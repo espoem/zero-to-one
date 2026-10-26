@@ -23,10 +23,8 @@ import {
   createSignal,
   createMemo,
   createEffect,
-  createRenderEffect,
   createRoot,
   flush,
-  untrack,
   onCleanup,
   onSettled,
   createContext,
@@ -44,12 +42,10 @@ import {
   renderFor,
   renderRepeat,
   createLoadingBoundary,
-  createErroredBoundary,
+  createErrorBoundary,
   createOptimisticStore,
-  createOptimistic,
   action,
   refresh,
-  affects,
   until,
   isPending,
   latest,
@@ -59,9 +55,6 @@ import {
   assert,
   assertEqual,
   assertDeepEqual,
-  assertThrowsAsync,
-  type Expect,
-  type Equal,
 } from "./utils/type-helpers.ts";
 
 declare const process: any;
@@ -414,7 +407,7 @@ async function testColorlessAsyncAndBoundaries() {
     return dividend() / divisor();
   });
 
-  const errorBoundary = createErroredBoundary({
+  const errorBoundary = createErrorBoundary({
     fallback: (err) => `Error caught: ${(err() as Error).message}`,
     children: () => `Result: ${divisionMemo()}`,
   });

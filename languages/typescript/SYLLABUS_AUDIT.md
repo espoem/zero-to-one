@@ -14,12 +14,12 @@ This document verifies that every single workshop, tutorial, section, lesson, an
 | **TypeScript Generics** (Weeks 14–16) | 6 sections (49 exercises) | Module 07 | `03-generics-and-overloads.ts` | ✅ 100% Covered |
 | **Advanced TypeScript Patterns** (Weeks 17–20) | 7 sections (45 exercises) | Modules 08, 11 | `04-advanced-patterns.ts`, `07-modern-ts-and-js-features.ts` | ✅ 100% Covered |
 | **TypeScript Expert Interviews** (Complete Volume) | 7 expert sessions | Module 11 (Lesson 11.1) | `07-modern-ts-and-js-features.ts` | ✅ 100% Covered |
-| **Zod Tutorial** (Week 21) | 1 section (10 exercises) | Module 09 (Lessons 9.1–9.2) | `05-zod-and-schema-validation.ts`, `utils/mini-zod.ts` | ✅ 100% Covered |
+| **Zod Tutorial** (Week 21) | 1 section (10 exercises) | Module 09 (Lessons 9.1–9.2) | `05-zod-and-schema-validation.ts` | ✅ 100% Covered |
 | **React with TypeScript** (Weeks 22–23) | 3 sections (21 exercises) | Module 09 (Lessons 9.3–9.4) | `06-react-patterns.tsx` | ✅ 100% Covered |
 | **Advanced React with TypeScript** (Weeks 24–26) | 6 sections (57 exercises) | Modules 10, 11 | `06-react-patterns.tsx` | ✅ 100% Covered |
 | **Modern JS & TS 5.x–7.0 Extensions** | ES2023–ES2025 + TS 5.0–7.0 | Module 11 (Lessons 11.2–11.3) | `07-modern-ts-and-js-features.ts` | ✅ 100% Covered |
-| **React 19.x Mastery Extension** | React 19 Actions, `use`, `ref`, RSC | Module 12 | `08-react-19-patterns.tsx`, `utils/react-shim.d.ts` | ✅ 100% Covered |
-| **SolidJS 2.x (`@solidjs/signals`) Extension** | Solid 2.0 Async, Signals, Projections | Module 13 | `09-solidjs-2-patterns.ts`, `utils/solid2-shim.ts` | ✅ 100% Covered |
+| **React 19.x Mastery Extension** | React 19 Actions, `use`, `ref`, RSC | Module 12 | `08-react-19-patterns.tsx` | ✅ 100% Covered |
+| **SolidJS 2.x (`@solidjs/signals`) Extension** | Solid 2.0 Async, Signals, Projections | Module 13 | `09-solidjs-2-patterns.ts` | ✅ 100% Covered |
 
 ---
 

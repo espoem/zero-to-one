@@ -18,7 +18,6 @@ import {
   type Equal,
   type NotEqual,
   type Extends,
-  assert,
   assertEqual,
   assertDeepEqual,
 } from "./utils/type-helpers.ts";
@@ -28,10 +27,6 @@ console.log("=== 07: Modern TypeScript & JavaScript Features ===");
 // ============================================================================
 // 1. Explicit Resource Management (Disposable, AsyncDisposable, using)
 // ============================================================================
-
-// Ensure symbols exist on all runtime platforms
-(Symbol as any).dispose ??= Symbol("Symbol.dispose");
-(Symbol as any).asyncDispose ??= Symbol("Symbol.asyncDispose");
 
 /**
  * Disposable resource representing an open file handle.
@@ -84,8 +79,8 @@ export class AsyncDbSession implements AsyncDisposable {
 }
 
 /**
- * Custom DisposableScope (similar to standard DisposableStack).
- * Allows managing multiple resources and deferred callbacks with LIFO disposal order.
+ * Educational DisposableScope simulating the official TC39 `DisposableStack`.
+ * Demonstrates managing multiple resources and deferred callbacks with LIFO disposal order.
  */
 export class DisposableScope implements Disposable {
   private readonly stack: (() => void)[] = [];

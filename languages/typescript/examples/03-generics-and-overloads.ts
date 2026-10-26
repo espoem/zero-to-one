@@ -14,9 +14,7 @@
 import {
   type Expect,
   type Equal,
-  type NotEqual,
   type Prettify,
-  assert,
   assertEqual,
   assertDeepEqual,
 } from "./utils/type-helpers.ts";

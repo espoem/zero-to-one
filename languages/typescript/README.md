@@ -28,10 +28,7 @@ languages/typescript/
 │   └── 13-solidjs-2-with-typescript.md                  # SolidJS 2.x Mastery: @solidjs/signals, First-Class Async, Stores & Projections
 └── examples/
     ├── utils/
-    │   ├── type-helpers.ts                              # Expect<T>, Equal<X, Y>, Prettify<T>, StrictOmit<T, K>, Brand<T, B>
-    │   ├── mini-zod.ts                                  # Self-contained Zod implementation showing runtime + type inference
-    │   ├── react-shim.d.ts                              # Zero-dependency React 19 + JSX type declarations for instant tsc checks
-    │   └── solid2-shim.ts                               # SolidJS 2.0 (@solidjs/signals, solid-js, @solidjs/web) native facade & test harness
+    │   └── type-helpers.ts                              # Expect<T>, Equal<X, Y>, Prettify<T>, StrictOmit<T, K>, Serializable<T>, Brand<T, B>
     ├── 01-essentials-and-narrowing.ts                   # Discriminated unions, exhaustiveness, readonly, and satisfies
     ├── 02-type-transformations.ts                       # Template literals, conditional types, infer, and URL path parsers
     ├── 03-generics-and-overloads.ts                     # Generic constraints, const type parameters, currying, and overloads

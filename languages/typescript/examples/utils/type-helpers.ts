@@ -1,3 +1,5 @@
+import { deepStrictEqual } from "node:assert/strict";
+
 /**
  * Total TypeScript Type Testing & Utility Helpers
  *
@@ -19,16 +21,6 @@
  * type fail = Expect<Equal<string, number>>; // Type 'false' does not satisfy constraint 'true'
  */
 export type Expect<T extends true> = T;
-
-/**
- * ExpectTrue is an alias for Expect.
- */
-export type ExpectTrue<T extends true> = T;
-
-/**
- * ExpectFalse validates that a condition evaluates to false at compile time.
- */
-export type ExpectFalse<T extends false> = T;
 
 /**
  * Equal checks structural and nominal equality between two types.
@@ -54,25 +46,6 @@ export type NotEqual<X, Y> = Equal<X, Y> extends true ? false : true;
  * Extends checks if X is assignable to Y.
  */
 export type Extends<X, Y> = X extends Y ? true : false;
-
-/**
- * IsAny tests if a type is the `any` type.
- */
-export type IsAny<T> = 0 extends 1 & T ? true : false;
-
-/**
- * IsNever tests if a type is `never`.
- */
-export type IsNever<T> = [T] extends [never] ? true : false;
-
-/**
- * IsUnknown tests if a type is `unknown` (and not `any`).
- */
-export type IsUnknown<T> = IsAny<T> extends true
-  ? false
-  : [unknown] extends [T]
-  ? true
-  : false;
 
 // ============================================================================
 // 2. Structural & Utility Types
@@ -103,14 +76,23 @@ export type Prettify<T> = {
 export type StrictOmit<T, K extends keyof T> = Omit<T, K>;
 
 /**
- * Maybe represents a value that could be null or undefined.
+ * JsonPrimitive and recursive Serializable helper for client/server serialization boundaries.
  */
-export type Maybe<T> = T | null | undefined;
+export type JsonPrimitive = string | number | boolean | null | undefined | bigint;
 
-/**
- * NonEmptyArray guarantees at least one element in an array at compile time.
- */
-export type NonEmptyArray<T> = [T, ...T[]];
+export type Serializable<T> = T extends (...args: any[]) => any
+  ? never
+  : T extends symbol
+  ? never
+  : T extends JsonPrimitive | Date
+  ? T
+  : T extends (infer U)[]
+  ? Serializable<U>[]
+  : T extends readonly (infer U)[]
+  ? readonly Serializable<U>[]
+  : T extends object
+  ? { [K in keyof T]: Serializable<T[K]> }
+  : never;
 
 /**
  * DeepPartial recursively makes all properties of an object and nested objects optional.
@@ -172,14 +154,15 @@ export function assertEqual<T>(actual: T, expected: T, message?: string): void {
 }
 
 /**
- * Assert structural deep equality via JSON serialization.
+ * Assert structural deep equality using Node.js native assert/strict.
  */
 export function assertDeepEqual<T>(actual: T, expected: T, message?: string): void {
-  const actualStr = JSON.stringify(actual);
-  const expectedStr = JSON.stringify(expected);
-  if (actualStr !== expectedStr) {
-    throw new Error(
-      `[Assertion Error] ${message ?? `Expected deep equality:\n  Expected: ${expectedStr}\n  Actual:   ${actualStr}`}`
-    );
+  try {
+    deepStrictEqual(actual, expected);
+  } catch (err: unknown) {
+    if (message) {
+      throw new Error(`[Assertion Error] ${message}: ${(err as Error).message}`);
+    }
+    throw err;
   }
 }

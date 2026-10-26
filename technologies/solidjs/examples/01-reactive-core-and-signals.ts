@@ -241,8 +241,7 @@ check("untrack isolates reads; runWithOwner restores owner", () => {
       },
     );
     flush();
-    const initialRuns = effectRuns;
-    void initialRuns;
+    assertEqual(effectRuns, 1, "split effect ran once on initial flush");
     // A write observed only through untrack must not retrigger the effect.
     runWithOwner(owner, () => {
       const probe = untrack(() => count());

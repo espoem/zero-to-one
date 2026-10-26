@@ -8,7 +8,7 @@
 While React treats component functions as rendering routines executed repeatedly on every state change, **SolidJS executes component functions exactly once as initialization constructors**. In Solid, components are not units of re-rendering; they exist solely to wire a reactive dependency graph directly to DOM nodes. Once setup finishes, reactive updates bypass the component function and mutate DOM text nodes and attributes directly—without a Virtual DOM (VDOM), reconciliation diffing, or component re-execution.
 
 In **SolidJS 2.x (`@solidjs/signals`)**, the framework elevates this model by rebuilding its core reactive engine from the ground up:
-1. **Asynchronous Reactivity in the Graph**: Asynchronicity is a first-class citizen. Ordinary memos (`createMemo`) natively accept promises and async iterables and return a non-nullable `Accessor<T>`; downstream subscribers track pending states automatically and bubble out-of-band to `<Loading>` and `<Errored>` boundaries. `createMemo` is the official Solid 2.0 async primitive; `createAsync` is only a local test-shim helper in `solid2-shim.ts`, not a framework export.
+1. **Asynchronous Reactivity in the Graph**: Asynchronicity is a first-class citizen. Ordinary memos (`createMemo`) natively accept promises and async iterables and return a non-nullable `Accessor<T>`; downstream subscribers track pending states automatically and bubble out-of-band to `<Loading>` and `<Errored>` boundaries. `createMemo` is the official Solid 2.0 async primitive.
 2. **Deterministic Microtask Batching**: State writes are batched onto the microtask queue by default. Synchronous reads inside the same tick remain stable and glitch-free until a `flush()` occurs or the microtask resolves.
 3. **Two-Phase Split Effects**: `createEffect(compute, effect)` cleanly isolates synchronous reactive dependency tracking (Phase 1) from untracked side-effect execution and cleanup (Phase 2).
 4. **Draft-First Stores & Projections**: `createStore` defaults to draft-first mutation semantics, `storePath` builds reusable path setters, and `createProjection` creates fine-grained, derived read-only stores that update with `O(1)` property-level precision.
@@ -54,7 +54,7 @@ To eliminate confusion between versions, the following matrix clearly isolates t
 | :--- | :--- | :--- | :--- |
 | **Reactivity Engine** | Synchronous push reactivity (`solid-js`) | Push-pull hybrid via `@solidjs/signals` | Solves over-computation, intermediate glitches, and enables cross-framework signal interop. |
 | **Batching & Scheduling** | Synchronous signal writes; manual `batch(() => ...)` | **Microtask-batched by default**; `flush()` / `flush(fn)` | Guarantees consistent dependency snapshots before effects run; prevents layout thrashing. |
-| **Async Reactivity** | `createResource` returning `[Resource<T>, { mutate, refetch }]` (`T \| undefined`) | **Async `createMemo`** — the official async primitive (`createAsync` is only a local test-shim helper in `solid2-shim.ts`): promises and `AsyncIterable`s return non-nullable `Accessor<T>` | Eliminates the mental tax of async data being an external wrapper; promises flow through ordinary memos. |
+| **Async Reactivity** | `createResource` returning `[Resource<T>, { mutate, refetch }]` (`T \| undefined`) | **Async `createMemo`** — the official async primitive: promises and `AsyncIterable`s return non-nullable `Accessor<T>` | Eliminates the mental tax of async data being an external wrapper; promises flow through ordinary memos. |
 | **Async Inspection** | `resource.loading`, `resource.error` | `isPending(accessor)` & `await resolve(accessor)` | Standalone utility functions inspect any async accessor without coupling to resource wrappers. |
 | **UI Boundaries** | `<Suspense fallback={...}>` & `<ErrorBoundary fallback={...}>` | **`<Loading fallback={...}>`** & **`<Errored fallback={...}>`** | Granular async settlement; supports stale-while-revalidate transitions without layout flickering. |
 | **Side Effects** | Single-function `createEffect(() => ...)` (implicit dependency tracking across entire body) | **Split two-phase `createEffect(compute, effect)`** | Phase 1 synchronously defines tracked dependencies; Phase 2 executes side effects and returns cleanups. |
@@ -309,7 +309,7 @@ async function printArticle() {
 Memo options also include `loadingValue`, which supplies a seed value while the first async result is in flight (pairs naturally with optimistic state in Lesson 13.6).
 
 > [!NOTE]
-> **Official primitive:** use async `createMemo` in new code — `createMemo` is the official Solid 2.0 async primitive. `createAsync` is only a local test-shim helper in `solid2-shim.ts` (kept exported so existing examples and exercises still run), not a separate v2 primitive.
+> **Official primitive:** use async `createMemo` in new code — `createMemo` is the official Solid 2.0 async primitive, not a separate v2 primitive.
 
 ### 13.2.3 Split `createEffect` & `createRenderEffect`
 
@@ -868,7 +868,7 @@ This module is the TypeScript-focused slice. For the complete `solid-js@2.0.0-rc
 | :--- | :--- | :--- | :--- |
 | **Props** | `function Box({ title, count }: Props)` | `function Box(props: Props)` | Destructuring severs the reactive proxy. Access via `props.x`, `omit`, or `merge` (`splitProps`/`mergeProps` are 1.x legacy predecessors). |
 | **Default Props** | `{ size = "md" } = props;` | `const p = merge({ size: "md" }, props);` | Object destructuring reads properties once at setup. `merge` preserves dynamic reactivity (`mergeProps` is the 1.x legacy predecessor). |
-| **Async Data** | `const [res] = createResource(fetcher)` | `const data = createMemo(() => fetcher())` (`createAsync` is only a local test-shim helper in `solid2-shim.ts`) | Solid 2.0 replaces `createResource` with async memos returning non-nullable `Accessor<T>`. |
+| **Async Data** | `const [res] = createResource(fetcher)` | `const data = createMemo(() => fetcher())` | Solid 2.0 replaces `createResource` with async memos returning non-nullable `Accessor<T>`. |
 | **Pending States** | `res.loading ? <Spinner /> : ...` | `<Loading fallback={<Spinner />}>` / `isPending(data)` | Boundaries handle loading out-of-band; `isPending` inspects transitions without suspense triggers. |
 | **Error Handling** | `<ErrorBoundary fallback={...}>` | `<Errored fallback={(err, reset) => ...}>` (fallback receives an error accessor — call `err()`, e.g. `String(err())`) | Solid 2.0 `<Errored>` boundary integrates natively with promise rejections and reactive errors. |
 | **Effects** | `createEffect(() => console.log(x()))` | `createEffect(() => x(), (val) => console.log(val))` | Two-phase split prevents unintentional dependency tracking and cleans up naturally. |
@@ -932,7 +932,7 @@ export function useDebouncedSearch(
     if (q.length === 0) return [];
     return await fetcher(q);
   });
-  //    ^? Accessor<SearchResult[]> — async `createMemo` is the official primitive; `createAsync` is only a local test-shim helper in `solid2-shim.ts`
+  //    ^? Accessor<SearchResult[]> — async `createMemo` is the official primitive
 
   const searchState = createMemo<SearchState>(() => {
     const q = debouncedQuery().trim();
@@ -1205,7 +1205,7 @@ export function ComponentUnderContext() {
 2. **Deterministic Microtask Batching**: Signal writes are queued on the microtask queue by default. Immediate reads remain stable until `flush()` is called or the microtask drains.
 3. **Never Destructure Props**: Props are reactive proxy objects. Destructuring destroys reactivity. Access via `props.title`, `merge` (for default values), and `omit` (for prop extraction). `mergeProps`/`splitProps` are 1.x legacy predecessors.
 4. **Control-Flow Narrowing**: Use `<Show when={val()}>{(v) => ...}</Show>` to narrow types inside JSX. `v` is typed as `Accessor<NonNullable<T>>`.
-5. **Solid 2.0 Async Memos**: async `createMemo` returns `Accessor<Awaited<T>>` (not `T | undefined`) for promises and `AsyncIterable`s. `createMemo` is the official Solid 2.0 async primitive; `createAsync` is only a local test-shim helper in `solid2-shim.ts`. Pending computations propagate to `<Loading>` and `<Errored>` boundaries automatically. Inspect via `isPending`, `latest`, `resolve`, and `refresh`; throw `NotReadyError` to opt out of suspension.
+5. **Solid 2.0 Async Memos**: async `createMemo` returns `Accessor<Awaited<T>>` (not `T | undefined`) for promises and `AsyncIterable`s. `createMemo` is the official Solid 2.0 async primitive. Pending computations propagate to `<Loading>` and `<Errored>` boundaries automatically. Inspect via `isPending`, `latest`, `resolve`, and `refresh`; throw `NotReadyError` to opt out of suspension.
 6. **Two-Phase Effects**: Solid 2.0 `createEffect(compute, effect)` separates pure synchronous tracking from side-effect execution, providing automatic TypeScript parameter inference and direct cleanup return.
 7. **Stores & Draft Setters**: `createStore` manages deep nested proxies. Setters support native draft mutations (`setState(draft => { draft.done = true; })`) without Immer or `produce` wrapper boilerplate. `storePath` builds reusable path setters; `snapshot`/`deep`/`merge`/`omit` cover plain copies, deep tracking, and prop-style composition.
 8. **Derived Projections**: `createProjection` creates derived stores via mutable draft callbacks without invalidating array or object references, preserving `O(1)` fine-grained notification precision.

@@ -17,7 +17,6 @@ import {
   type NotEqual,
   type Prettify,
   type UnionToIntersection,
-  assert,
   assertEqual,
   assertDeepEqual,
 } from "./utils/type-helpers.ts";
@@ -67,7 +66,7 @@ export function makeUsd(dollars: number, cents: number): UsdCents {
 }
 
 // Compile-time checks: UserId and PostId must NOT be interchangeable
-type TestBrandMismatch = Expect<Equal<UserId, PostId> extends true ? false : true>;
+type TestBrandMismatch = Expect<NotEqual<UserId, PostId>>;
 
 function fetchUserPosts(userId: UserId): string {
   return `Fetched posts for ${userId}`;

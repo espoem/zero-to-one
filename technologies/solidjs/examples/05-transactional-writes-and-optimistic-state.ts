@@ -19,25 +19,17 @@
 import {
   action,
   affects,
-  createEffect,
-  createMemo,
   createOptimistic,
   createOptimisticStore,
-  createRoot,
   createSignal,
   createStore,
   flush,
   isPending,
-  onCleanup,
-  refresh,
-  snapshot,
   until,
 } from "./utils/solid2-runtime.ts";
 import {
   assert,
-  assertDeepEqual,
   assertEqual,
-  assertThrowsAsync,
 } from "./utils/type-helpers.ts";
 
 let passed = 0;
@@ -45,24 +37,6 @@ function check(condition: boolean, message: string): void {
   assert(condition, message);
   passed += 1;
   console.log(`ok ${passed} - ${message}`);
-}
-
-function deferred<T>(): {
-  promise: Promise<T>;
-  resolve: (value: T) => void;
-  reject: (err: unknown) => void;
-} {
-  let resolveFn: (value: T) => void = () => {};
-  let rejectFn: (err: unknown) => void = () => {};
-  const promise = new Promise<T>((res, rej) => {
-    resolveFn = res;
-    rejectFn = rej;
-  });
-  return {
-    promise,
-    resolve: (v: T): void => resolveFn(v),
-    reject: (e: unknown): void => rejectFn(e),
-  };
 }
 
 async function sleep(ms: number): Promise<void> {
@@ -80,7 +54,7 @@ async function main(): Promise<void> {
 
   // In Solid 2.0, optimistic writes exist inside a transaction/action frame:
   // they show the speculative value during the in-flight operation and revert when settled.
-  const previewGate = deferred<void>();
+  const previewGate = Promise.withResolvers<void>();
   const previewAction = action(function* () {
     setOptimisticCount(99);
     yield previewGate.promise;
@@ -104,7 +78,7 @@ async function main(): Promise<void> {
   // 2. Generator `action`: holding transactions open across async boundaries
   // ==========================================================================
   const [title, setTitle] = createOptimistic("Confirmed Title");
-  const saveGate = deferred<string>();
+  const saveGate = Promise.withResolvers<string>();
 
   const updateTitleAction = action(function* (newTitle: string) {
     setTitle(newTitle);
@@ -130,7 +104,7 @@ async function main(): Promise<void> {
   // ==========================================================================
   // 3. Automatic revert on action rejection (failure path)
   // ==========================================================================
-  const failGate = deferred<string>();
+  const failGate = Promise.withResolvers<string>();
   const failAction = action(function* (speculative: string) {
     setTitle(speculative);
     yield failGate.promise;
@@ -159,7 +133,7 @@ async function main(): Promise<void> {
   // 4. `affects(target)` and `isPending(target)` tracking
   // ==========================================================================
   const [dataFeed, setDataFeed] = createSignal("v1");
-  const reloadGate = deferred<void>();
+  const reloadGate = Promise.withResolvers<void>();
 
   const reloadAction = action(function* () {
     affects(dataFeed);
@@ -220,7 +194,7 @@ async function main(): Promise<void> {
 
   assertEqual(todos.length, 2, "optimistic store starts with initial confirmed items");
 
-  const todoGate = deferred<Todo>();
+  const todoGate = Promise.withResolvers<Todo>();
   const addTodoAction = action(function* (newTodo: Todo) {
     setTodos((draft) => {
       draft.push(newTodo);
@@ -267,7 +241,7 @@ async function main(): Promise<void> {
     confirmedProfile
   );
 
-  const saveProfileGate = deferred<void>();
+  const saveProfileGate = Promise.withResolvers<void>();
   const updateEmailAction = action(function* (newEmail: string) {
     setProfile((draft) => {
       draft.email = newEmail;
@@ -368,7 +342,7 @@ async function main(): Promise<void> {
     };
   }
 
-  const renameGate = deferred<void>();
+  const renameGate = Promise.withResolvers<void>();
   const table = createRowLabels(serverRows, (_id, _lbl) => renameGate.promise);
 
   const row1 = serverRows()[0]!;
@@ -418,7 +392,6 @@ async function main(): Promise<void> {
   type ChatMessage = { id: string; clientId?: string; text: string; pending?: boolean };
   type ChatInbox = { messages: ChatMessage[]; receipts: string[] };
 
-  const pendingReceipts = new Map<string, boolean>();
   const [confirmedInbox, setConfirmedInbox] = createStore<ChatInbox>({
     messages: [],
     receipts: [],
@@ -428,20 +401,15 @@ async function main(): Promise<void> {
     confirmedInbox
   );
 
-  const sendGate = deferred<void>();
+  const sendGate = Promise.withResolvers<void>();
   const sendChatMessage = action(function* (text: string) {
     const clientId = "client-uuid-123";
     const msg: ChatMessage = { id: clientId, clientId, text };
-    pendingReceipts.set(clientId, false);
-    try {
-      setInbox((draft) => {
-        draft.messages.push({ ...msg, pending: true });
-      });
-      yield sendGate.promise;
-      yield until(() => inbox.receipts.includes(clientId), { timeout: 1000 });
-    } finally {
-      pendingReceipts.delete(clientId);
-    }
+    setInbox((draft) => {
+      draft.messages.push({ ...msg, pending: true });
+    });
+    yield sendGate.promise;
+    yield until(() => inbox.receipts.includes(clientId), { timeout: 1000 });
   });
 
   const chatPromise = sendChatMessage("Hello Solid 2.0!");

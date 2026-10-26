@@ -18,20 +18,20 @@ import React, {
   use,
   useActionState,
   useOptimistic,
-  useFormStatus,
   createContext,
   type ReactNode,
   type Ref,
   type RefCallback,
   type ComponentProps,
-  type Serializable,
+  type JSX,
 } from "react";
+import { useFormStatus } from "react-dom";
 
 import {
   type Expect,
   type Equal,
-  type NotEqual,
   type Extends,
+  type Serializable,
 } from "./utils/type-helpers.ts";
 
 // ============================================================================
@@ -56,7 +56,7 @@ export function TextInput({ label, value, onChange, ref }: TextInputProps): JSX.
       <input
         ref={ref}
         value={value}
-        onChange={(e: any) => onChange(e.target.value)}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
       />
     </div>
   );

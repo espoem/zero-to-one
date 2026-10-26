@@ -15,8 +15,6 @@
 import {
   type Expect,
   type Equal,
-  type NotEqual,
-  type Prettify,
   assert,
   assertEqual,
   assertDeepEqual,
@@ -159,6 +157,13 @@ export function isUser(val: unknown): val is User {
   );
 }
 
+const sampleUser: unknown = { id: "u-1", name: "Alice" };
+assertEqual(isUser(sampleUser), true);
+if (isUser(sampleUser)) {
+  type TestNarrowedUser = Expect<Equal<typeof sampleUser, User>>;
+}
+assertEqual(isUser({ id: 123 }), false);
+
 /**
  * Generic type guard for filtering nullish values
  */
@@ -187,6 +192,11 @@ export function assertIsDefined<T>(val: T, message = "Expected value to be defin
     throw new Error(message);
   }
 }
+
+const nullableValue: string | null = "defined-value";
+assertIsDefined(nullableValue);
+type TestAssertedDefined = Expect<Equal<typeof nullableValue, string>>;
+assertEqual(nullableValue.toUpperCase(), "DEFINED-VALUE");
 
 function processUnknownInput(input: unknown): number {
   assertIsString(input);
