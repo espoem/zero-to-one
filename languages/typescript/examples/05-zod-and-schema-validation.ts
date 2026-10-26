@@ -28,7 +28,7 @@ import {
   type infer as zInfer,
   type input as zInput,
   type output as zOutput,
-} from "./utils/mini-zod.ts";
+} from "zod";
 
 console.log("=== 05: Zod and Schema Validation ===");
 
