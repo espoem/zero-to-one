@@ -1,0 +1,20 @@
+{
+  "name": "total-typescript-course-reference",
+  "version": "2.0.0",
+  "description": "Total TypeScript Complete Learning Path + React 19 + SolidJS 2.x runnable reference project and self-contained test suite",
+  "type": "module",
+  "scripts": {
+    "typecheck": "mise exec npm:typescript -- tsc --noEmit",
+    "test": "node examples/01-essentials-and-narrowing.ts && node examples/02-type-transformations.ts && node examples/03-generics-and-overloads.ts && node examples/04-advanced-patterns.ts && node examples/05-zod-and-schema-validation.ts && node examples/07-modern-ts-and-js-features.ts && node examples/09-solidjs-2-patterns.ts",
+    "test:01": "node examples/01-essentials-and-narrowing.ts",
+    "test:02": "node examples/02-type-transformations.ts",
+    "test:03": "node examples/03-generics-and-overloads.ts",
+    "test:04": "node examples/04-advanced-patterns.ts",
+    "test:05": "node examples/05-zod-and-schema-validation.ts",
+    "test:07": "node examples/07-modern-ts-and-js-features.ts",
+    "test:09": "node examples/09-solidjs-2-patterns.ts"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  }
+}
