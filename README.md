@@ -18,6 +18,7 @@ zero-to-one/
 ├── languages/                 # Programming languages and type systems
 │   └── typescript/            # Complete Total TypeScript + React 19 + SolidJS 2.x curriculum
 ├── technologies/              # Databases, containerization, cloud, and runtimes
+│   ├── panda-css/             # Complete build-time zero-runtime CSS-in-JS & design system curriculum
 │   └── solidjs/               # Complete SolidJS 2.x (@solidjs/signals, @solidjs/web, Start Mode) track
 ├── algorithms/                # Data structures, algorithmic complexity, and problem solving (.gitkeep)
 └── architecture/              # System design, distributed systems, and architectural patterns (.gitkeep)
@@ -39,6 +40,7 @@ Every track within the repository adheres to a uniform structure:
 | Domain | Topic / Technology | Scope & Description | Status | Reference Link |
 | :--- | :--- | :--- | :---: | :--- |
 | `languages/` | **TypeScript** | Complete 26-week Total TypeScript syllabus (476 lessons) + Modern JS/TS 5.x–7.0, React 19, and SolidJS 2.x | 🟢 Complete | [languages/typescript/](./languages/typescript/) |
+| `technologies/` | **Panda CSS** | Build-time zero-runtime CSS-in-JS, static AST extraction, design tokens, atomic and config recipes, slot recipes, layout patterns, container queries, and 25 production best practices | 🟢 Complete | [technologies/panda-css/](./technologies/panda-css/) |
 | `technologies/` | **SolidJS 2.x** | Complete Solid 2.0 RC (`@solidjs/signals`, `@solidjs/web`, Oxc/Rust compiler, draft-first stores, `createProjection`, colorless async, `action`/`createOptimisticStore`, Start Mode & `"use server"`) | 🟢 Complete | [technologies/solidjs/](./technologies/solidjs/) |
 | `languages/` | **Rust** | Ownership, lifetimes, borrow checker, async runtime, and systems programming | 🟡 Planned | `languages/rust/` |
 | `languages/` | **Python** | Python data model, metaprogramming, static typing (`mypy`), and async I/O | 🟡 Planned | `languages/python/` |
@@ -54,6 +56,7 @@ Every track within the repository adheres to a uniform structure:
 To bridge technical English documentation with accurate, established Czech academic and professional terminology:
 - **[Central Systems & CS Glossary](./GLOSSARY.md)** covers universal concepts (e.g., *Referential Transparency*, *Idempotency*, *Time Complexity*, *CAP Theorem*).
 - **[TypeScript & Type-System Glossary](./languages/typescript/GLOSSARY.md)** covers specific type theory, compiler analysis, and language features (e.g., *Discriminated Unions*, *Type Narrowing*, *Mapped Types*, *Branded Types*, *Variance*).
+- **[Panda CSS Build-Time & Design System Glossary](./technologies/panda-css/GLOSSARY.md)** covers static AST extraction, design tokens, atomic and config recipes, slot recipes, conditions, and container queries.
 - **[SolidJS 2.x Reactive & Full-Stack Glossary](./technologies/solidjs/GLOSSARY.md)** covers fine-grained push-pull reactivity, deterministic microtask batching, store projections, colorless async, optimistic transactions, and server functions.
 
 All glossaries strictly follow the discipline recorded in [AGENTS.md](./AGENTS.md): terms must be verified against official documentation, standards (ISO/IEC, ECMA, IEEE), and academic literature without fabricated neologisms.

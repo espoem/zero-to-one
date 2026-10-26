@@ -1,0 +1,25 @@
+{
+  "name": "panda-mastery-course",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Complete Panda CSS Mastery course material, runnable reference examples, and production best practices",
+  "scripts": {
+    "prepare": "panda codegen --config examples/panda.config.ts",
+    "codegen": "panda codegen --config examples/panda.config.ts",
+    "studio": "panda studio --config examples/panda.config.ts",
+    "analyze": "panda analyze --config examples/panda.config.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "tsc --noEmit && panda codegen --config examples/panda.config.ts --clean"
+  },
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@pandacss/dev": "^0.51.1",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "postcss": "^8.4.49",
+    "typescript": "^5.7.2"
+  }
+}
