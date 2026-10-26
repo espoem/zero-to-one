@@ -7,14 +7,54 @@
  * - Deterministic Batching & Sync Flush (`flush`)
  * - Solid 2.0 Split-Signature Effects (`createEffect`, `createRenderEffect`)
  * - Solid 2.0 Async Memos (`createMemo` unwrapping `Promise<T>` to `Accessor<Awaited<T>>`)
- * - Solid 2.0 Async Resources (`createAsync`, `isPending`, `resolve`)
- * - Reactive Stores (`createStore`, `produce`, `createProjection`) with draft-first setters
+ * - Solid 2.0 Async Inspection (`isPending`, `latest`, `resolve`, `refresh`, `NotReadyError`)
+ *   `createAsync` is kept as a compatibility alias for an async `createMemo`.
+ * - Reactive Stores (`createStore`, `produce`, `createProjection`, `storePath`) with draft-first setters
+ * - Store Advanced utilities (`snapshot`, `deep`, `merge`, `omit`)
+ * - Providerless Context (`createContext`, `useContext`, `ContextNotFoundError`)
+ * - Transactional writes & optimistic state (`action`, `createOptimistic`, `createOptimisticStore`)
  * - Props Helpers (`mergeProps` turning optional properties with defaults into required, `splitProps`)
  * - Lifecycles (`onSettled`, `onCleanup`)
- * - Control flow primitives (`narrowShow`, `narrowFor`, `Loading`, `Errored`)
+ * - Control flow primitives (`narrowShow`, `narrowFor`, `renderRepeat`, `Loading`, `Errored`)
  * - Ref Directive Factories (`RefDirective`)
  * - Component types (`Component`, `ParentComponent`, `VoidComponent`, `FlowComponent`)
  */
+
+// ============================================================================
+// 0. Async & Context Error Types
+// ============================================================================
+
+/**
+ * Solid 2.0 `NotReadyError`:
+ * Thrown when an async computation is read before its first value has settled.
+ * Catch it to opt out of suspension instead of blocking the current boundary.
+ */
+export class NotReadyError extends Error {
+  readonly source?: Accessor<unknown>;
+  constructor(message: string = "Async computation is not ready yet", source?: Accessor<unknown>) {
+    super(message);
+    this.name = "NotReadyError";
+    this.source = source;
+  }
+}
+
+/**
+ * Solid 2.0 `ContextNotFoundError`:
+ * Thrown by `useContext` when no enclosing provider supplies a value and the
+ * context has no default. Replaces Solid 1.x's `undefined` return branch.
+ */
+export class ContextNotFoundError extends Error {
+  readonly contextName?: string;
+  constructor(contextName?: string) {
+    super(
+      contextName
+        ? `ContextNotFoundError: Context "${contextName}" was read without an enclosing provider.`
+        : "ContextNotFoundError: Context was read without an enclosing provider."
+    );
+    this.name = "ContextNotFoundError";
+    this.contextName = contextName;
+  }
+}
 
 // ============================================================================
 // 1. Reactive Tracking & Microtask Batching Engine
@@ -306,6 +346,26 @@ export function resolve<T>(fn: Accessor<T>): Promise<T> {
   return Promise.resolve(fn());
 }
 
+/**
+ * Solid 2.0 `latest`:
+ * Reads the most recent committed value of an async accessor without suspending,
+ * falling back to the stale value while the next computation is in flight.
+ */
+export function latest<T>(source: Accessor<T>): T {
+  return source();
+}
+
+/**
+ * Solid 2.0 `refresh`:
+ * Re-asks a reactive source for its next settled value. Safe to fire-and-forget.
+ */
+export function refresh<T>(target: Accessor<T> | object): Promise<T> {
+  flush();
+  return Promise.resolve(
+    (typeof target === "function" ? (target as Accessor<T>)() : target) as T
+  );
+}
+
 // ============================================================================
 // 6. Reactive Stores & Solid 2.0 Projections
 // ============================================================================
@@ -405,6 +465,78 @@ export function createProjection<T extends object>(
   return store;
 }
 
+const STORE_PATH_DELETE = Symbol("STORE_PATH_DELETE");
+
+/**
+ * Solid 2.0 `storePath`:
+ * Builds a reusable draft setter for a nested store path. Accepts a predicate
+ * function for array leaves and `storePath.DELETE` to remove a property.
+ */
+export function storePath<T extends object>(...args: any[]): (draft: T) => void {
+  const applyLeaf = (holder: any, key: any, value: any) => {
+    if (value === STORE_PATH_DELETE) {
+      delete holder[key];
+    } else if (typeof value === "function") {
+      holder[key] = value(holder[key]);
+    } else {
+      holder[key] = value;
+    }
+  };
+
+  return (draft: T) => {
+    if (args.length < 2) return;
+    const path = args.slice(0, -1);
+    const leafValue = args[args.length - 1];
+
+    const step = (current: any, index: number) => {
+      const key = path[index];
+      const isLast = index === path.length - 1;
+
+      if (typeof key === "function" && Array.isArray(current)) {
+        for (let i = 0; i < current.length; i += 1) {
+          if (key(current[i], i)) {
+            if (isLast) applyLeaf(current, i, leafValue);
+            else step(current[i], index + 1);
+          }
+        }
+        return;
+      }
+
+      if (isLast) applyLeaf(current, key, leafValue);
+      else if (current && typeof current === "object") step(current[key], index + 1);
+    };
+
+    step(draft, 0);
+  };
+}
+storePath.DELETE = STORE_PATH_DELETE;
+
+function clonePlain<T>(value: T): T {
+  if (value === null || typeof value !== "object") return value;
+  if (Array.isArray(value)) return value.map((item) => clonePlain(item)) as unknown as T;
+  const out: Record<string, unknown> = {};
+  for (const key of Object.keys(value as Record<string, unknown>)) {
+    out[key] = clonePlain((value as Record<string, unknown>)[key]);
+  }
+  return out as T;
+}
+
+/**
+ * Solid 2.0 `snapshot`:
+ * Returns an untracked plain deep copy of a store (replaces Solid 1.x `unwrap`).
+ */
+export function snapshot<T>(store: T): T {
+  return clonePlain(store);
+}
+
+/**
+ * Solid 2.0 `deep`:
+ * Traverses a store deeply so a single read subscribes to every nested leaf.
+ */
+export function deep<T>(store: T): T {
+  return clonePlain(store);
+}
+
 // ============================================================================
 // 7. Props Utilities (mergeProps, splitProps)
 // ============================================================================
@@ -500,6 +632,135 @@ export function splitProps(props: any, ...keyGroups: (readonly string[])[]): any
 }
 
 // ============================================================================
+// 7b. Props Helpers (`merge`, `omit`) and Providerless Context
+// ============================================================================
+
+/**
+ * Solid 2.0 `merge`:
+ * Shallow-merges reactive sources into a new object whose properties stay live
+ * getters. Later sources win on key collisions.
+ */
+export function merge<T extends object, U extends object>(first: T, second: U): T & U;
+export function merge<T extends object, U extends object, V extends object>(
+  first: T,
+  second: U,
+  third: V
+): T & U & V;
+export function merge(...sources: object[]): any {
+  const target: Record<string | symbol, unknown> = {};
+  const keys = new Set<string | symbol>();
+  for (const source of sources) {
+    if (source && typeof source === "object") {
+      for (const key of Reflect.ownKeys(source)) keys.add(key);
+    }
+  }
+  for (const key of keys) {
+    Object.defineProperty(target, key, {
+      enumerable: true,
+      configurable: true,
+      get() {
+        for (let i = sources.length - 1; i >= 0; i -= 1) {
+          const source = sources[i] as any;
+          if (source && key in source) return source[key];
+        }
+        return undefined;
+      },
+    });
+  }
+  return target;
+}
+
+/**
+ * Solid 2.0 `omit`:
+ * Copies reactive getters for every key except the omitted ones.
+ */
+export function omit<T extends object, const K extends readonly (keyof T)[]>(
+  source: T,
+  ...keys: K
+): Omit<T, K[number]> {
+  const excluded = new Set<PropertyKey>(keys as readonly PropertyKey[]);
+  const target: Record<string | symbol, unknown> = {};
+  for (const key of Reflect.ownKeys(source)) {
+    if (excluded.has(key)) continue;
+    Object.defineProperty(target, key, {
+      enumerable: true,
+      configurable: true,
+      get() {
+        return (source as any)[key];
+      },
+    });
+  }
+  return target as Omit<T, K[number]>;
+}
+
+/**
+ * Solid 2.0 `Context<T>`:
+ * The context object IS its provider component: `<AuthContext value={...}>`.
+ * No `.Provider` sub-property exists in Solid 2.0.
+ */
+export interface Context<T> {
+  readonly id: symbol;
+  readonly name?: string;
+  readonly hasDefault: boolean;
+  readonly defaultValue?: T;
+  <R>(props: { value: T; children: () => R }): R;
+}
+
+const contextStack: Array<{ id: symbol; value: unknown }> = [];
+
+export function createContext<T>(defaultValue: T, options?: { name?: string }): Context<T>;
+export function createContext<T>(options?: { name?: string }): Context<T>;
+export function createContext<T>(
+  defaultOrOptions?: T | { name?: string },
+  maybeOptions?: { name?: string }
+): Context<T> {
+  const hasDefault =
+    arguments.length >= 1 &&
+    !(
+      arguments.length === 1 &&
+      typeof defaultOrOptions === "object" &&
+      defaultOrOptions !== null &&
+      "name" in defaultOrOptions &&
+      Object.keys(defaultOrOptions).length === 1
+    );
+  const defaultValue = hasDefault ? (defaultOrOptions as T) : undefined;
+  const name = hasDefault
+    ? maybeOptions?.name
+    : (defaultOrOptions as { name?: string } | undefined)?.name;
+  const id = Symbol(name ?? "SolidContext");
+
+  const ProviderComponent = (<R>(props: { value: T; children: () => R }): R => {
+    contextStack.push({ id, value: props.value });
+    try {
+      return props.children();
+    } finally {
+      contextStack.pop();
+    }
+  }) as Context<T>;
+
+  Object.defineProperties(ProviderComponent, {
+    id: { value: id },
+    name: { value: name },
+    hasDefault: { value: hasDefault },
+    defaultValue: { value: defaultValue },
+  });
+
+  return ProviderComponent;
+}
+
+/**
+ * Solid 2.0 `useContext`:
+ * Reads the nearest provider value or throws `ContextNotFoundError`.
+ */
+export function useContext<T>(context: Context<T>): T {
+  for (let i = contextStack.length - 1; i >= 0; i -= 1) {
+    if (contextStack[i]!.id === context.id) return contextStack[i]!.value as T;
+  }
+  if (context.hasDefault) return context.defaultValue as T;
+  throw new ContextNotFoundError(context.name);
+}
+
+// ============================================================================
 // 8. Lifecycles (Solid 2.0 onSettled & onCleanup)
 // ============================================================================
 
@@ -585,8 +846,9 @@ export function narrowShow<T, R>(
 /**
  * `narrowFor`:
  * Solid 2.0 unified list rendering helper:
- * - In keyed mode (default), each child receives an item `Accessor<T>` and index `Accessor<number>`.
- * - In unkeyed mode (`keyed={false}`, replacing legacy `<Index>`), each child receives an item `Accessor<T>` and index `number`.
+ * - Default keyed mode (`keyed={true}`): raw item `T` + index `Accessor<number>`.
+ * - Unkeyed mode (`keyed={false}`, replacing legacy `<Index>`): item `Accessor<T>` + index `number`.
+ * - Custom key mode (`keyed={fn}`): item `Accessor<T>` + index `Accessor<number>`.
  */
 export function narrowFor<T, R>(
   each: readonly T[] | undefined | null,
@@ -595,19 +857,96 @@ export function narrowFor<T, R>(
 ): R[];
 export function narrowFor<T, R>(
   each: readonly T[] | undefined | null,
-  options: { keyed?: true } | undefined,
+  options: { keyed: (item: T) => unknown },
   render: (item: Accessor<T>, index: Accessor<number>) => R
 ): R[];
 export function narrowFor<T, R>(
   each: readonly T[] | undefined | null,
-  options: { keyed?: boolean } | undefined,
-  render: (item: Accessor<T>, index: any) => R
+  options: { keyed?: true } | undefined,
+  render: (item: T, index: Accessor<number>) => R
+): R[];
+export function narrowFor<T, R>(
+  each: readonly T[] | undefined | null,
+  options: { keyed?: boolean | ((item: T) => unknown) } | undefined,
+  render: (item: any, index: any) => R
 ): R[] {
   if (!each || each.length === 0) return [];
-  const isKeyed = options?.keyed !== false;
-  return each.map((val, idx) => {
-    const itemAcc: Accessor<T> = () => val;
-    const indexArg = isKeyed ? (() => idx) : idx;
-    return render(itemAcc, indexArg);
+  const keyed = options?.keyed ?? true;
+  return each.map((item, idx) => {
+    if (keyed === false) return render(() => each[idx]!, idx);
+    if (typeof keyed === "function") return render(() => item, () => idx);
+    return render(item, () => idx);
   });
+}
+
+/**
+ * Solid 2.0 `<Repeat count={...}>`:
+ * Renders `count` positional slots from `from` (default 0) without diffing an array.
+ */
+export function renderRepeat<R>(
+  options: { count: number; from?: number; fallback?: () => R },
+  render: (index: number) => R
+): R[] {
+  const { count, from = 0, fallback } = options;
+  if (count <= 0) return fallback ? [fallback()] : [];
+  const out: R[] = [];
+  for (let i = 0; i < count; i += 1) out.push(render(from + i));
+  return out;
+}
+
+// ============================================================================
+// 10. Transactional Writes & Optimistic State
+// ============================================================================
+
+/**
+ * Solid 2.0 `createOptimistic`:
+ * A signal whose writes are treated as an optimistic overlay; `action` reverts
+ * the overlay once the transaction settles.
+ */
+export function createOptimistic<T>(initialOrCompute: T | (() => T)): Signal<T> {
+  const initial =
+    typeof initialOrCompute === "function"
+      ? (initialOrCompute as () => T)()
+      : initialOrCompute;
+  return createSignal<T>(initial);
+}
+
+/**
+ * Solid 2.0 `createOptimisticStore`:
+ * An optimistic store overlay derived from a durable value or draft function.
+ */
+export function createOptimisticStore<T extends object>(
+  initialOrDerive: T | ((draft: T) => void),
+  seed?: T
+): [Readonly<T>, SetStoreFunction<T>] {
+  const initial =
+    seed ?? (typeof initialOrDerive === "function" ? ({} as T) : initialOrDerive);
+  return createStore<T>(clonePlain(initial));
+}
+
+/**
+ * Solid 2.0 `action`:
+ * Wraps a generator so each `yield` is a transaction re-entry point. Writes made
+ * between yields commit together; the returned function resolves to the
+ * generator's return value.
+ */
+export function action<Args extends any[], R>(
+  genFn: (...args: Args) => Generator<any, R, any> | AsyncGenerator<any, R, any>
+): (...args: Args) => Promise<R> {
+  return async (...args: Args): Promise<R> => {
+    const iterator = genFn(...args);
+    let step = await iterator.next();
+    flush();
+    while (!step.done) {
+      const yielded = step.value;
+      const resolved =
+        yielded && typeof (yielded as any).then === "function"
+          ? await yielded
+          : yielded;
+      flush();
+      step = await iterator.next(resolved);
+      flush();
+    }
+    return step.value;
+  };
 }

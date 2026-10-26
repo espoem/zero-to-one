@@ -5,12 +5,16 @@
  * (`@solidjs/signals` + `solid-js` 2.0):
  * - Signals with deterministic microtask batching (`createSignal`, `flush`, `Accessor<T>`, `Setter<T>`)
  * - First-class async memos (`createMemo` unwrapping `Promise<T>` to `Accessor<Awaited<T>>`)
- * - Async resources (`createAsync`, `isPending`, `resolve`)
+ * - Async inspection (`isPending`, `latest`, `resolve`, `refresh`, `NotReadyError`), with
+ *   `createAsync` retained as a compatibility alias for an async memo
  * - Split tracking/effect signatures (`createEffect(compute, effect)`) with cleanup lifecycle
- * - Fine-grained reactive stores (`createStore`, `createProjection`) with draft-first setters
+ * - Fine-grained reactive stores (`createStore`, `createProjection`, `storePath`) and store
+ *   advanced utilities (`snapshot`, `deep`, `merge`, `omit`) with draft-first setters
+ * - Providerless context (`createContext`, `useContext`, `ContextNotFoundError`)
+ * - Transactional writes and optimistic state (`action`, `createOptimistic`, `createOptimisticStore`)
  * - Props manipulation (`mergeProps` turning optional properties with defaults into required, `splitProps`)
  * - Lifecycles (`onSettled` replacing `onMount` with return cleanup)
- * - Unified list iteration (`narrowFor` with accessor children, `keyed={false}` replacing `<Index>`)
+ * - Unified list iteration (`<For>` default keyed, `keyed={false}`, `keyed={fn}`, and `<Repeat>`)
  * - Ref directive factories (`RefDirective` replacing legacy `use:*`)
  * - Component types (`Component`, `ParentComponent`, `VoidComponent`, `FlowComponent`, `<Show>` narrowing)
  *
@@ -24,15 +28,30 @@ import {
   createMemo,
   createAsync,
   isPending,
+  latest,
   resolve,
+  refresh,
+  NotReadyError,
+  ContextNotFoundError,
   createEffect,
   createRenderEffect,
   createStore,
   createProjection,
+  storePath,
+  snapshot,
+  deep,
+  merge,
+  omit,
+  createContext,
+  useContext,
+  createOptimistic,
+  createOptimisticStore,
+  action,
   mergeProps,
   splitProps,
   narrowShow,
   narrowFor,
+  renderRepeat,
   onSettled,
   onCleanup,
   flush,
@@ -128,6 +147,9 @@ assertEqual(asyncConvertedPrice(), 200);
 flush(() => setCurrency("EUR"));
 await new Promise((r) => setTimeout(r, 30));
 assertEqual(asyncConvertedPrice(), 184);
+
+// `latest` reads the most recent committed value without suspending.
+assertEqual(latest(asyncConvertedPrice), 184);
 
 // ============================================================================
 // 3. Solid 2.0 Async Resources (`createAsync`, `isPending`, `resolve`)
@@ -259,6 +281,36 @@ assertEqual(summaryProjection.product, 50);
 flush(() => setCounterA(7));
 assertEqual(summaryProjection.sum, 17);
 assertEqual(summaryProjection.product, 70);
+
+// Solid 2.0 `storePath`: reusable, predicate-aware path setters.
+setState(storePath<AppState>("user", "preferences", "theme", "light"));
+assertEqual(state.user.preferences.theme, "light");
+
+setState(storePath<AppState>("todos", (item: AppState["todos"][number]) => item.id === 2, "title", (prev: string) => `${prev}!`));
+assertEqual(state.todos[1]?.title, "Master TypeScript!");
+
+const [profileState, setProfileState] = createStore<{ name: string; nickname?: string }>({
+  name: "Alex",
+  nickname: "Lex",
+});
+setProfileState(storePath("nickname", storePath.DELETE));
+assertEqual(profileState.nickname, undefined);
+
+// `snapshot` is an untracked plain copy; `deep` traverses every nested leaf.
+const stateSnapshot = snapshot(state);
+setState(storePath<AppState>("user", "name", "Snapshot Proof"));
+assertEqual(state.user.name, "Snapshot Proof");
+assertEqual(stateSnapshot.user.name, "Alexander");
+assertEqual(deep(state).todos[0]?.title, "Learn Solid 2.0");
+
+// `merge` composes reactive sources (later sources win); `omit` strips keys.
+const mergedFeatureFlags = merge({ beta: false, audit: true }, { beta: true });
+assertEqual(mergedFeatureFlags.beta, true);
+assertEqual(mergedFeatureFlags.audit, true);
+
+const stateWithoutTodos = omit(state, "todos");
+type TestOmitType = Expect<Extends<typeof stateWithoutTodos, Omit<AppState, "todos">>>;
+assertEqual(stateWithoutTodos.user.name, "Snapshot Proof");
 
 // ============================================================================
 // 6. Reactive Props Helpers (mergeProps, splitProps)
@@ -414,21 +466,35 @@ assertDeepEqual(lifecycleLog, ["settled"]);
 
 const tags = ["typescript", "solid2", "signals"];
 
-// 1. Keyed mode (default): child receives (item: Accessor<T>, index: Accessor<number>)
+// 1. Keyed mode (default `keyed={true}`): raw item `T` + index `Accessor<number>`
 const renderedKeyed = narrowFor(tags, { keyed: true }, (item, index) => {
-  type TestItemAcc = Expect<Equal<typeof item, Accessor<string>>>;
+  type TestItemRaw = Expect<Equal<typeof item, string>>;
   type TestIndexAcc = Expect<Equal<typeof index, Accessor<number>>>;
-  return `${index()}:${item()}`;
+  return `${index()}:${item}`;
 });
 assertDeepEqual(renderedKeyed, ["0:typescript", "1:solid2", "2:signals"]);
 
-// 2. Unkeyed mode (`keyed={false}`, replaces removed `<Index>`): child receives (item: Accessor<T>, index: number)
+// 2. Custom key mode (`keyed={fn}`): item `Accessor<T>` + index `Accessor<number>`
+const renderedCustomKey = narrowFor(tags, { keyed: (tag) => tag.toUpperCase() }, (item, index) => {
+  type TestItemAcc = Expect<Equal<typeof item, Accessor<string>>>;
+  type TestIndexAcc2 = Expect<Equal<typeof index, Accessor<number>>>;
+  return `${index()}:${item().toUpperCase()}`;
+});
+assertDeepEqual(renderedCustomKey, ["0:TYPESCRIPT", "1:SOLID2", "2:SIGNALS"]);
+
+// 3. Unkeyed mode (`keyed={false}`, replaces removed `<Index>`): item `Accessor<T>` + index `number`
 const renderedUnkeyed = narrowFor(tags, { keyed: false }, (item, index) => {
   type TestItemAcc2 = Expect<Equal<typeof item, Accessor<string>>>;
   type TestIndexNum = Expect<Equal<typeof index, number>>;
   return `${index}:${item()}`;
 });
 assertDeepEqual(renderedUnkeyed, ["0:typescript", "1:solid2", "2:signals"]);
+
+// 4. `<Repeat count={...}>`: positional slots without array diffing.
+const repeatedSlots = renderRepeat({ count: 3, from: 1 }, (index) => `slot-${index}`);
+assertDeepEqual(repeatedSlots, ["slot-1", "slot-2", "slot-3"]);
+const emptyRepeat = renderRepeat({ count: 0, fallback: () => "empty" }, (index) => `${index}`);
+assertDeepEqual(emptyRepeat, ["empty"]);
 
 // ============================================================================
 // 10. Solid 2.0 Ref Directive Factories (replaces legacy `use:*`)
@@ -451,5 +517,80 @@ const cleanupDirective = trackFocus("saveButton")(dummyElement);
 assertDeepEqual(directiveEvents, ["attach:saveButton:BUTTON"]);
 cleanupDirective?.();
 assertDeepEqual(directiveEvents, ["attach:saveButton:BUTTON", "detach:saveButton"]);
+
+// ============================================================================
+// 11. Providerless Context (`createContext` + `useContext`)
+// ============================================================================
+
+interface AuthState {
+  user: string | null;
+  logout: () => void;
+}
+
+// Solid 2.0: the context object is the provider component itself — no `.Provider`.
+const AuthContext = createContext<AuthState>({ name: "AuthContext" });
+
+const renderedAuth = AuthContext({
+  value: { user: "ada", logout: () => {} },
+  children: () => useContext(AuthContext),
+});
+assertEqual(renderedAuth.user, "ada");
+
+// Reading without an enclosing provider throws `ContextNotFoundError`.
+let contextError: unknown;
+try {
+  useContext(AuthContext);
+} catch (err) {
+  contextError = err;
+}
+assert(contextError instanceof ContextNotFoundError);
+
+// `NotReadyError` is the explicit opt-out from async suspension.
+let notReady: unknown;
+try {
+  throw new NotReadyError();
+} catch (err) {
+  notReady = err;
+}
+assert(notReady instanceof NotReadyError);
+
+// ============================================================================
+// 12. Transactional Writes & Optimistic State (`action`, `refresh`)
+// ============================================================================
+
+interface CartState {
+  items: string[];
+  status: "idle" | "pending" | "confirmed";
+}
+
+const [cart, setCart] = createStore<CartState>({ items: [], status: "idle" });
+
+// Generator `action`: each `yield` separates transaction re-entry points.
+const addToCart = action(function* (item: string): Generator<Promise<void>, string, void> {
+  setCart("items", (items) => [...items, item]);
+  setCart("status", "pending");
+  yield new Promise<void>((resolveDelay) => setTimeout(resolveDelay, 5));
+  setCart("status", "confirmed");
+  return item;
+});
+
+const confirmedItem = await addToCart("keyboard");
+assertEqual(confirmedItem, "keyboard");
+assertDeepEqual(cart.items, ["keyboard"]);
+assertEqual(cart.status, "confirmed");
+
+// `createOptimistic` is a signal overlay; `createOptimisticStore` is a store overlay.
+const [optimisticItems, setOptimisticItems] = createOptimistic<string[]>([]);
+flush(() => setOptimisticItems(["pending-item"]));
+assertDeepEqual(optimisticItems(), ["pending-item"]);
+
+const [optimisticCart, setOptimisticCart] = createOptimisticStore<{ count: number }>(
+  { count: 0 },
+  { count: 0 }
+);
+setOptimisticCart("count", 5);
+assertEqual(optimisticCart.count, 5);
+await refresh(optimisticCart);
+assertEqual(optimisticCart.count, 5);
 
 console.log("✓ All 09 SolidJS 2.0 Reactive Patterns tests passed successfully!\n");
