@@ -1,3 +1,5 @@
+import { deepStrictEqual } from "node:assert/strict";
+
 /**
  * Compile-Time Type Assertion & Runtime Verification Helpers
  */
@@ -9,14 +11,6 @@ export type Equal<X, Y> =
   (<T>() => T extends Y ? 1 : 2)
     ? true
     : false;
-
-export type NotEqual<X, Y> = true extends Equal<X, Y> ? false : true;
-
-export type Extends<T, U> = T extends U ? true : false;
-
-export type Prettify<T> = {
-  [K in keyof T]: T[K];
-} & {};
 
 export function assert(condition: boolean, message: string = "Assertion failed"): asserts condition {
   if (!condition) {
@@ -33,12 +27,13 @@ export function assertEqual<T>(actual: T, expected: T, message?: string): void {
 }
 
 export function assertDeepEqual<T>(actual: T, expected: T, message?: string): void {
-  const actualJson = JSON.stringify(actual);
-  const expectedJson = JSON.stringify(expected);
-  if (actualJson !== expectedJson) {
-    throw new Error(
-      `${message ?? "assertDeepEqual failed"}: expected ${expectedJson}, got ${actualJson}`
-    );
+  try {
+    deepStrictEqual(actual, expected);
+  } catch (err: unknown) {
+    if (message) {
+      throw new Error(`${message}: ${(err as Error).message}`);
+    }
+    throw err;
   }
 }
 

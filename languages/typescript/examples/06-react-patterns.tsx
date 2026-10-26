@@ -8,7 +8,7 @@
  * - Polymorphic `as` prop component (Box) with HTML attribute forwarding
  * - Fixed `forwardRef` preserving generic type arguments
  *
- * Ambient React definitions supplied by `examples/utils/react-shim.d.ts`.
+ * Ambient React definitions supplied by official `@types/react`.
  * Validated via: `tsc --noEmit`
  */
 
@@ -21,12 +21,12 @@ import React, {
   type ComponentPropsWithoutRef,
   type Ref,
   type RefAttributes,
+  type JSX,
 } from "react";
 
 import {
   type Expect,
   type Equal,
-  type NotEqual,
   type StrictOmit,
 } from "./utils/type-helpers.ts";
 
@@ -186,7 +186,7 @@ export const userTable = (
     ]}
     onRowClick={(user) => {
       // Inferred as UserRow
-      const _id: number = user.id;
+      void user.id;
     }}
   />
 );
@@ -292,7 +292,7 @@ export function Box<TAs extends ElementType = "div">({
   children,
   ...restProps
 }: PolymorphicProps<TAs, { customPadding?: number }>): JSX.Element {
-  const Component: any = as || "div";
+  const Component: ElementType = as || "div";
   return <Component {...(restProps as any)}>{children}</Component>;
 }
 
@@ -302,15 +302,17 @@ export const anchorBox = <Box as="a" href="https://example.com" target="_blank">
 export const buttonBox = <Box as="button" type="submit" disabled={false}>Submit</Box>;
 
 // ============================================================================
-// 5. Fixed forwardRef Preserving Generics
+// 5. Fixed forwardRef Preserving Generics (React 18 vs React 19)
 // ============================================================================
 
 /**
- * React.forwardRef inherently strips generic type parameters:
+ * React 18: `React.forwardRef` inherently stripped generic type parameters:
  * `const List = forwardRef(<T,>(props: ListProps<T>, ref: Ref<HTMLUListElement>) => ...)`
- * turns `List` into an unparameterized component!
+ * turned `List` into an unparameterized component!
  *
- * Total TypeScript canonical solution: `fixedForwardRef`
+ * Total TypeScript React 18 solution: `fixedForwardRef`.
+ * Note: React 19 natively supports generic `ref` props directly on function components,
+ * eliminating the need for `forwardRef` entirely (see Module 12).
  */
 export type FixedForwardRef = <TRef, TProps = {}>(
   render: (props: TProps, ref: Ref<TRef>) => JSX.Element | null

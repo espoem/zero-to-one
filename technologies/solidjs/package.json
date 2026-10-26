@@ -15,11 +15,12 @@
     "test:07": "node --conditions=browser examples/07-solid1-vs-solid2-and-deep-dives.ts"
   },
   "devDependencies": {
+    "@types/node": "^26.6.5",
     "typescript": "^5.7.0"
   },
   "dependencies": {
-    "solid-js": "2.0.0-rc.18",
     "@solidjs/signals": "2.0.0-rc.18",
-    "@solidjs/web": "2.0.0-rc.18"
+    "@solidjs/web": "2.0.0-rc.18",
+    "solid-js": "2.0.0-rc.18"
   }
 }

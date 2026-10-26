@@ -15,11 +15,9 @@
 import {
   type Expect,
   type Equal,
-  type NotEqual,
   type Prettify,
   type DeepReadonly,
   type DeepPartial,
-  assert,
   assertEqual,
   assertDeepEqual,
 } from "./utils/type-helpers.ts";
@@ -259,10 +257,33 @@ interface NestedConfig {
 type ReadonlyConfig = DeepReadonly<NestedConfig>;
 type PartialConfig = DeepPartial<NestedConfig>;
 
-// Compile-time check that DeepReadonly freezes deep properties
-type TestDeepReadonly = Expect<
-  Equal<ReadonlyConfig["database"]["credentials"]["pass"], string>
->;
+// Compile-time check that DeepReadonly freezes deep properties and nested arrays
+type ExpectedReadonlyConfig = {
+  readonly database: {
+    readonly host: string;
+    readonly port: number;
+    readonly credentials: {
+      readonly user: string;
+      readonly pass: string;
+    };
+  };
+  readonly features: readonly string[];
+};
+type TestDeepReadonly = Expect<Equal<ReadonlyConfig, ExpectedReadonlyConfig>>;
+
+// Compile-time check that DeepPartial recursively makes nested properties optional
+type ExpectedPartialConfig = {
+  database?: {
+    host?: string;
+    port?: number;
+    credentials?: {
+      user?: string;
+      pass?: string;
+    };
+  };
+  features?: string[];
+};
+type TestDeepPartial = Expect<Equal<PartialConfig, ExpectedPartialConfig>>;
 
 // Prettify utility flattens complex intersections for clean hover docs
 type MessyUnion = { id: string } & { title: string } & { meta: { tags: string[] } };

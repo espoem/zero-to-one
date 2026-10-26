@@ -38,9 +38,7 @@ import {
 } from "./utils/solid2-runtime.ts";
 import {
   assert,
-  assertDeepEqual,
   assertEqual,
-  assertThrowsAsync,
 } from "./utils/type-helpers.ts";
 
 let passed = 0;
@@ -462,7 +460,7 @@ async function main(): Promise<void> {
     metadata: new Map([["priority", 1], ["weight", 42]]),
   };
 
-  // Serializer supporting rich types (simulating Solid 2.0 rich-args encoder)
+  // Serializer supporting rich types (educational simulation of SolidStart's official Seroval serializer)
   function serializeRichValue(val: unknown): string {
     return JSON.stringify(val, function (key, value) {
       const raw = key ? (this as any)[key] : value;

@@ -15,7 +15,7 @@
  * `refresh`.
  */
 import {
-  createErroredBoundary,
+  createErrorBoundary,
   createLoadingBoundary,
   createMemo,
   createProjection,
@@ -38,28 +38,6 @@ function check(condition: boolean, message: string): void {
   console.log(`ok ${passed} - ${message}`);
 }
 
-function deferred<T>(): {
-  promise: Promise<T>;
-  resolve: (value: T) => void;
-  reject: (err: unknown) => void;
-} {
-  let resolveFn: (value: T) => void = () => {};
-  let rejectFn: (err: unknown) => void = () => {};
-  const promise = new Promise<T>((res, rej) => {
-    resolveFn = res;
-    rejectFn = rej;
-  });
-  return {
-    promise,
-    resolve: (value: T): void => {
-      resolveFn(value);
-    },
-    reject: (err: unknown): void => {
-      rejectFn(err);
-    },
-  };
-}
-
 async function sleep(ms: number): Promise<void> {
   await new Promise<void>((done) => {
     setTimeout(done, ms);
@@ -77,7 +55,7 @@ async function main(): Promise<void> {
   // --- 1. Native async derivations: Promise<T> without createResource ---------
   // The memo returns an accessor of the *resolved* value, typed as a
   // non-nullable `Accessor<User>` — consumers never branch on `T | undefined`.
-  const gate1 = deferred<User>();
+  const gate1 = Promise.withResolvers<User>();
   const [userId, setUserId] = createSignal("u1");
   const fetches = new Map<string, Promise<User>>([["u1", gate1.promise]]);
   const user = createMemo((): Promise<User> => fetches.get(userId()) as Promise<User>);
@@ -120,7 +98,7 @@ async function main(): Promise<void> {
   check(!isPending(user), "settled memo is no longer pending");
 
   // --- 2. Background revalidation keeps stale UI stable ------------------------
-  const gate2 = deferred<User>();
+  const gate2 = Promise.withResolvers<User>();
   fetches.set("u2", gate2.promise);
   setUserId("u2");
   flush();
@@ -183,7 +161,7 @@ async function main(): Promise<void> {
   assertEqual(search(), "results:b", "superseded result is discarded, replacement commits");
 
   // --- 5. <Loading> readiness: mount once, reveal, then keep stale ------------
-  const profileGate = deferred<string>();
+  const profileGate = Promise.withResolvers<string>();
   const profileSource = new Map<string, Promise<string>>([["n1", profileGate.promise]]);
   const [profileId, setProfileId] = createSignal("n1");
   const profile = createMemo((): Promise<string> => profileSource.get(profileId()) as Promise<string>);
@@ -197,7 +175,7 @@ async function main(): Promise<void> {
   flush();
   assertEqual(view(), "profile:Ada", "Loading reveals content once ready");
 
-  const profileGate2 = deferred<string>();
+  const profileGate2 = Promise.withResolvers<string>();
   profileSource.set("n2", profileGate2.promise);
   setProfileId("n2");
   flush();
@@ -211,7 +189,7 @@ async function main(): Promise<void> {
   check(!isPending(profile), "pending clears after the new answer reveals");
 
   // --- 6. <Loading on={key}> re-arms fallback when the key changes ------------
-  const tabGate = deferred<string>();
+  const tabGate = Promise.withResolvers<string>();
   const tabData = createMemo((): Promise<string> => tabGate.promise);
   const [tab, setTab] = createSignal<"t1" | "t2">("t1");
   const tabView = createLoadingBoundary({
@@ -231,7 +209,7 @@ async function main(): Promise<void> {
   // --- 7. Provisional first paint: loadingValue & seedLoadingValue -------------
   // A loading value commits immediately: no suspension, no boundary hole, no
   // pending flag, and it becomes the initial `prev` for the compute.
-  const levelGate = deferred<number>();
+  const levelGate = Promise.withResolvers<number>();
   const level = createMemo((): Promise<number> => levelGate.promise, { loadingValue: -1 });
   createLoadingBoundary(() => level(), () => null);
   assertEqual(level(), -1, "loadingValue is readable synchronously before resolution");
@@ -244,7 +222,7 @@ async function main(): Promise<void> {
   assertEqual(level(), 41, "memo commits the real answer after first paint");
   check(!isPending(level), "pending clears once the first real answer commits");
 
-  const todoGate = deferred<string[]>();
+  const todoGate = Promise.withResolvers<string[]>();
   const [todos] = createStore(
     (): Promise<string[]> => todoGate.promise,
     [] as string[],
@@ -272,7 +250,7 @@ async function main(): Promise<void> {
   check(!isPending(counter), "quiet refresh never sets pending");
 
   // --- 9. Async createProjection ------------------------------------------------
-  const projGate = deferred<{ n: number }>();
+  const projGate = Promise.withResolvers<{ n: number }>();
   const projView = createProjection<{ n: number }>(
     (): Promise<{ n: number }> => projGate.promise,
     { n: 0 },
@@ -292,7 +270,7 @@ async function main(): Promise<void> {
     return "steady";
   });
   let capturedReset: (() => void) | undefined;
-  const guarded = createErroredBoundary({
+  const guarded = createErrorBoundary({
     fallback: (err, reset) => {
       capturedReset = reset;
       return `fallback:${(err() as Error).message}`;

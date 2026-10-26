@@ -15,6 +15,7 @@
 import {
   createEffect,
   createProjection,
+  createRoot,
   createSignal,
   createStore,
   deep,
@@ -23,7 +24,6 @@ import {
   snapshot,
   storePath,
 } from "./utils/solid2-runtime.ts";
-import type { ArrayFilterFn } from "./utils/solid2-runtime.ts";
 import { assert, assertDeepEqual, assertEqual } from "./utils/type-helpers.ts";
 
 let passed = 0;
@@ -132,27 +132,30 @@ check(state.user.name === "D" && state.tags.length === 0, "object reconcile repl
 // raw: replace their root slot by reference instead of mutating their fields.
 const [shallowRows, setShallowRows] = createStore<Row[]>([{ id: 1, label: "old" }], { shallow: true });
 let shallowRuns = 0;
-createEffect(
-  () => shallowRows[0]?.label ?? "missing",
-  () => {
-    shallowRuns += 1;
-  },
-);
-// Native effects apply on flush, not synchronously at creation.
-flush();
-check(shallowRuns === 1, "shallow reader effect applies once on setup");
+createRoot((dispose) => {
+  createEffect(
+    () => shallowRows[0]?.label ?? "missing",
+    () => {
+      shallowRuns += 1;
+    },
+  );
+  // Native effects apply on flush, not synchronously at creation.
+  flush();
+  check(shallowRuns === 1, "shallow reader effect applies once on setup");
 
-(shallowRows[0] as Row).label = "mutated-silently";
-flush();
-check(shallowRuns === 1, "nested raw mutation under shallow:true notifies nobody");
-assertEqual(shallowRows[0]?.label, "mutated-silently", "raw nested write is visible to direct readers (the stale-UI risk)");
+  (shallowRows[0] as Row).label = "mutated-silently";
+  flush();
+  check(shallowRuns === 1, "nested raw mutation under shallow:true notifies nobody");
+  assertEqual(shallowRows[0]?.label, "mutated-silently", "raw nested write is visible to direct readers (the stale-UI risk)");
 
-setShallowRows((draft) => {
-  draft[0] = { ...(draft[0] as Row), label: "new" };
+  setShallowRows((draft) => {
+    draft[0] = { ...(draft[0] as Row), label: "new" };
+  });
+  flush();
+  check(shallowRuns === 2, "replacing the root slot notifies shallow readers");
+  assertEqual(shallowRows[0]?.label, "new", "root-slot replacement commits the new record");
+  dispose();
 });
-flush();
-check(shallowRuns === 2, "replacing the root slot notifies shallow readers");
-assertEqual(shallowRows[0]?.label, "new", "root-slot replacement commits the new record");
 
 // --- 6. snapshot (untracked) vs deep (tracked) ---------------------------------
 // `snapshot` replaces v1 `unwrap`: a plain deep copy that subscribes to nothing.
@@ -173,32 +176,38 @@ setProfile((draft) => {
 flush();
 
 let snapComputes = 0;
-createEffect(
-  () => {
-    snapComputes += 1;
-    return snapshot(profile).user.name;
-  },
-  () => {},
-);
-setProfile((draft) => {
-  draft.user.name = "B";
+createRoot((dispose) => {
+  createEffect(
+    () => {
+      snapComputes += 1;
+      return snapshot(profile).user.name;
+    },
+    () => {},
+  );
+  setProfile((draft) => {
+    draft.user.name = "B";
+  });
+  flush();
+  check(snapComputes === 1, "snapshot is untracked: readers do not resubscribe");
+  assertEqual(profile.user.name, "B", "store still updates underneath the untracked read");
+  dispose();
 });
-flush();
-check(snapComputes === 1, "snapshot is untracked: readers do not resubscribe");
-assertEqual(profile.user.name, "B", "store still updates underneath the untracked read");
 
 let deepApplies = 0;
-createEffect(() => deep(profile), () => {
-  deepApplies += 1;
+createRoot((dispose) => {
+  createEffect(() => deep(profile), () => {
+    deepApplies += 1;
+  });
+  flush();
+  check(deepApplies === 1, "deep-based effect applies once on setup");
+  setProfile((draft) => {
+    draft.user.name = "C";
+  });
+  flush();
+  check(deepApplies === 2, "deep tracks nested fields, so the effect recomputes on nested writes");
+  assertDeepEqual(deep(profile), snapshot(profile));
+  dispose();
 });
-flush();
-check(deepApplies === 1, "deep-based effect applies once on setup");
-setProfile((draft) => {
-  draft.user.name = "C";
-});
-flush();
-check(deepApplies === 2, "deep tracks nested fields, so the effect recomputes on nested writes");
-assertDeepEqual(deep(profile), snapshot(profile));
 
 // --- 7. Writable derived stores vs read-only projections ----------------------
 const [settings, setSettings] = createStore({ theme: "light", fontSize: 14 });

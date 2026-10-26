@@ -1,5 +1,5 @@
 /**
- * 05: Schema Validation & Mini-Zod Engine
+ * 05: Schema Validation & Official Zod Engine
  *
  * Demonstrates how Zod and runtime schema validators model TypeScript types:
  * - Phantom types for tracking input vs output (`_input`, `_output`)
@@ -14,8 +14,6 @@
 import {
   type Expect,
   type Equal,
-  type NotEqual,
-  type Prettify,
   assert,
   assertEqual,
   assertDeepEqual,
@@ -23,8 +21,6 @@ import {
 
 import {
   z,
-  ZodError,
-  type ZodType,
   type infer as zInfer,
   type input as zInput,
   type output as zOutput,

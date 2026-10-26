@@ -12,7 +12,8 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "skipLibCheck": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "types": ["node"]
   },
   "include": [
     "examples/**/*"

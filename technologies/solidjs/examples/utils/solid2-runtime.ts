@@ -112,14 +112,9 @@ export {
 export type { ResponseEnvelope } from "@solidjs/web";
 
 import {
-  createMemo as nativeCreateMemo,
-  createSignal as nativeCreateSignal,
-} from "solid-js";
-import {
   createLoadingBoundary as nativeCreateLoadingBoundary,
   createErrorBoundary as nativeCreateErrorBoundary,
 } from "@solidjs/signals";
-import { NotReadyError as NativeNotReadyError } from "solid-js";
 import { isResponseEnvelope as nativeIsResponseEnvelope, isSafeError as nativeIsSafeError } from "@solidjs/web";
 import type { Accessor as NativeAccessor } from "solid-js";
 
@@ -261,12 +256,12 @@ export function createLoadingBoundary<R>(
 }
 
 /**
- * Headless self-healing `<Errored>` boundary: delegates directly to native
- * `createErrorBoundary`. Catches errors thrown by children, renders
- * `fallback(errorAccessor, reset)`, and automatically recovers when upstream
+ * Headless self-healing boundary: delegates directly to native
+ * `createErrorBoundary` from `@solidjs/signals`. Catches errors thrown by children,
+ * renders `fallback(errorAccessor, reset)`, and automatically recovers when upstream
  * dependencies change.
  */
-export function createErroredBoundary<R>(
+export function createErrorBoundary<R>(
   fnOrOptions:
     | (() => R)
     | { fallback: (error: NativeAccessor<unknown>, reset: () => void) => R; children: () => R },
@@ -283,6 +278,8 @@ export function createErroredBoundary<R>(
     fallback ?? (() => null as unknown as R)
   ) as NativeAccessor<R>;
 }
+
+export const createErroredBoundary = createErrorBoundary;
 
 // ============================================================================
 // 7. Server-functions test harness (headless; interoperates with native envelopes)

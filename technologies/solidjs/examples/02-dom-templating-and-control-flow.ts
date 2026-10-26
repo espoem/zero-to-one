@@ -241,9 +241,6 @@ check("providerless context provides value; missing provider throws", () => {
     assertEqual(useContext(ThemeContext).theme, "light", "default value");
     dispose();
   });
-  const StrictContext = createContext<{ user: string }>(undefined as never, {
-    name: "Strict",
-  });
   // Simulate a required context: no default -> throws without provider.
   const Required = createContext<{ token: string }>();
   createRoot((dispose) => {
@@ -256,7 +253,6 @@ check("providerless context provides value; missing provider throws", () => {
     assert(threw instanceof ContextNotFoundError, "throws ContextNotFoundError");
     dispose();
   });
-  void StrictContext;
   // Provider is the context itself: value flows to the subtree. The native
   // provider returns an accessor, so it is read to run the children.
   createRoot((dispose) => {
