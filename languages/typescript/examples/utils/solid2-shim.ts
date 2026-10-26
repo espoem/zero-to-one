@@ -1,282 +1,169 @@
 /**
- * SolidJS 2.0 Minimal Ambient & Runtime Engine Shim
+ * SolidJS 2.0 Native Runtime Facade & Headless Test Harness
  *
- * Implements a zero-dependency, pure ECMAScript reactive runtime and full type system
- * representing SolidJS 2.0 (`@solidjs/signals` + `solid-js` 2.0):
- * - Signals (`Accessor<T>`, `Setter<T>`, `createSignal`) with deterministic microtask batching
- * - Deterministic Batching & Sync Flush (`flush`)
- * - Solid 2.0 Split-Signature Effects (`createEffect`, `createRenderEffect`)
- * - Solid 2.0 Async Memos (`createMemo` unwrapping `Promise<T>` to `Accessor<Awaited<T>>`)
- * - Solid 2.0 Async Inspection (`isPending`, `latest`, `resolve`, `refresh`, `NotReadyError`)
- *   `createAsync` is kept as a compatibility alias for an async `createMemo`.
- * - Reactive Stores (`createStore`, `produce`, `createProjection`, `storePath`) with draft-first setters
- * - Store Advanced utilities (`snapshot`, `deep`, `merge`, `omit`)
- * - Providerless Context (`createContext`, `useContext`, `ContextNotFoundError`)
- * - Transactional writes & optimistic state (`action`, `createOptimistic`, `createOptimisticStore`)
- * - Props Helpers (`mergeProps` turning optional properties with defaults into required, `splitProps`)
- * - Lifecycles (`onSettled`, `onCleanup`)
- * - Control flow primitives (`narrowShow`, `narrowFor`, `renderRepeat`, `Loading`, `Errored`)
- * - Ref Directive Factories (`RefDirective`)
- * - Component types (`Component`, `ParentComponent`, `VoidComponent`, `FlowComponent`)
+ * Backed by the official published packages:
+ * - `solid-js@2.0.0-rc.18`
+ * - `@solidjs/signals@2.0.0-rc.18`
+ * - `@solidjs/web@2.0.0-rc.18`
+ *
+ * Re-exports the native reactive core, stores, context, action transactions,
+ * and lifecycle hooks. Provides headless adapters for command-line Node.js execution.
  */
 
+import {
+  createSignal as nativeCreateSignal,
+  createMemo as nativeCreateMemo,
+  createEffect as nativeCreateEffect,
+  createRenderEffect as nativeCreateRenderEffect,
+  createReaction as nativeCreateReaction,
+  createRoot as nativeCreateRoot,
+  runWithOwner as nativeRunWithOwner,
+  getOwner as nativeGetOwner,
+  untrack as nativeUntrack,
+  onCleanup as nativeOnCleanup,
+  onSettled as nativeOnSettled,
+  flush as nativeFlush,
+  createStore as nativeCreateStore,
+  createProjection as nativeCreateProjection,
+  createOptimistic as nativeCreateOptimistic,
+  createOptimisticStore as nativeCreateOptimisticStore,
+  reconcile as nativeReconcile,
+  deep as nativeDeep,
+  merge as nativeMerge,
+  omit as nativeOmit,
+  action as nativeAction,
+  refresh as nativeRefresh,
+  isPending as nativeIsPending,
+  latest as nativeLatest,
+  resolve as nativeResolve,
+  createContext as nativeCreateContext,
+  useContext as nativeUseContext,
+  Show as NativeShow,
+  Switch as NativeSwitch,
+  Match as NativeMatch,
+  For as NativeFor,
+  Repeat as NativeRepeat,
+  Loading as NativeLoading,
+  Reveal as NativeReveal,
+  Errored as NativeErrored,
+  NotReadyError as NativeNotReadyError,
+} from "solid-js";
+
+import {
+  storePath as nativeStorePath,
+  snapshot as nativeSnapshot,
+  ContextNotFoundError as NativeContextNotFoundError,
+  until as nativeUntil,
+  affects as nativeAffects,
+} from "@solidjs/signals";
+
+import type {
+  Accessor as NativeAccessor,
+  Setter as NativeSetter,
+  Signal as NativeSignal,
+  Store as NativeStore,
+  StoreSetter as NativeStoreSetter,
+  Context as NativeContext,
+  Owner,
+} from "solid-js";
+
 // ============================================================================
-// 0. Async & Context Error Types
+// 1. Core Reactive Primitives Re-exports
 // ============================================================================
 
-/**
- * Solid 2.0 `NotReadyError`:
- * Thrown when an async computation is read before its first value has settled.
- * Catch it to opt out of suspension instead of blocking the current boundary.
- */
-export class NotReadyError extends Error {
-  readonly source?: Accessor<unknown>;
-  constructor(message: string = "Async computation is not ready yet", source?: Accessor<unknown>) {
-    super(message);
+export {
+  nativeCreateReaction as createReaction,
+  nativeCreateRoot as createRoot,
+  nativeRunWithOwner as runWithOwner,
+  nativeGetOwner as getOwner,
+  nativeUntrack as untrack,
+  nativeOnCleanup as onCleanup,
+  nativeReconcile as reconcile,
+  nativeDeep as deep,
+  nativeMerge as merge,
+  nativeOmit as omit,
+  nativeAction as action,
+  nativeRefresh as refresh,
+  nativeUntil as until,
+  nativeAffects as affects,
+  NativeContextNotFoundError as ContextNotFoundError,
+  NativeShow as Show,
+  NativeSwitch as Switch,
+  NativeMatch as Match,
+  NativeFor as For,
+  NativeRepeat as Repeat,
+  NativeLoading as Loading,
+  NativeReveal as Reveal,
+  NativeErrored as Errored,
+};
+
+export class NotReadyError extends NativeNotReadyError {
+  constructor(source: any = "NotReady") {
+    super(source);
     this.name = "NotReadyError";
-    this.source = source;
   }
 }
 
-/**
- * Solid 2.0 `ContextNotFoundError`:
- * Thrown by `useContext` when no enclosing provider supplies a value and the
- * context has no default. Replaces Solid 1.x's `undefined` return branch.
- */
-export class ContextNotFoundError extends Error {
-  readonly contextName?: string;
-  constructor(contextName?: string) {
-    super(
-      contextName
-        ? `ContextNotFoundError: Context "${contextName}" was read without an enclosing provider.`
-        : "ContextNotFoundError: Context was read without an enclosing provider."
-    );
-    this.name = "ContextNotFoundError";
-    this.contextName = contextName;
-  }
+export function onSettled(fn: () => void | (() => void)): void {
+  nativeOnSettled(fn);
+  nativeFlush();
 }
+
+export type {
+  NativeAccessor as Accessor,
+  NativeSetter as Setter,
+  NativeSignal as Signal,
+  NativeStore as Store,
+  Owner,
+};
 
 // ============================================================================
-// 1. Reactive Tracking & Microtask Batching Engine
+// 2. Signals & Microtask Flush
 // ============================================================================
 
-type Computation = () => void;
-
-let currentListener: Computation | null = null;
-let pendingQueue: Array<() => void> = [];
-let microtaskScheduled = false;
-
-function scheduleMicrotaskFlush() {
-  if (!microtaskScheduled) {
-    microtaskScheduled = true;
-    queueMicrotask(() => {
-      microtaskScheduled = false;
-      flush();
-    });
-  }
+export function createSignal<T>(): [NativeAccessor<T | undefined>, NativeSetter<T | undefined>];
+export function createSignal<T>(
+  value: T,
+  options?: { name?: string; equals?: false | ((prev: T, next: T) => boolean) }
+): [NativeAccessor<T>, NativeSetter<T>];
+export function createSignal<T>(
+  initialValue?: T,
+  options?: { name?: string; equals?: false | ((prev: T, next: T) => boolean) }
+): [NativeAccessor<any>, NativeSetter<any>] {
+  return (nativeCreateSignal as any)(initialValue, options);
 }
 
-/**
- * Solid 2.0 `flush`:
- * Synchronously flushes all pending microtask signal writes and executes downstream computations.
- * Optionally runs a scoped callback `fn` and immediately flushes any writes performed inside it.
- */
 export function flush(fn?: () => void): void {
   if (fn) {
-    fn();
-  }
-  while (pendingQueue.length > 0) {
-    const queue = pendingQueue;
-    pendingQueue = [];
-    for (const job of queue) {
-      job();
-    }
+    nativeFlush(fn);
+  } else {
+    nativeFlush();
   }
 }
 
 // ============================================================================
-// 2. Signals, Accessors & Microtask Batching
+// 3. Effects (Split-Signature Solid 2.0)
 // ============================================================================
 
-export type Accessor<T> = () => T;
-export type Setter<T> = (value: T | ((prev: T) => T)) => T;
-export type Signal<T> = [get: Accessor<T>, set: Setter<T>];
-
-export function createSignal<T>(value: T): Signal<T>;
-export function createSignal<T = undefined>(): Signal<T | undefined>;
-export function createSignal<T>(initialValue?: T): Signal<T | undefined> {
-  let committedValue = initialValue;
-  let pendingValue = initialValue;
-  let hasPending = false;
-  const subscribers = new Set<Computation>();
-
-  const get: Accessor<T | undefined> = () => {
-    if (currentListener) {
-      subscribers.add(currentListener);
-    }
-    return committedValue;
-  };
-
-  const set: Setter<T | undefined> = (next) => {
-    const currentBase = hasPending ? pendingValue : committedValue;
-    const nextVal =
-      typeof next === "function"
-        ? (next as (prev: T | undefined) => T | undefined)(currentBase)
-        : next;
-
-    pendingValue = nextVal;
-    hasPending = true;
-
-    pendingQueue.push(() => {
-      if (hasPending) {
-        if (!Object.is(committedValue, pendingValue)) {
-          committedValue = pendingValue;
-          hasPending = false;
-          const toNotify = Array.from(subscribers);
-          for (const sub of toNotify) {
-            sub();
-          }
-        } else {
-          hasPending = false;
-        }
-      }
-    });
-
-    scheduleMicrotaskFlush();
-    return pendingValue;
-  };
-
-  return [get, set];
-}
-
-// ============================================================================
-// 3. Solid 2.0 Split-Signature Effects
-// ============================================================================
-
-/**
- * Solid 2.0 separates tracking from effect execution:
- * - `compute`: Pure synchronous function tracking reactive signal dependencies.
- * - `effect`: Untracked side-effect executed with `(value, prev)` when `compute` changes.
- *   Returns an optional cleanup function `() => void`.
- */
 export function createEffect<T>(
-  compute: () => T,
-  effect: (value: T, prev: T | undefined) => void | (() => void)
+  compute: (prev?: T) => T,
+  apply: (value: T, prev: T | undefined) => void | (() => void),
+  options?: { name?: string; defer?: boolean }
 ): void {
-  let prevValue: T | undefined = undefined;
-  let cleanup: (() => void) | void = undefined;
-  let isFirstRun = true;
-
-  const computation: Computation = () => {
-    // Run previous cleanup callback if one was returned
-    if (typeof cleanup === "function") {
-      cleanup();
-      cleanup = undefined;
-    }
-
-    // Run `compute` under reactive tracking
-    const prevListener = currentListener;
-    currentListener = computation;
-    let newValue: T;
-    try {
-      newValue = compute();
-    } finally {
-      currentListener = prevListener;
-    }
-
-    // Execute side-effect outside tracking context if value changed or on mount
-    if (isFirstRun || !Object.is(newValue, prevValue)) {
-      const prev = prevValue;
-      prevValue = newValue;
-      isFirstRun = false;
-
-      const prevL = currentListener;
-      currentListener = null;
-      try {
-        cleanup = effect(newValue, prev);
-      } finally {
-        currentListener = prevL;
-      }
-    }
-  };
-
-  computation();
+  nativeCreateEffect(compute, apply, options as any);
+  nativeFlush();
 }
 
 export function createRenderEffect<T>(
   compute: () => T,
   effect: (value: T, prev: T | undefined) => void
 ): void {
-  createEffect(compute, (val, prev) => {
-    effect(val, prev);
-  });
+  nativeCreateRenderEffect(compute, effect as any);
+  nativeFlush();
 }
 
 // ============================================================================
-// 4. Solid 2.0 Memos (Sync & First-Class Async)
-// ============================================================================
-
-/**
- * Solid 2.0 `createMemo`:
- * If `fn` returns a Promise, `createMemo` unwraps it and returns `Accessor<Awaited<T>>`.
- */
-export function createMemo<T>(fn: (prev?: T) => T | Promise<T>): Accessor<Awaited<T>> {
-  let cachedValue: any = undefined;
-  let hasComputed = false;
-  let isDirty = true;
-  const subscribers = new Set<Computation>();
-
-  const computation: Computation = () => {
-    isDirty = true;
-    computeValue();
-  };
-
-  const computeValue = () => {
-    const prevListener = currentListener;
-    currentListener = computation;
-    let result: any;
-    try {
-      result = fn(cachedValue);
-    } finally {
-      currentListener = prevListener;
-    }
-
-    if (result && typeof result.then === "function") {
-      result.then((resolved: any) => {
-        if (!Object.is(cachedValue, resolved)) {
-          cachedValue = resolved;
-          hasComputed = true;
-          isDirty = false;
-          const toNotify = Array.from(subscribers);
-          for (const sub of toNotify) {
-            sub();
-          }
-        }
-      });
-    } else {
-      cachedValue = result;
-      hasComputed = true;
-      isDirty = false;
-      const toNotify = Array.from(subscribers);
-      for (const sub of toNotify) {
-        sub();
-      }
-    }
-  };
-
-  // Run initial computation eagerly
-  computeValue();
-
-  return () => {
-    if (currentListener) {
-      subscribers.add(currentListener);
-    }
-    return cachedValue;
-  };
-}
-
-// ============================================================================
-// 5. Solid 2.0 Async Resources (createAsync, isPending, resolve)
+// 4. Memos & Async Reactivity
 // ============================================================================
 
 const ASYNC_META = Symbol("SOLID2_ASYNC_META");
@@ -287,21 +174,23 @@ interface AsyncResourceMeta<T> {
   promise: Promise<T>;
 }
 
-export function createAsync<T>(fn: () => Promise<T> | T): Accessor<T> {
+export function createMemo<T>(
+  fn: (prev?: T) => T | Promise<T>,
+  options?: { name?: string; equals?: false | ((prev: T, next: T) => boolean) }
+): NativeAccessor<Awaited<T>> {
+  return nativeCreateMemo(fn as any, options as any) as any;
+}
+
+export function createAsync<T>(fn: () => Promise<T> | T): NativeAccessor<T> {
   let pending = true;
   let value: T = undefined as any;
-  const subscribers = new Set<Computation>();
-
   let currentPromise: Promise<T>;
+
   const res = fn();
   if (res && typeof (res as any).then === "function") {
     currentPromise = (res as Promise<T>).then((val) => {
       value = val;
       pending = false;
-      const toNotify = Array.from(subscribers);
-      for (const sub of toNotify) {
-        sub();
-      }
       return val;
     });
   } else {
@@ -310,14 +199,8 @@ export function createAsync<T>(fn: () => Promise<T> | T): Accessor<T> {
     currentPromise = Promise.resolve(value);
   }
 
-  const accessor: any = () => {
-    if (currentListener) {
-      subscribers.add(currentListener);
-    }
-    return value;
-  };
-
-  const meta: AsyncResourceMeta<T> = {
+  const accessor: any = () => value;
+  accessor[ASYNC_META] = {
     get pending() {
       return pending;
     },
@@ -329,225 +212,188 @@ export function createAsync<T>(fn: () => Promise<T> | T): Accessor<T> {
     },
   };
 
-  accessor[ASYNC_META] = meta;
-  return accessor as Accessor<T>;
+  return accessor as NativeAccessor<T>;
 }
 
-export function isPending(fn: Accessor<any>): boolean {
+export function isPending(fn: NativeAccessor<any>): boolean {
   const meta = (fn as any)?.[ASYNC_META] as AsyncResourceMeta<any> | undefined;
-  return meta ? meta.pending : false;
+  if (meta !== undefined) return meta.pending;
+  return nativeIsPending(fn);
 }
 
-export function resolve<T>(fn: Accessor<T>): Promise<T> {
-  const meta = (fn as any)?.[ASYNC_META] as AsyncResourceMeta<T> | undefined;
-  if (meta) {
-    return meta.promise;
-  }
-  return Promise.resolve(fn());
+export function latest<T>(fn: NativeAccessor<T>): T {
+  const meta = (fn as any)?.[ASYNC_META] as AsyncResourceMeta<any> | undefined;
+  if (meta !== undefined) return meta.value;
+  return nativeLatest(fn);
 }
 
-/**
- * Solid 2.0 `latest`:
- * Reads the most recent committed value of an async accessor without suspending,
- * falling back to the stale value while the next computation is in flight.
- */
-export function latest<T>(source: Accessor<T>): T {
-  return source();
-}
-
-/**
- * Solid 2.0 `refresh`:
- * Re-asks a reactive source for its next settled value. Safe to fire-and-forget.
- */
-export function refresh<T>(target: Accessor<T> | object): Promise<T> {
-  flush();
-  return Promise.resolve(
-    (typeof target === "function" ? (target as Accessor<T>)() : target) as T
-  );
+export function resolve<T>(fn: NativeAccessor<T>): Promise<T> {
+  const meta = (fn as any)?.[ASYNC_META] as AsyncResourceMeta<any> | undefined;
+  if (meta !== undefined) return meta.promise;
+  return nativeResolve(fn);
 }
 
 // ============================================================================
-// 6. Reactive Stores & Solid 2.0 Projections
+// 5. Stores & Projections
 // ============================================================================
 
 export type SetStoreFunction<T> = {
+  (fn: (draft: T) => void): void;
   <K extends keyof T>(key: K, value: T[K] | ((prev: T[K]) => T[K])): void;
-  (setter: (draft: T) => void): void;
-  (partial: Partial<T>): void;
+  (...pathAndValue: any[]): void;
 };
 
-export function produce<T>(fn: (draft: T) => void): (draft: T) => void {
-  return fn;
+export function createStore<T extends object = {}>(
+  initialValue: T,
+  options?: any
+): [T, SetStoreFunction<T>];
+export function createStore<T extends object = {}>(
+  fn: (draft: T) => void | T | Promise<void | T> | AsyncIterable<void | T>,
+  seed: T,
+  options?: any
+): [T, SetStoreFunction<T>];
+export function createStore<T extends object = {}>(...args: any[]): [T, SetStoreFunction<T>] {
+  const [store, nativeSetStore] = (nativeCreateStore as any)(...args);
+  const setStore: SetStoreFunction<T> = (...setterArgs: any[]) => {
+    if (
+      setterArgs.length === 2 &&
+      (typeof setterArgs[0] === "string" || typeof setterArgs[0] === "number")
+    ) {
+      const [key, val] = setterArgs;
+      nativeSetStore((draft: any) => {
+        draft[key] = typeof val === "function" ? val(draft[key]) : val;
+      });
+      nativeFlush();
+      return;
+    }
+    const res = (nativeSetStore as any)(...setterArgs);
+    nativeFlush();
+    return res;
+  };
+  return [store, setStore];
 }
 
-export function createStore<T extends object>(initial: T): [get: Readonly<T>, set: SetStoreFunction<T>] {
-  const subscribers = new Map<string | symbol, Set<Computation>>();
-  const target: any = Array.isArray(initial) ? [...initial] : { ...initial };
-
-  function getSubscribers(prop: string | symbol): Set<Computation> {
-    let set = subscribers.get(prop);
-    if (!set) {
-      set = new Set();
-      subscribers.set(prop, set);
-    }
-    return set;
-  }
-
-  function notify(prop: string | symbol) {
-    const set = subscribers.get(prop);
-    if (set) {
-      const toNotify = Array.from(set);
-      for (const sub of toNotify) {
-        sub();
-      }
-    }
-  }
-
-  const proxy = new Proxy(target, {
-    get(obj, prop) {
-      if (currentListener) {
-        getSubscribers(prop).add(currentListener);
-      }
-      return obj[prop];
-    },
-    set(obj, prop, value) {
-      if (!Object.is(obj[prop], value)) {
-        obj[prop] = value;
-        notify(prop);
-      }
-      return true;
-    },
-  });
-
-  const setStore: SetStoreFunction<T> = ((...args: any[]) => {
-    if (args.length === 2) {
-      const [key, valueOrUpdater] = args;
-      const currentVal = target[key];
-      const nextVal =
-        typeof valueOrUpdater === "function" ? valueOrUpdater(currentVal) : valueOrUpdater;
-      if (!Object.is(currentVal, nextVal)) {
-        target[key] = nextVal;
-        notify(key);
-      }
-    } else if (args.length === 1) {
-      const arg = args[0];
-      if (typeof arg === "function") {
-        arg(proxy);
-      } else if (typeof arg === "object" && arg !== null) {
-        for (const [key, val] of Object.entries(arg)) {
-          if (!Object.is(target[key], val)) {
-            target[key] = val;
-            notify(key);
-          }
-        }
-      }
-    }
-  }) as SetStoreFunction<T>;
-
-  return [proxy as Readonly<T>, setStore];
-}
-
-/**
- * Solid 2.0 `createProjection`:
- * Creates a reactive projection store updated by applying draft mutations.
- */
 export function createProjection<T extends object>(
   fn: (draft: T) => void,
   initialValue: T
-): Readonly<T> {
-  const [store, setStore] = createStore(initialValue);
-  createEffect(
-    () => {
-      setStore(produce(fn));
-    },
-    () => {}
-  );
-  return store;
+): T {
+  return (nativeCreateProjection as any)(fn, initialValue);
 }
 
-const STORE_PATH_DELETE = Symbol("STORE_PATH_DELETE");
-
-/**
- * Solid 2.0 `storePath`:
- * Builds a reusable draft setter for a nested store path. Accepts a predicate
- * function for array leaves and `storePath.DELETE` to remove a property.
- */
-export function storePath<T extends object>(...args: any[]): (draft: T) => void {
-  const applyLeaf = (holder: any, key: any, value: any) => {
-    if (value === STORE_PATH_DELETE) {
-      delete holder[key];
-    } else if (typeof value === "function") {
-      holder[key] = value(holder[key]);
-    } else {
-      holder[key] = value;
-    }
-  };
-
-  return (draft: T) => {
-    if (args.length < 2) return;
-    const path = args.slice(0, -1);
-    const leafValue = args[args.length - 1];
-
-    const step = (current: any, index: number) => {
-      const key = path[index];
-      const isLast = index === path.length - 1;
-
-      if (typeof key === "function" && Array.isArray(current)) {
-        for (let i = 0; i < current.length; i += 1) {
-          if (key(current[i], i)) {
-            if (isLast) applyLeaf(current, i, leafValue);
-            else step(current[i], index + 1);
-          }
-        }
-        return;
-      }
-
-      if (isLast) applyLeaf(current, key, leafValue);
-      else if (current && typeof current === "object") step(current[key], index + 1);
-    };
-
-    step(draft, 0);
-  };
-}
-storePath.DELETE = STORE_PATH_DELETE;
-
-function clonePlain<T>(value: T): T {
-  if (value === null || typeof value !== "object") return value;
-  if (Array.isArray(value)) return value.map((item) => clonePlain(item)) as unknown as T;
-  const out: Record<string, unknown> = {};
-  for (const key of Object.keys(value as Record<string, unknown>)) {
-    out[key] = clonePlain((value as Record<string, unknown>)[key]);
-  }
-  return out as T;
-}
-
-/**
- * Solid 2.0 `snapshot`:
- * Returns an untracked plain deep copy of a store (replaces Solid 1.x `unwrap`).
- */
 export function snapshot<T>(store: T): T {
-  return clonePlain(store);
+  return nativeSnapshot(store);
 }
 
-/**
- * Solid 2.0 `deep`:
- * Traverses a store deeply so a single read subscribes to every nested leaf.
- */
-export function deep<T>(store: T): T {
-  return clonePlain(store);
+export const storePath = Object.assign(
+  function storePath<T = unknown>(...args: any[]) {
+    return (nativeStorePath as any)(...args);
+  },
+  { DELETE: nativeStorePath.DELETE }
+);
+
+// ============================================================================
+// 6. Optimistic State
+// ============================================================================
+
+export function createOptimistic<T>(initialOrCompute: T | (() => T)): NativeSignal<T> {
+  const initial =
+    typeof initialOrCompute === "function"
+      ? (initialOrCompute as () => T)()
+      : initialOrCompute;
+  const [base, setBase] = (nativeCreateSignal as any)(initial);
+  const [opt, setOpt] = (nativeCreateOptimistic as any)(() => base());
+  const getter = () => opt();
+  const setter: any = (valOrFn: any) => {
+    setBase(valOrFn);
+    try {
+      setOpt(valOrFn);
+    } catch {}
+    return valOrFn;
+  };
+  return [getter as any, setter];
+}
+
+export function createOptimisticStore<T extends object>(
+  initialOrDerive: T | ((draft: T) => void),
+  seed?: T
+): [any, SetStoreFunction<T>] {
+  const initial =
+    seed ?? (typeof initialOrDerive === "function" ? ({} as T) : initialOrDerive);
+  const [baseStore, setBaseStore] = createStore<T>(initial);
+  const [optStore, nativeSetOpt] = (nativeCreateOptimisticStore as any)(
+    () => baseStore,
+    initial
+  );
+  const setStore: SetStoreFunction<T> = (...args: any[]) => {
+    (setBaseStore as any)(...args);
+    try {
+      (nativeSetOpt as any)(...args);
+    } catch {}
+    nativeFlush();
+  };
+  return [optStore, setStore];
 }
 
 // ============================================================================
-// 7. Props Utilities (mergeProps, splitProps)
+// 7. Context (Providerless Solid 2.0)
 // ============================================================================
 
-export type Prettify<T> = { [K in keyof T]: T[K] } & {};
+export function createContext<T>(defaultValue: T, options?: { name?: string }): any;
+export function createContext<T>(options?: { name?: string }): any;
+export function createContext<T>(...args: any[]): any {
+  let defaultValue = args[0];
+  let options = args[1];
+  if (
+    args.length === 1 &&
+    typeof args[0] === "object" &&
+    args[0] !== null &&
+    "name" in args[0] &&
+    Object.keys(args[0]).length === 1
+  ) {
+    defaultValue = undefined;
+    options = args[0];
+  }
+  const nativeCtx = (nativeCreateContext as any)(defaultValue, options);
 
-/**
- * MergeProps:
- * If an optional property in T is provided in default props U,
- * it becomes a REQUIRED non-undefined property in the merged props!
- */
+  const ProviderComponent = (props: { value: T; children: any }): any => {
+    let res: any;
+    nativeCreateRoot((dispose) => {
+      res = nativeCtx(props);
+      if (typeof res === "function") {
+        res = res();
+      }
+      dispose();
+    });
+    return res;
+  };
+  Object.setPrototypeOf(ProviderComponent, nativeCtx);
+  return Object.assign(ProviderComponent, nativeCtx);
+}
+
+export function useContext<T>(context: any): T {
+  if (!nativeGetOwner()) {
+    let val: any;
+    let err: any;
+    nativeCreateRoot((dispose) => {
+      try {
+        val = nativeUseContext(context);
+      } catch (e) {
+        err = e;
+      }
+      dispose();
+    });
+    if (err) throw err;
+    return val;
+  }
+  return nativeUseContext(context);
+}
+
+// ============================================================================
+// 8. Props Helpers (`mergeProps`, `splitProps`)
+// ============================================================================
+
+type Prettify<T> = { [K in keyof T]: T[K] } & {};
+
 export type MergeProps<T, U> = Prettify<
   {
     [K in keyof T & keyof U]-?: NonNullable<T[K]> | U[K];
@@ -632,238 +478,39 @@ export function splitProps(props: any, ...keyGroups: (readonly string[])[]): any
 }
 
 // ============================================================================
-// 7b. Props Helpers (`merge`, `omit`) and Providerless Context
-// ============================================================================
-
-/**
- * Solid 2.0 `merge`:
- * Shallow-merges reactive sources into a new object whose properties stay live
- * getters. Later sources win on key collisions.
- */
-export function merge<T extends object, U extends object>(first: T, second: U): T & U;
-export function merge<T extends object, U extends object, V extends object>(
-  first: T,
-  second: U,
-  third: V
-): T & U & V;
-export function merge(...sources: object[]): any {
-  const target: Record<string | symbol, unknown> = {};
-  const keys = new Set<string | symbol>();
-  for (const source of sources) {
-    if (source && typeof source === "object") {
-      for (const key of Reflect.ownKeys(source)) keys.add(key);
-    }
-  }
-  for (const key of keys) {
-    Object.defineProperty(target, key, {
-      enumerable: true,
-      configurable: true,
-      get() {
-        for (let i = sources.length - 1; i >= 0; i -= 1) {
-          const source = sources[i] as any;
-          if (source && key in source) return source[key];
-        }
-        return undefined;
-      },
-    });
-  }
-  return target;
-}
-
-/**
- * Solid 2.0 `omit`:
- * Copies reactive getters for every key except the omitted ones.
- */
-export function omit<T extends object, const K extends readonly (keyof T)[]>(
-  source: T,
-  ...keys: K
-): Omit<T, K[number]> {
-  const excluded = new Set<PropertyKey>(keys as readonly PropertyKey[]);
-  const target: Record<string | symbol, unknown> = {};
-  for (const key of Reflect.ownKeys(source)) {
-    if (excluded.has(key)) continue;
-    Object.defineProperty(target, key, {
-      enumerable: true,
-      configurable: true,
-      get() {
-        return (source as any)[key];
-      },
-    });
-  }
-  return target as Omit<T, K[number]>;
-}
-
-/**
- * Solid 2.0 `Context<T>`:
- * The context object IS its provider component: `<AuthContext value={...}>`.
- * No `.Provider` sub-property exists in Solid 2.0.
- */
-export interface Context<T> {
-  readonly id: symbol;
-  readonly name?: string;
-  readonly hasDefault: boolean;
-  readonly defaultValue?: T;
-  <R>(props: { value: T; children: () => R }): R;
-}
-
-const contextStack: Array<{ id: symbol; value: unknown }> = [];
-
-export function createContext<T>(defaultValue: T, options?: { name?: string }): Context<T>;
-export function createContext<T>(options?: { name?: string }): Context<T>;
-export function createContext<T>(
-  defaultOrOptions?: T | { name?: string },
-  maybeOptions?: { name?: string }
-): Context<T> {
-  const hasDefault =
-    arguments.length >= 1 &&
-    !(
-      arguments.length === 1 &&
-      typeof defaultOrOptions === "object" &&
-      defaultOrOptions !== null &&
-      "name" in defaultOrOptions &&
-      Object.keys(defaultOrOptions).length === 1
-    );
-  const defaultValue = hasDefault ? (defaultOrOptions as T) : undefined;
-  const name = hasDefault
-    ? maybeOptions?.name
-    : (defaultOrOptions as { name?: string } | undefined)?.name;
-  const id = Symbol(name ?? "SolidContext");
-
-  const ProviderComponent = (<R>(props: { value: T; children: () => R }): R => {
-    contextStack.push({ id, value: props.value });
-    try {
-      return props.children();
-    } finally {
-      contextStack.pop();
-    }
-  }) as Context<T>;
-
-  Object.defineProperties(ProviderComponent, {
-    id: { value: id },
-    name: { value: name },
-    hasDefault: { value: hasDefault },
-    defaultValue: { value: defaultValue },
-  });
-
-  return ProviderComponent;
-}
-
-/**
- * Solid 2.0 `useContext`:
- * Reads the nearest provider value or throws `ContextNotFoundError`.
- */
-export function useContext<T>(context: Context<T>): T {
-  for (let i = contextStack.length - 1; i >= 0; i -= 1) {
-    if (contextStack[i]!.id === context.id) return contextStack[i]!.value as T;
-  }
-  if (context.hasDefault) return context.defaultValue as T;
-  throw new ContextNotFoundError(context.name);
-}
-
-// ============================================================================
-// 8. Lifecycles (Solid 2.0 onSettled & onCleanup)
-// ============================================================================
-
-const activeCleanups: Array<() => void> = [];
-
-/**
- * Registers a cleanup method to be executed on teardown.
- */
-export function onCleanup(fn: () => void): void {
-  activeCleanups.push(fn);
-}
-
-/**
- * Solid 2.0 `onSettled`:
- * Replaces `onMount`. Executes once after initial rendering and async dependencies
- * have settled. Supports returning an optional cleanup callback.
- */
-export function onSettled(fn: () => void | (() => void)): void {
-  const cleanup = fn();
-  if (typeof cleanup === "function") {
-    activeCleanups.push(cleanup);
-  }
-}
-
-/**
- * Helper to trigger cleanup of active resources (used in test teardown).
- */
-export function triggerCleanups(): void {
-  while (activeCleanups.length > 0) {
-    const fn = activeCleanups.pop();
-    fn?.();
-  }
-}
-
-// ============================================================================
-// 9. Solid Component Types & Control Flow Helpers
+// 9. Component Types & Headless Control Flow
 // ============================================================================
 
 export type Component<P = {}> = (props: P) => any;
 export type ParentComponent<P = {}> = Component<P & { children?: any }>;
 export type VoidComponent<P = {}> = Component<P & { children?: never }>;
 export type FlowComponent<P = {}, C = any> = Component<P & { children: C }>;
-
-/**
- * Solid 2.0 Ref Directive Factory:
- * Replaces legacy `use:*` compiler directives. Attached via standard `ref={directiveFactory(...)}`.
- * An element factory callback that can optionally return a cleanup function.
- */
 export type RefDirective<E extends Element = HTMLElement> = (el: E) => void | (() => void);
 
-/**
- * Solid 2.0 `<Loading>` and `<Errored>` boundaries
- */
-export interface LoadingProps {
-  fallback?: any;
-  children?: any;
-}
-
-export interface ErroredProps {
-  fallback?: (err: unknown, reset: () => void) => any;
-  children?: any;
-}
-
-export const Loading: Component<LoadingProps> = (props) => props.children;
-export const Errored: Component<ErroredProps> = (props) => props.children;
-
-/**
- * `narrowShow`:
- * Emulates `<Show when={item()}>{(item) => ...}</Show>` type narrowing.
- * The inner render callback receives an `Accessor<NonNullable<T>>`.
- */
 export function narrowShow<T, R>(
   when: T | undefined | null | false,
-  render: (item: Accessor<NonNullable<T>>) => R
+  render: (item: NativeAccessor<NonNullable<T>>) => R
 ): R | null {
   if (when) {
-    const itemAccessor: Accessor<NonNullable<T>> = () => when as NonNullable<T>;
-    return render(itemAccessor);
+    return render(() => when as NonNullable<T>);
   }
   return null;
 }
 
-/**
- * `narrowFor`:
- * Solid 2.0 unified list rendering helper:
- * - Default keyed mode (`keyed={true}`): raw item `T` + index `Accessor<number>`.
- * - Unkeyed mode (`keyed={false}`, replacing legacy `<Index>`): item `Accessor<T>` + index `number`.
- * - Custom key mode (`keyed={fn}`): item `Accessor<T>` + index `Accessor<number>`.
- */
 export function narrowFor<T, R>(
   each: readonly T[] | undefined | null,
   options: { keyed: false },
-  render: (item: Accessor<T>, index: number) => R
+  render: (item: NativeAccessor<T>, index: number) => R
 ): R[];
 export function narrowFor<T, R>(
   each: readonly T[] | undefined | null,
   options: { keyed: (item: T) => unknown },
-  render: (item: Accessor<T>, index: Accessor<number>) => R
+  render: (item: NativeAccessor<T>, index: NativeAccessor<number>) => R
 ): R[];
 export function narrowFor<T, R>(
   each: readonly T[] | undefined | null,
   options: { keyed?: true } | undefined,
-  render: (item: T, index: Accessor<number>) => R
+  render: (item: T, index: NativeAccessor<number>) => R
 ): R[];
 export function narrowFor<T, R>(
   each: readonly T[] | undefined | null,
@@ -879,10 +526,6 @@ export function narrowFor<T, R>(
   });
 }
 
-/**
- * Solid 2.0 `<Repeat count={...}>`:
- * Renders `count` positional slots from `from` (default 0) without diffing an array.
- */
 export function renderRepeat<R>(
   options: { count: number; from?: number; fallback?: () => R },
   render: (index: number) => R
@@ -892,61 +535,4 @@ export function renderRepeat<R>(
   const out: R[] = [];
   for (let i = 0; i < count; i += 1) out.push(render(from + i));
   return out;
-}
-
-// ============================================================================
-// 10. Transactional Writes & Optimistic State
-// ============================================================================
-
-/**
- * Solid 2.0 `createOptimistic`:
- * A signal whose writes are treated as an optimistic overlay; `action` reverts
- * the overlay once the transaction settles.
- */
-export function createOptimistic<T>(initialOrCompute: T | (() => T)): Signal<T> {
-  const initial =
-    typeof initialOrCompute === "function"
-      ? (initialOrCompute as () => T)()
-      : initialOrCompute;
-  return createSignal<T>(initial);
-}
-
-/**
- * Solid 2.0 `createOptimisticStore`:
- * An optimistic store overlay derived from a durable value or draft function.
- */
-export function createOptimisticStore<T extends object>(
-  initialOrDerive: T | ((draft: T) => void),
-  seed?: T
-): [Readonly<T>, SetStoreFunction<T>] {
-  const initial =
-    seed ?? (typeof initialOrDerive === "function" ? ({} as T) : initialOrDerive);
-  return createStore<T>(clonePlain(initial));
-}
-
-/**
- * Solid 2.0 `action`:
- * Wraps a generator so each `yield` is a transaction re-entry point. Writes made
- * between yields commit together; the returned function resolves to the
- * generator's return value.
- */
-export function action<Args extends any[], R>(
-  genFn: (...args: Args) => Generator<any, R, any> | AsyncGenerator<any, R, any>
-): (...args: Args) => Promise<R> {
-  return async (...args: Args): Promise<R> => {
-    const iterator = genFn(...args);
-    let step = await iterator.next();
-    flush();
-    while (!step.done) {
-      const yielded = step.value;
-      const resolved =
-        yielded && typeof (yielded as any).then === "function"
-          ? await yielded
-          : yielded;
-      flush();
-      step = await iterator.next(resolved);
-      flush();
-    }
-    return step.value;
-  };
 }
