@@ -3,25 +3,59 @@
  *
  * Implements a zero-dependency, pure ECMAScript reactive runtime and full type system
  * representing SolidJS 2.0 (`@solidjs/signals` + `solid-js` 2.0):
- * - Signals (`Accessor<T>`, `Setter<T>`, `createSignal`)
+ * - Signals (`Accessor<T>`, `Setter<T>`, `createSignal`) with deterministic microtask batching
+ * - Deterministic Batching & Sync Flush (`flush`)
  * - Solid 2.0 Split-Signature Effects (`createEffect`, `createRenderEffect`)
  * - Solid 2.0 Async Memos (`createMemo` unwrapping `Promise<T>` to `Accessor<Awaited<T>>`)
  * - Solid 2.0 Async Resources (`createAsync`, `isPending`, `resolve`)
- * - Reactive Stores (`createStore`, `produce`, `createProjection`)
+ * - Reactive Stores (`createStore`, `produce`, `createProjection`) with draft-first setters
  * - Props Helpers (`mergeProps` turning optional properties with defaults into required, `splitProps`)
- * - Component types (`Component`, `ParentComponent`, `VoidComponent`, `FlowComponent`, `narrowShow`)
+ * - Lifecycles (`onSettled`, `onCleanup`)
+ * - Control flow primitives (`narrowShow`, `narrowFor`, `Loading`, `Errored`)
+ * - Ref Directive Factories (`RefDirective`)
+ * - Component types (`Component`, `ParentComponent`, `VoidComponent`, `FlowComponent`)
  */
 
 // ============================================================================
-// 1. Reactive Tracking Engine
+// 1. Reactive Tracking & Microtask Batching Engine
 // ============================================================================
 
 type Computation = () => void;
 
 let currentListener: Computation | null = null;
+let pendingQueue: Array<() => void> = [];
+let microtaskScheduled = false;
+
+function scheduleMicrotaskFlush() {
+  if (!microtaskScheduled) {
+    microtaskScheduled = true;
+    queueMicrotask(() => {
+      microtaskScheduled = false;
+      flush();
+    });
+  }
+}
+
+/**
+ * Solid 2.0 `flush`:
+ * Synchronously flushes all pending microtask signal writes and executes downstream computations.
+ * Optionally runs a scoped callback `fn` and immediately flushes any writes performed inside it.
+ */
+export function flush(fn?: () => void): void {
+  if (fn) {
+    fn();
+  }
+  while (pendingQueue.length > 0) {
+    const queue = pendingQueue;
+    pendingQueue = [];
+    for (const job of queue) {
+      job();
+    }
+  }
+}
 
 // ============================================================================
-// 2. Signals & Accessors
+// 2. Signals, Accessors & Microtask Batching
 // ============================================================================
 
 export type Accessor<T> = () => T;
@@ -31,27 +65,45 @@ export type Signal<T> = [get: Accessor<T>, set: Setter<T>];
 export function createSignal<T>(value: T): Signal<T>;
 export function createSignal<T = undefined>(): Signal<T | undefined>;
 export function createSignal<T>(initialValue?: T): Signal<T | undefined> {
-  let value = initialValue;
+  let committedValue = initialValue;
+  let pendingValue = initialValue;
+  let hasPending = false;
   const subscribers = new Set<Computation>();
 
   const get: Accessor<T | undefined> = () => {
     if (currentListener) {
       subscribers.add(currentListener);
     }
-    return value;
+    return committedValue;
   };
 
   const set: Setter<T | undefined> = (next) => {
-    const nextValue =
-      typeof next === "function" ? (next as (prev: T | undefined) => T | undefined)(value) : next;
-    if (!Object.is(value, nextValue)) {
-      value = nextValue;
-      const toNotify = Array.from(subscribers);
-      for (const sub of toNotify) {
-        sub();
+    const currentBase = hasPending ? pendingValue : committedValue;
+    const nextVal =
+      typeof next === "function"
+        ? (next as (prev: T | undefined) => T | undefined)(currentBase)
+        : next;
+
+    pendingValue = nextVal;
+    hasPending = true;
+
+    pendingQueue.push(() => {
+      if (hasPending) {
+        if (!Object.is(committedValue, pendingValue)) {
+          committedValue = pendingValue;
+          hasPending = false;
+          const toNotify = Array.from(subscribers);
+          for (const sub of toNotify) {
+            sub();
+          }
+        } else {
+          hasPending = false;
+        }
       }
-    }
-    return value;
+    });
+
+    scheduleMicrotaskFlush();
+    return pendingValue;
   };
 
   return [get, set];
@@ -448,13 +500,71 @@ export function splitProps(props: any, ...keyGroups: (readonly string[])[]): any
 }
 
 // ============================================================================
-// 8. Solid Component Types & Narrowing Helper
+// 8. Lifecycles (Solid 2.0 onSettled & onCleanup)
+// ============================================================================
+
+const activeCleanups: Array<() => void> = [];
+
+/**
+ * Registers a cleanup method to be executed on teardown.
+ */
+export function onCleanup(fn: () => void): void {
+  activeCleanups.push(fn);
+}
+
+/**
+ * Solid 2.0 `onSettled`:
+ * Replaces `onMount`. Executes once after initial rendering and async dependencies
+ * have settled. Supports returning an optional cleanup callback.
+ */
+export function onSettled(fn: () => void | (() => void)): void {
+  const cleanup = fn();
+  if (typeof cleanup === "function") {
+    activeCleanups.push(cleanup);
+  }
+}
+
+/**
+ * Helper to trigger cleanup of active resources (used in test teardown).
+ */
+export function triggerCleanups(): void {
+  while (activeCleanups.length > 0) {
+    const fn = activeCleanups.pop();
+    fn?.();
+  }
+}
+
+// ============================================================================
+// 9. Solid Component Types & Control Flow Helpers
 // ============================================================================
 
 export type Component<P = {}> = (props: P) => any;
 export type ParentComponent<P = {}> = Component<P & { children?: any }>;
 export type VoidComponent<P = {}> = Component<P & { children?: never }>;
 export type FlowComponent<P = {}, C = any> = Component<P & { children: C }>;
+
+/**
+ * Solid 2.0 Ref Directive Factory:
+ * Replaces legacy `use:*` compiler directives. Attached via standard `ref={directiveFactory(...)}`.
+ * An element factory callback that can optionally return a cleanup function.
+ */
+export type RefDirective<E extends Element = HTMLElement> = (el: E) => void | (() => void);
+
+/**
+ * Solid 2.0 `<Loading>` and `<Errored>` boundaries
+ */
+export interface LoadingProps {
+  fallback?: any;
+  children?: any;
+}
+
+export interface ErroredProps {
+  fallback?: (err: unknown, reset: () => void) => any;
+  children?: any;
+}
+
+export const Loading: Component<LoadingProps> = (props) => props.children;
+export const Errored: Component<ErroredProps> = (props) => props.children;
 
 /**
  * `narrowShow`:
@@ -470,4 +580,34 @@ export function narrowShow<T, R>(
     return render(itemAccessor);
   }
   return null;
+}
+
+/**
+ * `narrowFor`:
+ * Solid 2.0 unified list rendering helper:
+ * - In keyed mode (default), each child receives an item `Accessor<T>` and index `Accessor<number>`.
+ * - In unkeyed mode (`keyed={false}`, replacing legacy `<Index>`), each child receives an item `Accessor<T>` and index `number`.
+ */
+export function narrowFor<T, R>(
+  each: readonly T[] | undefined | null,
+  options: { keyed: false },
+  render: (item: Accessor<T>, index: number) => R
+): R[];
+export function narrowFor<T, R>(
+  each: readonly T[] | undefined | null,
+  options: { keyed?: true } | undefined,
+  render: (item: Accessor<T>, index: Accessor<number>) => R
+): R[];
+export function narrowFor<T, R>(
+  each: readonly T[] | undefined | null,
+  options: { keyed?: boolean } | undefined,
+  render: (item: Accessor<T>, index: any) => R
+): R[] {
+  if (!each || each.length === 0) return [];
+  const isKeyed = options?.keyed !== false;
+  return each.map((val, idx) => {
+    const itemAcc: Accessor<T> = () => val;
+    const indexArg = isKeyed ? (() => idx) : idx;
+    return render(itemAcc, indexArg);
+  });
 }

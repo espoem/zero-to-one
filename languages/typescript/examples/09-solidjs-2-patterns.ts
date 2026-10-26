@@ -3,13 +3,16 @@
  *
  * Demonstrates the modern reactivity model and type system of SolidJS 2.0
  * (`@solidjs/signals` + `solid-js` 2.0):
- * - Signals (`createSignal`, `Accessor<T>`, `Setter<T>`)
+ * - Signals with deterministic microtask batching (`createSignal`, `flush`, `Accessor<T>`, `Setter<T>`)
  * - First-class async memos (`createMemo` unwrapping `Promise<T>` to `Accessor<Awaited<T>>`)
  * - Async resources (`createAsync`, `isPending`, `resolve`)
  * - Split tracking/effect signatures (`createEffect(compute, effect)`) with cleanup lifecycle
- * - Fine-grained reactive stores (`createStore`, `produce`) & derived projections (`createProjection`)
+ * - Fine-grained reactive stores (`createStore`, `createProjection`) with draft-first setters
  * - Props manipulation (`mergeProps` turning optional properties with defaults into required, `splitProps`)
- * - Component types (`Component`, `ParentComponent`, `VoidComponent`, `FlowComponent`) and `<Show>` narrowing
+ * - Lifecycles (`onSettled` replacing `onMount` with return cleanup)
+ * - Unified list iteration (`narrowFor` with accessor children, `keyed={false}` replacing `<Index>`)
+ * - Ref directive factories (`RefDirective` replacing legacy `use:*`)
+ * - Component types (`Component`, `ParentComponent`, `VoidComponent`, `FlowComponent`, `<Show>` narrowing)
  *
  * Validated via:
  * - `mise exec npm:typescript@latest -- tsc --noEmit -p tsconfig.json`
@@ -25,11 +28,16 @@ import {
   createEffect,
   createRenderEffect,
   createStore,
-  produce,
   createProjection,
   mergeProps,
   splitProps,
   narrowShow,
+  narrowFor,
+  onSettled,
+  onCleanup,
+  flush,
+  Loading,
+  Errored,
   type Accessor,
   type Setter,
   type Signal,
@@ -38,6 +46,7 @@ import {
   type VoidComponent,
   type FlowComponent,
   type MergeProps,
+  type RefDirective,
 } from "./utils/solid2-shim.ts";
 
 import {
@@ -53,7 +62,7 @@ import {
 console.log("=== 09: SolidJS 2.0 Reactive Patterns ===");
 
 // ============================================================================
-// 1. Signals & Accessors
+// 1. Signals, Accessors & Deterministic Microtask Batching
 // ============================================================================
 
 const [count, setCount] = createSignal(10);
@@ -61,16 +70,23 @@ type TestCountGet = Expect<Equal<typeof count, Accessor<number>>>;
 type TestCountSet = Expect<Equal<typeof setCount, Setter<number>>>;
 
 assertEqual(count(), 10);
+
+// In Solid 2.0, signal writes are queued on the microtask queue by default
 setCount(25);
+assertEqual(count(), 10); // Still 10 synchronously before flush!
+
+flush(); // Force synchronous flush of queued writes
 assertEqual(count(), 25);
-setCount((prev) => prev + 5);
+
+// flush can also execute a scoped callback and immediately commit:
+flush(() => setCount((prev) => prev + 5));
 assertEqual(count(), 30);
 
 // Signal overload with undefined default
 const [optionalStr, setOptionalStr] = createSignal<string>();
 type TestOptionalStrGet = Expect<Equal<typeof optionalStr, Accessor<string | undefined>>>;
 assertEqual(optionalStr(), undefined);
-setOptionalStr("solid");
+flush(() => setOptionalStr("solid"));
 assertEqual(optionalStr(), "solid");
 
 // ============================================================================
@@ -85,9 +101,9 @@ const total = createMemo(() => Math.round(price() * (1 + taxRate())));
 type TestTotalType = Expect<Equal<typeof total, Accessor<number>>>;
 
 assertEqual(total(), 120);
-setPrice(200);
+flush(() => setPrice(200));
 assertEqual(total(), 240);
-setTaxRate(0.1);
+flush(() => setTaxRate(0.1));
 assertEqual(total(), 220);
 
 // 2. Solid 2.0 Async Memo: unwraps `Promise<T>` to `Accessor<Awaited<T>>`
@@ -109,7 +125,7 @@ type TestAsyncMemoType = Expect<Equal<typeof asyncConvertedPrice, Accessor<numbe
 await new Promise((r) => setTimeout(r, 30));
 assertEqual(asyncConvertedPrice(), 200);
 
-setCurrency("EUR");
+flush(() => setCurrency("EUR"));
 await new Promise((r) => setTimeout(r, 30));
 assertEqual(asyncConvertedPrice(), 184);
 
@@ -166,12 +182,12 @@ createEffect(
 assertDeepEqual(effectLog, ["switch:none->home"]);
 assertDeepEqual(cleanupLog, []);
 
-// Trigger effect update
-setActiveTab("profile");
+// Trigger effect update via flush
+flush(() => setActiveTab("profile"));
 assertDeepEqual(cleanupLog, ["teardown:home"]);
 assertDeepEqual(effectLog, ["switch:none->home", "switch:home->profile"]);
 
-setActiveTab("settings");
+flush(() => setActiveTab("settings"));
 assertDeepEqual(cleanupLog, ["teardown:home", "teardown:profile"]);
 assertDeepEqual(effectLog, [
   "switch:none->home",
@@ -213,12 +229,10 @@ setState("user", {
 assertEqual(state.user.name, "Alexander");
 assertEqual(state.user.preferences.theme, "dark");
 
-// Update via `produce` mutator
-setState(
-  produce((draft) => {
-    draft.todos.push({ id: 2, title: "Master TypeScript", completed: true });
-  })
-);
+// Solid 2.0 draft-first store setter
+setState((draft) => {
+  draft.todos.push({ id: 2, title: "Master TypeScript", completed: true });
+});
 assertEqual(state.todos.length, 2);
 assertEqual(state.todos[1]?.title, "Master TypeScript");
 
@@ -242,7 +256,7 @@ const summaryProjection = createProjection<ProjectedSummary>(
 assertEqual(summaryProjection.sum, 15);
 assertEqual(summaryProjection.product, 50);
 
-setCounterA(7);
+flush(() => setCounterA(7));
 assertEqual(summaryProjection.sum, 17);
 assertEqual(summaryProjection.product, 70);
 
@@ -373,10 +387,69 @@ const renderedNull = narrowShow(currentUser(), (user) => {
 assertEqual(renderedNull, null);
 
 // When `currentUser()` is present, callback receives `Accessor<NonNullable<T>>`
-setCurrentUser({ id: "u1", name: "Maria", email: "maria@example.com" });
+flush(() => setCurrentUser({ id: "u1", name: "Maria", email: "maria@example.com" }));
 const renderedUser = narrowShow(currentUser(), (user) => {
   return `User: ${user().name} (${user().email})`;
 });
 assertEqual(renderedUser, "User: Maria (maria@example.com)");
+
+// ============================================================================
+// 8. Solid 2.0 Lifecycle: `onSettled` (replaces `onMount`)
+// ============================================================================
+
+const lifecycleLog: string[] = [];
+
+onSettled(() => {
+  lifecycleLog.push("settled");
+  return () => {
+    lifecycleLog.push("cleanup");
+  };
+});
+
+assertDeepEqual(lifecycleLog, ["settled"]);
+
+// ============================================================================
+// 9. Solid 2.0 Unified `<For>` (Accessor Child & `keyed={false}` unkeyed)
+// ============================================================================
+
+const tags = ["typescript", "solid2", "signals"];
+
+// 1. Keyed mode (default): child receives (item: Accessor<T>, index: Accessor<number>)
+const renderedKeyed = narrowFor(tags, { keyed: true }, (item, index) => {
+  type TestItemAcc = Expect<Equal<typeof item, Accessor<string>>>;
+  type TestIndexAcc = Expect<Equal<typeof index, Accessor<number>>>;
+  return `${index()}:${item()}`;
+});
+assertDeepEqual(renderedKeyed, ["0:typescript", "1:solid2", "2:signals"]);
+
+// 2. Unkeyed mode (`keyed={false}`, replaces removed `<Index>`): child receives (item: Accessor<T>, index: number)
+const renderedUnkeyed = narrowFor(tags, { keyed: false }, (item, index) => {
+  type TestItemAcc2 = Expect<Equal<typeof item, Accessor<string>>>;
+  type TestIndexNum = Expect<Equal<typeof index, number>>;
+  return `${index}:${item()}`;
+});
+assertDeepEqual(renderedUnkeyed, ["0:typescript", "1:solid2", "2:signals"]);
+
+// ============================================================================
+// 10. Solid 2.0 Ref Directive Factories (replaces legacy `use:*`)
+// ============================================================================
+
+const directiveEvents: string[] = [];
+
+function trackFocus(label: string): RefDirective<HTMLElement> {
+  return (el) => {
+    directiveEvents.push(`attach:${label}:${el.tagName}`);
+    return () => {
+      directiveEvents.push(`detach:${label}`);
+    };
+  };
+}
+
+// Simulating DOM node attaching ref factory
+const dummyElement = { tagName: "BUTTON" } as unknown as HTMLElement;
+const cleanupDirective = trackFocus("saveButton")(dummyElement);
+assertDeepEqual(directiveEvents, ["attach:saveButton:BUTTON"]);
+cleanupDirective?.();
+assertDeepEqual(directiveEvents, ["attach:saveButton:BUTTON", "detach:saveButton"]);
 
 console.log("✓ All 09 SolidJS 2.0 Reactive Patterns tests passed successfully!\n");

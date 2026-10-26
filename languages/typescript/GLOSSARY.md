@@ -76,3 +76,19 @@ This glossary defines standard technical terms used throughout the `languages/ty
 | **`@ts-expect-error`** | **Direktiva `@ts-expect-error`** | A comment directive suppressing the subsequent compiler diagnostic error only if an error actually occurs on that line (emitting a compiler warning otherwise). | TypeScript 3.9 Release Notes |
 | **`@ts-ignore`** | **Direktiva `@ts-ignore`** | A comment directive unconditionally suppressing any compiler error on the subsequent line. | TS Handbook |
 | **Explicit Resource Management (`using`)** | **Explicitní správa prostředků (`using`)** | A TC39 syntax feature for deterministic resource cleanup upon leaving a block scope by invoking `[Symbol.dispose]()`. | TypeScript 5.2 Release Notes / TC39 |
+
+---
+
+## 6. Fine-Grained Reactivity & SolidJS 2.x
+
+| English Term | Czech Term | Definition & Context | Primary Reference |
+| :--- | :--- | :--- | :--- |
+| **Fine-Grained Reactivity** | **Jemnozrnná reaktivita** | A computational design pattern where individual data values (signals) directly update the precise DOM nodes or computations that depend on them, eliminating Virtual DOM diffing and whole-component re-renders. | SolidJS Architecture, Carniato |
+| **Signal (`createSignal`)** | **Signál** | The fundamental atomic reactive primitive containing a getter accessor (`() => T`) and a setter (`(v: T) => void`), tracking subscribers when read inside reactive contexts. | `@solidjs/signals`, TC39 Signals Proposal |
+| **Accessor** | **Přístupová funkce (accessor)** | A parameterless getter function (`() => T`) that establishes a reactive subscription when invoked within a tracking scope. | SolidJS Handbook |
+| **Deterministic Microtask Batching** | **Deterministické dávkování v mikrotasku** | The execution model in Solid 2.0 where signal mutations are queued and deferred to the JavaScript microtask queue, ensuring consistent graph snapshots and preventing layout thrashing unless manually flushed via `flush()`. | SolidJS 2.0 Specifications |
+| **First-Class Async Reactivity** | **Prvotřídní asynchronní reaktivita** | An architecture where promises and async operations flow directly through ordinary computations (`createAsync`, `createMemo`), propagating pending and rejected states out-of-band to `<Loading>` and `<Errored>` boundaries. | SolidJS 2.0 Architecture |
+| **Split Effect (`createEffect(compute, effect)`)** | **Rozdělený (dvoufázový) efekt** | A two-phase effect primitive separating synchronous dependency tracking (`compute`) from asynchronous untracked side-effect execution (`effect`), with built-in cleanup return handling. | SolidJS 2.0 Architecture |
+| **Settled Lifecycle (`onSettled`)** | **Životní cyklus po ustálení (`onSettled`)** | An async-aware component lifecycle hook replacing `onMount`, executing after initial DOM rendering and asynchronous dependencies have settled, and natively supporting returned cleanups. | SolidJS 2.0 Specifications |
+| **Store Projection (`createProjection`)** | **Projekce úložiště (`createProjection`)** | A derived reactive store construct updated via mutable draft functions that notifies downstream subscribers with $O(1)$ property-level leaf precision. | SolidJS 2.0 Store Architecture |
+| **Ref Directive Factory** | **Továrna na direktivy přes ref** | A reusable DOM attachment pattern replacing legacy `use:*` compiler transforms, structured as composable functions returning element callbacks with optional cleanups. | SolidJS 2.0 Architecture |

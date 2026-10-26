@@ -40,7 +40,7 @@ languages/typescript/
     ├── 06-react-patterns.tsx                            # Discriminated props, generic components, polymorphic Box, and forwardRef
     ├── 07-modern-ts-and-js-features.ts                  # Explicit Resource Management (using), Stage-3 Decorators, tRPC & ts-pattern
     ├── 08-react-19-patterns.tsx                         # React 19 ref prop, RefCallback cleanup, use(), useActionState, useOptimistic, RSC
-    └── 09-solidjs-2-patterns.ts                         # Solid 2.0 createSignal, async createMemo/createAsync, split createEffect, createProjection
+    └── 09-solidjs-2-patterns.ts                         # Solid 2.0 microtask batching/flush, async createMemo/createAsync, split createEffect, draft stores, onSettled, ref directive factories
 ```
 
 ## Full Curriculum Map (Modules 01–13)
@@ -59,7 +59,7 @@ languages/typescript/
 | [Module 10](./modules/10-advanced-react-with-typescript.md) | Weeks 24–26 | Advanced React with TypeScript (Sec 1–6) | Discriminated props, generic JSX `<Table<T>>`, `useSafeContext`, polymorphic `as` prop, `fixedForwardRef` |
 | [Module 11](./modules/11-expert-interviews-and-modern-ts-js.md) | Complete Volume Bonus | TypeScript Expert Interviews & Modern TS/JS | tRPC phantom builders, TanStack `DataTag`, `ts-pattern`, `using` / `Symbol.dispose`, Stage-3 Decorators, ES2025 `Set` & `Object.groupBy`, `(string & {})` |
 | [Module 12](./modules/12-react-19-and-modern-react-typescript.md) | Modern React Extension | React 19.x Deep Dive | `ref` as standard prop, `RefCallback` cleanup, `use(Promise \| Context)`, `useActionState`, `useOptimistic`, `useFormStatus`, RSC `Serializable<T>` |
-| [Module 13](./modules/13-solidjs-2-with-typescript.md) | Modern Signals Extension | SolidJS 2.x (`@solidjs/signals`) Deep Dive | Run-once setup vs narrowing, `createSignal`, first-class async `createMemo`/`createAsync`, `<Loading>`, split `createEffect`, `createStore`, `createProjection`, `mergeProps`/`splitProps` |
+| [Module 13](./modules/13-solidjs-2-with-typescript.md) | Modern Signals Extension | SolidJS 2.x (`@solidjs/signals`) Deep Dive | Microtask batching & `flush()`, first-class async `createMemo`/`createAsync`, `<Loading>` & `<Errored>`, split `createEffect`, draft-first `createStore`, `createProjection`, `onSettled`, ref directive factories, `mergeProps`/`splitProps` |
 
 ## Architecture of TypeScript's Dual Spaces
 

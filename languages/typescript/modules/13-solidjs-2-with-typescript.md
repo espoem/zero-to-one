@@ -7,12 +7,12 @@
 
 While React treats component functions as rendering routines executed repeatedly on every state change, **SolidJS executes component functions exactly once as initialization constructors**. In Solid, components are not units of re-rendering; they exist solely to wire a reactive dependency graph directly to DOM nodes. Once setup finishes, reactive updates bypass the component function and mutate DOM text nodes and attributes directly—without a Virtual DOM (VDOM), reconciliation diffing, or component re-execution.
 
-This architectural shift fundamentally redefines TypeScript patterns:
-1. **Prop Reactivity**: Destructuring props severs reactivity because Solid's props are getter proxies. Preserving reactivity requires `props.property`, `mergeProps`, or `splitProps`.
-2. **Control Flow & Narrowing**: React-style `if (user()) return <Child user={user()} />` evaluates once during setup. Narrowing dynamic values in JSX requires accessor callbacks: `<Show when={user()}>{(u) => <Child user={u()} />}</Show>`.
-3. **Solid 2.0 Async-First Reactivity (`@solidjs/signals`)**: Solid 2.0 deprecates `createResource` in favor of first-class async signals. Any `createMemo` or `createAsync` can return a `Promise<T>`, yet its accessor return type is statically typed as `Accessor<T>` (`() => T`, not `T | undefined`), propagating pending and error states out-of-band to `<Loading>` and `<ErrorBoundary>`.
-4. **Deep Store Projections**: `createStore` manages nested reactive proxy trees with path-syntax mutations, while Solid 2.0's `createProjection` derives read-only store projections using mutable draft callbacks that notify subscribers with $O(1)$ precision.
-5. **DOM Primitives & Directives**: Solid provides compile-time safety for DOM variable refs, custom directives (`use:*`), tuple-delegated events (`onClick={[handler, data]}`), and polymorphic UI primitives (`<Dynamic>`).
+In **SolidJS 2.x (`@solidjs/signals`)**, the framework elevates this model by rebuilding its core reactive engine from the ground up:
+1. **Asynchronous Reactivity in the Graph**: Asynchronicity is a first-class citizen. Ordinary memos and async computations (`createAsync`, `createMemo`) natively return promises; downstream subscribers track pending states automatically and bubble out-of-band to `<Loading>` and `<Errored>` boundaries.
+2. **Deterministic Microtask Batching**: State writes are batched onto the microtask queue by default. Synchronous reads inside the same tick remain stable and glitch-free until a `flush()` occurs or the microtask resolves.
+3. **Two-Phase Split Effects**: `createEffect(compute, effect)` cleanly isolates synchronous reactive dependency tracking (Phase 1) from untracked side-effect execution and cleanup (Phase 2).
+4. **Draft-First Stores & Projections**: `createStore` defaults to draft-first mutation semantics, while `createProjection` creates fine-grained, derived read-only stores that update with $O(1)$ property-level precision.
+5. **Unified Control Flow & Directives**: List rendering is unified under `<For>` (with child item accessors and `keyed={false}` replacing the removed `<Index>`), while custom directives transition from compiler transforms (`use:*`) to composable **ref directive factories**.
 
 ```
                     ┌────────────────────────────────────────────────────────┐
@@ -25,10 +25,10 @@ This architectural shift fundamentally redefines TypeScript patterns:
                     │  Creates signals, stores, memos, effects, and DOM nodes│
                     └───────────────┬────────────────────────┬───────────────┘
                                     │                        │
-               Fine-Grained Updates │                        │ Nested Property Updates
-                                    ▼                        ▼
+       Microtask Batched Writes &   │                        │ Draft-First Stores &
+       Fine-Grained Signal Updates  ▼                        ▼ Fine-Grained Projections
 ┌──────────────────────────────────────────────┐  ┌──────────────────────────────────────────┐
-│ Signal Accessor: <span>{count()}</span>      │  │ createProjection / Store Path            │
+│ Signal Accessor: <span>{count()}</span>      │  │ createProjection / Store Leaf            │
 │ Directly updates DOM text node in place      │  │ Directly notifies target property leaf   │
 └──────────────────────────────────────────────┘  └──────────────────────────────────────────┘
 ```
@@ -46,20 +46,43 @@ export type Equal<X, Y> =
 
 ---
 
-## Lesson 13.1: SolidJS Mental Model vs. React & `tsconfig.json` Setup for Solid 2.x
+## Architectural Comparison: SolidJS 1.x vs. SolidJS 2.x
+
+To eliminate confusion between versions, the following matrix clearly isolates the breaking changes and architectural evolution from SolidJS 1.x to SolidJS 2.x:
+
+| Architectural Area | SolidJS 1.x (Legacy) | SolidJS 2.x (Modern `@solidjs/signals`) | Architectural Justification |
+| :--- | :--- | :--- | :--- |
+| **Reactivity Engine** | Synchronous push reactivity (`solid-js`) | Push-pull hybrid via `@solidjs/signals` | Solves over-computation, intermediate glitches, and enables cross-framework signal interop. |
+| **Batching & Scheduling** | Synchronous signal writes; manual `batch(() => ...)` | **Microtask-batched by default**; `flush()` / `flush(fn)` | Guarantees consistent dependency snapshots before effects run; prevents layout thrashing. |
+| **Async Reactivity** | `createResource` returning `[Resource<T>, { mutate, refetch }]` (`T \| undefined`) | **First-class async in graph**: `createAsync` & async `createMemo` return non-nullable `Accessor<T>` | Eliminates the mental tax of async data being an external wrapper; promises flow through ordinary memos. |
+| **Async Inspection** | `resource.loading`, `resource.error` | `isPending(accessor)` & `await resolve(accessor)` | Standalone utility functions inspect any async accessor without coupling to resource wrappers. |
+| **UI Boundaries** | `<Suspense fallback={...}>` & `<ErrorBoundary fallback={...}>` | **`<Loading fallback={...}>`** & **`<Errored fallback={...}>`** | Granular async settlement; supports stale-while-revalidate transitions without layout flickering. |
+| **Side Effects** | Single-function `createEffect(() => ...)` (implicit dependency tracking across entire body) | **Split two-phase `createEffect(compute, effect)`** | Phase 1 synchronously defines tracked dependencies; Phase 2 executes side effects and returns cleanups. |
+| **Component Lifecycles** | `onMount(() => ...)` with separate `onCleanup` | **`onSettled(() => { ...; return () => ...; })`** | Async-aware: executes after initial render and async dependencies settle; directly returns cleanups. |
+| **List Iteration** | `<For>` (by item reference) + separate `<Index>` (by array index) | **Unified `<For>`**: `<For keyed={false}>` replaces `<Index>`; child parameters receive accessors | Unifies list rendering; child parameters consistently receive accessors across keyed and unkeyed modes. |
+| **Directives** | Compiler transform `use:name={val}` + `JSX.Directives` interface augmentation | **Ref Directive Factories**: `ref={directiveFactory(...)}` | Eliminates compiler magic and namespace collisions; uses standard composable ref functions. |
+| **Store Setters** | Path syntax tuples or external `produce(...)` wrapper | **Draft-first store setters**: `setStore(draft => { ... })` | Intuitive mutable draft semantics are native to store setters without extra library imports. |
+| **Derived Stores** | `createMemo(() => state.items.filter(...))` returning new array references | **`createProjection(draft => ...)`** | Maintains derived stores via mutable drafts, preserving identity and updating with $O(1)$ precision. |
+
+---
+
+## Lesson 13.1: Mental Model vs. React, `tsconfig.json`, & Deterministic Microtask Batching
 
 ### 13.1.1 Why Solid Components Run Once (Setup Phase)
 
 In React, state updates re-render the entire component function. In SolidJS, **the component body runs exactly once on mount**.
 
 ```tsx
-import { createSignal, onCleanup } from "solid-js";
+import { createSignal, onSettled } from "solid-js";
 
 export function Counter() {
   console.log("Counter setup executed!"); // Logs EXACTLY ONCE on mount!
   const [count, setCount] = createSignal<number>(0);
-  const timer = setInterval(() => setCount((prev) => prev + 1), 1000);
-  onCleanup(() => clearInterval(timer));
+
+  onSettled(() => {
+    const timer = setInterval(() => setCount((prev) => prev + 1), 1000);
+    return () => clearInterval(timer); // Cleanups returned directly in Solid 2.0!
+  });
 
   // The component function never re-runs when count changes.
   return <button onClick={() => setCount((c) => c + 1)}>Count: {count()}</button>;
@@ -146,26 +169,55 @@ Solid compiles JSX into real DOM creation templates (`_tmpl$()`). TypeScript mus
 - `"jsx": "preserve"`: Leaves JSX intact in `.tsx` files for `@solidjs/vite-plugin` or `babel-preset-solid`.
 - `"jsxImportSource": "solid-js"`: Resolves JSX types from `solid-js/jsx-runtime` instead of `@types/react`.
 
+### 13.1.3 Solid 2.0 Deterministic Microtask Batching & `flush()`
+
+A foundational architectural shift in Solid 2.0 is **deterministic microtask batching**. In Solid 1.x, signal writes updated synchronously. In Solid 2.0, signal writes are queued onto the JavaScript microtask queue by default:
+
+```typescript
+import { createSignal, flush, createMemo } from "solid-js";
+
+const [count, setCount] = createSignal(10);
+const doubled = createMemo(() => count() * 2);
+
+setCount(25);
+// In Solid 2.0, count() is STILL 10 here! The write is queued on the microtask queue:
+console.log(count()); // 10
+
+// When immediate synchronous synchronization is required, call `flush()`:
+flush();
+console.log(count());   // 25
+console.log(doubled()); // 50
+
+// `flush()` also accepts a callback, draining all writes within its block immediately:
+flush(() => {
+  setCount((c) => c + 5);
+});
+console.log(count()); // 30
+```
+
+> [!IMPORTANT]
+> Microtask batching prevents intermediate layout thrashing, cascading recalculations, and inconsistencies when multiple asynchronous sources update interdependent signals.
+
 ---
 
 ## Lesson 13.2: Fine-Grained Reactive Primitives in Solid 2.x (`@solidjs/signals`)
 
 Solid 2.0 unifies reactivity around `@solidjs/signals`. Reactivity consists of two atomic concepts: **Signals** (producers) and **Computations/Effects** (consumers).
 
-### 13.2.1 `createSignal<T>`: Accessors, Setters, and Uninitialized Signals
+### 13.2.1 `createSignal<T>`: Accessors, Setters, and Type Widening
 
 A signal is an observable state container returning a getter/setter tuple:
 
 ```typescript
-import { createSignal, Accessor, Setter } from "solid-js";
+import { createSignal, Accessor, Setter, flush } from "solid-js";
 
 type Signal<T> = [get: Accessor<T>, set: Setter<T>];
 
 const [count, setCount] = createSignal<number>(0);
 //    ^? const count: Accessor<number>
 //           ^? const setCount: Setter<number>
-setCount(10);                 // Direct value update
-setCount((prev) => prev + 1); // Functional updater
+flush(() => setCount(10));                 // Direct value update
+flush(() => setCount((prev) => prev + 1)); // Functional updater
 
 type TestAccessor = Expect<Equal<typeof count, Accessor<number>>>;
 type TestSetter = Expect<Equal<typeof setCount, Setter<number>>>;
@@ -179,14 +231,14 @@ const [tab, setTab] = createSignal<"home" | "profile">("home");
 type TestTab = Expect<Equal<ReturnType<typeof tab>, "home" | "profile">>;
 ```
 
-### 13.2.2 First-Class Async `createMemo<T>` & `createAsync<T>` in Solid 2.0
+### 13.2.2 First-Class Async `createMemo<T>` & `createAsync<T>`
 
-In Solid 1.x, asynchronous data required `createResource`, which returned `[Resource<T>, { mutate, refetch }]` where `resource()` returned `T | undefined`.
+In Solid 1.x, asynchronous data fetching required `createResource`, which returned `[Resource<T>, { mutate, refetch }]` where `resource()` returned `T | undefined`.
 
 **Solid 2.0 introduces first-class async directly into the reactive graph**, superseding `createResource`:
 1. `createMemo` and `createAsync` natively accept promises or async iterables.
 2. The accessor returned by `createAsync<T>` is typed as `Accessor<T>` (`() => T`, **not** `T | undefined`!).
-3. If the promise is pending or rejected, the runtime automatically suspends execution of the tracking scope and propagates the state to the nearest `<Loading>` or `<ErrorBoundary>` boundary.
+3. If the promise is pending or rejected, the runtime automatically suspends execution of the tracking scope and propagates the state out-of-band to the nearest `<Loading>` or `<Errored>` boundary.
 
 ```typescript
 import { createAsync, Accessor } from "solid-js";
@@ -205,13 +257,14 @@ export function ArticleViewer(props: { articleId: Accessor<string> }) {
 
 #### Inspecting and Resolving Async Signals: `isPending` and `resolve`
 
+In Solid 2.0, checking whether an async signal is loading or extracting its underlying Promise is handled via standalone utility functions:
+
 ```typescript
 import { isPending, resolve, Accessor } from "solid-js";
 declare const articleAccessor: Accessor<{ id: string; title: string }>;
 
-// 1. `isPending` returns Accessor<boolean> without triggering Suspense:
-const loading = isPending(articleAccessor);
-type TestPending = Expect<Equal<typeof loading, Accessor<boolean>>>;
+// 1. `isPending` returns boolean without triggering boundary suspension:
+const loading: boolean = isPending(articleAccessor);
 
 // 2. `resolve` extracts a Promise<T> to await programmatically:
 async function printArticle() {
@@ -220,22 +273,24 @@ async function printArticle() {
 }
 ```
 
-### 13.2.3 Split `createEffect` & `createRenderEffect` in Solid 2.0
+### 13.2.3 Split `createEffect` & `createRenderEffect`
 
-Solid 2.0 separates pure reactive compute/tracking from side-effect execution:
+In Solid 1.x, `createEffect` used a single callback that implicitly tracked all signals read anywhere inside it.
+
+**Solid 2.0 splits `createEffect` into two distinct phases**:
 - **Phase 1 (`compute`)**: A pure tracking callback that synchronously reads signals and returns a value of type `T`.
-- **Phase 2 (`effect`)**: A side-effect callback that runs asynchronously with `(value: T, prev?: T)`. Signals read here are **not** tracked.
+- **Phase 2 (`effect`)**: A side-effect callback that runs asynchronously with `(value: T, prev?: T)`. Signals read here are **not** tracked. It can return an optional cleanup function `() => void`.
 
 ```typescript
-import { createSignal, createEffect } from "solid-js";
+import { createSignal, createEffect, flush } from "solid-js";
 
 const [volume, setVolume] = createSignal<number>(75);
 const [muted, setMuted] = createSignal<boolean>(false);
 
 createEffect(
-  // Compute callback: Only signals read here are tracked
+  // Phase 1 (compute): Only signals read here are tracked!
   () => ({ currentVolume: volume(), isMuted: muted() }),
-  // Effect handler: TypeScript infers `data: T` from compute's return type!
+  // Phase 2 (effect): TypeScript infers `data: T` from compute's return type!
   (data, prevData) => {
     // ^? (parameter) data: { currentVolume: number; isMuted: boolean; }
     // ^? (parameter) prevData: { currentVolume: number; isMuted: boolean; } | undefined
@@ -249,7 +304,7 @@ createEffect(
 
 ---
 
-## Lesson 13.3: Deep Reactivity with `createStore`, `produce`, `reconcile`, and Solid 2.0 `createProjection`
+## Lesson 13.3: Deep Reactivity with `createStore`, Draft-First Mutations, and Solid 2.0 `createProjection`
 
 While `createSignal` manages primitive values or atomic replacements, **Stores** provide fine-grained, nested reactivity for complex object trees and arrays without replacing parent references.
 
@@ -272,27 +327,23 @@ type TestStore = Expect<Equal<typeof state, Store<AppState>>>;
 
 When an expression reads `state.user.preferences.theme`, Solid subscribes that expression exclusively to the `theme` property leaf. Mutating `state.todos` does not notify theme subscribers.
 
-### 13.3.2 Path-Syntax Type Safety, `produce`, and `reconcile`
+### 13.3.2 Draft-First Store Setters & Path Mutations
 
-`SetStoreFunction` supports path tuples, Immer-like mutable drafts with `produce`, and structural diffing with `reconcile`:
+In Solid 1.x, mutating nested objects required importing a separate `produce` utility or using path syntax tuples.
+
+In Solid 2.0, store setters support **draft-first semantics natively**:
 
 ```typescript
-import { produce, reconcile } from "solid-js/store";
+import { createStore } from "solid-js/store";
 
-// 1. Path syntax: Target nested property directly with full type-checking
-setState("user", "preferences", "theme", "dark");
-// 2. Predicate filter path: Toggle completed for matching items
-setState("todos", (todo) => !todo.completed, "completed", true);
-// 3. `produce` for mutable drafts:
-setState("todos", produce((draft) => {
-  draft.push({ id: "2", title: "Ship course", completed: false });
-  if (draft[0]) draft[0].title = "Draft Solid 2.x Module";
-}));
-// 4. `reconcile` for deep diffing external payloads:
-async function syncTodos() {
-  const fresh: TodoItem[] = await (await fetch("/api/todos")).json();
-  setState("todos", reconcile(fresh, { key: "id" }));
-}
+// 1. Native draft-first setter: mutate directly on the draft!
+setState((draft) => {
+  draft.todos.push({ id: "2", title: "Ship curriculum", completed: false });
+  draft.user.preferences.theme = "dark";
+});
+
+// 2. Path syntax: Target nested properties directly with strict compile-time checking
+setState("user", "preferences", "theme", "light");
 ```
 
 ### 13.3.3 Solid 2.0 `createProjection`: Derived Store Projections
@@ -323,7 +374,7 @@ type TestProjection = Expect<Equal<typeof completedTasks, Store<Task[]>>>;
 
 ---
 
-## Lesson 13.4: Typing Solid Components, Props (`mergeProps`, `splitProps`), Control Flow, and Context
+## Lesson 13.4: Typing Solid Components, Props (`mergeProps`, `splitProps`), Control Flow, and Boundaries
 
 ### 13.4.1 Component Types: `Component`, `ParentComponent`, `VoidComponent`, `FlowComponent`
 
@@ -389,10 +440,18 @@ export function TextInput(props: InputProps) {
 }
 ```
 
-### 13.4.3 Type-Narrowing in Control Flow (`<Show>`, `<For>`, `<Index>`, `<Switch>`, `<Loading>`)
+### 13.4.3 Unified Control Flow: `<Show>`, `<For>` (Accessor Child & `keyed={false}`), `<Switch>`
+
+In Solid 1.x, `<For>` and `<Index>` were separate primitives with differing callback conventions.
+
+In **Solid 2.0**:
+- `<Index>` is **removed**.
+- List rendering is unified under **`<For>`**.
+- In keyed mode (default), `<For>` passes an **`Accessor<T>`** for items (`(item: Accessor<T>, index: Accessor<number>) => ...`).
+- In unkeyed mode (replacing `<Index>`), pass **`keyed={false}`**, where each child receives `(item: Accessor<T>, index: number)`.
 
 ```tsx
-import { Show, For, Index, Switch, Match, createSignal, Accessor, JSX } from "solid-js";
+import { Show, For, Switch, Match, createSignal, Accessor, JSX } from "solid-js";
 interface UserProfile { id: string; username: string; role: "admin" | "member"; }
 
 export function ControlFlowDemo() {
@@ -413,20 +472,46 @@ export function ControlFlowDemo() {
           </div>
         )}
       </Show>
-      {/* 3. <For>: Keyed by ITEM reference (item is T, index is Accessor<number>) */}
-      <For each={tags()}>{(tag, index) => <div>{index()}: {tag}</div>}</For>
-      {/* 4. <Index>: Keyed by ARRAY INDEX (index is number, item is Accessor<T>) */}
-      <Index each={tags()}>{(tagAcc, index) => <div>{index}: {tagAcc()}</div>}</Index>
+
+      {/* 3. <For> Keyed (Default): item is Accessor<T>, index is Accessor<number> */}
+      <For each={tags()}>
+        {(tag: Accessor<string>, index: Accessor<number>) => (
+          <div>{index()}: {tag()}</div>
+        )}
+      </For>
+
+      {/* 4. <For keyed={false}> (Replaces removed <Index>): index is number, item is Accessor<T> */}
+      <For each={tags()} keyed={false}>
+        {(tag: Accessor<string>, index: number) => (
+          <div>{index}: {tag()}</div>
+        )}
+      </For>
     </div>
   );
 }
 ```
 
-> **`<For>` vs `<Index>`**:
-> - `<For>` keys by item reference. Use when items move, reorder, or have unique IDs (`item: T`, `index: Accessor<number>`).
-> - `<Index>` keys by position. Use for primitive arrays where array size is stable but values change (`item: Accessor<T>`, `index: number`).
+### 13.4.4 Async Boundaries in Solid 2.0: `<Loading>` and `<Errored>`
 
-### 13.4.4 Strongly Typed Context: `createSafeSolidContext<T>`
+Solid 2.0 rethinks boundaries to match its native async graph:
+- **`<Loading fallback={<Spinner />}>`**: Suspends when any child signal read is pending. Supports stale-while-revalidate transitions so the existing UI remains visible during background re-fetching.
+- **`<Errored fallback={(err, reset) => <ErrorView error={err} onRetry={reset} />}>`**: Catches unhandled promise rejections and reactive compute exceptions.
+
+```tsx
+import { Loading, Errored } from "solid-js";
+
+export function AsyncLayout(props: { children: any }) {
+  return (
+    <Errored fallback={(err, reset) => <div>Failed: {String(err)} <button onClick={reset}>Retry</button></div>}>
+      <Loading fallback={<div>Loading data...</div>}>
+        {props.children}
+      </Loading>
+    </Errored>
+  );
+}
+```
+
+### 13.4.5 Strongly Typed Context: `createSafeSolidContext<T>`
 
 Solid's `createContext<T>()` returns `Context<T | undefined>` when initialized without defaults. The `createSafeSolidContext` factory guarantees non-undefined returns:
 
@@ -456,48 +541,77 @@ export function Nav() {
 
 ---
 
-## Lesson 13.5: DOM Refs, Custom Directives, Event Handlers, and Polymorphic Components
+## Lesson 13.5: DOM Refs, Ref Directive Factories, Event Delegation, and Polymorphic Components
 
 ### 13.5.1 DOM Refs: Variable Refs vs Callback Refs
 
 In Solid, refs assign the instantiated DOM node directly to a variable rather than using a `{ current: T }` container:
 
 ```tsx
-import { onMount } from "solid-js";
+import { onSettled } from "solid-js";
 
 export function AutoFocusInput() {
   let inputRef!: HTMLInputElement; // Definite assignment assertion
-  onMount(() => { inputRef.focus(); inputRef.select(); });
-  return <input ref={inputRef} placeholder="Focused on mount" />;
+
+  onSettled(() => {
+    inputRef.focus();
+    inputRef.select();
+  });
+
+  return <input ref={inputRef} placeholder="Focused when settled" />;
 }
 
 export const CallbackRef = () => <input ref={(el: HTMLInputElement) => el.setAttribute("data-ready", "true")} />;
 ```
 
-### 13.5.2 Custom Directives (`use:*`) & Global JSX Augmentation
+### 13.5.2 Ref Directive Factories (Replacing Legacy `use:*`)
 
-Directives attach reusable behaviors to DOM nodes (`use:directiveName={value}`). Augment `JSX.Directives` to make directives type-safe:
+In Solid 1.x, custom directives used the compiler-transformed `use:directiveName={value}` syntax and required augmenting `namespace JSX { interface Directives { ... } }`.
 
-```typescript
-import { Accessor, onCleanup } from "solid-js";
+**Solid 2.0 removes the `use:*` compiler syntax in favor of composable Ref Directive Factories**:
+- A ref directive is simply a standard function returning an element callback.
+- The callback can return an optional cleanup function that executes when the element is removed.
+- Ref directive factories avoid global namespace collisions and provide natural TypeScript parameter inference.
 
-export function clickOutside(el: HTMLElement, accessor: Accessor<() => void>) {
-  const onClick = (e: MouseEvent) => { if (!el.contains(e.target as Node)) accessor()(); };
-  document.addEventListener("click", onClick);
-  onCleanup(() => document.removeEventListener("click", onClick));
-}
+```tsx
+export type RefDirective<E extends Element = HTMLElement> = (el: E) => void | (() => void);
 
-declare module "solid-js" {
-  namespace JSX { interface Directives { clickOutside: () => void; } }
+export function clickOutside(onClose: () => void): RefDirective<HTMLElement> {
+  return (el) => {
+    const onClick = (e: MouseEvent) => {
+      if (!el.contains(e.target as Node)) onClose();
+    };
+    document.addEventListener("click", onClick);
+    return () => document.removeEventListener("click", onClick); // Cleanup returned directly!
+  };
 }
 
 export function Dropdown(props: { onClose: () => void }) {
-  false && clickOutside;
-  return <div use:clickOutside={props.onClose}>Dropdown Content</div>;
+  return <div ref={clickOutside(props.onClose)}>Dropdown Content</div>;
 }
 ```
 
-### 13.5.3 Event Handlers: `on:*` vs `onClick` & Tuple Delegation
+### 13.5.3 Lifecycle Management: `onSettled` Replacing `onMount`
+
+In Solid 2.0, **`onMount` is deprecated and replaced by `onSettled`**:
+- `onSettled` executes after initial rendering and all pending asynchronous dependencies have settled.
+- `onSettled` natively accepts a returned cleanup function, eliminating the need for nested `onCleanup` calls.
+
+```typescript
+import { onSettled } from "solid-js";
+
+export function WindowWatcher() {
+  onSettled(() => {
+    const onResize = () => console.log("Width:", window.innerWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize); // Cleaned up on unmount!
+  });
+
+  return <div>Watching window resize...</div>;
+}
+```
+
+### 13.5.4 Event Handlers: Delegated vs Native & Tuple Event Delegation
 
 Solid provides two event handling models:
 1. **Delegated Events (`onClick`, `onInput`)**: Solid attaches a single delegated listener at the `document` root.
@@ -523,8 +637,8 @@ export function ItemList(props: { items: Item[]; onRemove: (id: number) => void 
       <For each={props.items}>
         {(item) => (
           <li>
-            <span>{item.title}</span>
-            <button onClick={[handleDelete, item.id]}>Delete</button>
+            <span>{item().title}</span>
+            <button onClick={[handleDelete, item().id]}>Delete</button>
           </li>
         )}
       </For>
@@ -533,7 +647,7 @@ export function ItemList(props: { items: Item[]; onRemove: (id: number) => void 
 }
 ```
 
-### 13.5.4 Polymorphic Components in Solid (`<Dynamic>`)
+### 13.5.5 Strongly Typed Polymorphic Components (`<Dynamic>`)
 
 To create polymorphic UI components (e.g. `<Button as="a" href="..." />`), Solid provides `<Dynamic>` from `solid-js/web`:
 
@@ -562,33 +676,37 @@ export function ButtonUsage() {
 
 ## Anti-Patterns vs. Best Practices
 
-| Category | ❌ Anti-Pattern | ✅ Solid 2.x Best Practice | Reason / Impact |
+| Category | ❌ Solid 1.x Legacy / React Anti-Pattern | ✅ Solid 2.x Best Practice | Reason / Impact |
 | :--- | :--- | :--- | :--- |
 | **Props** | `function Box({ title, count }: Props)` | `function Box(props: Props)` | Destructuring severs the reactive proxy. Access via `props.x`, `splitProps`, or `mergeProps`. |
 | **Default Props** | `{ size = "md" } = props;` | `const p = mergeProps({ size: "md" }, props);` | Object destructuring reads properties once at setup. `mergeProps` preserves dynamic reactivity. |
 | **Async Data** | `const [res] = createResource(fetcher)` | `const data = createAsync(() => fetcher())` | Solid 2.0 replaces `createResource` with first-class async signals returning non-nullable `Accessor<T>`. |
-| **JSX Narrowing** | `{user() ? <span>{user().name}</span> : null}` | `<Show when={user()}>{(u) => <span>{u().name}</span>}</Show>` | TS cannot narrow across repeated `user()` calls. `<Show>` passes a narrowed `Accessor<NonNullable<T>>`. |
-| **List Iteration** | `items().map((i) => <Item item={i} />)` | `<For each={items()}>{(i) => <Item item={i} />}</For>` | Array `.map()` in JSX destroys and re-creates DOM nodes on every update. `<For>` diffs by reference. |
-| **Derived State** | `createEffect(() => setDouble(count() * 2))` | `const double = createMemo(() => count() * 2)` | Syncing state via effects causes extra rendering cycles. Memos compute lazily and cache. |
-| **List Handlers** | `onClick={() => deleteItem(item.id)}` | `onClick={[deleteItem, item.id]}` | Inline lambdas allocate new closure instances per row. Tuple delegation uses zero allocations. |
-| **Derived Stores** | `createMemo(() => state.items.filter(...))` | `createProjection<Item[]>(draft => ...)` | Returning new arrays from `createMemo` invalidates references. `createProjection` emits fine-grained updates. |
+| **Pending States** | `res.loading ? <Spinner /> : ...` | `<Loading fallback={<Spinner />}>` / `isPending(data)` | Boundaries handle loading out-of-band; `isPending` inspects transitions without suspense triggers. |
+| **Error Handling** | `<ErrorBoundary fallback={...}>` | `<Errored fallback={(err, reset) => ...}>` | Solid 2.0 `<Errored>` boundary integrates natively with promise rejections and reactive errors. |
+| **Effects** | `createEffect(() => console.log(x()))` | `createEffect(() => x(), (val) => console.log(val))` | Two-phase split prevents unintentional dependency tracking and cleans up naturally. |
+| **Lifecycles** | `onMount(() => { ...; onCleanup(...) })` | `onSettled(() => { ...; return () => ...; })` | `onSettled` waits for async resolution and directly returns its cleanup function. |
+| **List Iteration** | `<Index each={items()}>...` | `<For each={items()} keyed={false}>...` | `<Index>` is removed in 2.0; unified `<For>` handles unkeyed index iteration via `keyed={false}`. |
+| **Directives** | `<div use:clickOutside={onClose} />` | `<div ref={clickOutside(onClose)} />` | `use:*` compiler syntax is removed; ref directive factories provide clean composability without JSX augmentation. |
+| **Store Setters** | `setState(produce(draft => { ... }))` | `setState(draft => { ... })` | Store setters feature native draft-first semantics; no external `produce` wrapper needed. |
+| **Derived Stores** | `createMemo(() => state.items.filter(...))` | `createProjection(draft => ...)` | Returning new array references breaks subscriber identity. `createProjection` emits fine-grained updates. |
+| **Event Handlers** | `onClick={() => deleteItem(item().id)}` | `onClick={[deleteItem, item().id]}` | Inline lambdas allocate new closures per row. Tuple delegation uses zero allocations. |
 
 ---
 
 ## Hands-On Exercises
 
-### Exercise 13.1: Reactive State Machine & Async Search Filter with `createSignal` and `createAsync`
+### Exercise 13.1: Reactive State Machine & Async Search Filter with `createSignal`, `createAsync`, and `isPending`
 
 #### Problem Statement
 Build a type-safe autocomplete search system in Solid 2.x:
 1. Define a discriminated union state machine representing search states: `idle`, `loading`, `success`, `error`.
 2. Implement a `useDebouncedSearch` primitive accepting a query `Accessor<string>` and an async search fetcher.
-3. Use Solid 2.0's first-class async primitives (`createAsync`) and ensure the accessor return type is statically verified.
+3. Use Solid 2.0's first-class async primitive (`createAsync`), check pending state via `isPending`, and ensure accessor return types are statically verified.
 
 #### Complete Solution & Explanation
 
 ```typescript
-import { createSignal, createMemo, createAsync, Accessor, onCleanup } from "solid-js";
+import { createSignal, createEffect, createMemo, createAsync, Accessor, isPending } from "solid-js";
 
 export interface SearchResult { id: string; label: string; }
 export type SearchState =
@@ -601,13 +719,15 @@ export function createDebouncedSignal<T>(source: Accessor<T>, delayMs: number): 
   const [debounced, setDebounced] = createSignal<T>(source());
   let timer: NodeJS.Timeout | number | undefined;
 
-  createMemo(() => {
-    const value = source();
-    clearTimeout(timer);
-    timer = setTimeout(() => setDebounced(() => value), delayMs);
-  });
+  createEffect(
+    () => source(),
+    (value) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => setDebounced(() => value), delayMs);
+      return () => clearTimeout(timer); // Cleanups returned directly in Solid 2.0 two-phase effect!
+    }
+  );
 
-  onCleanup(() => clearTimeout(timer));
   return debounced;
 }
 
@@ -626,6 +746,7 @@ export function useDebouncedSearch(
   const searchState = createMemo<SearchState>(() => {
     const q = debouncedQuery().trim();
     if (q.length === 0) return { status: "idle" };
+    if (isPending(results)) return { status: "loading" };
     try {
       const items = results();
       return { status: "success", results: items };
@@ -648,18 +769,18 @@ type TestStateType = Expect<Equal<typeof searchState, Accessor<SearchState>>>;
 
 ---
 
-### Exercise 13.2: Deep Store Manipulation with `createStore`, `produce`, and `createProjection`
+### Exercise 13.2: Deep Store Manipulation with Draft-First Setters & `createProjection`
 
 #### Problem Statement
-Design an inventory tracking store with fine-grained projections:
+Design an inventory tracking store with fine-grained projections in Solid 2.0:
 1. Define a domain store containing `products` (dictionary indexed by string ID) and `cart` (array of cart items).
-2. Write typed mutation functions for adding an item to the cart using path syntax, and modifying quantities using `produce`.
-3. Create a derived store projection using Solid 2.0 `createProjection` that calculates cart totals and warns when inventory is below threshold.
+2. Write typed mutation functions for adding an item to the cart using draft-first setters without external produce wrappers.
+3. Create a derived store projection using Solid 2.0 `createProjection` that calculates cart totals and identifies out-of-stock items.
 
 #### Complete Solution & Explanation
 
 ```typescript
-import { createStore, produce, createProjection, Store } from "solid-js/store";
+import { createStore, createProjection, Store } from "solid-js/store";
 
 export interface Product { id: string; name: string; price: number; stock: number; }
 export interface CartItem { productId: string; quantity: number; }
@@ -673,18 +794,20 @@ export function createInventoryManager(initialProducts: Product[]) {
   const [state, setState] = createStore<InventoryState>({ products: productsMap, cart: [] });
 
   const addToCart = (productId: string, quantity: number = 1) => {
-    const existingIndex = state.cart.findIndex((item) => item.productId === productId);
-    if (existingIndex >= 0) {
-      setState("cart", existingIndex, "quantity", (q) => q + quantity);
-    } else {
-      setState("cart", (prev) => [...prev, { productId, quantity }]);
-    }
+    setState((draft) => {
+      const existing = draft.cart.find((item) => item.productId === productId);
+      if (existing) {
+        existing.quantity += quantity;
+      } else {
+        draft.cart.push({ productId, quantity });
+      }
+    });
   };
 
   const decrementStock = (productId: string, count: number) => {
-    setState("products", productId, produce((draft) => {
+    setState("products", productId, (draft) => {
       if (draft && draft.stock >= count) draft.stock -= count;
-    }));
+    });
   };
 
   const summary = createProjection<CartSummary>((draft) => {
@@ -717,13 +840,14 @@ type TestSummaryType = Expect<Equal<typeof manager.summary, Store<CartSummary>>>
 
 ---
 
-### Exercise 13.3: Strongly Typed Polymorphic UI Primitive with `splitProps` and `<Dynamic>`
+### Exercise 13.3: Strongly Typed Polymorphic UI Primitive with `splitProps`, `<Dynamic>`, and Ref Directive Factory
 
 #### Problem Statement
-Build an accessible polymorphic `<Box>` component:
+Build an accessible polymorphic `<Box>` component with Solid 2.0 ref directive integration:
 1. Accept an optional `as` prop accepting any valid Solid HTML tag or component (e.g., `"div"`, `"button"`, `"a"`).
 2. Extract custom styling props (`padding`, `elevation`, `bordered`) using `splitProps`.
 3. Support element-specific attributes (e.g., `href` only allowed when `as="a"`) without TypeScript errors.
+4. Attach an auto-focus ref directive factory using Solid 2.0 `ref={...}` semantics.
 
 #### Complete Solution & Explanation
 
@@ -738,6 +862,12 @@ export type BoxProps<T extends ValidComponent = "div"> = BoxCustomProps & {
   as?: T;
   children?: JSX.Element;
 } & Omit<ComponentProps<T>, keyof BoxCustomProps | "as" | "children">;
+
+export function autoFocusOnMount(): (el: HTMLElement) => void {
+  return (el) => {
+    el.focus();
+  };
+}
 
 export function Box<T extends ValidComponent = "div">(props: BoxProps<T>): JSX.Element {
   const [local, nativeAttrs] = splitProps(props as BoxProps<ValidComponent>, [
@@ -765,7 +895,7 @@ export function BoxTestCases() {
     <>
       <Box padding="md" elevation={2} role="region">Default Box</Box>
       <Box as="a" href="https://solidjs.com" target="_blank" bordered>Link Box</Box>
-      <Box as="button" type="submit" disabled padding="sm">Submit Box</Box>
+      <Box as="button" type="submit" disabled padding="sm" ref={autoFocusOnMount()}>Submit Box</Box>
     </>
   );
 }
@@ -773,13 +903,14 @@ export function BoxTestCases() {
 
 ---
 
-### Exercise 13.4: Safe Solid Context Provider with Signal/Store Fallback and Accessor Narrowing
+### Exercise 13.4: Safe Solid Context Provider with Signal/Store Fallback, `<Loading>`, and `onSettled`
 
 #### Problem Statement
-Construct an enterprise Theme & Feature Flag context architecture:
+Construct an enterprise Theme & Feature Flag context architecture in Solid 2.0:
 1. Support both signal accessors (`theme: Accessor<"light" | "dark">`) and a store of feature flags (`flags: Store<Record<string, boolean>>`).
 2. Implement a `createSafeSolidContext` helper preventing runtime null assertions.
 3. Build a `<FeatureGate>` flow component that narrows children rendering based on active feature flags.
+4. Use `onSettled` to sync active theme preferences to `localStorage`.
 
 #### Complete Solution & Explanation
 
@@ -791,7 +922,8 @@ import {
   ParentComponent,
   Accessor,
   JSX,
-  Show
+  Show,
+  onSettled
 } from "solid-js";
 import { createStore, Store } from "solid-js/store";
 
@@ -830,6 +962,12 @@ export const AppSettingsProvider: ParentComponent = (props) => {
   const [flags, setFlagsStore] = createStore<Record<string, boolean>>({
     betaCheckout: false,
     newDashboard: true,
+  });
+
+  onSettled(() => {
+    const saved = localStorage.getItem("app_theme") as ThemeMode | null;
+    if (saved) setThemeSignal(saved);
+    return () => localStorage.setItem("app_theme", theme());
   });
 
   const value: AppConfigContextValue = {
@@ -883,11 +1021,14 @@ export function ComponentUnderContext() {
 ## Module 13 Summary & Cheat Sheet
 
 1. **Setup Phase Execution**: Solid components run **once**. Local variables in component functions do not re-run on state changes.
-2. **Never Destructure Props**: Props are reactive proxy objects. Destructuring destroys reactivity. Access via `props.title`, `mergeProps` (for default values), and `splitProps` (for prop extraction).
-3. **Control-Flow Narrowing**: Use `<Show when={val()}>{(v) => ...}</Show>` to narrow types inside JSX. `v` is typed as `Accessor<NonNullable<T>>`.
-4. **Solid 2.0 First-Class Async**: `createAsync` directly returns `Accessor<T>` (not `T | undefined`). Pending computations propagate to `<Loading>` and `<Suspense>` boundaries automatically.
-5. **Two-Phase Effects**: Solid 2.0 `createEffect(compute, effect)` separates pure synchronous tracking from side-effect execution, providing automatic TypeScript parameter inference.
-6. **Stores & Path Syntax**: `createStore` manages deep nested proxies. Mutate using path syntax (`setState("items", 0, "done", true)`), `produce` (for mutable drafts), or `reconcile` (for diffing external JSON).
-7. **Derived Projections**: `createProjection` creates derived stores via mutable draft callbacks without invalidating array or object references.
-8. **Directives & Events**: Augment `declare module "solid-js" { namespace JSX { interface Directives { ... } } }` for `use:*`. Prefer tuple event delegation `onClick={[handler, data]}` over inline arrow functions to eliminate closure allocations.
-9. **Polymorphic `<Dynamic>`**: Combine `ValidComponent`, `ComponentProps<T>`, and `splitProps` to build strongly typed primitives with the `as` prop.
+2. **Deterministic Microtask Batching**: Signal writes are queued on the microtask queue by default. Immediate reads remain stable until `flush()` is called or the microtask drains.
+3. **Never Destructure Props**: Props are reactive proxy objects. Destructuring destroys reactivity. Access via `props.title`, `mergeProps` (for default values), and `splitProps` (for prop extraction).
+4. **Control-Flow Narrowing**: Use `<Show when={val()}>{(v) => ...}</Show>` to narrow types inside JSX. `v` is typed as `Accessor<NonNullable<T>>`.
+5. **Solid 2.0 First-Class Async**: `createAsync` directly returns `Accessor<T>` (not `T | undefined`). Pending computations propagate to `<Loading>` and `<Errored>` boundaries automatically. Inspect via `isPending(accessor)` and `await resolve(accessor)`.
+6. **Two-Phase Effects**: Solid 2.0 `createEffect(compute, effect)` separates pure synchronous tracking from side-effect execution, providing automatic TypeScript parameter inference and direct cleanup return.
+7. **Stores & Draft Setters**: `createStore` manages deep nested proxies. Setters support native draft mutations (`setState(draft => { draft.done = true; })`) without Immer or `produce` wrapper boilerplate.
+8. **Derived Projections**: `createProjection` creates derived stores via mutable draft callbacks without invalidating array or object references, preserving $O(1)$ fine-grained notification precision.
+9. **Unified List Iteration**: `<For>` is unified across keyed (default) and unkeyed (`keyed={false}`, replacing removed `<Index>`). Child render parameters consistently receive accessors.
+10. **Ref Directive Factories**: Legacy `use:*` compiler directives are removed in favor of composable ref factories `ref={directiveFactory(...)}` returning optional cleanup functions.
+11. **Async-Aware Lifecycle**: `onSettled` replaces `onMount`, executing after async dependencies resolve and supporting direct cleanup returns.
+12. **Polymorphic `<Dynamic>`**: Combine `ValidComponent`, `ComponentProps<T>`, and `splitProps` to build strongly typed primitives with the `as` prop.

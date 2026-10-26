@@ -119,16 +119,21 @@ export type Equal<X, Y> =
 | Task in SolidJS 2.x | SolidJS 2.x Type / Pattern |
 | :--- | :--- |
 | **TSConfig for Solid** | `"jsx": "preserve"`, `"jsxImportSource": "solid-js"` |
-| **Reactive Signal** | `const [count, setCount] = createSignal<number>(0)` → `[Accessor<number>, Setter<number>]` |
-| **First-Class Async Memo / Query (Solid 2.0)** | `const user = createAsync(async () => fetchUser(id()))` or `createMemo(async () => ...)` → Returns `Accessor<User>` (**not** `User \| undefined`!). Pending/errors bubble to `<Loading>` and `<ErrorBoundary>`. |
+| **Reactive Signal & Batching** | `const [count, setCount] = createSignal<number>(0)` → `[Accessor<number>, Setter<number>]` (writes are microtask-batched by default!) |
+| **Synchronous Flush** | `flush()` or `flush(() => setCount(c => c + 1))` (immediately drains pending microtask queue) |
+| **First-Class Async Signal** | `const user = createAsync(async () => fetchUser(id()))` or `createMemo(async () => ...)` → Returns `Accessor<User>` (**not** `User \| undefined`!). Pending/errors bubble to `<Loading>` and `<Errored>`. |
 | **Check Pending / Imperative Resolve** | `isPending(user)` (`boolean`) / `await resolve(user)` (`Promise<User>`) |
-| **Split Two-Phase Effect (Solid 2.0)** | `createEffect(() => count(), (val, prev) => { console.log(val); return () => cleanup(); })` — Phase 1 tracks synchronously and infers `val: T` for Phase 2! |
-| **Deep Store & Mutation** | `const [state, setState] = createStore<State>(initial)` + `setState("users", 0, "name", "Ada")` or `setState(produce((draft) => { draft.users[0].name = "Ada"; }))` |
-| **Derived Store Projection (Solid 2.0)** | `const selection = createProjection<Record<string, boolean>>((draft) => { draft[selectedId()] = true; }, {})` |
+| **Split Two-Phase Effect** | `createEffect(() => count(), (val, prev) => { console.log(val); return () => cleanup(); })` — Phase 1 tracks synchronously and infers `val: T` for Phase 2; cleanups returned directly! |
+| **Component Lifecycle** | `onSettled(() => { ...; return () => cleanup(); })` (replaces `onMount`; waits for async resolution and returns cleanup) |
+| **Deep Store & Draft Setters** | `const [state, setState] = createStore<State>(initial)` + `setState((draft) => { draft.users[0].name = "Ada"; })` (draft-first by default) |
+| **Derived Store Projection** | `const selection = createProjection<Record<string, boolean>>((draft) => { draft[selectedId()] = true; }, {})` ($O(1)$ property-level notification precision) |
 | **Default Props (Preserving Reactivity)** | `const merged = mergeProps({ size: "md" as const }, props)` (never destructure `props` at setup top-level!) |
 | **Split Props for Forwarding** | `const [local, others] = splitProps(props, ["variant", "size"])` → `[Pick<P, "variant" \| "size">, Omit<P, "variant" \| "size">]` |
 | **Narrowing in JSX (`<Show>`)** | `<Show when={user()}>{(u: Accessor<User>) => <Profile user={u()} />}</Show>` |
-| **Zero-Allocation Event Tuple** | `<button onClick={[handleDelete, item.id]}>Delete</button>` (infers `handleDelete(id: string, e: MouseEvent)`) |
+| **Unified List Iteration (`<For>`)** | Keyed: `<For each={items()}>{(item: Accessor<T>, index: Accessor<number>) => ...}</For>`<br>Unkeyed: `<For each={items()} keyed={false}>{(item: Accessor<T>, index: number) => ...}</For>` (replaces removed `<Index>`) |
+| **Ref Directive Factory** | `<div ref={clickOutside(onClose)} />` with `type RefDirective<E> = (el: E) => void \| (() => void)` (replaces removed `use:*`) |
+| **Async Boundaries** | `<Errored fallback={(err, reset) => ...}><Loading fallback={<Spinner />}>{children}</Loading></Errored>` |
+| **Zero-Allocation Event Tuple** | `<button onClick={[handleDelete, item().id]}>Delete</button>` (infers `handleDelete(id: string, e: MouseEvent)`) |
 | **Polymorphic Component** | `<Dynamic component={local.as ?? "button"} {...others} />` typed with `ValidComponent` |
 
 ---
