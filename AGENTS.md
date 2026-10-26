@@ -24,7 +24,7 @@ Every self-contained learning track MUST follow this uniform directory structure
 Follow these rules when creating or updating any `GLOSSARY.md` file:
 1. **Established Terminology Only**: Use standard terms established in official documentation, academic computer science literature, and authoritative reference publications. Never invent neologisms or colloquial translations.
 2. **Universal Consistency**: When a concept spans multiple areas (e.g., *Immutability*, *Idempotency*, *Pure Function*, *Covariance*), maintain consistent definitions and translations across all module glossaries and the root glossary.
-3. **Bilingual Mapping**: Present terms with their precise English canonical name, Czech equivalent (or established Czech industry usage), concise definition, and primary source / reference.
+3. **Bilingual Mapping with English Prose**: Write all explanations, definitions, headings, and notes entirely in English. Present terms with their precise English canonical name, established Czech equivalent, concise English definition, and primary source / reference.
 4. **Two-Level Scope**:
    - Repository Root `GLOSSARY.md`: General computer science, systems engineering, and algorithmic concepts.
    - Module `GLOSSARY.md`: Language-specific and technology-specific terms (e.g., TypeScript type-system operators and compiler mechanics).
