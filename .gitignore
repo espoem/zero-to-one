@@ -12,6 +12,9 @@ __pycache__/
 *.pyc
 .venv/
 env/
+styled-system/
+.panda/
+*.buildinfo.json
 
 # Logs and Runtime
 *.log

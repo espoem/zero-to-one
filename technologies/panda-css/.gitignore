@@ -1,0 +1,10 @@
+# Dependencies
+node_modules/
+
+# Panda CSS Generated Design Engine
+styled-system/
+
+# Panda CSS Cache & Performance Profiles
+.panda/
+*.buildinfo.json
+*.cpuprofile
