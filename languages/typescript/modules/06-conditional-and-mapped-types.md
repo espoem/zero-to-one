@@ -84,7 +84,9 @@ When a conditional type acts on a **naked type parameter** (a generic parameter 
 
 When you pass a union to a distributive conditional type, TypeScript automatically distributes the evaluation across every individual member of the union, exactly like a `map` operation over an array:
 
-$$(\text{A} \mid \text{B} \mid \text{C}) \text{ extends } \text{U} \ ?\ \text{X} : \text{Y} \iff (\text{A extends U} \ ?\ \text{X} : \text{Y}) \mid (\text{B extends U} \ ?\ \text{X} : \text{Y}) \mid (\text{C extends U} \ ?\ \text{X} : \text{Y})$$
+```typescript
+(A | B | C) extends U ? X : Y  ⟺  (A extends U ? X : Y) | (B extends U ? X : Y) | (C extends U ? X : Y)
+```
 
 Consider how TypeScript's built-in `Exclude<T, U>` is implemented:
 
@@ -93,10 +95,10 @@ type MyExclude<T, U> = T extends U ? never : T;
 ```
 
 Let's trace `MyExclude<"a" | "b" | "c", "a">`:
-1. `"a" extends "a" ? never : "a"` $\implies$ `never`
-2. `"b" extends "a" ? never : "b"` $\implies$ `"b"`
-3. `"c" extends "a" ? never : "c"` $\implies$ `"c"`
-4. Union of results: `never | "b" | "c"` $\implies$ `"b" | "c"` (because `never` represents the empty set and disappears from unions).
+1. `"a" extends "a" ? never : "a"` ⟹ `never`
+2. `"b" extends "a" ? never : "b"` ⟹ `"b"`
+3. `"c" extends "a" ? never : "c"` ⟹ `"c"`
+4. Union of results: `never | "b" | "c"` ⟹ `"b" | "c"` (because `never` represents the empty set and disappears from unions).
 
 ### Why `T extends any` Distributes
 
@@ -710,7 +712,7 @@ type TestReversed = Expect<
 
 #### Scenario
 Create a type helper `ParseQueryString<TQuery>` that parses a URL query string (without the leading `?`) into an object type:
-`"tab=settings&mode=dark&ref=dashboard"` $\implies$ `{ tab: "settings"; mode: "dark"; ref: "dashboard" }`.
+`"tab=settings&mode=dark&ref=dashboard"` ⟹ `{ tab: "settings"; mode: "dark"; ref: "dashboard" }`.
 
 ```typescript
 import type { Equal, Expect } from "../examples/utils/type-helpers";

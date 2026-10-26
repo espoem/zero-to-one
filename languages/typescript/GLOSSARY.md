@@ -59,10 +59,10 @@ This glossary defines standard technical terms used throughout the `languages/ty
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
 | :--- | :--- | :--- | :--- |
-| **Covariance** | **Kovariance** | A subtyping relationship where composite types preserve the subtyping direction of their components ($A \le B \implies F(A) \le F(B)$). Characteristic of function return types and read-only collections. | Pierce (TAPL), Cardelli |
-| **Contravariance** | **Kontravariance** | A subtyping relationship where composite types reverse the subtyping direction of their components ($A \le B \implies F(B) \le F(A)$). Characteristic of function parameter types under `--strictFunctionTypes`. | Pierce (TAPL), TS Handbook |
-| **Invariance** | **Invariance** | A relationship where $F(A) \le F(B)$ holds if and only if $A = B$. Characteristic of mutable read-write collections and structures. | Pierce (TAPL) |
-| **Bivariance** | **Bivariance** | A relationship where $F(A) \le F(B)$ holds if either $A \le B$ or $B \le A$. Used historically for method parameters in TypeScript for compatibility with array mutation. | TypeScript FAQ |
+| **Covariance** | **Kovariance** | A subtyping relationship where composite types preserve the subtyping direction of their components (`A ≤ B ⟹ F(A) ≤ F(B)`). Characteristic of function return types and read-only collections. | Pierce (TAPL), Cardelli |
+| **Contravariance** | **Kontravariance** | A subtyping relationship where composite types reverse the subtyping direction of their components (`A ≤ B ⟹ F(B) ≤ F(A)`). Characteristic of function parameter types under `--strictFunctionTypes`. | Pierce (TAPL), TS Handbook |
+| **Invariance** | **Invariance** | A relationship where `F(A) ≤ F(B)` holds if and only if `A = B`. Characteristic of mutable read-write collections and structures. | Pierce (TAPL) |
+| **Bivariance** | **Bivariance** | A relationship where `F(A) ≤ F(B)` holds if either `A ≤ B` or `B ≤ A`. Used historically for method parameters in TypeScript for compatibility with array mutation. | TypeScript FAQ |
 
 ---
 
@@ -90,5 +90,5 @@ This glossary defines standard technical terms used throughout the `languages/ty
 | **First-Class Async Reactivity** | **Prvotřídní asynchronní reaktivita** | An architecture where promises and async operations flow directly through ordinary computations (`createAsync`, `createMemo`), propagating pending and rejected states out-of-band to `<Loading>` and `<Errored>` boundaries. | SolidJS 2.0 Architecture |
 | **Split Effect (`createEffect(compute, effect)`)** | **Rozdělený (dvoufázový) efekt** | A two-phase effect primitive separating synchronous dependency tracking (`compute`) from asynchronous untracked side-effect execution (`effect`), with built-in cleanup return handling. | SolidJS 2.0 Architecture |
 | **Settled Lifecycle (`onSettled`)** | **Životní cyklus po ustálení (`onSettled`)** | An async-aware component lifecycle hook replacing `onMount`, executing after initial DOM rendering and asynchronous dependencies have settled, and natively supporting returned cleanups. | SolidJS 2.0 Specifications |
-| **Store Projection (`createProjection`)** | **Projekce úložiště (`createProjection`)** | A derived reactive store construct updated via mutable draft functions that notifies downstream subscribers with $O(1)$ property-level leaf precision. | SolidJS 2.0 Store Architecture |
+| **Store Projection (`createProjection`)** | **Projekce úložiště (`createProjection`)** | A derived reactive store construct updated via mutable draft functions that notifies downstream subscribers with `O(1)` property-level leaf precision. | SolidJS 2.0 Store Architecture |
 | **Ref Directive Factory** | **Továrna na direktivy přes ref** | A reusable DOM attachment pattern replacing legacy `use:*` compiler transforms, structured as composable functions returning element callbacks with optional cleanups. | SolidJS 2.0 Architecture |

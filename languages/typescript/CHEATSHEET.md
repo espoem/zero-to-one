@@ -126,7 +126,7 @@ export type Equal<X, Y> =
 | **Split Two-Phase Effect** | `createEffect(() => count(), (val, prev) => { console.log(val); return () => cleanup(); })` — Phase 1 tracks synchronously and infers `val: T` for Phase 2; cleanups returned directly! |
 | **Component Lifecycle** | `onSettled(() => { ...; return () => cleanup(); })` (replaces `onMount`; waits for async resolution and returns cleanup) |
 | **Deep Store & Draft Setters** | `const [state, setState] = createStore<State>(initial)` + `setState((draft) => { draft.users[0].name = "Ada"; })` (draft-first by default) |
-| **Derived Store Projection** | `const selection = createProjection<Record<string, boolean>>((draft) => { draft[selectedId()] = true; }, {})` ($O(1)$ property-level notification precision) |
+| **Derived Store Projection** | `const selection = createProjection<Record<string, boolean>>((draft) => { draft[selectedId()] = true; }, {})` (`O(1)` property-level notification precision) |
 | **Default Props (Preserving Reactivity)** | `const merged = mergeProps({ size: "md" as const }, props)` (never destructure `props` at setup top-level!) |
 | **Split Props for Forwarding** | `const [local, others] = splitProps(props, ["variant", "size"])` → `[Pick<P, "variant" \| "size">, Omit<P, "variant" \| "size">]` |
 | **Narrowing in JSX (`<Show>`)** | `<Show when={user()}>{(u: Accessor<User>) => <Profile user={u()} />}</Show>` |

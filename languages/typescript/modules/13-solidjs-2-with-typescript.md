@@ -11,7 +11,7 @@ In **SolidJS 2.x (`@solidjs/signals`)**, the framework elevates this model by re
 1. **Asynchronous Reactivity in the Graph**: Asynchronicity is a first-class citizen. Ordinary memos and async computations (`createAsync`, `createMemo`) natively return promises; downstream subscribers track pending states automatically and bubble out-of-band to `<Loading>` and `<Errored>` boundaries.
 2. **Deterministic Microtask Batching**: State writes are batched onto the microtask queue by default. Synchronous reads inside the same tick remain stable and glitch-free until a `flush()` occurs or the microtask resolves.
 3. **Two-Phase Split Effects**: `createEffect(compute, effect)` cleanly isolates synchronous reactive dependency tracking (Phase 1) from untracked side-effect execution and cleanup (Phase 2).
-4. **Draft-First Stores & Projections**: `createStore` defaults to draft-first mutation semantics, while `createProjection` creates fine-grained, derived read-only stores that update with $O(1)$ property-level precision.
+4. **Draft-First Stores & Projections**: `createStore` defaults to draft-first mutation semantics, while `createProjection` creates fine-grained, derived read-only stores that update with `O(1)` property-level precision.
 5. **Unified Control Flow & Directives**: List rendering is unified under `<For>` (with child item accessors and `keyed={false}` replacing the removed `<Index>`), while custom directives transition from compiler transforms (`use:*`) to composable **ref directive factories**.
 
 ```
@@ -62,7 +62,7 @@ To eliminate confusion between versions, the following matrix clearly isolates t
 | **List Iteration** | `<For>` (by item reference) + separate `<Index>` (by array index) | **Unified `<For>`**: `<For keyed={false}>` replaces `<Index>`; child parameters receive accessors | Unifies list rendering; child parameters consistently receive accessors across keyed and unkeyed modes. |
 | **Directives** | Compiler transform `use:name={val}` + `JSX.Directives` interface augmentation | **Ref Directive Factories**: `ref={directiveFactory(...)}` | Eliminates compiler magic and namespace collisions; uses standard composable ref functions. |
 | **Store Setters** | Path syntax tuples or external `produce(...)` wrapper | **Draft-first store setters**: `setStore(draft => { ... })` | Intuitive mutable draft semantics are native to store setters without extra library imports. |
-| **Derived Stores** | `createMemo(() => state.items.filter(...))` returning new array references | **`createProjection(draft => ...)`** | Maintains derived stores via mutable drafts, preserving identity and updating with $O(1)$ precision. |
+| **Derived Stores** | `createMemo(() => state.items.filter(...))` returning new array references | **`createProjection(draft => ...)`** | Maintains derived stores via mutable drafts, preserving identity and updating with `O(1)` precision. |
 
 ---
 
@@ -350,7 +350,7 @@ setState("user", "preferences", "theme", "light");
 
 In Solid 1.x, deriving filtered collections via `createMemo` returned new array references on every change, invalidating downstream subscriber identity.
 
-**Solid 2.0 introduces `createProjection`**, which maintains a read-only derived store updated via a mutable draft callback with $O(1)$ property-level notifications:
+**Solid 2.0 introduces `createProjection`**, which maintains a read-only derived store updated via a mutable draft callback with `O(1)` property-level notifications:
 
 ```typescript
 import { createStore, createProjection, Store } from "solid-js/store";
@@ -1027,7 +1027,7 @@ export function ComponentUnderContext() {
 5. **Solid 2.0 First-Class Async**: `createAsync` directly returns `Accessor<T>` (not `T | undefined`). Pending computations propagate to `<Loading>` and `<Errored>` boundaries automatically. Inspect via `isPending(accessor)` and `await resolve(accessor)`.
 6. **Two-Phase Effects**: Solid 2.0 `createEffect(compute, effect)` separates pure synchronous tracking from side-effect execution, providing automatic TypeScript parameter inference and direct cleanup return.
 7. **Stores & Draft Setters**: `createStore` manages deep nested proxies. Setters support native draft mutations (`setState(draft => { draft.done = true; })`) without Immer or `produce` wrapper boilerplate.
-8. **Derived Projections**: `createProjection` creates derived stores via mutable draft callbacks without invalidating array or object references, preserving $O(1)$ fine-grained notification precision.
+8. **Derived Projections**: `createProjection` creates derived stores via mutable draft callbacks without invalidating array or object references, preserving `O(1)` fine-grained notification precision.
 9. **Unified List Iteration**: `<For>` is unified across keyed (default) and unkeyed (`keyed={false}`, replacing removed `<Index>`). Child render parameters consistently receive accessors.
 10. **Ref Directive Factories**: Legacy `use:*` compiler directives are removed in favor of composable ref factories `ref={directiveFactory(...)}` returning optional cleanup functions.
 11. **Async-Aware Lifecycle**: `onSettled` replaces `onMount`, executing after async dependencies resolve and supporting direct cleanup returns.
