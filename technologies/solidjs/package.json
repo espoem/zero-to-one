@@ -1,0 +1,25 @@
+{
+  "name": "solidjs-2-complete-curriculum",
+  "version": "2.0.0-rc.8",
+  "description": "SolidJS 2.x (@solidjs/signals, solid-js 2.0, @solidjs/web) complete curriculum, reference runtime, and runnable test suite",
+  "type": "module",
+  "scripts": {
+    "typecheck": "mise exec npm:typescript -- tsc --noEmit",
+    "test": "node --conditions=browser examples/01-reactive-core-and-signals.ts && node --conditions=browser examples/02-dom-templating-and-control-flow.ts && node --conditions=browser examples/03-draft-first-stores-and-projections.ts && node --conditions=browser examples/04-colorless-async-and-graph-consistency.ts && node --conditions=browser examples/05-transactional-writes-and-optimistic-state.ts && node --conditions=browser examples/06-full-stack-start-mode-and-server-functions.ts && node --conditions=browser examples/07-solid1-vs-solid2-and-deep-dives.ts",
+    "test:01": "node --conditions=browser examples/01-reactive-core-and-signals.ts",
+    "test:02": "node --conditions=browser examples/02-dom-templating-and-control-flow.ts",
+    "test:03": "node --conditions=browser examples/03-draft-first-stores-and-projections.ts",
+    "test:04": "node --conditions=browser examples/04-colorless-async-and-graph-consistency.ts",
+    "test:05": "node --conditions=browser examples/05-transactional-writes-and-optimistic-state.ts",
+    "test:06": "node --conditions=browser examples/06-full-stack-start-mode-and-server-functions.ts",
+    "test:07": "node --conditions=browser examples/07-solid1-vs-solid2-and-deep-dives.ts"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  },
+  "dependencies": {
+    "solid-js": "2.0.0-rc.18",
+    "@solidjs/signals": "2.0.0-rc.18",
+    "@solidjs/web": "2.0.0-rc.18"
+  }
+}

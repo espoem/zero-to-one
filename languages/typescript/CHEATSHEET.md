@@ -118,17 +118,27 @@ export type Equal<X, Y> =
 
 | Task in SolidJS 2.x | SolidJS 2.x Type / Pattern |
 | :--- | :--- |
-| **TSConfig for Solid** | `"jsx": "preserve"`, `"jsxImportSource": "solid-js"` |
-| **Reactive Signal** | `const [count, setCount] = createSignal<number>(0)` → `[Accessor<number>, Setter<number>]` |
-| **First-Class Async Memo / Query (Solid 2.0)** | `const user = createAsync(async () => fetchUser(id()))` or `createMemo(async () => ...)` → Returns `Accessor<User>` (**not** `User \| undefined`!). Pending/errors bubble to `<Loading>` and `<ErrorBoundary>`. |
-| **Check Pending / Imperative Resolve** | `isPending(user)` (`boolean`) / `await resolve(user)` (`Promise<User>`) |
-| **Split Two-Phase Effect (Solid 2.0)** | `createEffect(() => count(), (val, prev) => { console.log(val); return () => cleanup(); })` — Phase 1 tracks synchronously and infers `val: T` for Phase 2! |
-| **Deep Store & Mutation** | `const [state, setState] = createStore<State>(initial)` + `setState("users", 0, "name", "Ada")` or `setState(produce((draft) => { draft.users[0].name = "Ada"; }))` |
-| **Derived Store Projection (Solid 2.0)** | `const selection = createProjection<Record<string, boolean>>((draft) => { draft[selectedId()] = true; }, {})` |
+| **TSConfig for Solid** | `"jsx": "preserve"`, `"jsxImportSource": "@solidjs/web"` (store APIs import from `solid-js`) |
+| **Reactive Signal & Batching** | `const [count, setCount] = createSignal<number>(0)` → `[Accessor<number>, Setter<number>]` (writes are microtask-batched by default!) |
+| **Synchronous Flush** | `flush()` or `flush(() => setCount(c => c + 1))` (immediately drains pending microtask queue) |
+| **First-Class Async Memo** | `const user = createMemo(() => fetchUser(id()))` or `createMemo(async () => ...)` / `createMemo(() => asyncIterable)` → `Accessor<Awaited<T>>` (**not** `T \| undefined`!). Pending/errors bubble to `<Loading>` and `<Errored>`. `createAsync` is only a compatibility alias. |
+| **Check Pending / Latest / Resolve** | `isPending(user)` (`boolean`) / `latest(user)` (stale value without suspending) / `await resolve(user)` (`Promise<User>`) / `refresh(user)` (re-ask for the next settled value) / `throw new NotReadyError()` (opt out of suspension) |
+| **Split Two-Phase Effect** | `createEffect(() => count(), (val, prev) => { console.log(val); return () => cleanup(); })` — Phase 1 tracks synchronously and infers `val: T` for Phase 2; cleanups returned directly! |
+| **Component Lifecycle** | `onSettled(() => { ...; return () => cleanup(); })` (replaces `onMount`; waits for async resolution and returns cleanup) |
+| **Deep Store & Draft Setters** | `const [state, setState] = createStore<State>(initial)` + `setState((draft) => { draft.users[0].name = "Ada"; })` (draft-first by default); `setState(storePath("user", "prefs", "theme", "dark"))` for reusable paths (`storePath.DELETE` removes a leaf) |
+| **Store Advanced Utilities** | `snapshot(state)` (untracked plain copy), `deep(state)` (subscribe to every nested leaf), `merge(a, b)` (live getters, later wins), `omit(state, "key")` (copy without keys) |
+| **Derived Store Projection** | `const selection = createProjection<Record<string, boolean>>((draft) => { draft[selectedId()] = true; }, {})` (`O(1)` property-level notification precision) |
 | **Default Props (Preserving Reactivity)** | `const merged = mergeProps({ size: "md" as const }, props)` (never destructure `props` at setup top-level!) |
 | **Split Props for Forwarding** | `const [local, others] = splitProps(props, ["variant", "size"])` → `[Pick<P, "variant" \| "size">, Omit<P, "variant" \| "size">]` |
 | **Narrowing in JSX (`<Show>`)** | `<Show when={user()}>{(u: Accessor<User>) => <Profile user={u()} />}</Show>` |
-| **Zero-Allocation Event Tuple** | `<button onClick={[handleDelete, item.id]}>Delete</button>` (infers `handleDelete(id: string, e: MouseEvent)`) |
+| **Unified List Iteration (`<For>` + `<Repeat>`)** | Default `keyed={true}`: `<For each={items()}>{(item: T, index: Accessor<number>) => ...}</For>`<br>Unkeyed `keyed={false}`: `{(item: Accessor<T>, index: number) => ...}` (replaces removed `<Index>`)<br>Custom key `keyed={fn}`: `{(item: Accessor<T>, index: Accessor<number>) => ...}`<br>Positional: `<Repeat count={3} from={1}>{(index: number) => ...}</Repeat>` |
+| **Ref Directive Factory** | `<div ref={clickOutside(onClose)} />` with `type RefDirective<E> = (el: E) => void \| (() => void)` (replaces removed `use:*`) |
+| **Context (Providerless)** | `const Auth = createContext<AuthState>({ name: "Auth" }); <Auth value={auth}>{children}</Auth>` (no `.Provider`); `useContext(Auth)` throws `ContextNotFoundError` when unprovided |
+| **Transactional Mutations** | `const save = action(function* (item) { setState(...); yield api.save(item); refresh(state); })` → `Promise<R>`; writes between yields commit together |
+| **Optimistic State** | `const [items, setItems] = createOptimistic<string[]>([])` / `const [cart, setCart] = createOptimisticStore(derive, seed)`; overlay reverts on settlement |
+| **Server Functions** | `"use server"` module + `@solidjs/vite-plugin` start mode; dispatch with `handleServerFunctionRequest(request)` from `@solidjs/web` (there is no `handleRequest` export); validate `unknown` with Zod/Valibot |
+| **Async Boundaries** | `<Errored fallback={(err, reset) => ...}><Loading fallback={<Spinner />}><Reveal>{children}</Reveal></Loading></Errored>` |
+| **Zero-Allocation Event Tuple** | `<button onClick={[handleDelete, item().id]}>Delete</button>` (infers `handleDelete(id: string, e: MouseEvent)`) |
 | **Polymorphic Component** | `<Dynamic component={local.as ?? "button"} {...others} />` typed with `ValidComponent` |
 
 ---

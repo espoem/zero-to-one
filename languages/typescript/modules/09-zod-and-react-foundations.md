@@ -801,7 +801,7 @@ export function cartReducer(state: CartState, action: CartAction): CartState {
 ## Module 09 Summary & Cheat Sheet
 
 1. **Zod as Truth Source**: Derive static types using `z.infer<typeof Schema>`.
-2. **Discriminated Unions**: Prefer `z.discriminatedUnion("key", [...])` for $O(1)$ dispatch and clean errors.
+2. **Discriminated Unions**: Prefer `z.discriminatedUnion("key", [...])` for `O(1)` dispatch and clean errors.
 3. **Safe Parsing**: Use `schema.safeParse(data)` for untrusted inputs to inspect `{ success, data } | { success, error }`.
 4. **Direct Component Props**: Avoid `React.FC`. Use `function Comp(props: Props): React.JSX.Element`.
 5. **Component Props Helpers**: Use `ComponentPropsWithoutRef<"element">` and `Omit` when overriding native props.

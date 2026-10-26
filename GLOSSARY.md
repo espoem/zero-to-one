@@ -14,7 +14,7 @@ All definitions and prose are in English; terms provide their canonical English 
 | **Side Effect** | **Vedlejší účinek** | Any state mutation outside the local execution scope of a function (e.g., modifying global state, performing I/O, writing to disk or network). | IEEE Standard Glossary of Software Engineering Technology |
 | **Referential Transparency** | **Referenční transparentnost** | An expression property where any call can be substituted with its resulting value without altering the behavior of the program. | Strachey (Fundamental Concepts in Programming Languages) |
 | **Immutability** | **Neměnnost (imutabilita)** | The property of a data structure or object whose state cannot be modified after instantiation. Modifications create a new instance. | Okasaki (Purely Functional Data Structures) |
-| **Idempotence / Idempotency** | **Idempotence** | The property of an operation where multiple identical executions yield the exact same system state as a single execution ($f(f(x)) = f(x)$). | ISO/IEC 2382, RFC 9110 (HTTP Semantics) |
+| **Idempotence / Idempotency** | **Idempotence** | The property of an operation where multiple identical executions yield the exact same system state as a single execution (`f(f(x)) = f(x)`). | ISO/IEC 2382, RFC 9110 (HTTP Semantics) |
 | **Type System** | **Typový systém** | A tractable syntactic method for proving the absence of certain program behaviors by classifying expressions according to the kinds of values they compute. | Pierce (Types and Programming Languages - TAPL) |
 | **Static vs. Dynamic Typing** | **Statické vs. dynamické typování** | Static typing verifies and enforces type constraints at compile time; dynamic typing validates types during runtime execution. | Pierce (TAPL), ISO/IEC 2382 |
 | **Strong vs. Weak Typing** | **Silné vs. slabé typování** | Strong typing strictly disallows unintended implicit type conversions between incompatible types; weak typing allows implicit type coercion (e.g., interpreting numbers as strings). | Cardelli & Wegner (On Understanding Types) |
@@ -29,9 +29,9 @@ All definitions and prose are in English; terms provide their canonical English 
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
 | :--- | :--- | :--- | :--- |
-| **Time Complexity** | **Časová složitost** | An asymptotic measure quantifying the amount of time an algorithm takes as a function of the input length $n$. | Cormen, Leiserson, Rivest, Stein (CLRS) |
-| **Space Complexity** | **Paměťová složitost** | An asymptotic measure quantifying the memory storage an algorithm consumes relative to the input length $n$. | CLRS |
-| **Big-O Notation** | **Asymptotická notace $\mathcal{O}$** | A mathematical notation describing the asymptotic upper bound of a function's growth rate ($f(n) \in \mathcal{O}(g(n))$). | Knuth (Big Omicron and big Omega and big Theta) |
+| **Time Complexity** | **Časová složitost** | An asymptotic measure quantifying the amount of time an algorithm takes as a function of the input length `n`. | Cormen, Leiserson, Rivest, Stein (CLRS) |
+| **Space Complexity** | **Paměťová složitost** | An asymptotic measure quantifying the memory storage an algorithm consumes relative to the input length `n`. | CLRS |
+| **Big-O Notation** | **Asymptotická notace O** | A mathematical notation describing the asymptotic upper bound of a function's growth rate (`f(n) ∈ O(g(n))`). | Knuth (Big Omicron and big Omega and big Theta) |
 | **Amortized Analysis** | **Amortizovaná analýza** | A method of analyzing the average execution cost of operations over a sequence of operations in the worst case (e.g., dynamic array growth). | Tarjan (Amortized Computational Complexity) |
 | **Divide and Conquer** | **Rozděl a panuj** | An algorithmic paradigm that breaks a problem down into smaller subproblems of the same type, solves them recursively, and combines results. | CLRS |
 | **Dynamic Programming** | **Dynamické programování** | An optimization technique that solves complex problems by combining solutions to overlapping subproblems using memoization or tabulation. | Bellman (Dynamic Programming) |
