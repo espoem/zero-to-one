@@ -8,3 +8,7 @@ styled-system/
 .panda/
 *.buildinfo.json
 *.cpuprofile
+
+# Vite builds made by the e2e tests
+dist/
+dist-*/

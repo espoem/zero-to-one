@@ -1,0 +1,92 @@
+@layer reset, base, tokens, recipes, utilities;
+@layer recipes { @layer base, slots, variants, compound_variants; }
+@layer recipes.slots { @layer base, variants, compound_variants; }
+@layer base {
+  :root {
+    --made-with-panda: '🐼';
+  }
+}
+@layer tokens {
+  :where(:root, :host) {
+    --colors-brand-100: #e0e7ff;
+    --colors-brand-500: #6366f1;
+    --colors-brand-600: #4f46e5;
+    --colors-brand-900: #312e81;
+    --colors-ink-100: #f4f4f5;
+    --font-sizes-xs: 0.75rem;
+    --font-sizes-sm: 0.875rem;
+    --font-weights-medium: 500;
+    --font-weights-semibold: 600;
+    --sizes-12: 3rem;
+    --spacing-2: 0.5rem;
+    --spacing-5: 1.25rem;
+    --radii-md: 0.375rem;
+    --radii-full: 9999px;
+    --radii-control: var(--radii-md);
+    --durations-snappy: 120ms;
+    --colors-accent-default: var(--colors-brand-600);
+  }
+  :where(.dark, [data-color-mode=dark]) {
+    --colors-accent-default: var(--colors-brand-500);
+  }
+}
+@layer recipes {
+  @layer base {
+    .button {
+      --transition-duration: var(--durations-snappy);
+      gap: var(--spacing-2);
+      border-radius: var(--radii-control);
+      display: inline-flex;
+      align-items: center;
+      font-weight: var(--font-weights-medium);
+      transition-duration: var(--durations-snappy);
+    }
+  }
+  @layer variants {
+    .button--visual_outline {
+      border-width: 1px;
+      border-color: var(--colors-accent-default);
+      color: var(--colors-accent-default);
+    }
+    .button--size_lg {
+      padding-inline: var(--spacing-5);
+      font-size: 1.125rem;
+      line-height: calc(1.75 / 1.125);
+      height: var(--sizes-12);
+    }
+  }
+  @layer compound_variants {
+    .button--compound__size_lg__visual_outline {
+      border-width: 2px;
+    }
+  }
+}
+@layer utilities {
+  .bg_brand\.100 {
+    background: var(--colors-brand-100);
+  }
+  .bg_ink\.100 {
+    background: var(--colors-ink-100);
+  }
+  .px_2 {
+    padding-inline: var(--spacing-2);
+  }
+  .bdr_full {
+    border-radius: var(--radii-full);
+  }
+  .c_brand\.900 {
+    color: var(--colors-brand-900);
+  }
+  .d_inline-flex {
+    display: inline-flex;
+  }
+  .fs_sm {
+    font-size: var(--font-sizes-sm);
+  }
+  .fs_xs {
+    font-size: var(--font-sizes-xs);
+  }
+  .fw_semibold {
+    font-weight: var(--font-weights-semibold);
+  }
+}

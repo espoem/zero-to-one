@@ -1,25 +1,39 @@
 {
-  "name": "panda-mastery-course",
-  "version": "1.0.0",
+  "name": "zero-to-one-panda-css",
+  "version": "2.0.0",
   "private": true,
-  "description": "Complete Panda CSS Mastery course material, runnable reference examples, and production best practices",
+  "type": "module",
+  "description": "Panda CSS v2 curriculum: executable examples, CSS snapshot fixtures, negative extraction fixtures and Playwright computed-style tests",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
-    "prepare": "panda codegen --config examples/panda.config.ts",
-    "codegen": "panda codegen --config examples/panda.config.ts",
-    "studio": "panda studio --config examples/panda.config.ts",
-    "analyze": "panda analyze --config examples/panda.config.ts",
-    "typecheck": "tsc --noEmit",
-    "test": "tsc --noEmit && panda codegen --config examples/panda.config.ts --clean"
+    "prepare": "npm run codegen",
+    "codegen": "panda codegen --cwd examples/react && panda codegen --cwd examples/solid && panda codegen --cwd examples/vanilla && panda codegen --cwd examples/fixtures",
+    "typecheck": "npm run codegen && tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.solid.json",
+    "test": "npm run codegen && node --test \"examples/tests/*.test.ts\"",
+    "test:update-snapshots": "npm run codegen && node --test --test-update-snapshots examples/tests/css-snapshots.test.ts",
+    "doctor": "panda doctor --cwd examples/react",
+    "analyze": "panda analyze --cwd examples/react",
+    "dev:react": "vite --config examples/react/vite.config.ts",
+    "dev:solid": "vite --config examples/solid/vite.config.ts"
   },
   "dependencies": {
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "solid-js": "1.9.17"
   },
   "devDependencies": {
-    "@pandacss/dev": "^0.51.1",
-    "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
-    "postcss": "^8.4.49",
-    "typescript": "^7.0.2"
+    "@pandacss/dev": "2.4.0",
+    "@pandacss/preset-base": "2.4.0",
+    "@pandacss/preset-panda": "2.4.0",
+    "@pandacss/vite": "2.4.0",
+    "@types/node": "26.6.6",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "typescript": "7.0.2",
+    "vite": "8.3.5",
+    "vite-plugin-solid": "2.11.14"
   }
 }

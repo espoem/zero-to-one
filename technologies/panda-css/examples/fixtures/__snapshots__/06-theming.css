@@ -1,0 +1,69 @@
+@layer reset, base, tokens, recipes, utilities;
+@layer recipes { @layer base, slots, variants, compound_variants; }
+@layer recipes.slots { @layer base, variants, compound_variants; }
+@layer base {
+  :root {
+    --made-with-panda: '🐼';
+  }
+}
+@layer tokens {
+  :where(:root, :host) {
+    --colors-white: #fff;
+    --colors-ink-50: #fafafa;
+    --colors-ink-100: #f4f4f5;
+    --colors-ink-900: #18181b;
+    --colors-ink-950: #09090b;
+    --font-sizes-md: 1rem;
+    --font-sizes-2xl: 1.5rem;
+    --font-weights-bold: 700;
+    --line-heights-tight: 1.25;
+    --line-heights-relaxed: 1.625;
+    --letter-spacings-tight: -0.025em;
+    --radii-lg: 0.5rem;
+    --colors-bg-canvas: var(--colors-white);
+    --colors-bg-subtle: var(--colors-ink-100);
+    --colors-fg-default: var(--colors-ink-900);
+  }
+  :where(.dark, [data-color-mode=dark]) {
+    --colors-bg-canvas: var(--colors-ink-950);
+    --colors-bg-subtle: var(--colors-ink-900);
+    --colors-fg-default: var(--colors-ink-50);
+  }
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
+@layer utilities {
+  .anim_fadeIn_200ms_ease-out {
+    animation: fadeIn 200ms ease-out;
+  }
+  .bg_bg\.canvas {
+    background: var(--colors-bg-canvas);
+  }
+  .c_fg\.default {
+    color: var(--colors-fg-default);
+  }
+  @layer compositions {
+    .layerStyle_card {
+      background: var(--colors-bg-canvas);
+      border-width: 1px;
+      border-color: var(--colors-bg-subtle);
+      border-radius: var(--radii-lg);
+    }
+    .textStyle_body {
+      font-size: var(--font-sizes-md);
+      line-height: var(--line-heights-relaxed);
+    }
+    .textStyle_heading {
+      font-size: var(--font-sizes-2xl);
+      font-weight: var(--font-weights-bold);
+      line-height: var(--line-heights-tight);
+      letter-spacing: var(--letter-spacings-tight);
+    }
+  }
+}
