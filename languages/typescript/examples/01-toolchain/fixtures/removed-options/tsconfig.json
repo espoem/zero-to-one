@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "noEmit": true,
+    "baseUrl": ".",
+    "moduleResolution": "node",
+    "esModuleInterop": false,
+    "target": "es5"
+  }
+}
