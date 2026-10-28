@@ -8,7 +8,7 @@
  * - Discriminated unions with automatic type inference
  * - Runtime parsing with .parse() and .safeParse()
  *
- * Runnable via: `node examples/05-zod-and-schema-validation.ts`
+ * Run: `node --test` on this file (see package.json)
  */
 
 import {
@@ -17,7 +17,7 @@ import {
   assert,
   assertEqual,
   assertDeepEqual,
-} from "./utils/type-helpers.ts";
+} from "../utils/type-helpers.ts";
 
 import {
   z,

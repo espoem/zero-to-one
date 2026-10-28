@@ -8,7 +8,7 @@
  * - Deep dot-notation path traversal (`Get<T, "a.b.c">`)
  * - Global and module declaration merging
  *
- * Runnable via: `node examples/04-advanced-patterns.ts`
+ * Run: `node --test` on this file (see package.json)
  */
 
 import {
@@ -19,7 +19,7 @@ import {
   type UnionToIntersection,
   assertEqual,
   assertDeepEqual,
-} from "./utils/type-helpers.ts";
+} from "../utils/type-helpers.ts";
 
 console.log("=== 04: Advanced Patterns ===");
 

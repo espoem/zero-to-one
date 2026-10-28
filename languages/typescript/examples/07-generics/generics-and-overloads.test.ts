@@ -8,7 +8,7 @@
  * - Generic builders and fluent immutable state accumulation
  * - Type-safe Event Emitter pattern
  *
- * Runnable via: `node examples/03-generics-and-overloads.ts`
+ * Run: `node --test` on this file (see package.json)
  */
 
 import {
@@ -17,7 +17,7 @@ import {
   type Prettify,
   assertEqual,
   assertDeepEqual,
-} from "./utils/type-helpers.ts";
+} from "../utils/type-helpers.ts";
 
 console.log("=== 03: Generics and Overloads ===");
 

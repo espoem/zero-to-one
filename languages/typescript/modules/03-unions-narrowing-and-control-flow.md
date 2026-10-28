@@ -399,102 +399,6 @@ function handleTask(res: TaskResult<number>) {
 
 ---
 
-## Lesson 2.4: Object Types, `interface` vs `type`, and Extending Objects
-
-### 2.4.1 `interface` vs `type`
-
-| Feature | `interface` | `type` Alias |
-| :--- | :--- | :--- |
-| **Declaration Merging** | Yes: multiple interfaces with the same name merge their properties. | No: duplicate type declarations throw a duplicate identifier error. |
-| **Primitives, Unions, Tuples**| No: can only define object shapes. | Yes: can alias primitives, unions, tuples, functions, intersections. |
-| **Extending / Inheritance** | `interface B extends A {}` | `type B = A & {}` |
-| **Property Collision Behavior**| Reports clear compile error if property types conflict. | Silently collapses conflicting primitive properties into `never`. |
-
-### 2.4.2 Incompatible Property Extension: `interface` vs `&`
-
-This is one of the most critical differences in TypeScript object architecture:
-
-```typescript
-interface BaseUser {
-  id: string;
-}
-
-// 1. Interface extension collision:
-// ❌ COMPILE ERROR: Interface 'NumericUser' incorrectly extends interface 'BaseUser'.
-// Types of property 'id' are incompatible. Type 'number' is not assignable to type 'string'.
-interface NumericUser extends BaseUser {
-  id: number;
-}
-
-// 2. Type intersection collision:
-// ⚠️ NO IMMEDIATE ERROR! But id becomes string & number = never:
-type CollisionUser = BaseUser & {
-  id: number;
-};
-
-// When you attempt to create the object:
-// ❌ Error: Type 'string' is not assignable to type 'never'.
-const impossible: CollisionUser = {
-  id: "123", // Can NEVER be satisfied!
-};
-```
-
-> **Recommendation**: Prefer `interface extends` when defining domain entities with inheritance so conflicting property types are flagged immediately at the definition site rather than creating silent `never` traps at instantiation sites.
-
-### 2.4.3 Dynamic Keys, Index Signatures, and `PropertyKey`
-
-```typescript
-// Index signature allowing arbitrary string keys:
-type ConfigDictionary = {
-  [key: string]: string | number;
-};
-
-// Record<Keys, Values> utility helper:
-type UserPermissions = Record<string, boolean>;
-
-// PropertyKey covers string | number | symbol:
-type DynamicCache = Record<PropertyKey, unknown>;
-
-// Allowing arbitrary keys while auto-completing known common keys:
-type KnownHeaders = "Content-Type" | "Authorization" | (string & {});
-
-const header: KnownHeaders = "Content-Type"; // Autocompletes, but accepts any custom string!
-```
-
-### 2.4.4 Essential Object Utilities
-
-```typescript
-interface UserProfile {
-  id: string;
-  username: string;
-  email: string;
-  avatarUrl: string;
-  isVerified: boolean;
-}
-
-// 1. Pick<T, Keys>: Select only specific fields
-type UserHeader = Pick<UserProfile, "username" | "avatarUrl">;
-
-// 2. Omit<T, Keys>: Exclude specific fields
-type CreateUserPayload = Omit<UserProfile, "id" | "isVerified">;
-
-// 3. Partial<T>: Make all fields optional (ideal for PATCH payloads)
-type UpdateUserDto = Partial<UserProfile>;
-
-// 4. Required<T>: Make all optional fields strictly required
-type StrictConfig = Required<{ port?: number; host?: string }>;
-```
-
-#### Quirk of `Omit` with Discriminated Unions
-Standard `Omit<T, K>` does not distribute over unions. Running `Omit<NetworkState, "latencyMs">` will strip all union variants into a single flattened object, destroying the discriminant tag. To safely omit from a union, use a distributive conditional type helper:
-
-```typescript
-type DistributiveOmit<T, K extends PropertyKey> = T extends unknown
-  ? Omit<T, K>
-  : never;
-```
-
----
 
 ## Anti-Patterns vs. Best Practices
 
@@ -542,6 +446,7 @@ type Equal<X, Y> =
 ```
 
 ---
+
 
 ### Exercise 2.1: The Resilient Async State Machine
 
@@ -700,75 +605,6 @@ const unknownErr = normalizeError({ random: 123 });
 
 ---
 
-### Exercise 2.3: Entity Schema Transformation with Utility Types
-
-#### Problem Description
-Given an authoritative `DatabaseUser` interface:
-1. Derive `CreateUserInput` which omits `"id"`, `"createdAt"`, and `"updatedAt"`.
-2. Derive `UpdateUserInput` where all fields of `CreateUserInput` are optional.
-3. Derive `UserSummary` which picks only `"id"`, `"email"`, and `"role"`.
-4. Create a dictionary type `UserLookupTable` keyed by string ID mapping to `DatabaseUser`.
-
-#### Starter Code
-```typescript
-interface DatabaseUser {
-  id: string;
-  email: string;
-  role: "admin" | "member" | "guest";
-  fullName: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-// TODO: Implement using Pick, Omit, Partial, and Record
-type CreateUserInput = any;
-type UpdateUserInput = any;
-type UserSummary = any;
-type UserLookupTable = any;
-
-// Tests:
-type TestCreate = Expect<Equal<CreateUserInput, { email: string; role: "admin" | "member" | "guest"; fullName: string }>>;
-type TestSummary = Expect<Equal<UserSummary, { id: string; email: string; role: "admin" | "member" | "guest" }>>;
-type TestLookup = Expect<Equal<UserLookupTable, Record<string, DatabaseUser>>>;
-```
-
-#### Hints
-1. `Omit<Type, Keys>` strips specified keys.
-2. `Partial<Type>` makes all keys optional.
-3. `Record<KeyType, ValueType>` builds lookup tables.
-
-#### Step-by-Step Solution
-
-```typescript
-interface DatabaseUser {
-  id: string;
-  email: string;
-  role: "admin" | "member" | "guest";
-  fullName: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-// 1. Omit system-managed metadata:
-type CreateUserInput = Omit<DatabaseUser, "id" | "createdAt" | "updatedAt">;
-
-// 2. Make update fields optional:
-type UpdateUserInput = Partial<CreateUserInput>;
-
-// 3. Pick specific summary fields:
-type UserSummary = Pick<DatabaseUser, "id" | "email" | "role">;
-
-// 4. Dictionary lookup table:
-type UserLookupTable = Record<string, DatabaseUser>;
-
-// Verification:
-type TestCreate = Expect<Equal<CreateUserInput, { email: string; role: "admin" | "member" | "guest"; fullName: string }>>;
-type TestSummary = Expect<Equal<UserSummary, { id: string; email: string; role: "admin" | "member" | "guest" }>>;
-type TestLookup = Expect<Equal<UserLookupTable, Record<string, DatabaseUser>>>;
-type TestUpdate = Expect<Equal<UpdateUserInput, { email?: string; role?: "admin" | "member" | "guest"; fullName?: string }>>;
-```
-
----
 
 ### Exercise 2.4: Type-Safe Result Tuple Unwrapper
 
@@ -830,3 +666,4 @@ try {
   console.log("Properly caught:", e);
 }
 ```
+

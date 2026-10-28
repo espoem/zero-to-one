@@ -9,7 +9,7 @@
  * - The `satisfies` operator vs type annotations/assertions
  * - `as const` assertions and object-as-enum patterns
  *
- * Runnable via: `node examples/01-essentials-and-narrowing.ts`
+ * Run: `node --test` on this file (see package.json)
  */
 
 import {
@@ -18,7 +18,7 @@ import {
   assert,
   assertEqual,
   assertDeepEqual,
-} from "./utils/type-helpers.ts";
+} from "../utils/type-helpers.ts";
 
 console.log("=== 01: Essentials and Narrowing ===");
 

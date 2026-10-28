@@ -10,7 +10,7 @@
  * - `ts-pattern`-style exhaustive pattern matcher using `Exclude<T, Matched>`
  * - Immutable ES2023–ES2025 array & grouping helpers (`Object.groupBy`, `toSorted`, `Promise.withResolvers`)
  *
- * Runnable via: `node examples/07-modern-ts-and-js-features.ts`
+ * Run: `node --test` on this file (see package.json)
  */
 
 import {
@@ -20,7 +20,7 @@ import {
   type Extends,
   assertEqual,
   assertDeepEqual,
-} from "./utils/type-helpers.ts";
+} from "../utils/type-helpers.ts";
 
 console.log("=== 07: Modern TypeScript & JavaScript Features ===");
 

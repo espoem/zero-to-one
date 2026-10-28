@@ -158,65 +158,6 @@ getUser(postId, cache);
 
 ---
 
-## Lesson 8.2: Understanding & Augmenting Global Scope
-
-### 8.2.1 TypeScript's Scope Model: Scripts vs. Modules
-
-A file with no `import` or `export` statements is treated as a **script** in global scope. Any variable declared in it leaks into every other file. Conversely, any file containing `import` or `export` is a **module** with its own isolated scope.
-
-### 8.2.2 The `declare global` Block
-
-When inside a module, you must explicitly use `declare global` to augment the global scope:
-
-```ts
-// Ensure file is treated as a module
-export {};
-
-declare global {
-  // Augmenting NodeJS process.env
-  namespace NodeJS {
-    interface ProcessEnv {
-      NODE_ENV: "development" | "production" | "test";
-      PORT: string;
-      DATABASE_URL: string;
-    }
-  }
-
-  // Augmenting global browser Window
-  interface Window {
-    __APP_CONFIG__: {
-      apiUrl: string;
-      featureFlags: Record<string, boolean>;
-    };
-  }
-}
-```
-
-Now `process.env.DATABASE_URL` is statically known, and `window.__APP_CONFIG__` autocompletes throughout the project.
-
-### 8.2.3 Colocating Types for Global Interfaces
-
-> [!TIP]
-> Keep global augmentations colocated with the feature code that depends on them, rather than dumped into a single unstructured `globals.d.ts`. Always include `export {}` at the top of the file.
-
-```ts
-// analytics.ts
-export interface AnalyticsClient {
-  track(event: string, properties?: Record<string, unknown>): void;
-}
-
-declare global {
-  interface Window {
-    analytics?: AnalyticsClient;
-  }
-}
-
-export function trackEvent(name: string) {
-  window.analytics?.track(name);
-}
-```
-
----
 
 ## Lesson 8.3: Type Predicates, Assertion Functions & Classes
 
@@ -734,3 +675,4 @@ In this workshop module, we mastered:
 5. **Inference Steering**: `NoInfer<T>` in TS 5.4+, const type parameters in identity functions, and reverse-mapped types for mutually constrained configurations.
 
 Proceed to **[Module 09: Runtime Checking with Zod & React Foundations](./09-zod-and-react-foundations.md)** to connect type-level guarantees with runtime schema validation and component architectures.
+

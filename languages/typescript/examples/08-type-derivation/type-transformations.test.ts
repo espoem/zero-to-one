@@ -9,7 +9,7 @@
  * - Mapped types, property modifiers, and key remapping (`as`)
  * - Deep transformations (DeepReadonly, DeepPartial, Prettify)
  *
- * Runnable via: `node examples/02-type-transformations.ts`
+ * Run: `node --test` on this file (see package.json)
  */
 
 import {
@@ -20,7 +20,7 @@ import {
   type DeepPartial,
   assertEqual,
   assertDeepEqual,
-} from "./utils/type-helpers.ts";
+} from "../utils/type-helpers.ts";
 
 console.log("=== 02: Type Transformations ===");
 
