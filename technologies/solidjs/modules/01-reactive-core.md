@@ -139,7 +139,7 @@ function handleSubmit() {
 
 `flush(fn)` runs `fn`, drains every write it made before returning, and returns `fn`'s return value. Nested `flush(fn)` calls drain at each level.
 
-**Do not sprinkle `flush()` in application code.** Every early flush also runs every pending effect early, which can make effects run twice per user action and defeats batching. Inside an effect callback or `onSettled` it is a no-op in production and a dev error (`FLUSH_IN_EFFECT_CALLBACK`), because the flush is already running.
+**Do not sprinkle `flush()` in application code.** Every early flush also runs every pending effect early, which can make effects run twice per user action and defeats batching. Inside an effect callback it is a no-op, and the dev build reports `FLUSH_IN_EFFECT_CALLBACK` (a warning in rc.19, verified in the Module 02 suite), because the flush is already running.
 
 ## 4. Memos: derived values
 
