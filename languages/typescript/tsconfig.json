@@ -16,5 +16,9 @@
     "skipLibCheck": true
   },
   "include": ["examples/**/*"],
-  "exclude": ["examples/**/fixtures/**", "examples/12-typing-ui-frameworks/**"]
+  "exclude": [
+    "examples/**/fixtures/**",
+    "examples/12-typing-ui-frameworks/react/**",
+    "examples/12-typing-ui-frameworks/solid/**"
+  ]
 }

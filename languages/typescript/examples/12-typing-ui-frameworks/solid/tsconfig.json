@@ -1,0 +1,17 @@
+{
+  // Type tests for Solid 2.0 RC typing (solid-js 2.0.0-rc.19). Checked by `npm run typecheck`
+  // and by ../ui-typing.test.ts. Nothing here executes: JSX cannot run under Node type stripping.
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "preserve",
+    "jsx": "preserve",
+    "jsxImportSource": "@solidjs/web",
+    "lib": ["esnext", "dom"],
+    "types": [],
+    "noEmit": true,
+    "verbatimModuleSyntax": true,
+    "noUncheckedIndexedAccess": true,
+    "skipLibCheck": true
+  },
+  "include": ["./**/*.ts", "./**/*.tsx"]
+}

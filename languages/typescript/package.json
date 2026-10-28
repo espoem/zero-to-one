@@ -8,7 +8,7 @@
     "node": ">=26"
   },
   "scripts": {
-    "typecheck": "tsc -p .",
+    "typecheck": "tsc -p . && tsc -p examples/12-typing-ui-frameworks/react && tsc -p examples/12-typing-ui-frameworks/solid",
     "test": "node --test \"examples/**/*.test.ts\"",
     "test:module": "node --test"
   },

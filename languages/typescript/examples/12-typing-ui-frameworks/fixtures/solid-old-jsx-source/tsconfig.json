@@ -1,0 +1,11 @@
+{
+  // Solid 1.x configuration. In 2.0 (rc.19) the JSX runtime moved to @solidjs/web,
+  // so this setting no longer resolves.
+  "compilerOptions": {
+    "module": "preserve",
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
+    "noEmit": true,
+    "skipLibCheck": true
+  }
+}
