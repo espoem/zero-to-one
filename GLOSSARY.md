@@ -50,3 +50,17 @@ All definitions and prose are in English; terms provide their canonical English 
 | **Separation of Concerns (SoC)** | **Oddělení odpovědností / zájmů** | A design principle for separating a computer program into distinct sections, where each section addresses a separate concern. | Dijkstra (On the Role of Scientific Thought) |
 | **Single Responsibility Principle (SRP)** | **Princip jedné odpovědnosti** | An object-oriented and modular principle stating that a module should have one, and only one, reason to change. | Martin (Clean Architecture / SOLID) |
 | **Dependency Inversion Principle (DIP)** | **Princip inverze závislostí** | A structural principle stating that high-level modules should not depend on low-level modules; both should depend on abstractions. | Martin (SOLID) |
+
+---
+
+## 4. Databases, Storage Engines & Concurrency Control
+
+| English Term | Czech Term | Definition & Context | Primary Reference |
+| :--- | :--- | :--- | :--- |
+| **Multi-Version Concurrency Control (MVCC)** | **Víceverzně řízené souběžné zpracování (MVCC)** | A concurrency control method where mutations generate new physical record versions instead of modifying data in place, allowing readers and writers to execute concurrently without mutual blocking. | Bernstein, Hadzilacos, Goodman (Concurrency Control & Recovery) |
+| **Write-Ahead Logging (WAL)** | **Zápis do předstihového deníku (WAL)** | A durability protocol requiring state modifications to be flushed to non-volatile sequential log storage before the corresponding dirty page blocks are written to heap storage. | Mohan et al. (ARIES Recovery Algorithm) |
+| **Serializable Snapshot Isolation (SSI)** | **Sériovatelná izolace přes snímky (SSI)** | An optimistic concurrency isolation mechanism providing strict serializability by tracking dynamic read-write anti-dependencies (si-edges) without blocking concurrent read or write transactions. | Cahill, Röhm, Fekete (Serializable Isolation for Snapshot Databases) |
+| **Two-Phase Locking (2PL)** | **Dvoufázové zamykání (2PL)** | A pessimistic concurrency control algorithm ensuring serializability by dividing lock handling into an expanding growing phase and a contracting shrinking phase. | Eswaran, Gray, Lorie, Traiger (The Notions of Consistency and Predicate Locks) |
+| **Cost-Based Optimizer (CBO)** | **Nákladový optimalizátor dotazů** | An execution planning engine estimating disk I/O, memory bandwidth, and CPU cycles for candidate relational algebra trees to select the cheapest execution plan. | Selinger et al. (Access Path Selection in a Relational Database Management System) |
+| **B-Tree (Balanced Tree)** | **B-strom (vyvážený vyhledávací strom)** | A self-balancing search tree data structure maintaining sorted keys with logarithmic search, insertion, and deletion times, optimized for disk block page access. | Bayer & McCreight (Organization and Maintenance of Large Ordered Indices) |
+| **Point-In-Time Recovery (PITR)** | **Obnova k určitému časovému bodu (PITR)** | A disaster recovery mechanism that restores a base snapshot and continuously rolls forward sequential write-ahead logs up to an exact timestamp or transaction boundary. | Database Systems Architecture |
