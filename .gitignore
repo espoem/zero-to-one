@@ -48,3 +48,6 @@ audit.md
 SYLLABUS_AUDIT.md
 *SYLLABUS_AUDIT.md
 
+
+# Agent runtime scratch (pi task dirs)
+.pi/tasks/
