@@ -19,6 +19,25 @@ Every self-contained learning track MUST follow this uniform directory structure
 - `examples/`: Runnable, verified code examples and test suites proving concepts.
 - `CHEATSHEET.md`: Fast-lookup reference covering key syntax, operators, and rules.
 
+## Topic Depth and Technical Rigor
+
+Apply these requirements when creating or updating any topic module:
+
+1. **Academic Grounding and Formal Definitions**:
+   - Provide formal definitions for core concepts (algebraic, axiomatic, or operational semantics where applicable).
+   - Anchor definitions in primary specifications (RFCs, ISO/ECMA standards) and seminal computer science literature.
+   - Detail underlying mechanics: abstract syntax trees, compiler lowering, desugaring, runtime memory layout, cache behavior, and hardware or OS boundaries.
+
+2. **Continuous Multi-Tier Progression**:
+   - Span the complete spectrum from foundational mechanics to senior-level architectural and operational concerns.
+   - Do not partition content by audience tier or insert labels such as "Beginner", "Medior", or "Senior". Structure each topic as a single progressive narrative that deepens naturally.
+   - Cover expert topics, niche edge cases, subtle semantics, and production failure modes (such as race conditions, memory leaks, false sharing, and boundary violations).
+
+3. **Executable Proofs and Edge Cases**:
+   - Accompany theoretical principles with runnable, deterministic test suites in `examples/`.
+   - Provide negative tests and counterexamples demonstrating compiler rejections, runtime exceptions, and subtle anti-patterns.
+   - Verify every example with the local compiler and test runner before committing changes.
+
 ## Terminology and Glossary Discipline
 
 Follow these rules when creating or updating any `GLOSSARY.md` file:
