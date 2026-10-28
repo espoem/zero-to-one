@@ -32,4 +32,6 @@ Follow these rules when creating or updating any `GLOSSARY.md` file:
 ## Isolation and Polyglot Tooling
 
 1. Keep dependencies isolated within each track directory (e.g., `languages/typescript/package.json`). Do not configure a single global package root that couples heterogeneous tech stacks.
-2. Verify all examples before committing. Run deterministic type checks and test scripts within the module directory.
+2. For every project using TypeScript (existing, in-progress, or future), target and use the latest available stable TypeScript release.
+3. Resolve and pin all project tooling dependencies locally using a project-level mise configuration (`.mise.toml` within the track directory).
+4. Verify all examples before committing. Run deterministic type checks and test scripts within the module directory.

@@ -37,3 +37,7 @@ Thumbs.db
 !.vscode/extensions.json
 *.swp
 *.swo
+
+# Tooling runtime and locks
+.mise/
+*.local.toml
