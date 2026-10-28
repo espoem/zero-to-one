@@ -41,3 +41,8 @@ Thumbs.db
 # Tooling runtime and locks
 .mise/
 *.local.toml
+
+# Audits and reports
+AUDIT.md
+audit.md
+
