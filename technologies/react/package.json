@@ -1,0 +1,20 @@
+{
+  "name": "react-19-complete-curriculum",
+  "version": "19.0.0",
+  "description": "React 19, React Compiler, Server Components, and Concurrent Architecture complete curriculum, reference implementations, and verified test suites",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types examples/01-elements-and-jsx-runtime.ts && node --experimental-strip-types examples/02-fiber-reconciliation-and-keys.ts && node --experimental-strip-types examples/03-hooks-closure-contracts.ts && node --experimental-strip-types examples/04-effects-and-ref-cleanup.ts && node --experimental-strip-types examples/05-concurrent-lanes-and-transitions.ts && node --experimental-strip-types examples/06-suspense-and-streaming-ssr.ts && node --experimental-strip-types examples/07-rsc-and-flight-protocol.ts && node --experimental-strip-types examples/08-actions-and-optimistic-updates.ts && node --experimental-strip-types examples/09-compiler-memoization-lowering.ts && node --experimental-strip-types examples/10-error-boundaries-and-resilience.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  }
+}

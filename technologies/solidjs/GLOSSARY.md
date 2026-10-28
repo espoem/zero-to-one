@@ -22,6 +22,11 @@ This glossary defines standard technical terms used throughout the `technologies
 | **Untrack (`untrack`)** | **Nesledované čtení (untrack)** | An execution wrapper that reads signals and memos without establishing subscriptions in the currently active reactive observer. | SolidJS Reactivity API |
 | **Reactive Ownership (`Owner`, `createRoot`)** | **Reaktivní vlastnictví** | The hierarchical lifecycle tree that binds cleanups, context maps, and sub-computations to their parent scopes, ensuring deterministic resource disposal. | SolidJS Runtime Engine |
 | **Settled Lifecycle (`onSettled`)** | **Životní cyklus po ustálení (`onSettled`)** | An async-aware lifecycle hook replacing `onMount`, executing after DOM mounting and asynchronous dependencies have settled, and natively supporting returned cleanup functions. | SolidJS 2.0 Specifications |
+| **Directed Acyclic Graph (DAG)** | **Orientovaný acyklický graf (DAG)** | The formal topological model of the reactive network where source, memo, and effect nodes connect via directed dependency edges without cycles. | Formal Reactivity Standards, Carniato |
+| **Glitch Freedom** | **Absence zákmitů (glitch freedom)** | The mathematical property guaranteeing that no derived computation or observer runs with a mix of old and new inputs during a state transition. | Reactive Systems Theory |
+| **Diamond Problem** | **Diamantový problém** | A graph topology ($A \to B, C \to D$) where a single source change branches and converges; glitch-free systems require topological ordering so $D$ evaluates once. | Reactive Programming Literature |
+| **Topological Ordering** | **Topologické uspořádání (topologické řazení)** | Linear ordering of vertices in a DAG such that for every directed edge $u \to v$, node $u$ comes before $v$, ensuring dependencies are clean before evaluations. | Cormen et al. (CLRS) |
+| **Dirty Marking (Stale Invalidation)** | **Označování za zneplatněné (dirty marking)** | The push-phase algorithm recursively tagging downstream nodes as `STALE` without recomputing them, preparing nodes for lazy pull evaluation. | `@solidjs/signals` Internals |
 
 ---
 

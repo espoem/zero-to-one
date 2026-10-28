@@ -64,3 +64,16 @@ All definitions and prose are in English; terms provide their canonical English 
 | **Cost-Based Optimizer (CBO)** | **Nákladový optimalizátor dotazů** | An execution planning engine estimating disk I/O, memory bandwidth, and CPU cycles for candidate relational algebra trees to select the cheapest execution plan. | Selinger et al. (Access Path Selection in a Relational Database Management System) |
 | **B-Tree (Balanced Tree)** | **B-strom (vyvážený vyhledávací strom)** | A self-balancing search tree data structure maintaining sorted keys with logarithmic search, insertion, and deletion times, optimized for disk block page access. | Bayer & McCreight (Organization and Maintenance of Large Ordered Indices) |
 | **Point-In-Time Recovery (PITR)** | **Obnova k určitému časovému bodu (PITR)** | A disaster recovery mechanism that restores a base snapshot and continuously rolls forward sequential write-ahead logs up to an exact timestamp or transaction boundary. | Database Systems Architecture |
+
+---
+
+## 5. Reactive Systems, Compilers & UI Runtime Mechanics
+
+| English Term | Czech Term | Definition & Context | Primary Reference |
+| :--- | :--- | :--- | :--- |
+| **Fine-Grained Reactivity** | **Jemnozrnná reaktivita** | A state management model where atomic state cells connect directly to dependent computations and bindings without intermediate virtual DOM diffing. | Reactive Programming Literature |
+| **Glitch Freedom** | **Absence zákmitů (glitch freedom)** | The formal guarantee that derived computations in a reactive graph never observe transient or inconsistent combinations of old and new inputs during state propagation. | Reactive Graph Semantics |
+| **Reconciliation** | **Usmiřování (reconciliation)** | The algorithmic process of comparing two virtual UI tree descriptions to determine the minimal sequence of mutations required to update the target host environment. | UI Systems Architecture |
+| **Time Slicing** | **Časové dělení (time slicing)** | An execution technique dividing long-running rendering or computational tasks into discrete time quanta (e.g. 5ms), yielding execution to avoid blocking input events. | Cooperative Multitasking Standards |
+| **Hydration** | **Hydratace** | The process where a client runtime attaches reactive state, event listeners, and data structures to server-rendered markup without destroying or recreating the existing DOM tree. | Web Architecture Specifications |
+| **Zero-Runtime Compilation** | **Kompilace s nulovým během** | A build-time architecture where code representations (such as style objects or JSX) are evaluated and extracted statically ahead of time, leaving zero runtime overhead in production bundles. | Compiler Engineering Standards |

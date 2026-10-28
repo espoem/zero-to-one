@@ -278,4 +278,56 @@ check("onSettled runs post-flush; onCleanup disposes with owner", () => {
   });
 });
 
+// 11. Reactive Graph DAG & Glitch Freedom: The Diamond Problem
+check("reactive DAG topological order guarantees glitch freedom in diamond dependency graph", () => {
+  createRoot((dispose) => {
+    // Diamond structure:
+    //      A (source)
+    //     / \
+    //    B   C (memos)
+    //     \ /
+    //      D (derived memo: B + C)
+    const [a, setA] = createSignal(1);
+    let bRuns = 0;
+    let cRuns = 0;
+    let dRuns = 0;
+
+    const b = createMemo(() => {
+      bRuns += 1;
+      return a() * 10;
+    });
+
+    const c = createMemo(() => {
+      cRuns += 1;
+      return a() + 5;
+    });
+
+    const d = createMemo(() => {
+      dRuns += 1;
+      return `${b()}-${c()}`;
+    });
+
+    // Initial read pulls all nodes
+    assertEqual(d(), "10-6", "Initial evaluation of D resolves B and C");
+    assertEqual(bRuns, 1);
+    assertEqual(cRuns, 1);
+    assertEqual(dRuns, 1);
+
+    // Update source A
+    setA(2);
+    flush();
+
+    // In a naive push-only graph without topological sorting, D would evaluate twice:
+    // Once when B pushes (with B=20, stale C=6 -> glitch: "20-6"),
+    // then again when C pushes (with B=20, C=7 -> "20-7").
+    // SolidJS 2.0 push-pull guarantees topological resolution: D evaluates exactly ONCE with synchronized inputs.
+    assertEqual(d(), "20-7", "D resolved both updated inputs without intermediate glitch state");
+    assertEqual(bRuns, 2, "B recomputed exactly once");
+    assertEqual(cRuns, 2, "C recomputed exactly once");
+    assertEqual(dRuns, 2, "Glitch freedom: D recomputed exactly once for the single source change");
+
+    dispose();
+  });
+});
+
 console.log(`\nAll ${passed} Module 01 example suites passed.`);

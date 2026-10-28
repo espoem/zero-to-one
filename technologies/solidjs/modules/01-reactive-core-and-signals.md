@@ -44,6 +44,33 @@ setDraft("my edit"); // local override wins until props.initial changes
 > [!NOTE]
 > Component bodies run once; reading `props.title` inside JSX or a memo/compute callback stays live, while destructuring (`const { title } = props`) or capturing (`const title = props.title`) freezes the initial value and warns in dev.
 
+### 1.4 Reactive Graph DAG Semantics, Topological Sorting & Glitch Freedom
+
+Formally, the reactive graph in `@solidjs/signals` is a **Directed Acyclic Graph** (DAG) $G = (V, E)$, where:
+- $V = V_{\text{source}} \cup V_{\text{computation}} \cup V_{\text{effect}}$
+- An edge $(u, v) \in E$ denotes that node $v$ reads (observes) node $u$.
+
+#### Invalidation vs Evaluation (Push-Pull Mechanics)
+1. **Push Phase (Marking Stale)**: When a source signal $s \in V_{\text{source}}$ is mutated, the runtime marks $s$ as dirty and recursively pushes an invalidation flag down all reachable directed paths in $G$. Computations are not re-evaluated yet; they are marked `STALE` or `CHECK_DIRTY`.
+2. **Pull Phase (Topological Evaluation)**: When an observer or effect accesses a derived node, the runtime traverses the graph in **topological order**. Before evaluating node $v$, all prerequisite dependencies $u \in \text{parents}(v)$ are brought up to date. If parents did not change value, $v$ skips re-evaluation.
+
+#### Glitch Freedom and The Diamond Problem
+A classic failure mode in reactive architectures is the **Diamond Problem**:
+
+```text
+       A (Source: count)
+      / \
+     B   C (Memos: count * 10, count + 5)
+      \ /
+       D (Derived Memo: `${b()}-${c()}`)
+```
+
+In a naive push-only or depth-first system, updating $A$ pushes to $B$, which immediately triggers $D$. At this transient moment, $D$ observes $B_{\text{new}}$ combined with $C_{\text{old}}$, producing an invalid intermediate state (a **glitch** or tear). Then $C$ updates and triggers $D$ a second time.
+
+SolidJS 2.0 mathematically guarantees **Glitch Freedom**:
+- Node $D$ evaluates strictly in topological order after both $B$ and $C$ have settled.
+- Node $D$ executes **exactly once** per transaction with consistent, synchronized snapshots.
+
 ## 2. Deterministic microtask batching
 
 Solid 2.0 removes `batch()` entirely because batching is now automatic: every setter queues its write onto a deterministic microtask, consecutive writes in the same tick coalesce into one commit, and subscribers run once with the final value. A synchronous read immediately after a write therefore observes the stale committed value, which is expected behavior rather than a bug; call `flush()` to drain the queue synchronously (render lane, then user lane, then `onSettled` callbacks) before asserting or measuring.
