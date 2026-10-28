@@ -85,6 +85,48 @@ npx panda check
 
 The output of `panda debug` displays exactly which Box nodes were identified, which call expressions were evaluated, and any extraction warnings.
 
+### The 6 Formal Compiler Lowering Passes & Deterministic Atomic Hashing
+
+Panda transforms high-level style objects into production CSS via a deterministic 6-pass lowering pipeline:
+
+1. **Shorthand Expansion (Desugaring)**: Expands authoring shorthands to standard CSS property names (`p` $\to$ `padding`, `px` $\to$ `padding-inline`, `bg` $\to$ `background`, `w` $\to$ `width`, `rounded` $\to$ `border-radius`).
+2. **Token Path Resolution**: Resolves dotted token strings (`blue.500`, `spacing.4`) against the theme schema into CSS Custom Properties (`var(--colors-blue-500)`).
+3. **Condition & Breakpoint Resolution**: Unpacks responsive objects (`{ base: '4', md: '8' }`) and pseudo-selectors (`_hover`, `_dark`) into media query and selector envelopes (`@media screen and (min-width: 48em)`, `[data-theme="dark"] &`).
+4. **Deterministic Class Name Hashing**: Unlike runtime CSS-in-JS libraries that compute non-deterministic runtime hashes (e.g. MurmurHash), Panda uses a deterministic property-value slug algorithm (`<prefix>-<property>_<value>`), generating stable class names like `p_4` or `bg_blue\.500`.
+5. **Cascade Layer Assignment**: Directs generated CSS rules into W3C `@layer` boundaries (`@layer reset, base, tokens, recipes, utilities`), guaranteeing deterministic override precedence regardless of stylesheet import order.
+6. **Rule Deduplication & Static Sheet Emission**: Collects all unique declarations across the entire project AST, deduplicates identical rules, and writes the consolidated atomic stylesheet to disk.
+
+### W3C Design Tokens Community Group (DTCG) Compliance
+
+Panda CSS token definitions adhere to the formal W3C DTCG specification, allowing interoperability with design tools like Figma and Style Dictionary:
+
+```json
+{
+  "color": {
+    "brand": {
+      "primary": {
+        "$value": "#2563eb",
+        "$type": "color",
+        "$description": "Primary brand interactive color"
+      },
+      "surface": {
+        "$value": "{color.brand.primary}",
+        "$type": "color"
+      }
+    }
+  }
+}
+```
+
+### Taxonomy of Extraction Failure Modes & Repair Strategies
+
+| Failure Mode | Root Cause | Observable Symptom | Repair Strategy |
+| :--- | :--- | :--- | :--- |
+| **Dynamic Key Omission** | Object has dynamic computed key (`{ [prop]: value }`) | Style silently missing from `.css` | Map dynamic key to a static recipe variant or use explicit `staticCss` manifest. |
+| **Un-tracked Import** | Component imports `css` from relative file instead of `styled-system` | Classes appear in HTML but not in generated CSS | Update import path to `styled-system/css` or configure `importMap` in `panda.config.ts`. |
+| **Runtime Expression** | Style value calls external function (`w: getWidth()`) | AST parser skips expression | Refactor to inline CSS Custom Property (`style={{ '--width': getWidth() }}`) or static tokens. |
+| **Silent Rest Prop Drop** | Spreading untyped props into JSX style calls (`<Box {...props} />`) | Custom styles dropped | Explicitly destructure recognized style props or use `styled()` factory with typed prop forward. |
+
 ### ❌ Anti-Pattern vs ✅ Best Practice
 
 ```tsx

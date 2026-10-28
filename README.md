@@ -20,6 +20,7 @@ zero-to-one/
 ├── technologies/              # Databases, containerization, cloud, and runtimes
 │   ├── panda-css/             # Complete build-time zero-runtime CSS-in-JS & design system curriculum
 │   ├── postgres/              # Complete PostgreSQL 18 curriculum, architecture & verified test suites
+│   ├── react/                 # Complete React 19, Fiber, Concurrent Rendering, RSC, & Compiler track
 │   └── solidjs/               # Complete SolidJS 2.x (@solidjs/signals, @solidjs/web, Start Mode) track
 ├── algorithms/                # Data structures, algorithmic complexity, and problem solving (.gitkeep)
 └── architecture/              # System design, distributed systems, and architectural patterns (.gitkeep)
@@ -40,7 +41,8 @@ Every track within the repository adheres to a uniform structure:
 
 | Domain | Topic / Technology | Scope & Description | Status | Reference Link |
 | :--- | :--- | :--- | :---: | :--- |
-| `languages/` | **TypeScript** | Complete 26-week Total TypeScript syllabus (476 lessons) + Modern JS/TS 5.x–7.0, React 19, and SolidJS 2.x | 🟢 Complete | [languages/typescript/](./languages/typescript/) |
+| `languages/` | **TypeScript** | Complete 26-week Total TypeScript syllabus (476 lessons) + Modern JS/TS 5.x–7.0 pure type systems and compiler mechanics | 🟢 Complete | [languages/typescript/](./languages/typescript/) |
+| `technologies/` | **React 19** | Complete React 19 architecture (Fiber reconciler, Concurrent Mode, 31-bit Lanes, Suspense, RSC Flight Protocol, Server Actions, and React Compiler) | 🟢 Complete | [technologies/react/](./technologies/react/) |
 | `technologies/` | **Panda CSS** | Build-time zero-runtime CSS-in-JS, static AST extraction, design tokens, atomic and config recipes, slot recipes, layout patterns, container queries, and 25 production best practices | 🟢 Complete | [technologies/panda-css/](./technologies/panda-css/) |
 | `technologies/` | **PostgreSQL 18** | Complete PostgreSQL 18.6 curriculum (Architecture, AIO, uuidv7, Virtual Columns, Temporal WITHOUT OVERLAPS, Joins, CTEs, Windowing, JSONB, MVCC, Indexing, Skip Scan, Upgrades, PITR, Patroni HA, and pgvector) | 🟢 Complete | [technologies/postgres/](./technologies/postgres/) |
 | `technologies/` | **SolidJS 2.x** | Complete Solid 2.0 RC (@solidjs/signals, @solidjs/web, Oxc/Rust compiler, draft-first stores, createProjection, colorless async, action/createOptimisticStore, Start Mode & "use server") | 🟢 Complete | [technologies/solidjs/](./technologies/solidjs/) |
@@ -57,6 +59,8 @@ Every track within the repository adheres to a uniform structure:
 To bridge technical English documentation with accurate, established Czech academic and professional terminology:
 - **[Central Systems & CS Glossary](./GLOSSARY.md)** covers universal concepts (e.g., *Referential Transparency*, *Idempotency*, *Time Complexity*, *CAP Theorem*).
 - **[TypeScript & Type-System Glossary](./languages/typescript/GLOSSARY.md)** covers specific type theory, compiler analysis, and language features (e.g., *Discriminated Unions*, *Type Narrowing*, *Mapped Types*, *Branded Types*, *Variance*).
+- **[React 19 & Architecture Glossary](./technologies/react/GLOSSARY.md)** covers Fiber reconciliation, Concurrent Mode priority lanes, selective hydration, Flight protocol, Server Actions, and React Compiler lowering.
+- **[SolidJS 2.0 & Reactive Graph Glossary](./technologies/solidjs/GLOSSARY.md)** covers fine-grained reactivity, DAG topological ordering, glitch freedom, push-pull signals, draft stores, and colorless async.
 - **[Panda CSS Build-Time & Design System Glossary](./technologies/panda-css/GLOSSARY.md)** covers static AST extraction, design tokens, atomic and config recipes, slot recipes, conditions, and container queries.
 - **[PostgreSQL 18 Database Architecture & SQL Glossary](./technologies/postgres/GLOSSARY.md)** covers the process model, shared buffers, Asynchronous I/O, `uuidv7`, virtual columns, temporal constraints, MVCC internals, B-tree Skip Scan, PITR, and pgvector.
 - **[SolidJS 2.x Reactive & Full-Stack Glossary](./technologies/solidjs/GLOSSARY.md)** covers fine-grained push-pull reactivity, deterministic microtask batching, store projections, colorless async, optimistic transactions, and server functions.

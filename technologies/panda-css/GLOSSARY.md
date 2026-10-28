@@ -16,6 +16,11 @@ This glossary defines standard technical terms used throughout the `technologies
 | **Import Map (`importMap`)** | **Mapa importů (`importMap`)** | A configuration setting defining custom module specifiers for importing generated `styled-system` packages (e.g., `@acme/styled-system`), essential for multi-package monorepos. | Panda CSS Monorepo Guide |
 | **Static CSS (`staticCss`)** | **Předem vygenerované (statické) CSS** | A configuration manifest forcing Panda to pre-generate specific recipes, variants, and token combinations ahead of time, preventing missing styles when classes are constructed dynamically. | Panda CSS Config Reference |
 | **Strict Tokens (`strictTokens`)** | **Striktní vynucení tokenů** | A compiler validation mode that restricts style properties strictly to declared theme token values, rejecting arbitrary or unmapped CSS values at compile time. | Panda CSS Type Safety |
+| **Atomic CSS Hashing** | **Hashování atomických tříd** | The deterministic hashing algorithm converting property-value pairs into predictable, stable CSS class names without runtime collisions. | Panda CSS Architecture |
+| **Deterministic Slug** | **Deterministický název třídy (slug)** | A predictable human-readable class name format (e.g. `bg_blue.500`) generated ahead-of-time by the compiler parser. | Panda CSS Compiler Spec |
+| **Compiler Lowering Pass** | **Průchod snižování abstrakce (lowering pass)** | A sequential transformation phase in the compiler AST pipeline (such as shorthand expansion or cascade layer assignment). | Compiler Engineering Standards |
+| **Shorthand Expansion (Desugaring)** | **Rozepsání zkratek na plné vlastnosti (desugaring)** | The compile-time expansion of ergonomic property shorthands (`p`, `bg`, `w`) into standardized W3C CSS properties (`padding`, `background`, `width`). | CSS Language Specifications |
+| **Extraction Failure Mode** | **Poruchový režim extrakce (failure mode)** | An authoring anti-pattern (such as dynamic property keys or un-tracked imports) causing the static AST parser to skip style emission. | Panda CSS Troubleshooting Guide |
 
 ---
 

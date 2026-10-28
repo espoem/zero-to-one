@@ -1,6 +1,11 @@
-# Total TypeScript — Complete Learning Path, React 19 & SolidJS 2.x Mastery
+# Total TypeScript — Complete Language & Type-System Curriculum
 
-TypeScript transforms JavaScript from a dynamically typed scripting language into a statically verified systems and application language. Modeled after Matt Pocock's [Total TypeScript Learning Path](https://www.totaltypescript.com/typescript-learning-path) (the complete 26-week curriculum spanning **Pro Essentials**, **Beginner's TypeScript**, **Type Transformations**, **TypeScript Generics**, **Advanced TypeScript Patterns**, **TypeScript Expert Interviews**, **Zod**, **React with TypeScript**, and **Advanced React with TypeScript**) and expanded with **Modern JS/TS 5.x–7.0**, **React 19.x**, and **SolidJS 2.x (`@solidjs/signals`)**, this repository provides complete, self-paced learning material, type-level exercises with full solutions, a 476-lesson syllabus audit, and runnable TypeScript reference code.
+TypeScript transforms JavaScript from a dynamically typed scripting language into a statically verified systems and application language. Modeled after Matt Pocock's [Total TypeScript Learning Path](https://www.totaltypescript.com/typescript-learning-path) (spanning **Pro Essentials**, **Beginner's TypeScript**, **Type Transformations**, **TypeScript Generics**, **Advanced TypeScript Patterns**, **TypeScript Expert Interviews**, and **Zod Runtime Validation**) and expanded with **Modern JS/TS 5.x–7.0**, this track provides complete, self-paced learning material, type-level exercises with full solutions, a 476-lesson syllabus audit, and runnable TypeScript reference code.
+
+> [!NOTE]
+> Framework-specific runtime tracks are modularized and deduplicated:
+> - For React 19, Server Components, Fiber, and Concurrent Rendering: see [technologies/react](../../technologies/react).
+> - For SolidJS 2.0, reactive graph mechanics, and fine-grained DOM compilation: see [technologies/solidjs](../../technologies/solidjs).
 
 ## Module Layout
 
@@ -8,8 +13,8 @@ TypeScript transforms JavaScript from a dynamically typed scripting language int
 languages/typescript/
 ├── README.md                                            # Full syllabus, architecture map, and setup guide
 ├── GLOSSARY.md                                          # Bilingual (EN ↔ CZ) TypeScript & type-system terminology index
-├── CHEATSHEET.md                                        # Fast lookup for utility types, React 19, Solid 2.x, and TSConfig
-├── SYLLABUS_AUDIT.md                                    # Verification matrix mapping all 476 lessons + modern JS/TS/React/Solid
+├── CHEATSHEET.md                                        # Fast lookup for utility types, generics, and TSConfig
+├── SYLLABUS_AUDIT.md                                    # Verification matrix mapping all 476 lessons + modern JS/TS
 ├── package.json                                         # Typechecking and execution scripts
 ├── tsconfig.json                                        # Total TypeScript strict production configuration
 ├── modules/
@@ -21,23 +26,17 @@ languages/typescript/
 │   ├── 06-conditional-and-mapped-types.md               # Week 14: Type Transformations II — Conditionals, infer, & Mapped Types
 │   ├── 07-typescript-generics.md                        # Weeks 14–16: TypeScript Generics — Functions, Classes, & Overloads
 │   ├── 08-advanced-typescript-patterns.md               # Weeks 17–20: Branded Types, Predicates, Assertions, & Builders
-│   ├── 09-zod-and-react-foundations.md                  # Weeks 21–23: Runtime Checking with Zod & React Foundations
-│   ├── 10-advanced-react-with-typescript.md             # Weeks 24–26: Advanced React — Generic Components, Hooks, & Polymorphism
-│   ├── 11-expert-interviews-and-modern-ts-js.md         # Bonus & Modern TS/JS: Expert Interviews, using/Dispose, Decorators, TS 5.x–7.0
-│   ├── 12-react-19-and-modern-react-typescript.md       # React 19.x Mastery: ref as Prop, use(), Form Actions, RSC & Serializable<T>
-│   └── 13-solidjs-2-with-typescript.md                  # SolidJS 2.x Mastery: @solidjs/signals, First-Class Async, Stores & Projections
+│   ├── 09-zod-and-react-foundations.md                  # Week 21: Runtime Checking with Zod & Schema Validation
+│   └── 11-expert-interviews-and-modern-ts-js.md         # Bonus & Modern TS/JS: Expert Interviews, using/Dispose, Decorators, TS 5.x–7.0
 └── examples/
     ├── utils/
-    │   └── type-helpers.ts                              # Expect<T>, Equal<X, Y>, Prettify<T>, StrictOmit<T, K>, Serializable<T>, Brand<T, B>
+    │   └── type-helpers.ts                              # Expect<T>, Equal<X, Y>, Prettify<T>, StrictOmit<T, K>, Brand<T, B>
     ├── 01-essentials-and-narrowing.ts                   # Discriminated unions, exhaustiveness, readonly, and satisfies
     ├── 02-type-transformations.ts                       # Template literals, conditional types, infer, and URL path parsers
     ├── 03-generics-and-overloads.ts                     # Generic constraints, const type parameters, currying, and overloads
     ├── 04-advanced-patterns.ts                          # Branded types, type predicates, assertion functions, and builders
     ├── 05-zod-and-schema-validation.ts                  # Schema validation, transforms, refinements, and z.infer<T>
-    ├── 06-react-patterns.tsx                            # Discriminated props, generic components, polymorphic Box, and forwardRef
-    ├── 07-modern-ts-and-js-features.ts                  # Explicit Resource Management (using), Stage-3 Decorators, tRPC & ts-pattern
-    ├── 08-react-19-patterns.tsx                         # React 19 ref prop, RefCallback cleanup, use(), useActionState, useOptimistic, RSC
-    └── 09-solidjs-2-patterns.ts                         # Solid 2.0 microtask batching/flush, async createMemo/createAsync, split createEffect, draft stores, onSettled, ref directive factories
+    └── 07-modern-ts-and-js-features.ts                  # Explicit Resource Management (using), Stage-3 Decorators, tRPC & ts-pattern
 ```
 
 ## Full Curriculum Map (Modules 01–13)
