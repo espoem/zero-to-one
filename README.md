@@ -19,6 +19,7 @@ zero-to-one/
 │   └── typescript/            # Complete Total TypeScript + React 19 + SolidJS 2.x curriculum
 ├── technologies/              # Databases, containerization, cloud, and runtimes
 │   ├── panda-css/             # Complete build-time zero-runtime CSS-in-JS & design system curriculum
+│   ├── postgres/              # Complete PostgreSQL 18 curriculum, architecture & verified test suites
 │   └── solidjs/               # Complete SolidJS 2.x (@solidjs/signals, @solidjs/web, Start Mode) track
 ├── algorithms/                # Data structures, algorithmic complexity, and problem solving (.gitkeep)
 └── architecture/              # System design, distributed systems, and architectural patterns (.gitkeep)
@@ -41,12 +42,12 @@ Every track within the repository adheres to a uniform structure:
 | :--- | :--- | :--- | :---: | :--- |
 | `languages/` | **TypeScript** | Complete 26-week Total TypeScript syllabus (476 lessons) + Modern JS/TS 5.x–7.0, React 19, and SolidJS 2.x | 🟢 Complete | [languages/typescript/](./languages/typescript/) |
 | `technologies/` | **Panda CSS** | Build-time zero-runtime CSS-in-JS, static AST extraction, design tokens, atomic and config recipes, slot recipes, layout patterns, container queries, and 25 production best practices | 🟢 Complete | [technologies/panda-css/](./technologies/panda-css/) |
-| `technologies/` | **SolidJS 2.x** | Complete Solid 2.0 RC (`@solidjs/signals`, `@solidjs/web`, Oxc/Rust compiler, draft-first stores, `createProjection`, colorless async, `action`/`createOptimisticStore`, Start Mode & `"use server"`) | 🟢 Complete | [technologies/solidjs/](./technologies/solidjs/) |
+| `technologies/` | **PostgreSQL 18** | Complete PostgreSQL 18.6 curriculum (Architecture, AIO, uuidv7, Virtual Columns, Temporal WITHOUT OVERLAPS, Joins, CTEs, Windowing, JSONB, MVCC, Indexing, Skip Scan, Upgrades, PITR, Patroni HA, and pgvector) | 🟢 Complete | [technologies/postgres/](./technologies/postgres/) |
+| `technologies/` | **SolidJS 2.x** | Complete Solid 2.0 RC (@solidjs/signals, @solidjs/web, Oxc/Rust compiler, draft-first stores, createProjection, colorless async, action/createOptimisticStore, Start Mode & "use server") | 🟢 Complete | [technologies/solidjs/](./technologies/solidjs/) |
 | `languages/` | **Rust** | Ownership, lifetimes, borrow checker, async runtime, and systems programming | 🟡 Planned | `languages/rust/` |
-| `languages/` | **Python** | Python data model, metaprogramming, static typing (`mypy`), and async I/O | 🟡 Planned | `languages/python/` |
+| `languages/` | **Python** | Python data model, metaprogramming, static typing (mypy), and async I/O | 🟡 Planned | `languages/python/` |
 | `algorithms/` | **Data Structures & Algorithms** | CLRS-aligned data structures, sorting, graph algorithms, and dynamic programming | 🟡 Planned | `algorithms/` |
 | `architecture/` | **Distributed Systems** | Consensus algorithms (Raft, Paxos), CAP/BASE, event-driven architectures, and messaging | 🟡 Planned | `architecture/` |
-| `technologies/` | **Databases & Storage Engines** | Relational internals (PostgreSQL, B-Trees, WAL), LSM-trees, and query optimization | 🟡 Planned | `technologies/` |
 | `technologies/` | **Containers & Virtualization** | Linux namespaces, cgroups, OCI runtime specifications, and Docker/Kubernetes | 🟡 Planned | `technologies/` |
 
 ---
@@ -57,6 +58,7 @@ To bridge technical English documentation with accurate, established Czech acade
 - **[Central Systems & CS Glossary](./GLOSSARY.md)** covers universal concepts (e.g., *Referential Transparency*, *Idempotency*, *Time Complexity*, *CAP Theorem*).
 - **[TypeScript & Type-System Glossary](./languages/typescript/GLOSSARY.md)** covers specific type theory, compiler analysis, and language features (e.g., *Discriminated Unions*, *Type Narrowing*, *Mapped Types*, *Branded Types*, *Variance*).
 - **[Panda CSS Build-Time & Design System Glossary](./technologies/panda-css/GLOSSARY.md)** covers static AST extraction, design tokens, atomic and config recipes, slot recipes, conditions, and container queries.
+- **[PostgreSQL 18 Database Architecture & SQL Glossary](./technologies/postgres/GLOSSARY.md)** covers the process model, shared buffers, Asynchronous I/O, `uuidv7`, virtual columns, temporal constraints, MVCC internals, B-tree Skip Scan, PITR, and pgvector.
 - **[SolidJS 2.x Reactive & Full-Stack Glossary](./technologies/solidjs/GLOSSARY.md)** covers fine-grained push-pull reactivity, deterministic microtask batching, store projections, colorless async, optimistic transactions, and server functions.
 
 All glossaries strictly follow the discipline recorded in [AGENTS.md](./AGENTS.md): terms must be verified against official documentation, standards (ISO/IEC, ECMA, IEEE), and academic literature without fabricated neologisms.
@@ -81,6 +83,24 @@ npm run typecheck
 ```
 
 Refer to [languages/typescript/README.md](./languages/typescript/README.md) for the full 13-module syllabus and [languages/typescript/CHEATSHEET.md](./languages/typescript/CHEATSHEET.md) for quick lookups.
+
+### Running the PostgreSQL 18 Track
+
+```bash
+# Navigate to the PostgreSQL module
+cd technologies/postgres
+
+# Install dependencies
+npm install
+
+# Run all 10 verified test suites (PGlite WASM / in-process execution)
+npm test
+
+# Run the TypeScript strict compiler check
+npm run typecheck
+```
+
+Refer to [technologies/postgres/README.md](./technologies/postgres/README.md) for the complete 10-module syllabus and [technologies/postgres/CHEATSHEET.md](./technologies/postgres/CHEATSHEET.md) for quick lookups.
 
 ### Running the SolidJS 2.x Track
 

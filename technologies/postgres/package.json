@@ -1,0 +1,27 @@
+{
+  "name": "postgresql-18-complete-curriculum",
+  "version": "18.6.0",
+  "description": "PostgreSQL 18 complete curriculum, architectural reference, and runnable verified test suites",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types examples/01-architecture-and-connection.ts && node --experimental-strip-types examples/02-relational-modeling-and-constraints.ts && node --experimental-strip-types examples/03-sql-querying-and-joins.ts && node --experimental-strip-types examples/04-advanced-sql-ctes-and-window-functions.ts && node --experimental-strip-types examples/05-jsonb-and-full-text-search.ts && node --experimental-strip-types examples/06-concurrency-and-mvcc.ts && node --experimental-strip-types examples/07-query-planning-and-indexing.ts && node --experimental-strip-types examples/08-maintenance-and-statistics.ts && node --experimental-strip-types examples/09-backup-pitr-and-migration.ts && node --experimental-strip-types examples/10-ha-replication-and-pgvector.ts",
+    "test:01": "node --experimental-strip-types examples/01-architecture-and-connection.ts",
+    "test:02": "node --experimental-strip-types examples/02-relational-modeling-and-constraints.ts",
+    "test:03": "node --experimental-strip-types examples/03-sql-querying-and-joins.ts",
+    "test:04": "node --experimental-strip-types examples/04-advanced-sql-ctes-and-window-functions.ts",
+    "test:05": "node --experimental-strip-types examples/05-jsonb-and-full-text-search.ts",
+    "test:06": "node --experimental-strip-types examples/06-concurrency-and-mvcc.ts",
+    "test:07": "node --experimental-strip-types examples/07-query-planning-and-indexing.ts",
+    "test:08": "node --experimental-strip-types examples/08-maintenance-and-statistics.ts",
+    "test:09": "node --experimental-strip-types examples/09-backup-pitr-and-migration.ts",
+    "test:10": "node --experimental-strip-types examples/10-ha-replication-and-pgvector.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "^0.5.12"
+  }
+}
