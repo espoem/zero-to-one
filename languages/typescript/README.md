@@ -14,7 +14,6 @@ languages/typescript/
 ├── README.md                                            # Full syllabus, architecture map, and setup guide
 ├── GLOSSARY.md                                          # Bilingual (EN ↔ CZ) TypeScript & type-system terminology index
 ├── CHEATSHEET.md                                        # Fast lookup for utility types, generics, and TSConfig
-├── SYLLABUS_AUDIT.md                                    # Verification matrix mapping all 476 lessons + modern JS/TS
 ├── package.json                                         # Typechecking and execution scripts
 ├── tsconfig.json                                        # Total TypeScript strict production configuration
 ├── modules/
@@ -107,6 +106,6 @@ npm run typecheck
 npm test
 ```
 
-## Verification & Syllabus Audit
+## Verification & Test Coverage
 
-See [`SYLLABUS_AUDIT.md`](./SYLLABUS_AUDIT.md) for the complete section-by-section verification matrix covering all 476 lessons across the 8 official Total TypeScript workshops/tutorials, the 7 **TypeScript Expert Interviews**, **Modern JS/TS (ES2023–ES2025, TS 5.x–7.0)**, **React 19.x**, and **SolidJS 2.x**.
+All modules in this track are accompanied by deterministic test suites verifying core type transformations, generics, branded types, and schema validation. Run `npm test` and `npm run typecheck` to execute full verification.
