@@ -49,7 +49,7 @@ The `$$typeof` property is critical to application security. In web applications
 
 Because JSON specifications cannot serialize JavaScript `Symbol` primitives, any object originating from `JSON.parse` will lack a genuine `Symbol.for('react.element')` or `Symbol.for('react.transitional.element')`. During reconciliation, `React.isValidElement(node)` evaluates:
 
-$$\text{isValidElement}(e) \iff e \neq \text{null} \land \typeof(e) = \text{'object'} \land e.\$\$typeof = \text{Symbol.for}('react.transitional.element')$$
+$$\text{isValidElement}(e) \iff e \neq \text{null} \land \text{typeof}(e) = \text{'object'} \land e.\$\$\text{typeof} = \text{Symbol.for}('react.transitional.element')$$
 
 If an object lacks this exact symbol reference, React rejects it, terminating injection vulnerabilities before the DOM layer.
 
