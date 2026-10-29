@@ -62,6 +62,91 @@ _$createComponent(Counter, _$mergeProps({
 
 So `props.value` is a **getter**: reading it calls `count()` *at the time of the read*, inside whatever tracking scope the read happens in. That one fact explains both prop rules below.
 
+### 1.2 More real compiler output, annotated
+
+All snippets below are verbatim `@solidjs/compiler@2.0.0-rc.19` output (`generate: "dom"`, imports omitted); the comments are ours.
+
+**Conditionals are memoised on their condition.**
+
+```js
+// <div>{props.ok ? <b>yes</b> : <i>no</i>}</div>
+_$insert(_el$, (() => {
+  var _c$ = _$memo(() => { return !!props.ok; });   // memo over the TRUTHINESS only
+  return () => { return _c$() ? _tmpl$2() : _tmpl$3(); };
+})());
+```
+
+The branch function re-runs only when `!!props.ok` flips, so a change from one truthy value to another does not re-create the `<b>` (proved: same node after `1 → 2`). Without this wrapping, every change of `props.ok` would rebuild the branch. The option is `wrapConditionals` (on by default); `&&` and `||` get the same treatment.
+
+**Control-flow components are just components with getter props.**
+
+```js
+// <Show when={props.user} fallback={<p>login</p>}>{(u) => <p>{u().name}</p>}</Show>
+_$createComponent(_$Show, {
+  get when() { return props.user; },          // read lazily inside Show's own memo
+  get fallback() { return _tmpl$(); },          // a getter: the fallback DOM is created only when needed
+  children: (u) => (() => {                     // a plain function prop: Show calls it per branch
+    var _el$2 = _tmpl$2();
+    _$insert(_el$2, () => { return u().name; });  // the read happens in a binding → tracked
+    return _el$2;
+  })()
+});
+```
+
+This is why the callback body is an owner, not a tracking scope ([Module 04](./04-control-flow-and-composition.md)): it is the body of `children`, called once per branch; only the `insert` inside is reactive.
+
+**Spreads and refs.**
+
+```js
+// <input {...props} onFocus={f} onScroll={g} ref={r} style={{ color: props.c }} />
+_$spread(_el$, [props, { onFocus: f, onScroll: g, get style() { return { color: props.c }; } }], false);
+var _ref$ = r;
+typeof _ref$ === "function" || Array.isArray(_ref$)
+  ? _$ref(() => { return _ref$; }, _el$)        // callback or array: called with the element
+  : r = _el$;                                    // bare variable: assigned (single ref only)
+```
+
+A spread compiles to one `spread()` call that re-applies whatever changed in the merged sources, *including handlers*: the one exception to "handlers bind once" (proved: switching the handler in a spread source takes effect). The ref code shows mechanically why a variable inside an array is never assigned: only the non-function, non-array branch assigns.
+
+**Events: delegated or native.**
+
+```js
+// <input onFocus={f} onClick={g} />
+_$addEvent(_el$, "click", g, true);   // true → delegated (stored on the node, dispatched by the root listener)
+_$addEvent(_el$, "focus", f);         // native addEventListener on the element
+_$delegateEvents(["click"]);          // declare which delegated types this module needs
+```
+
+`@solidjs/web` exports the delegated set as `DelegatedEvents`: `beforeinput, click, dblclick, contextmenu, focusin, focusout, input, keydown, keyup, mouse*, pointer*, touch*` (rc.19). Non-bubbling events (`focus`, `blur`, `scroll`, `load`, media events) get a native listener on the element (proved: `onFocus` fires). Inline arrows are stored directly on the node (`_el$._$$click = () => …`).
+
+**Dev builds carry names.**
+
+```js
+// dev: true — <Child>text <b>{x()}</b></Child> in src/c.jsx
+_$createComponent(Child, { get children() { return ["text ", (() => {
+  var _el$ = _tmpl$();
+  _$insert(_el$, x, undefined, undefined, { name: "b.children", loc: "src/c.jsx:1:32" });
+  return _el$;
+})()]; } }, "Child", "src/c.jsx:1:17");
+```
+
+The extra arguments are what turn a diagnostic into `in <App> › <Child> › b.children at src/c.jsx:1:32`. Note also that `children` is a getter returning *fresh DOM on every access*, the mechanical reason for the `children()` helper.
+
+### 1.3 Templates and the DOM: why cloning wins
+
+The grouped effect is why §6's form-input pitfall exists: one compute half reads every dynamic attribute of the element, so any of them changing re-runs the apply half for the element.
+
+```mermaid
+flowchart LR
+  T["_$template(`<button>Hi `)"] -->|"parse once (innerHTML into a <template>)"| F["DocumentFragment"]
+  F -->|"cloneNode(true) per instance"| I1["instance 1"]
+  F -->|"cloneNode(true)"| I2["instance 2"]
+  I1 --> W["walk: firstChild / nextSibling to the holes"]
+  W --> B["attach bindings: insert(), effect(), addEvent()"]
+```
+
+`cloneNode(true)` of a parsed fragment is a single native call that creates the whole static subtree; the alternative (one `createElement`/`setAttribute`/`appendChild` per node) crosses the JS/DOM boundary for every node. The compiler then reaches dynamic nodes with fixed `firstChild`/`nextSibling` walks (no `querySelector`), and comment markers (`<!>` in DOM templates, `<!--$-->…<!--/-->` in SSR output) delimit holes whose content can change length. Static parts never get a binding at all, so a mostly-static component costs one clone plus a few bindings.
+
 ## 2. Props: values at the call site, property reads in the child
 
 The official cheatsheet calls this "together the most common AI-generated bug class in Solid". It is also the most common human one.
@@ -204,6 +289,20 @@ const [draft, setDraft] = createSignal(untrack(() => props.name));
 
 For values that need not be reactive, go **uncontrolled**: `defaultValue={initial}` and read `new FormData(form)` on submit. Reset with `form.reset()` or by remounting under a keyed `<Show>`. A `value` passed through a spread is rewritten whenever the spread re-evaluates; forward a draft value or bind `value` directly.
 
+### 6.1 Failure modes proved by negative tests
+
+| Failure | Test (`03-components-props-and-dom.test.tsx`) |
+|---|---|
+| accessor passed as a prop | "passing the accessor instead of the value…" |
+| destructured props | "destructuring freezes the value…" (`STRICT_READ_UNTRACKED`) |
+| `undefined` overriding a default | "merge supplies defaults reactively; undefined overrides…" |
+| handler chosen at mount | "the handler expression binds once…" |
+| typed text erased by an unrelated attribute | "binding the committed value loses uncommitted typing" (`UNCOMMITTED_INPUT_OVERWRITTEN`) |
+| function on a lowercase `onclick` | `LOWERCASE_EVENT_ATTRIBUTE` |
+| removed namespaces | four compile errors |
+| bare variable inside a ref array | "a bare variable is assigned for a single ref but never inside an array" |
+| non-renderable value in JSX | "inserting a plain object…" (`UNRECOGNIZED_INSERT_VALUE`) |
+
 ## 7. Then vs now
 
 | 1.x (≤ 1.9) | 2.0 RC | Migration |
@@ -219,6 +318,19 @@ For values that need not be reactive, go **uncontrolled**: `defaultValue={initia
 | `/*@once*/` | removed | reactive JSX, `defaultValue`, or `untrack` |
 | document-global delegation | root-owned delegation | check multi-root / micro-frontend pages |
 | Babel only (`babel-preset-solid`) | `@solidjs/compiler` (Oxc, native) or `@solidjs/babel-plugin` | `@solidjs/vite-plugin` picks it up |
+
+### 7.1 Then vs now: the compiler
+
+| | 1.x | 2.0 RC |
+|---|---|---|
+| Compiler | `babel-preset-solid` / `babel-plugin-jsx-dom-expressions` | `@solidjs/compiler` (Rust/Oxc, native + WASM, default in `@solidjs/vite-plugin`) or `@solidjs/babel-plugin` (`compiler: "babel"` escape hatch) |
+| Attribute effects | one grouped `effect(_p$ => …)` per element, diffing against a previous-values object | the same grouping, now in the split compute/apply shape (compute returns the values object, apply diffs and writes) |
+| Event delegation target | `document` | the render root (and portal mounts) |
+| Removed syntax | tolerated `classList`, `on:`, `use:`, `attr:` | compile errors naming the replacement |
+| Dev labels | function names | `sourceNames`: tag, binding name and `file:line:col` |
+| Experimental | — | TSRX (`.tsrx`) frontend |
+
+**Pitfall when mixing:** a component library compiled with the 1.x Babel preset and shipped as compiled JS imports from `solid-js/web`, which no longer exists. Libraries must ship source JSX (the `solid` export condition) or be recompiled against `@solidjs/web`.
 
 ## 8. Production failure modes
 

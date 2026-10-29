@@ -5,6 +5,7 @@ import { describe, it, expect, afterEach } from "vitest";
 import { createSignal, createEffect, flush, merge, omit, onSettled, untrack } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { render, cleanup } from "@solidjs/testing-library";
+import { DelegatedEvents } from "@solidjs/web";
 import { transform } from "@solidjs/compiler";
 import { captureDiagnostics } from "./support/diagnostics.ts";
 
@@ -356,5 +357,69 @@ describe("03 · form inputs", () => {
     flush();
     expect(input.value).toBe("12");
     expect(digits()).toBe("12");
+  });
+});
+
+describe("03 · compiler output semantics", () => {
+  it("a ternary's condition is memoised: a truthy→truthy change keeps the branch's DOM node", () => {
+    const [n, setN] = createSignal(1);
+    const { container } = render(() => <div>{n() ? <b>yes {n()}</b> : <i>no</i>}</div>);
+    const b = container.querySelector("b");
+    setN(2); // still truthy
+    flush();
+    expect(container.querySelector("b")).toBe(b); // not re-created
+    expect(b!.textContent).toBe("yes 2");
+    setN(0);
+    flush();
+    expect(container.querySelector("i")).not.toBeNull();
+  });
+
+  it("only bubbling UI events are delegated; others get a native listener", () => {
+    const delegated = [...DelegatedEvents];
+    expect(delegated).toContain("click");
+    expect(delegated).toContain("input");
+    expect(delegated).not.toContain("focus"); // focus does not bubble
+    expect(delegated).not.toContain("scroll");
+    let focused = 0;
+    const { container } = render(() => <input onFocus={() => focused++} />);
+    container.querySelector("input")!.dispatchEvent(new FocusEvent("focus"));
+    expect(focused).toBe(1);
+    const { code } = transform(`export const x = <input onFocus={f} onClick={g} />;`, { generate: "dom", filename: "e.jsx" });
+    expect(code).toContain('_$addEvent(_el$, "focus", f);'); // native listener
+    expect(code).toContain('_$addEvent(_el$, "click", g, true);'); // `true` = delegated
+    expect(code).toContain('_$delegateEvents(["click"]);');
+  });
+
+  it("spread is the exception to 'handlers bind once': a changed handler in a spread is re-applied", () => {
+    const log: string[] = [];
+    const [mode, setMode] = createSignal<"a" | "b">("a");
+    const handlers = { a: () => log.push("a"), b: () => log.push("b") };
+    const props = () => ({ onClick: handlers[mode()] });
+    const { container } = render(() => <button {...props()} />);
+    const btn = container.querySelector("button")!;
+    btn.click();
+    setMode("b");
+    flush();
+    btn.click();
+    expect(log).toEqual(["a", "b"]);
+  });
+
+  it("dev builds name bindings and components with source locations (sourceNames)", () => {
+    const { code } = transform(`const D = () => <Child>text <b>{x()}</b></Child>;`, {
+      generate: "dom",
+      filename: "src/c.jsx",
+      dev: true,
+    });
+    expect(code).toContain('"Child", "src/c.jsx:1:17"'); // createComponent(Child, props, name, loc)
+    expect(code).toContain('name: "b.children"');
+  });
+
+  it("negative: inserting a plain object renders nothing and warns UNRECOGNIZED_INSERT_VALUE", () => {
+    const { codes } = captureDiagnostics(() => {
+      const value = { not: "renderable" } as unknown as string;
+      const { container } = render(() => <p>{value}</p>);
+      expect(container.textContent).toBe("");
+    });
+    expect(codes).toContain("UNRECOGNIZED_INSERT_VALUE");
   });
 });

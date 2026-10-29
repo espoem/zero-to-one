@@ -387,17 +387,17 @@ Writes in one synchronous frame commit together, and if one starts async work, t
 It tracks inside the same callback that performs side effects, so it cannot know its dependencies before acting, cannot hold a transition, may run several times for one change, and can tear. It exists only to ease 1.x migration. `createEffect` (react to state) and `onSettled` (one-time post-render DOM work) cover its uses.
 </details>
 
-<details><summary>11. Why can't an effect's apply half create a memo?</summary>
+<details><summary>10. Why can't an effect's apply half create a memo?</summary>
 
 The apply half runs unowned (it is imperative code, like an event handler). A primitive created there would have no owner to dispose it, so rc.19 throws `PRIMITIVE_IN_EFFECT_CALLBACK`. Create primitives in the component body and only use them in apply.
 </details>
 
-<details><summary>12. In one flush, in what order do render effects and user effects apply, and why?</summary>
+<details><summary>11. In one flush, in what order do render effects and user effects apply, and why?</summary>
 
 All render-effect applies (DOM bindings) run, then all user-effect applies, regardless of creation order. User code should observe a DOM that already reflects the committed state.
 </details>
 
-<details><summary>10. How would you assert in a unit test that a component does not read props at the top level?</summary>
+<details><summary>12. How would you assert in a unit test that a component does not read props at the top level?</summary>
 
 Render it in the dev build and capture diagnostics with `OBSERVE.diagnostics.capture()`: a top-level read emits `STRICT_READ_UNTRACKED`. The suite does exactly this; `@solidjs/diagnostics` offers matchers for the same channel.
 </details>
