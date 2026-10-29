@@ -5,6 +5,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { rmSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { expectTypeOf } from "expect-type";
 import { fixture, runTsc } from "../utils/tsc.ts";
@@ -68,4 +69,39 @@ test("project references: tsc -b builds dependencies first, in parallel with --b
   const r = runTsc(["-b", "app", "--builders", "2", "--verbose"], dir);
   assert.equal(r.status, 0, r.output);
   assert.match(r.output, /core/);
+});
+
+test("exports: import vs require conditions pick different declarations; unexported subpaths fail", () => {
+  const r = runTsc(["-p", "."], fixture(import.meta.url, "exports-conditions"));
+  // consumer.mts gets "esm", consumer.cts gets "cjs" (no errors there); only the deep import fails.
+  assert.deepEqual(r.codes, ["TS2307"]);
+  assert.match(r.output, /zto-self\/src\/internal\.js/);
+});
+
+test("customConditions add a condition that wins over later ones (here: \"source\")", () => {
+  const r = runTsc(["-p", ".", "--customConditions", "source"], fixture(import.meta.url, "exports-conditions"));
+  assert.deepEqual([...r.codes].sort(), ["TS2307", "TS2322"]); // pub now comes from src/public.ts (type 2)
+});
+
+test("moduleDetection: a script's top-level const collides with lib.dom globals (TS2451)", () => {
+  const dir = fixture(import.meta.url, "module-detection");
+  const script = runTsc(["-p", "."], dir);
+  assert.ok(script.codes.includes("TS2451"), script.output);
+  const forced = runTsc(["-p", ".", "--moduleDetection", "force"], dir);
+  assert.equal(forced.status, 0, forced.output);
+});
+
+test("--traceResolution explains how a specifier was resolved", () => {
+  const r = runTsc(["-p", ".", "--traceResolution"], fixture(import.meta.url, "exports-conditions"));
+  assert.match(r.output, /Resolving module 'zto-self' from/);
+  assert.match(r.output, /import/);
+});
+
+test("paths aliases type-check but do not exist at runtime (Node ignores tsconfig)", () => {
+  const dir = fixture(import.meta.url, "paths-alias");
+  const checked = runTsc(["-p", "."], dir);
+  assert.equal(checked.status, 0, checked.output);
+  const run = spawnSync(process.execPath, [path.join(dir, "src", "main.ts")], { encoding: "utf8" });
+  assert.notEqual(run.status, 0);
+  assert.match(run.stderr, /ERR_MODULE_NOT_FOUND|Cannot find package '@lib/);
 });

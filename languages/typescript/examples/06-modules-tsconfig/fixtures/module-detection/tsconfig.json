@@ -1,0 +1,3 @@
+{
+  "compilerOptions": { "noEmit": true, "lib": ["esnext", "dom"], "types": [] }
+}

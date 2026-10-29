@@ -19,7 +19,9 @@ A file is a **module** if it has a top-level `import` or `export` (or, with `mod
 | `"force"` | Every non-declaration file is a module |
 | `"legacy"` | Only `import`/`export` makes a module |
 
-**Failure mode:** a helper file without imports declares `const name = "x"` and collides with the DOM's global `name` (TS2451 "Cannot redeclare block-scoped variable"). Use `moduleDetection: "force"`, or add `export {}`.
+**Failure mode:** a helper file without imports declares `const name = "x"` and collides with the DOM's global `name` (TS2451 "Cannot redeclare block-scoped variable", reported both in your file and in `lib.dom.d.ts`). The fixture [`module-detection/`](../examples/06-modules-tsconfig/fixtures/module-detection/index.ts) reproduces it and the test shows that `--moduleDetection force` makes it compile. Use `moduleDetection: "force"`, or add `export {}`.
+
+**Why scripts still exist.** Global scripts are how `lib.d.ts`, `@types/node` globals and classic `<script>` code are modelled: their top-level declarations *must* merge into one global scope. A `.d.ts` without `import`/`export` is therefore global on purpose; adding a single `import` to it silently turns its declarations into module-local ones, a common reason "my global type disappeared".
 
 ---
 
@@ -73,6 +75,50 @@ Writing `.js` for a file that exists as `.ts` surprises newcomers. The rule: spe
 ### 3.2 `bundler`: model a bundler
 
 `moduleResolution: "bundler"` (implied by `module: "preserve"`) uses the `exports` map with the `import` condition, but allows extensionless relative imports and directory `index` files, because bundlers do. The fixture [`bundler/`](../examples/06-modules-tsconfig/fixtures/bundler/index.ts) compiles `import { version } from "./user"`.
+
+### 3.3 How `exports` conditions are matched (worked example)
+
+The fixture [`exports-conditions/`](../examples/06-modules-tsconfig/fixtures/exports-conditions/package.json) is a package that imports *itself* by name (Node's **package self-reference**, which works whenever the nearest `package.json` has `name` and `exports`):
+
+```json
+{
+  "name": "zto-self",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": { "import": "./types/esm.d.ts", "require": "./types/cjs.d.cts" },
+      "default": "./src/index.js"
+    },
+    "./public": { "source": "./src/public.ts", "types": "./types/public.d.ts", "default": "./src/public.js" }
+  }
+}
+```
+
+Resolution walks the condition object **in key order** and takes the first key that is in the active condition set; nested objects repeat the walk. The active set under `nodenext` is `types` + `node` + (`import` for an ESM importer | `require` for a CJS importer) + `customConditions` + `default`.
+
+| Importer | Specifier | Path taken | Declarations |
+|---|---|---|---|
+| `consumer.mts` (ESM) | `zto-self` | `"."` → `types` → `import` | `types/esm.d.ts` (`flavor: "esm"`) |
+| `consumer.cts` (CJS) | `zto-self` | `"."` → `types` → `require` | `types/cjs.d.cts` (`flavor: "cjs"`) |
+| `consumer.mts` | `zto-self/public` | `"./public"` → `types` | `types/public.d.ts` (`pub: 1`) |
+| `consumer.mts` with `--customConditions source` | `zto-self/public` | `"./public"` → `source` (listed first, now active) | `src/public.ts` (`pub: 2`) |
+| `consumer.mts` | `zto-self/src/internal.js` | no matching key in `exports` | **TS2307**: the file exists but is encapsulated |
+
+The tests assert each row. Two practical uses follow. **Encapsulation:** `exports` is a public-API boundary; deep imports into a dependency's internals stop compiling (and stop working in Node) when the dependency adds `exports`. **Source conditions in monorepos:** a custom `"source"` condition pointing at `.ts` files lets workspace packages type-check against each other's sources without building first; the bundler and `customConditions` must agree, or editor and build see different code.
+
+`--traceResolution` prints every step ("Resolving module 'zto-self' from …", which conditions were tried, which file was found). It is the tool for "why does TypeScript pick that file?" (asserted by a test).
+
+### 3.4 `paths`: a type-checker alias, not a runtime feature
+
+`paths` maps specifier patterns to file locations *for the checker only*:
+
+```jsonc
+"paths": { "@lib/*": ["./src/lib/*"], "config": ["./src/config/index.ts"] }
+```
+
+Matching rules: a pattern may contain one `*`; when several patterns match, the one with the **longest prefix before the `*`** wins; each pattern may list several fallback locations, tried in order; locations are resolved relative to the config file (since `baseUrl` is gone in 7.0, start them with `./`). `paths` never rewrites the emitted specifier.
+
+The fixture [`paths-alias/`](../examples/06-modules-tsconfig/fixtures/paths-alias/src/main.ts) type-checks `import { answer } from "@lib/answer.ts"`, and the test then runs the same file with Node, which fails with `ERR_MODULE_NOT_FOUND`: Node does not read `tsconfig.json`. Use `paths` only when a bundler (configured with the same aliases) produces the runtime code; for code that Node runs, use `package.json` `imports` (`#lib/*`), which both Node and TypeScript understand.
 
 ### Then vs now: module resolution
 
@@ -201,6 +247,15 @@ Use `var` for globals that must appear on `globalThis`. Global augmentation desc
 
 **Failure mode:** `declare global` in a file without imports/exports is an error (TS2669: augmentations for the global scope can only be directly nested in external modules), and a *script* `.d.ts` with `declare module "x" {}` *replaces* the module's types instead of augmenting them, silently hiding the real declarations. Keep augmentation files as modules (`export {}`).
 
+### 6.4 How merged symbols are resolved
+
+Declaration merging happens in the binder (per file) and in the checker (across files, and between a module and its augmentations). Rules worth knowing when an augmentation "doesn't apply":
+
+1. **The specifier must resolve to the same module.** `declare module "lib"` augments whatever `"lib"` resolves to *from the augmenting file*. If the augmentation file resolves `"lib"` to a different copy (two versions in `node_modules`, or `"lib/dist/index"` vs `"lib"`), the augmentation lands on a different symbol. `--traceResolution` from the augmenting file shows which.
+2. **Only existing interfaces/namespaces can be extended.** A new top-level `export const` inside `declare module "lib"` is an error; a new interface is allowed but is only visible to code that imports it from `"lib"`.
+3. **Interface member order matters for overloads.** Later declarations' call signatures come *first*, so an augmentation can add a more specific overload that wins over the library's own.
+4. **The augmenting file must be part of the program.** An augmentation in a file nobody imports and `include` does not match has no effect; for library-provided augmentations, `types` or an explicit `import "lib/augment"` brings it in.
+
 ---
 
 ## 7. Project references and `tsc -b`
@@ -296,6 +351,9 @@ TS 7 builds independent projects in parallel (`--builders <n>`, experimental), a
 6. **Stale project-reference builds** cause phantom errors. Always `tsc -b` in CI, and clean `.tsbuildinfo` when switching branches if the build tool caches.
 7. **`paths` aliases work in the editor but not at runtime.** `paths` never changes emitted specifiers; use `imports` or configure the bundler.
 8. **CSS/asset side-effect imports fail after upgrading** (TS2882). Add ambient declarations.
+9. **Deep imports break when a dependency adds `exports`** (TS2307 for a file that exists). Import from the public entry points, or ask the maintainer to export the subpath.
+10. **Editor and build disagree in a monorepo** because one uses a `"source"` custom condition and the other does not. Configure `customConditions` and the bundler's `resolve.conditions` identically.
+11. **A global declaration file stops being global** after someone adds an `import` to it. Keep global `.d.ts` files import-free, or wrap their contents in `declare global {}` and add `export {}` deliberately.
 
 ---
 
@@ -331,7 +389,12 @@ So each project is checked once and downstream projects only read the compact pu
 `noUncheckedSideEffectImports` is on by default since 6.0, so the side-effect import must resolve or be declared. Add `declare module "*.css";` in an ambient `.d.ts` (or, in 7.1, an attribute-based declaration for `with { type: "css" }` imports).
 </details>
 
-<details><summary>7. Why can't a type alias be augmented?</summary>
+<details><summary>7. In what order are <code>exports</code> conditions matched, and how does a <code>.cts</code> file get different types from a <code>.mts</code> file for the same specifier?</summary>
+
+In the object's key order; the first key in the active set wins and nested objects are walked recursively. The active set contains `types`, `node`, `import` or `require` depending on the importing file's format, any `customConditions`, and `default`. A `.cts` importer activates `require`, a `.mts` importer `import`, so a `types: { import: …, require: … }` object gives them different declaration files.
+</details>
+
+<details><summary>8. Why can't a type alias be augmented?</summary>
 
 Only interfaces, namespaces, and value/namespace combinations participate in declaration merging. A second `type X = …` is a duplicate identifier. Libraries that want to be extensible expose interfaces (registry pattern).
 </details>
