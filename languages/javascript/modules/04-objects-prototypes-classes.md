@@ -238,6 +238,8 @@ and a field shadows a setter inherited from the base class (define semantics do 
 
 `accessor x = 1` (auto-accessors) belongs to the **Decorators proposal, Stage 2.7** as of 2026-10-28. TypeScript accepts it; V8 parses it only behind `--js-decorators`. Do not treat it as standard class syntax ([module 09](09-metaprogramming.md)).
 
+> **Exam delta (JSA-41-01).** The JS Institute associate exam does not state its ECMAScript edition, and its "Classes" and "Classless Objects" sections predate ES2022. Expect constructor functions, `prototype` assignment and ES2015 class syntax; `#private` fields, static blocks, `Object.hasOwn` and `#x in obj` may be absent from the exam even though they are current practice. See [exams/README.md](../exams/README.md).
+
 ### Then vs now
 
 | Then (ES5 and conventions) | Now |
