@@ -247,3 +247,219 @@ The transform rewrites only static call sites. Dynamic sites (e.g. `css(badge.ra
 **B.**
 - Ref: [M02 §2.4](../modules/02-installation-and-build-integration.md#typescript-7-and-the-css-import), `examples/react/src/env.d.ts`
 </details>
+
+---
+
+## D3 · Styling API, conditions and cascade (9)
+
+### Q-INT-019 · D3 · difficulty 1 · single
+What does `css({ color: 'orange.700' }, { color: 'orange.300' })` return?
+- A) `'c_orange.700 c_orange.300'`
+- B) `'c_orange.300'`
+- C) `'c_orange.700'`
+- D) It throws: duplicate property
+<details><summary>Answer</summary>
+
+**B.** Objects merge left to right before encoding; the last value wins per property.
+- Ref: [M03 §3.3](../modules/03-styling-api-and-conditions.md#33-composition-css-a-b-cssraw-cx), `runtime.test.ts`
+</details>
+
+### Q-INT-020 · D3 · difficulty 2 · scenario
+An element has `class="c_orange.300 c_orange.700"` built by string concatenation, with `orange.300` written last on purpose. It renders `orange.700`. Why?
+- A) The browser applies the first class in the attribute
+- B) Class order is irrelevant; both rules are in `@layer utilities` with equal specificity, so the one later in the stylesheet wins, and atoms of one property are ordered by value, not usage
+- C) `orange.300` is not a token
+- D) A bug in Panda 2.4
+<details><summary>Answer</summary>
+
+**B.** Merge style objects with `css(a, b)` instead of concatenating classes.
+- Ref: [M03 §3.3](../modules/03-styling-api-and-conditions.md#cx-is-not-a-merge), Playwright test `NEGATIVE: concatenated classes …`
+</details>
+
+### Q-INT-021 · D3 · difficulty 2 · single
+Why does `css({ bg: 'red.500' })` override a config recipe's background even if the recipe selector is more specific?
+- A) Utilities use `!important`
+- B) `utilities` is declared after `recipes` in the layer order, and layer order is compared before specificity
+- C) Recipes are emitted with `:where()`
+- D) Utilities are inline styles
+<details><summary>Answer</summary>
+
+**B.**
+- Ref: [M01 §1.3](../modules/01-mental-model-and-v2-architecture.md#13-the-layered-stylesheet); cascade theory in `languages/css`
+</details>
+
+### Q-INT-022 · D3 · difficulty 3 · scenario
+In v1, `cx(css({ borderWidth: '1px', borderStyle: 'solid' }), css({ borderInlineEnd: '0' }))` produced an open bracket. In v2 the box is closed again. What changed and what is the fix?
+<details><summary>Answer</summary>
+
+v2 sorts atoms by property breadth and puts all border shorthands in one tier; the per-side shorthand `border-inline-end` is emitted before `border-width`, so `border-width: 1px` re-applies the side. Use the longhand `borderInlineEndWidth: '0'`, which sorts after all shorthands. Verified with computed `border-right-width` (1px vs 0px).
+- Verification: `e2e-fixtures.test.ts` (v2 border tiers).
+- Ref: [M03](../modules/03-styling-api-and-conditions.md#property-breadth-ordering-and-the-v2-border-change), https://panda-css.com/docs/get-started/upgrading-to-v2
+</details>
+
+### Q-INT-023 · D3 · difficulty 1 · multi
+Which keys inside a style object are treated as conditions or selectors (not CSS properties)? (Select all that apply.)
+- A) `_hover`
+- B) `md`
+- C) `'&[data-state=open]'`
+- D) `padding`
+- E) `'@container (min-width: 10px)'`
+<details><summary>Answer</summary>
+
+**A, B, C, E.** Nesting under `padding` emits dead CSS and a `nested_property` warning.
+- Ref: [M03 §3.2](../modules/03-styling-api-and-conditions.md#32-conditions)
+</details>
+
+### Q-INT-024 · D3 · difficulty 2 · single
+`_groupHover` styles never apply. What is missing most often?
+- A) `jsxFramework`
+- B) The `group` class (or `role=group` in a custom definition) on the ancestor
+- C) A `:hover` polyfill
+- D) `staticCss`
+<details><summary>Answer</summary>
+
+**B.** Group/peer conditions emit `.group:is(:hover, [data-hover]) .cls` and `.peer:… ~ .cls`.
+- Ref: [M03 §3.2](../modules/03-styling-api-and-conditions.md#families), `e2e-fixtures.test.ts`
+</details>
+
+### Q-INT-025 · D3 · difficulty 2 · scenario
+`<Grid columns={1} md={{ columns: 3 }} />` makes paragraphs flow into three text columns on tablets, but the grid stays single-column. Explain and fix.
+<details><summary>Answer</summary>
+
+The `md` object is a style-prop condition, not a pattern prop, so the grid transform never sees `columns: 3`; `columns` is also a CSS property (multi-column layout), so Panda emits `.md\:columns_3 { columns: 3 }`. Write `columns={{ base: 1, md: 3 }}`.
+- Verification: `negative-extraction.test.ts` (patterns).
+- Ref: [M04 §4.3](../modules/04-patterns-and-layout.md#the-breakpoint-wrapping-trap)
+</details>
+
+### Q-INT-026 · D3 · difficulty 2 · single
+How are container queries declared and queried in Panda 2.x?
+- A) `theme.containerSizes` + `cq` pattern only
+- B) Declare with `containerType`/`containerName` (or `cq()`), sizes in `theme.containers`, names in `theme.containerNames`, query with `'@name/size'` or `'@/size'`
+- C) Only through arbitrary `@container` keys
+- D) Through breakpoints with a `cq` prefix
+<details><summary>Answer</summary>
+
+**B.** Arbitrary `@container` keys also work, but the theme API gives typed conditions.
+- Why not A: `containerSizes` is the v1 key and is silently ignored in v2.
+- Ref: [M04 §4.5](../modules/04-patterns-and-layout.md#45-container-queries-themecontainers), https://panda-css.com/docs/styling/conditional-styles#container-queries
+</details>
+
+### Q-INT-027 · D3 · difficulty 3 · hands-on
+Define a `hoverActive` condition that applies hover styles on pointer devices and active styles on touch devices, under one name. Verify it compiles to two independent media blocks.
+<details><summary>Answer</summary>
+
+```ts
+conditions: { extend: { hoverActive: {
+  '@media (hover: hover)': { '&:is(:hover, [data-hover])': '@slot' },
+  '@media (hover: none)': { '&:is(:active, [data-active])': '@slot' },
+} } }
+```
+
+Each path to `@slot` becomes its own block. The v1 array form (`['@media …', '&:hover']`) can only nest and now warns `config_condition_array_unsupported`.
+- Verification: adapt `configs/array-condition.config.ts` and its test in `negative-extraction.test.ts`.
+- Ref: [M03 §3.4](../modules/03-styling-api-and-conditions.md#block-form-with-slot-and-the-then-vs-now), https://panda-css.com/docs/theming/conditions
+</details>
+
+---
+
+## D4 · Design tokens and theming (9)
+
+### Q-INT-028 · D4 · difficulty 1 · single
+How does a semantic token with `{ base: '{colors.ink.900}', _dark: '{colors.ink.50}' }` compile?
+- A) Two utility classes per usage
+- B) One custom property declared on the root and redeclared under the dark selector, referencing other variables with `var()`
+- C) A JavaScript object read at runtime
+- D) A media query per component
+<details><summary>Answer</summary>
+
+**B.**
+- Ref: [M05 §5.1](../modules/05-design-tokens.md#51-formal-model), `05-tokens` snapshot
+</details>
+
+### Q-INT-029 · D4 · difficulty 2 · scenario
+`css({ borderColor: token('colors.brand.700') })` does not change in dark mode, but `css({ borderColor: 'brand.700' })` would. Why?
+<details><summary>Answer</summary>
+
+The generated `token()` call folds at build time to the token's raw value (`border-color: #4338ca`); a category value or `token.var()` keeps `var(--colors-brand-700)`, which follows redeclarations.
+- Verification: `05-tokens` snapshot (`.bd-c_\#4338ca`).
+- Ref: [M05 §5.3](../modules/05-design-tokens.md#53-five-ways-to-reference-a-token)
+</details>
+
+### Q-INT-030 · D4 · difficulty 2 · multi
+Which statements about `strictTokens` are true? (Select all that apply.)
+- A) `css({ color: '#ff0000' })` is a type error
+- B) `css({ color: '[#ff0000]' })` type-checks
+- C) The compiler refuses to emit CSS for raw values
+- D) It increases type-check work in large apps
+<details><summary>Answer</summary>
+
+**A, B, D.**
+- Why not C: strictness is type-level only.
+- Ref: [M05 §5.5](../modules/05-design-tokens.md#55-strict-modes), `type-tests.ts`
+</details>
+
+### Q-INT-031 · D4 · difficulty 2 · single
+Which conditions can a semantic token use?
+- A) Any condition, including `_hover`
+- B) At-rule and parent-selector conditions (e.g. `md`, `_osDark`, `_dark`)
+- C) Only `_dark`
+- D) Only breakpoints
+<details><summary>Answer</summary>
+
+**B.** The variable is declared on the root or a themed ancestor; element-state conditions do not fit that model.
+- Ref: [M05 §5.2](../modules/05-design-tokens.md#52-declaring-tokens), https://panda-css.com/docs/theming/tokens
+</details>
+
+### Q-INT-032 · D4 · difficulty 3 · scenario
+You ship an on-demand theme with `injectTheme` and enable `optimize.removeUnusedTokens`. The theme's accent renders transparent. Explain.
+<details><summary>Answer</summary>
+
+The on-demand theme references primitives (e.g. `--colors-black`) that nothing static used, so `removeUnusedTokens` pruned them from the main sheet. `var()` of an undefined variable makes the declaration invalid at computed-value time, so `background-color` falls back to transparent. Ship the theme statically (`staticCss.themes`), disable the flag, or reference the primitives from scanned code.
+- Verification: `e2e-fixtures.test.ts` (themes).
+- Ref: [M06 §6.3](../modules/06-color-mode-and-theming.md#what-the-e2e-test-proves)
+</details>
+
+### Q-INT-033 · D4 · difficulty 2 · single
+What does `defineThemeContract` give you?
+- A) Runtime validation of themes
+- B) A type error when a theme omits a contracted token, instead of a silent fallback
+- C) Automatic dark variants
+- D) Smaller theme CSS
+<details><summary>Answer</summary>
+
+**B.**
+- Ref: [M06 §6.3](../modules/06-color-mode-and-theming.md#theme-contract), `configs/themes.config.ts` (`brokenTheme`)
+</details>
+
+### Q-INT-034 · D4 · difficulty 2 · scenario
+Users with a stored dark preference see a light flash on every SSR page load. Propose two fixes.
+<details><summary>Answer</summary>
+
+(1) A tiny blocking inline script in `<head>` that sets `class="dark"` from storage or `prefers-color-scheme` before first paint; (2) read a cookie on the server and render the class into the HTML. OS-only setups can use `_osDark` tokens with no JS at all. Also set `color-scheme`.
+- Ref: [M06 §6.2](../modules/06-color-mode-and-theming.md#flash-of-incorrect-theme-fouc-on-server-rendering)
+</details>
+
+### Q-INT-035 · D4 · difficulty 3 · single
+After upgrading to v2, utilities using `translate`/`filter` disappear in Safari 15 but work in Chrome. Why, and what is the opt-in fix?
+- A) Safari lacks `color-mix`; enable `polyfill`
+- B) v2 registers internal variables with `@property` instead of a universal reset; browsers without `@property` drop them. Enable `optimize.propertyFallback`
+- C) Safari ignores cascade layers; enable `polyfill`
+- D) Safari needs `-webkit-` prefixes; enable `lightningcss`
+<details><summary>Answer</summary>
+
+**B.** `propertyFallback` also emits the plain `*, ::before, ::after, ::backdrop` defaults.
+- Why not D: `lightningcss` was removed in v2.
+- Ref: [M05 §5.4](../modules/05-design-tokens.md#54-registered-variables-property-and-propertyfallback), `05-property-registration` snapshot and fallback test
+</details>
+
+### Q-INT-036 · D4 · difficulty 2 · single
+`css({ textStyle: 'heading', fontSize: 'sm' })`: which font size applies?
+- A) The heading's size, because compositions win
+- B) `sm`, because compositions are in the nested `utilities.compositions` layer and direct utilities beat nested layers
+- C) Whichever key is written last
+- D) Undefined; it warns
+<details><summary>Answer</summary>
+
+**B.**
+- Ref: [M06 §6.4](../modules/06-color-mode-and-theming.md#64-compositions-text-styles-layer-styles-animation-styles), `e2e-fixtures.test.ts`
+</details>
