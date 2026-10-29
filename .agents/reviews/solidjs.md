@@ -9,8 +9,8 @@ Vitest 5.0.5, jsdom 30.1.3, TypeScript 7.0.2, Node 26.12.1.
 
 Done so far (module by module):
 - Harness: Vitest projects `client` (jsdom, dev build, diagnostics live) and `server` (node, SSR build) via `@solidjs/vite-plugin`; old `examples/utils/solid2-runtime.ts` shim deleted.
-- M01 reactive core, M02 effects/lifecycle/diagnostics, M03 components/props/DOM, M04 control flow/composition: modules + suites.
-- M05 stores: suite committed; module text in progress.
+- M01–M10 written with matching suites (examples/typescript/NN-*.test.ts[x]); old modules 01–07 and the shim removed.
+- Next: exams/, GLOSSARY.md, CHEATSHEET.md, README.md.
 
 ## Remaining work
 See the ordered list at the end of this file (kept current).
