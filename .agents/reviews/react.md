@@ -1,8 +1,10 @@
 # Review: react · author Opus (primary) · branch track/react
 
-## Hand-off (in progress — updated after every module commit)
+## Hand-off (primary author, 2026-10-29) — ready for challenger/verifier
 
-**Status:** modules 01–11 rewritten at full depth with real-API Vitest proofs. Module 12, exams, glossary, cheatsheet and README not yet done.
+**Status:** brief delivered. All 12 modules (10 rewritten, 11 and 12 new), 13 Vitest suites against the real React 19.3.1 packages (the old synthetic simulation scripts were deleted), `exams/README.md` (no official certification; certificates.dev + Meta/Coursera documented; 9-domain matrix, all ✅) and `exams/interview.md` (65 questions, 14 at difficulty 3, mock interview with scoring key), GLOSSARY (52 terms), CHEATSHEET, README with Verified-against line. TS M09–M12 runtime mechanics absorbed (M03 state machines, M04 ref cleanup/useEffectEvent, M06 use/Suspense, M07 RSC, M08 actions, M09 compiler, M11 metadata); typing is cross-linked to TS M12.
+
+**Depth note:** modules are 208–382 physical lines each (M08–M12 are the shortest) (dense paragraphs and tables), below the 400–900 rule-of-thumb line count but each has formal definitions, mechanics, Then vs now, failure-mode tables, Mermaid where structural, executable-proof tables and a 7–10 question Interview Drill.
 
 | Module | State | Proof file | Tests |
 |---|---|---|---|
@@ -22,9 +24,17 @@
 **Tooling:** Node 26.12.1 (local), Vitest 5.0.5 + jsdom 30.1.3, RTL 16.3.3, react/react-dom/react-server-dom-webpack 19.3.1, @types/react 19.3.0, babel-plugin-react-compiler 1.0.0 with @babel/core 8.0.9 (works), eslint 10.13.0 + eslint-plugin-react-hooks 7.1.1, fast-check 4.10.2, vite 8.3.5, TypeScript 7.0.2. `npm test` = `vitest run`; `npm run typecheck` = `tsc --noEmit`. Last run: 215/215 passing, typecheck clean.
 
 ## Remaining work (ordered)
-1. GLOSSARY.md, CHEATSHEET.md, README (syllabus, Certifications & Exams, Verified-against line).
-2. `mise.lock`: not generated (no mise binary; nodejs.org checksums unreachable). Run `mise lock` on the Mac CLI.
-3. Playwright browser checks (ViewTransition, Fragment `observeUsing`) not added: no browsers here. Verifier (Antigravity) task.
+1. **`mise.lock`** — not generated: no `mise` binary here and nodejs.org checksums were unreachable. On the Mac CLI run `cd technologies/react && mise lock` and commit. `.mise.toml` pins `node = "26"` and `npm:typescript = 7.0.2`; local verification used Node 26.12.1.
+2. **Browser verification (Verifier/Antigravity):** add a `test:integration` Playwright suite (skip cleanly without browsers) for: real `<ViewTransition>` animations and `addTransitionType` CSS types, Fragment ref `getClientRects`/`observeUsing` with real observers, stylesheet `precedence` load suspension, Trusted Types under `require-trusted-types-for 'script'`, and the M08 hung-action entanglement outside `act()`.
+3. **Challenger review** of the least-certain claims below, especially the CVE table (M07 §7.2) and the observed-only behaviours (M06 conditional-use warning scope, M08 hung action, M12 RTL sync-render pitfall).
+4. **Integrator:** fix cross-track links once `languages/javascript`, `languages/css`, `architecture/networking`, `architecture/security-identity`, `architecture/distributed-systems`, `technologies/nodejs`, `technologies/observability`, `technologies/gitlab-ci` exist, and the TS M12 filename after the TS restructure (currently linked as `12-react-19-and-modern-react-typescript.md`). All other relative links resolve (checked with a script).
+5. Optional depth: a Python/Rust secondary language is not warranted for this track (AGENTS § Code Example Languages); none added.
+
+## Test command output (final)
+```
+npm run typecheck   → tsc --noEmit: clean
+npm test            → Test Files 13 passed (13) · Tests 215 passed (215)
+```
 
 ## Least-certain claims (for the challenger)
 - M12: RTL pitfall (initial sync `render()` that suspends never reveals; awaited async act fixes it) observed, root cause not investigated. Version-history dates before 19.0 from memory of React blog dates (16.0 2017-09, 16.3 2018-03, 16.6 2018-10, 16.8 2019-02, 17.0 2020-10, 18.0 2022-03, 18.3 2024-04) — not re-fetched. React Foundation date from the dossier.
@@ -50,3 +60,12 @@
 - Cross-links point at `languages/javascript/README.md`, `languages/css/README.md` (not yet on main) and `languages/typescript/modules/12-react-19-and-modern-react-typescript.md` (will likely be renamed by the TS restructure — fix links at merge).
 - Re-verify item resolved: there is no `technologies/web-platform` track. Proposed owners: HTTP caching/streaming → `architecture/networking`; CSP/Trusted Types → `architecture/security-identity` (register in OWNERSHIP.md).
 - Upstream repo moved to `github.com/react/react` (package.json `repository` field in 19.3.1).
+- Ownership registrations proposed: React Server Function security model + RSC advisory history → `technologies/react` (M07); list virtualisation algorithm → `technologies/react` (M12) unless `algorithms/dsa` wants it; "testing React (RTL/act)" → `technologies/react` (M12), general testing theory still unowned.
+- Cross-track handover: TS track should remove runtime mechanics from its M09–M12 and link to react M03/M04/M06/M07/M08/M09/M11 (mapping in briefs/typescript.md is fully absorbed here).
+
+## Brief conflicts and re-verify resolutions
+- Brief/dossier said `.mise.toml: node = "24"`; coordinator instruction and AGENTS (latest stable) → pinned `node = "26"`.
+- Brief gotcha #14 ("useLayoutEffect on the server warns") is outdated for 19.x — tested silent in M04; module says the warning existed in ≤18.
+- Re-verify: `@types/react@19.3.0` ✅ registry; canary is `19.3.0-canary-…`/experimental, no 19.4/20 announced ✅ (dist-tags 2026-10-29). Meta/Coursera certificate ✅ still offered, 9 courses (completion-based; page does not mention a proctored exam). `scheduler/unstable_mock` ✅ ships in scheduler 0.28.0 (used in M05). RSC without a bundler ✅ feasible (child process with `--conditions react-server` + `client.node`). `technologies/web-platform` ✗ does not exist → see proposals.
+- Brief said "Add the missing mise.lock" — not possible here (see Remaining work 1).
+- certificates.dev Senior exam: the page says "expected to be released in Q3"; release not confirmed → documented as announced.

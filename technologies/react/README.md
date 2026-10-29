@@ -1,44 +1,67 @@
-# React 19 & Modern React Architecture
+# React 19.3 — From Elements to Server Components
 
-A complete, production-grade learning track and reference implementation covering **React 19**, the **React Compiler**, **Concurrent Mode & Fiber Architecture**, **React Server Components (RSC)**, and **Server Actions**.
+A single progressive track through React's runtime: the element model, the Fiber reconciler, hooks and effects, concurrent scheduling, Suspense and streaming SSR, Server Components and the Flight protocol, Actions, the React Compiler, error handling, DOM platform integration, and production operations. Every claim that can be executed is executed: each module has a Vitest suite that runs against the **real** React packages (no simulations), including negative tests for the failure modes.
 
-This curriculum adheres strictly to the repository standards in [AGENTS.md](../../AGENTS.md):
-1. **Academic Grounding**: Rooted in formal semantics, React Fiber specifications, algebraic scheduling lanes, and primary RFCs.
-2. **Continuous Multi-Tier Progression**: Seamlessly transitions from JSX compilation primitives to concurrent scheduling, streaming wire protocols, and production resilience.
-3. **Executable Proofs**: Accompanied by deterministic test suites verifying edge cases, negative compilation and runtime rejections, hydration error boundaries, and optimistic rollbacks.
-4. **Bilingual Terminology Discipline**: Aligned with the repository [GLOSSARY.md](GLOSSARY.md) with canonical English and professional Czech mappings.
-5. **Tooling Isolation**: Pinned locally with Node 24 and TypeScript 7.0.2 via `.mise.toml`.
+**Verified against** react / react-dom / react-server-dom-webpack 19.3.1, scheduler 0.28.0, @types/react 19.3.0, babel-plugin-react-compiler 1.0.0, eslint-plugin-react-hooks 7.1.1, Vitest 5.0.5, jsdom 30.1.3, @testing-library/react 16.3.3, TypeScript 7.0.2, Node 26.12.1 **on 2026-10-29** (npm registry, react.dev blog and reference, GitHub/OSV/GitLab advisory databases).
 
----
+## Prerequisites
 
-## Curriculum Syllabus & Module Breakdown
+- JavaScript: closures, promises and the event loop ([languages/javascript](../../languages/javascript/README.md)).
+- TypeScript basics; **typing React** (JSX namespace, component and hook types, generic components) is taught in [languages/typescript](../../languages/typescript/README.md) module 12, not here.
+- HTML/DOM basics; CSS view transitions and the rendering pipeline are in [languages/css](../../languages/css/README.md).
 
-| Module | Title | Core Focus Areas | Verified Examples |
-| :--- | :--- | :--- | :--- |
-| **01** | [Elements, JSX & Runtime Model](modules/01-elements-jsx-and-render-model.md) | JSX lowering (`jsxDEV`/`jsxs`), `$$typeof` symbol protection, immutable element trees, element vs. component instance. | `01-elements-and-jsx-runtime.ts` |
-| **02** | [Fiber Reconciler & Tree Mutation](modules/02-fiber-reconciler-and-commit.md) | Persistent fiber nodes, child/sibling/return pointers, double-buffering via `alternate`, stable keying, list reconciliation. | `02-fiber-reconciliation-and-keys.ts` |
-| **03** | [Hooks, State & Closure Mechanics](modules/03-hooks-closure-contracts.md) | Hook linked list structure, dispatchers, functional updaters, stale closure prevention, batching rules. | `03-hooks-closure-contracts.ts` |
-| **04** | [Effects, Refs & React 19 Cleanup](modules/04-effects-and-ref-cleanup.md) | Direct `ref` prop, callback ref cleanup return semantics, effect lifecycle timing (`useLayoutEffect` vs `useEffect`), unmounting order. | `04-effects-and-ref-cleanup.ts` |
-| **05** | [Concurrent Rendering & Priority Lanes](modules/05-concurrent-lanes-and-transitions.md) | 31-bit Lane bitmask algebra, time-slicing (5ms yields), `startTransition`, non-blocking interrupts, preventing UI tearing. | `05-concurrent-lanes-and-transitions.ts` |
-| **06** | [Suspense, Streaming & Hydration](modules/06-suspense-and-streaming-ssr.md) | Thrown promises unrolled via `use()`, selective streaming HTML, hydration boundary mismatch recovery, progressive hydration. | `06-suspense-and-streaming-ssr.ts` |
-| **07** | [React Server Components & Flight](modules/07-rsc-and-flight-protocol.md) | Zero-bundle server execution, `"use client"` vs `"use server"`, Flight wire protocol serialization, client reference slots. | `07-rsc-and-flight-protocol.ts` |
-| **08** | [Server Actions & Optimistic UI](modules/08-actions-and-optimistic-updates.md) | Progressive enhancement `<form action>`, `useActionState`, `useFormStatus`, `useOptimistic` speculative state and rollback on error. | `08-actions-and-optimistic-updates.ts` |
-| **09** | [React Compiler & Memoization Lowering](modules/09-compiler-memoization-lowering.md) | High-Level Intermediate Representation (HIR), reactive scopes, automatic memo cache slots, rules of React, `"use no memo"`. | `09-compiler-memoization-lowering.ts` |
-| **10** | [Resilience, Error Boundaries & Reset](modules/10-error-boundaries-and-resilience.md) | Error boundary class contracts, `getDerivedStateFromError`, `componentDidCatch`, resetting state on navigation/keys, logging digests. | `10-error-boundaries-and-resilience.ts` |
+## Syllabus
 
----
+| # | Module | Covers | Proofs |
+|---|---|---|---|
+| 01 | [Elements, JSX & the render model](modules/01-elements-jsx-and-render-model.md) | JSX automatic runtime, `$$typeof` brand (19 transitional symbol), purity, Strict Mode, keys/identity, `ref` as prop, roots, renderers | [`01-elements`](examples/01-elements/elements.test.tsx) |
+| 02 | [Fiber reconciler & commit](modules/02-fiber-reconciler-and-commit.md) | Fiber fields, double buffering, work loop, two-pass keyed diff (vs LIS), bailouts, commit sub-phases, Fragment refs | [`02-fiber`](examples/02-fiber/fiber.test.tsx) |
+| 03 | [State, hooks & closures](modules/03-state-hooks-and-closures.md) | Hook list, update queues and rebasing, batching, stale closures, reducers as state machines, context, `useSyncExternalStore` and tearing | [`03-state`](examples/03-state/state.test.tsx) |
+| 04 | [Effects & synchronization](modules/04-effects-and-synchronization.md) | Insertion/layout/passive order, Strict Mode (incl. 19.3 hydration), ref cleanup, `useEffectEvent`, fetch races, "you might not need an effect" | [`04-effects`](examples/04-effects/effects.test.tsx) |
+| 05 | [Concurrency: lanes, transitions & Activity](modules/05-concurrency-lanes-transitions.md) | Lane bitmask (checked against the shipped build), scheduler, transitions, **19.3 untangled transitions**, `useDeferredValue`, `<Activity>` | [`05-concurrency`](examples/05-concurrency/concurrency.test.tsx) |
+| 06 | [Suspense, streaming SSR & hydration](modules/06-suspense-streaming-ssr-and-hydration.md) | `use(promise)`, reveal rules, streaming wire format, PPR `prerender`/`resume`, hydration mismatches, `useId`, `browser()` | [`06-suspense-ssr`](examples/06-suspense-ssr/suspense-ssr.test.tsx) |
+| 07 | [Server Components & Flight](modules/07-server-components-and-flight.md) | Module graphs, Flight rows, serialisation, `cache`/`cacheSignal`, Server Function security, **CVE-2025-55182** and follow-ups | [`07-rsc`](examples/07-rsc/rsc.test.tsx) |
+| 08 | [Actions, forms & optimistic UI](modules/08-actions-forms-and-optimistic-ui.md) | Form actions, `useFormStatus`, `useActionState`, `useOptimistic`, races, progressive enhancement | [`08-actions`](examples/08-actions/actions.test.tsx) |
+| 09 | [React Compiler 1.0](modules/09-react-compiler.md) | Pipeline, generated cache code, Rules of React as preconditions, lint, configuration, adoption | [`09-compiler`](examples/09-compiler/compiler.test.tsx) |
+| 10 | [Errors & resilience](modules/10-errors-and-resilience.md) | Error boundaries, root error callbacks, recovery, errors in hidden `<Activity>` | [`10-errors`](examples/10-errors/errors.test.tsx) |
+| 11 | [Animation & DOM platform](modules/11-animation-and-dom-platform.md) | `<ViewTransition>`, `addTransitionType`, Fragment refs, portals, metadata/resources, Trusted Types | [`11-dom-platform`](examples/11-dom-platform/dom-platform.test.tsx) |
+| 12 | [Performance, testing & production](modules/12-performance-testing-and-production.md) | Profiler and Performance Tracks, render cost, virtualisation, `lazy`, RTL/`act`, 18→19 upgrade, patch hygiene, version history | [`12-perf-testing`](examples/12-perf-testing/perf-testing.test.tsx) |
 
-## Verification & Execution
+Reference material: [GLOSSARY.md](GLOSSARY.md) (EN ↔ CZ) · [CHEATSHEET.md](CHEATSHEET.md) · [exams/](exams/README.md).
 
-Ensure dependencies and toolchains are active via `mise`:
+**Out of scope:** routers and meta-frameworks (Next.js, React Router) beyond cross-references; React Native; state-management library APIs; styling systems. See [exams/README.md](exams/README.md#out-of-scope-with-reason).
+
+## Running the examples
 
 ```bash
-# Verify local toolchain
-mise run -- tsc --version # TypeScript 7.0.2
-
-# Run full deterministic test suite
-npm test
-
-# Run isolated type check
-npm run typecheck
+mise install                 # node 26, typescript 7.0.2 (see .mise.toml)
+mise exec -- npm ci
+mise exec -- npm test        # vitest run — all 12 example suites
+mise exec -- npm run typecheck
+mise exec -- npm test -- examples/07-rsc   # one module
 ```
+
+How the harness works:
+
+- Client tests run in **jsdom** with `IS_REACT_ACT_ENVIRONMENT = true` ([`examples/setup.ts`](examples/setup.ts)); a few tests deliberately leave `act()` to observe production scheduling.
+- Server-rendering tests call `react-dom/server` and `react-dom/static` in the same process.
+- **Server Components** run in a child Node process started with `--conditions react-server` and `NODE_ENV=production` ([`examples/07-rsc/server.ts`](examples/07-rsc/server.ts)); the test decodes the Flight stream with `react-server-dom-webpack/client.node`. No bundler is needed.
+- Compiler tests run the real `babel-plugin-react-compiler` and import compiled output from a git-ignored `.generated/` directory.
+- A few tests read **private** fiber fields through [`examples/_shared/internals.ts`](examples/_shared/internals.ts) for teaching; they are pinned to 19.3.1 and documented as such.
+- Browser-only behaviour (real view-transition animations, layout, CSP/Trusted Types) cannot be proven in jsdom; see Module 11 §6. There is no `test:integration` script yet (no Docker or browser is needed by the current suites).
+
+## Certifications & Exams
+
+**There is no official React certification** from Meta or the React Foundation. Documented in detail, with the domain coverage matrix, in [exams/README.md](exams/README.md):
+
+| Credential | Vendor / code | Status (verified 2026-10-29) | Format | Product version |
+|---|---|---|---|---|
+| [React Certification](https://certificates.dev/react) — Junior, Mid-Level, Senior | certificates.dev (third party, not endorsed by Meta) | Junior and Mid-Level available; Senior announced, release not confirmed | Proctored. Junior: 50 MCQ / 40 min. Mid/Senior: 40 MCQ + 105 min coding (135 min); passing score not published | Not stated (exam delta noted in exams/README) |
+| [Meta Front-End Developer Professional Certificate](https://www.coursera.org/professional-certificates/meta-front-end-developer) | Meta via Coursera | Offered | **Completion-based** 9-course programme (incl. React Basics, Advanced React), no proctored exam mentioned | Not stated |
+| **Senior React interview loop** (this track's fallback) | — | — | Technical screen, live coding, frontend system design | React 19.3 |
+
+Preparation: [exams/interview.md](exams/interview.md) — 65 original questions across 9 domains (single, multi-select, scenario, ordering, hands-on tasks verified by the example tests) and a full mock interview with a scoring key.
+
+## Relationship to other tracks
+
+This track owns Fiber, lanes, Suspense, RSC/Flight, Actions and the React Compiler (see `.agents/OWNERSHIP.md`). It cross-links instead of re-explaining: JavaScript semantics ([languages/javascript](../../languages/javascript/README.md)), typing React ([languages/typescript](../../languages/typescript/README.md) M12), view transitions and rendering pipeline ([languages/css](../../languages/css/README.md)), HTTP/streaming/caching ([architecture/networking](../../architecture/networking/README.md)), authorization and OWASP ([architecture/security-identity](../../architecture/security-identity/README.md)), and the React-vs-Solid comparison ([technologies/solidjs](../solidjs/README.md)).
