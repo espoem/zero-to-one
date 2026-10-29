@@ -1,0 +1,4 @@
+{
+  "compilerOptions": { "rootDir": "src", "outDir": "dist", "types": [] },
+  "references": [{ "path": "../core" }]
+}
