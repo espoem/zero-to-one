@@ -347,7 +347,7 @@ In rc.19 `Store<T> = T` and `StoreSetter<T> = (fn: (state: T) => T | void) => vo
 | `ParentComponent<P>` | `P & { children?: JSX.Element }` | Optional |
 | `VoidComponent<P>` | `P & { children?: never }` | Forbidden |
 | `FlowComponent<P, C>` | `P & { children: C }` | Required, of type `C` (e.g. a render function) |
-| `ValidComponent` (`@solidjs/web`) | — | A tag name or `Component<any>` |
+| `ValidComponent` (`@solidjs/web`) | — | A tag name or `Component<any>` (input of `dynamic()`) |
 | `ComponentProps<T>` | Props of a component or intrinsic tag | — |
 
 **Accessor-as-prop bug.** `<Label text={mode} />` passes the function, not the string. With `text: string` that is a type error; with `text: any` or a union including functions, it compiles and renders nothing useful. Type props as values and call accessors at the use site.
@@ -371,9 +371,9 @@ The three overloads are distinguished by the literal type of `keyed`, a direct a
 ### 4.7 Context, events, refs, `<Dynamic>`, actions
 
 - **Context.** `createContext<T>()` without a default still yields `useContext(ctx): T`. A missing provider throws `ContextNotFoundError` at runtime instead of returning `undefined`, so the type is honest only if every consumer is under a provider. Use `createContext<T | null>(null)` for genuinely optional context. The context object is the provider: `<ThemeContext value={…}>`.
-- **Events.** `onClick={(e) => …}` gets `MouseEvent & { currentTarget: HTMLButtonElement; target: DOMElement }`.
+- **Events.** `onClick={(e) => …}` gets `MouseEvent & { currentTarget: HTMLButtonElement; target: DOMElement }`. Solid 2.0 removed the 1.x `on:click` namespace for native listeners: `on:click={…}` is now a compile error (asserted in the type test). Delegated vs native listener semantics are in the solidjs track.
 - **Refs.** `ref={(el) => …}` receives the element type of the tag (`HTMLButtonElement`).
-- **`<Dynamic component={X} …>`** is typed by `DynamicProps<T extends ValidComponent>`: passing `component={Label}` requires `Label`'s props.
+- **`dynamic(() => X)`** returns `Component<ComponentProps<T>>` for `T extends ValidComponent` (a component or a tag name), so `const Field = dynamic(() => cond() ? Rich : "input")` is used as `<Field …/>` with the resolved props checked. The JSX form `<Dynamic component={X} …>` still exists but is `@deprecated` in rc.19 (RFC 03): it re-merges `component` into props and builds a new factory per instance.
 - **Generator actions.** `action(function* (title: string) { …; return x; })` has type `(title: string) => Promise<typeof x>`: `action<Args, Y, R>(genFn: (...args: Args) => Generator<Y, R, any>) => (...args: Args) => Promise<R>`.
 
 ### Then vs now: Solid 1.x → 2.0 typing
@@ -385,6 +385,8 @@ The three overloads are distinguished by the literal type of `keyed`, a direct a
 | Async data | `createResource` → `Resource<T>` with `.loading`/`.error` | async `createMemo` → `Accessor<T>` | Pending/error states move to boundaries, not to the type |
 | `<For>` callback | `(item: T, index: Accessor<number>)` only | Three shapes by `keyed` | `<Index>` → `<For keyed={false}>` |
 | Context | `createContext<T>()` gave `T \| undefined` | `T`, throws if missing | Remove `!`/guards only where a provider is guaranteed |
+| Native events | `on:click={…}` | Removed (compile error); use `onClick` (native-listener options: solidjs track) | Rewrite `on:` attributes |
+| Polymorphic | `<Dynamic component={…}>` | `dynamic(() => …)` (`<Dynamic>` deprecated) | Hoist one factory per component instance |
 | Store setter | Path syntax `setStore("todos", 0, "done", true)` | Draft function | Rewrite path calls as draft mutations |
 
 Pitfall of mixing: libraries built against 1.x types import `JSX` from `solid-js`; in a 2.0 project they type-check against a different namespace or fail to resolve. Check every Solid UI library's 2.0 status before upgrading.

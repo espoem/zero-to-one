@@ -23,7 +23,7 @@ import {
   type Setter,
   type VoidComponent,
 } from "solid-js";
-import { Dynamic, type ComponentProps, type JSX } from "@solidjs/web";
+import { dynamic, type ComponentProps, type JSX } from "@solidjs/web";
 import { expectTypeOf } from "expect-type";
 
 // ---------------------------------------------------------------------------
@@ -212,14 +212,25 @@ export const clicker = (
 );
 
 // ---------------------------------------------------------------------------
-// 9. <Dynamic>: ValidComponent and ComponentProps
+// 9. dynamic(): ValidComponent and ComponentProps (`<Dynamic>` is deprecated in 2.0)
 // ---------------------------------------------------------------------------
 
 expectTypeOf<ComponentProps<typeof Label>>().toEqualTypeOf<{ text: string }>();
-export const dynamicTag = <Dynamic component="a" href="/docs" />;
-export const dynamicComp = <Dynamic component={Label} text="x" />;
+const [rich] = createSignal(false);
+// dynamic() returns a Component whose props are those of the resolved component/tag.
+const Field = dynamic(() => (rich() ? Label : Label));
+export const field = <Field text="x" />;
 // @ts-expect-error — Label requires `text`
-export const dynamicMissing = <Dynamic component={Label} />;
+export const fieldMissing = <Field />;
+const Link = dynamic(() => "a" as const);
+export const link = <Link href="/docs" />;
+
+// ---------------------------------------------------------------------------
+// 9b. Solid 2.0 removed the `on:` namespace for native events: a compile error
+// ---------------------------------------------------------------------------
+
+// @ts-expect-error — `on:click` is not an attribute in Solid 2.0's JSX types
+export const nativeNs = <button on:click={() => {}} />;
 
 // ---------------------------------------------------------------------------
 // 10. Generator actions: the call signature is derived from the generator

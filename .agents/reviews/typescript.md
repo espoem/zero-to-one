@@ -188,12 +188,12 @@ Receiving tracks should cross-link back to **TS M12** (`languages/typescript/mod
 | 13.5.1 Variable vs callback refs | Ref prop types → **TS M12** | — | **solidjs M03** | — | |
 | 13.5.2 Ref directive factories (replacing `use:*`) | Factory type → **TS M12** | — | **solidjs M03** | — | |
 | 13.5.3 `onSettled` replacing `onMount` | — | — | **solidjs M02** | — | |
-| 13.5.4 Delegated vs native events, tuple delegation | Handler types → **TS M12** | — | Delegation semantics → **solidjs M03** | — | |
-| 13.5.5 Polymorphic `<Dynamic>` | `ValidComponent`, `ComponentProps<T>` → **TS M12** | — | `dynamic()` vs `<Dynamic>` runtime → **solidjs M04** | — | |
+| 13.5.4 Delegated vs native events, tuple delegation | Handler types → **TS M12** | — | Delegation semantics → **solidjs M03** | — | **Correction (solidjs review):** the old text taught `on:click`; that namespace is a compile error in Solid 2.0 |
+| 13.5.5 Polymorphic `<Dynamic>` | `ValidComponent`, `ComponentProps<T>` → **TS M12** (now taught via `dynamic()`) | — | `dynamic()` vs `<Dynamic>` runtime → **solidjs M04** | — | **Correction:** `<Dynamic>` is `@deprecated` in rc.19 (RFC 03); `dynamic()` is primary |
 | 13.6.1 Generator `action(fn*)` | Generator typing (`Generator<Y, R, N>`) → **TS M12** | — | **solidjs M07** | Generator protocol → javascript M05 | |
 | 13.6.2 `createOptimistic`/`createOptimisticStore` | — | — | **solidjs M07** | — | |
-| 13.6.3 `"use server"`, `handleServerFunctionRequest` | Argument/return serializability types → **TS M12** | — | **solidjs M08** | — | |
-| 13.6.4 "Full 7-Module Solid Track" pointer | — | — | — | — | **Drop** (stub pointer; brief says delete) |
+| 13.6.3 `"use server"`, `handleServerFunctionRequest` | Argument/return serializability types → **TS M12** | — | **solidjs M08** | — | **Correction:** import path is `@solidjs/web/server-functions/server`, not `@solidjs/web` |
+| 13.6.4 "Full 7-Module Solid Track" pointer | — | — | Replaced by a link to the solidjs track README (from TS M12) | — | **Drop** (stub pointer, rc.8-era) |
 | Anti-patterns | Types-only rows → **TS M12** | — | Behavioural rows → solidjs M02–M04 | — | |
 | Exercise 13.1 async search filter | Type assertions → **TS M12** | — | Runtime → **solidjs M06** | — | |
 | Exercise 13.2 store + projection | Type assertions → **TS M12** | — | Runtime → **solidjs M05** | — | |
