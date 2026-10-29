@@ -76,6 +76,18 @@ sequenceDiagram
 
 **Root without a boundary.** If an async read happens during mount with no `<Loading>` above it, the dev build warns `ASYNC_OUTSIDE_LOADING_BOUNDARY` and the **root mount is deferred** until the value lands (proved: the container stays empty, then shows `late`). It is not an error, but the user sees nothing at all until the slowest top-level read resolves. Put boundaries where partial UI makes sense.
 
+### 1.5 `from()` in detail
+
+`from(source)` turns a push source into a value a computation can return:
+
+| Source shape | Example | Lifecycle |
+|---|---|---|
+| subscribe function `(next, error, complete) => unsubscribe` | WebSocket wrapper, event emitter | subscribed when the computation runs; unsubscribed when it re-runs or is disposed (proved) |
+| Observable (`Symbol.observable`, RxJS) | `from(rx$)` | same |
+| AsyncIterable | `from(stream)` | iterated; `return()` called on re-run/disposal |
+
+Keep the latest value only: a subscription is a *signal over time*, not a log. Transform downstream in another memo (`const label = createMemo(() => format(price()))`), not inside the subscription callback. Under SSR a subscription renders its first value, then the client resubscribes after hydration (`ssrSource: "hybrid"` behaviour for streams).
+
 ## 2. `<Loading>`: branch readiness, not "is fetching"
 
 ```tsx
@@ -371,6 +383,16 @@ A rejection makes the computation errored; reads propagate the error to the near
 <details><summary>9. When is `loadingValue` appropriate?</summary>
 
 When the real loading UI is the real component with provisional data (placeholder rows, default chart), marked as provisional in the data. It commits the placeholder, never suspends, and keeps `isPending` false during the first flight. If the placeholder can't be shaped like a real answer, use `<Loading>`.
+</details>
+
+<details><summary>11. Two searches race and the older response arrives last. What does the user see, and why?</summary>
+
+The newer result. Each computation accepts a flight's value only if the run that started it is still current (last-run-wins); the older response is discarded. Aborting via `onCleanup` additionally stops the wasted request.
+</details>
+
+<details><summary>12. Why put `<Errored>` outside the `<Loading>` it protects?</summary>
+
+If the first load fails inside the boundary, the error must replace the whole subtree including the fallback; inside it, the fallback would sit next to (or instead of) the error depending on timing. Outside, a failed first load shows the error UI, and `reset` retries the whole branch.
 </details>
 
 <details><summary>10. Explain `<Reveal>` sequential vs together.</summary>
