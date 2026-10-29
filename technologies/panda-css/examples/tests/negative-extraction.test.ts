@@ -78,4 +78,12 @@ describe('v1 -> v2 misconfigurations', () => {
     assert.match(log, /nested_property/)
     assert.ok(!/@media \(width >= 48rem\)/.test(css), 'md breakpoint is gone')
   })
+
+  test('@property registrations ship only when used; propertyFallback re-adds plain initial values', () => {
+    const plain = cssgen({ include: 'positive/05-property-registration.ts' }).css
+    assert.match(plain, /@property --translate-y \{/)
+    assert.ok(!plain.includes('*, ::before, ::after'), 'no universal variable reset by default')
+    const fallback = cssgen({ config: 'configs/property-fallback.config.ts' }).css
+    assert.match(fallback, /\*, ::before, ::after, ::backdrop \{[^}]*--translate-y: 0;/)
+  })
 })
