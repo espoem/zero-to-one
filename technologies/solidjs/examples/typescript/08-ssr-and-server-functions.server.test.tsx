@@ -5,7 +5,16 @@
  */
 import { describe, it, expect, beforeAll } from "vitest";
 import { createMemo, Loading } from "solid-js";
-import { renderToString, renderToStream, isServer, getRequestEvent, markSafeError, redirect } from "@solidjs/web";
+import {
+  renderToString,
+  renderToStream,
+  isServer,
+  getRequestEvent,
+  markSafeError,
+  redirect,
+  parseCookieHeader,
+  serializeCookie,
+} from "@solidjs/web";
 import { provideRequestEvent } from "@solidjs/web/storage";
 import {
   registerServerFunction,
@@ -225,5 +234,19 @@ describe("08 · server functions (real client transport → real handler)", () =
     expect(lastResponse!.status).toBeLessThan(500);
     const headerDump = JSON.stringify([...lastResponse!.headers.entries()]);
     expect(headerDump).toContain("/login"); // forwarded as redirect metadata, not as an error body
+  });
+});
+
+describe("08 · cookies (core codec over native Headers)", () => {
+  it("serializeCookie/parseCookieHeader round-trip any string and emit only the given attributes", () => {
+    const header = serializeCookie("session", "a b;c=d", { httpOnly: true, secure: true, sameSite: "lax", maxAge: 60 });
+    expect(header).toMatch(/^session=a%20b%3Bc%3Dd;/); // percent-encoded value
+    expect(header).toContain("Max-Age=60");
+    expect(header).toContain("HttpOnly");
+    expect(header).toContain("Secure");
+    expect(header).toMatch(/SameSite=Lax/i);
+    expect(header).toContain("Path=/"); // the only default
+    expect(parseCookieHeader("session=a%20b%3Bc%3Dd; theme=dark")).toEqual({ session: "a b;c=d", theme: "dark" });
+    expect(serializeCookie("session", "", { maxAge: 0 })).toContain("Max-Age=0"); // deleting = expiring
   });
 });

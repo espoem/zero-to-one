@@ -89,3 +89,20 @@ describe("08 · hydration round-trip", () => {
     expect(root.innerHTML).toBe("<section>other</section>");
   });
 });
+
+describe("08 · streaming wire format (hydratable SSR)", () => {
+  it("the shell carries a placeholder + fallback and a serialized pending promise; a later chunk swaps in the content", () => {
+    const chunks = JSON.parse(
+      execFileSync(process.execPath, ["examples/typescript/support/stream-server.mjs"], { cwd: process.cwd(), encoding: "utf8" }),
+    ) as string[];
+    expect(chunks.length).toBeGreaterThanOrEqual(2);
+    const [shell, ...rest] = chunks;
+    const later = rest.join("");
+    expect(shell).toContain("<h1>shell</h1>"); // shell flushed without waiting
+    expect(shell).toMatch(/<template id="pl-\d+"><\/template><i _hk=\d+>wait<\/i><!--pl-\d+-->/); // placeholder + fallback
+    expect(shell).toContain('_$HY.r["0"]'); // the async memo's value, as a pending seroval promise record
+    expect(later).toMatch(/<template id="\d+"><b _hk=\d+>42<\/b><\/template>/); // resolved fragment
+    expect(later).toContain("{n:42}"); // the memo's data, resolving the promise for hydration
+    expect(later).toContain("$df("); // the swap function that replaces the fallback
+  });
+});

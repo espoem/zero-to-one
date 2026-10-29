@@ -1,5 +1,7 @@
 # Module 08 — Full Stack: SSR, Start Mode, Request Isolation and Server Functions
 
+> **Hydration and streaming proofs:** [`examples/typescript/08-hydration-roundtrip.test.tsx`](../examples/typescript/08-hydration-roundtrip.test.tsx) compiles a fixture with the real compiler for both targets, renders it in a child `node` process (server build), hydrates it in jsdom (browser build), and inspects the streaming wire format.
+>
 > **Executable proof:** [`examples/typescript/08-ssr-and-server-functions.server.test.tsx`](../examples/typescript/08-ssr-and-server-functions.server.test.tsx) runs in the Vitest **server** project (`environment: "node"`), which `@solidjs/vite-plugin` resolves with server export conditions and SSR codegen, so `isServer === true` and the real `@solidjs/web` server build renders. Server functions are called through the **real client transport** wired straight into the **real `handleServerFunctionRequest`**.
 >
 > HTTP semantics, caching (RFC 9111), streaming transport and CDNs are owned by `architecture/networking`; `structuredClone`/serialisation limits by `languages/javascript`; Standard Schema typing by the TypeScript track (M11).
@@ -73,6 +75,77 @@ var _tmpl$ = ["<p", ' class="x"><!--$-->', "<!--/--> and <!--$-->", "<!--/--></p
 export const C = (p) => _$ssr(_tmpl$, _$ssrHydrationKey(), _$scope(() => _$escape(p.a)), _$scope(() => _$escape(p.b)));
 ```
 
+### 3.1.1 Hydration, mechanically
+
+Hydratable compilation produces matching code on both sides. Server output for the fixture `<main><button onClick=…>count {n()}</button><p>{props.label}</p></main>` (rendered, verbatim):
+
+```html
+<main _hk=0><button>count <!--$-->1<!--/--></button><p>server</p></main>
+```
+
+- `_hk` is the **hydration key**: a path-like id derived from the owner tree position (component and child order), the same scheme `createUniqueId` uses. The client computes the same keys while it re-runs the component code.
+- `<!--$-->…<!--/-->` brackets a **dynamic hole** whose content may have any length.
+- Text and attributes that are static are plain HTML.
+
+Client output for the same source (`generate: "dom", hydratable: true`, verbatim excerpt):
+
+```js
+var _el$ = _$getNextElement(_tmpl$);                  // CLAIM the existing <main> by key instead of cloning
+var _el$2 = _el$.firstChild;                          // walk the server DOM like a fresh clone
+var [_el$5, _el$6] = _$getNextMarker(_el$4.nextSibling); // find the <!--$--> … <!--/--> hole
+_el$2._$$click = () => setN(n() + 1);                 // attach delegated handler
+_$insert(_el$2, _$scope(() => n()), _el$5, _el$6);    // bind the hole between the markers
+_$runHydrationEvents();                               // replay clicks captured before hydration
+```
+
+Hydration therefore **re-runs every component once** on the client (setup is needed to create signals and bindings) but **creates no DOM**: elements are claimed by key and bindings attach to existing nodes. Proved in the round-trip test: the `<button>` is the same node object before and after `hydrate()`, and a click afterwards increments it.
+
+The inline bootstrap from `generateHydrationScript()` / `<HydrationScript />` defines `window._$HY` and installs document listeners for the delegated events that **queue user events that happen before the client code arrives**; `runHydrationEvents()` replays them once handlers exist, so an early click is not lost.
+
+**Mismatch is not repaired.** Hydration trusts the server HTML. Proved:
+
+| Situation | Result in rc.19 |
+|---|---|
+| client props/state differ from the server's (`start: 5, label: "client"` vs server `1, "server"`) | the DOM keeps the **server** text, no diagnostic is emitted; the next update of a binding writes the client value (the count jumps from `1` to `6`) |
+| HTML structure does not match the client tree | nothing is claimed and nothing renders (the foreign HTML stays) |
+
+So the inputs to the first client render must equal the server's: serialize them (async memos default to `ssrSource: "server"`, which adopts the server value), never branch on `typeof window` / `isServer` in what you render, and use `createUniqueId` instead of random ids. For values that are legitimately client-only, render a placeholder that matches the server and switch in `onSettled`, or use `ssrSource: "client"` / `clientOnly`.
+
+### 3.1.2 Streaming, on the wire
+
+Verbatim (abridged) chunks from `renderToStream` for a page with one slow `<Loading>`, from the round-trip suite:
+
+```html
+<!-- chunk 0: the shell, flushed immediately -->
+<main _hk=1><h1>shell</h1><!--$--><template id="pl-2"></template><i _hk=20>wait</i><!--pl-2--><!--/--></main>
+<script>(self.$R=self.$R||{})[""]=[];
+  _$HY.r["0"]=$R[0]=…pending promise…;          // hydration record for the async memo (id "0")
+  _$HY.r["2_fr"]=…pending promise…;             // the boundary's fragment resolver
+</script>
+
+<!-- chunk 1: when the data lands -->
+<template id="2"><b _hk=2000>42</b></template>
+<script>…resolve($R[1], $R[5]={n:42});         // fulfil the memo's promise with the serialized value
+  $df("2");                                      // swap: replace the placeholder + fallback with template #2
+</script>
+```
+
+The mechanics: the fallback is rendered behind a placeholder `<template id="pl-N">`; the async memo's value is written as a **seroval** record (a pending promise in the shell, resolved in a later script with the serialized data); the resolved HTML arrives inside `<template id="N">` and `$df(N)` moves it into place. On hydration, the client's memo **adopts** the record instead of fetching again (`ssrSource: "server"`), so the hydrated value equals what was rendered. Proved structurally by the streaming test (placeholder + fallback + pending record in the shell; template, `{n:42}` and `$df(` later).
+
+```mermaid
+sequenceDiagram
+  participant S as server render
+  participant N as network
+  participant B as browser
+  S->>N: shell: layout + placeholder + fallback + pending records
+  N->>B: parse & paint shell (fallback visible), client JS starts loading
+  S->>N: fragment template + data script (when the boundary resolves)
+  N->>B: $df swaps fragment in; record resolved
+  B->>B: hydrate(): claim nodes by _hk, adopt serialized values, replay queued events
+```
+
+Because the head is committed with the shell, status codes and headers must be decided before it ([§3.3](#33-status-and-headers-from-the-tree)). A source marked `deferStream: true` keeps the shell from flushing until it resolves.
+
 ### 3.2 Hydration policy per computation
 
 Async values computed on the server are **serialized** (with seroval) into the HTML and adopted by the client, so the client does not refetch on load. The policy is per primitive ([Module 06](./06-colorless-async.md)):
@@ -133,6 +206,41 @@ flowchart LR
 
 Signal/store setters that run during a server render are inert and warn `SERVER_WRITE` (they will throw in a future release): server rendering is a one-shot projection of state, not an interactive graph.
 
+## 4.1 The request event and the response head
+
+```mermaid
+flowchart LR
+  Req["Request"] --> H["handleRequest(request, { event, nonce, renderMode })"]
+  H --> E["createRequestEvent: { request, locals, response: ResponseStub }"]
+  E --> P["provideRequestEvent(event, …) — AsyncLocalStorage scope"]
+  P --> MW["middleware chain (event, next)"]
+  MW -->|"next()"| R["page render (renderToStream) or server-function dispatch"]
+  R -->|"httpStatus / httpHeader / Set-Cookie write the stub"| ST["ResponseStub (status, headers)"]
+  ST -->|"shell flush → committed"| Res["Response head on the wire"]
+  R --> Body["streamed body"]
+```
+
+- `event.locals` is the per-request bag middleware fills (user, tenant, DB handle). Type it by **module-augmenting** `RequestEventLocals` from `@solidjs/web` in a file that is a module (has an import/export); a script-style `declare module` replaces the package types instead of augmenting them.
+- Direct (in-process, SSR-time) server-function calls run under a derived event whose `locals` is a **shallow copy**: reads see what middleware set; top-level assignments inside the call do not leak back into the render.
+- `event.response` is the response head **as it forms**. Writes after it is `committed` fail loudly (headers) or are dropped with `LATE_HEADER_WRITE` (status via `httpStatus`).
+- Errors that escape the chain in production are contained (bodyless 500) and reported once to `configureServerErrors({ onError })`, or `console.error` if no hook is configured; in dev they reject so Vite's overlay shows them.
+
+### 4.2 Cookies and sessions
+
+Core ships the **codec** and the exchange, not a session system (RFC 12):
+
+```ts
+import { getRequestEvent, parseCookieHeader, serializeCookie } from "@solidjs/web";
+const event = getRequestEvent()!;
+const { theme } = parseCookieHeader(event.request.headers.get("cookie"));
+event.response.headers.append("set-cookie",
+  serializeCookie("session", token, { httpOnly: true, secure: true, sameSite: "lax", maxAge: 604800 }));
+```
+
+Proved: values are percent-encoded and round-trip any string (`"a b;c=d"`); attributes are emitted exactly when given; `Path=/` is the only default; deleting is expiring (`maxAge: 0`). Reads see only what the client sent: a `Set-Cookie` appended in this request does not read back. Multiple `Set-Cookie` headers are never folded into one.
+
+Sessions are deliberately app-layer. RFC 12's recipe composes a signed-cookie library (`@remix-run/cookie`, WebCrypto-based, secret rotation) with `getRequestEvent()`: read and verify the cookie in middleware or a server function, put the user on `event.locals`, re-issue the cookie on change, and enforce expiry server-side, not only via `Max-Age`. The login flow "set the session cookie, then `throw redirect('/')`" works because the server-function handler folds the stub's cookies onto whatever response leaves, redirects included.
+
 ## 5. Server functions
 
 ### 5.1 Compilation
@@ -181,6 +289,17 @@ A server component is *a function returned from a server function*; there is no 
 
 `@solidjs/router@2.0.0-next.43` is the Solid 2 router (peers on `solid-js ^2.0.0-rc.19`), with file-system routing via `@solidjs/router/fs` and a `setup`-hook integration in start mode. Its API is still moving between `next` releases and is not covered by this track's tests; check its README for the pinned version before teaching it (listed under remaining work).
 
+### 6.1 Failure modes proved by negative tests
+
+| Failure | Test |
+|---|---|
+| module-scope state shared across requests | "module-scope state leaks between concurrent requests" (server suite) |
+| hydration data mismatch | "a data mismatch is not repaired…" (round-trip suite) |
+| foreign HTML at the hydration root | "structurally foreign HTML is not claimed…" |
+| cross-site server-function call | CSRF 403, function body never ran |
+| wrong HTTP method | 405 |
+| non-JSON arguments | refused with the `enableRichArguments()` hint |
+
 ## 7. Then vs now
 
 | 1.x / SolidStart 1 | 2.0 RC | Migration |
@@ -194,6 +313,19 @@ A server component is *a function returned from a server function*; there is no 
 | `createResource({ ssrLoadFrom, deferStream })` | `ssrSource`, `deferStream` on any computation | |
 | `clientOnly` from `@solidjs/start` | `clientOnly` from `@solidjs/web` | |
 | `@solidjs/router` 0.x/1.x `cache`, `createAsync` | router 2.0-next on core async | follow router migration notes |
+
+### 7.1 Then vs now: hydration and streaming details
+
+| | 1.x | 2.0 RC (observed in this track's tests) |
+|---|---|---|
+| Hydration key attribute | `data-hk` | `_hk` |
+| Async value transfer | resources serialized for hydration (seroval since 1.8) | every async computation serialized as a seroval record (`_$HY.r[id]`), adopted by default (`ssrSource: "server"`) |
+| Streaming swap | `<template>` + script per `<Suspense>` resolution | `<template id="pl-N">` placeholder, `<template id="N">` content, `$df(N)` swap |
+| Early events | delegated events captured by the hydration script and replayed | same idea: `_$HY` queues delegated events, `runHydrationEvents()` replays |
+| Duplicate fetch on hydrate | refetch unless `ssrLoadFrom: "initial"` | none by default; beware the tracking-run duplicates in §3.2 |
+| Client-only branches | `isServer` checks, `<NoHydration>`, `clientOnly` (Start) | `ssrSource: "client"`, `clientOnly` (core), `NoHydration`/`Hydration` still exported |
+
+**Pitfall when mixing:** an SSR document produced by one version and hydrated by another (stale CDN HTML after a deploy) has different keys and markers; the client claims nothing. Version HTML and client bundles together and purge the HTML cache on deploy.
 
 ## 8. Production failure modes
 
@@ -245,6 +377,16 @@ Cross-site requests (same-origin check via `Sec-Fetch-Site`/`Origin`/`Referer`, 
 <details><summary>7. How do you validate server-function input?</summary>
 
 Treat arguments as `unknown` and validate with a Standard Schema validator (Zod, Valibot, ArkType) inside the function; return issues as data for forms, or throw `respond(error, { status: 400 })`. Core intentionally ships no validator.
+</details>
+
+<details><summary>9. What happens if the client's first render does not match the server HTML?</summary>
+
+Hydration trusts the server DOM: with different data, the server's text stays (no diagnostic in rc.19) until a binding next updates; with a different structure, nothing is claimed. Make the first client render's inputs identical (serialized values, `createUniqueId`, no `isServer` branching in output) and switch to client-only values in `onSettled`.
+</details>
+
+<details><summary>10. Walk through what the browser receives for a page with one slow `<Loading>`.</summary>
+
+A shell with layout, a placeholder `<template id="pl-N">` plus the fallback, and seroval records for pending async values; later a `<template id="N">` with the resolved HTML plus a script that resolves the record with the serialized data and calls `$df(N)` to swap it in. Hydration then adopts the serialized values instead of refetching.
 </details>
 
 <details><summary>8. What problem does `ssrSource: "client"` solve, and what does the server render?</summary>
