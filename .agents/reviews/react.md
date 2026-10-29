@@ -2,7 +2,7 @@
 
 ## Hand-off (in progress — updated after every module commit)
 
-**Status:** modules 01–05 rewritten at full depth with real-API Vitest proofs. Modules 06–12, exams, glossary, cheatsheet and README not yet done.
+**Status:** modules 01–06 rewritten at full depth with real-API Vitest proofs. Modules 07–12, exams, glossary, cheatsheet and README not yet done.
 
 | Module | State | Proof file | Tests |
 |---|---|---|---|
@@ -11,12 +11,12 @@
 | 03 State, hooks & closures | done (renamed from `03-hooks-closure-contracts.md`) | `examples/03-state/state.test.tsx`, `fetch-machine.ts` | 25 |
 | 04 Effects & synchronization | done (renamed from `04-effects-and-ref-cleanup.md`) | `examples/04-effects/effects.test.tsx` | 22 |
 | 05 Concurrency: lanes, transitions | done (renamed from `05-concurrent-lanes-and-transitions.md`) | `examples/05-concurrency/concurrency.test.tsx`, `lane-model.ts` (property test vs function extracted from installed react-dom build) | 17 |
-| 06–12 | old ~70-line text (04–10) or missing (11, 12); their old synthetic examples were deleted in b5fd650 | — | — |
+| 06 Suspense, streaming SSR & hydration | done (renamed from `06-suspense-and-streaming-ssr.md`) | `examples/06-suspense-ssr/suspense-ssr.test.tsx`, `_shared/ssr.ts` | 20 |
+| 07–12 | old ~70-line text (04–10) or missing (11, 12); their old synthetic examples were deleted in b5fd650 | — | — |
 
-**Tooling:** Node 26.12.1 (local), Vitest 5.0.5 + jsdom 30.1.3, RTL 16.3.3, react/react-dom/react-server-dom-webpack 19.3.1, @types/react 19.3.0, babel-plugin-react-compiler 1.0.0 with @babel/core 8.0.9 (works), eslint 10.13.0 + eslint-plugin-react-hooks 7.1.1, fast-check 4.10.2, vite 8.3.5, TypeScript 7.0.2. `npm test` = `vitest run`; `npm run typecheck` = `tsc --noEmit`. Last run: 104/104 passing, typecheck clean.
+**Tooling:** Node 26.12.1 (local), Vitest 5.0.5 + jsdom 30.1.3, RTL 16.3.3, react/react-dom/react-server-dom-webpack 19.3.1, @types/react 19.3.0, babel-plugin-react-compiler 1.0.0 with @babel/core 8.0.9 (works), eslint 10.13.0 + eslint-plugin-react-hooks 7.1.1, fast-check 4.10.2, vite 8.3.5, TypeScript 7.0.2. `npm test` = `vitest run`; `npm run typecheck` = `tsc --noEmit`. Last run: 124/124 passing, typecheck clean.
 
 ## Remaining work (ordered)
-3. M06 Suspense/SSR (use(promise) caching, renderToPipeableStream, prerender+resume, hydration mismatch via onRecoverableError, `browser()` + `onBrowserBailout`, useId `_r_`).
 4. M07 RSC/Flight: feasible without a bundler — spawn `node --conditions react-server` child with NODE_ENV=production (dev rows leak absolute file paths), decode with `react-server-dom-webpack/client.node` `createFromNodeStream(stream, {moduleMap:{}, serverModuleMap:null, moduleLoading:null})`. CVE section + version-gate test.
 5. M08 Actions; M09 Compiler (babel transform fixtures, eslint Linter runs); M10 Errors; M11 DOM platform (new); M12 Perf/testing/ops (new).
 6. exams/README.md + exams/interview.md (≥60 Q, mock exam), GLOSSARY.md, CHEATSHEET.md, README (syllabus, Certifications & Exams, Verified-against line).
@@ -24,6 +24,8 @@
 8. Playwright browser checks (ViewTransition, Fragment `observeUsing`) not added: no browsers here. Verifier (Antigravity) task.
 
 ## Least-certain claims (for the challenger)
+- M06: the 19.3 conditional-`use` warning only fires when React retries the same fiber (observed: root-level suspend, not inside a Suspense boundary). Module text says so. Production-mode SSR error output (digest only, no data-msg) is stated, not tested (tests run the DEV build).
+- M06: useId history (`:r:` 18–19.0, `«r»` 19.1, `_r_` 19.2) from the 19.2 blog; server prefix `_R_` observed on 19.3.1.
 - M05: lane names for bits 18–21 (TransitionDeferredLanes) and 22–25 (RetryLanes) inferred from `requestDeferredLane` and the Performance-track labels in the 19.3.1 build; the 19.2 `getHighestPriorityLanes` difference was checked by hand against a downloaded react-dom@19.2.9 tarball (not in tests). Untangled behaviour is tested only on 19.3.1.
 - M05: `GestureLane` described as experimental API (not re-verified).
 - Brief gotcha #14 ("useLayoutEffect on the server warns") is outdated: 19.3.1 prints nothing (tested in M04). M04 says the warning existed in ≤18.
@@ -35,6 +37,7 @@
 
 ## Proposals for integrator
 - Root glossary candidates: Tearing, Double buffering, Left-child/right-sibling tree, Tree edit distance.
+- Cross-links also point at `technologies/nodejs/README.md` and `architecture/networking/README.md` (planned tracks).
 - Cross-links point at `languages/javascript/README.md`, `languages/css/README.md` (not yet on main) and `languages/typescript/modules/12-react-19-and-modern-react-typescript.md` (will likely be renamed by the TS restructure — fix links at merge).
 - Re-verify item resolved: there is no `technologies/web-platform` track. Proposed owners: HTTP caching/streaming → `architecture/networking`; CSP/Trusted Types → `architecture/security-identity` (register in OWNERSHIP.md).
 - Upstream repo moved to `github.com/react/react` (package.json `repository` field in 19.3.1).
