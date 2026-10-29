@@ -13,6 +13,8 @@ import {
   getOwner,
   runWithOwner,
   isEqual,
+  createEffect,
+  resetErrorHalt,
 } from "solid-js";
 import { captureDiagnostics, tick } from "./support/diagnostics.ts";
 
@@ -337,5 +339,98 @@ describe("01 · negative: writes inside an owned scope", () => {
       expect(flag()).toBe(true);
       dispose();
     });
+  });
+});
+
+describe("01 · internals and production failure modes", () => {
+  it("dormancy: an untracked read of a subscriber-less memo lets the next flush sweep it; a later read revives it", () => {
+    const [s, setS] = createSignal(1);
+    let runs = 0;
+    const m = createMemo(() => (runs++, s())); // no owner, no subscriber
+    expect(m()).toBe(1); // untracked read → queued as dormant
+    expect(runs).toBe(1);
+    setS(2);
+    flush(); // the sweep unlinks the dormant memo before the heap runs: no recompute
+    expect(runs).toBe(1);
+    expect(m()).toBe(2); // the read revives it with a full recompute
+    expect(runs).toBe(2);
+  });
+
+  it("dynamic dependencies raise height: a node that starts reading a deeper memo is re-ordered after it", () => {
+    const order: string[] = [];
+    const { setUseDeep, setBase, dispose } = createRoot((dispose) => {
+      const [base, setBase] = createSignal(1);
+      const [useDeep, setUseDeep] = createSignal(false);
+      const d1 = createMemo(() => base() + 1);
+      const d2 = createMemo(() => d1() + 1); // height 2
+      const d3 = createMemo(() => (order.push(`d3 sees d2=${d2()}`), d2() + 1)); // height 3
+      createMemo(() => {
+        const v = useDeep() ? d3() : base();
+        order.push(`sink ${v}`);
+      });
+      return { setUseDeep, setBase, dispose };
+    });
+    order.length = 0;
+    setUseDeep(true);
+    flush();
+    setBase(10);
+    flush();
+    // After the switch the sink depends on d3 (height 3) and must run after it in the same pass.
+    expect(order.slice(-2)).toEqual(["d3 sees d2=12", "sink 13"]);
+    dispose();
+  });
+
+  it("negative: an effect created without an owner keeps running forever (NO_OWNER_EFFECT)", () => {
+    const [s, setS] = createSignal(0);
+    let runs = 0;
+    const { codes } = captureDiagnostics(() => {
+      createEffect(
+        () => s(),
+        () => {
+          runs++;
+        },
+      );
+    });
+    flush();
+    setS(1);
+    flush();
+    setS(2);
+    flush();
+    expect(codes).toContain("NO_OWNER_EFFECT");
+    expect(runs).toBe(3); // nothing can dispose it: a leak for the lifetime of `s`
+  });
+
+  it("negative: a read outside any tracking scope is a snapshot, not a subscription", () => {
+    const [n, setN] = createSignal(1);
+    const label = `n is ${n()}`; // plain read at module/handler level
+    const { live, dispose } = createRoot((dispose) => ({ live: createMemo(() => `n is ${n()}`), dispose }));
+    setN(2);
+    flush();
+    expect(label).toBe("n is 1");
+    expect(live()).toBe("n is 2");
+    dispose();
+  });
+
+  it("negative: an effect that writes its own source loops until the runtime gives up", () => {
+    let error: unknown;
+    const { x, dispose } = createRoot((dispose) => {
+      const [x, setX] = createSignal(0);
+      createEffect(
+        () => x(),
+        (v) => {
+          setX(v + 1); // ❌ unbounded feedback through the apply half
+        },
+      );
+      return { x, dispose };
+    });
+    try {
+      flush();
+    } catch (e) {
+      error = e;
+    }
+    expect(String(error)).toMatch(/Potential Infinite Loop Detected/);
+    expect(x()).toBeGreaterThan(90_000); // ~100k iterations ran first
+    dispose();
+    resetErrorHalt();
   });
 });

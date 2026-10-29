@@ -81,6 +81,93 @@ flush():                              -- microtask, or an explicit flush()
 
 Loop invariant of the pull loop: *when node $v$ is popped, every node of smaller height that $v$ might read is already clean in $\sigma_{k+1}$*. Because heights strictly increase along edges, that invariant is what makes each run consistent. This is the classic three-colour (clean / check / dirty) push-pull algorithm popularised by Reactively and alien-signals; the RC's internals literally use `REACTIVE_CHECK` / `REACTIVE_DIRTY` flags and a height-ordered heap (`@solidjs/signals/dist/types/core/heap.d.ts`). Those internals are not public API and change between RCs; the observable contract is the one the tests assert.
 
+### 2.2 The rc.19 implementation, annotated
+
+The operational semantics above is the contract. This section reads the actual engine (`@solidjs/signals/dist/dev-shared.js`, rc.19) so you can explain *how* the contract is met. Function names are real; internal fields start with `_` and are not API.
+
+#### Data structures
+
+```mermaid
+classDiagram
+  class Signal { _value; _pendingValue; _subs: Link; _subsTail; _config }
+  class Computed { _fn; _value; _height; _flags; _deps: Link; _depsTail; _depGen; _subs; _parent (owner) }
+  class Link { _dep; _sub; _nextDep; _prevSub; _nextSub; _gen }
+  class Heap { _heap: Computed[] by height; _min; _max; _marked }
+  Signal "1" --> "*" Link : _subs
+  Computed "1" --> "*" Link : _deps
+  Link --> Computed : _sub
+  Heap --> Computed : buckets
+```
+
+- **`Link`** is one dependency edge, stored once and threaded into two doubly-linked lists: the subscriber's `_deps` list and the source's `_subs` list. The `link(dep, sub)` function carries a comment pointing at `alien-signals` v2.0.3 (`system.ts`), the algorithm it derives from. During a re-run, `link` walks the previous dependency list *in order*: if the next read is the same dependency as last time, the existing link is reused and stamped with the current generation (`_gen = _depGen`); otherwise a new link is spliced in. After the run, links not stamped this generation are trimmed (`trimStaleDeps`). This makes dependency re-recording $O(\text{reads})$ with no allocation in the common case where a computation reads the same things in the same order.
+- **The dirty heap** is not a binary heap: it is an **array of buckets indexed by height**, each bucket a circular doubly-linked list (`_prevHeap`/`_nextHeap`). `insertIntoHeap` appends in $O(1)$; `runHeap` scans buckets from `_min` to `_max`.
+- **Flags** per computed: `REACTIVE_CHECK` (some upstream may have changed), `REACTIVE_DIRTY` (a direct dependency changed), `REACTIVE_IN_HEAP`, `REACTIVE_RECOMPUTING_DEPS` (currently running), `REACTIVE_DISPOSED`, plus RC-era flags for holds and lanes.
+
+#### The three-colour marking
+
+```mermaid
+stateDiagram-v2
+  [*] --> CLEAN
+  CLEAN --> DIRTY: a direct dependency was written
+  CLEAN --> CHECK: an upstream node became DIRTY/CHECK (markNode recursion)
+  CHECK --> DIRTY: a dependency, once brought up to date, changed value
+  CHECK --> CLEAN: all dependencies validated unchanged (no recompute)
+  DIRTY --> CLEAN: recompute (equal result → subscribers not dirtied)
+```
+
+`markNode(el, state)` sets `el`'s state if it is "stronger" than the current one and recurses into every subscriber with `CHECK`. The recursion stops at nodes already marked at least that strongly, so each node is visited at most twice per write burst (once for CHECK, once for DIRTY): marking is $O(|V_{reach}| + |E_{reach}|)$.
+
+#### One flush, step by step
+
+`schedule()` sets a `scheduled` flag and calls `queueMicrotask(flush)` unless a flush is already running or a `flush(fn)` is in progress (`syncDepth`). `GlobalQueue.flush()` then runs, in this order (verbatim structure, comments ours):
+
+```js
+sweepDormant();                       // 1. unlink unobserved memos read untracked last tick
+runHeap(dirtyQueue, GlobalQueue._update); // 2. recompute dirty nodes bucket by bucket (height order)
+this.settle();                        // 3. commit staged values, resolve holds
+clock++;                              // 4. advance the global epoch
+this.run(EFFECT_RENDER);              // 5. apply halves of render effects (DOM bindings)
+this.run(EFFECT_USER);                // 6. apply halves of user effects (createEffect)
+```
+
+Writes made in step 5 or 6 (an effect apply that sets a signal) set `scheduled` again and the loop continues in the same flush ("the same flush's continuation"). A dev guard counts iterations: past roughly 100 000 the runtime throws **"Potential Infinite Loop Detected"** (proved: an apply half that increments its own source got to about 99 998 before the throw).
+
+```text
+RUN-HEAP(H)
+  H.marked ← false
+  for h ← 0 to H.max:                          ▷ invariant: all buckets < h are empty
+      while H.bucket[h] ≠ ∅:
+          v ← head(H.bucket[h])
+          if v.flags ∋ IN_HEAP: RECOMPUTE(v)     ▷ removes v; may insert subscribers at heights > h
+          else: ADJUST-HEIGHT(v)                 ▷ v moved here only to fix its height
+  H.max ← 0
+```
+
+**Loop invariant.** When bucket $h$ is processed, every bucket $h' < h$ is empty, so every dependency of a node at height $h$ is either a source or a node that has already been recomputed (or validated) in this flush.
+
+**Dynamic heights.** Heights are not fixed: if a re-run makes $v$ read a node $u$ with $h(u) \ge h(v)$, `adjustHeight` raises $h(v)$ to $h(u)+1$ and re-inserts $v$'s subscribers so they move up too. A child computation is also placed above its owner (`parentHeight + 1`), so an owner always re-runs (and possibly disposes its children) before the children would run. The suite's "dynamic dependencies raise height" test switches a sink from a height-1 source to a height-3 memo and asserts the sink runs after it in the same pass.
+
+#### Pull on read
+
+Between flushes, a read of a node in CHECK state calls `updateIfNecessary`: it walks the node's dependencies in order, recursively updating computed ones, and stops at the first one that turned the node DIRTY; then it recomputes. This is the "pull" half: a value read mid-tick (for example inside `latest()` or a nested `flush(fn)`) is brought up to date on demand without waiting for the heap.
+
+#### Dormancy and autodisposal
+
+A memo with **no owner and no subscribers** that is read untracked is queued as *dormant*; the next flush's `sweepDormant()` unlinks it from its sources *before* the heap runs, so it costs nothing until read again, and the next read recomputes it from scratch. Proved: after an untracked read, a write + flush does not recompute it; the following read does. This is how unowned memos avoid the classic leak "a source keeps a dead memo alive forever" (the source comment notes that upstream alien-signals has exactly that retention). Lazy memos opt into the same lifecycle explicitly.
+
+### 2.3 Proof sketch: glitch freedom
+
+**Claim.** In a flush, every computation $v$ that runs reads only values computed from $\sigma_{k+1}$.
+
+1. *Commit before compute.* Writes are staged into `_pendingValue`; the heap runs over nodes marked by those writes; reads of a source during the flush return the staged value for the transaction being flushed (`settle` then makes it the committed value). No write from *outside* the flush can interleave, because JavaScript is single-threaded and the flush runs synchronously.
+2. *Topological order.* By the loop invariant, when $v$ at height $h$ runs, all its computed dependencies have height $< h$ and their buckets are empty: each is either clean, or was recomputed in this flush from $\sigma_{k+1}$ (induction on height, base case: sources).
+3. *Dynamic edges.* If $v$'s run reads a node it did not read before, that node is brought up to date by `updateIfNecessary` (pull), or, if its height is not lower, `adjustHeight` moves $v$ above it and $v$ is re-run after it. Either way the read value derives from $\sigma_{k+1}$.
+4. *Effects.* Apply halves run only after the heap is empty (steps 5–6), so every apply sees the fully recomputed state.
+
+Hence no run observes a mix of old and new inputs. (Async holds extend this: a node whose value is pending is not committed to the screen frame until its transaction settles; [Module 06](./06-colorless-async.md).)
+
+**Complexity.** For a write burst affecting the reachable set $R$, marking is $O(|R| + |E_R|)$, recomputation is $O(\sum_{v \in R'} \text{cost}(f_v))$ where $R' \subseteq R$ are the nodes whose inputs actually changed (CHECK nodes whose dependencies were equal are skipped), and heap operations are $O(1)$ each plus an $O(H)$ bucket scan, $H$ the maximum height.
+
 ## 3. Signals
 
 ```ts
@@ -232,6 +319,26 @@ Rules proved by the tests:
 
 Production nuance from RFC 02: in the production build a component body shares its enclosing owner instead of getting its own, so a parent that registers `onCleanup` *after* creating children runs before them in production and after them in dev. Register cleanup before creating children when the order matters.
 
+### 6.1 Disposal, step by step
+
+Disposing an owner (`dispose()` from `createRoot`, a `<Show>` branch turning false, a `<For>` row leaving) runs:
+
+```text
+DISPOSE(o)
+  for each child c of o:                          ▷ children before the parent's own cleanups
+      DISPOSE(c)
+  for each cleanup k registered on o, last first: ▷ LIFO
+      k()
+  unlink o's dependency edges from every source  ▷ sources no longer hold o
+  mark o DISPOSED                                 ▷ a later read serves its last value; never recomputes
+```
+
+Three consequences show up in production:
+
+- **Unlinking is what frees memory.** A computation is retained by the sources it reads (through their `_subs` lists). Until it is disposed, a long-lived signal (module scope, a global store, a WebSocket-fed signal) keeps every computation that ever read it alive. An effect created with no owner is never disposed: proved by the negative test, where an unowned effect keeps running on every write and dev warns `NO_OWNER_EFFECT`.
+- **A disposed node is inert, not deleted.** References you still hold return the last value. Holding a memo from a disposed component is a stale-data bug, not a crash.
+- **`runWithOwner` with a disposed owner** creates children that are never disposed (`RUN_WITH_DISPOSED_OWNER` warns). This happens when an async continuation re-enters an owner that was disposed while it awaited. Check `isDisposed(owner)` before re-entering in library code.
+
 ### Then vs now: roots
 
 | | Solid 1.x | Solid 2.0 |
@@ -285,6 +392,16 @@ Why the rule exists: a write inside a computation creates a hidden edge from tha
 | `REACTIVE_WRITE_IN_OWNED_SCOPE` thrown from a component | setter called during render | move it to an event handler / `onSettled`, or derive |
 | Custom `equals` hides a real change | comparator only compares ids | compare everything the UI shows, or use separate signals |
 
+### 8.1 Failure modes proved by negative tests
+
+| Failure | Test in `01-reactive-core.test.ts` | What it shows |
+|---|---|---|
+| Leak from an unowned computation | "an effect created without an owner keeps running forever" | `NO_OWNER_EFFECT`; the effect fires on every write with no way to dispose it |
+| Reading outside a tracking scope | "a read outside any tracking scope is a snapshot" | a plain read never updates; a memo over the same read does |
+| Feedback loop through an effect | "an effect that writes its own source loops" | "Potential Infinite Loop Detected" after ~100k iterations; the system needs `resetErrorHalt` |
+| Write inside an owned scope | "throws REACTIVE_WRITE_IN_OWNED_SCOPE…" (3 tests) | root body, `untrack`, memo |
+| Stale cache of an unowned memo | "dormancy…" | unobserved memos are swept and recomputed on demand |
+
 ## 9. Then vs now summary
 
 | Topic | Solid 1.x (1.0–1.9) | Solid 2.0 RC | Migration |
@@ -296,6 +413,19 @@ Why the rule exists: a write inside a computation creates a hidden edge from tha
 | Nested roots | detached | owned by parent | wrap intentional singletons in `runWithOwner(null, …)` |
 | Writes in scope | allowed (and a common bug source) | dev error | move writes to handlers / `onSettled` |
 | Core package | `solid-js` | `@solidjs/signals`, re-exported by `solid-js` | import from `solid-js` |
+
+### 9.1 Then vs now: the scheduler
+
+| | Solid 1.x (≤ 1.9) | Solid 2.0 RC |
+|---|---|---|
+| When computations run | synchronously inside the setter (outside `batch`); `batch` deferred them to the end of the callback | always in a flush: microtask, or `flush()` |
+| Ordering | queue of "pure" computations then effects, with `STALE`/`PENDING` states per node | height-bucketed heap, CLEAN/CHECK/DIRTY, dynamic height adjustment |
+| Dependency bookkeeping | arrays of sources/observers with slot indices | doubly-linked `Link` lists with generation stamps (alien-signals lineage) |
+| Unowned memos | leaked while their sources lived | swept as dormant, recomputed on read |
+| Effects | ran after pure computations, but a single function tracked and acted at once | compute in the heap, apply after the heap (render queue then user queue) |
+| Infinite-loop guard | dev "Potential Infinite Loop" | same message, iteration cap on the flush loop |
+
+Proved side by side in [Module 10](./10-migration-and-react-comparison.md): in 1.9 a write outside `batch` re-runs a computation immediately; in 2.0 it waits for the flush.
 
 **Pitfall when mixing:** 1.x code that relies on synchronous reads after a write (for example `setOpen(true); measure(panel)`) compiles fine against 2.0 and silently measures the old state. Grep for setter calls followed by reads in the same function during migration.
 
