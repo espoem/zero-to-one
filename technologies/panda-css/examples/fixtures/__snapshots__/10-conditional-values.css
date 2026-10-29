@@ -1,0 +1,30 @@
+@layer reset, base, tokens, recipes, utilities;
+@layer recipes { @layer base, slots, variants, compound_variants; }
+@layer recipes.slots { @layer base, variants, compound_variants; }
+@layer base {
+  :root {
+    --made-with-panda: '🐼';
+  }
+}
+@layer tokens {
+  :where(:root, :host) {
+    --colors-gray-500: oklch(55.1% 0.027 264.364);
+    --colors-green-700: oklch(52.7% 0.154 150.069);
+    --font-weights-semibold: 600;
+    --letter-spacings-tight: -0.025em;
+  }
+}
+@layer utilities {
+  .c_gray\.500 {
+    color: var(--colors-gray-500);
+  }
+  .c_green\.700 {
+    color: var(--colors-green-700);
+  }
+  .fw_semibold {
+    font-weight: var(--font-weights-semibold);
+  }
+  .ls_tight {
+    letter-spacing: var(--letter-spacings-tight);
+  }
+}

@@ -20,13 +20,14 @@ export interface CssgenResult {
  * Using the CLI rather than internal compiler APIs keeps the tests honest: this is the
  * exact path a project's build takes.
  */
-export function cssgen(options: { include?: string; config?: string; cwd?: string } = {}): CssgenResult {
+export function cssgen(options: { include?: string; config?: string; cwd?: string; extraArgs?: string[] } = {}): CssgenResult {
   const cwd = options.cwd ?? fixturesDir
   const out = mkdtempSync(join(tmpdir(), 'panda-css-'))
   const outfile = join(out, 'styles.css')
   const args = ['cssgen', '--no-color', '-o', outfile]
   if (options.include) args.push('--include', options.include)
   if (options.config) args.push('--config', options.config)
+  if (options.extraArgs) args.push(...options.extraArgs)
   try {
     const run = spawnSync(pandaBin, args, { cwd, encoding: 'utf8' })
     if (run.status !== 0) throw new Error(`panda cssgen failed (${run.status}):\n${run.stdout}${run.stderr}`)
