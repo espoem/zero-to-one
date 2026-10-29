@@ -2,7 +2,7 @@
 
 ## Hand-off (in progress — updated after every module commit)
 
-**Status:** modules 01–09 rewritten at full depth with real-API Vitest proofs. Modules 10–12, exams, glossary, cheatsheet and README not yet done.
+**Status:** modules 01–10 rewritten at full depth with real-API Vitest proofs. Modules 11–12, exams, glossary, cheatsheet and README not yet done.
 
 | Module | State | Proof file | Tests |
 |---|---|---|---|
@@ -15,12 +15,13 @@
 | 07 Server Components & Flight | done (renamed from `07-rsc-and-flight-protocol.md`) | `examples/07-rsc/rsc.test.tsx` + `server.ts` (child process, `--conditions react-server`, NODE_ENV=production) | 13 |
 | 08 Actions, forms & optimistic UI | done (renamed from `08-actions-and-optimistic-updates.md`) | `examples/08-actions/actions.test.tsx`, `hung-action.test.tsx` | 16 |
 | 09 React Compiler 1.0 | done (renamed from `09-compiler-memoization-lowering.md`) | `examples/09-compiler/compiler.test.tsx`, `compile.ts` (real babel plugin + eslint Linter; compiled modules written to gitignored `.generated/`) | 17 |
-| 10–12 | old ~70-line text (04–10) or missing (11, 12); their old synthetic examples were deleted in b5fd650 | — | — |
+| 10 Errors & resilience | done (renamed from `10-error-boundaries-and-resilience.md`) | `examples/10-errors/errors.test.tsx` | 14 |
+| 11–12 | old ~70-line text (04–10) or missing (11, 12); their old synthetic examples were deleted in b5fd650 | — | — |
 
-**Tooling:** Node 26.12.1 (local), Vitest 5.0.5 + jsdom 30.1.3, RTL 16.3.3, react/react-dom/react-server-dom-webpack 19.3.1, @types/react 19.3.0, babel-plugin-react-compiler 1.0.0 with @babel/core 8.0.9 (works), eslint 10.13.0 + eslint-plugin-react-hooks 7.1.1, fast-check 4.10.2, vite 8.3.5, TypeScript 7.0.2. `npm test` = `vitest run`; `npm run typecheck` = `tsc --noEmit`. Last run: 169/169 passing, typecheck clean.
+**Tooling:** Node 26.12.1 (local), Vitest 5.0.5 + jsdom 30.1.3, RTL 16.3.3, react/react-dom/react-server-dom-webpack 19.3.1, @types/react 19.3.0, babel-plugin-react-compiler 1.0.0 with @babel/core 8.0.9 (works), eslint 10.13.0 + eslint-plugin-react-hooks 7.1.1, fast-check 4.10.2, vite 8.3.5, TypeScript 7.0.2. `npm test` = `vitest run`; `npm run typecheck` = `tsc --noEmit`. Last run: 183/183 passing, typecheck clean.
 
 ## Remaining work (ordered)
-5. M10 Errors; M11 DOM platform (new); M12 Perf/testing/ops (new).
+5. M11 DOM platform (new); M12 Perf/testing/ops (new).
 6. exams/README.md + exams/interview.md (≥60 Q, mock exam), GLOSSARY.md, CHEATSHEET.md, README (syllabus, Certifications & Exams, Verified-against line).
 7. `mise.lock`: not generated (no mise binary; nodejs.org checksums unreachable). Run `mise lock` on the Mac CLI.
 8. Playwright browser checks (ViewTransition, Fragment `observeUsing`) not added: no browsers here. Verifier (Antigravity) task.
