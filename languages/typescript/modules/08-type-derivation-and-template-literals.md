@@ -1,8 +1,9 @@
-# Module 05: Type Transformations Part 1 — Inference, Unions, Template Literals, & Type Helpers
+# Module 08: Type-Level Programming I — Derivation & Template Literal Types
 
-> **Weeks 12–13 | Type Transformations Fundamentals**
-> 
-> *Prerequisites*: Solid understanding of TypeScript basic types, interfaces, object shapes, and standard narrowing (Modules 01–04).
+> Examples and tests: [`examples/08-type-derivation/derivation.test.ts`](../examples/08-type-derivation/derivation.test.ts) (`typeof`/`keyof`/indexed access, `keyof` of unions and intersections, function utilities, non-distributive `Omit`, template literal types, `string & {}`) and [`type-transformations.test.ts`](../examples/08-type-derivation/type-transformations.test.ts).
+> Run: `mise exec -- node --test examples/08-type-derivation/`
+>
+> Prerequisites: [Module 05](./05-classes-mutability-and-ts-only-syntax.md) (`as const`) and [Module 07](./07-generics-and-inference.md) (generics). Conditional, mapped and recursive types continue in [Module 09](./09-conditional-mapped-and-recursive-types.md).
 
 ---
 
@@ -38,7 +39,24 @@ By the end of this module, you will be able to:
 
 ---
 
-## Lesson 5.1: Inference Basics from Values & Functions
+## The type operators, precisely
+
+| Operator | Input → output | Key rules |
+|---|---|---|
+| `typeof v` (in a type position) | value → its declared/inferred type | Only identifiers and property paths (`typeof a.b`), not arbitrary expressions; `typeof` of a `const` with a literal keeps the literal |
+| `keyof T` | object type → union of its keys | Index signature `[k: string]` gives `string \| number`; `keyof (A \| B)` = keys common to both; `keyof (A & B)` = union of keys; `keyof never` = `string \| number \| symbol` |
+| `T[K]` | indexed access | `K` must be assignable to `keyof T`; `T[number]` on arrays/tuples gives the element union; distributes over unions in `K` |
+| `` `${A}-${B}` `` | template literal type | Cross product over unions in `A` and `B`; placeholders accept `string`, `number`, `bigint`, `boolean`, `null`, `undefined` and literal unions |
+
+Two consequences the example proves: `keyof` of a **union** keeps only *common* keys (so a union of event shapes exposes only the discriminant), and an **intersection** of object types with a conflicting literal-typed property reduces to `never` (since TS 3.9), so `keyof (A & B)` becomes every key.
+
+### Then vs now: template literal inference by code point
+
+In TS 7.0, inference of template literal placeholders (`` `${infer H}${infer T}` ``) works on Unicode code points rather than UTF-16 code units; see [Module 09](./09-conditional-mapped-and-recursive-types.md) §9.5.2 for the before/after and migration. Type-level string utilities in this module that only *build* strings (cross products, `Capitalize`) are unaffected.
+
+---
+
+## Lesson 8.1: Inference Basics from Values & Functions
 
 ### Value Space vs. Type Space
 
@@ -190,7 +208,7 @@ type TestUserProfile = Expect<
 
 ---
 
-## Lesson 5.2: Unions, Discriminated Unions & Indexed Access Transformations
+## Lesson 8.2: Unions, Discriminated Unions & Indexed Access Transformations
 
 ### Union Terminology: Primitives vs. Objects vs. Discriminated Unions
 
@@ -319,7 +337,7 @@ type TestStatusCode = Expect<Equal<StatusCode, 200 | 201 | 400 | 401 | 404 | 500
 
 ---
 
-## Lesson 5.3: Template Literal Types
+## Lesson 8.3: Template Literal Types
 
 Introduced in TypeScript 4.1, **Template Literal Types** bring JavaScript's backtick string interpolation syntax directly into type space. They can constrain strings to dynamic patterns, generate permutations, and parse string structures.
 
@@ -439,7 +457,13 @@ const cardMargin: MarginConfig = {
 
 ---
 
-## Lesson 5.4: Building Reusable Type Helpers
+### The `string & {}` autocompletion trick
+
+A union of literals with `string` collapses: `"primary" | "secondary" | string` *is* `string` (subtype reduction), so editors lose the suggestions. Writing `"primary" | "secondary" | (string & {})` keeps the literals as distinct members, because `string & {}` is not reduced into `string` during union construction, while any string remains assignable. It is a widely used idiom (React's `ARIARole`, CSS-in-JS libraries); it relies on current reduction behaviour rather than a documented guarantee.
+
+---
+
+## Lesson 8.4: Building Reusable Type Helpers
 
 A **Type Helper** is a generic type alias that functions like a pure function in type space: it accepts types as type parameters and returns a newly constructed type.
 
@@ -832,12 +856,34 @@ type TestStrictState = Expect<
 
 ---
 
-## Summary & Next Steps
+## Interview Drill
 
-In this module, you mastered the fundamental building blocks of type transformations:
-- Bridging value space and type space using `typeof`, `as const`, `ReturnType`, and `Awaited`.
-- Slicing and refining unions using `Extract`, `Exclude`, and indexed access lookups (`T[keyof T]`, `T[number]`).
-- Dynamically constructing and validating string unions using Template Literal Types and string intrinsic utilities.
-- Encapsulating generic logic with constrained type helpers.
+<details><summary>1. What does <code>keyof (A | B)</code> return, and why?</summary>
 
-In **Module 06: Conditional and Mapped Types**, we will unlock TypeScript's advanced logic engine: pattern matching using `infer`, distributive conditional types, mapped types with key remapping (`as`), and solve the capstone challenge problems.
+Only the keys present in both. A value of type `A | B` is guaranteed to have only the common keys, so only those are safe to index with.
+</details>
+
+<details><summary>2. Why is <code>Omit&lt;Union, "k"&gt;</code> often wrong, and how do you fix it?</summary>
+
+`Omit` is a mapped type over `Exclude<keyof T, K>`; with a union `T`, `keyof T` is only the common keys, so the result is a single object with the common properties and the variants are lost. Use a distributive version: `T extends unknown ? Omit<T, K> : never`.
+</details>
+
+<details><summary>3. How do you get the union of an array's element values from a constant?</summary>
+
+Declare it `as const` (a readonly tuple of literals) and index with `number`: `(typeof ROUTES)[number]`.
+</details>
+
+<details><summary>4. How do template literal types combine unions?</summary>
+
+They distribute: `` `${A}-${B}` `` with `A` of size m and `B` of size n yields m×n literal members. Large products hit the cross-product limit (TS2590 "Expression produces a union type that is too complex to represent"): measured on 7.0.2, 50,000 members compile and 100,000 fail. Keep inputs small.
+</details>
+
+<details><summary>5. What is <code>string &amp; {}</code> for?</summary>
+
+It keeps literal suggestions in a union that also accepts any string, because the intersection is not absorbed into `string` by subtype reduction.
+</details>
+
+<details><summary>6. <code>typeof</code> in a type position vs in an expression?</summary>
+
+In an expression it is the JavaScript runtime operator returning a string tag (and a narrowing guard). In a type position it is TypeScript's type query, lifting a value's static type into type space; it only accepts identifiers and property paths.
+</details>

@@ -19,12 +19,13 @@ Done:
 - M03 unions/narrowing: CFA formalism, closure-narrowing Then vs now (5.4), switch(true), inferred predicates, drill + new control-flow example.
 - M05 classes/mutability: this typing, abstract/override/accessor, erasableSyntaxOnly Then vs now, drill + new example.
 - M07 generics: inference phases, variance annotations (method bivariance caveat verified), drill + new inference/variance example.
+- M08 type derivation: operator table, keyof union/intersection semantics, string & {} trick, code-point pointer, drill + new example (measured TS2590 cross-product limit).
 
 ## Remaining work (ordered)
 1. (done) M13.
 2. (done) M09.
 3. (done) M10.
-4. M02–M08: retitle headers (remove "Weeks"/track labels), add formal definitions, TS 7 notes, Then vs now where practice changed, Interview Drill; M04 merged sections need a coherent intro; M06 needs nodenext/bundler, exports/types conditions, project references, `types: []`, `rootDir`, import attributes; M03 add `switch(true)`; M08 add `string & {}`.
+4. (done) M02–M08 updated.
 5. Convert old script-style examples (essentials-and-narrowing, generics-and-overloads, type-transformations, advanced-patterns, modern-features-typing, zod-schema-validation) to `test()` blocks; add examples for M02, M04, M05, M06.
 6. exams/README.md + exams/interview.md (certificates.dev TS cert: 40 MCQ + 2 coding in 135 min; no published weights) + mock exam.
 7. GLOSSARY.md, CHEATSHEET.md, final README (Certifications & Exams, `Verified against … on <date>`).
