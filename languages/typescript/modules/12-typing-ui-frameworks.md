@@ -368,7 +368,7 @@ In rc.19 `Store<T> = T` and `StoreSetter<T> = (fn: (state: T) => T | void) => vo
 
 The three overloads are distinguished by the literal type of `keyed`, a direct application of overload resolution on literal types ([Module 07](./07-generics-and-inference.md)).
 
-### 4.7 Context, events, refs, `<Dynamic>`, actions
+### 4.7 Context, events, refs, `dynamic()`, actions
 
 - **Context.** `createContext<T>()` without a default still yields `useContext(ctx): T`. A missing provider throws `ContextNotFoundError` at runtime instead of returning `undefined`, so the type is honest only if every consumer is under a provider. Use `createContext<T | null>(null)` for genuinely optional context. The context object is the provider: `<ThemeContext value={…}>`.
 - **Events.** `onClick={(e) => …}` gets `MouseEvent & { currentTarget: HTMLButtonElement; target: DOMElement }`. Solid 2.0 removed the 1.x `on:click` namespace for native listeners: `on:click={…}` is now a compile error (asserted in the type test). Delegated vs native listener semantics are in the solidjs track.
