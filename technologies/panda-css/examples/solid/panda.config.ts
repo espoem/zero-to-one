@@ -17,4 +17,6 @@ export default defineConfig({
   include: ['./src/**/*.{ts,tsx}'],
   exclude: [],
   outdir: 'styled-system',
+  // `.js` in generated imports, so Node can render the components in SSR tests.
+  forceImportExtension: true,
 })
