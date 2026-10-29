@@ -18,5 +18,5 @@
     "jsxImportSource": "react"
   },
   "include": ["examples/**/*"],
-  "exclude": ["examples/solid/**", "**/styled-system/**", "**/dist/**", "node_modules"]
+  "exclude": ["examples/solid/**", "examples/bench/**", "**/styled-system/**", "**/dist/**", "node_modules"]
 }
