@@ -247,6 +247,53 @@ A provider stores its value on its **owner** (`setContext` on the owner record);
 
 RFC 02 and the package cheatsheet are explicit: *module scope is shared by every request in the same process*. A store created at module scope becomes shared server state the day SSR is turned on, leaking one user's data into another's render. Create state inside a provider component (one instance per request on the server) and pass it through context. Module scope is for constants and the `createContext` call itself. [Module 08](./08-ssr-and-start-mode.md) proves the leak with a server-side test.
 
+## 7.2 Worked example: a headless Tabs component
+
+Composition in Solid combines the pieces above: context for shared state (created per instance, so SSR-safe), `children()` to inspect slots, `<For>` keyed by id, and `dynamic()` for a polymorphic element.
+
+```tsx
+type TabsCtx = { active: () => string; select: (id: string) => void };
+const Tabs = createContext<TabsCtx>();               // default-less: <Tab> outside <TabList> throws
+
+export function TabList(props: { initial: string; as?: ValidComponent; children: Element }) {
+  const [active, setActive] = createSignal(untrack(() => props.initial));
+  const Root = dynamic(() => props.as ?? "div", { static: isStatic(props, "as") });
+  return (
+    <Tabs value={{ active, select: setActive }}>       {/* state lives in the instance, not module scope */}
+      <Root role="tablist">{props.children}</Root>
+    </Tabs>
+  );
+}
+
+export function Tab(props: { id: string; children: Element }) {
+  const tabs = useContext(Tabs);                       // read once in the body: O(depth) lookup
+  return (
+    <button
+      role="tab"
+      aria-selected={tabs.active() === props.id}      // binding: tracked
+      class={{ active: tabs.active() === props.id }}
+      onClick={() => tabs.select(props.id)}           // stable handler; decision inside
+    >
+      {props.children}
+    </button>
+  );
+}
+```
+
+Imports: `createContext`, `useContext`, `createSignal`, `untrack`, `isStatic` and the `Element` type from `solid-js`; `dynamic` and the `ValidComponent` type from `@solidjs/web`.
+
+Review checklist for the example: no destructured props; `props.initial` read with `untrack` (intentional one-time read, no `STRICT_READ_UNTRACKED`); the handler is stable; the selected state is per-`TabList` instance; `aria-selected` is a boolean attribute (presence/absence). With 10 000 tabs the `active() === id` comparison would be the O(n) selection problem from [Module 05 §4.1](./05-stores-and-projections.md#41-o1-selection); swap in a selection projection.
+
+### 7.3 Failure modes proved by negative tests
+
+| Failure | Test (`04-control-flow-and-composition.test.tsx`) |
+|---|---|
+| reading an accessor at the top of a row callback | "the callback body is an owner, not a tracking scope" (`STRICT_READ_UNTRACKED`) |
+| new identities rebuild rows | "default (keyed by identity)…" (`created` 2 → 3) |
+| missing provider | `ContextNotFoundError` (default-less form) |
+| `undefined` as a provider value | "undefined means 'not provided'…" |
+| resources left behind by removed rows | "a removed row's owner is disposed: its cleanups run" (shows the mechanism you must hook into) |
+
 ## 8. Then vs now
 
 | 1.x (≤ 1.9) | 2.0 RC | Migration notes |
@@ -336,7 +383,17 @@ Default-less contexts throw `ContextNotFoundError` from `useContext`, and the ty
 On the server, module scope is shared by every request in the process, so a module-level store leaks data between users. A provider creates the state once per render (per request) and disposes it with the owner.
 </details>
 
-<details><summary>10. What problem does `children()` solve?</summary>
+<details><summary>10. How does `useContext` find a value, and why does it work through a Portal?</summary>
+
+The provider stores the value on its owner; `useContext` walks up the owner chain. A portal moves DOM, not ownership, so its children still sit under the provider's owner.
+</details>
+
+<details><summary>11. What does the keyed list algorithm do when nothing structurally changed?</summary>
+
+After prefix/suffix matching covers every position at the same length, it keeps the mapped array's identity, so downstream computations (and the DOM reconciliation) don't run at all. That is why `reconcile` into a store plus `<For>` is so cheap on polls.
+</details>
+
+<details><summary>12. What problem does `children()` solve?</summary>
 
 `props.children` is a getter, so each read re-evaluates the children expression and can create DOM twice. `children()` resolves once into a memo with `toArray()`, so a component can inspect, count or place its children safely.
 </details>
