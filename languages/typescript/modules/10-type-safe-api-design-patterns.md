@@ -1,11 +1,13 @@
-# Module 08: Advanced TypeScript Patterns — Branded Types, Globals, Predicates, Assertions, Builder Pattern, & Identity Functions
+# Module 10: Type-Safe API Design Patterns
 
-> **Weeks 17–20** | Modeled after Matt Pocock's *Total TypeScript Advanced Patterns Workshop* (7 sections, 45 exercises).  
-> **Prerequisites**: Modules 01–07 (Generics, Type Transformations, Narrowing, and Strict TSConfig).
+> Examples and tests: [`examples/10-api-design/advanced-patterns.test.ts`](../examples/10-api-design/advanced-patterns.test.ts) (brands, predicates, assertion functions, builders), [`resource-management-typing.test.ts`](../examples/10-api-design/resource-management-typing.test.ts) (`Disposable` typing), [`decorators-typing.ts`](../examples/10-api-design/decorators-typing.ts) (TC39 decorator typing, type-checked only) and [`modern-features-typing.test.ts`](../examples/10-api-design/modern-features-typing.test.ts) (router inference, `string & {}`, `switch (true)`).
+> Run: `mise exec -- node --test examples/10-api-design/` and `mise exec -- npm run typecheck`.
+>
+> Prerequisites: [Module 07](./07-generics-and-inference.md) (inference) and [Module 09](./09-conditional-mapped-and-recursive-types.md) (conditional and mapped types). Augmenting globals and third-party modules is in [Module 06](./06-modules-declarations-and-tsconfig.md).
 
 ---
 
-## Workshop Overview & Mental Model
+## Overview & Mental Model
 
 While everyday TypeScript focuses on typing functions and objects, library authors and infrastructure engineers encounter higher-order challenges: **enforcing domain semantics that structural typing allows**, **augmenting runtime environments without collision**, **accumulating compile-time state across chained calls**, and **directing the compiler's inference engine**.
 
@@ -28,14 +30,14 @@ flowchart TD
     end
 
     subgraph InferenceControl["4. Inference Steering"]
-        NoInfer["NoInfer<T> (TS 5.4+)"]
+        NoInfer["NoInfer<T>"]
         Reverse["Reverse Mapped Types"]
         Ident["Identity Functions (defineConfig)"]
     end
 ```
 
 ```ts
-// Total TypeScript test helpers
+// Type-test helpers (see examples/utils/type-helpers.ts)
 type Expect<T extends true> = T;
 type Equal<X, Y> =
   (<T>() => T extends X ? 1 : 2) extends (<T>() => T extends Y ? 1 : 2) ? true : false;
@@ -43,9 +45,9 @@ type Equal<X, Y> =
 
 ---
 
-## Lesson 8.1: Branded Types (Nominal Typing in a Structural System)
+## Lesson 10.1: Branded Types (Nominal Typing in a Structural System)
 
-### 8.1.1 Structural Typing and Primitive Obsession
+### 10.1.1 Structural Typing and Primitive Obsession
 
 TypeScript's type system is **structural**: if two types share the same shape, they are interchangeable. This creates a severe design flaw with primitives—commonly called **Primitive Obsession**:
 
@@ -61,7 +63,7 @@ const orderId = "ord_123";
 transferFunds(orderId, userId, 500);
 ```
 
-### 8.1.2 Creating Zero-Cost Branded Types
+### 10.1.2 Creating Zero-Cost Branded Types
 
 To achieve nominal typing (types distinguished by identity/name rather than structure), attach a phantom property keyed by a `unique symbol`. The symbol is erased at runtime, introducing **zero runtime overhead**:
 
@@ -87,7 +89,7 @@ type testUid = Expect<Equal<typeof uId, UserId>>;
 uId = pId;
 ```
 
-### 8.1.3 Validated Strings & Numbers
+### 10.1.3 Validated Strings & Numbers
 
 Branded types prevent unvalidated primitives from flowing into sensitive domain operations:
 
@@ -105,7 +107,7 @@ const rawInput = "alice@example.com";
 sendVerificationEmail(rawInput);
 ```
 
-### 8.1.4 Smart Constructors & Validation Boundaries
+### 10.1.4 Smart Constructors & Validation Boundaries
 
 A **smart constructor** validates input at the boundary and casts it to the branded type once verified:
 
@@ -131,7 +133,7 @@ type testEmail = Expect<Equal<typeof verifiedEmail, ValidEmail>>;
 sendVerificationEmail(verifiedEmail); // ✅ Compiles cleanly
 ```
 
-### 8.1.5 Index Signatures with Branded Types
+### 10.1.5 Index Signatures with Branded Types
 
 Branded types make dictionary lookups resilient against passing the wrong ID key:
 
@@ -159,9 +161,9 @@ getUser(postId, cache);
 ---
 
 
-## Lesson 8.3: Type Predicates, Assertion Functions & Classes
+## Lesson 10.2: Type Predicates, Assertion Functions & Classes
 
-### 8.3.1 Type Predicates (`x is T`)
+### 10.2.1 Type Predicates (`x is T`)
 
 A type predicate is a special return type annotation that instructs the compiler's control flow analyzer to narrow a variable when the function returns `true`:
 
@@ -178,7 +180,7 @@ function processValue(val: unknown) {
 }
 ```
 
-### 8.3.2 Filtering Arrays with Type Predicates
+### 10.2.2 Filtering Arrays with Type Predicates
 
 Default `.filter(Boolean)` does not remove `null` or `undefined` at the type level. A predicate-typed filter helper preserves strictness:
 
@@ -199,7 +201,7 @@ const clean = mixed.filter(isNonNullable);
 type testClean = Expect<Equal<typeof clean, string[]>>;
 ```
 
-### 8.3.3 Assertion Functions (`asserts x is T`)
+### 10.2.3 Assertion Functions (`asserts x is T`)
 
 Assertion functions verify a condition and throw an exception if invalid. Unlike predicates (which return a boolean for `if` branches), assertion functions terminate the current flow:
 
@@ -217,7 +219,7 @@ function handlePayload(payload: unknown) {
 }
 ```
 
-### 8.3.4 Avoiding TS2775 ("Assertions require every name...")
+### 10.2.4 Avoiding TS2775 ("Assertions require every name...")
 
 > [!WARNING]
 > **TypeScript Error TS2775**:  
@@ -237,7 +239,7 @@ const assertDefinedGood: AssertDefinedFn = (val) => {
 };
 ```
 
-### 8.3.5 Combining Brands with Predicates & Assertions
+### 10.2.5 Combining Brands with Predicates & Assertions
 
 ```ts
 function isValidEmail(val: string): val is ValidEmail {
@@ -251,7 +253,7 @@ function assertValidEmail(val: string): asserts val is ValidEmail {
 }
 ```
 
-### 8.3.6 Predicates and Assertion Methods on Classes
+### 10.2.6 Predicates and Assertion Methods on Classes
 
 Methods on classes can narrow `this` using polymorphic `this is ...` guards:
 
@@ -290,15 +292,15 @@ class ApiSdk {
 
 ---
 
-## Lesson 8.4: The Builder Pattern & External Libraries
+## Lesson 10.3: The Builder Pattern & External Libraries
 
-### 8.4.1 Classes as Types and Values
+### 10.3.1 Classes as Types and Values
 
 In TypeScript, a `class` statement produces two distinct symbols:
 1. A **Value**: The constructor function and prototype executed at runtime.
 2. A **Type**: The interface representing instances created by `new Class()`.
 
-### 8.4.2 Type-State Accumulation in the Builder Pattern
+### 10.3.2 Type-State Accumulation in the Builder Pattern
 
 The Builder pattern accumulates static types across method chaining without mutating underlying generic variables:
 
@@ -335,7 +337,7 @@ const result = query.execute();
 type testQuery = Expect<Equal<typeof result, Record<"id" | "email" | "createdAt", unknown>>>;
 ```
 
-### 8.4.3 tRPC-Style Procedure Builders
+### 10.3.3 tRPC-Style Procedure Builders
 
 Modern libraries like tRPC accumulate input validation schemas and context middleware:
 
@@ -376,7 +378,7 @@ const proc = new ProcedureBuilder()
   });
 ```
 
-### 8.4.4 Module Augmentation for External Libraries
+### 10.3.4 Module Augmentation for External Libraries
 
 When third-party libraries (e.g. Express, Fastify) don't include your domain properties on requests, use `declare module` to augment their internal interface:
 
@@ -397,9 +399,9 @@ declare module "express-serve-static-core" {
 
 ---
 
-## Lesson 8.5: Identity Functions, `const T`, `NoInfer<T>`, & Reverse Mapped Types
+## Lesson 10.4: Identity Functions, `const T`, `NoInfer<T>`, & Reverse Mapped Types
 
-### 8.5.1 Identity Functions as an Ergonomic Alternative to `as const`
+### 10.4.1 Identity Functions as an Ergonomic Alternative to `as const`
 
 Identity functions validate a configuration against a broad contract while preserving literal inference without forcing callers to append `as const`:
 
@@ -427,7 +429,7 @@ const route = defineConfig({
 type testRoute = Expect<Equal<typeof route.method, "GET">>;
 ```
 
-### 8.5.2 Specifying Where Inference Should NOT Happen: `NoInfer<T>` (TS 5.4+)
+### 10.4.2 Specifying Where Inference Should NOT Happen: `NoInfer<T>` 
 
 TypeScript normally infers `T` from every occurrence in a signature. When passing a default value or secondary parameter, you frequently want `T` inferred *only* from the primary source:
 
@@ -441,7 +443,7 @@ function createThemeBad<T extends string>(options: T[], defaultOption: T): T {
 // Reality: T is inferred as "red" | "blue" | "purple", so no error!
 createThemeBad(["red", "blue"], "purple");
 
-// ✅ With TS 5.4+ NoInfer<T>: T is ONLY inferred from options!
+// ✅ With NoInfer<T>: T is ONLY inferred from options!
 function createTheme<T extends string>(options: T[], defaultOption: NoInfer<T>): T {
   return defaultOption;
 }
@@ -450,7 +452,7 @@ function createTheme<T extends string>(options: T[], defaultOption: NoInfer<T>):
 createTheme(["red", "blue"], "purple");
 ```
 
-### 8.5.3 Reverse Mapped Types
+### 10.4.3 Reverse Mapped Types
 
 Reverse mapped types allow the keys and values of an object argument to constrain each other simultaneously:
 
@@ -472,7 +474,7 @@ const counterStore = createStore(
 );
 ```
 
-### 8.5.4 Dynamic Reducer Pattern
+### 10.4.4 Dynamic Reducer Pattern
 
 ```ts
 type ReducerMap<TState, TPayloads extends Record<string, any>> = {
@@ -501,6 +503,76 @@ const reducer = createReducer<AppState, AppActions>({
 ```
 
 ---
+
+## Lesson 10.5: Typing Explicit Resource Management
+
+The runtime semantics of `using`/`await using` (disposal order, `SuppressedError` aggregation, `DisposableStack` move semantics) are owned by `languages/javascript`. This lesson covers what the *types* give you.
+
+- `using x = expr` requires `expr` to be `Disposable | null | undefined`, where `interface Disposable { [Symbol.dispose](): void }`. Anything else is a compile error, and the runtime throws a `TypeError` for the same value (the example asserts both).
+- `await using` accepts `AsyncDisposable | Disposable | null | undefined` and is only allowed where `await` is.
+- Declaring a resource-returning API as `(…) => Connection` with `interface Connection extends Disposable` lets callers choose `using` (scoped) or manual disposal; returning a bare object with a `close()` method gives them no compiler help.
+- `DisposableStack.adopt<T>(value: T, onDispose: (value: T) => void): T` returns the value with its type intact, so non-disposable handles (file descriptors, timers) can be scoped without wrapper classes.
+- Library setup: the types live in `lib.esnext.disposable.d.ts` (included by `lib: ["esnext"]`; not part of `es2025` in TS 7.0.2's lib list). `target` below `es2025`/`esnext` makes `tsc` lower `using` to `try`/`finally` with helpers; Node 26 runs it natively.
+
+**Design rule.** Make the resource type itself `Disposable` rather than returning a separate disposer: a `Disposable` value cannot be forgotten in a `using` block, while a returned `() => void` is easy to drop (lint for floating disposables where your linter supports it).
+
+## Lesson 10.6: Typing Decorators
+
+### 10.6.1 Standard (TC39) decorators
+
+A standard decorator is a function `(value, context) => replacement | void`. TypeScript types the `context` argument with one interface per decorated element kind: `ClassMethodDecoratorContext<This, Value>`, `ClassFieldDecoratorContext<This, Value>`, `ClassGetterDecoratorContext`, `ClassSetterDecoratorContext`, `ClassAccessorDecoratorContext` and `ClassDecoratorContext<Class>`. Making the decorator **generic in `This`, `Args` and `R`** lets it preserve the decorated method's signature and restrict where it applies:
+
+```ts
+export function retry<This, Args extends unknown[], R>(
+  target: (this: This, ...args: Args) => Promise<R>,
+  _context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Promise<R>>,
+) {
+  return async function (this: This, ...args: Args): Promise<R> { /* … */ };
+}
+
+class Service {
+  @retry async load(id: number): Promise<string> { /* ok */ }
+  @retry sync(): string { /* error: not a Promise-returning method */ }
+}
+```
+
+A field decorator returns an **initializer transformer** `(initial: V) => V`; its type is checked against the field type through `ClassFieldDecoratorContext<This, V>`. Decorator metadata (`context.metadata`, `Symbol.metadata`) is typed by `lib.esnext.decorators`. Evaluation order, `addInitializer`, and the `accessor` keyword at runtime belong to `languages/javascript`.
+
+Decorators are **not erasable syntax**: they compile to helper calls. Node 26's type stripping rejects them, and V8 does not yet run them natively, so decorated code needs `tsc` or a bundler transform (the example file is type-checked only).
+
+### 10.6.2 Then vs now: legacy (`experimentalDecorators`) vs standard decorators
+
+| | Legacy (`experimentalDecorators`, TS 1.5–today) | Standard (TS 5.0+, TC39 stage 3) |
+|---|---|---|
+| Signature | `(target, propertyKey, descriptor) => descriptor \| void` | `(value, context) => replacement \| void` |
+| Parameter decorators | Yes (used by Angular, NestJS DI) | No |
+| Type metadata | `emitDecoratorMetadata` emits `design:type`/`design:paramtypes` via `reflect-metadata` | No type metadata; `context.metadata` is a plain object you fill |
+| Status in TS 7.0.2 | **Still supported** (a fixture with both flags compiles and emits `__decorate`/`__metadata`; the 7.0 post does not mention them) | Default when the flag is off |
+
+**Why it changed.** The legacy proposal was never standardised; the TC39 design has different semantics (decorators receive the original value and a context object, and cannot see parameter types). **Migration:** frameworks that rely on parameter decorators or `design:paramtypes` (NestJS, Angular, TypeORM, InversifyJS) still need the legacy mode; new code should use standard decorators. **Pitfall:** the two modes cannot be mixed in one project; flipping `experimentalDecorators` changes the meaning of every `@` in the program, and esbuild/Node stripping cannot emit legacy metadata at all.
+
+## Lesson 10.7: Case Studies in Public API Typing
+
+These distil the design lessons that used to be the "expert interviews" lesson (old 11.1); the publishing and performance side is in [Module 13](./13-library-authoring-performance-and-type-tests.md).
+
+**Inference across a router object (tRPC style).** The server's router *value* is the single source of truth; the client type is `typeof router`, transformed by a mapped type into callable procedures. No code generation is needed because types flow through `import type`. The trade-off is that every consumer instantiates the whole router type; large routers need splitting or explicit annotations.
+
+```ts
+type Procedure<I, O> = { _input: I; _output: O };            // phantom fields
+type Client<R> = { [K in keyof R]: R[K] extends Procedure<infer I, infer O> ? (input: I) => Promise<O> : never };
+```
+
+**Phantom-tagged keys (TanStack Query `DataTag`).** A key type carries the data type as a phantom property, so `getQueryData(key)` needs no type argument:
+
+```ts
+type DataTag<K, TData> = K & { [dataTagSymbol]: TData };
+declare function queryKey<const K extends readonly unknown[], TData>(key: K): DataTag<K, TData>;
+declare function getQueryData<K extends DataTag<readonly unknown[], unknown>>(key: K): K[typeof dataTagSymbol] | undefined;
+```
+
+**Tuple accumulation (Redux Toolkit middleware).** Each `.concat(middleware)` returns a builder whose type parameter is the tuple so far (`[...Ms, M]`), so `dispatch` is the intersection of every middleware's extension. Variadic tuple types make this linear and inference-friendly.
+
+**Exhaustive pattern matching (ts-pattern).** The matcher's type tracks the *remaining* cases: each `.with(pattern, handler)` excludes what the pattern covers (`Exclude`-like on the input union), and `.exhaustive()` exists only when the remainder is `never`. The same idea in plain TypeScript is the `const x: never = value` check ([Module 03](./03-unions-narrowing-and-control-flow.md)). Cost: deep unions make this a common source of TS2589.
 
 ## Anti-Patterns vs. Best Practices
 
@@ -665,14 +737,39 @@ const machine = defineStateMachine({
 
 ---
 
-## Summary & Next Steps
+## Interview Drill
 
-In this workshop module, we mastered:
-1. **Branded Types**: Constructing nominal types using `unique symbol` tags with zero runtime cost, and building validation boundaries with smart constructors.
-2. **Global Augmentation**: Scoping ambient types using `declare global`, augmenting Node and browser environments, and module colocation via `export {}`.
-3. **Type Predicates & Assertion Functions**: Custom narrowing with `x is T`, array filtering, assertion functions (`asserts x is T`), avoiding TS2775, and polymorphic `this is ...` guards on classes.
-4. **The Builder Pattern**: Type-state accumulation across immutable method chains, navigating third-party `.d.ts` definitions, and module augmentation.
-5. **Inference Steering**: `NoInfer<T>` in TS 5.4+, const type parameters in identity functions, and reverse-mapped types for mutually constrained configurations.
+<details><summary>1. How do you get nominal typing in a structural type system, and what does it cost at runtime?</summary>
 
-Proceed to **[Module 09: Runtime Checking with Zod & React Foundations](./09-zod-and-react-foundations.md)** to connect type-level guarantees with runtime schema validation and component architectures.
+Intersect the base type with a phantom property (`string & { readonly __brand: "UserId" }`, or a `unique symbol` key to prevent forgery by object literals). Values get the brand only through a smart constructor or parser. Runtime cost is zero: the brand is erased; the value is still a plain string.
+</details>
 
+<details><summary>2. Type predicate vs assertion function: when do you use each?</summary>
+
+A predicate `(x): x is T` returns a boolean and narrows in the true branch; use it in conditions and `filter`. An assertion `(x): asserts x is T` returns `void` and narrows the rest of the scope or throws; use it for invariants. Both are unchecked promises to the compiler: a wrong predicate body is not caught.
+</details>
+
+<details><summary>3. Why does calling an assertion function sometimes give TS2775?</summary>
+
+Assertion signatures only take effect when the call target has an explicit type annotation (every name in the call target must be declared with an explicit type), because control-flow analysis must know the assertion signature without inferring it. Declare the function with `function` syntax or annotate the `const`.
+</details>
+
+<details><summary>4. What is a type-state builder, and what is its main pitfall?</summary>
+
+A builder whose type parameters record which steps have run (`QueryBuilder<Selected, HasWhere>`), so that `.execute()` is only available when the state is complete. Each call returns a new type. Pitfall: long chains create deep instantiations and confusing errors; keep the state small and the method set per state explicit.
+</details>
+
+<details><summary>5. What does <code>NoInfer&lt;T&gt;</code> do?</summary>
+
+It marks a position as *not* an inference site, so `T` is inferred from other arguments and this argument is only checked against it. Example: `createFSM<S extends string>(states: S[], initial: NoInfer<S>)` makes `initial: "typo"` an error instead of widening `S`.
+</details>
+
+<details><summary>6. How do you type a method decorator that only applies to async methods?</summary>
+
+Make it generic in `This`, `Args`, `R`, and type the target as `(this: This, ...args: Args) => Promise<R>` with `ClassMethodDecoratorContext<This, typeof target>`. Applying it to a synchronous method is then a type error, and the replacement preserves the signature.
+</details>
+
+<details><summary>7. Why prefer making a resource type <code>Disposable</code> over returning a disposer function?</summary>
+
+`using` requires a `Disposable` and disposes it at scope exit even on exceptions; the type system rejects non-disposables. A returned `() => void` can be ignored without any error, leaking the resource.
+</details>

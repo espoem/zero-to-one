@@ -12,11 +12,12 @@ Done:
 - M12 typing UI frameworks (new, React 19 + Solid 2 RC) + type tests.
 - M13 library authoring, type performance, type tests, migration, version history (new) + package/attw/publint/TS2589/TS2578/trace fixtures.
 - M09 conditional/mapped/recursive: formal semantics, recursion limits, TS 7 code-point and 7.1 distributive changes, drill; new dedicated example (the "missing example for module 06").
+- M10 API design: renumbered old 08 lessons, new lessons on Disposable typing, TC39 vs legacy decorator typing (Then vs now), case studies from old 11.1, drill; new examples for using/DisposableStack and decorator typing.
 
 ## Remaining work (ordered)
 1. (done) M13.
 2. (done) M09.
-3. M10 API design (old 08 + old 11 case studies): Disposable/decorator typing, DataTag/tuple accumulation/ts-pattern case studies; drop version tags; drill.
+3. (done) M10.
 4. M02–M08: retitle headers (remove "Weeks"/track labels), add formal definitions, TS 7 notes, Then vs now where practice changed, Interview Drill; M04 merged sections need a coherent intro; M06 needs nodenext/bundler, exports/types conditions, project references, `types: []`, `rootDir`, import attributes; M03 add `switch(true)`; M08 add `string & {}`.
 5. Convert old script-style examples (essentials-and-narrowing, generics-and-overloads, type-transformations, advanced-patterns, modern-features-typing, zod-schema-validation) to `test()` blocks; add examples for M02, M04, M05, M06.
 6. exams/README.md + exams/interview.md (certificates.dev TS cert: 40 MCQ + 2 coding in 135 min; no published weights) + mock exam.
