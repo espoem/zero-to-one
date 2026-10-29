@@ -28,3 +28,11 @@ type PillProps = RecipeVariantProps<typeof pill>
 export const p: PillProps = { tone: 'muted' }
 // @ts-expect-error -- `loud` is not a tone
 export const badTone: PillProps = { tone: 'loud' }
+
+// Pattern props are typed from `properties`; `blocklist` removes style props the pattern owns.
+import { scrollable } from '../styled-system/patterns'
+export const sc = scrollable({ direction: { base: 'horizontal', md: 'vertical' }, p: '4' })
+// @ts-expect-error -- `diagonal` is not in the enum
+export const badDirection = scrollable({ direction: 'diagonal' })
+// @ts-expect-error -- overflowX is blocklisted: the pattern owns it
+export const blocked = scrollable({ overflowX: 'visible' })

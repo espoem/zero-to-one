@@ -7,13 +7,14 @@
 Done:
 - Toolchain: `@pandacss/dev` 2.4.0 (+ preset-base, preset-panda, vite 2.4.0), TypeScript 7.0.2, Vite 8.3.5, React 19.3.1, Solid 1.9.17, Node 26. ESM-only package.
 - Tests (`npm test`, node --test): CSS snapshot fixtures (one CLI cssgen per fixture), negative fixtures (dynamic values, default/namespace imports, shadowed `css`, unsupported pure helper, config recipe with runtime variant, string concatenation), v1→v2 misconfig configs (no preset-base, `containerSizes`, breakpoints without extend, `propertyFallback`), runtime class-string tests, CLI oracles (doctor/analyze/debug JSON, codegen --check), Playwright computed-style tests on React + Solid builds with and without `transform: true`, plus a vanilla build proving runtime removal (19,811 → 923 bytes). Type tests via `@ts-expect-error` in `examples/react/src/type-tests.ts`.
-- Last run: `npm run typecheck` OK; `npm test` 87/87 pass.
+- Last run: `npm run typecheck` OK; `npm test` 89/89 pass.
 - Modules written: see the module log below.
 
 Module log:
 - M01 mental model & v2 architecture: done.
 - M02 installation & build integration: done (+ PostCSS integration test).
 - M03 styling API & conditions: done (+ property-order fixture, array-condition config, e2e-fixtures Playwright suite).
+- M04 patterns & layout: done (scrollable pattern uses map + blocklist; pattern-prop-in-breakpoint negative fixture; pattern type tests).
 
 ## Remaining work (ordered)
 1. Modules 02–12 per brief (delete superseded old modules as each lands).

@@ -56,6 +56,23 @@ describe('static extraction cannot see runtime values', () => {
   })
 })
 
+describe('patterns (Module 04)', () => {
+  test('a pattern prop nested in a breakpoint key bypasses the pattern and leaks as a CSS property', () => {
+    const { css } = cssgen({ include: 'negative/pattern-prop-in-breakpoint.tsx' })
+    const names = classNames(css)
+    assert.ok(!names.has('md:grid-tc_repeat(3,_minmax(0,_1fr))'), 'no responsive grid columns')
+    // `columns` is also a real CSS property (multi-column layout), so this silently CHANGES layout
+    assert.match(css, /\.md\\:columns_3 \{\s*columns: 3;/)
+  })
+
+  test('responsive pattern props are mapped per breakpoint by the transform', () => {
+    const names = classNames(cssgen({ include: 'positive/04-patterns.ts' }).css)
+    for (const n of ['ov-x_auto', 'ov-y_hidden', 'md:ov-x_hidden', 'md:ov-y_auto', 'md:grid-tc_repeat(3,_minmax(0,_1fr))']) {
+      assert.ok(names.has(n), n)
+    }
+  })
+})
+
 describe('v1 -> v2 misconfigurations', () => {
   test('without @pandacss/preset-base: unknown_condition + raw, unresolved token values', () => {
     const { css, log } = cssgen({ config: 'configs/no-preset-base.config.ts' })
