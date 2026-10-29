@@ -9,7 +9,7 @@
   },
   "scripts": {
     "prepare": "npm run codegen",
-    "codegen": "panda codegen --cwd examples/react && panda codegen --cwd examples/solid && panda codegen --cwd examples/vanilla && panda codegen --cwd examples/fixtures",
+    "codegen": "panda codegen --cwd examples/react && panda codegen --cwd examples/solid && panda codegen --cwd examples/vanilla && panda codegen --cwd examples/fixtures && panda codegen --cwd examples/monorepo/packages/ds && panda lib --cwd examples/monorepo/packages/ds && panda codegen --cwd examples/monorepo/apps/web",
     "typecheck": "npm run codegen && tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.solid.json",
     "test": "npm run codegen && node --test \"examples/tests/*.test.ts\"",
     "test:update-snapshots": "npm run codegen && node --test --test-update-snapshots examples/tests/css-snapshots.test.ts",
@@ -36,5 +36,8 @@
     "typescript": "7.0.2",
     "vite": "8.3.5",
     "vite-plugin-solid": "2.11.14"
-  }
+  },
+  "workspaces": [
+    "examples/monorepo/packages/*"
+  ]
 }
