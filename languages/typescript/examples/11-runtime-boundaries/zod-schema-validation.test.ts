@@ -86,7 +86,7 @@ assert(!TagsSchema.safeParse(["ok", 123]).success);
 export const UserSchema = z.object({
   id: z.string(),
   username: z.string().min(3),
-  email: z.string().email(),
+  email: z.email(),
   bio: z.string().optional(),
   avatarUrl: z.string().nullable(),
   role: RoleSchema.default("viewer"),
