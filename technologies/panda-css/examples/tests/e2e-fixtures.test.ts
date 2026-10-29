@@ -4,7 +4,9 @@
 import { after, before, describe, test } from 'node:test'
 import assert from 'node:assert/strict'
 import { loadChromium } from './helpers/browser.ts'
-import { cssgen } from './helpers/panda.ts'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { cssgen, fixturesDir, panda } from './helpers/panda.ts'
 
 const chromium = await loadChromium()
 const skip = typeof chromium === 'string' ? chromium : false
@@ -18,8 +20,8 @@ describe('fixture stylesheets in Chromium', { skip }, () => {
   })
   after(async () => browser?.close())
 
-  const load = async (fixture: string, body: string) => {
-    const { css } = cssgen({ include: fixture })
+  const load = async (fixture: string, body: string, config?: string) => {
+    const { css } = config ? cssgen({ config }) : cssgen({ include: fixture })
     await page.setContent(`<!doctype html><html><head><style>${css}</style></head><body>${body}</body></html>`)
   }
   const style = (sel: string, prop: string) =>
@@ -67,5 +69,43 @@ describe('fixture stylesheets in Chromium', { skip }, () => {
     assert.equal(await style('#s', 'color'), 'rgb(24, 24, 27)')
     // color-mix(in oklab, …) with 40% of brand.500 over transparent
     assert.match(await style('#s', 'background-color'), /^(oklab|color\(srgb)/)
+  })
+
+  test('themes: static theme block, dark composition, theme condition, on-demand theme CSS', async () => {
+    panda(['codegen', '--config', 'configs/themes.config.ts'])
+    const contrast = JSON.parse(readFileSync(join(fixturesDir, 'styled-system-themes/themes/theme-contrast.json'), 'utf8'))
+    assert.equal(contrast.id, 'panda-theme-contrast')
+    await load(
+      '',
+      `<div id="def" class="bg_accent.default"></div>
+       <section data-panda-theme="forest">
+         <div id="forest" class="bg_accent.default themeForest:tt_uppercase">x</div>
+         <div class="dark"><div id="forestDark" class="bg_accent.default"></div></div>
+       </section>
+       <section data-panda-theme="contrast"><div id="contrast" class="bg_accent.default"></div></section>`,
+      'configs/themes.config.ts',
+    )
+    assert.equal(await style('#def', 'background-color'), 'rgb(79, 70, 229)')
+    const forest = await style('#forest', 'background-color')
+    const forestDark = await style('#forestDark', 'background-color')
+    assert.match(forest, /^oklch\(0\.527/)
+    assert.match(forestDark, /^oklch\(0\.871/)
+    assert.equal(await style('#forest', 'text-transform'), 'uppercase')
+    // `contrast` is not in staticCss.themes: no CSS until its JSON is injected
+    assert.equal(await style('#contrast', 'background-color'), 'rgb(79, 70, 229)')
+    await page.addStyleTag({ content: contrast.css })
+    // GOTCHA: the on-demand theme references --colors-black, which removeUnusedTokens pruned
+    // from the main sheet (nothing static used it). var() of an undefined variable makes the
+    // declaration invalid at computed-value time -> background falls back to transparent.
+    assert.equal(await style('#contrast', 'background-color'), 'rgba(0, 0, 0, 0)')
+    await page.addStyleTag({ content: ':root { --colors-black: #000; }' })
+    assert.equal(await style('#contrast', 'background-color'), 'rgb(0, 0, 0)')
+  })
+
+  test('compositions (text/layer styles) lose to plain utilities: nested layer', async () => {
+    await load('positive/06-theming.ts', `<h2 id="h" class="textStyle_heading fs_sm">t</h2><h2 id="h2" class="textStyle_heading">t</h2>`)
+    assert.equal(await style('#h2', 'font-size'), '24px')
+    assert.equal(await style('#h', 'font-size'), '14px')
+    assert.equal(await style('#h', 'font-weight'), '700', 'other composition properties still apply')
   })
 })

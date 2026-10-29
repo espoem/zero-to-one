@@ -13,6 +13,7 @@
     --colors-ink-100: #f4f4f5;
     --colors-ink-900: #18181b;
     --colors-ink-950: #09090b;
+    --font-sizes-sm: 0.875rem;
     --font-sizes-md: 1rem;
     --font-sizes-2xl: 1.5rem;
     --font-weights-bold: 700;
@@ -47,6 +48,9 @@
   }
   .c_fg\.default {
     color: var(--colors-fg-default);
+  }
+  .fs_sm {
+    font-size: var(--font-sizes-sm);
   }
   @layer compositions {
     .layerStyle_card {

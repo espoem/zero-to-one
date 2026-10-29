@@ -3,6 +3,7 @@ node_modules/
 
 # Panda CSS Generated Design Engine
 styled-system/
+styled-system-*/
 
 # Panda CSS Cache & Performance Profiles
 .panda/
