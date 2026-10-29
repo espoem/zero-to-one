@@ -2,7 +2,7 @@
 
 ## Hand-off (author: Opus · 2026-10-29 · branch `track/typescript`)
 
-Status: 🟨 ready for challenger/verifier (STATUS.md not edited: outside this agent's boundaries). 25 commits since `9700c8d`.
+Status: 🟨 ready for challenger/verifier (STATUS.md not edited: outside this agent's boundaries). 25 commits since `9700c8d` (including this hand-off fix).
 
 **Test status (Node 26.12.1, tsc 7.0.2):** `npm test` → `node --test "examples/**/*.test.ts"`: **111 tests, 111 pass, 0 fail**. `npm run typecheck` → `tsc -p .` + React project + Solid project: **clean**. Relative-link check over all track markdown: 0 broken (one false positive inside a code block). Absolute-path scan: clean.
 
