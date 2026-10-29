@@ -12,6 +12,12 @@ import {
   flush,
   mapArray,
   resetErrorHalt,
+  onCleanup,
+  lazy,
+  Loading,
+  isStatic,
+  omit,
+  createUniqueId,
   For,
   Repeat,
   Show,
@@ -386,3 +392,129 @@ describe("04 · context", () => {
     expect(container.textContent).toBe("lightdark");
   });
 });
+
+describe("04 · list internals and lifetimes", () => {
+  it("a removed row's owner is disposed: its cleanups run (no leaked subscriptions)", () => {
+    const log: string[] = [];
+    const { setList, dispose } = createRoot((dispose) => {
+      const [list, setList] = createSignal(["a", "b", "c"]);
+      mapArray(list, (x) => {
+        onCleanup(() => log.push(`dispose ${x}`));
+        return x;
+      })(); // read once so the mapping runs
+      return { setList, dispose };
+    });
+    setList(["a", "c"]);
+    flush();
+    expect(log).toEqual(["dispose b"]);
+    dispose();
+    expect(log[0]).toBe("dispose b");
+    expect(log.slice(1).sort()).toEqual(["dispose a", "dispose c"]); // the remaining rows die with the list's owner
+  });
+
+  it("duplicate references in a keyed list get one row each, matched in order", () => {
+    const o = { id: 1 };
+    let made = 0;
+    const { m, setList, dispose } = createRoot((dispose) => {
+      const [list, setList] = createSignal([o, o]);
+      const m = mapArray(list, (_x, i) => (made++, i));
+      return { m, setList, dispose };
+    });
+    expect(m().map((i) => i())).toEqual([0, 1]);
+    setList([o]);
+    flush();
+    expect(m().map((i) => i())).toEqual([0]);
+    expect(made).toBe(2); // the surviving duplicate kept its row
+    dispose();
+  });
+
+  it("context is resolved through the owner tree, so a Portal child still sees its provider", () => {
+    const Theme = createContext<string>("light");
+    const target = document.createElement("div");
+    document.body.append(target);
+    function Label() {
+      return <span>{useContext(Theme)}</span>;
+    }
+    render(() => (
+      <Theme value="dark">
+        <Portal mount={target}>
+          <Label />
+        </Portal>
+      </Theme>
+    ));
+    expect(target.textContent).toBe("dark"); // DOM parent is outside the provider; the owner is not
+    target.remove();
+  });
+
+  it("nested providers shadow outer ones for their subtree only", () => {
+    const Lang = createContext<string>("en");
+    const Show2 = () => <i>{useContext(Lang)}</i>;
+    const { container } = render(() => (
+      <Lang value="cs">
+        <Show2 />
+        <Lang value="de">
+          <Show2 />
+        </Lang>
+        <Show2 />
+      </Lang>
+    ));
+    expect(container.textContent).toBe("csdecs");
+  });
+
+  it("lazy() loads code on first render and suspends to the nearest <Loading>", async () => {
+    const Heavy = lazy(
+      () => new Promise<{ default: () => string }>((resolve) => setTimeout(() => resolve({ default: () => "heavy!" }), 1)),
+    );
+    const { container } = render(() => (
+      <Loading fallback="loading">
+        <Heavy />
+      </Loading>
+    ));
+    expect(container.textContent).toBe("loading");
+    await new Promise((r) => setTimeout(r, 10));
+    flush();
+    expect(container.textContent).toBe("heavy!");
+  });
+
+  it("dynamic(…, { static: isStatic(props, 'as') }) skips the memo when the tag was written as a literal", () => {
+    const seen: boolean[] = [];
+    function Box(props: { as?: string; children?: unknown }) {
+      seen.push(isStatic(props, "as"));
+      const Tag = dynamic(() => props.as ?? "div", { static: isStatic(props, "as") });
+      return <Tag {...omit(props, "as")} />;
+    }
+    const [tag, setTag] = createSignal("section");
+    const { container } = render(() => (
+      <div>
+        <Box as="article">a</Box>
+        <Box as={tag()}>b</Box>
+      </div>
+    ));
+    expect(seen).toEqual([true, false]); // literal → data property; expression → getter
+    setTag("aside");
+    flush();
+    expect([...container.firstElementChild!.children].map((e) => e.tagName)).toEqual(["ARTICLE", "ASIDE"]);
+  });
+
+  it("createUniqueId gives per-instance ids for label/aria wiring", () => {
+    function Field() {
+      const id = createUniqueId();
+      return (
+        <div>
+          <label for={id}>name</label>
+          <input id={id} />
+        </div>
+      );
+    }
+    const { container } = render(() => (
+      <>
+        <Field />
+        <Field />
+      </>
+    ));
+    const ids = [...container.querySelectorAll("input")].map((i) => i.id);
+    expect(ids[0]).not.toBe(ids[1]);
+    expect(container.querySelector("label")!.getAttribute("for")).toBe(ids[0]);
+  });
+});
+
