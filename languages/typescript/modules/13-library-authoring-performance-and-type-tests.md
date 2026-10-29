@@ -166,6 +166,8 @@ TS can type-check `.js` files using JSDoc annotations (`allowJs` + `checkJs`, or
 - `@class` no longer turns a function into a constructor; aliasing `this` and assigning to `prototype` are no longer specially understood.
 - Typedefs must use `@typedef`; Closure-style function types (`function(string): number`) are unsupported; use `(s: string) => number`.
 
+The fixture `jsdoc-ts7/` shows both: `@param {Color}` on an `@enum` object is **TS2749** (a value used as a type) and `@type {function(string): number}` no longer parses (**TS1005**).
+
 **Failure mode:** a JS code base with Closure-style JSDoc silently loses types (they become `any`) or gains errors on upgrade. Run 6.0 and 7.0 side by side on the JS files and diff the diagnostics before switching.
 
 ---

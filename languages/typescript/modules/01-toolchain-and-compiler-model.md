@@ -35,7 +35,7 @@ A handful of TypeScript constructs **emit runtime code** and therefore violate t
 | `<T>expr` (angle-bracket assertion) | `expr` | Erasable in principle, but ambiguous with JSX, so strippers refuse it |
 | Legacy decorators with `emitDecoratorMetadata` | `__decorate`/`__metadata` calls carrying **type** information | Emit depends on types |
 
-`const enum` is worse: erasing it correctly needs the *value* of the enum member, which lives in another file. That is the canonical example of an emit that is not per-file, and the reason `isolatedModules` exists.
+`const enum` is worse: erasing it correctly needs the *value* of the enum member, which lives in another file. That is the canonical example of an emit that is not per-file, and the reason `isolatedModules` exists: with it, using a `const enum` declared in another file's declarations is **TS2748** ("Cannot access ambient const enums when 'isolatedModules' is enabled"; fixture `const-enum-isolated/`). Library authors should never export `const enum`s across package boundaries.
 
 ### 1.3 `isolatedModules`, `verbatimModuleSyntax`, `erasableSyntaxOnly`
 

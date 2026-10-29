@@ -85,3 +85,8 @@ test("--checkers and --singleThreaded are accepted (parallelism is a CLI concern
   assert.equal(runTsc(["-p", ".", "--checkers", "2"], dir).status, 0);
   assert.equal(runTsc(["-p", ".", "--singleThreaded"], dir).status, 0);
 });
+
+test("const enums from another file cannot be used under isolatedModules (TS2748)", () => {
+  const r = runTsc(["-p", "."], fixture(import.meta.url, "const-enum-isolated"));
+  assert.deepEqual(r.codes, ["TS2748"]);
+});

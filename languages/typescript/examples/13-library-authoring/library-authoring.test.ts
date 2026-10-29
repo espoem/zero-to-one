@@ -97,3 +97,9 @@ test("--extendedDiagnostics and --generateTrace work in tsc 7", () => {
   }
   assert.ok(existsSync(path.join(dir, "src", "index.ts")));
 });
+
+test("TS 7 JSDoc: @enum is not special and Closure function types are unsupported", () => {
+  const r = runTsc(["-p", "."], fixture(import.meta.url, "jsdoc-ts7"));
+  assert.ok(r.codes.includes("TS2749"), r.output); // `Color` is a value used as a type
+  assert.ok(r.codes.includes("TS1005"), r.output); // `function(string): number` no longer parses
+});
