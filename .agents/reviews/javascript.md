@@ -2,7 +2,7 @@
 
 ## Hand-off (primary · Opus · in progress, last updated 2026-10-29)
 
-Status: 🟦 authoring. Modules 01–04 done; modules 05–13, the exams, the glossary, the cheatsheet and the README are still to do.
+Status: 🟦 authoring. Modules 01–05 done; modules 06–13, the exams, the glossary, the cheatsheet and the README are still to do.
 
 ### Done
 | Module | File | Example / tests |
@@ -11,10 +11,11 @@ Status: 🟦 authoring. Modules 01–04 done; modules 05–13, the exams, the gl
 | 02 Types, values, coercion (8 types, IEEE 754, BigInt, UTF-16, Symbols, ToPrimitive/ToNumber/…, 4 equality algorithms, `+`, Neumaier pseudocode + invariant) | `modules/02-types-values-coercion.md` | `examples/02-…test.js` (fast-check: round-trip, ToInt32, SameValue) |
 | 03 Execution contexts, scope, closures, `this`, strict mode, eval | `modules/03-…md` | `examples/03-…test.js` (V8 shared-Context leak proven via `--expose-gc` + WeakRef) |
 | 04 Objects, prototypes, classes, exotic objects, copying | `modules/04-…md` | `examples/04-…test.js` (myNew, myInstanceof, override mistake, private names vs Proxy) |
+| 05 Iterators, generators, helpers, `Iterator.concat`, async iteration, `Array.fromAsync` | `modules/05-…md` | `examples/05-…test.js` (IteratorClose cases, co driver, `for await` crash in a child process) |
 
 Tooling: `package.json` (TypeScript 7.0.2, @types/node 26.6.6, fast-check 4.10.2, esbuild 0.28.2, reserved for the module 09 decorator desugaring demo), `tsconfig.json`, `.mise.toml` (node 26.12.1), and `examples/helpers/run-node.js` (spawns the same Node binary for flag- and goal-specific checks).
 
-Test output at the last commit: `npm test` → 126 tests, 126 pass, 0 fail. `npm run typecheck` → clean.
+Test output at the last commit: `npm test` → 153 tests, 153 pass, 0 fail. `npm run typecheck` → clean.
 
 ### Verified facts (2026-10-28/29)
 - ES2026 is ECMA-262 17th edition (June 2026). Section numbers were taken from the 17.0 ToC.
@@ -24,7 +25,6 @@ Test output at the last commit: `npm test` → 126 tests, 126 pass, 0 fail. `npm
 - JSNAD was retired on 2025-09-30, and JSNSD is inactive (Linux Foundation pages). The only active proctored JS-core cert found is OpenEDG JS Institute **JSA-41-01**: 40 questions, 60 min, US$325, Pearson VUE. Domains: Classless Objects 25%, Classes 23%, Built-in Objects 27%, Advanced Functions 25%. Passing score not published on the voucher page. Its authority is low (InfoWorld 2026-04: no widely accepted JS cert authority). Plan: put the primary effort into `exams/interview.md` and map the JSA domains in the coverage matrix.
 
 ## Remaining work (ordered)
-1. Module 05 iterators & generators (iterator protocol, `return()` cleanup, helpers, `Iterator.concat`, generators as coroutines, async iterators, `Array.fromAsync`), plus tests.
 2. Module 06 agents, realms & job queue, **including the HTML event-loop processing model** (task → microtask checkpoint → update the rendering: rAF → style/layout → paint), HostEnqueuePromiseJob, thenable job extra ticks, unhandled rejections (child-process test).
 3. Module 07 async in depth (combinators, `withResolvers`, `await` desugaring, AbortSignal.any/timeout, concurrency limiter, `Promise.all` does not cancel).
 4. Module 08 modules (Module Records, Link/Evaluate, live bindings, cycles/TDZ, TLA, import attributes, `import.meta`, `import defer`/source phase, `exports` conditions at runtime; link to the nodejs track for the CJS loader and `require(esm)`), with fixtures under `examples/fixtures/08/`.
