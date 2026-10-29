@@ -108,4 +108,9 @@ describe('fixture stylesheets in Chromium', { skip }, () => {
     assert.equal(await style('#h', 'font-size'), '14px')
     assert.equal(await style('#h', 'font-weight'), '700', 'other composition properties still apply')
   })
+
+  test('migration bridge: a static class reading a CSS variable set inline at runtime', async () => {
+    await load('negative/dynamic-value.ts', `<span id="v" class="c_var(--badge-tone)" style="--badge-tone: rgb(1, 2, 3)">x</span>`)
+    assert.equal(await style('#v', 'color'), 'rgb(1, 2, 3)')
+  })
 })

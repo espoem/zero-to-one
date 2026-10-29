@@ -7,7 +7,7 @@
 Done:
 - Toolchain: `@pandacss/dev` 2.4.0 (+ preset-base, preset-panda, vite 2.4.0), TypeScript 7.0.2, Vite 8.3.5, React 19.3.1, Solid 1.9.17, Node 26. ESM-only package.
 - Tests (`npm test`, node --test): CSS snapshot fixtures (one CLI cssgen per fixture), negative fixtures (dynamic values, default/namespace imports, shadowed `css`, unsupported pure helper, config recipe with runtime variant, string concatenation), v1→v2 misconfig configs (no preset-base, `containerSizes`, breakpoints without extend, `propertyFallback`), runtime class-string tests, CLI oracles (doctor/analyze/debug JSON, codegen --check), Playwright computed-style tests on React + Solid builds with and without `transform: true`, plus a vanilla build proving runtime removal (19,811 → 923 bytes). Type tests via `@ts-expect-error` in `examples/react/src/type-tests.ts`.
-- Last run: `npm run typecheck` OK; `npm test` 115/115 pass.
+- Last run: `npm run typecheck` OK; `npm test` 118/118 pass.
 - Modules written: see the module log below.
 
 Module log:
@@ -22,6 +22,7 @@ Module log:
 - M09 JSX factory & style props (React + Solid): done (jsxStyleProps type-cost bench + test: all 8587 vs minimal 5073 instantiations; Solid Vite 8 INVALID_ANNOTATION finding).
 - M10 compiler internals & debugging: done (compiler.test.ts: conditional fold, js_parse_error loses whole file, plugins hooks, config_hooks_removed, --splitting files, --profile span names).
 - M11 monorepos & design-system libraries: done (npm workspace examples/monorepo with @acme/ds built by panda lib and apps/web consuming via designSystem; monorepo.test.ts covers manifest, exports sync, build-info replay, stale fallback, design_system_in_include, treeshakeDesignSystem).
+- M12 migration & upgrades: done (v2-upgrade-audit.ts script + v1-project fixture + migration.test.ts; CSS-variable bridge e2e; 23-step checklist; version-history table; 25-rule v2 catalogue). Restructure 13 → 12 complete.
 
 ## Remaining work (ordered)
 1. Modules 02–12 per brief (delete superseded old modules as each lands).

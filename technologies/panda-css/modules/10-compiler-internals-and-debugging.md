@@ -113,7 +113,7 @@ The proofs, all in the test suite:
 | Code | Meaning |
 |---|---|
 | `panda_call_unextractable` | A style call got an unreadable value (`css(props.styles)`). **Turned off when `jsxFramework` is set**, which is why our fixtures (React) report `diagnostics: 0` for dynamic values |
-| `pure_helper_unevaluated` | A helper with static arguments has a body Panda cannot evaluate (an `if`, `.map`). In our `String(n)` fixture it did **not** fire: unsupported helpers "stay unresolved without a warning" when lowering fails early |
+| `pure_helper_unevaluated` | Listed in the diagnostics reference, but the 2.2.0 changelog says this warning (added in 2.1.2) was **removed** because it could fail `--max-warnings 0` builds. Our `String(n)` fixture confirms: no diagnostic. Unsupported helpers fail silently, so test for their CSS |
 | `imported_recipe_raw_dynamic` | `button.raw({ size })` with a dynamic `size` on a `cva` from another file |
 | `js_parse_error` | Oxc recovered from a syntax error; extraction ran on the partial AST |
 | `nested_property`, `unknown_condition` | Style object shape problems ([Module 03](./03-styling-api-and-conditions.md)) |
