@@ -34,6 +34,39 @@ Proved: writing `s.a.x = 2` re-runs the memo that read `a.x` and not the one tha
 
 Reads lag writes exactly like signals: the setter stages, the commit applies ([Module 01](./01-reactive-core.md)). Writes are subject to the same owned-scope rule: no store writes in a component body, memo or effect compute.
 
+### 1.1 Inside the proxy (rc.19)
+
+The store implementation's header comment (in `@solidjs/signals`) describes the representation exactly; here it is with the consequences you can observe:
+
+| Node kind | Created when | Read that subscribes to it | Proved |
+|---|---|---|---|
+| **leaf node** (one per key) | a key is read in a tracking scope or written | `store.a`, `store.list[0]` | one element read ignores writes to other elements |
+| **presence node** | `key in store` is read | `"nick" in store` tracks presence, not value | value change: no re-run; `delete`: re-run |
+| **container node** (`$TRACK`) | first structural read | `Object.keys`, `for…in`, iteration, `.length`, `map`/`filter` over an array, `deep()` | `Object.keys` memo ignores a value change, re-runs on a new key |
+| **deep witness** | `deep(store)` | every record reachable | M05 `deep` test |
+
+Further mechanics:
+
+- **Nodes are lazy.** An object you put in a store and nobody reads costs no nodes. Reading a key with no leaf node outside a tracking scope reads the backing directly without creating anything ("node existence is unobservable").
+- **Copy-on-write backing.** The committed backing object is your object, shared until the first write privatises it (and its ancestor chain). Writes during a setter go to a *pending* backing owned by the container node; the committed backing mutates at exactly one moment, the flush's commit. This is why reads lag writes for stores exactly as for signals, and why holds and optimistic overlays can park or revert a store write wholesale.
+- **Cost of a setter is O(written keys)**: the draft records which keys were touched (`touch(target, key)`), and only those leaves are staged and notified at commit. Array writes also touch `length`.
+- **Nested objects are wrapped on read.** `store.user` returns a proxy for the nested record; the same record always yields the same proxy while it is observed (identity is per record, which is what keyed `<For>` relies on).
+- **Writes outside a draft are refused** in the `set`/`deleteProperty` traps (`STORE_WRITE_OUTSIDE_SETTER`), and a write to `__proto__` is dropped as a prototype-pollution guard (proved: neither `Object.prototype` nor the store's prototype changes). This matters when a setter spreads untrusted JSON into the draft.
+- **Unobserved slots are released.** When the last reader of a leaf goes away, the slot node is released (`slotUnobservedHook`). That is the mechanism behind the M05 observation that only *observed* rows are guaranteed to keep proxy identity across `reconcile`.
+
+```mermaid
+flowchart TB
+  subgraph Proxy["store proxy for record R"]
+    T["get trap"] -->|"key read in a tracking scope"| L["leaf node R.key"]
+    T -->|"'key' in R"| P["presence node R.key"]
+    T -->|"ownKeys / length / iterate"| K["container node R.$TRACK"]
+    T -->|"value is an object"| W["wrap → proxy of child record"]
+  end
+  S["setter draft"] -->|"set / delete trap: touch(key)"| PB["pending backing (CoW)"]
+  PB -->|"flush commit"| CB["committed backing"]
+  CB -->|"notify touched leaves / presence / container"| Subs["subscribers"]
+```
+
 ## 2. Draft-first setters
 
 ```ts
@@ -127,6 +160,24 @@ const selected = createProjection<Record<number, boolean>>((draft) => {
 
 (Formally the derive itself is $O(|\text{draft}|)$ in this naive version because of the `Object.keys` sweep; with one remembered previous id it is $O(1)$ too. The notification cost, which is what dominates in UI, is $O(1)$ in both.)
 
+#### Then vs now: `createSelector` → projection
+
+```ts
+// 1.x (≤ 1.9)
+const isSelected = createSelector(selectedId);          // (key) => boolean, tracked per key
+<For each={rows()}>{(row) => <li classList={{ active: isSelected(row.id) }}>{row.label}</li>}</For>
+
+// 2.0
+const selected = createProjection<Record<string, boolean>>((d) => {
+  const id = selectedId();
+  for (const k in d) if (k !== id) delete d[k];
+  d[id] = true;
+}, {});
+<For each={rows()}>{(row) => <li class={{ active: selected[row.id] === true }}>{row.label}</li>}</For>
+```
+
+Both are O(1) per change. `createSelector` solved exactly this one shape; a projection is a general derived store, so the same tool covers multi-select (several `true` keys), "hovered and selected" maps, or per-row derived flags. Migration is mechanical: replace `isSelected(key)` with `selected[key] === true` and build the projection from the same source signal.
+
 ### 4.2 Async and subscriptions in projections
 
 The derive may be `async` or return an `AsyncIterable`; the projection then participates in `<Loading>` like an async memo ([Module 06](./06-colorless-async.md)).
@@ -170,6 +221,64 @@ Same derive semantics plus a setter for local writes (proved: a local `override`
 
 Use it only when profiling shows ingestion cost for data whose records change wholesale (polling dashboards, streamed feeds). For forms and field-by-field edits, the default deep store is optimal.
 
+## 6.1 Worked example: normalised state with derived views
+
+A typical app store keeps entities normalised and derives views with projections, so every update touches the fewest slots:
+
+```ts
+type Todo = { id: string; title: string; done: boolean; listId: string };
+const [db, setDb] = createStore<{ todos: Record<string, Todo>; order: string[] }>({ todos: {}, order: [] });
+
+// Server sync: reconcile by id into the normalised map (identity preserved).
+const ingest = (rows: Todo[]) =>
+  setDb((d) => {
+    for (const r of rows) d.todos[r.id] ? reconcile(r, "id")(d.todos[r.id]) : (d.todos[r.id] = r);
+    d.order = rows.map((r) => r.id);
+  });
+
+// Derived view: open todos of the selected list, keyed by id.
+const openTodos = createProjection<Todo[]>(
+  () => db.order.map((id) => db.todos[id]!).filter((t) => t.listId === listId() && !t.done),
+  [],
+  { key: "id" },
+);
+
+// O(1) selection (§4.1) and a writable local annotation store (§4.3).
+const [ui, setUi] = createStore((d: Record<string, { editing?: boolean }>) => {
+  for (const id of db.order) d[id] ??= {};
+}, {});
+```
+
+Why each choice: the map makes single-entity edits touch one leaf; `order` changes are structural and notify only list consumers; the projection returns data and lets keyed reconciliation keep row identity, so a `<For>` over `openTodos` only creates rows for todos that appear and only disposes rows that disappear; UI-only state (editing flags) lives in a separate writable derived store, so server refreshes never clobber it.
+
+## 6.2 Failure modes proved by negative tests
+
+| Failure | Test (`05-stores-and-projections.test.ts`) |
+|---|---|
+| writing through the proxy | "…STORE_WRITE_OUTSIDE_SETTER" |
+| `await` inside a setter | "…ASYNC_STORE_SETTER" |
+| mutating an object already handed to the store | "re-assigning a mutated object…notifies nobody" |
+| store write during render | "a store setter inside a component/root body throws…" |
+| prototype pollution via the draft | "__proto__ writes through a draft are dropped" |
+| assuming `storePath` comes from `solid-js` | "storePath is the optional 1.x-style helper, exported by @solidjs/signals" |
+
+## 6.3 Cost model
+
+| Operation | Cost | Notes |
+|---|---|---|
+| tracked read `store.a.b` | O(path length) proxy traps + O(1) per node (created once) | nested records are wrapped on first access |
+| untracked read of an unobserved key | O(1), no node | reads the backing directly |
+| setter | O(keys written) + notification of their subscribers | untouched keys cost nothing |
+| return-form setter (shallow) | O(top-level keys) or O(array length) | index-by-index replacement; no key map |
+| `reconcile(data, key)` | O(n) with a key → index map, recursing into changed records only | unchanged leaves are not notified |
+| `snapshot(store)` | O(changed part) + structural sharing for unchanged subtrees | untracked |
+| `deep(store)` | O(size of the reachable graph) subscriptions | use sparingly |
+| projection selection | O(1) notifications per change | §4.1 |
+
+**Immutable updates are an anti-pattern inside stores.** `setStore((s) => ({ ...s, user: { ...s.user, name } }))` replaces the `user` record with a copy: every leaf under it is compared, and any reader of `store.user` (the record itself) sees a new identity. The attribution engine reports it as `IMMUTABLE_UPDATE_IN_STORE` ("store container replaced by a mostly-identical copy"). Write the draft instead: `setStore((s) => { s.user.name = name; })`. Immutable spreading is a React habit; in Solid it throws away the granularity the store exists for.
+
+**Signal of an array vs store of an array.** `createSignal<Todo[]>` notifies every reader on any change and needs a new array per write; it is right for small, wholesale-replaced lists. A store notifies per element/field and lets `<For>` keep rows. A store is right as soon as rows have fields that change independently.
+
 ## 7. Choosing the right primitive
 
 ```mermaid
@@ -197,6 +306,17 @@ flowchart TD
 | `createSelector` | `createProjection` / `createStore(fn)` | more general | §4.1 |
 | `unwrap` | `snapshot` | distinct graph needed | |
 | `mergeProps` skipped `undefined` | `merge` treats `undefined` as a value | consistency | audit defaults |
+
+### 8.1 Then vs now: store internals
+
+| | 1.x (`solid-js/store`) | 2.0 RC |
+|---|---|---|
+| Node creation | per-property signals created lazily on tracked read (`$NODE` maps) | leaf, presence, container and deep-witness nodes, lazily, on read *or write* |
+| Writes | applied to the raw object immediately, then notified (sync unless batched) | staged on a copy-on-write pending backing; committed at the flush |
+| Structure tracking | `$SELF`/`$TRACK` node per object | container node (`$TRACK`) for keys/length/iteration; separate presence nodes for `in` |
+| Mutation API | path setters, `produce`, `createMutable` | draft setter only (plus optional `storePath`) |
+| Deep tracking | `trackDeep` from `@solid-primitives/deep` (community) | `deep()` in core |
+| Unwrap | `unwrap` returned the underlying object (shared) | `snapshot` returns a plain graph (new where changed) |
 
 **Pitfall when mixing:** a 1.x path setter `setStore("user", "name", "x")` compiles under loose typing and fails at runtime in 2.0 (the setter takes no path). A codemod should turn every path call into a draft write or `storePath`.
 
@@ -260,3 +380,14 @@ When records are replaced wholesale and ingestion cost shows up in profiles (pol
 
 The throw is how the runtime learns the derive depends on unsettled async; it holds the projection pending and retries on settle. On the server build it is the only re-derive channel, so catching it freezes the projection at a partial result. Use `isPending()` to branch on readiness.
 </details>
+
+<details><summary>10. What does `"key" in store` subscribe to, and why does that matter?</summary>
+
+A presence node: it re-runs when the key is added or deleted, not when its value changes. That lets "does this optional field exist?" logic avoid re-running on every value edit.
+</details>
+
+<details><summary>11. Why is `setStore(s => ({ ...s, user: { ...s.user, name } }))` discouraged?</summary>
+
+It replaces the `user` record with a copy, so the store must compare every leaf and anything reading `store.user` sees a new identity; attribution flags `IMMUTABLE_UPDATE_IN_STORE`. The draft write `s.user.name = name` touches one leaf.
+</details>
+

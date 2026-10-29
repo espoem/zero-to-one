@@ -269,3 +269,85 @@ describe("05 · negative tests", () => {
     dispose();
   });
 });
+
+describe("05 · proxy mechanics: what each kind of read subscribes to", () => {
+  it("`in` subscribes to presence, not value", () => {
+    const { setStore, runs, dispose } = createRoot((dispose) => {
+      const [store, setStore] = createStore<{ nick?: string }>({ nick: "a" });
+      let runs = 0;
+      createMemo(() => (runs++, "nick" in store));
+      return { setStore, runs: () => runs, dispose };
+    });
+    setStore((s) => {
+      s.nick = "b"; // value change: presence unchanged
+    });
+    flush();
+    expect(runs()).toBe(1);
+    setStore((s) => {
+      delete s.nick;
+    });
+    flush();
+    expect(runs()).toBe(2);
+    dispose();
+  });
+
+  it("Object.keys / iteration subscribe to the container (structure), not to values", () => {
+    const { setStore, runs, dispose } = createRoot((dispose) => {
+      const [store, setStore] = createStore<Record<string, number>>({ a: 1 });
+      let runs = 0;
+      createMemo(() => (runs++, Object.keys(store).join()));
+      return { setStore, runs: () => runs, dispose };
+    });
+    setStore((s) => {
+      s.a = 2;
+    });
+    flush();
+    expect(runs()).toBe(1);
+    setStore((s) => {
+      s.b = 1;
+    });
+    flush();
+    expect(runs()).toBe(2);
+    dispose();
+  });
+
+  it("reading one array element does not subscribe to the others", () => {
+    const { setStore, runs, dispose } = createRoot((dispose) => {
+      const [store, setStore] = createStore({ list: [1, 2, 3] });
+      let runs = 0;
+      createMemo(() => (runs++, store.list[0]));
+      return { setStore, runs: () => runs, dispose };
+    });
+    setStore((s) => {
+      s.list[2] = 30;
+    });
+    flush();
+    expect(runs()).toBe(1);
+    dispose();
+  });
+
+  it("negative: __proto__ writes through a draft are dropped (prototype-pollution guard)", () => {
+    const [store, setStore] = createStore<Record<string, unknown>>({});
+    setStore((s) => {
+      (s as Record<string, unknown>)["__proto__"] = { polluted: true };
+    });
+    flush();
+    expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+    expect(Object.getPrototypeOf(store)).toBe(Object.prototype);
+  });
+
+  it("negative: a store setter inside a component/root body throws REACTIVE_WRITE_IN_OWNED_SCOPE", () => {
+    expect(() =>
+      createRoot((dispose) => {
+        const [, setStore] = createStore({ n: 1 });
+        try {
+          setStore((s) => {
+            s.n = 2;
+          });
+        } finally {
+          dispose();
+        }
+      }),
+    ).toThrow(/REACTIVE_WRITE_IN_OWNED_SCOPE/);
+  });
+});
