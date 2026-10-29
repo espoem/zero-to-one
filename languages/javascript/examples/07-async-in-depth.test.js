@@ -92,15 +92,16 @@ describe('async/await semantics', () => {
     assert.deepEqual(log, ['sync part', 'caller continues']);
   });
 
-  test('sequential awaits sum latencies; concurrent awaits take the max', async () => {
-    const t0 = performance.now();
-    for (const ms of [30, 30, 30]) await delay(ms);
-    const sequential = performance.now() - t0;
-    const t1 = performance.now();
-    await Promise.all([30, 30, 30].map((ms) => delay(ms)));
-    const concurrent = performance.now() - t1;
-    assert.ok(sequential >= 85, `sequential ${sequential}`);
-    assert.ok(concurrent < 70, `concurrent ${concurrent}`);
+  test('sequential awaits run one at a time; Promise.all runs them concurrently', async () => {
+    // Deterministic: measure peak concurrency instead of wall-clock time.
+    let inFlight = 0;
+    let peak = 0;
+    const op = async () => { inFlight++; peak = Math.max(peak, inFlight); await delay(1); inFlight--; };
+    for (const _ of [1, 2, 3]) await op();
+    assert.equal(peak, 1);
+    peak = 0;
+    await Promise.all([1, 2, 3].map(() => op()));
+    assert.equal(peak, 3);
   });
 
   test('NEGATIVE: forEach(async ...) does not wait', async () => {

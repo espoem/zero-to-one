@@ -23,6 +23,9 @@ Tooling: `package.json` (TypeScript 7.0.2, @types/node 26.6.6, fast-check 4.10.2
 
 Test output at the last commit: `npm test` → 288 tests, 288 pass, 0 fail. `npm run typecheck` → clean.
 
+### Determinism policy
+No test depends on a race or on wall-clock thresholds: data-race tests assert only bounds (`plain ≤ expected`, `atomic === expected`); cross-agent tests use Atomics handshakes; concurrency is measured by peak in-flight counts, not elapsed time; timer-based ordering relies only on timer FIFO/expiry order. The remaining engine-specific (but deterministic) assertions are the V8 GC tests in modules 03 and 09, which use `--expose-gc` + `gc()`.
+
 ### Verified facts (2026-10-28/29)
 - ES2026 is ECMA-262 17th edition (June 2026). Section numbers were taken from the 17.0 ToC.
 - Node 26.12.1 / V8 14.6.202 ships Temporal, `using`/`DisposableStack`, Upsert, `Iterator.concat`, `JSON.rawJSON`, base64/hex, `Error.isError`, `Array.fromAsync` and `Atomics.pause`. **It does not ship `Math.sumPrecise` (ES2026) without `--js-sum-precise`**, nor `Iterator.zip` or `chunks`. `import defer` needs `--js-defer-import-eval`. `--js-decorators` parses `accessor` but not `@dec`.

@@ -130,18 +130,25 @@ describe('Realms (§9.3)', () => {
 });
 
 describe('Agents (§9.6): a worker is a separate agent with its own event loop', () => {
-  test('blocking the worker does not block the main agent', async () => {
+  test('a blocked worker does not block the main agent (deterministic handshake)', async () => {
+    // The worker blocks in Atomics.wait until the main agent, after running several of its own
+    // timer tasks, flips the flag. If agents shared one thread, this could never complete.
+    const sab = new SharedArrayBuffer(8);
+    const a = new Int32Array(sab);
     const worker = new Worker(`
-      const { parentPort } = require('node:worker_threads');
-      const end = Date.now() + 200;
-      while (Date.now() < end) {}        // busy loop: blocks only this agent
-      parentPort.postMessage('done');`, { eval: true });
-    let mainTicks = 0;
-    const interval = setInterval(() => mainTicks++, 10);
-    await new Promise((r) => worker.once('message', r));
-    clearInterval(interval);
+      const { parentPort, workerData: { sab } } = require('node:worker_threads');
+      const a = new Int32Array(sab);
+      Atomics.store(a, 1, 1); Atomics.notify(a, 1);     // "I am about to block"
+      Atomics.wait(a, 0, 0);                            // blocks this agent only
+      parentPort.postMessage(Atomics.load(a, 0));`, { eval: true, workerData: { sab } });
+    await Atomics.waitAsync(a, 1, 0).value;            // the worker is blocked (or about to be)
+    let mainTasks = 0;
+    for (let i = 0; i < 5; i++) { await new Promise((r) => setTimeout(r, 0)); mainTasks++; }
+    Atomics.store(a, 0, mainTasks);
+    Atomics.notify(a, 0);
+    const seen = await new Promise((r) => worker.once('message', r));
     await worker.terminate();
-    assert.ok(mainTicks >= 5, `main agent kept running (${mainTicks} ticks)`);
+    assert.equal(seen, 5);                              // the main agent ran 5 tasks while the worker was blocked
   });
 
   test('structured clone recreates values in the receiving realm', async () => {
