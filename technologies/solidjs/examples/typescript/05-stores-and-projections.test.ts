@@ -14,6 +14,7 @@ import {
   snapshot,
   deep,
   flush,
+  isWrappable,
 } from "solid-js";
 import { storePath } from "@solidjs/signals";
 import { captureDiagnostics } from "./support/diagnostics.ts";
@@ -349,5 +350,19 @@ describe("05 · proxy mechanics: what each kind of read subscribes to", () => {
         }
       }),
     ).toThrow(/REACTIVE_WRITE_IN_OWNED_SCOPE/);
+  });
+});
+
+describe("05 · what gets wrapped", () => {
+  it("only plain objects and arrays become proxies; Map, Date and class instances are stored as-is", () => {
+    const m = new Map([["a", 1]]);
+    const d = new Date(0);
+    const raw = { x: 1 };
+    const [store] = createStore({ m, d, plain: raw });
+    expect(isWrappable({})).toBe(true);
+    expect(isWrappable(m)).toBe(false);
+    expect(store.m).toBe(m); // the real Map: its internal mutations are not tracked
+    expect(store.d).toBe(d);
+    expect(store.plain).not.toBe(raw); // a plain record comes back as a tracking proxy
   });
 });
