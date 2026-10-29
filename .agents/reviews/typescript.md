@@ -1,52 +1,59 @@
 # Review: typescript
 
-## Hand-off (author: Opus, in progress — updated after every commit)
+## Hand-off (author: Opus · 2026-10-29 · branch `track/typescript`)
 
-Status: 🟦 in progress on `track/typescript`. Tests: `npm test` (node --test) and `npm run typecheck` (tsc 7.0.2 on root + React + Solid projects) green at every commit.
+Status: 🟨 ready for challenger/verifier (STATUS.md not edited: outside this agent's boundaries). 25 commits since `9700c8d`.
 
-Done:
-- Handover map for old 09–13 (below).
-- Restructure to the brief's 13-module syllabus; tooling bump (node 26, typescript 7.0.2, zod 4.6.7, @types/node 26.6.6, @types/react 19.3.0, solid-js/@solidjs/web 2.0.0-rc.19, expect-type 1.4.0, attw 0.18.5, publint 0.3.25, @standard-schema/spec 1.1.0).
-- M01 toolchain (new) + fixture tests asserting TS7 diagnostics.
-- M11 runtime boundaries (rewritten for Zod 4 + Standard Schema) + tests.
-- M12 typing UI frameworks (new, React 19 + Solid 2 RC) + type tests.
-- M13 library authoring, type performance, type tests, migration, version history (new) + package/attw/publint/TS2589/TS2578/trace fixtures.
-- M09 conditional/mapped/recursive: formal semantics, recursion limits, TS 7 code-point and 7.1 distributive changes, drill; new dedicated example (the "missing example for module 06").
-- M10 API design: renumbered old 08 lessons, new lessons on Disposable typing, TC39 vs legacy decorator typing (Then vs now), case studies from old 11.1, drill; new examples for using/DisposableStack and decorator typing.
-- M06 modules/declarations/tsconfig: rewritten (module formats, nodenext vs bundler with Then vs now, verbatimModuleSyntax Then vs now, d.ts, ambient assets, merging, augmentation, project references, TS 7 tsconfigs) + fixture tests (TS2835, TS1484, TS1543, TS6306, tsc -b --builders).
-- M04 objects/assignability: formal assignability and variance, unsoundness table, freshness, reordered lessons, strictness flags with Then vs now, drill + new example (runtime crashes for bivariance/array covariance, TS2375 fixture).
-- M02 essential types: sets-of-values intro, renumbered lessons, iteration/generator typing lesson with Then vs now (BuiltinIteratorReturn), drill + new example.
-- M03 unions/narrowing: CFA formalism, closure-narrowing Then vs now (5.4), switch(true), inferred predicates, drill + new control-flow example.
-- M05 classes/mutability: this typing, abstract/override/accessor, erasableSyntaxOnly Then vs now, drill + new example.
-- M07 generics: inference phases, variance annotations (method bivariance caveat verified), drill + new inference/variance example.
-- M08 type derivation: operator table, keyof union/intersection semantics, string & {} trick, code-point pointer, drill + new example (measured TS2590 cross-product limit).
+**Test status (Node 26.12.1, tsc 7.0.2):** `npm test` → `node --test "examples/**/*.test.ts"`: **111 tests, 111 pass, 0 fail**. `npm run typecheck` → `tsc -p .` + React project + Solid project: **clean**. Relative-link check over all track markdown: 0 broken (one false positive inside a code block). Absolute-path scan: clean.
+
+Module by module (each module has a matching example directory with negative tests; each ends with an Interview Drill):
+- **M01 toolchain (new):** erasure model, compiler pipeline, Go port/parallel checkers, 5.x→6.0→7.0 defaults and removals (Then vs now), no classic API + `@typescript/typescript6` bridge, Node 26 type stripping (Then vs now). Fixtures assert TS2591, TS2882, TS5102, TS5108, TS5011, TS1294, TS5112, TS2748 and `ERR_UNSUPPORTED_TYPESCRIPT_SYNTAX`.
+- **M02 essential types:** types-as-sets intro, functions, tuples, `Set`/`Map`, `unknown`, Promise typing, iterator/generator typing (Then vs now: `BuiltinIteratorReturn`).
+- **M03 unions/narrowing:** CFA formalism, closure narrowing (Then vs now, 5.4), `switch (true)`, inferred predicates, destructuring trap.
+- **M04 objects/assignability:** formal assignability and variance, unsoundness table with runtime crashes, freshness, `satisfies`, strictness flags (Then vs now on `strict`), TS2375 fixture.
+- **M05 classes/mutability:** `this` typing, abstract/override/accessor, enums & co. under `erasableSyntaxOnly` (Then vs now).
+- **M06 modules/declarations/tsconfig (rewritten):** module formats, `nodenext` vs `bundler` (Then vs now), `verbatimModuleSyntax` (Then vs now), `.d.ts`, ambient assets, merging, augmentation, project references; fixtures TS2835, TS1484, TS1543, TS6306, `tsc -b --builders`.
+- **M07 generics:** inference phases, `const T`, `NoInfer`, partial inference, variance annotations (method-bivariance caveat verified).
+- **M08 derivation:** operator table, `keyof` of unions/intersections, `string & {}`, measured TS2590 limit.
+- **M09 conditional/mapped/recursive:** formal semantics, recursion limits, TS 7 code-point inference (Then vs now), 7.1 distributive change (preview). **New dedicated example = the "missing example for module 06".**
+- **M10 API design:** old 08 + `Disposable` typing, TC39 vs legacy decorators (Then vs now), case studies from old 11.1.
+- **M11 runtime boundaries (rewritten):** parse-don't-validate, Zod 4 input/output (Zod 3→4 Then vs now), Standard Schema.
+- **M12 typing UI frameworks (new):** JSX checking algorithm, React 19 typing (refs Then vs now), Solid 2.0 rc.19 typing (1.x→2.0 Then vs now); solidjs review corrections applied (`dynamic()` primary, `on:` is a compile error).
+- **M13 library authoring/perf/type tests/migration (new):** declaration emit, `isolatedDeclarations` (Then vs now), `exports`, masquerading, publint/attw tests, type tests, measured recursion limits, traces, JSDoc in 7.0, migration playbooks, version history table.
+- **Exams:** `exams/README.md` (certificates.dev Junior/Mid/Senior, exam delta, matrix), 70-question bank, 2 hands-on challenges with tests in `examples/exams/`, full mock exam with scoring key.
+- **GLOSSARY** (TS-typing/toolchain terms; Solid runtime terms removed), **CHEATSHEET** (rewritten), **README** (syllabus, run instructions, Certifications & Exams, verified-versions line).
 
 ## Remaining work (ordered)
-1. (done) M13.
-2. (done) M09.
-3. (done) M10.
-4. (done) M02–M08 updated.
-5. Convert old script-style examples (essentials-and-narrowing, generics-and-overloads, type-transformations, advanced-patterns, modern-features-typing, zod-schema-validation) to `test()` blocks; add examples for M02, M04, M05, M06.
-6. (done) exams: README + matrix, 70-question bank (35 Mid, 35 Senior), H-001/H-002 with tests, mock exam. Shortfall: Junior domains are cross-listed onto Mid questions, not given 5 dedicated questions each.
-7. GLOSSARY.md, CHEATSHEET.md, final README (Certifications & Exams, `Verified against … on <date>`).
-8. Run `mise lock` on a machine with mise: `mise.lock` still pins node 24.22.1 (node 26 checksums could not be fetched here).
+1. Depth: M06 (337 lines), M01 (381), M13 (288) and M11 (243) are below the 400–900 rule of thumb (dense, long lines). Add worked examples and exercises (M11: Valibot/ArkType via Standard Schema; M13: a dual-package walkthrough with `.d.cts`; M06: `exports` with `customConditions`).
+2. Convert the six inherited script-style example files (`03-unions-narrowing/essentials-and-narrowing.test.ts`, `07-generics/generics-and-overloads.test.ts`, `08-type-derivation/type-transformations.test.ts`, `10-api-design/advanced-patterns.test.ts`, `10-api-design/modern-features-typing.test.ts`, `11-runtime-boundaries/zod-schema-validation.test.ts`) into `test()` blocks; they currently run as one test each and use a custom `assert` helper.
+3. Exams: Junior domains are cross-listed onto Mid questions instead of 5 dedicated questions each (shortfall vs AGENTS.md ≥5/domain if Junior is treated as a separate certification). Add a Junior mock (50 questions / 40 min) if the integrator wants all three levels covered.
+4. Some inherited exercise/anti-pattern sections in M03–M10 still use "Total TypeScript" phrasing and Week-era wording in places; polish pass.
+5. Run `mise lock` on a machine with mise: `mise.lock` still pins node 24.22.1 (node 26 checksums could not be fetched here). `.mise.toml` pins node 26 + typescript 7.0.2.
+6. Set `.agents/STATUS.md` row to 🟨 (outside this agent's edit boundary).
 
-## Least-certain claims
-- `--builders` default (not stated in the 7.0 post).
-- Version in which Node removed `--experimental-transform-types` (Node 26.12.1 rejects it; introduced in 22.7).
-- 5.x release months in the M01 version table (marked unverified).
+## Least-certain claims (for the challenger)
+- `--builders` default (not stated in the 7.0 post); TS 7 internal recursion constants (track asserts measured boundaries 47/48 and 999/1000 only).
+- Node version that removed `--experimental-transform-types` (26.12.1 rejects it; introduced 22.7) and the 22.18/23.6 unflagging versions of type stripping.
+- 5.x release months in the M01 and M13 version tables (marked unverified).
 - Zod 3 version that first implemented Standard Schema (stated as 3.24).
+- `vitest --typecheck` compatibility with the TS 7 binary (marked unverified in M13).
+- `@typescript/analyze-trace` compatibility with 7.0 per-checker traces (marked unverified).
+- The tRPC/TanStack/Redux/ts-pattern case-study descriptions in M10 §10.7 are conceptual simplifications, not those libraries' exact types.
 
 ## Corrections to the brief found during verification
-- Most "TS 7 defaults" (strict, module esnext, types [], rootDir, noUncheckedSideEffectImports) changed in **6.0**; 7.0 made the 6.0 deprecations hard errors.
+- Most "TS 7 defaults" (strict, module esnext, `types: []`, `rootDir`, `noUncheckedSideEffectImports`) changed in **6.0**; 7.0 made the 6.0 deprecations hard errors.
 - `rootDir` change is not silent in 7.0.2: tsc reports TS5011 when the inferred common source dir differs.
-- `experimentalDecorators`/`emitDecoratorMetadata` still work in 7.0.2 (fixture compiled, metadata emitted). `--extendedDiagnostics` and `--generateTrace` work in 7.0.2 (trace writes one types_N.json per checker).
+- `experimentalDecorators`/`emitDecoratorMetadata` still work in 7.0.2 (fixture compiled, metadata emitted). `--extendedDiagnostics` and `--generateTrace` work in 7.0.2 (trace writes one `types_N.json` per checker).
 - 7.0.2 has no classic API on the main entry, but ships `typescript/unstable/*` subpath exports.
 - Zod 4.6.7 does not deprecate `.superRefine` (typings); brief's "unverified" item resolved.
-- Executable proofs use `node --test` + tsc (AGENTS.md § Code Example Languages) instead of the brief's vitest `--typecheck`; AGENTS.md wins.
+- `<Dynamic>` is `@deprecated` in `@solidjs/web` rc.19; `on:` events are a compile error (via solidjs review).
+- Executable proofs use `node --test` + tsc (AGENTS.md § Code Example Languages) instead of the brief's vitest `--typecheck`; AGENTS.md wins. Node is 26 (kickoff) rather than the brief's 24.
 
 ## Proposals for integrator
-- Convert plain-text references to `languages/javascript` and `technologies/nodejs` into links once those tracks exist (they do not exist on this branch).
+- Convert plain-text references to `languages/javascript` and `technologies/nodejs` into links once those tracks exist (not present on this branch).
+- Root glossary candidates (general CS, not TS-specific): *Assignability / subtyping*, *Variance (covariance, contravariance, invariance, bivariance)* (currently defined in this track's glossary; the root has only structural vs nominal typing), *Type erasure*.
+- OWNERSHIP: register "Standard Schema interface" under `languages/typescript` (M11) explicitly, and "type tests / declaration emit / attw-publint packaging checks" under `languages/typescript` (M13).
+- React track: link component/hook typing to TS M12 instead of re-explaining it; solidjs track already does.
 
 ## Handover
 
