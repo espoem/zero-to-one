@@ -56,6 +56,26 @@ describe('static extraction cannot see runtime values', () => {
   })
 })
 
+describe('config recipes (Module 07)', () => {
+  test('recipe JSX tracking matches tag names: a renamed wrapper emits defaults only', () => {
+    const names = classNames(cssgen({ include: 'negative/recipe-renamed-wrapper.tsx' }).css)
+    assert.ok(names.has('button--size_sm'))
+    assert.ok(!names.has('button--size_lg'))
+  })
+
+  test('staticCss pre-generates variants that only exist at runtime', () => {
+    const names = classNames(cssgen({ config: 'configs/recipe-static-css.config.ts' }).css)
+    assert.ok(names.has('button--size_lg'))
+  })
+
+  test('default: every compound of a used recipe ships; smartCompoundVariants: only matching ones', () => {
+    const eager = classNames(cssgen({ include: 'negative/config-recipe-dynamic.ts' }).css)
+    const smart = classNames(cssgen({ config: 'configs/smart-compounds.config.ts' }).css)
+    assert.ok(eager.has('button--compound__size_lg__visual_outline'))
+    assert.ok(!smart.has('button--compound__size_lg__visual_outline'))
+  })
+})
+
 describe('patterns (Module 04)', () => {
   test('a pattern prop nested in a breakpoint key bypasses the pattern and leaks as a CSS property', () => {
     const { css } = cssgen({ include: 'negative/pattern-prop-in-breakpoint.tsx' })
