@@ -1,6 +1,42 @@
 # Review: typescript
 
-> The hand-off, remaining work, least-certain claims and integrator proposals are added above this section when the author finishes. The **Handover** below is written first because the `react`, `solidjs` and `javascript` authors depend on it.
+## Hand-off (author: Opus, in progress — updated after every commit)
+
+Status: 🟦 in progress on `track/typescript`. Tests: `npm test` (node --test) and `npm run typecheck` (tsc 7.0.2 on root + React + Solid projects) green at every commit.
+
+Done:
+- Handover map for old 09–13 (below).
+- Restructure to the brief's 13-module syllabus; tooling bump (node 26, typescript 7.0.2, zod 4.6.7, @types/node 26.6.6, @types/react 19.3.0, solid-js/@solidjs/web 2.0.0-rc.19, expect-type 1.4.0, attw 0.18.5, publint 0.3.25, @standard-schema/spec 1.1.0).
+- M01 toolchain (new) + fixture tests asserting TS7 diagnostics.
+- M11 runtime boundaries (rewritten for Zod 4 + Standard Schema) + tests.
+- M12 typing UI frameworks (new, React 19 + Solid 2 RC) + type tests.
+
+## Remaining work (ordered)
+1. M13 library authoring / type performance / type tests (new) + example (attw/publint on a tiny package, TS2589 depth fixture: non-tail recursion fails at 48 elements, tail recursion at 1000 iterations in 7.0.2).
+2. M09 conditional/mapped/recursive (old 06): add the missing dedicated example (the "missing example for module 06"), recursion limits, 7.1 distributive change, code-point template literal change, Then vs now, Interview Drill.
+3. M10 API design (old 08 + old 11 case studies): Disposable/decorator typing, DataTag/tuple accumulation/ts-pattern case studies; drop version tags; drill.
+4. M02–M08: retitle headers (remove "Weeks"/track labels), add formal definitions, TS 7 notes, Then vs now where practice changed, Interview Drill; M04 merged sections need a coherent intro; M06 needs nodenext/bundler, exports/types conditions, project references, `types: []`, `rootDir`, import attributes; M03 add `switch(true)`; M08 add `string & {}`.
+5. Convert old script-style examples (essentials-and-narrowing, generics-and-overloads, type-transformations, advanced-patterns, modern-features-typing, zod-schema-validation) to `test()` blocks; add examples for M02, M04, M05, M06.
+6. exams/README.md + exams/interview.md (certificates.dev TS cert: 40 MCQ + 2 coding in 135 min; no published weights) + mock exam.
+7. GLOSSARY.md, CHEATSHEET.md, final README (Certifications & Exams, `Verified against … on <date>`).
+8. Run `mise lock` on a machine with mise: `mise.lock` still pins node 24.22.1 (node 26 checksums could not be fetched here).
+
+## Least-certain claims
+- `--builders` default (not stated in the 7.0 post).
+- Version in which Node removed `--experimental-transform-types` (Node 26.12.1 rejects it; introduced in 22.7).
+- 5.x release months in the M01 version table (marked unverified).
+- Zod 3 version that first implemented Standard Schema (stated as 3.24).
+
+## Corrections to the brief found during verification
+- Most "TS 7 defaults" (strict, module esnext, types [], rootDir, noUncheckedSideEffectImports) changed in **6.0**; 7.0 made the 6.0 deprecations hard errors.
+- `rootDir` change is not silent in 7.0.2: tsc reports TS5011 when the inferred common source dir differs.
+- `experimentalDecorators`/`emitDecoratorMetadata` still work in 7.0.2 (fixture compiled, metadata emitted). `--extendedDiagnostics` and `--generateTrace` work in 7.0.2 (trace writes one types_N.json per checker).
+- 7.0.2 has no classic API on the main entry, but ships `typescript/unstable/*` subpath exports.
+- Zod 4.6.7 does not deprecate `.superRefine` (typings); brief's "unverified" item resolved.
+- Executable proofs use `node --test` + tsc (AGENTS.md § Code Example Languages) instead of the brief's vitest `--typecheck`; AGENTS.md wins.
+
+## Proposals for integrator
+- Convert plain-text references to `languages/javascript` and `technologies/nodejs` into links once those tracks exist (they do not exist on this branch).
 
 ## Handover
 
