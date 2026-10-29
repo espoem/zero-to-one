@@ -1,115 +1,138 @@
-# React 19 & Architecture Cheatsheet
+# React 19.3 Cheatsheet
 
-Fast lookup reference for React 19 syntax, concurrent primitives, compiler behavior, server actions, and runtime mechanics.
+Fast lookup for `technologies/react` (React 19.3.1, React Compiler 1.0, eslint-plugin-react-hooks 7.1.1). Each row links to the module that explains and tests it.
 
----
+## Render model (M01–M02)
 
-## 1. React 19 Primitives & Hooks Reference
+| Rule | Detail |
+|---|---|
+| Element ≠ render | `<X/>` builds `{ $$typeof, type, key, props }`; `X` runs only when React renders it |
+| Identity | position + type + key; change any → remount (state lost) |
+| Reset state | `<Form key={userId} />` |
+| Keys | stable data IDs; never index for reorderable lists, never random |
+| `key` before spread | `<p key="k" {...rest} />` (key after spread falls back to `createElement`) |
+| `0 &&` | `{n > 0 && <Badge/>}` — `0` renders as text |
+| Bailout for free | pass content as `children`; same element object ⇒ skipped |
+| Move cost | moving the last keyed item to the front moves *n−1* DOM nodes |
+| Commit order | before-mutation → mutation → `root.current` swap → layout → passive |
+| `ref` | a regular prop in 19; `forwardRef` unnecessary; `element.ref` removed |
 
-| Hook / API | Signature | Primary Purpose | Key Gotcha / Semantic Rule |
-| :--- | :--- | :--- | :--- |
-| `useActionState` | `[state, formAction, isPending] = useActionState(fn, initial, permalink?)` | Form action submission & async mutation handling. | Action function signature is `(prevState, formData) => Promise<nextState>`. |
-| `useOptimistic` | `[optimistic, setOptimistic] = useOptimistic(passthrough, updateFn)` | Speculative immediate UI updates during pending transitions. | Must be triggered inside a transition or form action; reverts automatically on settlement. |
-| `useFormStatus` | `{ pending, data, method, action } = useFormStatus()` | Subtree access to parent `<form>` submission state. | Must be called inside a component rendered *as a child* of `<form>`, not in the same component. |
-| `use(Promise \| Context)` | `val = use(resource)` | Conditional unrolling of Promises or React Context in render. | Can be invoked inside loops and conditions; throws the Promise to `<Suspense>` if unresolved. |
-| `ref` prop | `<input ref={(el) => { ... return () => cleanup(); }} />` | Direct ref passing to function components; callback cleanup. | `forwardRef` is deprecated; returning non-function from ref callback triggers compiler error. |
-| `startTransition` | `startTransition(() => setState(newVal))` | Non-urgent background state dispatch yielding to user events. | Updates wrapped in transition do not trigger fallback of already-suspended interfaces. |
-
----
-
-## 2. Server Components vs. Client Components
-
-| Feature | React Server Component (Default) | Client Component (`"use client"`) |
-| :--- | :--- | :--- |
-| **Execution Environment** | Server only (Build time or per-request) | Client browser (plus SSR prerender) |
-| **Bundle Impact** | 0 KB JavaScript sent to browser | Shipped to browser bundle |
-| **Direct File/DB Access** | Yes (`fs`, database drivers, ORMs) | No (throws error or leaks secrets) |
-| **State & Lifecycle Hooks** | No (`useState`, `useEffect` not permitted) | Yes (`useState`, `useEffect`, events) |
-| **Passing Props Across Boundary** | Props must be Flight-serializable (JSON, Promises, JSX, Arrays, Maps, Sets) | Functions must be Server Actions marked `"use server"` |
-
----
-
-## 3. Server Actions & Mutations
+## Hooks & state (M03)
 
 ```tsx
-// actions.ts
-"use server";
-
-export async function updateUsername(prevState: { error?: string }, formData: FormData) {
-  const name = formData.get("name") as string;
-  if (!name || name.length < 3) {
-    return { error: "Name must be at least 3 characters." };
-  }
-  await db.user.update({ where: { id: 1 }, data: { name } });
-  return { error: undefined };
-}
-
-// UserForm.tsx ("use client")
-import { useActionState, useOptimistic } from "react";
-import { useFormStatus } from "react-dom";
-import { updateUsername } from "./actions";
-
-function SubmitButton() {
-  const { pending } = useFormStatus();
-  return <button type="submit" disabled={pending}>{pending ? "Saving..." : "Save"}</button>;
-}
-
-export function UserForm({ currentName }: { currentName: string }) {
-  const [state, formAction, isPending] = useActionState(updateUsername, {});
-  const [optimisticName, setOptimisticName] = useOptimistic(
-    currentName,
-    (_current, next: string) => next
-  );
-
-  return (
-    <form action={async (formData) => {
-      setOptimisticName(formData.get("name") as string);
-      await formAction(formData);
-    }}>
-      <p>Display Name: {optimisticName}</p>
-      <input name="name" defaultValue={currentName} />
-      {state.error && <span role="alert">{state.error}</span>}
-      <SubmitButton />
-    </form>
-  );
-}
+const [v, setV] = useState(() => expensiveInit());   // lazy init
+setV(prev => prev + 1);                               // compose updates
+const [s, dispatch] = useReducer(reducer, init);      // dispatch is stable
+const value = use(Ctx);                               // may be conditional
+const snap = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot); // cached snapshot!
+<Ctx value={v}>…</Ctx>                                // 19: context is the provider
 ```
 
----
+| Gotcha | Fix |
+|---|---|
+| Rendered more/fewer hooks | hooks unconditional, top level |
+| `setN(n+1)` ×3 = +1 | `setN(x => x+1)` |
+| mutated state not shown | new object/array |
+| `getSnapshot` new object → infinite loop | return cached value |
+| interval stuck | updater or `useEffectEvent` |
 
-## 4. Priority Lanes Bitmask Quick Reference
+## Effects (M04)
 
-| Lane Name | Bitmask Value | Usage & Urgency Level |
-| :--- | :--- | :--- |
-| **SyncLane** | `0b0000000000000000000000000000001` | Discrete synchronous inputs (click, input, keydown). |
-| **InputContinuousLane** | `0b0000000000000000000000000000100` | Continuous interactions (scroll, drag, mousemove). |
-| **DefaultLane** | `0b0000000000000000000000010000000` | Standard state updates without transition wrapping. |
-| **TransitionLanes** | `0b0000000000001111111111100000000` | Non-urgent updates (`startTransition`, `useDeferredValue`). |
-| **IdleLane** | `0b0100000000000000000000000000000` | Off-screen speculative work, background pre-rendering. |
+| Hook | When | Use |
+|---|---|---|
+| `useInsertionEffect` | mutation phase | CSS-in-JS only |
+| `useLayoutEffect` | after DOM mutation, before paint (blocks) | measure + fix layout |
+| `useEffect` | after paint (flushed before next discrete event) | everything external |
+| `useEffectEvent` (19.2) | inside effects only | read latest props without re-sync |
 
----
+Order: render parent→child; each effect kind child→parent. Strict Mode (dev): setup→cleanup→setup on mount **and hydration (19.3)**. Ref callbacks may `return () => cleanup` (19). Fetch: `ignore` flag + `AbortController`. Don't use effects for derived data, events, resets (key), store subscriptions (uSES).
 
-## 5. React Compiler & Rules of React
+## Concurrency (M05)
 
 ```tsx
-// Rule 1: Never mutate component props or state directly
-function BadMutation({ items }: { items: string[] }) {
-  items.push("new"); // ❌ Bails out compiler memoization
-  return <div>{items.length}</div>;
-}
-
-function GoodPure({ items }: { items: readonly string[] }) {
-  const next = [...items, "new"]; // ✅ Immutable clone; preserves memoization
-  return <div>{next.length}</div>;
-}
-
-// Rule 2: Never read or write ref.current in render
-function BadRefRender() {
-  const countRef = useRef(0);
-  countRef.current += 1; // ❌ Unstable render behavior under concurrent mode
-  return <span>{countRef.current}</span>;
-}
-
-// Rule 3: Opt-out directive for rare legacy exceptions
-"use no memo"; // Placed at function or file header to disable compiler lowering
+const [isPending, start] = useTransition();
+start(async () => { await save(); startTransition(() => setDone(true)); }); // re-wrap after await
+const deferred = useDeferredValue(query, /* initialValue */ "");
+<Activity mode={visible ? "visible" : "hidden"}>…</Activity>             // 19.2
 ```
+
+| Fact | Value |
+|---|---|
+| Highest priority lane | `lanes & -lanes` |
+| Scheduler slice | 5 ms (`frameInterval`) |
+| Blocking lanes batched | Sync + InputContinuous + Default |
+| Transitions (19.3) | each lane renders alone — **untangled** (≤19.2: entangled) |
+| `<Activity hidden>` | keeps state + DOM, cleans effects, offscreen priority |
+
+## Suspense & SSR (M06)
+
+| API | Note |
+|---|---|
+| `use(promise)` | promise must be cached; rejected → error boundary |
+| `renderToPipeableStream` | `onShellReady` (browsers) / `onAllReady` (bots) / `onShellError` / `onError` → digest |
+| `renderToReadableStream` | Web streams (edge; Node since 19.2) |
+| `prerender` → `{prelude, postponed}` → `resume` | partial pre-rendering (19.2) |
+| `hydrateRoot(el, app, { onRecoverableError })` | mismatch → client-render boundary |
+| `suppressHydrationWarning` | one level; keeps server text |
+| `useId` | `_r_…_` (19.2+); server `_R_…_` |
+| `use(browser(reason))` | 19.3: skip SSR for a subtree; `onBrowserBailout` |
+
+## Server Components (M07)
+
+| Directive / API | Meaning |
+|---|---|
+| (none) | Server Component in the server graph; may be `async` |
+| `"use client"` | module boundary → client references |
+| `"use server"` | Server Function = public endpoint: authN, authZ, validate |
+| `cache(fn)` / `cacheSignal()` | per-request memo / abort when render ends (19.2) |
+| Serialisable props | primitives incl. undefined/BigInt, plain objects, Map, Set, Date, typed arrays, Promise, JSX, Server Functions — **not** functions, class instances |
+| Patched floor | `react-server-dom-*` ≥ 19.0.8 / 19.1.9 / 19.2.8, or any 19.3 (CVE-2025-55182 + follow-ups) |
+
+## Actions & forms (M08)
+
+```tsx
+const [state, formAction, isPending] = useActionState(async (prev, fd) => next, initial);
+const [optimistic, addOptimistic] = useOptimistic(real, (cur, x) => [...cur, x]);
+<form action={formAction}><Submit /></form>   // Submit uses useFormStatus() INSIDE the form
+```
+
+Queued actions run sequentially · success resets uncontrolled fields (`onReset` fires, 19.3) · optimistic layer lives until the Action settles · **always add request timeouts** (a hung action holds back later transitions).
+
+## React Compiler 1.0 (M09)
+
+```js
+["babel-plugin-react-compiler", { target: "19", compilationMode: "infer", panicThreshold: "none" }]
+// "use memo" (annotation mode) · "use no memo" (opt out) · target "17"/"18" + react-compiler-runtime
+```
+
+Lint: `reactHooks.configs.flat.recommended` → `refs`, `set-state-in-effect`, `static-components`, `purity`, `immutability`, `set-state-in-render`, `preserve-manual-memoization`, `incompatible-library`, `rules-of-hooks`, `exhaustive-deps`. Keep existing `useMemo`; pin the compiler exactly.
+
+## Errors (M10)
+
+| Caught by boundaries | Not caught |
+|---|---|
+| render, effects, lifecycles, ref callbacks, `use(rejected)` | event handlers, async code, SSR, the boundary itself |
+
+Root options: `onCaughtError`, `onUncaughtError` (root unmounted), `onRecoverableError`. Reset: `key={pathname}` or `resetKey`. Forward async errors: `setState(() => { throw e })`. 19.3: errors don't escape hidden `<Activity>`.
+
+## DOM platform (M11)
+
+| Feature | Snippet |
+|---|---|
+| View transition (19.3) | `<ViewTransition enter="slide" default="none">` + `startTransition(() => { addTransitionType("forward"); … })` |
+| Fragment ref (19.3) | `<Fragment ref={r}>` → `FragmentInstance` (`addEventListener`, `focus`, `observeUsing`, …) |
+| Portal | `createPortal(node, el)` — events bubble through the React tree |
+| Metadata | `<title>`, `<meta>`, `<link>` hoisted to `<head>` |
+| Stylesheet | `<link rel="stylesheet" href precedence="default">` deduped + ordered |
+| Hints | `preconnect`, `prefetchDNS`, `preload`, `preloadModule`, `preinit`, `preinitModule` |
+| Trusted Types | passed through unchanged (19.3) |
+
+## Performance, testing, upgrades (M12)
+
+| Task | How |
+|---|---|
+| Measure | `<Profiler onRender>`, DevTools Profiler, Performance Tracks (19.2), production/profiling build |
+| Fix order | colocate state → Compiler → stable/split context → transitions → virtualise → `lazy` → RSC |
+| Test | RTL `getByRole`/`findBy*`; `await act(async …)` around suspending renders; `act` from `react` |
+| 18 → 19 removed | `ReactDOM.render/hydrate/unmountComponentAtNode/findDOMNode`, string refs, legacy context, `createFactory`, fn `defaultProps` & `propTypes` (ignored), `react-dom/test-utils` (except deprecated `act`), `renderToNodeStream` |
+| Versions in lockstep | `react` = `react-dom` = `react-server-dom-*`, exact pins |
