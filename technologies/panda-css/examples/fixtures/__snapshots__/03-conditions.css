@@ -17,6 +17,7 @@
     --font-sizes-sm: 0.875rem;
     --font-sizes-md: 1rem;
     --font-sizes-lg: 1.125rem;
+    --font-weights-medium: 500;
     --font-weights-bold: 700;
     --colors-bg-subtle: var(--colors-ink-100);
     --colors-fg-default: var(--colors-ink-900);
@@ -34,6 +35,9 @@
   }
   .fs_sm {
     font-size: var(--font-sizes-sm);
+  }
+  .fw_medium {
+    font-weight: var(--font-weights-medium);
   }
   .\[\&\[data-state\=open\]\]\:fw_bold[data-state=open] {
     font-weight: var(--font-weights-bold);
@@ -61,6 +65,9 @@
   @media (width >= 64rem) {
     .lg\:fs_lg {
       font-size: var(--font-sizes-lg);
+    }
+    .lg\:fw_bold {
+      font-weight: var(--font-weights-bold);
     }
   }
   @media (hover: hover) and (pointer: fine) {

@@ -86,4 +86,12 @@ describe('v1 -> v2 misconfigurations', () => {
     const fallback = cssgen({ config: 'configs/property-fallback.config.ts' }).css
     assert.match(fallback, /\*, ::before, ::after, ::backdrop \{[^}]*--translate-y: 0;/)
   })
+
+  test('array condition definitions are converted with a warning (v1 syntax)', () => {
+    const { css, log } = cssgen({ config: 'configs/array-condition.config.ts' })
+    assert.match(log, /warning config_condition_array_unsupported/)
+    // both forms produce the same nested rule
+    assert.match(css, /@media \(hover: hover\) \{\s*\.hoverV1\\:c_red\\\.500:hover/)
+    assert.match(css, /\.hoverV2\\:c_red\\\.700:hover/)
+  })
 })

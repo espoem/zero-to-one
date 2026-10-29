@@ -13,3 +13,7 @@ export const link = css({
 
 export const groupItem = css({ _groupHover: { bg: 'bg.subtle' } })
 export const peerLabel = css({ _peerInvalid: { color: 'red.600' } })
+
+// Responsive *array values* are still supported in v2 (index = breakpoint order: base, sm, md, lg…).
+// What v2 deprecates are *array condition definitions* in the config (see configs/array-condition.config.ts).
+export const weight = css({ fontWeight: ['medium', undefined, undefined, 'bold'] })
