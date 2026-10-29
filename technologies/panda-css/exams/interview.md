@@ -463,3 +463,325 @@ After upgrading to v2, utilities using `translate`/`filter` disappear in Safari 
 **B.**
 - Ref: [M06 §6.4](../modules/06-color-mode-and-theming.md#64-compositions-text-styles-layer-styles-animation-styles), `e2e-fixtures.test.ts`
 </details>
+
+---
+
+## D5 · Recipes and component architecture (12)
+
+### Q-INT-037 · D5 · difficulty 1 · single
+What is the main CSS difference between `cva` and a config recipe?
+- A) `cva` emits named classes; config recipes emit atoms
+- B) `cva` emits atomic utilities for every variant; config recipes emit named classes in `@layer recipes` only for variants seen in source
+- C) There is none
+- D) Config recipes cannot have compound variants
+<details><summary>Answer</summary>
+
+**B.**
+- Ref: [M07 §7.1](../modules/07-recipes-and-config-recipes.md#71-the-recipe-model), `07-recipes` snapshot
+</details>
+
+### Q-INT-038 · D5 · difficulty 2 · scenario
+`<Button size="lg">` works in Storybook but in the app `<Button size={size}>` renders without size styles, although the class `button--size_lg` is on the element. Explain and give three fixes.
+<details><summary>Answer</summary>
+
+Config recipes are JIT: only literal variant values are emitted. Storybook's literal produced the CSS there; in the app `size={size}` is unknown, so only defaults are emitted while the runtime still returns the class. Fixes: a literal call somewhere scanned, `staticCss: { recipes: { button: [{ size: ['*'] }] } }`, or modelling the value so a literal appears.
+- Verification: `negative-extraction.test.ts` (`config recipe with a runtime variant`, `staticCss pre-generates …`).
+- Ref: [M07 §7.3](../modules/07-recipes-and-config-recipes.md#jit-emission-and-its-three-failure-modes), https://panda-css.com/docs/recipes/dynamic-variants
+</details>
+
+### Q-INT-039 · D5 · difficulty 2 · single
+A wrapper `function Action(p) { return <button className={button(p)} /> }` is used as `<Action size="lg" />`. Why is `size=lg` missing?
+- A) `button` must be called in JSX
+- B) Recipe JSX tracking matches tag names (`jsx: ['Button']`); `Action` is not listed
+- C) Wrappers are never supported
+- D) `size` must be a boolean
+<details><summary>Answer</summary>
+
+**B.** Add `'Action'` to the recipe's `jsx`, rename the wrapper, or use `staticCss`.
+- Ref: [M07 §7.3](../modules/07-recipes-and-config-recipes.md#jit-emission-and-its-three-failure-modes), `negative/recipe-renamed-wrapper.tsx`
+</details>
+
+### Q-INT-040 · D5 · difficulty 3 · multi
+Which statements about compound variants in Panda 2.x config recipes are true? (Select all that apply.)
+- A) Each matching compound is a named class like `button--compound__size_lg__visual_outline`
+- B) They live in `@layer recipes.compound_variants`, above the recipe's variants
+- C) `css()` overrides them only if its selector is more specific
+- D) By default every compound of a used recipe is emitted; `smartCompoundVariants` limits that
+- E) A direct call `button({ visual: 'outline', size: 'lg' })` does not include the compound class
+<details><summary>Answer</summary>
+
+**A, B, D.**
+- Why not C: utilities beat everything in `recipes` by layer order.
+- Why not E: v2 runtime appends the compound class on direct calls too.
+- Ref: [M07 §7.4](../modules/07-recipes-and-config-recipes.md#74-compound-variants-then-vs-now), `runtime.test.ts`, e2e compound tests
+</details>
+
+### Q-INT-041 · D5 · difficulty 2 · single
+What does `colorPalette: 'red'` emit on an element?
+- A) A class that sets `color: red`
+- B) Declarations pointing the `--colors-color-palette-*` variables at the red scale, which `colorPalette.*` tokens read and descendants inherit
+- C) A theme block
+- D) Nothing until `staticCss` is set
+<details><summary>Answer</summary>
+
+**B.**
+- Ref: [M07 §7.5](../modules/07-recipes-and-config-recipes.md#75-virtual-colors-colorpalette), `08-slot-recipes` snapshot
+</details>
+
+### Q-INT-042 · D5 · difficulty 2 · single
+Which replaced `createStyleContext` in v2?
+- A) `createContext` from React
+- B) `createSlotRecipeContext` (slot recipes) and `createRecipeContext` (single-element recipes) from `styled-system/jsx`
+- C) `defineParts`
+- D) `sva.context()`
+<details><summary>Answer</summary>
+
+**B.** `defineParts` was removed too.
+- Ref: [M08 §8.2](../modules/08-slot-recipes-and-recipe-contexts.md#then-vs-now), `cli.test.ts` (doctor artifacts)
+</details>
+
+### Q-INT-043 · D5 · difficulty 2 · scenario
+A Dialog root from a headless library renders no DOM element. Which helper wraps it and why?
+<details><summary>Answer</summary>
+
+`withRootProvider(Dialog.Root, { defaultProps })`: it provides the slot map through context without applying a slot class (there is no element to style). Parts use `withContext`.
+- Ref: [M08 §8.2](../modules/08-slot-recipes-and-recipe-contexts.md#createslotrecipecontext), https://panda-css.com/docs/recipes/slot-recipe-context
+</details>
+
+### Q-INT-044 · D5 · difficulty 2 · hands-on
+Build an `Alert` compound component (`Root`, `Title`, `Description`) from the `alert` slot recipe for React **and** Solid. Show that the root does not forward `status` to the DOM and that a part rendered outside the root throws.
+<details><summary>Answer</summary>
+
+```tsx
+const { withProvider, withContext } = createSlotRecipeContext(alert)
+export const Alert = {
+  Root: withProvider('div', 'root', { defaultProps: { role: 'status' } }),
+  Title: withContext('p', 'title'),
+  Description: withContext('p', 'description'),
+}
+```
+
+Identical source for both frameworks; the generated helpers differ internally.
+- Verification: `examples/tests/recipe-context.test.ts` (React and Solid SSR); `examples/react/src/Alert.tsx`, `examples/solid/src/Alert.tsx`.
+- Ref: [M08](../modules/08-slot-recipes-and-recipe-contexts.md)
+</details>
+
+### Q-INT-045 · D5 · difficulty 2 · single
+Why should a Solid component accepting a `css` prop use `splitProps` instead of destructuring?
+- A) Panda cannot extract destructured props
+- B) Destructuring reads props once and loses reactivity; `splitProps` keeps reactive groups
+- C) Solid forbids rest parameters
+- D) `class` must be read last
+<details><summary>Answer</summary>
+
+**B.** Extraction reads the `css` prop at the call site either way.
+- Ref: [M09 §9.2](../modules/09-jsx-factory-and-style-props.md#92-react-and-solid-side-by-side), `examples/solid/src/Badge.tsx`
+</details>
+
+### Q-INT-046 · D5 · difficulty 3 · single
+In this track's benchmark, how did `jsxStyleProps: 'minimal'` compare to `'all'` on type-check work, and why?
+- A) No difference
+- B) ~41 % fewer type instantiations, because generic style props are no longer part of every element's props type
+- C) Slower, because `css` objects are checked
+- D) Faster only at runtime
+<details><summary>Answer</summary>
+
+**B.** 8,587 → 5,073 instantiations on identical source (tiny project; ratio depends on app size).
+- Ref: [M09 §9.3](../modules/09-jsx-factory-and-style-props.md#93-jsxstyleprops-extraction-surface-and-type-cost), `type-cost.test.ts`
+</details>
+
+### Q-INT-047 · D5 · difficulty 2 · multi
+Which prop names does extraction read on JSX call sites? (Select all that apply.)
+- A) `css`
+- B) `trackCss`
+- C) `sx`
+- D) Utility names like `bg` when `jsxStyleProps: 'all'`
+- E) `elementWidth` forwarded to `width` inside the component
+<details><summary>Answer</summary>
+
+**A, B, D.**
+- Why not C/E: other names are not read; wrap values in `css.raw()` or expose utility names / `*Css` props.
+- Ref: [M09 §9.1](../modules/09-jsx-factory-and-style-props.md#91-style-props-are-css-with-a-different-surface), https://panda-css.com/docs/styling/extraction-rules
+</details>
+
+### Q-INT-048 · D5 · difficulty 3 · scenario
+Design the override API for a `Card` with parts `root`, `header`, `body` in a design system used by 30 teams. Requirements: per-part overrides, no specificity wars, typed, extractable.
+<details><summary>Answer</summary>
+
+Use a config slot recipe (`defineSlotRecipe`) for named, layered classes and JIT emission; build the component with `createSlotRecipeContext`; expose `css` on the root plus `headerCss`/`bodyCss` (or per-part `css` on each part component) typed as `SystemStyleObject`, merged with `css(recipe.raw…, override)` or applied as utilities, which always beat `@layer recipes`. Use `jsxStyleProps: 'minimal'` for type cost, list wrapper names in `jsx`, and `forwardProps` for variants headless parts need.
+- Ref: [M08](../modules/08-slot-recipes-and-recipe-contexts.md), [M09](../modules/09-jsx-factory-and-style-props.md), [M03 §3.3](../modules/03-styling-api-and-conditions.md#the-css-prop-forwarding-pattern)
+</details>
+
+---
+
+## D6 · Design-system delivery and monorepos (6)
+
+### Q-INT-049 · D6 · difficulty 1 · single
+What does `panda lib` produce?
+- A) A minified CSS file only
+- B) `dist/panda/lib.json`, `preset.mjs`, `buildinfo.json`, and synced `package.json` exports
+- C) A Storybook build
+- D) An npm tarball
+<details><summary>Answer</summary>
+
+**B.**
+- Ref: [M11 §11.2](../modules/11-monorepos-and-design-system-libraries.md#112-building-a-design-system-with-panda-lib), `monorepo.test.ts`
+</details>
+
+### Q-INT-050 · D6 · difficulty 2 · scenario
+An app sets `designSystem: '@acme/ds'` and also adds `'@acme/ds'` to `include` "to be safe". What happens?
+<details><summary>Answer</summary>
+
+The build errors with `design_system_in_include`. The package is loaded through its manifest and build info; `include` is only for the app's own sources. A path glob into the package's source does not error but re-extracts work the build info already covers.
+- Verification: `monorepo.test.ts` (NEGATIVE test).
+- Ref: [M11 §11.3](../modules/11-monorepos-and-design-system-libraries.md#fallback-and-failure)
+</details>
+
+### Q-INT-051 · D6 · difficulty 2 · single
+How does an app get the package's component styles without scanning the package's source?
+- A) It imports the package's CSS file
+- B) It replays the package's `buildinfo.json` into its own compilation
+- C) It runs `panda lib` itself
+- D) Through `staticCss: '*'`
+<details><summary>Answer</summary>
+
+**B.** The app run reported only its own files parsed, yet emitted the package's classes.
+- Ref: [M11 §11.3](../modules/11-monorepos-and-design-system-libraries.md#113-consuming-a-design-system)
+</details>
+
+### Q-INT-052 · D6 · difficulty 3 · scenario
+An app sets `hash: true` for production; components from the design system render unstyled. Explain.
+<details><summary>Answer</summary>
+
+The package's classes are baked into its build (runtime and build info) with its own `hash`/`prefix`/`separator`. A different app setting produces different class names in the app's CSS (`design_system_option_mismatch`). Leave these options unset in the app so they are inherited.
+- Ref: [M11 §11.3](../modules/11-monorepos-and-design-system-libraries.md#fallback-and-failure), https://panda-css.com/docs/reference/diagnostics
+</details>
+
+### Q-INT-053 · D6 · difficulty 2 · multi
+Which reduce CSS shipped by an app that uses 3 of 60 design-system components? (Select all that apply.)
+- A) `optimize.treeshakeDesignSystem: true`
+- B) `optimize.removeUnusedTokens: true`
+- C) Adding the package's source to `include`
+- D) For non-Panda consumers: `panda cssgen --splitting` and importing per-recipe files
+<details><summary>Answer</summary>
+
+**A, B, D.**
+- Why not C: errors or duplicates extraction.
+- Ref: [M11 §11.3](../modules/11-monorepos-and-design-system-libraries.md#tree-shaking-the-design-system), `monorepo.test.ts`
+</details>
+
+### Q-INT-054 · D6 · difficulty 2 · ordering
+Order the CI tasks for a monorepo with a design-system package and an app.
+1. App `build`
+2. Package `panda codegen`
+3. App `panda codegen`
+4. Package `panda lib`
+<details><summary>Answer</summary>
+
+**2 → 4 → 3 → 1.** The app's Panda run needs the package's manifest and build info; the app's `styled-system` re-exports the package's.
+- Ref: [M11 §11.4](../modules/11-monorepos-and-design-system-libraries.md#task-graph-and-caching-turborepo-or-similar), this track's `codegen` script
+</details>
+
+---
+
+## D7 · Migration and upgrades (6)
+
+### Q-INT-055 · D7 · difficulty 1 · single
+How do you migrate `color: ${(p) => p.$color}` (user-chosen color) from styled-components?
+- A) `css({ color: props.color })`
+- B) A static style reading a CSS variable, with the variable set inline
+- C) `staticCss` for every possible color
+- D) A runtime `<style>` tag
+<details><summary>Answer</summary>
+
+**B.** Finite sets become variants instead.
+- Ref: [M12 §12.1](../modules/12-migration-and-upgrades.md#121-from-runtime-css-in-js-styled-components-emotion-stitches), bridge test in `e2e-fixtures.test.ts`
+</details>
+
+### Q-INT-056 · D7 · difficulty 2 · multi
+Which v1 → v2 changes produce **no** error and no warning? (Select all that apply.)
+- A) `theme.containerSizes`
+- B) Root `hooks`
+- C) `emitPackage: true`
+- D) `createStyleContext` import
+- E) A default import of a style-values module
+<details><summary>Answer</summary>
+
+**A, C, E.**
+- Why not B: `config_hooks_removed` error.
+- Why not D: the import fails at type-check/build.
+- Ref: [M12 §12.3](../modules/12-migration-and-upgrades.md#checklist), `migration.test.ts`
+</details>
+
+### Q-INT-057 · D7 · difficulty 2 · scenario
+During a gradual migration, a migrated Panda component inside a legacy Emotion parent loses its padding to the parent's descendant selector. Explain and fix.
+<details><summary>Answer</summary>
+
+Emotion's injected CSS is unlayered, and unlayered declarations beat all layered ones regardless of specificity. Layer legacy global CSS below Panda's (`@layer legacy, reset, …` with `@import … layer(legacy)`), migrate leaf components first, and remove the runtime library at the end.
+- Ref: [M12 §12.1](../modules/12-migration-and-upgrades.md#coexistence-during-the-migration)
+</details>
+
+### Q-INT-058 · D7 · difficulty 2 · single
+What replaced Tailwind's `tailwind-merge` in a Panda codebase?
+- A) `cx()`
+- B) Object merging with `css(base, overrides)`
+- C) `staticCss`
+- D) Nothing is needed because Panda has no conflicts
+<details><summary>Answer</summary>
+
+**B.**
+- Why not A: `cx` only joins strings.
+- Ref: [M12 §12.2](../modules/12-migration-and-upgrades.md#122-from-tailwind-css)
+</details>
+
+### Q-INT-059 · D7 · difficulty 3 · hands-on
+Write a static audit that flags v1 idioms v2 ignores silently, and prove it finds them in a v1 project while reporting nothing for a clean v2 project.
+<details><summary>Answer</summary>
+
+See `examples/scripts/v2-upgrade-audit.ts`: regex rules over source files with comments blanked, configuration-only rules (root `hooks`, removed options, array conditions), and a `preset-base-missing` check. Severity `silent` marks `containerSizes`, `emitPackage`/removed options, missing `preset-base` and default imports of style modules.
+- Verification: `examples/tests/migration.test.ts` (v1 fixture project + the track's own v2 examples).
+- Ref: [M12 §12.3](../modules/12-migration-and-upgrades.md#123-upgrading-panda-0x--1x--2x)
+</details>
+
+### Q-INT-060 · D7 · difficulty 2 · single
+Why can a project move from Panda 0.51 directly to 2.4?
+- A) 0.x and 2.x share the same engine
+- B) 1.0 listed no breaking changes, so one v2 checklist covers 0.x and 1.x
+- C) The CLI auto-migrates configs
+- D) It cannot; it must stop at every 1.x minor
+<details><summary>Answer</summary>
+
+**B.** If the project adopted `createStyleContext` (added in 1.0), that is part of the v2 migration.
+- Ref: [M12 §12.3](../modules/12-migration-and-upgrades.md#0x--1x)
+</details>
+
+---
+
+## Mock interview
+
+A 60-minute senior frontend / design-system loop. Answer without notes, then score with the key. The mix follows the domain weights in the [README](./README.md#domain--module-coverage-matrix) (D1 20 %, D5 20 %, D3/D4 15 %, D2/D6/D7 10 %).
+
+| Block | Time | Questions | Points each | Points |
+|---|---|---|---|---|
+| 1. Warm-up concepts (answer in ≤ 1 minute each) | 8 min | Q-INT-001, 003, 013, 019, 028, 037, 049, 055 | 2 | 16 |
+| 2. Precision checks (multi-select: all correct options, no wrong ones) | 10 min | Q-INT-002, 006, 030, 040, 053, 056 | 3 | 18 |
+| 3. Debugging scenarios (explain cause and fix aloud) | 20 min | Q-INT-007, 012, 020, 025, 032, 038, 050, 057 | 4 | 32 |
+| 4. Design discussion | 12 min | Q-INT-048, Q-INT-017 | 8 | 16 |
+| 5. Hands-on (live) | 10 min | Q-INT-022 (or Q-INT-044 for component-heavy roles) | 18 | 18 |
+| **Total** | **60 min** | **24** | | **100** |
+
+### Scoring key
+
+- Blocks 1–2: full points only for exactly the keyed answer(s); no partial credit on multi-select.
+- Block 3 (4 points): 2 for the root cause matching the answer, 1 for a correct fix, 1 for naming how to verify (test, `panda debug`, computed style).
+- Block 4 (8 points): 3 for the right primitives (slot recipe/context/override props; or measuring transform impact), 3 for the trade-offs (layer order, JIT, type cost; dynamic sites keep the runtime), 2 for the verification plan.
+- Block 5 (18 points): 8 for a working solution, 6 for a passing verification (the referenced test or an equivalent computed-style check), 4 for explaining the v1 vs v2 behaviour.
+
+| Score | Interpretation |
+|---|---|
+| ≥ 85 | Senior / design-system owner level: ready for Panda-heavy roles |
+| 70–84 | Pass: solid practitioner; review the modules behind missed questions |
+| 50–69 | Gaps in extraction or recipe internals: redo M07, M10 and their tests |
+| < 50 | Restart from M01; run every test in `examples/tests` and read its fixture |
+
+Per-domain self-check: map each missed question to its domain tag and re-read the module column in the [coverage matrix](./README.md#domain--module-coverage-matrix).
