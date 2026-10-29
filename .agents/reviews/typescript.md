@@ -27,7 +27,7 @@ Done:
 3. (done) M10.
 4. (done) M02–M08 updated.
 5. Convert old script-style examples (essentials-and-narrowing, generics-and-overloads, type-transformations, advanced-patterns, modern-features-typing, zod-schema-validation) to `test()` blocks; add examples for M02, M04, M05, M06.
-6. exams: README + matrix done; Mid bank (35) + H-001/H-002 done; Senior bank (S-001..S-035) and mock exam pending.
+6. (done) exams: README + matrix, 70-question bank (35 Mid, 35 Senior), H-001/H-002 with tests, mock exam. Shortfall: Junior domains are cross-listed onto Mid questions, not given 5 dedicated questions each.
 7. GLOSSARY.md, CHEATSHEET.md, final README (Certifications & Exams, `Verified against … on <date>`).
 8. Run `mise lock` on a machine with mise: `mise.lock` still pins node 24.22.1 (node 26 checksums could not be fetched here).
 
