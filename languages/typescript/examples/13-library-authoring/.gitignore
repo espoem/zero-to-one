@@ -1,0 +1,4 @@
+fixtures/*/dist/
+fixtures/*/types/
+fixtures/*/out/
+*.tgz

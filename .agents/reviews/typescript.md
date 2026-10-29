@@ -10,9 +10,10 @@ Done:
 - M01 toolchain (new) + fixture tests asserting TS7 diagnostics.
 - M11 runtime boundaries (rewritten for Zod 4 + Standard Schema) + tests.
 - M12 typing UI frameworks (new, React 19 + Solid 2 RC) + type tests.
+- M13 library authoring, type performance, type tests, migration, version history (new) + package/attw/publint/TS2589/TS2578/trace fixtures.
 
 ## Remaining work (ordered)
-1. M13 library authoring / type performance / type tests (new) + example (attw/publint on a tiny package, TS2589 depth fixture: non-tail recursion fails at 48 elements, tail recursion at 1000 iterations in 7.0.2).
+1. (done) M13.
 2. M09 conditional/mapped/recursive (old 06): add the missing dedicated example (the "missing example for module 06"), recursion limits, 7.1 distributive change, code-point template literal change, Then vs now, Interview Drill.
 3. M10 API design (old 08 + old 11 case studies): Disposable/decorator typing, DataTag/tuple accumulation/ts-pattern case studies; drop version tags; drill.
 4. M02–M08: retitle headers (remove "Weeks"/track labels), add formal definitions, TS 7 notes, Then vs now where practice changed, Interview Drill; M04 merged sections need a coherent intro; M06 needs nodenext/bundler, exports/types conditions, project references, `types: []`, `rootDir`, import attributes; M03 add `switch(true)`; M08 add `string & {}`.
