@@ -2,7 +2,7 @@
 
 ## Hand-off (in progress — updated after every module commit)
 
-**Status:** modules 01–06 rewritten at full depth with real-API Vitest proofs. Modules 07–12, exams, glossary, cheatsheet and README not yet done.
+**Status:** modules 01–07 rewritten at full depth with real-API Vitest proofs. Modules 08–12, exams, glossary, cheatsheet and README not yet done.
 
 | Module | State | Proof file | Tests |
 |---|---|---|---|
@@ -12,12 +12,12 @@
 | 04 Effects & synchronization | done (renamed from `04-effects-and-ref-cleanup.md`) | `examples/04-effects/effects.test.tsx` | 22 |
 | 05 Concurrency: lanes, transitions | done (renamed from `05-concurrent-lanes-and-transitions.md`) | `examples/05-concurrency/concurrency.test.tsx`, `lane-model.ts` (property test vs function extracted from installed react-dom build) | 17 |
 | 06 Suspense, streaming SSR & hydration | done (renamed from `06-suspense-and-streaming-ssr.md`) | `examples/06-suspense-ssr/suspense-ssr.test.tsx`, `_shared/ssr.ts` | 20 |
-| 07–12 | old ~70-line text (04–10) or missing (11, 12); their old synthetic examples were deleted in b5fd650 | — | — |
+| 07 Server Components & Flight | done (renamed from `07-rsc-and-flight-protocol.md`) | `examples/07-rsc/rsc.test.tsx` + `server.ts` (child process, `--conditions react-server`, NODE_ENV=production) | 13 |
+| 08–12 | old ~70-line text (04–10) or missing (11, 12); their old synthetic examples were deleted in b5fd650 | — | — |
 
-**Tooling:** Node 26.12.1 (local), Vitest 5.0.5 + jsdom 30.1.3, RTL 16.3.3, react/react-dom/react-server-dom-webpack 19.3.1, @types/react 19.3.0, babel-plugin-react-compiler 1.0.0 with @babel/core 8.0.9 (works), eslint 10.13.0 + eslint-plugin-react-hooks 7.1.1, fast-check 4.10.2, vite 8.3.5, TypeScript 7.0.2. `npm test` = `vitest run`; `npm run typecheck` = `tsc --noEmit`. Last run: 124/124 passing, typecheck clean.
+**Tooling:** Node 26.12.1 (local), Vitest 5.0.5 + jsdom 30.1.3, RTL 16.3.3, react/react-dom/react-server-dom-webpack 19.3.1, @types/react 19.3.0, babel-plugin-react-compiler 1.0.0 with @babel/core 8.0.9 (works), eslint 10.13.0 + eslint-plugin-react-hooks 7.1.1, fast-check 4.10.2, vite 8.3.5, TypeScript 7.0.2. `npm test` = `vitest run`; `npm run typecheck` = `tsc --noEmit`. Last run: 137/137 passing, typecheck clean.
 
 ## Remaining work (ordered)
-4. M07 RSC/Flight: feasible without a bundler — spawn `node --conditions react-server` child with NODE_ENV=production (dev rows leak absolute file paths), decode with `react-server-dom-webpack/client.node` `createFromNodeStream(stream, {moduleMap:{}, serverModuleMap:null, moduleLoading:null})`. CVE section + version-gate test.
 5. M08 Actions; M09 Compiler (babel transform fixtures, eslint Linter runs); M10 Errors; M11 DOM platform (new); M12 Perf/testing/ops (new).
 6. exams/README.md + exams/interview.md (≥60 Q, mock exam), GLOSSARY.md, CHEATSHEET.md, README (syllabus, Certifications & Exams, Verified-against line).
 7. `mise.lock`: not generated (no mise binary; nodejs.org checksums unreachable). Run `mise lock` on the Mac CLI.
@@ -33,7 +33,8 @@
 - M02: lane-agnostic bailout condition paraphrased from `beginWork`; work-tag numbers taken from 19.3.1 build behaviour (tested for 0, 3, 5, 7).
 - M03: "React 19 dims the second Strict Mode log" (from React 19 release notes, not re-fetched); rebase table in §3.3 is derived from the algorithm, not from a test.
 - M01: `javascript:` URL blocking stated "React 19" (behaviour tested on 19.3.1; the version where blocking began was not re-verified).
-- RSC CVE fixed-version floor: 19.0.1/19.1.2/19.2.1 (RCE), 19.0.4/19.1.5/19.2.4 (DoS/source exposure + CVE-2026-23864), CVE-2026-23869 fixed versions inferred from affected ranges (≤19.2.4 → 19.2.5), CVE-2026-23870 fixed in 19.0.6/19.1.7/19.2.6 (GitLab advisory).
+- RSC CVE table (M07 §7.2): CVE-2026-23869 fixed versions inferred from affected ranges; CVE-2026-44907 (GHSA-wx67-qw84-cm4g) fixed 19.0.8/19.1.9/19.2.8 per corgea/releasealert, not the React blog; whether the 2026-10-14 releases are security releases is unknown. Gate test uses floors 19.0.8/19.1.9/19.2.8, any 19.3.
+- Old note — RSC CVE fixed-version floor: 19.0.1/19.1.2/19.2.1 (RCE), 19.0.4/19.1.5/19.2.4 (DoS/source exposure + CVE-2026-23864), CVE-2026-23869 fixed versions inferred from affected ranges (≤19.2.4 → 19.2.5), CVE-2026-23870 fixed in 19.0.6/19.1.7/19.2.6 (GitLab advisory).
 
 ## Proposals for integrator
 - Root glossary candidates: Tearing, Double buffering, Left-child/right-sibling tree, Tree edit distance.
