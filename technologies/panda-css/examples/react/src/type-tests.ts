@@ -36,3 +36,10 @@ export const sc = scrollable({ direction: { base: 'horizontal', md: 'vertical' }
 export const badDirection = scrollable({ direction: 'diagonal' })
 // @ts-expect-error -- overflowX is blocklisted: the pattern owns it
 export const blocked = scrollable({ overflowX: 'visible' })
+
+// strictPropertyValues: keyword-only properties reject unknown keywords...
+export const okDisplay = css({ display: 'grid', position: 'sticky' })
+// @ts-expect-error -- 'abc' is not a display keyword
+export const badDisplay = css({ display: 'abc' })
+// ...while properties with neither a keyword list nor a token category (content) stay free-form.
+export const freeForm = css({ content: '"→"' })

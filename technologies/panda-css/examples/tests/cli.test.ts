@@ -61,3 +61,22 @@ describe('panda codegen --check', () => {
     panda(['codegen', '--check'], reactDir)
   })
 })
+
+describe('panda codegen --spec (Module 05)', () => {
+  test('writes a machine-readable design-system spec that keeps token references', () => {
+    const out = mkdtempSync(join(tmpdir(), 'panda-spec-'))
+    try {
+      // --spec=<path> must be relative and inside the project; bare --spec writes <outdir>/specs/
+      panda(['codegen', '--spec', '--outdir', out], fixturesDir)
+      const file = join(out, 'specs', 'design-system.json')
+      const spec = JSON.parse(readFileSync(file, 'utf8'))
+      assert.equal(spec.schemaVersion, 1)
+      assert.deepEqual(
+        { ...spec.tokens['colors.accent.default'], source: undefined },
+        { category: 'colors', cssVar: '--colors-accent-default', originalValue: '{colors.brand.600}', semantic: true, source: undefined },
+      )
+    } finally {
+      rmSync(out, { recursive: true, force: true })
+    }
+  })
+})

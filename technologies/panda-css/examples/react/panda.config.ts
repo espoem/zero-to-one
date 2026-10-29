@@ -14,6 +14,8 @@ export default defineConfig({
   jsxStyleProps: 'all',
   // Reject raw values for token-backed properties at the type level (Module 05).
   strictTokens: true,
+  // Reject values outside the keyword list of enumerable properties (display, position, …).
+  strictPropertyValues: true,
   include: ['./src/**/*.{ts,tsx}'],
   exclude: [],
   outdir: 'styled-system',

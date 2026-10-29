@@ -11,6 +11,7 @@
     --colors-brand-100: #e0e7ff;
     --colors-brand-500: #6366f1;
     --colors-brand-600: #4f46e5;
+    --colors-brand-700: #4338ca;
     --colors-ink-50: #fafafa;
     --colors-ink-900: #18181b;
     --spacing-4: 1rem;
@@ -31,6 +32,9 @@
   .bg_brand\.500\/40 {
     background: color-mix(in oklab, var(--colors-brand-500) 40%, transparent);
   }
+  .bd_1px_solid_token\(colors\.brand\.600\,_crimson\) {
+    border: 1px solid var(--colors-brand-600, crimson);
+  }
   .px_gutter {
     padding-inline: var(--spacing-gutter);
   }
@@ -42,5 +46,8 @@
   }
   .c_fg\.default {
     color: var(--colors-fg-default);
+  }
+  .c_var\(--colors-brand-700\) {
+    color: var(--colors-brand-700);
   }
 }

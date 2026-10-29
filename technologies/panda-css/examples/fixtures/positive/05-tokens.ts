@@ -12,3 +12,6 @@ export const swatch = css({
 })
 
 export const raw = token.var('colors.brand.600')
+
+// token() inside a string keeps the variable and takes a fallback; token.var() folds to var().
+export const fallback = css({ border: '1px solid token(colors.brand.600, crimson)', color: token.var('colors.brand.700') })
