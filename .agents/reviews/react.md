@@ -2,7 +2,7 @@
 
 ## Hand-off (in progress — updated after every module commit)
 
-**Status:** modules 01–10 rewritten at full depth with real-API Vitest proofs. Modules 11–12, exams, glossary, cheatsheet and README not yet done.
+**Status:** modules 01–11 rewritten at full depth with real-API Vitest proofs. Module 12, exams, glossary, cheatsheet and README not yet done.
 
 | Module | State | Proof file | Tests |
 |---|---|---|---|
@@ -16,17 +16,19 @@
 | 08 Actions, forms & optimistic UI | done (renamed from `08-actions-and-optimistic-updates.md`) | `examples/08-actions/actions.test.tsx`, `hung-action.test.tsx` | 16 |
 | 09 React Compiler 1.0 | done (renamed from `09-compiler-memoization-lowering.md`) | `examples/09-compiler/compiler.test.tsx`, `compile.ts` (real babel plugin + eslint Linter; compiled modules written to gitignored `.generated/`) | 17 |
 | 10 Errors & resilience | done (renamed from `10-error-boundaries-and-resilience.md`) | `examples/10-errors/errors.test.tsx` | 14 |
-| 11–12 | old ~70-line text (04–10) or missing (11, 12); their old synthetic examples were deleted in b5fd650 | — | — |
+| 11 Animation & DOM platform (new) | done | `examples/11-dom-platform/dom-platform.test.tsx`, `fake-view-transitions.ts` (recording stub of the VT API) | 15 |
+| 12 | old ~70-line text (04–10) or missing (11, 12); their old synthetic examples were deleted in b5fd650 | — | — |
 
-**Tooling:** Node 26.12.1 (local), Vitest 5.0.5 + jsdom 30.1.3, RTL 16.3.3, react/react-dom/react-server-dom-webpack 19.3.1, @types/react 19.3.0, babel-plugin-react-compiler 1.0.0 with @babel/core 8.0.9 (works), eslint 10.13.0 + eslint-plugin-react-hooks 7.1.1, fast-check 4.10.2, vite 8.3.5, TypeScript 7.0.2. `npm test` = `vitest run`; `npm run typecheck` = `tsc --noEmit`. Last run: 183/183 passing, typecheck clean.
+**Tooling:** Node 26.12.1 (local), Vitest 5.0.5 + jsdom 30.1.3, RTL 16.3.3, react/react-dom/react-server-dom-webpack 19.3.1, @types/react 19.3.0, babel-plugin-react-compiler 1.0.0 with @babel/core 8.0.9 (works), eslint 10.13.0 + eslint-plugin-react-hooks 7.1.1, fast-check 4.10.2, vite 8.3.5, TypeScript 7.0.2. `npm test` = `vitest run`; `npm run typecheck` = `tsc --noEmit`. Last run: 198/198 passing, typecheck clean.
 
 ## Remaining work (ordered)
-5. M11 DOM platform (new); M12 Perf/testing/ops (new).
+5. M12 Perf/testing/ops (new).
 6. exams/README.md + exams/interview.md (≥60 Q, mock exam), GLOSSARY.md, CHEATSHEET.md, README (syllabus, Certifications & Exams, Verified-against line).
 7. `mise.lock`: not generated (no mise binary; nodejs.org checksums unreachable). Run `mise lock` on the Mac CLI.
 8. Playwright browser checks (ViewTransition, Fragment `observeUsing`) not added: no browsers here. Verifier (Antigravity) task.
 
 ## Least-certain claims (for the challenger)
+- M11: from react.dev docs, not tested: `<meta itemProp>` not hoisted; no dedupe of multiple `<title>`; ViewTransition event props `onEnter/onExit/onUpdate/onShare` signatures; stylesheet load suspension on the client; Trusted Types pass-through (jsdom has no TT). Auto VT name format `_t_<n>_` observed on 19.3.1.
 - M09: pipeline description (HIR → SSA → effect inference → reactive scopes) is from public compiler talks/source structure, not re-verified pass by pass; tooling support list (Vite/Next ≥15.3.1/Expo 54/Rsbuild, SWC experimental) is from the 1.0 blog post. "Memo ✨" DevTools badge not re-verified.
 - M09: finding — compiler 1.0 + lint preset do NOT flag `props.items.push(1)` (tested); a reviewer may want to check whether `immutability` catches other forms.
 - M08: "a never-settling async action holds back every later transition" observed on 19.3.1 under act() in jsdom (`hung-action.test.tsx`); not verified in a real browser scheduler.
