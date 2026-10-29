@@ -24,7 +24,7 @@ import {
   Reveal,
 } from "solid-js";
 import { render, cleanup } from "@solidjs/testing-library";
-import { captureDiagnosticsAsync, deferred, settle } from "./support/diagnostics.ts";
+import { captureDiagnostics, captureDiagnosticsAsync, deferred, settle } from "./support/diagnostics.ts";
 
 afterEach(() => {
   cleanup();
@@ -476,5 +476,83 @@ describe("06 · <Reveal>", () => {
     expect(container.textContent).toBe("a…b…");
     await b.resolveLast("B");
     expect(container.textContent).toBe("AB");
+  });
+});
+
+describe("06 · races and boundaries (internals)", () => {
+  it("a superseded flight's late answer is dropped: out-of-order responses cannot overwrite newer data", async () => {
+    const api = fakeApi<string>();
+    const [id, setId] = createSignal(1);
+    const user = createRoot(() => createMemo(() => api.fetch(id())));
+    const { container } = render(() => (
+      <Loading fallback="…">
+        <p>{user()}</p>
+      </Loading>
+    ));
+    await api.resolveLast("u1");
+    setId(2);
+    flush();
+    await settle();
+    setId(3);
+    flush();
+    await settle();
+    // request for id 3 answers first, the stale request for id 2 answers last
+    api.calls[2]!.d.resolve("u3");
+    await settle();
+    flush();
+    api.calls[1]!.d.resolve("u2 (stale)");
+    await settle();
+    flush();
+    expect(container.textContent).toBe("u3");
+  });
+
+  it("refresh(x) returns a promise of the settled value (the imperative settle point)", async () => {
+    const api = fakeApi<number>();
+    const user = createRoot(() => createMemo(() => api.fetch("x")));
+    render(() => (
+      <Loading fallback="…">
+        <p>{user()}</p>
+      </Loading>
+    ));
+    await api.resolveLast(1);
+    const next = refresh(user);
+    flush();
+    await settle();
+    await api.resolveLast(2);
+    await expect(next).resolves.toBe(2);
+  });
+
+  it("negative: async read with no <Loading> above warns ASYNC_OUTSIDE_LOADING_BOUNDARY and defers the root mount", async () => {
+    const api = fakeApi<string>();
+    const user = createRoot(() => createMemo(() => api.fetch("x")));
+    const { codes } = await captureDiagnosticsAsync(async () => {
+      const { container } = render(() => <p>{user()}</p>);
+      expect(container.textContent).toBe(""); // nothing mounted yet
+      await api.resolveLast("late");
+      expect(container.textContent).toBe("late");
+    });
+    expect(codes).toContain("ASYNC_OUTSIDE_LOADING_BOUNDARY");
+  });
+
+  it("negative: reading a pending value at the top of a component body throws PENDING_ASYNC_UNTRACKED_READ (and halts)", () => {
+    const user = createRoot(() => createMemo(() => new Promise<string>(() => {})));
+    function Bad() {
+      const v = user(); // ❌ untracked read of a pending value
+      return <p>{v}</p>;
+    }
+    let error: unknown;
+    const { codes } = captureDiagnostics(() => {
+      try {
+        render(() => (
+          <Loading fallback="…">
+            <Bad />
+          </Loading>
+        ));
+      } catch (e) {
+        error = e;
+      }
+    });
+    expect(String(error)).toMatch(/PENDING_ASYNC_UNTRACKED_READ/);
+    expect(codes).toContain("REACTIVITY_HALTED"); // even <Loading> cannot catch a read it never saw
   });
 });

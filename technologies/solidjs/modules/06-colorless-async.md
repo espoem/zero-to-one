@@ -46,6 +46,36 @@ const price = createMemo(() => from(ticker(symbol())));
 const label = createMemo(() => format(price()));      // transform downstream, not in a for-await
 ```
 
+### 1.4 How "not ready" travels: the rc.19 mechanics
+
+The public contract is "pending reads go to the nearest boundary". The engine (`@solidjs/signals`, `core/async`, `boundaries`) does it with a status bit, a set of pending sources, and a walk on settle:
+
+1. **A computation returns a thenable or async iterable.** `handleAsync` subscribes to it, marks the node `STATUS_PENDING` (and `STATUS_UNINITIALIZED` on the first flight), and records an in-flight token. If the node re-runs before the flight lands, the old token is superseded: its result is **dropped** and a returned iterable is closed (proved: the stale answer for id 2, arriving after id 3's, never reaches the screen).
+2. **Status propagates to dependents** (`propagateStatus`): every subscriber is marked so that its next read sees "pending" without re-running your code.
+3. **A tracked read of a pending node throws `NotReadyError`** inside the reader's compute. The reader's `recompute` catches it, registers the source in its own pending set (`addPendingSource`) and becomes pending too. This is how `title = user().name + "!"` is "not ready" without being async itself.
+4. **Boundaries catch frame readers.** A `<Loading>` keeps the set of render effects (frame readers) under it that carry pending status. If it has not shown content yet, its output switches to the fallback; if it has, the write that caused the pending state is **held** (the old frame stays). User effects whose run came due behind a fallback are parked and re-queued at reveal.
+5. **On settle** (`settlePendingSource`), the runtime walks the nodes that registered the source, re-runs them, clears their status, commits the held writes of the transaction (if nothing else holds it), and the boundary reveals.
+6. **Untracked reads have no catcher.** Outside a tracking scope the `NotReadyError` reaches your code: `untrack(user)` throws it; at the top of a component body the dev build throws `PENDING_ASYNC_UNTRACKED_READ` and, because nothing contains it, the system halts (proved: even with a `<Loading>` around the component, the body read happens outside any frame reader the boundary could see).
+
+```mermaid
+sequenceDiagram
+  participant M as user = createMemo(fetch)
+  participant D as title = memo(user().name)
+  participant R as render effect <p>{title()}</p>
+  participant B as <Loading>
+  M->>M: returns Promise → STATUS_PENDING
+  M-->>D: propagateStatus
+  D->>M: read → NotReadyError (caught), addPendingSource(M)
+  D-->>R: pending
+  R->>B: frame reader pending → fallback (first load) or hold (revalidation)
+  Note over M: promise resolves
+  M->>D: settlePendingSource walk → recompute
+  D->>R: value
+  R->>B: ready → reveal / commit held writes
+```
+
+**Root without a boundary.** If an async read happens during mount with no `<Loading>` above it, the dev build warns `ASYNC_OUTSIDE_LOADING_BOUNDARY` and the **root mount is deferred** until the value lands (proved: the container stays empty, then shows `late`). It is not an error, but the user sees nothing at all until the slowest top-level read resolves. Put boundaries where partial UI makes sense.
+
 ## 2. `<Loading>`: branch readiness, not "is fetching"
 
 ```tsx
@@ -142,6 +172,19 @@ Rules (RFC 05):
 
 An iterable *returned* from the compute is closed on re-run. An iterable you `for await` *inside* an async compute is yours; wrap it in `from()` so a re-run stops it.
 
+### 4.1 Races, formally
+
+Let a computation $c$ start flights $f_1, f_2, \ldots$ as its inputs change, each flight tagged with the run that started it. Solid's rule is **last-run-wins**: when $f_i$ settles, its value is accepted only if the run that started it is still the current run of $c$; otherwise it is discarded. Responses may arrive in any order, but the committed value always corresponds to the latest inputs. That removes the classic "search results for an old query overwrite the new ones" bug without any user code (proved by the out-of-order test). Cancellation (above) is the *efficiency* half: dropping the result does not stop the network request; aborting does.
+
+Two places where the rule does **not** protect you:
+
+- **Effects that fetch** (`createEffect(() => q(), async (q) => setResults(await search(q)))`): the effect's apply runs for every value and each `await` continuation writes whenever it resolves, so the oldest response can land last. Use an async memo.
+- **Shared caches outside the graph** keyed by input: the graph discards a stale *result*, but a cache you wrote from inside the flight is already polluted. Write caches only from the value that landed.
+
+### 4.2 `refresh` as a settle point
+
+`refresh(x)` returns a promise of `x`'s next quiescent value (proved: resolves to `2` after the refetch lands). In imperative code (`await refresh(todos); navigate(...)`) it replaces polling for "has it reloaded yet?". Its semantics are quiescence, not flight identity: if another invalidation supersedes it, it resolves with whatever finally lands.
+
 ## 5. Errors
 
 Async errors flow through the graph like values and are caught by **`<Errored>`** (replaces `<ErrorBoundary>`):
@@ -157,6 +200,61 @@ Async errors flow through the graph like values and are caught by **`<Errored>`*
 - **Boundaries heal automatically.** When an input of the failed computation changes and the new run succeeds, the boundary returns to content without `reset` (proved). 1.x `resetErrorBoundaries` is gone.
 - There is one error path. 1.x `resource.error` let code branch inline and bypass the boundary (invisible to SSR). In 2.0 handle async errors with `<Errored>` or an effect's `error` arm ([Module 02](./02-effects-and-lifecycle.md)).
 - Report caught errors to monitoring with `configureClientErrors({ onError(error, { ownerPath, boundaryPath }) { … } })` (or per root via `render`'s options). An error that escapes every boundary halts the system (`REACTIVITY_HALTED`) and goes to `reportError`/`window.onerror`.
+
+## 5.1 Designing boundary placement
+
+Boundaries are UX decisions. The engine gives three answers to "something under here is not ready", and you choose per subtree:
+
+| Want | Tool |
+|---|---|
+| show a placeholder until the subtree first has data | `<Loading fallback>` around it |
+| keep the old content, hint that it is updating | nothing extra (holds) + `isPending(() => x())` |
+| replace content with a placeholder when *this* input changes | `<Loading on={input()}>` |
+| show provisional real UI | `loadingValue` / `seedLoadingValue` |
+| reveal several placeholders in a controlled order | `<Reveal>` |
+| contain failures | `<Errored>` (outside the `<Loading>` it protects, so a failed first load shows the error, not an eternal spinner) |
+
+Start the fetches **high** (create the async memos in a route or layout component so independent requests start in parallel) and put boundaries **low** (around the parts that render the data), so the shell and unrelated panels are interactive while each panel loads. Creating each memo inside the component that renders it serialises requests behind parents' boundaries: the attribution engine reports that shape as `ASYNC_WATERFALL`.
+
+```mermaid
+flowchart TD
+  Route["<UserPage> — creates user(), posts(), stats() memos (requests start in parallel)"]
+  Route --> Shell["header / nav (no async reads: interactive immediately)"]
+  Route --> E1["<Errored>"] --> L1["<Loading on={id()}> → <Profile user={user()}/>"]
+  Route --> E2["<Errored>"] --> R["<Reveal order='sequential'>"]
+  R --> L2["<Loading> → <Posts posts={posts()}/>"]
+  R --> L3["<Loading> → <Stats stats={stats()}/>"]
+```
+
+## 5.2 Worked example: search as you type
+
+```tsx
+function Search() {
+  const [query, setQuery] = createSignal("");
+  const results = createDeferred(async () => {            // lags but never leads: no flashing
+    const q = query();                                     // read before the first await
+    if (q.length < 2) return [] as Hit[];
+    const ac = new AbortController();
+    onCleanup(() => ac.abort());                           // abort superseded keystrokes
+    const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`, { signal: ac.signal });
+    if (!res.ok) throw new Error(`search failed: ${res.status}`);
+    return (await res.json()) as Hit[];
+  });
+  return (
+    <>
+      <input value={query()} onInput={(e) => setQuery(e.currentTarget.value)} />
+      <Errored fallback={(err, reset) => <p>{err().message} <button onClick={() => reset()}>retry</button></p>}>
+        <Loading fallback={<p>Searching…</p>}>
+          <p class={{ dim: isPending(() => results()) }}>{results().length} hits for “{latest(query)}”</p>
+          <For each={results()} keyed={(h) => h.id}>{(h) => <Row hit={h()} />}</For>
+        </Loading>
+      </Errored>
+    </>
+  );
+}
+```
+
+What each line buys: `createDeferred` keeps the last results on screen while the next keystroke's request runs (no fallback flash after the first load); the read-before-await keeps `query` a dependency; `onCleanup` before the `await` aborts superseded requests (stale ones that do complete are discarded anyway by last-run-wins); `isPending` dims the stale list; `latest(query)` labels it with the text being searched; the `<Errored>` sits outside the `<Loading>`; keyed `<For>` keeps rows that appear in consecutive results.
 
 ## 6. Sequence: a navigation with a held write
 
@@ -189,7 +287,29 @@ sequenceDiagram
 | `createResource({ initialValue })` | `loadingValue` / `seedLoadingValue` | honest placeholders | |
 | `ssrLoadFrom`, `deferStream` on resources | `ssrSource`, `deferStream` on any computation | per-primitive SSR policy | Module 08 |
 
+### 7.1 Then vs now: the async machinery
+
+| | 1.x | 2.0 RC |
+|---|---|---|
+| Where async lives | a separate primitive (`createResource`) wrapping a fetcher; readers got `T \| undefined` | any computation; readers get `T` or "not ready" |
+| Suspension mechanism | reading a resource inside `<Suspense>` incremented the boundary's counter (`SuspenseContext`) | `NotReadyError` thrown through computations, status propagated, boundaries track frame readers |
+| Race handling | resource kept the latest fetch, earlier promises ignored | last-run-wins for every computation, plus iterator close / `onCleanup` abort on supersede |
+| Transitions | `startTransition` kept old UI while new resources loaded | every write that leads to async is held by default; several transactions in flight |
+| Streams | not supported by resources | AsyncIterable return values and `from()` |
+| SSR | `ssrLoadFrom`, `deferStream` on resources | `ssrSource`, `deferStream`, `loadingValue` on any computation |
+
 **Pitfall when mixing:** code ported from 1.x often keeps `<Show when={!data.loading}>` style branches. In 2.0 there is no `.loading`, and porting it to `isPending` makes the first-load case render nothing (first load is the boundary's job, `isPending` is `false`). Restructure around `<Loading>`.
+
+### 7.2 Failure modes proved by negative tests
+
+| Failure | Test (`06-colorless-async.test.tsx`) |
+|---|---|
+| input read after `await` | `UNTRACKED_READ_AFTER_AWAIT` |
+| cleanup registered after `await` | stale request not aborted |
+| fallback that can never show | `LOADING_ON_OUTSIDE_HOLD` |
+| pending read in a component body | `PENDING_ASYNC_UNTRACKED_READ` → halt |
+| no boundary above async UI | `ASYNC_OUTSIDE_LOADING_BOUNDARY`, mount deferred |
+| out-of-order responses | stale answer dropped (positive proof of the guarantee) |
 
 ## 8. Production failure modes
 
