@@ -2,7 +2,7 @@
 
 ## Hand-off (in progress — updated after every module commit)
 
-**Status:** modules 01–07 rewritten at full depth with real-API Vitest proofs. Modules 08–12, exams, glossary, cheatsheet and README not yet done.
+**Status:** modules 01–08 rewritten at full depth with real-API Vitest proofs. Modules 09–12, exams, glossary, cheatsheet and README not yet done.
 
 | Module | State | Proof file | Tests |
 |---|---|---|---|
@@ -13,17 +13,19 @@
 | 05 Concurrency: lanes, transitions | done (renamed from `05-concurrent-lanes-and-transitions.md`) | `examples/05-concurrency/concurrency.test.tsx`, `lane-model.ts` (property test vs function extracted from installed react-dom build) | 17 |
 | 06 Suspense, streaming SSR & hydration | done (renamed from `06-suspense-and-streaming-ssr.md`) | `examples/06-suspense-ssr/suspense-ssr.test.tsx`, `_shared/ssr.ts` | 20 |
 | 07 Server Components & Flight | done (renamed from `07-rsc-and-flight-protocol.md`) | `examples/07-rsc/rsc.test.tsx` + `server.ts` (child process, `--conditions react-server`, NODE_ENV=production) | 13 |
-| 08–12 | old ~70-line text (04–10) or missing (11, 12); their old synthetic examples were deleted in b5fd650 | — | — |
+| 08 Actions, forms & optimistic UI | done (renamed from `08-actions-and-optimistic-updates.md`) | `examples/08-actions/actions.test.tsx`, `hung-action.test.tsx` | 16 |
+| 09–12 | old ~70-line text (04–10) or missing (11, 12); their old synthetic examples were deleted in b5fd650 | — | — |
 
-**Tooling:** Node 26.12.1 (local), Vitest 5.0.5 + jsdom 30.1.3, RTL 16.3.3, react/react-dom/react-server-dom-webpack 19.3.1, @types/react 19.3.0, babel-plugin-react-compiler 1.0.0 with @babel/core 8.0.9 (works), eslint 10.13.0 + eslint-plugin-react-hooks 7.1.1, fast-check 4.10.2, vite 8.3.5, TypeScript 7.0.2. `npm test` = `vitest run`; `npm run typecheck` = `tsc --noEmit`. Last run: 137/137 passing, typecheck clean.
+**Tooling:** Node 26.12.1 (local), Vitest 5.0.5 + jsdom 30.1.3, RTL 16.3.3, react/react-dom/react-server-dom-webpack 19.3.1, @types/react 19.3.0, babel-plugin-react-compiler 1.0.0 with @babel/core 8.0.9 (works), eslint 10.13.0 + eslint-plugin-react-hooks 7.1.1, fast-check 4.10.2, vite 8.3.5, TypeScript 7.0.2. `npm test` = `vitest run`; `npm run typecheck` = `tsc --noEmit`. Last run: 153/153 passing, typecheck clean.
 
 ## Remaining work (ordered)
-5. M08 Actions; M09 Compiler (babel transform fixtures, eslint Linter runs); M10 Errors; M11 DOM platform (new); M12 Perf/testing/ops (new).
+5. M09 Compiler (babel transform fixtures, eslint Linter runs); M10 Errors; M11 DOM platform (new); M12 Perf/testing/ops (new).
 6. exams/README.md + exams/interview.md (≥60 Q, mock exam), GLOSSARY.md, CHEATSHEET.md, README (syllabus, Certifications & Exams, Verified-against line).
 7. `mise.lock`: not generated (no mise binary; nodejs.org checksums unreachable). Run `mise lock` on the Mac CLI.
 8. Playwright browser checks (ViewTransition, Fragment `observeUsing`) not added: no browsers here. Verifier (Antigravity) task.
 
 ## Least-certain claims (for the challenger)
+- M08: "a never-settling async action holds back every later transition" observed on 19.3.1 under act() in jsdom (`hung-action.test.tsx`); not verified in a real browser scheduler.
 - M06: the 19.3 conditional-`use` warning only fires when React retries the same fiber (observed: root-level suspend, not inside a Suspense boundary). Module text says so. Production-mode SSR error output (digest only, no data-msg) is stated, not tested (tests run the DEV build).
 - M06: useId history (`:r:` 18–19.0, `«r»` 19.1, `_r_` 19.2) from the 19.2 blog; server prefix `_R_` observed on 19.3.1.
 - M05: lane names for bits 18–21 (TransitionDeferredLanes) and 22–25 (RetryLanes) inferred from `requestDeferredLane` and the Performance-track labels in the 19.3.1 build; the 19.2 `getHighestPriorityLanes` difference was checked by hand against a downloaded react-dom@19.2.9 tarball (not in tests). Untangled behaviour is tested only on 19.3.1.
