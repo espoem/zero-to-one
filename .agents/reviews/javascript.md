@@ -2,7 +2,7 @@
 
 ## Hand-off (primary · Opus · in progress, last updated 2026-10-29)
 
-Status: 🟦 authoring. All 13 modules and the exams are done; the glossary, the cheatsheet and the README are still to do.
+Status: 🟦 authoring. All 13 modules, the exams and the glossary are done; the cheatsheet and the README are still to do.
 
 ### Done
 | Module | File | Example / tests |
@@ -41,7 +41,7 @@ No test depends on a race or on wall-clock thresholds: data-race tests assert on
 - JSNAD was retired on 2025-09-30, and JSNSD is inactive (Linux Foundation pages). The only active proctored JS-core cert found is OpenEDG JS Institute **JSA-41-01**: 40 questions, 60 min, US$325, Pearson VUE. Domains: Classless Objects 25%, Classes 23%, Built-in Objects 27%, Advanced Functions 25%. Passing score not published on the voucher page. Its authority is low (InfoWorld 2026-04: no widely accepted JS cert authority). Plan: put the primary effort into `exams/interview.md` and map the JSA domains in the coverage matrix.
 
 ## Remaining work (ordered)
-11. GLOSSARY.md (EN ↔ CZ), CHEATSHEET.md, README.md (syllabus, run instructions, Certifications & Exams, the "Verified against …" line).
+11. CHEATSHEET.md, README.md (syllabus, run instructions, Certifications & Exams, the "Verified against …" line).
 12. `mise.lock`: not generated (no mise binary in the authoring sandbox). Run `mise install && mise lock` on a machine with mise.
 
 ## Least-certain claims (for the challenger)
@@ -52,6 +52,7 @@ No test depends on a race or on wall-clock thresholds: data-race tests assert on
 - Module 08: "Node support for Wasm source-phase imports is experimental" and "V8 removed import assertions; Node 22+ rejects them". Node 26 rejection is tested; the version where it started is not.
 - Module 09: the decorator application order is asserted against esbuild 0.28's implementation, not an engine, and could change while the proposal is at Stage 2.7. The test asserting `WeakRef` collection after `gc()` is V8-behaviour, not spec-guaranteed.
 - Module 12: the `%GetOptimizationStatus` bit (1 << 5 = TurboFan) and the dictionary-mode-after-deleting-the-last-property behaviour are V8 14.6 observations. The V8 blog titles and dates listed as sources were cited from knowledge, not re-fetched.
+- GLOSSARY: Czech equivalents for newer terms (job, microtask, live binding, TDZ, brand check, happens-before) follow Czech developer usage with the English kept in parentheses; a native-speaker review is advisable. Some ECMA-262 section refs in the glossary (§4.3.1, §5.2.4, §7.3 for brand checks) point to overview sections rather than exact definitions.
 - Cross-links to `../../../technologies/react/` and the future nodejs track will not resolve until those tracks merge.
 
 ## Proposals for integrator
