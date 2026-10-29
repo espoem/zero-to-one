@@ -1,5 +1,7 @@
-# Module 02: Unions, Literals, Narrowing, & Objects
-**Week 3 | Intermediate Track**
+# Module 03: Unions, Narrowing & Control-Flow Analysis
+
+> Examples and tests: [`examples/03-unions-narrowing/control-flow.test.ts`](../examples/03-unions-narrowing/control-flow.test.ts) (exhaustiveness, `switch (true)`, truthiness traps, destructured unions, closures, inferred predicates) and [`essentials-and-narrowing.test.ts`](../examples/03-unions-narrowing/essentials-and-narrowing.test.ts).
+> Run: `mise exec -- node --test examples/03-unions-narrowing/`
 
 ---
 
@@ -29,22 +31,20 @@ In TypeScript, **types are sets of allowable runtime values**:
                     (must satisfy both)
 ```
 
-### The Total TypeScript Type Testing Helper
+### Control-flow analysis, formally
 
-We verify compile-time behavior using Matt Pocock's standard Total TypeScript assertions:
+The checker gives every *reference* (a variable, parameter, or property access path like `a.b.c`) a **declared type** and, at each program point, a **narrowed type**. The binder builds a control-flow graph whose nodes are assignments, conditions and branch joins. To find the type of a reference at a point, the checker walks the graph **backwards** to the declaration:
 
-```typescript
-export type Expect<T extends true> = T;
-export type Equal<X, Y> =
-  (<T>() => T extends X ? 1 : 2) extends
-  (<T>() => T extends Y ? 1 : 2) ? true : false;
-```
+- an **assignment** `x = e` sets the narrowed type to the type of `e` (filtered by the declared type);
+- a **condition** node (`typeof x === "string"`, `x !== null`, `"k" in x`, `x instanceof C`, `x.kind === "a"`, a call to a type predicate, truthiness) on the true/false edge *filters* the type: $T \mapsto T \cap P$ on the true branch and $T \mapsto T \setminus P$ on the false branch, applied per union member;
+- a **join** (after `if`/`else`, at loop heads) takes the union of incoming types;
+- a call to an **assertion function** (`asserts x is T`) or a `never`-returning function narrows everything after it.
 
----
+Because the analysis is per reference, these break narrowing: reassignment of the reference after the check, a property path through a function call (`getUser().name`), aliasing into a separate `let` variable, and checks performed inside a *called* function (unless that function is a predicate). TS 4.4 added **aliased conditions** (`const isStr = typeof x === "string"; if (isStr) …` narrows when `x` is `const` or a non-reassigned parameter) and 4.6 added narrowing of **destructured discriminated unions** (when destructured from a parameter or `const`, not `let`).
 
-## Lesson 2.1: Union Types, Literal Types & Assignability
+## Lesson 3.1: Union Types, Literal Types & Assignability
 
-### 2.1.1 Sets of Values and Type Assignability
+### 3.1.1 Sets of Values and Type Assignability
 
 Type assignability answers a single question: *Is set A a subset of set B?*
 
@@ -63,7 +63,7 @@ const invalidDir: Direction = anyString;
 
 Because `"north"` is a subset of `string`, you can pass a `Direction` to a function expecting `string`. But you cannot pass a general `string` to a parameter expecting `Direction`.
 
-### 2.1.2 Literal Types and Type Widening
+### 3.1.2 Literal Types and Type Widening
 
 When you declare a variable with `let`, TypeScript infers a **widened** mutable primitive type. When you declare with `const`, TypeScript infers the exact **literal** type:
 
@@ -94,7 +94,7 @@ const buttonConfig2 = {
 // buttonConfig2.size: "large"
 ```
 
-### 2.1.3 Handling `null` and `undefined` with `strictNullChecks`
+### 3.1.3 Handling `null` and `undefined` with `strictNullChecks`
 
 Without `"strictNullChecks": true`, `null` and `undefined` are automatically assignable to every type in the language. With `strictNullChecks` enabled (standard in all modern TypeScript projects), they form distinct sets:
 
@@ -116,7 +116,7 @@ if (user !== null) {
 
 > **Warning on `!` (Non-null assertion)**: The non-null assertion operator (`user!.name`) silences compiler warnings without adding any runtime check. If `user` is actually `null`, the program crashes at runtime. Avoid `!` in production code.
 
-### 2.1.4 Combining Unions & Combinatorial Limits
+### 3.1.4 Combining Unions & Combinatorial Limits
 
 Unions combine cleanly using type aliases and template literal types:
 
@@ -134,11 +134,11 @@ type DeploymentKey = `${Stage}_${Status}`;
 
 ---
 
-## Lesson 2.2: Control-Flow Narrowing
+## Lesson 3.2: Control-Flow Narrowing
 
 TypeScript uses **control-flow analysis** to inspect conditional statements, loops, and branching logic, refining broad types into narrower subtypes.
 
-### 2.2.1 Primitive Narrowing: `typeof`, `instanceof`, and `"prop" in obj`
+### 3.2.1 Primitive Narrowing: `typeof`, `instanceof`, and `"prop" in obj`
 
 ```typescript
 // 1. typeof narrowing:
@@ -174,7 +174,7 @@ function contactUser(user: EmailUser | PhoneUser) {
 }
 ```
 
-### 2.2.2 Truthiness, Equality, and Narrowing Pitfalls
+### 3.2.2 Truthiness, Equality, and Narrowing Pitfalls
 
 #### Trap 1: `typeof null === "object"`
 In JavaScript, `typeof null` evaluates to `"object"`. A check for `typeof val === "object"` will still include `null`:
@@ -226,7 +226,7 @@ if (count !== undefined) {
 }
 ```
 
-### 2.2.3 Narrowing by Throwing Errors (Guard Clauses)
+### 3.2.3 Narrowing by Throwing Errors (Guard Clauses)
 
 When a branch throws an error or calls a function returning `never`, TypeScript eliminates that branch from the downstream control flow:
 
@@ -242,7 +242,7 @@ function processTransaction(id: string | null) {
 }
 ```
 
-### 2.2.4 The `unknown` Type in Catch Clauses
+### 3.2.4 The `unknown` Type in Catch Clauses
 
 Under `useUnknownInCatchVariables` (default in modern TS), `catch` variables are typed as `unknown` instead of `any`:
 
@@ -262,38 +262,49 @@ try {
 }
 ```
 
-### 2.2.5 Narrowing Scope in Closures
+### 3.2.5 Narrowing Scope in Closures
 
-TypeScript intentionally resets narrowed types inside nested callbacks if the variable is declared with `let`, because callbacks can execute asynchronously after the outer variable has been modified:
+A callback may run later, after the variable changed. The checker therefore has to decide whether a narrowing established *outside* a closure still holds *inside* it.
 
-```typescript
-let selectedId: string | null = "abc";
+### Then vs now: narrowing in closures
 
+**Then (TS ≤ 5.3).** Narrowing of a `let` variable or parameter was discarded inside every function expression, so the standard workaround was to copy into a `const`:
+
+```ts
+let selectedId: string | null = load();
 if (selectedId !== null) {
-  // selectedId is string here
-
-  setTimeout(() => {
-    // ❌ Inside closure, selectedId reverts to string | null!
-    // selectedId.toUpperCase();
-  }, 100);
-}
-
-// ✅ Fix: Bind to a const local before entering closure:
-if (selectedId !== null) {
-  const currentId = selectedId; // const never reassigns
-  setTimeout(() => {
-    console.log(currentId.toUpperCase()); // currentId: string
-  }, 100);
+  const id = selectedId;              // workaround
+  setTimeout(() => id.toUpperCase());
 }
 ```
 
+**Now (TS 5.4+, unchanged in 7.0).** Narrowing is preserved inside closures created **after the last assignment** to the variable. If the variable is assigned anywhere later in the function, the closure falls back to the declared type (TS18047 "possibly 'null'"). The test `closures keep narrowing only after the last assignment` shows both cases.
+
+**Migration.** The `const` copy is still correct and still needed when there is a later assignment; remove it only where the compiler now accepts the direct reference. **Pitfall:** adding an assignment at the bottom of a long function silently re-widens every closure above it, so a refactor far away produces errors here.
+
+### 3.2.6 `switch (true)`
+
+Since TS 5.3, each `case` expression of a `switch (true)` narrows like an `if` condition, which reads well for ordered type tests:
+
+```ts
+switch (true) {
+  case typeof x === "string": return x.toUpperCase();
+  case Array.isArray(x):      return x.length;
+  default:                    return x.toFixed();
+}
+```
+
+### 3.2.7 Inferred type predicates
+
+Since TS 5.5, a function whose body is a single narrowing expression on its parameter gets an **inferred predicate** return type: `(x) => typeof x === "number"` is `(x: unknown) => x is number`, so `array.filter(x => x !== null)` returns the narrowed array type. Inference only happens when the predicate is exact in both directions (the false branch must also be precise); `x => !!x` is not inferred because a falsy `0` would be excluded from `number` without the type saying so.
+
 ---
 
-## Lesson 2.3: Discriminated Unions & Exhaustiveness Checking
+## Lesson 3.3: Discriminated Unions & Exhaustiveness Checking
 
 A **Discriminated Union** (also called a Tagged Union or Algebraic Data Type) consists of variants that all share a single literal property—known as the **discriminant** or **tag**.
 
-### 2.3.1 Defining Discriminated Unions
+### 3.3.1 Defining Discriminated Unions
 
 ```typescript
 type NetworkState =
@@ -305,7 +316,7 @@ type NetworkState =
 
 Every variant has `status`, but the literal value of `status` uniquely identifies which other fields exist.
 
-### 2.3.2 Narrowing with `switch`
+### 3.3.2 Narrowing with `switch`
 
 ```typescript
 function renderState(state: NetworkState): string {
@@ -322,7 +333,7 @@ function renderState(state: NetworkState): string {
 }
 ```
 
-### 2.3.3 The Destructuring Trap
+### 3.3.3 The Destructuring Trap
 
 > **Critical Gotcha**: Do **not** destructure properties before narrowing!
 
@@ -344,7 +355,7 @@ function goodRender(state: NetworkState) {
 }
 ```
 
-### 2.3.4 Exhaustiveness Checking with `never`
+### 3.3.4 Exhaustiveness Checking with `never`
 
 What happens when someone adds `{ status: "cancelled"; reason: string }` to `NetworkState` in the future? Without exhaustive checking, downstream `switch` statements silently miss the new case.
 
@@ -373,7 +384,7 @@ function handleState(state: NetworkState): string {
 }
 ```
 
-### 2.3.5 Discriminated Booleans and Tuples
+### 3.3.5 Discriminated Booleans and Tuples
 
 Discriminants don't have to be strings; booleans and tuple indices work as well:
 
@@ -448,7 +459,7 @@ type Equal<X, Y> =
 ---
 
 
-### Exercise 2.1: The Resilient Async State Machine
+### Exercise 3.1: The Resilient Async State Machine
 
 #### Problem Description
 Design a discriminated union `AsyncData<T>` that represents four distinct states:
@@ -518,7 +529,7 @@ type Test2 = Expect<Equal<TestSuccess, true>>;
 
 ---
 
-### Exercise 2.2: Normalized Pipeline Error Handler
+### Exercise 3.2: Normalized Pipeline Error Handler
 
 #### Problem Description
 Write a utility function `normalizeError` that takes an `unknown` error caught in a try/catch block and normalizes it into a standardized `{ message: string; statusCode: number }` object:
@@ -606,7 +617,7 @@ const unknownErr = normalizeError({ random: 123 });
 ---
 
 
-### Exercise 2.4: Type-Safe Result Tuple Unwrapper
+### Exercise 3.4: Type-Safe Result Tuple Unwrapper
 
 #### Problem Description
 In functional programming, operations often return a Result tuple:
@@ -667,3 +678,41 @@ try {
 }
 ```
 
+---
+
+## Interview Drill
+
+<details><summary>1. How does control-flow narrowing work under the hood?</summary>
+
+The binder records a control-flow graph of assignments and conditions per reference. To type a reference at a point, the checker walks backwards: assignments set the type, condition edges filter union members (intersect on the true branch, subtract on the false one), joins union the incoming types. Narrowing is per reference path, so reassignment, aliasing via `let`, or going through a function call loses it.
+</details>
+
+<details><summary>2. What makes a union "discriminated", and why is it preferable to optional fields?</summary>
+
+Every member has a common property of a literal (or unit) type whose value identifies the member. Checking it narrows to one member, and impossible states (loading with data and error) are unrepresentable, unlike a bag of optional fields.
+</details>
+
+<details><summary>3. How do you make the compiler fail when a new union member is not handled?</summary>
+
+In the default branch assign the value to `never` (`assertNever(x)` or `const _: never = x`). If any member reaches the default, it is not `never` and the assignment errors. Alternatively annotate the return type so a missing case is a "not all code paths return" error.
+</details>
+
+<details><summary>4. Why does <code>const { kind, payload } = msg; if (kind === "n") payload</code> narrow, but the <code>let</code> version does not?</summary>
+
+TS 4.6+ tracks the correlation between destructured variables only when they come from a `const` declaration or a parameter that is never reassigned. With `let`, either variable may be reassigned independently, so narrowing one cannot narrow the other.
+</details>
+
+<details><summary>5. Why can <code>if (count)</code> be a bug for <code>number | null</code>?</summary>
+
+Truthiness removes `null`, but also `0` (and `NaN`), so a legitimate zero takes the "missing" branch. Use `count !== null` (or `!= null` to also exclude `undefined`).
+</details>
+
+<details><summary>6. When is narrowing kept inside a callback?</summary>
+
+Since TS 5.4, for `let` variables and parameters, when the closure is created after the last assignment to that variable. Otherwise the callback sees the declared type; copy to a `const` first.
+</details>
+
+<details><summary>7. What is an inferred type predicate, and when is it not inferred?</summary>
+
+Since 5.5, `(x) => <narrowing expression>` gets a return type `x is T`. It is inferred only if the expression narrows exactly in both branches; truthiness checks on numbers/strings are not inferred because the false branch would wrongly exclude `0`/`""`.
+</details>
