@@ -17,6 +17,7 @@ Done:
 - M04 objects/assignability: formal assignability and variance, unsoundness table, freshness, reordered lessons, strictness flags with Then vs now, drill + new example (runtime crashes for bivariance/array covariance, TS2375 fixture).
 - M02 essential types: sets-of-values intro, renumbered lessons, iteration/generator typing lesson with Then vs now (BuiltinIteratorReturn), drill + new example.
 - M03 unions/narrowing: CFA formalism, closure-narrowing Then vs now (5.4), switch(true), inferred predicates, drill + new control-flow example.
+- M05 classes/mutability: this typing, abstract/override/accessor, erasableSyntaxOnly Then vs now, drill + new example.
 
 ## Remaining work (ordered)
 1. (done) M13.

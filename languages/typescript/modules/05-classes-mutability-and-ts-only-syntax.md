@@ -1,12 +1,9 @@
-# Module 03: Mutability, Classes, TypeScript-Only Features, & Deriving Types
+# Module 05: Classes, Mutability & TS-Only Syntax
 
-> **Weeks 4–5 | Total TypeScript Pro Essentials (Sections 7–10)**  
-> **Prerequisites:** Modules 01 & 02 (Essential Types, Unions, Narrowing, and Object Types)
-
----
-
-## Table of Contents
-[Overview](#module-overview--learning-objectives) | [Lesson 3.1: Mutability & as const](#lesson-31-mutability-object-property-inference-readonly--as-const) | [Lesson 3.2: Classes](#lesson-32-classes-in-typescript) | [Lesson 3.3: TS-Only Features](#lesson-33-typescript-only-features--why-to-avoid-them) | [Lesson 3.4: Deriving Types](#lesson-34-deriving-types-from-values) | [Anti-Patterns](#anti-patterns-vs-best-practices) | [Exercises](#hands-on-exercises--step-by-step-solutions) | [Cheat Sheet](#module-summary--cheat-sheet)
+> Example and tests: [`examples/05-classes-mutability/classes-mutability.test.ts`](../examples/05-classes-mutability/classes-mutability.test.ts) (widening and `as const`, readonly arrays, the `as const` object pattern, `#private` vs `private`, `override`, abstract classes and polymorphic `this`, `this` parameters). The `erasableSyntaxOnly` fixture is in [Module 01](./01-toolchain-and-compiler-model.md)'s examples.
+> Run: `mise exec -- node --test examples/05-classes-mutability/`
+>
+> Ownership: class *runtime* semantics (prototypes, fields, `#private` brand semantics, `this` binding rules) belong to `languages/javascript`. This module covers how TypeScript types them and which TypeScript-only syntax to avoid.
 
 ---
 
@@ -23,7 +20,7 @@ This module explores the boundary between JavaScript's dynamic runtime mutabilit
 
 ---
 
-## Lesson 3.1: Mutability, Object Property Inference, `readonly` & `as const`
+## Lesson 5.1: Mutability, Object Property Inference, `readonly` & `as const`
 
 ### The Variable vs. Property Widening Dilemma
 
@@ -180,7 +177,7 @@ async function run() {
 
 ---
 
-## Lesson 3.2: Classes in TypeScript
+## Lesson 5.2: Classes in TypeScript
 
 TypeScript classes compile directly to ECMAScript classes while providing static typing, member visibility, and compile-time contract enforcement.
 
@@ -274,29 +271,23 @@ class InstrumentedCache<T> extends BaseCache<T> {
 }
 ```
 
-### Contextual `this` in Functions and Objects
+### Typing `this`
 
-JavaScript dynamically binds `this` at call time. TypeScript lets you annotate an explicit `this` parameter as the first parameter (erased at compile time) or use arrow function properties to bind lexically:
+How `this` is *bound* at runtime (call-site rules, arrow functions, `bind`) is taught in `languages/javascript`. TypeScript adds three typing tools:
 
-```typescript
-// Explicit this parameter annotation
-function logElement(this: HTMLElement, event: Event) {
-  console.log(`Element ID: ${this.id}`);
-}
+- **`this` parameters.** A first parameter named `this` declares the required receiver and is erased: `function shout(this: { name: string })`. Calling it without a matching receiver is a compile error, and under `noImplicitThis` (part of `strict`) an unannotated `this` in a function is an error rather than `any`.
+- **Polymorphic `this` types.** A method returning `this` returns the type of the *receiver*, so fluent chains on subclasses keep subclass methods (`new UserRepo().save(u).count()` in the example).
+- **`ThisType<T>`** in an object literal's contextual type sets the type of `this` inside its methods (used by Vue's options API and builder DSLs).
 
-class EventHandler {
-  count = 0;
+### Abstract classes, `override` and `accessor`
 
-  // Arrow function binds `this` to instance permanently
-  onClick = () => {
-    this.count++;
-  };
-}
-```
+- `abstract` classes cannot be instantiated; `abstract` members must be implemented by concrete subclasses. Unlike interfaces, they can carry implementation and `protected` state.
+- `override` (with `noImplicitOverride`) marks members that replace a base member. A typo in an overriding name becomes **TS4113** instead of silently adding a new method.
+- `accessor name = value` (TS 4.9+, TC39 decorators proposal) declares an auto-accessor: a private storage slot plus a getter/setter pair. It exists mainly as a decoration target ([Module 10](./10-type-safe-api-design-patterns.md)); like decorators, Node 26 does not execute it natively.
 
 ---
 
-## Lesson 3.3: TypeScript-Only Features & Why to Avoid Them
+## Lesson 5.3: TypeScript-Only Features & Why to Avoid Them
 
 Early versions of TypeScript introduced syntax extensions that emit custom JavaScript runtime code. In modern TypeScript, the general rule is: **prefer standard ECMAScript features over TypeScript-only syntax**.
 
@@ -344,7 +335,21 @@ assign("ADMIN"); // Fails because string enums are nominally typed!
 
 ---
 
-### The Modern Total TypeScript Standard: `as const` Object + Union Pattern
+### Then vs now: TS-only syntax and `erasableSyntaxOnly`
+
+**Then (TS 1.x–5.7).** `enum`, `namespace`, parameter properties and `import x = require()` were idiomatic; TypeScript emitted the runtime code, and tools like Babel/esbuild re-implemented the transforms (except `const enum` across files).
+
+**Now (TS 5.8+ `erasableSyntaxOnly`; Node 23.6+/22.18+ type stripping by default; Node 26 rejects these constructs with `ERR_UNSUPPORTED_TYPESCRIPT_SYNTAX`).** Code meant to run by stripping types must avoid all four constructs. `tsc` 7.0 still compiles them when the flag is off: they are discouraged, not removed. `declare enum`/`declare namespace` (ambient, no emit) remain allowed.
+
+**Migration.**
+1. Turn on `erasableSyntaxOnly`; every violation is TS1294 ([Module 01](./01-toolchain-and-compiler-model.md)).
+2. Enums → `as const` objects plus a derived union type (below). Numeric enums used as bit flags → `as const` objects of numbers.
+3. Parameter properties → explicit fields assigned in the constructor.
+4. Value namespaces → modules; `import x = require()` → `import`.
+
+**Pitfalls.** String enums are **nominal** (a raw `"ADMIN"` is not a `Role.Admin`), while the `as const` replacement is structural, so API consumers that passed string literals start compiling where they did not before, which is usually desired. Code that iterated `Object.values(NumericEnum)` relied on reverse mappings (and got both names and numbers); the `as const` object has no reverse mapping.
+
+### The Modern Standard: `as const` Object + Union Pattern
 
 ```typescript
 // 1. Runtime single source of truth (plain, tree-shakeable JS object)
@@ -369,7 +374,7 @@ export type StatusKey = keyof typeof STATUS;
 
 ---
 
-## Lesson 3.4: Deriving Types from Values
+## Lesson 5.4: Deriving Types from Values
 
 In well-architected TypeScript codebases, runtime constants serve as the single source of truth, and types are derived dynamically.
 
@@ -496,7 +501,7 @@ export type Expect<T extends true> = T;
 export type Equal<X, Y> = (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y ? 1 : 2 ? true : false;
 ```
 
-### Exercise 3.1: The Type-Safe Route Registry
+### Exercise 5.1: The Type-Safe Route Registry
 **Problem:** Derive the route keys and route paths from an immutable routing configuration without duplicating strings in manual type declarations.
 
 ```typescript
@@ -518,7 +523,7 @@ type test_Path = Expect<Equal<RoutePath, "/" | "/users" | "/users/:id" | "/posts
 
 ---
 
-### Exercise 3.2: Entity Repository with `#private` State & `override`
+### Exercise 5.2: Entity Repository with `#private` State & `override`
 **Problem:** Implement an abstract base repository and a subclass enforcing contract adherence with `implements`, genuine runtime privacy with `#private`, and override verification with `override`.
 
 ```typescript
@@ -559,7 +564,7 @@ type test_Result = Expect<Equal<typeof result, User | undefined>>;
 
 ---
 
-### Exercise 3.3: Refactoring Legacy Enums to `as const` Objects
+### Exercise 5.3: Refactoring Legacy Enums to `as const` Objects
 **Problem:** Refactor a legacy numeric HTTP status enum to the `as const` pattern, derive value and key union types, and implement a type-safe status name lookup helper.
 
 ```typescript
@@ -587,7 +592,7 @@ type test_StatusName = Expect<Equal<HttpStatusName, "Ok" | "Created" | "BadReque
 
 ---
 
-### Exercise 3.4: Dynamic Event Dispatcher & Payload Extraction
+### Exercise 5.4: Dynamic Event Dispatcher & Payload Extraction
 **Problem:** From a dictionary of event action handlers, extract the union of event names and derive the parameter payload type for each event dynamically using `Parameters<T>`.
 
 ```typescript
@@ -646,3 +651,37 @@ type test_RolePayload = Expect<
 - `(typeof OBJ)[keyof typeof OBJ]`: extracts union of object values.
 - `Parameters<typeof fn>` & `ReturnType<typeof fn>`: extracts function argument and return types.
 - `InstanceType<typeof Class>`: extracts instance type from class constructors.
+
+---
+
+## Interview Drill
+
+<details><summary>1. Why does <code>{ mode: "dark" }</code> infer <code>mode: string</code>, and what are the fixes?</summary>
+
+Object properties are mutable, so literal types widen to their base type. Fixes: `as const` (literal and `readonly`), a literal-typed annotation, `satisfies` with a literal-typed target, or a `const` type parameter in a helper function ([Module 07](./07-generics-and-inference.md)).
+</details>
+
+<details><summary>2. <code>private</code> vs <code>#private</code>?</summary>
+
+`private` is a compile-time check, erased; the property exists, is enumerable and reachable through casts or `obj["x"]`. `#private` is an ECMAScript private name enforced by the runtime, invisible to `Object.keys`, and enables `#x in obj` brand checks. `#private` also makes classes nominal: two classes with the same `#field` are not assignable to each other.
+</details>
+
+<details><summary>3. Why avoid <code>enum</code> today?</summary>
+
+It emits runtime code (not erasable, so Node type stripping rejects it), numeric enums have reverse mappings and weak typing history, string enums are nominal, and `const enum` breaks under isolated transpilation. The `as const` object plus union gives the same autocompletion with plain JavaScript.
+</details>
+
+<details><summary>4. What does a method returning <code>this</code> give you?</summary>
+
+Polymorphic `this`: the return type is the receiver's type, so a chain started on a subclass keeps subclass members. Returning the class name instead would lose them after the first call.
+</details>
+
+<details><summary>5. Is <code>readonly T[]</code> assignable to <code>T[]</code>? Why not?</summary>
+
+No: a `T[]` parameter could be mutated by the callee, violating the caller's read-only view. The reverse is allowed. Accept `readonly T[]` in parameters so callers can pass both.
+</details>
+
+<details><summary>6. What does <code>noImplicitOverride</code> catch?</summary>
+
+Members that override a base member without `override` (silent shadowing), and `override` on a member that does not exist in the base (TS4113), which catches renames in base classes.
+</details>
