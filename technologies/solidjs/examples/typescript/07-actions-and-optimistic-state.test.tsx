@@ -17,6 +17,7 @@ import {
   resetErrorHalt,
   until,
   TimeoutError,
+  createEffect,
   Loading,
 } from "solid-js";
 import { render, cleanup } from "@solidjs/testing-library";
@@ -315,3 +316,121 @@ describe("07 · invariants", () => {
     expect(codes).toContain("ACTION_CALLED_IN_OWNED_SCOPE");
   });
 });
+
+describe("07 · transaction internals", () => {
+  it("plain (non-optimistic) writes inside an action are held until it settles, and read as pending", async () => {
+    const gate = deferred<void>();
+    const [page, setPage] = createSignal("a");
+    const go = action(function* () {
+      setPage("b"); // a normal write…
+      yield gate.promise; // …inside an open transaction
+    });
+    const done = go();
+    flush();
+    await settle();
+    flush();
+    expect(page()).toBe("a"); // held: the committed value is unchanged
+    expect(isPending(() => page())).toBe(true);
+    gate.resolve();
+    await done;
+    await settle();
+    flush();
+    expect(page()).toBe("b"); // committed together with everything else in the transaction
+  });
+
+  it("writes on both sides of a yield commit together, at the end", async () => {
+    const gate = deferred<void>();
+    const [n, setN] = createSignal(0);
+    const seen: number[] = [];
+    createRoot(() =>
+      createEffect(
+        () => n(),
+        (v) => {
+          seen.push(v);
+        },
+      ),
+    );
+    flush();
+    const run = action(function* () {
+      setN(1);
+      yield gate.promise;
+      setN(2);
+    });
+    const done = run();
+    flush();
+    await settle();
+    gate.resolve();
+    await done;
+    await settle();
+    flush();
+    expect(seen).toEqual([0, 2]); // the intermediate 1 was never shown
+  });
+
+  it("createOptimistic(fn): the guess shows, then the recomputed truth replaces it at commit", async () => {
+    const gate = deferred<void>();
+    const r = createRoot(() => {
+      const [src, setSrc] = createSignal(1);
+      const [total, setTotal] = createOptimistic(() => src() * 10);
+      return { setSrc, total, setTotal };
+    });
+    const act = action(function* () {
+      r.setTotal(99); // guess
+      yield gate.promise;
+      r.setSrc(5); // the real change
+    });
+    const done = act();
+    flush();
+    await settle();
+    flush();
+    expect(r.total()).toBe(99);
+    gate.resolve();
+    await done;
+    await settle();
+    flush();
+    expect(r.total()).toBe(50);
+  });
+
+  it("negative: flush() inside an action throws FLUSH_IN_ACTION", async () => {
+    let error: unknown;
+    const act = action(function* () {
+      try {
+        flush();
+      } catch (e) {
+        error = e;
+      }
+      yield Promise.resolve();
+    });
+    await act();
+    expect(String(error)).toMatch(/FLUSH_IN_ACTION/);
+  });
+
+  it("negative: action() needs a generator; a plain async function fails when called", async () => {
+    const bad = action((async () => {}) as unknown as () => Generator<never, void, unknown>);
+    await expect(Promise.resolve().then(() => bad())).rejects.toThrow(/next is not a function/);
+  });
+
+  it("affects(record, key) pends exactly one slot; siblings stay settled", async () => {
+    const gate = deferred<void>();
+    const { todo, rename } = createRoot(() => {
+      const [todos] = createStore({ list: [{ id: 1, text: "a", updatedAt: 0 }] });
+      const todo = todos.list[0]!;
+      const rename = action(function* () {
+        affects(todo, "updatedAt");
+        yield gate.promise;
+      });
+      return { todo, rename };
+    });
+    const done = rename();
+    flush();
+    await settle();
+    flush();
+    expect(isPending(() => todo.updatedAt)).toBe(true);
+    expect(isPending(() => todo.text)).toBe(false);
+    gate.resolve();
+    await done;
+    await settle();
+    flush();
+    expect(isPending(() => todo.updatedAt)).toBe(false);
+  });
+});
+
