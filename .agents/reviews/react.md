@@ -2,7 +2,7 @@
 
 ## Hand-off (in progress — updated after every module commit)
 
-**Status:** modules 01–04 rewritten at full depth with real-API Vitest proofs. Modules 05–12, exams, glossary, cheatsheet and README not yet done.
+**Status:** modules 01–05 rewritten at full depth with real-API Vitest proofs. Modules 06–12, exams, glossary, cheatsheet and README not yet done.
 
 | Module | State | Proof file | Tests |
 |---|---|---|---|
@@ -10,12 +10,12 @@
 | 02 Fiber reconciler & commit | done | `examples/02-fiber/fiber.test.tsx`, `keyed-diff.ts` (fast-check vs real DOM placements) | 20 |
 | 03 State, hooks & closures | done (renamed from `03-hooks-closure-contracts.md`) | `examples/03-state/state.test.tsx`, `fetch-machine.ts` | 25 |
 | 04 Effects & synchronization | done (renamed from `04-effects-and-ref-cleanup.md`) | `examples/04-effects/effects.test.tsx` | 22 |
-| 05–12 | old ~70-line text (04–10) or missing (11, 12); their old synthetic examples were deleted in b5fd650 | — | — |
+| 05 Concurrency: lanes, transitions | done (renamed from `05-concurrent-lanes-and-transitions.md`) | `examples/05-concurrency/concurrency.test.tsx`, `lane-model.ts` (property test vs function extracted from installed react-dom build) | 17 |
+| 06–12 | old ~70-line text (04–10) or missing (11, 12); their old synthetic examples were deleted in b5fd650 | — | — |
 
-**Tooling:** Node 26.12.1 (local), Vitest 5.0.5 + jsdom 30.1.3, RTL 16.3.3, react/react-dom/react-server-dom-webpack 19.3.1, @types/react 19.3.0, babel-plugin-react-compiler 1.0.0 with @babel/core 8.0.9 (works), eslint 10.13.0 + eslint-plugin-react-hooks 7.1.1, fast-check 4.10.2, vite 8.3.5, TypeScript 7.0.2. `npm test` = `vitest run`; `npm run typecheck` = `tsc --noEmit`. Last run: 87/87 passing, typecheck clean.
+**Tooling:** Node 26.12.1 (local), Vitest 5.0.5 + jsdom 30.1.3, RTL 16.3.3, react/react-dom/react-server-dom-webpack 19.3.1, @types/react 19.3.0, babel-plugin-react-compiler 1.0.0 with @babel/core 8.0.9 (works), eslint 10.13.0 + eslint-plugin-react-hooks 7.1.1, fast-check 4.10.2, vite 8.3.5, TypeScript 7.0.2. `npm test` = `vitest run`; `npm run typecheck` = `tsc --noEmit`. Last run: 104/104 passing, typecheck clean.
 
 ## Remaining work (ordered)
-2. M05 Concurrency (lane model checked against `getHighestPriorityLanes` extracted from the shipped react-dom build: 19.3 returns each transition lane individually = untangled transitions; `scheduler/unstable_mock` ships in scheduler@0.28.0; `<Activity>`; untangled-transition test).
 3. M06 Suspense/SSR (use(promise) caching, renderToPipeableStream, prerender+resume, hydration mismatch via onRecoverableError, `browser()` + `onBrowserBailout`, useId `_r_`).
 4. M07 RSC/Flight: feasible without a bundler — spawn `node --conditions react-server` child with NODE_ENV=production (dev rows leak absolute file paths), decode with `react-server-dom-webpack/client.node` `createFromNodeStream(stream, {moduleMap:{}, serverModuleMap:null, moduleLoading:null})`. CVE section + version-gate test.
 5. M08 Actions; M09 Compiler (babel transform fixtures, eslint Linter runs); M10 Errors; M11 DOM platform (new); M12 Perf/testing/ops (new).
@@ -24,6 +24,8 @@
 8. Playwright browser checks (ViewTransition, Fragment `observeUsing`) not added: no browsers here. Verifier (Antigravity) task.
 
 ## Least-certain claims (for the challenger)
+- M05: lane names for bits 18–21 (TransitionDeferredLanes) and 22–25 (RetryLanes) inferred from `requestDeferredLane` and the Performance-track labels in the 19.3.1 build; the 19.2 `getHighestPriorityLanes` difference was checked by hand against a downloaded react-dom@19.2.9 tarball (not in tests). Untangled behaviour is tested only on 19.3.1.
+- M05: `GestureLane` described as experimental API (not re-verified).
 - Brief gotcha #14 ("useLayoutEffect on the server warns") is outdated: 19.3.1 prints nothing (tested in M04). M04 says the warning existed in ≤18.
 - M04: React 18 "discrete-input renders flush passive effects synchronously at end of commit" — from React 18 notes, not tested directly.
 - M02: lane-agnostic bailout condition paraphrased from `beginWork`; work-tag numbers taken from 19.3.1 build behaviour (tested for 0, 3, 5, 7).
