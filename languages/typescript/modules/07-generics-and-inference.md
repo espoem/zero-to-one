@@ -1,11 +1,13 @@
-# Module 07: TypeScript Generics Workshop — Functions, Classes, Type Arguments, & Overloads
+# Module 07: Generics & Inference
 
-> **Weeks 14–16** | Modeled after Matt Pocock's *Total TypeScript Generics Workshop* (6 sections, 49 exercises).  
-> **Prerequisites**: Modules 01–06 (Unions, Narrowing, Object Types, Type Transformations, Conditionals & Mapped Types).
+> Examples and tests: [`examples/07-generics/inference-and-variance.test.ts`](../examples/07-generics/inference-and-variance.test.ts) (inference sites, `const T`, `NoInfer`, two-pass inference, partial inference, variance annotations, overloads, useless generics) and [`generics-and-overloads.test.ts`](../examples/07-generics/generics-and-overloads.test.ts).
+> Run: `mise exec -- node --test examples/07-generics/`
+>
+> Prerequisites: [Module 04](./04-objects-assignability-and-weird-parts.md) (assignability and variance).
 
 ---
 
-## Workshop Overview & Mental Model
+## Overview & Mental Model
 
 In standard programming, functions accept runtime values as arguments and return runtime values. Generics introduce the exact same abstraction to TypeScript's type system: **type parameters that accept types as arguments and produce specialized types**.
 
@@ -28,11 +30,28 @@ flowchart TD
 A generic function or interface does not lock in concrete types ahead of time. Instead, it declares type parameters (`<T>`, `<K>`, `<TItem>`) acting as placeholders, resolved at the call site through either **automatic inference** from runtime arguments or **explicit type arguments** (`fn<string>(...)`).
 
 ```ts
-// Total TypeScript test helpers
+// Type-test helpers (examples/utils/type-helpers.ts)
 type Expect<T extends true> = T;
 type Equal<X, Y> =
   (<T>() => T extends X ? 1 : 2) extends (<T>() => T extends Y ? 1 : 2) ? true : false;
 ```
+
+---
+
+## How inference works
+
+A call `f(a1, …, an)` to `function f<T1, …, Tk>(p1: P1, …, pn: Pn)` is resolved in phases:
+
+1. **Collect candidates.** Each argument type is matched structurally against its parameter type, and every occurrence of a type parameter in the parameter type is an **inference site** that yields a candidate (`T` in `T[]` from `string[]` gives `string`). Sites have priorities: a naked `T` beats `T` inside a return position of a callback, and `NoInfer<T>` is not a site at all.
+2. **Context-sensitive arguments wait.** Arrow functions with unannotated parameters are *context sensitive*: their parameter types depend on `T`. They are skipped in the first pass, `T` is fixed from the other arguments, and then they are checked with contextual types. This is why `make(() => ({ n: 2 }), v => v.n)` types `v` correctly: `T` is fixed from the context-insensitive `factory` before `consume` is checked. (Since 6.0, functions that never use `this` are no longer treated as context sensitive merely because of method syntax.)
+3. **Choose a type.** Covariant candidates are unioned or reduced to a best common supertype (literals are **widened** unless `T` has a primitive constraint, the call is in a `const` context, or `T` is a `const` type parameter); contravariant candidates (from callback parameters) are intersected. The result must satisfy the constraint, otherwise the constraint itself is used and the argument check fails.
+4. **Check the arguments** against the instantiated signature.
+
+Inference is **all or nothing**: you either pass all type arguments or none (TS2558 otherwise). Defaults (`<T, K = keyof T>`) fill missing arguments but do not trigger inference for them. Currying or a builder are the standard workarounds.
+
+### Variance and variance annotations
+
+For a generic type `G<T>`, TypeScript computes variance by checking `G<Sub>` against `G<Super>` with marker types, then caches the result so later comparisons of `G<A>` and `G<B>` only compare `A` and `B`. Since 4.7 you can annotate it: `out T` (covariant: produced), `in T` (contravariant: consumed), `in out T` (invariant). Annotations speed up checking of large recursive types and document intent; a wrong annotation is TS2636 at the declaration. Because method parameters are bivariant ([Module 04](./04-objects-assignability-and-weird-parts.md)), `out T` is *accepted* on an interface whose methods take `T` as a parameter; only function-typed properties are checked strictly. Solid's `Setter<in out T>` is a real-world invariant annotation ([Module 12](./12-typing-ui-frameworks.md)).
 
 ---
 
@@ -292,12 +311,11 @@ const timedHash = withExecutionTiming(computeHash);
 //    ^? const timedHash: (data: string, salt: number) => { result: string; durationMs: number; }
 ```
 
-### 7.3.4 Literal Inference & Const Type Parameters (`<const T>` in TS 5.0+)
+### 7.3.4 Literal Inference & Const Type Parameters (`<const T>`)
 
 Passing objects to generic functions normally widens string literals. `<const T>` preserves exact literals without requiring `as const` at the call site:
 
 ```ts
-// TS 5.0+ const type parameter
 function defineRoutes<const TRoutes extends readonly string[]>(routes: TRoutes): TRoutes {
   return routes;
 }
@@ -348,7 +366,7 @@ const entry = logger({ label: "user_login", userId: "u1" });
 //    ^? const entry: { label: string; userId: string; tagged: `AUDIT:${string}`; }
 ```
 
-### 7.4.3 Matt Pocock's Golden Rule of Generics
+### 7.4.3 The Rule of Two: Spotting Useless Generics
 
 > [!IMPORTANT]
 > **The Golden Rule of Generics**:  
@@ -437,7 +455,7 @@ const rCustom = getDefaultRole("admin");
 
 ---
 
-## Lesson 7.6: Generics Workshop Challenges
+## Lesson 7.6: Generics Challenges
 
 ### Challenge 1: Infinite Scroll Generic Hook
 
@@ -701,13 +719,39 @@ type testInvert = Expect<Equal<typeof statusMap, { 1: "active"; 2: "pending"; 3:
 
 ---
 
-## Summary & Next Steps
+## Interview Drill
 
-In this workshop module, we mastered:
-1. **Generic Functions & Classes**: Constraining type parameters with `extends`, parameterizing class instances, and typing object parameters.
-2. **Type Argument Inference & Passing**: Providing defaults (`<T = ...>`), typing tricky standard library functions like `reduce`, and preventing `any` propagation.
-3. **The Art of Type Arguments**: Interface-level vs. method-level generics, typed `Object.keys`, and preserving deep literals with `<const T>` in TypeScript 5.0+.
-4. **Advanced Generics & Currying**: Reconciling unresolved generics with safe `as` assertions, avoiding useless generics via Matt Pocock's Golden Rule, and solving partial inference.
-5. **Function Overloads vs. Conditional Types**: Crafting overloaded signatures, understanding implementation signature mechanics, and choosing between unions, conditionals, and overloads.
+<details><summary>1. What is an inference site, and how do you stop a parameter from being one?</summary>
 
-Proceed to **[Module 08: Advanced TypeScript Patterns](./08-advanced-typescript-patterns.md)** to explore nominal branded types, global augmenting, type predicates, assertion functions, and the builder pattern.
+Any occurrence of a type parameter in a parameter type that the argument is matched against. Candidates from all sites are combined. `NoInfer<T>` (or, before it existed, `T & {}` tricks) removes a site so the argument is only *checked* against `T` inferred elsewhere.
+</details>
+
+<details><summary>2. Why does <code>identity(["a", "b"])</code> give <code>string[]</code> and how do you get <code>readonly ["a", "b"]</code>?</summary>
+
+Literal candidates are widened when the type parameter is unconstrained. Declare `<const T>` (or require `as const` at the call site). A constraint of `readonly unknown[]` keeps the tuple shape readonly.
+</details>
+
+<details><summary>3. What is the "rule of two" for generics?</summary>
+
+A type parameter should appear at least twice (relating two positions, e.g. input and output). If it appears only in the return type it is a disguised cast (`parse<T>(s): T`); if only in one parameter, replace it with that parameter's constraint.
+</details>
+
+<details><summary>4. Explain covariance, contravariance and invariance with an example from TypeScript.</summary>
+
+Covariant: `ReadonlyArray<Dog>` is a `ReadonlyArray<Animal>` (values are only produced). Contravariant: a `(a: Animal) => void` is a `(d: Dog) => void` (values are consumed). Invariant: a mutable cell with get and set; neither direction is safe. Annotations `out`, `in`, `in out` state this explicitly.
+</details>
+
+<details><summary>5. Why can't you write <code>get&lt;User&gt;(obj, "name")</code> when <code>get</code> has two type parameters?</summary>
+
+TypeScript has no partial type-argument inference: supplying some arguments disables inference for the rest (TS2558). Use currying (`getFrom<User>(obj)(key)`), defaults, or let both be inferred.
+</details>
+
+<details><summary>6. Overloads vs conditional return types vs unions: how do you choose?</summary>
+
+If the return type does not depend on the input, use a union parameter. If a few discrete input shapes map to outputs, use overloads (callers see clean signatures; the implementation is unchecked against them). Use a conditional return type when the mapping is generic and computed, accepting that the implementation needs casts because conditional types over unresolved `T` are deferred.
+</details>
+
+<details><summary>7. Why does a generic function returning <code>T extends string ? A : B</code> need a cast in its body?</summary>
+
+Inside the body `T` is unresolved, so the conditional type is deferred and neither `A` nor `B` is assignable to it. Use overloads, or an audited `as` at the return.
+</details>

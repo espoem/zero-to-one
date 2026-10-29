@@ -18,6 +18,7 @@ Done:
 - M02 essential types: sets-of-values intro, renumbered lessons, iteration/generator typing lesson with Then vs now (BuiltinIteratorReturn), drill + new example.
 - M03 unions/narrowing: CFA formalism, closure-narrowing Then vs now (5.4), switch(true), inferred predicates, drill + new control-flow example.
 - M05 classes/mutability: this typing, abstract/override/accessor, erasableSyntaxOnly Then vs now, drill + new example.
+- M07 generics: inference phases, variance annotations (method bivariance caveat verified), drill + new inference/variance example.
 
 ## Remaining work (ordered)
 1. (done) M13.
