@@ -2,7 +2,7 @@
 
 ## Hand-off (primary · Opus · in progress, last updated 2026-10-29)
 
-Status: 🟦 authoring. Modules 01–10 done; modules 11–13, the exams, the glossary, the cheatsheet and the README are still to do.
+Status: 🟦 authoring. Modules 01–11 done; modules 12–13, the exams, the glossary, the cheatsheet and the README are still to do.
 
 ### Done
 | Module | File | Example / tests |
@@ -16,11 +16,12 @@ Status: 🟦 authoring. Modules 01–10 done; modules 11–13, the exams, the gl
 | 08 Modules: Module Records, link/evaluate, live bindings, namespace objects, cycles/TDZ, TLA, import attributes, `import.meta`, `import defer`, `exports` conditions | `modules/08-modules.md` | `examples/08-modules.test.js` + `examples/fixtures/08-modules/` (cycle TDZ by import order, TLA sibling order, conditions via self-reference) |
 | 09 Metaprogramming: Proxy traps and invariants, Reflect receiver, reactivity store, well-known symbols, tagged templates, WeakMap/WeakRef/FinalizationRegistry, decorators (Stage 2.7) | `modules/09-metaprogramming.md` | `examples/09-metaprogramming.test.js` (decorators executed via esbuild 0.28 transform; GC behaviour in a child process with `--expose-gc`) |
 | 10 Explicit resource management (`using`, `await using`, SuppressedError, DisposableStack.move) and Temporal (types, DST gap/fold disambiguation, overflow, relative durations, Date migration) | `modules/10-resource-management-temporal.md` | `examples/10-…test.js` (Europe/Prague 2026 DST days; fast-check properties on ZonedDateTime arithmetic) |
+| 11 Binary data (resizable/transfer, typed arrays, DataView, base64/hex), structuredClone limits, SAB + cross-origin isolation, memory model (happens-before, DRF-SC), Atomics incl. waitAsync/pause, CAS mutex | `modules/11-binary-data-memory-model.md` | `examples/11-…test.js` (worker data race asserts only `≤`; mutex and wait/notify via deterministic handshakes) |
 | 05 Iterators, generators, helpers, `Iterator.concat`, async iteration, `Array.fromAsync` | `modules/05-…md` | `examples/05-…test.js` (IteratorClose cases, co driver, `for await` crash in a child process) |
 
 Tooling: `package.json` (TypeScript 7.0.2, @types/node 26.6.6, fast-check 4.10.2, esbuild 0.28.2, reserved for the module 09 decorator desugaring demo), `tsconfig.json`, `.mise.toml` (node 26.12.1), and `examples/helpers/run-node.js` (spawns the same Node binary for flag- and goal-specific checks).
 
-Test output at the last commit: `npm test` → 266 tests, 266 pass, 0 fail. `npm run typecheck` → clean.
+Test output at the last commit: `npm test` → 288 tests, 288 pass, 0 fail. `npm run typecheck` → clean.
 
 ### Verified facts (2026-10-28/29)
 - ES2026 is ECMA-262 17th edition (June 2026). Section numbers were taken from the 17.0 ToC.
@@ -30,7 +31,6 @@ Test output at the last commit: `npm test` → 266 tests, 266 pass, 0 fail. `npm
 - JSNAD was retired on 2025-09-30, and JSNSD is inactive (Linux Foundation pages). The only active proctored JS-core cert found is OpenEDG JS Institute **JSA-41-01**: 40 questions, 60 min, US$325, Pearson VUE. Domains: Classless Objects 25%, Classes 23%, Built-in Objects 27%, Advanced Functions 25%. Passing score not published on the voucher page. Its authority is low (InfoWorld 2026-04: no widely accepted JS cert authority). Plan: put the primary effort into `exams/interview.md` and map the JSA domains in the coverage matrix.
 
 ## Remaining work (ordered)
-7. Module 11 binary data, serialisation & memory model (ArrayBuffer resize/transfer, TypedArrays, base64, SAB/Atomics with worker_threads, `structuredClone` full treatment).
 8. Module 12 V8 internals (`--allow-natives-syntax` tests, version-sensitive).
 9. Module 13 correctness & security pitfalls, plus the version history table (ES2015 → ES2027).
 10. `exams/README.md` (interview format + JSA-41-01 matrix) and `exams/interview.md` (≥60 questions, mock exam).
