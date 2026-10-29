@@ -2,7 +2,7 @@
 
 ## Hand-off (primary · Opus · in progress, last updated 2026-10-29)
 
-Status: 🟦 authoring. All 13 modules, the exams and the glossary are done; the cheatsheet and the README are still to do.
+Status: 🟦 authoring. All 13 modules, the exams, the glossary and the cheatsheet are done; the README is still to do.
 
 ### Done
 | Module | File | Example / tests |
@@ -41,7 +41,7 @@ No test depends on a race or on wall-clock thresholds: data-race tests assert on
 - JSNAD was retired on 2025-09-30, and JSNSD is inactive (Linux Foundation pages). The only active proctored JS-core cert found is OpenEDG JS Institute **JSA-41-01**: 40 questions, 60 min, US$325, Pearson VUE. Domains: Classless Objects 25%, Classes 23%, Built-in Objects 27%, Advanced Functions 25%. Passing score not published on the voucher page. Its authority is low (InfoWorld 2026-04: no widely accepted JS cert authority). Plan: put the primary effort into `exams/interview.md` and map the JSA domains in the coverage matrix.
 
 ## Remaining work (ordered)
-11. CHEATSHEET.md, README.md (syllabus, run instructions, Certifications & Exams, the "Verified against …" line).
+11. README.md (syllabus, run instructions, Certifications & Exams, the "Verified against …" line).
 12. `mise.lock`: not generated (no mise binary in the authoring sandbox). Run `mise install && mise lock` on a machine with mise.
 
 ## Least-certain claims (for the challenger)
