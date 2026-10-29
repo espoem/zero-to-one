@@ -8,6 +8,9 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createRequire } from "node:module";
+import { mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { fixture, runTsc } from "../utils/tsc.ts";
 
 const require = createRequire(import.meta.url);
@@ -89,4 +92,79 @@ test("--checkers and --singleThreaded are accepted (parallelism is a CLI concern
 test("const enums from another file cannot be used under isolatedModules (TS2748)", () => {
   const r = runTsc(["-p", "."], fixture(import.meta.url, "const-enum-isolated"));
   assert.deepEqual(r.codes, ["TS2748"]);
+});
+
+/** Emit the lowering fixture with a given target into a fresh temp dir and return the JS. */
+function emitWithTarget(target: string, extra: string[] = []): { js: string; dir: string } {
+  const dir = mkdtempSync(path.join(os.tmpdir(), "zto-lower-"));
+  const r = runTsc(["-p", ".", "--target", target, "--outDir", dir, ...extra], fixture(import.meta.url, "lowering"));
+  assert.equal(r.status, 0, r.output);
+  return { js: readFileSync(path.join(dir, "index.js"), "utf8"), dir };
+}
+
+test("target controls lowering: `using` is lowered below esnext, kept at esnext", () => {
+  const low = emitWithTarget("es2022");
+  const native = emitWithTarget("esnext");
+  try {
+    assert.match(low.js, /__addDisposableResource/);
+    assert.doesNotMatch(low.js, /\busing held\b/);
+    assert.match(low.js, /#count/); // private fields are native in es2022
+    assert.match(native.js, /using held = r;/);
+  } finally {
+    rmSync(low.dir, { recursive: true, force: true });
+    rmSync(native.dir, { recursive: true, force: true });
+  }
+});
+
+test("target es2015 lowers #private fields to WeakMap-based helpers", () => {
+  const old = emitWithTarget("es2015");
+  try {
+    assert.match(old.js, /WeakMap/);
+    assert.doesNotMatch(old.js, /#count/);
+  } finally {
+    rmSync(old.dir, { recursive: true, force: true });
+  }
+});
+
+test("lib, not target, decides which built-ins exist (TS2550)", () => {
+  const r = runTsc(["-p", "."], fixture(import.meta.url, "lib-mismatch"));
+  assert.deepEqual(r.codes, ["TS2550"]);
+  assert.match(r.output, /es2023/);
+});
+
+test("--showConfig prints the effective config after `extends` merging", () => {
+  const r = runTsc(["-p", ".", "--showConfig"], fixture(import.meta.url, "extends-base"));
+  const shown = JSON.parse(r.output) as { compilerOptions: Record<string, unknown> };
+  assert.equal(shown.compilerOptions["strict"], false); // inherited from config/base.json
+  assert.equal(shown.compilerOptions["noUncheckedIndexedAccess"], true);
+  assert.equal(shown.compilerOptions["noEmit"], true);
+});
+
+test("incremental builds: a second run with no changes emits nothing", () => {
+  const dir = mkdtempSync(path.join(os.tmpdir(), "zto-incr-"));
+  try {
+    const args = ["-p", ".", "--target", "esnext", "--outDir", dir, "--incremental", "--tsBuildInfoFile", path.join(dir, "b.tsbuildinfo"), "--listEmittedFiles"];
+    const first = runTsc(args, fixture(import.meta.url, "lowering"));
+    assert.match(first.output, /TSFILE: .*index\.js/);
+    assert.ok(readdirSync(dir).includes("b.tsbuildinfo"));
+    const second = runTsc(args, fixture(import.meta.url, "lowering"));
+    assert.doesNotMatch(second.output, /TSFILE: .*index\.js/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("failure mode: deleting outDir but keeping .tsbuildinfo leaves the outputs missing", () => {
+  const out = mkdtempSync(path.join(os.tmpdir(), "zto-stale-out-"));
+  const info = mkdtempSync(path.join(os.tmpdir(), "zto-stale-info-"));
+  try {
+    const args = ["-p", ".", "--target", "esnext", "--outDir", out, "--incremental", "--tsBuildInfoFile", path.join(info, "b.tsbuildinfo"), "--listEmittedFiles"];
+    runTsc(args, fixture(import.meta.url, "lowering"));
+    rmSync(out, { recursive: true, force: true });
+    const again = runTsc(args, fixture(import.meta.url, "lowering"));
+    assert.doesNotMatch(again.output, /TSFILE/); // tsc trusts the build info and emits nothing
+  } finally {
+    rmSync(out, { recursive: true, force: true });
+    rmSync(info, { recursive: true, force: true });
+  }
 });

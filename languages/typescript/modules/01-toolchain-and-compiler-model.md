@@ -75,6 +75,49 @@ flowchart LR
 
 `target` controls **syntax lowering**: features newer than the target are rewritten (e.g. class fields into constructor assignments, `using` into `try`/`finally` with `__addDisposableResource` helpers). `lib` controls which **type declarations** for built-ins are visible. They are independent: `target: "es2022"` with `lib: ["esnext"]` type-checks calls to `Iterator.prototype.map` but does not polyfill them. Polyfilling is never the compiler's job.
 
+### 2.2 Inside the checker
+
+The checker is the part that "knows" TypeScript. A few internal facts explain most of its observable behaviour:
+
+- **Symbols vs types.** The binder creates a *symbol* per declared name, with flags saying what it is (value, type, namespace, or several at once: a class is both a value and a type; `const enum` is a type and an inlinable value). Merged declarations ([Module 06](./06-modules-declarations-and-tsconfig.md)) are one symbol with several declarations. Types are created lazily by the checker from symbols when something asks for them.
+- **Interned, identity-compared types.** Primitive, literal and union types are interned: `"a" | "b"` written twice is the *same* type object, which is what makes most relation checks O(1) for identical types. Unions are stored as sorted, deduplicated member lists, and *subtype reduction* removes members that are subtypes of other members in some contexts (why `"a" | string` is `string`).
+- **Relation caches.** Assignability, comparability (used by `as` and `===`) and identity are separate relations, each memoised per (source, target) pair. Generic types are compared through their **variance** (computed once per declaration with marker types, [Module 07](./07-generics-and-inference.md)) instead of structurally each time.
+- **Laziness and deferral.** Types of declarations are resolved on demand; circular references are detected with a resolution stack (TS2456 "Type alias circularly references itself", TS7022 "implicitly has type 'any' because it … is referenced directly or indirectly in its own initializer"). Conditional types with unresolved type parameters are *deferred* ([Module 09](./09-conditional-mapped-and-recursive-types.md)).
+- **Interfaces vs intersections.** An `interface` is a named object type whose members are resolved once and cached; an intersection `A & B` is re-examined member by member at each use. That is the mechanical reason the performance guidance prefers `interface … extends` ([Module 13](./13-library-authoring-performance-and-type-tests.md)).
+
+Two consequences for TS 7: each parallel checker keeps its *own* caches (so a type may be computed once per checker), and diagnostics are produced per checker and merged, which is why stable type ordering (§3.3) was needed for deterministic output.
+
+### 2.3 Emit, lowering and helpers
+
+`tsc` emits JavaScript for the configured `target` by **lowering** syntax the target lacks. The fixture [`lowering/`](../examples/01-toolchain/fixtures/lowering/index.ts) is compiled three times by the tests:
+
+| `target` | `using held = r` | `#count` private field |
+|---|---|---|
+| `esnext` | kept verbatim | kept |
+| `es2022` | lowered to `__addDisposableResource`/`__disposeResources` helpers inside `try`/`catch`/`finally` | kept (native since ES2022) |
+| `es2015` | lowered | lowered to `WeakMap`-based `__classPrivateFieldGet`/`Set` helpers |
+
+Helpers are inlined into every file by default. With `importHelpers: true` they are imported from `tslib` instead (smaller bundles; `tslib` must be a runtime dependency). Lowering never adds missing *library* functions: that is `lib`'s domain, and a mismatch is reported as **TS2550** ("Property 'toSorted' does not exist on type 'number[]'. … Try changing the 'lib' compiler option to 'es2023' or later", fixture `lib-mismatch/`).
+
+### Then vs now: class fields (`useDefineForClassFields`)
+
+**Then (target < ES2022, TS ≤ 3.x behaviour).** Class fields were emitted as *assignments* in the constructor (`this.x = 1`), which runs setters inherited from a base class and ignores `declare`-free redeclarations.
+
+**Now (default `true` when `target` ≥ ES2022, i.e. always with TS 6/7 defaults).** Fields use ECMAScript `[[Define]]` semantics (`Object.defineProperty`), which shadows base-class accessors and initialises fields *after* the base constructor runs. **Pitfall:** code that redeclares a base-class property in a subclass just to narrow its type (`name: string` over a base accessor) now overwrites the accessor; use `declare name: string;` for type-only redeclaration.
+
+### 2.4 Configuration resolution
+
+1. `tsc -p dir` reads `dir/tsconfig.json`; without `-p`, `tsc` walks up from the current directory.
+2. `extends` (a path, a package name, or an array of them since 5.0) is resolved first; the child's `compilerOptions` are merged over the parent's *per option*, while `files`, `include` and `exclude` are *replaced*, not merged. Relative paths in a config are resolved relative to the file that declares them.
+3. `include` selects files by glob; `exclude` only filters `include` (an imported file is still part of the program even if excluded). `files` lists exact roots.
+4. `--showConfig` prints the effective, merged configuration: the test `--showConfig prints the effective config after extends merging` shows `strict: false` arriving from `config/base.json`. `--explainFiles` prints why each file is in the program (root, import, `lib` reference, `types` entry), and `--listFilesOnly` prints the list without checking. These three flags answer most "why is this file checked / why does this option apply" questions.
+
+### 2.5 Incremental builds
+
+With `incremental` (implied by `composite`), `tsc` writes a `.tsbuildinfo` file recording each file's version hash, its *declaration signature* (a hash of its public `.d.ts` surface), the options, and the diagnostics. On the next run, files whose hash is unchanged are skipped; a changed file whose declaration signature is unchanged does not force its importers to be re-checked. The test `incremental builds` runs the same build twice and asserts that the second run emits nothing (`--listEmittedFiles` is empty). TS 7's `--watch` uses the same information with a new file watcher (a Go port of Parcel's watcher, per the release post).
+
+**Failure modes.** Deleting `outDir` but not the `.tsbuildinfo` makes `tsc` believe the outputs are current (it emits nothing; asserted by the test `failure mode: deleting outDir …`): delete both, or put `tsBuildInfoFile` inside `outDir`. Changing a dependency in `node_modules` that is not a tracked input can leave stale diagnostics; CI should start from a clean state.
+
 ---
 
 ## 3. TypeScript 7: the native compiler
