@@ -11,10 +11,11 @@ Done:
 - M11 runtime boundaries (rewritten for Zod 4 + Standard Schema) + tests.
 - M12 typing UI frameworks (new, React 19 + Solid 2 RC) + type tests.
 - M13 library authoring, type performance, type tests, migration, version history (new) + package/attw/publint/TS2589/TS2578/trace fixtures.
+- M09 conditional/mapped/recursive: formal semantics, recursion limits, TS 7 code-point and 7.1 distributive changes, drill; new dedicated example (the "missing example for module 06").
 
 ## Remaining work (ordered)
 1. (done) M13.
-2. M09 conditional/mapped/recursive (old 06): add the missing dedicated example (the "missing example for module 06"), recursion limits, 7.1 distributive change, code-point template literal change, Then vs now, Interview Drill.
+2. (done) M09.
 3. M10 API design (old 08 + old 11 case studies): Disposable/decorator typing, DataTag/tuple accumulation/ts-pattern case studies; drop version tags; drill.
 4. M02–M08: retitle headers (remove "Weeks"/track labels), add formal definitions, TS 7 notes, Then vs now where practice changed, Interview Drill; M04 merged sections need a coherent intro; M06 needs nodenext/bundler, exports/types conditions, project references, `types: []`, `rootDir`, import attributes; M03 add `switch(true)`; M08 add `string & {}`.
 5. Convert old script-style examples (essentials-and-narrowing, generics-and-overloads, type-transformations, advanced-patterns, modern-features-typing, zod-schema-validation) to `test()` blocks; add examples for M02, M04, M05, M06.

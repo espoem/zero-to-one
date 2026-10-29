@@ -1,14 +1,15 @@
-# Module 06: Type Transformations Part 2 — Conditional Types, `infer`, Mapped Types, & Challenges
+# Module 09: Type-Level Programming II — Conditional, Mapped & Recursive Types
 
-> **Week 14 | Advanced Type Transformations & Capstone Challenges**
-> 
-> *Prerequisites*: Module 05 (Inference, Unions, Template Literals, Type Helpers) or equivalent knowledge of TypeScript value/type space and indexed access.
+> Example and tests: [`examples/09-conditional-mapped/conditional-mapped.test.ts`](../examples/09-conditional-mapped/conditional-mapped.test.ts) (distribution, `infer … extends`, code-point template inference, route params, homomorphic and remapped mapped types, union ↔ map, `DeepReadonly`). Recursion-limit fixtures live with [Module 13](./13-library-authoring-performance-and-type-tests.md).
+> Run: `mise exec -- node --test examples/09-conditional-mapped/` and `mise exec -- npm run typecheck`.
+>
+> Prerequisites: [Module 08](./08-type-derivation-and-template-literals.md) (derivation, indexed access, template literal types) and [Module 07](./07-generics-and-inference.md) (generics).
 
 ---
 
 ## The Type Transformation Logic Engine
 
-In Module 05, we treated types as static structures to inspect, slice, and index. In Module 06, we step into the full computational engine of TypeScript: **Conditional Types**, **Pattern Matching with `infer`**, and **Mapped Types with Key Remapping**.
+In Module 08, we treated types as static structures to inspect, slice, and index. In this module we step into the full computational engine of TypeScript: **Conditional Types**, **Pattern Matching with `infer`**, and **Mapped Types with Key Remapping**.
 
 Together, these three constructs elevate TypeScript from a structural checker to a Turing-complete metaprogramming system capable of:
 - Inspecting and destructuring arbitrary function signatures, promises, and tuple structures.
@@ -36,11 +37,38 @@ By the end of this module, you will be able to:
 1. Master conditional types (`T extends U ? X : Y`), grasp how and why distributive conditional types operate over unions, and understand how to control distribution using 1-tuples (`[T] extends [U]`).
 2. Harness the `infer` keyword for pattern matching to extract return types, parameter lists, promise resolutions, tuple elements, and template literal string segments.
 3. Construct advanced Mapped Types with property modifiers (`readonly`, `-readonly`, `?`, `-?`), remap object keys using `as`, filter keys using `as never`, and transform objects into unions of tuples or template literals.
-4. Solve the four capstone Total TypeScript transformation challenges: URL path parameter extraction, object-to-discriminated-union translation, discriminated-union-to-map conversion, and recursive `DeepPartial<T>`.
+4. Solve four capstone transformation challenges: URL path parameter extraction, object-to-discriminated-union translation, discriminated-union-to-map conversion, and recursive `DeepPartial<T>`.
 
 ---
 
-## Lesson 6.1: Conditional Types & Distributive Conditional Types
+## Formal semantics in brief
+
+**Conditional types.** `T extends U ? X : Y` is evaluated by asking whether `T` is assignable to `U`. If `T` (or `U`) still contains type parameters whose instantiation could change the answer, the type is **deferred**: it stays as a conditional type and is re-evaluated when the parameters are known. That is why `function f<T>(x: T): T extends string ? 1 : 2` cannot return `1` from its body without a cast ([Module 07](./07-generics-and-inference.md)).
+
+**Distributivity.** A conditional type whose check type is a *naked* type parameter `T` is **distributive**: instantiating it with a union applies it to each member and unions the results:
+
+$$C\langle A_1 \mid \dots \mid A_n \rangle = C\langle A_1 \rangle \mid \dots \mid C\langle A_n \rangle, \qquad C\langle \text{never} \rangle = \text{never}$$
+
+Wrapping both sides in a one-tuple (`[T] extends [U]`) or any other type constructor (`{ v: T }`) turns distribution off. The test `_wrapped` shows that `{ v: string | number } extends { v: string }` is simply false.
+
+**`infer`.** `infer X` introduces a type variable bound by **inference** against the pattern, exactly as when inferring type arguments of a call. `infer X extends C` (since 4.7/4.8) adds a constraint: the branch matches only if the inferred `X` satisfies `C`, and within a template literal the constraint also *parses* (`` `${infer N extends number}` `` turns `"42"` into `42`). For overloaded functions, inference uses the **last** overload signature (`Parameters<typeof over>` is `[x: number]`).
+
+**Mapped types.** `{ [K in S]: F<K> }` builds an object type with one property per member of the key union `S`. It is **homomorphic** when `S` is `keyof T` for a type parameter `T` (or `keyof` of a type): then it copies `readonly`/`?` modifiers from `T`, maps array and tuple types to arrays and tuples (instead of mapping their methods), and distributes over unions in `T`. `+`/`-` prefixes add or remove modifiers. Key remapping `as N<K>` changes the key; remapping to `never` removes it. A remapped mapped type is still homomorphic for modifier purposes when it iterates `keyof T`.
+
+```mermaid
+flowchart LR
+    T["T extends U ? X : Y"] --> Q{"T contains unresolved<br/>type parameters?"}
+    Q -- yes --> D["deferred: stays a conditional type"]
+    Q -- no --> N{"check type is a naked<br/>type parameter instantiated<br/>with a union?"}
+    N -- yes --> DIST["map over members,<br/>union the results"]
+    N -- no --> A{"T assignable to U?<br/>(infer variables bound)"}
+    A -- yes --> X["X"]
+    A -- no --> Y["Y"]
+```
+
+---
+
+## Lesson 9.1: Conditional Types & Distributive Conditional Types
 
 ### The Ternary Operator at Type Level
 
@@ -157,7 +185,7 @@ type Result3 = IsNever<string>;
 
 ---
 
-## Lesson 6.2: Pattern Matching with the `infer` Keyword
+## Lesson 9.2: Pattern Matching with the `infer` Keyword
 
 The `infer` keyword allows you to declare a type variable within the `extends` clause of a conditional type. TypeScript deduces ("infers") what type occupies that position during structural pattern matching.
 
@@ -279,7 +307,7 @@ type Resolver2 = ActionResolver<(id: string) => { type: "LOAD"; id: string }>;
 
 ---
 
-## Lesson 6.3: Mapped Types & Key Remapping
+## Lesson 9.3: Mapped Types & Key Remapping
 
 **Mapped Types** allow you to create new object types based on another type. They iterate over keys much like a `for...in` loop or `Array.prototype.map`.
 
@@ -452,7 +480,7 @@ type CssTokens = ObjectToCssVariables<ThemeColors>;
 
 ---
 
-## Lesson 6.4: Master Type Transformation Challenges
+## Lesson 9.4: Master Type Transformation Challenges
 
 These four capstone challenges represent the summit of TypeScript's type transformation capabilities.
 
@@ -660,6 +688,44 @@ type TestDeepPartial = Expect<
 
 ---
 
+## Lesson 9.5: Recursion, Limits and TypeScript 7 Changes
+
+### 9.5.1 Recursive types and the depth limit
+
+Recursive conditional types (`DeepPartial`, `Length`, `RouteParams`) are evaluated by nested instantiation, and the checker stops at a fixed depth with **TS2589** "Type instantiation is excessively deep and possibly infinite". Measured on TS 7.0.2 ([Module 13](./13-library-authoring-performance-and-type-tests.md), fixture `depth/`): building a tuple non-tail-recursively fails at 48 elements; the tail-recursive version fails at 1000 iterations.
+
+A conditional type is **tail-recursive** when the recursive reference is the *entire* branch:
+
+```ts
+// Not tail-recursive: the recursive call is wrapped in a spread
+type BuildNT<N extends number, A extends unknown[] = []> = A["length"] extends N ? A : [...BuildNT<N, [...A, 0]>];
+// Tail-recursive: accumulate in a parameter and return the call itself
+type BuildT<N extends number, A extends unknown[] = []> = A["length"] extends N ? A : BuildT<N, [...A, 0]>;
+```
+
+Rewrite with an accumulator parameter (the `Length<S, Acc>` helper in the example does this) and always give the recursion a base case that is reached for `string`/`number` (non-literal) inputs, otherwise `Length<string>` recurses forever.
+
+### 9.5.2 Then vs now: template literal inference by code point (TS 7.0)
+
+**Then (TS ≤ 6.0).** `` S extends `${infer H}${infer T}` `` consumed one UTF-16 code unit, so `HeadTail<"😀abc">` produced `["\ud83d", "\ude00abc"]` and a `Length` helper counted the emoji as 2.
+
+**Now (TS 7.0).** Inference consumes one Unicode **code point**: `HeadTail<"😀abc">` is `["😀", "abc"]` and `Length<"a😀b">` is `3` (both asserted in the example). This matches `[...str]` at runtime but *not* `str.length` (which still counts code units, and is 4 for `"a😀b"`).
+
+**Migration.** Search for type-level string utilities (lengths, reversals, splitters) whose tests use non-BMP characters; update expected values, or document that the type models code points. Pitfall: a type-level `Length` that now disagrees with the runtime `.length` it is meant to describe.
+
+### 9.5.3 Preview: stricter distributive relations (TS 7.1 beta)
+
+TS 7.1 (beta, 2026-10-20, preview only) reports an error when a type parameter constrained to *another* type parameter is related to that parameter inside a branch where it has been distributed:
+
+```ts
+type Issue<A extends number, B extends A> = A extends B ? never : Show<A, B>;
+// 7.1: 'B' is only assignable to the non-distributed 'A', but 'A' has been distributed here.
+```
+
+In 7.0 this compiles, and `Issue<0 | 1, 0>` silently produced the misleading `"0 extends 1"` case. Fix by removing the unnecessary `B extends A` constraint or by adding an explicit check inside the branch.
+
+---
+
 ## Anti-Patterns vs. Best Practices
 
 | Anti-Pattern | Best Practice | Why it Matters |
@@ -839,13 +905,39 @@ type TestDeepRequired = Expect<
 
 ---
 
-## Summary & What's Ahead
+## Interview Drill
 
-In this module, you unlocked the most advanced capabilities of TypeScript's type engine:
-- Conditional types and distributive conditional evaluation over unions.
-- Preventing accidental distribution and correctly handling `never` with 1-tuples `[T]`.
-- Pattern matching against functions, classes, objects, tuples, and template literals using `infer`.
-- Mapped types with modifier control (`-?`, `-readonly`) and key remapping (`as NewKey`, `as never`).
-- Solving real-world architectural challenges: URL path parsers, query string parsers, discriminated union conversions, and recursive deep modifiers.
+<details><summary>1. Why does <code>T extends string ? 1 : 2</code> with <code>T = string | number</code> give <code>1 | 2</code>, and how do you prevent it?</summary>
 
-In **Module 07: TypeScript Generics & Function Overloads**, we will apply these transformation techniques to design flexible, type-safe API boundaries and generic library utilities.
+A conditional type whose check type is a naked type parameter distributes over unions: it is evaluated per member and the results are unioned. Wrap both sides (`[T] extends [string]`) to evaluate the union as a whole.
+</details>
+
+<details><summary>2. Why does <code>IsNever&lt;never&gt;</code> written as <code>T extends never ? true : false</code> return <code>never</code>?</summary>
+
+`never` is the empty union, and distributing over an empty union yields the empty union, `never`, without evaluating either branch. Use `[T] extends [never]`.
+</details>
+
+<details><summary>3. What does <code>infer X extends C</code> add over plain <code>infer X</code>?</summary>
+
+A constraint checked during matching: the branch is taken only if the inferred type satisfies `C`, and `X` has type `C` in the true branch without a nested conditional. In template literals it also converts: `` `${infer N extends number}` `` parses `"42"` into the literal `42`.
+</details>
+
+<details><summary>4. What is a homomorphic mapped type, and what does it preserve?</summary>
+
+A mapped type over `keyof T` (e.g. `{ [K in keyof T]: F<T[K]> }`). It preserves `readonly`/optional modifiers, maps arrays/tuples to arrays/tuples, and distributes over unions in `T`. A mapped type over an arbitrary key union does none of this.
+</details>
+
+<details><summary>5. How do you turn a discriminated union into a map keyed by the discriminant?</summary>
+
+`{ [E in Union as E["type"]]: Omit<E, "type"> }`: iterate the union members themselves (not keys) and remap each to its discriminant. Derived handler maps then stay exhaustive automatically when a member is added.
+</details>
+
+<details><summary>6. You hit TS2589 in a recursive type. What are your options?</summary>
+
+Make the recursion tail-recursive (accumulator parameter, recursive call as the whole branch; limit 1000 instead of the depth limit), add or fix base cases for non-literal inputs, cap the depth with a counter tuple, or precompute/annotate the result. Then measure with `--extendedDiagnostics`.
+</details>
+
+<details><summary>7. What changed for template literal types in TS 7.0?</summary>
+
+Inference splits strings by Unicode code point instead of UTF-16 code unit, so astral characters (emoji) are no longer split into surrogate halves. Type-level length/split utilities change results for non-BMP input.
+</details>
