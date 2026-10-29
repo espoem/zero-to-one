@@ -1,6 +1,19 @@
-## Lesson 1.3: Basic Types, Primitive Annotations & Function Signatures
+# Module 02: Essential Types & Functions
 
-### 1.3.1 Primitives and the Implicit `any` Error
+> Example and tests: [`examples/02-essential-types/essential-types.test.ts`](../examples/02-essential-types/essential-types.test.ts).
+> Run: `mise exec -- node --test examples/02-essential-types/`
+
+This module covers the types every TypeScript file uses: primitives and literals, functions, arrays and tuples, `Set`/`Map`, `unknown` at `JSON.parse`, promises and iterators. The build pipeline that used to open this module is now [Module 01](./01-toolchain-and-compiler-model.md). The *runtime* semantics of promises, the job queue and iteration protocols belong to `languages/javascript`; here we cover only how they are typed.
+
+**The core idea: types are sets of values.** A type denotes the set of runtime values it admits: `string` is the set of all strings, the literal type `"GET"` is the singleton $\{\texttt{"GET"}\}$, `never` is $\varnothing$ and `unknown` is the set of all values. Assignability is (mostly) set inclusion, unions are set union, and narrowing ([Module 03](./03-unions-narrowing-and-control-flow.md)) is set difference. [Module 04](./04-objects-assignability-and-weird-parts.md) states where TypeScript deliberately departs from this model.
+
+**Inference first, annotations at boundaries.** TypeScript infers the types of initialised variables and return values. Annotate function *parameters* (they cannot be inferred from the body), exported APIs (they are contracts and make declaration emit cheap, see [Module 13](./13-library-authoring-performance-and-type-tests.md)), and values whose inferred type is narrower or wider than intended. `const x = "a"` has the literal type `"a"`; `let x = "a"` widens to `string`.
+
+---
+
+## Lesson 2.1: Basic Types, Primitive Annotations & Function Signatures
+
+### 2.1.1 Primitives and the Implicit `any` Error
 
 TypeScript includes the standard JavaScript primitives: `string`, `number`, `boolean`, `symbol`, `bigint`, `null`, and `undefined`.
 
@@ -20,7 +33,7 @@ function logMessageExplicit(message: string): void {
 
 The `any` type disables type checking entirely for that symbol, turning off safety checks and auto-completion.
 
-### 1.3.2 Parameter vs. Return Type Annotations
+### 2.1.2 Parameter vs. Return Type Annotations
 
 TypeScript has exceptional return type inference. In application code, annotating return types on simple functions is often unnecessary:
 
@@ -38,7 +51,7 @@ function multiply(x: number, y: number) {
 2. **Complex Functions with Multiple Branches**: Ensures every branch returns the intended shape.
 3. **Recursive Functions**: TypeScript often cannot infer recursive return types without assistance.
 
-### 1.3.3 Optional, Default, and Rest Parameters
+### 2.1.3 Optional, Default, and Rest Parameters
 
 ```typescript
 // 1. Optional parameters with '?' (type becomes T | undefined)
@@ -58,7 +71,7 @@ function sumValues(...values: number[]): number {
 }
 ```
 
-### 1.3.4 Function Types & Callback Signatures
+### 2.1.4 Function Types & Callback Signatures
 
 Functions are first-class values in JavaScript. In TypeScript, their types are expressed using arrow syntax `(params) => ReturnType`:
 
@@ -82,9 +95,9 @@ function registerHandler(event: string, cb: EventCallback): void {
 
 ---
 
-## Lesson 1.4: Arrays, Tuples, `Set`, `Map`, and `JSON.parse`
+## Lesson 2.2: Arrays, Tuples, `Set`, `Map`, and `JSON.parse`
 
-### 1.4.1 Arrays: `T[]` vs. `Array<T>`
+### 2.2.1 Arrays: `T[]` vs. `Array<T>`
 
 Both syntaxes are functionally identical:
 ```typescript
@@ -99,7 +112,7 @@ const users: UserSummary[] = [
 ];
 ```
 
-### 1.4.2 Tuples: Fixed-Length and Position-Sensitive Arrays
+### 2.2.2 Tuples: Fixed-Length and Position-Sensitive Arrays
 
 A tuple is an array with a fixed number of elements where each position has a specific type:
 
@@ -122,7 +135,7 @@ type CommandWithFlags = [command: string, ...flags: string[]];
 const gitCmd: CommandWithFlags = ["git", "commit", "-m", "Initial commit"];
 ```
 
-### 1.4.3 Sets and Maps
+### 2.2.3 Sets and Maps
 
 `Set` and `Map` accept generic type arguments:
 
@@ -142,7 +155,7 @@ const cachedItem = cache.get("cache_key_1");
 ```
 Notice that `.get(...)` on a `Map` always returns `V | undefined` because keys may not exist at runtime.
 
-### 1.4.4 The Danger of `JSON.parse`
+### 2.2.4 The Danger of `JSON.parse`
 
 `JSON.parse` is typed in the TypeScript standard library as returning `any`:
 
@@ -160,9 +173,9 @@ const safeResult: unknown = JSON.parse(rawData);
 
 ---
 
-## Lesson 1.5: Typing Async Functions, Promises & Network Requests
+## Lesson 2.3: Typing Async Functions, Promises & Network Requests
 
-### 1.5.1 Promises and `async` Functions
+### 2.3.1 Promises and `async` Functions
 
 An `async` function **always** wraps its return value in a `Promise`:
 
@@ -179,7 +192,7 @@ type UnwrappedScore = Awaited<ScorePromise>;
 //   ^? number
 ```
 
-### 1.5.2 Concurrent Promises: `Promise.all` and `Promise.allSettled`
+### 2.3.2 Concurrent Promises: `Promise.all` and `Promise.allSettled`
 
 `Promise.all` infers a tuple of results if passed a tuple of promises:
 
@@ -212,7 +225,7 @@ async function loadMetrics() {
 }
 ```
 
-### 1.5.3 Typing `fetch` Responses Safely
+### 2.3.3 Typing `fetch` Responses Safely
 
 `response.json()` returns `Promise<any>`. To handle API responses safely without relying on reckless type casting:
 
@@ -247,6 +260,33 @@ async function fetchUser(userId: string): Promise<UserDto> {
   throw new Error("Invalid response payload received from server");
 }
 ```
+
+---
+
+## Lesson 2.4: Typing Iteration and Generators
+
+Iteration protocols (`[Symbol.iterator]`, `next()`, `return()`) are specified by ECMAScript and taught in `languages/javascript`. Their types:
+
+| Type | Meaning |
+|---|---|
+| `Iterator<T, TReturn = any, TNext = any>` | An object with `next(...[value]: [] \| [TNext]): IteratorResult<T, TReturn>` |
+| `IteratorResult<T, TReturn>` | `{ done?: false; value: T } \| { done: true; value: TReturn }`: a discriminated union on `done` |
+| `Iterable<T>` | Has `[Symbol.iterator](): Iterator<T>`; accepted by `for…of`, spread, `Array.from` |
+| `IteratorObject<T, TReturn, TNext>` | The built-in iterator objects (array/map/set iterators, generators) that inherit `Iterator.prototype` and its helper methods |
+| `Generator<T, TReturn, TNext>` | What a `function*` returns: yields `T`, returns `TReturn`, and receives `TNext` from `next(x)` |
+| `AsyncGenerator<T, TReturn, TNext>` / `AsyncIterable<T>` | The async counterparts used by `for await` |
+
+The example's generator `ids(): Generator<number, "done", undefined>` shows `IteratorResult` narrowing: after `if (!r.done)` the value is `number`, otherwise `"done"`.
+
+**Iterator helpers** (`.map`, `.filter`, `.take`, `.drop`, `.flatMap`, `.toArray`, … on `Iterator.prototype`) are typed in `lib.es2025.iterator.d.ts`. `[1, 2, 3].values().map(x => x * 2)` has type `IteratorObject<number, undefined, unknown>`; the helpers are lazy and single-pass, unlike the array methods of the same name.
+
+### Then vs now: built-in iterator types
+
+**Then (TS ≤ 5.5).** Built-in iterators were typed as `IterableIterator<T>`, whose `TReturn` was `any`, so `const r = arr.values().next(); if (r.done) r.value` was `any`. There were no types for iterator helpers.
+
+**Now (TS 5.6+, unchanged in 7.0).** Built-ins return `ArrayIterator<T>`, `MapIterator<T>`, `SetIterator<T>`, … which extend `IteratorObject<T, BuiltinIteratorReturn, unknown>`. Under `strictBuiltinIteratorReturn` (part of `strict`), `BuiltinIteratorReturn` is `undefined` instead of `any`. With `lib: ["es2025"]` or `esnext`, the helper methods are typed.
+
+**Migration.** Code that annotated `IterableIterator<T>` still works for built-ins, but custom classes implementing it should now implement `IteratorObject` (or extend the global `Iterator` class) if they want the helper methods. Code reading `value` after `done: true` from a built-in iterator gets `undefined` and may need a check.
 
 ---
 
@@ -285,7 +325,7 @@ type Equal<X, Y> =
 
 ---
 
-### Exercise 1.1: The Typed Event Bus
+### Exercise 2.1: The Typed Event Bus
 
 #### Problem Description
 Implement a type-safe `EventBus` class or helper object that allows subscribing to events and dispatching them with arbitrary payload arguments. The listener must support optional listener tags for debugging.
@@ -338,7 +378,7 @@ const bus: EventBus = {
 
 ---
 
-### Exercise 1.2: Immutable Geo-Coordinate Cache
+### Exercise 2.2: Immutable Geo-Coordinate Cache
 
 #### Problem Description
 You are building an in-memory geo-location cache.
@@ -391,7 +431,7 @@ activeRegions.add("EU");
 
 ---
 
-### Exercise 1.3: Safe Async Batch Loader
+### Exercise 2.3: Safe Async Batch Loader
 
 #### Problem Description
 Implement a typed function `batchFetchResults` that takes an array of URL endpoints, executes them concurrently using `Promise.allSettled`, and returns an object separating successful responses from failed errors.
@@ -456,7 +496,7 @@ async function testBatch() {
 
 ---
 
-### Exercise 1.4: Safe JSON Parser with Runtime Fallback
+### Exercise 2.4: Safe JSON Parser with Runtime Fallback
 
 #### Problem Description
 Write a helper function `parseJsonWithFallback<T>` that parses a raw JSON string. If parsing fails or returns invalid non-object data, it returns a provided default fallback value. The return type must be guaranteed to be `T`.
@@ -513,3 +553,36 @@ const parsedNumber = parseJsonWithFallback("42", 0);
 type TestNumber = Expect<Equal<typeof parsedNumber, number>>;
 ```
 
+---
+
+## Interview Drill
+
+<details><summary>1. What is the type of <code>const method = "GET"</code> vs <code>let method = "GET"</code>, and why?</summary>
+
+`const` gives the literal type `"GET"` because the binding can never change; `let` widens to `string` because later assignments are allowed. Object properties widen too (they are mutable), which is why `as const` or a literal-typed annotation is needed for config objects.
+</details>
+
+<details><summary>2. Why is a callback typed <code>() =&gt; void</code> allowed to return a number?</summary>
+
+A `void` return in a *function type* means "the caller ignores the result", so any function is assignable to it (this is what lets `arr.forEach(x => list.push(x))` compile). A function *declaration* annotated `: void` may not return a value.
+</details>
+
+<details><summary>3. Why does <code>map.has(k)</code> not narrow <code>map.get(k)</code>?</summary>
+
+Narrowing applies to references (variables, properties), not to the results of separate method calls; the checker cannot relate two calls. Read once and check the value: `const v = map.get(k); if (v !== undefined) …`.
+</details>
+
+<details><summary>4. What does <code>Promise.all([a, b])</code> return when <code>a: Promise&lt;number&gt;</code> and <code>b: Promise&lt;string&gt;</code>?</summary>
+
+`Promise<[number, string]>`: the signature uses a mapped type over a `const`-inferred tuple, so positions are preserved. `Promise.allSettled` returns a tuple of `PromiseSettledResult<T>`, a union discriminated by `status`.
+</details>
+
+<details><summary>5. What does <code>Generator&lt;T, TReturn, TNext&gt;</code> encode?</summary>
+
+The yielded type, the type of the `return` value (seen as `value` when `done: true`), and the type accepted by `next(x)` and produced by the `yield` expression inside the generator.
+</details>
+
+<details><summary>6. Why should <code>JSON.parse</code> results be typed <code>unknown</code>?</summary>
+
+`JSON.parse` returns `any`, which silently disables checking for everything derived from it. `unknown` forces narrowing or schema parsing before use ([Module 11](./11-runtime-boundaries-validation.md)).
+</details>
