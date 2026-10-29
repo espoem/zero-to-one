@@ -2,7 +2,7 @@
 
 ## Hand-off (primary · Opus · in progress, last updated 2026-10-29)
 
-Status: 🟦 authoring. All 13 modules done; the exams, the glossary, the cheatsheet and the README are still to do.
+Status: 🟦 authoring. All 13 modules and the exams are done; the glossary, the cheatsheet and the README are still to do.
 
 ### Done
 | Module | File | Example / tests |
@@ -25,6 +25,11 @@ Tooling: `package.json` (TypeScript 7.0.2, @types/node 26.6.6, fast-check 4.10.2
 
 Test output at the last commit: `npm test` → 324 tests, 324 pass, 0 fail. `npm run typecheck` → clean.
 
+### Exams
+- `exams/README.md`: no authoritative JS cert exists (JSNAD retired 2025-09-30, JSNSD inactive). Primary target: the senior interview format. Secondary: JSA-41-01 (OpenEDG, 40 items/60 min), mapped by section with an exam-delta callout. Includes a syllabus-completeness table against the ECMA-262 2026 ToC with out-of-scope reasons.
+- `exams/interview.md`: 73 questions over 10 domains plus 6 hands-on tasks (difficulty 1/2/3 = 14/41/18; 35 single, 15 multi, 12 scenario, 5 ordering, 6 hands-on). Mock A is a 60-minute interview screen; Mock B is JSA-shaped (40 items, 60 min). Hands-on verification: `examples/exam-hands-on.test.js` (`SOLUTIONS=… node --test …`).
+- 🟡 JSA "Classes" section: only 7 class-specific bank questions (Mock B fills it with 010 and 014). JSE-40-01 format details are unverified (the official page could not be fetched).
+
 ### Determinism policy
 No test depends on a race or on wall-clock thresholds: data-race tests assert only bounds (`plain ≤ expected`, `atomic === expected`); cross-agent tests use Atomics handshakes; concurrency is measured by peak in-flight counts, not elapsed time; timer-based ordering relies only on timer FIFO/expiry order. The remaining engine-specific (but deterministic) assertions are the V8 GC tests in modules 03 and 09, which use `--expose-gc` + `gc()`.
 
@@ -36,7 +41,6 @@ No test depends on a race or on wall-clock thresholds: data-race tests assert on
 - JSNAD was retired on 2025-09-30, and JSNSD is inactive (Linux Foundation pages). The only active proctored JS-core cert found is OpenEDG JS Institute **JSA-41-01**: 40 questions, 60 min, US$325, Pearson VUE. Domains: Classless Objects 25%, Classes 23%, Built-in Objects 27%, Advanced Functions 25%. Passing score not published on the voucher page. Its authority is low (InfoWorld 2026-04: no widely accepted JS cert authority). Plan: put the primary effort into `exams/interview.md` and map the JSA domains in the coverage matrix.
 
 ## Remaining work (ordered)
-10. `exams/README.md` (interview format + JSA-41-01 matrix) and `exams/interview.md` (≥60 questions, mock exam).
 11. GLOSSARY.md (EN ↔ CZ), CHEATSHEET.md, README.md (syllabus, run instructions, Certifications & Exams, the "Verified against …" line).
 12. `mise.lock`: not generated (no mise binary in the authoring sandbox). Run `mise install && mise lock` on a machine with mise.
 
