@@ -17,9 +17,10 @@ import {
   onFlush,
   untrack,
   resetErrorHalt,
+  action,
 } from "solid-js";
 import { render } from "@solidjs/testing-library";
-import { captureDiagnostics, tick } from "./support/diagnostics.ts";
+import { captureDiagnostics, captureDiagnosticsAsync, tick, deferred, settle } from "./support/diagnostics.ts";
 
 afterEach(() => resetErrorHalt());
 
@@ -470,3 +471,157 @@ describe("02 · invariants and diagnostics (negative tests)", () => {
     expect(good.codes).not.toContain("STRICT_READ_UNTRACKED");
   });
 });
+
+describe("02 · scheduling internals", () => {
+  it("in one flush every render-effect apply runs before any user-effect apply, regardless of creation order", () => {
+    const order: string[] = [];
+    const { setX, dispose } = createRoot((dispose) => {
+      const [x, setX] = createSignal(0);
+      createEffect(
+        () => x(),
+        (v) => {
+          order.push(`user ${v}`);
+        },
+      ); // created first
+      createRenderEffect(
+        () => x(),
+        (v) => {
+          order.push(`render ${v}`);
+        },
+      );
+      return { setX, dispose };
+    });
+    flush();
+    order.length = 0;
+    setX(1);
+    flush();
+    expect(order).toEqual(["render 1", "user 1"]);
+    dispose();
+  });
+
+  it("an effect whose compute reads a pending async value defers its apply until the value lands", async () => {
+    const d = deferred<number>();
+    const log: string[] = [];
+    const dispose = createRoot((dispose) => {
+      const m = createMemo(() => d.promise);
+      createEffect(
+        () => m(),
+        (v) => {
+          log.push(`apply ${v}`);
+        },
+      );
+      return dispose;
+    });
+    flush();
+    expect(log).toEqual([]); // no apply with a half-ready value
+    d.resolve(7);
+    await settle();
+    flush();
+    expect(log).toEqual(["apply 7"]);
+    dispose();
+  });
+
+  it("onSettled from an event handler waits for the action the handler started", async () => {
+    const gate = deferred<void>();
+    const log: string[] = [];
+    const save = action(function* () {
+      yield gate.promise;
+      log.push("action done");
+    });
+    const done = save(); // an "event handler" (no owner)
+    onSettled(() => {
+      log.push("settled");
+    });
+    flush();
+    await settle();
+    expect(log).toEqual([]);
+    gate.resolve();
+    await done;
+    await settle();
+    flush();
+    expect(log).toEqual(["action done", "settled"]);
+  });
+});
+
+describe("02 · more negative tests", () => {
+  it("returning a non-function from an apply half is an application error (system halts)", () => {
+    let error: unknown;
+    const { codes } = captureDiagnostics(() => {
+      const dispose = createRoot((dispose) => {
+        const [x] = createSignal(1);
+        createEffect(
+          () => x(),
+          (v) => v as unknown as void, // ❌ returns a number
+        );
+        return dispose;
+      });
+      try {
+        flush();
+      } catch (e) {
+        error = e;
+      }
+      dispose();
+    });
+    expect(String(error)).toMatch(/invalid cleanup value/);
+    expect(codes).toContain("REACTIVITY_HALTED");
+  });
+
+  it("onSettled returning a cleanup from an unowned scope is SETTLED_CLEANUP_UNOWNED", async () => {
+    let error: unknown;
+    const { codes } = await captureDiagnosticsAsync(async () => {
+      try {
+        onSettled(() => () => {}); // ❌ nothing owns this cleanup
+        flush();
+        await settle();
+      } catch (e) {
+        error = e;
+      }
+    });
+    expect(String(error)).toMatch(/SETTLED_CLEANUP_UNOWNED/);
+    expect(codes).toContain("SETTLED_CLEANUP_UNOWNED");
+  });
+
+  it("creating a primitive inside an apply half throws PRIMITIVE_IN_EFFECT_CALLBACK (apply is unowned)", () => {
+    let error: unknown;
+    const dispose = createRoot((dispose) => {
+      const [x] = createSignal(1);
+      createEffect(
+        () => x(),
+        () => {
+          try {
+            createMemo(() => 1); // ❌ nothing would own or dispose it
+          } catch (e) {
+            error = e;
+          }
+        },
+      );
+      return dispose;
+    });
+    flush();
+    expect(String(error)).toMatch(/PRIMITIVE_IN_EFFECT_CALLBACK/);
+    dispose();
+  });
+
+  it("pattern: an apply half that owns an external resource cleans it up on change and disposal", () => {
+    const opened: string[] = [];
+    const closed: string[] = [];
+    const { setRoom, dispose } = createRoot((dispose) => {
+      const [room, setRoom] = createSignal("a");
+      createEffect(
+        () => room(),
+        (r) => {
+          opened.push(r); // e.g. socket.join(r)
+          return () => closed.push(r); // socket.leave(r)
+        },
+      );
+      return { setRoom, dispose };
+    });
+    flush();
+    setRoom("b");
+    flush();
+    dispose();
+    expect(opened).toEqual(["a", "b"]);
+    expect(closed).toEqual(["a", "b"]);
+  });
+});
+
