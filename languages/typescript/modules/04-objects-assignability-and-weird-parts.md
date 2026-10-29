@@ -1,102 +1,141 @@
-## Lesson 4.1: Annotations vs Assertions & `satisfies`
+# Module 04: Objects, Assignability & the "Weird Parts"
 
-### The Core Spectrum: `:` vs. `as` vs. `satisfies`
+> Example and tests: [`examples/04-assignability/assignability.test.ts`](../examples/04-assignability/assignability.test.ts) (excess-property checks, `Object.keys`, `{}`/`object`/`unknown`, method bivariance, array covariance, `satisfies`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes` fixture, intersection conflicts).
+> Run: `mise exec -- node --test examples/04-assignability/`
 
-Developers often confuse the three primary ways to type an expression:
+Almost every "weird" TypeScript behaviour is a consequence of one design decision: **structural typing with deliberate, documented unsoundness** where soundness would have made common JavaScript patterns untypeable. This module states the assignability relation precisely, lists where it is intentionally unsound, and then works through object types, the weird parts, and the three ways to give a value a type (`:`, `as`, `satisfies`).
 
-```typescript
-type Color = "red" | "green" | "blue";
-type Palette = Record<string, Color | [number, number, number]>;
+---
 
-// 1. Annotation (`:`): Validates conformance and WIDENS to the annotated type
-const p1: Palette = {
-  primary: "red",
-  secondary: [0, 255, 0],
-};
-// p1.primary is typed as: Color | [number, number, number] (Lost exact literal "red"!)
+## Assignability, formally
 
-// 2. Assertion (`as`): Bypasses safety, forces compiler to accept, does NOT validate typos
-const p2 = {
-  primary: "purplllle", // Typo! But TypeScript doesn't check!
-} as Palette;
+TypeScript's central question is "is `S` assignable to `T`?" (written $S \preceq T$). For object types the rule is **structural**:
 
-// 3. The `satisfies` operator (TS 4.9+): Validates conformance WITHOUT widening
-const p3 = {
-  primary: "red",
-  secondary: [0, 255, 0],
-} satisfies Palette;
-// p3.primary is preserved as exact literal: "red"!
-// p3.secondary is preserved as: [number, number, number]!
-p3.primary.toUpperCase(); // OK! No union narrowing needed!
-```
+$$S \preceq T \iff \forall p \in \mathrm{props}(T):\; p \in \mathrm{props}(S) \land S[p] \preceq T[p] \;\;(\text{or } p \text{ optional in } T)$$
 
-```typescript
-// If you make a typo with `satisfies`, it errors immediately:
-const p4 = {
-  // @ts-expect-error Type '"yellowish"' is not assignable to type 'Color | [number, number, number]'.
-  primary: "yellowish",
-} satisfies Palette;
-```
+plus rules for call/construct signatures and index signatures. Consequences:
 
-### The Limits of `as` and the Double Assertion Smell
+- **Width subtyping.** `S` may have *more* properties than `T`. `{ x, y, z }` is assignable to `Point`.
+- **No nominal identity.** Two unrelated interfaces with the same members are interchangeable. Brands restore nominality where it matters ([Module 10](./10-type-safe-api-design-patterns.md)).
+- **Assignability is not subtyping.** Assignability adds special cases on top of the subtype relation: `any` is assignable to and from everything; optional properties accept `undefined` (unless `exactOptionalPropertyTypes`); numeric enums interoperate with `number`.
 
-TypeScript only allows a type assertion `A as B` if `A` sufficiently overlaps with `B` (one is a subtype of the other):
+**Variance** describes how a type constructor's assignability follows its arguments. For functions, the sound rule is **contravariance in parameters** and **covariance in return types**:
 
-```typescript
-const num = 42;
-// @ts-expect-error Conversion of type 'number' to type 'string' may be a mistake.
-const str = num as string;
-```
+$$(A_1 \to R_1) \preceq (A_2 \to R_2) \iff A_2 \preceq A_1 \;\land\; R_1 \preceq R_2$$
 
-To bypass this check, developers resort to the **double assertion escape hatch**:
+TypeScript applies it under `strictFunctionTypes` (part of `strict`, on by default since 6.0) **only to function-typed properties and standalone function types**. Parameters of **methods** (`handle(a: Animal): string` shorthand) and of constructors are still compared **bivariantly** (either direction suffices), so that `Array<Dog>` remains assignable to `Array<Animal>` despite `push(item: T)`. Arrays and other generic types are therefore effectively **covariant**, which is unsound for writes. The example shows both holes crashing at runtime.
 
-```typescript
-// Bypasses the type checker completely
-const forcedStr = num as unknown as string;
-```
+| Known unsound spot | Why it exists | Defence |
+|---|---|---|
+| Method-parameter bivariance | Keeps arrays and DOM event-handler types usable | Declare callbacks as function-typed *properties*; lint `method-signature-style` |
+| Covariant mutable arrays | Same | `readonly T[]` in parameters |
+| `any` | Gradual typing | `unknown`, `noImplicitAny` (strict) |
+| Index reads without `undefined` | Ergonomics | `noUncheckedIndexedAccess` |
+| Optional props accept `undefined` | JS treats absent ≈ `undefined` | `exactOptionalPropertyTypes` |
+| Type assertions, `!`, predicates | Escape hatches | Validate at boundaries ([Module 11](./11-runtime-boundaries-validation.md)) |
 
-> [!CAUTION]
-> Double assertion (`expr as unknown as T`) is an explicit lie to the compiler. It disables static type safety and should only be used as a last resort at low-level library boundaries with third-party untyped code.
+**Freshness.** An object literal expression has a *fresh* type until it is assigned or widened. Fresh types get the **excess-property check**: properties not in the target are an error (TS2353), because they are almost always typos. Assigning the literal to a variable first removes freshness and the check, which is why `const p3 = {x, y, z}; const p: Point = p3;` compiles. JSX attributes are always fresh ([Module 12](./12-typing-ui-frameworks.md)).
 
-### Non-Null Assertion (`!`) and Compiler Directives
+---
 
-The non-null assertion operator (`!`) strips `null` and `undefined` from a type:
+## Lesson 4.1: Object Types, `interface` vs `type`, and Extending Objects
+
+### 4.1.1 `interface` vs `type`
+
+| Feature | `interface` | `type` Alias |
+| :--- | :--- | :--- |
+| **Declaration Merging** | Yes: multiple interfaces with the same name merge their properties. | No: duplicate type declarations throw a duplicate identifier error. |
+| **Primitives, Unions, Tuples**| No: can only define object shapes. | Yes: can alias primitives, unions, tuples, functions, intersections. |
+| **Extending / Inheritance** | `interface B extends A {}` | `type B = A & {}` |
+| **Property Collision Behavior**| Reports clear compile error if property types conflict. | Silently collapses conflicting primitive properties into `never`. |
+
+### 4.1.2 Incompatible Property Extension: `interface` vs `&`
+
+This is one of the most critical differences in TypeScript object architecture:
 
 ```typescript
-const root = document.getElementById("root")!;
-//    ^? const root: HTMLElement (stripped null)
-```
-
-Only use `!` when the runtime guarantee is physically verified by your architecture (e.g. an HTML template guaranteed to contain `#root`). Otherwise, use narrowing or runtime assertion guards.
-
-#### `@ts-ignore` vs. `@ts-expect-error`
-- `@ts-ignore`: Silences any error on the next line forever, even if the error is resolved later by a library update.
-- `@ts-expect-error`: Suppresses the error **only if an error exists**. If the code becomes valid, TypeScript emits an error alerting you that the directive is unused!
-
-```typescript
-// BEST PRACTICE: Always prefer @ts-expect-error with a descriptive reason
-// @ts-expect-error Testing invalid input for runtime defensive check
-validateUser(null);
-```
-
-### Global Typing Traps: `JSON.parse` and `localStorage`
-
-Standard TypeScript types `JSON.parse` and `localStorage.getItem` as `any` or `string | null`:
-
-```typescript
-const raw = JSON.parse('{"id": 1}');
-//    ^? const raw: any (Dangerous! Contaminates downstream types)
-```
-
-**Fix:** Treat raw inputs as `unknown` and validate them using Zod, type guards, or `@total-typescript/ts-reset`:
-
-```typescript
-function parseJsonSafe(json: string): unknown {
-  return JSON.parse(json);
+interface BaseUser {
+  id: string;
 }
+
+// 1. Interface extension collision:
+// ❌ COMPILE ERROR: Interface 'NumericUser' incorrectly extends interface 'BaseUser'.
+// Types of property 'id' are incompatible. Type 'number' is not assignable to type 'string'.
+interface NumericUser extends BaseUser {
+  id: number;
+}
+
+// 2. Type intersection collision:
+// ⚠️ NO IMMEDIATE ERROR! But id becomes string & number = never:
+type CollisionUser = BaseUser & {
+  id: number;
+};
+
+// When you attempt to create the object:
+// ❌ Error: Type 'string' is not assignable to type 'never'.
+const impossible: CollisionUser = {
+  id: "123", // Can NEVER be satisfied!
+};
+```
+
+> **Recommendation**: Prefer `interface extends` when defining domain entities with inheritance so conflicting property types are flagged immediately at the definition site rather than creating silent `never` traps at instantiation sites.
+
+### 4.1.3 Dynamic Keys, Index Signatures, and `PropertyKey`
+
+```typescript
+// Index signature allowing arbitrary string keys:
+type ConfigDictionary = {
+  [key: string]: string | number;
+};
+
+// Record<Keys, Values> utility helper:
+type UserPermissions = Record<string, boolean>;
+
+// PropertyKey covers string | number | symbol:
+type DynamicCache = Record<PropertyKey, unknown>;
+
+// Allowing arbitrary keys while auto-completing known common keys:
+type KnownHeaders = "Content-Type" | "Authorization" | (string & {});
+
+const header: KnownHeaders = "Content-Type"; // Autocompletes, but accepts any custom string!
+```
+
+### 4.1.4 Essential Object Utilities
+
+```typescript
+interface UserProfile {
+  id: string;
+  username: string;
+  email: string;
+  avatarUrl: string;
+  isVerified: boolean;
+}
+
+// 1. Pick<T, Keys>: Select only specific fields
+type UserHeader = Pick<UserProfile, "username" | "avatarUrl">;
+
+// 2. Omit<T, Keys>: Exclude specific fields
+type CreateUserPayload = Omit<UserProfile, "id" | "isVerified">;
+
+// 3. Partial<T>: Make all fields optional (ideal for PATCH payloads)
+type UpdateUserDto = Partial<UserProfile>;
+
+// 4. Required<T>: Make all optional fields strictly required
+type StrictConfig = Required<{ port?: number; host?: string }>;
+```
+
+#### Quirk of `Omit` with Discriminated Unions
+Standard `Omit<T, K>` does not distribute over unions. Running `Omit<NetworkState, "latencyMs">` will strip all union variants into a single flattened object, destroying the discriminant tag. To safely omit from a union, use a distributive conditional type helper:
+
+```typescript
+type DistributiveOmit<T, K extends PropertyKey> = T extends unknown
+  ? Omit<T, K>
+  : never;
 ```
 
 ---
+
+
 
 ## Lesson 4.2: The Weird Parts of TypeScript
 
@@ -198,103 +237,127 @@ numbers.map((n) => n * 2);
 ---
 
 
-## Lesson 2.4: Object Types, `interface` vs `type`, and Extending Objects
 
-### 2.4.1 `interface` vs `type`
+## Lesson 4.3: Annotations vs Assertions & `satisfies`
 
-| Feature | `interface` | `type` Alias |
-| :--- | :--- | :--- |
-| **Declaration Merging** | Yes: multiple interfaces with the same name merge their properties. | No: duplicate type declarations throw a duplicate identifier error. |
-| **Primitives, Unions, Tuples**| No: can only define object shapes. | Yes: can alias primitives, unions, tuples, functions, intersections. |
-| **Extending / Inheritance** | `interface B extends A {}` | `type B = A & {}` |
-| **Property Collision Behavior**| Reports clear compile error if property types conflict. | Silently collapses conflicting primitive properties into `never`. |
+### The Core Spectrum: `:` vs. `as` vs. `satisfies`
 
-### 2.4.2 Incompatible Property Extension: `interface` vs `&`
-
-This is one of the most critical differences in TypeScript object architecture:
+Developers often confuse the three primary ways to type an expression:
 
 ```typescript
-interface BaseUser {
-  id: string;
-}
+type Color = "red" | "green" | "blue";
+type Palette = Record<string, Color | [number, number, number]>;
 
-// 1. Interface extension collision:
-// ❌ COMPILE ERROR: Interface 'NumericUser' incorrectly extends interface 'BaseUser'.
-// Types of property 'id' are incompatible. Type 'number' is not assignable to type 'string'.
-interface NumericUser extends BaseUser {
-  id: number;
-}
-
-// 2. Type intersection collision:
-// ⚠️ NO IMMEDIATE ERROR! But id becomes string & number = never:
-type CollisionUser = BaseUser & {
-  id: number;
+// 1. Annotation (`:`): Validates conformance and WIDENS to the annotated type
+const p1: Palette = {
+  primary: "red",
+  secondary: [0, 255, 0],
 };
+// p1.primary is typed as: Color | [number, number, number] (Lost exact literal "red"!)
 
-// When you attempt to create the object:
-// ❌ Error: Type 'string' is not assignable to type 'never'.
-const impossible: CollisionUser = {
-  id: "123", // Can NEVER be satisfied!
-};
+// 2. Assertion (`as`): Bypasses safety, forces compiler to accept, does NOT validate typos
+const p2 = {
+  primary: "purplllle", // Typo! But TypeScript doesn't check!
+} as Palette;
+
+// 3. The `satisfies` operator (TS 4.9+): Validates conformance WITHOUT widening
+const p3 = {
+  primary: "red",
+  secondary: [0, 255, 0],
+} satisfies Palette;
+// p3.primary is preserved as exact literal: "red"!
+// p3.secondary is preserved as: [number, number, number]!
+p3.primary.toUpperCase(); // OK! No union narrowing needed!
 ```
 
-> **Recommendation**: Prefer `interface extends` when defining domain entities with inheritance so conflicting property types are flagged immediately at the definition site rather than creating silent `never` traps at instantiation sites.
-
-### 2.4.3 Dynamic Keys, Index Signatures, and `PropertyKey`
-
 ```typescript
-// Index signature allowing arbitrary string keys:
-type ConfigDictionary = {
-  [key: string]: string | number;
-};
-
-// Record<Keys, Values> utility helper:
-type UserPermissions = Record<string, boolean>;
-
-// PropertyKey covers string | number | symbol:
-type DynamicCache = Record<PropertyKey, unknown>;
-
-// Allowing arbitrary keys while auto-completing known common keys:
-type KnownHeaders = "Content-Type" | "Authorization" | (string & {});
-
-const header: KnownHeaders = "Content-Type"; // Autocompletes, but accepts any custom string!
+// If you make a typo with `satisfies`, it errors immediately:
+const p4 = {
+  // @ts-expect-error Type '"yellowish"' is not assignable to type 'Color | [number, number, number]'.
+  primary: "yellowish",
+} satisfies Palette;
 ```
 
-### 2.4.4 Essential Object Utilities
+### The Limits of `as` and the Double Assertion Smell
+
+TypeScript only allows a type assertion `A as B` if `A` sufficiently overlaps with `B` (one is a subtype of the other):
 
 ```typescript
-interface UserProfile {
-  id: string;
-  username: string;
-  email: string;
-  avatarUrl: string;
-  isVerified: boolean;
+const num = 42;
+// @ts-expect-error Conversion of type 'number' to type 'string' may be a mistake.
+const str = num as string;
+```
+
+To bypass this check, developers resort to the **double assertion escape hatch**:
+
+```typescript
+// Bypasses the type checker completely
+const forcedStr = num as unknown as string;
+```
+
+> [!CAUTION]
+> Double assertion (`expr as unknown as T`) is an explicit lie to the compiler. It disables static type safety and should only be used as a last resort at low-level library boundaries with third-party untyped code.
+
+### Non-Null Assertion (`!`) and Compiler Directives
+
+The non-null assertion operator (`!`) strips `null` and `undefined` from a type:
+
+```typescript
+const root = document.getElementById("root")!;
+//    ^? const root: HTMLElement (stripped null)
+```
+
+Only use `!` when the runtime guarantee is physically verified by your architecture (e.g. an HTML template guaranteed to contain `#root`). Otherwise, use narrowing or runtime assertion guards.
+
+#### `@ts-ignore` vs. `@ts-expect-error`
+- `@ts-ignore`: Silences any error on the next line forever, even if the error is resolved later by a library update.
+- `@ts-expect-error`: Suppresses the error **only if an error exists**. If the code becomes valid, TypeScript emits an error alerting you that the directive is unused!
+
+```typescript
+// BEST PRACTICE: Always prefer @ts-expect-error with a descriptive reason
+// @ts-expect-error Testing invalid input for runtime defensive check
+validateUser(null);
+```
+
+### Global Typing Traps: `JSON.parse` and `localStorage`
+
+Standard TypeScript types `JSON.parse` and `localStorage.getItem` as `any` or `string | null`:
+
+```typescript
+const raw = JSON.parse('{"id": 1}');
+//    ^? const raw: any (Dangerous! Contaminates downstream types)
+```
+
+**Fix:** Treat raw inputs as `unknown` and validate them using Zod, type guards, or `@total-typescript/ts-reset`:
+
+```typescript
+function parseJsonSafe(json: string): unknown {
+  return JSON.parse(json);
 }
-
-// 1. Pick<T, Keys>: Select only specific fields
-type UserHeader = Pick<UserProfile, "username" | "avatarUrl">;
-
-// 2. Omit<T, Keys>: Exclude specific fields
-type CreateUserPayload = Omit<UserProfile, "id" | "isVerified">;
-
-// 3. Partial<T>: Make all fields optional (ideal for PATCH payloads)
-type UpdateUserDto = Partial<UserProfile>;
-
-// 4. Required<T>: Make all optional fields strictly required
-type StrictConfig = Required<{ port?: number; host?: string }>;
-```
-
-#### Quirk of `Omit` with Discriminated Unions
-Standard `Omit<T, K>` does not distribute over unions. Running `Omit<NetworkState, "latencyMs">` will strip all union variants into a single flattened object, destroying the discriminant tag. To safely omit from a union, use a distributive conditional type helper:
-
-```typescript
-type DistributiveOmit<T, K extends PropertyKey> = T extends unknown
-  ? Omit<T, K>
-  : never;
 ```
 
 ---
 
+
+## Lesson 4.4: Strictness Flags Beyond `strict`
+
+### 4.4.1 `noUncheckedIndexedAccess`
+
+Without it, `record[key]` and `array[i]` have the element type, although the value may be `undefined`. With it, every index read through an index signature (not through a declared property or tuple position) includes `| undefined`. `for…of`, `.entries()` and destructuring tuple types avoid the noise.
+
+### 4.4.2 `exactOptionalPropertyTypes`
+
+`{ theme?: "light" | "dark" }` normally means "absent, or a theme, or `undefined`". With `exactOptionalPropertyTypes`, it means "absent or a theme"; assigning `theme: undefined` is **TS2375** (fixture `exact-optional/`). The distinction matters for `in` checks, `Object.keys`, spreading (`{ ...defaults, ...partial }` where `partial.theme === undefined` overwrites the default), and serialisation (`JSON.stringify` drops `undefined` but `structuredClone` keeps the key).
+
+### Then vs now: what `strict` means
+
+**Then (TS 2.x–5.x).** `strict` was off by default; a bare `tsconfig.json` allowed implicit `any`, unchecked `null`, and bivariant function parameters. Teams enabled `strict` and then added the extra flags one by one.
+
+**Now (6.0/7.0).** `strict` is the default. It covers `noImplicitAny`, `strictNullChecks`, `strictFunctionTypes`, `strictBindCallApply`, `strictPropertyInitialization`, `noImplicitThis`, `useUnknownInCatchVariables`, `alwaysStrict` (which can no longer be turned off in 7.0) and `strictBuiltinIteratorReturn`. Still opt-in: `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitOverride`, `noPropertyAccessFromIndexSignature`.
+
+**Migration.** Remove `"strict": true` from configs (harmless but redundant) and audit any `"strict": false` left over from old projects: under 6.0/7.0 that line is now the *only* thing keeping a project lax. Turn on the opt-in flags one per commit; `noUncheckedIndexedAccess` usually produces the most errors and the most real bugs.
+
+---
 
 ## Anti-Patterns vs. Best Practices
 
@@ -329,7 +392,7 @@ export type Equal<X, Y> = (<T>() => T extends X ? 1 : 2) extends <T>() => T exte
 ```
 
 
-### Exercise 2.3: Entity Schema Transformation with Utility Types
+### Exercise 4.0: Entity Schema Transformation with Utility Types
 
 #### Problem Description
 Given an authoritative `DatabaseUser` interface:
@@ -450,3 +513,39 @@ const invalidEmpty: EmptyObject = { a: 1 };
 
 ---
 
+## Interview Drill
+
+<details><summary>1. Structural vs nominal typing: what does TypeScript use and what are the consequences?</summary>
+
+Structural: assignability depends on members, not names. Width subtyping lets objects carry extra properties, which is why `Object.keys` returns `string[]` and why two interfaces with the same shape are interchangeable. Nominal behaviour, where needed, comes from brands or `#private` class fields.
+</details>
+
+<details><summary>2. Why does <code>const p: Point = { x: 1, y: 2, z: 3 }</code> fail but assigning the same object through a variable succeeds?</summary>
+
+The excess-property check applies only to fresh object literals, as a typo detector. Once the literal is stored in a variable its type is no longer fresh and ordinary width subtyping applies.
+</details>
+
+<details><summary>3. Explain method-parameter bivariance and how to avoid the unsoundness.</summary>
+
+Under `strictFunctionTypes`, function-typed properties check parameters contravariantly, but method shorthand signatures are still bivariant, so a handler requiring `Dog` can be assigned where an `Animal` handler is expected and crash at runtime. Declare callbacks as properties (`handle: (a: Animal) => void`) and use `readonly` arrays in parameters.
+</details>
+
+<details><summary>4. <code>{}</code> vs <code>object</code> vs <code>unknown</code>?</summary>
+
+`unknown` accepts everything including `null`/`undefined`. `{}` accepts every non-nullish value, primitives included. `object` accepts non-primitive values only. For "any non-null value" use `{}` (or `NonNullable<unknown>`); for "any object" use `object` or `Record<string, unknown>`.
+</details>
+
+<details><summary>5. <code>satisfies</code> vs annotation vs <code>as</code>?</summary>
+
+An annotation replaces the inferred type with the declared one (losing literal keys/values). `satisfies` checks assignability but keeps the inferred type (literal keys, and literal values when the target type is literal-ish). `as` asserts without checking assignability beyond "sufficient overlap"; `as unknown as T` bypasses even that.
+</details>
+
+<details><summary>6. When would you enable <code>exactOptionalPropertyTypes</code>, and what breaks?</summary>
+
+When "absent" and "present but undefined" mean different things (patch payloads, spreading over defaults, `in` checks). Code that writes `prop: undefined` to clear an optional property breaks (TS2375) and must use `delete` or widen the type to `T | undefined` explicitly; some third-party types disagree with the flag.
+</details>
+
+<details><summary>7. <code>interface extends</code> vs intersection <code>&amp;</code> when properties conflict?</summary>
+
+`interface C extends A, B` reports the conflict at the declaration (TS2320/TS2430). `A & B` silently produces a property of type `never` (for incompatible primitives), and the error appears later at a use site. Interfaces are also cached by the checker, which makes them cheaper than large intersections.
+</details>

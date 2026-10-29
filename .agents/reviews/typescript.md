@@ -14,6 +14,7 @@ Done:
 - M09 conditional/mapped/recursive: formal semantics, recursion limits, TS 7 code-point and 7.1 distributive changes, drill; new dedicated example (the "missing example for module 06").
 - M10 API design: renumbered old 08 lessons, new lessons on Disposable typing, TC39 vs legacy decorator typing (Then vs now), case studies from old 11.1, drill; new examples for using/DisposableStack and decorator typing.
 - M06 modules/declarations/tsconfig: rewritten (module formats, nodenext vs bundler with Then vs now, verbatimModuleSyntax Then vs now, d.ts, ambient assets, merging, augmentation, project references, TS 7 tsconfigs) + fixture tests (TS2835, TS1484, TS1543, TS6306, tsc -b --builders).
+- M04 objects/assignability: formal assignability and variance, unsoundness table, freshness, reordered lessons, strictness flags with Then vs now, drill + new example (runtime crashes for bivariance/array covariance, TS2375 fixture).
 
 ## Remaining work (ordered)
 1. (done) M13.
