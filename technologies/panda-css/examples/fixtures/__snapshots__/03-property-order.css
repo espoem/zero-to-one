@@ -1,0 +1,28 @@
+@layer reset, base, tokens, recipes, utilities;
+@layer recipes { @layer base, slots, variants, compound_variants; }
+@layer recipes.slots { @layer base, variants, compound_variants; }
+@layer base {
+  :root {
+    --made-with-panda: '🐼';
+  }
+}
+@layer utilities {
+  .p_10px {
+    padding: 10px;
+  }
+  .bd-e_0 {
+    border-inline-end: 0;
+  }
+  .border-style_solid {
+    border-style: solid;
+  }
+  .bd-w_1px {
+    border-width: 1px;
+  }
+  .bd-e-w_0 {
+    border-inline-end-width: 0;
+  }
+  .pt_20px {
+    padding-top: 20px;
+  }
+}

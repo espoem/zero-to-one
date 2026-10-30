@@ -1,0 +1,3 @@
+/* The layer-order statement marks this file as the Panda CSS root; @pandacss/vite
+   replaces it with the generated stylesheet at build time. */
+@layer reset, base, tokens, recipes, utilities;

@@ -1,0 +1,39 @@
+@layer reset, base, tokens, recipes, utilities;
+@layer recipes { @layer base, slots, variants, compound_variants; }
+@layer recipes.slots { @layer base, variants, compound_variants; }
+@layer base {
+  :root {
+    --made-with-panda: '🐼';
+  }
+}
+@layer tokens {
+  :where(:root, :host) {
+    --colors-brand-50: #eef2ff;
+    --colors-brand-500: #6366f1;
+    --colors-brand-900: #312e81;
+    --spacing-8: 2rem;
+  }
+}
+@layer utilities {
+  .bg_brand\.50 {
+    background: var(--colors-brand-50);
+  }
+  .p_8 {
+    padding: var(--spacing-8);
+  }
+  .bd-w_3px {
+    border-width: 3px;
+  }
+  .c_brand\.900 {
+    color: var(--colors-brand-900);
+  }
+  .focusVisible\:ring-c_brand\.500:is(:focus-visible, [data-focus-visible]) {
+    outline-color: var(--colors-brand-500);
+  }
+  .focusVisible\:outline-style_solid:is(:focus-visible, [data-focus-visible]) {
+    outline-style: solid;
+  }
+  .focusVisible\:ring-w_3px:is(:focus-visible, [data-focus-visible]) {
+    outline-width: 3px;
+  }
+}

@@ -1,170 +1,134 @@
-# Panda CSS — Fast-Lookup Cheat Sheet
+# Panda CSS 2.4 Cheatsheet
 
-A dense reference covering Panda CSS configuration, styling APIs, recipes, tokens, patterns, JSX factory utilities, CLI commands, and static extraction rules.
+Fast lookup for the [Panda CSS track](./README.md). Every item links to the module that explains it. Verified against `@pandacss/dev` 2.4.0 on 2026-10-29.
 
-## 1. Cascade Layer Order
+## Setup ([M02](./modules/02-installation-and-build-integration.md))
 
-Every Panda CSS entry stylesheet begins with the five-layer cascade declaration:
+```bash
+npm i -D @pandacss/dev            # Node >= 22, ESM-only
+npx panda init [--postcss] [--jsx-framework react|solid] [--strict-tokens]
+npx panda codegen --clean          # once after any upgrade (.mjs -> .js)
+```
+
+```ts
+export default defineConfig({
+  presets: ['@pandacss/preset-base', '@pandacss/preset-panda'], // NOT implicit in v2
+  include: ['./src/**/*.{ts,tsx}'], exclude: [], outdir: 'styled-system',
+  jsxFramework: 'react', preflight: true, strictTokens: true,
+})
+```
 
 ```css
+/* root CSS file (PostCSS / Vite plugin replace it) */
 @layer reset, base, tokens, recipes, utilities;
 ```
 
-| Layer | Purpose | Specificity Priority |
-| :--- | :--- | :--- |
-| `reset` | Preflight CSS normalize rules (`preflight: true`) | Lowest (1) |
-| `base` | Global styles defined via `globalCss` | Low (2) |
-| `tokens` | CSS custom properties (`--colors-*`, `--spacing-*`) and theme overrides | Medium-Low (3) |
-| `recipes` | Config recipe classes (`defineRecipe`, `defineSlotRecipe`) | Medium-High (4) |
-| `utilities` | Atomic classes from `css()`, `cva()`, `sva()`, and patterns | Highest (5 — always overrides config recipes cleanly) |
+| Integration | Config |
+|---|---|
+| PostCSS | `{ plugins: { '@pandacss/dev/postcss': {} } }` |
+| Vite | `plugins: [pandacss({ transform?: boolean }), react()]` from `@pandacss/vite` |
+| CLI | `panda` / `panda dev` / `panda cssgen -o styles.css` |
 
-## 2. Core Styling Primitives (`styled-system/css`)
+## CLI ([M02](./modules/02-installation-and-build-integration.md), [M10](./modules/10-compiler-internals-and-debugging.md))
 
-### `css()` — Atomic Style Function
+| Command | Purpose |
+|---|---|
+| `panda` · `build` · `dev` | Codegen + CSS (once / watch) |
+| `codegen [--check] [--clean] [--spec]` | `styled-system` only; drift gate; JSON spec |
+| `cssgen [-o file] [--splitting --outdir dir] [--include glob]` | CSS only |
+| `doctor [--json]` | Validate setup |
+| `debug [--include g] [--outdir d] [--dry]` | Resolved config + per-file `*.extract.json` |
+| `analyze [--scope s] [--unused] [--json]` | Usage report |
+| `lib [--watch] [--files g]` · `buildinfo --outfile f` | Publish a design system |
+| `studio [--no-open]` | Hosted Studio, live-connected |
+| Flags | `--max-warnings 0`, `--format github`, `--log-level silent`, `--profile` (→ `.panda/trace.json`, `timings.json`) |
 
-```tsx
-import { css } from '../styled-system/css'
+## Styling ([M03](./modules/03-styling-api-and-conditions.md))
 
-const boxClass = css({
-  bg: { base: 'bg.surface', _dark: 'slate.900' },
-  color: 'fg.default',
-  p: { base: '4', md: '6' },
-  rounded: 'lg',
-  shadow: 'sm',
-  borderWidth: '1px',
-  borderColor: 'border.subtle',
-  transition: 'all 0.2s token(easings.easeOut)',
-  _hover: {
-    borderColor: 'brand.500',
-    transform: 'translateY(-2px)',
-  },
-  _focusVisible: {
-    outline: '2px solid',
-    outlineColor: 'brand.500',
-    outlineOffset: '2px',
-  },
-})
+```ts
+css({ p: '4', bg: 'brand.500/40', color: { base: 'fg.default', _hover: 'accent.default' },
+      md: { px: '6' }, '&[data-state=open]': { fontWeight: 'bold' }, _dark: { bg: 'ink.900' } })
+css(base, override)                 // merge objects: last wins per property
+css.raw({...}); cva.raw(p)          // mark/compose objects
+cx(recipeClass, className)          // join strings only (no conflict resolution)
 ```
 
-### `css.raw()` & Deterministic Merging
+| Key | Meaning |
+|---|---|
+| `_hover`, `_focusVisible`, `_disabled`, `_open` | `:is(:pseudo, [data-*])` |
+| `_groupHover` / `_peerInvalid` | needs `.group` ancestor / `.peer` previous sibling |
+| `sm md lg xl 2xl`, `mdDown`, `mdOnly`, `smToLg` | `@media (width >= …)` ranges |
+| `_dark`, `_osDark`, `_motionReduce`, `_starting` | `.dark &`, `prefers-color-scheme`, reduced motion, `@starting-style` |
+| `'@card/wide'`, `'@/md'` | container queries (`theme.containers`) |
+| `color: 'red!'` | `!important` |
+| `w: '[18rem]'` | raw value under `strictTokens` |
 
-Never concatenate two `css()` strings when properties might collide. Pass raw style objects into `css()` so Panda merges conflicting properties deterministically (last argument wins):
+Custom condition: `conditions: { extend: { hocus: '&:is(:hover, :focus)', supportsHover: { '@media (hover: hover)': { '&:hover': '@slot' } } } }`.
 
-```tsx
-import { css, type SystemStyleObject } from '../styled-system/css'
+## Patterns ([M04](./modules/04-patterns-and-layout.md))
 
-const baseCard = css.raw({ bg: 'white', p: '6', rounded: 'md' })
-
-export function Card({ css: cssProp, children }: { css?: SystemStyleObject; children: React.ReactNode }) {
-  // If caller passes { p: '2' }, p: '6' is removed before class names are emitted
-  return <div className={css(baseCard, cssProp)}>{children}</div>
-}
-```
-
-### `cx()` — Class Name Joiner
-
-Use `cx()` to join a config recipe class, an atomic `css()` override class, and an external `className`:
+`stack hstack vstack flex wrap grid gridItem container center square circle aspectRatio float bleed linkOverlay box visuallyHidden divider cq spacer`
 
 ```tsx
-import { css, cx } from '../styled-system/css'
-import { badge } from '../styled-system/recipes'
-
-const className = cx(badge({ visual: 'solid' }), css({ mt: '2' }), externalClassName)
+<Grid columns={{ base: 1, md: 3 }} />      // ✅ condition on the prop
+<Grid columns={1} md={{ columns: 3 }} />    // ❌ emits CSS `columns: 3`
+definePattern({ properties, defaultValues, strict, blocklist, jsx, transform(props, { map }) {} })
 ```
 
-## 3. Common Shorthands
+## Tokens ([M05](./modules/05-design-tokens.md))
 
-| Shorthand | CSS Property | Token Category |
-| :--- | :--- | :--- |
-| `bg` | `backgroundColor` | `colors` |
-| `p`, `px`, `py`, `pt`, `pr`, `pb`, `pl` | `padding`, `paddingInline`, `paddingBlock`, etc. | `spacing` |
-| `m`, `mx`, `my`, `mt`, `mr`, `mb`, `ml` | `margin`, `marginInline`, `marginBlock`, etc. | `spacing` |
-| `w`, `h`, `minW`, `maxW`, `minH`, `maxH` | `width`, `height`, `minWidth`, etc. | `sizes` |
-| `boxSize` | `width` + `height` | `sizes` |
-| `rounded` | `borderRadius` | `radii` |
-| `shadow` | `boxShadow` | `shadows` |
-| `ring`, `ringColor`, `ringOffset` | `outlineWidth`, `outlineColor`, `outlineOffset` | `sizes` / `colors` |
-| ` pos` | `position` | N/A |
-| `inset`, `insetX`, `insetY` | `inset`, `insetInline`, `insetBlock` | `spacing` |
-| `srOnly` | Visually hidden for screen readers (`boolean`) | Utility |
-| `truncate` | Single-line ellipsis overflow (`boolean`) | Utility |
-| `lineClamp` | Multi-line clamp (`1`, `2`, `3`, `'none'`) | Utility |
+| Form | Output | Theme-aware |
+|---|---|---|
+| `color: 'brand.600'` | `var(--colors-brand-600)` | ✅ |
+| `'0 0 0 2px {colors.brand.100}'` | `var(…)` inside | ✅ |
+| `'token(colors.x, crimson)'` (string) | `var(--colors-x, crimson)` | ✅ |
+| `token.var('colors.x')` | `var(--colors-x)` | ✅ |
+| `token('colors.x')` (JS call) | raw value | ❌ |
+| `bg: 'brand.500/40'` | `color-mix(in oklab, …)` | ✅ |
 
-## 4. Layout Patterns (`styled-system/patterns`)
+`semanticTokens: { colors: { fg: { value: { base: '{colors.ink.900}', _dark: '{colors.ink.50}' } } } }` · `optimize: { removeUnusedTokens, removeUnusedKeyframes, propertyFallback }`
 
-| Pattern | Import | Key Pattern Props |
-| :--- | :--- | :--- |
-| `stack` | `import { stack } from 'styled-system/patterns'` | `direction` (`'column'` default), `gap`, `align`, `justify` |
-| `vstack` | `import { vstack } from 'styled-system/patterns'` | `gap`, `justify` (`alignItems: 'center'` by default) |
-| `hstack` | `import { hstack } from 'styled-system/patterns'` | `gap`, `justify` (`alignItems: 'center'` by default) |
-| `flex` | `import { flex } from 'styled-system/patterns'` | `direction`, `align`, `justify`, `wrap`, `basis`, `grow`, `shrink` |
-| `wrap` | `import { wrap } from 'styled-system/patterns'` | `gap`, `rowGap`, `columnGap`, `align`, `justify` |
-| `grid` | `import { grid } from 'styled-system/patterns'` | `columns`, `gap`, `rowGap`, `columnGap`, `minChildWidth` |
-| `gridItem` | `import { gridItem } from 'styled-system/patterns'` | `colSpan`, `rowSpan`, `colStart`, `colEnd`, `rowStart`, `rowEnd` |
-| `center` | `import { center } from 'styled-system/patterns'` | `inline` (`boolean`) |
-| `circle` / `square` | `import { circle, square } from 'styled-system/patterns'` | `size` |
-| `container` | `import { container } from 'styled-system/patterns'` | Centers content with `maxW: '8xl'` and responsive `px` |
-| `cq` | `import { cq } from 'styled-system/patterns'` | `name`, `type` (`'inline-size'` default) for `@/sm`, `@/md` queries |
-| `linkOverlay` | `import { linkOverlay, linkBox } from 'styled-system/patterns'` | Stretches `<a>` pseudo-element across a relative `linkBox` container |
+## Theming ([M06](./modules/06-color-mode-and-theming.md))
 
-## 5. Recipes Decision Matrix
-
-| Feature | Atomic Recipe (`cva`) | Atomic Slot Recipe (`sva`) | Config Recipe (`defineRecipe`) | Config Slot Recipe (`defineSlotRecipe`) |
-| :--- | :--- | :--- | :--- | :--- |
-| **Where defined** | Colocated in component file | Colocated in component file | `panda.config.ts` (`theme.recipes`) | `panda.config.ts` (`theme.slotRecipes`) |
-| **CSS Layer** | `@layer utilities` | `@layer utilities` | `@layer recipes` | `@layer recipes` |
-| **Class Output** | Pure atomic classes (`bg_blue_500 p_4`) | Pure atomic classes per slot | Named recipe classes (`badge badge--size_md`) | Named slot classes (`alert__root alert__icon`) |
-| **`splitVariantProps`** | Yes (`recipe.splitVariantProps`) | Yes (`recipe.splitVariantProps`) | Yes (`recipe.splitVariantProps`) | Yes (`recipe.splitVariantProps`) |
-| **Codegen required** | No (zero codegen on edit) | No (zero codegen on edit) | Yes (`panda codegen` on schema change) | Yes (`panda codegen` on schema change) |
-| **Best for** | App-local single-element components | App-local multi-part components | Design-system single-element primitives | Design-system multi-part primitives |
-
-## 6. Virtual Colors (`colorPalette`)
-
-Declare `colorPalette` once on a parent or variant, and reference `colorPalette.*` shades across every state:
-
-```tsx
-const button = cva({
-  base: {
-    colorPalette: 'brand', // Default palette
-    bg: 'colorPalette.600',
-    color: 'white',
-    _hover: { bg: 'colorPalette.700' },
-    _focusVisible: { ringColor: 'colorPalette.400' },
-  },
-})
-
-// Override palette per instance:
-<button className={cx(button(), css({ colorPalette: 'emerald' }))}>Save</button>
+```ts
+themes: { forest: defineTheme({ semanticTokens: {...} }) }, staticCss: { themes: ['forest'] }
+// <html data-panda-theme="forest" class="dark">;  getTheme(name) + injectTheme(el, theme) for on demand
 ```
 
-## 7. Design Token Helpers (`styled-system/tokens`)
+Always use `theme.extend`. Without it, only the named entry is replaced, except `breakpoints` (whole set).
 
-```tsx
-import { token } from '../styled-system/tokens'
+## Recipes ([M07](./modules/07-recipes-and-config-recipes.md), [M08](./modules/08-slot-recipes-and-recipe-contexts.md))
 
-// 1. Raw value (e.g. '#3b82f6' or '1rem') — useful for Canvas or third-party JS libs
-const rawHex = token('colors.brand.500')
+| | `cva` / `sva` | `defineRecipe` / `defineSlotRecipe` |
+|---|---|---|
+| CSS | atoms in `utilities` | named classes in `recipes` |
+| Emission | all variants | JIT: literals, `jsx` tags, `staticCss` |
+| Compounds | atoms | `recipes.compound_variants` class |
 
-// 2. CSS variable reference (e.g. 'var(--colors-brand-500)') — respects dark mode & themes!
-const cssVar = token.var('colors.brand.500')
-
-// 3. Inline token interpolation inside compound CSS values
-const box = css({
-  border: '1px solid token(colors.border.default)',
-  boxShadow: '0 4px 12px token(colors.brand.500/25)',
-})
+```ts
+recipe.splitVariantProps(props); recipe.variantMap; RecipeVariantProps<typeof recipe>
+const { withProvider, withContext, withRootProvider, PropsProvider } = createSlotRecipeContext(slotRecipe)
+const { withContext, PropsProvider } = createRecipeContext(recipe)
+staticCss: { recipes: { button: [{ size: ['*'] }] } } · optimize: { smartCompoundVariants: true }
 ```
 
-## 8. Essential CLI Commands
+## JSX ([M09](./modules/09-jsx-factory-and-style-props.md))
 
-| Command | Description |
-| :--- | :--- |
-| `panda init --postcss` | Initialize `panda.config.ts`, `postcss.config.cjs`, and generate `styled-system/` |
-| `panda codegen` | Regenerate JS/TS runtime files in `styled-system/` after editing `panda.config.ts` |
-| `panda codegen --watch` | Watch `panda.config.ts` and regenerate `styled-system/` on changes |
-| `panda cssgen` | Extract styles from `include` files and write static CSS output |
-| `panda --watch` | Run both codegen and CSS extraction in watch mode |
-| `panda studio` | Launch interactive local web UI showing all tokens, typography, and colors |
-| `panda analyze` | Analyze token and recipe usage across source files (`--json` for CI pipelines) |
-| `panda ship` | Emit `./styled-system/panda.buildinfo.json` for pre-compiled UI library packages |
-| `panda debug` | Debug AST extraction and generated CSS per source file |
+`styled(el, recipe?, { defaultProps, shouldForwardProp, forwardProps, dataAttr })` · props `css`, `*Css`, `as`, `htmlWidth`, `unstyled` · `jsxStyleProps: 'all' | 'minimal' | 'none'` · `jsxMatchTag` · React `className` / Solid `class` + `splitProps`.
+
+## Extraction rules ([M10](./modules/10-compiler-internals-and-debugging.md))
+
+| Visible | Invisible |
+|---|---|
+| literals, ternaries (both branches), `&&`/`??` right side | props, state, `Math.random()` |
+| same-file consts; **named** imports, re-exports, barrels, tsconfig paths | default and namespace imports |
+| pure helpers (one expression / consts + return) | helpers with `if`, loops, unknown calls (`String()`) |
+| `css.raw`, `cva.raw`, `token()` | renamed props (`elementWidth`), unlisted wrapper tags |
+
+## Design systems ([M11](./modules/11-monorepos-and-design-system-libraries.md))
+
+Package: `panda codegen && panda lib` → `dist/panda/{lib.json,preset.mjs,buildinfo.json}` + synced exports. App: `designSystem: '@acme/ds'` (never in `include`), `optimize.treeshakeDesignSystem`.
+
+## v1 → v2 silent breakers ([M12](./modules/12-migration-and-upgrades.md))
+
+`preset-base` missing · `containerSizes` → `containers` · stale `.mjs` → `--clean` · `emitPackage`/removed options ignored · default imports · compound and border visual changes · `breakpoints` without `extend` · `sizes.prose` 60ch · `@property` browser floor. Errors: root `hooks`, `createStyleContext`, `defineParts`, template literals, `panda ship`.

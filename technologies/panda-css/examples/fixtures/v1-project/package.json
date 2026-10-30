@@ -1,0 +1,8 @@
+{
+  "name": "v1-project",
+  "private": true,
+  "scripts": {
+    "prepare": "panda codegen --silent",
+    "release": "panda ship --outfile dist/panda.buildinfo.json"
+  }
+}

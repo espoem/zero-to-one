@@ -1,3 +1,4 @@
+# Toolchain for the Panda CSS track. npm packages (panda CLI, TypeScript 7, Vite 8) are
+# pinned exactly in package.json + package-lock.json.
 [tools]
-node = "24"
-"npm:typescript" = "7.0.2"
+node = "26"

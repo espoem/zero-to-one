@@ -1,0 +1,74 @@
+@layer reset, base, tokens, recipes, utilities;
+@layer recipes { @layer base, slots, variants, compound_variants; }
+@layer recipes.slots { @layer base, variants, compound_variants; }
+@layer base {
+  :root {
+    --made-with-panda: '🐼';
+  }
+  @property --brightness {
+    syntax: '*';
+    inherits: false;
+  }
+  @property --contrast {
+    syntax: '*';
+    inherits: false;
+  }
+  @property --grayscale {
+    syntax: '*';
+    inherits: false;
+  }
+  @property --hue-rotate {
+    syntax: '*';
+    inherits: false;
+  }
+  @property --invert {
+    syntax: '*';
+    inherits: false;
+  }
+  @property --saturate {
+    syntax: '*';
+    inherits: false;
+  }
+  @property --sepia {
+    syntax: '*';
+    inherits: false;
+  }
+  @property --drop-shadow {
+    syntax: '*';
+    inherits: false;
+  }
+  @property --blur {
+    syntax: '*';
+    inherits: false;
+  }
+  @property --translate-x {
+    syntax: '<length-percentage>';
+    inherits: false;
+    initial-value: 0;
+  }
+  @property --translate-y {
+    syntax: '<length-percentage>';
+    inherits: false;
+    initial-value: 0;
+  }
+}
+@layer tokens {
+  :where(:root, :host) {
+    --spacing-1: 0.25rem;
+    --blurs-sm: 8px;
+  }
+}
+@layer utilities {
+  .translate-y_-1 {
+    --translate-y: calc(var(--spacing-1) * -1);
+  }
+  .blur_sm {
+    --blur: blur(var(--blurs-sm));
+  }
+  .filter_auto {
+    filter: var(--blur, ) var(--brightness, ) var(--contrast, ) var(--grayscale, ) var(--hue-rotate, ) var(--invert, ) var(--saturate, ) var(--sepia, ) var(--drop-shadow, );
+  }
+  .translate_auto {
+    translate: var(--translate-x) var(--translate-y);
+  }
+}
