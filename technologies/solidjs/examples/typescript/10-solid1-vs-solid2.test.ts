@@ -136,3 +136,81 @@ describe("10 · Then vs now, proved on both runtimes", () => {
     }
   });
 });
+
+describe("10 · props and stores, then vs now", () => {
+  it("defaults: mergeProps (1.x) skips undefined, merge (2.0) lets it override", () => {
+    expect(v1.mergeProps({ size: "md" }, { size: undefined }).size).toBe("md");
+    expect(v2.merge({ size: "md" }, { size: undefined }).size).toBeUndefined();
+  });
+
+  it("splitProps (1.x) vs omit (2.0)", () => {
+    const props = { a: 1, b: 2, c: 3 };
+    const [local, rest] = v1.splitProps(props, ["a"]);
+    expect(local).toEqual({ a: 1 });
+    expect(rest).toEqual({ b: 2, c: 3 });
+    const rest2 = v2.omit(props, "a");
+    expect("a" in rest2).toBe(false);
+    expect(rest2.b).toBe(2);
+  });
+
+  // Note: solid-js@1.9's `solid-js/store` entry imports the bare specifier "solid-js",
+  // which resolves to 2.0 in this project, so 1.x stores cannot be loaded side by side.
+  // Store then-vs-now is covered in modules 05 and 10 as prose plus the 2.0-side tests.
+  it("2.0 store updates are draft-first and staged until flush", () => {
+    const [s2, set2] = v2.createStore({ user: { name: "A" }, todos: [{ done: false }, { done: true }] });
+    set2((d) => {
+      d.user.name = "B";
+      for (const t of d.todos) if (!t.done) t.done = true;
+    });
+    expect(s2.user.name).toBe("A");
+    v2.flush();
+    expect(s2.user.name).toBe("B");
+    expect(s2.todos.every((t) => t.done)).toBe(true);
+    expect("unwrap" in v2).toBe(false);
+  });
+
+  it("selection: createSelector (1.x) and a projection (2.0) both notify only the two affected keys", () => {
+    let runs1 = 0;
+    const r1 = v1.createRoot((dispose) => {
+      const [sel, setSel] = v1.createSignal(0);
+      const isSelected = v1.createSelector(sel);
+      for (let i = 0; i < 100; i++) v1.createComputed(() => (runs1++, isSelected(i)));
+      return { setSel, dispose };
+    });
+    runs1 = 0;
+    r1.setSel(50);
+    expect(runs1).toBe(2);
+    r1.dispose();
+
+    let runs2 = 0;
+    const r2 = v2.createRoot((dispose) => {
+      const [sel, setSel] = v2.createSignal(0);
+      const selected = v2.createProjection<Record<number, boolean>>((d) => {
+        for (const k of Object.keys(d)) delete d[Number(k)];
+        d[sel()] = true;
+      }, {});
+      for (let i = 0; i < 100; i++) v2.createMemo(() => (runs2++, selected[i] === true));
+      return { setSel, dispose };
+    });
+    runs2 = 0;
+    r2.setSel(50);
+    v2.flush();
+    expect(runs2).toBe(2);
+    r2.dispose();
+  });
+
+  it("async: createResource exposes loading/undefined (1.x); 2.0 has no createResource", async () => {
+    let resolve!: (v: string) => void;
+    const r = v1.createRoot((dispose) => {
+      const [data] = v1.createResource(() => new Promise<string>((res) => (resolve = res)));
+      return { data, dispose };
+    });
+    expect(r.data.loading).toBe(true);
+    expect(r.data()).toBeUndefined(); // the `T | undefined` loading hole
+    resolve("x");
+    await new Promise((res) => setTimeout(res, 0));
+    expect(r.data()).toBe("x");
+    r.dispose();
+    expect("createResource" in v2).toBe(false);
+  });
+});
