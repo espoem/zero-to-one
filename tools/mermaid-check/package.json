@@ -1,0 +1,13 @@
+{
+  "name": "mermaid-check",
+  "private": true,
+  "type": "module",
+  "description": "Parses every Mermaid diagram in the repository's Markdown with two Mermaid majors (GitHub-rendering compatibility).",
+  "bin": { "mermaid-check": "./check.mjs" },
+  "scripts": { "check": "node check.mjs ../.." },
+  "dependencies": {
+    "jsdom": "30.1.3",
+    "mermaid": "12.2.0",
+    "mermaid11": "npm:mermaid@11.17.2"
+  }
+}
