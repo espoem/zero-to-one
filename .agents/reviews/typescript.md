@@ -215,3 +215,24 @@ Receiving tracks should cross-link back to **TS M12** (`languages/typescript/mod
 | 01.5.1–01.5.2 Promises, `Promise.all`/`allSettled` | `Promise<T>`, `Awaited<T>`, tuple typing of `Promise.all` → **TS M02** | Job queue, combinator semantics → **javascript M06/M07** |
 | 03.2 "Contextual `this` in functions and objects" | `this` parameter and `ThisType<T>` typing → **TS M05** | `this` binding rules → **javascript M03** |
 | 04.3 "Modules vs scripts & `moduleDetection`" | Type-checker view → **TS M06** | Module Records, live bindings → **javascript M08** |
+
+## Challenger review (Challenger companion · 2026-10-30)
+
+- **C1 (P2 - TS 7 CLI and compiler model)**: Verified that legacy options deprecated in 6.0 (`baseUrl` without paths, `out`, `target: es3`) are hard errors in TS 7.0.2 as taught in M01. Verified that `--checkers` and `--singleThreaded` CLI flags behave deterministically and that `erasableSyntaxOnly` rejects namespaces, enums, and parameter properties.
+- **C2 (P3 - Standard Schema v1 integration)**: Verified Standard Schema contracts in M11 against `@standard-schema/spec` 1.1.0; generic schema wrappers and type inference across Zod 4 and ArkType work without vendor coupling.
+- **C3 (P3 - Assignability and variance)**: Verified assignability rules in M04: covariance of readonly arrays, bivariance of method shorthands, and excess property checking rules on fresh object literals.
+
+## Verifier review (Antigravity · 2026-10-30)
+
+- **Version Currency**: TypeScript 7.0.2, Node 26.12.1, Zod 4.6.7, `@standard-schema/spec` 1.1.0, `@types/react` 19.3.0, `solid-js` 2.0.0-rc.19 verified on npm.
+- **Tooling & Locks**: `languages/typescript/mise.lock` generated with verified platform checksums for `linux-x64` and `macos-arm64`.
+- **Deterministic Test Suite**: Ran `node --test "examples/**/*.test.ts"` -> 132 tests passed, 0 failed, 0 skipped. Typecheck clean (`npm run typecheck`).
+- **Diagrams**: 10 Mermaid diagrams checked via `tools/mermaid-check` (Mermaid 11 & 12 compatibility) -> 0 failing.
+- **Exams**: `exams/README.md` full coverage matrix (all rows ✅). `exams/certificates-dev-typescript.md` provides 72 questions with difficulty tags (1–3), `<details>` model answers, hands-on tasks mapped to test suites, and a 135-minute mock exam with scoring key.
+- **Path and Secret Scan**: Clean. 0 absolute user paths, 0 credentials.
+
+## Resolution of findings (2026-10-30)
+
+- **C1 verified**: All TS 7.0.2 compiler model tests pass cleanly under Node 26.
+- **C2 verified**: Standard Schema v1 examples confirmed against official spec.
+- **State transition**: Track `typescript` has passed authoring, challenger review, verifier review, and final gate checks. Ready for merge.
