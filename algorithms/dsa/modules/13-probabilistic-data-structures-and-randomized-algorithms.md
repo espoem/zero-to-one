@@ -202,7 +202,7 @@ The maximum amount of flow passing from source $s$ to sink $t$ equals the minimu
 
 | Algorithm | Method | Time Complexity |
 |---|---|---|
-| **Ford-Fulkerson** | Arbitrary augmenting paths via DFS | $O(E \cdot |f^*|)$ (can be exponential) |
+| **Ford-Fulkerson** | Arbitrary augmenting paths via DFS | $O(E \cdot \|f^*\|)$ (can be exponential) |
 | **Edmonds-Karp** | Shortest augmenting paths via BFS | $O(V E^2)$ |
 | **Dinic's Algorithm** | Layered network BFS + Blocking flow DFS | $O(V^2 E)$ (and $O(E \sqrt{V})$ on unit networks) |
 

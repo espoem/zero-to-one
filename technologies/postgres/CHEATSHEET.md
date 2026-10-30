@@ -165,7 +165,7 @@ WINDOW w AS (PARTITION BY department_id ORDER BY salary DESC);
 | `@>` | `boolean` | Left JSONB contains right JSONB | `'{"a":1, "b":2}'::jsonb @> '{"a":1}'` |
 | `<@` | `boolean` | Left JSONB is contained by right JSONB | `'{"a":1}'::jsonb <@ '{"a":1, "b":2}'` |
 | `?` | `boolean` | String key exists in JSONB | `data ? 'email'` |
-| `?|` | `boolean` | Any specified string key exists | `data ?| array['mobile', 'email']` |
+| `?\|` | `boolean` | Any specified string key exists | `data ?\| array['mobile', 'email']` |
 | `?&` | `boolean` | All specified string keys exist | `data ?& array['first', 'last']` |
 | `\|\|` | `jsonb` | Concatenate / merge two JSONB objects | `data \|\| '{"status": "verified"}'` |
 | `-` | `jsonb` | Delete key or array index from JSONB | `data - 'temporary_token'` |

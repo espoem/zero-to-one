@@ -53,6 +53,10 @@ Apply these requirements when creating or updating any topic module:
    - Every topic in those sources must map to a module or be explicitly listed as out of scope, with a reason.
    - End each module with an **Interview Drill**: 5–10 questions an experienced interviewer would ask about the module, with model answers in collapsible `<details>` blocks.
 
+6. **Markdown Tables and Escaped Delimiters**:
+   - In all Markdown tables, every literal pipe character (`|`) occurring inside cell text, inline code spans (e.g. `A \| B`), math, or descriptions MUST be escaped as `\|` or `&#124;` unless it functions as a table column grid mark.
+   - Unescaped pipes inside cells fragment row parsing, creating phantom columns and corrupting table alignment across GitHub and Markdown renderers. Always verify table column count consistency.
+
 ## Version Currency
 
 1. Target the latest stable release of every language, runtime, framework, and tool. Verify each version against a primary source (official release notes, the package registry, or upstream tags) at the time of writing. Never rely on model memory for versions.

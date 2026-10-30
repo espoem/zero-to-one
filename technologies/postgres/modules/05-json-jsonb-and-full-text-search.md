@@ -133,7 +133,7 @@ CREATE INDEX idx_payload_path ON client_payloads USING gin (attributes jsonb_pat
 | Dimension | Default `jsonb_ops` | Path-Optimized `jsonb_path_ops` |
 | :--- | :--- | :--- |
 | **Indexed Entries** | Indexes every key, every value, and every path independently | Indexes a 32-bit hash of the complete `path = value` pair |
-| **Supported Operators** | `@>`, `?`, `?|`, `?&` | **Only `@>`** (Containment) |
+| **Supported Operators** | `@>`, `?`, `?\|`, `?&` | **Only `@>`** (Containment) |
 | **Index Size** | Large (indexes individual keys multiple times) | **30% to 50% smaller** footprint |
 | **Query Speed** | Fast for containment and key existence | **Significantly faster** for deep containment queries |
 

@@ -165,7 +165,7 @@ On modern 64-bit hardware, bit manipulation evaluates in 1 CPU cycle, providing 
 | Operation | Expression | Mathematical Purpose |
 | :--- | :--- | :--- |
 | **Check $k$-th bit** | `(x & (1 << k)) !== 0` | Tests if bit $k$ is set |
-| **Set $k$-th bit** | `x | (1 << k)` | Unconditionally sets bit $k$ to 1 |
+| **Set $k$-th bit** | `x \| (1 << k)` | Unconditionally sets bit $k$ to 1 |
 | **Clear $k$-th bit** | `x & ~(1 << k)` | Clears bit $k$ to 0 |
 | **Toggle $k$-th bit** | `x ^ (1 << k)` | Inverts bit $k$ |
 | **Extract lowest set bit** | `x & (-x)` | Isolates least significant 1-bit via two's complement |
