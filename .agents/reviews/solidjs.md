@@ -1,6 +1,24 @@
 # Review: solidjs
 
-## Hand-off (primary: Opus · 2026-10-29 · branch `track/solidjs`)
+## Hand-off (primary: Opus · updated 2026-10-30 · branch `track/solidjs`)
+
+### Depth pass (2026-10-29/30)
+Every module is now ≥ 400 lines (total ≈ 4 100, was ≈ 2 500), with new internals, negative tests, Then-vs-now and diagrams:
+- M01: annotated rc.19 engine (Link lists from alien-signals, height-bucket heap, CLEAN/CHECK/DIRTY, flush steps, adjustHeight, pull-on-read, dormancy sweep), glitch-freedom proof sketch, disposal internals; tests for dormancy, dynamic heights, unowned-effect leak, untracked snapshot read, effect feedback loop ("Potential Infinite Loop").
+- M02: effect queues (render before user), lifecycle state machine, onSettled settle semantics, diagnostics pipeline, pattern catalogue, decision flowchart; tests for queue order, apply waiting on async, onSettled after an action, invalid cleanup → halt, SETTLED_CLEANUP_UNOWNED, PRIMITIVE_IN_EFFECT_CALLBACK.
+- M03: annotated real compiler output (memoised conditionals, Show as getter props, spread/ref lowering, delegated vs native events, dev sourceNames), template cloning; tests incl. UNRECOGNIZED_INSERT_VALUE and spread re-applying handlers.
+- M04: annotated `updateKeyedMap` (prefix/suffix, identity-kept, small-move, strong abort), Show/Switch state machine, repeat() windowing, dynamic() `static`/`isStatic`, createUniqueId, owner-tree context lookup, worked Tabs example.
+- M05: store proxy node kinds (leaf/presence/container/deep), CoW backing, O(written) setters, slot release, `isWrappable`, `__proto__` guard, cost model, normalised-state example, createSelector then-vs-now.
+- M06: NotReadyError/status propagation and settle walk, boundary frame readers, last-run-wins (out-of-order test), refresh settle promise, ASYNC_OUTSIDE_LOADING_BOUNDARY, PENDING_ASYNC_UNTRACKED_READ, boundary placement design, search example.
+- M07: action runner pseudocode + state machine, held plain writes (proved), three state layers, lane read rules, acknowledgement table, collaborative-list system design; corrected a false claim (a plain async function passed to `action()` fails at call time).
+- M08: **hydration round-trip test** (child `node` process renders hydratable SSR output of a real-compiler fixture; jsdom hydrates it: node adoption, live events, silent data mismatch, unclaimed foreign HTML), **streaming wire-format test**, `_hk`/markers/event replay, request event + response head, cookie codec test, sessions recipe.
+- M09: testing pattern catalogue, costs()/why() profiling test, behavioural leak test + fix, zero-diagnostics CI gate, configureClientErrors test, performance-track guide, CI for RC deps, debugging checklist.
+- M10: more 1.9-vs-2.0 executed comparisons, a fully migrated component, migration grep audit, SolidStart 1 → start mode path, RC risk register, React memoisation and RSC comparisons.
+- All 30 Mermaid diagrams pass `tools/mermaid-check` (Mermaid 11 and 12).
+
+Tests now: **Test Files 11 passed (11), Tests 216 passed (216)**; typecheck clean; mermaid-check 0 failing.
+
+### Original hand-off
 
 All work tests against the **real published packages**; the old shim (`examples/utils/solid2-runtime.ts`) and the old `node --conditions=browser` scripts are gone.
 
@@ -31,11 +49,16 @@ Test status (Node 26.12.1): `npm test` → **Test Files 10 passed (10), Tests 16
 2. **`mise.lock`**: hand-written node 26.12.1 entry without platform checksums (no mise binary here). Run `mise lock` on a machine with mise and commit.
 3. **Router**: `@solidjs/router@2.0.0-next.43` is not covered by tests; add a routing section/suite once its API stabilises (and `setup` hook usage in start mode).
 4. **Start-mode end-to-end**: `vite build` + `vite preview` (+ Playwright) as `test:integration`, skipping cleanly when browsers are unavailable.
-5. **Hydration round-trip test**: SSR HTML (hydratable codegen) → `hydrate()` in jsdom; the client project is non-hydratable by plugin design, so this needs a dedicated config.
+5. ~~Hydration round-trip test~~ done (child-process server render + jsdom hydrate).
 6. Optional CI job against `solid-js@next` (allowed to fail).
 7. Update `.agents/STATUS.md` (not edited by the author per the kickoff boundaries) to 🟨.
 
 ## Least-certain claims (for the challenger)
+
+- Hydration data mismatch emits no diagnostic in rc.19 (observed); RFCs may intend one.
+- `graphSize()` returned zeros in jsdom; M09 treats it as a browser tool (unverified there).
+- Engine internals in M01/M04/M05/M07 are read from rc.19 dist code and dated source comments; they are labelled non-API and may change between RCs.
+- 1.x stores cannot be loaded beside 2.0 (bare-specifier import), so store then-vs-now is prose-only.
 
 - `onFlush` callbacks are not run by an explicit `flush()`; they run with the scheduled microtask flush (observed in rc.19, undocumented).
 - `reconcile` keeps identity only for **observed** rows; an unobserved proxy grabbed earlier was not `===` after reconcile in a probe (M05 §3). Contradicts a literal reading of RFC 04 "preserving identity".

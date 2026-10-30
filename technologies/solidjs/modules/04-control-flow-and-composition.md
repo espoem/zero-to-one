@@ -1,6 +1,6 @@
 # Module 04 — Control Flow and Composition
 
-> **Executable proof:** [`examples/typescript/04-control-flow-and-composition.test.tsx`](../examples/typescript/04-control-flow-and-composition.test.tsx) (18 tests, jsdom, real `solid-js@2.0.0-rc.19`).
+> **Executable proof:** [`examples/typescript/04-control-flow-and-composition.test.tsx`](../examples/typescript/04-control-flow-and-composition.test.tsx) (25 tests, jsdom, real `solid-js@2.0.0-rc.19`).
 >
 > Async boundaries (`<Loading>`, `<Errored>`, `<Reveal>`) are control flow too, but they only make sense with async data, so they live in [Module 06](./06-colorless-async.md).
 
