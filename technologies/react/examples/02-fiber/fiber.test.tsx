@@ -5,7 +5,7 @@
  */
 import { afterEach, describe, expect, test, vi } from "vitest";
 import fc from "fast-check";
-import { Fragment, act, memo, useState, type ReactNode } from "react";
+import { Fragment, StrictMode, act, memo, useEffect, useLayoutEffect, useState, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { WorkTag, fiberOf, fiberRootOf, type Fiber } from "../_shared/internals.ts";
 import { lisLength, reconcileKeyed } from "./keyed-diff.ts";
@@ -374,6 +374,91 @@ describe("bailouts: when React skips re-rendering a subtree", () => {
     const dt = fiberOf(container.querySelector("dt")!);
     expect(dt.return!.tag).toBe(WorkTag.Fragment);
     expect(dt.return!.key).toBe("1");
+  });
+});
+
+describe("source-level behaviours (ReactChildFiber.placeChild, commitRoot)", () => {
+  test("StrictMode re-runs effects for INSERTED children (PlacementDEV) but not for MOVED ones (Placement)", () => {
+    const log: string[] = [];
+    function Row({ id }: { id: string }) {
+      useEffect(() => {
+        log.push(`mount ${id}`);
+        return () => void log.push(`unmount ${id}`);
+      }, [id]);
+      return <li>{id}</li>;
+    }
+    function List({ ids }: { ids: string[] }) {
+      return (
+        <ul>
+          {ids.map((id) => (
+            <Row key={id} id={id} />
+          ))}
+        </ul>
+      );
+    }
+    const { rerender } = mount(
+      <StrictMode>
+        <List ids={["a", "b"]} />
+      </StrictMode>,
+    );
+    log.length = 0;
+    // "b" moves (Placement only); "c" is inserted (Placement | PlacementDEV).
+    rerender(
+      <StrictMode>
+        <List ids={["b", "a", "c"]} />
+      </StrictMode>,
+    );
+    expect(log).toEqual(["mount c", "unmount c", "mount c"]);
+  });
+
+  test("commit is atomic: a layout effect sees every sibling's DOM already updated", () => {
+    const seen: string[] = [];
+    function Reader() {
+      useLayoutEffect(() => {
+        seen.push(document.getElementById("later-sibling")!.textContent!);
+      });
+      return null;
+    }
+    function App({ v }: { v: string }) {
+      return (
+        <>
+          <Reader />
+          <p id="later-sibling">{v}</p>
+        </>
+      );
+    }
+    const { rerender } = mount(<App v="one" />);
+    rerender(<App v="two" />);
+    // Reader comes BEFORE the <p> in the tree, yet its layout effect already sees "two":
+    // the whole mutation phase finishes before any layout effect runs.
+    expect(seen).toEqual(["one", "two"]);
+  });
+
+  test("NEGATIVE: a memo comparator that ignores a prop freezes the UI on that prop", () => {
+    const Price = memo(
+      function Price({ amount, currency }: { amount: number; currency: string }) {
+        return (
+          <b>
+            {amount} {currency}
+          </b>
+        );
+      },
+      (prev, next) => prev.amount === next.amount, // forgot currency
+    );
+    const { container, rerender } = mount(<Price amount={10} currency="EUR" />);
+    rerender(<Price amount={10} currency="CZK" />);
+    expect(container.textContent).toBe("10 EUR"); // stale: wrong currency on screen
+  });
+
+  test("NEGATIVE: mutating an object prop in place is invisible to memo (same reference)", () => {
+    const List = memo(function List({ items }: { items: string[] }) {
+      return <i>{items.join(",")}</i>;
+    });
+    const items = ["a"];
+    const { container, rerender } = mount(<List items={items} />);
+    items.push("b");
+    rerender(<List items={items} />);
+    expect(container.textContent).toBe("a");
   });
 });
 
