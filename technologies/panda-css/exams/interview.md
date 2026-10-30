@@ -261,7 +261,7 @@ What does `css({ color: 'orange.700' }, { color: 'orange.300' })` return?
 <details><summary>Answer</summary>
 
 **B.** Objects merge left to right before encoding; the last value wins per property.
-- Ref: [M03 §3.3](../modules/03-styling-api-and-conditions.md#33-composition-css-a-b-cssraw-cx), `runtime.test.ts`
+- Ref: [M03 §3.3](../modules/03-styling-api-and-conditions.md#33-composition-cssa-b-cssraw-cx), `runtime.test.ts`
 </details>
 
 ### Q-INT-020 · D3 · difficulty 2 · scenario

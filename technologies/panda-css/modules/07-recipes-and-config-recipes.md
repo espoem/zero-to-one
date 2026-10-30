@@ -24,7 +24,7 @@ styles(p)   = B ⊕ V[k₁][resolve(p)(k₁)] ⊕ … ⊕ { c.css | c ∈ C, mat
 matches(c, r) = ∀ k ∈ keys(c.match): r(k) ∈ asSet(c.match(k))     // array = any of
 ```
 
-`⊕` is the style-object merge from [Module 03](./03-styling-api-and-conditions.md#33-composition-css-a-b-cssraw-cx). Compound variants apply only when **every** key matches; an array value means "any of these". Booleans as variant keys work (`invalid: { true: {…} }`).
+`⊕` is the style-object merge from [Module 03](./03-styling-api-and-conditions.md#33-composition-cssa-b-cssraw-cx). Compound variants apply only when **every** key matches; an array value means "any of these". Booleans as variant keys work (`invalid: { true: {…} }`).
 
 | | Atomic recipe `cva()` | Config recipe `defineRecipe()` |
 |---|---|---|
