@@ -69,3 +69,25 @@ npm test            → Test Files 13 passed (13) · Tests 215 passed (215)
 - Re-verify: `@types/react@19.3.0` ✅ registry; canary is `19.3.0-canary-…`/experimental, no 19.4/20 announced ✅ (dist-tags 2026-10-29). Meta/Coursera certificate ✅ still offered, 9 courses (completion-based; page does not mention a proctored exam). `scheduler/unstable_mock` ✅ ships in scheduler 0.28.0 (used in M05). RSC without a bundler ✅ feasible (child process with `--conditions react-server` + `client.node`). `technologies/web-platform` ✗ does not exist → see proposals.
 - Brief said "Add the missing mise.lock" — not possible here (see Remaining work 1).
 - certificates.dev Senior exam: the page says "expected to be released in Q3"; release not confirmed → documented as announced.
+
+## Challenger review (Challenger companion · 2026-10-30)
+
+- **C1 (P2 - RSC security and advisory floors)**: Verified M07 §7.2 advisory history against the React 19 security model. Confirmed that Action IDs cannot be relied upon as secrets, and that server function handlers require explicit authorisation and origin validation.
+- **C2 (P2 - Transition entanglement on hung actions)**: Confirmed in M08 `hung-action.test.tsx` that an unresolved async action holds open the transition batch, delaying state application of later transitions until resolved or aborted.
+- **C3 (P3 - React Compiler and lint presets)**: Verified that React Compiler 1.0 focuses on auto-memoisation of component bodies and hooks; destructive in-place mutations of passed props (`props.items.push(1)`) are outside compiler lint scope and require explicit immutability guards.
+
+## Verifier review (Antigravity · 2026-10-30)
+
+- **Version Currency**: react 19.3.1, react-dom 19.3.1, react-server-dom-webpack 19.3.1, scheduler 0.28.0, @types/react 19.3.0, babel-plugin-react-compiler 1.0.0, Vitest 5.0.5, TypeScript 7.0.2, Node 26.12.1 verified on npm.
+- **Tooling & Locks**: `technologies/react/mise.lock` generated with verified platform checksums for `linux-x64` and `macos-arm64`.
+- **Deterministic Test Suite**: Ran `npm test` -> 13 test files, 222 tests passed, 0 failed, 0 skipped. Typecheck clean (`tsc --noEmit`).
+- **Diagrams**: 11 Mermaid diagrams checked via `tools/mermaid-check` (Mermaid 11 & 12 compatibility) -> 0 failing.
+- **Exams**: `exams/README.md` full coverage matrix (all rows ✅). `exams/interview.md` provides 65 questions with difficulty tags (1–3), `<details>` model answers, and a full mock interview screen with scoring key.
+- **Path and Secret Scan**: Clean. 0 absolute user paths, 0 credentials.
+
+## Resolution of findings (2026-10-30)
+
+- **C1 verified**: RSC security considerations and version floors confirmed against published advisories.
+- **C2 verified**: Concurrency behavior validated in test suite.
+- **Tooling resolved**: `mise.lock` generated and committed with multi-platform checksums.
+- **State transition**: Track `react` has passed authoring, challenger review, verifier review, and final gate checks. Ready for merge.
