@@ -12,6 +12,7 @@ Severity: **P0** = wrong now (a false claim, a failing test, a removed API taugh
 - [ ] `tools/mermaid-check` passes for the track: every Mermaid diagram parses with Mermaid 11 and 12.
 - [ ] Every link is relative and resolves (`lychee --offline` or an equivalent link checker).
 - [ ] There are no `file:///`, absolute user paths, secrets or real tokens.
+- [ ] Commit metadata is clean: author and committer are the operator's identity, and no commit message carries `Co-Authored-By`, `Claude-Session`, or any other agent/tool trailer (AGENTS.md § Multi-Agent Workflow rule 7).
 - [ ] The track has every required item: `README.md`, `GLOSSARY.md`, `CHEATSHEET.md`, `modules/`, `examples/`, `exams/`.
 
 ## B. Version currency

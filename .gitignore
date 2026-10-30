@@ -48,6 +48,10 @@ audit.md
 SYLLABUS_AUDIT.md
 *SYLLABUS_AUDIT.md
 
+# Transfer bundles and scratch
+*.bundle
+
+
 
 # Agent runtime scratch (pi task dirs)
 .pi/tasks/
