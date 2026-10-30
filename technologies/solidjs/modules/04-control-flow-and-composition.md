@@ -397,3 +397,8 @@ After prefix/suffix matching covers every position at the same length, it keeps 
 
 `props.children` is a getter, so each read re-evaluates the children expression and can create DOM twice. `children()` resolves once into a memo with `toArray()`, so a component can inspect, count or place its children safely.
 </details>
+
+<details><summary>13. Build a virtualised list in Solid 2. Which primitive and why?</summary>
+
+`<Repeat count={visible} from={first}>` over store-backed rows: the index is a stable number, scrolling only shifts the window (rows leaving are disposed, entering ones created), and each row reads `store.rows[i]` fields fine-grained. A `<For>` over a sliced array would diff the slice on every scroll step.
+</details>

@@ -392,3 +392,13 @@ A presence node: it re-runs when the key is added or deleted, not when its value
 It replaces the `user` record with a copy, so the store must compare every leaf and anything reading `store.user` sees a new identity; attribution flags `IMMUTABLE_UPDATE_IN_STORE`. The draft write `s.user.name = name` touches one leaf.
 </details>
 
+<details><summary>12. You store a `Map` in a store and call `map.set(k, v)` in a setter. Why doesn't the UI update?</summary>
+
+Only plain objects and arrays are wrapped (`isWrappable`); a `Map` is stored as-is, so its internal mutation notifies nothing. Replace the `Map` (`d.index = new Map(d.index).set(k, v)`) or model it as a plain record keyed by id.
+</details>
+
+<details><summary>13. Where does a store write live between the setter call and the flush?</summary>
+
+On the container node's pending (copy-on-write) backing; the committed backing mutates only at the flush's commit. That is why reads lag writes for stores too, and why a transaction can hold or discard a store write wholesale.
+</details>
+

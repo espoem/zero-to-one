@@ -391,3 +391,13 @@ Audit dependencies (peer ranges; SolidStart has no 2.0 line, so move to start mo
 React re-runs component functions, creating new closures and child elements each render, so stable references and memoised children prevent cascades. Solid runs components once, so closures are created once and children never re-render; memos are only for expensive or shared derivations.
 </details>
 
+<details><summary>10. Compare React Server Components with Solid 2's server components.</summary>
+
+React marks client modules with `"use client"` and streams the Flight format; client components hydrate. Solid 2 (experimental) has no `"use client"`: a server component is a function returned from a `"use server"` function, streamed as HTML with values as data records ("single copy"), and adopted at hydration without re-running.
+</details>
+
+<details><summary>11. Why can't the 1.9 store be tested side by side with 2.0 in one project?</summary>
+
+`solid-js@1.9`'s `solid-js/store` entry imports the bare `solid-js` specifier, which resolves to the installed 2.0 package; the 1.x store would bind to the wrong runtime. Core APIs can be compared through an npm alias because the 1.x core module imports nothing from `solid-js`.
+</details>
+

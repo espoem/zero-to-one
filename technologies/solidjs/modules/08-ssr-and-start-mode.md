@@ -393,3 +393,8 @@ A shell with layout, a placeholder `<template id="pl-N">` plus the fallback, and
 
 For client-only computations (localStorage, measurements) where a serialized server value is meaningless. The server never runs it; it renders the nearest `<Loading>` fallback (and the client renders after hydration), or a declared `loadingValue`.
 </details>
+
+<details><summary>11. What is `_hk`, and why must `createUniqueId` be used instead of random ids under SSR?</summary>
+
+`_hk` is the hydration key the server writes on claimed elements, derived from the owner-tree position; the client computes the same keys while re-running components and claims nodes by them. Random ids differ between server and client, so labels and ARIA references would point at the wrong element after hydration; `createUniqueId` uses the same deterministic scheme.
+</details>

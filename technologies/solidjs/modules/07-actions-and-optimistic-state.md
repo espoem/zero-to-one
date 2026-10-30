@@ -389,3 +389,13 @@ Committed (what the frame was built from), staged (held writes and truth that la
 
 The action probably calls `affects(store)` on the list root, which pends everything reachable. Use `affects(todo, "title")` (one slot per call) so only the edited field reads as pending; keep the process affordance as an optimistic flag on the row.
 </details>
+
+<details><summary>13. Inside an action, a plain `setPage("b")` before a `yield`: when does `page()` return `"b"`?</summary>
+
+When the action's transaction settles. Plain writes inside an open action are held (staged); until then readers see the committed value and `isPending(() => page())` is true. All writes on both sides of the yields commit together.
+</details>
+
+<details><summary>14. Why does a temporary client id cause a "double row" flash after a successful create?</summary>
+
+The confirmed row arrives under the server's id, a different key from the guess; the guess only disappears when its overlay drops at the end of the transaction. Use client-generated ids that the server keeps, so reconciliation lands the truth on the same record.
+</details>

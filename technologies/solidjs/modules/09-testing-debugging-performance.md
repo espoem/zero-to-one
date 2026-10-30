@@ -395,3 +395,8 @@ Enable attribution (or record a trace with the Solid tracks): `costs().writes` r
 
 They turn rule violations (destructured props, owned writes, overwritten input) into assertable codes, so negative tests prove an anti-pattern is detected, and positive tests prove the fix emits nothing.
 </details>
+
+<details><summary>10. How do you turn "this component has no reactivity anti-patterns" into a CI check?</summary>
+
+Render and exercise it inside `OBSERVE.diagnostics.capture()` in the dev build and assert the captured codes are `[]`, alongside negative tests that prove each guard still fires.
+</details>
