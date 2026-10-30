@@ -77,3 +77,25 @@ Test status (Node 26.12.1): `npm test` → **Test Files 10 passed (10), Tests 16
 - **TypeScript track handover**: TS M13 13.5.4 teaches `on:click` native events — a compile error in Solid 2.0; 13.5.5 teaches `<Dynamic>` as primary — deprecated per RFC 03 (use `dynamic()`); 13.1.3 claims `flush()` from module scope after writes; fine. 13.6.3 imports `handleServerFunctionRequest` from `@solidjs/web` — correct path is `@solidjs/web/server-functions/server`. Replace 13.6.4 pointer ("7-Module", rc.8) with a link to this README.
 - **React track**: link its comparison sections to `technologies/solidjs/modules/10-migration-and-react-comparison.md#4-react-19-vs-solid-2-the-mental-models`.
 - **AGENTS.md conflict noted**: AGENTS prescribes `node --test` for TypeScript; this track uses Vitest because JSX compilation and the client/server postures require `@solidjs/vite-plugin` (brief's executable-proof strategy). Per AGENTS precedence this is recorded here for the integrator's decision.
+
+## Challenger review (Challenger companion · 2026-10-30)
+
+- **C1 (P2 - graphSize resolution condition)**: In M09 line 229, `graphSize()` was noted as returning zeros in jsdom tests. Audit of `@solidjs/signals/package.json` and dist files reveals that `./attribution` exports `./dist/prod/attribution.js` by default, which hardcodes `{ roots: 0, owners: 0, computations: 0, signals: 0, edges: 0 }`. Live root iteration requires either the `observe` or `development` export condition to resolve `./dist/dev.attribution.js` and access `liveRootOwners()`.
+- **C2 (P2 - Hydration mismatch diagnostics)**: Verified claims in M08 regarding hydration error behavior against `@solidjs/web/dist/web.dev.js`. Tag and structure mismatches emit `console.warn` via `describeSiblings`; missing key nodes throw an explicit `Error`. Data/text mismatches deliberately emit no warning or diagnostic; client signals silently overwrite mismatched text content during initial hydration effect. The hand-off observation is accurate.
+- **C3 (P3 - Alien-signals engine lowering)**: Verified Link list structures and CLEAN/CHECK/DIRTY height-bucket priority mechanics in M01 against rc.19 implementation.
+- **C4 (P3 - onFlush lifecycle)**: Confirmed that `onFlush` hooks run during microtask queue processing, not immediate synchronous `flush()` calls.
+
+## Verifier review (Antigravity · 2026-10-30)
+
+- **Version Currency**: Primary packages verified against npm: `solid-js` 2.0.0-rc.19, `@solidjs/signals` 2.0.0-rc.19, `@solidjs/web` 2.0.0-rc.19, `@solidjs/compiler` 2.0.0-rc.19, `@solidjs/vite-plugin` 3.0.0-next.52, `@solidjs/testing-library` 1.0.0-rc.2, Vitest 5.0.5, Vite 8.3.5, TypeScript 7.0.2, Node 26.12.1.
+- **Tooling & Locks**: `technologies/solidjs/mise.lock` generated with verified platform checksums for `linux-x64` and `macos-arm64`.
+- **Deterministic Test Suite**: Ran `mise exec -- npm test` -> 11 test files, 216 tests passed, 0 failed, 0 skipped. Typecheck clean (`tsc -p tsconfig.json`).
+- **Diagrams**: 30 Mermaid diagrams checked via `tools/mermaid-check` (Mermaid 11 & 12 compatibility) -> 0 failing.
+- **Exams**: `exams/README.md` full coverage matrix (D1–D7) without gaps. `exams/interview.md` provides 60 questions with difficulty tags (1–3), `<details>` model answers, hands-on tasks tied to test files, and a timed 25-question mock exam.
+- **Path and Secret Scan**: Clean. 0 absolute user paths, 0 credentials.
+
+## Resolution of findings (2026-10-30)
+
+- **C1 resolved**: Updated M09 line 229 to state that `graphSize()` returns zeros in tests lacking the `observe` export condition because it resolves to the production stub; real root traversal requires `observe`/`development` conditions on `@solidjs/signals/attribution`.
+- **C2 noted**: Confirmed M08 text-mismatch silence as intentional framework behavior.
+- **State transition**: Track `solidjs` has passed authoring, challenger review, verifier review, and final gate checks. Ready for merge.
