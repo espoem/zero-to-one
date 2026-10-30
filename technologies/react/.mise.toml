@@ -1,3 +1,10 @@
+# Toolchain for technologies/react. Run everything through it:
+#   mise install && mise exec -- npm ci && mise exec -- npm test
+# npm packages (react, vitest, babel-plugin-react-compiler, …) are pinned exactly
+# in package.json + package-lock.json; mise pins the runtimes and global CLIs.
 [tools]
-node = "24"
+node = "26"
 "npm:typescript" = "7.0.2"
+
+[settings]
+lockfile = true

@@ -1,0 +1,93 @@
+# Review: react · author Opus (primary) · branch track/react
+
+## Hand-off (primary author, 2026-10-29) — ready for challenger/verifier
+
+**Status:** brief delivered. All 12 modules (10 rewritten, 11 and 12 new), 13 Vitest suites against the real React 19.3.1 packages (the old synthetic simulation scripts were deleted), `exams/README.md` (no official certification; certificates.dev + Meta/Coursera documented; 9-domain matrix, all ✅) and `exams/interview.md` (65 questions, 14 at difficulty 3, mock interview with scoring key), GLOSSARY (52 terms), CHEATSHEET, README with Verified-against line. TS M09–M12 runtime mechanics absorbed (M03 state machines, M04 ref cleanup/useEffectEvent, M06 use/Suspense, M07 RSC, M08 actions, M09 compiler, M11 metadata); typing is cross-linked to TS M12.
+
+**Depth note:** modules are 208–382 physical lines each (M08–M12 are the shortest) (dense paragraphs and tables), below the 400–900 rule-of-thumb line count but each has formal definitions, mechanics, Then vs now, failure-mode tables, Mermaid where structural, executable-proof tables and a 7–10 question Interview Drill.
+
+| Module | State | Proof file | Tests |
+|---|---|---|---|
+| 01 Elements, JSX & render model | done | `examples/01-elements/elements.test.tsx` | 20 |
+| 02 Fiber reconciler & commit | done | `examples/02-fiber/fiber.test.tsx`, `keyed-diff.ts` (fast-check vs real DOM placements) | 20 |
+| 03 State, hooks & closures | done (renamed from `03-hooks-closure-contracts.md`) | `examples/03-state/state.test.tsx`, `fetch-machine.ts` | 25 |
+| 04 Effects & synchronization | done (renamed from `04-effects-and-ref-cleanup.md`) | `examples/04-effects/effects.test.tsx` | 22 |
+| 05 Concurrency: lanes, transitions | done (renamed from `05-concurrent-lanes-and-transitions.md`) | `examples/05-concurrency/concurrency.test.tsx`, `lane-model.ts` (property test vs function extracted from installed react-dom build) | 17 |
+| 06 Suspense, streaming SSR & hydration | done (renamed from `06-suspense-and-streaming-ssr.md`) | `examples/06-suspense-ssr/suspense-ssr.test.tsx`, `_shared/ssr.ts` | 20 |
+| 07 Server Components & Flight | done (renamed from `07-rsc-and-flight-protocol.md`) | `examples/07-rsc/rsc.test.tsx` + `server.ts` (child process, `--conditions react-server`, NODE_ENV=production) | 13 |
+| 08 Actions, forms & optimistic UI | done (renamed from `08-actions-and-optimistic-updates.md`) | `examples/08-actions/actions.test.tsx`, `hung-action.test.tsx` | 16 |
+| 09 React Compiler 1.0 | done (renamed from `09-compiler-memoization-lowering.md`) | `examples/09-compiler/compiler.test.tsx`, `compile.ts` (real babel plugin + eslint Linter; compiled modules written to gitignored `.generated/`) | 17 |
+| 10 Errors & resilience | done (renamed from `10-error-boundaries-and-resilience.md`) | `examples/10-errors/errors.test.tsx` | 14 |
+| 11 Animation & DOM platform (new) | done | `examples/11-dom-platform/dom-platform.test.tsx`, `fake-view-transitions.ts` (recording stub of the VT API) | 15 |
+| 12 Performance, testing & production (new) | done | `examples/12-perf-testing/perf-testing.test.tsx`, `virtual-window.ts` | 17 |
+
+**Tooling:** Node 26.12.1 (local), Vitest 5.0.5 + jsdom 30.1.3, RTL 16.3.3, react/react-dom/react-server-dom-webpack 19.3.1, @types/react 19.3.0, babel-plugin-react-compiler 1.0.0 with @babel/core 8.0.9 (works), eslint 10.13.0 + eslint-plugin-react-hooks 7.1.1, fast-check 4.10.2, vite 8.3.5, TypeScript 7.0.2. `npm test` = `vitest run`; `npm run typecheck` = `tsc --noEmit`. Last run: 215/215 passing, typecheck clean.
+
+## Remaining work (ordered)
+1. **`mise.lock`** — not generated: no `mise` binary here and nodejs.org checksums were unreachable. On the Mac CLI run `cd technologies/react && mise lock` and commit. `.mise.toml` pins `node = "26"` and `npm:typescript = 7.0.2`; local verification used Node 26.12.1.
+2. **Browser verification (Verifier/Antigravity):** add a `test:integration` Playwright suite (skip cleanly without browsers) for: real `<ViewTransition>` animations and `addTransitionType` CSS types, Fragment ref `getClientRects`/`observeUsing` with real observers, stylesheet `precedence` load suspension, Trusted Types under `require-trusted-types-for 'script'`, and the M08 hung-action entanglement outside `act()`.
+3. **Challenger review** of the least-certain claims below, especially the CVE table (M07 §7.2) and the observed-only behaviours (M06 conditional-use warning scope, M08 hung action, M12 RTL sync-render pitfall).
+4. **Integrator:** fix cross-track links once `languages/javascript`, `languages/css`, `architecture/networking`, `architecture/security-identity`, `architecture/distributed-systems`, `technologies/nodejs`, `technologies/observability`, `technologies/gitlab-ci` exist, and the TS M12 filename after the TS restructure (currently linked as `12-react-19-and-modern-react-typescript.md`). All other relative links resolve (checked with a script).
+5. Optional depth: a Python/Rust secondary language is not warranted for this track (AGENTS § Code Example Languages); none added.
+
+## Test command output (final)
+```
+npm run typecheck   → tsc --noEmit: clean
+npm test            → Test Files 13 passed (13) · Tests 215 passed (215)
+```
+
+## Least-certain claims (for the challenger)
+- M12: RTL pitfall (initial sync `render()` that suspends never reveals; awaited async act fixes it) observed, root cause not investigated. Version-history dates before 19.0 from memory of React blog dates (16.0 2017-09, 16.3 2018-03, 16.6 2018-10, 16.8 2019-02, 17.0 2020-10, 18.0 2022-03, 18.3 2024-04) — not re-fetched. React Foundation date from the dossier.
+- M11: from react.dev docs, not tested: `<meta itemProp>` not hoisted; no dedupe of multiple `<title>`; ViewTransition event props `onEnter/onExit/onUpdate/onShare` signatures; stylesheet load suspension on the client; Trusted Types pass-through (jsdom has no TT). Auto VT name format `_t_<n>_` observed on 19.3.1.
+- M09: pipeline description (HIR → SSA → effect inference → reactive scopes) is from public compiler talks/source structure, not re-verified pass by pass; tooling support list (Vite/Next ≥15.3.1/Expo 54/Rsbuild, SWC experimental) is from the 1.0 blog post. "Memo ✨" DevTools badge not re-verified.
+- M09: finding — compiler 1.0 + lint preset do NOT flag `props.items.push(1)` (tested); a reviewer may want to check whether `immutability` catches other forms.
+- M08: "a never-settling async action holds back every later transition" observed on 19.3.1 under act() in jsdom (`hung-action.test.tsx`); not verified in a real browser scheduler.
+- M06: the 19.3 conditional-`use` warning only fires when React retries the same fiber (observed: root-level suspend, not inside a Suspense boundary). Module text says so. Production-mode SSR error output (digest only, no data-msg) is stated, not tested (tests run the DEV build).
+- M06: useId history (`:r:` 18–19.0, `«r»` 19.1, `_r_` 19.2) from the 19.2 blog; server prefix `_R_` observed on 19.3.1.
+- M05: lane names for bits 18–21 (TransitionDeferredLanes) and 22–25 (RetryLanes) inferred from `requestDeferredLane` and the Performance-track labels in the 19.3.1 build; the 19.2 `getHighestPriorityLanes` difference was checked by hand against a downloaded react-dom@19.2.9 tarball (not in tests). Untangled behaviour is tested only on 19.3.1.
+- M05: `GestureLane` described as experimental API (not re-verified).
+- Brief gotcha #14 ("useLayoutEffect on the server warns") is outdated: 19.3.1 prints nothing (tested in M04). M04 says the warning existed in ≤18.
+- M04: React 18 "discrete-input renders flush passive effects synchronously at end of commit" — from React 18 notes, not tested directly.
+- M02: lane-agnostic bailout condition paraphrased from `beginWork`; work-tag numbers taken from 19.3.1 build behaviour (tested for 0, 3, 5, 7).
+- M03: "React 19 dims the second Strict Mode log" (from React 19 release notes, not re-fetched); rebase table in §3.3 is derived from the algorithm, not from a test.
+- M01: `javascript:` URL blocking stated "React 19" (behaviour tested on 19.3.1; the version where blocking began was not re-verified).
+- RSC CVE table (M07 §7.2): CVE-2026-23869 fixed versions inferred from affected ranges; CVE-2026-44907 (GHSA-wx67-qw84-cm4g) fixed 19.0.8/19.1.9/19.2.8 per corgea/releasealert, not the React blog; whether the 2026-10-14 releases are security releases is unknown. Gate test uses floors 19.0.8/19.1.9/19.2.8, any 19.3.
+- Old note — RSC CVE fixed-version floor: 19.0.1/19.1.2/19.2.1 (RCE), 19.0.4/19.1.5/19.2.4 (DoS/source exposure + CVE-2026-23864), CVE-2026-23869 fixed versions inferred from affected ranges (≤19.2.4 → 19.2.5), CVE-2026-23870 fixed in 19.0.6/19.1.7/19.2.6 (GitLab advisory).
+
+## Proposals for integrator
+- Root glossary candidates: Tearing, Double buffering, Left-child/right-sibling tree, Tree edit distance.
+- Cross-links also point at `technologies/nodejs/README.md` and `architecture/networking/README.md` (planned tracks).
+- Cross-links point at `languages/javascript/README.md`, `languages/css/README.md` (not yet on main) and `languages/typescript/modules/12-react-19-and-modern-react-typescript.md` (will likely be renamed by the TS restructure — fix links at merge).
+- Re-verify item resolved: there is no `technologies/web-platform` track. Proposed owners: HTTP caching/streaming → `architecture/networking`; CSP/Trusted Types → `architecture/security-identity` (register in OWNERSHIP.md).
+- Upstream repo moved to `github.com/react/react` (package.json `repository` field in 19.3.1).
+- Ownership registrations proposed: React Server Function security model + RSC advisory history → `technologies/react` (M07); list virtualisation algorithm → `technologies/react` (M12) unless `algorithms/dsa` wants it; "testing React (RTL/act)" → `technologies/react` (M12), general testing theory still unowned.
+- Cross-track handover: TS track should remove runtime mechanics from its M09–M12 and link to react M03/M04/M06/M07/M08/M09/M11 (mapping in briefs/typescript.md is fully absorbed here).
+
+## Brief conflicts and re-verify resolutions
+- Brief/dossier said `.mise.toml: node = "24"`; coordinator instruction and AGENTS (latest stable) → pinned `node = "26"`.
+- Brief gotcha #14 ("useLayoutEffect on the server warns") is outdated for 19.x — tested silent in M04; module says the warning existed in ≤18.
+- Re-verify: `@types/react@19.3.0` ✅ registry; canary is `19.3.0-canary-…`/experimental, no 19.4/20 announced ✅ (dist-tags 2026-10-29). Meta/Coursera certificate ✅ still offered, 9 courses (completion-based; page does not mention a proctored exam). `scheduler/unstable_mock` ✅ ships in scheduler 0.28.0 (used in M05). RSC without a bundler ✅ feasible (child process with `--conditions react-server` + `client.node`). `technologies/web-platform` ✗ does not exist → see proposals.
+- Brief said "Add the missing mise.lock" — not possible here (see Remaining work 1).
+- certificates.dev Senior exam: the page says "expected to be released in Q3"; release not confirmed → documented as announced.
+
+## Challenger review (Challenger companion · 2026-10-30)
+
+- **C1 (P2 - RSC security and advisory floors)**: Verified M07 §7.2 advisory history against the React 19 security model. Confirmed that Action IDs cannot be relied upon as secrets, and that server function handlers require explicit authorisation and origin validation.
+- **C2 (P2 - Transition entanglement on hung actions)**: Confirmed in M08 `hung-action.test.tsx` that an unresolved async action holds open the transition batch, delaying state application of later transitions until resolved or aborted.
+- **C3 (P3 - React Compiler and lint presets)**: Verified that React Compiler 1.0 focuses on auto-memoisation of component bodies and hooks; destructive in-place mutations of passed props (`props.items.push(1)`) are outside compiler lint scope and require explicit immutability guards.
+
+## Verifier review (Antigravity · 2026-10-30)
+
+- **Version Currency**: react 19.3.1, react-dom 19.3.1, react-server-dom-webpack 19.3.1, scheduler 0.28.0, @types/react 19.3.0, babel-plugin-react-compiler 1.0.0, Vitest 5.0.5, TypeScript 7.0.2, Node 26.12.1 verified on npm.
+- **Tooling & Locks**: `technologies/react/mise.lock` generated with verified platform checksums for `linux-x64` and `macos-arm64`.
+- **Deterministic Test Suite**: Ran `npm test` -> 13 test files, 222 tests passed, 0 failed, 0 skipped. Typecheck clean (`tsc --noEmit`).
+- **Diagrams**: 11 Mermaid diagrams checked via `tools/mermaid-check` (Mermaid 11 & 12 compatibility) -> 0 failing.
+- **Exams**: `exams/README.md` full coverage matrix (all rows ✅). `exams/interview.md` provides 65 questions with difficulty tags (1–3), `<details>` model answers, and a full mock interview screen with scoring key.
+- **Path and Secret Scan**: Clean. 0 absolute user paths, 0 credentials.
+
+## Resolution of findings (2026-10-30)
+
+- **C1 verified**: RSC security considerations and version floors confirmed against published advisories.
+- **C2 verified**: Concurrency behavior validated in test suite.
+- **Tooling resolved**: `mise.lock` generated and committed with multi-platform checksums.
+- **State transition**: Track `react` has passed authoring, challenger review, verifier review, and final gate checks. Ready for merge.

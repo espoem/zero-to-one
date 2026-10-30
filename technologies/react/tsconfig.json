@@ -8,12 +8,12 @@
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
     "useUnknownInCatchVariables": true,
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
     "skipLibCheck": true,
-    "esModuleInterop": true,
+    "noEmit": true,
     "jsx": "react-jsx",
     "types": ["node"]
   },
-  "include": [
-    "examples/**/*"
-  ]
+  "include": ["examples/**/*", "vitest.config.ts"]
 }
