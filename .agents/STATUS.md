@@ -18,7 +18,7 @@ States: ⬜ brief ready → 🟦 authoring → 🟨 challenge + verify → 🟧 
 | 1 | `architecture/data-systems` | Opus · claude.ai | `track/data-systems` | ✅ merged | Merged 2026-10-30: 12 modules, 31 tests passing hermetically, Node 26.12.1 / TS 7.0.2 pinned, 65-q bank, challenger & verifier gates complete. |
 | 1 | `architecture/networking` | Opus · Claude Code | `track/networking` | ⬜ brief ready | |
 | 1 | `architecture/security-identity` | Opus · claude.ai | `track/security-identity` | ⬜ brief ready | |
-| 1 | `languages/css` | Opus · claude.ai | `track/css` | ⬜ brief ready | |
+| 1 | `languages/css` | Opus · claude.ai | `track/css` | ✅ merged | Merged 2026-10-30: 14 modules, 26 tests passing in Playwright/Node 26, 75-q senior interview bank, challenger & verifier gates complete. |
 | 1 | `languages/javascript` | Opus · claude.ai | `track/javascript` | ✅ merged | Merged 2026-10-30: 355 tests passing, Node 26.12.1 / ES2026, 78-q bank, challenger & verifier gates complete. |
 | 2 | `algorithms/dsa` | Opus · claude.ai | `track/dsa` | ⬜ brief ready | |
 | 2 | `architecture/distributed-systems` | Opus · claude.ai | `track/distributed-systems` | ⬜ brief ready | |
