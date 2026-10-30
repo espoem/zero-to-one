@@ -7,11 +7,12 @@ import { join } from 'node:path'
 import { after, before, describe, test } from 'node:test'
 import assert from 'node:assert/strict'
 import { build } from 'vite'
-import { loadChromium, serve } from './helpers/browser.ts'
+import { loadChromium, playwrightInfo, serve } from './helpers/browser.ts'
 import { root } from './helpers/panda.ts'
 
 const chromium = await loadChromium()
 const skip = typeof chromium === 'string' ? chromium : false
+if (!skip) console.log(`# e2e using ${playwrightInfo}`)
 
 const builds = [
   { app: 'react', transform: false },

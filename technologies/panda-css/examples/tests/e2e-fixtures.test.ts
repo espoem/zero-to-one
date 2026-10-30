@@ -3,13 +3,14 @@
 // so each test isolates one cascade rule (Modules 03, 04, 05).
 import { after, before, describe, test } from 'node:test'
 import assert from 'node:assert/strict'
-import { loadChromium } from './helpers/browser.ts'
+import { loadChromium, playwrightInfo } from './helpers/browser.ts'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { cssgen, fixturesDir, panda } from './helpers/panda.ts'
 
 const chromium = await loadChromium()
 const skip = typeof chromium === 'string' ? chromium : false
+if (!skip) console.log(`# e2e using ${playwrightInfo}`)
 
 describe('fixture stylesheets in Chromium', { skip }, () => {
   let browser: any

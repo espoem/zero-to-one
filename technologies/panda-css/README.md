@@ -1,6 +1,6 @@
 # Panda CSS 2.x · Build-Time, Type-Safe Styling
 
-> **Verified against** `@pandacss/dev` 2.4.0 (+ `@pandacss/preset-base`, `@pandacss/preset-panda`, `@pandacss/vite` 2.4.0, native `@pandacss/compiler` on linux-x64), TypeScript 7.0.2, Node 26.12.1, Vite 8.3.5, React 19.3.1, Solid 1.9.17, PostCSS 8.5.32, Playwright 1.63.0 with Chromium 153 (preinstalled; see [Running the tests](#running-the-tests)) on **2026-10-29** (tests re-run 2026-10-30).
+> **Verified against** `@pandacss/dev` 2.4.0 (+ `@pandacss/preset-base`, `@pandacss/preset-panda`, `@pandacss/vite` 2.4.0, native `@pandacss/compiler` on linux-x64), TypeScript 7.0.2, Node 26.12.1, Vite 8.3.5, React 19.3.1, Solid 1.9.17, PostCSS 8.5.32, Playwright 1.64.1 pinned (tests executed with the preinstalled 1.63.0 / Chromium 153; see [Running the tests](#running-the-tests)) on **2026-10-29** (tests re-run 2026-10-30).
 
 Panda CSS is a styling engine from the Chakra UI team: you write typed style objects, recipes and tokens in TypeScript; a Rust compiler built on Oxc reads your source without running it and emits one atomic, cascade-layered stylesheet plus a generated, typed `styled-system` package. This track teaches **Panda 2.x** (2.0.0 shipped 2026-09-29) from the mental model to compiler internals, shipping design systems and migrating from 0.x/1.x, with every claim backed by an executable test.
 
@@ -59,6 +59,7 @@ technologies/panda-css/
 ```bash
 mise install            # node 26 (or any Node >= 22)
 npm install             # runs `prepare` -> panda codegen for every example project
+npx playwright install chromium   # browser for the e2e suites (Playwright is pinned to 1.64.1)
 npm run typecheck       # tsc (React + Solid configs), including @ts-expect-error negative type tests
 npm test                # node --test examples/tests/*.test.ts
 npm run test:update-snapshots   # only when a CSS change is intended; review the diff
@@ -79,7 +80,7 @@ npm run test:update-snapshots   # only when a CSS change is intended; review the
 | `type-cost.test.ts` | `jsxStyleProps: 'minimal'` vs `'all'` type-check work |
 | `e2e-computed-style.test.ts`, `e2e-fixtures.test.ts` | Playwright + Chromium computed styles: cascade layers, compound variants, dark mode, themes, container queries, breakpoints, property order, source transforms (React and Solid builds, with and without `transform: true`) |
 
-**Playwright** is deliberately not a dependency: browser binaries are tied to the Playwright build that downloaded them. The e2e suites use whichever Playwright the machine resolves (a global install on `NODE_PATH`, or `npm i -D playwright && npx playwright install chromium`) and **skip with a message** if none can launch Chromium. They ran here with Playwright 1.63.0 / Chromium 153; the latest Playwright on npm is 1.64.1.
+**Playwright** is pinned as a devDependency (`playwright@1.64.1`, the stable release on 2026-10-30); `npx playwright install chromium` downloads the matching browser (Chrome for Testing 156). Browser binaries are tied to the Playwright build that downloaded them, so [`helpers/browser.ts`](./examples/tests/helpers/browser.ts) tries the pinned build first and then any other `playwright` resolvable from `NODE_PATH`, using the first one that launches Chromium, and prints which one it used (`# e2e using playwright …`). If none can launch, the e2e suites **skip with the reason** instead of failing. In the authoring sandbox `playwright install` was not allowed: the pinned 1.64.1 had no browser, so the suites ran on the preinstalled Playwright 1.63.0 with Chromium 153.0.8010.12. Results on Chrome 156 have not been observed here.
 
 Last run (2026-10-29): `npm run typecheck` clean; `npm test` **118/118 passing**; Mermaid diagrams parse with Mermaid 11 and 12 (`tools/mermaid-check`).
 
