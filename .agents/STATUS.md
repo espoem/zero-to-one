@@ -15,7 +15,7 @@ States: ⬜ brief ready → 🟦 authoring → 🟨 challenge + verify → 🟧 
 | 1 | `technologies/postgres` | Opus · claude.ai | `track/postgres` | ✅ merged | Merged 2026-10-30: 13 modules, 13 PGlite tests passing hermetically, PG18.6 / Node 26.12.1 pinned, 65-q EDB bank, challenger & verifier gates complete. |
 | 1 | `technologies/react` | Opus · claude.ai | `track/react` | ✅ merged | Merged 2026-10-30: 222 tests passing, React 19.3.1, 65-q bank, challenger & verifier gates complete. |
 | 1 | `technologies/solidjs` | Opus · claude.ai | `track/solidjs` | ✅ merged | Merged 2026-10-30: 216 tests passing, SolidJS 2.0-rc.19, 60-q bank, challenger & verifier gates complete. |
-| 1 | `architecture/data-systems` | Opus · claude.ai | `track/data-systems` | ⬜ brief ready | |
+| 1 | `architecture/data-systems` | Opus · claude.ai | `track/data-systems` | ✅ merged | Merged 2026-10-30: 12 modules, 31 tests passing hermetically, Node 26.12.1 / TS 7.0.2 pinned, 65-q bank, challenger & verifier gates complete. |
 | 1 | `architecture/networking` | Opus · Claude Code | `track/networking` | ⬜ brief ready | |
 | 1 | `architecture/security-identity` | Opus · claude.ai | `track/security-identity` | ⬜ brief ready | |
 | 1 | `languages/css` | Opus · claude.ai | `track/css` | ⬜ brief ready | |
