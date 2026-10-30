@@ -1,0 +1,19 @@
+{
+  "name": "zero-to-one-networking",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Executable proofs, protocols, and socket labs for the Zero-to-One Networking Architecture track",
+  "type": "module",
+  "engines": {
+    "node": ">=26"
+  },
+  "scripts": {
+    "test": "node --test \"examples/**/*.test.ts\"",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.6",
+    "fast-check": "4.10.2",
+    "typescript": "7.0.2"
+  }
+}
