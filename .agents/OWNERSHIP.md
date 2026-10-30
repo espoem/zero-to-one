@@ -78,6 +78,8 @@ The `M` numbers refer to the proposed module lists in `research/*.md`. Authors u
 | 2PC/3PC, Percolator/Spanner/Calvin, sagas as a correctness problem, CRDTs | `architecture/distributed-systems` | data-systems, system-design |
 | Delivery semantics (at-most / at-least / effectively-once), idempotency theory | `architecture/distributed-systems` | system-design, gitlab-ci (retries) |
 | Retry amplification, metastable failures (theory) | `architecture/distributed-systems` | system-design (patterns as components) |
+| Byzantine Fault Tolerance ($3f+1$ bound, PBFT, Nakamoto consensus) | `architecture/distributed-systems` | security-identity, system-design |
+| Deterministic Simulation Testing (DST, FoundationDB/TigerBeetle model) | `architecture/distributed-systems` | data-systems, system-design |
 | Requirements → HLD → deep dives, estimation, LB/CDN/rate-limiter/queue as components, SLO math | `architecture/system-design` | everything |
 
 ## Networking and security
