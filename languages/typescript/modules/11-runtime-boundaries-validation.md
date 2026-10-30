@@ -1,6 +1,6 @@
 # Module 11: Runtime Boundaries — Validation, Zod 4 & Standard Schema
 
-> Example and tests: [`examples/11-runtime-boundaries/boundaries.test.ts`](../examples/11-runtime-boundaries/boundaries.test.ts) (Zod 4.6.7, `@standard-schema/spec` 1.1.0) and the older walkthrough [`zod-schema-validation.test.ts`](../examples/11-runtime-boundaries/zod-schema-validation.test.ts).
+> Examples and tests: [`examples/11-runtime-boundaries/boundaries.test.ts`](../examples/11-runtime-boundaries/boundaries.test.ts) (Zod 4.6.7, `@standard-schema/spec` 1.1.0), [`advanced-schemas.test.ts`](../examples/11-runtime-boundaries/advanced-schemas.test.ts) (async refinements, recursion, codecs, JSON Schema, error functions, union diagnostics) and the older walkthrough [`zod-schema-validation.test.ts`](../examples/11-runtime-boundaries/zod-schema-validation.test.ts).
 > Run: `mise exec -- node --test examples/11-runtime-boundaries/`
 
 Types are erased ([Module 01](./01-toolchain-and-compiler-model.md)). Everything the type checker proved stops at the edge of the program: HTTP bodies, `JSON.parse`, `localStorage`, environment variables, message queues, files, `postMessage`, and the arguments of server functions. This module is about that edge: how to turn `unknown` into a typed value *with evidence*, how a schema library derives its static types, and how to stay library-neutral with Standard Schema.
@@ -189,7 +189,78 @@ Arguments of `"use server"` functions (React) or server functions (Solid) are at
 
 ---
 
-## 6. Production failure modes
+## 6. Beyond the basics: async, recursion, codecs and contracts
+
+### 6.1 Async refinements and the colour of `parse`
+
+A refinement or transform that returns a promise makes the whole schema **async**: `parse`/`safeParse` throw (`$ZodAsyncError`: "Encountered Promise during synchronous parse. Use .parseAsync() instead.") and you must call `parseAsync`/`safeParseAsync`. The test proves both. The static type does not record this, so the error appears only at runtime, often in a code path that previously used a sync schema. Keep I/O-bound checks (uniqueness in a database, remote lookups) *out* of shared schemas: put them in the handler after the synchronous parse, where their latency and failure modes are visible.
+
+### 6.2 Recursive schemas
+
+A schema cannot reference itself in its own initializer (TDZ at runtime, and TS7022 "implicitly has type 'any'" at compile time). Zod 4 uses a **getter** on the shape, which defers the reference until the property is read:
+
+```ts
+const Category = z.object({
+  name: z.string(),
+  get children() { return z.array(Category); },
+});
+type Category = z.infer<typeof Category>;   // { name: string; children: Category[] }
+```
+
+The getter is the runtime deferral; on the type side, TypeScript can type the getter's return without evaluating it eagerly, so the inferred type is properly recursive (the test asserts `Category["children"][number]` is `Category`). Zod 3 needed `z.lazy(() => …)` plus a hand-written interface, because inference could not see through the cycle.
+
+### 6.3 Codecs: decode and encode
+
+A boundary is bidirectional: you decode wire data into domain values and encode them back. A **codec** pairs an input schema with an output schema and two functions:
+
+```ts
+const IsoDate = z.codec(z.iso.datetime(), z.date(), {
+  decode: (s) => new Date(s),
+  encode: (d) => d.toISOString(),
+});
+IsoDate.decode("2026-01-01T00:00:00.000Z"); // Date
+IsoDate.encode(new Date());                  // string
+```
+
+`z.input<typeof IsoDate>` is `string` and `z.output` is `Date`. A one-way `.transform` cannot be reversed, which is why APIs that both read and write (forms, caches, URL state) drift into two hand-maintained schemas without codecs.
+
+### 6.4 Schemas as contracts for other tools
+
+`z.toJSONSchema(schema)` emits JSON Schema (draft 2020-12), so one TypeScript source of truth can feed OpenAPI documents, other-language clients, and LLM tool definitions. The test checks `required`, and that `.int()` becomes `"type": "integer"`. Not every Zod feature has a JSON Schema equivalent (transforms, refinements with arbitrary code, codecs): those are either dropped or reported depending on options, so treat the export as the *structural* contract and keep semantic checks server-side.
+
+### 6.5 Error messages that help users
+
+The unified `error` option accepts a function of the issue, which can tell "missing" from "wrong type":
+
+```ts
+z.string({ error: (issue) => (issue.input === undefined ? "required" : "must be text") });
+```
+
+For localisation, set a global error map with `z.config(...)` and keep messages out of schemas. For APIs, return `z.flattenError` (flat forms) or `z.treeifyError` (nested data) rather than the raw issue list, and never echo `issue.input` back for secrets.
+
+### 6.6 Unions: diagnostics and cost
+
+`z.union([A, B])` tries each member and, if all fail, reports an `invalid_union` issue containing every member's errors: correct, but hard to read and O(members) work per value. `z.discriminatedUnion("kind", [A, B])` reads the discriminant first and validates only the matching member, so errors point at the actual field (`["n"]` in the test) and cost is O(1) member validations. Use discriminated unions whenever the data has a tag, which is also what TypeScript narrows best ([Module 03](./03-unions-narrowing-and-control-flow.md)).
+
+### 6.7 What parsing returns
+
+`parse` builds a **new** value (objects and arrays are copied, unknown keys stripped), so later mutation of the input does not affect the parsed output (asserted in the test). Two consequences: parsing large payloads allocates; and identity checks (`parsed === input`) are false, which matters for caches keyed by object identity. Branded outputs (§5.3) are the same runtime values as their unbranded inputs; only the type changes.
+
+### 6.8 Choosing a validator
+
+| Concern | Zod 4 | Valibot | ArkType | Hand-written predicate |
+|---|---|---|---|---|
+| Static inference | Yes | Yes | Yes (from string DSL) | Manual type |
+| Standard Schema | Yes | Yes | Yes | Implement `~standard` yourself (§4) |
+| Bundle size | Medium (Zod Mini for tree-shaking) | Small (functional, tree-shakeable) | Medium | Minimal |
+| JSON Schema export | Built in | Via package | Built in | — |
+| When to choose | Default for apps; ecosystem | Size-sensitive frontends | Very large schemas, terse syntax | One tiny boundary, no dependency |
+
+Bundle-size and feature notes for Valibot and ArkType come from their documentation, not from tests in this track (unverified here). The decision that matters more than the library: **one schema per boundary, parsed once, at the edge**, and libraries that accept schemas typed as `StandardSchemaV1`.
+
+---
+
+## 7. Production failure modes
 
 1. **`as` / `!` / `JSON.parse` at the boundary.** The crash appears far from its cause. Parse at the edge.
 2. **`z.infer` used as a request type.** Input and output differ under defaults/transforms; use `z.input` for what clients send.
@@ -198,15 +269,79 @@ Arguments of `"use server"` functions (React) or server functions (Solid) are at
 5. **Library code typed against a specific Zod major.** Accept `StandardSchemaV1` instead.
 6. **`z.object` strips a field you needed** (silently missing in the output). Use `z.looseObject` or add the field; use `z.strictObject` to make drift loud.
 7. **Coercion accepts junk** (`z.coerce.number()` maps `""` to `0`, `z.coerce.boolean()` maps `"false"` to `true`). Use `z.stringbool()` and explicit regexes.
-8. **Async refinement + `parse`** throws at runtime. Use `parseAsync`.
+8. **Async refinement + `parse`** throws at runtime (`$ZodAsyncError`). Use `parseAsync`, or keep I/O checks out of schemas.
+9. **Self-referencing schema without a getter**: TS7022 at compile time and a TDZ `ReferenceError` at runtime. Use the getter form.
+10. **Plain `z.union` on tagged data**: unreadable errors and wasted work. Use `z.discriminatedUnion`.
+11. **Hand-maintained read and write schemas drift**. Use a codec for bidirectional fields (dates, money, IDs).
 
 ---
 
 ## Exercises
 
-1. Write a `CheckoutSchema` with a discriminated `payment` union (card/bank/invoice), a cross-field rule "invoice requires a company VAT id" via `superRefine`, and derive both the input type for the form and the output type for the service.
-2. Write `parseSearchParams<S extends StandardSchemaV1>(schema: S, params: URLSearchParams)` that converts params into an object and validates it with any Standard Schema.
-3. Convert a Zod 3 schema that uses `message`, `errorMap`, `.merge` and `.default` before a `.transform` to Zod 4, and write a test that proves the default behaviour is preserved (hint: `.prefault`).
+Reference solutions with tests: [`examples/11-runtime-boundaries/exercises.test.ts`](../examples/11-runtime-boundaries/exercises.test.ts). Try each before reading the solution.
+
+### Exercise 11.1: Checkout schema with a cross-field rule
+
+Write a `Checkout` schema with an email, an optional company (`name`, optional `vatId`), and a discriminated `payment` union (`card` with a token, `bank` with an IBAN, `invoice` with `dueDays` coerced from a string and defaulting to 14). Invoices require a company VAT id. Derive the form type and the service type.
+
+<details><summary>Solution and explanation</summary>
+
+```ts
+export const Checkout = z
+  .object({
+    email: z.email(),
+    company: z.object({ name: z.string().min(1), vatId: z.string().regex(/^[A-Z]{2}\d{8,12}$/).optional() }).optional(),
+    payment: z.discriminatedUnion("method", [
+      z.object({ method: z.literal("card"), token: z.string().min(1) }),
+      z.object({ method: z.literal("bank"), iban: z.string().min(15) }),
+      z.object({ method: z.literal("invoice"), dueDays: z.coerce.number().int().default(14) }),
+    ]),
+  })
+  .superRefine((v, ctx) => {
+    if (v.payment.method === "invoice" && !v.company?.vatId) {
+      ctx.addIssue({ code: "custom", message: "invoice requires a company VAT id", path: ["company", "vatId"] });
+    }
+  });
+export type CheckoutForm = z.input<typeof Checkout>;
+export type CheckoutCommand = z.output<typeof Checkout>;
+```
+
+- The cross-field rule lives in `superRefine` on the *parent*, because neither field alone can decide it; the issue's `path` points at the field the user must fix, so form libraries display it in the right place.
+- Inside `superRefine`, `v` is already the output type, so `v.payment.method === "invoice"` narrows like ordinary TypeScript.
+- `dueDays` is `unknown` in the form type (coercion accepts anything) and `number` in the command type. Using `z.infer` for the form would wrongly require `dueDays`.
+</details>
+
+### Exercise 11.2: Search params through Standard Schema
+
+Write `parseSearchParams<S extends StandardSchemaV1>(schema: S, params: URLSearchParams)` that turns repeated keys into arrays and validates with any Standard Schema.
+
+<details><summary>Solution and explanation</summary>
+
+```ts
+export async function parseSearchParams<S extends StandardSchemaV1>(schema: S, params: URLSearchParams): Promise<StandardSchemaV1.InferOutput<S>> {
+  const raw: Record<string, string | string[]> = {};
+  for (const key of new Set(params.keys())) {
+    const all = params.getAll(key);
+    raw[key] = all.length > 1 ? all : (all[0] ?? "");
+  }
+  let result = schema["~standard"].validate(raw);
+  if (result instanceof Promise) result = await result;
+  if (result.issues) throw new Error(result.issues.map((i) => i.message).join("; "));
+  return result.value;
+}
+```
+
+The function knows nothing about Zod; coercion (`page: "2"` → `2`) is the schema's job. The shape decision (single value vs array) is the only boundary logic, and the schema can accept both (`z.union([z.string(), z.array(z.string())])`).
+</details>
+
+### Exercise 11.3: Migrating a Zod 3 default
+
+A Zod 3 schema `z.string().default("abc").transform(s => s.length)` returned `3` for `undefined`. Write the Zod 4 equivalent and a test proving it.
+
+<details><summary>Solution and explanation</summary>
+
+Zod 4's `.default(v)` short-circuits with an *output* value, so the Zod 3 meaning ("substitute this input, then parse it") is `.prefault("abc")`: `z.string().transform((s) => s.length).prefault("abc").parse(undefined) === 3`, while `.default(0)` returns `0` without running the transform.
+</details>
 
 ---
 
@@ -240,4 +375,25 @@ It short-circuits: on `undefined` input it returns the default as the output val
 <details><summary>6. Your server action has typed parameters. Why must it still validate them?</summary>
 
 Types are erased and the action is a public HTTP endpoint; any client can send any payload. Validate with a schema, then authorize.
+</details>
+
+<details><summary>7. How do you define a recursive schema in Zod 4, and why does it type-check?</summary>
+
+Put the self-reference in a getter on the object shape (`get children() { return z.array(Category); }`). At runtime the getter defers evaluation until after `Category` is initialised; at compile time the getter's return type is resolved lazily, so inference produces a properly recursive type instead of TS7022.
+</details>
+
+<details><summary>8. <code>z.union</code> vs <code>z.discriminatedUnion</code>?</summary>
+
+A plain union tries every member and, on failure, reports an `invalid_union` with all members' errors. A discriminated union reads the tag and validates one member: O(1) member checks and errors that point at the real field.
+</details>
+
+
+<details><summary>9. When do you need a codec instead of a transform?</summary>
+
+When the same boundary is crossed in both directions (API reads and writes, form state, URL state, caches). A transform is one-way; a codec (`z.codec(wire, domain, { decode, encode })`) keeps decoding and encoding in one definition, with `z.input` as the wire type and `z.output` as the domain type, so the two directions cannot drift.
+</details>
+
+<details><summary>10. A schema shared by many handlers gains an async uniqueness check. What breaks, and what is the better design?</summary>
+
+Every synchronous `parse`/`safeParse` call now throws at runtime ("Encountered Promise during synchronous parse"), and nothing in the static types warns you. Keep schemas synchronous and structural; run I/O-bound checks in the handler after parsing, where latency, retries and error mapping are explicit.
 </details>
