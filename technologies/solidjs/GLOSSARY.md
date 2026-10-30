@@ -1,107 +1,96 @@
-# SolidJS 2.0 Glossary
+# SolidJS 2.0 Glossary (EN ↔ CZ)
 
-This glossary defines standard technical terms used throughout the `technologies/solidjs/` learning track. All definitions, headings, and explanations are written in English; each term provides its canonical English name, established Czech equivalent, concise definition, and primary authoritative reference. Terminology adheres to the official SolidJS 2.0 specification (`v2.solidjs.com`), `@solidjs/signals`, `@solidjs/web`, TC39 JavaScript standards, and computer science literature.
+Technology-specific terms for the `technologies/solidjs` track. General computer-science terms (pure function, side effect, hydration, idempotence, …) live in the [root glossary](../../GLOSSARY.md); where a term appears in both, the root definition is reused verbatim. Czech equivalents are the established technical Czech terms; where Czech practice keeps the English API name, the table says so (*anglický termín*) rather than inventing a translation.
 
----
+References: *RFC NN* = `documentation/solid-2.0/NN-*.md` in the `solidjs/solid` repository (`next` branch); *CS* = `node_modules/solid-js/CHEATSHEET.md` (rc.19); *M NN* = this track's module.
 
-## 1. Reactivity & Push-Pull Signals
+## 1. Reactive core
 
-| English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
-| **Fine-Grained Reactivity** | **Jemnozrnná reaktivita** | A computational paradigm where reactive state nodes connect directly to dependent DOM bindings, computations, and side effects without intermediate Virtual DOM diffing or whole-component function re-renders. | SolidJS Architecture, Carniato |
-| **Push-Pull Reactivity** | **Reaktivita typu push-pull** | A hybrid notification and execution model where changed signals push invalidation marks down the dependency graph, while dependent computations pull (evaluate) values lazily upon access, eliminating redundant calculations. | `@solidjs/signals`, TC39 Signals Proposal |
-| **Signal (`createSignal`)** | **Signál** | The foundational atomic reactive primitive holding a committed value, exposing a parameterless read accessor and a setter function, and tracking active observers on access. | `@solidjs/signals` |
-| **Accessor** | **Přístupová funkce (accessor)** | A zero-argument getter function (`() => T`) that establishes a dynamic reactive dependency when invoked inside a tracking computation scope. | SolidJS Handbook |
-| **Setter** | **Nastavovací funkce (setter)** | A function (`(value: T \| ((prev: T) => T)) => T`) used to update a signal's value, enqueuing the modification into the microtask batch. | SolidJS Handbook |
-| **Writable Derived Signal** | **Zapisovatelný odvozený signál** | A signal created with a derivation function (`createSignal(() => source())`) that automatically follows upstream dependencies while permitting local manual overrides via its setter. | SolidJS 2.0 Reactivity Reference |
-| **Deterministic Microtask Batching** | **Deterministické dávkování v mikrotasku** | The execution mechanism where signal mutations are queued and deferred to the JavaScript microtask queue, ensuring consistent graph snapshots and eliminating intermediate observer thrashing. | SolidJS 2.0 Specifications |
-| **Synchronous Flush (`flush`)** | **Synchronní vyprázdnění fronty zápisů (flush)** | An imperative escape hatch that immediately drains all queued microtask writes, executes render and user effect lanes, and runs pending settled callbacks. | SolidJS 2.0 Core API |
-| **Split Effect (`createEffect(compute, apply)`)** | **Rozdělený (dvoufázový) efekt** | A two-phase side-effect primitive that cleanly isolates synchronous dependency tracking (`compute`) from untracked execution and cleanup management (`apply`). | SolidJS 2.0 Architecture |
-| **Render Effect (`createRenderEffect`)** | **Vykreslovací efekt (render effect)** | A split effect variant executing within the pre-paint render lane ahead of user effects, specifically designed for DOM layout measurements and renderer bindings. | SolidJS 2.0 Architecture |
-| **Reaction (`createReaction`)** | **Reakce (reaction)** | A low-level primitive providing a tracked execution callback that triggers an untracked notification exactly once when tracked dependencies change. | SolidJS Reactivity API |
-| **Untrack (`untrack`)** | **Nesledované čtení (untrack)** | An execution wrapper that reads signals and memos without establishing subscriptions in the currently active reactive observer. | SolidJS Reactivity API |
-| **Reactive Ownership (`Owner`, `createRoot`)** | **Reaktivní vlastnictví** | The hierarchical lifecycle tree that binds cleanups, context maps, and sub-computations to their parent scopes, ensuring deterministic resource disposal. | SolidJS Runtime Engine |
-| **Settled Lifecycle (`onSettled`)** | **Životní cyklus po ustálení (`onSettled`)** | An async-aware lifecycle hook replacing `onMount`, executing after DOM mounting and asynchronous dependencies have settled, and natively supporting returned cleanup functions. | SolidJS 2.0 Specifications |
-| **Directed Acyclic Graph (DAG)** | **Orientovaný acyklický graf (DAG)** | The formal topological model of the reactive network where source, memo, and effect nodes connect via directed dependency edges without cycles. | Formal Reactivity Standards, Carniato |
-| **Glitch Freedom** | **Absence zákmitů (glitch freedom)** | The mathematical property guaranteeing that no derived computation or observer runs with a mix of old and new inputs during a state transition. | Reactive Systems Theory |
-| **Diamond Problem** | **Diamantový problém** | A graph topology ($A \to B, C \to D$) where a single source change branches and converges; glitch-free systems require topological ordering so $D$ evaluates once. | Reactive Programming Literature |
-| **Topological Ordering** | **Topologické uspořádání (topologické řazení)** | Linear ordering of vertices in a DAG such that for every directed edge $u \to v$, node $u$ comes before $v$, ensuring dependencies are clean before evaluations. | Cormen et al. (CLRS) |
-| **Dirty Marking (Stale Invalidation)** | **Označování za zneplatněné (dirty marking)** | The push-phase algorithm recursively tagging downstream nodes as `STALE` without recomputing them, preparing nodes for lazy pull evaluation. | `@solidjs/signals` Internals |
+| English term | Czech term | Definition | Reference |
+|---|---|---|---|
+| **Fine-grained reactivity** | jemnozrnná reaktivita | Updates propagate from a changed value to exactly the computations and DOM bindings that read it; components are not re-executed and no virtual DOM is diffed. | M 01 |
+| **Signal** | signál | A reactive source holding one value, read through an accessor and written through a setter; reads inside tracking scopes subscribe. | RFC 02, M 01 |
+| **Accessor** | přístupová funkce (*accessor*) | The zero-argument getter `() => T` returned by `createSignal`/`createMemo`. | CS, M 01 |
+| **Setter** | nastavovací funkce (*setter*) | The function that stages a new value or an updater `(prev) => next`; the value becomes visible at the next commit. | CS, M 01 |
+| **Memo** | memo (memoizovaná hodnota) | A cached derived value recomputed when its dependencies change; stops propagation when its result is `equals` to the previous one. | RFC 01, M 01 |
+| **Writable derived signal** (writable memo) | zapisovatelná odvozená hodnota | `createSignal(fn)`: derives like a memo, can be overwritten; a source change re-runs `fn` with the write as `prev`. | RFC 02, M 01 |
+| **Tracking scope** | sledovací kontext | Code during whose execution reads are recorded as dependencies: memo bodies, effect compute halves, JSX expressions. | RFC 01, M 01 |
+| **Owner** | vlastník (*owner*) | The node in the ownership tree under which primitives are created and by which they are disposed. | RFC 02, M 01 |
+| **Owned scope** | vlastněný kontext | Component bodies, memos, effect compute halves and root bodies; writes there are forbidden in dev. | RFC 01, M 01 |
+| **Root** | kořen (*root*) | An owner created by `render()` or `createRoot`; in 2.0 owned by its parent unless created under `runWithOwner(null, …)`. | RFC 02, M 01 |
+| **Push-pull evaluation** | vyhodnocování push-pull | Writes push dirty/check marks down the graph; nodes are recomputed (pulled) in topological order at the commit. | M 01 |
+| **Glitch freedom** | absence glitchů (konzistence) | Every run of a computation observes inputs from one committed state, never a mix of old and new values. | M 01 |
+| **Commit (flush)** | potvrzení změn (*flush*) | The point at which staged writes become visible and dirty nodes are recomputed; scheduled on a microtask or forced with `flush()`. | RFC 01, M 01 |
+| **Microtask batching** | dávkování v mikroúlohách | All writes made before the commit are applied together in one flush. | RFC 01, M 01 |
+| **Equality cut-off** | přerušení šíření při rovnosti | A recomputed value equal to the previous one does not notify subscribers. | M 01 |
+| **Lazy memo** | líné memo | `createMemo(fn, { lazy: true })`: computes on first read and autodisposes when unobserved. | RFC 01, M 01 |
 
----
+## 2. Effects and lifecycle
 
-## 2. Compiler, JSX & DOM Primitives
+| English term | Czech term | Definition | Reference |
+|---|---|---|---|
+| **Split effect** | rozdělený efekt | `createEffect(compute, apply)`: a tracked pure compute half and an untracked apply half that performs side effects and may return a cleanup. | RFC 01, M 02 |
+| **Compute half / apply half** | výpočetní fáze / aplikační fáze | The two halves of a split effect; all compute halves of a flush run before any apply half. | RFC 01, M 02 |
+| **Render effect** | vykreslovací efekt | `createRenderEffect`: split effect applied during the render phase (synchronously at creation); used by compiled DOM bindings. | RFC 01, M 02 |
+| **User effect** | uživatelský efekt | An effect created with `createEffect`, applied after render effects in the flush. | M 02 |
+| **Cleanup** | úklidová funkce (*cleanup*) | A function run before the next apply and on disposal. | M 02 |
+| **Settle** | ustálení | The state in which pending async work under an owner has resolved and the queue has flushed; `onSettled` runs then. | RFC 01, M 02 |
+| **Diagnostic code** | diagnostický kód | A stable identifier (e.g. `STRICT_READ_UNTRACKED`) attached to each dev-mode error, warning or info finding. | RFC 08, M 02 |
+| **Reactivity halt** | zastavení reaktivity | `REACTIVITY_HALTED`: an error escaped every boundary and the scheduler stopped processing updates. | RFC 08, M 02 |
 
-| English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
-| **Native JSX Transform** | **Nativní JSX transformace** | The high-performance compilation pipeline (built on Rust/Oxc in `@solidjs/vite-plugin`) compiling JSX into direct DOM element creation and fine-grained property binding expressions. | `@solidjs/vite-plugin` |
-| **Fine-Grained DOM Updates** | **Jemnozrnné aktualizace DOMu** | The browser update mechanism where signal mutations target exact DOM text nodes and element properties without diffing a synthetic Virtual DOM tree. | SolidJS Core Architecture |
-| **Providerless Context** | **Kontext bez poskytovatele (providerless context)** | A context design where the context object directly serves as the provider component (`<ThemeContext value={...}>`) without requiring a separate `.Provider` property. | SolidJS 2.0 Component Model |
-| **Context Not Found Error (`ContextNotFoundError`)** | **Chyba nenalezeného kontextu** | A runtime error thrown when `useContext` is invoked on a default-less context outside the scope of its corresponding provider component. | SolidJS 2.0 Context API |
-| **Keyed List (`<For keyed={true}>`)** | **Klíčovaný seznam** | The default collection rendering mode mapping each item by object identity, providing the raw item value and a reactive index accessor to child templates. | SolidJS 2.0 Control Flow |
-| **Non-Keyed Positional List (`<For keyed={false}>`)** | **Neklíčovaný poziční seznam** | The positional list mode (replacing `<Index>`) maintaining fixed DOM slots for array indices, providing a reactive item accessor and a plain index number. | SolidJS 2.0 Control Flow |
-| **Positional Repeat (`<Repeat>`)** | **Poziční opakovač** | A dedicated control flow primitive rendering a fixed numeric count of positional slots without array diffing or allocation overhead. | SolidJS 2.0 Control Flow |
-| **Ref Directive Factory** | **Továrna na direktivy přes ref** | A reusable DOM attachment pattern replacing legacy `use:*` compiler transforms, structured as composable functions returning element callbacks with optional cleanups. | SolidJS 2.0 DOM Bindings |
-| **Unified Class Binding** | **Sjednocená vazba tříd (class binding)** | The consolidated `class` attribute accepting strings, class name arrays, boolean record objects, and nested structures without requiring `classList`. | `@solidjs/web` |
-| **Props Merge (`merge`)** | **Sloučení vlastností (props merge)** | A reactive property merger combining multiple source objects where later properties—including explicit `undefined`—override earlier defaults. | SolidJS Props Utilities |
-| **Props Omission (`omit`)** | **Vyloučení vlastností (props omit)** | A reactive rest helper returning a new proxy object omitting specified property keys while retaining live reactivity for remaining fields. | SolidJS Props Utilities |
+## 3. Components and DOM
 
----
+| English term | Czech term | Definition | Reference |
+|---|---|---|---|
+| **Component** | komponenta | A function that runs once to create DOM and reactive bindings. | M 03 |
+| **Props** | vlastnosti (*props*) | The component's input object; dynamic props are getters, so they must be read, not destructured. | CS, M 03 |
+| **Template cloning** | klonování šablon | Compiled static HTML parsed once by `template()` and cloned per instance. | M 03 |
+| **Binding** | vazba | A compiled reactive connection from an expression to a DOM text node, attribute or property. | M 03 |
+| **Event delegation** | delegace událostí | One listener per event type on the render root dispatches to handlers stored on elements. | RFC 07, M 03 |
+| **Ref** | reference (*ref*) | Access to a created element via a variable or callback; runs before the element is attached. | RFC 07, M 03 |
+| **Directive factory** | továrna direktiv | A function returning a ref callback (`ref={tooltip(opts)}`), replacing 1.x `use:`. | RFC 07, M 03 |
+| **Control-flow component** | komponenta řízení toku | `<Show>`, `<Switch>/<Match>`, `<For>`, `<Repeat>` and boundaries: memos that create and dispose owned subtrees. | RFC 03, M 04 |
+| **Keyed list** | klíčovaný seznam | A list whose rows are preserved by item identity or an extracted key across updates. | RFC 03, M 04 |
+| **Context** | kontext | A value provided down the owner tree; `<Ctx value>` is the provider. | RFC 02, M 04 |
+| **Portal** | portál | Renders children into another DOM node while keeping them in the owner tree. | M 04 |
 
-## 3. Stores, Mutations & Projections
+## 4. Stores
 
-| English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
-| **Draft-First Store (`createStore`)** | **Úložiště s přímou mutací návrhu (draft-first store)** | A proxy-backed reactive store whose update setter provides a direct mutable draft argument by default, eliminating manual `produce` wrappers. | SolidJS 2.0 Stores Reference |
-| **Store Proxy** | **Proxy úložiště (store proxy)** | The recursive JavaScript `Proxy` tree intercepting property reads to record fine-grained path subscriptions and intercepting writes to notify exact sub-paths. | SolidJS Store Architecture |
-| **Path Setter (`storePath`)** | **Cestový nastavovač** | A declarative helper function enabling path-based updates and predicate-based element targeting across nested stores. | SolidJS Store Advanced |
-| **Structural Reconciliation (`reconcile`)** | **Strukturální rekonciliace (reconciliation)** | An intelligent diffing algorithm merging incoming external or server data into an existing store, mutating only changed fields to preserve object identity. | SolidJS Store Utilities |
-| **Store Projection (`createProjection`)** | **Projekce úložiště** | A derived, read-only reactive store computed by a draft mutation function that updates downstream subscribers with O(1) leaf precision. | SolidJS 2.0 Stores Architecture |
-| **Store Snapshot (`snapshot`)** | **Snímek úložiště (store snapshot)** | An untracked operation generating a plain, unproxied JavaScript clone of a store tree for external serialization or network transmission. | SolidJS Store Utilities |
-| **Deep Store Traversal (`deep`)** | **Hluboký průchod úložištěm** | A traversal helper that recursively touches all nested properties within a store to register comprehensive tracking in an effect or memo compute phase. | SolidJS Store Utilities |
-| **Shallow Store** | **Mělké úložiště (shallow store)** | A store configured with `{ shallow: true }` that limits proxy wrapping and reactive notification strictly to its root-level properties. | SolidJS Store Options |
+| English term | Czech term | Definition | Reference |
+|---|---|---|---|
+| **Store** | úložiště stavu (*store*) | A proxy over a nested object/array with per-property subscriptions, written through a setter. | RFC 04, M 05 |
+| **Draft** | koncept (pracovní kopie, *draft*) | The mutable view a store setter or projection derive receives; mutations commit as one transaction. | RFC 04, M 05 |
+| **Reconciliation** | rekonciliace (sladění) | Diffing new data into an existing store tree, reusing records by key so identity survives. | RFC 04, M 05 |
+| **Projection** | projekce | `createProjection(fn, seed)`: a read-only derived store driven by draft mutation or returned data. | RFC 04, M 05 |
+| **Snapshot** | snímek (*snapshot*) | `snapshot(store)`: a plain, untracked copy of a store. | RFC 04, M 05 |
+| **Shallow store** | mělký store | `createStore(v, { shallow: true })`: reactive root keys with plain records replaced by reference. | RFC 04, M 05 |
 
----
+## 5. Async, transactions, optimistic state
 
-## 4. Colorless Async & Boundaries
+| English term | Czech term | Definition | Reference |
+|---|---|---|---|
+| **Colorless async** | asynchronie bez „barvení“ funkcí | Async values flow through ordinary computations and accessors, without `async` spreading through callers or `T \| undefined` loading holes. | RFC 05, M 06 |
+| **Not ready** (`NotReadyError`) | nepřipravená hodnota | The state of an async value that has not produced its first answer; reads propagate it to boundaries. | RFC 05, M 06 |
+| **Loading boundary** | hranice načítání | `<Loading>`: shows a fallback while its subtree has not yet produced content. | RFC 03/05, M 06 |
+| **Error boundary** | chybová hranice | `<Errored>`: renders a fallback with the error and a `reset` action; heals automatically. | RFC 03, M 06 |
+| **Hold** | pozdržení | Keeping a write uncommitted while async work it started is pending, so the screen shows a consistent old frame. | RFC 05, M 06 |
+| **Transition** | přechod | A set of writes and their async work committed together; built into the scheduler. | RFC 05, M 06 |
+| **Pending state** | stav probíhající změny | `isPending(fn)`: true while a change to a read's value is in flight. | RFC 05, M 06 |
+| **Action** | akce | `action(function*)`: a transaction that interleaves writes, yielded async work and refreshes. | RFC 06, M 07 |
+| **Optimistic update** | optimistická aktualizace | A guess shown during a transaction that reverts when it settles. | RFC 06, M 07 |
+| **Overlay (lane)** | překryvná vrstva (*lane*) | The per-transaction layer holding optimistic values above committed state. | RFC 06, M 07 |
+| **Acknowledgement** (`until`) | potvrzení | Waiting for a reactive predicate to settle truthy, e.g. a live-channel echo. | RFC 06, M 07 |
 
-| English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
-| **Colorless Async Reactivity** | **Bezpříznaková asynchronní reaktivita (colorless async)** | A unified reactive model where asynchronous operations (promises and async iterables) flow through standard synchronous-like primitives (`createMemo`) without specialized wrappers. | SolidJS 2.0 Async Architecture |
-| **Async Computation** | **Asynchronní výpočet** | A derived memo returning a `Promise<T>` or `AsyncIterable<T>`, pausing downstream consumers out-of-band until its first value settles. | SolidJS 2.0 Async Reference |
-| **Not Ready Error (`NotReadyError`)** | **Chyba nepřipraveného stavu** | A specialized internal control-flow signal thrown when an unready asynchronous computation is read, directing execution to the nearest `<Loading>` boundary. | SolidJS Async Internals |
-| **Initial Readiness (`<Loading>`)** | **Počáteční připravenost** | The boundary component displaying a fallback exclusively during initial asynchronous preparation, holding established UI during subsequent background refreshes. | SolidJS 2.0 Boundaries |
-| **Stale-While-Revalidate** | **Zobrazení původních dat během obnovy** | An asynchronous UI pattern where previously resolved content remains visible on screen while a background revalidation or query refresh is in flight. | SolidJS Async Patterns |
-| **In-Flight Pending State (`isPending`)** | **Stav probíhajícího požadavku** | A non-suspending reactive inspector checking whether an asynchronous memo, store, or signal has an unresolved background transition in flight. | SolidJS Core Reactivity |
-| **Latest In-Flight Value (`latest`)** | **Nejnovější zpracovávaná hodnota** | A non-suspending accessor reading the most recently initiated or resolved value of an async source, bypassing `<Loading>` suspension. | SolidJS Core Reactivity |
-| **Reveal Coordination (`<Reveal>`)** | **Koordinace odhalení (reveal)** | A boundary coordinator (replacing `<SuspenseList>`) managing the display order (`together`, `sequential`, `natural`) of nested `<Loading>` regions. | SolidJS 2.0 Boundaries |
-| **Self-Healing Error Boundary (`<Errored>`)** | **Samoopravná chybová hranice** | An error boundary catching render and async errors that automatically heals and restores its content when upstream dependencies transition back to valid states. | SolidJS 2.0 Boundaries |
+## 6. Full stack and tooling
 
----
-
-## 5. Transactional Actions & Optimistic State
-
-| English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
-| **Transactional Action (`action`)** | **Transakční akce** | A managed mutation wrapper converting generator functions into discrete transactional workflows with automated rollback and dependency revalidation. | SolidJS 2.0 Mutations Reference |
-| **Generator Action (`action(function* () {})`)** | **Generátorová akce** | A mutation procedure using `yield` statements as transaction checkpoints to execute optimistic writes, await network responses, and trigger graph refreshes. | SolidJS 2.0 Mutations |
-| **Optimistic Store (`createOptimisticStore`)** | **Optimistické úložiště** | A specialized store maintaining an optimistic draft overlay that renders immediate local modifications and automatically rolls back if the server rejects. | SolidJS 2.0 Mutations Reference |
-| **Optimistic Signal (`createOptimistic`)** | **Optimistický signál** | A single-value reactive signal supporting transient optimistic overrides that revert upon transaction completion or error. | SolidJS 2.0 Mutations |
-| **Optimistic Reversion** | **Vrácení optimistického stavu (reversion / rollback)** | The automatic restoration of authoritative confirmed state when a mutation fails, aborts, or is superseded by a newer authoritative server update. | SolidJS Mutation Architecture |
-| **Target Invalidation Tracking (`affects`)** | **Sledování ovlivněných cílů (affects tracking)** | An action-scoped registration marking external signals or projections as pending during the lifetime of a transactional operation. | SolidJS Mutations Reference |
-| **Explicit Revalidation (`refresh`)** | **Explicitní znovunačtení (revalidation)** | A function instructing an asynchronous memo or projection store to re-evaluate its source and settle with authoritative server state. | SolidJS Core API |
-| **Reactive Condition Acknowledgment (`until`)** | **Čekání na splnění reaktivní podmínky (until)** | A promise-based synchronization utility pausing an action until a reactive predicate evaluates to true, with built-in timeout and abort signal support. | SolidJS Async Synchronization |
-
----
-
-## 6. Full-Stack Start Mode & Server Functions
-
-| English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
-| **Server Function (`"use server"` / `registerServerFunction`)** | **Serverová funkce** | An RPC endpoint defined in application code compiled into a secure network dispatch handler callable from the client via HTTP POST or GET. | `@solidjs/web/server-functions` |
-| **Request Event Context (`RequestEvent`, `getRequestEvent`)** | **Kontext požadavku události** | The per-request execution environment providing access to the native Fetch `Request`, response headers, and request-scoped metadata during SSR. | `@solidjs/web` Server Context |
-| **Response Envelope (`respond`, `ResponseEnvelope`)** | **Obálka odpovědi** | A structured server return structure encapsulating HTTP status codes, custom headers, and cache revalidation tags alongside payload data. | `@solidjs/web` |
-| **Safe Error (`markSafeError`, `isSafeError`)** | **Bezpečná chyba** | An intentional error explicitly marked as safe to expose over the network to the client, preventing unintended leakage of server internals. | `@solidjs/web` |
-| **Standard Schema Validation** | **Validace dle standardního schématu (Standard Schema)** | The practice of validating untrusted server function arguments at the network boundary using Standard Schema-compliant libraries (e.g., Zod, Valibot). | SolidJS Security Guidance |
-| **Progressive Enhancement** | **Postupné vylepšování (progressive enhancement)** | The ability of server functions and forms to function natively via HTTP form submissions when client-side JavaScript is absent or loading. | `@solidjs/web` Architecture |
-| **Streaming HTML SSR (`renderToStream`)** | **Proudové SSR renderování do HTML** | Server-side rendering that streams early HTML shells immediately and out-of-order flushes deferred `<Loading>` chunks as async data resolves. | `@solidjs/web` SSR Engine |
+| English term | Czech term | Definition | Reference |
+|---|---|---|---|
+| **Start mode** | režim start | The serving layer of `@solidjs/vite-plugin` (`start: true`) that replaces SolidStart for Solid 2. | Plugin README, M 08 |
+| **Streaming SSR** | streamované vykreslování na serveru | Sending the shell first and each resolved boundary later in the same response. | RFC 12, M 08 |
+| **Hydration** | hydratace | The process where a client runtime attaches reactive state, event listeners, and data structures to server-rendered markup without destroying or recreating the existing DOM tree. (root definition) | root glossary, M 08 |
+| **Request event** | událost požadavku | The per-request object (`getRequestEvent()`) carrying the `Request`, `locals` and response head. | RFC 12, M 08 |
+| **Request isolation** | izolace požadavků | Keeping per-request state out of module scope so concurrent requests cannot see each other's data. | M 08 |
+| **Server function** | serverová funkce | A function marked `"use server"`, executed on the server and called from the client over HTTP. | RFC 10, M 08 |
+| **Export condition** | exportní podmínka | A `package.json` `exports` key (`browser`, `node`, `development`, `observe`) that selects a build variant. | M 09 |
+| **Observe build** | sledovací (observe) sestavení | Production-speed build that keeps the diagnostics and attribution channels. | Plugin README, M 09 |
+| **Attribution** | atribuce (vysvětlení běhů) | The opt-in engine that explains why each computation re-ran and reports cost findings. | RFC 08, M 09 |
