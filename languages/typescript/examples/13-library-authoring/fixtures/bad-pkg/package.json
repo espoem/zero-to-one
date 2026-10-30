@@ -1,0 +1,15 @@
+{
+  "name": "zto-bad-lib",
+  "version": "1.0.0",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./types/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "types"
+  ],
+  "type": "module"
+}

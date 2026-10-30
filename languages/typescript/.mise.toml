@@ -1,3 +1,6 @@
+# Pinned toolchain for the TypeScript track. Run everything through mise:
+#   mise install && mise exec -- npm ci && mise exec -- npm test && mise exec -- npm run typecheck
+# npm:typescript gives a global-free `tsc` 7.0.2; the project's own devDependency is the same version.
 [tools]
-node = "24"
+node = "26"
 "npm:typescript" = "7.0.2"

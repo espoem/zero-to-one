@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "module": "nodenext",
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "types": [],
+    "paths": { "@lib/*": ["./src/lib/*"] }
+  }
+}

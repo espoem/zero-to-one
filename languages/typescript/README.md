@@ -1,111 +1,63 @@
-# Total TypeScript — Complete Language & Type-System Curriculum
+# TypeScript: Type System, Compiler & Tooling (TypeScript 7)
 
-TypeScript transforms JavaScript from a dynamically typed scripting language into a statically verified systems and application language. Modeled after Matt Pocock's [Total TypeScript Learning Path](https://www.totaltypescript.com/typescript-learning-path) (spanning **Pro Essentials**, **Beginner's TypeScript**, **Type Transformations**, **TypeScript Generics**, **Advanced TypeScript Patterns**, **TypeScript Expert Interviews**, and **Zod Runtime Validation**) and expanded with **Modern JS/TS 5.x–7.0**, this track provides complete, self-paced learning material, type-level exercises with full solutions, a 476-lesson syllabus audit, and runnable TypeScript reference code.
+A single progressive course on the TypeScript type system and its toolchain: erasure and the native compiler, narrowing and assignability, generics and inference, type-level programming, API design, runtime boundaries, typing UI frameworks, and shipping typed libraries.
 
-> [!NOTE]
-> Framework-specific runtime tracks are modularized and deduplicated:
-> - For React 19, Server Components, Fiber, and Concurrent Rendering: see [technologies/react](../../technologies/react).
-> - For SolidJS 2.0, reactive graph mechanics, and fine-grained DOM compilation: see [technologies/solidjs](../../technologies/solidjs).
+Verified against TypeScript 7.0.2 (7.1.0-beta noted as preview), `@typescript/typescript6` 6.0.2, Node 26.12.1, Zod 4.6.7, `@standard-schema/spec` 1.1.0, `@types/react` 19.3.0, `solid-js`/`@solidjs/web` 2.0.0-rc.19, `@types/node` 26.6.6, expect-type 1.4.0, `@arethetypeswrong/cli` 0.18.5, publint 0.3.25 (npm registry and release posts) on 2026-10-29.
 
-## Module Layout
+**Ownership.** This track owns the type system, inference, variance, declaration emit, tsconfig, the typing of JSX/components/hooks, and Standard Schema/Zod typing (see `.agents/OWNERSHIP.md`). Runtime semantics are cross-linked instead of re-explained: JavaScript language semantics (`this`, closures, promises, ESM, `using`, decorators at runtime) belong to `languages/javascript`, Node's type stripping and loader to `technologies/nodejs`, React internals to [technologies/react](../../technologies/react/README.md), and Solid's reactive runtime to [technologies/solidjs](../../technologies/solidjs/README.md).
 
-```text
-languages/typescript/
-├── README.md                                            # Full syllabus, architecture map, and setup guide
-├── GLOSSARY.md                                          # Bilingual (EN ↔ CZ) TypeScript & type-system terminology index
-├── CHEATSHEET.md                                        # Fast lookup for utility types, generics, and TSConfig
-├── package.json                                         # Typechecking and execution scripts
-├── tsconfig.json                                        # Total TypeScript strict production configuration
-├── modules/
-│   ├── 01-setup-and-essential-types.md                  # Weeks 1–2 & 10–11: Setup, IDE Superpowers, & Essential Types
-│   ├── 02-unions-narrowing-and-objects.md               # Week 3: Unions, Literals, Control-Flow Narrowing, & Objects
-│   ├── 03-mutability-classes-and-ts-features.md         # Weeks 4–5: Mutability, Classes, TS-Only Features, & Deriving Types
-│   ├── 04-assertions-weird-parts-and-tsconfig.md        # Weeks 6–9: Assertions, Weird Parts, Modules, & TSConfig
-│   ├── 05-type-transformations-fundamentals.md          # Weeks 12–13: Type Transformations I — Inference & Template Literals
-│   ├── 06-conditional-and-mapped-types.md               # Week 14: Type Transformations II — Conditionals, infer, & Mapped Types
-│   ├── 07-typescript-generics.md                        # Weeks 14–16: TypeScript Generics — Functions, Classes, & Overloads
-│   ├── 08-advanced-typescript-patterns.md               # Weeks 17–20: Branded Types, Predicates, Assertions, & Builders
-│   ├── 09-zod-and-react-foundations.md                  # Week 21: Runtime Checking with Zod & Schema Validation
-│   └── 11-expert-interviews-and-modern-ts-js.md         # Bonus & Modern TS/JS: Expert Interviews, using/Dispose, Decorators, TS 5.x–7.0
-└── examples/
-    ├── utils/
-    │   └── type-helpers.ts                              # Expect<T>, Equal<X, Y>, Prettify<T>, StrictOmit<T, K>, Brand<T, B>
-    ├── 01-essentials-and-narrowing.ts                   # Discriminated unions, exhaustiveness, readonly, and satisfies
-    ├── 02-type-transformations.ts                       # Template literals, conditional types, infer, and URL path parsers
-    ├── 03-generics-and-overloads.ts                     # Generic constraints, const type parameters, currying, and overloads
-    ├── 04-advanced-patterns.ts                          # Branded types, type predicates, assertion functions, and builders
-    ├── 05-zod-and-schema-validation.ts                  # Schema validation, transforms, refinements, and z.infer<T>
-    └── 07-modern-ts-and-js-features.ts                  # Explicit Resource Management (using), Stage-3 Decorators, tRPC & ts-pattern
-```
+## Prerequisites
 
-## Full Curriculum Map (Modules 01–13)
+Working JavaScript (functions, objects, classes, promises, modules) and a terminal. No prior TypeScript is assumed; the course deepens continuously from Module 01 to Module 13.
 
-| Module | Learning Path Weeks | Source Workshops & Extensions | Key Concepts & Primitives Covered |
-| :--- | :--- | :--- | :--- |
-| [Module 01](./modules/01-setup-and-essential-types.md) | Weeks 1–2, 10–11 | Pro Essentials (Sec 1–4) & Beginner's TS | `tsc --noEmit`, `// ^?` hover introspection, JSDoc, tuples, `Set`, `Map`, `Promise<T>` |
-| [Module 02](./modules/02-unions-narrowing-and-objects.md) | Week 3 | Pro Essentials (Sec 5–6) | Union sets, literal narrowing, discriminated unions, `never`, `interface extends` vs `&`, `Record` |
-| [Module 03](./modules/03-mutability-classes-and-ts-features.md) | Weeks 4–5 | Pro Essentials (Sec 7–10) | `readonly`, `as const`, `#private` vs `private`, why to avoid `enum`, `typeof`, `keyof`, indexed access |
-| [Module 04](./modules/04-assertions-weird-parts-and-tsconfig.md) | Weeks 6–9 | Pro Essentials (Sec 11–17) | `satisfies` vs `as`, `@ts-expect-error`, `{}` vs `object`, excess properties, `.d.ts`, `tsconfig.json` |
-| [Module 05](./modules/05-type-transformations-fundamentals.md) | Weeks 12–13 | Type Transformations (Sec 1–4) | `ReturnType`, `Parameters`, `Awaited`, `Extract`, `Exclude`, template literals, type helpers |
-| [Module 06](./modules/06-conditional-and-mapped-types.md) | Week 14 | Type Transformations (Sec 5–7) | Distributive conditional types, `infer` pattern matching, mapped types, `as` key remapping, `DeepPartial` |
-| [Module 07](./modules/07-typescript-generics.md) | Weeks 14–16 | TypeScript Generics (Sec 1–6) | Generic functions/classes, `<const T>`, Golden Rule of Generics, function overloads vs conditional types |
-| [Module 08](./modules/08-advanced-typescript-patterns.md) | Weeks 17–20 | Advanced TS Patterns (Sec 1–7) | Branded types (`unique symbol`), `declare global`, `x is T`, `asserts x is T`, Builder pattern, `NoInfer<T>` |
-| [Module 09](./modules/09-zod-and-react-foundations.md) | Weeks 21–23 | Zod Tutorial & React with TS | `z.object()`, `z.infer`, `z.input`/`z.output`, `ComponentProps`, `ReactNode` vs `JSX.Element`, typed hooks |
-| [Module 10](./modules/10-advanced-react-with-typescript.md) | Weeks 24–26 | Advanced React with TypeScript (Sec 1–6) | Discriminated props, generic JSX `<Table<T>>`, `useSafeContext`, polymorphic `as` prop, `fixedForwardRef` |
-| [Module 11](./modules/11-expert-interviews-and-modern-ts-js.md) | Complete Volume Bonus | TypeScript Expert Interviews & Modern TS/JS | tRPC phantom builders, TanStack `DataTag`, `ts-pattern`, `using` / `Symbol.dispose`, Stage-3 Decorators, ES2025 `Set` & `Object.groupBy`, `(string & {})` |
-| [Module 12](./modules/12-react-19-and-modern-react-typescript.md) | Modern React Extension | React 19.x Deep Dive | `ref` as standard prop, `RefCallback` cleanup, `use(Promise \| Context)`, `useActionState`, `useOptimistic`, `useFormStatus`, RSC `Serializable<T>` |
-| [Module 13](./modules/13-solidjs-2-with-typescript.md) | Modern Signals Extension | SolidJS 2.x (`@solidjs/signals`) Deep Dive | Microtask batching & `flush()`, first-class async `createMemo`/`createAsync`, `<Loading>` & `<Errored>`, split `createEffect`, draft-first `createStore`, `createProjection`, `onSettled`, ref directive factories, `mergeProps`/`splitProps` |
+## Syllabus
 
-## Architecture of TypeScript's Dual Spaces
+| # | Module | Covers | Example / tests |
+|---|---|---|---|
+| 01 | [Toolchain & compiler model (TS 7)](./modules/01-toolchain-and-compiler-model.md) | Erasure, compiler pipeline, Go port and parallel checkers, 6.0/7.0 defaults and removals, no classic API and the 6.0 bridge, Node type stripping | [`01-toolchain`](./examples/01-toolchain/) |
+| 02 | [Essential types & functions](./modules/02-essential-types-and-functions.md) | Types as sets, literals and widening, functions, tuples, `Set`/`Map`, `unknown`, Promise and iterator/generator typing | [`02-essential-types`](./examples/02-essential-types/) |
+| 03 | [Unions, narrowing & control-flow analysis](./modules/03-unions-narrowing-and-control-flow.md) | CFA model, discriminated unions, exhaustiveness, closures, `switch (true)`, inferred predicates | [`03-unions-narrowing`](./examples/03-unions-narrowing/) |
+| 04 | [Objects, assignability & the "weird parts"](./modules/04-objects-assignability-and-weird-parts.md) | Formal assignability and variance, deliberate unsoundness, freshness, `{}`/`object`/`unknown`, `satisfies`, strictness flags | [`04-assignability`](./examples/04-assignability/) |
+| 05 | [Classes, mutability & TS-only syntax](./modules/05-classes-mutability-and-ts-only-syntax.md) | `readonly`/`as const`, `#private`, `override`, abstract classes, `this` typing, enums under `erasableSyntaxOnly` | [`05-classes-mutability`](./examples/05-classes-mutability/) |
+| 06 | [Modules, declarations & tsconfig](./modules/06-modules-declarations-and-tsconfig.md) | `nodenext` vs `bundler`, `verbatimModuleSyntax`, `.d.ts`, ambient modules, merging, augmentation, project references | [`06-modules-tsconfig`](./examples/06-modules-tsconfig/) |
+| 07 | [Generics & inference](./modules/07-generics-and-inference.md) | Inference sites and phases, `const T`, `NoInfer`, partial inference, variance annotations, overloads | [`07-generics`](./examples/07-generics/) |
+| 08 | [Type-level programming I: derivation](./modules/08-type-derivation-and-template-literals.md) | `typeof`/`keyof`/indexed access, utility types, template literal types, `string & {}` | [`08-type-derivation`](./examples/08-type-derivation/) |
+| 09 | [Type-level programming II: conditional, mapped & recursive](./modules/09-conditional-mapped-and-recursive-types.md) | Distributivity, `infer … extends`, homomorphic mapped types, recursion limits, TS 7 code-point inference | [`09-conditional-mapped`](./examples/09-conditional-mapped/) |
+| 10 | [Type-safe API design patterns](./modules/10-type-safe-api-design-patterns.md) | Brands, predicates/assertions, builders, `NoInfer`, `Disposable` and decorator typing, library case studies | [`10-api-design`](./examples/10-api-design/) |
+| 11 | [Runtime boundaries: validation & Standard Schema](./modules/11-runtime-boundaries-validation.md) | Parse-don't-validate, Zod 4 input/output types, Zod 3→4, Standard Schema, typed fetch and env | [`11-runtime-boundaries`](./examples/11-runtime-boundaries/) |
+| 12 | [Typing UI frameworks: React & Solid](./modules/12-typing-ui-frameworks.md) | How JSX is checked, React 19 and Solid 2.0 RC component/prop/hook/event/ref typing | [`12-typing-ui-frameworks`](./examples/12-typing-ui-frameworks/) |
+| 13 | [Library authoring, type performance & type tests](./modules/13-library-authoring-performance-and-type-tests.md) | Declaration emit, `isolatedDeclarations`, `exports`/`types`, attw/publint, type tests, performance limits, migration, version history | [`13-library-authoring`](./examples/13-library-authoring/) |
 
-TypeScript operates across two parallel worlds: the **Type World** (evaluated and erased at compile time) and the **Value World** (emitted and executed at runtime). Mastering Total TypeScript means knowing how to bridge between them cleanly without losing type information.
+Also: [GLOSSARY.md](./GLOSSARY.md) (EN ↔ CZ), [CHEATSHEET.md](./CHEATSHEET.md), [exams/](./exams/README.md).
 
-```mermaid
-flowchart LR
-    subgraph ValueWorld["Value World (Runtime JS / React 19 / Solid 2.x)"]
-        RuntimeVal["const config = { port: 3000 } as const"]
-        FnVal["function fetchUser(id: string) { ... }"]
-        ZodSchema["const UserSchema = z.object({ ... })"]
-        ReactiveVal["createSignal / createAsync / useActionState"]
-    end
+**Out of scope, with reasons:** framework runtime behaviour (owned by the react/solidjs tracks); JavaScript semantics (owned by `languages/javascript`); the TS 7.1 API, content mappers and `import source` are previewed only (beta at the time of writing); Vue/Angular/Svelte typing (no track in this repository yet); the language-service plugin API (absent in TS 7.0).
 
-    subgraph Bridge["Bridge Operators"]
-        TypeofOp["typeof (Value → Type)"]
-        InferOp["ReturnType / Parameters / Awaited / z.infer"]
-        NarrowOp["Control-Flow Narrowing (is / asserts / Show / use)"]
-    end
-
-    subgraph TypeWorld["Type World (Compile-Time TS — Erased in JS)"]
-        ConfigType["type Config = typeof config"]
-        KeysType["type ConfigKey = keyof typeof config"]
-        Transform["Mapped & Conditional Types (infer, as, Extract)"]
-        ExpectTest["type test = Expect<Equal<Actual, Expected>>"]
-    end
-
-    RuntimeVal --> TypeofOp --> ConfigType
-    ConfigType --> KeysType --> Transform
-    FnVal --> InferOp --> Transform
-    ZodSchema --> InferOp
-    ReactiveVal --> NarrowOp --> Transform
-    Transform --> ExpectTest
-```
-
-## How to Run the Examples and Type Tests
-
-Every example in [`examples/`](./examples/) is self-contained and verified with compile-time `Expect<Equal<Actual, Expected>>` assertions and runtime tests.
-
-### 1. Run the TypeScript Compiler Check (`tsc --noEmit`)
+## Running the examples
 
 ```bash
-npm run typecheck
+mise install                      # node 26 + typescript 7.0.2 (see .mise.toml)
+mise exec -- npm ci
+mise exec -- npm test             # node --test over examples/**/*.test.ts
+mise exec -- npm run typecheck    # tsc 7 on the track + the React and Solid JSX projects
+mise exec -- node --test examples/09-conditional-mapped/   # one module
 ```
 
-### 2. Run the Node.js Runtime Test Suite
+How the tests prove things:
+- **Runtime tests** use `node --test`; Node 26 runs `.ts` files by stripping types, which is why the track enforces `erasableSyntaxOnly` and `verbatimModuleSyntax`.
+- **Type tests** are `expectTypeOf(…)` assertions and `// @ts-expect-error` negatives, checked by `npm run typecheck` (a stale `@ts-expect-error` fails with TS2578).
+- **Compiler-fixture tests** spawn the pinned `tsc` against small projects under `examples/**/fixtures/` and assert exact diagnostic codes (TS2591, TS2882, TS5102, TS5108, TS5011, TS1294, TS2835, TS1484, TS1543, TS6306, TS9013, TS2589, …).
+- **Packaging tests** build a tiny package and run publint and attw against good and broken `exports`.
 
-```bash
-npm test
-```
+Performance numbers (e.g. `--checkers` speed-ups) are hardware dependent and are never asserted.
 
-## Verification & Test Coverage
+## Certifications & Exams
 
-All modules in this track are accompanied by deterministic test suites verifying core type transformations, generics, branded types, and schema validation. Run `npm test` and `npm run typecheck` to execute full verification.
+There is **no official Microsoft certification** for TypeScript. The recognised proctored exam is the independent **certificates.dev TypeScript Certification** (<https://certificates.dev/typescript>, checked 2026-10-29):
+
+| Level | Status | Format | Pass rule | Targets |
+|---|---|---|---|---|
+| Junior | Active | 50 multiple-choice, 40 min, proctored | Not stated per level | TS version not stated |
+| Mid-Level | Active | 40 multiple-choice + 2 coding challenges, 135 min | "70% of the questions and both challenges" | Not stated |
+| Senior | Active | 40 multiple-choice + 2 coding challenges, 135 min | Same | Not stated |
+
+Domain weights are not published. The coverage matrix, exam delta (TS 7 vs older material) and a 70-question bank with two hands-on challenges and a full mock exam are in [exams/README.md](./exams/README.md) and [exams/certificates-dev-typescript.md](./exams/certificates-dev-typescript.md). Every module also ends with an Interview Drill for interview-format preparation.

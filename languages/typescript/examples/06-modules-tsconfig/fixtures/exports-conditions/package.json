@@ -1,0 +1,18 @@
+{
+  "name": "zto-self",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": {
+        "import": "./types/esm.d.ts",
+        "require": "./types/cjs.d.cts"
+      },
+      "default": "./src/index.js"
+    },
+    "./public": {
+      "source": "./src/public.ts",
+      "types": "./types/public.d.ts",
+      "default": "./src/public.js"
+    }
+  }
+}
