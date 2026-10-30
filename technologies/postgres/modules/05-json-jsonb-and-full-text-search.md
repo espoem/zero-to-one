@@ -1,370 +1,291 @@
-# Module 05 — Semi-Structured Data: JSON/JSONB & Full-Text Search
+# Module 05 — Semi-Structured Data, JSONB & Full-Text Search
 
-Welcome to **Module 05** of the PostgreSQL 18 Curriculum. This module provides a comprehensive, academically grounded, and production-tested analysis of semi-structured document storage and information retrieval in PostgreSQL. We dissect the binary internal representation of `jsonb` at the byte level, examine SQL/JSON path language algebra, contrast Generalized Inverted Index (GIN) operator classes (`jsonb_ops` vs. `jsonb_path_ops`), explore Information Retrieval (IR) theory (TF-IDF and cover density ranking), and evaluate GIN index structures including posting trees, fastupdate buffers, and GiST lossy signature trade-offs.
+Welcome to **Module 05** of the PostgreSQL curriculum. This module provides an in-depth, production-tested examination of semi-structured document storage, SQL/JSON standard operations, Generalized Inverted Index (GIN) mechanics, and full-text document retrieval in PostgreSQL 18. We dissect the binary layout of `jsonb`, evaluate JSONPath query engines, transform documents with SQL/JSON `JSON_TABLE`, benchmark `jsonb_ops` versus `jsonb_path_ops`, construct linguistic search pipelines using `tsvector` and `tsquery`, execute fuzzy similarity matching with `pg_trgm`, and define the architectural boundary for when to graduate to Elasticsearch.
 
 ---
 
 ## 1. Core Terminology & Concept Definitions
 
-To establish conceptual precision across this curriculum, the following semi-structured and search terms are formally defined:
-
-- **JSONB (`Binary JSON`)**: A decomposed, parsed binary representation of JSON data stored in PostgreSQL. JSONB normalizes whitespace and key ordering while enabling $O(\log K)$ binary key searches, nested attribute slicing, and inverted index acceleration.
-- **`JEntry` (JSON Entry Header)**: A 32-bit internal metadata header associated with each element within a JSONB container that encodes data type flags, offset lengths, and nesting indicators.
-- **Containment Operator (`@>`)**: A binary Boolean operator evaluating whether the left-hand JSONB document structurally contains and matches all key-value pairs or array elements specified in the right-hand JSONB document:
-  $$A \supseteq B \iff A \text{ @> } B$$
-- **SQL/JSON Path Expressions**: An ISO/IEC standard declarative expression language integrated into PostgreSQL that allows developers to navigate, filter, and project elements from deeply nested JSON documents.
-- **Text Search Vector (`tsvector`)**: A sorted collection of normalized, distinct lexemes representing an input text document, with stop words removed and integer positional offsets recorded.
-- **Text Search Query (`tsquery`)**: A structured Boolean tree of normalized search lexemes connected by relational search operators (`&` for AND, `|` for OR, `!` for NOT, `<N>` for word distance/phrase matching).
-- **Lexeme**: The canonical, morphological base form of a word produced by a language-specific dictionary stemmer (e.g., "analyzing", "analyzed", and "analysis" normalize to the canonical lexeme `'analys'`).
-- **Generalized Inverted Index (GIN)**: An index access method that maps individual decomposed tokens (such as JSONB keys, array elements, and text lexemes) to ordered collections of physical heap tuple pointers (`ItemPointer` / `ctid`).
-- **Posting List**: An array of sorted heap row identifiers (`ctid`s) stored within a GIN index leaf page corresponding to a single indexed key.
-- **Posting Tree**: A secondary B-Tree of `ctid`s created dynamically by GIN when a single key's posting list overflows an 8KB index block.
+- **`json` vs `jsonb`**: `json` stores exact textual strings (preserving whitespace and duplicate keys), requiring on-the-fly parsing on every query. `jsonb` parses JSON into a decomposed binary format at write time, deduplicating keys, sorting them, and storing index offsets for $O(\log K)$ key lookups.
+- **JSONPath**: An expression language standardized in SQL:2016 for navigating and filtering complex JSON hierarchies using path projections (`$.user.orders[*].total`).
+- **`JSON_TABLE`**: A SQL/JSON standard table function introduced in modern PostgreSQL that transforms nested JSON document arrays into relational columns with explicit SQL data types.
+- **Generalized Inverted Index (GIN)**: An index structure designed for composite and multi-valued data types (JSONB, arrays, text search vectors) where index entries map individual components (lexemes or key-value pairs) to an internal posting list of matching heap tuple IDs (`ItemPointer`).
+- **`tsvector`**: A sorted array of distinct normalized lexemes (words stripped of suffixes and punctuation) accompanied by integer arrays indicating their physical word positions within the original document.
+- **`tsquery`**: A structured full-text search query consisting of lexemes combined with boolean operators (`&` AND, `|` OR, `!` NOT, `<->` phrase distance).
+- **Trigram (`pg_trgm`)**: A contiguous sequence of three characters extracted from a string, utilized to compute string similarity scores and accelerate arbitrary substring searches (`ILIKE '%pattern%'`).
 
 ---
 
-## 2. Low-Level Storage Architectures: `json` vs. `jsonb`
+## 2. JSON vs. JSONB: Binary Internal Mechanics
 
-PostgreSQL provides two native types for handling JSON documents, representing fundamentally different engineering trade-offs:
-
-```mermaid
-flowchart LR
-    RawInput["Raw JSON String:<br/>{'name': 'Laptop', 'price': 999}"]
-
-    subgraph JSONStorage["json Storage (Verbatim Text)"]
-        RawText["Text Storage in Heap:<br/>• Exact byte-for-byte text replica<br/>• Whitespace & duplicate keys preserved<br/>• Must be re-parsed on every read call<br/>• No GIN index support"]
-    end
-
-    subgraph JSONBStorage["jsonb Storage (Decomposed Binary)"]
-        Binary["Binary Format (JsonbContainer):<br/>• 32-bit Container Header<br/>• JEntry Metadata Array<br/>• Sorted Keys (Binary Search O(log K))<br/>• Direct Byte Offset Slicing<br/>• Full GIN Inverted Indexing"]
-    end
-
-    RawInput --> JSONStorage
-    RawInput --> JSONBStorage
-```
-
-### The Binary Anatomy of `jsonb`
-Internally, a `jsonb` datum is stored as a `JsonbContainer` C-struct:
-1. **Container Header (32 bits)**: Encodes whether the container is an Object, an Array, or a Scalar, along with the total number of entries ($K$).
-2. **`JEntry` Array**: A contiguous array of 32-bit headers, one for each key and value in the container:
-   - **Bits 0..27 (28 bits)**: Offset into the raw data buffer.
-   - **Bits 28..31 (4 bits)**: Type flag (`0x00` = String, `0x01` = Numeric, `0x02` = Boolean False, `0x03` = Boolean True, `0x04` = Null, `0x05` = Container Object/Array).
-3. **Data Payload Buffer**: Contiguous byte buffer containing raw string bytes and binary-encoded numerics.
-4. **Key Sorting**: Keys are sorted in storage by **byte length first**, and **lexicographically second**. This enables binary search lookups ($O(\log K)$) across keys without scanning the entire document.
+PostgreSQL's `jsonb` is not a simple string. It is a hierarchical binary format:
 
 ```mermaid
 flowchart TD
-    subgraph JsonbBinaryLayout["JsonbContainer Binary Memory Layout"]
-        Header["Header (4 bytes): Container Type & Entry Count K"]
-        JEntries["JEntry Array (K * 4 bytes): [JEntry 0, JEntry 1, ..., JEntry K]"]
-        DataBuffer["Data Payload Buffer: [Key 0, Key 1, Value 0, Value 1, ...]"]
+    subgraph JSONBLayout["Binary Memory Layout of a JSONB Document"]
+        Header["4-Byte Container Header<br/>• Number of elements / pairs (28 bits)<br/>• Container type flags (Scalar, Array, Object)"]
+        JEntryArray["Array of 4-Byte JEntry Descriptors<br/>• JEntry 0: Type (String, Numeric, Bool, Null) + Byte Offset<br/>• JEntry 1: Type + Byte Offset<br/>• JEntry N: ..."]
+        KeyData["Continuous Variable Data Area<br/>• Sorted Key 1 ('address')<br/>• Sorted Key 2 ('name')<br/>• Value Payload 1 ('123 Market St')<br/>• Value Payload 2 ('Acme Corp')"]
         
-        Header --> JEntries --> DataBuffer
+        Header --- JEntryArray --- KeyData
     end
 ```
+
+### Why `jsonb` Dominates Modern Development
+1. **Deduplication**: If an input payload contains `{"status": "open", "status": "closed"}`, `jsonb` retains only the last value (`"closed"`).
+2. **Key Ordering**: Keys are physically sorted in binary lexical order, allowing binary search lookups ($O(\log K)$) across keys rather than full string scans.
+3. **No Whitespace**: Extraneous spaces, tabs, and indentation are discarded, optimizing cache footprint.
+
+### Primary Query Operators
+```sql
+CREATE TABLE client_payloads (
+    id SERIAL PRIMARY KEY,
+    attributes JSONB NOT NULL
+);
+
+INSERT INTO client_payloads (attributes) VALUES (
+    '{"org": "FinTech", "tier": "gold", "tags": ["pci", "soc2"], "metrics": {"rps": 5000}}'
+);
+
+-- Extract as JSONB (->):
+SELECT attributes -> 'metrics' FROM client_payloads;
+-- Output: {"rps": 5000} (jsonb)
+
+-- Extract as TEXT (->>):
+SELECT attributes ->> 'tier' FROM client_payloads;
+-- Output: gold (text)
+
+-- Subscripting Syntax:
+SELECT attributes['metrics']['rps'] FROM client_payloads;
+-- Output: 5000
+
+-- Containment Operator (@>):
+SELECT * FROM client_payloads WHERE attributes @> '{"tier": "gold"}';
+
+-- Key Existence Operators (?, ?|, ?&):
+SELECT * FROM client_payloads WHERE attributes ? 'org'; -- Has key 'org'
+SELECT * FROM client_payloads WHERE attributes -> 'tags' ?| ARRAY['pci', 'hipaa']; -- Has ANY
+SELECT * FROM client_payloads WHERE attributes -> 'tags' ?& ARRAY['pci', 'soc2'];  -- Has ALL
+```
+
+---
+
+## 3. SQL/JSON Standard Functions & JSONPath
+
+PostgreSQL 18 fully implements the SQL:2016 standard for SQL/JSON querying.
+
+### JSONPath Expressions
+JSONPath provides structured filtering within queries:
+
+```sql
+-- Find items with unit price > 100:
+SELECT jsonb_path_query(
+    '{"items": [{"name": "A", "price": 45}, {"name": "B", "price": 150}]}',
+    '$.items[*] ? (@.price > 100)'
+);
+-- Returns: {"name": "B", "price": 150}
+```
+
+### Relational Projection via `JSON_TABLE`
+`JSON_TABLE` unpacks hierarchical JSON arrays into a normalized relational table without needing legacy `jsonb_to_recordset` hacks:
+
+```sql
+SELECT j.*
+FROM client_payloads p,
+JSON_TABLE(
+    p.attributes,
+    '$' COLUMNS (
+        org_name TEXT PATH '$.org',
+        tier_level TEXT PATH '$.tier',
+        peak_rps INT PATH '$.metrics.rps'
+    )
+) AS j;
+```
+
+---
+
+## 4. GIN Indexing for JSONB: `jsonb_ops` vs. `jsonb_path_ops`
+
+A standard B-tree index cannot index the internal components of a JSONB document. PostgreSQL requires a **Generalized Inverted Index (GIN)**:
+
+```mermaid
+flowchart LR
+    Doc["JSONB: {'tier': 'gold', 'region': 'us'}"]
+    
+    subgraph GINIndex["GIN Inverted Index Tree"]
+        Key1["'tier'::'gold'"] --> Posting1["Heap Tuples: [Page 1, Off 2], [Page 4, Off 5]"]
+        Key2["'region'::'us'"] --> Posting2["Heap Tuples: [Page 1, Off 2], [Page 9, Off 1]"]
+    end
+    
+    Doc --> GINIndex
+```
+
+### Operator Class Comparison
+
+```sql
+-- 1. Default GIN (jsonb_ops):
+CREATE INDEX idx_payload_default ON client_payloads USING gin (attributes);
+
+-- 2. Path-Optimized GIN (jsonb_path_ops):
+CREATE INDEX idx_payload_path ON client_payloads USING gin (attributes jsonb_path_ops);
+```
+
+| Dimension | Default `jsonb_ops` | Path-Optimized `jsonb_path_ops` |
+| :--- | :--- | :--- |
+| **Indexed Entries** | Indexes every key, every value, and every path independently | Indexes a 32-bit hash of the complete `path = value` pair |
+| **Supported Operators** | `@>`, `?`, `?|`, `?&` | **Only `@>`** (Containment) |
+| **Index Size** | Large (indexes individual keys multiple times) | **30% to 50% smaller** footprint |
+| **Query Speed** | Fast for containment and key existence | **Significantly faster** for deep containment queries |
 
 > [!TIP]
-> In production systems, standardize on **`jsonb`** in 99% of workloads. Reserve plain `json` strictly for audit log tables where exact character-for-character replication (including original formatting, whitespace, and duplicate keys) is legally required.
+> If your application queries exclusively using containment (`attributes @> '{"key": "value"}'`), always use `jsonb_path_ops` to save memory and boost query performance.
 
 ---
 
-## 3. High-Performance JSONB Operators & Expressions
+## 5. Full-Text Search: `tsvector`, `tsquery` & Relevance Ranking
 
-```sql
-CREATE TABLE product_catalogs (
-    id UUID PRIMARY KEY DEFAULT uuidv7(),
-    title VARCHAR(120) NOT NULL,
-    metadata JSONB NOT NULL DEFAULT '{}'::jsonb
-);
-
-INSERT INTO product_catalogs (title, metadata) VALUES
-(
-    'Pro Studio Display',
-    '{
-        "brand": "TechCorp",
-        "specs": {
-            "resolution": "5K",
-            "refresh_rate": 120,
-            "ports": ["Thunderbolt 4", "HDMI 2.1", "USB-C"]
-        },
-        "inventory": {
-            "in_stock": true,
-            "quantity": 35
-        },
-        "tags": ["audio", "video", "creator"]
-    }'::jsonb
-);
-```
-
-### Operator Navigation Matrix
-
-| Operator | Left Operand | Right Operand | Result Type | Semantic Meaning |
-| :--- | :--- | :--- | :--- | :--- |
-| `->` | `jsonb` | `text` or `int` | `jsonb` | Extract element by key or array index (preserves JSON quotes). |
-| `->>` | `jsonb` | `text` or `int` | `text` | Extract element as unquoted text. |
-| `#>` | `jsonb` | `text[]` | `jsonb` | Extract nested object along a path array (e.g. `'{specs, resolution}'`). |
-| `#>>` | `jsonb` | `text[]` | `text` | Extract nested object along a path array as unquoted text. |
-| `@>` | `jsonb` | `jsonb` | `boolean` | Structural containment: Does left document contain right pattern? |
-| `<@` | `jsonb` | `jsonb` | `boolean` | Structural contained-in: Is left document enclosed within right? |
-| `?` | `jsonb` | `text` | `boolean` | Does top-level key exist? |
-| `?\|` | `jsonb` | `text[]` | `boolean` | Do *any* of the specified keys exist? |
-| `?&` | `jsonb` | `text[]` | `boolean` | Do *all* of the specified keys exist? |
-
-```sql
-SELECT 
-    title,
-    metadata->'specs' AS specs_jsonb,
-    metadata->>'brand' AS brand_name,
-    metadata->'specs'->'ports'->>0 AS primary_port,
-    metadata#>'{specs, resolution}' AS resolution_jsonb,
-    (metadata#>>'{inventory, quantity}')::integer AS stock_quantity
-FROM product_catalogs
-WHERE metadata @> '{"inventory": {"in_stock": true}}'
-  AND metadata ?& ARRAY['brand', 'specs'];
-```
-
----
-
-## 4. Immutable JSONB Manipulation
-
-Because PostgreSQL tuples are immutable under MVCC, modifying JSONB attributes creates a modified binary representation rather than altering disk bytes in place:
-
-```sql
--- 1. Targeted Path Update with jsonb_set
-UPDATE product_catalogs
-SET metadata = jsonb_set(
-    metadata, 
-    '{specs, refresh_rate}', 
-    '144'::jsonb, 
-    create_if_missing => false
-)
-WHERE title = 'Pro Studio Display';
-
--- 2. Concatenation & Shallow Object Merge (||)
-UPDATE product_catalogs
-SET metadata = metadata || '{"warranty_period_months": 36, "compliance_certified": true}'::jsonb
-WHERE title = 'Pro Studio Display';
-
--- 3. Key Deletion using Minus (-) Operator
-UPDATE product_catalogs
-SET metadata = metadata - 'compliance_certified'
-WHERE title = 'Pro Studio Display';
-
--- 4. Deep Path Deletion using Hash-Minus (#-) Operator
-UPDATE product_catalogs
-SET metadata = metadata #- '{specs, ports, 1}' -- Removes index 1 ('HDMI 2.1')
-WHERE title = 'Pro Studio Display';
-```
-
----
-
-## 5. Standard ISO SQL/JSON Path Language (`jsonpath`)
-
-The SQL/JSON path language (SQL:2016 standard) provides standardized navigation and structural predicate filtering:
-
-```sql
--- 1. Predicate Existence Testing (jsonb_path_exists)
-SELECT title FROM product_catalogs
-WHERE jsonb_path_exists(metadata, '$.specs.ports[*] ? (@ == "Thunderbolt 4")');
-
--- 2. Value Projection with Filtering (jsonb_path_query)
-SELECT 
-    title,
-    jsonb_path_query(metadata, '$.specs.refresh_rate') AS refresh_rate,
-    jsonb_path_query_array(metadata, '$.specs.ports[*]') AS all_ports
-FROM product_catalogs;
-
--- 3. Complex Arithmetic & Predicate Filtering (jsonb_path_match)
-SELECT title
-FROM product_catalogs
-WHERE jsonb_path_match(
-    metadata, 
-    '$.inventory.quantity >= 20 && $.specs.refresh_rate >= 120'
-);
-```
-
----
-
-## 6. Generalized Inverted Index (GIN) Architecture & Operator Classes
-
-### The GIN Index Internal Structure
-A GIN index consists of:
-1. **Entry Tree**: A balanced B-Tree containing unique extracted keys/lexemes.
-2. **Posting List**: A compact array of `ctid` pointers stored on leaf pages.
-3. **Posting Tree**: When a single key occurs in thousands of rows (e.g. `{"in_stock": true}`), the posting list expands into a full independent B-Tree of `ctid`s.
-4. **`fastupdate` Pending List**: To avoid synchronous B-Tree leaf rebalancing during high-volume `INSERT`s, new entries are buffered into a flat unsorted pending list. When the pending list exceeds `gin_pending_list_limit` (default: 4MB), or during `VACUUM`, the entries are batched and inserted into the main GIN tree.
+PostgreSQL contains a built-in search engine capable of morphological linguistic analysis across multiple languages.
 
 ```mermaid
 flowchart TD
-    subgraph GINStructure["Generalized Inverted Index (GIN) Anatomy"]
-        EntryTree["Entry B-Tree<br/>(Unique keys, paths, and lexemes)"]
-        
-        EntryTree -->|"Few matching rows"| PostList["Posting List Array<br/>[ctid1, ctid2, ctid3]"]
-        EntryTree -->|"Many matching rows"| PostTree["Posting B-Tree<br/>(Dedicated B-Tree of ctids)"]
-        
-        PendingList["Fastupdate Pending List<br/>(Buffers inserts, flushes at limit)"] -.-> EntryTree
-    end
-```
-
-### `jsonb_ops` vs. `jsonb_path_ops` Trade-Off Analysis
-
-| Dimension | `jsonb_ops` (Default) | `jsonb_path_ops` |
-| :--- | :--- | :--- |
-| **Indexed Unit** | Every key, path, and scalar value separately. | 32-bit hash of each complete path + leaf value. |
-| **Supported Operators** | `@>`, `?`, `?\|`, `?&` | Strict `@>` (Containment) only. |
-| **Index Size on Disk** | Large (indexes all individual keys and values). | **Up to 60% smaller** (stores only compact 32-bit hashes). |
-| **Lookup Speed** | Moderate. | **Significantly faster** for deep containment queries. |
-
-```sql
--- Comprehensive GIN index supporting containment (@>) and key existence (?):
-CREATE INDEX idx_catalogs_meta_ops ON product_catalogs USING GIN (metadata);
-
--- Highly optimized GIN index for deep structural containment (@>) queries:
-CREATE INDEX idx_catalogs_meta_path_ops ON product_catalogs USING GIN (metadata jsonb_path_ops);
-```
-
----
-
-## 7. Full-Text Search (FTS) Fundamentals & Information Retrieval
-
-Relational string searches using `LIKE '%term%'` require exhaustive sequential heap scans and cannot process linguistic morphology ("developer" vs. "developing"). PostgreSQL's native FTS subsystem implements formal Information Retrieval pipelines:
-
-```mermaid
-flowchart LR
-    RawDoc["Raw Text Document"] --> Parser["1. Text Parser<br/>(Tokenizes words, numbers, tags)"]
-    Parser --> Dictionary["2. Dictionaries & Stopwords<br/>(Discards 'the', 'is', 'at')"]
-    Dictionary --> Stemmer["3. Snowball Stemmer<br/>(Normalizes words to lexemes)"]
-    Stemmer --> Vector["4. tsvector Document<br/>(Sorted lexemes + position offsets)"]
-```
-
-### 1. Linguistic Parsing & The `tsvector` Type
-The `to_tsvector()` function normalizes input text into sorted lexemes and positional offsets:
-
-```sql
-SELECT to_tsvector('english', 'The engineers are engineering PostgreSQL 18 databases');
--- Result: '18':6 'databas':7 'engin':2,4 'postgresql':5
-```
-Notice that:
-- Stop words (`The`, `are`) are discarded.
-- `engineers` and `engineering` both normalize to the single root lexeme `'engin'`.
-- Word positions (`2, 4`) are preserved for proximity matching.
-
-### 2. Search Expressions & The `tsquery` Type
-The `to_tsquery()` function compiles search terms into a Boolean expression tree:
-- **`&` (AND)**: `to_tsquery('english', 'database & postgresql')`
-- **`|` (OR)**: `to_tsquery('english', 'postgres | mysql')`
-- **`!` (NOT)**: `to_tsquery('english', '!oracle')`
-- **`<N>` (Phrase / Distance)**: Words must appear within $N$ positions of each other:
-  ```sql
-  -- Matches 'postgresql' immediately followed by '18' (distance = 1)
-  SELECT to_tsquery('english', 'postgresql <-> 18');
-  -- Matches 'distributed' within 3 words of 'database'
-  SELECT to_tsquery('english', 'distributed <3> database');
-  ```
-
-### 3. Executing Search via the Match Operator (`@@`)
-```sql
-SELECT title
-FROM product_catalogs
-WHERE to_tsvector('english', title) @@ to_tsquery('english', 'studio & display');
-```
-
----
-
-## 8. Document Weighting, Cover Density Ranking & Highlighting
-
-### Document Weighting (`setweight`)
-Lexemes can be assigned one of four priority weights (`A`, `B`, `C`, `D`):
-- `A` = 1.0 (Title / Primary header)
-- `B` = 0.4 (Subtitle / Abstract)
-- `C` = 0.2 (Body text)
-- `D` = 0.1 (Metadata / Footnotes)
-
-### Ranking Algorithms: `ts_rank` vs. `ts_rank_cd`
-- **`ts_rank`**: Computes standard term frequency ($TF$) ranking based on how often matching lexemes appear.
-- **`ts_rank_cd` (Cover Density)**: Calculates ranking based on the proximity of matching lexemes to one another. Documents where search terms cluster closely together in a sentence receive significantly higher scores.
-
-```sql
-SELECT 
-    title,
-    ts_rank_cd(
-        setweight(to_tsvector('english', title), 'A') || 
-        setweight(to_tsvector('english', metadata->>'brand'), 'B'),
-        to_tsquery('english', 'techcorp & display')
-    ) AS relevance_score
-FROM product_catalogs
-ORDER BY relevance_score DESC;
-```
-
-### Result Snippet Highlighting (`ts_headline`)
-```sql
-SELECT 
-    title,
-    ts_headline(
-        'english', 
-        'The Pro Studio Display features an incredible 5K panel with Thunderbolt 4 connectivity.',
-        to_tsquery('english', '5k & thunderbolt'),
-        'StartSel=<b>, StopSel=</b>, MaxWords=25, MinWords=10'
-    ) AS highlighted_snippet;
--- Result: "The Pro Studio Display features an incredible <b>5K</b> panel with <b>Thunderbolt</b> 4 connectivity."
-```
-
----
-
-## 9. Production-Grade FTS Indexing & Physical Storage Architecture
-
-Computing `to_tsvector()` on the fly during queries forces full table sequential scans. In production systems:
-1. Materialize the vector into a **Stored Generated Column**.
-2. Build an inverted **GIN index** on the pre-computed column.
-
-```mermaid
-flowchart TD
-    subgraph StoredFTSPipeline["Production FTS Generated Column Pipeline"]
-        InsertRow["INSERT / UPDATE on Articles"] --> GenCol["Compute Stored TSVECTOR<br/>(Weighted title 'A' + body 'B')"]
-        GenCol --> DiskHeap["Persist 8KB Heap Tuple"]
-        GenCol --> GINIndex["Update GIN Inverted Index<br/>(Buffered via fastupdate)"]
-        
-        ClientQuery["Client SELECT ... WHERE search_vector @@ to_tsquery()"] --> GINIndex
-        GINIndex --> QuickResult["Instant Sub-Millisecond Index Scan!"]
-    end
-```
-
-```sql
-CREATE TABLE technical_articles (
-    article_id UUID PRIMARY KEY DEFAULT uuidv7(),
-    title VARCHAR(255) NOT NULL,
-    abstract TEXT,
-    content TEXT NOT NULL,
+    Raw["Raw Text: 'The quick brown foxes were jumping over dogs'"]
     
-    -- Stored Generated Column: pre-computed and stored in heap
+    subgraph FTSPipeline["Full-Text Search Engine Pipeline"]
+        Tokenize["1. Tokenizer: Split into words and punctuation"]
+        Dictionary["2. Dictionary & Stop Words: Discard 'the', 'were', 'over'"]
+        Stemming["3. Snowball Stemmer: 'foxes' -> 'fox', 'jumping' -> 'jump', 'dogs' -> 'dog'"]
+        Emit["4. Emit tsvector with word positions: 'brown':3 'dog':8 'fox':4 'jump':6 'quick':2"]
+    end
+    
+    Raw --> Tokenize --> Dictionary --> Stemming --> Emit
+```
+
+### Document Vectorization and Querying
+```sql
+CREATE TABLE knowledge_base (
+    id SERIAL PRIMARY KEY,
+    title TEXT NOT NULL,
+    body TEXT NOT NULL,
     search_vector TSVECTOR GENERATED ALWAYS AS (
-        setweight(to_tsvector('english', coalesce(title, '')), 'A') ||
-        setweight(to_tsvector('english', coalesce(abstract, '')), 'B') ||
-        setweight(to_tsvector('english', coalesce(content, '')), 'C')
+        setweight(to_tsvector('english', title), 'A') ||
+        setweight(to_tsvector('english', body), 'B')
     ) STORED
 );
 
--- Inverted GIN Index
-CREATE INDEX idx_articles_search_vector ON technical_articles USING GIN (search_vector);
+CREATE INDEX idx_kb_search ON knowledge_base USING gin (search_vector);
 
--- Sub-millisecond Execution
-SELECT article_id, title, ts_rank_cd(search_vector, q) AS rank
-FROM technical_articles, to_tsquery('english', 'postgresql & mvcc') AS q
-WHERE search_vector @@ q
-ORDER BY rank DESC
-LIMIT 10;
+-- Search using tsquery:
+SELECT 
+    title,
+    ts_rank(search_vector, query) AS rank_score
+FROM knowledge_base,
+to_tsquery('english', 'fox & jumping') query
+WHERE search_vector @@ query
+ORDER BY rank_score DESC;
+```
+
+### Phrase Searching (`<->`)
+The `<->` operator enforces word distance:
+```sql
+-- Search for 'database' followed immediately by 'systems':
+SELECT to_tsvector('english', 'Relational database systems') @@ 
+       to_tsquery('english', 'database <-> systems');
+-- Evaluates to TRUE
 ```
 
 ---
 
-## 10. Summary & Module Progression
+## 6. Fuzzy Substring Matching with `pg_trgm`
 
-In this module, we examined:
-- The binary decomposition of `jsonb` (`JsonbContainer`, `JEntry` headers, and key sorting).
-- JSON path navigation, containment (`@>`), and standard ISO SQL/JSON path queries.
-- GIN index internal mechanics: Entry Trees, Posting Lists, Posting Trees, and `fastupdate` buffers.
-- The performance trade-offs of `jsonb_ops` versus `jsonb_path_ops`.
-- Natural language text processing: tokenization, stop word elimination, Snowball stemming, and `tsvector` generation.
-- Phrase matching (`<N>`), document weighting (`setweight`), cover density ranking (`ts_rank_cd`), and snippet generation (`ts_headline`).
-- Pre-computing search vectors via Stored Generated Columns with GIN index acceleration.
+Standard B-tree indexes cannot satisfy arbitrary wildcard queries (`WHERE name ILIKE '%substring%'`) because the prefix is unknown. The `pg_trgm` extension solves this by decomposing strings into 3-character slices:
 
-Proceed to **[Module 06 — Concurrency, Transactions & MVCC Internals](./06-concurrency-transactions-and-mvcc.md)** to explore PostgreSQL's transaction isolation levels, heap tuple version headers, Serializable Snapshot Isolation (SSI) anti-dependency cycles, and lock conflict matrices.
+```sql
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+-- The string 'cat' generates trigrams: '  c', ' ca', 'cat', 'at '
+SELECT show_trgm('cat');
+
+CREATE TABLE products (id SERIAL PRIMARY KEY, name TEXT NOT NULL);
+INSERT INTO products (name) VALUES ('Apple MacBook Pro 16'), ('Sony Bravia OLED TV');
+
+-- Create a Trigram GIN index:
+CREATE INDEX idx_products_name_trgm ON products USING gin (name gin_trgm_ops);
+
+-- Accelerates leading-wildcard queries:
+EXPLAIN ANALYZE
+SELECT * FROM products WHERE name ILIKE '%macbook%';
+```
+
+---
+
+## 7. Architectural Seam: PostgreSQL FTS vs. Elasticsearch
+
+PostgreSQL FTS and trigrams satisfy 90% of web application search requirements without managing a secondary data store. However, specialized search engines become necessary at specific scale thresholds.
+
+```mermaid
+flowchart TD
+    Query["Search Requirements Evaluation"] --> Scale{"Index size > RAM or > 100M docs?"}
+    Scale -->|Yes| ES["Graduate to Elasticsearch / OpenSearch"]
+    Scale -->|No| Typo{"Complex multi-lingual morphology or typo distance > 2?"}
+    Typo -->|Yes| ES
+    Typo -->|No| DualWrite{"Need cross-shard distributed inverted index?"}
+    DualWrite -->|Yes| ES
+    DualWrite -->|No| PG["Keep in PostgreSQL FTS + pg_trgm<br/>(Guarantees ACID, Zero Dual-Write Lag)"]
+```
+
+> [!NOTE]
+> For distributed Lucene architectures, BM25 scoring engines, cross-cluster replication, and high-volume tokenization pipelines, consult the dedicated track [technologies/elasticsearch](../../technologies/elasticsearch/README.md).
+
+---
+
+## 8. Then vs. Now: Semi-Structured Data & Search
+
+| Capability | PostgreSQL $\le$ 14 | PostgreSQL 15–17 | PostgreSQL 18 & 19 (Current) |
+| :--- | :--- | :--- | :--- |
+| **SQL/JSON Functions** | Partial JSONPath functions | Added `JSON_TABLE`, `JSON_QUERY` | Full SQL:2016 SQL/JSON compliance with performance optimizations |
+| **JSON Subscripting** | Only operators (`->`, `->>`) | Added basic subscripting | Native multidimensional subscripting (`data['a']['b']`) across all query types |
+| **GIN Concurrency** | Periodic lock contention during fastinsert cleanups | Improved page vacuuming in GIN | Parallel GIN build optimizations and reduced locking overhead |
+
+---
+
+## 9. Interview Drill
+
+<details>
+<summary>1. Explain the architectural and performance differences between `json` and `jsonb` data types in PostgreSQL.</summary>
+
+**Answer**: `json` stores an exact copy of the input text, preserving formatting, whitespace, and duplicate keys. Every query inspecting a `json` column must parse the text from scratch, resulting in $O(N)$ CPU parsing overhead per read. In contrast, `jsonb` parses the document at write time into an internal decomposed binary format. Keys are sorted, whitespace is discarded, and duplicate keys are removed. `jsonb` supports binary search key lookup ($O(\log K)$) and GIN indexing, making it vastly superior for querying, filtering, and indexing.
+- Ref: [PostgreSQL Documentation: JSON Types](https://www.postgresql.org/docs/18/datatype-json.html)
+</details>
+
+<details>
+<summary>2. When should you use `jsonb_path_ops` instead of the default `jsonb_ops` in a GIN index?</summary>
+
+**Answer**: `jsonb_ops` (the default) creates independent index entries for every key, value, and sub-path in the document. It supports containment (`@>`) as well as key-existence operators (`?`, `?|`, `?&`). However, this produces large index files. `jsonb_path_ops` computes a single 32-bit hash for each leaf path-value combination (e.g., hash of `$.address.zip = 94107`). It only supports the containment operator (`@>`), but generates indexes that are 30% to 50% smaller on disk and significantly faster to scan. Use `jsonb_path_ops` when queries only filter via `@>`.
+- Ref: [PostgreSQL Documentation: GIN Internals: jsonb_ops](https://www.postgresql.org/docs/18/datatype-json.html#JSON-INDEXING)
+</details>
+
+<details>
+<summary>3. Why can't a standard B-tree index accelerate `WHERE description ILIKE '%engine%'`, and how does `pg_trgm` solve this?</summary>
+
+**Answer**: A B-tree index sorts keys lexicographically from left to right. When a search query specifies a leading wildcard (`%engine%`), the prefix is unknown, preventing the B-tree from seeking to a specific starting position in the leaf pages; the engine must fall back to a full sequential table scan. The `pg_trgm` extension breaks strings into 3-character slices (trigrams). A GIN index on trigrams (`USING gin (description gin_trgm_ops)`) maps individual trigrams to the rows containing them. During a wildcard query, PostgreSQL extracts trigrams from the search pattern and performs an index lookup on the matching trigrams, identifying candidate rows in $O(\log N)$ time.
+- Ref: [PostgreSQL Documentation: pg_trgm](https://www.postgresql.org/docs/18/pgtrgm.html)
+</details>
+
+<details>
+<summary>4. What is the function of the SQL/JSON standard `JSON_TABLE` function?</summary>
+
+**Answer**: `JSON_TABLE` is a SQL:2016 standard function that maps complex, nested JSON data into a virtual relational table directly within a SQL query. It takes a JSON document and a path expression identifying array rows, and allows you to declare explicit SQL column names and types for each extracted attribute using `COLUMNS (...) PATH '...'`. This eliminates the need for procedural unpacking or complex JSON array unnesting.
+- Ref: [PostgreSQL Documentation: JSON Functions: JSON_TABLE](https://www.postgresql.org/docs/18/functions-json.html#FUNCTIONS-SQLJSON-TABLE)
+</details>
+
+<details>
+<summary>5. At what architectural threshold should an engineering team graduate from PostgreSQL Full-Text Search to a dedicated engine like Elasticsearch?</summary>
+
+**Answer**: Graduate to Elasticsearch/OpenSearch when:
+1. Search volume or index size exceeds PostgreSQL's RAM, causing search queries to starve the transactional OLTP buffer pool.
+2. The system requires advanced multi-lingual NLP (lemmatization, compound word splitting, phonetic matching like Double Metaphone) not supported by PostgreSQL's Snowball stemmer.
+3. You require complex BM25 scoring with term frequency/inverse document frequency (TF/IDF) tuned across distributed shards.
+4. You require multi-cluster distributed sharding and horizontal scaling for billions of log records or documents.
+Keep search in PostgreSQL when ACID transactional consistency and zero dual-write lag between the primary data and the search index are paramount.
+- Ref: [PostgreSQL Documentation: Full Text Search](https://www.postgresql.org/docs/18/textsearch.html)
+</details>

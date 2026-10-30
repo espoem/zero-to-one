@@ -12,7 +12,7 @@ States: ⬜ brief ready → 🟦 authoring → 🟨 challenge + verify → 🟧 
 |:-:|---|---|---|---|---|
 | 1 | `languages/typescript` | Opus · claude.ai | `track/typescript` | ✅ merged | Merged 2026-10-30: 132 tests passing, TS 7.0.2 pinned, 72-q bank, challenger & verifier gates complete. |
 | 1 | `technologies/panda-css` | Opus · claude.ai | `track/panda-css` | ✅ merged | Merged 2026-10-30: 118 tests passing (45 in Chromium), Panda 2.4.0, 60-q bank, challenger & verifier gates complete. |
-| 1 | `technologies/postgres` | Opus · claude.ai | `track/postgres` | ⬜ brief ready | |
+| 1 | `technologies/postgres` | Opus · claude.ai | `track/postgres` | 🟦 authoring | Restructuring 10 -> 13 modules, adding PG19 deltas, exams matrix and 60+ question bank. |
 | 1 | `technologies/react` | Opus · claude.ai | `track/react` | ✅ merged | Merged 2026-10-30: 222 tests passing, React 19.3.1, 65-q bank, challenger & verifier gates complete. |
 | 1 | `technologies/solidjs` | Opus · claude.ai | `track/solidjs` | ✅ merged | Merged 2026-10-30: 216 tests passing, SolidJS 2.0-rc.19, 60-q bank, challenger & verifier gates complete. |
 | 1 | `architecture/data-systems` | Opus · claude.ai | `track/data-systems` | ⬜ brief ready | |

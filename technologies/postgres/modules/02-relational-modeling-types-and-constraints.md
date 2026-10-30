@@ -1,382 +1,317 @@
-# Module 02 — Relational Modeling, Types & Constraints
+# Module 02 — Relational Modeling, Data Types & Integrity Constraints
 
-Welcome to **Module 02** of the PostgreSQL 18 Curriculum. This module provides a rigorous, academically grounded, and production-tested exploration of relational schema design and the PostgreSQL type system. We examine formal relational normalization theory (1NF through BCNF), dissect the low-level physical storage representation of data types and the TOAST subsystem, evaluate surrogate key strategies including PostgreSQL 18's native **`uuidv7()`**, contrast **Virtual vs. Stored Generated Columns**, analyze foreign key locking hazards, and implement ANSI SQL:2016 **Temporal Constraints** with **`WITHOUT OVERLAPS`**.
+Welcome to **Module 02** of the PostgreSQL curriculum. This module provides an in-depth, production-hardened examination of physical schema design, relational data types, and declarative integrity constraints in PostgreSQL 18. We analyze numerical representation tradeoffs (`numeric` vs `float8`), timezone handling mechanics with `timestamptz`, native `uuidv7()` generation, TOAST internal storage strategies and compression algorithms, generated columns (`STORED` vs `VIRTUAL`), constraint lifecycle management (`NOT VALID` / `VALIDATE`), deferrable constraints, exclusion constraints with temporal `WITHOUT OVERLAPS`, and modern identity column semantics.
+
+> [!NOTE]
+> For abstract relational algebra foundations, normal forms (1NF through BCNF), and theoretical schema normalization proofs, consult the foundational track [architecture/data-systems](../../architecture/data-systems/modules/01-data-models-and-relational-algebra.md). This module focuses on PostgreSQL's concrete physical realization, storage trade-offs, and operational mechanics.
 
 ---
 
 ## 1. Core Terminology & Concept Definitions
 
-To establish absolute clarity across this curriculum, the following relational modeling terms are formally defined:
-
-- **Functional Dependency ($X \to Y$)**: A mathematical constraint between two sets of attributes in a relation $R$, stating that if two tuples agree on attributes $X$, they must identically agree on attributes $Y$:
-  $$\forall t_1, t_2 \in R, \quad t_1[X] = t_2[X] \implies t_1[Y] = t_2[Y]$$
-- **Candidate Key**: A minimal superkey—a set of attributes $K \subseteq Sch(R)$ such that $K \to Sch(R)$ and no proper subset of $K$ functionally determines $Sch(R)$.
-- **Prime Attribute**: An attribute that belongs to at least one candidate key of the relation schema.
-- **Relational Normalization**: The systematic decomposition of relational schemas into progressively higher normal forms (1NF, 2NF, 3NF, BCNF) to eliminate data redundancy, update anomalies, insertion anomalies, and deletion anomalies.
-- **Universally Unique Identifier Version 7 (`uuidv7`)**: A 128-bit identifier standardized in RFC 9562 and natively implemented in PostgreSQL 18 that embeds a 48-bit UNIX millisecond timestamp prefix, guaranteeing monotonic index locality and eliminating B-Tree leaf fragmentation.
-- **TOAST (The Oversized-Attribute Storage Technique)**: PostgreSQL's transparent disk paging mechanism that compresses and moves wide attributes exceeding ~2KB out-of-line into a dedicated secondary table (`pg_toast_<relfilenode>`) to maintain compact 8KB heap tuples.
-- **Virtual Generated Column**: A column defined by a deterministic SQL expression whose value is computed dynamically upon read operations without consuming physical storage in 8KB disk blocks (the default in PostgreSQL 18).
-- **Stored Generated Column**: A column defined by a deterministic SQL expression evaluated during write operations (`INSERT` or `UPDATE`) and serialized permanently into the physical heap tuple.
-- **Temporal Constraint (`WITHOUT OVERLAPS`)**: An ANSI SQL:2016 relational integrity constraint supported in PostgreSQL 18 enforcing that primary keys or unique keys covering range or period attributes never overlap in time for the same entity.
-- **Referential Integrity**: The constraint rule ensuring foreign key references point to existing, valid rows in the parent relation, managed via referential actions (`RESTRICT`, `CASCADE`, `SET NULL`, `NO ACTION`).
+- **Arbitrary-Precision Arithmetic (`numeric`)**: A variable-length numeric representation implemented using Base-10,000 arithmetic digits that guarantees exact decimal precision with no binary rounding errors, up to 131,072 digits before the decimal point.
+- **`timestamptz` (`timestamp with time zone`)**: An 8-byte integer tracking microsecond elapsed time from the PostgreSQL epoch (`2000-01-01 00:00:00 UTC`). It stores all values normalized to UTC internally and converts to the client session's `TimeZone` during output formatting.
+- **UUIDv7**: A 128-bit Universally Unique Identifier specified in RFC 9562, encoding a 48-bit millisecond Unix timestamp followed by random entropy, providing monotonic sortability and cache-friendly B-tree index locality.
+- **TOAST (The Oversized-Attribute Storage Technique)**: An automatic storage subsystem that compresses large attribute values exceeding approximately 2KB and moves them into a dedicated auxiliary table (`pg_toast_<oid>`), slicing payloads into chunks to preserve the 8KB primary page constraint.
+- **`VIRTUAL` Generated Column**: A generated column introduced in PostgreSQL 18 that computes its value on-the-fly during query evaluation without consuming physical disk storage, contrasted with `STORED` generated columns which persist on disk.
+- **Unindexed Foreign Key Hazard**: A severe performance bottleneck where deleting or updating a parent primary key forces the database engine to perform a full sequential scan across the child referencing table while acquiring table-level share locks.
+- **Exclusion Constraint (`EXCLUDE USING gist`)**: A generalized constraint enforcing that no two rows satisfy a given operator comparison across specified columns (e.g., preventing overlapping time intervals or intersecting bounding boxes).
+- **`WITHOUT OVERLAPS`**: A native SQL:2011 temporal constraint clause introduced in PostgreSQL 18 enforcing non-overlapping time ranges within primary or unique keys when combined with the `btree_gist` extension.
 
 ---
 
-## 2. Relational Normalization & Schema Decomposition Theory
+## 2. Advanced Data Types: Representation & Storage Mechanics
 
-Relational database design relies on formal decomposition theory to eliminate anomalies:
-
-```mermaid
-flowchart TD
-    Raw["Unnormalized Data<br/>(Repeating groups, nested lists)"] -->|"Atomic domains only"| NF1["1NF: First Normal Form"]
-    NF1 -->|"Eliminate partial dependencies on candidate keys"| NF2["2NF: Second Normal Form"]
-    NF2 -->|"Eliminate transitive dependencies (X → Y → Z)"| NF3["3NF: Third Normal Form"]
-    NF3 -->|"For all X → Y, X must be a superkey"| BCNF["BCNF: Boyce-Codd Normal Form"]
-```
-
-### The Normal Forms Defined Formally:
-
-1. **First Normal Form (1NF)**:
-   - Every attribute domain contains only atomic (indivisible) values.
-   - No tuple contains repeating groups, nested relation tables, or multi-valued attribute arrays (when modeling strict relational core entities).
-2. **Second Normal Form (2NF)**:
-   - The relation is in 1NF.
-   - Every non-prime attribute is fully functionally dependent on every candidate key. No non-prime attribute depends on a proper subset of a composite candidate key (no partial dependencies).
-3. **Third Normal Form (3NF)**:
-   - The relation is in 2NF.
-   - No non-prime attribute is transitively dependent on a candidate key. That is, for every functional dependency $X \to Y$, either $X$ is a superkey, or $Y$ is a prime attribute.
-4. **Boyce-Codd Normal Form (BCNF)**:
-   - A stricter formulation of 3NF eliminating all anomalies resulting from overlapping composite candidate keys.
-   - For every non-trivial functional dependency $X \to Y$, $X$ must be a strict superkey.
-
-### Strategic Denormalization in PostgreSQL
-While OLTP core transactional models should adhere strictly to 3NF/BCNF, PostgreSQL provides native semi-structured primitives (`jsonb`, arrays) and virtual generated columns that permit controlled denormalization for high-throughput read workloads without breaking transactional invariants.
-
----
-
-## 3. Physical Type Architecture & TOAST Subsystem
-
-PostgreSQL manages scalar types through fixed-length structures or variable-length byte arrays (`varlena`).
-
-```mermaid
-flowchart TD
-    subgraph VarlenaLayout["Variable-Length Array (varlena) Header Layout"]
-        H1["1-Byte Header (va_header = 0x01..0xFE)<br/>Used for short strings < 127 bytes.<br/>Lowest bit = 1 indicates 1-byte header."]
-        H4["4-Byte Header (va_header = 0x00..)<br/>Used for standard strings up to 1GB.<br/>Bit 0 = 0, Bit 1 indicates whether data is compressed."]
-    end
-```
-
-### The TOAST Storage Architecture
-PostgreSQL pages are fixed at 8192 bytes (8KB). To prevent wide tuples (e.g. large text descriptions, JSON documents, binary images) from overflowing a single page, PostgreSQL employs **TOAST**:
-
-1. **Activation Threshold**: When a tuple exceeds `TOAST_TUPLE_THRESHOLD` (typically 2048 bytes / 2KB), PostgreSQL attempts to compress and out-of-line wide attributes until the tuple fits within `TOAST_TUPLE_TARGET` (default 2048 bytes).
-2. **Chunking**: Out-of-line data is sliced into 2KB chunks and stored in a hidden companion relation named `pg_toast.pg_toast_<relfilenode>`.
-
-```mermaid
-flowchart LR
-    subgraph MainTable["Main Heap Table (8KB Page)"]
-        Tuple["Heap Tuple Header<br/>+ Normal Columns<br/>+ TOAST Pointer (va_tag, chunk_id, chunk_count)"]
-    end
-
-    subgraph ToastTable["pg_toast Table (Chunked Storage)"]
-        Chunk1["Chunk 0 (2KB)"]
-        Chunk2["Chunk 1 (2KB)"]
-        Chunk3["Chunk 2 (2KB)"]
-    end
-
-    Tuple -->|"Out-of-line dereference"| ToastTable
-```
-
-### TOAST Column Storage Strategies
-PostgreSQL supports four distinct storage strategies configured per column:
-
-| Strategy | Compression Allowed? | Out-of-Line Storage Allowed? | Typical Use Case |
-| :--- | :--- | :--- | :--- |
-| **`PLAIN`** | No | No | Fixed-width types (`int4`, `uuid`, `timestamptz`). Never TOASTed. |
-| **`EXTENDED`** | Yes (LZ4 or pglz) | Yes | Default for `text`, `varchar`, `jsonb`, `bytea`. Compresses inline first, then moves out-of-line. |
-| **`EXTERNAL`** | No | Yes | Prevents compression overhead on already-compressed data (e.g. JPEG, MP4, pre-gzipped blobs). |
-| **`MAIN`** | Yes | Yes (As last resort) | Attempts compression inline; only moves out-of-line if page cannot accommodate row otherwise. |
+### Financial Accuracy: `numeric` vs. Floating Point (`float8` / `double precision`)
+Binary floating point formats (IEEE 754) represent numbers as fractional powers of two ($2^{-1}, 2^{-2}, \dots$). Decimal fractions such as $0.1$ cannot be represented exactly in binary floating point, leading to silent rounding accumulation in financial calculations:
 
 ```sql
--- Explicitly configure column storage strategies
-ALTER TABLE documents ALTER COLUMN raw_payload SET STORAGE EXTERNAL;
-ALTER TABLE documents ALTER COLUMN compression_algorithm SET STORAGE PLAIN;
+-- Inexact IEEE 754 floating point arithmetic:
+SELECT (0.1::float8 + 0.2::float8) = 0.3::float8 AS is_equal;
+-- Result: false (Actual value: 0.30000000000000004)
+
+-- Exact arbitrary-precision numeric arithmetic:
+SELECT (0.1::numeric + 0.2::numeric) = 0.3::numeric AS is_equal;
+-- Result: true
 ```
 
----
+#### Under the Hood: `numeric` Memory Layout
+`numeric` stores values in an internal header followed by an array of 16-bit integers (`NumericDigit`), where each digit represents a base-10,000 value ($0000$ to $9999$). While `numeric` guarantees mathematical correctness, its CPU overhead is approximately 10x to 20x higher than native CPU hardware floating point operations. Use `numeric` for monetary values, account balances, and legal metrics; use `float8` for scientific measurements, geospatial coordinates, and vector embeddings.
 
-## 4. PostgreSQL Core Scalar Types
+### Timezone Mechanics: `timestamptz` vs. Naive `timestamp`
+A common production failure mode is storing datetime values in naive `timestamp without time zone`. 
 
-```mermaid
-flowchart TD
-    subgraph TypeTaxonomy["PostgreSQL Native Scalar Taxonomy"]
-        direction TB
-        Numeric["Numeric Types<br/>• smallint (2B, -32k..32k)<br/>• integer (4B, -2.1B..2.1B)<br/>• bigint (8B, 64-bit integer)<br/>• numeric(p, s) (Arbitrary precision decimal, exact)<br/>• double precision (8B, IEEE 754 floating-point)"]
-        String["Character Types<br/>• text (Variable length, unlimited, optimal)<br/>• varchar(n) (Length-bounded text)<br/>• char(n) (Blank-padded, legacy, avoid)"]
-        Temporal["Date & Time Types<br/>• timestamptz (8B UTC timestamp with timezone)<br/>• timestamp (8B local wall-clock time)<br/>• date (4B calendar date)<br/>• interval (16B elapsed duration)"]
-        Boolean["Boolean Type<br/>• boolean (1 byte, TRUE, FALSE, NULL)"]
-    end
-```
-
-### Exact Precision (`numeric`) vs Floating-Point (`double precision`)
-- **`numeric(precision, scale)`**: Encoded as variable-length base-10,000 binary-coded decimal digits. Operations use arbitrary-precision arithmetic without rounding errors. **Mandatory for monetary balances, financial transactions, and billing ledgers.**
-- **`double precision`**: Hardware-accelerated IEEE 754 binary floating point. Susceptible to base-2 representation inaccuracies (e.g. $0.1 + 0.2 \neq 0.3$). Recommended only for scientific measurements, geospatial coordinates, and physical simulations.
-
-### Time Zones: `timestamptz` vs `timestamp`
-Always standardize on **`timestamptz`** (`timestamp with time zone`) for application timestamps:
-1. When receiving a timestamp string with an offset (e.g. `'2026-10-28 14:00:00+02'`), PostgreSQL converts it and stores the integer value normalized to **UTC** in 8 bytes.
-2. When querying `timestamptz`, PostgreSQL rotates the UTC value into the client session's active `TimeZone` setting.
-3. Plain `timestamp` (without time zone) discards timezone context, making daylight saving shifts and global distributed multi-region tracking hazardous.
-
----
-
-## 5. Timestamp-Ordered UUIDs with PostgreSQL 18 `uuidv7()`
-
-### The UUIDv4 B-Tree Fragmentation Hazard
-Random UUIDv4 identifiers (`gen_random_uuid()`) distribute keys uniformly across the 128-bit hash space. When inserted into a B-Tree index:
-- Every insert lands on a random leaf page.
-- When the index working set exceeds `shared_buffers`, every insertion causes a cache miss, reading a disk block, causing a 50/50 page split, and dirtying random blocks.
-- B-Tree page utilization drops to ~50% (50% internal fragmentation), halving query throughput.
-
-### How PostgreSQL 18 `uuidv7()` Solves This
-RFC 9562 defines UUIDv7, which PostgreSQL 18 implements natively via `uuidv7()`:
-- **Bits 0..47 (48 bits)**: High-resolution UNIX timestamp in milliseconds.
-- **Bits 48..51 (4 bits)**: UUID version (`0111` for version 7).
-- **Bits 52..63 (12 bits)**: Sub-millisecond fraction or monotonic counter.
-- **Bits 64..65 (2 bits)**: UUID variant (`10`).
-- **Bits 66..127 (62 bits)**: Cryptographically secure random entropy.
-
-```mermaid
-flowchart LR
-    subgraph UUIDv7Anatomy["PostgreSQL 18 uuidv7() Bit Layout (128 bits)"]
-        direction LR
-        TS["48 bits: UNIX Timestamp (ms)<br/>Monotonically increasing"]
-        Ver["4 bits: Version (7)"]
-        Counter["12 bits: Counter / Sub-ms"]
-        Var["2 bits: Variant"]
-        Rand["62 bits: Random Entropy<br/>Collision resistance"]
-        TS --- Ver --- Counter --- Var --- Rand
-    end
-```
-
-Because the leading 48 bits increase monotonically with real time, new tuples are appended exclusively to the right-most leaf page of the B-Tree index:
-- Page splits are eliminated during steady-state ingestion.
-- B-Tree leaf pages achieve 90%–100% packing density.
-- Cache locality is preserved: only the current right-edge leaf page must remain resident in `shared_buffers`.
-
-```sql
-CREATE TABLE transaction_records (
-    -- Native PostgreSQL 18 monotonic identifier
-    transaction_id UUID PRIMARY KEY DEFAULT uuidv7(),
-    amount NUMERIC(12, 2) NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp()
-);
-
--- Inspect generated UUIDv7 values
-SELECT uuidv7();
--- Result: '0192d3b4-7e89-7f31-92b4-c1e4d89a1200'
-```
-
----
-
-## 6. PostgreSQL 18 Virtual vs Stored Generated Columns
-
-Generated columns are computed from other columns in the same relation. PostgreSQL 18 introduces **Virtual Generated Columns** (`GENERATED ALWAYS AS (...) VIRTUAL`):
-
-| Evaluation Dimension | Virtual Generated Column (`VIRTUAL`) | Stored Generated Column (`STORED`) |
+| Property | `timestamp` (without time zone) | `timestamptz` (with time zone) |
 | :--- | :--- | :--- |
-| **Default in PG 18** | Yes (Default when modifier omitted) | No (Requires explicit `STORED` keyword) |
-| **Computation Timing** | Evaluated on demand during `SELECT` | Evaluated at `INSERT` and `UPDATE` |
-| **Disk Storage** | 0 bytes in heap tuple | Full byte width stored in 8KB disk block |
-| **Write Performance** | Faster (no evaluation or storage cost) | Slower (computation + larger tuple size) |
-| **Read Performance** | Mild CPU cost per row during query | Instant read directly from tuple |
-| **Indexing** | Fully indexable via Expression Indexes | Fully indexable via standard B-tree |
+| **Storage Size** | 8 bytes | 8 bytes |
+| **Internal Representation** | Microseconds since 2000-01-01 (naive) | Microseconds since 2000-01-01 **UTC** |
+| **Timezone Preserved?** | No timezone stored | No timezone stored (normalized to UTC) |
+| **Display Formatting** | Disregards client timezone | Formats string relative to client `SET TimeZone` |
+| **Comparison Semantics** | Compares raw local clock values | Compares absolute points in global time |
+
+```sql
+-- Demonstrate timestamptz normalization
+SET TimeZone = 'UTC';
+SELECT '2026-10-30 14:00:00+02'::timestamptz;
+-- Output: 2026-10-30 12:00:00+00
+
+SET TimeZone = 'America/New_York';
+SELECT '2026-10-30 14:00:00+02'::timestamptz;
+-- Output: 2026-10-30 08:00:00-04
+```
+
+### Native UUIDv7 vs. UUIDv4
+Random UUIDv4 identifiers cause catastrophic B-tree write amplification: because new IDs are distributed randomly across the key space, every `INSERT` touches a random 8KB B-tree leaf page. When index sizes exceed `shared_buffers`, this forces high random disk I/O.
+
+PostgreSQL 18 introduces native RFC 9562 `uuidv7()`:
+- **Timestamp Prefix (48 bits)**: Monotonically increasing milliseconds since Unix epoch.
+- **Sub-millisecond & Random Bits (80 bits)**: High-entropy randomness ensuring global uniqueness.
+- **Index Impact**: New keys append sequentially to the rightmost leaf page of the B-tree, keeping active insertions pinned in memory and reducing page splits by over 90%.
+
+```sql
+-- Generating UUIDv7 natively in PostgreSQL 18:
+SELECT uuidv7();
+-- Result: 0192e21b-87a4-7123-89b1-5d918237fa41
+```
+
+---
+
+## 3. TOAST: Physical Storage & Compression Strategies
+
+PostgreSQL uses a fixed 8KB page size and never allows a single row to span across multiple physical pages. If a row exceeds approximately 2KB (`TOAST_TUPLE_THRESHOLD = 2040 bytes`), the engine engages **TOAST**:
 
 ```mermaid
 flowchart TD
-    subgraph VirtualColumnLifecycle["Virtual vs Stored Column Lifecycle"]
-        WriteOp["Client INSERT / UPDATE"]
-        WriteOp -->|"Skip computation"| VirtualHeap["Write to Heap:<br/>Zero bytes consumed for virtual column!"]
-        WriteOp -->|"Evaluate formula"| StoredHeap["Write to Heap:<br/>Materialize evaluated value to disk!"]
+    Row["Incoming Row Payload (> 2KB)"] --> Check{"Can compress inline?"}
+    Check -->|Yes| Comp["Compress column using LZ4/PGLZ"]
+    Comp --> CheckSize{"Payload < 2KB?"}
+    CheckSize -->|Yes| StoreMain["Store Compressed on Main Page"]
+    CheckSize -->|No| MoveOut["Move Out-Of-Line to TOAST Table"]
+    Check -->|No / Failed| MoveOut
+    
+    subgraph ToastTable["Dedicated Aux Table: pg_toast_OID"]
+        MoveOut --> Slice["Split into 2KB Chunks"]
+        Slice --> Chunk1["Chunk 0: 2048 Bytes"]
+        Slice --> Chunk2["Chunk 1: 2048 Bytes"]
+        Slice --> ChunkN["Chunk N: Remainder"]
+    end
+    
+    StoreMain --> Pointer["Write 18-byte Pointer on Main Heap: (toast_relid, toast_chunk_id)"]
+    MoveOut --> Pointer
+```
 
-        ReadOp["Client SELECT"]
-        VirtualHeap -->|"Compute dynamically on read"| ReadOp
-        StoredHeap -->|"Read pre-computed bytes directly"| ReadOp
+### Storage Strategies per Column
+Columns can be configured with specific TOAST strategies via `ALTER TABLE ... ALTER COLUMN ... SET STORAGE`:
+1. **`PLAIN`**: Disables compression and out-of-line storage. Used for fixed-width types (integers, booleans). If a row exceeds 8KB, `INSERT` fails.
+2. **`EXTENDED` (Default for variable types)**: Allows both inline compression and out-of-line storage in the TOAST table.
+3. **`EXTERNAL`**: Allows out-of-line storage but **disables compression**. Ideal for pre-compressed payloads (JPEG images, PDF files, encrypted strings) to save CPU cycles.
+4. **`MAIN`**: Compresses the attribute inline, only moving it out-of-line if all other attributes have been moved and the row still exceeds the page threshold.
+
+### Compression Algorithms: `lz4` vs `pglz`
+- **`pglz`**: PostgreSQL's legacy internal LZ-variant algorithm. High compression ratio, but relatively slow CPU throughput.
+- **`lz4`**: Modern high-throughput compression algorithm. Provides 2x to 4x faster decompression and compression speeds. Configured via `default_toast_compression = 'lz4'` or per-column via `COMPRESSION lz4`.
+- **PostgreSQL 19 Evolution**: PostgreSQL 19 switches the default TOAST compression engine cluster-wide from `pglz` to `lz4`.
+
+---
+
+## 4. Generated Columns: `STORED` vs `VIRTUAL`
+
+PostgreSQL 18 introduces `VIRTUAL` generated columns alongside traditional `STORED` generated columns:
+
+```sql
+CREATE TABLE inventory_items (
+    id SERIAL PRIMARY KEY,
+    unit_price NUMERIC(10,2) NOT NULL,
+    quantity INT NOT NULL,
+    discount_pct NUMERIC(4,2) DEFAULT 0.0,
+    -- STORED: evaluated on INSERT/UPDATE, consumes disk storage
+    total_stored NUMERIC(10,2) GENERATED ALWAYS AS (unit_price * quantity * (1 - discount_pct/100)) STORED,
+    -- VIRTUAL (PG18): evaluated dynamically on query SELECT, zero disk footprint
+    total_virtual NUMERIC(10,2) GENERATED ALWAYS AS (unit_price * quantity * (1 - discount_pct/100)) VIRTUAL
+);
+```
+
+### Tradeoff Matrix
+- **`STORED`**: Consumes storage on disk and in `shared_buffers`. Requires CPU on every `INSERT` or `UPDATE`. Can be indexed directly using standard B-tree indexes.
+- **`VIRTUAL` (PG18+)**: Consumes zero disk and buffer cache space. Re-evaluated during query execution. Can be indexed via expression indexes (`CREATE INDEX ON inventory_items ((total_virtual));`).
+
+---
+
+## 5. Constraint Architecture & Production Safety
+
+### The Unindexed Foreign Key Trap
+Foreign key constraints validate parent existence during child inserts. However, when a row in the **parent** table is deleted or its primary key updated, PostgreSQL must scan the **child** table to verify no referencing rows exist (or to apply `ON DELETE CASCADE` / `ON DELETE SET NULL`).
+
+```mermaid
+sequenceDiagram
+    participant App as Application Client
+    participant P as Parent Table (departments)
+    participant C as Child Table (employees)
+    
+    App->>P: DELETE FROM departments WHERE id = 10;
+    Note over P,C: Engine checks Foreign Key Constraint
+    alt Child table has index on department_id
+        P->>C: B-Tree Index Lookup (O(log N))
+        C-->>P: No rows found / Rows cascaded
+        P-->>App: DELETE Complete (Instant)
+    else Child table lacks index on department_id
+        P->>C: Full Table Sequential Scan (O(N)) + SHARE Lock on Child!
+        Note over C: Concurrently blocks ALL writes to employees table!
+        C-->>P: Scan complete
+        P-->>App: DELETE Complete (High latency & Lock Pileup)
     end
 ```
 
-### Syntax & Practical Implementation
+> [!CAUTION]
+> Creating a foreign key constraint does **not** automatically create an index on the child referencing column. Always index foreign key columns unless child table rows are strictly static and parent keys are never deleted or modified.
+
+### Zero-Downtime Constraint Creation (`NOT VALID` & `VALIDATE`)
+Executing `ALTER TABLE orders ADD CONSTRAINT fk_customer FOREIGN KEY (customer_id) REFERENCES customers(id);` acquires an `ACCESS EXCLUSIVE` lock on `orders` for the duration of a full table validation scan, blocking all reads and writes.
+
+To add constraints safely on production tables with millions of rows, execute the operation in two phases:
+
 ```sql
-CREATE TABLE invoices (
-    invoice_id UUID PRIMARY KEY DEFAULT uuidv7(),
-    subtotal NUMERIC(12, 2) NOT NULL,
-    tax_rate NUMERIC(4, 2) NOT NULL DEFAULT 0.21,
-    
-    -- Virtual Generated Column (PostgreSQL 18 default: 0 disk bytes consumed)
-    tax_amount NUMERIC(12, 2) GENERATED ALWAYS AS (subtotal * tax_rate) VIRTUAL,
-    
-    -- Stored Generated Column (materialized on disk)
-    grand_total NUMERIC(12, 2) GENERATED ALWAYS AS (subtotal * (1 + tax_rate)) STORED
+-- Phase 1: Instantaneous catalog update (enforces rule on all new writes only)
+ALTER TABLE orders 
+ADD CONSTRAINT fk_customer 
+FOREIGN KEY (customer_id) REFERENCES customers(id) 
+NOT VALID;
+
+-- Phase 2: Online background validation (takes only a SHARE UPDATE EXCLUSIVE lock; allows concurrent reads and writes!)
+ALTER TABLE orders 
+VALIDATE CONSTRAINT fk_customer;
+```
+
+### Deferrable Constraints
+By default, constraints are checked immediately at statement execution. Circular relationships (e.g., a company requires a primary contact employee, and an employee belongs to a company) cannot be inserted in a single statement without deferrable constraints:
+
+```sql
+CREATE TABLE accounts (
+    account_id INT PRIMARY KEY,
+    owner_id INT NOT NULL DEFERRABLE INITIALLY DEFERRED
 );
+
+CREATE TABLE account_owners (
+    owner_id INT PRIMARY KEY,
+    account_id INT NOT NULL REFERENCES accounts(account_id) DEFERRABLE INITIALLY DEFERRED
+);
+
+ALTER TABLE accounts 
+ADD CONSTRAINT fk_owner 
+FOREIGN KEY (owner_id) REFERENCES account_owners(owner_id);
+
+-- Both rows can now be inserted inside an atomic transaction:
+BEGIN;
+  INSERT INTO accounts VALUES (101, 501);
+  INSERT INTO account_owners VALUES (501, 101);
+COMMIT; -- Constraints validated here at commit boundary!
 ```
 
 ---
 
-## 7. Foreign Keys & The Unindexed Foreign Key Locking Hazard
+## 6. Exclusion & Temporal Constraints (`WITHOUT OVERLAPS`)
 
-A foreign key constraint enforces referential integrity between child and parent tables:
-
-```sql
-CREATE TABLE customers (
-    customer_id UUID PRIMARY KEY DEFAULT uuidv7(),
-    company_name VARCHAR(120) NOT NULL
-);
-
-CREATE TABLE orders (
-    order_id UUID PRIMARY KEY DEFAULT uuidv7(),
-    customer_id UUID NOT NULL,
-    order_date DATE NOT NULL DEFAULT CURRENT_DATE,
-    
-    CONSTRAINT fk_orders_customer FOREIGN KEY (customer_id)
-        REFERENCES customers (customer_id)
-        ON DELETE RESTRICT
-        ON UPDATE CASCADE
-);
-```
-
-### The Unindexed Foreign Key Hazard
-> [!CRITICAL]
-> **PostgreSQL does NOT automatically create an index on the referencing foreign key column (`orders.customer_id`)!**
-
-If `orders.customer_id` is not explicitly indexed:
-1. When a row in `customers` is deleted or its primary key is updated, PostgreSQL must verify whether referencing child rows exist.
-2. Without an index on `orders(customer_id)`, the engine performs a **sequential scan** of the entire child table `orders`.
-3. In earlier versions, or when modifying parent rows concurrently, this triggered high-level table locks or extensive row-level locks, causing widespread transaction deadlocks in high-concurrency systems.
-4. **Mandatory Rule**: Always create an explicit B-Tree index on every foreign key referencing column:
-   ```sql
-   CREATE INDEX idx_orders_customer_id ON orders (customer_id);
-   ```
-
----
-
-## 8. PostgreSQL 18 Temporal Constraints with `WITHOUT OVERLAPS`
-
-Enforcing non-overlapping time spans for the same resource (e.g. hotel room reservations, rental fleets, employee shift assignments) historically required complex GiST exclusion constraints (`CREATE EXTENSION btree_gist; ALTER TABLE ... ADD CONSTRAINT ... EXCLUDE USING gist (...)`).
-
-PostgreSQL 18 natively implements the ANSI SQL:2016 **`WITHOUT OVERLAPS`** temporal constraint directly on `PRIMARY KEY` and `UNIQUE` declarations:
+Exclusion constraints generalize uniqueness to non-equality operators using GiST index structures:
 
 ```sql
+CREATE EXTENSION IF NOT EXISTS btree_gist;
+
+-- Enforce no room booking overlaps for the same room
 CREATE TABLE room_reservations (
-    reservation_id UUID DEFAULT uuidv7(),
-    room_number VARCHAR(16) NOT NULL,
-    guest_id UUID NOT NULL,
-    stay_period TSTZRANGE NOT NULL,
-    
-    -- PostgreSQL 18 Temporal Primary Key: Prevents double-booking collisions!
-    CONSTRAINT pk_room_reservations PRIMARY KEY (room_number, stay_period WITHOUT OVERLAPS)
+    room_id INT NOT NULL,
+    during TSRANGE NOT NULL,
+    EXCLUDE USING gist (room_id WITH =, during WITH &&)
 );
-
--- First reservation succeeds: Oct 10 to Oct 15
-INSERT INTO room_reservations (room_number, guest_id, stay_period)
-VALUES (
-    'Suite-101', 
-    uuidv7(), 
-    tstzrange('2026-10-10 14:00:00+00', '2026-10-15 11:00:00+00')
-);
-
--- Overlapping reservation fails immediately: Oct 12 to Oct 18 (COLLISION!)
-INSERT INTO room_reservations (room_number, guest_id, stay_period)
-VALUES (
-    'Suite-101', 
-    uuidv7(), 
-    tstzrange('2026-10-12 14:00:00+00', '2026-10-18 11:00:00+00')
-);
--- ERROR: conflicting key value violates exclusion or temporal constraint "pk_room_reservations"
--- DETAIL: Key (room_number, stay_period)=(Suite-101, ["2026-10-12 14:00:00+00","2026-10-18 11:00:00+00")) conflicts with existing key.
 ```
 
----
-
-## 9. Comprehensive Multi-Entity Domain Architecture
-
-The following schema unifies normalization, native types, UUIDv7 keys, virtual columns, and temporal constraints into a production-grade architecture:
-
-```mermaid
-erDiagram
-    CUSTOMERS ||--o{ CUSTOMER_ORDERS : places
-    CUSTOMER_ORDERS ||--|{ ORDER_ITEMS : contains
-    ORDER_ITEMS }|--|| PRODUCTS : references
-    HOTEL_ROOMS ||--o{ ROOM_RESERVATIONS : reserves
-
-    CUSTOMERS {
-        uuid customer_id PK
-        varchar company_name
-        varchar tax_id UK
-        numeric balance
-    }
-    CUSTOMER_ORDERS {
-        uuid order_id PK
-        uuid customer_id FK
-        timestamptz order_date
-        varchar order_status
-    }
-    ORDER_ITEMS {
-        uuid item_id PK
-        uuid order_id FK
-        uuid product_id FK
-        int quantity
-        numeric unit_price
-        numeric line_total "VIRTUAL"
-    }
-    ROOM_RESERVATIONS {
-        varchar room_number PK
-        tstzrange stay_period PK "WITHOUT OVERLAPS"
-        uuid guest_id FK
-    }
-```
+### PostgreSQL 18 Temporal Constraints: `WITHOUT OVERLAPS`
+PostgreSQL 18 natively implements the SQL:2011 temporal constraint standard:
 
 ```sql
--- Production Domain DDL
-CREATE TABLE products (
-    product_id UUID PRIMARY KEY DEFAULT uuidv7(),
-    sku VARCHAR(64) NOT NULL UNIQUE,
-    product_name TEXT NOT NULL,
-    unit_price NUMERIC(10, 2) NOT NULL CHECK (unit_price >= 0.00),
-    tags TEXT[] DEFAULT ARRAY[]::TEXT[]
+CREATE TABLE employee_contracts (
+    employee_id INT NOT NULL,
+    valid_period TSRANGE NOT NULL,
+    role_title TEXT NOT NULL,
+    CONSTRAINT pk_employee_contract PRIMARY KEY (employee_id, valid_period WITHOUT OVERLAPS)
 );
-
-CREATE TABLE customer_orders (
-    order_id UUID PRIMARY KEY DEFAULT uuidv7(),
-    customer_id UUID NOT NULL REFERENCES customers (customer_id) ON DELETE RESTRICT,
-    order_date TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
-    order_status VARCHAR(32) NOT NULL DEFAULT 'PENDING'
-);
-CREATE INDEX idx_customer_orders_customer_id ON customer_orders (customer_id);
-
-CREATE TABLE order_items (
-    item_id UUID PRIMARY KEY DEFAULT uuidv7(),
-    order_id UUID NOT NULL REFERENCES customer_orders (order_id) ON DELETE CASCADE,
-    product_id UUID NOT NULL REFERENCES products (product_id) ON DELETE RESTRICT,
-    quantity INT NOT NULL CHECK (quantity > 0),
-    unit_price NUMERIC(10, 2) NOT NULL,
-    -- PostgreSQL 18 Virtual Generated Column: computes on read, 0 bytes stored
-    line_total NUMERIC(12, 2) GENERATED ALWAYS AS (quantity * unit_price) VIRTUAL
-);
-CREATE INDEX idx_order_items_order_id ON order_items (order_id);
-CREATE INDEX idx_order_items_product_id ON order_items (product_id);
 ```
+Any attempt to insert a contract spanning a time range that intersects an existing contract for that `employee_id` is rejected at the storage layer.
 
 ---
 
-## 10. Summary & Module Progression
+## 7. Identity Columns vs. Sequences
 
-In this module, we examined:
-- Formal normalization theory (1NF, 2NF, 3NF, BCNF) and functional dependency mathematics.
-- Physical storage representations: `varlena` headers, the 2KB TOAST threshold, and `PLAIN`/`EXTENDED`/`EXTERNAL`/`MAIN` strategies.
-- Precision mechanics: arbitrary-precision `numeric` vs IEEE 754 `double precision`, and UTC-normalized `timestamptz`.
-- Monotonic B-Tree indexing dynamics with PostgreSQL 18 `uuidv7()`.
-- Virtual vs. Stored Generated Columns in PostgreSQL 18.
-- Foreign key referential actions and the critical necessity of indexing foreign key columns.
-- Native ANSI SQL:2016 Temporal Constraints with `WITHOUT OVERLAPS`.
+PostgreSQL historically used pseudo-type sequences (`id SERIAL PRIMARY KEY`). Modern schema designs mandate SQL-standard identity columns:
 
-Proceed to **[Module 03 — Modern SQL Querying, Filtering & Joins](./03-sql-querying-filtering-and-joins.md)** to explore relational algebra operators, Three-Valued Logic truth tables, physical join engines, and PostgreSQL 18 `RETURNING OLD / NEW`.
+```sql
+-- Legacy: SERIAL
+CREATE TABLE legacy_items (id SERIAL PRIMARY KEY);
+
+-- Modern Standard: IDENTITY
+CREATE TABLE modern_items (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY
+);
+```
+
+### Sequence Gaps & Transaction Rollbacks
+PostgreSQL sequences allocate numbers via lock-free shared memory atomic increments (`nextval()`) to avoid serialization bottlenecks between concurrent transactions.
+- **Sequence Gaps Are Inevitable**: If Transaction A requests `nextval()` (yielding `101`) and subsequently aborts, the value `101` is never reclaimed or reused.
+- **Operational Rule**: Never rely on database sequences or auto-incrementing identity columns for strictly gapless numerical sequences (such as legal invoicing or accounting ledger sequences). Gapless sequences require explicit serialization locking (`SELECT next_val FROM sequence_table FOR UPDATE;`).
+
+---
+
+## 8. Then vs. Now: Data Types & Constraints
+
+| Feature / Standard | PostgreSQL $\le$ 16 | PostgreSQL 17 | PostgreSQL 18 & 19 (Current) |
+| :--- | :--- | :--- | :--- |
+| **UUID Generation** | External extension (`uuid-ossp` / `pgcrypto`) for UUIDv4 | `uuidv4()` builtin | Native **`uuidv7()`** (RFC 9562 time-ordered, B-tree friendly) |
+| **Generated Columns** | `STORED` only (persisted on disk) | `STORED` only | **`VIRTUAL`** (dynamic on-read, zero disk overhead) |
+| **Temporal Keys** | Manual `EXCLUDE USING gist` with range types | Manual `EXCLUDE USING gist` | Native SQL:2011 **`WITHOUT OVERLAPS`** on primary & unique keys |
+| **TOAST Default Compression** | `pglz` | `pglz` | `pglz` (PG18) $\rightarrow$ **`lz4` default in PG19** |
+| **Sequence Sync** | Manual catalog manipulation | Manual `ALTER SEQUENCE` | Logical replication of sequence states (PG19) |
+
+---
+
+## 9. Interview Drill
+
+<details>
+<summary>1. Why does an unindexed foreign key column represent a severe availability risk on high-throughput database clusters?</summary>
+
+**Answer**: When a row in the parent table is deleted or has its primary key updated, PostgreSQL must ensure referential integrity by checking whether referencing child rows exist. Without an index on the child table's foreign key column, the planner must execute a full sequential scan over the entire child table. Crucially, during this scan, the engine acquires a `SHARE` row-level or table-level lock on the child table. On a table with millions of rows, this scan takes seconds or minutes, stalling all concurrent `INSERT`, `UPDATE`, and `DELETE` transactions on the child table and precipitating connection pool exhaustion.
+- Ref: [PostgreSQL Documentation: Foreign Keys](https://www.postgresql.org/docs/18/ddl-constraints.html#DDL-CONSTRAINTS-FK)
+</details>
+
+<details>
+<summary>2. Explain how UUIDv7 eliminates the index fragmentation and write amplification caused by UUIDv4.</summary>
+
+**Answer**: UUIDv4 is 128 bits of pseudo-random data. In a B-tree index, randomly distributed keys are inserted uniformly across all existing leaf pages. Once an index exceeds `shared_buffers`, almost every insert requires loading a different 8KB leaf page from disk, causing massive random I/O and frequent B-tree page splits. In contrast, UUIDv7 encodes a 48-bit millisecond Unix timestamp in its most significant bits. New keys are monotonically increasing, meaning new index entries consistently append to the rightmost leaf page of the B-tree. This preserves spatial and temporal cache locality, eliminates random disk reads, and drastically reduces page splitting.
+- Ref: [RFC 9562: Universally Unique IDentifiers](https://datatracker.ietf.org/doc/rfc9562/)
+</details>
+
+<details>
+<summary>3. What is the two-step pattern for adding a foreign key or check constraint to a multi-million-row production table without downtime?</summary>
+
+**Answer**:
+1. Execute `ALTER TABLE ... ADD CONSTRAINT ... NOT VALID;`. This acquires an `ACCESS EXCLUSIVE` lock only for milliseconds to update the catalog; it immediately enforces referential integrity on all subsequent writes without checking existing rows.
+2. Execute `ALTER TABLE ... VALIDATE CONSTRAINT ...;`. This scans the table to verify existing rows against the constraint, but only acquires a `SHARE UPDATE EXCLUSIVE` lock. This lock allows concurrent `SELECT`, `INSERT`, `UPDATE`, and `DELETE` operations, preventing production service disruptions.
+- Ref: [PostgreSQL Documentation: ALTER TABLE](https://www.postgresql.org/docs/18/sql-altertable.html)
+</details>
+
+<details>
+<summary>4. What are the four TOAST storage strategies and how do you configure them?</summary>
+
+**Answer**:
+1. `PLAIN`: Disables compression and out-of-line storage; data must fit on the 8KB page.
+2. `EXTENDED`: Enables compression and out-of-line storage in the TOAST table (default for variable types like `text` and `jsonb`).
+3. `EXTERNAL`: Enables out-of-line storage but disables compression (ideal for pre-compressed assets like images or encrypted blobs).
+4. `MAIN`: Compresses inline, moving out-of-line only as a last resort.
+Strategies are configured per column via `ALTER TABLE tbl ALTER COLUMN col SET STORAGE <STRATEGY>;`.
+- Ref: [PostgreSQL Documentation: TOAST](https://www.postgresql.org/docs/18/storage-toast.html)
+</details>
+
+<details>
+<summary>5. Why can you not guarantee a gapless sequence using PostgreSQL sequences or identity columns?</summary>
+
+**Answer**: PostgreSQL sequences optimize for high concurrency by allocating sequence values (`nextval()`) in shared memory without transaction-level locking. If Transaction A calls `nextval()`, receives ID `100`, and subsequently rolls back, that value is permanently discarded and cannot be recycled without blocking other transactions. Sequences also cache allocations in memory per session if `CACHE` is specified. If the server crashes or restarts, cached unused sequence values are lost. True gapless sequences require explicit serialization locking via `SELECT current_number FROM sequence_table FOR UPDATE`, which forces serial single-threaded execution.
+- Ref: [PostgreSQL Documentation: Sequence Manipulation Functions](https://www.postgresql.org/docs/18/functions-sequence.html)
+</details>

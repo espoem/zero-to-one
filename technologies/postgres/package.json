@@ -5,20 +5,24 @@
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types examples/01-architecture-and-connection.ts && node --experimental-strip-types examples/02-relational-modeling-and-constraints.ts && node --experimental-strip-types examples/03-sql-querying-and-joins.ts && node --experimental-strip-types examples/04-advanced-sql-ctes-and-window-functions.ts && node --experimental-strip-types examples/05-jsonb-and-full-text-search.ts && node --experimental-strip-types examples/06-concurrency-and-mvcc.ts && node --experimental-strip-types examples/07-query-planning-and-indexing.ts && node --experimental-strip-types examples/08-maintenance-and-statistics.ts && node --experimental-strip-types examples/09-backup-pitr-and-migration.ts && node --experimental-strip-types examples/10-ha-replication-and-pgvector.ts",
-    "test:01": "node --experimental-strip-types examples/01-architecture-and-connection.ts",
+    "test": "node --experimental-strip-types examples/01-architecture-and-storage.ts && node --experimental-strip-types examples/02-relational-modeling-and-constraints.ts && node --experimental-strip-types examples/03-sql-querying-and-joins.ts && node --experimental-strip-types examples/04-advanced-sql-ctes-and-window-functions.ts && node --experimental-strip-types examples/05-jsonb-and-full-text-search.ts && node --experimental-strip-types examples/06-indexing-in-depth.ts && node --experimental-strip-types examples/07-query-planning-and-tuning.ts && node --experimental-strip-types examples/08-concurrency-mvcc-and-locking.ts && node --experimental-strip-types examples/09-vacuum-freezing-and-bloat.ts && node --experimental-strip-types examples/10-server-programming-and-security.ts && node --experimental-strip-types examples/11-partitioning-and-connections.ts && node --experimental-strip-types examples/12-durability-backup-and-pitr.ts && node --experimental-strip-types examples/13-replication-ha-and-extensions.ts",
+    "test:integration": "node --experimental-strip-types examples/integration-test.ts",
+    "test:01": "node --experimental-strip-types examples/01-architecture-and-storage.ts",
     "test:02": "node --experimental-strip-types examples/02-relational-modeling-and-constraints.ts",
     "test:03": "node --experimental-strip-types examples/03-sql-querying-and-joins.ts",
     "test:04": "node --experimental-strip-types examples/04-advanced-sql-ctes-and-window-functions.ts",
     "test:05": "node --experimental-strip-types examples/05-jsonb-and-full-text-search.ts",
-    "test:06": "node --experimental-strip-types examples/06-concurrency-and-mvcc.ts",
-    "test:07": "node --experimental-strip-types examples/07-query-planning-and-indexing.ts",
-    "test:08": "node --experimental-strip-types examples/08-maintenance-and-statistics.ts",
-    "test:09": "node --experimental-strip-types examples/09-backup-pitr-and-migration.ts",
-    "test:10": "node --experimental-strip-types examples/10-ha-replication-and-pgvector.ts"
+    "test:06": "node --experimental-strip-types examples/06-indexing-in-depth.ts",
+    "test:07": "node --experimental-strip-types examples/07-query-planning-and-tuning.ts",
+    "test:08": "node --experimental-strip-types examples/08-concurrency-mvcc-and-locking.ts",
+    "test:09": "node --experimental-strip-types examples/09-vacuum-freezing-and-bloat.ts",
+    "test:10": "node --experimental-strip-types examples/10-server-programming-and-security.ts",
+    "test:11": "node --experimental-strip-types examples/11-partitioning-and-connections.ts",
+    "test:12": "node --experimental-strip-types examples/12-durability-backup-and-pitr.ts",
+    "test:13": "node --experimental-strip-types examples/13-replication-ha-and-extensions.ts"
   },
   "devDependencies": {
-    "@types/node": "^24.0.0",
+    "@types/node": "^26.0.0",
     "typescript": "^7.0.2"
   },
   "dependencies": {

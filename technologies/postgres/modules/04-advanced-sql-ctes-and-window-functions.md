@@ -1,403 +1,306 @@
-# Module 04 — Advanced SQL: CTEs & Window Functions
+# Module 04 — Advanced SQL, CTEs, Window Functions & Analytics
 
-Welcome to **Module 04** of the PostgreSQL 18 Curriculum. This module provides a rigorous, academically grounded, and production-tested exploration of advanced analytical SQL in PostgreSQL. We examine the formal fixpoint semantics of recursive Common Table Expressions (CTEs), optimization fence controls (`MATERIALIZED` vs. `NOT MATERIALIZED`), atomic multi-statement data mutations via writable CTEs, directed graph cycle detection, and the internal executor mechanics of the **`WindowAgg`** subsystem, including tuplestore memory spilling, deep frame specifications, and multi-dimensional OLAP aggregation lattices.
+Welcome to **Module 04** of the PostgreSQL curriculum. This module delivers an academically rigorous and production-tested exploration of analytical SQL in PostgreSQL 18. We analyze Common Table Expression (CTE) inlining and the `MATERIALIZED` optimization fence, construct writable data pipelines, trace recursive graph evaluation with SQL:2016 `CYCLE` detection, dissect window frame mechanics (`ROWS`, `RANGE`, `GROUPS`), evaluate multi-dimensional aggregation (`GROUPING SETS`, `ROLLUP`, `CUBE`), and investigate analytical evolutions including PostgreSQL 19's `IGNORE NULLS`.
 
 ---
 
 ## 1. Core Terminology & Concept Definitions
 
-To establish exact precision across this curriculum, the following analytical SQL terms are formally defined:
-
-- **Common Table Expression (CTE)**: A named auxiliary statement defined in a query-scoped `WITH` clause that acts as a modular relational expression. CTEs improve readability and can be referenced multiple times within the outer query.
-- **Optimization Fence**: A planner boundary that prevents the query optimizer from pushing down predicates or inlining subqueries across expression boundaries. In PostgreSQL, `AS MATERIALIZED` establishes an explicit optimization fence, whereas `AS NOT MATERIALIZED` instructs the optimizer to inline the CTE.
-- **Data-Modifying CTE (Writable CTE)**: A CTE containing `INSERT`, `UPDATE`, or `DELETE` statements paired with a `RETURNING` clause, piping mutated tuples into downstream CTE steps or outer queries within a single atomic transaction.
-- **Recursive CTE**: A self-referential query evaluated iteratively according to relational least fixpoint semantics. It begins with an anchor expression, repeatedly applies a recursive member query via `UNION ALL`, and terminates when an iteration returns an empty tuple set.
-- **Cycle Detection (`CYCLE`)**: An ANSI SQL standard clause supported natively in PostgreSQL that tracks visited primary keys in an internal array, terminating execution and setting a boolean indicator when a circular path is encountered.
-- **Window Function**: A scalar function evaluated across a designated subset of relation tuples (the "window frame") associated with the current row, returning a calculated value for each input tuple without collapsing the relation into aggregate summary rows.
-- **Window Frame**: The dynamic boundary specification within an ordered partition (`ROWS`, `RANGE`, or `GROUPS`) that defines which neighboring tuples participate in the calculation relative to the current row.
-- **Tuplestore**: The internal PostgreSQL executor storage abstraction used by `WindowAgg` and `Materialize` nodes to hold intermediate tuple sets in memory, spilling to temporary disk files when partition size exceeds `work_mem`.
+- **Common Table Expression (CTE)**: A named temporary result set defined using the `WITH` clause that exists only within the execution scope of a single query.
+- **CTE Inlining**: An optimizer behavior (default since PostgreSQL 12) where the planner flattens non-recursive, side-effect-free CTEs directly into the parent query, allowing joint cost estimation and predicate pushdown.
+- **Optimization Fence (`AS MATERIALIZED`)**: An explicit hint instructing the query planner to evaluate a CTE independently into a temporary in-memory or on-disk worktable, preventing predicate pushdown across the CTE boundary.
+- **Writable CTE**: A data-modifying statement (`INSERT`, `UPDATE`, `DELETE`) enclosed inside a `WITH` clause using `RETURNING`, enabling atomic multi-table state pipelines.
+- **Recursive CTE**: An iterative query comprising an **Anchor Member** and a **Recursive Member** joined by `UNION` or `UNION ALL`, executed repeatedly over a dynamic working table until an empty set is produced.
+- **`CYCLE` Clause (SQL:2016)**: A declarative standard clause that tracks visited node identifiers during recursive evaluation, setting a boolean flag and terminating recursion when an infinite loop or graph cycle is detected.
+- **Window Frame**: The dynamic subset of rows within a window partition over which aggregate and ranking functions are calculated, bounded by `ROWS`, `RANGE`, or `GROUPS`.
+- **RunCondition Optimization**: An executor optimization that short-circuits window function processing once a bounding filter condition (e.g., `row_number() <= 10`) is satisfied.
 
 ---
 
-## 2. Common Table Expressions (CTEs) & Optimization Fences
+## 2. Common Table Expressions: Inlining vs. `AS MATERIALIZED`
 
-### Planner Mechanics: Inlining vs. Materialization
-PostgreSQL evaluates CTEs through two fundamentally different strategies:
+Prior to PostgreSQL 12, all CTEs acted as rigid optimization fences: they were materialized into temporary structures, preventing the planner from pushing outer `WHERE` filters down into the CTE.
+
+### Modern CTE Inlining
+In PostgreSQL 18, standard CTEs are automatically inlined:
+
+```sql
+WITH customer_orders AS (
+    SELECT o.id, o.customer_id, o.total_amount, o.order_date
+    FROM orders o
+    JOIN customers c ON c.id = o.customer_id
+)
+SELECT * FROM customer_orders 
+WHERE order_date >= '2026-01-01';
+```
+The optimizer inlines `customer_orders` into the main query, pushing `order_date >= '2026-01-01'` directly into the scan on `orders`, taking advantage of available indexes.
+
+### When to Force Materialization (`AS MATERIALIZED`)
+Sometimes inlining produces sub-optimal plans (e.g., when a computationally intensive CTE is referenced multiple times in the outer query, causing duplicate evaluation). The `AS MATERIALIZED` modifier forces independent evaluation:
+
+```sql
+WITH expensive_calculation AS MATERIALIZED (
+    -- Evaluated exactly once, cached, and reused:
+    SELECT department_id, AVG(salary) AS avg_sal
+    FROM payroll_ledger
+    GROUP BY department_id
+)
+SELECT e.name, e.salary, c.avg_sal
+FROM employees e
+JOIN expensive_calculation c ON c.department_id = e.department_id
+WHERE e.salary > c.avg_sal;
+```
+
+---
+
+## 3. Writable CTEs: Atomic Multi-Table Pipelines
+
+PostgreSQL allows `INSERT`, `UPDATE`, and `DELETE` statements inside CTEs, provided they include a `RETURNING` clause. All statements within a single query execute under the same snapshot and commit atomically.
+
+### Moving Records Between Tables Without Intermediary App Logic
+```sql
+WITH archived_events AS (
+    -- Atomic DELETE and capture of rows
+    DELETE FROM live_event_stream
+    WHERE created_at < NOW() - INTERVAL '30 days'
+    RETURNING event_id, payload, created_at
+)
+-- Atomic INSERT into cold archive table
+INSERT INTO cold_event_archive (event_id, payload, archived_at)
+SELECT event_id, payload, created_at
+FROM archived_events;
+```
+
+---
+
+## 4. Recursive CTEs & SQL:2016 `CYCLE` Detection
+
+A recursive CTE executes using an internal **Working Table** ($W$) and an **Intermediate Table** ($I$):
 
 ```mermaid
 flowchart TD
-    subgraph CTEExecutionStrategies["CTE Execution Strategies"]
-        direction TB
-        Inline["AS NOT MATERIALIZED (Default for single reference)<br/>• Subquery inlined into parent plan<br/>• Outer WHERE predicates push down into CTE<br/>• Eliminates temporary table overhead"]
-        Fence["AS MATERIALIZED (Default for multiple references)<br/>• Evaluated exactly once into an ephemeral Tuplestore<br/>• Optimization fence: Outer predicates DO NOT push down<br/>• Guarantees expensive function runs once"]
-    end
-```
-
-### Strategic Materialization Control
-
-```sql
--- 1. AS NOT MATERIALIZED: Forces inlining and predicate pushdown
-WITH high_volume_events AS NOT MATERIALIZED (
-    SELECT tenant_id, event_type, payload, created_at
-    FROM telemetry_events
-)
-SELECT * 
-FROM high_volume_events
-WHERE tenant_id = 'TENANT-9901' 
-  AND created_at >= clock_timestamp() - INTERVAL '15 minutes';
--- The planner pushes 'tenant_id = TENANT-9901' directly into the index scan of telemetry_events!
-
--- 2. AS MATERIALIZED: Acts as an optimization fence
-WITH heavy_ml_scoring AS MATERIALIZED (
-    SELECT candidate_id, compute_deep_risk_score(feature_vector) AS risk_score
-    FROM loan_applications
-)
-SELECT c.full_name, s.risk_score
-FROM candidates c
-JOIN heavy_ml_scoring s ON c.id = s.candidate_id
-WHERE s.risk_score > 0.85;
--- compute_deep_risk_score is evaluated strictly once per application row, never repeatedly.
-```
-
----
-
-## 3. Atomic Multi-Mutation Writable CTEs
-
-Writable CTEs execute state-modifying DML statements (`INSERT`, `UPDATE`, `DELETE`) with `RETURNING`, allowing complex multi-stage mutations to commit atomically within a single statement without requiring application-level distributed transactions.
-
-```mermaid
-sequenceDiagram
-    autonumber
-    participant App as Application Client
-    participant CTE1 as Step 1: Claim & DELETE
-    participant CTE2 as Step 2: INSERT Audit History
-    participant Outer as Step 3: Return to Caller
-
-    App->>CTE1: Execute Writable CTE Batch
-    Note over CTE1: Atomically lock and delete 10 pending tasks (SKIP LOCKED)
-    CTE1->>CTE2: Stream RETURNING (task_id, payload)
-    Note over CTE2: Insert claimed tasks into persistent history table
-    CTE2->>Outer: Pass through claimed task records
-    Outer-->>App: Return 10 claimed tasks ready for processing
-```
-
-### Atomic Concurrent Queue Drain Pattern
-```sql
-WITH claimed_tasks AS (
-    -- Step 1: Claim and delete pending work items without lock contention
-    DELETE FROM task_queue
-    WHERE task_id IN (
-        SELECT task_id 
-        FROM task_queue
-        WHERE task_status = 'PENDING'
-        ORDER BY priority_score DESC, created_at ASC
-        FOR UPDATE SKIP LOCKED
-        LIMIT 25
-    )
-    RETURNING task_id, task_type, payload, priority_score, created_at
-),
-audit_log AS (
-    -- Step 2: Archive claimed items into audit history
-    INSERT INTO task_processing_history (task_id, task_type, payload, started_at)
-    SELECT task_id, task_type, payload, clock_timestamp()
-    FROM claimed_tasks
-    RETURNING history_id
-)
--- Step 3: Deliver the batch of claimed tasks directly to the caller
-SELECT task_id, task_type, payload, priority_score
-FROM claimed_tasks;
-```
-
----
-
-## 4. Recursive CTEs & Relational Fixpoint Semantics
-
-### Theoretical Foundations: The Least Fixpoint (LFP)
-In formal database theory (Datalog), a recursive query evaluates the **Least Fixpoint (LFP)** of a monotonic relational transformation operator $T$. By the Knaster-Tarski Theorem, because relational algebra expressions with union are monotonic, iterating the operator from an empty base set converges to a unique minimal fixpoint:
-
-$$T(R) = \text{AnchorQuery} \cup \text{RecursiveQuery}(R)$$
-$$R_0 = \emptyset, \quad R_1 = T(R_0) = \text{Anchor}, \quad R_{k+1} = T(R_k)$$
-$$\text{LFP} = \bigcup_{i=0}^{\infty} R_i$$
-
-### Execution State Machine of `RecursiveUnion`
-The PostgreSQL executor evaluates recursive CTEs using two working tables in memory:
-1. **Working Table ($W$)**: Contains tuples produced in iteration $i$, which serve as input to the recursive query in iteration $i+1$.
-2. **Intermediate Table ($I$)**: Accumulates the output tuples produced during iteration $i+1$.
-3. **Result Table ($A$)**: Collects all generated tuples across all iterations.
-
-```mermaid
-flowchart TD
-    Init["1. Execute Anchor Query<br/>• Load tuples into W and A"] --> CheckEmpty{"Is Working Table<br/>W empty?"}
-    CheckEmpty -- Yes --> Done["Terminate & Return Result A"]
-    CheckEmpty -- No --> ExecRec["2. Execute Recursive Member<br/>• Pass W as self-reference<br/>• Store new rows in I"]
-    ExecRec --> Swap["3. State Transition<br/>• Append I to A<br/>• W := I<br/>• Clear I"]
+    Anchor["1. Evaluate Anchor Member -> Emit results to Working Table W"]
+    Anchor --> CheckEmpty{"Is Working Table W empty?"}
+    CheckEmpty -->|No| Rec["2. Execute Recursive Member using W -> Result to Intermediate Table I"]
+    Rec --> Append["3. Append I to cumulative result set"]
+    Append --> Swap["4. Replace W with I, clear I"]
     Swap --> CheckEmpty
+    CheckEmpty -->|Yes| Finish["5. Recursion Terminates -> Return final result"]
 ```
-
-> [!WARNING]
-> Because recursive evaluation requires monotonicity to ensure convergence, SQL standards and PostgreSQL prohibit non-monotonic operations inside the recursive member query:
-> - No `DISTINCT` or `GROUP BY`
-> - No aggregate functions (`COUNT`, `SUM`, `AVG`)
-> - No outer joins where the recursive CTE is on the right/inner side
-> - No subqueries referencing the recursive working table
-
----
 
 ### Hierarchical Tree Traversal
 ```sql
-WITH RECURSIVE org_chart AS (
-    -- Anchor Member: Identify top-level executives (nodes with no parent)
-    SELECT 
-        employee_id,
-        manager_id,
-        full_name,
-        job_title,
-        1 AS depth_level,
-        full_name::text AS reporting_hierarchy
-    FROM company_employees
-    WHERE manager_id IS NULL
+CREATE TABLE organization_nodes (
+    node_id INT PRIMARY KEY,
+    parent_id INT REFERENCES organization_nodes(node_id),
+    title TEXT NOT NULL
+);
 
+WITH RECURSIVE org_hierarchy AS (
+    -- Anchor Member: Root node
+    SELECT node_id, parent_id, title, 1 AS depth
+    FROM organization_nodes
+    WHERE parent_id IS NULL
+    
     UNION ALL
-
-    -- Recursive Member: Join current working generation with base table
-    SELECT 
-        e.employee_id,
-        e.manager_id,
-        e.full_name,
-        e.job_title,
-        c.depth_level + 1,
-        c.reporting_hierarchy || ' -> ' || e.full_name
-    FROM company_employees e
-    INNER JOIN org_chart c ON e.manager_id = c.employee_id
+    
+    -- Recursive Member: Traverse child nodes
+    SELECT c.node_id, c.parent_id, c.title, p.depth + 1
+    FROM organization_nodes c
+    JOIN org_hierarchy p ON p.node_id = c.parent_id
 )
-SELECT depth_level, reporting_hierarchy, job_title
-FROM org_chart
-ORDER BY reporting_hierarchy;
+SELECT * FROM org_hierarchy ORDER BY depth, node_id;
 ```
 
----
+### Graph Cycles & The Declarative `CYCLE` Clause
+In cyclic graphs (e.g., social networks or bad data where $A \rightarrow B \rightarrow A$), standard recursion runs infinitely until out-of-memory or stack overflow occurs.
 
-### Directed Graphs & PostgreSQL `CYCLE` Clause
-In directed cyclic graphs (e.g. logistics networks, dependency trees, financial transactions), recursive queries will loop infinitely unless cycles are trapped.
-
-PostgreSQL natively supports the ANSI SQL `CYCLE` clause:
-```sql
-WITH RECURSIVE flight_routes AS (
-    -- Anchor Member: Direct outbound departures from PRG
-    SELECT 
-        origin_airport,
-        destination_airport,
-        ARRAY[origin_airport, destination_airport] AS path_segments,
-        1 AS total_legs
-    FROM flight_schedules
-    WHERE origin_airport = 'PRG'
-
-    UNION ALL
-
-    -- Recursive Member: Connect arrival airport to next departure
-    SELECT 
-        f.origin_airport,
-        f.destination_airport,
-        r.path_segments || f.destination_airport,
-        r.total_legs + 1
-    FROM flight_schedules f
-    INNER JOIN flight_routes r ON f.origin_airport = r.destination_airport
-)
-CYCLE destination_airport SET has_cycle USING cycle_path
-SELECT 
-    origin_airport,
-    destination_airport,
-    total_legs,
-    path_segments,
-    has_cycle
-FROM flight_routes
-WHERE has_cycle = FALSE;
-```
-The `CYCLE` clause tracks visited node identifiers in an internal array (`cycle_path`), marks duplicate visits by asserting `has_cycle = TRUE`, and immediately prunes further recursive descent from that branch.
-
----
-
-## 5. Continuous Series Synthesis with `generate_series`
-
-`generate_series(start, stop, step)` is PostgreSQL's built-in set-returning generator function. It is indispensable for zero-filling sparse time series and calendar reporting:
+PostgreSQL natively supports the SQL:2016 standard `CYCLE` clause:
 
 ```sql
--- Zero-filled daily revenue report across an entire month
-SELECT 
-    calendar.day::date AS reporting_date,
-    COALESCE(SUM(o.total_amount), 0.00) AS total_revenue,
-    COUNT(o.order_id) AS order_count
-FROM generate_series(
-    '2026-10-01'::timestamp, 
-    '2026-10-31'::timestamp, 
-    '1 day'::interval
-) AS calendar(day)
-LEFT JOIN customer_orders o ON o.order_date::date = calendar.day::date
-GROUP BY calendar.day::date
-ORDER BY reporting_date ASC;
+WITH RECURSIVE graph_traverse AS (
+    SELECT node_id, neighbor_id, 1 AS path_length
+    FROM network_edges
+    WHERE node_id = 1
+    
+    UNION ALL
+    
+    SELECT e.node_id, e.neighbor_id, g.path_length + 1
+    FROM network_edges e
+    JOIN graph_traverse g ON g.neighbor_id = e.node_id
+)
+CYCLE neighbor_id SET is_cycle USING path_trace
+SELECT node_id, neighbor_id, path_length, is_cycle, path_trace
+FROM graph_traverse;
 ```
+When `neighbor_id` has already been visited along the path, `is_cycle` evaluates to `true`, and the engine stops following that branch.
 
 ---
 
-## 6. Window Function Architecture & `WindowAgg` Mechanics
+## 5. Window Frames in Depth: `ROWS`, `RANGE` & `GROUPS`
 
-Unlike aggregate functions with `GROUP BY` that collapse rows into a single partition summary, **window functions** preserve every individual tuple while computing scalar values over a sliding or fixed frame of peer tuples.
+A window function operates on a partition of rows without collapsing them into a single row. The exact rows evaluated are governed by the **Window Frame**:
+
+$$\{ \text{ROWS} \mid \text{RANGE} \mid \text{GROUPS} \} \quad \text{BETWEEN} \quad \text{frame\_start} \quad \text{AND} \quad \text{frame\_end}$$
 
 ```mermaid
-flowchart TD
-    subgraph WindowAnatomy["Window Framing Anatomy"]
-        direction TB
-        FrameStart["UNBOUNDED PRECEDING (Partition Boundary Start)"]
-        Preceding["N PRECEDING (Offset Rows)"]
-        Current["CURRENT ROW (Active Evaluation Pointer)"]
-        Following["N FOLLOWING (Offset Rows)"]
-        FrameEnd["UNBOUNDED FOLLOWING (Partition Boundary End)"]
-        
-        FrameStart --> Preceding --> Current --> Following --> FrameEnd
+flowchart LR
+    subgraph WindowFrames["Window Frame Types"]
+        ROWS["ROWS:<br/>Physical row offset count<br/>(e.g., 2 PRECEDING)"]
+        RANGE["RANGE:<br/>Logical value offset on ORDER BY<br/>(e.g., INTERVAL '7 days')"]
+        GROUPS["GROUPS:<br/>Offset by distinct peer groups<br/>of ORDER BY values"]
     end
 ```
 
-### 1. The `WindowAgg` Executor Node & Memory Bounds
-In the PostgreSQL query execution pipeline:
-1. Input tuples are presorted by `PARTITION BY` and `ORDER BY` keys.
-2. The `WindowAgg` execution node reads tuples into an internal **Tuplestore**.
-3. If the partition exceeds `work_mem`, the `Tuplestore` spills tuples to temporary files on disk (`$PGDATA/base/pgsql_tmp/`).
-4. To optimize performance, ensure `work_mem` is sized sufficiently to retain complete partitions in memory.
+### The Default Window Frame Pitfall
+When an `ORDER BY` clause is present inside `OVER ()`, SQL mandates a default frame:
+$$\text{RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW}$$
 
-### 2. Physical vs. Logical Framing: `ROWS`, `RANGE`, and `GROUPS`
+This evaluates from the start of the partition through all **peers** of the current row (rows with identical `ORDER BY` values).
 
-| Frame Mode | Unit of Offset | Semantic Behavior | Performance Impact |
-| :--- | :--- | :--- | :--- |
-| **`ROWS`** | Physical Tuples | Strict physical count of rows before/after current row. | **Fastest**: Simple pointer arithmetic in the Tuplestore. |
-| **`RANGE`** | Logical Values | Based on value difference from current row's `ORDER BY` expression. | **Slower**: Must inspect tuple values to detect duplicates/boundaries. |
-| **`GROUPS`** | Peer Groups | Counts sets of rows possessing identical `ORDER BY` values. | **Moderate**: Requires tracking peer-group transitions. |
+```sql
+-- DANGEROUS: If multiple transactions share the exact same timestamp,
+-- RANGE evaluates the sum across ALL peer rows simultaneously!
+SELECT 
+    id, created_at, amount,
+    SUM(amount) OVER (
+        ORDER BY created_at
+        -- Implicit: RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+    ) AS running_total_range,
+    SUM(amount) OVER (
+        ORDER BY created_at
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+    ) AS running_total_rows
+FROM financial_ledger;
+```
 
-> [!CRITICAL]
-> **The Hidden Performance Trap of Default Window Framing:**
-> When an `ORDER BY` is provided inside an `OVER (...)` clause without an explicit frame, the ANSI standard defaults to:
-> ```sql
-> RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
-> ```
-> Under `RANGE`, PostgreSQL must verify whether following rows have identical sort keys (peer duplicates) before completing the aggregate, preventing streaming optimizations. 
-> Whenever calculating running totals where physical rows suffice, explicitly specify `ROWS`:
-> ```sql
-> ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
-> ```
+### Frame Exclusion Clauses
+You can selectively omit rows from the calculation frame:
+- **`EXCLUDE CURRENT ROW`**: Omit the current row, keeping its peers.
+- **`EXCLUDE GROUP`**: Omit the current row and all its peer rows.
+- **`EXCLUDE TIES`**: Keep the current row, but omit any peers sharing its sort key.
 
 ---
 
-### 3. Ranking & Statistical Distribution Functions
-```sql
-SELECT 
-    department_id,
-    full_name,
-    salary,
-    -- Strictly sequential integers without ties (1, 2, 3, 4, 5)
-    ROW_NUMBER() OVER w AS seq_num,
-    -- Leaves gaps on ties (1, 2, 2, 4)
-    RANK() OVER w AS rank_position,
-    -- No gaps on ties (1, 2, 2, 3)
-    DENSE_RANK() OVER w AS dense_position,
-    -- Equi-depth buckets (e.g. quartiles 1, 2, 3, 4)
-    NTILE(4) OVER w AS compensation_quartile,
-    -- Relative rank from 0.0 to 1.0: (rank - 1) / (total_rows - 1)
-    PERCENT_RANK() OVER w AS relative_rank
-FROM employee_salaries
-WINDOW w AS (PARTITION BY department_id ORDER BY salary DESC);
-```
+## 6. Analytical Navigation & PostgreSQL 19 `IGNORE NULLS`
 
-### 4. Inter-Row Value Offset Functions
-```sql
-SELECT 
-    customer_id,
-    order_date,
-    total_amount,
-    -- Value from exactly 1 row prior (defaults to 0.00 if first row)
-    LAG(total_amount, 1, 0.00) OVER w AS prior_order_amount,
-    -- Velocity of purchase: difference from prior transaction
-    total_amount - LAG(total_amount, 1, total_amount) OVER w AS purchase_delta,
-    -- Value from 1 row ahead
-    LEAD(total_amount, 1, 0.00) OVER w AS subsequent_order_amount,
-    -- Highest value within the partition
-    FIRST_VALUE(total_amount) OVER (
-        w ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
-    ) AS historical_peak_amount
-FROM customer_orders
-WINDOW w AS (PARTITION BY customer_id ORDER BY order_date ASC);
-```
+Window navigation functions inspect neighboring rows within the partition:
+- `LAG(col, offset, default)`: Value from $N$ rows prior.
+- `LEAD(col, offset, default)`: Value from $N$ rows ahead.
+- `FIRST_VALUE(col)` / `LAST_VALUE(col)`: Boundary values of the current frame.
 
-### 5. Moving Averages & Frame Exclusion Clauses
+### The Problem of Sparse Sensor Data
+In IoT and financial series, data streams often contain `NULL`s for missing ticks. Finding the "last known non-null value" historically required complex self-joins or array aggregates.
+
+### PostgreSQL 19 Forward-Look: `IGNORE NULLS`
+PostgreSQL 19 adds the SQL-standard `IGNORE NULLS` clause:
+
 ```sql
+-- PostgreSQL 19 Native Non-Null Lookback:
 SELECT 
-    device_id,
-    recorded_at,
-    temperature_celsius,
-    -- Centered 5-point moving average: 2 preceding, current row, 2 following
-    ROUND(AVG(temperature_celsius) OVER (
+    device_id, recorded_at, temperature,
+    LAG(temperature) IGNORE NULLS OVER (
         PARTITION BY device_id 
-        ORDER BY recorded_at ASC
-        ROWS BETWEEN 2 PRECEDING AND 2 FOLLOWING
-    )::numeric, 2) AS smoothed_temperature,
-    -- Moving average excluding the current row's reading (outlier detection)
-    ROUND(AVG(temperature_celsius) OVER (
-        PARTITION BY device_id 
-        ORDER BY recorded_at ASC
-        ROWS BETWEEN 2 PRECEDING AND 2 FOLLOWING EXCLUDE CURRENT ROW
-    )::numeric, 2) AS neighbor_baseline_avg
+        ORDER BY recorded_at
+    ) AS last_known_temperature
 FROM sensor_telemetry;
 ```
 
 ---
 
-## 7. Multi-Dimensional OLAP Aggregations: `GROUPING SETS`, `ROLLUP` & `CUBE`
+## 7. Multi-Dimensional Aggregation: `GROUPING SETS`, `ROLLUP` & `CUBE`
 
-To avoid executing multiple `UNION ALL` queries for subtotal and grand total reporting, PostgreSQL evaluates multidimensional aggregation lattices in a single sequential scan:
-
-```mermaid
-flowchart TD
-    subgraph CubeLattice["CUBE (Region, Product) Aggregation Lattice"]
-        All["() Grand Total"]
-        R["(Region) Subtotal"]
-        P["(Product) Subtotal"]
-        RP["(Region, Product) Detail"]
-        
-        All --> R
-        All --> P
-        R --> RP
-        P --> RP
-    end
-```
+Calculating aggregates across multiple dimensional hierarchies in a single query avoids executing multiple separate `GROUP BY` queries and `UNION ALL` scans.
 
 ```sql
 SELECT 
-    COALESCE(region, '[All Regions]') AS region,
-    COALESCE(product_category, '[All Categories]') AS product_category,
-    GROUPING(region, product_category) AS grouping_bitmask,
-    SUM(sale_amount) AS total_sales,
-    COUNT(sale_id) AS transaction_count
-FROM sales_records
-GROUP BY CUBE (region, product_category)
-ORDER BY region, product_category;
+    region, 
+    product_category, 
+    SUM(sales_amount) AS total_sales,
+    GROUPING(region) AS is_region_subtotal,
+    GROUPING(product_category) AS is_category_subtotal
+FROM regional_sales
+GROUP BY GROUPING SETS (
+    (region, product_category), -- Detailed breakdown
+    (region),                   -- Subtotal per region
+    ()                          -- Grand total across all regions
+);
 ```
 
-### Demystifying the `GROUPING()` Bitmask
-The `GROUPING(col1, col2, ...)` function returns an integer bitmask indicating which columns are aggregated in the current row:
-- Bit value `0`: The column is a grouping key for this row.
-- Bit value `1`: The column is aggregated (subtotaled/grand totaled).
-- This allows programmatic distinction between a genuine `NULL` stored in the database versus a synthetic `NULL` generated by `ROLLUP` or `CUBE`.
+### Hierarchy Helpers: `ROLLUP` and `CUBE`
+- **`ROLLUP (year, quarter, month)`**: Generates hierarchical subtotals ($N+1$ groupings):
+  1. `(year, quarter, month)`
+  2. `(year, quarter)`
+  3. `(year)`
+  4. `()`
+- **`CUBE (region, category)`**: Generates all $2^N$ combinatorial groupings:
+  1. `(region, category)`
+  2. `(region)`
+  3. `(category)`
+  4. `()`
+
+### The `FILTER (WHERE ...)` Clause
+Modern PostgreSQL supports the SQL standard `FILTER` clause directly on aggregate functions, avoiding inefficient `CASE WHEN` constructs:
+
+```sql
+SELECT 
+    account_id,
+    COUNT(*) AS total_tx,
+    COUNT(*) FILTER (WHERE status = 'settled') AS settled_tx,
+    SUM(amount) FILTER (WHERE amount > 1000) AS large_volume_sum
+FROM transactions
+GROUP BY account_id;
+```
 
 ---
 
-## 8. Summary & Module Progression
+## 8. Then vs. Now: Advanced SQL & Analytics
 
-In this module, we examined:
-- Optimization fences and materialization dynamics (`AS MATERIALIZED` vs. `AS NOT MATERIALIZED`).
-- Multi-step atomic mutations via writable CTEs (`DELETE ... RETURNING` into `INSERT`).
-- Formal least fixpoint (LFP) semantics and the `RecursiveUnion` executor state machine.
-- Cycle trapping in cyclic directed graphs using the ANSI `CYCLE` clause.
-- Gap-free time series generation with `generate_series`.
-- The `WindowAgg` execution engine, partition tuplestores, and `work_mem` bounds.
-- Physical (`ROWS`) vs. logical (`RANGE`, `GROUPS`) window framing and the `EXCLUDE` clause.
-- OLAP multidimensional aggregation lattices (`GROUPING SETS`, `ROLLUP`, `CUBE`) and the `GROUPING()` bitmask.
+| Feature | PostgreSQL $\le$ 11 | PostgreSQL 12–17 | PostgreSQL 18 & 19 (Current) |
+| :--- | :--- | :--- | :--- |
+| **CTE Optimization** | Rigid optimization fence (always materialized) | Inlined by default; `AS [NOT] MATERIALIZED` syntax | Inlined with cost model pushdown |
+| **Cycle Detection** | Manual path array tracking (`path || id`) | SQL:2016 **`CYCLE`** clause | Standard `CYCLE` with path verification |
+| **Window Pushdown** | Full partition evaluated before filtering | RunCondition optimization in executor | Enhanced incremental sorting for window aggregates |
+| **Null Navigation** | Required custom aggregates / PL/pgSQL | Required custom subqueries | PG19 native **`IGNORE NULLS`** clause |
 
-Proceed to **[Module 05 — Semi-Structured Data: JSON/JSONB & Full-Text Search](./05-json-jsonb-and-full-text-search.md)** to explore binary JSON decomposition, JSON Path expressions, GIN indexing internals, and lexical full-text search dictionaries.
+---
+
+## 9. Interview Drill
+
+<details>
+<summary>1. How did PostgreSQL 12 change CTE optimization, and when must you use `AS MATERIALIZED`?</summary>
+
+**Answer**: Prior to PostgreSQL 12, all CTEs were optimization fences: the engine materialized the CTE into a temporary worktable, preventing the planner from pushing outer `WHERE` predicates into the CTE. In PostgreSQL 12+, non-recursive side-effect-free CTEs are automatically inlined and flattened into the parent query, allowing joint join reordering and index predicate pushdown. You should explicitly declare a CTE `AS MATERIALIZED` when the CTE is referenced multiple times in the outer query (preventing the engine from computing it more than once) or when you deliberately want to prevent the optimizer from generating a complex combined plan.
+- Ref: [PostgreSQL Documentation: Queries: WITH](https://www.postgresql.org/docs/18/queries-with.html)
+</details>
+
+<details>
+<summary>2. Explain the fundamental difference between `ROWS BETWEEN`, `RANGE BETWEEN`, and `GROUPS BETWEEN` in a window frame.</summary>
+
+**Answer**:
+- `ROWS BETWEEN` specifies frame boundaries as a physical count of rows before or after the current row (e.g., `ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING`).
+- `RANGE BETWEEN` specifies boundaries as a logical offset relative to the value of the `ORDER BY` expression (e.g., `RANGE BETWEEN INTERVAL '1 day' PRECEDING AND CURRENT ROW`). Identical values of the `ORDER BY` key are treated as peers.
+- `GROUPS BETWEEN` specifies boundaries as an offset of distinct peer groups of `ORDER BY` values (e.g., `GROUPS BETWEEN 2 PRECEDING AND CURRENT ROW` includes all rows belonging to the current group and the preceding two distinct groups of sort keys).
+- Ref: [PostgreSQL Documentation: Window Function Calls](https://www.postgresql.org/docs/18/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS)
+</details>
+
+<details>
+<summary>3. Why is `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` dangerous for running totals when timestamps are not unique?</summary>
+
+**Answer**: Because `RANGE` treats rows with identical values of the sorting key as peers. If five transactions share the exact same timestamp, the window frame extends through the end of the peer group. As a result, all five rows will display the identical cumulative total (the sum including all five rows) rather than an incremental row-by-row running balance. To guarantee strictly progressive running totals, you must specify `ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` and include a secondary unique tiebreaker in the `ORDER BY` clause.
+- Ref: [PostgreSQL Documentation: Window Functions](https://www.postgresql.org/docs/18/tutorial-window.html)
+</details>
+
+<details>
+<summary>4. How does a recursive CTE prevent infinite loops using the SQL:2016 `CYCLE` clause?</summary>
+
+**Answer**: In cyclic graphs (e.g., $A \rightarrow B \rightarrow A$), recursion continues indefinitely unless terminated. The `CYCLE column SET is_cycle USING path` clause directs the engine to maintain an array of visited values for `column`. If a newly produced row contains a value already present in the path array, the engine sets the boolean column `is_cycle` to `true` and suppresses further recursive evaluation on that branch, allowing the query to terminate safely without application-level loop guards.
+- Ref: [PostgreSQL Documentation: WITH Queries: Cycle Detection](https://www.postgresql.org/docs/18/queries-with.html#QUERIES-WITH-CYCLE)
+</details>
+
+<details>
+<summary>5. What is the operational advantage of `FILTER (WHERE ...)` over `CASE WHEN` inside aggregate functions?</summary>
+
+**Answer**: The `FILTER (WHERE condition)` clause is SQL-standard and directly instructs the aggregation node to discard non-matching tuples before feeding them into the accumulator. With `CASE WHEN condition THEN val ELSE NULL END`, the expression must still be evaluated for every tuple and passed to the aggregate function, which checks for `NULL`. The `FILTER` syntax is more concise, less error-prone with count functions (`COUNT(val)` vs `COUNT(*)`), and optimizes execution speed in the executor.
+- Ref: [PostgreSQL Documentation: Aggregate Expressions](https://www.postgresql.org/docs/18/sql-expressions.html#SYNTAX-AGGREGATES)
+</details>

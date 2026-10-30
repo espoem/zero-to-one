@@ -267,3 +267,145 @@ FROM document_embeddings
 ORDER BY embedding <=> :query_vector
 LIMIT 5;
 ```
+
+---
+
+## 9. Declarative Partitioning
+
+```sql
+-- Partitioned parent table
+CREATE TABLE measurement_events (
+    event_id UUID DEFAULT uuidv7(),
+    device_id UUID NOT NULL,
+    recorded_at TIMESTAMPTZ NOT NULL,
+    reading_val DOUBLE PRECISION NOT NULL,
+    PRIMARY KEY (device_id, recorded_at, event_id)
+) PARTITION BY RANGE (recorded_at);
+
+-- Monthly partition tables
+CREATE TABLE measurement_events_2026_10 PARTITION OF measurement_events
+    FOR VALUES FROM ('2026-10-01 00:00:00+00') TO ('2026-11-01 00:00:00+00');
+
+CREATE TABLE measurement_events_2026_11 PARTITION OF measurement_events
+    FOR VALUES FROM ('2026-11-01 00:00:00+00') TO ('2026-12-01 00:00:00+00');
+
+-- Query with partition pruning (plan scans only target partition)
+EXPLAIN (COSTS OFF)
+SELECT * FROM measurement_events
+WHERE recorded_at >= '2026-10-15' AND recorded_at < '2026-10-20';
+```
+
+---
+
+## 10. Autovacuum, Bloat & Freezing Diagnostics
+
+```sql
+-- Identify tables with high dead tuple ratio (bloat risk)
+SELECT 
+    schemaname,
+    relname,
+    n_live_tup,
+    n_dead_tup,
+    ROUND(100.0 * n_dead_tup / NULLIF(n_live_tup + n_dead_tup, 0), 2) AS dead_tuple_pct,
+    last_vacuum,
+    last_autovacuum
+FROM pg_stat_user_tables
+WHERE n_dead_tup > 1000
+ORDER BY dead_tuple_pct DESC;
+
+-- Check distance to transaction ID wraparound
+SELECT 
+    datname,
+    age(datfrozenxid) AS age_datfrozenxid,
+    ROUND(100.0 * age(datfrozenxid) / 2147483648, 2) AS wraparound_pct
+FROM pg_database
+ORDER BY age_datfrozenxid DESC;
+
+-- Non-blocking index rebuild
+REINDEX TABLE CONCURRENTLY accounts;
+```
+
+---
+
+## 11. Connection Pooling & PgBouncer Essentials
+
+```ini
+# /etc/pgbouncer/pgbouncer.ini
+[databases]
+app_db = host=127.0.0.1 port=5432 dbname=app_db
+
+[pgbouncer]
+listen_port = 6432
+listen_addr = 0.0.0.0
+auth_type = scram-sha-256
+auth_file = /etc/pgbouncer/userlist.txt
+pool_mode = transaction
+default_pool_size = 32
+max_client_conn = 5000
+reserve_pool_size = 8
+server_idle_timeout = 60
+```
+
+```sql
+-- PgBouncer admin console checks (psql -p 6432 -U pgbouncer pgbouncer)
+SHOW POOLS;
+SHOW CLIENTS;
+SHOW SERVERS;
+```
+
+---
+
+## 12. Backup, Recovery & Point-In-Time Recovery (PITR)
+
+```bash
+# Physical cluster base backup with streaming WAL
+pg_basebackup -h primary.db.internal -U replicator -D /var/lib/postgresql/data -Fp -Xs -P -R
+
+# Logical database schema and data backup (custom format, parallel jobs)
+pg_dump -h localhost -U postgres -Fc -j 4 -f app_db_backup.dump app_db
+
+# Restore logical backup into target database
+pg_restore -h localhost -U postgres -d app_db_restored -j 4 app_db_backup.dump
+```
+
+```ini
+# PostgreSQL recovery configuration (postgresql.conf / recovery.signal)
+restore_command = 'cp /mnt/wal_archive/%f %p'
+recovery_target_time = '2026-10-30 14:00:00+00'
+recovery_target_action = 'promote'
+```
+
+---
+
+## 13. High Availability & Replication Monitoring
+
+```sql
+-- Primary: monitor active streaming replication standbys and lag
+SELECT 
+    client_addr,
+    application_name,
+    state,
+    sync_state,
+    pg_wal_lsn_diff(pg_current_wal_lsn(), sent_lsn) AS send_lag_bytes,
+    pg_wal_lsn_diff(sent_lsn, write_lsn) AS write_lag_bytes,
+    pg_wal_lsn_diff(write_lsn, flush_lsn) AS flush_lag_bytes,
+    pg_wal_lsn_diff(flush_lsn, replay_lsn) AS replay_lag_bytes
+FROM pg_stat_replication;
+
+-- Primary: inspect replication slots (ensure active = true to avoid WAL retention bloat)
+SELECT 
+    slot_name,
+    plugin,
+    slot_type,
+    active,
+    wal_status,
+    safe_wal_size
+FROM pg_replication_slots;
+
+-- Standby: verify recovery status and replay LSN
+SELECT 
+    pg_is_in_recovery() AS in_recovery,
+    pg_last_wal_receive_lsn() AS receive_lsn,
+    pg_last_wal_replay_lsn() AS replay_lsn,
+    pg_last_xact_replay_timestamp() AS last_xact_time;
+```
