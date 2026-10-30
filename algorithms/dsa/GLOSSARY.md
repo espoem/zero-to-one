@@ -58,4 +58,4 @@ This glossary establishes canonical terminology for algorithm design, computatio
 | **Two Pointers Technique** | Technika dvou ukazatelů | An algorithmic technique using two index pointers traversing a linear collection (either opposite directions or fast/slow) to achieve linear time. | Classical Interview Taxonomy |
 | **Word-RAM Model** | Model Word-RAM | A realistic model of computation where the unit of memory is a word of $w \ge \log_2 n$ bits, capable of constant-time arithmetic and bitwise operations. | Fredman & Willard (1993) |
 | **Work-Span Model** | Model práce a rozpětí | A theoretical parallel computing framework measuring total instruction operations ($T_1$, Work) and critical path dependency chain length ($T_\infty$, Span). | Cormen et al., Brent (1974) |
-| **Z-Algorithm** | Z-algoritmus | A linear $O(n)$ string algorithm calculating the longest common prefix between string $S$ and every suffix $S[i \dots |S|-1]$. | Gusfield (1997) |
+| **Z-Algorithm** | Z-algoritmus | A linear $O(n)$ string algorithm calculating the longest common prefix between string $S$ and every suffix $S[i \dots \|S\|-1]$. | Gusfield (1997) |

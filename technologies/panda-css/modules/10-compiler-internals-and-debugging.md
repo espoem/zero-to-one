@@ -198,7 +198,7 @@ flowchart TD
 | `panda --profile` | `.panda/trace.json` (Chrome trace format: open in Perfetto/`chrome://tracing`) and `.panda/timings.json` (per-span totals, slowest files) |
 | `--trace --trace-output chrome-json --trace-file …` | Fine-grained tracing |
 | `panda cssgen --splitting` | One file per layer and per recipe (`styles/tokens.css`, `styles/recipes/button.css`, `styles/utilities.css`, …): inspect or load per route |
-| `--format json|github`, `--max-warnings` | Diagnostics for scripts and CI |
+| `--format json\|github`, `--max-warnings` | Diagnostics for scripts and CI |
 
 `panda analyze` and `panda debug` no longer take positional globs in v2; they scan the config `include` (or `--include`).
 

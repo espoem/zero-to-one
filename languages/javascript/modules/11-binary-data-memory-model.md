@@ -157,7 +157,7 @@ plain 611766    atomic 800000    expected 800000     (one run on Node 26)
 | `add`, `sub`, `and`, `or`, `xor`, `exchange` | atomic read-modify-write; return the **old** value |
 | `compareExchange(ta, i, expected, replacement)` | CAS: write only if the current value equals `expected`; returns the old value. Building block for lock-free structures and mutexes |
 | `wait(ta, i, value, timeout?)` | if `ta[i] === value`, **block** the agent until notified or timed out; returns `'ok'`, `'not-equal'` or `'timed-out'`. Only on `Int32Array`/`BigInt64Array` over a SAB. Throws `TypeError` where `[[CanBlock]]` is false (browser main thread); allowed in workers and Node's main thread |
-| `waitAsync(ta, i, value, timeout?)` (ES2024) | non-blocking variant: returns `{ async: false, value: 'not-equal' | 'timed-out' }` or `{ async: true, value: Promise<'ok' | 'timed-out'> }`. Usable on the main thread |
+| `waitAsync(ta, i, value, timeout?)` (ES2024) | non-blocking variant: returns `{ async: false, value: 'not-equal' \| 'timed-out' }` or `{ async: true, value: Promise<'ok' \| 'timed-out'> }`. Usable on the main thread |
 | `notify(ta, i, count?)` | wake up to `count` waiters on that index; returns how many woke |
 | `pause(n?)` (ES2027, shipped in Node 26) | a CPU hint for spin-wait loops (x86 `PAUSE`, ARM `YIELD`): reduces power and contention while spinning before falling back to `wait` |
 | `isLockFree(n)` | whether `n`-byte atomics are lock-free on this platform |

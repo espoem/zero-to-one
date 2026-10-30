@@ -153,7 +153,7 @@ Rules for micro-benchmarks: warm up (let tiering happen), defeat dead-code elimi
 | `arguments` leaking, `for...in` over many keys, and `let` in loops caused "optimisation killers" | most killers removed; remaining cliffs are about feedback (shapes, megamorphism, elements kinds) |
 | Full-codegen baseline compiler | Ignition interpreter + Sparkplug baseline (lower memory, faster startup) |
 | One optimising tier | Maglev mid-tier + Turbofan top tier; Turboshaft replaced Turbofan's Sea-of-Nodes backend |
-| Advice like "use `|0` everywhere" (asm.js style) | write type-stable code; the JIT infers Smi/double from feedback |
+| Advice like "use `\|0` everywhere" (asm.js style) | write type-stable code; the JIT infers Smi/double from feedback |
 
 ---
 

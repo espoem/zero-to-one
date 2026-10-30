@@ -259,7 +259,7 @@ GROUP BY account_id;
 | Feature | PostgreSQL $\le$ 11 | PostgreSQL 12–17 | PostgreSQL 18 & 19 (Current) |
 | :--- | :--- | :--- | :--- |
 | **CTE Optimization** | Rigid optimization fence (always materialized) | Inlined by default; `AS [NOT] MATERIALIZED` syntax | Inlined with cost model pushdown |
-| **Cycle Detection** | Manual path array tracking (`path || id`) | SQL:2016 **`CYCLE`** clause | Standard `CYCLE` with path verification |
+| **Cycle Detection** | Manual path array tracking (`path \|\| id`) | SQL:2016 **`CYCLE`** clause | Standard `CYCLE` with path verification |
 | **Window Pushdown** | Full partition evaluated before filtering | RunCondition optimization in executor | Enhanced incremental sorting for window aggregates |
 | **Null Navigation** | Required custom aggregates / PL/pgSQL | Required custom subqueries | PG19 native **`IGNORE NULLS`** clause |
 

@@ -82,7 +82,7 @@ Python enables custom collection classes through the sequence and mapping protoc
 | **Sized** | `__len__(self) -> int` | `len(obj)`, boolean truthiness check (`bool(obj)`) |
 | **Container** | `__contains__(self, item: object) -> bool` | `item in obj`, `item not in obj` |
 | **Iterable** | `__iter__(self) -> Iterator[T]` | `for x in obj:`, `iter(obj)`, unpacking `*obj` |
-| **Sequence (Read-Only)** | `__len__`, `__getitem__(self, key: int | slice)` | Random access `obj[i]`, slicing `obj[1:5:2]`, reverse traversal |
+| **Sequence (Read-Only)** | `__len__`, `__getitem__(self, key: int \| slice)` | Random access `obj[i]`, slicing `obj[1:5:2]`, reverse traversal |
 | **Sequence (Mutable)** | `__setitem__`, `__delitem__`, `insert` | In-place mutation `obj[i] = val`, `del obj[i]` |
 | **Mapping** | `__getitem__`, `__setitem__`, `__delitem__`, `__iter__`, `__len__`, `keys`, `values`, `items` | Hash table dictionary operations `obj["key"]` |
 
