@@ -201,16 +201,133 @@ Hosts expose async iterables widely: Node `Readable` streams and `events.on(emit
 
 ---
 
-## 5. Production failure modes
+### Then vs now: consuming asynchronous sequences
 
-| Failure | Mechanism | Defence |
+| Then | Now |
+|---|---|
+| `stream.on('data', cb)` + `on('end')` + `on('error')`, manual pause/resume for backpressure | `for await (const chunk of stream)`: pull-based, so backpressure is implicit; `break` destroys the stream through `return()` |
+| Callback pagination helpers (`fetchAll(cb)`) | async generators that `yield*` each page |
+| RxJS/IxJS for simple async pipelines | async generators; observables remain useful for push-based multicast |
+| `Promise.all(await Promise.all(...))` to flatten paged results | `Array.fromAsync(paginate())` (ES2026), sequential by design |
+
+Mixing pitfall: attaching a `'data'` listener to a stream that is also consumed with `for await` switches it to flowing mode and loses chunks; pick one consumption style per stream.
+
+### Worked example: lazy in-order traversal of a binary search tree
+
+Recursive generators make tree traversals lazy, but each `yield*` level adds one delegation hop per element, so a tree of height *h* costs O(*h*) per yielded value. An explicit stack gives O(1) amortised per element and constant-depth suspension:
+
+```
+INORDER-ITER(root)
+1  S ← empty stack;  x ← root
+2  while S is not empty or x ≠ NIL
+3      while x ≠ NIL                ▷ descend left, remembering the path
+4          PUSH(S, x);  x ← x.left
+5      x ← POP(S)
+6      YIELD x.key
+7      x ← x.right
+```
+
+**Loop invariant.** At the top of the outer loop, the keys already yielded are exactly the keys smaller than every key in the subtree rooted at *x* and smaller than every node on *S*, in ascending order; *S* holds the ancestors of *x* whose left subtrees have been fully yielded but which have not been yielded themselves. **Termination:** each node is pushed and popped exactly once, so the loop runs Θ(*n*) times in total; amortised O(1) per `next()`.
+
+The example file implements both versions, checks with fast-check that they yield the sorted keys, and shows that `take(3)` on a 2,000-node left spine visits each spine node once (the initial descent) and yields only three keys: the rest of the traversal is never run.
+
+## 5. The algorithms behind `for...of` and generators
+
+### 5.1 `for...of`, step by step
+
+`for (const x of expr) body` is evaluated by ForIn/OfHeadEvaluation and **ForIn/OfBodyEvaluation (§14.7.5.7)** with *iterationKind* = iterate. Condensed:
+
+```
+FOR-OF-BODY(lhs, body, iteratorRecord)            ▷ iteratorRecord from GetIterator (§7.4.4)
+1  V ← undefined
+2  repeat
+3      nextResult ← ? Call(iteratorRecord.[[NextMethod]], iteratorRecord.[[Iterator]])
+4      if nextResult is not an Object, throw TypeError
+5      if ? IteratorComplete(nextResult) return V              ▷ exhausted: no return() call
+6      nextValue ← ? IteratorValue(nextResult)
+7      create a fresh declarative environment for lhs (let/const)  ▷ per-iteration binding
+8      status ← bind lhs to nextValue (destructuring may throw)
+9      if status is abrupt
+10         return ? IteratorClose(iteratorRecord, status)      ▷ destructuring failure closes
+11     result ← evaluate body
+12     if LoopContinues(result) is false                        ▷ break, return, throw, outer continue
+13         return ? IteratorClose(iteratorRecord, UpdateEmpty(result, V))
+14     if result.[[Value]] is not empty, V ← result.[[Value]]
+```
+
+**Invariant.** At the top of each iteration, the iterator has been neither closed nor exhausted, and `iteratorRecord.[[NextMethod]]` is the method read once by GetIterator. The loop leaves through exactly one of three exits: line 5 (exhausted, no close), line 3/4/6 throwing (the iterator is presumed broken, no close), or lines 10/13 (close with the pending completion).
+
+The `?` on lines 3–6 is why an exception thrown by `next()` or by a `value` getter does **not** trigger `return()`: the abrupt completion propagates immediately, before reaching any IteratorClose.
+
+**IteratorClose (§7.4.11)** with a pending *completion*:
+
+```
+ITERATOR-CLOSE(iteratorRecord, completion)
+1  returnMethod ← GetMethod(iterator, "return")             ▷ may itself throw
+2  if returnMethod is undefined, return completion
+3  innerResult ← Call(returnMethod, iterator)
+4  if completion is a throw completion, return completion    ▷ the body's error wins
+5  if innerResult is a throw completion, return innerResult  ▷ else return()'s error wins
+6  if innerResult.[[Value]] is not an Object, throw TypeError
+7  return completion
+```
+
+Line 4 is the rule tested in the example file: the body's exception takes priority over an exception from `return()`. Line 6 makes a `return()` that returns a primitive a protocol violation, but only when the loop exits normally (`break`).
+
+### 5.2 Generators in the specification
+
+A generator object has `[[GeneratorState]]` ∈ {suspended-start, suspended-yield, executing, completed} and `[[GeneratorContext]]` (the suspended execution context).
+
+- **GeneratorStart (§27.5.3.1)** stores the body as the continuation of a fresh execution context, without running it.
+- **GeneratorResume (§27.5.3.3)**: `GeneratorValidate` throws `TypeError` if the state is executing (re-entrancy). If completed, return `{ value: undefined, done: true }`. Otherwise set the state to executing, push the generator's context onto the execution context stack, and resume it with the `next()` argument as the result of the paused `yield`.
+- **GeneratorYield (§27.5.3.6)** sets the state to suspended-yield, removes the generator's context from the stack, and returns the iterator result to the caller of `next()`.
+- `return(v)` and `throw(e)` go through GeneratorResumeAbrupt: in suspended-start they complete the generator immediately (the body never runs); in suspended-yield they resume the context with a return or throw completion **at the `yield`**, so `try/finally` blocks run.
+- `yield*` (§15.5.5) loops over the inner iterator, forwarding `next`/`throw`/`return`. If the inner iterator has no `throw` method, it closes the inner iterator and throws a `TypeError` ("the iterator does not provide a 'throw' method").
+
+### 5.3 Async generators and the request queue
+
+Async generator objects (§27.6) have `[[AsyncGeneratorState]]` ∈ {suspended-start, suspended-yield, executing, draining-queue, completed} and an `[[AsyncGeneratorQueue]]`. Every call to `next`, `throw` or `return` creates a promise and appends a request to the queue (AsyncGeneratorEnqueue, §27.6.3.4); the generator resumes only when it is not already executing, and completes requests strictly in order.
+
+```mermaid
+stateDiagram-v2
+  [*] --> SuspendedStart: call asyncGen()
+  SuspendedStart --> Executing: next() dequeued
+  SuspendedStart --> DrainingQueue: return()/throw() before start
+  Executing --> SuspendedYield: yield v (resolve the head request with {v, false})
+  Executing --> Executing: await (requests keep queueing)
+  SuspendedYield --> Executing: next request dequeued
+  Executing --> DrainingQueue: body completes or throws
+  DrainingQueue --> DrainingQueue: settle remaining requests ({undefined, true}; awaits return(v) values)
+  DrainingQueue --> Completed: queue empty
+  Completed --> DrainingQueue: new request
+```
+
+> **Then vs now:** before ES2024 the spec had an *awaiting-return* state; the queue-draining logic was restructured into the *draining-queue* state. The observable behaviour (requests settle in order; `return(promise)` awaits the promise) did not change.
+
+Consequences: `Promise.all([it.next(), it.next()])` is safe and ordered; a `return()` issued while the generator is executing waits behind earlier requests; `yield promise` and `return promise` in an async generator await the promise first, so consumers never receive a promise as `value`.
+
+AsyncFromSyncIterator (§27.1.5.1) wraps a sync iterator for `for await`: it awaits each `value` (so rejected promises yielded by a sync generator become thrown errors in the loop) and, since ES2025, closes the sync iterator if awaiting a yielded value rejects.
+
+## 6. Engine mechanics (V8)
+
+- **Generators are resumable functions.** Ignition compiles a generator body into bytecode with `SuspendGenerator`/`ResumeGenerator` instructions and a `SwitchOnGeneratorState` jump table at the entry. On suspension, the live interpreter registers are copied into the generator object (a `JSGeneratorObject` with a register-file array); on resumption, they are copied back and execution jumps to the saved offset. Async functions reuse exactly this machinery (`JSAsyncFunctionObject`), which is why an `await` costs about as much as a `yield` plus one promise reaction.
+- **Optimising compilers handle generators**, but every suspension materialises the frame, so a hot inner loop that yields per element is slower than a plain loop over an array. Lazy pipelines trade throughput for memory; use them for large or unbounded sources, not to replace `map`/`filter` on small arrays.
+- **Array iteration fast paths.** `for...of`, spread and destructuring over arrays do not literally call `next()` per element in optimised code: V8 inlines the array iterator, guarded by a *protector* (a global "nobody has modified the array iteration protocol" flag). Assigning `Array.prototype[Symbol.iterator]` or `%ArrayIteratorPrototype%.next` invalidates the protector **for the whole isolate**, permanently sending every array spread and `for...of` to the generic path. Semantically, the patched method is honoured everywhere (the example file proves that a patched iterator changes `[...arr]` and destructuring of every array); the performance cost is V8-specific.
+- **Iterator helpers allocate** one helper object per stage and one result object per element (`{ value, done }`); escape analysis can remove some allocations in optimised code, but not across megamorphic stages.
+
+## 7. Production failure modes
+
+| Failure | Mechanism | Defence (tested) |
 |---|---|---|
 | File handle or DB cursor leaked when a consumer breaks out early | iterator without `return()`, or a generator without `try/finally` | put cleanup in `finally` inside generators; implement `return()` in hand-written iterators; prefer `using` ([module 10](10-resource-management-temporal.md)) |
+| Cursor leaked when **destructuring in the loop head** throws | binding failure is abrupt → IteratorClose runs, but only if `return()` exists | same as above; the example proves `return()` is called |
 | Second loop over a generator silently does nothing | generators are one-shot iterators | expose an *iterable* (object with `[Symbol.iterator]() { return gen() }`) |
 | Process crash on `for await` over pre-created promises | later promises reject before a handler is attached | `Promise.allSettled` |
 | Memory blow-up in a "streaming" pipeline | spreading a generator into an array before filtering | iterator helpers / async generators end to end |
-| Slow sequential I/O | `Array.fromAsync(urls.map(fetch))` is fine (fetches started), but `Array.fromAsync(urls, fetch)` fetches one by one | start work before collecting, or use a concurrency limiter ([module 07](07-async-in-depth.md)) |
-| `TypeError: Generator is already running` | calling `next()` from inside the generator's own body (for example via a synchronous callback) | restructure; generators are not re-entrant |
+| Slow sequential I/O | `Array.fromAsync(urls, fetch)` fetches one by one | start work before collecting, or use a concurrency limiter ([module 07](07-async-in-depth.md)) |
+| `TypeError: Generator is already running` | calling `next()` from inside the generator's own body | restructure; generators are not re-entrant |
+| `yield*` delegation to a plain iterator throws `TypeError` on `gen.throw()` | the inner iterator has no `throw` method; spec closes it and throws | give delegated iterators a `throw` method or avoid `throw()` on delegating generators |
+| A polyfill or test helper patches `Array.prototype[Symbol.iterator]`; unrelated code changes behaviour and every array loop slows down | the iteration protocol is global and honoured everywhere; V8's array-iterator protector is invalidated | never patch built-in iteration; wrap instead |
 
 ---
 
@@ -275,4 +392,14 @@ function* take(iterable, n) {
   }
 }
 ```
+</details>
+
+<details><summary>9. Why does an exception thrown by `next()` not call `return()`, while an exception in the loop body does?</summary>
+
+In ForIn/OfBodyEvaluation, the call to `next()`, the `done` check and the `value` read are all `?` operations: an abrupt completion propagates before IteratorClose is reached, because an iterator that throws from `next()` is considered broken. An exception from the body is caught by the loop algorithm, which then calls IteratorClose with the throw completion; the body's error wins over any error from `return()`.
+</details>
+
+<details><summary>10. What happens when `for await` iterates a sync generator that yields a rejected promise?</summary>
+
+AsyncFromSyncIterator awaits each yielded value; the rejection is thrown into the loop at that iteration. Since ES2025 the wrapper also closes the underlying sync iterator, so its `finally` blocks run before the error reaches your `catch`.
 </details>

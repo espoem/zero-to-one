@@ -282,3 +282,143 @@ describe('Async iteration (§27.1.1.3, §27.6)', () => {
     assert.doesNotMatch(r.stdout, /slow/);   // the process died before the loop reached the first value
   });
 });
+
+// ---- Depth pass: spec algorithms (§14.7.5.7, §7.4.11, §27.5.3, §27.6, §27.1.5) and failure modes
+
+/** In-order traversal: recursive generator (O(h) delegation per element). */
+export function* inorderRecursive(node) {
+  if (!node) return;
+  yield* inorderRecursive(node.left);
+  yield node.key;
+  yield* inorderRecursive(node.right);
+}
+
+/** In-order traversal with an explicit stack (INORDER-ITER in module 05). */
+export function* inorderIter(root, visit = () => {}) {
+  const stack = [];
+  let x = root;
+  while (stack.length > 0 || x) {
+    while (x) { visit(x); stack.push(x); x = x.left; }
+    x = stack.pop();
+    yield x.key;
+    x = x.right;
+  }
+}
+
+function bstInsert(root, key) {
+  if (!root) return { key, left: null, right: null };
+  if (key < root.key) root.left = bstInsert(root.left, key);
+  else root.right = bstInsert(root.right, key);
+  return root;
+}
+
+describe('Depth: lazy tree traversal', () => {
+  test('property: both traversals yield the sorted distinct keys', () => {
+    fc.assert(fc.property(fc.uniqueArray(fc.integer(), { maxLength: 60 }), (keys) => {
+      let root = null;
+      for (const k of keys) root = bstInsert(root, k);
+      const sorted = [...keys].sort((a, b) => a - b);
+      return JSON.stringify([...inorderRecursive(root)]) === JSON.stringify(sorted) &&
+        JSON.stringify([...inorderIter(root)]) === JSON.stringify(sorted);
+    }));
+  });
+
+  test('take(3) on a large degenerate-left tree visits only the left spine', () => {
+    // a left spine: the root holds n, its left child n-1, ..., the deepest node 1
+    let root = null;
+    const n = 2000;
+    for (let k = 1; k <= n; k++) root = { key: k, left: root, right: null };
+    let visited = 0;
+    const first = inorderIter(root, () => visited++).take(3).toArray();
+    assert.deepEqual(first, [1, 2, 3]);
+    assert.equal(visited, n); // descending the spine once; nothing else materialised
+  });
+});
+
+describe('Depth: ForIn/OfBodyEvaluation and IteratorClose', () => {
+  test('NEGATIVE: a destructuring failure in the loop head closes the iterator', () => {
+    const log = [];
+    const it = {
+      [Symbol.iterator]() { return this; },
+      next: () => ({ value: null, done: false }),       // destructuring null throws
+      return() { log.push('return'); return {}; },
+    };
+    assert.throws(() => { for (const { a } of it) void a; }, TypeError);
+    assert.deepEqual(log, ['return']);
+  });
+
+  test('NEGATIVE: an exception from next() does not call return()', () => {
+    const log = [];
+    const it = {
+      [Symbol.iterator]() { return this; },
+      next() { throw new Error('broken'); },
+      return() { log.push('return'); return {}; },
+    };
+    assert.throws(() => { for (const _ of it); }, /broken/);
+    assert.deepEqual(log, []);
+  });
+
+  test('NEGATIVE: a return() that yields a primitive is a TypeError on break', () => {
+    const it = {
+      [Symbol.iterator]() { return this; },
+      next: () => ({ value: 1, done: false }),
+      return: () => 42,
+    };
+    assert.throws(() => { for (const _ of it) break; }, TypeError);
+  });
+
+  test('NEGATIVE: yield* to an iterator without throw() closes it and throws TypeError', () => {
+    const log = [];
+    const inner = {
+      [Symbol.iterator]() { return this; },
+      next: () => ({ value: 'x', done: false }),
+      return() { log.push('inner closed'); return { done: true }; },
+    };
+    function* outer() { yield* inner; }
+    const g = outer();
+    g.next();
+    assert.throws(() => g.throw(new Error('e')), TypeError);
+    assert.deepEqual(log, ['inner closed']);
+  });
+});
+
+describe('Depth: async generator request queue (§27.6) and AsyncFromSyncIterator (§27.1.5)', () => {
+  test('return() issued while executing waits behind earlier requests', async () => {
+    const log = [];
+    async function* g() {
+      try { log.push('start'); await null; yield 1; yield 2; } finally { log.push('finally'); }
+    }
+    const it = g();
+    const p1 = it.next();
+    const p2 = it.return('done');
+    const p3 = it.next();
+    const [r1, r2, r3] = await Promise.all([p1, p2, p3]);
+    assert.deepEqual([r1, r2, r3], [{ value: 1, done: false }, { value: 'done', done: true }, { value: undefined, done: true }]);
+    assert.deepEqual(log, ['start', 'finally']);
+  });
+
+  test('yield and return of a promise inside an async generator are awaited', async () => {
+    async function* g() { yield Promise.resolve('y'); return Promise.resolve('r'); }
+    const it = g();
+    assert.deepEqual(await it.next(), { value: 'y', done: false });
+    assert.deepEqual(await it.next(), { value: 'r', done: true });
+  });
+
+  test('for await over a sync generator yielding a rejection throws and closes it (ES2025)', async () => {
+    const log = [];
+    function* g() { try { yield Promise.reject(new Error('r')); yield 2; } finally { log.push('closed'); } }
+    await assert.rejects((async () => { for await (const _ of g()); })(), /r/);
+    assert.deepEqual(log, ['closed']);
+  });
+});
+
+describe('Depth: the iteration protocol is global', () => {
+  test('NEGATIVE: patching Array.prototype[Symbol.iterator] changes spread and destructuring everywhere', () => {
+    const r = runNode(['-e', `
+      const orig = Array.prototype[Symbol.iterator];
+      Array.prototype[Symbol.iterator] = function* () { for (const x of orig.call(this)) yield x * 10; };
+      const [a] = [1, 2];
+      console.log(JSON.stringify([[...[1, 2]], a, Array.from([3])]));`]);
+    assert.deepEqual(JSON.parse(r.stdout), [[10, 20], 10, [30]]);
+  });
+});
