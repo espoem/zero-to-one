@@ -1,20 +1,24 @@
 {
+  // TypeScript 7 project config: list only what differs from the 7.0 defaults.
+  // Defaults already in force: strict, module esnext (overridden below), esModuleInterop,
+  // alwaysStrict, noUncheckedSideEffectImports, stableTypeOrdering, types: [] (overridden below).
   "compilerOptions": {
-    "target": "ESNext",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "lib": ["ESNext", "DOM", "DOM.Iterable"],
-    "strict": true,
+    "target": "esnext",
+    "module": "nodenext",
+    "lib": ["esnext", "dom", "dom.iterable"],
+    "types": ["node"],
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
-    "useUnknownInCatchVariables": true,
-    "allowImportingTsExtensions": true,
-    "noEmit": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "types": ["node"]
+    "skipLibCheck": true
   },
-  "include": [
-    "examples/**/*"
+  "include": ["examples/**/*"],
+  "exclude": [
+    "examples/**/fixtures/**",
+    "examples/12-typing-ui-frameworks/react/**",
+    "examples/12-typing-ui-frameworks/solid/**"
   ]
 }

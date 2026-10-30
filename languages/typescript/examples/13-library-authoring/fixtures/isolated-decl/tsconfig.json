@@ -1,0 +1,3 @@
+{
+  "compilerOptions": { "declaration": true, "emitDeclarationOnly": true, "isolatedDeclarations": true, "outDir": "out", "rootDir": "." }
+}

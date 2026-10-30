@@ -1,23 +1,29 @@
 {
-  "name": "total-typescript-course-reference",
-  "version": "2.0.0",
-  "description": "Total TypeScript Complete Learning Path runnable reference project and self-contained pure TypeScript test suite",
+  "name": "zero-to-one-typescript",
+  "version": "3.0.0",
+  "private": true,
+  "description": "zero-to-one TypeScript track: runnable examples, type tests and compiler-fixture tests for TypeScript 7",
   "type": "module",
+  "engines": {
+    "node": ">=26"
+  },
   "scripts": {
-    "typecheck": "mise exec npm:typescript -- tsc --noEmit",
-    "test": "node examples/01-essentials-and-narrowing.ts && node examples/02-type-transformations.ts && node examples/03-generics-and-overloads.ts && node examples/04-advanced-patterns.ts && node examples/05-zod-and-schema-validation.ts && node examples/07-modern-ts-and-js-features.ts",
-    "test:01": "node examples/01-essentials-and-narrowing.ts",
-    "test:02": "node examples/02-type-transformations.ts",
-    "test:03": "node examples/03-generics-and-overloads.ts",
-    "test:04": "node examples/04-advanced-patterns.ts",
-    "test:05": "node examples/05-zod-and-schema-validation.ts",
-    "test:07": "node examples/07-modern-ts-and-js-features.ts"
+    "typecheck": "tsc -p . && tsc -p examples/12-typing-ui-frameworks/react && tsc -p examples/12-typing-ui-frameworks/solid",
+    "test": "node --test \"examples/**/*.test.ts\"",
+    "test:module": "node --test"
   },
   "devDependencies": {
-    "@types/node": "^22.10.0",
-    "typescript": "^7.0.2"
+    "@arethetypeswrong/cli": "0.18.5",
+    "@standard-schema/spec": "1.1.0",
+    "@types/node": "26.6.6",
+    "@types/react": "19.3.0",
+    "expect-type": "1.4.0",
+    "publint": "0.3.25",
+    "typescript": "7.0.2"
   },
   "dependencies": {
-    "zod": "^3.24.1"
+    "@solidjs/web": "2.0.0-rc.19",
+    "solid-js": "2.0.0-rc.19",
+    "zod": "4.6.7"
   }
 }

@@ -1,153 +1,164 @@
-# Total TypeScript — Fast-Lookup Cheat Sheet (TS 5.x–7.0, React 19 & SolidJS 2.x)
+# TypeScript Cheat Sheet (TypeScript 7.0)
 
-A dense desk reference covering TypeScript's type-level operators, built-in and custom utility types, generic patterns, narrowing techniques, modern ECMAScript/TypeScript features, React 19 patterns, SolidJS 2.x (`@solidjs/signals`) primitives, and Matt Pocock's recommended `tsconfig.json` rules.
-
----
-
-## 1. Value World vs. Type World Bridge Operators
-
-| Operator | Direction | Purpose | Example |
-| :--- | :--- | :--- | :--- |
-| `:` (Annotation) | Type → Value | Constrains a variable or parameter to a declared type (widens literals to the annotated type) | `const cfg: Record<string, number> = { a: 1 }` |
-| `satisfies` | Type ↔ Value | Validates that a value matches a contract **without** widening its inferred literal/property types | `const cfg = { a: 1 } satisfies Record<string, number>` (`cfg.a` is `number`, keys are `'a'`) |
-| `as const` | Value → Narrow Type | Freezes an expression into deeply `readonly` literal types and fixed-length tuples | `const roles = ['admin', 'user'] as const` (`readonly ['admin', 'user']`) |
-| `<const T>` | Call-Site Arg → Narrow Type | Infers deeply `readonly` literal types directly at a generic function call site without requiring `as const` | `function defineRoutes<const T extends readonly string[]>(routes: T): T` |
-| `typeof` (type level) | Value → Type | Extracts the static TypeScript type of a runtime variable, function, or class | `type Roles = typeof roles` |
-| `keyof` | Type → Union of Keys | Produces a union of all public property keys of a type | `type RoleKey = keyof User` (`'id' \| 'name'`) |
-| `keyof typeof` | Value → Union of Keys | Extracts the literal keys of a runtime object | `type EnvKey = keyof typeof ENV` |
-| `T[K]` (Indexed Access) | Type → Property Type | Looks up the type of property `K` (or a union of keys) on `T` | `type IdOrName = User['id' \| 'name']` |
-| `T[number]` | Array/Tuple → Union | Extracts the union of all element types in an array or tuple | `type Role = (typeof roles)[number]` (`'admin' \| 'user'`) |
+Fast lookup for the track. Every row links to the module that explains it. Versions: TypeScript 7.0.2, Node 26, Zod 4.6.7, `@types/react` 19.3.0, Solid 2.0.0-rc.19 (release candidate).
 
 ---
 
-## 2. Built-In Utility Types Matrix
+## 1. Toolchain (TS 7) — [Module 01](./modules/01-toolchain-and-compiler-model.md)
 
-### Object & Union Manipulation
+| Task | Command / setting |
+|---|---|
+| Type-check only | `tsc --noEmit` (or `tsc -b` with project references) |
+| Run a `.ts` file | `node file.ts` (Node 26 strips types; no checking) |
+| Parallel checking | `--checkers <n>` (default 4), `--builders <n>` for `tsc -b`, `--singleThreaded` |
+| Compile a single file next to a tsconfig | `tsc --ignoreConfig file.ts` (else TS5112) |
+| Tools needing the compiler API (typescript-eslint, vue-tsc) | `"typescript": "npm:@typescript/typescript6@^6.0.2"`, `"@typescript/native": "npm:typescript@^7.0.2"` |
+| Profile | `--extendedDiagnostics`, `--generateTrace <dir>` (one `types_N.json` per checker) |
 
-| Utility Type | Definition Under the Hood | What It Does |
-| :--- | :--- | :--- |
-| `Partial<T>` | `{ [P in keyof T]?: T[P] }` | Makes all top-level properties of `T` optional |
-| `Required<T>` | `{ [P in keyof T]-?: T[P] }` | Makes all top-level properties of `T` required (strips `?`) |
-| `Readonly<T>` | `{ readonly [P in keyof T]: T[P] }` | Makes all top-level properties of `T` `readonly` |
-| `Pick<T, K>` | `{ [P in K]: T[P] }` (`K extends keyof T`) | Keeps only the specified keys `K` from object `T` |
-| `Omit<T, K>` | `Pick<T, Exclude<keyof T, K>>` | Removes keys `K` from object `T` *(Note: does not constrain `K extends keyof T`)* |
-| `Record<K, V>` | `{ [P in K]: V }` (`K extends PropertyKey`) | Creates an object type where every key in union `K` maps to value type `V` |
-| `Exclude<T, U>` | `T extends U ? never : T` | Removes members of union `T` that are assignable to `U` |
-| `Extract<T, U>` | `T extends U ? T : never` | Keeps only members of union `T` that are assignable to `U` |
-| `NonNullable<T>` | `T & {}` | Removes `null` and `undefined` from `T` |
+**Defaults since 6.0:** `strict: true`, `module: esnext`, `target`: latest ES year, `types: []`, `rootDir: ./`, `noUncheckedSideEffectImports: true`, `libReplacement: false`. **Removed in 7.0:** `target es5`, `downlevelIteration`, `moduleResolution node/node10/classic`, `module amd/umd/system/none`, `baseUrl`, `outFile`, `esModuleInterop:false`, `alwaysStrict:false`, `import … assert`.
 
-### Function, Class, Promise & Inference Control
-
-| Utility Type | Definition Under the Hood | What It Does |
-| :--- | :--- | :--- |
-| `ReturnType<T>` | `T extends (...args: any) => infer R ? R : any` | Extracts the return type of function type `T` |
-| `Parameters<T>` | `T extends (...args: infer P) => any ? P : never` | Extracts a tuple of parameter types of function type `T` |
-| `ConstructorParameters<T>` | `T extends abstract new (...args: infer P) => any ? P : never` | Extracts constructor parameter tuple from a class constructor type |
-| `InstanceType<T>` | `T extends abstract new (...args: any) => infer R ? R : any` | Extracts the instance type produced by `new Class()` |
-| `Awaited<T>` | Recursive `infer` over `.then()` | Recursively unwraps `Promise<Promise<U>>` to `U` |
-| `NoInfer<T>` (TS 5.4+) | Intrinsic compiler primitive | Prevents TypeScript from inferring a generic type parameter from a specific argument position |
+| Error after upgrading | Fix |
+|---|---|
+| TS2591 "Cannot find name 'process'" | `"types": ["node"]` |
+| TS2882 side-effect import of `./x.css` | `declare module "*.css";` |
+| TS5102 / TS5108 option removed | Replace `baseUrl` with `./`-relative `paths`; use `nodenext`/`bundler` |
+| TS5011 common source directory | Set `rootDir` |
+| TS1294 not erasable | Remove enums/namespaces/parameter properties/`<T>x` |
 
 ---
 
-## 3. Essential Custom Type Helpers (The `utils/` Folder)
+## 2. Minimal tsconfigs — [Module 06](./modules/06-modules-declarations-and-tsconfig.md)
 
-```ts
-// 1. Prettify: Flattens intersections so IDE hovers show clean properties
-export type Prettify<T> = {
-  [K in keyof T]: T[K];
-} & {};
-
-// 2. StrictOmit: Enforces that omitted keys actually exist on T
-export type StrictOmit<T, K extends keyof T> = Omit<T, K>;
-
-// 3. DistributiveOmit: Preserves discriminated unions when omitting a property
-export type DistributiveOmit<T, K extends PropertyKey> = T extends any
-  ? Omit<T, K>
-  : never;
-
-// 4. LooseAutocomplete: Preserves IDE literal autocomplete while accepting any string!
-export type LooseAutocomplete<T extends string> = T | (string & {});
-
-// 5. Branded Type: Nominal typing in a structural type system
-declare const brand: unique symbol;
-export type Brand<T, TBrand extends string> = T & { readonly [brand]: TBrand };
-
-// 6. Compile-Time Type Assertion Helpers (Total TypeScript test style)
-export type Expect<T extends true> = T;
-export type Equal<X, Y> =
-  (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y ? 1 : 2
-    ? true
-    : false;
+```jsonc
+// Node (run by Node)                         // Bundled app (Vite)
+{ "compilerOptions": {                        { "compilerOptions": {
+  "module": "nodenext",                         "module": "preserve",
+  "types": ["node"],                            "jsx": "react-jsx",
+  "rootDir": "./src", "outDir": "./dist",       "lib": ["esnext", "dom"],
+  "verbatimModuleSyntax": true,                 "types": ["vite/client"],
+  "erasableSyntaxOnly": true,                   "noEmit": true,
+  "noUncheckedIndexedAccess": true,             "verbatimModuleSyntax": true,
+  "skipLibCheck": true } }                      "noUncheckedIndexedAccess": true } }
 ```
 
----
-
-## 4. Modern JavaScript & TypeScript 5.x–7.0 Features
-
-| Feature | Syntax / Type | Key Rule |
-| :--- | :--- | :--- |
-| **Explicit Resource Management** | `using conn = getDb()` / `await using tx = beginTx()` | Implements `[Symbol.dispose](): void` (`Disposable`) or `[Symbol.asyncDispose](): Promise<void>` (`AsyncDisposable`) |
-| **Stage-3 Decorators** | `ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>` | Standard ES decorators require no `experimentalDecorators` flag and preserve `this` and argument types |
-| **Immutable Array Methods** | `.toSorted()`, `.toReversed()`, `.toSpliced()`, `.with(i, v)` | Available directly on `readonly T[]` without mutating the source array |
-| **Typed Grouping** | `Object.groupBy(items, (x) => x.status)` | Infers `Partial<Record<StatusUnion, Item[]>>` directly from literal union keys |
-| **ES2025 Set Operations** | `setA.union(setB)`, `setA.intersection(setB)`, `setA.difference(setB)` | Native mathematical set methods returning strongly typed `Set<T>` |
-| **`Promise.withResolvers`** | `const { promise, resolve, reject } = Promise.withResolvers<User>()` | Replaces manual `let resolve!: ...` outside `new Promise()` |
-| **Erasable Syntax Only** | `--erasableSyntaxOnly` (TS 5.8+ / Node.js native TS) | Disallows runtime-emitting TS features (`enum`, `namespace`, parameter properties) so Node can strip types directly |
-| **Isolated Declarations** | `--isolatedDeclarations` (TS 5.5+) | Requires explicit return types on exported APIs so bundlers can emit `.d.ts` files in parallel without full typecheck |
+| `nodenext` error | Meaning | Fix |
+|---|---|---|
+| TS2835 | Relative ESM import needs an extension | `./x.js` (or `.ts` + `rewriteRelativeImportExtensions`) |
+| TS1484 | Type imported without `type` | `import type { T }` |
+| TS1543 | JSON import needs attribute | `with { type: "json" }` |
+| TS6306 | Referenced project not composite | `"composite": true` |
 
 ---
 
-## 5. React 19.x with TypeScript Quick Reference
+## 3. Narrowing — [Module 03](./modules/03-unions-narrowing-and-control-flow.md)
 
-| Task in React 19 | Modern React 19 Type / Pattern |
-| :--- | :--- |
-| **Pass `ref` to a component** | **No `forwardRef` needed!** Add `ref?: React.Ref<HTMLInputElement>` directly to your props object or use `React.ComponentProps<"input">` (which now includes `ref`!) |
-| **Generic component with `ref`** | `function Select<T>({ options, ref }: SelectProps<T> & { ref?: React.Ref<HTMLSelectElement> })` |
-| **Ref callback cleanup** | `<div ref={(el) => { ...; return () => cleanup(); }} />` *(Implicit returns like `ref={el => (myRef = el)}` are now a compile error; use block braces `{ myRef = el; }`)* |
-| **Strict `useRef` (React 19)** | `useRef<T>(null)` or `useRef<T \| undefined>(undefined)` *(0-arg `useRef<T>()` is disallowed in React 19 types)* |
-| **Unwrap Promise or conditional Context** | `const data = use(dataPromise)` or `if (show) { const theme = use(ThemeContext); }` (`Usable<T> = PromiseLike<T> \| Context<T>`) |
-| **Context Provider shorthand** | `<ThemeContext value={theme}>{children}</ThemeContext>` (no `.Provider` needed) |
-| **Stateful Form Action** | `const [state, formAction, isPending] = useActionState<ActionState, FormData>(serverAction, initialState)` |
-| **Optimistic UI State** | `const [optimisticItems, addOptimistic] = useOptimistic<Item[], NewItem>(items, (state, next) => [...state, next])` |
-| **Child Form Submit Status** | `const { pending, data } = useFormStatus()` (must be called inside a child component of `<form>`) |
-| **RSC Boundary Check** | Ensure props crossing `"use server"` / `"use client"` satisfy `Serializable<T>` (no functions, classes, or DOM nodes) |
+| Guard | Narrows | Trap |
+|---|---|---|
+| `typeof x === "object"` | to object types **and `null`** | check `x !== null` |
+| `if (x)` | removes `null`, `undefined`, **`0`, `""`, `NaN`** | use `!== null` |
+| `"k" in x` | members with `k` | right side must be an object |
+| `x instanceof C` | to `C` | fails across realms |
+| `x.kind === "a"` | discriminated member | destructure only from `const`/params |
+| `switch (true) { case cond: }` | per case (5.3+) | |
+| `arr.filter(x => x !== null)` | inferred predicate (5.5+) | not for truthiness |
+| closures | keep narrowing after the last assignment (5.4+) | later assignment re-widens |
 
----
-
-## 6. SolidJS 2.x (`@solidjs/signals`) with TypeScript Quick Reference
-
-| Task in SolidJS 2.x | SolidJS 2.x Type / Pattern |
-| :--- | :--- |
-| **TSConfig for Solid** | `"jsx": "preserve"`, `"jsxImportSource": "@solidjs/web"` (store APIs import from `solid-js`) |
-| **Reactive Signal & Batching** | `const [count, setCount] = createSignal<number>(0)` → `[Accessor<number>, Setter<number>]` (writes are microtask-batched by default!) |
-| **Synchronous Flush** | `flush()` or `flush(() => setCount(c => c + 1))` (immediately drains pending microtask queue) |
-| **First-Class Async Memo** | `const user = createMemo(() => fetchUser(id()))` or `createMemo(async () => ...)` / `createMemo(() => asyncIterable)` → `Accessor<Awaited<T>>` (**not** `T \| undefined`!). Pending/errors bubble to `<Loading>` and `<Errored>`. `createAsync` is only a compatibility alias. |
-| **Check Pending / Latest / Resolve** | `isPending(user)` (`boolean`) / `latest(user)` (stale value without suspending) / `await resolve(user)` (`Promise<User>`) / `refresh(user)` (re-ask for the next settled value) / `throw new NotReadyError()` (opt out of suspension) |
-| **Split Two-Phase Effect** | `createEffect(() => count(), (val, prev) => { console.log(val); return () => cleanup(); })` — Phase 1 tracks synchronously and infers `val: T` for Phase 2; cleanups returned directly! |
-| **Component Lifecycle** | `onSettled(() => { ...; return () => cleanup(); })` (replaces `onMount`; waits for async resolution and returns cleanup) |
-| **Deep Store & Draft Setters** | `const [state, setState] = createStore<State>(initial)` + `setState((draft) => { draft.users[0].name = "Ada"; })` (draft-first by default); `setState(storePath("user", "prefs", "theme", "dark"))` for reusable paths (`storePath.DELETE` removes a leaf) |
-| **Store Advanced Utilities** | `snapshot(state)` (untracked plain copy), `deep(state)` (subscribe to every nested leaf), `merge(a, b)` (live getters, later wins), `omit(state, "key")` (copy without keys) |
-| **Derived Store Projection** | `const selection = createProjection<Record<string, boolean>>((draft) => { draft[selectedId()] = true; }, {})` (`O(1)` property-level notification precision) |
-| **Default Props (Preserving Reactivity)** | `const merged = mergeProps({ size: "md" as const }, props)` (never destructure `props` at setup top-level!) |
-| **Split Props for Forwarding** | `const [local, others] = splitProps(props, ["variant", "size"])` → `[Pick<P, "variant" \| "size">, Omit<P, "variant" \| "size">]` |
-| **Narrowing in JSX (`<Show>`)** | `<Show when={user()}>{(u: Accessor<User>) => <Profile user={u()} />}</Show>` |
-| **Unified List Iteration (`<For>` + `<Repeat>`)** | Default `keyed={true}`: `<For each={items()}>{(item: T, index: Accessor<number>) => ...}</For>`<br>Unkeyed `keyed={false}`: `{(item: Accessor<T>, index: number) => ...}` (replaces removed `<Index>`)<br>Custom key `keyed={fn}`: `{(item: Accessor<T>, index: Accessor<number>) => ...}`<br>Positional: `<Repeat count={3} from={1}>{(index: number) => ...}</Repeat>` |
-| **Ref Directive Factory** | `<div ref={clickOutside(onClose)} />` with `type RefDirective<E> = (el: E) => void \| (() => void)` (replaces removed `use:*`) |
-| **Context (Providerless)** | `const Auth = createContext<AuthState>({ name: "Auth" }); <Auth value={auth}>{children}</Auth>` (no `.Provider`); `useContext(Auth)` throws `ContextNotFoundError` when unprovided |
-| **Transactional Mutations** | `const save = action(function* (item) { setState(...); yield api.save(item); refresh(state); })` → `Promise<R>`; writes between yields commit together |
-| **Optimistic State** | `const [items, setItems] = createOptimistic<string[]>([])` / `const [cart, setCart] = createOptimisticStore(derive, seed)`; overlay reverts on settlement |
-| **Server Functions** | `"use server"` module + `@solidjs/vite-plugin` start mode; dispatch with `handleServerFunctionRequest(request)` from `@solidjs/web` (there is no `handleRequest` export); validate `unknown` with Zod/Valibot |
-| **Async Boundaries** | `<Errored fallback={(err, reset) => ...}><Loading fallback={<Spinner />}><Reveal>{children}</Reveal></Loading></Errored>` |
-| **Zero-Allocation Event Tuple** | `<button onClick={[handleDelete, item().id]}>Delete</button>` (infers `handleDelete(id: string, e: MouseEvent)`) |
-| **Polymorphic Component** | `<Dynamic component={local.as ?? "button"} {...others} />` typed with `ValidComponent` |
+Exhaustiveness: `default: { const _x: never = value; }`.
 
 ---
 
-## 7. Empty Object Trap: `{}` vs. `object` vs. `Record`
+## 4. Assignability — [Module 04](./modules/04-objects-assignability-and-weird-parts.md)
 
-| Type | Accepts Primitives (`"hi"`, `123`)? | Accepts Objects (`{ a: 1 }`)? | Accepts `null` / `undefined`? | Actual Meaning |
-| :--- | :--- | :--- | :--- | :--- |
-| `{}` | **Yes!** | **Yes!** | No | Anything except `null` or `undefined` |
-| `object` | No | Yes (including arrays & functions) | No | Any non-primitive reference value |
-| `Record<string, unknown>` | No | Yes (key-value objects) | No | Object indexable by `string` keys |
-| `Record<PropertyKey, never>` | No | Only `{}` (truly empty object) | No | Object with **zero** allowed properties |
+| Fact | Consequence |
+|---|---|
+| Structural, width subtyping | `Object.keys` → `string[]`; fresh literals get excess-property checks |
+| Function properties: contravariant params; **methods: bivariant** | declare callbacks as properties |
+| Arrays covariant | take `readonly T[]` |
+| `{}` = non-nullish, `object` = non-primitive, `unknown` = anything | |
+| `A & B` with conflicting literal property | `never` |
+| `:` replaces the type; `satisfies` checks and keeps it; `as` asserts | |
+| `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes` | opt-in beyond `strict` |
+
+---
+
+## 5. Generics & variance — [Module 07](./modules/07-generics-and-inference.md)
+
+| Need | Tool |
+|---|---|
+| Keep literals/tuples from arguments | `<const T>` |
+| Stop a parameter from inferring `T` | `NoInfer<T>` |
+| Supply some type args, infer others | not supported (TS2558): curry |
+| State variance | `interface P<out T>`, `C<in T>`, `Cell<in out T>` (TS2636 if wrong) |
+| Useless generic | `T` used once → replace with its constraint / a schema |
+
+---
+
+## 6. Type-level toolkit — [Modules 08](./modules/08-type-derivation-and-template-literals.md) & [09](./modules/09-conditional-mapped-and-recursive-types.md)
+
+```ts
+type Values<T> = T[keyof T];
+type Elem<A extends readonly unknown[]> = A[number];
+type Awaited2<T> = Awaited<T>;
+type NonDist<T> = [T] extends [string] ? 1 : 2;          // stop distribution
+type IsNever<T> = [T] extends [never] ? true : false;
+type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
+type Mutable<T> = { -readonly [K in keyof T]: T[K] };
+type Getters<T> = { [K in keyof T & string as `get${Capitalize<K>}`]: () => T[K] };
+type PickByValue<T, V> = { [K in keyof T as T[K] extends V ? K : never]: T[K] };
+type ToNumber<S> = S extends `${infer N extends number}` ? N : never;
+type UnionToMap<U extends { type: string }> = { [E in U as E["type"]]: Omit<E, "type"> };
+type Suggest = "primary" | "secondary" | (string & {});   // literals + any string
+```
+
+Limits (measured, 7.0.2): non-tail recursion TS2589 at ~48 levels; tail recursion 1000 iterations; template cross products fail at 100,000 members (TS2590). TS 7 template inference splits by **code point**.
+
+---
+
+## 7. API design — [Module 10](./modules/10-type-safe-api-design-patterns.md)
+
+| Pattern | Shape |
+|---|---|
+| Brand | `type UserId = string & { readonly __brand: "UserId" }` + one parser |
+| Predicate / assertion | `(x): x is T` / `(x): asserts x is T` (assertion targets need explicit types, TS2775) |
+| Disposable resource | `interface Conn extends Disposable {}`; `using c = connect()` |
+| Typed decorator | `<This, Args extends unknown[], R>(fn: (this: This, ...a: Args) => R, ctx: ClassMethodDecoratorContext<This, …>)` |
+| Registry (open for augmentation) | `export interface Registry {}` + `declare module "lib" { interface Registry { … } }` |
+
+---
+
+## 8. Runtime boundaries — [Module 11](./modules/11-runtime-boundaries-validation.md)
+
+```ts
+const User = z.object({ id: z.uuid(), email: z.email(), age: z.number().int() });
+type User = z.infer<typeof User>;           // output; z.input for what clients send
+const r = User.safeParse(raw);              // { success: true, data } | { success: false, error }
+z.flattenError(r.error!);                   // { formErrors, fieldErrors }
+```
+
+Zod 4: top-level formats (`z.email()`), `{ error }` param, `.default` short-circuits (old behaviour = `.prefault`), `z.strictObject`/`z.looseObject`, `.extend` instead of `.merge`. Library-neutral input: `StandardSchemaV1` from `@standard-schema/spec`.
+
+---
+
+## 9. UI typing — [Module 12](./modules/12-typing-ui-frameworks.md)
+
+| React 19 | Solid 2.0 RC |
+|---|---|
+| `jsx: "react-jsx"` | `jsx: "preserve"`, `jsxImportSource: "@solidjs/web"` |
+| `children: ReactNode` | `ParentComponent<P>` / `JSX.Element` |
+| `ComponentProps<"button">` (includes `ref`) | `JSX.ButtonHTMLAttributes<HTMLButtonElement>` |
+| `ref` is a normal prop; no `forwardRef` | `ref={(el) => …}` |
+| `useRef<T>(null)` → `RefObject<T \| null>`; argument required | `createSignal<T>()` → `T \| undefined` |
+| Ref callback may return cleanup | `<Show when={x}>{(v) => v()}</Show>` gives an accessor |
+| `<Ctx value={…}>`, `use(ctx)` | `<Ctx value={…}>`, `useContext` returns `T` |
+| Augment `declare module "react" { namespace JSX … }` | `merge`/`omit` instead of `mergeProps`/`splitProps` |
+
+---
+
+## 10. Publishing — [Module 13](./modules/13-library-authoring-performance-and-type-tests.md)
+
+```json
+"type": "module",
+"exports": { ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" } }
+```
+
+`types` first · one `.d.ts` per format (`.d.cts` for CJS) · `isolatedDeclarations` for fast emit · check with `publint` and `attw --pack . --profile esm-only` · type tests: `@ts-expect-error` (TS2578 when stale), `expectTypeOf(x).toEqualTypeOf<T>()`.

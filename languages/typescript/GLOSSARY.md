@@ -1,4 +1,4 @@
-# TypeScript & Modern JavaScript Glossary
+# TypeScript Glossary (EN ↔ CZ)
 
 This glossary defines standard technical terms used throughout the `languages/typescript/` learning track. All definitions and context descriptions are written in English; terms provide their canonical English name and established Czech equivalent. Terminology is based on the official TypeScript specification and handbook, the ECMA-262 (ECMAScript) standard, and fundamental type systems literature (Benjamin C. Pierce: *Types and Programming Languages*).
 
@@ -9,7 +9,7 @@ This glossary defines standard technical terms used throughout the `languages/ty
 | English Term | Czech Term | Definition & Context | Primary Reference |
 | :--- | :--- | :--- | :--- |
 | **Type World vs. Value World** | **Typový prostor vs. prostor hodnot** | The fundamental separation in TypeScript: the *Type World* exists solely during compilation and is erased during emit (*type erasure*); the *Value World* represents executable JavaScript runtime memory and state. | TypeScript Handbook |
-| **Structural Typing (Duck Typing)** | **Strukturální typování** | A type system model where type compatibility and equivalence are based exclusively on an object's shape, properties, and methods, rather than on explicit declarations or class inheritance. | TS Handbook (Type Compatibility), Pierce (TAPL) |
+| **Structural vs. Nominal Typing** | **Strukturální vs. nominální typování** | In structural typing, type compatibility is determined by shape and members; in nominal typing, compatibility requires explicit declarations and type names. (Root glossary wording; TypeScript is structural, with brands and `#private` fields as nominal escape hatches.) | Pierce (TAPL) |
 | **Type Erasure** | **Vymazání typů** | The compile-time transformation where all type annotations, interface declarations, type aliases, and assertions are stripped, producing standard executable JavaScript. | TypeScript Design Goals |
 | **Type Annotation** | **Typová anotace** | Explicit syntax (`: T`) instructing the compiler on the required type of a variable, function parameter, or return value. May trigger type widening from literal values. | TS Handbook (Everyday Types) |
 | **Type Inference** | **Typová inference (odvozování typů)** | The compiler's automatic deduction of an expression's type without requiring explicit manual annotations. | TS Handbook (Type Inference) |
@@ -79,26 +79,50 @@ This glossary defines standard technical terms used throughout the `languages/ty
 
 ---
 
-## 6. Fine-Grained Reactivity & SolidJS 2.x
+## 6. Assignability, Inference & Variance Mechanics
+
+Where Czech practice has no established translation, the English term is used in Czech texts as well; this is marked "(EN term used)".
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
 | :--- | :--- | :--- | :--- |
-| **Fine-Grained Reactivity** | **Jemnozrnná reaktivita** | A computational design pattern where individual data values (signals) directly update the precise DOM nodes or computations that depend on them, eliminating Virtual DOM diffing and whole-component re-renders. | SolidJS Architecture, Carniato |
-| **Signal (`createSignal`)** | **Signál** | The fundamental atomic reactive primitive containing a getter accessor (`() => T`) and a setter (`(v: T) => void`), tracking subscribers when read inside reactive contexts. | `@solidjs/signals`, TC39 Signals Proposal |
-| **Accessor** | **Přístupová funkce (accessor)** | A parameterless getter function (`() => T`) that establishes a reactive subscription when invoked within a tracking scope. | SolidJS Handbook |
-| **Deterministic Microtask Batching** | **Deterministické dávkování v mikrotasku** | The execution model in Solid 2.0 where signal mutations are queued and deferred to the JavaScript microtask queue, ensuring consistent graph snapshots and preventing layout thrashing unless manually flushed via `flush()`. | SolidJS 2.0 Specifications |
-| **First-Class Async Reactivity** | **Prvotřídní asynchronní reaktivita** | An architecture where promises and async iterables flow directly through ordinary computations (async `createMemo`; `createAsync` is a compatibility alias), propagating pending and rejected states out-of-band to `<Loading>` and `<Errored>` boundaries. | SolidJS 2.0 Architecture |
-| **Async Memo** | **Asynchronní memo** | A `createMemo` whose callback returns a `Promise<T>` or `AsyncIterable<T>`; the runtime unwraps it to `Accessor<Awaited<T>>` and suspends readers until the first value settles. | `solid-js` reference (`createMemo`) |
-| **`NotReadyError`** | **Chyba nepřipravenosti (`NotReadyError`)** | The error thrown when an async computation is read before its first value arrives; catching it lets a consumer opt out of suspension instead of blocking the boundary. | `solid-js` reference (Interop Async) |
-| **`latest`** | **Poslední hodnota (`latest`)** | A reader that returns the most recently committed value of an async accessor without suspending, falling back to the stale value while a new computation is in flight. | `solid-js` reference |
-| **Providerless Context** | **Kontext bez poskytovatele** | The Solid 2.0 context model where `createContext` returns a context object that is itself the provider component; `<Context value={...}>` replaces the removed `<Context.Provider>` wrapper. | `solid-js` reference (`createContext`) |
-| **`ContextNotFoundError`** | **Chyba nenalezeného kontextu (`ContextNotFoundError`)** | The error thrown by `useContext` when no enclosing provider supplies a value and the context has no default, replacing Solid 1.x's `undefined` return and manual guards. | `solid-js` reference (`useContext`) |
-| **`storePath`** | **Cesta v úložišti (`storePath`)** | A helper that builds a reusable draft setter for a nested store path, supporting predicate functions for array elements and `storePath.DELETE` for leaf removal. | `solid-js` reference (Store Advanced) |
-| **Store Snapshot (`snapshot`) / Deep (`deep`)** | **Snímek úložiště (`snapshot`) / Hluboký přístup (`deep`)** | `snapshot` returns an untracked plain deep copy of a store (replacing `unwrap`); `deep` traverses every nested leaf so a single read subscribes to the whole subtree. | `solid-js` reference (Store Advanced) |
-| **Optimistic Store (`createOptimisticStore`)** | **Optimistické úložiště (`createOptimisticStore`)** | A store overlay layered over a durable or derived value; writes display immediately and revert when the confirmed value settles via `refresh`. | `solid-js` reference (`createOptimisticStore`) |
-| **Transactional Action (`action`)** | **Transakční akce (`action`)** | A wrapper around a generator function where each `yield` is a transaction re-entry point; writes between yields commit together and the returned function resolves to the generator's return value. | `solid-js` reference (`action`) |
-| **`Repeat`** | **Opakování (`Repeat`)** | A positional control-flow primitive that renders `count` slots (optionally from `from`) without diffing an array, distinct from keyed `<For>` iteration. | `solid-js` reference (`Repeat`) |
-| **Split Effect (`createEffect(compute, effect)`)** | **Rozdělený (dvoufázový) efekt** | A two-phase effect primitive separating synchronous dependency tracking (`compute`) from asynchronous untracked side-effect execution (`effect`), with built-in cleanup return handling. | SolidJS 2.0 Architecture |
-| **Settled Lifecycle (`onSettled`)** | **Životní cyklus po ustálení (`onSettled`)** | An async-aware component lifecycle hook replacing `onMount`, executing after initial DOM rendering and asynchronous dependencies have settled, and natively supporting returned cleanups. | SolidJS 2.0 Specifications |
-| **Store Projection (`createProjection`)** | **Projekce úložiště (`createProjection`)** | A derived reactive store construct updated via mutable draft functions that notifies downstream subscribers with `O(1)` property-level leaf precision. | SolidJS 2.0 Store Architecture |
-| **Ref Directive Factory** | **Továrna na direktivy přes ref** | A reusable DOM attachment pattern replacing legacy `use:*` compiler transforms, structured as composable functions returning element callbacks with optional cleanups. | SolidJS 2.0 Architecture |
+| **Assignability** | **Přiřaditelnost** | The relation $S \preceq T$ deciding whether a value of type `S` may be used where `T` is expected; structural subtyping plus special cases (`any`, optional properties, enums). | TS Handbook (Type Compatibility) |
+| **Freshness (Fresh Object Literal)** | **Čerstvý objektový literál** (EN term used) | The status of an object literal expression before it is assigned or widened; fresh types are subject to excess-property checks. | TS Handbook (Object Types) |
+| **Inference Site** | **Místo inference** (EN term used) | An occurrence of a type parameter in a parameter type that an argument type is matched against to collect inference candidates; `NoInfer<T>` removes it. | TS Handbook (Generics), [Module 07](./modules/07-generics-and-inference.md) |
+| **Variance Annotation (`in` / `out`)** | **Anotace variance** | Explicit marking of a type parameter as contravariant (`in`), covariant (`out`) or invariant (`in out`); checked against usage (TS2636). | TS 4.7 release notes |
+| **Homomorphic Mapped Type** | **Homomorfní mapovaný typ** | A mapped type over `keyof T` that preserves `readonly`/optional modifiers and maps arrays and tuples to arrays and tuples. | TS Handbook (Mapped Types) |
+| **Deferred Conditional Type** | **Odložený podmíněný typ** | A conditional type whose check depends on unresolved type parameters and is kept unevaluated until instantiation. | TS Handbook (Conditional Types) |
+| **Tail-Recursive Conditional Type** | **Koncově rekurzivní podmíněný typ** | A recursive conditional type whose recursive reference is an entire branch, evaluated iteratively (limit 1000 iterations) instead of by nested instantiation. | TS 4.5 release notes |
+| **Inferred Type Predicate** | **Odvozený typový predikát** | A `x is T` return type that the compiler infers from a function body consisting of a precise narrowing expression (TS 5.5+). | TS 5.5 release notes |
+
+---
+
+## 7. Modules, Declarations & Toolchain
+
+| English Term | Czech Term | Definition & Context | Primary Reference |
+| :--- | :--- | :--- | :--- |
+| **Declaration File (`.d.ts`)** | **Deklarační soubor** | A file containing only type declarations describing JavaScript; emits no code. | TS Handbook (Declaration Files) |
+| **Ambient Declaration** | **Ambientní deklarace** | A `declare` statement describing a value, module or global that exists at runtime but is implemented elsewhere. | TS Handbook (Modules) |
+| **Declaration Merging** | **Slučování deklarací** | Combining same-named interfaces, namespaces and value declarations into one symbol; type aliases never merge. | TS Handbook (Declaration Merging) |
+| **Module Augmentation** | **Rozšíření modulu** (augmentace) | Adding declarations to an existing module from another module with `declare module "x" { … }`; `declare global` does the same for the global scope. | TS Handbook (Declaration Merging) |
+| **Module Resolution** | **Rozlišení modulů** (resolve) | The algorithm mapping an import specifier to a file and its declarations; `nodenext` models Node, `bundler` models bundlers. | TS Handbook (Modules Reference) |
+| **Package Exports / Conditions** | **Exporty balíčku / podmínky** | The `exports` map in `package.json` and the condition names (`types`, `import`, `require`, `default`) selecting an entry point. | Node.js documentation (Packages) |
+| **Project References** | **Odkazy na projekty** (project references) | Splitting a code base into `composite` projects linked by `references` and built with `tsc -b`, downstream projects checking against upstream `.d.ts` output. | TS Handbook (Project References) |
+| **Type Stripping** | **Odstranění typů** (type stripping) | Executing TypeScript by deleting type syntax without type checking or transforming, as Node.js does by default. | Node.js documentation (TypeScript) |
+| **Erasable Syntax** | **Vymazatelná syntaxe** | TypeScript syntax whose removal yields correct JavaScript; `erasableSyntaxOnly` forbids the rest (enums, value namespaces, parameter properties). | TS 5.8 release notes |
+| **Verbatim Module Syntax** | (EN term used) | The rule that imports/exports are kept or removed purely by the presence of the `type` modifier. | TS tsconfig reference |
+| **Isolated Declarations** | **Izolované deklarace** (EN term used) | A mode requiring explicit types on exports so that declaration files can be emitted per file without type checking. | TS 5.5 release notes |
+| **Native Compiler (TypeScript 7)** | **Nativní kompilátor** | The Go port of the TypeScript compiler released as 7.0, with parallel parsing and type checking. | TS 7.0 announcement |
+| **Language Server (LSP)** | **Jazykový server** | The editor back end implementing the Language Server Protocol; TS 7's server speaks LSP natively. | LSP specification |
+| **Standard Schema** | (EN term used) | A library-neutral interface (`~standard.validate`, phantom `types`) implemented by schema libraries such as Zod, Valibot and ArkType. | standardschema.dev |
+
+---
+
+## 8. JSX & UI Framework Typing
+
+| English Term | Czech Term | Definition & Context | Primary Reference |
+| :--- | :--- | :--- | :--- |
+| **JSX Namespace** | **Jmenný prostor JSX** | The set of types (`Element`, `IntrinsicElements`, `ElementChildrenAttribute`, …) a framework exports to tell the checker how to type JSX. | TS Handbook (JSX) |
+| **Intrinsic Element** | **Vnitřní (intrinsic) element** | A lowercase JSX tag whose props come from `JSX.IntrinsicElements[tag]`. | TS Handbook (JSX) |
+| **JSX Import Source** | (EN term used) | The package whose `jsx-runtime` module provides the JSX namespace and runtime (`react`, `@solidjs/web`). | TS tsconfig reference |
+| **Polymorphic Component** | **Polymorfní komponenta** | A component whose rendered element and accepted props are chosen by an `as`-style prop. | [Module 12](./modules/12-typing-ui-frameworks.md) |
+| **Accessor (Solid)** | **Accessor** (EN term used) | The function type `() => T` returned by Solid signals and memos; read by calling it. Runtime semantics: technologies/solidjs. | Solid documentation |

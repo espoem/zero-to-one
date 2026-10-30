@@ -1,0 +1,238 @@
+# Review: typescript
+
+## Hand-off (author: Opus · 2026-10-29 · branch `track/typescript`)
+
+Status: 🟨 ready for challenger/verifier (STATUS.md not edited: outside this agent's boundaries). 25 commits since `9700c8d` (including this hand-off fix).
+
+**Test status (Node 26.12.1, tsc 7.0.2):** `npm test` → `node --test "examples/**/*.test.ts"`: **111 tests, 111 pass, 0 fail**. `npm run typecheck` → `tsc -p .` + React project + Solid project: **clean**. Relative-link check over all track markdown: 0 broken (one false positive inside a code block). Absolute-path scan: clean.
+
+Module by module (each module has a matching example directory with negative tests; each ends with an Interview Drill):
+- **M01 toolchain (new):** erasure model, compiler pipeline, Go port/parallel checkers, 5.x→6.0→7.0 defaults and removals (Then vs now), no classic API + `@typescript/typescript6` bridge, Node 26 type stripping (Then vs now). Fixtures assert TS2591, TS2882, TS5102, TS5108, TS5011, TS1294, TS5112, TS2748 and `ERR_UNSUPPORTED_TYPESCRIPT_SYNTAX`.
+- **M02 essential types:** types-as-sets intro, functions, tuples, `Set`/`Map`, `unknown`, Promise typing, iterator/generator typing (Then vs now: `BuiltinIteratorReturn`).
+- **M03 unions/narrowing:** CFA formalism, closure narrowing (Then vs now, 5.4), `switch (true)`, inferred predicates, destructuring trap.
+- **M04 objects/assignability:** formal assignability and variance, unsoundness table with runtime crashes, freshness, `satisfies`, strictness flags (Then vs now on `strict`), TS2375 fixture.
+- **M05 classes/mutability:** `this` typing, abstract/override/accessor, enums & co. under `erasableSyntaxOnly` (Then vs now).
+- **M06 modules/declarations/tsconfig (rewritten):** module formats, `nodenext` vs `bundler` (Then vs now), `verbatimModuleSyntax` (Then vs now), `.d.ts`, ambient assets, merging, augmentation, project references; fixtures TS2835, TS1484, TS1543, TS6306, `tsc -b --builders`.
+- **M07 generics:** inference phases, `const T`, `NoInfer`, partial inference, variance annotations (method-bivariance caveat verified).
+- **M08 derivation:** operator table, `keyof` of unions/intersections, `string & {}`, measured TS2590 limit.
+- **M09 conditional/mapped/recursive:** formal semantics, recursion limits, TS 7 code-point inference (Then vs now), 7.1 distributive change (preview). **New dedicated example = the "missing example for module 06".**
+- **M10 API design:** old 08 + `Disposable` typing, TC39 vs legacy decorators (Then vs now), case studies from old 11.1.
+- **M11 runtime boundaries (rewritten):** parse-don't-validate, Zod 4 input/output (Zod 3→4 Then vs now), Standard Schema.
+- **M12 typing UI frameworks (new):** JSX checking algorithm, React 19 typing (refs Then vs now), Solid 2.0 rc.19 typing (1.x→2.0 Then vs now); solidjs review corrections applied (`dynamic()` primary, `on:` is a compile error).
+- **M13 library authoring/perf/type tests/migration (new):** declaration emit, `isolatedDeclarations` (Then vs now), `exports`, masquerading, publint/attw tests, type tests, measured recursion limits, traces, JSDoc in 7.0, migration playbooks, version history table.
+- **Exams:** `exams/README.md` (certificates.dev Junior/Mid/Senior, exam delta, matrix), 70-question bank, 2 hands-on challenges with tests in `examples/exams/`, full mock exam with scoring key.
+- **GLOSSARY** (TS-typing/toolchain terms; Solid runtime terms removed), **CHEATSHEET** (rewritten), **README** (syllabus, run instructions, Certifications & Exams, verified-versions line).
+
+## Remaining work (ordered)
+1. Depth: M06 (337 lines), M01 (381), M13 (288) and M11 (243) are below the 400–900 rule of thumb (dense, long lines). Add worked examples and exercises (M11: Valibot/ArkType via Standard Schema; M13: a dual-package walkthrough with `.d.cts`; M06: `exports` with `customConditions`).
+2. Convert the six inherited script-style example files (`03-unions-narrowing/essentials-and-narrowing.test.ts`, `07-generics/generics-and-overloads.test.ts`, `08-type-derivation/type-transformations.test.ts`, `10-api-design/advanced-patterns.test.ts`, `10-api-design/modern-features-typing.test.ts`, `11-runtime-boundaries/zod-schema-validation.test.ts`) into `test()` blocks; they currently run as one test each and use a custom `assert` helper.
+3. Exams: Junior domains are cross-listed onto Mid questions instead of 5 dedicated questions each (shortfall vs AGENTS.md ≥5/domain if Junior is treated as a separate certification). Add a Junior mock (50 questions / 40 min) if the integrator wants all three levels covered.
+4. Some inherited exercise/anti-pattern sections in M03–M10 still use "Total TypeScript" phrasing and Week-era wording in places; polish pass.
+5. Run `mise lock` on a machine with mise: `mise.lock` still pins node 24.22.1 (node 26 checksums could not be fetched here). `.mise.toml` pins node 26 + typescript 7.0.2.
+6. Set `.agents/STATUS.md` row to 🟨 (outside this agent's edit boundary).
+
+## Least-certain claims (for the challenger)
+- `--builders` default (not stated in the 7.0 post); TS 7 internal recursion constants (track asserts measured boundaries 47/48 and 999/1000 only).
+- Node version that removed `--experimental-transform-types` (26.12.1 rejects it; introduced 22.7) and the 22.18/23.6 unflagging versions of type stripping.
+- 5.x release months in the M01 and M13 version tables (marked unverified).
+- Zod 3 version that first implemented Standard Schema (stated as 3.24).
+- `vitest --typecheck` compatibility with the TS 7 binary (marked unverified in M13).
+- `@typescript/analyze-trace` compatibility with 7.0 per-checker traces (marked unverified).
+- The tRPC/TanStack/Redux/ts-pattern case-study descriptions in M10 §10.7 are conceptual simplifications, not those libraries' exact types.
+
+## Corrections to the brief found during verification
+- Most "TS 7 defaults" (strict, module esnext, `types: []`, `rootDir`, `noUncheckedSideEffectImports`) changed in **6.0**; 7.0 made the 6.0 deprecations hard errors.
+- `rootDir` change is not silent in 7.0.2: tsc reports TS5011 when the inferred common source dir differs.
+- `experimentalDecorators`/`emitDecoratorMetadata` still work in 7.0.2 (fixture compiled, metadata emitted). `--extendedDiagnostics` and `--generateTrace` work in 7.0.2 (trace writes one `types_N.json` per checker).
+- 7.0.2 has no classic API on the main entry, but ships `typescript/unstable/*` subpath exports.
+- Zod 4.6.7 does not deprecate `.superRefine` (typings); brief's "unverified" item resolved.
+- `<Dynamic>` is `@deprecated` in `@solidjs/web` rc.19; `on:` events are a compile error (via solidjs review).
+- Executable proofs use `node --test` + tsc (AGENTS.md § Code Example Languages) instead of the brief's vitest `--typecheck`; AGENTS.md wins. Node is 26 (kickoff) rather than the brief's 24.
+
+## Proposals for integrator
+- Convert plain-text references to `languages/javascript` and `technologies/nodejs` into links once those tracks exist (not present on this branch).
+- Root glossary candidates (general CS, not TS-specific): *Assignability / subtyping*, *Variance (covariance, contravariance, invariance, bivariance)* (currently defined in this track's glossary; the root has only structural vs nominal typing), *Type erasure*.
+- OWNERSHIP: register "Standard Schema interface" under `languages/typescript` (M11) explicitly, and "type tests / declaration emit / attw-publint packaging checks" under `languages/typescript` (M13).
+- React track: link component/hook typing to TS M12 instead of re-explaining it; solidjs track already does.
+
+## Handover
+
+Owner decision (brief §1): modules 09–13 of `languages/typescript` shrink to the TypeScript-typing angle. Runtime and framework mechanics move to the owning tracks listed in `.agents/OWNERSHIP.md`. This table lists **every section** of the pre-restructure modules 09–13 (as of commit `9700c8d`, path `languages/typescript/modules/`), so the receiving authors can pull the old text with `git show 9700c8d:languages/typescript/modules/<file>` and nothing is lost.
+
+Legend for the target columns:
+- **TS (new Mnn)**: stays in this track, in the new module number (see the new syllabus in `languages/typescript/README.md`). Only the *types* stay: signatures, inference, narrowing, declaration merging.
+- **react Mnn / solidjs Mnn / javascript Mnn**: module numbers from `.agents/briefs/react.md`, `.agents/briefs/solidjs.md` and `.agents/briefs/javascript.md`.
+- **Drop**: obsolete or redundant; the reason is given.
+
+Receiving tracks should cross-link back to **TS M12** (`languages/typescript/modules/12-typing-ui-frameworks.md`) for the typing of components, hooks, JSX and refs, and to **TS M11** (`languages/typescript/modules/11-runtime-boundaries-validation.md`) for Zod / Standard Schema typing.
+
+### Old M09: "Runtime Checking with Zod & React with TypeScript Foundations"
+
+| Old section | Stays in TS (typing angle) | → react | → solidjs | → javascript | Notes |
+|---|---|---|---|---|---|
+| Overview, type-testing helpers | Type-test helpers become `expect-type` + `vitest --typecheck` (TS M13) | — | — | — | Hand-rolled `Expect<Equal<…>>` helpers stay as a teaching device in TS M09 |
+| 9.1.1 Runtime boundary problem | **TS M11** (parse-don't-validate, `unknown` at the edge) | — | — | `JSON.parse` precision/BigInt reviver → javascript M13 | |
+| 9.1.2 Primitives/objects/arrays/tuples in Zod | **TS M11**, updated to Zod 4 (`z.email()` etc. top-level formats) | — | — | — | |
+| 9.1.3 Enums, unions, discriminated unions in Zod | **TS M11** | — | — | — | |
+| 9.1.4 optional/nullable/default/catch | **TS M11** (input vs output type effect of `.default`, `.catch`) | — | — | — | |
+| 9.2.1 Input vs output types | **TS M11** (`z.input`/`z.output`/`z.infer`) | — | — | — | |
+| 9.2.2 `.parse` vs `.safeParse` | **TS M11** (result-type narrowing on `success`) | — | — | — | |
+| 9.2.3 `.refine` / `.superRefine` | **TS M11** (type effect only; Zod 4 `.check`/`.superRefine` status re-verified there) | — | — | — | |
+| 9.2.4 Schema composition (`extend`/`pick`/`omit`/`merge`) | **TS M11** (Zod 4: `.merge` deprecated in favour of `.extend`/spread) | — | — | — | |
+| 9.2.5 Fetcher pattern | **TS M11** (typed `fetch` with a schema parameter) | — | — | `fetch`/`AbortSignal` semantics → javascript M07 | |
+| 9.3.1 Component signatures, direct typing vs `React.FC` | **TS M12** | Function-component render model → react M01 | — | — | |
+| 9.3.2 `ReactNode` vs `JSX.Element` vs `ReactElement` | **TS M12** | Element objects, `$$typeof` → react M01 | — | — | |
+| 9.3.3 HTML props inheritance and overrides (`ComponentProps<'button'>`, `Omit`) | **TS M12** | — | — | — | |
+| 9.4.1 Synthetic events | **TS M12** (event generic types: `ChangeEvent<HTMLInputElement>`, `currentTarget` vs `target` typing) | Event delegation/root listener semantics → react M01/M02 | — | DOM event propagation basics → javascript (HTML event loop row) | |
+| 9.4.2 `useState`/`useEffect`/`useCallback`/`useMemo` | **TS M12** (`useState<T>` inference, `undefined` initialiser, setter types) | Effect semantics, dependency arrays, batching, async effects/race → react M03/M04 | — | — | The "async effects" anti-pattern (old §5) moves to react M04 |
+| 9.4.3 `useRef` overloads | **TS M12** (`RefObject<T \| null>`, React 19 single-overload change) | Ref mutation semantics → react M04 | — | — | |
+| 9.4.4 `useReducer` with discriminated unions | **TS M12** (action-union typing, exhaustiveness) | Reducer design, purity, batching → react M03 | — | — | |
+| Anti-patterns 1–5 | 1, 2, 3, 4 → TS M11/M12 | 5 "async effects" → react M04 | — | — | |
+| Exercise 9.1 checkout schema | **TS M11** exercise | — | — | — | |
+| Exercise 9.2 `superRefine` form validator | **TS M11** exercise (rewritten for Zod 4) | — | — | — | |
+| Exercise 9.3 `LabeledInput` with ref forwarding | **TS M12** exercise, rewritten with ref-as-prop (React 19) | — | — | — | `forwardRef` version dropped |
+| Exercise 9.4 `useCart` reducer | **TS M12** exercise (types only) | Reducer runtime tests → react M03 | — | — | |
+| Summary & cheat sheet | Merged into `CHEATSHEET.md` | — | — | — | |
+
+### Old M10: "Advanced React with TypeScript"
+
+| Old section | Stays in TS | → react | → solidjs | → javascript | Notes |
+|---|---|---|---|---|---|
+| 10.1.1 Mutually exclusive props via discriminated unions | **TS M12** | — | — | — | |
+| 10.1.2 Destructuring gotcha | Generic rule → **TS M03** (destructuring trap); props-specific note → **TS M12** | — | Solid's *reactivity* destructuring trap is a different bug → solidjs M03 | — | |
+| 10.1.3 Boolean discriminators, `Record<string, never>` | **TS M12** | — | — | — | |
+| 10.2.1 Generic components `Table<TRow>`, `Select<TOption>` | **TS M12** | — | — | — | |
+| 10.2.2 Constraining type params / explicit type args in JSX | **TS M12** | — | — | — | |
+| 10.2.3 DRY prop helpers | **TS M12** | — | — | — | |
+| 10.3.1 `as const` tuple returns from hooks | **TS M12** | — | — | — | |
+| 10.3.2 `createSafeContext` | **TS M12** (typing of a default-less context) | Context propagation/re-render cost → react M03/M12 | — | — | |
+| 10.3.3 State machines & discriminated tuples in hooks | Types → **TS M12** | State-machine hook design → react M03 | — | — | |
+| 10.4.1 `JSX.Element` vs `ReactElement` vs `ReactNode` | **TS M12** (merged with 9.3.2) | — | — | — | |
+| 10.4.2 `JSX.IntrinsicElements` | **TS M12** (JSX namespace resolution, `jsxImportSource`) | — | — | — | |
+| 10.4.3 Global JSX augmentation & CSS custom properties | **TS M12** | — | — | — | Panda/CSS custom-property typing: cross-link from panda-css |
+| 10.5.1 Polymorphic `as` prop | **TS M12** | — | — | — | |
+| 10.5.2 `forwardRef` generic erasure fix | **TS M12** one-paragraph legacy note ("Then vs now": 18 vs 19) | `forwardRef` deprecation path → react M12 (18→19 upgrade) | — | — | |
+| 10.5.3 React Hook Form wrapper, TanStack Query overloads | **TS M10** case study (overload design, `DataTag`) | Library usage itself: out of scope everywhere | — | — | |
+| Anti-patterns 1–4 | **TS M12** | — | — | — | |
+| Exercises 10.1–10.4 | 10.1 polymorphic, 10.2 generic table, 10.3 safe context → **TS M12**; 10.4 `useForm` wrapper → **TS M10** case study | — | — | — | |
+
+### Old M11: "Expert Interviews, Modern TypeScript & JavaScript Mastery"
+
+| Old section | Stays in TS | → react | → solidjs | → javascript | Notes |
+|---|---|---|---|---|---|
+| 11.1.1 Rosenwasser: erasable types, `tsgo` | Facts folded into **TS M01** (toolchain, TS 7 architecture) | — | — | — | Dropped as an "interview" lesson (owner decision) |
+| 11.1.2 tRPC zero-codegen | **TS M10** case study (inference across a router object) | — | — | — | |
+| 11.1.3 Zod: parse-don't-validate, dual phantoms | **TS M11** | — | — | — | |
+| 11.1.4 TanStack `DataTag` & overloads | **TS M10** case study | — | — | — | |
+| 11.1.5 Redux tuple accumulation | **TS M10** case study (variadic tuple accumulation) | — | — | — | |
+| 11.1.6 ts-pattern exhaustiveness | **TS M10** case study | — | — | — | |
+| 11.1.7 Enterprise migration strategies | **TS M13** (JS→TS and 5.x→7 migration) | — | — | — | |
+| 11.2.1 `using` / `await using` | Typing only (`Disposable`, `AsyncDisposable`, `lib: esnext.disposable`) → **TS M10** | — | — | Dispose order, `SuppressedError`, `DisposableStack` runtime → **javascript M10** | |
+| 11.2.2 Stage-3 decorators | Decorator *typing* (`ClassMethodDecoratorContext<This, Value>`), legacy `experimentalDecorators` "Then vs now" → **TS M10** | — | — | Evaluation order, `context.addInitializer`, `accessor` runtime → **javascript M04** (classes) / decorators row | |
+| 11.2.3 ES2023–2025 array/collection methods | Only the lib typing (`lib` targets, `toSorted` return types) → **TS M06** | — | — | All runtime behaviour → **javascript M05** (iterators) and M02/M04 | |
+| 11.2.4 Async & iterator primitives (`Promise.withResolvers`, `Array.fromAsync`, iterator helpers) | Generic signatures only (`IteratorObject`, `BuiltinIteratorReturn`) → **TS M02** | — | — | Runtime semantics → **javascript M05/M07** | |
+| 11.2.5 `isolatedDeclarations` | **TS M13** | — | — | — | |
+| 11.3.1 `switch (true)` narrowing | **TS M03** | — | — | — | |
+| 11.3.2 `string & {}` autocompletion trick | **TS M08** | — | — | — | |
+| 11.3.3 HOCs & class components | HOC typing → **TS M12** appendix | Class components, error boundaries → **react M10** | — | — | |
+| 11.3.4 Workshop challenges | Distributed into TS M09/M10 exercises | — | — | — | |
+| Exercise 11.1 RPC builder | **TS M10** | — | — | — | |
+| Exercise 11.2 unit-of-work with `using` | Typing half → **TS M10**; runtime dispose-order assertions → **javascript M10** | — | — | ✓ | |
+| Exercise 11.3 pattern-matching state machine | **TS M10** | — | — | — | |
+| Exercise 11.4 `DataTag` query options | **TS M10** | — | — | — | |
+
+### Old M12: "React 19 & Modern React with TypeScript"
+
+| Old section | Stays in TS | → react | → solidjs | → javascript | Notes |
+|---|---|---|---|---|---|
+| 12.1.1 Why `forwardRef` broke generics | **TS M12** legacy note | — | — | — | |
+| 12.1.2 `ref` as a prop | **TS M12** (prop type) | Runtime: ref attachment timing → react M01/M04 | — | — | |
+| 12.1.3 `ComponentProps` vs `…WithRef` vs `…WithoutRef` | **TS M12** | — | — | — | |
+| 12.1.4 Generic components with `ref` | **TS M12** | — | — | — | |
+| 12.1.5 Ref callback cleanup | Type only (callback may return `() => void`; implicit-return rejection) → **TS M12** | Cleanup semantics, when React calls it → **react M04** | — | — | |
+| 12.1.6 Strict `useRef<T>`, `React.JSX` namespace | **TS M12** | — | — | — | |
+| 12.2.1 `use()` signature | `use<T>(usable: Usable<T>): T` → **TS M12** | Suspension protocol, cached promises → **react M06** | — | — | |
+| 12.2.2 Conditional context via `use()` | Typing → **TS M12** | Why `use` may be conditional (no hook list slot) → **react M03/M06** | — | — | |
+| 12.2.3 Streaming promises server→client | Type of a `Promise<T>` prop → **TS M12** | Streaming, serialization → **react M06/M07** | — | — | |
+| 12.2.4 `<Context value>` | **TS M12** | Provider deprecation path → react M12 | — | — | |
+| 12.3.1 Async transitions | `startTransition` callback type → **TS M12** | Transition semantics → **react M05/M08** | — | — | |
+| 12.3.2 `<form action>`, `formAction` | Prop types (`(formData: FormData) => void \| Promise<void>`) → **TS M12** | Progressive enhancement, ordering → **react M08** | — | — | |
+| 12.3.3 `useActionState<State, Payload>` | Generic signature, discriminated state → **TS M12** | Semantics, queuing, races → **react M08** | — | — | |
+| 12.3.4 `useFormStatus` | Return type → **TS M12** | Semantics → **react M08** | — | — | |
+| 12.3.5 `useOptimistic<State, Action>` | Generic signature → **TS M12** | Rollback, hung-request failure mode → **react M08** | — | — | |
+| 12.4.1 Async server components | Return type `Promise<ReactNode>` → **TS M12** | RSC execution model → **react M07** | — | — | |
+| 12.4.2 Serialization boundaries at type level | `Serializable` constraint type → **TS M12** | What Flight actually serializes → **react M07** | — | `structuredClone` limits → javascript (serialisation row) | |
+| 12.4.3 Server actions + Zod + `useActionState` | Arg typing of `"use server"` functions, schema at the boundary → **TS M11/M12** | Directives, security model, CVE-2025-55182, auth/IDOR → **react M07** | — | — | |
+| 12.5.1 React Compiler & immutability contracts | — | **All → react M09** ("React Forget" is the obsolete codename; product is React Compiler 1.0) | — | — | |
+| 12.5.2 `useEffectEvent` | — | **All → react M04** (stable since 19.2, not experimental) | — | — | |
+| 12.5.3 Document metadata & resource preloading | — | **All → react M11** | — | — | |
+| Anti-patterns | Types-only rows → **TS M12** | Behavioural rows → react M04/M08 | — | — | |
+| Exercise 12.1 generic dropdown with `ref` | **TS M12** | — | — | — | |
+| Exercise 12.2 conditional context with `use()` | Type half → **TS M12** | Runtime half → **react M06** | — | — | |
+| Exercise 12.3 action form | Type half → **TS M12** | Runtime half → **react M08** | — | — | |
+| Exercise 12.4 RSC serialization validator | **TS M12** | — | — | — | |
+
+### Old M13: "SolidJS 2.x with TypeScript"
+
+| Old section | Stays in TS | → react | → solidjs | → javascript | Notes |
+|---|---|---|---|---|---|
+| Overview; Solid 1.x vs 2.x comparison table | — | — | **solidjs M10** (migration map) | — | |
+| 13.1.1 Components run once; prop-destructuring trap; control-flow narrowing in JSX | `<Show>` narrowing (callback receives a narrowed accessor) → **TS M12** | — | Run-once model, destructuring trap → **solidjs M01/M03** | — | |
+| 13.1.2 tsconfig for Solid 2 | `jsx: "preserve"`, `jsxImportSource: "@solidjs/web"` → **TS M12** (verify against rc) | — | Build/plugin setup → solidjs M03/M08 | — | |
+| 13.1.3 Microtask batching & `flush()` | — | — | **solidjs M01** | Microtask queue → javascript M06 | |
+| 13.2.1 `createSignal<T>` accessors/setters, widening | `Accessor<T>`/`Setter<T>` types, literal widening, function-valued signals → **TS M12** | — | Semantics → **solidjs M01** | — | |
+| 13.2.2 Async `createMemo`, `AsyncIterable`, `NotReadyError`, `latest`, `isPending` | Return type of async memo (`Accessor<T>` not `Accessor<Promise<T>>`) → **TS M12** | — | **solidjs M06** | Async iteration → javascript M05 | |
+| 13.2.3 Split `createEffect`/`createRenderEffect` | Two-arg overload typing → **TS M12** | — | **solidjs M02** | — | |
+| 13.3.1 `createStore<T extends object>` | **TS M12** (constraint, `Store<T>` readonly view) | — | Semantics → **solidjs M05** | Proxy mechanics → javascript M09 | |
+| 13.3.2 Draft-first setters, path mutations | Setter overload typing → **TS M12** | — | **solidjs M05** | — | |
+| 13.3.3 `createProjection` | Generic signature → **TS M12** | — | **solidjs M05** | — | |
+| 13.3.4 `storePath`, `snapshot`/`deep`, `merge`/`omit` | `merge`/`omit` result types → **TS M12** | — | Rest → **solidjs M05** | — | |
+| 13.4.1 `Component`/`ParentComponent`/`VoidComponent`/`FlowComponent` | **TS M12** | — | — | — | |
+| 13.4.2 `merge`/`omit` (vs 1.x `mergeProps`/`splitProps`) | Result types → **TS M12** | — | Reactivity preservation, 1.x→2.0 rename → **solidjs M03/M10** | — | |
+| 13.4.3 `<Show>`, `<For>` (three keying modes), `<Repeat>`, `<Switch>` | Callback parameter types per keying mode → **TS M12** | — | Runtime semantics → **solidjs M04** | — | |
+| 13.4.4 `<Loading>`, `<Errored>` | — (prop types trivial) | — | **solidjs M06** | — | |
+| 13.4.5 Providerless context, `ContextNotFoundError` | Context typed `T` vs `T \| undefined` → **TS M12** | — | Runtime → **solidjs M04** | — | |
+| 13.5.1 Variable vs callback refs | Ref prop types → **TS M12** | — | **solidjs M03** | — | |
+| 13.5.2 Ref directive factories (replacing `use:*`) | Factory type → **TS M12** | — | **solidjs M03** | — | |
+| 13.5.3 `onSettled` replacing `onMount` | — | — | **solidjs M02** | — | |
+| 13.5.4 Delegated vs native events, tuple delegation | Handler types → **TS M12** | — | Delegation semantics → **solidjs M03** | — | **Correction (solidjs review):** the old text taught `on:click`; that namespace is a compile error in Solid 2.0 |
+| 13.5.5 Polymorphic `<Dynamic>` | `ValidComponent`, `ComponentProps<T>` → **TS M12** (now taught via `dynamic()`) | — | `dynamic()` vs `<Dynamic>` runtime → **solidjs M04** | — | **Correction:** `<Dynamic>` is `@deprecated` in rc.19 (RFC 03); `dynamic()` is primary |
+| 13.6.1 Generator `action(fn*)` | Generator typing (`Generator<Y, R, N>`) → **TS M12** | — | **solidjs M07** | Generator protocol → javascript M05 | |
+| 13.6.2 `createOptimistic`/`createOptimisticStore` | — | — | **solidjs M07** | — | |
+| 13.6.3 `"use server"`, `handleServerFunctionRequest` | Argument/return serializability types → **TS M12** | — | **solidjs M08** | — | **Correction:** import path is `@solidjs/web/server-functions/server`, not `@solidjs/web` |
+| 13.6.4 "Full 7-Module Solid Track" pointer | — | — | Replaced by a link to the solidjs track README (from TS M12) | — | **Drop** (stub pointer, rc.8-era) |
+| Anti-patterns | Types-only rows → **TS M12** | — | Behavioural rows → solidjs M02–M04 | — | |
+| Exercise 13.1 async search filter | Type assertions → **TS M12** | — | Runtime → **solidjs M06** | — | |
+| Exercise 13.2 store + projection | Type assertions → **TS M12** | — | Runtime → **solidjs M05** | — | |
+| Exercise 13.3 polymorphic primitive | **TS M12** | — | Runtime → **solidjs M04** | — | |
+| Exercise 13.4 providerless context + `<Loading>` | Context typing → **TS M12** | — | Runtime → **solidjs M04/M06** | — | |
+
+### Also moving out of old modules 01–08 (runtime semantics → javascript)
+
+| Old section | Stays in TS | → javascript |
+|---|---|---|
+| 01.1.4 "`tsx` for rapid execution" | **TS M01** (TS 7 toolchain: Node type stripping vs `tsx`) | Node type-stripping internals → **technologies/nodejs** |
+| 01.5.1–01.5.2 Promises, `Promise.all`/`allSettled` | `Promise<T>`, `Awaited<T>`, tuple typing of `Promise.all` → **TS M02** | Job queue, combinator semantics → **javascript M06/M07** |
+| 03.2 "Contextual `this` in functions and objects" | `this` parameter and `ThisType<T>` typing → **TS M05** | `this` binding rules → **javascript M03** |
+| 04.3 "Modules vs scripts & `moduleDetection`" | Type-checker view → **TS M06** | Module Records, live bindings → **javascript M08** |
+
+## Challenger review (Challenger companion · 2026-10-30)
+
+- **C1 (P2 - TS 7 CLI and compiler model)**: Verified that legacy options deprecated in 6.0 (`baseUrl` without paths, `out`, `target: es3`) are hard errors in TS 7.0.2 as taught in M01. Verified that `--checkers` and `--singleThreaded` CLI flags behave deterministically and that `erasableSyntaxOnly` rejects namespaces, enums, and parameter properties.
+- **C2 (P3 - Standard Schema v1 integration)**: Verified Standard Schema contracts in M11 against `@standard-schema/spec` 1.1.0; generic schema wrappers and type inference across Zod 4 and ArkType work without vendor coupling.
+- **C3 (P3 - Assignability and variance)**: Verified assignability rules in M04: covariance of readonly arrays, bivariance of method shorthands, and excess property checking rules on fresh object literals.
+
+## Verifier review (Antigravity · 2026-10-30)
+
+- **Version Currency**: TypeScript 7.0.2, Node 26.12.1, Zod 4.6.7, `@standard-schema/spec` 1.1.0, `@types/react` 19.3.0, `solid-js` 2.0.0-rc.19 verified on npm.
+- **Tooling & Locks**: `languages/typescript/mise.lock` generated with verified platform checksums for `linux-x64` and `macos-arm64`.
+- **Deterministic Test Suite**: Ran `node --test "examples/**/*.test.ts"` -> 132 tests passed, 0 failed, 0 skipped. Typecheck clean (`npm run typecheck`).
+- **Diagrams**: 10 Mermaid diagrams checked via `tools/mermaid-check` (Mermaid 11 & 12 compatibility) -> 0 failing.
+- **Exams**: `exams/README.md` full coverage matrix (all rows ✅). `exams/certificates-dev-typescript.md` provides 72 questions with difficulty tags (1–3), `<details>` model answers, hands-on tasks mapped to test suites, and a 135-minute mock exam with scoring key.
+- **Path and Secret Scan**: Clean. 0 absolute user paths, 0 credentials.
+
+## Resolution of findings (2026-10-30)
+
+- **C1 verified**: All TS 7.0.2 compiler model tests pass cleanly under Node 26.
+- **C2 verified**: Standard Schema v1 examples confirmed against official spec.
+- **State transition**: Track `typescript` has passed authoring, challenger review, verifier review, and final gate checks. Ready for merge.
