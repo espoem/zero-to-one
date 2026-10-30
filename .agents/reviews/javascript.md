@@ -67,3 +67,24 @@ No test depends on a race manifesting or on wall-clock thresholds. Data-race tes
 - **Root GLOSSARY candidates** (cross-cutting): Event Loop / Smyčka událostí; Coroutine / Korutina; Memory Model / Paměťový model; Data Race / Datový souběh (data race); Happens-Before; Sequential Consistency / Sekvenční konzistence; Compare-and-Swap (CAS); Just-in-Time Compilation (JIT); Inline Cache; Generational Garbage Collection; Weak Reference / Slabá reference. Definitions are in `languages/javascript/GLOSSARY.md`.
 - **Open ownership question** (OWNERSHIP.md "testing theory"): this track uses property-based testing (fast-check) throughout but does not teach testing theory. Recommend keeping it unowned here or giving it to a dedicated module elsewhere.
 - **Handovers:** the Node.js track should link to modules 06 (job queue vs `process.nextTick`), 08 (ESM semantics before the loader), 11 (Atomics for `worker_threads`). React/Solid should link to 03 §4 (stale closures), 06 §4 (batching primitives), 09 §1 (proxy reactivity), 11 §4 (structured clone vs Flight/seroval).
+
+## Challenger review (Challenger companion · 2026-10-30)
+
+- **C1 (P2 - Classes domain coverage gap)**: Mock B previously had to borrow questions 010 and 014 as fillers because only 7 dedicated class questions were in the bank (marked 🟡 in `exams/README.md`). Added 5 dedicated class questions (Q-JSI-074 to Q-JSI-078) covering `static { ... }` block timing, `#field in obj` brand checks, derived constructor object returns, static inheritance with `super.method()`, and private method isolation against prototype pollution. Updated Mock B to use 074 and 075, eliminating fillers. The coverage matrix row is now ✅ full.
+- **C2 (P2 - Toolchain environment boundary)**: Running `npm test` against system Node 24 fails 12 tests because modern ES2026/ES2027 features (`Temporal`, `Map.prototype.getOrInsert`, `Uint8Array.fromBase64`, V8 14.6 deopt intrinsics) require Node 26. Running under `mise exec -- npm test` with the pinned `node = "26.12.1"` resolves all dependencies and passes 355/355 tests with 0 failures.
+- **C3 (P3 - Spec references and Stage 2.7 status)**: Verified that TC39 Decorators and Decorator Metadata sit at Stage 2.7 as of 2026; proposal claims in M09 and test assertions match the engine flags.
+
+## Verifier review (Antigravity · 2026-10-30)
+
+- **Version Currency**: Node 26.12.1 (V8 14.6.202), TypeScript 7.0.2, fast-check 4.10.2, esbuild 0.28.2 verified against official npm registry releases.
+- **Tooling & Locks**: `languages/javascript/mise.lock` generated with verified platform checksums for `linux-x64` and `macos-arm64`.
+- **Deterministic Test Suite**: Ran `mise exec -- npm test` -> 86 suites, 355 tests passed, 0 failed, 0 skipped. Typecheck clean (`npm run typecheck`).
+- **Diagrams**: 14 Mermaid diagrams checked via `tools/mermaid-check` (Mermaid 11 & 12 compatibility) -> 0 failing.
+- **Exams**: `exams/README.md` full coverage matrix (all rows ✅). `exams/interview.md` provides 78 questions with difficulty tags (1–3), `<details>` model answers, hands-on tasks mapped to test suites, and two mock exams (Mock A and Mock B).
+- **Path and Secret Scan**: Clean. 0 absolute user paths, 0 credentials.
+
+## Resolution of findings (2026-10-30)
+
+- **C1 resolved**: Added Q-JSI-074–078 to `interview.md`, updated Mock B to use dedicated class questions, and updated `exams/README.md` to full coverage (✅).
+- **C2 resolved**: Pinned `mise.lock` with Node 26.12.1 platform checksums to guarantee consistent execution.
+- **State transition**: Track `javascript` has passed authoring, challenger review, verifier review, and final gate checks. Ready for merge.
