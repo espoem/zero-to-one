@@ -1,0 +1,13 @@
+{
+  "name": "cond-demo",
+  "type": "module",
+  "exports": {
+    ".": {
+      "development": "./src/dev.js",
+      "node": "./src/node.js",
+      "default": "./src/default.js"
+    },
+    "./feature": "./src/feature.js",
+    "./internal/*": null
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "name": "zero-to-one-javascript",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Executable proofs for the zero-to-one JavaScript (ECMAScript 2026) track",
+  "type": "module",
+  "engines": {
+    "node": ">=26"
+  },
+  "scripts": {
+    "test": "node --test --test-reporter=spec \"examples/**/*.test.{js,mjs,ts}\"",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.6",
+    "esbuild": "0.28.2",
+    "fast-check": "4.10.2",
+    "typescript": "7.0.2"
+  }
+}

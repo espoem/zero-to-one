@@ -1,0 +1,4 @@
+# Toolchain for languages/javascript. Run everything through mise:
+#   mise install && mise exec -- npm ci && mise exec -- npm test
+[tools]
+node = "26.12.1"
