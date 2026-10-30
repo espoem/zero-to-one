@@ -42,7 +42,12 @@ Apply these requirements when creating or updating any topic module:
    - Verify every example with the local compiler and test runner before committing changes.
    - Keep hermetic tests in `test`. Tests that need containers or external services go in `test:integration` (or the language's equivalent), and must skip cleanly with a clear message when the service is unavailable.
 
-4. **Syllabus Completeness**:
+4. **Diagrams Must Parse**:
+   - Every Mermaid diagram (` ```mermaid ` fence) must be syntactically valid. It must parse with both Mermaid 11 and Mermaid 12, so it renders on GitHub whichever major GitHub ships.
+   - Run `tools/mermaid-check` (`mise exec -- node check.mjs ../..` from that directory, or point it at the track) before every commit that touches Markdown. Never commit a diagram that fails the check.
+   - Prefer quoted labels (`A["text (x)"]`, `-->|"label & more"|`) and write `#59;` instead of a literal `;` inside sequence-diagram text.
+
+5. **Syllabus Completeness**:
    - Before writing, derive the syllabus from current authoritative sources: the official documentation table of contents, official certification exam guides, and recognised university or industry courses.
    - Every topic in those sources must map to a module or be explicitly listed as out of scope, with a reason.
    - End each module with an **Interview Drill**: 5–10 questions an experienced interviewer would ask about the module, with model answers in collapsible `<details>` blocks.
