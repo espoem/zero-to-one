@@ -103,13 +103,13 @@ sequenceDiagram
     participant T2 as Transaction 2 (Concurrent Session)
     participant DB as Heap Storage
 
-    T1->>DB: BEGIN;
-    T1->>DB: SELECT balance FROM accounts WHERE id = 1; (Reads $100)
+    T1->>DB: BEGIN#59;
+    T1->>DB: SELECT balance FROM accounts WHERE id = 1#59; (Reads $100)
     Note over T1: Snapshot 1 Established
-    T2->>DB: UPDATE accounts SET balance = 300 WHERE id = 1; COMMIT;
-    T1->>DB: SELECT balance FROM accounts WHERE id = 1; (Reads $300!)
+    T2->>DB: UPDATE accounts SET balance = 300 WHERE id = 1#59; COMMIT#59;
+    T1->>DB: SELECT balance FROM accounts WHERE id = 1#59; (Reads $300!)
     Note over T1: Fresh Snapshot Established on Statement 2!
-    T1->>DB: COMMIT;
+    T1->>DB: COMMIT#59;
 ```
 
 ---

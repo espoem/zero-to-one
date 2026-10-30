@@ -10,16 +10,16 @@ States: ⬜ brief ready → 🟦 authoring → 🟨 challenge + verify → 🟧 
 
 | Phase | Track | Primary | Branch | State | Notes |
 |:-:|---|---|---|---|---|
-| 1 | `languages/typescript` | Opus · claude.ai | `track/typescript` | ⬜ brief ready | |
-| 1 | `technologies/panda-css` | Opus · claude.ai | `track/panda-css` | ⬜ brief ready | |
+| 1 | `languages/typescript` | Opus · claude.ai | `track/typescript` | 🟦 authoring | Wave 1: Opus subagent in the claude.ai workspace, started 2026-10-28 |
+| 1 | `technologies/panda-css` | Opus · claude.ai | `track/panda-css` | 🟦 authoring | Wave 1: Opus subagent in the claude.ai workspace, started 2026-10-28 |
 | 1 | `technologies/postgres` | Opus · claude.ai | `track/postgres` | ⬜ brief ready | |
-| 1 | `technologies/react` | Opus · claude.ai | `track/react` | ⬜ brief ready | |
-| 1 | `technologies/solidjs` | Opus · claude.ai | `track/solidjs` | ⬜ brief ready | |
+| 1 | `technologies/react` | Opus · claude.ai | `track/react` | 🟦 authoring | Wave 1: Opus subagent in the claude.ai workspace, started 2026-10-28 |
+| 1 | `technologies/solidjs` | Opus · claude.ai | `track/solidjs` | 🟦 authoring | Wave 1: Opus subagent in the claude.ai workspace, started 2026-10-28 |
 | 1 | `architecture/data-systems` | Opus · claude.ai | `track/data-systems` | ⬜ brief ready | |
 | 1 | `architecture/networking` | Opus · Claude Code | `track/networking` | ⬜ brief ready | |
 | 1 | `architecture/security-identity` | Opus · claude.ai | `track/security-identity` | ⬜ brief ready | |
 | 1 | `languages/css` | Opus · claude.ai | `track/css` | ⬜ brief ready | |
-| 1 | `languages/javascript` | Opus · claude.ai | `track/javascript` | ⬜ brief ready | |
+| 1 | `languages/javascript` | Opus · claude.ai | `track/javascript` | 🟦 authoring | Wave 1: Opus subagent in the claude.ai workspace, started 2026-10-28 |
 | 2 | `algorithms/dsa` | Opus · claude.ai | `track/dsa` | ⬜ brief ready | |
 | 2 | `architecture/distributed-systems` | Opus · claude.ai | `track/distributed-systems` | ⬜ brief ready | |
 | 2 | `languages/python` | Opus · claude.ai | `track/python` | ⬜ brief ready | |
