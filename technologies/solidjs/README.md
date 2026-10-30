@@ -1,91 +1,61 @@
-# SolidJS 2.0 Curriculum & Complete Reference
+# SolidJS 2.0
 
-Welcome to the **SolidJS 2.0 Complete Learning Track** (`solid-js@2.0.0-rc.8`, `@solidjs/signals`, `@solidjs/web`). This repository module provides an end-to-end, zero-to-one curriculum covering modern fine-grained reactivity, native JSX compilation, draft-first reactive stores, colorless asynchronous data flow, transactional mutations, full-stack server functions, and comprehensive migration guidance from Solid 1.x.
+A zero-to-one track on **Solid 2.0** (release candidate): fine-grained reactivity, the 2.0 async and transaction model, full-stack rendering with `@solidjs/vite-plugin` start mode, and migration from Solid 1.x. It is also the repository's single home of the **React vs Solid** comparison.
 
-Every concept in this curriculum is backed by a numerically ordered lesson in [modules/](./modules/) and a corresponding, self-contained runnable TypeScript test suite in [examples/](./examples/).
+> **Release-candidate track.** Solid 2.0 has no GA date; the official docs (<https://v2.solidjs.com>) say "APIs may change before the stable release". Everything here is pinned to `2.0.0-rc.19` and re-verified on each bump.
 
----
+**Verified against** `solid-js` / `@solidjs/signals` / `@solidjs/web` / `@solidjs/compiler` **2.0.0-rc.19**, `@solidjs/vite-plugin` **3.0.0-next.52**, `@solidjs/testing-library` **1.0.0-rc.2**, `solid-js` **1.9.17** (comparison only), Vite **8.3.5**, Vitest **5.0.5**, jsdom **30.1.3**, TypeScript **7.0.2**, Node **26.12.1** on **2026-10-28**.
 
-## 1. Curriculum Syllabus & Topic Breakdown
+## Prerequisites
 
-The curriculum is structured into seven self-contained modules designed for progressive mastery:
+- JavaScript: closures, promises and the microtask queue, generators, Proxy, ESM `exports` (owned by `languages/javascript`).
+- TypeScript basics; typing Solid components is covered in [TypeScript module 13](../../languages/typescript/modules/13-solidjs-2-with-typescript.md) (moving to TS M12).
+- Helpful: one component framework (the [React track](../react/README.md) links back to Module 10 here).
 
-### [Module 01 — Reactive Core and Signals](./modules/01-reactive-core-and-signals.md)
-- **Concepts**: Fine-grained push-pull computational graph (`@solidjs/signals`), `createSignal`, lazy `createMemo`, writable derived `createSignal(fn)`, deterministic microtask batching, synchronous `flush()`, split two-phase `createEffect(compute, apply)`, `createRenderEffect`, ownership trees, and the `onSettled` lifecycle hook.
-- **Runnable Example**: [`examples/01-reactive-core-and-signals.ts`](./examples/01-reactive-core-and-signals.ts) (`npm run test:01`)
+## Syllabus
 
-### [Module 02 — DOM Templating and Control Flow](./modules/02-dom-templating-and-control-flow.md)
-- **Concepts**: Native Oxc/Rust JSX compilation pipeline, getter-based component props, unified `<For>` (default `keyed={true}`, positional `keyed={false}`, and custom key extractors), positional `<Repeat>`, conditional `<Show>` and `<Switch>/<Match>`, Ref Directive Factories (`applyRef`), consolidated `class` and `style` bindings, providerless `<Context value={...}>`, `ContextNotFoundError`, and props utilities (`merge`, `omit`).
-- **Runnable Example**: [`examples/02-dom-templating-and-control-flow.ts`](./examples/02-dom-templating-and-control-flow.ts) (`npm run test:02`)
+| # | Module | Covers | Proof |
+|---|---|---|---|
+| 01 | [Reactive core](./modules/01-reactive-core.md) | graph model, push-pull, glitch freedom, microtask commits, `flush`, lazy and writable memos, ownership, the owned-write invariant | [`01-reactive-core.test.ts`](./examples/typescript/01-reactive-core.test.ts) |
+| 02 | [Effects, lifecycle & invariants](./modules/02-effects-and-lifecycle.md) | split effects, render vs user effects, error arm, `createReaction`, deprecated `createTrackedEffect`, `onSettled`/`onCleanup`/`onFlush`, diagnostics codes | [`02-…test.tsx`](./examples/typescript/02-effects-and-lifecycle.test.tsx) |
+| 03 | [Components, props & DOM](./modules/03-components-props-and-dom.md) | compiler output, props as getters, `merge`/`omit`, attributes/class/style, root-owned events, refs and directive factories, form inputs | [`03-…test.tsx`](./examples/typescript/03-components-props-and-dom.test.tsx) |
+| 04 | [Control flow & composition](./modules/04-control-flow-and-composition.md) | `<For>` keying modes, `<Repeat>`, `<Show>`/`<Switch>`, `dynamic()`, `children`, `Portal`, context | [`04-…test.tsx`](./examples/typescript/04-control-flow-and-composition.test.tsx) |
+| 05 | [Stores & projections](./modules/05-stores-and-projections.md) | draft setters, `reconcile`, projections and O(1) selection, `snapshot`/`deep`, shallow stores | [`05-…test.ts`](./examples/typescript/05-stores-and-projections.test.ts) |
+| 06 | [Colorless async](./modules/06-colorless-async.md) | async computations, `<Loading>`/`on`/holds, `<Reveal>`, `isPending`/`latest`/`createDeferred`, cancellation, `<Errored>` | [`06-…test.tsx`](./examples/typescript/06-colorless-async.test.tsx) |
+| 07 | [Actions & optimistic state](./modules/07-actions-and-optimistic-state.md) | transactions, generator actions, optimistic primitives, `refresh`/`affects`/`until`, races | [`07-…test.tsx`](./examples/typescript/07-actions-and-optimistic-state.test.tsx) |
+| 08 | [SSR, start mode & server functions](./modules/08-ssr-and-start-mode.md) | start mode, `renderToStream`, hydration policy, `httpStatus`, request isolation, server-function wire and security | [`08-…server.test.tsx`](./examples/typescript/08-ssr-and-server-functions.server.test.tsx) |
+| 09 | [Testing, debugging & performance](./modules/09-testing-debugging-performance.md) | Vitest postures, test patterns, build variants, attribution, performance tracks | [`09-…test.tsx`](./examples/typescript/09-testing-debugging-performance.test.tsx) |
+| 10 | [Migration & React comparison](./modules/10-migration-and-react-comparison.md) | 1.x → 2.0 map and procedure, version history, ecosystem status, React 19 vs Solid 2 | [`10-solid1-vs-solid2.test.ts`](./examples/typescript/10-solid1-vs-solid2.test.ts) |
 
-### [Module 03 — Draft-First Stores and Projections](./modules/03-draft-first-stores-and-projections.md)
-- **Concepts**: Proxy-based reactive data structures, draft-first setters (eliminating legacy `produce` wrappers), path-based mutation helpers (`storePath`), structural reconciliation (`reconcile`), fine-grained store projections (`createProjection`), untracked serialization (`snapshot`), deep dependency tracking (`deep`), and shallow stores.
-- **Runnable Example**: [`examples/03-draft-first-stores-and-projections.ts`](./examples/03-draft-first-stores-and-projections.ts) (`npm run test:03`)
+Reference: [GLOSSARY.md](./GLOSSARY.md) (EN ↔ CZ) · [CHEATSHEET.md](./CHEATSHEET.md) · [exams/](./exams/README.md).
 
-### [Module 04 — Colorless Async and Graph Consistency](./modules/04-colorless-async-and-graph-consistency.md)
-- **Concepts**: Colorless asynchronous reactivity, async `createMemo` accepting Promises and `AsyncIterable` streams, `NotReadyError` control flow, initial readiness with `<Loading>`, non-suspending inspections via `isPending()` and `latest()`, sibling boundary coordination with `<Reveal>`, and self-healing error recovery with `<Errored>`.
-- **Runnable Example**: [`examples/04-colorless-async-and-graph-consistency.ts`](./examples/04-colorless-async-and-graph-consistency.ts) (`npm run test:04`)
+## Run it
 
-### [Module 05 — Transactional Writes and Optimistic State](./modules/05-transactional-writes-and-optimistic-state.md)
-- **Concepts**: Transactional mutations using generator functions (`action(function* () {})`), checkpoint suspension across `yield` boundaries, `createOptimistic` signals and `createOptimisticStore`, automatic rollback upon network failure, target invalidation with `affects()`, authoritative revalidation with `refresh()`, and event-driven synchronization with `until()`.
-- **Runnable Example**: [`examples/05-transactional-writes-and-optimistic-state.ts`](./examples/05-transactional-writes-and-optimistic-state.ts) (`npm run test:05`)
-
-### [Module 06 — Full-Stack Start Mode and Server Functions](./modules/06-full-stack-start-mode-and-server-functions.md)
-- **Concepts**: `@solidjs/vite-plugin` full-stack Start mode, `"use server"` RPC compilation, `@solidjs/web/server-functions` endpoint dispatch (`handleServerFunctionRequest`), request-scoped contexts (`RequestEvent`, `getRequestEvent`), response envelopes (`respond`, `redirect`), security boundaries with `markSafeError`/`isSafeError`, Standard Schema argument validation, and out-of-order streaming SSR (`renderToStream`).
-- **Runnable Example**: [`examples/06-full-stack-start-mode-and-server-functions.ts`](./examples/06-full-stack-start-mode-and-server-functions.ts) (`npm run test:06`)
-
-### [Module 07 — Migration from Solid 1.x to 2.0 & Architectural Deep Dives](./modules/07-migration-and-architectural-deep-dives.md)
-- **Concepts**: Side-by-side Solid 1.x vs Solid 2.0 code comparison across all major APIs, React 19 vs Solid 2.0 mental model comparison, Deep Dive 1 (O(1) selection projections replacing `createSelector` over normalized state), and Deep Dive 2 (concurrent overlapping generator actions, out-of-order responses, and real-time WebSocket `until()` synchronization).
-- **Runnable Example**: [`examples/07-solid1-vs-solid2-and-deep-dives.ts`](./examples/07-solid1-vs-solid2-and-deep-dives.ts) (`npm run test:07`)
-
----
-
-## 2. Fast Reference Documents
-
-- **[GLOSSARY.md](./GLOSSARY.md)**: Bilingual English ↔ Czech terminology reference strictly obeying repository conventions across all core domains (Signals, Compiler, Stores, Boundaries, Actions, Server Functions).
-- **[CHEATSHEET.md](./CHEATSHEET.md)**: Fast-lookup desk reference providing exact TypeScript signatures, `<For>` keying matrix, compiler diagnostics repair instructions (`STRICT_READ_UNTRACKED`, `REACTIVE_WRITE_IN_OWNED_SCOPE`, etc.), and anti-pattern fixes.
-
----
-
-## 3. Verification & Execution Instructions
-
-This learning track installs the official published Release Candidate packages (`solid-js@2.0.0-rc.18`, `@solidjs/signals@2.0.0-rc.18`, and `@solidjs/web@2.0.0-rc.18`) directly in `package.json`. All example test suites run natively on Node (Node 22+) using the `browser` export condition (`node --conditions=browser ...`) to execute the reactive client graph. The companion [`examples/utils/solid2-runtime.ts`](./examples/utils/solid2-runtime.ts) serves as a direct facade over the official libraries, providing headless adapters (such as JSX-free control flow runners and in-process mock HTTP dispatch for server functions) for CLI execution without requiring a full browser or Vite dev server.
-
-### Run All Test Suites
 ```bash
 cd technologies/solidjs
-npm test
+mise install            # node 26 (see .mise.toml)
+npm ci
+npm test                # all suites: client (jsdom, dev build) + server (node, SSR build)
+npm run test:client     # or: npm run test:server
+npm test -- 06          # one module
+npm run typecheck       # tsc (TypeScript 7)
+npm run versions        # installed versions, for the "Verified against" line
 ```
 
-### Run Individual Module Suites
-```bash
-npm run test:01 # Reactive Core & Signals
-npm run test:02 # DOM Templating & Control Flow
-npm run test:03 # Draft-First Stores & Projections
-npm run test:04 # Colorless Async & Boundaries
-npm run test:05 # Transactional Writes & Optimistic State
-npm run test:06 # Full-Stack Start Mode & Server Functions
-npm run test:07 # Migration & Architectural Deep Dives
-```
+Every test runs against the **real published packages**: there is no shim layer. `vitest.config.ts` uses `@solidjs/vite-plugin`'s two test postures; the server project runs `*.server.test.tsx`. All async tests settle hand-made deferreds, so the suite has no timing dependence. `solid-js-1` is an npm alias of `solid-js@1.9.17`, used only by the Module 10 comparison.
 
-### Typecheck Without Emitting Code
-```bash
-npm run typecheck
-```
+## Certifications & Exams
 
----
+**No official SolidJS certification exists** (checked 2026-10-28). Following the repository rules, the track prepares for the recognised substitute, the **senior frontend interview loop** for a Solid role (knowledge screen, live coding, frontend system design, migration discussion):
 
-## 4. Primary Learning References & Authoritative Sources
+| Exam / format | Vendor | Guide | Targets | Status | Format |
+|---|---|---|---|---|---|
+| Senior frontend interview (Solid) | none (industry format) | [exams/README.md](./exams/README.md) | Solid 2.0 RC (answers name 1.x equivalents) | n/a | 60-question bank (single, multi, scenario, hands-on with test verification), 25-question / 45-minute mock screen + 20-minute hands-on, scoring key |
 
-The curriculum synthesized in this track is based on authoritative primary documentation, architectural design RFCs, and engineering walkthroughs from the SolidJS core team:
+## Sources
 
-1. **Official SolidJS 2.0 Documentation Site**: [https://v2.solidjs.com](https://v2.solidjs.com) — Authoritative concepts, API reference, tutorials, and migration specifications.
-2. **Ryan Carniato: "Solid 2.0 RC: The Big Reveal"**: [SolidJS Official Blog](https://www.solidjs.com/blog/solid-2-0-rc-the-big-reveal) — Core architectural announcement detailing `@solidjs/signals`, the Oxc/Rust compiler pipeline, and the new push-pull reactive core.
-3. **Ryan Carniato: 3-Part "Async Solid" Series**:
-   - *Part 1: "Fetch High, Block Low"*: [https://www.solidjs.com/blog/async-solid-fetch-high-block-low](https://www.solidjs.com/blog/async-solid-fetch-high-block-low) — Architectural deep dive into data fetching boundaries and `<Loading>` vs `<Suspense>`.
-   - *Part 2: "Write Sync, Run Async"*: [https://www.solidjs.com/blog/async-solid-write-sync-run-async](https://www.solidjs.com/blog/async-solid-write-sync-run-async) — The design of microtask batching, synchronous transactions, and asynchronous graph resumption.
-   - *Part 3: "One Graph, Two Machines"*: [https://www.solidjs.com/blog/async-solid-one-graph-two-machines](https://www.solidjs.com/blog/async-solid-one-graph-two-machines) — Full-stack reactive unification across client and server runtimes.
-4. **GitHub Discussion #2425: "The Road to 2.0"**: [github.com/solidjs/solid/discussions/2425](https://github.com/solidjs/solid/discussions/2425) — Design RFC outlining major breaking changes, store refactors, and JSX improvements.
-5. **Dennis Morello: "SolidJS 2.0 for React Developers: A First Look"**: [morello.dev/blog/solidjs-2-react-developers-first-look](https://morello.dev/blog/solidjs-2-react-developers-first-look) — Comparative exploration of execution models, dependency arrays vs push-pull signals, and actions.
-6. **SolidJS V2 Agent Skill & API Reference (`khmm12/solidjs-v2-skills`)**: [github.com/khmm12/solidjs-v2-skills](https://github.com/khmm12/solidjs-v2-skills) / [skillsdirectory.com/skills/khmm12-solidjs-v2](https://www.skillsdirectory.com/skills/khmm12-solidjs-v2) — Type-verified API signatures and migration rules targeting `solid-js@2.0.0-rc.8`.
-7. **Ryan Carniato: SolidJS 2.0 RC Walkthrough & Deep Dive**: [YouTube Video Stream](https://www.youtube.com/watch?v=sYvrPLcGznA) — Line-by-line runtime implementation review and live architectural Q&A.
+- Solid 2.0 RFCs and migration guide: <https://github.com/solidjs/solid/tree/next/documentation/solid-2.0>
+- Package cheatsheet and skills shipped in `solid-js@2.0.0-rc.19` (`CHEATSHEET.md`, `skills/solid-2.0`, `skills/reactivity-diagnostics`, `diagnostics.json`)
+- Solid 2.0 docs (RC): <https://v2.solidjs.com>; Solid 1.x docs: <https://docs.solidjs.com>
+- `@solidjs/vite-plugin` README (start mode, SSR, testing, diagnostics)
+- TC39 Signals proposal (Stage 1): <https://github.com/tc39/proposal-signals>

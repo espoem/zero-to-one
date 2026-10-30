@@ -1,3 +1,4 @@
+# Toolchain for the SolidJS track. Every npm tool (TypeScript, Vite, Vitest)
+# is pinned exactly in package.json and run through `npm run …`.
 [tools]
-node = "24"
-"npm:typescript" = "7.0.2"
+node = "26"
