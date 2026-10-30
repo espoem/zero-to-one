@@ -82,6 +82,82 @@ Effect-phase throws halt the reactive system (`REACTIVITY_HALTED`) globally. Cal
 
 Two habits make these tests trustworthy. **Prefer behavioural assertions over internals**: count runs and observe DOM, do not inspect private fields that change between RCs. **Assert the negative too**: for every anti-pattern a module warns about, there is a test that triggers it and asserts the diagnostic, so an RC that silently drops the guard is noticed.
 
+### 1.7 Worked example: testing a component with async data and an optimistic action
+
+The component: a todo list loaded from an API, with an "add" button that shows the new row optimistically.
+
+```tsx
+// TodoList.tsx
+export function TodoList(props: { api: Api }) {
+  const [todos, setTodos] = createOptimisticStore(() => props.api.list(), [] as Todo[]);
+  const add = action(function* (title: string) {
+    const todo = { id: crypto.randomUUID(), title };
+    setTodos((d) => { d.push(todo); });
+    yield props.api.add(todo);
+    refresh(todos);
+  });
+  return (
+    <Errored fallback={(e) => <p role="alert">{e().message}</p>}>
+      <Loading fallback={<p>loading…</p>}>
+        <ul>
+          <For each={todos} keyed={(t) => t.id}>{(t) => <li>{t().title}</li>}</For>
+        </ul>
+        <button onClick={() => add("new")}>add</button>
+      </Loading>
+    </Errored>
+  );
+}
+```
+
+The test, following §1.6 (a fake API with hand-settled calls, no timers, no network; `fakeServer` here is an illustrative variant of the M07 helper with a `failAdds` option, not a file in this track):
+
+```tsx
+it("shows the new todo at once and keeps it after the server confirms", async () => {
+  const api = fakeServer([{ id: "1", title: "first" }]);       // M07's helper shape
+  render(() => <TodoList api={api} />);
+  expect(screen.getByText("loading…")).toBeTruthy();           // first load: the boundary owns it
+  await settle(); flush();
+  expect(screen.getAllByRole("listitem").map((li) => li.textContent)).toEqual(["first"]);
+
+  fireEvent.click(screen.getByRole("button", { name: "add" }));
+  flush();
+  expect(screen.getAllByRole("listitem")).toHaveLength(2);     // optimistic
+
+  await api.complete();                                        // server answers; refresh lands
+  expect(screen.getAllByRole("listitem")).toHaveLength(2);     // confirmed, not duplicated
+});
+
+it("reverts and reports when the server rejects", async () => {
+  const api = fakeServer([], { failAdds: true });
+  render(() => <TodoList api={api} />);
+  await settle(); flush();
+  fireEvent.click(screen.getByRole("button", { name: "add" }));
+  flush();
+  expect(screen.getAllByRole("listitem")).toHaveLength(1);
+  await api.complete();
+  expect(screen.queryAllByRole("listitem")).toHaveLength(0);   // overlay discarded
+});
+```
+
+The executable versions of both flows are the M07 tests "shows the optimistic row at once, then reconciles with the server truth" and "a failed action reverts the optimistic write and rejects its promise"; the snippet shows how they look when written against a component's public DOM rather than its internals.
+
+```mermaid
+flowchart LR
+  subgraph Unit["Vitest client project (jsdom, dev build)"]
+    U1["graph tests: createRoot + flush"] --- U2["component tests: testing-library"] --- U3["diagnostics assertions"]
+  end
+  subgraph Server["Vitest server project (node, server build)"]
+    S1["renderToString / renderToStream"] --- S2["server functions via real handler"]
+  end
+  subgraph Cross["child node process + jsdom"]
+    H1["hydration round-trip"] --- H2["streaming wire format"]
+  end
+  subgraph E2E["test:integration (Playwright, optional)"]
+    E1["vite build + preview, real browser"]
+  end
+  Unit --> Server --> Cross --> E2E
+```
+
 ## 2. Build variants are export conditions
 
 `solid-js` and `@solidjs/web` publish several builds selected by **package export conditions** (ESM `exports` resolution is owned by `languages/javascript`):
@@ -170,6 +246,75 @@ Typical sources: subscriptions opened in a ref or event handler without cleanup;
 
 Benchmarks (the js-framework-benchmark keyed suite) consistently place Solid near vanilla JS; treat any specific number as version-dependent and re-measure for your own workload.
 
+## 4.2 Reading the Solid tracks
+
+A practical recipe for the Chrome Performance panel with `@solidjs/web/performance-tracks` (auto-enabled under `vite dev`):
+
+1. Record the interaction (click, type, navigate). Find the **Interactions** track span: it shows input delay, handler time, and the settle (`committed` or `held`). A *silent hold* is drawn as a warning: the user saw nothing change while async work held the write.
+2. Open the **Propagation** span below it. Its label names the writes that started the drain and how many runs they reached (`count 0 → 1 — click on button#next · 5 runs, 1 unchanged`). Underneath, each run is labelled by what made it run (`<TodoRow> › effect ← doubled`): the write's path through the graph as a flame chart.
+3. Check **Effects** and **Memos** for wide spans (expensive scopes) and many thin repeated spans (hot scopes). "unchanged" runs are wasted compute: add an `equals` or a memo cut-off.
+4. **Async** shows flights; staggered sequential flights are waterfalls. **Holds** shows how long writes waited on async.
+5. Markers on the **Timings** track are diagnostics (`SILENT_HOLD — <Search>`); at `warn` or worse they appear in the Insights sidebar with a link to the repair guide.
+6. On SSR pages, the **Server** track shows `Server-Timing` metrics (`solid-shell`, `solid-boundary`, `solid-invocation`) for the shell, each boundary the shell waited on, and server-function calls.
+
+```mermaid
+flowchart TD
+  Slow{"What feels slow?"} -->|"click → paint"| I["Interactions span: handler vs settle"]
+  I -->|"long handler"| H["optimise the handler / move work out"]
+  I -->|"long settle, held"| AS["Async + Holds tracks: waterfall? slow API?"]
+  I -->|"long settle, committed"| P["Propagation flame: which scopes ran"]
+  P -->|"many runs"| F["narrow reads, projections, memo cut-offs"]
+  P -->|"one expensive run"| C["optimise that computation / createDeferred"]
+  AS -->|"sequential flights"| W["start fetches high, in parallel"]
+  Slow -->|"first load"| SV["Server track + shell timing: deferStream? slow boundary?"]
+```
+
+## 4.3 Production monitoring
+
+| Need | Tool |
+|---|---|
+| errors caught by `<Errored>` boundaries | `configureClientErrors({ onError(error, { ownerPath, boundaryPath }) })` or `render(..., { onError })`; reported once per error object (proved) |
+| uncaught errors (system halted) | `window.onerror` / `reportError` — `REACTIVITY_HALTED` hands the cause to the platform |
+| server render and server-function errors | `configureServerErrors({ onError })` from `@solidjs/web`; start mode reports contained request failures through it |
+| owner names and finding codes in production | the **observe** build (`solid({ observe: true })`), subscribe to `OBSERVE.diagnostics` and forward to your APM |
+| real-user performance | observe build + `enablePerformanceTracks()` (Chrome) or the attribution `feedback()` tables (fallback flashes, holds, interactions) shipped to analytics |
+
+The fallback UI rendered by a boundary is a handled failure: without the client error hook, nothing outside the app sees it in production.
+
+## 4.4 CI setup for an RC dependency
+
+- **Pin exact versions** and assert them in a test (this track's "RC churn guard").
+- Run the suite in both Vitest projects (client and server) on every push; run `tsc` (TypeScript 7) separately.
+- A **canary job** installs `solid-js@next @solidjs/web@next @solidjs/signals@next` and runs the suite with `continue-on-error`, so an RC that changes behaviour is noticed before you bump.
+- Lint with `eslint-plugin-solid` (`0.18.x`) using its `configs/v2` or `configs/v2-strict` export, which encode the 2.0 rules (no destructured props, split effects, `class` over `classList`).
+- Keep end-to-end tests (Playwright against `vite build && vite preview`) in a separate `test:integration` job; they catch hydration and streaming issues that jsdom cannot (real parser, real network chunking).
+
+## 4.5 "Nothing updates": a debugging checklist
+
+| Check | How | Typical fix |
+|---|---|---|
+| Did the write happen? | log in the handler; `why(node)` shows no write | the handler isn't bound (lowercase `onclick`, handler expression evaluated once) |
+| Did you read before the flush? | the value is right a tick later | `flush()` at an imperative boundary, or read in JSX/effects |
+| Is the read tracked? | `subscriptions(memo)` lacks the source; `STRICT_READ_UNTRACKED` | read inside JSX/memo/compute, not in a body, callback top, or apply half |
+| Was the read after an `await`? | `UNTRACKED_READ_AFTER_AWAIT` | read before the first `await` |
+| Is the value equal? | default `===` cut-off; custom `equals` too coarse | new object, or fix `equals` |
+| Was a prop passed as a function or destructured? | child receives a function / frozen value | `value={x()}`, `props.value` |
+| Is a store mutated outside its setter? | `STORE_WRITE_OUTSIDE_SETTER`; object mutated after hand-over | write through the setter with fresh objects |
+| Is the write held? | `isPending(() => x())` is true; Holds track shows it | async under the write is still loading: show `isPending`, or check the slow source |
+| Are there two Solid copies? | "Multiple Solid instances"; `npm ls solid-js` | dedupe |
+| Has the system halted? | `REACTIVITY_HALTED` in the console | an error escaped every boundary; add `<Errored>` and fix the throw |
+
+## 4.6 Benchmarking honestly
+
+Micro-benchmarks of signals in isolation (millions of writes per second) say little about an app; what matters is the work a realistic interaction causes. Measure that first with `costs()`, then optimise the top scope.
+
+
+- Use the **production** build (or observe if that is what ships); dev builds carry guards and diagnostics and are several times slower.
+- Measure **interactions end to end** (input → next paint) in a real browser; jsdom timings are meaningless for rendering.
+- Separate **create**, **update**, **swap/reorder**, **remove** and **memory** costs; Solid's profile differs per operation (cheap updates, comparatively more work at creation for bindings and owners).
+- Warm up, repeat, report medians and spread; pin CPU throttling for comparisons.
+- When comparing frameworks, use the js-framework-benchmark keyed suite as the shared methodology and cite the exact version and date; results move between releases (and 2.0 RCs).
+
 ## 5. Then vs now
 
 | 1.x | 2.0 RC |
@@ -229,6 +374,21 @@ Run in dev or observe, enable `solid-js/attribution` (or record a Chrome Perform
 <details><summary>5. What causes "Multiple Solid instances" and how do you fix it?</summary>
 
 Two copies of `solid-js` in the graph, each with its own reactive runtime: signals created by one are invisible to the other. Causes include mismatched versions (e.g. `@solidjs/start@2` pulling Solid 1.9 next to Solid 2) and libraries bundling Solid. Fix by deduping, pinning one version and making libraries use a peer dependency.
+</details>
+
+<details><summary>7. How do you detect a memory leak in a Solid component?</summary>
+
+Behaviourally: mount, unmount, write to a source the component read; nothing it created may run. In the browser, watch `graphSize()` across repeated route visits (`GRAPH_GROWTH`). The usual cause is a computation created without an owner (after an `await`, in an event handler) kept alive by a long-lived source; capture `getOwner()` before awaiting and use `runWithOwner`.
+</details>
+
+<details><summary>8. How would you find which state change made an interaction slow?</summary>
+
+Enable attribution (or record a trace with the Solid tracks): `costs().writes` ranks sources by the downstream time they caused, `costs().scopes` ranks computations by self time, and `why(node)` shows the cause chain to the originating write. Then narrow reads, add cut-offs or move work off the hot path.
+</details>
+
+<details><summary>9. How do you report errors that an `<Errored>` boundary handled?</summary>
+
+`configureClientErrors({ onError })` (or `render`'s `onError` option): it fires once per error object with the owner path where it was thrown and the boundary path where it was caught. Uncaught errors go to `reportError`/`window.onerror`.
 </details>
 
 <details><summary>6. Why use diagnostics in tests?</summary>

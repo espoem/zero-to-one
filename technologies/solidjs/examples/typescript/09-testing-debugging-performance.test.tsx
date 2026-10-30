@@ -5,7 +5,7 @@ import { describe, it, expect, afterEach } from "vitest";
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { createSignal, createMemo, createEffect, createRoot, flush, OBSERVE, getOwner, runWithOwner } from "solid-js";
+import { createSignal, createMemo, createEffect, createRoot, flush, OBSERVE, getOwner, runWithOwner, configureClientErrors, Errored } from "solid-js";
 import { attribution, subscriptions, costs, why } from "solid-js/attribution";
 import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
 import { enablePerformanceTracks } from "@solidjs/web/performance-tracks";
@@ -239,5 +239,28 @@ describe("09 · a clean component emits no diagnostics (a CI gate)", () => {
       r.unmount();
     });
     expect(codes).toEqual([]);
+  });
+});
+
+describe("09 · production error reporting", () => {
+  it("configureClientErrors reports errors that an <Errored> boundary caught, with owner and boundary paths", () => {
+    const reports: Array<{ message: string; boundaryPath: unknown }> = [];
+    configureClientErrors({
+      onError(error, ctx) {
+        reports.push({ message: (error as Error).message, boundaryPath: ctx.boundaryPath });
+      },
+    });
+    function Broken(): never {
+      throw new Error("render failed");
+    }
+    const r = render(() => (
+      <Errored fallback={<p>sorry</p>}>
+        <Broken />
+      </Errored>
+    ));
+    flush();
+    expect(r.container.textContent).toBe("sorry");
+    expect(reports.map((x) => x.message)).toEqual(["render failed"]); // once per error object
+    configureClientErrors({ onError: () => {} });
   });
 });
