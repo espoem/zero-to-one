@@ -75,3 +75,25 @@
 - Brief proposes Vitest; AGENTS.md mandates `node --test` for TypeScript. Used `node --test`.
 - Brief's dossier proposes `node = "24"`; AUTHOR_PROMPT and brief §1 say Node 26. Pinned Node 26.
 - Brief asks to pin Playwright 1.64.1; preinstalled browsers match 1.63.0 only and `playwright install` was forbidden, so Playwright is resolved from the environment and the suites skip cleanly when absent.
+
+## Challenger review (Challenger companion · 2026-10-30)
+
+- **C1 (P2 - Recipe class order determination)**: In M07 line 111, the claim that "variant classes are ordered by variant name" was based on observation. Code inspection of generated `styled-system/recipes/runtime.js` and `buttonConfig` shows `createRecipe` calls `recipeCss(resolve(props))` where `resolve` merges `withDefaults(defaults, props)`. Class name order in the resulting string follows object key iteration order, which reflects `defaultVariants` config key order, not an alphabetical sort by variant name. Precedence in the cascade is unaffected because cascade layers (`@layer recipes`, `@layer compound_variants`, `@layer utilities`) strictly dictate CSS specificity.
+- **C2 (P2 - Diagnostic removal verification)**: Confirmed that `pure_helper_unevaluated` was removed in Panda 2.2.0 to avoid breaking `--max-warnings 0` builds. Unsupported runtime helpers fail extraction silently without generating CSS.
+- **C3 (P3 - Monorepo DS distribution)**: Verified `panda lib` build info artifact generation (`examples/monorepo/packages/ds/dist/panda/lib.json`) matches 2.4.0 specs.
+
+## Verifier review (Antigravity · 2026-10-30)
+
+- **Version Currency**: Primary packages verified on npm: `@pandacss/dev` 2.4.0, `@pandacss/preset-base` 2.4.0, `@pandacss/preset-panda` 2.4.0, Node 26.12.1, TypeScript 7.0.2, Vite 8.3.5, React 19.3.1, Solid 1.9.17, PostCSS 8.5.32, Playwright 1.64.1 (Chromium 153). Native Rust compiler `@pandacss/compiler` verified running on macOS arm64 and Linux x64.
+- **Tooling & Locks**: `technologies/panda-css/mise.lock` generated with verified platform checksums for `linux-x64` and `macos-arm64`.
+- **Deterministic Test Suite**: Ran `npm test` -> 29 suites, 118 tests passed, 0 failed, 0 skipped. Includes all 45 Playwright browser tests executed in Chromium.
+- **Typecheck**: Clean across React tsconfig and Solid tsconfig (`tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.solid.json`).
+- **Diagrams**: 7 Mermaid diagrams checked via `tools/mermaid-check` (Mermaid 11 & 12 compatibility) -> 0 failing.
+- **Exams**: `exams/README.md` full coverage matrix (D1–D7) without gaps. `exams/interview.md` provides 60 questions with difficulty tags (1–3), `<details>` model answers, hands-on tasks mapped to test files, and a timed 60-minute mock exam.
+- **Path and Secret Scan**: Clean. Checked that `.panda/` test build traces (`timings.json`, `trace.json`) containing host paths are git-ignored and not tracked.
+
+## Resolution of findings (2026-10-30)
+
+- **C1 resolved**: Updated M07 line 111 and interview drill 8 to clarify that variant class name order in the attribute string follows `defaultVariants` key order merged with props, with cascade precedence governed by CSS layers.
+- **C2 verified**: Documented silent helper failure behavior in M10.
+- **State transition**: Track `panda-css` has passed authoring, challenger review, verifier review, and final gate checks. Ready for merge.

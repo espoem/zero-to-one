@@ -108,7 +108,7 @@ button()                                    // 'button button--size_sm button--v
 button({ visual: 'outline', size: 'lg' })   // 'button button--size_lg button--visual_outline button--compound__size_lg__visual_outline'
 ```
 
-(Variant classes are ordered by variant name, as the runtime tests show.)
+(Variant classes follow the key order of `defaultVariants` merged with props in the runtime resolver.)
 
 Emitted CSS, from the [`07-recipes`](../examples/fixtures/__snapshots__/07-recipes.css) snapshot:
 
@@ -242,7 +242,7 @@ Each key in a `staticCss` rule is generated independently with the other keys at
 
 <details><summary>8. Why might the class order from `button()` differ from your variant declaration order, and does it matter?</summary>
 
-The runtime orders variant classes by variant name (`size` before `visual`). It does not matter: precedence comes from the cascade layer and sub-layer, not class order in the attribute.
+The runtime orders variant classes by configuration key order in `defaultVariants` merged with incoming props. It does not matter: precedence comes from cascade layers and sub-layers, not class order in the attribute.
 </details>
 
 ## References
