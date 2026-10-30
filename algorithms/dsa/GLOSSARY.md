@@ -1,0 +1,61 @@
+# Bilingual Glossary: Data Structures & Algorithms (English ↔ Czech)
+
+This glossary establishes canonical terminology for algorithm design, computational complexity, data structures, and asymptotic analysis. Definitions are written in technical English accompanied by established Czech academic terminology, anchored in primary computer science literature (CLRS 4th ed., Sedgewick & Wayne, Knuth TAOCP, and IEEE/ISO standards).
+
+---
+
+## Terminology Index
+
+| English Term | Czech Equivalent | Concise Technical Definition | Primary Authority |
+|---|---|---|---|
+| **Amortized Analysis** | Amortizovaná složitost | Analyzing the average run time per operation over a worst-case sequence of operations, guaranteeing that total sequence cost $\le \sum \hat{c}_i$. | CLRS 4e Ch. 17 |
+| **Asymptotic Complexity** | Asymptotická složitost | The limiting behavior of execution time or memory consumption as input size $n$ approaches infinity ($O, \Omega, \Theta$). | Knuth (1976), CLRS Ch. 3 |
+| **Backtracking** | Zpětné vyhledávání (prohledávání s návratem) | Algorithmic technique that incrementally builds candidate solutions and abandons (backtracks) a candidate as soon as it determines it cannot yield a valid solution. | Golomb & Baumert (1965) |
+| **Binary Search Tree (BST)** | Binární vyhledávací strom | A node-based binary tree data structure where each node satisfies the invariant: keys in left subtree $<$ node key $<$ keys in right subtree. | Knuth TAOCP Vol. 3 |
+| **Bitmask Dynamic Programming** | Dynamické programování s bitovými maskami | Dynamic programming where subsets of state elements are represented as an integer bitfield, enabling $O(1)$ state transitions via bitwise operations. | Held & Karp (1962) |
+| **Bloom Filter** | Bloomův filtr | A space-efficient probabilistic data structure that tests set membership with zero false negatives and a tunable false positive rate. | Burton Bloom (1970) |
+| **Breadth-First Search (BFS)** | Prohledávání do šířky | A graph traversal algorithm exploring all neighbor vertices at the present depth layer prior to moving to vertices at the next depth layer. | Moore (1959) |
+| **Compare-And-Swap (CAS)** | Porovnej a prohoď (CAS) | An atomic hardware CPU instruction that compares the contents of a memory location to an expected value and, if identical, modifies it to a desired value. | Herlihy (1991) |
+| **Consistent Hashing** | Konzistentní hašování | A hashing scheme where the addition or removal of a slot (node) causes only $K/n$ keys to be remapped on average, preventing cache stampedes. | Karger et al. (STOC 1997) |
+| **Count-Min Sketch** | Count-Min náčrt (kostra) | A probabilistic sub-linear space frequency estimator for streaming data using a 2D array of counters and independent hash functions. | Cormode & Muthukrishnan (2005) |
+| **Cyclic Sort** | Cyklické řazení | An in-place $O(n)$ sorting algorithm for arrays containing numbers in a known bounded range $[1 \dots n]$, placing elements directly into their target indices via swaps. | Classic Interview Taxonomy |
+| **Depth-First Search (DFS)** | Prohledávání do hloubky | A graph traversal algorithm exploring as far as possible along each branch before backtracking. | Tarjan (1972) |
+| **Disjoint-Set Union (DSU / Union-Find)** | Struktura pro disjunktní množiny | A data structure tracking partitioned elements into disjoint sets, supporting near-constant $O(\alpha(n))$ `find` and `union` operations. | Galler & Fischer (1964), Tarjan (1975) |
+| **Divide and Conquer** | Rozděl a panuj | An algorithmic paradigm recursively breaking a problem into independent subproblems of the same type until simple enough to solve directly. | von Neumann (1945), CLRS Ch. 4 |
+| **Dynamic Programming (DP)** | Dynamické programování | An algorithmic optimization strategy decomposing a problem into overlapping subproblems and storing intermediate solutions (tabulation or memoization). | Richard Bellman (1953) |
+| **Fenwick Tree (Binary Indexed Tree)** | Fenwickův strom (binární indexovaný strom) | An implicit array-backed tree structure supporting $O(\log n)$ point updates and prefix sum queries via bitwise lowest set bit operations (`i & -i`). | Peter Fenwick (1994) |
+| **Fibonacci Heap** | Fibonacciho halda | A priority queue data structure supporting $O(1)$ amortized insertion, decrease-key, and find-min, and $O(\log n)$ amortized extract-min. | Fredman & Tarjan (1987) |
+| **Floyd's Cycle-Finding Algorithm** | Floydův algoritmus detekce cyklů | A pointer algorithm utilizing two pointers moving at different speeds (Tortoise and Hare) to detect cycles and cycle start nodes in $O(n)$ time and $O(1)$ space. | Robert W. Floyd (1967) |
+| **Greedy Algorithm** | Hladový algoritmus | An algorithm that makes locally optimal choices at each stage with the intent of finding a global optimum, valid under the Greedy-Choice Property and Optimal Substructure. | CLRS Ch. 16 |
+| **Held-Karp Algorithm** | Heldův-Karpův algoritmus | A bitmask dynamic programming algorithm solving the Traveling Salesperson Problem (TSP) in $O(n^2 2^n)$ time. | Held & Karp (1962) |
+| **HyperLogLog** | HyperLogLog | A space-efficient probabilistic algorithm estimating the cardinality of unique elements in a multiset using the harmonic mean of leading zero counts. | Flajolet et al. (2007) |
+| **Knuth-Morris-Pratt (KMP)** | Knuthův-Morrisův-Prattův algoritmus | A linear $O(n + m)$ exact string matching algorithm utilizing a precomputed longest prefix-suffix ($\pi$) array to avoid backtracking the text index. | Knuth, Morris, Pratt (1977) |
+| **Least Recently Used (LRU) Cache** | Vyrovnávací paměť podle nejdelší neaktivity | A cache replacement topology evicting the least recently accessed item first, implemented in $O(1)$ time via a Hash Map and Doubly Linked List. | Denning (1968) |
+| **Least Frequently Used (LFU) Cache** | Vyrovnávací paměť podle nejnižší frekvence | A cache eviction topology discarding items with the lowest access frequency, implemented in $O(1)$ time using dual frequency-to-node-list maps. | Classic Systems Taxonomy |
+| **Lock-Free Data Structure** | Bezpečná bez-zámková datová struktura | A concurrent data structure guaranteeing that at least one thread makes forward progress in a finite number of steps without utilizing mutual exclusion locks. | Herlihy (1991) |
+| **Longest Increasing Subsequence (LIS)** | Nejdelší rostoucí podposloupnost | The longest subsequence of an array where elements are in strictly increasing order; solved in $O(n \log n)$ time via Patience Sorting. | Schensted (1961), Aldous & Diaconis (1999) |
+| **Manacher's Algorithm** | Manacherův algoritmus | A linear $O(n)$ algorithm finding the longest palindromic substring by tracking the center and rightmost boundary of known palindromes. | Glenn K. Manacher (1975) |
+| **Master Theorem** | Kuchařková věta (Master věta) | A cookbook formula providing closed-form asymptotic bounds for divide-and-conquer recurrences of the form $T(n) = aT(n/b) + f(n)$. | Bentley, Haken, Saxe (1980), CLRS Ch. 4 |
+| **Matroid** | Matroid | A combinatorial structure generalizing linear independence in vector spaces, guaranteeing that greedy optimization yields an optimal global basis. | Hassler Whitney (1935), Edmonds (1971) |
+| **Monotonic Stack / Queue** | Monotónní zásobník / fronta | A stack or queue whose elements remain strictly monotonic (all increasing or all decreasing), answering range extrema or next-greater queries in $O(n)$ amortized time. | Algorithmic Problem Solving |
+| **Morris Traversal** | Morrisův průchod stromem | An in-order or pre-order tree traversal algorithm executing in $O(n)$ time and $O(1)$ auxiliary space by creating temporary threaded predecessor links. | Joseph M. Morris (1979) |
+| **Optimal Substructure** | Optimální podstruktura | The property that an optimal solution to a problem contains within it optimal solutions to subproblems. | Richard Bellman (1953) |
+| **Patience Sorting** | Trpělivostní třídění (Patience sorting) | A sorting algorithm based on a card game that computes the length of the Longest Increasing Subsequence in $O(n \log n)$ time. | Mallows (1962), Aldous & Diaconis (1999) |
+| **Potential Method** | Potenciálová metoda | An amortized analysis framework defining a potential function $\Phi(D)$ mapping data structure states to real numbers, computing amortized costs as $\hat{c}_i = c_i + \Delta\Phi$. | Robert Tarjan (1985) |
+| **Quickselect** | Quickselect (Hoareův výběr) | A selection algorithm to find the $k$-th smallest element in an unordered list in $O(n)$ average time and $O(n^2)$ worst-case time. | Tony Hoare (1961) |
+| **Rabin-Karp Algorithm** | Rabinův-Karpův algoritmus | A string searching algorithm utilizing a rolling polynomial hash to locate pattern substrings in $O(n + m)$ average time. | Michael O. Rabin & Richard M. Karp (1987) |
+| **Red-Black Tree** | Červeno-černý strom | A self-balancing binary search tree maintaining balance through five color and black-height invariants, bounding height to $2 \log_2(n + 1)$. | Bayer (1972), Guibas & Sedgewick (1978) |
+| **Reservoir Sampling** | Výběr ze zásobníku (Reservoir sampling) | A randomized algorithm that selects $k$ items uniformly at random from an unindexed streaming sequence of unknown length $N$ in $O(N)$ time. | Alan G. Waterman, Knuth TAOCP Vol. 2 |
+| **Robin Hood Hashing** | Hašování Robina Hooda | An open-addressing collision resolution strategy that reduces probe sequence variance by allowing incoming keys to displace occupants with smaller DIBs. | Pedro Celis (1986) |
+| **Segment Tree** | Intervalový strom (Segment tree) | A tree data structure for storing intervals or segments, allowing querying range aggregations and point/range updates in $O(\log n)$ time. | Jon Bentley (1977) |
+| **Skip List** | Přeskakovací seznam | A probabilistic alternative to balanced trees, using layered linked lists with forward express pointers to achieve $O(\log n)$ expected search, insertion, and deletion. | William Pugh (1990) |
+| **Strongly Connected Component (SCC)** | Silně souvislá komponenta | A maximal subgraph of a directed graph where every vertex is reachable from every other vertex within the subgraph. | Tarjan (1972) |
+| **Tarjan's SCC Algorithm** | Tarjanův algoritmus pro silně souvislé komponenty | A linear $O(V + E)$ graph algorithm that partitions a directed graph into Strongly Connected Components using DFS discovery and low-link numbers. | Robert Tarjan (1972) |
+| **TimSort** | TimSort | An adaptive, stable hybrid sorting algorithm derived from merge sort and insertion sort, optimized to find natural real-world runs in $O(n)$ best and $O(n \log n)$ worst-case time. | Tim Peters (2002) |
+| **Topological Sort** | Topologické uspořádání | A linear ordering of vertices in a Directed Acyclic Graph (DAG) such that for every directed edge $(u, v)$, vertex $u$ appears before vertex $v$. | Kahn (1962), Tarjan (1976) |
+| **Treiber Stack** | Treiberův zásobník | A scalable lock-free concurrent LIFO stack utilizing single-word atomic Compare-And-Swap (CAS) on the top pointer. | R. Kent Treiber (1986) |
+| **Trie (Prefix Tree)** | Trie (prefixový strom) | An ordered tree data structure used to store a dynamic set of strings where keys are character sequences and descendants share common prefixes. | René de la Briandais (1959), Edward Fredkin (1960) |
+| **Two Pointers Technique** | Technika dvou ukazatelů | An algorithmic technique using two index pointers traversing a linear collection (either opposite directions or fast/slow) to achieve linear time. | Classical Interview Taxonomy |
+| **Word-RAM Model** | Model Word-RAM | A realistic model of computation where the unit of memory is a word of $w \ge \log_2 n$ bits, capable of constant-time arithmetic and bitwise operations. | Fredman & Willard (1993) |
+| **Work-Span Model** | Model práce a rozpětí | A theoretical parallel computing framework measuring total instruction operations ($T_1$, Work) and critical path dependency chain length ($T_\infty$, Span). | Cormen et al., Brent (1974) |
+| **Z-Algorithm** | Z-algoritmus | A linear $O(n)$ string algorithm calculating the longest common prefix between string $S$ and every suffix $S[i \dots |S|-1]$. | Gusfield (1997) |
