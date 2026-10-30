@@ -53,7 +53,7 @@ sequenceDiagram
   participant R as Render effects (DOM bindings)
   participant U as User effects (apply halves)
   participant S as onSettled callbacks
-  H->>Q: setA(1); setB(2)  (staged, flush scheduled)
+  H->>Q: setA(1)#59; setB(2)  (staged, flush scheduled)
   Note over H: a(), b() still return committed values
   Q->>C: commit, recompute dirty nodes by height
   C-->>Q: values + dependency sets for this commit
@@ -275,7 +275,7 @@ All diagnostics are stripped from production builds. They are also available pro
 
 ```mermaid
 flowchart LR
-  Site["guard site in the runtime (dev/observe build)"] -->|emitDiagnostic(event)| Chan["OBSERVE.diagnostics channel"]
+  Site["guard site in the runtime (dev/observe build)"] -->|"emitDiagnostic(event)"| Chan["OBSERVE.diagnostics channel"]
   Chan --> Cap["capture() / subscribe() consumers (tests, @solidjs/diagnostics, devtools)"]
   Chan --> Con["console report: [CODE] message + owner path + at file:line + footer"]
   Site -->|severity error| Throw["throw Error('[CODE] …')"]

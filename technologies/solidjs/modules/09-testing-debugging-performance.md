@@ -63,6 +63,25 @@ Dev diagnostics are first-class test oracles. `OBSERVE.diagnostics.capture()` co
 
 Effect-phase throws halt the reactive system (`REACTIVITY_HALTED`) globally. Call `resetErrorHalt()` in `afterEach` in suites that test error paths.
 
+### 1.6 Testing patterns catalogue
+
+| What to test | Pattern | Example in this track |
+|---|---|---|
+| a memo / derivation | `createRoot` → return setter → write outside → `flush()` → assert | M01 suite |
+| an effect's side effect | spy in apply; assert after `flush()`; assert cleanup after `dispose()` | M02 "pattern: an apply half that owns an external resource" |
+| a component's DOM | `render(() => <C/>)`, query by role/text, `fireEvent`, `flush()` or `findBy*` | M03, M09 |
+| async UI | fake API returning hand-settled deferreds; `await settle(); flush()` | M06 `fakeApi` |
+| races | settle deferreds out of order | M06 out-of-order test |
+| optimistic flows | fake server with a pending-call queue completed by index | M07 `fakeServer` |
+| server functions | `configureServerFunctionsClient({ fetch })` routed into the real `handleServerFunctionRequest` | M08 server suite |
+| SSR output | Vitest `server` project (node environment) + `renderToString` / `renderToStream` | M08 server suite |
+| hydration | child `node` renders hydratable SSR; jsdom hydrates hydratable DOM code | M08 round-trip suite |
+| anti-patterns | `OBSERVE.diagnostics.capture()` + assert codes (negative) and `[]` (positive gate) | every suite; M09 "clean component" |
+| performance regressions | `attribution.enable({ log: false })` + `costs()` / run counts | M09 profiling test |
+| leaks | behavioural: after unmount, a write must not run anything from the component | M09 leak tests |
+
+Two habits make these tests trustworthy. **Prefer behavioural assertions over internals**: count runs and observe DOM, do not inspect private fields that change between RCs. **Assert the negative too**: for every anti-pattern a module warns about, there is a test that triggers it and asserts the diagnostic, so an RC that silently drops the guard is noticed.
+
 ## 2. Build variants are export conditions
 
 `solid-js` and `@solidjs/web` publish several builds selected by **package export conditions** (ESM `exports` resolution is owned by `languages/javascript`):
@@ -113,6 +132,28 @@ While enabled it also runs **cost checks** that emit diagnostics. Proved: an eff
 | `ASYNC_WATERFALL`, `ABANDONED_FLIGHTS` | sequential fetches that could be parallel; request per keystroke | hoist fetches ("fetch high"), cancel, defer |
 | `SILENT_HOLD`, `LONG_HOLD`, `STACKED_HOLDS`, `FALLBACK_FLASH` | responsiveness: a held write with no on-screen acknowledgement, a sub-150 ms spinner flash | `isPending` indicator, optimistic value, remove the boundary |
 
+### 3.1 Profiling in code: `costs()` and `why()`
+
+With the engine enabled, `costs()` returns two ranked tables: **scopes** (each memo/effect with `runs`, `selfMs`, `wastedMs` = time in runs whose value did not change, `overlayMs` = optimistic/held work) and **writes** (each source with the downstream re-run time it caused). `why(node)` returns re-run records whose `causes` chain back to the originating write. Verbatim shape from the suite (timings vary per machine):
+
+```json
+scopes: [{ "name": "heavy", "kind": "memo", "runs": 3, "selfMs": 35.9, "wastedMs": 0 }, { "name": "reader", … }]
+writes: [{ "name": "a", "runs": 6, "downstreamMs": 36.2 }]
+why(heavy).at(-1): { "nodeName": "heavy", "causes": [{ "kind": "write", "name": "a", "prev": "3", "value": "4" }],
+                     "depsAdded": [], "depsRemoved": [], "selfMs": 14.9, "changed": true }
+```
+
+Proved: the expensive memo tops `scopes`, its source tops `writes`, and the last `why` record names the write. Use this in a performance regression test (assert run counts, not milliseconds, which are noisy in CI), or in the browser console during an investigation. Name your primitives (`{ name: "heavy" }`) or let the compiler's `sourceNames` pass do it, otherwise tables read `memo#12`.
+
+### 3.2 Finding leaks
+
+A leak in Solid is almost always **an owner-less computation kept alive by a long-lived source** (Module 01 §6.1). The two reliable detectors:
+
+1. **Behavioural test** (proved): mount, unmount, then write to the shared source; nothing from the unmounted component may run. The negative test creates an effect after an `await` (owner lost) and observes it still running after unmount; the fixed version captures `getOwner()` before the await and re-enters it with `runWithOwner`, and runs nothing after unmount.
+2. **Graph growth** in the browser: with attribution enabled, `graphSize()` reports roots, owners, computations, signals and edges reachable from registered roots, and the engine emits `GRAPH_GROWTH` when the live graph climbs across repeated visits to a route. (In this track's jsdom tests `graphSize()` reported zeros, so the behavioural test is the portable check; treat `graphSize` as a browser/devtools tool.)
+
+Typical sources: subscriptions opened in a ref or event handler without cleanup; `createRoot` under `runWithOwner(null)` never disposed; module-scope stores that accumulate per-page entries; `from()` sources whose subscribe function does not return an unsubscribe.
+
 ## 4. Performance in Chrome DevTools
 
 `@solidjs/web/performance-tracks` paints the attribution records as custom tracks in the Chrome Performance panel, in a `Solid` group: Interactions, Propagation (one span per scheduler drain, labelled by the writes that started it), Effects, Memos, Async, Holds, Navigations and Server (from `Server-Timing`). Diagnostics become markers on the Timings track. Under `vite dev`, `@solidjs/vite-plugin` enables the tracks automatically (`performanceTracks` option, default on in dev, off in build/preview/Vitest). In an observe production build, call `enablePerformanceTracks()` yourself.
@@ -139,6 +180,16 @@ Benchmarks (the js-framework-benchmark keyed suite) consistently place Solid nea
 | dev warnings as free-form console text | coded diagnostics with a structured channel (`OBSERVE.diagnostics`) |
 | Solid DevTools extension (community) | built-in attribution engine + Chrome performance tracks |
 | dev vs prod build only | dev, **observe**, prod tiers |
+
+## 5.1 Failure modes proved by negative tests
+
+| Failure | Test (`09-testing-debugging-performance.test.tsx`) |
+|---|---|
+| testing the server build by accident | "plain Node resolves the server build" |
+| relying on dev-only guards in prod | "production: … the owned-write guard is compiled out" |
+| relay effects | "…EFFECT_RELAY_TEAR" |
+| owner lost across `await` → leak | "an effect created after an await (no owner) outlives its component" |
+| RC drift | "installed RC versions match the exact pins" |
 
 ## 6. Production failure modes
 

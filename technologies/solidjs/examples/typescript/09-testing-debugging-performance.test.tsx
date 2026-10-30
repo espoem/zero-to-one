@@ -5,11 +5,11 @@ import { describe, it, expect, afterEach } from "vitest";
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { createSignal, createMemo, createEffect, createRoot, flush, OBSERVE } from "solid-js";
-import { attribution, subscriptions } from "solid-js/attribution";
+import { createSignal, createMemo, createEffect, createRoot, flush, OBSERVE, getOwner, runWithOwner } from "solid-js";
+import { attribution, subscriptions, costs, why } from "solid-js/attribution";
 import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
 import { enablePerformanceTracks } from "@solidjs/web/performance-tracks";
-import { captureDiagnostics } from "./support/diagnostics.ts";
+import { captureDiagnostics, settle } from "./support/diagnostics.ts";
 
 afterEach(() => cleanup());
 
@@ -130,5 +130,114 @@ describe("09 · performance tracks and version pinning", () => {
       };
       expect(installed.version).toBe(pinned);
     }
+  });
+});
+
+describe("09 · profiling with the attribution engine", () => {
+  it("costs() ranks scopes by self time and writes by downstream time; why() gives the cause chain", () => {
+    const off = attribution.enable({ log: false });
+    try {
+      const r = createRoot((dispose) => {
+        const [a, setA] = createSignal(1, { name: "a" });
+        const heavy = createMemo(
+          () => {
+            let x = 0;
+            for (let i = 0; i < 100_000; i++) x += i % (a() + 1);
+            return x;
+          },
+          { name: "heavy" },
+        );
+        createMemo(() => heavy(), { name: "reader" });
+        return { setA, dispose, heavy };
+      });
+      for (let i = 0; i < 3; i++) {
+        r.setA(i + 2);
+        flush();
+      }
+      const table = costs();
+      expect(table.scopes[0]!.name).toBe("heavy"); // the expensive scope tops the table
+      expect(table.writes[0]!.name).toBe("a"); // and the write that caused it
+      const last = why(r.heavy).at(-1)!;
+      expect(last.causes[0]).toMatchObject({ kind: "write", name: "a" }); // "heavy ran because a was written"
+      r.dispose();
+    } finally {
+      off();
+    }
+  });
+});
+
+describe("09 · leak detection by behaviour", () => {
+  it("negative: an effect created after an await (no owner) outlives its component", async () => {
+    const [ticks, setTicks] = createSignal(0);
+    let runs = 0;
+    function Leaky() {
+      void (async () => {
+        await Promise.resolve();
+        createEffect(
+          () => ticks(),
+          () => {
+            runs++;
+          },
+        ); // ❌ owner lost across the await
+      })();
+      return <p>leaky</p>;
+    }
+    const r = render(() => <Leaky />);
+    await settle();
+    flush();
+    r.unmount();
+    const before = runs;
+    setTicks(1);
+    flush();
+    expect(runs).toBe(before + 1); // still running after unmount: a leak
+  });
+
+  it("fix: capture the owner before awaiting and re-enter it", async () => {
+    const [ticks, setTicks] = createSignal(0);
+    let runs = 0;
+    function Fixed() {
+      const owner = getOwner();
+      void (async () => {
+        await Promise.resolve();
+        runWithOwner(owner, () =>
+          createEffect(
+            () => ticks(),
+            () => {
+              runs++;
+            },
+          ),
+        );
+      })();
+      return <p>fixed</p>;
+    }
+    const r = render(() => <Fixed />);
+    await settle();
+    flush();
+    r.unmount();
+    const before = runs;
+    setTicks(1);
+    flush();
+    expect(runs).toBe(before); // disposed with the component
+  });
+});
+
+describe("09 · a clean component emits no diagnostics (a CI gate)", () => {
+  it("rendering, updating and unmounting a well-formed component produces zero diagnostic events", () => {
+    function Todo(props: { title: string; done: boolean; onToggle: () => void }) {
+      return (
+        <li class={{ done: props.done }}>
+          <input type="checkbox" checked={props.done} onChange={() => props.onToggle()} />
+          {props.title}
+        </li>
+      );
+    }
+    const { codes } = captureDiagnostics(() => {
+      const [done, setDone] = createSignal(false);
+      const r = render(() => <Todo title="write tests" done={done()} onToggle={() => setDone((d) => !d)} />);
+      fireEvent.change(r.container.querySelector("input")!);
+      flush();
+      r.unmount();
+    });
+    expect(codes).toEqual([]);
   });
 });

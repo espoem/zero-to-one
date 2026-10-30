@@ -116,7 +116,7 @@ sequenceDiagram
   R->>R: schedule render (lane), re-run Counter()
   R->>R: re-run children unless memoized (Expensive)
   R->>R: diff new elements vs old (reconcile)
-  R->>R: commit: p.textContent = "1"; run effects whose deps changed
+  R->>R: commit: p.textContent = "1"#59; run effects whose deps changed
   E->>S: setCount(c => c + 1)  (staged)
   S->>S: microtask flush: mark p's text binding dirty
   S->>S: re-run that one binding: p.textContent = "1"

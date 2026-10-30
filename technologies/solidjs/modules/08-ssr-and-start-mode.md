@@ -140,7 +140,7 @@ sequenceDiagram
   S->>N: shell: layout + placeholder + fallback + pending records
   N->>B: parse & paint shell (fallback visible), client JS starts loading
   S->>N: fragment template + data script (when the boundary resolves)
-  N->>B: $df swaps fragment in; record resolved
+  N->>B: $df swaps fragment in#59; record resolved
   B->>B: hydrate(): claim nodes by _hk, adopt serialized values, replay queued events
 ```
 

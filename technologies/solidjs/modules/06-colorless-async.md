@@ -277,7 +277,7 @@ sequenceDiagram
   participant L as Loading (no on)
   participant S as Screen
   U->>G: setId(2)
-  G->>G: user = fetch(2) → ⊥ ; write held
+  G->>G: user = fetch(2) → ⊥ #59; write held
   G-->>S: keep frame [id 1, Ada] (isPending(user) = true)
   Note over S: optional "(updating)" via isPending, latest(id) = 2
   G->>G: fetch(2) resolves "Grace"
