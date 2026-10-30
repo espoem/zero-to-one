@@ -233,3 +233,35 @@ describe("children are opaque data", () => {
     expect(renderToStaticMarkup(<p>{n && <b>x</b>}</p>)).toBe("<p>0</p>");
   });
 });
+
+describe("source-level behaviours (ReactJSXElement.js, sanitizeURL.js)", () => {
+  test("production jsx() reuses the config object as props when it has no key (zero-copy)", async () => {
+    const { execFileSync } = await import("node:child_process");
+    const out = execFileSync(
+      process.execPath,
+      [
+        "-e",
+        `const { jsx } = require("react/jsx-runtime");
+         const cfg = { id: "a" };
+         const withKey = { id: "b", key: "k" };
+         const e1 = jsx("div", cfg), e2 = jsx("div", withKey);
+         console.log(JSON.stringify([e1.props === cfg, e2.props === withKey, "key" in e2.props, Object.isFrozen(e1)]));`,
+      ],
+      { env: { ...process.env, NODE_ENV: "production" }, cwd: process.cwd() },
+    ).toString();
+    // no key → same object; key in config → copied without "key"; production does not freeze.
+    expect(JSON.parse(out)).toEqual([true, false, false, false]);
+  });
+
+  test("NEGATIVE: obfuscated javascript: URLs (leading control chars, embedded tabs/newlines) are blocked too", () => {
+    for (const url of ["\u0001 javascript:alert(1)", "java\tscript:alert(1)", "JaVa\nScRiPt:alert(1)"]) {
+      const html = renderToStaticMarkup(<a href={url}>x</a>);
+      expect(html).toContain("React has blocked a javascript: URL");
+    }
+  });
+
+  test("NEGATIVE: data: URLs are NOT blocked — sanitising them is the app's job", () => {
+    const html = renderToStaticMarkup(<a href="data:text/html,<script>alert(1)</script>">x</a>);
+    expect(html).toContain('href="data:text/html');
+  });
+});

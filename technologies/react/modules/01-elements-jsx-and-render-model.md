@@ -89,6 +89,35 @@ Four rules fall out of the transform, and each has consequences:
 
 In development the transform emits `jsxDEV(type, props, key, isStaticChildren, source, self)` from `react/jsx-dev-runtime`. React 19's `jsxDEV` reads only the first four arguments: instead of the compiler-supplied `__source`/`__self`, it captures a stack when the element is created and uses it for [owner stacks](https://react.dev/reference/react/captureOwnerStack) in warnings and error overlays.
 
+### 2.2.1 Source: what `jsx()` executes (v19.3.1)
+
+The production `jsx`/`jsxs` exports are [`jsxProd`](https://github.com/react/react/blob/v19.3.1/packages/react/src/jsx/ReactJSXElement.js#L291) in `packages/react/src/jsx/ReactJSXElement.js`. Condensed:
+
+```js
+export function jsxProd(type, config, maybeKey) {
+  let key = null;
+  if (maybeKey !== undefined) key = '' + maybeKey;     // positional key from the compiler
+  if (hasValidKey(config)) key = '' + config.key;      // key inside a spread wins
+  let props;
+  if (!('key' in config)) {
+    props = config;                                    // zero-copy: the compiler's object IS props
+  } else {
+    props = {};
+    for (const propName in config) if (propName !== 'key') props[propName] = config[propName];
+  }
+  return ReactElement(type, key, props, getOwner(), undefined, undefined);
+}
+```
+
+and [`ReactElement`](https://github.com/react/react/blob/v19.3.1/packages/react/src/jsx/ReactJSXElement.js#L170) builds `{ $$typeof: REACT_ELEMENT_TYPE, type, key, ref: props.ref ?? null, props }` (DEV adds `_owner`, `_store`, `_debugInfo`, `_debugStack`, `_debugTask` and freezes both objects; `ref` on the element is a DEV warning getter, [`elementRefGetterWithDeprecationWarning`](https://github.com/react/react/blob/v19.3.1/packages/react/src/jsx/ReactJSXElement.js#L143)).
+
+Three consequences you can test (in `source-level behaviours…`):
+
+1. **Zero-copy props.** With no `key` in the config, `element.props` is literally the object literal the compiler wrote — "production jsx() reuses the config object as props…" runs the production build in a child process and asserts `e1.props === cfg`. This is why the automatic runtime is cheaper than `createElement`, which always copies.
+2. **Key coercion is string concatenation** (`'' + key`), so `key={1}` and `key="1"` collide, and an object key becomes `"[object Object]"` for every item — a silent duplicate-key bug. DEV runs `checkKeyStringCoercion` to warn about values whose `toString` throws (e.g. Symbols, Temporal objects).
+3. **No freezing in production.** The child-process test also shows `Object.isFrozen(element) === false` without `NODE_ENV=development`; mutation "works" there and silently breaks memoisation (§3.4).
+
+The DEV-only `key` warning getter is [`defineKeyPropWarningGetter`](https://github.com/react/react/blob/v19.3.1/packages/react/src/jsx/ReactJSXElement.js#L121); the "Each child in a list should have a unique key" warning moved in React 19 from element creation into the reconciler ([`ReactChildFiber.js` `warnForMissingKey`](https://github.com/react/react/blob/v19.3.1/packages/react-reconciler/src/ReactChildFiber.js#L152)), which means it fires only for children that are actually rendered, and the "older version of React" error is thrown by [`throwOnInvalidObjectTypeImpl`](https://github.com/react/react/blob/v19.3.1/packages/react-reconciler/src/ReactChildFiber.js#L301).
 ### 2.3 Then vs now: the JSX runtime
 
 | | Then (React ≤16, classic runtime) | Now (React 17+ automatic runtime; React 19 deprecates the classic path's quirks) |
@@ -130,7 +159,17 @@ $$\text{isValidElement}(x) \iff x \neq \text{null} \land \texttt{typeof}\ x = \t
 
 An object that fails the check and is not a string, number, array/iterable or promise is rejected with *"Objects are not valid as a React child"* — the test "rendering a forged element throws instead of creating DOM" proves this. (In engines without `Symbol`, React historically fell back to the number `0xeac7`; every supported engine now has `Symbol`.)
 
+The brand check itself is one line, [`isValidElement`](https://github.com/react/react/blob/v19.3.1/packages/react/src/jsx/ReactJSXElement.js#L891): `typeof object === 'object' && object !== null && object.$$typeof === REACT_ELEMENT_TYPE`, where `REACT_ELEMENT_TYPE = Symbol.for('react.transitional.element')` and `REACT_LEGACY_ELEMENT_TYPE = Symbol.for('react.element')` ([`shared/ReactSymbols.js`](https://github.com/react/react/blob/v19.3.1/packages/shared/ReactSymbols.js#L15)). Because `Symbol.for` uses the global symbol registry, the brand is shared across realms and bundle copies — two copies of React 19 recognise each other's elements, which is why the version-skew error exists only between majors.
 **What `$$typeof` does not protect against:** `dangerouslySetInnerHTML` with untrusted HTML, URL attributes (React 19 replaces a `javascript:` URL in `href`, `src`, `action` or `formAction` with a stub that throws *"React has blocked a javascript: URL as a security precaution"* — test "javascript: URLs are replaced" — but `data:` URLs and other sinks are your responsibility), and spreading untrusted objects into props (`<div {...userJson} />` lets the attacker set `dangerouslySetInnerHTML`). Text children *are* always escaped (test "text children are escaped").
+
+The URL check lives in [`react-dom-bindings/src/shared/sanitizeURL.js`](https://github.com/react/react/blob/v19.3.1/packages/react-dom-bindings/src/shared/sanitizeURL.js#L19):
+
+```js
+const isJavaScriptProtocol =
+  /^[\u0000-\u001F ]*j[\r\n\t]*a[\r\n\t]*v[\r\n\t]*a[\r\n\t]*s[\r\n\t]*c[\r\n\t]*r[\r\n\t]*i[\r\n\t]*p[\r\n\t]*t[\r\n\t]*\:/i;
+```
+
+The regex mirrors the [WHATWG URL parser](https://url.spec.whatwg.org/#concept-basic-url-parser), which strips leading C0 control characters and spaces and removes tab/newline characters anywhere before parsing the scheme. A naive `url.startsWith("javascript:")` check misses `"\u0001 javascript:…"` and `"java\tscript:…"`; React's does not (test "NEGATIVE: obfuscated javascript: URLs… are blocked too"). It deliberately does **not** touch `data:` URLs (test "NEGATIVE: data: URLs are NOT blocked") — `data:text/html` in `<a href>` is blocked for top-level navigation by modern browsers, but in `<iframe src>` or `<object data>` it is not, so allow-list URL schemes yourself for user-supplied links.
 
 ### 3.3 Then vs now: the element brand and `ref`
 
@@ -312,6 +351,9 @@ This is why the element/component model is identical across platforms, and why h
 | `props.key` is `undefined` | Keys are not props | Pass the ID as a separate prop |
 | Memoised child does not update after `items.push()` | Mutation keeps reference identity | Create a new array |
 | XSS through `<div {...json}>` | Spreading untrusted data into props | Whitelist props explicitly |
+| Every list item shares the same key `"[object Object]"` | Object used as `key` (string coercion) | Use a primitive ID |
+| User-supplied link executes script via `data:`/other schemes | React only blocks `javascript:` | Allow-list `https:`/`mailto:` etc. — test "NEGATIVE: data: URLs are NOT blocked" |
+| Mutated element/props "work" in production, break memo | Elements are frozen only in DEV | Never mutate elements; production test shows `isFrozen === false` |
 
 ---
 
@@ -329,6 +371,7 @@ This is why the element/component model is identical across platforms, and why h
 | Creating ≠ rendering; components are not functions you call | `the component function runs only when…`, `calling a component as a function…` |
 | Strict Mode double render exposes impurity | `StrictMode double-invokes…`, `NEGATIVE: mutating a module-level array…` |
 | `ref` is a prop | `ref is readable from props…`, `a function component receives ref…` |
+| Zero-copy props, no freezing in production; URL sanitiser regex; `data:` not blocked | `source-level behaviours…` (3 tests) |
 
 Run: `npm test -- examples/01-elements`.
 
