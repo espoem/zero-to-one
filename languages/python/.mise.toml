@@ -1,0 +1,9 @@
+[tools]
+python = "3.15.2"
+uv = "0.13.6"
+
+[tasks.test]
+run = "uv run pytest"
+
+[tasks.typecheck]
+run = "uv run mypy examples"
