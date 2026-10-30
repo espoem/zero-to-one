@@ -229,3 +229,123 @@ describe('HTML processing model (executable model, examples/06-event-loop-model.
     assert.equal(r.stdout.trim(), 'sync,m1,m2,timer');
   });
 });
+
+// ---- Depth pass: promise algorithms (§27.2.1–§27.2.5) and the verified HTML processing model
+
+describe('Depth: CreateResolvingFunctions, reactions, PromiseIsHandled', () => {
+  test('resolve reads `then` synchronously; a throwing getter rejects instead of throwing', async () => {
+    const log = [];
+    const p = new Promise((resolve) => {
+      resolve({ get then() { log.push('getter'); throw new Error('from getter'); } });
+      log.push('after resolve');
+    });
+    assert.deepEqual(log, ['getter', 'after resolve']);
+    await assert.rejects(p, /from getter/);
+  });
+
+  test('reactions on one promise run in registration order', async () => {
+    const log = [];
+    const { promise, resolve } = Promise.withResolvers();
+    promise.then(() => log.push(1));
+    promise.then(() => log.push(2));
+    promise.then(() => log.push(3));
+    resolve();
+    await promise; await null;
+    assert.deepEqual(log, [1, 2, 3]);
+  });
+
+  test('then() without handlers passes values and rejections through', async () => {
+    assert.equal(await Promise.resolve(7).then().then(), 7);
+    await assert.rejects(Promise.reject(new Error('down')).then((v) => v).then(), /down/);
+  });
+
+  test('NEGATIVE: handling p does not handle the derived promise p.then(f)', () => {
+    const r = runNode(['-e', `
+      const p = Promise.reject(new Error('derived is unhandled'));
+      p.catch(() => {});        // p is handled
+      p.then(() => 'never');    // this returns a new rejected promise with no handler
+    `]);
+    assert.equal(r.status, 1);
+    assert.match(r.stderr, /derived is unhandled/);
+  });
+
+  test('await calls PerformPromiseThen directly; resolve(promise) calls the public then', () => {
+    const r = runNode(['-e', `
+      const orig = Promise.prototype.then; let calls = 0;
+      Promise.prototype.then = function (...a) { calls++; return orig.apply(this, a); };
+      (async () => {
+        await Promise.resolve(1); const viaAwait = calls; calls = 0;
+        await new Promise((r) => r(Promise.resolve(2))); const viaResolve = calls;
+        console.log(JSON.stringify([viaAwait, viaResolve]));
+      })();`]);
+    assert.deepEqual(JSON.parse(r.stdout), [0, 1]);
+  });
+
+  test('an exception thrown inside a reaction rejects the derived promise, it does not escape', async () => {
+    const derived = Promise.resolve().then(() => { throw new Error('inside reaction'); });
+    await assert.rejects(derived, /inside reaction/);
+  });
+});
+
+describe('Depth: rendering task details in the model (HTML §8.1.7.3)', () => {
+  test('verbose rendering follows the standard sub-step order', () => {
+    const el = new EventLoopModel({ frameMs: 16 });
+    el.verboseRendering = true;
+    el.queueTask('script', 'script', () => el.requestAnimationFrame(() => el.log.push('rAF')));
+    el.run();
+    assert.deepEqual(el.log, ['resize', 'scroll', 'media queries', 'animations', 'fullscreen', 'context lost',
+      'rAF', 'style+layout', 'focus fix-up', 'view transitions', 'intersection observers', 'paint']);
+  });
+
+  test('all rAF callbacks in a frame receive the same timestamp', () => {
+    const el = new EventLoopModel({ frameMs: 16 });
+    const stamps = [];
+    el.queueTask('script', 'script', () => {
+      el.requestAnimationFrame((t) => { stamps.push(t); el.setTimeout('busy', () => {}); });
+      el.requestAnimationFrame((t) => stamps.push(t));
+    });
+    el.run();
+    assert.equal(stamps.length, 2);
+    assert.equal(stamps[0], stamps[1]);
+  });
+
+  test('NEGATIVE: hidden documents are filtered out: no rAF callbacks, no paint', () => {
+    const el = new EventLoopModel({ frameMs: 16 });
+    el.visible = false;
+    el.queueTask('script', 'script', () => el.requestAnimationFrame(() => el.log.push('rAF')));
+    el.run({ maxSteps: 100 });
+    assert.deepEqual(el.log, []);
+  });
+
+  test('idle deadline is capped at 50 ms and by the next timer', () => {
+    const el = new EventLoopModel();
+    assert.equal(el.idleDeadline(), 50);
+    el.setTimeout('t', () => {}, 20);
+    assert.equal(el.idleDeadline(), 20);
+  });
+
+  test('user dispatch checkpoints between listeners; el.click() from script does not', () => {
+    const run = (fromUser) => {
+      const el = new EventLoopModel();
+      el.queueTask('user-interaction', 'click', () => {
+        el.dispatch([
+          () => { el.queueMicrotask(() => el.log.push('microtask from listener 1')); el.log.push('listener 1'); },
+          () => el.log.push('listener 2'),
+        ], { fromUser });
+      });
+      el.run();
+      return el.log;
+    };
+    assert.deepEqual(run(true), ['listener 1', 'microtask from listener 1', 'listener 2']);
+    assert.deepEqual(run(false), ['listener 1', 'listener 2', 'microtask from listener 1']);
+  });
+
+  test('Node EventTarget dispatch from script behaves like el.click(): microtasks after all listeners', () => {
+    const log = [];
+    const target = new EventTarget();
+    target.addEventListener('x', () => { queueMicrotask(() => log.push('microtask')); log.push('l1'); });
+    target.addEventListener('x', () => log.push('l2'));
+    target.dispatchEvent(new Event('x'));
+    assert.deepEqual(log, ['l1', 'l2']);
+  });
+});

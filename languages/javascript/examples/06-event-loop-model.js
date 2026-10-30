@@ -22,6 +22,12 @@ export class EventLoopModel {
     /** @type {string[]} */
     this.log = [];
     this.performingCheckpoint = false;
+    /** Document visibility: hidden documents are filtered out of rendering. */
+    this.visible = true;
+    /** When true, the rendering task logs every sub-step instead of only style+layout and paint. */
+    this.verboseRendering = false;
+    /** Active timer due times, for idle-deadline computation. */
+    this.lastRenderOpportunity = 0;
   }
 
   /** Queue a task on a task source, runnable from time `at`. */
@@ -63,8 +69,12 @@ export class EventLoopModel {
   /** Run until no work remains or `maxSteps` iterations elapse. */
   run({ maxSteps = 1000, microtaskLimit = 10_000 } = {}) {
     for (let step = 0; step < maxSteps; step++) {
-      if (this.now >= this.nextFrame && this.rafCallbacks.length > 0) {
-        this.queueTask('rendering', 'update the rendering', () => this.updateTheRendering());
+      if (this.now >= this.nextFrame) {
+        // in parallel: a rendering opportunity queues a task on the rendering task source
+        this.lastRenderOpportunity = this.now;
+        if (this.rafCallbacks.length > 0) {
+          this.queueTask('rendering', 'update the rendering', () => this.updateTheRendering());
+        }
         this.nextFrame += this.frameMs;
       }
       const task = this.pickTask();
@@ -80,14 +90,45 @@ export class EventLoopModel {
   }
 
   updateTheRendering() {
+    // Filter non-renderable documents: a hidden document is skipped entirely (no rAF).
+    if (!this.visible) return;
+    const steps = this.verboseRendering
+      ? ['resize', 'scroll', 'media queries', 'animations', 'fullscreen', 'context lost']
+      : [];
+    this.log.push(...steps);
     const callbacks = this.rafCallbacks;
     this.rafCallbacks = [];
-    const ts = this.now;
+    const ts = this.lastRenderOpportunity;           // one shared timestamp for all callbacks
     for (const cb of callbacks) {
       cb(ts);
-      this.performMicrotaskCheckpoint(10_000); // clean up after running script
+      this.performMicrotaskCheckpoint(10_000);       // clean up after running script
     }
     this.log.push('style+layout');
+    if (this.verboseRendering) this.log.push('focus fix-up', 'view transitions', 'intersection observers');
     this.log.push('paint');
+  }
+
+  /**
+   * Idle deadline per §8.1.7.3: min(idle start + 50 ms, earliest pending timer,
+   * next render deadline if rAF callbacks are pending).
+   */
+  idleDeadline(refreshMs = this.frameMs) {
+    let deadline = this.now + 50;
+    for (const t of this.taskQueues.get('timer') ?? []) deadline = Math.min(deadline, t.at);
+    if (this.rafCallbacks.length > 0) deadline = Math.min(deadline, this.lastRenderOpportunity + refreshMs);
+    return deadline;
+  }
+
+  /**
+   * Dispatch an event to several listeners.
+   * fromUser = true: each listener is invoked from an empty stack, so a microtask checkpoint
+   * runs after each one ("clean up after running script"). fromUser = false models el.click()
+   * called from script: the stack is not empty, so microtasks wait until the caller finishes.
+   */
+  dispatch(listeners, { fromUser }) {
+    for (const l of listeners) {
+      l();
+      if (fromUser) this.performMicrotaskCheckpoint(10_000);
+    }
   }
 }

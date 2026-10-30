@@ -70,6 +70,50 @@ Each promise has `[[PromiseState]]` (pending, fulfilled, rejected), `[[PromiseRe
   - if `x` is a **thenable** (including a native promise): enqueue a `NewPromiseResolveThenableJob` (§27.2.2.2), which later calls `x.then(resolve, reject)`. That costs extra ticks.
 - Only the first call to `resolve`/`reject` counts (the `[[AlreadyResolved]]` flag).
 
+### Walkthrough: from `resolve(x)` to a reaction job
+
+The algorithms, with their ES2026 section numbers:
+
+```
+CreateResolvingFunctions(promise)                                   §27.2.1.3
+  resolve(resolution):
+  1  if alreadyResolved, return undefined;  alreadyResolved ← true
+  2  if resolution is promise itself → RejectPromise(promise, TypeError)
+  3  if resolution is not an Object → FulfillPromise(promise, resolution)
+  4  thenAction ← Get(resolution, "then")                 ▷ SYNCHRONOUS: a getter runs now
+  5  if that threw → RejectPromise(promise, error)
+  6  if thenAction is not callable → FulfillPromise(promise, resolution)
+  7  job ← NewPromiseResolveThenableJob(promise, resolution, thenAction)   §27.2.2.2
+  8  HostEnqueuePromiseJob(job.[[Job]], job.[[Realm]])    ▷ the then() call happens one tick later
+
+FulfillPromise / RejectPromise                                      §27.2.1.4 / §27.2.1.7
+  set [[PromiseState]], [[PromiseResult]], clear both reaction lists;
+  RejectPromise also calls HostPromiseRejectionTracker(promise, "reject") if not [[PromiseIsHandled]];
+  then TriggerPromiseReactions(reactions, value)                    §27.2.1.8
+     for each reaction, in order: HostEnqueuePromiseJob(NewPromiseReactionJob(reaction, value))
+
+PerformPromiseThen(promise, onFulfilled, onRejected, resultCapability)    §27.2.5.4.1
+  1  wrap callables in JobCallback Records (HostMakeJobCallback)
+  2  if pending: append to both reaction lists
+  3  if fulfilled: enqueue NewPromiseReactionJob(fulfillReaction, result)
+  4  if rejected: if not handled, HostPromiseRejectionTracker(promise, "handle");
+                  enqueue NewPromiseReactionJob(rejectReaction, reason)
+  5  [[PromiseIsHandled]] ← true
+
+NewPromiseReactionJob(reaction, argument)                           §27.2.2.1
+  run the handler (or pass the value through / rethrow if the handler is undefined),
+  then resolve or reject the derived promise (reaction.[[Capability]]) with the outcome
+```
+
+Facts that fall out of the algorithms and are tested:
+
+- Step 4 of `resolve` reads `then` **synchronously**: a `then` getter on a resolution value runs inside the `resolve()` call, and an exception from it rejects the promise instead of propagating to the caller.
+- Reactions registered on the same promise run in **registration order**, because TriggerPromiseReactions enqueues them in list order.
+- `p.then()` with no handlers still creates a derived promise that adopts `p`'s outcome (the pass-through in NewPromiseReactionJob), so a rejection travels down a chain of `then(onFulfilled)` calls until a rejection handler.
+- `[[PromiseIsHandled]]` is set by `then`, so attaching any handler silences unhandled-rejection reporting for **that** promise, but not for the derived promise `then` returns: `p.then(f)` on a rejecting `p` produces a new rejected promise, which is itself unhandled.
+
+In HTML, HostEnqueuePromiseJob (§8.1.6.6.4) queues a microtask that prepares to run script with the settings object of the job's realm (the realm of the handler function, or of the `then` function for thenable jobs), runs the job, cleans up after running script, and **reports** an exception thrown by the job to that realm's global (`error` event) instead of letting it escape.
+
 ### Tick accounting (measured on Node 26 and pinned in the example file)
 
 Counting "ticks" as successive microtask turns after the current script ends:
@@ -113,70 +157,104 @@ The HTML Standard (§8.1.7) defines the browser host's event loop. This track ow
 - The **microtask queue** is a real FIFO queue, one per event loop. Promise reactions, `queueMicrotask` callbacks and `MutationObserver` notifications are microtasks.
 - The **performing a microtask checkpoint** flag prevents re-entrancy of the checkpoint.
 
-### Processing model (§8.1.7.3), condensed
+### Processing model (§8.1.7.3), verified against the HTML Standard source on 2026-10-30
+
+The event loop runs two things: a sequential loop that processes tasks, and, for window event loops, an **in-parallel** process that waits for rendering opportunities and queues rendering tasks.
 
 ```
-EVENT-LOOP()
-1  loop forever
-2      taskQueue ← an implementation-chosen task queue containing a runnable task
-3      if taskQueue exists
-4          oldestTask ← the first runnable task in taskQueue; remove it
-5          run oldestTask's steps                      ▷ e.g. a setTimeout callback, an event dispatch,
-6                                                       ▷ or the "update the rendering" task
+EVENT-LOOP()                                         ▷ "continually run through the following steps"
+1  oldestTask ← null
+2  if some task queue has a runnable task
+3      taskQueue ← one such queue, chosen in an implementation-defined manner
+4      taskStartTime ← now; oldestTask ← first runnable task of taskQueue (removed)
+5      record task start time (Long Animation Frames)
+6      currently running task ← oldestTask; run oldestTask's steps; currently running task ← null
 7      PERFORM-MICROTASK-CHECKPOINT()
-8      record task timing; if this is a window event loop and there is
-9          no runnable task and no rendering opportunity, the idle period may start
-10         (requestIdleCallback deadlines are computed here)
+8  taskEndTime ← now
+9  if oldestTask ≠ null: report long tasks (> 50 ms) for the affected top-level browsing contexts,
+10     record task end time
+11 if window event loop with no runnable task: start an idle period for each same-loop window,
+12     deadline = min(last idle start + 50 ms, earliest active timer,
+13                    next render deadline if rAF callbacks or rendering updates are pending)
+14 if worker event loop: optionally run the worker's animation frame callbacks and render
+15     (OffscreenCanvas in dedicated workers); destroy the loop if closing and no tasks remain
+
+IN PARALLEL, for a window event loop:
+1  wait until some navigable might have a rendering opportunity
+2  last render opportunity time ← now
+3  for each navigable with a rendering opportunity:
+       queue a global task on the RENDERING TASK SOURCE to UPDATE-THE-RENDERING
 
 PERFORM-MICROTASK-CHECKPOINT()
-1  if performing-checkpoint flag is set, return
+1  if performing-a-microtask-checkpoint flag is true, return        ▷ re-entrancy guard
 2  set the flag
 3  while the microtask queue is not empty
-4      dequeue the oldest microtask and run it          ▷ microtasks enqueued now run in this same loop
-5  for each environment settings object: notify about rejected promises
-6  cleanup IndexedDB transactions; ClearKeptObjects() (WeakRef targets may now be collected)
-7  unset the flag
+4      dequeue the oldest microtask and run it                       ▷ new microtasks join this drain
+5  for each environment settings object of this loop: notify about rejected promises
+6  cleanup IndexedDB transactions
+7  ClearKeptObjects()                                                 ▷ WeakRef targets become collectable
+8  unset the flag; record timing info for the microtask checkpoint
 ```
 
-**Loop invariant.** When step 2 selects the next task, the microtask queue is empty. Every task (including the rendering update) is followed by a complete drain of the microtask queue, and a microtask that enqueues another microtask extends the *current* drain. Consequently, microtasks can starve tasks and rendering forever; tasks cannot starve microtasks.
+**Loop invariant.** When step 2 selects the next task, the microtask queue is empty. Every task (including the rendering task) is followed by a complete drain of the microtask queue, and a microtask that enqueues another microtask extends the *current* drain. Consequently, microtasks can starve tasks and rendering forever; tasks cannot starve microtasks.
+
+The checkpoint also runs outside step 7: "clean up after running script" performs a microtask checkpoint whenever the JavaScript execution context stack becomes empty, for example between two event listeners dispatched by the browser for one user click, or between two `requestAnimationFrame` callbacks. That is why a promise reaction queued in the first click listener runs **before** the second listener for a real click, but **after** the second listener when the click is dispatched by script (`el.click()`), because then the stack never empties in between.
+
+The 50 ms idle cap (line 12) is the same threshold as the long-task definition: "to ensure responsiveness to new user input within the threshold of human perception".
 
 ### Updating the rendering
 
-In the current standard, whenever the window event loop has a **rendering opportunity** (typically aligned with the display's refresh, about every 16.7 ms at 60 Hz, and only for documents that are visible and not throttled), it queues an **"update the rendering" task** on the *rendering task source*. That task, for each fully active document whose rendering is relevant, runs in this order (condensed from the standard; consult §8.1.7.3 for the full list):
+The **rendering task**, for its event loop, takes the fully active documents (ancestors before descendants) and runs these steps, in this order:
 
-1. reveal the document, flush autofocus candidates;
-2. **run the resize steps** (fire `resize`);
-3. **run the scroll steps** (fire `scroll`, `scrollend`);
-4. evaluate media queries and report changes (`matchMedia` listeners);
-5. update animations and send events (Web Animations, CSS animation/transition events);
-6. run the fullscreen steps;
-7. **run the animation frame callbacks** (`requestAnimationFrame`), each with the same timestamp;
-8. loop: **recalculate styles and update layout**, gather and broadcast `ResizeObserver` observations (repeat while observations at deeper depths exist);
-9. update intersection observations (`IntersectionObserver`);
-10. **paint**: update the rendering or user interface of the document and its browsing context.
+1. **Filter non-renderable documents**: drop documents that are render-blocked, whose visibility state is `hidden`, whose rendering is suppressed for a view transition, or whose navigable has no rendering opportunity now.
+2. **Unnecessary rendering**: drop documents where updating would have no visible effect *and* the map of animation frame callbacks is empty. The user agent may also skip documents for other reasons (for example to coalesce timer callbacks with only microtask checkpoints in between).
+3. Reveal each document; flush autofocus candidates (top-level only).
+4. **Run the resize steps** (fire `resize`, CSSOM View).
+5. **Run the scroll steps** (fire `scroll`, `scrollend`, CSSOM View).
+6. **Evaluate media queries and report changes** (`MediaQueryList` `change` events).
+7. **Update animations and send events** (Web Animations, CSS animation and transition events), with the frame timestamp.
+8. **Run the fullscreen steps**.
+9. Run the canvas **context lost** steps for 2D contexts whose backing storage was lost (`contextlost` / `contextrestored`).
+10. **Run the animation frame callbacks** (`requestAnimationFrame`), all receiving the **same** timestamp: the last render opportunity time.
+11. For each document, loop: **recalculate styles and update layout**; determine `content-visibility: auto` proximity (repeat once if an initial determination made content visible); gather active `ResizeObserver` observations at the current depth; if any, broadcast them and repeat at the new depth; otherwise stop. Observations skipped because of the depth limit produce the "ResizeObserver loop completed with undelivered notifications" error.
+12. Focus fix-up: if the focused area is no longer focusable (hidden, disabled), run the focusing steps for the viewport (fires `blur`, possibly `change`).
+13. Perform pending **view transition** operations.
+14. **Run the update intersection observations steps** (`IntersectionObserver`).
+15. Record rendering time (Long Animation Frames).
+16. **Paint**: "update the rendering or user interface of *doc* and its node navigable to reflect the current state".
+17. Process top-layer removals (popovers, dialogs).
 
-Because the rendering update is itself a task, it too is followed by a microtask checkpoint, and every rAF callback is a separate callback invocation, after which microtasks queued by it run ("clean up after running script" performs a microtask checkpoint when the JavaScript stack empties).
+Because the rendering update is itself a task, it is followed by a microtask checkpoint, and because each rAF callback is invoked from an empty stack, microtasks queued by one rAF callback run before the next rAF callback.
 
-> **Then vs now:** older versions of the standard (and most blog posts before 2024) describe "update the rendering" as a *step* of the event loop after the microtask checkpoint. The standard was refactored so that rendering is a task on its own task source. Observable ordering is essentially the same; the change makes rendering prioritisable like other task sources. (Servo's event loop rewrite references it as "add an update-the-rendering task".)
+**Rendering opportunities** are not mandated: they depend on the display refresh rate and page performance. The standard's own examples: at most every 16.7 ms for 60 Hz, a drop to 30 per second for a navigable that cannot keep up, and "4 rendering opportunities per second, or even less" for a navigable that is not visible.
+
+> **Then vs now:** older versions of the standard (and most blog posts before 2024) describe "update the rendering" as a step of the event loop, run after the microtask checkpoint of every iteration. The current standard runs an in-parallel wait for rendering opportunities that **queues a task on the rendering task source**. Observable ordering is essentially the same; the change lets browsers prioritise rendering against other task sources and gives Long Animation Frame timing a clean definition. Newer steps also appeared in the list over the years (view transitions, `content-visibility`, `contextlost`, `scrollend`, top-layer removals).
 
 ```mermaid
 flowchart TD
-  T["pick a runnable task<br/>(timer, input, message, network, or rendering task)"] --> R[run task]
-  R --> MC["microtask checkpoint:<br/>drain promise jobs, queueMicrotask, MutationObserver"]
-  MC --> REJ[notify unhandled rejections]
-  REJ --> OPP{rendering opportunity?}
-  OPP -- "yes: queue rendering task" --> T
-  OPP -- no --> IDLE{idle?}
-  IDLE -- yes --> RIC[requestIdleCallback]
-  IDLE -- no --> T
-  RIC --> T
+  subgraph LOOP["event loop (sequential)"]
+    T["pick a runnable task<br/>(timer, input, message, network, rendering task)"] --> R[run task]
+    R --> MC["microtask checkpoint:<br/>drain microtasks, notify rejections, ClearKeptObjects"]
+    MC --> LT[report long tasks / LoAF timing]
+    LT --> IDLE{"window loop with<br/>no runnable task?"}
+    IDLE -- yes --> RIC["start idle period<br/>(requestIdleCallback, deadline ≤ 50 ms)"]
+    IDLE -- no --> T
+    RIC --> T
+  end
+  subgraph PAR["in parallel (window event loop)"]
+    W[wait for a rendering opportunity] --> Q["queue 'update the rendering'<br/>on the rendering task source"]
+    Q --> W
+  end
+  Q -. "becomes a runnable task" .-> T
   subgraph RT["the update-the-rendering task"]
     direction TB
-    RS[resize, scroll, media queries] --> AN[animations + events]
-    AN --> RAF[requestAnimationFrame callbacks]
-    RAF --> SL[style + layout, ResizeObserver loop]
-    SL --> IO[IntersectionObserver]
-    IO --> P[paint]
+    F["filter: render-blocked, hidden,<br/>no visible change and no rAF"] --> RS[resize, scroll, media queries]
+    RS --> AN[animations + events, fullscreen, canvas context lost]
+    AN --> RAF["requestAnimationFrame callbacks<br/>(one shared timestamp)"]
+    RAF --> SL["style + layout ⟲ ResizeObserver depth loop"]
+    SL --> VT[focus fix-up, view transitions]
+    VT --> IO[IntersectionObserver]
+    IO --> P[paint, top-layer removals]
   end
 ```
 
@@ -200,19 +278,67 @@ Other rules:
 - `MutationObserver` callbacks are microtasks, so DOM mutations from many statements are delivered as one batch at the checkpoint.
 - Framework batching (React's automatic batching, Solid's flush) is built on these primitives; see the React and SolidJS tracks.
 
+### Worked example: listeners, microtasks and dispatch paths
+
+```js
+button.addEventListener('click', () => {
+  Promise.resolve().then(() => log('microtask from listener 1'));
+  log('listener 1');
+});
+button.addEventListener('click', () => log('listener 2'));
+```
+
+| Dispatch | Log |
+|---|---|
+| user clicks the button | `listener 1`, `microtask from listener 1`, `listener 2` |
+| script calls `button.click()` | `listener 1`, `listener 2`, `microtask from listener 1` (after the calling script returns) |
+
+The difference is the stack: the browser invokes each listener for a real click from an empty stack and runs "clean up after running script" after each; `click()` runs both listeners inside the caller's execution context. The executable model's `dispatch(listeners, { fromUser })` reproduces both orders.
+
+### Yielding to the event loop correctly
+
+| Technique | Lets input and rendering run? | Notes |
+|---|---|---|
+| `await null`, `await Promise.resolve()` | **no** | continues in the same microtask drain |
+| `queueMicrotask(next)` | **no** | same |
+| `setTimeout(next, 0)` | yes | clamped to ≥ 4 ms after 5 nested levels; low priority |
+| `MessageChannel` post | yes | a task without timer clamping (used by React's scheduler) |
+| `await scheduler.yield()` | yes | continuation is prioritised ahead of other queued tasks of the same priority, so long jobs keep their place (Chromium; check support) |
+| `requestIdleCallback(fn)` | only when idle | deadline ≤ 50 ms; may never run on a busy page without `timeout` |
+
 ### Node.js as a host, briefly
 
 Node also drains the microtask queue after each callback from libuv, and has `process.nextTick`, a separate queue processed **before** promise microtasks. Its loop phases (timers, pending callbacks, poll, check, close) are owned by the Node.js track. For the code in this track, the relevant guarantee is the same as HTML's: synchronous code → all microtasks → next macrotask.
 
 ---
 
-## 5. Executable model of the processing model
+## 5. Engine mechanics: where the queues live
 
-[`examples/06-event-loop-model.js`](../examples/06-event-loop-model.js) implements a deterministic simulator: task sources with FIFO order within a source, one microtask queue, a checkpoint after every task, and a rendering task queued whenever the simulated clock crosses a frame boundary. Tests replay the classic puzzles against it and against Node, and show starvation: a self-re-enqueuing microtask prevents both timers and rendering forever, while a self-re-enqueuing *task* lets rendering interleave.
+- **V8** keeps a `MicrotaskQueue` per native context group (by default one per isolate). Promise reaction jobs are `PromiseReactionJobTask` objects, and the queue is drained by the `RunMicrotasks` builtin under a policy chosen by the embedder: Node uses `kExplicit` (the host calls it), Blink uses `kScoped` (microtasks run when the outermost script scope exits, which implements "clean up after running script"). V8 never runs microtasks on its own; the HTML checkpoint and Node's tick processing are host code.
+- **Await fast path.** Since V8 7.2 (2018), `await` on a native promise neither allocates a throwaway wrapper promise nor goes through a thenable job. This is the engine side of the ES2019 spec change: Await (§27.7.5.3) calls PromiseResolve and then **PerformPromiseThen directly**, never the user-visible `then` method. Resolving a promise *with* a promise, by contrast, looks up and calls `then` (step 4 above), so a patched `Promise.prototype.then` is observable there and costs two extra ticks. The example file proves both: a patched `then` is called 0 times by `await p` and once by `new Promise(r => r(p))`.
+- **Chromium** runs the HTML processing model in Blink's scheduler with prioritised task queues (input and rendering high, timers lower, background tabs throttled); `scheduler.postTask(fn, { priority })` and `scheduler.yield()` expose that priority to script.
+- **Node.js** drains `process.nextTick` callbacks first, then calls V8's `RunMicrotasks`, repeating until both are empty, after every callback from libuv (`processTicksAndRejections`). It reports unhandled rejections at the end of that drain. Phase structure and `nextTick` semantics are owned by the Node.js track ([`../../../technologies/nodejs/`](../../../technologies/nodejs/)).
+
+## 6. Executable model of the processing model
+
+[`examples/06-event-loop-model.js`](../examples/06-event-loop-model.js) implements a deterministic simulator of the window event loop. It is a teaching model, so it simplifies on purpose:
+
+| Modelled faithfully | Simplified |
+|---|---|
+| task sources with FIFO order within a source and an implementation-defined choice between sources (a fixed priority list) | one document, one navigable, one event loop |
+| one FIFO microtask queue, drained completely after every task, with the re-entrancy flag | every task costs 1 ms of simulated time |
+| rendering opportunities at frame boundaries queue a task on the rendering task source | rendering opportunity = every `frameMs`, never throttled |
+| hidden documents filtered out of rendering (no rAF callbacks run) | "unnecessary rendering" = no rAF callbacks pending |
+| all rAF callbacks in one frame receive the same timestamp; microtasks run between them | style, layout and paint are log entries |
+| sub-step order of the rendering task (verbose mode) | ResizeObserver depth loop not modelled |
+| idle deadline = min(idle start + 50 ms, next timer, next render deadline) | |
+| listener dispatch from user input (checkpoint after each listener) vs `el.click()` from script | |
+
+Tests replay the classic puzzles against it **and against Node** where the behaviour is host-independent, and show starvation: a self-re-enqueuing microtask prevents both timers and rendering forever, while a self-re-enqueuing *task* lets rendering interleave.
 
 ---
 
-## 6. Production failure modes
+## 7. Production failure modes
 
 | Failure | Mechanism | Defence |
 |---|---|---|
@@ -222,6 +348,11 @@ Node also drains the microtask queue after each callback from libuv, and has `pr
 | Animation stutters | layout reads after writes in rAF (forced synchronous layout), or work scheduled with `setTimeout(16)` | batch reads then writes; drive animations with rAF timestamps |
 | Test flakes "sometimes passes" | relying on rAF vs timer ordering, or on cross-source task ordering | wait on explicit signals; use fake timers that model microtasks |
 | `instanceof Error` false in tests | errors created in a different realm (`vm`-based runners) | `Error.isError` |
+| Promise rejected although the code "never throws" | a `then` getter or a throwing `then` method on a resolution value: resolve reads `then` synchronously and rejects on error | do not resolve promises with objects that have a `then` property unless they are real thenables; wrap data (`{ value: obj }`) |
+| Process exits with code 1 although the promise had `.catch` | `p.then(f)` returns a **new** promise that rejects too; only `p` was handled | end every chain with `.catch`, or `await` it |
+| Microtask ordering differs between real clicks and `el.click()` in tests | real dispatch empties the stack between listeners (checkpoint between them); synthetic dispatch from script does not | test with the dispatch path users take, or do not depend on cross-listener microtask order |
+| Animations stop and timers run rarely in background tabs | hidden documents are filtered out of rendering (no rAF callbacks); rendering opportunities drop to a few per second or none | do not drive logic from rAF; use `visibilitychange` to pause and resume |
+| "ResizeObserver loop completed with undelivered notifications" in error logs | a resize callback changed layout at a shallower depth, so observations were skipped | avoid resizing the observed element from its own observer; defer with rAF |
 
 ---
 
@@ -265,4 +396,14 @@ If every awaited value is already resolved, the whole loop runs within one micro
 <details><summary>8. Why is a task "queue" actually a set?</summary>
 
 The event loop chooses the first *runnable* task from a queue of its choosing; tasks whose document is not fully active are skipped, and browsers prioritise some sources (input, rendering) over others (timers). Only tasks from the same source keep their relative order.
+</details>
+
+<details><summary>9. What does `new Promise(r => r({ get then() { throw new Error('x') } }))` produce, and when does the getter run?</summary>
+
+The getter runs synchronously inside `r(...)`, because CreateResolvingFunctions step 4 reads `then` immediately. The exception does not escape the executor: the promise is rejected with it.
+</details>
+
+<details><summary>10. Why does a real user click run a microtask queued by the first listener before the second listener, but `el.click()` does not?</summary>
+
+For a user click, the browser invokes each listener from an empty JavaScript stack, and "clean up after running script" performs a microtask checkpoint after each callback. With `el.click()` the dispatch happens inside running script, the stack never empties between listeners, and microtasks run only after `click()` returns and the calling script finishes.
 </details>
