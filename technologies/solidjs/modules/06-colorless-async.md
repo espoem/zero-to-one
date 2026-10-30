@@ -1,6 +1,6 @@
 # Module 06 — Colorless Async: Async Computations, Boundaries and Pending State
 
-> **Executable proof:** [`examples/typescript/06-colorless-async.test.tsx`](../examples/typescript/06-colorless-async.test.tsx) (19 tests). Every promise in the suite is a hand-settled deferred, so the tests contain no timers and no races.
+> **Executable proof:** [`examples/typescript/06-colorless-async.test.tsx`](../examples/typescript/06-colorless-async.test.tsx) (23 tests). Every promise in the suite is a hand-settled deferred, so the tests contain no timers and no races.
 >
 > Promise and job-queue semantics, async functions and async iteration are owned by `languages/javascript`. This module covers how Solid's graph treats them.
 

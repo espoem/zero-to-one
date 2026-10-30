@@ -1,6 +1,6 @@
 # Module 07 — Actions, Transactions and Optimistic State
 
-> **Executable proof:** [`examples/typescript/07-actions-and-optimistic-state.test.tsx`](../examples/typescript/07-actions-and-optimistic-state.test.tsx) (10 tests against an in-memory server whose requests the test completes by hand, including out of order).
+> **Executable proof:** [`examples/typescript/07-actions-and-optimistic-state.test.tsx`](../examples/typescript/07-actions-and-optimistic-state.test.tsx) (16 tests against an in-memory server whose requests the test completes by hand, including out of order).
 >
 > Generator and iterator protocol semantics are owned by `languages/javascript`.
 

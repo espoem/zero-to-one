@@ -1,6 +1,6 @@
 # Module 05 — Stores and Projections
 
-> **Executable proof:** [`examples/typescript/05-stores-and-projections.test.ts`](../examples/typescript/05-stores-and-projections.test.ts) (16 tests, real `solid-js@2.0.0-rc.19`).
+> **Executable proof:** [`examples/typescript/05-stores-and-projections.test.ts`](../examples/typescript/05-stores-and-projections.test.ts) (22 tests, real `solid-js@2.0.0-rc.19`).
 >
 > Proxy and Reflect semantics (traps, invariants, identity) are owned by `languages/javascript` and are not re-explained here.
 
