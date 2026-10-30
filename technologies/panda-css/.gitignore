@@ -3,8 +3,13 @@ node_modules/
 
 # Panda CSS Generated Design Engine
 styled-system/
+styled-system-*/
 
 # Panda CSS Cache & Performance Profiles
 .panda/
 *.buildinfo.json
 *.cpuprofile
+
+# Vite builds made by the e2e tests
+dist/
+dist-*/

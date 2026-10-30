@@ -1,22 +1,22 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "target": "ES2024",
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "lib": ["ES2024", "DOM", "DOM.Iterable"],
+    "types": ["node"],
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
-    "useUnknownInCatchVariables": true,
+    "exactOptionalPropertyTypes": false,
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
     "skipLibCheck": true,
-    "esModuleInterop": true,
     "jsx": "react-jsx",
-    "paths": {
-      "styled-system/*": ["./styled-system/*"]
-    }
+    "jsxImportSource": "react"
   },
-  "include": [
-    "examples/**/*",
-    "styled-system/**/*"
-  ]
+  "include": ["examples/**/*"],
+  "exclude": ["examples/solid/**", "examples/bench/**", "examples/fixtures/negative/parse-error.ts", "**/styled-system/**", "**/dist/**", "node_modules"]
 }

@@ -1,0 +1,78 @@
+@layer reset, base, tokens, recipes, utilities;
+@layer recipes { @layer base, slots, variants, compound_variants; }
+@layer recipes.slots { @layer base, variants, compound_variants; }
+@layer base {
+  :root {
+    --made-with-panda: '🐼';
+  }
+}
+@layer tokens {
+  :where(:root, :host) {
+    --colors-red-600: oklch(57.7% 0.245 27.325);
+    --colors-brand-500: #6366f1;
+    --colors-brand-600: #4f46e5;
+    --colors-ink-50: #fafafa;
+    --colors-ink-100: #f4f4f5;
+    --colors-ink-900: #18181b;
+    --font-sizes-sm: 0.875rem;
+    --font-sizes-md: 1rem;
+    --font-sizes-lg: 1.125rem;
+    --font-weights-medium: 500;
+    --font-weights-bold: 700;
+    --colors-bg-subtle: var(--colors-ink-100);
+    --colors-fg-default: var(--colors-ink-900);
+    --colors-accent-default: var(--colors-brand-600);
+  }
+  :where(.dark, [data-color-mode=dark]) {
+    --colors-bg-subtle: var(--colors-ink-900);
+    --colors-fg-default: var(--colors-ink-50);
+    --colors-accent-default: var(--colors-brand-500);
+  }
+}
+@layer utilities {
+  .c_fg\.default {
+    color: var(--colors-fg-default);
+  }
+  .fs_sm {
+    font-size: var(--font-sizes-sm);
+  }
+  .fw_medium {
+    font-weight: var(--font-weights-medium);
+  }
+  .\[\&\[data-state\=open\]\]\:fw_bold[data-state=open] {
+    font-weight: var(--font-weights-bold);
+  }
+  .peer:is(:invalid, [data-invalid], [aria-invalid=true]) ~ .peerInvalid\:c_red\.600 {
+    color: var(--colors-red-600);
+  }
+  .hover\:c_accent\.default:is(:hover, [data-hover]) {
+    color: var(--colors-accent-default);
+  }
+  .group:is(:hover, [data-hover]) .groupHover\:bg_bg\.subtle {
+    background: var(--colors-bg-subtle);
+  }
+  .focusVisible\:outline-style_solid:is(:focus-visible, [data-focus-visible]) {
+    outline-style: solid;
+  }
+  .focusVisible\:ring-w_2px:is(:focus-visible, [data-focus-visible]) {
+    outline-width: 2px;
+  }
+  @media (width >= 48rem) {
+    .md\:fs_md {
+      font-size: var(--font-sizes-md);
+    }
+  }
+  @media (width >= 64rem) {
+    .lg\:fs_lg {
+      font-size: var(--font-sizes-lg);
+    }
+    .lg\:fw_bold {
+      font-weight: var(--font-weights-bold);
+    }
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .supportsHover\:td_underline {
+      text-decoration: underline;
+    }
+  }
+}
