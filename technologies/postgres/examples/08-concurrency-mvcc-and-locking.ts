@@ -19,7 +19,7 @@ async function run(): Promise<void> {
       BEGIN;
       UPDATE accounts SET balance = balance - 20 WHERE id = 1;
       UPDATE accounts SET balance = balance + 20 WHERE id = 2;
-      -- Simulate a forced rollback
+      -- Force rollback
       ROLLBACK;
     `);
   } catch {
@@ -41,34 +41,36 @@ async function run(): Promise<void> {
   assert.equal(Number(balAfterCommit.rows[0]!.balance), 70.00);
   assert.equal(Number(balAfterCommit.rows[1]!.balance), 80.00);
 
-  // Test 3: Queuing Pattern with FOR UPDATE
+  // Test 3: Transaction-Level Advisory Locks
   await db.exec(`
-    CREATE TABLE task_queue (
-      task_id SERIAL PRIMARY KEY,
+    BEGIN;
+    SELECT pg_advisory_xact_lock(101);
+    COMMIT;
+  `);
+
+  // Test 4: Work Queue with FOR UPDATE SKIP LOCKED
+  await db.exec(`
+    CREATE TABLE job_queue (
+      job_id SERIAL PRIMARY KEY,
       task_name TEXT NOT NULL,
       status TEXT NOT NULL DEFAULT 'pending'
     );
 
-    INSERT INTO task_queue (task_name) VALUES ('email_1'), ('email_2');
+    INSERT INTO job_queue (task_name) VALUES ('job_alpha'), ('job_beta');
   `);
 
-  const taskFetch = await db.query<{ task_id: number; task_name: string }>(`
-    SELECT task_id, task_name
-    FROM task_queue
+  const jobFetch = await db.query<{ job_id: number; task_name: string }>(`
+    SELECT job_id, task_name
+    FROM job_queue
     WHERE status = 'pending'
-    ORDER BY task_id ASC
+    ORDER BY job_id ASC
     LIMIT 1
-    FOR UPDATE;
+    FOR UPDATE SKIP LOCKED;
   `);
-  assert.equal(taskFetch.rows.length, 1);
-  assert.equal(taskFetch.rows[0]!.task_name, 'email_1');
+  assert.equal(jobFetch.rows.length, 1);
+  assert.equal(jobFetch.rows[0]!.task_name, 'job_alpha');
 
-  // Test 4: Advisory Locks
-  const advLock = await db.query<{ lock_acquired: boolean }>('SELECT pg_try_advisory_lock(42) AS lock_acquired;');
-  assert.equal(advLock.rows[0]!.lock_acquired, true);
-  await db.query('SELECT pg_advisory_unlock(42);');
-
-  logSuccess('06-concurrency-and-mvcc');
+  logSuccess('08-concurrency-mvcc-and-locking');
 }
 
 await run();
