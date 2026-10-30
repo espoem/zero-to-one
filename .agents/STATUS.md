@@ -22,7 +22,7 @@ States: ⬜ brief ready → 🟦 authoring → 🟨 challenge + verify → 🟧 
 | 1 | `languages/javascript` | Opus · claude.ai | `track/javascript` | ✅ merged | Merged 2026-10-30: 355 tests passing, Node 26.12.1 / ES2026, 78-q bank, challenger & verifier gates complete. |
 | 2 | `algorithms/dsa` | Opus · claude.ai | `track/dsa` | ✅ merged | Merged 2026-10-30: 14 modules, 68 tests passing hermetically in 0.39s, Node 26.12.1 / TS 7.0.2 pinned, 75-q MIT 6.1210/6.1220J & FAANG bank + 90-min mock exam, challenger & verifier gates complete. |
 | 2 | `architecture/distributed-systems` | Opus · claude.ai | `track/distributed-systems` | ✅ merged | Merged 2026-10-30: 14 modules, 49 tests passing hermetically in 6.2s, Node 26.12.1 / TS 7.0.2 pinned, 75-q MIT 6.5840 / Cambridge & Staff loop bank + 90-min mock exam, challenger & verifier gates complete. |
-| 2 | `languages/python` | Opus · claude.ai | `track/python` | ⬜ brief ready | |
+| 2 | `languages/python` | Opus · claude.ai | `track/python` | ✅ merged | Merged 2026-10-30: 14 modules, 82 tests passing hermetically in 0.76s, Python 3.15.2 / uv 0.13.6 pinned, PCAP/PCPP1 & Senior loop 75-q bank + 90-min mock exam, challenger & verifier gates complete. |
 | 2 | `technologies/elasticsearch` | Opus · Claude Code | `track/elasticsearch` | ⬜ brief ready | |
 | 2 | `technologies/nodejs` | Opus · claude.ai | `track/nodejs` | ⬜ brief ready | |
 | 2 | `technologies/redis` | Opus · Claude Code | `track/redis` | ⬜ brief ready | |
