@@ -9,6 +9,7 @@ Severity: **P0** = wrong now (a false claim, a failing test, a removed API taugh
 - [ ] `mise exec -- npm test` (or the track's equivalent) passes. `typecheck` passes.
 - [ ] `test:integration`, if present, passes with Docker running and skips with a clear message without Docker.
 - [ ] Every runnable snippet quoted in `modules/` exists in `examples/` and is exercised by a test.
+- [ ] `tools/mermaid-check` passes for the track: every Mermaid diagram parses with Mermaid 11 and 12.
 - [ ] Every link is relative and resolves (`lychee --offline` or an equivalent link checker).
 - [ ] There are no `file:///`, absolute user paths, secrets or real tokens.
 - [ ] The track has every required item: `README.md`, `GLOSSARY.md`, `CHEATSHEET.md`, `modules/`, `examples/`, `exams/`.
