@@ -14,7 +14,7 @@ States: ⬜ brief ready → 🟦 authoring → 🟨 challenge + verify → 🟧 
 | 1 | `technologies/panda-css` | Opus · claude.ai | `track/panda-css` | 🟦 authoring | Wave 1: Opus subagent in the claude.ai workspace, started 2026-10-28 |
 | 1 | `technologies/postgres` | Opus · claude.ai | `track/postgres` | ⬜ brief ready | |
 | 1 | `technologies/react` | Opus · claude.ai | `track/react` | 🟦 authoring | Wave 1: Opus subagent in the claude.ai workspace, started 2026-10-28 |
-| 1 | `technologies/solidjs` | Opus · claude.ai | `track/solidjs` | 🟦 authoring | Wave 1: Opus subagent in the claude.ai workspace, started 2026-10-28 |
+| 1 | `technologies/solidjs` | Opus · claude.ai | `track/solidjs` | 🟨 challenge + verify | Author pass done 2026-10-30: 216 tests, 10 modules ≥400 lines, 60-q interview bank. Run prompts C and V from KICKOFF.md on track/solidjs. |
 | 1 | `architecture/data-systems` | Opus · claude.ai | `track/data-systems` | ⬜ brief ready | |
 | 1 | `architecture/networking` | Opus · Claude Code | `track/networking` | ⬜ brief ready | |
 | 1 | `architecture/security-identity` | Opus · claude.ai | `track/security-identity` | ⬜ brief ready | |
