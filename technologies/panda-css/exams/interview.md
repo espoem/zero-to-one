@@ -768,7 +768,7 @@ A 60-minute senior frontend / design-system loop. Answer without notes, then sco
 | 3. Debugging scenarios (explain cause and fix aloud) | 20 min | Q-INT-007, 012, 020, 025, 032, 038, 050, 057 | 4 | 32 |
 | 4. Design discussion | 12 min | Q-INT-048, Q-INT-017 | 8 | 16 |
 | 5. Hands-on (live) | 10 min | Q-INT-022 (or Q-INT-044 for component-heavy roles) | 18 | 18 |
-| **Total** | **60 min** | **24** | | **100** |
+| **Total** | **60 min** | **25** | | **100** |
 
 ### Scoring key
 

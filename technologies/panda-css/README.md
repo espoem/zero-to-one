@@ -16,20 +16,24 @@ Derived from the panda-css.com v2 documentation table of contents (Get started, 
 
 | # | Module | Covers | Executable proof |
 |---|---|---|---|
-| 01 | [Static CSS-in-JS mental model & v2 architecture](./modules/01-mental-model-and-v2-architecture.md) | Static extraction (formal), atoms, layered stylesheet, codegen vs cssgen, runtime `css()`, source transforms (measured), Rust crate tiers, RSC/SSR | snapshots, `runtime.test.ts`, vanilla transform build |
-| 02 | [Installation & build integration](./modules/02-installation-and-build-integration.md) | ESM/Node ≥ 22, explicit presets, PostCSS / Vite / CLI, `prepare`, `--clean`, TS 7 CSS import, `doctor`/`check`/`debug`, CI gates, CLI Then vs now | `integration-postcss.test.ts`, `cli.test.ts`, no-preset-base config |
-| 03 | [Styling API & conditions](./modules/03-styling-api-and-conditions.md) | Style-object grammar, utilities, conditions, responsive keys, `css`/`css.raw`/`cx` merge semantics, property-breadth order and v2 border tiers, `css` prop pattern, `@slot` conditions | `e2e-fixtures.test.ts`, array-condition config |
-| 04 | [Patterns & layout](./modules/04-patterns-and-layout.md) | Built-in and custom patterns, responsive props with `map`, `linkOverlay`, `theme.containers` container queries | pattern fixtures, container e2e, `containerSizes` negative |
-| 05 | [Design tokens & semantic tokens](./modules/05-design-tokens.md) | Token graph, references, opacity modifier, `token()` folding trap, `@property` vs v1 reset, strict modes, `removeUnusedTokens`, JSON spec, DTCG status | `05-*` snapshots, `type-tests.ts`, `--spec` test |
-| 06 | [Color mode & theming](./modules/06-color-mode-and-theming.md) | `_dark`/`_osDark`, FOUC, multi-brand `themes`, static vs on-demand, theme contracts, compositions, theme-key replacement semantics | themes Playwright test |
-| 07 | [Recipes (`cva`) & config recipes](./modules/07-recipes-and-config-recipes.md) | Recipe model, eager vs JIT emission, JSX tracking, `staticCss`, compound variants Then vs now, `smartCompoundVariants`, `colorPalette` | `runtime.test.ts`, recipe negatives, cascade e2e |
-| 08 | [Slot recipes & recipe contexts](./modules/08-slot-recipes-and-recipe-contexts.md) | `sva`/`defineSlotRecipe`, `createSlotRecipeContext`/`createRecipeContext`/`withRootProvider`, `createStyleContext`/`defineParts` removal, headless libraries | `recipe-context.test.ts` (React + Solid SSR) |
-| 09 | [JSX factory & style props (React and Solid)](./modules/09-jsx-factory-and-style-props.md) | Style-prop extraction, factory options, React vs Solid idioms, `jsxStyleProps` type cost (measured) | `type-cost.test.ts`, both apps in e2e |
-| 10 | [Compiler internals & static-analysis debugging](./modules/10-compiler-internals-and-debugging.md) | v2 pipeline stage by stage, import matching, literal-fold rules, diagnostics, v1 engine as history, plugins/hooks, debugging playbook | `compiler.test.ts`, negative fixtures |
-| 11 | [Monorepos & shipping a design-system library](./modules/11-monorepos-and-design-system-libraries.md) | Preset vs `panda lib` vs stylesheet, `designSystem`, build-info replay, `treeshakeDesignSystem`, include hygiene, task graphs | `monorepo.test.ts` (workspace package + app) |
-| 12 | [Migration & upgrades](./modules/12-migration-and-upgrades.md) | Runtime CSS-in-JS and Tailwind → Panda, 0.x/1.x → 2.x checklist, version history, v2 best-practices catalogue | `migration.test.ts` + upgrade audit script |
+| 01 | [Static CSS-in-JS Mental Model and the v2 Architecture](./modules/01-mental-model-and-v2-architecture.md) | Static extraction (formal), atoms, layered stylesheet, codegen vs cssgen, runtime `css()`, source transforms (measured), Rust crate tiers, RSC/SSR | snapshots, `runtime.test.ts`, vanilla transform build |
+| 02 | [Installation and Build Integration](./modules/02-installation-and-build-integration.md) | ESM/Node ≥ 22, explicit presets, PostCSS / Vite / CLI, `prepare`, `--clean`, TS 7 CSS import, `doctor`/`check`/`debug`, CI gates, CLI Then vs now | `integration-postcss.test.ts`, `cli.test.ts`, no-preset-base config |
+| 03 | [The Styling API and Conditions](./modules/03-styling-api-and-conditions.md) | Style-object grammar, utilities, conditions, responsive keys, `css`/`css.raw`/`cx` merge semantics, property-breadth order and v2 border tiers, `css` prop pattern, `@slot` conditions | `e2e-fixtures.test.ts`, array-condition config |
+| 04 | [Patterns and Layout](./modules/04-patterns-and-layout.md) | Built-in and custom patterns, responsive props with `map`, `linkOverlay`, `theme.containers` container queries | pattern fixtures, container e2e, `containerSizes` negative |
+| 05 | [Design Tokens and Semantic Tokens](./modules/05-design-tokens.md) | Token graph, references, opacity modifier, `token()` folding trap, `@property` vs v1 reset, strict modes, `removeUnusedTokens`, JSON spec, DTCG status | `05-*` snapshots, `type-tests.ts`, `--spec` test |
+| 06 | [Color Mode and Theming](./modules/06-color-mode-and-theming.md) | `_dark`/`_osDark`, FOUC, multi-brand `themes`, static vs on-demand, theme contracts, compositions, theme-key replacement semantics | themes Playwright test |
+| 07 | [Recipes (`cva`) and Config Recipes](./modules/07-recipes-and-config-recipes.md) | Recipe model, eager vs JIT emission, JSX tracking, `staticCss`, compound variants Then vs now, `smartCompoundVariants`, `colorPalette` | `runtime.test.ts`, recipe negatives, cascade e2e |
+| 08 | [Slot Recipes and Recipe Contexts](./modules/08-slot-recipes-and-recipe-contexts.md) | `sva`/`defineSlotRecipe`, `createSlotRecipeContext`/`createRecipeContext`/`withRootProvider`, `createStyleContext`/`defineParts` removal, headless libraries | `recipe-context.test.ts` (React + Solid SSR) |
+| 09 | [The JSX Factory and Style Props (React and Solid)](./modules/09-jsx-factory-and-style-props.md) | Style-prop extraction, factory options, React vs Solid idioms, `jsxStyleProps` type cost (measured) | `type-cost.test.ts`, both apps in e2e |
+| 10 | [Compiler Internals and Static-Analysis Debugging](./modules/10-compiler-internals-and-debugging.md) | v2 pipeline stage by stage, import matching, literal-fold rules, diagnostics, v1 engine as history, plugins/hooks, debugging playbook | `compiler.test.ts`, negative fixtures |
+| 11 | [Monorepos and Shipping a Design-System Library](./modules/11-monorepos-and-design-system-libraries.md) | Preset vs `panda lib` vs stylesheet, `designSystem`, build-info replay, `treeshakeDesignSystem`, include hygiene, task graphs | `monorepo.test.ts` (workspace package + app) |
+| 12 | [Migration and Upgrades](./modules/12-migration-and-upgrades.md) | Runtime CSS-in-JS and Tailwind → Panda, 0.x/1.x → 2.x checklist, version history, v2 best-practices catalogue | `migration.test.ts` + upgrade audit script |
 
-Out of scope, with reasons: framework guides other than React, Solid and Vite/PostCSS (Vue, Svelte, Astro, Angular, Qwik, Ember: same compiler, framework-specific wiring only; the official guides suffice); Panda MCP server and agent skills (`npx -y @pandacss/mcp`: tooling around the product, not the styling model); the ESLint/oxlint plugin rules beyond a mention in M11; `@pandacss/preset-typography`; `positionTry()`, `viewTransition()` and `firstThatWorks()` helpers beyond mentions (thin wrappers over CSS features owned by `languages/css`).
+### Out of Scope
+- Framework integrations other than React, Solid and Vite/PostCSS (Vue, Svelte, Astro, Angular, Qwik: identical compiler mechanics, framework-specific adapter wiring only; official documentation suffices).
+- Panda MCP server and editor agent skills (`@pandacss/mcp`: development tooling around the product rather than the styling runtime).
+- `@pandacss/preset-typography`, `positionTry()`, `viewTransition()` and `firstThatWorks()` helpers beyond mentions (thin utility wrappers over CSS features owned by [`languages/css`](../../languages/css/README.md)).
+- General CSS cascade and layout theory (owned by [`languages/css`](../../languages/css/README.md)).
 
 **Recommended order:** 01 → 12. Short paths: application developers 01–06 + 09; design-system authors 05–08, 10, 11; upgrading teams 02, 10, 12.
 
@@ -58,11 +62,11 @@ technologies/panda-css/
 
 ```bash
 mise install            # node 26 (or any Node >= 22)
-npm install             # runs `prepare` -> panda codegen for every example project
-npx playwright install chromium   # browser for the e2e suites (Playwright is pinned to 1.64.1)
-npm run typecheck       # tsc (React + Solid configs), including @ts-expect-error negative type tests
-npm test                # node --test examples/tests/*.test.ts
-npm run test:update-snapshots   # only when a CSS change is intended; review the diff
+mise exec -- npm install             # runs `prepare` -> panda codegen for every example project
+mise exec -- npx playwright install chromium   # browser for the e2e suites (Playwright is pinned to 1.64.1)
+mise exec -- npm run typecheck       # tsc (React + Solid configs), including @ts-expect-error negative type tests
+mise exec -- npm test                # node --test examples/tests/*.test.ts
+mise exec -- npm run test:update-snapshots   # only when a CSS change is intended; review the diff
 ```
 
 `npm test` runs, without network access:
