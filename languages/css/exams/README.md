@@ -33,8 +33,8 @@ CSS is an open web standard governed by the W3C CSS Working Group. Unlike propri
 | **10** | Color Spaces (OKLCH), RCS & Typography | 7% | [10-color-theming-and-typography.md](../modules/10-color-theming-and-typography.md) | [10-color-oklch-and-theming.test.ts](../examples/10-color-oklch-and-theming.test.ts) | ✅ Full |
 | **11** | Motion, Transitions, Scroll & View Transitions | 8% | [11-motion-transitions-animations-and-view-transitions.md](../modules/11-motion-transitions-animations-and-view-transitions.md) | [11-motion-and-starting-style.test.ts](../examples/11-motion-and-starting-style.test.ts) | ✅ Full |
 | **12** | Responsive & Accessible CSS (Forced Colors) | 6% | [12-responsive-and-accessible-css.md](../modules/12-responsive-and-accessible-css.md) | [12-responsive-and-accessibility.test.ts](../examples/12-responsive-and-accessibility.test.ts) | ✅ Full |
-| **13** | Rendering Pipeline, Performance & Core Web Vitals | 5% | [13-rendering-pipeline-and-performance.md](../modules/13-rendering-pipeline-and-performance.md) | Chromium CDP Performance Metrics | ✅ Full |
-| **14** | Architecture, Zero-Runtime & Design Tokens (DTCG) | 4% | [14-css-architecture-and-design-tokens.md](../modules/14-css-architecture-and-design-tokens.md) | [13-design-tokens-dtcg.test.ts](../examples/13-design-tokens-dtcg.test.ts) | ✅ Full |
+| **13** | Rendering Pipeline, Performance & Core Web Vitals | 5% | [13-rendering-pipeline-and-performance.md](../modules/13-rendering-pipeline-and-performance.md) | [13-rendering-pipeline-performance.test.ts](../examples/13-rendering-pipeline-performance.test.ts) | ✅ Full |
+| **14** | Architecture, Zero-Runtime & Design Tokens (DTCG) | 4% | [14-css-architecture-and-design-tokens.md](../modules/14-css-architecture-and-design-tokens.md) | [14-design-tokens-dtcg.test.ts](../examples/14-design-tokens-dtcg.test.ts) | ✅ Full |
 
 ---
 
