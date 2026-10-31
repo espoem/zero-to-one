@@ -46,31 +46,31 @@ The curriculum is structured into 14 self-contained, progressive modules:
 
 ### [Module 03 — Passwords, Peppering & Secrets at Rest](./modules/03-passwords-and-secrets-at-rest.md)
 - **Concepts**: Why general-purpose hashes fail for passwords, memory-hard KDFs: Argon2id (RFC 9106), scrypt, and bcrypt, the bcrypt 72-byte silent truncation vulnerability, salts vs KMS peppers, compromised credential checking via k-Anonymity (Have I Been Pwned), HashiCorp Vault dynamic secrets, and automated credential rotation.
-- **Runnable Proof**: [`examples/03-password-peppering-argon2id.test.ts`](./examples/03-password-peppering-argon2id.test.ts)
+- **Runnable Proof**: [`examples/03-passwords-and-secrets.test.ts`](./examples/03-passwords-and-secrets.test.ts)
 
 ### [Module 04 — Public Key Infrastructure, X.509 & Workload Identity](./modules/04-pki-x509-and-mtls.md)
 - **Concepts**: X.509 ASN.1 data structure (RFC 5280), CA hierarchies and trust stores, critical extensions (SAN, BasicConstraints, KeyUsage, EKU), CA/Browser Forum SC-081 certificate lifespan compression (47 days in 2029), revocation mechanics (CRL, CRLite, OCSP Stapling), Certificate Transparency (CT logs, RFC 6962), ACME protocol automation (RFC 8555), and mutual TLS (mTLS) with SPIFFE/SPIRE workload identities.
-- **Runnable Proof**: [`examples/04-x509-pki-mtls.test.ts`](./examples/04-x509-pki-mtls.test.ts)
+- **Runnable Proof**: [`examples/04-pki-cert-validation.test.ts`](./examples/04-pki-cert-validation.test.ts)
 
 ### [Module 05 — Sessions, Cookies & Browser Security Architecture](./modules/05-sessions-cookies-and-browser-security.md)
-- **Concepts**: Stateful server sessions vs client JWT sessions, session fixation, cookie security attributes (`HttpOnly`, `Secure`, `SameSite=Strict/Lax`), RFC 6265bis `__Host-` prefix rules, Cross-Site Request Forgery (CSRF) and Synchronizer Tokens, Cross-Origin Resource Sharing (CORS), Content Security Policy Level 3 nonces, Fetch Metadata (`Sec-Fetch-Site`), and the Backend-for-Frontend (BFF) pattern (RFC 10017).
-- **Runnable Proof**: [`examples/05-session-cookie-browser.test.ts`](./examples/05-session-cookie-browser.test.ts)
+- **Concepts**: Stateful server sessions vs client JWT sessions, session fixation, cookie security attributes (`HttpOnly`, `Secure`, `SameSite=Strict/Lax`), RFC 6265bis `__Host-` prefix rules, Cross-Site Request Forgery (CSRF) and Synchronizer Tokens, Cross-Origin Resource Sharing (CORS), Content Security Policy Level 3 nonces, Fetch Metadata (`Sec-Fetch-Site`), and the Backend-for-Frontend (BFF) pattern (draft-ietf-oauth-browser-based-apps).
+- **Runnable Proof**: [`examples/05-session-and-cookie-security.test.ts`](./examples/05-session-and-cookie-security.test.ts)
 
 ### [Module 06 — Modern OAuth 2.1 Core](./modules/06-oauth-2-1-core.md)
 - **Concepts**: The OAuth 2.1 consolidation: deprecation of Implicit and ROPC grants, Authorization Code Flow, Proof Key for Code Exchange (PKCE S256, RFC 7636), exact string matching for redirect URIs, Refresh Token Rotation (RTR) and automated family revocation upon reuse, and RFC 9700 mix-up attack defenses (`iss` parameter, RFC 9207).
-- **Runnable Proof**: [`examples/06-oauth2-pkce-rtr.test.ts`](./examples/06-oauth2-pkce-rtr.test.ts)
+- **Runnable Proof**: [`examples/06-oauth-pkce-flow.test.ts`](./examples/06-oauth-pkce-flow.test.ts)
 
 ### [Module 07 — OpenID Connect & Federated Identity Defense](./modules/07-oidc-and-federation.md)
 - **Concepts**: OIDC Core architecture, ID Token vs Access Token distinction, OIDC Discovery (`/.well-known/openid-configuration`) and JWKS rotation, mathematical validation of the `at_hash` claim, the nOAuth unverified email account takeover exploit, federated session logout (Front-Channel vs Back-Channel Logout 1.0), and Token Exchange (RFC 8693).
-- **Runnable Proof**: [`examples/07-oidc-validation-and-noauth.test.ts`](./examples/07-oidc-validation-and-noauth.test.ts)
+- **Runnable Proof**: [`examples/07-oidc-id-token-validation.test.ts`](./examples/07-oidc-id-token-validation.test.ts)
 
 ### [Module 08 — Tokens, JOSE Suite & Sender-Constraining](./modules/08-tokens-jose-and-sender-constraining.md)
-- **Concepts**: The JOSE family (JWS, JWE, JWK, JWA, JWT), parsing compact serialization, the `alg:none` catastrophe, RS256/HS256 Algorithm Confusion (Key Confusion), RFC 8725 JWT Best Current Practice, explicit token typing (`typ: "at+jwt"`, RFC 9068), Demonstrating Proof-of-Possession (DPoP, RFC 9449), mTLS-bound access tokens (RFC 8705), and Selective Disclosure JWTs (SD-JWT, RFC 9901).
+- **Concepts**: The JOSE family (JWS, JWE, JWK, JWA, JWT), parsing compact serialization, the `alg:none` catastrophe, RS256/HS256 Algorithm Confusion (Key Confusion), RFC 8725 JWT Best Current Practice, explicit token typing (`typ: "at+jwt"`, RFC 9068), Demonstrating Proof-of-Possession (DPoP, RFC 9449), mTLS-bound access tokens (RFC 8705), and Selective Disclosure JWTs (SD-JWT, draft-ietf-oauth-selective-disclosure-jwt).
 - **Runnable Proof**: [`examples/08-jwt-vulnerabilities-and-dpop.test.ts`](./examples/08-jwt-vulnerabilities-and-dpop.test.ts)
 
 ### [Module 09 — Hardware-Backed MFA, WebAuthn & Passkeys](./modules/09-passkeys-webauthn-and-mfa.md)
 - **Concepts**: WebAuthn Level 3 and FIDO2/CTAP2 architecture, Registration and Authentication ceremonies, the mathematical proof of phishing resistance via `clientDataJSON` origin binding, `authenticatorData` binary flags bitfield (UP, UV, BE, BS), sign counters and synced passkeys, WebAuthn PRF extension for client-side encryption, RFC 6238 TOTP math, and mitigating MFA push fatigue.
-- **Runnable Proof**: [`examples/09-webauthn-totp.test.ts`](./examples/09-webauthn-totp.test.ts)
+- **Runnable Proof**: [`examples/09-passkey-webauthn-math.test.ts`](./examples/09-passkey-webauthn-math.test.ts)
 
 ### [Module 10 — Authorization Models: RBAC, ABAC, ReBAC & Policy Engines](./modules/10-authorization-models.md)
 - **Concepts**: The authorization evolution: DAC $\to$ MAC $\to$ RBAC $\to$ ABAC $\to$ ReBAC, Google Zanzibar architecture (relation tuples, userset rewrites), the New-Enemy Problem and Zookies (consistency tokens), OpenFGA, Cedar policy language semantics (forbid-overrides-permit, default-deny), and preventing Broken Object Level Authorization (BOLA/IDOR).
@@ -78,19 +78,31 @@ The curriculum is structured into 14 self-contained, progressive modules:
 
 ### [Module 11 — Web & API Vulnerability Classes](./modules/11-web-and-api-vulnerability-classes.md)
 - **Concepts**: Server-Side Request Forgery (SSRF) and cloud IMDS exfiltration (`169.254.169.254`), DNS Rebinding and socket-level IP pinning, SQL, Command, and Template Injection, Insecure Deserialization and Java/Node gadget chains, OWASP A10:2025 Mishandling of Exceptional Conditions (fail-open bypasses), and Web Cache Deception (WCD).
-- **Runnable Proof**: [`examples/11-ssrf-dns-rebinding-cache-deception.test.ts`](./examples/11-ssrf-dns-rebinding-cache-deception.test.ts)
+- **Runnable Proof**: [`examples/11-vulnerability-ssrf-filter.test.ts`](./examples/11-vulnerability-ssrf-filter.test.ts)
 
 ### [Module 12 — Software Supply Chain & Dependency Security](./modules/12-supply-chain-and-dependency-security.md)
 - **Concepts**: OWASP A03:2025 Software Supply Chain Failures, typosquatting and Dependency Confusion, case study: the XZ Utils backdoor (CVE-2024-3094), neutralizing malicious lifecycle scripts (`npm ci --ignore-scripts`), lockfile checksum integrity, SLSA Level 3 framework, Sigstore / Cosign provenance, and CycloneDX / SPDX Software Bill of Materials (SBOM).
 - **Runnable Proof**: [`examples/12-supply-chain-lockfile-verify.test.ts`](./examples/12-supply-chain-lockfile-verify.test.ts)
 
 ### [Module 13 — Security Operations, Detection Engineering & Incident Handling](./modules/13-security-operations-and-detection.md)
-- **Concepts**: Structured audit logging (OWASP A09:2025) and automated PII/credential redaction, detection engineering rules: Impossible Travel velocity anomalies and concurrent refresh token reuse, vulnerability prioritization: CVSS v4.0 vs EPSS vs SSVC decision trees, NIST SP 800-61r2 incident response phases, and zero-downtime emergency credential rotation drills.
-- **Runnable Proof**: [`examples/13-secops-detection-signals.test.ts`](./examples/13-secops-detection-signals.test.ts)
+- **Concepts**: Structured audit logging (OWASP A09:2025) and automated PII/credential redaction, detection engineering rules: Impossible Travel velocity anomalies and concurrent refresh token reuse, vulnerability prioritization: CVSS v4.0 vs EPSS vs SSVC decision trees, NIST SP 800-61r2/r3 incident response phases, and zero-downtime emergency credential rotation drills.
+- **Runnable Proof**: [`examples/13-secops-audit-and-anomaly.test.ts`](./examples/13-secops-audit-and-anomaly.test.ts)
 
 ### [Module 14 — Expert Architecture: Post-Quantum, Protocol Verification & Zero Trust](./modules/14-expert-topics.md)
 - **Concepts**: The Harvest Now, Decrypt Later (HNDL) threat, NIST Post-Quantum standards (FIPS 203 ML-KEM, FIPS 204 ML-DSA), Hybrid Post-Quantum Key Exchange (X25519MLKEM768, RFC 10024), formal cryptographic protocol verification (Tamarin Prover & ProVerif), Workload Identity Federation (CI-to-cloud without static keys), NIST SP 800-207 Zero Trust Architecture, Crypto-Shredding for GDPR Article 17 on immutable ledgers, and a Staff Security Architect capstone design.
 - **Runnable Proof**: [`examples/14-envelope-encryption-and-crypto-shredding.test.ts`](./examples/14-envelope-encryption-and-crypto-shredding.test.ts)
+
+### Prerequisites
+
+- Understanding of web application architecture, HTTP protocol headers, and client-server communication models.
+- Familiarity with basic mathematical concepts (modular arithmetic, bitwise XOR/AND operations, hashes).
+- Node.js 26 and `npm` installed via `mise`.
+
+### Out of Scope
+
+- **Hardware Side-Channel Power Analysis / DPA**: Physical probing of silicon dies, electromagnetic emissions analysis, and acoustic cryptanalysis belong to hardware laboratory engineering.
+- **Kernel-Level Exploit Development**: Ring 0 kernel shellcode execution, ROP chains in binary executables, and firmware bootkit development are owned by specialized systems security tracks.
+- **Physical Facility Security**: CCTV placement, physical mantraps, biometric door access hardware, and badge reader mechanics.
 
 ---
 
