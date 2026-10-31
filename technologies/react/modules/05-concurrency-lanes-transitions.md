@@ -189,7 +189,7 @@ For the deferred render to be cheap to interrupt, the expensive child must **bai
 
 ## 5. `<Activity>`: hidden, not unmounted
 
-[`<Activity mode="visible" | "hidden">`](https://react.dev/reference/react/Activity) (stable since **19.2**, internally the `Offscreen` fiber, tag 22) is a third option between rendering and not rendering:
+[`<Activity mode="visible" \| "hidden">`](https://react.dev/reference/react/Activity) (stable since **19.2**, internally `ActivityComponent`, tag 31; legacy Suspense offscreen uses `OffscreenComponent`, tag 22) is a third option between rendering and not rendering:
 
 | | `{cond && <Page/>}` | `<Activity mode={cond ? "visible" : "hidden"}>` |
 |---|---|---|
