@@ -657,7 +657,10 @@ In the N-Queens problem, how can column and diagonal attacks be checked in $O(1)
 - D) Using a matrix transpose.
 <details><summary>Answer</summary>
 
-**B** is false; **A** is correct. A queen placed at $(r, c)$ attacks column $c$, main diagonal $r - c$ (shifted by $+ N$ to keep positive), and anti-diagonal $r + c$. By tracking occupied lines with bitwise masks (`(cols & (1 << c)) !== 0`), conflict checking and state mutation run in $O(1)$ single-cycle bitwise operations.
+**A.** A queen placed at $(r, c)$ attacks column $c$, main diagonal $r - c$ (shifted by $+ N$ to keep index positive), and anti-diagonal $r + c$. By tracking occupied lines with bitwise masks (`(cols & (1 << c)) !== 0`), conflict checking and state mutation run in $O(1)$ single-cycle bitwise operations.
+- Why not B: An AVL tree incurs $O(\log N)$ lookup overhead per queen check, whereas bitmask operations evaluate in single-cycle $O(1)$ CPU operations.
+- Why not C: Primality of $N$ has no bearing on column or diagonal attack geometry.
+- Why not D: Matrix transposition changes axes but still requires traversal scanning.
 - Ref: [modules/09-recursion-backtracking-and-divide-and-conquer.md](../modules/09-recursion-backtracking-and-divide-and-conquer.md)
 </details>
 
@@ -855,7 +858,7 @@ What does the Rado-Edmonds Theorem prove regarding matroids?
 - Why not A: Matroids are combinatorial structures, not invertible functions.
 - Why not C: Matroids define independence systems, not universal computation.
 - Why not D: Kruskal's MST algorithm is a direct instance of the greedy algorithm operating on a graphic matroid.
-- Ref: [modules/11-greedy-arguments.md](../modules/11-greedy-algorithms-and-exchange-arguments.md)
+- Ref: [modules/11-greedy-algorithms-and-exchange-arguments.md](../modules/11-greedy-algorithms-and-exchange-arguments.md#6-matroids-and-the-rado-edmonds-theorem)
 </details>
 
 ---
