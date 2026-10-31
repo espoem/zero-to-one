@@ -111,7 +111,7 @@ Standard custom properties are treated as discrete strings; browsers cannot inte
 ```
 
 ### Critical `@property` Gotchas
-1. **Global Registration & First Registration Wins**: Registered properties live in a flat global namespace. If two component packages both declare `@property --theme-color` with different syntaxes or initial values, the first declaration encountered in parsing wins, and the second is discarded.
+1. **Global Registration & Last Rule Wins in CSS**: Registered properties share a flat document-wide namespace. When multiple `@property --theme-color` at-rules are declared in CSS stylesheets, standard cascade ordering applies: the last valid `@property` declaration in document order wins. In contrast, the imperative JavaScript API `window.CSS.registerProperty()` throws a DOMException `InvalidModificationError` if an already registered property name is registered a second time.
 2. **`inherits: false` Breaks Root Custom Property Patterns**: If a developer registers `--theme-spacing` with `inherits: false` and sets `--theme-spacing: 2rem` on `:root`, child components in the `<body>` will NOT inherit `2rem`. They will receive the property's `initial-value`!
 
 ---

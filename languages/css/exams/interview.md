@@ -94,18 +94,16 @@ What is the exact specificity 3-tuple $(A, B, C)$ of the selector `:is(.nav, #he
 - D) `(1, 0, 2)`
 <details><summary>Answer</summary>
 
-**A.**
+**C.**
 - `:is(.nav, #header)` adopts the specificity of its highest argument: `#header` contributes $A = 1, B = 0, C = 0$.
 - `ul` is an element type selector: $C = 1$.
 - `>` is a child combinator: contributes $(0, 0, 0)$.
 - `li` is an element type selector: $C = 1$.
 - `.active` is a class selector: $B = 1$.
-- Total: $A = 1$, $B = 1$ (from `.active`)? Wait! Does `:is()` have `.nav` or `#header`? `#header` has $A=1$. Is there any other class? `.active` has $B=1$.
-Wait: $A = 1$ (from `#header`), $B = 1$ (from `.active`), $C = 2$ (from `ul` and `li`).
-Total tuple: $(1, 1, 2)$!
-- Why not A: $(1, 2, 2)$ erroneously counted `.nav` alongside `#header`, but `:is()` only takes the maximum argument, not the sum!
-- Why not B: $(0, 2, 2)$ missed the ID in `:is()`.
-- Why not D: $(1, 0, 2)$ missed `.active`.
+- Total tuple: $A = 1$ (from `#header`), $B = 1$ (from `.active`), $C = 2$ (from `ul` and `li`) $\implies (1, 1, 2)$.
+- Why not A: `(1, 2, 2)` erroneously counted `.nav` alongside `#header`, but `:is()` only takes the maximum argument, not the sum.
+- Why not B: `(0, 2, 2)` missed the ID in `:is()`.
+- Why not D: `(1, 0, 2)` missed `.active`.
 - Ref: [modules/02-syntax-selectors-and-specificity.md](../modules/02-syntax-selectors-and-specificity.md#specificity-mathematics-the-a-b-c-tuple)
 </details>
 

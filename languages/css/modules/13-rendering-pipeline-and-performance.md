@@ -45,8 +45,8 @@ Every CSS property modification invalidates the pipeline at a specific stage:
 | Invalidation Stage | Pipeline Cost | Triggering CSS Properties | Performance Impact |
 | :--- | :---: | :--- | :--- |
 | **Reflow / Layout** | **Severe (Highest Cost)** | `width`, `height`, `margin`, `padding`, `font-size`, `display`, `top`, `left`, `flex`, `grid` | Forces re-layout of the element and all surrounding/descendant elements. |
-| **Repaint** | **Moderate Cost** | `color`, `background-color`, `border-color`, `box-shadow`, `visibility`, `outline` | Bypasses layout, but re-records draw instructions for the affected layer. |
-| **Composite-Only** | **Minimal (Fastest / 120fps)** | `transform`, `opacity`, `filter`, `backdrop-filter` | Bypasses layout and paint entirely! Handled directly on GPU compositor thread. |
+| **Repaint** | **Moderate Cost** | `color`, `background-color`, `border-color`, `box-shadow`, `visibility`, `outline`, `filter`, `backdrop-filter` | Bypasses layout, but re-records draw instructions and re-rasters pixels for the affected layer. |
+| **Composite-Only** | **Minimal (Fastest / 120fps)** | `transform`, `opacity` | Bypasses layout and paint entirely! Handled directly on GPU compositor thread. |
 
 > [!TIP]
 > Always animate `transform` and `opacity`. Never animate `top`, `left`, `width`, or `height`. Animating `transform: translateX(100px)` executes entirely on the GPU at 120fps without touching the CPU main thread.

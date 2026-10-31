@@ -147,10 +147,10 @@ graph TD
 
 Masonry (waterfall) layouts allow items of varying heights to pack tightly into columns without leaving vertical gaps. For years, browser vendors debated whether masonry belonged inside CSS Grid (`display: grid; grid-template-rows: masonry`) or as an independent display model (`display: masonry`).
 
-In 2025/2026, the W3C CSSWG achieved formal consensus in **CSS Grid Level 3**:
-- Masonry is standardized as **`display: grid-lanes`**.
-- It reuses the entire Grid coordinate system, line naming, track sizing (`fr`, `minmax`), and alignment properties, but treats the cross-axis as non-rigid lanes where items pack into the shortest available column.
-- Safari 26.4 shipped the initial native implementation; Chromium and Firefox are completing implementation.
+In the **CSS Grid Level 3 Editor's Draft** (`unverified` active specification proposal), the CSSWG discussed standardizing masonry via grid-lane models:
+- The candidate syntax proposal specifies **`display: grid-lanes`** (with earlier prototypes testing `display: masonry` or `grid-template-rows: masonry`).
+- It reuses Grid coordinate systems, line naming, track sizing (`fr`, `minmax`), and alignment properties, but treats the cross-axis as non-rigid lanes where items pack into the shortest available column.
+- **Specification Status**: Active Editor's Draft (`unverified`), not yet widely supported across all stable browser release channels. Production systems must use progressive enhancement with standard CSS Grid or CSS multi-column fallbacks.
 
 ```css
 /* Progressive enhancement for Grid-Lanes Masonry */

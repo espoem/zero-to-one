@@ -73,11 +73,11 @@ The curriculum is structured into 14 self-contained, progressively deepening mod
 
 ### [Module 13 — Rendering Pipeline & Performance](./modules/13-rendering-pipeline-and-performance.md)
 - **Concepts**: Critical Rendering Path (DOM/CSSOM $\rightarrow$ Render Tree $\rightarrow$ Layout $\rightarrow$ Paint $\rightarrow$ Composite), style recalculation algorithms, layout thrashing anti-patterns, GPU layer compositing (`transform`, `opacity`), and `content-visibility: auto`.
-- **Runnable Example**: [`examples/01-platform-and-lightningcss.test.ts`](./examples/01-platform-and-lightningcss.test.ts)
+- **Runnable Example**: [`examples/13-rendering-pipeline-performance.test.ts`](./examples/13-rendering-pipeline-performance.test.ts)
 
 ### [Module 14 — CSS Architecture & Design Tokens](./modules/14-css-architecture-and-design-tokens.md)
 - **Concepts**: Evolution of CSS architecture (BEM, CSS Modules, Utility-First, Zero-Runtime CSS), Design Tokens Community Group (DTCG) W3C specification, 3-tier token hierarchy (Global $\rightarrow$ Semantic $\rightarrow$ Component), and token compilation pipelines.
-- **Runnable Example**: [`examples/13-design-tokens-dtcg.test.ts`](./examples/13-design-tokens-dtcg.test.ts)
+- **Runnable Example**: [`examples/14-design-tokens-dtcg.test.ts`](./examples/14-design-tokens-dtcg.test.ts)
 
 ---
 
