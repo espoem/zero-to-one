@@ -9,25 +9,32 @@ A zero-to-one track on **Solid 2.0** (release candidate): fine-grained reactivit
 ## Prerequisites
 
 - JavaScript: closures, promises and the microtask queue, generators, Proxy, ESM `exports` (owned by `languages/javascript`).
-- TypeScript basics; typing Solid components is covered in [TypeScript module 13](../../languages/typescript/modules/13-solidjs-2-with-typescript.md) (moving to TS M12).
-- Helpful: one component framework (the [React track](../react/README.md) links back to Module 10 here).
+- TypeScript basics; typing Solid components is covered in [TypeScript module 12](../../languages/typescript/modules/12-typing-ui-frameworks.md).
+- Helpful: one component framework (the [React track](../react/README.md) links to common reactive concepts).
 
 ## Syllabus
 
 | # | Module | Covers | Proof |
 |---|---|---|---|
-| 01 | [Reactive core](./modules/01-reactive-core.md) | graph model, push-pull, glitch freedom, microtask commits, `flush`, lazy and writable memos, ownership, the owned-write invariant | [`01-reactive-core.test.ts`](./examples/typescript/01-reactive-core.test.ts) |
-| 02 | [Effects, lifecycle & invariants](./modules/02-effects-and-lifecycle.md) | split effects, render vs user effects, error arm, `createReaction`, deprecated `createTrackedEffect`, `onSettled`/`onCleanup`/`onFlush`, diagnostics codes | [`02-…test.tsx`](./examples/typescript/02-effects-and-lifecycle.test.tsx) |
-| 03 | [Components, props & DOM](./modules/03-components-props-and-dom.md) | compiler output, props as getters, `merge`/`omit`, attributes/class/style, root-owned events, refs and directive factories, form inputs | [`03-…test.tsx`](./examples/typescript/03-components-props-and-dom.test.tsx) |
-| 04 | [Control flow & composition](./modules/04-control-flow-and-composition.md) | `<For>` keying modes, `<Repeat>`, `<Show>`/`<Switch>`, `dynamic()`, `children`, `Portal`, context | [`04-…test.tsx`](./examples/typescript/04-control-flow-and-composition.test.tsx) |
-| 05 | [Stores & projections](./modules/05-stores-and-projections.md) | draft setters, `reconcile`, projections and O(1) selection, `snapshot`/`deep`, shallow stores | [`05-…test.ts`](./examples/typescript/05-stores-and-projections.test.ts) |
-| 06 | [Colorless async](./modules/06-colorless-async.md) | async computations, `<Loading>`/`on`/holds, `<Reveal>`, `isPending`/`latest`/`createDeferred`, cancellation, `<Errored>` | [`06-…test.tsx`](./examples/typescript/06-colorless-async.test.tsx) |
-| 07 | [Actions & optimistic state](./modules/07-actions-and-optimistic-state.md) | transactions, generator actions, optimistic primitives, `refresh`/`affects`/`until`, races | [`07-…test.tsx`](./examples/typescript/07-actions-and-optimistic-state.test.tsx) |
-| 08 | [SSR, start mode & server functions](./modules/08-ssr-and-start-mode.md) | start mode, `renderToStream`, hydration policy, `httpStatus`, request isolation, server-function wire and security | [`08-…server.test.tsx`](./examples/typescript/08-ssr-and-server-functions.server.test.tsx) |
-| 09 | [Testing, debugging & performance](./modules/09-testing-debugging-performance.md) | Vitest postures, test patterns, build variants, attribution, performance tracks | [`09-…test.tsx`](./examples/typescript/09-testing-debugging-performance.test.tsx) |
-| 10 | [Migration & React comparison](./modules/10-migration-and-react-comparison.md) | 1.x → 2.0 map and procedure, version history, ecosystem status, React 19 vs Solid 2 | [`10-solid1-vs-solid2.test.ts`](./examples/typescript/10-solid1-vs-solid2.test.ts) |
+| 01 | [Reactive Core: Signals, Memos, Batching and Ownership](./modules/01-reactive-core.md) | graph model, push-pull, glitch freedom, microtask commits, `flush`, lazy and writable memos, ownership, the owned-write invariant | [`01-reactive-core.test.ts`](./examples/typescript/01-reactive-core.test.ts) |
+| 02 | [Effects, Lifecycle and Runtime Invariants](./modules/02-effects-and-lifecycle.md) | split effects, render vs user effects, error arm, `createReaction`, deprecated `createTrackedEffect`, `onSettled`/`onCleanup`/`onFlush`, diagnostics codes | [`02-effects-and-lifecycle.test.tsx`](./examples/typescript/02-effects-and-lifecycle.test.tsx) |
+| 03 | [Components, Props and the DOM Layer](./modules/03-components-props-and-dom.md) | compiler output, props as getters, `merge`/`omit`, attributes/class/style, root-owned events, refs and directive factories, form inputs | [`03-components-props-and-dom.test.tsx`](./examples/typescript/03-components-props-and-dom.test.tsx) |
+| 04 | [Control Flow and Composition](./modules/04-control-flow-and-composition.md) | `<For>` keying modes, `<Repeat>`, `<Show>`/`<Switch>`, `dynamic()`, `children`, `Portal`, context | [`04-control-flow-and-composition.test.tsx`](./examples/typescript/04-control-flow-and-composition.test.tsx) |
+| 05 | [Stores, Reconcile and Projections](./modules/05-stores-and-projections.md) | draft setters, `reconcile`, projections and O(1) selection, `snapshot`/`deep`, shallow stores | [`05-stores-and-projections.test.ts`](./examples/typescript/05-stores-and-projections.test.ts) |
+| 06 | [Colorless Async: Computations, Loading and Suspense](./modules/06-colorless-async.md) | async computations, `<Loading>`/`on`/holds, `<Reveal>`, `isPending`/`latest`/`createDeferred`, cancellation, `<Errored>` | [`06-colorless-async.test.tsx`](./examples/typescript/06-colorless-async.test.tsx) |
+| 07 | [Actions, Transactions and Optimistic UI](./modules/07-actions-and-optimistic-state.md) | transactions, generator actions, optimistic primitives, `refresh`/`affects`/`until`, races | [`07-actions-and-optimistic-state.test.tsx`](./examples/typescript/07-actions-and-optimistic-state.test.tsx) |
+| 08 | [Full Stack: SSR, Start Mode, Request Isolation and Server Functions](./modules/08-ssr-and-start-mode.md) | start mode, `renderToStream`, hydration policy, `httpStatus`, request isolation, server-function wire and security | [`08-ssr-and-server-functions.server.test.tsx`](./examples/typescript/08-ssr-and-server-functions.server.test.tsx), [`08-hydration-roundtrip.test.tsx`](./examples/typescript/08-hydration-roundtrip.test.tsx) |
+| 09 | [Testing, Debugging and Performance Attribution](./modules/09-testing-debugging-performance.md) | Vitest postures, test patterns, build variants, attribution, performance tracks | [`09-testing-debugging-performance.test.tsx`](./examples/typescript/09-testing-debugging-performance.test.tsx) |
+| 10 | [Solid 1.x to 2.0 Migration and React Comparison](./modules/10-migration-and-react-comparison.md) | 1.x → 2.0 map and procedure, version history, ecosystem status, React 19 vs Solid 2 | [`10-solid1-vs-solid2.test.ts`](./examples/typescript/10-solid1-vs-solid2.test.ts) |
 
 Reference: [GLOSSARY.md](./GLOSSARY.md) (EN ↔ CZ) · [CHEATSHEET.md](./CHEATSHEET.md) · [exams/](./exams/README.md).
+
+### Out of Scope
+- Solid 1.x legacy APIs deprecated or removed without direct 2.0 equivalents.
+- Mobile/native application runtimes (Solid Native).
+- Styling solutions and CSS-in-JS libraries (covered in dedicated [technologies/panda-css](../panda-css/README.md) and [languages/css](../../languages/css/README.md) tracks).
+- Generic HTTP and network transport mechanics (owned by [architecture/networking](../../architecture/networking/README.md)).
+See [exams/README.md](./exams/README.md#out-of-scope-with-reason).
 
 ## Run it
 

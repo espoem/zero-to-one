@@ -7,8 +7,8 @@
 Solid is a *fine-grained reactive* UI library: the unit of update is not a component but a single reactive binding. A component function runs **once** to build a graph of signals, derived computations and DOM bindings; afterwards, a write to one signal reaches exactly the bindings that read it, without re-running the component and without diffing a virtual DOM. This module defines that graph precisely, shows how the 2.0 scheduler keeps it consistent (push-pull evaluation, glitch freedom, microtask batching), and covers the ownership tree that decides when reactive nodes die.
 
 Prerequisites, owned elsewhere and only referenced here:
-- closures, `this` and scope; the HTML event loop and the microtask queue (`languages/javascript`, not yet published);
-- typing `Accessor<T>` / `Setter<T>` and the writable-memo overloads ([TypeScript module 12/13](../../../languages/typescript/modules/13-solidjs-2-with-typescript.md)).
+- closures, `this` and scope; the HTML event loop and the microtask queue ([languages/javascript](../../../languages/javascript/README.md));
+- typing `Accessor<T>` / `Setter<T>` and the writable-memo overloads ([TypeScript module 12](../../../languages/typescript/modules/12-typing-ui-frameworks.md)).
 
 ---
 
