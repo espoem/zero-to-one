@@ -208,7 +208,7 @@ async def async_handler():
 
 In producer-consumer streaming pipelines, fast producers can easily overwhelm slow consumers, consuming gigabytes of memory buffering unconsumed messages.
 - An `asyncio.Queue(maxsize=N)` enforces backpressure: when the queue contains $N$ items, `await queue.put(item)` suspends the producer coroutine until a consumer processes an item via `await queue.get()`.
-- In Python 3.13+, **PEP 713** introduced `queue.shutdown()`: producers call `queue.shutdown()` to signal that no more items will be sent. Subsequent `put()` calls raise `asyncio.QueueShutDown`, and waiting consumers exit cleanly once all buffered items are consumed.
+- In Python 3.13+, `asyncio.Queue.shutdown()` was introduced: producers call `queue.shutdown()` to signal that no more items will be sent. Subsequent `put()` calls raise `asyncio.QueueShutDown`, and waiting consumers exit cleanly once all buffered items are consumed.
 
 ---
 

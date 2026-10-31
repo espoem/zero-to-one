@@ -781,18 +781,18 @@ How should a synchronous, CPU-bound or blocking I/O function be invoked from wit
 </details>
 
 ### Q-PYTHON-050 · Asyncio & Structured Concurrency · difficulty 3 · single
-What does PEP 713 `asyncio.Queue.shutdown()` do when called with `immediate=False`?
+What does Python 3.13+ `asyncio.Queue.shutdown()` do when called with `immediate=False`?
 - A) It cancels all pending consumers and empties the queue instantly.
 - B) It closes the queue to new additions (subsequent `put()` raises `QueueShutDown`), while allowing existing queued items to be consumed; once empty, subsequent `get()` raises `QueueShutDown`.
 - C) It stops the event loop immediately.
 - D) It converts the queue to a LIFO stack.
 <details><summary>Answer</summary>
 
-**B.** PEP 713 introduced `Queue.shutdown()`. With `immediate=False`, it prevents further submissions while allowing consumers to process remaining in-flight items cleanly, raising `QueueShutDown` once drained.
+**B.** In Python 3.13+, `Queue.shutdown()` was introduced to solve graceful draining. With `immediate=False`, it prevents further submissions while allowing consumers to process remaining in-flight items cleanly, raising `QueueShutDown` once drained.
 - Why not A: Immediate discarding occurs when `immediate=True`.
 - Why not C: It shuts down the queue instance, not the entire event loop.
 - Why not D: Queue ordering is not changed.
-- Ref: [modules/10-asyncio-internals-and-structured-concurrency.md](../modules/10-asyncio-internals-and-structured-concurrency.md#7-backpressure-and-queue-shutdown-pep-713), https://peps.python.org/pep-0713/
+- Ref: [modules/10-asyncio-internals-and-structured-concurrency.md](../modules/10-asyncio-internals-and-structured-concurrency.md#7-streaming-backpressure-asyncioqueue--queueshutdown), https://docs.python.org/3/library/asyncio-queue.html#asyncio.Queue.shutdown
 </details>
 
 ---
@@ -1231,7 +1231,7 @@ class EventNode:
 import weakref
 
 class EventNode:
-    __slots__ = ("event_id", "payload", "_parent_ref", "children")
+    __slots__ = ("event_id", "payload", "_parent_ref", "children", "__weakref__")
 
     def __init__(self, event_id: str, payload: dict) -> None:
         self.event_id = event_id
@@ -1267,7 +1267,7 @@ async def on_message(ws, db_pool):
 #### Questions:
 1. Identify the fundamental architectural defect and explain how unbounded task creation bypasses database connection pool limits. (3 Points)
 2. Explain the difference in failure handling between `asyncio.gather()` and `asyncio.TaskGroup()`. (3 Points)
-3. Architect and write a complete, backpressured consumer pipeline using `asyncio.Queue` (with PEP 713 `.shutdown()`) and `asyncio.TaskGroup` that caps concurrent database writes at 20 while applying upstream backpressure to the WebSocket stream. (4 Points)
+3. Architect and write a complete, backpressured consumer pipeline using `asyncio.Queue` (with Python 3.13+ `.shutdown()`) and `asyncio.TaskGroup` that caps concurrent database writes at 20 while applying upstream backpressure to the WebSocket stream. (4 Points)
 
 <details><summary>Scoring Key & Solution</summary>
 

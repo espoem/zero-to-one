@@ -162,7 +162,7 @@ except* KeyError as eg:
 import asyncio
 
 async def pipeline():
-    # Bounded queue with backpressure and shutdown protocol (PEP 713)
+    # Bounded queue with backpressure and shutdown protocol (Python 3.13+)
     queue: asyncio.Queue[str] = asyncio.Queue(maxsize=100)
 
     async def worker():

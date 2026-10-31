@@ -75,7 +75,7 @@ class AsyncOrchestrator:
             # Wait until all submitted tasks have called task_done()
             await self.queue.join()
 
-            # Trigger queue shutdown protocol (PEP 713)
+            # Trigger queue shutdown protocol (Python 3.13+)
             self.queue.shutdown()
 
             # Cancel remaining idle workers awaiting get()

@@ -17,7 +17,7 @@ flowchart TD
     CST -->|"AST Lowering"| AST["Abstract Syntax Tree (ast module)"]
     AST -->|"Symtable Compiler"| Sym["Symbol Table (Scopes & Free Variables)"]
     AST -->|"Bytecode Emitter"| CFG["Control Flow Graph (Basic Blocks)"]
-    CFG -->|"Assembler & Peep-Hole Optimizer"| Bytecode["PyCodeObject (co_code, co_consts, co_varnames)"]
+    CFG -->|"CFG Optimizer & Assembler"| Bytecode["PyCodeObject (co_code, co_consts, co_varnames)"]
     Bytecode -->|"eval loop (_PyEval_EvalFrameDefault)"| VM["CPython Virtual Machine (Stack & Registers)"]
 ```
 
@@ -26,11 +26,13 @@ The tokenizer scans raw UTF-8 bytes and converts source text into a stream of ca
 - When a line begins with more leading whitespace than the current stack top, the lexer pushes the new column width onto the stack and emits an `INDENT` token.
 - When indentation decreases, the lexer pops column widths from the stack and emits a `DEDENT` token for each popped level until matching an existing column width. If no matching indentation level is found, the tokenizer raises an immediate `IndentationError: unindent does not match any outer indentation level`.
 
-### 1.2 PEG Parser (PEP 617)
-Starting in Python 3.9, CPython replaced its legacy LL(1) parser with a high-performance **Parsing Expression Grammar (PEG)** parser. The LL(1) parser could look ahead by only a single token, which forced the language to avoid complex syntax constructs or introduce awkward parser hacks. The PEG parser operates with arbitrary lookahead and backtracks when necessary, enabling cleaner syntactic features such as parenthesized context managers across multiple lines without backslashes, structural pattern matching (`match/case`), and PEP 695 type parameter syntax.
+### 1.2 PEG Parser (PEP 617) & Direct AST Generation
+Starting in Python 3.9, CPython replaced its legacy LL(1) parser with a high-performance **Parsing Expression Grammar (PEG)** parser (`pegen`). The legacy parser produced an intermediate Concrete Syntax Tree (CST) that required lowering; modern CPython constructs the **Abstract Syntax Tree (AST)** directly from the grammar actions during PEG parsing.
+
+The PEG parser operates with arbitrary lookahead and backtracks when necessary, enabling cleaner syntactic features such as parenthesized context managers across multiple lines without backslashes, structural pattern matching (`match/case`), and PEP 695 type parameter syntax.
 
 ### 1.3 Abstract Syntax Tree (AST) & Symbol Table
-The Concrete Syntax Tree produced by the PEG parser is lowered into an **Abstract Syntax Tree (AST)**. The AST strips away superficial syntactic artifacts (such as parentheses, whitespace, and commas) and models the hierarchical semantics of the program. Developers can inspect, mutate, and evaluate this tree at runtime using the standard library `ast` module.
+The AST models the hierarchical semantics of the program, stripping away superficial syntactic artifacts (parentheses, whitespace, commas). Developers can inspect, mutate, and evaluate this tree at runtime using the standard library `ast` module.
 
 Concurrently, CPython builds a **Symbol Table** (`symtable` module). This pass analyzes every identifier in the AST to categorize its scope:
 - **Local (`DEF_LOCAL`)**: Assigned within the current block without a `global` or `nonlocal` declaration.
@@ -40,7 +42,7 @@ Concurrently, CPython builds a **Symbol Table** (`symtable` module). This pass a
 This lexical scoping classification happens entirely during compilation. Because CPython determines variable scopes at compile time, an assignment anywhere inside a function causes that name to be classified as local for the *entire* function body, which is the root cause of the classic `UnboundLocalError`.
 
 ### 1.4 Bytecode & the `PyCodeObject`
-The compiler translates the AST and symbol table into basic blocks of instructions, optimizes jump targets, applies peephole optimizations (such as folding constant arithmetic `1 + 2` $\to$ `3`), and outputs a `PyCodeObject`. A code object is an immutable container holding:
+The compiler translates the AST and symbol table into a Control Flow Graph (CFG) of basic blocks, applies AST constant folding and CFG optimizations (such as jump-to-jump elimination and dead block pruning via `Python/flowgraph.c` and `Python/assemble.c`), and outputs a `PyCodeObject`. A code object is an immutable container holding:
 - `co_code`: The raw bytes representing bytecode instructions and their opargs.
 - `co_consts`: A tuple of literal constants loaded by `LOAD_CONST`.
 - `co_varnames`: A tuple of local variable names accessed by fast array indexing (`LOAD_FAST`).
