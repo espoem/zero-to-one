@@ -65,7 +65,7 @@ Notes:
 | JSNSD (OpenJS Node.js Services Developer) | OpenJS Foundation / Linux Foundation | **Inactive** ([LF notice](https://training.linuxfoundation.org/jsnsd-cert-inactive/)) | — | — |
 | **JSA-41-01** JSA™ Certified Associate JavaScript Programmer | JS Institute (OpenEDG) | Active ([official voucher page](https://ums.edube.org/products/jsa-exam), checked 2026-10-28); ECMAScript version not stated | 40 items, 60 minutes, Pearson VUE or OnVUE, US$325; sections Classless Objects 25%, Classes 23%, Built-in Objects 27%, Advanced Functions 25%; passing score not published | secondary target: section matrix + 40-item mock (Mock B) |
 | JSE-40-01 JSE™ Certified Entry-Level JavaScript Programmer | JS Institute (OpenEDG) | Active (OpenEDG store, TestNow) | details unverified | not targeted (below this track's level) |
-| **Senior JavaScript technical interview** | industry format | — | knowledge and output-prediction questions plus live coding | **primary target**: [exams/interview.md](exams/interview.md), 73 questions in 10 domains, 6 hands-on tasks with a verification script, and a 60-minute mock (Mock A) |
+| **Senior JavaScript technical interview** | industry format | — | knowledge and output-prediction questions plus live coding | **primary target**: [exams/interview.md](exams/interview.md), 78 questions in 10 domains, 6 hands-on tasks with a verification script, and a 60-minute mock (Mock A) |
 
 **Exam delta:** JSA-41-01 does not state its ECMAScript edition and its sections predate ES2022–ES2027; expect ES2015–ES2020 era questions. This track's ES2024+ content (Temporal, `using`, iterator helpers, ES2026 built-ins, decorators) is beyond that exam.
 
