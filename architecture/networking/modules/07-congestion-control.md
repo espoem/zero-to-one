@@ -103,7 +103,7 @@ Where:
 - $C$: A scaling factor fixed at $0.4$.
 - $t$: Elapsed time in seconds since the most recent window reduction.
 - $K$: The time period required for the cubic function to climb from the reduced window back to $W_{\text{max}}$:
-  $$K = \sqrt[3]{\frac{W_{\text{max}} \cdot \beta}{C}} \quad (\text{where multiplicative decrease } \beta = 0.7)$$
+  $$K = \sqrt[3]{\frac{W_{\text{max}} \cdot (1 - \beta)}{C}} \quad (\text{where multiplicative decrease } \beta = 0.7)$$
 
 ```
 Window Size (cwnd)
@@ -308,7 +308,7 @@ In Chiu and Jain's phase plot (where axes represent the allocation of two compet
 
 **Target Memory and Stability Concavity.**
 - $W_{\text{max}}$ is the saturation window size in packets immediately before the most recent packet drop occurred.
-- $K = \sqrt[3]{\frac{W_{\text{max}} \beta}{C}}$ is the mathematical time required to scale back up to $W_{\text{max}}$.
+- $K = \sqrt[3]{\frac{W_{\text{max}} (1 - \beta)}{C}}$ is the mathematical time required to scale back up to $W_{\text{max}}$.
 - **When $t < K$ (Concave Region)**: The window grows toward $W_{\text{max}}$, but the rate of growth decelerates as it approaches $W_{\text{max}}$, forming a flat plateau. This provides high stability and maximizes link utilization without triggering another drop.
 - **When $t > K$ (Convex Region)**: The window has operated safely at $W_{\text{max}}$ without loss. CUBIC assumes background conditions have improved or cross-traffic has departed, and accelerates its growth rate exponentially upward to probe for new capacity.
 - Ref: RFC 9438 Section 3.1; Ha et al., "CUBIC: A New TCP-Friendly High-Speed TCP Variant".

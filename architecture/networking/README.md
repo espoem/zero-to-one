@@ -18,7 +18,7 @@ This curriculum provides 100% full coverage for both official industry certifica
 - **Official Exam Guide**: [CompTIA Network+ N10-009 Exam Objectives](https://www.comptia.org/certifications/network)
 - **Status**: **Active** (Launched June 20, 2024; officially supersedes retired N10-008).
 - **Date Verified**: 2026-10-30 against official CompTIA N10-009 objectives.
-- **Target Specifications**: Modern enterprise and internet networking: IPv4/IPv6 dual-stack, TCP (RFC 9293), TLS 1.3 (RFC 8446/9846), HTTP/2 & HTTP/3 (RFC 9113/9114), QUIC (RFC 9000), BGP-4 (RFC 4271), RPKI ROV, IEEE 802.1Q, 802.11ax/be, and Linux container networking (`veth`, `netns`).
+- **Target Specifications**: Modern enterprise and internet networking: IPv4/IPv6 dual-stack, TCP (RFC 9293), TLS 1.3 (RFC 8446), HTTP/2 & HTTP/3 (RFC 9113/9114), QUIC (RFC 9000), BGP-4 (RFC 4271), RPKI ROV, IEEE 802.1Q, 802.11ax/be, and Linux container networking (`veth`, `netns`).
 - **Format**: Up to 90 questions: Multiple-choice (single and multiple select), drag-and-drop, and Performance-Based Questions (PBQs).
 - **Duration**: 90 minutes.
 - **Passing Score**: 720 / 900 (scaled score, ~80%).
@@ -57,7 +57,7 @@ The curriculum is structured into 14 self-contained, progressive modules:
 - **Runnable Proof**: [`examples/05-udp-and-socket-lifecycle.test.ts`](./examples/05-udp-and-socket-lifecycle.test.ts)
 
 ### [Module 06 — TCP Internals: State Machine, Flow Control & SACK](./modules/06-tcp-internals.md)
-- **Concepts**: RFC 9293 consolidated TCP specification, the 11-state FSM, 3-way handshake and 4-way teardown, cryptographic ISN generation (RFC 6528), sliding window flow control, Window Scale (RFC 7323), SACK (RFC 2018), PAWS, RACK-TLP (RFC 8985), Nagle's algorithm vs Delayed ACKs (the 40ms stall), the `TIME_WAIT` state ($2 \times \text{MSL}$), and SYN Cookies (RFC 4987).
+- **Concepts**: RFC 9293 consolidated TCP specification, the 11-state FSM, 3-way handshake and 4-way teardown, cryptographic ISN generation (RFC 9293 §3.4.1), sliding window flow control, Window Scale (RFC 7323), SACK (RFC 2018), PAWS, RACK-TLP (RFC 8985), Nagle's algorithm vs Delayed ACKs (the 40ms stall), the `TIME_WAIT` state ($2 \times \text{MSL}$), and SYN Cookies (RFC 4987).
 - **Runnable Proof**: [`examples/06-tcp-state-machine-and-nagle.test.ts`](./examples/06-tcp-state-machine-and-nagle.test.ts)
 
 ### [Module 07 — Congestion Control: AIMD, CUBIC & BBR](./modules/07-congestion-control.md)
@@ -91,6 +91,18 @@ The curriculum is structured into 14 self-contained, progressive modules:
 ### [Module 14 — Linux Networking Operations, Diagnostics & Packet Filtering](./modules/14-linux-networking-ops.md)
 - **Concepts**: `iproute2` administration, `ss` socket diagnostics (`Recv-Q` vs `Send-Q` semantics), `tcpdump` and BPF header offset filtering, `nftables` bytecode sets vs linear `iptables`, Netfilter connection tracking (`conntrack`) table saturation, Linux network namespaces (`netns`) and `veth` container networking, traffic control with `tc netem`, and `curl -w` network timing breakdowns.
 - **Runnable Proof**: [`examples/14-curl-timing-breakdown.test.ts`](./examples/14-curl-timing-breakdown.test.ts)
+
+### Prerequisites
+
+- Basic comfort with binary and hexadecimal representations, bitwise operators, and network addresses.
+- Familiarity with the Linux command line and POSIX environments.
+- Node.js 26 and `npm` installed for running deterministic protocol test suites.
+
+### Out of Scope
+
+- **Physical Layer RF/Optical Modulation**: Radio signal processing (OFDMA, QAM constellations in 802.11be), photonics, and physical cable plant engineering.
+- **Cellular Core Networks**: 5G NR baseband, EPC architecture, and telephony signaling protocols (SS7/Diameter).
+- **Application Logic & Web Frameworks**: Higher-level application state management and browser DOM rendering engines (owned by `languages/javascript` and `technologies/react`).
 
 ---
 
