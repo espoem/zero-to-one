@@ -401,18 +401,19 @@ How does Chain Replication with Apportioned Queries (CRAQ, Terrace & Freedman 20
 </details>
 
 #### Q-DIST-026 · Quorum Anomalies · difficulty 3 · scenario
-In a leaderless Dynamo-style cluster of $N=5$ replicas configured with write quorum $W=3$ and read quorum $R=3$, the quorum condition $R + W > N$ ($3 + 3 = 6 > 5$) holds. Client A writes `v1` to nodes $\{N_1, N_2, N_3\}$. Next, Client B writes `v2` to nodes $\{N_3, N_4, N_5\}$. Node $N_3$ is slow and drops Client B's message, but Client B's write succeeds on $\{N_4, N_5\}$ and $N_3$ receives it later.
-Now, Client C reads from $\{N_1, N_2, N_3\}$ and observes `v2` (from $N_3$). Immediately afterward, Client D reads from $\{N_1, N_2, N_4\}$. What value does Client D observe, and what anomaly does this demonstrate?
-- A) Client D observes `v2`; the system is fully linearizable.
-- B) Client D observes only $\{N_1: v1, N_2: v1, N_4: v2\}$, and without read-repair or write-backs, another reader reading from $\{N_1, N_2, N_5\}$ could observe `v1`, demonstrating the **New-Then-Old** non-linearizable read anomaly.
-- C) Client D's read times out because $R+W > N$ requires locks.
-- D) Client D triggers an immediate database crash.
+In a leaderless Dynamo-style cluster of $N=3$ replicas configured with write quorum $W=2$ and read quorum $R=2$, the quorum overlap condition $R + W > N$ ($2 + 2 = 4 > 3$) holds. All replicas initially hold value $v_0$. A client begins writing value $v_1$ with a newer timestamp: replica $N_1$ accepts and persists $v_1$, but the write has not yet reached replicas $N_2$ and $N_3$.
+Reader 1 reads from read quorum $\{N_1, N_2\}$. It receives $N_1: v_1$ and $N_2: v_0$, and returns the newer value $v_1$ to its caller.
+Immediately after Reader 1 completes, Reader 2 reads from read quorum $\{N_2, N_3\}$. What value does Reader 2 observe, and what anomaly does this demonstrate?
+- A) Reader 2 must observe $v_1$; quorum condition $R + W > N$ guarantees linearizability.
+- B) Reader 2 receives $\{N_2: v_0, N_3: v_0\}$ and returns $v_0$, demonstrating the **New-Then-Old** non-linearizable read anomaly.
+- C) Reader 2 times out because $R + W > N$ acquires distributed locks.
+- D) Reader 2 triggers an immediate database crash.
 <details><summary>Answer</summary>
 
-**B.** The overlap condition $R + W > N$ guarantees only that a read quorum intersects a write quorum by at least one node; it does NOT guarantee linearizability! Because different read quorums can query different subsets of nodes, Client C can read from $\{N_3, N_4, N_5\}$ and see new value `v2`, while Client D reading non-overlapping nodes $\{N_1, N_2, N_3\}$ (if $N_3$ hasn't updated) or $\{N_1, N_2, N_4\}$ can see stale value `v1`. Observing a newer value followed in real time by an older value is the classic "New-Then-Old" anomaly.
-- Why not A: Quorum intersection alone does not enforce linearizability.
-- Why not C: Dynamo-style quorums do not acquire locks.
-- Why not D: Quorum queries are standard operations that do not crash the engine.
+**B.** The overlap condition $R + W > N$ guarantees that in steady state after a write has fully committed to $W$ replicas, any read quorum $R$ intersects at least one written replica. However, it does NOT guarantee linearizability! While a write is in flight or propagating, Reader 1 can query $\{N_1, N_2\}$, observe the newer value $v_1$ from $N_1$, and return it. A subsequent Reader 2 querying $\{N_2, N_3\}$ in real time will receive only stale value $v_0$ from both nodes and return $v_0$. Observing a newer value followed in real time by an older value is the classic "New-Then-Old" anomaly. To achieve true linearizability over quorum systems, protocols like ABD (1995) require readers to perform a synchronous write-back (read-repair) to a write quorum before returning.
+- Why not A: Quorum intersection without synchronous read-repair does not prevent non-linearizable reads.
+- Why not C: Leaderless quorums do not acquire distributed locks.
+- Why not D: Quorum reads on available nodes succeed normally.
 - Ref: [modules/05-replication-protocols-and-quorums.md](../modules/05-replication-protocols-and-quorums.md#quorum-systems-and-the-r-w-n-illusion), Kleppmann (DDIA 2e Chapter 5)
 </details>
 
