@@ -55,6 +55,19 @@ flowchart TD
 13. [Module 13: Probabilistic Data Structures, Caches & Randomization](modules/13-probabilistic-data-structures-and-randomized-algorithms.md): Bloom filter error derivation ($p \approx (1 - e^{-kn/m})^k$), Count-Min Sketch Markov bounds, HyperLogLog harmonic mean, $O(1)$ LRU & LFU caches, Consistent Hash Ring & Jump Consistent Hash, Reservoir sampling.
 14. [Module 14: Parallel Algorithms, Concurrency & Interview Execution](modules/14-parallel-algorithms-concurrency-and-interview-execution.md): PRAM model, Work-Span analysis ($T_1 / T_\infty$), Brent's Theorem, Lock-free Treiber stack & MS-Queue, CAS mechanics & ABA avoidance, UMPIRE interview framework, TS $\leftrightarrow$ Python matrix.
 
+### Prerequisites
+
+- Working knowledge of basic programming constructs (variables, control flow, functions, recursion).
+- Comfort with elementary mathematical notation (summations, logarithms, induction proofs).
+- Terminal environment with Node.js 26 and `npm` installed.
+
+### Out of Scope
+
+- **Theoretical Complexity Reductions & NP-Completeness Proofs**: Turing machine reductions, Cook-Levin theorem, and formal language automata belong to academic theoretical computer science.
+- **Hardware-Specific Microarchitecture Tuning**: SIMD vectorization intrinsics, cache hierarchy hardware design, and CPU branch predictor implementations belong to systems architecture.
+- **Database Engine Internals**: B+ Trees as page-storage layouts on disk, WAL logging, and MVCC are owned by `architecture/data-systems` and `technologies/postgres`.
+- **Distributed Consensus Protocols**: Paxos, Raft, and distributed transaction 2PC are owned by `architecture/distributed-systems`.
+
 ---
 
 ## 2. Certifications & Exams
