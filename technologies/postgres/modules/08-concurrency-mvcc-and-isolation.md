@@ -3,7 +3,7 @@
 Welcome to **Module 08** of the PostgreSQL curriculum. This module provides a rigorous, academically grounded, and production-tested exploration of database concurrency control and transactional isolation in PostgreSQL 18. We examine the physical 23-byte `HeapTupleHeaderData` and Hint Bit dynamics, trace version chains with `pageinspect`, evaluate transaction snapshots across the ANSI isolation spectrum, dissect the mathematics of Serializable Snapshot Isolation (SSI), evaluate the exhaustive 8x8 table lock conflict matrix, diagnose catastrophic DDL lock-queue pileups, and implement non-blocking worker queues using `FOR UPDATE SKIP LOCKED`.
 
 > [!NOTE]
-> For abstract isolation anomaly taxonomies (Berenson et al., 1995), dependency graphs, and mathematical serializability theory (Adya, 1999), consult the foundational track [architecture/data-systems](../../architecture/data-systems/modules/03-transactions-and-isolation-levels.md). This module focuses on PostgreSQL's concrete physical implementation, tuple versioning, and locking mechanics.
+> For abstract isolation anomaly taxonomies (Berenson et al., 1995), dependency graphs, and mathematical serializability theory (Adya, 1999), consult the foundational track [architecture/data-systems](../../architecture/data-systems/modules/05-transactions-acid-and-isolation-levels.md). This module focuses on PostgreSQL's concrete physical implementation, tuple versioning, and locking mechanics.
 
 ---
 

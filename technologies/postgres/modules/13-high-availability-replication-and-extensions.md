@@ -44,14 +44,17 @@ Replication durability is controlled on the primary server per transaction or cl
 flowchart TD
     subgraph CommitModes["Durability vs. Latency Spectrum"]
         Off["synchronous_commit = off<br/>Returns immediately before local WAL flush<br/>(Risk of losing last few milliseconds on crash)"]
-        Local["synchronous_commit = local (Default)<br/>Waits for local primary disk fsync<br/>(Survives local crash; RPO > 0 on standby failover)"]
+        Local["synchronous_commit = local<br/>Waits for local primary disk fsync<br/>(Survives local crash; RPO > 0 on standby failover)"]
         RemoteWrite["synchronous_commit = remote_write<br/>Waits until standby receives WAL into OS memory<br/>(Survives standby OS crash)"]
-        On["synchronous_commit = on<br/>Waits until standby flushes WAL to disk with fsync<br/>(Zero RPO: survives primary destruction!)"]
+        On["synchronous_commit = on (Default)<br/>Waits until standby flushes WAL to disk with fsync<br/>(Zero RPO: survives primary destruction; equivalent to local if no sync standby is configured)"]
         RemoteApply["synchronous_commit = remote_apply<br/>Waits until standby actually replays WAL into memory<br/>(Zero read-after-write replication lag on standby!)"]
         
         Off --- Local --- RemoteWrite --- On --- RemoteApply
     end
 ```
+
+> [!NOTE]
+> `synchronous_commit = on` is the default setting in PostgreSQL. When no standby names are configured in `synchronous_standby_names`, `on` behaves identically to `local`, waiting only for local WAL disk flush and returning immediately without blocking.
 
 ### Quorum Replication Syntax
 To prevent a single slow or stalled standby from blocking all commits on the primary:

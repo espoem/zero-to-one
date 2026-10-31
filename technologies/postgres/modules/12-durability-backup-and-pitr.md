@@ -3,7 +3,7 @@
 Welcome to **Module 12** of the PostgreSQL curriculum. This module delivers comprehensive, academically grounded, and production-tested disaster recovery and database durability knowledge for PostgreSQL 18. We examine the Write-Ahead Log (WAL) architecture, dissect the Full-Page Write (`full_page_writes`) torn-page protection mechanism, calibrate checkpoint algorithms to eliminate I/O spikes, evaluate native incremental backups (`pg_basebackup` / `pg_combinebackup`), execute precision Point-In-Time Recovery (PITR) drills, navigate timeline branching ($TLI$), and leverage PostgreSQL 18's **retained optimizer statistics** during `pg_upgrade`.
 
 > [!NOTE]
-> For abstract ARIES recovery algorithms (Mohan et al., IBM 1992), Write-Ahead Logging theoretical proofs, and distributed state machine persistence models, consult the foundational track [architecture/data-systems](../../architecture/data-systems/modules/04-storage-recovery-and-wal.md). This module covers PostgreSQL's concrete physical implementation, recovery configuration, and operational disaster recovery drills.
+> For abstract ARIES recovery algorithms (Mohan et al., IBM 1992), Write-Ahead Logging theoretical proofs, and distributed state machine persistence models, consult the foundational track [architecture/data-systems](../../architecture/data-systems/modules/06-durability-wal-and-crash-recovery.md). This module covers PostgreSQL's concrete physical implementation, recovery configuration, and operational disaster recovery drills.
 
 ---
 
@@ -23,13 +23,17 @@ Welcome to **Module 12** of the PostgreSQL curriculum. This module delivers comp
 ## 2. Write-Ahead Log (WAL) Architecture & Torn Page Protection
 
 ### Binary Anatomy of a WAL Record
-Every transaction modification creates a binary WAL record consisting of a header and payload:
-- **`Record LSN`** (8 bytes): Unique global log sequence number.
-- **`rmid`** (1 byte): Resource Manager ID (`RM_HEAP_ID`, `RM_BTREE_ID`, `RM_XACT_ID`).
-- **`xl_info`** (1 byte): Flag indicating operation type (e.g. `XLOG_HEAP_INSERT`, `XLOG_BTREE_SPLIT`).
-- **`xl_xid`** (4 bytes): Transaction ID executing the modification.
-- **`xl_prev`** (8 bytes): Pointer to preceding WAL record in the chain.
-- **Data Payload**: Delta modifications or complete 8KB Full Page Images (FPI).
+Every transaction modification creates a binary WAL record consisting of a 24-byte header (`XLogRecord`) followed by resource manager data and block payloads:
+- **`xl_tot_len`** (4 bytes, uint32): Total record length in bytes, including header and data payload.
+- **`xl_xid`** (4 bytes, TransactionId): Transaction ID executing the modification.
+- **`xl_prev`** (8 bytes, XLogRecPtr): Pointer to preceding WAL record in the chain.
+- **`xl_info`** (1 byte, uint8): Flag indicating operation type (e.g. `XLOG_HEAP_INSERT`, `XLOG_BTREE_SPLIT`).
+- **`xl_rmid`** (1 byte, RmgrId): Resource Manager ID (`RM_HEAP_ID`, `RM_BTREE_ID`, `RM_XACT_ID`).
+- *Alignment padding* (2 bytes).
+- **`xl_crc`** (4 bytes, pg_crc32c): CRC-32C checksum of the entire record.
+- **Data Payload**: Registered buffer headers, delta modifications, or complete 8KB Full Page Images (FPI).
+
+*(Note: The record's LSN is its physical byte position address in the WAL stream; it is derived from the WAL segment and page header rather than stored as an explicit field inside `XLogRecord`.)*
 
 ```mermaid
 flowchart TD
