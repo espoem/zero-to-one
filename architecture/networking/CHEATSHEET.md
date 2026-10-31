@@ -181,8 +181,8 @@ Common Options: MSS (Kind 2, Len 4), Window Scale (Kind 3, Len 3), SACK Permitte
   - Congestion Avoidance: $W_{t+1} = W_t + 1\text{ MSS}$ per RTT
   - Loss Recovery (3 DupACKs): $W_{\text{new}} = W_{\text{curr}} \times 0.5$
 - **CUBIC Window Growth Function (RFC 9438)**:
-  $$W_{\text{cubic}}(t) = C \cdot (t - K)^3 + W_{\max}, \quad \text{where } K = \sqrt[3]{\frac{W_{\max} \cdot \beta}{C}}$$
-  - $C = 0.4$ (scaling factor), $\beta = 0.2$ (loss multiplicative reduction parameter)
+  $$W_{\text{cubic}}(t) = C \cdot (t - K)^3 + W_{\max}, \quad \text{where } K = \sqrt[3]{\frac{W_{\max} \cdot (1 - \beta)}{C}}$$
+  - $C = 0.4$ (scaling factor), $\beta = 0.7$ (multiplicative decrease factor on loss)
 - **BBR Control Targets (Kleinrock Point)**:
   - In-Flight Target: $\text{BDP} = \text{BtlBw} \times \text{RTprop}$
   - Pacing Rate: $\text{Rate} = \text{pacing\_gain} \times \text{BtlBw}$
