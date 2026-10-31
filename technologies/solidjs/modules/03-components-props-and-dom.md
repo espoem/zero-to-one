@@ -2,7 +2,7 @@
 
 > **Executable proof:** [`examples/typescript/03-components-props-and-dom.test.tsx`](../examples/typescript/03-components-props-and-dom.test.tsx). The suite renders real components with `@solidjs/testing-library@1.0.0-rc.2` in jsdom, compiles snippets with `@solidjs/compiler@2.0.0-rc.19` to inspect its output, and asserts on the dev diagnostics.
 >
-> **Typing** of components, props, events and refs is owned by the TypeScript track ([TS module 13](../../../languages/typescript/modules/13-solidjs-2-with-typescript.md), moving to TS M12). This module covers runtime semantics only.
+> **Typing** of components, props, events and refs is owned by the TypeScript track ([TS module 12](../../../languages/typescript/modules/12-typing-ui-frameworks.md)). This module covers runtime semantics only.
 
 A Solid component is an ordinary function that runs once and returns DOM nodes. Everything dynamic in its JSX becomes a binding in the reactive graph of [Module 01](./01-reactive-core.md). This module explains how the compiler gets there, what that means for props, and how 2.0 changed the DOM surface: attributes, classes, events, refs, directives and form inputs.
 

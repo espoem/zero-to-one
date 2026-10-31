@@ -100,18 +100,24 @@ In Solid 2.0, what happens to a `createRoot` created inside a component when the
 - Ref: [modules/01-reactive-core.md](../modules/01-reactive-core.md#6-ownership-who-disposes-what), RFC 02
 </details>
 
-### Q-SOLID-007 · D1 · difficulty 2 · single
-`createEffect(() => status() !== "off", on => { start(); return stop; })`. `status` changes from `"active"` to `"busy"`. What runs?
-- A) Nothing: the compute returned `true` both times.
-- B) `stop()` then `start()`.
-- C) Only `start()`.
-- D) Only the compute half.
+### Q-SOLID-007 · D1 · difficulty 2 · ordering
+When an effect re-runs following a reactive update in Solid 2.0, what is the exact chronological execution sequence?
+- 1: Signal write stages dirty marks in the reactive graph
+- 2: Effect compute phase `compute()` re-runs and produces next state
+- 3: Previous run's cleanup function executes
+- 4: New apply phase `apply()` executes with the computed value
+
+Sequence options:
+- A) 1 → 2 → 3 → 4
+- B) 1 → 3 → 2 → 4
+- C) 3 → 1 → 2 → 4
+- D) 2 → 1 → 4 → 3
 <details><summary>Answer</summary>
 
-**B.** Effects never compare: when compute re-runs, the previous cleanup and apply run again. Put a memo in front to get equality cut-off.
-- Why not A: that is memo behaviour, not effect behaviour.
-- Why not C: the cleanup always precedes the next apply.
-- Why not D: apply follows every compute re-run.
+**A.** (1 → 2 → 3 → 4). A signal write stages dirty marks in the graph (1); when scheduled, the pure compute phase `compute()` evaluates (2); if compute succeeds, the previous run's cleanup executes (3); finally, the new apply phase `apply()` executes with the new value (4).
+- Why not B: The previous cleanup runs only after the new compute successfully returns.
+- Why not C: Dirty marks are staged before any effect runs.
+- Why not D: Compute cannot run before dirty marking, and apply cannot precede cleanup.
 - Ref: [modules/02-effects-and-lifecycle.md](../modules/02-effects-and-lifecycle.md#11-formal-contract), RFC 01 "Split tracking from effect"
 </details>
 
@@ -805,7 +811,7 @@ No official exam exists, so the mock mirrors a typical senior frontend knowledge
 
 | # | Question | # | Question | # | Question |
 |---|---|---|---|---|---|
-| 1 | Q-SOLID-001 | 10 | Q-SOLID-018 | 19 | Q-SOLID-042 |
+| 1 | Q-SOLID-001 | 10 | Q-SOLID-045 | 19 | Q-SOLID-042 |
 | 2 | Q-SOLID-002 | 11 | Q-SOLID-024 | 20 | Q-SOLID-044 |
 | 3 | Q-SOLID-004 | 12 | Q-SOLID-025 | 21 | Q-SOLID-049 |
 | 4 | Q-SOLID-007 | 13 | Q-SOLID-029 | 22 | Q-SOLID-052 |
