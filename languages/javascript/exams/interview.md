@@ -15,16 +15,16 @@ The interview format has no official weights. These weights reflect how often ea
 |---|---|---|---|
 | D1 | Types, values and coercion | 8% | 6 |
 | D2 | Scope, closures and `this` | 12% | 8 |
-| D3 | Objects, prototypes and classes | 12% | 8 |
+| D3 | Objects, prototypes and classes | 16% | 13 |
 | D4 | Iterators and generators | 8% | 5 |
-| D5 | Event loop and job queue | 14% | 9 |
-| D6 | Async patterns | 14% | 9 |
+| D5 | Event loop and job queue | 12% | 9 |
+| D6 | Async patterns | 12% | 9 |
 | D7 | Modules | 8% | 5 |
 | D8 | Metaprogramming, memory and binary data | 8% | 6 |
 | D9 | Modern ECMAScript (ES2024–ES2027) | 6% | 5 |
 | D10 | Performance and security | 10% | 6 |
-| H | Hands-on coding tasks (span D2, D5, D6) | — | 6 |
-| | **Total** | 100% | **73** |
+| H | Hands-on coding tasks (span D2, D3, D5, D6) | — | 6 |
+| | **Total** | 100% | **78** |
 
 ---
 
@@ -168,9 +168,9 @@ console.log(readLater());                // line 5
 
 <details><summary>Answer</summary>
 
-**D.** The TDZ is temporal: `readLater` reads `value` only when called at line 5, after line 4 initialised it. `typeof` on an unresolvable reference returns `"undefined"` without throwing.
+**D.** The TDZ is temporal: `readLater` reads `value` only when called at line 5, after line 4 initialised it. `typeof` on an unresolvable reference returns `"undefined"` without throwing (ECMA-262 §13.5.3 checks `IsUnresolvableReference` before calling `GetValue`, whereas reading an uninitialised TDZ binding performs `GetValue` on an initialised-but-unbound reference and throws `ReferenceError`). Line 3 reads the function's own `.name` property safely.
 - Why not A: declaring a function that mentions a later `let` is fine.
-- Why not B: `typeof` special-cases unresolvable references.
+- Why not B: `typeof` special-cases unresolvable references (§13.5.3).
 - Why not C: by line 5, `value` is initialised.
 - Ref: [modules/03-execution-contexts-scope-closures.md](../modules/03-execution-contexts-scope-closures.md) §3, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/let#temporal_dead_zone_tdz
 </details>
@@ -418,6 +418,125 @@ Why does `class Stack extends Array {}` produce instances whose `length` updates
 - Why not C: they can, but the object is ordinary, so `length` is a plain property.
 - Why not D: `Object.create` returns an ordinary extensible object.
 - Ref: [modules/04-objects-prototypes-classes.md](../modules/04-objects-prototypes-classes.md) §4, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/extends
+</details>
+
+### Q-JSI-074 · Classes · difficulty 2 · single
+When does a `static { ... }` class initialisation block execute in JavaScript?
+- A) When the first instance of the class is constructed with `new`.
+- B) During module/script execution when the class definition is evaluated.
+- C) Lazily, when the first static member of the class is accessed.
+- D) Concurrently during microtask processing.
+
+<details><summary>Answer</summary>
+
+**B.** Static initialisation blocks run synchronously during class definition evaluation in the order they appear alongside static field initialisers.
+- Why not A: static blocks do not wait for instantiation; they run before any instance can be created.
+- Why not C: static blocks are evaluated eagerly with the class definition, not lazily on member access.
+- Why not D: class evaluation is synchronous in the current execution context.
+- Ref: [modules/04-objects-prototypes-classes.md](../modules/04-objects-prototypes-classes.md) §4.3, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Static_initialization_blocks
+</details>
+
+### Q-JSI-075 · Classes · difficulty 2 · single
+Given a class with a private field `#secret`, which syntax correctly performs a private brand check without throwing if `obj` is an instance of a different class or a primitive?
+```js
+class Vault {
+  #secret = 42;
+  static isVault(obj) {
+    return /* expression */;
+  }
+}
+```
+- A) `obj.#secret !== undefined`
+- B) `#secret in obj`
+- C) `Object.hasOwn(obj, '#secret')`
+- D) `Reflect.has(obj, '#secret')`
+
+<details><summary>Answer</summary>
+
+**B.** The `#field in obj` operator performs a safe brand check returning `true` if the private name is installed on `obj` and `false` otherwise (including if `obj` is a non-object or lacks the private brand).
+- Why not A: `obj.#secret` throws a `TypeError` if `obj` does not have the `#secret` private brand.
+- Why not C: `Object.hasOwn` only checks string and symbol properties, not private names.
+- Why not D: `Reflect.has` operates on property keys (strings/symbols) and does not recognise private identifiers.
+- Ref: [modules/04-objects-prototypes-classes.md](../modules/04-objects-prototypes-classes.md) §4.2, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/in#private_names
+</details>
+
+### Q-JSI-076 · Classes · difficulty 3 · single
+```js
+class Base {
+  constructor() {
+    return { kind: 'base-override' };
+  }
+}
+class Sub extends Base {
+  constructor() {
+    super();
+    this.extra = true;
+  }
+}
+const inst = new Sub();
+console.log(inst instanceof Sub, inst.extra);
+```
+What is printed?
+- A) `true true`
+- B) `false true`
+- C) `false undefined`
+- D) `TypeError: Super constructor may not return object`
+
+<details><summary>Answer</summary>
+
+**B.** When `super()` returns an object, that object becomes the binding for `this` in the derived constructor. `this.extra = true` mutates the returned object (`{ kind: 'base-override', extra: true }`). Because `{ kind: 'base-override' }` inherits from `Object.prototype`, not `Sub.prototype`, `inst instanceof Sub` is `false`.
+- Why not A: the instance prototype is not `Sub.prototype` because the base constructor returned an ordinary object literal.
+- Why not C: `this.extra = true` executes on the returned object and is set.
+- Why not D: constructors in ES classes are allowed to return an object override.
+- Ref: [modules/04-objects-prototypes-classes.md](../modules/04-objects-prototypes-classes.md) §4.1, https://tc39.es/ecma262/#sec-super-keyword
+</details>
+
+### Q-JSI-077 · Classes · difficulty 2 · single
+```js
+class Animal {
+  static category = 'fauna';
+  static getCategory() {
+    return this.category;
+  }
+}
+class Dog extends Animal {
+  static category = 'canine';
+}
+console.log(Dog.getCategory(), Dog.__proto__ === Animal);
+```
+What is printed?
+- A) `'fauna' false`
+- B) `'canine' false`
+- C) `'fauna' true`
+- D) `'canine' true`
+
+<details><summary>Answer</summary>
+
+**D.** In ES classes, derived class constructors inherit from base class constructors (`Dog.__proto__ === Animal`), establishing static method inheritance. When `Dog.getCategory()` is called, `this` inside `getCategory` is `Dog`, so `this.category` evaluates to `'canine'`.
+- Why not A or C: `this` points to the calling class (`Dog`), not `Animal`.
+- Why not B: `Dog.__proto__ === Animal` is `true`; static inheritance uses the constructor prototype chain.
+- Ref: [modules/04-objects-prototypes-classes.md](../modules/04-objects-prototypes-classes.md) §4.4, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/extends
+</details>
+
+### Q-JSI-078 · Classes · difficulty 3 · scenario
+A security team audits a library where an instance method `#verifyToken()` was implemented as a private method:
+```js
+class AuthManager {
+  #verifyToken(token) { /* security check */ }
+  authenticate(token) { return this.#verifyToken(token); }
+}
+```
+An attacker successfully pollutes `Object.prototype` and `AuthManager.prototype`. Can this prototype pollution tamper with or bypass `#verifyToken`?
+- A) Yes, if the attacker defines `Object.prototype['#verifyToken']`.
+- B) Yes, because private methods are stored as non-enumerable properties on `AuthManager.prototype`.
+- C) No, because private methods are lexical brand-checked records associated with the instance and cannot be resolved, patched, or masked via the prototype chain.
+- D) Yes, through `Reflect.set(AuthManager.prototype, '#verifyToken', attackerFn)`.
+
+<details><summary>Answer</summary>
+
+**C.** Private methods are not properties on any prototype object; they use lexical private identifiers that require receiver brand validation. Prototype pollution cannot create, mask, or modify private methods.
+- Why not A, B, D: private methods never appear in prototype lookup chains and cannot be accessed via string keys.
+- Ref: [modules/04-objects-prototypes-classes.md](../modules/04-objects-prototypes-classes.md) §4.2, [modules/13-correctness-security-pitfalls.md](../modules/13-correctness-security-pitfalls.md) §1, https://tc39.es/ecma262/#sec-private-methods
 </details>
 
 ---
@@ -1180,125 +1299,6 @@ Which comparators violate the "consistent comparator" contract, making the sort 
 **A, B, C, E.** A returns Booleans (never negative); B is inconsistent; C and E produce `NaN`, which is treated as 0 and breaks transitivity.
 - Why not D: `localeCompare` returns a consistent negative, zero or positive number.
 - Ref: [modules/13-correctness-security-pitfalls.md](../modules/13-correctness-security-pitfalls.md) §6, https://tc39.es/ecma262/#sec-array.prototype.sort
-</details>
-
-### Q-JSI-074 · Classes · difficulty 2 · single
-When does a `static { ... }` class initialisation block execute in JavaScript?
-- A) When the first instance of the class is constructed with `new`.
-- B) During module/script execution when the class definition is evaluated.
-- C) Lazily, when the first static member of the class is accessed.
-- D) Concurrently during microtask processing.
-
-<details><summary>Answer</summary>
-
-**B.** Static initialisation blocks run synchronously during class definition evaluation in the order they appear alongside static field initialisers.
-- Why not A: static blocks do not wait for instantiation; they run before any instance can be created.
-- Why not C: static blocks are evaluated eagerly with the class definition, not lazily on member access.
-- Why not D: class evaluation is synchronous in the current execution context.
-- Ref: [modules/04-objects-prototypes-classes.md](../modules/04-objects-prototypes-classes.md) §4.3, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Static_initialization_blocks
-</details>
-
-### Q-JSI-075 · Classes · difficulty 2 · single
-Given a class with a private field `#secret`, which syntax correctly performs a private brand check without throwing if `obj` is an instance of a different class or a primitive?
-```js
-class Vault {
-  #secret = 42;
-  static isVault(obj) {
-    return /* expression */;
-  }
-}
-```
-- A) `obj.#secret !== undefined`
-- B) `#secret in obj`
-- C) `Object.hasOwn(obj, '#secret')`
-- D) `Reflect.has(obj, '#secret')`
-
-<details><summary>Answer</summary>
-
-**B.** The `#field in obj` operator performs a safe brand check returning `true` if the private name is installed on `obj` and `false` otherwise (including if `obj` is a non-object or lacks the private brand).
-- Why not A: `obj.#secret` throws a `TypeError` if `obj` does not have the `#secret` private brand.
-- Why not C: `Object.hasOwn` only checks string and symbol properties, not private names.
-- Why not D: `Reflect.has` operates on property keys (strings/symbols) and does not recognise private identifiers.
-- Ref: [modules/04-objects-prototypes-classes.md](../modules/04-objects-prototypes-classes.md) §4.2, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/in#private_names
-</details>
-
-### Q-JSI-076 · Classes · difficulty 3 · single
-```js
-class Base {
-  constructor() {
-    return { kind: 'base-override' };
-  }
-}
-class Sub extends Base {
-  constructor() {
-    super();
-    this.extra = true;
-  }
-}
-const inst = new Sub();
-console.log(inst instanceof Sub, inst.extra);
-```
-What is printed?
-- A) `true true`
-- B) `false true`
-- C) `false undefined`
-- D) `TypeError: Super constructor may not return object`
-
-<details><summary>Answer</summary>
-
-**B.** When `super()` returns an object, that object becomes the binding for `this` in the derived constructor. `this.extra = true` mutates the returned object (`{ kind: 'base-override', extra: true }`). Because `{ kind: 'base-override' }` inherits from `Object.prototype`, not `Sub.prototype`, `inst instanceof Sub` is `false`.
-- Why not A: the instance prototype is not `Sub.prototype` because the base constructor returned an ordinary object literal.
-- Why not C: `this.extra = true` executes on the returned object and is set.
-- Why not D: constructors in ES classes are allowed to return an object override.
-- Ref: [modules/04-objects-prototypes-classes.md](../modules/04-objects-prototypes-classes.md) §4.1, https://tc39.es/ecma262/#sec-super-keyword
-</details>
-
-### Q-JSI-077 · Classes · difficulty 2 · single
-```js
-class Animal {
-  static category = 'fauna';
-  static getCategory() {
-    return this.category;
-  }
-}
-class Dog extends Animal {
-  static category = 'canine';
-}
-console.log(Dog.getCategory(), Dog.__proto__ === Animal);
-```
-What is printed?
-- A) `'fauna' false`
-- B) `'canine' false`
-- C) `'fauna' true`
-- D) `'canine' true`
-
-<details><summary>Answer</summary>
-
-**D.** In ES classes, derived class constructors inherit from base class constructors (`Dog.__proto__ === Animal`), establishing static method inheritance. When `Dog.getCategory()` is called, `this` inside `getCategory` is `Dog`, so `this.category` evaluates to `'canine'`.
-- Why not A or C: `this` points to the calling class (`Dog`), not `Animal`.
-- Why not B: `Dog.__proto__ === Animal` is `true`; static inheritance uses the constructor prototype chain.
-- Ref: [modules/04-objects-prototypes-classes.md](../modules/04-objects-prototypes-classes.md) §4.4, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/extends
-</details>
-
-### Q-JSI-078 · Classes · difficulty 3 · scenario
-A security team audits a library where an instance method `#verifyToken()` was implemented as a private method:
-```js
-class AuthManager {
-  #verifyToken(token) { /* security check */ }
-  authenticate(token) { return this.#verifyToken(token); }
-}
-```
-An attacker successfully pollutes `Object.prototype` and `AuthManager.prototype`. Can this prototype pollution tamper with or bypass `#verifyToken`?
-- A) Yes, if the attacker defines `Object.prototype['#verifyToken']`.
-- B) Yes, because private methods are stored as non-enumerable properties on `AuthManager.prototype`.
-- C) No, because private methods are lexical brand-checked records associated with the instance and cannot be resolved, patched, or masked via the prototype chain.
-- D) Yes, through `Reflect.set(AuthManager.prototype, '#verifyToken', attackerFn)`.
-
-<details><summary>Answer</summary>
-
-**C.** Private methods are not properties on any prototype object; they use lexical private identifiers that require receiver brand validation. Prototype pollution cannot create, mask, or modify private methods.
-- Why not A, B, D: private methods never appear in prototype lookup chains and cannot be accessed via string keys.
-- Ref: [modules/04-objects-prototypes-classes.md](../modules/04-objects-prototypes-classes.md) §4.2, [modules/13-correctness-security-pitfalls.md](../modules/13-correctness-security-pitfalls.md) §1, https://tc39.es/ecma262/#sec-private-methods
 </details>
 
 ---

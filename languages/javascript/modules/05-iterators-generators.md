@@ -297,7 +297,7 @@ stateDiagram-v2
   Executing --> Executing: await (requests keep queueing)
   SuspendedYield --> Executing: next request dequeued
   Executing --> DrainingQueue: body completes or throws
-  DrainingQueue --> DrainingQueue: settle remaining requests ({undefined, true}; awaits return(v) values)
+  DrainingQueue --> DrainingQueue: settle remaining requests ({undefined, true}, awaits return(v) values)
   DrainingQueue --> Completed: queue empty
   Completed --> DrainingQueue: new request
 ```
