@@ -46,7 +46,7 @@ The test "pointers and work tags of a real fiber" walks exactly this structure o
 
 | Field | Meaning | Used in |
 |---|---|---|
-| `tag` | Kind of fiber: `FunctionComponent` 0, `ClassComponent` 1, `HostRoot` 3, `HostPortal` 4, `HostComponent` 5, `HostText` 6, `Fragment` 7, `ForwardRef` 11, `SuspenseComponent` 13, `MemoComponent` 14, `SimpleMemoComponent` 15, `OffscreenComponent` 22 (backs `<Activity>` and Suspense content) … | dispatch in `beginWork`/`completeWork` |
+| `tag` | Kind of fiber: `FunctionComponent` 0, `ClassComponent` 1, `HostRoot` 3, `HostPortal` 4, `HostComponent` 5, `HostText` 6, `Fragment` 7, `ForwardRef` 11, `SuspenseComponent` 13, `MemoComponent` 14, `SimpleMemoComponent` 15, `OffscreenComponent` 22 (backs Suspense offscreen content), `ActivityComponent` 31 (backs `<Activity>` in 19.3+) … | dispatch in `beginWork`/`completeWork` |
 | `type`, `elementType`, `key` | Copied from the element; the identity triple | reconciliation |
 | `stateNode` | Host instance (DOM node) for host fibers; class instance for class components; `FiberRoot` for the HostRoot; `null` for function components | commit |
 | `pendingProps` / `memoizedProps` | Props for this render / props used last time it completed | bailout check |
@@ -310,14 +310,14 @@ When the work loop finishes, `finishedWork` (the WIP HostRoot) holds a tree anno
 
 ```mermaid
 sequenceDiagram
-    participant WL as Work loop (render)
-    participant BM as Before mutation
-    participant M as Mutation
-    participant L as Layout
-    participant P as Passive (later task)
+    participant WL as "Work loop (render)"
+    participant BM as "Before mutation"
+    participant M as "Mutation"
+    participant L as "Layout"
+    participant P as "Passive (later task)"
     WL->>BM: finishedWork
     Note over BM: getSnapshotBeforeUpdate (classes)<br/>ViewTransition snapshots (Module 11)
-    BM->>M: 
+    BM->>M: "mutation phase"
     Note over M: DOM inserts / updates / deletions<br/>detach old refs (call ref cleanups)<br/>useInsertionEffect, useLayoutEffect cleanups
     M->>L: root.current = finishedWork
     Note over L: useLayoutEffect setups<br/>componentDidMount / DidUpdate<br/>attach refs
@@ -452,7 +452,7 @@ Child first. The commit traverses depth-first and fires layout effects on comple
 
 <details><summary><strong>8. What replaced the effect list in React 18 and why should you care?</strong></summary>
 
-`subtreeFlags` bubbled during `completeWork`; commit walks the tree and skips subtrees whose `subtreeFlags` are empty. It made hiding/showing subtrees (Suspense fallbacks, Offscreen → `<Activity>`) expressible. You care mainly to recognise outdated explanations.
+`subtreeFlags` bubbled during `completeWork`; commit walks the tree and skips subtrees whose `subtreeFlags` are empty. It made hiding/showing subtrees (Suspense fallbacks, Offscreen/Activity) expressible. You care mainly to recognise outdated explanations.
 </details>
 
 <details><summary><strong>9. A list row contains an embedded <code>&lt;iframe&gt;</code> player. After "move to top" it reloads. Why?</strong></summary>

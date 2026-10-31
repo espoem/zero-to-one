@@ -233,9 +233,9 @@ Hardening the decoder surfaced more issues. All are in the same three packages a
 | CVE-2025-55183 | 2025-12-11 | Source code exposure: a Server Function's source returned via stringification | 5.3 | 19.0.2 / 19.1.3 / 19.2.2 |
 | CVE-2025-67779 | 2025-12-11/12 | DoS: incomplete fix of 55184 | 7.5 | 19.0.3 / 19.1.4 / 19.2.3 |
 | CVE-2026-23864 | 2026-01-26 | DoS: crashes, OOM, CPU | 7.5 | 19.0.4 / 19.1.5 / 19.2.4 |
-| CVE-2026-23869 | 2026-04-08 | DoS: CPU for up to a minute | 7.5 | 19.0.5 / 19.1.6 / 19.2.5 (inferred from affected ranges) |
-| CVE-2026-23870 | 2026-05 | DoS: OOM / CPU | 7.5 | 19.0.6 / 19.1.7 / 19.2.6 |
-| CVE-2026-44907 | 2026-07 | DoS: OOM / CPU | 7.5 | 19.0.8 / 19.1.9 / 19.2.8 |
+| CVE-2026-23869 | 2026-04-08 | DoS: CPU for up to a minute | 7.5 | 19.0.5 / 19.1.6 / 19.2.5 (unverified, inferred from affected ranges) |
+| CVE-2026-23870 | 2026-05 (unverified) | DoS: OOM / CPU | 7.5 | 19.0.6 / 19.1.7 / 19.2.6 (unverified) |
+| CVE-2026-44907 | 2026-07 (unverified) | DoS: OOM / CPU | 7.5 | 19.0.8 / 19.1.9 / 19.2.8 (unverified) |
 
 Sources: the [12-11 React follow-up post](https://react.dev/blog/2025/12/11/denial-of-service-and-source-code-exposure-in-react-server-components) (55183/55184/67779/23864), GitLab and OSV advisory databases for the 2026 IDs. 19.3.0 (2026-09-09) was released after all of them. The 2026-10-14 releases (19.3.1 and 19.0.9/19.1.10/19.2.9 on the same day) had no published advisory at the time of verification (2026-10-29) *(unverified whether they contain security fixes)* — take the latest patch of your line regardless.
 

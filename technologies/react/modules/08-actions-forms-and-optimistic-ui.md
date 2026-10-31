@@ -27,10 +27,10 @@ The last row is the production failure mode to remember. Observed on 19.3.1: aft
 
 ```mermaid
 sequenceDiagram
-    participant U as User
-    participant R as React
-    participant A as Action (async)
-    participant S as Server
+    participant U as "User"
+    participant R as "React"
+    participant A as "Action (async)"
+    participant S as "Server"
     U->>R: submit form
     R->>R: start transition · isPending = true · apply optimistic update
     R->>A: call action(prevState, formData)
