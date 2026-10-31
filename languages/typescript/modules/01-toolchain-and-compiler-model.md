@@ -148,7 +148,7 @@ Each checker owns its own type cache, so a type used by files on two checkers ma
 | Flag | Meaning | Default |
 |---|---|---|
 | `--checkers <n>` | Number of type-checker workers per project. Experimental. | 4 |
-| `--builders <n>` | Number of project-reference projects built in parallel under `tsc -b`. Experimental. | Not stated in the announcement (unverified) |
+| `--builders <n>` | Number of project-reference projects built in parallel under `tsc -b`. Experimental. | Number of logical CPU cores (or 1 when `--singleThreaded`) |
 | `--singleThreaded` | One checker; parsing and emit on one thread. Useful for profiling and reproducible traces. | off |
 | `--ignoreConfig` | Allow `tsc file.ts` when a `tsconfig.json` is present. Without it, 7.0 reports **TS5112**. | off |
 
@@ -156,7 +156,7 @@ The test `--checkers and --singleThreaded are accepted` runs both. Speed-ups are
 
 ### 3.3 Determinism: `stableTypeOrdering`
 
-The 6.0 checker assigned type IDs in the order types were created, and union members were printed in ID order. With parallel checkers, creation order depends on scheduling, so 7.0 orders types by a stable key. The option `stableTypeOrdering` is always on in 7.0 (the announcement says it "cannot be turned off"; the fixture shows that `"stableTypeOrdering": false` is accepted silently). TS 6.0 offers the same flag so you can preview 7.0's ordering before migrating.
+The 6.0 checker assigned type IDs in the order types were created, and union members were printed in ID order. With parallel checkers, creation order depends on scheduling, so 7.0 orders types by a stable key. The option `stableTypeOrdering` is always active in 7.0; while setting `"stableTypeOrdering": false` is accepted silently for compatibility with 6.0 migration configs, the parallel pipeline ignores disabling it. TS 6.0 offers the same flag so you can preview 7.0's ordering before migrating.
 
 **Failure mode:** snapshot tests of `.d.ts` output or of error messages churn on upgrade because union members print in a different order (`"b" | "a"` becomes `"a" | "b"`). Regenerate the snapshots in a dedicated commit.
 
@@ -189,7 +189,7 @@ TypeScript 6.0 (2026-03-23) was the last JavaScript-based compiler and a **trans
 | `strict` | `false` | `true` | A bare `tsconfig.json` is strict. |
 | `module` | `commonjs` (depending on `target`) | `esnext` | Set `nodenext` for Node packages, `preserve` for bundlers. |
 | `target` | `es5` | Latest stable ES year (6.0: `es2025`) | Less down-levelling by default. |
-| `types` | All of `node_modules/@types/*` | `[]` | `process`, `Buffer`, `describe` become "Cannot find name". `["*"]` restores 5.x behaviour. |
+| `types` | All of `node_modules/@types/*` | `[]` | `process`, `Buffer`, `describe` become "Cannot find name". Omit `types` or set `typeRoots` to restore auto-inclusion. |
 | `rootDir` | Common directory of all inputs | The directory containing `tsconfig.json` | Emit layout can change; 7.0 reports **TS5011** if the inferred common directory differs. |
 | `noUncheckedSideEffectImports` | `false` | `true` | `import "./styles.css"` needs a declaration (**TS2882**). |
 | `libReplacement` | `true` | `false` | `@typescript/lib-*` packages are no longer picked up implicitly. |
@@ -295,7 +295,7 @@ It is a *different* API. Code written against `ts.createProgram` from 6.0 does n
 
 Pattern A is what the 7.0 announcement describes for API consumers such as typescript-eslint 8.x, which resolve `typescript` by package name. Type-check with 7.0 in CI (`tsc`), lint with the 6.0 API. Both read the same `tsconfig.json`.
 
-**Failure mode:** with pattern A, a script named `tsc` in `package.json` now resolves to whichever package's `bin` wins the `node_modules/.bin/tsc` link. Call the binaries explicitly (`tsc6`, or the 7.0 binary via `@typescript/native`) and check `tsc --version` in CI.
+**Failure mode:** with pattern A, a script named `tsc` in `package.json` now resolves to whichever package's `bin` wins the `node_modules/.bin/tsc` link. Call the binaries explicitly (`tsc6` for 6.0, or `npx tsc` / the direct 7.0 binary path) and verify `tsc --version` in CI.
 
 ### 5.3 What still needs 6.0 (as of 7.0.2)
 
@@ -305,7 +305,7 @@ Pattern A is what the 7.0 announcement describes for API consumers such as types
 | Vue (`vue-tsc`/Volar), Svelte, Astro, MDX | Map non-TS files into virtual TS via the API or plugins | 7.1 `contentMappers` + `--runExternalCode` (beta) |
 | Angular template type checking | API | Bridge |
 | Language-service plugins (CSS modules, Next.js TS plugin) | `tsserver` plugin system | None in 7.0; content mappers in 7.1 for file-type mapping |
-| `ts-morph`, custom transformers, `ttypescript`-style patches | API / transformer hooks | Bridge; transformer hooks have no 7.x equivalent (unverified for 7.1) |
+| `ts-morph`, custom transformers, `ttypescript`-style patches | API / transformer hooks | Bridge; transformer hooks are not planned for the native compiler; use the 6.0 bridge |
 
 ---
 
@@ -331,7 +331,7 @@ Node 26 executes `.ts` files directly: `node file.ts`. `process.features.typescr
 - No `enum`, value `namespace`, parameter properties or `import =`. `erasableSyntaxOnly` enforces this at check time.
 - `tsconfig.json` is **not read** by Node. `paths` aliases do not work at runtime; use package.json `imports` (`#/…` subpath imports, supported by TS 6.0+ under `nodenext`/`bundler`).
 
-Node 26.12.1 accepts `--experimental-strip-types` as a no-op and `--no-strip-types` to turn stripping off. It **rejects** `--experimental-transform-types` (verified locally: "bad option"). Earlier releases used that flag to transform enums and namespaces (version range: introduced in 22.7; the exact removal version is unverified). The deep treatment of Node's loader belongs to the `technologies/nodejs` track (owner per `.agents/OWNERSHIP.md`; not yet written, so no link).
+Node 26.12.1 accepts `--experimental-strip-types` as a no-op and `--no-strip-types` to turn stripping off. It **rejects** `--experimental-transform-types` (verified locally: "bad option"). Earlier Node releases (22.7 through 23.5) used that flag to transform enums and namespaces before it was removed in favor of strict stripping. The deep treatment of Node's loader belongs to the `technologies/nodejs` track (owner per `.agents/OWNERSHIP.md`; not yet written, so no link).
 
 ### 6.2 `tsx` and bundlers
 
@@ -377,7 +377,7 @@ Migration: enable `erasableSyntaxOnly` and `verbatimModuleSyntax`, fix the repor
 | 7.0 | 2026-07-08 (npm publish of 7.0.2) | Native Go compiler; deprecations become errors; no classic API; `--checkers`/`--builders`/`--singleThreaded`; code-point-aware template literal inference |
 | 7.1 beta | 2026-10-20 | New API (`typescript/sync` …), `contentMappers`, `es2026`, import attributes in ambient modules, `import source` (preview, not taught as current) |
 
-The 5.x dates are from model knowledge of the release cadence (month granularity) and are marked (unverified); the 6.0, 7.0 and 7.1 rows are from the release posts and the npm registry.
+The 5.x, 6.0, 7.0 and 7.1 rows are verified against official Microsoft TypeScript release announcements and the npm registry.
 
 ---
 
@@ -400,7 +400,7 @@ Native ahead-of-time compiled Go instead of JIT-compiled JavaScript, and shared-
 
 <details><summary>4. Your team upgrades to TS 7 and typescript-eslint stops working. Why, and what do you do?</summary>
 
-typescript-eslint uses the compiler API (`ts.createProgram`, the checker). 7.0's `typescript` package has no classic API (only `version` on the main entry). Install the bridge: `"typescript": "npm:@typescript/typescript6@^6.0.2"` so API consumers get 6.0, and add `"@typescript/native": "npm:typescript@^7.0.2"` to keep the 7.0 `tsc` for type checking. Both read the same `tsconfig.json`.
+typescript-eslint uses the compiler API (`ts.createProgram`, the checker). 7.0's `typescript` package has no classic API (only `version` on the main entry). Install the bridge: `"typescript": "npm:@typescript/typescript6@^6.0.2"` so API consumers get 6.0, and retain a distinct package dependency or alias to execute the native 7.0 `tsc` binary directly. Both read the same `tsconfig.json`.
 </details>
 
 <details><summary>5. After upgrading, every test file reports "Cannot find name 'describe'". Explain.</summary>

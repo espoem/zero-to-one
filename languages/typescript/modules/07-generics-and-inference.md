@@ -19,8 +19,8 @@ flowchart TD
     end
 
     subgraph TypeWorld["Compile-Time Type World"]
-        TArg["Type Argument: <User>"] --> TFn["Generic Signature: fetch<T>(url): Promise<T>"]
-        TFn --> TRet["Inferred Type: Promise<User>"]
+        TArg["Type Argument: &lt;User&gt;"] --> TFn["Generic Signature: fetch&lt;T&gt;(url): Promise&lt;T&gt;"]
+        TFn --> TRet["Inferred Type: Promise&lt;User&gt;"]
     end
 
     VArg -.->|passes data to| VFn
@@ -43,7 +43,7 @@ type Equal<X, Y> =
 A call `f(a1, …, an)` to `function f<T1, …, Tk>(p1: P1, …, pn: Pn)` is resolved in phases:
 
 1. **Collect candidates.** Each argument type is matched structurally against its parameter type, and every occurrence of a type parameter in the parameter type is an **inference site** that yields a candidate (`T` in `T[]` from `string[]` gives `string`). Sites have priorities: a naked `T` beats `T` inside a return position of a callback, and `NoInfer<T>` is not a site at all.
-2. **Context-sensitive arguments wait.** Arrow functions with unannotated parameters are *context sensitive*: their parameter types depend on `T`. They are skipped in the first pass, `T` is fixed from the other arguments, and then they are checked with contextual types. This is why `make(() => ({ n: 2 }), v => v.n)` types `v` correctly: `T` is fixed from the context-insensitive `factory` before `consume` is checked. (Since 6.0, functions that never use `this` are no longer treated as context sensitive merely because of method syntax.)
+2. **Context-sensitive arguments wait.** Arrow functions with unannotated parameters are *context sensitive*: their parameter types depend on `T`. They are skipped in the first pass, `T` is fixed from the other arguments, and then they are checked with contextual types. This is why `make(() => ({ n: 2 }), v => v.n)` types `v` correctly: `T` is fixed from the context-insensitive `factory` before `consume` is checked.
 3. **Choose a type.** Covariant candidates are unioned or reduced to a best common supertype (literals are **widened** unless `T` has a primitive constraint, the call is in a `const` context, or `T` is a `const` type parameter); contravariant candidates (from callback parameters) are intersected. The result must satisfy the constraint, otherwise the constraint itself is used and the argument check fails.
 4. **Check the arguments** against the instantiated signature.
 
@@ -716,6 +716,18 @@ const statusMap = invertMap({ active: "1", pending: "2", archived: "3" });
 
 type testInvert = Expect<Equal<typeof statusMap, { 1: "active"; 2: "pending"; 3: "archived" }>>;
 ```
+
+---
+
+## Then vs now: generic type inference
+
+| Dimension | Then (TS ≤ 4.6) | Intermediate (TS 4.7 – 5.3) | Now (TS 5.4+ / TS 7.0) |
+|---|---|---|---|
+| Literal argument retention | Required call-site `as const`: `fn(["a", "b"] as const)` | Required call-site `as const` | Declaration-site `<const T>` (TS 5.0) infers literal tuples directly |
+| Suppressing inference sites | Unstable hacks: `T & {}` or `[T][T extends any ? 0 : never]` | Unstable hacks | Native `NoInfer<T>` intrinsic (TS 5.4) excludes positions cleanly |
+| Structural variance checks | Full AST/type traversal on every instantiation check | `in T`, `out T`, `in out T` (TS 4.7) cache variance upfront | `in`/`out` annotations standard across UI and reactive libraries |
+
+**Migration and pitfalls:** Replace brittle parameter intersection tricks `T & {}` with `NoInfer<T>` to prevent secondary arguments from widening or polluting generic inference candidates. Use `<const T>` on builder and dispatch signatures instead of forcing consumers to add `as const` casts at callsites.
 
 ---
 

@@ -50,7 +50,7 @@ Which of these narrow `x: string | number[]` to `number[]` in the true branch? (
 <details><summary>Answer</summary>
 
 **A, B, C.** `Array.isArray` is declared as a predicate; `typeof … === "object"` removes `string`; `instanceof Array` narrows to the array member.
-- Why not D: `in` on a primitive-containing union is an error (`"length" in x` requires an object), and strings also have `length`.
+- Why not D: `"length" in x` produces compile error TS2361/TS2686 ("The right-hand side of an 'in' expression must not be a primitive") because `x` includes the primitive type `string`. TypeScript only permits `in` operator narrowing when the target operand type is constrained to `object`.
 - Ref: [modules/03](../modules/03-unions-narrowing-and-control-flow.md), https://www.typescriptlang.org/docs/handbook/2/narrowing.html
 </details>
 

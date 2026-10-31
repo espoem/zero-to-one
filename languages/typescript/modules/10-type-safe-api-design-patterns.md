@@ -15,7 +15,7 @@ While everyday TypeScript focuses on typing functions and objects, library autho
 flowchart TD
     subgraph NominalDomain["1. Nominal Typing (Branded Types)"]
         RawStr["raw: string"] --> SmartConst["Smart Constructor / Validation"]
-        SmartConst --> Brand["Brand<string, 'UserId'>"]
+        SmartConst --> Brand["Brand&lt;string, 'UserId'&gt;"]
     end
 
     subgraph ControlFlow["2. Custom Narrowing"]
@@ -25,7 +25,7 @@ flowchart TD
 
     subgraph StateAccumulation["3. Type-State Accumulation"]
         Builder["Builder Pattern: query.select().where()"]
-        TypeState["QueryBuilder<TSelected, TWhere>"]
+        TypeState["QueryBuilder&lt;TSelected, TWhere&gt;"]
         Builder --> TypeState
     end
 

@@ -20,13 +20,13 @@ Weights: not published by the vendor; the bank uses equal weights (5 questions p
 
 | Level | Domain (official topic) | Weight | Modules | Examples | Bank questions | Status |
 |---|---|---|---|---|---|---|
-| Junior | TypeScript basics and compiler errors | n/p | 01, 02 | `01-toolchain`, `02-essential-types` | M-001, M-031..035 cross-listed | ✅ |
-| Junior | Types, annotations and inference | n/p | 02, 07 | `02-essential-types`, `07-generics` | M-001..005 | ✅ |
-| Junior | Arrays, tuples and literal types | n/p | 02, 05 | `02-essential-types`, `05-classes-mutability` | M-002, M-003, M-011, S-012, S-013 | ✅ |
-| Junior | Objects and interfaces | n/p | 04 | `04-assignability` | S-001..005 | ✅ |
-| Junior | Typing function parameters and return values | n/p | 02, 07 | `02-essential-types`, `07-generics` | M-004, M-006..010 | ✅ |
-| Junior | Narrowing | n/p | 03 | `03-unions-narrowing` | M-001..005 | ✅ |
-| Junior | Type space, escape hatches and config | n/p | 01, 04, 06 | `01-toolchain`, `04-assignability` | M-031..035, S-031 | ✅ |
+| Junior | TypeScript basics and compiler errors | n/p | 01, 02 | `01-toolchain`, `02-essential-types` | M-001, M-031..035 cross-listed | 🟡 (covered via Mid bank) |
+| Junior | Types, annotations and inference | n/p | 02, 07 | `02-essential-types`, `07-generics` | M-001..005 | 🟡 (covered via Mid bank) |
+| Junior | Arrays, tuples and literal types | n/p | 02, 05 | `02-essential-types`, `05-classes-mutability` | M-002, M-003, M-011, S-012, S-013 | 🟡 (covered via Mid bank) |
+| Junior | Objects and interfaces | n/p | 04 | `04-assignability` | S-001..005 | 🟡 (covered via Mid bank) |
+| Junior | Typing function parameters and return values | n/p | 02, 07 | `02-essential-types`, `07-generics` | M-004, M-006..010 | 🟡 (covered via Mid bank) |
+| Junior | Narrowing | n/p | 03 | `03-unions-narrowing` | M-001..005 | 🟡 (covered via Mid bank) |
+| Junior | Type space, escape hatches and config | n/p | 01, 04, 06 | `01-toolchain`, `04-assignability` | M-031..035, S-031 | 🟡 (covered via Mid bank) |
 | Mid | Modeling states with unions and type guards | n/p | 03, 10 | `03-unions-narrowing`, `10-api-design` | M-001..M-005 | ✅ |
 | Mid | Generics | n/p | 07 | `07-generics` | M-006..M-010 | ✅ |
 | Mid | Utility types and type operators | n/p | 08 | `08-type-derivation` | M-011..M-015 | ✅ |

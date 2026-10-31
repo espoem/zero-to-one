@@ -140,7 +140,7 @@ The fixture [`paths-alias/`](../examples/06-modules-tsconfig/fixtures/paths-alia
 
 Historically TypeScript **elided** imports that were only used as types. That was invisible but had two problems: per-file transpilers could not know whether `import { X }` was a type, and side-effectful modules disappeared when only types were used.
 
-`verbatimModuleSyntax` replaces the heuristics with one rule: imports and exports without `type` stay, with `type` they go. It supersedes `importsNotUsedAsValues`/`preserveValueImports` (both removed in 5.5+). It implies `isolatedModules`, and it forbids `import x = require()` in ESM files and `export =` in ESM.
+`verbatimModuleSyntax` replaces the heuristics with one rule: imports and exports without `type` stay, with `type` they go. It supersedes `importsNotUsedAsValues` and `preserveValueImports` (both deprecated since 5.0 and ignored with a warning when `verbatimModuleSyntax` is active). It implies `isolatedModules`, and it forbids `import x = require()` in ESM files and `export =` in ESM.
 
 ### Then vs now: type-only imports
 
