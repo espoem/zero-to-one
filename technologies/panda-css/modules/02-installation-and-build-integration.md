@@ -100,7 +100,7 @@ flowchart TB
     c1["panda --watch / panda dev"] --> c2["writes styled-system/ + styles.css"]
   end
   subgraph POSTCSS["PostCSS plugin"]
-    p1["root CSS file containing<br/>@layer reset, base, tokens, recipes, utilities;"] --> p2["@pandacss/dev/postcss replaces it<br/>with the generated sheet"]
+    p1["root CSS file containing<br/>@layer reset, base, tokens, recipes, utilities#59;"] --> p2["@pandacss/dev/postcss replaces it<br/>with the generated sheet"]
   end
   subgraph VITE["@pandacss/vite (inline compiler)"]
     v1["root CSS file with the layer statement"] --> v2["plugin injects CSS, runs codegen, HMR,<br/>optional transform: true"]

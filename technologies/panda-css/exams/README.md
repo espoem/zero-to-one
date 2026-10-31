@@ -33,7 +33,7 @@ Each question in [`interview.md`](./interview.md) is tagged with its domain, a d
 
 ## Mock interview
 
-[`interview.md` § Mock interview](./interview.md#mock-interview) is a 60-minute, 24-question loop that mirrors a senior design-system interview (warm-up concepts → debugging scenarios → design questions → one hands-on task), with a scoring key and a pass bar.
+[`interview.md` § Mock interview](./interview.md#mock-interview) is a 60-minute, 25-question loop that mirrors a senior design-system interview (warm-up concepts → debugging scenarios → design questions → one hands-on task), with a scoring key and a pass bar.
 
 ## Integrity
 
