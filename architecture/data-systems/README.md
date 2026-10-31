@@ -8,32 +8,17 @@ Every concept is backed by a numerically ordered module in [modules/](./modules/
 
 ---
 
-## 1. Certifications & Academic Standards
-
-Data systems architecture is a foundational, vendor-neutral computer systems discipline. Evaluation in this field is anchored in two industry standards:
-
-- **Academic Examination Rigor (CMU 15-445/645 & MIT 6.5840)**:
-  - **Focus**: Algorithmic and mathematical mechanics of data models, relational algebra, B+Tree splits, mini-LSM compaction, buffer pool eviction (2Q/CLOCK), ARIES 3-pass crash recovery, MVCC snapshot isolation, and quorum consensus ($W + R > N$).
-- **Staff / Principal Storage & Distributed Systems Technical Interview Loop**:
-  - **Focus**: Real-world architectural trade-offs (RUM conjecture, CAP/PACELC), anomaly hierarchies (Berenson/Adya), cache stampede mitigation (XFetch), binary wire serialization (Varints, ZigZag, Avro/Protobuf schema evolution), and stream-table duality.
-
-Full certification domain mappings and question banks:
-- **[exams/README.md](./exams/README.md)**: Examination coverage matrix mapping all 12 domains to modules and executable tests with 100% full coverage (zero gaps).
-- **[exams/interview.md](./exams/interview.md)**: 65 original technical interview questions across difficulty levels 1–3, with comprehensive explanations, distractor analysis, and a 60-minute full mock examination with scoring rubrics.
-
----
-
-## 2. Curriculum Syllabus & Topic Breakdown
+## 1. Curriculum Syllabus & Topic Breakdown
 
 The curriculum is structured into 12 self-contained, progressive modules:
 
 ### [Module 01 — Data Models, Relational Algebra & Formal Query Languages](./modules/01-data-models-and-query-languages.md)
-- **Concepts**: Relational algebra formal algebraic primitives ($\sigma, \pi, \times, \cup, -, \bowtie_\theta$), functional dependencies and Armstrong's Axioms, normal forms ($1\text{NF} \subset 2\text{NF} \subset 3\text{NF} \subset \text{BCNF} \subset 4\text{NF} \subset 5\text{NF}$), multivalued dependencies, Schema-on-Write vs. Schema-on-Read, and Datalog recursive query evaluation.
-- **Runnable Example**: [`examples/01-slotted-page.test.ts`](./examples/01-slotted-page.test.ts)
+- **Concepts**: Relational algebra formal algebraic primitives ($\sigma, \pi, \times, \cup, -, \bowtie_\theta$), functional dependencies and Armstrong's Axioms, normal forms ($\text{5NF} \subset \text{4NF} \subset \text{BCNF} \subset \text{3NF} \subset \text{2NF} \subset \text{1NF}$), multivalued dependencies (4NF), join dependencies (5NF / PJNF), Schema-on-Write vs. Schema-on-Read, and Datalog recursive query evaluation (Knaster-Tarski least fixed point, seminaive evaluation, stratified negation).
+- **Executable Verification**: Theoretical foundational proofs; storage mechanics verified in Module 02.
 
 ### [Module 02 — Storage Engines: Slotted Pages, B-Trees & LSM-Trees](./modules/02-storage-engines-b-trees-and-lsm.md)
 - **Concepts**: Slotted page binary architecture and compaction, Lehman-Yao B-link tree concurrent algorithm (high keys and right links), Log-Structured Merge-Trees (LSM), MemTable flushes, immutable SSTables, Size-Tiered vs. Leveled compaction, the RUM conjecture (Read, Update, Memory trade-off triangle), and columnar storage with vectorized execution.
-- **Runnable Examples**: [`examples/02-bplus-tree.test.ts`](./examples/02-bplus-tree.test.ts), [`examples/03-mini-lsm.test.ts`](./examples/03-mini-lsm.test.ts)
+- **Runnable Examples**: [`examples/01-slotted-page.test.ts`](./examples/01-slotted-page.test.ts), [`examples/02-bplus-tree.test.ts`](./examples/02-bplus-tree.test.ts), [`examples/03-mini-lsm.test.ts`](./examples/03-mini-lsm.test.ts)
 
 ### [Module 03 — Indexing Theory, Inverted Indexes & Vector ANN](./modules/03-indexing-theory-and-vector-search.md)
 - **Concepts**: Clustered vs. secondary indexes, inverted index postings lists, Okapi BM25 probabilistic term scoring ($k_1, b$), spatial indexes (R-Trees and BKD trees), and high-dimensional Vector Approximate Nearest Neighbor search (IVF, HNSW multi-layer graphs, DiskANN, SQ8 and Product Quantization).
@@ -58,6 +43,46 @@ The curriculum is structured into 12 self-contained, progressive modules:
 ### [Module 08 — Partitioning, Consistent Hashing & Routing](./modules/08-partitioning-sharding-and-routing.md)
 - **Concepts**: Range partitioning vs. hash partitioning vs. directory routing, consistent hashing with virtual nodes (vnodes), minimal key migration fraction ($1 / (N+1)$), document-partitioned (local) vs. term-partitioned (global) secondary indexes, and the "Tail at Scale" scatter-gather latency problem.
 - **Runnable Example**: [`examples/08-consistent-hashing.test.ts`](./examples/08-consistent-hashing.test.ts)
+
+### [Module 09 — Caching Theory, Cache Stampedes & Invalidation](./modules/09-caching-theory-and-consistency.md)
+- **Concepts**: Cache topologies (Cache-Aside, Read-Through, Write-Through, Write-Back), cache invalidation dual-write race conditions, the Cache Stampede (Thundering Herd) failure mode, probabilistic early expiration via the XFetch algorithm, and Window TinyLFU (W-TinyLFU) frequency admission filtering.
+- **Runnable Example**: [`examples/09-cache-xfetch.test.ts`](./examples/09-cache-xfetch.test.ts)
+
+### [Module 10 — Encoding, Binary Serialization & Schema Evolution](./modules/10-encoding-serialization-and-schema-evolution.md)
+- **Concepts**: Text vs. binary encoding formats, Variable-Length Quantity (Varint) 7-bit continuation masks, ZigZag signed integer bitwise mapping, Protocol Buffers wire types and field tags, Apache Avro tagless binary encoding and schema resolution, schema evolution compatibility rules (Backward, Forward, Full), and Schema Registries in distributed event streaming.
+- **Runnable Example**: [`examples/10-schema-evolution.test.ts`](./examples/10-schema-evolution.test.ts)
+
+### [Module 11 — Stream Processing, Event Logs & Compaction](./modules/11-stream-processing-and-event-logs.md)
+- **Concepts**: The append-only commit log abstraction, consumer groups and partition assignment rebalancing (Eager vs. Incremental Cooperative), the Stream-Table Duality ($\text{Table} = \int \text{Stream} \, dt$), log compaction and tombstone retention windows, processing-time vs. event-time, Watermark progress tracking, and Exactly-Once Semantics (EOS).
+- **Runnable Example**: [`examples/11-stream-table-duality.test.ts`](./examples/11-stream-table-duality.test.ts)
+
+### [Module 12 — Architectural Decision Matrix, CAP/PACELC & Polyglot Persistence](./modules/12-architectural-decision-matrix-and-polyglot-persistence.md)
+- **Concepts**: Workload taxonomy (OLTP vs. OLAP vs. HTAP), Brewer's CAP Theorem formal bounds, Abadi's PACELC classification (Spanner PC/EC vs. Cassandra/Dynamo PA/EL), the comprehensive architectural decision matrix, and polyglot persistence design patterns.
+- **Runnable Examples**: All test suites (01–12)
+
+---
+
+## 2. Certifications & Exams
+
+Data systems architecture is a foundational, vendor-neutral computer systems discipline. Evaluation in this field is anchored in two industry standards:
+
+- **Academic Examination Rigor (CMU 15-445/645 & MIT 6.5840)**:
+  - **Focus**: Algorithmic and mathematical mechanics of data models, relational algebra, B+Tree splits, mini-LSM compaction, buffer pool eviction (2Q/CLOCK), ARIES 3-pass crash recovery, MVCC snapshot isolation, and quorum consensus ($W + R > N$).
+- **Staff / Principal Storage & Distributed Systems Technical Interview Loop**:
+  - **Focus**: Real-world architectural trade-offs (RUM conjecture, CAP/PACELC), anomaly hierarchies (Berenson/Adya), cache stampede mitigation (XFetch), binary wire serialization (Varints, ZigZag, Avro/Protobuf schema evolution), and stream-table duality.
+
+### Prerequisites
+- Proficiency in systems programming or modern TypeScript/Node.js.
+- Basic understanding of memory hierarchy (L1/L2/L3 caches, RAM, SSD NVMe, sequential vs random I/O).
+- Familiarity with basic discrete mathematics (sets, relations, propositional logic, asymptotic analysis $O, \Omega, \Theta$).
+
+### Out of Scope
+- Specific cloud provider managed database console operations (AWS RDS/DynamoDB UI, Azure Cosmos DB portal).
+- Language-specific Object-Relational Mapping (ORM) frameworks (Prisma, TypeORM, Hibernate) except where contrasting N+1 query patterns.
+
+Full certification domain mappings and question banks:
+- **[exams/README.md](./exams/README.md)**: Examination coverage matrix mapping all 12 domains to modules and executable tests with 100% full coverage (zero gaps).
+- **[exams/interview.md](./exams/interview.md)**: 65 original technical interview questions across difficulty levels 1–3, with comprehensive explanations, distractor analysis, and a 60-minute full mock examination with scoring rubrics.
 
 ### [Module 09 — Caching Theory, Cache Stampedes & Invalidation](./modules/09-caching-theory-and-consistency.md)
 - **Concepts**: Cache topologies (Cache-Aside, Read-Through, Write-Through, Write-Back), cache invalidation dual-write race conditions, the Cache Stampede (Thundering Herd) failure mode, probabilistic early expiration via the XFetch algorithm, and Window TinyLFU (W-TinyLFU) frequency admission filtering.

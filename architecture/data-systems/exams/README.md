@@ -22,8 +22,8 @@ Data systems architecture is a vendor-neutral computer systems discipline. There
 
 | Domain # | Domain / Objective | Weight | Primary Module | Executable Proof | Status |
 | :-: | :--- | :-: | :--- | :--- | :-: |
-| **01** | Data Models, Relational Algebra & Schema Design | 8% | [01-data-models-and-query-languages.md](../modules/01-data-models-and-query-languages.md) | [01-slotted-page.test.ts](../examples/01-slotted-page.test.ts) | ✅ Full |
-| **02** | Storage Engines: Slotted Pages, B-Trees & LSM-Trees | 10% | [02-storage-engines-b-trees-and-lsm.md](../modules/02-storage-engines-b-trees-and-lsm.md) | [02-bplus-tree.test.ts](../examples/02-bplus-tree.test.ts), [03-mini-lsm.test.ts](../examples/03-mini-lsm.test.ts) | ✅ Full |
+| **01** | Data Models, Relational Algebra & Schema Design | 8% | [01-data-models-and-query-languages.md](../modules/01-data-models-and-query-languages.md) | Formal proofs & algebraic equivalence (Codd 1970) | ✅ Full |
+| **02** | Storage Engines: Slotted Pages, B-Trees & LSM-Trees | 10% | [02-storage-engines-b-trees-and-lsm.md](../modules/02-storage-engines-b-trees-and-lsm.md) | [01-slotted-page.test.ts](../examples/01-slotted-page.test.ts), [02-bplus-tree.test.ts](../examples/02-bplus-tree.test.ts), [03-mini-lsm.test.ts](../examples/03-mini-lsm.test.ts) | ✅ Full |
 | **03** | Indexing Theory, Inverted Indexes & Vector ANN | 9% | [03-indexing-theory-and-vector-search.md](../modules/03-indexing-theory-and-vector-search.md) | [12-vector-ann-hnsw.test.ts](../examples/12-vector-ann-hnsw.test.ts) | ✅ Full |
 | **04** | Buffer Management, OS Paging & Direct I/O | 8% | [04-buffer-management-and-operating-system-io.md](../modules/04-buffer-management-and-operating-system-io.md) | [04-buffer-pool.test.ts](../examples/04-buffer-pool.test.ts) | ✅ Full |
 | **05** | Transactions, ACID & Isolation Anomaly Hierarchy | 10% | [05-transactions-acid-and-isolation-levels.md](../modules/05-transactions-acid-and-isolation-levels.md) | [05-mvcc-transaction-manager.test.ts](../examples/05-mvcc-transaction-manager.test.ts) | ✅ Full |
