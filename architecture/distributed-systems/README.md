@@ -55,9 +55,21 @@ flowchart TD
 13. [Module 13: Byzantine Fault Tolerance & Open Systems](modules/13-byzantine-fault-tolerance-and-open-systems.md): Byzantine failure model, $3f + 1$ mathematical proof, PBFT 3-phase pre-prepare/prepare/commit, Sybil attack defenses, Nakamoto Proof-of-Work & longest-chain rule, SUNDR fork consistency, CFT vs BFT trade-off matrix.
 14. [Module 14: Real-World Systems, Sharding & Capstone](modules/14-distributed-systems-in-practice-and-capstone.md): GFS 64MB chunks & record appends, MapReduce fault tolerance, Dynamo vector clocks & sloppy quorums, Spanner architecture, AWS Aurora 6-way quorum log streaming, Memcached leases, Capstone Multi-Raft Sharded Key-Value Store with Linearizable Handoff.
 
+### Prerequisites
+
+- Solid understanding of data structures, network communication (TCP/UDP, sockets), and concurrency primitives (threads, mutexes, condition variables).
+- Ability to read and execute TypeScript code with Node.js 26.
+- Familiarity with basic probability and propositional logic.
+
+### Out of Scope
+
+- **Database Engine Page Layouts**: Slotted page internals, B+ Tree page splits on disk, and table vacuuming are owned by `architecture/data-systems` and `technologies/postgres`.
+- **Physical Network Routing & Hardware Protocols**: BGP routing convergence, TCP congestion control math (CUBIC/BBR), and physical optics are owned by `architecture/networking`.
+- **Operating System Kernel Mechanics**: Linux cgroups, eBPF probes, and physical memory paging are owned by `technologies/linux` and `technologies/docker`.
+
 ---
 
-## 2. Certifications & Academic Standards
+## 2. Certifications & Exams
 
 This track covers foundational graduate and undergraduate distributed systems curricula and industry technical interview loops:
 
@@ -85,13 +97,10 @@ All examples and proofs are hermetic TypeScript test suites running directly on 
 
 ```bash
 # Execute pinned toolchain
-mise run test
-
-# Or run directly via npm
-npm test
+mise exec -- npm test
 
 # Run strict static type checking
-npm run typecheck
+mise exec -- npm run typecheck
 
 # Verify all Mermaid diagrams
 node ../../tools/mermaid-check/check.mjs .
