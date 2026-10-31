@@ -5,6 +5,7 @@ Data models represent the fundamental abstraction through which software enginee
 ---
 
 ## 1. Formal Foundations: Relational Algebra and Relational Calculus
+<a id="relational-algebra-formal-algebraic-primitives"></a>
 
 The relational data model, introduced by Edgar F. Codd in 1970, grounds data representation in first-order predicate logic and set theory. A relation $R$ is mathematically defined as a subset of the Cartesian product of $n$ attribute domains:
 
@@ -71,6 +72,7 @@ $$\sigma_{\varphi}(R \bowtie S) \equiv (\sigma_{\varphi}(R)) \bowtie S \quad \te
 ---
 
 ## 2. Normalization Theory: Functional Dependencies to BCNF
+<a id="functional-dependencies-and-normal-forms-1nf-through-bcnf"></a>
 
 Normalization is the mathematical decomposition of relations to eliminate data redundancy, prevent update anomalies (insert, delete, and update anomalies), and preserve data integrity through functional dependency constraints.
 
@@ -94,11 +96,18 @@ graph TD
         B["2NF: 1NF + No Partial Key Dependencies"]
         C["3NF: 2NF + No Transitive Dependencies on Non-Keys"]
         D["BCNF: Every Non-Trivial X → Y Has Superkey X"]
+        E["4NF: BCNF + No Non-Trivial Multivalued Dependencies"]
+        F["5NF (PJNF): 4NF + No Non-Trivial Join Dependencies"]
         A --> B
         B --> C
         C --> D
+        D --> E
+        E --> F
     end
 ```
+
+In terms of the set of compliant relations satisfying each constraint level:
+$$\text{5NF} \subset \text{4NF} \subset \text{BCNF} \subset \text{3NF} \subset \text{2NF} \subset \text{1NF}$$
 
 ### The Normal Form Spectrum
 
@@ -108,6 +117,8 @@ graph TD
 | **Second Normal Form (2NF)** | Relation is in 1NF, and no non-prime attribute is functionally dependent on a proper subset of any candidate key (no partial key dependencies). | Prevents data duplication when tables utilize composite candidate keys. |
 | **Third Normal Form (3NF)** | Relation is in 2NF, and for every non-trivial functional dependency $X \to Y$, either $X$ is a superkey or $Y$ is a prime attribute (part of a candidate key). | Eliminates transitive functional dependencies ($X \to Z$ mediated through non-key $Y$). |
 | **Boyce-Codd Normal Form (BCNF)** | For every non-trivial functional dependency $X \to Y$ in $F^+$, $X$ must be a strict superkey of $R$. | Completely eliminates redundancy attributable to functional dependencies. Unlike 3NF, BCNF decomposition may not always preserve all functional dependencies. |
+| **Fourth Normal Form (4NF)** | For every non-trivial multivalued dependency (MVD) $X \twoheadrightarrow Y$ on $R$, $X$ must be a superkey of $R$. | Eliminates independent multi-valued facts from multiplying Cartesian products inside tuples. |
+| **Fifth Normal Form (5NF / PJNF)** | Every non-trivial join dependency $\Join[R_1, \dots, R_n]$ on $R$ is implied by the candidate keys of $R$. | Guarantees lossless reconstruction without cyclic join anomalies across $n$-way decompositions. |
 
 ### Lossless-Join Decomposition and Dependency Preservation
 
@@ -116,6 +127,52 @@ Decomposing relation $R$ into subrelations $R_1, R_2$ with attribute sets $A(R_1
 $$A(R_1) \cap A(R_2) \to A(R_1) \quad \text{or} \quad A(R_1) \cap A(R_2) \to A(R_2)$$
 
 That is, the common attributes must form a superkey for at least one of the decomposed relations. If this condition fails, joining $R_1$ and $R_2$ produces spurious false tuples not present in the original relation $R$.
+
+### Higher Normal Forms: 4NF, 5NF, and Denormalization Trade-offs
+<a id="higher-normal-forms-4nf-5nf-and-denormalization-tradeoffs"></a>
+
+#### Multivalued Dependencies and Fourth Normal Form (4NF)
+A functional dependency $X \to Y$ restricts each $X$-value to exactly one $Y$-value. A **Multivalued Dependency** (MVD), denoted $X \twoheadrightarrow Y$, models independent multi-valued facts. Given relation schema $R$ and attribute sets $X, Y \subseteq R$, let $Z = R \setminus (X \cup Y)$. The MVD $X \twoheadrightarrow Y$ holds on $R$ if and only if for all tuples $t_1, t_2 \in R$ such that $t_1[X] = t_2[X]$, there exists a tuple $t_3 \in R$ such that:
+$$t_3[X] = t_1[X], \quad t_3[Y] = t_1[Y], \quad t_3[Z] = t_2[Z]$$
+Symmetrically, there must also exist $t_4 \in R$ with $t_4[X] = t_1[X], t_4[Y] = t_2[Y], t_4[Z] = t_1[Z]$. Intuitively, $Y$ and $Z$ are conditionally independent given $X$.
+
+**4NF Definition (Fagin 1977):** Relation $R$ is in 4NF with respect to a set of functional and multivalued dependencies if for every non-trivial MVD $X \twoheadrightarrow Y$ (where $Y \nsubseteq X$ and $X \cup Y \neq R$), $X$ is a superkey for $R$.
+- **Anomaly Solved:** Storing an author who speaks multiple languages and teaches multiple courses in a single table `(Author, Language, Course)` generates a Cartesian product of tuples for every independent language and course. 4NF decomposes $R$ into `(Author, Language)` and `(Author, Course)`.
+
+#### Join Dependencies and Fifth Normal Form (5NF / PJNF)
+A **Join Dependency** (JD), denoted $\Join[R_1, R_2, \dots, R_n]$ where $\bigcup_{i=1}^n R_i = R$, asserts that $R$ can be losslessly reconstructed by joining its projections on $R_1, \dots, R_n$:
+$$R = \pi_{R_1}(R) \bowtie \pi_{R_2}(R) \bowtie \dots \bowtie \pi_{R_n}(R)$$
+An MVD is merely a 2-way join dependency: $X \twoheadrightarrow Y \iff \Join[X \cup Y, X \cup (R \setminus Y)]$.
+
+**5NF (Project-Join Normal Form, Fagin 1979):** Relation $R$ is in 5NF if and only if every non-trivial join dependency on $R$ is implied by the candidate keys of $R$.
+- **Symmetric Cyclic Constraints:** 5NF handles 3-way symmetric relationships (e.g. `(Supplier, Part, Project)` where a supplier supplies a part, a project uses a part, and a supplier works on a project, but only certain 3-way combinations are valid). Decomposing into 3 binary tables is lossless only if the 5NF join dependency holds.
+
+### Recursive Query Evaluation: Datalog and Fixed-Point Semantics
+<a id="datalog-recursive-query-evaluation"></a>
+
+While standard relational algebra (and non-recursive SQL) cannot express transitive closure (such as traversing an arbitrary-depth graph or bill-of-materials), **Datalog** provides formal declarative recursion grounded in Horn-clause first-order logic.
+
+A Datalog rule has the form:
+$$\text{Head}(X) \leftarrow \text{Body}_1(X, Y_1), \dots, \text{Body}_k(Y_{k-1}, Z)$$
+- **EDB (Extensional Database):** Base relations stored directly in physical storage.
+- **IDB (Intensional Database):** Virtual relations defined declaratively by Datalog rules.
+
+#### Fixed-Point Semantics (Knaster-Tarski)
+The semantics of a positive Datalog program $P$ is defined via the **Immediate Consequence Operator** $T_P$. Given a database instance $I$, $T_P(I)$ returns the set of all facts that can be inferred by applying one step of the rules in $P$ to facts in $I$.
+1. Because positive Datalog rules contain only conjunctions and existential variables (no negation), $T_P$ is **monotonic**: $I \subseteq J \implies T_P(I) \subseteq T_P(J)$.
+2. By the Knaster-Tarski Theorem on the complete lattice of relation subsets, $T_P$ has a unique **Least Fixed Point (LFP)**, denoted $T_P^\infty(\emptyset)$:
+$$I_0 = \emptyset, \quad I_{k+1} = T_P(I_k), \quad T_P^\infty(\emptyset) = \bigcup_{k \ge 0} I_k$$
+On finite databases, the fixed point is reached in a finite number of steps ($I_{k+1} = I_k$).
+
+#### Seminaive Evaluation
+Naive evaluation evaluates all rules repeatedly over $I_k$, re-deriving already known facts and resulting in $O(k^2)$ redundant tuple evaluations. **Seminaive Evaluation** computes the fixed point incrementally by maintaining differential deltas $\Delta R^{(k)} = R^{(k)} \setminus R^{(k-1)}$:
+- At step $k$, each recursive rule must use at least one delta predicate $\Delta R^{(k)}$ from the immediately preceding iteration in its body.
+- This ensures no tuple combination is evaluated more than once across iterations, forming the theoretical execution foundation for modern SQL recursive CTEs (`WITH RECURSIVE`).
+
+#### Stratified Negation
+When Datalog programs include negation ($\text{not } P(X)$), monotonicity is broken, potentially creating ill-defined or non-deterministic fixed points (e.g. $p \leftarrow \text{not } q$ and $q \leftarrow \text{not } p$).
+- **Stratification:** The rule dependency graph (with directed edges $P \to Q$, and negative edges for $\text{not } Q$) must contain **no negative cycles**.
+- The rules are partitioned into strata $S_0, S_1, \dots, S_m$ where any negated predicate in stratum $S_i$ is fully computed and finalized in a strictly lower stratum $S_j$ ($j < i$). Each stratum is evaluated to its unique least fixed point sequentially, preserving declarative determinism.
 
 ---
 

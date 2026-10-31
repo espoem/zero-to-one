@@ -69,19 +69,16 @@ Consider a relation with multivalued dependency $A \twoheadrightarrow B$. Under 
 
 ### Q-DATA-005 · Data Models · difficulty 2 · ordering
 Order the normal forms from least restrictive (weakest constraints) to most restrictive (strongest constraints):
-1. Boyce-Codd Normal Form (BCNF)
-2. First Normal Form (1NF)
-3. Third Normal Form (3NF)
-4. Second Normal Form (2NF)
-5. Fourth Normal Form (4NF)
-- A) 2 $\rightarrow$ 4 $\rightarrow$ 3 $\rightarrow$ 1 $\rightarrow$ 5
-- B) 1 $\rightarrow$ 2 $\rightarrow$ 4 $\rightarrow$ 3 $\rightarrow$ 5
-- C) 2 $\rightarrow$ 3 $\rightarrow$ 4 $\rightarrow$ 1 $\rightarrow$ 5
-- D) 4 $\rightarrow$ 2 $\rightarrow$ 3 $\rightarrow$ 5 $\rightarrow$ 1
+- A) 1NF $\rightarrow$ 2NF $\rightarrow$ 3NF $\rightarrow$ BCNF $\rightarrow$ 4NF
+- B) 1NF $\rightarrow$ 2NF $\rightarrow$ BCNF $\rightarrow$ 3NF $\rightarrow$ 4NF
+- C) 2NF $\rightarrow$ 1NF $\rightarrow$ 3NF $\rightarrow$ BCNF $\rightarrow$ 4NF
+- D) 1NF $\rightarrow$ 3NF $\rightarrow$ 2NF $\rightarrow$ 4NF $\rightarrow$ BCNF
 <details><summary>Answer</summary>
 
-**A.** The containment hierarchy of relational normal forms is $1\text{NF} \subset 2\text{NF} \subset 3\text{NF} \subset \text{BCNF} \subset 4\text{NF} \subset 5\text{NF}$.
-- Why not B, C, D: 1NF precedes 2NF (elimination of partial dependencies), which precedes 3NF (elimination of transitive dependencies), which precedes BCNF (every determinant is a candidate key), which precedes 4NF (elimination of multivalued dependencies).
+**A.** The progression from least restrictive to most restrictive constraints is:
+1NF (atomicity) $\rightarrow$ 2NF (no partial key dependencies) $\rightarrow$ 3NF (no transitive dependencies) $\rightarrow$ BCNF (every determinant is a superkey) $\rightarrow$ 4NF (no multivalued dependencies).
+In terms of the sets of compliant relations satisfying each constraint level, the containment hierarchy is $\text{4NF} \subset \text{BCNF} \subset \text{3NF} \subset \text{2NF} \subset \text{1NF}$ (stronger normal forms constrain relations to a strict subset).
+- Why not B, C, D: 1NF precedes 2NF, which precedes 3NF, which precedes BCNF, which precedes 4NF.
 - Ref: [modules/01-data-models-and-query-languages.md](../modules/01-data-models-and-query-languages.md#functional-dependencies-and-normal-forms-1nf-through-bcnf)
 </details>
 
@@ -151,7 +148,7 @@ Which of the following statements correctly characterize the RUM Conjecture in d
 </details>
 
 ### Q-DATA-010 · Storage Engines · difficulty 3 · scenario
-In an LSM storage engine using Leveled Compaction (LCS), Level $L$ has a capacity of 100 MB and Level $L+1$ has a capacity of 1 GB. When an SSTable from Level $L$ is compacted into Level $L+1$, what is the worst-case write amplification factor for that step?
+In an LSM storage engine using Leveled Compaction (LCS), Level $L$ has a capacity of 100 MB and Level $L+1$ has a capacity of 1 GB. Assuming equal-sized SSTables and full key-range overlap across adjacent levels, when an SSTable from Level $L$ is compacted into Level $L+1$, what is the worst-case write amplification factor for that step?
 - A) 1
 - B) Up to 10
 - C) Exactly 100
@@ -181,7 +178,7 @@ In Okapi BM25 full-text scoring, what is the role of parameter $b$ in the docume
 - Why not A: Parameter $k_1$ controls term frequency saturation, not $b$.
 - Why not C: Inverted index compression is handled by algorithms like PForDelta or Roaring Bitmaps.
 - Why not D: IDF prevents common words from dominating; $b$ normalizes document verbosity.
-- Ref: [modules/03-indexing-theory-and-vector-search.md](../modules/03-indexing-theory-and-vector-search.md#inverted-indexes-and-lexical-ranking-bm25), [12-vector-ann-hnsw.test.ts](../examples/12-vector-ann-hnsw.test.ts)
+- Ref: [modules/03-indexing-theory-and-vector-search.md](../modules/03-indexing-theory-and-vector-search.md#inverted-indexes-and-lexical-ranking-bm25), Robertson et al. (1994)
 </details>
 
 ### Q-DATA-012 · Indexing Theory · difficulty 3 · scenario
@@ -378,22 +375,26 @@ How does Serializable Snapshot Isolation (SSI, Cahill et al. 2008) eliminate Wri
 </details>
 
 ### Q-DATA-024 · Transactions & ACID · difficulty 2 · ordering
-Order the standard ANSI and modern transaction isolation levels from weakest guarantees (most anomalies permitted) to strongest guarantees (zero anomalies permitted):
+Order the four standard ANSI SQL transaction isolation levels from weakest guarantees (most anomalies permitted) to strongest guarantees (zero anomalies permitted), and identify why Snapshot Isolation (SI) cannot be placed on this linear continuum:
 1. Repeatable Read
 2. Read Committed
 3. Serializable
 4. Read Uncommitted
-5. Snapshot Isolation
-- A) 4 $\rightarrow$ 2 $\rightarrow$ 1 $\rightarrow$ 5 $\rightarrow$ 3
-- B) 4 $\rightarrow$ 2 $\rightarrow$ 5 $\rightarrow$ 1 $\rightarrow$ 3
-- C) 2 $\rightarrow$ 4 $\rightarrow$ 1 $\rightarrow$ 5 $\rightarrow$ 3
-- D) 4 $\rightarrow$ 1 $\rightarrow$ 2 $\rightarrow$ 5 $\rightarrow$ 3
+- A) 4 $\rightarrow$ 2 $\rightarrow$ 1 $\rightarrow$ 3; SI cannot be linearly placed because SI and ANSI Repeatable Read are incomparable partial orders.
+- B) 4 $\rightarrow$ 1 $\rightarrow$ 2 $\rightarrow$ 3; SI is strictly weaker than Read Committed.
+- C) 2 $\rightarrow$ 4 $\rightarrow$ 1 $\rightarrow$ 3; SI is identical in all anomalies to ANSI Repeatable Read.
+- D) 4 $\rightarrow$ 2 $\rightarrow$ 3 $\rightarrow$ 1; SI is strictly stronger than Serializable.
 <details><summary>Answer</summary>
 
-**B.** The progression from weakest to strongest isolation is:
-Read Uncommitted (permits dirty reads) $\rightarrow$ Read Committed (prevents dirty reads) $\rightarrow$ Snapshot Isolation (prevents non-repeatable reads and lost updates, permits write skew) $\rightarrow$ Repeatable Read (ANSI) $\rightarrow$ Serializable (guarantees serializable equivalent order).
-- Why not A, C, D: Read Uncommitted is strictly the weakest level, followed by Read Committed. Snapshot Isolation prevents Lost Update ($G\text{-upd}$), whereas ANSI Repeatable Read does not prevent Write Skew.
-- Ref: [modules/05-transactions-acid-and-isolation-levels.md](../modules/05-transactions-acid-and-isolation-levels.md#isolation-levels-and-their-anomalies)
+**A.** The linear progression of standard ANSI SQL isolation levels is:
+Read Uncommitted (permits dirty reads $P1$) $\rightarrow$ Read Committed (prevents dirty reads, permits fuzzy reads $P2$) $\rightarrow$ Repeatable Read (prevents fuzzy reads, permits phantoms $P3$) $\rightarrow$ Serializable (prevents all ANSI anomalies).
+
+As formally proven by Berenson et al. (1995) in *A Critique of ANSI SQL Isolation Levels*, **Snapshot Isolation (SI) and ANSI Repeatable Read are incomparable partial orders**, and cannot be placed on a single linear spectrum:
+1. SI prevents Lost Update ($P4$) and Read Skew ($A5A$), which ANSI Repeatable Read permits under its formal specification.
+2. Conversely, strict locking-based Repeatable Read prevents Write Skew ($A5B$), whereas Snapshot Isolation permits Write Skew anomalies.
+*(Note: Commercial engines such as PostgreSQL implement their `REPEATABLE READ` SQL isolation level using Snapshot Isolation).*
+- Why not B, C, D: Read Uncommitted is strictly the weakest level; ANSI Repeatable Read precedes Serializable; SI is incomparable to ANSI RR rather than identical or strictly weaker/stronger.
+- Ref: [modules/05-transactions-acid-and-isolation-levels.md](../modules/05-transactions-acid-and-isolation-levels.md#isolation-levels-and-their-anomalies), Berenson et al. (1995)
 </details>
 
 ### Q-DATA-025 · Transactions & ACID · difficulty 3 · scenario
@@ -674,7 +675,7 @@ In high-throughput systems, what is the fundamental flaw of the Cache-Aside patt
 ### Q-DATA-042 · Caching Theory · difficulty 3 · single
 How does the XFetch algorithm (Vattani et al. 2015) prevent cache stampedes probabilistically without requiring distributed mutex locks?
 - A) It deletes the cache entry randomly after 1 millisecond.
-- B) While the cache entry is still valid, incoming reads evaluate the condition $-\beta \cdot \delta \cdot \ln(\text{rand}()) > \text{TTL}_{\text{remaining}}$, where $\delta$ is the computation time; as expiration nears, the probability of an early background refresh smoothly approaches 1.0, ensuring exactly one worker refreshes the value before it expires.
+- B) While the cache entry is still valid, incoming reads evaluate the condition $-\beta \cdot \delta \cdot \ln(\text{rand}()) > \text{TTL}_{\text{remaining}}$, where $\delta$ is the computation time; as expiration nears, the probability of an early background refresh smoothly approaches 1.0, with high probability triggering a worker to refresh the value before it expires.
 - C) It stores all cached items in a static hash table in the client's browser.
 - D) It routes all cache misses to a secondary database replica.
 <details><summary>Answer</summary>
@@ -783,15 +784,15 @@ In Apache Avro binary serialization, records are encoded without any field tags 
 
 ### Q-DATA-049 · Encoding & Serialization · difficulty 2 · multi
 Which of the following modifications maintain Backward Compatibility in a binary schema evolution system (e.g. Protobuf or Avro)? (Select TWO)
-- A) Adding an optional field with an explicit default value.
+- A) Adding an optional field with an explicit default value (Avro) or adding a new field with default zero-value (Protobuf3).
 - B) Deleting a required field that has no default value.
 - C) Renaming a Protobuf field while keeping its numeric field tag number unchanged.
 - D) Changing the wire data type of a field from a string to a nested repeated struct.
 <details><summary>Answer</summary>
 
 **A and C.**
-- A is correct: A new reader can successfully read data written by an old writer because the absent field is populated with the default value.
-- C is correct: In Protobuf, the wire format only encodes field tag numbers; field names exist solely in generated code, so renaming a field does not break compatibility.
+- A is correct: In Avro, adding a field with an explicit default allows new readers to read old data. In Proto3, all non-repeated fields default to their zero-value, ensuring new readers safely parse old records missing that field.
+- C is correct: In Protobuf, the binary wire format encodes only field tag numbers and wire types, not field names. Field names exist solely in generated application code, so renaming a field does not alter wire compatibility.
 - Why not B: Deleting a required field causes older readers to fail validation when parsing new records.
 - Why not D: Altering wire types violates wire decoding rules and corrupts field extraction.
 - Ref: [modules/10-encoding-serialization-and-schema-evolution.md](../modules/10-encoding-serialization-and-schema-evolution.md#schema-evolution-rules-backward-forward-and-full)
