@@ -17,7 +17,7 @@ Senior engineers must frequently refactor legacy codebases and guide team conven
 | **Type Narrowing** | `TypeGuard[T]` (one-way narrowing) | `TypeIs[T]` (PEP 742, bidirectional narrowing) | Preserves false-branch type safety |
 | **Annotations** | Eager runtime evaluation at import time | `annotationlib` (PEP 649 / 749 deferred evaluation) | Zero import-time overhead, no string forward-ref hacks |
 | **Concurrency** | Raw `threading.Thread`, manual GIL workarounds | `asyncio.TaskGroup`, PEP 703 Free-Threading (`python3.15t`) | Leak-free structured concurrency, true multi-core |
-| **Async Queues** | Unbounded `asyncio.Queue` with sentinel `None` | Bounded queues with `queue.shutdown()` (PEP 713) | Deterministic graceful shutdown, built-in backpressure |
+| **Async Queues** | Unbounded `asyncio.Queue` with sentinel `None` | Bounded queues with `queue.shutdown()` (Python 3.13+) | Deterministic graceful shutdown, built-in backpressure |
 | **Exception Handling** | Monolithic `try...except Exception:` | `ExceptionGroup` and `except*` (PEP 654) | Handles multiple concurrent failures in task groups |
 | **Default Encoding** | OS locale-dependent (`cp1252`, `ASCII`) | Universal UTF-8 Default Mode (PEP 686) | Eliminates cross-platform file/pipe encoding bugs |
 
@@ -95,7 +95,7 @@ To demonstrate mastery across the entire Python engineering stack, we design and
 
 ### Architectural Requirements:
 1. **Type-Safe Task Protocol**: Utilizes PEP 695 generics (`Task[T, R]`) with static handler typing.
-2. **Backpressure & Graceful Drain**: Employs a bounded `asyncio.Queue` utilizing PEP 713 `shutdown()`.
+2. **Backpressure & Graceful Drain**: Employs a bounded `asyncio.Queue` utilizing Python 3.13+ `shutdown()`.
 3. **Structured Concurrency**: Manages worker pools strictly via `asyncio.TaskGroup`, preventing orphaned coroutines.
 4. **Context Propagation**: Tracks distributed execution context across coroutine boundaries using `contextvars.ContextVar`.
 5. **Resilient Failure Handling**: Collects results, isolates worker exceptions without crashing the pipeline, and enforces task deadlines via `asyncio.timeout`.
@@ -191,7 +191,7 @@ class AsyncOrchestrator:
             # Wait until all submitted tasks have called task_done()
             await self._queue.join()
             
-            # Initiate graceful queue shutdown (PEP 713)
+            # Initiate graceful queue shutdown (Python 3.13+)
             self._queue.shutdown()
             
             # Cancel idle workers waiting on queue.get()
@@ -222,10 +222,10 @@ When using `asyncio.gather(*tasks)`, if one child task raises an unhandled excep
 </details>
 
 <details>
-<summary>3. What is PEP 713 `asyncio.Queue.shutdown()` and what problem does it solve?</summary>
+<summary>3. What is `asyncio.Queue.shutdown()` (introduced in Python 3.13) and what problem does it solve?</summary>
 
 **Answer:**
-Before PEP 713 (introduced in Python 3.13), shutting down producer-consumer worker pools required awkward sentinel conventions (such as putting `None` into the queue for each worker) or abruptly cancelling worker tasks while they might still have unprocessed tasks in the queue.
+Before Python 3.13, shutting down producer-consumer worker pools required awkward sentinel conventions (such as putting `None` into the queue for each worker) or abruptly cancelling worker tasks while they might still have unprocessed tasks in the queue.
 `Queue.shutdown(immediate=False)` transitions the queue into a shut-down state:
 1. Any subsequent `put()` operations immediately raise `asyncio.QueueShutDown`.
 2. Existing items in the queue can still be consumed via `get()`. Once the queue is completely drained, any subsequent `get()` raises `asyncio.QueueShutDown`.

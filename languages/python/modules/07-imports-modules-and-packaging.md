@@ -77,16 +77,19 @@ When you execute `python module_a.py`:
 
 ---
 
-## 3. Explicit Lazy Imports (PEP 810)
+## 3. Explicit Lazy Imports: PEP 810 (Draft) & `LazyLoader`
 
 In large-scale enterprise services and CLI applications, importing heavy dependencies (such as large machine learning frameworks, ORMs, or cloud SDKs) can cause slow application startup times ($> 2\text{--}5\text{s}$), even when the CLI command invoked does not use those packages.
 
-In Python 3.15+, **PEP 810** introduced **Explicit Lazy Imports**:
+In modern Python, lazy importing exists across two layers:
+1. **Standard Library `importlib.util.LazyLoader`**: Wraps any loader so that module execution is deferred until attribute access.
+2. **PEP 810 (Draft Proposal)**: Proposes explicit declarative grammar for lazy imports:
 ```python
+# Proposed PEP 810 syntax (Draft specification)
 lazy import heavy_ml_library
 lazy import polars as pl
 ```
-- When `lazy import foo` executes, Python creates a lightweight deferred proxy in `sys.modules`.
+- When a lazy import executes, Python creates a lightweight deferred proxy in `sys.modules`.
 - The actual disk read, AST parsing, and module bytecode execution occur **only when an attribute on `foo` is accessed for the first time** (`foo.calculate()`).
 - This reduces CLI invocation and test suite startup latency by over 50%.
 

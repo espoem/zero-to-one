@@ -97,7 +97,7 @@ async def test_asyncio_to_thread_delegation() -> None:
 
 @pytest.mark.asyncio
 async def test_asyncio_queue_backpressure_and_shutdown() -> None:
-    """Proves asyncio.Queue backpressure with maxsize and PEP 713 Queue.shutdown()."""
+    """Proves asyncio.Queue backpressure with maxsize and Queue.shutdown()."""
     # Create bounded queue with maxsize=2
     queue: asyncio.Queue[int] = asyncio.Queue(maxsize=2)
 
