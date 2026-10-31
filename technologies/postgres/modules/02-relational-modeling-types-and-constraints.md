@@ -3,7 +3,7 @@
 Welcome to **Module 02** of the PostgreSQL curriculum. This module provides an in-depth, production-hardened examination of physical schema design, relational data types, and declarative integrity constraints in PostgreSQL 18. We analyze numerical representation tradeoffs (`numeric` vs `float8`), timezone handling mechanics with `timestamptz`, native `uuidv7()` generation, TOAST internal storage strategies and compression algorithms, generated columns (`STORED` vs `VIRTUAL`), constraint lifecycle management (`NOT VALID` / `VALIDATE`), deferrable constraints, exclusion constraints with temporal `WITHOUT OVERLAPS`, and modern identity column semantics.
 
 > [!NOTE]
-> For abstract relational algebra foundations, normal forms (1NF through BCNF), and theoretical schema normalization proofs, consult the foundational track [architecture/data-systems](../../architecture/data-systems/modules/01-data-models-and-relational-algebra.md). This module focuses on PostgreSQL's concrete physical realization, storage trade-offs, and operational mechanics.
+> For abstract relational algebra foundations, normal forms (1NF through BCNF), and theoretical schema normalization proofs, consult the foundational track [architecture/data-systems](../../architecture/data-systems/modules/01-data-models-and-query-languages.md). This module focuses on PostgreSQL's concrete physical realization, storage trade-offs, and operational mechanics.
 
 ---
 

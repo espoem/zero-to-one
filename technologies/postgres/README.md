@@ -8,32 +8,23 @@ Every concept is backed by a numerically ordered module in [modules/](./modules/
 
 ---
 
-## 1. Certifications & Exams
-
-This track directly aligns with and prepares candidates for the official EnterpriseDB (EDB) PostgreSQL certification programs and recognized senior database engineering interview loops:
-
-- **EnterpriseDB Certified Associate (EDB-CA-PG18)**:
-  - **Vendor**: EnterpriseDB (EDB)
-  - **Exam Guide**: [EnterpriseDB Training & Certification](https://www.enterprisedb.com/training)
-  - **Target Version**: PostgreSQL 18.x
-  - **Format**: 65 multiple-choice questions; 90 minutes; passing score 70%.
-- **EnterpriseDB Certified Professional (EDB-CP-PG18)**:
-  - **Vendor**: EnterpriseDB (EDB)
-  - **Exam Guide**: [EnterpriseDB Training & Certification](https://www.enterprisedb.com/training)
-  - **Target Version**: PostgreSQL 18.x
-  - **Format**: Scenario-based, architectural, and operational troubleshooting examination; 90 minutes; passing score 70%.
-- **Senior Database Reliability Engineer / DBA Technical Interview Loop**:
-  - Anchored in CMU 15-445/645 (Database Systems), Kleppmann's *Designing Data-Intensive Applications* (DDIA), and production post-mortems from high-throughput OLTP clusters.
-
-Full certification domain mappings and question banks:
-- **[exams/README.md](./exams/README.md)**: Official exam coverage matrix mapping all 13 domains to modules and executable tests with 100% full coverage (zero gaps).
-- **[exams/edb-postgres-associate-professional.md](./exams/edb-postgres-associate-professional.md)**: 65 original preparation questions across difficulty levels 1–3, with comprehensive explanations, distractor analysis, and a 90-minute full mock examination.
-
----
-
-## 2. Curriculum Syllabus & Topic Breakdown
+## 1. Modules & Syllabus
 
 The curriculum is structured into 13 self-contained, progressive modules:
+
+### Prerequisites
+- Relational database fundamentals and working knowledge of standard SQL (`SELECT`, `INSERT`, `UPDATE`, `DELETE`, basic joins).
+- Familiarity with UNIX/Linux command-line terminals and environment variables.
+- Pinned toolchain installed via `mise` (Node.js 26+ and Docker / Docker Compose for multi-node container labs).
+
+### Out of Scope
+- Proprietary legacy database migrations (e.g. automated Oracle PL/SQL to PL/pgSQL schema conversion).
+- Third-party distributed extension engines (e.g. Citus distributed coordinator sharding, TimescaleDB hypertable internals), which belong to specialized distributed data systems tracks.
+- Cloud-managed proprietary engines (e.g. AWS Aurora PostgreSQL storage engine internals).
+- Speculative performance tuning without telemetry and workload baselines.
+
+> [!NOTE]
+> PostgreSQL 18 is the primary target version of this track. Forward-looking features labeled as PostgreSQL 19 (e.g. online `REPACK`, sequence replication) reflect upstream development / Release Candidates and are explicitly marked as forward-looking.
 
 ### [Module 01 — Architecture, Process Model, Memory & Storage Anatomy](./modules/01-architecture-process-memory-and-storage.md)
 - **Concepts**: Client-server process model (`postmaster`, backends, auxiliary workers), shared memory (`shared_buffers`, `wal_buffers`, CLOG `pg_xact`), double buffering and OS page cache interactions, `$PGDATA` filesystem layout and relation forks (`main`, `_fsm`, `_vm`, `_init`), 8KB page binary anatomy (`PageHeaderData`, `ItemIdData`, `HeapTupleHeaderData`), inspection via `pageinspect`, default data checksums in PostgreSQL 18 `initdb`, Asynchronous I/O (AIO) subsystem (`io_method = worker / io_uring`), and psql command-line mastery.
@@ -86,6 +77,29 @@ The curriculum is structured into 13 self-contained, progressive modules:
 ### [Module 13 — High Availability, Replication, CDC, Extensions & Observability](./modules/13-high-availability-replication-and-extensions.md)
 - **Concepts**: Physical streaming replication (`walsender`, `walreceiver`, startup process), synchronous commit modes (`off`, `local`, `remote_write`, `on`, `remote_apply`), quorum replication, the inactive replication slot disk-exhaustion hazard and `max_slot_wal_keep_size` defenses, logical replication (publish-subscribe) and Change Data Capture (CDC), PostgreSQL 17/18 **synchronized failover slots** (`sync_replication_slots`), PostgreSQL 19 sequence replication, automated split-brain-free clustering with Patroni and Raft consensus (`etcd`), client multi-host connection failover (`target_session_attrs=read-write`), read-your-writes consistency with PostgreSQL 19 `WAIT FOR LSN`, AI vector similarity search using `pgvector` (HNSW vs IVFFlat), and production telemetry with `pg_stat_statements`, `pg_stat_io`, wait events, and lock blocking diagnostics.
 - **Runnable Example**: [`examples/13-replication-ha-and-extensions.ts`](./examples/13-replication-ha-and-extensions.ts) (`npm run test:13`)
+
+---
+
+## 2. Certifications & Exams
+
+This track directly aligns with and prepares candidates for the official EnterpriseDB (EDB) PostgreSQL certification programs and recognized senior database engineering interview loops:
+
+- **EnterpriseDB Certified Associate (EDB-CA-PG18)**:
+  - **Vendor**: EnterpriseDB (EDB)
+  - **Exam Guide**: [EnterpriseDB Training & Certification](https://www.enterprisedb.com/training)
+  - **Target Version**: PostgreSQL 18.x
+  - **Format**: 65 multiple-choice questions; 90 minutes; passing score 70%.
+- **EnterpriseDB Certified Professional (EDB-CP-PG18)**:
+  - **Vendor**: EnterpriseDB (EDB)
+  - **Exam Guide**: [EnterpriseDB Training & Certification](https://www.enterprisedb.com/training)
+  - **Target Version**: PostgreSQL 18.x
+  - **Format**: Scenario-based, architectural, and operational troubleshooting examination; 90 minutes; passing score 70%.
+- **Senior Database Reliability Engineer / DBA Technical Interview Loop**:
+  - Anchored in CMU 15-445/645 (Database Systems), Kleppmann's *Designing Data-Intensive Applications* (DDIA), and production post-mortems from high-throughput OLTP clusters.
+
+Full certification domain mappings and question banks:
+- **[exams/README.md](./exams/README.md)**: Official exam coverage matrix mapping all 13 domains to modules and executable tests with 100% full coverage (zero gaps).
+- **[exams/edb-postgres-associate-professional.md](./exams/edb-postgres-associate-professional.md)**: 65 original preparation questions across difficulty levels 1–3, with comprehensive explanations, distractor analysis, and a 90-minute full mock examination.
 
 ---
 

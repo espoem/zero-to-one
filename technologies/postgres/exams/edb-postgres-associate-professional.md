@@ -402,7 +402,7 @@ When is an engineering team advised to graduate from PostgreSQL Full-Text Search
 - Why not A: PostgreSQL FTS comfortably manages millions of documents on standard hardware.
 - Why not B: Elasticsearch does not provide relational ACID transactions.
 - Why not D: Integer primary keys are indexed with B-trees in PostgreSQL.
-- Ref: [modules/05-json-jsonb-and-full-text-search.md](../modules/05-json-jsonb-and-full-text-search.md#7-architectural-seam-postgresql-fts-vs-elasticsearch), [technologies/elasticsearch](../../technologies/elasticsearch/README.md)
+- Ref: [modules/05-json-jsonb-and-full-text-search.md](../modules/05-json-jsonb-and-full-text-search.md#7-architectural-seam-postgresql-fts-vs-elasticsearch), https://www.postgresql.org/docs/18/textsearch.html
 </details>
 
 ---
@@ -611,7 +611,7 @@ How does `SELECT ... FOR UPDATE SKIP LOCKED` enable lock-free, highly scalable b
 - Why not A: Rows are locked, not deleted; deletion occurs only upon explicit `DELETE`.
 - Why not C: PostgreSQL operates independently of Redis.
 - Why not D: It does not alter user privileges.
-- Ref: [modules/08-concurrency-mvcc-and-isolation.md](../modules/08-concurrency-mvcc-and-locking.md#6-row-level-locking--non-blocking-work-queues), https://www.postgresql.org/docs/18/sql-select.html#SQL-FOR-UPDATE-SHARE
+- Ref: [modules/08-concurrency-mvcc-and-isolation.md](../modules/08-concurrency-mvcc-and-isolation.md#6-row-level-locking--non-blocking-work-queues), https://www.postgresql.org/docs/18/sql-select.html#SQL-FOR-UPDATE-SHARE
 </details>
 
 ### Q-EDB-039 · Isolation · difficulty 3 · single
@@ -664,14 +664,14 @@ What are the two mandatory prerequisites for an `UPDATE` to utilize the Heap-Onl
 </details>
 
 ### Q-EDB-042 · Wraparound · difficulty 3 · scenario
-A cluster monitoring alert triggers: `database age is 2,050,000,000 transactions`. Autovacuum fails to freeze transaction IDs because a developer left an uncommitted `BEGIN` session open 3 weeks ago. What emergency consequence will occur if transaction count reaches $2^{31} - 3,000,000$?
+A cluster monitoring alert triggers: `database age is 2,050,000,000 transactions`. Autovacuum fails to freeze transaction IDs because a developer left an uncommitted `BEGIN` session open 3 weeks ago. What emergency consequence will occur if the transaction count reaches the critical threshold ($2^{31} - 1,000,000$)?
 - A) Autovacuum will automatically kill the developer's session and resume normal operation
-- B) The database cluster will initiate an emergency shutdown, refuse all connections, and require single-user standalone mode to recover
+- B) The database cluster will halt assignment of new transaction IDs, refusing all write commands to prevent data loss, requiring manual freezing to recover
 - C) Transaction IDs will wrap around to 0 silently without service interruption
 - D) The database drops un-frozen tables to preserve the catalog
 <details><summary>Answer</summary>
 
-**B.** To prevent Transaction ID wraparound (where ancient committed data becomes invisible due to modulo-$2^{31}$ arithmetic), PostgreSQL executes an emergency shutdown approximately 3 million transactions before wraparound. It refuses all connections and halts the postmaster. Recovery requires stopping the cluster, starting PostgreSQL in single-user standalone mode (`postgres --single`), and running a manual freeze `VACUUM`.
+**B.** To prevent Transaction ID wraparound (where ancient committed data becomes invisible due to modulo-$2^{31}$ arithmetic), PostgreSQL warns aggressively when 3 million transactions remain (`xidWarnLimit`). When 1 million transactions remain before wraparound (`xidStopLimit`), PostgreSQL halts the assignment of new transaction IDs, refusing all write transactions and commands that consume an XID. Existing connections remain active and read-only queries continue to function, but writes fail until freezing is executed. Recovery requires starting PostgreSQL in single-user standalone mode (`postgres --single`) or superuser maintenance and running a manual freeze `VACUUM`.
 - Why not A: PostgreSQL will not automatically terminate open client sessions unless `idle_in_transaction_session_timeout` is configured.
 - Why not C: Wraparound without freezing causes catastrophic data invisibility.
 - Why not D: PostgreSQL never drops user tables automatically.

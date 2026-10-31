@@ -120,8 +120,8 @@ PostgreSQL transaction IDs are 32-bit unsigned integers, providing $2^{32} \appr
 ```mermaid
 flowchart TD
     XID["Transaction Counter Advances"] --> Warn["autovacuum_freeze_max_age (Default: 200M)<br/>PostgreSQL triggers Aggressive Freeze Scan"]
-    Warn --> Crit["2.0 Billion Transactions<br/>PostgreSQL begins issuing server error warnings in logs"]
-    Crit --> Stop["2.14 Billion Transactions (3 Million before wraparound)<br/>EMERGENCY SHUTDOWN!<br/>PostgreSQL halts all transactions and refuses connections!"]
+    Warn --> Crit["xidWarnLimit (3 Million Transactions before wraparound)<br/>PostgreSQL begins issuing server error warnings in logs"]
+    Crit --> Stop["xidStopLimit (1 Million Transactions before wraparound)<br/>SAFETY STOP: Stops assigning new transaction IDs<br/>PostgreSQL halts write transactions to protect data integrity!"]
 ```
 
 ### The Freezing Mechanism
@@ -222,7 +222,7 @@ Configuration: Reduce table `fillfactor` (e.g. `ALTER TABLE t SET (fillfactor = 
 <details>
 <summary>3. What is Transaction ID (XID) wraparound, and what happens if a database cluster reaches the critical wraparound threshold?</summary>
 
-**Answer**: PostgreSQL uses 32-bit unsigned transaction IDs compared modulo-$2^{31}$. A transaction ID can only be safely compared against past transactions up to 2.1 billion transactions ago. If older transactions are not "frozen" (marked with `FrozenTransactionId = 2`), the transaction counter wraps around, making ancient committed tuples appear to be in the future, rendering data completely invisible. If the system approaches 3 million transactions before wraparound without completing freezing, PostgreSQL initiates an **emergency shutdown**: it refuses all write and read transactions, halts the postmaster, and can only be recovered by launching single-user standalone mode (`postgres --single`) and executing a manual vacuum.
+**Answer**: PostgreSQL uses 32-bit unsigned transaction IDs compared modulo-$2^{31}$. A transaction ID can only be safely compared against past transactions up to 2.1 billion transactions ago. If older transactions are not "frozen" (marked with `HEAP_XMIN_FROZEN` or `FrozenTransactionId = 2`), the transaction counter wraps around, making ancient committed tuples appear to be in the future, rendering data completely invisible. If the system approaches 3 million transactions remaining before wraparound (`xidWarnLimit`), PostgreSQL emits continuous server log warnings. If it reaches 1 million transactions remaining (`xidStopLimit`), PostgreSQL halts the assignment of new transaction IDs, refusing all write commands and queries consuming an XID. Existing connections remain active and read-only queries continue to function. Recovery requires starting single-user standalone mode (`postgres --single`) and executing a manual vacuum freeze.
 - Ref: [PostgreSQL Documentation: Routine Vacuuming: Wraparound](https://www.postgresql.org/docs/18/routine-vacuuming.html#VACUUM-FOR-WRAPAROUND)
 </details>
 

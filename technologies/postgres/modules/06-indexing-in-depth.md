@@ -3,7 +3,7 @@
 Welcome to **Module 06** of the PostgreSQL curriculum. This module provides an advanced, academically grounded analysis of database indexing and physical access methods in PostgreSQL 18. We examine the Lehman-Yao B-link tree concurrency algorithm, investigate PostgreSQL 18 **B-Tree Skip Scans**, analyze specialized access methods (GiST, SP-GiST, BRIN, Hash, Bloom), evaluate Index-Only Scans and their dependency on the Visibility Map, dissect the operational failure modes of `CREATE INDEX CONCURRENTLY`, and perform index integrity verification using `amcheck`.
 
 > [!NOTE]
-> For abstract B-tree, B+ tree, and LSM storage engine mathematics and data structure theory, consult the foundational track [architecture/data-systems](../../architecture/data-systems/modules/02-storage-engines-and-indexes.md). This module covers PostgreSQL's concrete physical implementation, concurrency mechanics, and production operations.
+> For abstract B-tree, B+ tree, and LSM storage engine mathematics and data structure theory, consult the foundational track [architecture/data-systems](../../architecture/data-systems/modules/02-storage-engines-b-trees-and-lsm.md). This module covers PostgreSQL's concrete physical implementation, concurrency mechanics, and production operations.
 
 ---
 
