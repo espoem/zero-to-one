@@ -1,13 +1,13 @@
 import { describe, it, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { createPage, closeSharedBrowser } from './helpers/browser.ts';
+import { createPage, closeSharedBrowser, browserSkip } from './helpers/browser.ts';
 
 describe('Module 11: Motion, Transitions & @starting-style', () => {
   after(async () => {
     await closeSharedBrowser();
   });
 
-  it('demonstrates @starting-style defining initial entry transition states', async () => {
+  it('demonstrates @starting-style defining initial entry transition states', { skip: browserSkip }, async () => {
     const html = `
       <!DOCTYPE html>
       <html>

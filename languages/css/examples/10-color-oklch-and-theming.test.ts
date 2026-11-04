@@ -1,13 +1,13 @@
 import { describe, it, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { createPage, closeSharedBrowser } from './helpers/browser.ts';
+import { createPage, closeSharedBrowser, browserSkip } from './helpers/browser.ts';
 
 describe('Module 10: Color Spaces, OKLCH & Theming', () => {
   after(async () => {
     await closeSharedBrowser();
   });
 
-  it('demonstrates OKLCH color parsing and relative color syntax opacity extraction', async () => {
+  it('demonstrates OKLCH color parsing and relative color syntax opacity extraction', { skip: browserSkip }, async () => {
     const html = `
       <!DOCTYPE html>
       <html>
@@ -41,7 +41,7 @@ describe('Module 10: Color Spaces, OKLCH & Theming', () => {
     }
   });
 
-  it('proves light-dark() adapts dynamically to color-scheme settings', async () => {
+  it('proves light-dark() adapts dynamically to color-scheme settings', { skip: browserSkip }, async () => {
     const html = `
       <!DOCTYPE html>
       <html>

@@ -1,13 +1,13 @@
 import { describe, it, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { createPage, closeSharedBrowser } from './helpers/browser.ts';
+import { createPage, closeSharedBrowser, browserSkip } from './helpers/browser.ts';
 
 describe('Module 03: The Cascade, Layers & Scope', () => {
   after(async () => {
     await closeSharedBrowser();
   });
 
-  it('proves that layer order beats selector specificity for normal declarations', async () => {
+  it('proves that layer order beats selector specificity for normal declarations', { skip: browserSkip }, async () => {
     const html = `
       <!DOCTYPE html>
       <html>
@@ -47,7 +47,7 @@ describe('Module 03: The Cascade, Layers & Scope', () => {
     }
   });
 
-  it('demonstrates the !important layer inversion rule', async () => {
+  it('demonstrates the !important layer inversion rule', { skip: browserSkip }, async () => {
     const html = `
       <!DOCTYPE html>
       <html>
@@ -85,7 +85,7 @@ describe('Module 03: The Cascade, Layers & Scope', () => {
     }
   });
 
-  it('proves unlayered author styles beat all layered author styles', async () => {
+  it('proves unlayered author styles beat all layered author styles', { skip: browserSkip }, async () => {
     const html = `
       <!DOCTYPE html>
       <html>

@@ -1,13 +1,13 @@
 import { describe, it, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { createPage, closeSharedBrowser } from './helpers/browser.ts';
+import { createPage, closeSharedBrowser, browserSkip } from './helpers/browser.ts';
 
 describe('Module 08: Containment & Container Queries', () => {
   after(async () => {
     await closeSharedBrowser();
   });
 
-  it('demonstrates size container queries adapting layout based on container width', async () => {
+  it('demonstrates size container queries adapting layout based on container width', { skip: browserSkip }, async () => {
     const html = `
       <!DOCTYPE html>
       <html>
@@ -53,7 +53,7 @@ describe('Module 08: Containment & Container Queries', () => {
     }
   });
 
-  it('demonstrates style container queries querying ancestor custom properties', async () => {
+  it('demonstrates style container queries querying ancestor custom properties', { skip: browserSkip }, async () => {
     const html = `
       <!DOCTYPE html>
       <html>

@@ -1,13 +1,13 @@
 import { describe, it, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { createPage, closeSharedBrowser } from './helpers/browser.ts';
+import { createPage, closeSharedBrowser, browserSkip } from './helpers/browser.ts';
 
 describe('Module 02: Syntax, Selectors & Specificity', () => {
   after(async () => {
     await closeSharedBrowser();
   });
 
-  it('demonstrates that :where() has strictly zero specificity (0, 0, 0)', async () => {
+  it('demonstrates that :where() has strictly zero specificity (0, 0, 0)', { skip: browserSkip }, async () => {
     const html = `
       <!DOCTYPE html>
       <html>
@@ -40,7 +40,7 @@ describe('Module 02: Syntax, Selectors & Specificity', () => {
     }
   });
 
-  it('proves that :has() selects parents conditionally based on child elements', async () => {
+  it('proves that :has() selects parents conditionally based on child elements', { skip: browserSkip }, async () => {
     const html = `
       <!DOCTYPE html>
       <html>

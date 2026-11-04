@@ -1,13 +1,13 @@
 import { describe, it, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { createPage, closeSharedBrowser } from './helpers/browser.ts';
+import { createPage, closeSharedBrowser, browserSkip } from './helpers/browser.ts';
 
 describe('Module 05: Box Model & Block Formatting Contexts (BFC)', () => {
   after(async () => {
     await closeSharedBrowser();
   });
 
-  it('demonstrates parent-child margin collapse and its resolution via display: flow-root', async () => {
+  it('demonstrates parent-child margin collapse and its resolution via display: flow-root', { skip: browserSkip }, async () => {
     const html = `
       <!DOCTYPE html>
       <html>
@@ -64,7 +64,7 @@ describe('Module 05: Box Model & Block Formatting Contexts (BFC)', () => {
     }
   });
 
-  it('proves that aspect-ratio derives cross-axis dimension deterministically', async () => {
+  it('proves that aspect-ratio derives cross-axis dimension deterministically', { skip: browserSkip }, async () => {
     const html = `
       <!DOCTYPE html>
       <html>

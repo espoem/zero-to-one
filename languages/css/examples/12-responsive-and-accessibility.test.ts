@@ -1,13 +1,13 @@
 import { describe, it, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { createPage, closeSharedBrowser } from './helpers/browser.ts';
+import { createPage, closeSharedBrowser, browserSkip } from './helpers/browser.ts';
 
 describe('Module 12: Responsive & Accessible CSS', () => {
   after(async () => {
     await closeSharedBrowser();
   });
 
-  it('demonstrates :focus-visible matching keyboard navigation', async () => {
+  it('demonstrates :focus-visible matching keyboard navigation', { skip: browserSkip }, async () => {
     const html = `
       <!DOCTYPE html>
       <html>
@@ -44,7 +44,7 @@ describe('Module 12: Responsive & Accessible CSS', () => {
     }
   });
 
-  it('demonstrates field-sizing: content expanding textarea with typed text', async () => {
+  it('demonstrates field-sizing: content expanding textarea with typed text', { skip: browserSkip }, async () => {
     const html = `
       <!DOCTYPE html>
       <html>

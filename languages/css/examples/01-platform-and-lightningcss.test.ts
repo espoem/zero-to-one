@@ -1,7 +1,7 @@
 import { describe, it, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { transform } from 'lightningcss';
-import { createPage, closeSharedBrowser } from './helpers/browser.ts';
+import { createPage, closeSharedBrowser, browserSkip } from './helpers/browser.ts';
 
 describe('Module 01: Platform, Baseline & Lightning CSS', () => {
   after(async () => {
@@ -34,7 +34,7 @@ describe('Module 01: Platform, Baseline & Lightning CSS', () => {
     assert(output.includes(':hover'), 'Output must contain :hover rule');
   });
 
-  it('verifies @supports conditional queries in Chromium', async () => {
+  it('verifies @supports conditional queries in Chromium', { skip: browserSkip }, async () => {
     const html = `
       <!DOCTYPE html>
       <html>

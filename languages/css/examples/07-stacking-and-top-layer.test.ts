@@ -1,13 +1,13 @@
 import { describe, it, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { createPage, closeSharedBrowser } from './helpers/browser.ts';
+import { createPage, closeSharedBrowser, browserSkip } from './helpers/browser.ts';
 
 describe('Module 07: Positioning, Stacking Contexts & Top Layer', () => {
   after(async () => {
     await closeSharedBrowser();
   });
 
-  it('proves the transformed ancestor trap on position: fixed', async () => {
+  it('proves the transformed ancestor trap on position: fixed', { skip: browserSkip }, async () => {
     const html = `
       <!DOCTYPE html>
       <html>
@@ -53,7 +53,7 @@ describe('Module 07: Positioning, Stacking Contexts & Top Layer', () => {
     }
   });
 
-  it('demonstrates that native Popovers render in the Top Layer above high z-indexes', async () => {
+  it('demonstrates that native Popovers render in the Top Layer above high z-indexes', { skip: browserSkip }, async () => {
     const html = `
       <!DOCTYPE html>
       <html>

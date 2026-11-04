@@ -1,13 +1,13 @@
 import { describe, it, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { createPage, closeSharedBrowser } from './helpers/browser.ts';
+import { createPage, closeSharedBrowser, browserSkip } from './helpers/browser.ts';
 
 describe('Module 04: Value Processing & Units', () => {
   after(async () => {
     await closeSharedBrowser();
   });
 
-  it('proves the IACVT (Invalid at Computed-Value Time) unset trap', async () => {
+  it('proves the IACVT (Invalid at Computed-Value Time) unset trap', { skip: browserSkip }, async () => {
     const html = `
       <!DOCTYPE html>
       <html>
@@ -51,7 +51,7 @@ describe('Module 04: Value Processing & Units', () => {
     }
   });
 
-  it('demonstrates mathematical clamp(min, val, max) evaluation', async () => {
+  it('demonstrates mathematical clamp(min, val, max) evaluation', { skip: browserSkip }, async () => {
     const html = `
       <!DOCTYPE html>
       <html>

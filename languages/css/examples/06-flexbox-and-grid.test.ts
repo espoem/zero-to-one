@@ -1,13 +1,13 @@
 import { describe, it, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { createPage, closeSharedBrowser } from './helpers/browser.ts';
+import { createPage, closeSharedBrowser, browserSkip } from './helpers/browser.ts';
 
 describe('Module 06: Layout: Flexbox, Grid & Subgrid', () => {
   after(async () => {
     await closeSharedBrowser();
   });
 
-  it('proves the flexbox min-width: auto overflow trap and its min-width: 0 fix', async () => {
+  it('proves the flexbox min-width: auto overflow trap and its min-width: 0 fix', { skip: browserSkip }, async () => {
     const html = `
       <!DOCTYPE html>
       <html>
@@ -69,7 +69,7 @@ describe('Module 06: Layout: Flexbox, Grid & Subgrid', () => {
     }
   });
 
-  it('demonstrates Subgrid alignment across nested card rows', async () => {
+  it('demonstrates Subgrid alignment across nested card rows', { skip: browserSkip }, async () => {
     const html = `
       <!DOCTYPE html>
       <html>

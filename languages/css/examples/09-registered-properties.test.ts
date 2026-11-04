@@ -1,13 +1,13 @@
 import { describe, it, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { createPage, closeSharedBrowser } from './helpers/browser.ts';
+import { createPage, closeSharedBrowser, browserSkip } from './helpers/browser.ts';
 
 describe('Module 09: Registered Custom Properties (@property)', () => {
   after(async () => {
     await closeSharedBrowser();
   });
 
-  it('demonstrates @property type enforcement and initial-value fallback under invalid syntax', async () => {
+  it('demonstrates @property type enforcement and initial-value fallback under invalid syntax', { skip: browserSkip }, async () => {
     const html = `
       <!DOCTYPE html>
       <html>
@@ -47,7 +47,7 @@ describe('Module 09: Registered Custom Properties (@property)', () => {
     }
   });
 
-  it('proves that registered length property resolves to computed pixel units', async () => {
+  it('proves that registered length property resolves to computed pixel units', { skip: browserSkip }, async () => {
     const html = `
       <!DOCTYPE html>
       <html>
