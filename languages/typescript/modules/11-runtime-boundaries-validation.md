@@ -273,6 +273,7 @@ Bundle-size and feature notes for Valibot and ArkType come from their documentat
 9. **Self-referencing schema without a getter**: TS7022 at compile time and a TDZ `ReferenceError` at runtime. Use the getter form.
 10. **Plain `z.union` on tagged data**: unreadable errors and wasted work. Use `z.discriminatedUnion`.
 11. **Hand-maintained read and write schemas drift**. Use a codec for bidirectional fields (dates, money, IDs).
+12. **Identity-keyed caches miss after parsing**: `parse` returns new objects, so `WeakMap` caches keyed by the raw input never hit for the parsed value. Key caches by an ID, not by object identity.
 
 ---
 

@@ -16,7 +16,7 @@ A declaration file is the erasure dual of a JavaScript file: it keeps *only* the
 For exported declarations without annotations, the compiler must **print the inferred type**. That has three consequences:
 
 1. Declaration emit needs the full type checker (it is not a per-file transform), unless `isolatedDeclarations` is on.
-2. Inferred types can reference names the declaration file cannot reach. TS reports **TS2742** ("The inferred type of 'x' cannot be named without a reference to '…/node_modules/…'. This is likely not portable.") or **TS4023**-family errors. Fix by annotating the export with a public type.
+2. Inferred types can reference names the declaration file cannot reach. TypeScript 7.0.2 reports **TS2883** ("The inferred type of 'value' cannot be named without a reference to 'Secret' from 'outer/node_modules/inner'. This is likely not portable. A type annotation is necessary."); TS 5.x/6.x reported the same situation as **TS2742** with a path-based message, and older guides still cite that code. Fix by annotating the export with a public type. The test `declaration emit: an inferred type that can't be named portably` builds the nested-`node_modules` layout that triggers it (a type from a dependency's private dependency) and shows that an annotated sibling export compiles.
 3. Large inferred types (a deeply nested Zod schema, a tRPC router) are printed in full, which bloats `.d.ts` files and slows every consumer. Annotate with a named type, or export the type alias and annotate with it.
 
 ### 1.2 `isolatedDeclarations`
@@ -83,6 +83,43 @@ If both branches point at the same `index.d.ts`, TypeScript believes the CJS ent
 
 attw 0.18.5 depends on the 5.x compiler API internally; it is a separate tool and is unaffected by the project using TS 7.
 
+### 2.4 Worked example: a correct dual package vs a masquerading one
+
+Two fixtures ship the same JavaScript (`lib/esm/index.js` and `lib/cjs/index.cjs`):
+
+```jsonc
+// dual-pkg: one declaration file per format
+"exports": { ".": {
+  "import":  { "types": "./lib/esm/index.d.ts",  "default": "./lib/esm/index.js" },
+  "require": { "types": "./lib/cjs/index.d.cts", "default": "./lib/cjs/index.cjs" }
+} }
+
+// masq-pkg: a single top-level "types" shared by both formats
+"exports": { ".": {
+  "types": "./lib/esm/index.d.ts",
+  "import": "./lib/esm/index.js",
+  "require": "./lib/cjs/index.cjs"
+} }
+```
+
+In `masq-pkg`, a CommonJS consumer resolving under `node16-cjs` matches the top-level `types` first and gets `index.d.ts`, which under `"type": "module"` describes an **ES module**, while Node will load the `.cjs` file. attw reports this as **FalseESM** ("Masquerading as ESM"); with `--profile node16` it fails, while `dual-pkg` passes (both asserted). The concrete damage: for a CommonJS file the TypeScript checker models ESM imports of CJS differently (default import = `module.exports`), so a consumer's `import x from "lib"` type-checks against the wrong shape and fails at runtime, or vice versa.
+
+Rules that follow:
+1. Each condition branch that points at a different JavaScript format needs its own declaration file with the matching extension (`.d.ts` for ESM under `"type": "module"`, `.d.cts` for CJS; `.d.mts` for ESM under a CJS package).
+2. Put `types` *inside* each branch, first.
+3. Generate the CJS declarations with a second `tsc` run whose output uses `.cts` sources or a nested `package.json` with `"type": "commonjs"`; renaming `.d.ts` → `.d.cts` without re-emitting is wrong when the files contain relative imports (their specifiers must end in `.cjs`).
+4. Prefer **ESM only** when your consumers run Node ≥ 22.12 (which can `require()` ESM) or bundlers; the whole problem disappears.
+
+### 2.5 Versioning the public types
+
+Your `.d.ts` files are an API. Changes that break consumers *without* any JavaScript change:
+- narrowing a parameter type or widening a return type;
+- adding a required property to an interface consumers implement (or an optional one they return under `exactOptionalPropertyTypes`);
+- changing a type parameter's constraint, default or variance;
+- raising the minimum TypeScript version needed to read the declarations (e.g. using `NoInfer` or `const` type parameters in public signatures).
+
+Treat these as semver-major or ship them behind new names. `typesVersions` in `package.json` can serve different declaration directories to older compilers (`">=5.0": ["types/latest/*"], "*": ["types/legacy/*"]`), but it is consulted only when `exports` is absent or for older resolution modes, so most modern packages instead document a minimum TypeScript version and test against it.
+
 ---
 
 ## 3. Testing types
@@ -117,6 +154,32 @@ Two generic signatures are related only if their deferred conditional types are 
 | `tsc --noEmit` over test files | What this track does (`npm run typecheck`, and fixture tests that spawn `tsc`) | Works with TS 7 today |
 | `vitest --typecheck` with `*.test-d.ts` | Vitest spawns `tsc` and maps errors to tests | Depends on Vitest's integration with the TS 7 binary (unverified for vitest 5.0.5) |
 | Diagnostic snapshots | Spawn `tsc -p fixture`, assert error codes | Assert codes and line numbers, not full messages: message text and union order change across versions (`stableTypeOrdering`) |
+
+### 3.4 A type-test suite for a public API (worked example)
+
+[`public-api.type-test.test.ts`](../examples/13-library-authoring/public-api.type-test.test.ts) tests a tiny `Result<T, E>` library the way a published package should be tested: inference of literals through `const` type parameters, that `map` keeps the error type, that `unwrapOr` returns `T | D`, and that misuse (reading `value` before narrowing, a mapper with the wrong parameter type) is rejected.
+
+Writing it surfaced a pitfall worth remembering. The first draft declared test inputs as
+
+```ts
+const r: Result<number, "E1"> = ok(2);
+```
+
+and `map(r, String)` came out as `Result<string, unknown>`. The reason is **narrowing by assignment** ([Module 03](./03-unions-narrowing-and-control-flow.md)): when a variable's declared type is a union, an initializer narrows it to the union members the assigned value fits, so `r` is `Ok<number>` at every later use, the error type `E` has no inference source, and the test exercises a different type than intended. The fix is to declare test inputs without values:
+
+```ts
+declare const anyResult: Result<number, "E1">;
+const typeOnly = () => { expectTypeOf(map(anyResult, String)).toEqualTypeOf<Result<string, "E1">>(); };
+```
+
+`declare const` has the declared type everywhere, and wrapping assertions that touch it in an uncalled arrow function keeps the file runnable (a declared constant has no runtime value). The example keeps one test that *documents* the narrowed behaviour, so a future reader sees why the suite is written this way.
+
+Checklist for a library type-test suite:
+1. Test the **public** entry point (import from the package name or its `exports` path), not internal files.
+2. For every generic API, assert the inferred result for representative inputs, including literals, unions, `readonly` arrays, `never` and `any` inputs.
+3. Add one negative test per documented constraint (`@ts-expect-error` with a comment naming the expected error).
+4. Use `declare const` inputs for union-typed values to avoid assignment narrowing.
+5. Run the suite against the **minimum** TypeScript version you support and the latest; type behaviour (e.g. union ordering, code-point inference) differs across versions.
 
 ---
 
@@ -153,6 +216,28 @@ The first boundary reflects an instantiation-depth limit of 100 (each element co
 4. In the editor, measure with the language server's own logging; a single slow file shows up as completion latency.
 
 **Performance numbers are hardware dependent.** The track asserts that the diagnostics *exist*, never how fast they are.
+
+### 4.4 Reading `--extendedDiagnostics`
+
+| Line | Meaning | What a jump usually means |
+|---|---|---|
+| `Files`, `Lines` | Program size including `lib` and `@types` | An accidental `include` of generated code or `node_modules`, or `types` re-including everything |
+| `Identifiers`, `Symbols` | Binder output | Mostly proportional to code size |
+| `Types` | Distinct types created by the checker | Large unions, template-literal cross products, deep mapped types |
+| `Instantiations` | Generic instantiations performed | Recursive conditional types, heavy generic libraries (schema builders, routers, ORMs) |
+| `Memory used` | Peak heap | Proportional to `Types` and caches; with N checkers, caches are per checker |
+| `Parse/Bind/Check/Emit time` | Phase timings | `Check time` dominating is normal; `Parse time` dominating means too many files |
+
+A practical workflow: record these numbers in CI for each package, and fail a review (not the build) when `Instantiations` grows by an order of magnitude in one change. The traces (§4.3) then tell you *which* type is responsible.
+
+### 4.5 Budget rules that keep types fast
+
+1. Annotate exported functions' return types (also required by `isolatedDeclarations`): the checker reuses the annotation instead of re-inferring the body for every consumer.
+2. Name intermediate types (`type Row = …`) instead of re-deriving them inline: named aliases of non-generic types are computed once.
+3. Prefer `interface X extends A, B` to `A & B & C` for object composition you use widely: interface members are resolved once and cached, intersections are re-examined per use.
+4. Constrain generic parameters to the narrowest domain (a polymorphic component over 5 tags, not all of `JSX.IntrinsicElements`).
+5. Bound recursive types and keep them tail-recursive (§4.2).
+6. Keep `skipLibCheck: true` so declaration files of dependencies are not re-checked in every project.
 
 ---
 
@@ -215,7 +300,7 @@ These distil design lessons that used to be a separate "expert interviews" lesso
 
 ## 7. Production failure modes
 
-1. **TS2742 "inferred type cannot be named"** when emitting declarations in a monorepo. Annotate the export with a public type.
+1. **TS2883 (TS2742 before 7.0) "inferred type cannot be named"** when emitting declarations in a monorepo. Annotate the export with a public type.
 2. **Thousands of errors from enabling `isolatedDeclarations` late.** Enable per package, use quick fixes, never annotate with `object`.
 3. **`types` condition after `import`/`default`.** Consumers silently get adjacent or no types. publint catches it.
 4. **Masquerading ESM/CJS types** in dual packages. One `.d.ts` per format; check with attw.
@@ -223,6 +308,46 @@ These distil design lessons that used to be a separate "expert interviews" lesso
 6. **Declaration snapshots churn after upgrading to 7.0** (`stableTypeOrdering`). Regenerate in one commit; assert codes, not messages.
 7. **`@ts-ignore` in type tests.** Tests that cannot fail. Use `@ts-expect-error`.
 8. **JSDoc-typed JS loses types on 7.0** (`@enum`, Closure syntax). Diff diagnostics of 6.0 vs 7.0 before switching.
+
+---
+
+## Exercises
+
+### Exercise 13.1: Fix the broken package
+
+Make [`fixtures/bad-pkg`](../examples/13-library-authoring/fixtures/bad-pkg/package.json) pass both `publint .` and `attw --pack . --profile esm-only`.
+
+<details><summary>Solution</summary>
+
+Put `types` first in the condition object and point it at the declarations actually emitted: either move `declarationDir` back next to the JS (`"types": "./dist/index.d.ts"`) or keep `./types/index.d.ts` but list it before `import`. Add `"default"` (or keep `import`) for the JS, and keep `"type": "module"` so `.js`/`.d.ts` are read as ESM. Re-run both tools; `FallbackCondition` disappears once TypeScript no longer has to guess an adjacent `.d.ts`.
+</details>
+
+### Exercise 13.2: Make a recursive type tail-recursive
+
+`type Join<T extends string[], Sep extends string> = T extends [infer H extends string, ...infer R extends string[]] ? R extends [] ? H : `${H}${Sep}${Join<R, Sep>}` : "";` hits TS2589 for long tuples. Rewrite it.
+
+<details><summary>Solution</summary>
+
+Accumulate the result in a parameter so the recursive call is the whole branch:
+
+```ts
+type Join<T extends string[], Sep extends string, Acc extends string = ""> =
+  T extends [infer H extends string, ...infer R extends string[]]
+    ? Join<R, Sep, Acc extends "" ? H : `${Acc}${Sep}${H}`>
+    : Acc;
+```
+
+The template literal now wraps only the *accumulator argument*, not the recursive call, so the checker evaluates it iteratively (limit 1000) instead of nesting instantiations.
+</details>
+
+### Exercise 13.3: Find the slow type
+
+Run `tsc -p . --extendedDiagnostics` on a project of yours, then `tsc -p . --generateTrace trace --singleThreaded`, open `trace/trace.json` in a trace viewer, and find the longest `checkSourceFile` span. Within it, look for repeated `structuredTypeRelatedTo` or `instantiateType` events and map their type IDs to source positions through `types_0.json`.
+
+<details><summary>What to look for</summary>
+
+A few files usually dominate. Typical culprits: a polymorphic component used hundreds of times with an unconstrained element type, a schema/router type re-instantiated in every consumer (fix: export an annotated named type), or a deep recursive helper applied to large literal inputs.
+</details>
 
 ---
 
@@ -284,7 +409,13 @@ Compare `--extendedDiagnostics` (`Instantiations`, check time) between commits, 
 The recursive reference must be the entire branch of the conditional (not wrapped in a tuple spread, template literal or another type). Then the checker evaluates it as a loop with a 1000-iteration limit instead of nested instantiations limited by depth (≈48 tuple elements in the measured non-tail case).
 </details>
 
+
 <details><summary>7. Outline a safe 5.x → 7.0 upgrade for a monorepo with typescript-eslint.</summary>
 
 Upgrade to 6.0; fix deprecations in the shared base config first; make `types`/`rootDir` explicit; add asset declarations; enable `stableTypeOrdering` and regenerate snapshots; alias `typescript` to `@typescript/typescript6` for eslint and add `@typescript/native` for the 7.0 `tsc`; switch CI type checking to 7.0; run both compilers for a cycle and diff diagnostics.
+</details>
+
+<details><summary>8. Which changes to <code>.d.ts</code> files are breaking even if the JavaScript is unchanged?</summary>
+
+Narrowing parameter types or widening return types, adding required members to interfaces consumers implement, changing type-parameter constraints/defaults/variance, and requiring a newer TypeScript to read the declarations. Version them like API changes.
 </details>

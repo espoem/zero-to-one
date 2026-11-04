@@ -1,0 +1,15 @@
+{
+  "name": "zto-masq",
+  "version": "1.0.0",
+  "type": "module",
+  "files": [
+    "lib"
+  ],
+  "exports": {
+    ".": {
+      "types": "./lib/esm/index.d.ts",
+      "import": "./lib/esm/index.js",
+      "require": "./lib/cjs/index.cjs"
+    }
+  }
+}

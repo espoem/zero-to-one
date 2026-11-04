@@ -814,7 +814,7 @@ A dual package points both `import` and `require` at `dist/index.d.ts` (ESM). CJ
 </details>
 
 ### Q-TSC-S-024 · Authoring and shipping typed libraries · difficulty 2 · single
-Exporting `const router = createRouter({ … })` without an annotation yields TS2742 ("inferred type cannot be named"). Fix?
+Exporting `const router = createRouter({ … })` without an annotation yields TS2883 (TS2742 before 7.0) ("inferred type cannot be named"). Fix?
 - A) Add `skipLibCheck`
 - B) Annotate the export with a public, importable type
 - C) Disable `declaration`
