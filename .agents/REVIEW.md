@@ -10,7 +10,8 @@ Severity: **P0** = wrong now (a false claim, a failing test, a removed API taugh
 - [ ] `test:integration`, if present, passes with Docker running and skips with a clear message without Docker.
 - [ ] Every runnable snippet quoted in `modules/` exists in `examples/` and is exercised by a test.
 - [ ] `tools/mermaid-check` passes for the track: every Mermaid diagram parses with Mermaid 11 and 12.
-- [ ] Every link is relative and resolves (`lychee --offline` or an equivalent link checker).
+- [ ] Every link is relative and resolves, including `#anchors`: `tools/link-check` reports 0 broken.
+- [ ] `tools/table-check` passes: no unescaped pipes in table cells, consistent column counts.
 - [ ] There are no `file:///`, absolute user paths, secrets or real tokens.
 - [ ] Commit metadata is clean: author and committer are the operator's identity, and no commit message carries `Co-Authored-By`, `Claude-Session`, or any other agent/tool trailer (AGENTS.md § Multi-Agent Workflow rule 7).
 - [ ] The track has every required item: `README.md`, `GLOSSARY.md`, `CHEATSHEET.md`, `modules/`, `examples/`, `exams/`.
