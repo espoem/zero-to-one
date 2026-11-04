@@ -31,7 +31,7 @@ Runtime CSS-in-JS libraries (such as `styled-components` and `Emotion`) embedded
 Modern architecture utilizes zero-runtime compilers—such as **Panda CSS** and **Meta's StyleX**:
 - Styles are authored with full TypeScript type safety and component props.
 - An ahead-of-time (AOT) compiler parses the AST at build time, extracts the styles, and emits a single, highly optimized, deduped **atomic CSS stylesheet**.
-- Zero JavaScript bytes are dedicated to a CSS runtime, eliminating INP regressions and delivering pure native performance (see complete details in [Panda CSS Architecture](../../technologies/panda-css/README.md)).
+- Zero JavaScript bytes are dedicated to a CSS runtime, eliminating INP regressions and delivering pure native performance (see complete details in [Panda CSS Architecture](../../../technologies/panda-css/README.md)).
 
 ---
 

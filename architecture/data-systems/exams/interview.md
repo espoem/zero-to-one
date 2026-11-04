@@ -49,7 +49,7 @@ An e-commerce platform stores user profiles with frequently changing dynamic att
 - Why not A: Migrating entire user accounts to a document store degrades transactional isolation and forces fragile distributed transactions during payments.
 - Why not C: EAV schemas create massive table bloat, destroy cache locality, require deep self-joins, and break query optimization.
 - Why not D: Unindexed blobs force full-table scans for any analytical filtering on marketing attributes.
-- Ref: [modules/01-data-models-and-query-languages.md](../modules/01-data-models-and-query-languages.md#schema-on-write-vs-schema-on-read)
+- Ref: [modules/01-data-models-and-query-languages.md](../modules/01-data-models-and-query-languages.md#4-schema-on-read-versus-schema-on-write)
 </details>
 
 ### Q-DATA-004 · Data Models · difficulty 3 · scenario
@@ -98,7 +98,7 @@ In a slotted page physical architecture, how does the page header organize varia
 - Why not B: Hardcoding offsets contiguously without slot indirection requires rewriting external index pointers whenever a tuple expands or deletes.
 - Why not C: Variable-length attributes cannot be constrained to fixed slots without massive internal fragmentation or pointer chasing.
 - Why not D: Growing tuples from the front would collide immediately with the growing slot array.
-- Ref: [modules/02-storage-engines-b-trees-and-lsm.md](../modules/02-storage-engines-b-trees-and-lsm.md#page-layout-slotted-pages-and-tuple-storage), [01-slotted-page.test.ts](../examples/01-slotted-page.test.ts)
+- Ref: [modules/02-storage-engines-b-trees-and-lsm.md](../modules/02-storage-engines-b-trees-and-lsm.md#mechanical-layout-of-a-slotted-page), [01-slotted-page.test.ts](../examples/01-slotted-page.test.ts)
 </details>
 
 ### Q-DATA-007 · Storage Engines · difficulty 2 · single
@@ -113,7 +113,7 @@ Why does the Lehman-Yao B-link tree algorithm eliminate the need for top-down re
 - Why not A: B-Trees live on disk pages, not solely within CPU registers.
 - Why not C: Lehman-Yao is specifically designed to maximize concurrent readers and writers without exclusive tree latches.
 - Why not D: Crash recovery logging is orthogonal to concurrent structural modification latching.
-- Ref: [modules/02-storage-engines-b-trees-and-lsm.md](../modules/02-storage-engines-b-trees-and-lsm.md#b-trees-and-variants-b-trees-and-lehman-yao-b-link-trees), Lehman & Yao (1981)
+- Ref: [modules/02-storage-engines-b-trees-and-lsm.md](../modules/02-storage-engines-b-trees-and-lsm.md#concurrency-and-the-lehman-yao-b-link-tree-algorithm), Lehman & Yao (1981)
 </details>
 
 ### Q-DATA-008 · Storage Engines · difficulty 3 · scenario
@@ -128,7 +128,7 @@ An analytics logging engine experiences $150{,}000$ write operations per second 
 - Why not B: B+Trees easily handle strings of arbitrary length using prefix compression and overflow pages.
 - Why not C: Buffer pool managers manage concurrency with frame latches, not thread crashes.
 - Why not D: LSM-Trees perform heavy background compaction; they do not avoid compaction.
-- Ref: [modules/02-storage-engines-b-trees-and-lsm.md](../modules/02-storage-engines-b-trees-and-lsm.md#log-structured-merge-trees-lsm-and-ss-tables), [03-mini-lsm.test.ts](../examples/03-mini-lsm.test.ts)
+- Ref: [modules/02-storage-engines-b-trees-and-lsm.md](../modules/02-storage-engines-b-trees-and-lsm.md#3-append-only-storage-engines-log-structured-merge-trees-lsm), [03-mini-lsm.test.ts](../examples/03-mini-lsm.test.ts)
 </details>
 
 ### Q-DATA-009 · Storage Engines · difficulty 2 · multi
@@ -144,7 +144,7 @@ Which of the following statements correctly characterize the RUM Conjecture in d
 - C is correct: LSM-trees optimize update costs by appending sequentially, but readers must check multiple levels and SSTables (read amplification) and space is temporarily duplicated until compaction runs.
 - Why not A: The RUM conjecture formally proves that you can only optimize two of the three dimensions at the expense of the third.
 - Why not D: Disk I/O latency is orders of magnitude slower than RAM; eliminating memory structures severely degrades latency.
-- Ref: [modules/02-storage-engines-b-trees-and-lsm.md](../modules/02-storage-engines-b-trees-and-lsm.md#the-rum-conjecture-read-update-memory-trade-offs), Athanassoulis et al. (2016)
+- Ref: [modules/02-storage-engines-b-trees-and-lsm.md](../modules/02-storage-engines-b-trees-and-lsm.md), Athanassoulis et al. (2016)
 </details>
 
 ### Q-DATA-010 · Storage Engines · difficulty 3 · scenario
@@ -159,7 +159,7 @@ In an LSM storage engine using Leveled Compaction (LCS), Level $L$ has a capacit
 - Why not A: A factor of 1 only occurs if there is zero key overlap across adjacent levels (extremely rare in random write workloads).
 - Why not C: The ratio between adjacent levels is 10, not 100.
 - Why not D: Compaction merges and sorts physical keys on disk; it cannot be zero-copy.
-- Ref: [modules/02-storage-engines-b-trees-and-lsm.md](../modules/02-storage-engines-b-trees-and-lsm.md#compaction-strategies-size-tiered-vs-leveled)
+- Ref: [modules/02-storage-engines-b-trees-and-lsm.md](../modules/02-storage-engines-b-trees-and-lsm.md#compaction-strategies-leveled-versus-size-tiered)
 </details>
 
 ---
@@ -178,7 +178,7 @@ In Okapi BM25 full-text scoring, what is the role of parameter $b$ in the docume
 - Why not A: Parameter $k_1$ controls term frequency saturation, not $b$.
 - Why not C: Inverted index compression is handled by algorithms like PForDelta or Roaring Bitmaps.
 - Why not D: IDF prevents common words from dominating; $b$ normalizes document verbosity.
-- Ref: [modules/03-indexing-theory-and-vector-search.md](../modules/03-indexing-theory-and-vector-search.md#inverted-indexes-and-lexical-ranking-bm25), Robertson et al. (1994)
+- Ref: [modules/03-indexing-theory-and-vector-search.md](../modules/03-indexing-theory-and-vector-search.md#2-inverted-indexes-and-text-retrieval-tf-idf-and-bm25), Robertson et al. (1994)
 </details>
 
 ### Q-DATA-012 · Indexing Theory · difficulty 3 · scenario
@@ -193,7 +193,7 @@ A vector database indexing 100 million 1536-dimensional embedding vectors experi
 - Why not A: Brute-force scanning 100 million vectors on each query yields unacceptable multi-second latencies.
 - Why not C: Text representations inflate memory usage even further.
 - Why not D: Setting $M=0$ destroys the graph edges, rendering HNSW completely incapable of navigation.
-- Ref: [modules/03-indexing-theory-and-vector-search.md](../modules/03-indexing-theory-and-vector-search.md#vector-quantization-sq8-pq-and-bbq)
+- Ref: [modules/03-indexing-theory-and-vector-search.md](../modules/03-indexing-theory-and-vector-search.md)
 </details>
 
 ### Q-DATA-013 · Indexing Theory · difficulty 2 · multi
@@ -209,7 +209,7 @@ Which of the following statements regarding HNSW (Hierarchical Navigable Small W
 - C is correct: Layer 0 contains all vectors in the dataset and establishes fine-grained local neighbor connections.
 - Why not B: HNSW supports incremental insertions; vectors are probabilistically assigned a maximum layer and linked without global rebuilds.
 - Why not D: HNSW is an *approximate* nearest neighbor (ANN) algorithm; recall is tunable via $efSearch$ and $M$ but is not 100% guaranteed.
-- Ref: [modules/03-indexing-theory-and-vector-search.md](../modules/03-indexing-theory-and-vector-search.md#hierarchical-navigable-small-world-hnsw), Malkov & Yashunin (2018)
+- Ref: [modules/03-indexing-theory-and-vector-search.md](../modules/03-indexing-theory-and-vector-search.md#2-hierarchical-navigable-small-world-hnsw), Malkov & Yashunin (2018)
 </details>
 
 ### Q-DATA-014 · Indexing Theory · difficulty 2 · single
@@ -224,7 +224,7 @@ Why are B+Trees ineffective for indexing multi-dimensional spatial points $(x, y
 - Why not A: B+Trees easily index single-dimensional floats and doubles.
 - Why not C: B+Trees scale to trillions of rows.
 - Why not D: Block size alignment is a standard feature of B+Trees, not a multi-dimensional limitation.
-- Ref: [modules/03-indexing-theory-and-vector-search.md](../modules/03-indexing-theory-and-vector-search.md#spatial-and-multidimensional-indexes-r-trees-and-bkd-trees)
+- Ref: [modules/03-indexing-theory-and-vector-search.md](../modules/03-indexing-theory-and-vector-search.md#3-multidimensional-and-spatial-indexing-r-trees-and-bkd-trees)
 </details>
 
 ### Q-DATA-015 · Indexing Theory · difficulty 3 · scenario
@@ -239,7 +239,7 @@ In inverted index postings list compression, why is Roaring Bitmaps preferred ov
 - Why not B: Roaring Bitmaps are a compression structure, not an encryption protocol.
 - Why not C: They are used *inside* inverted index postings lists, not as a replacement for them.
 - Why not D: Roaring Bitmaps run on standard CPU architectures and leverage AVX-512/NEON vector instructions.
-- Ref: [modules/03-indexing-theory-and-vector-search.md](../modules/03-indexing-theory-and-vector-search.md#inverted-indexes-and-lexical-ranking-bm25), Chambi et al. (2016)
+- Ref: [modules/03-indexing-theory-and-vector-search.md](../modules/03-indexing-theory-and-vector-search.md#2-inverted-indexes-and-text-retrieval-tf-idf-and-bm25), Chambi et al. (2016)
 </details>
 
 ---
@@ -258,7 +258,7 @@ Why do production database engines (e.g. PostgreSQL, MySQL InnoDB, CockroachDB) 
 - Why not A: 64-bit OS kernels easily map hundreds of terabytes.
 - Why not C: `mmap` supports random access anywhere in the mapped memory window.
 - Why not D: Bypassing CPU cache is impossible; user-space buffer pools explicitly utilize CPU caches.
-- Ref: [modules/04-buffer-management-and-operating-system-io.md](../modules/04-buffer-management-and-operating-system-io.md#the-mmap-critique-why-databases-manage-their-own-pages), Crotty et al. (CIDR 2022)
+- Ref: [modules/04-buffer-management-and-operating-system-io.md](../modules/04-buffer-management-and-operating-system-io.md), Crotty et al. (CIDR 2022)
 </details>
 
 ### Q-DATA-017 · Buffer Management · difficulty 2 · single
@@ -273,7 +273,7 @@ How does the CLOCK eviction algorithm approximate Least Recently Used (LRU) whil
 - Why not A: Random eviction provides poor hit rates and does not capture temporal locality.
 - Why not C: CLOCK refers to the circular rotating hand, not physical wall-clock GPS hardware.
 - Why not D: Alphabetical eviction has zero correlation with query access patterns.
-- Ref: [modules/04-buffer-management-and-operating-system-io.md](../modules/04-buffer-management-and-operating-system-io.md#eviction-algorithms-lru-clock-2q-and-lirs), [04-buffer-pool.test.ts](../examples/04-buffer-pool.test.ts)
+- Ref: [modules/04-buffer-management-and-operating-system-io.md](../modules/04-buffer-management-and-operating-system-io.md#3-buffer-replacement-policies-lru-2q-clock-and-lirs), [04-buffer-pool.test.ts](../examples/04-buffer-pool.test.ts)
 </details>
 
 ### Q-DATA-018 · Buffer Management · difficulty 3 · scenario
@@ -288,7 +288,7 @@ A database undergoes a sequential scan of a 500 GB table while concurrent transa
 - Why not B: Out-of-memory panics do not occur because buffer pools have fixed frame allocations.
 - Why not C: Reading pages does not corrupt index structures.
 - Why not D: Sequential reads do not generate WAL records.
-- Ref: [modules/04-buffer-management-and-operating-system-io.md](../modules/04-buffer-management-and-operating-system-io.md#eviction-algorithms-lru-clock-2q-and-lirs), Johnson & Shasha (1994)
+- Ref: [modules/04-buffer-management-and-operating-system-io.md](../modules/04-buffer-management-and-operating-system-io.md#3-buffer-replacement-policies-lru-2q-clock-and-lirs), Johnson & Shasha (1994)
 </details>
 
 ### Q-DATA-019 · Buffer Management · difficulty 3 · single
@@ -303,7 +303,7 @@ What was the core revelation of the PostgreSQL "fsyncgate" incident regarding Li
 - Why not A: Partition tables are unaffected by file fsync calls.
 - Why not C: Fsyncgate was about silent error masking, not throughput throttling.
 - Why not D: File descriptors remain open; error codes were simply discarded.
-- Ref: [modules/04-buffer-management-and-operating-system-io.md](../modules/04-buffer-management-and-operating-system-io.md#operating-system-io-direct-io-fsyncgate-and-io_uring)
+- Ref: [modules/04-buffer-management-and-operating-system-io.md](../modules/04-buffer-management-and-operating-system-io.md#5-linux-storage-mechanics-the-fsyncgate-flaw-o_direct-and-io_uring)
 </details>
 
 ### Q-DATA-020 · Buffer Management · difficulty 2 · multi
@@ -319,7 +319,7 @@ Which of the following advantages are provided by Linux `io_uring` for high-thro
 - B is correct: The Submission Queue (SQ) and Completion Queue (CQ) are lockless ring buffers mapped into both user space and kernel space, allowing request dispatch with zero syscall context switches in polled mode.
 - Why not C: `io_uring` is an I/O subsystem; it has nothing to do with database durability logging invariants.
 - Why not D: Hardware RAID management is managed by disk controllers or Linux `mdadm`, not `io_uring`.
-- Ref: [modules/04-buffer-management-and-operating-system-io.md](../modules/04-buffer-management-and-operating-system-io.md#operating-system-io-direct-io-fsyncgate-and-io_uring), Axboe (2019)
+- Ref: [modules/04-buffer-management-and-operating-system-io.md](../modules/04-buffer-management-and-operating-system-io.md#5-linux-storage-mechanics-the-fsyncgate-flaw-o_direct-and-io_uring), Axboe (2019)
 </details>
 
 ---
@@ -338,7 +338,7 @@ In the formal taxonomy of isolation anomalies defined by Berenson et al. (1995) 
 - Why not B: Both anomalies apply equally to single-node and distributed systems.
 - Why not C: Both are isolation anomalies, not atomicity or durability violations.
 - Why not D: Repeatable Read prevents Non-Repeatable Read; Read Committed allows both.
-- Ref: [modules/05-transactions-acid-and-isolation-levels.md](../modules/05-transactions-acid-and-isolation-levels.md#the-anomaly-hierarchy-beyond-ansi-sql-92), Berenson et al. (1995)
+- Ref: [modules/05-transactions-acid-and-isolation-levels.md](../modules/05-transactions-acid-and-isolation-levels.md), Berenson et al. (1995)
 </details>
 
 ### Q-DATA-022 · Transactions & ACID · difficulty 3 · scenario
@@ -356,7 +356,7 @@ Both transactions commit successfully. What specific anomaly occurred, and why d
 - Why not A: Neither transaction wrote uncommitted values written by the other (no Dirty Write).
 - Why not C: Neither row was overwritten; both rows transitioned from active to inactive.
 - Why not D: No new rows were inserted; existing records were updated.
-- Ref: [modules/05-transactions-acid-and-isolation-levels.md](../modules/05-transactions-acid-and-isolation-levels.md#the-anomaly-hierarchy-beyond-ansi-sql-92), [05-mvcc-transaction-manager.test.ts](../examples/05-mvcc-transaction-manager.test.ts)
+- Ref: [modules/05-transactions-acid-and-isolation-levels.md](../modules/05-transactions-acid-and-isolation-levels.md), [05-mvcc-transaction-manager.test.ts](../examples/05-mvcc-transaction-manager.test.ts)
 </details>
 
 ### Q-DATA-023 · Transactions & ACID · difficulty 3 · single
@@ -371,7 +371,7 @@ How does Serializable Snapshot Isolation (SSI, Cahill et al. 2008) eliminate Wri
 - Why not A: SSI maintains the core MVCC principle: readers never block writers, and writers never block readers.
 - Why not C: Sequential single-thread execution is VoltDB/Redis architecture, not SSI.
 - Why not D: SSI avoids coarse table locks completely.
-- Ref: [modules/05-transactions-acid-and-isolation-levels.md](../modules/05-transactions-acid-and-isolation-levels.md#serializable-snapshot-isolation-ssi), Cahill, Rohm & Fekete (2008)
+- Ref: [modules/05-transactions-acid-and-isolation-levels.md](../modules/05-transactions-acid-and-isolation-levels.md#3-serializable-snapshot-isolation-ssi), Cahill, Rohm & Fekete (2008)
 </details>
 
 ### Q-DATA-024 · Transactions & ACID · difficulty 2 · ordering
@@ -394,7 +394,7 @@ As formally proven by Berenson et al. (1995) in *A Critique of ANSI SQL Isolatio
 2. Conversely, strict locking-based Repeatable Read prevents Write Skew ($A5B$), whereas Snapshot Isolation permits Write Skew anomalies.
 *(Note: Commercial engines such as PostgreSQL implement their `REPEATABLE READ` SQL isolation level using Snapshot Isolation).*
 - Why not B, C, D: Read Uncommitted is strictly the weakest level; ANSI Repeatable Read precedes Serializable; SI is incomparable to ANSI RR rather than identical or strictly weaker/stronger.
-- Ref: [modules/05-transactions-acid-and-isolation-levels.md](../modules/05-transactions-acid-and-isolation-levels.md#isolation-levels-and-their-anomalies), Berenson et al. (1995)
+- Ref: [modules/05-transactions-acid-and-isolation-levels.md](../modules/05-transactions-acid-and-isolation-levels.md), Berenson et al. (1995)
 </details>
 
 ### Q-DATA-025 · Transactions & ACID · difficulty 3 · scenario
@@ -409,7 +409,7 @@ Under Multi-Version Concurrency Control (MVCC), a row is updated by Transaction 
 - Why not A: Reading $T_{110}$'s commit would violate Snapshot Isolation and cause a Non-Repeatable Read.
 - Why not C: MVCC read operations do not take write locks and never trigger deadlocks.
 - Why not D: Deletions or updates by younger transactions are ignored by older active snapshots.
-- Ref: [modules/05-transactions-acid-and-isolation-levels.md](../modules/05-transactions-acid-and-isolation-levels.md#multi-version-concurrency-control-mvcc-internals), [05-mvcc-transaction-manager.test.ts](../examples/05-mvcc-transaction-manager.test.ts)
+- Ref: [modules/05-transactions-acid-and-isolation-levels.md](../modules/05-transactions-acid-and-isolation-levels.md#2-multi-version-concurrency-control-mvcc-and-snapshot-isolation), [05-mvcc-transaction-manager.test.ts](../examples/05-mvcc-transaction-manager.test.ts)
 </details>
 
 ---
@@ -426,7 +426,7 @@ What does the Steal / No-Force policy in database buffer management specify?
 
 **A.** Steal policy allows the buffer manager to flush dirty pages belonging to uncommitted transactions to disk to reclaim frames for other queries (requiring UNDO logging during crash recovery). No-Force policy means a transaction can commit as soon as its WAL records are synced, without forcing modified data pages to disk (requiring REDO logging).
 - Why not B, C, D: Steal/Force are formal database concepts governing the relationship between the buffer pool and persistent disk pages.
-- Ref: [modules/06-durability-wal-and-crash-recovery.md](../modules/06-durability-wal-and-crash-recovery.md#buffer-pool-policies-stealno-force-classification), Haerder & Reuter (1983)
+- Ref: [modules/06-durability-wal-and-crash-recovery.md](../modules/06-durability-wal-and-crash-recovery.md#1-buffer-management-policies-steal-no-steal-force-and-no-force), Haerder & Reuter (1983)
 </details>
 
 ### Q-DATA-027 · Durability & WAL · difficulty 3 · scenario
@@ -441,7 +441,7 @@ A database server experiences a sudden power loss. Upon reboot, the ARIES crash 
 - Why not A: Rolling back loser transactions occurs in the *Undo* phase, not the Redo phase.
 - Why not C: Full backups are only used for catastrophic media failure recovery, not standard crash recovery.
 - Why not D: B+Tree index changes are WAL-logged and recovered identically to data pages.
-- Ref: [modules/06-durability-wal-and-crash-recovery.md](../modules/06-durability-wal-and-crash-recovery.md#the-three-passes-of-aries-analysis-redo-undo), Mohan et al. (1992)
+- Ref: [modules/06-durability-wal-and-crash-recovery.md](../modules/06-durability-wal-and-crash-recovery.md), Mohan et al. (1992)
 </details>
 
 ### Q-DATA-028 · Durability & WAL · difficulty 3 · single
@@ -456,7 +456,7 @@ Why are Compensation Log Records (CLRs) recorded during the Undo phase of ARIES,
 - Why not B: Erasing log files during crash recovery would destroy durability and corrupt data.
 - Why not C: Aborting transactions is the fundamental requirement of rollback; it cannot be disabled.
 - Why not D: Uncommitted transactions must be rolled back, never artificially committed.
-- Ref: [modules/06-durability-wal-and-crash-recovery.md](../modules/06-durability-wal-and-crash-recovery.md#compensation-log-records-clrs-and-repeating-history), [06-aries-wal-recovery.test.ts](../examples/06-aries-wal-recovery.test.ts)
+- Ref: [modules/06-durability-wal-and-crash-recovery.md](../modules/06-durability-wal-and-crash-recovery.md), [06-aries-wal-recovery.test.ts](../examples/06-aries-wal-recovery.test.ts)
 </details>
 
 ### Q-DATA-029 · Durability & WAL · difficulty 2 · ordering
@@ -475,7 +475,7 @@ Order the three phases of the ARIES recovery algorithm in their correct executio
 2. Redo: Scans forward from smallest `recLSN` to repeat history.
 3. Undo: Scans backward to roll back all loser transactions.
 - Why not A, C, D: Redo cannot begin until Analysis determines the active transaction table and smallest `recLSN`; Undo cannot begin until history has been restored by Redo.
-- Ref: [modules/06-durability-wal-and-crash-recovery.md](../modules/06-durability-wal-and-crash-recovery.md#the-three-passes-of-aries-analysis-redo-undo)
+- Ref: [modules/06-durability-wal-and-crash-recovery.md](../modules/06-durability-wal-and-crash-recovery.md)
 </details>
 
 ### Q-DATA-030 · Durability & WAL · difficulty 2 · single
@@ -490,7 +490,7 @@ What is the purpose of Group Commit in write-ahead log management?
 - Why not A: Transactions execute concurrently across multiple threads; only the I/O flush is grouped.
 - Why not C: Group commit is a low-level WAL I/O optimization, not application query batching.
 - Why not D: Tablespace organization is unrelated to WAL group commit.
-- Ref: [modules/06-durability-wal-and-crash-recovery.md](../modules/06-durability-wal-and-crash-recovery.md#group-commit-mechanics)
+- Ref: [modules/06-durability-wal-and-crash-recovery.md](../modules/06-durability-wal-and-crash-recovery.md#group-commit-optimization)
 </details>
 
 ---
@@ -509,7 +509,7 @@ In a leaderless replicated storage cluster (Dynamo-style) with $N$ replicas, wri
 - Why not A: If $W + R \le N$, the read quorum may query disjoint replicas that never received the latest write, returning stale data.
 - Why not C: If $W=1, R=1$ in a cluster where $N \ge 2$, $W+R = 2 \le N$, permitting stale reads.
 - Why not D: Multiplying cluster factors is mathematically invalid for quorum intersection.
-- Ref: [modules/07-replication-mechanics-and-consensus.md](../modules/07-replication-mechanics-and-consensus.md#leaderless-replication-and-dynamo-style-quorums), [07-replication-quorum.test.ts](../examples/07-replication-quorum.test.ts)
+- Ref: [modules/07-replication-mechanics-and-consensus.md](../modules/07-replication-mechanics-and-consensus.md#3-leaderless-replication-dynamo-style-quorums), [07-replication-quorum.test.ts](../examples/07-replication-quorum.test.ts)
 </details>
 
 ### Q-DATA-032 · Replication · difficulty 3 · scenario
@@ -524,7 +524,7 @@ A user updates their account profile picture on an e-commerce website backed by 
 - Why not A: Monotonic reads guarantees that a user who observes state $S_1$ will never later observe older state $S_0$; it does not guarantee immediate observation of fresh writes.
 - Why not C: Terminating replicas destroys read scaling.
 - Why not D: The transaction already committed atomically on the leader; the issue is replication lag.
-- Ref: [modules/07-replication-mechanics-and-consensus.md](../modules/07-replication-mechanics-and-consensus.md#replication-lag-anomalies-and-guarantees)
+- Ref: [modules/07-replication-mechanics-and-consensus.md](../modules/07-replication-mechanics-and-consensus.md#3-replication-lag-anomalies)
 </details>
 
 ### Q-DATA-033 · Replication · difficulty 3 · single
@@ -539,7 +539,7 @@ In Martin Kleppmann's critique of the Redlock distributed locking algorithm, why
 - Why not A: Redis is built entirely on TCP/IP sockets.
 - Why not C: Redis cluster nodes run on standard multi-core systems.
 - Why not D: Redis key value typing is orthogonal to distributed lease safety.
-- Ref: [modules/07-replication-mechanics-and-consensus.md](../modules/07-replication-mechanics-and-consensus.md#distributed-locks-and-the-redlock-critique), Kleppmann (2016)
+- Ref: [modules/07-replication-mechanics-and-consensus.md](../modules/07-replication-mechanics-and-consensus.md#martin-kleppmanns-critique-of-distributed-locks-the-redlock-flaw), Kleppmann (2016)
 </details>
 
 ### Q-DATA-034 · Replication · difficulty 2 · multi
@@ -555,7 +555,7 @@ Which of the following statements are correct regarding physical versus logical 
 - C is correct: Logical decoding extracts data change tuples (INSERT, UPDATE, DELETE) independent of physical storage layouts, making cross-version replication and Kafka CDC ingestion possible.
 - Why not B: Statement-based replication of non-deterministic functions (`NOW()`, `UUID()`) produces data divergences; modern logical replication streams row changes, not raw SQL strings.
 - Why not D: Physical standbys are strictly read-only; they cannot write local tables because binary WAL replays would conflict with local page alterations.
-- Ref: [modules/07-replication-mechanics-and-consensus.md](../modules/07-replication-mechanics-and-consensus.md#replication-log-implementations)
+- Ref: [modules/07-replication-mechanics-and-consensus.md](../modules/07-replication-mechanics-and-consensus.md)
 </details>
 
 ### Q-DATA-035 · Replication · difficulty 2 · single
@@ -570,7 +570,7 @@ What is the function of Read Repair in leaderless storage architectures?
 - Why not A: Filesystem repair is handled by `fsck`, not database read repair.
 - Why not C: JIT compilers optimize queries, not replication.
 - Why not D: Read repair operates online during standard client read operations.
-- Ref: [modules/07-replication-mechanics-and-consensus.md](../modules/07-replication-mechanics-and-consensus.md#leaderless-replication-and-dynamo-style-quorums), [07-replication-quorum.test.ts](../examples/07-replication-quorum.test.ts)
+- Ref: [modules/07-replication-mechanics-and-consensus.md](../modules/07-replication-mechanics-and-consensus.md#3-leaderless-replication-dynamo-style-quorums), [07-replication-quorum.test.ts](../examples/07-replication-quorum.test.ts)
 </details>
 
 ---
@@ -589,7 +589,7 @@ In consistent hashing, what is the primary benefit of introducing Virtual Nodes 
 - Why not A: Network encryption is handled by TLS/mTLS, not consistent hashing.
 - Why not C: Consistent hashing fundamentally requires hashing algorithms (Murmur3, FNV-1a, SHA).
 - Why not D: Consistent hashing is a routing abstraction; data can reside on SSD or disk.
-- Ref: [modules/08-partitioning-sharding-and-routing.md](../modules/08-partitioning-sharding-and-routing.md#consistent-hashing-and-virtual-nodes), [08-consistent-hashing.test.ts](../examples/08-consistent-hashing.test.ts)
+- Ref: [modules/08-partitioning-sharding-and-routing.md](../modules/08-partitioning-sharding-and-routing.md#3-consistent-hashing-karger-et-al-1997), [08-consistent-hashing.test.ts](../examples/08-consistent-hashing.test.ts)
 </details>
 
 ### Q-DATA-037 · Partitioning & Routing · difficulty 3 · scenario
@@ -604,7 +604,7 @@ A cluster consists of $N = 4$ nodes and stores 100,000 keys using consistent has
 - Why not A: Modular hashing rebalances almost all keys; consistent hashing minimizes rebalancing.
 - Why not C: 50% migration only occurs when doubling a cluster from 1 to 2 nodes.
 - Why not D: Adding a node to accept writes requires routing existing keys to it.
-- Ref: [modules/08-partitioning-sharding-and-routing.md](../modules/08-partitioning-sharding-and-routing.md#consistent-hashing-and-virtual-nodes), Karger et al. (1997)
+- Ref: [modules/08-partitioning-sharding-and-routing.md](../modules/08-partitioning-sharding-and-routing.md#3-consistent-hashing-karger-et-al-1997), Karger et al. (1997)
 </details>
 
 ### Q-DATA-038 · Partitioning & Routing · difficulty 2 · multi
@@ -620,7 +620,7 @@ What are the trade-offs between Document-Partitioned (Local) Secondary Indexes a
 - C is correct: Global indexes route lookups for a given term directly to the shard owning that term, but writing a row requires updating both the primary data shard and the remote global index shard.
 - Why not B: Primary keys remain mandatory for unique record identification.
 - Why not D: Local indexes support arbitrary column types.
-- Ref: [modules/08-partitioning-sharding-and-routing.md](../modules/08-partitioning-sharding-and-routing.md#secondary-indexes-in-partitioned-systems)
+- Ref: [modules/08-partitioning-sharding-and-routing.md](../modules/08-partitioning-sharding-and-routing.md#2-secondary-indexes-in-partitioned-databases-local-versus-global)
 </details>
 
 ### Q-DATA-039 · Partitioning & Routing · difficulty 3 · scenario
@@ -635,7 +635,7 @@ A distributed time-series database partitions data by sensor timestamp (e.g. ran
 - Why not A: SSD hardware is superior to HDD; changing disk types does not fix hotspot routing.
 - Why not C: Deadlocks are not resolved by dropping essential indexes.
 - Why not D: Periodic restarts do not resolve architectural workload imbalances.
-- Ref: [modules/08-partitioning-sharding-and-routing.md](../modules/08-partitioning-sharding-and-routing.md#partitioning-strategies-range-hash-and-directory)
+- Ref: [modules/08-partitioning-sharding-and-routing.md](../modules/08-partitioning-sharding-and-routing.md#1-partitioning-strategies-range-hash-and-consistent-hashing)
 </details>
 
 ### Q-DATA-040 · Partitioning & Routing · difficulty 2 · single
@@ -650,7 +650,7 @@ Why does the tail latency ($P99.9$) of scatter-gather queries across 100 partiti
 - Why not A: Cluster communication uses high-speed Ethernet / InfiniBand.
 - Why not C: Queries execute in parallel across all shards.
 - Why not D: Disk decryption is performed locally at the storage layer, not by the query coordinator.
-- Ref: [modules/08-partitioning-sharding-and-routing.md](../modules/08-partitioning-sharding-and-routing.md#scatter-gather-and-the-tail-at-scale-problem), Dean & Barroso (2013)
+- Ref: [modules/08-partitioning-sharding-and-routing.md](../modules/08-partitioning-sharding-and-routing.md#2-tail-latency-meltdown-via-unbounded-scatter-gather-fanout), Dean & Barroso (2013)
 </details>
 
 ---
@@ -669,7 +669,7 @@ In high-throughput systems, what is the fundamental flaw of the Cache-Aside patt
 - Why not A: Cache expiration in Redis/Memcached has no direct deletion effect on database tables.
 - Why not C: Cache misses simply return null; they do not crash the cache server.
 - Why not D: Reads succeed once the database responds, but with extreme latency degradation.
-- Ref: [modules/09-caching-theory-and-consistency.md](../modules/09-caching-theory-and-consistency.md#the-cache-stampede-problem-thundering-herd), [09-cache-xfetch.test.ts](../examples/09-cache-xfetch.test.ts)
+- Ref: [modules/09-caching-theory-and-consistency.md](../modules/09-caching-theory-and-consistency.md#4-cache-stampede-thundering-herd-and-the-xfetch-algorithm), [09-cache-xfetch.test.ts](../examples/09-cache-xfetch.test.ts)
 </details>
 
 ### Q-DATA-042 · Caching Theory · difficulty 3 · single
@@ -684,7 +684,7 @@ How does the XFetch algorithm (Vattani et al. 2015) prevent cache stampedes prob
 - Why not A: Deleting entries prematurely increases database load.
 - Why not C: Browser storage does not coordinate backend server load.
 - Why not D: Hitting a replica still duplicates expensive computation and wastes read capacity.
-- Ref: [modules/09-caching-theory-and-consistency.md](../modules/09-caching-theory-and-consistency.md#probabilistic-early-expiration-the-xfetch-algorithm), Vattani et al. (VLDB 2015)
+- Ref: [modules/09-caching-theory-and-consistency.md](../modules/09-caching-theory-and-consistency.md), Vattani et al. (VLDB 2015)
 </details>
 
 ### Q-DATA-043 · Caching Theory · difficulty 3 · scenario
@@ -699,7 +699,7 @@ Under the Cache-Aside pattern with updates, consider two operations: Write (upda
 - Why not A: User-space cache updates do not trigger OS kernel deadlocks.
 - Why not C: Updating a single key does not exhaust server memory.
 - Why not D: Redis LRU evicts based on memory pressure, not individual key update sequences.
-- Ref: [modules/09-caching-theory-and-consistency.md](../modules/09-caching-theory-and-consistency.md#caching-topologies-and-patterns)
+- Ref: [modules/09-caching-theory-and-consistency.md](../modules/09-caching-theory-and-consistency.md#1-caching-topologies-and-access-patterns)
 </details>
 
 ### Q-DATA-044 · Caching Theory · difficulty 2 · multi
@@ -715,7 +715,7 @@ Which of the following characteristics distinguish Window TinyLFU (used in moder
 - B is correct: The W-TinyLFU policy admits new keys into a window cache ($1\%$ of space) and only promotes them to the main cache if their frequency exceeds the victim's frequency, resisting scan pollution.
 - Why not C: Memory is finite; caches must evict candidates when capacity is reached.
 - Why not D: Hashing keys with cryptographic SHA-256 severely slows down cache lookup latency.
-- Ref: [modules/09-caching-theory-and-consistency.md](../modules/09-caching-theory-and-consistency.md#cache-replacement-policies-lru-lfu-and-window-tinylfu), Manasse et al. (2017)
+- Ref: [modules/09-caching-theory-and-consistency.md](../modules/09-caching-theory-and-consistency.md#5-cache-eviction-policies-lru-lfu-and-window-tinylfu), Manasse et al. (2017)
 </details>
 
 ### Q-DATA-045 · Caching Theory · difficulty 2 · single
@@ -730,7 +730,7 @@ What is the difference between Write-Through and Write-Back (Write-Behind) cachi
 - Why not B: Both patterns handle write mutations.
 - Why not C: Both are backend caching topologies.
 - Why not D: Memory consumption is governed by eviction boundaries, not write topology.
-- Ref: [modules/09-caching-theory-and-consistency.md](../modules/09-caching-theory-and-consistency.md#caching-topologies-and-patterns)
+- Ref: [modules/09-caching-theory-and-consistency.md](../modules/09-caching-theory-and-consistency.md#1-caching-topologies-and-access-patterns)
 </details>
 
 ---
@@ -749,7 +749,7 @@ How does Protocol Buffers (Protobuf) encode integers efficiently on the wire whi
 - Why not A: Text-based key-value formats (like JSON/XML) suffer from large payloads and high CPU parsing overhead.
 - Why not C: Compression can be applied optionally, but it is not the foundational wire encoding format.
 - Why not D: Floating-point conversions introduce rounding errors and byte overhead.
-- Ref: [modules/10-encoding-serialization-and-schema-evolution.md](../modules/10-encoding-serialization-and-schema-evolution.md#binary-encoding-mechanics-varints-and-zigzag), [10-schema-evolution.test.ts](../examples/10-schema-evolution.test.ts)
+- Ref: [modules/10-encoding-serialization-and-schema-evolution.md](../modules/10-encoding-serialization-and-schema-evolution.md#2-low-level-binary-mechanics-varints-and-zigzag-encoding), [10-schema-evolution.test.ts](../examples/10-schema-evolution.test.ts)
 </details>
 
 ### Q-DATA-047 · Encoding & Serialization · difficulty 2 · single
@@ -764,7 +764,7 @@ Why does Protocol Buffers utilize ZigZag encoding for signed integers (`sint32`,
 - Why not A: ZigZag is an integer representation mapping, not encryption.
 - Why not C: Varints are inherently byte-stream oriented; ZigZag does not alter endianness.
 - Why not D: ZigZag operates on integers, not floating-point numbers.
-- Ref: [modules/10-encoding-serialization-and-schema-evolution.md](../modules/10-encoding-serialization-and-schema-evolution.md#binary-encoding-mechanics-varints-and-zigzag)
+- Ref: [modules/10-encoding-serialization-and-schema-evolution.md](../modules/10-encoding-serialization-and-schema-evolution.md#2-low-level-binary-mechanics-varints-and-zigzag-encoding)
 </details>
 
 ### Q-DATA-048 · Encoding & Serialization · difficulty 3 · scenario
@@ -779,7 +779,7 @@ In Apache Avro binary serialization, records are encoded without any field tags 
 - Why not A: Binary parsers require deterministic schemas, not statistical guesses.
 - Why not C: Prepending schema text to every message would ruin wire efficiency.
 - Why not D: Avro decodes binary directly into in-memory object representations.
-- Ref: [modules/10-encoding-serialization-and-schema-evolution.md](../modules/10-encoding-serialization-and-schema-evolution.md#apache-avro-schema-resolution-without-tags)
+- Ref: [modules/10-encoding-serialization-and-schema-evolution.md](../modules/10-encoding-serialization-and-schema-evolution.md)
 </details>
 
 ### Q-DATA-049 · Encoding & Serialization · difficulty 2 · multi
@@ -795,7 +795,7 @@ Which of the following modifications maintain Backward Compatibility in a binary
 - C is correct: In Protobuf, the binary wire format encodes only field tag numbers and wire types, not field names. Field names exist solely in generated application code, so renaming a field does not alter wire compatibility.
 - Why not B: Deleting a required field causes older readers to fail validation when parsing new records.
 - Why not D: Altering wire types violates wire decoding rules and corrupts field extraction.
-- Ref: [modules/10-encoding-serialization-and-schema-evolution.md](../modules/10-encoding-serialization-and-schema-evolution.md#schema-evolution-rules-backward-forward-and-full)
+- Ref: [modules/10-encoding-serialization-and-schema-evolution.md](../modules/10-encoding-serialization-and-schema-evolution.md#3-schema-evolution-rules-backward-forward-and-full-compatibility)
 </details>
 
 ### Q-DATA-050 · Encoding & Serialization · difficulty 2 · single
@@ -810,7 +810,7 @@ What is the function of the 5-byte framing header commonly prepended to Kafka me
 - Why not B: Framing headers provide format metadata, not encryption salt.
 - Why not C: User IDs are application payload fields or Kafka message headers.
 - Why not D: Timestamps are stored natively in Kafka's record batch metadata format.
-- Ref: [modules/10-encoding-serialization-and-schema-evolution.md](../modules/10-encoding-serialization-and-schema-evolution.md#schema-registries-in-distributed-pipelines)
+- Ref: [modules/10-encoding-serialization-and-schema-evolution.md](../modules/10-encoding-serialization-and-schema-evolution.md#3-schema-registry-network-outage-halting-event-pipelines)
 </details>
 
 ---
@@ -829,7 +829,7 @@ What core principle defines the Stream-Table Duality in distributed data systems
 - Why not A: Modern data pipelines frequently integrate stream-table operations (e.g. stream-table joins).
 - Why not C: Streaming logs (Kafka commit log) persist on disk; tables can exist in-memory or on disk.
 - Why not D: Both structures support arbitrary schemas and data types.
-- Ref: [modules/11-stream-processing-and-event-logs.md](../modules/11-stream-processing-and-event-logs.md#the-stream-table-duality), [11-stream-table-duality.test.ts](../examples/11-stream-table-duality.test.ts)
+- Ref: [modules/11-stream-processing-and-event-logs.md](../modules/11-stream-processing-and-event-logs.md#3-the-stream-table-duality-and-log-compaction), [11-stream-table-duality.test.ts](../examples/11-stream-table-duality.test.ts)
 </details>
 
 ### Q-DATA-052 · Stream Processing · difficulty 2 · single
@@ -844,7 +844,7 @@ In an Apache Kafka topic configured with `cleanup.policy=compact`, how does log 
 - Why not A: Compaction operates per-record based on keys; it does not drop entire partitions.
 - Why not C: Kafka brokers process produce/fetch protocols, not HTTP deletes for individual log offsets.
 - Why not D: Compaction runs continuously in the background without locking client readers.
-- Ref: [modules/11-stream-processing-and-event-logs.md](../modules/11-stream-processing-and-event-logs.md#log-compaction-mechanics)
+- Ref: [modules/11-stream-processing-and-event-logs.md](../modules/11-stream-processing-and-event-logs.md#log-compaction-tombstone-pruning)
 </details>
 
 ### Q-DATA-053 · Stream Processing · difficulty 3 · scenario
@@ -859,7 +859,7 @@ A streaming application calculating hourly revenue metrics receives event timest
 - Why not A: Silently dropping late events corrupts revenue calculations.
 - Why not C: Processing-time assigns late data to the wrong analytical window.
 - Why not D: Pausing pipelines destroys throughput and violates real-time processing requirements.
-- Ref: [modules/11-stream-processing-and-event-logs.md](../modules/11-stream-processing-and-event-logs.md#windowing-semantics-event-time-vs-processing-time)
+- Ref: [modules/11-stream-processing-and-event-logs.md](../modules/11-stream-processing-and-event-logs.md#5-time-semantics-and-windowing-event-time-watermarks-and-windows)
 </details>
 
 ### Q-DATA-054 · Stream Processing · difficulty 3 · single
@@ -874,7 +874,7 @@ How does Apache Kafka guarantee "Exactly-Once Semantics" (EOS) across a consume-
 - Why not A: Scaling requires partitioning across consumer groups.
 - Why not C: Client browsers do not participate in Kafka broker transactions.
 - Why not D: Disabling ACKs leads to severe data loss, destroying all correctness guarantees.
-- Ref: [modules/11-stream-processing-and-event-logs.md](../modules/11-stream-processing-and-event-logs.md#processing-guarantees-at-least-once-vs-exactly-once)
+- Ref: [modules/11-stream-processing-and-event-logs.md](../modules/11-stream-processing-and-event-logs.md#4-processing-guarantees-at-most-once-at-least-once-and-exactly-once-eos)
 </details>
 
 ### Q-DATA-055 · Stream Processing · difficulty 2 · multi
@@ -890,7 +890,7 @@ Which of the following statements are correct regarding Kafka consumer group par
 - B is correct: Incremental Cooperative Rebalancing (KIP-429) migrates only the subset of partitions being reassigned, preserving continuous throughput for all other partitions.
 - Why not C: In a consumer group, each partition is strictly assigned to at most one consumer instance at any time to preserve ordering.
 - Why not D: Rebalances are triggered by consumer additions, removals, crashes, or partition count changes.
-- Ref: [modules/11-stream-processing-and-event-logs.md](../modules/11-stream-processing-and-event-logs.md#the-commit-log-abstraction-and-consumer-groups)
+- Ref: [modules/11-stream-processing-and-event-logs.md](../modules/11-stream-processing-and-event-logs.md)
 </details>
 
 ---
@@ -909,7 +909,7 @@ According to Abadi's PACELC theorem, what does a distributed system face when th
 - Why not A: Speed-of-light network latency and coordination overhead make trade-offs unavoidable.
 - Why not C: Leader elections are triggered by heartbeats, not continuous periodic re-elections.
 - Why not D: PACELC applies universally across relational and non-relational distributed systems.
-- Ref: [modules/12-architectural-decision-matrix-and-polyglot-persistence.md](../modules/12-architectural-decision-matrix-and-polyglot-persistence.md#cap-vs-pacelc-formal-trade-offs), Abadi (2012)
+- Ref: [modules/12-architectural-decision-matrix-and-polyglot-persistence.md](../modules/12-architectural-decision-matrix-and-polyglot-persistence.md), Abadi (2012)
 </details>
 
 ### Q-DATA-057 · Architecture & CAP · difficulty 3 · scenario
@@ -922,7 +922,7 @@ Under the PACELC classification, how are Amazon DynamoDB (with default eventual 
 
 **A.** Under network partitions, DynamoDB prioritizes Availability ($PA$), and during normal execution it minimizes Latency by serving reads from a single replica with eventual consistency ($EL$). Google Cloud Spanner prioritizes Consistency during partitions ($PC$) using Paxos quorums, and enforces strict Linearizable consistency during normal execution ($EC$) via TrueTime atomic clocks.
 - Why not B, C, D: DynamoDB's design trade-off is latency and availability; Spanner's core invariant is strict serializable consistency.
-- Ref: [modules/12-architectural-decision-matrix-and-polyglot-persistence.md](../modules/12-architectural-decision-matrix-and-polyglot-persistence.md#cap-vs-pacelc-formal-trade-offs)
+- Ref: [modules/12-architectural-decision-matrix-and-polyglot-persistence.md](../modules/12-architectural-decision-matrix-and-polyglot-persistence.md)
 </details>
 
 ### Q-DATA-058 · Architecture & CAP · difficulty 2 · multi
@@ -938,7 +938,7 @@ Which storage architectural differences distinguish OLTP (Online Transaction Pro
 - C is correct: Columnar engines process data in CPU vector registers (SIMD) and compress uniform data types using RLE and Bit-Packing.
 - Why not B: The workloads are inverted; OLTP handles short point transactions, while OLAP handles large-scale analytical aggregations.
 - Why not D: OLTP systems rely heavily on B+Tree secondary indexes.
-- Ref: [modules/12-architectural-decision-matrix-and-polyglot-persistence.md](../modules/12-architectural-decision-matrix-and-polyglot-persistence.md#workload-taxonomy-oltp-vs-olap-vs-htap)
+- Ref: [modules/12-architectural-decision-matrix-and-polyglot-persistence.md](../modules/12-architectural-decision-matrix-and-polyglot-persistence.md#1-workload-classification-oltp-olap-htap-search-and-in-memory)
 </details>
 
 ### Q-DATA-059 · Architecture & CAP · difficulty 3 · scenario
@@ -952,7 +952,7 @@ An organization designs a polyglot persistence architecture. Financial payments 
 **B.** Polyglot persistence maps specialized workloads to engines optimized for their data access characteristics: ACID relational for financial ledgers, columnar/time-series for telemetry ingestion, inverted indexes for lexical search, and in-memory key-value for transient session caches.
 - Why not A, D: Mismatches workloads (e.g. running fuzzy search on Redis or payments on in-memory caches).
 - Why not C: Hosting SQLite over NFS destroys concurrency, risks file corruption, and cannot handle enterprise write throughput.
-- Ref: [modules/12-architectural-decision-matrix-and-polyglot-persistence.md](../modules/12-architectural-decision-matrix-and-polyglot-persistence.md#the-architectural-decision-matrix)
+- Ref: [modules/12-architectural-decision-matrix-and-polyglot-persistence.md](../modules/12-architectural-decision-matrix-and-polyglot-persistence.md#2-the-comprehensive-architectural-decision-matrix)
 </details>
 
 ### Q-DATA-060 · Architecture & CAP · difficulty 2 · single
@@ -967,7 +967,7 @@ What architectural mechanism enables HTAP (Hybrid Transactional/Analytical Proce
 - Why not A: Weekly batch exports are legacy ETL, not real-time HTAP.
 - Why not C: Disabling locks destroys transactional consistency.
 - Why not D: Discarding data violates durability.
-- Ref: [modules/12-architectural-decision-matrix-and-polyglot-persistence.md](../modules/12-architectural-decision-matrix-and-polyglot-persistence.md#workload-taxonomy-oltp-vs-olap-vs-htap)
+- Ref: [modules/12-architectural-decision-matrix-and-polyglot-persistence.md](../modules/12-architectural-decision-matrix-and-polyglot-persistence.md#1-workload-classification-oltp-olap-htap-search-and-in-memory)
 </details>
 
 ---
@@ -987,7 +987,7 @@ What is the exact sequence of structural modifications according to standard B+T
 - Why not A: Exceeding maximum capacity violates B+Tree node constraints.
 - Why not C: B+Trees never discard valid existing data keys during an insert.
 - Why not D: Inverted index conversion is completely unrelated to B+Tree leaf splits.
-- Ref: [modules/02-storage-engines-b-trees-and-lsm.md](../modules/02-storage-engines-b-trees-and-lsm.md#b-trees-and-variants-b-trees-and-lehman-yao-b-link-trees), [02-bplus-tree.test.ts](../examples/02-bplus-tree.test.ts)
+- Ref: [modules/02-storage-engines-b-trees-and-lsm.md](../modules/02-storage-engines-b-trees-and-lsm.md#concurrency-and-the-lehman-yao-b-link-tree-algorithm), [02-bplus-tree.test.ts](../examples/02-bplus-tree.test.ts)
 </details>
 
 ### Q-DATA-062 · Transactions & Concurrency · difficulty 3 · scenario
@@ -1005,7 +1005,7 @@ $T_1$ commits first. When $T_2$ attempts to commit, what happens under the first
 - Why not A: Allowing $T_2$ to overwrite $T_1$'s update would cause a Lost Update anomaly ($P4$), which Snapshot Isolation explicitly prevents.
 - Why not C: Standard relational engines do not automatically compute operational transforms or merge mathematical business logic without explicit retry loops or atomic `UPDATE ... SET balance = balance - 30`.
 - Why not D: Write-conflict aborts are handled immediately by the transaction manager.
-- Ref: [modules/05-transactions-acid-and-isolation-levels.md](../modules/05-transactions-acid-and-isolation-levels.md#multi-version-concurrency-control-mvcc-internals), [05-mvcc-transaction-manager.test.ts](../examples/05-mvcc-transaction-manager.test.ts)
+- Ref: [modules/05-transactions-acid-and-isolation-levels.md](../modules/05-transactions-acid-and-isolation-levels.md#2-multi-version-concurrency-control-mvcc-and-snapshot-isolation), [05-mvcc-transaction-manager.test.ts](../examples/05-mvcc-transaction-manager.test.ts)
 </details>
 
 ### Q-DATA-063 · Storage Engines · difficulty 3 · scenario
@@ -1020,7 +1020,7 @@ An LSM-tree storage engine receives a deletion for key `"user_99"`. How is the d
 - Why not A: In-place disk rewriting would destroy the append-only write throughput advantage of LSM-trees.
 - Why not C: Deletions are a core primitive supported by all LSM engines (RocksDB, Cassandra, Pebble).
 - Why not D: Deleting an entire SSTable would discard all other non-deleted keys residing in that file.
-- Ref: [modules/02-storage-engines-b-trees-and-lsm.md](../modules/02-storage-engines-b-trees-and-lsm.md#log-structured-merge-trees-lsm-and-ss-tables), [03-mini-lsm.test.ts](../examples/03-mini-lsm.test.ts)
+- Ref: [modules/02-storage-engines-b-trees-and-lsm.md](../modules/02-storage-engines-b-trees-and-lsm.md#3-append-only-storage-engines-log-structured-merge-trees-lsm), [03-mini-lsm.test.ts](../examples/03-mini-lsm.test.ts)
 </details>
 
 ### Q-DATA-064 · Durability & Recovery · difficulty 3 · hands-on
@@ -1038,7 +1038,7 @@ Which transaction belongs to the Loser Transactions set, and what action is perf
 - Why not A: $T_1$ committed before the crash; its changes are durable and preserved during the Redo pass.
 - Why not C: Uncommitted transactions cannot be committed without violating Atomicity.
 - Why not D: Leaving $T_2$'s uncommitted writes in place would leave the database in an inconsistent state.
-- Ref: [modules/06-durability-wal-and-crash-recovery.md](../modules/06-durability-wal-and-crash-recovery.md#the-three-passes-of-aries-analysis-redo-undo), [06-aries-wal-recovery.test.ts](../examples/06-aries-wal-recovery.test.ts)
+- Ref: [modules/06-durability-wal-and-crash-recovery.md](../modules/06-durability-wal-and-crash-recovery.md), [06-aries-wal-recovery.test.ts](../examples/06-aries-wal-recovery.test.ts)
 </details>
 
 ### Q-DATA-065 · Replication & Quorums · difficulty 3 · scenario
@@ -1054,7 +1054,7 @@ What are the exact integer values of $W$ and $R$, and does this configuration gu
 Thus, $W = 3$ and $R = 3$. Because $W + R = 3 + 3 = 6 > 5$, any read quorum intersects with any write quorum on at least $6 - 5 = 1$ replica, mathematically guaranteeing strong consistency.
 - Why not A: A quorum of 5 is 3, not 2.
 - Why not C, D: Setting $W=5$ is `ConsistencyLevel = ALL`, not `QUORUM`.
-- Ref: [modules/07-replication-mechanics-and-consensus.md](../modules/07-replication-mechanics-and-consensus.md#leaderless-replication-and-dynamo-style-quorums), [07-replication-quorum.test.ts](../examples/07-replication-quorum.test.ts)
+- Ref: [modules/07-replication-mechanics-and-consensus.md](../modules/07-replication-mechanics-and-consensus.md#3-leaderless-replication-dynamo-style-quorums), [07-replication-quorum.test.ts](../examples/07-replication-quorum.test.ts)
 </details>
 
 ---

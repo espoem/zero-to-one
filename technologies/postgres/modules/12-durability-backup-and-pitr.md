@@ -3,7 +3,7 @@
 Welcome to **Module 12** of the PostgreSQL curriculum. This module delivers comprehensive, academically grounded, and production-tested disaster recovery and database durability knowledge for PostgreSQL 18. We examine the Write-Ahead Log (WAL) architecture, dissect the Full-Page Write (`full_page_writes`) torn-page protection mechanism, calibrate checkpoint algorithms to eliminate I/O spikes, evaluate native incremental backups (`pg_basebackup` / `pg_combinebackup`), execute precision Point-In-Time Recovery (PITR) drills, navigate timeline branching ($TLI$), and leverage PostgreSQL 18's **retained optimizer statistics** during `pg_upgrade`.
 
 > [!NOTE]
-> For abstract ARIES recovery algorithms (Mohan et al., IBM 1992), Write-Ahead Logging theoretical proofs, and distributed state machine persistence models, consult the foundational track [architecture/data-systems](../../architecture/data-systems/modules/06-durability-wal-and-crash-recovery.md). This module covers PostgreSQL's concrete physical implementation, recovery configuration, and operational disaster recovery drills.
+> For abstract ARIES recovery algorithms (Mohan et al., IBM 1992), Write-Ahead Logging theoretical proofs, and distributed state machine persistence models, consult the foundational track [architecture/data-systems](../../../architecture/data-systems/modules/06-durability-wal-and-crash-recovery.md). This module covers PostgreSQL's concrete physical implementation, recovery configuration, and operational disaster recovery drills.
 
 ---
 

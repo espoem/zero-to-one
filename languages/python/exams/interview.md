@@ -18,7 +18,7 @@ What are the primary pipeline stages CPython traverses from raw source text to b
 - Why not A: CPython does not compile to LLVM IR or native machine code; it compiles to CPython bytecode.
 - Why not C: Python has no C-style preprocessor or native linker.
 - Why not D: CPython's standard pipeline does not enforce static type inference.
-- Ref: [modules/01-execution-model-and-tooling.md](../modules/01-execution-model-and-tooling.md#1-the-cpython-compilation-pipeline), https://docs.python.org/3/reference/executionmodel.html
+- Ref: [modules/01-execution-model-and-tooling.md](../modules/01-execution-model-and-tooling.md#1-the-cpython-compilation--execution-pipeline), https://docs.python.org/3/reference/executionmodel.html
 </details>
 
 ### Q-PYTHON-002 · Execution Model & Tooling · difficulty 2 · scenario
@@ -33,7 +33,7 @@ An engineer notices that a test script executing `python -X dev -X faulthandler 
 - Why not A: Free-threading is enabled via `--disable-gil` at build time or `python3.15t`, not `-X dev`.
 - Why not C: CPython never compiles Python files to native `.so` libraries automatically.
 - Why not D: `-X dev` does not launch `pdb`.
-- Ref: [modules/01-execution-model-and-tooling.md](../modules/01-execution-model-and-tooling.md#4-runtime-execution-cli-flags--configuration), https://docs.python.org/3/using/cmdline.html#cmdoption-X
+- Ref: [modules/01-execution-model-and-tooling.md](../modules/01-execution-model-and-tooling.md), https://docs.python.org/3/using/cmdline.html#cmdoption-X
 </details>
 
 ### Q-PYTHON-003 · Execution Model & Tooling · difficulty 2 · single
@@ -48,7 +48,7 @@ Why is `uv` significantly faster than legacy `pip` when resolving and installing
 - Why not A: `uv` strictly validates wheel cryptographic hashes against lockfiles.
 - Why not C: `uv` installs standard Python wheels and sdists, not WebAssembly.
 - Why not D: Executing arbitrary `setup.py` scripts concurrently is unsafe; `uv` prioritizes static PEP 517/PEP 621 metadata.
-- Ref: [modules/01-execution-model-and-tooling.md](../modules/01-execution-model-and-tooling.md#3-modern-tooling-ecosystem-uv--ruff), https://docs.astral.sh/uv/
+- Ref: [modules/01-execution-model-and-tooling.md](../modules/01-execution-model-and-tooling.md#3-modern-python-tooling-the-uv--ruff-revolution), https://docs.astral.sh/uv/
 </details>
 
 ### Q-PYTHON-004 · Execution Model & Tooling · difficulty 3 · multi
@@ -64,7 +64,7 @@ Which of the following statements regarding the CPython bytecode evaluation loop
 - B is TRUE: Under PEP 659 (Adaptive Specializing Interpreter), frequently executed instructions are replaced in-memory with specialized opcodes (e.g. `BINARY_OP_ADD_INT`).
 - Why not C: CPython is a stack machine, not a register-based VM.
 - Why not D: `.pyc` bytecode is specific to the exact minor Python version and magic number.
-- Ref: [modules/01-execution-model-and-tooling.md](../modules/01-execution-model-and-tooling.md#1-the-cpython-compilation-pipeline), https://peps.python.org/pep-0659/
+- Ref: [modules/01-execution-model-and-tooling.md](../modules/01-execution-model-and-tooling.md#1-the-cpython-compilation--execution-pipeline), https://peps.python.org/pep-0659/
 </details>
 
 ### Q-PYTHON-005 · Execution Model & Tooling · difficulty 2 · ordering
@@ -80,7 +80,7 @@ Order the following phases of a standard Python import resolution:
 <details><summary>Answer</summary>
 
 **A.** Python first checks if the module already exists in `sys.modules`. If not, it queries `sys.meta_path` finders to obtain a `ModuleSpec`, constructs an uninitialized module object and adds it to `sys.modules` (to handle circular imports), and finally calls `loader.exec_module()` to execute module code.
-- Ref: [modules/07-imports-modules-and-packaging.md](../modules/07-imports-modules-and-packaging.md#1-the-cpython-import-system-architecture), https://docs.python.org/3/reference/import.html
+- Ref: [modules/07-imports-modules-and-packaging.md](../modules/07-imports-modules-and-packaging.md), https://docs.python.org/3/reference/import.html
 </details>
 
 ---
@@ -97,7 +97,7 @@ What is the structural composition of a standard `PyObject` header in 64-bit CPy
 - Why not B: Hash values are computed lazily or stored in specific subtype structures, not the base `PyObject` header.
 - Why not C: Object names and dictionaries are not part of raw `PyObject` headers.
 - Why not D: GC tracking headers precede the `PyObject` head via `PyGC_Head`.
-- Ref: [modules/02-names-scopes-and-objects.md](../modules/02-names-scopes-and-objects.md#1-everything-is-an-object-pyobject-anatomy), https://docs.python.org/3/c-api/structures.html
+- Ref: [modules/02-names-scopes-and-objects.md](../modules/02-names-scopes-and-objects.md#1-the-anatomy-of-a-pyobject), https://docs.python.org/3/c-api/structures.html
 </details>
 
 ### Q-PYTHON-007 · Names, Scopes & Objects · difficulty 2 · single
@@ -119,7 +119,7 @@ print(a is b, c is d)  # Evaluated in an interactive REPL
 - Why not A: In the REPL, integers $\ge 257$ on separate prompt lines do not share identity.
 - Why not C: 256 is within the small integer cache.
 - Why not D: 256 is cached; 257 is not.
-- Ref: [modules/02-names-scopes-and-objects.md](../modules/02-names-scopes-and-objects.md#2-identity-vs-equality--cpython-interning), https://docs.python.org/3/c-api/long.html
+- Ref: [modules/02-names-scopes-and-objects.md](../modules/02-names-scopes-and-objects.md#2-object-identity-equality--caching), https://docs.python.org/3/c-api/long.html
 </details>
 
 ### Q-PYTHON-008 · Names, Scopes & Objects · difficulty 2 · scenario
@@ -143,7 +143,7 @@ What is printed, and why?
 - Why not A: Default arguments are not re-evaluated per call.
 - Why not C: Python never copies default arguments automatically.
 - Why not D: Mutable defaults are valid syntax, though an established anti-pattern.
-- Ref: [modules/02-names-scopes-and-objects.md](../modules/02-names-scopes-and-objects.md#5-the-mutable-default-argument-trap), https://docs.python.org/3/tutorial/controlflow.html#default-argument-values
+- Ref: [modules/02-names-scopes-and-objects.md](../modules/02-names-scopes-and-objects.md#51-the-mutable-default-argument-trap), https://docs.python.org/3/tutorial/controlflow.html#default-argument-values
 </details>
 
 ### Q-PYTHON-009 · Names, Scopes & Objects · difficulty 2 · single
@@ -158,7 +158,7 @@ What causes the "late-binding closure trap" when generating functions in a loop,
 - Why not A: Python does not create a new scope per loop iteration.
 - Why not C: Lambdas are created but not executed during list construction.
 - Why not D: CPython does not constant-fold dynamic loop variables in closures.
-- Ref: [modules/02-names-scopes-and-objects.md](../modules/02-names-scopes-and-objects.md#6-late-binding-closures-in-loops), https://docs.python.org/3/faq/programming.html#why-do-lambdas-defined-in-a-loop-with-different-values-all-return-the-same-result
+- Ref: [modules/02-names-scopes-and-objects.md](../modules/02-names-scopes-and-objects.md#52-the-late-binding-closure-trap), https://docs.python.org/3/faq/programming.html#why-do-lambdas-defined-in-a-loop-with-different-values-all-return-the-same-result
 </details>
 
 ### Q-PYTHON-010 · Names, Scopes & Objects · difficulty 3 · scenario
@@ -173,7 +173,7 @@ How does PEP 649 / PEP 749 deferred annotation evaluation in Python 3.14+ resolv
 - Why not A: Annotations are preserved and retrievable via `annotationlib`.
 - Why not C: Annotations remain part of the AST and runtime metadata.
 - Why not D: CPython does not enforce runtime type checks.
-- Ref: [modules/02-names-scopes-and-objects.md](../modules/02-names-scopes-and-objects.md#8-pep-649--749-deferred-evaluation-of-annotations), https://peps.python.org/pep-0649/
+- Ref: [modules/02-names-scopes-and-objects.md](../modules/02-names-scopes-and-objects.md#7-deferred-annotations--annotationlib-pep-649--pep-749), https://peps.python.org/pep-0649/
 </details>
 
 ---
@@ -190,7 +190,7 @@ What fundamental invariant must hold between `__eq__` and `__hash__` in Python?
 - Why not B: Hash collisions allow unequal objects to produce identical hashes.
 - Why not C: Unequal objects can collide on the same hash value.
 - Why not D: `id(a)` is a memory address and changes between runs; hash is based on value content.
-- Ref: [modules/03-data-model-and-dunder-protocols.md](../modules/03-data-model-and-dunder-protocols.md#2-the-hash-invariant-and-dict-key-mechanics), https://docs.python.org/3/reference/datamodel.html#object.__hash__
+- Ref: [modules/03-data-model-and-dunder-protocols.md](../modules/03-data-model-and-dunder-protocols.md), https://docs.python.org/3/reference/datamodel.html#object.__hash__
 </details>
 
 ### Q-PYTHON-012 · Data Model & Dunder Protocols · difficulty 2 · single
@@ -205,7 +205,7 @@ If a custom class defines `__eq__` but does NOT define `__hash__`, what does Pyt
 - Why not A: Inheriting `object.__hash__` while defining value equality would violate the hash invariant.
 - Why not C: Dictionaries are mutable and unhashable.
 - Why not D: Overriding `__eq__` without `__hash__` is valid syntax; error occurs only when hashed.
-- Ref: [modules/03-data-model-and-dunder-protocols.md](../modules/03-data-model-and-dunder-protocols.md#2-the-hash-invariant-and-dict-key-mechanics), https://docs.python.org/3/reference/datamodel.html#object.__hash__
+- Ref: [modules/03-data-model-and-dunder-protocols.md](../modules/03-data-model-and-dunder-protocols.md), https://docs.python.org/3/reference/datamodel.html#object.__hash__
 </details>
 
 ### Q-PYTHON-013 · Data Model & Dunder Protocols · difficulty 2 · single
@@ -220,7 +220,7 @@ What should a custom numeric class return from arithmetic dunders (`__add__`, `_
 - Why not A: Raising `TypeError` immediately preempts the right-hand operand's chance to handle the operation.
 - Why not B: Returning `None` treats `None` as a valid numeric result.
 - Why not D: Returning `False` treats boolean `False` as the arithmetic result.
-- Ref: [modules/03-data-model-and-dunder-protocols.md](../modules/03-data-model-and-dunder-protocols.md#4-arithmetic-emulation--reflected-operations), https://docs.python.org/3/reference/datamodel.html#emulating-numeric-types
+- Ref: [modules/03-data-model-and-dunder-protocols.md](../modules/03-data-model-and-dunder-protocols.md#4-arithmetic--reflected-operators), https://docs.python.org/3/reference/datamodel.html#emulating-numeric-types
 </details>
 
 ### Q-PYTHON-014 · Data Model & Dunder Protocols · difficulty 2 · scenario
@@ -235,7 +235,7 @@ How does specifying `__slots__` on a class optimize memory footprint and attribu
 - Why not A: Attributes remain standard Python object pointers (`PyObject*`).
 - Why not C: CPython does not compress instance memory with zlib.
 - Why not D: Instances retain separate values; only attribute names and offsets are fixed.
-- Ref: [modules/03-data-model-and-dunder-protocols.md](../modules/03-data-model-and-dunder-protocols.md#5-memory-optimization-with-__slots__), https://docs.python.org/3/reference/datamodel.html#slots
+- Ref: [modules/03-data-model-and-dunder-protocols.md](../modules/03-data-model-and-dunder-protocols.md#5-memory-optimization-with-slots), https://docs.python.org/3/reference/datamodel.html#slots
 </details>
 
 ### Q-PYTHON-015 · Data Model & Dunder Protocols · difficulty 3 · single
@@ -250,7 +250,7 @@ What does PEP 487 `__init_subclass__` provide over traditional metaclass customi
 - Why not A: Python has no native final class concept at the C level that `__init_subclass__` circumvents.
 - Why not C: `__init_subclass__` runs at class creation time, not instance initialization.
 - Why not D: It operates purely within CPython's standard class construction.
-- Ref: [modules/03-data-model-and-dunder-protocols.md](../modules/03-data-model-and-dunder-protocols.md#6-subclass-customization-via-__init_subclass__-pep-487), https://peps.python.org/pep-0487/
+- Ref: [modules/03-data-model-and-dunder-protocols.md](../modules/03-data-model-and-dunder-protocols.md#6-class-customization-with-init_subclass-pep-487), https://peps.python.org/pep-0487/
 </details>
 
 ---
@@ -267,7 +267,7 @@ What is the difference between a **data descriptor** and a **non-data descriptor
 - Why not B: Descriptors are in-memory protocol objects.
 - Why not C: Descriptors can be attached to any Python class.
 - Why not D: Descriptor lookup order is governed by attribute access rules, not `__init__`.
-- Ref: [modules/04-descriptors-metaclasses-and-attributes.md](../modules/04-descriptors-metaclasses-and-attributes.md#1-the-descriptor-protocol-data-vs-non-data), https://docs.python.org/3/howto/descriptor.html
+- Ref: [modules/04-descriptors-metaclasses-and-attributes.md](../modules/04-descriptors-metaclasses-and-attributes.md#1-the-descriptor-protocol), https://docs.python.org/3/howto/descriptor.html
 </details>
 
 ### Q-PYTHON-017 · Descriptors, Metaclasses & Attributes · difficulty 2 · scenario
@@ -282,7 +282,7 @@ An instance `obj` has an attribute `'x'` in its `obj.__dict__`. Its class has a 
 - Why not A: Instance `__dict__` only overrides non-data descriptors, not data descriptors.
 - Why not C: `__getattr__` is called only if attribute lookup fails everywhere else.
 - Why not D: The small int cache has no relation to descriptor precedence.
-- Ref: [modules/04-descriptors-metaclasses-and-attributes.md](../modules/04-descriptors-metaclasses-and-attributes.md#2-attribute-lookup-precedence-order), https://docs.python.org/3/reference/datamodel.html#invoking-descriptors
+- Ref: [modules/04-descriptors-metaclasses-and-attributes.md](../modules/04-descriptors-metaclasses-and-attributes.md), https://docs.python.org/3/reference/datamodel.html#invoking-descriptors
 </details>
 
 ### Q-PYTHON-018 · Descriptors, Metaclasses & Attributes · difficulty 3 · single
@@ -297,7 +297,7 @@ What algorithm does Python use to determine the Method Resolution Order (MRO) fo
 - Why not A: DFS was used in Python 2.2 and earlier ("old-style classes") and suffered from serious diamond inheritance anomalies.
 - Why not B: Simple BFS violates inheritance hierarchy monotonicity.
 - Why not D: Tarjan's algorithm finds SCCs in directed graphs, not class linearization orders.
-- Ref: [modules/04-descriptors-metaclasses-and-attributes.md](../modules/04-descriptors-metaclasses-and-attributes.md#4-multiple-inheritance-and-c3-linearization-mro), https://docs.python.org/3/howto/mro.html
+- Ref: [modules/04-descriptors-metaclasses-and-attributes.md](../modules/04-descriptors-metaclasses-and-attributes.md#2-method-resolution-order-mro--c3-linearization), https://docs.python.org/3/howto/mro.html
 </details>
 
 ### Q-PYTHON-019 · Descriptors, Metaclasses & Attributes · difficulty 2 · scenario
@@ -312,7 +312,7 @@ How does cooperative multiple inheritance with `super()` work in Python?
 - Why not A: Hardcoding the syntactic parent breaks cooperative diamond hierarchies.
 - Why not C: `super()` advances along the MRO, not from `object`.
 - Why not D: Execution is strictly serial and synchronous.
-- Ref: [modules/04-descriptors-metaclasses-and-attributes.md](../modules/04-descriptors-metaclasses-and-attributes.md#5-cooperative-super-and-diamond-hierarchies), https://docs.python.org/3/library/functions.html#super
+- Ref: [modules/04-descriptors-metaclasses-and-attributes.md](../modules/04-descriptors-metaclasses-and-attributes.md#22-cooperative-multiple-inheritance-with-super), https://docs.python.org/3/library/functions.html#super
 </details>
 
 ### Q-PYTHON-020 · Descriptors, Metaclasses & Attributes · difficulty 3 · single
@@ -327,7 +327,7 @@ How can a class satisfy `isinstance(obj, MyABC)` without explicitly inheriting f
 - Why not B: `@dataclass` generates dunders for fields; it does not implement structural ABC hooks.
 - Why not C: Mutating `__class__` changes nominal type, not virtual ABC compliance.
 - Why not D: Cython does not alter ABC subtyping mechanics.
-- Ref: [modules/04-descriptors-metaclasses-and-attributes.md](../modules/04-descriptors-metaclasses-and-attributes.md#7-abstract-base-classes-abcs--virtual-subclasses), https://docs.python.org/3/library/abc.html
+- Ref: [modules/04-descriptors-metaclasses-and-attributes.md](../modules/04-descriptors-metaclasses-and-attributes.md#4-abstract-base-classes-abcs--structural-typing), https://docs.python.org/3/library/abc.html
 </details>
 
 ---
@@ -344,7 +344,7 @@ What exception must an iterator's `__next__()` method raise to terminate iterati
 - Why not A: `GeneratorExit` is raised inside a generator when `.close()` is called.
 - Why not B: `IndexError` signals sequence bounds exceedance in old-style indexing protocols, not standard iterators.
 - Why not D: `KeyError` is raised on missing dictionary keys.
-- Ref: [modules/05-iteration-generators-and-context-managers.md](../modules/05-iteration-generators-and-context-managers.md#1-the-iteration-protocol-mechanics), https://docs.python.org/3/reference/datamodel.html#iterator-types
+- Ref: [modules/05-iteration-generators-and-context-managers.md](../modules/05-iteration-generators-and-context-managers.md#1-the-iteration-protocol), https://docs.python.org/3/reference/datamodel.html#iterator-types
 </details>
 
 ### Q-PYTHON-022 · Iteration, Generators & Context Managers · difficulty 2 · single
@@ -359,7 +359,7 @@ What is the return value of `generator.send(val)` on a freshly instantiated gene
 - Why not A: It does not return `None`; it throws an exception.
 - Why not B: It cannot consume a non-None value before reaching a yield point.
 - Why not D: Generators cannot be restarted.
-- Ref: [modules/05-iteration-generators-and-context-managers.md](../modules/05-iteration-generators-and-context-managers.md#2-generator-mechanics--frame-suspension), https://docs.python.org/3/reference/expressions.html#generator.send
+- Ref: [modules/05-iteration-generators-and-context-managers.md](../modules/05-iteration-generators-and-context-managers.md#2-generators--frame-suspension-mechanics), https://docs.python.org/3/reference/expressions.html#generator.send
 </details>
 
 ### Q-PYTHON-023 · Iteration, Generators & Context Managers · difficulty 2 · scenario
@@ -374,7 +374,7 @@ How does `yield from subgen()` communicate with the caller of the delegating gen
 - Why not A: `yield from` streams items lazily with $O(1)$ memory.
 - Why not C: `yield from` is entirely synchronous and runs on the current thread.
 - Why not D: It is executed by standard CPython evaluation bytecode.
-- Ref: [modules/05-iteration-generators-and-context-managers.md](../modules/05-iteration-generators-and-context-managers.md#3-bidirectional-communication-and-yield-from), https://peps.python.org/pep-0380/
+- Ref: [modules/05-iteration-generators-and-context-managers.md](../modules/05-iteration-generators-and-context-managers.md#4-subgenerator-delegation-via-yield-from), https://peps.python.org/pep-0380/
 </details>
 
 ### Q-PYTHON-024 · Iteration, Generators & Context Managers · difficulty 2 · single
@@ -389,7 +389,7 @@ In a context manager's `__exit__(self, exc_type, exc_val, exc_tb)`, how do you s
 - Why not B: Returning `False` allows the exception to propagate.
 - Why not C: `sys.exc_clear()` was removed in Python 3.
 - Why not D: `raise None` is invalid syntax.
-- Ref: [modules/05-iteration-generators-and-context-managers.md](../modules/05-iteration-generators-and-context-managers.md#4-the-context-manager-protocol), https://docs.python.org/3/reference/datamodel.html#object.__exit__
+- Ref: [modules/05-iteration-generators-and-context-managers.md](../modules/05-iteration-generators-and-context-managers.md#5-the-context-manager-protocol), https://docs.python.org/3/reference/datamodel.html#object.__exit__
 </details>
 
 ### Q-PYTHON-025 · Iteration, Generators & Context Managers · difficulty 3 · scenario
@@ -404,7 +404,7 @@ How does PEP 654 `except*` syntax handle an `ExceptionGroup` containing both `Va
 - Why not A: Traditional `except Exception:` matches the whole group monolithically; `except*` selectively splits and matches.
 - Why not C: Tracebacks remain attached to individual exception objects.
 - Why not D: Handled portions do not abort execution.
-- Ref: [modules/05-iteration-generators-and-context-managers.md](../modules/05-iteration-generators-and-context-managers.md#6-pep-654-exceptiongroup--except), https://peps.python.org/pep-0654/
+- Ref: [modules/05-iteration-generators-and-context-managers.md](../modules/05-iteration-generators-and-context-managers.md#6-exception-groups--except-pep-654), https://peps.python.org/pep-0654/
 </details>
 
 ---
@@ -421,7 +421,7 @@ How are generic classes defined using modern PEP 695 syntax in Python 3.12+?
 - Why not A: Legacy syntax required importing `TypeVar` and `Generic`.
 - Why not C: C++ template syntax is invalid Python.
 - Why not D: Decorator-based generics are not part of Python.
-- Ref: [modules/06-type-system-and-annotations.md](../modules/06-type-system-and-annotations.md#1-pep-695-type-parameter-syntax), https://peps.python.org/pep-0695/
+- Ref: [modules/06-type-system-and-annotations.md](../modules/06-type-system-and-annotations.md#11-type-parameter-defaults-pep-696), https://peps.python.org/pep-0695/
 </details>
 
 ### Q-PYTHON-027 · Type System & Annotations · difficulty 2 · single
@@ -451,7 +451,7 @@ What is the crucial advantage of PEP 742 `TypeIs[T]` over `TypeGuard[T]`?
 - Why not A: Both are static typing constructs interpreted by type checkers.
 - Why not C: Static type annotations have zero effect on bytecode speed.
 - Why not D: It types custom functions that call `isinstance()`.
-- Ref: [modules/06-type-system-and-annotations.md](../modules/06-type-system-and-annotations.md#6-pep-742-typeis-vs-typeguard), https://peps.python.org/pep-0742/
+- Ref: [modules/06-type-system-and-annotations.md](../modules/06-type-system-and-annotations.md#5-type-narrowing-typeguard-vs-typeis-pep-742), https://peps.python.org/pep-0742/
 </details>
 
 ### Q-PYTHON-029 · Type System & Annotations · difficulty 3 · scenario
@@ -466,7 +466,7 @@ How do you type a decorator that adds an argument to a function signature while 
 - Why not A: `Any` loses all static type safety and autocompletion.
 - Why not C: `TypeVarTuple` is designed for variadic type generics (e.g. multi-dimensional tensor shapes), not callable parameter insertion.
 - Why not D: Modern Python static typing cleanly types signature transformations.
-- Ref: [modules/06-type-system-and-annotations.md](../modules/06-type-system-and-annotations.md#5-paramspec-and-concatenate-for-higher-order-callables), https://peps.python.org/pep-0612/
+- Ref: [modules/06-type-system-and-annotations.md](../modules/06-type-system-and-annotations.md), https://peps.python.org/pep-0612/
 </details>
 
 ### Q-PYTHON-030 · Type System & Annotations · difficulty 2 · single
@@ -481,7 +481,7 @@ What does decorating a `typing.Protocol` with `@runtime_checkable` allow?
 - Why not A: Protocols are pure Python.
 - Why not C: Python does not perform runtime argument type checks automatically.
 - Why not D: Dynamic attribute assignment is governed by `__setattr__` or `__slots__`.
-- Ref: [modules/06-type-system-and-annotations.md](../modules/06-type-system-and-annotations.md#4-structural-typing-with-typingprotocol), https://docs.python.org/3/library/typing.html#typing.runtime_checkable
+- Ref: [modules/06-type-system-and-annotations.md](../modules/06-type-system-and-annotations.md#3-structural-subtyping-typingprotocol), https://docs.python.org/3/library/typing.html#typing.runtime_checkable
 </details>
 
 ---
@@ -498,7 +498,7 @@ What is the purpose of `sys.modules`?
 - Why not A: Search paths are stored in `sys.path`.
 - Why not C: `sys.modules` stores module objects, not AST nodes.
 - Why not D: Built-in C modules are listed in `sys.builtin_module_names`.
-- Ref: [modules/07-imports-modules-and-packaging.md](../modules/07-imports-modules-and-packaging.md#1-the-cpython-import-system-architecture), https://docs.python.org/3/library/sys.html#sys.modules
+- Ref: [modules/07-imports-modules-and-packaging.md](../modules/07-imports-modules-and-packaging.md), https://docs.python.org/3/library/sys.html#sys.modules
 </details>
 
 ### Q-PYTHON-032 · Imports, Modules & Packaging · difficulty 2 · scenario
@@ -516,7 +516,7 @@ Running `python a.py` raises `ImportError: cannot import name 'func_b' from part
 - Why not A: Circular imports are supported if resolved via module-level imports (`import a; a.func_a()`) or inside function bodies.
 - Why not C: Both modules are in the same directory.
 - Why not D: Namespaces are isolated per module.
-- Ref: [modules/07-imports-modules-and-packaging.md](../modules/07-imports-modules-and-packaging.md#3-circular-imports-mechanics-and-remediation), https://docs.python.org/3/reference/import.html
+- Ref: [modules/07-imports-modules-and-packaging.md](../modules/07-imports-modules-and-packaging.md#2-circular-imports-anatomy-diagnosis--resolutions), https://docs.python.org/3/reference/import.html
 </details>
 
 ### Q-PYTHON-033 · Imports, Modules & Packaging · difficulty 2 · single
@@ -531,7 +531,7 @@ What defines a **PEP 420 Implicit Namespace Package** in Python 3.3+?
 - Why not A: Directories with `__init__.py` are regular packages.
 - Why not C: Zip imports are governed by `zipimport`, not PEP 420.
 - Why not D: Installation target directory does not determine namespace package semantics.
-- Ref: [modules/07-imports-modules-and-packaging.md](../modules/07-imports-modules-and-packaging.md#4-pep-420-namespace-packages), https://peps.python.org/pep-0420/
+- Ref: [modules/07-imports-modules-and-packaging.md](../modules/07-imports-modules-and-packaging.md#4-namespace-packages-pep-420), https://peps.python.org/pep-0420/
 </details>
 
 ### Q-PYTHON-034 · Imports, Modules & Packaging · difficulty 3 · single
@@ -546,7 +546,7 @@ How does PEP 810 explicit lazy imports optimize application startup latency?
 - Why not A: Python bytecode is not WebAssembly.
 - Why not C: Module syntax is validated when compiled.
 - Why not D: It executes in the same process on demand.
-- Ref: [modules/07-imports-modules-and-packaging.md](../modules/07-imports-modules-and-packaging.md#2-pep-810-explicit-lazy-imports), https://peps.python.org/pep-0810/
+- Ref: [modules/07-imports-modules-and-packaging.md](../modules/07-imports-modules-and-packaging.md#3-explicit-lazy-imports-pep-810-draft--lazyloader), https://peps.python.org/pep-0810/
 </details>
 
 ### Q-PYTHON-035 · Imports, Modules & Packaging · difficulty 2 · single
@@ -561,7 +561,7 @@ What is the structural format of a standard Python Wheel (`.whl`) file?
 - Why not A: Source archives (`.tar.gz`) are sdists, not wheels.
 - Why not C: Wheels are ZIP archives containing files, not standalone ELF executables.
 - Why not D: Wheels do not use SQLite format.
-- Ref: [modules/07-imports-modules-and-packaging.md](../modules/07-imports-modules-and-packaging.md#5-wheels-pyprojecttoml-and-modern-packaging), https://peps.python.org/pep-0427/
+- Ref: [modules/07-imports-modules-and-packaging.md](../modules/07-imports-modules-and-packaging.md#5-modern-packaging-standards-wheels-uv-and-pyprojecttoml), https://peps.python.org/pep-0427/
 </details>
 
 ---
@@ -578,7 +578,7 @@ What tool in the Python standard library allows disassembling Python functions a
 - Why not A: `ast` inspects abstract syntax tree nodes, not compiled bytecode.
 - Why not C: `inspect` inspects live objects, call frames, and signatures.
 - Why not D: `tokenize` parses source text into lexical tokens.
-- Ref: [modules/08-cpython-internals-and-bytecode.md](../modules/08-cpython-internals-and-bytecode.md#1-the-cpython-bytecode-virtual-machine), https://docs.python.org/3/library/dis.html
+- Ref: [modules/08-cpython-internals-and-bytecode.md](../modules/08-cpython-internals-and-bytecode.md#1-the-cpython-virtual-machine--bytecode-architecture), https://docs.python.org/3/library/dis.html
 </details>
 
 ### Q-PYTHON-037 · CPython Internals & Bytecode · difficulty 2 · scenario
@@ -593,7 +593,7 @@ How does PEP 659 Specialized Adaptive Interpreter achieve 10–60% execution spe
 - Why not A: PEP 659 operates entirely within CPython bytecode, not native assembly.
 - Why not C: Reference counting remains active.
 - Why not D: Free-threading is PEP 703, not PEP 659.
-- Ref: [modules/08-cpython-internals-and-bytecode.md](../modules/08-cpython-internals-and-bytecode.md#2-pep-659-specializing-adaptive-interpreter), https://peps.python.org/pep-0659/
+- Ref: [modules/08-cpython-internals-and-bytecode.md](../modules/08-cpython-internals-and-bytecode.md#11-specializing-adaptive-interpreter-pep-659), https://peps.python.org/pep-0659/
 </details>
 
 ### Q-PYTHON-038 · CPython Internals & Bytecode · difficulty 2 · single
@@ -608,7 +608,7 @@ What problem do PEP 683 **Immortal Objects** solve in CPython?
 - Why not A: They do not change kernel heap fragmentation.
 - Why not C: Object longevity does not prevent system restarts.
 - Why not D: Immutability is governed by object type methods, not immortality.
-- Ref: [modules/08-cpython-internals-and-bytecode.md](../modules/08-cpython-internals-and-bytecode.md#3-memory-management-reference-counting--pep-683-immortal-objects), https://peps.python.org/pep-0683/
+- Ref: [modules/08-cpython-internals-and-bytecode.md](../modules/08-cpython-internals-and-bytecode.md#3-reference-counting--immortal-objects-pep-683), https://peps.python.org/pep-0683/
 </details>
 
 ### Q-PYTHON-039 · CPython Internals & Bytecode · difficulty 3 · single
@@ -638,7 +638,7 @@ What is `pymalloc` in CPython?
 - Why not A: Python's raw memory interface is `PyMem_RawMalloc`.
 - Why not C: Memory profiling is provided by `tracemalloc`.
 - Why not D: Cyclic GC is handled by the `gc` module, not `pymalloc`.
-- Ref: [modules/08-cpython-internals-and-bytecode.md](../modules/08-cpython-internals-and-bytecode.md#5-memory-allocator-hierarchy-pymalloc--mimalloc), https://docs.python.org/3/c-api/memory.html
+- Ref: [modules/08-cpython-internals-and-bytecode.md](../modules/08-cpython-internals-and-bytecode.md#5-memory-allocator-architecture-pymalloc--mimalloc), https://docs.python.org/3/c-api/memory.html
 </details>
 
 ---
@@ -655,7 +655,7 @@ What is the primary role of the Global Interpreter Lock (GIL) in standard CPytho
 - Why not A: Processes have separate address spaces and separate GILs.
 - Why not C: Database locks are managed by DBMS engines.
 - Why not D: Python does not perform static type checks at runtime.
-- Ref: [modules/09-concurrency-gil-threads-and-subinterpreters.md](../modules/09-concurrency-gil-threads-and-subinterpreters.md#1-the-global-interpreter-lock-gil-mechanics), https://wiki.python.org/moin/GlobalInterpreterLock
+- Ref: [modules/09-concurrency-gil-threads-and-subinterpreters.md](../modules/09-concurrency-gil-threads-and-subinterpreters.md#1-the-global-interpreter-lock-gil), https://wiki.python.org/moin/GlobalInterpreterLock
 </details>
 
 ### Q-PYTHON-042 · Concurrency: GIL, Threads & Subinterpreters · difficulty 2 · scenario
@@ -670,7 +670,7 @@ Two threads in standard CPython increment a shared variable `counter += 1` insid
 - Why not A: The GIL does not guarantee application-level atomicity.
 - Why not C: Integer immutability does not prevent name rebinding races.
 - Why not D: Thread preemption happens on all platforms.
-- Ref: [modules/09-concurrency-gil-threads-and-subinterpreters.md](../modules/09-concurrency-gil-threads-and-subinterpreters.md#3-thread-safety-in-pure-python-data-races-under-the-gil), https://docs.python.org/3/library/threading.html
+- Ref: [modules/09-concurrency-gil-threads-and-subinterpreters.md](../modules/09-concurrency-gil-threads-and-subinterpreters.md#23-the-false-sense-of-security-data-races-in-pure-python), https://docs.python.org/3/library/threading.html
 </details>
 
 ### Q-PYTHON-043 · Concurrency: GIL, Threads & Subinterpreters · difficulty 3 · single
@@ -685,7 +685,7 @@ How does PEP 703 Free-Threaded CPython (`python3.15t`) safely operate without a 
 - Why not A: Threads share process memory.
 - Why not C: Threads run truly in parallel across CPU cores.
 - Why not D: Cyclic GC is updated to operate concurrently.
-- Ref: [modules/09-concurrency-gil-threads-and-subinterpreters.md](../modules/09-concurrency-gil-threads-and-subinterpreters.md#2-pep-703--pep-779-free-threaded-python), https://peps.python.org/pep-0703/
+- Ref: [modules/09-concurrency-gil-threads-and-subinterpreters.md](../modules/09-concurrency-gil-threads-and-subinterpreters.md#2-free-threaded-cpython-pep-703--pep-779), https://peps.python.org/pep-0703/
 </details>
 
 ### Q-PYTHON-044 · Concurrency: GIL, Threads & Subinterpreters · difficulty 2 · single
@@ -700,7 +700,7 @@ What is the safest `multiprocessing` start method across all platforms for multi
 - Why not A: `fork` in multi-threaded programs duplicates locks held by other threads, causing deadlocks in the child.
 - Why not C: `exec` replaces the current process rather than spawning a worker pool.
 - Why not D: `forkserver` is safer than `fork`, but not universally supported across all platforms (e.g. Windows).
-- Ref: [modules/09-concurrency-gil-threads-and-subinterpreters.md](../modules/09-concurrency-gil-threads-and-subinterpreters.md#4-multiprocessing-start-methods-fork-vs-spawn-vs-forkserver), https://docs.python.org/3/library/multiprocessing.html#contexts-and-start-methods
+- Ref: [modules/09-concurrency-gil-threads-and-subinterpreters.md](../modules/09-concurrency-gil-threads-and-subinterpreters.md#31-start-methods-fork-vs-spawn-vs-forkserver), https://docs.python.org/3/library/multiprocessing.html#contexts-and-start-methods
 </details>
 
 ### Q-PYTHON-045 · Concurrency: GIL, Threads & Subinterpreters · difficulty 3 · single
@@ -715,7 +715,7 @@ What capability do subinterpreters with per-interpreter GILs (PEP 684 / PEP 734)
 - Why not A: Both run the same Python 3.15 runtime.
 - Why not C: OS threads schedule the subinterpreters.
 - Why not D: Subinterpreters have isolated namespaces and do not share global variables.
-- Ref: [modules/09-concurrency-gil-threads-and-subinterpreters.md](../modules/09-concurrency-gil-threads-and-subinterpreters.md#5-subinterpreters-and-per-interpreter-gil-pep-684--pep-734), https://peps.python.org/pep-0684/
+- Ref: [modules/09-concurrency-gil-threads-and-subinterpreters.md](../modules/09-concurrency-gil-threads-and-subinterpreters.md), https://peps.python.org/pep-0684/
 </details>
 
 ---
@@ -732,7 +732,7 @@ What architectural pattern forms the foundation of Python's `asyncio` event loop
 - Why not A: MVC is an application UI pattern.
 - Why not C: Blackboard is an AI / blackboard collaboration architecture.
 - Why not D: Active Record is a database ORM pattern.
-- Ref: [modules/10-asyncio-internals-and-structured-concurrency.md](../modules/10-asyncio-internals-and-structured-concurrency.md#1-the-reactor-pattern--the-asyncio-event-loop), https://docs.python.org/3/library/asyncio.html
+- Ref: [modules/10-asyncio-internals-and-structured-concurrency.md](../modules/10-asyncio-internals-and-structured-concurrency.md#1-the-asyncio-architecture-coroutines-tasks--event-loop), https://docs.python.org/3/library/asyncio.html
 </details>
 
 ### Q-PYTHON-047 · Asyncio & Structured Concurrency · difficulty 2 · scenario
@@ -747,7 +747,7 @@ Why does `asyncio.CancelledError` inherit from `BaseException` rather than `Exce
 - Why not B: Cancellation cancels the task, not the whole OS process.
 - Why not C: Exception hierarchy placement is a design choice in Python's standard library.
 - Why not D: Coroutines still require an active event loop.
-- Ref: [modules/10-asyncio-internals-and-structured-concurrency.md](../modules/10-asyncio-internals-and-structured-concurrency.md#3-cancellation-mechanics--cancellederror-lifecycle), https://docs.python.org/3/library/asyncio-exceptions.html#asyncio.CancelledError
+- Ref: [modules/10-asyncio-internals-and-structured-concurrency.md](../modules/10-asyncio-internals-and-structured-concurrency.md#3-cancellation-semantics--the-cancellederror-invariant), https://docs.python.org/3/library/asyncio-exceptions.html#asyncio.CancelledError
 </details>
 
 ### Q-PYTHON-048 · Asyncio & Structured Concurrency · difficulty 2 · single
@@ -762,7 +762,7 @@ What is the primary benefit of `asyncio.TaskGroup` over `asyncio.gather()`?
 - Why not A: `TaskGroup` runs coroutines on the single event loop thread.
 - Why not C: Tasks run concurrently, not serially.
 - Why not D: Coroutines still require `await`.
-- Ref: [modules/10-asyncio-internals-and-structured-concurrency.md](../modules/10-asyncio-internals-and-structured-concurrency.md#4-structured-concurrency-with-asynciotaskgroup), https://docs.python.org/3/library/asyncio-task.html#asyncio.TaskGroup
+- Ref: [modules/10-asyncio-internals-and-structured-concurrency.md](../modules/10-asyncio-internals-and-structured-concurrency.md#2-structured-concurrency-asynciotaskgroup), https://docs.python.org/3/library/asyncio-task.html#asyncio.TaskGroup
 </details>
 
 ### Q-PYTHON-049 · Asyncio & Structured Concurrency · difficulty 2 · scenario
@@ -777,7 +777,7 @@ How should a synchronous, CPU-bound or blocking I/O function be invoked from wit
 - Why not A: Direct invocation blocks the event loop thread for the duration of the call.
 - Why not C: `create_task()` expects a coroutine, not a regular blocking function.
 - Why not D: Raw threads are not awaited by the event loop and do not integrate results into the async workflow.
-- Ref: [modules/10-asyncio-internals-and-structured-concurrency.md](../modules/10-asyncio-internals-and-structured-concurrency.md#6-bridging-sync-and-async-asyncio-to_thread), https://docs.python.org/3/library/asyncio-task.html#asyncio.to_thread
+- Ref: [modules/10-asyncio-internals-and-structured-concurrency.md](../modules/10-asyncio-internals-and-structured-concurrency.md), https://docs.python.org/3/library/asyncio-task.html#asyncio.to_thread
 </details>
 
 ### Q-PYTHON-050 · Asyncio & Structured Concurrency · difficulty 3 · single
@@ -809,7 +809,7 @@ What is the default scope of a Pytest fixture if not explicitly specified?
 - Why not A: Module scope runs once per test file.
 - Why not B: Session scope runs once per entire pytest invocation.
 - Why not D: Class scope runs once per test class.
-- Ref: [modules/11-testing-pytest-and-hypothesis.md](../modules/11-testing-pytest-and-hypothesis.md#1-pytest-architecture-and-dependency-injection), https://docs.pytest.org/en/stable/how-to/fixtures.html#fixture-scopes
+- Ref: [modules/11-testing-pytest-and-hypothesis.md](../modules/11-testing-pytest-and-hypothesis.md#1-pytest-architecture-fixtures--dependency-injection), https://docs.pytest.org/en/stable/how-to/fixtures.html#fixture-scopes
 </details>
 
 ### Q-PYTHON-052 · Testing Practice: Pytest & Hypothesis · difficulty 2 · single
@@ -839,7 +839,7 @@ Why is `unittest.mock.create_autospec` preferred over standard `Mock()` or `Magi
 - Why not A: Mocks run in the test thread.
 - Why not C: Mock histories are kept in memory.
 - Why not D: Mocks are used alongside dependency injection.
-- Ref: [modules/11-testing-pytest-and-hypothesis.md](../modules/11-testing-pytest-and-hypothesis.md#4-mocking-discipline--preventing-mock-drift), https://docs.python.org/3/library/unittest.mock.html#auto-speccing
+- Ref: [modules/11-testing-pytest-and-hypothesis.md](../modules/11-testing-pytest-and-hypothesis.md), https://docs.python.org/3/library/unittest.mock.html#auto-speccing
 </details>
 
 ### Q-PYTHON-054 · Testing Practice: Pytest & Hypothesis · difficulty 2 · single
@@ -854,7 +854,7 @@ How do you verify in Pytest that a specific block of code raises a `ValueError` 
 - Why not A: `assert_raises` is an old unittest-style API.
 - Why not C: Manual try-except does not fail if no exception is raised unless extra assertions are written.
 - Why not D: Pytest has no `@pytest.mark.raises` decorator for this purpose.
-- Ref: [modules/11-testing-pytest-and-hypothesis.md](../modules/11-testing-pytest-and-hypothesis.md#5-negative-testing-and-exception-verification), https://docs.pytest.org/en/stable/reference/reference.html#pytest-raises
+- Ref: [modules/11-testing-pytest-and-hypothesis.md](../modules/11-testing-pytest-and-hypothesis.md#5-negative-testing--warning-contracts), https://docs.pytest.org/en/stable/reference/reference.html#pytest-raises
 </details>
 
 ### Q-PYTHON-055 · Testing Practice: Pytest & Hypothesis · difficulty 3 · single
@@ -869,7 +869,7 @@ In Pytest, how does fixture yield teardown behave when an exception occurs insid
 - Why not A: Pytest ensures teardown execution.
 - Why not C: Other tests continue running.
 - Why not D: Fixtures are torn down, not re-run on failure.
-- Ref: [modules/11-testing-pytest-and-hypothesis.md](../modules/11-testing-pytest-and-hypothesis.md#1-pytest-architecture-and-dependency-injection), https://docs.pytest.org/en/stable/how-to/fixtures.html#teardown-cleanup-yielding-fixture
+- Ref: [modules/11-testing-pytest-and-hypothesis.md](../modules/11-testing-pytest-and-hypothesis.md#1-pytest-architecture-fixtures--dependency-injection), https://docs.pytest.org/en/stable/how-to/fixtures.html#teardown-cleanup-yielding-fixture
 </details>
 
 ---
@@ -1117,7 +1117,7 @@ In a high-throughput streaming service, why is using `asyncio.Queue(maxsize=1000
 - Why not A: Memory exhaustion is the fatal issue, not queue CPU speed.
 - Why not C: Async queues operate in standard memory on the CPU.
 - Why not D: Both queue variants implement `get()`.
-- Ref: [modules/10-asyncio-internals-and-structured-concurrency.md](../modules/10-asyncio-internals-and-structured-concurrency.md#7-backpressure-and-queue-shutdown-pep-713), https://docs.python.org/3/library/asyncio-queue.html
+- Ref: [modules/10-asyncio-internals-and-structured-concurrency.md](../modules/10-asyncio-internals-and-structured-concurrency.md), https://docs.python.org/3/library/asyncio-queue.html
 </details>
 
 ### Q-PYTHON-072 · Cross-Cutting Architecture · difficulty 3 · single
@@ -1132,7 +1132,7 @@ What guarantees that an `async with asyncio.timeout(5.0):` block properly handle
 - Why not A: It bounds task execution, not process life.
 - Why not C: It runs on the event loop.
 - Why not D: Bytecode is not altered.
-- Ref: [modules/10-asyncio-internals-and-structured-concurrency.md](../modules/10-asyncio-internals-and-structured-concurrency.md#5-timeouts-and-deadlines-with-asynciotimeout), https://docs.python.org/3/library/asyncio-task.html#asyncio.timeout
+- Ref: [modules/10-asyncio-internals-and-structured-concurrency.md](../modules/10-asyncio-internals-and-structured-concurrency.md#4-modern-timeouts-asynciotimeout), https://docs.python.org/3/library/asyncio-task.html#asyncio.timeout
 </details>
 
 ### Q-PYTHON-073 · Cross-Cutting Architecture · difficulty 3 · single
@@ -1147,7 +1147,7 @@ What is the effect of setting `sys.set_int_max_str_digits(4300)` in Python 3.11+
 - Why not A: Pure integer arithmetic in memory remains arbitrarily large.
 - Why not C: Floats follow IEEE 754 64-bit precision.
 - Why not D: It is an interpreter-level DoS protection setting.
-- Ref: [modules/01-execution-model-and-tooling.md](../modules/01-execution-model-and-tooling.md#4-runtime-execution-cli-flags--configuration), https://docs.python.org/3/library/sys.html#sys.set_int_max_str_digits
+- Ref: [modules/01-execution-model-and-tooling.md](../modules/01-execution-model-and-tooling.md), https://docs.python.org/3/library/sys.html#sys.set_int_max_str_digits
 </details>
 
 ### Q-PYTHON-074 · Cross-Cutting Architecture · difficulty 3 · scenario
@@ -1162,7 +1162,7 @@ How does Python's `weakref` module prevent memory leaks in cache implementations
 - Why not A: Weak references are governed by object lifetime, not TTL timers.
 - Why not C: Weak references exist in process memory.
 - Why not D: Memory compression is not performed by `weakref`.
-- Ref: [modules/08-cpython-internals-and-bytecode.md](../modules/08-cpython-internals-and-bytecode.md#3-memory-management-reference-counting--pep-683-immortal-objects), https://docs.python.org/3/library/weakref.html
+- Ref: [modules/08-cpython-internals-and-bytecode.md](../modules/08-cpython-internals-and-bytecode.md#3-reference-counting--immortal-objects-pep-683), https://docs.python.org/3/library/weakref.html
 </details>
 
 ### Q-PYTHON-075 · Cross-Cutting Architecture · difficulty 3 · single
@@ -1247,7 +1247,7 @@ class EventNode:
         self.children.append(child)
         child._parent_ref = weakref.ref(self)
 ```
-- Ref: [modules/03-data-model-and-dunder-protocols.md](../modules/03-data-model-and-dunder-protocols.md#5-memory-optimization-with-__slots__), [modules/08-cpython-internals-and-bytecode.md](../modules/08-cpython-internals-and-bytecode.md#4-the-cyclic-garbage-collector)
+- Ref: [modules/03-data-model-and-dunder-protocols.md](../modules/03-data-model-and-dunder-protocols.md#5-memory-optimization-with-slots), [modules/08-cpython-internals-and-bytecode.md](../modules/08-cpython-internals-and-bytecode.md#4-the-cyclic-garbage-collector)
 </details>
 
 ---
@@ -1305,7 +1305,7 @@ async def ingest_pipeline(ws, db_pool, max_concurrency: int = 20, max_queue: int
         for w in workers:
             w.cancel()
 ```
-- Ref: [modules/10-asyncio-internals-and-structured-concurrency.md](../modules/10-asyncio-internals-and-structured-concurrency.md#4-structured-concurrency-with-asynciotaskgroup), [modules/10-asyncio-internals-and-structured-concurrency.md](../modules/10-asyncio-internals-and-structured-concurrency.md#7-backpressure-and-queue-shutdown-pep-713)
+- Ref: [modules/10-asyncio-internals-and-structured-concurrency.md](../modules/10-asyncio-internals-and-structured-concurrency.md#2-structured-concurrency-asynciotaskgroup), [modules/10-asyncio-internals-and-structured-concurrency.md](../modules/10-asyncio-internals-and-structured-concurrency.md)
 </details>
 
 ---
@@ -1351,7 +1351,7 @@ class ValidatedField[T]:
             raise TypeError(f"Expected {self.expected_type.__name__}, got {type(value).__name__}")
         setattr(instance, self.private_name, value)
 ```
-- Ref: [modules/04-descriptors-metaclasses-and-attributes.md](../modules/04-descriptors-metaclasses-and-attributes.md#3-the-__set_name__-protocol-pep-487), [modules/06-type-system-and-annotations.md](../modules/06-type-system-and-annotations.md#1-pep-695-type-parameter-syntax)
+- Ref: [modules/04-descriptors-metaclasses-and-attributes.md](../modules/04-descriptors-metaclasses-and-attributes.md#13-automatic-identifier-binding-set_name-pep-487), [modules/06-type-system-and-annotations.md](../modules/06-type-system-and-annotations.md#11-type-parameter-defaults-pep-696)
 </details>
 
 ---
@@ -1386,5 +1386,5 @@ You are designing a high-compute fraud detection engine that evaluates complex m
    - **Recommendation**: Deploy **Free-Threaded Python (`python3.15t`)** with `InterpreterPoolExecutor` fallback.
    - **Rationale**: For sub-10ms latency, the serialization overhead of `multiprocessing` IPC exceeds the budget. Shared memory access to fraud feature graphs in `python3.15t` allows 64 cores to process feature calculations with sub-millisecond thread handoffs.
    - **Migration**: Guard shared cache writes with reader-writer locks (`threading.Lock`), run test suites under ThreadSanitizer (`-X dev`), and ensure all native C/Rust dependencies publish free-threaded wheels.
-- Ref: [modules/09-concurrency-gil-threads-and-subinterpreters.md](../modules/09-concurrency-gil-threads-and-subinterpreters.md#2-pep-703--pep-779-free-threaded-python), [modules/09-concurrency-gil-threads-and-subinterpreters.md](../modules/09-concurrency-gil-threads-and-subinterpreters.md#5-subinterpreters-and-per-interpreter-gil-pep-684--pep-734)
+- Ref: [modules/09-concurrency-gil-threads-and-subinterpreters.md](../modules/09-concurrency-gil-threads-and-subinterpreters.md#2-free-threaded-cpython-pep-703--pep-779), [modules/09-concurrency-gil-threads-and-subinterpreters.md](../modules/09-concurrency-gil-threads-and-subinterpreters.md)
 </details>

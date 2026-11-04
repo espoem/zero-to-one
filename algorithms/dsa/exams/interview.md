@@ -858,7 +858,7 @@ What does the Rado-Edmonds Theorem prove regarding matroids?
 - Why not A: Matroids are combinatorial structures, not invertible functions.
 - Why not C: Matroids define independence systems, not universal computation.
 - Why not D: Kruskal's MST algorithm is a direct instance of the greedy algorithm operating on a graphic matroid.
-- Ref: [modules/11-greedy-algorithms-and-exchange-arguments.md](../modules/11-greedy-algorithms-and-exchange-arguments.md#6-matroids-and-the-rado-edmonds-theorem)
+- Ref: [modules/11-greedy-algorithms-and-exchange-arguments.md](../modules/11-greedy-algorithms-and-exchange-arguments.md)
 </details>
 
 ---

@@ -2,7 +2,7 @@
 
 > **Track:** `technologies/react` · **React:** 19.3.1 · **Proofs:** [`examples/06-suspense-ssr/suspense-ssr.test.tsx`](../examples/06-suspense-ssr/suspense-ssr.test.tsx), helper [`examples/_shared/ssr.ts`](../examples/_shared/ssr.ts)
 >
-> **Cross-links.** Promise and job-queue semantics are owned by [languages/javascript](../../../languages/javascript/README.md); Node streams and backpressure by [technologies/nodejs](../../nodejs/README.md); HTTP chunked transfer, HTTP/2 streams, compression and caching of streamed responses by [architecture/networking](../../../architecture/networking/README.md). Typing `use<T>(Usable<T>)` is in [TypeScript M12](../../../languages/typescript/modules/12-react-19-and-modern-react-typescript.md).
+> **Cross-links.** Promise and job-queue semantics are owned by [languages/javascript](../../../languages/javascript/README.md); Node streams and backpressure by [technologies/nodejs](../../nodejs/README.md); HTTP chunked transfer, HTTP/2 streams, compression and caching of streamed responses by [architecture/networking](../../../architecture/networking/README.md). Typing `use<T>(Usable<T>)` is in [TypeScript M12](../../../languages/typescript/modules/12-typing-ui-frameworks.md).
 
 Suspense is React's answer to "what should the UI show while some of it is not ready?". It is one mechanism with three uses that this module treats together: **data and code loading on the client**, **streaming HTML from the server**, and **progressive hydration**. We define the suspension protocol (`use(promise)`), the reveal rules of boundaries, the HTML wire format of streaming SSR, hydration and its mismatch failure mode, partial pre-rendering (19.2) and the `browser()` opt-out (19.3).
 

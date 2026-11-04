@@ -282,7 +282,7 @@ In `<For each={items()} keyed={false}>{(item, i) => …}</For>`, what are `item`
 **B.** Non-keyed rows are slots: the index is stable, the item can change.
 - Why not A: that is the default (identity-keyed) mode.
 - Why not C: that is the custom-key mode.
-- Ref: [modules/04-control-flow-and-composition.md](../modules/04-control-flow-and-composition.md#2-for-one-list-primitive-three-keying-modes)
+- Ref: [modules/04-control-flow-and-composition.md](../modules/04-control-flow-and-composition.md#2--one-list-primitive-three-keying-modes)
 </details>
 
 ### Q-SOLID-019 · D2 · difficulty 2 · scenario
@@ -423,7 +423,7 @@ A profile has rendered. The user id changes and the new profile is loading. With
 **B.** `<Loading>` covers first load; later changes are held and the old consistent frame stays.
 - Why not A: that needs `on={id()}`.
 - Why not D: holds prevent torn frames.
-- Ref: [modules/06-colorless-async.md](../modules/06-colorless-async.md#2-loading-branch-readiness-not-is-fetching)
+- Ref: [modules/06-colorless-async.md](../modules/06-colorless-async.md#2--branch-readiness-not-is-fetching)
 </details>
 
 ### Q-SOLID-030 · D4 · difficulty 2 · single
@@ -494,7 +494,7 @@ In `<Reveal>` (default order) with boundaries A then B, B's data resolves first.
 <details><summary>Answer</summary>
 
 **B.** Sequential reveal: later boundaries wait for earlier ones.
-- Ref: [modules/06-colorless-async.md](../modules/06-colorless-async.md#23-reveal-coordinating-siblings), RFC 03
+- Ref: [modules/06-colorless-async.md](../modules/06-colorless-async.md#23--coordinating-siblings), RFC 03
 </details>
 
 ### Q-SOLID-035 · D4 · difficulty 2 · single

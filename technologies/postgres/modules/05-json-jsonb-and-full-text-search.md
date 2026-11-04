@@ -234,7 +234,7 @@ flowchart TD
 ```
 
 > [!NOTE]
-> For distributed Lucene architectures, BM25 scoring engines, cross-cluster replication, and high-volume tokenization pipelines, consult the dedicated track [technologies/elasticsearch](../../technologies/elasticsearch/README.md).
+> For distributed Lucene architectures, BM25 scoring engines, cross-cluster replication, and high-volume tokenization pipelines, consult the dedicated track [technologies/elasticsearch](../../elasticsearch/README.md).
 
 ---
 

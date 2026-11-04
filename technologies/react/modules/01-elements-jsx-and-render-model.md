@@ -2,7 +2,7 @@
 
 > **Track:** `technologies/react` · **React:** 19.3.1 · **Proofs:** [`examples/01-elements/elements.test.tsx`](../examples/01-elements/elements.test.tsx)
 >
-> **Typing JSX** (the `JSX` namespace, `jsxImportSource`, `ReactNode` vs `ReactElement`, `ComponentProps<'button'>`) is owned by the TypeScript track: see [TypeScript module 12](../../../languages/typescript/modules/12-react-19-and-modern-react-typescript.md). This module covers what JSX *does at runtime*.
+> **Typing JSX** (the `JSX` namespace, `jsxImportSource`, `ReactNode` vs `ReactElement`, `ComponentProps<'button'>`) is owned by the TypeScript track: see [TypeScript module 12](../../../languages/typescript/modules/12-typing-ui-frameworks.md). This module covers what JSX *does at runtime*.
 
 React's whole programming model rests on one idea: **a component is a function from inputs to a description of UI, and React — not your code — decides when to call it and what to do with the description.** This module makes that idea precise. We start with the data structure your JSX produces (the *element*), follow it through the compiler and the runtime, define the contracts React expects from your components (purity, immutability, identity), and finish with the render → commit pipeline that the rest of the track takes apart piece by piece.
 
@@ -196,7 +196,7 @@ function Input({ ref, ...props }: Props & { ref?: React.Ref<HTMLInputElement> })
 }
 ```
 
-The [`remove-forward-ref` codemod](https://github.com/reactjs/react-codemod) automates this. Pitfall: a component that spreads `{...props}` onto a DOM node now also spreads `ref` — usually what you want, but check wrappers that previously relied on `ref` being filtered out. Typing `ref` as a prop is covered in [TypeScript M12](../../../languages/typescript/modules/12-react-19-and-modern-react-typescript.md).
+The [`remove-forward-ref` codemod](https://github.com/reactjs/react-codemod) automates this. Pitfall: a component that spreads `{...props}` onto a DOM node now also spreads `ref` — usually what you want, but check wrappers that previously relied on `ref` being filtered out. Typing `ref` as a prop is covered in [TypeScript M12](../../../languages/typescript/modules/12-typing-ui-frameworks.md).
 
 ### 3.4 Immutability
 

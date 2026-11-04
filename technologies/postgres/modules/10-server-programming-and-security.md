@@ -3,7 +3,7 @@
 Welcome to **Module 10** of the PostgreSQL curriculum. This module provides complete, academically grounded, and staff-level security and server programming expertise for PostgreSQL 18. We examine the procedural execution engine (PL/pgSQL), dissect functions versus procedures, evaluate volatility categories (`IMMUTABLE`, `STABLE`, `VOLATILE`), construct high-throughput triggers with transition tables, configure role-based access control (RBAC) and default privileges, neutralize `SECURITY DEFINER` search-path hijacking vulnerabilities, enforce defense-in-depth multi-tenant Row-Level Security (RLS), and implement PostgreSQL 18 authentication standards including OAuth 2.0.
 
 > [!NOTE]
-> For abstract cryptographic primitives, OAuth 2.1/OIDC protocol flows, PKI certificate authority lifecycles, and STRIDE threat modeling, consult the foundational track [architecture/security-identity](../../architecture/security-identity/README.md). This module covers PostgreSQL's concrete physical implementation, in-database authorization models, and SQL injection defenses.
+> For abstract cryptographic primitives, OAuth 2.1/OIDC protocol flows, PKI certificate authority lifecycles, and STRIDE threat modeling, consult the foundational track [architecture/security-identity](../../../architecture/security-identity/README.md). This module covers PostgreSQL's concrete physical implementation, in-database authorization models, and SQL injection defenses.
 
 ---
 

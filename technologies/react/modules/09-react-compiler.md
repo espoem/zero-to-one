@@ -2,7 +2,7 @@
 
 > **Track:** `technologies/react` · **React:** 19.3.1 · **Compiler:** `babel-plugin-react-compiler@1.0.0` · **Lint:** `eslint-plugin-react-hooks@7.1.1` · **Proofs:** [`examples/09-compiler/compiler.test.tsx`](../examples/09-compiler/compiler.test.tsx), helpers [`examples/09-compiler/compile.ts`](../examples/09-compiler/compile.ts)
 >
-> **Cross-links.** How TypeScript's `readonly` and immutability types interact with the compiler's assumptions: [TypeScript M12](../../../languages/typescript/modules/12-react-19-and-modern-react-typescript.md). Compiler theory in general (SSA, data-flow analysis) is standard compiler material; this module covers only what React's compiler does with it.
+> **Cross-links.** How TypeScript's `readonly` and immutability types interact with the compiler's assumptions: [TypeScript M12](../../../languages/typescript/modules/12-typing-ui-frameworks.md). Compiler theory in general (SSA, data-flow analysis) is standard compiler material; this module covers only what React's compiler does with it.
 
 The React Compiler is a build-time Babel plugin that **automatically memoises** components and hooks. It reached **1.0 on 2025-10-07** ([React blog](https://react.dev/blog/2025/10/07/react-compiler-1)). It replaces most hand-written `useMemo`, `useCallback` and `memo`, and — unlike hand-written memoisation — it can memoise *conditionally* and at a granularity finer than a hook. It relies on your code obeying the **Rules of React**; where it can prove a violation it skips the function, and where it cannot prove one it may compile code whose behaviour then depends on luck. This module explains the pipeline, the generated code, the preconditions, the lint rules that enforce them, configuration and adoption.
 

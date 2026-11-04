@@ -2,7 +2,7 @@
 
 > **Track:** `technologies/react` · **React:** 19.3.1 · **Proofs:** [`examples/03-state/state.test.tsx`](../examples/03-state/state.test.tsx), [`examples/03-state/fetch-machine.ts`](../examples/03-state/fetch-machine.ts)
 >
-> **Cross-links.** Lexical scope and closures as a language mechanism are owned by [languages/javascript](../../../languages/javascript/README.md); this module covers only how React's render model *creates* closures. Hook signatures, `useState<T>` inference, `useRef` overloads and discriminated-union action types are typed in [TypeScript M12](../../../languages/typescript/modules/12-react-19-and-modern-react-typescript.md).
+> **Cross-links.** Lexical scope and closures as a language mechanism are owned by [languages/javascript](../../../languages/javascript/README.md); this module covers only how React's render model *creates* closures. Hook signatures, `useState<T>` inference, `useRef` overloads and discriminated-union action types are typed in [TypeScript M12](../../../languages/typescript/modules/12-typing-ui-frameworks.md).
 
 Hooks look like ordinary function calls, but they are a protocol between your component and the reconciler. This module opens the protocol: where hook state lives (a linked list on the fiber), how updates are queued and processed (circular queues with lanes), why every render sees a frozen **snapshot** (and therefore why closures go stale), how to design state with reducers and state machines, and how to read state that React does not own without **tearing**.
 

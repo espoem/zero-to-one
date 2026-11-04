@@ -1,6 +1,6 @@
 # Module 09: TLS 1.3 Wire Architecture, Handshake Mechanics & Post-Quantum Cryptography
 
-Transport Layer Security (TLS) is the ubiquitous cryptographic protocol securing communications across the modern Internet. While foundational cryptographic theory (X.509 validation, certificate lifecycle, PKI trust stores, and mutual TLS identity) is owned by [`architecture/security-identity`](../security-identity/), this module dissects the **wire protocol mechanics**: the elimination of legacy cipher suites, the 1-RTT handshake state machine, the HKDF key derivation schedule, 0-RTT Early Data and its replay vulnerabilities (RFC 8470), Encrypted Client Hello (ECH / RFC 9849), and the operational impact of Post-Quantum Hybrid Key Exchange (RFC 10024) on MTU fragmentation and middlebox traversal.
+Transport Layer Security (TLS) is the ubiquitous cryptographic protocol securing communications across the modern Internet. While foundational cryptographic theory (X.509 validation, certificate lifecycle, PKI trust stores, and mutual TLS identity) is owned by [`architecture/security-identity`](../../security-identity/), this module dissects the **wire protocol mechanics**: the elimination of legacy cipher suites, the 1-RTT handshake state machine, the HKDF key derivation schedule, 0-RTT Early Data and its replay vulnerabilities (RFC 8470), Encrypted Client Hello (ECH / RFC 9849), and the operational impact of Post-Quantum Hybrid Key Exchange (RFC 10024) on MTU fragmentation and middlebox traversal.
 
 ---
 

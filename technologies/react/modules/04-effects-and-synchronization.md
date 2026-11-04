@@ -2,7 +2,7 @@
 
 > **Track:** `technologies/react` · **React:** 19.3.1 · **Proofs:** [`examples/04-effects/effects.test.tsx`](../examples/04-effects/effects.test.tsx)
 >
-> **Cross-links.** Where effects run relative to tasks, microtasks, `requestAnimationFrame` and paint is the HTML event loop, owned by [languages/javascript](../../../languages/javascript/README.md); the browser's style → layout → paint pipeline is owned by [languages/css](../../../languages/css/README.md). Typing effect callbacks, ref callbacks and `useEffectEvent` is in [TypeScript M12](../../../languages/typescript/modules/12-react-19-and-modern-react-typescript.md).
+> **Cross-links.** Where effects run relative to tasks, microtasks, `requestAnimationFrame` and paint is the HTML event loop, owned by [languages/javascript](../../../languages/javascript/README.md); the browser's style → layout → paint pipeline is owned by [languages/css](../../../languages/css/README.md). Typing effect callbacks, ref callbacks and `useEffectEvent` is in [TypeScript M12](../../../languages/typescript/modules/12-typing-ui-frameworks.md).
 
 Rendering computes *what the UI should look like*. Effects are how a component **synchronises something outside React** — a subscription, a socket, a DOM measurement, a third-party widget, a timer — with what was rendered. This module gives a precise definition of an effect, the exact commit-time order of the three effect kinds and ref callbacks, the Strict Mode re-run (including the 19.3 hydration change), the React 19 ref-cleanup protocol, `useEffectEvent` (stable since 19.2), and the long list of cases where an effect is the wrong tool.
 

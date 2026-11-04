@@ -20,7 +20,7 @@ Which of the following describes the fundamental distinction between an asynchro
 - Why not A: In the standard asynchronous model, messages sent across non-faulty links are eventually delivered (they are not dropped indefinitely), but no time bound can be placed on arrival.
 - Why not C: In an asynchronous network, an arbitrary delay is indistinguishable from a node crash, making perfect failure detection impossible.
 - Why not D: Physical clocks cannot be synchronized in an asynchronous model.
-- Ref: [modules/01-system-models-and-impossibility.md](../modules/01-system-models-and-impossibility.md#timing-models), Dwork, Lynch, Stockmeyer (1988)
+- Ref: [modules/01-system-models-and-impossibility.md](../modules/01-system-models-and-impossibility.md#2-network-timing-models), Dwork, Lynch, Stockmeyer (1988)
 </details>
 
 #### Q-DIST-002 · Impossibility Proofs · difficulty 2 · scenario
@@ -35,7 +35,7 @@ In the classic Two Generals Problem, General A sends a message $m_1$ ("Attack at
 - Why not A: Two Generals concerns message omission, not Byzantine arbitrary behavior.
 - Why not C: The problem is a foundational mathematical result, independent of transport protocols like TCP.
 - Why not D: Time drift is irrelevant to the message-loss impossibility proof.
-- Ref: [modules/01-system-models-and-impossibility.md](../modules/01-system-models-and-impossibility.md#the-two-generals-problem), Gray (1978)
+- Ref: [modules/01-system-models-and-impossibility.md](../modules/01-system-models-and-impossibility.md#3-the-two-generals-problem-consensus-over-unreliable-channels), Gray (1978)
 </details>
 
 #### Q-DIST-003 · Impossibility Proofs · difficulty 3 · single
@@ -50,7 +50,7 @@ What is the precise statement and consequence of the Fischer-Lynch-Paterson (FLP
 - Why not A: FLP proves impossibility for even $f = 1$; majority quorums cannot circumvent FLP in pure asynchronous models without timeouts, randomization, or partial synchrony.
 - Why not C: FLP applies to crash faults in asynchronous systems, not synchronous Byzantine rounds.
 - Why not D: This confuses FLP with CAP/PACELC.
-- Ref: [modules/01-system-models-and-impossibility.md](../modules/01-system-models-and-impossibility.md#flp-impossibility-result), Fischer, Lynch, Paterson (1985)
+- Ref: [modules/01-system-models-and-impossibility.md](../modules/01-system-models-and-impossibility.md#4-the-flp-impossibility-theorem), Fischer, Lynch, Paterson (1985)
 </details>
 
 #### Q-DIST-004 · CAP & PACELC · difficulty 1 · single
@@ -63,7 +63,7 @@ In Daniel Abadi's PACELC theorem, what does the acronym stand for?
 
 **A.** PACELC expands the CAP theorem by observing that partitions are rare: If there is a **P**artition, how does your system trade off **A**vailability versus **C**onsistency? **E**lse (during normal failure-free operation), how does your system trade off **L**atency versus **C**onsistency?
 - Why not B, C, D: These are fictitious expansions.
-- Ref: [modules/01-system-models-and-impossibility.md](../modules/01-system-models-and-impossibility.md#pacelc-beyond-binary-cap), Abadi (2012)
+- Ref: [modules/01-system-models-and-impossibility.md](../modules/01-system-models-and-impossibility.md#5-cap-theorem-formal-gilbert-lynch-statement-and-pacelc), Abadi (2012)
 </details>
 
 #### Q-DIST-005 · Formal Properties · difficulty 2 · single
@@ -78,7 +78,7 @@ In Lamport's classification of distributed system properties, which of the follo
 - Why not A: The classifications are inverted.
 - Why not C: Termination in under 100ms is a timed safety property, not pure liveness.
 - Why not D: Encryption is a safety invariant.
-- Ref: [modules/01-system-models-and-impossibility.md](../modules/01-system-models-and-impossibility.md#safety-vs-liveness), Alpern & Schneider (1985)
+- Ref: [modules/01-system-models-and-impossibility.md](../modules/01-system-models-and-impossibility.md#6-safety-vs-liveness-lamports-dual-axioms), Alpern & Schneider (1985)
 </details>
 
 ---
@@ -97,7 +97,7 @@ A payments service experiences a network timeout while calling a third-party bil
 - Why not A: TCP state is ephemeral and connection-scoped; it does not deduplicate across distinct connections.
 - Why not C: 2PC requires an explicit coordinator protocol; standard HTTP POSTs do not participate in 2PC.
 - Why not D: Throwing an error in the client does not alter the fact that the remote server already executed the charge.
-- Ref: [modules/02-networks-rpc-and-failure-detection.md](../modules/02-networks-rpc-and-failure-detection.md#at-most-once-rpc-mechanics), Birrell & Nelson (1984)
+- Ref: [modules/02-networks-rpc-and-failure-detection.md](../modules/02-networks-rpc-and-failure-detection.md), Birrell & Nelson (1984)
 </details>
 
 #### Q-DIST-007 · Jitter & Retries · difficulty 2 · single
@@ -112,7 +112,7 @@ In a large distributed microservice mesh experiencing downstream database overlo
 - Why not B: Calculating backoff sleep delays takes negligible CPU cycles.
 - Why not C: Jitter modifies the timing delay, not the payload size.
 - Why not D: Application-layer retry logic operates above the transport layer.
-- Ref: [modules/02-networks-rpc-and-failure-detection.md](../modules/02-networks-rpc-and-failure-detection.md#retry-strategies-and-jitter), Brooker (AWS Architecture Blog 2015)
+- Ref: [modules/02-networks-rpc-and-failure-detection.md](../modules/02-networks-rpc-and-failure-detection.md#jitter-strategies-aws-architecture--marc-brooker), Brooker (AWS Architecture Blog 2015)
 </details>
 
 #### Q-DIST-008 · Metastable Failures · difficulty 3 · scenario
@@ -127,7 +127,7 @@ A downstream cache cluster restarts after a power failure. During the reboot, al
 - Why not A: Nodes are not malicious or compromised; they are simply overloaded.
 - Why not C: The database is thrashing under CPU saturation, not blocked in a cyclic lock dependency.
 - Why not D: There is no partitioning of consensus leaders.
-- Ref: [modules/02-networks-rpc-and-failure-detection.md](../modules/02-networks-rpc-and-failure-detection.md#metastable-failures-and-retry-storms), Bronson et al. (OSDI 2022)
+- Ref: [modules/02-networks-rpc-and-failure-detection.md](../modules/02-networks-rpc-and-failure-detection.md#3-retries-backoff-and-metastable-failures), Bronson et al. (OSDI 2022)
 </details>
 
 #### Q-DIST-009 · Failure Detection · difficulty 2 · single
@@ -142,7 +142,7 @@ How does the $\Phi$-Accrual Failure Detector (Hayashibara et al.) differ from a 
 - Why not A: It is a local statistical detector, not a consensus protocol.
 - Why not C: FLP proves that in asynchronous networks, false positives cannot be eliminated if crash faults are to be detected in finite time.
 - Why not D: It measures local time intervals between received heartbeats; no physical clock synchronization is needed.
-- Ref: [modules/02-networks-rpc-and-failure-detection.md](../modules/02-networks-rpc-and-failure-detection.md#phi-accrual-failure-detectors), Hayashibara et al. (SRDS 2004)
+- Ref: [modules/02-networks-rpc-and-failure-detection.md](../modules/02-networks-rpc-and-failure-detection.md#4-failure-detectors-from-static-timeouts-to-phi-accrual), Hayashibara et al. (SRDS 2004)
 </details>
 
 #### Q-DIST-010 · Gossip Protocols · difficulty 2 · single
@@ -157,7 +157,7 @@ In the SWIM (Structured Weakly-Consistent Infection-Style Process Group Membersh
 - Why not B: Declaring dead immediately without indirect probing causes severe false positives on transient packet drops.
 - Why not C: SWIM is decentralized and peer-to-peer; it does not use ZooKeeper.
 - Why not D: ICMP does not check process-level health and does not scale in distributed groups.
-- Ref: [modules/02-networks-rpc-and-failure-detection.md](../modules/02-networks-rpc-and-failure-detection.md#swim-gossip-protocol), Das, Gupta, Motivala (DSN 2002)
+- Ref: [modules/02-networks-rpc-and-failure-detection.md](../modules/02-networks-rpc-and-failure-detection.md#6-the-swim-gossip-protocol), Das, Gupta, Motivala (DSN 2002)
 </details>
 
 ---
@@ -176,7 +176,7 @@ Two distinct database nodes, Node 1 and Node 2, synchronize their physical time 
 - Why not A: LWW compares timestamps, not physical UTC reality.
 - Why not C: Standard LWW storage systems (like Apache Cassandra) do not detect clock anomalies or throw exceptions.
 - Why not D: NTP does not reset database journals.
-- Ref: [modules/03-time-clocks-and-ordering.md](../modules/03-time-clocks-and-ordering.md#physical-clocks-and-skew), Kleppmann (DDIA 2e Chapter 8)
+- Ref: [modules/03-time-clocks-and-ordering.md](../modules/03-time-clocks-and-ordering.md#1-physical-clocks-skew-drift-and-non-monotonicity), Kleppmann (DDIA 2e Chapter 8)
 </details>
 
 #### Q-DIST-012 · Logical Clocks · difficulty 2 · single
@@ -191,7 +191,7 @@ Given Lamport timestamps $L(a)$ and $L(b)$ for two events $a$ and $b$, what can 
 - Why not A: Lamport clocks cannot distinguish causal dependency from concurrency.
 - Why not B: Lamport logical time is completely decoupled from physical real time.
 - Why not D: Events can occur on distinct nodes in the cluster.
-- Ref: [modules/03-time-clocks-and-ordering.md](../modules/03-time-clocks-and-ordering.md#lamport-timestamps), Lamport (CACM 1978)
+- Ref: [modules/03-time-clocks-and-ordering.md](../modules/03-time-clocks-and-ordering.md#1-lamport-logical-clocks-scalar), Lamport (CACM 1978)
 </details>
 
 #### Q-DIST-013 · Vector Clocks · difficulty 2 · scenario
@@ -206,7 +206,7 @@ In a 3-node cluster ($A, B, C$), event $x$ has vector timestamp $V(x) = [A: 2, B
 - Why not A: $V(x)[B] < V(y)[B]$ contradicts $x \to y$.
 - Why not B: $V(x)[A] > V(y)[A]$ contradicts $y \to x$.
 - Why not D: The vectors have different values.
-- Ref: [modules/03-time-clocks-and-ordering.md](../modules/03-time-clocks-and-ordering.md#vector-clocks), Mattern (1988), Fidge (1988)
+- Ref: [modules/03-time-clocks-and-ordering.md](../modules/03-time-clocks-and-ordering.md#3-logical-clocks-lamport-vs-vector-clocks), Mattern (1988), Fidge (1988)
 </details>
 
 #### Q-DIST-014 · Google Spanner TrueTime · difficulty 3 · single
@@ -221,7 +221,7 @@ In Google Spanner, the TrueTime API returns a time interval $[t_{\text{earliest}
 - Why not A: Spanner uses timestamps to serve read-only transactions without acquiring locks or running Paxos rounds.
 - Why not C: Spanner requires GPS receivers and atomic rubidium clocks in each datacenter to enforce a strict $\epsilon$ bound.
 - Why not D: Logical Lamport clocks cannot enforce real-time external consistency across disconnected clients.
-- Ref: [modules/03-time-clocks-and-ordering.md](../modules/03-time-clocks-and-ordering.md#google-spanner-truetime), Corbett et al. (OSDI 2012)
+- Ref: [modules/03-time-clocks-and-ordering.md](../modules/03-time-clocks-and-ordering.md#5-google-spanners-truetime-and-commit-wait), Corbett et al. (OSDI 2012)
 </details>
 
 #### Q-DIST-015 · Fencing Tokens · difficulty 2 · scenario
@@ -236,7 +236,7 @@ Client 1 acquires a distributed lock with a 10-second TTL from a coordination se
 - Why not A: Storage nodes cannot rely on physical clocks due to skew and drift.
 - Why not C: Client 1 is unaware that its lock expired, so it has no reason to contact Client 2.
 - Why not D: Operating systems do not introspect application-level distributed lock semantics.
-- Ref: [modules/03-time-clocks-and-ordering.md](../modules/03-time-clocks-and-ordering.md#gc-pauses-and-fencing-tokens), Kleppmann (2016)
+- Ref: [modules/03-time-clocks-and-ordering.md](../modules/03-time-clocks-and-ordering.md#6-distributed-leases-gc-pauses-and-fencing-tokens), Kleppmann (2016)
 </details>
 
 #### Q-DIST-016 · Hybrid Logical Clocks · difficulty 2 · single
@@ -251,7 +251,7 @@ What is the primary motivation for Hybrid Logical Clocks (HLC, Kulkarni et al.) 
 - Why not A: HLC is an algorithmic software clock protocol.
 - Why not C: HLC establishes a total order; vector clocks are still required to detect concurrent multi-writer conflicts.
 - Why not D: Zero-RTT consensus violates fundamental FLP/Paxos bounds.
-- Ref: [modules/03-time-clocks-and-ordering.md](../modules/03-time-clocks-and-ordering.md#hybrid-logical-clocks-hlc), Kulkarni et al. (2014)
+- Ref: [modules/03-time-clocks-and-ordering.md](../modules/03-time-clocks-and-ordering.md#4-hybrid-logical-clocks-hlc), Kulkarni et al. (2014)
 </details>
 
 ---
@@ -270,7 +270,7 @@ According to the formal definition of Linearizability by Maurice Herlihy and Jea
 - Why not A: Quorum systems can be linearizable without 100% node acknowledgments.
 - Why not C: This describes database serializability, not linearizability of concurrent objects.
 - Why not D: Linearizability is designed specifically for asynchronous, distributed systems without shared clocks.
-- Ref: [modules/04-consistency-models-and-linearizability.md](../modules/04-consistency-models-and-linearizability.md#formal-definition-herlihy-wing-1990), Herlihy & Wing (ACM TOPLAS 1990)
+- Ref: [modules/04-consistency-models-and-linearizability.md](../modules/04-consistency-models-and-linearizability.md#1-linearizability-formal-herlihy-wing-definition), Herlihy & Wing (ACM TOPLAS 1990)
 </details>
 
 #### Q-DIST-018 · Serializability vs Linearizability · difficulty 2 · single
@@ -285,7 +285,7 @@ What is the precise difference between **Serializability** (from database transa
 - Why not B: Serializability does not enforce real-time precedence; an execution can be serializable without being linearizable.
 - Why not C: Both are safety properties.
 - Why not D: The definitions are mathematical specifications, independent of implementation protocols.
-- Ref: [modules/04-consistency-models-and-linearizability.md](../modules/04-consistency-models-and-linearizability.md#serializability-vs-linearizability), Kleppmann (DDIA 2e Chapter 7 & 9)
+- Ref: [modules/04-consistency-models-and-linearizability.md](../modules/04-consistency-models-and-linearizability.md#6-interview-drill-consistency-models--linearizability), Kleppmann (DDIA 2e Chapter 7 & 9)
 </details>
 
 #### Q-DIST-019 · Linearizability Checking · difficulty 3 · scenario
@@ -303,7 +303,7 @@ Is this history linearizable, and why?
 - Why not A: The operations are strictly non-overlapping in time ($30 < 35$); they are not concurrent.
 - Why not C: Eventual consistency is a weaker model; the question asks whether the trace is *linearizable*.
 - Why not D: Linearizability is non-blocking and does not mandate mutexes.
-- Ref: [modules/04-consistency-models-and-linearizability.md](../modules/04-consistency-models-and-linearizability.md#linearizability-verification-wgl-algorithm), Wing & Gong (1993)
+- Ref: [modules/04-consistency-models-and-linearizability.md](../modules/04-consistency-models-and-linearizability.md#5-algorithmic-verification-the-wing-gong-wgl-algorithm), Wing & Gong (1993)
 </details>
 
 #### Q-DIST-020 · Linearizability Verification · difficulty 3 · single
@@ -318,7 +318,7 @@ In the Wing-Gong (WGL) linearizability checking algorithm, what computational co
 - Why not A: A single topological sort cannot evaluate all valid overlapping interleavings.
 - Why not B: Timestamps do not resolve overlapping concurrent windows.
 - Why not D: Finite traces have a finite permutation space, making the problem decidable.
-- Ref: [modules/04-consistency-models-and-linearizability.md](../modules/04-consistency-models-and-linearizability.md#linearizability-verification-wgl-algorithm), Gibbons & Korach (IEEE TPDS 1997)
+- Ref: [modules/04-consistency-models-and-linearizability.md](../modules/04-consistency-models-and-linearizability.md#5-algorithmic-verification-the-wing-gong-wgl-algorithm), Gibbons & Korach (IEEE TPDS 1997)
 </details>
 
 #### Q-DIST-021 · Session Guarantees · difficulty 2 · single
@@ -333,7 +333,7 @@ A user updates their profile picture on a social network. Upon refreshing the pa
 - Why not A: Monotonic Writes guarantees that a process's writes are serialized in the order they were submitted.
 - Why not B: Writes-Follow-Reads guarantees that if a process reads version $v$ and writes $w$, $w$ is serialized after $v$.
 - Why not D: Profile picture update involves a single user record, not multi-register atomic snapshots.
-- Ref: [modules/04-consistency-models-and-linearizability.md](../modules/04-consistency-models-and-linearizability.md#session-guarantees), Terry et al. (Bayou, 1994)
+- Ref: [modules/04-consistency-models-and-linearizability.md](../modules/04-consistency-models-and-linearizability.md#3-client-session-guarantees), Terry et al. (Bayou, 1994)
 </details>
 
 #### Q-DIST-022 · Composability · difficulty 2 · single
@@ -348,7 +348,7 @@ What is the **Locality (P-Compositionality)** property of Linearizability, and h
 - Why not B: Locality in this context refers to mathematical decomposition, not disk hardware.
 - Why not C: "P-compositionality" refers to property composition, not node partitioning.
 - Why not D: It is sequential consistency that fails to compose, not linearizability.
-- Ref: [modules/04-consistency-models-and-linearizability.md](../modules/04-consistency-models-and-linearizability.md#formal-definition-herlihy-wing-1990), Herlihy & Wing (1990)
+- Ref: [modules/04-consistency-models-and-linearizability.md](../modules/04-consistency-models-and-linearizability.md#1-linearizability-formal-herlihy-wing-definition), Herlihy & Wing (1990)
 </details>
 
 ---
@@ -367,7 +367,7 @@ In asynchronous primary-backup replication, what risk is fundamentally accepted 
 - Why not A: Asynchronous replication explicitly returns *before* backups acknowledge.
 - Why not C: Primary CPU overhead is $O(N)$ for streaming to $N$ replicas.
 - Why not D: Backups can serve read traffic (subject to replication lag).
-- Ref: [modules/05-replication-protocols-and-quorums.md](../modules/05-replication-protocols-and-quorums.md#primary-backup-replication), Kleppmann (DDIA 2e Chapter 5)
+- Ref: [modules/05-replication-protocols-and-quorums.md](../modules/05-replication-protocols-and-quorums.md#1-primary-backup-replication), Kleppmann (DDIA 2e Chapter 5)
 </details>
 
 #### Q-DIST-024 · Chain Replication · difficulty 2 · scenario
@@ -382,7 +382,7 @@ In standard Chain Replication (Schneider, van Renesse 2004), client writes are s
 - Why not A: Intermediate nodes or the head contain uncommitted writes that may still fail or be rolled back, causing dirty/unlinearizable reads.
 - Why not C: The head sees writes before they are committed; reading from the head would expose uncommitted state.
 - Why not D: Chain replication does not use majority quorums; its strength is $O(1)$ single-node reads at the tail.
-- Ref: [modules/05-replication-protocols-and-quorums.md](../modules/05-replication-protocols-and-quorums.md#chain-replication), van Renesse & Schneider (OSDI 2004)
+- Ref: [modules/05-replication-protocols-and-quorums.md](../modules/05-replication-protocols-and-quorums.md#2-chain-replication-and-craq), van Renesse & Schneider (OSDI 2004)
 </details>
 
 #### Q-DIST-025 · CRAQ · difficulty 2 · single
@@ -414,7 +414,7 @@ Immediately after Reader 1 completes, Reader 2 reads from read quorum $\{N_2, N_
 - Why not A: Quorum intersection without synchronous read-repair does not prevent non-linearizable reads.
 - Why not C: Leaderless quorums do not acquire distributed locks.
 - Why not D: Quorum reads on available nodes succeed normally.
-- Ref: [modules/05-replication-protocols-and-quorums.md](../modules/05-replication-protocols-and-quorums.md#quorum-systems-and-the-r-w-n-illusion), Kleppmann (DDIA 2e Chapter 5)
+- Ref: [modules/05-replication-protocols-and-quorums.md](../modules/05-replication-protocols-and-quorums.md#why-r--w--n-fails-linearizability), Kleppmann (DDIA 2e Chapter 5)
 </details>
 
 #### Q-DIST-027 · ABD Protocol · difficulty 2 · single
@@ -429,7 +429,7 @@ How does the Attiya-Bar-Noy-Dolev (ABD, 1995) protocol eliminate the "New-Then-O
 - Why not A: ABD operates in a purely asynchronous model without clocks.
 - Why not C: ABD is leaderless and decentralized.
 - Why not D: ABD is designed specifically for concurrent clients.
-- Ref: [modules/05-replication-protocols-and-quorums.md](../modules/05-replication-protocols-and-quorums.md#the-abd-algorithm), Attiya, Bar-Noy, Dolev (JACM 1995)
+- Ref: [modules/05-replication-protocols-and-quorums.md](../modules/05-replication-protocols-and-quorums.md#3-quorum-systems-and-the-abd-protocol), Attiya, Bar-Noy, Dolev (JACM 1995)
 </details>
 
 #### Q-DIST-028 · Consensus Reads · difficulty 2 · single
@@ -444,7 +444,7 @@ In a consensus-based replicated state machine (such as Raft or Multi-Paxos), why
 - Why not A: Memory is not corrupted by disk writes.
 - Why not C: Consensus algorithms do not require follower decryption keys to read local state.
 - Why not D: Operating systems do not introspect consensus roles.
-- Ref: [modules/05-replication-protocols-and-quorums.md](../modules/05-replication-protocols-and-quorums.md#linearizable-reads-in-consensus-systems), Ongaro (Stanford PhD Thesis 2014)
+- Ref: [modules/05-replication-protocols-and-quorums.md](../modules/05-replication-protocols-and-quorums.md), Ongaro (Stanford PhD Thesis 2014)
 </details>
 
 ---
@@ -463,7 +463,7 @@ Which of the following defines the four fundamental formal correctness propertie
 - Why not A: These are data transformation concepts.
 - Why not C: These are database ACID transaction properties.
 - Why not D: These are memory consistency models.
-- Ref: [modules/06-consensus-foundations-and-paxos.md](../modules/06-consensus-foundations-and-paxos.md#consensus-problem-definition), Lynch (Distributed Algorithms 1996)
+- Ref: [modules/06-consensus-foundations-and-paxos.md](../modules/06-consensus-foundations-and-paxos.md), Lynch (Distributed Algorithms 1996)
 </details>
 
 #### Q-DIST-030 · Single-Decree Paxos · difficulty 2 · scenario
@@ -479,7 +479,7 @@ What value must Proposer 1 send in its Phase 2a `Accept(n=100, v)` message?
 - Why not A: Proposers can only pick their own arbitrary value if ALL acceptors in the promise quorum returned `null`.
 - Why not B: The protocol mandates choosing the value with the *highest* accepted proposal number, not the lowest.
 - Why not D: The proposer received promises from a majority ($\{A_1, A_2, A_3\}$), so it does not abort.
-- Ref: [modules/06-consensus-foundations-and-paxos.md](../modules/06-consensus-foundations-and-paxos.md#single-decree-paxos-mechanics), Lamport (The Part-Time Parliament 1998)
+- Ref: [modules/06-consensus-foundations-and-paxos.md](../modules/06-consensus-foundations-and-paxos.md#2-single-decree-paxos-protocol-mechanics), Lamport (The Part-Time Parliament 1998)
 </details>
 
 #### Q-DIST-031 · Paxos Livelock · difficulty 2 · single
@@ -494,7 +494,7 @@ What causes the "Dueling Proposers" livelock condition in Single-Decree Paxos, a
 - Why not A: Livelock is a protocol message interleaving issue, not disk capacity.
 - Why not C: 2PC does not resolve consensus livelock.
 - Why not D: UDP would exacerbate packet drops.
-- Ref: [modules/06-consensus-foundations-and-paxos.md](../modules/06-consensus-foundations-and-paxos.md#dueling-proposers-and-livelock), Lamport (Paxos Made Simple 2001)
+- Ref: [modules/06-consensus-foundations-and-paxos.md](../modules/06-consensus-foundations-and-paxos.md#the-livelock-vulnerability-dueling-proposers), Lamport (Paxos Made Simple 2001)
 </details>
 
 #### Q-DIST-032 · Flexible Paxos · difficulty 3 · single
@@ -509,7 +509,7 @@ What breakthrough theoretical observation was proven by Heidi Howard et al. in *
 - Why not B: Consensus cannot be achieved with 0 nodes.
 - Why not C: Byzantine agreement requires $3f + 1$ nodes.
 - Why not D: Monotonic proposal numbers are essential to order rounds.
-- Ref: [modules/06-consensus-foundations-and-paxos.md](../modules/06-consensus-foundations-and-paxos.md#flexible-paxos), Howard, Malkhi, Spiegelman (2016)
+- Ref: [modules/06-consensus-foundations-and-paxos.md](../modules/06-consensus-foundations-and-paxos.md#4-flexible-paxos-dismantling-the-majority-quorum-myth), Howard, Malkhi, Spiegelman (2016)
 </details>
 
 #### Q-DIST-033 · ZooKeeper Atomic Broadcast · difficulty 2 · single
@@ -522,7 +522,7 @@ In the ZooKeeper Atomic Broadcast (ZAB) protocol, what are the two components of
 
 **B.** A $zxid$ consists of an epoch $e$ (the high-order 32 bits) and a counter $c$ (the low-order 32 bits). Each time a leader election completes and synchronization succeeds, the new leader increments the epoch and resets the counter to 0. Comparing two $zxid$s is a simple 64-bit integer comparison: a transaction from a higher epoch always supersedes a transaction from an older epoch, matching the leader term structure.
 - Why not A, C, D: These fields do not enforce epoch-based total ordering.
-- Ref: [modules/06-consensus-foundations-and-paxos.md](../modules/06-consensus-foundations-and-paxos.md#zookeeper-atomic-broadcast-zab), Junqueira et al. (DSN 2011)
+- Ref: [modules/06-consensus-foundations-and-paxos.md](../modules/06-consensus-foundations-and-paxos.md#6-zookeeper-atomic-broadcast-zab), Junqueira et al. (DSN 2011)
 </details>
 
 #### Q-DIST-034 · Multi-Paxos · difficulty 2 · single
@@ -537,7 +537,7 @@ In Multi-Paxos, what optimization allows steady-state client writes to commit in
 - Why not A: Phase 2 is the commit/replication phase; skipping it would mean nothing is replicated or stored.
 - Why not C: Distributed followers cannot write to client disks.
 - Why not D: NTP cannot replace message passing in consensus protocols.
-- Ref: [modules/06-consensus-foundations-and-paxos.md](../modules/06-consensus-foundations-and-paxos.md#multi-paxos-and-the-steady-state), Lamport (2001)
+- Ref: [modules/06-consensus-foundations-and-paxos.md](../modules/06-consensus-foundations-and-paxos.md#3-multi-paxos-steady-state-optimization), Lamport (2001)
 </details>
 
 ---
@@ -556,7 +556,7 @@ What are the three possible roles that a node can occupy in a Raft consensus clu
 - Why not A: Master/minion is legacy terminology, not Raft.
 - Why not C: These are Two-Phase Commit terms.
 - Why not D: These are Paxos roles.
-- Ref: [modules/07-raft-consensus-deep-dive.md](../modules/07-raft-consensus-deep-dive.md#raft-state-machine-overview), Ongaro & Ousterhout (USENIX ATC 2014)
+- Ref: [modules/07-raft-consensus-deep-dive.md](../modules/07-raft-consensus-deep-dive.md#1-raft-roles-and-state-transition-machine), Ongaro & Ousterhout (USENIX ATC 2014)
 </details>
 
 #### Q-DIST-036 · Raft Leader Election · difficulty 2 · scenario
@@ -571,7 +571,7 @@ In a 5-node Raft cluster, Candidate $C_1$ sends a `RequestVote(term=4, candidate
 - Why not A: A higher term alone is not sufficient; the candidate's log must also satisfy the up-to-dateness check.
 - Why not C: Votes are evaluated strictly against Raft invariants.
 - Why not D: Raft requires no physical clock synchronization.
-- Ref: [modules/07-raft-consensus-deep-dive.md](../modules/07-raft-consensus-deep-dive.md#leader-election-and-voting-restriction), Ongaro & Ousterhout (2014)
+- Ref: [modules/07-raft-consensus-deep-dive.md](../modules/07-raft-consensus-deep-dive.md), Ongaro & Ousterhout (2014)
 </details>
 
 #### Q-DIST-037 · Raft Figure 8 Trap · difficulty 3 · scenario
@@ -584,7 +584,7 @@ In Raft, Leader $L$ in Term 4 replicates an entry from a prior term (Term 2) to 
 
 **B.** This is the subtle correctness rule illustrated in Figure 8 of the Raft paper. If a leader were allowed to commit an old entry simply because it is on a majority, an alternate candidate with a higher term and an older log could be elected under certain interleavings and overwrite that supposedly committed entry. Raft guarantees safety by mandating that **a leader never commits an entry from a previous term by counting replicas; only entries from the leader's current term may be committed by counting replicas**. Once a current-term entry is committed, all prior entries are committed indirectly by the Log Matching Property.
 - Why not A, C, D: These are nonsensical distractors.
-- Ref: [modules/07-raft-consensus-deep-dive.md](../modules/07-raft-consensus-deep-dive.md#the-figure-8-commit-rule), Ongaro & Ousterhout (2014)
+- Ref: [modules/07-raft-consensus-deep-dive.md](../modules/07-raft-consensus-deep-dive.md#4-the-critical-figure-8-commit-rule), Ongaro & Ousterhout (2014)
 </details>
 
 #### Q-DIST-038 · Raft Durability Invariants · difficulty 2 · single
@@ -598,7 +598,7 @@ Which three state variables **must** be synchronously flushed to non-volatile di
 **B.** According to Raft Figure 2: `currentTerm`, `votedFor`, and `log[]` are the **persistent state** on all servers. If a node crashes and restarts without preserving `votedFor`, it could vote for a second candidate in the same term, causing two leaders to be elected simultaneously. If `currentTerm` or `log[]` are lost, log matching invariants and committed entry durability are violated. All other state (`commitIndex`, `lastApplied`, `nextIndex[]`, `matchIndex[]`) is volatile and safely reconstructed upon restart.
 - Why not A, C: Volatile state variables that are recalculated upon restart.
 - Why not D: Ephemeral operating system resources.
-- Ref: [modules/07-raft-consensus-deep-dive.md](../modules/07-raft-consensus-deep-dive.md#raft-state-machine-overview), Ongaro & Ousterhout (2014)
+- Ref: [modules/07-raft-consensus-deep-dive.md](../modules/07-raft-consensus-deep-dive.md#1-raft-roles-and-state-transition-machine), Ongaro & Ousterhout (2014)
 </details>
 
 #### Q-DIST-039 · Raft Pre-Vote Extension · difficulty 2 · single
@@ -613,7 +613,7 @@ What problem does the **Pre-Vote** extension solve in production Raft systems?
 - Why not B: Real elections are still conducted if pre-vote succeeds.
 - Why not C: Pre-vote has nothing to do with disk persistence.
 - Why not D: Raft remains a Crash-Fault-Tolerant (CFT) system.
-- Ref: [modules/07-raft-consensus-deep-dive.md](../modules/07-raft-consensus-deep-dive.md#pre-vote-and-check-quorum), Ongaro (Stanford Thesis 2014)
+- Ref: [modules/07-raft-consensus-deep-dive.md](../modules/07-raft-consensus-deep-dive.md#6-pre-vote-and-check-quorum-extensions), Ongaro (Stanford Thesis 2014)
 </details>
 
 #### Q-DIST-040 · Check Quorum · difficulty 2 · single
@@ -628,7 +628,7 @@ How does the **Check-Quorum** mechanism protect a Raft leader that has been part
 - Why not A: A partitioned leader cannot send signals across a severed network.
 - Why not C: Check-quorum is an algorithmic software safeguard.
 - Why not D: Raft is strictly a CP protocol; it never serves uncommitted writes in AP mode.
-- Ref: [modules/07-raft-consensus-deep-dive.md](../modules/07-raft-consensus-deep-dive.md#pre-vote-and-check-quorum), Ongaro (2014)
+- Ref: [modules/07-raft-consensus-deep-dive.md](../modules/07-raft-consensus-deep-dive.md#6-pre-vote-and-check-quorum-extensions), Ongaro (2014)
 </details>
 
 ---
@@ -647,7 +647,7 @@ In Martin Kleppmann's formal critique of the Redis Redlock algorithm (2016), wha
 - Why not A: The cluster sizing was not the theoretical flaw.
 - Why not C: Redis natively supports key expiration.
 - Why not D: Redlock assumes a crash-fault model, not Byzantine.
-- Ref: [modules/08-distributed-coordination-and-locks.md](../modules/08-distributed-coordination-and-locks.md#martin-kleppmanns-redlock-critique), Kleppmann (2016)
+- Ref: [modules/08-distributed-coordination-and-locks.md](../modules/08-distributed-coordination-and-locks.md#3-the-redlock-critique-kleppmann-vs-redis), Kleppmann (2016)
 </details>
 
 #### Q-DIST-042 · Thundering Herd in Locks · difficulty 2 · single
@@ -662,7 +662,7 @@ In Apache ZooKeeper, how does the Standard Distributed Lock Recipe avoid the "Th
 - Why not A: Setting a watch on the root lock node is the exact anti-pattern that causes the thundering herd.
 - Why not C: Polling with backoff does not guarantee FIFO order and wastes bandwidth.
 - Why not D: DNS has no awareness of lock ownership.
-- Ref: [modules/08-distributed-coordination-and-locks.md](../modules/08-distributed-coordination-and-locks.md#zookeeper-curator-lock-recipe), Hunt et al. (USENIX ATC 2010)
+- Ref: [modules/08-distributed-coordination-and-locks.md](../modules/08-distributed-coordination-and-locks.md), Hunt et al. (USENIX ATC 2010)
 </details>
 
 #### Q-DIST-043 · Ephemeral Nodes · difficulty 1 · single
@@ -677,7 +677,7 @@ What is an **Ephemeral Node** in Apache ZooKeeper or etcd lease mechanism, and w
 - Why not A: Deletion is driven by session expiration, not calendar time.
 - Why not C: Ephemeral znodes are replicated across the consensus ensemble.
 - Why not D: Ephemeral nodes are visible to all clients with read permissions.
-- Ref: [modules/08-distributed-coordination-and-locks.md](../modules/08-distributed-coordination-and-locks.md#zookeeper-primitives), Hunt et al. (2010)
+- Ref: [modules/08-distributed-coordination-and-locks.md](../modules/08-distributed-coordination-and-locks.md#5-coordination-primitives-in-etcd-and-zookeeper), Hunt et al. (2010)
 </details>
 
 #### Q-DIST-044 · etcd Revisions · difficulty 2 · single
@@ -692,7 +692,7 @@ In `etcd` v3, how do 64-bit cluster **Revisions** enable lock-free atomic Compar
 - Why not B: Revisions are logical sequence numbers, not physical timestamps.
 - Why not C: etcd uses Multi-Version Concurrency Control (MVCC), avoiding table locks.
 - Why not D: Revisions are metadata, not encryption routines.
-- Ref: [modules/08-distributed-coordination-and-locks.md](../modules/08-distributed-coordination-and-locks.md#etcd-concurrency-primitives), etcd Documentation
+- Ref: [modules/08-distributed-coordination-and-locks.md](../modules/08-distributed-coordination-and-locks.md#5-coordination-primitives-in-etcd-and-zookeeper), etcd Documentation
 </details>
 
 #### Q-DIST-045 · Distributed Barriers · difficulty 2 · scenario
@@ -707,7 +707,7 @@ In a distributed batch processing framework, 10 worker nodes must process interm
 - Why not A: NFS file polling lacks transactional event notifications and watch mechanics.
 - Why not C: 2PC is for atomic transaction commit, not multi-phase synchronization.
 - Why not D: UDP is unreliable and prone to silent packet loss.
-- Ref: [modules/08-distributed-coordination-and-locks.md](../modules/08-distributed-coordination-and-locks.md#distributed-barriers), ZooKeeper Recipes Documentation
+- Ref: [modules/08-distributed-coordination-and-locks.md](../modules/08-distributed-coordination-and-locks.md#6-distributed-barriers-and-service-discovery), ZooKeeper Recipes Documentation
 </details>
 
 ---
@@ -727,7 +727,7 @@ In a Two-Phase Commit (2PC) protocol with 1 Coordinator and 3 Participants, all 
 - Why not B: The coordinator already logged COMMIT; aborting would cause a split transaction.
 - Why not C is correct.
 - Why not D: Standard 2PC participants do not have an embedded Raft protocol to supersede coordinators.
-- Ref: [modules/09-distributed-transactions-and-atomic-commit.md](../modules/09-distributed-transactions-and-atomic-commit.md#two-phase-commit-2pc-and-blocking), Gray (1978), Bernstein et al. (1987)
+- Ref: [modules/09-distributed-transactions-and-atomic-commit.md](../modules/09-distributed-transactions-and-atomic-commit.md#2-two-phase-commit-2pc-protocol-and-the-blocking-flaw), Gray (1978), Bernstein et al. (1987)
 </details>
 
 #### Q-DIST-047 · Three-Phase Commit · difficulty 3 · single
@@ -742,7 +742,7 @@ Why is the Three-Phase Commit (3PC, Skeen 1981) protocol rarely deployed in real
 - Why not A: 3PC requires 3 round trips, not 100.
 - Why not C: Fictitious requirement.
 - Why not D: 3PC is mathematically correct under its stated (synchronous, crash-stop) assumptions.
-- Ref: [modules/09-distributed-transactions-and-atomic-commit.md](../modules/09-distributed-transactions-and-atomic-commit.md#three-phase-commit-3pc-and-partitions), Skeen (1981)
+- Ref: [modules/09-distributed-transactions-and-atomic-commit.md](../modules/09-distributed-transactions-and-atomic-commit.md#3-three-phase-commit-3pc-and-why-it-is-unused), Skeen (1981)
 </details>
 
 #### Q-DIST-048 · Google Percolator · difficulty 3 · scenario
@@ -757,7 +757,7 @@ In Google's Percolator transaction protocol (Peng & Dabek 2016), how are distrib
 - Why not B: Percolator avoids a centralized coordinator service; the client coordinates using Bigtable cells.
 - Why not C: Bigtable SSTables are immutable on GFS/Colossus; file locking is impossible.
 - Why not D: Percolator is explicitly designed to implement Snapshot Isolation.
-- Ref: [modules/09-distributed-transactions-and-atomic-commit.md](../modules/09-distributed-transactions-and-atomic-commit.md#google-percolator-protocol), Peng & Dabek (OSDI 2010)
+- Ref: [modules/09-distributed-transactions-and-atomic-commit.md](../modules/09-distributed-transactions-and-atomic-commit.md#1-google-percolator-peng--dabek-2010), Peng & Dabek (OSDI 2010)
 </details>
 
 #### Q-DIST-049 · Sagas vs 2PC · difficulty 2 · single
@@ -772,7 +772,7 @@ What is the fundamental architectural difference between an ACID 2PC transaction
 - Why not A: Holding locks across microservices is 2PC, not Sagas.
 - Why not C: Sagas inherently expose unisolated intermediate states.
 - Why not D: Sagas are database-agnostic and widely used with polyglot persistence.
-- Ref: [modules/09-distributed-transactions-and-atomic-commit.md](../modules/09-distributed-transactions-and-atomic-commit.md#sagas-orchestration-and-choreography), Garcia-Molina & Salem (1987)
+- Ref: [modules/09-distributed-transactions-and-atomic-commit.md](../modules/09-distributed-transactions-and-atomic-commit.md#orchestration-vs-choreography), Garcia-Molina & Salem (1987)
 </details>
 
 #### Q-DIST-050 · Transactional Outbox · difficulty 2 · single
@@ -787,7 +787,7 @@ What failure mode does the **Transactional Outbox** pattern solve when a service
 - Why not A: The problem exists regardless of Kafka's rebalancing mechanics.
 - Why not C: Outbox tables do not resolve buffer pool memory exhaustion.
 - Why not D: Unrelated to transport encryption.
-- Ref: [modules/09-distributed-transactions-and-atomic-commit.md](../modules/09-distributed-transactions-and-atomic-commit.md#transactional-outbox-and-listen-to-yourself), Richardson (Microservices Patterns 2018)
+- Ref: [modules/09-distributed-transactions-and-atomic-commit.md](../modules/09-distributed-transactions-and-atomic-commit.md#the-transactional-outbox-pattern), Richardson (Microservices Patterns 2018)
 </details>
 
 #### Q-DIST-051 · Spanner Distributed Transactions · difficulty 3 · single
@@ -802,7 +802,7 @@ In Google Spanner, how are cross-shard distributed transactions executed while g
 - Why not B: Spanner is globally distributed and decentralized; routing all writes through a single leader would defeat its scaling and availability goals.
 - Why not C: Spanner provides strict serializability, not eventual consistency.
 - Why not D: Cross-shard transactions are a flagship capability of Spanner.
-- Ref: [modules/09-distributed-transactions-and-atomic-commit.md](../modules/09-distributed-transactions-and-atomic-commit.md#spanner-paxos-2pc-and-calvin), Corbett et al. (2012)
+- Ref: [modules/09-distributed-transactions-and-atomic-commit.md](../modules/09-distributed-transactions-and-atomic-commit.md), Corbett et al. (2012)
 </details>
 
 ---
@@ -821,7 +821,7 @@ In an Apache Kafka partition, what is the distinction between the **Log End Offs
 - Why not B: Consumer offsets are stored in `__consumer_offsets`; producer sequence numbers are in the produce request.
 - Why not C: HW and LEO track physical partition offsets, not compaction tombstones.
 - Why not D: These are log indexing offsets, not cryptographic tokens.
-- Ref: [modules/10-messaging-logs-and-delivery-semantics.md](../modules/10-messaging-logs-and-delivery-semantics.md#the-distributed-commit-log), Kreps (I Heart Logs 2014)
+- Ref: [modules/10-messaging-logs-and-delivery-semantics.md](../modules/10-messaging-logs-and-delivery-semantics.md#1-the-distributed-commit-log-as-source-of-truth), Kreps (I Heart Logs 2014)
 </details>
 
 #### Q-DIST-053 · Kafka Durability Configuration · difficulty 2 · scenario
@@ -836,7 +836,7 @@ A financial audit topic in Kafka requires zero message loss upon single broker f
 - Why not A: `acks=all` waits for the leader AND all in-sync followers.
 - Why not C: SSL encrypts transit data; it has no effect on log persistence.
 - Why not D: `min.insync.replicas` is an ISR threshold, independent of partition count.
-- Ref: [modules/10-messaging-logs-and-delivery-semantics.md](../modules/10-messaging-logs-and-delivery-semantics.md#durability-invariants-and-the-isr), Kleppmann (DDIA 2e Chapter 11)
+- Ref: [modules/10-messaging-logs-and-delivery-semantics.md](../modules/10-messaging-logs-and-delivery-semantics.md), Kleppmann (DDIA 2e Chapter 11)
 </details>
 
 #### Q-DIST-054 · Producer Idempotence · difficulty 2 · single
@@ -851,7 +851,7 @@ How does Apache Kafka's Idempotent Producer eliminate duplicate records upon net
 - Why not A: Kafka uses sequence numbers, not probabilistic Bloom filters.
 - Why not C: 2PC is used in transactional multi-partition writes, not simple idempotent produce.
 - Why not D: Multiple threads and concurrent batches can be executed.
-- Ref: [modules/10-messaging-logs-and-delivery-semantics.md](../modules/10-messaging-logs-and-delivery-semantics.md#exactly-once-semantics-eos), KIP-98 (2017)
+- Ref: [modules/10-messaging-logs-and-delivery-semantics.md](../modules/10-messaging-logs-and-delivery-semantics.md#3-delivery-semantics-and-exactly-once-processing), KIP-98 (2017)
 </details>
 
 #### Q-DIST-055 · Partition Resizing Trap · difficulty 3 · scenario
@@ -866,7 +866,7 @@ An e-commerce system partitions order events by `order_id` across 10 Kafka parti
 - Why not A: Consumer groups automatically adapt to new partitions without crashing.
 - Why not C: Existing partitions and historical data remain intact.
 - Why not D: Partition expansion is a standard administrative operation that does not corrupt metadata.
-- Ref: [modules/10-messaging-logs-and-delivery-semantics.md](../modules/10-messaging-logs-and-delivery-semantics.md#partitioning-and-the-resizing-trap), Kafka Documentation
+- Ref: [modules/10-messaging-logs-and-delivery-semantics.md](../modules/10-messaging-logs-and-delivery-semantics.md), Kafka Documentation
 </details>
 
 #### Q-DIST-056 · Cooperative Rebalancing · difficulty 2 · single
@@ -881,7 +881,7 @@ What was the primary performance defect of Kafka's legacy Eager Consumer Rebalan
 - Why not A: Rebalancing operates purely within consumer clients and group coordinators, not JVM restarts.
 - Why not C: Rebalancing protocol changes do not alter Kafka's storage architecture.
 - Why not D: Kafka does not drop committed messages during rebalance.
-- Ref: [modules/10-messaging-logs-and-delivery-semantics.md](../modules/10-messaging-logs-and-delivery-semantics.md#consumer-groups-and-rebalancing), KIP-429 / KIP-848
+- Ref: [modules/10-messaging-logs-and-delivery-semantics.md](../modules/10-messaging-logs-and-delivery-semantics.md#4-consumer-groups-rebalances-and-kip-848), KIP-429 / KIP-848
 </details>
 
 #### Q-DIST-057 · Kafka 4.2 Share Groups · difficulty 2 · single
@@ -896,7 +896,7 @@ What new consumption paradigm was introduced in Kafka 4.2 via KIP-932 (Share Gro
 - Why not A: Partitions remain the underlying storage and ordering engine.
 - Why not C: KRaft remains the metadata consensus protocol.
 - Why not D: BitTorrent is unrelated to Kafka streaming.
-- Ref: [modules/10-messaging-logs-and-delivery-semantics.md](../modules/10-messaging-logs-and-delivery-semantics.md#kafka-share-groups-kip-932), KIP-932 (Kafka 4.2)
+- Ref: [modules/10-messaging-logs-and-delivery-semantics.md](../modules/10-messaging-logs-and-delivery-semantics.md#kafka-42-ga-share-groups--queues-for-kafka-kip-932), KIP-932 (Kafka 4.2)
 </details>
 
 ---
@@ -914,7 +914,7 @@ What three algebraic properties must the merge operator ($\sqcup$) of a state-ba
 **B.** A state-based CRDT (CvRDT) relies on a mathematical join-semilattice equipped with a partial order $\le$ and a least upper bound operator $\sqcup$ (merge). Commutativity ensures that network arrival order does not matter; Associativity ensures that message batching or grouping does not alter the result; Idempotence ensures that duplicate message deliveries (retries) have no effect. Together, these guarantee Strong Eventual Consistency (SEC) without distributed locking.
 - Why not A: These are properties of a partial order relation, not the binary merge operator itself.
 - Why not C, D: These are properties from linear algebra or ring theory.
-- Ref: [modules/11-conflict-free-replicated-data-types-crdts.md](../modules/11-conflict-free-replicated-data-types-crdts.md#algebraic-foundations-join-semilattices), Shapiro et al. (INRIA 2011)
+- Ref: [modules/11-conflict-free-replicated-data-types-crdts.md](../modules/11-conflict-free-replicated-data-types-crdts.md#2-state-based-crdts-cvrdt-and-join-semilattices), Shapiro et al. (INRIA 2011)
 </details>
 
 #### Q-DIST-059 · PN-Counter Mechanics · difficulty 1 · single
@@ -928,7 +928,7 @@ How does a PN-Counter (Positive-Negative Counter) achieve correct increments and
 **B.** Decrements violate the monotonicity requirement of a join-semilattice. A PN-Counter circumvents this by using two monotonic G-Counters: vector $P$ tracks all positive increments per node, while vector $N$ tracks all negative decrements (represented as positive quantities). Merging two PN-counters takes the component-wise maximum of $P$ and the component-wise maximum of $N$. The user-visible counter value is $\sum P[i] - \sum N[i]$, guaranteeing monotonic growth of internal states and deterministic convergence.
 - Why not A: Direct subtraction on non-monotonic state breaks idempotence and associativity.
 - Why not C, D: CRDTs are explicitly designed to operate lock-free without consensus protocols.
-- Ref: [modules/11-conflict-free-replicated-data-types-crdts.md](../modules/11-conflict-free-replicated-data-types-crdts.md#pn-counter-mechanics), Shapiro et al. (2011)
+- Ref: [modules/11-conflict-free-replicated-data-types-crdts.md](../modules/11-conflict-free-replicated-data-types-crdts.md#2-positive-negative-counter-pn-counter), Shapiro et al. (2011)
 </details>
 
 #### Q-DIST-060 · OR-Set Add-Wins · difficulty 2 · scenario
@@ -943,7 +943,7 @@ In an Observed-Removed Set (OR-Set) CRDT with Add-Wins semantics, Replica A and 
 - Why not A: In an Add-Wins set, concurrent adds win over removes; Remove-Wins is an alternative policy, but Add-Wins is the industry default.
 - Why not C: CRDT merges are deterministic mathematical joins that never throw conflict exceptions.
 - Why not D: Sets enforce distinct elements; element $e$ is either present or absent.
-- Ref: [modules/11-conflict-free-replicated-data-types-crdts.md](../modules/11-conflict-free-replicated-data-types-crdts.md#or-set-add-wins), Shapiro et al. (2011)
+- Ref: [modules/11-conflict-free-replicated-data-types-crdts.md](../modules/11-conflict-free-replicated-data-types-crdts.md#3-observed-remove-set-or-set), Shapiro et al. (2011)
 </details>
 
 #### Q-DIST-061 · CRDT Sequence Tombstones · difficulty 2 · single
@@ -958,7 +958,7 @@ In collaborative text editing sequence CRDTs (such as RGA or Yjs), what problem 
 - Why not A: Deletions target individual characters, not full documents.
 - Why not C: Collaborative editing CRDTs are decentralized and peer-to-peer.
 - Why not D: Window resizing is a UI event unrelated to CRDT causal trees.
-- Ref: [modules/11-conflict-free-replicated-data-types-crdts.md](../modules/11-conflict-free-replicated-data-types-crdts.md#sequence-crdts-and-collaborative-text), Roh et al. (RGA 2011), Kleppmann (Automerge)
+- Ref: [modules/11-conflict-free-replicated-data-types-crdts.md](../modules/11-conflict-free-replicated-data-types-crdts.md#4-collaborative-text-and-sequence-crdts), Roh et al. (RGA 2011), Kleppmann (Automerge)
 </details>
 
 #### Q-DIST-062 · Local-First Software · difficulty 1 · single
@@ -973,7 +973,7 @@ Which of the following is one of the seven foundational ideals of **Local-First 
 - Why not A: Local-first requires immediate local execution without network waits.
 - Why not C: Local-first prioritizes user ownership and end-to-end encryption.
 - Why not D: Local-first systems frequently use WebSockets and WebRTC for synchronization.
-- Ref: [modules/11-conflict-free-replicated-data-types-crdts.md](../modules/11-conflict-free-replicated-data-types-crdts.md#local-first-software), Kleppmann, Wiggins, van Hardenberg, McGranaghan (Onward! 2019)
+- Ref: [modules/11-conflict-free-replicated-data-types-crdts.md](../modules/11-conflict-free-replicated-data-types-crdts.md#6-the-local-first-software-movement), Kleppmann, Wiggins, van Hardenberg, McGranaghan (Onward! 2019)
 </details>
 
 ---
@@ -992,7 +992,7 @@ FoundationDB and TigerBeetle test their distributed storage engines using **Dete
 - Why not A: DST runs on standard CPU architectures in software.
 - Why not C: DST tests protocol code directly via simulation, not log pattern mining.
 - Why not D: DST relies heavily on invariant assertions running continuously.
-- Ref: [modules/12-verification-testing-and-fault-injection.md](../modules/12-verification-testing-and-fault-injection.md#deterministic-simulation-testing-dst), Zhou et al. (FoundationDB, SIGMOD 2021)
+- Ref: [modules/12-verification-testing-and-fault-injection.md](../modules/12-verification-testing-and-fault-injection.md#2-deterministic-simulation-testing-dst), Zhou et al. (FoundationDB, SIGMOD 2021)
 </details>
 
 #### Q-DIST-064 · Jepsen Testing · difficulty 2 · single
@@ -1007,7 +1007,7 @@ In Kyle Kingsbury's **Jepsen** distributed systems testing framework, what is th
 - Why not A: That is the role of the Generator/Client.
 - Why not B: Jepsen tests runtime behavior, not static configuration parsing.
 - Why not D: That is the role of the Checker/Analyzer.
-- Ref: [modules/12-verification-testing-and-fault-injection.md](../modules/12-verification-testing-and-fault-injection.md#jepsen-testing-framework), Kingsbury (aphyr.com)
+- Ref: [modules/12-verification-testing-and-fault-injection.md](../modules/12-verification-testing-and-fault-injection.md), Kingsbury (aphyr.com)
 </details>
 
 #### Q-DIST-065 · TLA+ Formal Verification · difficulty 3 · single
@@ -1022,7 +1022,7 @@ How does Leslie Lamport's **TLA+** (Temporal Logic of Actions) and its model che
 - Why not A: TLA+ is a specification language, not a compiler.
 - Why not C: TLA+ is a design verification tool, not an APM monitoring tool.
 - Why not D: TLC tests abstract state machines exhaustively, not HTTP endpoints.
-- Ref: [modules/12-verification-testing-and-fault-injection.md](../modules/12-verification-testing-and-fault-injection.md#formal-methods-tla), Newcombe et al. (AWS, CACM 2015)
+- Ref: [modules/12-verification-testing-and-fault-injection.md](../modules/12-verification-testing-and-fault-injection.md#4-formal-methods-tla-and-pluscal), Newcombe et al. (AWS, CACM 2015)
 </details>
 
 #### Q-DIST-066 · State Space Explosion · difficulty 2 · single
@@ -1037,7 +1037,7 @@ When using a formal model checker like TLC, what is the **State Space Explosion*
 - Why not A: Exponential growth rapidly outstrips any physical hardware scaling.
 - Why not C: Memory and algorithmic bounds are the limiting factor, not disk fragmentation.
 - Why not D: Specification text size does not dictate state graph dimensions.
-- Ref: [modules/12-verification-testing-and-fault-injection.md](../modules/12-verification-testing-and-fault-injection.md#formal-methods-tla), Lamport (Specifying Systems 2002)
+- Ref: [modules/12-verification-testing-and-fault-injection.md](../modules/12-verification-testing-and-fault-injection.md#4-formal-methods-tla-and-pluscal), Lamport (Specifying Systems 2002)
 </details>
 
 #### Q-DIST-067 · Chaos Engineering · difficulty 1 · single
@@ -1051,7 +1051,7 @@ What is the core principle of **Chaos Engineering** (pioneered by Netflix with C
 **B.** Principles of Chaos Engineering (Basiri et al., Netflix 2016): (1) Define steady-state as measurable business output (e.g., stream starts per second); (2) Hypothesize that steady-state will continue in both control and experiment groups; (3) Introduce variables that reflect real-world events (server crashes, datacenter disconnects, network latency); (4) Minimize blast radius; (5) Run experiments in production to build confidence in systemic resilience.
 - Why not A: Chaos engineering requires deliberate hypotheses and controlled blast radii, not reckless sabotage.
 - Why not C, D: Unrelated to the definition of chaos engineering.
-- Ref: [modules/12-verification-testing-and-fault-injection.md](../modules/12-verification-testing-and-fault-injection.md#chaos-engineering-in-production), Basiri et al. (IEEE Software 2016)
+- Ref: [modules/12-verification-testing-and-fault-injection.md](../modules/12-verification-testing-and-fault-injection.md#5-chaos-engineering-resilience-in-production), Basiri et al. (IEEE Software 2016)
 </details>
 
 ---
@@ -1070,7 +1070,7 @@ What characterizes a **Byzantine Fault** (Lamport, Shostak, Pease 1982) compared
 - Why not A: This describes a Crash-Stop fault.
 - Why not C: This is a crash-recovery / transient timing fault.
 - Why not D: This is a network omission fault.
-- Ref: [modules/13-byzantine-fault-tolerance-and-open-systems.md](../modules/13-byzantine-fault-tolerance-and-open-systems.md#the-byzantine-fault-model), Lamport, Shostak, Pease (ACM TOPLAS 1982)
+- Ref: [modules/13-byzantine-fault-tolerance-and-open-systems.md](../modules/13-byzantine-fault-tolerance-and-open-systems.md#1-the-byzantine-fault-model), Lamport, Shostak, Pease (ACM TOPLAS 1982)
 </details>
 
 #### Q-DIST-069 · Byzantine Mathematical Bound · difficulty 3 · scenario
@@ -1083,7 +1083,7 @@ Prove why a system of $N$ nodes can tolerate at most $f$ Byzantine faulty nodes 
 
 **B.** Lamport, Shostak, and Pease proved that for oral (unauthenticated) messages, no solution exists for $N \le 3f$. In any quorum or decision group, if $f$ nodes crash or lie, the remaining $N - f$ nodes must be able to make progress. Furthermore, within those $N - f$ nodes, up to $f$ could be faulty nodes feeding misinformation. To ensure that the honest nodes outnumber the faulty nodes in the active set, we must have $(N - f) - f > f$, which simplifies directly to $N - 2f > f \implies N \ge 3f + 1$.
 - Why not A, C, D: These are nonsensical distractors.
-- Ref: [modules/13-byzantine-fault-tolerance-and-open-systems.md](../modules/13-byzantine-fault-tolerance-and-open-systems.md#the-3f-1-mathematical-bound), Lamport, Shostak, Pease (1982)
+- Ref: [modules/13-byzantine-fault-tolerance-and-open-systems.md](../modules/13-byzantine-fault-tolerance-and-open-systems.md#2-the-3f--1-quorum-bound-mathematical-derivation), Lamport, Shostak, Pease (1982)
 </details>
 
 #### Q-DIST-070 · Practical Byzantine Fault Tolerance · difficulty 2 · single
@@ -1098,7 +1098,7 @@ In Castro and Liskov's **Practical Byzantine Fault Tolerance (PBFT)** algorithm 
 - Why not A: These are client interaction steps, not the internal consensus phases.
 - Why not C: These are TCP transport connection phases.
 - Why not D: These are optimistic concurrency control phases.
-- Ref: [modules/13-byzantine-fault-tolerance-and-open-systems.md](../modules/13-byzantine-fault-tolerance-and-open-systems.md#practical-byzantine-fault-tolerance-pbft), Castro & Liskov (OSDI 1999)
+- Ref: [modules/13-byzantine-fault-tolerance-and-open-systems.md](../modules/13-byzantine-fault-tolerance-and-open-systems.md#3-practical-byzantine-fault-tolerance-pbft), Castro & Liskov (OSDI 1999)
 </details>
 
 #### Q-DIST-071 · Nakamoto Consensus · difficulty 2 · single
@@ -1113,7 +1113,7 @@ How does Bitcoin's Nakamoto Consensus (2008) solve Byzantine consensus in an ope
 - Why not A: Bitcoin is permissionless and pseudonymous without KYC.
 - Why not C: Classical Paxos has $O(N^2)$ message complexity and cannot scale to permissionless networks.
 - Why not D: Nakamoto consensus relies on Proof-of-Work difficulty, not synchronized clocks.
-- Ref: [modules/13-byzantine-fault-tolerance-and-open-systems.md](../modules/13-byzantine-fault-tolerance-and-open-systems.md#nakamoto-consensus-and-open-systems), Nakamoto (2008)
+- Ref: [modules/13-byzantine-fault-tolerance-and-open-systems.md](../modules/13-byzantine-fault-tolerance-and-open-systems.md#key-innovations-of-nakamoto-consensus), Nakamoto (2008)
 </details>
 
 ---
@@ -1132,7 +1132,7 @@ In the Google File System (GFS, Ghemawat et al. 2003), why did the architects ch
 - Why not B: Linux ext3 supported multi-gigabyte files.
 - Why not C: Disk seeks are orders of magnitude slower than RAM.
 - Why not D: Chunk size has no connection to network encryption.
-- Ref: [modules/14-distributed-systems-in-practice-and-capstone.md](../modules/14-distributed-systems-in-practice-and-capstone.md#google-file-system-gfs), Ghemawat et al. (SOSP 2003)
+- Ref: [modules/14-distributed-systems-in-practice-and-capstone.md](../modules/14-distributed-systems-in-practice-and-capstone.md#1-google-file-system-gfs-2003), Ghemawat et al. (SOSP 2003)
 </details>
 
 #### Q-DIST-073 · AWS Aurora Architecture · difficulty 3 · single
@@ -1147,7 +1147,7 @@ What was the foundational architectural insight behind Amazon Aurora (Verbitski 
 - Why not A: In Aurora, storage is persistent and durable, not merely a backup.
 - Why not C: Aurora provides MySQL and PostgreSQL compatibility.
 - Why not D: Aurora's defining feature is shared distributed storage across AZs.
-- Ref: [modules/14-distributed-systems-in-practice-and-capstone.md](../modules/14-distributed-systems-in-practice-and-capstone.md#aws-aurora-the-log-is-the-database), Verbitski et al. (SIGMOD 2017)
+- Ref: [modules/14-distributed-systems-in-practice-and-capstone.md](../modules/14-distributed-systems-in-practice-and-capstone.md#4-amazon-aurora-2017-the-log-is-the-database), Verbitski et al. (SIGMOD 2017)
 </details>
 
 #### Q-DIST-074 · Dynamo Architecture · difficulty 2 · single
@@ -1162,7 +1162,7 @@ In Amazon's original Dynamo system (DeCandia et al. SOSP 2007), what mechanisms 
 - Why not A: Synchronous consensus rejects writes on minority partitions, violating always-writable availability.
 - Why not C: 2PL blocks on partition boundaries.
 - Why not D: Dynamo is decentralized and peer-to-peer without central coordination.
-- Ref: [modules/14-distributed-systems-in-practice-and-capstone.md](../modules/14-distributed-systems-in-practice-and-capstone.md#amazon-dynamo), DeCandia et al. (SOSP 2007)
+- Ref: [modules/14-distributed-systems-in-practice-and-capstone.md](../modules/14-distributed-systems-in-practice-and-capstone.md#2-amazon-dynamo-2007-the-ap-masterpiece), DeCandia et al. (SOSP 2007)
 </details>
 
 #### Q-DIST-075 · Multi-Raft Sharding & Handoff · difficulty 3 · scenario
@@ -1177,7 +1177,7 @@ In a sharded distributed database running **Multi-Raft** (such as CockroachDB or
 - Why not A: Dual-writing by clients causes split-brain conflicts and lacks transaction isolation.
 - Why not C: Restarting nodes causes severe downtime and does not automate state migration.
 - Why not D: DNS operates at network layer and has zero awareness of key ranges or Raft logs.
-- Ref: [modules/14-distributed-systems-in-practice-and-capstone.md](../modules/14-distributed-systems-in-practice-and-capstone.md#sharded-multi-raft-architecture), Ongaro (2014), TiKV / CockroachDB Architecture Docs
+- Ref: [modules/14-distributed-systems-in-practice-and-capstone.md](../modules/14-distributed-systems-in-practice-and-capstone.md#3-capstone-architecture-sharded-key-value-store-on-multi-raft), Ongaro (2014), TiKV / CockroachDB Architecture Docs
 </details>
 
 ---

@@ -18,7 +18,7 @@ Which organization is the official standards body responsible for standardizing 
 - Why not A: TC39 standardizes ECMAScript (JavaScript), not CSS.
 - Why not C: IETF standardizes internet networking protocols (TCP, IP, HTTP, TLS).
 - Why not D: OSI governs open-source software licensing, not web standards.
-- Ref: [modules/01-css-platform-specs-baseline-and-tooling.md](../modules/01-css-platform-specs-baseline-and-tooling.md#the-w3c-specification-process--the-snapshot-model)
+- Ref: [modules/01-css-platform-specs-baseline-and-tooling.md](../modules/01-css-platform-specs-baseline-and-tooling.md#1-the-w3c-specification-process--the-snapshot-model)
 </details>
 
 ### Q-CSS-002 · Platform Specs · difficulty 2 · single
@@ -33,7 +33,7 @@ What defines a feature as "Baseline: Widely Available" under the web-features co
 - Why not A: Baseline requires all four core engines: Chrome, Edge, Firefox, and Safari (desktop and mobile).
 - Why not C: W3C REC status is a formal process stage; many Widely Available features are in Candidate Recommendation.
 - Why not D: Polyfills are independent JavaScript libraries, not browser baseline metrics.
-- Ref: [modules/01-css-platform-specs-baseline-and-tooling.md](../modules/01-css-platform-specs-baseline-and-tooling.md#the-baseline-compatibility-standard--web-features)
+- Ref: [modules/01-css-platform-specs-baseline-and-tooling.md](../modules/01-css-platform-specs-baseline-and-tooling.md#2-the-baseline-compatibility-standard--web-features)
 </details>
 
 ### Q-CSS-003 · Platform Specs · difficulty 2 · scenario
@@ -48,7 +48,7 @@ An engineer wants to use the `:has()` relational selector in production. How sho
 - Why not A: Testing properties requires property-value syntax (e.g. `display: grid`); `:has()` is a selector, so testing it as a property is invalid syntax.
 - Why not C: `@media` queries evaluate media environment characteristics (viewport width, color scheme), not language syntax.
 - Why not D: `try/catch` is JavaScript syntax, invalid in CSS.
-- Ref: [modules/01-css-platform-specs-baseline-and-tooling.md](../modules/01-css-platform-specs-baseline-and-tooling.md#progressive-enhancement-with-supports)
+- Ref: [modules/01-css-platform-specs-baseline-and-tooling.md](../modules/01-css-platform-specs-baseline-and-tooling.md#3-progressive-enhancement-with-supports)
 </details>
 
 ### Q-CSS-004 · Platform Specs · difficulty 2 · multi
@@ -64,7 +64,7 @@ Which of the following statements are correct regarding modern CSS build tooling
 - C is correct: Lightning CSS contains a built-in compatibility database (driven by browserslist) and down-levels nesting, colors, and prefixes automatically.
 - Why not B: Lightning CSS has first-class native support for CSS nesting.
 - Why not D: Autoprefixer is obsolete when using Lightning CSS, as prefix generation is built directly into its core engine.
-- Ref: [modules/01-css-platform-specs-baseline-and-tooling.md](../modules/01-css-platform-specs-baseline-and-tooling.md#modern-build-tooling-lightning-css--stylelint-17)
+- Ref: [modules/01-css-platform-specs-baseline-and-tooling.md](../modules/01-css-platform-specs-baseline-and-tooling.md#4-modern-build-tooling-lightning-css--stylelint-17)
 </details>
 
 ### Q-CSS-005 · Platform Specs · difficulty 3 · single
@@ -104,7 +104,7 @@ What is the exact specificity 3-tuple $(A, B, C)$ of the selector `:is(.nav, #he
 - Why not A: `(1, 2, 2)` erroneously counted `.nav` alongside `#header`, but `:is()` only takes the maximum argument, not the sum.
 - Why not B: `(0, 2, 2)` missed the ID in `:is()`.
 - Why not D: `(1, 0, 2)` missed `.active`.
-- Ref: [modules/02-syntax-selectors-and-specificity.md](../modules/02-syntax-selectors-and-specificity.md#specificity-mathematics-the-a-b-c-tuple)
+- Ref: [modules/02-syntax-selectors-and-specificity.md](../modules/02-syntax-selectors-and-specificity.md#3-specificity-mathematics-the-a-b-c-tuple)
 </details>
 
 ### Q-CSS-007 · Selectors · difficulty 2 · single
@@ -172,7 +172,7 @@ Which of the following pseudo-classes contribute to the **$B$ category** (Classe
 - A and C are correct: Standard pseudo-classes like `:hover`, `:focus-visible`, `:checked`, and `:disabled` contribute $1$ to the $B$ tuple column.
 - Why not B: `:is()` itself contributes zero to $B$; it adopts the specificity of its highest internal argument (which could be an ID $A$, class $B$, or element $C$).
 - Why not D: `::before` is a pseudo-element, which contributes to the $C$ category.
-- Ref: [modules/02-syntax-selectors-and-specificity.md](../modules/02-syntax-selectors-and-specificity.md#specificity-mathematics-the-a-b-c-tuple)
+- Ref: [modules/02-syntax-selectors-and-specificity.md](../modules/02-syntax-selectors-and-specificity.md#3-specificity-mathematics-the-a-b-c-tuple)
 </details>
 
 ---
@@ -290,7 +290,7 @@ Under the Invalid at Computed-Value Time (IACVT) rule, what color will `.child` 
 - Why not A: Custom property substitution happens after the cascade; earlier declarations are already discarded.
 - Why not C: `unset` inherits rather than defaulting to black (unless root is reached).
 - Why not D: Text color does not default to transparent.
-- Ref: [modules/04-value-processing-and-units.md](../modules/04-value-processing-and-units.md#the-six-stages-of-value-processing), [modules/09-custom-properties-registered-and-functions.md](../modules/09-custom-properties-registered-and-functions.md#the-invalid-at-computed-value-time-iacvt-trap)
+- Ref: [modules/04-value-processing-and-units.md](../modules/04-value-processing-and-units.md#1-the-six-stages-of-value-processing), [modules/09-custom-properties-registered-and-functions.md](../modules/09-custom-properties-registered-and-functions.md#the-invalid-at-computed-value-time-iacvt-trap)
 </details>
 
 ### Q-CSS-017 · Value Processing · difficulty 2 · single
@@ -800,7 +800,7 @@ Why must font preloads (`<link rel="preload" as="font" href="...">`) always spec
 - Why not A: HTTPS works with or without CORS.
 - Why not C: CORS governs cross-origin access control, not file encryption.
 - Why not D: Preload is already asynchronous.
-- Ref: [modules/10-color-theming-and-typography.md](../modules/10-color-theming-and-typography.md#the-font-preload-link-trap)
+- Ref: [modules/10-color-theming-and-typography.md](../modules/10-color-theming-and-typography.md#the-font-preload--trap)
 </details>
 
 ### Q-CSS-050 · Color & Typography · difficulty 2 · multi
@@ -1200,7 +1200,7 @@ In a W3C DTCG design token file, Token A defines `$value: "{color.b}"` and Token
 - Why not A: Silently guessing fallback colors masks design system bugs.
 - Why not C: Conforming compilers track visited nodes in a Set to detect cycles before looping.
 - Why not D: Resolving aliases occurs before color formatting.
-- Ref: [modules/14-css-architecture-and-design-tokens.md](../modules/14-css-architecture-and-design-tokens.md#3-the-w3c-design-tokens-standard-dtcg-202510), [13-design-tokens-dtcg.test.ts](../examples/13-design-tokens-dtcg.test.ts)
+- Ref: [modules/14-css-architecture-and-design-tokens.md](../modules/14-css-architecture-and-design-tokens.md#3-the-w3c-design-tokens-standard-dtcg-202510), [13-design-tokens-dtcg.test.ts](../examples/14-design-tokens-dtcg.test.ts)
 </details>
 
 ---

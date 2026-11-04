@@ -2,7 +2,7 @@
 
 > **Track:** `technologies/react` · **React:** 19.3.1 · **Proofs:** [`examples/05-concurrency/concurrency.test.tsx`](../examples/05-concurrency/concurrency.test.tsx), [`examples/05-concurrency/lane-model.ts`](../examples/05-concurrency/lane-model.ts)
 >
-> **Cross-links.** Tasks, microtasks, `MessageChannel` and where rendering steps happen in the event loop are owned by [languages/javascript](../../../languages/javascript/README.md). Typing `useTransition`/`useDeferredValue` is in [TypeScript M12](../../../languages/typescript/modules/12-react-19-and-modern-react-typescript.md).
+> **Cross-links.** Tasks, microtasks, `MessageChannel` and where rendering steps happen in the event loop are owned by [languages/javascript](../../../languages/javascript/README.md). Typing `useTransition`/`useDeferredValue` is in [TypeScript M12](../../../languages/typescript/modules/12-typing-ui-frameworks.md).
 
 "Concurrent React" does not mean threads. JavaScript on the main thread is single-threaded; React is concurrent in the operating-systems sense of **interleaving**: it can start rendering one update, pause, handle something more urgent, and come back — or throw the first render away. This module defines the priority model (**lanes**), the cooperative **scheduler** that slices work, the user-facing APIs (`startTransition`, `useTransition`, `useDeferredValue`, `<Activity>`), and the 19.3 change that made transitions **independent** of each other.
 
