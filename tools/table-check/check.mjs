@@ -4,7 +4,18 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
-const SKIP = new Set(['node_modules', '.git', 'styled-system', 'dist', 'build', '.mise']);
+const SKIP = new Set([
+  'node_modules',
+  '.git',
+  'styled-system',
+  'dist',
+  'build',
+  '.mise',
+  '.venv',
+  '.pytest_cache',
+  '.mypy_cache',
+  '.ruff_cache',
+]);
 
 async function* walk(dir) {
   for (const e of await readdir(dir, { withFileTypes: true })) {
@@ -54,8 +65,6 @@ for (const root of roots) {
           tableStartLine = lineNum;
           headerCols = colCount;
         } else {
-          // Check if separator row like |---|---|
-          const isSeparator = cells.every((c) => /^:?-+:?$/.test(c.trim()));
           if (colCount !== headerCols) {
             failedRows++;
             console.error(

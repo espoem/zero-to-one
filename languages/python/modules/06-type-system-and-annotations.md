@@ -26,6 +26,7 @@ class Repository[T, ID]:
     def get(self, entity_id: ID) -> T | None:
         return self._storage.get(entity_id)
 
+
 # Generic type aliases using the 'type' statement:
 type Vector3D[T] = tuple[T, T, T]
 type JsonValue = str | int | float | bool | None | list[JsonValue] | dict[str, JsonValue]
@@ -40,6 +41,7 @@ class Response[Data = dict[str, object], Error = str]:
     def __init__(self, data: Data | None, error: Error | None = None) -> None:
         self.data = data
         self.error = error
+
 
 # Defaults to Response[dict[str, object], str]
 default_resp: Response = Response({"status": "ok"})
@@ -70,17 +72,19 @@ classDiagram
    ```python
    dogs: list[Dog] = [Dog()]
    animals: list[Animal] = dogs  # TYPE CHECKER REJECTS THIS!
-   animals.append(Cat())        # If permitted, a Cat would now be inside a list of Dogs!
+   animals.append(Cat())  # If permitted, a Cat would now be inside a list of Dogs!
    ```
 2. **Covariance**: If $Dog <: Animal$, then $F[Dog] <: F[Animal]$ (the subtyping direction is preserved). A read-only / producer container is covariant:
    ```python
    from collections.abc import Sequence
+
    dogs: Sequence[Dog] = (Dog(),)
    animals: Sequence[Animal] = dogs  # VALID: Sequence is read-only
    ```
 3. **Contravariance**: If $Dog <: Animal$, then $F[Animal] <: F[Dog]$ (the subtyping direction is reversed). A consumer / write-only sink is contravariant:
    ```python
    from collections.abc import Callable
+
    # A function that can process ANY Animal can safely be used where a function processing Dogs is expected!
    animal_inspector: Callable[[Animal], None] = lambda a: print(a)
    dog_inspector: Callable[[Dog], None] = animal_inspector  # VALID
@@ -101,17 +105,21 @@ Python's dynamic nature is famously rooted in "duck typing" ("if it walks like a
 ```python
 from typing import Protocol, runtime_checkable
 
+
 @runtime_checkable
 class Renderable(Protocol):
     def render(self) -> str: ...
+
 
 class UIWidget:
     # Does NOT inherit from Renderable!
     def render(self) -> str:
         return "<div>Widget</div>"
 
+
 def display(component: Renderable) -> None:
     print(component.render())
+
 
 # Fully passes static type check (mypy/pyright)!
 display(UIWidget())
@@ -136,19 +144,24 @@ import time
 P = ParamSpec("P")
 R = TypeVar("R")
 
+
 def time_it(func: Callable[P, R]) -> Callable[P, R]:
     """Decorator that preserves the exact parameter types and return type of the wrapped function."""
+
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
         start = time.perf_counter()
         result = func(*args, **kwargs)
         duration = time.perf_counter() - start
         print(f"{func.__name__} took {duration:.4f}s")
         return result
+
     return wrapper
+
 
 @time_it
 def compute(x: int, y: str, debug: bool = False) -> str:
     return f"{y}:{x}"
+
 
 # Mypy strictly validates that compute takes (int, str, bool), preserving full IDE autocomplete!
 res = compute(10, "label", debug=True)
@@ -167,8 +180,10 @@ In Python, functions that check types at runtime are common (e.g. `is_string_lis
 ```python
 from typing import TypeGuard
 
+
 def is_str(val: object) -> TypeGuard[str]:
     return isinstance(val, str)
+
 
 x: str | int = get_val()
 if is_str(x):
@@ -186,8 +201,10 @@ else:
 ```python
 from typing import TypeIs
 
+
 def is_int(val: object) -> TypeIs[int]:
     return isinstance(val, int)
+
 
 def process(val: int | str) -> str:
     if is_int(val):
@@ -209,9 +226,11 @@ from typing import TypeVarTuple, Unpack
 
 Ts = TypeVarTuple("Ts")
 
+
 class Array[*Ts]:
     def __init__(self, shape: tuple[*Ts]):
         self.shape = shape
+
 
 # Array with 3 dimensions: int, int, str
 arr: Array[int, int, str] = Array((1920, 1080, "RGB"))
@@ -226,19 +245,24 @@ When a function's return type depends dynamically on the types or literal values
 ```python
 from typing import Literal, overload
 
+
 @overload
 def read_data(binary: Literal[False]) -> str: ...
+
 
 @overload
 def read_data(binary: Literal[True]) -> bytes: ...
 
+
 @overload
 def read_data(binary: bool = False) -> str | bytes: ...
+
 
 def read_data(binary: bool = False) -> str | bytes:
     if binary:
         return b"\x00\x01\x02"
     return "text data"
+
 
 # Mypy accurately infers concrete types without type assertions!
 text: str = read_data(False)

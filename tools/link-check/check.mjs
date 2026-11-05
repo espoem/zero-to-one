@@ -14,6 +14,10 @@ const SKIP = new Set([
   'dist',
   'build',
   '.mise',
+  '.venv',
+  '.pytest_cache',
+  '.mypy_cache',
+  '.ruff_cache',
   'research',
   'briefs',
 ]);

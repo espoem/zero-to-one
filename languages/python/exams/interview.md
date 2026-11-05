@@ -168,6 +168,7 @@ def append_item(val: int, target: list[int] = []) -> list[int]:
     target.append(val)
     return target
 
+
 print(append_item(1))
 print(append_item(2))
 ```
@@ -1609,6 +1610,7 @@ class EventNode:
 ```python
 import weakref
 
+
 class EventNode:
     __slots__ = ("event_id", "payload", "_parent_ref", "children", "__weakref__")
 
@@ -1661,6 +1663,7 @@ async def on_message(ws, db_pool):
 ```python
 import asyncio
 
+
 async def ingest_pipeline(ws, db_pool, max_concurrency: int = 20, max_queue: int = 100) -> None:
     queue: asyncio.Queue[str] = asyncio.Queue(maxsize=max_queue)
 
@@ -1668,7 +1671,7 @@ async def ingest_pipeline(ws, db_pool, max_concurrency: int = 20, max_queue: int
         while True:
             try:
                 msg = await queue.get()
-            except (asyncio.CancelledError, asyncio.QueueShutDown):
+            except asyncio.CancelledError, asyncio.QueueShutDown:
                 break
             try:
                 await process_and_save(msg, db_pool)
@@ -1717,6 +1720,7 @@ An enterprise framework requires a validation library where data classes validat
 
 ```python
 from typing import Any, get_args
+
 
 class ValidatedField[T]:
     def __init__(self, expected_type: type[T]) -> None:

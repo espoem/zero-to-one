@@ -35,7 +35,7 @@ describe('Module 08: JWT Vulnerabilities & DPoP Sender-Constraining', () => {
 
   it('prevents RS256/HS256 Algorithm Confusion attacks', async () => {
     // Generate RSA key pair
-    const { publicKey, privateKey } = await jose.generateKeyPair('RS256');
+    const { publicKey } = await jose.generateKeyPair('RS256');
 
     // Attacker exports the public key as text SPKI
     const spkiText = await jose.exportSPKI(publicKey);

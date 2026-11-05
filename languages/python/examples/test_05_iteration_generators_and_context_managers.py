@@ -14,6 +14,7 @@ import pytest
 
 def test_custom_iterator_protocol() -> None:
     """Proves iterable and iterator separation and StopIteration signaling."""
+
     class RangeCounter:
         def __init__(self, limit: int):
             self.limit = limit
@@ -53,6 +54,7 @@ def test_custom_iterator_protocol() -> None:
 
 def test_generator_lifecycle_and_suspension_states() -> None:
     """Proves generator states: GEN_CREATED, GEN_SUSPENDED, and GEN_CLOSED."""
+
     def simple_gen() -> Generator[int, None, str]:
         yield 100
         yield 200
@@ -78,6 +80,7 @@ def test_generator_lifecycle_and_suspension_states() -> None:
 
 def test_generator_bidirectional_send_and_throw() -> None:
     """Proves bidirectional communication using .send() and exception injection using .throw()."""
+
     def accumulator() -> Generator[float, float, None]:
         total = 0.0
         while True:
@@ -107,6 +110,7 @@ def test_generator_bidirectional_send_and_throw() -> None:
 
 def test_generator_close_and_ignored_exit_runtime_error() -> None:
     """Proves that ignoring GeneratorExit raises a RuntimeError."""
+
     def rule_violating_gen() -> Generator[int, None, None]:
         try:
             yield 1
@@ -122,6 +126,7 @@ def test_generator_close_and_ignored_exit_runtime_error() -> None:
 
 def test_subgenerator_delegation_via_yield_from() -> None:
     """Proves yield from transparently delegates yielded values and captures return value."""
+
     def worker_child() -> Generator[str, None, int]:
         yield "child_step_1"
         yield "child_step_2"
@@ -140,6 +145,7 @@ def test_subgenerator_delegation_via_yield_from() -> None:
 
 def test_context_manager_protocol_and_exception_suppression() -> None:
     """Proves __enter__ and __exit__ protocol, including exception suppression by returning True."""
+
     class SuppressExceptions:
         def __init__(self, target_type: type[BaseException]):
             self.target_type = target_type
@@ -203,6 +209,7 @@ def test_exit_stack_dynamic_unwinding() -> None:
 
 def test_exception_groups_and_except_star() -> None:
     """Proves PEP 654 ExceptionGroup decomposition via except*."""
+
     def throw_multiple() -> None:
         raise ExceptionGroup(
             "Batch execution errors",

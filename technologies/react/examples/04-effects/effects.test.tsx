@@ -227,7 +227,7 @@ describe('ref callbacks and cleanup (React 19)', () => {
     function C({ n }: { n: number }) {
       return (
         <b
-          ref={(el) => {
+          ref={(_el) => {
             log.push(`attach ${n}`);
             return () => void log.push(`detach ${n}`);
           }}

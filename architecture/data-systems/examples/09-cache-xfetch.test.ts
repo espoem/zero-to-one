@@ -11,7 +11,7 @@ export class XFetchCache<T> {
   private store = new Map<string, CacheEntry<T>>();
   dbQueryCount = 0;
 
-  get(key: string, now: number): CacheEntry<T> | null {
+  get(key: string, _now: number): CacheEntry<T> | null {
     const entry = this.store.get(key);
     if (!entry) return null;
     return entry;

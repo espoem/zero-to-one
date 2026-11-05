@@ -13,6 +13,7 @@ import pytest
 
 def test_data_vs_non_data_descriptor_precedence() -> None:
     """Proves that Data Descriptors shadow __dict__, while Non-Data Descriptors are shadowed by __dict__."""
+
     class DataDescriptor:
         def __init__(self, val: str):
             self.val = val
@@ -53,6 +54,7 @@ def test_data_vs_non_data_descriptor_precedence() -> None:
 
 def test_set_name_automatic_binding() -> None:
     """Proves PEP 487 __set_name__ passes owner class and target attribute name during class creation."""
+
     class LoggedField:
         def __init__(self) -> None:
             self.field_name = ""
@@ -86,6 +88,7 @@ def test_set_name_automatic_binding() -> None:
 
 def test_methods_as_descriptors_and_binding() -> None:
     """Proves that Python functions are non-data descriptors that bind to instances via MethodType."""
+
     class Calculator:
         def multiply(self, x: int, y: int) -> int:
             return x * y
@@ -142,6 +145,7 @@ def test_c3_linearization_and_cooperative_super() -> None:
 
 def test_c3_linearization_inconsistency_rejection() -> None:
     """Proves CPython rejects inconsistent inheritance hierarchies with TypeError at compile time."""
+
     class X:
         pass
 
@@ -156,12 +160,14 @@ def test_c3_linearization_inconsistency_rejection() -> None:
 
     # A requires X < Y; B requires Y < X. Creating subclass C(A, B) causes irreconcilable contradiction
     with pytest.raises(TypeError, match="Cannot create a consistent method resolution"):
+
         class Contradiction(A, B):  # type: ignore[misc]
             pass
 
 
 def test_metaclass_class_creation_interception() -> None:
     """Proves metaclass __new__ can inspect, validate, and inject attributes into classes."""
+
     class ValidatingMeta(type):
         def __new__(mcs, name: str, bases: tuple[type, ...], namespace: dict[str, Any]) -> type:
             # Enforce that all non-dunder method names must be lower_case
@@ -179,7 +185,10 @@ def test_metaclass_class_creation_interception() -> None:
 
     assert getattr(ValidClass, "__generated_by__") == "ValidatingMeta"
 
-    with pytest.raises(TypeError, match="Method 'InvalidMethod' in class 'BrokenClass' must be lowercase"):
+    with pytest.raises(
+        TypeError, match="Method 'InvalidMethod' in class 'BrokenClass' must be lowercase"
+    ):
+
         class BrokenClass(metaclass=ValidatingMeta):
             def InvalidMethod(self) -> None:
                 pass
@@ -187,6 +196,7 @@ def test_metaclass_class_creation_interception() -> None:
 
 def test_abc_enforcement_and_subclasshook() -> None:
     """Proves ABC prevents instantiation of incomplete classes and supports structural __subclasshook__."""
+
     class AbstractWorker(abc.ABC):
         @abc.abstractmethod
         def execute(self) -> str:

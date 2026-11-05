@@ -119,3 +119,5 @@ mise exec -- npm test
 # Run TypeScript typecheck
 mise exec -- npm run typecheck
 ```
+
+Lint and format checks run against the shared root configs: `npm run lint` and `npm run fmt:check` (`npm run fmt` applies the formatting).

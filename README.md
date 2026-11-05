@@ -100,3 +100,16 @@ To bridge technical English documentation with accurate, established Czech acade
 New tracks add their glossary here when they land. All glossaries follow the discipline recorded in [AGENTS.md](./AGENTS.md): shared terms reuse the root definition and Czech translation verbatim; no fabricated neologisms.
 
 ---
+
+## 4. Getting Started & Verification
+
+Install the repository-wide tooling and run the full gate from the repository root (Node 26):
+
+```bash
+npm ci
+npm run check
+```
+
+`npm run check` runs, in order: `oxfmt --check` (formatting), `oxlint` (0 errors), then the Markdown gates `tools/wrap-check` (no hard-wrapped prose), `tools/table-check`, `tools/link-check` (links to planned tracks are allowed) and `tools/mermaid-check` (install its dependencies once with `cd tools/mermaid-check && npm ci`). Run it before every commit.
+
+Each Node track also exposes `npm run lint`, `npm run fmt` and `npm run fmt:check` next to `npm test` and `npm run typecheck`; the Python track uses `ruff check` and `ruff format --check`. See the "Running" section of each track's README.

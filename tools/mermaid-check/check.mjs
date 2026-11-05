@@ -20,7 +20,18 @@ for (const [name, spec] of [
   engines.push([name, m]);
 }
 
-const SKIP = new Set(['node_modules', '.git', 'styled-system', 'dist', 'build', '.mise']);
+const SKIP = new Set([
+  'node_modules',
+  '.git',
+  'styled-system',
+  'dist',
+  'build',
+  '.mise',
+  '.venv',
+  '.pytest_cache',
+  '.mypy_cache',
+  '.ruff_cache',
+]);
 async function* walk(dir) {
   for (const e of await readdir(dir, { withFileTypes: true })) {
     if (SKIP.has(e.name)) continue;

@@ -46,6 +46,8 @@ mise exec -- npm test           # all suites: node --test "examples/**/*.test.{j
 mise exec -- npm run typecheck  # tsc --noEmit (TypeScript 7)
 ```
 
+Lint and format checks run against the shared root configs: `npm run lint` and `npm run fmt:check` (`npm run fmt` applies the formatting).
+
 Run one module: `mise exec -- node --test examples/06-agents-realms-job-queue.test.js`.
 
 Notes:

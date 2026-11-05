@@ -148,6 +148,8 @@ npm run test:02
 npm run test:13
 ```
 
+Lint and format checks run against the shared root configs: `npm run lint` and `npm run fmt:check` (`npm run fmt` applies the formatting).
+
 ### Option B: Running with Docker Compose (PostgreSQL 18)
 
 ```bash

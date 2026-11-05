@@ -106,3 +106,5 @@ mise exec -- npm run typecheck
 # Verify all Mermaid diagrams
 node ../../tools/mermaid-check/check.mjs .
 ```
+
+Lint and format checks run against the shared root configs: `npm run lint` and `npm run fmt:check` (`npm run fmt` applies the formatting).

@@ -28,6 +28,7 @@ def test_thread_data_race_without_lock_vs_with_lock() -> None:
 
     under multi-threading without locks, and that threading.Lock restores correctness.
     """
+
     class UnsafeCounter:
         def __init__(self) -> None:
             self.value = 0
@@ -72,6 +73,7 @@ def test_thread_data_race_without_lock_vs_with_lock() -> None:
 
 def test_thread_pool_executor_io_concurrency() -> None:
     """Proves ThreadPoolExecutor executes concurrent tasks with future results."""
+
     def simulate_io_fetch(item_id: int) -> dict[str, int]:
         time.sleep(0.01)  # Releases GIL during sleep
         return {"id": item_id, "status": 200}

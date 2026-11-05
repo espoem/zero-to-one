@@ -182,6 +182,7 @@ async def test_asyncio_signal_handling_lifecycle() -> None:
     try:
         # Trigger signal locally to this process
         import os
+
         os.kill(os.getpid(), signal.SIGUSR1)
 
         # Await the event loop processing the signal

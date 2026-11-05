@@ -30,12 +30,15 @@ from typing import TypeVar, Generic, Sequence
 T = TypeVar("T")
 R = TypeVar("R")
 
+
 class Transformer(Generic[T, R]):
     def __init__(self, mapper: callable) -> None:
         self.mapper = mapper
 
+
 # NOW: Python 3.12 - 3.15 (PEP 695)
 from collections.abc import Callable
+
 
 class Transformer[T, R]:
     def __init__(self, mapper: Callable[[T], R]) -> None:
@@ -50,6 +53,7 @@ async def fetch_all_then(urls: list[str]) -> list[str]:
     # If one fetch raises, others keep running in the background as orphaned tasks!
     results = await asyncio.gather(*(fetch(u) for u in urls))
     return results
+
 
 # NOW: asyncio.TaskGroup (Guaranteed structured lifecycle)
 async def fetch_all_now(urls: list[str]) -> list[str]:
@@ -138,7 +142,10 @@ from dataclasses import dataclass
 from typing import Callable, Generic, TypeVar
 
 # Trace context propagation
-current_trace_id: contextvars.ContextVar[str] = contextvars.ContextVar("current_trace_id", default="untracked")
+current_trace_id: contextvars.ContextVar[str] = contextvars.ContextVar(
+    "current_trace_id", default="untracked"
+)
+
 
 @dataclass(frozen=True, slots=True)
 class Task[T, R]:
@@ -147,12 +154,14 @@ class Task[T, R]:
     handler: Callable[[T], R]
     timeout_seconds: float = 2.0
 
+
 @dataclass(frozen=True, slots=True)
 class TaskResult[R]:
     task_id: str
     result: R | None
     error: str | None
     trace_id: str
+
 
 class AsyncOrchestrator:
     def __init__(self, concurrency: int = 4, max_queue_size: int = 100) -> None:
@@ -169,7 +178,7 @@ class AsyncOrchestrator:
         while True:
             try:
                 task = await self._queue.get()
-            except (asyncio.CancelledError, asyncio.QueueShutDown):
+            except asyncio.CancelledError, asyncio.QueueShutDown:
                 break
 
             trace = current_trace_id.get()

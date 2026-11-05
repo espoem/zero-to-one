@@ -45,10 +45,10 @@ def test_cprofile_deterministic_tracing_and_pstats() -> None:
 
     # Direct stat dictionary verification
     # stats.stats key is (filename, line_number, func_name)
-    raw_stats: dict[tuple[str, int, str], tuple[int, int, float, float, dict[object, object]]] = getattr(stats, "stats")
-    sub_worker_stats = [
-        val for key, val in raw_stats.items() if key[2] == "_sub_worker"
-    ]
+    raw_stats: dict[tuple[str, int, str], tuple[int, int, float, float, dict[object, object]]] = (
+        getattr(stats, "stats")
+    )
+    sub_worker_stats = [val for key, val in raw_stats.items() if key[2] == "_sub_worker"]
     assert len(sub_worker_stats) == 1
     cc, nc, tottime, cumtime, _callers = sub_worker_stats[0]
     assert nc == 50  # Exactly 50 calls recorded deterministically
@@ -57,6 +57,7 @@ def test_cprofile_deterministic_tracing_and_pstats() -> None:
 
 def test_local_variable_caching_bytecode() -> None:
     """Verify that local variable binding changes LOAD_GLOBAL to LOAD_FAST in bytecode."""
+
     def unoptimized(data: list[float]) -> list[float]:
         return [math.sqrt(x) for x in data]
 

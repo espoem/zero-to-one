@@ -34,6 +34,7 @@ async function loadClientApp(): Promise<Component<AppProps>> {
 
 /** Install the hydration bootstrap (`_$HY`) the way the inline script would. Idempotent. */
 function bootstrap(script: string): void {
+  // oxlint-disable-next-line no-eval -- the test must execute the server-emitted hydration bootstrap exactly as a browser would run the inline <script>
   (0, eval)(script.replace(/^<script>/, '').replace(/<\/script>[\s\S]*$/, ''));
 }
 

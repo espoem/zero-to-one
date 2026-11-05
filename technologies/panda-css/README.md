@@ -70,6 +70,8 @@ mise exec -- npm test                # node --test examples/tests/*.test.ts
 mise exec -- npm run test:update-snapshots   # only when a CSS change is intended; review the diff
 ```
 
+Lint and format checks run against the shared root configs: `npm run lint` and `npm run fmt:check` (`npm run fmt` applies the formatting).
+
 `npm test` runs, without network access:
 
 | Suite | Proves |

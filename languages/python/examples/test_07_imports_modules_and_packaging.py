@@ -35,6 +35,7 @@ def test_sys_modules_cache_and_reload() -> None:
 
 def test_custom_meta_path_finder_and_loader() -> None:
     """Proves custom module generation via sys.meta_path finder and loader protocols."""
+
     class VirtualModuleLoader(importlib.abc.Loader):
         def __init__(self, spec: Any):
             self.spec = spec
@@ -54,6 +55,7 @@ def test_custom_meta_path_finder_and_loader() -> None:
             if fullname == self.TARGET_MODULE:
                 loader = VirtualModuleLoader(None)
                 from importlib.machinery import ModuleSpec
+
                 return ModuleSpec(fullname, loader, origin="virtual_memory")
             return None
 

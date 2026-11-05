@@ -90,6 +90,7 @@ def test_paramspec_decorator_signature_preservation() -> None:
             result = func(*args, **kwargs)
             call_log.append(f"finished_{func.__name__}")
             return result
+
         return wrapper
 
     @log_call
@@ -103,6 +104,7 @@ def test_paramspec_decorator_signature_preservation() -> None:
 
 def test_type_is_bidirectional_narrowing() -> None:
     """Proves PEP 742 TypeIs narrows types in positive and negative execution branches."""
+
     def is_string(val: object) -> TypeIs[str]:
         return isinstance(val, str)
 

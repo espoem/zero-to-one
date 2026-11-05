@@ -19,13 +19,18 @@
     "test:10": "node --experimental-strip-types examples/10-server-programming-and-security.ts",
     "test:11": "node --experimental-strip-types examples/11-partitioning-and-connections.ts",
     "test:12": "node --experimental-strip-types examples/12-durability-backup-and-pitr.ts",
-    "test:13": "node --experimental-strip-types examples/13-replication-ha-and-extensions.ts"
+    "test:13": "node --experimental-strip-types examples/13-replication-ha-and-extensions.ts",
+    "lint": "oxlint -c ../../.oxlintrc.json .",
+    "fmt": "oxfmt -c ../../.oxfmtrc.json .",
+    "fmt:check": "oxfmt -c ../../.oxfmtrc.json --check ."
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.12"
   },
   "devDependencies": {
     "@types/node": "^26.0.0",
+    "oxfmt": "0.76.0",
+    "oxlint": "1.91.0",
     "typescript": "^7.0.2"
   }
 }

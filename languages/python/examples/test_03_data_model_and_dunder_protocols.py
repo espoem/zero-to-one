@@ -11,6 +11,7 @@ import pytest
 
 def test_repr_and_str_fallback_contract() -> None:
     """Proves that __repr__ acts as a fallback for __str__, while __str__ does not fallback to __repr__."""
+
     class OnlyRepr:
         def __init__(self, val: int):
             self.val = val
@@ -38,6 +39,7 @@ def test_repr_and_str_fallback_contract() -> None:
 
 def test_equality_and_hashing_invariants() -> None:
     """Proves the hashing invariant and the automatic __hash__ = None rule."""
+
     class PersonWithoutHash:
         def __init__(self, person_id: int):
             self.person_id = person_id
@@ -86,6 +88,7 @@ def test_equality_and_hashing_invariants() -> None:
 
 def test_sequence_protocol_with_slice_handling() -> None:
     """Proves custom sequence implementation with len, negative index, and slice handling."""
+
     class CustomSequence:
         def __init__(self, items: list[int]):
             self._items = list(items)
@@ -118,6 +121,7 @@ def test_sequence_protocol_with_slice_handling() -> None:
 
 def test_reflected_arithmetic_operators() -> None:
     """Proves cooperative inter-type arithmetic via __mul__ and __rmul__ using NotImplemented."""
+
     class Currency:
         def __init__(self, amount: float, currency: str = "USD"):
             self.amount = amount
@@ -149,6 +153,7 @@ def test_reflected_arithmetic_operators() -> None:
 
 def test_slots_memory_and_attribute_restriction() -> None:
     """Proves that __slots__ prevents dynamic attributes, eliminates __dict__, and reduces memory."""
+
     class StandardClass:
         def __init__(self, x: int, y: int):
             self.x = x
@@ -180,6 +185,7 @@ def test_slots_memory_and_attribute_restriction() -> None:
 
 def test_init_subclass_plugin_registration() -> None:
     """Proves PEP 487 __init_subclass__ auto-registration mechanism with kwargs."""
+
     class PluginBase:
         registry: dict[str, type["PluginBase"]] = {}
 
@@ -203,5 +209,6 @@ def test_init_subclass_plugin_registration() -> None:
 
     # Verify duplicate name rejection
     with pytest.raises(ValueError, match="Duplicate plugin: s3"):
+
         class DuplicateS3(PluginBase, plugin_name="s3"):
             pass

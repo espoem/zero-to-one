@@ -54,7 +54,8 @@ class Vector:
     __slots__ = ("x", "y")  # Eliminates __dict__, saves >60% RAM
 
     def __init__(self, x: float, y: float) -> None:
-        self.x = x; self.y = y
+        self.x = x
+        self.y = y
 
     def __add__(self, other: object) -> Vector:
         if not isinstance(other, Vector):
@@ -97,12 +98,16 @@ class Base:
     def __init__(self, **kwargs: object) -> None:
         super().__init__(**kwargs)
 
+
 class MixinA(Base):
     def __init__(self, **kwargs: object) -> None:
         super().__init__(**kwargs)  # Calls next in MRO, NOT necessarily Base!
 
+
 class Diamond(MixinA, Base):
     pass
+
+
 # Inspect MRO: Diamond.mro() or Diamond.__mro__
 ```
 
@@ -119,19 +124,22 @@ class Repository[T, ID]:
     def get(self, item_id: ID) -> T | None:
         return self._data.get(item_id)
 
+
 type JSONValue = str | int | float | bool | None | list[JSONValue] | dict[str, JSONValue]
 
 # Bidirectional Type Narrowing (PEP 742)
 from typing import TypeIs
 
+
 def is_str(val: object) -> TypeIs[str]:
     return isinstance(val, str)
 
+
 def process(val: str | int) -> None:
     if is_str(val):
-        val.upper()   # Narrowed to str
+        val.upper()  # Narrowed to str
     else:
-        val + 10      # Narrowed to int (removed str from union)
+        val + 10  # Narrowed to int (removed str from union)
 ```
 
 ---
@@ -144,9 +152,11 @@ def subgen():
     val = yield "ready"
     return f"processed: {val}"
 
+
 def delegator():
     result = yield from subgen()  # Two-way pipe: .send() goes to subgen; return value bound to result
     yield result
+
 
 # Modern ExceptionGroup Handling (PEP 654)
 try:
@@ -165,6 +175,7 @@ except* KeyError as eg:
 ```python
 import asyncio
 
+
 async def pipeline():
     # Bounded queue with backpressure and shutdown protocol (Python 3.13+)
     queue: asyncio.Queue[str] = asyncio.Queue(maxsize=100)
@@ -173,7 +184,7 @@ async def pipeline():
         while True:
             try:
                 item = await queue.get()
-            except (asyncio.CancelledError, asyncio.QueueShutDown):
+            except asyncio.CancelledError, asyncio.QueueShutDown:
                 break
             try:
                 # Deadline enforcement (PEP 654 / Python 3.11+)
@@ -200,14 +211,17 @@ async def pipeline():
 import pytest
 from hypothesis import given, strategies as st
 
+
 # Parametrized Unit Test with Exception Match
 @pytest.mark.parametrize("input_val, expected", [(2, 4), (3, 9)])
 def test_squares(input_val: int, expected: int) -> None:
-    assert input_val ** 2 == expected
+    assert input_val**2 == expected
+
 
 def test_exception_verification() -> None:
     with pytest.raises(ValueError, match=r"^Invalid ID: \d+$"):
         raise ValueError("Invalid ID: 999")
+
 
 # Property-Based Testing with Shrinking
 @given(st.lists(st.integers()))

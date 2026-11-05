@@ -7,17 +7,17 @@ import fc from 'fast-check';
  * Order M: Maximum M children per internal node, maximum M-1 keys per node.
  * Leaf nodes maintain a right-sibling pointer for sequential range scans.
  */
-interface BPlusNode<K, V> {
+interface BPlusNode<K> {
   isLeaf: boolean;
   keys: K[];
 }
 
-interface InternalNode<K, V> extends BPlusNode<K, V> {
+interface InternalNode<K> extends BPlusNode<K> {
   isLeaf: false;
-  children: BPlusNode<K, V>[];
+  children: BPlusNode<K>[];
 }
 
-interface LeafNode<K, V> extends BPlusNode<K, V> {
+interface LeafNode<K, V> extends BPlusNode<K> {
   isLeaf: true;
   values: V[];
   next: LeafNode<K, V> | null;
@@ -25,7 +25,7 @@ interface LeafNode<K, V> extends BPlusNode<K, V> {
 
 export class BPlusTree<K extends string | number, V> {
   readonly order: number;
-  root: BPlusNode<K, V>;
+  root: BPlusNode<K>;
 
   constructor(order = 4) {
     assert(order >= 3, 'B+Tree order must be at least 3');
@@ -36,7 +36,7 @@ export class BPlusTree<K extends string | number, V> {
   get(key: K): V | null {
     let curr = this.root;
     while (!curr.isLeaf) {
-      const internal = curr as InternalNode<K, V>;
+      const internal = curr as InternalNode<K>;
       let idx = 0;
       while (idx < internal.keys.length && key >= internal.keys[idx]!) {
         idx++;
@@ -53,7 +53,7 @@ export class BPlusTree<K extends string | number, V> {
     const split = this.insertInternal(this.root, key, value);
     if (split) {
       // Root split
-      const newRoot: InternalNode<K, V> = {
+      const newRoot: InternalNode<K> = {
         isLeaf: false,
         keys: [split.promotedKey],
         children: [this.root, split.newNode],
@@ -63,10 +63,10 @@ export class BPlusTree<K extends string | number, V> {
   }
 
   private insertInternal(
-    node: BPlusNode<K, V>,
+    node: BPlusNode<K>,
     key: K,
     value: V,
-  ): { promotedKey: K; newNode: BPlusNode<K, V> } | null {
+  ): { promotedKey: K; newNode: BPlusNode<K> } | null {
     if (node.isLeaf) {
       const leaf = node as LeafNode<K, V>;
       let idx = 0;
@@ -99,7 +99,7 @@ export class BPlusTree<K extends string | number, V> {
 
       return { promotedKey: rightLeaf.keys[0]!, newNode: rightLeaf };
     } else {
-      const internal = node as InternalNode<K, V>;
+      const internal = node as InternalNode<K>;
       let idx = 0;
       while (idx < internal.keys.length && key >= internal.keys[idx]!) {
         idx++;
@@ -119,7 +119,7 @@ export class BPlusTree<K extends string | number, V> {
       const mid = Math.floor(internal.keys.length / 2);
       const promotedKey = internal.keys[mid]!;
 
-      const rightInternal: InternalNode<K, V> = {
+      const rightInternal: InternalNode<K> = {
         isLeaf: false,
         keys: internal.keys.splice(mid + 1),
         children: internal.children.splice(mid + 1),
@@ -133,7 +133,7 @@ export class BPlusTree<K extends string | number, V> {
   rangeScan(startKey: K, endKey: K): { key: K; value: V }[] {
     let curr = this.root;
     while (!curr.isLeaf) {
-      const internal = curr as InternalNode<K, V>;
+      const internal = curr as InternalNode<K>;
       let idx = 0;
       while (idx < internal.keys.length && startKey >= internal.keys[idx]!) {
         idx++;

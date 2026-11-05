@@ -425,7 +425,7 @@ describe('06 · errors', () => {
     const [id, setId] = createSignal(1);
     const data = createRoot(() => createMemo(() => api.fetch(id())));
     const { container } = render(() => (
-      <Errored fallback={(err) => <p>error</p>}>
+      <Errored fallback={(_err) => <p>error</p>}>
         <Loading fallback={<p>loading</p>}>
           <p>{data()}</p>
         </Loading>

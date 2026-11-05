@@ -33,6 +33,7 @@ class CountUpTo:
         # Returns a fresh iterator instance
         return CountUpToIterator(self.limit)
 
+
 class CountUpToIterator:
     def __init__(self, limit: int):
         self.limit = limit
@@ -109,6 +110,7 @@ def running_average():
         count += 1
         average = total / count
 
+
 avg = running_average()
 next(avg)  # Prime generator (advances to first yield)
 assert avg.send(10) == 10.0
@@ -143,9 +145,11 @@ def sub_task():
     yield 2
     return "Finished SubTask"
 
+
 def main_coordinator():
     result = yield from sub_task()
     yield f"Result: {result}"
+
 
 gen = main_coordinator()
 assert list(gen) == [1, 2, "Result: Finished SubTask"]
@@ -190,6 +194,7 @@ When an application needs to manage an arbitrary or dynamic number of context ma
 ```python
 from contextlib import ExitStack
 
+
 def process_multiple_files(paths: list[str]) -> list[str]:
     contents = []
     with ExitStack() as stack:
@@ -216,8 +221,13 @@ When dealing with concurrent operations (such as multiple parallel tasks in an `
 def run_concurrent_batch():
     raise ExceptionGroup(
         "Batch failure",
-        [ValueError("Invalid id: -1"), KeyError("Missing key: 'token'"), ValueError("Invalid count: 0")]
+        [
+            ValueError("Invalid id: -1"),
+            KeyError("Missing key: 'token'"),
+            ValueError("Invalid count: 0"),
+        ],
     )
+
 
 try:
     run_concurrent_batch()

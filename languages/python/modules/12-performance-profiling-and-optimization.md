@@ -50,8 +50,10 @@ import cProfile
 import pstats
 import io
 
+
 def heavy_computation():
     return sum(i * i for i in range(100_000))
+
 
 profiler = cProfile.Profile()
 profiler.enable()
@@ -85,8 +87,11 @@ Global and module-level lookups (`math.sin`, `len`) require hash table searches 
 ```python
 # SLOW: 1,000,000 LOAD_GLOBAL lookups on 'math' and attribute lookups on 'sqrt'
 import math
+
+
 def compute_slow(data: list[float]) -> list[float]:
     return [math.sqrt(x) for x in data]
+
 
 # FAST: Local variable binding loads sqrt once via LOAD_FAST
 def compute_fast(data: list[float]) -> list[float]:

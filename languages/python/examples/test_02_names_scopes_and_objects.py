@@ -52,6 +52,7 @@ def test_tuple_augmented_assignment_anomaly() -> None:
 
 def test_mutable_default_argument_trap_and_idiomatic_fix() -> None:
     """Demonstrates the mutable default argument trap and its idiomatic None-sentinel fix."""
+
     # Anti-pattern: default list evaluated once at function definition time
     def broken_append(val: int, acc: list[int] = []) -> list[int]:  # noqa: B006
         acc.append(val)
@@ -90,8 +91,10 @@ def test_late_binding_closure_trap_and_fixes() -> None:
     # Fix 1: Default argument captures current loop value at definition time
     fixed_callbacks_1: list[Callable[[], int]] = []
     for idx in range(4):
+
         def default_arg_fn(captured: int = idx) -> int:
             return captured
+
         fixed_callbacks_1.append(default_arg_fn)
     assert [cb() for cb in fixed_callbacks_1] == [0, 1, 2, 3]
 
@@ -139,6 +142,7 @@ def test_comprehension_scope_isolation() -> None:
 
 def test_annotationlib_deferred_annotations() -> None:
     """Proves PEP 649 / PEP 749 deferred annotation inspection using standard library annotationlib."""
+
     class Person:
         name: str
         age: int

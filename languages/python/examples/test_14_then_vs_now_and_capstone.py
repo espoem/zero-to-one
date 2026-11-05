@@ -16,7 +16,9 @@ from typing import Any, TypeIs
 import pytest
 
 # ContextVar for distributed trace ID propagation
-trace_context: contextvars.ContextVar[str] = contextvars.ContextVar("trace_context", default="untracked")
+trace_context: contextvars.ContextVar[str] = contextvars.ContextVar(
+    "trace_context", default="untracked"
+)
 
 
 # 1. Capstone Data Classes and Orchestrator
@@ -50,7 +52,7 @@ class AsyncOrchestrator:
         while True:
             try:
                 task = await self.queue.get()
-            except (asyncio.CancelledError, asyncio.QueueShutDown):
+            except asyncio.CancelledError, asyncio.QueueShutDown:
                 break
 
             current_trace = trace_context.get()
@@ -139,6 +141,7 @@ async def test_capstone_orchestrator_execution() -> None:
 
 def test_pep695_generics_and_typeis_narrowing() -> None:
     """Verify PEP 695 generic class and PEP 742 TypeIs narrowing function."""
+
     class Container[T]:
         def __init__(self, value: T) -> None:
             self.value: T = value

@@ -165,6 +165,8 @@ mise exec -- node --test examples/08-jwt-vulnerabilities-and-dpop.test.ts
 mise exec -- npm run typecheck
 ```
 
+Lint and format checks run against the shared root configs: `npm run lint` and `npm run fmt:check` (`npm run fmt` applies the formatting).
+
 ### Diagram Verification
 
 Validate that all Mermaid diagrams parse across both Mermaid 11 and 12:

@@ -360,7 +360,7 @@ export const appRouter = createRouter({
   updateEmail: procedure<
     { id: string; email: string },
     { success: boolean; updatedAt: number }
-  >().mutation(async ({ id, email }) => {
+  >().mutation(async (_input) => {
     return { success: true, updatedAt: 1700000000 };
   }),
 });

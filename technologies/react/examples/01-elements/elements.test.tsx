@@ -15,7 +15,7 @@ import {
   type ReactElement,
   type Ref,
 } from 'react';
-import { jsx, jsxs } from 'react/jsx-runtime';
+import { jsxs } from 'react/jsx-runtime';
 import { createRoot } from 'react-dom/client';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { act } from 'react';

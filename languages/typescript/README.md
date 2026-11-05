@@ -60,6 +60,8 @@ mise exec -- npm run typecheck    # tsc 7 on the track + the React and Solid JSX
 mise exec -- node --test examples/09-conditional-mapped/   # one module
 ```
 
+Lint and format checks run against the shared root configs: `npm run lint` and `npm run fmt:check` (`npm run fmt` applies the formatting).
+
 How the tests prove things:
 
 - **Runtime tests** use `node --test`; Node 26 runs `.ts` files by stripping types, which is why the track enforces `erasableSyntaxOnly` and `verbatimModuleSyntax`.

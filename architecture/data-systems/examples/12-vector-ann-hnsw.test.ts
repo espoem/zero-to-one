@@ -21,7 +21,6 @@ export class InvertedIndexBM25 {
     this.documents.set(docId, tokens);
     this.totalLength += tokens.length;
 
-    const tfMap = new Map<number, number>();
     for (const t of tokens) {
       if (!this.postings.has(t)) {
         this.postings.set(t, new Map());

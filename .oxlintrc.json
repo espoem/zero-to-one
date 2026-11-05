@@ -59,6 +59,18 @@
       }
     },
     {
+      "files": ["languages/typescript/examples/06-modules-tsconfig/fixtures/module-detection/**"],
+      "rules": {
+        "no-unused-vars": "off"
+      }
+    },
+    {
+      "files": ["languages/javascript/examples/fixtures/08-modules/live/**"],
+      "rules": {
+        "import/namespace": "off"
+      }
+    },
+    {
       "files": ["languages/javascript/examples/10-resource-management-temporal.test.js"],
       "rules": {
         "no-unused-vars": "off"

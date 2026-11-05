@@ -266,6 +266,7 @@ export function TextInput({
 }
 
 export function RefCallbacks() {
+  // oxlint-disable-next-line no-unused-vars -- teaching example: `node` is the assignment target the ref callbacks below demonstrate; it is never read
   let node: HTMLDivElement | null = null;
   return (
     <>

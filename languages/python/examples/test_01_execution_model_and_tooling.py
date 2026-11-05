@@ -80,6 +80,7 @@ GLOBAL_FACTOR: int = 2
 
 def test_bytecode_fast_locals_vs_global_lookup() -> None:
     """Proves that local variables emit LOAD_FAST/STORE_FAST while globals emit LOAD_GLOBAL."""
+
     def compute(val: int) -> int:
         factor = 3
         return val * factor * GLOBAL_FACTOR
@@ -115,6 +116,7 @@ def test_unbound_local_error_compile_time_scope_trap() -> None:
 
 def test_code_object_immutability_and_attributes() -> None:
     """Proves the internal structure and immutability of PyCodeObject."""
+
     def sample_func(a: int, b: int = 10) -> int:
         """Sample docstring."""
         c = a + b
@@ -135,6 +137,7 @@ def test_code_object_immutability_and_attributes() -> None:
 
 def test_peephole_constant_folding() -> None:
     """Proves that CPython's bytecode compiler folds constant expressions at compile time."""
+
     def calculate() -> int:
         return 60 * 60 * 24  # 86400 seconds in a day
 

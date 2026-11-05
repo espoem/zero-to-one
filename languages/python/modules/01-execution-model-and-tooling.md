@@ -60,9 +60,11 @@ The compiler translates the AST and symbol table into a Control Flow Graph (CFG)
 ```python
 import dis
 
+
 def calculate_discount(price: float, discount: float) -> float:
     final_price = price * (1.0 - discount)
     return final_price
+
 
 dis.dis(calculate_discount)
 ```

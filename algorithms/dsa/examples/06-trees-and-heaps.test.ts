@@ -1,6 +1,5 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import fc from 'fast-check';
 
 // Standard Min-Heap
 export class MinHeap<T> {
@@ -191,33 +190,34 @@ export class Trie {
   private children = new Map<string, Trie>();
   private isEnd = false;
 
-  insert(word: string): void {
-    let node: Trie = this;
-    for (const char of word) {
-      if (!node.children.has(char)) {
-        node.children.set(char, new Trie());
-      }
-      node = node.children.get(char)!;
+  /** Walk `s` from this node; `null` when the path leaves the trie. */
+  private walk(s: string): Trie | null {
+    return Array.from(s).reduce<Trie | null>(
+      (node, char) => node?.children.get(char) ?? null,
+      this,
+    );
+  }
+
+  /** The child for `char`, created when missing. */
+  private childFor(char: string): Trie {
+    let child = this.children.get(char);
+    if (!child) {
+      child = new Trie();
+      this.children.set(char, child);
     }
-    node.isEnd = true;
+    return child;
+  }
+
+  insert(word: string): void {
+    Array.from(word).reduce<Trie>((node, char) => node.childFor(char), this).isEnd = true;
   }
 
   search(word: string): boolean {
-    let node: Trie = this;
-    for (const char of word) {
-      if (!node.children.has(char)) return false;
-      node = node.children.get(char)!;
-    }
-    return node.isEnd;
+    return this.walk(word)?.isEnd ?? false;
   }
 
   startsWith(prefix: string): boolean {
-    let node: Trie = this;
-    for (const char of prefix) {
-      if (!node.children.has(char)) return false;
-      node = node.children.get(char)!;
-    }
-    return true;
+    return this.walk(prefix) !== null;
   }
 }
 

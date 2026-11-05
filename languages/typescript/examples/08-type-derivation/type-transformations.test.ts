@@ -135,7 +135,7 @@ export type MyReturnType<T> = T extends (...args: any[]) => infer R ? R : never;
 export type MyParameters<T> = T extends (...args: infer P) => any ? P : never;
 export type MyAwaited<T> = T extends Promise<infer U> ? MyAwaited<U> : T;
 
-function sampleFn(name: string, count: number): { success: boolean } {
+function sampleFn(_name: string, _count: number): { success: boolean } {
   return { success: true };
 }
 

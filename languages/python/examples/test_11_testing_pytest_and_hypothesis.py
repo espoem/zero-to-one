@@ -44,7 +44,11 @@ def test_parametric_squaring(input_val: int, expected_squared: int) -> None:
     assert input_val * input_val == expected_squared
 
 
-@given(st.dictionaries(keys=st.text(min_size=1, max_size=20), values=st.integers(min_value=-1000, max_value=1000)))
+@given(
+    st.dictionaries(
+        keys=st.text(min_size=1, max_size=20), values=st.integers(min_value=-1000, max_value=1000)
+    )
+)
 def test_hypothesis_json_roundtrip_property(data: dict[str, int]) -> None:
     """Hypothesis property test proving serialization roundtrip invertibility:
 
@@ -88,6 +92,7 @@ def test_autospec_mock_prevents_mock_drift() -> None:
 
 def test_strict_exception_matching() -> None:
     """Proves pytest.raises matches exception type and regex message pattern."""
+
     def parse_port(val: str) -> int:
         port = int(val)
         if not (1 <= port <= 65535):
@@ -100,8 +105,11 @@ def test_strict_exception_matching() -> None:
 
 def test_warning_contract_verification() -> None:
     """Proves pytest.warns captures and asserts on deprecation warnings."""
+
     def legacy_api() -> str:
-        warnings.warn("legacy_api() is deprecated; use modern_api() instead", DeprecationWarning, stacklevel=2)
+        warnings.warn(
+            "legacy_api() is deprecated; use modern_api() instead", DeprecationWarning, stacklevel=2
+        )
         return "legacy"
 
     with pytest.warns(DeprecationWarning, match="legacy_api\\(\\) is deprecated"):

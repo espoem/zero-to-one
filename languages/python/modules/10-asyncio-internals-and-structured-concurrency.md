@@ -70,15 +70,18 @@ sequenceDiagram
 ```python
 import asyncio
 
+
 async def fetch_user(user_id: int) -> dict[str, int]:
     await asyncio.sleep(0.01)
     return {"id": user_id}
+
 
 async def fetch_profile(user_id: int) -> dict[str, str]:
     await asyncio.sleep(0.01)
     if user_id < 0:
         raise ValueError(f"Invalid user id: {user_id}")
     return {"name": "Alice"}
+
 
 async def load_dashboard(user_id: int):
     async with asyncio.TaskGroup() as tg:
@@ -141,6 +144,7 @@ Python 3.11+ introduced `asyncio.timeout(delay)` as an asynchronous context mana
 ```python
 import asyncio
 
+
 async def fetch_with_deadline():
     try:
         async with asyncio.timeout(2.0):
@@ -171,6 +175,7 @@ import asyncio
 # Request-scoped correlation ID
 request_id_ctx: ContextVar[str] = ContextVar("request_id", default="unassigned")
 
+
 async def worker(task_name: str, req_id: str):
     # Set context variable for this specific task
     request_id_ctx.set(req_id)
@@ -178,10 +183,12 @@ async def worker(task_name: str, req_id: str):
     # The variable value is strictly isolated to this coroutine context!
     assert request_id_ctx.get() == req_id
 
+
 async def main():
     async with asyncio.TaskGroup() as tg:
         tg.create_task(worker("t1", "REQ-1001"))
         tg.create_task(worker("t2", "REQ-1002"))
+
 
 asyncio.run(main())
 ```
@@ -198,10 +205,12 @@ To safely execute blocking functions without stalling the event loop, use `async
 import asyncio
 import time
 
+
 def sync_heavy_computation(data: str) -> str:
     # Synchronous blocking call
     time.sleep(0.5)
     return data.upper()
+
 
 async def async_handler():
     # Runs sync_heavy_computation in a separate worker thread from CPython's ThreadPoolExecutor,

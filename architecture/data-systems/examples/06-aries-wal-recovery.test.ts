@@ -148,7 +148,7 @@ describe('ARIES Crash Recovery Algorithm', () => {
     aries.diskPages.set(20, { value: 999, pageLsn: l5.lsn });
 
     // CRASH OCCURS HERE!
-    const { loserTxns, redoneLsns, undoneLsns } = aries.recover();
+    const { loserTxns, undoneLsns } = aries.recover();
 
     // Analysis correctly identified T2 as loser
     assert.deepEqual(Array.from(loserTxns), [2]);
@@ -185,7 +185,7 @@ describe('ARIES Crash Recovery Algorithm', () => {
     aries.diskPages.set(10, { value: 0, pageLsn: clr.lsn });
 
     // Second recovery runs
-    const res = aries.recover();
+    aries.recover();
 
     // The CLR was not undone; page 10 remains 0
     assert.equal(aries.diskPages.get(10)?.value, 0);

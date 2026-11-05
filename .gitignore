@@ -9,6 +9,9 @@ out/
 *.tsbuildinfo
 target/
 __pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 *.pyc
 .venv/
 env/

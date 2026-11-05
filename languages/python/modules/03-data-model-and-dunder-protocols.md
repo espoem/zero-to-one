@@ -44,6 +44,7 @@ class Account:
             return NotImplemented
         return self.account_id == other.account_id
 
+
 acc = Account("ACC-100")
 # Attempting to hash acc raises TypeError!
 hash(acc)  # TypeError: unhashable type: 'Account'
@@ -189,11 +190,14 @@ class PluginBase:
             raise ValueError(f"Duplicate plugin name: {name}")
         cls.registry[name] = cls
 
+
 class S3StoragePlugin(PluginBase, plugin_name="s3"):
     pass
 
+
 class GCSStoragePlugin(PluginBase, plugin_name="gcs"):
     pass
+
 
 assert "s3" in PluginBase.registry
 assert PluginBase.registry["s3"] is S3StoragePlugin

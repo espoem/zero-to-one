@@ -82,6 +82,7 @@ Many developers incorrectly believed that the GIL prevented race conditions in P
 # ANTI-PATTERN: Data race even under the GIL!
 count = 0
 
+
 def increment():
     global count
     for _ in range(100_000):
@@ -134,8 +135,10 @@ A major limitation of `multiprocessing` is that processes have completely separa
 # Modern PEP 734 Subinterpreters (Conceptual & Staged Architecture):
 from concurrent.interpreters import InterpreterPoolExecutor
 
+
 def cpu_heavy_work(data_chunk: bytes) -> int:
     return sum(data_chunk)
+
 
 with InterpreterPoolExecutor(max_workers=4) as executor:
     futures = [executor.submit(cpu_heavy_work, b"...") for _ in range(4)]

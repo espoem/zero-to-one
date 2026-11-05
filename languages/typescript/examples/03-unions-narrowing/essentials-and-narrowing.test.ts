@@ -233,6 +233,7 @@ assert(caughtError, 'assertIsString threw successfully on non-string');
 // ============================================================================
 
 // `any` disables all type checking (unsafe escape hatch)
+// oxlint-disable-next-line no-unused-vars -- teaching example: `anyVal` only exists to contrast `any` with `unknown`
 const anyVal: any = { message: 'hello' };
 // anyVal.nonExistentMethod(); // Compiles, crashes at runtime!
 

@@ -30,6 +30,7 @@ import asyncio
 import signal
 import sys
 
+
 async def main() -> None:
     loop = asyncio.get_running_loop()
     shutdown_event = asyncio.Event()
@@ -49,6 +50,7 @@ async def main() -> None:
     print("Flushing logs and draining connection pools...")
     await asyncio.sleep(0.1)  # Simulate pool close
     print("Shutdown complete.")
+
 
 if __name__ == "__main__":
     asyncio.run(main())
@@ -70,6 +72,7 @@ import json
 import logging
 import time
 from typing import Any
+
 
 class JSONFormatter(logging.Formatter):
     """Production JSON log formatter emitting newline-delimited JSON."""
@@ -183,10 +186,12 @@ flowchart TD
 import os
 import pickle
 
+
 class Exploit:
     def __reduce__(self):
         # Instructs the unpickler to call os.system('id') upon deserialization!
         return (os.system, ("id",))
+
 
 payload = pickle.dumps(Exploit())
 # When an unsuspecting server executes:
@@ -205,11 +210,13 @@ Executing OS processes via `subprocess` with `shell=True` invokes `/bin/sh -c` (
 import subprocess
 import shlex
 
+
 # VULNERABLE: Shell command injection!
 def query_user_vulnerable(username: str) -> str:
     # If username is "alice; rm -rf /", shell executes both commands!
     cmd = f"id {username}"
     return subprocess.check_output(cmd, shell=True, text=True)
+
 
 # HARDENED: shell=False with explicit argument vector (argv list)
 def query_user_safe(username: str) -> str:
@@ -231,13 +238,16 @@ Accepting file paths from users without boundary validation allows path traversa
 ```python
 from pathlib import Path
 
+
 def get_safe_file_content(base_dir: Path, user_supplied_path: str) -> str:
     """Resolve user path and guarantee it remains strictly within base_dir."""
     target_path = (base_dir / user_supplied_path).resolve()
 
     # Verify that the canonical resolved path starts with the base directory
     if not target_path.is_relative_to(base_dir.resolve()):
-        raise PermissionError(f"Access denied: path traversal attempt detected ({user_supplied_path})")
+        raise PermissionError(
+            f"Access denied: path traversal attempt detected ({user_supplied_path})"
+        )
 
     if not target_path.is_file():
         raise FileNotFoundError(f"File not found: {user_supplied_path}")

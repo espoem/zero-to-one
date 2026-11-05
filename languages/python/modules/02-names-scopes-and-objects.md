@@ -75,7 +75,7 @@ assert x is y  # True: both point to the pre-allocated singleton in small_ints
 x = 1000
 y = 1000
 assert x is not y  # True: two distinct PyLongObject instances on the heap
-assert x == y      # True: equal values
+assert x == y  # True: equal values
 ```
 
 > [!WARNING]
@@ -139,11 +139,14 @@ In Python, assignment (`=`) binds a name in the current local scope by default. 
 ```python
 def make_counter(start: int = 0):
     count = start
+
     def increment():
         nonlocal count
         count += 1
         return count
+
     return increment
+
 
 c = make_counter(10)
 assert c() == 11
@@ -164,7 +167,8 @@ def add_item(item: str, target: list[str] = []) -> list[str]:
     target.append(item)
     return target
 
-print(add_item("apple"))   # ['apple']
+
+print(add_item("apple"))  # ['apple']
 print(add_item("banana"))  # ['apple', 'banana'] -- BUG: shared list instance!
 ```
 
@@ -198,6 +202,7 @@ print([cb() for cb in callbacks])  # [3, 3, 3, 3] -- BUG: all see the final loop
 2. **Factory Function / `functools.partial`**:
    ```python
    from functools import partial
+
    callbacks = [partial(lambda x: x, i) for i in range(4)]
    assert [cb() for cb in callbacks] == [0, 1, 2, 3]
    ```
@@ -227,8 +232,10 @@ In Python 3.14 and 3.15, **PEP 649** and **PEP 749** introduced deferred annotat
 ```python
 import annotationlib
 
+
 class Service:
     client: "UnresolvedClient"  # Forward reference works without string quotes!
+
 
 # Inspect annotations in different formats
 annos = annotationlib.get_annotations(Service, format=annotationlib.Format.FORWARDREF)
@@ -293,6 +300,7 @@ Available `annotationlib.Format` formats:
 
 ```python
 _MISSING = object()
+
 
 def fetch(key: str, default: object = _MISSING) -> object:
     if default is _MISSING:

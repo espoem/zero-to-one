@@ -73,6 +73,7 @@ function fetchUserPosts(userId: UserId): string {
 }
 
 const aliceId = makeUserId('usr_100');
+// oxlint-disable-next-line no-unused-vars -- teaching example: constructing a branded PostId is the point; it is deliberately never passed to a UserId parameter
 const post1Id = makePostId('pst_999');
 const aliceEmail = makeEmail('Alice@Example.com');
 

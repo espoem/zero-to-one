@@ -47,6 +47,7 @@ async def test_task_group_structured_concurrency_and_cancellation() -> None:
 @pytest.mark.asyncio
 async def test_asyncio_timeout_context_manager() -> None:
     """Proves modern asyncio.timeout cancels operations when deadline is exceeded."""
+
     async def slow_operation() -> str:
         await asyncio.sleep(0.5)
         return "completed"
@@ -86,6 +87,7 @@ async def test_contextvars_isolation_across_concurrent_tasks() -> None:
 @pytest.mark.asyncio
 async def test_asyncio_to_thread_delegation() -> None:
     """Proves asyncio.to_thread runs synchronous blocking calls on background worker threads."""
+
     def blocking_sync_function(multiplier: int) -> int:
         time.sleep(0.02)
         return 42 * multiplier

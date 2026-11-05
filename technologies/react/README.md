@@ -46,6 +46,8 @@ mise exec -- npm run typecheck
 mise exec -- npm test -- examples/07-rsc   # one module
 ```
 
+Lint and format checks run against the shared root configs: `npm run lint` and `npm run fmt:check` (`npm run fmt` applies the formatting).
+
 How the harness works:
 
 - Client tests run in **jsdom** with `IS_REACT_ACT_ENVIRONMENT = true` ([`examples/setup.ts`](examples/setup.ts)); a few tests deliberately leave `act()` to observe production scheduling.

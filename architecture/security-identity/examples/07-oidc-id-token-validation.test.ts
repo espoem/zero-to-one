@@ -10,7 +10,7 @@ import * as jose from 'jose';
  */
 
 // Compute OIDC at_hash (Access Token Hash) per OIDC Core §3.1.3.6
-function computeAtHash(accessToken: string, alg: string = 'RS256'): string {
+function computeAtHash(accessToken: string, _alg: string = 'RS256'): string {
   // 1. Hash access token using matching hash algorithm (SHA-256 for RS256/ES256)
   const hash = crypto.createHash('sha256').update(accessToken, 'ascii').digest();
   // 2. Take the leftmost half of the hash digest (first 16 bytes)

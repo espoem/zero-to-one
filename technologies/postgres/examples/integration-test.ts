@@ -3,11 +3,9 @@ import net from 'node:net';
 function checkPostgresReachable(host: string, port: number, timeoutMs = 1500): Promise<boolean> {
   return new Promise((resolve) => {
     const socket = new net.Socket();
-    let isConnected = false;
 
     socket.setTimeout(timeoutMs);
     socket.once('connect', () => {
-      isConnected = true;
       socket.destroy();
       resolve(true);
     });

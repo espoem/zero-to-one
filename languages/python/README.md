@@ -96,9 +96,14 @@ mise exec -- uv run pytest
 # Run static type checking with strict mypy configuration
 mise exec -- uv run mypy examples
 
-# Run code formatting and linter validation
+# Run the linter
 mise exec -- uv run ruff check .
+
+# Verify formatting (apply with `ruff format .`)
+mise exec -- uv run ruff format --check .
 ```
+
+Lint and format checks: `uv run ruff check .` and `uv run ruff format --check .` (`uv run ruff format .` applies the formatting). Markdown in this track is formatted by the root `oxfmt`.
 
 ### Environment Specifications
 

@@ -49,6 +49,7 @@ class Greeter:
     def greet(self):
         return "Hello"
 
+
 g = Greeter()
 # When you evaluate g.greet, CPython invokes:
 # Greeter.__dict__['greet'].__get__(g, Greeter)
@@ -77,6 +78,7 @@ class ValidatedString:
         if not isinstance(value, str):
             raise TypeError(f"Expected str, got {type(value).__name__}")
         setattr(instance, self.storage_name, value)
+
 
 class User:
     username = ValidatedString()  # __set_name__ automatically binds self.storage_name = "_username"
@@ -124,17 +126,21 @@ class Root:
     def ping(self) -> list[str]:
         return ["Root"]
 
+
 class ServiceA(Root):
     def ping(self) -> list[str]:
         return ["ServiceA"] + super().ping()
+
 
 class ServiceB(Root):
     def ping(self) -> list[str]:
         return ["ServiceB"] + super().ping()
 
+
 class CombinedService(ServiceA, ServiceB):
     def ping(self) -> list[str]:
         return ["Combined"] + super().ping()
+
 
 s = CombinedService()
 # MRO: [CombinedService, ServiceA, ServiceB, Root, object]
@@ -173,8 +179,10 @@ class StrictModelMeta(type):
             raise TypeError(f"Class '{name}' must provide a docstring")
         return super().__new__(mcs, name, bases, namespace)
 
+
 class ValidModel(metaclass=StrictModelMeta):
     """A fully documented production model."""
+
     pass
 ```
 
@@ -194,6 +202,7 @@ Using `abc.ABCMeta` and `@abc.abstractmethod`, an ABC prevents direct instantiat
 
 ```python
 import abc
+
 
 class Repository(abc.ABC):
     @abc.abstractmethod
@@ -221,9 +230,14 @@ class SizedIterable(abc.ABC):
             return has_len and has_iter
         return NotImplemented
 
+
 class CustomList:
-    def __len__(self) -> int: return 0
-    def __iter__(self): return iter([])
+    def __len__(self) -> int:
+        return 0
+
+    def __iter__(self):
+        return iter([])
+
 
 # CustomList did NOT inherit from SizedIterable, yet issubclass is True!
 assert issubclass(CustomList, SizedIterable)

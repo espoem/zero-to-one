@@ -11,10 +11,7 @@ export interface HttpTimingBreakdown {
   statusCode: number;
 }
 
-export function measureHttpRequest(
-  url: string,
-  simulatedDelayMs = 0,
-): Promise<HttpTimingBreakdown> {
+export function measureHttpRequest(url: string): Promise<HttpTimingBreakdown> {
   return new Promise((resolve, reject) => {
     const t0 = performance.now();
     let tDns = t0;

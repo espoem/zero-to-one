@@ -49,6 +49,8 @@ npm run typecheck       # tsc (TypeScript 7)
 npm run versions        # installed versions, for the "Verified against" line
 ```
 
+Lint and format checks run against the shared root configs: `npm run lint` and `npm run fmt:check` (`npm run fmt` applies the formatting).
+
 Every test runs against the **real published packages**: there is no shim layer. `vitest.config.ts` uses `@solidjs/vite-plugin`'s two test postures; the server project runs `*.server.test.tsx`. All async tests settle hand-made deferreds, so the suite has no timing dependence. `solid-js-1` is an npm alias of `solid-js@1.9.17`, used only by the Module 10 comparison.
 
 ## Certifications & Exams

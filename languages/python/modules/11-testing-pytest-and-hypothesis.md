@@ -30,6 +30,7 @@ A pytest fixture manages both setup and teardown using a `yield` statement. Code
 import pytest
 from typing import Generator
 
+
 @pytest.fixture(scope="function")
 def isolated_db_session() -> Generator[dict[str, str], None, None]:
     # SETUP: Allocate isolated memory session
@@ -55,6 +56,7 @@ Testing repetitive permutations with loops inside a test function is an anti-pat
 ```python
 import pytest
 
+
 @pytest.mark.parametrize(
     ("input_str", "expected_count"),
     [
@@ -62,7 +64,7 @@ import pytest
         ("hello", 5),
         ("zero-to-one", 11),
     ],
-    ids=["empty", "single_word", "hyphenated"]
+    ids=["empty", "single_word", "hyphenated"],
 )
 def test_string_lengths(input_str: str, expected_count: int) -> None:
     assert len(input_str) == expected_count
@@ -102,6 +104,7 @@ Common algebraic properties to verify with Hypothesis:
 from hypothesis import given, strategies as st
 import json
 
+
 @given(st.dictionaries(keys=st.text(min_size=1), values=st.integers()))
 def test_json_roundtrip_property(payload: dict[str, int]) -> None:
     serialized = json.dumps(payload)
@@ -129,10 +132,12 @@ Always use `create_autospec()` or `@patch(..., autospec=True)`. `autospec` inspe
 ```python
 from unittest.mock import create_autospec
 
+
 class PaymentGateway:
     def charge(self, customer_id: str, amount: float) -> str:
         # Real network HTTP call
         return "tx_123"
+
 
 # SAFE: create_autospec mirrors the exact interface of PaymentGateway
 mock_gateway = create_autospec(PaymentGateway, instance=True)

@@ -32,6 +32,7 @@ def test_cyclic_reference_garbage_collection() -> None:
 
     but are collected deterministically by the cyclic garbage collector.
     """
+
     class Node:
         def __init__(self, name: str):
             self.name = name
@@ -72,6 +73,7 @@ def test_gc_threshold_inspection() -> None:
 
 def test_bytecode_disassembly_instructions() -> None:
     """Proves bytecode inspection and opargs via dis module."""
+
     def add_values(x: int, y: int) -> int:
         return x + y
 

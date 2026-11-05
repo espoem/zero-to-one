@@ -48,11 +48,14 @@ Consider two modules, `module_a.py` and `module_b.py`:
 # module_a.py
 from module_b import helper_b
 
+
 def func_a():
     return "A"
 
+
 # module_b.py
 from module_a import func_a
+
 
 def helper_b():
     return func_a()
@@ -73,6 +76,7 @@ When you execute `python module_a.py`:
    ```python
    def helper_b():
        from module_a import func_a
+
        return func_a()
    ```
 3. **Type-Only Imports with `typing.TYPE_CHECKING`**: If the import is needed solely for type annotations, wrap it inside `if TYPE_CHECKING:`. At runtime, `TYPE_CHECKING` is always `False`, preventing cyclic runtime imports while allowing static type checkers to see the types.
