@@ -22,6 +22,10 @@ All definitions and prose are in English; terms provide their canonical English 
 | **First-Class Citizen** | **Prvotřídní prvek (hodnota první třídy)** | An entity in a programming language (e.g., a function) that can be bound to variables, passed as arguments, and returned from other functions. | Strachey |
 | **Higher-Order Function** | **Funkce vyššího řádu** | A function that accepts one or more functions as arguments, returns a function, or both. | Abelson & Sussman (SICP) |
 | **Closure** | **Uzávěr (lexikální uzávěr)** | The combination of a function bundled together with references to its surrounding lexical environment, allowing access to outer scope variables. | Landin (The Mechanical Evaluation of Expressions) |
+| **Subtyping Variance** | **Variance podtypů** | The relationship between the subtyping of complex generic types ($F[A]$ and $F[B]$) and the subtyping of their component types ($A$ and $B$). | TAPL / PEP 484 |
+| **Covariance** | **Kovariance** | A subtyping relationship where composite types preserve the subtyping direction of their components (`A ≤ B ⟹ F(A) ≤ F(B)`). Characteristic of function return types and read-only collections. | Pierce (TAPL), Cardelli |
+| **Contravariance** | **Kontravariance** | A subtyping relationship where composite types reverse the subtyping direction of their components (`A ≤ B ⟹ F(B) ≤ F(A)`). Characteristic of function parameter types under `--strictFunctionTypes`. | Pierce (TAPL), TS Handbook |
+| **Invariance** | **Invariance** | A relationship where `F(A) ≤ F(B)` holds if and only if `A = B`. Characteristic of mutable read-write collections and structures. | Pierce (TAPL) |
 
 ---
 
@@ -77,3 +81,26 @@ All definitions and prose are in English; terms provide their canonical English 
 | **Time Slicing** | **Časové dělení (time slicing)** | An execution technique dividing long-running rendering or computational tasks into discrete time quanta (e.g. 5ms), yielding execution to avoid blocking input events. | Cooperative Multitasking Standards |
 | **Hydration** | **Hydratace** | The process where a client runtime attaches reactive state, event listeners, and data structures to server-rendered markup without destroying or recreating the existing DOM tree. | Web Architecture Specifications |
 | **Zero-Runtime Compilation** | **Kompilace s nulovým během** | A build-time architecture where code representations (such as style objects or JSX) are evaluated and extracted statically ahead of time, leaving zero runtime overhead in production bundles. | Compiler Engineering Standards |
+| **Abstract Syntax Tree (AST)** | **Abstraktní syntaktický strom (AST)** | A tree representation of the abstract syntactic structure of source code, produced by a parser and consumed by compilers, linters, and transformers. | Aho, Lam, Sethi, Ullman (Compilers: Principles, Techniques, and Tools) |
+| **Constant Folding** | **Skládání konstant** | Evaluating expressions whose operands are known at compile time and replacing them with the resulting value ahead of execution. | Aho et al., *Compilers* |
+| **Tree Shaking** | **Odstraňování nepoužitého kódu (tree shaking)** | Removal of unused exports by bundlers, enabled by the static structure of ESM. | Rollup documentation |
+| **Type Erasure** | **Vymazání typů** | The compile-time transformation where all type annotations, interface declarations, type aliases, and assertions are stripped, producing standard executable JavaScript. | TypeScript Design Goals |
+| **Request Isolation** | **Izolace požadavků** | Keeping per-request state out of module scope so concurrent requests cannot see each other's data. | SolidJS track (module 08) |
+
+---
+
+## 6. Concurrency, Memory Model & Runtime Systems
+
+| English Term | Czech Term | Definition & Context | Primary Reference |
+| :--- | :--- | :--- | :--- |
+| **Event Loop** | **Smyčka událostí** | The host mechanism that repeatedly selects a task, runs it, drains the microtask queue and updates the rendering. | HTML Living Standard §8.1.7 |
+| **Coroutine** | **Korutina** | A routine that can suspend and resume while keeping its local state; generators and async functions are coroutines. | Knuth (TAOCP Vol. 1) |
+| **Memory Model** | **Paměťový model** | The rules determining which values reads of shared memory may observe in concurrent executions. | ECMA-262 §29 |
+| **Data Race** | **Datový souběh (data race)** | Conflicting accesses to the same memory, at least one a write, not ordered by happens-before and not both atomic. | ECMA-262 §29.9 |
+| **Happens-Before** | *Happens-before* | A strict partial ordering of events in a distributed system based on process-local order and message send-receive causality. | Lamport (CACM 1978) |
+| **Sequential Consistency** | **Sekvenční konzistence** | A consistency model requiring that all operations appear to execute in some serial order that is consistent with the program order observed on each individual process. | Lamport (IEEE Trans. Comp. 1979) |
+| **Compare-and-Swap (CAS)** | *Compare-and-swap (CAS)* | An atomic operation that writes a new value only if the current value equals an expected one. | Herlihy & Shavit (The Art of Multiprocessor Programming) |
+| **Weak Reference** | **Slabá reference** | A reference that does not prevent garbage collection of its target (`WeakRef`, `WeakMap` keys). | ECMA-262 §26.1 |
+| **Just-in-Time Compilation (JIT)** | **Překlad za běhu (JIT)** | Compilation of code to machine code during execution, guided by runtime feedback. | Aycock (2003) |
+| **Inline Cache (IC)** | *Inline cache (IC)* | A per-site cache of observed hidden classes enabling fast property access; monomorphic, polymorphic or megamorphic. | Hölzle, Chambers & Ungar (1991) |
+| **Generational Garbage Collection** | **Generační správa paměti (garbage collection)** | Collection that separates young and old objects, collecting young ones frequently. | Ungar (1984), Jones et al. (The Garbage Collection Handbook) |
