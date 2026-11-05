@@ -24,10 +24,13 @@ The `M` numbers refer to the proposed module lists in `research/*.md`. Authors u
 | V8 shapes/ICs at the "why is my code slow" level | `languages/javascript` | nodejs (GC tuning flags), dsa |
 | libuv phases, `process.nextTick`, threadpool, streams & backpressure, CJS loader, `require(esm)`, GC tuning flags | `technologies/nodejs` | javascript, cloudflare, networking (DNS threadpool starvation) |
 | Node runtime type stripping | `technologies/nodejs` | typescript (`erasableSyntaxOnly`) |
-| Node-specific security (permission model, prototype pollution, `vm` is not a sandbox, ReDoS) | `technologies/nodejs` | security-identity |
+| Node-specific security hardening (permission model, `--disable-proto`, `vm` is not a sandbox) | `technologies/nodejs` | security-identity, javascript |
+| AbortController/AbortSignal cancellation patterns, retry/backoff with jitter, bounded concurrency pools (M07) | `languages/javascript` | nodejs, react, solidjs |
+| Prototype pollution and ReDoS mechanics at the language level (M13) | `languages/javascript` | nodejs (Node-specific hardening), security-identity |
 | The type system, inference, variance, declaration emit, tsconfig | `languages/typescript` | all TS-based tracks |
 | Typing JSX, components, hooks, generic/polymorphic components | `languages/typescript` (M12) | react, solidjs, panda-css |
 | Standard Schema, Zod typing of runtime boundaries | `languages/typescript` (M11) | nodejs, react, solidjs |
+| Type tests, declaration emit checks, attw/publint packaging checks (M13) | `languages/typescript` | all TS-based tracks |
 | Python data model, typing, asyncio, CPython internals, packaging (uv) | `languages/python` | dsa (Python idioms), all Python examples |
 | Python-specific security (pickle, framework security) | `languages/python` | security-identity |
 
@@ -41,10 +44,18 @@ The `M` numbers refer to the proposed module lists in `research/*.md`. Authors u
 | View transitions, scroll-driven animations, top layer | `languages/css` | react (`<ViewTransition>`), solidjs |
 | Design-token theory (W3C DTCG format) | `languages/css` | panda-css |
 | CSS architecture comparison (BEM/ITCSS, utility-first, runtime vs zero-runtime CSS-in-JS) | `languages/css` | panda-css |
+| CSS migration coexistence via cascade layers (`@import … layer()`) | `languages/css` | panda-css (M12 migration) |
 | Rendering pipeline internals (style → layout → paint → composite, reflow triggers) | `languages/css` | react, solidjs |
 | Panda extraction, recipes, slot recipes, codegen, v2 compiler | `technologies/panda-css` | — |
+| Static style extraction / source transforms (build-time CSS-in-JS compilers) | `technologies/panda-css` | languages/css (architecture comparison) |
+| Design-system distribution via build info (`panda lib` / `designSystem`) | `technologies/panda-css` (M11) | languages/css (token theory) |
 | Fiber, lanes, Suspense, RSC/Flight, Actions, React Compiler | `technologies/react` | typescript |
+| React Server Function security model, RSC advisory history (M07) | `technologies/react` | security-identity |
+| List virtualisation algorithm (M12) | `technologies/react` | dsa, languages/css (`content-visibility`) |
+| Testing React (RTL, `act`) (M12) | `technologies/react` | typescript |
 | Signals graph, push-pull, stores/projections, colorless async, start mode | `technologies/solidjs` | typescript |
+| Solid build variants and export-condition test postures (M09) | `technologies/solidjs` | nodejs (condition resolution), javascript (ESM `exports`) |
+| Optimistic UI realisations (React `useOptimistic`; Solid optimistic overlays) | each framework track (react M08, solidjs M07) | typescript |
 | React vs Solid mental-model comparison (written once) | `technologies/solidjs` (M10) | react |
 
 ## Algorithms and data
@@ -96,6 +107,7 @@ The `M` numbers refer to the proposed module lists in `research/*.md`. Authors u
 | Authorization models (RBAC/ABAC/ReBAC, Zanzibar, Cedar, OpenFGA) | `architecture/security-identity` | cloud-foundations, kubernetes (RBAC realisation) |
 | OWASP Top 10:2025, ASVS 5.0, API Top 10, threat modelling (STRIDE), secrets management | `architecture/security-identity` | all |
 | Cache poisoning/deception attacks | `architecture/security-identity` (attack) | networking (mechanism) |
+| CSP, Trusted Types (M05) | `architecture/security-identity` | react (DOM platform), networking (headers on the wire) |
 
 ## Platform and cloud
 
