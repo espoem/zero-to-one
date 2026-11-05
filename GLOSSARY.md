@@ -24,7 +24,7 @@ All definitions and prose are in English; terms provide their canonical English 
 | **Closure** | **Uzávěr (lexikální uzávěr)** | The combination of a function bundled together with references to its surrounding lexical environment, allowing access to outer scope variables. | Landin (The Mechanical Evaluation of Expressions) |
 | **Subtyping Variance** | **Variance podtypů** | The relationship between the subtyping of complex generic types ($F[A]$ and $F[B]$) and the subtyping of their component types ($A$ and $B$). | TAPL / PEP 484 |
 | **Covariance** | **Kovariance** | A subtyping relationship where composite types preserve the subtyping direction of their components (`A ≤ B ⟹ F(A) ≤ F(B)`). Characteristic of function return types and read-only collections. | Pierce (TAPL), Cardelli |
-| **Contravariance** | **Kontravariance** | A subtyping relationship where composite types reverse the subtyping direction of their components (`A ≤ B ⟹ F(B) ≤ F(A)`). Characteristic of function parameter types under `--strictFunctionTypes`. | Pierce (TAPL), TS Handbook |
+| **Contravariance** | **Kontravariance** | A subtyping relationship where composite types reverse the subtyping direction of their components (`A ≤ B ⟹ F(B) ≤ F(A)`). Characteristic of function parameter types. | Pierce (TAPL), TS Handbook |
 | **Invariance** | **Invariance** | A relationship where `F(A) ≤ F(B)` holds if and only if `A = B`. Characteristic of mutable read-write collections and structures. | Pierce (TAPL) |
 
 ---
@@ -103,4 +103,4 @@ All definitions and prose are in English; terms provide their canonical English 
 | **Weak Reference** | **Slabá reference** | A reference that does not prevent garbage collection of its target (`WeakRef`, `WeakMap` keys). | ECMA-262 §26.1 |
 | **Just-in-Time Compilation (JIT)** | **Překlad za běhu (JIT)** | Compilation of code to machine code during execution, guided by runtime feedback. | Aycock (2003) |
 | **Inline Cache (IC)** | *Inline cache (IC)* | A per-site cache of observed hidden classes enabling fast property access; monomorphic, polymorphic or megamorphic. | Hölzle, Chambers & Ungar (1991) |
-| **Generational Garbage Collection** | **Generační správa paměti (garbage collection)** | Collection that separates young and old objects, collecting young ones frequently. | Ungar (1984), Jones et al. (The Garbage Collection Handbook) |
+| **Generational Garbage Collection** | **Generační garbage collection (generační úklid paměti)** | Collection that separates young and old objects, collecting young ones frequently. | Ungar (1984), Jones et al. (The Garbage Collection Handbook) |
