@@ -41,22 +41,22 @@ All tooling is pinned per track with [mise](https://mise.jdx.dev/) (`.mise.toml`
 
 ## 2. Curriculum Roadmap & Status
 
-29 tracks. Work is phased by dependency; see [.agents/PLAN.md](./.agents/PLAN.md) for the plan and [.agents/STATUS.md](./.agents/STATUS.md) for live status.
+29 tracks: 13 complete, 4 in progress (Phase 2), 12 planned. Work is phased by dependency; see [.agents/PLAN.md](./.agents/PLAN.md) for the plan and [.agents/STATUS.md](./.agents/STATUS.md) for live status.
 
 | Domain | Track | Scope | Status | Path |
 | :--- | :--- | :--- | :---: | :--- |
-| `languages/` | **CSS & web platform** | Foundation: cascade/@layer/@scope, layout, container queries, @property, rendering pipeline, view transitions | 🟡 Planned (Phase 1) | `languages/css/` |
-| `languages/` | **JavaScript** | Foundation; decorators listed at Stage 2.7 — re-verify | 🟡 Planned (Phase 1) | `languages/javascript/` |
-| `languages/` | **TypeScript** | Modules 09–13 cut to typing-only; TS 7 tsconfig defaults break M04; no programmatic API in 7.0 | 🟠 Restructuring (Phase 1) | [languages/typescript/](./languages/typescript/) |
-| `languages/` | **Python** | Free-threading still optional build; pin ≥3.14.5 if on 3.14 | 🟡 Planned (Phase 2) | `languages/python/` |
-| `technologies/` | **Panda CSS** | Repo on ^0.51 — two breaking majors; createStyleContext, panda ship, studio removed; Oxc compiler | 🟠 Restructuring (Phase 1) | [technologies/panda-css/](./technologies/panda-css/) |
-| `technologies/` | **PostgreSQL** | Failover slots mislabelled PG18 (are PG17); no partitioning/PL/pgSQL/PgBouncer; PGlite single-session | 🟠 Restructuring (Phase 1) | [technologies/postgres/](./technologies/postgres/) |
-| `technologies/` | **React** | Modules ~70 lines each; missing Activity, useEffectEvent, ViewTransition, CVE-2025-55182 | 🟠 Restructuring (Phase 1) | [technologies/react/](./technologies/react/) |
-| `technologies/` | **SolidJS** | README says rc.8; start mode lives in @solidjs/vite-plugin, @solidjs/start 2.x is Solid 1.9 | 🟠 Restructuring (Phase 1) | [technologies/solidjs/](./technologies/solidjs/) |
-| `technologies/` | **Elasticsearch** | Version not confirmed on elastic.co; Elastic cert still on 8.1 | 🟡 Planned (Phase 2) | `technologies/elasticsearch/` |
-| `technologies/` | **Node.js** | JSNAD/JSNSD retired 2025-09-30; new yearly release model from v27 | 🟡 Planned (Phase 2) | `technologies/nodejs/` |
-| `technologies/` | **Redis** | Tri-licence since 8.0; cert offline since Jan 2026 | 🟡 Planned (Phase 2) | `technologies/redis/` |
-| `technologies/` | **SQLite** | Turso = module 12; libSQL stuck on SQLite 3.45.1; bundled versions differ per binding | 🟡 Planned (Phase 2) | `technologies/sqlite/` |
+| `languages/` | **CSS & web platform** | Cascade, layout engines, the rendering pipeline, color science, motion and design-token architecture, tested in headless Chromium | 🟢 Complete | [languages/css/](./languages/css/) |
+| `languages/` | **JavaScript** | ECMAScript 2026 from the specification up: types and coercion, execution model, async semantics, modules, metaprogramming, memory model and V8 behaviour | 🟢 Complete | [languages/javascript/](./languages/javascript/) |
+| `languages/` | **TypeScript** | The TypeScript 7 type system and toolchain: erasure, narrowing, generics, type-level programming, runtime boundaries, typing UI frameworks, shipping typed libraries | 🟢 Complete | [languages/typescript/](./languages/typescript/) |
+| `languages/` | **Python** | Python 3.15 from CPython internals and bytecode to PEP 695 typing, structured concurrency and free-threading | 🟢 Complete | [languages/python/](./languages/python/) |
+| `technologies/` | **Panda CSS** | Panda CSS 2.x: build-time style extraction, tokens, recipes, the Oxc-based compiler, design-system distribution and migration from 0.x/1.x | 🟢 Complete | [technologies/panda-css/](./technologies/panda-css/) |
+| `technologies/` | **PostgreSQL** | PostgreSQL 18: process model, SQL and JSONB, indexing, planner, MVCC, vacuum, WAL and PITR, replication, extensions | 🟢 Complete | [technologies/postgres/](./technologies/postgres/) |
+| `technologies/` | **React** | React 19.3 runtime: Fiber, hooks, concurrent scheduling, Suspense, Server Components and Flight, Actions, React Compiler | 🟢 Complete | [technologies/react/](./technologies/react/) |
+| `technologies/` | **SolidJS** | Solid 2.0 RC: fine-grained reactivity, async and transactions, start-mode full stack, migration from 1.x and the React vs Solid comparison | 🟢 Complete | [technologies/solidjs/](./technologies/solidjs/) |
+| `technologies/` | **Elasticsearch** | Version not confirmed on elastic.co; Elastic cert still on 8.1 | 🟦 In progress (Phase 2) | `technologies/elasticsearch/` |
+| `technologies/` | **Node.js** | JSNAD/JSNSD retired 2025-09-30; new yearly release model from v27 | 🟦 In progress (Phase 2) | `technologies/nodejs/` |
+| `technologies/` | **Redis** | Tri-licence since 8.0; cert offline since Jan 2026 | 🟦 In progress (Phase 2) | `technologies/redis/` |
+| `technologies/` | **SQLite** | Turso = module 12; libSQL stuck on SQLite 3.45.1; bundled versions differ per binding | 🟦 In progress (Phase 2) | `technologies/sqlite/` |
 | `technologies/` | **Argo CD** | CGOA fits better than CAPA (48% Workflows/Events) | 🟡 Planned (Phase 3) | `technologies/argocd/` |
 | `technologies/` | **Containers** | cgroup v1 gone in Podman 6; containerd store default in Docker 29 | 🟡 Planned (Phase 3) | `technologies/containers/` |
 | `technologies/` | **GitLab CI** | Owns SBOM/cosign/SLSA | 🟡 Planned (Phase 3) | `technologies/gitlab-ci/` |
@@ -67,11 +67,11 @@ All tooling is pinned per track with [mise](https://mise.jdx.dev/) (`.mise.toml`
 | `technologies/` | **Azure** | AZ-204 retired; no default outbound for new VNets (verify date) | 🟡 Planned (Phase 4) | `technologies/azure/` |
 | `technologies/` | **Cloudflare** | vitest-pool-workers → @cloudflare/vitest-plugin | 🟡 Planned (Phase 4) | `technologies/cloudflare/` |
 | `technologies/` | **GCP** | PCA renewal centred on gen-AI case study | 🟡 Planned (Phase 4) | `technologies/gcp/` |
-| `algorithms/` | **DSA** | TS examples, Python translation table | 🟡 Planned (Phase 2) | `algorithms/dsa/` |
-| `architecture/` | **Data systems** | Foundation; toy engines + property tests | 🟡 Planned (Phase 1) | `architecture/data-systems/` |
-| `architecture/` | **Networking** | Foundation: TCP/IP, DNS, TLS, HTTP/1.1–3, QUIC, load balancing; Linux labs in Docker VM | 🟡 Planned (Phase 1) | `architecture/networking/` |
-| `architecture/` | **Security & identity** | Foundation: crypto for engineers, PKI/mTLS, OAuth/OIDC, WebAuthn, authz models, threat modeling | 🟡 Planned (Phase 1) | `architecture/security-identity/` |
-| `architecture/` | **Distributed systems** | Raft in TS on deterministic simulator; Porcupine cross-check | 🟡 Planned (Phase 2) | `architecture/distributed-systems/` |
+| `algorithms/` | **DSA** | Algorithm design, complexity analysis and data structures with proofs, invariants and TypeScript test suites | 🟢 Complete | [algorithms/dsa/](./algorithms/dsa/) |
+| `architecture/` | **Data systems** | Storage engines, indexing, transactions and isolation, WAL and recovery, replication, sharding, caching, encoding and stream processing | 🟢 Complete | [architecture/data-systems/](./architecture/data-systems/) |
+| `architecture/` | **Networking** | The protocol stack from Ethernet, IP and BGP through TCP, DNS, TLS 1.3, HTTP/1.1 to HTTP/3 and QUIC, load balancing and Linux network operations | 🟢 Complete | [architecture/networking/](./architecture/networking/) |
+| `architecture/` | **Security & identity** | Threat modeling, applied cryptography, PKI and mTLS, sessions, OAuth 2.1/OIDC, WebAuthn, authorization models, vulnerability classes and supply chain | 🟢 Complete | [architecture/security-identity/](./architecture/security-identity/) |
+| `architecture/` | **Distributed systems** | System models and impossibility results, clocks, consistency, replication, Paxos/Raft consensus, distributed transactions, CRDTs, deterministic simulation | 🟢 Complete | [architecture/distributed-systems/](./architecture/distributed-systems/) |
 | `architecture/` | **Cloud Foundations** | Concept → AWS/GCP/Azure mapping table (~35 rows) | 🟡 Planned (Phase 4) | `architecture/cloud-foundations/` |
 | `architecture/` | **System design** | Built last: composes all tracks | 🟡 Planned (Phase 4) | `architecture/system-design/` |
 
