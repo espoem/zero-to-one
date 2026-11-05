@@ -235,7 +235,7 @@ How does specifying `__slots__` on a class optimize memory footprint and attribu
 - Why not A: Attributes remain standard Python object pointers (`PyObject*`).
 - Why not C: CPython does not compress instance memory with zlib.
 - Why not D: Instances retain separate values; only attribute names and offsets are fixed.
-- Ref: [modules/03-data-model-and-dunder-protocols.md](../modules/03-data-model-and-dunder-protocols.md#5-memory-optimization-with-slots), https://docs.python.org/3/reference/datamodel.html#slots
+- Ref: [modules/03-data-model-and-dunder-protocols.md](../modules/03-data-model-and-dunder-protocols.md#5-memory-optimization-with-__slots__), https://docs.python.org/3/reference/datamodel.html#slots
 </details>
 
 ### Q-PYTHON-015 · Data Model & Dunder Protocols · difficulty 3 · single
@@ -250,7 +250,7 @@ What does PEP 487 `__init_subclass__` provide over traditional metaclass customi
 - Why not A: Python has no native final class concept at the C level that `__init_subclass__` circumvents.
 - Why not C: `__init_subclass__` runs at class creation time, not instance initialization.
 - Why not D: It operates purely within CPython's standard class construction.
-- Ref: [modules/03-data-model-and-dunder-protocols.md](../modules/03-data-model-and-dunder-protocols.md#6-class-customization-with-init_subclass-pep-487), https://peps.python.org/pep-0487/
+- Ref: [modules/03-data-model-and-dunder-protocols.md](../modules/03-data-model-and-dunder-protocols.md#6-class-customization-with-__init_subclass__-pep-487), https://peps.python.org/pep-0487/
 </details>
 
 ---
@@ -1247,7 +1247,7 @@ class EventNode:
         self.children.append(child)
         child._parent_ref = weakref.ref(self)
 ```
-- Ref: [modules/03-data-model-and-dunder-protocols.md](../modules/03-data-model-and-dunder-protocols.md#5-memory-optimization-with-slots), [modules/08-cpython-internals-and-bytecode.md](../modules/08-cpython-internals-and-bytecode.md#4-the-cyclic-garbage-collector)
+- Ref: [modules/03-data-model-and-dunder-protocols.md](../modules/03-data-model-and-dunder-protocols.md#5-memory-optimization-with-__slots__), [modules/08-cpython-internals-and-bytecode.md](../modules/08-cpython-internals-and-bytecode.md#4-the-cyclic-garbage-collector)
 </details>
 
 ---
@@ -1351,7 +1351,7 @@ class ValidatedField[T]:
             raise TypeError(f"Expected {self.expected_type.__name__}, got {type(value).__name__}")
         setattr(instance, self.private_name, value)
 ```
-- Ref: [modules/04-descriptors-metaclasses-and-attributes.md](../modules/04-descriptors-metaclasses-and-attributes.md#13-automatic-identifier-binding-set_name-pep-487), [modules/06-type-system-and-annotations.md](../modules/06-type-system-and-annotations.md#11-type-parameter-defaults-pep-696)
+- Ref: [modules/04-descriptors-metaclasses-and-attributes.md](../modules/04-descriptors-metaclasses-and-attributes.md#13-automatic-identifier-binding-__set_name__-pep-487), [modules/06-type-system-and-annotations.md](../modules/06-type-system-and-annotations.md#11-type-parameter-defaults-pep-696)
 </details>
 
 ---

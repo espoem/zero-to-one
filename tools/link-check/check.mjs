@@ -40,7 +40,11 @@ async function anchors(file) {
     if (fence) continue;
     const h = line.match(/^#{1,6}\s+(.*?)\s*#*\s*$/);
     if (h) {
-      const base = slug(h[1].replace(/`/g, '').replace(/\*\*|__/g, '').replace(/(^|\s)[*_]|[*_](\s|$)/g, '$1$2'));
+      // Strip emphasis markers only outside inline code: GitHub keeps underscores inside `code`.
+      const text = h[1].split(/(`[^`]*`)/).map((part) =>
+        part.startsWith('`') ? part.slice(1, -1) : part.replace(/\*\*|__/g, '').replace(/(^|\s)[*_]|[*_](\s|$)/g, '$1$2'),
+      ).join('');
+      const base = slug(text);
       const n = seen.get(base) ?? 0;
       seen.set(base, n + 1);
       set.add(n === 0 ? base : `${base}-${n}`);
