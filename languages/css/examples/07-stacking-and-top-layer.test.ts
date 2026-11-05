@@ -53,8 +53,11 @@ describe('Module 07: Positioning, Stacking Contexts & Top Layer', () => {
     }
   });
 
-  it('demonstrates that native Popovers render in the Top Layer above high z-indexes', { skip: browserSkip }, async () => {
-    const html = `
+  it(
+    'demonstrates that native Popovers render in the Top Layer above high z-indexes',
+    { skip: browserSkip },
+    async () => {
+      const html = `
       <!DOCTYPE html>
       <html>
         <head>
@@ -89,24 +92,31 @@ describe('Module 07: Positioning, Stacking Contexts & Top Layer', () => {
       </html>
     `;
 
-    const { page, cleanup } = await createPage(html);
-    try {
-      // Open the popover via browser API
-      await page.locator('#my-popover').evaluate((el: any) => el.showPopover());
+      const { page, cleanup } = await createPage(html);
+      try {
+        // Open the popover via browser API
+        await page.locator('#my-popover').evaluate((el: any) => el.showPopover());
 
-      const isOpen = await page.locator('#my-popover').evaluate((el: any) => el.matches(':popover-open'));
-      assert.equal(isOpen, true, 'Popover must match :popover-open');
+        const isOpen = await page
+          .locator('#my-popover')
+          .evaluate((el: any) => el.matches(':popover-open'));
+        assert.equal(isOpen, true, 'Popover must match :popover-open');
 
-      // Query which element is hit-tested at point (60, 60)
-      const topElementId = await page.evaluate(() => {
-        const el = document.elementFromPoint(60, 60);
-        return el ? (el.closest('#my-popover') ? 'my-popover' : el.id) : null;
-      });
+        // Query which element is hit-tested at point (60, 60)
+        const topElementId = await page.evaluate(() => {
+          const el = document.elementFromPoint(60, 60);
+          return el ? (el.closest('#my-popover') ? 'my-popover' : el.id) : null;
+        });
 
-      // The popover in the top layer must be on top of the z-index: 999999 blocker!
-      assert.equal(topElementId, 'my-popover', 'Native Popover in Top Layer must render above z-index: 999999');
-    } finally {
-      await cleanup();
-    }
-  });
+        // The popover in the top layer must be on top of the z-index: 999999 blocker!
+        assert.equal(
+          topElementId,
+          'my-popover',
+          'Native Popover in Top Layer must render above z-index: 999999',
+        );
+      } finally {
+        await cleanup();
+      }
+    },
+  );
 });

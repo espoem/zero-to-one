@@ -14,7 +14,11 @@ Solid 2.0 ships two JSX compilers that share options: **`@solidjs/compiler`** ("
 
 ```tsx
 export function C(props) {
-  return <button class={{ on: props.on }} title={props.t}>Hi {props.n}</button>;
+  return (
+    <button class={{ on: props.on }} title={props.t}>
+      Hi {props.n}
+    </button>
+  );
 }
 ```
 
@@ -23,14 +27,25 @@ the rc.19 compiler emits (verbatim, `generate: "dom"`, production mode):
 ```js
 var _tmpl$ = /* @__PURE__ */ _$template(`<button>Hi `);
 export function C(props) {
-  var _el$ = _tmpl$();                         // clone the parsed template
-  _$insert(_el$, () => { return props.n; }, null);   // text hole → insert binding
-  _$effect(() => {                              // ONE grouped effect for the element
-    return { e: !!props.on, t: props.t };       //   compute: read every dynamic attribute
-  }, ({ e, t }, _p$) => {                       //   apply: write only what changed
-    e !== _p$?.e && _el$.classList.toggle("on", e);
-    t !== _p$?.t && _$setAttribute(_el$, "title", t);
-  });
+  var _el$ = _tmpl$(); // clone the parsed template
+  _$insert(
+    _el$,
+    () => {
+      return props.n;
+    },
+    null,
+  ); // text hole → insert binding
+  _$effect(
+    () => {
+      // ONE grouped effect for the element
+      return { e: !!props.on, t: props.t }; //   compute: read every dynamic attribute
+    },
+    ({ e, t }, _p$) => {
+      //   apply: write only what changed
+      e !== _p$?.e && _el$.classList.toggle('on', e);
+      t !== _p$?.t && _$setAttribute(_el$, 'title', t);
+    },
+  );
   return _el$;
 }
 ```
@@ -42,7 +57,7 @@ What to take away (each item is asserted in the suite or visible in the output a
 3. **Attributes of one template share a grouped effect.** The compute half returns all dynamic values; the apply half diffs against the previous object and writes only changed ones. This keeps per-row cost low in lists, and it is the reason behind the form-input pitfall in §6.
 4. **The component body is plain code.** It runs once; nothing re-invokes `C`. The suite counts body executions across two updates: `bodyRuns === 1`.
 
-Formally, a component is a function $P \to N$ from a props object to a DOM node, evaluated once inside an owner. Its *reactive content* is the set of bindings it registered; an update $\sigma_k \to \sigma_{k+1}$ re-runs exactly the bindings whose dependencies changed.
+Formally, a component is a function $P \to N$ from a props object to a DOM node, evaluated once inside an owner. Its _reactive content_ is the set of bindings it registered; an update $\sigma_k \to \sigma_{k+1}$ re-runs exactly the bindings whose dependencies changed.
 
 ### 1.1 Component calls compile to getter props
 
@@ -53,14 +68,22 @@ Formally, a component is a function $P \to N$ from a props object to a DOM node,
 compiles to:
 
 ```js
-_$createComponent(Counter, _$mergeProps({
-  get value() { return count(); },   // dynamic expression → getter
-  label: "x",                         // static → plain value
-  onPick: pick,                       // identifier → plain value
-}, rest));
+_$createComponent(
+  Counter,
+  _$mergeProps(
+    {
+      get value() {
+        return count();
+      }, // dynamic expression → getter
+      label: 'x', // static → plain value
+      onPick: pick, // identifier → plain value
+    },
+    rest,
+  ),
+);
 ```
 
-So `props.value` is a **getter**: reading it calls `count()` *at the time of the read*, inside whatever tracking scope the read happens in. That one fact explains both prop rules below.
+So `props.value` is a **getter**: reading it calls `count()` _at the time of the read_, inside whatever tracking scope the read happens in. That one fact explains both prop rules below.
 
 ### 1.2 More real compiler output, annotated
 
@@ -70,10 +93,17 @@ All snippets below are verbatim `@solidjs/compiler@2.0.0-rc.19` output (`generat
 
 ```js
 // <div>{props.ok ? <b>yes</b> : <i>no</i>}</div>
-_$insert(_el$, (() => {
-  var _c$ = _$memo(() => { return !!props.ok; });   // memo over the TRUTHINESS only
-  return () => { return _c$() ? _tmpl$2() : _tmpl$3(); };
-})());
+_$insert(
+  _el$,
+  (() => {
+    var _c$ = _$memo(() => {
+      return !!props.ok;
+    }); // memo over the TRUTHINESS only
+    return () => {
+      return _c$() ? _tmpl$2() : _tmpl$3();
+    };
+  })(),
+);
 ```
 
 The branch function re-runs only when `!!props.ok` flips, so a change from one truthy value to another does not re-create the `<b>` (proved: same node after `1 → 2`). Without this wrapping, every change of `props.ok` would rebuild the branch. The option is `wrapConditionals` (on by default); `&&` and `||` get the same treatment.
@@ -83,13 +113,21 @@ The branch function re-runs only when `!!props.ok` flips, so a change from one t
 ```js
 // <Show when={props.user} fallback={<p>login</p>}>{(u) => <p>{u().name}</p>}</Show>
 _$createComponent(_$Show, {
-  get when() { return props.user; },          // read lazily inside Show's own memo
-  get fallback() { return _tmpl$(); },          // a getter: the fallback DOM is created only when needed
-  children: (u) => (() => {                     // a plain function prop: Show calls it per branch
-    var _el$2 = _tmpl$2();
-    _$insert(_el$2, () => { return u().name; });  // the read happens in a binding → tracked
-    return _el$2;
-  })()
+  get when() {
+    return props.user;
+  }, // read lazily inside Show's own memo
+  get fallback() {
+    return _tmpl$();
+  }, // a getter: the fallback DOM is created only when needed
+  children: (u) =>
+    (() => {
+      // a plain function prop: Show calls it per branch
+      var _el$2 = _tmpl$2();
+      _$insert(_el$2, () => {
+        return u().name;
+      }); // the read happens in a binding → tracked
+      return _el$2;
+    })(),
 });
 ```
 
@@ -99,22 +137,37 @@ This is why the callback body is an owner, not a tracking scope ([Module 04](./0
 
 ```js
 // <input {...props} onFocus={f} onScroll={g} ref={r} style={{ color: props.c }} />
-_$spread(_el$, [props, { onFocus: f, onScroll: g, get style() { return { color: props.c }; } }], false);
+_$spread(
+  _el$,
+  [
+    props,
+    {
+      onFocus: f,
+      onScroll: g,
+      get style() {
+        return { color: props.c };
+      },
+    },
+  ],
+  false,
+);
 var _ref$ = r;
-typeof _ref$ === "function" || Array.isArray(_ref$)
-  ? _$ref(() => { return _ref$; }, _el$)        // callback or array: called with the element
-  : r = _el$;                                    // bare variable: assigned (single ref only)
+typeof _ref$ === 'function' || Array.isArray(_ref$)
+  ? _$ref(() => {
+      return _ref$;
+    }, _el$) // callback or array: called with the element
+  : (r = _el$); // bare variable: assigned (single ref only)
 ```
 
-A spread compiles to one `spread()` call that re-applies whatever changed in the merged sources, *including handlers*: the one exception to "handlers bind once" (proved: switching the handler in a spread source takes effect). The ref code shows mechanically why a variable inside an array is never assigned: only the non-function, non-array branch assigns.
+A spread compiles to one `spread()` call that re-applies whatever changed in the merged sources, _including handlers_: the one exception to "handlers bind once" (proved: switching the handler in a spread source takes effect). The ref code shows mechanically why a variable inside an array is never assigned: only the non-function, non-array branch assigns.
 
 **Events: delegated or native.**
 
 ```js
 // <input onFocus={f} onClick={g} />
-_$addEvent(_el$, "click", g, true);   // true → delegated (stored on the node, dispatched by the root listener)
-_$addEvent(_el$, "focus", f);         // native addEventListener on the element
-_$delegateEvents(["click"]);          // declare which delegated types this module needs
+_$addEvent(_el$, 'click', g, true); // true → delegated (stored on the node, dispatched by the root listener)
+_$addEvent(_el$, 'focus', f); // native addEventListener on the element
+_$delegateEvents(['click']); // declare which delegated types this module needs
 ```
 
 `@solidjs/web` exports the delegated set as `DelegatedEvents`: `beforeinput, click, dblclick, contextmenu, focusin, focusout, input, keydown, keyup, mouse*, pointer*, touch*` (rc.19). Non-bubbling events (`focus`, `blur`, `scroll`, `load`, media events) get a native listener on the element (proved: `onFocus` fires). Inline arrows are stored directly on the node (`_el$._$$click = () => …`).
@@ -123,14 +176,26 @@ _$delegateEvents(["click"]);          // declare which delegated types this modu
 
 ```js
 // dev: true — <Child>text <b>{x()}</b></Child> in src/c.jsx
-_$createComponent(Child, { get children() { return ["text ", (() => {
-  var _el$ = _tmpl$();
-  _$insert(_el$, x, undefined, undefined, { name: "b.children", loc: "src/c.jsx:1:32" });
-  return _el$;
-})()]; } }, "Child", "src/c.jsx:1:17");
+_$createComponent(
+  Child,
+  {
+    get children() {
+      return [
+        'text ',
+        (() => {
+          var _el$ = _tmpl$();
+          _$insert(_el$, x, undefined, undefined, { name: 'b.children', loc: 'src/c.jsx:1:32' });
+          return _el$;
+        })(),
+      ];
+    },
+  },
+  'Child',
+  'src/c.jsx:1:17',
+);
 ```
 
-The extra arguments are what turn a diagnostic into `in <App> › <Child> › b.children at src/c.jsx:1:32`. Note also that `children` is a getter returning *fresh DOM on every access*, the mechanical reason for the `children()` helper.
+The extra arguments are what turn a diagnostic into `in <App> › <Child> › b.children at src/c.jsx:1:32`. Note also that `children` is a getter returning _fresh DOM on every access_, the mechanical reason for the `children()` helper.
 
 ### 1.3 Templates and the DOM: why cloning wins
 
@@ -158,13 +223,17 @@ The official cheatsheet calls this "together the most common AI-generated bug cl
 <Counter value={count} />    // ❌ the child receives the accessor function itself
 ```
 
-Proved: with `value={count}` the child observes `typeof props.value === "function"`. It might even render, because `insert` calls functions, which hides the bug until someone does arithmetic on it. If you *intend* to forward something lazily (render props, lazy slots), make it explicit: `getValue={() => count()}` and document it.
+Proved: with `value={count}` the child observes `typeof props.value === "function"`. It might even render, because `insert` calls functions, which hides the bug until someone does arithmetic on it. If you _intend_ to forward something lazily (render props, lazy slots), make it explicit: `getValue={() => count()}` and document it.
 
 ### Rule 2 — in the child, read `props.x` where you need it; never destructure
 
 ```tsx
-function Good(props: { name: string }) { return <i>{props.name}</i>; }   // ✅ read in JSX → tracked
-function Bad({ name }: { name: string }) { return <b>{name}</b>; }      // ❌ read once at setup
+function Good(props: { name: string }) {
+  return <i>{props.name}</i>;
+} // ✅ read in JSX → tracked
+function Bad({ name }: { name: string }) {
+  return <b>{name}</b>;
+} // ❌ read once at setup
 ```
 
 Destructuring evaluates every getter once, in the component body, which is untracked. Proved: after `setName("Grace")` the `<b>` still says `Ada` and the dev build emitted `STRICT_READ_UNTRACKED`. The same applies to `const n = props.count` at the top of a body. For an intentional one-time read, write `untrack(() => props.x)`, which documents the intent and silences the warning.
@@ -174,8 +243,8 @@ Destructuring evaluates every getter once, in the component body, which is untra
 Because props must not be destructured, defaults and forwarding need helpers that preserve laziness:
 
 ```tsx
-const p = merge({ size: "md" }, props);   // defaults; later sources win
-const rest = omit(props, "label");        // everything except `label`, still lazy
+const p = merge({ size: 'md' }, props); // defaults; later sources win
+const rest = omit(props, 'label'); // everything except `label`, still lazy
 ```
 
 - **`merge(...sources)`** (replaces 1.x `mergeProps`) resolves each property from the last source that defines it, lazily.
@@ -192,7 +261,7 @@ const rest = omit(props, "label");        // everything except `label`, still la
 2.0 follows HTML by default (RFC 07):
 
 | Rule | 1.x | 2.0 |
-|---|---|---|
+| --- | --- | --- |
 | Built-in attribute names | camelCase allowed (`tabIndex`, `readOnly`) | **lowercase** (`tabindex`, `readonly`) |
 | Attribute vs property | per-type heuristics plus `attr:` / `prop:` / `bool:` | attributes by default; stateful form props (`value`, `checked`, `selected`, `muted`, their `default*` twins) stay properties; `prop:x` forces a property |
 | Booleans | `"true"` strings in places | `true` adds the attribute, `false` removes it (proved with `disabled`) |
@@ -231,7 +300,7 @@ Proved: after `setAdmin(true)`, the "bad" button still calls `b`. Put the decisi
 
 ```tsx
 const on = (type, handler, options) => (el) => el.addEventListener(type, handler, options);
-<div ref={on("click", log, { capture: true })} />
+<div ref={on('click', log, { capture: true })} />;
 ```
 
 Proved: a capture listener on a parent fires before the delegated target handler.
@@ -278,13 +347,17 @@ The factory call happens in the component body (owned), so primitives created th
 `value={x()}` / `checked={x()}` write the DOM **property** each time the binding re-runs, without comparing to what the DOM currently holds. Typing changes the DOM directly. Two consequences:
 
 1. **Re-asserting an equal value does nothing.** If a handler rejects a keystroke and the signal does not change, nothing re-runs, and the rejected character stays in the box. Write the filtered value to `e.currentTarget.value` yourself (proved: `12x` becomes `12`). Do not use `equals: false` to force a re-run; that triggers the next problem.
-2. **Any re-run overwrites uncommitted text.** Because attributes of one template share a grouped effect (§1), a change to *any other dynamic attribute in the same template* re-runs the effect and writes `value` again. Proved: with `value={name()}` bound to a committed value and `class={{ hl: highlight() }}` on the same input, typing `Ada L` and then toggling `highlight` resets the box to `Ada`, and the dev build emits **`UNCOMMITTED_INPUT_OVERWRITTEN`**.
+2. **Any re-run overwrites uncommitted text.** Because attributes of one template share a grouped effect (§1), a change to _any other dynamic attribute in the same template_ re-runs the effect and writes `value` again. Proved: with `value={name()}` bound to a committed value and `class={{ hl: highlight() }}` on the same input, typing `Ada L` and then toggling `highlight` resets the box to `Ada`, and the dev build emits **`UNCOMMITTED_INPUT_OVERWRITTEN`**.
 
 The fix is the **draft pattern**: keep the in-progress text in a signal written from `onInput`, and commit on `onChange`/submit. The binding then always mirrors the box, so re-runs are harmless (proved: typing survives the `highlight` change and `onChange` commits `Ada L`).
 
 ```tsx
 const [draft, setDraft] = createSignal(untrack(() => props.name));
-<input value={draft()} onInput={(e) => setDraft(e.currentTarget.value)} onChange={() => props.onCommit(draft())} />
+<input
+  value={draft()}
+  onInput={(e) => setDraft(e.currentTarget.value)}
+  onChange={() => props.onCommit(draft())}
+/>;
 ```
 
 For values that need not be reactive, go **uncontrolled**: `defaultValue={initial}` and read `new FormData(form)` on submit. Reset with `form.reset()` or by remounting under a keyed `<Show>`. A `value` passed through a spread is rewritten whenever the spread re-evaluates; forward a draft value or bind `value` directly.
@@ -292,7 +365,7 @@ For values that need not be reactive, go **uncontrolled**: `defaultValue={initia
 ### 6.1 Failure modes proved by negative tests
 
 | Failure | Test (`03-components-props-and-dom.test.tsx`) |
-|---|---|
+| --- | --- |
 | accessor passed as a prop | "passing the accessor instead of the value…" |
 | destructured props | "destructuring freezes the value…" (`STRICT_READ_UNTRACKED`) |
 | `undefined` overriding a default | "merge supplies defaults reactively; undefined overrides…" |
@@ -306,23 +379,23 @@ For values that need not be reactive, go **uncontrolled**: `defaultValue={initia
 ## 7. Then vs now
 
 | 1.x (≤ 1.9) | 2.0 RC | Migration |
-|---|---|---|
+| --- | --- | --- |
 | `import { render } from "solid-js/web"` | `import { render } from "@solidjs/web"` | rewrite imports |
 | `jsxImportSource: "solid-js"` | `"@solidjs/web"`; `solid-js` no longer ships `jsx-runtime`; `JSX` type comes from `@solidjs/web` | update tsconfig |
 | `mergeProps` / `splitProps` | `merge` / `omit` | `splitProps(p, ["a"])` → read `p.a` directly + `omit(p, "a")`; audit `undefined` defaults |
 | `classList={{ a: x() }}` | `class={{ a: x() }}` or array form | compile error guides you |
 | `tabIndex`, `readOnly` | `tabindex`, `readonly` | lowercase built-ins |
 | `use:tooltip={opts}` + `JSX.Directives` augmentation | `ref={tooltip(opts)}` | turn each directive into a factory |
-| `on:click`, `oncapture:click` | `onClick`; ref callback with `addEventListener` options | |
-| `attr:` / `bool:` / `prop:` heuristics | attributes by default, `prop:` kept | |
+| `on:click`, `oncapture:click` | `onClick`; ref callback with `addEventListener` options |  |
+| `attr:` / `bool:` / `prop:` heuristics | attributes by default, `prop:` kept |  |
 | `/*@once*/` | removed | reactive JSX, `defaultValue`, or `untrack` |
 | document-global delegation | root-owned delegation | check multi-root / micro-frontend pages |
 | Babel only (`babel-preset-solid`) | `@solidjs/compiler` (Oxc, native) or `@solidjs/babel-plugin` | `@solidjs/vite-plugin` picks it up |
 
 ### 7.1 Then vs now: the compiler
 
-| | 1.x | 2.0 RC |
-|---|---|---|
+|  | 1.x | 2.0 RC |
+| --- | --- | --- |
 | Compiler | `babel-preset-solid` / `babel-plugin-jsx-dom-expressions` | `@solidjs/compiler` (Rust/Oxc, native + WASM, default in `@solidjs/vite-plugin`) or `@solidjs/babel-plugin` (`compiler: "babel"` escape hatch) |
 | Attribute effects | one grouped `effect(_p$ => …)` per element, diffing against a previous-values object | the same grouping, now in the split compute/apply shape (compute returns the values object, apply diffs and writes) |
 | Event delegation target | `document` | the render root (and portal mounts) |
@@ -335,7 +408,7 @@ For values that need not be reactive, go **uncontrolled**: `defaultValue={initia
 ## 8. Production failure modes
 
 | Symptom | Cause | Fix |
-|---|---|---|
+| --- | --- | --- |
 | Child shows `NaN` or `function…` | passed `count` instead of `count()` | call accessors at the call site |
 | Prop never updates | destructured props / top-level read (`STRICT_READ_UNTRACKED`) | read `props.x` in JSX |
 | Default ignored | `undefined` overrides in `merge` | default at the read, or omit the prop |

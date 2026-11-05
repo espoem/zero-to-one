@@ -12,7 +12,7 @@ A signal holds one value. Application state is a tree: a user with an address, a
 
 **Definition.** A store over a plain object/array tree $T$ is a proxy $\pi(T)$ such that:
 
-- every property read `π.p` inside a tracking scope subscribes that scope to the *slot* $(\text{node}, p)$;
+- every property read `π.p` inside a tracking scope subscribes that scope to the _slot_ $(\text{node}, p)$;
 - writes go only through the setter, which opens a **draft**, applies the mutations, and commits them as one transaction;
 - after a commit, exactly the subscribers of changed slots are notified (plus subscribers of `length`, key membership or iteration when those changed).
 
@@ -39,7 +39,7 @@ Reads lag writes exactly like signals: the setter stages, the commit applies ([M
 The store implementation's header comment (in `@solidjs/signals`) describes the representation exactly; here it is with the consequences you can observe:
 
 | Node kind | Created when | Read that subscribes to it | Proved |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | **leaf node** (one per key) | a key is read in a tracking scope or written | `store.a`, `store.list[0]` | one element read ignores writes to other elements |
 | **presence node** | `key in store` is read | `"nick" in store` tracks presence, not value | value change: no re-run; `delete`: re-run |
 | **container node** (`$TRACK`) | first structural read | `Object.keys`, `for…in`, iteration, `.length`, `map`/`filter` over an array, `deep()` | `Object.keys` memo ignores a value change, re-runs on a new key |
@@ -48,12 +48,12 @@ The store implementation's header comment (in `@solidjs/signals`) describes the 
 Further mechanics:
 
 - **Nodes are lazy.** An object you put in a store and nobody reads costs no nodes. Reading a key with no leaf node outside a tracking scope reads the backing directly without creating anything ("node existence is unobservable").
-- **Copy-on-write backing.** The committed backing object is your object, shared until the first write privatises it (and its ancestor chain). Writes during a setter go to a *pending* backing owned by the container node; the committed backing mutates at exactly one moment, the flush's commit. This is why reads lag writes for stores exactly as for signals, and why holds and optimistic overlays can park or revert a store write wholesale.
+- **Copy-on-write backing.** The committed backing object is your object, shared until the first write privatises it (and its ancestor chain). Writes during a setter go to a _pending_ backing owned by the container node; the committed backing mutates at exactly one moment, the flush's commit. This is why reads lag writes for stores exactly as for signals, and why holds and optimistic overlays can park or revert a store write wholesale.
 - **Cost of a setter is O(written keys)**: the draft records which keys were touched (`touch(target, key)`), and only those leaves are staged and notified at commit. Array writes also touch `length`.
 - **Nested objects are wrapped on read.** `store.user` returns a proxy for the nested record; the same record always yields the same proxy while it is observed (identity is per record, which is what keyed `<For>` relies on).
 - **Only plain objects and arrays are wrapped** (`isWrappable`). A `Map`, `Set`, `Date` or class instance is stored and returned as-is (proved: `store.m === m`): reading it is tracked as one leaf, but its internal mutations (`map.set`) are invisible to Solid. Store such values immutably (replace the `Map` in a setter) or model them as plain records.
 - **Writes outside a draft are refused** in the `set`/`deleteProperty` traps (`STORE_WRITE_OUTSIDE_SETTER`), and a write to `__proto__` is dropped as a prototype-pollution guard (proved: neither `Object.prototype` nor the store's prototype changes). This matters when a setter spreads untrusted JSON into the draft.
-- **Unobserved slots are released.** When the last reader of a leaf goes away, the slot node is released (`slotUnobservedHook`). That is the mechanism behind the M05 observation that only *observed* rows are guaranteed to keep proxy identity across `reconcile`.
+- **Unobserved slots are released.** When the last reader of a leaf goes away, the slot node is released (`slotUnobservedHook`). That is the mechanism behind the M05 observation that only _observed_ rows are guaranteed to keep proxy identity across `reconcile`.
 
 ```mermaid
 flowchart TB
@@ -71,11 +71,12 @@ flowchart TB
 ## 2. Draft-first setters
 
 ```ts
-const [store, setStore] = createStore({ user: { name: "A" }, list: [] as string[] });
+const [store, setStore] = createStore({ user: { name: 'A' }, list: [] as string[] });
 
-setStore((s) => {          // s is a mutable draft
-  s.user.name = "B";
-  s.list.push("x");
+setStore((s) => {
+  // s is a mutable draft
+  s.user.name = 'B';
+  s.list.push('x');
 });
 ```
 
@@ -83,13 +84,13 @@ The callback **is** the transaction: all mutations inside it commit together. Th
 
 ### 2.1 Returning a value: shallow replacement
 
-If the callback **returns** a value, that value replaces the draft's target with a *shallow* diff:
+If the callback **returns** a value, that value replaces the draft's target with a _shallow_ diff:
 
 - arrays are replaced **by index and length**;
 - objects are diffed **at the top level**; untouched branches keep their identity (proved: `store.keep` is the same proxy after replacing `list`).
 
 ```ts
-setStore((s) => s.list.filter((x) => x !== "b"));        // remove: easier as a return
+setStore((s) => s.list.filter((x) => x !== 'b')); // remove: easier as a return
 setStore((s) => ({ ...s, list: [] }));
 ```
 
@@ -98,7 +99,7 @@ The return form does **no keyed reconciliation**. For keyed diffs use `reconcile
 ### 2.2 Translating 1.x path setters
 
 | 1.x | 2.0 draft |
-|---|---|
+| --- | --- |
 | `setStore("user", "address", "city", "Paris")` | `setStore((s) => { s.user.address.city = "Paris"; })` |
 | `setStore("items", { from: 1, to: 4, by: 2 }, 99)` | `for (let i = 1; i <= 4; i += 2) s.items[i] = 99;` |
 | `setStore("todos", (t) => t.done, "archived", true)` | `for (const t of s.todos) if (t.done) t.archived = true;` |
@@ -119,24 +120,24 @@ Server responses arrive as fresh objects. Assigning them wholesale gives every r
 
 ```ts
 setStore((s) => {
-  reconcile(serverTodos, "id")(s.todos);   // call it on the draft sub-tree
+  reconcile(serverTodos, 'id')(s.todos); // call it on the draft sub-tree
 });
 ```
 
 - `key` defaults to `"id"`; it may be a property name or a function.
-- `key = null` merges **positionally**: index *n* of the new array into index *n* of the old (proved: slot 0 keeps its identity, `v` becomes 9). This replaces 1.x `reconcile(v, { key: null, merge: true })`; merge semantics are always on in 2.0.
+- `key = null` merges **positionally**: index _n_ of the new array into index _n_ of the old (proved: slot 0 keeps its identity, `v` becomes 9). This replaces 1.x `reconcile(v, { key: null, merge: true })`; merge semantics are always on in 2.0.
 - Only changed leaves notify (proved: the memo reading the row whose `done` flipped re-ran).
 
-**Identity subtlety (observed in rc.19).** A row that something is observing (a `<For>` row, a memo) keeps its identity across `reconcile`, including across reorders (proved with a memo that holds row 1). A proxy you grabbed *outside* any tracking scope and that nobody observes may not be the same object afterwards: the store releases unobserved slot nodes. Compare rows through the reactive graph, not through stale references held in plain variables.
+**Identity subtlety (observed in rc.19).** A row that something is observing (a `<For>` row, a memo) keeps its identity across `reconcile`, including across reorders (proved with a memo that holds row 1). A proxy you grabbed _outside_ any tracking scope and that nobody observes may not be the same object afterwards: the store releases unobserved slot nodes. Compare rows through the reactive graph, not through stale references held in plain variables.
 
-**Do not keep mutating an object you handed to a store.** The store stores that object as its record. Mutating it afterwards bypasses the setter, so nobody is notified; assigning the *same* reference again is not a change either (proved: the subscriber still sees `"a"`). Pass a fresh object (`{ ...next }`). This bites test fixtures and caches that reuse one response object.
+**Do not keep mutating an object you handed to a store.** The store stores that object as its record. Mutating it afterwards bypasses the setter, so nobody is notified; assigning the _same_ reference again is not a change either (proved: the subscriber still sees `"a"`). Pass a fresh object (`{ ...next }`). This bites test fixtures and caches that reuse one response object.
 
 ## 4. Projections: derived stores
 
 2.0 mirrors the signal/memo split for stores:
 
 | Signals | Stores |
-|---|---|
+| --- | --- |
 | `createMemo(fn)` — read-only derived value | `createProjection(fn, seed, options?)` — read-only derived store |
 | `createSignal(fn)` — writable derived value | `createStore(fn, seed, options?)` — writable derived store |
 
@@ -184,7 +185,7 @@ Both are O(1) per change. `createSelector` solved exactly this one shape; a proj
 The derive may be `async` or return an `AsyncIterable`; the projection then participates in `<Loading>` like an async memo ([Module 06](./06-colorless-async.md)).
 
 ```ts
-const users = createProjection(async () => api.listUsers(), [], { key: "id" });
+const users = createProjection(async () => api.listUsers(), [], { key: 'id' });
 ```
 
 The draft a run receives stays writable until the next run starts or the owner is disposed, so external subscriptions are a plain derive:
@@ -199,7 +200,7 @@ const feed = createProjection((draft) => {
 
 Late writes through a superseded draft are dropped silently, but stopping the subscription is still your job (`onCleanup`).
 
-**Never swallow `NotReadyError` inside a derive.** Reading a not-yet-settled async source throws; that throw is how the projection knows to wait and retry. On the server build (no subscription graph) it is the *only* re-derive channel, so a broad `try/catch` freezes the projection at its first partial result in SSR. Probe readiness with `isPending()` instead.
+**Never swallow `NotReadyError` inside a derive.** Reading a not-yet-settled async source throws; that throw is how the projection knows to wait and retry. On the server build (no subscription graph) it is the _only_ re-derive channel, so a broad `try/catch` freezes the projection at its first partial result in SSR. Probe readiness with `isPending()` instead.
 
 ### 4.3 `createStore(fn, seed)`: writable derived store
 
@@ -207,10 +208,10 @@ Same derive semantics plus a setter for local writes (proved: a local `override`
 
 ## 5. Plain copies: `snapshot` and `deep`
 
-| | Subscribes? | Returns | Use |
-|---|---|---|---|
+|  | Subscribes? | Returns | Use |
+| --- | --- | --- | --- |
 | `snapshot(store)` | no | plain object (new where changed, shared where unchanged) | serialization, `localStorage`, third-party libraries, test assertions |
-| `deep(store)` | **yes, to every reachable property** | plain object | an effect that must react to *any* nested change |
+| `deep(store)` | **yes, to every reachable property** | plain object | an effect that must react to _any_ nested change |
 
 `deep` belongs in an effect's compute half: it does all reads where they are tracked and hands the apply half a plain object, which avoids `STRICT_READ_UNTRACKED` (proved: the effect saw `{c:1}` then `{c:2}` after a nested write). Use it sparingly; it subscribes to everything, which is the opposite of what stores are for.
 
@@ -228,12 +229,15 @@ A typical app store keeps entities normalised and derives views with projections
 
 ```ts
 type Todo = { id: string; title: string; done: boolean; listId: string };
-const [db, setDb] = createStore<{ todos: Record<string, Todo>; order: string[] }>({ todos: {}, order: [] });
+const [db, setDb] = createStore<{ todos: Record<string, Todo>; order: string[] }>({
+  todos: {},
+  order: [],
+});
 
 // Server sync: reconcile by id into the normalised map (identity preserved).
 const ingest = (rows: Todo[]) =>
   setDb((d) => {
-    for (const r of rows) d.todos[r.id] ? reconcile(r, "id")(d.todos[r.id]) : (d.todos[r.id] = r);
+    for (const r of rows) d.todos[r.id] ? reconcile(r, 'id')(d.todos[r.id]) : (d.todos[r.id] = r);
     d.order = rows.map((r) => r.id);
   });
 
@@ -241,7 +245,7 @@ const ingest = (rows: Todo[]) =>
 const openTodos = createProjection<Todo[]>(
   () => db.order.map((id) => db.todos[id]!).filter((t) => t.listId === listId() && !t.done),
   [],
-  { key: "id" },
+  { key: 'id' },
 );
 
 // O(1) selection (§4.1) and a writable local annotation store (§4.3).
@@ -255,18 +259,18 @@ Why each choice: the map makes single-entity edits touch one leaf; `order` chang
 ## 6.2 Failure modes proved by negative tests
 
 | Failure | Test (`05-stores-and-projections.test.ts`) |
-|---|---|
+| --- | --- |
 | writing through the proxy | "…STORE_WRITE_OUTSIDE_SETTER" |
 | `await` inside a setter | "…ASYNC_STORE_SETTER" |
 | mutating an object already handed to the store | "re-assigning a mutated object…notifies nobody" |
 | store write during render | "a store setter inside a component/root body throws…" |
-| prototype pollution via the draft | "__proto__ writes through a draft are dropped" |
+| prototype pollution via the draft | "**proto** writes through a draft are dropped" |
 | assuming `storePath` comes from `solid-js` | "storePath is the optional 1.x-style helper, exported by @solidjs/signals" |
 
 ## 6.3 Cost model
 
 | Operation | Cost | Notes |
-|---|---|---|
+| --- | --- | --- |
 | tracked read `store.a.b` | O(path length) proxy traps + O(1) per node (created once) | nested records are wrapped on first access |
 | untracked read of an unobserved key | O(1), no node | reads the backing directly |
 | setter | O(keys written) + notification of their subscribers | untouched keys cost nothing |
@@ -297,22 +301,22 @@ flowchart TD
 ## 8. Then vs now
 
 | 1.x (≤ 1.9) | 2.0 RC | Why | Migration |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `import { createStore } from "solid-js/store"` | `from "solid-js"` | stores are core | rewrite imports |
 | path setters `setStore("a", "b", v)` | draft setter | one ergonomic form, still fine-grained | §2.2 table, or `storePath` |
-| `produce` | default behaviour | | delete the wrapper |
-| `createMutable` / `modifyMutable` | `createStore` + draft setter | one write path, transactions | |
+| `produce` | default behaviour |  | delete the wrapper |
+| `createMutable` / `modifyMutable` | `createStore` + draft setter | one write path, transactions |  |
 | `setStore("todos", reconcile(data))` | `setStore(s => { reconcile(data, "id")(s.todos); })` | draft-first | call reconcile on the draft sub-tree |
-| `reconcile(v, { key: null, merge: true })` | `reconcile(v, null)` | merge always on | |
+| `reconcile(v, { key: null, merge: true })` | `reconcile(v, null)` | merge always on |  |
 | `createSelector` | `createProjection` / `createStore(fn)` | more general | §4.1 |
-| `unwrap` | `snapshot` | distinct graph needed | |
+| `unwrap` | `snapshot` | distinct graph needed |  |
 | `mergeProps` skipped `undefined` | `merge` treats `undefined` as a value | consistency | audit defaults |
 
 ### 8.1 Then vs now: store internals
 
-| | 1.x (`solid-js/store`) | 2.0 RC |
-|---|---|---|
-| Node creation | per-property signals created lazily on tracked read (`$NODE` maps) | leaf, presence, container and deep-witness nodes, lazily, on read *or write* |
+|  | 1.x (`solid-js/store`) | 2.0 RC |
+| --- | --- | --- |
+| Node creation | per-property signals created lazily on tracked read (`$NODE` maps) | leaf, presence, container and deep-witness nodes, lazily, on read _or write_ |
 | Writes | applied to the raw object immediately, then notified (sync unless batched) | staged on a copy-on-write pending backing; committed at the flush |
 | Structure tracking | `$SELF`/`$TRACK` node per object | container node (`$TRACK`) for keys/length/iteration; separate presence nodes for `in` |
 | Mutation API | path setters, `produce`, `createMutable` | draft setter only (plus optional `storePath`) |
@@ -324,7 +328,7 @@ flowchart TD
 ## 9. Production failure modes
 
 | Symptom | Cause | Fix |
-|---|---|---|
+| --- | --- | --- |
 | Whole list re-renders on every poll | fresh objects assigned wholesale | `reconcile(data, "id")` or a keyed projection |
 | Update "doesn't show" | object mutated after being handed to the store, or written through the proxy (`STORE_WRITE_OUTSIDE_SETTER`) | write through the setter with fresh objects |
 | Half of an async update lost | `await` inside a setter callback (`ASYNC_STORE_SETTER`) | move async into an action |
@@ -401,4 +405,3 @@ Only plain objects and arrays are wrapped (`isWrappable`); a `Map` is stored as-
 
 On the container node's pending (copy-on-write) backing; the committed backing mutates only at the flush's commit. That is why reads lag writes for stores too, and why a transaction can hold or discard a store write wholesale.
 </details>
-

@@ -1,0 +1,3 @@
+# Repository-wide tooling (formatter, linter, Markdown gates). Each track pins its own runtimes.
+[tools]
+node = "26"

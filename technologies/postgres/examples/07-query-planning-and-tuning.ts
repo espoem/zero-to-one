@@ -23,15 +23,15 @@ async function run(): Promise<void> {
   `);
 
   // Test 1: EXPLAIN plan generation & cost parameter calibration
-  await db.exec("SET random_page_cost = 1.1;");
-  const costSetting = await db.query<{ random_page_cost: string }>("SHOW random_page_cost;");
+  await db.exec('SET random_page_cost = 1.1;');
+  const costSetting = await db.query<{ random_page_cost: string }>('SHOW random_page_cost;');
   assert.equal(costSetting.rows[0]!.random_page_cost, '1.1');
 
   const explainResult = await db.query<{ 'QUERY PLAN': string }>(
-    "EXPLAIN (ANALYZE, BUFFERS) SELECT * FROM car_inventory WHERE make = 'Audi' AND model = 'A4';"
+    "EXPLAIN (ANALYZE, BUFFERS) SELECT * FROM car_inventory WHERE make = 'Audi' AND model = 'A4';",
   );
   assert.ok(explainResult.rows.length > 0);
-  const planText = explainResult.rows.map(r => r['QUERY PLAN']).join('\n');
+  const planText = explainResult.rows.map((r) => r['QUERY PLAN']).join('\n');
   assert.match(planText, /Scan/i);
 
   // Test 2: Multivariate Extended Statistics on Correlated Columns
@@ -43,7 +43,7 @@ async function run(): Promise<void> {
   `);
 
   const statCheck = await db.query<{ stxname: string }>(
-    "SELECT stxname FROM pg_statistic_ext WHERE stxname = 'stats_cars_correlated';"
+    "SELECT stxname FROM pg_statistic_ext WHERE stxname = 'stats_cars_correlated';",
   );
   assert.equal(statCheck.rows.length, 1);
 

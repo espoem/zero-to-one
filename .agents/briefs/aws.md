@@ -1,35 +1,40 @@
 # Brief: AWS (`technologies/aws`)
 
-| | |
-|---|---|
-| Phase | 4 |
-| Kind | NEW track: create from scratch |
-| Primary (author) | **Opus · claude.ai** |
-| Drafter (on request) | pi · DeepSeek |
-| Challenger | pi · Muse Spark 1.3 |
-| Verifier | Antigravity |
-| Final gate | Opus (claude.ai session) |
-| Branch / worktree | `track/aws` · `../zto-aws` |
-| Depends on | architecture/cloud-foundations |
-| Research dossier | `.agents/research/F-cloud.md` |
+|                      |                                |
+| -------------------- | ------------------------------ |
+| Phase                | 4                              |
+| Kind                 | NEW track: create from scratch |
+| Primary (author)     | **Opus · claude.ai**           |
+| Drafter (on request) | pi · DeepSeek                  |
+| Challenger           | pi · Muse Spark 1.3            |
+| Verifier             | Antigravity                    |
+| Final gate           | Opus (claude.ai session)       |
+| Branch / worktree    | `track/aws` · `../zto-aws`     |
+| Depends on           | architecture/cloud-foundations |
+| Research dossier     | `.agents/research/F-cloud.md`  |
 
 ## 0. Read before starting (binding)
+
 1. `AGENTS.md`: the contract. If it conflicts with this brief, AGENTS.md wins; log the conflict in your review file.
 2. `.agents/OWNERSHIP.md`: what you own vs only cross-link.
 3. `.agents/REVIEW.md`: the checklist your work is judged against.
 4. Your global/agent instructions still apply where they do not conflict.
 
 ## 1. Owner decisions and track-specific instructions
+
 - LocalStack now requires an auth token and its free tier is non-commercial. Use moto as the token-free baseline; LocalStack tests skip without a token.
 - DVA-C02 → DVA-C03 and SAP-C02 → SAP-C03 transitions: cover both, with an exam-delta callout.
 - Teach the **latest stable** versions. Add **Then vs now** comparisons wherever practice changed (AGENTS.md § Version Currency).
 - Pin **all** tooling via mise (`.mise.toml` + `mise.lock`): node 26 for JS/TS, plus every CLI and runtime the examples need.
 
 ## 2. Ownership
+
 **You own (full treatment):**
+
 - (see dossier "Overlaps / dedupe")
 
 **Cross-link only (do not re-explain):**
+
 - Cloud model, shared responsibility, IAM model, VPC/CIDR, storage classes, managed DBs, serverless, Well-Architected, FinOps → owned by `architecture/cloud-foundations`
 
 ## 3. Research dossier (verified 2026-10-27/28; re-verify before use)
@@ -50,35 +55,38 @@
 - **Authoritative syllabi used (verified on official AWS pages):**
   - **SAA-C03:** still current, no successor announced on the official page.
 
-    | Domain | Weight |
-    |---|---|
-    | Design Secure Architectures | 30% |
-    | Design Resilient Architectures | 26% |
-    | Design High-Performing Architectures | 24% |
-    | Design Cost-Optimized Architectures | 20% |
+    | Domain                               | Weight |
+    | ------------------------------------ | ------ |
+    | Design Secure Architectures          | 30%    |
+    | Design Resilient Architectures       | 26%    |
+    | Design High-Performing Architectures | 24%    |
+    | Design Cost-Optimized Architectures  | 20%    |
 
     Source: https://docs.aws.amazon.com/aws-certification/latest/solutions-architect-associate-03/solutions-architect-associate-03.html. Third-party "SAA-C04" claims (e.g. cciedump.spoto.net) are **not** reflected on aws.amazon.com and should be treated as false/unverified.
+
   - **Developer Associate: transition happening now.** DVA-C02 last test day is **2026-11-30**; **DVA-C03** registration opens **2026-12-01**.
 
-    | DVA-C03 domain | Weight |
-    |---|---|
-    | Development with AWS Services | 30% |
-    | Security | 26% |
-    | Testing and Deployment | 22% |
-    | Troubleshooting and Optimization | 22% |
+    | DVA-C03 domain                   | Weight |
+    | -------------------------------- | ------ |
+    | Development with AWS Services    | 30%    |
+    | Security                         | 26%    |
+    | Testing and Deployment           | 22%    |
+    | Troubleshooting and Optimization | 22%    |
 
     Source: https://docs.aws.amazon.com/aws-certification/latest/developer-associate-03/developer-associate-03.html. Target C03.
+
   - **SA Professional: transition happening now.** **SAP-C03** registration opened 2026-10-27, GA 2026-11-17; SAP-C02 last day 2026-11-16 (dates per https://tutorialsdojo.com/whats-new-with-the-aws-certified-solutions-architect-professional-sap-c03/; the official guide links a C02/C03 comparison page). 65 scored + 10 unscored questions, pass 720.
 
-    | SAP-C03 domain | Weight |
-    |---|---|
-    | Architecture Design and Implementation Built for the Cloud | 25% |
-    | Security, Compliance, and Governance | 25% |
-    | Cost-Optimized Architecture Design | 15% |
-    | Resilience, Migration, and Business Continuity | 15% |
-    | Operational Excellence and Automation | 20% |
+    | SAP-C03 domain                                             | Weight |
+    | ---------------------------------------------------------- | ------ |
+    | Architecture Design and Implementation Built for the Cloud | 25%    |
+    | Security, Compliance, and Governance                       | 25%    |
+    | Cost-Optimized Architecture Design                         | 15%    |
+    | Resilience, Migration, and Business Continuity             | 15%    |
+    | Operational Excellence and Automation                      | 20%    |
 
     Source: https://docs.aws.amazon.com/aws-certification/latest/solutions-architect-professional-03/solutions-architect-professional-03.html
+
   - AWS Well-Architected Framework and lenses (Serverless lens): https://docs.aws.amazon.com/wellarchitected/latest/framework/
   - IAM policy evaluation logic: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_evaluation-logic.html
   - Amazon Builders' Library (static stability, timeouts/retries/backoff, shuffle sharding): https://aws.amazon.com/builders-library/
@@ -169,7 +177,7 @@
     - Sources: https://blog.localstack.cloud/2026-upcoming-pricing-changes/, https://blog.localstack.cloud/localstack-single-image-next-steps/, https://github.com/localstack/localstack/releases
     - Implication: a personal learning repo qualifies for the free non-commercial tier. Examples must read the token from env and **skip gracefully** when it is absent, and must never rely on `:latest` without a token.
     - Pinning old OSS tags (≤4.14) works offline but is frozen/unpatched. Acceptable only as a documented fallback.
-  - **Primary deterministic layer: moto 5.2.5** (Apache-2.0, `mock_aws` decorator or `moto_server` for the JS SDK via endpoint override). Covers S3/SQS/SNS/DynamoDB/IAM (IAM policy *enforcement* is opt-in and partial).
+  - **Primary deterministic layer: moto 5.2.5** (Apache-2.0, `mock_aws` decorator or `moto_server` for the JS SDK via endpoint override). Covers S3/SQS/SNS/DynamoDB/IAM (IAM policy _enforcement_ is opt-in and partial).
   - **Suites:**
     - DynamoDB single-table access patterns plus conditional-write negative tests (`ConditionalCheckFailedException`)
     - SQS consumer idempotency with redelivery
@@ -202,7 +210,7 @@
 **Proposal.**
 
 | Track | Repo path | Owns | Size |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Cloud Foundations | `architecture/cloud-foundations` | Provider-neutral concepts with formal definitions. Each module ends with a three-column "how AWS / GCP / Azure spell it" table that deep-links into the provider tracks. Uses Terraform as the lingua franca, with the IaC internals themselves left to the IaC track. | 12 modules (the full syllabus) |
 | AWS | `technologies/aws` | Exam-domain mapping (SAA-C03, DVA-C02 to C03, SAP-C03), AWS-only semantics (IAM policy evaluation order, SCP/RCP, S3 specifics, DynamoDB modelling, Lambda internals) and AWS gotchas | 9–10 modules |
 | GCP | `technologies/gcp` | ACE/PCA mapping, resource hierarchy, IAM deny/PAB, global VPC, Shared VPC, Cloud Run/GKE, Spanner/BigQuery, PCA case studies | 8–9 modules |
@@ -216,7 +224,7 @@
 ##### 0.1 Concept to service mapping (core of the foundation track; becomes `architecture/cloud-foundations/MAPPING.md`)
 
 | Concept | AWS | GCP | Azure | Cloudflare (where applicable) |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | Top-level boundary / hierarchy | Organization → OU → Account | Organization → Folder → Project | Entra tenant → Management group → Subscription → Resource group | Account → Zone |
 | Guardrail policy (preventive) | SCP, RCP (resource control policies), declarative policies | Org Policy constraints (incl. custom), IAM Deny policies | Azure Policy (Deny/Modify/DeployIfNotExists), deny assignments | Account-level settings |
 | Human identity / SSO | IAM Identity Center | Cloud Identity / Workspace, Workforce Identity Federation | Entra ID | Cloudflare Access (Zero Trust) |
@@ -258,7 +266,9 @@ Rows marked "(unverified)" are names the curriculum author must confirm before p
 ---
 
 ## 4. Re-verify list
+
 These claims were marked unverified during research. Confirm or correct each one against a primary source before teaching it:
+
 - AWS CLI v2 (pin minor at authoring time; unverified exact, GitHub blocked)
 - Source: https://docs.aws.amazon.com/aws-certification/latest/solutions-architect-associate-03/solutions-architect-associate-03.html. Third-party "SAA-C04" claims (e.g. cciedump.spoto.net) are **not** reflected on aws.amazon.com and should be treated as false/unverified.
 - 5. An SQS visibility timeout shorter than the Lambda timeout × batch causes duplicate processing. AWS guidance: visibility timeout ≥ 6× function timeout (unverified current wording).
@@ -272,7 +282,9 @@ These claims were marked unverified during research. Confirm or correct each one
 - Rows marked "(unverified)" are names the curriculum author must confirm before publishing. The table is a teaching scaffold, not a spec.
 
 ## 5. Certifications & exams
+
 Follow AGENTS.md § Certification and Exam Coverage exactly. Minimum deliverables:
+
 1. **README "Certifications & Exams" section.** Start from the exams named in the dossier above ("Authoritative syllabi used"). Re-verify each exam's code, status, guide version/date, targeted product version and domain weights on the official page. Where no certification exists, say so and use the recognised interview format.
 2. **`exams/README.md` coverage matrix.** Rows are domain/objective, weight, modules, examples, status. No ❌ at hand-off.
 3. **`exams/<exam-code>.md` question banks.**
@@ -284,11 +296,14 @@ Follow AGENTS.md § Certification and Exam Coverage exactly. Minimum deliverable
 5. **Original questions only.** No braindump content.
 
 ## 6. Code languages
+
 Per AGENTS.md § Code Example Languages:
+
 - **Primary:** pseudocode (where algorithms or protocols are described) + TypeScript (or the track's own language, for language tracks).
 - **Secondary:** Python, Rust or Nim only where it teaches something. Each language lives in `examples/<lang>/` with its own mise-pinned toolchain and native test runner, and `test` runs them all.
 
 ## 7. Workflow and definition of done
+
 1. **Primary (Opus)** works on branch `track/aws` and sets this track's row in `.agents/STATUS.md` to 🟦.
 2. **Verify versions first.** Check every version in the dossier against its primary source today. Record the results in the README's `Verified against …` line. Resolve every item in the re-verify list below.
 3. Build in stages: README syllabus + exam matrix → modules one by one, each with its examples/tests → glossary → cheatsheet → question banks → mock exam. Delegate bulk drafting (question-bank drafts, glossary candidates, cheatsheet tables) to the **Drafter**, then correct and integrate it yourself.

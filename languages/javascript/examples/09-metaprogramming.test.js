@@ -11,24 +11,39 @@ export function createReactivity() {
   const subscribers = new WeakMap();
   const proxies = new WeakMap();
   function reactive(obj) {
-    return proxies.getOrInsertComputed(obj, () => new Proxy(obj, {
-      get(target, key, receiver) {
-        if (activeEffect) {
-          const byKey = subscribers.getOrInsertComputed(target, () => new Map());
-          byKey.getOrInsertComputed(key, () => new Set()).add(activeEffect);
-        }
-        const value = Reflect.get(target, key, receiver);
-        return typeof value === 'object' && value !== null ? reactive(value) : value;
-      },
-      set(target, key, value, receiver) {
-        const ok = Reflect.set(target, key, value, receiver);
-        subscribers.get(target)?.get(key)?.forEach((fn) => fn());
-        return ok;
-      },
-    }));
+    return proxies.getOrInsertComputed(
+      obj,
+      () =>
+        new Proxy(obj, {
+          get(target, key, receiver) {
+            if (activeEffect) {
+              const byKey = subscribers.getOrInsertComputed(target, () => new Map());
+              byKey.getOrInsertComputed(key, () => new Set()).add(activeEffect);
+            }
+            const value = Reflect.get(target, key, receiver);
+            return typeof value === 'object' && value !== null ? reactive(value) : value;
+          },
+          set(target, key, value, receiver) {
+            const ok = Reflect.set(target, key, value, receiver);
+            subscribers
+              .get(target)
+              ?.get(key)
+              ?.forEach((fn) => fn());
+            return ok;
+          },
+        }),
+    );
   }
   function effect(fn) {
-    const run = () => { const prev = activeEffect; activeEffect = run; try { fn(); } finally { activeEffect = prev; } };
+    const run = () => {
+      const prev = activeEffect;
+      activeEffect = run;
+      try {
+        fn();
+      } finally {
+        activeEffect = prev;
+      }
+    };
     run();
   }
   return { reactive, effect };
@@ -44,18 +59,42 @@ describe('Proxy traps and Reflect (§10.5, §28)', () => {
   test('traps intercept every essential internal method used by common operations', () => {
     const log = [];
     const handler = {};
-    for (const trap of ['get', 'set', 'has', 'deleteProperty', 'ownKeys', 'getOwnPropertyDescriptor', 'defineProperty']) {
-      handler[trap] = (...args) => { log.push(trap); return Reflect[trap](...args); };
+    for (const trap of [
+      'get',
+      'set',
+      'has',
+      'deleteProperty',
+      'ownKeys',
+      'getOwnPropertyDescriptor',
+      'defineProperty',
+    ]) {
+      handler[trap] = (...args) => {
+        log.push(trap);
+        return Reflect[trap](...args);
+      };
     }
     const p = new Proxy({ a: 1 }, handler);
-    void p.a; p.b = 2; void ('a' in p); delete p.b; Object.keys(p);
-    assert.deepEqual(log, ['get', 'set', 'getOwnPropertyDescriptor', 'defineProperty', 'has', 'deleteProperty',
-      'ownKeys', 'getOwnPropertyDescriptor']);
+    void p.a;
+    p.b = 2;
+    void ('a' in p);
+    delete p.b;
+    Object.keys(p);
+    assert.deepEqual(log, [
+      'get',
+      'set',
+      'getOwnPropertyDescriptor',
+      'defineProperty',
+      'has',
+      'deleteProperty',
+      'ownKeys',
+      'getOwnPropertyDescriptor',
+    ]);
   });
 
   test('negative indices via a get trap', () => {
     const arr = new Proxy([1, 2, 3], {
-      get: (t, k, r) => (typeof k === 'string' && /^-\d+$/.test(k) ? t[t.length + Number(k)] : Reflect.get(t, k, r)),
+      get: (t, k, r) =>
+        typeof k === 'string' && /^-\d+$/.test(k) ? t[t.length + Number(k)] : Reflect.get(t, k, r),
     });
     assert.equal(arr[-1], 3);
     assert.equal(arr.length, 3);
@@ -76,26 +115,42 @@ describe('Proxy traps and Reflect (§10.5, §28)', () => {
 
   test('NEGATIVE: a set trap returning false throws in strict code', () => {
     const readonly = new Proxy({}, { set: () => false });
-    assert.throws(() => { /** @type {any} */ (readonly).x = 1; }, TypeError);
+    assert.throws(() => {
+      /** @type {any} */ (readonly).x = 1;
+    }, TypeError);
   });
 
   test('Reflect.get forwards the receiver to getters; target[key] does not', () => {
-    const base = { _v: 'base', get v() { return this._v; } };
+    const base = {
+      _v: 'base',
+      get v() {
+        return this._v;
+      },
+    };
     const reads = [];
-    const make = (forward) => new Proxy(base, {
-      get(t, k, r) { reads.push(String(k)); return forward ? Reflect.get(t, k, r) : t[k]; },
-    });
-    reads.length = 0; void make(true).v;
-    assert.deepEqual(reads, ['v', '_v']);       // the getter's read of _v went through the proxy
-    reads.length = 0; void make(false).v;
-    assert.deepEqual(reads, ['v']);             // the getter's read bypassed the proxy
+    const make = (forward) =>
+      new Proxy(base, {
+        get(t, k, r) {
+          reads.push(String(k));
+          return forward ? Reflect.get(t, k, r) : t[k];
+        },
+      });
+    reads.length = 0;
+    void make(true).v;
+    assert.deepEqual(reads, ['v', '_v']); // the getter's read of _v went through the proxy
+    reads.length = 0;
+    void make(false).v;
+    assert.deepEqual(reads, ['v']); // the getter's read bypassed the proxy
   });
 
   test('NEGATIVE: internal slots are not forwarded (Map behind a Proxy)', () => {
     const p = new Proxy(new Map([['k', 1]]), {});
     assert.throws(() => p.get('k'), TypeError);
     const fixed = new Proxy(new Map([['k', 1]]), {
-      get(t, k) { const v = Reflect.get(t, k, t); return typeof v === 'function' ? v.bind(t) : v; },
+      get(t, k) {
+        const v = Reflect.get(t, k, t);
+        return typeof v === 'function' ? v.bind(t) : v;
+      },
     });
     assert.equal(fixed.get('k'), 1);
   });
@@ -116,12 +171,28 @@ describe('Proxy traps and Reflect (§10.5, §28)', () => {
 
   test('apply and construct traps', () => {
     const calls = [];
-    const fn = new Proxy(function add(a, b) { return a + b; }, {
-      apply(t, thisArg, args) { calls.push(args); return Reflect.apply(t, thisArg, args) * 10; },
-    });
+    const fn = new Proxy(
+      function add(a, b) {
+        return a + b;
+      },
+      {
+        apply(t, thisArg, args) {
+          calls.push(args);
+          return Reflect.apply(t, thisArg, args) * 10;
+        },
+      },
+    );
     assert.equal(fn(1, 2), 30);
-    class Point { constructor(x) { this.x = x; } }
-    const P = new Proxy(Point, { construct(t, args, nt) { return Reflect.construct(t, [args[0] * 2], nt); } });
+    class Point {
+      constructor(x) {
+        this.x = x;
+      }
+    }
+    const P = new Proxy(Point, {
+      construct(t, args, nt) {
+        return Reflect.construct(t, [args[0] * 2], nt);
+      },
+    });
     assert.equal(new P(2).x, 4);
   });
 
@@ -130,30 +201,43 @@ describe('Proxy traps and Reflect (§10.5, §28)', () => {
     const state = reactive({ user: { name: 'Ada' }, count: 0 });
     const seen = [];
     effect(() => seen.push(state.user.name));
-    state.count = 1;                 // not read by the effect: no re-run
+    state.count = 1; // not read by the effect: no re-run
     state.user.name = 'Grace';
     assert.deepEqual(seen, ['Ada', 'Grace']);
     assert.equal(reactive(state.user) === state.user, false); // proxies of proxies are distinct...
     const raw = { a: 1 };
-    assert.equal(reactive(raw), reactive(raw));                // ...but the cache returns one proxy per target
+    assert.equal(reactive(raw), reactive(raw)); // ...but the cache returns one proxy per target
   });
 });
 
 describe('Well-known symbols (§6.1.5.1)', () => {
   test('Symbol.toPrimitive, hasInstance, toStringTag, isConcatSpreadable', () => {
-    const money = { cents: 1250, [Symbol.toPrimitive](hint) { return hint === 'string' ? '€12.50' : this.cents; } };
+    const money = {
+      cents: 1250,
+      [Symbol.toPrimitive](hint) {
+        return hint === 'string' ? '€12.50' : this.cents;
+      },
+    };
     assert.equal(`${money}`, '€12.50');
     assert.equal(/** @type {any} */ (money) + 0, 1250);
     const Even = { [Symbol.hasInstance]: (n) => n % 2 === 0 };
     assert.equal(/** @type {any} */ (4) instanceof /** @type {any} */ (Even), true);
-    class Thing { get [Symbol.toStringTag]() { return 'Thing'; } }
+    class Thing {
+      get [Symbol.toStringTag]() {
+        return 'Thing';
+      }
+    }
     assert.equal(Object.prototype.toString.call(new Thing()), '[object Thing]');
     const arrayLike = { length: 2, 0: 'a', 1: 'b', [Symbol.isConcatSpreadable]: true };
     assert.deepEqual([0].concat(/** @type {any} */ (arrayLike)), [0, 'a', 'b']);
   });
 
   test('Symbol.species decides the class of derived results', () => {
-    class Plain extends Array { static get [Symbol.species]() { return Array; } }
+    class Plain extends Array {
+      static get [Symbol.species]() {
+        return Array;
+      }
+    }
     const p = Plain.from([1, 2]);
     assert.ok(p instanceof Plain);
     assert.equal(p.map((x) => x) instanceof Plain, false);
@@ -163,9 +247,12 @@ describe('Well-known symbols (§6.1.5.1)', () => {
 describe('Tagged templates (§13.3.11)', () => {
   test('strings are frozen, have raw, and are cached per call site', () => {
     const seen = [];
-    const tag = (strings) => { seen.push(strings); return strings; };
+    const tag = (strings) => {
+      seen.push(strings);
+      return strings;
+    };
     for (let i = 0; i < 2; i++) tag`a${i}b`;
-    tag`a${0}b`;                                   // different call site, same text
+    tag`a${0}b`; // different call site, same text
     assert.equal(seen[0], seen[1]);
     assert.notEqual(seen[0], seen[2]);
     assert.ok(Object.isFrozen(seen[0]) && Object.isFrozen(seen[0].raw));
@@ -180,10 +267,15 @@ describe('Tagged templates (§13.3.11)', () => {
   });
 
   test('a SQL tag separates code from data', () => {
-    const sql = (strings, ...values) => ({ text: strings.reduce((acc, s, i) => `${acc}$${i}${s}`), values });
-    const userId = "1; DROP TABLE users";
-    assert.deepEqual(sql`SELECT * FROM users WHERE id = ${userId}`,
-      { text: 'SELECT * FROM users WHERE id = $1', values: [userId] });
+    const sql = (strings, ...values) => ({
+      text: strings.reduce((acc, s, i) => `${acc}$${i}${s}`),
+      values,
+    });
+    const userId = '1; DROP TABLE users';
+    assert.deepEqual(sql`SELECT * FROM users WHERE id = ${userId}`, {
+      text: 'SELECT * FROM users WHERE id = $1',
+      values: [userId],
+    });
   });
 });
 
@@ -197,7 +289,7 @@ describe('Weak collections and references (§24.3, §26)', () => {
     assert.equal(wm.get(key), 1);
     assert.throws(() => wm.set(/** @type {any} */ ('str'), 1), TypeError);
     assert.throws(() => wm.set(/** @type {any} */ (Symbol.for('registered')), 1), TypeError);
-    wm.set(Symbol('unregistered'), 1);              // ES2023: non-registered symbols allowed
+    wm.set(Symbol('unregistered'), 1); // ES2023: non-registered symbols allowed
     assert.equal(/** @type {any} */ (wm)[Symbol.iterator], undefined);
   });
 
@@ -218,7 +310,7 @@ describe('Weak collections and references (§24.3, §26)', () => {
     const r = runNode(['--expose-gc', '-e', src]);
     const out = JSON.parse(r.stdout);
     assert.equal(out.sameJob, true);
-    assert.equal(out.later, true);               // V8 with explicit gc(); not guaranteed by the spec
+    assert.equal(out.later, true); // V8 with explicit gc(); not guaranteed by the spec
     // Cleanup callbacks are allowed to be delayed or skipped entirely; only check the type if present:
     assert.ok(out.cleaned.every((v) => v === 'target-held-value'));
   });
@@ -274,8 +366,8 @@ describe('Decorators (Stage 2.7) via esbuild transpilation', () => {
       }
       export const meta = Svc[Symbol.metadata ?? Symbol.for('Symbol.metadata')];
       export const instance = new Svc();`);
-    assert.deepEqual(mod.registry, ['Svc#start']);          // ran during construction
-    assert.equal(mod.reader.get(mod.instance), 7);          // reads a #private field from outside
+    assert.deepEqual(mod.registry, ['Svc#start']); // ran during construction
+    assert.equal(mod.reader.get(mod.instance), 7); // reads a #private field from outside
     assert.equal(mod.reader.has({}), false);
     assert.deepEqual(mod.meta && { ...mod.meta }, { id: 'column:id' });
   });

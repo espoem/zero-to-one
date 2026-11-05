@@ -1,6 +1,6 @@
 # 03 · Execution Contexts, Scope, Closures and `this`
 
-> **Spec anchors (ECMA-262 17th edition):** §9.1 *Environment Records* (§9.1.1.1 Declarative, §9.1.1.2 Object, §9.1.1.3 Function, §9.1.1.4 Global, §9.1.1.5 Module), §9.2 *PrivateEnvironment Records*, §9.4 *Execution Contexts* (§9.4.2 ResolveBinding, §9.4.3 GetThisEnvironment, §9.4.4 ResolveThisBinding), §10.2 *ECMAScript Function Objects* (§10.2.1.2 OrdinaryCallBindThis, §10.2.11 FunctionDeclarationInstantiation), §10.4.1 *Bound Function Exotic Objects*, §16.1.7 *GlobalDeclarationInstantiation*, §19.2.1 `eval` and §19.2.1.1 *PerformEval*, §11.2.2 *Strict Mode Code*, Annex B.3 (block-level functions).
+> **Spec anchors (ECMA-262 17th edition):** §9.1 _Environment Records_ (§9.1.1.1 Declarative, §9.1.1.2 Object, §9.1.1.3 Function, §9.1.1.4 Global, §9.1.1.5 Module), §9.2 _PrivateEnvironment Records_, §9.4 _Execution Contexts_ (§9.4.2 ResolveBinding, §9.4.3 GetThisEnvironment, §9.4.4 ResolveThisBinding), §10.2 _ECMAScript Function Objects_ (§10.2.1.2 OrdinaryCallBindThis, §10.2.11 FunctionDeclarationInstantiation), §10.4.1 _Bound Function Exotic Objects_, §16.1.7 _GlobalDeclarationInstantiation_, §19.2.1 `eval` and §19.2.1.1 _PerformEval_, §11.2.2 _Strict Mode Code_, Annex B.3 (block-level functions).
 >
 > **Executable proof:** [`examples/03-execution-contexts-scope-closures.test.js`](../examples/03-execution-contexts-scope-closures.test.js)
 
@@ -10,12 +10,12 @@ Scope, hoisting, closures and `this` are four views of one mechanism: **an execu
 
 ## 1. Execution contexts
 
-**Definition (§9.4).** An *execution context* is a specification device that tracks the runtime evaluation of code. At any time there is at most one *running execution context* per agent; the contexts form the **execution context stack** (the call stack).
+**Definition (§9.4).** An _execution context_ is a specification device that tracks the runtime evaluation of code. At any time there is at most one _running execution context_ per agent; the contexts form the **execution context stack** (the call stack).
 
 Components of every execution context:
 
 | Component | Meaning |
-|---|---|
+| --- | --- |
 | code evaluation state | where to resume (needed for generators and `await`) |
 | Function | the function object being evaluated, or null for scripts and modules |
 | Realm | the Realm Record whose intrinsics this code uses ([module 06](06-agents-realms-job-queue.md)) |
@@ -24,18 +24,18 @@ Components of every execution context:
 Additional components for ECMAScript code:
 
 | Component | Meaning |
-|---|---|
+| --- | --- |
 | **LexicalEnvironment** | the Environment Record used to resolve identifiers; changes as blocks are entered and left |
 | **VariableEnvironment** | the Environment Record holding `var` bindings of the function or script |
 | **PrivateEnvironment** | the PrivateEnvironment Record for `#private` names in enclosing classes (§9.2) |
 
-Generators and async functions also hold a *Generator* component. Suspending a generator removes its execution context from the stack *with* its environments; resuming pushes it back. That is why local variables survive `yield` and `await` ([module 05](05-iterators-generators.md), [module 07](07-async-in-depth.md)).
+Generators and async functions also hold a _Generator_ component. Suspending a generator removes its execution context from the stack _with_ its environments; resuming pushes it back. That is why local variables survive `yield` and `await` ([module 05](05-iterators-generators.md), [module 07](07-async-in-depth.md)).
 
 ---
 
 ## 2. Environment Records
 
-**Definition (§9.1).** An *Environment Record* is a specification type that associates identifiers with variables and functions, based on the lexical nesting of the code. Each has an `[[OuterEnv]]` field (null for the global record). The chain through `[[OuterEnv]]` *is* the scope chain.
+**Definition (§9.1).** An _Environment Record_ is a specification type that associates identifiers with variables and functions, based on the lexical nesting of the code. Each has an `[[OuterEnv]]` field (null for the global record). The chain through `[[OuterEnv]]` _is_ the scope chain.
 
 ```mermaid
 classDiagram
@@ -81,16 +81,16 @@ classDiagram
 ```
 
 | Kind | Created for | Notable behaviour |
-|---|---|---|
+| --- | --- | --- |
 | Declarative (§9.1.1.1) | blocks, `catch` clauses, function bodies | Bindings can be **uninitialized** (TDZ) |
 | Function (§9.1.1.3) | each function call | Holds the `this` binding (unless arrow), `new.target`, `super` home |
-| Module (§9.1.1.5) | each module | **Import bindings are indirect**: reading one reads the exporter's binding *now* (live bindings, [module 08](08-modules.md)) |
+| Module (§9.1.1.5) | each module | **Import bindings are indirect**: reading one reads the exporter's binding _now_ (live bindings, [module 08](08-modules.md)) |
 | Object (§9.1.1.2) | `with` statements, the object part of the global record | Bindings are properties; can be shadowed by `Symbol.unscopables` |
 | Global (§9.1.1.4) | the realm | Two-part: object record (global object properties: `var`, function declarations, built-ins) + declarative record (top-level `let`/`const`/`class`) |
 
 ### Identifier resolution
 
-`ResolveBinding(name)` (§9.4.2) calls `GetIdentifierReference(env, name, strict)` which walks `[[OuterEnv]]` until some record's `HasBinding(name)` is true, returning a Reference Record whose base is that Environment Record. If no record has it, the reference is *unresolvable*: reading throws `ReferenceError`; assigning creates a global property in sloppy mode and throws `ReferenceError` in strict mode.
+`ResolveBinding(name)` (§9.4.2) calls `GetIdentifierReference(env, name, strict)` which walks `[[OuterEnv]]` until some record's `HasBinding(name)` is true, returning a Reference Record whose base is that Environment Record. If no record has it, the reference is _unresolvable_: reading throws `ReferenceError`; assigning creates a global property in sloppy mode and throws `ReferenceError` in strict mode.
 
 Resolution is **lexical**: the chain is fixed by where the code is written, not by who calls it. The only constructs that make resolution dynamic are `with` and sloppy direct `eval` (which can add `var` bindings to the calling function's scope). Both defeat engine optimisations ([module 12](12-engine-internals-v8.md)).
 
@@ -108,10 +108,10 @@ Resolution is **lexical**: the chain is fixed by where the code is written, not 
 4. For each function declaration: create a binding and **initialize it to the function object** (so it can be called before the line where it appears).
 5. For each `let`, `const`, `class` in the top-level lexical scope: create the binding **uninitialized**.
 
-`GlobalDeclarationInstantiation` (§16.1.7) does the same for scripts, plus collision checks: a script that declares `let x` when another script already declared `var x` (or vice versa) fails with a `SyntaxError` *before any of it runs*.
+`GlobalDeclarationInstantiation` (§16.1.7) does the same for scripts, plus collision checks: a script that declares `let x` when another script already declared `var x` (or vice versa) fails with a `SyntaxError` _before any of it runs_.
 
 | Declaration | Binding created at | Initialized at | Before initialization |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `var` | instantiation | instantiation (`undefined`) | reads `undefined` |
 | function declaration | instantiation | instantiation (function object) | callable |
 | `let`, `const` | instantiation | when the declaration is evaluated | **ReferenceError (TDZ)** |
@@ -120,17 +120,21 @@ Resolution is **lexical**: the chain is fixed by where the code is written, not 
 
 ### The temporal dead zone is temporal
 
-The TDZ is the time between binding creation and initialization. It is about *execution order*, not text position:
+The TDZ is the time between binding creation and initialization. It is about _execution order_, not text position:
 
 ```js
-function readLater() { return value; } // mentions `value` before its declaration: fine
+function readLater() {
+  return value;
+} // mentions `value` before its declaration: fine
 let value = 42;
 readLater(); // 42: by the time of the call, `value` is initialized
 
 {
   readLater2(); // ReferenceError: called while `v2` is in TDZ
   let v2 = 1;
-  function readLater2() { return v2; }
+  function readLater2() {
+    return v2;
+  }
 }
 ```
 
@@ -141,21 +145,23 @@ Also in TDZ: `let x = x;` (the right side reads the uninitialized `x`), default 
 In a classic **script** (not a module):
 
 ```js
-var a = 1;       // creates globalThis.a (non-configurable property of the global object)
-let b = 2;       // creates a binding in the global *declarative* record; globalThis.b is undefined
-function c() {}  // creates globalThis.c
+var a = 1; // creates globalThis.a (non-configurable property of the global object)
+let b = 2; // creates a binding in the global *declarative* record; globalThis.b is undefined
+function c() {} // creates globalThis.c
 ```
 
 Modules have their own Module Environment Record: top-level `var` in a module does **not** create a global property. Code that relies on `var` leaking into `window` breaks when converted to a module.
 
 ### Block-level functions in sloppy mode (Annex B.3.3)
 
-In strict code, a function declared in a block is block-scoped, like `let`. In sloppy code, for web compatibility, it is *also* assigned to a `var`-like binding in the enclosing function when the declaration is evaluated. The behaviour is complex and differs from intuition:
+In strict code, a function declared in a block is block-scoped, like `let`. In sloppy code, for web compatibility, it is _also_ assigned to a `var`-like binding in the enclosing function when the declaration is evaluated. The behaviour is complex and differs from intuition:
 
 ```js
 // sloppy script
 console.log(typeof f); // 'undefined' (var-like binding exists, not yet assigned)
-{ function f() {} }
+{
+  function f() {}
+}
 console.log(typeof f); // 'function'
 ```
 
@@ -165,17 +171,18 @@ Do not write function declarations inside blocks in sloppy code. Modules and cla
 
 ## 4. Closures
 
-**Definition.** A *closure* is a function object together with the Environment Record that was the running execution context's LexicalEnvironment when the function was created. ECMA-262 stores that record in the function's `[[Environment]]` internal slot (§10.2); when the function is called, its new Function Environment Record gets `[[OuterEnv]] = F.[[Environment]]`.
+**Definition.** A _closure_ is a function object together with the Environment Record that was the running execution context's LexicalEnvironment when the function was created. ECMA-262 stores that record in the function's `[[Environment]]` internal slot (§10.2); when the function is called, its new Function Environment Record gets `[[OuterEnv]] = F.[[Environment]]`.
 
-Every function in JavaScript is a closure in this sense. The interesting cases are those where the function *outlives* the call that created its environment.
+Every function in JavaScript is a closure in this sense. The interesting cases are those where the function _outlives_ the call that created its environment.
 
 ```js
 function counter() {
-  let n = 0;                         // lives in counter's Function Environment Record
+  let n = 0; // lives in counter's Function Environment Record
   return { inc: () => ++n, get: () => n };
 }
 const c = counter();
-c.inc(); c.inc();
+c.inc();
+c.inc();
 c.get(); // 2: both arrows share the same record
 ```
 
@@ -184,11 +191,11 @@ c.get(); // 2: both arrows share the same record
 ```js
 const fs = [];
 for (var i = 0; i < 3; i++) fs.push(() => i);
-fs.map(f => f()); // [3, 3, 3]: one binding `i` in the function's VariableEnvironment
+fs.map((f) => f()); // [3, 3, 3]: one binding `i` in the function's VariableEnvironment
 
 const gs = [];
 for (let j = 0; j < 3; j++) gs.push(() => j);
-gs.map(g => g()); // [0, 1, 2]
+gs.map((g) => g()); // [0, 1, 2]
 ```
 
 For `let` in a `for` head, the spec (`ForBodyEvaluation`, `CreatePerIterationEnvironment`, §14.7.4) creates a **fresh declarative environment per iteration** and copies the current values into it before the increment expression. Each closure captures a different record. `for...of` and `for...in` with `let`/`const` likewise get a new binding per iteration.
@@ -201,8 +208,8 @@ The spec says a closure retains its whole Environment Record chain. Engines opti
 function handler(req) {
   const big = loadHugeBuffer(req);
   const log = () => console.log(big.length); // references big → big goes into the shared Context
-  const onDone = () => 'ok';                 // does not mention big...
-  return onDone;                             // ...but retains the Context, hence big
+  const onDone = () => 'ok'; // does not mention big...
+  return onDone; // ...but retains the Context, hence big
 }
 ```
 
@@ -215,7 +222,7 @@ Other closure-related leaks:
 
 ### Stale closures
 
-A closure reads the binding it captured; if the code later creates a *new* binding instead of mutating the old one, the closure keeps seeing the old value. In React, each render is a new function call with new `const` bindings, so an effect or callback created in render *N* sees render *N*'s state forever unless it is re-created. See the React track for the framework delta ([`../../../technologies/react/`](../../../technologies/react/)); the language mechanism is exactly the per-call Environment Record described here.
+A closure reads the binding it captured; if the code later creates a _new_ binding instead of mutating the old one, the closure keeps seeing the old value. In React, each render is a new function call with new `const` bindings, so an effect or callback created in render _N_ sees render _N_'s state forever unless it is re-created. See the React track for the framework delta ([`../../../technologies/react/`](../../../technologies/react/)); the language mechanism is exactly the per-call Environment Record described here.
 
 ---
 
@@ -224,7 +231,7 @@ A closure reads the binding it captured; if the code later creates a *new* bindi
 `this` is **not** lexical for ordinary functions. It is a property of the Function Environment Record, set at call time by `OrdinaryCallBindThis` (§10.2.1.2) according to the function's `[[ThisMode]]`:
 
 | `[[ThisMode]]` | Functions | `this` is |
-|---|---|---|
+| --- | --- | --- |
 | lexical | arrow functions | not bound; resolved from the enclosing environment (`GetThisEnvironment`, §9.4.3) |
 | strict | strict functions, class methods, module code | exactly the `thisArgument` passed by the caller (may be `undefined` or a primitive) |
 | global | sloppy functions | `thisArgument`; if `undefined` or `null`, the realm's `globalThis`; primitives are boxed with ToObject |
@@ -232,13 +239,13 @@ A closure reads the binding it captured; if the code later creates a *new* bindi
 What the caller passes as `thisArgument` depends on the **call expression form**:
 
 | Call form | `thisArgument` | Why |
-|---|---|---|
+| --- | --- | --- |
 | `obj.method()`, `obj['method']()`, `obj?.method()` | `obj` | the callee is a property Reference whose base is `obj` |
 | `(obj.method)()` | `obj` | parentheses keep the Reference |
 | `(0, obj.method)()`, `(f = obj.method)()` | `undefined` | the comma/assignment operator calls GetValue: the Reference is gone |
-| `f()` (plain identifier) | `undefined` (base is an Environment Record, whose `WithBaseObject()` is undefined except in `with`) | |
+| `f()` (plain identifier) | `undefined` (base is an Environment Record, whose `WithBaseObject()` is undefined except in `with`) |  |
 | `new F()` | a new object whose prototype is `F.prototype` (`OrdinaryCreateFromConstructor`) | for derived classes, `this` is uninitialized until `super()` returns |
-| `f.call(x, ...)`, `f.apply(x, [...])` | `x` | |
+| `f.call(x, ...)`, `f.apply(x, [...])` | `x` |  |
 | `f.bind(x)()` | `x` | bound function exotic object (§10.4.1) |
 | tagged template `` obj.tag`...` `` | `obj` | same as a method call |
 
@@ -261,12 +268,14 @@ Precedence when several apply: **`new` > bound > explicit (`call`/`apply`) > met
 ```js
 class Button {
   label = 'ok';
-  onClick = () => this.label;        // per-instance function, `this` fixed
-  method() { return this?.label; }   // shared on the prototype, `this` depends on the call
+  onClick = () => this.label; // per-instance function, `this` fixed
+  method() {
+    return this?.label;
+  } // shared on the prototype, `this` depends on the call
 }
 const { onClick, method } = new Button();
-onClick();  // 'ok'
-method();   // undefined
+onClick(); // 'ok'
+method(); // undefined
 ```
 
 Arrow fields cost one function object per instance, are not on the prototype (cannot be overridden by `super.onClick()` in a subclass or spied on via the prototype), but are safe to pass as callbacks. Binding in the constructor (`this.m = this.m.bind(this)`) has the same trade-offs.
@@ -277,7 +286,7 @@ Arrow fields cost one function object per instance, are not on the prototype (ca
 ### Then vs now: capturing `this`
 
 | Then (ES5) | Now (ES2015+) |
-|---|---|
+| --- | --- |
 | `var self = this; setTimeout(function () { self.x++; })` | `setTimeout(() => { this.x++; })` |
 | `this.handle = this.handle.bind(this)` in constructors (React class components) | class field arrow `handle = () => {...}`, or function components |
 | `arguments` object (array-like, mapped to parameters in sloppy mode) | rest parameters `(...args)`; arrows have no own `arguments` |
@@ -292,7 +301,7 @@ Mixing pitfall: converting a method that uses `arguments` or `this` into an arro
 Strict mode (§11.2.2) affects scope and `this` directly:
 
 | Behaviour | Sloppy | Strict |
-|---|---|---|
+| --- | --- | --- |
 | Assignment to an undeclared identifier | creates a global property | `ReferenceError` |
 | `this` in a plain call | `globalThis` | `undefined` |
 | Primitive `this` (`f.call(5)`) | boxed `Number` object | `5` |
@@ -313,19 +322,19 @@ Modules, class bodies, and code inside them are always strict. Since practically
 `PerformEval(x, strictCaller, direct)` (§19.2.1.1) distinguishes:
 
 | Form | Scope | Notes |
-|---|---|---|
+| --- | --- | --- |
 | **Direct eval**: the callee expression is exactly the identifier `eval` resolving to the intrinsic `%eval%` | the caller's LexicalEnvironment and VariableEnvironment | In sloppy code it can add `var` bindings to the caller; it can see and modify local variables, defeating optimisation of the whole enclosing function |
 | **Indirect eval**: anything else (`(0, eval)(s)`, `const e = eval; e(s)`, `globalThis.eval(s)`) | the global environment | Behaves like a separate global script |
 | `new Function(args, body)` | the global environment of its realm, never the caller's | Body is sloppy unless it starts with `"use strict"` |
 
-All three are blocked by a Content Security Policy without `'unsafe-eval'` and by Node's `--disallow-code-generation-from-strings`. The Stage 3 *Dynamic Code Brand Checks* proposal adds host hooks for Trusted Types integration.
+All three are blocked by a Content Security Policy without `'unsafe-eval'` and by Node's `--disallow-code-generation-from-strings`. The Stage 3 _Dynamic Code Brand Checks_ proposal adds host hooks for Trusted Types integration.
 
 ---
 
 ## 8. Production failure modes
 
 | Failure | Mechanism | Defence |
-|---|---|---|
+| --- | --- | --- |
 | `TypeError: Cannot read properties of undefined (reading 'x')` after passing a method as a callback | method extracted from its Reference; `this` is `undefined` in strict code | arrow wrapper, class field arrow, or `.bind` |
 | Memory grows with each request | long-lived closure shares a V8 Context with a closure that captured a large object | split scopes; null out large locals; heap snapshot "retainers" view shows `context` |
 | Timers fire with stale data | closure captured a binding that the code replaced instead of mutating | read from a mutable holder (`ref.current`) or recreate the closure |
@@ -364,6 +373,7 @@ function bind(fn, thisArg, ...bound) {
   return boundFn;
 }
 ```
+
 It gets `name` and `length` wrong (spec: `"bound f"`, `max(0, f.length - bound.length)`), has a `prototype` property while real bound functions have none, and `instanceof boundFn` behaviour relies on `prototype` instead of delegating to the target through `[[BoundTargetFunction]]`.
 </details>
 

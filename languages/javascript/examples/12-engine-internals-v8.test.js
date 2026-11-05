@@ -7,7 +7,12 @@ import { runNode } from './helpers/run-node.js';
 
 /** Evaluate a snippet with natives syntax enabled; the snippet must assign `out`. */
 function v8(src, extraFlags = []) {
-  const r = runNode(['--allow-natives-syntax', ...extraFlags, '-e', `let out; ${src}; console.log(JSON.stringify(out));`]);
+  const r = runNode([
+    '--allow-natives-syntax',
+    ...extraFlags,
+    '-e',
+    `let out; ${src}; console.log(JSON.stringify(out));`,
+  ]);
   if (r.status !== 0) throw new Error(r.stderr);
   return JSON.parse(r.stdout.trim().split('\n').at(-1) ?? 'null');
 }
@@ -84,9 +89,14 @@ describe('Tiering and deoptimisation', () => {
   });
 
   test('--trace-deopt reports the reason', () => {
-    const r = runNode(['--allow-natives-syntax', '--trace-deopt', '-e', `function add(p, q) { return p + q; }
+    const r = runNode([
+      '--allow-natives-syntax',
+      '--trace-deopt',
+      '-e',
+      `function add(p, q) { return p + q; }
       %PrepareFunctionForOptimization(add); add(1, 2); add(3, 4);
-      %OptimizeFunctionOnNextCall(add); add(5, 6); add('a', 'b');`]);
+      %OptimizeFunctionOnNextCall(add); add(5, 6); add('a', 'b');`,
+    ]);
     assert.match(r.stdout + r.stderr, /reason: not a Smi/);
   });
 

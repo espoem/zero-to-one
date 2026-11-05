@@ -37,7 +37,13 @@ export class QuorumCluster {
     this.nodes = Array.from({ length: n }, (_, i) => new ReplicaNode(i));
   }
 
-  writeQuorum(key: string, value: string, version: number, w: number, targetNodes?: number[]): boolean {
+  writeQuorum(
+    key: string,
+    value: string,
+    version: number,
+    w: number,
+    targetNodes?: number[],
+  ): boolean {
     const targets = targetNodes ? targetNodes.map((id) => this.nodes[id]!) : this.nodes;
     let acks = 0;
 
@@ -52,7 +58,12 @@ export class QuorumCluster {
     return acks >= w;
   }
 
-  readQuorum(key: string, r: number, targetNodes?: number[], enableReadRepair = true): RecordVersion | null {
+  readQuorum(
+    key: string,
+    r: number,
+    targetNodes?: number[],
+    enableReadRepair = true,
+  ): RecordVersion | null {
     const targets = targetNodes ? targetNodes.map((id) => this.nodes[id]!) : this.nodes;
     const responses: { node: ReplicaNode; record: RecordVersion | null }[] = [];
 
@@ -62,7 +73,9 @@ export class QuorumCluster {
     }
 
     if (responses.length < r) {
-      throw new Error(`Read quorum failed: only ${responses.length} nodes available, required ${r}`);
+      throw new Error(
+        `Read quorum failed: only ${responses.length} nodes available, required ${r}`,
+      );
     }
 
     // Determine highest version

@@ -40,6 +40,7 @@ classDiagram
 ```
 
 ### 1.1 The Base Fields
+
 1. `ob_refcnt` (`Py_ssize_t`): The reference counter tracking how many active references currently point to this object. When this counter drops to zero, the object is immediately deallocated (unless part of an uncollected cyclic reference cycle managed by the cyclic GC).
 2. `ob_type` (`struct _typeobject*`): A pointer to the type object that defines the behavior, methods, and dunder protocols of this instance (e.g. `&PyLong_Type`, `&PyList_Type`).
 3. `ob_size` (in `PyVarObject`): Tracks the number of items or digits currently contained in a variable-sized object (e.g., number of elements in a list, characters in a string, or limbs in an arbitrary-precision integer).
@@ -51,6 +52,7 @@ Because of this metadata overhead, even the simplest integer `0` consumes 28 byt
 ## 2. Object Identity, Equality & Caching
 
 Python distinguishes strictly between **Identity** and **Value Equality**:
+
 - **Identity (`is`)**: Checks whether two references point to the exact same physical memory address: `a is b` $\iff$ `id(a) == id(b)`.
 - **Equality (`==`)**: Invokes the `__eq__` dunder method on the left operand, evaluating whether two objects represent equivalent values according to their domain logic.
 
@@ -62,6 +64,7 @@ print(a is b)  # False (distinct heap-allocated lists)
 ```
 
 ### 2.1 The Small Integer Cache (`small_ints`)
+
 To optimize performance and eliminate heap allocations for common integers, CPython pre-allocates an array of singleton integer objects for numbers in the range `[-5, 256]` during interpreter startup.
 
 ```python
@@ -79,6 +82,7 @@ assert x == y      # True: equal values
 > Never use `is` to compare numbers or strings in production code! Relying on `is` for integer comparisons introduces insidious bugs where values $\le 256$ pass tests while values $> 256$ fail in production. The `is` operator should be used almost exclusively for checking singleton sentinels: `if val is None:`, `if flag is True:`, or custom sentinel identities.
 
 ### 2.2 String Interning
+
 CPython automatically interns string literals that resemble valid Python identifiers (ASCII letters, digits, and underscores) via `sys.intern()`. Interned strings share a single canonical memory address, allowing the CPython compiler and dictionary lookup routines to replace expensive string character comparisons (`memcmp`) with instantaneous pointer equality checks (`ptr1 == ptr2`).
 
 ---
@@ -88,11 +92,12 @@ CPython automatically interns string literals that resemble valid Python identif
 Every Python type falls into one of two fundamental categories:
 
 | Category | Built-in Types | Characteristics & Invariants |
-|---|---|---|
+| --- | --- | --- |
 | **Immutable** | `int`, `float`, `bool`, `str`, `tuple`, `frozenset`, `bytes` | State cannot be altered after creation. Hashable if all contained elements are hashable. Safe to share across threads without locks. |
 | **Mutable** | `list`, `dict`, `set`, `bytearray` | State can be modified in-place without altering object identity (`id()`). Unhashable (`__hash__ = None`). |
 
 ### 3.1 The "Mutable Inside Immutable" Trap
+
 A tuple is immutable: its sequence of contained references cannot be extended, shortened, or reassigned. However, if a tuple contains a reference to a mutable object (such as a list), the contents of that list can be mutated freely in-place!
 
 ```python
@@ -100,6 +105,7 @@ nested_tuple = (1, [10, 20])
 nested_tuple[1].append(30)
 print(nested_tuple)  # (1, [10, 20, 30])
 ```
+
 Because the contents of `nested_tuple` can change, it cannot compute a stable hash code. Attempting to call `hash(nested_tuple)` raises `TypeError: unhashable type: 'list'`. A tuple is hashable if and only if **all** of its constituent elements are themselves hashable.
 
 ---
@@ -124,7 +130,9 @@ flowchart TD
 4. **Builtin (B)**: Built-in functions, constants, and exceptions provided by the `builtins` module (`len`, `range`, `Exception`, `True`).
 
 ### 4.1 Rebinding Outer Names: `global` vs `nonlocal`
+
 In Python, assignment (`=`) binds a name in the current local scope by default. To rebind a variable in an outer scope, you must declare intent explicitly:
+
 - `global name`: Binds all reads and writes of `name` directly to the module's top-level global dictionary.
 - `nonlocal name`: Binds reads and writes to the closest enclosing lexical function scope, skipping the global namespace. If no matching enclosing variable is found, Python raises `SyntaxError: no binding for nonlocal 'name' found`.
 
@@ -147,6 +155,7 @@ assert c() == 12
 ## 5. Classic Scoping Traps & Failure Modes
 
 ### 5.1 The Mutable Default Argument Trap
+
 In Python, default parameter expressions in `def` statements are evaluated **exactly once at compile/definition time**, not each time the function is called!
 
 ```python
@@ -159,8 +168,8 @@ print(add_item("apple"))   # ['apple']
 print(add_item("banana"))  # ['apple', 'banana'] -- BUG: shared list instance!
 ```
 
-**The Senior Engineering Fix**:
-Use `None` as the default argument sentinel and assign a fresh list inside the function:
+**The Senior Engineering Fix**: Use `None` as the default argument sentinel and assign a fresh list inside the function:
+
 ```python
 def add_item(item: str, target: list[str] | None = None) -> list[str]:
     if target is None:
@@ -170,7 +179,8 @@ def add_item(item: str, target: list[str] | None = None) -> list[str]:
 ```
 
 ### 5.2 The Late-Binding Closure Trap
-In Python, closures bind variables **by reference (lookup by name), not by value**! When an inner function references an outer variable, it looks up the value of that variable at the time the inner function is *executed*, not when it is *defined*.
+
+In Python, closures bind variables **by reference (lookup by name), not by value**! When an inner function references an outer variable, it looks up the value of that variable at the time the inner function is _executed_, not when it is _defined_.
 
 ```python
 # ANTI-PATTERN:
@@ -179,6 +189,7 @@ print([cb() for cb in callbacks])  # [3, 3, 3, 3] -- BUG: all see the final loop
 ```
 
 **The Fixes**:
+
 1. **Default Argument Binding**: Exploit default argument evaluation at definition time:
    ```python
    callbacks = [lambda i=i: i for i in range(4)]
@@ -195,8 +206,7 @@ print([cb() for cb in callbacks])  # [3, 3, 3, 3] -- BUG: all see the final loop
 
 ## 6. Comprehension Scoping & Python 3 Isolation
 
-In Python 2, list comprehensions leaked their loop variables into the enclosing local scope, silently overwriting existing variables.
-In Python 3+, all comprehensions (list, dict, set comprehensions and generator expressions) are compiled into isolated, anonymous nested function scopes. Variables defined within a comprehension do **not** leak into the outer scope.
+In Python 2, list comprehensions leaked their loop variables into the enclosing local scope, silently overwriting existing variables. In Python 3+, all comprehensions (list, dict, set comprehensions and generator expressions) are compiled into isolated, anonymous nested function scopes. Variables defined within a comprehension do **not** leak into the outer scope.
 
 ```python
 x = "outer"
@@ -211,6 +221,7 @@ assert x == "outer"  # Loop variable x did NOT leak or overwrite outer x!
 Historically (PEP 563 / Python 3.7+), `from __future__ import annotations` converted all type annotations into raw strings. While this solved circular imports and forward references, it broke runtime type inspection tools (Pydantic, dataclasses, FastAPI) because evaluating stringified annotations required calling `eval()` on arbitrary scopes.
 
 ### 7.1 Modern Solution: `annotationlib`
+
 In Python 3.14 and 3.15, **PEP 649** and **PEP 749** introduced deferred annotations evaluated via compiler-generated code objects rather than raw strings or eager execution. Annotations are compiled into a special function (`__annotate__`) and evaluated lazily only when inspected via the new standard library `annotationlib` module.
 
 ```python
@@ -225,6 +236,7 @@ assert annos["client"] is not None
 ```
 
 Available `annotationlib.Format` formats:
+
 - `VALUE`: Evaluates annotations into real Python types (raises `NameError` if a forward reference is undefined).
 - `FORWARDREF`: Returns a `ForwardRef` proxy object for undefined types, allowing safe inspection without runtime failure.
 - `STRING`: Returns the exact string representation of the annotation expression.
@@ -237,50 +249,48 @@ Available `annotationlib.Format` formats:
 <details>
 <summary>1. What is the difference between `is` and `==`, and when is it safe to use `is`?</summary>
 
-**Answer:**
-`is` tests pointer identity (`id(a) == id(b)`): whether both references point to the exact same physical memory address on the heap. `==` tests value equality by invoking `a.__eq__(b)`.
-`is` is safe and recommended only when checking against known singleton instances whose identity is guaranteed to be unique throughout interpreter execution:
+**Answer:** `is` tests pointer identity (`id(a) == id(b)`): whether both references point to the exact same physical memory address on the heap. `==` tests value equality by invoking `a.__eq__(b)`. `is` is safe and recommended only when checking against known singleton instances whose identity is guaranteed to be unique throughout interpreter execution:
+
 1. `val is None`
 2. `flag is True` or `flag is False`
 3. Custom sentinel objects (`sentinel = object()`)
-4. Checking whether an object is identical to itself for caching/short-circuiting.
-It is never safe to use `is` for integers, floats, or strings, because Python's internal caching and interning mechanisms are implementation-dependent.
+4. Checking whether an object is identical to itself for caching/short-circuiting. It is never safe to use `is` for integers, floats, or strings, because Python's internal caching and interning mechanisms are implementation-dependent.
+
 </details>
 
 <details>
 <summary>2. Why does `a = ([1, 2], 3); a[0] += [4]` both modify the list and raise a `TypeError`?</summary>
 
-**Answer:**
-This is the famous Python "augmented assignment on tuple" anomaly.
+**Answer:** This is the famous Python "augmented assignment on tuple" anomaly.
+
 1. The expression `a[0] += [4]` translates to `a[0].__iadd__([4])` followed by `a[0] = result`.
 2. First, `__iadd__` executes on the mutable list `a[0]`. It mutates the list in-place by appending `4`, and returns the reference to `a[0]`. The list is now `[1, 2, 4]`.
 3. Next, the virtual machine executes the assignment `STORE_SUBSCR` to assign the result back into `a[0]`.
-4. Because `a` is an immutable tuple, the tuple's item assignment fails and raises `TypeError: 'tuple' object does not support item assignment`.
-Result: The in-place mutation succeeded, but the subsequent tuple assignment failed, leaving the modified list inside the tuple accompanied by an unhandled `TypeError`.
+4. Because `a` is an immutable tuple, the tuple's item assignment fails and raises `TypeError: 'tuple' object does not support item assignment`. Result: The in-place mutation succeeded, but the subsequent tuple assignment failed, leaving the modified list inside the tuple accompanied by an unhandled `TypeError`.
+
 </details>
 
 <details>
 <summary>3. How do closures maintain access to outer variables in CPython after the outer function has returned?</summary>
 
-**Answer:**
-When CPython's symbol table detects that an inner function references a variable from an enclosing scope, the compiler marks that variable as a **cell variable** (`DEF_CELL`) in the outer function and a **free variable** (`DEF_FREE`) in the inner function.
-Instead of storing the variable in a fast local stack slot, CPython allocates a heap-resident `PyCellObject`. Both the outer function's local frame and the inner function's closure tuple (`func.__closure__`) hold a reference to this cell object. When the outer function returns and its call frame is destroyed, the `PyCellObject` survives on the heap because the inner function's closure keeps a positive reference count. When the inner function executes, it reads and writes to the cell's `ob_ref` pointer via `LOAD_DEREF` and `STORE_DEREF`.
+**Answer:** When CPython's symbol table detects that an inner function references a variable from an enclosing scope, the compiler marks that variable as a **cell variable** (`DEF_CELL`) in the outer function and a **free variable** (`DEF_FREE`) in the inner function. Instead of storing the variable in a fast local stack slot, CPython allocates a heap-resident `PyCellObject`. Both the outer function's local frame and the inner function's closure tuple (`func.__closure__`) hold a reference to this cell object. When the outer function returns and its call frame is destroyed, the `PyCellObject` survives on the heap because the inner function's closure keeps a positive reference count. When the inner function executes, it reads and writes to the cell's `ob_ref` pointer via `LOAD_DEREF` and `STORE_DEREF`.
 </details>
 
 <details>
 <summary>4. How does `nonlocal` differ from `global` in nested scopes?</summary>
 
 **Answer:**
+
 - `global x` instructs the compiler that references and assignments to `x` in the current block should bind directly to the top-level module namespace dictionary (`__dict__`). It bypasses all intermediate enclosing scopes.
 - `nonlocal x` instructs the compiler to search backwards through enclosing lexical function scopes (from innermost to outermost) for an existing binding of `x`. It binds to that specific enclosing scope's cell variable without reaching the global module namespace. If no matching enclosing variable exists, `nonlocal` raises a compile-time `SyntaxError`.
+
 </details>
 
 <details>
 <summary>5. What problem does PEP 661 / sentinel objects solve, and how are sentinels properly implemented?</summary>
 
-**Answer:**
-When an API needs to distinguish between a parameter that was explicitly passed as `None` versus a parameter that was omitted entirely, using `arg=None` as the default fails.
-To resolve this, engineers use a unique sentinel object:
+**Answer:** When an API needs to distinguish between a parameter that was explicitly passed as `None` versus a parameter that was omitted entirely, using `arg=None` as the default fails. To resolve this, engineers use a unique sentinel object:
+
 ```python
 _MISSING = object()
 
@@ -291,5 +301,6 @@ def fetch(key: str, default: object = _MISSING) -> object:
     # User supplied a default, which could legally be None
     return cache.get(key, default)
 ```
+
 Using `object()` creates a unique heap reference with no special methods, guaranteeing that `default is _MISSING` is True if and only if the caller did not supply an argument.
 </details>

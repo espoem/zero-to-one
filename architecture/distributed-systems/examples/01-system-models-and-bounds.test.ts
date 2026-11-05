@@ -8,7 +8,7 @@ import assert from 'node:assert/strict';
 export function simulateTwoGenerals(
   maxRounds: number,
   packetDropRate: number,
-  randomFn = Math.random
+  randomFn = Math.random,
 ): { agreed: boolean; roundsUsed: number; totalAcks: number } {
   let g1Confirmed = false;
   let g2Confirmed = false;
@@ -101,41 +101,47 @@ test('Module 01: System Models, Impossibility & CAP', async (t) => {
     assert.equal(result.totalAcks, 0);
   });
 
-  await t.test('CAP Theorem: CP mode rejects minority partition writes to preserve consistency', () => {
-    const store = new PartitionedKVStore(['A', 'B', 'C']); // 3 nodes, majority is 2
-    // Normal operation: Write succeeds
-    assert.equal(store.writeCP('A', 100), true);
-    assert.equal(store.read('A'), 100);
-    assert.equal(store.read('B'), 100);
+  await t.test(
+    'CAP Theorem: CP mode rejects minority partition writes to preserve consistency',
+    () => {
+      const store = new PartitionedKVStore(['A', 'B', 'C']); // 3 nodes, majority is 2
+      // Normal operation: Write succeeds
+      assert.equal(store.writeCP('A', 100), true);
+      assert.equal(store.read('A'), 100);
+      assert.equal(store.read('B'), 100);
 
-    // Network partition: A is isolated in Partition 2, while B and C are in Partition 1
-    store.setPartition('A', 2);
-    store.setPartition('B', 1);
-    store.setPartition('C', 1);
+      // Network partition: A is isolated in Partition 2, while B and C are in Partition 1
+      store.setPartition('A', 2);
+      store.setPartition('B', 1);
+      store.setPartition('C', 1);
 
-    // CP write to isolated minority node A MUST be rejected
-    assert.equal(store.writeCP('A', 200), false);
-    assert.equal(store.read('A'), 100); // Unaltered
+      // CP write to isolated minority node A MUST be rejected
+      assert.equal(store.writeCP('A', 200), false);
+      assert.equal(store.read('A'), 100); // Unaltered
 
-    // CP write to majority node B succeeds
-    assert.equal(store.writeCP('B', 300), true);
-    assert.equal(store.read('B'), 300);
-    assert.equal(store.read('C'), 300);
-  });
+      // CP write to majority node B succeeds
+      assert.equal(store.writeCP('B', 300), true);
+      assert.equal(store.read('B'), 300);
+      assert.equal(store.read('C'), 300);
+    },
+  );
 
-  await t.test('CAP Theorem: AP mode accepts writes on partition, creating divergent states', () => {
-    const store = new PartitionedKVStore(['A', 'B']); // 2 nodes
-    // Partition: A in partition 1, B in partition 2
-    store.setPartition('A', 1);
-    store.setPartition('B', 2);
+  await t.test(
+    'CAP Theorem: AP mode accepts writes on partition, creating divergent states',
+    () => {
+      const store = new PartitionedKVStore(['A', 'B']); // 2 nodes
+      // Partition: A in partition 1, B in partition 2
+      store.setPartition('A', 1);
+      store.setPartition('B', 2);
 
-    // AP accepts writes on both sides
-    assert.equal(store.writeAP('A', 111), true);
-    assert.equal(store.writeAP('B', 222), true);
+      // AP accepts writes on both sides
+      assert.equal(store.writeAP('A', 111), true);
+      assert.equal(store.writeAP('B', 222), true);
 
-    // State diverges: reading from A and B gives conflicting values
-    assert.equal(store.read('A'), 111);
-    assert.equal(store.read('B'), 222);
-    assert.notEqual(store.read('A'), store.read('B'));
-  });
+      // State diverges: reading from A and B gives conflicting values
+      assert.equal(store.read('A'), 111);
+      assert.equal(store.read('B'), 222);
+      assert.notEqual(store.read('A'), store.read('B'));
+    },
+  );
 });

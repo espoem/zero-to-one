@@ -1,34 +1,39 @@
 # Brief: GitLab CI (`technologies/gitlab-ci`)
 
-| | |
-|---|---|
-| Phase | 3 |
-| Kind | NEW track: create from scratch |
-| Primary (author) | **Opus · Claude Code** |
-| Drafter (on request) | pi · DeepSeek |
-| Challenger | pi · Muse Spark 1.3 |
-| Verifier | Antigravity |
-| Final gate | Opus (claude.ai session) |
-| Branch / worktree | `track/gitlab-ci` · `../zto-gitlab-ci` |
-| Depends on | technologies/containers |
-| Research dossier | `.agents/research/E-platform.md` |
+|                      |                                        |
+| -------------------- | -------------------------------------- |
+| Phase                | 3                                      |
+| Kind                 | NEW track: create from scratch         |
+| Primary (author)     | **Opus · Claude Code**                 |
+| Drafter (on request) | pi · DeepSeek                          |
+| Challenger           | pi · Muse Spark 1.3                    |
+| Verifier             | Antigravity                            |
+| Final gate           | Opus (claude.ai session)               |
+| Branch / worktree    | `track/gitlab-ci` · `../zto-gitlab-ci` |
+| Depends on           | technologies/containers                |
+| Research dossier     | `.agents/research/E-platform.md`       |
 
 ## 0. Read before starting (binding)
+
 1. `AGENTS.md`: the contract. If it conflicts with this brief, AGENTS.md wins; log the conflict in your review file.
 2. `.agents/OWNERSHIP.md`: what you own vs only cross-link.
 3. `.agents/REVIEW.md`: the checklist your work is judged against.
 4. Your global/agent instructions still apply where they do not conflict.
 
 ## 1. Owner decisions and track-specific instructions
+
 - None beyond the dossier and AGENTS.md.
 - Teach the **latest stable** versions. Add **Then vs now** comparisons wherever practice changed (AGENTS.md § Version Currency).
 - Pin **all** tooling via mise (`.mise.toml` + `mise.lock`): node 26 for JS/TS, plus every CLI and runtime the examples need.
 
 ## 2. Ownership
+
 **You own (full treatment):**
+
 - CI/CD pipelines, SBOM, signing (cosign), SLSA provenance, OIDC-to-cloud from CI
 
 **Cross-link only (do not re-explain):**
+
 - Delivery semantics (at-most / at-least / effectively-once), idempotency theory → owned by `architecture/distributed-systems`
 - OCI image/runtime/distribution specs, BuildKit, rootless, Docker vs Podman → owned by `technologies/containers`
 - GitOps principles (OpenGitOps), Argo CD internals, Rollouts / progressive delivery → owned by `technologies/argocd`
@@ -61,7 +66,7 @@
 ##### Structural decisions (summary)
 
 | Question | Recommendation | Rationale |
-|---|---|---|
+| --- | --- | --- |
 | Docker vs Podman | **One track `technologies/containers`** | Both are front-ends over the same OCI image/runtime/distribution specs, same kernel primitives (namespaces, cgroups v2, overlayfs, seccomp), same runtimes (runc/crun). Splitting would duplicate ~70% of content. Tool differences (daemon vs daemonless, rootless defaults, Quadlet vs compose, Buildah/Skopeo) fit in 2 modules. |
 | Kubernetes | **`technologies/kubernetes`**, prerequisite = containers | Single narrative covering CKA+CKAD; CKS content as late modules (security). |
 | Argo CD | **Standalone `technologies/argocd`, scoped as "GitOps with Argo CD (+ Argo Rollouts)"** | Too deep (controller internals, sharding, ApplicationSets, hydrator, RBAC, multi-tenancy) to be one K8s module; but should not become an "all of Argo" track — CAPA is 36% Workflows + 12% Events, which are a different problem (batch/DAG). Cover CGOA (100%) + CAPA's Argo CD 34% + Rollouts 18%; Workflows/Events = one optional appendix module. Flux only as comparison. A separate `gitops` track is not justified (principles = 1 module). |
@@ -73,13 +78,17 @@ Suggested order: containers → kubernetes → (terraform in parallel) → argoc
 ---
 
 ## 4. Re-verify list
+
 These claims were marked unverified during research. Confirm or correct each one against a primary source before teaching it:
+
 - **Current stable version(s)**: GitLab **19.x** (19.0 released 2026-05-21 — https://www.businesswire.com/news/home/20260521893408/en/ ; monthly releases on the third Thursday, so 19.5 likely current as of Oct 2026 — **unverified**). gitlab-ci-local **4.77.0** (third-party local runner emulator). GitLab Runner version not verified.
 - **Authoritative syllabi used**: GitLab CI/CD YAML reference https://docs.gitlab.com/ci/yaml/ ; GitLab CI/CD docs ToC https://docs.gitlab.com/ci/ ; GitLab certifications (GitLab Certified CI/CD Associate — current availability unverified); SLSA spec https://slsa.dev/ ; CKS "Supply Chain Security 20%" domain.
 - 8. Secrets & cloud auth — masked/hidden/protected variables, OIDC federation to AWS/GCP/Azure/Vault (no long-lived keys), GitLab Secrets Manager (19.0 — unverified detail).
 
 ## 5. Certifications & exams
+
 Follow AGENTS.md § Certification and Exam Coverage exactly. Minimum deliverables:
+
 1. **README "Certifications & Exams" section.** Start from the exams named in the dossier above ("Authoritative syllabi used"). Re-verify each exam's code, status, guide version/date, targeted product version and domain weights on the official page. Where no certification exists, say so and use the recognised interview format.
 2. **`exams/README.md` coverage matrix.** Rows are domain/objective, weight, modules, examples, status. No ❌ at hand-off.
 3. **`exams/<exam-code>.md` question banks.**
@@ -91,11 +100,14 @@ Follow AGENTS.md § Certification and Exam Coverage exactly. Minimum deliverable
 5. **Original questions only.** No braindump content.
 
 ## 6. Code languages
+
 Per AGENTS.md § Code Example Languages:
+
 - **Primary:** pseudocode (where algorithms or protocols are described) + TypeScript (or the track's own language, for language tracks).
 - **Secondary:** Python, Rust or Nim only where it teaches something. Each language lives in `examples/<lang>/` with its own mise-pinned toolchain and native test runner, and `test` runs them all.
 
 ## 7. Workflow and definition of done
+
 1. **Primary (Opus)** works on branch `track/gitlab-ci` and sets this track's row in `.agents/STATUS.md` to 🟦.
 2. **Verify versions first.** Check every version in the dossier against its primary source today. Record the results in the README's `Verified against …` line. Resolve every item in the re-verify list below.
 3. Build in stages: README syllabus + exam matrix → modules one by one, each with its examples/tests → glossary → cheatsheet → question banks → mock exam. Delegate bulk drafting (question-bank drafts, glossary candidates, cheatsheet tables) to the **Drafter**, then correct and integrate it yourself.

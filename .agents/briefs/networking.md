@@ -1,25 +1,27 @@
 # Brief: Networking (`architecture/networking`)
 
-| | |
-|---|---|
-| Phase | 1 |
-| Kind | NEW track: create from scratch |
-| Primary (author) | **Opus · Claude Code** |
-| Drafter (on request) | pi · DeepSeek |
-| Challenger | pi · Muse Spark 1.3 |
-| Verifier | Antigravity |
-| Final gate | Opus (claude.ai session) |
-| Branch / worktree | `track/networking` · `../zto-networking` |
-| Depends on | none (can start now) |
-| Research dossier | `.agents/research/G-foundations.md` |
+|                      |                                          |
+| -------------------- | ---------------------------------------- |
+| Phase                | 1                                        |
+| Kind                 | NEW track: create from scratch           |
+| Primary (author)     | **Opus · Claude Code**                   |
+| Drafter (on request) | pi · DeepSeek                            |
+| Challenger           | pi · Muse Spark 1.3                      |
+| Verifier             | Antigravity                              |
+| Final gate           | Opus (claude.ai session)                 |
+| Branch / worktree    | `track/networking` · `../zto-networking` |
+| Depends on           | none (can start now)                     |
+| Research dossier     | `.agents/research/G-foundations.md`      |
 
 ## 0. Read before starting (binding)
+
 1. `AGENTS.md`: the contract. If it conflicts with this brief, AGENTS.md wins; log the conflict in your review file.
 2. `.agents/OWNERSHIP.md`: what you own vs only cross-link.
 3. `.agents/REVIEW.md`: the checklist your work is judged against.
 4. Your global/agent instructions still apply where they do not conflict.
 
 ## 1. Owner decisions and track-specific instructions
+
 - Foundation track. TLS 1.3 is now RFC 9846; ECH is RFC 9849; hybrid PQ is RFC 10024 (re-verify).
 - macOS ships LibreSSL as `openssl`. Pin OpenSSL with mise and add a preflight test that rejects LibreSSL.
 - Linux-only tooling (`ss`, `nft`, `tc`, netns) runs in a pinned Docker Linux container under `test:integration`.
@@ -27,13 +29,16 @@
 - Pin **all** tooling via mise (`.mise.toml` + `mise.lock`): node 26 for JS/TS, plus every CLI and runtime the examples need.
 
 ## 2. Ownership
+
 **You own (full treatment):**
+
 - TCP/IP, UDP, routing/BGP/anycast, NAT, DNS, congestion control
 - TLS on the wire (handshake, RTTs, SNI/ALPN/ECH, PQ size impact), QUIC
 - HTTP/1.1, HTTP/2, HTTP/3, WebSockets, gRPC, HTTP caching (RFC 9111), CDNs, L4/L7 load balancing
 - Linux network tooling (ss, tcpdump, iproute2, nftables, netns)
 
 **Cross-link only (do not re-explain):**
+
 - libuv phases, `process.nextTick`, threadpool, streams & backpressure, CJS loader, `require(esm)`, GC tuning flags → owned by `technologies/nodejs`
 - PKI/X.509 validation, mTLS identity, cert lifecycle → owned by `architecture/security-identity`
 - Cache poisoning/deception attacks → owned by `architecture/security-identity` (attack)
@@ -76,9 +81,9 @@
     - The ~6-day `shortlived` profile and IP-address certificates have been GA since 2026-01-15.
     - The default lifetime goes 90 → 64 days (2027-02-10) → 45 days (2028-02-16).
 - **Authoritative syllabi used**
-  - **Kurose & Ross**, *Computer Networking: A Top-Down Approach*, **9th ed.** (Pearson, ISBN 9780135429334). https://www.schweitzer-online.de/en/buch/Kurose/Computer-Networking-Top-Down-Approach/9780135429334/A75251515/ . The book's ToC (application → transport → network data/control plane → link → wireless → security) is the spine.
-  - **Stevens / Fall**, *TCP/IP Illustrated Vol. 1*, 2nd ed., for packet-level depth. Stevens, *UNIX Network Programming Vol. 1*, for the sockets API (backlog, SO_REUSEADDR/PORT, non-blocking I/O).
-  - **Ilya Grigorik**, *High Performance Browser Networking* (free, https://hpbn.co). Some of it is dated (pre-h3); use it for latency and TLS cost intuition.
+  - **Kurose & Ross**, _Computer Networking: A Top-Down Approach_, **9th ed.** (Pearson, ISBN 9780135429334). https://www.schweitzer-online.de/en/buch/Kurose/Computer-Networking-Top-Down-Approach/9780135429334/A75251515/ . The book's ToC (application → transport → network data/control plane → link → wireless → security) is the spine.
+  - **Stevens / Fall**, _TCP/IP Illustrated Vol. 1_, 2nd ed., for packet-level depth. Stevens, _UNIX Network Programming Vol. 1_, for the sockets API (backlog, SO_REUSEADDR/PORT, non-blocking I/O).
+  - **Ilya Grigorik**, _High Performance Browser Networking_ (free, https://hpbn.co). Some of it is dated (pre-h3); use it for latency and TLS cost intuition.
   - **CompTIA Network+ N10-009** (launched 2024-06-20) https://destcert.com/resources/n10-009-objectives/ . Use it only as a coverage checklist:
     - Troubleshooting 24%
     - Concepts 23%
@@ -86,7 +91,7 @@
     - Operations 19%
     - Security 14%
   - Cloudflare Learning Center and the Cloudflare blog (QUIC, ECH, PQ rollout) as secondary reading.
-  - Brendan Gregg, *Systems Performance* 2nd ed., networking chapter, for the Linux tooling methodology.
+  - Brendan Gregg, _Systems Performance_ 2nd ed., networking chapter, for the Linux tooling methodology.
 - **Proposed modules**
   1. **01-layers-and-packets**
      - OSI vs TCP/IP model and why OSI is a vocabulary, not an implementation.
@@ -209,7 +214,7 @@
       - Troubleshooting runbook: "is it DNS, TCP, TLS, or app?"
 - **Gotchas & production failure modes**
   1. **Nagle + delayed ACK** gives about 40 ms (Linux) or 200 ms stalls on small write-write-read patterns. Fix it with `TCP_NODELAY` or coalesced writes. Node's `net` sockets now default `noDelay: true` for http (verify in a lab).
-  2. **TIME_WAIT exhaustion** on the *client* side when connections are not pooled: every outbound connection to the same (dst ip, port) burns an ephemeral port for 60 s. The fix is keep-alive pools, not sysctl hacks. `tcp_tw_recycle` broke NATed clients and was removed in Linux 4.12.
+  2. **TIME_WAIT exhaustion** on the _client_ side when connections are not pooled: every outbound connection to the same (dst ip, port) burns an ephemeral port for 60 s. The fix is keep-alive pools, not sysctl hacks. `tcp_tw_recycle` broke NATed clients and was removed in Linux 4.12.
   3. **Accept-queue overflow**: `listen()` backlog is capped by `net.core.somaxconn`. Overflow silently drops SYN/ACKs (`ss -lnt` Recv-Q, `nstat ListenOverflows`). This shows up as random 1 s/3 s connect latency (SYN retransmits).
   4. **Keep-alive race**: the LB idle timeout is shorter than the backend's keepAliveTimeout, and the backend closes the socket just as the LB reuses it, causing 502s. Rule: backend timeout > LB timeout (Node `server.keepAliveTimeout` vs ALB 60 s).
   5. **PMTUD black holes**: ICMP "frag needed" is filtered (or there is VPN/GRE overhead), so the TLS handshake hangs after ClientHello once it grows. Hybrid PQ (about 1.2 KB extra key share) makes the ClientHello span packets and breaks buggy middleboxes.
@@ -222,7 +227,7 @@
   8. **Negative caching**: an NXDOMAIN during a deploy is cached for the SOA minimum TTL, causing "DNS fixed but still broken."
   9. **DNSSEC misconfiguration** (expired RRSIG, DS mismatch after a key rollover) gives SERVFAIL only on validating resolvers, so it fails for some users only.
   10. **HTTP/2 connection coalescing**: browsers reuse one h2 connection for hosts covered by the cert SAN that resolve to the same IP. That yields 421 Misdirected Request and routing to the wrong backend when SNI-based routing differs.
-  11. **HTTP/2 HOL**: one lossy TCP connection stalls all multiplexed streams. h2 can be *worse* than 6×h1 on lossy mobile links, which motivates QUIC.
+  11. **HTTP/2 HOL**: one lossy TCP connection stalls all multiplexed streams. h2 can be _worse_ than 6×h1 on lossy mobile links, which motivates QUIC.
   12. **gRPC behind an L4 LB**: a single long-lived h2 connection pins all RPCs to one backend. You need L7/xDS or client-side LB, plus `MAX_CONNECTION_AGE`.
   13. **Request smuggling** between a front proxy and Node: differing CL/TE parsing. Node's `llhttp` is strict, and the `--insecure-http-parser` flag reopens it.
   14. **Ephemeral port exhaustion** through a NAT/egress gateway (65k per destination 4-tuple), common with serverless and CGNAT.
@@ -275,7 +280,7 @@
   - **Cannot prove locally**: real BGP/anycast and RPKI (fallback: run a BIRD 2/FRR container pair for an eBGP session lab, and offline RPKI validation with `rpki-client` snapshots (unverified feasibility)), CDN PoP behaviour, and real middlebox breakage.
   - **Fallbacks**: annotated pcaps, RIPEstat/bgp.tools URL references, and Cloudflare Radar data cited (not tested).
 - **Overlaps / dedupe**
-  - Cryptographic primitives, X.509/PKI validation, mTLS identity and cert lifecycle are owned by **architecture/security-identity**. The networking track owns the *wire* view of TLS: handshake, RTTs, SNI/ALPN/ECH and PQ size impact.
+  - Cryptographic primitives, X.509/PKI validation, mTLS identity and cert lifecycle are owned by **architecture/security-identity**. The networking track owns the _wire_ view of TLS: handshake, RTTs, SNI/ALPN/ECH and PQ size impact.
   - Kubernetes Services, kube-proxy/IPVS/eBPF, CNI and NetworkPolicy belong to **technologies/kubernetes** (cross-link from module 13/14).
   - VPC, subnets, security groups, cloud LBs and PrivateLink belong to **architecture/cloud-foundations**.
   - Edge, Workers, the CDN product, Zero Trust tunnels and the Cloudflare ECH/PQ rollout belong to **technologies/cloudflare**.
@@ -287,7 +292,9 @@
 ---
 
 ## 4. Re-verify list
+
 These claims were marked unverified during research. Confirm or correct each one against a primary source before teaching it:
+
 - Node has no stable HTTP/3 client or server yet. HTTP/3 implementation details are in progress (unverified as a usable API). Treat it as a lab-only, preview feature.
 - **OpenSSL 4.0.0** (2026-04-14) adds ECH (RFC 9849), removes ENGINEs, SSLv3 and the SSLv2 ClientHello, and replaces `c_rehash` with `openssl rehash`. It is supported only to 2027-05-14; 4.1 is planned for Oct 2026. https://openssl-library.org/post/2026-04-14-openssl-40-final-release/ . OpenSSL 3.5 is the LTS line, and its default TLS group list prefers X25519MLKEM768 (unverified for the exact default string; prove it in a lab with `openssl s_client -groups` and a pcap).
 - Linux mainline still ships BBRv1 as `tcp_bbr`; BBRv3 lives in the google/bbr `v3` branch (unverified for 2026 mainline status).
@@ -298,7 +305,9 @@ These claims were marked unverified during research. Confirm or correct each one
 - **Cannot prove locally**: real BGP/anycast and RPKI (fallback: run a BIRD 2/FRR container pair for an eBGP session lab, and offline RPKI validation with `rpki-client` snapshots (unverified feasibility)), CDN PoP behaviour, and real middlebox breakage.
 
 ## 5. Certifications & exams
+
 Follow AGENTS.md § Certification and Exam Coverage exactly. Minimum deliverables:
+
 1. **README "Certifications & Exams" section.** Start from the exams named in the dossier above ("Authoritative syllabi used"). Re-verify each exam's code, status, guide version/date, targeted product version and domain weights on the official page. Where no certification exists, say so and use the recognised interview format.
 2. **`exams/README.md` coverage matrix.** Rows are domain/objective, weight, modules, examples, status. No ❌ at hand-off.
 3. **`exams/<exam-code>.md` question banks.**
@@ -310,11 +319,14 @@ Follow AGENTS.md § Certification and Exam Coverage exactly. Minimum deliverable
 5. **Original questions only.** No braindump content.
 
 ## 6. Code languages
+
 Per AGENTS.md § Code Example Languages:
+
 - **Primary:** pseudocode (where algorithms or protocols are described) + TypeScript (or the track's own language, for language tracks).
 - **Secondary:** Python, Rust or Nim only where it teaches something. Each language lives in `examples/<lang>/` with its own mise-pinned toolchain and native test runner, and `test` runs them all.
 
 ## 7. Workflow and definition of done
+
 1. **Primary (Opus)** works on branch `track/networking` and sets this track's row in `.agents/STATUS.md` to 🟦.
 2. **Verify versions first.** Check every version in the dossier against its primary source today. Record the results in the README's `Verified against …` line. Resolve every item in the re-verify list below.
 3. Build in stages: README syllabus + exam matrix → modules one by one, each with its examples/tests → glossary → cheatsheet → question banks → mock exam. Delegate bulk drafting (question-bank drafts, glossary candidates, cheatsheet tables) to the **Drafter**, then correct and integrate it yourself.

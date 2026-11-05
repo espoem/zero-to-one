@@ -5,20 +5,20 @@ description = "Zero-to-One Python curriculum: Data model, CPython internals, typ
 readme = "README.md"
 requires-python = ">=3.15"
 dependencies = [
-    "hypothesis>=6.170.0",
-    "mypy>=2.4.0",
-    "pytest>=9.2.0",
-    "pytest-asyncio>=1.4.0",
-    "ruff>=0.17.0",
+  "hypothesis>=6.170.0",
+  "mypy>=2.4.0",
+  "pytest>=9.2.0",
+  "pytest-asyncio>=1.4.0",
+  "ruff>=0.17.0",
 ]
 
 [dependency-groups]
 dev = [
-    "hypothesis>=6.170.0",
-    "mypy>=2.4.0",
-    "pytest>=9.2.0",
-    "pytest-asyncio>=1.4.0",
-    "ruff>=0.17.0",
+  "hypothesis>=6.170.0",
+  "mypy>=2.4.0",
+  "pytest>=9.2.0",
+  "pytest-asyncio>=1.4.0",
+  "ruff>=0.17.0",
 ]
 
 [tool.pytest.ini_options]

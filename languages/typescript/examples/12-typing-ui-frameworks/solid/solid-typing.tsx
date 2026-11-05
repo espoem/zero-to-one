@@ -22,9 +22,9 @@ import {
   type ParentComponent,
   type Setter,
   type VoidComponent,
-} from "solid-js";
-import { dynamic, type ComponentProps, type JSX } from "@solidjs/web";
-import { expectTypeOf } from "expect-type";
+} from 'solid-js';
+import { dynamic, type ComponentProps, type JSX } from '@solidjs/web';
+import { expectTypeOf } from 'expect-type';
 
 // ---------------------------------------------------------------------------
 // 1. Signals: accessors and setters
@@ -36,13 +36,13 @@ expectTypeOf<typeof setCount>().toEqualTypeOf<Setter<number>>();
 setCount(1);
 setCount((c) => c + 1);
 // @ts-expect-error — the setter is typed by the signal's T
-setCount("one");
+setCount('one');
 
 // Literal types widen like a `let` binding unless you annotate.
-const [mode] = createSignal("light");
+const [mode] = createSignal('light');
 expectTypeOf(mode()).toEqualTypeOf<string>();
-const [mode2] = createSignal<"light" | "dark">("light");
-expectTypeOf(mode2()).toEqualTypeOf<"light" | "dark">();
+const [mode2] = createSignal<'light' | 'dark'>('light');
+expectTypeOf(mode2()).toEqualTypeOf<'light' | 'dark'>();
 
 // No initial value: T | undefined.
 const [maybe] = createSignal<number>();
@@ -50,7 +50,7 @@ expectTypeOf(maybe()).toEqualTypeOf<number | undefined>();
 
 // A function argument means "derived signal", so storing a function needs a wrapper.
 const [handler, setHandler] = createSignal<{ fn: () => void }>({ fn: () => {} });
-setHandler({ fn: () => console.log("x") });
+setHandler({ fn: () => console.log('x') });
 expectTypeOf(handler().fn).toEqualTypeOf<() => void>();
 
 // ---------------------------------------------------------------------------
@@ -60,7 +60,7 @@ expectTypeOf(handler().fn).toEqualTypeOf<() => void>();
 const doubled = createMemo(() => count() * 2);
 expectTypeOf(doubled()).toEqualTypeOf<number>();
 
-const user = createMemo(async () => ({ id: count(), name: "Ada" }));
+const user = createMemo(async () => ({ id: count(), name: 'Ada' }));
 expectTypeOf(user()).toEqualTypeOf<{ id: number; name: string }>();
 
 // ---------------------------------------------------------------------------
@@ -75,11 +75,11 @@ interface Todo {
 const [store, setStore] = createStore<{ todos: Todo[] }>({ todos: [] });
 expectTypeOf(store.todos).toEqualTypeOf<Todo[]>();
 setStore((draft) => {
-  draft.todos.push({ id: 1, title: "write", done: false });
+  draft.todos.push({ id: 1, title: 'write', done: false });
 });
 setStore((draft) => {
   // @ts-expect-error — `done` is boolean
-  draft.todos[0]!.done = "yes";
+  draft.todos[0]!.done = 'yes';
 });
 
 // ---------------------------------------------------------------------------
@@ -121,13 +121,13 @@ export const valueAsProp = <Label text={mode()} />;
 // ---------------------------------------------------------------------------
 
 interface ButtonProps extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "ghost";
+  variant?: 'primary' | 'ghost';
 }
 
 export const Button: Component<ButtonProps> = (props) => {
-  const merged = merge({ variant: "primary" as const }, props);
-  expectTypeOf(merged.variant).toEqualTypeOf<"primary" | "ghost">();
-  const rest = omit(merged, "variant");
+  const merged = merge({ variant: 'primary' as const }, props);
+  expectTypeOf(merged.variant).toEqualTypeOf<'primary' | 'ghost'>();
+  const rest = omit(merged, 'variant');
   // @ts-expect-error — `variant` was omitted
   rest.variant;
   return <button {...rest} data-variant={merged.variant} />;
@@ -178,14 +178,14 @@ export const forUnkeyed = (
 // 7. Context: useContext returns T (a missing provider throws at runtime)
 // ---------------------------------------------------------------------------
 
-const ThemeContext = createContext<{ mode: "light" | "dark" }>();
+const ThemeContext = createContext<{ mode: 'light' | 'dark' }>();
 export function ThemedLabel() {
   const theme = useContext(ThemeContext);
-  expectTypeOf(theme).toEqualTypeOf<{ mode: "light" | "dark" }>();
+  expectTypeOf(theme).toEqualTypeOf<{ mode: 'light' | 'dark' }>();
   return <span>{theme.mode}</span>;
 }
 export const provided = (
-  <ThemeContext value={{ mode: "dark" }}>
+  <ThemeContext value={{ mode: 'dark' }}>
     <ThemedLabel />
   </ThemeContext>
 );
@@ -222,7 +222,7 @@ const Field = dynamic(() => (rich() ? Label : Label));
 export const field = <Field text="x" />;
 // @ts-expect-error — Label requires `text`
 export const fieldMissing = <Field />;
-const Link = dynamic(() => "a" as const);
+const Link = dynamic(() => 'a' as const);
 export const link = <Link href="/docs" />;
 
 // ---------------------------------------------------------------------------

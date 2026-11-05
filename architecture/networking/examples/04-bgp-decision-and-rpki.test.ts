@@ -4,15 +4,15 @@ import assert from 'node:assert/strict';
 export interface BGPRoute {
   prefix: string;
   nextHop: string;
-  weight?: number;        // Local to router (default 0)
-  localPref?: number;    // AS-wide (default 100)
+  weight?: number; // Local to router (default 0)
+  localPref?: number; // AS-wide (default 100)
   locallyOriginated?: boolean;
-  asPath: number[];       // List of ASNs
+  asPath: number[]; // List of ASNs
   origin: 'IGP' | 'EGP' | 'INCOMPLETE'; // IGP(0) < EGP(1) < INCOMPLETE(2)
-  med?: number;           // Multi-Exit Discriminator (lower preferred)
-  isEBGP: boolean;        // eBGP preferred over iBGP
-  igpMetric?: number;     // Metric to NEXT_HOP (lower preferred)
-  routerId: string;       // Tie-breaker (lower numeric IP)
+  med?: number; // Multi-Exit Discriminator (lower preferred)
+  isEBGP: boolean; // eBGP preferred over iBGP
+  igpMetric?: number; // Metric to NEXT_HOP (lower preferred)
+  routerId: string; // Tie-breaker (lower numeric IP)
 }
 
 export function compareBGPPaths(a: BGPRoute, b: BGPRoute): number {
@@ -76,12 +76,16 @@ export interface ROA {
 
 export type RovStatus = 'VALID' | 'INVALID' | 'NOT_FOUND';
 
-export function validateRPKI(advertisedPrefix: string, advertisedAsn: number, roaDatabase: ROA[]): RovStatus {
+export function validateRPKI(
+  advertisedPrefix: string,
+  advertisedAsn: number,
+  roaDatabase: ROA[],
+): RovStatus {
   const [ip, lenStr] = advertisedPrefix.split('/');
   const len = Number.parseInt(lenStr ?? '32', 10);
 
   // Check if any ROA covers this prefix
-  const coveringRoas = roaDatabase.filter(r => {
+  const coveringRoas = roaDatabase.filter((r) => {
     const [roaIp, roaLenStr] = r.prefix.split('/');
     const roaLen = Number.parseInt(roaLenStr ?? '32', 10);
     // Simple equality or covering check for demo
@@ -93,7 +97,7 @@ export function validateRPKI(advertisedPrefix: string, advertisedAsn: number, ro
   }
 
   // If covering ROA exists, check if any matches ASN and length
-  const matched = coveringRoas.some(r => r.asn === advertisedAsn && len <= r.maxLength);
+  const matched = coveringRoas.some((r) => r.asn === advertisedAsn && len <= r.maxLength);
   return matched ? 'VALID' : 'INVALID';
 }
 
@@ -155,7 +159,7 @@ describe('Module 04: BGP Path Selection & RPKI Route Origin Validation', () => {
         prefix: '198.51.100.0/22',
         prefixLength: 22,
         maxLength: 22, // No sub-prefixes permitted!
-        asn: 64500,    // Legitimate owner
+        asn: 64500, // Legitimate owner
       },
     ];
 

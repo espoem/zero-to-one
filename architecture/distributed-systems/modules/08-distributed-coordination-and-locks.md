@@ -25,6 +25,7 @@ flowchart TD
 To guarantee Deadlock Freedom, distributed locks use **Leases** (time-bounded locks). The lock automatically expires after a Time-To-Live (TTL) unless the client sends periodic heartbeat renewals.
 
 ### The Stop-The-World GC Vulnerability
+
 In managed runtimes (Java, Node.js, Python, Go), local lease timers cannot guarantee mutual exclusion:
 
 ```mermaid
@@ -54,7 +55,7 @@ sequenceDiagram
 
 Salvatore Sanfilippo (creator of Redis) proposed **Redlock**, an algorithm for acquiring locks across $N = 5$ independent Redis instances without consensus: a client queries each Redis node sequentially, and if it acquires a majority within a timeout, it assumes the lock is held.
 
-In 2016, Martin Kleppmann published a comprehensive critique (*"How to do distributed locking"*), proving Redlock is unsafe for systems where correctness matters:
+In 2016, Martin Kleppmann published a comprehensive critique (_"How to do distributed locking"_), proving Redlock is unsafe for systems where correctness matters:
 
 ```mermaid
 flowchart TD
@@ -68,6 +69,7 @@ flowchart TD
 ```
 
 ### Kleppmann's Verdict: What Locks Are For
+
 - **For Efficiency (Optimization)**: If a duplicate execution only wastes CPU work (e.g. rendering an image twice, sending a duplicate email that is acceptable), lightweight Redis locks are sufficient.
 - **For Correctness (Safety)**: If a duplicate execution corrupts financial ledgers, customer records, or shared files, **Redlock is unsafe**. You must use a **Consensus-backed coordination engine (etcd, ZooKeeper)** paired with **Fencing Tokens**.
 
@@ -99,6 +101,7 @@ sequenceDiagram
 ```
 
 ### Requirements for Fencing Tokens
+
 1. **Monotonically Increasing**: Every successive lock grant must issue a strictly higher integer token ($33, 34, 35, \dots$). Consensus engines (etcd's `raft_index` / `mod_revision`, ZooKeeper's `zxid`) provide this natively.
 2. **Storage Enforcement**: The storage service must record the highest token processed so far (`highestTokenSeen`), rejecting any write presenting a token $< \text{highestTokenSeen}$.
 
@@ -118,7 +121,9 @@ flowchart TD
 ```
 
 ### Implementing Fair Distributed Locks without Thundering Herds
+
 A naive distributed lock broadcasts an event to thousands of waiting nodes when a lock is released, causing a catastrophic **Thundering Herd** CPU spike.
+
 - **The Solution (ZooKeeper Lock Queue)**:
   1. Each client creates an **Ephemeral Sequential** node: `/locks/resource-lock-000001`.
   2. The client lists all children of `/locks`.
@@ -143,14 +148,18 @@ flowchart LR
 ## 6. Distributed Barriers and Service Discovery
 
 ### Distributed Barrier
+
 A coordination pattern where $N$ independent worker nodes must complete Phase 1 before any node is permitted to proceed to Phase 2:
+
 - Workers register by creating an ephemeral child node under `/barrier/node_i`.
 - Each worker sets a watch on `/barrier`.
 - When the number of registered children reaches $N$, the coordinator creates `/barrier/ready`.
 - The watch fires on all nodes simultaneously, allowing workers to proceed to Phase 2.
 
 ### Service Discovery
+
 In dynamic container environments (Kubernetes), IP addresses churn constantly.
+
 - Instances register by creating an ephemeral key (`/services/payment-service/<ip>:<port>`) with a 10-second lease renewal heartbeat.
 - API Gateways watch the `/services/payment-service/` prefix.
 - If an instance crashes, its lease expires, the key is removed, and the gateway automatically reroutes traffic away from the dead instance within seconds.
@@ -174,8 +183,7 @@ Fencing tokens move enforcement from the client to the storage service. The lock
 <details>
 <summary>3. In ZooKeeper, how does watching the preceding sequential znode eliminate the Thundering Herd problem?</summary>
 
-In a naive implementation, all waiting clients set a watch on the main lock znode. When the lock is released, all waiting nodes wake up simultaneously, overwhelming ZooKeeper with thousands of concurrent read requests.
-By using sequential znodes, each candidate watches only the znode immediately preceding its own number in the queue. When the active lock is deleted, exactly one client (the next in line) receives a notification, ensuring $O(1)$ network and CPU overhead.
+In a naive implementation, all waiting clients set a watch on the main lock znode. When the lock is released, all waiting nodes wake up simultaneously, overwhelming ZooKeeper with thousands of concurrent read requests. By using sequential znodes, each candidate watches only the znode immediately preceding its own number in the queue. When the active lock is deleted, exactly one client (the next in line) receives a notification, ensuring $O(1)$ network and CPU overhead.
 </details>
 
 <details>
@@ -183,13 +191,11 @@ By using sequential znodes, each candidate watches only the znode immediately pr
 
 - **Persistent znode**: Remains in the ZooKeeper tree permanently until an explicit `delete` API call removes it.
 - **Ephemeral znode**: Bound to the active client session that created it. If the client disconnects or fails to send heartbeats within the session timeout period, ZooKeeper automatically deletes the znode. This makes ephemeral znodes ideal for leader election, membership tracking, and distributed locks.
+
 </details>
 
 <details>
 <summary>5. How does etcd implement distributed locks using its revision and transaction (Txn) APIs?</summary>
 
-In etcd, every write operation increments a global 64-bit integer called `mod_revision`.
-A client creates a key with a time-bounded Lease. It then executes an atomic transaction:
-`IF (create_revision == 0) THEN (put key with lease) ELSE (get key)`.
-If successful, the client's key has the lowest `mod_revision`. The client uses `mod_revision` as its fencing token. Waiting clients set a watch on the key prefix to observe releases.
+In etcd, every write operation increments a global 64-bit integer called `mod_revision`. A client creates a key with a time-bounded Lease. It then executes an atomic transaction: `IF (create_revision == 0) THEN (put key with lease) ELSE (get key)`. If successful, the client's key has the lowest `mod_revision`. The client uses `mod_revision` as its fencing token. Waiting clients set a watch on the key prefix to observe releases.
 </details>

@@ -63,11 +63,23 @@ describe('Module 01: Platform, Baseline & Lightning CSS', () => {
 
     const { page, cleanup } = await createPage(html);
     try {
-      const color = await page.locator('.target').evaluate((el) => window.getComputedStyle(el).color);
-      const bg = await page.locator('.target').evaluate((el) => window.getComputedStyle(el).backgroundColor);
+      const color = await page
+        .locator('.target')
+        .evaluate((el) => window.getComputedStyle(el).color);
+      const bg = await page
+        .locator('.target')
+        .evaluate((el) => window.getComputedStyle(el).backgroundColor);
 
-      assert.equal(color, 'rgb(0, 128, 0)', 'Engine must evaluate @supports (display: grid) as true');
-      assert.equal(bg, 'rgb(0, 0, 255)', 'Engine must evaluate @supports selector(:has(...)) as true');
+      assert.equal(
+        color,
+        'rgb(0, 128, 0)',
+        'Engine must evaluate @supports (display: grid) as true',
+      );
+      assert.equal(
+        bg,
+        'rgb(0, 0, 255)',
+        'Engine must evaluate @supports selector(:has(...)) as true',
+      );
     } finally {
       await cleanup();
     }

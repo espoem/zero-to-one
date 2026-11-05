@@ -219,7 +219,7 @@ export function jumpConsistentHash(key: bigint, numBuckets: number): number {
   let j = 0n;
   while (j < BigInt(numBuckets)) {
     b = j;
-    key = ((key * 2862933555777941757n) + 1n) & 0xffffffffffffffffn;
+    key = (key * 2862933555777941757n + 1n) & 0xffffffffffffffffn;
     j = ((b + 1n) * (1n << 31n)) / ((key >> 33n) + 1n);
   }
   return Number(b);
@@ -316,23 +316,26 @@ test('Module 13: Probabilistic Data Structures, Caches & Consistent Hashing', as
     assert.equal(unique.size, 5);
   });
 
-  await t.test('Property test: Bloom filter never produces false negatives on arbitrary items', () => {
-    fc.assert(
-      fc.property(
-        fc.array(fc.string({ minLength: 1, maxLength: 20 }), { minLength: 1, maxLength: 30 }),
-        (items) => {
-          const bf = new BloomFilter(2000, 7);
-          for (const item of items) {
-            bf.add(item);
-          }
-          // Invariant: zero false negatives
-          for (const item of items) {
-            if (!bf.has(item)) return false;
-          }
-          return true;
-        }
-      ),
-      { seed: 42, numRuns: 100 }
-    );
-  });
+  await t.test(
+    'Property test: Bloom filter never produces false negatives on arbitrary items',
+    () => {
+      fc.assert(
+        fc.property(
+          fc.array(fc.string({ minLength: 1, maxLength: 20 }), { minLength: 1, maxLength: 30 }),
+          (items) => {
+            const bf = new BloomFilter(2000, 7);
+            for (const item of items) {
+              bf.add(item);
+            }
+            // Invariant: zero false negatives
+            for (const item of items) {
+              if (!bf.has(item)) return false;
+            }
+            return true;
+          },
+        ),
+        { seed: 42, numRuns: 100 },
+      );
+    },
+  );
 });

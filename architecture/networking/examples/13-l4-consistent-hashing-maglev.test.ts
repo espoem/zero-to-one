@@ -10,7 +10,8 @@ export class MaglevLookupTable {
   private backends: string[];
   private lookupTable: number[]; // Index into backends array
 
-  constructor(backends: string[], tableSize = 1009) { // 1009 is prime
+  constructor(backends: string[], tableSize = 1009) {
+    // 1009 is prime
     this.backends = [...backends];
     this.M = tableSize;
     this.lookupTable = new Array(this.M).fill(-1);
@@ -91,7 +92,10 @@ describe('Module 13: Layer 4 Consistent Hashing (Google Maglev Algorithm)', () =
     const expectedMean = 1009 / backends.length; // ~252
     for (const [name, count] of counts.entries()) {
       const ratio = count / expectedMean;
-      assert.ok(ratio > 0.85 && ratio < 1.15, `Backend ${name} distribution variance (${count}) out of bounds`);
+      assert.ok(
+        ratio > 0.85 && ratio < 1.15,
+        `Backend ${name} distribution variance (${count}) out of bounds`,
+      );
     }
   });
 
@@ -122,6 +126,9 @@ describe('Module 13: Layer 4 Consistent Hashing (Google Maglev Algorithm)', () =
     // Almost all flows originally pointing to A, B, C, D should STILL point to A, B, C, D
     const expectedPreserved = 1000 - nodeEChurn;
     const preservationRate = preservedCount / expectedPreserved;
-    assert.ok(preservationRate > 0.85, `Expected high preservation rate (>85%), got ${(preservationRate * 100).toFixed(1)}%`);
+    assert.ok(
+      preservationRate > 0.85,
+      `Expected high preservation rate (>85%), got ${(preservationRate * 100).toFixed(1)}%`,
+    );
   });
 });

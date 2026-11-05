@@ -77,7 +77,7 @@ export interface TCPHeader {
 
 function formatMac(buf: Buffer, offset: number): string {
   return Array.from(buf.subarray(offset, offset + 6))
-    .map(b => b.toString(16).padStart(2, '0'))
+    .map((b) => b.toString(16).padStart(2, '0'))
     .join(':');
 }
 
@@ -94,7 +94,7 @@ export function computeIPv4Checksum(headerBuf: Buffer, ihlBytes: number): number
   while (sum >> 16) {
     sum = (sum & 0xffff) + (sum >> 16);
   }
-  return (~sum) & 0xffff;
+  return ~sum & 0xffff;
 }
 
 export function parsePcapGlobalHeader(buf: Buffer): PcapGlobalHeader {
@@ -106,9 +106,15 @@ export function parsePcapGlobalHeader(buf: Buffer): PcapGlobalHeader {
     throw new Error(`Invalid pcap magic number: 0x${magic.toString(16)}`);
   }
 
-  const readU16 = isLittleEndian ? (o: number) => buf.readUInt16LE(o) : (o: number) => buf.readUInt16BE(o);
-  const readU32 = isLittleEndian ? (o: number) => buf.readUInt32LE(o) : (o: number) => buf.readUInt32BE(o);
-  const readI32 = isLittleEndian ? (o: number) => buf.readInt32LE(o) : (o: number) => buf.readInt32BE(o);
+  const readU16 = isLittleEndian
+    ? (o: number) => buf.readUInt16LE(o)
+    : (o: number) => buf.readUInt16BE(o);
+  const readU32 = isLittleEndian
+    ? (o: number) => buf.readUInt32LE(o)
+    : (o: number) => buf.readUInt32BE(o);
+  const readI32 = isLittleEndian
+    ? (o: number) => buf.readInt32LE(o)
+    : (o: number) => buf.readInt32BE(o);
 
   return {
     magicNumber: magic,
@@ -121,7 +127,10 @@ export function parsePcapGlobalHeader(buf: Buffer): PcapGlobalHeader {
   };
 }
 
-export function parsePcapPacketRecord(buf: Buffer, offset: number): { header: PcapPacketHeader; frame: Buffer; nextOffset: number } {
+export function parsePcapPacketRecord(
+  buf: Buffer,
+  offset: number,
+): { header: PcapPacketHeader; frame: Buffer; nextOffset: number } {
   if (buf.length - offset < 16) throw new Error('Buffer too small for pcap packet header');
   const tsSec = buf.readUInt32BE(offset);
   const tsUsec = buf.readUInt32BE(offset + 4);
@@ -243,12 +252,12 @@ describe('Module 01: Pcap Binary Parsing & Packet Dissection', () => {
   it('parses a valid libpcap global header', () => {
     const pcapHeader = Buffer.alloc(24);
     pcapHeader.writeUInt32BE(0xa1b2c3d4, 0); // Magic (Big-endian)
-    pcapHeader.writeUInt16BE(2, 4);          // Major
-    pcapHeader.writeUInt16BE(4, 6);          // Minor
-    pcapHeader.writeInt32BE(0, 8);           // ThisZone
-    pcapHeader.writeUInt32BE(0, 12);         // SigFigs
-    pcapHeader.writeUInt32BE(65535, 16);     // SnapLen
-    pcapHeader.writeUInt32BE(1, 20);         // LinkType (Ethernet)
+    pcapHeader.writeUInt16BE(2, 4); // Major
+    pcapHeader.writeUInt16BE(4, 6); // Minor
+    pcapHeader.writeInt32BE(0, 8); // ThisZone
+    pcapHeader.writeUInt32BE(0, 12); // SigFigs
+    pcapHeader.writeUInt32BE(65535, 16); // SnapLen
+    pcapHeader.writeUInt32BE(1, 20); // LinkType (Ethernet)
 
     const parsed = parsePcapGlobalHeader(pcapHeader);
     assert.equal(parsed.magicNumber, 0xa1b2c3d4);
@@ -266,9 +275,25 @@ describe('Module 01: Pcap Binary Parsing & Packet Dissection', () => {
     ipBuf.writeUInt16BE(0x1234, 4); // ID
     ipBuf.writeUInt16BE(0x4000, 6); // Flags: DF=1, Offset=0
     ipBuf[8] = 64; // TTL = 64
-    ipBuf[9] = 6;  // Protocol = TCP
-    ipBuf.write('192.168.1.100'.split('.').map(Number).map(b => String.fromCharCode(b)).join(''), 12, 'binary');
-    ipBuf.write('203.0.113.5'.split('.').map(Number).map(b => String.fromCharCode(b)).join(''), 16, 'binary');
+    ipBuf[9] = 6; // Protocol = TCP
+    ipBuf.write(
+      '192.168.1.100'
+        .split('.')
+        .map(Number)
+        .map((b) => String.fromCharCode(b))
+        .join(''),
+      12,
+      'binary',
+    );
+    ipBuf.write(
+      '203.0.113.5'
+        .split('.')
+        .map(Number)
+        .map((b) => String.fromCharCode(b))
+        .join(''),
+      16,
+      'binary',
+    );
 
     const expectedChecksum = computeIPv4Checksum(ipBuf, 20);
     ipBuf.writeUInt16BE(expectedChecksum, 10);
@@ -311,8 +336,8 @@ describe('Module 01: Pcap Binary Parsing & Packet Dissection', () => {
 
           const { header } = parseIPv4Header(buf);
           assert.equal(header.isValidChecksum, true);
-        }
-      )
+        },
+      ),
     );
   });
 });

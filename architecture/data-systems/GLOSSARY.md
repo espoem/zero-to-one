@@ -7,7 +7,7 @@ This glossary provides authoritative English ↔ Czech definitions of core data 
 ## 1. Data Models, Relational Algebra & Normal Forms
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Relational Algebra** | **Relační algebra** | A formal mathematical query system consisting of algebraic operations ($\sigma, \pi, \bowtie, \cup, \cap, -$) that take relations as input and produce relations as output. | E. F. Codd (1970) |
 | **Functional Dependency ($X \rightarrow Y$)** | **Funkční závislost ($X \rightarrow Y$)** | A mathematical constraint stating that the value of attribute set $X$ uniquely and deterministically determines the value of attribute set $Y$ within relation $R$. | Armstrong's Axioms (1974) |
 | **First Normal Form (1NF)** | **První normální forma (1NF)** | The property of a relation where every attribute domain contains only atomic (indivisible) scalar values and there are no repeating groups or nested relations. | Relational Database Theory |
@@ -24,7 +24,7 @@ This glossary provides authoritative English ↔ Czech definitions of core data 
 ## 2. Storage Engines: Slotted Pages, B-Trees & LSM-Trees
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Slotted Page** | **Stránka se slotovým polem (slotted page)** | A physical disk page layout dividing the block into a forward-growing slot index array (Tuple IDs) and backward-growing variable-length data tuples, preventing external fragmentation. | Ramakrishnan & Gehrke |
 | **Tuple ID / Record ID (RID)** | **Identifikátor záznamu (RID / TID)** | A physical indirection pointer consisting of `(PageNumber, SlotNumber)` uniquely identifying a row's location within a storage file. | CMU 15-445 |
 | **B+Tree** | **B+ strom** | A self-balancing search tree data structure where all actual data records reside in leaf nodes, linked sequentially via sibling pointers, and internal nodes store only routing keys. | Comer (1979) |
@@ -43,7 +43,7 @@ This glossary provides authoritative English ↔ Czech definitions of core data 
 ## 3. Indexing Theory, Lexical Search & Vector ANN
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Inverted Index** | **Invertovaný index** | An indexing data structure mapping each unique lexical term (token) to a sorted postings list of document identifiers containing that term. | Manning, Raghavan & Schütze |
 | **Okapi BM25** | **Relevanční skórovací funkce Okapi BM25** | A non-linear probabilistic term-ranking function that incorporates term frequency saturation ($k_1$) and document length normalization ($b$) to rank lexical query relevance. | Robertson & Jones (1994) |
 | **Approximate Nearest Neighbor (ANN)** | **Aproximativní vyhledávání nejbližších sousedů (ANN)** | Algorithmic techniques that search for vectors closest to a query embedding in high-dimensional metric space with bounded recall trade-offs for orders-of-magnitude faster query latency. | Indyk & Motwani (1998) |
@@ -57,7 +57,7 @@ This glossary provides authoritative English ↔ Czech definitions of core data 
 ## 4. Buffer Management, Paging & Operating System I/O
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Buffer Pool Manager** | **Správce vyrovnávací paměti stránek (Buffer Pool)** | A database subsystem responsible for allocating a fixed pool of memory frames, caching disk blocks, tracking pin counts, and flushing dirty pages to storage. | CMU 15-445 / Stonebraker (1981) |
 | **Pin Count / Latch** | **Počet referencí (pin count) a rámcový zámek (latch)** | Pin count tracks the number of concurrent query threads reading or modifying a page frame in memory (preventing eviction); latches provide mutual exclusion for frame data structures. | Database Systems Internals |
 | **CLOCK Eviction Algorithm** | **Hodinový algoritmus vyřazování stránek (CLOCK)** | An efficient approximation of Least Recently Used (LRU) that sweeps frames circularly using a single reference usage bit, providing second-chance retention without lock contention on cache hits. | F. J. Corbató (1968) |
@@ -71,7 +71,7 @@ This glossary provides authoritative English ↔ Czech definitions of core data 
 ## 5. Concurrency Control, Isolation Levels & MVCC
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **ACID Guarantees** | **ACID vlastnosti (Atomicity, Consistency, Isolation, Durability)** | The four foundational guarantees of database transactions: Atomicity (all-or-nothing), Consistency (state invariant preservation), Isolation (concurrency control), Durability (persistence after commit). | Haerder & Reuter (1983) |
 | **Multi-Version Concurrency Control (MVCC)** | **Víceverzové řízení souběhu (MVCC)** | A concurrency mechanism where data updates create new row versions stamped with transaction IDs (`xmin`/`xmax`), allowing readers to access consistent historical snapshots without blocking writers. | Bernstein & Goodman (1981) |
 | **Snapshot Isolation (SI)** | **Izolace snímkem (Snapshot Isolation)** | An isolation level where a transaction observes a static, internally consistent snapshot of the database taken at transaction begin, and writes are validated via the first-committer-wins rule. | Berenson et al. (1995) |
@@ -85,7 +85,7 @@ This glossary provides authoritative English ↔ Czech definitions of core data 
 ## 6. Durability, Write-Ahead Logging & ARIES Crash Recovery
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Write-Ahead Logging (WAL)** | **Předstihový deník (WAL)** | The foundational durability invariant requiring that log records describing a change must be flushed to non-volatile storage before corresponding dirty database pages are written to disk. | Gray (1978) |
 | **Log Sequence Number (LSN)** | **Sekvenční číslo záznamu v deníku (LSN)** | A 64-bit monotonically increasing byte offset in the write-ahead log used to track page modifications (`pageLSN`) and checkpoint positions (`checkpointLSN`). | Mohan et al. (ARIES, 1992) |
 | **Steal / No-Force Policy** | **Zásada Steal / No-Force** | Steal allows uncommitted dirty pages to be written to disk to free buffer frames (requires UNDO); No-Force permits a transaction to commit without immediately flushing dirty data pages to disk (requires REDO). | Haerder & Reuter (1983) |
@@ -100,7 +100,7 @@ This glossary provides authoritative English ↔ Czech definitions of core data 
 ## 7. Replication Mechanics, Quorums & Distributed Consensus
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Read-Your-Writes Consistency** | **Konzistence čtení vlastních zápisů** | A consistency model guaranteeing that after a user submits a mutation, any subsequent read by that same user will always observe that mutation or a newer state. | Terry et al. (1994) |
 | **Monotonic Reads** | **Monotonní čtení** | A session consistency guarantee ensuring that after a client observes a particular data version, they will never subsequently observe an older version of that data. | Terry et al. (1994) |
 | **Quorum Consensus ($W + R > N$)** | **Kvorum konsenzu ($W + R > N$)** | A leaderless replication rule stating that strong consistency is preserved across $N$ nodes if write quorum $W$ and read quorum $R$ overlap by at least one replica ($W + R > N$). | Gifford (1979) |
@@ -113,7 +113,7 @@ This glossary provides authoritative English ↔ Czech definitions of core data 
 ## 8. Partitioning, Consistent Hashing & Routing
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Consistent Hashing** | **Konzistentní hashování** | A distributed routing technique that maps both nodes and keys onto a circular hash ring, guaranteeing that adding or removing a node migrates only $1/N$ of keys on average. | Karger et al. (1997) |
 | **Virtual Nodes (vnodes)** | **Virtuální uzly (vnodes)** | The technique of mapping each physical server to multiple discrete positions on a consistent hash ring to balance statistical key distribution and accommodate heterogeneous hardware. | Dynamo Paper (2007) |
 | **Document-Partitioned Index (Local)** | **Index dělený dle dokumentů (lokální sekundární index)** | Secondary index design where index entries are stored on the same shard as the primary data tuple, requiring scatter-gather queries across all shards to evaluate search predicates. | Kleppmann (DDIA) |
@@ -126,7 +126,7 @@ This glossary provides authoritative English ↔ Czech definitions of core data 
 ## 9. Caching Theory, Cache Topologies & Invalidation
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Cache-Aside (Lazy Loading)** | **Vzor Cache-Aside (líné načítání do mezipaměti)** | Application architecture where the application queries the cache first, reads from the database upon a cache miss, and populates the cache for subsequent readers. | Cloud Architecture Patterns |
 | **Cache Stampede (Thundering Herd)** | **Lavina dotazů na mezipaměť (Cache Stampede)** | The failure mode where an expired hot cache key causes hundreds of concurrent application threads to query the database simultaneously, exhausting database connection pools. | Vattani et al. (2015) |
 | **XFetch Algorithm** | **Pravděpodobnostní algoritmus XFetch** | A probabilistic early expiration formula ($-\beta \cdot \delta \cdot \ln(\text{rand}()) > \text{TTL}_{\text{remaining}}$) that triggers an asynchronous cache refresh before key expiration, eliminating stampedes. | Vattani et al. (VLDB 2015) |
@@ -139,7 +139,7 @@ This glossary provides authoritative English ↔ Czech definitions of core data 
 ## 10. Binary Serialization, Encoding & Schema Evolution
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Variable-Length Quantity (Varint)** | **Celočíselný formát s proměnnou délkou (Varint)** | A binary integer encoding using 7 bits per byte for payload data and the most significant bit (MSB) as a continuation flag, compressing small integers into fewer bytes. | Google Protocol Buffers Specification |
 | **ZigZag Encoding** | **Klikaté kódování (ZigZag encoding)** | A mathematical mapping of signed integers onto unsigned integers ($(n \ll 1) \oplus (n \gg 31)$) so that negative numbers with small absolute values can be efficiently compressed by Varints. | Protocol Buffers Internals |
 | **Field Tag Number** | **Číselný identifikátor pole (tag number)** | An integer identifier embedded in binary protocols (e.g. Protobuf) to represent a field on the wire instead of transmitting human-readable string field names. | Protobuf Encoding Specification |
@@ -152,7 +152,7 @@ This glossary provides authoritative English ↔ Czech definitions of core data 
 ## 11. Stream Processing, Event Logs & Compaction
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Commit Log** | **Potvrzovací deník událostí (Commit Log)** | An append-only, totally ordered sequence of immutable records written to disk, serving as the foundational architectural primitive for distributed event streams. | Jay Kreps (2013) |
 | **Stream-Table Duality** | **Dualita proudu a tabulky (Stream-Table Duality)** | The mathematical relationship stating that a stream represents a changelog of mutations over time, and a table represents the aggregated state at a specific point in time. | Kafka Streams / Apache Flink |
 | **Log Compaction** | **Kompakce deníku (Log Compaction)** | A retention policy in an event log that purges older historical records for each key, retaining only the single latest record or tombstone per unique primary key. | Apache Kafka Architecture |
@@ -165,7 +165,7 @@ This glossary provides authoritative English ↔ Czech definitions of core data 
 ## 12. Workload Classification, CAP/PACELC & System Architecture
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **CAP Theorem** | **CAP teorém (teorém o kompromisu distribuovaných systémů)** | The formal theorem stating that in an asynchronous network subject to partitions ($P$), a distributed data store can guarantee at most Consistency ($C$) or Availability ($A$), but not both. | Eric Brewer (2000) / Gilbert & Lynch (2002) |
 | **PACELC Theorem** | **PACELC teorém (rozšířený teorém kompromisů)** | The theorem stating that if there is a Partition ($P$), choose Availability ($A$) or Consistency ($C$); Else ($E$), choose Latency ($L$) or Consistency ($C$). | Daniel Abadi (2012) |
 | **Linearizability** | **Linearizovatelnost (silná konzistence)** | A recency guarantee requiring that once any read or write completes globally, all subsequent operations on all nodes must observe that state or a newer state (appears as a single atomic copy). | Herlihy & Wing (1990) |

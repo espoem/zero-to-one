@@ -1,0 +1,16 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "printWidth": 100,
+  "singleQuote": true,
+  "proseWrap": "never",
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "**/styled-system/**",
+    "**/dist/**",
+    "**/*.lock",
+    "**/package-lock.json",
+    "technologies/panda-css/examples/fixtures/negative/**",
+    "**/fixtures/**",
+    "**/__snapshots__/**"
+  ]
+}

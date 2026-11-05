@@ -13,9 +13,13 @@ npx panda codegen --clean          # once after any upgrade (.mjs -> .js)
 ```ts
 export default defineConfig({
   presets: ['@pandacss/preset-base', '@pandacss/preset-panda'], // NOT implicit in v2
-  include: ['./src/**/*.{ts,tsx}'], exclude: [], outdir: 'styled-system',
-  jsxFramework: 'react', preflight: true, strictTokens: true,
-})
+  include: ['./src/**/*.{ts,tsx}'],
+  exclude: [],
+  outdir: 'styled-system',
+  jsxFramework: 'react',
+  preflight: true,
+  strictTokens: true,
+});
 ```
 
 ```css
@@ -23,16 +27,16 @@ export default defineConfig({
 @layer reset, base, tokens, recipes, utilities;
 ```
 
-| Integration | Config |
-|---|---|
-| PostCSS | `{ plugins: { '@pandacss/dev/postcss': {} } }` |
-| Vite | `plugins: [pandacss({ transform?: boolean }), react()]` from `@pandacss/vite` |
-| CLI | `panda` / `panda dev` / `panda cssgen -o styles.css` |
+| Integration | Config                                                                        |
+| ----------- | ----------------------------------------------------------------------------- |
+| PostCSS     | `{ plugins: { '@pandacss/dev/postcss': {} } }`                                |
+| Vite        | `plugins: [pandacss({ transform?: boolean }), react()]` from `@pandacss/vite` |
+| CLI         | `panda` / `panda dev` / `panda cssgen -o styles.css`                          |
 
 ## CLI ([M02](./modules/02-installation-and-build-integration.md), [M10](./modules/10-compiler-internals-and-debugging.md))
 
 | Command | Purpose |
-|---|---|
+| --- | --- |
 | `panda` · `build` · `dev` | Codegen + CSS (once / watch) |
 | `codegen [--check] [--clean] [--spec]` | `styled-system` only; drift gate; JSON spec |
 | `cssgen [-o file] [--splitting --outdir dir] [--include glob]` | CSS only |
@@ -54,7 +58,7 @@ cx(recipeClass, className)          // join strings only (no conflict resolution
 ```
 
 | Key | Meaning |
-|---|---|
+| --- | --- |
 | `_hover`, `_focusVisible`, `_disabled`, `_open` | `:is(:pseudo, [data-*])` |
 | `_groupHover` / `_peerInvalid` | needs `.group` ancestor / `.peer` previous sibling |
 | `sm md lg xl 2xl`, `mdDown`, `mdOnly`, `smToLg` | `@media (width >= …)` ranges |
@@ -77,14 +81,14 @@ definePattern({ properties, defaultValues, strict, blocklist, jsx, transform(pro
 
 ## Tokens ([M05](./modules/05-design-tokens.md))
 
-| Form | Output | Theme-aware |
-|---|---|---|
-| `color: 'brand.600'` | `var(--colors-brand-600)` | ✅ |
-| `'0 0 0 2px {colors.brand.100}'` | `var(…)` inside | ✅ |
-| `'token(colors.x, crimson)'` (string) | `var(--colors-x, crimson)` | ✅ |
-| `token.var('colors.x')` | `var(--colors-x)` | ✅ |
-| `token('colors.x')` (JS call) | raw value | ❌ |
-| `bg: 'brand.500/40'` | `color-mix(in oklab, …)` | ✅ |
+| Form                                  | Output                     | Theme-aware |
+| ------------------------------------- | -------------------------- | ----------- |
+| `color: 'brand.600'`                  | `var(--colors-brand-600)`  | ✅          |
+| `'0 0 0 2px {colors.brand.100}'`      | `var(…)` inside            | ✅          |
+| `'token(colors.x, crimson)'` (string) | `var(--colors-x, crimson)` | ✅          |
+| `token.var('colors.x')`               | `var(--colors-x)`          | ✅          |
+| `token('colors.x')` (JS call)         | raw value                  | ❌          |
+| `bg: 'brand.500/40'`                  | `color-mix(in oklab, …)`   | ✅          |
 
 `semanticTokens: { colors: { fg: { value: { base: '{colors.ink.900}', _dark: '{colors.ink.50}' } } } }` · `optimize: { removeUnusedTokens, removeUnusedKeyframes, propertyFallback }`
 
@@ -99,11 +103,11 @@ Always use `theme.extend`. Without it, only the named entry is replaced, except 
 
 ## Recipes ([M07](./modules/07-recipes-and-config-recipes.md), [M08](./modules/08-slot-recipes-and-recipe-contexts.md))
 
-| | `cva` / `sva` | `defineRecipe` / `defineSlotRecipe` |
-|---|---|---|
-| CSS | atoms in `utilities` | named classes in `recipes` |
-| Emission | all variants | JIT: literals, `jsx` tags, `staticCss` |
-| Compounds | atoms | `recipes.compound_variants` class |
+|           | `cva` / `sva`        | `defineRecipe` / `defineSlotRecipe`    |
+| --------- | -------------------- | -------------------------------------- |
+| CSS       | atoms in `utilities` | named classes in `recipes`             |
+| Emission  | all variants         | JIT: literals, `jsx` tags, `staticCss` |
+| Compounds | atoms                | `recipes.compound_variants` class      |
 
 ```ts
 recipe.splitVariantProps(props); recipe.variantMap; RecipeVariantProps<typeof recipe>
@@ -119,7 +123,7 @@ staticCss: { recipes: { button: [{ size: ['*'] }] } } · optimize: { smartCompou
 ## Extraction rules ([M10](./modules/10-compiler-internals-and-debugging.md))
 
 | Visible | Invisible |
-|---|---|
+| --- | --- |
 | literals, ternaries (both branches), `&&`/`??` right side | props, state, `Math.random()` |
 | same-file consts; **named** imports, re-exports, barrels, tsconfig paths | default and namespace imports |
 | pure helpers (one expression / consts + return) | helpers with `if`, loops, unknown calls (`String()`) |

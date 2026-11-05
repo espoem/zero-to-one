@@ -1,4 +1,4 @@
-import { definePattern } from '@pandacss/dev'
+import { definePattern } from '@pandacss/dev';
 
 /**
  * Custom pattern (Module 04): a typed layout function generated into
@@ -18,12 +18,12 @@ export const scrollablePattern = definePattern({
   // The pattern owns overflow; callers may not override it (type-level only).
   blocklist: ['overflow', 'overflowX', 'overflowY'],
   transform(props, { map }) {
-    const { direction, hideScrollbar, ...rest } = props
+    const { direction, hideScrollbar, ...rest } = props;
     return {
       overflowX: map(direction, (d) => (d === 'horizontal' ? 'auto' : 'hidden')),
       overflowY: map(direction, (d) => (d === 'vertical' ? 'auto' : 'hidden')),
       scrollbarWidth: hideScrollbar ? 'none' : undefined,
       ...rest,
-    }
+    };
   },
-})
+});

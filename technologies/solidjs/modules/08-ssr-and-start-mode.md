@@ -13,7 +13,7 @@
 In Solid 1.x, server rendering beyond the basics lived in **SolidStart** (`@solidjs/start`), a metaframework on Vinxi/Nitro. In 2.0 the HTTP exchange moved into core, and the serving layer moved into the Vite plugin:
 
 | Concern | Solid 2.0 home |
-|---|---|
+| --- | --- |
 | render entry points (`render`, `hydrate`, `renderToString`, `renderToStream`) | `@solidjs/web` |
 | request event, response head, `httpStatus`/`httpHeader`, cookies | `@solidjs/web` (+ `@solidjs/web/storage` for request scope) |
 | server functions runtime and HTTP handler | `@solidjs/web/server-functions` |
@@ -29,11 +29,11 @@ Versions verified on npm 2026-10-28: `@solidjs/vite-plugin@3.0.0-next.52` (peers
 
 ```ts
 // vite.config.ts
-import { defineConfig } from "vite";
-import solid from "@solidjs/vite-plugin";
+import { defineConfig } from 'vite';
+import solid from '@solidjs/vite-plugin';
 
 export default defineConfig({
-  plugins: [solid({ start: true, ssr: true })],   // SSR start mode
+  plugins: [solid({ start: true, ssr: true })], // SSR start mode
 });
 ```
 
@@ -47,20 +47,20 @@ export default function App() {
 The plugin owns entries, dev serving and the build: no entry files, no `index.html`, no dev-server script. `ssr` picks the rendering mode for the same conventions: `ssr: true` streams SSR; omitted, the app is client-rendered onto a prerendered static shell. Flipping a project between SPA and SSR is that one boolean.
 
 | Phase | What start mode does (from the plugin README) |
-|---|---|
+| --- | --- |
 | `vite` (dev) | middleware streams the app for HTML GET requests through the SSR environment, injects the Vite client; SSR errors show Vite's overlay; Chrome Performance panel tracks enabled |
 | `vite build` | client assets + manifest to `dist/client`, server bundle to `dist/server/server.js` (client built first, because the server reads the manifest) |
 | production | `dist/server/server.js` exports `handleRequest(request) → Response` and a default `{ fetch(request) }` (Workers, Deno, Bun, Netlify, Nitro); `start: { node: true }` also emits `dist/server/node.js` (`node dist/server/node.js`, `PORT`/`HOST`) |
 | `vite preview` | runs the production artifact |
 
-Options worth knowing: `middleware` (a module default-exporting `(event, next) => Response`, run for pages *and* server functions, inside the request scope; set `event.nonce` for CSP and `event.renderMode` (`"stream"` / `"async"`) before `next()`), `setup` (per-request app setup, e.g. creating a router bound to the request), `app`, `document`, `clientSetup`, `productionErrorBoundary`, `externalServer`. The `server-only` / `client-only` marker imports turn "server code shipped to the browser" into a build error at the import edge.
+Options worth knowing: `middleware` (a module default-exporting `(event, next) => Response`, run for pages _and_ server functions, inside the request scope; set `event.nonce` for CSP and `event.renderMode` (`"stream"` / `"async"`) before `next()`), `setup` (per-request app setup, e.g. creating a router bound to the request), `app`, `document`, `clientSetup`, `productionErrorBoundary`, `externalServer`. The `server-only` / `client-only` marker imports turn "server code shipped to the browser" into a build error at the import edge.
 
 ## 3. Server rendering
 
 ### 3.1 Entry points
 
 | Function | Where | Behaviour |
-|---|---|---|
+| --- | --- | --- |
 | `renderToString(fn)` | server | synchronous; async boundaries render their fallbacks (proved: escaped, attribute-correct HTML) |
 | `renderToStream(fn, opts)` | server | shell first, then each `<Loading>` streams its resolved fragment plus a swap script; `.pipe()`, `.pipeTo()`, `.readable`; **awaiting it yields the fully settled HTML** (replaces the removed `renderToStringAsync`) |
 | `hydrate(fn, el)` | client | claims server DOM once at t = 0; needs `generateHydrationScript()` / `<HydrationScript />` before the app markup |
@@ -71,8 +71,14 @@ Proved: the first streamed chunk contains the `<Loading>` fallback, later chunks
 The compiler emits different code per target. For the same component, `generate: "ssr"` produces string templates with `escape()` holes and hydration keys instead of DOM templates (see [Module 03](./03-components-props-and-dom.md) for the DOM output):
 
 ```js
-var _tmpl$ = ["<p", ' class="x"><!--$-->', "<!--/--> and <!--$-->", "<!--/--></p>"];
-export const C = (p) => _$ssr(_tmpl$, _$ssrHydrationKey(), _$scope(() => _$escape(p.a)), _$scope(() => _$escape(p.b)));
+var _tmpl$ = ['<p', ' class="x"><!--$-->', '<!--/--> and <!--$-->', '<!--/--></p>'];
+export const C = (p) =>
+  _$ssr(
+    _tmpl$,
+    _$ssrHydrationKey(),
+    _$scope(() => _$escape(p.a)),
+    _$scope(() => _$escape(p.b)),
+  );
 ```
 
 ### 3.1.1 Hydration, mechanically
@@ -80,7 +86,13 @@ export const C = (p) => _$ssr(_tmpl$, _$ssrHydrationKey(), _$scope(() => _$escap
 Hydratable compilation produces matching code on both sides. Server output for the fixture `<main><button onClick=…>count {n()}</button><p>{props.label}</p></main>` (rendered, verbatim):
 
 ```html
-<main _hk=0><button>count <!--$-->1<!--/--></button><p>server</p></main>
+<main _hk="0">
+  <button>
+    count
+    <!--$-->1<!--/-->
+  </button>
+  <p>server</p>
+</main>
 ```
 
 - `_hk` is the **hydration key**: a path-like id derived from the owner tree position (component and child order), the same scheme `createUniqueId` uses. The client computes the same keys while it re-runs the component code.
@@ -90,12 +102,17 @@ Hydratable compilation produces matching code on both sides. Server output for t
 Client output for the same source (`generate: "dom", hydratable: true`, verbatim excerpt):
 
 ```js
-var _el$ = _$getNextElement(_tmpl$);                  // CLAIM the existing <main> by key instead of cloning
-var _el$2 = _el$.firstChild;                          // walk the server DOM like a fresh clone
+var _el$ = _$getNextElement(_tmpl$); // CLAIM the existing <main> by key instead of cloning
+var _el$2 = _el$.firstChild; // walk the server DOM like a fresh clone
 var [_el$5, _el$6] = _$getNextMarker(_el$4.nextSibling); // find the <!--$--> … <!--/--> hole
-_el$2._$$click = () => setN(n() + 1);                 // attach delegated handler
-_$insert(_el$2, _$scope(() => n()), _el$5, _el$6);    // bind the hole between the markers
-_$runHydrationEvents();                               // replay clicks captured before hydration
+_el$2._$$click = () => setN(n() + 1); // attach delegated handler
+_$insert(
+  _el$2,
+  _$scope(() => n()),
+  _el$5,
+  _el$6,
+); // bind the hole between the markers
+_$runHydrationEvents(); // replay clicks captured before hydration
 ```
 
 Hydration therefore **re-runs every component once** on the client (setup is needed to create signals and bindings) but **creates no DOM**: elements are claimed by key and bindings attach to existing nodes. Proved in the round-trip test: the `<button>` is the same node object before and after `hydrate()`, and a click afterwards increments it.
@@ -105,7 +122,7 @@ The inline bootstrap from `generateHydrationScript()` / `<HydrationScript />` de
 **Mismatch is not repaired.** Hydration trusts the server HTML. Proved:
 
 | Situation | Result in rc.19 |
-|---|---|
+| --- | --- |
 | client props/state differ from the server's (`start: 5, label: "client"` vs server `1, "server"`) | the DOM keeps the **server** text, no diagnostic is emitted; the next update of a binding writes the client value (the count jumps from `1` to `6`) |
 | HTML structure does not match the client tree | nothing is claimed and nothing renders (the foreign HTML stays) |
 
@@ -117,16 +134,21 @@ Verbatim (abridged) chunks from `renderToStream` for a page with one slow `<Load
 
 ```html
 <!-- chunk 0: the shell, flushed immediately -->
-<main _hk=1><h1>shell</h1><!--$--><template id="pl-2"></template><i _hk=20>wait</i><!--pl-2--><!--/--></main>
-<script>(self.$R=self.$R||{})[""]=[];
-  _$HY.r["0"]=$R[0]=…pending promise…;          // hydration record for the async memo (id "0")
-  _$HY.r["2_fr"]=…pending promise…;             // the boundary's fragment resolver
+<main _hk="1">
+  <h1>shell</h1>
+  <!--$--><template id="pl-2"></template><i _hk="20">wait</i><!--pl-2--><!--/-->
+</main>
+<script>
+  (self.$R=self.$R||{})[""]=[];
+    _$HY.r["0"]=$R[0]=…pending promise…;          // hydration record for the async memo (id "0")
+    _$HY.r["2_fr"]=…pending promise…;             // the boundary's fragment resolver
 </script>
 
 <!-- chunk 1: when the data lands -->
-<template id="2"><b _hk=2000>42</b></template>
-<script>…resolve($R[1], $R[5]={n:42});         // fulfil the memo's promise with the serialized value
-  $df("2");                                      // swap: replace the placeholder + fallback with template #2
+<template id="2"><b _hk="2000">42</b></template>
+<script>
+  …resolve($R[1], $R[5]={n:42});         // fulfil the memo's promise with the serialized value
+    $df("2");                                      // swap: replace the placeholder + fallback with template #2
 </script>
 ```
 
@@ -165,7 +187,7 @@ Two traps from RFC 05's "tracking run" section: a non-fake `await` before the re
 ```tsx
 function NotFound() {
   httpStatus(404);
-  httpHeader("cache-control", "no-store");
+  httpHeader('cache-control', 'no-store');
   return <h1>Not found</h1>;
 }
 ```
@@ -174,7 +196,7 @@ function NotFound() {
 
 ### 3.4 Error sanitization
 
-The production server build replaces plain thrown errors with a generic `Error("Internal Server Error")` on every wire (SSR-serialized boundary errors, streamed rejections, server-function responses), so database messages and connection strings never reach the client. The **development** build keeps full fidelity. `markSafeError(err)` brands an error whose message is meant for the user; it passes intact everywhere (proved through the server-function wire). The dev/prod line is the *build variant* (export condition), not `NODE_ENV`.
+The production server build replaces plain thrown errors with a generic `Error("Internal Server Error")` on every wire (SSR-serialized boundary errors, streamed rejections, server-function responses), so database messages and connection strings never reach the client. The **development** build keeps full fidelity. `markSafeError(err)` brands an error whose message is meant for the user; it passes intact everywhere (proved through the server-function wire). The dev/prod line is the _build variant_ (export condition), not `NODE_ENV`.
 
 ## 4. Request isolation: the leak you only see in production
 
@@ -230,11 +252,18 @@ flowchart LR
 Core ships the **codec** and the exchange, not a session system (RFC 12):
 
 ```ts
-import { getRequestEvent, parseCookieHeader, serializeCookie } from "@solidjs/web";
+import { getRequestEvent, parseCookieHeader, serializeCookie } from '@solidjs/web';
 const event = getRequestEvent()!;
-const { theme } = parseCookieHeader(event.request.headers.get("cookie"));
-event.response.headers.append("set-cookie",
-  serializeCookie("session", token, { httpOnly: true, secure: true, sameSite: "lax", maxAge: 604800 }));
+const { theme } = parseCookieHeader(event.request.headers.get('cookie'));
+event.response.headers.append(
+  'set-cookie',
+  serializeCookie('session', token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'lax',
+    maxAge: 604800,
+  }),
+);
 ```
 
 Proved: values are percent-encoded and round-trip any string (`"a b;c=d"`); attributes are emitted exactly when given; `Path=/` is the only default; deleting is expiring (`maxAge: 0`). Reads see only what the client sent: a `Set-Cookie` appended in this request does not read back. Multiple `Set-Cookie` headers are never folded into one.
@@ -247,24 +276,24 @@ Sessions are deliberately app-layer. RFC 12's recipe composes a signed-cookie li
 
 ```ts
 export async function addTodo(title: string) {
-  "use server";
+  'use server';
   await db.insert(title);
 }
 ```
 
-With `serverFunctions` (or start mode) enabled, the compiler extracts the body to the server build, registers it, and replaces it on the client with a fetch-backed reference. Everything referenced only inside the body (database handles, schemas) is dead-code-eliminated from the client: **the directive boundary is the privacy mechanism**. Function-level directives register the raw function (wrappers around them like `GET(...)` affect only the client transport); module-level `"use server"` registers each export's *evaluated value*, so server-side wrappers (auth, validation) apply to every call path.
+With `serverFunctions` (or start mode) enabled, the compiler extracts the body to the server build, registers it, and replaces it on the client with a fetch-backed reference. Everything referenced only inside the body (database handles, schemas) is dead-code-eliminated from the client: **the directive boundary is the privacy mechanism**. Function-level directives register the raw function (wrappers around them like `GET(...)` affect only the client transport); module-level `"use server"` registers each export's _evaluated value_, so server-side wrappers (auth, validation) apply to every call path.
 
 ### 5.2 The runtime and the wire
 
 ```ts
-import { handleServerFunctionRequest } from "@solidjs/web/server-functions/server";
-if (url.pathname.startsWith("/_server")) return handleServerFunctionRequest(request);
+import { handleServerFunctionRequest } from '@solidjs/web/server-functions/server';
+if (url.pathname.startsWith('/_server')) return handleServerFunctionRequest(request);
 ```
 
 Start mode mounts this for you. Properties proved in the suite (calls go through the real client transport, with `configureServerFunctionsClient({ fetch })` routing them into the real handler):
 
 | Property | Evidence |
-|---|---|
+| --- | --- |
 | default endpoint `/_server`, call data address `/_server/data/<id>` | the request event's pathname starts with `/_server` |
 | calls run inside a request-event scope (`provideEvent`) | `getRequestEvent()` works in the function |
 | **results** are encoded with seroval: `Date`, `Map`, … survive | yes |
@@ -283,7 +312,7 @@ Arguments arrive from the network: they are **untrusted** whatever their TypeScr
 
 ### 5.4 Server components (experimental)
 
-A server component is *a function returned from a server function*; there is no `"use client"`. Enable with `serverFunctions: { components: true }`; the client consumes it through `dynamicComponent`/`dynamic`. Content travels as HTML, values as data records, nothing as both ("single-copy"). Treat it as an RC-era experiment; it is out of scope for exercises here.
+A server component is _a function returned from a server function_; there is no `"use client"`. Enable with `serverFunctions: { components: true }`; the client consumes it through `dynamicComponent`/`dynamic`. Content travels as HTML, values as data records, nothing as both ("single-copy"). Treat it as an RC-era experiment; it is out of scope for exercises here.
 
 ## 6. Routing
 
@@ -292,7 +321,7 @@ A server component is *a function returned from a server function*; there is no 
 ### 6.1 Failure modes proved by negative tests
 
 | Failure | Test |
-|---|---|
+| --- | --- |
 | module-scope state shared across requests | "module-scope state leaks between concurrent requests" (server suite) |
 | hydration data mismatch | "a data mismatch is not repaired…" (round-trip suite) |
 | foreign HTML at the hydration root | "structurally foreign HTML is not claimed…" |
@@ -303,21 +332,21 @@ A server component is *a function returned from a server function*; there is no 
 ## 7. Then vs now
 
 | 1.x / SolidStart 1 | 2.0 RC | Migration |
-|---|---|---|
+| --- | --- | --- |
 | `@solidjs/start` (Vinxi/Nitro), `app.config.ts` | `@solidjs/vite-plugin` `start: true` | do **not** upgrade `@solidjs/start` to 2.x for Solid 2; switch to start mode |
 | `vite-plugin-solid` | `@solidjs/vite-plugin` (renamed) | swap dependency and import |
-| `renderToStringAsync` | `await renderToStream(...)` | |
+| `renderToStringAsync` | `await renderToStream(...)` |  |
 | `"use server"` via SolidStart / Vinxi | core runtime + plugin compilation | `handleServerFunctionRequest` for custom servers |
-| `getRequestEvent` from `solid-js/web` | `@solidjs/web`; scope via `@solidjs/web/storage` | |
+| `getRequestEvent` from `solid-js/web` | `@solidjs/web`; scope via `@solidjs/web/storage` |  |
 | `<HttpStatusCode>`, `<HttpHeader>` components (Start) | `httpStatus()` / `httpHeader()` functions | shell-time only |
-| `createResource({ ssrLoadFrom, deferStream })` | `ssrSource`, `deferStream` on any computation | |
-| `clientOnly` from `@solidjs/start` | `clientOnly` from `@solidjs/web` | |
+| `createResource({ ssrLoadFrom, deferStream })` | `ssrSource`, `deferStream` on any computation |  |
+| `clientOnly` from `@solidjs/start` | `clientOnly` from `@solidjs/web` |  |
 | `@solidjs/router` 0.x/1.x `cache`, `createAsync` | router 2.0-next on core async | follow router migration notes |
 
 ### 7.1 Then vs now: hydration and streaming details
 
-| | 1.x | 2.0 RC (observed in this track's tests) |
-|---|---|---|
+|  | 1.x | 2.0 RC (observed in this track's tests) |
+| --- | --- | --- |
 | Hydration key attribute | `data-hk` | `_hk` |
 | Async value transfer | resources serialized for hydration (seroval since 1.8) | every async computation serialized as a seroval record (`_$HY.r[id]`), adopted by default (`ssrSource: "server"`) |
 | Streaming swap | `<template>` + script per `<Suspense>` resolution | `<template id="pl-N">` placeholder, `<template id="N">` content, `$df(N)` swap |
@@ -330,7 +359,7 @@ A server component is *a function returned from a server function*; there is no 
 ## 8. Production failure modes
 
 | Symptom | Cause | Fix |
-|---|---|---|
+| --- | --- | --- |
 | Users see each other's data | module-scope state on the server | providers / request event |
 | "Multiple Solid instances", nothing updates | `@solidjs/start@2` (Solid 1.9) installed beside Solid 2 | remove it; use start mode; dedupe `solid-js` |
 | Duplicate API calls after hydration | non-fake `await` before the request in a hydrated compute | start the request synchronously |

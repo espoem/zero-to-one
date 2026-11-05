@@ -1,4 +1,4 @@
-import { defineSemanticTokens } from '@pandacss/dev'
+import { defineSemanticTokens } from '@pandacss/dev';
 
 /**
  * Semantic tokens: intent-named aliases whose value depends on a condition.
@@ -23,4 +23,4 @@ export const semanticTokens = defineSemanticTokens({
   spacing: {
     gutter: { value: { base: '{spacing.4}', md: '{spacing.6}' } },
   },
-})
+});

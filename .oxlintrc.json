@@ -1,0 +1,68 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "unicorn", "oxc", "import"],
+  "categories": {
+    "correctness": "error"
+  },
+  "env": {
+    "builtin": true,
+    "es2026": true,
+    "node": true,
+    "browser": true
+  },
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "**/styled-system/**",
+    "**/dist/**",
+    "technologies/panda-css/examples/fixtures/negative/**"
+  ],
+  "rules": {
+    "no-unused-vars": [
+      "error",
+      {
+        "varsIgnorePattern": "^(_|Test|Assert|Expect|Check)",
+        "argsIgnorePattern": "^_",
+        "caughtErrors": "none",
+        "ignoreRestSiblings": true
+      }
+    ],
+    "unicorn/no-new-array": "off"
+  },
+  "overrides": [
+    {
+      "files": ["languages/javascript/examples/**"],
+      "rules": {
+        "no-compare-neg-zero": "off",
+        "no-constant-binary-expression": "off",
+        "no-eval": "off",
+        "no-import-assign": "off",
+        "no-sparse-arrays": "off",
+        "no-this-before-super": "off",
+        "no-unreachable": "off",
+        "no-unsafe-finally": "off",
+        "no-unused-expressions": "off",
+        "use-isnan": "off",
+        "oxc/const-comparisons": "off",
+        "unicorn/no-thenable": "off",
+        "unicorn/no-unnecessary-await": "off",
+        "unicorn/no-useless-spread": "off"
+      }
+    },
+    {
+      "files": [
+        "technologies/solidjs/**/*.tsx",
+        "languages/typescript/examples/12-typing-ui-frameworks/solid/**"
+      ],
+      "rules": {
+        "no-unassigned-vars": "off",
+        "no-unused-expressions": "off"
+      }
+    },
+    {
+      "files": ["languages/javascript/examples/10-resource-management-temporal.test.js"],
+      "rules": {
+        "no-unused-vars": "off"
+      }
+    }
+  ]
+}

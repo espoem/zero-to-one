@@ -7,7 +7,7 @@ A concise, high-density reference sheet for PostgreSQL 18 covering command-line 
 ## 1. Client CLI (`psql`) Commands
 
 | Command | Description | Example |
-| :--- | :--- | :--- |
+| :-- | :-- | :-- |
 | `\l` | List all databases | `\l` or `\l+` (detailed with size) |
 | `\c <db> [user]` | Connect to a database / user | `\c training_db app_user` |
 | `\dt[+] [pattern]` | List tables in current database | `\dt+ public.*` |
@@ -27,6 +27,7 @@ A concise, high-density reference sheet for PostgreSQL 18 covering command-line 
 ## 2. PostgreSQL 18 Data Definition Language (DDL)
 
 ### Tables, Identity & PostgreSQL 18 `uuidv7()`
+
 ```sql
 CREATE TABLE accounts (
     id UUID PRIMARY KEY DEFAULT uuidv7(),
@@ -39,6 +40,7 @@ CREATE TABLE accounts (
 ```
 
 ### PostgreSQL 18 Virtual vs Stored Generated Columns
+
 ```sql
 CREATE TABLE line_items (
     item_id UUID PRIMARY KEY DEFAULT uuidv7(),
@@ -53,6 +55,7 @@ CREATE TABLE line_items (
 ```
 
 ### PostgreSQL 18 Temporal Constraints (`WITHOUT OVERLAPS`)
+
 ```sql
 CREATE TABLE room_bookings (
     booking_id UUID DEFAULT uuidv7(),
@@ -68,22 +71,24 @@ CREATE TABLE room_bookings (
 ## 3. Advanced DML & Modern SQL Constructs
 
 ### PostgreSQL 18 `RETURNING OLD / NEW`
+
 ```sql
 -- Atomically capture previous state and new state in an update
 UPDATE subscriptions
 SET status = 'active', renewed_at = now()
 WHERE id = '018b3d88-7522-7901-b65a-8b1e42a98f12'
-RETURNING 
-    OLD.status AS previous_status, 
+RETURNING
+    OLD.status AS previous_status,
     NEW.status AS current_status,
     NEW.renewed_at;
 ```
 
 ### Atomic Upsert (`INSERT ... ON CONFLICT`)
+
 ```sql
 INSERT INTO user_preferences (user_id, theme, notifications_enabled)
 VALUES ('018b3d88-7522-7901-b65a-8b1e42a98f12', 'dark', true)
-ON CONFLICT (user_id) 
+ON CONFLICT (user_id)
 DO UPDATE SET
     theme = EXCLUDED.theme,
     notifications_enabled = EXCLUDED.notifications_enabled,
@@ -91,6 +96,7 @@ DO UPDATE SET
 ```
 
 ### Chained & Data-Modifying CTEs
+
 ```sql
 WITH archived_orders AS (
     DELETE FROM active_orders
@@ -98,11 +104,12 @@ WITH archived_orders AS (
     RETURNING order_id, customer_id, total_amount, completed_at
 )
 INSERT INTO order_history (order_id, customer_id, total_amount, completed_at)
-SELECT order_id, customer_id, total_amount, completed_at 
+SELECT order_id, customer_id, total_amount, completed_at
 FROM archived_orders;
 ```
 
 ### Hierarchical Recursive CTE
+
 ```sql
 WITH RECURSIVE org_chart AS (
     -- Anchor Member
@@ -115,8 +122,8 @@ WITH RECURSIVE org_chart AS (
     FROM employees e
     INNER JOIN org_chart o ON e.manager_id = o.employee_id
 )
-SELECT depth, employee_id, full_name 
-FROM org_chart 
+SELECT depth, employee_id, full_name
+FROM org_chart
 ORDER BY depth, full_name;
 ```
 
@@ -125,7 +132,7 @@ ORDER BY depth, full_name;
 ## 4. Window Functions Reference
 
 ```sql
-SELECT 
+SELECT
     department_id,
     employee_name,
     salary,
@@ -138,14 +145,14 @@ SELECT
     LEAD(salary, 1, 0) OVER w AS next_salary,
     -- Running Total (Window Frame)
     SUM(salary) OVER (
-        PARTITION BY department_id 
-        ORDER BY salary DESC 
+        PARTITION BY department_id
+        ORDER BY salary DESC
         ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
     ) AS running_dept_total,
     -- Moving Average (Sliding Frame)
     AVG(salary) OVER (
-        PARTITION BY department_id 
-        ORDER BY salary DESC 
+        PARTITION BY department_id
+        ORDER BY salary DESC
         ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING
     ) AS moving_avg
 FROM employee_salaries
@@ -157,7 +164,7 @@ WINDOW w AS (PARTITION BY department_id ORDER BY salary DESC);
 ## 5. JSONB Query & Indexing Operators
 
 | Operator | Return Type | Description | Example |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | `->` | `jsonb` | Extract JSON element by key or array index | `data->'address'` |
 | `->>` | `text` | Extract JSON element as string | `data->>'city'` |
 | `#>` | `jsonb` | Extract nested object by path array | `data#>'{user, address, zip}'` |
@@ -171,6 +178,7 @@ WINDOW w AS (PARTITION BY department_id ORDER BY salary DESC);
 | `-` | `jsonb` | Delete key or array index from JSONB | `data - 'temporary_token'` |
 
 ### JSONB GIN Indexing
+
 ```sql
 -- Standard GIN: supports @>, ?, ?|, ?& operators
 CREATE INDEX idx_users_meta ON users USING GIN (metadata);
@@ -184,6 +192,7 @@ CREATE INDEX idx_users_meta_path ON users USING GIN (metadata jsonb_path_ops);
 ## 6. Query Optimization, EXPLAIN & Indexing
 
 ### Reading Execution Plans
+
 ```sql
 EXPLAIN (ANALYZE, BUFFERS, SETTINGS, COSTS, TIMING, SUMMARY)
 SELECT u.id, u.email, count(o.id)
@@ -194,30 +203,32 @@ GROUP BY u.id, u.email;
 ```
 
 ### PostgreSQL 18 B-Tree Skip Scan Indexing
+
 ```sql
 -- Composite index where tenant_id has low cardinality (e.g. 10 tenants, 1,000,000 logs)
 CREATE INDEX idx_audit_tenant_created ON audit_logs (tenant_id, created_at);
 
 -- In PostgreSQL 18, Skip Scan automatically leverages this index even when tenant_id is omitted!
-SELECT * FROM audit_logs 
-WHERE created_at >= '2026-10-01' 
+SELECT * FROM audit_logs
+WHERE created_at >= '2026-10-01'
 ORDER BY created_at DESC LIMIT 50;
 ```
 
 ### Advanced Indexes
+
 ```sql
 -- Covering Index (facilitates Index-Only Scans)
-CREATE INDEX idx_orders_user_covering 
-ON orders (user_id) 
+CREATE INDEX idx_orders_user_covering
+ON orders (user_id)
 INCLUDE (total_amount, order_status);
 
 -- Partial Index
-CREATE INDEX idx_unprocessed_events 
-ON domain_events (created_at) 
+CREATE INDEX idx_unprocessed_events
+ON domain_events (created_at)
 WHERE processed = false;
 
 -- Functional / Expression Index
-CREATE INDEX idx_users_lower_email 
+CREATE INDEX idx_users_lower_email
 ON users (lower(email));
 ```
 
@@ -237,7 +248,7 @@ LIMIT 1;
 
 -- Process work in application code...
 
-UPDATE task_queue 
+UPDATE task_queue
 SET status = 'completed', completed_at = clock_timestamp()
 WHERE id = :task_id;
 COMMIT;
@@ -257,7 +268,7 @@ CREATE TABLE document_embeddings (
 );
 
 -- Fast Approximate Nearest Neighbor (ANN) HNSW Index
-CREATE INDEX idx_doc_embeddings_hnsw 
+CREATE INDEX idx_doc_embeddings_hnsw
 ON document_embeddings USING hnsw (embedding vector_cosine_ops)
 WITH (m = 16, ef_construction = 64);
 
@@ -301,7 +312,7 @@ WHERE recorded_at >= '2026-10-15' AND recorded_at < '2026-10-20';
 
 ```sql
 -- Identify tables with high dead tuple ratio (bloat risk)
-SELECT 
+SELECT
     schemaname,
     relname,
     n_live_tup,
@@ -314,7 +325,7 @@ WHERE n_dead_tup > 1000
 ORDER BY dead_tuple_pct DESC;
 
 -- Check distance to transaction ID wraparound
-SELECT 
+SELECT
     datname,
     age(datfrozenxid) AS age_datfrozenxid,
     ROUND(100.0 * age(datfrozenxid) / 2147483648, 2) AS wraparound_pct
@@ -381,7 +392,7 @@ recovery_target_action = 'promote'
 
 ```sql
 -- Primary: monitor active streaming replication standbys and lag
-SELECT 
+SELECT
     client_addr,
     application_name,
     state,
@@ -393,7 +404,7 @@ SELECT
 FROM pg_stat_replication;
 
 -- Primary: inspect replication slots (ensure active = true to avoid WAL retention bloat)
-SELECT 
+SELECT
     slot_name,
     plugin,
     slot_type,
@@ -403,7 +414,7 @@ SELECT
 FROM pg_replication_slots;
 
 -- Standby: verify recovery status and replay LSN
-SELECT 
+SELECT
     pg_is_in_recovery() AS in_recovery,
     pg_last_wal_receive_lsn() AS receive_lsn,
     pg_last_wal_replay_lsn() AS replay_lsn,

@@ -94,7 +94,7 @@ export class BufferPoolManager {
     // Enforce WAL Invariant: flushed_lsn >= page_lsn
     if (this.flushedLsn < frame.pageLsn) {
       throw new Error(
-        `WAL Invariant Violation: flushedLsn (${this.flushedLsn}) < pageLsn (${frame.pageLsn}). Cannot flush dirty page before WAL!`
+        `WAL Invariant Violation: flushedLsn (${this.flushedLsn}) < pageLsn (${frame.pageLsn}). Cannot flush dirty page before WAL!`,
       );
     }
 
@@ -178,7 +178,7 @@ describe('Buffer Pool Manager & CLOCK Replacement Policy', () => {
     bpm.flushedLsn = 400n;
     assert.throws(
       () => bpm.flushPage(100),
-      /WAL Invariant Violation.*Cannot flush dirty page before WAL/
+      /WAL Invariant Violation.*Cannot flush dirty page before WAL/,
     );
 
     // Once WAL is fsynced up to LSN 500, flush succeeds

@@ -32,7 +32,9 @@ type JsonValue = str | int | float | bool | None | list[JsonValue] | dict[str, J
 ```
 
 ### 1.1 Type Parameter Defaults (PEP 696)
+
 In Python 3.13+, **PEP 696** allows type parameters to declare default types, mirroring default arguments in function signatures:
+
 ```python
 class Response[Data = dict[str, object], Error = str]:
     def __init__(self, data: Data | None, error: Error | None = None) -> None:
@@ -63,6 +65,7 @@ classDiagram
 ```
 
 ### 2.1 The Three Variance Rules
+
 1. **Invariance**: $F[Dog]$ has NO subtyping relationship to $F[Animal]$. A mutable container **must** be invariant:
    ```python
    dogs: list[Dog] = [Dog()]
@@ -84,8 +87,8 @@ classDiagram
    ```
 
 ### 2.2 PEP 695 Automatic Variance Inference
-In legacy Python, developers had to manually deduce and specify variance: `T_co = TypeVar("T_co", covariant=True)`.
-Under **PEP 695**, static type checkers automatically infer the variance of generic classes based on how the type parameters are used across attributes and method signatures! If a parameter is used exclusively in return types, it is inferred as covariant; if used in both parameter and return positions, it is inferred as invariant.
+
+In legacy Python, developers had to manually deduce and specify variance: `T_co = TypeVar("T_co", covariant=True)`. Under **PEP 695**, static type checkers automatically infer the variance of generic classes based on how the type parameters are used across attributes and method signatures! If a parameter is used exclusively in return types, it is inferred as covariant; if used in both parameter and return positions, it is inferred as invariant.
 
 ---
 
@@ -158,7 +161,9 @@ res = compute(10, "label", debug=True)
 In Python, functions that check types at runtime are common (e.g. `is_string_list(val)`). However, standard boolean functions do not inform the static type checker that a variable has been narrowed inside an `if` branch.
 
 ### 5.1 The Flaw of `TypeGuard` (PEP 647)
+
 `TypeGuard[T]` narrows the type in the `if` (positive) branch, but does **not** narrow the type in the `else` (negative) branch:
+
 ```python
 from typing import TypeGuard
 
@@ -175,6 +180,7 @@ else:
 ```
 
 ### 5.2 The Solution: `TypeIs` (PEP 742 / Python 3.13+)
+
 `TypeIs[T]` enforces strict bidirectional narrowing. In the `if` branch, the type is narrowed to $T$; in the `else` branch, the type is narrowed by subtracting $T$ ($Original \setminus T$):
 
 ```python
@@ -215,8 +221,7 @@ arr: Array[int, int, str] = Array((1920, 1080, "RGB"))
 
 ## 7. Function Overloading: `@typing.overload`
 
-When a function's return type depends dynamically on the types or literal values of its input arguments, defining a single signature forces developers to use vague unions (`Union[str, bytes]`).
-`@overload` allows developers to declare multiple distinct type signatures for static analysis, terminated by a single runtime implementation:
+When a function's return type depends dynamically on the types or literal values of its input arguments, defining a single signature forces developers to use vague unions (`Union[str, bytes]`). `@overload` allows developers to declare multiple distinct type signatures for static analysis, terminated by a single runtime implementation:
 
 ```python
 from typing import Literal, overload
@@ -247,40 +252,39 @@ raw: bytes = read_data(True)
 <details>
 <summary>1. Why is `list[Dog]` not a subtype of `list[Animal]` in Python's type system?</summary>
 
-**Answer:**
-Because `list` is a mutable container. If `list[Dog]` were considered a subtype of `list[Animal]`, the Liskov Substitution Principle would allow a `list[Dog]` to be passed to any function expecting a `list[Animal]`. That function could legally execute `animals.append(Cat())`. Since `animals` and the original list reference the same physical heap object, the `list[Dog]` would now contain a `Cat`, causing runtime `AttributeError`s when the caller attempts to invoke `.bark()` on all items in the list. To preserve type safety, mutable containers must always be invariant.
+**Answer:** Because `list` is a mutable container. If `list[Dog]` were considered a subtype of `list[Animal]`, the Liskov Substitution Principle would allow a `list[Dog]` to be passed to any function expecting a `list[Animal]`. That function could legally execute `animals.append(Cat())`. Since `animals` and the original list reference the same physical heap object, the `list[Dog]` would now contain a `Cat`, causing runtime `AttributeError`s when the caller attempts to invoke `.bark()` on all items in the list. To preserve type safety, mutable containers must always be invariant.
 </details>
 
 <details>
 <summary>2. What is the fundamental difference between `Protocol` and `abc.ABC`?</summary>
 
 **Answer:**
+
 - `abc.ABC` enforces **nominal subtyping**: a class is recognized as an instance of the ABC only if it explicitly declares the ABC in its inheritance list (`class Service(BaseService):`). It couples the implementation to the interface's module.
 - `typing.Protocol` enforces **structural subtyping** (static duck typing): any class that implements the required methods and attributes with matching signatures is automatically accepted by static type checkers, without requiring any inheritance relationship or dependency on the protocol's package.
+
 </details>
 
 <details>
 <summary>3. Why was `TypeIs` introduced in PEP 742 to replace `TypeGuard`?</summary>
 
-**Answer:**
-`TypeGuard[T]` (PEP 647) provided one-way narrowing: it narrowed the type in the `if` (truthy) branch to $T$, but was forbidden from narrowing the type in the `else` (falsy) branch. This was because `TypeGuard` did not require that *all* non-$T$ items return `False` (for example, a typeguard could narrow `float` to `int` if it checked `isinstance(x, int)`, but a float could still be equal to an int).
-`TypeIs[T]` (PEP 742) enforces a strict equivalence: `is_T(x) == True` if and only if $x \in T$. This mathematical guarantee enables type checkers to narrow bidirectionally: in the `if` branch, $x$ is $T$; in the `else` branch, $x$ is narrowed by removing $T$ from its original union ($Original \setminus T$), preventing false positive type errors in negative branches.
+**Answer:** `TypeGuard[T]` (PEP 647) provided one-way narrowing: it narrowed the type in the `if` (truthy) branch to $T$, but was forbidden from narrowing the type in the `else` (falsy) branch. This was because `TypeGuard` did not require that _all_ non-$T$ items return `False` (for example, a typeguard could narrow `float` to `int` if it checked `isinstance(x, int)`, but a float could still be equal to an int). `TypeIs[T]` (PEP 742) enforces a strict equivalence: `is_T(x) == True` if and only if $x \in T$. This mathematical guarantee enables type checkers to narrow bidirectionally: in the `if` branch, $x$ is $T$; in the `else` branch, $x$ is narrowed by removing $T$ from its original union ($Original \setminus T$), preventing false positive type errors in negative branches.
 </details>
 
 <details>
 <summary>4. How does `ParamSpec` solve the decorator typing problem?</summary>
 
-**Answer:**
-Before `ParamSpec`, typing a decorator using `Callable[..., R]` stripped all parameter names, default argument values, and positional/keyword constraints from the wrapped function, destroying IDE autocomplete and static type safety at call sites.
-`ParamSpec` represents an entire parameter specification as a single type variable. By typing the decorator as `Callable[P, R] -> Callable[P, R]`, the type checker preserves the exact parameter signatures, argument names, and types of the wrapped function, allowing decorators to be applied transparently while retaining 100% type safety.
+**Answer:** Before `ParamSpec`, typing a decorator using `Callable[..., R]` stripped all parameter names, default argument values, and positional/keyword constraints from the wrapped function, destroying IDE autocomplete and static type safety at call sites. `ParamSpec` represents an entire parameter specification as a single type variable. By typing the decorator as `Callable[P, R] -> Callable[P, R]`, the type checker preserves the exact parameter signatures, argument names, and types of the wrapped function, allowing decorators to be applied transparently while retaining 100% type safety.
 </details>
 
 <details>
 <summary>5. What are the key architectural improvements introduced by PEP 695 in Python 3.12+?</summary>
 
 **Answer:**
+
 1. **Clean Syntax**: Replaced verbose `TypeVar("T")` and `Generic[T]` boilerplate with first-class language syntax: `def func[T](x: T) -> T:` and `class Box[T]:`.
 2. **Explicit Type Aliases**: Introduced the `type Alias[T] = ...` statement, replacing ambiguous variable assignments (`Alias = Union[...]`).
 3. **Automatic Variance Inference**: Type checkers infer whether a type parameter is covariant, contravariant, or invariant from its usage in class definitions, eliminating manual variance guessing.
 4. **Scoped Type Parameters**: Type parameters declared on a function or class are scoped strictly to that code block, preventing accidental leakage or unintended sharing of type variables across distinct functions.
+
 </details>

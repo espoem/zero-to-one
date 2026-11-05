@@ -75,9 +75,7 @@ describe('Cache Stampede Mitigation & The XFetch Algorithm', () => {
 
     // 100 concurrent requests arrive at time 6001 (1ms after expiration)
     const concurrentRequests = 100;
-    await Promise.all(
-      Array.from({ length: concurrentRequests }, () => readNaive('hot_key', 6001))
-    );
+    await Promise.all(Array.from({ length: concurrentRequests }, () => readNaive('hot_key', 6001)));
 
     // Stampede failure: all 100 concurrent requests missed simultaneously and hit the database!
     assert.equal(dbQueries, 101);

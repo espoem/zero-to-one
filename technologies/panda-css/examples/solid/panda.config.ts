@@ -1,5 +1,5 @@
-import { defineConfig } from '@pandacss/dev'
-import { acmePreset } from '../system/preset.ts'
+import { defineConfig } from '@pandacss/dev';
+import { acmePreset } from '../system/preset.ts';
 
 /**
  * Solid app config (Modules 02, 09). Same preset as React; only `jsxFramework` differs. Presets are explicit in v2: base (utilities,
@@ -19,4 +19,4 @@ export default defineConfig({
   outdir: 'styled-system',
   // `.js` in generated imports, so Node can render the components in SSR tests.
   forceImportExtension: true,
-})
+});

@@ -2,9 +2,9 @@
 
 > **Track:** `technologies/react` · **React:** 19.3.1 · **Proofs:** [`examples/01-elements/elements.test.tsx`](../examples/01-elements/elements.test.tsx)
 >
-> **Typing JSX** (the `JSX` namespace, `jsxImportSource`, `ReactNode` vs `ReactElement`, `ComponentProps<'button'>`) is owned by the TypeScript track: see [TypeScript module 12](../../../languages/typescript/modules/12-typing-ui-frameworks.md). This module covers what JSX *does at runtime*.
+> **Typing JSX** (the `JSX` namespace, `jsxImportSource`, `ReactNode` vs `ReactElement`, `ComponentProps<'button'>`) is owned by the TypeScript track: see [TypeScript module 12](../../../languages/typescript/modules/12-typing-ui-frameworks.md). This module covers what JSX _does at runtime_.
 
-React's whole programming model rests on one idea: **a component is a function from inputs to a description of UI, and React — not your code — decides when to call it and what to do with the description.** This module makes that idea precise. We start with the data structure your JSX produces (the *element*), follow it through the compiler and the runtime, define the contracts React expects from your components (purity, immutability, identity), and finish with the render → commit pipeline that the rest of the track takes apart piece by piece.
+React's whole programming model rests on one idea: **a component is a function from inputs to a description of UI, and React — not your code — decides when to call it and what to do with the description.** This module makes that idea precise. We start with the data structure your JSX produces (the _element_), follow it through the compiler and the runtime, define the contracts React expects from your components (purity, immutability, identity), and finish with the render → commit pipeline that the rest of the track takes apart piece by piece.
 
 ---
 
@@ -14,17 +14,13 @@ React's whole programming model rests on one idea: **a component is a function f
 
 Let **Props** be the set of finite maps from string keys to JavaScript values, and **Type** be the union of host types (strings such as `"div"`), component types (functions or classes), and React's built-in special types (`Fragment`, `Suspense`, `Activity`, `ViewTransition`, context objects, `lazy` and `memo` wrappers).
 
-> **Definition 1.1 (Element).** A React element is an immutable record
-> $e = (\tau, k, p)$ with $\tau \in \text{Type}$, $k \in \text{String} \cup \{\bot\}$, $p \in \text{Props}$,
-> tagged with the brand `$$typeof = Symbol.for('react.transitional.element')`.
+> **Definition 1.1 (Element).** A React element is an immutable record $e = (\tau, k, p)$ with $\tau \in \text{Type}$, $k \in \text{String} \cup \{\bot\}$, $p \in \text{Props}$, tagged with the brand `$$typeof = Symbol.for('react.transitional.element')`.
 
-> **Definition 1.2 (Component).** A function component is a function
-> $C : \text{Props} \times \Sigma \times \Gamma \to \text{Node}$ where $\Sigma$ is the component's own state (hooks) and $\Gamma$ is the context visible at its position. **Node** is the recursive type
-> $\text{Node} ::= \text{Element} \mid \text{string} \mid \text{number} \mid \text{bigint} \mid \text{boolean} \mid \text{null} \mid \text{undefined} \mid \text{Iterable}\langle\text{Node}\rangle \mid \text{Promise}\langle\text{Node}\rangle$.
+> **Definition 1.2 (Component).** A function component is a function $C : \text{Props} \times \Sigma \times \Gamma \to \text{Node}$ where $\Sigma$ is the component's own state (hooks) and $\Gamma$ is the context visible at its position. **Node** is the recursive type $\text{Node} ::= \text{Element} \mid \text{string} \mid \text{number} \mid \text{bigint} \mid \text{boolean} \mid \text{null} \mid \text{undefined} \mid \text{Iterable}\langle\text{Node}\rangle \mid \text{Promise}\langle\text{Node}\rangle$.
 
-> **Definition 1.3 (Purity / idempotence).** React requires that for fixed $(p, \sigma, \gamma)$, evaluating $C(p, \sigma, \gamma)$ any number of times returns structurally equal output and performs no observable side effect outside the component's own fresh locals. React's documentation calls these the [Rules of React](https://react.dev/reference/rules): *components and hooks must be pure*, *React calls components and hooks*, *rules of hooks*.
+> **Definition 1.3 (Purity / idempotence).** React requires that for fixed $(p, \sigma, \gamma)$, evaluating $C(p, \sigma, \gamma)$ any number of times returns structurally equal output and performs no observable side effect outside the component's own fresh locals. React's documentation calls these the [Rules of React](https://react.dev/reference/rules): _components and hooks must be pure_, _React calls components and hooks_, _rules of hooks_.
 
-> **Definition 1.4 (Identity of a component instance).** A component instance (its state, its DOM, its effects) lives at a *position* in the tree. Two renders refer to the same instance iff, along the path from the root, every step matches on **(parent position, element type, key — or index when no key)**. Changing any of the three destroys the old instance and creates a new one.
+> **Definition 1.4 (Identity of a component instance).** A component instance (its state, its DOM, its effects) lives at a _position_ in the tree. Two renders refer to the same instance iff, along the path from the root, every step matches on **(parent position, element type, key — or index when no key)**. Changing any of the three destroys the old instance and creates a new one.
 
 Everything React does is a consequence of these four definitions:
 
@@ -50,12 +46,12 @@ The rest of the track zooms into each box: render/reconcile (Modules 02–03), c
 
 ### 2.1 What JSX is
 
-JSX is not part of ECMAScript. It is a syntax extension, specified informally by the [JSX draft spec](https://facebook.github.io/jsx/), that a compiler (TypeScript, Babel, SWC, oxc, esbuild) lowers to ordinary function calls *before* the code runs. The browser never sees JSX.
+JSX is not part of ECMAScript. It is a syntax extension, specified informally by the [JSX draft spec](https://facebook.github.io/jsx/), that a compiler (TypeScript, Babel, SWC, oxc, esbuild) lowers to ordinary function calls _before_ the code runs. The browser never sees JSX.
 
 There are two lowering strategies:
 
 | Strategy | Configuration | Output | Status |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | **Classic** | `"jsx": "react"` (TS), `runtime: "classic"` (Babel) | `React.createElement(type, props, ...children)` | Legacy; requires `React` in scope |
 | **Automatic** | `"jsx": "react-jsx"` (TS), `runtime: "automatic"` | `jsx(type, props, key)` / `jsxs(...)` from `react/jsx-runtime`; `jsxDEV` from `react/jsx-dev-runtime` in development | Default since React 17 (2020) |
 
@@ -74,18 +70,18 @@ const p = <p>one</p>;
 
 ```js
 // Lowered (production, automatic runtime) — verified by the test "JSX compiles to jsx/jsxs calls…"
-import { jsx, jsxs } from "react/jsx-runtime";
+import { jsx, jsxs } from 'react/jsx-runtime';
 
-const list = jsxs("ul", { id: "x", children: [jsx("li", {}), items] }, "k");
-const p = jsx("p", { children: "one" });
+const list = jsxs('ul', { id: 'x', children: [jsx('li', {}), items] }, 'k');
+const p = jsx('p', { children: 'one' });
 ```
 
 Four rules fall out of the transform, and each has consequences:
 
 1. **`children` becomes a prop.** A single child is stored as the value itself; several children become an array. That is why `props.children` is sometimes an array and sometimes not, and why [`Children`](https://react.dev/reference/react/Children) utilities exist.
 2. **`key` is pulled out of props** and passed positionally. Components can never read `props.key` (DEV installs a warning getter that returns `undefined`). If you need the ID inside the component, pass it twice: `<Row key={id} id={id} />`.
-3. **`jsxs` vs `jsx`** encodes whether the children array is *static* (written literally in the JSX). For a static array the compiler already knows each child's position is fixed, so React does not demand keys and does not warn. For `{items}` — a dynamic array — React checks for keys at runtime.
-4. **A `key` after a spread** (`<p {...rest} key="z" />`) falls back to `createElement`, because the compiler cannot know whether `rest` also contains a `key`. The test "a key after a spread falls back to createElement" proves this. Put `key` *before* spreads.
+3. **`jsxs` vs `jsx`** encodes whether the children array is _static_ (written literally in the JSX). For a static array the compiler already knows each child's position is fixed, so React does not demand keys and does not warn. For `{items}` — a dynamic array — React checks for keys at runtime.
+4. **A `key` after a spread** (`<p {...rest} key="z" />`) falls back to `createElement`, because the compiler cannot know whether `rest` also contains a `key`. The test "a key after a spread falls back to createElement" proves this. Put `key` _before_ spreads.
 
 In development the transform emits `jsxDEV(type, props, key, isStaticChildren, source, self)` from `react/jsx-dev-runtime`. React 19's `jsxDEV` reads only the first four arguments: instead of the compiler-supplied `__source`/`__self`, it captures a stack when the element is created and uses it for [owner stacks](https://react.dev/reference/react/captureOwnerStack) in warnings and error overlays.
 
@@ -96,11 +92,11 @@ The production `jsx`/`jsxs` exports are [`jsxProd`](https://github.com/react/rea
 ```js
 export function jsxProd(type, config, maybeKey) {
   let key = null;
-  if (maybeKey !== undefined) key = '' + maybeKey;     // positional key from the compiler
-  if (hasValidKey(config)) key = '' + config.key;      // key inside a spread wins
+  if (maybeKey !== undefined) key = '' + maybeKey; // positional key from the compiler
+  if (hasValidKey(config)) key = '' + config.key; // key inside a spread wins
   let props;
   if (!('key' in config)) {
-    props = config;                                    // zero-copy: the compiler's object IS props
+    props = config; // zero-copy: the compiler's object IS props
   } else {
     props = {};
     for (const propName in config) if (propName !== 'key') props[propName] = config[propName];
@@ -118,15 +114,16 @@ Three consequences you can test (in `source-level behaviours…`):
 3. **No freezing in production.** The child-process test also shows `Object.isFrozen(element) === false` without `NODE_ENV=development`; mutation "works" there and silently breaks memoisation (§3.4).
 
 The DEV-only `key` warning getter is [`defineKeyPropWarningGetter`](https://github.com/react/react/blob/v19.3.1/packages/react/src/jsx/ReactJSXElement.js#L121); the "Each child in a list should have a unique key" warning moved in React 19 from element creation into the reconciler ([`ReactChildFiber.js` `warnForMissingKey`](https://github.com/react/react/blob/v19.3.1/packages/react-reconciler/src/ReactChildFiber.js#L152)), which means it fires only for children that are actually rendered, and the "older version of React" error is thrown by [`throwOnInvalidObjectTypeImpl`](https://github.com/react/react/blob/v19.3.1/packages/react-reconciler/src/ReactChildFiber.js#L301).
+
 ### 2.3 Then vs now: the JSX runtime
 
-| | Then (React ≤16, classic runtime) | Now (React 17+ automatic runtime; React 19 deprecates the classic path's quirks) |
-|---|---|---|
+|  | Then (React ≤16, classic runtime) | Now (React 17+ automatic runtime; React 19 deprecates the classic path's quirks) |
+| --- | --- | --- |
 | Call | `React.createElement("div", props, a, b)` | `jsxs("div", { ...props, children: [a, b] }, key)` |
 | Imports | `import React from "react"` in every JSX file | Compiler inserts `react/jsx-runtime` import |
 | `key` | Read from the props object at runtime | Extracted at compile time |
 | Children | Variadic arguments | Single `children` prop |
-| Why it changed | Every file needed `React` in scope; `createElement` had to copy props to separate `key`/`ref`; variadic children blocked static optimisation. | |
+| Why it changed | Every file needed `React` in scope; `createElement` had to copy props to separate `key`/`ref`; variadic children blocked static optimisation. |  |
 
 **Migration:** set `"jsx": "react-jsx"` in `tsconfig.json` (or the bundler equivalent), run the [`update-react-imports` codemod](https://github.com/reactjs/react-codemod) to delete unused `React` imports. **Pitfall when mixing:** files compiled with the classic runtime still work, but any code that relies on `React` being a global (e.g. old MDX setups) breaks once the import is removed.
 
@@ -147,7 +144,7 @@ The DEV-only `key` warning getter is [`defineKeyPropWarningGetter`](https://gith
 }
 ```
 
-The test "an element is a plain description" asserts this shape; "keys are coerced to strings" proves `key={7}` becomes `"7"`. Because element keys are compared as strings, `key={1}` and `key="1"` are the *same* key.
+The test "an element is a plain description" asserts this shape; "keys are coerced to strings" proves `key={7}` becomes `"7"`. Because element keys are compared as strings, `key={1}` and `key="1"` are the _same_ key.
 
 ### 3.2 Why `$$typeof` exists: the JSON injection defence
 
@@ -157,10 +154,9 @@ The fix: every element carries a **Symbol** brand. `Symbol.for(...)` values are 
 
 $$\text{isValidElement}(x) \iff x \neq \text{null} \land \texttt{typeof}\ x = \texttt{"object"} \land x.\texttt{\$\$typeof} = \texttt{Symbol.for("react.transitional.element")}$$
 
-An object that fails the check and is not a string, number, array/iterable or promise is rejected with *"Objects are not valid as a React child"* — the test "rendering a forged element throws instead of creating DOM" proves this. (In engines without `Symbol`, React historically fell back to the number `0xeac7`; every supported engine now has `Symbol`.)
+An object that fails the check and is not a string, number, array/iterable or promise is rejected with _"Objects are not valid as a React child"_ — the test "rendering a forged element throws instead of creating DOM" proves this. (In engines without `Symbol`, React historically fell back to the number `0xeac7`; every supported engine now has `Symbol`.)
 
-The brand check itself is one line, [`isValidElement`](https://github.com/react/react/blob/v19.3.1/packages/react/src/jsx/ReactJSXElement.js#L891): `typeof object === 'object' && object !== null && object.$$typeof === REACT_ELEMENT_TYPE`, where `REACT_ELEMENT_TYPE = Symbol.for('react.transitional.element')` and `REACT_LEGACY_ELEMENT_TYPE = Symbol.for('react.element')` ([`shared/ReactSymbols.js`](https://github.com/react/react/blob/v19.3.1/packages/shared/ReactSymbols.js#L15)). Because `Symbol.for` uses the global symbol registry, the brand is shared across realms and bundle copies — two copies of React 19 recognise each other's elements, which is why the version-skew error exists only between majors.
-**What `$$typeof` does not protect against:** `dangerouslySetInnerHTML` with untrusted HTML, URL attributes (React 19 replaces a `javascript:` URL in `href`, `src`, `action` or `formAction` with a stub that throws *"React has blocked a javascript: URL as a security precaution"* — test "javascript: URLs are replaced" — but `data:` URLs and other sinks are your responsibility), and spreading untrusted objects into props (`<div {...userJson} />` lets the attacker set `dangerouslySetInnerHTML`). Text children *are* always escaped (test "text children are escaped").
+The brand check itself is one line, [`isValidElement`](https://github.com/react/react/blob/v19.3.1/packages/react/src/jsx/ReactJSXElement.js#L891): `typeof object === 'object' && object !== null && object.$$typeof === REACT_ELEMENT_TYPE`, where `REACT_ELEMENT_TYPE = Symbol.for('react.transitional.element')` and `REACT_LEGACY_ELEMENT_TYPE = Symbol.for('react.element')` ([`shared/ReactSymbols.js`](https://github.com/react/react/blob/v19.3.1/packages/shared/ReactSymbols.js#L15)). Because `Symbol.for` uses the global symbol registry, the brand is shared across realms and bundle copies — two copies of React 19 recognise each other's elements, which is why the version-skew error exists only between majors. **What `$$typeof` does not protect against:** `dangerouslySetInnerHTML` with untrusted HTML, URL attributes (React 19 replaces a `javascript:` URL in `href`, `src`, `action` or `formAction` with a stub that throws _"React has blocked a javascript: URL as a security precaution"_ — test "javascript: URLs are replaced" — but `data:` URLs and other sinks are your responsibility), and spreading untrusted objects into props (`<div {...userJson} />` lets the attacker set `dangerouslySetInnerHTML`). Text children _are_ always escaped (test "text children are escaped").
 
 The URL check lives in [`react-dom-bindings/src/shared/sanitizeURL.js`](https://github.com/react/react/blob/v19.3.1/packages/react-dom-bindings/src/shared/sanitizeURL.js#L19):
 
@@ -173,14 +169,14 @@ The regex mirrors the [WHATWG URL parser](https://url.spec.whatwg.org/#concept-b
 
 ### 3.3 Then vs now: the element brand and `ref`
 
-| | Then (React ≤18) | Now (React 19+) |
-|---|---|---|
+|  | Then (React ≤18) | Now (React 19+) |
+| --- | --- | --- |
 | Brand | `Symbol.for("react.element")` | `Symbol.for("react.transitional.element")` |
 | `ref` | Special: stripped from props into `element.ref`; function components needed `forwardRef` to receive it | A normal prop: `props.ref`. `element.ref` is a DEV-warning getter. `forwardRef` still works but is no longer needed and will be deprecated |
 | String refs (`ref="input"`) | Deprecated since 16.3 | **Removed** |
-| Why | `ref` special-casing complicated every wrapper and generic component typing | |
+| Why | `ref` special-casing complicated every wrapper and generic component typing |  |
 
-React 19 renamed the brand precisely so that elements produced by an older React (e.g. a library bundling its own React 18 copy) are detected: rendering one throws *"A React Element from an older version of React was rendered"* (test "the legacy `Symbol.for('react.element')` is rejected"). If you see this error, you have two copies of React in the bundle — fix the dependency graph (`npm ls react`), do not patch the element.
+React 19 renamed the brand precisely so that elements produced by an older React (e.g. a library bundling its own React 18 copy) are detected: rendering one throws _"A React Element from an older version of React was rendered"_ (test "the legacy `Symbol.for('react.element')` is rejected"). If you see this error, you have two copies of React in the bundle — fix the dependency graph (`npm ls react`), do not patch the element.
 
 **Migration from `forwardRef`:**
 
@@ -215,21 +211,21 @@ Creating an element is an $O(\text{number of props})$ object allocation. **It do
 
 ```tsx
 const el = <Chart data={data} />; // Chart has NOT run
-return cond ? el : null;           // if cond is false, Chart never runs at all
+return cond ? el : null; // if cond is false, Chart never runs at all
 ```
 
 Consequences:
 
 - **Elements as props are cheap.** `<Layout sidebar={<Sidebar />} />` passes a description; `Layout` decides whether and where to render it.
-- **Calling a component directly is not rendering it.** `Counter()` executes `Counter`'s body in the *caller's* hook context (or with no context at all, which throws — test "calling a component as a function is not rendering it"). Its hooks become the caller's hooks, it gets no position, no key, no own state. Never call components; render them.
-- **"Children as a slot" is the cheapest optimisation in React.** If `<Parent>` re-renders but its `children` prop is the same element object created by *its* parent, React bails out of re-rendering those children (Module 02 §5, Module 12).
+- **Calling a component directly is not rendering it.** `Counter()` executes `Counter`'s body in the _caller's_ hook context (or with no context at all, which throws — test "calling a component as a function is not rendering it"). Its hooks become the caller's hooks, it gets no position, no key, no own state. Never call components; render them.
+- **"Children as a slot" is the cheapest optimisation in React.** If `<Parent>` re-renders but its `children` prop is the same element object created by _its_ parent, React bails out of re-rendering those children (Module 02 §5, Module 12).
 
 ### 4.1 What a component may return
 
 The `Node` grammar in Definition 1.2 maps directly to rendering rules (test "booleans, null and undefined render nothing; 0 renders '0'"):
 
 | Value | Renders as | Pitfall |
-|---|---|---|
+| --- | --- | --- |
 | `null`, `undefined`, `true`, `false` | nothing | `{count && <Badge />}` renders `0` when `count === 0`. Use `count > 0 &&`. |
 | string, number, bigint | text node (escaped) | `NaN` renders `"NaN"` |
 | element | the element | — |
@@ -249,10 +245,10 @@ React's scheduler assumes it can:
 2. call a component **more than once** for the same commit (Strict Mode, retries after suspending, concurrent restarts);
 3. call components **out of order** relative to effects (render of a subtree may happen before the parent's previous effects have run).
 
-Any side effect in render — mutating a module variable, writing to a ref that is read during render, sending analytics, subscribing to a store — is executed once per *render attempt*, not once per *commit*. The number of attempts is unspecified.
+Any side effect in render — mutating a module variable, writing to a ref that is read during render, sending analytics, subscribing to a store — is executed once per _render attempt_, not once per _commit_. The number of attempts is unspecified.
 
 | Allowed during render | Not allowed during render |
-|---|---|
+| --- | --- |
 | Reading props, state, context | Mutating props, state, context values |
 | Creating new objects/arrays/JSX | Mutating objects that existed before this render |
 | Local mutation of values created in this render | `ref.current` reads or writes (except lazy init) |
@@ -267,7 +263,7 @@ Any side effect in render — mutating a module variable, writing to a ref that 
 3. **runs ref callbacks setup → cleanup → setup** on mount;
 4. warns about deprecated APIs.
 
-The "NEGATIVE: mutating a module-level array during render duplicates output" test shows the classic bug: a render that pushes into shared state produces two rows under Strict Mode. In production it would produce one row per *render attempt*, which is worse: it is non-deterministic.
+The "NEGATIVE: mutating a module-level array during render duplicates output" test shows the classic bug: a render that pushes into shared state produces two rows under Strict Mode. In production it would produce one row per _render attempt_, which is worse: it is non-deterministic.
 
 > **Then vs now (Strict Mode logging).** React 17 silenced `console.log` during the second invocation, which confused people into thinking the double call did not happen. React 18 stopped silencing; React 19 dims the second log in DevTools instead. Do not try to "detect" the second render; make render pure.
 
@@ -283,18 +279,20 @@ Keys are the user-visible half of Definition 1.4; the reconciler half is in Modu
 4. **A key on a single element is a reset switch.** `<Profile key={userId} />` gives each user a fresh instance; this is the idiomatic way to reset all state when an identity changes, instead of syncing state in an effect.
 5. **Fragments can be keyed** (`<Fragment key={id}>`), the shorthand `<>` cannot.
 
-`Children.toArray` shows how React builds the *effective* key of nested arrays: `.$a` for explicit key `a`, `.1:$b` for key `b` inside the array at index 1 (test "Children.toArray assigns keys and flattens"). These path-prefixed keys are why moving an element between two different arrays always remounts it.
+`Children.toArray` shows how React builds the _effective_ key of nested arrays: `.$a` for explicit key `a`, `.1:$b` for key `b` inside the array at index 1 (test "Children.toArray assigns keys and flattens"). These path-prefixed keys are why moving an element between two different arrays always remounts it.
 
 ---
 
 ## 7. Roots: entering the render model
 
 ```tsx
-import { createRoot, hydrateRoot } from "react-dom/client";
+import { createRoot, hydrateRoot } from 'react-dom/client';
 
-const root = createRoot(document.getElementById("app")!, {
-  onCaughtError, onUncaughtError, onRecoverableError, // Module 10
-  identifierPrefix: "app1-",                            // namespaces useId (Module 06)
+const root = createRoot(document.getElementById('app')!, {
+  onCaughtError,
+  onUncaughtError,
+  onRecoverableError, // Module 10
+  identifierPrefix: 'app1-', // namespaces useId (Module 06)
 });
 root.render(<App />);
 // later
@@ -308,7 +306,7 @@ root.unmount();
 ### 7.1 Then vs now: root APIs
 
 | Then (≤17, deprecated in 18, **removed in 19**) | Now |
-|---|---|
+| --- | --- |
 | `ReactDOM.render(<App />, el)` | `createRoot(el).render(<App />)` |
 | `ReactDOM.hydrate(<App />, el)` | `hydrateRoot(el, <App />)` |
 | `ReactDOM.unmountComponentAtNode(el)` | `root.unmount()` |
@@ -321,10 +319,10 @@ Migration: replace the entry point, run tests under `StrictMode`, fix effects th
 
 ## 7.2 Renderers: one reconciler, many hosts
 
-`react` (the package) contains only the element factory, hooks dispatch and shared types. The algorithm that turns elements into a host tree is `react-reconciler`, and each **renderer** plugs into it with a *host config* — a table of primitive operations:
+`react` (the package) contains only the element factory, hooks dispatch and shared types. The algorithm that turns elements into a host tree is `react-reconciler`, and each **renderer** plugs into it with a _host config_ — a table of primitive operations:
 
 | Renderer | Host instance | Example host-config operations |
-|---|---|---|
+| --- | --- | --- |
 | `react-dom` | DOM `Element`/`Text` | `createInstance` → `document.createElement`, `appendChild`, `commitUpdate` → set attributes/listeners |
 | `react-dom/server` (Fizz) | HTML byte stream | writes chunks; no reconciler — a separate, streaming renderer (Module 06) |
 | `react-server` (Flight) | Flight rows | serialises the tree for the client (Module 07) |
@@ -335,14 +333,14 @@ This is why the element/component model is identical across platforms, and why h
 
 ### 7.3 The `react` / `react-dom` version lock
 
-`react` and `react-dom` must be **the exact same version**. `react-dom` checks this at load time and throws *"Incompatible React versions"* when they differ, because the two packages share internal data structures (`ReactSharedInternals`) whose layout changes even between minors. The same applies to `react-server-dom-*` (Module 07). Pin them together (this track pins `19.3.1` for all three) and upgrade them in one commit.
+`react` and `react-dom` must be **the exact same version**. `react-dom` checks this at load time and throws _"Incompatible React versions"_ when they differ, because the two packages share internal data structures (`ReactSharedInternals`) whose layout changes even between minors. The same applies to `react-server-dom-*` (Module 07). Pin them together (this track pins `19.3.1` for all three) and upgrade them in one commit.
 
 ---
 
 ## 8. Production failure modes
 
 | Symptom | Root cause | Fix |
-|---|---|---|
+| --- | --- | --- |
 | `0` appears in the UI | `{n && <X/>}` with `n === 0` | `{n > 0 && <X/>}` |
 | "Objects are not valid as a React child" | Rendering a plain object / Date / API payload | Render a field, or format it |
 | "A React Element from an older version of React was rendered" | Two React copies (library bundles React 18) | Dedupe `react`; library should declare a peer dependency |
@@ -362,7 +360,7 @@ This is why the element/component model is identical across platforms, and why h
 [`examples/01-elements/elements.test.tsx`](../examples/01-elements/elements.test.tsx) (Vitest + jsdom, real React 19.3):
 
 | Claim | Test |
-|---|---|
+| --- | --- |
 | JSX lowers to `jsx`/`jsxs` with key positional | `JSX compiles to jsx/jsxs calls…` (uses Vite's oxc transform) |
 | Key after spread → `createElement` | `a key after a spread falls back to createElement` |
 | Elements are branded and frozen | `an element is a plain description…`, `element and props are frozen in DEV` |

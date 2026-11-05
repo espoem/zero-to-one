@@ -3,6 +3,7 @@
 ## Hand-off (primary author, 2026-10-30) — ready for challenger/verifier
 
 **Status:** brief delivered. Authored comprehensive, academically grounded foundation track conforming to repository standards (`AGENTS.md` and modern W3C/WHATWG CSS platform specifications):
+
 - All 14 modules authored in `modules/01-*.md` through `modules/14-*.md` with unwrapped paragraphs, formal definitions, state machines, and detailed Interview Drills with collapsible `<details>` blocks.
 - 13 hermetic test suites with Playwright 1.64.1 and Chromium 156 in `examples/` verifying Lightning CSS AST lowering, `:where()` zero specificity vs `:has()` relational selection, cascade layers (`@layer`) and `!important` inversion, Invalid-at-Computed-Value-Time (`unset`) mechanics, parent-child margin collapsing and BFC resolution via `display: flow-root`, `min-width: 0` flex item shrink fix, subgrid track alignment, `position: fixed` transform trapping, HTML Top Layer Popover API rendering, container queries (size & style), Houdini `@property` type enforcement and initial-value fallback, OKLCH relative color syntax and `light-dark()`, `@starting-style` entry transitions, `:focus-visible` keyboard modality and `field-sizing: content`, and DTCG design tokens hierarchy and circular alias cycle detection.
 - `exams/README.md` (14 domains, 100% full coverage, 0 gaps).
@@ -12,7 +13,7 @@
 - `README.md` updated with `Verified against Node 26.12.1, TypeScript 7.0.2, Playwright 1.64.1, Chromium 156 on 2026-10-30`, syllabus, and "Certifications & Industry Examination Standards" section.
 
 | Module | State | Proof file | Tests |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 01 CSS Platform Specs, Baseline & Tooling | done | `examples/01-platform-and-lightningcss.test.ts` | pass |
 | 02 Syntax, Selectors & Specificity | done | `examples/02-selectors-and-specificity.test.ts` | pass |
 | 03 Cascade, Cascade Layers & Scope | done | `examples/03-cascade-layers-and-scope.test.ts` | pass |
@@ -29,6 +30,7 @@
 | 14 CSS Architecture & Design Tokens | done | `examples/13-design-tokens-dtcg.test.ts` | pass |
 
 **Tooling:**
+
 - Node 26.12.1 and TypeScript 7.0.2 pinned in `.mise.toml` and `mise.lock` (multi-platform checksums for `linux-x64` and `macos-arm64`).
 - `lightningcss: ^1.29.2`, `playwright: ^1.51.0`, `@types/node: ^26.0.0`, `typescript: ^7.0.2`.
 - Hermetic test runner: `mise exec -- npm test` (26 headless browser and unit tests passing in 52s).

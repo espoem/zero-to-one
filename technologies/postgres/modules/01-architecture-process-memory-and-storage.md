@@ -55,15 +55,19 @@ flowchart TD
 ```
 
 ### The Postmaster & Per-Connection Backends
+
 When a client initiates a connection, the Postmaster performs TLS negotiation, processes `pg_hba.conf` authentication rules, forks a child backend process, transfers the open client socket, and steps out of the communication loop.
 
 Each backend process allocates dedicated private memory regions:
+
 1. **`work_mem`**: Private workspace allocated per sorting operation (`ORDER BY`, `DISTINCT`, window functions) and hash operation (Hash Join, Hash Aggregate). A single complex query with multiple joins and sorts can allocate multiple multiples of `work_mem`.
 2. **`maintenance_work_mem`**: Private workspace used by administrative commands such as `VACUUM`, `CREATE INDEX`, and `ALTER TABLE ADD FOREIGN KEY`.
 3. **`temp_buffers`**: Session-private buffer pool used exclusively for temporary tables, avoiding shared buffer eviction and lock contention.
 
 ### Auxiliary Background Processes
+
 PostgreSQL offloads asynchronous system tasks to specialized background workers:
+
 - **Checkpointer**: Periodically flushes dirty `shared_buffers` pages to kernel storage, generates a WAL Checkpoint record, and updates `pg_control`.
 - **Background Writer (`bgwriter`)**: Continuously scans `shared_buffers` using a clock sweep algorithm and asynchronously flushes dirty pages so client backends rarely have to write dirty pages during page allocation.
 - **WAL Writer**: Periodically flushes the `wal_buffers` ring buffer to disk ahead of transaction commits to minimize commit latency.
@@ -84,6 +88,7 @@ flowchart LR
 ```
 
 ### The Double Buffering Tradeoff
+
 1. **Cache Sizing**: Sizing `shared_buffers` to 75% or 90% of system RAM wastes memory because cached pages are duplicated in the OS page cache. Standard industry practice allocates **25% to 40% of physical RAM** to `shared_buffers`, leaving the remaining memory for the kernel page cache and connection-level `work_mem`.
 2. **Buffer Replacement (Clock Sweep)**: PostgreSQL manages `shared_buffers` using a generalized 2Q/Clock Sweep algorithm. Each buffer header contains a usage counter (0 to 5). When a free buffer is needed, a sweep hand checks pages, decrementing non-zero usage counters. Pages with a zero counter are evicted.
 3. **Writeback Throttling (`backend_flush_after`)**: Prevents large checkpoints or bulk writes from flooding the OS page cache with dirty pages and stalling subsequent read I/O.
@@ -113,7 +118,9 @@ $PGDATA/
 ```
 
 ### Relation Physical Storage Forks
+
 Every relation (table or index) on disk is divided into 1GB segment files (`<filenode>`, `<filenode>.1`, `<filenode>.2`) to avoid 32-bit filesystem file size limits. A relation comprises up to four distinct forks:
+
 1. **Main Fork (`<filenode>`)**: The raw 8KB database data blocks.
 2. **Free Space Map (`<filenode>_fsm`)**: Tracks available free space across each 8KB block to accelerate `INSERT` placement.
 3. **Visibility Map (`<filenode>_vm`)**: Tracks two bits per 8KB block:
@@ -141,6 +148,7 @@ flowchart TD
 ```
 
 ### Proving Page Anatomy with `pageinspect`
+
 PostgreSQL provides the `pageinspect` extension to inspect the raw binary contents of storage pages:
 
 ```sql
@@ -160,6 +168,7 @@ FROM heap_page_items(get_raw_page('page_demo', 0));
 ```
 
 The output confirms:
+
 - `lower` points to the end of the line pointer array (growing downwards from byte 24).
 - `upper` points to the byte offset of the most recently allocated tuple (growing upwards from byte 8192).
 - When `lower >= upper`, the page is physically full.
@@ -171,12 +180,15 @@ The output confirms:
 Modern database architectures must sustain millions of IOPS on NVMe storage. PostgreSQL's traditional reliance on synchronous `read()`/`write()` calls executed by individual backend processes causes high context switching and thread blocking.
 
 ### Asynchronous I/O (AIO) Architecture
+
 PostgreSQL 18 introduces the integrated AIO subsystem framework:
+
 - **`io_method = worker` (Default across platforms)**: Spawns specialized background I/O workers that dequeue asynchronous I/O requests submitted by backend query executors.
 - **`io_method = io_uring` (Linux kernel $\ge$ 5.1)**: Uses zero-copy Linux `io_uring` ring buffers shared between user space and kernel space, submitting batch I/O without system call overhead.
 - **PG19 Forward Evolution**: PostgreSQL 19 introduces automatic scaling of I/O worker threads via `io_min_workers` and `io_max_workers`, dynamically adjusting worker concurrency to match storage queue depth.
 
 ### Default Data Checksums
+
 Starting with PostgreSQL 18, `initdb` enables **data checksums by default** (`data_checksums = on`). Every 8KB block calculates an internal checksum stored in `pd_checksum`. If silent disk bit-rot alters bytes, PostgreSQL rejects the block with error code `XX001` rather than silently returning corrupted data.
 
 ---
@@ -184,7 +196,7 @@ Starting with PostgreSQL 18, `initdb` enables **data checksums by default** (`da
 ## 7. Then vs. Now: Architecture & Storage
 
 | Architectural Dimension | PostgreSQL $\le$ 14 | PostgreSQL 15–17 | PostgreSQL 18 & 19 (Current) |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Cumulative Statistics** | UDP socket daemon (`pgstat.c`); high packet drop risk under load | In-memory shared hash tables (`dshash`); zero packet drop | Shared memory stats with lock-free atomics and extended session telemetry |
 | **Data Block Checksums** | Disabled by default; required manual `initdb -k` | Disabled by default in standard distributions | **Enabled by default** in `initdb`; automatic bit-rot defense |
 | **Disk I/O Dispatch** | Synchronous POSIX calls (`pread`/`pwrite`) blocking backend workers | Pre-fetching via `posix_fadvise`; synchronous reads | Native **Asynchronous I/O (AIO)** engine (`io_method = worker / io_uring`); PG19 dynamic worker scaling |
@@ -198,37 +210,48 @@ Starting with PostgreSQL 18, `initdb` enables **data checksums by default** (`da
 <summary>1. Why does PostgreSQL utilize a multi-process architecture instead of a multi-threaded architecture?</summary>
 
 **Answer**: PostgreSQL was originally architected at UC Berkeley (Ingres/POSTGRES project) when operating system thread implementations were unstable and non-standard. The multi-process model provides total address space isolation: a segmentation fault or memory corruption in one client backend cannot crash the server or corrupt other connections. However, processes introduce memory overhead per connection (typically 5–10MB per backend) and high context switching costs, which necessitates dedicated connection pooling (e.g., PgBouncer) in high-concurrency environments.
+
 - Ref: [PostgreSQL Internals (Suzuki)](https://www.interdb.jp/pg/)
+
 </details>
 
 <details>
 <summary>2. Explain the phenomenon of "double buffering" in PostgreSQL. Why is setting `shared_buffers` to 90% of RAM an anti-pattern?</summary>
 
 **Answer**: PostgreSQL utilizes standard buffered operating system read and write calls (unless Direct I/O is enabled). When a page is read from storage, the OS kernel caches it in the OS page cache before copying it into PostgreSQL's `shared_buffers`. If `shared_buffers` is allocated 90% of system RAM, nearly all cached pages are duplicated across both caches, wasting memory. Furthermore, memory starvation for private backend structures (`work_mem`, connection stacks) triggers OS kernel Out-Of-Memory (OOM) kills. The standard recommended allocation is 25% to 40% of physical RAM for `shared_buffers`, leaving the remainder for the OS cache and query work memory.
+
 - Ref: [PostgreSQL Documentation: Resource Consumption](https://www.postgresql.org/docs/18/runtime-config-resource.html)
+
 </details>
 
 <details>
 <summary>3. What is the purpose of the line pointer (`ItemIdData`) array in the 8KB page? Why don't indexes point directly to byte offsets?</summary>
 
 **Answer**: The line pointer array decouples logical tuple addressing from physical byte locations. An item pointer (`ctid = (block_number, offset_number)`) points to line pointer `offset_number` in the page header, not to raw byte coordinates. When tuples are updated in-place via Heap-Only Tuples (HOT) or defragmented within the page, only the internal byte offsets in `ItemIdData` are adjusted. Secondary indexes do not require updates because their target `(block, offset)` remains unchanged.
+
 - Ref: [PostgreSQL Source: src/include/storage/bufpage.h](https://git.postgresql.org/gitweb/?p=postgresql.git;a=blob;f=src/include/storage/bufpage.h)
+
 </details>
 
 <details>
 <summary>4. What are the four forks of a PostgreSQL relation and what is the function of each?</summary>
 
 **Answer**:
+
 1. **Main Fork**: The actual data blocks containing physical rows or index nodes.
 2. **Free Space Map (`_fsm`)**: A binary tree tracking free space per page to rapidly locate blocks with room for new inserts.
 3. **Visibility Map (`_vm`)**: Tracks all-visible (all tuples visible to all transactions, enabling Index-Only Scans) and all-frozen bits per page.
 4. **Initialization Fork (`_init`)**: Exists only on unlogged tables; used to reset the table to empty during crash recovery without reading WAL.
+
 - Ref: [PostgreSQL Documentation: Database Physical Storage](https://www.postgresql.org/docs/18/storage-file-layout.html)
+
 </details>
 
 <details>
 <summary>5. What changes occurred in PostgreSQL 18 regarding data checksums and I/O architecture?</summary>
 
 **Answer**: PostgreSQL 18 enables cluster data checksums by default during `initdb` to protect against undetected bit-rot on storage devices. It also integrates an Asynchronous I/O (AIO) framework (`io_method = worker / io_uring`) allowing asynchronous batch operations across read and write pathways, moving towards auto-scaling I/O workers in PostgreSQL 19.
+
 - Ref: [PostgreSQL 18 Release Notes](https://www.postgresql.org/docs/18/release-18.html)
+
 </details>

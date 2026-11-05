@@ -7,8 +7,11 @@ describe('Module 02: Syntax, Selectors & Specificity', () => {
     await closeSharedBrowser();
   });
 
-  it('demonstrates that :where() has strictly zero specificity (0, 0, 0)', { skip: browserSkip }, async () => {
-    const html = `
+  it(
+    'demonstrates that :where() has strictly zero specificity (0, 0, 0)',
+    { skip: browserSkip },
+    async () => {
+      const html = `
       <!DOCTYPE html>
       <html>
         <head>
@@ -31,17 +34,27 @@ describe('Module 02: Syntax, Selectors & Specificity', () => {
       </html>
     `;
 
-    const { page, cleanup } = await createPage(html);
-    try {
-      const color = await page.locator('#target').evaluate((el) => window.getComputedStyle(el).color);
-      assert.equal(color, 'rgb(0, 0, 255)', ':where() must have 0 specificity and lose to element selector');
-    } finally {
-      await cleanup();
-    }
-  });
+      const { page, cleanup } = await createPage(html);
+      try {
+        const color = await page
+          .locator('#target')
+          .evaluate((el) => window.getComputedStyle(el).color);
+        assert.equal(
+          color,
+          'rgb(0, 0, 255)',
+          ':where() must have 0 specificity and lose to element selector',
+        );
+      } finally {
+        await cleanup();
+      }
+    },
+  );
 
-  it('proves that :has() selects parents conditionally based on child elements', { skip: browserSkip }, async () => {
-    const html = `
+  it(
+    'proves that :has() selects parents conditionally based on child elements',
+    { skip: browserSkip },
+    async () => {
+      const html = `
       <!DOCTYPE html>
       <html>
         <head>
@@ -66,19 +79,24 @@ describe('Module 02: Syntax, Selectors & Specificity', () => {
       </html>
     `;
 
-    const { page, cleanup } = await createPage(html);
-    try {
-      const borderColorImg = await page
-        .locator('#card-with-img')
-        .evaluate((el) => window.getComputedStyle(el).borderColor);
-      const borderColorText = await page
-        .locator('#card-text-only')
-        .evaluate((el) => window.getComputedStyle(el).borderColor);
+      const { page, cleanup } = await createPage(html);
+      try {
+        const borderColorImg = await page
+          .locator('#card-with-img')
+          .evaluate((el) => window.getComputedStyle(el).borderColor);
+        const borderColorText = await page
+          .locator('#card-text-only')
+          .evaluate((el) => window.getComputedStyle(el).borderColor);
 
-      assert.equal(borderColorImg, 'rgb(0, 128, 0)', 'Card with img must match :has(> img)');
-      assert.equal(borderColorText, 'rgb(128, 128, 128)', 'Card without img must retain default border');
-    } finally {
-      await cleanup();
-    }
-  });
+        assert.equal(borderColorImg, 'rgb(0, 128, 0)', 'Card with img must match :has(> img)');
+        assert.equal(
+          borderColorText,
+          'rgb(128, 128, 128)',
+          'Card without img must retain default border',
+        );
+      } finally {
+        await cleanup();
+      }
+    },
+  );
 });

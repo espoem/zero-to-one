@@ -7,7 +7,7 @@ This glossary provides authoritative English ↔ Czech definitions of core compu
 ## 1. Threat Modeling, Security Principles & Governance
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **CIA Triad** | **Triáda CIA (Důvěrnost, Integrita, Dostupnost)** | The foundational information security model defining Confidentiality (preventing unauthorized disclosure), Integrity (preventing unauthorized modification), and Availability (ensuring timely, reliable access). | ISO/IEC 27000 |
 | **Parkerian Hexad** | **Parkerova hexáda** | An expansion of the CIA triad formulated by Donn Parker adding Possession/Control, Authenticity, and Utility to capture nuanced asset loss states. | Information Security Principles |
 | **STRIDE Methodology** | **Metodika STRIDE** | Threat modeling taxonomy developed by Praerit Garg and Loren Kohnfelder at Microsoft categorizing threats into: Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, and Elevation of Privilege. | Microsoft Security Engineering |
@@ -24,7 +24,7 @@ This glossary provides authoritative English ↔ Czech definitions of core compu
 ## 2. Cryptographic Foundations, Ciphers & Randomness
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Cryptographically Secure PRNG (CSPRNG)** | **Kryptograficky bezpečný pseudonáhodný generátor (CSPRNG)** | A random number generator seeded with physical hardware entropy that satisfies the Next-Bit Test: no polynomial-time algorithm can predict the $(k+1)$-th bit with probability $>0.5$. | RFC 4086 |
 | **Cryptographic Hash Function** | **Kryptografická hašovací funkce** | A deterministic one-way algorithm mapping arbitrary-length bitstrings to fixed-size digests exhibiting pre-image, second pre-image, and collision resistance. | NIST FIPS 180-4 |
 | **Length Extension Attack** | **Útok prodloužením délky zprávy** | An exploit targeting Merkle-Damgård constructed hash functions (MD5, SHA-1, SHA-256) where an attacker knowing $H(\text{secret} \mathbin{\Vert} m)$ can append padding and arbitrary text $m'$ to compute $H(\text{secret} \mathbin{\Vert} m \mathbin{\Vert} \text{pad} \mathbin{\Vert} m')$ without knowing the secret. | Cryptographic Analysis |
@@ -41,7 +41,7 @@ This glossary provides authoritative English ↔ Czech definitions of core compu
 ## 3. Passwords, Secrets Management & KDFs
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Argon2id** | **Algoritmus Argon2id** | The standard memory-hard password hashing function (winner of the Password Hashing Competition) combining Argon2d (data-dependent memory access) and Argon2i (data-independent memory access) to defend against side-channel and GPU/ASIC attacks. | RFC 9106 |
 | **Password Salt** | **Sůl hesla** | A unique, cryptographically random bitstring generated per user account and stored alongside the password hash to neutralize precomputed dictionary and rainbow table lookups. | NIST SP 800-63B |
 | **Password Pepper** | **Pepř hesla** | An organization-wide secret cryptographic key combined with passwords before hashing and stored separately from the user database (e.g. in a KMS/HSM). | OWASP Guidelines |
@@ -55,7 +55,7 @@ This glossary provides authoritative English ↔ Czech definitions of core compu
 ## 4. Public Key Infrastructure & Workload Identity
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **X.509 Certificate** | **Certifikát X.509** | An ITU-T standard defining the ASN.1 structure binding an entity's identity to a public key via a digital signature created by a trusted Certificate Authority. | RFC 5280 |
 | **Subject Alternative Name (SAN)** | **Alternativní jméno subjektu (SAN)** | An X.509 extension specifying multiple hostnames, IP addresses, and URIs for which a certificate is valid, formally deprecating the legacy Common Name (CN). | RFC 5280 |
 | **Basic Constraints** | **Základní omezení (Basic Constraints)** | An X.509 extension (`id-ce-basicConstraints`, critical) indicating whether the certificate subject is authorized to act as a Certificate Authority (`cA: TRUE`) and setting path length limits. | RFC 5280 |
@@ -72,7 +72,7 @@ This glossary provides authoritative English ↔ Czech definitions of core compu
 ## 5. Web & Browser Security Architecture
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Same-Origin Policy (SOP)** | **Pravidlo stejného původu (SOP)** | A fundamental browser security model permitting scripts running on one web page to access data on another page only if both pages share identical Scheme, Host, and Port. | W3C / WHATWG |
 | **Cross-Site Scripting (XSS)** | **Skriptování mezi stránkami (XSS)** | A vulnerability allowing an attacker to inject and execute arbitrary malicious client-side JavaScript in a victim's browser session (Stored, Reflected, or DOM-based). | OWASP Top 10 |
 | **Cross-Site Request Forgery (CSRF)** | **Padělání požadavku mezi stránkami (CSRF)** | An attack tricking an authenticated user's browser into submitting unauthorized state-changing HTTP requests to a target site that relies implicitly on browser-managed cookies. | OWASP Top 10 |
@@ -88,7 +88,7 @@ This glossary provides authoritative English ↔ Czech definitions of core compu
 ## 6. OAuth 2.1, OIDC & Federated Identity
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **OAuth 2.1** | **Autorizační rámec OAuth 2.1** | The consolidated specification modernizing OAuth 2.0: deprecates Implicit and ROPC grants, mandates PKCE for all clients, and requires exact string matching for redirect URIs. | IETF OAuth 2.1 Draft |
 | **Authorization Code Flow** | **Tok s autorizačním kódem** | An OAuth redirection flow where the client receives a short-lived authorization code in the front channel and exchanges it for tokens directly over a back-channel TLS connection. | RFC 6749, OAuth 2.1 |
 | **PKCE (Proof Key for Code Exchange)** | **Mechanismus PKCE (RFC 7636)** | A cryptographic extension binding authorization code requests to token redemption via a dynamic `code_verifier` and its SHA-256 hash (`code_challenge`), neutralizing interception attacks. | RFC 7636 |
@@ -104,7 +104,7 @@ This glossary provides authoritative English ↔ Czech definitions of core compu
 ## 7. Tokens, JOSE & Sender-Constraining
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **JSON Object Signing and Encryption (JOSE)** | **Rámec JOSE (podepisování a šifrování JSON)** | The suite of specifications defining cryptographic representations in JSON: JWS (signatures), JWE (encryption), JWK (keys), JWA (algorithms), and JWT (tokens). | RFC 7515-7519 |
 | **JSON Web Token (JWT)** | **Webový token JSON (JWT)** | A compact, URL-safe means of representing claims consisting of three base64url-encoded parts separated by dots: Header, Payload, and Signature (`header.payload.signature`). | RFC 7519 |
 | **The `alg:none` Catastrophe** | **Zranitelnost s algoritmem "none"** | A critical vulnerability where a JWT library accepts tokens with `"alg": "none"` and an empty signature, allowing attackers to forge arbitrary claims if algorithm validation is omitted. | RFC 8725 |
@@ -119,7 +119,7 @@ This glossary provides authoritative English ↔ Czech definitions of core compu
 ## 8. Hardware-Backed MFA, WebAuthn & Passkeys
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **WebAuthn Level 3** | **Standard WebAuthn Level 3** | A W3C standard defining a JavaScript browser API for public-key authentication using on-device hardware authenticators (FIDO2/CTAP2). | W3C WebAuthn Level 3 |
 | **Passkey** | **Přístupový klíč (Passkey)** | A user-friendly branding for FIDO2/WebAuthn credentials; consists of an asymmetric key pair where the private key never leaves the device or encrypted cloud keychain. | FIDO Alliance |
 | **Phishing Resistance** | **Odolnost proti phishingu** | The property of WebAuthn where the browser signs the origin URL (`clientDataJSON`), preventing reverse-proxy phishing tools (Evilginx) from using harvested signatures on target domains. | FIDO Architecture |
@@ -134,7 +134,7 @@ This glossary provides authoritative English ↔ Czech definitions of core compu
 ## 9. Authorization Models & Policy Engines
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Role-Based Access Control (RBAC)** | **Řízení přístupu na základě rolí (RBAC)** | An access model where permissions are grouped into static administrative roles and subjects are assigned to those roles. | ANSI/INCITS 359 |
 | **Attribute-Based Access Control (ABAC)** | **Řízení přístupu na základě atributů (ABAC)** | A dynamic access model evaluating policies based on boolean expressions over attributes of the Subject, Resource, Action, and Environment. | NIST SP 800-162 |
 | **Relationship-Based Access Control (ReBAC)** | **Řízení přístupu na základě vztahů (ReBAC)** | A graph-based access control paradigm evaluating permissions through multi-hop relationship edges between objects and subjects (inspired by Google Zanzibar). | Google Zanzibar (2019) |
@@ -147,7 +147,7 @@ This glossary provides authoritative English ↔ Czech definitions of core compu
 ## 10. Web Application Vulnerabilities & Supply Chain
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Server-Side Request Forgery (SSRF)** | **Padělání požadavku na straně serveru (SSRF)** | A flaw allowing an attacker to coerce a server-side application into initiating arbitrary HTTP requests to internal network services or cloud instance metadata (169.254.169.254). | OWASP Top 10 |
 | **DNS Rebinding** | **Útok DNS rebinding** | An exploit circumventing IP allowlists by returning a legitimate public IP during an application's validation check and a loopback/private IP during the subsequent socket connection. | Application Security Research |
 | **Insecure Deserialization** | **Nezabezpečená deserializace objektů** | Converting untrusted serialization streams into language memory objects, enabling attackers to execute arbitrary code via structured gadget chains. | OWASP Top 10 |
@@ -161,7 +161,7 @@ This glossary provides authoritative English ↔ Czech definitions of core compu
 ## 11. Security Operations & Detection Signals
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Security Information & Event Management (SIEM)** | **Správa bezpečnostních informací a událostí (SIEM)** | A centralized system aggregating, normalizing, correlating, and alerting on log telemetry across enterprise infrastructure. | NIST SP 800-92 |
 | **Security Orchestration, Automation & Response (SOAR)** | **Bezpečnostní orchestrace a automatizace (SOAR)** | Technology automating repetitive SOC workflows, executing pre-programmed incident containment and remediation playbooks. | Gartner IT Glossary |
 | **Common Vulnerability Scoring System (CVSS v4.0)** | **Metrika závažnosti zranitelností (CVSS v4.0)** | An open industry standard providing qualitative and quantitative severity ratings (0.0 to 10.0) based on base, threat, and environmental metrics. | FIRST CVSS v4.0 |
@@ -175,7 +175,7 @@ This glossary provides authoritative English ↔ Czech definitions of core compu
 ## 12. Advanced & Post-Quantum Security
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Harvest Now, Decrypt Later (HNDL)** | **Ulož nyní, dešifruj později (HNDL)** | An adversary strategy where encrypted communications are captured and stored in bulk today, anticipating future quantum computers breaking classical asymmetric ciphers. | NSA / CISA Quantum Advisory |
 | **Post-Quantum Cryptography (PQC)** | **Postkvantová kryptografie (PQC)** | Cryptographic ciphers designed to run on classical hardware while resisting attacks from quantum computers running Shor's or Grover's algorithms. | NIST PQC Standardization |
 | **ML-KEM (FIPS 203)** | **Klíčový mechanismus ML-KEM (FIPS 203)** | NIST standard post-quantum Key Encapsulation Mechanism derived from CRYSTALS-Kyber, based on the hardness of the Module Learning with Errors (M-LWE) lattice problem. | NIST FIPS 203 |

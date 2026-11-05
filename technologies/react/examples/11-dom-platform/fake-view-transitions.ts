@@ -13,16 +13,16 @@ export interface RecordedTransition {
 export function installFakeViewTransitions(observe: () => Element[]): RecordedTransition[] {
   const recorded: RecordedTransition[] = [];
   const doc = document as Document & { startViewTransition?: unknown };
-  Object.defineProperty(document, "fonts", {
+  Object.defineProperty(document, 'fonts', {
     configurable: true,
-    value: { status: "loaded", ready: Promise.resolve() },
+    value: { status: 'loaded', ready: Promise.resolve() },
   });
   doc.startViewTransition = (arg: { update: () => unknown; types?: string[] }) => {
     const entry: RecordedTransition = { types: [...(arg.types ?? [])], stylesDuringUpdate: [] };
     recorded.push(entry);
     const updateDone = Promise.resolve().then(async () => {
       await arg.update();
-      entry.stylesDuringUpdate = observe().map((el) => el.getAttribute("style") ?? "");
+      entry.stylesDuringUpdate = observe().map((el) => el.getAttribute('style') ?? '');
     });
     return {
       updateCallbackDone: updateDone,

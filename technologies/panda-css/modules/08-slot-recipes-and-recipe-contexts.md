@@ -1,7 +1,6 @@
 # Module 08 · Slot Recipes and Recipe Contexts
 
-> **Verified against** `@pandacss/dev` 2.4.0, React 19.3.1, Solid 1.9.17 on 2026-10-29.
-> **Executable proof:** [`examples/system/recipes/alert.slot-recipe.ts`](../examples/system/recipes/alert.slot-recipe.ts); [`examples/react/src/Alert.tsx`](../examples/react/src/Alert.tsx), [`examples/solid/src/Alert.tsx`](../examples/solid/src/Alert.tsx); fixture [`08-slot-recipes.ts`](../examples/fixtures/positive/08-slot-recipes.ts) + snapshot; [`recipe-context.test.ts`](../examples/tests/recipe-context.test.ts) (React and Solid server rendering); slot tests in [`runtime.test.ts`](../examples/tests/runtime.test.ts); the alert assertions in [`e2e-computed-style.test.ts`](../examples/tests/e2e-computed-style.test.ts).
+> **Verified against** `@pandacss/dev` 2.4.0, React 19.3.1, Solid 1.9.17 on 2026-10-29. **Executable proof:** [`examples/system/recipes/alert.slot-recipe.ts`](../examples/system/recipes/alert.slot-recipe.ts); [`examples/react/src/Alert.tsx`](../examples/react/src/Alert.tsx), [`examples/solid/src/Alert.tsx`](../examples/solid/src/Alert.tsx); fixture [`08-slot-recipes.ts`](../examples/fixtures/positive/08-slot-recipes.ts) + snapshot; [`recipe-context.test.ts`](../examples/tests/recipe-context.test.ts) (React and Solid server rendering); slot tests in [`runtime.test.ts`](../examples/tests/runtime.test.ts); the alert assertions in [`e2e-computed-style.test.ts`](../examples/tests/e2e-computed-style.test.ts).
 
 Most real components have parts: an alert has a root, a title and a description; a tabs widget has a list, triggers, an indicator and panels. A **slot recipe** styles all parts from one variant selection. A **recipe context** distributes that selection through the component tree so that `<Alert.Root status="danger">` styles its children without prop drilling.
 
@@ -20,8 +19,8 @@ apply(SR, p) : S → classString
 
 The result is a **map from slot name to class string**, one entry per slot, computed from the same resolved variant props. All slots therefore agree on `status`, `size` etc. by construction.
 
-| | Inline `sva()` | Config `defineSlotRecipe()` |
-|---|---|---|
+|  | Inline `sva()` | Config `defineSlotRecipe()` |
+| --- | --- | --- |
 | Lives in | Component code | Config / preset (`theme.slotRecipes`) |
 | CSS | Atomic utilities per slot | Named classes `alert__root`, `alert__root--status_danger` in `@layer recipes.slots` |
 | Emission | Every variant, eagerly | JIT: literal variant values seen at `Alert`, `Alert.Root`, `AlertRoot` (or `jsx`) |
@@ -45,8 +44,12 @@ Note that every slot gets a variant class, even if the variant has no style for 
 Config slot recipes have their own nested ladder inside `recipes`:
 
 ```css
-@layer recipes { @layer base, slots, variants, compound_variants; }
-@layer recipes.slots { @layer base, variants, compound_variants; }
+@layer recipes {
+  @layer base, slots, variants, compound_variants;
+}
+@layer recipes.slots {
+  @layer base, variants, compound_variants;
+}
 ```
 
 So, from lowest to highest: plain recipe base → **slot recipes (base, variants, compounds)** → plain recipe variants → plain recipe compounds → utilities. A slot recipe's own variants beat its base; anything in `utilities` (including a `css` prop on a part) beats all of it.
@@ -61,16 +64,16 @@ So, from lowest to highest: plain recipe base → **slot recipes (base, variants
 
 ```tsx
 // examples/react/src/Alert.tsx (the Solid file is identical)
-import { createSlotRecipeContext } from '../styled-system/jsx'
-import { alert } from '../styled-system/recipes'
+import { createSlotRecipeContext } from '../styled-system/jsx';
+import { alert } from '../styled-system/recipes';
 
-const { withProvider, withContext } = createSlotRecipeContext(alert)
+const { withProvider, withContext } = createSlotRecipeContext(alert);
 
 export const Alert = {
   Root: withProvider('div', 'root', { defaultProps: { role: 'status' } }),
   Title: withContext('p', 'title'),
   Description: withContext('p', 'description'),
-}
+};
 ```
 
 ```tsx
@@ -96,7 +99,7 @@ sequenceDiagram
 ```
 
 | Helper | Use | Accepts variant props | Renders a DOM element |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `withProvider(component, slot, options?)` | Usual root | Yes (split off, not forwarded unless `forwardProps`) | Yes, with the slot class + `data-slot` |
 | `withRootProvider(component, options?)` | Root of a headless library that renders **no** element (e.g. a `Dialog.Root` that is context only) | Yes | No slot class; only `defaultProps` option |
 | `withContext(component, slot, options?)` | Each part | No (reads context) | Yes, with the slot class + `data-slot` |
@@ -123,7 +126,7 @@ Both helpers are client components (they use context). The recipe functions them
 ### Then vs now
 
 | v1 (≤ 1.12) | v2 |
-|---|---|
+| --- | --- |
 | Hand-written or generated `createStyleContext(recipe)` returning `withProvider` / `withContext` (this track's old `create-style-context.tsx`) | **Removed** from `styled-system/jsx`. Use `createSlotRecipeContext(slotRecipe)` (`withRootProvider`, `withProvider`, `withContext`, `PropsProvider`) or `createRecipeContext(recipe)` (`withContext`, `PropsProvider`) |
 | No way to provide slots without rendering a slot element | `withRootProvider` |
 | `defineParts(anatomy)` mapped part names to `[data-part]` selectors | **Removed**. Write the selector as a key (`'& [data-part="control"]': {…}`), copy the helper into your config, or use `defineSlotRecipe` for a class per part |
@@ -138,7 +141,7 @@ Both helpers are client components (they use context). The recipe functions them
 
 Config slot recipes are tracked by tag name: an `alert` slot recipe matches `Alert`, `Alert.Root` and `AlertRoot` by default (our recipe sets `jsx: ['Alert', 'Alert.Root']` explicitly). Variant props are read **only from the root**, because that is where callers put them. Rules:
 
-- `jsx` replaces the default *root* names. If you export `Panel.Root` for an `alert` recipe, list `Panel.Root`.
+- `jsx` replaces the default _root_ names. If you export `Panel.Root` for an `alert` recipe, list `Panel.Root`.
 - A group component that forwards variants via `PropsProvider` (e.g. `<CardGroup size="lg">`) must be listed in `jsx`, or its literal `size="lg"` is invisible.
 - `sva` needs none of this: it emits every variant eagerly.
 
@@ -151,14 +154,14 @@ The same JIT failure modes as [Module 07](./07-recipes-and-config-recipes.md#jit
 Headless libraries render accessible behaviour without styles and expose state as `data-*` attributes (`data-state="open"`, `data-part`). Match the helper to the library's tree:
 
 ```tsx
-import { Accordion as Ark } from '@ark-ui/react/accordion'
-const { withProvider, withContext } = createSlotRecipeContext(accordion)
+import { Accordion as Ark } from '@ark-ui/react/accordion';
+const { withProvider, withContext } = createSlotRecipeContext(accordion);
 export const Accordion = {
   Root: withProvider(Ark.Root, 'root'),
   Item: withContext(Ark.Item, 'item'),
   ItemTrigger: withContext(Ark.ItemTrigger, 'itemTrigger'),
   ItemContent: withContext(Ark.ItemContent, 'itemContent'),
-}
+};
 ```
 
 Write the recipe's state styles with Panda conditions that already include the data-attribute twin (`_open`, `_expanded`, `_disabled` match `[data-state=open]`, `[data-expanded]`, `[data-disabled]`; see [Module 03](./03-styling-api-and-conditions.md#32-conditions)). For a root that only provides context (`Dialog.Root`), use `withRootProvider`.
@@ -170,7 +173,7 @@ Write the recipe's state styles with Panda conditions that already include the d
 ## 8.5 Production failure modes
 
 | Symptom | Cause | Fix / proof |
-|---|---|---|
+| --- | --- | --- |
 | "Cannot access createSlotRecipeContext… missing its Provider" | Part rendered outside its root (portals, story of one part) | Render under the root; negative tests |
 | Variant attribute (`status="danger"`) in the DOM | Hand-rolled root forwarding all props | Use `withProvider` (splits variants) |
 | Variant ignored on a wrapped headless component | Library needs the value (e.g. `orientation`) | `forwardProps` |

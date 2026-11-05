@@ -1,7 +1,6 @@
 # Module 04 · Patterns and Layout
 
-> **Verified against** `@pandacss/dev` 2.4.0, `@pandacss/preset-base` 2.4.0, `@pandacss/preset-panda` 2.4.0 on 2026-10-29.
-> **Executable proof:** [`examples/system/patterns/scrollable.pattern.ts`](../examples/system/patterns/scrollable.pattern.ts); fixture [`04-patterns.ts`](../examples/fixtures/positive/04-patterns.ts) + snapshot; negative fixture [`pattern-prop-in-breakpoint.tsx`](../examples/fixtures/negative/pattern-prop-in-breakpoint.tsx); legacy config [`container-sizes.config.ts`](../examples/fixtures/configs/container-sizes.config.ts); the `patterns (Module 04)` and `legacy theme.containerSizes` tests in [`negative-extraction.test.ts`](../examples/tests/negative-extraction.test.ts); the container-query test in [`e2e-computed-style.test.ts`](../examples/tests/e2e-computed-style.test.ts); pattern type tests in [`type-tests.ts`](../examples/react/src/type-tests.ts).
+> **Verified against** `@pandacss/dev` 2.4.0, `@pandacss/preset-base` 2.4.0, `@pandacss/preset-panda` 2.4.0 on 2026-10-29. **Executable proof:** [`examples/system/patterns/scrollable.pattern.ts`](../examples/system/patterns/scrollable.pattern.ts); fixture [`04-patterns.ts`](../examples/fixtures/positive/04-patterns.ts) + snapshot; negative fixture [`pattern-prop-in-breakpoint.tsx`](../examples/fixtures/negative/pattern-prop-in-breakpoint.tsx); legacy config [`container-sizes.config.ts`](../examples/fixtures/configs/container-sizes.config.ts); the `patterns (Module 04)` and `legacy theme.containerSizes` tests in [`negative-extraction.test.ts`](../examples/tests/negative-extraction.test.ts); the container-query test in [`e2e-computed-style.test.ts`](../examples/tests/e2e-computed-style.test.ts); pattern type tests in [`type-tests.ts`](../examples/react/src/type-tests.ts).
 
 Flexbox, grid, subgrid, positioning and the container-query model (containment, `container-type`, query evaluation) are owned by [`languages/css`](../../../languages/css/README.md) (modules "Layout: flexbox, grid, subgrid" and "Containment & container queries"). This module covers what Panda adds: patterns as typed layout functions, and the theme API for container queries.
 
@@ -12,9 +11,9 @@ Flexbox, grid, subgrid, positioning and the container-query model (containment, 
 **Definition.** A pattern is a pair `(P, T)` where `P` is a typed property schema and `T : props → StyleObject` is a transform. Codegen turns it into three entry points:
 
 ```ts
-import { stack } from '../styled-system/patterns'   // stack(props) → class string
-stack.raw({ gap: '4' })                              // → style object, for composition
-import { Stack } from '../styled-system/jsx'         // <Stack gap="4"> → <div class=…>
+import { stack } from '../styled-system/patterns'; // stack(props) → class string
+stack.raw({ gap: '4' }); // → style object, for composition
+import { Stack } from '../styled-system/jsx'; // <Stack gap="4"> → <div class=…>
 ```
 
 The compiler calls `T` **at build time** with the statically folded props of every call site it extracts, then encodes the returned style object into atoms like any `css()` call. The same `T` is also serialised into the generated runtime so `stack(props)` can compute class names in the browser. Two consequences:
@@ -29,11 +28,11 @@ Patterns versus recipes: a pattern is a layout helper with a few props, typicall
 ## 4.2 The built-in patterns (from `@pandacss/preset-base`)
 
 | Group | Patterns | Notes |
-|---|---|---|
+| --- | --- | --- |
 | Stacking and flex | `stack`, `hstack`, `vstack`, `flex`, `spacer` | `stack` default gap is `8px`; `hstack`/`vstack` have their own defaults |
 | Wrapping and grids | `wrap`, `grid`, `gridItem` | `grid({ columns: 3 })` → `repeat(3, minmax(0, 1fr))`; `minChildWidth` → `auto-fit` |
 | Sizing and centering | `container`, `center`, `square`, `circle`, `aspectRatio` | `aspectRatio` uses a `::before` with `padding-bottom: (1/ratio)·100%` (default ratio 4/3), not the `aspect-ratio` property |
-| Positioning | `float`, `bleed`, `linkOverlay` | |
+| Positioning | `float`, `bleed`, `linkOverlay` |  |
 | Utilities | `box`, `visuallyHidden`, `divider`, `cq` | `cq` declares a query container |
 
 `panda doctor` lists 21 patterns for the React app (`analyze` reports `patterns.total: 21`, 20 built-ins plus the custom `scrollable`).
@@ -42,7 +41,11 @@ Patterns versus recipes: a pattern is a layout helper with a few props, typicall
 
 ```tsx
 <article className={css({ position: 'relative' })}>
-  <h3><a href="/post/1" className={linkOverlay()}>Read the post</a></h3>
+  <h3>
+    <a href="/post/1" className={linkOverlay()}>
+      Read the post
+    </a>
+  </h3>
 </article>
 ```
 
@@ -56,8 +59,8 @@ Pattern props accept the same condition objects as style properties:
 
 ```ts
 // examples/fixtures/positive/04-patterns.ts
-scrollable({ direction: { base: 'horizontal', md: 'vertical' }, hideScrollbar: true })
-grid({ columns: { base: 1, md: 3 }, gap: '4' })
+scrollable({ direction: { base: 'horizontal', md: 'vertical' }, hideScrollbar: true });
+grid({ columns: { base: 1, md: 3 }, gap: '4' });
 ```
 
 Inside `T`, a responsive prop arrives as the **object**, so `direction === 'horizontal'` is never true. The `map` helper applies a function to each condition value and rebuilds the object:
@@ -87,10 +90,14 @@ The test `responsive pattern props are mapped per breakpoint` asserts the four o
 `md={{ columns: 3 }}` is a **style prop** condition, not a pattern prop, so `T` never sees it. Worse, `columns` is a real CSS property (multi-column layout), so Panda emits it verbatim:
 
 ```css
-@media (width >= 48rem) { .md\:columns_3 { columns: 3; } }
+@media (width >= 48rem) {
+  .md\:columns_3 {
+    columns: 3;
+  }
+}
 ```
 
-The grid stays single-column, and its children now also flow into three *text* columns at `md`. The negative test asserts this exact rule exists and that no responsive `grid-template-columns` does. Correct form: `<Grid columns={{ base: 1, md: 3 }} />`.
+The grid stays single-column, and its children now also flow into three _text_ columns at `md`. The negative test asserts this exact rule exists and that no responsive `grid-template-columns` does. Correct form: `<Grid columns={{ base: 1, md: 3 }} />`.
 
 ---
 
@@ -105,16 +112,22 @@ export const scrollablePattern = definePattern({
   },
   defaultValues: { direction: 'vertical', hideScrollbar: false },
   blocklist: ['overflow', 'overflowX', 'overflowY'],
-  transform(props, { map }) { /* … */ },
-})
+  transform(props, { map }) {
+    /* … */
+  },
+});
 // preset.ts
-patterns: { extend: { scrollable: scrollablePattern } }
+patterns: {
+  extend: {
+    scrollable: scrollablePattern;
+  }
+}
 ```
 
 ### Property types
 
 | `type` | Typed as | Resolution |
-|---|---|---|
+| --- | --- | --- |
 | `property` (`value: 'alignItems'`) | That CSS property's values | Like the property |
 | `enum` (`value: [...]`) | Union of strings | Passed to `T` |
 | `token` (`value: 'sizes', property: 'borderWidth'`) | Token names in the category | Resolved through the given property |
@@ -139,7 +152,7 @@ patterns: {
 }
 ```
 
-**Missing `extend` is destructive:** `patterns: { scrollable }` replaces *all* built-in patterns.
+**Missing `extend` is destructive:** `patterns: { scrollable }` replaces _all_ built-in patterns.
 
 ### Wrapping a pattern component
 
@@ -166,8 +179,16 @@ Panda separates the two jobs of CSS container queries:
 
 ```css
 /* 04-patterns snapshot */
-@container (inline-size >= 28rem)      { .\@\/md\:fs_md { font-size: var(--font-sizes-md); } }
-@container card (inline-size >= 40rem) { .\@card\/wide\:flex-d_row { flex-direction: row; } }
+@container (inline-size >= 28rem) {
+  .\@\/md\:fs_md {
+    font-size: var(--font-sizes-md);
+  }
+}
+@container card (inline-size >= 40rem) {
+  .\@card\/wide\:flex-d_row {
+    flex-direction: row;
+  }
+}
 ```
 
 `preset-panda` ships a default scale (`xs 320px` … `8xl 1440px`; `md` = 28rem, as the snapshot shows). Range forms exist like breakpoints (`@/smDown`, `@/smOnly`, `@/smToMd`).
@@ -176,22 +197,22 @@ The e2e suite renders the same `cardBody` class inside an 18rem and a 48rem `car
 
 ### Then vs now: `containerSizes` → `containers`
 
-| | 0.x / 1.x | 2.x |
-|---|---|---|
+|  | 0.x / 1.x | 2.x |
+| --- | --- | --- |
 | Size scale key | `theme.containerSizes` | `theme.containers` (shared scale for named and unnamed queries) |
 | Names | `theme.containerNames` | unchanged |
 | Old key in a v2 config | — | **Silently ignored**: no diagnostic, still type-checks |
 
 The fixture [`container-sizes.config.ts`](../examples/fixtures/configs/container-sizes.config.ts) uses the old key. The test proves the stylesheet contains **no** `@container` rule and the CLI reports `diagnostics: 0`, and `tsc` accepts the config (the theme type is open-ended). Only a visual check or a test like this catches it. Migration: rename the key; run `panda analyze` or a CSS grep for `@container` in CI.
 
-Validation that *does* exist: `config_container_invalid`, `config_container_name_invalid` (space, `/` or `@` in a name), `config_container_units_mixed`, `config_container_condition_conflict`.
+Validation that _does_ exist: `config_container_invalid`, `config_container_name_invalid` (space, `/` or `@` in a name), `config_container_units_mixed`, `config_container_condition_conflict`.
 
 ---
 
 ## 4.6 Production failure modes
 
 | Symptom | Cause | Fix / proof |
-|---|---|---|
+| --- | --- | --- |
 | Container layout never switches after upgrade | `containerSizes` ignored in v2 | Rename to `containers`; legacy-config test |
 | Grid unexpectedly multi-column text | Pattern prop inside a breakpoint key → raw CSS `columns` | Put the condition on the prop; negative test |
 | Responsive pattern prop half-works | `T` compares an object with `===` | Use `map` |

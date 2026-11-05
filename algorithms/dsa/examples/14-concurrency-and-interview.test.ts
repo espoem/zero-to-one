@@ -103,7 +103,7 @@ test('Module 14: Parallel Algorithms, Concurrency & Interview Patterns', async (
 
   await t.test("Brent's Theorem bound strictly respects Span Law and Work Law", () => {
     const T1 = 1000; // total work
-    const Tinf = 50;  // critical path span
+    const Tinf = 50; // critical path span
 
     // On 1 processor, bound must be <= T1
     const boundP1 = brentUpperBound(T1, Tinf, 1);
@@ -125,9 +125,9 @@ test('Module 14: Parallel Algorithms, Concurrency & Interview Patterns', async (
           const packed = packCoord(r, c, numCols);
           const [unpackedR, unpackedC] = unpackCoord(packed, numCols);
           return unpackedR === r && unpackedC === c;
-        }
+        },
       ),
-      { seed: 42, numRuns: 100 }
+      { seed: 42, numRuns: 100 },
     );
   });
 });

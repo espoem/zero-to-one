@@ -145,7 +145,9 @@ export class MiniLSM {
     const compactedEntries: { key: string; value: string | null }[] = [];
     const filter = new SimpleBloomFilter();
 
-    for (const [key, value] of Array.from(merged.entries()).sort((a, b) => a[0].localeCompare(b[0]))) {
+    for (const [key, value] of Array.from(merged.entries()).sort((a, b) =>
+      a[0].localeCompare(b[0]),
+    )) {
       if (value !== null) {
         compactedEntries.push({ key, value });
         filter.add(key);
@@ -212,7 +214,7 @@ describe('Log-Structured Merge-Tree (LSM)', () => {
             key: fc.stringMatching(/^[a-z]{1,3}$/),
             val: fc.stringMatching(/^[A-Z]{1,5}$/),
           }),
-          { minLength: 10, maxLength: 60 }
+          { minLength: 10, maxLength: 60 },
         ),
         (operations) => {
           const lsm = new MiniLSM(4);
@@ -236,8 +238,8 @@ describe('Log-Structured Merge-Tree (LSM)', () => {
           for (const [k, v] of model.entries()) {
             assert.equal(lsm.get(k), v);
           }
-        }
-      )
+        },
+      ),
     );
   });
 });

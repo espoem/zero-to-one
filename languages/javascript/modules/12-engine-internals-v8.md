@@ -24,19 +24,21 @@ flowchart LR
 ```
 
 | Tier | Since | Role |
-|---|---|---|
-| **Parser** | | *Lazy parsing*: functions not called at startup are only pre-parsed (syntax checked, scopes analysed for closures); they are fully parsed and compiled on first call. Wrapping a function in parentheses (`(function () {...})`) is a heuristic for "invoked immediately" (PIFE) and triggers eager compilation |
+| --- | --- | --- |
+| **Parser** |  | _Lazy parsing_: functions not called at startup are only pre-parsed (syntax checked, scopes analysed for closures); they are fully parsed and compiled on first call. Wrapping a function in parentheses (`(function () {...})`) is a heuristic for "invoked immediately" (PIFE) and triggers eager compilation |
 | **Ignition** | 2016–17 | Register-based bytecode interpreter. Every property access, call and arithmetic operation has a **feedback slot** recording the types and shapes it saw |
 | **Sparkplug** | 2021 | Compiles bytecode to machine code 1:1 without optimisation. Cheap; removes interpreter dispatch overhead |
 | **Maglev** | 2023 | Mid-tier optimising compiler: SSA graph from bytecode + feedback, fast to compile |
 | **Turbofan** | 2017 | Top-tier optimising compiler; speculative optimisation based on feedback. Its backend was replaced by **Turboshaft** (control-flow-graph IR replacing the Sea of Nodes) |
 
-**Speculative optimisation.** Optimising tiers assume the future looks like the feedback: "`p` and `q` were always small integers (Smis), so emit an integer add with an overflow check". If an assumption fails (a string arrives), the code **deoptimises**: execution transfers back to Ignition at the equivalent bytecode, the optimised code is discarded, and the function may be re-optimised later with more general feedback. Occasional deopts are normal; deopt *loops* and permanently generic feedback are performance bugs.
+**Speculative optimisation.** Optimising tiers assume the future looks like the feedback: "`p` and `q` were always small integers (Smis), so emit an integer add with an overflow check". If an assumption fails (a string arrives), the code **deoptimises**: execution transfers back to Ignition at the equivalent bytecode, the optimised code is discarded, and the function may be re-optimised later with more general feedback. Occasional deopts are normal; deopt _loops_ and permanently generic feedback are performance bugs.
 
 ```js
-function add(p, q) { return p + q; }
+function add(p, q) {
+  return p + q;
+}
 // warm up with Smis, force optimisation (natives syntax, test-only)
-add('a', 'b');   // --trace-deopt: "bailout (kind: deopt-eager, reason: not a Smi)"
+add('a', 'b'); // --trace-deopt: "bailout (kind: deopt-eager, reason: not a Smi)"
 ```
 
 ---
@@ -47,7 +49,7 @@ JavaScript objects are dynamic dictionaries semantically ([module 04](04-objects
 
 - Adding a property creates a **transition** from the old map to a new one. Maps form a transition tree; `{}` → `{x}` → `{x, y}`.
 - **Order matters**: `{x, y}` and `{y, x}` have different maps.
-- Values of the same field can be tracked with a *field representation* (Smi, Double, HeapObject, Tagged) and field type; storing a double into a field that so far held Smis generalises the map (a *map deprecation*, migrating existing objects lazily).
+- Values of the same field can be tracked with a _field representation_ (Smi, Double, HeapObject, Tagged) and field type; storing a double into a field that so far held Smis generalises the map (a _map deprecation_, migrating existing objects lazily).
 - **Dictionary mode** ("slow properties"): after `delete` of a property (V8 14.6 transitions even when the deleted property was the last one added, verified in the example), after adding many properties dynamically, or for objects used as hash maps, V8 switches the object to a hash-table representation. Property access no longer benefits from offsets and inline caches.
 - `Object.setPrototypeOf` / `__proto__` assignment on an object invalidates prototype-chain assumptions (prototype maps are tracked specially); doing it on objects that are already in use is a known cliff.
 
@@ -65,19 +67,21 @@ Guidelines:
 An **inline cache** (IC) is the feedback slot at one property access site plus the specialised fast path built from it:
 
 | IC state | Maps seen at the site | Cost |
-|---|---|---|
-| uninitialised | 0 | |
+| --- | --- | --- |
+| uninitialised | 0 |  |
 | **monomorphic** | 1 | one map check + load at a fixed offset; inlinable |
 | **polymorphic** | 2–4 | a small linear chain of map checks |
 | **megamorphic** | > 4 | global stub cache lookup (hash of map + name); optimising compilers cannot specialise it |
 
 ```js
-function area(shape) { return shape.w * shape.h; }   // one site, many shapes?
-area({ w: 1, h: 2 });              // map A
-area({ h: 2, w: 1 });              // map B (different order)
-area({ w: 1, h: 2, color: 'r' });  // map C
-area(new Rect(1, 2));              // map D
-area({ w: 1, h: 2, id: 7 });       // map E → megamorphic
+function area(shape) {
+  return shape.w * shape.h;
+} // one site, many shapes?
+area({ w: 1, h: 2 }); // map A
+area({ h: 2, w: 1 }); // map B (different order)
+area({ w: 1, h: 2, color: 'r' }); // map C
+area(new Rect(1, 2)); // map D
+area({ w: 1, h: 2, id: 7 }); // map E → megamorphic
 ```
 
 The same code with objects created by one factory or class is monomorphic. Real-world sources of megamorphism: objects built from parsed JSON with varying key orders or optional keys, "options bag" parameters with arbitrary subsets of keys, mixins, and generic utility functions (deep equal, serialisers) that see every shape in the program; for the last, megamorphism is unavoidable and acceptable.
@@ -86,7 +90,7 @@ The same code with objects created by one factory or class is monomorphic. Real-
 
 ## 4. Elements kinds (arrays)
 
-V8 tracks the *kind* of each array's elements, separately from named properties:
+V8 tracks the _kind_ of each array's elements, separately from named properties:
 
 ```
 PACKED_SMI_ELEMENTS → PACKED_DOUBLE_ELEMENTS → PACKED_ELEMENTS
@@ -106,7 +110,7 @@ Guidelines: create hot arrays with literals, by pushing into `[]`, with `Array.f
 ## 5. Functions, closures and inlining
 
 - Small monomorphic functions are **inlined** by Maglev/Turbofan, removing call overhead and enabling further optimisation. Megamorphic call sites (calling many different closures from one place, typical of callback-heavy generic code) prevent inlining.
-- Each closure *instance* shares bytecode (the `SharedFunctionInfo`) but has its own context; feedback is per function literal, so a factory producing closures used with different shapes pollutes one shared feedback vector.
+- Each closure _instance_ shares bytecode (the `SharedFunctionInfo`) but has its own context; feedback is per function literal, so a factory producing closures used with different shapes pollutes one shared feedback vector.
 - Closure contexts: variables captured by any inner function live in a heap-allocated context shared by all closures of that scope (the memory-retention consequence is shown in [module 03](03-execution-contexts-scope-closures.md)).
 - `arguments` in sloppy functions with mapped parameters, `eval`, and `with` force conservative compilation of the enclosing function.
 - `try/catch` is no longer a deoptimisation trigger (it was in the Crankshaft era, before 2017).
@@ -118,10 +122,10 @@ Guidelines: create hot arrays with literals, by pushing into `[]`, with `Array.f
 V8's heap (Orinoco project) is **generational**:
 
 | Space | Collector | Notes |
-|---|---|---|
+| --- | --- | --- |
 | Young generation (nursery + intermediate) | **Scavenger**: parallel semi-space copying collector | Most objects die young; scavenges are frequent and short |
 | Old generation | **Mark-Compact**: concurrent marking, parallel compaction, incremental steps | Triggered by heap growth; full pauses minimised by concurrency |
-| Large object space | | objects above a size threshold, never moved |
+| Large object space |  | objects above a size threshold, never moved |
 
 Mechanisms worth knowing:
 
@@ -136,7 +140,7 @@ Heap snapshots (Chrome DevTools, `node --heapsnapshot-signal`, `v8.writeHeapSnap
 ## 7. Diagnosing performance
 
 | Question | Tool |
-|---|---|
+| --- | --- |
 | Where is time spent? | `node --cpu-prof`, Chrome DevTools Performance panel, `--prof` + `--prof-process`, Linux `perf` with `--perf-basic-prof` |
 | Is my function optimised? Did it deoptimise? | `--trace-opt`, `--trace-deopt` (look for the `reason:`), DevTools "deoptimised" markers, `%GetOptimizationStatus` (tests only) |
 | Are my objects sharing shapes? | `%HaveSameMap(a, b)` and `%DebugPrint(obj)` with `--allow-natives-syntax` (tests and experiments only, never in production) |
@@ -148,7 +152,7 @@ Rules for micro-benchmarks: warm up (let tiering happen), defeat dead-code elimi
 ### Then vs now
 
 | Then (Crankshaft era, ≤ 2016) | Now (V8 ≥ 2017, Ignition + Sparkplug + Maglev + Turbofan) |
-|---|---|
+| --- | --- |
 | `try/catch` in a function prevented optimisation | optimised normally |
 | `arguments` leaking, `for...in` over many keys, and `let` in loops caused "optimisation killers" | most killers removed; remaining cliffs are about feedback (shapes, megamorphism, elements kinds) |
 | Full-codegen baseline compiler | Ignition interpreter + Sparkplug baseline (lower memory, faster startup) |
@@ -160,7 +164,7 @@ Rules for micro-benchmarks: warm up (let tiering happen), defeat dead-code elimi
 ## 8. Production failure modes
 
 | Failure | Mechanism | Defence (tested where possible) |
-|---|---|---|
+| --- | --- | --- |
 | A hot function becomes 10–100× slower after a refactor | call site went megamorphic (objects created in different key orders or with optional keys) | construct objects with one factory/class; `%HaveSameMap` in experiments |
 | Throughput collapses after a "cleanup" that deletes temporary fields | `delete` → dictionary mode | assign `undefined`, or separate the temporary data |
 | Numeric code slow | arrays holey or generic (one `undefined` or string) | packed arrays, typed arrays |

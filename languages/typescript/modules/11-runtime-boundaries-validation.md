@@ -1,9 +1,8 @@
 # Module 11: Runtime Boundaries — Validation, Zod 4 & Standard Schema
 
-> Examples and tests: [`examples/11-runtime-boundaries/boundaries.test.ts`](../examples/11-runtime-boundaries/boundaries.test.ts) (Zod 4.6.7, `@standard-schema/spec` 1.1.0), [`advanced-schemas.test.ts`](../examples/11-runtime-boundaries/advanced-schemas.test.ts) (async refinements, recursion, codecs, JSON Schema, error functions, union diagnostics) and the older walkthrough [`zod-schema-validation.test.ts`](../examples/11-runtime-boundaries/zod-schema-validation.test.ts).
-> Run: `mise exec -- node --test examples/11-runtime-boundaries/`
+> Examples and tests: [`examples/11-runtime-boundaries/boundaries.test.ts`](../examples/11-runtime-boundaries/boundaries.test.ts) (Zod 4.6.7, `@standard-schema/spec` 1.1.0), [`advanced-schemas.test.ts`](../examples/11-runtime-boundaries/advanced-schemas.test.ts) (async refinements, recursion, codecs, JSON Schema, error functions, union diagnostics) and the older walkthrough [`zod-schema-validation.test.ts`](../examples/11-runtime-boundaries/zod-schema-validation.test.ts). Run: `mise exec -- node --test examples/11-runtime-boundaries/`
 
-Types are erased ([Module 01](./01-toolchain-and-compiler-model.md)). Everything the type checker proved stops at the edge of the program: HTTP bodies, `JSON.parse`, `localStorage`, environment variables, message queues, files, `postMessage`, and the arguments of server functions. This module is about that edge: how to turn `unknown` into a typed value *with evidence*, how a schema library derives its static types, and how to stay library-neutral with Standard Schema.
+Types are erased ([Module 01](./01-toolchain-and-compiler-model.md)). Everything the type checker proved stops at the edge of the program: HTTP bodies, `JSON.parse`, `localStorage`, environment variables, message queues, files, `postMessage`, and the arguments of server functions. This module is about that edge: how to turn `unknown` into a typed value _with evidence_, how a schema library derives its static types, and how to stay library-neutral with Standard Schema.
 
 ---
 
@@ -14,7 +13,7 @@ A **trust boundary** is a point where a value enters the program from a source t
 Three ways to cross a boundary, in increasing order of honesty:
 
 | Technique | Static type after | Runtime evidence | Failure mode |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `JSON.parse(text) as User` | `User` | None | A wrong payload crashes later, far from the cause (`undefined is not a function` in an unrelated module) |
 | Hand-written predicate `isUser(x): x is User` | `User` | As good as the predicate | The predicate and the type drift apart silently ([Module 10](./10-type-safe-api-design-patterns.md)) |
 | Schema `User.parse(x)` with `type User = z.infer<typeof User>` | `User` | Full | Cost of parsing; schema must be kept at the edge |
@@ -23,7 +22,7 @@ The test `a cast is not a check` shows the first row: `raw as User` compiles, `l
 
 ### 1.1 Parse, don't validate
 
-"Parse, don't validate" (Alexis King, 2019) says: a check that returns `boolean` throws away what it learned, so the rest of the program must either re-check or trust. A **parser** returns a *more precise type* that records the evidence: `string → Email`, `unknown → User`, `number[] → NonEmptyArray<number>`. Downstream code takes the precise type as a parameter and cannot be called with unchecked data.
+"Parse, don't validate" (Alexis King, 2019) says: a check that returns `boolean` throws away what it learned, so the rest of the program must either re-check or trust. A **parser** returns a _more precise type_ that records the evidence: `string → Email`, `unknown → User`, `number[] → NonEmptyArray<number>`. Downstream code takes the precise type as a parameter and cannot be called with unchecked data.
 
 In TypeScript, the "more precise type" is either a structural type (the parsed object), a branded type (`string & { __brand: "Email" }`, [Module 10](./10-type-safe-api-design-patterns.md)), or a tuple type that encodes an invariant (`[T, ...T[]]`).
 
@@ -41,17 +40,17 @@ Keep the parse at the edge (controller, loader, message handler) and pass typed 
 
 ## 2. How a schema library computes static types
 
-A Zod schema is a value whose *type* carries two phantom type parameters: the **input** type (what `parse` accepts without failing) and the **output** type (what it returns). In Zod 4 they live under `schema._zod.input` / `schema._zod.output` and are read with:
+A Zod schema is a value whose _type_ carries two phantom type parameters: the **input** type (what `parse` accepts without failing) and the **output** type (what it returns). In Zod 4 they live under `schema._zod.input` / `schema._zod.output` and are read with:
 
 ```ts
-type In  = z.input<typeof Schema>;
-type Out = z.output<typeof Schema>;   // z.infer is an alias of z.output
+type In = z.input<typeof Schema>;
+type Out = z.output<typeof Schema>; // z.infer is an alias of z.output
 ```
 
 Each combinator computes its result type from its arguments:
 
 | Combinator | Input type | Output type |
-|---|---|---|
+| --- | --- | --- |
 | `z.string()` | `string` | `string` |
 | `z.object({ a: A, b: B })` | `{ a: In<A>; b: In<B> }` (optional where `In` includes `undefined`) | `{ a: Out<A>; b: Out<B> }` |
 | `A.optional()` | `In<A> \| undefined` | `Out<A> \| undefined` |
@@ -62,16 +61,16 @@ Each combinator computes its result type from its arguments:
 | `A.refine(pred)` with a type predicate `(x) => x is R` | `In<A>` | `Out<A> & R` |
 | `A.brand<"B">()` | `In<A>` | `Out<A> & z.$brand<"B">` |
 
-The test `z.input and z.output differ wherever a transform, default or coercion sits` asserts each row for a small `Settings` schema. **Failure mode:** typing a form's state or an HTTP *request* type with `z.infer` (the output) when the client sends the *input*: `{ theme?: "light" | "dark" }` is valid input, but `z.infer` claims `theme` is always present.
+The test `z.input and z.output differ wherever a transform, default or coercion sits` asserts each row for a small `Settings` schema. **Failure mode:** typing a form's state or an HTTP _request_ type with `z.infer` (the output) when the client sends the _input_: `{ theme?: "light" | "dark" }` is valid input, but `z.infer` claims `theme` is always present.
 
 ### 2.1 `.default` vs `.prefault` (Zod 4 semantics)
 
-In Zod 4, `.default(v)` **short-circuits**: if the input is `undefined`, `v` is returned as the *output* without running the inner schema, so `v` must be assignable to the output type. `.prefault(v)` substitutes `v` as *input* and parses it, so `v` must be assignable to the input type. The test shows `z.string().transform(s => s.length).default(99)` returning `99`, while `.prefault("abc")` returns `3`.
+In Zod 4, `.default(v)` **short-circuits**: if the input is `undefined`, `v` is returned as the _output_ without running the inner schema, so `v` must be assignable to the output type. `.prefault(v)` substitutes `v` as _input_ and parses it, so `v` must be assignable to the input type. The test shows `z.string().transform(s => s.length).default(99)` returning `99`, while `.prefault("abc")` returns `3`.
 
 ### Then vs now: Zod 3 → Zod 4
 
 | Concern | Zod 3 | Zod 4 (4.6.7) | Migration |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | String formats | `z.string().email()`, `.uuid()`, `.url()` | Top-level `z.email()`, `z.uuid()`, `z.url()`, `z.iso.datetime()`; method forms are `@deprecated` | Search-and-replace; method forms still work |
 | Error customisation | `message`, `errorMap`, `invalid_type_error`, `required_error` | One `error` parameter (string or function of the issue); `message` deprecated; the two `*_error` params removed | Rewrite messages to `{ error: … }` |
 | `.default()` | Applied to input, then parsed | Short-circuits with an output value; old behaviour is `.prefault()` | Check defaults on schemas with transforms |
@@ -83,16 +82,16 @@ In Zod 4, `.default(v)` **short-circuits**: if the input is `undefined`, `v` is 
 | `.superRefine` | Available | Still available and not deprecated in 4.6.7's typings; `.check()` is the lower-level alternative | None |
 | `.deepPartial()` | Deprecated | Removed | Write a recursive partial schema |
 
-Mixing pitfall: Zod 3 and Zod 4 schema *types* are not interchangeable. A library typed against `ZodType` from v3 rejects v4 schemas. This is exactly the coupling Standard Schema removes (§4).
+Mixing pitfall: Zod 3 and Zod 4 schema _types_ are not interchangeable. A library typed against `ZodType` from v3 rejects v4 schemas. This is exactly the coupling Standard Schema removes (§4).
 
 ---
 
 ## 3. Parsing APIs and error handling
 
 ```ts
-const user = User.parse(raw);            // throws ZodError
-const result = User.safeParse(raw);      // { success: true; data } | { success: false; error }
-const user2 = await User.parseAsync(raw);// required if any refinement/transform is async
+const user = User.parse(raw); // throws ZodError
+const result = User.safeParse(raw); // { success: true; data } | { success: false; error }
+const user2 = await User.parseAsync(raw); // required if any refinement/transform is async
 ```
 
 `safeParse` returns a discriminated union on `success`, so narrowing gives `data: User` or `error: ZodError<User>` (asserted in the tests). Formatting helpers:
@@ -130,23 +129,27 @@ interface StandardSchemaV1<Input = unknown, Output = Input> {
 ```
 
 Two design points:
+
 1. **Types travel in a phantom property.** `types` is optional and never read at runtime; `StandardSchemaV1.InferOutput<S>` reads it at the type level. That is the same phantom-type technique Zod uses internally.
 2. **The `~` prefix** sorts the property last in autocompletion and makes collisions with user-defined keys unlikely.
 
 A consumer (a form library, a router's search-param parser, a server-function framework, an env loader) depends only on the interface:
 
 ```ts
-async function parseWith<S extends StandardSchemaV1>(schema: S, value: unknown): Promise<StandardSchemaV1.InferOutput<S>> {
-  let result = schema["~standard"].validate(value);
+async function parseWith<S extends StandardSchemaV1>(
+  schema: S,
+  value: unknown,
+): Promise<StandardSchemaV1.InferOutput<S>> {
+  let result = schema['~standard'].validate(value);
   if (result instanceof Promise) result = await result;
-  if (result.issues) throw new Error(result.issues.map((i) => i.message).join("; "));
+  if (result.issues) throw new Error(result.issues.map((i) => i.message).join('; '));
   return result.value;
 }
 ```
 
 The test uses the same function with a Zod schema and with a hand-written `PositiveInt` schema that has no dependency at all. TanStack Form/Router and Solid's server functions accept Standard Schema, so application code can switch validators without touching those libraries.
 
-**When to depend on what.** Applications pick one library and use its full API (`z.infer`, error formatting, JSON Schema export). Libraries that *accept* user schemas type their parameters as `StandardSchemaV1` and never import a validator.
+**When to depend on what.** Applications pick one library and use its full API (`z.infer`, error formatting, JSON Schema export). Libraries that _accept_ user schemas type their parameters as `StandardSchemaV1` and never import a validator.
 
 ---
 
@@ -155,7 +158,11 @@ The test uses the same function with a Zod schema and with a hand-written `Posit
 ### 5.1 Typed `fetch`
 
 ```ts
-async function fetchJson<S extends z.ZodType>(input: string, schema: S, fetchImpl = fetch): Promise<z.output<S>> {
+async function fetchJson<S extends z.ZodType>(
+  input: string,
+  schema: S,
+  fetchImpl = fetch,
+): Promise<z.output<S>> {
   const res = await fetchImpl(input);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return schema.parse(await res.json());
@@ -171,8 +178,8 @@ Every environment variable is `string | undefined`. Parse them once at start-up 
 ```ts
 const Env = z.object({
   PORT: z.coerce.number().int().default(3000),
-  NODE_ENV: z.enum(["development", "test", "production"]),
-  DEBUG: z.stringbool().default(false),   // "true"/"yes"/"1" → true
+  NODE_ENV: z.enum(['development', 'test', 'production']),
+  DEBUG: z.stringbool().default(false), // "true"/"yes"/"1" → true
 });
 export const env = Env.parse(process.env);
 ```
@@ -193,7 +200,7 @@ Arguments of `"use server"` functions (React) or server functions (Solid) are at
 
 ### 6.1 Async refinements and the colour of `parse`
 
-A refinement or transform that returns a promise makes the whole schema **async**: `parse`/`safeParse` throw (`$ZodAsyncError`: "Encountered Promise during synchronous parse. Use .parseAsync() instead.") and you must call `parseAsync`/`safeParseAsync`. The test proves both. The static type does not record this, so the error appears only at runtime, often in a code path that previously used a sync schema. Keep I/O-bound checks (uniqueness in a database, remote lookups) *out* of shared schemas: put them in the handler after the synchronous parse, where their latency and failure modes are visible.
+A refinement or transform that returns a promise makes the whole schema **async**: `parse`/`safeParse` throw (`$ZodAsyncError`: "Encountered Promise during synchronous parse. Use .parseAsync() instead.") and you must call `parseAsync`/`safeParseAsync`. The test proves both. The static type does not record this, so the error appears only at runtime, often in a code path that previously used a sync schema. Keep I/O-bound checks (uniqueness in a database, remote lookups) _out_ of shared schemas: put them in the handler after the synchronous parse, where their latency and failure modes are visible.
 
 ### 6.2 Recursive schemas
 
@@ -202,9 +209,11 @@ A schema cannot reference itself in its own initializer (TDZ at runtime, and TS7
 ```ts
 const Category = z.object({
   name: z.string(),
-  get children() { return z.array(Category); },
+  get children() {
+    return z.array(Category);
+  },
 });
-type Category = z.infer<typeof Category>;   // { name: string; children: Category[] }
+type Category = z.infer<typeof Category>; // { name: string; children: Category[] }
 ```
 
 The getter is the runtime deferral; on the type side, TypeScript can type the getter's return without evaluating it eagerly, so the inferred type is properly recursive (the test asserts `Category["children"][number]` is `Category`). Zod 3 needed `z.lazy(() => …)` plus a hand-written interface, because inference could not see through the cycle.
@@ -218,22 +227,22 @@ const IsoDate = z.codec(z.iso.datetime(), z.date(), {
   decode: (s) => new Date(s),
   encode: (d) => d.toISOString(),
 });
-IsoDate.decode("2026-01-01T00:00:00.000Z"); // Date
-IsoDate.encode(new Date());                  // string
+IsoDate.decode('2026-01-01T00:00:00.000Z'); // Date
+IsoDate.encode(new Date()); // string
 ```
 
 `z.input<typeof IsoDate>` is `string` and `z.output` is `Date`. A one-way `.transform` cannot be reversed, which is why APIs that both read and write (forms, caches, URL state) drift into two hand-maintained schemas without codecs.
 
 ### 6.4 Schemas as contracts for other tools
 
-`z.toJSONSchema(schema)` emits JSON Schema (draft 2020-12), so one TypeScript source of truth can feed OpenAPI documents, other-language clients, and LLM tool definitions. The test checks `required`, and that `.int()` becomes `"type": "integer"`. Not every Zod feature has a JSON Schema equivalent (transforms, refinements with arbitrary code, codecs): those are either dropped or reported depending on options, so treat the export as the *structural* contract and keep semantic checks server-side.
+`z.toJSONSchema(schema)` emits JSON Schema (draft 2020-12), so one TypeScript source of truth can feed OpenAPI documents, other-language clients, and LLM tool definitions. The test checks `required`, and that `.int()` becomes `"type": "integer"`. Not every Zod feature has a JSON Schema equivalent (transforms, refinements with arbitrary code, codecs): those are either dropped or reported depending on options, so treat the export as the _structural_ contract and keep semantic checks server-side.
 
 ### 6.5 Error messages that help users
 
 The unified `error` option accepts a function of the issue, which can tell "missing" from "wrong type":
 
 ```ts
-z.string({ error: (issue) => (issue.input === undefined ? "required" : "must be text") });
+z.string({ error: (issue) => (issue.input === undefined ? 'required' : 'must be text') });
 ```
 
 For localisation, set a global error map with `z.config(...)` and keep messages out of schemas. For APIs, return `z.flattenError` (flat forms) or `z.treeifyError` (nested data) rather than the raw issue list, and never echo `issue.input` back for secrets.
@@ -249,7 +258,7 @@ For localisation, set a global error map with `z.config(...)` and keep messages 
 ### 6.8 Choosing a validator
 
 | Concern | Zod 4 | Valibot | ArkType | Hand-written predicate |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | Static inference | Yes | Yes | Yes (from string DSL) | Manual type |
 | Standard Schema | Yes | Yes | Yes | Implement `~standard` yourself (§4) |
 | Bundle size | Medium (Zod Mini for tree-shaking) | Small (functional, tree-shakeable) | Medium | Minimal |
@@ -291,25 +300,38 @@ Write a `Checkout` schema with an email, an optional company (`name`, optional `
 export const Checkout = z
   .object({
     email: z.email(),
-    company: z.object({ name: z.string().min(1), vatId: z.string().regex(/^[A-Z]{2}\d{8,12}$/).optional() }).optional(),
-    payment: z.discriminatedUnion("method", [
-      z.object({ method: z.literal("card"), token: z.string().min(1) }),
-      z.object({ method: z.literal("bank"), iban: z.string().min(15) }),
-      z.object({ method: z.literal("invoice"), dueDays: z.coerce.number().int().default(14) }),
+    company: z
+      .object({
+        name: z.string().min(1),
+        vatId: z
+          .string()
+          .regex(/^[A-Z]{2}\d{8,12}$/)
+          .optional(),
+      })
+      .optional(),
+    payment: z.discriminatedUnion('method', [
+      z.object({ method: z.literal('card'), token: z.string().min(1) }),
+      z.object({ method: z.literal('bank'), iban: z.string().min(15) }),
+      z.object({ method: z.literal('invoice'), dueDays: z.coerce.number().int().default(14) }),
     ]),
   })
   .superRefine((v, ctx) => {
-    if (v.payment.method === "invoice" && !v.company?.vatId) {
-      ctx.addIssue({ code: "custom", message: "invoice requires a company VAT id", path: ["company", "vatId"] });
+    if (v.payment.method === 'invoice' && !v.company?.vatId) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'invoice requires a company VAT id',
+        path: ['company', 'vatId'],
+      });
     }
   });
 export type CheckoutForm = z.input<typeof Checkout>;
 export type CheckoutCommand = z.output<typeof Checkout>;
 ```
 
-- The cross-field rule lives in `superRefine` on the *parent*, because neither field alone can decide it; the issue's `path` points at the field the user must fix, so form libraries display it in the right place.
+- The cross-field rule lives in `superRefine` on the _parent_, because neither field alone can decide it; the issue's `path` points at the field the user must fix, so form libraries display it in the right place.
 - Inside `superRefine`, `v` is already the output type, so `v.payment.method === "invoice"` narrows like ordinary TypeScript.
 - `dueDays` is `unknown` in the form type (coercion accepts anything) and `number` in the command type. Using `z.infer` for the form would wrongly require `dueDays`.
+
 </details>
 
 ### Exercise 11.2: Search params through Standard Schema
@@ -319,15 +341,18 @@ Write `parseSearchParams<S extends StandardSchemaV1>(schema: S, params: URLSearc
 <details><summary>Solution and explanation</summary>
 
 ```ts
-export async function parseSearchParams<S extends StandardSchemaV1>(schema: S, params: URLSearchParams): Promise<StandardSchemaV1.InferOutput<S>> {
+export async function parseSearchParams<S extends StandardSchemaV1>(
+  schema: S,
+  params: URLSearchParams,
+): Promise<StandardSchemaV1.InferOutput<S>> {
   const raw: Record<string, string | string[]> = {};
   for (const key of new Set(params.keys())) {
     const all = params.getAll(key);
-    raw[key] = all.length > 1 ? all : (all[0] ?? "");
+    raw[key] = all.length > 1 ? all : (all[0] ?? '');
   }
-  let result = schema["~standard"].validate(raw);
+  let result = schema['~standard'].validate(raw);
   if (result instanceof Promise) result = await result;
-  if (result.issues) throw new Error(result.issues.map((i) => i.message).join("; "));
+  if (result.issues) throw new Error(result.issues.map((i) => i.message).join('; '));
   return result.value;
 }
 ```
@@ -341,7 +366,7 @@ A Zod 3 schema `z.string().default("abc").transform(s => s.length)` returned `3`
 
 <details><summary>Solution and explanation</summary>
 
-Zod 4's `.default(v)` short-circuits with an *output* value, so the Zod 3 meaning ("substitute this input, then parse it") is `.prefault("abc")`: `z.string().transform((s) => s.length).prefault("abc").parse(undefined) === 3`, while `.default(0)` returns `0` without running the transform.
+Zod 4's `.default(v)` short-circuits with an _output_ value, so the Zod 3 meaning ("substitute this input, then parse it") is `.prefault("abc")`: `z.string().transform((s) => s.length).prefault("abc").parse(undefined) === 3`, while `.default(0)` returns `0` without running the transform.
 </details>
 
 ---
@@ -387,7 +412,6 @@ Put the self-reference in a getter on the object shape (`get children() { return
 
 A plain union tries every member and, on failure, reports an `invalid_union` with all members' errors. A discriminated union reads the tag and validates one member: O(1) member checks and errors that point at the real field.
 </details>
-
 
 <details><summary>9. When do you need a codec instead of a transform?</summary>
 

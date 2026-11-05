@@ -40,26 +40,33 @@ export function encodeQuicVarInt(value: bigint | number): Buffer {
 /**
  * Decodes a QUIC Variable-Length Integer from a buffer at a given offset
  */
-export function decodeQuicVarInt(buf: Buffer, offset: number): { value: bigint; bytesRead: number } {
+export function decodeQuicVarInt(
+  buf: Buffer,
+  offset: number,
+): { value: bigint; bytesRead: number } {
   if (offset >= buf.length) throw new Error('Buffer exhausted before reading QUIC VarInt');
   const firstByte = buf[offset]!;
   const prefix = (firstByte >> 6) & 0x03;
 
   switch (prefix) {
-    case 0: { // 1 byte
+    case 0: {
+      // 1 byte
       return { value: BigInt(firstByte & 0x3f), bytesRead: 1 };
     }
-    case 1: { // 2 bytes
+    case 1: {
+      // 2 bytes
       if (buf.length - offset < 2) throw new Error('Buffer truncated for 2-byte QUIC VarInt');
       const val = buf.readUInt16BE(offset) & 0x3fff;
       return { value: BigInt(val), bytesRead: 2 };
     }
-    case 2: { // 4 bytes
+    case 2: {
+      // 4 bytes
       if (buf.length - offset < 4) throw new Error('Buffer truncated for 4-byte QUIC VarInt');
       const val = buf.readUInt32BE(offset) & 0x3fffffff;
       return { value: BigInt(val), bytesRead: 4 };
     }
-    case 3: { // 8 bytes
+    case 3: {
+      // 8 bytes
       if (buf.length - offset < 8) throw new Error('Buffer truncated for 8-byte QUIC VarInt');
       const mask = (1n << 62n) - 1n;
       const val = buf.readBigUInt64BE(offset) & mask;
@@ -97,15 +104,12 @@ describe('Module 11: QUIC Transport Variable-Length Integers (RFC 9000)', () => 
 
   it('property test: lossless round-trip encoding/decoding for arbitrary integers', () => {
     fc.assert(
-      fc.property(
-        fc.bigInt({ min: 0n, max: 1_000_000_000_000n }),
-        (val) => {
-          const encoded = encodeQuicVarInt(val);
-          const { value: decoded, bytesRead } = decodeQuicVarInt(encoded, 0);
-          assert.equal(decoded, val);
-          assert.equal(bytesRead, encoded.length);
-        }
-      )
+      fc.property(fc.bigInt({ min: 0n, max: 1_000_000_000_000n }), (val) => {
+        const encoded = encodeQuicVarInt(val);
+        const { value: decoded, bytesRead } = decodeQuicVarInt(encoded, 0);
+        assert.equal(decoded, val);
+        assert.equal(bytesRead, encoded.length);
+      }),
     );
   });
 });

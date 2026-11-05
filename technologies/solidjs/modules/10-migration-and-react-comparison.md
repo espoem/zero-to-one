@@ -1,6 +1,6 @@
 # Module 10 — Migration 1.x → 2.0, Version History, and React vs Solid
 
-> **Executable proof:** [`examples/typescript/10-solid1-vs-solid2.test.ts`](../examples/typescript/10-solid1-vs-solid2.test.ts) installs `solid-js@1.9.17` under the npm alias `solid-js-1` **only for this comparison** and runs the same scenarios on both runtimes. (Two runtimes in one *app* is the "Multiple Solid instances" bug of [Module 09](./09-testing-debugging-performance.md); in a test that imports them as separate namespaces it is a controlled experiment.)
+> **Executable proof:** [`examples/typescript/10-solid1-vs-solid2.test.ts`](../examples/typescript/10-solid1-vs-solid2.test.ts) installs `solid-js@1.9.17` under the npm alias `solid-js-1` **only for this comparison** and runs the same scenarios on both runtimes. (Two runtimes in one _app_ is the "Multiple Solid instances" bug of [Module 09](./09-testing-debugging-performance.md); in a test that imports them as separate namespaces it is a controlled experiment.)
 >
 > This module is the single home of the **React vs Solid mental-model comparison** for the whole repository. The React track ([technologies/react](../../react/README.md)) links here and owns React internals (Fiber, lanes, RSC/Flight, the React Compiler).
 
@@ -9,7 +9,7 @@
 ## 1. Version history
 
 | Release | Date (npm) | What changed for practitioners |
-|---|---|---|
+| --- | --- | --- |
 | 1.0 | 2021-06-28 | stable fine-grained reactivity, JSX compiled to DOM templates, stores, `createResource`, `<Suspense>` |
 | 1.1 – 1.7 | 2021-08 → 2023-03 | incremental minors (release dates from npm; per-minor feature notes not re-verified for this track) |
 | 1.8 | 2023-10-09 | the line SolidStart 1.0 shipped on (unverified: see the SolidStart changelog) |
@@ -28,25 +28,25 @@ Companion packages for the 2.0 line (verified 2026-10-28): `@solidjs/web`, `@sol
 Peer ranges read from npm. "2.0-ready" means a published version peers on `solid-js` 2.0 RCs.
 
 | Package | Solid 1.x line | Solid 2.0 line | Notes |
-|---|---|---|---|
-| `@solidjs/start` | `2.1.0` (`latest`) — peers `solid-js ^1.9.15` | **none**; use `@solidjs/vite-plugin` start mode | the 2.x *Start* major is a Solid **1.9** package |
-| `@solidjs/router` | `1.0.0` | `2.0.0-next.43` | |
+| --- | --- | --- | --- |
+| `@solidjs/start` | `2.1.0` (`latest`) — peers `solid-js ^1.9.15` | **none**; use `@solidjs/vite-plugin` start mode | the 2.x _Start_ major is a Solid **1.9** package |
+| `@solidjs/router` | `1.0.0` | `2.0.0-next.43` |  |
 | `vite-plugin-solid` → `@solidjs/vite-plugin` | `vite-plugin-solid@2.11.x` | `@solidjs/vite-plugin@3.0.0-next.52` | renamed |
-| `@solidjs/testing-library` | `0.8.10` | `1.0.0-rc.2` | |
+| `@solidjs/testing-library` | `0.8.10` | `1.0.0-rc.2` |  |
 | `@solidjs/meta` | `0.29.4` | `1.0.0-next.2` | head tags; `useHead` also in `@solidjs/web` |
-| `@tanstack/solid-query` | `5.105.0` | `6.0.0-rc.5` (peers `>=2.0.0-rc.13`) | |
-| `@tanstack/solid-router` | `1.170.x` | `2.0.0-rc.9` (peers `>=2.0.0-rc.16`) | |
+| `@tanstack/solid-query` | `5.105.0` | `6.0.0-rc.5` (peers `>=2.0.0-rc.13`) |  |
+| `@tanstack/solid-router` | `1.170.x` | `2.0.0-rc.9` (peers `>=2.0.0-rc.16`) |  |
 | `@kobalte/core` | `0.13.14` | `2.0.0-alpha.4` (pins `2.0.0-rc.16` exactly) | will conflict with rc.19 until it bumps |
 | `@solid-primitives/*` | `latest` | `next` tags (e.g. `storage@5.0.0-next.7`) | per package |
 | `@ark-ui/solid` | `5.39.x` | `6.0.0-next.0` still peers `solid-js >=1.6.0` | unverified 2.0 support |
-| Panda CSS | `jsxFramework: "solid"` | | owned by the `panda-css` track |
+| Panda CSS | `jsxFramework: "solid"` |  | owned by the `panda-css` track |
 
 Before adopting Solid 2 in production, check every dependency's peer range; an exact-pinned peer (Kobalte's alpha) forces you onto its RC or into an override.
 
 ### 2.1 RC risk register
 
 | Risk | Likelihood | Mitigation in this track |
-|---|---|---|
+| --- | --- | --- |
 | API renamed or removed between RCs | medium (several changes during the RC line) | exact pins; pin-assertion test; canary job on `@next` |
 | semantics change silently (e.g. `<Loading on>` re-arm, deferred 2026-10-06) | medium | behavioural tests for every documented rule; re-run on each bump |
 | ecosystem lags (UI kits pinned to older RCs) | high | peer-range audit (§2); overrides only with a test suite |
@@ -58,7 +58,7 @@ Before adopting Solid 2 in production, check every dependency's peer range; an e
 Each row links to the module with the full treatment and is proved either there or in this module's suite.
 
 | Area | 1.x (≤ 1.9) | 2.0 RC | Module |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Imports | `solid-js/web`, `solid-js/store`, `solid-js/h`, `solid-js/html` | `@solidjs/web`, `solid-js`, `@solidjs/h`, `@solidjs/html` | 03 |
 | JSX types | `jsxImportSource: "solid-js"` | `"@solidjs/web"` | 03 |
 | Batching | sync writes, `batch()` | microtask commits, `flush()`; `batch` removed (proved) | 01 |
@@ -100,7 +100,7 @@ Each row links to the module with the full treatment and is proved either there 
 The comparison suite runs each scenario on `solid-js@1.9.17` and `2.0.0-rc.19`:
 
 | Scenario | 1.9 | 2.0 |
-|---|---|---|
+| --- | --- | --- |
 | read right after a write | new value | committed value until `flush()` |
 | two writes outside `batch` | computation runs per write (3 runs incl. creation + 1 batched) | one run per flush |
 | `createComputed` write-back | works (`copy === 4`) | API gone; writes in owned scope throw |
@@ -117,8 +117,17 @@ The comparison suite runs each scenario on `solid-js@1.9.17` and `2.0.0-rc.19`:
 
 ```tsx
 // ── Solid 1.9 ───────────────────────────────────────────────
-import { createResource, createSignal, onMount, Show, Suspense, ErrorBoundary, mergeProps, For } from "solid-js";
-import { createStore, produce } from "solid-js/store";
+import {
+  createResource,
+  createSignal,
+  onMount,
+  Show,
+  Suspense,
+  ErrorBoundary,
+  mergeProps,
+  For,
+} from 'solid-js';
+import { createStore, produce } from 'solid-js/store';
 
 function Inbox(rawProps: { userId: string; pageSize?: number }) {
   const props = mergeProps({ pageSize: 20 }, rawProps);
@@ -128,7 +137,7 @@ function Inbox(rawProps: { userId: string; pageSize?: number }) {
     ([id, p]) => api.inbox(id, p, props.pageSize),
   );
   const [ui, setUi] = createStore({ selected: [] as string[] });
-  onMount(() => document.title = "Inbox");
+  onMount(() => (document.title = 'Inbox'));
   const archive = async (id: string) => {
     mutate((m) => m?.filter((x) => x.id !== id));
     await api.archive(id);
@@ -138,10 +147,15 @@ function Inbox(rawProps: { userId: string; pageSize?: number }) {
     <ErrorBoundary fallback={(e) => <p>{e.message}</p>}>
       <Suspense fallback={<Spinner />}>
         <Show when={mail.loading}>refreshing…</Show>
-        <For each={mail()}>{(m) =>
-          <Row mail={m} selected={ui.selected.includes(m.id)}
-               onSelect={() => setUi("selected", (s) => [...s, m.id])}
-               onArchive={() => archive(m.id)} />}
+        <For each={mail()}>
+          {(m) => (
+            <Row
+              mail={m}
+              selected={ui.selected.includes(m.id)}
+              onSelect={() => setUi('selected', (s) => [...s, m.id])}
+              onArchive={() => archive(m.id)}
+            />
+          )}
         </For>
       </Suspense>
     </ErrorBoundary>
@@ -149,29 +163,55 @@ function Inbox(rawProps: { userId: string; pageSize?: number }) {
 }
 
 // ── Solid 2.0 RC ────────────────────────────────────────────
-import { createSignal, createStore, createOptimisticStore, action, refresh,
-         onSettled, isPending, merge, For, Show, Loading, Errored } from "solid-js";
+import {
+  createSignal,
+  createStore,
+  createOptimisticStore,
+  action,
+  refresh,
+  onSettled,
+  isPending,
+  merge,
+  For,
+  Show,
+  Loading,
+  Errored,
+} from 'solid-js';
 
 function Inbox(rawProps: { userId: string; pageSize?: number }) {
-  const props = merge({ pageSize: 20 }, rawProps);                     // undefined now overrides: parents must omit
+  const props = merge({ pageSize: 20 }, rawProps); // undefined now overrides: parents must omit
   const [page, setPage] = createSignal(0);
   const [mail, setMail] = createOptimisticStore(
-    () => api.inbox(props.userId, page(), props.pageSize), [] as Mail[], { key: "id" });  // reads before any await
+    () => api.inbox(props.userId, page(), props.pageSize),
+    [] as Mail[],
+    { key: 'id' },
+  ); // reads before any await
   const [selectedIds, setSelectedIds] = createStore<Record<string, true>>({});
-  onSettled(() => { document.title = "Inbox"; });
+  onSettled(() => {
+    document.title = 'Inbox';
+  });
   const archive = action(function* (id: string) {
-    setMail((d) => d.filter((x) => x.id !== id));                        // optimistic, reverts on failure
+    setMail((d) => d.filter((x) => x.id !== id)); // optimistic, reverts on failure
     yield api.archive(id);
     refresh(mail);
   });
   return (
     <Errored fallback={(e) => <p>{e().message}</p>}>
       <Loading fallback={<Spinner />}>
-        <Show when={isPending(() => mail.length)}>refreshing…</Show>     {/* only for real changes */}
-        <For each={mail} keyed={(m) => m.id}>{(m) =>
-          <Row mail={m()} selected={selectedIds[m().id] === true}         // O(1) per row
-               onSelect={() => setSelectedIds((d) => { d[m().id] = true; })}
-               onArchive={() => archive(m().id)} />}
+        <Show when={isPending(() => mail.length)}>refreshing…</Show> {/* only for real changes */}
+        <For each={mail} keyed={(m) => m.id}>
+          {(m) => (
+            <Row
+              mail={m()}
+              selected={selectedIds[m().id] === true} // O(1) per row
+              onSelect={() =>
+                setSelectedIds((d) => {
+                  d[m().id] = true;
+                })
+              }
+              onArchive={() => archive(m().id)}
+            />
+          )}
         </For>
       </Loading>
     </Errored>
@@ -179,14 +219,14 @@ function Inbox(rawProps: { userId: string; pageSize?: number }) {
 }
 ```
 
-Changes and their reasons: `merge` semantics differ for `undefined`; the resource becomes an optimistic derived store (granular, reconciled by id, race-safe); `mail.loading` becomes `isPending` (true only while a *change* is in flight — the first load is the boundary's); `onMount` → `onSettled`; path setters and `includes` (O(n) per row) become a keyed map; the manual `mutate` + `refetch` becomes an action that reverts on failure; boundaries are renamed and the error accessor is called (`e()`).
+Changes and their reasons: `merge` semantics differ for `undefined`; the resource becomes an optimistic derived store (granular, reconciled by id, race-safe); `mail.loading` becomes `isPending` (true only while a _change_ is in flight — the first load is the boundary's); `onMount` → `onSettled`; path setters and `includes` (O(n) per row) become a keyed map; the manual `mutate` + `refetch` becomes an action that reverts on failure; boundaries are renamed and the error accessor is called (`e()`).
 
 ### 3.4 Search patterns for a migration audit
 
 Grep for these in a 1.x codebase; each hit is a decision, not a blind replacement.
 
 | Pattern | Why it matters in 2.0 |
-|---|---|
+| --- | --- |
 | `from "solid-js/web"`, `"solid-js/store"` | import moves |
 | `createEffect\(\(\) =>` with no second argument | must become compute + apply; reads move to compute |
 | `batch\(` | delete; check reads that follow |
@@ -222,12 +262,12 @@ Notes: `"use server"` functions keep working (compiled by the plugin), but their
 
 ## 4. React 19 vs Solid 2: the mental models
 
-React (19.3.1 on npm, 2026-10-28) and Solid share JSX, components, context, Suspense-like boundaries and actions, so code *looks* alike. The execution models are opposites.
+React (19.3.1 on npm, 2026-10-28) and Solid share JSX, components, context, Suspense-like boundaries and actions, so code _looks_ alike. The execution models are opposites.
 
 ### 4.1 Unit of re-execution
 
-| | React 19 | Solid 2 |
-|---|---|---|
+|  | React 19 | Solid 2 |
+| --- | --- | --- |
 | What re-runs on state change | the **component function** (and, by default, its children) | only the **bindings, memos and effects** that read the changed signal |
 | Component body | a render function, called many times | a setup function, called **once** |
 | Reconciliation | diff a new element tree against the previous one (Fiber) | none for updates; fine-grained bindings write the DOM directly; lists use keyed mapping |
@@ -262,8 +302,8 @@ Cost model: React's update cost grows with the size of the re-rendered subtree (
 
 ### 4.3 Async, transitions and actions
 
-| | React 19 | Solid 2 |
-|---|---|---|
+|  | React 19 | Solid 2 |
+| --- | --- | --- |
 | Async read | `use(promise)` inside a component, with `<Suspense>`; promise identity must be stable across renders (cache it) | async memo; the accessor is the API; identity handled by the graph |
 | Loading UI | `<Suspense fallback>`; a transition keeps old UI, otherwise the fallback re-appears | `<Loading>` covers first load only; revalidation keeps content; `on` re-arms deliberately |
 | Pending UI | `useTransition` → `isPending`, `useDeferredValue` | `isPending(() => x())`, `latest`, `createDeferred` |
@@ -277,32 +317,41 @@ Cost model: React's update cost grows with the size of the re-rendered subtree (
 ```tsx
 // React 19
 function Products({ items }: { items: Product[] }) {
-  const [q, setQ] = useState("");
+  const [q, setQ] = useState('');
   const deferredQ = useDeferredValue(q);
-  const visible = useMemo(() => items.filter((p) => p.name.includes(deferredQ)), [items, deferredQ]);
-  return (<>
-    <input value={q} onChange={(e) => setQ(e.target.value)} />
-    <List items={visible} stale={q !== deferredQ} />       {/* List re-renders; memo(List) to stop children */}
-  </>);
+  const visible = useMemo(
+    () => items.filter((p) => p.name.includes(deferredQ)),
+    [items, deferredQ],
+  );
+  return (
+    <>
+      <input value={q} onChange={(e) => setQ(e.target.value)} />
+      <List items={visible} stale={q !== deferredQ} />{' '}
+      {/* List re-renders; memo(List) to stop children */}
+    </>
+  );
 }
 
 // Solid 2
 function Products(props: { items: Product[] }) {
-  const [q, setQ] = createSignal("");
+  const [q, setQ] = createSignal('');
   const visible = createMemo(() => props.items.filter((p) => p.name.includes(q())));
-  return (<>
-    <input value={q()} onInput={(e) => setQ(e.currentTarget.value)} />
-    <For each={visible()}>{(p) => <Row product={p} />}</For>  {/* rows for unchanged products are kept */}
-  </>);
+  return (
+    <>
+      <input value={q()} onInput={(e) => setQ(e.currentTarget.value)} />
+      <For each={visible()}>{(p) => <Row product={p} />}</For>{' '}
+      {/* rows for unchanged products are kept */}
+    </>
+  );
 }
 ```
 
-In React every keystroke re-renders `Products` and, without memoisation, `List` and its rows; `useDeferredValue` keeps typing responsive by rendering the expensive part at lower priority. In Solid a keystroke re-runs one memo; `<For>` keeps rows for products that stay visible and creates/disposes only the difference, so deferral is rarely needed for this size. For an expensive *async* filter, `createDeferred` plays `useDeferredValue`'s role.
+In React every keystroke re-renders `Products` and, without memoisation, `List` and its rows; `useDeferredValue` keeps typing responsive by rendering the expensive part at lower priority. In Solid a keystroke re-runs one memo; `<For>` keeps rows for products that stay visible and creates/disposes only the difference, so deferral is rarely needed for this size. For an expensive _async_ filter, `createDeferred` plays `useDeferredValue`'s role.
 
 ### 4.3.2 Memoisation, compared
 
 | Concern | React 19 (+ Compiler) | Solid 2 |
-|---|---|---|
+| --- | --- | --- |
 | avoid recomputing a derived value | `useMemo` / compiler auto-memoisation | `createMemo` (only when expensive or shared) |
 | avoid re-rendering a child | `memo(Child)` / compiler | not applicable: children don't re-render |
 | stable callbacks | `useCallback` / compiler | not applicable: closures are created once |
@@ -311,9 +360,9 @@ In React every keystroke re-renders `Products` and, without memoisation, `List` 
 
 ### 4.3.3 Server rendering models
 
-| | React 19 (RSC) | Solid 2 RC |
-|---|---|---|
-| Server/client split | `"use client"` marks client modules; everything else may be a Server Component | everything is isomorphic by default; `"use server"` marks server functions; server components (experimental) are functions *returned* from server functions, no `"use client"` |
+|  | React 19 (RSC) | Solid 2 RC |
+| --- | --- | --- |
+| Server/client split | `"use client"` marks client modules; everything else may be a Server Component | everything is isomorphic by default; `"use server"` marks server functions; server components (experimental) are functions _returned_ from server functions, no `"use client"` |
 | Wire format | Flight protocol (serialized element tree + client references) | streamed HTML fragments + seroval data records; server components stream HTML ("single copy": content as HTML, values as data) |
 | Hydration | client components hydrate; server output is not re-rendered on the client | whole tree hydrates (components re-run once, DOM claimed by `_hk`); server-component frames are adopted without re-running |
 | Mutations | Server Functions / Actions + `useActionState`, `useOptimistic` | server functions + `action()` + optimistic primitives |
@@ -329,18 +378,18 @@ React internals (Fiber, lanes, Flight) are owned by the [React track](../../reac
 ### 4.5 Translation table for React developers
 
 | React habit | Solid 2 equivalent | Trap |
-|---|---|---|
+| --- | --- | --- |
 | `const [x, setX] = useState(0)` | `const [x, setX] = createSignal(0)` | read with `x()`; reads lag writes |
 | `useMemo(() => f(a), [a])` | `createMemo(() => f(a()))` | no dependency array |
 | `useEffect(() => { sub(); return unsub }, [a])` | `createEffect(() => a(), (v) => { sub(v); return unsub })` | reads in compute, effects never compare |
-| `useEffect(() => {...}, [])` | `onSettled(() => { …; return cleanup })` | |
+| `useEffect(() => {...}, [])` | `onSettled(() => { …; return cleanup })` |  |
 | `useRef` | `let el; <div ref={el} />` or a ref callback | refs run before attach |
 | `{cond && <X/>}` / early return | `<Show when={cond()}>` | early returns run once |
 | `items.map(i => <Row key={i.id} />)` | `<For each={items()} keyed={(i) => i.id}>` | callback body runs once per row |
 | `function C({ title })` | `function C(props)` + `props.title` | destructuring freezes |
 | `<Ctx.Provider value>` | `<Ctx value>` | default-less context throws |
-| `use(promise)` + `<Suspense>` | async memo + `<Loading>` | |
-| `useOptimistic` | `createOptimistic` inside an `action` | |
+| `use(promise)` + `<Suspense>` | async memo + `<Loading>` |  |
+| `useOptimistic` | `createOptimistic` inside an `action` |  |
 
 ---
 
@@ -400,4 +449,3 @@ React marks client modules with `"use client"` and streams the Flight format; cl
 
 `solid-js@1.9`'s `solid-js/store` entry imports the bare `solid-js` specifier, which resolves to the installed 2.0 package; the 1.x store would bind to the wrong runtime. Core APIs can be compared through an npm alias because the 1.x core module imports nothing from `solid-js`.
 </details>
-

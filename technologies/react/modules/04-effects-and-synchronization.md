@@ -4,7 +4,7 @@
 >
 > **Cross-links.** Where effects run relative to tasks, microtasks, `requestAnimationFrame` and paint is the HTML event loop, owned by [languages/javascript](../../../languages/javascript/README.md); the browser's style → layout → paint pipeline is owned by [languages/css](../../../languages/css/README.md). Typing effect callbacks, ref callbacks and `useEffectEvent` is in [TypeScript M12](../../../languages/typescript/modules/12-typing-ui-frameworks.md).
 
-Rendering computes *what the UI should look like*. Effects are how a component **synchronises something outside React** — a subscription, a socket, a DOM measurement, a third-party widget, a timer — with what was rendered. This module gives a precise definition of an effect, the exact commit-time order of the three effect kinds and ref callbacks, the Strict Mode re-run (including the 19.3 hydration change), the React 19 ref-cleanup protocol, `useEffectEvent` (stable since 19.2), and the long list of cases where an effect is the wrong tool.
+Rendering computes _what the UI should look like_. Effects are how a component **synchronises something outside React** — a subscription, a socket, a DOM measurement, a third-party widget, a timer — with what was rendered. This module gives a precise definition of an effect, the exact commit-time order of the three effect kinds and ref callbacks, the Strict Mode re-run (including the 19.3 hydration change), the React 19 ref-cleanup protocol, `useEffectEvent` (stable since 19.2), and the long list of cases where an effect is the wrong tool.
 
 ---
 
@@ -12,7 +12,7 @@ Rendering computes *what the UI should look like*. Effects are how a component *
 
 > **Definition 4.1 (Effect).** An effect is a pair $(\text{setup}, \text{deps})$ declared during render. After a commit in which the instance is mounted, or in which some $d_i \in \text{deps}$ changed by `Object.is`, React runs the previous setup's cleanup (if any) and then `setup()`. When the instance unmounts, React runs the last cleanup. With `deps` omitted, the effect re-synchronises after every commit; with `deps = []`, only on mount and unmount.
 
-> **Definition 4.2 (Correct effect).** An effect is correct iff for every sequence of commits, the external system ends in the state that a *single* setup with the *current* deps would produce. Equivalently: **setup ∘ cleanup ∘ setup ≡ setup** (idempotence modulo cleanup).
+> **Definition 4.2 (Correct effect).** An effect is correct iff for every sequence of commits, the external system ends in the state that a _single_ setup with the _current_ deps would produce. Equivalently: **setup ∘ cleanup ∘ setup ≡ setup** (idempotence modulo cleanup).
 
 Definition 4.2 is the whole design. Effects are not lifecycle hooks ("run on mount"), they are **synchronisation**: "keep the chat connection pointed at `roomId`". React may tear down and re-establish synchronisation whenever it likes — on dep change, in Strict Mode, when an `<Activity>` hides and shows a subtree (Module 05), on Fast Refresh — and a correct effect does not care.
 
@@ -34,7 +34,7 @@ Note the cleanup runs **with the values it closed over**, i.e. the old deps (tes
 ## 2. The three effect kinds and where they run
 
 | Hook | Runs | Blocks paint | Use for |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `useInsertionEffect` | Commit, **mutation** phase, before layout effects; refs not attached yet | Yes | CSS-in-JS libraries inserting `<style>` rules before anything measures layout. Not for app code; cannot schedule updates |
 | `useLayoutEffect` | Commit, **layout** phase, after all DOM mutations and ref attachment, same task | Yes | Measuring layout (tooltips, popovers), synchronously correcting DOM before the user sees it |
 | `useEffect` | **Passive** phase: usually a later task after paint; flushed synchronously before the next discrete update or when a layout effect/flushSync forces it | No | Everything else: subscriptions, network, timers, logging, non-React widgets |
@@ -71,7 +71,7 @@ On the server neither layout nor passive effects run. React 19 no longer prints 
 
 ### 2.4 Passive effects and the next event
 
-Passive effects are guaranteed to be flushed **before React processes the next discrete event's update** (test "passive effects are flushed before the next discrete update is processed": `effect 0` always precedes `click sees 0`). So an effect that subscribes cannot miss a click that the user made after seeing the frame. They are *not* guaranteed to run before the next paint, nor before an arbitrary `setTimeout`.
+Passive effects are guaranteed to be flushed **before React processes the next discrete event's update** (test "passive effects are flushed before the next discrete update is processed": `effect 0` always precedes `click sees 0`). So an effect that subscribes cannot miss a click that the user made after seeing the frame. They are _not_ guaranteed to run before the next paint, nor before an arbitrary `setTimeout`.
 
 > **Then vs now (passive timing).** React 17 always deferred passive effects. React 18+ runs them **synchronously at the end of the commit** when the render was the result of a discrete input (click, keydown) — so results are visible in the same frame — and deferred otherwise. Code that relied on effects always being async (e.g. reading a value set by a `setTimeout(0)` scheduled in render) can behave differently.
 
@@ -90,7 +90,7 @@ In development, `<StrictMode>` simulates an immediate unmount/remount on mount: 
 **What to do when Strict Mode exposes a problem** — never "use a ref to run only once". Implement the cleanup:
 
 | Effect | Cleanup |
-|---|---|
+| --- | --- |
 | Subscribe/listen | Unsubscribe/remove listener |
 | `setInterval`/`setTimeout` | `clearInterval`/`clearTimeout` |
 | Fetch | Ignore the result (flag) and/or `AbortController.abort()` (§6) |
@@ -105,15 +105,17 @@ In development, `<StrictMode>` simulates an immediate unmount/remount on mount: 
 A **ref callback** is called by React in the commit's layout phase with the DOM node (or class instance / `FragmentInstance`). React 19 adds a return value:
 
 ```tsx
-<div ref={(node) => {
-  const ro = new ResizeObserver(onResize);
-  ro.observe(node);
-  return () => ro.disconnect();      // React 19: cleanup instead of ref(null)
-}} />
+<div
+  ref={(node) => {
+    const ro = new ResizeObserver(onResize);
+    ro.observe(node);
+    return () => ro.disconnect(); // React 19: cleanup instead of ref(null)
+  }}
+/>
 ```
 
-| | Then (≤18) | Now (19+) |
-|---|---|---|
+|  | Then (≤18) | Now (19+) |
+| --- | --- | --- |
 | Detach signal | `ref(null)` | The returned cleanup is called; `ref(null)` is **not** called if a cleanup was returned (tests "a ref callback may return a cleanup…" and "without a cleanup, the legacy protocol calls ref(null)") |
 | Implicit returns | Ignored | TypeScript rejects `ref={el => (this.x = el)}` (the assignment returns a value) — React tells you to use braces |
 | String refs | Deprecated | Removed |
@@ -128,12 +130,12 @@ A **ref callback** is called by React in the commit's layout phase with the DOM 
 
 ### 5.1 The problem
 
-Every value read inside an effect that comes from render (props, state, derived values, functions defined in the component) is **reactive**: it can change between renders, so the linter (`react-hooks/exhaustive-deps`) requires it in the deps. Sometimes a value is read inside an effect but changing it should *not* re-synchronise:
+Every value read inside an effect that comes from render (props, state, derived values, functions defined in the component) is **reactive**: it can change between renders, so the linter (`react-hooks/exhaustive-deps`) requires it in the deps. Sometimes a value is read inside an effect but changing it should _not_ re-synchronise:
 
 ```tsx
 useEffect(() => {
   const c = connect(roomId);
-  c.on("connected", () => showToast("Connected", theme)); // theme is read here…
+  c.on('connected', () => showToast('Connected', theme)); // theme is read here…
   return () => c.disconnect();
 }, [roomId, theme]); // …so changing the theme reconnects the chat. Wrong.
 ```
@@ -146,23 +148,23 @@ Omitting `theme` from deps gives a **stale closure** — the toast uses the them
 
 1. it always calls the **latest** render's version of the function (reads current props/state);
 2. its identity is irrelevant to deps — effect events are **not** dependencies, and current `eslint-plugin-react-hooks` (v6.1+, this track pins 7.1.1) knows that;
-3. it may only be called from effects (or functions called by effects) — **calling it during render throws** *"A function wrapped in useEffectEvent can't be called during rendering"* (test "NEGATIVE: calling an effect event during render throws");
+3. it may only be called from effects (or functions called by effects) — **calling it during render throws** _"A function wrapped in useEffectEvent can't be called during rendering"_ (test "NEGATIVE: calling an effect event during render throws");
 4. it must not be passed to other components or hooks (lint-enforced).
 
 ```tsx
-const onConnected = useEffectEvent(() => showToast("Connected", theme));
+const onConnected = useEffectEvent(() => showToast('Connected', theme));
 useEffect(() => {
   const c = connect(roomId);
-  c.on("connected", () => onConnected());
+  c.on('connected', () => onConnected());
   return () => c.disconnect();
 }, [roomId]); // ✅ complete
 ```
 
 Test "reads the latest props without re-running the effect" changes `theme` after connecting; there is no reconnect and the event logs `dark`. In 19.3 a bug was fixed where effect events inside `memo`/`forwardRef` components could read stale values ([react#34831](https://github.com/react/react/pull/34831)).
 
-### 5.3 When *not* to use it
+### 5.3 When _not_ to use it
 
-`useEffectEvent` is **not a way to silence the dependency linter**. If a value change *should* re-synchronise (the room ID, the URL to fetch), it is reactive and must be a dependency. The 19.2 announcement is explicit: wrap only functions that are conceptually *events fired from an effect*. Wrapping `fetchData(url)` to drop `url` from deps reintroduces exactly the stale-data bug that deps prevent.
+`useEffectEvent` is **not a way to silence the dependency linter**. If a value change _should_ re-synchronise (the room ID, the URL to fetch), it is reactive and must be a dependency. The 19.2 announcement is explicit: wrap only functions that are conceptually _events fired from an effect_. Wrapping `fetchData(url)` to drop `url` from deps reintroduces exactly the stale-data bug that deps prevent.
 
 > **Then vs now.** Before 19.2 the options were: suppress the lint (bug-prone), store the latest callback in a ref updated in a layout effect (the "`useLatest`/`useEvent`" pattern, still seen in libraries), or accept the re-synchronisation. Migrate ref-based "latest callback" hooks to `useEffectEvent` where they are only called from effects; keep refs where the callback is passed to children or called in event handlers.
 
@@ -182,8 +184,13 @@ The minimal correct pattern guards with the cleanup:
 useEffect(() => {
   let ignore = false;
   const ac = new AbortController();
-  fetchUser(id, { signal: ac.signal }).then((u) => { if (!ignore) setUser(u); });
-  return () => { ignore = true; ac.abort(); };
+  fetchUser(id, { signal: ac.signal }).then((u) => {
+    if (!ignore) setUser(u);
+  });
+  return () => {
+    ignore = true;
+    ac.abort();
+  };
 }, [id]);
 ```
 
@@ -198,12 +205,12 @@ The better answers, in order: a framework loader or **Server Components** (Modul
 An effect is for synchronising with an **external system**. If there is no external system, there should be no effect. The canonical list ([react.dev: You Might Not Need an Effect](https://react.dev/learn/you-might-not-need-an-effect)), with the reason each is wrong:
 
 | Instead of an effect that… | Do | Why |
-|---|---|---|
+| --- | --- | --- |
 | derives state from props/state (`setFull(first + last)`) | Compute during render | Effect version commits twice and the first commit shows stale data (test "NEGATIVE: deriving state in an effect…": commits `""` then `"Ada Lovelace"`; the render version commits once) |
 | caches an expensive derivation | `useMemo` (or let the Compiler) | No extra render |
 | resets all state when a prop changes | `key` | Module 01 §6 |
-| adjusts *some* state when a prop changes | Set state **during render**, guarded by a stored previous value | React restarts the component before rendering children and commits once (test "adjusting state when a prop changes…") — better still, derive it |
-| reacts to a user event (submit, buy) | Do it in the event handler | You know *why* it happened there; an effect only knows *that* state changed (and runs again on remount) |
+| adjusts _some_ state when a prop changes | Set state **during render**, guarded by a stored previous value | React restarts the component before rendering children and commits once (test "adjusting state when a prop changes…") — better still, derive it |
+| reacts to a user event (submit, buy) | Do it in the event handler | You know _why_ it happened there; an effect only knows _that_ state changed (and runs again on remount) |
 | notifies the parent of a change (`onChange(state)`) | Call `onChange` in the same handler that sets state, or lift state up | Avoids a render-commit-effect-render cascade |
 | chains state updates (A changes → effect sets B → effect sets C) | Compute everything in the handler | Cascades multiply renders and can loop |
 | initialises the app once | Module-level code or a guarded top-level call | Effects re-run in Strict Mode and on remount |
@@ -222,7 +229,7 @@ When an [`<Activity mode="hidden">`](https://react.dev/reference/react/Activity)
 ## 9. Production failure modes
 
 | Symptom | Mechanism | Fix |
-|---|---|---|
+| --- | --- | --- |
 | Duplicate subscriptions / double network calls in dev | Strict Mode re-run exposes missing cleanup | Add cleanup; don't suppress Strict Mode |
 | New duplicate-subscription warnings after upgrading to 19.3 in an SSR app | Strict Mode now double-invokes on hydration | Same: fix the cleanup |
 | Wrong profile shown after fast navigation | Fetch race | Ignore flag + `AbortController`, or a data library |
@@ -240,7 +247,7 @@ When an [`<Activity mode="hidden">`](https://react.dev/reference/react/Activity)
 ## 10. Executable proofs
 
 | Claim | Test (`effects.test.tsx`) |
-|---|---|
+| --- | --- |
 | Phase order and bottom-up effect order; unmount order | "effect phases and ordering" (2 tests) |
 | Cleanup-before-setup with old values | "on dependency change…" |
 | Layout effect update before paint | "a layout effect sees committed DOM…" |
@@ -272,7 +279,7 @@ Strict Mode mounts, unmounts and remounts to check that setup→cleanup→setup 
 
 <details><summary><strong>4. What problem does <code>useEffectEvent</code> solve, and what is it not for?</strong></summary>
 
-It lets an effect read the latest props/state inside a callback without making them dependencies — for logic that is an *event* fired from an effect (e.g. show a toast with the current theme when connected). It is not for removing genuinely reactive values (like the URL to fetch) from deps; that reintroduces stale data. It cannot be called during render or passed to other components.
+It lets an effect read the latest props/state inside a callback without making them dependencies — for logic that is an _event_ fired from an effect (e.g. show a toast with the current theme when connected). It is not for removing genuinely reactive values (like the URL to fetch) from deps; that reintroduces stale data. It cannot be called during render or passed to other components.
 </details>
 
 <details><summary><strong>5. What changed about ref callbacks in React 19?</strong></summary>

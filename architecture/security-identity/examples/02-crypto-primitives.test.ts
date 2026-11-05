@@ -1,7 +1,7 @@
-import { describe, it } from "node:test";
-import assert from "node:assert/strict";
-import crypto from "node:crypto";
-import fc from "fast-check";
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
+import crypto from 'node:crypto';
+import fc from 'fast-check';
 
 /**
  * Module 02: Cryptographic Primitives for Software Engineers
@@ -11,7 +11,7 @@ import fc from "fast-check";
 
 // Encrypt using AES-256-GCM (AEAD)
 function encryptAESGCM(plaintext: Buffer, key: Buffer, nonce: Buffer, aad?: Buffer) {
-  const cipher = crypto.createCipheriv("aes-256-gcm", key, nonce);
+  const cipher = crypto.createCipheriv('aes-256-gcm', key, nonce);
   if (aad) {
     cipher.setAAD(aad);
   }
@@ -21,8 +21,14 @@ function encryptAESGCM(plaintext: Buffer, key: Buffer, nonce: Buffer, aad?: Buff
 }
 
 // Decrypt using AES-256-GCM (AEAD)
-function decryptAESGCM(ciphertext: Buffer, key: Buffer, nonce: Buffer, authTag: Buffer, aad?: Buffer): Buffer {
-  const decipher = crypto.createDecipheriv("aes-256-gcm", key, nonce);
+function decryptAESGCM(
+  ciphertext: Buffer,
+  key: Buffer,
+  nonce: Buffer,
+  authTag: Buffer,
+  aad?: Buffer,
+): Buffer {
+  const decipher = crypto.createDecipheriv('aes-256-gcm', key, nonce);
   decipher.setAuthTag(authTag);
   if (aad) {
     decipher.setAAD(aad);
@@ -30,13 +36,13 @@ function decryptAESGCM(ciphertext: Buffer, key: Buffer, nonce: Buffer, authTag: 
   return Buffer.concat([decipher.update(ciphertext), decipher.final()]);
 }
 
-describe("Module 02: Cryptographic Primitives & Side-Channel Defenses", () => {
+describe('Module 02: Cryptographic Primitives & Side-Channel Defenses', () => {
   const key = crypto.randomBytes(32);
   const nonce = crypto.randomBytes(12);
-  const plaintext = Buffer.from("CRITICAL_FINANCIAL_TRANSACTION_PAYLOAD_2026");
-  const associatedData = Buffer.from("tenant_id=tenant_99;version=1.0");
+  const plaintext = Buffer.from('CRITICAL_FINANCIAL_TRANSACTION_PAYLOAD_2026');
+  const associatedData = Buffer.from('tenant_id=tenant_99;version=1.0');
 
-  it("successfully performs AEAD round-trip encryption and authentication with AAD", () => {
+  it('successfully performs AEAD round-trip encryption and authentication with AAD', () => {
     const { ciphertext, authTag } = encryptAESGCM(plaintext, key, nonce, associatedData);
     assert.equal(ciphertext.length, plaintext.length);
     assert.equal(authTag.length, 16);
@@ -45,7 +51,7 @@ describe("Module 02: Cryptographic Primitives & Side-Channel Defenses", () => {
     assert.deepEqual(decrypted, plaintext);
   });
 
-  it("throws authentication tag failure when ciphertext is tampered by even 1 bit", () => {
+  it('throws authentication tag failure when ciphertext is tampered by even 1 bit', () => {
     const { ciphertext, authTag } = encryptAESGCM(plaintext, key, nonce, associatedData);
 
     // Tamper with the first byte of ciphertext
@@ -54,25 +60,25 @@ describe("Module 02: Cryptographic Primitives & Side-Channel Defenses", () => {
 
     assert.throws(
       () => decryptAESGCM(tamperedCiphertext, key, nonce, authTag, associatedData),
-      /Unsupported state or unable to authenticate data/
+      /Unsupported state or unable to authenticate data/,
     );
   });
 
-  it("throws authentication tag failure when Associated Data (AAD) is modified in transit", () => {
+  it('throws authentication tag failure when Associated Data (AAD) is modified in transit', () => {
     const { ciphertext, authTag } = encryptAESGCM(plaintext, key, nonce, associatedData);
 
-    const tamperedAAD = Buffer.from("tenant_id=tenant_00;version=1.0"); // Attacker swapped tenant!
+    const tamperedAAD = Buffer.from('tenant_id=tenant_00;version=1.0'); // Attacker swapped tenant!
 
     assert.throws(
       () => decryptAESGCM(ciphertext, key, nonce, authTag, tamperedAAD),
-      /Unsupported state or unable to authenticate data/
+      /Unsupported state or unable to authenticate data/,
     );
   });
 
-  it("demonstrates the AES-GCM Nonce-Reuse Catastrophe: recovers XOR of plaintexts", () => {
+  it('demonstrates the AES-GCM Nonce-Reuse Catastrophe: recovers XOR of plaintexts', () => {
     // Both messages encrypted under the IDENTICAL (Key, Nonce) pair
-    const p1 = Buffer.from("ATTACK_AT_DAWN_12345"); // 20 bytes
-    const p2 = Buffer.from("RETREAT_AT_DUSK_9876"); // 20 bytes
+    const p1 = Buffer.from('ATTACK_AT_DAWN_12345'); // 20 bytes
+    const p2 = Buffer.from('RETREAT_AT_DUSK_9876'); // 20 bytes
 
     const enc1 = encryptAESGCM(p1, key, nonce);
     const enc2 = encryptAESGCM(p2, key, nonce);
@@ -99,7 +105,7 @@ describe("Module 02: Cryptographic Primitives & Side-Channel Defenses", () => {
     assert.deepEqual(recoveredP2, p2);
   });
 
-  it("verifies constant-time comparison via crypto.timingSafeEqual", () => {
+  it('verifies constant-time comparison via crypto.timingSafeEqual', () => {
     const macA = crypto.randomBytes(32);
     const macB = Buffer.from(macA);
     const macC = crypto.randomBytes(32);
@@ -109,23 +115,26 @@ describe("Module 02: Cryptographic Primitives & Side-Channel Defenses", () => {
 
     // Mismatched lengths throw an immediate error (lengths must match for timingSafeEqual)
     const shortBuffer = crypto.randomBytes(16);
-    assert.throws(() => crypto.timingSafeEqual(macA, shortBuffer), /Input buffers must have the same.*length/);
+    assert.throws(
+      () => crypto.timingSafeEqual(macA, shortBuffer),
+      /Input buffers must have the same.*length/,
+    );
   });
 
-  it("proves HKDF (RFC 5869) extracts uniform keys and expands with context strings", () => {
-    const ikm = Buffer.from("raw_diffie_hellman_shared_secret_entropy");
-    const salt = Buffer.from("salt_entropy_1234");
-    const info = "app-v1-encryption-key";
+  it('proves HKDF (RFC 5869) extracts uniform keys and expands with context strings', () => {
+    const ikm = Buffer.from('raw_diffie_hellman_shared_secret_entropy');
+    const salt = Buffer.from('salt_entropy_1234');
+    const info = 'app-v1-encryption-key';
 
-    const derivedKey = crypto.hkdfSync("sha256", ikm, salt, info, 32);
+    const derivedKey = crypto.hkdfSync('sha256', ikm, salt, info, 32);
     assert.equal(derivedKey.byteLength, 32);
 
     // Changing info context generates an orthogonal, completely independent key
-    const differentKey = crypto.hkdfSync("sha256", ikm, salt, "app-v1-mac-key", 32);
+    const differentKey = crypto.hkdfSync('sha256', ikm, salt, 'app-v1-mac-key', 32);
     assert.notDeepEqual(Buffer.from(derivedKey), Buffer.from(differentKey));
   });
 
-  it("property test: AEAD encryption and decryption is an exact identity function for arbitrary inputs", () => {
+  it('property test: AEAD encryption and decryption is an exact identity function for arbitrary inputs', () => {
     fc.assert(
       fc.property(
         fc.uint8Array({ minLength: 1, maxLength: 512 }),
@@ -137,12 +146,18 @@ describe("Module 02: Cryptographic Primitives & Side-Channel Defenses", () => {
           const aadBuf = Buffer.from(aadBytes);
 
           const { ciphertext, authTag } = encryptAESGCM(pBuf, ephemeralKey, ephemeralNonce, aadBuf);
-          const decrypted = decryptAESGCM(ciphertext, ephemeralKey, ephemeralNonce, authTag, aadBuf);
+          const decrypted = decryptAESGCM(
+            ciphertext,
+            ephemeralKey,
+            ephemeralNonce,
+            authTag,
+            aadBuf,
+          );
 
           return decrypted.equals(pBuf);
-        }
+        },
       ),
-      { numRuns: 50 }
+      { numRuns: 50 },
     );
   });
 });

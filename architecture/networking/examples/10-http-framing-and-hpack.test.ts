@@ -2,13 +2,18 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
 export interface HTTP2FrameHeader {
-  length: number;    // 24 bits
-  type: number;      // 8 bits (0=DATA, 1=HEADERS, etc.)
-  flags: number;     // 8 bits
-  streamId: number;  // 31 bits
+  length: number; // 24 bits
+  type: number; // 8 bits (0=DATA, 1=HEADERS, etc.)
+  flags: number; // 8 bits
+  streamId: number; // 31 bits
 }
 
-export function encodeHTTP2FrameHeader(length: number, type: number, flags: number, streamId: number): Buffer {
+export function encodeHTTP2FrameHeader(
+  length: number,
+  type: number,
+  flags: number,
+  streamId: number,
+): Buffer {
   const buf = Buffer.alloc(9);
   // Length (24 bits)
   buf[0] = (length >> 16) & 0xff;
@@ -120,11 +125,7 @@ export function parseChunkedBody(buf: Buffer): Buffer {
 describe('Module 10: HTTP/1.1 Chunked Framing & HTTP/2 Binary Frames / HPACK', () => {
   it('correctly parses an HTTP/1.1 Chunked Transfer Encoding payload', () => {
     const rawChunks = Buffer.from(
-      '7\r\n' +
-      'Mozilla\r\n' +
-      '9\r\n' +
-      'Developer\r\n' +
-      '0\r\n\r\n'
+      '7\r\n' + 'Mozilla\r\n' + '9\r\n' + 'Developer\r\n' + '0\r\n\r\n',
     );
 
     const assembled = parseChunkedBody(rawChunks);

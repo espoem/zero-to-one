@@ -20,7 +20,7 @@ CSS is an open web standard governed by the W3C CSS Working Group. Unlike propri
 ## 2. Exam Domain Coverage Matrix
 
 | Domain # | Domain / Objective | Weight | Primary Module | Executable Proof | Status |
-| :-: | :--- | :-: | :--- | :--- | :-: |
+| :-: | :-- | :-: | :-- | :-- | :-: |
 | **01** | Platform Specs, Snapshots, Baseline & Tooling | 7% | [01-css-platform-specs-baseline-and-tooling.md](../modules/01-css-platform-specs-baseline-and-tooling.md) | [01-platform-and-lightningcss.test.ts](../examples/01-platform-and-lightningcss.test.ts) | ✅ Full |
 | **02** | Syntax, Selectors & Specificity Math | 8% | [02-syntax-selectors-and-specificity.md](../modules/02-syntax-selectors-and-specificity.md) | [02-selectors-and-specificity.test.ts](../examples/02-selectors-and-specificity.test.ts) | ✅ Full |
 | **03** | The Cascade, Layers (@layer) & Scope (@scope) | 9% | [03-cascade-layers-and-scope.md](../modules/03-cascade-layers-and-scope.md) | [03-cascade-layers-and-scope.test.ts](../examples/03-cascade-layers-and-scope.test.ts) | ✅ Full |
@@ -41,4 +41,5 @@ CSS is an open web standard governed by the W3C CSS Working Group. Unlike propri
 ## 3. Question Bank Navigation
 
 The complete preparation question bank, categorized by domain and difficulty (1–3), is available in:
+
 - [interview.md](./interview.md) — 70+ rigorous questions spanning single-choice, multiple-select, scenario analysis, ordering, and hands-on debugging tasks, complete with comprehensive explanations, distractor analysis, cross-module citations, and a 60-minute mock examination with scoring rubrics.

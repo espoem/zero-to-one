@@ -16,7 +16,7 @@ Other tracks build on this one and link here instead of re-explaining language s
 The modules form one progressive narrative; read them in order.
 
 | # | Module | Core content | Spec anchors | Executable proof |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | 01 | [Reading the specification](modules/01-reading-the-spec.md) | editions vs living draft, notation (`?`/`!`, Completion and Reference Records), TC39 stages incl. 2.7, proposal snapshot, engine support matrix, test262 | §5, §6.2.4–§6.2.5, Annex B | [01](examples/01-reading-the-spec.test.js) |
 | 02 | [Types, values and coercion](modules/02-types-values-coercion.md) | 8 types, IEEE 754, BigInt, UTF-16, symbols, ToPrimitive/ToNumber/…, four equality algorithms, `+`, compensated summation | §6.1, §7.1, §7.2 | [02](examples/02-types-values-coercion.test.js) |
 | 03 | [Execution contexts, scope, closures and `this`](modules/03-execution-contexts-scope-closures.md) | Environment Records, hoisting and TDZ, closures and V8 context retention, `this` rules, `bind`, strict mode, `eval` | §9.1, §9.4, §10.2, §19.2.1 | [03](examples/03-execution-contexts-scope-closures.test.js) |
@@ -49,6 +49,7 @@ mise exec -- npm run typecheck  # tsc --noEmit (TypeScript 7)
 Run one module: `mise exec -- node --test examples/06-agents-realms-job-queue.test.js`.
 
 Notes:
+
 - The examples are JavaScript (the track's own language) plus TypeScript files that Node 26 runs natively (erasable syntax only).
 - Some tests start child processes with engine flags (`--expose-gc`, `--allow-natives-syntax`, `--js-sum-precise`, `--js-defer-import-eval`, `--enable-experimental-regexp-engine`). Module 12's assertions about V8 internals are **pinned to V8 14.6** and are expected to change with V8 upgrades.
 - All tests are deterministic: none relies on a race manifesting or on wall-clock thresholds; cross-agent tests use Atomics handshakes.
@@ -60,7 +61,7 @@ Notes:
 **No authoritative certification exists for the JavaScript language** (verified 2026-10-28). Details, coverage matrices and the exam delta are in [exams/README.md](exams/README.md).
 
 | Exam | Vendor | Status | Format | Used here as |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | JSNAD (OpenJS Node.js Application Developer) | OpenJS Foundation / Linux Foundation | **Retired 2025-09-30**, no successor ([LF notice](https://training.linuxfoundation.org/jsnad-cert-inactive/)) | was performance-based | history only |
 | JSNSD (OpenJS Node.js Services Developer) | OpenJS Foundation / Linux Foundation | **Inactive** ([LF notice](https://training.linuxfoundation.org/jsnsd-cert-inactive/)) | — | — |
 | **JSA-41-01** JSA™ Certified Associate JavaScript Programmer | JS Institute (OpenEDG) | Active ([official voucher page](https://ums.edube.org/products/jsa-exam), checked 2026-10-28); ECMAScript version not stated | 40 items, 60 minutes, Pearson VUE or OnVUE, US$325; sections Classless Objects 25%, Classes 23%, Built-in Objects 27%, Advanced Functions 25%; passing score not published | secondary target: section matrix + 40-item mock (Mock B) |

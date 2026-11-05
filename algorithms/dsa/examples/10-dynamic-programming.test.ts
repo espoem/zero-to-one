@@ -126,11 +126,13 @@ export function levenshteinDistance(s1: string, s2: string): number {
       if (s1[i - 1] === s2[j - 1]) {
         curr[j] = prev[j - 1]!;
       } else {
-        curr[j] = 1 + Math.min(
-          prev[j]!,     // Delete
-          curr[j - 1]!, // Insert
-          prev[j - 1]!  // Replace
-        );
+        curr[j] =
+          1 +
+          Math.min(
+            prev[j]!, // Delete
+            curr[j - 1]!, // Insert
+            prev[j - 1]!, // Replace
+          );
       }
     }
     const temp = prev;
@@ -228,9 +230,9 @@ test('Module 10: Dynamic Programming: Foundations to Advanced Dimensions', async
           const expected = naiveLIS(nums);
           const actual = lengthOfLIS(nums);
           return expected === actual;
-        }
+        },
       ),
-      { seed: 42, numRuns: 100 }
+      { seed: 42, numRuns: 100 },
     );
   });
 });

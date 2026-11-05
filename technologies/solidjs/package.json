@@ -1,11 +1,8 @@
 {
   "name": "zero-to-one-solidjs",
-  "private": true,
   "version": "0.0.0",
+  "private": true,
   "type": "module",
-  "engines": {
-    "node": ">=22.12.0"
-  },
   "scripts": {
     "test": "vitest run",
     "test:client": "vitest run --project client",
@@ -29,5 +26,8 @@
     "typescript": "7.0.2",
     "vite": "8.3.5",
     "vitest": "5.0.5"
+  },
+  "engines": {
+    "node": ">=22.12.0"
   }
 }

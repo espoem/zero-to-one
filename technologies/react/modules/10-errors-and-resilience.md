@@ -10,11 +10,11 @@ A production UI fails in pieces: a widget's data is malformed, a third-party com
 
 ## 1. The model
 
-> **Definition 10.1 (Error boundary).** A class component that defines `static getDerivedStateFromError(error)` (and usually `componentDidCatch(error, info)`). When a descendant throws during **render**, in a **lifecycle method**, in an **effect** (layout or passive) or in a **ref callback**, React abandons the failed subtree, finds the nearest boundary *above* the throwing component, renders it again with the state returned by `getDerivedStateFromError`, and commits that fallback.
+> **Definition 10.1 (Error boundary).** A class component that defines `static getDerivedStateFromError(error)` (and usually `componentDidCatch(error, info)`). When a descendant throws during **render**, in a **lifecycle method**, in an **effect** (layout or passive) or in a **ref callback**, React abandons the failed subtree, finds the nearest boundary _above_ the throwing component, renders it again with the state returned by `getDerivedStateFromError`, and commits that fallback.
 
 > **Definition 10.2 (Uncaught render error).** If no boundary exists, React **unmounts the entire root** (the container becomes empty) and reports the error to `onUncaughtError`.
 
-The rationale for unmounting rather than leaving the last good UI on screen (React 16+): a UI that *looks* fine but is inconsistent with state is worse than an explicit error — the canonical example is a payment form showing the wrong amount.
+The rationale for unmounting rather than leaving the last good UI on screen (React 16+): a UI that _looks_ fine but is inconsistent with state is worse than an explicit error — the canonical example is a payment form showing the wrong amount.
 
 ```mermaid
 flowchart TD
@@ -31,7 +31,7 @@ flowchart TD
 ### 1.1 The two lifecycle methods
 
 | Method | Phase | Purpose | Rules |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `static getDerivedStateFromError(error)` | Render | Return state for the fallback | Pure: no logging, no side effects |
 | `componentDidCatch(error, info)` | Commit | Log/report; `info.componentStack` locates the failure | Side effects allowed |
 
@@ -42,7 +42,7 @@ There is **still no hook** for error boundaries in React 19.3; libraries such as
 ## 2. What is caught and what is not
 
 | Error source | Caught by boundaries? | Test |
-|---|---|---|
+| --- | --- | --- |
 | Render (function body, class `render`) | ✅ | "errors thrown during render…" |
 | Nearest boundary wins; others keep rendering | ✅ | "the nearest boundary wins…" |
 | `useEffect` / `useLayoutEffect` / lifecycle / ref callbacks | ✅ | "errors thrown in effects are caught too" |
@@ -69,7 +69,7 @@ const root = createRoot(container, {
 ```
 
 | Callback | Called when | Default (if omitted) | Test |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `onCaughtError` | A boundary caught an error; `errorInfo.errorBoundary` is the boundary instance | `console.error` | "onCaughtError reports errors handled by a boundary…" |
 | `onUncaughtError` | No boundary; root unmounted | `reportError` (→ `window` `error` event) | "onUncaughtError reports errors with no boundary; the root is unmounted" |
 | `onRecoverableError` | React recovered: a hydration mismatch fell back to client rendering, or a failed concurrent render succeeded on a synchronous retry; `error.cause` may hold the original | `reportError` | "an error thrown once and recovered by a synchronous retry…"; Module 06 mismatch test |
@@ -78,8 +78,8 @@ The recoverable-retry case deserves attention: when a concurrent render throws, 
 
 > **Then vs now: error reporting.**
 >
-> | | Then (≤18) | Now (19+) |
-> |---|---|---|
+> |  | Then (≤18) | Now (19+) |
+> | --- | --- | --- |
 > | Caught errors | Re-thrown and logged **twice** in dev (once by React, once by the browser), plus a separate "The above error occurred…" log | Reported once via `onCaughtError` (default `console.error`) with the component stack |
 > | Uncaught errors | Re-thrown from the render call; often logged twice | `onUncaughtError` (default `reportError`) |
 > | Hydration/recoverable | `onRecoverableError` existed (18) | Same, plus `error.cause` and better hydration diffs |
@@ -94,7 +94,7 @@ The recoverable-retry case deserves attention: when a concurrent render throws, 
 A boundary in the error state renders its fallback; its children are **unmounted**. Their state is gone, and setters captured from them no longer reach anything — test "NEGATIVE: once in the error state, re-rendering the same children does not recover".
 
 | Strategy | How | Keeps boundary state | Test |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | **Key reset** | Change the boundary's `key` (e.g. `key={pathname}`) | No — remounts boundary and children | "reset by key…" |
 | **resetKeys** | Compare a prop in `getDerivedStateFromProps` and clear `error` when it changes | Yes | "reset by resetKey prop…" |
 | **Retry button** | `this.setState({ error: null })` from the fallback | Yes | — |
@@ -126,7 +126,7 @@ Practical consequences: put an error boundary **inside** pre-rendered `<Activity
 ## 6. Other failure classes and their handling
 
 | Failure | Handling |
-|---|---|
+| --- | --- |
 | Chunk load failure (`lazy(() => import())` rejects after a deploy removed old chunks) | Error boundary around lazy routes; on `ChunkLoadError`-like errors, reload the page once (guard against loops) |
 | Server render error inside a boundary | Client-renders that boundary (Module 06); digest in `onError` |
 | Server Component error | Flight `E` row with a digest (production) → thrown on the client at that position → nearest client error boundary. 19.3 also transports `Error.cause` and `AggregateError.errors` |
@@ -140,7 +140,7 @@ Practical consequences: put an error boundary **inside** pre-rendered `<Activity
 ## 7. Production failure modes
 
 | Symptom | Cause | Fix |
-|---|---|---|
+| --- | --- | --- |
 | Blank page after one widget fails | No boundary below the root | Route and widget boundaries |
 | Errors from clicks are never reported | Event-handler errors bypass boundaries and root callbacks | `window` `error`/`unhandledrejection` reporting, local handling |
 | Retry button shows the error again immediately | Cause not fixed | Reset together with cache invalidation/navigation |
@@ -155,7 +155,7 @@ Practical consequences: put an error boundary **inside** pre-rendered `<Activity
 ## 8. Executable proofs
 
 | Claim | Test (`errors.test.tsx`) |
-|---|---|
+| --- | --- |
 | Render/effect errors caught; component stack; nearest boundary | "what an error boundary catches" (3 tests) |
 | Event-handler, async and self errors are not caught | three `NEGATIVE` tests |
 | Forwarding async errors with a throwing updater | "forwarding an async/event error…" |

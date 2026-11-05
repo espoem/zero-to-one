@@ -1,7 +1,6 @@
 # Module 03 · The Styling API and Conditions
 
-> **Verified against** `@pandacss/dev` 2.4.0 with `@pandacss/preset-base` 2.4.0 on 2026-10-29.
-> **Executable proof:** fixtures [`03-conditions.ts`](../examples/fixtures/positive/03-conditions.ts) and [`03-property-order.ts`](../examples/fixtures/positive/03-property-order.ts) with snapshots; [`runtime.test.ts`](../examples/tests/runtime.test.ts) (merging); [`e2e-fixtures.test.ts`](../examples/tests/e2e-fixtures.test.ts) (computed styles for property breadth, border tiers, group/peer, breakpoints); the `array condition definitions` test in [`negative-extraction.test.ts`](../examples/tests/negative-extraction.test.ts).
+> **Verified against** `@pandacss/dev` 2.4.0 with `@pandacss/preset-base` 2.4.0 on 2026-10-29. **Executable proof:** fixtures [`03-conditions.ts`](../examples/fixtures/positive/03-conditions.ts) and [`03-property-order.ts`](../examples/fixtures/positive/03-property-order.ts) with snapshots; [`runtime.test.ts`](../examples/tests/runtime.test.ts) (merging); [`e2e-fixtures.test.ts`](../examples/tests/e2e-fixtures.test.ts) (computed styles for property breadth, border tiers, group/peer, breakpoints); the `array condition definitions` test in [`negative-extraction.test.ts`](../examples/tests/negative-extraction.test.ts).
 
 `css()` is the primitive everything else compiles down to: patterns return style objects, `cva` returns style objects per variant, JSX style props become a style object. Learn its object language precisely and the rest of Panda is composition.
 
@@ -29,8 +28,8 @@ Selector      ::= string containing "&"
 Two equivalent placements of a condition:
 
 ```ts
-css({ _hover: { color: 'accent.default' } })        // nested condition
-css({ color: { base: 'fg.default', _hover: 'accent.default' } }) // property-based condition
+css({ _hover: { color: 'accent.default' } }); // nested condition
+css({ color: { base: 'fg.default', _hover: 'accent.default' } }); // property-based condition
 ```
 
 Both encode to the same atoms. Prefer property-based conditions when one property varies over several states; prefer nesting when several properties share one condition.
@@ -40,7 +39,7 @@ Both encode to the same atoms. Prefer property-based conditions when one propert
 `preset-base` defines **utilities**: a property name (or shorthand) → CSS property + token category + optional transform. Some you will meet constantly:
 
 | Write | Emits | Token category |
-|---|---|---|
+| --- | --- | --- |
 | `p`, `px`, `py`, `pt`… | `padding`, `padding-inline`, `padding-block`… | `spacing` |
 | `m`, `mx`, `my`… | `margin…` | `spacing` |
 | `bg` | `background` (not `background-color`) | `colors` |
@@ -67,14 +66,18 @@ A **condition** is a named selector or at-rule template. Each one has a placehol
 
 ```css
 /* from the 03-conditions snapshot */
-.hover\:c_accent\.default:is(:hover, [data-hover]) { color: var(--colors-accent-default); }
-.focusVisible\:ring-w_2px:is(:focus-visible, [data-focus-visible]) { outline-width: 2px; }
+.hover\:c_accent\.default:is(:hover, [data-hover]) {
+  color: var(--colors-accent-default);
+}
+.focusVisible\:ring-w_2px:is(:focus-visible, [data-focus-visible]) {
+  outline-width: 2px;
+}
 ```
 
 ### Families
 
 | Family | Examples | Emitted shape |
-|---|---|---|
+| --- | --- | --- |
 | Pseudo-class with data twin | `_hover`, `_focusVisible`, `_disabled`, `_checked`, `_invalid`, `_open` | `.cls:is(:hover, [data-hover])` |
 | Pseudo-element | `_before`, `_after`, `_placeholder`, `_selection`, `_file` | `.cls::before` |
 | Group (ancestor) | `_groupHover`, `_groupFocus`, … | `.group:is(:hover, [data-hover]) .cls` |
@@ -91,12 +94,16 @@ Group and peer conditions rely on a **marker class** (`group`, `peer`) you add t
 Breakpoints come from `theme.breakpoints` (`sm 40rem`, `md 48rem`, `lg 64rem`, `xl 80rem`, `2xl 96rem` in `preset-panda`). They are mobile-first `min-width` queries written in the range syntax:
 
 ```css
-@media (width >= 48rem) { .md\:fs_md { font-size: var(--font-sizes-md); } }
+@media (width >= 48rem) {
+  .md\:fs_md {
+    font-size: var(--font-sizes-md);
+  }
+}
 ```
 
 Generated keys per breakpoint `bp`: `bp` (≥), `bpDown` (<), `bpOnly` (only that band), and `bpToBp2` ranges such as `smToLg`. The e2e test resizes the viewport to 500/800/1100 px and reads 14/16/18 px font sizes.
 
-Object syntax is the default. **Array values** are still supported in v2 (`fontWeight: ['medium', undefined, undefined, 'bold']` → base and `lg`); the index is the breakpoint order, so arrays become wrong silently when someone inserts a breakpoint. Prefer objects. (Do not confuse this with *array condition definitions* in the config, which v2 deprecates; see 3.4.)
+Object syntax is the default. **Array values** are still supported in v2 (`fontWeight: ['medium', undefined, undefined, 'bold']` → base and `lg`); the index is the breakpoint order, so arrays become wrong silently when someone inserts a breakpoint. Prefer objects. (Do not confuse this with _array condition definitions_ in the config, which v2 deprecates; see 3.4.)
 
 Pattern props are compiled by the pattern, so put breakpoints on the prop (`columns={{ base: 1, md: 2 }}`), not around the pattern ([Module 04](./04-patterns-and-layout.md)).
 
@@ -106,10 +113,10 @@ Any key containing `&` is a selector; any key starting with `@media`, `@containe
 
 ```ts
 css({
-  '&[data-state=open]': { fontWeight: 'bold' },   // .\[\&\[data-state\=open\]\]\:fw_bold[data-state=open]
+  '&[data-state=open]': { fontWeight: 'bold' }, // .\[\&\[data-state\=open\]\]\:fw_bold[data-state=open]
   '& > *': { margin: '2' },
   '@supports (display: grid)': { display: 'grid' },
-})
+});
 ```
 
 A key that is neither a condition, a selector nor an at-rule is treated as a CSS property. Nesting a style object under it produces dead CSS and the `nested_property` warning:
@@ -130,8 +137,8 @@ We triggered this exact warning in [`configs/breakpoints-replace.config.ts`](../
 
 ```ts
 // examples/tests/runtime.test.ts
-css({ color: 'orange.700' }, { color: 'orange.300' })                       // 'c_orange.300'
-css(css.raw({ color: 'orange.700' }), css.raw({ color: 'orange.300' }))     // 'c_orange.300'
+css({ color: 'orange.700' }, { color: 'orange.300' }); // 'c_orange.300'
+css(css.raw({ color: 'orange.700' }), css.raw({ color: 'orange.300' })); // 'c_orange.300'
 ```
 
 `css.raw(obj)` returns `obj` unchanged and typed. Its job is to **mark a style object as Panda's** so the extractor picks it up wherever it is defined (another file included, in v2), and to make it composable without producing classes yet. `cva.raw()`, `sva.raw()`, pattern `.raw()` and config-recipe `.raw()` do the same for their outputs.
@@ -141,14 +148,14 @@ css(css.raw({ color: 'orange.700' }), css.raw({ color: 'orange.300' }))     // '
 `cx(...classStrings)` only concatenates truthy strings. It does not deduplicate and does not resolve conflicts:
 
 ```ts
-cx('a', false, undefined, 'b', 'a')                          // 'a b a'
-cx(css({ color: 'red.500' }), css({ color: 'blue.500' }))    // 'c_red.500 c_blue.500' — both atoms
+cx('a', false, undefined, 'b', 'a'); // 'a b a'
+cx(css({ color: 'red.500' }), css({ color: 'blue.500' })); // 'c_red.500 c_blue.500' — both atoms
 ```
 
 With two conflicting atoms on one element, the winner is whichever rule comes **later in the stylesheet**, and Panda sorts atoms of the same property by value, not by usage order. The Playwright test `NEGATIVE: concatenated classes …` renders `${css({color:'orange.700'})} ${css({color:'orange.300'})}` and shows the element is `orange.700`, even though `orange.300` was written last.
 
 | Need | Use |
-|---|---|
+| --- | --- |
 | Merge style objects (caller overrides component) | `css(base, override)` or `css(recipe.raw(props), cssProp)` |
 | Join a recipe class with an externally produced class | `cx(button(), className)` |
 | Never | Template-string concatenation of `css()` outputs that may conflict |
@@ -159,15 +166,27 @@ Inside `@layer utilities`, atoms are sorted by **property breadth**: broader sho
 
 ```css
 /* 03-property-order snapshot (abridged) */
-.p_10px { padding: 10px; }
-.bd-e_0 { border-inline-end: 0; }
-.border-style_solid { border-style: solid; }
-.bd-w_1px { border-width: 1px; }
-.bd-e-w_0 { border-inline-end-width: 0; }
-.pt_20px { padding-top: 20px; }
+.p_10px {
+  padding: 10px;
+}
+.bd-e_0 {
+  border-inline-end: 0;
+}
+.border-style_solid {
+  border-style: solid;
+}
+.bd-w_1px {
+  border-width: 1px;
+}
+.bd-e-w_0 {
+  border-inline-end-width: 0;
+}
+.pt_20px {
+  padding-top: 20px;
+}
 ```
 
-**Then vs now (borders, v1 → v2).** In v1, `cx(css({ borderWidth: '1px', borderStyle: 'solid' }), css({ borderInlineEnd: '0' }))` rendered an *open bracket*, because the override was emitted later. In v2 all border shorthands share one tier, and the per-side `border-inline-end` sorts *before* `border-width`, so the side re-closes. Only the longhand `borderInlineEndWidth: '0'` wins. The e2e test checks both: `border-right-width` is `1px` with the per-side shorthand and `0px` with the longhand. Migration: grep for per-side border shorthands used as overrides and switch to longhands.
+**Then vs now (borders, v1 → v2).** In v1, `cx(css({ borderWidth: '1px', borderStyle: 'solid' }), css({ borderInlineEnd: '0' }))` rendered an _open bracket_, because the override was emitted later. In v2 all border shorthands share one tier, and the per-side `border-inline-end` sorts _before_ `border-width`, so the side re-closes. Only the longhand `borderInlineEndWidth: '0'` wins. The e2e test checks both: `border-right-width` is `1px` with the per-side shorthand and `0px` with the longhand. Migration: grep for per-side border shorthands used as overrides and switch to longhands.
 
 ### The `css` prop forwarding pattern
 
@@ -176,7 +195,7 @@ Components that accept style overrides should take a **style object**, not a cla
 ```tsx
 // examples/react/src/Badge.tsx
 export function Badge({ tone, css: cssProp, className, ...rest }: BadgeProps) {
-  return <span className={cx(css(badge.raw({ tone }), cssProp), className)} {...rest} />
+  return <span className={cx(css(badge.raw({ tone }), cssProp), className)} {...rest} />;
 }
 // <Badge tone="brand" css={{ fontWeight: 'bold' }} />
 ```
@@ -184,8 +203,10 @@ export function Badge({ tone, css: cssProp, className, ...rest }: BadgeProps) {
 ```tsx
 // examples/solid/src/Badge.tsx — never destructure props in Solid
 export function Badge(props: BadgeProps) {
-  const [local, rest] = splitProps(props, ['tone', 'css', 'class'])
-  return <span class={cx(css(badge.raw({ tone: local.tone }), local.css), local.class)} {...rest} />
+  const [local, rest] = splitProps(props, ['tone', 'css', 'class']);
+  return (
+    <span class={cx(css(badge.raw({ tone: local.tone }), local.css), local.class)} {...rest} />
+  );
 }
 ```
 
@@ -229,8 +250,8 @@ conditions: {
 }
 ```
 
-| | v1 | v2 |
-|---|---|---|
+|  | v1 | v2 |
+| --- | --- | --- |
 | Nested condition | `supportHover: ['@media (hover: hover)', '&:hover']` (array) | `{ '@media (hover: hover)': { '&:hover': '@slot' } }` |
 | Multiple independent blocks | Not expressible | One path per `@slot` |
 | Old array form | — | Still works, converted, with `config_condition_array_unsupported` warning |
@@ -242,11 +263,11 @@ conditions: {
 ## 3.5 Global styles and global variables
 
 ```ts
-import { defineConfig, defineGlobalStyles } from '@pandacss/dev'
+import { defineConfig, defineGlobalStyles } from '@pandacss/dev';
 const globalCss = defineGlobalStyles({
   'html, body': { color: 'fg.default', lineHeight: '1.5' },
-})
-export default defineConfig({ globalCss /* … */ })
+});
+export default defineConfig({ globalCss /* … */ });
 ```
 
 `globalCss` is emitted into `@layer base`, so it sits below tokens, recipes and utilities. It accepts the same style language (tokens, conditions). `globalVars` declares custom properties or `@property` registrations that Panda then autocompletes in style objects; if a plain `globalVars` value collides with a utility's own `@property` registration, Panda warns `global_var_utility_conflict`. `globalFontface` declares `@font-face` rules.
@@ -256,7 +277,7 @@ export default defineConfig({ globalCss /* … */ })
 ## 3.6 Production failure modes
 
 | Symptom | Cause | Fix / proof |
-|---|---|---|
+| --- | --- | --- |
 | Override loses intermittently | String concatenation of conflicting atoms | Merge objects with `css(a, b)`; Playwright concat test |
 | Per-side border override no longer opens the side after upgrading | v2 border tiers | Use longhands; e2e border test |
 | `_groupHover` has no effect | Missing `group` class on the ancestor | Add the marker class |
@@ -286,7 +307,7 @@ Built-in state conditions emit `:is(:pseudo, [data-pseudo])`, so a component tha
 
 <details><summary>4. What changed in v2 about array syntax? Be precise.</summary>
 
-Array *condition definitions* in the config (`['@media …', '&:hover']`) are deprecated: they are converted to the block form and warn `config_condition_array_unsupported`. Responsive *array values* in style objects are still supported, though object syntax is preferable because arrays are positional.
+Array _condition definitions_ in the config (`['@media …', '&:hover']`) are deprecated: they are converted to the block form and warn `config_condition_array_unsupported`. Responsive _array values_ in style objects are still supported, though object syntax is preferable because arrays are positional.
 </details>
 
 <details><summary>5. A design system exposes `<Card sx={{ p: 4 }}>`. Styles never appear. Why, and what do you change?</summary>

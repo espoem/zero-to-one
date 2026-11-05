@@ -50,7 +50,8 @@ export class InvertedIndexBM25 {
       for (const [docId, tf] of termPostings.entries()) {
         const docLen = this.documents.get(docId)!.length;
         // BM25 term weight
-        const tfWeight = (tf * (this.k1 + 1)) / (tf + this.k1 * (1 - this.b + this.b * (docLen / avgdl)));
+        const tfWeight =
+          (tf * (this.k1 + 1)) / (tf + this.k1 * (1 - this.b + this.b * (docLen / avgdl)));
         const termScore = idf * tfWeight;
         scores.set(docId, (scores.get(docId) ?? 0) + termScore);
       }
@@ -144,7 +145,10 @@ describe('Indexing Retrieval: BM25 Lexical & Vector ANN Search', () => {
 
     bm25.addDocument(1, 'Distributed systems use consensus protocols like Paxos and Raft.');
     bm25.addDocument(2, 'Relational databases use B-Trees and Write-Ahead Logging.');
-    bm25.addDocument(3, 'Raft is a consensus algorithm designed for ease of understanding in distributed systems.');
+    bm25.addDocument(
+      3,
+      'Raft is a consensus algorithm designed for ease of understanding in distributed systems.',
+    );
 
     // Query for 'consensus distributed'
     const results = bm25.score('consensus distributed');
@@ -154,7 +158,10 @@ describe('Indexing Retrieval: BM25 Lexical & Vector ANN Search', () => {
     const topDocIds = results.slice(0, 2).map((r) => r.docId);
     assert.equal(topDocIds.includes(1), true);
     assert.equal(topDocIds.includes(3), true);
-    assert.equal(results.some((r) => r.docId === 2), false);
+    assert.equal(
+      results.some((r) => r.docId === 2),
+      false,
+    );
   });
 
   it('evaluates Vector Approximate Nearest Neighbor search against brute-force ground truth', () => {
@@ -186,6 +193,9 @@ describe('Indexing Retrieval: BM25 Lexical & Vector ANN Search', () => {
 
     // Assert that ANN search discovered top candidates with high overlap
     const overlap = annResults.filter((id) => exactTopK.includes(id));
-    assert(overlap.length >= 3, `Expected at least 3/5 overlap with exact top-5, got ${overlap.length}`);
+    assert(
+      overlap.length >= 3,
+      `Expected at least 3/5 overlap with exact top-5, got ${overlap.length}`,
+    );
   });
 });

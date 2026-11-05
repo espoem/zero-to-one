@@ -1,7 +1,7 @@
 # Brief: TypeScript (`languages/typescript`)
 
-| | |
-|---|---|
+|  |  |
+| --- | --- |
 | Phase | 1 |
 | Kind | EXISTING track: restructure and update in place, keeping tests green throughout |
 | Primary (author) | **Opus · claude.ai** |
@@ -14,12 +14,14 @@
 | Research dossier | `.agents/research/A-frontend.md` |
 
 ## 0. Read before starting (binding)
+
 1. `AGENTS.md`: the contract. If it conflicts with this brief, AGENTS.md wins; log the conflict in your review file.
 2. `.agents/OWNERSHIP.md`: what you own vs only cross-link.
 3. `.agents/REVIEW.md`: the checklist your work is judged against.
 4. Your global/agent instructions still apply where they do not conflict.
 
 ## 1. Owner decisions and track-specific instructions
+
 - **Dedupe (owner decision):** modules 09–13 shrink to the TypeScript-typing angle only. Follow the "stays in TS / moves to react / moves to solidjs" split in the dossier. Hand the moved framework content to the react and solidjs authors as notes in `.agents/reviews/typescript.md` (section "Handover"), so nothing is lost.
 - Runtime-semantics content (closures, `this`, microtasks, `using` runtime, ESM loading) moves to `languages/javascript`. Leave cross-links.
 - Upgrade the tsconfig module for the TS 7 defaults. Add "Then vs now" sections for TS 5.x/6.x vs 7.0 (no programmatic API in 7.0, the `@typescript/typescript6` bridge).
@@ -28,12 +30,15 @@
 - Pin **all** tooling via mise (`.mise.toml` + `mise.lock`): node 26 for JS/TS, plus every CLI and runtime the examples need.
 
 ## 2. Ownership
+
 **You own (full treatment):**
+
 - The type system, inference, variance, declaration emit, tsconfig
 - Typing JSX, components, hooks, generic/polymorphic components
 - Standard Schema, Zod typing of runtime boundaries
 
 **Cross-link only (do not re-explain):**
+
 - Types & coercion, scope/closures/`this`, prototypes/classes → owned by `languages/javascript`
 - ESM semantics (Module Records, live bindings, TLA), `exports` conditions at runtime → owned by `languages/javascript`
 - Temporal, explicit resource management (`using`, `DisposableStack`) runtime semantics → owned by `languages/javascript`
@@ -81,16 +86,14 @@
      - `module`/`moduleResolution` (`nodenext` vs `bundler`), `verbatimModuleSyntax`;
      - package.json `exports`/`types` conditions; `.d.ts`, ambient modules, `declare global`, module augmentation;
      - `types: []` and `rootDir` defaults; `noUncheckedSideEffectImports`; import attributes in ambient modules (7.1);
-     - project references and `tsc -b`.
-     Existing M04.3–4 plus the 08.2 globals, deduped.
+     - project references and `tsc -b`. Existing M04.3–4 plus the 08.2 globals, deduped.
   7. **Generics & inference**: inference sites, `const T`, `NoInfer`, partial inference, overloads vs conditional types, variance and the `in`/`out` annotations, "useless generics". Existing M07.
   8. **Type-level programming I: derivation**: `keyof`/`typeof`/indexed access, utility types, template literal types (with the code-point change in 7.0). Existing M05.
   9. **Type-level programming II: conditional/mapped/recursive types**:
      - distributivity; `infer` with `extends` constraints;
      - mapped-type modifiers and key remapping, homomorphic mapped types;
      - recursion limits (instantiation depth 50/100, unverified exact numbers), tail-recursive conditional types;
-     - the 7.1 change to distributive relations.
-     Existing M06.
+     - the 7.1 change to distributive relations. Existing M06.
   10. **Type-safe API design patterns**: branded types, predicates/assertion functions, builder/type-state, reverse-mapped types, identity functions, `using`/`Disposable` typing, decorator typing. Existing M08 + 11.2 (typing angle only).
   11. **Runtime boundaries: validation & Standard Schema**: Zod 4 (`zod@4.6.7`) input/output types, `z.infer`; Standard Schema (`StandardSchemaV1`) as a library-neutral contract; parse-don't-validate; branded outputs; typed `fetch` and env loaders. This is the reduced M09.1–2.
   12. **Typing UI frameworks: React & Solid (typing only)**: the JSX namespace and `jsxImportSource`; `IntrinsicElements`; component prop types; generic & polymorphic components; context typing; event types; ref types. Replaces M09.3–4, M10, M12 and M13 (split spec below).
@@ -134,7 +137,7 @@
     - ESM vs CJS loading and package.json `exports` at runtime;
     - closures and `this` binding (existing M03.2 "contextual this");
     - Promise/microtask semantics behind M01.5.
-  - TS keeps only the *typing* of each of these.
+  - TS keeps only the _typing_ of each of these.
   - React/Solid mechanics live in their own tracks, which cross-link to TS M12.
   - Expert-interview lesson 11.1: drop it as a lesson. Fold its design lessons (DataTag, tuple accumulation, ts-pattern exhaustiveness) into M10/M13 as case studies.
 - **Gap analysis vs existing**
@@ -167,7 +170,7 @@
   - **Exact split of current M09–M13**
 
     | Current | Stays in TS (→ new module) | Moves to |
-    |---|---|---|
+    | --- | --- | --- |
     | 09.1–9.2 Zod | Schema typing, `z.input/z.output/z.infer`, refinements' type effects, branded outputs, fetcher pattern → **M11**. Update to Zod 4 API (top-level string formats, unified `error` param; superRefine→`.check` deprecation is **unverified**) | — |
     | 09.3 Components & props | `ComponentProps<'button'>`, `ReactNode` vs `JSX.Element` vs `ReactElement`, overriding HTML props → **M12** | Component/render model → `react` M01 |
     | 09.4 Events & core hooks | Event generic types, `useState<T>` inference, `useRef` overloads, reducer action unions → **M12** | Effect semantics, batching, reducer design → `react` M03/M04 |
@@ -191,7 +194,9 @@
 ---
 
 ## 4. Re-verify list
+
 These claims were marked unverified during research. Confirm or correct each one against a primary source before teaching it:
+
 - TS 7.0 / 7.1 release posts (above). TS 6.0 deprecation notes (unverified URL: devblogs "Announcing TypeScript 6.0").
 - 1. **Toolchain & compiler model (TS 7)**: erasure; `tsc` vs bundlers vs Node type stripping (`erasableSyntaxOnly`); `tsgo` architecture (Go, parallel checkers); `--checkers/--builders`; the LSP-based editor; the 6.0 bridge; `tsx` vs `node --experimental-strip-types` (unverified flag status).
 - recursion limits (instantiation depth 50/100, unverified exact numbers), tail-recursive conditional types;
@@ -201,7 +206,9 @@ These claims were marked unverified during research. Confirm or correct each one
 - | 09.1–9.2 Zod | Schema typing, `z.input/z.output/z.infer`, refinements' type effects, branded outputs, fetcher pattern → **M11**. Update to Zod 4 API (top-level string formats, unified `error` param; superRefine→`.check` deprecation is **unverified**) | — |
 
 ## 5. Certifications & exams
+
 Follow AGENTS.md § Certification and Exam Coverage exactly. Minimum deliverables:
+
 1. **README "Certifications & Exams" section.** Start from the exams named in the dossier above ("Authoritative syllabi used"). Re-verify each exam's code, status, guide version/date, targeted product version and domain weights on the official page. Where no certification exists, say so and use the recognised interview format.
 2. **`exams/README.md` coverage matrix.** Rows are domain/objective, weight, modules, examples, status. No ❌ at hand-off.
 3. **`exams/<exam-code>.md` question banks.**
@@ -213,11 +220,14 @@ Follow AGENTS.md § Certification and Exam Coverage exactly. Minimum deliverable
 5. **Original questions only.** No braindump content.
 
 ## 6. Code languages
+
 Per AGENTS.md § Code Example Languages:
+
 - **Primary:** pseudocode (where algorithms or protocols are described) + TypeScript (or the track's own language, for language tracks).
 - **Secondary:** Python, Rust or Nim only where it teaches something. Each language lives in `examples/<lang>/` with its own mise-pinned toolchain and native test runner, and `test` runs them all.
 
 ## 7. Workflow and definition of done
+
 1. **Primary (Opus)** works on branch `track/typescript` and sets this track's row in `.agents/STATUS.md` to 🟦.
 2. **Verify versions first.** Check every version in the dossier against its primary source today. Record the results in the README's `Verified against …` line. Resolve every item in the re-verify list below.
 3. Build in stages: README syllabus + exam matrix → modules one by one, each with its examples/tests → glossary → cheatsheet → question banks → mock exam. Delegate bulk drafting (question-bank drafts, glossary candidates, cheatsheet tables) to the **Drafter**, then correct and integrate it yourself.

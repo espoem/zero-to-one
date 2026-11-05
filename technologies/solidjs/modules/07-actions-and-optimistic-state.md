@@ -4,7 +4,7 @@
 >
 > Generator and iterator protocol semantics are owned by `languages/javascript`.
 
-[Module 06](./06-colorless-async.md) modelled *reads* as computations. *Writes* to a server are different: they have side effects, they take time, the UI should show the expected result immediately, and they can fail or race. Solid 2.0 handles them with three pieces that reuse the signal/store model instead of adding a mutation library:
+[Module 06](./06-colorless-async.md) modelled _reads_ as computations. _Writes_ to a server are different: they have side effects, they take time, the UI should show the expected result immediately, and they can fail or race. Solid 2.0 handles them with three pieces that reuse the signal/store model instead of adding a mutation library:
 
 1. **`action(function* …)`**: a transaction that interleaves local writes, async work and refreshes;
 2. **optimistic primitives** (`createOptimistic`, `createOptimisticStore`): values that show a guess for the lifetime of a transaction and revert when it ends;
@@ -16,13 +16,13 @@
 
 A **transaction** $\tau$ is a set of staged writes plus the async work they started. While $\tau$ has unsettled work, its writes are **held**: they are not committed to the screen frame. When all of $\tau$'s work settles, its writes commit atomically.
 
-An **optimistic write** $w$ made inside $\tau$ lives in an **overlay** (the runtime calls it a *lane*) above the committed state:
+An **optimistic write** $w$ made inside $\tau$ lives in an **overlay** (the runtime calls it a _lane_) above the committed state:
 
 $$\text{display}(x) = \begin{cases} \text{overlay}_\tau(x) & \text{if } \tau \text{ is open and wrote } x \\ \text{committed}(x) & \text{otherwise} \end{cases}$$
 
-When $\tau$ settles (success or failure), $\text{overlay}_\tau$ is discarded. On success the committed state by then contains the server's truth (because the action refreshed it), so the user sees no flicker. On failure the committed state never changed, so discarding the overlay *is* the rollback.
+When $\tau$ settles (success or failure), $\text{overlay}_\tau$ is discarded. On success the committed state by then contains the server's truth (because the action refreshed it), so the user sees no flicker. On failure the committed state never changed, so discarding the overlay _is_ the rollback.
 
-This is why optimistic state needs no manual rollback code, and why an optimistic write *outside* any transaction does nothing (proved: `setName("Bob")` with nothing held leaves `name() === "Alice"`).
+This is why optimistic state needs no manual rollback code, and why an optimistic write _outside_ any transaction does nothing (proved: `setName("Bob")` with nothing held leaves `name() === "Alice"`).
 
 ## 2. `action`
 
@@ -37,7 +37,7 @@ const addTodo = action(function* (todo: Todo) {
 ```
 
 - `action(gen)` returns an async function; calling it starts the transaction and returns a Promise of the generator's return value. A throw (or a rejected `yield`) rejects it (proved: `rejected 500`).
-- **Why a generator?** After an `await`, JavaScript loses the synchronous context in which the runtime knows "we are inside transaction $\tau$" (there is no portable AsyncContext yet). `yield promise` hands the promise to the runtime, which resumes the generator *inside* $\tau$. Writes after a `yield` therefore still belong to the transaction. Writes after an `await` inside an async helper do not.
+- **Why a generator?** After an `await`, JavaScript loses the synchronous context in which the runtime knows "we are inside transaction $\tau$" (there is no portable AsyncContext yet). `yield promise` hands the promise to the runtime, which resumes the generator _inside_ $\tau$. Writes after a `yield` therefore still belong to the transaction. Writes after an `await` inside an async helper do not.
 - The async-generator form `action(async function* () { await x; yield; … })` is also supported; a bare `yield` re-enters the transaction after native `await`s.
 - Call actions from event handlers, effect apply halves or other actions. Calling one during render or in a computation throws `ACTION_CALLED_IN_OWNED_SCOPE` (proved).
 - Inside an action, call `refresh(x)` from the generator itself, not from an async helper you `yield`: code after an `await` in a helper runs outside the transaction, and awaiting a refresh there can deadlock (the waiter waits for the commit, the commit waits for the helper).
@@ -89,7 +89,7 @@ stateDiagram-v2
 ## 3. Optimistic primitives
 
 | Primitive | Shape | Typical use |
-|---|---|---|
+| --- | --- | --- |
 | `createOptimistic(value)` | like `createSignal`; writes are guesses for the current transaction | a "saving…" flag, a like count |
 | `createOptimistic(fn)` | writable derived; its own recompute is the truth | an optimistic view of a derived value |
 | `createOptimisticStore(fn, seed)` | like `createStore(fn, seed)`; draft writes are guesses | lists and documents fetched from a server |
@@ -121,14 +121,14 @@ flowchart TB
 - **Staged** holds a transaction's plain writes and any truth that lands while it is open (for example the result of the `refresh` it issued). It becomes committed when the transaction settles, or is discarded if it fails.
 - **Overlay** holds optimistic guesses; it is always discarded when its transaction ends, success or failure. On success the staged truth underneath has replaced what the guess stood for, so the screen does not change at that moment.
 
-`createOptimisticStore(fn, seed)` is a derived store (like `createStore(fn, seed)`) whose setter writes into the overlay. Because the derive's result is **reconciled by key**, a refresh that brings back the confirmed row with the same `id` as the guess lands on the same record: the user sees no duplicate and no remount. If the guess used a temporary id the server replaces, the confirmed row arrives as a *new* key and the guess only disappears when the overlay drops, so depending on timing both rows can be visible for a moment (not covered by this track's tests). Use client-generated ids the server keeps.
+`createOptimisticStore(fn, seed)` is a derived store (like `createStore(fn, seed)`) whose setter writes into the overlay. Because the derive's result is **reconciled by key**, a refresh that brings back the confirmed row with the same `id` as the guess lands on the same record: the user sees no duplicate and no remount. If the guess used a temporary id the server replaces, the confirmed row arrives as a _new_ key and the guess only disappears when the overlay drops, so depending on timing both rows can be visible for a moment (not covered by this track's tests). Use client-generated ids the server keeps.
 
 ### 3.1 Lanes: how the overlay is implemented
 
 Internally each transaction that writes optimistic values gets a **lane** (`core/lanes` in `@solidjs/signals`). A lane carries the guessed values for the nodes it wrote and the derivations that read them. The runtime distinguishes several "views" of a node, and which one a read gets depends on who is reading:
 
 | Reader | Sees | Why |
-|---|---|---|
+| --- | --- | --- |
 | render effect showing the guess | the lane's value | optimistic UI must display immediately |
 | `until(predicate)` inside an action | the **authoritative** value (staged truth or committed), never the overlay | your guess must not confirm itself (proved in the `until` test) |
 | an untracked direct read | the lane's latest value | "direct read shows optimistic" |
@@ -155,8 +155,10 @@ When a mutation is confirmed on a **live channel** (WebSocket, subscription, liv
 ```ts
 const send = action(async function* (text: string) {
   const clientId = crypto.randomUUID();
-  setMessages((m) => { m.push({ clientId, text, pending: true }); });
-  await socket.send({ clientId, text });                       // transport ack only
+  setMessages((m) => {
+    m.push({ clientId, text, pending: true });
+  });
+  await socket.send({ clientId, text }); // transport ack only
   yield until(() => messages.some((m) => m.clientId === clientId), { timeout: 10_000 });
 });
 ```
@@ -173,7 +175,7 @@ Always set `timeout` for transports that can drop; a dead socket would otherwise
 ### 4.4 Choosing the acknowledgement
 
 | Question you are asking | Primitive | Reads overrides? | Resolves when |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | "what is this value once settled?" | `resolve(() => x())` | yes (your own transaction's view) | first settled value |
 | "has the refetch I issued landed?" | `yield refresh(x)` | never delivers your override | the re-ask (or what superseded it) settled |
 | "has the world confirmed my change?" | `yield until(pred, { timeout })` | **no** (authoritative view) | predicate first settles truthy |
@@ -186,7 +188,7 @@ Several transactions may be in flight. Each has its own overlay; overlays that t
 The classic races this prevents:
 
 | Race | 1.x / naive code | 2.0 |
-|---|---|---|
+| --- | --- | --- |
 | Out-of-order responses overwrite newer state | `mutate(prev => …)` then `refetch()` per request | overlays per transaction; truth comes from `refresh` of the source |
 | Rollback clobbers a concurrent success | manual `catch { setList(previous) }` | discarding the failed overlay only removes that transaction's guesses |
 | "Saving…" flag stuck after an exception | manual `finally` | optimistic flag reverts with the transaction |
@@ -212,7 +214,7 @@ flowchart LR
 Decisions and why:
 
 1. **Truth arrives on one channel** (the live subscription, a `from()`-fed projection keyed by `id`). The mutation's own response is only a transport acknowledgement.
-2. **Client-generated ids** (`crypto.randomUUID()`) are used as the optimistic row's key *and* echoed by the server, so the confirmed row replaces the guess in place (no duplicate, no remount: keyed `<For>`).
+2. **Client-generated ids** (`crypto.randomUUID()`) are used as the optimistic row's key _and_ echoed by the server, so the confirmed row replaces the guess in place (no duplicate, no remount: keyed `<For>`).
 3. **`yield until(() => live.some((t) => t.clientId === id), { timeout: 10_000 })`** keeps the transaction open until the echo, so the overlay is dropped onto data that already contains the real row. The timeout turns a dead socket into a failure that reverts the guess and can be retried.
 4. **Conflicts** are resolved on the server (version numbers, last-writer-wins or merge); the client never needs special code because whatever the broadcast contains is the truth the overlay falls back to. If the server rejects an edit, the action's `until` times out or the server sends an explicit rejection that the action turns into a throw: the guess reverts.
 5. **Pending UI**: `affects(row, "title")` for the edited field only, so the rest of the list does not read as busy during long confirmations.
@@ -261,38 +263,38 @@ sequenceDiagram
 ## 7. Then vs now
 
 | 1.x (≤ 1.9) | 2.0 RC | Migration |
-|---|---|---|
+| --- | --- | --- |
 | `createResource` + `mutate(v)` + `refetch()` | `createOptimisticStore(fn, seed)` + `action` + `refresh` | move each mutation into an action |
 | `startTransition(() => …)`, `useTransition()` | built-in transitions; actions | delete wrappers |
 | manual loading/rollback flags | optimistic flags; automatic revert | delete `finally` resets |
 | SolidStart / router `action()` + `useSubmission` | core `action()` (router 2.0-next builds on it) | check router docs for submission APIs |
-| polling to detect server echo | `until(predicate, { timeout })` | |
+| polling to detect server echo | `until(predicate, { timeout })` |  |
 
 ### 7.1 Then vs now: mutation APIs in the 1.x ecosystem
 
 | 1.x stack | What it did | 2.0 replacement |
-|---|---|---|
+| --- | --- | --- |
 | `createResource` + `mutate` + `refetch` | replace the resource value wholesale, then refetch | `createOptimisticStore` + `action` + `refresh` (granular, reconciled, reverts on failure) |
 | `@solidjs/router` 0.x/1.x `action()` + `useSubmission` / `useSubmissions` | form-bound actions with submission state (pending, result, error) and optimistic UI built from submission input | core `action()` for the transaction; optimistic primitives for the UI; router 2.0-next layers form binding on top (its API is still moving) |
 | `startTransition(() => setX(…))` | keep old UI while resources for the new state load | default holds; actions for multi-step writes |
 | manual `setSaving(true)` / `finally setSaving(false)` | process affordance | `createOptimistic(false)` set inside the action |
 
-**Pitfall when mixing:** wrapping a 1.x-style `async` handler as `action(async () => …)` does not compile into a transaction at all: `action()` drives a generator, and calling the wrapped plain async function fails with `TypeError: it.next is not a function` (proved). The subtler trap is the **async generator** form: inside `action(async function* () { … })`, code between a native `await` and the next `yield` runs *outside* the transaction (writes commit immediately and are not reverted on failure). Put a bare `yield;` after every `await` that is followed by a write or by creating a reader.
+**Pitfall when mixing:** wrapping a 1.x-style `async` handler as `action(async () => …)` does not compile into a transaction at all: `action()` drives a generator, and calling the wrapped plain async function fails with `TypeError: it.next is not a function` (proved). The subtler trap is the **async generator** form: inside `action(async function* () { … })`, code between a native `await` and the next `yield` runs _outside_ the transaction (writes commit immediately and are not reverted on failure). Put a bare `yield;` after every `await` that is followed by a write or by creating a reader.
 
 ## 7.1 Worked example: a like button that survives double clicks and failures
 
 ```tsx
 function LikeButton(props: { postId: string; liked: boolean; count: number }) {
-  const [liked, setLiked] = createOptimistic(() => props.liked);    // truth follows props
+  const [liked, setLiked] = createOptimistic(() => props.liked); // truth follows props
   const [count, setCount] = createOptimistic(() => props.count);
-  const [saving, setSaving] = createOptimistic(false);               // process flag
+  const [saving, setSaving] = createOptimistic(false); // process flag
   const toggle = action(function* () {
     const next = !liked();
     setLiked(next);
     setCount((c) => c + (next ? 1 : -1));
     setSaving(true);
-    yield api.setLike(props.postId, next);                           // throws → all three revert
-    refresh(postQuery);                                              // truth arrives through props
+    yield api.setLike(props.postId, next); // throws → all three revert
+    refresh(postQuery); // truth arrives through props
   });
   return (
     <button aria-pressed={liked()} disabled={saving()} onClick={() => toggle()}>
@@ -306,19 +308,19 @@ Design notes: the optimistic values are writable derived values over props, so w
 
 ## 7.2 Failure modes proved by negative tests
 
-| Failure | Test (`07-actions-and-optimistic-state.test.tsx`) |
-|---|---|
-| optimistic write outside an action | "outside an action … as if it never happened" |
-| failed request | "a failed action reverts the optimistic write and rejects" |
-| `flush()` in an action | `FLUSH_IN_ACTION` |
-| plain async function as an action | `TypeError: it.next is not a function` |
-| action during render | `ACTION_CALLED_IN_OWNED_SCOPE` |
-| live ack never arrives | `until(…, { timeout })` → `TimeoutError` |
+| Failure                            | Test (`07-actions-and-optimistic-state.test.tsx`)          |
+| ---------------------------------- | ---------------------------------------------------------- |
+| optimistic write outside an action | "outside an action … as if it never happened"              |
+| failed request                     | "a failed action reverts the optimistic write and rejects" |
+| `flush()` in an action             | `FLUSH_IN_ACTION`                                          |
+| plain async function as an action  | `TypeError: it.next is not a function`                     |
+| action during render               | `ACTION_CALLED_IN_OWNED_SCOPE`                             |
+| live ack never arrives             | `until(…, { timeout })` → `TimeoutError`                   |
 
 ## 8. Production failure modes
 
 | Symptom | Cause | Fix |
-|---|---|---|
+| --- | --- | --- |
 | Optimistic row flashes out and back in | action settled at the transport ack before the live echo | `yield until(...)` with a timeout |
 | Duplicate row after success | guess and server row have different keys | give the guess the id the server will echo (client-generated id) |
 | Failed save leaves the row on screen | write made outside the transaction (after an `await` in a helper) | write inside the generator, after a `yield` |
@@ -367,7 +369,7 @@ An optimistic value is a guess over a transaction's held writes. With no transac
 
 <details><summary>8. Do you need an action to change a route parameter that triggers data loading?</summary>
 
-No. A plain setter is held automatically while the async it causes loads, and `isPending`/`latest` expose the state. Actions are for writes that happen *after* async work and must revert on failure.
+No. A plain setter is held automatically while the async it causes loads, and `isPending`/`latest` expose the state. Actions are for writes that happen _after_ async work and must revert on failure.
 </details>
 
 <details><summary>9. Why does `flush()` throw inside an action?</summary>

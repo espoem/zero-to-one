@@ -1,22 +1,33 @@
 /**
  * Module 09 — Testing, debugging and performance tooling.
  */
-import { describe, it, expect, afterEach } from "vitest";
-import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
-import { createSignal, createMemo, createEffect, createRoot, flush, OBSERVE, getOwner, runWithOwner, configureClientErrors, Errored } from "solid-js";
-import { attribution, subscriptions, costs, why } from "solid-js/attribution";
-import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
-import { enablePerformanceTracks } from "@solidjs/web/performance-tracks";
-import { captureDiagnostics, settle } from "./support/diagnostics.ts";
+import { describe, it, expect, afterEach } from 'vitest';
+import { execFileSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import {
+  createSignal,
+  createMemo,
+  createEffect,
+  createRoot,
+  flush,
+  OBSERVE,
+  getOwner,
+  runWithOwner,
+  configureClientErrors,
+  Errored,
+} from 'solid-js';
+import { attribution, subscriptions, costs, why } from 'solid-js/attribution';
+import { render, screen, cleanup, fireEvent } from '@solidjs/testing-library';
+import { enablePerformanceTracks } from '@solidjs/web/performance-tracks';
+import { captureDiagnostics, settle } from './support/diagnostics.ts';
 
 afterEach(() => cleanup());
 
 // Vitest runs from the track root (where vitest.config.ts lives); import.meta.url is not a file: URL under jsdom.
 const trackRoot = process.cwd();
 
-describe("09 · component tests with @solidjs/testing-library", () => {
+describe('09 · component tests with @solidjs/testing-library', () => {
   function Counter(props: { start: number }) {
     const [n, setN] = createSignal(props.start);
     return (
@@ -26,72 +37,91 @@ describe("09 · component tests with @solidjs/testing-library", () => {
     );
   }
 
-  it("render takes a function; query by role; flush (or await) before asserting", () => {
+  it('render takes a function; query by role; flush (or await) before asserting', () => {
     render(() => <Counter start={1} />);
-    const button = screen.getByRole("button");
-    expect(button.textContent).toBe("clicked 1");
+    const button = screen.getByRole('button');
+    expect(button.textContent).toBe('clicked 1');
     fireEvent.click(button);
-    expect(button.textContent).toBe("clicked 1"); // the write is queued…
+    expect(button.textContent).toBe('clicked 1'); // the write is queued…
     flush();
-    expect(button.textContent).toBe("clicked 2"); // …and committed
+    expect(button.textContent).toBe('clicked 2'); // …and committed
   });
 
-  it("findBy* queries wait across microtasks, so they also see committed updates", async () => {
+  it('findBy* queries wait across microtasks, so they also see committed updates', async () => {
     render(() => <Counter start={5} />);
-    fireEvent.click(screen.getByRole("button"));
-    expect(await screen.findByText("clicked 6")).toBeTruthy();
+    fireEvent.click(screen.getByRole('button'));
+    expect(await screen.findByText('clicked 6')).toBeTruthy();
   });
 });
 
-describe("09 · build variants are export conditions", () => {
+describe('09 · build variants are export conditions', () => {
   const probe = (conditions: string[]) =>
     JSON.parse(
-      execFileSync(process.execPath, [...conditions, "examples/typescript/support/build-variant-probe.mjs"], {
-        cwd: trackRoot,
-        encoding: "utf8",
-        stdio: ["ignore", "pipe", "ignore"],
-      }).trim(),
+      execFileSync(
+        process.execPath,
+        [...conditions, 'examples/typescript/support/build-variant-probe.mjs'],
+        {
+          cwd: trackRoot,
+          encoding: 'utf8',
+          stdio: ['ignore', 'pipe', 'ignore'],
+        },
+      ).trim(),
     ) as { resolved: string; dev: boolean; observe: boolean; ownedWrite: string };
 
-  it("dev: diagnostics live, invariants throw", () => {
-    const r = probe(["--conditions=browser", "--conditions=development"]);
-    expect(r).toEqual({ resolved: "solid-js/dist/solid.dev.js", dev: true, observe: true, ownedWrite: "throws" });
+  it('dev: diagnostics live, invariants throw', () => {
+    const r = probe(['--conditions=browser', '--conditions=development']);
+    expect(r).toEqual({
+      resolved: 'solid-js/dist/solid.dev.js',
+      dev: true,
+      observe: true,
+      ownedWrite: 'throws',
+    });
   });
 
-  it("observe: production speed, diagnostics channel kept, no dev guards", () => {
-    const r = probe(["--conditions=browser", "--conditions=observe"]);
-    expect(r).toEqual({ resolved: "solid-js/dist/solid.observe.js", dev: false, observe: true, ownedWrite: "allowed" });
+  it('observe: production speed, diagnostics channel kept, no dev guards', () => {
+    const r = probe(['--conditions=browser', '--conditions=observe']);
+    expect(r).toEqual({
+      resolved: 'solid-js/dist/solid.observe.js',
+      dev: false,
+      observe: true,
+      ownedWrite: 'allowed',
+    });
   });
 
-  it("production: no DEV/OBSERVE objects and the owned-write guard is compiled out", () => {
-    const r = probe(["--conditions=browser"]);
-    expect(r).toEqual({ resolved: "solid-js/dist/solid.js", dev: false, observe: false, ownedWrite: "allowed" });
+  it('production: no DEV/OBSERVE objects and the owned-write guard is compiled out', () => {
+    const r = probe(['--conditions=browser']);
+    expect(r).toEqual({
+      resolved: 'solid-js/dist/solid.js',
+      dev: false,
+      observe: false,
+      ownedWrite: 'allowed',
+    });
   });
 
-  it("plain Node resolves the server build (a test runner without the plugin silently tests SSR code)", () => {
-    expect(probe([]).resolved).toBe("solid-js/dist/server.js");
+  it('plain Node resolves the server build (a test runner without the plugin silently tests SSR code)', () => {
+    expect(probe([]).resolved).toBe('solid-js/dist/server.js');
   });
 
-  it("this Vitest client project runs the dev build", () => {
+  it('this Vitest client project runs the dev build', () => {
     expect(OBSERVE).toBeDefined();
   });
 });
 
-describe("09 · attribution: why did this run?", () => {
-  it("an effect relaying one signal into another is reported as EFFECT_RELAY_TEAR", async () => {
+describe('09 · attribution: why did this run?', () => {
+  it('an effect relaying one signal into another is reported as EFFECT_RELAY_TEAR', async () => {
     const off = attribution.enable();
     try {
       const { codes } = captureDiagnostics(() => {
         const r = createRoot((dispose) => {
-          const [a, setA] = createSignal(1, { name: "a" });
-          const [b, setB] = createSignal(0, { name: "b" });
+          const [a, setA] = createSignal(1, { name: 'a' });
+          const [b, setB] = createSignal(0, { name: 'b' });
           createEffect(
             () => a(),
             (v) => {
               setB(v * 2); // ❌ relay: derive with a memo instead
             },
           );
-          const sum = createMemo(() => a() + b(), { name: "sum" });
+          const sum = createMemo(() => a() + b(), { name: 'sum' });
           createEffect(
             () => sum(),
             () => {},
@@ -103,29 +133,31 @@ describe("09 · attribution: why did this run?", () => {
           r.setA(i);
           flush();
         }
-        expect(subscriptions(r.sum)).toEqual(["a", "b"]); // devtools-style dependency view
+        expect(subscriptions(r.sum)).toEqual(['a', 'b']); // devtools-style dependency view
         r.dispose();
       });
-      expect(codes).toContain("EFFECT_RELAY_TEAR");
+      expect(codes).toContain('EFFECT_RELAY_TEAR');
     } finally {
       off();
     }
   });
 });
 
-describe("09 · performance tracks and version pinning", () => {
-  it("performance tracks are an opt-in adapter from @solidjs/web/performance-tracks", () => {
-    expect(typeof enablePerformanceTracks).toBe("function");
+describe('09 · performance tracks and version pinning', () => {
+  it('performance tracks are an opt-in adapter from @solidjs/web/performance-tracks', () => {
+    expect(typeof enablePerformanceTracks).toBe('function');
   });
 
-  it("installed RC versions match the exact pins (RC churn guard)", () => {
-    const pkg = JSON.parse(readFileSync(join(trackRoot, "package.json"), "utf8")) as {
+  it('installed RC versions match the exact pins (RC churn guard)', () => {
+    const pkg = JSON.parse(readFileSync(join(trackRoot, 'package.json'), 'utf8')) as {
       dependencies: Record<string, string>;
     };
-    for (const name of ["solid-js", "@solidjs/web", "@solidjs/signals"]) {
+    for (const name of ['solid-js', '@solidjs/web', '@solidjs/signals']) {
       const pinned = pkg.dependencies[name]!;
       expect(pinned).toMatch(/^\d+\.\d+\.\d+-rc\.\d+$/); // exact, never ^2.0.0-rc
-      const installed = JSON.parse(readFileSync(join(trackRoot, "node_modules", name, "package.json"), "utf8")) as {
+      const installed = JSON.parse(
+        readFileSync(join(trackRoot, 'node_modules', name, 'package.json'), 'utf8'),
+      ) as {
         version: string;
       };
       expect(installed.version).toBe(pinned);
@@ -133,21 +165,21 @@ describe("09 · performance tracks and version pinning", () => {
   });
 });
 
-describe("09 · profiling with the attribution engine", () => {
-  it("costs() ranks scopes by self time and writes by downstream time; why() gives the cause chain", () => {
+describe('09 · profiling with the attribution engine', () => {
+  it('costs() ranks scopes by self time and writes by downstream time; why() gives the cause chain', () => {
     const off = attribution.enable({ log: false });
     try {
       const r = createRoot((dispose) => {
-        const [a, setA] = createSignal(1, { name: "a" });
+        const [a, setA] = createSignal(1, { name: 'a' });
         const heavy = createMemo(
           () => {
             let x = 0;
             for (let i = 0; i < 100_000; i++) x += i % (a() + 1);
             return x;
           },
-          { name: "heavy" },
+          { name: 'heavy' },
         );
-        createMemo(() => heavy(), { name: "reader" });
+        createMemo(() => heavy(), { name: 'reader' });
         return { setA, dispose, heavy };
       });
       for (let i = 0; i < 3; i++) {
@@ -155,10 +187,10 @@ describe("09 · profiling with the attribution engine", () => {
         flush();
       }
       const table = costs();
-      expect(table.scopes[0]!.name).toBe("heavy"); // the expensive scope tops the table
-      expect(table.writes[0]!.name).toBe("a"); // and the write that caused it
+      expect(table.scopes[0]!.name).toBe('heavy'); // the expensive scope tops the table
+      expect(table.writes[0]!.name).toBe('a'); // and the write that caused it
       const last = why(r.heavy).at(-1)!;
-      expect(last.causes[0]).toMatchObject({ kind: "write", name: "a" }); // "heavy ran because a was written"
+      expect(last.causes[0]).toMatchObject({ kind: 'write', name: 'a' }); // "heavy ran because a was written"
       r.dispose();
     } finally {
       off();
@@ -166,8 +198,8 @@ describe("09 · profiling with the attribution engine", () => {
   });
 });
 
-describe("09 · leak detection by behaviour", () => {
-  it("negative: an effect created after an await (no owner) outlives its component", async () => {
+describe('09 · leak detection by behaviour', () => {
+  it('negative: an effect created after an await (no owner) outlives its component', async () => {
     const [ticks, setTicks] = createSignal(0);
     let runs = 0;
     function Leaky() {
@@ -192,7 +224,7 @@ describe("09 · leak detection by behaviour", () => {
     expect(runs).toBe(before + 1); // still running after unmount: a leak
   });
 
-  it("fix: capture the owner before awaiting and re-enter it", async () => {
+  it('fix: capture the owner before awaiting and re-enter it', async () => {
     const [ticks, setTicks] = createSignal(0);
     let runs = 0;
     function Fixed() {
@@ -221,8 +253,8 @@ describe("09 · leak detection by behaviour", () => {
   });
 });
 
-describe("09 · a clean component emits no diagnostics (a CI gate)", () => {
-  it("rendering, updating and unmounting a well-formed component produces zero diagnostic events", () => {
+describe('09 · a clean component emits no diagnostics (a CI gate)', () => {
+  it('rendering, updating and unmounting a well-formed component produces zero diagnostic events', () => {
     function Todo(props: { title: string; done: boolean; onToggle: () => void }) {
       return (
         <li class={{ done: props.done }}>
@@ -233,8 +265,10 @@ describe("09 · a clean component emits no diagnostics (a CI gate)", () => {
     }
     const { codes } = captureDiagnostics(() => {
       const [done, setDone] = createSignal(false);
-      const r = render(() => <Todo title="write tests" done={done()} onToggle={() => setDone((d) => !d)} />);
-      fireEvent.change(r.container.querySelector("input")!);
+      const r = render(() => (
+        <Todo title="write tests" done={done()} onToggle={() => setDone((d) => !d)} />
+      ));
+      fireEvent.change(r.container.querySelector('input')!);
       flush();
       r.unmount();
     });
@@ -242,8 +276,8 @@ describe("09 · a clean component emits no diagnostics (a CI gate)", () => {
   });
 });
 
-describe("09 · production error reporting", () => {
-  it("configureClientErrors reports errors that an <Errored> boundary caught, with owner and boundary paths", () => {
+describe('09 · production error reporting', () => {
+  it('configureClientErrors reports errors that an <Errored> boundary caught, with owner and boundary paths', () => {
     const reports: Array<{ message: string; boundaryPath: unknown }> = [];
     configureClientErrors({
       onError(error, ctx) {
@@ -251,7 +285,7 @@ describe("09 · production error reporting", () => {
       },
     });
     function Broken(): never {
-      throw new Error("render failed");
+      throw new Error('render failed');
     }
     const r = render(() => (
       <Errored fallback={<p>sorry</p>}>
@@ -259,8 +293,8 @@ describe("09 · production error reporting", () => {
       </Errored>
     ));
     flush();
-    expect(r.container.textContent).toBe("sorry");
-    expect(reports.map((x) => x.message)).toEqual(["render failed"]); // once per error object
+    expect(r.container.textContent).toBe('sorry');
+    expect(reports.map((x) => x.message)).toEqual(['render failed']); // once per error object
     configureClientErrors({ onError: () => {} });
   });
 });

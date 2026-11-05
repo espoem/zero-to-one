@@ -5,20 +5,25 @@
  * ONLY for this comparison. Its core module imports nothing from `solid-js`, so the two
  * runtimes do not share state. Never do this in an app (see "Multiple Solid instances").
  */
-import { describe, it, expect } from "vitest";
-import * as v1 from "solid-js-1";
-import * as v2 from "solid-js";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
+import { describe, it, expect } from 'vitest';
+import * as v1 from 'solid-js-1';
+import * as v2 from 'solid-js';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
-describe("10 · Then vs now, proved on both runtimes", () => {
-  it("versions under test", () => {
-    const v = (p: string) => (JSON.parse(readFileSync(join(process.cwd(), "node_modules", p, "package.json"), "utf8")) as { version: string }).version;
-    expect(v("solid-js-1")).toBe("1.9.17");
-    expect(v("solid-js")).toBe("2.0.0-rc.19");
+describe('10 · Then vs now, proved on both runtimes', () => {
+  it('versions under test', () => {
+    const v = (p: string) =>
+      (
+        JSON.parse(
+          readFileSync(join(process.cwd(), 'node_modules', p, 'package.json'), 'utf8'),
+        ) as { version: string }
+      ).version;
+    expect(v('solid-js-1')).toBe('1.9.17');
+    expect(v('solid-js')).toBe('2.0.0-rc.19');
   });
 
-  it("read-after-write: 1.x is synchronous, 2.0 returns the committed value until flush", () => {
+  it('read-after-write: 1.x is synchronous, 2.0 returns the committed value until flush', () => {
     const [a1, setA1] = v1.createSignal(0);
     setA1(1);
     expect(a1()).toBe(1);
@@ -30,7 +35,7 @@ describe("10 · Then vs now, proved on both runtimes", () => {
     expect(a2()).toBe(1);
   });
 
-  it("batching: 1.x needs batch() to coalesce; 2.0 coalesces by default", () => {
+  it('batching: 1.x needs batch() to coalesce; 2.0 coalesces by default', () => {
     let runs1 = 0;
     const dispose1 = v1.createRoot((dispose) => {
       const [x, setX] = v1.createSignal(0);
@@ -59,10 +64,10 @@ describe("10 · Then vs now, proved on both runtimes", () => {
     v2.flush();
     expect(runs2).toBe(1 + 1);
     r.dispose();
-    expect("batch" in v2).toBe(false);
+    expect('batch' in v2).toBe(false);
   });
 
-  it("writes in a computation: allowed in 1.x (createComputed write-back), a dev error in 2.0", () => {
+  it('writes in a computation: allowed in 1.x (createComputed write-back), a dev error in 2.0', () => {
     const out = v1.createRoot((dispose) => {
       const [src, setSrc] = v1.createSignal(1);
       const [copy, setCopy] = v1.createSignal(0);
@@ -83,10 +88,10 @@ describe("10 · Then vs now, proved on both runtimes", () => {
         }
       }),
     ).toThrow(/REACTIVE_WRITE_IN_OWNED_SCOPE/);
-    expect("createComputed" in v2).toBe(false);
+    expect('createComputed' in v2).toBe(false);
   });
 
-  it("effects: 1.x single function tracks its whole body; 2.0 requires compute + apply", () => {
+  it('effects: 1.x single function tracks its whole body; 2.0 requires compute + apply', () => {
     const seen1: number[] = [];
     const r1 = v1.createRoot((dispose) => {
       const [n, setN] = v1.createSignal(0);
@@ -108,10 +113,10 @@ describe("10 · Then vs now, proved on both runtimes", () => {
     ).toThrow(/MISSING_EFFECT_FN/);
   });
 
-  it("nested roots: detached in 1.x, owned by the parent in 2.0", () => {
+  it('nested roots: detached in 1.x, owned by the parent in 2.0', () => {
     const log1: string[] = [];
     const d1 = v1.createRoot((dispose) => {
-      v1.createRoot(() => v1.onCleanup(() => log1.push("inner")));
+      v1.createRoot(() => v1.onCleanup(() => log1.push('inner')));
       return dispose;
     });
     d1();
@@ -119,57 +124,95 @@ describe("10 · Then vs now, proved on both runtimes", () => {
 
     const log2: string[] = [];
     const d2 = v2.createRoot((dispose) => {
-      v2.createRoot(() => v2.onCleanup(() => log2.push("inner")));
+      v2.createRoot(() => v2.onCleanup(() => log2.push('inner')));
       return dispose;
     });
     d2();
-    expect(log2).toEqual(["inner"]);
+    expect(log2).toEqual(['inner']);
   });
 
-  it("removed and renamed exports", () => {
-    for (const gone of ["createResource", "onMount", "createSelector", "Suspense", "ErrorBoundary", "Index", "mergeProps", "splitProps", "startTransition", "useTransition", "on", "batch"]) {
+  it('removed and renamed exports', () => {
+    for (const gone of [
+      'createResource',
+      'onMount',
+      'createSelector',
+      'Suspense',
+      'ErrorBoundary',
+      'Index',
+      'mergeProps',
+      'splitProps',
+      'startTransition',
+      'useTransition',
+      'on',
+      'batch',
+    ]) {
       expect(gone in v1, `${gone} existed in 1.9`).toBe(true);
       expect(gone in v2, `${gone} must not exist in 2.0`).toBe(false);
     }
-    for (const added of ["flush", "onSettled", "createProjection", "Loading", "Errored", "Reveal", "Repeat", "merge", "omit", "action", "createOptimistic", "createOptimisticStore", "isPending", "latest", "refresh", "affects", "until", "createStore", "snapshot", "deep", "reconcile"]) {
+    for (const added of [
+      'flush',
+      'onSettled',
+      'createProjection',
+      'Loading',
+      'Errored',
+      'Reveal',
+      'Repeat',
+      'merge',
+      'omit',
+      'action',
+      'createOptimistic',
+      'createOptimisticStore',
+      'isPending',
+      'latest',
+      'refresh',
+      'affects',
+      'until',
+      'createStore',
+      'snapshot',
+      'deep',
+      'reconcile',
+    ]) {
       expect(added in v2, `${added} must exist in 2.0`).toBe(true);
     }
   });
 });
 
-describe("10 · props and stores, then vs now", () => {
-  it("defaults: mergeProps (1.x) skips undefined, merge (2.0) lets it override", () => {
-    expect(v1.mergeProps({ size: "md" }, { size: undefined }).size).toBe("md");
-    expect(v2.merge({ size: "md" }, { size: undefined }).size).toBeUndefined();
+describe('10 · props and stores, then vs now', () => {
+  it('defaults: mergeProps (1.x) skips undefined, merge (2.0) lets it override', () => {
+    expect(v1.mergeProps({ size: 'md' }, { size: undefined }).size).toBe('md');
+    expect(v2.merge({ size: 'md' }, { size: undefined }).size).toBeUndefined();
   });
 
-  it("splitProps (1.x) vs omit (2.0)", () => {
+  it('splitProps (1.x) vs omit (2.0)', () => {
     const props = { a: 1, b: 2, c: 3 };
-    const [local, rest] = v1.splitProps(props, ["a"]);
+    const [local, rest] = v1.splitProps(props, ['a']);
     expect(local).toEqual({ a: 1 });
     expect(rest).toEqual({ b: 2, c: 3 });
-    const rest2 = v2.omit(props, "a");
-    expect("a" in rest2).toBe(false);
+    const rest2 = v2.omit(props, 'a');
+    expect('a' in rest2).toBe(false);
     expect(rest2.b).toBe(2);
   });
 
   // Note: solid-js@1.9's `solid-js/store` entry imports the bare specifier "solid-js",
   // which resolves to 2.0 in this project, so 1.x stores cannot be loaded side by side.
   // Store then-vs-now is covered in modules 05 and 10 as prose plus the 2.0-side tests.
-  it("2.0 store updates are draft-first and staged until flush", () => {
-    const [s2, set2] = v2.createStore({ user: { name: "A" }, todos: [{ done: false }, { done: true }] });
+  it('2.0 store updates are draft-first and staged until flush', () => {
+    const [s2, set2] = v2.createStore({
+      user: { name: 'A' },
+      todos: [{ done: false }, { done: true }],
+    });
     set2((d) => {
-      d.user.name = "B";
+      d.user.name = 'B';
       for (const t of d.todos) if (!t.done) t.done = true;
     });
-    expect(s2.user.name).toBe("A");
+    expect(s2.user.name).toBe('A');
     v2.flush();
-    expect(s2.user.name).toBe("B");
+    expect(s2.user.name).toBe('B');
     expect(s2.todos.every((t) => t.done)).toBe(true);
-    expect("unwrap" in v2).toBe(false);
+    expect('unwrap' in v2).toBe(false);
   });
 
-  it("selection: createSelector (1.x) and a projection (2.0) both notify only the two affected keys", () => {
+  it('selection: createSelector (1.x) and a projection (2.0) both notify only the two affected keys', () => {
     let runs1 = 0;
     const r1 = v1.createRoot((dispose) => {
       const [sel, setSel] = v1.createSignal(0);
@@ -199,7 +242,7 @@ describe("10 · props and stores, then vs now", () => {
     r2.dispose();
   });
 
-  it("async: createResource exposes loading/undefined (1.x); 2.0 has no createResource", async () => {
+  it('async: createResource exposes loading/undefined (1.x); 2.0 has no createResource', async () => {
     let resolve!: (v: string) => void;
     const r = v1.createRoot((dispose) => {
       const [data] = v1.createResource(() => new Promise<string>((res) => (resolve = res)));
@@ -207,10 +250,10 @@ describe("10 · props and stores, then vs now", () => {
     });
     expect(r.data.loading).toBe(true);
     expect(r.data()).toBeUndefined(); // the `T | undefined` loading hole
-    resolve("x");
+    resolve('x');
     await new Promise((res) => setTimeout(res, 0));
-    expect(r.data()).toBe("x");
+    expect(r.data()).toBe('x');
     r.dispose();
-    expect("createResource" in v2).toBe(false);
+    expect('createResource' in v2).toBe(false);
   });
 });

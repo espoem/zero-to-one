@@ -40,6 +40,7 @@ flowchart TD
 ```
 
 ### Module Directory
+
 1. [Module 01: Execution Model & Tooling Baseline](modules/01-execution-model-and-tooling.md): CPython compilation pipeline (Tokenizer $\to$ PEG parser $\to$ AST $\to$ Symtable $\to$ Bytecode $\to$ VM eval loop), CPython vs PyPy/GraalPy, the `uv` and `ruff` ecosystem, `pyproject.toml`, interpreter startup & runtime flags (`-X dev`, `-X faulthandler`).
 2. [Module 02: Names, Scopes & Object Model](modules/02-names-scopes-and-objects.md): PyObject memory anatomy (`ob_refcnt`, `ob_type`), identity vs equality (`is` vs `==`), small int cache `[-5, 256]`, string interning, LEGB lexical lookup rules, mutable default arguments, late-binding closure traps, PEP 649/749 deferred annotations.
 3. [Module 03: Data Model & Dunder Protocols](modules/03-data-model-and-dunder-protocols.md): String representation (`__repr__` vs `__str__`), hash invariant ($a == b \implies \text{hash}(a) == \text{hash}(b)$), sequence slicing (`slice.indices()`), reflected arithmetic returning `NotImplemented`, memory optimization with `__slots__`, subclass customization via `__init_subclass__` (PEP 487).
@@ -62,16 +63,18 @@ flowchart TD
 This curriculum provides comprehensive coverage for the primary industry certifications and senior engineering interview loops:
 
 | Certification / Standard | Vendor / Authority | Exam Guide & Status | Target Version | Format | Passing Score |
-|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- |
 | **PCAP™ (Exam PCAP-31-03)** | OpenEDG Python Institute | [PCAP-31-03 Guide](https://pythoninstitute.org/pcap) · Active | Python 3.x | 40 Single/Multiple choice · 65 min | 70% |
 | **PCPP1™ (Exam PCPP-32-101)** | OpenEDG Python Institute | [PCPP-32-101 Guide](https://pythoninstitute.org/pcpp1) · Active | Python 3.x | 45 Single/Multiple choice · 65 min | 70% |
 | **Senior / Staff Python Engineering Loop** | Tier-1 Tech (Google, Meta, Bloomberg) | [Interview Bank & Mock Exam](exams/interview.md) · Active | Python 3.15+ | 75 Qs + 90-min Hands-on Coding Mock | Staff Bar |
 
 ### Prerequisites
+
 - Proficiency in structured programming, functions, and elementary data structures (lists, dicts, sets).
 - Familiarity with the terminal command line and git.
 
 ### Out of Scope
+
 - Legacy Python 2 syntax and obsolete C-API idioms deprecated prior to Python 3.11.
 - GUI frameworks (Tkinter, PyQt) and client-side web development.
 
@@ -85,6 +88,7 @@ This curriculum provides comprehensive coverage for the primary industry certifi
 All tooling dependencies are resolved and pinned locally via `mise` (`.mise.toml`, `mise.lock`) and `uv` (`pyproject.toml`, `uv.lock`).
 
 ### Running the Test Suite
+
 ```bash
 # Execute all 82 hermetic unit and property tests
 mise exec -- uv run pytest
@@ -97,6 +101,7 @@ mise exec -- uv run ruff check .
 ```
 
 ### Environment Specifications
+
 - **Python**: 3.15.2 (and `python3.15t` for free-threaded execution)
 - **Package Manager**: `uv` 0.13.6
 - **Test Runner**: `pytest` 9.2.0 with `hypothesis` 6.170.14

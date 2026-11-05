@@ -7,8 +7,11 @@ describe('Module 06: Layout: Flexbox, Grid & Subgrid', () => {
     await closeSharedBrowser();
   });
 
-  it('proves the flexbox min-width: auto overflow trap and its min-width: 0 fix', { skip: browserSkip }, async () => {
-    const html = `
+  it(
+    'proves the flexbox min-width: auto overflow trap and its min-width: 0 fix',
+    { skip: browserSkip },
+    async () => {
+      const html = `
       <!DOCTYPE html>
       <html>
         <head>
@@ -55,19 +58,27 @@ describe('Module 06: Layout: Flexbox, Grid & Subgrid', () => {
       </html>
     `;
 
-    const { page, cleanup } = await createPage(html);
-    try {
-      // 1. In buggy item: width is clamped to 400px min-content, overflowing the 300px container!
-      const itemBugBox = (await page.locator('#item-bug').boundingBox())!;
-      assert(itemBugBox.width >= 400, 'Buggy flex item refused to shrink below 400px min-content');
+      const { page, cleanup } = await createPage(html);
+      try {
+        // 1. In buggy item: width is clamped to 400px min-content, overflowing the 300px container!
+        const itemBugBox = (await page.locator('#item-bug').boundingBox())!;
+        assert(
+          itemBugBox.width >= 400,
+          'Buggy flex item refused to shrink below 400px min-content',
+        );
 
-      // 2. In fixed item: min-width: 0 allows it to shrink to the remaining 200px (300 - 100)
-      const itemFixBox = (await page.locator('#item-fix').boundingBox())!;
-      assert.equal(itemFixBox.width, 200, 'Fixed flex item with min-width: 0 shrinks to exact available space (200px)');
-    } finally {
-      await cleanup();
-    }
-  });
+        // 2. In fixed item: min-width: 0 allows it to shrink to the remaining 200px (300 - 100)
+        const itemFixBox = (await page.locator('#item-fix').boundingBox())!;
+        assert.equal(
+          itemFixBox.width,
+          200,
+          'Fixed flex item with min-width: 0 shrinks to exact available space (200px)',
+        );
+      } finally {
+        await cleanup();
+      }
+    },
+  );
 
   it('demonstrates Subgrid alignment across nested card rows', { skip: browserSkip }, async () => {
     const html = `
@@ -116,7 +127,7 @@ describe('Module 06: Layout: Flexbox, Grid & Subgrid', () => {
       assert.equal(
         Math.round(f1Box.y),
         Math.round(f2Box.y),
-        'Subgrid must align footers of both cards to the exact same vertical y-coordinate'
+        'Subgrid must align footers of both cards to the exact same vertical y-coordinate',
       );
     } finally {
       await cleanup();

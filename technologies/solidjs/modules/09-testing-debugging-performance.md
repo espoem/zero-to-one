@@ -13,7 +13,7 @@
 `@solidjs/vite-plugin` configures Vitest for you. Its README states the rules this track's [`vitest.config.ts`](../vitest.config.ts) follows:
 
 | Project | `environment` | Posture the plugin applies | Use for |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `client` | `jsdom` (or `happy-dom`) | browser export conditions, DOM codegen, non-hydratable, **development build** | reactive core, components, control flow, async UI |
 | `server` | `node` (or `edge-runtime`) | server export conditions, SSR codegen, `isServer === true`, request-event storage | `renderToString/Stream`, server functions, sessions |
 
@@ -49,10 +49,10 @@ Make every async dependency a **deferred** you settle by hand ([`support/diagnos
 `@solidjs/testing-library@1.0.0-rc.2` (peer `solid-js >=2.0.0-0`) wraps `@testing-library/dom`:
 
 ```tsx
-render(() => <Counter start={1} />);          // a FUNCTION returning JSX, not the element
-fireEvent.click(screen.getByRole("button"));
-flush();                                     // or: await screen.findByText(...)
-expect(screen.getByRole("button").textContent).toBe("clicked 2");
+render(() => <Counter start={1} />); // a FUNCTION returning JSX, not the element
+fireEvent.click(screen.getByRole('button'));
+flush(); // or: await screen.findByText(...)
+expect(screen.getByRole('button').textContent).toBe('clicked 2');
 ```
 
 Proved: right after `fireEvent.click` the DOM still shows the old text; after `flush()` it shows the new one. `findBy*` queries poll across microtasks, so they also see committed updates. Call `cleanup()` (or rely on auto-cleanup) between tests. `@solidjs/testing-library@0.8.x` is the Solid 1 version: check the major you install.
@@ -66,7 +66,7 @@ Effect-phase throws halt the reactive system (`REACTIVITY_HALTED`) globally. Cal
 ### 1.6 Testing patterns catalogue
 
 | What to test | Pattern | Example in this track |
-|---|---|---|
+| --- | --- | --- |
 | a memo / derivation | `createRoot` → return setter → write outside → `flush()` → assert | M01 suite |
 | an effect's side effect | spy in apply; assert after `flush()`; assert cleanup after `dispose()` | M02 "pattern: an apply half that owns an external resource" |
 | a component's DOM | `render(() => <C/>)`, query by role/text, `fireEvent`, `flush()` or `findBy*` | M03, M09 |
@@ -92,7 +92,9 @@ export function TodoList(props: { api: Api }) {
   const [todos, setTodos] = createOptimisticStore(() => props.api.list(), [] as Todo[]);
   const add = action(function* (title: string) {
     const todo = { id: crypto.randomUUID(), title };
-    setTodos((d) => { d.push(todo); });
+    setTodos((d) => {
+      d.push(todo);
+    });
     yield props.api.add(todo);
     refresh(todos);
   });
@@ -100,9 +102,11 @@ export function TodoList(props: { api: Api }) {
     <Errored fallback={(e) => <p role="alert">{e().message}</p>}>
       <Loading fallback={<p>loading…</p>}>
         <ul>
-          <For each={todos} keyed={(t) => t.id}>{(t) => <li>{t().title}</li>}</For>
+          <For each={todos} keyed={(t) => t.id}>
+            {(t) => <li>{t().title}</li>}
+          </For>
         </ul>
-        <button onClick={() => add("new")}>add</button>
+        <button onClick={() => add('new')}>add</button>
       </Loading>
     </Errored>
   );
@@ -112,30 +116,32 @@ export function TodoList(props: { api: Api }) {
 The test, following §1.6 (a fake API with hand-settled calls, no timers, no network; `fakeServer` here is an illustrative variant of the M07 helper with a `failAdds` option, not a file in this track):
 
 ```tsx
-it("shows the new todo at once and keeps it after the server confirms", async () => {
-  const api = fakeServer([{ id: "1", title: "first" }]);       // M07's helper shape
+it('shows the new todo at once and keeps it after the server confirms', async () => {
+  const api = fakeServer([{ id: '1', title: 'first' }]); // M07's helper shape
   render(() => <TodoList api={api} />);
-  expect(screen.getByText("loading…")).toBeTruthy();           // first load: the boundary owns it
-  await settle(); flush();
-  expect(screen.getAllByRole("listitem").map((li) => li.textContent)).toEqual(["first"]);
-
-  fireEvent.click(screen.getByRole("button", { name: "add" }));
+  expect(screen.getByText('loading…')).toBeTruthy(); // first load: the boundary owns it
+  await settle();
   flush();
-  expect(screen.getAllByRole("listitem")).toHaveLength(2);     // optimistic
+  expect(screen.getAllByRole('listitem').map((li) => li.textContent)).toEqual(['first']);
 
-  await api.complete();                                        // server answers; refresh lands
-  expect(screen.getAllByRole("listitem")).toHaveLength(2);     // confirmed, not duplicated
+  fireEvent.click(screen.getByRole('button', { name: 'add' }));
+  flush();
+  expect(screen.getAllByRole('listitem')).toHaveLength(2); // optimistic
+
+  await api.complete(); // server answers; refresh lands
+  expect(screen.getAllByRole('listitem')).toHaveLength(2); // confirmed, not duplicated
 });
 
-it("reverts and reports when the server rejects", async () => {
+it('reverts and reports when the server rejects', async () => {
   const api = fakeServer([], { failAdds: true });
   render(() => <TodoList api={api} />);
-  await settle(); flush();
-  fireEvent.click(screen.getByRole("button", { name: "add" }));
+  await settle();
   flush();
-  expect(screen.getAllByRole("listitem")).toHaveLength(1);
+  fireEvent.click(screen.getByRole('button', { name: 'add' }));
+  flush();
+  expect(screen.getAllByRole('listitem')).toHaveLength(1);
   await api.complete();
-  expect(screen.queryAllByRole("listitem")).toHaveLength(0);   // overlay discarded
+  expect(screen.queryAllByRole('listitem')).toHaveLength(0); // overlay discarded
 });
 ```
 
@@ -163,12 +169,12 @@ flowchart LR
 `solid-js` and `@solidjs/web` publish several builds selected by **package export conditions** (ESM `exports` resolution is owned by `languages/javascript`):
 
 | Conditions | Resolved build (proved) | `DEV` | `OBSERVE` | Owned-write guard |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | `browser` + `development` | `dist/solid.dev.js` | yes | yes | **throws** |
 | `browser` + `observe` | `dist/solid.observe.js` | no | **yes** | compiled out |
 | `browser` | `dist/solid.js` | no | no | compiled out |
-| *(plain Node)* | `dist/server.js` | no | no | n/a (server) |
-| `node` + `development` / `observe` | `dist/server.dev.js` / `server.observe.js` | | | |
+| _(plain Node)_ | `dist/server.js` | no | no | n/a (server) |
+| `node` + `development` / `observe` | `dist/server.dev.js` / `server.observe.js` |  |  |  |
 
 Consequences:
 
@@ -186,20 +192,20 @@ Two copies of `solid-js` in one bundle (two versions, or one bundled into a libr
 The attribution engine is an opt-in module (`solid-js/attribution`, re-exporting `@solidjs/signals/attribution`); a build that never imports it never ships it, and in production it is an inert stub with the same surface.
 
 ```ts
-import { attribution, why, subscriptions } from "solid-js/attribution";
+import { attribution, why, subscriptions } from 'solid-js/attribution';
 const release = attribution.enable({ log: true });
 // [why-run] effect "docTitle" ran (run 4)
 //   ← memo "userLabel" changed (#6)
 //     ← signal "notifications" write (#5) 2 → 3
-subscriptions(sum);   // ["a", "b"]  — current dependency names
-why(sum);             // re-run records with cause chains
+subscriptions(sum); // ["a", "b"]  — current dependency names
+why(sum); // re-run records with cause chains
 release();
 ```
 
 While enabled it also runs **cost checks** that emit diagnostics. Proved: an effect that copies `a` into `b` (a relay) is reported as `EFFECT_RELAY_TEAR` (the reader of both runs twice per change, once with a torn value), and `subscriptions(sum)` returns `["a", "b"]`. Codes worth knowing:
 
 | Code | Finding | Typical fix |
-|---|---|---|
+| --- | --- | --- |
 | `EFFECT_RELAY_TEAR`, `EFFECT_WRITES_OWN_SOURCE` | effects used to sync derived state | `createMemo` / writable derived |
 | `WASTED_RECOMPUTE`, `UNSTABLE_MEMO_OUTPUT` | memo inputs change but result doesn't / result is new-but-equal every run | `equals`, return stable references |
 | `HOT_SCOPE_RERUNS`, `HOT_SCOPE_TIME`, `HOT_SCOPE_FANOUT` | per-frame signal leaking into many scopes | narrow reads, `createDeferred`, throttle at the source |
@@ -237,7 +243,7 @@ Typical sources: subscriptions opened in a ref or event handler without cleanup;
 ### 4.1 Where Solid's costs actually are
 
 | Cost | Driver | Lever |
-|---|---|---|
+| --- | --- | --- |
 | initial render | template cloning + one binding per dynamic hole; component bodies run once | static markup is nearly free; avoid needless wrapper components only when profiling says so |
 | update | number of bindings whose sources changed | fine-grained reads (`store.a.x` not `deep(store)`), projections, memo cut-offs |
 | list update | keyed reconciliation + DOM moves | stable identities, `reconcile`, `<Repeat>` for windows |
@@ -250,7 +256,7 @@ Benchmarks (the js-framework-benchmark keyed suite) consistently place Solid nea
 
 A practical recipe for the Chrome Performance panel with `@solidjs/web/performance-tracks` (auto-enabled under `vite dev`):
 
-1. Record the interaction (click, type, navigate). Find the **Interactions** track span: it shows input delay, handler time, and the settle (`committed` or `held`). A *silent hold* is drawn as a warning: the user saw nothing change while async work held the write.
+1. Record the interaction (click, type, navigate). Find the **Interactions** track span: it shows input delay, handler time, and the settle (`committed` or `held`). A _silent hold_ is drawn as a warning: the user saw nothing change while async work held the write.
 2. Open the **Propagation** span below it. Its label names the writes that started the drain and how many runs they reached (`count 0 → 1 — click on button#next · 5 runs, 1 unchanged`). Underneath, each run is labelled by what made it run (`<TodoRow> › effect ← doubled`): the write's path through the graph as a flame chart.
 3. Check **Effects** and **Memos** for wide spans (expensive scopes) and many thin repeated spans (hot scopes). "unchanged" runs are wasted compute: add an `equals` or a memo cut-off.
 4. **Async** shows flights; staggered sequential flights are waterfalls. **Holds** shows how long writes waited on async.
@@ -272,7 +278,7 @@ flowchart TD
 ## 4.3 Production monitoring
 
 | Need | Tool |
-|---|---|
+| --- | --- |
 | errors caught by `<Errored>` boundaries | `configureClientErrors({ onError(error, { ownerPath, boundaryPath }) })` or `render(..., { onError })`; reported once per error object (proved) |
 | uncaught errors (system halted) | `window.onerror` / `reportError` — `REACTIVITY_HALTED` hands the cause to the platform |
 | server render and server-function errors | `configureServerErrors({ onError })` from `@solidjs/web`; start mode reports contained request failures through it |
@@ -292,7 +298,7 @@ The fallback UI rendered by a boundary is a handled failure: without the client 
 ## 4.5 "Nothing updates": a debugging checklist
 
 | Check | How | Typical fix |
-|---|---|---|
+| --- | --- | --- |
 | Did the write happen? | log in the handler; `why(node)` shows no write | the handler isn't bound (lowercase `onclick`, handler expression evaluated once) |
 | Did you read before the flush? | the value is right a tick later | `flush()` at an imperative boundary, or read in JSX/effects |
 | Is the read tracked? | `subscriptions(memo)` lacks the source; `STRICT_READ_UNTRACKED` | read inside JSX/memo/compute, not in a body, callback top, or apply half |
@@ -308,7 +314,6 @@ The fallback UI rendered by a boundary is a handled failure: without the client 
 
 Micro-benchmarks of signals in isolation (millions of writes per second) say little about an app; what matters is the work a realistic interaction causes. Measure that first with `costs()`, then optimise the top scope.
 
-
 - Use the **production** build (or observe if that is what ships); dev builds carry guards and diagnostics and are several times slower.
 - Measure **interactions end to end** (input → next paint) in a real browser; jsdom timings are meaningless for rendering.
 - Separate **create**, **update**, **swap/reorder**, **remove** and **memory** costs; Solid's profile differs per operation (cheap updates, comparatively more work at creation for bindings and owners).
@@ -318,7 +323,7 @@ Micro-benchmarks of signals in isolation (millions of writes per second) say lit
 ## 5. Then vs now
 
 | 1.x | 2.0 RC |
-|---|---|
+| --- | --- |
 | `vite-plugin-solid` + `solid-jest` / manual conditions | `@solidjs/vite-plugin` configures Vitest postures (client/server projects) |
 | `@solidjs/testing-library` 0.8 | 1.0.0-rc.2 for Solid 2 |
 | tests could assert right after a write | `flush()` (or await) before asserting |
@@ -329,7 +334,7 @@ Micro-benchmarks of signals in isolation (millions of writes per second) say lit
 ## 5.1 Failure modes proved by negative tests
 
 | Failure | Test (`09-testing-debugging-performance.test.tsx`) |
-|---|---|
+| --- | --- |
 | testing the server build by accident | "plain Node resolves the server build" |
 | relying on dev-only guards in prod | "production: … the owned-write guard is compiled out" |
 | relay effects | "…EFFECT_RELAY_TEAR" |
@@ -339,7 +344,7 @@ Micro-benchmarks of signals in isolation (millions of writes per second) say lit
 ## 6. Production failure modes
 
 | Symptom | Cause | Fix |
-|---|---|---|
+| --- | --- | --- |
 | Tests pass, app broken (or vice versa) | tests resolved the server build | use the plugin's Vitest integration or set browser + development conditions |
 | Flaky async tests | real timers / network | deferreds + `settle()` + `flush()`; `resolve()` |
 | Tests leak into each other | unowned effects, no `dispose`, halted system | `createRoot` + dispose, `cleanup()`, `resetErrorHalt()` |

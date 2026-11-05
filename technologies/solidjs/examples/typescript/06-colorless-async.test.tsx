@@ -2,7 +2,7 @@
  * Module 06 — Colorless async: async computations, Loading, isPending/latest,
  * cancellation, errors, streams. Deterministic: every promise is a hand-settled deferred.
  */
-import { describe, it, expect, afterEach } from "vitest";
+import { describe, it, expect, afterEach } from 'vitest';
 import {
   createSignal,
   createMemo,
@@ -22,9 +22,14 @@ import {
   Loading,
   Errored,
   Reveal,
-} from "solid-js";
-import { render, cleanup } from "@solidjs/testing-library";
-import { captureDiagnostics, captureDiagnosticsAsync, deferred, settle } from "./support/diagnostics.ts";
+} from 'solid-js';
+import { render, cleanup } from '@solidjs/testing-library';
+import {
+  captureDiagnostics,
+  captureDiagnosticsAsync,
+  deferred,
+  settle,
+} from './support/diagnostics.ts';
 
 afterEach(() => {
   cleanup();
@@ -33,7 +38,8 @@ afterEach(() => {
 
 /** A fake API whose calls are settled by the test. */
 function fakeApi<T>() {
-  const calls: Array<{ arg: unknown; d: ReturnType<typeof deferred<T>>; signal?: AbortSignal }> = [];
+  const calls: Array<{ arg: unknown; d: ReturnType<typeof deferred<T>>; signal?: AbortSignal }> =
+    [];
   return {
     calls,
     fetch(arg: unknown, signal?: AbortSignal): Promise<T> {
@@ -49,8 +55,8 @@ function fakeApi<T>() {
   };
 }
 
-describe("06 · async computations", () => {
-  it("an async memo is just a memo returning a Promise; resolve() awaits its settled value", async () => {
+describe('06 · async computations', () => {
+  it('an async memo is just a memo returning a Promise; resolve() awaits its settled value', async () => {
     const api = fakeApi<string>();
     const { user, dispose } = createRoot((dispose) => {
       const [id] = createSignal(1);
@@ -58,13 +64,13 @@ describe("06 · async computations", () => {
       return { user, dispose };
     });
     const p = resolve(() => user());
-    await api.resolveLast("Ada");
-    await expect(p).resolves.toBe("Ada");
-    expect(user()).toBe("Ada");
+    await api.resolveLast('Ada');
+    await expect(p).resolves.toBe('Ada');
+    expect(user()).toBe('Ada');
     dispose();
   });
 
-  it("reading a pending async value outside any tracking scope throws NotReadyError", () => {
+  it('reading a pending async value outside any tracking scope throws NotReadyError', () => {
     const api = fakeApi<string>();
     const { user, dispose } = createRoot((dispose) => {
       const user = createMemo(() => api.fetch(1));
@@ -74,11 +80,11 @@ describe("06 · async computations", () => {
     dispose();
   });
 
-  it("dependencies read after the first await are not tracked (UNTRACKED_READ_AFTER_AWAIT)", async () => {
+  it('dependencies read after the first await are not tracked (UNTRACKED_READ_AFTER_AWAIT)', async () => {
     const gate = deferred<void>();
     const { codes } = await captureDiagnosticsAsync(async () => {
       const { setQ, dispose, runs } = createRoot((dispose) => {
-        const [q, setQ] = createSignal("a");
+        const [q, setQ] = createSignal('a');
         let runs = 0;
         createMemo(async () => {
           runs++;
@@ -90,16 +96,16 @@ describe("06 · async computations", () => {
       gate.resolve();
       await settle();
       flush();
-      setQ("b");
+      setQ('b');
       flush();
       await settle();
       expect(runs()).toBe(1); // never re-ran
       dispose();
     });
-    expect(codes).toContain("UNTRACKED_READ_AFTER_AWAIT");
+    expect(codes).toContain('UNTRACKED_READ_AFTER_AWAIT');
   });
 
-  it("an AsyncIterable streams values into the memo", async () => {
+  it('an AsyncIterable streams values into the memo', async () => {
     const steps = [deferred<void>(), deferred<void>()];
     async function* ticks() {
       yield 1;
@@ -108,7 +114,10 @@ describe("06 · async computations", () => {
       await steps[1]!.promise;
       yield 3;
     }
-    const { price, dispose } = createRoot((dispose) => ({ price: createMemo(() => ticks()), dispose }));
+    const { price, dispose } = createRoot((dispose) => ({
+      price: createMemo(() => ticks()),
+      dispose,
+    }));
     await settle();
     flush();
     expect(price()).toBe(1);
@@ -123,7 +132,7 @@ describe("06 · async computations", () => {
     dispose();
   });
 
-  it("from() adapts a push subscription; re-runs and disposal unsubscribe", async () => {
+  it('from() adapts a push subscription; re-runs and disposal unsubscribe', async () => {
     const listeners = new Set<(v: number) => void>();
     const subscribe = (next: (v: number) => void) => {
       listeners.add(next);
@@ -147,21 +156,21 @@ describe("06 · async computations", () => {
       const [src, setSrc] = createSignal<string | null>(null);
       const derived = createMemo(() => {
         const v = src();
-        if (v === null) throw new NotReadyError("waiting for src");
+        if (v === null) throw new NotReadyError('waiting for src');
         return v.toUpperCase();
       });
       return { derived, setSrc, dispose };
     });
     expect(() => untrack(derived)).toThrow(NotReadyError);
-    setSrc("ok");
+    setSrc('ok');
     flush();
-    expect(derived()).toBe("OK");
+    expect(derived()).toBe('OK');
     dispose();
   });
 });
 
-describe("06 · <Loading> and pending state", () => {
-  it("shows the fallback until the first value, then keeps stale content during revalidation", async () => {
+describe('06 · <Loading> and pending state', () => {
+  it('shows the fallback until the first value, then keeps stale content during revalidation', async () => {
     const api = fakeApi<string>();
     const [id, setId] = createSignal(1);
     const user = createRoot(() => createMemo(() => api.fetch(id())));
@@ -169,51 +178,51 @@ describe("06 · <Loading> and pending state", () => {
       <Loading fallback={<p>loading</p>}>
         <p>
           {user()}
-          {isPending(() => user()) ? " (updating)" : ""}
+          {isPending(() => user()) ? ' (updating)' : ''}
         </p>
       </Loading>
     ));
-    expect(container.textContent).toBe("loading");
-    await api.resolveLast("Ada");
-    expect(container.textContent).toBe("Ada");
+    expect(container.textContent).toBe('loading');
+    await api.resolveLast('Ada');
+    expect(container.textContent).toBe('Ada');
     setId(2); // input changed: a value change is in flight
     flush();
     await settle();
     flush();
-    expect(container.textContent).toBe("Ada (updating)"); // stale content + pending, no fallback
-    await api.resolveLast("Grace");
-    expect(container.textContent).toBe("Grace");
+    expect(container.textContent).toBe('Ada (updating)'); // stale content + pending, no fallback
+    await api.resolveLast('Grace');
+    expect(container.textContent).toBe('Grace');
   });
 
-  it("a bare refresh() is quiet; affects(x) + refresh(x) reads as pending", async () => {
+  it('a bare refresh() is quiet; affects(x) + refresh(x) reads as pending', async () => {
     const api = fakeApi<number>();
-    const user = createRoot(() => createMemo(() => api.fetch("u")));
+    const user = createRoot(() => createMemo(() => api.fetch('u')));
     const { container } = render(() => (
       <Loading fallback={<p>loading</p>}>
-        <p>{isPending(() => user()) ? "pending" : `v${user()}`}</p>
+        <p>{isPending(() => user()) ? 'pending' : `v${user()}`}</p>
       </Loading>
     ));
     await api.resolveLast(1);
-    expect(container.textContent).toBe("v1");
+    expect(container.textContent).toBe('v1');
     refresh(user);
     flush();
     await settle();
     flush();
     expect(api.calls.length).toBe(2); // re-asked
-    expect(container.textContent).toBe("v1"); // …silently
+    expect(container.textContent).toBe('v1'); // …silently
     await api.resolveLast(2);
-    expect(container.textContent).toBe("v2");
+    expect(container.textContent).toBe('v2');
     affects(user);
     refresh(user);
     flush();
     await settle();
     flush();
-    expect(container.textContent).toBe("pending");
+    expect(container.textContent).toBe('pending');
     await api.resolveLast(3);
-    expect(container.textContent).toBe("v3");
+    expect(container.textContent).toBe('v3');
   });
 
-  it("latest(id) peeks at the in-flight input while the frame is held", async () => {
+  it('latest(id) peeks at the in-flight input while the frame is held', async () => {
     const api = fakeApi<string>();
     const [id, setId] = createSignal(1);
     const user = createRoot(() => createMemo(() => api.fetch(id())));
@@ -224,17 +233,17 @@ describe("06 · <Loading> and pending state", () => {
         </p>
       </Loading>
     ));
-    await api.resolveLast("A");
+    await api.resolveLast('A');
     setId(2);
     flush();
     await settle();
     flush();
-    expect(container.textContent).toBe("A / committed 1 / latest 2");
-    await api.resolveLast("B");
-    expect(container.textContent).toBe("B / committed 2 / latest 2");
+    expect(container.textContent).toBe('A / committed 1 / latest 2');
+    await api.resolveLast('B');
+    expect(container.textContent).toBe('B / committed 2 / latest 2');
   });
 
-  it("<Loading on={id()}> shows the fallback again when the dependency changes", async () => {
+  it('<Loading on={id()}> shows the fallback again when the dependency changes', async () => {
     const api = fakeApi<string>();
     const [id, setId] = createSignal(1);
     const comments = createRoot(() => createMemo(() => api.fetch(id())));
@@ -243,18 +252,18 @@ describe("06 · <Loading> and pending state", () => {
         <p>{comments()}</p>
       </Loading>
     ));
-    await api.resolveLast("c1");
-    expect(container.textContent).toBe("c1");
+    await api.resolveLast('c1');
+    expect(container.textContent).toBe('c1');
     setId(2);
     flush();
     await settle();
     flush();
-    expect(container.textContent).toBe("spinner");
-    await api.resolveLast("c2");
-    expect(container.textContent).toBe("c2");
+    expect(container.textContent).toBe('spinner');
+    await api.resolveLast('c2');
+    expect(container.textContent).toBe('c2');
   });
 
-  it("negative: the same data read outside a <Loading on> boundary holds the frame (LOADING_ON_OUTSIDE_HOLD)", async () => {
+  it('negative: the same data read outside a <Loading on> boundary holds the frame (LOADING_ON_OUTSIDE_HOLD)', async () => {
     const api = fakeApi<string>();
     const [id, setId] = createSignal(1);
     const comments = createRoot(() => createMemo(() => api.fetch(id())));
@@ -269,64 +278,64 @@ describe("06 · <Loading> and pending state", () => {
           </Loading>
         </div>
       ));
-      await api.resolveLast("c1");
+      await api.resolveLast('c1');
       setId(2);
       flush();
       await settle();
       flush();
-      expect(container.textContent).not.toContain("spinner"); // the fallback can never be seen
-      await api.resolveLast("c22");
-      expect(container.textContent).toBe("3c22");
+      expect(container.textContent).not.toContain('spinner'); // the fallback can never be seen
+      await api.resolveLast('c22');
+      expect(container.textContent).toBe('3c22');
     });
-    expect(codes).toContain("LOADING_ON_OUTSIDE_HOLD");
+    expect(codes).toContain('LOADING_ON_OUTSIDE_HOLD');
   });
 
-  it("createDeferred lags but never leads: the last value stays while the refetch runs", async () => {
+  it('createDeferred lags but never leads: the last value stays while the refetch runs', async () => {
     const api = fakeApi<string>();
-    const [period, setPeriod] = createSignal("day");
+    const [period, setPeriod] = createSignal('day');
     const rows = createRoot(() => createDeferred(() => api.fetch(period())));
     const { container } = render(() => (
       <Loading fallback={<p>loading</p>}>
         <p>
           {rows()}
-          {isPending(() => rows()) ? "*" : ""}
+          {isPending(() => rows()) ? '*' : ''}
         </p>
       </Loading>
     ));
-    await api.resolveLast("day-rows");
-    setPeriod("week");
+    await api.resolveLast('day-rows');
+    setPeriod('week');
     flush();
     await settle();
     flush();
-    expect(container.textContent).toBe("day-rows*");
-    await api.resolveLast("week-rows");
-    expect(container.textContent).toBe("week-rows");
+    expect(container.textContent).toBe('day-rows*');
+    await api.resolveLast('week-rows');
+    expect(container.textContent).toBe('week-rows');
   });
 
-  it("loadingValue: a declared first paint (no fallback, isPending false during the first flight)", async () => {
+  it('loadingValue: a declared first paint (no fallback, isPending false during the first flight)', async () => {
     const api = fakeApi<{ items: string[]; provisional?: boolean }>();
     const feed = createRoot(() =>
-      createMemo(() => api.fetch("feed"), { loadingValue: { items: ["…"], provisional: true } }),
+      createMemo(() => api.fetch('feed'), { loadingValue: { items: ['…'], provisional: true } }),
     );
     const { container } = render(() => (
       <Loading fallback={<p>never shown</p>}>
         <p>
-          {feed().items.join(",")}
-          {feed().provisional ? " (provisional)" : ""}
-          {isPending(() => feed()) ? " pending" : ""}
+          {feed().items.join(',')}
+          {feed().provisional ? ' (provisional)' : ''}
+          {isPending(() => feed()) ? ' pending' : ''}
         </p>
       </Loading>
     ));
-    expect(container.textContent).toBe("… (provisional)");
-    await api.resolveLast({ items: ["a", "b"] });
-    expect(container.textContent).toBe("a,b");
+    expect(container.textContent).toBe('… (provisional)');
+    await api.resolveLast({ items: ['a', 'b'] });
+    expect(container.textContent).toBe('a,b');
   });
 });
 
-describe("06 · cancellation", () => {
-  it("onCleanup registered before the first await aborts the superseded flight", async () => {
+describe('06 · cancellation', () => {
+  it('onCleanup registered before the first await aborts the superseded flight', async () => {
     const api = fakeApi<string>();
-    const [q, setQ] = createSignal("a");
+    const [q, setQ] = createSignal('a');
     const results = createRoot(() =>
       createMemo(async () => {
         const ac = new AbortController();
@@ -341,7 +350,7 @@ describe("06 · cancellation", () => {
       </Loading>
     ));
     flush();
-    setQ("ab");
+    setQ('ab');
     flush();
     await settle();
     flush();
@@ -349,9 +358,9 @@ describe("06 · cancellation", () => {
     expect(api.calls[1]!.signal!.aborted).toBe(false);
   });
 
-  it("negative: cleanup registered after the first await never cancels the superseded flight", async () => {
+  it('negative: cleanup registered after the first await never cancels the superseded flight', async () => {
     const api = fakeApi<string>();
-    const [q, setQ] = createSignal("a");
+    const [q, setQ] = createSignal('a');
     const signals: AbortSignal[] = [];
     const results = createRoot(() =>
       createMemo(async () => {
@@ -374,7 +383,7 @@ describe("06 · cancellation", () => {
     ));
     flush();
     await settle();
-    setQ("ab");
+    setQ('ab');
     flush();
     await settle();
     flush();
@@ -383,10 +392,10 @@ describe("06 · cancellation", () => {
   });
 });
 
-describe("06 · errors", () => {
-  it("<Errored> catches an async rejection; reset() retries and the boundary heals", async () => {
+describe('06 · errors', () => {
+  it('<Errored> catches an async rejection; reset() retries and the boundary heals', async () => {
     const api = fakeApi<string>();
-    const data = createRoot(() => createMemo(() => api.fetch("x")));
+    const data = createRoot(() => createMemo(() => api.fetch('x')));
     const { container } = render(() => (
       <Errored
         fallback={(err, reset) => (
@@ -398,20 +407,20 @@ describe("06 · errors", () => {
         </Loading>
       </Errored>
     ));
-    api.calls[0]!.d.reject(new Error("503"));
+    api.calls[0]!.d.reject(new Error('503'));
     await settle();
     flush();
-    expect(container.textContent).toBe("failed: 503");
-    container.querySelector("button")!.click();
+    expect(container.textContent).toBe('failed: 503');
+    container.querySelector('button')!.click();
     flush();
     await settle();
     flush();
     expect(api.calls.length).toBe(2); // the errored branch re-asked
-    await api.resolveLast("ok");
-    expect(container.textContent).toBe("ok");
+    await api.resolveLast('ok');
+    expect(container.textContent).toBe('ok');
   });
 
-  it("a later success heals the boundary without reset (input changed)", async () => {
+  it('a later success heals the boundary without reset (input changed)', async () => {
     const api = fakeApi<string>();
     const [id, setId] = createSignal(1);
     const data = createRoot(() => createMemo(() => api.fetch(id())));
@@ -422,25 +431,25 @@ describe("06 · errors", () => {
         </Loading>
       </Errored>
     ));
-    api.calls[0]!.d.reject(new Error("boom"));
+    api.calls[0]!.d.reject(new Error('boom'));
     await settle();
     flush();
-    expect(container.textContent).toBe("error");
+    expect(container.textContent).toBe('error');
     setId(2);
     flush();
     await settle();
     flush();
-    await api.resolveLast("recovered");
-    expect(container.textContent).toBe("recovered");
+    await api.resolveLast('recovered');
+    expect(container.textContent).toBe('recovered');
   });
 });
 
-describe("06 · <Reveal>", () => {
-  it("sequential (default): a later boundary waits for the earlier one", async () => {
+describe('06 · <Reveal>', () => {
+  it('sequential (default): a later boundary waits for the earlier one', async () => {
     const a = fakeApi<string>();
     const b = fakeApi<string>();
-    const A = createRoot(() => createMemo(() => a.fetch("a")));
-    const B = createRoot(() => createMemo(() => b.fetch("b")));
+    const A = createRoot(() => createMemo(() => a.fetch('a')));
+    const B = createRoot(() => createMemo(() => b.fetch('b')));
     const { container } = render(() => (
       <Reveal>
         <Loading fallback={<i>a…</i>}>
@@ -451,17 +460,17 @@ describe("06 · <Reveal>", () => {
         </Loading>
       </Reveal>
     ));
-    await b.resolveLast("B"); // second resolves first
-    expect(container.textContent).toBe("a…b…"); // held behind the frontier
-    await a.resolveLast("A");
-    expect(container.textContent).toBe("AB");
+    await b.resolveLast('B'); // second resolves first
+    expect(container.textContent).toBe('a…b…'); // held behind the frontier
+    await a.resolveLast('A');
+    expect(container.textContent).toBe('AB');
   });
 
-  it("together: nothing reveals until every boundary is ready", async () => {
+  it('together: nothing reveals until every boundary is ready', async () => {
     const a = fakeApi<string>();
     const b = fakeApi<string>();
-    const A = createRoot(() => createMemo(() => a.fetch("a")));
-    const B = createRoot(() => createMemo(() => b.fetch("b")));
+    const A = createRoot(() => createMemo(() => a.fetch('a')));
+    const B = createRoot(() => createMemo(() => b.fetch('b')));
     const { container } = render(() => (
       <Reveal order="together">
         <Loading fallback={<i>a…</i>}>
@@ -472,14 +481,14 @@ describe("06 · <Reveal>", () => {
         </Loading>
       </Reveal>
     ));
-    await a.resolveLast("A");
-    expect(container.textContent).toBe("a…b…");
-    await b.resolveLast("B");
-    expect(container.textContent).toBe("AB");
+    await a.resolveLast('A');
+    expect(container.textContent).toBe('a…b…');
+    await b.resolveLast('B');
+    expect(container.textContent).toBe('AB');
   });
 });
 
-describe("06 · races and boundaries (internals)", () => {
+describe('06 · races and boundaries (internals)', () => {
   it("a superseded flight's late answer is dropped: out-of-order responses cannot overwrite newer data", async () => {
     const api = fakeApi<string>();
     const [id, setId] = createSignal(1);
@@ -489,7 +498,7 @@ describe("06 · races and boundaries (internals)", () => {
         <p>{user()}</p>
       </Loading>
     ));
-    await api.resolveLast("u1");
+    await api.resolveLast('u1');
     setId(2);
     flush();
     await settle();
@@ -497,18 +506,18 @@ describe("06 · races and boundaries (internals)", () => {
     flush();
     await settle();
     // request for id 3 answers first, the stale request for id 2 answers last
-    api.calls[2]!.d.resolve("u3");
+    api.calls[2]!.d.resolve('u3');
     await settle();
     flush();
-    api.calls[1]!.d.resolve("u2 (stale)");
+    api.calls[1]!.d.resolve('u2 (stale)');
     await settle();
     flush();
-    expect(container.textContent).toBe("u3");
+    expect(container.textContent).toBe('u3');
   });
 
-  it("refresh(x) returns a promise of the settled value (the imperative settle point)", async () => {
+  it('refresh(x) returns a promise of the settled value (the imperative settle point)', async () => {
     const api = fakeApi<number>();
-    const user = createRoot(() => createMemo(() => api.fetch("x")));
+    const user = createRoot(() => createMemo(() => api.fetch('x')));
     render(() => (
       <Loading fallback="…">
         <p>{user()}</p>
@@ -522,19 +531,19 @@ describe("06 · races and boundaries (internals)", () => {
     await expect(next).resolves.toBe(2);
   });
 
-  it("negative: async read with no <Loading> above warns ASYNC_OUTSIDE_LOADING_BOUNDARY and defers the root mount", async () => {
+  it('negative: async read with no <Loading> above warns ASYNC_OUTSIDE_LOADING_BOUNDARY and defers the root mount', async () => {
     const api = fakeApi<string>();
-    const user = createRoot(() => createMemo(() => api.fetch("x")));
+    const user = createRoot(() => createMemo(() => api.fetch('x')));
     const { codes } = await captureDiagnosticsAsync(async () => {
       const { container } = render(() => <p>{user()}</p>);
-      expect(container.textContent).toBe(""); // nothing mounted yet
-      await api.resolveLast("late");
-      expect(container.textContent).toBe("late");
+      expect(container.textContent).toBe(''); // nothing mounted yet
+      await api.resolveLast('late');
+      expect(container.textContent).toBe('late');
     });
-    expect(codes).toContain("ASYNC_OUTSIDE_LOADING_BOUNDARY");
+    expect(codes).toContain('ASYNC_OUTSIDE_LOADING_BOUNDARY');
   });
 
-  it("negative: reading a pending value at the top of a component body throws PENDING_ASYNC_UNTRACKED_READ (and halts)", () => {
+  it('negative: reading a pending value at the top of a component body throws PENDING_ASYNC_UNTRACKED_READ (and halts)', () => {
     const user = createRoot(() => createMemo(() => new Promise<string>(() => {})));
     function Bad() {
       const v = user(); // ❌ untracked read of a pending value
@@ -553,6 +562,6 @@ describe("06 · races and boundaries (internals)", () => {
       }
     });
     expect(String(error)).toMatch(/PENDING_ASYNC_UNTRACKED_READ/);
-    expect(codes).toContain("REACTIVITY_HALTED"); // even <Loading> cannot catch a read it never saw
+    expect(codes).toContain('REACTIVITY_HALTED'); // even <Loading> cannot catch a read it never saw
   });
 });

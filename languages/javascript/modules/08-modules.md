@@ -1,6 +1,6 @@
 # 08 · Modules: ESM Semantics, Live Bindings, Cycles, Top-Level Await and Conditions
 
-> **Spec anchors (ECMA-262 17th edition):** §16.2 *Modules*: §16.2.1.5 *Abstract Module Records*, §16.2.1.6 *Cyclic Module Records* (§16.2.1.6.1.2 Link, §16.2.1.6.1.3 Evaluate, §16.2.1.6.1.3.1 InnerModuleEvaluation, §16.2.1.6.1.3.2 ExecuteAsyncModule, §16.2.1.6.1.3.4 AsyncModuleExecutionFulfilled), §16.2.1.7 *Source Text Module Records*, §16.2.1.10 HostLoadImportedModule, §16.2.1.11 FinishLoadingImportedModule, §16.2.1.13 GetModuleNamespace, §16.2.2 *Imports*, §16.2.3 *Exports*, §9.1.1.5 *Module Environment Records*, §10.4.6 *Module Namespace Exotic Objects*, §13.3.10 `import()` (§13.3.10.2 EvaluateImportCall), §13.3.12.1.1 HostGetImportMetaProperties. Proposals: Deferring Module Evaluation (Stage 3), Source Phase Imports (Stage 3). Node.js documentation: *Modules: Packages* (`exports`, conditions).
+> **Spec anchors (ECMA-262 17th edition):** §16.2 _Modules_: §16.2.1.5 _Abstract Module Records_, §16.2.1.6 _Cyclic Module Records_ (§16.2.1.6.1.2 Link, §16.2.1.6.1.3 Evaluate, §16.2.1.6.1.3.1 InnerModuleEvaluation, §16.2.1.6.1.3.2 ExecuteAsyncModule, §16.2.1.6.1.3.4 AsyncModuleExecutionFulfilled), §16.2.1.7 _Source Text Module Records_, §16.2.1.10 HostLoadImportedModule, §16.2.1.11 FinishLoadingImportedModule, §16.2.1.13 GetModuleNamespace, §16.2.2 _Imports_, §16.2.3 _Exports_, §9.1.1.5 _Module Environment Records_, §10.4.6 _Module Namespace Exotic Objects_, §13.3.10 `import()` (§13.3.10.2 EvaluateImportCall), §13.3.12.1.1 HostGetImportMetaProperties. Proposals: Deferring Module Evaluation (Stage 3), Source Phase Imports (Stage 3). Node.js documentation: _Modules: Packages_ (`exports`, conditions).
 >
 > **Executable proof:** [`examples/08-modules.test.js`](../examples/08-modules.test.js) with fixtures in [`examples/fixtures/08-modules/`](../examples/fixtures/08-modules/)
 
@@ -10,7 +10,7 @@ ECMAScript modules (ESM) are the language's own module system. Its semantics are
 
 ## 1. Module Records and the three phases
 
-**Definition (§16.2.1.5).** A *Module Record* encapsulates structural information about one module: its realm, its environment, its namespace object, and host-defined data. A **Cyclic Module Record** (§16.2.1.6) can participate in dependency cycles; a **Source Text Module Record** (§16.2.1.7) is one created from ECMAScript source. Hosts can add other kinds (JSON modules are Synthetic Module Records in HTML; WebAssembly modules integrate through the ESM Integration proposal).
+**Definition (§16.2.1.5).** A _Module Record_ encapsulates structural information about one module: its realm, its environment, its namespace object, and host-defined data. A **Cyclic Module Record** (§16.2.1.6) can participate in dependency cycles; a **Source Text Module Record** (§16.2.1.7) is one created from ECMAScript source. Hosts can add other kinds (JSON modules are Synthetic Module Records in HTML; WebAssembly modules integrate through the ESM Integration proposal).
 
 Loading a module graph happens in three phases, separated in time:
 
@@ -35,7 +35,7 @@ flowchart LR
 2. **Link.** For each module, create its Module Environment Record and **import bindings**. Every import must resolve to an export (`ResolveExport`, following `export ... from` re-exports and `export *`). A missing named export is a `SyntaxError` at link time: **no module in the graph runs**.
 3. **Evaluate.** Execute module bodies depth-first, post-order, each module **at most once** per realm and per resolved URL. The result of `Evaluate()` is a promise (since ES2022, because of top-level await).
 
-The `[[Status]]` field tracks the progress: *new → unlinked → linking → linked → evaluating → evaluating-async → evaluated*. A module that throws during evaluation is *evaluated* with an `[[EvaluationError]]`; importing it again rethrows the **same** error object. A module failing once is broken for the lifetime of the realm; there is no retry.
+The `[[Status]]` field tracks the progress: _new → unlinked → linking → linked → evaluating → evaluating-async → evaluated_. A module that throws during evaluation is _evaluated_ with an `[[EvaluationError]]`; importing it again rethrows the **same** error object. A module failing once is broken for the lifetime of the realm; there is no retry.
 
 ### Static structure is the point
 
@@ -51,19 +51,21 @@ The dynamic escape hatch is `import(specifier)` (§13.3.10), an expression that 
 
 ## 2. Live bindings
 
-**Definition (§9.1.1.5).** In a Module Environment Record, an import is an **indirect binding**: `CreateImportBinding(N, M, N2)` makes the local name `N` an alias for the binding `N2` in module `M`'s environment. Reading the import reads the exporter's variable *at that moment*.
+**Definition (§9.1.1.5).** In a Module Environment Record, an import is an **indirect binding**: `CreateImportBinding(N, M, N2)` makes the local name `N` an alias for the binding `N2` in module `M`'s environment. Reading the import reads the exporter's variable _at that moment_.
 
 ```js
 // counter.js
 export let count = 0;
-export function increment() { count++; }
-export default count;              // default export of an *expression*: evaluated once, a snapshot
+export function increment() {
+  count++;
+}
+export default count; // default export of an *expression*: evaluated once, a snapshot
 
 // main.js
 import snapshot, { count, increment } from './counter.js';
 increment();
-count;     // 1   (live: reads counter.js's `count`)
-snapshot;  // 0   (export default <expression> creates a hidden *default* binding initialised once)
+count; // 1   (live: reads counter.js's `count`)
+snapshot; // 0   (export default <expression> creates a hidden *default* binding initialised once)
 count = 5; // TypeError: Assignment to constant variable (imports are read-only for the importer)
 ```
 
@@ -79,7 +81,7 @@ Facts:
 `import * as ns from './counter.js'` gives an exotic object with:
 
 | Property | Value |
-|---|---|
+| --- | --- |
 | `[[Prototype]]` | `null` |
 | keys | exported names, **sorted by code unit order** (not declaration order) |
 | `ns[Symbol.toStringTag]` | `'Module'` |
@@ -99,18 +101,29 @@ Fixture ([`examples/fixtures/08-modules/cycle/`](../examples/fixtures/08-modules
 
 ```js
 // a.js                              // b.js
-import { b } from './b.js';          import { a } from './a.js';
-export const a = 'A';                let seen;
-export function useB() { return b; } try { seen = a; } catch (e) { seen = e.message; }
-                                     export const b = 'B';
-                                     export const sawA = seen;
-                                     export function readALater() { return a; }
+import { b } from './b.js';
+import { a } from './a.js';
+export const a = 'A';
+let seen;
+export function useB() {
+  return b;
+}
+try {
+  seen = a;
+} catch (e) {
+  seen = e.message;
+}
+export const b = 'B';
+export const sawA = seen;
+export function readALater() {
+  return a;
+}
 // main.js
-import { useB } from './a.js';       // a.js is visited first
+import { useB } from './a.js'; // a.js is visited first
 import { sawA, readALater } from './b.js';
 ```
 
-Traversal from `main.js`: visit `a.js` → visit `b.js` → `b.js` imports `a.js`, which is already *evaluating* (in the current DFS stack), so `b.js` does not wait → `b.js` **evaluates first** and reads `a` while `a.js` has not run: `ReferenceError: Cannot access 'a' before initialization`. Then `a.js` evaluates. Later calls to `readALater()` succeed because the binding is live and now initialised.
+Traversal from `main.js`: visit `a.js` → visit `b.js` → `b.js` imports `a.js`, which is already _evaluating_ (in the current DFS stack), so `b.js` does not wait → `b.js` **evaluates first** and reads `a` while `a.js` has not run: `ReferenceError: Cannot access 'a' before initialization`. Then `a.js` evaluates. Later calls to `readALater()` succeed because the binding is live and now initialised.
 
 Swap the entry's import order and the error disappears. That fragility is the problem: **circular imports make program correctness depend on import order**. Defences:
 
@@ -139,7 +152,7 @@ slow:start → sibling → slow:end → consumer sees slow → entry
 Production implications:
 
 | Use | Verdict |
-|---|---|
+| --- | --- |
 | `const config = await loadConfig()` in an application entry module | fine |
 | `await` a database connection in a **shared** library module | dangerous: every importer's startup waits for it; a failure makes the module permanently broken in that realm; tests that import it need the DB |
 | TLA in a module that participates in a cycle | can **deadlock** the cycle's evaluation (each waits on the other) |
@@ -162,9 +175,9 @@ Production implications:
 
 A per-module object populated by the host (`HostGetImportMetaProperties`):
 
-| Host | Properties |
-|---|---|
-| HTML | `url`, `resolve(specifier)` |
+| Host    | Properties                                                                             |
+| ------- | -------------------------------------------------------------------------------------- |
+| HTML    | `url`, `resolve(specifier)`                                                            |
 | Node 26 | `url`, `resolve(specifier)`, `filename`, `dirname`, `main` (true for the entry module) |
 
 `import.meta.dirname` and `filename` replace the `fileURLToPath(new URL('.', import.meta.url))` boilerplate in Node ≥ 20.11.
@@ -176,17 +189,17 @@ import data from './data.json' with { type: 'json' };
 const css = await import('./theme.css', { with: { type: 'css' } }); // browsers (CSS module scripts)
 ```
 
-The attribute is a security feature: the importer states the *expected* type, so a server that returns JavaScript for `data.json` cannot execute code in the importer. Hosts **must** reject a JSON import without `type: 'json'` (Node: `ERR_IMPORT_ATTRIBUTE_MISSING`). JSON modules give the parsed value as `default` only, with `JSON.parse` semantics (so large integers lose precision, see [module 13](13-correctness-security-pitfalls.md)).
+The attribute is a security feature: the importer states the _expected_ type, so a server that returns JavaScript for `data.json` cannot execute code in the importer. Hosts **must** reject a JSON import without `type: 'json'` (Node: `ERR_IMPORT_ATTRIBUTE_MISSING`). JSON modules give the parsed value as `default` only, with `JSON.parse` semantics (so large integers lose precision, see [module 13](13-correctness-security-pitfalls.md)).
 
-> **Then vs now:** import *assertions* (`assert { type: 'json' }`, shipped in Chrome 91 and Node 17–21) were replaced by import *attributes* (`with { type: 'json' }`). V8 removed `assert` support; Node 22+ rejects it. Migrate by replacing `assert` with `with`.
+> **Then vs now:** import _assertions_ (`assert { type: 'json' }`, shipped in Chrome 91 and Node 17–21) were replaced by import _attributes_ (`with { type: 'json' }`). V8 removed `assert` support; Node 22+ rejects it. Migrate by replacing `assert` with `with`.
 
 ### Phase imports (Stage 3)
 
 | Syntax | Proposal | Meaning | Node 26.12.1 |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `import defer * as ns from './heavy.js'` | Deferring Module Evaluation, Stage 3 | load and link now; **evaluate on first property access** of `ns` (synchronously) | behind `--js-defer-import-eval` |
-| `import source wasmMod from './x.wasm'` | Source Phase Imports, Stage 3 | get the module's *source* representation (a `WebAssembly.Module`) without instantiating it | V8 flag on by default; Node support for Wasm source imports is experimental |
-| `import.sync` | Import Sync, Stage 2 | | absent |
+| `import source wasmMod from './x.wasm'` | Source Phase Imports, Stage 3 | get the module's _source_ representation (a `WebAssembly.Module`) without instantiating it | V8 flag on by default; Node support for Wasm source imports is experimental |
+| `import.sync` | Import Sync, Stage 2 |  | absent |
 
 `import defer` is a startup-time optimisation: the module and its dependencies are fetched and linked eagerly (so errors still surface early), but their bodies run only when needed. It cannot defer async modules (TLA) synchronously; those are evaluated eagerly. The example runs the fixture under the flag and shows `main body` logged before `heavy evaluated`.
 
@@ -212,14 +225,14 @@ Bare specifiers (`'react'`, `'solid-js/web'`) are resolved by the host. In Node 
 }
 ```
 
-Rules (from the Node.js *Packages* documentation, which bundlers follow):
+Rules (from the Node.js _Packages_ documentation, which bundlers follow):
 
 1. **Encapsulation.** Only subpaths listed in `exports` can be imported. `import 'cond-demo/src/secret.js'` fails with `ERR_PACKAGE_PATH_NOT_EXPORTED`. `null` targets explicitly block subpaths.
 2. **Condition matching.** Within a conditions object, keys are tested **in object order**; the first key that is in the active condition set wins. Put specific conditions first and `"default"` last.
 3. **Active conditions** depend on the environment:
 
 | Condition | Active when |
-|---|---|
+| --- | --- |
 | `import` / `require` | loaded via `import`/`import()` or via `require()` |
 | `module-sync` | loader can load ESM synchronously (Node ≥ 22.10, with `require(esm)`) |
 | `node`, `deno`, `bun`, `workerd` | in that runtime |
@@ -240,8 +253,8 @@ SolidJS and React both ship condition-based builds (`browser`/`node`/`developmen
 
 ## 7. ESM vs CommonJS, at the language level
 
-| | ESM | CommonJS |
-|---|---|---|
+|  | ESM | CommonJS |
+| --- | --- | --- |
 | Defined by | ECMA-262 | Node.js (host convention) |
 | Imports | static declarations, linked before evaluation | `require()` call, evaluated when reached |
 | Bindings | live, read-only for importers | copies of `module.exports` properties at the time of reading |
@@ -259,7 +272,7 @@ Interop details (`import cjs from './x.cjs'` gives `module.exports` as `default`
 ## 8. Production failure modes
 
 | Failure | Mechanism | Defence |
-|---|---|---|
+| --- | --- | --- |
 | `ReferenceError: Cannot access 'X' before initialization` at startup after an innocuous refactor | circular import; evaluation order changed | break cycles; lint `import/no-cycle`; access cyclic imports only inside functions |
 | `SyntaxError: The requested module './x.js' does not provide an export named 'y'` | link-time resolution failure; nothing ran | fix the import; for CJS dependencies use the default import |
 | App startup hangs | top-level await in a shared module waiting on a slow or dead dependency; or TLA in a cycle | keep TLA in entry modules; export async init functions |

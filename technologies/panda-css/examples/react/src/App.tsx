@@ -1,16 +1,26 @@
-import { useState } from 'react'
-import { css } from '../styled-system/css'
-import { Box, Flex, Stack } from '../styled-system/jsx'
-import { Alert } from './Alert.tsx'
-import { Badge } from './Badge.tsx'
-import { Button } from './Button.tsx'
+import { useState } from 'react';
+import { css } from '../styled-system/css';
+import { Box, Flex, Stack } from '../styled-system/jsx';
+import { Alert } from './Alert.tsx';
+import { Badge } from './Badge.tsx';
+import { Button } from './Button.tsx';
 
-const cardBody = css({ display: 'flex', flexDirection: 'column', '@card/wide': { flexDirection: 'row' } })
+const cardBody = css({
+  display: 'flex',
+  flexDirection: 'column',
+  '@card/wide': { flexDirection: 'row' },
+});
 
 export function App() {
-  const [dark, setDark] = useState(false)
+  const [dark, setDark] = useState(false);
   return (
-    <Box className={dark ? 'dark' : undefined} bg="bg.canvas" color="fg.default" p="6" data-testid="page">
+    <Box
+      className={dark ? 'dark' : undefined}
+      bg="bg.canvas"
+      color="fg.default"
+      p="6"
+      data-testid="page"
+    >
       <Stack gap="4">
         <Flex gap="2">
           <Button data-testid="solid" onClick={() => setDark((d) => !d)}>
@@ -19,7 +29,12 @@ export function App() {
           <Button data-testid="outline-lg" visual="outline" size="lg">
             Outline lg
           </Button>
-          <Button data-testid="override" visual="outline" size="lg" css={{ borderWidth: '4px', bg: 'brand.900' }}>
+          <Button
+            data-testid="override"
+            visual="outline"
+            size="lg"
+            css={{ borderWidth: '4px', bg: 'brand.900' }}
+          >
             css() beats recipes
           </Button>
         </Flex>
@@ -41,7 +56,10 @@ export function App() {
         </div>
 
         {/* NEGATIVE: concatenated classes; the stylesheet order, not string order, decides. */}
-        <p data-testid="concat" className={`${css({ color: 'orange.700' })} ${css({ color: 'orange.300' })}`}>
+        <p
+          data-testid="concat"
+          className={`${css({ color: 'orange.700' })} ${css({ color: 'orange.300' })}`}
+        >
           concatenated
         </p>
         <p data-testid="merged" className={css({ color: 'orange.700' }, { color: 'orange.300' })}>
@@ -49,5 +67,5 @@ export function App() {
         </p>
       </Stack>
     </Box>
-  )
+  );
 }

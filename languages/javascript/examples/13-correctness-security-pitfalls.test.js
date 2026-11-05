@@ -13,8 +13,10 @@ export function safeMerge(target, source) {
     if (DANGEROUS_KEYS.has(key)) continue;
     const value = source[key];
     if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-      const next = Object.hasOwn(target, key) && typeof target[key] === 'object' && target[key] !== null
-        ? target[key] : Object.create(null);
+      const next =
+        Object.hasOwn(target, key) && typeof target[key] === 'object' && target[key] !== null
+          ? target[key]
+          : Object.create(null);
       target[key] = safeMerge(next, value);
     } else {
       target[key] = value;
@@ -55,7 +57,12 @@ describe('Prototype pollution', () => {
   });
 
   test('safeMerge skips dangerous keys and leaves Object.prototype untouched', () => {
-    const result = safeMerge({}, JSON.parse('{"__proto__": {"isAdmin": true}, "constructor": {"prototype": {"x": 1}}, "ok": {"n": 1}}'));
+    const result = safeMerge(
+      {},
+      JSON.parse(
+        '{"__proto__": {"isAdmin": true}, "constructor": {"prototype": {"x": 1}}, "ok": {"n": 1}}',
+      ),
+    );
     assert.equal(/** @type {any} */ ({}).isAdmin, undefined);
     assert.equal(/** @type {any} */ ({}).x, undefined);
     assert.deepEqual(Object.keys(result), ['ok']);
@@ -64,11 +71,14 @@ describe('Prototype pollution', () => {
 
   test('property: safeMerge never changes Object.prototype for arbitrary JSON input', () => {
     const before = Reflect.ownKeys(Object.prototype).length;
-    fc.assert(fc.property(fc.json(), (text) => {
-      const parsed = JSON.parse(text);
-      if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) safeMerge({}, parsed);
-      return Reflect.ownKeys(Object.prototype).length === before;
-    }));
+    fc.assert(
+      fc.property(fc.json(), (text) => {
+        const parsed = JSON.parse(text);
+        if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed))
+          safeMerge({}, parsed);
+        return Reflect.ownKeys(Object.prototype).length === before;
+      }),
+    );
   });
 
   test('--disable-proto=throw removes the accessor (defence in depth)', () => {
@@ -93,9 +103,17 @@ describe('ReDoS', () => {
   });
 
   test("V8's experimental linear engine (l flag) runs the evil pattern instantly but rejects backreferences", () => {
-    const ok = runNode(['--enable-experimental-regexp-engine', '-p', `/(a+)+$/l.test(${evilInput})`]);
+    const ok = runNode([
+      '--enable-experimental-regexp-engine',
+      '-p',
+      `/(a+)+$/l.test(${evilInput})`,
+    ]);
     assert.equal(ok.stdout.trim(), 'false');
-    const bad = runNode(['--enable-experimental-regexp-engine', '-e', 'new RegExp("(a)\\\\1", "l")']);
+    const bad = runNode([
+      '--enable-experimental-regexp-engine',
+      '-e',
+      'new RegExp("(a)\\\\1", "l")',
+    ]);
     assert.match(bad.stderr, /SyntaxError/);
   });
 
@@ -117,7 +135,7 @@ describe('ReDoS', () => {
     assert.equal(/[\p{L}--[a-z]]/v.test('a'), false);
     assert.equal(/[\p{L}--[a-z]]/v.test('Á'), true);
     assert.equal(/^\p{RGI_Emoji}$/v.test('\u{1F44D}\u{1F3FD}'), true);
-    assert.equal(/^.$/.test('\u{1F600}'), false);      // without u/v, . is one code unit
+    assert.equal(/^.$/.test('\u{1F600}'), false); // without u/v, . is one code unit
     assert.equal(/^.$/u.test('\u{1F600}'), true);
   });
 });
@@ -131,28 +149,39 @@ describe('JSON and big integers (ES2026)', () => {
 
   test('reviver context.source preserves the exact digits', () => {
     const data = JSON.parse(text, (key, value, ctx) =>
-      typeof value === 'number' && !Number.isSafeInteger(value) ? BigInt(ctx.source) : value);
+      typeof value === 'number' && !Number.isSafeInteger(value) ? BigInt(ctx.source) : value,
+    );
     assert.equal(data.id, 12345678901234567890n);
     assert.equal(data.n, 1);
   });
 
   test('JSON.rawJSON serialises BigInt losslessly and rejects non-primitives', () => {
     const replacer = (_k, v) => (typeof v === 'bigint' ? JSON.rawJSON(v.toString()) : v);
-    assert.equal(JSON.stringify({ id: 12345678901234567890n }, replacer), '{"id":12345678901234567890}');
+    assert.equal(
+      JSON.stringify({ id: 12345678901234567890n }, replacer),
+      '{"id":12345678901234567890}',
+    );
     assert.throws(() => JSON.rawJSON('{}'), SyntaxError);
     assert.throws(() => JSON.rawJSON(' 1'), SyntaxError);
   });
 
   test('property: BigInt round-trip through JSON with rawJSON and context.source', () => {
-    fc.assert(fc.property(fc.bigInt({ min: -(2n ** 70n), max: 2n ** 70n }), (big) => {
-      const s = JSON.stringify({ v: big }, (_k, v) => (typeof v === 'bigint' ? JSON.rawJSON(v.toString()) : v));
-      const back = JSON.parse(s, (k, v, ctx) => (k === 'v' ? BigInt(ctx.source) : v));
-      return back.v === big;
-    }));
+    fc.assert(
+      fc.property(fc.bigInt({ min: -(2n ** 70n), max: 2n ** 70n }), (big) => {
+        const s = JSON.stringify({ v: big }, (_k, v) =>
+          typeof v === 'bigint' ? JSON.rawJSON(v.toString()) : v,
+        );
+        const back = JSON.parse(s, (k, v, ctx) => (k === 'v' ? BigInt(ctx.source) : v));
+        return back.v === big;
+      }),
+    );
   });
 
   test('NEGATIVE: JSON drops or rewrites non-JSON values silently', () => {
-    assert.equal(JSON.stringify({ a: undefined, b: () => 1, c: NaN, d: [undefined, Infinity] }), '{"c":null,"d":[null,null]}');
+    assert.equal(
+      JSON.stringify({ a: undefined, b: () => 1, c: NaN, d: [undefined, Infinity] }),
+      '{"c":null,"d":[null,null]}',
+    );
     assert.deepEqual(JSON.parse('{"k":1,"k":2}'), { k: 2 });
   });
 });
@@ -166,7 +195,10 @@ describe('Floating point money and dates', () => {
   test('integer minor units with Intl formatting', () => {
     const cents = [1999, 1, 1];
     const total = cents.reduce((a, b) => a + b, 0);
-    assert.equal(new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(total / 100), '$20.01');
+    assert.equal(
+      new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(total / 100),
+      '$20.01',
+    );
   });
 
   test('NEGATIVE: V8 accepts 30 February and rolls it over; Temporal can reject it', () => {
@@ -178,24 +210,37 @@ describe('Floating point money and dates', () => {
 describe('Sorting', () => {
   test('NEGATIVE: the default comparator compares strings', () => {
     assert.deepEqual([10, 1, 2].sort(), [1, 10, 2]);
-    assert.deepEqual([10, 1, 2].sort((a, b) => a - b), [1, 2, 10]);
+    assert.deepEqual(
+      [10, 1, 2].sort((a, b) => a - b),
+      [1, 2, 10],
+    );
   });
 
   test('NEGATIVE: a boolean comparator is inconsistent (V8 14.6 leaves this input unsorted)', () => {
-    assert.deepEqual([3, 1, 2].sort((a, b) => /** @type {any} */ (a > b)), [3, 1, 2]);
+    assert.deepEqual(
+      [3, 1, 2].sort((a, b) => /** @type {any} */ (a > b)),
+      [3, 1, 2],
+    );
   });
 
   test('property: sort is stable (ES2019)', () => {
-    fc.assert(fc.property(fc.array(fc.record({ k: fc.integer({ min: 0, max: 3 }), i: fc.nat() })), (xs) => {
-      const tagged = xs.map((x, idx) => ({ ...x, idx }));
-      const sorted = tagged.toSorted((a, b) => a.k - b.k);
-      return sorted.every((x, j) => j === 0 || sorted[j - 1].k < x.k || sorted[j - 1].idx < x.idx);
-    }));
+    fc.assert(
+      fc.property(fc.array(fc.record({ k: fc.integer({ min: 0, max: 3 }), i: fc.nat() })), (xs) => {
+        const tagged = xs.map((x, idx) => ({ ...x, idx }));
+        const sorted = tagged.toSorted((a, b) => a.k - b.k);
+        return sorted.every(
+          (x, j) => j === 0 || sorted[j - 1].k < x.k || sorted[j - 1].idx < x.idx,
+        );
+      }),
+    );
   });
 
   test('undefined and holes go last without calling the comparator', () => {
     const seen = [];
-    const out = [3, undefined, 1, , 2].sort((a, b) => { seen.push(a, b); return a - b; });
+    const out = [3, undefined, 1, , 2].sort((a, b) => {
+      seen.push(a, b);
+      return a - b;
+    });
     assert.deepEqual(out.slice(0, 4), [1, 2, 3, undefined]);
     assert.equal(4 in out, false);
     assert.ok(seen.every((v) => v !== undefined));
@@ -210,9 +255,18 @@ describe('Sorting', () => {
   });
 
   test('property: Fisher–Yates is a permutation', () => {
-    fc.assert(fc.property(fc.array(fc.integer()), fc.infiniteStream(fc.double({ min: 0, max: 0.999999, noNaN: true })), (xs, rnd) => {
-      const shuffled = shuffle(xs, () => rnd.next().value);
-      return JSON.stringify(shuffled.toSorted((a, b) => a - b)) === JSON.stringify(xs.toSorted((a, b) => a - b));
-    }));
+    fc.assert(
+      fc.property(
+        fc.array(fc.integer()),
+        fc.infiniteStream(fc.double({ min: 0, max: 0.999999, noNaN: true })),
+        (xs, rnd) => {
+          const shuffled = shuffle(xs, () => rnd.next().value);
+          return (
+            JSON.stringify(shuffled.toSorted((a, b) => a - b)) ===
+            JSON.stringify(xs.toSorted((a, b) => a - b))
+          );
+        },
+      ),
+    );
   });
 });

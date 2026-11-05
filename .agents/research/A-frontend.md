@@ -3,6 +3,7 @@
 Research date: 2026-10-28. Versions verified against the npm registry (`npm view <pkg> dist-tags` / `time`) plus official release notes. Anything not confirmed is marked "(unverified)".
 
 **Biggest surprises (read first)**
+
 1. **Panda CSS is at 2.4.0** (2026-10-22). 1.0 shipped on 2025-08-05 and 2.0 on 2026-09-29. The repo pins `^0.51` (Dec 2024), which is two majors behind. v2 replaced the ts-morph/ts-evaluator pipeline with a **Rust/Oxc compiler** and removed `createStyleContext`, `panda ship`, `emit-pkg`, local Studio, template-literal syntax, `defineParts` and the `hooks` config. It also renamed `theme.containerSizes` to `theme.containers`. Several existing modules teach removed APIs.
 2. **TypeScript 7.0 is the `typescript` package itself.** The first stable publish is 7.0.2 (2026-07-08); there was no 7.0.0 publish, only 7.0.1-rc. 7.0 ships **no programmatic API**, so typescript-eslint and Volar need the `@typescript/typescript6` bridge. TS 7.1.0-beta came out 2026-10-20 with the new API, `contentMappers` and `es2026`.
 3. **On npm, "SolidStart 2.x" (`@solidjs/start@2.1.0`) targets Solid 1.9** (peer `solid-js ^1.9.15`, router `<2`). For Solid 2, the serving layer is **"start mode" in `@solidjs/vite-plugin`**, which was renamed from `vite-plugin-solid`. Solid 2 is at **2.0.0-rc.19** (2026-10-27); the repo has rc.18. `solid-js` `latest` is still 1.9.17.
@@ -47,16 +48,14 @@ Research date: 2026-10-28. Versions verified against the npm registry (`npm view
      - `module`/`moduleResolution` (`nodenext` vs `bundler`), `verbatimModuleSyntax`;
      - package.json `exports`/`types` conditions; `.d.ts`, ambient modules, `declare global`, module augmentation;
      - `types: []` and `rootDir` defaults; `noUncheckedSideEffectImports`; import attributes in ambient modules (7.1);
-     - project references and `tsc -b`.
-     Existing M04.3–4 plus the 08.2 globals, deduped.
+     - project references and `tsc -b`. Existing M04.3–4 plus the 08.2 globals, deduped.
   7. **Generics & inference**: inference sites, `const T`, `NoInfer`, partial inference, overloads vs conditional types, variance and the `in`/`out` annotations, "useless generics". Existing M07.
   8. **Type-level programming I: derivation**: `keyof`/`typeof`/indexed access, utility types, template literal types (with the code-point change in 7.0). Existing M05.
   9. **Type-level programming II: conditional/mapped/recursive types**:
      - distributivity; `infer` with `extends` constraints;
      - mapped-type modifiers and key remapping, homomorphic mapped types;
      - recursion limits (instantiation depth 50/100, unverified exact numbers), tail-recursive conditional types;
-     - the 7.1 change to distributive relations.
-     Existing M06.
+     - the 7.1 change to distributive relations. Existing M06.
   10. **Type-safe API design patterns**: branded types, predicates/assertion functions, builder/type-state, reverse-mapped types, identity functions, `using`/`Disposable` typing, decorator typing. Existing M08 + 11.2 (typing angle only).
   11. **Runtime boundaries: validation & Standard Schema**: Zod 4 (`zod@4.6.7`) input/output types, `z.infer`; Standard Schema (`StandardSchemaV1`) as a library-neutral contract; parse-don't-validate; branded outputs; typed `fetch` and env loaders. This is the reduced M09.1–2.
   12. **Typing UI frameworks: React & Solid (typing only)**: the JSX namespace and `jsxImportSource`; `IntrinsicElements`; component prop types; generic & polymorphic components; context typing; event types; ref types. Replaces M09.3–4, M10, M12 and M13 (split spec below).
@@ -100,7 +99,7 @@ Research date: 2026-10-28. Versions verified against the npm registry (`npm view
     - ESM vs CJS loading and package.json `exports` at runtime;
     - closures and `this` binding (existing M03.2 "contextual this");
     - Promise/microtask semantics behind M01.5.
-  - TS keeps only the *typing* of each of these.
+  - TS keeps only the _typing_ of each of these.
   - React/Solid mechanics live in their own tracks, which cross-link to TS M12.
   - Expert-interview lesson 11.1: drop it as a lesson. Fold its design lessons (DataTag, tuple accumulation, ts-pattern exhaustiveness) into M10/M13 as case studies.
 - **Gap analysis vs existing**
@@ -133,7 +132,7 @@ Research date: 2026-10-28. Versions verified against the npm registry (`npm view
   - **Exact split of current M09–M13**
 
     | Current | Stays in TS (→ new module) | Moves to |
-    |---|---|---|
+    | --- | --- | --- |
     | 09.1–9.2 Zod | Schema typing, `z.input/z.output/z.infer`, refinements' type effects, branded outputs, fetcher pattern → **M11**. Update to Zod 4 API (top-level string formats, unified `error` param; superRefine→`.check` deprecation is **unverified**) | — |
     | 09.3 Components & props | `ComponentProps<'button'>`, `ReactNode` vs `JSX.Element` vs `ReactElement`, overriding HTML props → **M12** | Component/render model → `react` M01 |
     | 09.4 Events & core hooks | Event generic types, `useState<T>` inference, `useRef` overloads, reducer action unions → **M12** | Effect semantics, batching, reducer design → `react` M03/M04 |
@@ -273,31 +272,27 @@ Research date: 2026-10-28. Versions verified against the npm registry (`npm view
      - `createRenderEffect`, `createTrackedEffect`, `createReaction`;
      - `onSettled` vs `onCleanup`; `onFlush`;
      - **no writes in an owned scope** (`ownedWrite`); no top-level reactive reads;
-     - the diagnostics codes (`STRICT_READ_UNTRACKED`, `UNCOMMITTED_INPUT_OVERWRITTEN`, `LOADING_ON_OUTSIDE_HOLD`).
-     Split out of existing M01.3.
+     - the diagnostics codes (`STRICT_READ_UNTRACKED`, `UNCOMMITTED_INPUT_OVERWRITTEN`, `LOADING_ON_OUTSIDE_HOLD`). Split out of existing M01.3.
   3. **Components, props & DOM templating**:
      - props are values (call accessors at the call site); no destructuring; `merge`/`omit`;
      - Oxc compiler output; event handlers bind once;
      - lowercase attributes, boolean presence, `class` object/array form;
      - refs as functions/arrays, directive factories (`applyRef`);
-     - form-input binding semantics.
-     Existing M02.
+     - form-input binding semantics. Existing M02.
   4. **Control flow & composition**: `<For>` three keying modes and their callback shapes; callback bodies are owners, not tracking scopes; `<Repeat>`, `<Show>`/`<Switch>` narrowing; `dynamic()` factory vs `<Dynamic>`; `children()`, `lazy`, `Portal`; context (default-less throws `ContextNotFoundError`; `null` for optional). Split out of existing M02.
   5. **Stores & projections**: draft-first setters, the return-value (shallow) form, `reconcile(data, key)`, `createProjection`/`createStore(fn)` with keyed reconciliation, O(1) selection, `snapshot` vs `deep`, `storePath`. Existing M03.
   6. **Colorless async**:
      - async `createMemo`/`createProjection`; `<Loading>` (+ `on` semantics); `<Reveal>` ordering;
      - `isPending` vs `latest`, `createDeferred`, `from()` for push sources, `resolve()`, `NotReadyError`;
      - cancellation via `onCleanup` before the first await;
-     - `<Errored>` self-healing.
-     Existing M04.
+     - `<Errored>` self-healing. Existing M04.
   7. **Transactions & optimistic state**: `action(function*)` with `yield`; `createOptimistic`/`createOptimisticStore`; `affects`, `refresh` (quiet vs pending); `until(predicate, {timeout, signal})` + `TimeoutError`; race handling. Existing M05.
   8. **Full-stack: start mode, SSR & server functions**:
      - `@solidjs/vite-plugin` start mode; `renderToStream`, streaming, hydration, `clientOnly`, `httpStatus`/`httpHeader`;
      - **request isolation (module-scope state leaks across requests)**;
      - `"use server"`, `GET`/`withMeta`, `getRequestEvent`/`provideRequestEvent`;
      - Standard Schema validation; seroval serialisation; `@solidjs/web/frames` (experimental server components);
-     - router 2.0-next.
-     Existing M06.
+     - router 2.0-next. Existing M06.
   9. **Testing, debugging & performance (new)**: `createRoot` + `flush` in unit tests; `@solidjs/testing-library` rc; dev vs `observe` vs prod builds (export conditions); `@solidjs/web/performance-tracks` in Chrome DevTools; diagnostics; bundle and hydration cost; multiple-instance detection.
   10. **Migration 1.x→2.0 & architecture deep dives**: the full rename/removal map; React 19 vs Solid 2 execution traces; the O(1) projection proof; real-time sync. Existing M07; add the ecosystem-compatibility status (router, start, UI libs).
 - **Gotchas & production failure modes**
@@ -311,7 +306,7 @@ Research date: 2026-10-28. Versions verified against the npm registry (`npm view
   8. Module-scope stores become **shared cross-request state** once SSR is on, leaking data between users. Create state in a Provider.
   9. `<Loading on={...}>` with the same data also read outside the boundary means the fallback never shows (`LOADING_ON_OUTSIDE_HOLD`).
   10. `isPending` is not 1.x `.loading`: a bare `refresh()` is silent. Use `affects(x); refresh(x)`, or an optimistic "saving" flag.
-  11. Async cleanup registered *after* the first `await` never cancels the superseded fetch.
+  11. Async cleanup registered _after_ the first `await` never cancels the superseded fetch.
   12. `undefined` in `merge`/setters overrides; it does not skip.
   13. Two copies of `solid-js` (for example `@solidjs/start@2` pulling 1.9 next to 2.0-rc) produce the "Multiple Solid instances" error and dead reactivity. Pin and dedupe.
   14. Installing "SolidStart 2" for a Solid 2 app installs the wrong major. Use `@solidjs/vite-plugin` start mode.

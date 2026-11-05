@@ -7,8 +7,11 @@ describe('Module 05: Box Model & Block Formatting Contexts (BFC)', () => {
     await closeSharedBrowser();
   });
 
-  it('demonstrates parent-child margin collapse and its resolution via display: flow-root', { skip: browserSkip }, async () => {
-    const html = `
+  it(
+    'demonstrates parent-child margin collapse and its resolution via display: flow-root',
+    { skip: browserSkip },
+    async () => {
+      const html = `
       <!DOCTYPE html>
       <html>
         <head>
@@ -46,26 +49,38 @@ describe('Module 05: Box Model & Block Formatting Contexts (BFC)', () => {
       </html>
     `;
 
-    const { page, cleanup } = await createPage(html);
-    try {
-      // In p1 (collapsing): child top margin collapses OUTSIDE the parent.
-      // So parent top equals child top!
-      const p1Box = (await page.locator('#p1').boundingBox())!;
-      const c1Box = (await page.locator('#c1').boundingBox())!;
-      assert.equal(p1Box.y, c1Box.y, 'Parent top margin collapsed with child: both start at y = 50px');
+      const { page, cleanup } = await createPage(html);
+      try {
+        // In p1 (collapsing): child top margin collapses OUTSIDE the parent.
+        // So parent top equals child top!
+        const p1Box = (await page.locator('#p1').boundingBox())!;
+        const c1Box = (await page.locator('#c1').boundingBox())!;
+        assert.equal(
+          p1Box.y,
+          c1Box.y,
+          'Parent top margin collapsed with child: both start at y = 50px',
+        );
 
-      // In p2 (flow-root BFC): child margin is CONTAINED INSIDE the parent.
-      // Parent starts before child!
-      const p2Box = (await page.locator('#p2').boundingBox())!;
-      const c2Box = (await page.locator('#c2').boundingBox())!;
-      assert.equal(c2Box.y - p2Box.y, 50, 'Child margin of 50px is contained cleanly inside BFC parent');
-    } finally {
-      await cleanup();
-    }
-  });
+        // In p2 (flow-root BFC): child margin is CONTAINED INSIDE the parent.
+        // Parent starts before child!
+        const p2Box = (await page.locator('#p2').boundingBox())!;
+        const c2Box = (await page.locator('#c2').boundingBox())!;
+        assert.equal(
+          c2Box.y - p2Box.y,
+          50,
+          'Child margin of 50px is contained cleanly inside BFC parent',
+        );
+      } finally {
+        await cleanup();
+      }
+    },
+  );
 
-  it('proves that aspect-ratio derives cross-axis dimension deterministically', { skip: browserSkip }, async () => {
-    const html = `
+  it(
+    'proves that aspect-ratio derives cross-axis dimension deterministically',
+    { skip: browserSkip },
+    async () => {
+      const html = `
       <!DOCTYPE html>
       <html>
         <head>
@@ -82,14 +97,19 @@ describe('Module 05: Box Model & Block Formatting Contexts (BFC)', () => {
       </html>
     `;
 
-    const { page, cleanup } = await createPage(html);
-    try {
-      const box = (await page.locator('#video').boundingBox())!;
-      assert.equal(box.width, 320);
-      // 320 * (9 / 16) = 180
-      assert.equal(box.height, 180, 'Height must be exactly 180px derived from 16/9 aspect-ratio');
-    } finally {
-      await cleanup();
-    }
-  });
+      const { page, cleanup } = await createPage(html);
+      try {
+        const box = (await page.locator('#video').boundingBox())!;
+        assert.equal(box.width, 320);
+        // 320 * (9 / 16) = 180
+        assert.equal(
+          box.height,
+          180,
+          'Height must be exactly 180px derived from 16/9 aspect-ratio',
+        );
+      } finally {
+        await cleanup();
+      }
+    },
+  );
 });

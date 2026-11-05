@@ -1,11 +1,10 @@
 # Module 06: Modules, Declarations & tsconfig (TypeScript 7 Edition)
 
-> Example and tests: [`examples/06-modules-tsconfig/modules-tsconfig.test.ts`](../examples/06-modules-tsconfig/modules-tsconfig.test.ts) with fixtures in [`examples/06-modules-tsconfig/fixtures/`](../examples/06-modules-tsconfig/fixtures/) (`nodenext` errors and fixes, `bundler` resolution, project references) and an augmentable module [`event-registry.ts`](../examples/06-modules-tsconfig/event-registry.ts).
-> Run: `mise exec -- node --test examples/06-modules-tsconfig/`
+> Example and tests: [`examples/06-modules-tsconfig/modules-tsconfig.test.ts`](../examples/06-modules-tsconfig/modules-tsconfig.test.ts) with fixtures in [`examples/06-modules-tsconfig/fixtures/`](../examples/06-modules-tsconfig/fixtures/) (`nodenext` errors and fixes, `bundler` resolution, project references) and an augmentable module [`event-registry.ts`](../examples/06-modules-tsconfig/event-registry.ts). Run: `mise exec -- node --test examples/06-modules-tsconfig/`
 
-The type checker has to answer, for every `import` specifier, *which file the runtime will load* and *which declarations describe it*. Get that wrong and the program either fails to compile or, worse, type-checks against declarations of a file that is never loaded. This module covers how TypeScript models module systems, how it resolves specifiers (`nodenext` vs `bundler`), declaration files and ambient declarations, augmentation, project references, and a TS 7-era `tsconfig.json`.
+The type checker has to answer, for every `import` specifier, _which file the runtime will load_ and _which declarations describe it_. Get that wrong and the program either fails to compile or, worse, type-checks against declarations of a file that is never loaded. This module covers how TypeScript models module systems, how it resolves specifiers (`nodenext` vs `bundler`), declaration files and ambient declarations, augmentation, project references, and a TS 7-era `tsconfig.json`.
 
-**Ownership.** The runtime semantics of ES modules (Module Records, linking, live bindings, cycles, top-level await) and of `package.json` `exports` at runtime belong to `languages/javascript`; Node's loader internals belong to `technologies/nodejs`. This module covers the *type-checker's model* of them. Publishing (`exports`/`types` conditions from the publisher's side, attw) is in [Module 13](./13-library-authoring-performance-and-type-tests.md).
+**Ownership.** The runtime semantics of ES modules (Module Records, linking, live bindings, cycles, top-level await) and of `package.json` `exports` at runtime belong to `languages/javascript`; Node's loader internals belong to `technologies/nodejs`. This module covers the _type-checker's model_ of them. Publishing (`exports`/`types` conditions from the publisher's side, attw) is in [Module 13](./13-library-authoring-performance-and-type-tests.md).
 
 ---
 
@@ -14,14 +13,14 @@ The type checker has to answer, for every `import` specifier, *which file the ru
 A file is a **module** if it has a top-level `import` or `export` (or, with `moduleDetection: "auto"`, other signals such as `"type": "module"` or JSX under `react-jsx`). Otherwise it is a **script**, and its top-level declarations are **global**: they merge with every other script's declarations and with `lib.d.ts`.
 
 | `moduleDetection` | Rule |
-|---|---|
+| --- | --- |
 | `"auto"` (default) | Module if it has `import`/`export`, is `.mjs`/`.mts`/`.cjs`/`.cts`, is under `"type": "module"` with `module: nodenext`, or uses the automatic JSX runtime |
 | `"force"` | Every non-declaration file is a module |
 | `"legacy"` | Only `import`/`export` makes a module |
 
 **Failure mode:** a helper file without imports declares `const name = "x"` and collides with the DOM's global `name` (TS2451 "Cannot redeclare block-scoped variable", reported both in your file and in `lib.dom.d.ts`). The fixture [`module-detection/`](../examples/06-modules-tsconfig/fixtures/module-detection/index.ts) reproduces it and the test shows that `--moduleDetection force` makes it compile. Use `moduleDetection: "force"`, or add `export {}`.
 
-**Why scripts still exist.** Global scripts are how `lib.d.ts`, `@types/node` globals and classic `<script>` code are modelled: their top-level declarations *must* merge into one global scope. A `.d.ts` without `import`/`export` is therefore global on purpose; adding a single `import` to it silently turns its declarations into module-local ones, a common reason "my global type disappeared".
+**Why scripts still exist.** Global scripts are how `lib.d.ts`, `@types/node` globals and classic `<script>` code are modelled: their top-level declarations _must_ merge into one global scope. A `.d.ts` without `import`/`export` is therefore global on purpose; adding a single `import` to it silently turns its declarations into module-local ones, a common reason "my global type disappeared".
 
 ---
 
@@ -30,7 +29,7 @@ A file is a **module** if it has a top-level `import` or `export` (or, with `mod
 Since TS 4.7, `module` describes the **host's module system**, not just the emit format:
 
 | `module` | Means | Implied `moduleResolution` | Typical use |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `nodenext` (or `node18`/`node20`) | Node's dual ESM/CJS system; each file's format comes from its extension and the nearest `package.json` `"type"` | `nodenext` | Libraries and Node apps executed by Node |
 | `preserve` | Keep `import`/`require` as written; a bundler or runtime will handle them | `bundler` | Apps built by Vite/Rolldown/esbuild, Bun |
 | `esnext` (TS 6/7 default) | Emit ESM syntax, no host semantics | `bundler` | Rarely the right explicit choice; prefer the two above |
@@ -61,12 +60,12 @@ The format decides which import syntax is legal and how imports resolve. Under `
 The fixture [`nodenext-errors/`](../examples/06-modules-tsconfig/fixtures/nodenext-errors/index.ts) collects the three errors everyone meets:
 
 | Code | Message (abridged) | Why | Fix |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | **TS2835** | Relative import paths need explicit file extensions in ECMAScript imports … Did you mean `./lib/user.js`? | Node's ESM resolver does no extension probing | Write the extension of the **output** file: `./lib/user.js` (or `.ts` with `allowImportingTsExtensions`/`rewriteRelativeImportExtensions`) |
 | **TS1484** | 'User' is a type and must be imported using a type-only import | `verbatimModuleSyntax`: unmarked imports are kept in the output, and Node would fail to find the binding | `import type { User }` or `import { type User }` |
 | **TS1543** | Importing a JSON file into an ECMAScript module requires a `type: "json"` import attribute | Node requires the attribute | `import data from "./data.json" with { type: "json" }` |
 
-Writing `.js` for a file that exists as `.ts` surprises newcomers. The rule: specifiers name the file *the runtime loads*. TypeScript maps `./user.js` back to `./user.ts` (and `./user.d.ts`) during checking.
+Writing `.js` for a file that exists as `.ts` surprises newcomers. The rule: specifiers name the file _the runtime loads_. TypeScript maps `./user.js` back to `./user.ts` (and `./user.d.ts`) during checking.
 
 **Subpath imports.** `package.json` `"imports": { "#lib/*": "./lib/*" }` gives Node-native aliases (`import … from "#lib/user.js"`), resolved by both Node and TypeScript (supported for `#/…` since TS 6.0 under `nodenext` and `bundler`). Unlike `paths`, they work at runtime without a bundler. The fixed fixture uses one.
 
@@ -78,7 +77,7 @@ Writing `.js` for a file that exists as `.ts` surprises newcomers. The rule: spe
 
 ### 3.3 How `exports` conditions are matched (worked example)
 
-The fixture [`exports-conditions/`](../examples/06-modules-tsconfig/fixtures/exports-conditions/package.json) is a package that imports *itself* by name (Node's **package self-reference**, which works whenever the nearest `package.json` has `name` and `exports`):
+The fixture [`exports-conditions/`](../examples/06-modules-tsconfig/fixtures/exports-conditions/package.json) is a package that imports _itself_ by name (Node's **package self-reference**, which works whenever the nearest `package.json` has `name` and `exports`):
 
 ```json
 {
@@ -89,7 +88,11 @@ The fixture [`exports-conditions/`](../examples/06-modules-tsconfig/fixtures/exp
       "types": { "import": "./types/esm.d.ts", "require": "./types/cjs.d.cts" },
       "default": "./src/index.js"
     },
-    "./public": { "source": "./src/public.ts", "types": "./types/public.d.ts", "default": "./src/public.js" }
+    "./public": {
+      "source": "./src/public.ts",
+      "types": "./types/public.d.ts",
+      "default": "./src/public.js"
+    }
   }
 }
 ```
@@ -97,7 +100,7 @@ The fixture [`exports-conditions/`](../examples/06-modules-tsconfig/fixtures/exp
 Resolution walks the condition object **in key order** and takes the first key that is in the active condition set; nested objects repeat the walk. The active set under `nodenext` is `types` + `node` + (`import` for an ESM importer | `require` for a CJS importer) + `customConditions` + `default`.
 
 | Importer | Specifier | Path taken | Declarations |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `consumer.mts` (ESM) | `zto-self` | `"."` → `types` → `import` | `types/esm.d.ts` (`flavor: "esm"`) |
 | `consumer.cts` (CJS) | `zto-self` | `"."` → `types` → `require` | `types/cjs.d.cts` (`flavor: "cjs"`) |
 | `consumer.mts` | `zto-self/public` | `"./public"` → `types` | `types/public.d.ts` (`pub: 1`) |
@@ -110,7 +113,7 @@ The tests assert each row. Two practical uses follow. **Encapsulation:** `export
 
 ### 3.4 `paths`: a type-checker alias, not a runtime feature
 
-`paths` maps specifier patterns to file locations *for the checker only*:
+`paths` maps specifier patterns to file locations _for the checker only_:
 
 ```jsonc
 "paths": { "@lib/*": ["./src/lib/*"], "config": ["./src/config/index.ts"] }
@@ -127,6 +130,7 @@ The fixture [`paths-alias/`](../examples/06-modules-tsconfig/fixtures/paths-alia
 **Now (TS 6.0 deprecations, 7.0 removal).** `node10`, `classic` and `baseUrl` are gone (TS5108/TS5102). Choose `nodenext` when Node runs the output, `bundler` when a bundler does. Aliases: `package.json` `imports` (runtime-native) or `paths` relative to the config (`"@/*": ["./src/*"]`, bundler must mirror them).
 
 **Migration.**
+
 1. Decide who resolves at runtime (Node or a bundler) per package; set `module` accordingly.
 2. Under `nodenext`, add extensions (the quick fix "Add missing file extension" works across files) and `type` modifiers (`verbatimModuleSyntax` tells you where).
 3. Replace `baseUrl`-relative imports (`import x from "utils/x"`) with `#` subpath imports or `paths` entries starting with `./`.
@@ -144,8 +148,8 @@ Historically TypeScript **elided** imports that were only used as types. That wa
 
 ### Then vs now: type-only imports
 
-| | Then (≤ 4.9) | Now (5.0+; required in practice for Node type stripping) |
-|---|---|---|
+|  | Then (≤ 4.9) | Now (5.0+; required in practice for Node type stripping) |
+| --- | --- | --- |
 | `import { User } from "./user"` used only as a type | Silently elided | Kept; error TS1484 when `User` is a type |
 | Side-effect retention | `importsNotUsedAsValues: preserve` | Default under `verbatimModuleSyntax` |
 | Per-file transpilers | Needed `isolatedModules` and guessed | Exact |
@@ -157,12 +161,13 @@ Historically TypeScript **elided** imports that were only used as types. That wa
 ### 5.1 `.d.ts` files
 
 A `.d.ts` file contains only declarations and emits nothing. TypeScript finds them:
+
 - next to a resolved `.js` file (`user.js` → `user.d.ts`; `.mjs` → `.d.mts`; `.cjs` → `.d.cts`);
 - through `types` conditions in `exports`, or `types`/`typings` in `package.json`;
-- in `@types/*` packages, *only* for packages you import, or for names listed in `types` (default `[]` since 6.0);
+- in `@types/*` packages, _only_ for packages you import, or for names listed in `types` (default `[]` since 6.0);
 - through `include`/`files`, for ambient declaration files you write.
 
-A declaration file is a module if it has a top-level `import`/`export`; otherwise its declarations are global. That distinction decides whether `declare module "x"` *declares* a module or *augments* one (§6).
+A declaration file is a module if it has a top-level `import`/`export`; otherwise its declarations are global. That distinction decides whether `declare module "x"` _declares_ a module or _augments_ one (§6).
 
 ### 5.2 Ambient modules for non-code assets
 
@@ -170,12 +175,12 @@ A declaration file is a module if it has a top-level `import`/`export`; otherwis
 
 ```ts
 // assets.d.ts — a script (no top-level import/export), so this is a global declaration
-declare module "*.css";                              // side-effect import only
-declare module "*.module.css" {
+declare module '*.css'; // side-effect import only
+declare module '*.module.css' {
   const classes: { readonly [className: string]: string };
   export default classes;
 }
-declare module "*.svg" {
+declare module '*.svg' {
   const url: string;
   export default url;
 }
@@ -207,7 +212,7 @@ Ambient module patterns are **not checked against files on disk**: a typo in the
 Declarations with the same name in the same scope **merge**:
 
 | Merge | Result |
-|---|---|
+| --- | --- |
 | interface + interface | Members combined; later overloads first; conflicting property types are an error |
 | namespace + namespace | Exported members combined |
 | namespace + function/class/enum | Static members attached to the value |
@@ -221,13 +226,13 @@ This is the deep reason behind "interfaces are open, type aliases are closed" ([
 Inside a **module**, `declare module "specifier" { … }` adds to the declarations of an existing module. You can merge into interfaces and namespaces; you cannot add new top-level values or change existing types. The example augments its own [`event-registry.ts`](../examples/06-modules-tsconfig/event-registry.ts):
 
 ```ts
-declare module "./event-registry.ts" {
+declare module './event-registry.ts' {
   interface EventRegistry {
-    "user.created": { id: string };
-    "order.paid": { orderId: string; cents: number };
+    'user.created': { id: string };
+    'order.paid': { orderId: string; cents: number };
   }
 }
-emit("order.paid", { orderId: "o1" }); // error: cents missing
+emit('order.paid', { orderId: 'o1' }); // error: cents missing
 ```
 
 This "registry interface" is how Express (`Request`), Vue (`ComponentCustomProperties`), Fastify, i18n libraries and React's `CSSProperties` ([Module 12](./12-typing-ui-frameworks.md)) let applications extend library types.
@@ -238,22 +243,24 @@ From inside a module, `declare global { … }` adds to the global scope:
 
 ```ts
 declare global {
-  interface Window { __APP_VERSION__: string }
-  var __BUILD_ID__: string | undefined;   // `var` (not let/const) declares a property of globalThis
+  interface Window {
+    __APP_VERSION__: string;
+  }
+  var __BUILD_ID__: string | undefined; // `var` (not let/const) declares a property of globalThis
 }
 ```
 
 Use `var` for globals that must appear on `globalThis`. Global augmentation describes values someone else provides (a script tag, a bundler `define`): it does not create them, so type them as possibly `undefined` unless their presence is guaranteed (the test asserts `globalThis.__BUILD_ID__` is `undefined` at runtime).
 
-**Failure mode:** `declare global` in a file without imports/exports is an error (TS2669: augmentations for the global scope can only be directly nested in external modules), and a *script* `.d.ts` with `declare module "x" {}` *replaces* the module's types instead of augmenting them, silently hiding the real declarations. Keep augmentation files as modules (`export {}`).
+**Failure mode:** `declare global` in a file without imports/exports is an error (TS2669: augmentations for the global scope can only be directly nested in external modules), and a _script_ `.d.ts` with `declare module "x" {}` _replaces_ the module's types instead of augmenting them, silently hiding the real declarations. Keep augmentation files as modules (`export {}`).
 
 ### 6.4 How merged symbols are resolved
 
 Declaration merging happens in the binder (per file) and in the checker (across files, and between a module and its augmentations). Rules worth knowing when an augmentation "doesn't apply":
 
-1. **The specifier must resolve to the same module.** `declare module "lib"` augments whatever `"lib"` resolves to *from the augmenting file*. If the augmentation file resolves `"lib"` to a different copy (two versions in `node_modules`, or `"lib/dist/index"` vs `"lib"`), the augmentation lands on a different symbol. `--traceResolution` from the augmenting file shows which.
+1. **The specifier must resolve to the same module.** `declare module "lib"` augments whatever `"lib"` resolves to _from the augmenting file_. If the augmentation file resolves `"lib"` to a different copy (two versions in `node_modules`, or `"lib/dist/index"` vs `"lib"`), the augmentation lands on a different symbol. `--traceResolution` from the augmenting file shows which.
 2. **Only existing interfaces/namespaces can be extended.** A new top-level `export const` inside `declare module "lib"` is an error; a new interface is allowed but is only visible to code that imports it from `"lib"`.
-3. **Interface member order matters for overloads.** Later declarations' call signatures come *first*, so an augmentation can add a more specific overload that wins over the library's own.
+3. **Interface member order matters for overloads.** Later declarations' call signatures come _first_, so an augmentation can add a more specific overload that wins over the library's own.
 4. **The augmenting file must be part of the program.** An augmentation in a file nobody imports and `include` does not match has no effect; for library-provided augmentations, `types` or an explicit `import "lib/augment"` brings it in.
 
 ---
@@ -266,11 +273,12 @@ A large repository is split into projects with their own `tsconfig.json`, linked
 // app/tsconfig.json
 {
   "compilerOptions": { "rootDir": "src", "outDir": "dist" },
-  "references": [{ "path": "../core" }]
+  "references": [{ "path": "../core" }],
 }
 ```
 
 `tsc -b app`:
+
 1. Builds the dependency graph from `references`.
 2. For each project in topological order, checks whether it is up to date (by comparing `.tsbuildinfo` hashes with the inputs) and rebuilds only if needed.
 3. Downstream projects type-check against the **`.d.ts` output** of upstream projects, not against their sources. That is what makes references scale, and also why a stale upstream build produces confusing errors.
@@ -296,13 +304,13 @@ TS 7 builds independent projects in parallel (`--builders <n>`, experimental), a
     "isolatedDeclarations": true,
     "verbatimModuleSyntax": true,
     "erasableSyntaxOnly": true,
-    "rewriteRelativeImportExtensions": true,  // write ./x.ts in source, emit ./x.js
+    "rewriteRelativeImportExtensions": true, // write ./x.ts in source, emit ./x.js
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
     "noImplicitOverride": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
   },
-  "include": ["src"]
+  "include": ["src"],
 }
 ```
 
@@ -312,7 +320,7 @@ TS 7 builds independent projects in parallel (`--builders <n>`, experimental), a
 {
   "compilerOptions": {
     "module": "preserve",
-    "jsx": "react-jsx",            // Solid: "preserve" + "jsxImportSource": "@solidjs/web"
+    "jsx": "react-jsx", // Solid: "preserve" + "jsxImportSource": "@solidjs/web"
     "lib": ["esnext", "dom"],
     "types": ["vite/client"],
     "noEmit": true,
@@ -320,16 +328,16 @@ TS 7 builds independent projects in parallel (`--builders <n>`, experimental), a
     "verbatimModuleSyntax": true,
     "noUncheckedIndexedAccess": true,
     "skipLibCheck": true,
-    "paths": { "@/*": ["./src/*"] }
+    "paths": { "@/*": ["./src/*"] },
   },
-  "include": ["src"]
+  "include": ["src"],
 }
 ```
 
 ### 8.3 Options worth knowing beyond defaults
 
 | Option | Effect | Trade-off |
-|---|---|---|
+| --- | --- | --- |
 | `noUncheckedIndexedAccess` | `arr[i]` and `record[key]` include `undefined` | Noisy in index-heavy code; use `for…of`, `.at()` + checks |
 | `exactOptionalPropertyTypes` | `{ a?: string }` no longer accepts explicit `a: undefined` | Libraries' types sometimes disagree; see [Module 04](./04-objects-assignability-and-weird-parts.md) |
 | `noImplicitOverride` | Requires `override` on overriding members | None; catches renamed base methods |
@@ -376,7 +384,7 @@ Imports/exports are kept or removed purely by the presence of `type`. Without it
 
 <details><summary>4. Module augmentation vs global augmentation vs ambient module declaration?</summary>
 
-Augmentation (`declare module "lib" { interface X { … } }` inside a module) merges into an existing module's declarations. Global augmentation (`declare global {}` inside a module) adds to the global scope. An ambient module declaration (`declare module "lib" {}` in a *script*) declares the module from scratch and shadows real types if both exist.
+Augmentation (`declare module "lib" { interface X { … } }` inside a module) merges into an existing module's declarations. Global augmentation (`declare global {}` inside a module) adds to the global scope. An ambient module declaration (`declare module "lib" {}` in a _script_) declares the module from scratch and shadows real types if both exist.
 </details>
 
 <details><summary>5. Why do project references type-check against <code>.d.ts</code> files, and what does that imply?</summary>

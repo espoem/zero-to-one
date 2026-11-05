@@ -17,7 +17,8 @@ describe('using (explicit resource management)', () => {
   test('disposes in reverse declaration order on normal exit', () => {
     const log = [];
     {
-      using a = resource('a', log), b = resource('b', log);
+      using a = resource('a', log),
+        b = resource('b', log);
       using c = resource('c', log);
       log.push('body');
     }
@@ -26,10 +27,19 @@ describe('using (explicit resource management)', () => {
 
   test('disposes on return, break and throw', () => {
     const log = [];
-    const f = () => { using r = resource('ret', log); return 'value'; };
+    const f = () => {
+      using r = resource('ret', log);
+      return 'value';
+    };
     assert.equal(f(), 'value');
-    for (const i of [1, 2]) { using r = resource(`loop${i}`, log); if (i === 1) break; }
-    assert.throws(() => { using r = resource('thr', log); throw new Error('x'); }, /x/);
+    for (const i of [1, 2]) {
+      using r = resource(`loop${i}`, log);
+      if (i === 1) break;
+    }
+    assert.throws(() => {
+      using r = resource('thr', log);
+      throw new Error('x');
+    }, /x/);
     assert.deepEqual(log, ['dispose ret', 'dispose loop1', 'dispose thr']);
   });
 
@@ -71,8 +81,13 @@ describe('using (explicit resource management)', () => {
   });
 
   test('NEGATIVE: a non-disposable value throws TypeError at the declaration; null/undefined are allowed', () => {
-    assert.throws(() => { using x = /** @type {any} */ ({}); }, TypeError);
-    assert.doesNotThrow(() => { using n = null; using u = undefined; });
+    assert.throws(() => {
+      using x = /** @type {any} */ ({});
+    }, TypeError);
+    assert.doesNotThrow(() => {
+      using n = null;
+      using u = undefined;
+    });
   });
 
   test('NEGATIVE: the dispose method is captured at declaration time', () => {
@@ -85,10 +100,10 @@ describe('using (explicit resource management)', () => {
   });
 
   test('NEGATIVE: using is a SyntaxError at the top level of a classic script and with destructuring', () => {
-    assert.throws(() => new vm.Script('using x = null;'), SyntaxError);              // script top level
-    assert.throws(() => new vm.Script('{ using { a } = { a: 1 }; }'), SyntaxError);  // destructuring
-    assert.doesNotThrow(() => new vm.Script('{ using x = null; }'));                 // a block is fine
-    assert.doesNotThrow(() => new Function('using x = null;'));                      // a function body too
+    assert.throws(() => new vm.Script('using x = null;'), SyntaxError); // script top level
+    assert.throws(() => new vm.Script('{ using { a } = { a: 1 }; }'), SyntaxError); // destructuring
+    assert.doesNotThrow(() => new vm.Script('{ using x = null; }')); // a block is fine
+    assert.doesNotThrow(() => new Function('using x = null;')); // a function body too
   });
 
   test('using in for-of disposes each value at the end of its iteration', () => {
@@ -101,7 +116,10 @@ describe('using (explicit resource management)', () => {
     const log = [];
     await (async () => {
       await using conn = {
-        async [Symbol.asyncDispose]() { await new Promise((r) => setTimeout(r, 5)); log.push('closed'); },
+        async [Symbol.asyncDispose]() {
+          await new Promise((r) => setTimeout(r, 5));
+          log.push('closed');
+        },
       };
       log.push('query');
     })();
@@ -109,7 +127,9 @@ describe('using (explicit resource management)', () => {
   });
 
   test('NEGATIVE: plain using does not await an async-only resource', () => {
-    assert.throws(() => { using x = /** @type {any} */ ({ async [Symbol.asyncDispose]() {} }); }, TypeError);
+    assert.throws(() => {
+      using x = /** @type {any} */ ({ async [Symbol.asyncDispose]() {} });
+    }, TypeError);
   });
 });
 
@@ -138,14 +158,16 @@ describe('DisposableStack', () => {
         this.log = stack.adopt('logfile', () => log.push('dispose logfile'));
         this.#resources = stack.move();
       }
-      [Symbol.dispose]() { this.#resources.dispose(); }
+      [Symbol.dispose]() {
+        this.#resources.dispose();
+      }
     }
     assert.throws(() => new Session(true), /second acquisition failed/);
-    assert.deepEqual(log, ['dispose socket']);           // partial acquisition cleaned up
+    assert.deepEqual(log, ['dispose socket']); // partial acquisition cleaned up
     log.length = 0;
     {
       using s = new Session(false);
-      assert.deepEqual(log, []);                         // nothing disposed while the object lives
+      assert.deepEqual(log, []); // nothing disposed while the object lives
     }
     assert.deepEqual(log, ['dispose logfile', 'dispose socket']);
   });
@@ -160,9 +182,15 @@ describe('DisposableStack', () => {
 describe('Date pitfalls that motivated Temporal', () => {
   test('NEGATIVE: date-only strings are UTC, date-time strings are local', () => {
     // run in Prague time so the difference is visible regardless of the machine's zone
-    const prague = runNode(['-e', `process.env.TZ='Europe/Prague'; console.log(JSON.stringify([
-      new Date('2026-03-29').toISOString(), new Date('2026-03-29T00:00').toISOString()]))`]);
-    assert.deepEqual(JSON.parse(prague.stdout), ['2026-03-29T00:00:00.000Z', '2026-03-28T23:00:00.000Z']);
+    const prague = runNode([
+      '-e',
+      `process.env.TZ='Europe/Prague'; console.log(JSON.stringify([
+      new Date('2026-03-29').toISOString(), new Date('2026-03-29T00:00').toISOString()]))`,
+    ]);
+    assert.deepEqual(JSON.parse(prague.stdout), [
+      '2026-03-29T00:00:00.000Z',
+      '2026-03-28T23:00:00.000Z',
+    ]);
   });
 
   test('NEGATIVE: Date months are 0-based and overflow rolls over silently', () => {
@@ -193,17 +221,35 @@ describe('Temporal (ES2027, shipped in Node 26)', () => {
 
   test('disambiguation for gaps and folds', () => {
     const at = (s, disambiguation) => Temporal.ZonedDateTime.from(s, { disambiguation }).toString();
-    assert.equal(at('2026-03-29T02:30[Europe/Prague]', 'compatible'), '2026-03-29T03:30:00+02:00[Europe/Prague]');
-    assert.equal(at('2026-03-29T02:30[Europe/Prague]', 'earlier'), '2026-03-29T01:30:00+01:00[Europe/Prague]');
-    assert.equal(at('2026-10-25T02:30[Europe/Prague]', 'earlier'), '2026-10-25T02:30:00+02:00[Europe/Prague]');
-    assert.equal(at('2026-10-25T02:30[Europe/Prague]', 'later'), '2026-10-25T02:30:00+01:00[Europe/Prague]');
+    assert.equal(
+      at('2026-03-29T02:30[Europe/Prague]', 'compatible'),
+      '2026-03-29T03:30:00+02:00[Europe/Prague]',
+    );
+    assert.equal(
+      at('2026-03-29T02:30[Europe/Prague]', 'earlier'),
+      '2026-03-29T01:30:00+01:00[Europe/Prague]',
+    );
+    assert.equal(
+      at('2026-10-25T02:30[Europe/Prague]', 'earlier'),
+      '2026-10-25T02:30:00+02:00[Europe/Prague]',
+    );
+    assert.equal(
+      at('2026-10-25T02:30[Europe/Prague]', 'later'),
+      '2026-10-25T02:30:00+01:00[Europe/Prague]',
+    );
     assert.throws(() => at('2026-03-29T02:30[Europe/Prague]', 'reject'), RangeError);
   });
 
   test('overflow: constrain by default, reject on request', () => {
     assert.equal(Temporal.PlainDate.from('2026-01-31').add({ months: 1 }).toString(), '2026-02-28');
-    assert.throws(() => Temporal.PlainDate.from('2026-01-31').add({ months: 1 }, { overflow: 'reject' }), RangeError);
-    assert.equal(Temporal.PlainDate.from({ year: 2026, month: 2, day: 30 }).toString(), '2026-02-28');
+    assert.throws(
+      () => Temporal.PlainDate.from('2026-01-31').add({ months: 1 }, { overflow: 'reject' }),
+      RangeError,
+    );
+    assert.equal(
+      Temporal.PlainDate.from({ year: 2026, month: 2, day: 30 }).toString(),
+      '2026-02-28',
+    );
   });
 
   test('durations: relative rounding across a 23-hour day, totals, until/since defaults', () => {
@@ -233,7 +279,10 @@ describe('Temporal (ES2027, shipped in Node 26)', () => {
 
   test('Instant ↔ ZonedDateTime ↔ Date interop', () => {
     const instant = Temporal.Instant.from('2026-03-29T00:00Z');
-    assert.equal(instant.toZonedDateTimeISO('America/New_York').toString(), '2026-03-28T20:00:00-04:00[America/New_York]');
+    assert.equal(
+      instant.toZonedDateTimeISO('America/New_York').toString(),
+      '2026-03-28T20:00:00-04:00[America/New_York]',
+    );
     const date = new Date(instant.epochMilliseconds);
     assert.equal(date.toTemporalInstant().equals(instant), true);
   });
@@ -245,16 +294,31 @@ describe('Temporal (ES2027, shipped in Node 26)', () => {
   });
 
   test('property: add then subtract the same calendar duration from a ZonedDateTime round-trips at non-ambiguous times', () => {
-    fc.assert(fc.property(fc.integer({ min: 0, max: 364 }), fc.integer({ min: 0, max: 400 }), (offsetDays, days) => {
-      const start = zoned('2026-01-01T12:00[Europe/Prague]').add({ days: offsetDays }); // noon: never in a gap or fold
-      return start.add({ days }).subtract({ days }).equals(start);
-    }));
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 0, max: 364 }),
+        fc.integer({ min: 0, max: 400 }),
+        (offsetDays, days) => {
+          const start = zoned('2026-01-01T12:00[Europe/Prague]').add({ days: offsetDays }); // noon: never in a gap or fold
+          return start.add({ days }).subtract({ days }).equals(start);
+        },
+      ),
+    );
   });
 
   test('property: hours-based addition always changes epochNanoseconds by exactly that amount', () => {
-    fc.assert(fc.property(fc.integer({ min: 0, max: 365 * 24 }), fc.integer({ min: -1000, max: 1000 }), (h0, h) => {
-      const start = zoned('2026-01-01T00:00[Europe/Prague]').add({ hours: h0 });
-      return start.add({ hours: h }).epochNanoseconds - start.epochNanoseconds === BigInt(h) * 3_600_000_000_000n;
-    }));
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 0, max: 365 * 24 }),
+        fc.integer({ min: -1000, max: 1000 }),
+        (h0, h) => {
+          const start = zoned('2026-01-01T00:00[Europe/Prague]').add({ hours: h0 });
+          return (
+            start.add({ hours: h }).epochNanoseconds - start.epochNanoseconds ===
+            BigInt(h) * 3_600_000_000_000n
+          );
+        },
+      ),
+    );
   });
 });

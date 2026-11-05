@@ -1,32 +1,36 @@
 # Brief: Distributed systems (`architecture/distributed-systems`)
 
-| | |
-|---|---|
-| Phase | 2 |
-| Kind | NEW track: create from scratch |
-| Primary (author) | **Opus · claude.ai** |
-| Drafter (on request) | pi · DeepSeek |
-| Challenger | pi · Muse Spark 1.3 |
-| Verifier | Antigravity |
-| Final gate | Opus (claude.ai session) |
-| Branch / worktree | `track/distributed-systems` · `../zto-distributed-systems` |
-| Depends on | architecture/data-systems |
-| Research dossier | `.agents/research/D-cs.md` |
+|                      |                                                            |
+| -------------------- | ---------------------------------------------------------- |
+| Phase                | 2                                                          |
+| Kind                 | NEW track: create from scratch                             |
+| Primary (author)     | **Opus · claude.ai**                                       |
+| Drafter (on request) | pi · DeepSeek                                              |
+| Challenger           | pi · Muse Spark 1.3                                        |
+| Verifier             | Antigravity                                                |
+| Final gate           | Opus (claude.ai session)                                   |
+| Branch / worktree    | `track/distributed-systems` · `../zto-distributed-systems` |
+| Depends on           | architecture/data-systems                                  |
+| Research dossier     | `.agents/research/D-cs.md`                                 |
 
 ## 0. Read before starting (binding)
+
 1. `AGENTS.md`: the contract. If it conflicts with this brief, AGENTS.md wins; log the conflict in your review file.
 2. `.agents/OWNERSHIP.md`: what you own vs only cross-link.
 3. `.agents/REVIEW.md`: the checklist your work is judged against.
 4. Your global/agent instructions still apply where they do not conflict.
 
 ## 1. Owner decisions and track-specific instructions
+
 - Primary proof: Raft in TypeScript on a deterministic simulator (seeded RNG, virtual clock and network), with the safety invariants checked every step and injected bugs that must be caught. Cross-check linearizability with Porcupine (Go via mise).
 - TLA+ specs use tla2tools pinned via mise (java). The Toolbox is unmaintained; use the CLI or the VS Code extension.
 - Teach the **latest stable** versions. Add **Then vs now** comparisons wherever practice changed (AGENTS.md § Version Currency).
 - Pin **all** tooling via mise (`.mise.toml` + `mise.lock`): node 26 for JS/TS, plus every CLI and runtime the examples need.
 
 ## 2. Ownership
+
 **You own (full treatment):**
+
 - System models, FLP, CAP/PACELC as formal results
 - Clocks (Lamport, vector, HLC, TrueTime), consistency hierarchy, linearizability checking
 - Consensus (Paxos/Raft/ZAB), replicated state machines, leases & fencing, distributed locks
@@ -35,6 +39,7 @@
 - Retry amplification, metastable failures (theory)
 
 **Cross-link only (do not re-explain):**
+
 - Concurrency models, locks, data races, lock-free structures (language-neutral) → owned by `algorithms/dsa` (proposed extra module, TBD)
 - Isolation levels & anomaly taxonomy (Adya/Berenson), MVCC theory, SSI → owned by `architecture/data-systems`
 - Replication mechanics (leader/follower, multi-leader, leaderless), sharding/rebalancing, CDC → owned by `architecture/data-systems`
@@ -58,8 +63,8 @@
   1. **System models & impossibility** — fallacies of distributed computing; crash-stop/crash-recovery/omission/Byzantine; synchronous/partially synchronous/asynchronous; FLP; two generals; CAP stated precisely (Gilbert–Lynch) and PACELC; safety vs liveness.
   2. **Networks, RPC & failure detection** — RPC semantics (at-most-once, at-least-once, dedupe tables — 6.5840 Lab 2), timeouts, retries with jittered exponential backoff, idempotency keys, phi-accrual/heartbeat failure detectors, gray failures, SWIM gossip & membership.
   3. **Time & order** — physical clocks, NTP/PTP, skew/drift, monotonic vs wall clock; happens-before, Lamport clocks, vector clocks/version vectors, dotted version vectors, HLC; TrueTime & commit-wait; leases and fencing tokens.
-  4. **Consistency models** — linearizability (formal: real-time order + legal sequential history), sequential, causal, session guarantees (RYW, MR, MW, WFR), eventual; transactional side (serializable, SI, strict serializable); Jepsen map & availability classes; how to *check* linearizability (WGL algorithm, Porcupine/Knossos, NP-completeness, P-compositionality).
-  5. **Replication protocols** — primary-backup, chain replication (CRAQ), quorum systems (R+W>N and why it is *not* linearizable without read repair/ABD), state-machine replication; reads: leader reads, ReadIndex, lease reads, follower reads.
+  4. **Consistency models** — linearizability (formal: real-time order + legal sequential history), sequential, causal, session guarantees (RYW, MR, MW, WFR), eventual; transactional side (serializable, SI, strict serializable); Jepsen map & availability classes; how to _check_ linearizability (WGL algorithm, Porcupine/Knossos, NP-completeness, P-compositionality).
+  5. **Replication protocols** — primary-backup, chain replication (CRAQ), quorum systems (R+W>N and why it is _not_ linearizable without read repair/ABD), state-machine replication; reads: leader reads, ReadIndex, lease reads, follower reads.
   6. **Consensus I: Paxos family** — single-decree Paxos proof sketch, Multi-Paxos, Flexible Paxos quorums, EPaxos (overview), ZAB/ZooKeeper (linearizable writes, FIFO client order, sync() reads).
   7. **Consensus II: Raft deep dive** — leader election (randomized timeouts, pre-vote, check-quorum), log replication, the 5 safety properties, Figure 8 commit rule, persistence requirements, snapshots/InstallSnapshot, membership changes (joint consensus vs single-server), log compaction, client interaction (sessions for exactly-once); implementation pitfalls (6.5840 students' guide).
   8. **Coordination services & primitives** — distributed locks (why Redlock is controversial), leader election via etcd/ZK leases, fencing, service discovery, barriers; etcd/ZooKeeper failure modes.
@@ -103,7 +108,7 @@
   - How would you test this? (Jepsen, DST, TLA+).
 - **Executable-proof strategy**
   - **Primary: Raft in TypeScript inside a deterministic simulator** (`node:test`, Node 24/26, fast-check 4.10.2). Simulator = seeded PRNG (e.g. xoshiro128**), virtual clock + event queue (no `setTimeout`/`Date.now` in node code — inject `Clock` and `Network` interfaces), simulated network with drop/delay/duplicate/reorder/partition, crash-restart that discards volatile state and keeps a fake `Storage` (with optional "lost unfsynced write" fault). After every event, assert Raft invariants: Election Safety, Leader Append-Only, Log Matching, Leader Completeness, State Machine Safety. Tests sweep e.g. 500 seeds × 2 000 steps; failing seed is printed and replayable byte-for-byte. Port the 6.5840 lab test scenarios (3A–3D, 4A) as TS tests.
-  - **Negative tests (bug-injection)**: flags that (a) skip persistence of `votedFor`, (b) commit previous-term entries by count (Figure 8), (c) serve leader reads without ReadIndex — each must be *caught* by the invariant checker / linearizability checker within N seeds. This proves the checkers have teeth.
+  - **Negative tests (bug-injection)**: flags that (a) skip persistence of `votedFor`, (b) commit previous-term entries by count (Figure 8), (c) serve leader reads without ReadIndex — each must be _caught_ by the invariant checker / linearizability checker within N seeds. This proves the checkers have teeth.
   - **Linearizability checker**: implement Wing–Gong/Lowe (WGL) with memoization in TS for a KV model, plus P-compositionality per key; cross-validate on exported JSON histories with **Porcupine v1.3.1** (Go 1.27 via mise `go = "1.27"`; optional) which also renders HTML visualizations. Include known non-linearizable hand-written histories as negative fixtures.
   - **Maelstrom 0.2.4** (needs a JDK — `java = "temurin-21"` in mise; JDK version requirement unverified) for Gossip Glomers-style workloads (echo, unique-ids, broadcast, g-counter, kafka-style log, txn-rw-register) with nodes written in Node/TS over stdin/stdout JSON. Deterministic enough for CI with fixed `--time-limit` and `--rate`, though not seed-reproducible (Maelstrom uses real threads) → mark as "integration proof", not unit.
   - **TLA+**: PlusCal specs for 2PC (Lamport's TwoPhase/TCommit), a simple Raft election, and a lock-with-lease spec showing the fencing bug (TLC finds counterexample; fixed spec passes). Pin `tla2tools.jar` **v1.7.4** (latest stable) by SHA-256 in a mise task; run `java -cp tla2tools.jar tlc2.TLC -deadlock -workers 1` (single worker for deterministic output). 1.8.0 is pre-release — do not pin. P language as optional alternative (version unverified).
@@ -112,10 +117,10 @@
   - **CRDTs**: own G-Counter/PN-Counter/OR-Set/LWW-Map implementations with fast-check properties: merge commutative, associative, idempotent; convergence after random delivery orders/duplication; compare with yjs 13.6.33 / automerge 3.5.0 behaviour on concurrent inserts.
   - **Cannot prove locally**: real clock skew/TrueTime, real WAN partitions, fsync durability on actual disks, BFT at scale → fallback: simulated faults in DST, TLA+ counterexamples, and paper-reading notes with "what would break" questions.
 - **Overlaps / dedupe**
-  - Belongs to `architecture/data-systems`: storage engines, single-node isolation implementation (MVCC, SSI internals), leader/follower & leaderless replication *mechanics*, sharding/rebalancing, CDC, stream-processing operators/windows. This track links those and only adds the correctness theory (anomaly definitions, linearizability, consensus).
+  - Belongs to `architecture/data-systems`: storage engines, single-node isolation implementation (MVCC, SSI internals), leader/follower & leaderless replication _mechanics_, sharding/rebalancing, CDC, stream-processing operators/windows. This track links those and only adds the correctness theory (anomaly definitions, linearizability, consensus).
   - Kafka operational depth → messaging/streaming track (or data-systems); here only log + delivery semantics.
   - Consistent hashing algorithm → `algorithms/dsa`; its use in sharding → data-systems.
-  - Retry/backoff/circuit-breaker *patterns as components* → system-design; here the theory (amplification, metastability).
+  - Retry/backoff/circuit-breaker _patterns as components_ → system-design; here the theory (amplification, metastability).
   - Go is used only as an optional runner for Porcupine/6.5840 originals; no Go teaching here.
 
 ---
@@ -127,10 +132,10 @@
 Rule of thumb: **DSA = in-memory algorithms on one machine; data-systems = how one database/log works and how it is replicated/partitioned; distributed-systems = theory of correctness under partial failure (time, consensus, consistency, distributed transactions); system-design = composing off-the-shelf building blocks under requirements, numbers and SLOs.**
 
 | Concept | Owner (full treatment) | Others only cross-link |
-|---|---|---|
-| Hash tables, heaps, trees, tries, graphs, Bloom filter / HyperLogLog / Count-Min math, consistent-hashing *algorithm* (ring, jump hash, rendezvous) | `algorithms/dsa` | system-design uses them as building blocks |
+| --- | --- | --- |
+| Hash tables, heaps, trees, tries, graphs, Bloom filter / HyperLogLog / Count-Min math, consistent-hashing _algorithm_ (ring, jump hash, rendezvous) | `algorithms/dsa` | system-design uses them as building blocks |
 | B-tree vs LSM, WAL, compaction, indexes, MVCC implementation, isolation levels as implemented by Postgres/MySQL, encoding & schema evolution (Avro/Protobuf), leader/follower + multi-leader + leaderless (quorums, read repair, hinted handoff), sharding/rebalancing, CDC, batch & stream processing internals (DDIA 2e ch. 3–8, 11–12) | `architecture/data-systems` | distributed-systems links for replication lag anomalies; system-design links for "pick a DB" |
-| System model (crash/omission/Byzantine, sync/partial-sync/async), FLP, CAP/PACELC as formal results, clocks (physical, Lamport, vector, HLC, TrueTime), consistency-model hierarchy (Jepsen), linearizability checking, consensus (Paxos/Raft/ZAB/VR), replicated state machines, leases & fencing, failure detectors/membership/gossip, 2PC/3PC/Percolator/Spanner/Calvin, sagas as a *correctness* problem, CRDTs, delivery semantics (at-most/at-least/effectively-once), BFT (DDIA 2e ch. 9–10; MIT 6.5840) | `architecture/distributed-systems` | data-systems links "transactions → distributed txns"; system-design links "why Raft/ZK behind your lock service" |
+| System model (crash/omission/Byzantine, sync/partial-sync/async), FLP, CAP/PACELC as formal results, clocks (physical, Lamport, vector, HLC, TrueTime), consistency-model hierarchy (Jepsen), linearizability checking, consensus (Paxos/Raft/ZAB/VR), replicated state machines, leases & fencing, failure detectors/membership/gossip, 2PC/3PC/Percolator/Spanner/Calvin, sagas as a _correctness_ problem, CRDTs, delivery semantics (at-most/at-least/effectively-once), BFT (DDIA 2e ch. 9–10; MIT 6.5840) | `architecture/distributed-systems` | data-systems links "transactions → distributed txns"; system-design links "why Raft/ZK behind your lock service" |
 | Requirements → API → data model → HLD → deep dives; capacity estimation; LB/CDN/cache/rate-limiter/queue/search/blob as black boxes with knobs; canonical problems; observability, SLOs, error budgets, load shedding, backpressure (DDIA 2e ch. 1–2) | `architecture/system-design` | — |
 | Kafka **operations** (broker config, KRaft, tiered storage, sizing) | a messaging/streaming track or data-systems (whoever owns Kafka) | distributed-systems teaches log abstraction + delivery semantics only; system-design treats Kafka as a black box |
 | Observability tooling (OTel, Prometheus internals) | an SRE/observability track if proposed by another agent | system-design keeps SLO math + "what to measure" |
@@ -140,7 +145,9 @@ DDIA 2nd ed. chapter split (ToC from O'Reilly, https://www.oreilly.com/library/v
 ---
 
 ## 4. Re-verify list
+
 These claims were marked unverified during research. Confirm or correct each one against a primary source before teaching it:
+
 - Tooling verified: Go 1.27.3 (1.27.0 released 2026-08-19; https://go.dev/doc/devel/release); Porcupine v1.3.1 (2026-09-21; https://pkg.go.dev/github.com/anishathalye/porcupine?tab=versions); Maelstrom 0.2.4 (bundles Jepsen 0.3.7, fixes a Knossos bug; https://github.com/jepsen-io/maelstrom/releases — year not shown, unverified); TLA+ tools: latest stable **v1.7.4** "Xenophanes", **v1.8.0 "Clarke" is still a pre-release** (dated 20 Oct, year not shown) and the **TLA+ Toolbox is no longer actively maintained** — use VS Code extension or CLI (https://github.com/tlaplus/tlaplus/releases/tag/v1.8.0). Apache Kafka latest **4.4.0 (2026-10-22)**, supported 4.3.1, 4.2.2 (https://kafka.apache.org/community/downloads/); Kafka 4.2 (2026-03-26) made **Queues for Kafka / share groups (KIP-932) GA** and KIP-1071 Streams rebalance GA (https://developer.confluent.io/newsletter/apache-kafka-42-released/). Node clients: `@confluentinc/kafka-javascript` 1.11.0; **kafkajs 2.2.4 last published 2023-02 — effectively unmaintained**. CRDT libs: yjs 13.6.33, @automerge/automerge 3.5.0 (npm). P language (p-org/P) version not verifiable (NuGet blocked by proxy) (unverified).
 - Kleppmann's Cambridge "Concurrent and Distributed Systems" lecture notes (https://www.cl.cam.ac.uk/teaching/2122/ConcDisSys/) (year of current edition unverified); Fly.io Gossip Glomers (https://fly.io/dist-sys/) on Maelstrom; Herlihy & Wing linearizability; Shapiro et al. CRDTs; Adya's isolation thesis + Elle paper.
 - **Maelstrom 0.2.4** (needs a JDK — `java = "temurin-21"` in mise; JDK version requirement unverified) for Gossip Glomers-style workloads (echo, unique-ids, broadcast, g-counter, kafka-style log, txn-rw-register) with nodes written in Node/TS over stdin/stdout JSON. Deterministic enough for CI with fixed `--time-limit` and `--rate`, though not seed-reproducible (Maelstrom uses real threads) → mark as "integration proof", not unit.
@@ -148,7 +155,9 @@ These claims were marked unverified during research. Confirm or correct each one
 - **Messaging**: docker compose single-node KRaft `apache/kafka:4.4.0` (image tag unverified) + `@confluentinc/kafka-javascript` 1.11.0: tests for idempotent producer dedupe, transactional read-process-write with `isolation.level=read_committed`, rebalance-induced duplicates, partition-count change breaking key affinity; Toxiproxy (version unverified) for partitions/latency. Requires Docker/Colima on Mac; mark these as `test:integration` separate from deterministic unit tests.
 
 ## 5. Certifications & exams
+
 Follow AGENTS.md § Certification and Exam Coverage exactly. Minimum deliverables:
+
 1. **README "Certifications & Exams" section.** Start from the exams named in the dossier above ("Authoritative syllabi used"). Re-verify each exam's code, status, guide version/date, targeted product version and domain weights on the official page. Where no certification exists, say so and use the recognised interview format.
 2. **`exams/README.md` coverage matrix.** Rows are domain/objective, weight, modules, examples, status. No ❌ at hand-off.
 3. **`exams/<exam-code>.md` question banks.**
@@ -160,11 +169,14 @@ Follow AGENTS.md § Certification and Exam Coverage exactly. Minimum deliverable
 5. **Original questions only.** No braindump content.
 
 ## 6. Code languages
+
 Per AGENTS.md § Code Example Languages:
+
 - **Primary:** pseudocode (where algorithms or protocols are described) + TypeScript (or the track's own language, for language tracks).
 - **Secondary:** Python, Rust or Nim only where it teaches something. Each language lives in `examples/<lang>/` with its own mise-pinned toolchain and native test runner, and `test` runs them all.
 
 ## 7. Workflow and definition of done
+
 1. **Primary (Opus)** works on branch `track/distributed-systems` and sets this track's row in `.agents/STATUS.md` to 🟦.
 2. **Verify versions first.** Check every version in the dossier against its primary source today. Record the results in the README's `Verified against …` line. Resolve every item in the re-verify list below.
 3. Build in stages: README syllabus + exam matrix → modules one by one, each with its examples/tests → glossary → cheatsheet → question banks → mock exam. Delegate bulk drafting (question-bank drafts, glossary candidates, cheatsheet tables) to the **Drafter**, then correct and integrate it yourself.

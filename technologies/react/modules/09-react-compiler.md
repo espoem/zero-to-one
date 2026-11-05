@@ -4,7 +4,7 @@
 >
 > **Cross-links.** How TypeScript's `readonly` and immutability types interact with the compiler's assumptions: [TypeScript M12](../../../languages/typescript/modules/12-typing-ui-frameworks.md). Compiler theory in general (SSA, data-flow analysis) is standard compiler material; this module covers only what React's compiler does with it.
 
-The React Compiler is a build-time Babel plugin that **automatically memoises** components and hooks. It reached **1.0 on 2025-10-07** ([React blog](https://react.dev/blog/2025/10/07/react-compiler-1)). It replaces most hand-written `useMemo`, `useCallback` and `memo`, and — unlike hand-written memoisation — it can memoise *conditionally* and at a granularity finer than a hook. It relies on your code obeying the **Rules of React**; where it can prove a violation it skips the function, and where it cannot prove one it may compile code whose behaviour then depends on luck. This module explains the pipeline, the generated code, the preconditions, the lint rules that enforce them, configuration and adoption.
+The React Compiler is a build-time Babel plugin that **automatically memoises** components and hooks. It reached **1.0 on 2025-10-07** ([React blog](https://react.dev/blog/2025/10/07/react-compiler-1)). It replaces most hand-written `useMemo`, `useCallback` and `memo`, and — unlike hand-written memoisation — it can memoise _conditionally_ and at a granularity finer than a hook. It relies on your code obeying the **Rules of React**; where it can prove a violation it skips the function, and where it cannot prove one it may compile code whose behaviour then depends on luck. This module explains the pipeline, the generated code, the preconditions, the lint rules that enforce them, configuration and adoption.
 
 ---
 
@@ -21,7 +21,7 @@ and it fails silently when one link breaks (an inline object prop defeats `memo`
 The runtime proof in the tests renders the same `Page` component uncompiled and compiled and clicks a counter three times:
 
 | Build | `Expensive` renders | Why |
-|---|---|---|
+| --- | --- | --- |
 | Uncompiled | 4 (mount + 3 clicks) | `items.filter(…)` creates a new array each render → new props → re-render |
 | Compiled | 1 | The filtered array and the `<Expensive>` element are cached on `items`; the click changes only `n` |
 
@@ -44,9 +44,9 @@ flowchart LR
 
 1. **Lowering to HIR** (High-level Intermediate Representation): the function becomes a control-flow graph of basic blocks with explicit temporaries, while keeping high-level constructs (JSX, property loads, hook calls) as instructions.
 2. **SSA conversion** gives every value one definition, which makes data-flow analysis straightforward.
-3. **Type and effect inference.** For each instruction the compiler infers whether values are *read*, *captured*, *mutated* or *frozen*. Props, state and hook return values are treated as **frozen** (immutable) — the core Rules-of-React assumption. It also knows built-ins (`Array.prototype.map` returns a new array, `push` mutates its receiver) and React hooks.
+3. **Type and effect inference.** For each instruction the compiler infers whether values are _read_, _captured_, _mutated_ or _frozen_. Props, state and hook return values are treated as **frozen** (immutable) — the core Rules-of-React assumption. It also knows built-ins (`Array.prototype.map` returns a new array, `push` mutates its receiver) and React hooks.
 4. **Validation.** Passes check hook call order, ref access during render, `setState` in render, mutation of frozen values the analysis can see, and more. A failure produces a `CompileError` event and, by default, the function is **left as written**.
-5. **Reactive scopes.** Values that are created together and mutated together are grouped into a *scope*; each scope's **dependencies** are the reactive inputs (props, state, context, other scopes' outputs) it reads. Overlapping scopes are merged; scopes that cannot be memoised (they contain a hook call, for example) are pruned.
+5. **Reactive scopes.** Values that are created together and mutated together are grouped into a _scope_; each scope's **dependencies** are the reactive inputs (props, state, context, other scopes' outputs) it reads. Overlapping scopes are merged; scopes that cannot be memoised (they contain a hook call, for example) are pruned.
 6. **Codegen** emits a cache array per function and wraps each scope in a guard.
 
 ### 2.1 The generated code
@@ -54,23 +54,24 @@ flowchart LR
 Test "the smallest case" compiles `function A({ x }) { return <div>{[x]}</div>; }` to:
 
 ```js
-import { c as _c } from "react/compiler-runtime";
+import { c as _c } from 'react/compiler-runtime';
 export function A(t0) {
-  const $ = _c(2);                 // a per-instance cache with 2 slots
+  const $ = _c(2); // a per-instance cache with 2 slots
   const { x } = t0;
   let t1;
-  if ($[0] !== x) {                // dependency changed?
-    t1 = <div>{[x]}</div>;         //   recompute the scope
-    $[0] = x;                      //   remember the dependency
-    $[1] = t1;                     //   and the result
+  if ($[0] !== x) {
+    // dependency changed?
+    t1 = <div>{[x]}</div>; //   recompute the scope
+    $[0] = x; //   remember the dependency
+    $[1] = t1; //   and the result
   } else {
-    t1 = $[1];                     // reuse: same element object → React bails out of the subtree
+    t1 = $[1]; // reuse: same element object → React bails out of the subtree
   }
   return t1;
 }
 ```
 
-A richer case (test "a component gets a memo cache… and guarded blocks per reactive scope") shows **nested** and **sequential** scopes: the sorted list depends on `items` *and* `onPick`, the `map` callback inside it depends only on `onPick`, and the `<ul>` depends only on the mapped children:
+A richer case (test "a component gets a memo cache… and guarded blocks per reactive scope") shows **nested** and **sequential** scopes: the sorted list depends on `items` _and_ `onPick`, the `map` callback inside it depends only on `onPick`, and the `<ul>` depends only on the mapped children:
 
 ```js
 const $ = _c(7);
@@ -85,7 +86,7 @@ if ($[5] !== t1) { t2 = <ul>{t1}</ul>; … }   // scope 2
 
 `_c(n)` is `useMemoCache(n)` under the hood: a hook (it occupies one hook slot) that returns an array stored on the fiber, initialised with a sentinel. Dependencies are compared with `!==` (i.e. `Object.is` except for `NaN`/`±0` corner cases).
 
-**Conditional memoisation.** Because scopes are blocks in the control-flow graph, memoisation can sit *after* an early return or inside a branch — impossible with `useMemo`, which is a hook and must be called unconditionally.
+**Conditional memoisation.** Because scopes are blocks in the control-flow graph, memoisation can sit _after_ an early return or inside a branch — impossible with `useMemo`, which is a hook and must be called unconditionally.
 
 ---
 
@@ -94,7 +95,7 @@ if ($[5] !== t1) { t2 = <ul>{t1}</ul>; … }   // scope 2
 The compiler's correctness theorem is conditional: **if** components and hooks are pure, props/state/context are never mutated, refs are not read during render, and hooks follow the call-order rules, **then** the compiled function is observationally equivalent to the original but renders less. The validations catch many violations; they cannot catch all of them.
 
 | Violation | What the compiler does | Test |
-|---|---|---|
+| --- | --- | --- |
 | Reading/writing `ref.current` during render | `CompileError` (category `Refs`), function left uncompiled | "reading a ref during render → CompileError" |
 | Conditional hook | `CompileError` (category `Hooks`) | "a conditional hook → CompileError" |
 | `setState` unconditionally in render, components defined in render, `Math.random()` in render | Detected by lint rules (§4) and/or validations | lint tests |
@@ -119,8 +120,8 @@ Since v6 (with React 19.2) the plugin's `recommended` preset uses **flat config 
 
 ```js
 // eslint.config.js
-import reactHooks from "eslint-plugin-react-hooks";
-import { defineConfig } from "eslint/config";
+import reactHooks from 'eslint-plugin-react-hooks';
+import { defineConfig } from 'eslint/config';
 export default defineConfig([reactHooks.configs.flat.recommended]);
 // legacy .eslintrc users: "plugin:react-hooks/recommended-legacy"
 ```
@@ -135,18 +136,25 @@ Use the lint rules **even if you do not enable the compiler**: every rule descri
 
 ```js
 // babel.config.js — options of babel-plugin-react-compiler 1.0.0
-["babel-plugin-react-compiler", {
-  target: "19",                    // "17" | "18" | "19"; 17/18 need the react-compiler-runtime package
-  compilationMode: "infer",        // default; also "annotation" | "syntax" | "all"
-  panicThreshold: "none",          // default; also "critical_errors" | "all_errors"
-  logger: { logEvent(filename, event) { /* CompileSuccess | CompileError | CompileSkip | … */ } },
-  gating: { source: "my-flags", importSpecifierName: "isCompilerEnabled" }, // runtime A/B switch
-  sources: (filename) => filename.includes("src/"),                             // which files to compile
-}]
+[
+  'babel-plugin-react-compiler',
+  {
+    target: '19', // "17" | "18" | "19"; 17/18 need the react-compiler-runtime package
+    compilationMode: 'infer', // default; also "annotation" | "syntax" | "all"
+    panicThreshold: 'none', // default; also "critical_errors" | "all_errors"
+    logger: {
+      logEvent(filename, event) {
+        /* CompileSuccess | CompileError | CompileSkip | … */
+      },
+    },
+    gating: { source: 'my-flags', importSpecifierName: 'isCompilerEnabled' }, // runtime A/B switch
+    sources: (filename) => filename.includes('src/'), // which files to compile
+  },
+];
 ```
 
 | Mechanism | Effect | Test |
-|---|---|---|
+| --- | --- | --- |
 | `compilationMode: "infer"` (default) | Compiles functions that look like components/hooks (name + JSX or hook calls) | — |
 | `compilationMode: "annotation"` | Compiles only functions with a `"use memo"` directive — useful for incremental adoption | "compilationMode annotation compiles only…" |
 | `"use no memo"` | Opts one function out (escape hatch while you fix it; remove later) | '"use no memo" opts a component out' |
@@ -160,7 +168,7 @@ Use the lint rules **even if you do not enable the compiler**: every rule descri
 ## 6. Manual memoisation in the compiler era
 
 | Situation | Recommendation (from the 1.0 announcement) |
-|---|---|
+| --- | --- |
 | New code | Rely on the compiler; use `useMemo`/`useCallback` only for precise control, e.g. a value used as an **effect dependency** whose identity must not change |
 | Existing `useMemo`/`useCallback`/`memo` | **Leave them**; removing them can change compilation output. Remove only with test coverage |
 | Existing memo with wrong deps | `preserve-manual-memoization` reports when the compiler cannot preserve your manual memoisation (e.g. deps you wrote disagree with the inferred ones) |
@@ -170,8 +178,8 @@ Test "existing useMemo is kept and its deps are checked against the inferred one
 
 > **Then vs now.**
 >
-> | | Then | Now |
-> |---|---|---|
+> |  | Then | Now |
+> | --- | --- | --- |
 > | ≤ 2024 | Manual `memo`/`useMemo`/`useCallback`; correctness depended on hand-written deps; `exhaustive-deps` lint | — |
 > | 2024–2025 | "React Forget" research → `babel-plugin-react-compiler` beta/RC (`19.0.0-beta…`, `19.1.0-rc.*`), separate `eslint-plugin-react-compiler` | — |
 > | 2025-10-07 | — | **React Compiler 1.0**: stable, versioned independently of React (`1.0.0`), lint merged into `eslint-plugin-react-hooks` (v6/v7), works with React 17+ |
@@ -183,7 +191,7 @@ Test "existing useMemo is kept and its deps are checked against the inferred one
 ## 7. Production failure modes
 
 | Symptom | Cause | Fix |
-|---|---|---|
+| --- | --- | --- |
 | Expected memoisation "doesn't happen" | Function bailed out silently (ref read, conditional hook, unsupported syntax) | Lint, logger, DevTools badge, `panicThreshold` in CI |
 | Stale UI after enabling the compiler | Code mutates props/state/context in place (undetectable by the compiler) | Immutable updates; `immutability` lint where detectable; tests |
 | Effect fires more/less often after enabling | Effect deps now stable (or newly memoised) values | Treat effects as synchronisation (Module 04); do not rely on identity churn |
@@ -196,7 +204,7 @@ Test "existing useMemo is kept and its deps are checked against the inferred one
 ## 8. Executable proofs
 
 | Claim | Test (`compiler.test.tsx`) |
-|---|---|
+| --- | --- |
 | `_c(n)` cache, guarded scopes, nested scopes | "a component gets a memo cache…", "the smallest case…" |
 | Manual `useMemo` integrates | "existing useMemo is kept…" |
 | Directives and options | '"use no memo"…', 'compilationMode "annotation"…', 'target "18"…' |

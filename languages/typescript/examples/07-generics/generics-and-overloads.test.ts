@@ -17,9 +17,9 @@ import {
   type Prettify,
   assertEqual,
   assertDeepEqual,
-} from "../utils/type-helpers.ts";
+} from '../utils/type-helpers.ts';
 
-console.log("=== 03: Generics and Overloads ===");
+console.log('=== 03: Generics and Overloads ===');
 
 // ============================================================================
 // 1. Generic Constraints & Dependent Type Parameters
@@ -33,24 +33,26 @@ export function getProperty<TObj, TKey extends keyof TObj>(obj: TObj, key: TKey)
   return obj[key];
 }
 
-const userProfile = { id: "usr_123", username: "pocock", karma: 9000, active: true };
-const karma = getProperty(userProfile, "karma");
-const username = getProperty(userProfile, "username");
+const userProfile = { id: 'usr_123', username: 'pocock', karma: 9000, active: true };
+const karma = getProperty(userProfile, 'karma');
+const username = getProperty(userProfile, 'username');
 
 type TestKarma = Expect<Equal<typeof karma, number>>;
 type TestUsername = Expect<Equal<typeof username, string>>;
 
 assertEqual(karma, 9000);
-assertEqual(username, "pocock");
+assertEqual(username, 'pocock');
 
 /**
  * Generic with default type parameter and object constraint
  */
-export function createRecord<TData = Record<string, unknown>>(data: TData): { data: TData; createdAt: number } {
+export function createRecord<TData = Record<string, unknown>>(
+  data: TData,
+): { data: TData; createdAt: number } {
   return { data, createdAt: Date.now() };
 }
 
-const defaultRecord = createRecord({ foo: "bar" });
+const defaultRecord = createRecord({ foo: 'bar' });
 type TestDefaultRecord = Expect<Equal<typeof defaultRecord.data, { foo: string }>>;
 
 // ============================================================================
@@ -63,12 +65,12 @@ export function parseInput(input: string): string[];
 export function parseInput(input: number): number[];
 export function parseInput(input: boolean): [boolean];
 export function parseInput(input: string | number | boolean): (string | number | boolean)[] {
-  if (typeof input === "string") return input.split("");
-  if (typeof input === "number") return [input, input * 2];
+  if (typeof input === 'string') return input.split('');
+  if (typeof input === 'number') return [input, input * 2];
   return [input];
 }
 
-const strOutput = parseInput("ts");
+const strOutput = parseInput('ts');
 const numOutput = parseInput(10);
 const boolOutput = parseInput(true);
 
@@ -76,7 +78,7 @@ type TestOverloadStr = Expect<Equal<typeof strOutput, string[]>>;
 type TestOverloadNum = Expect<Equal<typeof numOutput, number[]>>;
 type TestOverloadBool = Expect<Equal<typeof boolOutput, [boolean]>>;
 
-assertDeepEqual(strOutput, ["t", "s"]);
+assertDeepEqual(strOutput, ['t', 's']);
 assertDeepEqual(numOutput, [10, 20]);
 assertDeepEqual(boolOutput, [true]);
 
@@ -86,10 +88,10 @@ assertDeepEqual(boolOutput, [true]);
 // Total TypeScript Best Practice: Use Conditional Types or Discriminated Arguments instead!
 
 export function parseInputConditional<T extends string | number | boolean>(
-  input: T
+  input: T,
 ): T extends string ? string[] : T extends number ? number[] : [boolean] {
-  if (typeof input === "string") return input.split("") as any;
-  if (typeof input === "number") return [input, input * 2] as any;
+  if (typeof input === 'string') return input.split('') as any;
+  if (typeof input === 'number') return [input, input * 2] as any;
   return [input] as any;
 }
 
@@ -113,31 +115,33 @@ export function defineRoutes<const TRoutes extends readonly string[]>(routes: TR
   return routes;
 }
 
-const appRoutes = defineRoutes(["/home", "/dashboard", "/settings"]);
+const appRoutes = defineRoutes(['/home', '/dashboard', '/settings']);
 // appRoutes is inferred as readonly ["/home", "/dashboard", "/settings"], NOT string[]!
-type TestConstParam = Expect<Equal<typeof appRoutes, readonly ["/home", "/dashboard", "/settings"]>>;
+type TestConstParam = Expect<
+  Equal<typeof appRoutes, readonly ['/home', '/dashboard', '/settings']>
+>;
 
-assertEqual(appRoutes[0], "/home");
+assertEqual(appRoutes[0], '/home');
 assertEqual(appRoutes.length, 3);
 
 // Object inference with `const` type parameter:
 export function defineEventCatalog<const TCatalog extends Record<string, { payload: unknown }>>(
-  catalog: TCatalog
+  catalog: TCatalog,
 ): TCatalog {
   return catalog;
 }
 
 const catalog = defineEventCatalog({
-  LOGIN: { payload: { userId: "123" } },
-  LOGOUT: { payload: { reason: "timeout" } },
+  LOGIN: { payload: { userId: '123' } },
+  LOGOUT: { payload: { reason: 'timeout' } },
 });
 
 type TestCatalogLiteral = Expect<
   Equal<
     typeof catalog,
     {
-      readonly LOGIN: { readonly payload: { readonly userId: "123" } };
-      readonly LOGOUT: { readonly payload: { readonly reason: "timeout" } };
+      readonly LOGIN: { readonly payload: { readonly userId: '123' } };
+      readonly LOGOUT: { readonly payload: { readonly reason: 'timeout' } };
     }
   >
 >;
@@ -155,7 +159,7 @@ export class QueryBuilder<TSelected extends Record<string, any> = {}> {
 
   select<TKey extends string, TValue>(
     key: TKey,
-    value: TValue
+    value: TValue,
   ): QueryBuilder<Prettify<TSelected & Record<TKey, TValue>>> {
     return new QueryBuilder({
       ...this.state,
@@ -169,14 +173,14 @@ export class QueryBuilder<TSelected extends Record<string, any> = {}> {
 }
 
 const query = new QueryBuilder()
-  .select("id", "q-42")
-  .select("limit", 100)
-  .select("enabled", true)
+  .select('id', 'q-42')
+  .select('limit', 100)
+  .select('enabled', true)
   .build();
 
 type TestBuilder = Expect<Equal<typeof query, { id: string; limit: number; enabled: boolean }>>;
 
-assertEqual(query.id, "q-42");
+assertEqual(query.id, 'q-42');
 assertEqual(query.limit, 100);
 assertEqual(query.enabled, true);
 
@@ -213,23 +217,23 @@ export class TypedEventEmitter<TEvents extends Record<string, any>> {
 
 // Interface defining event map
 interface AppEvents {
-  "user:login": { userId: string; timestamp: number };
-  "user:logout": { userId: string };
-  "error": { code: number; message: string };
+  'user:login': { userId: string; timestamp: number };
+  'user:logout': { userId: string };
+  error: { code: number; message: string };
 }
 
 const emitter = new TypedEventEmitter<AppEvents>();
 
-let loggedInUser = "";
-const unsubscribe = emitter.on("user:login", (payload) => {
+let loggedInUser = '';
+const unsubscribe = emitter.on('user:login', (payload) => {
   loggedInUser = payload.userId;
 });
 
-emitter.emit("user:login", { userId: "u-999", timestamp: Date.now() });
-assertEqual(loggedInUser, "u-999");
+emitter.emit('user:login', { userId: 'u-999', timestamp: Date.now() });
+assertEqual(loggedInUser, 'u-999');
 
 unsubscribe();
-emitter.emit("user:login", { userId: "u-1000", timestamp: Date.now() });
-assertEqual(loggedInUser, "u-999"); // Did not change because unsubscribed
+emitter.emit('user:login', { userId: 'u-1000', timestamp: Date.now() });
+assertEqual(loggedInUser, 'u-999'); // Did not change because unsubscribed
 
-console.log("✓ All 03 Generics & Overloads tests passed successfully!\n");
+console.log('✓ All 03 Generics & Overloads tests passed successfully!\n');

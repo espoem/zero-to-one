@@ -3,6 +3,7 @@
 ## Hand-off (primary author, 2026-10-30) — ready for challenger/verifier
 
 **Status:** brief delivered. Restructured from 10 modules to 13 deep modules conforming to repository standards:
+
 - All 13 modules rewritten/authored conforming to `AGENTS.md`, unwrapped paragraphs, PG17/18/19 deltas, and comprehensive Interview Drills with collapsible `<details>` blocks.
 - 13 hermetic PGlite test suites in `examples/01-*.ts` through `examples/13-*.ts` verifying storage, relational modeling, advanced SQL/CTEs, JSONB/FTS, indexing (B-Tree, GIN, GiST, BRIN), CBO query plans, MVCC/isolation, autovacuum/freezing, server programming/RLS, declarative partitioning/pipeline mode, ARIES WAL durability, and streaming replication/pgvector.
 - 1 Docker integration test suite `examples/integration-test.ts` (skips cleanly with informative message when Docker is unreachable).
@@ -12,7 +13,7 @@
 - `README.md` updated with `Verified against PostgreSQL 18.6, PGlite 0.5.12, Node 26.12.1 on 2026-10-30`, the new 13-module syllabus, and the "Certifications & Exams" section.
 
 | Module | State | Proof file | Tests |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 01 Architecture, Process, Memory & Storage | done | `examples/01-architecture-and-storage.ts` | pass |
 | 02 Relational Modeling, Types & Constraints | done | `examples/02-relational-modeling-and-constraints.ts` | pass |
 | 03 SQL Querying, Filtering & Joins | done | `examples/03-sql-querying-and-joins.ts` | pass |
@@ -28,6 +29,7 @@
 | 13 High Availability, Replication & Extensions | done | `examples/13-replication-ha-and-extensions.ts` | pass |
 
 **Tooling:**
+
 - Node 26.12.1 pinned in `.mise.toml` and `mise.lock` (multi-platform checksums for `linux-x64` and `macos-arm64`).
 - PGlite 0.5.12, `@types/node: ^26.0.0`, `typescript: ^5.7.0`.
 - Hermetic test runner: `mise exec -- npm test`.

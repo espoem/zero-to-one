@@ -1,7 +1,6 @@
 # Module 12 · Migration and Upgrades
 
-> **Verified against** `@pandacss/dev` 2.4.0 (npm `latest`), release dates from the npm registry `time` field, and the repository `CHANGELOG.md` on 2026-10-29.
-> **Executable proof:** [`examples/scripts/v2-upgrade-audit.ts`](../examples/scripts/v2-upgrade-audit.ts) run against the v1-era project [`examples/fixtures/v1-project/`](../examples/fixtures/v1-project/) and against this track's own v2 code in [`migration.test.ts`](../examples/tests/migration.test.ts); the misconfiguration configs in [`examples/fixtures/configs/`](../examples/fixtures/configs/) with [`negative-extraction.test.ts`](../examples/tests/negative-extraction.test.ts) and [`compiler.test.ts`](../examples/tests/compiler.test.ts); the CSS-variable bridge test in [`e2e-fixtures.test.ts`](../examples/tests/e2e-fixtures.test.ts).
+> **Verified against** `@pandacss/dev` 2.4.0 (npm `latest`), release dates from the npm registry `time` field, and the repository `CHANGELOG.md` on 2026-10-29. **Executable proof:** [`examples/scripts/v2-upgrade-audit.ts`](../examples/scripts/v2-upgrade-audit.ts) run against the v1-era project [`examples/fixtures/v1-project/`](../examples/fixtures/v1-project/) and against this track's own v2 code in [`migration.test.ts`](../examples/tests/migration.test.ts); the misconfiguration configs in [`examples/fixtures/configs/`](../examples/fixtures/configs/) with [`negative-extraction.test.ts`](../examples/tests/negative-extraction.test.ts) and [`compiler.test.ts`](../examples/tests/compiler.test.ts); the CSS-variable bridge test in [`e2e-fixtures.test.ts`](../examples/tests/e2e-fixtures.test.ts).
 
 Two migrations matter in practice: **into** Panda from runtime CSS-in-JS or Tailwind, and **within** Panda from 0.x/1.x to 2.x. Both are mostly mechanical once you know which differences are silent. This module closes the track with the upgrade checklist, the version history, and a v2 best-practices catalogue that indexes the earlier modules.
 
@@ -13,10 +12,10 @@ The architectural comparison of runtime vs zero-runtime CSS-in-JS is owned by [`
 
 ### The one hard problem: dynamic values
 
-Runtime libraries evaluate interpolations per render: `` color: ${(p) => p.$tone}; ``. Panda cannot ([Module 01](./01-mental-model-and-v2-architecture.md#11-three-ways-to-get-from-a-style-object-to-pixels)). Map each dynamic value to one of three static shapes:
+Runtime libraries evaluate interpolations per render: `color: ${(p) => p.$tone};`. Panda cannot ([Module 01](./01-mental-model-and-v2-architecture.md#11-three-ways-to-get-from-a-style-object-to-pixels)). Map each dynamic value to one of three static shapes:
 
 | Runtime pattern | Value space | Panda shape |
-|---|---|---|
+| --- | --- | --- |
 | `${p => p.$variant === 'primary' ? … : …}` | Finite, known | Recipe variant (`cva` or config recipe) |
 | `${p => p.$active && css`…`}` | Boolean | Boolean variant, or `_active`/`data-*` condition |
 | `${p => p.$width}px`, user-picked colors | Continuous / unbounded | Static style reading a CSS variable, variable set inline |
@@ -35,11 +34,11 @@ const swatch = css({ color: 'var(--badge-tone)' })
 ### Concept map
 
 | styled-components / Emotion | Stitches | Panda |
-|---|---|---|
+| --- | --- | --- |
 | `styled.button` with template CSS | `styled('button', {...})` | `styled('button', recipe)` or `cva` ([Module 07](./07-recipes-and-config-recipes.md)) |
 | Transient props `$size` | `variants` | Recipe variants (split from DOM props automatically) |
 | `.attrs({ type: 'button' })` | — | `defaultProps` factory option |
-| Component selector `` ${Card}:hover & `` | — | `_groupHover` + `group` class, or `data-*` + condition |
+| Component selector `${Card}:hover &` | — | `_groupHover` + `group` class, or `data-*` + condition |
 | `css` prop (Emotion) | `css` prop | `css` prop on factory components / pattern in [Module 03](./03-styling-api-and-conditions.md#the-css-prop-forwarding-pattern) |
 | `ThemeProvider` + `props.theme.colors.x` | `createStitches({ theme })`, `$token` | Tokens + semantic tokens; `colors.x` values ([Module 05](./05-design-tokens.md)) |
 | Theme switching with nested providers | `createTheme()` classes | `themes` + `data-panda-theme` ([Module 06](./06-color-mode-and-theming.md)) |
@@ -65,7 +64,7 @@ Keep the runtime library until the last styled component is gone; then remove it
 Tailwind and Panda are both utility-first with build-time generation; the migration is a syntax translation:
 
 | Tailwind 4 | Panda |
-|---|---|
+| --- | --- |
 | `class="bg-red-500 px-4 hover:bg-red-600"` | `css({ bg: 'red.500', px: '4', _hover: { bg: 'red.600' } })` |
 | `md:flex` | `{ display: { md: 'flex' } }` |
 | `w-[327px]` arbitrary value | `width: '327px'` (raw values allowed; `'[327px]'` under `strictTokens`) |
@@ -78,7 +77,7 @@ Tailwind and Panda are both utility-first with build-time generation; the migrat
 | `tailwind-variants` / CVA | `cva`, `sva`, config recipes |
 | Class detection by text scan (any string that looks like a class) | AST extraction; class strings built at runtime are never "detected" |
 
-The important semantic difference runs the other way too: Tailwind's scanner picks up a class name from any string literal, so dynamic class *selection* among literals works; Panda's fold follows ternaries and imports but not runtime string building. Tailwind's `@apply` has no equivalent; use `css.raw`/recipes. Tailwind's `preflight` and Panda's `preflight` differ in detail, so expect visual diffs and run screenshot tests during the switch.
+The important semantic difference runs the other way too: Tailwind's scanner picks up a class name from any string literal, so dynamic class _selection_ among literals works; Panda's fold follows ternaries and imports but not runtime string building. Tailwind's `@apply` has no equivalent; use `css.raw`/recipes. Tailwind's `preflight` and Panda's `preflight` differ in detail, so expect visual diffs and run screenshot tests during the switch.
 
 ---
 
@@ -95,7 +94,7 @@ node examples/scripts/v2-upgrade-audit.ts path/to/project
 Against [`v1-project`](../examples/fixtures/v1-project/) it reports `preset-base-missing`, `containerSizes`, `emitPackage`, removed options and a default-imported style module as **silent**, and root `hooks`, `createStyleContext`, `panda ship`, template-literal `css`` ` as errors. Against this track's own v2 examples it reports nothing (both asserted in `migration.test.ts`).
 
 | # | Step | Why | Silent if missed? | Proof |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | 1 | Node ≥ 22; config and tooling as ESM | `@pandacss/*` are ESM-only (`require` fails) | No (crash) | — |
 | 2 | Upgrade **all** `@pandacss/*` to the same 2.x | One version group; v1/v2 mixes break codegen subtly | Partly | — |
 | 3 | List `@pandacss/preset-base` (and `preset-panda` if used) in `presets` | No implicit presets | **Yes** (warnings only) | `no-preset-base` test |
@@ -135,15 +134,15 @@ The 1.0.0 release notes (2025-08-05) list no breaking changes: 1.0 marked the AP
 Dates from the npm registry (`npm view @pandacss/dev time`), 2026-10-29.
 
 | Version | Date | Relevance for practitioners |
-|---|---|---|
+| --- | --- | --- |
 | first publish | 2023-02-13 | Package created |
 | 0.3.0 | 2023-06-14 | Early public 0.x; static extraction with `ts-morph`/`ts-evaluator`, PostCSS plugin |
 | 0.30.0 | 2024-02-05 | Mature 0.x line (config recipes, slot recipes, `panda ship`, Studio) |
-| 0.40.0 | 2024-05-29 | |
+| 0.40.0 | 2024-05-29 |  |
 | 0.51.1 | 2025-01-01 | Previous pin of this track |
 | 0.54.0 | 2025-06-12 | Last 0.x |
 | **1.0.0** | 2025-08-05 | Stable API; generated `createStyleContext` |
-| 1.9.0 | 2026-03-08 | |
+| 1.9.0 | 2026-03-08 |  |
 | 1.12.1 | 2026-09-04 | Last 1.x |
 | **2.0.0** | 2026-09-29 | Rust/Oxc compiler, ESM-only, Node ≥ 22, explicit presets, imports followed, compound-variant sub-layer, recipe contexts, `panda lib`/`designSystem`, plugins replace hooks, `@pandacss/vite` with `transform`, `@property` registration |
 | 2.1.0 | 2026-10-01 | `nested_property` warning, brace globs in `--include`, MCP usage report |
@@ -196,7 +195,7 @@ The previous version of this course ended with 25 rules written for 0.x. Here th
 22. Keep each `include` to the package's own source; never `node_modules`, `dist` or `styled-system`.
 23. Turn on `treeshakeDesignSystem`, `removeUnusedTokens`, `removeUnusedKeyframes` in production after testing.
 24. Measure `transform: true` before adopting; it only removes the runtime if every call site is static ([M01](./01-mental-model-and-v2-architecture.md#14-two-outputs-the-stylesheet-and-the-styled-system-package)).
-25. Re-verify after upgrades with snapshots *and* screenshots: several v2 changes are visual-only (compounds, borders, `sizes.prose`).
+25. Re-verify after upgrades with snapshots _and_ screenshots: several v2 changes are visual-only (compounds, borders, `sizes.prose`).
 
 ---
 

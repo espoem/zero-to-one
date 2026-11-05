@@ -1,7 +1,6 @@
 # Module 01: Toolchain & Compiler Model (TypeScript 7)
 
-> Example and tests: [`examples/01-toolchain/toolchain.test.ts`](../examples/01-toolchain/toolchain.test.ts) (compiler fixtures in [`examples/01-toolchain/fixtures/`](../examples/01-toolchain/fixtures/)).
-> Run: `mise exec -- node --test examples/01-toolchain/`
+> Example and tests: [`examples/01-toolchain/toolchain.test.ts`](../examples/01-toolchain/toolchain.test.ts) (compiler fixtures in [`examples/01-toolchain/fixtures/`](../examples/01-toolchain/fixtures/)). Run: `mise exec -- node --test examples/01-toolchain/`
 
 TypeScript is two programs that happen to share a parser: a **type checker** that proves properties of your program without running it, and an **emitter** that deletes the proof and leaves JavaScript. Almost every toolchain decision in a TypeScript codebase (which tool strips types, which one checks them, which flags are legal) follows from keeping those two jobs apart. This module builds that model, then applies it to the toolchain as it stands in TypeScript 7.0: a native Go compiler, new defaults, no classic programmatic API, and a compatibility bridge for tools that still need the 6.0 API.
 
@@ -27,7 +26,7 @@ Two consequences follow, and both shape the rest of the course:
 A handful of TypeScript constructs **emit runtime code** and therefore violate the property:
 
 | Construct | Emitted JavaScript | Why it is not erasable |
-|---|---|---|
+| --- | --- | --- |
 | `enum E { A }` | An IIFE that builds a bidirectional object | Introduces a runtime value |
 | `namespace N { export const x = 1 }` (with values) | An IIFE populating an object | Introduces a runtime value |
 | `constructor(private x: number)` (parameter properties) | `this.x = x;` in the constructor body | Generates assignments |
@@ -35,17 +34,17 @@ A handful of TypeScript constructs **emit runtime code** and therefore violate t
 | `<T>expr` (angle-bracket assertion) | `expr` | Erasable in principle, but ambiguous with JSX, so strippers refuse it |
 | Legacy decorators with `emitDecoratorMetadata` | `__decorate`/`__metadata` calls carrying **type** information | Emit depends on types |
 
-`const enum` is worse: erasing it correctly needs the *value* of the enum member, which lives in another file. That is the canonical example of an emit that is not per-file, and the reason `isolatedModules` exists: with it, using a `const enum` declared in another file's declarations is **TS2748** ("Cannot access ambient const enums when 'isolatedModules' is enabled"; fixture `const-enum-isolated/`). Library authors should never export `const enum`s across package boundaries.
+`const enum` is worse: erasing it correctly needs the _value_ of the enum member, which lives in another file. That is the canonical example of an emit that is not per-file, and the reason `isolatedModules` exists: with it, using a `const enum` declared in another file's declarations is **TS2748** ("Cannot access ambient const enums when 'isolatedModules' is enabled"; fixture `const-enum-isolated/`). Library authors should never export `const enum`s across package boundaries.
 
 ### 1.3 `isolatedModules`, `verbatimModuleSyntax`, `erasableSyntaxOnly`
 
-Three flags let the type checker *enforce* that a per-file transpiler will be correct:
+Three flags let the type checker _enforce_ that a per-file transpiler will be correct:
 
 | Flag | Guarantee it gives a per-file transpiler |
-|---|---|
+| --- | --- |
 | `isolatedModules` | Every file can be transpiled without type information (no cross-file `const enum` inlining, re-exports of types are marked). |
 | `verbatimModuleSyntax` | Import/export elision is purely syntactic: anything without `type` is kept, anything with `type` is dropped. Implies `isolatedModules`. |
-| `erasableSyntaxOnly` | No construct from the table above appears, so *deleting* type syntax is the whole compilation. |
+| `erasableSyntaxOnly` | No construct from the table above appears, so _deleting_ type syntax is the whole compilation. |
 
 `verbatimModuleSyntax` + `erasableSyntaxOnly` is the configuration for code that runs under Node's type stripping. The track's own [`tsconfig.json`](../tsconfig.json) uses both. The fixture [`erasable/`](../examples/01-toolchain/fixtures/erasable/) shows `tsc` reporting **TS1294** ("This syntax is not allowed when 'erasableSyntaxOnly' is enabled") for an `enum`, a value `namespace`, a parameter property and a `<number>` cast.
 
@@ -69,7 +68,7 @@ flowchart LR
 - **Binder.** Walks each AST, creates **symbols** for declarations (merging declarations that share a name: `interface` merging, namespace + function merging), and builds the **control-flow graph** used later for narrowing ([Module 03](./03-unions-narrowing-and-control-flow.md)).
 - **Program.** The set of root files plus everything reached through module resolution (`import`, `/// <reference>`, `types`), plus `lib.*.d.ts` files chosen by `target`/`lib`.
 - **Checker.** Lazily computes the type of each node and checks assignability ([Module 04](./04-objects-assignability-and-weird-parts.md)). It is the expensive part: on large codebases checking usually dominates total time.
-- **Emitter.** Prints JavaScript (essentially `erase(S)` plus down-levelling for older `target`s) and, when `declaration` is on, `.d.ts` files. Declaration emit *does* need the checker, unless `isolatedDeclarations` is on ([Module 13](./13-library-authoring-performance-and-type-tests.md)).
+- **Emitter.** Prints JavaScript (essentially `erase(S)` plus down-levelling for older `target`s) and, when `declaration` is on, `.d.ts` files. Declaration emit _does_ need the checker, unless `isolatedDeclarations` is on ([Module 13](./13-library-authoring-performance-and-type-tests.md)).
 
 ### 2.1 Lowering and `target`
 
@@ -79,42 +78,42 @@ flowchart LR
 
 The checker is the part that "knows" TypeScript. A few internal facts explain most of its observable behaviour:
 
-- **Symbols vs types.** The binder creates a *symbol* per declared name, with flags saying what it is (value, type, namespace, or several at once: a class is both a value and a type; `const enum` is a type and an inlinable value). Merged declarations ([Module 06](./06-modules-declarations-and-tsconfig.md)) are one symbol with several declarations. Types are created lazily by the checker from symbols when something asks for them.
-- **Interned, identity-compared types.** Primitive, literal and union types are interned: `"a" | "b"` written twice is the *same* type object, which is what makes most relation checks O(1) for identical types. Unions are stored as sorted, deduplicated member lists, and *subtype reduction* removes members that are subtypes of other members in some contexts (why `"a" | string` is `string`).
+- **Symbols vs types.** The binder creates a _symbol_ per declared name, with flags saying what it is (value, type, namespace, or several at once: a class is both a value and a type; `const enum` is a type and an inlinable value). Merged declarations ([Module 06](./06-modules-declarations-and-tsconfig.md)) are one symbol with several declarations. Types are created lazily by the checker from symbols when something asks for them.
+- **Interned, identity-compared types.** Primitive, literal and union types are interned: `"a" | "b"` written twice is the _same_ type object, which is what makes most relation checks O(1) for identical types. Unions are stored as sorted, deduplicated member lists, and _subtype reduction_ removes members that are subtypes of other members in some contexts (why `"a" | string` is `string`).
 - **Relation caches.** Assignability, comparability (used by `as` and `===`) and identity are separate relations, each memoised per (source, target) pair. Generic types are compared through their **variance** (computed once per declaration with marker types, [Module 07](./07-generics-and-inference.md)) instead of structurally each time.
-- **Laziness and deferral.** Types of declarations are resolved on demand; circular references are detected with a resolution stack (TS2456 "Type alias circularly references itself", TS7022 "implicitly has type 'any' because it … is referenced directly or indirectly in its own initializer"). Conditional types with unresolved type parameters are *deferred* ([Module 09](./09-conditional-mapped-and-recursive-types.md)).
+- **Laziness and deferral.** Types of declarations are resolved on demand; circular references are detected with a resolution stack (TS2456 "Type alias circularly references itself", TS7022 "implicitly has type 'any' because it … is referenced directly or indirectly in its own initializer"). Conditional types with unresolved type parameters are _deferred_ ([Module 09](./09-conditional-mapped-and-recursive-types.md)).
 - **Interfaces vs intersections.** An `interface` is a named object type whose members are resolved once and cached; an intersection `A & B` is re-examined member by member at each use. That is the mechanical reason the performance guidance prefers `interface … extends` ([Module 13](./13-library-authoring-performance-and-type-tests.md)).
 
-Two consequences for TS 7: each parallel checker keeps its *own* caches (so a type may be computed once per checker), and diagnostics are produced per checker and merged, which is why stable type ordering (§3.3) was needed for deterministic output.
+Two consequences for TS 7: each parallel checker keeps its _own_ caches (so a type may be computed once per checker), and diagnostics are produced per checker and merged, which is why stable type ordering (§3.3) was needed for deterministic output.
 
 ### 2.3 Emit, lowering and helpers
 
 `tsc` emits JavaScript for the configured `target` by **lowering** syntax the target lacks. The fixture [`lowering/`](../examples/01-toolchain/fixtures/lowering/index.ts) is compiled three times by the tests:
 
 | `target` | `using held = r` | `#count` private field |
-|---|---|---|
+| --- | --- | --- |
 | `esnext` | kept verbatim | kept |
 | `es2022` | lowered to `__addDisposableResource`/`__disposeResources` helpers inside `try`/`catch`/`finally` | kept (native since ES2022) |
 | `es2015` | lowered | lowered to `WeakMap`-based `__classPrivateFieldGet`/`Set` helpers |
 
-Helpers are inlined into every file by default. With `importHelpers: true` they are imported from `tslib` instead (smaller bundles; `tslib` must be a runtime dependency). Lowering never adds missing *library* functions: that is `lib`'s domain, and a mismatch is reported as **TS2550** ("Property 'toSorted' does not exist on type 'number[]'. … Try changing the 'lib' compiler option to 'es2023' or later", fixture `lib-mismatch/`).
+Helpers are inlined into every file by default. With `importHelpers: true` they are imported from `tslib` instead (smaller bundles; `tslib` must be a runtime dependency). Lowering never adds missing _library_ functions: that is `lib`'s domain, and a mismatch is reported as **TS2550** ("Property 'toSorted' does not exist on type 'number[]'. … Try changing the 'lib' compiler option to 'es2023' or later", fixture `lib-mismatch/`).
 
 ### Then vs now: class fields (`useDefineForClassFields`)
 
-**Then (target < ES2022, TS ≤ 3.x behaviour).** Class fields were emitted as *assignments* in the constructor (`this.x = 1`), which runs setters inherited from a base class and ignores `declare`-free redeclarations.
+**Then (target < ES2022, TS ≤ 3.x behaviour).** Class fields were emitted as _assignments_ in the constructor (`this.x = 1`), which runs setters inherited from a base class and ignores `declare`-free redeclarations.
 
-**Now (default `true` when `target` ≥ ES2022, i.e. always with TS 6/7 defaults).** Fields use ECMAScript `[[Define]]` semantics (`Object.defineProperty`), which shadows base-class accessors and initialises fields *after* the base constructor runs. **Pitfall:** code that redeclares a base-class property in a subclass just to narrow its type (`name: string` over a base accessor) now overwrites the accessor; use `declare name: string;` for type-only redeclaration.
+**Now (default `true` when `target` ≥ ES2022, i.e. always with TS 6/7 defaults).** Fields use ECMAScript `[[Define]]` semantics (`Object.defineProperty`), which shadows base-class accessors and initialises fields _after_ the base constructor runs. **Pitfall:** code that redeclares a base-class property in a subclass just to narrow its type (`name: string` over a base accessor) now overwrites the accessor; use `declare name: string;` for type-only redeclaration.
 
 ### 2.4 Configuration resolution
 
 1. `tsc -p dir` reads `dir/tsconfig.json`; without `-p`, `tsc` walks up from the current directory.
-2. `extends` (a path, a package name, or an array of them since 5.0) is resolved first; the child's `compilerOptions` are merged over the parent's *per option*, while `files`, `include` and `exclude` are *replaced*, not merged. Relative paths in a config are resolved relative to the file that declares them.
+2. `extends` (a path, a package name, or an array of them since 5.0) is resolved first; the child's `compilerOptions` are merged over the parent's _per option_, while `files`, `include` and `exclude` are _replaced_, not merged. Relative paths in a config are resolved relative to the file that declares them.
 3. `include` selects files by glob; `exclude` only filters `include` (an imported file is still part of the program even if excluded). `files` lists exact roots.
 4. `--showConfig` prints the effective, merged configuration: the test `--showConfig prints the effective config after extends merging` shows `strict: false` arriving from `config/base.json`. `--explainFiles` prints why each file is in the program (root, import, `lib` reference, `types` entry), and `--listFilesOnly` prints the list without checking. These three flags answer most "why is this file checked / why does this option apply" questions.
 
 ### 2.5 Incremental builds
 
-With `incremental` (implied by `composite`), `tsc` writes a `.tsbuildinfo` file recording each file's version hash, its *declaration signature* (a hash of its public `.d.ts` surface), the options, and the diagnostics. On the next run, files whose hash is unchanged are skipped; a changed file whose declaration signature is unchanged does not force its importers to be re-checked. The test `incremental builds` runs the same build twice and asserts that the second run emits nothing (`--listEmittedFiles` is empty). TS 7's `--watch` uses the same information with a new file watcher (a Go port of Parcel's watcher, per the release post).
+With `incremental` (implied by `composite`), `tsc` writes a `.tsbuildinfo` file recording each file's version hash, its _declaration signature_ (a hash of its public `.d.ts` surface), the options, and the diagnostics. On the next run, files whose hash is unchanged are skipped; a changed file whose declaration signature is unchanged does not force its importers to be re-checked. The test `incremental builds` runs the same build twice and asserts that the second run emits nothing (`--listEmittedFiles` is empty). TS 7's `--watch` uses the same information with a new file watcher (a Go port of Parcel's watcher, per the release post).
 
 **Failure modes.** Deleting `outDir` but not the `.tsbuildinfo` makes `tsc` believe the outputs are current (it emits nothing; asserted by the test `failure mode: deleting outDir …`): delete both, or put `tsBuildInfoFile` inside `outDir`. Changing a dependency in `node_modules` that is not a tracked input can leave stale diagnostics; CI should start from a clean state.
 
@@ -146,7 +145,7 @@ Each checker owns its own type cache, so a type used by files on two checkers ma
 ### 3.2 The new CLI knobs
 
 | Flag | Meaning | Default |
-|---|---|---|
+| --- | --- | --- |
 | `--checkers <n>` | Number of type-checker workers per project. Experimental. | 4 |
 | `--builders <n>` | Number of project-reference projects built in parallel under `tsc -b`. Experimental. | Number of logical CPU cores (or 1 when `--singleThreaded`) |
 | `--singleThreaded` | One checker; parsing and emit on one thread. Useful for profiling and reproducible traces. | off |
@@ -166,10 +165,10 @@ The 7.0 language server speaks the Language Server Protocol (LSP) directly and i
 
 When the editor shows stale types after a branch switch, restart the language server (VS Code: "TypeScript: Restart TS Server", or the "Disable/Enable TypeScript 7 Language Server" commands of the TS 7 extension).
 
-Hover introspection still works the same way, and course material uses the *twoslash* convention `// ^?` to show what the editor would display:
+Hover introspection still works the same way, and course material uses the _twoslash_ convention `// ^?` to show what the editor would display:
 
 ```ts
-const user = { id: "usr_102", loginCount: 42 };
+const user = { id: 'usr_102', loginCount: 42 };
 user.loginCount;
 //   ^? (property) loginCount: number
 ```
@@ -185,7 +184,7 @@ TypeScript 6.0 (2026-03-23) was the last JavaScript-based compiler and a **trans
 ### 4.1 Changed defaults (since 6.0, kept in 7.0)
 
 | Option | 5.x default | 6.0 / 7.0 default | Consequence |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `strict` | `false` | `true` | A bare `tsconfig.json` is strict. |
 | `module` | `commonjs` (depending on `target`) | `esnext` | Set `nodenext` for Node packages, `preserve` for bundlers. |
 | `target` | `es5` | Latest stable ES year (6.0: `es2025`) | Less down-levelling by default. |
@@ -199,7 +198,7 @@ TypeScript 6.0 (2026-03-23) was the last JavaScript-based compiler and a **trans
 
 `target: es5`, `downlevelIteration`, `moduleResolution: node`/`node10`/`classic`, `module: amd`/`umd`/`systemjs`/`none`, `baseUrl`, `outFile`, `esModuleInterop: false`, `allowSyntheticDefaultImports: false`, `alwaysStrict: false`, the `module` keyword for namespaces (`module Foo {}` → `namespace Foo {}`), and import `assert { … }` (use `with { … }`).
 
-The fixture [`removed-options/`](../examples/01-toolchain/fixtures/removed-options/tsconfig.json) shows the exact diagnostics: **TS5102** "Option 'baseUrl' has been removed" (with the hint `"paths": {"*": ["./*"]}`) and **TS5108** "Option 'moduleResolution=node10' has been removed" for each removed *value*.
+The fixture [`removed-options/`](../examples/01-toolchain/fixtures/removed-options/tsconfig.json) shows the exact diagnostics: **TS5102** "Option 'baseUrl' has been removed" (with the hint `"paths": {"*": ["./*"]}`) and **TS5108** "Option 'moduleResolution=node10' has been removed" for each removed _value_.
 
 ### Then vs now: project configuration
 
@@ -215,8 +214,8 @@ The fixture [`removed-options/`](../examples/01-toolchain/fixtures/removed-optio
     "esModuleInterop": true,
     "skipLibCheck": true,
     "baseUrl": ".",
-    "paths": { "@/*": ["src/*"] }
-  }
+    "paths": { "@/*": ["src/*"] },
+  },
 }
 ```
 
@@ -231,14 +230,15 @@ The fixture [`removed-options/`](../examples/01-toolchain/fixtures/removed-optio
     "outDir": "./dist",
     "paths": { "@/*": ["./src/*"] },
     "noUncheckedIndexedAccess": true,
-    "skipLibCheck": true
-  }
+    "skipLibCheck": true,
+  },
 }
 ```
 
 **Why it changed.** The old defaults silently produced weak configurations (non-strict, ambient `@types` pollution, CommonJS emit). With the Go port the team also dropped options whose semantics were costly to port (`baseUrl` resolution, `node10` resolution, ES5 lowering).
 
 **Migration steps.**
+
 1. Upgrade to 6.0 first. Fix every deprecation warning instead of silencing it with `"ignoreDeprecations": "6.0"`. Turn on `stableTypeOrdering` in 6.0 to see 7.0's ordering early.
 2. Add `"types": [...]` explicitly (`node`, test-runner globals).
 3. Replace `baseUrl` + `paths` with `paths` entries that start with `./`.
@@ -247,7 +247,7 @@ The fixture [`removed-options/`](../examples/01-toolchain/fixtures/removed-optio
 6. Add ambient declarations for side-effect imports of non-code assets (`declare module "*.css";`).
 7. Switch to 7.0 for `tsc`. Keep 6.0 for tools that need the API (§5).
 
-**Pitfalls of mixing.** A monorepo that upgrades one package to 7.0 while a shared base config still has `baseUrl` breaks *every* package at once, because the error is reported on the shared config. Upgrade the base config first. Running 6.0 and 7.0 side by side is supported, but they must read the same `tsconfig.json`, so that config must be valid for 7.0.
+**Pitfalls of mixing.** A monorepo that upgrades one package to 7.0 while a shared base config still has `baseUrl` breaks _every_ package at once, because the error is reported on the shared config. Upgrade the base config first. Running 6.0 and 7.0 side by side is supported, but they must read the same `tsconfig.json`, so that config must be valid for 7.0.
 
 ---
 
@@ -261,13 +261,13 @@ In 7.0.2 the package's main entry exports only `version` and `versionMajorMinor`
 
 ```ts
 // TypeScript 7.1 beta (preview, not taught as current): the new API
-import { API } from "typescript/sync";
+import { API } from 'typescript/sync';
 using api = new API();
 using program = api.createProgram(fileNames, options);
 const result = program.emit();
 ```
 
-It is a *different* API. Code written against `ts.createProgram` from 6.0 does not port mechanically.
+It is a _different_ API. Code written against `ts.createProgram` from 6.0 does not port mechanically.
 
 ### 5.2 The bridge: `@typescript/typescript6`
 
@@ -278,8 +278,8 @@ It is a *different* API. Code written against `ts.createProgram` from 6.0 does n
 {
   "devDependencies": {
     "typescript": "npm:@typescript/typescript6@^6.0.2",
-    "@typescript/native": "npm:typescript@^7.0.2"
-  }
+    "@typescript/native": "npm:typescript@^7.0.2",
+  },
 }
 ```
 
@@ -288,8 +288,8 @@ It is a *different* API. Code written against `ts.createProgram` from 6.0 does n
 {
   "devDependencies": {
     "typescript": "7.0.2",
-    "@typescript/typescript6": "6.0.2"
-  }
+    "@typescript/typescript6": "6.0.2",
+  },
 }
 ```
 
@@ -300,7 +300,7 @@ Pattern A is what the 7.0 announcement describes for API consumers such as types
 ### 5.3 What still needs 6.0 (as of 7.0.2)
 
 | Tool category | Why | 7.x path |
-|---|---|---|
+| --- | --- | --- |
 | typescript-eslint type-aware rules | Uses the 6.0 program/checker API | Bridge (pattern A) |
 | Vue (`vue-tsc`/Volar), Svelte, Astro, MDX | Map non-TS files into virtual TS via the API or plugins | 7.1 `contentMappers` + `--runExternalCode` (beta) |
 | Angular template type checking | API | Bridge |
@@ -341,8 +341,8 @@ Node 26.12.1 accepts `--experimental-strip-types` as a no-op and `--no-strip-typ
 
 ### Then vs now: running a TypeScript script
 
-| | Then (Node ≤ 22.5, TS ≤ 5.7) | Now (Node 26, TS 7) |
-|---|---|---|
+|  | Then (Node ≤ 22.5, TS ≤ 5.7) | Now (Node 26, TS 7) |
+| --- | --- | --- |
 | Command | `ts-node script.ts` or `tsx script.ts` | `node script.ts` |
 | Non-erasable syntax | Supported | Rejected; enforce `erasableSyntaxOnly` |
 | Import specifiers | Extensionless or `.js` | `.ts` (with `allowImportingTsExtensions` or `rewriteRelativeImportExtensions`) |
@@ -368,7 +368,7 @@ Migration: enable `erasableSyntaxOnly` and `verbatimModuleSyntax`, fix the repor
 ## 8. Version history (compiler and toolchain)
 
 | Version | Date | Relevant change for practitioners |
-|---|---|---|
+| --- | --- | --- |
 | 5.0 | 2023-03 | Standard (TC39) decorators, `const` type parameters, `verbatimModuleSyntax`, `moduleResolution: bundler` |
 | 5.5 | 2024-06 | Inferred type predicates, `isolatedDeclarations` |
 | 5.7 | 2024-11 | `rewriteRelativeImportExtensions` |

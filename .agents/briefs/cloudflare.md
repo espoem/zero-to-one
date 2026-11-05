@@ -1,34 +1,39 @@
 # Brief: Cloudflare (`technologies/cloudflare`)
 
-| | |
-|---|---|
-| Phase | 4 |
-| Kind | NEW track: create from scratch |
-| Primary (author) | **Opus · claude.ai** |
-| Drafter (on request) | pi · DeepSeek |
-| Challenger | pi · Muse Spark 1.3 |
-| Verifier | Antigravity |
-| Final gate | Opus (claude.ai session) |
-| Branch / worktree | `track/cloudflare` · `../zto-cloudflare` |
-| Depends on | phase 3 foundations |
-| Research dossier | `.agents/research/F-cloud.md` |
+|                      |                                          |
+| -------------------- | ---------------------------------------- |
+| Phase                | 4                                        |
+| Kind                 | NEW track: create from scratch           |
+| Primary (author)     | **Opus · claude.ai**                     |
+| Drafter (on request) | pi · DeepSeek                            |
+| Challenger           | pi · Muse Spark 1.3                      |
+| Verifier             | Antigravity                              |
+| Final gate           | Opus (claude.ai session)                 |
+| Branch / worktree    | `track/cloudflare` · `../zto-cloudflare` |
+| Depends on           | phase 3 foundations                      |
+| Research dossier     | `.agents/research/F-cloud.md`            |
 
 ## 0. Read before starting (binding)
+
 1. `AGENTS.md`: the contract. If it conflicts with this brief, AGENTS.md wins; log the conflict in your review file.
 2. `.agents/OWNERSHIP.md`: what you own vs only cross-link.
 3. `.agents/REVIEW.md`: the checklist your work is judged against.
 4. Your global/agent instructions still apply where they do not conflict.
 
 ## 1. Owner decisions and track-specific instructions
+
 - Tests use `@cloudflare/vitest-plugin` (it replaces `vitest-pool-workers`). Pin wrangler/workerd via npm and node via mise.
 - Teach the **latest stable** versions. Add **Then vs now** comparisons wherever practice changed (AGENTS.md § Version Currency).
 - Pin **all** tooling via mise (`.mise.toml` + `mise.lock`): node 26 for JS/TS, plus every CLI and runtime the examples need.
 
 ## 2. Ownership
+
 **You own (full treatment):**
+
 - Edge isolates, Workers runtime, Durable Objects, KV/R2/D1/Queues, Zero Trust
 
 **Cross-link only (do not re-explain):**
+
 - libuv phases, `process.nextTick`, threadpool, streams & backpressure, CJS loader, `require(esm)`, GC tuning flags → owned by `technologies/nodejs`
 - Caching theory (consistency, dual writes, invalidation, stampede) → owned by `architecture/data-systems`
 - Libsql/Turso → owned by `technologies/sqlite` (M12)
@@ -186,7 +191,9 @@
 ---
 
 ## 4. Re-verify list
+
 These claims were marked unverified during research. Confirm or correct each one against a primary source before teaching it:
+
 - Terraform `cloudflare/cloudflare` **5.28.1** (2026-10-20). v5 is the Stainless-generated rewrite with breaking schema changes vs v4 (unverified detail).
 - Cloudflare blog posts on isolates ("Cloud Computing without Containers") and on Durable Objects / SQLite-in-DO (unverified URLs; cite at authoring)
 - Public buckets vs custom domains; data catalog (unverified)
@@ -199,7 +206,9 @@ These claims were marked unverified during research. Confirm or correct each one
 - **Mise:** `node = "22"` (wrangler ≥22), npm deps pinned exactly (`wrangler@4.154.0`, `@cloudflare/vitest-plugin@1.4.9`, `vitest@5.0.5` or `4.1.x`), `terraform 1.17.0` for the provider examples, `cloudflared` (pin, unverified version).
 
 ## 5. Certifications & exams
+
 Follow AGENTS.md § Certification and Exam Coverage exactly. Minimum deliverables:
+
 1. **README "Certifications & Exams" section.** Start from the exams named in the dossier above ("Authoritative syllabi used"). Re-verify each exam's code, status, guide version/date, targeted product version and domain weights on the official page. Where no certification exists, say so and use the recognised interview format.
 2. **`exams/README.md` coverage matrix.** Rows are domain/objective, weight, modules, examples, status. No ❌ at hand-off.
 3. **`exams/<exam-code>.md` question banks.**
@@ -211,11 +220,14 @@ Follow AGENTS.md § Certification and Exam Coverage exactly. Minimum deliverable
 5. **Original questions only.** No braindump content.
 
 ## 6. Code languages
+
 Per AGENTS.md § Code Example Languages:
+
 - **Primary:** pseudocode (where algorithms or protocols are described) + TypeScript (or the track's own language, for language tracks).
 - **Secondary:** Python, Rust or Nim only where it teaches something. Each language lives in `examples/<lang>/` with its own mise-pinned toolchain and native test runner, and `test` runs them all.
 
 ## 7. Workflow and definition of done
+
 1. **Primary (Opus)** works on branch `track/cloudflare` and sets this track's row in `.agents/STATUS.md` to 🟦.
 2. **Verify versions first.** Check every version in the dossier against its primary source today. Record the results in the README's `Verified against …` line. Resolve every item in the re-verify list below.
 3. Build in stages: README syllabus + exam matrix → modules one by one, each with its examples/tests → glossary → cheatsheet → question banks → mock exam. Delegate bulk drafting (question-bank drafts, glossary candidates, cheatsheet tables) to the **Drafter**, then correct and integrate it yourself.

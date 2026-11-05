@@ -1,4 +1,4 @@
-import { deepStrictEqual } from "node:assert/strict";
+import { deepStrictEqual } from 'node:assert/strict';
 
 /**
  * Total TypeScript Type Testing & Utility Helpers
@@ -34,8 +34,7 @@ export type Expect<T extends true> = T;
  * - `never` from other types
  */
 export type Equal<X, Y> =
-  (<T>() => T extends X ? 1 : 2) extends
-  (<T>() => T extends Y ? 1 : 2) ? true : false;
+  (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y ? 1 : 2 ? true : false;
 
 /**
  * NotEqual checks that two types are NOT strictly equal.
@@ -83,16 +82,16 @@ export type JsonPrimitive = string | number | boolean | null | undefined | bigin
 export type Serializable<T> = T extends (...args: any[]) => any
   ? never
   : T extends symbol
-  ? never
-  : T extends JsonPrimitive | Date
-  ? T
-  : T extends (infer U)[]
-  ? Serializable<U>[]
-  : T extends readonly (infer U)[]
-  ? readonly Serializable<U>[]
-  : T extends object
-  ? { [K in keyof T]: Serializable<T[K]> }
-  : never;
+    ? never
+    : T extends JsonPrimitive | Date
+      ? T
+      : T extends (infer U)[]
+        ? Serializable<U>[]
+        : T extends readonly (infer U)[]
+          ? readonly Serializable<U>[]
+          : T extends object
+            ? { [K in keyof T]: Serializable<T[K]> }
+            : never;
 
 /**
  * DeepPartial recursively makes all properties of an object and nested objects optional.
@@ -100,10 +99,10 @@ export type Serializable<T> = T extends (...args: any[]) => any
 export type DeepPartial<T> = T extends Function
   ? T
   : T extends Array<infer U>
-  ? _DeepPartialArray<U>
-  : T extends object
-  ? _DeepPartialObject<T>
-  : T;
+    ? _DeepPartialArray<U>
+    : T extends object
+      ? _DeepPartialObject<T>
+      : T;
 
 type _DeepPartialArray<T> = Array<DeepPartial<T>>;
 type _DeepPartialObject<T> = { [P in keyof T]?: DeepPartial<T[P]> };
@@ -114,18 +113,18 @@ type _DeepPartialObject<T> = { [P in keyof T]?: DeepPartial<T[P]> };
 export type DeepReadonly<T> = T extends Function
   ? T
   : T extends Array<infer U>
-  ? ReadonlyArray<DeepReadonly<U>>
-  : T extends object
-  ? { readonly [P in keyof T]: DeepReadonly<T[P]> }
-  : T;
+    ? ReadonlyArray<DeepReadonly<U>>
+    : T extends object
+      ? { readonly [P in keyof T]: DeepReadonly<T[P]> }
+      : T;
 
 /**
  * UnionToIntersection converts a union type `A | B` to an intersection `A & B`.
  * Relies on the contravariance of function argument positions.
  */
-export type UnionToIntersection<U> = (
-  U extends any ? (k: U) => void : never
-) extends (k: infer I) => void
+export type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
+  k: infer I,
+) => void
   ? I
   : never;
 
@@ -136,7 +135,7 @@ export type UnionToIntersection<U> = (
 /**
  * Assert that a runtime condition is truthy.
  */
-export function assert(condition: boolean, message = "Assertion failed"): asserts condition {
+export function assert(condition: boolean, message = 'Assertion failed'): asserts condition {
   if (!condition) {
     throw new Error(`[Assertion Error] ${message}`);
   }
@@ -148,7 +147,7 @@ export function assert(condition: boolean, message = "Assertion failed"): assert
 export function assertEqual<T>(actual: T, expected: T, message?: string): void {
   if (actual !== expected) {
     throw new Error(
-      `[Assertion Error] ${message ?? `Expected ${String(expected)}, got ${String(actual)}`}`
+      `[Assertion Error] ${message ?? `Expected ${String(expected)}, got ${String(actual)}`}`,
     );
   }
 }

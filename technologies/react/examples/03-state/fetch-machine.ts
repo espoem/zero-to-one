@@ -5,28 +5,28 @@
  * illegal events return the SAME state object, so React bails out of re-rendering.
  */
 export type FetchState =
-  | { status: "idle" }
-  | { status: "loading" }
-  | { status: "success"; data: string[] }
-  | { status: "error"; error: string };
+  | { status: 'idle' }
+  | { status: 'loading' }
+  | { status: 'success'; data: string[] }
+  | { status: 'error'; error: string };
 
 export type FetchEvent =
-  | { type: "FETCH" }
-  | { type: "RESOLVE"; data: string[] }
-  | { type: "REJECT"; error: string }
-  | { type: "RESET" };
+  | { type: 'FETCH' }
+  | { type: 'RESOLVE'; data: string[] }
+  | { type: 'REJECT'; error: string }
+  | { type: 'RESET' };
 
 export function fetchMachine(state: FetchState, event: FetchEvent): FetchState {
   switch (state.status) {
-    case "idle":
-    case "error":
-    case "success":
-      if (event.type === "FETCH") return { status: "loading" };
-      if (event.type === "RESET") return { status: "idle" };
+    case 'idle':
+    case 'error':
+    case 'success':
+      if (event.type === 'FETCH') return { status: 'loading' };
+      if (event.type === 'RESET') return { status: 'idle' };
       return state;
-    case "loading":
-      if (event.type === "RESOLVE") return { status: "success", data: event.data };
-      if (event.type === "REJECT") return { status: "error", error: event.error };
+    case 'loading':
+      if (event.type === 'RESOLVE') return { status: 'success', data: event.data };
+      if (event.type === 'REJECT') return { status: 'error', error: event.error };
       return state;
   }
 }

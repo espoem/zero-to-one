@@ -25,22 +25,23 @@ Partitioning splits large relational tables into smaller physical tables while m
 ```mermaid
 flowchart TD
     Logical["Logical Parent Table: sales_ledger (Range Partitioned on order_date)"]
-    
+
     subgraph Partitions["Physical Partition Tables"]
         P2024["sales_2024 (order_date: 2024-01-01 .. 2024-12-31)"]
         P2025["sales_2025 (order_date: 2025-01-01 .. 2025-12-31)"]
         P2026["sales_2026 (order_date: 2026-01-01 .. 2026-12-31)"]
     end
-    
+
     Logical --> P2024
     Logical --> P2025
     Logical --> P2026
-    
+
     Query["Query: WHERE order_date >= '2026-06-01'"] --> PlanTimePruning["Partition Pruning Engine"]
     PlanTimePruning -->|Bypasses sales_2024 and sales_2025!| P2026
 ```
 
 ### Implementing Range Partitioning
+
 ```sql
 CREATE TABLE sales_ledger (
     id BIGINT GENERATED ALWAYS AS IDENTITY,
@@ -59,6 +60,7 @@ CREATE TABLE sales_2026 PARTITION OF sales_ledger
 ```
 
 ### Advanced Operations: Zero-Downtime Detach
+
 Detaching a partition to archive or drop it historically required an `ACCESS EXCLUSIVE` lock on the entire partitioned table. In modern PostgreSQL:
 
 ```sql
@@ -70,6 +72,7 @@ DROP TABLE sales_2025; -- O(1) instantaneous metadata drop!
 ```
 
 ### The Three Critical Partitioning Constraints:
+
 1. **Global Uniqueness Impossibility**: PostgreSQL cannot enforce unique or primary key constraints across partitions unless the partition key is included in the unique index definition.
 2. **Default Partition Hazard**: If a `DEFAULT` partition exists, attaching a new partition whose range overlaps data currently residing in the default partition will fail until the default partition is scanned and cleaned.
 3. **Time-Series Drop vs. `DELETE`**: Purging 100 million expired rows via `DELETE FROM sales WHERE date < '2025-01-01'` creates 100 million dead tuples, generates gigabytes of WAL, and induces severe bloat. Dropping the partition (`DROP TABLE sales_2024;`) is an instantaneous $O(1)$ filesystem unlink operation generating zero bloat.
@@ -96,14 +99,13 @@ flowchart LR
 ```
 
 ### Sizing PostgreSQL Backend Connections
-Optimal database throughput occurs when the active connection count approximates:
-$$\text{Optimal Connections} \approx (\text{CPU Cores} \times 2) + \text{Effective Spindle Count}$$
-On a 16-core cloud instance, a pool of **32 to 64 active backend connections** sustains maximum throughput, even when handling tens of thousands of client connections at the PgBouncer tier.
+
+Optimal database throughput occurs when the active connection count approximates: $$\text{Optimal Connections} \approx (\text{CPU Cores} \times 2) + \text{Effective Spindle Count}$$ On a 16-core cloud instance, a pool of **32 to 64 active backend connections** sustains maximum throughput, even when handling tens of thousands of client connections at the PgBouncer tier.
 
 ### PgBouncer Pooling Modes & Hazards
 
 | Pooling Mode | Connection Lifetime | Session State Allowed? | Prepared Statements | Best Use Case |
-| :--- | :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- | :-- |
 | **Session** | Assigned on connect; held until client disconnects | Yes (`SET`, temp tables, advisory locks) | Yes | Drop-in proxy; modest connection savings |
 | **Transaction** | Assigned on `BEGIN`; returned to pool on `COMMIT`/`ROLLBACK` | **No** (Session state discarded between transactions) | Supported in PgBouncer $\ge$ 1.21 via prepared statement tracking | **Standard High-Concurrency Production Architecture** |
 | **Statement** | Assigned per SQL statement | **No multi-statement transactions allowed** | No | Read-only analytics; logging pipelines |
@@ -146,30 +148,36 @@ sequenceDiagram
     autonumber
     participant App as Client Driver (Node.js / Python)
     participant PG as PostgreSQL Backend
-    
+
     App->>PG: Parse (SQL statement string + parameter types)
     PG-->>App: ParseComplete (Prepared Statement created in backend memory)
-    
+
     App->>PG: Bind (Statement name + binary parameter values)
     PG-->>App: BindComplete (Portal created with concrete values)
-    
+
     App->>PG: Execute (Portal name + fetch row limit)
     PG-->>App: DataRow (Binary / text data stream)
     PG-->>App: CommandComplete (Execution finished)
-    
+
     App->>PG: Sync (End of batch, commit pipeline)
     PG-->>App: ReadyForQuery (Transaction state confirmed)
 ```
 
 ### Node.js Integration Gotchas:
+
 1. **Duplicate Column Name Collapse**:
+
    ```typescript
    // DANGEROUS: JavaScript objects overwrite identical keys:
-   const res = await client.query('UPDATE accounts SET balance = 200 RETURNING old.balance, new.balance');
+   const res = await client.query(
+     'UPDATE accounts SET balance = 200 RETURNING old.balance, new.balance',
+   );
    // Output object: { balance: 200 } -> old.balance was silently lost!
-   
+
    // SAFE: Explicit aliases:
-   const res = await client.query('UPDATE accounts SET balance = 200 RETURNING old.balance AS old_balance, new.balance AS new_balance');
+   const res = await client.query(
+     'UPDATE accounts SET balance = 200 RETURNING old.balance AS old_balance, new.balance AS new_balance',
+   );
    // Output object: { old_balance: 100, new_balance: 200 }
    ```
 
@@ -189,7 +197,7 @@ flowchart TD
         Phase1["1. Expand Phase<br/>• Add new column or table in database<br/>• Deploy App v1: writes to both old and new columns"]
         Phase2["2. Backfill Phase<br/>• Background worker migrates historical data from old to new<br/>• Deploys App v2: reads from new column, writes to new column"]
         Phase3["3. Contract Phase<br/>• Drop old column or constraints safely without service interruption"]
-        
+
         Phase1 --> Phase2 --> Phase3
     end
 ```
@@ -197,7 +205,7 @@ flowchart TD
 ### Safe vs. Unsafe DDL Practices
 
 | Operation | Unsafe / Naive Approach | Safe Production Approach |
-| :--- | :--- | :--- |
+| :-- | :-- | :-- |
 | **Add Column with Default** | Pre-PG11: full table rewrite | Modern PG: `ALTER TABLE tbl ADD COLUMN col INT DEFAULT 0;` (Instant catalog metadata update) |
 | **Add `NOT NULL` Constraint** | `ALTER TABLE tbl ALTER COLUMN col SET NOT NULL;` (Scans table with `ACCESS EXCLUSIVE` lock) | Add `CHECK (col IS NOT NULL) NOT VALID;` then `VALIDATE CONSTRAINT` (Online validation) |
 | **Create Index** | `CREATE INDEX idx ON tbl (col);` (Locks table against writes) | `CREATE INDEX CONCURRENTLY idx ON tbl (col);` (Builds index online without write blocking) |
@@ -208,7 +216,7 @@ flowchart TD
 ## 7. Then vs. Now: Partitioning & Application Integration
 
 | Feature | PostgreSQL $\le$ 11 | PostgreSQL 12–17 | PostgreSQL 18 & 19 (Current) |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Partition Detach** | Exclusive table lock on parent | `DETACH PARTITION CONCURRENTLY` (PG14+) | Concurrently detaches with zero lock queue impact |
 | **Partition Pruning** | Static plan-time pruning only | Run-time pruning for joins & prepared statements | Parallel worker partition pruning optimizations |
 | **PgBouncer Prepared Stmts** | Broken in Transaction Mode | Broken unless session mode used | Native support via prepared statement tracking (PgBouncer $\ge$ 1.21) |
@@ -222,42 +230,54 @@ flowchart TD
 <summary>1. Why can PostgreSQL not enforce a global unique constraint across child partitions in declarative partitioning?</summary>
 
 **Answer**: In PostgreSQL declarative partitioning, child partitions are distinct physical relations (`pg_class` entries) with their own independent B-tree index files. A B-tree index is physically local to its partition. Because there are no cross-table "global" index structures in PostgreSQL, verifying uniqueness for a newly inserted tuple would require probing the B-tree indexes of every existing partition, converting single-row $O(\log N)$ inserts into expensive cross-table distributed checks. Therefore, PostgreSQL mandates that any unique or primary key constraint on a partitioned table must include all columns of the partition key, guaranteeing that uniqueness can be validated strictly within a single partition's local index.
+
 - Ref: [PostgreSQL Documentation: Table Partitioning: Limitations](https://www.postgresql.org/docs/18/ddl-partitioning.html#DDL-PARTITIONING-DECLARATIVE-LIMITATIONS)
+
 </details>
 
 <details>
 <summary>2. Why does setting `max_connections = 5000` severely degrade PostgreSQL server throughput compared to using a connection pooler like PgBouncer?</summary>
 
 **Answer**: PostgreSQL uses a process-per-connection architecture. 5,000 direct connections create 5,000 distinct operating system processes. Each process consumes 5MB to 10MB of baseline RAM (totalling 25GB to 50GB before query execution) and allocates per-operation `work_mem`. When thousands of processes actively compete for CPU cores, the operating system kernel spends the vast majority of CPU cycles performing process context-switching, TLB cache invalidation, and shared memory lock arbitration (`LWLock`) rather than executing SQL. PgBouncer terminates client TCP sockets in an event-driven loop and multiplexes queries into a pool of 32 to 64 backend processes, matching CPU core capacity and maximizing execution throughput.
+
 - Ref: [PostgreSQL Documentation: Number of Database Connections](https://wiki.postgresql.org/wiki/Number_Of_Database_Connections)
+
 </details>
 
 <details>
 <summary>3. What hazards occur when using PgBouncer in Transaction Pooling mode, and how do you prevent them?</summary>
 
 **Answer**: In Transaction Pooling mode, a PostgreSQL backend connection is released back to the pool immediately upon `COMMIT` or `ROLLBACK`. Any session-level state modified during the transaction is either lost for subsequent queries or leaks to another client that acquires the same backend. Specific hazards:
+
 1. `SET search_path` or `SET TimeZone` are discarded or leak across sessions (fix: use `SET LOCAL` inside transaction blocks).
 2. Temporary tables (`CREATE TEMP TABLE`) are tied to backend process lifetime and become inaccessible or leak.
 3. `LISTEN/NOTIFY` fails because notification channels require a persistent connection (fix: dedicate a small session-pooled connection group for listeners).
 4. Session-level advisory locks (`pg_advisory_lock`) remain held on the backend after the client disconnects (fix: strictly use `pg_advisory_xact_lock()`).
+
 - Ref: [PgBouncer Documentation: Pooling Modes](https://www.pgbouncer.org/features.html)
+
 </details>
 
 <details>
 <summary>4. Why is `idle_in_transaction_session_timeout` considered one of the most critical availability parameters in PostgreSQL?</summary>
 
 **Answer**: When an application opens a transaction (`BEGIN`), performs a query or write, and then leaves the connection idle without issuing `COMMIT` or `ROLLBACK` (often due to application crashes, network timeouts, or slow external API calls), that session holds open an active transaction ID (`backend_xmin`). This pins the cluster-wide oldest active `xmin` horizon. Autovacuum cannot reclaim any dead tuple versions deleted after that transaction started across **any table in the entire database**. Within hours, tables and indexes bloat catastrophically, and the cluster risks Transaction ID wraparound. Setting `idle_in_transaction_session_timeout = '60s'` forcibly terminates orphaned sessions, protecting cluster health.
+
 - Ref: [PostgreSQL Documentation: Client Connection Defaults](https://www.postgresql.org/docs/18/runtime-config-client.html#GUC-IDLE-IN-TRANSACTION-SESSION-TIMEOUT)
+
 </details>
 
 <details>
 <summary>5. Describe the Expand-Contract pattern for safely migrating a column from `VARCHAR(16)` to `UUID` on a live production table without downtime.</summary>
 
 **Answer**:
+
 1. **Expand**: Add a new column with the target type: `ALTER TABLE t ADD COLUMN id_v2 UUID;`.
 2. **Dual-Write**: Deploy application code (v1) that writes new records to both `id` and `id_v2`, while continuing to read from `id`.
 3. **Backfill**: Execute an asynchronous background script that updates historical rows in small batches (`UPDATE t SET id_v2 = id::uuid WHERE id_v2 IS NULL LIMIT 1000; COMMIT;`), committing incrementally to avoid bloat and locking.
 4. **Cutover**: Deploy application code (v2) that reads and writes exclusively from `id_v2`.
 5. **Contract**: Once v1 is completely decommissioned, drop the old column: `ALTER TABLE t DROP COLUMN id;`.
+
 - Ref: [Evolutionary Database Design (Fowler & Sadalage)](https://martinfowler.com/articles/evodb.html)
+
 </details>

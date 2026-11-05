@@ -1,22 +1,22 @@
 # 07 · Async Programming in Depth
 
-> **Spec anchors (ECMA-262 17th edition):** §27.2 *Promise Objects* (§27.2.4.1 `Promise.all`, §27.2.4.2 `allSettled`, §27.2.4.3 `any`, §27.2.4.5 `race`, §27.2.4.8 `try`, §27.2.4.9 `withResolvers`, §27.2.5.4 `then`), §27.7 *AsyncFunction Objects* (§27.7.5.3 Await), §15.8 *Async Function Definitions*, §20.5.7 *AggregateError*. DOM Standard §3.1 *Interface AbortController* / §3.2 *Interface AbortSignal* (`AbortSignal.any`, `AbortSignal.timeout`). TC39 AsyncContext proposal (Stage 2).
+> **Spec anchors (ECMA-262 17th edition):** §27.2 _Promise Objects_ (§27.2.4.1 `Promise.all`, §27.2.4.2 `allSettled`, §27.2.4.3 `any`, §27.2.4.5 `race`, §27.2.4.8 `try`, §27.2.4.9 `withResolvers`, §27.2.5.4 `then`), §27.7 _AsyncFunction Objects_ (§27.7.5.3 Await), §15.8 _Async Function Definitions_, §20.5.7 _AggregateError_. DOM Standard §3.1 _Interface AbortController_ / §3.2 _Interface AbortSignal_ (`AbortSignal.any`, `AbortSignal.timeout`). TC39 AsyncContext proposal (Stage 2).
 >
 > **Executable proof:** [`examples/07-async-in-depth.test.js`](../examples/07-async-in-depth.test.js), implementations in [`examples/07-async-utils.ts`](../examples/07-async-utils.ts)
 
-[Module 06](06-agents-realms-job-queue.md) explained *when* promise jobs run. This module is about *using* promises correctly: combinators, how `async`/`await` desugars, cancellation, error propagation, and controlling concurrency. These are the most common senior-interview coding tasks ("implement `Promise.all`", "write a concurrency-limited pool", "add retry with backoff and cancellation").
+[Module 06](06-agents-realms-job-queue.md) explained _when_ promise jobs run. This module is about _using_ promises correctly: combinators, how `async`/`await` desugars, cancellation, error propagation, and controlling concurrency. These are the most common senior-interview coding tasks ("implement `Promise.all`", "write a concurrency-limited pool", "add retry with backoff and cancellation").
 
 ---
 
 ## 1. A promise is a state machine plus a reaction list
 
-**Definition.** A *promise* is an object that represents the eventual result of an asynchronous operation. It is in exactly one state: *pending*, *fulfilled* with a value, or *rejected* with a reason. A settled promise never changes state.
+**Definition.** A _promise_ is an object that represents the eventual result of an asynchronous operation. It is in exactly one state: _pending_, _fulfilled_ with a value, or _rejected_ with a reason. A settled promise never changes state.
 
 Properties you can rely on:
 
 1. **Settles once.** Extra `resolve`/`reject` calls are ignored.
 2. **Callbacks are asynchronous.** `then` callbacks run as jobs, never synchronously.
-3. **`then` returns a new promise** resolved with the callback's return value; if the callback throws, the new promise rejects. Returning a thenable *adopts* its state.
+3. **`then` returns a new promise** resolved with the callback's return value; if the callback throws, the new promise rejects. Returning a thenable _adopts_ its state.
 4. **Errors propagate down the chain** until a rejection handler. `.catch(f)` is `.then(undefined, f)`; `.finally(f)` runs `f` without arguments and passes the original outcome through (unless `f` throws or returns a rejecting promise).
 5. **The executor runs synchronously.** `new Promise(executor)` calls `executor(resolve, reject)` immediately; an exception thrown by the executor rejects the promise.
 
@@ -30,7 +30,7 @@ const p = Promise.try(() => maybeSyncMaybeAsync(arg));
 ```
 
 | Then | Now |
-|---|---|
+| --- | --- |
 | `let resolve; const p = new Promise(r => { resolve = r; });` | `Promise.withResolvers()` (ES2024) |
 | `new Promise(r => r(fn()))` or `Promise.resolve().then(fn)` (the latter defers `fn` by a tick) | `Promise.try(fn)` (ES2025): runs `fn` synchronously, captures sync throws |
 
@@ -39,7 +39,7 @@ const p = Promise.try(() => maybeSyncMaybeAsync(arg));
 ## 2. The combinators
 
 | Combinator | Fulfils when | Rejects when | Result | Short-circuits |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | `Promise.all(it)` | all fulfil | **first** rejection | array of values in **input order** | on first rejection |
 | `Promise.allSettled(it)` (ES2020) | all settle | never | array of `{ status, value }` / `{ status, reason }` | no |
 | `Promise.any(it)` (ES2021) | **first** fulfilment | all reject | value / `AggregateError` with `.errors` | on first fulfilment |
@@ -63,11 +63,11 @@ function promiseAll(iterable) {
       const i = index++;
       pending++;
       Promise.resolve(item).then((value) => {
-        results[i] = value;                 // keep input order, not completion order
+        results[i] = value; // keep input order, not completion order
         if (--pending === 0) resolve(results);
-      }, reject);                           // first rejection wins; later calls are ignored
+      }, reject); // first rejection wins; later calls are ignored
     }
-    if (pending === 0) resolve(results);    // empty iterable
+    if (pending === 0) resolve(results); // empty iterable
   });
 }
 ```
@@ -83,18 +83,24 @@ function promiseAll(iterable) {
 Desugaring (conceptually, with the generator driver from [module 05](05-iterators-generators.md)):
 
 ```js
-async function f(x) { const a = await g(x); return a + 1; }
+async function f(x) {
+  const a = await g(x);
+  return a + 1;
+}
 // ≈
 function f(x) {
-  return run(function* () { const a = yield g(x); return a + 1; });
+  return run(function* () {
+    const a = yield g(x);
+    return a + 1;
+  });
 }
 ```
 
 Consequences:
 
-1. **Code before the first `await` runs synchronously** in the caller's turn. A synchronous throw there still becomes a *rejection*, not a thrown exception.
+1. **Code before the first `await` runs synchronously** in the caller's turn. A synchronous throw there still becomes a _rejection_, not a thrown exception.
 2. `try/catch` around `await` catches rejections, because the rejection is rethrown at the `await`.
-3. `return p` inside `try` does not catch `p`'s rejection: the function returns *before* `p` settles. Write `return await p` inside `try` blocks ([module 06](06-agents-realms-job-queue.md) shows it is not slower).
+3. `return p` inside `try` does not catch `p`'s rejection: the function returns _before_ `p` settles. Write `return await p` inside `try` blocks ([module 06](06-agents-realms-job-queue.md) shows it is not slower).
 4. Top-level `await` exists only in modules ([module 08](08-modules.md)).
 5. Async stack traces: V8 reconstructs "await" frames for native promises (`at async f`), which is another reason to prefer `await` over hand-built `.then` chains.
 
@@ -117,10 +123,12 @@ The first form is correct when each step depends on the previous one or when the
 
 ```ts
 export async function mapWithConcurrency<T, R>(
-  items: Iterable<T>, limit: number, fn: (item: T, index: number) => Promise<R>,
+  items: Iterable<T>,
+  limit: number,
+  fn: (item: T, index: number) => Promise<R>,
 ): Promise<R[]> {
   const results: R[] = [];
-  const iterator = Array.from(items).entries();     // shared cursor: workers pull from it
+  const iterator = Array.from(items).entries(); // shared cursor: workers pull from it
   async function worker() {
     for (const [i, item] of iterator) results[i] = await fn(item, i);
   }
@@ -140,12 +148,12 @@ ECMAScript has no cancellation primitive. The web platform's `AbortController`/`
 ```js
 const controller = new AbortController();
 const { signal } = controller;
-fetch(url, { signal });           // rejects with signal.reason (an AbortError DOMException by default)
+fetch(url, { signal }); // rejects with signal.reason (an AbortError DOMException by default)
 controller.abort(new Error('user navigated away'));
 ```
 
 | API | Since | Purpose |
-|---|---|---|
+| --- | --- | --- |
 | `signal.aborted`, `signal.reason`, `'abort'` event | DOM | observe |
 | `signal.throwIfAborted()` | 2022 | check at safe points in your own loops |
 | `AbortSignal.timeout(ms)` | 2022 | signal that aborts with a `TimeoutError` DOMException |
@@ -164,10 +172,18 @@ Combining a caller's signal with a per-attempt timeout: `AbortSignal.any([caller
 ### Retry with exponential backoff and jitter
 
 ```ts
-export async function retry<T>(op: (attempt: number, signal: AbortSignal) => Promise<T>, {
-  retries = 3, baseMs = 100, maxMs = 5_000, signal, sleep = defaultSleep, random = Math.random,
-  isRetryable = (_e: unknown) => true,
-}: RetryOptions = {}): Promise<T> {
+export async function retry<T>(
+  op: (attempt: number, signal: AbortSignal) => Promise<T>,
+  {
+    retries = 3,
+    baseMs = 100,
+    maxMs = 5_000,
+    signal,
+    sleep = defaultSleep,
+    random = Math.random,
+    isRetryable = (_e: unknown) => true,
+  }: RetryOptions = {},
+): Promise<T> {
   for (let attempt = 0; ; attempt++) {
     signal?.throwIfAborted();
     try {
@@ -175,7 +191,7 @@ export async function retry<T>(op: (attempt: number, signal: AbortSignal) => Pro
     } catch (e) {
       if (attempt >= retries || !isRetryable(e) || signal?.aborted) throw e;
       const cap = Math.min(maxMs, baseMs * 2 ** attempt);
-      await sleep(random() * cap, signal);           // "full jitter" (AWS Architecture Blog, 2015)
+      await sleep(random() * cap, signal); // "full jitter" (AWS Architecture Blog, 2015)
     }
   }
 }
@@ -195,7 +211,7 @@ Both are implemented and tested with fake time in [`examples/07-async-utils.ts`]
 ## 5. Error handling patterns
 
 | Situation | Pattern |
-|---|---|
+| --- | --- |
 | Fire-and-forget that must not crash | `void task().catch(logError)`: always attach the catch immediately |
 | Several independent operations, need all outcomes | `Promise.allSettled`, then partition |
 | First successful mirror/replica | `Promise.any`, handle `AggregateError.errors` |
@@ -224,7 +240,7 @@ The TC39 **AsyncContext** proposal (Stage 2 as of 2026-10-28) adds `AsyncContext
 ## 7. Production failure modes
 
 | Failure | Mechanism | Defence (tested) |
-|---|---|---|
+| --- | --- | --- |
 | `EMFILE`, 429s, memory spikes | `Promise.all` over thousands of items starts them all at once | concurrency-limited pool |
 | Work continues after the user left the page / the request timed out | combinators do not cancel; no signal plumbing | `AbortSignal` passed everywhere; `AbortSignal.any` |
 | Process exits with code 1 | floating promise rejection | `await` or `.catch` immediately; lint |
@@ -232,7 +248,7 @@ The TC39 **AsyncContext** proposal (Stage 2 as of 2026-10-28) adds `AsyncContext
 | Loop "finishes" before the work | `forEach(async ...)` | `for...of` or `Promise.all(map(...))` |
 | Retries amplify an outage | immediate retries without backoff or jitter, retrying non-idempotent calls | exponential backoff with full jitter, `isRetryable`, idempotency keys |
 | Listener leak on long-lived signals | `'abort'` listeners never removed | `{ once: true }` and remove on completion |
-| Latency is the *sum* of calls | sequential awaits of independent operations | start first, await later, or `Promise.all` |
+| Latency is the _sum_ of calls | sequential awaits of independent operations | start first, await later, or `Promise.all` |
 
 ---
 

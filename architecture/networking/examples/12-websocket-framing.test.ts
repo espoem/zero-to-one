@@ -138,8 +138,8 @@ describe('Module 12: Real-Time Protocols: WebSocket Handshake & Framing (RFC 645
           const masked = maskWebSocketPayload(data, mask);
           const unmasked = maskWebSocketPayload(masked, mask);
           assert.deepEqual(unmasked, data);
-        }
-      )
+        },
+      ),
     );
   });
 });

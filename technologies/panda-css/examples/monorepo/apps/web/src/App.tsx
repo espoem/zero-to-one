@@ -1,5 +1,5 @@
-import { Badge, Button } from '@acme/ds'
-import { css } from '../styled-system/css'
+import { Badge, Button } from '@acme/ds';
+import { css } from '../styled-system/css';
 
 export function App() {
   return (
@@ -7,5 +7,5 @@ export function App() {
       <Button size="lg">Save</Button>
       <Badge>new</Badge>
     </main>
-  )
+  );
 }

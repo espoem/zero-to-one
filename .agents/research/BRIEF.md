@@ -5,6 +5,7 @@ Context: `zero-to-one` is a personal curriculum repo for a senior software engin
 For EACH track assigned to you, produce a section with exactly these headings:
 
 ### <Track name> — `<proposed repo path>`
+
 - **Current stable version(s)** (+ release date, source URL). Note anything in RC/preview that matters.
 - **Authoritative syllabi used**: official docs ToC, official certification exam guides with domain weightings (e.g. CKA, Terraform Associate, AWS SAA-C03/its successor, AZ-104, GCP ACE/PCA), well-known university/industry courses. URLs.
 - **Proposed modules** (8–14, numbered, progressive from foundations → internals → production/ops → expert). For each: title + 4–8 bullet subtopics. Must collectively cover the cert/syllabus domains.

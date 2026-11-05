@@ -11,7 +11,7 @@ Research date: 2026-10-28. Every version and exam fact below was checked against
 **Proposal.**
 
 | Track | Repo path | Owns | Size |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Cloud Foundations | `architecture/cloud-foundations` | Provider-neutral concepts with formal definitions. Each module ends with a three-column "how AWS / GCP / Azure spell it" table that deep-links into the provider tracks. Uses Terraform as the lingua franca, with the IaC internals themselves left to the IaC track. | 12 modules (the full syllabus) |
 | AWS | `technologies/aws` | Exam-domain mapping (SAA-C03, DVA-C02 to C03, SAP-C03), AWS-only semantics (IAM policy evaluation order, SCP/RCP, S3 specifics, DynamoDB modelling, Lambda internals) and AWS gotchas | 9–10 modules |
 | GCP | `technologies/gcp` | ACE/PCA mapping, resource hierarchy, IAM deny/PAB, global VPC, Shared VPC, Cloud Run/GKE, Spanner/BigQuery, PCA case studies | 8–9 modules |
@@ -25,7 +25,7 @@ Research date: 2026-10-28. Every version and exam fact below was checked against
 ### 0.1 Concept to service mapping (core of the foundation track; becomes `architecture/cloud-foundations/MAPPING.md`)
 
 | Concept | AWS | GCP | Azure | Cloudflare (where applicable) |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | Top-level boundary / hierarchy | Organization → OU → Account | Organization → Folder → Project | Entra tenant → Management group → Subscription → Resource group | Account → Zone |
 | Guardrail policy (preventive) | SCP, RCP (resource control policies), declarative policies | Org Policy constraints (incl. custom), IAM Deny policies | Azure Policy (Deny/Modify/DeployIfNotExists), deny assignments | Account-level settings |
 | Human identity / SSO | IAM Identity Center | Cloud Identity / Workspace, Workforce Identity Federation | Entra ID | Cloudflare Access (Zero Trust) |
@@ -229,35 +229,38 @@ Rows marked "(unverified)" are names the curriculum author must confirm before p
 - **Authoritative syllabi used (verified on official AWS pages):**
   - **SAA-C03:** still current, no successor announced on the official page.
 
-    | Domain | Weight |
-    |---|---|
-    | Design Secure Architectures | 30% |
-    | Design Resilient Architectures | 26% |
-    | Design High-Performing Architectures | 24% |
-    | Design Cost-Optimized Architectures | 20% |
+    | Domain                               | Weight |
+    | ------------------------------------ | ------ |
+    | Design Secure Architectures          | 30%    |
+    | Design Resilient Architectures       | 26%    |
+    | Design High-Performing Architectures | 24%    |
+    | Design Cost-Optimized Architectures  | 20%    |
 
     Source: https://docs.aws.amazon.com/aws-certification/latest/solutions-architect-associate-03/solutions-architect-associate-03.html. Third-party "SAA-C04" claims (e.g. cciedump.spoto.net) are **not** reflected on aws.amazon.com and should be treated as false/unverified.
+
   - **Developer Associate: transition happening now.** DVA-C02 last test day is **2026-11-30**; **DVA-C03** registration opens **2026-12-01**.
 
-    | DVA-C03 domain | Weight |
-    |---|---|
-    | Development with AWS Services | 30% |
-    | Security | 26% |
-    | Testing and Deployment | 22% |
-    | Troubleshooting and Optimization | 22% |
+    | DVA-C03 domain                   | Weight |
+    | -------------------------------- | ------ |
+    | Development with AWS Services    | 30%    |
+    | Security                         | 26%    |
+    | Testing and Deployment           | 22%    |
+    | Troubleshooting and Optimization | 22%    |
 
     Source: https://docs.aws.amazon.com/aws-certification/latest/developer-associate-03/developer-associate-03.html. Target C03.
+
   - **SA Professional: transition happening now.** **SAP-C03** registration opened 2026-10-27, GA 2026-11-17; SAP-C02 last day 2026-11-16 (dates per https://tutorialsdojo.com/whats-new-with-the-aws-certified-solutions-architect-professional-sap-c03/; the official guide links a C02/C03 comparison page). 65 scored + 10 unscored questions, pass 720.
 
-    | SAP-C03 domain | Weight |
-    |---|---|
-    | Architecture Design and Implementation Built for the Cloud | 25% |
-    | Security, Compliance, and Governance | 25% |
-    | Cost-Optimized Architecture Design | 15% |
-    | Resilience, Migration, and Business Continuity | 15% |
-    | Operational Excellence and Automation | 20% |
+    | SAP-C03 domain                                             | Weight |
+    | ---------------------------------------------------------- | ------ |
+    | Architecture Design and Implementation Built for the Cloud | 25%    |
+    | Security, Compliance, and Governance                       | 25%    |
+    | Cost-Optimized Architecture Design                         | 15%    |
+    | Resilience, Migration, and Business Continuity             | 15%    |
+    | Operational Excellence and Automation                      | 20%    |
 
     Source: https://docs.aws.amazon.com/aws-certification/latest/solutions-architect-professional-03/solutions-architect-professional-03.html
+
   - AWS Well-Architected Framework and lenses (Serverless lens): https://docs.aws.amazon.com/wellarchitected/latest/framework/
   - IAM policy evaluation logic: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_evaluation-logic.html
   - Amazon Builders' Library (static stability, timeouts/retries/backoff, shuffle sharding): https://aws.amazon.com/builders-library/
@@ -348,7 +351,7 @@ Rows marked "(unverified)" are names the curriculum author must confirm before p
     - Sources: https://blog.localstack.cloud/2026-upcoming-pricing-changes/, https://blog.localstack.cloud/localstack-single-image-next-steps/, https://github.com/localstack/localstack/releases
     - Implication: a personal learning repo qualifies for the free non-commercial tier. Examples must read the token from env and **skip gracefully** when it is absent, and must never rely on `:latest` without a token.
     - Pinning old OSS tags (≤4.14) works offline but is frozen/unpatched. Acceptable only as a documented fallback.
-  - **Primary deterministic layer: moto 5.2.5** (Apache-2.0, `mock_aws` decorator or `moto_server` for the JS SDK via endpoint override). Covers S3/SQS/SNS/DynamoDB/IAM (IAM policy *enforcement* is opt-in and partial).
+  - **Primary deterministic layer: moto 5.2.5** (Apache-2.0, `mock_aws` decorator or `moto_server` for the JS SDK via endpoint override). Covers S3/SQS/SNS/DynamoDB/IAM (IAM policy _enforcement_ is opt-in and partial).
   - **Suites:**
     - DynamoDB single-table access patterns plus conditional-write negative tests (`ConditionalCheckFailedException`)
     - SQS consumer idempotency with redelivery
@@ -388,29 +391,30 @@ Rows marked "(unverified)" are names the curriculum author must confirm before p
 - **Authoritative syllabi used:**
   - **Associate Cloud Engineer:**
 
-    | Section | Weight |
-    |---|---|
-    | 1. Setting up a cloud solution environment | ~20% |
-    | 2. Planning and implementing a cloud solution | ~30% |
-    | 3. Ensuring successful operation | ~30% |
-    | 4. Configuring access and security | ~20% |
+    | Section                                       | Weight |
+    | --------------------------------------------- | ------ |
+    | 1. Setting up a cloud solution environment    | ~20%   |
+    | 2. Planning and implementing a cloud solution | ~30%   |
+    | 3. Ensuring successful operation              | ~30%   |
+    | 4. Configuring access and security            | ~20%   |
 
     2 h, 50–60 questions, $125; renewal exam 1 h / 20 questions / $75. Sources: https://services.google.com/fh/files/misc/associate_cloud_engineer_exam_guide_english.pdf, https://cloud.google.com/learn/certification/cloud-engineer
+
   - **Professional Cloud Architect:**
 
-    | Section | Weight |
-    |---|---|
-    | 1. Designing and planning a cloud solution architecture | ~25% |
-    | 2. Managing and provisioning infrastructure | ~17.5% |
-    | 3. Designing for security and compliance | ~17.5% |
-    | 4. Analyzing and optimizing technical and business processes | ~15% |
-    | 5. Managing implementation | ~12.5% |
-    | 6. Ensuring solution and operations excellence | ~12.5% |
-
+    | Section                                                      | Weight |
+    | ------------------------------------------------------------ | ------ |
+    | 1. Designing and planning a cloud solution architecture      | ~25%   |
+    | 2. Managing and provisioning infrastructure                  | ~17.5% |
+    | 3. Designing for security and compliance                     | ~17.5% |
+    | 4. Analyzing and optimizing technical and business processes | ~15%   |
+    | 5. Managing implementation                                   | ~12.5% |
+    | 6. Ensuring solution and operations excellence               | ~12.5% |
     - 2 h, 50–60 questions, 2 case studies = 20–30% of questions.
     - **Current case studies: Altostrat Media, Cymbal Retail, EHR Healthcare, KnightMotives Automotive.**
     - Renewal exam: 1 h, 25 questions, **one generative-AI-aligned case study = 90–100% of questions**.
     - Sources: https://services.google.com/fh/files/misc/professional_cloud_architect_exam_guide_english.pdf, https://cloud.google.com/learn/certification/cloud-architect
+
   - Google Cloud Well-Architected Framework: https://cloud.google.com/architecture/framework
   - Google SRE books (SLOs, error budgets): https://sre.google/books/
   - Spanner TrueTime paper (OSDI 2012)
@@ -516,22 +520,22 @@ Rows marked "(unverified)" are names the curriculum author must confirm before p
 - **Authoritative syllabi used:**
   - **AZ-104 (Administrator):** skills measured as of **2026-04-17**, no retirement notice. Source: https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/az-104
 
-    | Domain | Weight |
-    |---|---|
+    | Domain                    | Weight |
+    | ------------------------- | ------ |
     | Identities and governance | 20–25% |
-    | Compute | 20–25% |
-    | Storage | 15–20% |
-    | Virtual networking | 15–20% |
-    | Monitor and maintain | 10–15% |
+    | Compute                   | 20–25% |
+    | Storage                   | 15–20% |
+    | Virtual networking        | 15–20% |
+    | Monitor and maintain      | 10–15% |
 
   - **AZ-305 (Solutions Architect Expert):** skills as of **2026-04-17**, no retirement notice. Source: https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/az-305
 
-    | Domain | Weight |
-    |---|---|
+    | Domain                           | Weight |
+    | -------------------------------- | ------ |
     | Identity, governance, monitoring | 25–30% |
-    | Data storage | 20–25% |
-    | Business continuity | 15–20% |
-    | Infrastructure | 30–35% |
+    | Data storage                     | 20–25% |
+    | Business continuity              | 15–20% |
+    | Infrastructure                   | 30–35% |
 
   - **AZ-204 is RETIRED.**
     - The official certification page states "This certification and the renewal assessment are retired": https://learn.microsoft.com/en-us/credentials/certifications/azure-developer/
@@ -539,13 +543,14 @@ Rows marked "(unverified)" are names the curriculum author must confirm before p
     - Successor: **AI-200 "Developing AI Cloud Solutions on Azure"**, leading to the Azure AI Cloud Developer Associate. Skills as of **2026-10-07**:
 
       | AI-200 domain | Weight |
-      |---|---|
+      | --- | --- |
       | Develop containerized solutions | 20–25% |
       | Develop AI solutions using Azure data management services | 30–35% (page also says 25–30% in one heading; inconsistency in source) |
       | Connect to and consume Azure services | 20–25% |
       | Secure, monitor and troubleshoot | 20–25% |
 
       Source: https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/ai-200
+
     - Topics include vector search/RAG, KEDA on Container Apps and OpenTelemetry (per https://dev.to/lovelacecoding/bye-az-204-hello-ai-200-what-you-need-to-know-about-the-new-azure-developer-certification-2lo).
     - Other 2026 swaps: AZ-500 → SC-500 (2026-08-31), AI-102 → AI-103, DP-100 → AI-300 (secondary source above).
   - Azure Well-Architected Framework: https://learn.microsoft.com/azure/well-architected/
@@ -791,6 +796,7 @@ Rows marked "(unverified)" are names the curriculum author must confirm before p
 ---
 
 ## Surprises / flags for the curriculum owner
+
 1. **LocalStack is no longer free-and-anonymous.** Since 2026-03-23 it needs an account plus auth token, the free tier is non-commercial only, and the OSS repo is archived. Use moto as the token-free baseline.
 2. **AZ-204 is retired** (2026-07-31), replaced by **AI-200** (AI-heavy). AZ-104 and AZ-305 are current (skills dated 2026-04-17).
 3. **AWS is in the middle of a version transition:** DVA-C02 → **DVA-C03** (C02 last day 2026-11-30) and SAP-C02 → **SAP-C03** (GA 2026-11-17). **SAA-C03 is still current**; "SAA-C04" claims online are unverified third-party noise.

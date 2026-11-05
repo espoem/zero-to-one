@@ -1,7 +1,6 @@
 # Drafter/Auditor Audit: languages/typescript
-Auditor: `opencode-go/deepseek-v4.1-flash`
-Target: `languages/typescript`
-Date: 2026-10-31
+
+Auditor: `opencode-go/deepseek-v4.1-flash` Target: `languages/typescript` Date: 2026-10-31
 
 ---
 
@@ -18,7 +17,7 @@ Date: 2026-10-31
 ## P0 — blocks the merge gate
 
 | # | Finding | Evidence |
-|---|---|---|
+| --- | --- | --- |
 | 1 | **`@typescript/native` is taught as an installable alias but is unverified, and contradicts this repo's own research dossier**, which names the native preview package `@typescript/native-preview` (nightlies as `typescript@next`). No lockfile entry, no fixture, no test. | `modules/01:281`, `01:298`, `01:403`, `modules/13:289`, `CHEATSHEET.md:15`, `exams/certificates-dev-typescript.md:873` |
 | 2 | **`README.md:5` claims verification against `@typescript/typescript6` 6.0.2, but that package is not installed, not in `package.json`, and absent from `package-lock.json`**. | `README.md:5`, `package.json:14-22`, `node_modules/@typescript/` |
 

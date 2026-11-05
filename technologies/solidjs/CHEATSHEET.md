@@ -8,17 +8,19 @@ Fast lookup for this track. Authoritative long form: `node_modules/solid-js/CHEA
 // tsconfig.json
 { "compilerOptions": { "jsx": "preserve", "jsxImportSource": "@solidjs/web" } }
 ```
+
 ```ts
 // vite.config.ts
-import solid from "@solidjs/vite-plugin";            // renamed from vite-plugin-solid
-export default { plugins: [solid({ start: true, ssr: true })] };   // start mode (full stack)
+import solid from '@solidjs/vite-plugin'; // renamed from vite-plugin-solid
+export default { plugins: [solid({ start: true, ssr: true })] }; // start mode (full stack)
 ```
+
 Pin exact RC versions: `"solid-js": "2.0.0-rc.19"`. Node ≥ 22.12, Vite 8/9. **Do not** install `@solidjs/start@2.x` (it is a Solid 1.9 package).
 
 ## Imports
 
 | From | What |
-|---|---|
+| --- | --- |
 | `solid-js` | signals, memos, effects, stores, projections, async, actions, flow components, context |
 | `@solidjs/web` | `render`, `hydrate`, `Portal`, `dynamic`, `Dynamic` (deprecated), SSR, `httpStatus`, `getRequestEvent`, `JSX` types |
 | `@solidjs/web/storage` | `provideRequestEvent` |
@@ -38,6 +40,7 @@ const [v, setV] = createSignal(() => src() * 10);     // writable derived
 createSignal(x, { equals: false | (a,b)=>bool, unobserved, ownedWrite: true, name })
 untrack(() => x());  getOwner();  runWithOwner(owner, fn);  runWithOwner(null, () => createRoot(...)) // detached
 ```
+
 No writes in component bodies, memos, effect computes, root bodies → `REACTIVE_WRITE_IN_OWNED_SCOPE` (dev). `untrack` does not exempt.
 
 ## Effects & lifecycle (M02)
@@ -50,6 +53,7 @@ const on = createMemo(() => s() !== "off"); createEffect(() => on(), apply); // 
 onSettled(() => { setup(); return teardown; });   // replaces onMount + onCleanup
 onFlush(() => setOpen(false));                    // its own update, not held
 ```
+
 Forbidden: one-arg `createEffect` (`MISSING_EFFECT_FN`), `onCleanup` in `onSettled` (`CLEANUP_IN_FORBIDDEN_SCOPE`), primitives in `onSettled`. `createTrackedEffect` is `@deprecated`.
 
 ## Components & DOM (M03)
@@ -64,12 +68,13 @@ const p = merge({ size: "md" }, props);  const rest = omit(props, "label");   //
 <input ref={el} />  <div ref={[autofocus, tooltip({ text })]} />   // bare var not assigned inside arrays
 <input value={draft()} onInput={(e) => setDraft(e.currentTarget.value)} onChange={commit} />  // draft pattern
 ```
+
 Compile errors: `on:`, `oncapture:`, `use:`, `attr:`, `bool:`, `classList`. Refs run before attach → measure in `onSettled`.
 
 ## Control flow (M04)
 
 | Component | Callback args |
-|---|---|
+| --- | --- |
 | `<For each>` (default, by identity) | `(item, i)` raw value, **accessor** index |
 | `<For keyed={false}>` | `(item, i)` **accessor** item, number index |
 | `<For keyed={(t) => t.id}>` | both accessors |
@@ -90,6 +95,7 @@ const [c, setC] = createStore((d) => { d.v = f(); }, { v: 0 });  // writable der
 snapshot(s) /* untracked plain */;  deep(s) /* tracks everything, use in compute */
 createStore(rows, { shallow: true })  // records replaced, never edited
 ```
+
 `ASYNC_STORE_SETTER`, `STORE_WRITE_OUTSIDE_SETTER`. Don't mutate an object after handing it to a store.
 
 ## Async (M06)
@@ -105,6 +111,7 @@ createMemo(async () => { const q = query(); const ac = new AbortController(); on
 const price = createMemo(() => from(subscribeFn));
 <Reveal order="sequential|together|natural" collapsed>…</Reveal>
 ```
+
 Read inputs before the first `await`. Bare `refresh(x)` is quiet; `affects(x); refresh(x)` pends. `LOADING_ON_OUTSIDE_HOLD` when the `on` data is also read outside.
 
 ## Actions & optimistic (M07)
@@ -119,6 +126,7 @@ const add = action(function* (t) {
 const [saving, setSaving] = createOptimistic(false);   // process flag
 yield until(() => live.has(id), { timeout: 10_000 });   // live-channel ack; TimeoutError
 ```
+
 Call actions from handlers, never during render (`ACTION_CALLED_IN_OWNED_SCOPE`).
 
 ## Full stack (M08)
@@ -129,6 +137,7 @@ httpStatus(404); httpHeader("cache-control", "no-store");            // shell-ti
 createMemo(fn, { ssrSource: "server" | "hybrid" | "client", deferStream: true });
 export async function save(x: unknown) { "use server"; /* validate x */ }
 ```
+
 Module scope is shared across requests → state in providers / `getRequestEvent().locals`. Handler: same-origin only (403), POST unless `GET(fn)` (405), prod sanitizes errors (`markSafeError`), args JSON unless `enableRichArguments()`.
 
 ## Testing & perf (M09)
@@ -140,9 +149,9 @@ render(() => <C/>); fireEvent.click(btn); flush();          // @solidjs/testing-
 OBSERVE.diagnostics.capture() … .stop()                      // assert diagnostic codes
 attribution.enable();  // EFFECT_RELAY_TEAR, HOT_SCOPE_RERUNS, UNSTABLE_LIST_IDENTITY …
 ```
+
 Builds: `browser+development` (guards, diagnostics) · `browser+observe` · `browser` (prod) · plain Node → server build.
 
 ## 1.x → 2.0 renames
 
-`Suspense→Loading` · `SuspenseList→Reveal` · `ErrorBoundary→Errored` · `Index→For keyed={false}` · `mergeProps→merge` · `splitProps→omit` · `unwrap→snapshot` · `onMount→onSettled` · `createSelector→createProjection` · `Ctx.Provider→<Ctx value>` · `classList→class` · `use:x→ref={x()}` · `equalFn→isEqual` · `getListener→getObserver`.
-Removed: `batch`, `createComputed`, `createResource`, `startTransition`/`useTransition`, `on`, `onError`/`catchError`, `produce`, `createMutable`, `observable`, `indexArray`, `resetErrorBoundaries`, `createDynamic`.
+`Suspense→Loading` · `SuspenseList→Reveal` · `ErrorBoundary→Errored` · `Index→For keyed={false}` · `mergeProps→merge` · `splitProps→omit` · `unwrap→snapshot` · `onMount→onSettled` · `createSelector→createProjection` · `Ctx.Provider→<Ctx value>` · `classList→class` · `use:x→ref={x()}` · `equalFn→isEqual` · `getListener→getObserver`. Removed: `batch`, `createComputed`, `createResource`, `startTransition`/`useTransition`, `on`, `onError`/`catchError`, `produce`, `createMutable`, `observable`, `indexArray`, `resetErrorBoundaries`, `createDynamic`.

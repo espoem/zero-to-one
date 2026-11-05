@@ -3,6 +3,7 @@
 Research date: 2026-10-28. Everything below was checked against primary sources (IETF datatracker, RFC Editor, nodejs.org, OWASP, OpenSSL, W3C/FIDO, npm registry, GitHub releases) unless marked "(unverified)".
 
 **Surprises since most training data**
+
 - **TLS 1.3 is now RFC 9846** (July 2026, rfc8446bis). It obsoletes RFC 8446 **and RFC 5246 (TLS 1.2)** plus 5077/6961/7627/8422. https://www.rfc-editor.org/info/rfc9846
 - **ECH is RFC 9849** (March 2026). https://www.rfc-editor.org/rfc/rfc9849.html
 - **Hybrid PQ key exchange (X25519MLKEM768 etc.) is RFC 10024** (Proposed Standard, 2026-08-10; from draft-ietf-tls-ecdhe-mlkem-05). https://www.rfc-editor.org/info/rfc10024
@@ -51,9 +52,9 @@ Research date: 2026-10-28. Everything below was checked against primary sources 
     - The ~6-day `shortlived` profile and IP-address certificates have been GA since 2026-01-15.
     - The default lifetime goes 90 → 64 days (2027-02-10) → 45 days (2028-02-16).
 - **Authoritative syllabi used**
-  - **Kurose & Ross**, *Computer Networking: A Top-Down Approach*, **9th ed.** (Pearson, ISBN 9780135429334). https://www.schweitzer-online.de/en/buch/Kurose/Computer-Networking-Top-Down-Approach/9780135429334/A75251515/ . The book's ToC (application → transport → network data/control plane → link → wireless → security) is the spine.
-  - **Stevens / Fall**, *TCP/IP Illustrated Vol. 1*, 2nd ed., for packet-level depth. Stevens, *UNIX Network Programming Vol. 1*, for the sockets API (backlog, SO_REUSEADDR/PORT, non-blocking I/O).
-  - **Ilya Grigorik**, *High Performance Browser Networking* (free, https://hpbn.co). Some of it is dated (pre-h3); use it for latency and TLS cost intuition.
+  - **Kurose & Ross**, _Computer Networking: A Top-Down Approach_, **9th ed.** (Pearson, ISBN 9780135429334). https://www.schweitzer-online.de/en/buch/Kurose/Computer-Networking-Top-Down-Approach/9780135429334/A75251515/ . The book's ToC (application → transport → network data/control plane → link → wireless → security) is the spine.
+  - **Stevens / Fall**, _TCP/IP Illustrated Vol. 1_, 2nd ed., for packet-level depth. Stevens, _UNIX Network Programming Vol. 1_, for the sockets API (backlog, SO_REUSEADDR/PORT, non-blocking I/O).
+  - **Ilya Grigorik**, _High Performance Browser Networking_ (free, https://hpbn.co). Some of it is dated (pre-h3); use it for latency and TLS cost intuition.
   - **CompTIA Network+ N10-009** (launched 2024-06-20) https://destcert.com/resources/n10-009-objectives/ . Use it only as a coverage checklist:
     - Troubleshooting 24%
     - Concepts 23%
@@ -61,7 +62,7 @@ Research date: 2026-10-28. Everything below was checked against primary sources 
     - Operations 19%
     - Security 14%
   - Cloudflare Learning Center and the Cloudflare blog (QUIC, ECH, PQ rollout) as secondary reading.
-  - Brendan Gregg, *Systems Performance* 2nd ed., networking chapter, for the Linux tooling methodology.
+  - Brendan Gregg, _Systems Performance_ 2nd ed., networking chapter, for the Linux tooling methodology.
 - **Proposed modules**
   1. **01-layers-and-packets**
      - OSI vs TCP/IP model and why OSI is a vocabulary, not an implementation.
@@ -184,7 +185,7 @@ Research date: 2026-10-28. Everything below was checked against primary sources 
       - Troubleshooting runbook: "is it DNS, TCP, TLS, or app?"
 - **Gotchas & production failure modes**
   1. **Nagle + delayed ACK** gives about 40 ms (Linux) or 200 ms stalls on small write-write-read patterns. Fix it with `TCP_NODELAY` or coalesced writes. Node's `net` sockets now default `noDelay: true` for http (verify in a lab).
-  2. **TIME_WAIT exhaustion** on the *client* side when connections are not pooled: every outbound connection to the same (dst ip, port) burns an ephemeral port for 60 s. The fix is keep-alive pools, not sysctl hacks. `tcp_tw_recycle` broke NATed clients and was removed in Linux 4.12.
+  2. **TIME_WAIT exhaustion** on the _client_ side when connections are not pooled: every outbound connection to the same (dst ip, port) burns an ephemeral port for 60 s. The fix is keep-alive pools, not sysctl hacks. `tcp_tw_recycle` broke NATed clients and was removed in Linux 4.12.
   3. **Accept-queue overflow**: `listen()` backlog is capped by `net.core.somaxconn`. Overflow silently drops SYN/ACKs (`ss -lnt` Recv-Q, `nstat ListenOverflows`). This shows up as random 1 s/3 s connect latency (SYN retransmits).
   4. **Keep-alive race**: the LB idle timeout is shorter than the backend's keepAliveTimeout, and the backend closes the socket just as the LB reuses it, causing 502s. Rule: backend timeout > LB timeout (Node `server.keepAliveTimeout` vs ALB 60 s).
   5. **PMTUD black holes**: ICMP "frag needed" is filtered (or there is VPN/GRE overhead), so the TLS handshake hangs after ClientHello once it grows. Hybrid PQ (about 1.2 KB extra key share) makes the ClientHello span packets and breaks buggy middleboxes.
@@ -197,7 +198,7 @@ Research date: 2026-10-28. Everything below was checked against primary sources 
   8. **Negative caching**: an NXDOMAIN during a deploy is cached for the SOA minimum TTL, causing "DNS fixed but still broken."
   9. **DNSSEC misconfiguration** (expired RRSIG, DS mismatch after a key rollover) gives SERVFAIL only on validating resolvers, so it fails for some users only.
   10. **HTTP/2 connection coalescing**: browsers reuse one h2 connection for hosts covered by the cert SAN that resolve to the same IP. That yields 421 Misdirected Request and routing to the wrong backend when SNI-based routing differs.
-  11. **HTTP/2 HOL**: one lossy TCP connection stalls all multiplexed streams. h2 can be *worse* than 6×h1 on lossy mobile links, which motivates QUIC.
+  11. **HTTP/2 HOL**: one lossy TCP connection stalls all multiplexed streams. h2 can be _worse_ than 6×h1 on lossy mobile links, which motivates QUIC.
   12. **gRPC behind an L4 LB**: a single long-lived h2 connection pins all RPCs to one backend. You need L7/xDS or client-side LB, plus `MAX_CONNECTION_AGE`.
   13. **Request smuggling** between a front proxy and Node: differing CL/TE parsing. Node's `llhttp` is strict, and the `--insecure-http-parser` flag reopens it.
   14. **Ephemeral port exhaustion** through a NAT/egress gateway (65k per destination 4-tuple), common with serverless and CGNAT.
@@ -250,7 +251,7 @@ Research date: 2026-10-28. Everything below was checked against primary sources 
   - **Cannot prove locally**: real BGP/anycast and RPKI (fallback: run a BIRD 2/FRR container pair for an eBGP session lab, and offline RPKI validation with `rpki-client` snapshots (unverified feasibility)), CDN PoP behaviour, and real middlebox breakage.
   - **Fallbacks**: annotated pcaps, RIPEstat/bgp.tools URL references, and Cloudflare Radar data cited (not tested).
 - **Overlaps / dedupe**
-  - Cryptographic primitives, X.509/PKI validation, mTLS identity and cert lifecycle are owned by **architecture/security-identity**. The networking track owns the *wire* view of TLS: handshake, RTTs, SNI/ALPN/ECH and PQ size impact.
+  - Cryptographic primitives, X.509/PKI validation, mTLS identity and cert lifecycle are owned by **architecture/security-identity**. The networking track owns the _wire_ view of TLS: handshake, RTTs, SNI/ALPN/ECH and PQ size impact.
   - Kubernetes Services, kube-proxy/IPVS/eBPF, CNI and NetworkPolicy belong to **technologies/kubernetes** (cross-link from module 13/14).
   - VPC, subnets, security groups, cloud LBs and PrivateLink belong to **architecture/cloud-foundations**.
   - Edge, Workers, the CDN product, Zero Trust tunnels and the Cloudflare ECH/PQ rollout belong to **technologies/cloudflare**.
@@ -315,11 +316,11 @@ Research date: 2026-10-28. Everything below was checked against primary sources 
   - IETF OAuth WG documents list (https://datatracker.ietf.org/wg/oauth/documents/) and https://oauth.net/2.1/
   - OpenID specs (Core, Discovery, Back-Channel Logout, FAPI 2.0).
   - Crypto texts:
-    - Dan Boneh & Victor Shoup, *A Graduate Course in Applied Cryptography* (free).
-    - Jean-Philippe Aumasson, *Serious Cryptography* 2nd ed. (2024).
-    - David Wong, *Real-World Cryptography*.
+    - Dan Boneh & Victor Shoup, _A Graduate Course in Applied Cryptography_ (free).
+    - Jean-Philippe Aumasson, _Serious Cryptography_ 2nd ed. (2024).
+    - David Wong, _Real-World Cryptography_.
   - Threat modeling:
-    - Adam Shostack, *Threat Modeling: Designing for Security* and *Threats: What Every Engineer Should Learn from Star Wars*.
+    - Adam Shostack, _Threat Modeling: Designing for Security_ and _Threats: What Every Engineer Should Learn from Star Wars_.
     - Threat Modeling Manifesto.
     - Microsoft STRIDE docs.
   - Zanzibar paper (Pang et al., USENIX ATC 2019), the OpenFGA docs and the Cedar paper/docs (https://docs.cedarpolicy.com).

@@ -19,6 +19,7 @@ graph TD
 ```
 
 ### 1. Range Partitioning
+
 - **Mechanics**: Keys are sorted, and partitions are assigned contiguous ranges between boundaries:
   - Partition 1: $[\text{"A"}, \text{"G"})$
   - Partition 2: $[\text{"G"}, \text{"P"})$
@@ -27,6 +28,7 @@ graph TD
 - **The Hot Spot Failure Mode**: If the partition key is monotonic (such as a timestamp `created_at`), all write operations for the current second hit the exact same single partition (the latest time slice), while all past partition servers sit completely idle.
 
 ### 2. Modulo Hash Partitioning
+
 - **Mechanics**: Evaluates partition key $k$ through a deterministic hash function (e.g. MurmurHash3, MD5) modulo the total number of physical nodes $N$:
 
 $$\text{Node}(k) = \text{hash}(k) \pmod N$$
@@ -35,6 +37,7 @@ $$\text{Node}(k) = \text{hash}(k) \pmod N$$
 - **The Resizing Catastrophe**: If cluster capacity grows from $N$ to $N + 1$ nodes, almost every key in the database hashes to a completely different node ($\text{hash}(k) \bmod N \ne \text{hash}(k) \bmod (N+1)$). Adding a single server forces a massive, cluster-wide reshuffling of almost $100\%$ of all records.
 
 ### 3. Consistent Hashing (Karger et al., 1997)
+
 Consistent Hashing decouples the hash space from the number of physical nodes by mapping both keys and servers to an abstract circular ring:
 
 ```mermaid
@@ -45,7 +48,7 @@ graph TD
         NodeC["Server C (Pos: 3,000,000)"]
         Key1["Key 'user_123' (Hash: 450,000)"]
         Key2["Key 'user_456' (Hash: 2,200,000)"]
-        
+
         Key1 -.->|"Clockwise Hop"| NodeB
         Key2 -.->|"Clockwise Hop"| NodeC
     end
@@ -84,8 +87,9 @@ graph TD
 ```
 
 ### 1. Document-Partitioned (Local Secondary Indexes)
-- **Structure**: Each shard maintains secondary indexes covering *strictly the subset of records* stored locally on that shard.
-- **Write Path (Fast & Local)**: Updating a row requires modifying the heap and the secondary index on the *same physical machine*, requiring zero inter-node distributed transactions.
+
+- **Structure**: Each shard maintains secondary indexes covering _strictly the subset of records_ stored locally on that shard.
+- **Write Path (Fast & Local)**: Updating a row requires modifying the heap and the secondary index on the _same physical machine_, requiring zero inter-node distributed transactions.
 - **Read Path (The Scatter-Gather Penalty)**: If a query filters on a secondary attribute (`WHERE color = 'red'`) without specifying the partition key, the coordinator must execute a **Scatter-Gather query**: it sends the query to **every single shard in the cluster**, waits for all nodes to reply, and merges the results.
 - **The Tail Latency Amplification Problem**: If a cluster has $N = 100$ shards and each shard has a 99th-percentile latency of $p = 0.99$, the probability that a scatter-gather query hits at least one slow node is:
 
@@ -94,6 +98,7 @@ $$P(\text{Stall}) = 1 - (0.99)^{100} = 1 - 0.366 = 63.4\%$$
 A majority of client queries will experience the 99th-percentile tail latency! (Default in Elasticsearch and MongoDB).
 
 ### 2. Term-Partitioned (Global Secondary Indexes)
+
 - **Structure**: The secondary index is partitioned globally across the cluster, partitioned by the indexed attribute value itself.
 - **Read Path (Fast & Direct)**: A query for `WHERE color = 'red'` routes directly to the single shard responsible for the term `'red'`. Zero scatter-gather fanout.
 - **Write Path (Distributed & Heavy)**: Inserting a single row requires updating the primary record on Shard 1 and sending a remote network call to update the secondary index entry on Shard 2. To avoid blocking, modern distributed databases (e.g. DynamoDB GSI) update global secondary indexes **asynchronously**, sacrificing read-your-writes consistency.
@@ -145,8 +150,8 @@ graph TD
 ## 5. Then vs Now: Sharding and Partitioning Evolution
 
 | Dimension | Classical Era (1990–2000s) | Intermediate Wave (2010s) | Modern Distributed State-of-the-Art (2020s–Present) |
-| :--- | :--- | :--- | :--- |
-| **Sharding Responsibility**| Application layer (custom application routing scripts) | Coarse NoSQL partitioning (MongoDB, Cassandra) | Transparent Declarative Distributed SQL (Spanner, CockroachDB) |
+| :-- | :-- | :-- | :-- |
+| **Sharding Responsibility** | Application layer (custom application routing scripts) | Coarse NoSQL partitioning (MongoDB, Cassandra) | Transparent Declarative Distributed SQL (Spanner, CockroachDB) |
 | **Cross-Shard Transactions** | Forbidden or manually coordinated via complex 2PC | Eventual consistency only; single-row transactions | Distributed ACID with TrueTime / Hybrid Logical Clocks (HLC) |
 | **Secondary Indexes** | Avoided; all queries forced to use primary shard key | Scatter-gather local secondary indexes only | Asynchronous Global Secondary Indexes (GSI) with CDC pipelines |
 | **Rebalancing Overhead** | Manual off-peak dump-and-reload procedures | Network-saturating rebalances with severe write stalls | Throttled background chunk streaming with zero client downtime |
@@ -156,16 +161,19 @@ graph TD
 ## 6. Production Failure Modes and Anti-Patterns
 
 ### 1. Celebrity / Hot-Key Partition Saturation
+
 - **Symptom**: One database node runs at $100\%$ CPU and saturates its network interface, while 99 other nodes in the cluster sit idle.
 - **Root Cause**: A single partition key (e.g. a social media influencer with 50,000,000 followers, or a retailer's "Black Friday" SKU) receives millions of operations per second. Because hash partitioning maps all operations for that key to the same shard, hashing does not solve key skew.
 - **Mitigation**: Implement **Salting**: append a random 2-digit integer suffix to the key during write (`sku_1234_01` to `sku_1234_10`), spreading writes across 10 shards. Reads must query all 10 salted shards and aggregate.
 
 ### 2. Tail Latency Meltdown via Unbounded Scatter-Gather Fanout
+
 - **Symptom**: System-wide P99.9 latency explodes from $5\text{ ms}$ to $800\text{ ms}$ under modest traffic growth.
-- **Root Cause**: Microservices issue high-frequency queries that omit the partition key on a table with 200 document-partitioned shards. Every single request broadcasts to all 200 nodes. A transient network hiccup or garbage collection pause on *any single node* delays the entire user request.
+- **Root Cause**: Microservices issue high-frequency queries that omit the partition key on a table with 200 document-partitioned shards. Every single request broadcasts to all 200 nodes. A transient network hiccup or garbage collection pause on _any single node_ delays the entire user request.
 - **Mitigation**: Require the partition key in all high-frequency API contracts; maintain Global Secondary Indexes; apply speculative duplicate requests (hedged requests) to bypass slow tails.
 
 ### 3. Cross-Shard Distributed Transaction Deadlocks
+
 - **Symptom**: High transaction abort rates and connection spikes under distributed transactions spanning multiple shards.
 - **Root Cause**: Transactions acquiring distributed locks across distinct shards in non-uniform order ($T_1$ locks Shard A then Shard B; $T_2$ locks Shard B then Shard A).
 - **Mitigation**: Enforce global strict ordering on shard lock acquisition (sort shard IDs before locking) or design data models to keep transactions strictly within a single partition boundary.
@@ -177,8 +185,7 @@ graph TD
 <details>
 <summary><strong>Q1: Why does simple modulo hashing (`hash(key) % N`) cause severe operational failure when scaling a database cluster, and how does Consistent Hashing solve it?</strong></summary>
 
-**Answer:** 
-Under simple modulo hashing, the node assignment for key $k$ is determined by $\text{hash}(k) \bmod N$. If cluster capacity is altered by adding or removing a single node ($N \to N + 1$), almost every key in the database hashes to a completely different result because the divisor changes:
+**Answer:** Under simple modulo hashing, the node assignment for key $k$ is determined by $\text{hash}(k) \bmod N$. If cluster capacity is altered by adding or removing a single node ($N \to N + 1$), almost every key in the database hashes to a completely different result because the divisor changes:
 
 $$\text{hash}(k) \pmod N \ne \text{hash}(k) \pmod{N+1}$$
 
@@ -190,22 +197,23 @@ Consequently, scaling a 10-node cluster to 11 nodes forces a catastrophic rebala
 <details>
 <summary><strong>Q2: Compare the read and write trade-offs of Local Secondary Indexes (document-partitioned) versus Global Secondary Indexes (term-partitioned).</strong></summary>
 
-**Answer:** 
+**Answer:**
+
 - **Local Secondary Indexes (Document-Partitioned)**:
-  - *Write Path*: Highly efficient. The secondary index is stored on the same shard as the row. An insert or update is completely local to that single machine, requiring zero distributed transactions.
-  - *Read Path*: Terrible for non-partition queries. If a query filters on a secondary attribute without specifying the partition key, the coordinator must execute a **Scatter-Gather query**, fanning out to every single shard in the cluster and aggregating results.
+  - _Write Path_: Highly efficient. The secondary index is stored on the same shard as the row. An insert or update is completely local to that single machine, requiring zero distributed transactions.
+  - _Read Path_: Terrible for non-partition queries. If a query filters on a secondary attribute without specifying the partition key, the coordinator must execute a **Scatter-Gather query**, fanning out to every single shard in the cluster and aggregating results.
 - **Global Secondary Indexes (Term-Partitioned)**:
-  - *Read Path*: Highly efficient. The secondary index is partitioned by the index attribute itself. A query routes directly to the single shard responsible for that indexed value.
-  - *Write Path*: Heavy and distributed. Inserting a row requires writing to the primary shard and issuing a network call to update the index on a remote shard, requiring either expensive distributed 2PC or asynchronous eventual consistency.
+  - _Read Path_: Highly efficient. The secondary index is partitioned by the index attribute itself. A query routes directly to the single shard responsible for that indexed value.
+  - _Write Path_: Heavy and distributed. Inserting a row requires writing to the primary shard and issuing a network call to update the index on a remote shard, requiring either expensive distributed 2PC or asynchronous eventual consistency.
+
 </details>
 
 <details>
 <summary><strong>Q3: Explain the "Scatter-Gather Tail Latency Amplification" phenomenon and formulate its mathematical probability.</strong></summary>
 
-**Answer:** 
-When a query omits the partition key in a document-partitioned database, the coordinator must fan out the request to all $N$ shards and wait for the slowest response before returning.
+**Answer:** When a query omits the partition key in a document-partitioned database, the coordinator must fan out the request to all $N$ shards and wait for the slowest response before returning.
 
-If each independent shard has a probability $p$ of completing within a normal latency threshold (e.g. $p = 0.99$ for the 99th percentile), the probability that *all* $N$ shards respond within that threshold is $p^N$. Conversely, the probability that **at least one shard encounters a tail-latency stall** is:
+If each independent shard has a probability $p$ of completing within a normal latency threshold (e.g. $p = 0.99$ for the 99th percentile), the probability that _all_ $N$ shards respond within that threshold is $p^N$. Conversely, the probability that **at least one shard encounters a tail-latency stall** is:
 
 $$P(\text{Slow Response}) = 1 - p^N$$
 
@@ -219,35 +227,37 @@ Even though every individual node performs well $99\%$ of the time, nearly two-t
 <details>
 <summary><strong>Q4: What is the purpose of Virtual Nodes (Vnodes) in a Consistent Hashing architecture?</strong></summary>
 
-**Answer:** 
-Without virtual nodes, physical servers are mapped to a single point on the consistent hashing ring. Due to the stochastic nature of hashing, three physical nodes can easily be placed close together, leaving one node responsible for $70\%$ of the ring while the others receive almost no traffic (severe load imbalance).
+**Answer:** Without virtual nodes, physical servers are mapped to a single point on the consistent hashing ring. Due to the stochastic nature of hashing, three physical nodes can easily be placed close together, leaving one node responsible for $70\%$ of the ring while the others receive almost no traffic (severe load imbalance).
 
 **Virtual Nodes** solve this by assigning each physical machine $V$ distinct points across the ring (e.g. $V = 128$ or $256$). This ensures that:
+
 1. Ownership of the hash ring is uniformly distributed across physical machines according to the law of large numbers.
 2. Heterogeneous hardware can be accommodated: a powerful server with double the RAM and CPU can be assigned $2\times$ as many virtual nodes.
-3. When a physical machine fails, its load is evenly dispersed across *all* surviving cluster nodes rather than overwhelming its single immediate clockwise neighbor.
+3. When a physical machine fails, its load is evenly dispersed across _all_ surviving cluster nodes rather than overwhelming its single immediate clockwise neighbor.
+
 </details>
 
 <details>
 <summary><strong>Q5: How does Redis Cluster route client requests across its 16,384 hash slots, and how do client redirections (`MOVED` vs `ASK`) work?</strong></summary>
 
-**Answer:** 
-Redis Cluster divides its keyspace into exactly 16,384 logical **Hash Slots**:
+**Answer:** Redis Cluster divides its keyspace into exactly 16,384 logical **Hash Slots**:
 
 $$\text{Slot} = \text{CRC16}(\text{key}) \pmod{16384}$$
 
 Physical nodes divide ownership of these 16,384 slots. When a client sends a query to a node:
+
 - **`MOVED <slot> <ip:port>` Redirection**: If the target key belongs to a slot owned by a different node, the node responds with a `MOVED` error. The client updates its local slot-to-node cache and retries against the correct node.
 - **`ASK <slot> <ip:port>` Redirection**: Occurs during active cluster resharding. If a slot is currently in the process of being migrated from Node A to Node B, Node A checks if the specific key has already been moved. If not, it serves it locally; if the key has already migrated to Node B, Node A returns an `ASK` redirection. The client sends an `ASKING` command to Node B followed by the query, without permanently updating its local cluster map cache.
+
 </details>
 
 <details>
 <summary><strong>Q6: How do hash tags (e.g. `{user123}:orders`) enforce multi-key transactional locality in partitioned data systems?</strong></summary>
 
-**Answer:** 
-In partitioned databases like Redis Cluster, multi-key operations (transactions, `MGET`, Lua scripts) are strictly prohibited if the participating keys belong to different shards (triggering a `CROSSSLOT` error).
+**Answer:** In partitioned databases like Redis Cluster, multi-key operations (transactions, `MGET`, Lua scripts) are strictly prohibited if the participating keys belong to different shards (triggering a `CROSSSLOT` error).
 
-A **hash tag** overrides standard hashing by instructing the engine to hash *only the substring contained within curly braces `{}`*:
+A **hash tag** overrides standard hashing by instructing the engine to hash _only the substring contained within curly braces `{}`_:
+
 - For key `{user123}:orders`, the hash is computed on `user123`.
 - For key `{user123}:profile`, the hash is computed on `user123`.
 

@@ -7,7 +7,7 @@
 **Depth note:** modules are 208–382 physical lines each (M08–M12 are the shortest) (dense paragraphs and tables), below the 400–900 rule-of-thumb line count but each has formal definitions, mechanics, Then vs now, failure-mode tables, Mermaid where structural, executable-proof tables and a 7–10 question Interview Drill.
 
 | Module | State | Proof file | Tests |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 01 Elements, JSX & render model | done | `examples/01-elements/elements.test.tsx` | 20 |
 | 02 Fiber reconciler & commit | done | `examples/02-fiber/fiber.test.tsx`, `keyed-diff.ts` (fast-check vs real DOM placements) | 20 |
 | 03 State, hooks & closures | done (renamed from `03-hooks-closure-contracts.md`) | `examples/03-state/state.test.tsx`, `fetch-machine.ts` | 25 |
@@ -24,6 +24,7 @@
 **Tooling:** Node 26.12.1 (local), Vitest 5.0.5 + jsdom 30.1.3, RTL 16.3.3, react/react-dom/react-server-dom-webpack 19.3.1, @types/react 19.3.0, babel-plugin-react-compiler 1.0.0 with @babel/core 8.0.9 (works), eslint 10.13.0 + eslint-plugin-react-hooks 7.1.1, fast-check 4.10.2, vite 8.3.5, TypeScript 7.0.2. `npm test` = `vitest run`; `npm run typecheck` = `tsc --noEmit`. Last run: 215/215 passing, typecheck clean.
 
 ## Remaining work (ordered)
+
 1. **`mise.lock`** — not generated: no `mise` binary here and nodejs.org checksums were unreachable. On the Mac CLI run `cd technologies/react && mise lock` and commit. `.mise.toml` pins `node = "26"` and `npm:typescript = 7.0.2`; local verification used Node 26.12.1.
 2. **Browser verification (Verifier/Antigravity):** add a `test:integration` Playwright suite (skip cleanly without browsers) for: real `<ViewTransition>` animations and `addTransitionType` CSS types, Fragment ref `getClientRects`/`observeUsing` with real observers, stylesheet `precedence` load suspension, Trusted Types under `require-trusted-types-for 'script'`, and the M08 hung-action entanglement outside `act()`.
 3. **Challenger review** of the least-certain claims below, especially the CVE table (M07 §7.2) and the observed-only behaviours (M06 conditional-use warning scope, M08 hung action, M12 RTL sync-render pitfall).
@@ -31,12 +32,14 @@
 5. Optional depth: a Python/Rust secondary language is not warranted for this track (AGENTS § Code Example Languages); none added.
 
 ## Test command output (final)
+
 ```
 npm run typecheck   → tsc --noEmit: clean
 npm test            → Test Files 13 passed (13) · Tests 215 passed (215)
 ```
 
 ## Least-certain claims (for the challenger)
+
 - M12: RTL pitfall (initial sync `render()` that suspends never reveals; awaited async act fixes it) observed, root cause not investigated. Version-history dates before 19.0 from memory of React blog dates (16.0 2017-09, 16.3 2018-03, 16.6 2018-10, 16.8 2019-02, 17.0 2020-10, 18.0 2022-03, 18.3 2024-04) — not re-fetched. React Foundation date from the dossier.
 - M11: from react.dev docs, not tested: `<meta itemProp>` not hoisted; no dedupe of multiple `<title>`; ViewTransition event props `onEnter/onExit/onUpdate/onShare` signatures; stylesheet load suspension on the client; Trusted Types pass-through (jsdom has no TT). Auto VT name format `_t_<n>_` observed on 19.3.1.
 - M09: pipeline description (HIR → SSA → effect inference → reactive scopes) is from public compiler talks/source structure, not re-verified pass by pass; tooling support list (Vite/Next ≥15.3.1/Expo 54/Rsbuild, SWC experimental) is from the 1.0 blog post. "Memo ✨" DevTools badge not re-verified.
@@ -55,6 +58,7 @@ npm test            → Test Files 13 passed (13) · Tests 215 passed (215)
 - Old note — RSC CVE fixed-version floor: 19.0.1/19.1.2/19.2.1 (RCE), 19.0.4/19.1.5/19.2.4 (DoS/source exposure + CVE-2026-23864), CVE-2026-23869 fixed versions inferred from affected ranges (≤19.2.4 → 19.2.5), CVE-2026-23870 fixed in 19.0.6/19.1.7/19.2.6 (GitLab advisory).
 
 ## Proposals for integrator
+
 - Root glossary candidates: Tearing, Double buffering, Left-child/right-sibling tree, Tree edit distance.
 - Cross-links also point at `technologies/nodejs/README.md` and `architecture/networking/README.md` (planned tracks).
 - Cross-links point at `languages/javascript/README.md`, `languages/css/README.md` (not yet on main) and `languages/typescript/modules/12-react-19-and-modern-react-typescript.md` (will likely be renamed by the TS restructure — fix links at merge).
@@ -64,6 +68,7 @@ npm test            → Test Files 13 passed (13) · Tests 215 passed (215)
 - Cross-track handover: TS track should remove runtime mechanics from its M09–M12 and link to react M03/M04/M06/M07/M08/M09/M11 (mapping in briefs/typescript.md is fully absorbed here).
 
 ## Brief conflicts and re-verify resolutions
+
 - Brief/dossier said `.mise.toml: node = "24"`; coordinator instruction and AGENTS (latest stable) → pinned `node = "26"`.
 - Brief gotcha #14 ("useLayoutEffect on the server warns") is outdated for 19.x — tested silent in M04; module says the warning existed in ≤18.
 - Re-verify: `@types/react@19.3.0` ✅ registry; canary is `19.3.0-canary-…`/experimental, no 19.4/20 announced ✅ (dist-tags 2026-10-29). Meta/Coursera certificate ✅ still offered, 9 courses (completion-based; page does not mention a proctored exam). `scheduler/unstable_mock` ✅ ships in scheduler 0.28.0 (used in M05). RSC without a bundler ✅ feasible (child process with `--conditions react-server` + `client.node`). `technologies/web-platform` ✗ does not exist → see proposals.

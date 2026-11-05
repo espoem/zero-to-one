@@ -72,7 +72,10 @@ export class BinarySchemaSerializer {
 
       let value: any;
       if (typeCode === 1) {
-        value = new DataView(payload.buffer, payload.byteOffset, payload.byteLength).getInt32(0, true);
+        value = new DataView(payload.buffer, payload.byteOffset, payload.byteLength).getInt32(
+          0,
+          true,
+        );
       } else {
         value = new TextDecoder().decode(payload);
       }
@@ -88,7 +91,9 @@ export class BinarySchemaSerializer {
       } else if (field.defaultValue !== undefined) {
         result[field.name] = field.defaultValue;
       } else if (field.required) {
-        throw new Error(`Deserialization failed: missing required field ${field.name} (tag ${field.tag})`);
+        throw new Error(
+          `Deserialization failed: missing required field ${field.name} (tag ${field.tag})`,
+        );
       }
     }
 
@@ -112,12 +117,21 @@ describe('Binary Schema Evolution & Wire Compatibility', () => {
       fields: [
         { tag: 1, name: 'userId', type: 'int', required: true },
         { tag: 2, name: 'username', type: 'string', required: true },
-        { tag: 3, name: 'email', type: 'string', required: false, defaultValue: 'unknown@example.com' },
+        {
+          tag: 3,
+          name: 'email',
+          type: 'string',
+          required: false,
+          defaultValue: 'unknown@example.com',
+        },
       ],
     };
 
     // Producer encodes with V1
-    const v1Bytes = BinarySchemaSerializer.encodeRecord({ userId: 101, username: 'alice' }, schemaV1);
+    const v1Bytes = BinarySchemaSerializer.encodeRecord(
+      { userId: 101, username: 'alice' },
+      schemaV1,
+    );
 
     // Consumer decodes with V2 (New code reading old data)
     const decodedV2 = BinarySchemaSerializer.decodeRecord(v1Bytes, schemaV2);
@@ -141,7 +155,7 @@ describe('Binary Schema Evolution & Wire Compatibility', () => {
     // Producer encodes with V2 (including new field bio)
     const v2Bytes = BinarySchemaSerializer.encodeRecord(
       { userId: 202, username: 'bob', bio: 'Distributed systems architect' },
-      schemaV2
+      schemaV2,
     );
 
     // Consumer decodes with V1 (Old code reading new data)
@@ -164,11 +178,14 @@ describe('Binary Schema Evolution & Wire Compatibility', () => {
       ],
     };
 
-    const v1Bytes = BinarySchemaSerializer.encodeRecord({ userId: 303, username: 'charlie' }, schemaV1);
+    const v1Bytes = BinarySchemaSerializer.encodeRecord(
+      { userId: 303, username: 'charlie' },
+      schemaV1,
+    );
 
     assert.throws(
       () => BinarySchemaSerializer.decodeRecord(v1Bytes, breakingSchemaV2),
-      /Deserialization failed: missing required field securityToken/
+      /Deserialization failed: missing required field securityToken/,
     );
   });
 });

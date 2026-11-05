@@ -3,13 +3,14 @@
 Update this file when a track changes state. Keep the history in `reviews/<track>.md` and in git.
 
 **Roles** (AGENTS.md § Multi-Agent Workflow):
+
 - Primary author: **Opus**, either the claude.ai session with Opus subagents or Claude Code CLI on the Mac.
 - Companions on every track: **pi · DeepSeek** (drafter), **pi · Muse Spark 1.3** (challenger), **Antigravity** (verifier).
 
 States: ⬜ brief ready → 🟦 authoring → 🟨 challenge + verify → 🟧 resolving findings → 🟪 final gate → ✅ merged. ⛔ blocked (state why in Notes).
 
 | Phase | Track | Primary | Branch | State | Notes |
-|:-:|---|---|---|---|---|
+| :-: | --- | --- | --- | --- | --- |
 | 1 | `languages/typescript` | Opus · claude.ai | `track/typescript` | ✅ merged | Merged 2026-10-30: 132 tests passing, TS 7.0.2 pinned, 72-q bank, challenger & verifier gates complete. |
 | 1 | `technologies/panda-css` | Opus · claude.ai | `track/panda-css` | ✅ merged | Merged 2026-10-30: 118 tests passing (45 in Chromium), Panda 2.4.0, 60-q bank, challenger & verifier gates complete. |
 | 1 | `technologies/postgres` | Opus · claude.ai | `track/postgres` | ✅ merged | Merged 2026-10-30: 13 modules, 13 PGlite tests passing hermetically, PG18.6 / Node 26.12.1 pinned, 65-q EDB bank, challenger & verifier gates complete. |
@@ -27,20 +28,21 @@ States: ⬜ brief ready → 🟦 authoring → 🟨 challenge + verify → 🟧 
 | 2 | `technologies/nodejs` | Opus · claude.ai | `track/nodejs` | 🟦 authoring | Opus subagent in the claude.ai workspace, started 2026-11-04. Hermetic tests here; Docker `test:integration` labs to be run by Claude Code on the Mac. |
 | 2 | `technologies/redis` | Opus · Claude Code | `track/redis` | 🟦 authoring | Opus subagent in the claude.ai workspace, started 2026-11-04. Hermetic tests here; Docker `test:integration` labs to be run by Claude Code on the Mac. |
 | 2 | `technologies/sqlite` | Opus · claude.ai | `track/sqlite` | 🟦 authoring | Opus subagent in the claude.ai workspace, started 2026-11-04. Hermetic tests here; Docker `test:integration` labs to be run by Claude Code on the Mac. |
-| 3 | `technologies/argocd` | Opus · Claude Code | `track/argocd` | ⬜ brief ready | |
-| 3 | `technologies/containers` | Opus · Claude Code | `track/containers` | ⬜ brief ready | |
-| 3 | `technologies/gitlab-ci` | Opus · Claude Code | `track/gitlab-ci` | ⬜ brief ready | |
-| 3 | `technologies/kubernetes` | Opus · Claude Code | `track/kubernetes` | ⬜ brief ready | |
-| 3 | `technologies/observability` | Opus · Claude Code | `track/observability` | ⬜ brief ready | |
-| 3 | `technologies/terraform` | Opus · claude.ai | `track/terraform` | ⬜ brief ready | |
-| 4 | `architecture/cloud-foundations` | Opus · claude.ai | `track/cloud-foundations` | ⬜ brief ready | |
-| 4 | `architecture/system-design` | Opus · claude.ai | `track/system-design` | ⬜ brief ready | |
-| 4 | `technologies/aws` | Opus · claude.ai | `track/aws` | ⬜ brief ready | |
-| 4 | `technologies/azure` | Opus · claude.ai | `track/azure` | ⬜ brief ready | |
-| 4 | `technologies/cloudflare` | Opus · claude.ai | `track/cloudflare` | ⬜ brief ready | |
-| 4 | `technologies/gcp` | Opus · claude.ai | `track/gcp` | ⬜ brief ready | |
+| 3 | `technologies/argocd` | Opus · Claude Code | `track/argocd` | ⬜ brief ready |  |
+| 3 | `technologies/containers` | Opus · Claude Code | `track/containers` | ⬜ brief ready |  |
+| 3 | `technologies/gitlab-ci` | Opus · Claude Code | `track/gitlab-ci` | ⬜ brief ready |  |
+| 3 | `technologies/kubernetes` | Opus · Claude Code | `track/kubernetes` | ⬜ brief ready |  |
+| 3 | `technologies/observability` | Opus · Claude Code | `track/observability` | ⬜ brief ready |  |
+| 3 | `technologies/terraform` | Opus · claude.ai | `track/terraform` | ⬜ brief ready |  |
+| 4 | `architecture/cloud-foundations` | Opus · claude.ai | `track/cloud-foundations` | ⬜ brief ready |  |
+| 4 | `architecture/system-design` | Opus · claude.ai | `track/system-design` | ⬜ brief ready |  |
+| 4 | `technologies/aws` | Opus · claude.ai | `track/aws` | ⬜ brief ready |  |
+| 4 | `technologies/azure` | Opus · claude.ai | `track/azure` | ⬜ brief ready |  |
+| 4 | `technologies/cloudflare` | Opus · claude.ai | `track/cloudflare` | ⬜ brief ready |  |
+| 4 | `technologies/gcp` | Opus · claude.ai | `track/gcp` | ⬜ brief ready |  |
 
 ## Dependencies
+
 - Phase 1 foundations (javascript, css, data-systems, networking, security-identity) run alongside the existing-track fixes. The existing tracks add cross-links to the foundations as those merge.
 - containers → kubernetes → argocd; terraform runs in parallel; gitlab-ci after containers; observability after kubernetes.
 - cloud-foundations → aws, gcp, azure; cloudflare is independent; system-design runs last.

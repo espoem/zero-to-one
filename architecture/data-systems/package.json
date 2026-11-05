@@ -4,9 +4,6 @@
   "private": true,
   "description": "Executable proofs and models for the Zero-to-One Data Systems Architecture track",
   "type": "module",
-  "engines": {
-    "node": ">=26"
-  },
   "scripts": {
     "test": "node --test --test-reporter=spec \"examples/**/*.test.ts\"",
     "typecheck": "tsc --noEmit -p tsconfig.json"
@@ -15,5 +12,8 @@
     "@types/node": "26.6.6",
     "fast-check": "4.10.2",
     "typescript": "7.0.2"
+  },
+  "engines": {
+    "node": ">=26"
   }
 }

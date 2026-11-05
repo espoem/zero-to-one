@@ -1,4 +1,4 @@
-import { defineSlotRecipe } from '@pandacss/dev'
+import { defineSlotRecipe } from '@pandacss/dev';
 
 /**
  * Config slot recipe (Module 08): one recipe, several parts. Each slot gets its own
@@ -16,9 +16,13 @@ export const alertRecipe = defineSlotRecipe({
   },
   variants: {
     status: {
-      info: { root: { colorPalette: 'blue', bg: 'colorPalette.50', borderColor: 'colorPalette.200' } },
-      danger: { root: { colorPalette: 'red', bg: 'colorPalette.50', borderColor: 'colorPalette.200' } },
+      info: {
+        root: { colorPalette: 'blue', bg: 'colorPalette.50', borderColor: 'colorPalette.200' },
+      },
+      danger: {
+        root: { colorPalette: 'red', bg: 'colorPalette.50', borderColor: 'colorPalette.200' },
+      },
     },
   },
   defaultVariants: { status: 'info' },
-})
+});

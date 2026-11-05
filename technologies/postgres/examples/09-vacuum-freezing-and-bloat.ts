@@ -18,7 +18,7 @@ async function run(): Promise<void> {
   const relOpts = await db.query<{ reloptions: string[] }>(`
     SELECT reloptions FROM pg_class WHERE relname = 'high_churn_sessions';
   `);
-  assert.ok(relOpts.rows[0]!.reloptions.some(opt => opt.includes('fillfactor=85')));
+  assert.ok(relOpts.rows[0]!.reloptions.some((opt) => opt.includes('fillfactor=85')));
 
   // Test 2: Dead Tuple Generation & In-Engine VACUUM Reclaim
   await db.exec(`
@@ -34,7 +34,9 @@ async function run(): Promise<void> {
   // Run VACUUM to reclaim space within 8KB page for future inserts
   await db.exec('VACUUM bloat_target;');
 
-  const valCheck = await db.query<{ counter: number }>('SELECT counter FROM bloat_target WHERE id = 1;');
+  const valCheck = await db.query<{ counter: number }>(
+    'SELECT counter FROM bloat_target WHERE id = 1;',
+  );
   assert.equal(valCheck.rows[0]!.counter, 103);
 
   // Test 3: Autovacuum Tuning Configuration Per Table
@@ -48,7 +50,11 @@ async function run(): Promise<void> {
   const updatedOpts = await db.query<{ reloptions: string[] }>(`
     SELECT reloptions FROM pg_class WHERE relname = 'high_churn_sessions';
   `);
-  assert.ok(updatedOpts.rows[0]!.reloptions.some(opt => opt.includes('autovacuum_vacuum_scale_factor=0.02')));
+  assert.ok(
+    updatedOpts.rows[0]!.reloptions.some((opt) =>
+      opt.includes('autovacuum_vacuum_scale_factor=0.02'),
+    ),
+  );
 
   logSuccess('09-vacuum-freezing-and-bloat');
 }

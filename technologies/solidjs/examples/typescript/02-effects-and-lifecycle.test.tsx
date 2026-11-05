@@ -1,7 +1,7 @@
 /**
  * Module 02 — Effects, lifecycle and invariants (real solid-js rc.19 dev build).
  */
-import { describe, it, expect, afterEach } from "vitest";
+import { describe, it, expect, afterEach } from 'vitest';
 import {
   createSignal,
   createMemo,
@@ -18,14 +18,20 @@ import {
   untrack,
   resetErrorHalt,
   action,
-} from "solid-js";
-import { render } from "@solidjs/testing-library";
-import { captureDiagnostics, captureDiagnosticsAsync, tick, deferred, settle } from "./support/diagnostics.ts";
+} from 'solid-js';
+import { render } from '@solidjs/testing-library';
+import {
+  captureDiagnostics,
+  captureDiagnosticsAsync,
+  tick,
+  deferred,
+  settle,
+} from './support/diagnostics.ts';
 
 afterEach(() => resetErrorHalt());
 
-describe("02 · split effects: compute tracks, apply acts", () => {
-  it("createEffect: compute runs at creation, apply runs at the flush; cleanup precedes the next apply", () => {
+describe('02 · split effects: compute tracks, apply acts', () => {
+  it('createEffect: compute runs at creation, apply runs at the flush; cleanup precedes the next apply', () => {
     const log: string[] = [];
     const { setCount, dispose } = createRoot((dispose) => {
       const [count, setCount] = createSignal(0);
@@ -41,20 +47,20 @@ describe("02 · split effects: compute tracks, apply acts", () => {
       );
       return { setCount, dispose };
     });
-    expect(log).toEqual(["compute 0"]); // apply has not run yet
+    expect(log).toEqual(['compute 0']); // apply has not run yet
     flush();
-    expect(log).toEqual(["compute 0", "apply 0 (prev undefined)"]);
+    expect(log).toEqual(['compute 0', 'apply 0 (prev undefined)']);
     setCount(1);
     flush();
-    expect(log.slice(2)).toEqual(["compute 1", "cleanup 0", "apply 1 (prev 0)"]);
+    expect(log.slice(2)).toEqual(['compute 1', 'cleanup 0', 'apply 1 (prev 0)']);
     dispose();
-    expect(log.at(-1)).toBe("cleanup 1");
+    expect(log.at(-1)).toBe('cleanup 1');
   });
 
-  it("createRenderEffect applies synchronously at creation (render phase)", () => {
+  it('createRenderEffect applies synchronously at creation (render phase)', () => {
     const log: string[] = [];
     const dispose = createRoot((dispose) => {
-      const [title] = createSignal("a");
+      const [title] = createSignal('a');
       createRenderEffect(
         () => title(),
         (v) => {
@@ -69,13 +75,13 @@ describe("02 · split effects: compute tracks, apply acts", () => {
       );
       return dispose;
     });
-    expect(log).toEqual(["render a"]);
+    expect(log).toEqual(['render a']);
     flush();
-    expect(log).toEqual(["render a", "user a"]);
+    expect(log).toEqual(['render a', 'user a']);
     dispose();
   });
 
-  it("reads in the apply half are not tracked", () => {
+  it('reads in the apply half are not tracked', () => {
     let applies = 0;
     const { setUntrackedSource, dispose } = createRoot((dispose) => {
       const [tracked] = createSignal(0);
@@ -96,48 +102,48 @@ describe("02 · split effects: compute tracks, apply acts", () => {
     dispose();
   });
 
-  it("effects never compare: an equal compute result still re-runs apply and cleanup", () => {
+  it('effects never compare: an equal compute result still re-runs apply and cleanup', () => {
     const log: string[] = [];
     const { setStatus, dispose } = createRoot((dispose) => {
-      const [status, setStatus] = createSignal("active");
+      const [status, setStatus] = createSignal('active');
       createEffect(
-        () => status() !== "off", // stays true for "active" → "busy"
+        () => status() !== 'off', // stays true for "active" → "busy"
         (on) => {
           log.push(`start ${on}`);
-          return () => log.push("stop");
+          return () => log.push('stop');
         },
       );
       return { setStatus, dispose };
     });
     flush();
-    setStatus("busy");
+    setStatus('busy');
     flush();
-    expect(log).toEqual(["start true", "stop", "start true"]); // torn down and restarted
+    expect(log).toEqual(['start true', 'stop', 'start true']); // torn down and restarted
     dispose();
   });
 
-  it("…a memo in front adds the equality cut-off", () => {
+  it('…a memo in front adds the equality cut-off', () => {
     const log: string[] = [];
     const { setStatus, dispose } = createRoot((dispose) => {
-      const [status, setStatus] = createSignal("active");
-      const on = createMemo(() => status() !== "off");
+      const [status, setStatus] = createSignal('active');
+      const on = createMemo(() => status() !== 'off');
       createEffect(
         () => on(),
         (v) => {
           log.push(`start ${v}`);
-          return () => log.push("stop");
+          return () => log.push('stop');
         },
       );
       return { setStatus, dispose };
     });
     flush();
-    setStatus("busy");
+    setStatus('busy');
     flush();
-    expect(log).toEqual(["start true"]);
+    expect(log).toEqual(['start true']);
     dispose();
   });
 
-  it("defer: true skips the initial apply", () => {
+  it('defer: true skips the initial apply', () => {
     const log: number[] = [];
     const { setCount, dispose } = createRoot((dispose) => {
       const [count, setCount] = createSignal(0);
@@ -158,7 +164,7 @@ describe("02 · split effects: compute tracks, apply acts", () => {
     dispose();
   });
 
-  it("compute receives prev; a default parameter seeds the first run", () => {
+  it('compute receives prev; a default parameter seeds the first run', () => {
     const seen: number[] = [];
     const { setX, dispose } = createRoot((dispose) => {
       const [x, setX] = createSignal(1);
@@ -177,13 +183,13 @@ describe("02 · split effects: compute tracks, apply acts", () => {
     dispose();
   });
 
-  it("the error arm catches compute-phase errors (EffectBundle)", () => {
+  it('the error arm catches compute-phase errors (EffectBundle)', () => {
     const log: string[] = [];
     const { setX, dispose } = createRoot((dispose) => {
       const [x, setX] = createSignal(0);
       createEffect(
         () => {
-          if (x() > 0) throw new Error("boom");
+          if (x() > 0) throw new Error('boom');
           return x();
         },
         {
@@ -200,11 +206,11 @@ describe("02 · split effects: compute tracks, apply acts", () => {
     flush();
     setX(1);
     flush();
-    expect(log).toEqual(["ok 0", "error boom"]);
+    expect(log).toEqual(['ok 0', 'error boom']);
     dispose();
   });
 
-  it("writes in the apply half are legal and land in the same flush continuation", () => {
+  it('writes in the apply half are legal and land in the same flush continuation', () => {
     const { mirror, setSource, dispose } = createRoot((dispose) => {
       const [source, setSource] = createSignal(1);
       const [mirror, setMirror] = createSignal(0);
@@ -225,13 +231,13 @@ describe("02 · split effects: compute tracks, apply acts", () => {
   });
 });
 
-describe("02 · specialised effects", () => {
-  it("createReaction fires once per arm", () => {
+describe('02 · specialised effects', () => {
+  it('createReaction fires once per arm', () => {
     const log: string[] = [];
     const { setX, rearm, dispose } = createRoot((dispose) => {
       const [x, setX] = createSignal(0);
       const track = createReaction(() => {
-        log.push("changed");
+        log.push('changed');
       });
       const rearm = () => track(() => x());
       rearm();
@@ -241,22 +247,22 @@ describe("02 · specialised effects", () => {
     flush();
     setX(2);
     flush(); // not armed any more
-    expect(log).toEqual(["changed"]);
+    expect(log).toEqual(['changed']);
     rearm();
     setX(3);
     flush();
-    expect(log).toEqual(["changed", "changed"]);
+    expect(log).toEqual(['changed', 'changed']);
     dispose();
   });
 
-  it("createTrackedEffect (deprecated, migration aid) tracks inside its single callback", () => {
+  it('createTrackedEffect (deprecated, migration aid) tracks inside its single callback', () => {
     const log: string[] = [];
     const { setX, dispose } = createRoot((dispose) => {
       const [x, setX] = createSignal(0);
       createTrackedEffect(() => {
         log.push(`run ${x()}`);
         return () => {
-          log.push("cleanup");
+          log.push('cleanup');
         };
       });
       return { setX, dispose };
@@ -264,30 +270,30 @@ describe("02 · specialised effects", () => {
     flush();
     setX(1);
     flush();
-    expect(log).toEqual(["run 0", "cleanup", "run 1"]);
+    expect(log).toEqual(['run 0', 'cleanup', 'run 1']);
     dispose();
   });
 });
 
-describe("02 · lifecycle: onSettled, onCleanup, onFlush", () => {
-  it("onSettled runs after the first settle; its returned cleanup runs on disposal", () => {
+describe('02 · lifecycle: onSettled, onCleanup, onFlush', () => {
+  it('onSettled runs after the first settle; its returned cleanup runs on disposal', () => {
     const log: string[] = [];
     const dispose = createRoot((dispose) => {
       onSettled(() => {
-        log.push("settled");
-        return () => log.push("teardown");
+        log.push('settled');
+        return () => log.push('teardown');
       });
-      log.push("body");
+      log.push('body');
       return dispose;
     });
-    expect(log).toEqual(["body"]);
+    expect(log).toEqual(['body']);
     flush();
-    expect(log).toEqual(["body", "settled"]);
+    expect(log).toEqual(['body', 'settled']);
     dispose();
-    expect(log).toEqual(["body", "settled", "teardown"]);
+    expect(log).toEqual(['body', 'settled', 'teardown']);
   });
 
-  it("onSettled may write (it is an effect-phase scope)", () => {
+  it('onSettled may write (it is an effect-phase scope)', () => {
     const { ready, dispose } = createRoot((dispose) => {
       const [ready, setReady] = createSignal(false);
       onSettled(() => {
@@ -300,7 +306,7 @@ describe("02 · lifecycle: onSettled, onCleanup, onFlush", () => {
     dispose();
   });
 
-  it("negative: onCleanup inside onSettled is CLEANUP_IN_FORBIDDEN_SCOPE", () => {
+  it('negative: onCleanup inside onSettled is CLEANUP_IN_FORBIDDEN_SCOPE', () => {
     let thrown: unknown;
     const dispose = createRoot((dispose) => {
       onSettled(() => {
@@ -317,7 +323,7 @@ describe("02 · lifecycle: onSettled, onCleanup, onFlush", () => {
     dispose();
   });
 
-  it("negative: primitives cannot be created inside onSettled (PRIMITIVE_IN_FORBIDDEN_SCOPE)", () => {
+  it('negative: primitives cannot be created inside onSettled (PRIMITIVE_IN_FORBIDDEN_SCOPE)', () => {
     let thrown: unknown;
     const dispose = createRoot((dispose) => {
       onSettled(() => {
@@ -334,7 +340,7 @@ describe("02 · lifecycle: onSettled, onCleanup, onFlush", () => {
     dispose();
   });
 
-  it("onFlush runs after the scheduled flush, as its own update; in an owned scope it warns", async () => {
+  it('onFlush runs after the scheduled flush, as its own update; in an owned scope it warns', async () => {
     const log: string[] = [];
     // from an "event handler" (no owner):
     const [n, setN] = createSignal(0);
@@ -346,7 +352,7 @@ describe("02 · lifecycle: onSettled, onCleanup, onFlush", () => {
     });
     expect(log).toEqual([]);
     await tick(3);
-    expect(log).toEqual(["onFlush sees n=1"]);
+    expect(log).toEqual(['onFlush sees n=1']);
     expect(open()).toBe(false);
 
     const { codes } = captureDiagnostics(() =>
@@ -355,12 +361,12 @@ describe("02 · lifecycle: onSettled, onCleanup, onFlush", () => {
         dispose();
       }),
     );
-    expect(codes).toContain("ON_FLUSH_IN_OWNED_SCOPE");
+    expect(codes).toContain('ON_FLUSH_IN_OWNED_SCOPE');
   });
 });
 
-describe("02 · invariants and diagnostics (negative tests)", () => {
-  it("single-argument createEffect is MISSING_EFFECT_FN", () => {
+describe('02 · invariants and diagnostics (negative tests)', () => {
+  it('single-argument createEffect is MISSING_EFFECT_FN', () => {
     expect(() =>
       createRoot((dispose) => {
         try {
@@ -372,8 +378,8 @@ describe("02 · invariants and diagnostics (negative tests)", () => {
     ).toThrow(/MISSING_EFFECT_FN/);
   });
 
-  it("flush() inside an effect callback is FLUSH_IN_EFFECT_CALLBACK", () => {
-    let outcome = "no-error";
+  it('flush() inside an effect callback is FLUSH_IN_EFFECT_CALLBACK', () => {
+    let outcome = 'no-error';
     const { codes } = captureDiagnostics(() => {
       const dispose = createRoot((dispose) => {
         const [x] = createSignal(0);
@@ -392,10 +398,12 @@ describe("02 · invariants and diagnostics (negative tests)", () => {
       flush();
       dispose();
     });
-    expect(codes.includes("FLUSH_IN_EFFECT_CALLBACK") || /FLUSH_IN_EFFECT_CALLBACK/.test(outcome)).toBe(true);
+    expect(
+      codes.includes('FLUSH_IN_EFFECT_CALLBACK') || /FLUSH_IN_EFFECT_CALLBACK/.test(outcome),
+    ).toBe(true);
   });
 
-  it("effects created with no owner warn NO_OWNER_EFFECT", () => {
+  it('effects created with no owner warn NO_OWNER_EFFECT', () => {
     const { codes } = captureDiagnostics(() => {
       const [x] = createSignal(0);
       createEffect(
@@ -403,44 +411,44 @@ describe("02 · invariants and diagnostics (negative tests)", () => {
         () => {},
       );
     });
-    expect(codes).toContain("NO_OWNER_EFFECT");
+    expect(codes).toContain('NO_OWNER_EFFECT');
   });
 
-  it("onCleanup with no owner warns NO_OWNER_CLEANUP (and never runs)", () => {
+  it('onCleanup with no owner warns NO_OWNER_CLEANUP (and never runs)', () => {
     const { codes } = captureDiagnostics(() => onCleanup(() => {}));
-    expect(codes).toContain("NO_OWNER_CLEANUP");
+    expect(codes).toContain('NO_OWNER_CLEANUP');
   });
 
-  it("a top-level reactive read in a component body warns STRICT_READ_UNTRACKED", () => {
+  it('a top-level reactive read in a component body warns STRICT_READ_UNTRACKED', () => {
     function Title(props: { title: string }) {
       const t = props.title; // ❌ read once, at setup
       return <h1>{t}</h1>;
     }
     const { codes } = captureDiagnostics(() => {
-      const [title] = createSignal("hello");
+      const [title] = createSignal('hello');
       const r = render(() => <Title title={title()} />);
       r.unmount();
     });
-    expect(codes).toContain("STRICT_READ_UNTRACKED");
+    expect(codes).toContain('STRICT_READ_UNTRACKED');
   });
 
-  it("untrack marks an intentional one-time read (no warning)", () => {
+  it('untrack marks an intentional one-time read (no warning)', () => {
     function Title(props: { title: string }) {
       const t = untrack(() => props.title);
       return <h1>{t}</h1>;
     }
     const { codes } = captureDiagnostics(() => {
-      const [title] = createSignal("hello");
+      const [title] = createSignal('hello');
       const r = render(() => <Title title={title()} />);
       r.unmount();
     });
-    expect(codes).not.toContain("STRICT_READ_UNTRACKED");
+    expect(codes).not.toContain('STRICT_READ_UNTRACKED');
   });
 
-  it("reading a store proxy in the apply half warns; extract values in compute instead", () => {
+  it('reading a store proxy in the apply half warns; extract values in compute instead', () => {
     const bad = captureDiagnostics(() => {
       const dispose = createRoot((dispose) => {
-        const [store] = createStore({ user: { name: "Ada" } });
+        const [store] = createStore({ user: { name: 'Ada' } });
         createEffect(
           () => store.user,
           (user) => {
@@ -452,11 +460,11 @@ describe("02 · invariants and diagnostics (negative tests)", () => {
       flush();
       dispose();
     });
-    expect(bad.codes).toContain("STRICT_READ_UNTRACKED");
+    expect(bad.codes).toContain('STRICT_READ_UNTRACKED');
 
     const good = captureDiagnostics(() => {
       const dispose = createRoot((dispose) => {
-        const [store] = createStore({ user: { name: "Ada" } });
+        const [store] = createStore({ user: { name: 'Ada' } });
         createEffect(
           () => ({ name: store.user.name }), // ✅ plain values
           (v) => {
@@ -468,12 +476,12 @@ describe("02 · invariants and diagnostics (negative tests)", () => {
       flush();
       dispose();
     });
-    expect(good.codes).not.toContain("STRICT_READ_UNTRACKED");
+    expect(good.codes).not.toContain('STRICT_READ_UNTRACKED');
   });
 });
 
-describe("02 · scheduling internals", () => {
-  it("in one flush every render-effect apply runs before any user-effect apply, regardless of creation order", () => {
+describe('02 · scheduling internals', () => {
+  it('in one flush every render-effect apply runs before any user-effect apply, regardless of creation order', () => {
     const order: string[] = [];
     const { setX, dispose } = createRoot((dispose) => {
       const [x, setX] = createSignal(0);
@@ -495,11 +503,11 @@ describe("02 · scheduling internals", () => {
     order.length = 0;
     setX(1);
     flush();
-    expect(order).toEqual(["render 1", "user 1"]);
+    expect(order).toEqual(['render 1', 'user 1']);
     dispose();
   });
 
-  it("an effect whose compute reads a pending async value defers its apply until the value lands", async () => {
+  it('an effect whose compute reads a pending async value defers its apply until the value lands', async () => {
     const d = deferred<number>();
     const log: string[] = [];
     const dispose = createRoot((dispose) => {
@@ -517,20 +525,20 @@ describe("02 · scheduling internals", () => {
     d.resolve(7);
     await settle();
     flush();
-    expect(log).toEqual(["apply 7"]);
+    expect(log).toEqual(['apply 7']);
     dispose();
   });
 
-  it("onSettled from an event handler waits for the action the handler started", async () => {
+  it('onSettled from an event handler waits for the action the handler started', async () => {
     const gate = deferred<void>();
     const log: string[] = [];
     const save = action(function* () {
       yield gate.promise;
-      log.push("action done");
+      log.push('action done');
     });
     const done = save(); // an "event handler" (no owner)
     onSettled(() => {
-      log.push("settled");
+      log.push('settled');
     });
     flush();
     await settle();
@@ -539,12 +547,12 @@ describe("02 · scheduling internals", () => {
     await done;
     await settle();
     flush();
-    expect(log).toEqual(["action done", "settled"]);
+    expect(log).toEqual(['action done', 'settled']);
   });
 });
 
-describe("02 · more negative tests", () => {
-  it("returning a non-function from an apply half is an application error (system halts)", () => {
+describe('02 · more negative tests', () => {
+  it('returning a non-function from an apply half is an application error (system halts)', () => {
     let error: unknown;
     const { codes } = captureDiagnostics(() => {
       const dispose = createRoot((dispose) => {
@@ -563,10 +571,10 @@ describe("02 · more negative tests", () => {
       dispose();
     });
     expect(String(error)).toMatch(/invalid cleanup value/);
-    expect(codes).toContain("REACTIVITY_HALTED");
+    expect(codes).toContain('REACTIVITY_HALTED');
   });
 
-  it("onSettled returning a cleanup from an unowned scope is SETTLED_CLEANUP_UNOWNED", async () => {
+  it('onSettled returning a cleanup from an unowned scope is SETTLED_CLEANUP_UNOWNED', async () => {
     let error: unknown;
     const { codes } = await captureDiagnosticsAsync(async () => {
       try {
@@ -578,10 +586,10 @@ describe("02 · more negative tests", () => {
       }
     });
     expect(String(error)).toMatch(/SETTLED_CLEANUP_UNOWNED/);
-    expect(codes).toContain("SETTLED_CLEANUP_UNOWNED");
+    expect(codes).toContain('SETTLED_CLEANUP_UNOWNED');
   });
 
-  it("creating a primitive inside an apply half throws PRIMITIVE_IN_EFFECT_CALLBACK (apply is unowned)", () => {
+  it('creating a primitive inside an apply half throws PRIMITIVE_IN_EFFECT_CALLBACK (apply is unowned)', () => {
     let error: unknown;
     const dispose = createRoot((dispose) => {
       const [x] = createSignal(1);
@@ -602,11 +610,11 @@ describe("02 · more negative tests", () => {
     dispose();
   });
 
-  it("pattern: an apply half that owns an external resource cleans it up on change and disposal", () => {
+  it('pattern: an apply half that owns an external resource cleans it up on change and disposal', () => {
     const opened: string[] = [];
     const closed: string[] = [];
     const { setRoom, dispose } = createRoot((dispose) => {
-      const [room, setRoom] = createSignal("a");
+      const [room, setRoom] = createSignal('a');
       createEffect(
         () => room(),
         (r) => {
@@ -617,11 +625,10 @@ describe("02 · more negative tests", () => {
       return { setRoom, dispose };
     });
     flush();
-    setRoom("b");
+    setRoom('b');
     flush();
     dispose();
-    expect(opened).toEqual(["a", "b"]);
-    expect(closed).toEqual(["a", "b"]);
+    expect(opened).toEqual(['a', 'b']);
+    expect(closed).toEqual(['a', 'b']);
   });
 });
-

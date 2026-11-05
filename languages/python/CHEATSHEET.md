@@ -26,6 +26,7 @@ uv sync --frozen --no-dev            # Production container deterministic sync
 ## 2. Core Dunder Protocols Reference
 
 ### Representation & Hashing
+
 ```python
 class Model:
     def __repr__(self) -> str:
@@ -47,6 +48,7 @@ class Model:
 ```
 
 ### Sequence & Arithmetic Emulation
+
 ```python
 class Vector:
     __slots__ = ("x", "y")  # Eliminates __dict__, saves >60% RAM
@@ -71,6 +73,7 @@ class Vector:
 ## 3. Descriptors, MRO & Cooperative `super()`
 
 ### Data Descriptor (PEP 487)
+
 ```python
 class PositiveNumber:
     def __set_name__(self, owner: type, name: str) -> None:
@@ -88,6 +91,7 @@ class PositiveNumber:
 ```
 
 ### Cooperative Diamond Inheritance
+
 ```python
 class Base:
     def __init__(self, **kwargs: object) -> None:
@@ -216,10 +220,10 @@ def test_list_reversal_involution(xs: list[int]) -> None:
 ## 8. Performance & Defensive Security Guardrails
 
 | Requirement | Anti-Pattern | Senior Production Idiom |
-|---|---|---|
+| --- | --- | --- |
 | **Subprocess Execution** | `subprocess.run(f"cat {arg}", shell=True)` | `subprocess.run(["cat", arg], shell=False, check=True)` |
 | **Path Traversal Defense** | `if ".." not in user_path:` | `if not (base / user_path).resolve().is_relative_to(base.resolve()): raise PermissionError` |
 | **Object Deserialization** | `pickle.loads(untrusted_bytes)` | Use `json.loads()` or HMAC-signed envelopes |
-| **String Building in Loops**| `s = ""; for x in items: s += x` | `s = "".join(items)` ($O(N)$ single-pass allocation) |
-| **Attribute Lookup in Loops**| `for x in data: math.sqrt(x)` | `sqrt = math.sqrt; for x in data: sqrt(x)` (`LOAD_FAST`) |
-| **Instance Memory Footprint**| Standard class with dynamic `__dict__` | `__slots__ = ("a", "b")` (eliminates `__dict__`, $>60\%$ memory cut) |
+| **String Building in Loops** | `s = ""; for x in items: s += x` | `s = "".join(items)` ($O(N)$ single-pass allocation) |
+| **Attribute Lookup in Loops** | `for x in data: math.sqrt(x)` | `sqrt = math.sqrt; for x in data: sqrt(x)` (`LOAD_FAST`) |
+| **Instance Memory Footprint** | Standard class with dynamic `__dict__` | `__slots__ = ("a", "b")` (eliminates `__dict__`, $>60\%$ memory cut) |

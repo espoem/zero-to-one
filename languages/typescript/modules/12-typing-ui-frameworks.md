@@ -1,9 +1,9 @@
 # Module 12: Typing UI Frameworks — React & Solid (Typing Only)
 
-> Type tests: [`examples/12-typing-ui-frameworks/react/react-typing.tsx`](../examples/12-typing-ui-frameworks/react/react-typing.tsx) (`@types/react@19.3.0`) and [`examples/12-typing-ui-frameworks/solid/solid-typing.tsx`](../examples/12-typing-ui-frameworks/solid/solid-typing.tsx) (`solid-js@2.0.0-rc.19`, **release candidate**). Runner: [`examples/12-typing-ui-frameworks/ui-typing.test.ts`](../examples/12-typing-ui-frameworks/ui-typing.test.ts).
-> Run: `mise exec -- npm run typecheck` (or `node --test examples/12-typing-ui-frameworks/`).
+> Type tests: [`examples/12-typing-ui-frameworks/react/react-typing.tsx`](../examples/12-typing-ui-frameworks/react/react-typing.tsx) (`@types/react@19.3.0`) and [`examples/12-typing-ui-frameworks/solid/solid-typing.tsx`](../examples/12-typing-ui-frameworks/solid/solid-typing.tsx) (`solid-js@2.0.0-rc.19`, **release candidate**). Runner: [`examples/12-typing-ui-frameworks/ui-typing.test.ts`](../examples/12-typing-ui-frameworks/ui-typing.test.ts). Run: `mise exec -- npm run typecheck` (or `node --test examples/12-typing-ui-frameworks/`).
 
-**Scope.** This module owns how TypeScript *types* JSX, components, props, hooks/primitives, events and refs. It does not explain how the frameworks *run*:
+**Scope.** This module owns how TypeScript _types_ JSX, components, props, hooks/primitives, events and refs. It does not explain how the frameworks _run_:
+
 - React rendering, Fiber, hooks internals, effects, transitions, Suspense, Server Components, Actions and the React Compiler → [technologies/react](../../../technologies/react/README.md).
 - Solid's reactive graph, run-once components, batching and `flush()`, stores and projections, async boundaries → [technologies/solidjs](../../../technologies/solidjs/README.md).
 
@@ -53,8 +53,8 @@ flowchart TD
 
 ### 1.3 Configuration per framework
 
-| | React 19 | Solid 2.0 (RC) | Solid 1.x (then) |
-|---|---|---|---|
+|  | React 19 | Solid 2.0 (RC) | Solid 1.x (then) |
+| --- | --- | --- | --- |
 | `jsx` | `react-jsx` (prod) / `react-jsxdev` | `preserve` (Solid's compiler transforms JSX) | `preserve` |
 | `jsxImportSource` | `react` (the default) | `@solidjs/web` | `solid-js` |
 | JSX namespace | `React.JSX` (no global `JSX` since `@types/react` 19) | `JSX` exported by `@solidjs/web` | `JSX` from `solid-js` |
@@ -76,7 +76,12 @@ interface GreetingProps {
   children?: ReactNode;
 }
 export function Greeting({ name, children }: GreetingProps) {
-  return <p>Hello {name}{children}</p>;
+  return (
+    <p>
+      Hello {name}
+      {children}
+    </p>
+  );
 }
 ```
 
@@ -85,9 +90,9 @@ A component may return any `ReactNode`: strings, numbers, `bigint`, `null`, arra
 ### 2.2 `ReactNode` vs `ReactElement` vs `JSX.Element`
 
 | Type | What it is | Use it for |
-|---|---|---|
-| `React.JSX.Element` | The type of a JSX *expression*: `ReactElement<any, any>` | Rarely written by hand; it is what `<div/>` evaluates to |
-| `ReactElement<P, T>` | An element object `{ type, props, key }` with typed props | Props that must be a *single element* you will clone or inspect |
+| --- | --- | --- |
+| `React.JSX.Element` | The type of a JSX _expression_: `ReactElement<any, any>` | Rarely written by hand; it is what `<div/>` evaluates to |
+| `ReactElement<P, T>` | An element object `{ type, props, key }` with typed props | Props that must be a _single element_ you will clone or inspect |
 | `ReactNode` | Anything React can render | `children`, render-prop results, "slot" props |
 
 `JSX.Element ⊂ ReactElement ⊂ ReactNode`, and `string ⊂ ReactNode` but `string ⊄ JSX.Element`. The type test asserts all four relations. **Failure mode:** typing `children: JSX.Element` rejects `"text"`, numbers and arrays, and pushes callers into needless fragments.
@@ -97,8 +102,8 @@ A component may return any `ReactNode`: strings, numbers, `bigint`, `null`, arra
 `ComponentProps<"button">` is `JSX.IntrinsicElements["button"]`: all DOM attributes plus `ref` and `key` handling. To change a prop's type, remove it first; an intersection would combine the two handler types instead of replacing one.
 
 ```tsx
-type ButtonProps = Omit<ComponentProps<"button">, "onClick"> & {
-  variant: "primary" | "ghost";
+type ButtonProps = Omit<ComponentProps<'button'>, 'onClick'> & {
+  variant: 'primary' | 'ghost';
   onClick: (id: string) => void;
 };
 ```
@@ -109,8 +114,8 @@ In React 19, `ComponentProps<"input">` includes `ref`, and `ComponentPropsWithou
 
 ```tsx
 type ModalProps =
-  | { variant: "alert"; onConfirm: () => void }
-  | { variant: "prompt"; onSubmit: (value: string) => void; defaultValue?: string };
+  | { variant: 'alert'; onConfirm: () => void }
+  | { variant: 'prompt'; onSubmit: (value: string) => void; defaultValue?: string };
 ```
 
 JSX attribute objects are fresh, so `<Modal variant="alert" onConfirm={…} onSubmit={…}/>` is an excess-property error against the `"alert"` member. Inside the component, narrow on `props.variant`.
@@ -127,9 +132,11 @@ interface TableProps<TRow> {
   rowKey: (row: TRow) => string;
   renderRow: (row: TRow) => ReactNode;
 }
-export function Table<TRow>({ rows, rowKey, renderRow }: TableProps<TRow>) { /* … */ }
+export function Table<TRow>({ rows, rowKey, renderRow }: TableProps<TRow>) {
+  /* … */
+}
 
-<Table rows={users} rowKey={(u) => u.id} renderRow={(u) => u.name} />;      // TRow = User
+<Table rows={users} rowKey={(u) => u.id} renderRow={(u) => u.name} />; // TRow = User
 <Table<User> rows={users} rowKey={(u) => u.id} renderRow={(u) => u.name} />; // explicit
 ```
 
@@ -138,16 +145,21 @@ Inference runs in two phases: context-insensitive arguments (`rows`) first, then
 ### 2.6 Polymorphic components (`as` prop)
 
 ```tsx
-type PolymorphicProps<E extends ElementType, Own = {}> =
-  Own & { as?: E } & Omit<ComponentProps<E>, keyof Own | "as">;
+type PolymorphicProps<E extends ElementType, Own = {}> = Own & { as?: E } & Omit<
+    ComponentProps<E>,
+    keyof Own | 'as'
+  >;
 
-export function Text<E extends ElementType = "span">({ as, ...rest }: PolymorphicProps<E, { tone?: "muted" }>) {
-  const Tag: ElementType = as ?? "span";
+export function Text<E extends ElementType = 'span'>({
+  as,
+  ...rest
+}: PolymorphicProps<E, { tone?: 'muted' }>) {
+  const Tag: ElementType = as ?? 'span';
   return <Tag {...rest} />;
 }
 
-<Text as="a" href="/docs" />;   // ok: anchor props
-<Text href="/docs" />;          // error: <span> has no href
+<Text as="a" href="/docs" />; // ok: anchor props
+<Text href="/docs" />; // error: <span> has no href
 ```
 
 `E` is inferred from the `as` attribute; `ComponentProps<E>` then supplies the rest. Two costs to know: the type is expensive to compute for large unions of element types (editor latency; profile it with the techniques in [Module 13](./13-library-authoring-performance-and-type-tests.md)), and widening `Tag` to `ElementType` inside the body is an intentional escape hatch, because TypeScript cannot prove that `rest` matches an arbitrary `E`.
@@ -158,7 +170,7 @@ A higher-order component that injects props is typed by removing the injected ke
 
 ```tsx
 function withUser<P extends { user: User }>(Component: ComponentType<P>) {
-  return function WithUser(props: Omit<P, "user">) {
+  return function WithUser(props: Omit<P, 'user'>) {
     const user = useCurrentUser();
     return <Component {...(props as P)} user={user} />;
   };
@@ -174,25 +186,25 @@ The cast is unavoidable: `Omit<P, "user"> & { user: User }` is not provably `P` 
 ### 3.1 `useState`
 
 ```ts
-const [count, setCount] = useState(0);              // number
+const [count, setCount] = useState(0); // number
 const [user, setUser] = useState<User | null>(null); // annotate when the initial value is narrower than the state
-const [nothing] = useState();                        // undefined
+const [nothing] = useState(); // undefined
 ```
 
-The setter is `Dispatch<SetStateAction<S>>`, where `SetStateAction<S> = S | ((prev: S) => S)`. Because a function argument is interpreted as an updater, storing a *function* in state needs `setFn(() => fn)`.
+The setter is `Dispatch<SetStateAction<S>>`, where `SetStateAction<S> = S | ((prev: S) => S)`. Because a function argument is interpreted as an updater, storing a _function_ in state needs `setFn(() => fn)`.
 
 ### 3.2 `useRef` overloads (React 19)
 
-| Call | Type | Use |
-|---|---|---|
-| `useRef<T>(initial: T)` | `RefObject<T>` | Mutable instance value |
-| `useRef<T>(null)` | `RefObject<T \| null>` | DOM ref passed to `ref={…}` |
-| `useRef<T>(undefined)` | `RefObject<T \| undefined>` | Lazily set value |
-| `useRef<T>()` | **Error** in React 19 types | (allowed in 18) |
+| Call                    | Type                        | Use                         |
+| ----------------------- | --------------------------- | --------------------------- |
+| `useRef<T>(initial: T)` | `RefObject<T>`              | Mutable instance value      |
+| `useRef<T>(null)`       | `RefObject<T \| null>`      | DOM ref passed to `ref={…}` |
+| `useRef<T>(undefined)`  | `RefObject<T \| undefined>` | Lazily set value            |
+| `useRef<T>()`           | **Error** in React 19 types | (allowed in 18)             |
 
 ### Then vs now: refs
 
-**Then (`@types/react` 16–18).** `useRef<T>(null)` returned a *read-only* `RefObject<T>` and `useRef<T>(initial)` a `MutableRefObject<T>`; the choice of overload decided whether you could assign `.current`. Function components could not receive `ref` as a prop: you wrapped them in `forwardRef`, whose signature `forwardRef<T, P>(render)` returns a non-generic component, so **generic components lost their type parameter** and needed a cast-based `fixedForwardRef` helper.
+**Then (`@types/react` 16–18).** `useRef<T>(null)` returned a _read-only_ `RefObject<T>` and `useRef<T>(initial)` a `MutableRefObject<T>`; the choice of overload decided whether you could assign `.current`. Function components could not receive `ref` as a prop: you wrapped them in `forwardRef`, whose signature `forwardRef<T, P>(render)` returns a non-generic component, so **generic components lost their type parameter** and needed a cast-based `fixedForwardRef` helper.
 
 **Now (React 19).** `RefObject<T>.current` is always writable; `MutableRefObject` is deprecated. `ref` is an ordinary prop for function components, so a generic component just declares `ref?: Ref<HTMLInputElement>` in its props and stays generic. `forwardRef` still works but is on the deprecation path.
 
@@ -214,9 +226,9 @@ When React calls the cleanup and whether it also calls the callback with `null` 
 
 ```ts
 type CartAction =
-  | { type: "add"; sku: string; qty: number }
-  | { type: "remove"; sku: string }
-  | { type: "clear" };
+  | { type: 'add'; sku: string; qty: number }
+  | { type: 'remove'; sku: string }
+  | { type: 'clear' };
 ```
 
 `dispatch` is typed from the reducer's second parameter, so `dispatch({ type: "add", sku })` (missing `qty`) and `dispatch({ type: "empty" })` are errors. Add a `never` check in the reducer's `default` branch so that a new action member breaks the build ([Module 03](./03-unions-narrowing-and-control-flow.md)). React 19's types infer the action from the reducer (`useReducer<S, A extends AnyActionArg>`); explicit type arguments in the old form `useReducer<Reducer<S, A>>` no longer match.
@@ -253,14 +265,14 @@ export function createSafeContext<T>(displayName: string) {
 ### 3.7 `use`, actions and optimistic state: signatures only
 
 | API | Signature (from `@types/react` 19.3) | Typing note |
-|---|---|---|
+| --- | --- | --- |
 | `use` | `use<T>(usable: Usable<T>): T` where `Usable<T>` is a promise-like or a `Context<T>` | `use(userPromise)` gives `User`; `use(ThemeContext)` gives the context's `T` (including `null` if that is part of `T`) |
 | `useActionState` | `useActionState<State, Payload>(action: (state: Awaited<State>, payload: Payload) => State \| Promise<State>, initialState: Awaited<State>, permalink?)` → `[state, dispatch: (payload: Payload) => void, isPending]` | Model the state as a discriminated union (`idle` / `saved` / `error`) |
 | `useOptimistic` | `useOptimistic<State, Action>(passthrough: State, reducer: (state: State, action: Action) => State)` → `[State, (action: Action) => void]` | The action type comes from the reducer's 2nd parameter |
 | `startTransition` | `(scope: () => void \| Promise<void>) => void` | Async transitions are allowed in 19 |
 | `<form action>` | `string \| ((formData: FormData) => void \| Promise<void>)` | A `useActionState` dispatch with `Payload = FormData` fits |
 
-What these hooks *do* (queuing, pending states, rollback, races, progressive enhancement) is owned by the react track's Actions module.
+What these hooks _do_ (queuing, pending states, rollback, races, progressive enhancement) is owned by the react track's Actions module.
 
 ### 3.8 Server-function arguments: a type-level serializability constraint
 
@@ -268,27 +280,36 @@ Arguments and return values of `"use server"` functions cross the network, so fu
 
 ```ts
 type Serializable =
-  | string | number | boolean | null | undefined | bigint | Date | FormData
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | bigint
+  | Date
+  | FormData
   | readonly Serializable[]
   | { readonly [key: string]: Serializable };
 
-function serverFunction<Args extends Serializable[], R extends Serializable>(fn: (...args: Args) => Promise<R>) {
+function serverFunction<Args extends Serializable[], R extends Serializable>(
+  fn: (...args: Args) => Promise<R>,
+) {
   return fn;
 }
 serverFunction(async (cb: () => void) => String(cb)); // error
 ```
 
-This is a *model*; the exact set React's Flight serializer supports (Maps, Sets, typed arrays, promises, server references) is listed in the react track. A static constraint never replaces runtime validation of the arguments: a server function is a public HTTP endpoint, so parse its input with a schema ([Module 11](./11-runtime-boundaries-validation.md)).
+This is a _model_; the exact set React's Flight serializer supports (Maps, Sets, typed arrays, promises, server references) is listed in the react track. A static constraint never replaces runtime validation of the arguments: a server function is a public HTTP endpoint, so parse its input with a schema ([Module 11](./11-runtime-boundaries-validation.md)).
 
 ### 3.9 Augmenting React's JSX
 
 Custom elements and CSS custom properties are added by module augmentation ([Module 06](./06-modules-declarations-and-tsconfig.md)):
 
 ```ts
-declare module "react" {
+declare module 'react' {
   namespace JSX {
     interface IntrinsicElements {
-      "my-rating": { value: number; max?: number; children?: never };
+      'my-rating': { value: number; max?: number; children?: never };
     }
   }
   interface CSSProperties {
@@ -309,14 +330,14 @@ Solid 2.0 is at `2.0.0-rc.19` on npm (`next` tag; `latest` is still 1.9.17). Eve
 
 ```ts
 type Accessor<T> = () => T;
-type Setter<in out T> = { /* overloads: value or updater */ };
+type Setter<in out T> = {/* overloads: value or updater */};
 type Signal<T> = [get: SourceAccessor<T>, set: Setter<T>];
 ```
 
 - `createSignal(0)` → `[Accessor<number>, Setter<number>]`. Read with `count()`.
 - **Literal widening.** `createSignal("light")` gives `string`, like a `let` binding. Annotate `createSignal<"light" | "dark">("light")` for a union.
 - `createSignal<number>()` → `number | undefined`.
-- **Functions are not values.** The value overload is `createSignal<T>(value: Exclude<T, Function>)`; a function argument selects the *derived signal* overload (`createSignal(fn)` is a writable memo in 2.0). To store a callback, wrap it in an object.
+- **Functions are not values.** The value overload is `createSignal<T>(value: Exclude<T, Function>)`; a function argument selects the _derived signal_ overload (`createSignal(fn)` is a writable memo in 2.0). To store a callback, wrap it in an object.
 - `Setter<in out T>` uses an explicit **variance annotation**: setters are invariant in `T` ([Module 07](./07-generics-and-inference.md)).
 
 ### 4.2 Memos and colorless async
@@ -324,7 +345,7 @@ type Signal<T> = [get: SourceAccessor<T>, set: Setter<T>];
 `createMemo(() => count() * 2)` → `Accessor<number>`. In 2.0 a memo may return a promise or async iterable, and the accessor's type is the **resolved** value:
 
 ```ts
-const user = createMemo(async () => ({ id: count(), name: "Ada" }));
+const user = createMemo(async () => ({ id: count(), name: 'Ada' }));
 user(); // { id: number; name: string } — not a Promise
 ```
 
@@ -334,7 +355,9 @@ The compute function type is `ComputeFunction<Prev, Next> = (v: Prev) => Promise
 
 ```ts
 const [store, setStore] = createStore<{ todos: Todo[] }>({ todos: [] });
-setStore((draft) => { draft.todos.push({ id: 1, title: "write", done: false }); });
+setStore((draft) => {
+  draft.todos.push({ id: 1, title: 'write', done: false });
+});
 ```
 
 In rc.19 `Store<T> = T` and `StoreSetter<T> = (fn: (state: T) => T | void) => void`: the setter takes a draft function and may mutate it or return a replacement. Wrong field types inside the draft are ordinary assignment errors. The function form `createStore(fn, seed)` returns a derived (projection) store with the same types.
@@ -342,7 +365,7 @@ In rc.19 `Store<T> = T` and `StoreSetter<T> = (fn: (state: T) => T | void) => vo
 ### 4.4 Component types
 
 | Type | Props | Children |
-|---|---|---|
+| --- | --- | --- |
 | `Component<P>` | `P` | Only if `P` declares them |
 | `ParentComponent<P>` | `P & { children?: JSX.Element }` | Optional |
 | `VoidComponent<P>` | `P & { children?: never }` | Forbidden |
@@ -360,11 +383,11 @@ In rc.19 `Store<T> = T` and `StoreSetter<T> = (fn: (state: T) => T | void) => vo
 
 `<Show when={x}>` with a function child passes a **narrowed accessor**: `(item: Accessor<NonNullable<T>>) => JSX.Element`. With `keyed`, it passes the narrowed **value** instead. `<For>` changes its callback shape with the keying mode:
 
-| `<For>` mode | `item` | `index` |
-|---|---|---|
-| default (`keyed` by reference) | `T` | `Accessor<number>` |
-| `keyed={false}` | `Accessor<T>` | `number` |
-| `keyed={(item) => key}` | `Accessor<T>` | `Accessor<number>` |
+| `<For>` mode                   | `item`        | `index`            |
+| ------------------------------ | ------------- | ------------------ |
+| default (`keyed` by reference) | `T`           | `Accessor<number>` |
+| `keyed={false}`                | `Accessor<T>` | `number`           |
+| `keyed={(item) => key}`        | `Accessor<T>` | `Accessor<number>` |
 
 The three overloads are distinguished by the literal type of `keyed`, a direct application of overload resolution on literal types ([Module 07](./07-generics-and-inference.md)).
 
@@ -379,7 +402,7 @@ The three overloads are distinguished by the literal type of `keyed`, a direct a
 ### Then vs now: Solid 1.x → 2.0 typing
 
 | Concern | 1.x | 2.0 RC (rc.19) | Migration note |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `jsxImportSource` | `solid-js` | `@solidjs/web` | Old setting → TS2875 on every tag |
 | Prop helpers | `mergeProps`, `splitProps` (tuple result) | `merge`, `omit` | `splitProps(props, ["a"])` → `omit(props, "a")` plus direct reads |
 | Async data | `createResource` → `Resource<T>` with `.loading`/`.error` | async `createMemo` → `Accessor<T>` | Pending/error states move to boundaries, not to the type |
@@ -445,5 +468,5 @@ Module-augment React's JSX namespace: `declare module "react" { namespace JSX { 
 
 <details><summary>8. Why is a type-level <code>Serializable</code> constraint on server functions not enough?</summary>
 
-Types are erased; a server function is reachable by any HTTP client, which can send any payload. The constraint prevents *your* code from passing non-serializable values; the server must still parse its input with a runtime schema and check authorization.
+Types are erased; a server function is reachable by any HTTP client, which can send any payload. The constraint prevents _your_ code from passing non-serializable values; the server must still parse its input with a runtime schema and check authorization.
 </details>

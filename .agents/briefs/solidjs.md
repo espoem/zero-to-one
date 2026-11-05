@@ -1,7 +1,7 @@
 # Brief: SolidJS (`technologies/solidjs`)
 
-| | |
-|---|---|
+|  |  |
+| --- | --- |
 | Phase | 1 |
 | Kind | EXISTING track: restructure and update in place, keeping tests green throughout |
 | Primary (author) | **Opus · claude.ai** |
@@ -14,12 +14,14 @@
 | Research dossier | `.agents/research/A-frontend.md` |
 
 ## 0. Read before starting (binding)
+
 1. `AGENTS.md`: the contract. If it conflicts with this brief, AGENTS.md wins; log the conflict in your review file.
 2. `.agents/OWNERSHIP.md`: what you own vs only cross-link.
 3. `.agents/REVIEW.md`: the checklist your work is judged against.
 4. Your global/agent instructions still apply where they do not conflict.
 
 ## 1. Owner decisions and track-specific instructions
+
 - Bump to the latest Solid 2 RC (rc.19 at research time; re-check). Fix the README, which still says rc.8.
 - Start mode lives in `@solidjs/vite-plugin`. Warn that `@solidjs/start` 2.x targets Solid 1.9.
 - Merge in the Solid content handed over from TypeScript module 13. Grow to the 10-module structure in the dossier. Write the React-vs-Solid comparison here, once (react links to it).
@@ -28,11 +30,14 @@
 - Pin **all** tooling via mise (`.mise.toml` + `mise.lock`): node 26 for JS/TS, plus every CLI and runtime the examples need.
 
 ## 2. Ownership
+
 **You own (full treatment):**
+
 - Signals graph, push-pull, stores/projections, colorless async, start mode
 - React vs Solid mental-model comparison (written once)
 
 **Cross-link only (do not re-explain):**
+
 - Types & coercion, scope/closures/`this`, prototypes/classes → owned by `languages/javascript`
 - Iterators, generators, async iteration, Promise/job-queue semantics (spec level) → owned by `languages/javascript`
 - ESM semantics (Module Records, live bindings, TLA), `exports` conditions at runtime → owned by `languages/javascript`
@@ -71,31 +76,27 @@
      - `createRenderEffect`, `createTrackedEffect`, `createReaction`;
      - `onSettled` vs `onCleanup`; `onFlush`;
      - **no writes in an owned scope** (`ownedWrite`); no top-level reactive reads;
-     - the diagnostics codes (`STRICT_READ_UNTRACKED`, `UNCOMMITTED_INPUT_OVERWRITTEN`, `LOADING_ON_OUTSIDE_HOLD`).
-     Split out of existing M01.3.
+     - the diagnostics codes (`STRICT_READ_UNTRACKED`, `UNCOMMITTED_INPUT_OVERWRITTEN`, `LOADING_ON_OUTSIDE_HOLD`). Split out of existing M01.3.
   3. **Components, props & DOM templating**:
      - props are values (call accessors at the call site); no destructuring; `merge`/`omit`;
      - Oxc compiler output; event handlers bind once;
      - lowercase attributes, boolean presence, `class` object/array form;
      - refs as functions/arrays, directive factories (`applyRef`);
-     - form-input binding semantics.
-     Existing M02.
+     - form-input binding semantics. Existing M02.
   4. **Control flow & composition**: `<For>` three keying modes and their callback shapes; callback bodies are owners, not tracking scopes; `<Repeat>`, `<Show>`/`<Switch>` narrowing; `dynamic()` factory vs `<Dynamic>`; `children()`, `lazy`, `Portal`; context (default-less throws `ContextNotFoundError`; `null` for optional). Split out of existing M02.
   5. **Stores & projections**: draft-first setters, the return-value (shallow) form, `reconcile(data, key)`, `createProjection`/`createStore(fn)` with keyed reconciliation, O(1) selection, `snapshot` vs `deep`, `storePath`. Existing M03.
   6. **Colorless async**:
      - async `createMemo`/`createProjection`; `<Loading>` (+ `on` semantics); `<Reveal>` ordering;
      - `isPending` vs `latest`, `createDeferred`, `from()` for push sources, `resolve()`, `NotReadyError`;
      - cancellation via `onCleanup` before the first await;
-     - `<Errored>` self-healing.
-     Existing M04.
+     - `<Errored>` self-healing. Existing M04.
   7. **Transactions & optimistic state**: `action(function*)` with `yield`; `createOptimistic`/`createOptimisticStore`; `affects`, `refresh` (quiet vs pending); `until(predicate, {timeout, signal})` + `TimeoutError`; race handling. Existing M05.
   8. **Full-stack: start mode, SSR & server functions**:
      - `@solidjs/vite-plugin` start mode; `renderToStream`, streaming, hydration, `clientOnly`, `httpStatus`/`httpHeader`;
      - **request isolation (module-scope state leaks across requests)**;
      - `"use server"`, `GET`/`withMeta`, `getRequestEvent`/`provideRequestEvent`;
      - Standard Schema validation; seroval serialisation; `@solidjs/web/frames` (experimental server components);
-     - router 2.0-next.
-     Existing M06.
+     - router 2.0-next. Existing M06.
   9. **Testing, debugging & performance (new)**: `createRoot` + `flush` in unit tests; `@solidjs/testing-library` rc; dev vs `observe` vs prod builds (export conditions); `@solidjs/web/performance-tracks` in Chrome DevTools; diagnostics; bundle and hydration cost; multiple-instance detection.
   10. **Migration 1.x→2.0 & architecture deep dives**: the full rename/removal map; React 19 vs Solid 2 execution traces; the O(1) projection proof; real-time sync. Existing M07; add the ecosystem-compatibility status (router, start, UI libs).
 - **Gotchas & production failure modes**
@@ -109,7 +110,7 @@
   8. Module-scope stores become **shared cross-request state** once SSR is on, leaking data between users. Create state in a Provider.
   9. `<Loading on={...}>` with the same data also read outside the boundary means the fallback never shows (`LOADING_ON_OUTSIDE_HOLD`).
   10. `isPending` is not 1.x `.loading`: a bare `refresh()` is silent. Use `affects(x); refresh(x)`, or an optimistic "saving" flag.
-  11. Async cleanup registered *after* the first `await` never cancels the superseded fetch.
+  11. Async cleanup registered _after_ the first `await` never cancels the superseded fetch.
   12. `undefined` in `merge`/setters overrides; it does not skip.
   13. Two copies of `solid-js` (for example `@solidjs/start@2` pulling 1.9 next to 2.0-rc) produce the "Multiple Solid instances" error and dead reactivity. Pin and dedupe.
   14. Installing "SolidStart 2" for a Solid 2 app installs the wrong major. Use `@solidjs/vite-plugin` start mode.
@@ -156,7 +157,9 @@
 ---
 
 ## 4. Re-verify list
+
 These claims were marked unverified during research. Confirm or correct each one against a primary source before teaching it:
+
 - Ground truth: the `CHEATSHEET.md` shipped inside `solid-js@2.0.0-rc.19`, plus https://github.com/solidjs/solid/tree/next/documentation/solid-2.0 (RFCs, MIGRATION.md). There is no GA date (unverified).
 - docs.solidjs.com (1.x-era ToC; the 2.0 docs status is unverified).
 - Background: Ryan Carniato's reactivity writing; the TC39 Signals proposal (https://github.com/tc39/proposal-signals, Stage 1, unverified current stage).
@@ -164,7 +167,9 @@ These claims were marked unverified during research. Confirm or correct each one
 - M01 "Render lane vs user lane": terminology not found in the cheatsheet (unverified). Check it against the RFCs.
 
 ## 5. Certifications & exams
+
 Follow AGENTS.md § Certification and Exam Coverage exactly. Minimum deliverables:
+
 1. **README "Certifications & Exams" section.** Start from the exams named in the dossier above ("Authoritative syllabi used"). Re-verify each exam's code, status, guide version/date, targeted product version and domain weights on the official page. Where no certification exists, say so and use the recognised interview format.
 2. **`exams/README.md` coverage matrix.** Rows are domain/objective, weight, modules, examples, status. No ❌ at hand-off.
 3. **`exams/<exam-code>.md` question banks.**
@@ -176,11 +181,14 @@ Follow AGENTS.md § Certification and Exam Coverage exactly. Minimum deliverable
 5. **Original questions only.** No braindump content.
 
 ## 6. Code languages
+
 Per AGENTS.md § Code Example Languages:
+
 - **Primary:** pseudocode (where algorithms or protocols are described) + TypeScript (or the track's own language, for language tracks).
 - **Secondary:** Python, Rust or Nim only where it teaches something. Each language lives in `examples/<lang>/` with its own mise-pinned toolchain and native test runner, and `test` runs them all.
 
 ## 7. Workflow and definition of done
+
 1. **Primary (Opus)** works on branch `track/solidjs` and sets this track's row in `.agents/STATUS.md` to 🟦.
 2. **Verify versions first.** Check every version in the dossier against its primary source today. Record the results in the README's `Verified against …` line. Resolve every item in the re-verify list below.
 3. Build in stages: README syllabus + exam matrix → modules one by one, each with its examples/tests → glossary → cheatsheet → question banks → mock exam. Delegate bulk drafting (question-bank drafts, glossary candidates, cheatsheet tables) to the **Drafter**, then correct and integrate it yourself.

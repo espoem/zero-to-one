@@ -18,7 +18,9 @@ flowchart TD
 ```
 
 ### The Pitfall of Last-Write-Wins (LWW)
+
 Distributed databases like Apache Cassandra and Amazon DynamoDB often offer **Last-Write-Wins (LWW)** to resolve concurrent conflicts: the write with the highest physical wall-clock timestamp wins.
+
 - **The Catastrophe**: If Node $A$'s clock is 500ms ahead of Node $B$'s clock, a write executed on Node $B$ at 12:00:00.600 will be stamped as `12:00:00.600`. If an earlier write occurred on Node $A$ at 12:00:00.200, it was stamped as `12:00:00.700` due to clock skew.
 - **Result**: Node $A$'s older write permanently overwrites Node $B$'s newer write. **Data is silently lost without any error thrown.**
 
@@ -26,7 +28,7 @@ Distributed databases like Apache Cassandra and Amazon DynamoDB often offer **La
 
 ## 2. Lamport's Happens-Before Relation ($\to$)
 
-In his seminal 1978 paper (*"Time, Clocks, and the Ordering of Events in a Distributed System"*), Leslie Lamport demonstrated that ordering distributed events does not require physical clocks; it requires tracking **causality**.
+In his seminal 1978 paper (_"Time, Clocks, and the Ordering of Events in a Distributed System"_), Leslie Lamport demonstrated that ordering distributed events does not require physical clocks; it requires tracking **causality**.
 
 ```mermaid
 flowchart TD
@@ -38,6 +40,7 @@ flowchart TD
 ```
 
 ### Concurrent Events ($\parallel$)
+
 If two events $a$ and $b$ do not have a causal path between them ($a \not\to b$ and $b \not\to a$), they are formally **concurrent** ($a \parallel b$). Neither can be said to have happened first.
 
 ```mermaid
@@ -59,24 +62,28 @@ sequenceDiagram
 ## 3. Logical Clocks: Lamport vs. Vector Clocks
 
 ### 1. Lamport Logical Clocks (Scalar)
+
 Each process maintains an integer counter $L$.
+
 - Before executing a local event: $L = L + 1$.
 - When sending message $m$: attach current $L$.
 - When receiving message with timestamp $L_{\text{msg}}$: $L = \max(L, L_{\text{msg}}) + 1$.
 
 $$\text{Axiom}: \quad a \to b \implies L(a) < L(b)$$
+
 > [!WARNING]
 > **The converse does NOT hold**: $L(a) < L(b) \not\implies a \to b$. If $L(a) < L(b)$, events $a$ and $b$ might be causally related, or they might be completely concurrent. A scalar clock cannot detect concurrency!
 
 ---
 
 ### 2. Vector Clocks (Full Causal Tracking)
+
 To achieve bidirectional causality ($a \to b \iff V(a) < V(b)$), Fidge and Mattern (1988) introduced **Vector Clocks**. In a system of $N$ processes, each process maintains an integer vector $V[1 \dots N]$:
+
 1. Initially, $V = [0, 0, \dots, 0]$.
 2. Before local event at process $i$: $V_i[i] = V_i[i] + 1$.
 3. When sending message: attach vector $V_i$.
-4. When process $i$ receives vector $V_{\text{msg}}$:
-   $$V_i[j] = \max(V_i[j], V_{\text{msg}}[j]) \quad \forall j \neq i, \qquad V_i[i] = V_i[i] + 1$$
+4. When process $i$ receives vector $V_{\text{msg}}$: $$V_i[j] = \max(V_i[j], V_{\text{msg}}[j]) \quad \forall j \neq i, \qquad V_i[i] = V_i[i] + 1$$
 
 ```mermaid
 flowchart TD
@@ -87,7 +94,10 @@ flowchart TD
 ```
 
 ```typescript
-export function compareVectorClocks(v1: number[], v2: number[]): 'LESS' | 'GREATER' | 'EQUAL' | 'CONCURRENT' {
+export function compareVectorClocks(
+  v1: number[],
+  v2: number[],
+): 'LESS' | 'GREATER' | 'EQUAL' | 'CONCURRENT' {
   let hasLess = false;
   let hasGreater = false;
   for (let i = 0; i < v1.length; i++) {
@@ -95,9 +105,9 @@ export function compareVectorClocks(v1: number[], v2: number[]): 'LESS' | 'GREAT
     if (v1[i]! > v2[i]!) hasGreater = true;
   }
   if (!hasLess && !hasGreater) return 'EQUAL';
-  if (hasLess && !hasGreater) return 'LESS';       // v1 -> v2
-  if (hasGreater && !hasLess) return 'GREATER';    // v2 -> v1
-  return 'CONCURRENT';                             // v1 || v2
+  if (hasLess && !hasGreater) return 'LESS'; // v1 -> v2
+  if (hasGreater && !hasLess) return 'GREATER'; // v2 -> v1
+  return 'CONCURRENT'; // v1 || v2
 }
 ```
 
@@ -105,8 +115,8 @@ export function compareVectorClocks(v1: number[], v2: number[]): 'LESS' | 'GREAT
 
 ## 4. Hybrid Logical Clocks (HLC)
 
-Vector clocks provide precise causal ordering, but their size grows linearly with the number of nodes ($O(N)$), creating massive network overhead in clusters of 10,000 servers.
-The **Hybrid Logical Clock (HLC)** (Kulkarni et al., 2014, used by CockroachDB and MongoDB) combines physical wall-clock time $pt$ with a logical counter $c$ into a single 64-bit coordinate $(l, c)$:
+Vector clocks provide precise causal ordering, but their size grows linearly with the number of nodes ($O(N)$), creating massive network overhead in clusters of 10,000 servers. The **Hybrid Logical Clock (HLC)** (Kulkarni et al., 2014, used by CockroachDB and MongoDB) combines physical wall-clock time $pt$ with a logical counter $c$ into a single 64-bit coordinate $(l, c)$:
+
 - $l$: Highest physical time observed so far.
 - $c$: Logical sequence counter for events occurring within the same physical millisecond.
 - **Guarantee**: If $e_1 \to e_2$, then $HLC(e_1) < HLC(e_2)$, while $|l - pt| \le \epsilon$ stays bounded to physical real-world time.
@@ -136,6 +146,7 @@ By enforcing that transactions **wait out the clock uncertainty ($\approx 2\epsi
 A **lease** is a time-bounded distributed lock. If the lock holder fails to renew the lease, it automatically expires, allowing other nodes to acquire it without deadlocking.
 
 ### The GC Pause / VM Suspension Bug (Kleppmann on Redlock)
+
 Relying on local timers to verify lease validity is fundamentally flawed in managed runtimes (Node.js, Java, Python):
 
 ```mermaid
@@ -159,6 +170,7 @@ sequenceDiagram
 ```
 
 ### Remediation: Storage-Enforced Fencing Tokens
+
 To prevent stale lock holders from corrupting storage, the lock service must return a strictly monotonically increasing **Fencing Token** ($z = 33, 34, \dots$). The storage layer records the highest token seen so far:
 
 ```mermaid
@@ -188,9 +200,10 @@ Standard NTP over commodity networks can drift by tens or hundreds of millisecon
 <summary>3. In vector clocks, what is the exact mathematical condition indicating that event a causally preceded event b?</summary>
 
 Vector $V_a$ causally precedes $V_b$ ($V_a \to V_b$) if and only if:
+
 1. $V_a[k] \le V_b[k]$ for all node indices $k = 1 \dots N$, and
-2. There exists at least one index $j$ such that $V_a[j] < V_b[j]$.
-If neither $V_a \le V_b$ nor $V_b \le V_a$ holds, the events are concurrent ($V_a \parallel V_b$).
+2. There exists at least one index $j$ such that $V_a[j] < V_b[j]$. If neither $V_a \le V_b$ nor $V_b \le V_a$ holds, the events are concurrent ($V_a \parallel V_b$).
+
 </details>
 
 <details>

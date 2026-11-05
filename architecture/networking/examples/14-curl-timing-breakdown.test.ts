@@ -11,7 +11,10 @@ export interface HttpTimingBreakdown {
   statusCode: number;
 }
 
-export function measureHttpRequest(url: string, simulatedDelayMs = 0): Promise<HttpTimingBreakdown> {
+export function measureHttpRequest(
+  url: string,
+  simulatedDelayMs = 0,
+): Promise<HttpTimingBreakdown> {
   return new Promise((resolve, reject) => {
     const t0 = performance.now();
     let tDns = t0;
@@ -71,8 +74,14 @@ describe('Module 14: Network Diagnostics: Precision Connection Timing Decomposit
     assert.equal(timings.statusCode, 200);
 
     // Assertions on local loopback timing characteristics
-    assert.ok(timings.totalMs >= 20, `Total time (${timings.totalMs}ms) should reflect server processing delay`);
-    assert.ok(timings.ttfbMs >= 20, `TTFB (${timings.ttfbMs}ms) should isolate backend server processing time`);
+    assert.ok(
+      timings.totalMs >= 20,
+      `Total time (${timings.totalMs}ms) should reflect server processing delay`,
+    );
+    assert.ok(
+      timings.ttfbMs >= 20,
+      `TTFB (${timings.ttfbMs}ms) should isolate backend server processing time`,
+    );
 
     server.close();
   });

@@ -1,14 +1,14 @@
 # TypeScript Glossary (EN ↔ CZ)
 
-This glossary defines standard technical terms used throughout the `languages/typescript/` learning track. All definitions and context descriptions are written in English; terms provide their canonical English name and established Czech equivalent. Terminology is based on the official TypeScript specification and handbook, the ECMA-262 (ECMAScript) standard, and fundamental type systems literature (Benjamin C. Pierce: *Types and Programming Languages*).
+This glossary defines standard technical terms used throughout the `languages/typescript/` learning track. All definitions and context descriptions are written in English; terms provide their canonical English name and established Czech equivalent. Terminology is based on the official TypeScript specification and handbook, the ECMA-262 (ECMAScript) standard, and fundamental type systems literature (Benjamin C. Pierce: _Types and Programming Languages_).
 
 ---
 
 ## 1. Type System Foundations
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
-| **Type World vs. Value World** | **Typový prostor vs. prostor hodnot** | The fundamental separation in TypeScript: the *Type World* exists solely during compilation and is erased during emit (*type erasure*); the *Value World* represents executable JavaScript runtime memory and state. | TypeScript Handbook |
+| :-- | :-- | :-- | :-- |
+| **Type World vs. Value World** | **Typový prostor vs. prostor hodnot** | The fundamental separation in TypeScript: the _Type World_ exists solely during compilation and is erased during emit (_type erasure_); the _Value World_ represents executable JavaScript runtime memory and state. | TypeScript Handbook |
 | **Structural vs. Nominal Typing** | **Strukturální vs. nominální typování** | In structural typing, type compatibility is determined by shape and members; in nominal typing, compatibility requires explicit declarations and type names. (Root glossary wording; TypeScript is structural, with brands and `#private` fields as nominal escape hatches.) | Pierce (TAPL) |
 | **Type Erasure** | **Vymazání typů** | The compile-time transformation where all type annotations, interface declarations, type aliases, and assertions are stripped, producing standard executable JavaScript. | TypeScript Design Goals |
 | **Type Annotation** | **Typová anotace** | Explicit syntax (`: T`) instructing the compiler on the required type of a variable, function parameter, or return value. May trigger type widening from literal values. | TS Handbook (Everyday Types) |
@@ -23,10 +23,10 @@ This glossary defines standard technical terms used throughout the `languages/ty
 ## 2. Types & Combinators
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Union Type (`A \| B`)** | **Typ sjednocení (unijní typ)** | A type representing a value that can be any one of several specified types (the set union of allowable values). | TS Handbook (Everyday Types) |
 | **Intersection Type (`A & B`)** | **Typ průniku (průnikový typ)** | A type representing a value that simultaneously satisfies all combined types (merging their requirements and properties). | TS Handbook (Everyday Types) |
-| **Discriminated Union** | **Rozlišená (diskriminovaná) unie / tagované sjednocení** | A union of object types where each variant shares a common literal property (*discriminant / tag*), allowing type-safe branching and narrowing. | TS Handbook (Narrowing), Pierce (TAPL) |
+| **Discriminated Union** | **Rozlišená (diskriminovaná) unie / tagované sjednocení** | A union of object types where each variant shares a common literal property (_discriminant / tag_), allowing type-safe branching and narrowing. | TS Handbook (Narrowing), Pierce (TAPL) |
 | **Discriminant (Tag)** | **Diskriminant (značka)** | A literal property present on all variants of a discriminated union, allowing the compiler to identify the active type uniquely. | TS Handbook |
 | **Tuple** | **N-tice (uspořádaná n-tice / tuple)** | An array-like structure with a fixed number of elements where each index position has a distinct, known type. | TS Handbook |
 | **Literal Type** | **Literálový typ** | A type representing exactly one specific scalar value (e.g., `'success'`, `200`, `true`), rather than an open primitive domain. | TS Handbook |
@@ -39,7 +39,7 @@ This glossary defines standard technical terms used throughout the `languages/ty
 ## 3. Advanced Type-Level Mechanics
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Generics (Parametric Polymorphism)** | **Generika (parametrický polymorfismus)** | The facility to parameterize types, functions, and interfaces over type variables, providing code reuse while maintaining end-to-end type safety. | TS Handbook (Generics), Pierce (TAPL) |
 | **Type Parameter Constraint (`T extends U`)** | **Omezení typového parametru** | A rule restricting a type parameter `T` to only types that are assignable to `U`. | TS Handbook (Generics) |
 | **Const Type Parameters (`<const T>`)** | **Literálové typové parametry** | A feature introduced in TS 5.0 that automatically infers the most specific literal/tuple type for arguments passed to generic functions without requiring `as const`. | TypeScript 5.0 Release Notes |
@@ -58,7 +58,7 @@ This glossary defines standard technical terms used throughout the `languages/ty
 ## 4. Subtyping Variance
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Covariance** | **Kovariance** | A subtyping relationship where composite types preserve the subtyping direction of their components (`A ≤ B ⟹ F(A) ≤ F(B)`). Characteristic of function return types and read-only collections. | Pierce (TAPL), Cardelli |
 | **Contravariance** | **Kontravariance** | A subtyping relationship where composite types reverse the subtyping direction of their components (`A ≤ B ⟹ F(B) ≤ F(A)`). Characteristic of function parameter types under `--strictFunctionTypes`. | Pierce (TAPL), TS Handbook |
 | **Invariance** | **Invariance** | A relationship where `F(A) ≤ F(B)` holds if and only if `A = B`. Characteristic of mutable read-write collections and structures. | Pierce (TAPL) |
@@ -69,7 +69,7 @@ This glossary defines standard technical terms used throughout the `languages/ty
 ## 5. Operators, Directives & Pragmas
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **`satisfies` Operator** | **Operátor `satisfies`** | An operator that validates whether an expression matches a given type contract without widening the expression's inferred literal type. | TypeScript 4.9 Release Notes |
 | **`as const` Assertion** | **Konstantní tvrzení (`as const`)** | A type assertion directing the compiler to infer deeply immutable literal types and fixed-length tuples rather than mutable base primitives. | TypeScript 3.4 Release Notes |
 | **Non-Null Assertion (`!`)** | **Operátor nenulovosti (non-null assertion)** | A postfix operator asserting that a preceding expression is neither `null` nor `undefined`. | TS Handbook |
@@ -84,7 +84,7 @@ This glossary defines standard technical terms used throughout the `languages/ty
 Where Czech practice has no established translation, the English term is used in Czech texts as well; this is marked "(EN term used)".
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Assignability** | **Přiřaditelnost** | The relation $S \preceq T$ deciding whether a value of type `S` may be used where `T` is expected; structural subtyping plus special cases (`any`, optional properties, enums). | TS Handbook (Type Compatibility) |
 | **Freshness (Fresh Object Literal)** | **Čerstvý objektový literál** (EN term used) | The status of an object literal expression before it is assigned or widened; fresh types are subject to excess-property checks. | TS Handbook (Object Types) |
 | **Inference Site** | **Místo inference** (EN term used) | An occurrence of a type parameter in a parameter type that an argument type is matched against to collect inference candidates; `NoInfer<T>` removes it. | TS Handbook (Generics), [Module 07](./modules/07-generics-and-inference.md) |
@@ -99,7 +99,7 @@ Where Czech practice has no established translation, the English term is used in
 ## 7. Modules, Declarations & Toolchain
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Declaration File (`.d.ts`)** | **Deklarační soubor** | A file containing only type declarations describing JavaScript; emits no code. | TS Handbook (Declaration Files) |
 | **Ambient Declaration** | **Ambientní deklarace** | A `declare` statement describing a value, module or global that exists at runtime but is implemented elsewhere. | TS Handbook (Modules) |
 | **Declaration Merging** | **Slučování deklarací** | Combining same-named interfaces, namespaces and value declarations into one symbol; type aliases never merge. | TS Handbook (Declaration Merging) |
@@ -120,7 +120,7 @@ Where Czech practice has no established translation, the English term is used in
 ## 8. JSX & UI Framework Typing
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **JSX Namespace** | **Jmenný prostor JSX** | The set of types (`Element`, `IntrinsicElements`, `ElementChildrenAttribute`, …) a framework exports to tell the checker how to type JSX. | TS Handbook (JSX) |
 | **Intrinsic Element** | **Vnitřní (intrinsic) element** | A lowercase JSX tag whose props come from `JSX.IntrinsicElements[tag]`. | TS Handbook (JSX) |
 | **JSX Import Source** | (EN term used) | The package whose `jsx-runtime` module provides the JSX namespace and runtime (`react`, `@solidjs/web`). | TS tsconfig reference |

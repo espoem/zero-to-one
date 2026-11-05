@@ -9,8 +9,8 @@ This directory contains the examination and technical interview preparation ques
 Data systems architecture is a vendor-neutral computer systems discipline. There is no single proprietary certification that encapsulates foundational storage engine internals, formal transaction theory, and distributed consistency. Evaluation in this field is anchored in two industry standards:
 
 1. **Academic Computer Science Rigor (CMU 15-445/645 & MIT 6.5840)**:
-   - **Institutions**: Carnegie Mellon University (*Database Systems* & *Advanced Database Systems*) and MIT (*Distributed Systems*).
-   - **Foundational Texts**: Kleppmann's *Designing Data-Intensive Applications* (DDIA), Hellerstein, Stonebraker & Hamilton's *Readings in Database Systems* (Red Book 5th ed.), and Ramakrishnan & Gehrke's *Database Management Systems*.
+   - **Institutions**: Carnegie Mellon University (_Database Systems_ & _Advanced Database Systems_) and MIT (_Distributed Systems_).
+   - **Foundational Texts**: Kleppmann's _Designing Data-Intensive Applications_ (DDIA), Hellerstein, Stonebraker & Hamilton's _Readings in Database Systems_ (Red Book 5th ed.), and Ramakrishnan & Gehrke's _Database Management Systems_.
    - **Target Competency**: Deep operational and mathematical mechanics of data models, access methods, buffer pools, ARIES recovery, concurrency control anomaly hierarchies (Berenson / Adya), and distributed consensus.
 2. **Staff / Principal Storage & Distributed Systems Technical Interview Loop**:
    - **Format**: Senior/Staff/Principal engineering loops across tier-1 infrastructure providers (AWS DynamoDB/Aurora, Google Cloud Spanner/Bigtable, Meta, Databricks, Snowflake, CockroachDB).
@@ -21,7 +21,7 @@ Data systems architecture is a vendor-neutral computer systems discipline. There
 ## 2. Exam & Interview Domain Coverage Matrix
 
 | Domain # | Domain / Objective | Weight | Primary Module | Executable Proof | Status |
-| :-: | :--- | :-: | :--- | :--- | :-: |
+| :-: | :-- | :-: | :-- | :-- | :-: |
 | **01** | Data Models, Relational Algebra & Schema Design | 8% | [01-data-models-and-query-languages.md](../modules/01-data-models-and-query-languages.md) | Formal proofs & algebraic equivalence (Codd 1970) | ✅ Full |
 | **02** | Storage Engines: Slotted Pages, B-Trees & LSM-Trees | 10% | [02-storage-engines-b-trees-and-lsm.md](../modules/02-storage-engines-b-trees-and-lsm.md) | [01-slotted-page.test.ts](../examples/01-slotted-page.test.ts), [02-bplus-tree.test.ts](../examples/02-bplus-tree.test.ts), [03-mini-lsm.test.ts](../examples/03-mini-lsm.test.ts) | ✅ Full |
 | **03** | Indexing Theory, Inverted Indexes & Vector ANN | 9% | [03-indexing-theory-and-vector-search.md](../modules/03-indexing-theory-and-vector-search.md) | [12-vector-ann-hnsw.test.ts](../examples/12-vector-ann-hnsw.test.ts) | ✅ Full |
@@ -40,4 +40,5 @@ Data systems architecture is a vendor-neutral computer systems discipline. There
 ## 3. Question Bank Navigation
 
 The complete preparation question bank, categorized by domain and difficulty (1–3), is available in:
+
 - [interview.md](./interview.md) — 60+ rigorous questions spanning single-choice, multiple-select, scenario analysis, ordering, and hands-on algorithmic tasks, complete with comprehensive explanations, distractor analysis, cross-module citations, and a 60-minute mock examination with scoring key.

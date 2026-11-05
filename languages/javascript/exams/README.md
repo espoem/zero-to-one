@@ -5,7 +5,7 @@
 **No vendor-neutral, authoritative certification exists for the JavaScript language**, verified 2026-10-28. TC39 and Ecma International do not certify developers, and the OpenJS Foundation's Node.js certifications, which covered JavaScript fundamentals as a prerequisite domain, are retired.
 
 | Exam | Code | Vendor | Status (verified) | Format | Authority |
-|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- |
 | OpenJS Node.js Application Developer | JSNAD | OpenJS Foundation / Linux Foundation | **Retired 2025-09-30** (<https://training.linuxfoundation.org/jsnad-cert-inactive/>); no successor named | was performance-based, Node-focused | was the most credible JS-adjacent cert; see the Node.js track for history |
 | OpenJS Node.js Services Developer | JSNSD | OpenJS Foundation / Linux Foundation | **Inactive** (<https://training.linuxfoundation.org/jsnsd-cert-inactive/>) | — | — |
 | JSA™ Certified Associate JavaScript Programmer | **JSA-41-01** | JS Institute (OpenEDG) | Active; sold via the OpenEDG voucher store and Pearson VUE (<https://ums.edube.org/products/jsa-exam>, <https://www.pearsonvue.com/us/en/jsinstitute.html>) | 40 items, 60 minutes, Pearson VUE test centre or OnVUE; voucher US$325; passing score not published on the pages checked; targeted ECMAScript version not stated ("Exam Version" field blank) | Low: a commercial associate-level exam; recruiters report no widely accepted JS certification authority (InfoWorld, 2026-04-27) |
@@ -26,7 +26,7 @@
 There is no official weighting. The weights below are this track's estimate of how often each area appears in senior frontend/full-stack JavaScript interviews (output prediction around the event loop and `this`, async utilities, closures, prototypes, modules), cross-checked against the "Interview hot topics" in the track's research dossier.
 
 | # | Domain / objectives | Weight | Modules | Examples | Bank questions | Status |
-|---|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- | --- |
 | D1 | Types and coercion: 8 types, `typeof`, ToPrimitive and hints, `==` vs `===` vs SameValue(Zero), IEEE 754, BigInt, strings as UTF-16 | 8% | [02](../modules/02-types-values-coercion.md), [01](../modules/01-reading-the-spec.md) | `02-…test.js`, `01-…test.js` | 001–006 | ✅ |
 | D2 | Execution contexts, scope, hoisting/TDZ, closures and leaks, `this` rules, `bind`, strict mode, `eval` | 12% | [03](../modules/03-execution-contexts-scope-closures.md) | `03-…test.js` | 007–014, H4 (071) | ✅ |
 | D3 | Objects, descriptors, `[[Get]]`/`[[Set]]`, prototypes, `new`/`instanceof`, classes, private names, exotic objects, copying | 16% | [04](../modules/04-objects-prototypes-classes.md) | `04-…test.js` | 015–022, 074–078, H5 (072) | ✅ |
@@ -44,7 +44,7 @@ There is no official weighting. The weights below are this track's estimate of h
 Section names and weights from the official voucher page (<https://ums.edube.org/products/jsa-exam>, checked 2026-10-28). The detailed objective lists behind each section were not available on the pages fetched, so the mapping is by section.
 
 | JSA section | Weight | Modules | Bank questions (Mock B) | Status |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | Classless Objects (object literals, properties, descriptors, prototypes without classes, copying, JSON) | 25% | [04](../modules/04-objects-prototypes-classes.md) §1–§3, §6; [09](../modules/09-metaprogramming.md); [13](../modules/13-correctness-security-pitfalls.md) §1 | 015, 016, 019, 021, 051–054, 062, 064 | ✅ |
 | Classes and Class-Based Approach (class syntax, inheritance, `super`, static and private members, getters/setters) | 23% | [04](../modules/04-objects-prototypes-classes.md) §4; [03](../modules/03-execution-contexts-scope-closures.md) §5 | 017, 018, 020, 022, 074, 075, 076, 077, 078 | ✅ 8 dedicated class questions in bank (017, 018, 022, 074–078) |
 | Built-in Objects (Number, String, Math, Date, Array methods, Map/Set, JSON, RegExp, errors) | 27% | [02](../modules/02-types-values-coercion.md), [05](../modules/05-iterators-generators.md) §3, [10](../modules/10-resource-management-temporal.md), [11](../modules/11-binary-data-memory-model.md), [13](../modules/13-correctness-security-pitfalls.md) | 002, 004, 006, 026, 038, 057–060, 066, 067 | ✅ |
@@ -53,15 +53,15 @@ Section names and weights from the official voucher page (<https://ums.edube.org
 ## Syllabus completeness against ECMA-262 2026
 
 | ECMA-262 area | Covered in | Notes |
-|---|---|---|
-| §5 notation, §6 types, §7 abstract operations | 01, 02 | |
-| §8–§9 syntax-directed operations, environments, realms, jobs, agents | 01, 03, 06 | |
-| §10 ordinary and exotic objects | 04, 09 | |
-| §11–§15 source text, expressions, statements, functions, classes | 01–05, 07 | |
-| §16 scripts and modules | 08 | |
-| §17 error handling and language extensions | 01 | |
+| --- | --- | --- |
+| §5 notation, §6 types, §7 abstract operations | 01, 02 |  |
+| §8–§9 syntax-directed operations, environments, realms, jobs, agents | 01, 03, 06 |  |
+| §10 ordinary and exotic objects | 04, 09 |  |
+| §11–§15 source text, expressions, statements, functions, classes | 01–05, 07 |  |
+| §16 scripts and modules | 08 |  |
+| §17 error handling and language extensions | 01 |  |
 | §18–§28 standard library | 02, 04, 05, 07, 09, 10, 11, 13 | `Intl` (ECMA-402) is **out of scope** beyond formatting examples: it is a separate standard; the CSS and framework tracks use it at their layer |
-| §29 memory model | 11 | |
+| §29 memory model | 11 |  |
 | Annex B | 01, 03, 04, 13 | legacy features covered only where they cause bugs (`__proto__`, HTML-like comments, sloppy block functions) |
 | HTML event loop (WHATWG) | 06 | owned by this track; style/layout/paint internals are owned by `languages/css` |
 | DOM, `fetch`, Web APIs | **out of scope** | host APIs, not the language; `AbortController` is covered because async cancellation depends on it |

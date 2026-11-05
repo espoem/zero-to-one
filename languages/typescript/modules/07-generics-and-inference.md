@@ -1,7 +1,6 @@
 # Module 07: Generics & Inference
 
-> Examples and tests: [`examples/07-generics/inference-and-variance.test.ts`](../examples/07-generics/inference-and-variance.test.ts) (inference sites, `const T`, `NoInfer`, two-pass inference, partial inference, variance annotations, overloads, useless generics) and [`generics-and-overloads.test.ts`](../examples/07-generics/generics-and-overloads.test.ts).
-> Run: `mise exec -- node --test examples/07-generics/`
+> Examples and tests: [`examples/07-generics/inference-and-variance.test.ts`](../examples/07-generics/inference-and-variance.test.ts) (inference sites, `const T`, `NoInfer`, two-pass inference, partial inference, variance annotations, overloads, useless generics) and [`generics-and-overloads.test.ts`](../examples/07-generics/generics-and-overloads.test.ts). Run: `mise exec -- node --test examples/07-generics/`
 >
 > Prerequisites: [Module 04](./04-objects-assignability-and-weird-parts.md) (assignability and variance).
 
@@ -33,7 +32,7 @@ A generic function or interface does not lock in concrete types ahead of time. I
 // Type-test helpers (examples/utils/type-helpers.ts)
 type Expect<T extends true> = T;
 type Equal<X, Y> =
-  (<T>() => T extends X ? 1 : 2) extends (<T>() => T extends Y ? 1 : 2) ? true : false;
+  (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y ? 1 : 2 ? true : false;
 ```
 
 ---
@@ -43,7 +42,7 @@ type Equal<X, Y> =
 A call `f(a1, …, an)` to `function f<T1, …, Tk>(p1: P1, …, pn: Pn)` is resolved in phases:
 
 1. **Collect candidates.** Each argument type is matched structurally against its parameter type, and every occurrence of a type parameter in the parameter type is an **inference site** that yields a candidate (`T` in `T[]` from `string[]` gives `string`). Sites have priorities: a naked `T` beats `T` inside a return position of a callback, and `NoInfer<T>` is not a site at all.
-2. **Context-sensitive arguments wait.** Arrow functions with unannotated parameters are *context sensitive*: their parameter types depend on `T`. They are skipped in the first pass, `T` is fixed from the other arguments, and then they are checked with contextual types. This is why `make(() => ({ n: 2 }), v => v.n)` types `v` correctly: `T` is fixed from the context-insensitive `factory` before `consume` is checked.
+2. **Context-sensitive arguments wait.** Arrow functions with unannotated parameters are _context sensitive_: their parameter types depend on `T`. They are skipped in the first pass, `T` is fixed from the other arguments, and then they are checked with contextual types. This is why `make(() => ({ n: 2 }), v => v.n)` types `v` correctly: `T` is fixed from the context-insensitive `factory` before `consume` is checked.
 3. **Choose a type.** Covariant candidates are unioned or reduced to a best common supertype (literals are **widened** unless `T` has a primitive constraint, the call is in a `const` context, or `T` is a `const` type parameter); contravariant candidates (from callback parameters) are intersected. The result must satisfy the constraint, otherwise the constraint itself is used and the argument check fails.
 4. **Check the arguments** against the instantiated signature.
 
@@ -51,7 +50,7 @@ Inference is **all or nothing**: you either pass all type arguments or none (TS2
 
 ### Variance and variance annotations
 
-For a generic type `G<T>`, TypeScript computes variance by checking `G<Sub>` against `G<Super>` with marker types, then caches the result so later comparisons of `G<A>` and `G<B>` only compare `A` and `B`. Since 4.7 you can annotate it: `out T` (covariant: produced), `in T` (contravariant: consumed), `in out T` (invariant). Annotations speed up checking of large recursive types and document intent; a wrong annotation is TS2636 at the declaration. Because method parameters are bivariant ([Module 04](./04-objects-assignability-and-weird-parts.md)), `out T` is *accepted* on an interface whose methods take `T` as a parameter; only function-typed properties are checked strictly. Solid's `Setter<in out T>` is a real-world invariant annotation ([Module 12](./12-typing-ui-frameworks.md)).
+For a generic type `G<T>`, TypeScript computes variance by checking `G<Sub>` against `G<Super>` with marker types, then caches the result so later comparisons of `G<A>` and `G<B>` only compare `A` and `B`. Since 4.7 you can annotate it: `out T` (covariant: produced), `in T` (contravariant: consumed), `in out T` (invariant). Annotations speed up checking of large recursive types and document intent; a wrong annotation is TS2636 at the declaration. Because method parameters are bivariant ([Module 04](./04-objects-assignability-and-weird-parts.md)), `out T` is _accepted_ on an interface whose methods take `T` as a parameter; only function-typed properties are checked strictly. Solid's `Setter<in out T>` is a real-world invariant annotation ([Module 12](./12-typing-ui-frameworks.md)).
 
 ---
 
@@ -68,11 +67,11 @@ function identity<T>(value: T): T {
 
 const num = identity(42);
 //    ^? const num: 42
-const str = identity("hello");
+const str = identity('hello');
 //    ^? const str: "hello"
 
 type testNum = Expect<Equal<typeof num, 42>>;
-type testStr = Expect<Equal<typeof str, "hello">>;
+type testStr = Expect<Equal<typeof str, 'hello'>>;
 ```
 
 Without `<T>`, annotating `value: unknown` forces the return type to `unknown`, destroying downstream type safety.
@@ -90,11 +89,11 @@ function getEntityId<T extends HasId>(entity: T): string {
   return entity.id;
 }
 
-const user = getEntityId({ id: "usr_101", name: "Alice", role: "admin" });
+const user = getEntityId({ id: 'usr_101', name: 'Alice', role: 'admin' });
 // @ts-expect-error - number does not satisfy HasId
 getEntityId(123);
 // @ts-expect-error - missing required id property
-getEntityId({ name: "Bob" });
+getEntityId({ name: 'Bob' });
 ```
 
 `T extends HasId` requires `T` to be assignable to `HasId`, while preserving extra properties on `T`.
@@ -108,9 +107,9 @@ function pair<TFirst, TSecond>(first: TFirst, second: TSecond): [TFirst, TSecond
   return [first, second];
 }
 
-const result = pair("statusCode", 200);
+const result = pair('statusCode', 200);
 //    ^? const result: ["statusCode", 200]
-type testPair = Expect<Equal<typeof result, ["statusCode", 200]>>;
+type testPair = Expect<Equal<typeof result, ['statusCode', 200]>>;
 ```
 
 ### 7.1.4 Typing Object Parameters with Property Constraints
@@ -122,14 +121,14 @@ function getProperty<TObj, TKey extends keyof TObj>(obj: TObj, key: TKey): TObj[
   return obj[key];
 }
 
-const config = { host: "localhost", port: 8080, secure: true };
-const host = getProperty(config, "host");
+const config = { host: 'localhost', port: 8080, secure: true };
+const host = getProperty(config, 'host');
 //    ^? const host: string
-const port = getProperty(config, "port");
+const port = getProperty(config, 'port');
 //    ^? const port: number
 
 // @ts-expect-error - "database" does not exist on config
-getProperty(config, "database");
+getProperty(config, 'database');
 ```
 
 ### 7.1.5 Case Study: Generic Elements in Excalidraw
@@ -137,15 +136,29 @@ getProperty(config, "database");
 Canvas libraries share base geometry while preserving shape-specific properties (e.g. `radius` vs `strokeColor`):
 
 ```ts
-interface BaseElement { id: string; x: number; y: number }
-interface RectangleElement extends BaseElement { type: "rectangle"; strokeColor: string }
-interface CircleElement extends BaseElement { type: "circle"; radius: number }
+interface BaseElement {
+  id: string;
+  x: number;
+  y: number;
+}
+interface RectangleElement extends BaseElement {
+  type: 'rectangle';
+  strokeColor: string;
+}
+interface CircleElement extends BaseElement {
+  type: 'circle';
+  radius: number;
+}
 
-function translateElement<TElement extends BaseElement>(element: TElement, dx: number, dy: number): TElement {
+function translateElement<TElement extends BaseElement>(
+  element: TElement,
+  dx: number,
+  dy: number,
+): TElement {
   return { ...element, x: element.x + dx, y: element.y + dy };
 }
 
-const circle: CircleElement = { id: "c1", type: "circle", x: 10, y: 20, radius: 25 };
+const circle: CircleElement = { id: 'c1', type: 'circle', x: 10, y: 20, radius: 25 };
 const movedCircle = translateElement(circle, 5, -10);
 //    ^? const movedCircle: CircleElement
 type testCircle = Expect<Equal<typeof movedCircle, CircleElement>>;
@@ -164,17 +177,22 @@ class StateStore<TState> {
     this.state = initialState;
   }
 
-  public getState(): TState { return this.state; }
+  public getState(): TState {
+    return this.state;
+  }
 
   public setState(update: Partial<TState> | ((prev: TState) => TState)): void {
-    this.state = typeof update === "function" ? update(this.state) : { ...this.state, ...update };
+    this.state = typeof update === 'function' ? update(this.state) : { ...this.state, ...update };
     this.listeners.forEach((fn) => fn(this.state));
   }
 }
 
-interface Session { user: string; token: string }
-const store = new StateStore<Session>({ user: "alex", token: "jwt_123" });
-store.setState({ user: "alex_updated" });
+interface Session {
+  user: string;
+  token: string;
+}
+const store = new StateStore<Session>({ user: 'alex', token: 'jwt_123' });
+store.setState({ user: 'alex_updated' });
 // @ts-expect-error - invalid property
 store.setState({ invalidProp: 42 });
 ```
@@ -194,9 +212,12 @@ async function fetchData<TData>(url: string): Promise<TData> {
   return response.json() as Promise<TData>;
 }
 
-interface GitHubUser { login: string; id: number }
+interface GitHubUser {
+  login: string;
+  id: number;
+}
 async function run() {
-  const user = await fetchData<GitHubUser>("https://api.github.com/users/octocat");
+  const user = await fetchData<GitHubUser>('https://api.github.com/users/octocat');
   //    ^? const user: GitHubUser
   console.log(user.login);
 }
@@ -208,7 +229,7 @@ When callers frequently omit a type argument, supply a fallback default:
 
 ```ts
 interface ApiResponse<TBody = Record<string, unknown>> {
-  status: "success" | "error";
+  status: 'success' | 'error';
   data: TBody;
 }
 
@@ -222,10 +243,14 @@ type UserResp = ApiResponse<{ id: string; name: string }>;
 When `.reduce` uses an empty object `{}` as initial value, TypeScript infers accumulator as `{}`. Supply the accumulator generic explicitly:
 
 ```ts
-interface Product { id: string; category: "tech" | "books"; price: number }
+interface Product {
+  id: string;
+  category: 'tech' | 'books';
+  price: number;
+}
 const items: Product[] = [
-  { id: "p1", category: "tech", price: 100 },
-  { id: "p2", category: "books", price: 20 },
+  { id: 'p1', category: 'tech', price: 100 },
+  { id: 'p2', category: 'books', price: 20 },
 ];
 
 const grouped = items.reduce<Record<string, Product[]>>((acc, item) => {
@@ -246,7 +271,7 @@ type QueryHandler<TInput, TOutput> = (input: TInput) => Promise<TOutput>;
 
 function createApiHandler<TInput, TOutput>(
   validator: (raw: unknown) => TInput,
-  handler: QueryHandler<TInput, TOutput>
+  handler: QueryHandler<TInput, TOutput>,
 ): (rawRequest: unknown) => Promise<TOutput> {
   return async (rawRequest: unknown) => {
     const input = validator(rawRequest);
@@ -286,7 +311,7 @@ function typedObjectKeys<TObj extends object>(obj: TObj): (keyof TObj)[] {
   return Object.keys(obj) as (keyof TObj)[];
 }
 
-const theme = { primary: "#3b82f6", secondary: "#10b981", danger: "#ef4444" };
+const theme = { primary: '#3b82f6', secondary: '#10b981', danger: '#ef4444' };
 const themeKeys = typedObjectKeys(theme);
 //    ^? const themeKeys: ("primary" | "secondary" | "danger")[]
 ```
@@ -297,7 +322,7 @@ Preserve parameter types and return type using generic spread tuples:
 
 ```ts
 function withExecutionTiming<TArgs extends readonly unknown[], TReturn>(
-  fn: (...args: TArgs) => TReturn
+  fn: (...args: TArgs) => TReturn,
 ): (...args: TArgs) => { result: TReturn; durationMs: number } {
   return (...args: TArgs) => {
     const start = performance.now();
@@ -320,9 +345,9 @@ function defineRoutes<const TRoutes extends readonly string[]>(routes: TRoutes):
   return routes;
 }
 
-const routes = defineRoutes(["/dashboard", "/settings", "/billing"]);
+const routes = defineRoutes(['/dashboard', '/settings', '/billing']);
 //    ^? const routes: readonly ["/dashboard", "/settings", "/billing"]
-type testRoutes = Expect<Equal<typeof routes, readonly ["/dashboard", "/settings", "/billing"]>>;
+type testRoutes = Expect<Equal<typeof routes, readonly ['/dashboard', '/settings', '/billing']>>;
 ```
 
 ---
@@ -337,13 +362,13 @@ TypeScript cannot resolve conditional types containing unresolved generic parame
 type Formatted<T> = T extends string ? string : number;
 
 function formatInput<T extends string | number>(value: T): Formatted<T> {
-  if (typeof value === "string") {
+  if (typeof value === 'string') {
     return value.trim() as Formatted<T>;
   }
   return Math.round(value) as Formatted<T>;
 }
 
-const fStr = formatInput("  data  ");
+const fStr = formatInput('  data  ');
 //    ^? const fStr: string
 const fNum = formatInput(42.7);
 //    ^? const fNum: number
@@ -361,8 +386,8 @@ const createProcessor = <TPrefix extends string>(prefix: TPrefix) => {
   });
 };
 
-const logger = createProcessor("AUDIT");
-const entry = logger({ label: "user_login", userId: "u1" });
+const logger = createProcessor('AUDIT');
+const entry = logger({ label: 'user_login', userId: 'u1' });
 //    ^? const entry: { label: string; userId: string; tagged: `AUDIT:${string}`; }
 ```
 
@@ -370,7 +395,7 @@ const entry = logger({ label: "user_login", userId: "u1" });
 
 > [!IMPORTANT]
 > **The Golden Rule of Generics**:  
-> *If a type parameter only appears once in the function signature and isn't used to constrain or compute the return type or another parameter, it is a useless generic.*
+> _If a type parameter only appears once in the function signature and isn't used to constrain or compute the return type or another parameter, it is a useless generic._
 
 ```ts
 // ❌ ANTI-PATTERN: T appears only once in parameter position (Useless Generic)
@@ -409,10 +434,10 @@ function parseValue(value: number): string;
 
 // Implementation Signature (Reconciles both branches)
 function parseValue(value: string | number): string | number {
-  return typeof value === "string" ? parseFloat(value) : value.toString();
+  return typeof value === 'string' ? parseFloat(value) : value.toString();
 }
 
-const p1 = parseValue("42.5");
+const p1 = parseValue('42.5');
 //    ^? const p1: number
 const p2 = parseValue(100);
 //    ^? const p2: string
@@ -424,7 +449,7 @@ parseValue(true);
 ### 7.5.2 Decision Framework: Unions vs. Overloads vs. Conditional Types
 
 | Pattern | When to Use | Trade-off |
-| :--- | :--- | :--- |
+| :-- | :-- | :-- |
 | **Union Types** | Return type does not depend on parameter type | Simplest signature; cannot express input-to-output coupling |
 | **Conditional Types** | Return type transforms smoothly based on generic input (`T extends A ? B : C`) | Works cleanly with generics; hover types can become verbose |
 | **Function Overloads** | Differing argument counts (arities) or disparate parameter structures | Clear error messages; duplicate declarations; implementation complexity |
@@ -437,19 +462,19 @@ A frequent trap occurs when assigning a fallback value to a generic return type:
 // ❌ FAILS: 'T' could be instantiated with a subtype like "admin"
 function getDefaultRoleBad<T extends string>(role?: T): T {
   // @ts-expect-error - TS2322
-  return role ?? "viewer";
+  return role ?? 'viewer';
 }
 
 // ✅ BEST PRACTICE: Use function overloads for default fallback inference
-function getDefaultRole(): "viewer";
+function getDefaultRole(): 'viewer';
 function getDefaultRole<T extends string>(role: T): T;
 function getDefaultRole(role?: string): string {
-  return role ?? "viewer";
+  return role ?? 'viewer';
 }
 
 const rDefault = getDefaultRole();
 //    ^? const rDefault: "viewer"
-const rCustom = getDefaultRole("admin");
+const rCustom = getDefaultRole('admin');
 //    ^? const rCustom: "admin"
 ```
 
@@ -471,14 +496,16 @@ interface InfiniteScrollState<TItem, TCursor> {
 }
 
 function createInfiniteScroller<TItem, TCursor>(
-  config: InfiniteScrollConfig<TItem, TCursor>
+  config: InfiniteScrollConfig<TItem, TCursor>,
 ): InfiniteScrollState<TItem, TCursor> {
   const pages: { items: TItem[]; nextCursor: TCursor | null }[] = [];
   let cursor: TCursor | null = null;
 
   return {
     pages,
-    get allItems() { return pages.flatMap((p) => p.items); },
+    get allItems() {
+      return pages.flatMap((p) => p.items);
+    },
     async loadNext() {
       const page = await config.fetchPage(cursor);
       pages.push(page);
@@ -492,9 +519,9 @@ function createInfiniteScroller<TItem, TCursor>(
 
 ```ts
 type AppEvents =
-  | ["LOGIN", { userId: string; timestamp: number }]
-  | ["LOGOUT", { reason: string }]
-  | ["PING"];
+  | ['LOGIN', { userId: string; timestamp: number }]
+  | ['LOGOUT', { reason: string }]
+  | ['PING'];
 
 function dispatchEvent<TEvent extends AppEvents[0]>(
   ...args: Extract<AppEvents, [TEvent, ...any[]]> extends [TEvent, infer TPayload]
@@ -505,11 +532,11 @@ function dispatchEvent<TEvent extends AppEvents[0]>(
   console.log(`Event ${event}`, payload);
 }
 
-dispatchEvent("LOGIN", { userId: "u123", timestamp: Date.now() });
-dispatchEvent("PING");
+dispatchEvent('LOGIN', { userId: 'u123', timestamp: Date.now() });
+dispatchEvent('PING');
 
 // @ts-expect-error - missing payload for LOGIN
-dispatchEvent("LOGIN");
+dispatchEvent('LOGIN');
 ```
 
 ### Challenge 3: Type-Safe `pick(obj, keys)`
@@ -517,7 +544,7 @@ dispatchEvent("LOGIN");
 ```ts
 function pick<TObj extends object, const TKeys extends readonly (keyof TObj)[]>(
   obj: TObj,
-  keys: TKeys
+  keys: TKeys,
 ): Pick<TObj, TKeys[number]> {
   const result = {} as Pick<TObj, TKeys[number]>;
   for (const k of keys) {
@@ -526,8 +553,8 @@ function pick<TObj extends object, const TKeys extends readonly (keyof TObj)[]>(
   return result;
 }
 
-const account = { id: "u42", name: "Alice", email: "alice@acme.com", hash: "secret" };
-const publicAccount = pick(account, ["id", "name", "email"]);
+const account = { id: 'u42', name: 'Alice', email: 'alice@acme.com', hash: 'secret' };
+const publicAccount = pick(account, ['id', 'name', 'email']);
 //    ^? const publicAccount: Pick<typeof account, "id" | "name" | "email">
 
 type testPick = Expect<Equal<typeof publicAccount, { id: string; name: string; email: string }>>;
@@ -558,29 +585,35 @@ function createValidator<TForm extends Record<string, unknown>>(schema: Validati
   };
 }
 
-interface RegisterForm { username: string; age: number }
+interface RegisterForm {
+  username: string;
+  age: number;
+}
 const validateRegistration = createValidator<RegisterForm>({
-  username: (u) => (u.length >= 3 ? null : "Too short"),
-  age: (a) => (a >= 18 ? null : "Must be 18+"),
+  username: (u) => (u.length >= 3 ? null : 'Too short'),
+  age: (a) => (a >= 18 ? null : 'Must be 18+'),
 });
 ```
 
 ### Challenge 5: Enforcing Explicit Type Argument via Default Guard
 
 ```ts
-function strictFetch<
-  T = ["Error: You must pass an explicit type argument to strictFetch<T>()"]
->(url: string): Promise<T> {
+function strictFetch<T = ['Error: You must pass an explicit type argument to strictFetch<T>()']>(
+  url: string,
+): Promise<T> {
   return fetch(url).then((res) => res.json() as Promise<T>);
 }
 
-interface Post { id: number; title: string }
+interface Post {
+  id: number;
+  title: string;
+}
 // ✅ Explicit type argument provided
-const post = strictFetch<Post>("/api/posts/1");
+const post = strictFetch<Post>('/api/posts/1');
 //    ^? const post: Promise<Post>
 
 // ❌ Type argument omitted: results in descriptive error tuple type
-const missing = strictFetch("/api/posts/1");
+const missing = strictFetch('/api/posts/1');
 //    ^? const missing: Promise<["Error: You must pass an explicit type argument to strictFetch<T>()"]>
 ```
 
@@ -589,7 +622,7 @@ const missing = strictFetch("/api/posts/1");
 ## Anti-Patterns vs. Best Practices
 
 | Category | ❌ Anti-Pattern | ✅ Best Practice |
-| :--- | :--- | :--- |
+| :-- | :-- | :-- |
 | **Generic Cardinality** | `<T>(val: T): void` (Single occurrence of type parameter) | `(val: string): void` (Use concrete primitive or union) |
 | **JSON / API Parsing** | `parse<T>(json: string): T` (Fabricates type out of thin air) | `parse<T>(json: string, validator: (u: unknown) => T): T` |
 | **Literal Narrowing** | `fn<T extends string[]>(arr: T)` (Widened string array) | `fn<const T extends readonly string[]>(arr: T)` (Preserves exact literals) |
@@ -610,17 +643,17 @@ function pipe3<A, B, C, D>(
   input: A,
   fn1: (arg: A) => B,
   fn2: (arg: B) => C,
-  fn3: (arg: C) => D
+  fn3: (arg: C) => D,
 ): D {
   return fn3(fn2(fn1(input)));
 }
 
 // Verification
 const res = pipe3(
-  "  123  ",
+  '  123  ',
   (s) => s.trim(),
   (s) => parseInt(s, 10),
-  (n) => n * 2
+  (n) => n * 2,
 );
 //    ^? const res: number
 type testPipe = Expect<Equal<typeof res, number>>;
@@ -652,10 +685,14 @@ class InMemoryRepo<TEntity extends { id: string }> {
   }
 }
 
-interface Member { id: string; department: "eng" | "sales"; active: boolean }
+interface Member {
+  id: string;
+  department: 'eng' | 'sales';
+  active: boolean;
+}
 const repo = new InMemoryRepo<Member>();
-repo.save({ id: "m1", department: "eng", active: true });
-const engineers = repo.findWhere("department", "eng");
+repo.save({ id: 'm1', department: 'eng', active: true });
+const engineers = repo.findWhere('department', 'eng');
 //    ^? const engineers: Member[]
 ```
 
@@ -684,15 +721,15 @@ class TypedEventEmitter<TEvents extends Record<string, unknown>> {
 
 interface ServerEvents {
   start: { port: number };
-  shutdown: { signal: "SIGTERM" | "SIGINT" };
+  shutdown: { signal: 'SIGTERM' | 'SIGINT' };
 }
 
 const emitter = new TypedEventEmitter<ServerEvents>();
-emitter.on("start", (data) => console.log(data.port));
-emitter.emit("shutdown", { signal: "SIGTERM" });
+emitter.on('start', (data) => console.log(data.port));
+emitter.emit('shutdown', { signal: 'SIGTERM' });
 
 // @ts-expect-error - invalid event payload
-emitter.emit("shutdown", { signal: "INVALID" });
+emitter.emit('shutdown', { signal: 'INVALID' });
 ```
 
 ### Exercise 4: Curried Object Key-Value Inversion
@@ -702,7 +739,7 @@ emitter.emit("shutdown", { signal: "INVALID" });
 ```ts
 // Solution
 function invertMap<const TObj extends Record<PropertyKey, PropertyKey>>(
-  obj: TObj
+  obj: TObj,
 ): { [K in keyof TObj as `${TObj[K] & (string | number)}`]: K } {
   const result: any = {};
   for (const [key, value] of Object.entries(obj)) {
@@ -711,10 +748,10 @@ function invertMap<const TObj extends Record<PropertyKey, PropertyKey>>(
   return result;
 }
 
-const statusMap = invertMap({ active: "1", pending: "2", archived: "3" });
+const statusMap = invertMap({ active: '1', pending: '2', archived: '3' });
 //    ^? const statusMap: { 1: "active"; 2: "pending"; 3: "archived"; }
 
-type testInvert = Expect<Equal<typeof statusMap, { 1: "active"; 2: "pending"; 3: "archived" }>>;
+type testInvert = Expect<Equal<typeof statusMap, { 1: 'active'; 2: 'pending'; 3: 'archived' }>>;
 ```
 
 ---
@@ -722,7 +759,7 @@ type testInvert = Expect<Equal<typeof statusMap, { 1: "active"; 2: "pending"; 3:
 ## Then vs now: generic type inference
 
 | Dimension | Then (TS ≤ 4.6) | Intermediate (TS 4.7 – 5.3) | Now (TS 5.4+ / TS 7.0) |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Literal argument retention | Required call-site `as const`: `fn(["a", "b"] as const)` | Required call-site `as const` | Declaration-site `<const T>` (TS 5.0) infers literal tuples directly |
 | Suppressing inference sites | Unstable hacks: `T & {}` or `[T][T extends any ? 0 : never]` | Unstable hacks | Native `NoInfer<T>` intrinsic (TS 5.4) excludes positions cleanly |
 | Structural variance checks | Full AST/type traversal on every instantiation check | `in T`, `out T`, `in out T` (TS 4.7) cache variance upfront | `in`/`out` annotations standard across UI and reactive libraries |
@@ -735,7 +772,7 @@ type testInvert = Expect<Equal<typeof statusMap, { 1: "active"; 2: "pending"; 3:
 
 <details><summary>1. What is an inference site, and how do you stop a parameter from being one?</summary>
 
-Any occurrence of a type parameter in a parameter type that the argument is matched against. Candidates from all sites are combined. `NoInfer<T>` (or, before it existed, `T & {}` tricks) removes a site so the argument is only *checked* against `T` inferred elsewhere.
+Any occurrence of a type parameter in a parameter type that the argument is matched against. Candidates from all sites are combined. `NoInfer<T>` (or, before it existed, `T & {}` tricks) removes a site so the argument is only _checked_ against `T` inferred elsewhere.
 </details>
 
 <details><summary>2. Why does <code>identity(["a", "b"])</code> give <code>string[]</code> and how do you get <code>readonly ["a", "b"]</code>?</summary>

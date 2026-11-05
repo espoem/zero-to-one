@@ -50,14 +50,23 @@ export function createSignal(initial) {
   let value = initial;
   const subscribers = new Set();
   let scheduled = false;
-  const flush = () => { scheduled = false; for (const fn of [...subscribers]) fn(value); };
+  const flush = () => {
+    scheduled = false;
+    for (const fn of [...subscribers]) fn(value);
+  };
   return {
     get: () => value,
     set(next) {
-      if (Object.is(next, value)) return;           // SameValue: no notification for equal values
+      if (Object.is(next, value)) return; // SameValue: no notification for equal values
       value = next;
-      if (!scheduled) { scheduled = true; queueMicrotask(flush); }
+      if (!scheduled) {
+        scheduled = true;
+        queueMicrotask(flush);
+      }
     },
-    subscribe(fn) { subscribers.add(fn); return () => subscribers.delete(fn); },
+    subscribe(fn) {
+      subscribers.add(fn);
+      return () => subscribers.delete(fn);
+    },
   };
 }

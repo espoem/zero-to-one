@@ -9,7 +9,7 @@ Verified against TypeScript 7.0.2 (7.1.0-beta noted as preview), Node 26.12.1, Z
 ## 1. Modules & Syllabus
 
 | # | Module | Covers | Example / tests |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 01 | [Toolchain and Compiler Model (TypeScript 7)](./modules/01-toolchain-and-compiler-model.md) | Erasure, compiler pipeline, Go port and parallel checkers, 6.0/7.0 defaults and removals, no classic API and the 6.0 bridge, Node type stripping | [`01-toolchain`](./examples/01-toolchain/) |
 | 02 | [Essential Types and Functions](./modules/02-essential-types-and-functions.md) | Types as sets, literals and widening, functions, tuples, `Set`/`Map`, `unknown`, Promise and iterator/generator typing | [`02-essential-types`](./examples/02-essential-types/) |
 | 03 | [Unions, Narrowing and Control Flow](./modules/03-unions-narrowing-and-control-flow.md) | CFA model, discriminated unions, exhaustiveness, closures, `switch (true)`, inferred predicates | [`03-unions-narrowing`](./examples/03-unions-narrowing/) |
@@ -43,7 +43,7 @@ Working JavaScript (functions, objects, classes, promises, modules) and a termin
 There is **no official Microsoft certification** for TypeScript. The recognised proctored exam is the independent **certificates.dev TypeScript Certification** (<https://certificates.dev/typescript>, checked 2026-10-29):
 
 | Level | Status | Format | Pass rule | Targets |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | Junior | Active | 50 multiple-choice, 40 min, proctored | 70% | TS version not stated |
 | Mid-Level | Active | 40 multiple-choice + 2 coding challenges, 135 min | 70% of questions and both challenges | TS version not stated |
 | Senior | Active | 40 multiple-choice + 2 coding challenges, 135 min | 70% of questions and both challenges | TS version not stated |
@@ -61,6 +61,7 @@ mise exec -- node --test examples/09-conditional-mapped/   # one module
 ```
 
 How the tests prove things:
+
 - **Runtime tests** use `node --test`; Node 26 runs `.ts` files by stripping types, which is why the track enforces `erasableSyntaxOnly` and `verbatimModuleSyntax`.
 - **Type tests** are `expectTypeOf(…)` assertions and `// @ts-expect-error` negatives, checked by `npm run typecheck` (a stale `@ts-expect-error` fails with TS2578).
 - **Compiler-fixture tests** spawn the pinned `tsc` against small projects under `examples/**/fixtures/` and assert exact diagnostic codes (TS2591, TS2882, TS5102, TS5108, TS5011, TS1294, TS2835, TS1484, TS1543, TS6306, TS9013, TS2589, …).
@@ -73,7 +74,7 @@ Performance numbers (e.g. `--checkers` speed-ups) are hardware dependent and are
 There is **no official Microsoft certification** for TypeScript. The recognised proctored exam is the independent **certificates.dev TypeScript Certification** (<https://certificates.dev/typescript>, checked 2026-10-29):
 
 | Level | Status | Format | Pass rule | Targets |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | Junior | Active | 50 multiple-choice, 40 min, proctored | Not stated per level | TS version not stated |
 | Mid-Level | Active | 40 multiple-choice + 2 coding challenges, 135 min | "70% of the questions and both challenges" | Not stated |
 | Senior | Active | 40 multiple-choice + 2 coding challenges, 135 min | Same | Not stated |

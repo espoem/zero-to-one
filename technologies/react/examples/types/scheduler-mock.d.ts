@@ -1,5 +1,5 @@
 // Minimal declarations for the parts of scheduler@0.28 "unstable_mock" used by the examples.
-declare module "scheduler/unstable_mock" {
+declare module 'scheduler/unstable_mock' {
   export type PriorityLevel = 1 | 2 | 3 | 4 | 5;
   export const unstable_ImmediatePriority: 1;
   export const unstable_UserBlockingPriority: 2;

@@ -3,6 +3,7 @@
 ## Hand-off (primary author, 2026-10-30) — ready for challenger/verifier
 
 **Status:** brief delivered. Authored comprehensive, academically grounded, and production-grade security and identity architecture track conforming to repository standards (`AGENTS.md` and `.agents/briefs/security-identity.md`):
+
 - All 14 modules authored in `modules/01-*.md` through `modules/14-*.md` with unwrapped paragraphs, formal definitions, cryptographic state machines, binary packet/bitfield layouts, side-channel analysis, and detailed Interview Drills with collapsible `<details>` blocks.
 - 14 hermetic test suites in `examples/01-*.test.ts` through `examples/14-*.test.ts` verifying STRIDE trust boundary enforcement, AEAD round-trip encryption with AAD, bit-flip tamper detection, AES-GCM nonce reuse catastrophe XOR recovery, constant-time equality comparisons, HKDF key extraction and expansion, native Argon2id password hashing, bcrypt 72-byte truncation boundary proofs, k-anonymity breached password querying, X.509 certification path validation and SPIFFE URI extraction, RFC 6265bis `__Host-` cookie prefix rules, anti-CSRF token verification, Fetch Metadata zero-token defense, CSP Level 3 nonce generation, OAuth 2.1 PKCE S256 verification and Refresh Token Rotation (RTR) family revocation, OIDC `at_hash` mathematical validation and nOAuth defense, JWS algorithm allowlisting, RS256/HS256 algorithm confusion defense, explicit `typ: at+jwt` enforcement, RFC 9449 DPoP proof minting and verification, WebAuthn `authenticatorData` flags bitfield unpacking (UP/UV/BE/BS) and assertion signature verification, RFC 6238 TOTP calculation, ReBAC relationship graph traversal, Cedar policy evaluation with forbid-overrides-permit, BOLA/IDOR object ownership enforcement, SSRF/metadata blocking, DNS rebinding socket-level IP pinning, Web Cache Deception detection, lockfile SHA-512 tarball integrity, dependency confusion detection, malicious lifecycle script auditing, automated PII/credential audit log redaction, impossible travel velocity detection, CVSS/EPSS vulnerability triage, envelope encryption with KMS-wrapped DEKs, GDPR Article 17 crypto-shredding key destruction proofs, and Hybrid Post-Quantum Key Exchange (X25519MLKEM768).
 - `exams/README.md`: CompTIA Security+ (SY0-701) 5 domains + Staff Security Systems Engineering Technical Interview Loop Matrix, 100% full coverage, 0 gaps.
@@ -12,7 +13,7 @@
 - `README.md`: updated with `Verified against Node 26.12.1, TypeScript 7.0.2 on 2026-10-30`, syllabus, and "Certifications & Academic Standards" section.
 
 | Module | State | Proof file | Tests |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 01 Threat Modeling & Governance | done | `examples/01-threat-modeling-dfd.test.ts` | pass |
 | 02 Crypto Primitives for Engineers | done | `examples/02-crypto-primitives.test.ts` | pass |
 | 03 Passwords & Secrets at Rest | done | `examples/03-password-peppering-argon2id.test.ts` | pass |
@@ -29,6 +30,7 @@
 | 14 Expert Architecture & Post-Quantum | done | `examples/14-envelope-encryption-and-crypto-shredding.test.ts` | pass |
 
 **Tooling:**
+
 - Node 26.12.1 and TypeScript 7.0.2 pinned in `.mise.toml` and `mise.lock` (multi-platform checksums for `linux-x64` and `macos-arm64`).
 - `jose: 6.2.13`, `fast-check: ^4.5.3`, `@types/node: ^26.0.0`, `typescript: ^7.0.2`.
 - Hermetic test runner: `mise exec -- npm test` (14 suites, 54 unit, scenario, and property tests passing in 0.8s).

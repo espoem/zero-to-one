@@ -4,7 +4,7 @@
 >
 > **Prerequisites:** Module 01 (elements, identity). **Source of truth:** `packages/react-reconciler/src` in [github.com/react/react](https://github.com/react/react) — `ReactFiber.js`, `ReactFiberWorkLoop.js`, `ReactFiberBeginWork.js`, `ReactFiberCompleteWork.js`, `ReactChildFiber.js`, `ReactFiberCommitWork.js`.
 
-Module 01 defined *what* identity is (position + type + key). This module shows *how* React maintains identity over time: the **fiber tree**, the **work loop** that walks it, the **reconciliation algorithm** that matches new elements to old fibers, and the **commit phase** that applies the result to the host. Internal field names below are from the 19.3.1 build and are not public API; the tests that read them use a small, clearly-labelled helper ([`_shared/internals.ts`](../examples/_shared/internals.ts)) and pin the version.
+Module 01 defined _what_ identity is (position + type + key). This module shows _how_ React maintains identity over time: the **fiber tree**, the **work loop** that walks it, the **reconciliation algorithm** that matches new elements to old fibers, and the **commit phase** that applies the result to the host. Internal field names below are from the 19.3.1 build and are not public API; the tests that read them use a small, clearly-labelled helper ([`_shared/internals.ts`](../examples/_shared/internals.ts)) and pin the version.
 
 ---
 
@@ -12,21 +12,22 @@ Module 01 defined *what* identity is (position + type + key). This module shows 
 
 ### 1.1 The problem with recursion
 
-React 15's *stack reconciler* walked the element tree with ordinary recursion: `mountComponent` called `mountComponent` on each child. A recursive walk has two properties that conflict with a responsive UI:
+React 15's _stack reconciler_ walked the element tree with ordinary recursion: `mountComponent` called `mountComponent` on each child. A recursive walk has two properties that conflict with a responsive UI:
 
 1. **It cannot pause.** The JavaScript call stack is the only record of "where we are"; returning from the walk loses it. A 50 ms render blocks input for 50 ms.
 2. **It has no priorities.** Every update takes the same path, so a keystroke waits behind a data-grid re-render.
 
-React 16 (2017) replaced it with **Fiber**: the call stack is reified as a heap-allocated linked structure. Each frame becomes a *fiber* object; walking the tree becomes a loop over that structure. A loop can stop after any fiber, yield to the browser, and resume — or throw away its progress and restart with more urgent work (Module 05).
+React 16 (2017) replaced it with **Fiber**: the call stack is reified as a heap-allocated linked structure. Each frame becomes a _fiber_ object; walking the tree becomes a loop over that structure. A loop can stop after any fiber, yield to the browser, and resume — or throw away its progress and restart with more urgent work (Module 05).
 
 ### 1.2 Fiber, formally
 
-> **Definition 2.1 (Fiber).** A fiber is a mutable record representing one *instance* (Module 01, Def. 1.4) together with the pending and completed work for it. The fibers of a root form an ordered rooted tree encoded as a **left-child/right-sibling binary tree** with parent back-pointers:
+> **Definition 2.1 (Fiber).** A fiber is a mutable record representing one _instance_ (Module 01, Def. 1.4) together with the pending and completed work for it. The fibers of a root form an ordered rooted tree encoded as a **left-child/right-sibling binary tree** with parent back-pointers:
+>
 > - `child`: the first child, or `null`;
 > - `sibling`: the next sibling, or `null`;
-> - `return`: the parent (named after the frame we *return* to when this unit of work completes).
+> - `return`: the parent (named after the frame we _return_ to when this unit of work completes).
 
-Left-child/right-sibling encoding ([Knuth, *TAOCP* Vol. 1, §2.3.2](https://www-cs-faculty.stanford.edu/~knuth/taocp.html)) turns an n-ary tree into a binary one, so a depth-first traversal needs only three pointers and no auxiliary stack.
+Left-child/right-sibling encoding ([Knuth, _TAOCP_ Vol. 1, §2.3.2](https://www-cs-faculty.stanford.edu/~knuth/taocp.html)) turns an n-ary tree into a binary one, so a depth-first traversal needs only three pointers and no auxiliary stack.
 
 ```mermaid
 flowchart TB
@@ -45,7 +46,7 @@ The test "pointers and work tags of a real fiber" walks exactly this structure o
 ### 1.3 The fields that matter
 
 | Field | Meaning | Used in |
-|---|---|---|
+| --- | --- | --- |
 | `tag` | Kind of fiber: `FunctionComponent` 0, `ClassComponent` 1, `HostRoot` 3, `HostPortal` 4, `HostComponent` 5, `HostText` 6, `Fragment` 7, `ForwardRef` 11, `SuspenseComponent` 13, `MemoComponent` 14, `SimpleMemoComponent` 15, `OffscreenComponent` 22 (backs Suspense offscreen content), `ActivityComponent` 31 (backs `<Activity>` in 19.3+) … | dispatch in `beginWork`/`completeWork` |
 | `type`, `elementType`, `key` | Copied from the element; the identity triple | reconciliation |
 | `stateNode` | Host instance (DOM node) for host fibers; class instance for class components; `FiberRoot` for the HostRoot; `null` for function components | commit |
@@ -120,9 +121,9 @@ WORK-LOOP-CONCURRENT()
     workInProgress ← PERFORM-UNIT-OF-WORK(workInProgress)
 ```
 
-**Loop invariant (work loop).** At the top of each iteration, every fiber that precedes `workInProgress` in DFS pre-order has *begun*, and every fiber whose entire subtree precedes it has *completed*; `workInProgress` and the `return` chain above it are the only fibers with work partially done. Because that state is fully captured by the single pointer `workInProgress`, the loop can stop at any iteration (yield) and resume later from the same pointer.
+**Loop invariant (work loop).** At the top of each iteration, every fiber that precedes `workInProgress` in DFS pre-order has _begun_, and every fiber whose entire subtree precedes it has _completed_; `workInProgress` and the `return` chain above it are the only fibers with work partially done. Because that state is fully captured by the single pointer `workInProgress`, the loop can stop at any iteration (yield) and resume later from the same pointer.
 
-`SHOULD-YIELD` is the scheduler's deadline check — by default 5 ms per slice (`frameInterval = 5` in `scheduler@0.28.0`). Module 05 covers how lanes decide *which* work loop runs and when a yielded render is resumed versus restarted.
+`SHOULD-YIELD` is the scheduler's deadline check — by default 5 ms per slice (`frameInterval = 5` in `scheduler@0.28.0`). Module 05 covers how lanes decide _which_ work loop runs and when a yielded render is resumed versus restarted.
 
 ### 3.2 `beginWork`: going down
 
@@ -149,16 +150,16 @@ For host fibers, `completeWork`:
 - on update: computes whether attributes changed and marks `Update`;
 - for every fiber: **bubbles** `subtreeFlags |= child.flags | child.subtreeFlags` and `childLanes`, so the commit phase can skip subtrees with no effects.
 
-> **Then vs now: the effect list.** Until React 17, `completeWork` threaded every fiber with effects onto a singly linked *effect list* (`firstEffect`/`nextEffect`), and the commit phase walked only that list. React 18 replaced it with `subtreeFlags` bubbling and a tree traversal in commit. The effect list could not express "this subtree has effects but must be skipped" (needed for Suspense and Offscreen/Activity hiding), and keeping it consistent under interruption was error-prone. Nothing in user code depends on this, but older articles (and interview questions) still describe the effect list — know that it is gone.
+> **Then vs now: the effect list.** Until React 17, `completeWork` threaded every fiber with effects onto a singly linked _effect list_ (`firstEffect`/`nextEffect`), and the commit phase walked only that list. React 18 replaced it with `subtreeFlags` bubbling and a tree traversal in commit. The effect list could not express "this subtree has effects but must be skipped" (needed for Suspense and Offscreen/Activity hiding), and keeping it consistent under interruption was error-prone. Nothing in user code depends on this, but older articles (and interview questions) still describe the effect list — know that it is gone.
 
 ### 3.4 Source walkthrough (v19.3.1)
 
 Links point at the `v19.3.1` tag of [github.com/react/react](https://github.com/react/react/tree/v19.3.1) (the repository moved from `facebook/react`; the `repository` field of the 19.3.1 packages says so). The same function names appear in the shipped development build of `react-dom`, which is what the tests execute.
 
 | Step | Source | What it does |
-|---|---|---|
+| --- | --- | --- |
 | Entry per root | [`ReactFiberWorkLoop.js` → `performWorkOnRoot`](https://github.com/react/react/blob/v19.3.1/packages/react-reconciler/src/ReactFiberWorkLoop.js#L1137) | Chooses `renderRootSync` or `renderRootConcurrent` from the lanes (blocking and expired lanes render synchronously), then commits |
-| Fresh start | [`prepareFreshStack`](https://github.com/react/react/blob/v19.3.1/packages/react-reconciler/src/ReactFiberWorkLoop.js#L2023) | Discards any in-progress tree, calls `createWorkInProgress(root.current, null)`, resets the module-level `workInProgress*` variables — a *restart* (Module 05) |
+| Fresh start | [`prepareFreshStack`](https://github.com/react/react/blob/v19.3.1/packages/react-reconciler/src/ReactFiberWorkLoop.js#L2023) | Discards any in-progress tree, calls `createWorkInProgress(root.current, null)`, resets the module-level `workInProgress*` variables — a _restart_ (Module 05) |
 | Sync loop | [`workLoopSync`](https://github.com/react/react/blob/v19.3.1/packages/react-reconciler/src/ReactFiberWorkLoop.js#L2772) | `while (workInProgress !== null) performUnitOfWork(workInProgress)` |
 | Concurrent loop (ships) | [`workLoopConcurrentByScheduler`](https://github.com/react/react/blob/v19.3.1/packages/react-reconciler/src/ReactFiberWorkLoop.js#L3073) | `while (workInProgress !== null && !shouldYield())` |
 | Concurrent loop (flagged off) | [`workLoopConcurrent`](https://github.com/react/react/blob/v19.3.1/packages/react-reconciler/src/ReactFiberWorkLoop.js#L3056) | Time-boxed 25 ms for non-idle and 5 ms for idle work, "to reduce the framerate of animations to 30 frames per second"; behind `enableThrottledScheduling = false` in `shared/ReactFeatureFlags.js`. The shipped build calls `workLoopConcurrentByScheduler` |
@@ -171,20 +172,20 @@ The bailout test at the top of [`beginWork`](https://github.com/react/react/blob
 ```js
 if (current !== null) {
   if (oldProps !== newProps || hasLegacyContextChanged()) {
-    didReceiveUpdate = true;                          // new props object: must render
+    didReceiveUpdate = true; // new props object: must render
   } else {
     const hasScheduledUpdateOrContext = checkScheduledUpdateOrContext(current, renderLanes);
     if (!hasScheduledUpdateOrContext && (workInProgress.flags & DidCapture) === NoFlags) {
       didReceiveUpdate = false;
       return attemptEarlyBailoutIfNoScheduledUpdate(current, workInProgress, renderLanes);
     }
-    didReceiveUpdate = false;                         // an update exists; the component may still
-  }                                                   // bail out if its state turns out equal
+    didReceiveUpdate = false; // an update exists; the component may still
+  } // bail out if its state turns out equal
 }
-workInProgress.lanes = NoLanes;                       // cleared before the component runs
+workInProgress.lanes = NoLanes; // cleared before the component runs
 ```
 
-[`bailoutOnAlreadyFinishedWork`](https://github.com/react/react/blob/v19.3.1/packages/react-reconciler/src/ReactFiberBeginWork.js#L3826) then chooses between *skip the subtree* and *clone children and keep walking*:
+[`bailoutOnAlreadyFinishedWork`](https://github.com/react/react/blob/v19.3.1/packages/react-reconciler/src/ReactFiberBeginWork.js#L3826) then chooses between _skip the subtree_ and _clone children and keep walking_:
 
 ```js
 if (!includesSomeLane(renderLanes, workInProgress.childLanes)) {
@@ -197,7 +198,7 @@ cloneChildFibers(current, workInProgress);
 return workInProgress.child;
 ```
 
-Two consequences. The props check is **reference** equality on the props *object*, so any parent render that re-creates the element defeats it; `memo` ([`updateMemoComponent`](https://github.com/react/react/blob/v19.3.1/packages/react-reconciler/src/ReactFiberBeginWork.js#L479), [`updateSimpleMemoComponent`](https://github.com/react/react/blob/v19.3.1/packages/react-reconciler/src/ReactFiberBeginWork.js#L547)) adds `shallowEqual` on top. And context changes are propagated **lazily** while descending (`lazilyPropagateParentContextChanges`): a provider marks nothing up front; consumers are discovered during the walk.
+Two consequences. The props check is **reference** equality on the props _object_, so any parent render that re-creates the element defeats it; `memo` ([`updateMemoComponent`](https://github.com/react/react/blob/v19.3.1/packages/react-reconciler/src/ReactFiberBeginWork.js#L479), [`updateSimpleMemoComponent`](https://github.com/react/react/blob/v19.3.1/packages/react-reconciler/src/ReactFiberBeginWork.js#L547)) adds `shallowEqual` on top. And context changes are propagated **lazily** while descending (`lazilyPropagateParentContextChanges`): a provider marks nothing up front; consumers are discovered during the walk.
 
 In `completeWork`, [`bubbleProperties`](https://github.com/react/react/blob/v19.3.1/packages/react-reconciler/src/ReactFiberCompleteWork.js#L793) recomputes `subtreeFlags` and `childLanes` bottom-up (and sums profiler durations), and [`appendAllChildren`](https://github.com/react/react/blob/v19.3.1/packages/react-reconciler/src/ReactFiberCompleteWork.js#L245) attaches already-created child DOM nodes to a newly created parent, so a fresh subtree is assembled off-screen and inserted with **one** DOM operation at its top.
 
@@ -207,10 +208,10 @@ In `completeWork`, [`bubbleProperties`](https://github.com/react/react/blob/v19.
 
 ### 4.1 Why heuristics
 
-The general problem — the minimum-cost edit script transforming one ordered labelled tree into another — is the **tree edit distance** problem; the best general algorithms are $O(n^3)$ (Demaine et al., *An Optimal Decomposition Algorithm for Tree Edit Distance*, ACM TALG 2009; survey: Bille, *A survey on tree edit distance and related problems*, TCS 2005). For a 1,000-node UI that is $10^9$ operations per update. React instead runs an $O(n)$ algorithm built on two assumptions documented since 2013:
+The general problem — the minimum-cost edit script transforming one ordered labelled tree into another — is the **tree edit distance** problem; the best general algorithms are $O(n^3)$ (Demaine et al., _An Optimal Decomposition Algorithm for Tree Edit Distance_, ACM TALG 2009; survey: Bille, _A survey on tree edit distance and related problems_, TCS 2005). For a 1,000-node UI that is $10^9$ operations per update. React instead runs an $O(n)$ algorithm built on two assumptions documented since 2013:
 
 1. **Elements of different types produce different trees.** If the type at a position changes (`div` → `section`, `ComponentA` → `ComponentB`), React does not diff the subtrees; it destroys the old subtree and builds the new one.
-2. **Keys identify children across renders.** Among siblings, an element with key *k* corresponds to the old fiber with key *k*, wherever it moved.
+2. **Keys identify children across renders.** Among siblings, an element with key _k_ corresponds to the old fiber with key _k_, wherever it moved.
 
 Both are tested: "changing the element type at a position destroys state" and "stable keys: prepending keeps each input's text on its own row and reuses DOM nodes".
 
@@ -249,17 +250,17 @@ The real [`placeChild`](https://github.com/react/react/blob/v19.3.1/packages/rea
 function placeChild(newFiber, lastPlacedIndex, newIndex) {
   newFiber.index = newIndex;
   if (!shouldTrackSideEffects) {
-    newFiber.flags |= Forked;              // remembered for useId during hydration
+    newFiber.flags |= Forked; // remembered for useId during hydration
     return lastPlacedIndex;
   }
   const current = newFiber.alternate;
   if (current !== null) {
     const oldIndex = current.index;
     if (oldIndex < lastPlacedIndex) {
-      newFiber.flags |= Placement;         // a MOVE — deliberately not PlacementDEV
+      newFiber.flags |= Placement; // a MOVE — deliberately not PlacementDEV
       return lastPlacedIndex;
     } else {
-      return oldIndex;                     // stays in place
+      return oldIndex; // stays in place
     }
   } else {
     newFiber.flags |= Placement | PlacementDEV; // an INSERTION
@@ -268,17 +269,16 @@ function placeChild(newFiber, lastPlacedIndex, newIndex) {
 }
 ```
 
-The `Placement`/`PlacementDEV` split is observable: under Strict Mode a newly **inserted** row gets setup → cleanup → setup, a **moved** row does not (test "StrictMode re-runs effects for INSERTED children… but not for MOVED ones"). [`reconcileChildrenArray`](https://github.com/react/react/blob/v19.3.1/packages/react-reconciler/src/ReactChildFiber.js#L1177) drives it with [`updateSlot`](https://github.com/react/react/blob/v19.3.1/packages/react-reconciler/src/ReactChildFiber.js#L842) (pass 1; returns `null` on a key mismatch, which ends the pass), [`mapRemainingChildren`](https://github.com/react/react/blob/v19.3.1/packages/react-reconciler/src/ReactChildFiber.js#L467) (a `Map` keyed by `key`, or by `index` for unkeyed children) and [`updateFromMap`](https://github.com/react/react/blob/v19.3.1/packages/react-reconciler/src/ReactChildFiber.js#L985) (pass 2). Fibers left in the map go to `deleteChild`, which appends them to `returnFiber.deletions` and sets `ChildDeletion` on the parent.
-**Correctness.** The children that stay in place have strictly increasing old indices (the invariant), so their relative order in the old DOM already matches the new order. Every other child is inserted or moved with `insertBefore(node, nextStayingSibling)` in commit, which positions it relative to the stable skeleton. The property test "unmoved keys keep their relative order" checks the invariant over random inputs.
+The `Placement`/`PlacementDEV` split is observable: under Strict Mode a newly **inserted** row gets setup → cleanup → setup, a **moved** row does not (test "StrictMode re-runs effects for INSERTED children… but not for MOVED ones"). [`reconcileChildrenArray`](https://github.com/react/react/blob/v19.3.1/packages/react-reconciler/src/ReactChildFiber.js#L1177) drives it with [`updateSlot`](https://github.com/react/react/blob/v19.3.1/packages/react-reconciler/src/ReactChildFiber.js#L842) (pass 1; returns `null` on a key mismatch, which ends the pass), [`mapRemainingChildren`](https://github.com/react/react/blob/v19.3.1/packages/react-reconciler/src/ReactChildFiber.js#L467) (a `Map` keyed by `key`, or by `index` for unkeyed children) and [`updateFromMap`](https://github.com/react/react/blob/v19.3.1/packages/react-reconciler/src/ReactChildFiber.js#L985) (pass 2). Fibers left in the map go to `deleteChild`, which appends them to `returnFiber.deletions` and sets `ChildDeletion` on the parent. **Correctness.** The children that stay in place have strictly increasing old indices (the invariant), so their relative order in the old DOM already matches the new order. Every other child is inserted or moved with `insertBefore(node, nextStayingSibling)` in commit, which positions it relative to the stable skeleton. The property test "unmoved keys keep their relative order" checks the invariant over random inputs.
 
 **Complexity.** One pass over each list plus a hash map: $O(m + n)$ time and $O(m)$ extra space.
 
-**Optimality — it is not optimal.** The set of children left in place is a *greedy* increasing subsequence, not the *longest* one. The minimum number of moves is $|C| - \text{LIS}(C)$ where $C$ is the sequence of old indices of the common keys in new order. The greedy choice is optimal for appends, removals and moving an item *later*, but moving the **last** item to the **front** makes `lastPlacedIndex` jump to the end immediately, so every other item "moves":
+**Optimality — it is not optimal.** The set of children left in place is a _greedy_ increasing subsequence, not the _longest_ one. The minimum number of moves is $|C| - \text{LIS}(C)$ where $C$ is the sequence of old indices of the common keys in new order. The greedy choice is optimal for appends, removals and moving an item _later_, but moving the **last** item to the **front** makes `lastPlacedIndex` jump to the end immediately, so every other item "moves":
 
-| Change | React's DOM placements | Minimum |
-|---|---|---|
-| `[a b c d e] → [e a b c d]` | 4 (`a`, `b`, `c`, `d` are re-appended) | 1 |
-| `[e a b c d] → [a b c d e]` | 1 (`e`) | 1 |
+| Change                      | React's DOM placements                 | Minimum |
+| --------------------------- | -------------------------------------- | ------- |
+| `[a b c d e] → [e a b c d]` | 4 (`a`, `b`, `c`, `d` are re-appended) | 1       |
+| `[e a b c d] → [a b c d e]` | 1 (`e`)                                | 1       |
 
 The test "moving the LAST item to the front costs n−1 moves…" counts real `insertBefore`/`appendChild` calls in jsdom and gets exactly these numbers; "property: model's moves + inserts equal the real number of DOM placements" checks the model against the real reconciler on 150 random list pairs; "property: React's heuristic never beats the LIS lower bound" confirms it is ≥ the minimum. (Vue 3 and Inferno run an LIS step to get the minimum; React has not adopted it because moves are rarely the bottleneck compared with rendering the components themselves.)
 
@@ -286,21 +286,21 @@ The test "moving the LAST item to the front costs n−1 moves…" counts real `i
 
 ### 4.4 Index keys and missing keys
 
-Without keys React uses the index as the implicit key. The index is *position*, not *identity*: after a prepend, slot 0 now holds a different data item but the same fiber — and the fiber is where `useState`, uncontrolled DOM state (`<input>` text, focus, scroll) and effects live. The test "NEGATIVE: index keys: prepending moves state onto the wrong row" shows the typed text jumping to the new row. React warns about missing keys in dynamic arrays and about duplicate keys (both tested); with duplicates, behaviour is undefined (children may be duplicated or dropped).
+Without keys React uses the index as the implicit key. The index is _position_, not _identity_: after a prepend, slot 0 now holds a different data item but the same fiber — and the fiber is where `useState`, uncontrolled DOM state (`<input>` text, focus, scroll) and effects live. The test "NEGATIVE: index keys: prepending moves state onto the wrong row" shows the typed text jumping to the new row. React warns about missing keys in dynamic arrays and about duplicate keys (both tested); with duplicates, behaviour is undefined (children may be duplicated or dropped).
 
 ---
 
 ## 5. Bailouts you can rely on
 
 | Mechanism | Condition | Notes |
-|---|---|---|
-| **Same element reference** | `oldProps === newProps` (the element object was not re-created) | The "children as props" pattern: elements created by the *grandparent* survive the parent's re-render untouched (test "same element reference… is not re-rendered") |
+| --- | --- | --- |
+| **Same element reference** | `oldProps === newProps` (the element object was not re-created) | The "children as props" pattern: elements created by the _grandparent_ survive the parent's re-render untouched (test "same element reference… is not re-rendered") |
 | **`memo(Component, areEqual?)`** | Shallow `Object.is` per prop, or your comparator | Defeated by fresh objects/functions/JSX in props (test "memo bails out… and is defeated by a fresh object prop"). The React Compiler (Module 09) makes props stable automatically |
 | **State bailout** | `setState(sameValue)` by `Object.is` | React may still render the component once to confirm, then discard (Module 03) |
-| **Context** | Only consumers of a changed context re-render, *through* `memo` boundaries | Context value identity matters (Module 12) |
+| **Context** | Only consumers of a changed context re-render, _through_ `memo` boundaries | Context value identity matters (Module 12) |
 | **Subtree skip** | `childLanes ∩ renderLanes = ∅` | Automatic; why sibling subtrees of an update are not visited |
 
-What is **not** a bailout: wrapping a component in `useCallback` without `memo` on the child; `React.PureComponent` comparing a prop that is re-created each render; `key` (a key *forces* a new identity, it never skips work).
+What is **not** a bailout: wrapping a component in `useCallback` without `memo` on the child; `React.PureComponent` comparing a prop that is re-created each render; `key` (a key _forces_ a new identity, it never skips work).
 
 ---
 
@@ -332,7 +332,7 @@ Key facts (each one is tested in Module 04):
 3. **Layout effects block paint.** They run in the same task as the DOM mutations, before the browser gets a chance to render a frame. Passive effects run after paint (usually), in a separate task — unless a later synchronous update forces them to flush first.
 4. **Deletions** unmount the whole removed subtree: refs detached, layout and passive cleanups run, host nodes removed once at the top-most host node of the deleted subtree (not node-by-node).
 
-The browser's own rendering steps (style → layout → paint → composite) that happen *after* the commit belong to the CSS track ([languages/css](../../../languages/css/README.md)); the event-loop position of the commit task belongs to [languages/javascript](../../../languages/javascript/README.md).
+The browser's own rendering steps (style → layout → paint → composite) that happen _after_ the commit belong to the CSS track ([languages/css](../../../languages/css/README.md)); the event-loop position of the commit task belongs to [languages/javascript](../../../languages/javascript/README.md).
 
 ### 6.1 Fragment refs (19.3)
 
@@ -358,19 +358,20 @@ stateDiagram-v2
 Without a view transition, [`commitRoot`](https://github.com/react/react/blob/v19.3.1/packages/react-reconciler/src/ReactFiberWorkLoop.js#L3725) calls `flushMutationEffects(); flushLayoutEffects(); flushSpawnedWork();` back to back in one task. With one, the same functions are passed as callbacks to `startViewTransition` so the browser can snapshot the old DOM before `flushMutationEffects` runs. The source comment on `root.current = finishedWork` states the invariant: it happens "after the mutation phase, so that the previous tree is still current during componentWillUnmount, but before the layout phase, so that the finished work is current during componentDidMount/Update."
 
 | Phase | Source |
-|---|---|
+| --- | --- |
 | Before mutation | [`commitBeforeMutationEffects`](https://github.com/react/react/blob/v19.3.1/packages/react-reconciler/src/ReactFiberCommitWork.js#L352): snapshots, view-transition names |
 | Mutation | [`commitMutationEffects`](https://github.com/react/react/blob/v19.3.1/packages/react-reconciler/src/ReactFiberCommitWork.js#L2027), [`commitDeletionEffects`](https://github.com/react/react/blob/v19.3.1/packages/react-reconciler/src/ReactFiberCommitWork.js#L1386): DOM writes, ref detach, insertion/layout cleanups |
 | Layout | [`commitLayoutEffects`](https://github.com/react/react/blob/v19.3.1/packages/react-reconciler/src/ReactFiberCommitWork.js#L3063): layout setups, class lifecycles, ref attach |
 | Passive | [`flushPassiveEffects`](https://github.com/react/react/blob/v19.3.1/packages/react-reconciler/src/ReactFiberWorkLoop.js#L4691) → [`commitPassiveUnmountEffects`](https://github.com/react/react/blob/v19.3.1/packages/react-reconciler/src/ReactFiberCommitWork.js#L4853) for the **whole tree**, then [`commitPassiveMountEffects`](https://github.com/react/react/blob/v19.3.1/packages/react-reconciler/src/ReactFiberCommitWork.js#L3764) |
 
-The test "commit is atomic: a layout effect sees every sibling's DOM already updated" makes the split observable: a component *earlier* in the tree reads a *later* sibling's DOM from its layout effect and already sees the new text.
+The test "commit is atomic: a layout effect sees every sibling's DOM already updated" makes the split observable: a component _earlier_ in the tree reads a _later_ sibling's DOM from its layout effect and already sees the new text.
 
 ---
+
 ## 7. Then vs now
 
 | Topic | Then | Now | Why it changed |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Reconciler | Stack reconciler, recursive (≤15) | Fiber, iterative work loop (16+) | Interruptibility, priorities |
 | Effects bookkeeping | Effect list `firstEffect/nextEffect` (16–17) | `flags`/`subtreeFlags` bubbling (18+) | Offscreen/Suspense hiding, simpler interruption |
 | Priorities | `expirationTime` numbers (16) | Lanes bitmask (17+) | Batching several priorities, entanglement (Module 05) |
@@ -385,10 +386,10 @@ The test "commit is atomic: a layout effect sees every sibling's DOM already upd
 ## 8. Production failure modes
 
 | Symptom | Mechanism | Fix |
-|---|---|---|
+| --- | --- | --- |
 | Input text/focus jumps to another row after sorting | Index keys (§4.4) | Stable data keys |
 | A child's state resets on every parent render | Component type defined inside render (new function identity → type change) — test "NEGATIVE: a component defined inside render…" | Define components at module scope; `react-hooks` v7 lints this (`static-components`) |
-| `<iframe>` reloads, `<video>` pauses, CSS animation restarts when an item moves | DOM node *moved* (`insertBefore` = remove + insert) | Avoid last-to-first rotations of keyed lists; reorder visually with CSS |
+| `<iframe>` reloads, `<video>` pauses, CSS animation restarts when an item moves | DOM node _moved_ (`insertBefore` = remove + insert) | Avoid last-to-first rotations of keyed lists; reorder visually with CSS |
 | Whole page re-renders on every keystroke | State lifted too high; no bailout below | Colocate state; pass children as props; let the Compiler memoise |
 | Duplicated or missing rows | Duplicate keys | Unique keys among siblings |
 | Remount of a large subtree when toggling a wrapper (`cond ? <A><X/></A> : <X/>`) | The position of `X` changed (child of `A` vs direct child) | Keep the wrapper and toggle a prop, or accept the remount |
@@ -400,7 +401,7 @@ The test "commit is atomic: a layout effect sees every sibling's DOM already upd
 ## 9. Executable proofs
 
 | Claim | Test in `fiber.test.tsx` |
-|---|---|
+| --- | --- |
 | Fibers form a child/sibling/return tree; tags; `stateNode` | `pointers and work tags of a real fiber` |
 | Two HostRoot fibers swap on each commit | `double buffering: FiberRoot.current alternates…` |
 | Type change and key change destroy state; same position keeps it | `identity = position + type + key` (5 tests) |
@@ -457,5 +458,5 @@ Child first. The commit traverses depth-first and fires layout effects on comple
 
 <details><summary><strong>9. A list row contains an embedded <code>&lt;iframe&gt;</code> player. After "move to top" it reloads. Why?</strong></summary>
 
-The row was moved in the DOM (`insertBefore`), which is a removal followed by an insertion; browsers reload a re-inserted iframe (and pause a re-inserted media element). With React's heuristic, moving an item to the top of a keyed list can even move *every other* row. Avoid physical moves (render in stable order and position with CSS) or accept the reset.
+The row was moved in the DOM (`insertBefore`), which is a removal followed by an insertion; browsers reload a re-inserted iframe (and pause a re-inserted media element). With React's heuristic, moving an item to the top of a keyed list can even move _every other_ row. Avoid physical moves (render in stable order and position with CSS) or accept the reset.
 </details>

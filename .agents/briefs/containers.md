@@ -1,36 +1,41 @@
 # Brief: Containers (`technologies/containers`)
 
-| | |
-|---|---|
-| Phase | 3 |
-| Kind | NEW track: create from scratch |
-| Primary (author) | **Opus · Claude Code** |
-| Drafter (on request) | pi · DeepSeek |
-| Challenger | pi · Muse Spark 1.3 |
-| Verifier | Antigravity |
-| Final gate | Opus (claude.ai session) |
-| Branch / worktree | `track/containers` · `../zto-containers` |
-| Depends on | phase 2 foundations |
-| Research dossier | `.agents/research/E-platform.md` |
+|                      |                                          |
+| -------------------- | ---------------------------------------- |
+| Phase                | 3                                        |
+| Kind                 | NEW track: create from scratch           |
+| Primary (author)     | **Opus · Claude Code**                   |
+| Drafter (on request) | pi · DeepSeek                            |
+| Challenger           | pi · Muse Spark 1.3                      |
+| Verifier             | Antigravity                              |
+| Final gate           | Opus (claude.ai session)                 |
+| Branch / worktree    | `track/containers` · `../zto-containers` |
+| Depends on           | phase 2 foundations                      |
+| Research dossier     | `.agents/research/E-platform.md`         |
 
 ## 0. Read before starting (binding)
+
 1. `AGENTS.md`: the contract. If it conflicts with this brief, AGENTS.md wins; log the conflict in your review file.
 2. `.agents/OWNERSHIP.md`: what you own vs only cross-link.
 3. `.agents/REVIEW.md`: the checklist your work is judged against.
 4. Your global/agent instructions still apply where they do not conflict.
 
 ## 1. Owner decisions and track-specific instructions
+
 - None beyond the dossier and AGENTS.md.
 - Teach the **latest stable** versions. Add **Then vs now** comparisons wherever practice changed (AGENTS.md § Version Currency).
 - Pin **all** tooling via mise (`.mise.toml` + `mise.lock`): node 26 for JS/TS, plus every CLI and runtime the examples need.
 
 ## 2. Ownership
+
 **You own (full treatment):**
+
 - Linux processes, signals, filesystems, namespaces, cgroups v2, overlayfs, seccomp
 - OCI image/runtime/distribution specs, BuildKit, rootless, Docker vs Podman
 - Shared compose-stack conventions (`examples/_compose`)
 
 **Cross-link only (do not re-explain):**
+
 - TCP/IP, UDP, routing/BGP/anycast, NAT, DNS, congestion control → owned by `architecture/networking`
 - Linux network tooling (ss, tcpdump, iproute2, nftables, netns) → owned by `architecture/networking`
 - CI/CD pipelines, SBOM, signing (cosign), SLSA provenance, OIDC-to-cloud from CI → owned by `technologies/gitlab-ci`
@@ -115,7 +120,7 @@
 ##### Structural decisions (summary)
 
 | Question | Recommendation | Rationale |
-|---|---|---|
+| --- | --- | --- |
 | Docker vs Podman | **One track `technologies/containers`** | Both are front-ends over the same OCI image/runtime/distribution specs, same kernel primitives (namespaces, cgroups v2, overlayfs, seccomp), same runtimes (runc/crun). Splitting would duplicate ~70% of content. Tool differences (daemon vs daemonless, rootless defaults, Quadlet vs compose, Buildah/Skopeo) fit in 2 modules. |
 | Kubernetes | **`technologies/kubernetes`**, prerequisite = containers | Single narrative covering CKA+CKAD; CKS content as late modules (security). |
 | Argo CD | **Standalone `technologies/argocd`, scoped as "GitOps with Argo CD (+ Argo Rollouts)"** | Too deep (controller internals, sharding, ApplicationSets, hydrator, RBAC, multi-tenancy) to be one K8s module; but should not become an "all of Argo" track — CAPA is 36% Workflows + 12% Events, which are a different problem (batch/DAG). Cover CGOA (100%) + CAPA's Argo CD 34% + Rollouts 18%; Workflows/Events = one optional appendix module. Flux only as comparison. A separate `gitops` track is not justified (principles = 1 module). |
@@ -127,12 +132,16 @@ Suggested order: containers → kubernetes → (terraform in parallel) → argoc
 ---
 
 ## 4. Re-verify list
+
 These claims were marked unverified during research. Confirm or correct each one against a primary source before teaching it:
+
 - Podman **6.1.4** (2026-10-12; 6.0.0 tagged 2026-06-24). 6.0 breaking: slirp4netns removed (pasta only), **cgroups v1 removed**, BoltDB removed (SQLite only; upgrade via 5.8 first), Netavark drops iptables → nftables, containers.conf/storage.conf parsing reworked — https://fedoraproject.org/wiki/Changes/Podman6 . (Search results mention a `podman-container-tools/podman` GitHub org — possible repo move, unverified.)
 - Docker Certified Associate (DCA, Mirantis) is legacy and not worth targeting (unverified current status); CKAD "Application Design and Build 20%" (define/build/modify images) and CKS "Supply Chain Security 20%" + "Minimize base image footprint" overlap — curricula at https://github.com/cncf/curriculum
 
 ## 5. Certifications & exams
+
 Follow AGENTS.md § Certification and Exam Coverage exactly. Minimum deliverables:
+
 1. **README "Certifications & Exams" section.** Start from the exams named in the dossier above ("Authoritative syllabi used"). Re-verify each exam's code, status, guide version/date, targeted product version and domain weights on the official page. Where no certification exists, say so and use the recognised interview format.
 2. **`exams/README.md` coverage matrix.** Rows are domain/objective, weight, modules, examples, status. No ❌ at hand-off.
 3. **`exams/<exam-code>.md` question banks.**
@@ -144,11 +153,14 @@ Follow AGENTS.md § Certification and Exam Coverage exactly. Minimum deliverable
 5. **Original questions only.** No braindump content.
 
 ## 6. Code languages
+
 Per AGENTS.md § Code Example Languages:
+
 - **Primary:** pseudocode (where algorithms or protocols are described) + TypeScript (or the track's own language, for language tracks).
 - **Secondary:** Python, Rust or Nim only where it teaches something. Each language lives in `examples/<lang>/` with its own mise-pinned toolchain and native test runner, and `test` runs them all.
 
 ## 7. Workflow and definition of done
+
 1. **Primary (Opus)** works on branch `track/containers` and sets this track's row in `.agents/STATUS.md` to 🟦.
 2. **Verify versions first.** Check every version in the dossier against its primary source today. Record the results in the README's `Verified against …` line. Resolve every item in the re-verify list below.
 3. Build in stages: README syllabus + exam matrix → modules one by one, each with its examples/tests → glossary → cheatsheet → question banks → mock exam. Delegate bulk drafting (question-bank drafts, glossary candidates, cheatsheet tables) to the **Drafter**, then correct and integrate it yourself.

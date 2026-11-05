@@ -59,9 +59,9 @@ export class VectorClock {
     }
 
     if (!hasLess && !hasGreater) return 'EQUAL';
-    if (hasLess && !hasGreater) return 'LESS';       // v1 -> v2
-    if (hasGreater && !hasLess) return 'GREATER';    // v2 -> v1
-    return 'CONCURRENT';                             // v1 || v2
+    if (hasLess && !hasGreater) return 'LESS'; // v1 -> v2
+    if (hasGreater && !hasLess) return 'GREATER'; // v2 -> v1
+    return 'CONCURRENT'; // v1 || v2
   }
 }
 

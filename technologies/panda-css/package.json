@@ -2,11 +2,11 @@
   "name": "zero-to-one-panda-css",
   "version": "2.0.0",
   "private": true,
-  "type": "module",
   "description": "Panda CSS v2 curriculum: executable examples, CSS snapshot fixtures, negative extraction fixtures and Playwright computed-style tests",
-  "engines": {
-    "node": ">=22"
-  },
+  "workspaces": [
+    "examples/monorepo/packages/*"
+  ],
+  "type": "module",
   "scripts": {
     "prepare": "npm run codegen",
     "codegen": "panda codegen --cwd examples/react && panda codegen --cwd examples/solid && panda codegen --cwd examples/vanilla && panda codegen --cwd examples/fixtures && panda codegen --cwd examples/monorepo/packages/ds && panda lib --cwd examples/monorepo/packages/ds && panda codegen --cwd examples/monorepo/apps/web",
@@ -38,7 +38,7 @@
     "vite": "8.3.5",
     "vite-plugin-solid": "2.11.14"
   },
-  "workspaces": [
-    "examples/monorepo/packages/*"
-  ]
+  "engines": {
+    "node": ">=22"
+  }
 }

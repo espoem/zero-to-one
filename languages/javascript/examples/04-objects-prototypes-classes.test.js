@@ -14,7 +14,10 @@ export function myNew(F, ...args) {
 
 /** OrdinaryHasInstance, implemented. */
 export function myInstanceof(v, Target) {
-  if (typeof Target[Symbol.hasInstance] === 'function' && Target[Symbol.hasInstance] !== Function.prototype[Symbol.hasInstance]) {
+  if (
+    typeof Target[Symbol.hasInstance] === 'function' &&
+    Target[Symbol.hasInstance] !== Function.prototype[Symbol.hasInstance]
+  ) {
     return Boolean(Target[Symbol.hasInstance](v));
   }
   if (Object(v) !== v) return false;
@@ -30,13 +33,26 @@ describe('Property descriptors (§6.2.6)', () => {
     const o = {};
     o.a = 1;
     Object.defineProperty(o, 'b', { value: 2 });
-    assert.deepEqual(Object.getOwnPropertyDescriptor(o, 'a'), { value: 1, writable: true, enumerable: true, configurable: true });
-    assert.deepEqual(Object.getOwnPropertyDescriptor(o, 'b'), { value: 2, writable: false, enumerable: false, configurable: false });
+    assert.deepEqual(Object.getOwnPropertyDescriptor(o, 'a'), {
+      value: 1,
+      writable: true,
+      enumerable: true,
+      configurable: true,
+    });
+    assert.deepEqual(Object.getOwnPropertyDescriptor(o, 'b'), {
+      value: 2,
+      writable: false,
+      enumerable: false,
+      configurable: false,
+    });
     assert.deepEqual(Object.keys(o), ['a']);
   });
 
   test('class methods are non-enumerable, class fields are enumerable', () => {
-    class C { f = 1; m() {} }
+    class C {
+      f = 1;
+      m() {}
+    }
     assert.equal(Object.getOwnPropertyDescriptor(C.prototype, 'm')?.enumerable, false);
     assert.equal(Object.getOwnPropertyDescriptor(new C(), 'f')?.enumerable, true);
   });
@@ -44,11 +60,21 @@ describe('Property descriptors (§6.2.6)', () => {
   test('NEGATIVE: non-configurable properties reject redefinition except writable true→false', () => {
     const o = {};
     Object.defineProperty(o, 'x', { value: 1, writable: true, configurable: false });
-    Object.defineProperty(o, 'x', { value: 2 });           // allowed: still writable
-    Object.defineProperty(o, 'x', { writable: false });    // allowed: true → false
+    Object.defineProperty(o, 'x', { value: 2 }); // allowed: still writable
+    Object.defineProperty(o, 'x', { writable: false }); // allowed: true → false
     assert.throws(() => Object.defineProperty(o, 'x', { writable: true }), TypeError);
-    assert.throws(() => Object.defineProperty(o, 'x', { get() { return 1; } }), TypeError);
-    assert.throws(() => { delete /** @type {any} */ (o).x; }, TypeError);
+    assert.throws(
+      () =>
+        Object.defineProperty(o, 'x', {
+          get() {
+            return 1;
+          },
+        }),
+      TypeError,
+    );
+    assert.throws(() => {
+      delete (/** @type {any} */ (o).x);
+    }, TypeError);
   });
 
   test('NEGATIVE: Object.freeze is shallow and ignores internal slots', () => {
@@ -59,13 +85,19 @@ describe('Property descriptors (§6.2.6)', () => {
     assert.equal(o.nested.n, 2);
     assert.equal(o.m.get('k'), 'v');
     assert.equal(o.d.getTime(), 5);
-    assert.throws(() => { /** @type {any} */ (o).added = 1; }, TypeError);
+    assert.throws(() => {
+      /** @type {any} */ (o).added = 1;
+    }, TypeError);
   });
 });
 
 describe('[[Get]] and [[Set]] (§10.1.8, §10.1.9)', () => {
   test('inherited getters run with the receiver as this', () => {
-    const proto = { get who() { return this.name; } };
+    const proto = {
+      get who() {
+        return this.name;
+      },
+    };
     const o = Object.create(proto);
     o.name = 'instance';
     assert.equal(o.who, 'instance');
@@ -73,7 +105,11 @@ describe('[[Get]] and [[Set]] (§10.1.8, §10.1.9)', () => {
 
   test('inherited setters intercept assignment; no own property is created', () => {
     const log = [];
-    const proto = { set x(v) { log.push(v); } };
+    const proto = {
+      set x(v) {
+        log.push(v);
+      },
+    };
     const o = Object.create(proto);
     o.x = 1;
     assert.deepEqual(log, [1]);
@@ -81,16 +117,26 @@ describe('[[Get]] and [[Set]] (§10.1.8, §10.1.9)', () => {
   });
 
   test('NEGATIVE: the override mistake, an inherited read-only property blocks assignment', () => {
-    const proto = Object.freeze({ toString() { return 'proto'; } });
+    const proto = Object.freeze({
+      toString() {
+        return 'proto';
+      },
+    });
     const o = Object.create(proto);
-    assert.throws(() => { o.toString = () => 'own'; }, TypeError);
+    assert.throws(() => {
+      o.toString = () => 'own';
+    }, TypeError);
     Object.defineProperty(o, 'toString', { value: () => 'own' }); // definition works
     assert.equal(String(o), 'own');
   });
 
   test('Object.assign uses [[Set]] (setters run); spread uses define (no setters)', () => {
     const log = [];
-    const target = { set v(x) { log.push(x); } };
+    const target = {
+      set v(x) {
+        log.push(x);
+      },
+    };
     Object.assign(target, { v: 1 });
     assert.deepEqual(log, [1]);
     const spread = { ...{ v: 2 } };
@@ -108,27 +154,40 @@ describe('Own property key order (§10.1.11.1)', () => {
   });
 
   test('property: Object.keys always lists canonical array-index keys first, ascending', () => {
-    fc.assert(fc.property(fc.array(fc.oneof(fc.nat({ max: 1000 }).map(String), fc.string({ maxLength: 3 }))), (keys) => {
-      const o = {};
-      for (const k of keys) o[k] = true;
-      const isIndex = (k) => String(Number(k) >>> 0) === k && Number(k) !== 2 ** 32 - 1;
-      const ks = Object.keys(o);
-      const idx = ks.filter(isIndex);
-      const firstNonIndex = ks.findIndex((k) => !isIndex(k));
-      const sorted = [...idx].sort((a, b) => Number(a) - Number(b));
-      return JSON.stringify(idx) === JSON.stringify(sorted) &&
-        (firstNonIndex === -1 || ks.slice(firstNonIndex).every((k) => !isIndex(k)));
-    }));
+    fc.assert(
+      fc.property(
+        fc.array(fc.oneof(fc.nat({ max: 1000 }).map(String), fc.string({ maxLength: 3 }))),
+        (keys) => {
+          const o = {};
+          for (const k of keys) o[k] = true;
+          const isIndex = (k) => String(Number(k) >>> 0) === k && Number(k) !== 2 ** 32 - 1;
+          const ks = Object.keys(o);
+          const idx = ks.filter(isIndex);
+          const firstNonIndex = ks.findIndex((k) => !isIndex(k));
+          const sorted = [...idx].sort((a, b) => Number(a) - Number(b));
+          return (
+            JSON.stringify(idx) === JSON.stringify(sorted) &&
+            (firstNonIndex === -1 || ks.slice(firstNonIndex).every((k) => !isIndex(k)))
+          );
+        },
+      ),
+    );
   });
 });
 
 describe('Prototypes, new and instanceof', () => {
   test('myNew matches new for base constructors, including object return values', () => {
-    function P(x) { this.x = x; }
-    P.prototype.get = function () { return this.x; };
+    function P(x) {
+      this.x = x;
+    }
+    P.prototype.get = function () {
+      return this.x;
+    };
     assert.equal(myNew(P, 3).get(), 3);
     assert.ok(myNew(P, 3) instanceof P);
-    function Q() { return { replaced: true }; }
+    function Q() {
+      return { replaced: true };
+    }
     assert.deepEqual(myNew(Q), { replaced: true });
     assert.deepEqual(new /** @type {any} */ (Q)(), { replaced: true });
   });
@@ -190,58 +249,93 @@ describe('Classes (§15.7)', () => {
   });
 
   test('NEGATIVE: base constructor sees subclass fields as not yet defined', () => {
-    class Base { constructor() { this.init(); } init() {} }
+    class Base {
+      constructor() {
+        this.init();
+      }
+      init() {}
+    }
     class Derived extends Base {
       value = 'field';
-      init() { this.seen = this.value; }
+      init() {
+        this.seen = this.value;
+      }
     }
     assert.equal(new Derived().seen, undefined);
   });
 
   test('NEGATIVE: a class field shadows an inherited setter (define semantics)', () => {
     const log = [];
-    class Base { set v(x) { log.push(x); } }
-    class Derived extends Base { v = 1; }
+    class Base {
+      set v(x) {
+        log.push(x);
+      }
+    }
+    class Derived extends Base {
+      v = 1;
+    }
     const d = new Derived();
-    assert.deepEqual(log, []);              // the setter never ran
+    assert.deepEqual(log, []); // the setter never ran
     assert.equal(Object.hasOwn(d, 'v'), true);
   });
 
   test('subclassing Array produces a real Array exotic object', () => {
-    class Stack extends Array { peek() { return this[this.length - 1]; } }
+    class Stack extends Array {
+      peek() {
+        return this[this.length - 1];
+      }
+    }
     const s = new Stack();
     s.push(1, 2);
     s[5] = 9;
     assert.equal(s.length, 6);
     assert.equal(Array.isArray(s), true);
     assert.equal(s.peek(), 9);
-    assert.ok(s.map((x) => x) instanceof Stack);  // via Symbol.species
+    assert.ok(s.map((x) => x) instanceof Stack); // via Symbol.species
   });
 
   test('private names: brand checks and `#x in obj`', () => {
     class Point {
       #x;
-      constructor(x) { this.#x = x; }
-      static isPoint(o) { return #x in o; }
-      static readX(o) { return o.#x; }
-      equals(other) { return this.#x === other.#x; }
+      constructor(x) {
+        this.#x = x;
+      }
+      static isPoint(o) {
+        return #x in o;
+      }
+      static readX(o) {
+        return o.#x;
+      }
+      equals(other) {
+        return this.#x === other.#x;
+      }
     }
     const p = new Point(1);
     assert.equal(Point.isPoint(p), true);
     assert.equal(Point.isPoint({}), false);
     assert.equal(p.equals(new Point(1)), true);
     assert.throws(() => Point.readX({}), TypeError);
-    assert.deepEqual(Reflect.ownKeys(p), []);   // not a property
+    assert.deepEqual(Reflect.ownKeys(p), []); // not a property
   });
 
   test('NEGATIVE: Proxy does not forward private names', () => {
-    class Secret { #s = 42; reveal() { return this.#s; } }
+    class Secret {
+      #s = 42;
+      reveal() {
+        return this.#s;
+      }
+    }
     const proxied = new Proxy(new Secret(), {});
     assert.throws(() => proxied.reveal(), TypeError);
   });
 
   test('NEGATIVE: freezing an instance does not freeze private fields', () => {
-    class Counter { #n = 0; inc() { return ++this.#n; } }
+    class Counter {
+      #n = 0;
+      inc() {
+        return ++this.#n;
+      }
+    }
     const c = Object.freeze(new Counter());
     assert.equal(c.inc(), 1);
   });
@@ -250,15 +344,24 @@ describe('Classes (§15.7)', () => {
     let peek;
     class Vault {
       static #items = [];
-      static { this.#items.push('init'); peek = () => Vault.#items.length; }
-      static add(x) { Vault.#items.push(x); }
+      static {
+        this.#items.push('init');
+        peek = () => Vault.#items.length;
+      }
+      static add(x) {
+        Vault.#items.push(x);
+      }
     }
     Vault.add('a');
     assert.equal(peek(), 2);
   });
 
   test('static methods are inherited through the constructor chain', () => {
-    class A { static create() { return new this(); } }
+    class A {
+      static create() {
+        return new this();
+      }
+    }
     class B extends A {}
     assert.ok(B.create() instanceof B);
     assert.equal(Object.getPrototypeOf(B), A);
@@ -294,7 +397,7 @@ describe('Built-in exotic objects (§10.4)', () => {
     /** @type {any} */ (ta)[5] = 1;
     /** @type {any} */ (ta)[1.5] = 1;
     /** @type {any} */ (ta)['-0'] = 1;
-    ta[0] = 257;                                   // modulo 256
+    ta[0] = 257; // modulo 256
     assert.deepEqual(Reflect.ownKeys(ta), ['0', '1']);
     assert.equal(ta[0], 1);
     assert.equal(new Uint8ClampedArray([300])[0], 255);
@@ -309,7 +412,12 @@ describe('Built-in exotic objects (§10.4)', () => {
 
 describe('Copying', () => {
   test('spread and structuredClone lose the prototype; structuredClone handles cycles', () => {
-    class P { constructor() { this.x = 1; } m() {} }
+    class P {
+      constructor() {
+        this.x = 1;
+      }
+      m() {}
+    }
     const p = new P();
     assert.equal(Object.getPrototypeOf({ ...p }), Object.prototype);
     const cyc = { name: 'c' };
@@ -322,6 +430,10 @@ describe('Copying', () => {
 
   test('NEGATIVE: JSON round-trip loses types silently', () => {
     const src = { u: undefined, d: new Date(0), m: new Map([[1, 2]]), n: NaN };
-    assert.deepEqual(JSON.parse(JSON.stringify(src)), { d: '1970-01-01T00:00:00.000Z', m: {}, n: null });
+    assert.deepEqual(JSON.parse(JSON.stringify(src)), {
+      d: '1970-01-01T00:00:00.000Z',
+      m: {},
+      n: null,
+    });
   });
 });

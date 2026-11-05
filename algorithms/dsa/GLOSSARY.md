@@ -7,7 +7,7 @@ This glossary establishes canonical terminology for algorithm design, computatio
 ## Terminology Index
 
 | English Term | Czech Equivalent | Concise Technical Definition | Primary Authority |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | **Amortized Analysis** | Amortizovaná složitost | Analyzing the average run time per operation over a worst-case sequence of operations, guaranteeing that total sequence cost $\le \sum \hat{c}_i$. | CLRS 4e Ch. 17 |
 | **Asymptotic Complexity** | Asymptotická složitost | The limiting behavior of execution time or memory consumption as input size $n$ approaches infinity ($O, \Omega, \Theta$). | Knuth (1976), CLRS Ch. 3 |
 | **Backtracking** | Zpětné vyhledávání (prohledávání s návratem) | Algorithmic technique that incrementally builds candidate solutions and abandons (backtracks) a candidate as soon as it determines it cannot yield a valid solution. | Golomb & Baumert (1965) |

@@ -10,8 +10,8 @@ export function neumaierSum(xs) {
   let c = 0;
   for (const x of xs) {
     const t = s + x;
-    if (Math.abs(s) >= Math.abs(x)) c += (s - t) + x;
-    else c += (x - t) + s;
+    if (Math.abs(s) >= Math.abs(x)) c += s - t + x;
+    else c += x - t + s;
     s = t;
   }
   return s + c;
@@ -20,12 +20,12 @@ export function neumaierSum(xs) {
 describe('typeof (§13.5.3)', () => {
   test('the table, including the two historic special cases', () => {
     assert.equal(typeof undefined, 'undefined');
-    assert.equal(typeof null, 'object');          // historic bug, kept forever
-    assert.equal(typeof (() => {}), 'function');  // objects with [[Call]]
+    assert.equal(typeof null, 'object'); // historic bug, kept forever
+    assert.equal(typeof (() => {}), 'function'); // objects with [[Call]]
     assert.equal(typeof class {}, 'function');
     assert.equal(typeof 1n, 'bigint');
     assert.equal(typeof Symbol(), 'symbol');
-    assert.equal(typeof [], 'object');            // use Array.isArray
+    assert.equal(typeof [], 'object'); // use Array.isArray
     assert.equal(Array.isArray(new Proxy([], {})), true);
   });
 
@@ -35,7 +35,10 @@ describe('typeof (§13.5.3)', () => {
   });
 
   test('NEGATIVE: assigning a property to a primitive throws in strict code', () => {
-    assert.throws(() => { const s = 'abc'; s.custom = 1; }, TypeError);
+    assert.throws(() => {
+      const s = 'abc';
+      s.custom = 1;
+    }, TypeError);
   });
 });
 
@@ -57,7 +60,7 @@ describe('Number: IEEE 754 binary64 (§6.1.6.1)', () => {
     assert.equal(Object.is(0, -0), false);
     assert.equal(1 / -0, -Infinity);
     assert.ok(Object.is(Math.round(-0.4), -0));
-    assert.equal(String(-0), '0');           // the sign is lost in text
+    assert.equal(String(-0), '0'); // the sign is lost in text
     assert.equal(JSON.stringify(-0), '0');
   });
 
@@ -67,21 +70,29 @@ describe('Number: IEEE 754 binary64 (§6.1.6.1)', () => {
   });
 
   test('property: shortest round-trip, Number(String(x)) === x for all finite doubles', () => {
-    fc.assert(fc.property(fc.double({ noNaN: true, noDefaultInfinity: true }), (x) => {
-      return Object.is(Number(String(x)), x) || (x === 0); // String(-0) is "0"
-    }));
+    fc.assert(
+      fc.property(fc.double({ noNaN: true, noDefaultInfinity: true }), (x) => {
+        return Object.is(Number(String(x)), x) || x === 0; // String(-0) is "0"
+      }),
+    );
   });
 
   test('Neumaier summation fixes catastrophic cancellation where reduce fails', () => {
     const xs = [1e20, 0.1, -1e20];
-    assert.equal(xs.reduce((a, b) => a + b, 0), 0);  // naive: the 0.1 is lost
+    assert.equal(
+      xs.reduce((a, b) => a + b, 0),
+      0,
+    ); // naive: the 0.1 is lost
     assert.equal(neumaierSum(xs), 0.1);
   });
 
   test('Math.sumPrecise (ES2026) agrees with Neumaier, but only behind a flag in Node 26', () => {
     assert.equal(typeof Math.sumPrecise, 'undefined');
-    const r = runNode(['--js-sum-precise', '-p',
-      'JSON.stringify([Math.sumPrecise([1e20, 0.1, -1e20]), Object.is(Math.sumPrecise([]), -0)])']);
+    const r = runNode([
+      '--js-sum-precise',
+      '-p',
+      'JSON.stringify([Math.sumPrecise([1e20, 0.1, -1e20]), Object.is(Math.sumPrecise([]), -0)])',
+    ]);
     assert.deepEqual(JSON.parse(r.stdout), [0.1, true]);
   });
 
@@ -94,8 +105,8 @@ describe('Number: IEEE 754 binary64 (§6.1.6.1)', () => {
 describe('BigInt (§6.1.6.2)', () => {
   test('NEGATIVE: arithmetic does not mix BigInt and Number', () => {
     assert.throws(() => 1n + /** @type {any} */ (1), TypeError);
-    assert.throws(() => +(/** @type {any} */ (1n)), TypeError);   // unary plus
-    assert.throws(() => 1n >>> 0n, TypeError);                   // no unsigned shift
+    assert.throws(() => +(/** @type {any} */ (1n)), TypeError); // unary plus
+    assert.throws(() => 1n >>> 0n, TypeError); // no unsigned shift
   });
 
   test('comparisons across BigInt and Number are exact', () => {
@@ -163,27 +174,38 @@ describe('Symbols (§6.1.5)', () => {
 describe('ToPrimitive and hints (§7.1.1)', () => {
   const recordHints = () => {
     const hints = [];
-    const obj = { [Symbol.toPrimitive](hint) { hints.push(hint); return hint === 'string' ? 'S' : 42; } };
+    const obj = {
+      [Symbol.toPrimitive](hint) {
+        hints.push(hint);
+        return hint === 'string' ? 'S' : 42;
+      },
+    };
     return { obj, hints };
   };
 
   test('each operator passes the documented hint', () => {
     const { obj, hints } = recordHints();
     const o = /** @type {any} */ (obj);
-    void (o + '');     // default
-    void (o * 2);      // number
-    void `${o}`;       // string
-    void (o == 42);    // default
-    void (o < 100);    // number
-    void String(o);    // string
+    void (o + ''); // default
+    void (o * 2); // number
+    void `${o}`; // string
+    void (o == 42); // default
+    void (o < 100); // number
+    void String(o); // string
     assert.deepEqual(hints, ['default', 'number', 'string', 'default', 'number', 'string']);
   });
 
   test('OrdinaryToPrimitive tries valueOf first for number/default, toString first for string', () => {
     const calls = [];
     const o = /** @type {any} */ ({
-      valueOf() { calls.push('valueOf'); return {}; },  // not primitive: fall through
-      toString() { calls.push('toString'); return '7'; },
+      valueOf() {
+        calls.push('valueOf');
+        return {};
+      }, // not primitive: fall through
+      toString() {
+        calls.push('toString');
+        return '7';
+      },
     });
     assert.equal(o * 1, 7);
     assert.deepEqual(calls, ['valueOf', 'toString']);
@@ -196,7 +218,11 @@ describe('ToPrimitive and hints (§7.1.1)', () => {
   });
 
   test('NEGATIVE: @@toPrimitive returning an object throws TypeError', () => {
-    const bad = /** @type {any} */ ({ [Symbol.toPrimitive]() { return {}; } });
+    const bad = /** @type {any} */ ({
+      [Symbol.toPrimitive]() {
+        return {};
+      },
+    });
     assert.throws(() => bad + 1, TypeError);
   });
 });
@@ -213,7 +239,7 @@ describe('ToBoolean, ToNumber, ToString, ToPropertyKey, ToInt32', () => {
     assert.equal(Number('0x1F'), 31);
     assert.equal(Number('0b11'), 3);
     assert.equal(Number('Infinity'), Infinity);
-    assert.ok(Number.isNaN(Number('1_000')));    // separators are literal-only
+    assert.ok(Number.isNaN(Number('1_000'))); // separators are literal-only
     assert.ok(Number.isNaN(Number('12px')));
     assert.equal(Number(null), 0);
     assert.ok(Number.isNaN(Number(undefined)));
@@ -224,7 +250,7 @@ describe('ToBoolean, ToNumber, ToString, ToPropertyKey, ToInt32', () => {
 
   test('NEGATIVE: parseInt parses a prefix of the *string* form', () => {
     assert.equal(parseInt('12px', 10), 12);
-    assert.equal(parseInt(/** @type {any} */ (0.0000005), 10), 5);  // "5e-7"
+    assert.equal(parseInt(/** @type {any} */ (0.0000005), 10), 5); // "5e-7"
     assert.ok(Number.isNaN(parseInt('', 10)));
   });
 
@@ -236,12 +262,16 @@ describe('ToBoolean, ToNumber, ToString, ToPropertyKey, ToInt32', () => {
 
   test('NEGATIVE: ToPropertyKey collapses object keys to "[object Object]"', () => {
     const cache = {};
-    const a = {}; const b = {};
+    const a = {};
+    const b = {};
     cache[/** @type {any} */ (a)] = 'A';
     cache[/** @type {any} */ (b)] = 'B';
     assert.deepEqual(Object.keys(cache), ['[object Object]']);
-    assert.equal(cache[/** @type {any} */ (a)], 'B');  // collision
-    const m = new Map([[a, 'A'], [b, 'B']]);
+    assert.equal(cache[/** @type {any} */ (a)], 'B'); // collision
+    const m = new Map([
+      [a, 'A'],
+      [b, 'B'],
+    ]);
     assert.equal(m.get(a), 'A');
   });
 
@@ -259,17 +289,19 @@ describe('ToBoolean, ToNumber, ToString, ToPropertyKey, ToInt32', () => {
       const m = ((int % 2 ** 32) + 2 ** 32) % 2 ** 32;
       return m >= 2 ** 31 ? m - 2 ** 32 : m;
     };
-    fc.assert(fc.property(fc.integer({ min: -(2 ** 52), max: 2 ** 52 }), (n) => (n | 0) === toInt32(n)));
+    fc.assert(
+      fc.property(fc.integer({ min: -(2 ** 52), max: 2 ** 52 }), (n) => (n | 0) === toInt32(n)),
+    );
   });
 });
 
 describe('Equality algorithms (§7.2.9, §7.2.10, §7.2.13, §7.2.14)', () => {
   test('which API uses which algorithm', () => {
-    assert.equal([NaN].indexOf(NaN), -1);        // IsStrictlyEqual
-    assert.equal([NaN].includes(NaN), true);     // SameValueZero
-    assert.equal(new Set([0, -0]).size, 1);      // SameValueZero
+    assert.equal([NaN].indexOf(NaN), -1); // IsStrictlyEqual
+    assert.equal([NaN].includes(NaN), true); // SameValueZero
+    assert.equal(new Set([0, -0]).size, 1); // SameValueZero
     assert.equal(new Map([[NaN, 1]]).get(NaN), 1);
-    assert.equal(Object.is(0, -0), false);       // SameValue
+    assert.equal(Object.is(0, -0), false); // SameValue
   });
 
   test('IsLooselyEqual step by step', () => {
@@ -280,7 +312,7 @@ describe('Equality algorithms (§7.2.9, §7.2.10, §7.2.13, §7.2.14)', () => {
     assert.equal(eq([], false), true);
     assert.equal(eq([], ![]), true);
     assert.equal(eq('1', 1n), true);
-    assert.equal(eq('x', 1n), false);           // unparsable → false
+    assert.equal(eq('x', 1n), false); // unparsable → false
     assert.equal(eq({ valueOf: () => 3 }, 3), true);
   });
 

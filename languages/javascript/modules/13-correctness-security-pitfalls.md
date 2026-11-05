@@ -1,6 +1,6 @@
 # 13 · Correctness and Security Pitfalls, and the Version History
 
-> **Spec anchors (ECMA-262 17th edition):** §25.5.2 `JSON.parse` (reviver `context.source`, ES2026), §25.5.3 `JSON.rawJSON` (ES2026), §23.1.3.30 `Array.prototype.sort` (§23.1.3.30.1 SortIndexedProperties, §23.1.3.30.2 CompareArrayElements), §23.1.3.34 `toSorted`, §22.2 *RegExp Objects* (§22.2.2 pattern semantics), `RegExp.escape` (ES2025), §21.4.1.32 *Date Time String Format*, §21.4.3.2 `Date.parse`, Annex B.2.2.1 `__proto__`. OWASP: *Prototype Pollution Prevention Cheat Sheet*, *Regular expression Denial of Service (ReDoS)*. Node-specific hardening flags and the permission model belong to the Node.js track ([`../../../technologies/nodejs/`](../../../technologies/nodejs/)); cross-cutting security theory belongs to the security-identity track ([`../../../architecture/security-identity/`](../../../architecture/security-identity/)).
+> **Spec anchors (ECMA-262 17th edition):** §25.5.2 `JSON.parse` (reviver `context.source`, ES2026), §25.5.3 `JSON.rawJSON` (ES2026), §23.1.3.30 `Array.prototype.sort` (§23.1.3.30.1 SortIndexedProperties, §23.1.3.30.2 CompareArrayElements), §23.1.3.34 `toSorted`, §22.2 _RegExp Objects_ (§22.2.2 pattern semantics), `RegExp.escape` (ES2025), §21.4.1.32 _Date Time String Format_, §21.4.3.2 `Date.parse`, Annex B.2.2.1 `__proto__`. OWASP: _Prototype Pollution Prevention Cheat Sheet_, _Regular expression Denial of Service (ReDoS)_. Node-specific hardening flags and the permission model belong to the Node.js track ([`../../../technologies/nodejs/`](../../../technologies/nodejs/)); cross-cutting security theory belongs to the security-identity track ([`../../../architecture/security-identity/`](../../../architecture/security-identity/)).
 >
 > **Executable proof:** [`examples/13-correctness-security-pitfalls.test.js`](../examples/13-correctness-security-pitfalls.test.js)
 
@@ -10,7 +10,7 @@ This final module collects the language-level bugs that reach production most of
 
 ## 1. Prototype pollution
 
-**Definition.** *Prototype pollution* is a vulnerability in which attacker-controlled property keys cause a write to a shared prototype (usually `Object.prototype`), changing the behaviour of every object in the realm.
+**Definition.** _Prototype pollution_ is a vulnerability in which attacker-controlled property keys cause a write to a shared prototype (usually `Object.prototype`), changing the behaviour of every object in the realm.
 
 Mechanism ([module 04](04-objects-prototypes-classes.md)): `JSON.parse` creates an **own** property named `"__proto__"` (it uses `CreateDataProperty`, not the Annex B setter). A naive recursive merge then reads `source.__proto__` and does `target['__proto__'][key] = value`, which goes through the `__proto__` **accessor** on `Object.prototype` and returns `Object.prototype` itself:
 
@@ -19,7 +19,7 @@ function naiveMerge(target, source) {
   for (const key in source) {
     if (typeof source[key] === 'object' && source[key] !== null) {
       target[key] ??= {};
-      naiveMerge(target[key], source[key]);   // target['__proto__'] is Object.prototype!
+      naiveMerge(target[key], source[key]); // target['__proto__'] is Object.prototype!
     } else {
       target[key] = source[key];
     }
@@ -46,14 +46,14 @@ Defences, strongest first:
 
 ## 2. Regular-expression denial of service (ReDoS)
 
-**Definition.** *ReDoS* is a denial of service in which a crafted input makes a backtracking regular-expression engine take time exponential (or high-degree polynomial) in the input length.
+**Definition.** _ReDoS_ is a denial of service in which a crafted input makes a backtracking regular-expression engine take time exponential (or high-degree polynomial) in the input length.
 
 V8's default engine (Irregexp) is a **backtracking** engine, as ECMAScript semantics require for backreferences and lookaround. Patterns with **nested or overlapping quantifiers** can explore exponentially many ways to match before failing:
 
 ```js
-/(a+)+$/.test('a'.repeat(40) + '!');   // ~2^40 paths: effectively never finishes
+/(a+)+$/.test('a'.repeat(40) + '!'); // ~2^40 paths: effectively never finishes
 /^(\w+\s?)*$/.test(longSentence + '!'); // classic in validation code
-/^(a|aa)+$/                             // overlapping alternatives
+/^(a|aa)+$/; // overlapping alternatives
 ```
 
 The regex runs on the main thread: one request pins a CPU core, and in Node the whole event loop stops ([module 06](06-agents-realms-job-queue.md)).
@@ -61,7 +61,7 @@ The regex runs on the main thread: one request pins a CPU core, and in Node the 
 Defences:
 
 | Defence | Notes |
-|---|---|
+| --- | --- |
 | Rewrite without ambiguity | `/(a+)+$/` → `/a+$/`; make alternatives mutually exclusive; prefer possessive-style structure through lookahead + backreference tricks only if you understand them |
 | Bound input length before matching | cheap and effective for user input |
 | Linear-time engine | V8 has an **experimental** non-backtracking engine: `node --enable-experimental-regexp-engine` and the `l` flag (`/(a+)+$/l`) run in linear time but reject backreferences and lookarounds. Not production-ready; the RE2 library (`re2` npm package) is the production option |
@@ -81,19 +81,20 @@ Related regex correctness traps:
 `JSON.parse` turns every number into a Number (IEEE binary64): integers above 2⁵³ − 1 silently lose precision. Twitter/X and Discord IDs (Snowflake, 64-bit), database `BIGINT` keys, and financial amounts in minor units hit this.
 
 ```js
-JSON.parse('{"id":12345678901234567890}').id;   // 12345678901234567000
+JSON.parse('{"id":12345678901234567890}').id; // 12345678901234567000
 ```
 
 ### Then vs now: lossless JSON
 
 | Then | Now (ES2026, Node 26) |
-|---|---|
+| --- | --- |
 | Ask the API for IDs as strings (`id_str`), or use a third-party parser (`json-bigint`) | Reviver receives the **source text**: `JSON.parse(text, (key, value, { source }) => ...)` |
 | `JSON.stringify` cannot emit an unquoted big integer; `BigInt` throws `TypeError` | `JSON.rawJSON('12345678901234567890')` inserts raw JSON text, validated to be a primitive JSON value |
 
 ```js
 const data = JSON.parse(text, (key, value, ctx) =>
-  key === 'id' && typeof value === 'number' ? BigInt(ctx.source) : value);
+  key === 'id' && typeof value === 'number' ? BigInt(ctx.source) : value,
+);
 
 JSON.stringify({ id: JSON.rawJSON(data.id.toString()) }); // '{"id":12345678901234567890}'
 ```
@@ -115,7 +116,7 @@ Covered in [module 02](02-types-values-coercion.md): binary64 cannot represent m
 Covered in [module 10](10-resource-management-temporal.md). The parsing traps worth repeating:
 
 | Input | Result | Why |
-|---|---|---|
+| --- | --- | --- |
 | `new Date('2026-03-29')` | UTC midnight | date-only ISO forms are UTC |
 | `new Date('2026-03-29T00:00')` | local midnight | date-time without offset is local |
 | `new Date('2026-02-30')` | **2 March 2026** in V8 (not `Invalid Date`) | an out-of-range ISO string is not valid in the Date Time String Format (§21.4.1.32), so V8 falls back to its legacy, implementation-specific parser, which rolls over |
@@ -128,7 +129,7 @@ Validate date input with Temporal (`Temporal.PlainDate.from('2026-02-30', { over
 ## 6. Sorting
 
 - **Default comparator** converts elements to strings: `[10, 1, 2].sort()` is `[1, 10, 2]`. Always pass `(a, b) => a - b` for numbers (or `Intl.Collator` for human-readable text).
-- **Comparator contract** (§23.1.3.30): the comparator must be a *consistent comparator*: it must return a negative, zero or positive Number, consistently, and define a total preorder (antisymmetric, transitive). If it does not, **the sort order is implementation-defined**, which in practice means "wrong in some cases, differently per engine":
+- **Comparator contract** (§23.1.3.30): the comparator must be a _consistent comparator_: it must return a negative, zero or positive Number, consistently, and define a total preorder (antisymmetric, transitive). If it does not, **the sort order is implementation-defined**, which in practice means "wrong in some cases, differently per engine":
   - `(a, b) => a > b` returns a Boolean; `true`→1 and `false`→0 never say "less than". On V8 14.6, `[3, 1, 2].sort((a, b) => a > b)` returns `[3, 1, 2]` unchanged.
   - `() => Math.random() - 0.5` is not a shuffle: inconsistent results produce a biased permutation. Use Fisher–Yates.
   - `(a, b) => a.date - b.date` with some `undefined` dates returns `NaN`, which is treated as 0 and breaks transitivity.
@@ -141,7 +142,7 @@ Validate date input with Temporal (`Temporal.PlainDate.from('2026-02-30', { over
 ## 7. A quick reference of other language-level traps
 
 | Trap | Module |
-|---|---|
+| --- | --- |
 | `==` coercion, `typeof null`, NaN | [02](02-types-values-coercion.md) |
 | `this` lost in callbacks | [03](03-execution-contexts-scope-closures.md) |
 | closure retaining large objects | [03](03-execution-contexts-scope-closures.md) |
@@ -161,7 +162,7 @@ Validate date input with Temporal (`Temporal.PlainDate.from('2026-02-30', { over
 The major features practitioners meet, by edition. Each edition is the year's ECMA-262 publication; ES2027 lists features already at Stage 4 in the living draft as of 2026-10-28.
 
 | Edition | Highlights | Taught in |
-|---|---|---|
+| --- | --- | --- |
 | **ES2015** (6th) | `let`/`const`, arrow functions, classes, modules, promises, iterators and generators, `Symbol`, `Map`/`Set`/`WeakMap`/`WeakSet`, `Proxy`/`Reflect`, template literals, destructuring, default/rest/spread parameters, typed arrays standardised, `Object.is` | 03, 04, 05, 07, 08, 09 |
 | ES2016 | `Array.prototype.includes`, `**` | 02 |
 | ES2017 | `async`/`await`, `Object.values`/`entries`, `padStart`/`padEnd`, `Object.getOwnPropertyDescriptors`, `SharedArrayBuffer`, `Atomics` | 07, 11 |
@@ -183,7 +184,7 @@ Proposals at Stage 3 or below (decorators at 2.7, `import defer`, AsyncContext, 
 ## 9. Production failure modes (summary)
 
 | Failure | Mechanism | Defence (tested) |
-|---|---|---|
+| --- | --- | --- |
 | Every user becomes admin after one request | prototype pollution via recursive merge of parsed JSON | schema validation, null-prototype targets, key filtering |
 | Service hangs on one input | catastrophic backtracking | rewrite pattern, bound input, linear engine/RE2 |
 | Regex check passes and fails alternately | `lastIndex` on a shared `g` regex | no `g` with `test`; create regexes per call or reset `lastIndex` |

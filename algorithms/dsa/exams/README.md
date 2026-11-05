@@ -7,7 +7,7 @@ This directory contains the certification and technical examination mapping for 
 ## 1. Primary Reference Curricula & Exam Standards
 
 | Curricula / Examination | Authority / Institution | Verified Baseline | Exam / Guide Reference |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | **MIT 6.1210 (formerly 6.006)** | MIT EECS / CSAIL | Spring 2020 / Current | [MIT 6.1210 Introduction to Algorithms](https://toc.csail.mit.edu/node/1802) |
 | **MIT 6.1220J (formerly 6.046)** | MIT EECS / Mathematics | Spring 2015 / Current | [MIT 6.1220J Design and Analysis of Algorithms](https://toc.csail.mit.edu/node/1803) |
 | **Senior/Staff DSA Coding Loop** | Industry Standard (Google, Meta, Apple, Amazon) | 2026 Baseline | Comprehensive Algorithm Design, Verification & Complexity |
@@ -17,7 +17,7 @@ This directory contains the certification and technical examination mapping for 
 ## 2. Comprehensive Domain Coverage Matrix
 
 | Domain & Topic | Weight | Curriculum Modules | Executable Proofs | Status |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | **1. Models of Computation & Asymptotic Analysis**<br>Word-RAM, Master Theorem, Akra-Bazzi, Amortized Potential Method $\Phi(D) = 2S - C$, Invariants | 8% | [Module 01](../modules/01-models-of-computation-and-asymptotics.md) | `01-models-and-asymptotics.test.ts` | ✅ Full |
 | **2. Linear Data Structures & Memory Layout**<br>Contiguous vectors, V8 elements kinds, Ring-buffer Deques, Doubly-linked sentinels, Word-RAM bitwise math | 7% | [Module 02](../modules/02-linear-structures-and-memory-layout.md) | `02-linear-structures-and-deque.test.ts` | ✅ Full |
 | **3. Hashing, Hash Tables & Rolling Hash**<br>Separate chaining vs open addressing, Robin Hood hashing with DIB, HashDoS, Carter-Wegman universal hashing, Rabin-Karp | 7% | [Module 03](../modules/03-hashing-and-hash-tables.md) | `03-hashing-and-hash-tables.test.ts` | ✅ Full |
@@ -38,6 +38,7 @@ This directory contains the certification and technical examination mapping for 
 ## 3. Question Bank Inventory
 
 The question bank lives in [`interview.md`](./interview.md):
+
 - **Total Questions**: 75 comprehensive questions.
 - **Difficulty Distribution**:
   - Difficulty 1 (Foundational / Core): 25 questions.

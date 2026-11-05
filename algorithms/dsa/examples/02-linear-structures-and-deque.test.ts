@@ -1,6 +1,6 @@
-import { describe, it } from "node:test";
-import assert from "node:assert/strict";
-import fc from "fast-check";
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
+import fc from 'fast-check';
 
 // High-performance circular ring-buffer Deque
 export class CircularDeque<T> {
@@ -154,8 +154,8 @@ export function isPowerOfTwo(n: number): boolean {
   return n > 0 && (n & (n - 1)) === 0;
 }
 
-describe("Module 02: Linear Data Structures, Ring Buffer Deque & Bitwise Math", () => {
-  it("executes double-ended queue operations in O(1) time without array-shifting penalties", () => {
+describe('Module 02: Linear Data Structures, Ring Buffer Deque & Bitwise Math', () => {
+  it('executes double-ended queue operations in O(1) time without array-shifting penalties', () => {
     const deque = new CircularDeque<number>(4);
 
     deque.pushBack(10);
@@ -180,33 +180,33 @@ describe("Module 02: Linear Data Structures, Ring Buffer Deque & Bitwise Math", 
     assert.equal(deque.length, 0);
   });
 
-  it("proves sentinel doubly linked list eliminates edge cases on head/tail insertions & deletions", () => {
+  it('proves sentinel doubly linked list eliminates edge cases on head/tail insertions & deletions', () => {
     const list = new SentinelLinkedList<string>();
 
-    list.pushBack("Alpha");
-    list.pushBack("Beta");
-    list.pushBack("Gamma");
+    list.pushBack('Alpha');
+    list.pushBack('Beta');
+    list.pushBack('Gamma');
 
     assert.equal(list.length, 3);
-    assert.deepEqual(list.toArray(), ["Alpha", "Beta", "Gamma"]);
+    assert.deepEqual(list.toArray(), ['Alpha', 'Beta', 'Gamma']);
 
-    assert.equal(list.popFront(), "Alpha");
-    assert.equal(list.popFront(), "Beta");
-    assert.equal(list.popFront(), "Gamma");
+    assert.equal(list.popFront(), 'Alpha');
+    assert.equal(list.popFront(), 'Beta');
+    assert.equal(list.popFront(), 'Gamma');
     assert.equal(list.popFront(), undefined);
     assert.equal(list.length, 0);
   });
 
-  it("verifies bitwise Word-RAM primitives: Kernighan count, lowest set bit, and power of two", () => {
+  it('verifies bitwise Word-RAM primitives: Kernighan count, lowest set bit, and power of two', () => {
     assert.equal(countSetBitsKernighan(0), 0);
     assert.equal(countSetBitsKernighan(1), 1);
     assert.equal(countSetBitsKernighan(7), 3); // 0b111
     assert.equal(countSetBitsKernighan(0b10101010), 4);
     assert.equal(countSetBitsKernighan(0xffffffff), 32);
 
-    assert.equal(lowestSetBit(12), 4);  // 12 = 0b1100 -> lowest bit is 4 (0b0100)
+    assert.equal(lowestSetBit(12), 4); // 12 = 0b1100 -> lowest bit is 4 (0b0100)
     assert.equal(lowestSetBit(16), 16); // 16 = 0b10000 -> 16
-    assert.equal(lowestSetBit(7), 1);   // 7 = 0b0111 -> 1
+    assert.equal(lowestSetBit(7), 1); // 7 = 0b0111 -> 1
 
     assert.equal(isPowerOfTwo(1), true);
     assert.equal(isPowerOfTwo(2), true);
@@ -216,40 +216,40 @@ describe("Module 02: Linear Data Structures, Ring Buffer Deque & Bitwise Math", 
     assert.equal(isPowerOfTwo(-8), false);
   });
 
-  it("property test: CircularDeque behaves identically to a naive array-based queue model", () => {
+  it('property test: CircularDeque behaves identically to a naive array-based queue model', () => {
     fc.assert(
       fc.property(
         fc.array(
           fc.record({
-            op: fc.constantFrom("pushFront", "pushBack", "popFront", "popBack"),
-            val: fc.integer()
-          })
+            op: fc.constantFrom('pushFront', 'pushBack', 'popFront', 'popBack'),
+            val: fc.integer(),
+          }),
         ),
         (operations) => {
           const deque = new CircularDeque<number>();
           const model: number[] = [];
 
           for (const { op, val } of operations) {
-            if (op === "pushFront") {
+            if (op === 'pushFront') {
               deque.pushFront(val);
               model.unshift(val);
-            } else if (op === "pushBack") {
+            } else if (op === 'pushBack') {
               deque.pushBack(val);
               model.push(val);
-            } else if (op === "popFront") {
+            } else if (op === 'popFront') {
               const res = deque.popFront();
               const exp = model.shift();
               assert.equal(res, exp);
-            } else if (op === "popBack") {
+            } else if (op === 'popBack') {
               const res = deque.popBack();
               const exp = model.pop();
               assert.equal(res, exp);
             }
             assert.equal(deque.length, model.length);
           }
-        }
+        },
       ),
-      { numRuns: 150 }
+      { numRuns: 150 },
     );
   });
 });

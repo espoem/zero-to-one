@@ -1,6 +1,6 @@
-import { describe, it } from "node:test";
-import assert from "node:assert/strict";
-import fc from "fast-check";
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
+import fc from 'fast-check';
 
 // Sliding Window Maximum using Monotonic Decreasing Deque in O(n) time
 export function maxSlidingWindow(nums: number[], k: number): number[] {
@@ -76,8 +76,8 @@ export function maxSubArray(nums: number[]): number {
   return maxSum;
 }
 
-describe("Module 05: Interview Pattern Catalog (Linear & Pointers)", () => {
-  it("Sliding Window Maximum computes running window maximums in O(n) time", () => {
+describe('Module 05: Interview Pattern Catalog (Linear & Pointers)', () => {
+  it('Sliding Window Maximum computes running window maximums in O(n) time', () => {
     const nums = [1, 3, -1, -3, 5, 3, 6, 7];
     const k = 3;
     const expected = [3, 3, 5, 5, 6, 7];
@@ -85,7 +85,7 @@ describe("Module 05: Interview Pattern Catalog (Linear & Pointers)", () => {
     assert.deepEqual(maxSlidingWindow(nums, k), expected);
   });
 
-  it("Subarray Sum Equals K correctly counts subarrays in arrays with negative numbers", () => {
+  it('Subarray Sum Equals K correctly counts subarrays in arrays with negative numbers', () => {
     // Array: [1, -1, 1, 1, 1, -1], k = 2
     // Exactly 6 subarrays sum to 2: [0..3], [2..3], [1..4], [3..4], [0..5], [2..5]
     const nums = [1, -1, 1, 1, 1, -1];
@@ -95,7 +95,7 @@ describe("Module 05: Interview Pattern Catalog (Linear & Pointers)", () => {
     assert.equal(subarraySum([1, -1, -2, 2], -2), 2);
   });
 
-  it("Cyclic Sort sorts unsorted 1-to-N permutations in-place in O(n) time", () => {
+  it('Cyclic Sort sorts unsorted 1-to-N permutations in-place in O(n) time', () => {
     const nums = [3, 5, 2, 1, 4];
     cyclicSort(nums);
     assert.deepEqual(nums, [1, 2, 3, 4, 5]);
@@ -119,9 +119,9 @@ describe("Module 05: Interview Pattern Catalog (Linear & Pointers)", () => {
           }
 
           assert.equal(kadaneResult, bruteMax);
-        }
+        },
       ),
-      { numRuns: 150 }
+      { numRuns: 150 },
     );
   });
 });

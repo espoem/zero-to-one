@@ -7,8 +7,11 @@ describe('Module 08: Containment & Container Queries', () => {
     await closeSharedBrowser();
   });
 
-  it('demonstrates size container queries adapting layout based on container width', { skip: browserSkip }, async () => {
-    const html = `
+  it(
+    'demonstrates size container queries adapting layout based on container width',
+    { skip: browserSkip },
+    async () => {
+      const html = `
       <!DOCTYPE html>
       <html>
         <head>
@@ -35,26 +38,34 @@ describe('Module 08: Containment & Container Queries', () => {
       </html>
     `;
 
-    const { page, cleanup } = await createPage(html);
-    try {
-      // 1. Initial container width is 300px -> color is red
-      let color = await page.locator('#card').evaluate((el) => window.getComputedStyle(el).color);
-      assert.equal(color, 'rgb(255, 0, 0)', 'Child card must be red when container is 300px');
+      const { page, cleanup } = await createPage(html);
+      try {
+        // 1. Initial container width is 300px -> color is red
+        let color = await page.locator('#card').evaluate((el) => window.getComputedStyle(el).color);
+        assert.equal(color, 'rgb(255, 0, 0)', 'Child card must be red when container is 300px');
 
-      // 2. Expand container width to 600px -> container query triggers green!
-      await page.locator('#c-root').evaluate((el) => {
-        el.style.width = '600px';
-      });
+        // 2. Expand container width to 600px -> container query triggers green!
+        await page.locator('#c-root').evaluate((el) => {
+          el.style.width = '600px';
+        });
 
-      color = await page.locator('#card').evaluate((el) => window.getComputedStyle(el).color);
-      assert.equal(color, 'rgb(0, 128, 0)', 'Child card must switch to green when container expands past 500px');
-    } finally {
-      await cleanup();
-    }
-  });
+        color = await page.locator('#card').evaluate((el) => window.getComputedStyle(el).color);
+        assert.equal(
+          color,
+          'rgb(0, 128, 0)',
+          'Child card must switch to green when container expands past 500px',
+        );
+      } finally {
+        await cleanup();
+      }
+    },
+  );
 
-  it('demonstrates style container queries querying ancestor custom properties', { skip: browserSkip }, async () => {
-    const html = `
+  it(
+    'demonstrates style container queries querying ancestor custom properties',
+    { skip: browserSkip },
+    async () => {
+      const html = `
       <!DOCTYPE html>
       <html>
         <head>
@@ -81,21 +92,28 @@ describe('Module 08: Containment & Container Queries', () => {
       </html>
     `;
 
-    const { page, cleanup } = await createPage(html);
-    try {
-      // 1. Light theme -> black text
-      let color = await page.locator('#title').evaluate((el) => window.getComputedStyle(el).color);
-      assert.equal(color, 'rgb(0, 0, 0)');
+      const { page, cleanup } = await createPage(html);
+      try {
+        // 1. Light theme -> black text
+        let color = await page
+          .locator('#title')
+          .evaluate((el) => window.getComputedStyle(el).color);
+        assert.equal(color, 'rgb(0, 0, 0)');
 
-      // 2. Switch ancestor custom property to dark
-      await page.locator('#wrapper').evaluate((el) => {
-        el.style.setProperty('--theme', 'dark');
-      });
+        // 2. Switch ancestor custom property to dark
+        await page.locator('#wrapper').evaluate((el) => {
+          el.style.setProperty('--theme', 'dark');
+        });
 
-      color = await page.locator('#title').evaluate((el) => window.getComputedStyle(el).color);
-      assert.equal(color, 'rgb(255, 255, 255)', 'Style query must update text to white when --theme: dark');
-    } finally {
-      await cleanup();
-    }
-  });
+        color = await page.locator('#title').evaluate((el) => window.getComputedStyle(el).color);
+        assert.equal(
+          color,
+          'rgb(255, 255, 255)',
+          'Style query must update text to white when --theme: dark',
+        );
+      } finally {
+        await cleanup();
+      }
+    },
+  );
 });

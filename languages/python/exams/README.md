@@ -7,20 +7,20 @@ This directory contains the certification and technical interview mapping for th
 ## 1. Primary Reference Certifications & Standards
 
 | Certification / Standard | Authority / Vendor | Verified Baseline | Exam Guide / Reference |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | **PCAP™ (Exam PCAP-31-03)** | OpenEDG Python Institute | Active (targets Python 3.x core) | [PCAP-31-03 Exam Syllabus](https://pythoninstitute.org/pcap) |
 | **PCPP1™ (Exam PCPP-32-101)** | OpenEDG Python Institute | Active (Advanced OOP, Concurrency, Metaprogramming) | [PCPP-32-101 Exam Syllabus](https://pythoninstitute.org/pcpp1) |
 | **Senior / Staff Python Engineering Loop** | Tier-1 Tech (Google, Meta, Bloomberg, Netflix) | 2026 Baseline | CPython internals, GIL/free-threading, asyncio architecture, typing (PEP 695), defensive security |
 
-> [!NOTE] Exam Version Delta
-> Official Python Institute PCAP and PCPP1 exams target a Python 3.8–3.10 baseline (e.g. legacy `typing.TypeVar`, standard `asyncio.gather()`, and synchronous signal handling). This track teaches modern Python 3.15 while explicitly covering legacy vs modern semantics in our **Then vs Now** sections (Module 14), preparing candidates for both legacy exam questions and cutting-edge production codebases.
+> [!NOTE]
+> **Exam Version Delta** Official Python Institute PCAP and PCPP1 exams target a Python 3.8–3.10 baseline (e.g. legacy `typing.TypeVar`, standard `asyncio.gather()`, and synchronous signal handling). This track teaches modern Python 3.15 while explicitly covering legacy vs modern semantics in our **Then vs Now** sections (Module 14), preparing candidates for both legacy exam questions and cutting-edge production codebases.
 
 ---
 
 ## 2. Comprehensive Domain Coverage Matrix
 
 | Domain & Topic | Weight | Curriculum Modules | Executable Proofs | Status |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | **1. Execution Model, Bytecode & Tooling**<br>CPython compiler pipeline (Tokenizer $\to$ PEG parser $\to$ AST $\to$ Symtable $\to$ Bytecode $\to$ VM eval loop), CPython vs PyPy/GraalPy, `uv` & `ruff`, `pyproject.toml`, interpreter startup & `-X` flags | 7% | [Module 01](../modules/01-execution-model-and-tooling.md) | `test_01_execution_model_and_tooling.py` | ✅ Full |
 | **2. Names, Scopes & Objects**<br>PyObject anatomy (`ob_refcnt`, `ob_type`), identity vs equality (`is` vs `==`), small int cache `[-5, 256]`, string interning, mutability, LEGB lookup rules, `global`/`nonlocal`, mutable default arg trap, late-binding closure loop trap, PEP 649/749 `annotationlib` | 7% | [Module 02](../modules/02-names-scopes-and-objects.md) | `test_02_names_scopes_and_objects.py` | ✅ Full |
 | **3. Data Model & Dunder Protocols**<br>String representations (`__repr__` vs `__str__`), hash invariant ($a == b \implies \text{hash}(a) == \text{hash}(b)$), automatic `__hash__ = None`, sequence slicing with `slice.indices()`, reflected arithmetic returning `NotImplemented`, `__slots__` layout, `__init_subclass__` (PEP 487) | 8% | [Module 03](../modules/03-data-model-and-dunder-protocols.md) | `test_03_data_model_and_dunder_protocols.py` | ✅ Full |
@@ -41,6 +41,7 @@ This directory contains the certification and technical interview mapping for th
 ## 3. Question Bank Inventory
 
 The question bank lives in [`interview.md`](./interview.md):
+
 - **Total Questions**: 75 comprehensive questions covering PCAP, PCPP1, and Staff-level software engineering interview topics.
 - **Difficulty Distribution**:
   - Difficulty 1 (Core Foundations / Syntax / Language Mechanics): 25 questions.

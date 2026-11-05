@@ -1,35 +1,40 @@
 # Brief: SQLite (`technologies/sqlite`)
 
-| | |
-|---|---|
-| Phase | 2 |
-| Kind | NEW track: create from scratch |
-| Primary (author) | **Opus · claude.ai** |
-| Drafter (on request) | pi · DeepSeek |
-| Challenger | pi · Muse Spark 1.3 |
-| Verifier | Antigravity |
-| Final gate | Opus (claude.ai session) |
-| Branch / worktree | `track/sqlite` · `../zto-sqlite` |
-| Depends on | phase 1 foundations |
-| Research dossier | `.agents/research/B-data.md` |
+|                      |                                  |
+| -------------------- | -------------------------------- |
+| Phase                | 2                                |
+| Kind                 | NEW track: create from scratch   |
+| Primary (author)     | **Opus · claude.ai**             |
+| Drafter (on request) | pi · DeepSeek                    |
+| Challenger           | pi · Muse Spark 1.3              |
+| Verifier             | Antigravity                      |
+| Final gate           | Opus (claude.ai session)         |
+| Branch / worktree    | `track/sqlite` · `../zto-sqlite` |
+| Depends on           | phase 1 foundations              |
+| Research dossier     | `.agents/research/B-data.md`     |
 
 ## 0. Read before starting (binding)
+
 1. `AGENTS.md`: the contract. If it conflicts with this brief, AGENTS.md wins; log the conflict in your review file.
 2. `.agents/OWNERSHIP.md`: what you own vs only cross-link.
 3. `.agents/REVIEW.md`: the checklist your work is judged against.
 4. Your global/agent instructions still apply where they do not conflict.
 
 ## 1. Owner decisions and track-specific instructions
+
 - Turso/libSQL is **module 12 of this track**, not its own track (revisit at Turso Database 1.0).
 - Bindings bundle different SQLite versions. Every test suite asserts `sqlite_version()`, and the README documents which binding ships which version.
 - Teach the **latest stable** versions. Add **Then vs now** comparisons wherever practice changed (AGENTS.md § Version Currency).
 - Pin **all** tooling via mise (`.mise.toml` + `mise.lock`): node 26 for JS/TS, plus every CLI and runtime the examples need.
 
 ## 2. Ownership
+
 **You own (full treatment):**
+
 - Libsql/Turso
 
 **Cross-link only (do not re-explain):**
+
 - Data models, relational algebra, normal forms → owned by `architecture/data-systems`
 - Storage engines: B-tree vs LSM, WAL/ARIES, compaction, buffer pools → owned by `architecture/data-systems`
 - Isolation levels & anomaly taxonomy (Adya/Berenson), MVCC theory, SSI → owned by `architecture/data-systems`
@@ -120,7 +125,7 @@
     - Use temp-dir db files and two connections to show `SQLITE_BUSY`, `BEGIN IMMEDIATE`, and checkpoint starvation (assert `-wal` size grows while a reader holds a snapshot).
     - Use `worker_threads` or child processes for multi-process lock tests.
   - Inspect file format with `dbstat`, raw page bytes read from the file in tests, and `PRAGMA page_count/freelist_count`.
-  - **Cannot prove locally:** power-loss durability (`synchronous` levels) and network FS corruption. Fallback: documented reasoning plus fault injection via a custom VFS (advanced; optional) or simulated `kill -9` mid-transaction plus `integrity_check`, which *is* provable.
+  - **Cannot prove locally:** power-loss durability (`synchronous` levels) and network FS corruption. Fallback: documented reasoning plus fault injection via a custom VFS (advanced; optional) or simulated `kill -9` mid-transaction plus `integrity_check`, which _is_ provable.
   - CLI: `sqlite3` via mise (`aqua:sqlite/sqlite`? backend availability unverified). Fallback: Homebrew `sqlite` on Mac, or rely on bindings only.
 
 - **Overlaps / dedupe**
@@ -137,7 +142,7 @@
 
 - **Current stable version(s) and the state of the product**
   - **Two distinct things share the Turso name** (https://turso.tech/llms-full.txt):
-    1. **libSQL:** the open-source C *fork* of SQLite (2022–). Turso now labels it "**Legacy (libSQL) — battle-tested, ORM support**", "still supported". Its embedded engine reports **SQLite 3.45.1** (verified locally via `@libsql/client` **0.18.0**), roughly nine minor versions behind upstream 3.54. libSQL-only features:
+    1. **libSQL:** the open-source C _fork_ of SQLite (2022–). Turso now labels it "**Legacy (libSQL) — battle-tested, ORM support**", "still supported". Its embedded engine reports **SQLite 3.45.1** (verified locally via `@libsql/client` **0.18.0**), roughly nine minor versions behind upstream 3.54. libSQL-only features:
        - native vector type `F32_BLOB(n)` + `libsql_vector_idx` (DiskANN-based ANN index; creation verified locally)
        - `ALTER TABLE` extensions
        - the sqld server / Hrana protocol
@@ -150,7 +155,7 @@
          - **Async I/O** (io_uring on Linux)
          - **Built-in CDC:** `PRAGMA capture_data_changes_conn('full')` → `turso_cdc` table. Accepted locally.
          - **Vector types:** `vector32/64/8/1bit` + `vector_distance_cos`. Worked locally; the docs example is brute-force; ANN index status unverified.
-         - **Turso Sync:** `@tursodatabase/sync`, local-first push/pull, where *writes are also local*, unlike libSQL embedded replicas.
+         - **Turso Sync:** `@tursodatabase/sync`, local-first push/pull, where _writes are also local_, unlike libSQL embedded replicas.
          - Encryption at rest (cloud: AES-256; local page-codec interface in 0.8.0; details unverified).
   - **Turso Cloud** (the platform):
     - Jan 2025 changes: moved to AWS; deprecated edge replicas, multi-DB schemas and `ATTACH` for new users. The new cloud server is closed-source and a new implementation, while client code stays open.
@@ -191,7 +196,9 @@
 ---
 
 ## 4. Re-verify list
+
 These claims were marked unverified during research. Confirm or correct each one against a primary source before teaching it:
+
 - 6. **WAL mode:** WAL file + wal-index (`-shm`), readers don't block writer, checkpoints (PASSIVE/FULL/RESTART/TRUNCATE), checkpoint starvation, `wal_autocheckpoint`, `synchronous=NORMAL` vs `FULL` durability trade-off, WAL2/`BEGIN CONCURRENT` branches (not in mainline; unverified status).
 - 14. The default `SQLITE_MAX_VARIABLE_NUMBER` limits batch-insert sizes. The default has varied by version (32766 since 3.32; unverified current).
 - CLI: `sqlite3` via mise (`aqua:sqlite/sqlite`? backend availability unverified). Fallback: Homebrew `sqlite` on Mac, or rely on bindings only.
@@ -203,7 +210,9 @@ These claims were marked unverified during research. Confirm or correct each one
 - Embedded replica / sync against a local sqld: `ghcr.io/tursodatabase/libsql-server` image (tag unverified) via docker compose. The Turso Cloud sync path cannot be proven offline; mark it as "requires account" with a skipped test.
 
 ## 5. Certifications & exams
+
 Follow AGENTS.md § Certification and Exam Coverage exactly. Minimum deliverables:
+
 1. **README "Certifications & Exams" section.** Start from the exams named in the dossier above ("Authoritative syllabi used"). Re-verify each exam's code, status, guide version/date, targeted product version and domain weights on the official page. Where no certification exists, say so and use the recognised interview format.
 2. **`exams/README.md` coverage matrix.** Rows are domain/objective, weight, modules, examples, status. No ❌ at hand-off.
 3. **`exams/<exam-code>.md` question banks.**
@@ -215,11 +224,14 @@ Follow AGENTS.md § Certification and Exam Coverage exactly. Minimum deliverable
 5. **Original questions only.** No braindump content.
 
 ## 6. Code languages
+
 Per AGENTS.md § Code Example Languages:
+
 - **Primary:** pseudocode (where algorithms or protocols are described) + TypeScript (or the track's own language, for language tracks).
 - **Secondary:** Python, Rust or Nim only where it teaches something. Each language lives in `examples/<lang>/` with its own mise-pinned toolchain and native test runner, and `test` runs them all.
 
 ## 7. Workflow and definition of done
+
 1. **Primary (Opus)** works on branch `track/sqlite` and sets this track's row in `.agents/STATUS.md` to 🟦.
 2. **Verify versions first.** Check every version in the dossier against its primary source today. Record the results in the README's `Verified against …` line. Resolve every item in the re-verify list below.
 3. Build in stages: README syllabus + exam matrix → modules one by one, each with its examples/tests → glossary → cheatsheet → question banks → mock exam. Delegate bulk drafting (question-bank drafts, glossary candidates, cheatsheet tables) to the **Drafter**, then correct and integrate it yourself.

@@ -21,11 +21,11 @@
     "test:12": "node --experimental-strip-types examples/12-durability-backup-and-pitr.ts",
     "test:13": "node --experimental-strip-types examples/13-replication-ha-and-extensions.ts"
   },
+  "dependencies": {
+    "@electric-sql/pglite": "^0.5.12"
+  },
   "devDependencies": {
     "@types/node": "^26.0.0",
     "typescript": "^7.0.2"
-  },
-  "dependencies": {
-    "@electric-sql/pglite": "^0.5.12"
   }
 }

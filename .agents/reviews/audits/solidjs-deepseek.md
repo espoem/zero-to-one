@@ -1,4 +1,4 @@
-🍄💬: Audit complete. **No P0 defects.** The track is unusually rigorous (216 tests recomputed by counting `it(` calls, matching `.agents/STATUS.md`; every rc.19 pin consistent across `package.json`, `package-lock.json`, `mise.lock`, README, modules, cheatsheet, glossary). The real defects are in the *exam bank answer format*, *dead cross-links*, *README structure/titles*, and *heading-level drift inside modules*.
+🍄💬: Audit complete. **No P0 defects.** The track is unusually rigorous (216 tests recomputed by counting `it(` calls, matching `.agents/STATUS.md`; every rc.19 pin consistent across `package.json`, `package-lock.json`, `mise.lock`, README, modules, cheatsheet, glossary). The real defects are in the _exam bank answer format_, _dead cross-links_, _README structure/titles_, and _heading-level drift inside modules_.
 
 **Scope limit:** this session has no shell tool, so `npm test`, `npm run typecheck`, `tools/mermaid-check` and `tools/table-check` could not be executed. Everything below is static analysis; the diagram and table verdicts are by inspection of source, not by parser.
 
@@ -9,7 +9,7 @@ No incorrect teaching that would make a learner build a broken app, no secret/pa
 ## P1 — merge-blocking per AGENTS.md
 
 | # | Finding | Evidence |
-|---|---|---|
+| --- | --- | --- |
 | 1 | **Dead cross-links to a TypeScript module that does not exist.** All three point at `languages/typescript/modules/13-solidjs-2-with-typescript.md`; the directory has `12-typing-ui-frameworks.md` (which contains "§4 Solid 2.0 (release candidate)") and `13-library-authoring-performance-and-type-tests.md`. The prose already says "moving to TS M12", so the link is the stale half. | `README.md:12`, `modules/01-reactive-core.md:11`, `modules/03-components-props-and-dom.md:5` |
 | 2 | **Exam answers omit "why each distractor is wrong"** for roughly 26 of 60 questions — every question from Q-SOLID-034 onward plus several in D2/D3 (e.g. 014, 015, 040, 041, 042, 043, 045–060). AGENTS.md § Certification and Exam Coverage item 4 makes distractor analysis mandatory. Answers in D1 are exemplary; the bank degrades from D4 on. | `exams/interview.md` (last `- Why not` at line 540) |
 | 3 | **No `ordering` question type anywhere in the bank.** AGENTS.md requires the bank to mirror the real format including ordering questions. Zero matches for the `ordering` type tag. | `exams/interview.md` (grep: only prose hit at line 384) |
@@ -19,8 +19,8 @@ No incorrect teaching that would make a learner build a broken app, no secret/pa
 ## P2 — compliance and staleness
 
 | # | Finding | Evidence |
-|---|---|---|
-| 6 | **README heading structure diverges from the repo's canonical numbered form.** Sibling tracks (`languages/python`, `algorithms/dsa`, `architecture/data-systems`) use `## 1. Syllabus…` / `## 2. Certifications & Exams` with `### Prerequisites` and `### Out of Scope` nested. This track uses unnumbered `## Prerequisites` / `## Syllabus` / `## Run it` / `## Certifications & Exams` / `## Sources`. Note: AGENTS.md itself does not mandate the numbering — the harder requirement it *does* impose (§ Syllabus Completeness) is an explicit out-of-scope list, and the only one in this track lives in `exams/README.md`, not the README. | `README.md:7,13,53` |
+| --- | --- | --- |
+| 6 | **README heading structure diverges from the repo's canonical numbered form.** Sibling tracks (`languages/python`, `algorithms/dsa`, `architecture/data-systems`) use `## 1. Syllabus…` / `## 2. Certifications & Exams` with `### Prerequisites` and `### Out of Scope` nested. This track uses unnumbered `## Prerequisites` / `## Syllabus` / `## Run it` / `## Certifications & Exams` / `## Sources`. Note: AGENTS.md itself does not mandate the numbering — the harder requirement it _does_ impose (§ Syllabus Completeness) is an explicit out-of-scope list, and the only one in this track lives in `exams/README.md`, not the README. | `README.md:7,13,53` |
 | 7 | **`Verified against … on 2026-10-28` is stale.** Modules were rewritten and the suites re-run on 2026-10-29/30, and `.agents/STATUS.md` records the merge as 2026-10-30 with 216 tests. The date line should be bumped (and `exams/README.md`'s "checked 2026-10-28" alongside it if the exam re-check was redone). | `README.md:9`, `.agents/STATUS.md:17`, `.agents/reviews/solidjs.md:5` |
 | 8 | **Stale statement: "(languages/javascript, not yet published)".** That track is published and complete (11 modules, own README/GLOSSARY/exams). | `modules/01-reactive-core.md:11` |
 | 9 | **False cross-track claim: "the React track links back to Module 10 here".** The React track contains no reference to `technologies/solidjs` or to M10 — its README only mentions SolidJS indirectly via `.agents/OWNERSHIP.md`. Either add the link to the React track or drop the claim. | `README.md:12` |

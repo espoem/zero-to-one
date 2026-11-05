@@ -13,7 +13,7 @@ mise exec -- node ../../tools/table-check/check.mjs .
 ## Area verdicts
 
 | Focus area | Verdict | Evidence |
-|---|---|---|
+| --- | --- | --- |
 | Heading consistency | 🟡 Pass with nits | `## Prerequisites` (README:7), `## Syllabus` (13), `## Certifications & Exams` (87), `## Running the tests` (57) all present; `Verified against` line (3). Module titles in the syllabus table do **not** match module H1s (P2 #3). |
 | Verified vs stale | 🟡 One real staleness (root README), rest internally consistent | 2.4.0 pins in `package.json` == README line 3 == every module's `Verified against`; `mise.lock` has real sha256 for linux-x64 + macos-arm64; v1 idioms (`createStyleContext`, `panda ship`, `emitPackage`, `containerSizes`, `lightningcss`, template literals) appear only inside Then-vs-now/migration contexts. |
 | Depth | 🟢 Good | 12 modules each carry an `Executable proof` line pointing at files that exist (verified: `examples/tests/*` 13 files, `__snapshots__` 12 CSS, `fixtures/negative` 11, `fixtures/configs` 14, `bench/`, `scripts/v2-upgrade-audit.ts`, `tests/helpers/browser.ts`). Interview Drills: 6–8 per module (requirement 5–10). Exam bank: 60 Q, 7 domains, weights match counts, 4 hands-on tasks each naming a real test, mock exam with scoring key. |
@@ -27,14 +27,14 @@ mise exec -- node ../../tools/table-check/check.mjs .
 
 1. **`README.md:52` (repo root) is stale and contradicts the merged track.** It still says Panda CSS is "Repo on ^0.51 — two breaking majors; createStyleContext, panda ship, studio removed; Oxc compiler · 🟠 Restructuring (Phase 1)". `.agents/STATUS.md` records `technologies/panda-css` as ✅ merged 2026-10-30 with 118 tests at 2.4.0, and `technologies/panda-css/README.md:3` says the same. Fix: update the row to the merged state (version, test count, date) — and sweep the same table, since every merged Phase-1 track still shows Planned/Restructuring. Source: `.agents/STATUS.md`, `technologies/panda-css/README.md:3`.
 
-2. **`technologies/panda-css/README.md:32` — the out-of-scope sentence claims coverage that does not exist.** It lists "`@pandacss/preset-typography`; `positionTry()`, `viewTransition()` and `firstThatWorks()` helpers beyond mentions". `viewTransition()` *is* mentioned (`modules/06:168`) and so is the ESLint/oxlint plugin (`modules/11:170`), but `preset-typography`, `positionTry()` and `firstThatWorks()` appear **nowhere** in the track (grep: 0 hits outside README:32). AGENTS.md § Topic Depth 5 requires out-of-scope items to be listed with a reason — the reason is fine; the "beyond mentions" wording is false. Fix: either add one clause each in M04 (`positionTry`, `firstThatWorks`) and M06 (`preset-typography`), or reword to "not covered (thin wrappers over CSS features owned by `languages/css`)".
+2. **`technologies/panda-css/README.md:32` — the out-of-scope sentence claims coverage that does not exist.** It lists "`@pandacss/preset-typography`; `positionTry()`, `viewTransition()` and `firstThatWorks()` helpers beyond mentions". `viewTransition()` _is_ mentioned (`modules/06:168`) and so is the ESLint/oxlint plugin (`modules/11:170`), but `preset-typography`, `positionTry()` and `firstThatWorks()` appear **nowhere** in the track (grep: 0 hits outside README:32). AGENTS.md § Topic Depth 5 requires out-of-scope items to be listed with a reason — the reason is fine; the "beyond mentions" wording is false. Fix: either add one clause each in M04 (`positionTry`, `firstThatWorks`) and M06 (`preset-typography`), or reword to "not covered (thin wrappers over CSS features owned by `languages/css`)".
 
 ## P2 — inconsistent
 
 3. **Syllabus titles ≠ module H1 titles (all 12).** `README.md:17–31` uses sentence case with `&`; modules use Title Case with "and", and 03/09 add a leading "The":
 
 | README table | Module H1 |
-|---|---|
+| --- | --- |
 | `Static CSS-in-JS mental model & v2 architecture` | `Static CSS-in-JS Mental Model and the v2 Architecture` |
 | `Styling API & conditions` | `The Styling API and Conditions` |
 | `JSX factory & style props (React and Solid)` | `The JSX Factory and Style Props (React and Solid)` |
@@ -50,15 +50,15 @@ Fix: copy each H1 into the table (or normalise both to the same string). Same dr
 
 7. **Glossary duplicates terms owned elsewhere.** `GLOSSARY.md:93` (Tree Shaking) and `:94` (Monorepo) define concepts that `languages/javascript/GLOSSARY.md:105` already defines with identical English/Czech wording; `:17` (Constant Folding) and `:18` (AST) are general CS terms the root glossary does not yet carry. `:19` (Pure Function) does it correctly — "(Root glossary.)" plus a delta. The track's own review proposed promoting all four to the root glossary; that is still open. Fix: register Constant Folding/AST/Monorepo in `GLOSSARY.md` (root) and convert the four panda rows to the "↑ root" form used by `technologies/react/GLOSSARY.md:12,38`.
 
-8. **`.agents/OWNERSHIP.md:45` registers only one panda concept.** AGENTS.md § Knowledge Ownership 2 requires unregistered cross-cutting concepts to be registered in the same change. Missing: *static style extraction / source transforms as a build-time CSS-in-JS compiler technique* (taught in M01/M10, referenced by `languages/css` architecture module), *design-system distribution via build info* (`panda lib`/`designSystem`, M11), and *cascade-layer coexistence during a CSS migration* (`@import … layer()`, M12:52–56 — the general technique belongs to `languages/css`, panda keeps only the delta). The track's review proposed the first two; neither landed.
+8. **`.agents/OWNERSHIP.md:45` registers only one panda concept.** AGENTS.md § Knowledge Ownership 2 requires unregistered cross-cutting concepts to be registered in the same change. Missing: _static style extraction / source transforms as a build-time CSS-in-JS compiler technique_ (taught in M01/M10, referenced by `languages/css` architecture module), _design-system distribution via build info_ (`panda lib`/`designSystem`, M11), and _cascade-layer coexistence during a CSS migration_ (`@import … layer()`, M12:52–56 — the general technique belongs to `languages/css`, panda keeps only the delta). The track's review proposed the first two; neither landed.
 
-9. **`modules/05-design-tokens.md:24` vs `:52` — definitional drift.** §5.1 defines core tokens as "unconditional values (`brand.600 = #4f46e5`)", but §5.2's example declares `radii: { control: { value: '{radii.md}' } }` — a core token whose value is a reference, not a value. Fix: "unconditional values *or unconditional references* (`{radii.md}`), as opposed to semantic tokens that may vary by condition."
+9. **`modules/05-design-tokens.md:24` vs `:52` — definitional drift.** §5.1 defines core tokens as "unconditional values (`brand.600 = #4f46e5`)", but §5.2's example declares `radii: { control: { value: '{radii.md}' } }` — a core token whose value is a reference, not a value. Fix: "unconditional values _or unconditional references_ (`{radii.md}`), as opposed to semantic tokens that may vary by condition."
 
 ## P3 — polish
 
 10. **Verification dates disagree across the track.** M01:3 says 2026-10-28; the other eleven modules, the cheatsheet and the README say 2026-10-29; README adds "tests re-run 2026-10-30". Harmless but it makes "when was this last checked" ambiguous. Pick the re-run date as the track date, or keep per-module dates and say so in one line of README.
 
-11. **`README.md:3` narrows the compiler claim to linux-x64** ("native `@pandacss/compiler` on linux-x64") while `.agents/reviews/panda-css.md` records the verifier running it on macOS arm64 *and* linux x64, and the working tree is macOS. M01's "~11 MB … measured on linux-x64 only" is correctly scoped; the README line should match.
+11. **`README.md:3` narrows the compiler claim to linux-x64** ("native `@pandacss/compiler` on linux-x64") while `.agents/reviews/panda-css.md` records the verifier running it on macOS arm64 _and_ linux x64, and the working tree is macOS. M01's "~11 MB … measured on linux-x64 only" is correctly scoped; the README line should match.
 
 12. **`modules/02:166` miscounts the projects.** "runs `prepare → codegen` for the four example projects" — the script covers six `panda codegen` invocations plus `panda lib` (react, solid, vanilla, fixtures, monorepo/packages/ds, monorepo/apps/web).
 
@@ -70,7 +70,7 @@ Fix: copy each H1 into the table (or normalise both to the same string). Same dr
 
 16. **Two diagrams parse but their layout encodes the wrong story.** M01:124 uses `flowchart BT` for the cascade ladder (reset at the bottom, utilities at the top), while M06:19 and M10:12 use `TD`/`LR`; a reader trained on top-down diagrams can invert the precedence. M10:12 declares `glob["glob include/exclude"] --> files` in the `host` subgraph but `files` is first mentioned inside the `rust` subgraph, so the node renders on the Rust side of the boundary. Neither is a syntax error; fix by using `flowchart TD` with the ladder written lowest→highest and by declaring `files` in the host subgraph.
 
-17. **`modules/07:111` and `modules/12:149` use "order" for two different things.** M07 says runtime variant *class strings* follow `defaultVariants` key order; M12's 2.3.0 row says recipe variants *emit in config order* again. Both are defensible (attribute order vs stylesheet order) but adjacent readers will see a contradiction. One clause in M07 — "attribute order, not emission order" — settles it.
+17. **`modules/07:111` and `modules/12:149` use "order" for two different things.** M07 says runtime variant _class strings_ follow `defaultVariants` key order; M12's 2.3.0 row says recipe variants _emit in config order_ again. Both are defensible (attribute order vs stylesheet order) but adjacent readers will see a contradiction. One clause in M07 — "attribute order, not emission order" — settles it.
 
 18. **`.agents/reviews/panda-css.md` is stale in two "Remaining work" items.** Item 2 asks for `mise lock` checksums that `mise.lock` now contains (linux-x64 + macos-arm64), and item 3 says `languages/css` is "not yet in the repo" when it has merged. Update the review file so the next auditor does not re-open resolved work.
 

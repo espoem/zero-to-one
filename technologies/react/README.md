@@ -13,7 +13,7 @@ A single progressive track through React's runtime: the element model, the Fiber
 ## Syllabus
 
 | # | Module | Covers | Proofs |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 01 | [Elements, JSX & the Render Model](modules/01-elements-jsx-and-render-model.md) | JSX automatic runtime, `$$typeof` brand (19 transitional symbol), purity, Strict Mode, keys/identity, `ref` as prop, roots, renderers | [`01-elements`](examples/01-elements/elements.test.tsx) |
 | 02 | [The Fiber Reconciler & the Commit Phase](modules/02-fiber-reconciler-and-commit.md) | Fiber fields, double buffering, work loop, two-pass keyed diff (vs LIS), bailouts, commit sub-phases, Fragment refs | [`02-fiber`](examples/02-fiber/fiber.test.tsx) |
 | 03 | [State, Hooks & Closures](modules/03-state-hooks-and-closures.md) | Hook list, update queues and rebasing, batching, stale closures, reducers as state machines, context, `useSyncExternalStore` and tearing | [`03-state`](examples/03-state/state.test.tsx) |
@@ -30,11 +30,11 @@ A single progressive track through React's runtime: the element model, the Fiber
 Reference material: [GLOSSARY.md](GLOSSARY.md) (EN ↔ CZ) · [CHEATSHEET.md](CHEATSHEET.md) · [exams/](exams/README.md).
 
 ### Out of Scope
+
 - Routers and meta-frameworks (Next.js, React Router) beyond cross-references.
 - React Native architecture and mobile host renderers.
 - Third-party state-management library APIs (Redux, Zustand, MobX).
-- Third-party CSS-in-JS and styling frameworks (covered in dedicated [technologies/panda-css](../panda-css/README.md) and [languages/css](../../languages/css/README.md) tracks).
-See [exams/README.md](exams/README.md#out-of-scope-with-reason).
+- Third-party CSS-in-JS and styling frameworks (covered in dedicated [technologies/panda-css](../panda-css/README.md) and [languages/css](../../languages/css/README.md) tracks). See [exams/README.md](exams/README.md#out-of-scope-with-reason).
 
 ## Running the examples
 
@@ -60,7 +60,7 @@ How the harness works:
 **There is no official React certification** from Meta or the React Foundation. Documented in detail, with the domain coverage matrix, in [exams/README.md](exams/README.md):
 
 | Credential | Vendor / code | Status (verified 2026-10-29) | Format | Product version |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | [React Certification](https://certificates.dev/react) — Junior, Mid-Level, Senior | certificates.dev (third party, not endorsed by Meta) | Junior and Mid-Level available; Senior announced, release not confirmed | Proctored. Junior: 50 MCQ / 40 min. Mid/Senior: 40 MCQ + 105 min coding (135 min); passing score not published | Not stated (exam delta noted in exams/README) |
 | [Meta Front-End Developer Professional Certificate](https://www.coursera.org/professional-certificates/meta-front-end-developer) | Meta via Coursera | Offered | **Completion-based** 9-course programme (incl. React Basics, Advanced React), no proctored exam mentioned | Not stated |
 | **Senior React interview loop** (this track's fallback) | — | — | Technical screen, live coding, frontend system design | React 19.3 |

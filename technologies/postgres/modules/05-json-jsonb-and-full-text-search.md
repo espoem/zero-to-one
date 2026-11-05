@@ -26,17 +26,19 @@ flowchart TD
         Header["4-Byte Container Header<br/>• Number of elements / pairs (28 bits)<br/>• Container type flags (Scalar, Array, Object)"]
         JEntryArray["Array of 4-Byte JEntry Descriptors<br/>• JEntry 0: Type (String, Numeric, Bool, Null) + Byte Offset<br/>• JEntry 1: Type + Byte Offset<br/>• JEntry N: ..."]
         KeyData["Continuous Variable Data Area<br/>• Sorted Key 1 ('address')<br/>• Sorted Key 2 ('name')<br/>• Value Payload 1 ('123 Market St')<br/>• Value Payload 2 ('Acme Corp')"]
-        
+
         Header --- JEntryArray --- KeyData
     end
 ```
 
 ### Why `jsonb` Dominates Modern Development
+
 1. **Deduplication**: If an input payload contains `{"status": "open", "status": "closed"}`, `jsonb` retains only the last value (`"closed"`).
 2. **Key Ordering**: Keys are physically sorted in binary lexical order, allowing binary search lookups ($O(\log K)$) across keys rather than full string scans.
 3. **No Whitespace**: Extraneous spaces, tabs, and indentation are discarded, optimizing cache footprint.
 
 ### Primary Query Operators
+
 ```sql
 CREATE TABLE client_payloads (
     id SERIAL PRIMARY KEY,
@@ -75,6 +77,7 @@ SELECT * FROM client_payloads WHERE attributes -> 'tags' ?& ARRAY['pci', 'soc2']
 PostgreSQL 18 fully implements the SQL:2016 standard for SQL/JSON querying.
 
 ### JSONPath Expressions
+
 JSONPath provides structured filtering within queries:
 
 ```sql
@@ -87,6 +90,7 @@ SELECT jsonb_path_query(
 ```
 
 ### Relational Projection via `JSON_TABLE`
+
 `JSON_TABLE` unpacks hierarchical JSON arrays into a normalized relational table without needing legacy `jsonb_to_recordset` hacks:
 
 ```sql
@@ -111,12 +115,12 @@ A standard B-tree index cannot index the internal components of a JSONB document
 ```mermaid
 flowchart LR
     Doc["JSONB: {'tier': 'gold', 'region': 'us'}"]
-    
+
     subgraph GINIndex["GIN Inverted Index Tree"]
         Key1["'tier'::'gold'"] --> Posting1["Heap Tuples: [Page 1, Off 2], [Page 4, Off 5]"]
         Key2["'region'::'us'"] --> Posting2["Heap Tuples: [Page 1, Off 2], [Page 9, Off 1]"]
     end
-    
+
     Doc --> GINIndex
 ```
 
@@ -131,7 +135,7 @@ CREATE INDEX idx_payload_path ON client_payloads USING gin (attributes jsonb_pat
 ```
 
 | Dimension | Default `jsonb_ops` | Path-Optimized `jsonb_path_ops` |
-| :--- | :--- | :--- |
+| :-- | :-- | :-- |
 | **Indexed Entries** | Indexes every key, every value, and every path independently | Indexes a 32-bit hash of the complete `path = value` pair |
 | **Supported Operators** | `@>`, `?`, `?\|`, `?&` | **Only `@>`** (Containment) |
 | **Index Size** | Large (indexes individual keys multiple times) | **30% to 50% smaller** footprint |
@@ -149,18 +153,19 @@ PostgreSQL contains a built-in search engine capable of morphological linguistic
 ```mermaid
 flowchart TD
     Raw["Raw Text: 'The quick brown foxes were jumping over dogs'"]
-    
+
     subgraph FTSPipeline["Full-Text Search Engine Pipeline"]
         Tokenize["1. Tokenizer: Split into words and punctuation"]
         Dictionary["2. Dictionary & Stop Words: Discard 'the', 'were', 'over'"]
         Stemming["3. Snowball Stemmer: 'foxes' -> 'fox', 'jumping' -> 'jump', 'dogs' -> 'dog'"]
         Emit["4. Emit tsvector with word positions: 'brown':3 'dog':8 'fox':4 'jump':6 'quick':2"]
     end
-    
+
     Raw --> Tokenize --> Dictionary --> Stemming --> Emit
 ```
 
 ### Document Vectorization and Querying
+
 ```sql
 CREATE TABLE knowledge_base (
     id SERIAL PRIMARY KEY,
@@ -175,7 +180,7 @@ CREATE TABLE knowledge_base (
 CREATE INDEX idx_kb_search ON knowledge_base USING gin (search_vector);
 
 -- Search using tsquery:
-SELECT 
+SELECT
     title,
     ts_rank(search_vector, query) AS rank_score
 FROM knowledge_base,
@@ -185,10 +190,12 @@ ORDER BY rank_score DESC;
 ```
 
 ### Phrase Searching (`<->`)
+
 The `<->` operator enforces word distance:
+
 ```sql
 -- Search for 'database' followed immediately by 'systems':
-SELECT to_tsvector('english', 'Relational database systems') @@ 
+SELECT to_tsvector('english', 'Relational database systems') @@
        to_tsquery('english', 'database <-> systems');
 -- Evaluates to TRUE
 ```
@@ -241,7 +248,7 @@ flowchart TD
 ## 8. Then vs. Now: Semi-Structured Data & Search
 
 | Capability | PostgreSQL $\le$ 14 | PostgreSQL 15–17 | PostgreSQL 18 & 19 (Current) |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **SQL/JSON Functions** | Partial JSONPath functions | Added `JSON_TABLE`, `JSON_QUERY` | Full SQL:2016 SQL/JSON compliance with performance optimizations |
 | **JSON Subscripting** | Only operators (`->`, `->>`) | Added basic subscripting | Native multidimensional subscripting (`data['a']['b']`) across all query types |
 | **GIN Concurrency** | Periodic lock contention during fastinsert cleanups | Improved page vacuuming in GIN | Parallel GIN build optimizations and reduced locking overhead |
@@ -254,38 +261,48 @@ flowchart TD
 <summary>1. Explain the architectural and performance differences between `json` and `jsonb` data types in PostgreSQL.</summary>
 
 **Answer**: `json` stores an exact copy of the input text, preserving formatting, whitespace, and duplicate keys. Every query inspecting a `json` column must parse the text from scratch, resulting in $O(N)$ CPU parsing overhead per read. In contrast, `jsonb` parses the document at write time into an internal decomposed binary format. Keys are sorted, whitespace is discarded, and duplicate keys are removed. `jsonb` supports binary search key lookup ($O(\log K)$) and GIN indexing, making it vastly superior for querying, filtering, and indexing.
+
 - Ref: [PostgreSQL Documentation: JSON Types](https://www.postgresql.org/docs/18/datatype-json.html)
+
 </details>
 
 <details>
 <summary>2. When should you use `jsonb_path_ops` instead of the default `jsonb_ops` in a GIN index?</summary>
 
 **Answer**: `jsonb_ops` (the default) creates independent index entries for every key, value, and sub-path in the document. It supports containment (`@>`) as well as key-existence operators (`?`, `?|`, `?&`). However, this produces large index files. `jsonb_path_ops` computes a single 32-bit hash for each leaf path-value combination (e.g., hash of `$.address.zip = 94107`). It only supports the containment operator (`@>`), but generates indexes that are 30% to 50% smaller on disk and significantly faster to scan. Use `jsonb_path_ops` when queries only filter via `@>`.
+
 - Ref: [PostgreSQL Documentation: GIN Internals: jsonb_ops](https://www.postgresql.org/docs/18/datatype-json.html#JSON-INDEXING)
+
 </details>
 
 <details>
 <summary>3. Why can't a standard B-tree index accelerate `WHERE description ILIKE '%engine%'`, and how does `pg_trgm` solve this?</summary>
 
 **Answer**: A B-tree index sorts keys lexicographically from left to right. When a search query specifies a leading wildcard (`%engine%`), the prefix is unknown, preventing the B-tree from seeking to a specific starting position in the leaf pages; the engine must fall back to a full sequential table scan. The `pg_trgm` extension breaks strings into 3-character slices (trigrams). A GIN index on trigrams (`USING gin (description gin_trgm_ops)`) maps individual trigrams to the rows containing them. During a wildcard query, PostgreSQL extracts trigrams from the search pattern and performs an index lookup on the matching trigrams, identifying candidate rows in $O(\log N)$ time.
+
 - Ref: [PostgreSQL Documentation: pg_trgm](https://www.postgresql.org/docs/18/pgtrgm.html)
+
 </details>
 
 <details>
 <summary>4. What is the function of the SQL/JSON standard `JSON_TABLE` function?</summary>
 
 **Answer**: `JSON_TABLE` is a SQL:2016 standard function that maps complex, nested JSON data into a virtual relational table directly within a SQL query. It takes a JSON document and a path expression identifying array rows, and allows you to declare explicit SQL column names and types for each extracted attribute using `COLUMNS (...) PATH '...'`. This eliminates the need for procedural unpacking or complex JSON array unnesting.
+
 - Ref: [PostgreSQL Documentation: JSON Functions: JSON_TABLE](https://www.postgresql.org/docs/18/functions-json.html#FUNCTIONS-SQLJSON-TABLE)
+
 </details>
 
 <details>
 <summary>5. At what architectural threshold should an engineering team graduate from PostgreSQL Full-Text Search to a dedicated engine like Elasticsearch?</summary>
 
 **Answer**: Graduate to Elasticsearch/OpenSearch when:
+
 1. Search volume or index size exceeds PostgreSQL's RAM, causing search queries to starve the transactional OLTP buffer pool.
 2. The system requires advanced multi-lingual NLP (lemmatization, compound word splitting, phonetic matching like Double Metaphone) not supported by PostgreSQL's Snowball stemmer.
 3. You require complex BM25 scoring with term frequency/inverse document frequency (TF/IDF) tuned across distributed shards.
-4. You require multi-cluster distributed sharding and horizontal scaling for billions of log records or documents.
-Keep search in PostgreSQL when ACID transactional consistency and zero dual-write lag between the primary data and the search index are paramount.
+4. You require multi-cluster distributed sharding and horizontal scaling for billions of log records or documents. Keep search in PostgreSQL when ACID transactional consistency and zero dual-write lag between the primary data and the search index are paramount.
+
 - Ref: [PostgreSQL Documentation: Full Text Search](https://www.postgresql.org/docs/18/textsearch.html)
+
 </details>

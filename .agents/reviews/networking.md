@@ -3,6 +3,7 @@
 ## Hand-off (primary author, 2026-10-30) — ready for challenger/verifier
 
 **Status:** brief delivered. Authored comprehensive, academically grounded and production-grade networking foundation track conforming to repository standards (`AGENTS.md` and `.agents/briefs/networking.md`):
+
 - All 14 modules authored in `modules/01-*.md` through `modules/14-*.md` with unwrapped paragraphs, formal definitions, state machines, packet wire layouts, and detailed Interview Drills with collapsible `<details>` blocks.
 - 14 hermetic test suites in `examples/01-*.test.ts` through `examples/14-*.test.ts` verifying pcap global header parsing, IPv4 checksum calculation (RFC 1071 ones-complement sum), Ethernet II / 802.1Q VLAN dissection, ARP cache learning and aging eviction, CIDR subnetting math, Longest Prefix Match (LPM) binary routing trie, BGP path selection rules (LOCAL_PREF, AS_PATH, MED), RPKI Route Origin Validation (ROV), UDP connected socket filtering, RFC 9293 TCP state transitions, Nagle / Delayed ACK 40ms simulation, AIMD and RFC 9438 CUBIC congestion growth curves, RFC 1035 DNS wire parsing with compression pointers (`0xC000`), synthetic TLS 1.3 ClientHello dissection, HTTP/1.1 chunked framing, HTTP/2 9-byte binary frame headers, HPACK static and dynamic table mechanics, RFC 9000 QUIC VarInt lossless encoding, RFC 6455 WebSocket masking involution properties, Google Maglev consistent hashing with minimal churn on node eviction, and precision `curl -w` network timing breakdowns.
 - `exams/README.md`: CompTIA Network+ (N10-009) 5 domains + Staff Systems Infrastructure Interview Matrix, 100% full coverage, 0 gaps.
@@ -12,7 +13,7 @@
 - `README.md`: updated with `Verified against Node 26.12.1, TypeScript 7.0.2 on 2026-10-30`, syllabus, and "Certifications & Academic Standards" section.
 
 | Module | State | Proof file | Tests |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 01 Layers, Packets & Boundaries | done | `examples/01-pcap-and-packet-parser.test.ts` | pass |
 | 02 Link Layer & Switching | done | `examples/02-arp-and-ethernet.test.ts` | pass |
 | 03 IP Addressing & Routing | done | `examples/03-cidr-and-routing-trie.test.ts` | pass |
@@ -29,6 +30,7 @@
 | 14 Linux Networking Operations | done | `examples/14-curl-timing-breakdown.test.ts` | pass |
 
 **Tooling:**
+
 - Node 26.12.1 and TypeScript 7.0.2 pinned in `.mise.toml` and `mise.lock` (multi-platform checksums for `linux-x64` and `macos-arm64`).
 - `fast-check: ^4.5.3`, `@types/node: ^26.0.0`, `typescript: ^7.0.2`.
 - Hermetic test runner: `mise exec -- npm test` (14 suites, 33 unit, scenario, and property tests passing in 5.7s).

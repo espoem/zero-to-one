@@ -48,7 +48,7 @@ async function run(): Promise<void> {
     ORDER BY d.dept_name ASC;
   `);
   assert.equal(joinResult.rows.length, 3);
-  assert.equal(Number(joinResult.rows.find(r => r.dept_name === 'HR')?.total_salary), 0);
+  assert.equal(Number(joinResult.rows.find((r) => r.dept_name === 'HR')?.total_salary), 0);
 
   // Test 3: Upsert (INSERT ... ON CONFLICT DO UPDATE) with RETURNING
   await db.exec(`

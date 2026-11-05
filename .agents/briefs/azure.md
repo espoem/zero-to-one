@@ -1,34 +1,39 @@
 # Brief: Azure (`technologies/azure`)
 
-| | |
-|---|---|
-| Phase | 4 |
-| Kind | NEW track: create from scratch |
-| Primary (author) | **Opus · claude.ai** |
-| Drafter (on request) | pi · DeepSeek |
-| Challenger | pi · Muse Spark 1.3 |
-| Verifier | Antigravity |
-| Final gate | Opus (claude.ai session) |
-| Branch / worktree | `track/azure` · `../zto-azure` |
-| Depends on | architecture/cloud-foundations |
-| Research dossier | `.agents/research/F-cloud.md` |
+|                      |                                |
+| -------------------- | ------------------------------ |
+| Phase                | 4                              |
+| Kind                 | NEW track: create from scratch |
+| Primary (author)     | **Opus · claude.ai**           |
+| Drafter (on request) | pi · DeepSeek                  |
+| Challenger           | pi · Muse Spark 1.3            |
+| Verifier             | Antigravity                    |
+| Final gate           | Opus (claude.ai session)       |
+| Branch / worktree    | `track/azure` · `../zto-azure` |
+| Depends on           | architecture/cloud-foundations |
+| Research dossier     | `.agents/research/F-cloud.md`  |
 
 ## 0. Read before starting (binding)
+
 1. `AGENTS.md`: the contract. If it conflicts with this brief, AGENTS.md wins; log the conflict in your review file.
 2. `.agents/OWNERSHIP.md`: what you own vs only cross-link.
 3. `.agents/REVIEW.md`: the checklist your work is judged against.
 4. Your global/agent instructions still apply where they do not conflict.
 
 ## 1. Owner decisions and track-specific instructions
+
 - AZ-204 is retired → AI-200. Cover AZ-104, AZ-305 and AI-200 (re-verify dates).
 - Teach the **latest stable** versions. Add **Then vs now** comparisons wherever practice changed (AGENTS.md § Version Currency).
 - Pin **all** tooling via mise (`.mise.toml` + `mise.lock`): node 26 for JS/TS, plus every CLI and runtime the examples need.
 
 ## 2. Ownership
+
 **You own (full treatment):**
+
 - (see dossier "Overlaps / dedupe")
 
 **Cross-link only (do not re-explain):**
+
 - OAuth 2.1, OIDC, PKCE, DPoP, JWT pitfalls, sessions/cookies, WebAuthn/passkeys → owned by `architecture/security-identity`
 - Cloud model, shared responsibility, IAM model, VPC/CIDR, storage classes, managed DBs, serverless, Well-Architected, FinOps → owned by `architecture/cloud-foundations`
 
@@ -46,22 +51,22 @@
 - **Authoritative syllabi used:**
   - **AZ-104 (Administrator):** skills measured as of **2026-04-17**, no retirement notice. Source: https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/az-104
 
-    | Domain | Weight |
-    |---|---|
+    | Domain                    | Weight |
+    | ------------------------- | ------ |
     | Identities and governance | 20–25% |
-    | Compute | 20–25% |
-    | Storage | 15–20% |
-    | Virtual networking | 15–20% |
-    | Monitor and maintain | 10–15% |
+    | Compute                   | 20–25% |
+    | Storage                   | 15–20% |
+    | Virtual networking        | 15–20% |
+    | Monitor and maintain      | 10–15% |
 
   - **AZ-305 (Solutions Architect Expert):** skills as of **2026-04-17**, no retirement notice. Source: https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/az-305
 
-    | Domain | Weight |
-    |---|---|
+    | Domain                           | Weight |
+    | -------------------------------- | ------ |
     | Identity, governance, monitoring | 25–30% |
-    | Data storage | 20–25% |
-    | Business continuity | 15–20% |
-    | Infrastructure | 30–35% |
+    | Data storage                     | 20–25% |
+    | Business continuity              | 15–20% |
+    | Infrastructure                   | 30–35% |
 
   - **AZ-204 is RETIRED.**
     - The official certification page states "This certification and the renewal assessment are retired": https://learn.microsoft.com/en-us/credentials/certifications/azure-developer/
@@ -69,13 +74,14 @@
     - Successor: **AI-200 "Developing AI Cloud Solutions on Azure"**, leading to the Azure AI Cloud Developer Associate. Skills as of **2026-10-07**:
 
       | AI-200 domain | Weight |
-      |---|---|
+      | --- | --- |
       | Develop containerized solutions | 20–25% |
       | Develop AI solutions using Azure data management services | 30–35% (page also says 25–30% in one heading; inconsistency in source) |
       | Connect to and consume Azure services | 20–25% |
       | Secure, monitor and troubleshoot | 20–25% |
 
       Source: https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/ai-200
+
     - Topics include vector search/RAG, KEDA on Container Apps and OpenTelemetry (per https://dev.to/lovelacecoding/bye-az-204-hello-ai-200-what-you-need-to-know-about-the-new-azure-developer-certification-2lo).
     - Other 2026 swaps: AZ-500 → SC-500 (2026-08-31), AI-102 → AI-103, DP-100 → AI-300 (secondary source above).
   - Azure Well-Architected Framework: https://learn.microsoft.com/azure/well-architected/
@@ -184,7 +190,7 @@
 **Proposal.**
 
 | Track | Repo path | Owns | Size |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Cloud Foundations | `architecture/cloud-foundations` | Provider-neutral concepts with formal definitions. Each module ends with a three-column "how AWS / GCP / Azure spell it" table that deep-links into the provider tracks. Uses Terraform as the lingua franca, with the IaC internals themselves left to the IaC track. | 12 modules (the full syllabus) |
 | AWS | `technologies/aws` | Exam-domain mapping (SAA-C03, DVA-C02 to C03, SAP-C03), AWS-only semantics (IAM policy evaluation order, SCP/RCP, S3 specifics, DynamoDB modelling, Lambda internals) and AWS gotchas | 9–10 modules |
 | GCP | `technologies/gcp` | ACE/PCA mapping, resource hierarchy, IAM deny/PAB, global VPC, Shared VPC, Cloud Run/GKE, Spanner/BigQuery, PCA case studies | 8–9 modules |
@@ -198,7 +204,7 @@
 ##### 0.1 Concept to service mapping (core of the foundation track; becomes `architecture/cloud-foundations/MAPPING.md`)
 
 | Concept | AWS | GCP | Azure | Cloudflare (where applicable) |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | Top-level boundary / hierarchy | Organization → OU → Account | Organization → Folder → Project | Entra tenant → Management group → Subscription → Resource group | Account → Zone |
 | Guardrail policy (preventive) | SCP, RCP (resource control policies), declarative policies | Org Policy constraints (incl. custom), IAM Deny policies | Azure Policy (Deny/Modify/DeployIfNotExists), deny assignments | Account-level settings |
 | Human identity / SSO | IAM Identity Center | Cloud Identity / Workspace, Workforce Identity Federation | Entra ID | Cloudflare Access (Zero Trust) |
@@ -240,7 +246,9 @@ Rows marked "(unverified)" are names the curriculum author must confirm before p
 ---
 
 ## 4. Re-verify list
+
 These claims were marked unverified during research. Confirm or correct each one against a primary source before teaching it:
+
 - Azure CLI / Bicep / Functions Core Tools: pin at authoring time (unverified versions).
 - 3. RBAC control plane ≠ data plane: `Owner` on a storage account can't read blobs via Entra auth without a `Storage Blob Data *` role. Role assignments take minutes to propagate (unverified exact SLA).
 - 7. Cosmos DB: a poorly chosen partition key hits the 20 GB logical partition limit (unverified for current limits) plus RU hot partitions. Cross-partition queries burn RUs. 429s need SDK retry with `x-ms-retry-after-ms`.
@@ -255,7 +263,9 @@ These claims were marked unverified during research. Confirm or correct each one
 - Rows marked "(unverified)" are names the curriculum author must confirm before publishing. The table is a teaching scaffold, not a spec.
 
 ## 5. Certifications & exams
+
 Follow AGENTS.md § Certification and Exam Coverage exactly. Minimum deliverables:
+
 1. **README "Certifications & Exams" section.** Start from the exams named in the dossier above ("Authoritative syllabi used"). Re-verify each exam's code, status, guide version/date, targeted product version and domain weights on the official page. Where no certification exists, say so and use the recognised interview format.
 2. **`exams/README.md` coverage matrix.** Rows are domain/objective, weight, modules, examples, status. No ❌ at hand-off.
 3. **`exams/<exam-code>.md` question banks.**
@@ -267,11 +277,14 @@ Follow AGENTS.md § Certification and Exam Coverage exactly. Minimum deliverable
 5. **Original questions only.** No braindump content.
 
 ## 6. Code languages
+
 Per AGENTS.md § Code Example Languages:
+
 - **Primary:** pseudocode (where algorithms or protocols are described) + TypeScript (or the track's own language, for language tracks).
 - **Secondary:** Python, Rust or Nim only where it teaches something. Each language lives in `examples/<lang>/` with its own mise-pinned toolchain and native test runner, and `test` runs them all.
 
 ## 7. Workflow and definition of done
+
 1. **Primary (Opus)** works on branch `track/azure` and sets this track's row in `.agents/STATUS.md` to 🟦.
 2. **Verify versions first.** Check every version in the dossier against its primary source today. Record the results in the README's `Verified against …` line. Resolve every item in the re-verify list below.
 3. Build in stages: README syllabus + exam matrix → modules one by one, each with its examples/tests → glossary → cheatsheet → question banks → mock exam. Delegate bulk drafting (question-bank drafts, glossary candidates, cheatsheet tables) to the **Drafter**, then correct and integrate it yourself.

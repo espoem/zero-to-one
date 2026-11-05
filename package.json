@@ -1,0 +1,17 @@
+{
+  "name": "zero-to-one",
+  "private": true,
+  "description": "Repository-wide tooling only (formatting, linting, Markdown gates). Track dependencies stay in each track's own package.json.",
+  "type": "module",
+  "scripts": {
+    "fmt": "oxfmt .",
+    "fmt:check": "oxfmt --check .",
+    "lint": "oxlint .",
+    "lint:md": "node tools/wrap-check/check.mjs . && node tools/table-check/check.mjs . && node tools/link-check/check.mjs . && (cd tools/mermaid-check && node check.mjs ../..)",
+    "check": "npm run fmt:check && npm run lint && npm run lint:md"
+  },
+  "devDependencies": {
+    "oxfmt": "0.76.0",
+    "oxlint": "1.91.0"
+  }
+}

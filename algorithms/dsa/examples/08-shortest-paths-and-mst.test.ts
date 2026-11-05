@@ -1,5 +1,5 @@
-import { describe, it } from "node:test";
-import assert from "node:assert/strict";
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
 
 // Disjoint-Set Union (DSU) with Path Compression and Union by Rank
 export class DisjointSetUnion {
@@ -40,7 +40,7 @@ export class DisjointSetUnion {
 export function dijkstra(
   numNodes: number,
   edges: [number, number, number][],
-  source: number
+  source: number,
 ): number[] {
   const adj: [number, number][][] = Array.from({ length: numNodes }, () => []);
   for (const [u, v, w] of edges) {
@@ -75,7 +75,7 @@ export function dijkstra(
 export function bellmanFord(
   numNodes: number,
   edges: [number, number, number][],
-  source: number
+  source: number,
 ): { dist: number[]; hasNegativeCycle: boolean } {
   const dist = new Array(numNodes).fill(Infinity);
   dist[source] = 0;
@@ -104,7 +104,7 @@ export function bellmanFord(
 // Kruskal's Minimum Spanning Tree Algorithm
 export function kruskalMST(
   numNodes: number,
-  edges: [number, number, number][]
+  edges: [number, number, number][],
 ): { totalWeight: number; mstEdges: [number, number, number][] } {
   // Sort edges by weight in ascending order
   const sortedEdges = [...edges].sort((a, b) => a[2] - b[2]);
@@ -125,12 +125,9 @@ export function kruskalMST(
 }
 
 // Floyd-Warshall All-Pairs Shortest Paths
-export function floydWarshall(
-  numNodes: number,
-  edges: [number, number, number][]
-): number[][] {
+export function floydWarshall(numNodes: number, edges: [number, number, number][]): number[][] {
   const dist: number[][] = Array.from({ length: numNodes }, (_, i) =>
-    Array.from({ length: numNodes }, (_, j) => (i === j ? 0 : Infinity))
+    Array.from({ length: numNodes }, (_, j) => (i === j ? 0 : Infinity)),
   );
 
   for (const [u, v, w] of edges) {
@@ -150,8 +147,8 @@ export function floydWarshall(
   return dist;
 }
 
-describe("Module 08: Shortest Paths, MST & Disjoint-Set Union", () => {
-  it("Dijkstra accurately finds shortest paths on non-negative weighted graphs", () => {
+describe('Module 08: Shortest Paths, MST & Disjoint-Set Union', () => {
+  it('Dijkstra accurately finds shortest paths on non-negative weighted graphs', () => {
     // 0 --(4)--> 1 --(1)--> 2
     // 0 --(2)--> 3 --(1)--> 1
     // Shortest path 0 -> 1 is: 0 -> 3 -> 1 (cost 3)
@@ -159,7 +156,7 @@ describe("Module 08: Shortest Paths, MST & Disjoint-Set Union", () => {
       [0, 1, 4],
       [1, 2, 1],
       [0, 3, 2],
-      [3, 1, 1]
+      [3, 1, 1],
     ];
 
     const dist = dijkstra(4, edges, 0);
@@ -169,12 +166,12 @@ describe("Module 08: Shortest Paths, MST & Disjoint-Set Union", () => {
     assert.equal(dist[2], 4);
   });
 
-  it("Bellman-Ford handles negative edge weights and flags negative-weight cycles", () => {
+  it('Bellman-Ford handles negative edge weights and flags negative-weight cycles', () => {
     // Valid negative edge graph without cycle
     const edgesNoCycle: [number, number, number][] = [
       [0, 1, 4],
       [0, 2, 5],
-      [1, 2, -2] // 0 -> 1 -> 2 costs 4 + (-2) = 2 (better than 5)
+      [1, 2, -2], // 0 -> 1 -> 2 costs 4 + (-2) = 2 (better than 5)
     ];
 
     const res1 = bellmanFord(3, edgesNoCycle, 0);
@@ -186,7 +183,7 @@ describe("Module 08: Shortest Paths, MST & Disjoint-Set Union", () => {
       [0, 1, 5],
       [1, 2, 1],
       [2, 3, -3],
-      [3, 1, 1]
+      [3, 1, 1],
     ];
 
     const res2 = bellmanFord(4, edgesWithCycle, 0);
@@ -201,20 +198,20 @@ describe("Module 08: Shortest Paths, MST & Disjoint-Set Union", () => {
       [1, 2, 2],
       [2, 3, 3],
       [0, 3, 4],
-      [0, 2, 5]
+      [0, 2, 5],
     ];
 
     const { totalWeight, mstEdges } = kruskalMST(4, edges);
     assert.equal(totalWeight, 1 + 2 + 3); // 6
-    assert.equal(mstEdges.length, 3);     // 3 edges for 4 nodes
+    assert.equal(mstEdges.length, 3); // 3 edges for 4 nodes
   });
 
-  it("Floyd-Warshall calculates all-pairs shortest paths accurately", () => {
+  it('Floyd-Warshall calculates all-pairs shortest paths accurately', () => {
     const edges: [number, number, number][] = [
       [0, 1, 3],
       [1, 2, 1],
       [0, 2, 8],
-      [2, 0, 2]
+      [2, 0, 2],
     ];
 
     const matrix = floydWarshall(3, edges);

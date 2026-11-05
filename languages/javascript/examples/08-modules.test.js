@@ -18,7 +18,11 @@ const runFixture = (rel, flags = []) => {
 function runGraph(files, entry = 'main.js') {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'zto-esm-'));
   for (const [name, src] of Object.entries(files)) fs.writeFileSync(path.join(dir, name), src);
-  try { return runNode([path.join(dir, entry)]); } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+  try {
+    return runNode([path.join(dir, entry)]);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 }
 
 describe('Live bindings and namespace objects (§9.1.1.5, §10.4.6)', () => {
@@ -47,7 +51,8 @@ describe('Live bindings and namespace objects (§9.1.1.5, §10.4.6)', () => {
   test('the namespace object is cached: the same object for static and dynamic imports', async () => {
     const r = runGraph({
       'dep.js': 'export const v = 1;',
-      'main.js': 'import * as a from "./dep.js"; const b = await import("./dep.js"); console.log(a === b);',
+      'main.js':
+        'import * as a from "./dep.js"; const b = await import("./dep.js"); console.log(a === b);',
     });
     assert.equal(r.stdout.trim(), 'true');
   });
@@ -84,7 +89,7 @@ describe('Evaluation (§16.2.1.6.1.3): order, caching, cycles', () => {
   test('NEGATIVE: a cycle exposes a TDZ binding to the module that runs first', () => {
     const r = runFixture('cycle/main.js');
     assert.match(r.sawA, /ReferenceError: Cannot access 'a' before initialization/);
-    assert.equal(r.later, 'A');       // live binding, initialized by the time it is read later
+    assert.equal(r.later, 'A'); // live binding, initialized by the time it is read later
     assert.equal(r.useB, 'B');
   });
 
@@ -106,8 +111,13 @@ describe('Evaluation (§16.2.1.6.1.3): order, caching, cycles', () => {
 
 describe('Top-level await (ES2022)', () => {
   test('siblings continue while an async module awaits; dependents wait', () => {
-    assert.deepEqual(runFixture('tla/main.js'),
-      ['slow:start', 'sibling', 'slow:end', 'consumer sees slow', 'entry']);
+    assert.deepEqual(runFixture('tla/main.js'), [
+      'slow:start',
+      'sibling',
+      'slow:end',
+      'consumer sees slow',
+      'entry',
+    ]);
   });
 
   test('NEGATIVE: a rejected top-level await fails every dependent', () => {
@@ -141,8 +151,11 @@ describe('import.meta, import attributes, import defer', () => {
   });
 
   test('import defer (Stage 3) evaluates on first namespace access (flagged)', () => {
-    assert.deepEqual(runFixture('defer/main.js', ['--js-defer-import-eval']),
-      ['main body', 'heavy evaluated', 'value 42']);
+    assert.deepEqual(runFixture('defer/main.js', ['--js-defer-import-eval']), [
+      'main body',
+      'heavy evaluated',
+      'value 42',
+    ]);
   });
 
   test('NEGATIVE: import defer is a SyntaxError without the flag on Node 26', () => {
@@ -153,9 +166,15 @@ describe('import.meta, import attributes, import defer', () => {
 
 describe('package.json exports and conditions', () => {
   test('default conditions pick "node"; --conditions=development picks "development"', () => {
-    assert.deepEqual(runFixture('conditions/main.js'),
-      { build: 'node', feature: true, blocked: 'ERR_PACKAGE_PATH_NOT_EXPORTED' });
-    assert.equal(runFixture('conditions/main.js', ['--conditions=development']).build, 'development');
+    assert.deepEqual(runFixture('conditions/main.js'), {
+      build: 'node',
+      feature: true,
+      blocked: 'ERR_PACKAGE_PATH_NOT_EXPORTED',
+    });
+    assert.equal(
+      runFixture('conditions/main.js', ['--conditions=development']).build,
+      'development',
+    );
   });
 
   test('NEGATIVE: unexported subpaths are encapsulated', () => {
@@ -172,10 +191,15 @@ describe('ESM vs CJS at the language level', () => {
   });
 
   test('NEGATIVE: CommonJS destructuring copies values; it is not live', () => {
-    const r = runGraph({
-      'c.cjs': 'let count = 0; module.exports = { count, inc() { count++; module.exports.count = count; } };',
-      'main.cjs': 'const c = require("./c.cjs"); const { count } = c; c.inc(); console.log(count, c.count);',
-    }, 'main.cjs');
+    const r = runGraph(
+      {
+        'c.cjs':
+          'let count = 0; module.exports = { count, inc() { count++; module.exports.count = count; } };',
+        'main.cjs':
+          'const c = require("./c.cjs"); const { count } = c; c.inc(); console.log(count, c.count);',
+      },
+      'main.cjs',
+    );
     assert.equal(r.stdout.trim(), '0 1');
   });
 });

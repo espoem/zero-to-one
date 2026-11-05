@@ -1,19 +1,19 @@
 # 09 · Metaprogramming: Proxy, Reflect, Symbols, Tagged Templates, Weak References and Decorators
 
-> **Spec anchors (ECMA-262 17th edition):** §10.5 *Proxy Object Internal Methods and Internal Slots*, §28.1 *The Reflect Object*, §28.2 *Proxy Objects*, §6.1.5.1 *Well-Known Symbols*, §13.3.11 tagged templates (GetTemplateObject), §24.3 *WeakMap Objects*, §24.4 *WeakSet Objects*, §26.1 *WeakRef Objects*, §26.2 *FinalizationRegistry Objects*, §9.9 *Processing Model of WeakRef and FinalizationRegistry Targets*, §9.10 *ClearKeptObjects*. Decorators: TC39 proposal-decorators (**Stage 2.7**) and proposal-decorator-metadata (**Stage 2.7**).
+> **Spec anchors (ECMA-262 17th edition):** §10.5 _Proxy Object Internal Methods and Internal Slots_, §28.1 _The Reflect Object_, §28.2 _Proxy Objects_, §6.1.5.1 _Well-Known Symbols_, §13.3.11 tagged templates (GetTemplateObject), §24.3 _WeakMap Objects_, §24.4 _WeakSet Objects_, §26.1 _WeakRef Objects_, §26.2 _FinalizationRegistry Objects_, §9.9 _Processing Model of WeakRef and FinalizationRegistry Targets_, §9.10 _ClearKeptObjects_. Decorators: TC39 proposal-decorators (**Stage 2.7**) and proposal-decorator-metadata (**Stage 2.7**).
 >
 > **Executable proof:** [`examples/09-metaprogramming.test.js`](../examples/09-metaprogramming.test.js)
 
-Metaprogramming means writing code that changes how *other* code's operations behave: what a property read does, how `instanceof` answers, how a template literal is assembled, or what happens to a class method at definition time. JavaScript exposes this through three layers: well-known symbols (protocol hooks), Proxy (replacing an object's internal methods), and decorators (transforming class elements, not yet standard). Weak references sit alongside, because the classic metaprogramming use case, attaching hidden data to objects you do not own, needs them.
+Metaprogramming means writing code that changes how _other_ code's operations behave: what a property read does, how `instanceof` answers, how a template literal is assembled, or what happens to a class method at definition time. JavaScript exposes this through three layers: well-known symbols (protocol hooks), Proxy (replacing an object's internal methods), and decorators (transforming class elements, not yet standard). Weak references sit alongside, because the classic metaprogramming use case, attaching hidden data to objects you do not own, needs them.
 
 ---
 
 ## 1. Proxy
 
-**Definition (§10.5, §28.2).** A *Proxy* is an exotic object with `[[ProxyTarget]]` and `[[ProxyHandler]]` slots whose essential internal methods call the matching **trap** on the handler, falling back to the target's internal method when the trap is absent.
+**Definition (§10.5, §28.2).** A _Proxy_ is an exotic object with `[[ProxyTarget]]` and `[[ProxyHandler]]` slots whose essential internal methods call the matching **trap** on the handler, falling back to the target's internal method when the trap is absent.
 
 | Internal method | Trap | Triggered by |
-|---|---|---|
+| --- | --- | --- |
 | `[[GetPrototypeOf]]` | `getPrototypeOf` | `Object.getPrototypeOf`, `instanceof`, `__proto__` |
 | `[[SetPrototypeOf]]` | `setPrototypeOf` | `Object.setPrototypeOf` |
 | `[[IsExtensible]]` | `isExtensible` | `Object.isExtensible`, `isFrozen` |
@@ -54,12 +54,12 @@ const handler = {
 };
 ```
 
-Writing `target[key]` instead of `Reflect.get(target, key, receiver)` runs inherited getters with `this === target`, so property reads made *inside* the getter bypass the proxy and are not tracked. Other differences from the older `Object.*` functions: `Reflect.defineProperty` returns a boolean instead of throwing; `Reflect.ownKeys` returns strings and symbols; `Reflect.apply` is `Function.prototype.apply` that cannot be shadowed by an own `apply` property.
+Writing `target[key]` instead of `Reflect.get(target, key, receiver)` runs inherited getters with `this === target`, so property reads made _inside_ the getter bypass the proxy and are not tracked. Other differences from the older `Object.*` functions: `Reflect.defineProperty` returns a boolean instead of throwing; `Reflect.ownKeys` returns strings and symbols; `Reflect.apply` is `Function.prototype.apply` that cannot be shadowed by an own `apply` property.
 
 ### What proxies can and cannot do
 
 | Can | Cannot |
-|---|---|
+| --- | --- |
 | validation, defaults, negative array indices, logging, access control | intercept `#private` field access (private names are not properties, [module 04](04-objects-prototypes-classes.md)) |
 | reactivity: track reads in `get`, notify in `set` | intercept internal slots: `Map.prototype.get.call(proxyOfMap)` throws (no `[[MapData]]` on the proxy) |
 | virtual objects (remote objects, lazy loading) | make `typeof proxy` differ from the target's (`'function'` only if the target is callable) |
@@ -73,26 +73,36 @@ A minimal tracking store:
 
 ```js
 let activeEffect = null;
-const subscribers = new WeakMap();                      // target → Map<key, Set<effect>>
+const subscribers = new WeakMap(); // target → Map<key, Set<effect>>
 
 function reactive(obj) {
   return new Proxy(obj, {
     get(target, key, receiver) {
       if (activeEffect) {
         const byKey = subscribers.get(target) ?? subscribers.set(target, new Map()).get(target);
-        byKey.getOrInsertComputed(key, () => new Set()).add(activeEffect);   // ES2026 upsert
+        byKey.getOrInsertComputed(key, () => new Set()).add(activeEffect); // ES2026 upsert
       }
       const value = Reflect.get(target, key, receiver);
       return typeof value === 'object' && value !== null ? reactive(value) : value; // deep, lazy
     },
     set(target, key, value, receiver) {
       const ok = Reflect.set(target, key, value, receiver);
-      subscribers.get(target)?.get(key)?.forEach((fn) => fn());
+      subscribers
+        .get(target)
+        ?.get(key)
+        ?.forEach((fn) => fn());
       return ok;
     },
   });
 }
-function effect(fn) { activeEffect = fn; try { fn(); } finally { activeEffect = null; } }
+function effect(fn) {
+  activeEffect = fn;
+  try {
+    fn();
+  } finally {
+    activeEffect = null;
+  }
+}
 ```
 
 Real implementations add batching (flush in a microtask, [module 06](06-agents-realms-job-queue.md)), cleanup of stale subscriptions, a cache so the same object always maps to the same proxy, and array-method instrumentation. Solid's stores and projections are proxies built on this idea; the framework-specific design is in the SolidJS track ([`../../../technologies/solidjs/`](../../../technologies/solidjs/)).
@@ -106,26 +116,26 @@ Performance: every property access through a proxy is a function call that V8 ca
 The table in [module 02](02-types-values-coercion.md#5-symbol-and-the-well-known-symbols) lists them. The interesting ones for metaprogramming:
 
 | Symbol | Hook | Example use |
-|---|---|---|
+| --- | --- | --- |
 | `Symbol.toPrimitive` | conversion with a hint | money objects that add as numbers and print with currency |
 | `Symbol.hasInstance` | `instanceof` | structural "is a" checks; avoid in libraries (surprising) |
 | `Symbol.toStringTag` | `Object.prototype.toString` | `[object MyType]` in logs |
 | `Symbol.species` | which constructor derived results use (`map`, `filter`, `then`, `slice`) | subclass returning base instances; considered a design mistake, a proposal to remove most uses exists; V8 deoptimises when it is touched |
 | `Symbol.isConcatSpreadable` | `Array.prototype.concat` | array-likes that concat like arrays |
 | `Symbol.unscopables` | `with` | hiding newer `Array.prototype` methods from legacy `with` code |
-| `Symbol.iterator` / `asyncIterator` | iteration ([module 05](05-iterators-generators.md)) | |
-| `Symbol.dispose` / `asyncDispose` | `using` ([module 10](10-resource-management-temporal.md)) | |
-| `Symbol.metadata` | decorator metadata (Stage 2.7, not shipped in Node 26) | |
+| `Symbol.iterator` / `asyncIterator` | iteration ([module 05](05-iterators-generators.md)) |  |
+| `Symbol.dispose` / `asyncDispose` | `using` ([module 10](10-resource-management-temporal.md)) |  |
+| `Symbol.metadata` | decorator metadata (Stage 2.7, not shipped in Node 26) |  |
 
 ---
 
 ## 3. Tagged templates
 
-**Definition (§13.3.11).** A *tagged template* `` tag`a${x}b${y}c` `` calls `tag(strings, x, y)` where `strings` is a **template object**: a frozen array `['a', 'b', 'c']` with a frozen `raw` property holding the raw source text (escape sequences unprocessed).
+**Definition (§13.3.11).** A _tagged template_ `` tag`a${x}b${y}c` `` calls `tag(strings, x, y)` where `strings` is a **template object**: a frozen array `['a', 'b', 'c']` with a frozen `raw` property holding the raw source text (escape sequences unprocessed).
 
 Properties that libraries rely on:
 
-- **Identity per call site.** `GetTemplateObject` caches the template object per *source location* (Parse Node) and realm, so the same code location always passes the same `strings` array. Libraries (lit-html, GraphQL tags, styled-components, SQL builders) use it as a `WeakMap` key to cache parsing.
+- **Identity per call site.** `GetTemplateObject` caches the template object per _source location_ (Parse Node) and realm, so the same code location always passes the same `strings` array. Libraries (lit-html, GraphQL tags, styled-components, SQL builders) use it as a `WeakMap` key to cache parsing.
 - **Invalid escapes are allowed in tagged templates** (ES2018): `` tag`\unicode` `` gives `strings[0] === undefined` and `strings.raw[0] === '\\unicode'`, which lets DSLs like LaTeX use backslashes. Untagged templates with invalid escapes are still syntax errors.
 - `String.raw` is the built-in tag that concatenates `raw` strings.
 
@@ -144,7 +154,7 @@ sql`SELECT * FROM users WHERE id = ${userId}`; // { text: 'SELECT * FROM users W
 
 ### WeakMap and WeakSet: ephemerons
 
-**Definition (§24.3).** A *WeakMap* is a collection of key/value pairs whose keys are objects (or non-registered symbols, since ES2023) and **do not keep the key alive**. If the key is otherwise unreachable, the entry disappears and the value becomes collectible too, *even if the value references the key* (ephemeron semantics). WeakMaps are not iterable and have no `size`: making them enumerable would make garbage collection observable.
+**Definition (§24.3).** A _WeakMap_ is a collection of key/value pairs whose keys are objects (or non-registered symbols, since ES2023) and **do not keep the key alive**. If the key is otherwise unreachable, the entry disappears and the value becomes collectible too, _even if the value references the key_ (ephemeron semantics). WeakMaps are not iterable and have no `size`: making them enumerable would make garbage collection observable.
 
 Uses: private data for objects you do not own, caches keyed by object identity (parsed templates, computed layouts, DOM node metadata), cycle detection in deep clone and deep equal, "visited" sets.
 
@@ -157,7 +167,7 @@ const layoutOf = (node) => cache.getOrInsertComputed(node, computeLayout);
 
 ### WeakRef and FinalizationRegistry (ES2021)
 
-**Definition (§26.1, §26.2).** A *WeakRef* holds a target object (or non-registered symbol) without keeping it alive; `deref()` returns the target or `undefined` if it has been collected. A *FinalizationRegistry* lets you register a target with a held value; **at some point after** the target is collected, the host **may** call the cleanup callback with the held value.
+**Definition (§26.1, §26.2).** A _WeakRef_ holds a target object (or non-registered symbol) without keeping it alive; `deref()` returns the target or `undefined` if it has been collected. A _FinalizationRegistry_ lets you register a target with a held value; **at some point after** the target is collected, the host **may** call the cleanup callback with the held value.
 
 The spec deliberately gives few guarantees (§9.9):
 
@@ -165,7 +175,7 @@ The spec deliberately gives few guarantees (§9.9):
 2. Collection timing is unspecified. Engines may never collect a target (for example, short-lived programs, or a generational GC that has not run).
 3. Cleanup callbacks may run late, in batches, or **never** (for example, when the process exits or the page is closed).
 
-The proposal's own README says: *"avoid them if you can"*. Legitimate uses: caches of large, re-creatable objects (`WeakRef` values in a `Map`, with a FinalizationRegistry removing stale keys), and as a **safety net** that logs leaked resources ("this file handle was never closed"). **Never** rely on finalization for correctness: closing files, releasing locks, flushing data. Use explicit disposal (`using`, `try/finally`, [module 10](10-resource-management-temporal.md)).
+The proposal's own README says: _"avoid them if you can"_. Legitimate uses: caches of large, re-creatable objects (`WeakRef` values in a `Map`, with a FinalizationRegistry removing stale keys), and as a **safety net** that logs leaked resources ("this file handle was never closed"). **Never** rely on finalization for correctness: closing files, releasing locks, flushing data. Use explicit disposal (`using`, `try/finally`, [module 10](10-resource-management-temporal.md)).
 
 ---
 
@@ -173,10 +183,10 @@ The proposal's own README says: *"avoid them if you can"*. Legitimate uses: cach
 
 > **Status check (2026-10-28):** the Decorators proposal was at Stage 3 from March 2022 and **was moved back to Stage 2.7 at the May 2026 TC39 meeting**; Decorator Metadata is also at 2.7. No JavaScript engine ships decorators unflagged; V8 14.6's `--js-decorators` parses only the `accessor` keyword. TypeScript (since 5.0) and Babel/esbuild implement the 2023 version of the proposal by transpilation. Everything below may still change; the example file verifies it against esbuild 0.28's implementation, not against an engine.
 
-**Definition.** A *decorator* is an expression (`@expr`) applied to a class or class element at **class definition time**. It is called as `decorator(value, context)` and may return a replacement.
+**Definition.** A _decorator_ is an expression (`@expr`) applied to a class or class element at **class definition time**. It is called as `decorator(value, context)` and may return a replacement.
 
 | Decorated | `value` received | May return | `context.kind` |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | class | the class | a replacement class | `'class'` |
 | method | the method function | a replacement function | `'method'` |
 | getter / setter | the getter / setter | a replacement | `'getter'` / `'setter'` |
@@ -185,12 +195,12 @@ The proposal's own README says: *"avoid them if you can"*. Legitimate uses: cach
 
 `context` has `name`, `static`, `private`, `access` (`{ get, set, has }` functions that read the element on a given object, which also works for `#private` elements), `addInitializer(fn)` (runs during construction for instance elements, at class definition for static elements and classes), and `metadata` (a per-class object, exposed on the class as `C[Symbol.metadata]`, inherited prototypically from the parent's metadata).
 
-Evaluation order, as implemented by esbuild 0.28 and checked in the example: decorator *expressions* are evaluated in document order; then element decorators are **applied** to non-field elements (methods, getters/setters, auto-accessors; static elements first) before fields; class decorators are applied last; class `addInitializer` callbacks run after the class is fully defined.
+Evaluation order, as implemented by esbuild 0.28 and checked in the example: decorator _expressions_ are evaluated in document order; then element decorators are **applied** to non-field elements (methods, getters/setters, auto-accessors; static elements first) before fields; class decorators are applied last; class `addInitializer` callbacks run after the class is fully defined.
 
 Key semantic differences from TypeScript's **legacy** `experimentalDecorators` (owned by the TypeScript track):
 
 | Legacy (`experimentalDecorators: true`) | TC39 (2023 proposal) |
-|---|---|
+| --- | --- |
 | receive `(target, key, descriptor)`, can mutate the prototype directly | receive `(value, context)`, return replacements; no direct prototype access |
 | field decorators get no value and cannot change initialisation | field decorators return initialisers |
 | parameter decorators | **none** (Angular/NestJS DI relies on them, a reason those frameworks still use legacy mode) |
@@ -202,7 +212,7 @@ The two are **incompatible**; a decorator library targets one or the other.
 ### Then vs now
 
 | Then | Now |
-|---|---|
+| --- | --- |
 | `Object.defineProperty`-based method wrapping after the class definition | decorators (transpiled), or keep explicit wrapping until engines ship them |
 | `Object.observe` (proposed for ES2016, withdrawn in 2015) | Proxy (ES2015) |
 | `__defineGetter__`, `__lookupGetter__` (Annex B) | `Object.defineProperty`, `Object.getOwnPropertyDescriptor` |
@@ -214,7 +224,7 @@ The two are **incompatible**; a decorator library targets one or the other.
 ## 6. Production failure modes
 
 | Failure | Mechanism | Defence |
-|---|---|---|
+| --- | --- | --- |
 | `TypeError: 'get' on proxy: property 'x' is a read-only and non-configurable data property...` | proxy trap violates an invariant of a frozen target | proxy a mutable shadow target |
 | `TypeError: Method Map.prototype.get called on incompatible receiver` | proxying an object with internal slots (`Map`, `Date`, `Promise`, DOM nodes) | forward methods with `target` as `this`, or wrap the API instead |
 | Reactive store misses updates inside getters | `target[key]` instead of `Reflect.get(target, key, receiver)` | always forward the receiver |

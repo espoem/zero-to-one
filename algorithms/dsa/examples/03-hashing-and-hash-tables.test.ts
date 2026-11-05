@@ -1,6 +1,6 @@
-import { describe, it } from "node:test";
-import assert from "node:assert/strict";
-import fc from "fast-check";
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
+import fc from 'fast-check';
 
 interface HashEntry<K, V> {
   key: K;
@@ -161,7 +161,9 @@ export function rabinKarpSearch(text: string, pattern: string): number[] {
   let textHash = 0;
 
   for (let i = 0; i < m; i++) {
-    patternHash = Number((BigInt(patternHash) * BigInt(B) + BigInt(pattern.charCodeAt(i))) % BigInt(M));
+    patternHash = Number(
+      (BigInt(patternHash) * BigInt(B) + BigInt(pattern.charCodeAt(i))) % BigInt(M),
+    );
     textHash = Number((BigInt(textHash) * BigInt(B) + BigInt(text.charCodeAt(i))) % BigInt(M));
   }
 
@@ -185,37 +187,37 @@ export function rabinKarpSearch(text: string, pattern: string): number[] {
   return matches;
 }
 
-describe("Module 03: Hashing, Hash Tables & Rabin-Karp String Matching", () => {
-  it("Robin Hood hash table correctly sets, retrieves, and backward-shift deletes keys", () => {
+describe('Module 03: Hashing, Hash Tables & Rabin-Karp String Matching', () => {
+  it('Robin Hood hash table correctly sets, retrieves, and backward-shift deletes keys', () => {
     const map = new RobinHoodHashTable<string, number>(8);
 
-    map.set("apple", 100);
-    map.set("banana", 200);
-    map.set("cherry", 300);
-    map.set("date", 400);
+    map.set('apple', 100);
+    map.set('banana', 200);
+    map.set('cherry', 300);
+    map.set('date', 400);
 
-    assert.equal(map.get("apple"), 100);
-    assert.equal(map.get("banana"), 200);
-    assert.equal(map.get("cherry"), 300);
-    assert.equal(map.get("date"), 400);
-    assert.equal(map.get("elderberry"), undefined);
+    assert.equal(map.get('apple'), 100);
+    assert.equal(map.get('banana'), 200);
+    assert.equal(map.get('cherry'), 300);
+    assert.equal(map.get('date'), 400);
+    assert.equal(map.get('elderberry'), undefined);
 
     // Overwrite existing key
-    map.set("banana", 250);
-    assert.equal(map.get("banana"), 250);
+    map.set('banana', 250);
+    assert.equal(map.get('banana'), 250);
 
     // Deletion with backward shifting
-    assert.equal(map.delete("banana"), true);
-    assert.equal(map.has("banana"), false);
-    assert.equal(map.get("banana"), undefined);
+    assert.equal(map.delete('banana'), true);
+    assert.equal(map.has('banana'), false);
+    assert.equal(map.get('banana'), undefined);
 
     // Verify remaining keys are still accessible after deletion
-    assert.equal(map.get("apple"), 100);
-    assert.equal(map.get("cherry"), 300);
-    assert.equal(map.get("date"), 400);
+    assert.equal(map.get('apple'), 100);
+    assert.equal(map.get('cherry'), 300);
+    assert.equal(map.get('date'), 400);
   });
 
-  it("proves Robin Hood hash table automatically resizes while preserving all entries", () => {
+  it('proves Robin Hood hash table automatically resizes while preserving all entries', () => {
     const map = new RobinHoodHashTable<string, number>(4);
     const N = 500;
 
@@ -231,15 +233,15 @@ describe("Module 03: Hashing, Hash Tables & Rabin-Karp String Matching", () => {
     }
   });
 
-  it("Rabin-Karp correctly finds all occurrences of substring patterns in O(n + m) time", () => {
-    const text = "AABAACAADAABAABA";
-    const pattern = "AABA";
+  it('Rabin-Karp correctly finds all occurrences of substring patterns in O(n + m) time', () => {
+    const text = 'AABAACAADAABAABA';
+    const pattern = 'AABA';
 
     const matches = rabinKarpSearch(text, pattern);
     assert.deepEqual(matches, [0, 9, 12]);
   });
 
-  it("property test: Rabin-Karp matches naive string search across arbitrary strings", () => {
+  it('property test: Rabin-Karp matches naive string search across arbitrary strings', () => {
     fc.assert(
       fc.property(
         fc.string({ minLength: 1, maxLength: 50 }),
@@ -256,9 +258,9 @@ describe("Module 03: Hashing, Hash Tables & Rabin-Karp String Matching", () => {
           }
 
           assert.deepEqual(rkMatches, expected);
-        }
+        },
       ),
-      { numRuns: 150 }
+      { numRuns: 150 },
     );
   });
 });

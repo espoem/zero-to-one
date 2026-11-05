@@ -1,7 +1,6 @@
 # Module 10 · Compiler Internals and Static-Analysis Debugging
 
-> **Verified against** `@pandacss/dev` 2.4.0 and the [chakra-ui/panda](https://github.com/chakra-ui/panda) `main` branch design notes (`design-notes/*.md`, read on 2026-10-29).
-> **Executable proof:** [`compiler.test.ts`](../examples/tests/compiler.test.ts) (conditional folding, parse-error recovery, plugins, `--splitting`, `--profile` spans); [`negative-extraction.test.ts`](../examples/tests/negative-extraction.test.ts) (default/namespace imports, shadowing, unsupported helpers, dynamic values); [`cli.test.ts`](../examples/tests/cli.test.ts) (`panda debug` extract dumps); fixtures [`10-cross-file.ts`](../examples/fixtures/positive/10-cross-file.ts), [`10-conditional-values.ts`](../examples/fixtures/positive/10-conditional-values.ts), [`negative/`](../examples/fixtures/negative/); configs [`plugins.config.ts`](../examples/fixtures/configs/plugins.config.ts), [`hooks-removed.config.ts`](../examples/fixtures/configs/hooks-removed.config.ts).
+> **Verified against** `@pandacss/dev` 2.4.0 and the [chakra-ui/panda](https://github.com/chakra-ui/panda) `main` branch design notes (`design-notes/*.md`, read on 2026-10-29). **Executable proof:** [`compiler.test.ts`](../examples/tests/compiler.test.ts) (conditional folding, parse-error recovery, plugins, `--splitting`, `--profile` spans); [`negative-extraction.test.ts`](../examples/tests/negative-extraction.test.ts) (default/namespace imports, shadowing, unsupported helpers, dynamic values); [`cli.test.ts`](../examples/tests/cli.test.ts) (`panda debug` extract dumps); fixtures [`10-cross-file.ts`](../examples/fixtures/positive/10-cross-file.ts), [`10-conditional-values.ts`](../examples/fixtures/positive/10-conditional-values.ts), [`negative/`](../examples/fixtures/negative/); configs [`plugins.config.ts`](../examples/fixtures/configs/plugins.config.ts), [`hooks-removed.config.ts`](../examples/fixtures/configs/hooks-removed.config.ts).
 
 Every "my styles are missing" bug is a question about what the compiler can see. This module describes the v2 Rust compiler stage by stage, gives the exact folding rules, and shows how to inspect each stage. The JavaScript semantics it emulates (scopes, bindings, `ToString`/`ToNumber`) are owned by [`languages/javascript`](../../../languages/javascript/README.md).
 
@@ -32,7 +31,7 @@ flowchart LR
 ```
 
 | Stage | Crate | What it does | How to observe |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Construction | `pandacss_config`, `pandacss_system` | Compile the config once into matchers, utility metadata, conditions, token dictionary, recipe registry | `panda doctor`, `panda debug --onlyConfig` |
 | Parse | `pandacss_extractor` (Oxc), `pandacss_sfc` | One Oxc parse per file. `.vue`, `.svelte`, `.astro` (and MDX) are lowered to a same-offset JS program first | `js_parse_error` diagnostics |
 | Import matching | `pandacss_extractor` | Collect imports; match them against the import map by **substring** in fixed category order (css → tokens → recipe → pattern → jsx). Default and side-effect imports never match; type-only imports are skipped | `panda debug` (`matched` in tooling dumps) |
@@ -56,10 +55,10 @@ The JS host owns everything that must run arbitrary user code: config bundling, 
 ## 10.2 Import matching rules
 
 ```ts
-import { css } from '../styled-system/css'   // named: matched (substring "styled-system/css")
-import * as p from '../styled-system/css'    // namespace call p.css(...) — not a style helper import
-import css2 from '../styled-system/css'      // default: never matched
-import type { SystemStyleObject } from '../styled-system/types'  // type-only: skipped
+import { css } from '../styled-system/css'; // named: matched (substring "styled-system/css")
+import * as p from '../styled-system/css'; // namespace call p.css(...) — not a style helper import
+import css2 from '../styled-system/css'; // default: never matched
+import type { SystemStyleObject } from '../styled-system/types'; // type-only: skipped
 ```
 
 Consequences:
@@ -96,12 +95,12 @@ Consequences:
 - impure or unsupported helpers: async/generators, rest parameters, `if`/loops, `this`, assignments, unknown calls (including `String(n)`), member calls like `.map()`;
 - bare function values (`css({ color: getColor })` without a call).
 
-**Partial objects.** Folding is lenient per member: `{ color: 'red.500', p: props.p }` keeps `color`. An object is dropped only when *every* member is unknown, which is why the default-import fixture's debug dump is `"calls": []`.
+**Partial objects.** Folding is lenient per member: `{ color: 'red.500', p: props.p }` keeps `color`. An object is dropped only when _every_ member is unknown, which is why the default-import fixture's debug dump is `"calls": []`.
 
 The proofs, all in the test suite:
 
 | Fixture | Code | Result |
-|---|---|---|
+| --- | --- | --- |
 | [`10-cross-file.ts`](../examples/fixtures/positive/10-cross-file.ts) | `css(surface, pad(8), { borderWidth: ring, _focusVisible: focusRing })` with all four from other files (barrel `export *`, renamed re-export, pure helper, `css.raw`) | All atoms emitted; `panda debug` shows `{ p: '8' }` folded from `pad(8)` |
 | [`10-conditional-values.ts`](../examples/fixtures/positive/10-conditional-values.ts) | `active ? 'green.700' : 'gray.500'`, `active && 'semibold'`, `tone ?? 'tight'` | `c_green.700`, `c_gray.500`, `fw_semibold`, `ls_tight` |
 | [`helper-unsupported.ts`](../examples/fixtures/negative/helper-unsupported.ts) | `({ m: String(n) })` | Nothing, **and no diagnostic** |
@@ -111,7 +110,7 @@ The proofs, all in the test suite:
 ### Diagnostics you will see (and one you will not)
 
 | Code | Meaning |
-|---|---|
+| --- | --- |
 | `panda_call_unextractable` | A style call got an unreadable value (`css(props.styles)`). **Turned off when `jsxFramework` is set**, which is why our fixtures (React) report `diagnostics: 0` for dynamic values |
 | `pure_helper_unevaluated` | Listed in the diagnostics reference, but the 2.2.0 changelog says this warning (added in 2.1.2) was **removed** because it could fail `--max-warnings 0` builds. Our `String(n)` fixture confirms: no diagnostic. Unsupported helpers fail silently, so test for their CSS |
 | `imported_recipe_raw_dynamic` | `button.raw({ size })` with a dynamic `size` on a `cva` from another file |
@@ -122,8 +121,8 @@ The proofs, all in the test suite:
 
 ### Then vs now: the extraction engine
 
-| | v0.x / 1.x | 2.x |
-|---|---|---|
+|  | v0.x / 1.x | 2.x |
+| --- | --- | --- |
 | Parser | TypeScript via `ts-morph` (a full TS program, project-wide) | Oxc, one parse per file, no type program |
 | Evaluator | `ts-evaluator` interpreting expressions, plus a "box" model (literal / map / conditional boxes) that turned evaluated nodes into style objects | `pandacss_literal::Literal` fold with an explicit rule list, a closed pure-function descriptor instead of a JS interpreter |
 | Cross-file | Not followed (imported values were invisible) | `CrossFileResolver` with a hash-validated export cache |
@@ -154,17 +153,19 @@ const report = definePlugin({
   hooks: {
     'config:resolved': ({ config, utils }) => utils.omit(config, ['patterns.spacer']),
     'parser:before': {
-      filter: { id: /plugins-usage\.ts$/ },            // evaluated in Rust: no JS call per file
+      filter: { id: /plugins-usage\.ts$/ }, // evaluated in Rust: no JS call per file
       handler: ({ content }) => content.replaceAll("tone: 'alarm'", "color: 'red.700'"),
     },
-    'cssgen:done': ({ content }) => { /* observe only */ },
+    'cssgen:done': ({ content }) => {
+      /* observe only */
+    },
   },
-})
-export default defineConfig({ plugins: [report] /* … */ })
+});
+export default defineConfig({ plugins: [report] /* … */ });
 ```
 
 | Hook | Class | When | May |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `preset:resolved` | config | Once per preset, before merge | Replace the preset (async OK) |
 | `config:resolved` | config | After merge, before defaults | Replace the config (async OK); the only way to **remove** preset entries |
 | `parser:before` | per-file, hot path | After read, before parse | Return replacement source; use `filter` so Rust skips non-matching files |
@@ -192,7 +193,7 @@ flowchart TD
 ```
 
 | Tool | Use |
-|---|---|
+| --- | --- |
 | `panda debug --include <glob>` | Writes `config.json`, `system-info.json`, per-file `*.extract.json` and `styles.css` to `<outdir>/debug` (`--outdir`, `--dry`, `--zip`, `--onlyConfig`) |
 | `panda analyze [--scope recipes] [--unused] [--json]` | Usage across sources: unused tokens/recipes, which files use what |
 | `panda --profile` | `.panda/trace.json` (Chrome trace format: open in Perfetto/`chrome://tracing`) and `.panda/timings.json` (per-span totals, slowest files) |

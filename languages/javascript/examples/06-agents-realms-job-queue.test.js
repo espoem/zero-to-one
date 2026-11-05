@@ -14,7 +14,10 @@ describe('Job ordering in Node (HostEnqueuePromiseJob → microtasks)', () => {
     setTimeout(() => log.push('A timer'), 0);
     Promise.resolve().then(() => log.push('B then'));
     queueMicrotask(() => log.push('C queueMicrotask'));
-    (async () => { await null; log.push('D await'); })();
+    (async () => {
+      await null;
+      log.push('D await');
+    })();
     log.push('E sync');
     await new Promise((r) => setTimeout(r, 5));
     assert.deepEqual(log, ['E sync', 'B then', 'C queueMicrotask', 'D await', 'A timer']);
@@ -30,15 +33,34 @@ describe('Job ordering in Node (HostEnqueuePromiseJob → microtasks)', () => {
   test('tick accounting: await 1, thenable 2, resolve(promise) and async return 3', async () => {
     const log = [];
     let i = 0;
-    const step = () => { log.push(`tick${++i}`); if (i < 5) Promise.resolve().then(step); };
+    const step = () => {
+      log.push(`tick${++i}`);
+      if (i < 5) Promise.resolve().then(step);
+    };
     Promise.resolve().then(step);
-    (async () => { await Promise.resolve(); log.push('await'); })();
-    Promise.resolve({ then(/** @type {any} */ r) { r(); } }).then(() => log.push('thenable'));
+    (async () => {
+      await Promise.resolve();
+      log.push('await');
+    })();
+    Promise.resolve({
+      then(/** @type {any} */ r) {
+        r();
+      },
+    }).then(() => log.push('thenable'));
     new Promise((r) => r(Promise.resolve())).then(() => log.push('resolve(promise)'));
     (async () => Promise.resolve())().then(() => log.push('async return promise'));
     await macrotask();
-    assert.deepEqual(log, ['tick1', 'await', 'tick2', 'thenable', 'tick3',
-      'resolve(promise)', 'async return promise', 'tick4', 'tick5']);
+    assert.deepEqual(log, [
+      'tick1',
+      'await',
+      'tick2',
+      'thenable',
+      'tick3',
+      'resolve(promise)',
+      'async return promise',
+      'tick4',
+      'tick5',
+    ]);
   });
 
   test('return await is not slower than return (fewer ticks, in fact)', async () => {
@@ -52,8 +74,20 @@ describe('Job ordering in Node (HostEnqueuePromiseJob → microtasks)', () => {
 
   test('NEGATIVE: return p (without await) bypasses the surrounding catch', async () => {
     const failing = () => Promise.reject(new Error('x'));
-    async function withoutAwait() { try { return failing(); } catch { return 'caught'; } }
-    async function withAwait() { try { return await failing(); } catch { return 'caught'; } }
+    async function withoutAwait() {
+      try {
+        return failing();
+      } catch {
+        return 'caught';
+      }
+    }
+    async function withAwait() {
+      try {
+        return await failing();
+      } catch {
+        return 'caught';
+      }
+    }
     await assert.rejects(withoutAwait(), /x/);
     assert.equal(await withAwait(), 'caught');
   });
@@ -61,13 +95,19 @@ describe('Job ordering in Node (HostEnqueuePromiseJob → microtasks)', () => {
   test('NEGATIVE: resolving a promise with itself rejects with TypeError', async () => {
     /** @type {(v: any) => void} */
     let resolve = () => {};
-    const p = new Promise((r) => { resolve = r; });
+    const p = new Promise((r) => {
+      resolve = r;
+    });
     resolve(p);
     await assert.rejects(p, TypeError);
   });
 
   test('only the first resolve/reject call counts', async () => {
-    const p = new Promise((res, rej) => { res(1); rej(new Error('ignored')); res(2); });
+    const p = new Promise((res, rej) => {
+      res(1);
+      rej(new Error('ignored'));
+      res(2);
+    });
     assert.equal(await p, 1);
   });
 });
@@ -135,27 +175,35 @@ describe('Agents (§9.6): a worker is a separate agent with its own event loop',
     // timer tasks, flips the flag. If agents shared one thread, this could never complete.
     const sab = new SharedArrayBuffer(8);
     const a = new Int32Array(sab);
-    const worker = new Worker(`
+    const worker = new Worker(
+      `
       const { parentPort, workerData: { sab } } = require('node:worker_threads');
       const a = new Int32Array(sab);
       Atomics.store(a, 1, 1); Atomics.notify(a, 1);     // "I am about to block"
       Atomics.wait(a, 0, 0);                            // blocks this agent only
-      parentPort.postMessage(Atomics.load(a, 0));`, { eval: true, workerData: { sab } });
-    await Atomics.waitAsync(a, 1, 0).value;            // the worker is blocked (or about to be)
+      parentPort.postMessage(Atomics.load(a, 0));`,
+      { eval: true, workerData: { sab } },
+    );
+    await Atomics.waitAsync(a, 1, 0).value; // the worker is blocked (or about to be)
     let mainTasks = 0;
-    for (let i = 0; i < 5; i++) { await new Promise((r) => setTimeout(r, 0)); mainTasks++; }
+    for (let i = 0; i < 5; i++) {
+      await new Promise((r) => setTimeout(r, 0));
+      mainTasks++;
+    }
     Atomics.store(a, 0, mainTasks);
     Atomics.notify(a, 0);
     const seen = await new Promise((r) => worker.once('message', r));
     await worker.terminate();
-    assert.equal(seen, 5);                              // the main agent ran 5 tasks while the worker was blocked
+    assert.equal(seen, 5); // the main agent ran 5 tasks while the worker was blocked
   });
 
   test('structured clone recreates values in the receiving realm', async () => {
-    const worker = new Worker(`
+    const worker = new Worker(
+      `
       const { parentPort } = require('node:worker_threads');
       parentPort.once('message', (v) => parentPort.postMessage([Array.isArray(v.list), v.list instanceof Array, v.when instanceof Date]));`,
-    { eval: true });
+      { eval: true },
+    );
     worker.postMessage({ list: [1], when: new Date() });
     const answer = await new Promise((r) => worker.once('message', r));
     await worker.terminate();
@@ -177,8 +225,14 @@ describe('HTML processing model (executable model, examples/06-event-loop-model.
       el.log.push('2 sync');
     });
     el.run();
-    assert.deepEqual(el.log, ['1 sync', '2 sync', '3 microtask', '4 microtask',
-      '4b nested microtask, same checkpoint', '5 timer']);
+    assert.deepEqual(el.log, [
+      '1 sync',
+      '2 sync',
+      '3 microtask',
+      '4 microtask',
+      '4b nested microtask, same checkpoint',
+      '5 timer',
+    ]);
   });
 
   test('rAF runs inside the rendering task, before style/layout and paint; its microtasks run in between', () => {
@@ -209,7 +263,9 @@ describe('HTML processing model (executable model, examples/06-event-loop-model.
   test('a self-re-enqueuing task lets rendering interleave', () => {
     const el = new EventLoopModel({ frameMs: 16 });
     let n = 0;
-    const spin = () => { if (++n < 40) el.queueTask('message', 'spin', spin); };
+    const spin = () => {
+      if (++n < 40) el.queueTask('message', 'spin', spin);
+    };
     el.queueTask('script', 'script', () => {
       el.requestAnimationFrame(() => el.log.push(`rAF at task ${n}`));
       spin();
@@ -217,15 +273,21 @@ describe('HTML processing model (executable model, examples/06-event-loop-model.
     el.run();
     assert.ok(el.log.includes('paint'));
     const rafEntry = el.log.find((l) => l.startsWith('rAF'));
-    assert.ok(rafEntry && Number(rafEntry.split(' ').at(-1)) < 40, 'rendering happened while tasks were still queued');
+    assert.ok(
+      rafEntry && Number(rafEntry.split(' ').at(-1)) < 40,
+      'rendering happened while tasks were still queued',
+    );
   });
 
   test('Node agrees with the model on the sync/microtask/task order', () => {
-    const r = runNode(['-e', `
+    const r = runNode([
+      '-e',
+      `
       const log = [];
       setTimeout(() => { log.push('timer'); console.log(log.join(',')); });
       queueMicrotask(() => { log.push('m1'); queueMicrotask(() => log.push('m2')); });
-      log.push('sync');`]);
+      log.push('sync');`,
+    ]);
     assert.equal(r.stdout.trim(), 'sync,m1,m2,timer');
   });
 });
@@ -236,7 +298,12 @@ describe('Depth: CreateResolvingFunctions, reactions, PromiseIsHandled', () => {
   test('resolve reads `then` synchronously; a throwing getter rejects instead of throwing', async () => {
     const log = [];
     const p = new Promise((resolve) => {
-      resolve({ get then() { log.push('getter'); throw new Error('from getter'); } });
+      resolve({
+        get then() {
+          log.push('getter');
+          throw new Error('from getter');
+        },
+      });
       log.push('after resolve');
     });
     assert.deepEqual(log, ['getter', 'after resolve']);
@@ -250,39 +317,53 @@ describe('Depth: CreateResolvingFunctions, reactions, PromiseIsHandled', () => {
     promise.then(() => log.push(2));
     promise.then(() => log.push(3));
     resolve();
-    await promise; await null;
+    await promise;
+    await null;
     assert.deepEqual(log, [1, 2, 3]);
   });
 
   test('then() without handlers passes values and rejections through', async () => {
     assert.equal(await Promise.resolve(7).then().then(), 7);
-    await assert.rejects(Promise.reject(new Error('down')).then((v) => v).then(), /down/);
+    await assert.rejects(
+      Promise.reject(new Error('down'))
+        .then((v) => v)
+        .then(),
+      /down/,
+    );
   });
 
   test('NEGATIVE: handling p does not handle the derived promise p.then(f)', () => {
-    const r = runNode(['-e', `
+    const r = runNode([
+      '-e',
+      `
       const p = Promise.reject(new Error('derived is unhandled'));
       p.catch(() => {});        // p is handled
       p.then(() => 'never');    // this returns a new rejected promise with no handler
-    `]);
+    `,
+    ]);
     assert.equal(r.status, 1);
     assert.match(r.stderr, /derived is unhandled/);
   });
 
   test('await calls PerformPromiseThen directly; resolve(promise) calls the public then', () => {
-    const r = runNode(['-e', `
+    const r = runNode([
+      '-e',
+      `
       const orig = Promise.prototype.then; let calls = 0;
       Promise.prototype.then = function (...a) { calls++; return orig.apply(this, a); };
       (async () => {
         await Promise.resolve(1); const viaAwait = calls; calls = 0;
         await new Promise((r) => r(Promise.resolve(2))); const viaResolve = calls;
         console.log(JSON.stringify([viaAwait, viaResolve]));
-      })();`]);
+      })();`,
+    ]);
     assert.deepEqual(JSON.parse(r.stdout), [0, 1]);
   });
 
   test('an exception thrown inside a reaction rejects the derived promise, it does not escape', async () => {
-    const derived = Promise.resolve().then(() => { throw new Error('inside reaction'); });
+    const derived = Promise.resolve().then(() => {
+      throw new Error('inside reaction');
+    });
     await assert.rejects(derived, /inside reaction/);
   });
 });
@@ -293,15 +374,30 @@ describe('Depth: rendering task details in the model (HTML §8.1.7.3)', () => {
     el.verboseRendering = true;
     el.queueTask('script', 'script', () => el.requestAnimationFrame(() => el.log.push('rAF')));
     el.run();
-    assert.deepEqual(el.log, ['resize', 'scroll', 'media queries', 'animations', 'fullscreen', 'context lost',
-      'rAF', 'style+layout', 'focus fix-up', 'view transitions', 'intersection observers', 'paint']);
+    assert.deepEqual(el.log, [
+      'resize',
+      'scroll',
+      'media queries',
+      'animations',
+      'fullscreen',
+      'context lost',
+      'rAF',
+      'style+layout',
+      'focus fix-up',
+      'view transitions',
+      'intersection observers',
+      'paint',
+    ]);
   });
 
   test('all rAF callbacks in a frame receive the same timestamp', () => {
     const el = new EventLoopModel({ frameMs: 16 });
     const stamps = [];
     el.queueTask('script', 'script', () => {
-      el.requestAnimationFrame((t) => { stamps.push(t); el.setTimeout('busy', () => {}); });
+      el.requestAnimationFrame((t) => {
+        stamps.push(t);
+        el.setTimeout('busy', () => {});
+      });
       el.requestAnimationFrame((t) => stamps.push(t));
     });
     el.run();
@@ -328,10 +424,16 @@ describe('Depth: rendering task details in the model (HTML §8.1.7.3)', () => {
     const run = (fromUser) => {
       const el = new EventLoopModel();
       el.queueTask('user-interaction', 'click', () => {
-        el.dispatch([
-          () => { el.queueMicrotask(() => el.log.push('microtask from listener 1')); el.log.push('listener 1'); },
-          () => el.log.push('listener 2'),
-        ], { fromUser });
+        el.dispatch(
+          [
+            () => {
+              el.queueMicrotask(() => el.log.push('microtask from listener 1'));
+              el.log.push('listener 1');
+            },
+            () => el.log.push('listener 2'),
+          ],
+          { fromUser },
+        );
       });
       el.run();
       return el.log;
@@ -343,7 +445,10 @@ describe('Depth: rendering task details in the model (HTML §8.1.7.3)', () => {
   test('Node EventTarget dispatch from script behaves like el.click(): microtasks after all listeners', () => {
     const log = [];
     const target = new EventTarget();
-    target.addEventListener('x', () => { queueMicrotask(() => log.push('microtask')); log.push('l1'); });
+    target.addEventListener('x', () => {
+      queueMicrotask(() => log.push('microtask'));
+      log.push('l1');
+    });
     target.addEventListener('x', () => log.push('l2'));
     target.dispatchEvent(new Event('x'));
     assert.deepEqual(log, ['l1', 'l2']);

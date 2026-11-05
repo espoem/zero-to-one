@@ -9,7 +9,7 @@ Terms shared with the [root glossary](../../GLOSSARY.md) are reproduced verbatim
 ## 1. Specification and process
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **ECMAScript** | **ECMAScript** | The general-purpose programming language standardised by Ecma International as ECMA-262; "JavaScript" is ECMAScript embedded in a host with host APIs. | ECMA-262 §1–§4 |
 | **Edition** | **Vydání (edice)** | A yearly, frozen publication of ECMA-262 (ES2026 = 17th edition); edition = year − 2009. | ECMA-262 17th edition |
 | **TC39** | **TC39 (technická komise 39)** | The Ecma technical committee that evolves ECMAScript through staged proposals. | TC39 process document |
@@ -28,7 +28,7 @@ Terms shared with the [root glossary](../../GLOSSARY.md) are reproduced verbatim
 ## 2. Types, values and coercion
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Primitive Value** | **Primitivní hodnota** | A value of type Undefined, Null, Boolean, String, Symbol, Number or BigInt; immutable and compared by content. | ECMA-262 §6.1 |
 | **Type Coercion** | **Implicitní převod typů (koerce)** | Automatic conversion of a value to another type by an operator, performed by abstract operations such as ToPrimitive and ToNumber. | ECMA-262 §7.1 |
 | **Truthy / Falsy** | **Pravdivá / nepravdivá hodnota (truthy / falsy)** | Whether ToBoolean maps a value to true or false; the falsy values are `false`, `±0`, `0n`, `NaN`, `""`, `null`, `undefined` and `document.all`. | ECMA-262 §7.1.2 |
@@ -44,7 +44,7 @@ Terms shared with the [root glossary](../../GLOSSARY.md) are reproduced verbatim
 ## 3. Execution, scope and `this`
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Execution Context** | **Kontext provádění** | The specification device tracking the evaluation of code: its function, realm, script or module, and lexical, variable and private environments. | ECMA-262 §9.4 |
 | **Call Stack** | **Zásobník volání** | The execution context stack; the running execution context is on top. | ECMA-262 §9.4 |
 | **Environment Record** | **Záznam prostředí (Environment Record)** | The specification type binding identifiers to values for a scope; chained through `[[OuterEnv]]`. | ECMA-262 §9.1 |
@@ -60,7 +60,7 @@ Terms shared with the [root glossary](../../GLOSSARY.md) are reproduced verbatim
 ## 4. Objects, prototypes and classes
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Property Descriptor** | **Deskriptor vlastnosti** | The record of a property's attributes: value/writable or get/set, plus enumerable and configurable. | ECMA-262 §6.2.6 |
 | **Data / Accessor Property** | **Datová / přístupová vlastnost** | A property holding a value versus one defined by getter and setter functions. | ECMA-262 §6.1.7.1 |
 | **Prototype** | **Prototyp** | The object referenced by an object's `[[Prototype]]` slot, from which it inherits properties. | ECMA-262 §6.1.7 |
@@ -76,7 +76,7 @@ Terms shared with the [root glossary](../../GLOSSARY.md) are reproduced verbatim
 ## 5. Iteration, promises and the event loop
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Iterable / Iterator** | **Iterovatelný objekt / iterátor** | An object with `[Symbol.iterator]()` versus the object it returns, with `next()` producing `{ value, done }`. | ECMA-262 §27.1 |
 | **Generator** | **Generátor** | A function (`function*`) whose execution can be suspended at `yield` and resumed; its object is both an iterator and an iterable. | ECMA-262 §15.5, §27.5 |
 | **Coroutine** | **Korutina** | A routine that can suspend and resume while keeping its local state; generators and async functions are coroutines. | Knuth (TAOCP Vol. 1) |
@@ -93,7 +93,7 @@ Terms shared with the [root glossary](../../GLOSSARY.md) are reproduced verbatim
 ## 6. Modules
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **ES Module (ESM)** | **ES modul** | The standard module system with static `import`/`export`, linked before evaluation. | ECMA-262 §16.2 |
 | **Module Record** | **Záznam modulu (Module Record)** | The specification structure for one module: environment, namespace, dependencies and evaluation status. | ECMA-262 §16.2.1.5 |
 | **Live Binding** | **Živá vazba** | An import that reads the exporter's binding at access time rather than a copy. | ECMA-262 §9.1.1.5 |
@@ -101,13 +101,13 @@ Terms shared with the [root glossary](../../GLOSSARY.md) are reproduced verbatim
 | **Top-Level Await (TLA)** | **Await na nejvyšší úrovni** | `await` in a module body, which makes the module asynchronous for its dependents. | ECMA-262 §16.2.1.6 |
 | **Circular Dependency** | **Cyklická závislost** | Modules importing each other; evaluation order then exposes TDZ bindings to whichever module runs first. | ECMA-262 §16.2.1.6.1.3.1 |
 | **Import Attributes** | **Atributy importu** | `with { type: 'json' }` metadata on an import that the host must honour. | ECMA-262 §16.2.2 |
-| **Conditional Exports** | **Podmíněné exporty** | Package `exports` entries chosen by active conditions such as `import`, `node` or `development`. | Node.js documentation, *Packages* |
+| **Conditional Exports** | **Podmíněné exporty** | Package `exports` entries chosen by active conditions such as `import`, `node` or `development`. | Node.js documentation, _Packages_ |
 | **Tree Shaking** | **Odstraňování nepoužitého kódu (tree shaking)** | Removal of unused exports by bundlers, enabled by the static structure of ESM. | Rollup documentation |
 
 ## 7. Metaprogramming and resources
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Metaprogramming** | **Metaprogramování** | Code that inspects or changes the behaviour of other code's operations. | ECMA-262 §28 |
 | **Proxy** | **Proxy (zástupný objekt)** | An exotic object whose internal methods are delegated to handler traps. | ECMA-262 §10.5, §28.2 |
 | **Trap** | **Past (trap)** | A handler method of a Proxy that intercepts one internal method. | ECMA-262 §28.2 |
@@ -124,7 +124,7 @@ Terms shared with the [root glossary](../../GLOSSARY.md) are reproduced verbatim
 ## 8. Binary data, concurrency and the memory model
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **ArrayBuffer** | **ArrayBuffer (bajtový buffer)** | A fixed-length or resizable raw byte buffer, read through typed arrays or a DataView. | ECMA-262 §25.1 |
 | **Typed Array** | **Typované pole** | A view interpreting a buffer as elements of one numeric type in platform byte order. | ECMA-262 §23.2 |
 | **Endianness** | **Pořadí bajtů (endianita)** | The byte order of multi-byte values: little-endian or big-endian. | IEEE 754, Cohen (1981) |
@@ -144,7 +144,7 @@ Terms shared with the [root glossary](../../GLOSSARY.md) are reproduced verbatim
 ## 9. Engines and performance
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Just-in-Time Compilation (JIT)** | **Překlad za běhu (JIT)** | Compilation of code to machine code during execution, guided by runtime feedback. | Aycock (2003) |
 | **Bytecode Interpreter** | **Interpret bajtkódu** | The engine tier that executes compact bytecode (V8 Ignition) and collects type feedback. | V8 blog (2016) |
 | **Hidden Class (Map, Shape)** | **Skrytá třída (map, shape)** | An engine-internal descriptor of an object's layout shared by objects with the same properties in the same order. | Chambers, Ungar & Lee (1989), V8 blog |
@@ -157,7 +157,7 @@ Terms shared with the [root glossary](../../GLOSSARY.md) are reproduced verbatim
 ## 10. Security and correctness
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Prototype Pollution** | **Znečištění prototypu (prototype pollution)** | An attack that writes attacker-controlled properties to a shared prototype such as `Object.prototype`. | OWASP Prototype Pollution Prevention Cheat Sheet |
 | **ReDoS** | **ReDoS (odepření služby regulárním výrazem)** | Denial of service by inputs that make a backtracking regular-expression engine take exponential time. | OWASP |
 | **Catastrophic Backtracking** | **Katastrofický backtracking** | Exponential exploration of match alternatives caused by nested or overlapping quantifiers. | Friedl (Mastering Regular Expressions) |
@@ -169,7 +169,7 @@ Terms shared with the [root glossary](../../GLOSSARY.md) are reproduced verbatim
 These rows are copied verbatim from the [root glossary](../../GLOSSARY.md).
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Closure** | **Uzávěr (lexikální uzávěr)** | The combination of a function bundled together with references to its surrounding lexical environment, allowing access to outer scope variables. | Landin (The Mechanical Evaluation of Expressions) |
 | **Immutability** | **Neměnnost (imutabilita)** | The property of a data structure or object whose state cannot be modified after instantiation. Modifications create a new instance. | Okasaki (Purely Functional Data Structures) |
 | **Higher-Order Function** | **Funkce vyššího řádu** | A function that accepts one or more functions as arguments, returns a function, or both. | Abelson & Sussman (SICP) |

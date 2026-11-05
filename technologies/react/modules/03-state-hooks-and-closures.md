@@ -2,7 +2,7 @@
 
 > **Track:** `technologies/react` · **React:** 19.3.1 · **Proofs:** [`examples/03-state/state.test.tsx`](../examples/03-state/state.test.tsx), [`examples/03-state/fetch-machine.ts`](../examples/03-state/fetch-machine.ts)
 >
-> **Cross-links.** Lexical scope and closures as a language mechanism are owned by [languages/javascript](../../../languages/javascript/README.md); this module covers only how React's render model *creates* closures. Hook signatures, `useState<T>` inference, `useRef` overloads and discriminated-union action types are typed in [TypeScript M12](../../../languages/typescript/modules/12-typing-ui-frameworks.md).
+> **Cross-links.** Lexical scope and closures as a language mechanism are owned by [languages/javascript](../../../languages/javascript/README.md); this module covers only how React's render model _creates_ closures. Hook signatures, `useState<T>` inference, `useRef` overloads and discriminated-union action types are typed in [TypeScript M12](../../../languages/typescript/modules/12-typing-ui-frameworks.md).
 
 Hooks look like ordinary function calls, but they are a protocol between your component and the reconciler. This module opens the protocol: where hook state lives (a linked list on the fiber), how updates are queued and processed (circular queues with lanes), why every render sees a frozen **snapshot** (and therefore why closures go stale), how to design state with reducers and state machines, and how to read state that React does not own without **tearing**.
 
@@ -16,9 +16,9 @@ That is the entire explanation for three surprises (all tested):
 
 - `setN(5); console.log(n)` logs the old value — "reading state right after setState still gives the old value".
 - `setN(n + 1)` three times adds one, because all three read the same `n` from $\sigma_r$ — "three setN(n + 1) calls… increment by one".
-- An `async` handler that awaits and then reads a prop sees the prop *of the render that created the handler*, even if the component has re-rendered since — "an async handler sees the props/state of the render that created it". This is usually what you want (the message goes to the chat you clicked "send" in), and occasionally a bug (Module 04, `useEffectEvent`).
+- An `async` handler that awaits and then reads a prop sees the prop _of the render that created the handler_, even if the component has re-rendered since — "an async handler sees the props/state of the render that created it". This is usually what you want (the message goes to the chat you clicked "send" in), and occasionally a bug (Module 04, `useEffectEvent`).
 
-React's docs call this "[state as a snapshot](https://react.dev/learn/state-as-a-snapshot)". Formally, a component is a function of $\sigma_r$, and a closure is a function of the environment it captured — in React that environment *is* a snapshot.
+React's docs call this "[state as a snapshot](https://react.dev/learn/state-as-a-snapshot)". Formally, a component is a function of $\sigma_r$, and a closure is a function of the environment it captured — in React that environment _is_ a snapshot.
 
 ---
 
@@ -30,10 +30,10 @@ A function component's fiber stores its hooks in `fiber.memoizedState` as a **si
 
 ```ts
 type Hook = {
-  memoizedState: unknown;   // useState: the value · useRef: {current} · useMemo: [value, deps] · useEffect: effect object
-  baseState: unknown;       // state before the first skipped update (§3.3)
+  memoizedState: unknown; // useState: the value · useRef: {current} · useMemo: [value, deps] · useEffect: effect object
+  baseState: unknown; // state before the first skipped update (§3.3)
   baseQueue: Update | null; // skipped updates still to be rebased
-  queue: UpdateQueue | null;// pending updates (useState/useReducer)
+  queue: UpdateQueue | null; // pending updates (useState/useReducer)
   next: Hook | null;
 };
 ```
@@ -45,11 +45,11 @@ The test "memoizedState is a chain with one node per hook call, in call order" w
 `useState` does not contain the implementation. React exports a stub that forwards to `ReactSharedInternals.H` — the **current dispatcher** — which the reconciler swaps around each component call in `renderWithHooks`:
 
 | Situation | Dispatcher | `useState` does |
-|---|---|---|
+| --- | --- | --- |
 | First render of this fiber | `HooksDispatcherOnMount` | allocate a hook node, append to the WIP list |
-| Re-render | `HooksDispatcherOnUpdate` | advance a cursor along the *current* list in lockstep, clone the node |
+| Re-render | `HooksDispatcherOnUpdate` | advance a cursor along the _current_ list in lockstep, clone the node |
 | Re-render triggered during this render (`setState` in render) | `HooksDispatcherOnRerender` | as update, plus re-apply render-phase updates |
-| Outside any component render | `ContextOnlyDispatcher` (throws) | *"Invalid hook call. Hooks can only be called inside of the body of a function component"* |
+| Outside any component render | `ContextOnlyDispatcher` (throws) | _"Invalid hook call. Hooks can only be called inside of the body of a function component"_ |
 
 Two copies of React in a bundle means two `ReactSharedInternals` — the renderer sets the dispatcher on its copy, your component calls the other copy's stub, and you get "Invalid hook call". (Module 01 §7.3.)
 
@@ -73,9 +73,9 @@ after the component returns:
 
 Hooks are matched to their state **purely by position in the list**. There is no name and no key. So:
 
-1. **Call hooks unconditionally, at the top level, in the same order every render.** A hook inside `if`, a loop with a varying count, or after an early `return` changes the list. Tests: "a conditional hook changes the list length → React throws" (*Rendered more hooks…*), "hooks skipped by an early return" (*Rendered fewer hooks…*), "swapping hook kinds at the same index" (*React has detected a change in the order of Hooks*).
+1. **Call hooks unconditionally, at the top level, in the same order every render.** A hook inside `if`, a loop with a varying count, or after an early `return` changes the list. Tests: "a conditional hook changes the list length → React throws" (_Rendered more hooks…_), "hooks skipped by an early return" (_Rendered fewer hooks…_), "swapping hook kinds at the same index" (_React has detected a change in the order of Hooks_).
 2. **Call hooks only from components or other hooks** — only there is a dispatcher installed and a fiber to attach to.
-3. **`use` is the exception.** `use(promise)` and `use(context)` do not allocate a positional hook node for their *value*, so they may be called conditionally and in loops (test "use(Context) may be conditional"). In 19.3 React warns when `use` is called conditionally in a way it cannot support ([react#37104](https://github.com/react/react/pull/37104)); Module 06 has the details.
+3. **`use` is the exception.** `use(promise)` and `use(context)` do not allocate a positional hook node for their _value_, so they may be called conditionally and in loops (test "use(Context) may be conditional"). In 19.3 React warns when `use` is called conditionally in a way it cannot support ([react#37104](https://github.com/react/react/pull/37104)); Module 06 has the details.
 
 `eslint-plugin-react-hooks` `rules-of-hooks` enforces the rules statically; React 19 compiler-powered rules in v7 (Module 09) add many more.
 
@@ -101,7 +101,7 @@ DISPATCH-SET-STATE(fiber, queue, action)
   SCHEDULE-UPDATE-ON-FIBER(root, fiber, lane)
 ```
 
-- The **pending queue** is a circular singly linked list whose `pending` pointer is the *last* update, so append and "get first" are both $O(1)$.
+- The **pending queue** is a circular singly linked list whose `pending` pointer is the _last_ update, so append and "get first" are both $O(1)$.
 - **Updater functions** (`setN(x => x + 1)`) are stored as the action and applied in order during the next render, each receiving the previous result — "functional updaters compose".
 - **Eager state** lets React skip scheduling entirely when you set the same value (`Object.is`) and nothing else is pending. If the eager path cannot be used, React renders the component, notices the state is unchanged, and **bails out of its children** (test "Object.is bailout"). That is why you may see one extra render of the component itself but not of its subtree.
 - **`Object.is` semantics:** `NaN` equals `NaN`; `+0` does not equal `-0`. Mutating an object and setting the same reference is ignored — "NEGATIVE: mutating a state object and setting the same reference is ignored".
@@ -130,14 +130,14 @@ PROCESS-QUEUE(hook, renderLanes)
 Suppose `n = 0`, a transition enqueues `n => n + 10`, then a click (higher priority) enqueues `n => n * 2` before the transition renders.
 
 | Render | Lanes | Applied | Result shown |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 1 (urgent) | Sync | skip `+10` (kept in base queue), apply `*2` to 0 | `0` |
 | 2 (transition) | Sync + Transition | replay from base: `+10` then `*2` → `(0+10)*2` | `20` |
 
-The urgent render showed a state that is *not* a prefix of the final history, and the final state equals applying the updates **in enqueue order** — exactly like `git rebase`. Consequences:
+The urgent render showed a state that is _not_ a prefix of the final history, and the final state equals applying the updates **in enqueue order** — exactly like `git rebase`. Consequences:
 
 1. **The same updater can run more than once** (once in the urgent render — if it was urgent — and again when replayed; and twice in Strict Mode). Updaters and reducers must be pure: no side effects, no mutation of the previous state. The test "dispatch is stable across renders and StrictMode double-invokes the reducer" counts the double call.
-2. The final state is deterministic and independent of priorities: concurrency changes *when* you see intermediate states, never the *result*.
+2. The final state is deterministic and independent of priorities: concurrency changes _when_ you see intermediate states, never the _result_.
 
 ---
 
@@ -147,8 +147,8 @@ The urgent render showed a state that is *not* a prefix of the final history, an
 
 ### Then vs now
 
-| | Then (React ≤17 legacy root) | Now (React 18+ `createRoot`) |
-|---|---|---|
+|  | Then (React ≤17 legacy root) | Now (React 18+ `createRoot`) |
+| --- | --- | --- |
 | Inside React event handlers | Batched | Batched |
 | Inside `setTimeout`, promises, native listeners | **Each `setState` rendered synchronously** | Batched ("automatic batching") |
 | Opt out | — | `flushSync(() => setX(v))` |
@@ -165,7 +165,7 @@ The test "automatic batching outside act(): two updates in a timeout render once
 A closure created during render $r$ captures $\sigma_r$. It becomes **stale** when it outlives render $r$ and is invoked after $\sigma$ has moved on. Stale closures are not a React bug; they are the snapshot model meeting a long-lived callback:
 
 | Long-lived callback | Typical bug | Fix |
-|---|---|---|
+| --- | --- | --- |
 | `setInterval` in an effect with `[]` deps | Counter stuck at 1 (`setN(n + 1)` with `n` frozen at 0) — test "NEGATIVE: interval + [] deps…" | Functional updater `setN(x => x + 1)` — test "fix: the functional updater…" |
 | Event subscription in an effect | Handler reads old props | Put the prop in deps (resubscribe) **or** read it via `useEffectEvent` (Module 04) |
 | `useCallback(fn, [])` passed to a memoised child | Callback sees initial state | Correct deps; or functional updates; or let the Compiler infer deps |
@@ -173,9 +173,9 @@ A closure created during render $r$ captures $\sigma_r$. It becomes **stale** wh
 
 **The decision procedure** (in order of preference):
 
-1. Does the callback only need to *compute the next state from the previous state*? → functional updater or reducer `dispatch` (both are stable and need no deps).
-2. Is the value *reactive* — should a change re-run the effect/subscription? → add it to the dependency array.
-3. Is it read inside an effect but should *not* re-run it (e.g. log the current theme on connect)? → `useEffectEvent` (Module 04).
+1. Does the callback only need to _compute the next state from the previous state_? → functional updater or reducer `dispatch` (both are stable and need no deps).
+2. Is the value _reactive_ — should a change re-run the effect/subscription? → add it to the dependency array.
+3. Is it read inside an effect but should _not_ re-run it (e.g. log the current theme on connect)? → `useEffectEvent` (Module 04).
 4. Is it an imperative, non-rendered value (a timer ID, the latest value for an unmount handler)? → `useRef`, written in an effect or handler, never during render.
 
 ---
@@ -186,7 +186,7 @@ A closure created during render $r$ captures $\sigma_r$. It becomes **stale** wh
 
 1. **Minimal state.** Store the smallest set of values from which everything else can be computed during render. `fullName` from `first` and `last` is derived, not state.
 2. **No contradictions.** `isLoading`, `isError` and `data` as three booleans allow `isLoading && isError`. Use one discriminated value instead.
-3. **No duplication.** Store the selected *ID*, not a copy of the selected *object* (the copy goes stale when the list updates).
+3. **No duplication.** Store the selected _ID_, not a copy of the selected _object_ (the copy goes stale when the list updates).
 4. **Colocation.** State lives in the lowest common ancestor of the components that read it. Lifting it higher than necessary makes more of the tree re-render (Module 12).
 5. **Reset with keys**, not effects (Module 01 §6).
 
@@ -208,10 +208,10 @@ stateDiagram-v2
 
 Two design choices in that reducer matter at runtime:
 
-- **Illegal events return the *same* state object** (`return state`), so `useReducer` bails out and nothing re-renders — test "legal transitions advance; illegal events are ignored (same state reference)".
+- **Illegal events return the _same_ state object** (`return state`), so `useReducer` bails out and nothing re-renders — test "legal transitions advance; illegal events are ignored (same state reference)".
 - The reducer is **total**: every `(state, event)` pair has a defined result, which makes the late-response race (a `RESOLVE` arriving after `RESET`) harmless instead of resurrecting stale data.
 
-`dispatch` is **referentially stable** for the lifetime of the component (test "dispatch is stable across renders") — safe to pass down or omit from effect deps. Choose `useReducer` over several `useState`s when the next state depends on several current values, when transitions have rules, or when you want to unit-test logic without rendering. (The *typing* of the state and event unions is TS M12's topic; libraries such as XState add hierarchical/parallel states, which are out of scope here.)
+`dispatch` is **referentially stable** for the lifetime of the component (test "dispatch is stable across renders") — safe to pass down or omit from effect deps. Choose `useReducer` over several `useState`s when the next state depends on several current values, when transitions have rules, or when you want to unit-test logic without rendering. (The _typing_ of the state and event unions is TS M12's topic; libraries such as XState add hierarchical/parallel states, which are out of scope here.)
 
 ### 6.3 Refs: escape hatch, not state
 
@@ -225,10 +225,10 @@ Two design choices in that reducer matter at runtime:
 Context passes a value to every descendant without threading props. In React 19:
 
 ```tsx
-const Theme = createContext("light");
-<Theme value="dark">…</Theme>   // React 19: the context object IS the provider
-const t = use(Theme);            // may be called conditionally (test "…use(Context) may be conditional")
-const t2 = useContext(Theme);    // still supported; a positional hook
+const Theme = createContext('light');
+<Theme value="dark">…</Theme>; // React 19: the context object IS the provider
+const t = use(Theme); // may be called conditionally (test "…use(Context) may be conditional")
+const t2 = useContext(Theme); // still supported; a positional hook
 ```
 
 **Then vs now.** React ≤18 required `<Theme.Provider value>`; `.Provider` still works in 19 and is slated for deprecation. `use(Context)` is new in 19. Since **19.3**, Server Components can render a client context directly as a provider (`<UserContext value={user}>` in a Server Component), which previously required a client wrapper component (Module 07).
@@ -241,14 +241,14 @@ Mechanics: when a provider's `value` changes (by `Object.is`), React walks the s
 
 ### 7.1 Tearing
 
-> **Definition 3.3 (Tearing).** A committed UI *tears* if two components in the same commit display values of the same external source $S$ taken at different versions of $S$.
+> **Definition 3.3 (Tearing).** A committed UI _tears_ if two components in the same commit display values of the same external source $S$ taken at different versions of $S$.
 
 Under synchronous rendering, a render runs to completion in one task, so an external store cannot change between components — no tearing. Under **concurrent rendering** (transitions, Module 05) React yields to the browser between components; a store mutation during a yield means components rendered before and after the yield read different versions.
 
 The tests reproduce this deterministically: three `Reader`s render inside a transition and the first one mutates the store mid-render (a stand-in for "the store changed while React yielded").
 
 | Read strategy | Committed text | Test |
-|---|---|---|
+| --- | --- | --- |
 | `store.get()` directly in render | `011` — torn | "NEGATIVE: reading a mutable store directly tears" |
 | `useSyncExternalStore(store.subscribe, store.get)` | `111` — consistent | "useSyncExternalStore detects the inconsistency and re-renders synchronously" |
 
@@ -257,21 +257,21 @@ The tests reproduce this deterministically: three `Reader`s render inside a tran
 `useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot?)`:
 
 1. Reads `getSnapshot()` during render and records `(getSnapshot, value)` in a **store consistency check** list for this render.
-2. Before committing a *concurrent* render, React calls each `getSnapshot` again; if any value differs by `Object.is` from what was rendered, the render is **discarded and redone synchronously** (sync renders cannot be interrupted, so cannot tear).
+2. Before committing a _concurrent_ render, React calls each `getSnapshot` again; if any value differs by `Object.is` from what was rendered, the render is **discarded and redone synchronously** (sync renders cannot be interrupted, so cannot tear).
 3. After commit, it subscribes; on a store change notification, it compares snapshots and schedules a **synchronous** update.
 
 The price: an update coming from an external store is always synchronous — it cannot be a non-blocking transition. That is the trade-off for consistency; if a store wants transition semantics, the data must live in React state (or the store must be immutable and versioned so React can render old versions — which is what React's own state does).
 
 ### 7.3 The contract
 
-- `getSnapshot` must return the **same value** (by `Object.is`) when the store has not changed. Returning a new object each call makes React believe the store changes on every check → re-render → check → … *"Maximum update depth exceeded"* (test "NEGATIVE: getSnapshot returning a fresh object…"; React also logs *"The result of getSnapshot should be cached"*). Return immutable snapshots, or memoise selections.
+- `getSnapshot` must return the **same value** (by `Object.is`) when the store has not changed. Returning a new object each call makes React believe the store changes on every check → re-render → check → … _"Maximum update depth exceeded"_ (test "NEGATIVE: getSnapshot returning a fresh object…"; React also logs _"The result of getSnapshot should be cached"_). Return immutable snapshots, or memoise selections.
 - `subscribe` should be stable (define it outside the component or memoise it); a new function each render causes re-subscription every render.
-- **Server rendering requires `getServerSnapshot`**, and the value must equal what the client produces during hydration — test "getServerSnapshot is used for SSR and is required there" (*Missing getServerSnapshot…*).
+- **Server rendering requires `getServerSnapshot`**, and the value must equal what the client produces during hydration — test "getServerSnapshot is used for SSR and is required there" (_Missing getServerSnapshot…_).
 
 ### 7.4 Then vs now: subscribing to stores
 
 | Then | Problem | Now |
-|---|---|---|
+| --- | --- | --- |
 | `useState` + `useEffect(() => store.subscribe(() => setV(store.get())))` | Misses changes between render and subscription; tears under concurrency | `useSyncExternalStore` (React 18+) |
 | `use-subscription` package | Same issues under concurrency | Deprecated in favour of the built-in |
 | React 17 support | — | `use-sync-external-store/shim` backports the API |
@@ -283,7 +283,7 @@ Redux (`react-redux` 8+), Zustand, Jotai, MobX-react and TanStack Store all move
 ## 8. Choosing where state lives
 
 | Kind of state | Where | Why |
-|---|---|---|
+| --- | --- | --- |
 | UI-local (open/closed, input text) | `useState` in the component | Colocation; fastest re-render scope |
 | Shared by a subtree | Lift to the common ancestor; context if deep | Single source of truth |
 | Complex transitions | `useReducer` (state machine) | Explicit, testable, total |
@@ -299,7 +299,7 @@ The anti-pattern to avoid in interviews and code alike: **copying server data in
 ## 9. Production failure modes
 
 | Symptom | Cause | Fix |
-|---|---|---|
+| --- | --- | --- |
 | "Rendered more/fewer hooks…", "change in the order of Hooks" | Conditional hook, early return before a hook | Hooks at top level; `use` for conditional reads |
 | "Invalid hook call" | Hook outside a component; two React copies | Move the call; dedupe React |
 | Counter increments by 1 instead of 3 | Non-functional updates from one snapshot | `setN(x => x + 1)` |
@@ -316,7 +316,7 @@ The anti-pattern to avoid in interviews and code alike: **copying server data in
 ## 10. Executable proofs
 
 | Claim | Test (`state.test.tsx`) |
-|---|---|
+| --- | --- |
 | Hook state is a positional linked list | `memoizedState is a chain…` |
 | Conditional hooks / early returns break it | three `NEGATIVE` tests in "hooks are a linked list…" |
 | Snapshot semantics; updater composition | `three setN(n + 1)…`, `functional updaters compose…`, `reading state right after setState…` |

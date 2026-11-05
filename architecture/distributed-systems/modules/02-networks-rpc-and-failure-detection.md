@@ -26,10 +26,11 @@ sequenceDiagram
 ```
 
 ### The Three Delivery Semantics
+
 When an RPC client times out without a reply, it cannot determine whether the server crashed before running the function, during execution, or after completing it before the reply packet was sent. The chosen retry policy defines the delivery contract:
 
 | Semantic | Protocol Mechanism | Duplicate Execution Risk | Production Application |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | **At-Least-Once** | Client retries continuously until an acknowledgment is received. | High. Non-idempotent operations may execute multiple times. | Read operations, idempotent writes (e.g. `set(key, val)`). |
 | **At-Most-Once** | Server maintains a deduplication table of client request IDs. Retried requests return cached results without re-executing. | Zero. Operation executes at most once. | Financial transactions, order processing, mutating state. |
 | **Exactly-Once** | An idealistic concept. Achievable only within closed distributed state machines with 2PC/Raft; impossible when interacting with external uncoordinated APIs (e.g. charging a credit card). | Zero within transactional boundaries. | Kafka transactional outbox, Raft client sessions. |
@@ -53,6 +54,7 @@ flowchart TD
 ```
 
 ### MIT 6.5840 / Industry Best Practice: Deduplication Table Architecture
+
 1. **Client Identity**: Every client assigns a unique 64-bit `clientId` and a strictly monotonically increasing sequence number `seqNum` to every RPC.
 2. **Server Dedupe Record**:
    ```typescript
@@ -80,6 +82,7 @@ flowchart LR
 ```
 
 ### Jitter Strategies (AWS Architecture / Marc Brooker)
+
 To prevent clients from synchronizing their retries into constructive interference spikes (the "thundering herd"), backoff algorithms inject pseudo-random variance (**Jitter**):
 
 ```mermaid
@@ -98,14 +101,20 @@ export function computeBackoffFullJitter(attempt: number, baseMs = 100, capMs = 
   return Math.floor(Math.random() * maxBackoff);
 }
 
-export function computeDecorrelatedJitter(prevSleepMs: number, baseMs = 100, capMs = 10000): number {
+export function computeDecorrelatedJitter(
+  prevSleepMs: number,
+  baseMs = 100,
+  capMs = 10000,
+): number {
   const nextSleep = Math.min(capMs, baseMs + Math.random() * (prevSleepMs * 3 - baseMs));
   return Math.floor(nextSleep);
 }
 ```
 
 ### The Metastable Failure Trap
+
 A **metastable failure** is a state where a transient trigger (such as a temporary network hiccup or database garbage collection pause) pushes a system into an overload loop sustained entirely by internal feedback mechanisms (retries, cache invalidation storms, heavy health-check probes). The system **remains broken even after the original trigger has disappeared**, requiring operators to manually shed load or disable retries.
+
 - **Defense**: Implement **Retry Budgets** (e.g. limiting retries to at most $10\%$ of total outgoing requests) and storage-level circuit breakers.
 
 ---
@@ -113,14 +122,15 @@ A **metastable failure** is a state where a transient trigger (such as a tempora
 ## 4. Failure Detectors: From Static Timeouts to $\Phi$-Accrual
 
 A **Failure Detector** is a local oracle that monitors remote nodes and outputs whether a node is suspected of having crashed. Chandra and Toueg (1996) classified failure detectors by two axiomatic metrics:
+
 - **Completeness**: Every crashed node is eventually suspected by every non-faulty node.
 - **Accuracy**: Non-faulty nodes are not suspected.
 
 In an asynchronous network, **perfect accuracy is impossible** because network delays cannot be distinguished from crashes.
 
 ### The $\Phi$-Accrual Failure Detector (Hayashibara et al., 2004)
-Traditional failure detectors output a binary boolean decision: `ALIVE` or `DEAD`. Under variable network load, choosing a timeout is a painful trade-off: a short timeout triggers frequent false alarms, while a long timeout delays failovers for minutes.
-The **$\Phi$-Accrual Failure Detector** (used by Apache Cassandra and Akka Cluster) decouples detection from action by computing a continuous suspicion scale $\Phi$:
+
+Traditional failure detectors output a binary boolean decision: `ALIVE` or `DEAD`. Under variable network load, choosing a timeout is a painful trade-off: a short timeout triggers frequent false alarms, while a long timeout delays failovers for minutes. The **$\Phi$-Accrual Failure Detector** (used by Apache Cassandra and Akka Cluster) decouples detection from action by computing a continuous suspicion scale $\Phi$:
 
 ```mermaid
 flowchart LR
@@ -134,6 +144,7 @@ flowchart LR
 ```
 
 $$\Phi = - \log_{10} \left( P_{\text{later}}(t - t_{\text{last}}) \right)$$
+
 - If $\Phi = 1$, the probability of a false alarm is $10^{-1} = 10\%$.
 - If $\Phi = 8$, the probability of a false alarm is $10^{-8} = 0.000001\%$.
 - **Advantage**: The detector automatically adapts to network jitter without manual operator tuning!
@@ -155,6 +166,7 @@ flowchart TD
 ```
 
 ### Common Gray Failure Causes
+
 1. **Network BGP/Switch Flapping**: A switch drops large jumbo packets or specific TCP ports while ping ICMP packets pass cleanly.
 2. **Disk I/O Latency Spikes**: A slow disk blocks database write threads while health endpoints serve static JSON from RAM.
 3. **Memory Leaks & JVM GC Pauses**: Memory pressure causes periodic 10-second pauses that coincide with user request processing.
@@ -189,6 +201,7 @@ sequenceDiagram
 ```
 
 ### SWIM Mechanisms
+
 1. **Direct Probe**: At each time interval $T$, node $A$ selects a random peer $B$ and sends a `PING`.
 2. **Indirect Probe (Ping-Req)**: If $B$ fails to reply within timeout, $A$ selects $k$ random peers ($C, D$) and sends `PING-REQ(B)`. The peers probe $B$ on $A$'s behalf. This prevents false alarms caused by localized network edge degradation between $A$ and $B$.
 3. **Suspicion Mechanism**: If indirect probes fail, $B$ is not immediately declared dead. It is marked as **SUSPECT** and gossiped to the cluster. If $B$ is alive, it has a timeout period to broadcast an `ALIVE` refutation before being declared **DEAD**.
@@ -200,7 +213,7 @@ sequenceDiagram
 <details>
 <summary>1. In an at-least-once RPC protocol, why does an idempotency key need to be assigned by the client rather than the server?</summary>
 
-If the server generated the idempotency key, the initial request might be lost in transit before reaching the server, or the server's reply containing the generated key might be dropped. The client would then be forced to retry without a key, creating a duplicate server-side record. When the client generates a unique UUIDv4 key *before* transmitting the request, all subsequent retries carry the identical identifier, allowing the server to reliably recognize retries.
+If the server generated the idempotency key, the initial request might be lost in transit before reaching the server, or the server's reply containing the generated key might be dropped. The client would then be forced to retry without a key, creating a duplicate server-side record. When the client generates a unique UUIDv4 key _before_ transmitting the request, all subsequent retries carry the identical identifier, allowing the server to reliably recognize retries.
 </details>
 
 <details>

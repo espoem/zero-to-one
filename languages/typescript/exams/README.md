@@ -5,7 +5,7 @@ Verified on 2026-10-29 against the official page <https://certificates.dev/types
 ## Exams
 
 | Exam | Vendor | Status | Format | Targets | Notes |
-|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- |
 | TypeScript Certification — Junior | certificates.dev (independent; no Microsoft certification for TypeScript exists) | Active | 50 multiple-choice questions, 40 min, proctored | TS version not stated | No coding phase |
 | TypeScript Certification — Mid-Level | certificates.dev | Active | 40 multiple-choice + 2 coding challenges, 135 min (coding phase 105 min), proctored | Not stated | Pass rule on the page: "70% of the questions and both challenges" |
 | TypeScript Certification — Senior | certificates.dev | Active | 40 multiple-choice + 2 coding challenges, 135 min (coding phase 105 min), proctored | Not stated | Same pass rule |
@@ -19,7 +19,7 @@ There is **no vendor (Microsoft) TypeScript certification**. certificates.dev is
 Weights: not published by the vendor; the bank uses equal weights (5 questions per Mid/Senior domain). Junior topics are a subset of the Mid/Senior material; their questions are cross-listed.
 
 | Level | Domain (official topic) | Weight | Modules | Examples | Bank questions | Status |
-|---|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- | --- |
 | Junior | TypeScript basics and compiler errors | n/p | 01, 02 | `01-toolchain`, `02-essential-types` | M-001, M-031..035 cross-listed | 🟡 (covered via Mid bank) |
 | Junior | Types, annotations and inference | n/p | 02, 07 | `02-essential-types`, `07-generics` | M-001..005 | 🟡 (covered via Mid bank) |
 | Junior | Arrays, tuples and literal types | n/p | 02, 05 | `02-essential-types`, `05-classes-mutability` | M-002, M-003, M-011, S-012, S-013 | 🟡 (covered via Mid bank) |

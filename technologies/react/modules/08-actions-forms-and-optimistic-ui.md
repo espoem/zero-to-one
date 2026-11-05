@@ -17,7 +17,7 @@ React 19 turned "mutate something, show progress, handle the result" into a firs
 Consequences:
 
 | Property | Where tested |
-|---|---|
+| --- | --- |
 | `isPending` stays true across `await` | "useTransition with an async function keeps isPending true across the await" |
 | Actions dispatched to the same `useActionState` run **sequentially**, each receiving the previous result | "[state, dispatch, isPending]; calls are queued…" |
 | Optimistic state lives exactly as long as the Action | `useOptimistic` tests |
@@ -55,7 +55,7 @@ After a **successful** action, React **resets** the form's uncontrolled fields t
 ```tsx
 function SubmitButton() {
   const { pending, data, method, action } = useFormStatus();
-  return <button disabled={pending}>{pending ? `Saving ${data?.get("title")}…` : "Save"}</button>;
+  return <button disabled={pending}>{pending ? `Saving ${data?.get('title')}…` : 'Save'}</button>;
 }
 ```
 
@@ -83,8 +83,8 @@ Semantics, all tested:
 
 1. **Reducer-like signature.** The action receives the previous state first, then the payload (`FormData` when used as a form action — test "as a form action: the first argument is the previous state…").
 2. **Sequential queue.** Calls to `dispatch` are **queued**; the next starts only when the previous settles, and receives its result. Two dispatches `"a"`, `"b"` produce calls `prev="" item=a` then `prev="a" item=b` and final state `"ab"`. Ordering is therefore guaranteed for one `useActionState` — unlike independent async handlers (§5).
-3. **Must run in a transition.** `dispatch` called outside `startTransition` and outside an `action`/`formAction` prop works but warns *"An async function with useActionState was called outside of a transition…"*, and `isPending` is wrong — test "NEGATIVE: dispatching outside a transition…".
-4. **Errors.** If the action throws, the error is rethrown when the component renders, so the nearest **error boundary** handles it (test "an action that throws inside useActionState is rethrown during render, to the error boundary"); queued actions after it are cancelled. For *expected* failures (validation, 409 conflicts) **return** an error state instead of throwing.
+3. **Must run in a transition.** `dispatch` called outside `startTransition` and outside an `action`/`formAction` prop works but warns _"An async function with useActionState was called outside of a transition…"_, and `isPending` is wrong — test "NEGATIVE: dispatching outside a transition…".
+4. **Errors.** If the action throws, the error is rethrown when the component renders, so the nearest **error boundary** handles it (test "an action that throws inside useActionState is rethrown during render, to the error boundary"); queued actions after it are cancelled. For _expected_ failures (validation, 409 conflicts) **return** an error state instead of throwing.
 
 > **Then vs now.** React 18 canaries called it `useFormState` (from `react-dom`). React 19 renamed it to `useActionState`, moved it to `react`, and added `isPending`. 19.3 changed the error messages to say "action state" instead of "form state". Migration: rename the import; the signature is unchanged apart from the third tuple element.
 
@@ -94,21 +94,21 @@ Semantics, all tested:
 
 ```tsx
 const [optimisticTodos, addOptimistic] = useOptimistic(
-  todos,                                         // the real state ("passthrough")
-  (current, newTodo) => [...current, { ...newTodo, pending: true }],  // pure reducer
+  todos, // the real state ("passthrough")
+  (current, newTodo) => [...current, { ...newTodo, pending: true }], // pure reducer
 );
 ```
 
-> **Definition 8.3.** `useOptimistic(value, reducer)` returns `value` when no Action is pending. During an Action, calls to `addOptimistic(x)` push `x` onto an **optimistic layer** that is applied on top of the *current* `value` with the reducer at every render. When the Action (transition) that added an entry settles, the entry is **discarded**, and the UI shows whatever the real `value` is then.
+> **Definition 8.3.** `useOptimistic(value, reducer)` returns `value` when no Action is pending. During an Action, calls to `addOptimistic(x)` push `x` onto an **optimistic layer** that is applied on top of the _current_ `value` with the reducer at every render. When the Action (transition) that added an entry settles, the entry is **discarded**, and the UI shows whatever the real `value` is then.
 
 So there is no explicit "rollback" API: rollback is the absence of a real update. Tests:
 
 | Scenario | Result |
-|---|---|
+| --- | --- |
 | Success: the Action updates the real state (in a transition) before settling | `ab (saving)` → `ab` |
 | Failure: the Action catches the error and does not update real state | `ab (saving)` → `a` ("on failure the optimistic entry is rolled back automatically") |
 | Hang: the request never settles | `ab (saving)` forever (`hung-action.test.tsx`) |
-| `addOptimistic` outside a transition/Action | Warns *"An optimistic state update occurred outside a transition or action"* and is not shown |
+| `addOptimistic` outside a transition/Action | Warns _"An optimistic state update occurred outside a transition or action"_ and is not shown |
 
 Design rules:
 
@@ -124,7 +124,7 @@ Design rules:
 Async functions resolve in **completion order**, not call order. Without coordination, a slow early request overwrites a fast later one — test "NEGATIVE: independent async handlers resolve out of order and the stale response wins" ends with `results for re` after the user typed `react`.
 
 | Technique | Guarantees | Test / where |
-|---|---|---|
+| --- | --- | --- |
 | `useActionState` | Calls are serialised; each sees the previous result | §3 |
 | Sequence number (`if (mine === seq.current)`) | Only the latest request's result is applied | "a sequence number (or AbortController) discards superseded responses" |
 | `AbortController` per request | Older requests are cancelled (saves work) — combine with the sequence check | Module 04 §6 |
@@ -137,8 +137,8 @@ Disable double submits with `useFormStatus().pending`, but do not rely on it alo
 
 ## 6. Then vs now: mutations in React
 
-| | Then (≤18) | Now (19+) |
-|---|---|---|
+|  | Then (≤18) | Now (19+) |
+| --- | --- | --- |
 | Submit | `onSubmit={e => { e.preventDefault(); … }}` | `<form action={fn}>` |
 | Pending | `const [loading, setLoading] = useState(false)` set before/after `await` | `isPending` from `useTransition`/`useActionState`, `useFormStatus().pending` |
 | Ordering | Manual (often missing) | `useActionState` queue |
@@ -147,20 +147,20 @@ Disable double submits with `useFormStatus().pending`, but do not rely on it alo
 | Server mutations | API route + `fetch` + client state sync | Server Function (RSC frameworks), with the same security obligations as an API route |
 | Without JS | Only with a separate non-JS code path | Progressive enhancement through Server Function form actions |
 
-**Migration steps:** replace `onSubmit` + loading flags with a form action and `useFormStatus`; move multi-step mutation state into `useActionState`; replace manual optimistic copies with `useOptimistic`; add timeouts to every request; keep server-side validation and authorisation (Module 07 §6.1). **Pitfalls when mixing:** controlled inputs are *not* reset automatically; state set after an `await` inside an Action must be wrapped in `startTransition` again.
+**Migration steps:** replace `onSubmit` + loading flags with a form action and `useFormStatus`; move multi-step mutation state into `useActionState`; replace manual optimistic copies with `useOptimistic`; add timeouts to every request; keep server-side validation and authorisation (Module 07 §6.1). **Pitfalls when mixing:** controlled inputs are _not_ reset automatically; state set after an `await` inside an Action must be wrapped in `startTransition` again.
 
 ---
 
 ## 7. Production failure modes
 
 | Symptom | Cause | Fix |
-|---|---|---|
+| --- | --- | --- |
 | Spinner never stops; later navigations "do nothing" | Action awaiting a request with no timeout (action scope never settles) | `AbortSignal.timeout`, error state |
 | Optimistic item stays forever | Same | Same |
 | Results flicker back to older query | Out-of-order async responses | `useActionState`, sequence numbers, abort |
 | `isPending` never true | `dispatch` called outside a transition | Pass it to `action`/`formAction`, or wrap in `startTransition` |
 | Submit button never shows pending | `useFormStatus` called in the component that renders `<form>` | Move it into a child component inside the form |
-| Inputs cleared after a validation error | Automatic reset after a *successful* action (you returned an error *as success*) | Return submitted values in state and render as `defaultValue`, or use controlled inputs |
+| Inputs cleared after a validation error | Automatic reset after a _successful_ action (you returned an error _as success_) | Return submitted values in state and render as `defaultValue`, or use controlled inputs |
 | Double orders on double click | No idempotency | Disable while pending **and** server idempotency key |
 | Error page instead of inline message | Expected errors thrown from `useActionState` action | Return error state; throw only unexpected errors |
 | Data leak / IDOR through a form action | Server Function trusts form fields | Module 07 §6.1 |
@@ -170,7 +170,7 @@ Disable double submits with `useFormStatus().pending`, but do not rely on it alo
 ## 8. Executable proofs
 
 | Claim | Test |
-|---|---|
+| --- | --- |
 | `FormData`, `useFormStatus`, automatic reset and 19.3 `onReset` | "the action receives FormData…" |
 | `useFormStatus` scope | "NEGATIVE: useFormStatus outside the <form>…" |
 | `requestFormReset` | "requestFormReset resets a form…" |

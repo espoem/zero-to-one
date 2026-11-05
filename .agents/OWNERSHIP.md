@@ -1,6 +1,7 @@
 # Concept Ownership Registry
 
 **Rule (AGENTS.md § Knowledge Ownership):**
+
 - The **owner** gives the full treatment: formal definition, mechanics, proofs, exam coverage.
 - Every other track **cross-links** to the owner's module and adds only its own delta: the technology-specific realisation, limits, defaults and pitfalls.
 - An unregistered concept gets registered here in the same change that introduces it.
@@ -11,7 +12,7 @@ The `M` numbers refer to the proposed module lists in `research/*.md`. Authors u
 ## Languages and runtimes
 
 | Concept | Owner | Cross-link only |
-|---|---|---|
+| --- | --- | --- |
 | Types & coercion, scope/closures/`this`, prototypes/classes | `languages/javascript` | typescript, react (stale closures), solidjs |
 | Iterators, generators, async iteration, Promise/job-queue semantics (spec level) | `languages/javascript` | nodejs, react (`use`), solidjs (`action(function*)`) |
 | ESM semantics (Module Records, live bindings, TLA), `exports` conditions at runtime | `languages/javascript` | nodejs (loader internals), typescript (resolution typing), solidjs/react (condition builds) |
@@ -37,7 +38,7 @@ The `M` numbers refer to the proposed module lists in `research/*.md`. Authors u
 ## Web UI
 
 | Concept | Owner | Cross-link only |
-|---|---|---|
+| --- | --- | --- |
 | Cascade, `@layer`, `@scope`, specificity, inheritance, value processing | `languages/css` | panda-css |
 | Layout (flow, flex, grid, subgrid, anchor positioning), stacking contexts | `languages/css` | panda-css (patterns) |
 | Custom properties, `@property`, container queries, color spaces | `languages/css` | panda-css |
@@ -61,9 +62,9 @@ The `M` numbers refer to the proposed module lists in `research/*.md`. Authors u
 ## Algorithms and data
 
 | Concept | Owner | Cross-link only |
-|---|---|---|
+| --- | --- | --- |
 | Asymptotic analysis, linear/tree/graph structures, sorting, DP, greedy, amortisation | `algorithms/dsa` | everything |
-| Heaps, tries, LRU/LFU implementations, B-tree *as a data structure* | `algorithms/dsa` | data-systems, redis, system-design |
+| Heaps, tries, LRU/LFU implementations, B-tree _as a data structure_ | `algorithms/dsa` | data-systems, redis, system-design |
 | Bloom / HyperLogLog / Count-Min math | `algorithms/dsa` | data-systems, redis, system-design |
 | Consistent hashing algorithms (ring, jump, rendezvous) | `algorithms/dsa` | data-systems (use in sharding), system-design |
 | Concurrency models, locks, data races, lock-free structures (language-neutral) | `algorithms/dsa` (proposed extra module, TBD) | javascript (Atomics), nodejs, python (GIL / free-threading), distributed-systems |
@@ -82,7 +83,7 @@ The `M` numbers refer to the proposed module lists in `research/*.md`. Authors u
 ## Distributed systems and design
 
 | Concept | Owner | Cross-link only |
-|---|---|---|
+| --- | --- | --- |
 | System models, FLP, CAP/PACELC as formal results | `architecture/distributed-systems` | system-design, data-systems |
 | Clocks (Lamport, vector, HLC, TrueTime), consistency hierarchy, linearizability checking | `architecture/distributed-systems` | data-systems, cloudflare (Durable Objects) |
 | Consensus (Paxos/Raft/ZAB), replicated state machines, leases & fencing, distributed locks | `architecture/distributed-systems` | kubernetes (etcd), redis (Redlock critique), system-design |
@@ -96,7 +97,7 @@ The `M` numbers refer to the proposed module lists in `research/*.md`. Authors u
 ## Networking and security
 
 | Concept | Owner | Cross-link only |
-|---|---|---|
+| --- | --- | --- |
 | TCP/IP, UDP, routing/BGP/anycast, NAT, DNS, congestion control | `architecture/networking` | cloud-foundations, kubernetes, containers |
 | TLS on the wire (handshake, RTTs, SNI/ALPN/ECH, PQ size impact), QUIC | `architecture/networking` | security-identity, cloudflare |
 | HTTP/1.1, HTTP/2, HTTP/3, WebSockets, gRPC, HTTP caching (RFC 9111), CDNs, L4/L7 load balancing | `architecture/networking` | system-design, cloudflare, react/solidjs (streaming) |
@@ -112,7 +113,7 @@ The `M` numbers refer to the proposed module lists in `research/*.md`. Authors u
 ## Platform and cloud
 
 | Concept | Owner | Cross-link only |
-|---|---|---|
+| --- | --- | --- |
 | Linux processes, signals, filesystems, namespaces, cgroups v2, overlayfs, seccomp | `technologies/containers` | kubernetes, nodejs (signals in containers) |
 | OCI image/runtime/distribution specs, BuildKit, rootless, Docker vs Podman | `technologies/containers` | kubernetes, gitlab-ci |
 | Shared compose-stack conventions (`examples/_compose`) | `technologies/containers` | every track with Docker labs |
@@ -129,5 +130,6 @@ The `M` numbers refer to the proposed module lists in `research/*.md`. Authors u
 | Edge isolates, Workers runtime, Durable Objects, KV/R2/D1/Queues, Zero Trust | `technologies/cloudflare` | networking, distributed-systems |
 
 ## Open ownership questions
+
 - Language-neutral concurrency theory: proposed as a new module in `algorithms/dsa`. Confirm before Phase 2.
 - Testing theory (test pyramid, property-based testing, mutation testing): no owner yet. Proposal: one module in `languages/javascript`, with `languages/python` owning pytest/Hypothesis mechanics.

@@ -1,4 +1,4 @@
-import { defineRecipe } from '@pandacss/dev'
+import { defineRecipe } from '@pandacss/dev';
 
 /**
  * Config recipe (Module 07). Lives in the config, so Panda emits named classes into
@@ -32,4 +32,4 @@ export const buttonRecipe = defineRecipe({
     { visual: 'outline', size: 'lg', css: { borderWidth: '2px' } },
   ],
   defaultVariants: { visual: 'solid', size: 'sm' },
-})
+});

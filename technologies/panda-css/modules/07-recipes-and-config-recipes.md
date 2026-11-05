@@ -1,7 +1,6 @@
 # Module 07 · Recipes (`cva`) and Config Recipes
 
-> **Verified against** `@pandacss/dev` 2.4.0 on 2026-10-29.
-> **Executable proof:** [`examples/system/recipes/button.recipe.ts`](../examples/system/recipes/button.recipe.ts); [`examples/react/src/Badge.tsx`](../examples/react/src/Badge.tsx) and [`examples/solid/src/Badge.tsx`](../examples/solid/src/Badge.tsx); fixture [`07-recipes.ts`](../examples/fixtures/positive/07-recipes.ts) + snapshot; negative fixtures [`config-recipe-dynamic.ts`](../examples/fixtures/negative/config-recipe-dynamic.ts), [`recipe-renamed-wrapper.tsx`](../examples/fixtures/negative/recipe-renamed-wrapper.tsx); configs [`recipe-static-css.config.ts`](../examples/fixtures/configs/recipe-static-css.config.ts), [`smart-compounds.config.ts`](../examples/fixtures/configs/smart-compounds.config.ts); [`runtime.test.ts`](../examples/tests/runtime.test.ts) (class strings); the `config recipes (Module 07)` tests; Playwright cascade tests in [`e2e-computed-style.test.ts`](../examples/tests/e2e-computed-style.test.ts).
+> **Verified against** `@pandacss/dev` 2.4.0 on 2026-10-29. **Executable proof:** [`examples/system/recipes/button.recipe.ts`](../examples/system/recipes/button.recipe.ts); [`examples/react/src/Badge.tsx`](../examples/react/src/Badge.tsx) and [`examples/solid/src/Badge.tsx`](../examples/solid/src/Badge.tsx); fixture [`07-recipes.ts`](../examples/fixtures/positive/07-recipes.ts) + snapshot; negative fixtures [`config-recipe-dynamic.ts`](../examples/fixtures/negative/config-recipe-dynamic.ts), [`recipe-renamed-wrapper.tsx`](../examples/fixtures/negative/recipe-renamed-wrapper.tsx); configs [`recipe-static-css.config.ts`](../examples/fixtures/configs/recipe-static-css.config.ts), [`smart-compounds.config.ts`](../examples/fixtures/configs/smart-compounds.config.ts); [`runtime.test.ts`](../examples/tests/runtime.test.ts) (class strings); the `config recipes (Module 07)` tests; Playwright cascade tests in [`e2e-computed-style.test.ts`](../examples/tests/e2e-computed-style.test.ts).
 
 A **recipe** names the looks of a component. Instead of ternaries inside `css()`, you declare `base`, `variants`, `compoundVariants` and `defaultVariants` once. Panda has two implementations of the same authoring shape, with different CSS output and different extraction rules. Choosing between them is one of the most common senior-level Panda questions.
 
@@ -26,8 +25,8 @@ matches(c, r) = ∀ k ∈ keys(c.match): r(k) ∈ asSet(c.match(k))     // array
 
 `⊕` is the style-object merge from [Module 03](./03-styling-api-and-conditions.md#33-composition-cssa-b-cssraw-cx). Compound variants apply only when **every** key matches; an array value means "any of these". Booleans as variant keys work (`invalid: { true: {…} }`).
 
-| | Atomic recipe `cva()` | Config recipe `defineRecipe()` |
-|---|---|---|
+|  | Atomic recipe `cva()` | Config recipe `defineRecipe()` |
+| --- | --- | --- |
 | Lives in | Component code | Config / preset (`theme.recipes`) |
 | CSS shape | Atomic utilities in `@layer utilities` | Named classes in `@layer recipes` (`button`, `button--size_lg`) |
 | What is emitted | **Every** variant, as soon as the `cva` is defined | Only variants seen as literals (JIT), plus `base` and defaults on first use |
@@ -53,16 +52,16 @@ export const badge = cva({
   },
   compoundVariants: [{ tone: 'brand', size: 'md', css: { fontWeight: 'semibold' } }],
   defaultVariants: { tone: 'neutral', size: 'sm' },
-})
+});
 ```
 
 From [`runtime.test.ts`](../examples/tests/runtime.test.ts):
 
 ```ts
-badge()                               // 'd_inline-flex px_2 bg_ink.100 fs_xs'
-badge({ tone: 'brand', size: 'md' })  // 'd_inline-flex px_2 bg_brand.100 c_brand.900 fs_sm fw_semibold'
-badge.splitVariantProps({ tone: 'brand', id: 'x' })   // [{ tone: 'brand' }, { id: 'x' }]
-badge.variantMap                      // { tone: ['neutral', 'brand'], size: ['sm', 'md'] }
+badge(); // 'd_inline-flex px_2 bg_ink.100 fs_xs'
+badge({ tone: 'brand', size: 'md' }); // 'd_inline-flex px_2 bg_brand.100 c_brand.900 fs_sm fw_semibold'
+badge.splitVariantProps({ tone: 'brand', id: 'x' }); // [{ tone: 'brand' }, { id: 'x' }]
+badge.variantMap; // { tone: ['neutral', 'brand'], size: ['sm', 'md'] }
 ```
 
 The snapshot proves the "eager" rule: all of `bg_ink.100`, `bg_brand.100`, `fs_xs`, `fs_sm` and the compound's `fw_semibold` are in the sheet although only the definition exists. That is why dynamic `cva` props are safe: `badge({ tone: props.tone })` always finds its CSS.
@@ -87,25 +86,25 @@ The Playwright test `cva + css prop merge` reads `font-weight: 700` from the cal
 ```ts
 // examples/system/recipes/button.recipe.ts
 export const buttonRecipe = defineRecipe({
-  className: 'button',          // CSS stem; the theme key `button` is the import name
+  className: 'button', // CSS stem; the theme key `button` is the import name
   description: 'Action trigger',
-  jsx: ['Button'],              // tag names that count as usages (replaces the default list)
-  base: { display: 'inline-flex', alignItems: 'center', gap: '2', borderRadius: 'control', /* … */ },
+  jsx: ['Button'], // tag names that count as usages (replaces the default list)
+  base: { display: 'inline-flex', alignItems: 'center', gap: '2', borderRadius: 'control' /* … */ },
   variants: {
-    visual: { solid: { bg: 'accent.default', color: 'accent.fg' }, outline: { /* … */ } },
+    visual: { solid: { bg: 'accent.default', color: 'accent.fg' }, outline: {/* … */} },
     size: { sm: { px: '3', h: '8', textStyle: 'sm' }, lg: { px: '5', h: '12', textStyle: 'lg' } },
   },
   compoundVariants: [{ visual: 'outline', size: 'lg', css: { borderWidth: '2px' } }],
   defaultVariants: { visual: 'solid', size: 'sm' },
-})
+});
 // preset: theme.extend.recipes.button = buttonRecipe
 ```
 
 Generated: `import { button, type ButtonVariantProps } from 'styled-system/recipes'`.
 
 ```ts
-button()                                    // 'button button--size_sm button--visual_solid'
-button({ visual: 'outline', size: 'lg' })   // 'button button--size_lg button--visual_outline button--compound__size_lg__visual_outline'
+button(); // 'button button--size_sm button--visual_solid'
+button({ visual: 'outline', size: 'lg' }); // 'button button--size_lg button--visual_outline button--compound__size_lg__visual_outline'
 ```
 
 (Variant classes follow the key order of `defaultVariants` merged with props in the runtime resolver.)
@@ -129,11 +128,11 @@ Naming: `className` changes only the CSS stem; the theme key is the import and t
 
 A config recipe emits a variant only when extraction sees a **literal** for it:
 
-| Call site | Emitted |
-|---|---|
-| `button({ size: 'lg' })` / `<Button size="lg" />` | `size=lg` |
-| `button({ size: wide ? 'sm' : 'lg' })` | both branches |
-| `button({ size })` / `<Button size={size} />` | only defaults (+ base) |
+| Call site                                              | Emitted                         |
+| ------------------------------------------------------ | ------------------------------- |
+| `button({ size: 'lg' })` / `<Button size="lg" />`      | `size=lg`                       |
+| `button({ size: wide ? 'sm' : 'lg' })`                 | both branches                   |
+| `button({ size })` / `<Button size={size} />`          | only defaults (+ base)          |
 | `<Action size="lg" />` where `Action` wraps `button()` | only defaults: tag not in `jsx` |
 
 The negative tests prove the last two: [`config-recipe-dynamic.ts`](../examples/fixtures/negative/config-recipe-dynamic.ts) and [`recipe-renamed-wrapper.tsx`](../examples/fixtures/negative/recipe-renamed-wrapper.tsx) both produce `button--size_sm` but no `button--size_lg`. The runtime still returns `button--size_lg` as a class name, pointing at a rule that does not exist. Classic symptom: "works in Storybook (literal), blank in the app (prop)".
@@ -141,7 +140,11 @@ The negative tests prove the last two: [`config-recipe-dynamic.ts`](../examples/
 Fixes, in order of preference: a literal at a scanned call site; add the wrapper to `jsx` (`['Button', 'Action']`, regexes allowed); or pre-generate with `staticCss`:
 
 ```ts
-staticCss: { recipes: { button: [{ size: ['*'] }] } }      // or on the recipe: staticCss: [{ size: ['sm','lg'] }]
+staticCss: {
+  recipes: {
+    button: [{ size: ['*'] }];
+  }
+} // or on the recipe: staticCss: [{ size: ['sm','lg'] }]
 ```
 
 [`recipe-static-css.config.ts`](../examples/fixtures/configs/recipe-static-css.config.ts) emits `button--size_lg` for the dynamic fixture. Caveats: each key in a `staticCss` rule generates independently (`{ size: ['sm'], visual: ['solid'] }` is two generations, not the pair); `'*'` on every recipe bloats production CSS (`static_css_wildcard_large` info above 250 values).
@@ -152,8 +155,8 @@ staticCss: { recipes: { button: [{ size: ['*'] }] } }      // or on the recipe: 
 
 ## 7.4 Compound variants: then vs now
 
-| | v1 (≤ 1.12) | v2 (2.0 →) |
-|---|---|---|
+|  | v1 (≤ 1.12) | v2 (2.0 →) |
+| --- | --- | --- |
 | Config recipe compound CSS | Atomized into `@layer utilities`, next to `css()` | One named class (`button--compound__size_lg__visual_outline`, or your `compoundVariants[].className`) in `@layer recipes.compound_variants` |
 | Beats the recipe's own variants? | Yes, by layer | Yes, by sub-layer order `base < slots < variants < compound_variants` |
 | Can `css()` override it? | Not reliably: same layer, decided by emit order ([#3480](https://github.com/chakra-ui/panda/issues/3480), [#3503](https://github.com/chakra-ui/panda/issues/3503)) | Always: `recipes` < `utilities` |
@@ -193,7 +196,7 @@ Mechanically, `colorPalette: 'red'` emits declarations that point the `--colors-
 ## 7.6 Production failure modes
 
 | Symptom | Cause | Fix / proof |
-|---|---|---|
+| --- | --- | --- |
 | Variant renders unstyled in the app, fine in Storybook | Config recipe JIT + runtime prop | Literal, `jsx`, or `staticCss`; dynamic negative test |
 | Wrapper's variant ignored | Tag name not in `jsx` | Add it; renamed-wrapper test |
 | Caller override loses to a `cva` | Concatenated classes | `css(recipe.raw(p), override)` |

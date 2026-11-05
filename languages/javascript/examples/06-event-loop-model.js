@@ -8,7 +8,10 @@
  */
 
 export class EventLoopModel {
-  constructor({ frameMs = 16, sourcePriority = ['rendering', 'user-interaction', 'timer', 'message'] } = {}) {
+  constructor({
+    frameMs = 16,
+    sourcePriority = ['rendering', 'user-interaction', 'timer', 'message'],
+  } = {}) {
     this.now = 0;
     this.frameMs = frameMs;
     this.nextFrame = frameMs;
@@ -36,16 +39,25 @@ export class EventLoopModel {
     this.taskQueues.get(source)?.push({ source, at, run, label });
   }
 
-  setTimeout(label, fn, ms = 0) { this.queueTask('timer', label, fn, this.now + ms); }
-  queueMicrotask(fn) { this.microtasks.push(fn); }
-  requestAnimationFrame(fn) { this.rafCallbacks.push(fn); }
+  setTimeout(label, fn, ms = 0) {
+    this.queueTask('timer', label, fn, this.now + ms);
+  }
+  queueMicrotask(fn) {
+    this.microtasks.push(fn);
+  }
+  requestAnimationFrame(fn) {
+    this.rafCallbacks.push(fn);
+  }
 
   performMicrotaskCheckpoint(limit) {
     if (this.performingCheckpoint) return;
     this.performingCheckpoint = true;
     let n = 0;
     while (this.microtasks.length > 0) {
-      if (++n > limit) { this.log.push('STARVED'); throw new Error('microtask starvation'); }
+      if (++n > limit) {
+        this.log.push('STARVED');
+        throw new Error('microtask starvation');
+      }
       const mt = /** @type {() => void} */ (this.microtasks.shift());
       mt();
     }
@@ -64,7 +76,9 @@ export class EventLoopModel {
     return undefined;
   }
 
-  hasPendingTasks() { return [...this.taskQueues.values()].some((q) => q.length > 0); }
+  hasPendingTasks() {
+    return [...this.taskQueues.values()].some((q) => q.length > 0);
+  }
 
   /** Run until no work remains or `maxSteps` iterations elapse. */
   run({ maxSteps = 1000, microtaskLimit = 10_000 } = {}) {
@@ -98,13 +112,14 @@ export class EventLoopModel {
     this.log.push(...steps);
     const callbacks = this.rafCallbacks;
     this.rafCallbacks = [];
-    const ts = this.lastRenderOpportunity;           // one shared timestamp for all callbacks
+    const ts = this.lastRenderOpportunity; // one shared timestamp for all callbacks
     for (const cb of callbacks) {
       cb(ts);
-      this.performMicrotaskCheckpoint(10_000);       // clean up after running script
+      this.performMicrotaskCheckpoint(10_000); // clean up after running script
     }
     this.log.push('style+layout');
-    if (this.verboseRendering) this.log.push('focus fix-up', 'view transitions', 'intersection observers');
+    if (this.verboseRendering)
+      this.log.push('focus fix-up', 'view transitions', 'intersection observers');
     this.log.push('paint');
   }
 
@@ -115,7 +130,8 @@ export class EventLoopModel {
   idleDeadline(refreshMs = this.frameMs) {
     let deadline = this.now + 50;
     for (const t of this.taskQueues.get('timer') ?? []) deadline = Math.min(deadline, t.at);
-    if (this.rafCallbacks.length > 0) deadline = Math.min(deadline, this.lastRenderOpportunity + refreshMs);
+    if (this.rafCallbacks.length > 0)
+      deadline = Math.min(deadline, this.lastRenderOpportunity + refreshMs);
     return deadline;
   }
 

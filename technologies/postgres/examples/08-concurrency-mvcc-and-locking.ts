@@ -26,8 +26,10 @@ async function run(): Promise<void> {
     // Expected simulation
   }
 
-  const balCheck = await db.query<{ balance: string }>('SELECT balance FROM accounts WHERE id = 1;');
-  assert.equal(Number(balCheck.rows[0]!.balance), 100.00, 'Rollback must preserve original balance');
+  const balCheck = await db.query<{ balance: string }>(
+    'SELECT balance FROM accounts WHERE id = 1;',
+  );
+  assert.equal(Number(balCheck.rows[0]!.balance), 100.0, 'Rollback must preserve original balance');
 
   // Test 2: Successful Transactional Transfer
   await db.exec(`
@@ -37,9 +39,11 @@ async function run(): Promise<void> {
     COMMIT;
   `);
 
-  const balAfterCommit = await db.query<{ id: number; balance: string }>('SELECT id, balance FROM accounts ORDER BY id ASC;');
-  assert.equal(Number(balAfterCommit.rows[0]!.balance), 70.00);
-  assert.equal(Number(balAfterCommit.rows[1]!.balance), 80.00);
+  const balAfterCommit = await db.query<{ id: number; balance: string }>(
+    'SELECT id, balance FROM accounts ORDER BY id ASC;',
+  );
+  assert.equal(Number(balAfterCommit.rows[0]!.balance), 70.0);
+  assert.equal(Number(balAfterCommit.rows[1]!.balance), 80.0);
 
   // Test 3: Transaction-Level Advisory Locks
   await db.exec(`

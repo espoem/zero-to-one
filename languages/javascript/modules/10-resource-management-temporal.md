@@ -19,10 +19,10 @@ try {
   try {
     await work(handle);
   } finally {
-    await lock.release();       // nested try/finally per resource; order easy to get wrong
+    await lock.release(); // nested try/finally per resource; order easy to get wrong
   }
 } finally {
-  await handle.close();         // and if release() throws, the original error from work() is lost
+  await handle.close(); // and if release() throws, the original error from work() is lost
 }
 ```
 
@@ -34,8 +34,8 @@ try {
 
 ```js
 {
-  using file = openSync(path);          // file[Symbol.dispose] captured now
-  await using conn = await pool.get();  // conn[Symbol.asyncDispose] captured now
+  using file = openSync(path); // file[Symbol.dispose] captured now
+  await using conn = await pool.get(); // conn[Symbol.asyncDispose] captured now
   // ... use both
 } // dispose conn (awaited), then file: reverse order of declaration
 ```
@@ -67,7 +67,7 @@ sequenceDiagram
 For resources acquired conditionally or in loops, or for adapting APIs without `Symbol.dispose`:
 
 | Method | Purpose |
-|---|---|
+| --- | --- |
 | `stack.use(resource)` | register a disposable; returns it |
 | `stack.adopt(value, onDispose)` | register a non-disposable value with a cleanup callback |
 | `stack.defer(fn)` | register a callback |
@@ -81,12 +81,14 @@ The constructor pattern (acquire several resources; if any acquisition fails, re
 class Session {
   #resources;
   constructor() {
-    using stack = new DisposableStack();       // disposed if the constructor throws
+    using stack = new DisposableStack(); // disposed if the constructor throws
     this.socket = stack.use(openSocket());
     this.log = stack.adopt(openLog(), (l) => l.close());
-    this.#resources = stack.move();            // success: the stack being disposed is now empty
+    this.#resources = stack.move(); // success: the stack being disposed is now empty
   }
-  [Symbol.dispose]() { this.#resources.dispose(); }
+  [Symbol.dispose]() {
+    this.#resources.dispose();
+  }
 }
 ```
 
@@ -100,7 +102,7 @@ class Session {
 ### Then vs now
 
 | Then | Now (ES2027, Node 26) |
-|---|---|
+| --- | --- |
 | nested `try/finally`, cleanup errors overwrite body errors | `using` / `await using`, errors combined in `SuppressedError` |
 | `finally { a.close(); b.close(); }`: if `a.close()` throws, `b` leaks | dispose stack: every resource is disposed even if one disposal throws |
 | library-specific `withConnection(async (c) => ...)` callback helpers | plain blocks with `await using` |
@@ -117,14 +119,14 @@ Migration pitfalls: `using x = await getThing()` disposes **synchronously**; if 
 `Date` (ES1, modelled on Java's 1995 `java.util.Date`) is one mutable number (milliseconds since the Unix epoch) with a local-time veneer:
 
 | Problem | Example |
-|---|---|
+| --- | --- |
 | Mutable | `d.setMonth(1)` changes a shared object |
-| Only UTC and the *host's* local time zone | no way to say "9:00 in Tokyo" |
+| Only UTC and the _host's_ local time zone | no way to say "9:00 in Tokyo" |
 | Parsing inconsistencies | `new Date('2026-03-29')` is **UTC midnight** but `new Date('2026-03-29T00:00')` is **local** midnight; non-ISO formats are implementation-defined |
 | Month numbering from 0 | `new Date(2026, 0, 31)` is January |
 | Overflow silently rolls over | `new Date(2026, 1, 30)` is March 2 |
 | No date-only or time-only types | birthdays shift by a day when the time zone changes |
-| No calendar support beyond Gregorian | |
+| No calendar support beyond Gregorian |  |
 | No duration type, DST-unaware arithmetic | `d.getTime() + 24 * 3600e3` is not "same time tomorrow" across DST |
 
 ### 6. The Temporal type system
@@ -152,7 +154,7 @@ flowchart TB
 ```
 
 | Type | Use for |
-|---|---|
+| --- | --- |
 | `Instant` | timestamps, logs, ordering events, storage in UTC |
 | `ZonedDateTime` | anything a human schedules in a place: meetings, deadlines, "every day at 9:00 in Prague"; the only type that does DST-correct arithmetic |
 | `PlainDate` | birthdays, holidays, due dates without a time |
@@ -170,7 +172,7 @@ In Europe/Prague, 2026-03-29 has **23 hours** (02:00 → 03:00 skipped) and 2026
 
 ```js
 const z = Temporal.ZonedDateTime.from('2026-03-28T12:00[Europe/Prague]');
-z.add({ days: 1 });   // 2026-03-29T12:00+02:00: same wall-clock time ("calendar day")
+z.add({ days: 1 }); // 2026-03-29T12:00+02:00: same wall-clock time ("calendar day")
 z.add({ hours: 24 }); // 2026-03-29T13:00+02:00: exactly 24 elapsed hours
 ```
 
@@ -179,7 +181,7 @@ Both are correct; they answer different questions. `Date` arithmetic only offers
 **Disambiguation** when converting a wall-clock time that does not exist (gap) or exists twice (fold) to an exact time:
 
 | Option | Gap (02:30 on 2026-03-29) | Fold (02:30 on 2026-10-25) |
-|---|---|---|
+| --- | --- | --- |
 | `'compatible'` (default, matches `Date`) | later: 03:30+02:00 | earlier: 02:30+02:00 |
 | `'earlier'` | 01:30+01:00 | 02:30+02:00 |
 | `'later'` | 03:30+02:00 | 02:30+01:00 |
@@ -190,9 +192,9 @@ Both are correct; they answer different questions. `Date` arithmetic only offers
 ### 8. Calendar arithmetic and overflow
 
 ```js
-Temporal.PlainDate.from('2026-01-31').add({ months: 1 });                       // 2026-02-28 (constrain)
+Temporal.PlainDate.from('2026-01-31').add({ months: 1 }); // 2026-02-28 (constrain)
 Temporal.PlainDate.from('2026-01-31').add({ months: 1 }, { overflow: 'reject' }); // RangeError
-Temporal.PlainDate.from({ year: 2026, month: 2, day: 30 });                      // 2026-02-28 (constrain)
+Temporal.PlainDate.from({ year: 2026, month: 2, day: 30 }); // 2026-02-28 (constrain)
 ```
 
 Durations with years, months, weeks or days are **relative**: their length depends on the starting point. Rounding or totalling them requires `relativeTo`:
@@ -200,7 +202,7 @@ Durations with years, months, weeks or days are **relative**: their length depen
 ```js
 const d = Temporal.Duration.from({ hours: 25 });
 d.round({ largestUnit: 'day', relativeTo: z }); // P1DT2H across the 23-hour day
-d.total({ unit: 'minute' });                     // 1500 (no calendar units involved)
+d.total({ unit: 'minute' }); // 1500 (no calendar units involved)
 ```
 
 `until`/`since` choose a default `largestUnit` per type (`hour` for `ZonedDateTime`, `day` for `PlainDate`): March 2026 in Prague is `PT743H` (31 × 24 − 1) or `P31D` with `largestUnit: 'day'`.
@@ -208,7 +210,7 @@ d.total({ unit: 'minute' });                     // 1500 (no calendar units invo
 ### 9. Migrating from `Date`
 
 | Then (`Date`, moment.js, date-fns) | Now (Temporal) |
-|---|---|
+| --- | --- |
 | `Date.now()` | `Temporal.Now.instant()` (ns) or keep `Date.now()` for ms timestamps |
 | `new Date(isoString)` | `Temporal.Instant.from(s)` if it has an offset/`Z`; `PlainDate.from` for date-only strings |
 | `date.getTimezoneOffset()` | `zdt.offset`, `zdt.offsetNanoseconds` |
@@ -225,7 +227,7 @@ Pitfalls when mixing: `Date` is millisecond-precision and has no zone, so a roun
 ## 10. Production failure modes
 
 | Failure | Mechanism | Defence (tested) |
-|---|---|---|
+| --- | --- | --- |
 | File descriptors exhausted under errors | cleanup skipped on exception paths | `using` / `await using` |
 | Root cause missing from logs | cleanup exception overwrote the original | `SuppressedError` carries both; log `error` and `suppressed` |
 | Async cleanup not awaited | `using` instead of `await using` | lint; types (`AsyncDisposable`) |

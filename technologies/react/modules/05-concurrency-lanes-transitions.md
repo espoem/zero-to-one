@@ -12,19 +12,19 @@
 
 > **Definition 5.1 (Lane).** A lane is a bit position $\ell \in \{0, \dots, 30\}$ in a 31-bit integer. A **lane set** $L$ is a 31-bit mask. Lower bit = higher priority. Every update carries exactly one lane; every fiber and root carries the set of lanes of its pending updates.
 
-> **Definition 5.2 (Render).** A render works on a lane set $R$ (the *render lanes*). It processes exactly the updates whose lane $\in R$ (skipped updates are rebased later, Module 03 §3.3) and commits a tree that reflects those and all previously committed updates.
+> **Definition 5.2 (Render).** A render works on a lane set $R$ (the _render lanes_). It processes exactly the updates whose lane $\in R$ (skipped updates are rebased later, Module 03 §3.3) and commits a tree that reflects those and all previously committed updates.
 
 > **Definition 5.3 (Urgency classes).** Updates are **blocking** (must be reflected in the next frame: typing, clicking) or **non-blocking** (transitions: may be shown later, may be interrupted, must never show a worse UI than the current one).
 
 Bitmasks make the scheduler's set operations single CPU instructions:
 
-| Operation | Expression | Meaning |
-|---|---|---|
-| merge | $A \mid B$ | union of pending work |
-| remove | $A \mathbin{\&} \sim B$ | mark $B$ as done |
-| intersects | $(A \mathbin{\&} B) \neq 0$ | does this fiber have work in this render? |
-| subset | $(A \mathbin{\&} B) = B$ | |
-| highest priority | $A \mathbin{\&} -A$ | lowest set bit (two's complement) |
+| Operation        | Expression                  | Meaning                                   |
+| ---------------- | --------------------------- | ----------------------------------------- |
+| merge            | $A \mid B$                  | union of pending work                     |
+| remove           | $A \mathbin{\&} \sim B$     | mark $B$ as done                          |
+| intersects       | $(A \mathbin{\&} B) \neq 0$ | does this fiber have work in this render? |
+| subset           | $(A \mathbin{\&} B) = B$    |                                           |
+| highest priority | $A \mathbin{\&} -A$         | lowest set bit (two's complement)         |
 
 The test "lowest set bit = highest priority" exercises these with the model in [`lane-model.ts`](../examples/05-concurrency/lane-model.ts).
 
@@ -33,13 +33,13 @@ The test "lowest set bit = highest priority" exercises these with the model in [
 Lane values are **internal** and have changed in most minors; the table below is the shipped 19.3.1 layout, and the property test "the model equals react-dom 19.3.1's getHighestPriorityLanes for random lane sets" extracts the real function from the installed build and compares it with the model on 2,000 random lane sets.
 
 | Bits | Lanes | Source of updates |
-|---|---|---|
+| --- | --- | --- |
 | 0, 2, 4 | `SyncHydration`, `InputContinuousHydration`, `DefaultHydration` | Hydrating with the matching priority |
 | 1 | `SyncLane` | Discrete events (click, keydown, input), `flushSync` |
 | 3 | `InputContinuousLane` | Continuous events (pointermove, scroll, wheel) |
 | 5 | `DefaultLane` | Updates outside events: timers, network callbacks, `root.render` |
 | 6 | `GestureLane` | Gesture-driven transitions (experimental API) |
-| 7 | `TransitionHydrationLane` | |
+| 7 | `TransitionHydrationLane` |  |
 | 8–17 | 10 × `TransitionUpdateLanes` | `startTransition`, `useTransition`, Actions — assigned round-robin |
 | 18–21 | 4 × `TransitionDeferredLanes` | The background render of `useDeferredValue` |
 | 22–25 | 4 × `RetryLanes` | Retrying a suspended Suspense boundary after its data resolved |
@@ -78,7 +78,7 @@ PERFORM-CONCURRENT-WORK(root)
 The two outcomes that make React "concurrent":
 
 - **Resume.** If nothing more urgent arrived, the next slice continues from the saved `workInProgress` pointer.
-- **Restart.** If a higher-priority update arrived, `getNextLanes` returns different lanes, React handles the urgent work first (from the *current* tree), and later **restarts** the transition from scratch, because its partial WIP tree was computed against a state that is no longer current. The interrupted work is simply discarded — possible only because render is pure (Module 01 §5).
+- **Restart.** If a higher-priority update arrived, `getNextLanes` returns different lanes, React handles the urgent work first (from the _current_ tree), and later **restarts** the transition from scratch, because its partial WIP tree was computed against a state that is no longer current. The interrupted work is simply discarded — possible only because render is pure (Module 01 §5).
 
 ---
 
@@ -94,13 +94,13 @@ The two outcomes that make React "concurrent":
 The deterministic `scheduler/unstable_mock` build (still shipped in 0.28.0, resolving the brief's re-verify item) replaces the clock with a counter: `shouldYield()` becomes true after N values have been passed to `Scheduler.log()`. Tests:
 
 | Property | Test |
-|---|---|
+| --- | --- |
 | Priority order then FIFO | "callbacks run by priority, then by insertion order" |
 | Yield + continuation resumes where it stopped | "a task yields when shouldYield() is true and resumes via a returned continuation" |
 | Urgent work is interleaved between slices of a long task | "an urgent task scheduled while a long task has yielded runs before it resumes" → `long 0, long 1, click, long 2 …` |
 | Expired tasks run regardless (no starvation) | "starvation guard: an expired low-priority task runs…" |
 
-**Why 5 ms?** At 60 Hz a frame is 16.7 ms; leaving most of it to the browser for input handling, style, layout and paint keeps the page responsive while React makes progress. It is a heuristic, not a guarantee: a single component that takes 50 ms to render still blocks for 50 ms, because React can only yield *between* fibers. Concurrency hides *many small* costs, never *one big* one — split expensive components or move the work off the main thread.
+**Why 5 ms?** At 60 Hz a frame is 16.7 ms; leaving most of it to the browser for input handling, style, layout and paint keeps the page responsive while React makes progress. It is a heuristic, not a guarantee: a single component that takes 50 ms to render still blocks for 50 ms, because React can only yield _between_ fibers. Concurrency hides _many small_ costs, never _one big_ one — split expensive components or move the work off the main thread.
 
 ---
 
@@ -109,15 +109,16 @@ The deterministic `scheduler/unstable_mock` build (still shipped in 0.28.0, reso
 ### 3.1 API
 
 ```tsx
-import { startTransition, useTransition } from "react";
+import { startTransition, useTransition } from 'react';
 
-startTransition(() => setTab("photos"));           // anywhere, no pending flag
+startTransition(() => setTab('photos')); // anywhere, no pending flag
 
-const [isPending, start] = useTransition();         // in a component
-start(() => setTab("photos"));
-start(async () => {                                 // React 19: async "Actions"
+const [isPending, start] = useTransition(); // in a component
+start(() => setTab('photos'));
+start(async () => {
+  // React 19: async "Actions"
   const data = await save(form);
-  startTransition(() => setResult(data));           // updates after await need their own wrapper (see below)
+  startTransition(() => setResult(data)); // updates after await need their own wrapper (see below)
 });
 ```
 
@@ -126,13 +127,13 @@ start(async () => {                                 // React 19: async "Actions"
 ### 3.2 What transitions guarantee — tested
 
 | Behaviour | Test |
-|---|---|
+| --- | --- |
 | While a transition is suspended, the **old content stays** visible and `isPending` is `true` | "useTransition: isPending is true while the transition is outstanding" (`<em>pending</em><i>old</i>`) |
 | Without a transition, the same update **replaces content with the fallback** | "NEGATIVE: the same update without a transition replaces content with the fallback" |
 | Urgent updates (typing) commit while a transition is pending | "urgent updates are not blocked by a pending transition" |
 | 19.3: an unrelated transition commits while another is suspended | "19.3 untangled transitions…" |
 
-The fallback rule has a precise scope: a transition avoids hiding **already-revealed** boundaries. A *new* Suspense boundary that appears for the first time during a transition can still show its fallback — that is how you deliberately show a skeleton for a new section.
+The fallback rule has a precise scope: a transition avoids hiding **already-revealed** boundaries. A _new_ Suspense boundary that appears for the first time during a transition can still show its fallback — that is how you deliberately show a skeleton for a new section.
 
 ### 3.3 Async transitions (React 19)
 
@@ -145,21 +146,21 @@ start(async () => {
 });
 ```
 
-Internally, while an async action is outstanding, React keeps an "entangled action lane" (`currentEntangledLane` in the build) so that transitions started *inside the same action scope* share one lane and commit together. Actions, `useActionState` and `useOptimistic` build on this (Module 08).
+Internally, while an async action is outstanding, React keeps an "entangled action lane" (`currentEntangledLane` in the build) so that transitions started _inside the same action scope_ share one lane and commit together. Actions, `useActionState` and `useOptimistic` build on this (Module 08).
 
 ### 3.4 Then vs now: transition scheduling
 
-| | Then | Now |
-|---|---|---|
+|  | Then | Now |
+| --- | --- | --- |
 | ≤17 | No transitions; everything sync or batched-sync | — |
 | 18.0 | `startTransition`/`useTransition`, sync callbacks only | — |
 | 19.0 | Async functions in transitions ("Actions") | — |
 | 19.0–19.2 | All pending transition lanes rendered **together** ("entangled"): a transition suspended on slow data held back every other transition until it resolved | — |
 | 19.3 | — | Each transition renders on **its own lane** ([react#37290](https://github.com/react/react/pull/37290)); a slow transition no longer blocks unrelated ones |
 
-**Migration and pitfalls.** This changed in a *minor* release, so test against the version you pin:
+**Migration and pitfalls.** This changed in a _minor_ release, so test against the version you pin:
 
-- UI that *accidentally* relied on two transitions committing together (e.g. a tab switch and a filter change that should appear atomically) may now show them separately. If two updates must commit together, enqueue them in the **same** `startTransition` call.
+- UI that _accidentally_ relied on two transitions committing together (e.g. a tab switch and a filter change that should appear atomically) may now show them separately. If two updates must commit together, enqueue them in the **same** `startTransition` call.
 - Tests that asserted "B is still old while A suspends" now fail on 19.3; they were asserting the old entanglement.
 - Async actions are unaffected: updates in one action scope still share a lane.
 
@@ -169,7 +170,7 @@ Internally, while an async action is outstanding, React keeps an "entangled acti
 
 ```tsx
 function Search({ query }: { query: string }) {
-  const deferredQuery = useDeferredValue(query);        // or useDeferredValue(query, initialValue)
+  const deferredQuery = useDeferredValue(query); // or useDeferredValue(query, initialValue)
   const isStale = query !== deferredQuery;
   return <Results query={deferredQuery} dim={isStale} />;
 }
@@ -179,7 +180,7 @@ function Search({ query }: { query: string }) {
 
 Test "renders first with the stale value, then again with the new value in the background" logs exactly `query=ab deferred=a` then `query=ab deferred=ab`. With an **initial value** (React 19), the very first render uses it and the real value is rendered in the background — test "initialValue (React 19)…" logs `""` then `"react"`. This is the pattern for "show a cheap placeholder on mount, then the expensive version".
 
-**Transition vs deferred value.** Use a transition when you own the `setState` call; use a deferred value when you only receive the value (a prop) or when the urgent and non-urgent consumers of the *same* state differ (the input shows `query` instantly; the list renders `deferredQuery`). Neither debounces: React does no work for skipped values only because it restarts; it does not wait a fixed time. To avoid network requests per keystroke you still need a debounce or a cache.
+**Transition vs deferred value.** Use a transition when you own the `setState` call; use a deferred value when you only receive the value (a prop) or when the urgent and non-urgent consumers of the _same_ state differ (the input shows `query` instantly; the list renders `deferredQuery`). Neither debounces: React does no work for skipped values only because it restarts; it does not wait a fixed time. To avoid network requests per keystroke you still need a debounce or a cache.
 
 For the deferred render to be cheap to interrupt, the expensive child must **bail out** when the deferred value is unchanged — wrap it in `memo` or let the React Compiler memoise it. Otherwise the urgent render re-renders the expensive list with the old value anyway, and nothing is gained.
 
@@ -191,8 +192,8 @@ For the deferred render to be cheap to interrupt, the expensive child must **bai
 
 [`<Activity mode="visible" \| "hidden">`](https://react.dev/reference/react/Activity) (stable since **19.2**, internally `ActivityComponent`, tag 31; legacy Suspense offscreen uses `OffscreenComponent`, tag 22) is a third option between rendering and not rendering:
 
-| | `{cond && <Page/>}` | `<Activity mode={cond ? "visible" : "hidden"}>` |
-|---|---|---|
+|  | `{cond && <Page/>}` | `<Activity mode={cond ? "visible" : "hidden"}>` |
+| --- | --- | --- |
 | State when hidden | Destroyed | **Kept** |
 | DOM when hidden | Removed | Kept, styled `display: none !important` |
 | Effects when hidden | Cleaned up (unmounted) | **Cleaned up** (Module 04 §8) |
@@ -203,7 +204,7 @@ Tests: "hidden content keeps state and DOM, unmounts effects, and resumes when v
 
 **Data fetching caveat.** Pre-rendering helps only with data loaded during render (Suspense-enabled sources, `use`, Server Components). Data fetched in effects will not load while hidden, because effects do not run.
 
-**19.3 fixes worth knowing:** errors thrown inside a hidden `<Activity>` no longer escape to boundaries outside it ([react#35074](https://github.com/react/react/pull/35074), Module 10); portals inside a hidden `<Activity>` are now hidden too; `useSyncExternalStore` no longer misses store mutations made while hidden; `<title>` inside a hidden `<Activity>` is no longer hoisted; and `<Activity>` is supported in Server Components (Flight). If you depended on the old behaviour (e.g. an error boundary *outside* the Activity catching errors of hidden content), it changed in a minor.
+**19.3 fixes worth knowing:** errors thrown inside a hidden `<Activity>` no longer escape to boundaries outside it ([react#35074](https://github.com/react/react/pull/35074), Module 10); portals inside a hidden `<Activity>` are now hidden too; `useSyncExternalStore` no longer misses store mutations made while hidden; `<title>` inside a hidden `<Activity>` is no longer hoisted; and `<Activity>` is supported in Server Components (Flight). If you depended on the old behaviour (e.g. an error boundary _outside_ the Activity catching errors of hidden content), it changed in a minor.
 
 > **Then vs now.** Before 19.2 the only way to "keep state while hidden" was CSS hiding (`style={{display: cond ? "" : "none"}}`), which keeps effects running (timers, subscriptions on invisible UI), or lifting state out of the hidden component. Both remain valid; `<Activity>` gives the effect semantics and priority that CSS hiding cannot. The unstable `unstable_Offscreen`/`unstable_Activity` names from canary builds are gone.
 
@@ -214,17 +215,17 @@ Tests: "hidden content keeps state and DOM, unmounts effects, and resumes when v
 1. **It cannot interrupt a single slow component.** Yielding happens between fibers.
 2. **It cannot make commits cheaper.** Commit is synchronous (Module 02 §6); 10,000 DOM mutations block regardless of lanes.
 3. **It does not apply to external stores.** Updates from `useSyncExternalStore` are always synchronous (Module 03 §7).
-4. **It does not reduce total work.** It reorders work for responsiveness and may *increase* total work (restarts).
+4. **It does not reduce total work.** It reorders work for responsiveness and may _increase_ total work (restarts).
 5. **It does not debounce.** See §4.
 
-When the Performance panel shows long tasks, the fix is usually smaller components, memoisation (Compiler), virtualisation, or moving computation off the main thread — Module 12 shows how to read **Performance Tracks** (19.2), which label each render by lane group (*Blocking*, *Transition*, *Suspense*, *Idle* tracks).
+When the Performance panel shows long tasks, the fix is usually smaller components, memoisation (Compiler), virtualisation, or moving computation off the main thread — Module 12 shows how to read **Performance Tracks** (19.2), which label each render by lane group (_Blocking_, _Transition_, _Suspense_, _Idle_ tracks).
 
 ---
 
 ## 7. Production failure modes
 
 | Symptom | Cause | Fix |
-|---|---|---|
+| --- | --- | --- |
 | Typing lags while a big list re-renders | The list re-renders in the urgent update | Render the list with `useDeferredValue` and memoise it, or put its update in a transition |
 | Content flashes to a spinner on tab switch | The update is not a transition | Wrap in `startTransition` |
 | A transition never finishes (`isPending` stuck) | A promise used in render is never resolved, or a new one is created each render (Module 06) | Cache promises; add timeouts |
@@ -239,7 +240,7 @@ When the Performance panel shows long tasks, the fix is usually smaller componen
 ## 8. Executable proofs
 
 | Claim | Test (`concurrency.test.tsx`) |
-|---|---|
+| --- | --- |
 | Lane algebra; model = shipped 19.3.1 function (property test, 2,000 runs) | "lanes: a bitmask algebra…" (4 tests) |
 | 19.3 untangled lanes vs 19.2 entangled (model) | "19.3: two pending transition lanes are rendered separately" |
 | Scheduler priority, yield/continuation, interleaving, expiry | "the scheduler…" (4 tests) |

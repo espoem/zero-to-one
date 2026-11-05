@@ -3,7 +3,7 @@
 **Opus is the primary agent on every track.** Companions work under its direction. Replace `<track>` with the brief's file name (e.g. `panda-css`). Branches: `track/<track>`.
 
 | Role | Agent | When |
-|---|---|---|
+| --- | --- | --- |
 | Primary | Opus: claude.ai session, or Claude Code CLI on Opus for Docker-heavy tracks | Authors the track; integrates everything; final gate |
 | Drafter | pi · DeepSeek | When the primary asks for bulk drafts (prompt D) |
 | Challenger | pi · Muse Spark 1.3 | When a track reaches 🟨 (prompt C) |

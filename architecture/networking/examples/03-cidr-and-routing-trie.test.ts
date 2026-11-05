@@ -13,7 +13,7 @@ export interface SubnetInfo {
 
 export function ipToNumber(ip: string): number {
   const octets = ip.split('.').map(Number);
-  if (octets.length !== 4 || octets.some(o => o < 0 || o > 255)) {
+  if (octets.length !== 4 || octets.some((o) => o < 0 || o > 255)) {
     throw new Error(`Invalid IPv4 address: ${ip}`);
   }
   return (((octets[0]! << 24) >>> 0) + (octets[1]! << 16) + (octets[2]! << 8) + octets[3]!) >>> 0;
@@ -33,9 +33,9 @@ export function parseCidr(cidr: string): SubnetInfo {
   }
 
   const ipNum = ipToNumber(ipStr);
-  const maskNum = prefix === 0 ? 0 : ((~((1 << (32 - prefix)) - 1)) >>> 0);
+  const maskNum = prefix === 0 ? 0 : ~((1 << (32 - prefix)) - 1) >>> 0;
   const networkNum = (ipNum & maskNum) >>> 0;
-  const broadcastNum = (networkNum | (~maskNum)) >>> 0;
+  const broadcastNum = (networkNum | ~maskNum) >>> 0;
 
   const totalAddresses = Math.pow(2, 32 - prefix);
   const usableHosts = prefix >= 31 ? (prefix === 31 ? 2 : 1) : totalAddresses - 2;
@@ -147,7 +147,7 @@ describe('Module 03: CIDR Math & Longest Prefix Match Routing Trie', () => {
         const match = trie.lookup(testIp);
         assert.equal(match?.gateway, 'GW_Cluster');
         assert.equal(match?.prefixLength, 24);
-      })
+      }),
     );
   });
 });

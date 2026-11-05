@@ -50,7 +50,12 @@ export class IdempotentRpcServer<Req, Res> {
 /**
  * Exponential backoff with Full Jitter and Decorrelated Jitter.
  */
-export function fullJitterBackoff(attempt: number, baseMs = 100, capMs = 5000, randomFn = Math.random): number {
+export function fullJitterBackoff(
+  attempt: number,
+  baseMs = 100,
+  capMs = 5000,
+  randomFn = Math.random,
+): number {
   const maxWait = Math.min(capMs, baseMs * Math.pow(2, attempt));
   return Math.floor(randomFn() * maxWait);
 }
@@ -59,7 +64,7 @@ export function decorrelatedJitterBackoff(
   prevSleepMs: number,
   baseMs = 100,
   capMs = 5000,
-  randomFn = Math.random
+  randomFn = Math.random,
 ): number {
   const ceiling = Math.min(capMs, prevSleepMs * 3);
   const sleep = baseMs + randomFn() * (ceiling - baseMs);
@@ -112,13 +117,15 @@ export class PhiAccrualFailureDetector {
 
     // For large z, calculate -log10(P) directly to avoid underflow
     if (z > 8) {
-      const log10P = -(z * z / 2) * Math.LOG10E - Math.log10(z * Math.sqrt(2 * Math.PI));
+      const log10P = -((z * z) / 2) * Math.LOG10E - Math.log10(z * Math.sqrt(2 * Math.PI));
       return Math.min(16, -log10P);
     }
 
     // Standard rational approximation for normal upper tail
     const t = 1.0 / (1.0 + 0.2316419 * z);
-    const poly = t * (0.319381530 + t * (-0.356563782 + t * (1.781477937 + t * (-1.821255978 + t * 1.330274429))));
+    const poly =
+      t *
+      (0.31938153 + t * (-0.356563782 + t * (1.781477937 + t * (-1.821255978 + t * 1.330274429))));
     const pLater = (1.0 / Math.sqrt(2 * Math.PI)) * Math.exp(-0.5 * z * z) * poly;
     const phi = -Math.log10(Math.max(1e-16, pLater));
     return Math.min(16, phi);

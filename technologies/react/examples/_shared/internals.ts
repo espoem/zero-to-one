@@ -36,13 +36,13 @@ function privateKey(node: object, prefix: string): string {
 
 /** The fiber that owns a host DOM node (tag 5 = HostComponent, 6 = HostText). */
 export function fiberOf(node: Node): Fiber {
-  return (node as unknown as Record<string, Fiber>)[privateKey(node, "__reactFiber$")]!;
+  return (node as unknown as Record<string, Fiber>)[privateKey(node, '__reactFiber$')]!;
 }
 
 /** The FiberRoot behind a createRoot() container. */
 export function fiberRootOf(container: Element): FiberRoot {
   const hostRootFiber = (container as unknown as Record<string, Fiber>)[
-    privateKey(container, "__reactContainer$")
+    privateKey(container, '__reactContainer$')
   ]!;
   return hostRootFiber.stateNode as FiberRoot;
 }

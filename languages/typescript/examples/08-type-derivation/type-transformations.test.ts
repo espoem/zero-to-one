@@ -20,9 +20,9 @@ import {
   type DeepPartial,
   assertEqual,
   assertDeepEqual,
-} from "../utils/type-helpers.ts";
+} from '../utils/type-helpers.ts';
 
-console.log("=== 02: Type Transformations ===");
+console.log('=== 02: Type Transformations ===');
 
 // ============================================================================
 // 1. Unions & Indexed Access
@@ -41,7 +41,12 @@ export const STATUS_CODES = {
 export type StatusCodeKey = keyof typeof STATUS_CODES;
 export type StatusCodeValue = (typeof STATUS_CODES)[StatusCodeKey];
 
-type TestKeys = Expect<Equal<StatusCodeKey, "OK" | "CREATED" | "BAD_REQUEST" | "UNAUTHORIZED" | "NOT_FOUND" | "INTERNAL_ERROR">>;
+type TestKeys = Expect<
+  Equal<
+    StatusCodeKey,
+    'OK' | 'CREATED' | 'BAD_REQUEST' | 'UNAUTHORIZED' | 'NOT_FOUND' | 'INTERNAL_ERROR'
+  >
+>;
 type TestValues = Expect<Equal<StatusCodeValue, 200 | 201 | 400 | 401 | 404 | 500>>;
 
 // Extract / Exclude
@@ -52,66 +57,65 @@ type TestErrorStatus = Expect<Equal<ErrorStatusCode, 400 | 401 | 404 | 500>>;
 type TestSuccessStatus = Expect<Equal<SuccessStatusCode, 200 | 201>>;
 
 // Array element indexed access
-const CONFIG_MODES = ["development", "staging", "production"] as const;
+const CONFIG_MODES = ['development', 'staging', 'production'] as const;
 export type ConfigMode = (typeof CONFIG_MODES)[number];
 
-type TestConfigMode = Expect<Equal<ConfigMode, "development" | "staging" | "production">>;
+type TestConfigMode = Expect<Equal<ConfigMode, 'development' | 'staging' | 'production'>>;
 
 // ============================================================================
 // 2. Template Literal Types & Route Parameter Extraction
 // ============================================================================
 
 // String manipulation intrinsics
-type Action = "create" | "update" | "delete";
-type Entity = "user" | "post" | "comment";
+type Action = 'create' | 'update' | 'delete';
+type Entity = 'user' | 'post' | 'comment';
 
 export type EventName = `${Entity}:${Action}`;
 type TestEventName = Expect<
   Equal<
     EventName,
-    | "user:create"
-    | "user:update"
-    | "user:delete"
-    | "post:create"
-    | "post:update"
-    | "post:delete"
-    | "comment:create"
-    | "comment:update"
-    | "comment:delete"
+    | 'user:create'
+    | 'user:update'
+    | 'user:delete'
+    | 'post:create'
+    | 'post:update'
+    | 'post:delete'
+    | 'comment:create'
+    | 'comment:update'
+    | 'comment:delete'
   >
 >;
 
 // Total TypeScript Classic: Route Parameter Parser
 // Extracts `:param` segments from a path template like "/users/:id/posts/:postId"
-export type ExtractRouteParams<TPath extends string> =
-  TPath extends `${string}:${infer Rest}`
-    ? Rest extends `${infer Param}/${infer Next}`
-      ? { [K in Param | keyof ExtractRouteParams<`/${Next}`>]: string }
-      : { [K in Rest]: string }
-    : {};
+export type ExtractRouteParams<TPath extends string> = TPath extends `${string}:${infer Rest}`
+  ? Rest extends `${infer Param}/${infer Next}`
+    ? { [K in Param | keyof ExtractRouteParams<`/${Next}`>]: string }
+    : { [K in Rest]: string }
+  : {};
 
-type Route1 = ExtractRouteParams<"/users/:userId">;
+type Route1 = ExtractRouteParams<'/users/:userId'>;
 type TestRoute1 = Expect<Equal<Route1, { userId: string }>>;
 
-type Route2 = ExtractRouteParams<"/orgs/:orgId/teams/:teamId/members/:memberId">;
+type Route2 = ExtractRouteParams<'/orgs/:orgId/teams/:teamId/members/:memberId'>;
 type TestRoute2 = Expect<Equal<Route2, { orgId: string; teamId: string; memberId: string }>>;
 
-type Route3 = ExtractRouteParams<"/static/assets/logo.png">;
+type Route3 = ExtractRouteParams<'/static/assets/logo.png'>;
 type TestRoute3 = Expect<Equal<Route3, {}>>;
 
 // Runtime URL parser implementation matching the type signature
 export function parseRouteParams<TPath extends string>(
   template: TPath,
-  path: string
+  path: string,
 ): ExtractRouteParams<TPath> {
-  const templateParts = template.split("/");
-  const pathParts = path.split("/");
+  const templateParts = template.split('/');
+  const pathParts = path.split('/');
   const params: Record<string, string> = {};
 
   for (let i = 0; i < templateParts.length; i++) {
     const tPart = templateParts[i];
     const pPart = pathParts[i];
-    if (tPart && tPart.startsWith(":") && pPart) {
+    if (tPart && tPart.startsWith(':') && pPart) {
       params[tPart.slice(1)] = pPart;
     }
   }
@@ -119,8 +123,8 @@ export function parseRouteParams<TPath extends string>(
   return params as ExtractRouteParams<TPath>;
 }
 
-const parsed = parseRouteParams("/orgs/:orgId/teams/:teamId", "/orgs/acme/teams/engineering");
-assertDeepEqual(parsed, { orgId: "acme", teamId: "engineering" });
+const parsed = parseRouteParams('/orgs/:orgId/teams/:teamId', '/orgs/acme/teams/engineering');
+assertDeepEqual(parsed, { orgId: 'acme', teamId: 'engineering' });
 
 // ============================================================================
 // 3. Conditional Types & `infer`
@@ -196,9 +200,9 @@ type TestFuncOnly = Expect<
 
 // Key remapping: Generate typed getter methods (-readonly strips readonly, -? makes methods required)
 export type Getters<T> = {
-  -readonly [K in keyof T as T[K] extends Function
-    ? never
-    : `get${Capitalize<string & K>}`]-?: () => T[K];
+  -readonly [
+    K in keyof T as T[K] extends Function ? never : `get${Capitalize<string & K>}`
+  ]-?: () => T[K];
 };
 
 type ProductGetters = Getters<Product>;
@@ -218,7 +222,7 @@ type TestGetters = Expect<
 export function createGetters<T extends Record<string, any>>(obj: T): Getters<T> {
   const result: Record<string, () => any> = {};
   for (const key of Object.keys(obj)) {
-    if (typeof obj[key] !== "function") {
+    if (typeof obj[key] !== 'function') {
       const getterName = `get${key.charAt(0).toUpperCase()}${key.slice(1)}`;
       result[getterName] = () => obj[key];
     }
@@ -227,15 +231,15 @@ export function createGetters<T extends Record<string, any>>(obj: T): Getters<T>
 }
 
 const sampleProduct: Product = {
-  id: "p-100",
-  name: "Keyboard",
+  id: 'p-100',
+  name: 'Keyboard',
   price: 120,
   calculateDiscount: (p) => 120 * (1 - p / 100),
 };
 
 const getters = createGetters(sampleProduct);
-assertEqual(getters.getId(), "p-100");
-assertEqual(getters.getName(), "Keyboard");
+assertEqual(getters.getId(), 'p-100');
+assertEqual(getters.getName(), 'Keyboard');
 assertEqual(getters.getPrice(), 120);
 
 // ============================================================================
@@ -290,4 +294,4 @@ type MessyUnion = { id: string } & { title: string } & { meta: { tags: string[] 
 type Cleaned = Prettify<MessyUnion>;
 type TestPrettify = Expect<Equal<Cleaned, { id: string; title: string; meta: { tags: string[] } }>>;
 
-console.log("✓ All 02 Type Transformations tests passed successfully!\n");
+console.log('✓ All 02 Type Transformations tests passed successfully!\n');

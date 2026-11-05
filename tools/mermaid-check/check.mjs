@@ -11,7 +11,10 @@ globalThis.window = dom.window;
 globalThis.document = dom.window.document;
 
 const engines = [];
-for (const [name, spec] of [['mermaid@12', 'mermaid'], ['mermaid@11', 'mermaid11']]) {
+for (const [name, spec] of [
+  ['mermaid@12', 'mermaid'],
+  ['mermaid@11', 'mermaid11'],
+]) {
   const { default: m } = await import(spec);
   m.initialize({ startOnLoad: false, securityLevel: 'strict' });
   engines.push([name, m]);
@@ -30,7 +33,8 @@ async function* walk(dir) {
 const roots = process.argv.slice(2);
 if (roots.length === 0) roots.push('.');
 const cwd = process.cwd();
-let total = 0, failed = 0;
+let total = 0,
+  failed = 0;
 for (const root of roots) {
   for await (const file of walk(root)) {
     const lines = (await readFile(file, 'utf8')).split('\n');
@@ -40,7 +44,8 @@ for (const root of roots) {
       const fence = open[2];
       const start = i + 1;
       const body = [];
-      for (i = i + 1; i < lines.length && !lines[i].trimStart().startsWith(fence); i++) body.push(lines[i]);
+      for (i = i + 1; i < lines.length && !lines[i].trimStart().startsWith(fence); i++)
+        body.push(lines[i]);
       const src = body.join('\n');
       total++;
       for (const [name, m] of engines) {
@@ -48,7 +53,10 @@ for (const root of roots) {
           await m.parse(src);
         } catch (err) {
           failed++;
-          const msg = String(err?.message ?? err).split('\n').slice(0, 3).join(' | ');
+          const msg = String(err?.message ?? err)
+            .split('\n')
+            .slice(0, 3)
+            .join(' | ');
           console.log(`FAIL ${relative(cwd, file)}:${start} [${name}] ${msg}`);
           break;
         }

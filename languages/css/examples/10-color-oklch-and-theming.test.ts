@@ -7,8 +7,11 @@ describe('Module 10: Color Spaces, OKLCH & Theming', () => {
     await closeSharedBrowser();
   });
 
-  it('demonstrates OKLCH color parsing and relative color syntax opacity extraction', { skip: browserSkip }, async () => {
-    const html = `
+  it(
+    'demonstrates OKLCH color parsing and relative color syntax opacity extraction',
+    { skip: browserSkip },
+    async () => {
+      const html = `
       <!DOCTYPE html>
       <html>
         <head>
@@ -28,21 +31,27 @@ describe('Module 10: Color Spaces, OKLCH & Theming', () => {
       </html>
     `;
 
-    const { page, cleanup } = await createPage(html);
-    try {
-      const bg = await page.locator('#target').evaluate((el) => window.getComputedStyle(el).backgroundColor);
-      // Modern engines parse OKLCH and return an rgba() or oklch() color with alpha 0.5
-      assert(
-        bg.includes('0.5') || bg.includes('128'),
-        `Background color must reflect 50% opacity from Relative Color Syntax: ${bg}`
-      );
-    } finally {
-      await cleanup();
-    }
-  });
+      const { page, cleanup } = await createPage(html);
+      try {
+        const bg = await page
+          .locator('#target')
+          .evaluate((el) => window.getComputedStyle(el).backgroundColor);
+        // Modern engines parse OKLCH and return an rgba() or oklch() color with alpha 0.5
+        assert(
+          bg.includes('0.5') || bg.includes('128'),
+          `Background color must reflect 50% opacity from Relative Color Syntax: ${bg}`,
+        );
+      } finally {
+        await cleanup();
+      }
+    },
+  );
 
-  it('proves light-dark() adapts dynamically to color-scheme settings', { skip: browserSkip }, async () => {
-    const html = `
+  it(
+    'proves light-dark() adapts dynamically to color-scheme settings',
+    { skip: browserSkip },
+    async () => {
+      const html = `
       <!DOCTYPE html>
       <html>
         <head>
@@ -62,19 +71,24 @@ describe('Module 10: Color Spaces, OKLCH & Theming', () => {
       </html>
     `;
 
-    const { page, cleanup } = await createPage(html);
-    try {
-      // 1. Force light scheme via emulation
-      await page.emulateMedia({ colorScheme: 'light' });
-      let bg = await page.locator('#box').evaluate((el) => window.getComputedStyle(el).backgroundColor);
-      assert.equal(bg, 'rgb(255, 255, 255)', 'light-dark() must evaluate to white in light mode');
+      const { page, cleanup } = await createPage(html);
+      try {
+        // 1. Force light scheme via emulation
+        await page.emulateMedia({ colorScheme: 'light' });
+        let bg = await page
+          .locator('#box')
+          .evaluate((el) => window.getComputedStyle(el).backgroundColor);
+        assert.equal(bg, 'rgb(255, 255, 255)', 'light-dark() must evaluate to white in light mode');
 
-      // 2. Force dark scheme via emulation
-      await page.emulateMedia({ colorScheme: 'dark' });
-      bg = await page.locator('#box').evaluate((el) => window.getComputedStyle(el).backgroundColor);
-      assert.equal(bg, 'rgb(0, 0, 0)', 'light-dark() must evaluate to black in dark mode');
-    } finally {
-      await cleanup();
-    }
-  });
+        // 2. Force dark scheme via emulation
+        await page.emulateMedia({ colorScheme: 'dark' });
+        bg = await page
+          .locator('#box')
+          .evaluate((el) => window.getComputedStyle(el).backgroundColor);
+        assert.equal(bg, 'rgb(0, 0, 0)', 'light-dark() must evaluate to black in dark mode');
+      } finally {
+        await cleanup();
+      }
+    },
+  );
 });

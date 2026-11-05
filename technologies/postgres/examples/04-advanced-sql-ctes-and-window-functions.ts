@@ -40,7 +40,11 @@ async function run(): Promise<void> {
   assert.equal(recurseResult.rows[4]!.depth, 4);
 
   // Test 2: generate_series and Window Functions (Running Total & LAG)
-  const windowResult = await db.query<{ day_num: number; running_total: number; prev_val: number | null }>(`
+  const windowResult = await db.query<{
+    day_num: number;
+    running_total: number;
+    prev_val: number | null;
+  }>(`
     WITH sales_data AS (
       SELECT s AS day_num, s * 100 AS daily_sales
       FROM generate_series(1, 5) AS s
@@ -54,7 +58,11 @@ async function run(): Promise<void> {
 
   assert.equal(windowResult.rows.length, 5);
   assert.equal(Number(windowResult.rows[0]!.running_total), 100);
-  assert.equal(Number(windowResult.rows[4]!.running_total), 1500, 'Sum of 100+200+300+400+500 = 1500');
+  assert.equal(
+    Number(windowResult.rows[4]!.running_total),
+    1500,
+    'Sum of 100+200+300+400+500 = 1500',
+  );
   assert.equal(windowResult.rows[0]!.prev_val, null);
   assert.equal(Number(windowResult.rows[1]!.prev_val), 100);
 

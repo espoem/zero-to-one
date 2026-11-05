@@ -6,14 +6,18 @@
  * production build). Nothing here re-implements Solid: it only collects the
  * diagnostic codes the real runtime emitted while `fn` ran.
  */
-import { OBSERVE, type DiagnosticEvent } from "solid-js";
+import { OBSERVE, type DiagnosticEvent } from 'solid-js';
 
 export function hasObserve(): boolean {
   return OBSERVE !== undefined;
 }
 
-export function captureDiagnostics<T>(fn: () => T): { result: T; codes: string[]; events: DiagnosticEvent[] } {
-  if (!OBSERVE) throw new Error("diagnostics need the development or observe build of solid-js");
+export function captureDiagnostics<T>(fn: () => T): {
+  result: T;
+  codes: string[];
+  events: DiagnosticEvent[];
+} {
+  if (!OBSERVE) throw new Error('diagnostics need the development or observe build of solid-js');
   const capture = OBSERVE.diagnostics.capture();
   let result!: T;
   let events: DiagnosticEvent[] = [];
@@ -29,7 +33,7 @@ export function captureDiagnostics<T>(fn: () => T): { result: T; codes: string[]
 export async function captureDiagnosticsAsync<T>(
   fn: () => Promise<T>,
 ): Promise<{ result: T; codes: string[]; events: DiagnosticEvent[] }> {
-  if (!OBSERVE) throw new Error("diagnostics need the development or observe build of solid-js");
+  if (!OBSERVE) throw new Error('diagnostics need the development or observe build of solid-js');
   const capture = OBSERVE.diagnostics.capture();
   let result!: T;
   let events: DiagnosticEvent[] = [];

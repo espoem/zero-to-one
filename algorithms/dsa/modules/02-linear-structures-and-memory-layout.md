@@ -23,6 +23,7 @@ flowchart TD
 ```
 
 ### Contiguous Arrays vs Pointer-Chasing Linked Lists
+
 1. **Contiguous Array**: Elements are stored in adjacent memory addresses ($A[i] = \text{base} + i \times \text{sizeof}(\text{element})$).
    - **Spatial Locality**: When the CPU requests $A[0]$, the hardware prefetcher loads an entire 64-byte cache line into L1 cache, pulling the next several elements into fast SRAM simultaneously.
    - **Stride Predictability**: Linear array scans allow branch predictors and hardware prefetchers to stream data ahead of execution, avoiding CPU memory stalls.
@@ -58,6 +59,7 @@ flowchart TD
 ```
 
 ### The Transition Rules
+
 Transitions in V8's elements kinds lattice are **one-way**: an array can only transition to a more generic or holey state; it never transitions back to a more specific packed state.
 
 1. **`PACKED_SMI_ELEMENTS`**:
@@ -73,8 +75,8 @@ Transitions in V8's elements kinds lattice are **one-way**: an array can only tr
    - Occurs when an element is deleted (`delete arr[2]`) or elements are written past the current length (`arr[100] = 1` on an array of length 2).
    - **Severe Performance Penalty**: When accessing `arr[i]`, if the slot is empty, V8 must traverse the prototype chain (`arr.__proto__`) to check for inherited properties before returning `undefined`.
 
-> [!CAUTION] The Pre-Allocation Trap
-> Writing `const arr = new Array(1000)` creates an array with 1000 uninitialized holes (`HOLEY_SMI_ELEMENTS`). Filling it with a loop leaves it permanently holey. Always initialize with `Array.from({ length: 1000 }, () => 0)` or fill immediately via `new Array(1000).fill(0)` to preserve `PACKED` status.
+> [!CAUTION]
+> **The Pre-Allocation Trap** Writing `const arr = new Array(1000)` creates an array with 1000 uninitialized holes (`HOLEY_SMI_ELEMENTS`). Filling it with a loop leaves it permanently holey. Always initialize with `Array.from({ length: 1000 }, () => 0)` or fill immediately via `new Array(1000).fill(0)` to preserve `PACKED` status.
 
 ---
 
@@ -85,13 +87,14 @@ A classic performance trap in algorithmic programming is using a native JavaScri
 ```typescript
 // ANTI-PATTERN: O(n) per dequeue operation
 const queue: number[] = [];
-queue.push(1);       // O(1) amortized
+queue.push(1); // O(1) amortized
 const item = queue.shift(); // O(n) — must memmove all remaining elements 1 slot to the left!
 ```
 
 Processing $n$ elements through `queue.push()` and `queue.shift()` takes $O(n^2)$ total time, causing timeouts on inputs with $n = 100,000$.
 
 ### The Circular Ring Buffer Deque
+
 A **Double-Ended Queue (Deque)** implemented over a fixed or dynamic circular array achieves true $O(1)$ amortized `pushFront`, `pushBack`, `popFront`, and `popBack`.
 
 ```mermaid
@@ -112,12 +115,10 @@ flowchart LR
 ```
 
 ### Invariants & Wrap-Around Math
-For an array of capacity $C$:
-$$\text{next\_index} = (\text{index} + 1) \pmod C$$
-$$\text{prev\_index} = (\text{index} - 1 + C) \pmod C$$
 
-When $C$ is a power of 2 ($C = 2^k$), the expensive modulo operation `% C` can be replaced with the ultra-fast bitwise AND mask:
-$$\text{index} \pmod C \equiv \text{index} \ \& \ (C - 1)$$
+For an array of capacity $C$: $$\text{next\_index} = (\text{index} + 1) \pmod C$$ $$\text{prev\_index} = (\text{index} - 1 + C) \pmod C$$
+
+When $C$ is a power of 2 ($C = 2^k$), the expensive modulo operation `% C` can be replaced with the ultra-fast bitwise AND mask: $$\text{index} \pmod C \equiv \text{index} \ \& \ (C - 1)$$
 
 ---
 
@@ -139,8 +140,9 @@ flowchart LR
 ```
 
 ### The Sentinel (Dummy Head/Tail) Pattern
-In naive linked list implementations, inserting or deleting at the head or tail requires verbose conditional logic (`if (this.head === null) ... if (node === this.tail) ...`).
-Using a circular **Sentinel Node** (or a dummy head and dummy tail pair) completely eliminates null checks:
+
+In naive linked list implementations, inserting or deleting at the head or tail requires verbose conditional logic (`if (this.head === null) ... if (node === this.tail) ...`). Using a circular **Sentinel Node** (or a dummy head and dummy tail pair) completely eliminates null checks:
+
 - The list is never empty: `sentinel.next === sentinel` represents an empty list.
 - Every valid element node $X$ is guaranteed to have both $X.prev$ and $X.next$.
 - Insertion before any node $P$:
@@ -162,8 +164,9 @@ Using a circular **Sentinel Node** (or a dummy head and dummy tail pair) complet
 On modern 64-bit hardware, bit manipulation evaluates in 1 CPU cycle, providing $O(1)$ operations over compact bitsets.
 
 ### Essential Bitwise Formulas
+
 | Operation | Expression | Mathematical Purpose |
-| :--- | :--- | :--- |
+| :-- | :-- | :-- |
 | **Check $k$-th bit** | `(x & (1 << k)) !== 0` | Tests if bit $k$ is set |
 | **Set $k$-th bit** | `x \| (1 << k)` | Unconditionally sets bit $k$ to 1 |
 | **Clear $k$-th bit** | `x & ~(1 << k)` | Clears bit $k$ to 0 |
@@ -181,24 +184,21 @@ On modern 64-bit hardware, bit manipulation evaluates in 1 CPU cycle, providing 
 <details>
 <summary>1. Why is Array.prototype.shift() an O(n) operation in JavaScript, and what data structure should be used instead for FIFO queues?</summary>
 
-`Array.prototype.shift()` removes the element at index 0. Because a standard array stores elements in contiguous memory, removing index 0 requires the runtime to shift all remaining $n - 1$ elements one memory slot to the left to maintain contiguous indexing.
-For a FIFO queue, an engineer should use a **Circular Ring-Buffer Deque** or a linked list with head/tail pointers, both of which execute dequeue operations in $O(1)$ amortized time.
+`Array.prototype.shift()` removes the element at index 0. Because a standard array stores elements in contiguous memory, removing index 0 requires the runtime to shift all remaining $n - 1$ elements one memory slot to the left to maintain contiguous indexing. For a FIFO queue, an engineer should use a **Circular Ring-Buffer Deque** or a linked list with head/tail pointers, both of which execute dequeue operations in $O(1)$ amortized time.
 </details>
 
 <details>
 <summary>2. What is the difference between JavaScript's >> (Sign-propagating right shift) and >>> (Zero-fill right shift)?</summary>
 
 - `>>` is an arithmetic right shift: it preserves the sign bit of a 32-bit signed integer. If the input is negative, 1s are shifted in from the left.
-- `>>>` is a logical right shift: it always shifts in 0s from the left regardless of the sign bit, and crucially, coerces the output to an **unsigned 32-bit integer** in the range $[0, 2^{32} - 1]$.
-For example, `(-1) >> 1 === -1`, while `(-1) >>> 1 === 2147483647`.
+- `>>>` is a logical right shift: it always shifts in 0s from the left regardless of the sign bit, and crucially, coerces the output to an **unsigned 32-bit integer** in the range $[0, 2^{32} - 1]$. For example, `(-1) >> 1 === -1`, while `(-1) >>> 1 === 2147483647`.
+
 </details>
 
 <details>
 <summary>3. Why does Brian Kernighan's algorithm count set bits in O(k) time rather than O(w) time where w is word size?</summary>
 
-Kernighan's algorithm uses the identity `x & (x - 1)`:
-Subtracting 1 from a binary number flips the lowest set bit to 0 and all trailing 0s to 1. Performing a bitwise AND between $x$ and $x - 1$ clears the lowest set bit and leaves all higher bits unchanged.
-Because each iteration of the loop `x = x & (x - 1)` eliminates exactly one set bit, the loop runs in $O(k)$ iterations where $k$ is the number of set bits (popcount), rather than checking all 32 or 64 bits sequentially.
+Kernighan's algorithm uses the identity `x & (x - 1)`: Subtracting 1 from a binary number flips the lowest set bit to 0 and all trailing 0s to 1. Performing a bitwise AND between $x$ and $x - 1$ clears the lowest set bit and leaves all higher bits unchanged. Because each iteration of the loop `x = x & (x - 1)` eliminates exactly one set bit, the loop runs in $O(k)$ iterations where $k$ is the number of set bits (popcount), rather than checking all 32 or 64 bits sequentially.
 </details>
 
 <details>

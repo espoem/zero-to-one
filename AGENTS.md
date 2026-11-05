@@ -5,6 +5,7 @@ This document specifies conventions and operating constraints for AI agents main
 ## Repository Taxonomy and Layout
 
 Organize all educational materials into four root directories:
+
 - `languages/`: Programming language curricula and type systems (e.g., `languages/typescript/`, `languages/rust/`).
 - `technologies/`: Runtimes, databases, platforms, and toolchains (e.g., `technologies/docker/`, `technologies/postgres/`).
 - `algorithms/`: Data structures, algorithm design, computational complexity, and problem sets.
@@ -15,6 +16,7 @@ Coordination material for multi-agent work lives in `.agents/` (see [Multi-Agent
 ## Topic Module Standard
 
 Every self-contained learning track MUST follow this uniform directory structure:
+
 - `README.md`: Curriculum overview, syllabus, prerequisites, runnable instructions, a **Certifications & Exams** section (see below), and a `Verified against <tool versions> on <YYYY-MM-DD>` line.
 - `GLOSSARY.md`: Bilingual English ↔ Czech terminology index.
 - `modules/`: Self-contained markdown lesson files ordered numerically (e.g., `01-introduction.md`).
@@ -61,6 +63,14 @@ Apply these requirements when creating or updating any topic module:
    - In all Markdown tables, every literal pipe character (`|`) occurring inside cell text, inline code spans (e.g. `A \| B`), math, or descriptions MUST be escaped as `\|` or `&#124;` unless it functions as a table column grid mark.
    - Unescaped pipes inside cells fragment row parsing, creating phantom columns and corrupting table alignment across GitHub and Markdown renderers. Always verify table column count consistency.
 
+## Formatting and Linting
+
+1. **One formatter, one linter, repository-wide.** `oxfmt` formats code (JS/TS/JSX/TSX), Markdown, JSON, YAML, TOML and CSS. `oxlint` lints JS/TS. Both are pinned in the root `package.json` (tooling only) and configured once in `.oxfmtrc.json` and `.oxlintrc.json`. Python uses `ruff format` and `ruff check`. Rust (`cargo fmt`, `cargo clippy`) and Nim (`nimpretty`) use their native tools.
+2. **No hard-wrapped prose.** Every paragraph, list item and blockquote paragraph is one source line (`proseWrap: "never"`). `tools/wrap-check` enforces this and `--fix` repairs it. GitHub alerts keep their marker alone on its line (`> [!NOTE]`).
+3. **Every track exposes the same scripts:** `lint`, `fmt` and `fmt:check` (run against the root configs), next to `test` and `typecheck`.
+4. **Gate:** run `npm run check` at the repository root (format check, lint, wrap/table/link/Mermaid checks) before committing. Never commit unformatted files or lint errors.
+5. **Deliberate anti-patterns.** Examples that demonstrate an anti-pattern on purpose are exempted by a scoped override in `.oxlintrc.json`, or by `// oxlint-disable-next-line <rule> -- <why>`. Never exempt by disabling a rule repository-wide.
+
 ## Version Currency
 
 1. Target the latest stable release of every language, runtime, framework, and tool. Verify each version against a primary source (official release notes, the package registry, or upstream tags) at the time of writing. Never rely on model memory for versions.
@@ -71,6 +81,7 @@ Apply these requirements when creating or updating any topic module:
    - migration steps and the pitfalls of mixing old and new.
 
    Each track's final or migration module also carries a version history table of the major releases relevant to practitioners. Do not silently rewrite history, and do not teach removed APIs as current.
+
 4. Mark any claim that could not be verified against a primary source with `(unverified)`, and resolve it before the track is merged.
 
 ## Certification and Exam Coverage
@@ -89,6 +100,7 @@ Every track MUST cover the official certifications and exams for its topic. Wher
    3. Where no certification exists (e.g., SolidJS, Panda CSS), the recognised technical interview format for the topic: senior frontend loop, system-design round, DSA coding round.
 
    State explicitly when no certification exists.
+
 2. **Map domains to modules.** `exams/README.md` contains a coverage matrix: every exam domain and objective, its official weight, the module(s) and examples that teach it, and its coverage status (✅ full / 🟡 partial / ❌ gap). There must be no ❌ rows at merge time. Any 🟡 row needs a reason.
 3. **Exam version deltas.** When an exam targets an older product version than the track (e.g., Terraform Associate → 1.12 while the track teaches 1.17), add an "Exam delta" callout in the affected modules and in `exams/README.md`. The callout states what the exam expects versus current behaviour.
 4. **Preparation question banks.** Write one file per exam, `exams/<exam-code>.md` (or `exams/interview.md` for interview-format prep), containing:
@@ -100,16 +112,20 @@ Every track MUST cover the official certifications and exams for its topic. Wher
 
      ```markdown
      ### Q-<EXAM>-<NNN> · <Domain> · difficulty <1-3> · <single|multi|scenario|ordering|hands-on>
+
      <question text>
      - A) …
      - B) …
      <details><summary>Answer</summary>
 
      **B.** <explanation>
+
      - Why not A: …
      - Ref: [modules/NN-….md](../modules/NN-….md#anchor), <official doc URL>
+
      </details>
      ```
+
    - **Mock exam:** at least one full mock exam section that matches the real exam's question count, time limit and domain mix, with a scoring key.
 5. **Integrity.** Write only original questions. Never reproduce, paraphrase or solicit actual exam content ("braindumps"); that breaches certification NDAs. Base questions on the public exam guide objectives and the official documentation.
 6. **Upkeep.** Re-check exam guides when you update a track. Retirements, renamed codes and changed domain weights update the README, the matrix and the question banks in the same change.
@@ -133,8 +149,9 @@ Every track MUST cover the official certifications and exams for its topic. Wher
 ## Terminology and Glossary Discipline
 
 Follow these rules when creating or updating any `GLOSSARY.md` file:
+
 1. **Established Terminology Only**: Use standard terms established in official documentation, academic computer science literature, and authoritative reference publications. Never invent neologisms or colloquial translations.
-2. **Universal Consistency**: When a concept spans multiple areas (e.g., *Immutability*, *Idempotency*, *Pure Function*, *Covariance*), maintain consistent definitions and translations across all module glossaries and the root glossary.
+2. **Universal Consistency**: When a concept spans multiple areas (e.g., _Immutability_, _Idempotency_, _Pure Function_, _Covariance_), maintain consistent definitions and translations across all module glossaries and the root glossary.
 3. **Bilingual Mapping with English Prose**: Write all explanations, definitions, headings, and notes entirely in English. Present terms with their precise English canonical name, established Czech equivalent, concise English definition, and primary source / reference.
 4. **Two-Level Scope**:
    - Repository Root `GLOSSARY.md`: General computer science, systems engineering, and algorithmic concepts.
@@ -142,7 +159,7 @@ Follow these rules when creating or updating any `GLOSSARY.md` file:
 
 ## Isolation and Polyglot Tooling
 
-1. Keep dependencies isolated within each track directory (e.g., `languages/typescript/package.json`). Do not configure a single global package root that couples heterogeneous tech stacks.
+1. Keep dependencies isolated within each track directory (e.g., `languages/typescript/package.json`). Do not configure a single global package root that couples heterogeneous tech stacks. The root `package.json` is the one exception: it may hold repository-wide tooling only (formatter, linter, Markdown gates), never track dependencies.
 2. For every project using TypeScript (existing, in-progress, or future), target and use the latest available stable TypeScript release.
 3. Resolve and pin **all** project tooling locally using a project-level mise configuration (`.mise.toml` within the track directory). Commit `mise.lock`. This covers language runtimes (node, python/uv, rust, nim, go, java) and CLIs (kubectl, kind, helm, terraform, opentofu, and so on). Never rely on globally installed tools or system interpreters.
 4. Run every command through the pinned toolchain (`mise exec -- <cmd>`, or mise-activated shells). Container images are pinned by exact tag (and preferably digest) in compose files.
@@ -153,8 +170,9 @@ Follow these rules when creating or updating any `GLOSSARY.md` file:
 Several agents work in this repository. **Opus is the primary agent**: it plans, authors, integrates and makes the final call. Every other model is a companion that works under Opus's direction, on cheaper or independent tasks.
 
 ### Roles
+
 | Role | Who | Does | Never does |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | **Primary (author + integrator)** | Claude Opus: the claude.ai orchestration session (with Opus subagents) and Claude Code CLI running Opus on the Mac (for Docker/mise-heavy tracks) | Owns each track end to end: syllabus, modules, examples, exams, glossary, cheatsheet. Integrates companion output. Final gate. | Merges companion output without reading it |
 | **Drafter** | pi · DeepSeek | Bulk first drafts on request from the primary: question-bank drafts, glossary candidates, cheatsheet tables, example boilerplate, test scaffolding | Decides syllabus or structure; commits to `main` |
 | **Challenger** | pi · Muse Spark 1.3 | Adversarial review: attacks factual claims, hunts subtle errors and missing gotchas, tries to break tests and exam answers, argues the strongest counter-position | Rewrites content directly (it reports findings) |
@@ -163,18 +181,20 @@ Several agents work in this repository. **Opus is the primary agent**: it plans,
 Companion output is input to the primary, never final content. The primary reads, corrects and integrates it, and records what was used in `.agents/reviews/<track>.md`.
 
 ### Coordination files
-| File | Purpose |
-|---|---|
-| `.agents/PLAN.md` | Master plan, phases, decisions |
-| `.agents/OWNERSHIP.md` | Concept → owning track registry |
-| `.agents/STATUS.md` | Board: track, primary, companions, branch, state |
-| `.agents/briefs/<track>.md` | Self-contained task brief for a track |
-| `.agents/REVIEW.md` | Review checklist derived from this file |
+
+| File                         | Purpose                                                           |
+| ---------------------------- | ----------------------------------------------------------------- |
+| `.agents/PLAN.md`            | Master plan, phases, decisions                                    |
+| `.agents/OWNERSHIP.md`       | Concept → owning track registry                                   |
+| `.agents/STATUS.md`          | Board: track, primary, companions, branch, state                  |
+| `.agents/briefs/<track>.md`  | Self-contained task brief for a track                             |
+| `.agents/REVIEW.md`          | Review checklist derived from this file                           |
 | `.agents/reviews/<track>.md` | Hand-off notes, challenger/verifier findings and their resolution |
-| `.agents/KICKOFF.md` | Copy-paste prompts for each role |
-| `.agents/research/` | Research dossiers (versions, syllabi, gotchas) |
+| `.agents/KICKOFF.md`         | Copy-paste prompts for each role                                  |
+| `.agents/research/`          | Research dossiers (versions, syllabi, gotchas)                    |
 
 ### Rules
+
 1. **One track, one branch.** Work happens on `track/<name>` (in a dedicated worktree when several agents share a checkout). Never edit another track's branch.
 2. **Follow the brief.** Start from `.agents/briefs/<track>.md`. If the brief conflicts with this file, this file wins; record the conflict in the review file.
 3. **Every track is challenged and verified** by at least one companion before the final gate. The final gate is always Opus: tests re-run, versions and links verified, glossary and ownership checked.

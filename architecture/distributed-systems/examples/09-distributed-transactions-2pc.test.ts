@@ -83,21 +83,24 @@ test('Module 09: Distributed Transactions, 2PC & Sagas', async (t) => {
     assert.equal(p2.heldLock, null);
   });
 
-  await t.test('2PC blocks participants with locks held if coordinator crashes during PREPARED', () => {
-    const p1 = new TwoPhaseParticipant();
-    const p2 = new TwoPhaseParticipant();
+  await t.test(
+    '2PC blocks participants with locks held if coordinator crashes during PREPARED',
+    () => {
+      const p1 = new TwoPhaseParticipant();
+      const p2 = new TwoPhaseParticipant();
 
-    p1.prepare('row_100', true);
-    p2.prepare('row_200', true);
+      p1.prepare('row_100', true);
+      p2.prepare('row_200', true);
 
-    // Coordinator crashes before broadcasting Phase 2 decision!
-    // Invariants: Both participants remain locked in PREPARED state indefinitely
-    assert.equal(p1.state, 'PREPARED');
-    assert.equal(p2.state, 'PREPARED');
-    assert.equal(p1.heldLock, 'row_100');
-    assert.equal(p2.heldLock, 'row_200');
-    // They cannot unilaterally release locks without coordinator resolution
-  });
+      // Coordinator crashes before broadcasting Phase 2 decision!
+      // Invariants: Both participants remain locked in PREPARED state indefinitely
+      assert.equal(p1.state, 'PREPARED');
+      assert.equal(p2.state, 'PREPARED');
+      assert.equal(p1.heldLock, 'row_100');
+      assert.equal(p2.heldLock, 'row_200');
+      // They cannot unilaterally release locks without coordinator resolution
+    },
+  );
 
   await t.test('Saga Orchestrator rolls back already committed steps when later step fails', () => {
     const context = {

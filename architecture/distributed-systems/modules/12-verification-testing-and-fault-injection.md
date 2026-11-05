@@ -38,6 +38,7 @@ flowchart TD
 ```
 
 ### The Invariant Audit Loop
+
 1. The simulation executes millions of steps in fractions of a second (simulating days of cluster operation in 2 seconds).
 2. The virtual network and disk randomly inject faults:
    - Partitions clusters into asymmetric splits.
@@ -45,9 +46,9 @@ flowchart TD
    - Reorders, duplicates, and delays packets.
    - Pauses and crashes nodes, restarting them from simulated non-volatile storage.
 3. **Continuous Safety Invariant Check**: After **every single event**, the test asserts global invariants:
-   - *Election Safety*: At most one leader in any term.
-   - *Linearizability*: State machine history is legal.
-   - *Log Matching*: Replicas do not hold contradictory entries.
+   - _Election Safety_: At most one leader in any term.
+   - _Linearizability_: State machine history is legal.
+   - _Log Matching_: Replicas do not hold contradictory entries.
 4. **Byte-for-Byte Replayability**: If an invariant is violated at step $4,921$, the test runner prints the initial random seed (e.g. `seed: 0x4a9b21f`). Re-running the simulation with that exact seed reproduces the bug **identically down to the exact CPU instruction**, allowing developers to step through with a debugger!
 
 ---
@@ -95,7 +96,9 @@ flowchart TD
 ```
 
 ### Industrial Impact at Amazon Web Services (AWS)
-In 2015, Chris Newcombe et al. published *"How Amazon Web Services Uses Formal Methods"*, documenting how AWS uses TLA+ to verify core services like **Amazon S3**, **DynamoDB**, and **EBS**:
+
+In 2015, Chris Newcombe et al. published _"How Amazon Web Services Uses Formal Methods"_, documenting how AWS uses TLA+ to verify core services like **Amazon S3**, **DynamoDB**, and **EBS**:
+
 - TLA+ discovered subtle, multi-year bugs in S3 fault-tolerant replication that had evaded code reviews and years of testing.
 - It gave engineers mathematical proof that performance optimizations did not compromise data durability.
 - Engineers write models in **PlusCal** (a C-like pseudo-code syntax), which compiles automatically into pure TLA+ for model checking with **TLC**.
@@ -105,6 +108,7 @@ In 2015, Chris Newcombe et al. published *"How Amazon Web Services Uses Formal M
 ## 5. Chaos Engineering: Resilience in Production
 
 While DST and TLA+ operate before code ships, **Chaos Engineering** tests resilience in live production environments. Pioneered by Netflix with **Chaos Monkey** and standardized by CNCF tools like **Chaos Mesh**:
+
 - **Principle**: Introduce controlled, randomized failures directly in production (terminating pods, introducing latency, degrading DNS) during working hours to verify that self-healing systems (Kubernetes, Envoy, Circuit Breakers) handle failures gracefully without customer-facing downtime.
 
 ---
@@ -114,15 +118,13 @@ While DST and TLA+ operate before code ships, **Chaos Engineering** tests resili
 <details>
 <summary>1. Why is single-threaded Deterministic Simulation Testing superior to multi-threaded integration testing for distributed algorithms?</summary>
 
-Multi-threaded testing depends on the host operating system's thread scheduler, which is inherently non-deterministic. When a multi-threaded test catches an elusive race condition, re-running it almost never reproduces the failure, turning debugging into guesswork.
-In contrast, a deterministic simulator runs in a single thread driven by a seeded pseudo-random number generator (PRNG). Every network delay, packet drop, disk write latency, and context switch is a deterministic function of the seed. If a bug is caught on step 10,000, passing the same seed reproduces the identical failure byte-for-byte in a debugger every single time.
+Multi-threaded testing depends on the host operating system's thread scheduler, which is inherently non-deterministic. When a multi-threaded test catches an elusive race condition, re-running it almost never reproduces the failure, turning debugging into guesswork. In contrast, a deterministic simulator runs in a single thread driven by a seeded pseudo-random number generator (PRNG). Every network delay, packet drop, disk write latency, and context switch is a deterministic function of the seed. If a bug is caught on step 10,000, passing the same seed reproduces the identical failure byte-for-byte in a debugger every single time.
 </details>
 
 <details>
 <summary>2. How does Kyle Kingsbury's Jepsen test for linearizability violations?</summary>
 
-Jepsen client processes concurrently execute read and write operations against the cluster while a "Nemesis" injects network partitions and node crashes. Jepsen records every operation's invocation timestamp, return timestamp, and result.
-After the run, a linearizability checker (such as Porcupine or Knossos) parses the recorded history using the Wing-Gong algorithm, searching for a legal sequential execution order that respects the real-time precedence of all operations. If no valid linearization exists, Jepsen outputs the exact minimal sequence of operations that broke linearizability.
+Jepsen client processes concurrently execute read and write operations against the cluster while a "Nemesis" injects network partitions and node crashes. Jepsen records every operation's invocation timestamp, return timestamp, and result. After the run, a linearizability checker (such as Porcupine or Knossos) parses the recorded history using the Wing-Gong algorithm, searching for a legal sequential execution order that respects the real-time precedence of all operations. If no valid linearization exists, Jepsen outputs the exact minimal sequence of operations that broke linearizability.
 </details>
 
 <details>
@@ -130,15 +132,17 @@ After the run, a linearizability checker (such as Porcupine or Knossos) parses t
 
 - **Invariant (Safety Property)**: A state predicate that must evaluate to `TRUE` in every single reachable state of the system (e.g. `TypeOK`, `NoTwoLeadersInSameTerm`). It can be violated in a single step and is checked by evaluating the state table.
 - **Temporal Property (Liveness Property)**: A formula in temporal logic asserting behavior across sequences of states over time (e.g. $\Box \Diamond \text{LeaderElected}$, meaning "it is always true that eventually a leader will be elected"). It cannot be violated in a finite state and is checked by searching for cycles (strongly connected components) in the state graph.
+
 </details>
 
 <details>
 <summary>4. What are the limitations of TLA+ model checking, and how do engineers manage state space explosion?</summary>
 
-TLC exhaustively enumerates all reachable states. As the number of nodes, buffer sizes, or message queues increases, the number of states explodes exponentially ($O(k^N)$), quickly exhausting physical memory.
-Engineers manage this by:
+TLC exhaustively enumerates all reachable states. As the number of nodes, buffer sizes, or message queues increases, the number of states explodes exponentially ($O(k^N)$), quickly exhausting physical memory. Engineers manage this by:
+
 1. Model symmetry reduction (treating identical node IDs as symmetric equivalents).
 2. Constraining model parameters to small constants (e.g. testing with 3 nodes, 2 client values, and message queues capped at 2 packets). Research shows that almost all concurrency and consensus bugs manifest in configurations with $\le 3$ nodes.
+
 </details>
 
 <details>

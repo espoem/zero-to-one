@@ -3,13 +3,13 @@ import assert from 'node:assert/strict';
 
 export interface DNSHeader {
   id: number;
-  qr: boolean;      // 0 = Query, 1 = Response
+  qr: boolean; // 0 = Query, 1 = Response
   opcode: number;
-  aa: boolean;      // Authoritative Answer
-  tc: boolean;      // Truncation
-  rd: boolean;      // Recursion Desired
-  ra: boolean;      // Recursion Available
-  rcode: number;    // 0=NOERROR, 3=NXDOMAIN, etc.
+  aa: boolean; // Authoritative Answer
+  tc: boolean; // Truncation
+  rd: boolean; // Recursion Desired
+  ra: boolean; // Recursion Available
+  rcode: number; // 0=NOERROR, 3=NXDOMAIN, etc.
   qdCount: number;
   anCount: number;
   nsCount: number;

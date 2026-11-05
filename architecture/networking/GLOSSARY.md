@@ -7,7 +7,7 @@ This glossary provides authoritative English ↔ Czech definitions of core compu
 ## 1. Link Layer, Physical Medium & Packet Framing
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Protocol Data Unit (PDU)** | **Protokolová datová jednotka (PDU)** | The discrete structural unit of data specified in an architectural protocol layer, comprising protocol-control information (headers/trailers) and user payload (e.g., Frame at L2, Packet at L3, Segment/Datagram at L4). | ISO/IEC 7498-1 |
 | **Ethernet II Frame** | **Rámec Ethernet II** | The ubiquitous IEEE 802.3 / DIX link-layer framing format consisting of a 14-byte header (6-byte Dst MAC, 6-byte Src MAC, 2-byte EtherType), 46–1500 byte payload, and 4-byte Frame Check Sequence (FCS/CRC-32). | IEEE 802.3 |
 | **Content-Addressable Memory (CAM) Table** | **CAM tabulka (tabulka MAC adres přepínače)** | High-speed hardware associative memory in Layer 2 switches mapping physical switch ports and VLANs to learned source MAC addresses with dynamic aging timers. | IEEE 802.1D |
@@ -26,7 +26,7 @@ This glossary provides authoritative English ↔ Czech definitions of core compu
 ## 2. Network Layer, Addressing & IP Routing
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Classless Inter-Domain Routing (CIDR)** | **Beztřídní směrování mezi doménami (CIDR)** | An IP addressing scheme allocating variable-length prefix masks (`/n`) to replace legacy Class A, B, and C networks, preventing IP address depletion and enabling hierarchical route aggregation. | RFC 1519, RFC 4632 |
 | **Variable Length Subnet Masking (VLSM)** | **Maska podsítě s proměnnou délkou (VLSM)** | The design practice of subdividing an assigned IP address block into hierarchically sized subnets of varying prefix lengths to match host density and minimize wasted IP space. | RFC 1878 |
 | **Longest Prefix Match (LPM)** | **Pravidlo nejdelší shody prefixu (LPM)** | The fundamental IP forwarding algorithm where a router inspects multiple matching route prefixes in its forwarding table and forwards the packet via the route entry with the highest number of matching leading prefix bits. | RFC 1812 |
@@ -42,7 +42,7 @@ This glossary provides authoritative English ↔ Czech definitions of core compu
 ## 3. Internet Peering, Autonomous Systems & BGP
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Autonomous System (AS)** | **Autonomní systém (AS)** | A connected group of IP networks and routers managed under a common technical administrative domain with a coherent internal routing policy, identified globally by an Autonomous System Number (ASN). | RFC 1930 |
 | **Default-Free Zone (DFZ)** | **Zóna bez výchozího směrování (DFZ)** | The core collection of internet backbone routers that maintain an explicit, full global BGP routing table (~950,000+ prefixes) without relying on any default gateway route (`0.0.0.0/0`). | Internet Architecture |
 | **Border Gateway Protocol (BGP-4)** | **Směrovací protokol BGP-4** | The standard de-facto exterior path-vector routing protocol operating over TCP port 179 that exchanges reachability information, prefix policies, and AS paths across Autonomous Systems. | RFC 4271 |
@@ -60,7 +60,7 @@ This glossary provides authoritative English ↔ Czech definitions of core compu
 ## 4. Transport Layer & Socket Programming
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **User Datagram Protocol (UDP)** | **Protokol uživatelských datagramů (UDP)** | A minimal, connectionless, stateless Layer 4 transport protocol (RFC 768) providing best-effort unacknowledged packet delivery with an 8-byte header and optional (IPv4) or mandatory (IPv6) checksum integrity. | RFC 768 |
 | **Transmission Control Protocol (TCP)** | **Protokol řízení přenosu (TCP)** | A connection-oriented, reliable, bidirectional byte-stream transport protocol (RFC 9293) providing in-order delivery, flow control, retransmission, and congestion control over an unreliable internetwork. | RFC 9293 |
 | **Berkeley Sockets API** | **Rozhraní soketů Berkeley (POSIX sockets)** | The canonical operating system C programming interface (`socket`, `bind`, `listen`, `accept`, `connect`, `send`, `recv`) for network inter-process communication. | POSIX.1-2017 |
@@ -81,7 +81,7 @@ This glossary provides authoritative English ↔ Czech definitions of core compu
 ## 5. Congestion Control & Queue Management
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Additive Increase / Multiplicative Decrease (AIMD)** | **Lineární nárůst / multiplikativní pokles (AIMD)** | A feedback control algorithm where transmission window increases linearly ($W \leftarrow W + 1$) during absence of congestion and decreases multiplicatively ($W \leftarrow W \times \beta$) upon packet loss, guaranteeing convergence to efficiency and fairness. | Chiu & Jain (1989) |
 | **Slow Start** | **Fáze pomalého startu (Slow Start)** | The initial TCP congestion control phase where the congestion window (`cwnd`) doubles every round-trip time ($W \leftarrow W \times 2$) to rapidly probe link capacity until reaching `ssthresh`. | RFC 5681 |
 | **CUBIC Congestion Control** | **Algoritmus řízení zahlcení CUBIC** | The default Linux loss-based congestion control algorithm (RFC 9438) that sizes the congestion window as a cubic function of time elapsed since the last packet drop, decoupling window growth from RTT. | RFC 9438 |
@@ -97,7 +97,7 @@ This glossary provides authoritative English ↔ Czech definitions of core compu
 ## 6. Domain Name System (DNS) & Wire Formats
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Authoritative Name Server** | **Autoritativní jmenný server** | A DNS server holding the definitive, authentic master records for a specific domain zone (e.g. `example.com`), answering queries without recursion. | RFC 1034, RFC 1035 |
 | **Recursive Resolver** | **Rekurzivní resolver (překladač)** | A DNS caching server that accepts client queries and performs iterative lookups across root, TLD, and authoritative servers to assemble the final answer. | RFC 1034 |
 | **DNS Compression Pointer** | **DNS kompresní ukazatel** | A 2-byte wire format mechanism where domain labels can be replaced by a pointer (`0b11` in highest 2 bits followed by 14-bit byte offset) referencing earlier identical domain names in the DNS message. | RFC 1035 §4.1.4 |
@@ -116,7 +116,7 @@ This glossary provides authoritative English ↔ Czech definitions of core compu
 ## 7. Transport Layer Security & Cryptography on the Wire
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Transport Layer Security (TLS 1.3)** | **Zabezpečení transportní vrstvy (TLS 1.3)** | Modern cryptographic transport protocol (RFC 8446) providing confidentiality, authenticity, and integrity with a 1-RTT handshake and mandatory forward-secret AEAD ciphers. | RFC 8446 |
 | **Authenticated Encryption with Associated Data (AEAD)** | **Autentizované šifrování s přidruženými daty (AEAD)** | A symmetric cryptographic scheme (e.g. AES-128-GCM, ChaCha20-Poly1305) that simultaneously guarantees both confidentiality and ciphertext integrity in a single pass. | RFC 5116 |
 | **Perfect Forward Secrecy (PFS)** | **Dopředná bezpečnost (PFS)** | A cryptographic property ensuring that compromise of a long-term server private key does not compromise the confidentiality of historical recorded session traffic, guaranteed by ephemeral DH keys. | Cryptographic Architecture |
@@ -130,7 +130,7 @@ This glossary provides authoritative English ↔ Czech definitions of core compu
 ## 8. Modern Web Application Protocols & Streaming
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Chunked Transfer Encoding** | **Počástečkované kódování přenosu (Chunked Encoding)** | An HTTP/1.1 streaming mechanism (`Transfer-Encoding: chunked`) where a message payload is serialized as a series of size-prefixed chunks, terminated by a zero-sized chunk (`0\r\n\r\n`). | RFC 9112 |
 | **HTTP Request Smuggling** | **Podstrčení HTTP požadavku (Request Smuggling)** | A critical web vulnerability where desynchronization between a front-end proxy and backend server parsing `Content-Length` vs `Transfer-Encoding` (CL.TE / TE.CL) allows an attacker to inject invisible request prefixes. | PortSwigger / RFC 9112 |
 | **HTTP/2 Binary Framing Layer** | **Binární rámcová vrstva HTTP/2** | The framing specification (RFC 9113) that partitions HTTP messages into discrete binary frames (HEADERS, DATA, SETTINGS, RST_STREAM) with a fixed 9-byte header, multiplexing multiple concurrent streams over a single TCP connection. | RFC 9113 |
@@ -148,7 +148,7 @@ This glossary provides authoritative English ↔ Czech definitions of core compu
 ## 9. Load Balancing, Edge Caching & Linux Kernel Operations
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Direct Server Return (DSR)** | **Přímá odpověď serveru (DSR)** | A Layer 4 load balancing technique where incoming packets have only their destination MAC address rewritten to the backend server; backend servers transmit responses directly to clients via their default gateway, bypassing the load balancer. | L4 Load Balancing Architecture |
 | **Maglev Consistent Hashing** | **Konzistentní hašování Maglev** | A lookup-table consistent hashing algorithm developed by Google using prime-sized permutation tables to distribute packet 5-tuples across backends with minimal churn upon node membership changes. | Eisenbud et al. (NSDI 2016) |
 | **PROXY Protocol** | **Protokol PROXY** | A protocol created by HAProxy (v1 text, v2 binary) that prepends client connection metadata (source IP, destination IP, ports) to a newly opened TCP stream to pass client identity through Layer 4 proxies. | HAProxy Specification |

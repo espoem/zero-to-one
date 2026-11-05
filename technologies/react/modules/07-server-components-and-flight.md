@@ -12,7 +12,7 @@ React Server Components (RSC) split one React tree across two environments. **Se
 
 > **Definition 7.1 (Two module graphs).** An RSC application is bundled twice. The **server graph** is resolved with the `react-server` export condition: in it, `react` resolves to a build without client hooks (`useState`, `useEffect` are absent) and `react-server-dom-*/server` provides the Flight encoder. The **client graph** is resolved normally. A module marked `"use client"` is a **boundary**: in the server graph its exports are replaced by **client references**; in the client graph they are the real components.
 
-> **Definition 7.2 (Client reference).** An opaque value `{$$typeof: Symbol.for("react.client.reference"), $$id, …}` that stands for "export *name* of client module *id*". The server can pass it around and render it as an element type, but cannot call it.
+> **Definition 7.2 (Client reference).** An opaque value `{$$typeof: Symbol.for("react.client.reference"), $$id, …}` that stands for "export _name_ of client module _id_". The server can pass it around and render it as an element type, but cannot call it.
 
 > **Definition 7.3 (Server reference).** A function marked by `"use server"` and registered with an id. When serialised to the client it becomes a **reference**; calling it on the client sends an HTTP request with the encoded arguments to an endpoint that decodes them and calls the function. A Server Function is therefore an **RPC endpoint**.
 
@@ -37,7 +37,7 @@ flowchart LR
 ### 1.1 Directives
 
 | Directive | Placed | Means | Does **not** mean |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `"use client"` | Top of a module | This module and everything it imports are client code; its exports become client references when imported from the server graph | "Render only on the client" — Client Components are still server-rendered to HTML by SSR |
 | `"use server"` | Top of a module, or first statement of an async function | These async functions are Server Functions callable from the client | "This is a Server Component" — Server Components need no directive; they are the default in the server graph |
 | `import "server-only"` | Any module | Build error if it ends up in the client graph | Runtime protection |
@@ -46,8 +46,8 @@ flowchart LR
 
 ### 1.2 RSC is not SSR
 
-| | SSR (`react-dom/server`, Module 06) | RSC |
-|---|---|---|
+|  | SSR (`react-dom/server`, Module 06) | RSC |
+| --- | --- | --- |
 | Output | HTML | Flight (a serialised React tree) |
 | Runs | All components, once per request, to produce the first paint | Only Server Components |
 | Client then | Downloads JS for **all** components and hydrates | Downloads JS only for Client Components; Server Component output is data |
@@ -63,11 +63,11 @@ They compose: a framework renders RSC → Flight on the server, then feeds the F
 ```tsx
 // No directive: a Server Component (server graph).
 export default async function NotePage({ id }: { id: string }) {
-  const note = await db.notes.find(id);                // direct data access, no API layer
+  const note = await db.notes.find(id); // direct data access, no API layer
   return (
     <article>
       <h1>{note.title}</h1>
-      <Markdown source={note.body} />                   {/* heavy library: never shipped */}
+      <Markdown source={note.body} /> {/* heavy library: never shipped */}
       <LikeButton noteId={id} initialLikes={note.likes} /> {/* "use client" component */}
     </article>
   );
@@ -83,14 +83,17 @@ Rules:
 
 ```tsx
 // Server Component
-<ClientTabs>{/* rendered on the server, passed as children */}<ServerHeavyPanel /></ClientTabs>
+<ClientTabs>
+  {/* rendered on the server, passed as children */}
+  <ServerHeavyPanel />
+</ClientTabs>
 ```
 
 The test "the client decodes rows into React elements…" shows the server-rendered `<b>server-rendered label</b>` passed as a `label` prop into the client `Counter` — the client receives a ready element, not code.
 
 ### 2.1 Then vs now: Context in Server Components (19.3)
 
-Server Components can **read** no context (there is no client context on the server). Before 19.3 they also could not **provide** one, so a layout that loaded the current user needed a `"use client"` wrapper just to render `<UserContext.Provider>`. Since **19.3** a Server Component can render a context imported from a client module directly as a provider: `<UserContext value={user}>{children}</UserContext>`. Test "19.3: a Server Component renders a client Context as its provider" decodes the tree and renders `hello ada`. Server Components still cannot *create* contexts.
+Server Components can **read** no context (there is no client context on the server). Before 19.3 they also could not **provide** one, so a layout that loaded the current user needed a `"use client"` wrapper just to render `<UserContext.Provider>`. Since **19.3** a Server Component can render a context imported from a client module directly as a provider: `<UserContext value={user}>{children}</UserContext>`. Test "19.3: a Server Component renders a client Context as its provider" decodes the tree and renders `hello ada`. Server Components still cannot _create_ contexts.
 
 ---
 
@@ -113,7 +116,7 @@ A Flight response is a stream of **rows**. Each row is `<id>:<tag?><payload>\n` 
 An element is encoded as the array `["$", type, key, props]`. String values starting with `$` are **references**:
 
 | Encoding | Meaning |
-|---|---|
+| --- | --- |
 | `"$1"` | Value of chunk 1 |
 | `"$L2"` | **Lazy** reference to chunk 2 (a client component or a not-yet-resolved subtree) |
 | `"$@5"` | A **Promise** resolved by chunk 5 |
@@ -143,27 +146,27 @@ An async Server Component inside `<Suspense>` becomes a lazy hole (`"$L4"`) in t
 Props passed from Server to Client Components, and arguments/return values of Server Functions, must be serialisable by Flight (test "rich values survive the boundary…"):
 
 | Supported | Not supported |
-|---|---|
-| Primitives incl. `undefined`, `NaN`, `-0`, `±Infinity`, `BigInt` | **Functions** (except Server Functions) — test "NEGATIVE: a plain function prop…" (*Event handlers cannot be passed to Client Component props*) |
-| Plain objects, arrays, `Map`, `Set`, `Date` | **Class instances**, objects with null prototype — test "NEGATIVE: class instances…" (*Only plain objects, and a few built-ins…*) |
+| --- | --- |
+| Primitives incl. `undefined`, `NaN`, `-0`, `±Infinity`, `BigInt` | **Functions** (except Server Functions) — test "NEGATIVE: a plain function prop…" (_Event handlers cannot be passed to Client Component props_) |
+| Plain objects, arrays, `Map`, `Set`, `Date` | **Class instances**, objects with null prototype — test "NEGATIVE: class instances…" (_Only plain objects, and a few built-ins…_) |
 | Typed arrays, `ArrayBuffer`, `Blob`, `FormData` | Symbols not registered with `Symbol.for` |
 | **Promises** (streamed; read with `use`) | Closures over server resources (DB connections, file handles) |
 | React elements (JSX), client references, Server Functions | DOM nodes, Web streams in some directions (check the version) |
-| Iterables/async iterables (version-dependent) | |
+| Iterables/async iterables (version-dependent) |  |
 
 Observed details worth knowing: a property whose value is `undefined` arrives as `undefined` but the key is **absent** after decoding (19.3.1); repeated objects are deduplicated by reference; promises let you **start** data loading on the server and **finish** it on the client (`<Comments commentsPromise={getComments()} />` + `use(commentsPromise)` in a Client Component, without blocking the server render).
 
-> **Security corollary.** Serialisation is also an *exposure* boundary: every prop you pass to a Client Component is sent to the browser, visible in the page source. Passing a whole `user` row from the database to a client avatar ships the password hash too. Select fields explicitly (a "DTO" per boundary). React's experimental `taintObjectReference`/`taintUniqueValue` APIs (canary/experimental channel only, not in 19.3 stable) aim to make such leaks throw.
+> **Security corollary.** Serialisation is also an _exposure_ boundary: every prop you pass to a Client Component is sent to the browser, visible in the page source. Passing a whole `user` row from the database to a client avatar ships the password hash too. Select fields explicitly (a "DTO" per boundary). React's experimental `taintObjectReference`/`taintUniqueValue` APIs (canary/experimental channel only, not in 19.3 stable) aim to make such leaks throw.
 
 ---
 
 ## 5. Per-request caching: `cache` and `cacheSignal`
 
 ```tsx
-import { cache, cacheSignal } from "react";
+import { cache, cacheSignal } from 'react';
 
 const getUser = cache(async (id: string) => {
-  return db.users.find(id, { signal: cacheSignal() });   // abort when the render no longer needs it
+  return db.users.find(id, { signal: cacheSignal() }); // abort when the render no longer needs it
 });
 ```
 
@@ -191,16 +194,16 @@ On the wire the function is `{"id":"server/notes.js#deleteNote","bound":null}` r
 
 > **A Server Function is a public, unauthenticated-by-default HTTP endpoint whose arguments are attacker-controlled.**
 
-The UI deciding *when* the button is shown is irrelevant: anyone can POST any encoded arguments to the action ID (IDs are discoverable from the client bundle). The tests demonstrate this without any UI:
+The UI deciding _when_ the button is shown is irrelevant: anyone can POST any encoded arguments to the action ID (IDs are discoverable from the client bundle). The tests demonstrate this without any UI:
 
 - "arguments are whatever the request body says": `encodeReply(["n2"])` → `decodeReply` → `["n2"]`.
 - "NEGATIVE (IDOR): an action without an authorization check deletes another user's note": the session is Alice, the UI only lists Alice's notes, yet POSTing Bob's ID deletes it.
-- "the action re-checks input and ownership on the server": validating the *type* (rejects `{ $ne: null }`) and the *ownership* stops both attacks.
+- "the action re-checks input and ownership on the server": validating the _type_ (rejects `{ $ne: null }`) and the _ownership_ stops both attacks.
 
 Checklist for every Server Function:
 
 1. **Authenticate** (read the session from cookies/headers on the server, never from arguments).
-2. **Authorise** the specific object (ownership/permission check) — this is OWASP *Broken Access Control*.
+2. **Authorise** the specific object (ownership/permission check) — this is OWASP _Broken Access Control_.
 3. **Validate** every argument's shape at runtime (a schema; typing it is [TS M11](../../../languages/typescript/README.md)). TypeScript types do not exist at runtime.
 4. **Treat closed-over values as client-supplied** if they were bound on the client (`.bind(null, id)` arguments are serialised and sent back).
 5. **Do not return secrets**; return values are serialised to the client like props.
@@ -213,21 +216,21 @@ Checklist for every Server Function:
 
 ### 7.1 What happened
 
-On **2025-12-03** the React team disclosed **CVE-2025-55182**, CVSS **10.0**: *"an unauthenticated remote code execution vulnerability in React Server Components"*, caused by *"a flaw in how React decodes payloads sent to React Server Function endpoints"* ([react.dev advisory](https://react.dev/blog/2025/12/03/critical-security-vulnerability-in-react-server-components)). Key properties:
+On **2025-12-03** the React team disclosed **CVE-2025-55182**, CVSS **10.0**: _"an unauthenticated remote code execution vulnerability in React Server Components"_, caused by _"a flaw in how React decodes payloads sent to React Server Function endpoints"_ ([react.dev advisory](https://react.dev/blog/2025/12/03/critical-security-vulnerability-in-react-server-components)). Key properties:
 
 - **Affected:** `react-server-dom-webpack`, `react-server-dom-parcel`, `react-server-dom-turbopack` versions **19.0.0, 19.1.0, 19.1.1, 19.2.0**, and therefore every framework bundling them: Next.js (App Router), React Router RSC, Waku, `@parcel/rsc`, `@vitejs/plugin-rsc`, `rwsdk`.
-- **No Server Functions required:** *"Even if your app does not implement any React Server Function endpoints it may still be vulnerable if your app supports React Server Components"* — the decoding endpoint exists whenever RSC is wired up.
+- **No Server Functions required:** _"Even if your app does not implement any React Server Function endpoints it may still be vulnerable if your app supports React Server Components"_ — the decoding endpoint exists whenever RSC is wired up.
 - **Not affected:** apps without a React server, and apps without an RSC-capable framework/bundler (plain SPA, classic SSR without RSC).
 - **Fixed in:** 19.0.1, 19.1.2, 19.2.1 (2025-12-03). Reported 2025-11-29 via Meta's bug bounty; fix rolled out with hosting providers before disclosure.
 
-The root cause class is **unsafe deserialisation**: the reply decoder (the inverse of Flight, used for Server Function arguments) could be driven by a crafted payload into resolving references to objects and properties it should never reach, ultimately executing attacker-chosen code. That is the same class as Java deserialisation gadgets or Python `pickle`: a *rich* serialisation format with references is a powerful attack surface when it parses **untrusted input**.
+The root cause class is **unsafe deserialisation**: the reply decoder (the inverse of Flight, used for Server Function arguments) could be driven by a crafted payload into resolving references to objects and properties it should never reach, ultimately executing attacker-chosen code. That is the same class as Java deserialisation gadgets or Python `pickle`: a _rich_ serialisation format with references is a powerful attack surface when it parses **untrusted input**.
 
 ### 7.2 The follow-up advisories
 
 Hardening the decoder surfaced more issues. All are in the same three packages and are fixed per release line:
 
 | CVE | Published | Type | CVSS | Fixed in (19.0 / 19.1 / 19.2) |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | CVE-2025-55182 | 2025-12-03 | **RCE** via Server Function payload decoding | 10.0 | 19.0.1 / 19.1.2 / 19.2.1 |
 | CVE-2025-55184 | 2025-12-11 | DoS: infinite loop on deserialisation | 7.5 | 19.0.2 / 19.1.3 / 19.2.2 (incomplete) |
 | CVE-2025-55183 | 2025-12-11 | Source code exposure: a Server Function's source returned via stringification | 5.3 | 19.0.2 / 19.1.3 / 19.2.2 |
@@ -237,17 +240,17 @@ Hardening the decoder surfaced more issues. All are in the same three packages a
 | CVE-2026-23870 | 2026-05 (unverified) | DoS: OOM / CPU | 7.5 | 19.0.6 / 19.1.7 / 19.2.6 (unverified) |
 | CVE-2026-44907 | 2026-07 (unverified) | DoS: OOM / CPU | 7.5 | 19.0.8 / 19.1.9 / 19.2.8 (unverified) |
 
-Sources: the [12-11 React follow-up post](https://react.dev/blog/2025/12/11/denial-of-service-and-source-code-exposure-in-react-server-components) (55183/55184/67779/23864), GitLab and OSV advisory databases for the 2026 IDs. 19.3.0 (2026-09-09) was released after all of them. The 2026-10-14 releases (19.3.1 and 19.0.9/19.1.10/19.2.9 on the same day) had no published advisory at the time of verification (2026-10-29) *(unverified whether they contain security fixes)* — take the latest patch of your line regardless.
+Sources: the [12-11 React follow-up post](https://react.dev/blog/2025/12/11/denial-of-service-and-source-code-exposure-in-react-server-components) (55183/55184/67779/23864), GitLab and OSV advisory databases for the 2026 IDs. 19.3.0 (2026-09-09) was released after all of them. The 2026-10-14 releases (19.3.1 and 19.0.9/19.1.10/19.2.9 on the same day) had no published advisory at the time of verification (2026-10-29) _(unverified whether they contain security fixes)_ — take the latest patch of your line regardless.
 
-The source-exposure CVE is instructive: *"Only secrets in source code may be exposed"*, i.e. hard-coded keys in Server Function bodies; runtime `process.env` values were not. Never hard-code secrets, even in server-only code.
+The source-exposure CVE is instructive: _"Only secrets in source code may be exposed"_, i.e. hard-coded keys in Server Function bodies; runtime `process.env` values were not. Never hard-code secrets, even in server-only code.
 
 ### 7.3 Then vs now: running RSC in production
 
-| | Then (pre-patch RSC setups, 19.0.0–19.2.0, until December 2025) | Now |
-|---|---|---|
+|  | Then (pre-patch RSC setups, 19.0.0–19.2.0, until December 2025) | Now |
+| --- | --- | --- |
 | Version policy | `react-server-dom-*` pinned implicitly by the framework; teams upgraded React by minors only | Patch-level hygiene: subscribe to React/framework advisories; take every patch of your release line; Dependabot/Renovate on `react-server-dom-*` and the framework |
 | Threat model | "Server Functions are internal functions with nice ergonomics" | Server Functions and the RSC endpoint are **public deserialisation endpoints**: authN/authZ/validation in every function, request size limits and rate limits at the edge |
-| Exposure | RSC endpoint reachable even if the app defines no Server Functions | Same — so *every* RSC app must patch, not only those using actions |
+| Exposure | RSC endpoint reachable even if the app defines no Server Functions | Same — so _every_ RSC app must patch, not only those using actions |
 | Defence in depth | — | Hosting-provider WAF rules can reduce exposure (the advisory mentions coordinating with hosting providers), but **only patching fixes it** |
 | Version check in CI | — | A gate test like "the installed react-server-dom-webpack is at or above the patched floor" |
 
@@ -267,7 +270,7 @@ The version-gate tests ("the version gate itself…", "the installed react-serve
 ## 8. Production failure modes
 
 | Symptom | Cause | Fix |
-|---|---|---|
+| --- | --- | --- |
 | "Event handlers cannot be passed to Client Component props" | Passing a function from a Server Component | Move the handler into a Client Component, or pass a Server Function |
 | "Only plain objects… can be passed to Client Components" | Passing class instances (ORM entities, `Decimal`, `URL`) | Map to plain DTOs |
 | `useState is not a function` / "… only works in Client Components" | Hook used in a server-graph module | Add `"use client"` to the interactive component |
@@ -284,7 +287,7 @@ The version-gate tests ("the version gate itself…", "the installed react-serve
 ## 9. Executable proofs
 
 | Claim | Test (`rsc.test.tsx`) |
-|---|---|
+| --- | --- |
 | Flight rows: `I` client refs, symbols, lazy holes, late rows; server code not shipped | "a server tree streams as rows…" |
 | Client decodes to elements and resolves client components from its own bundle | "the client decodes rows…" |
 | Rich serialisation incl. Promise; undefined-key behaviour | "rich values survive the boundary…" |

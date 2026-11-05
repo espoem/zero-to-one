@@ -135,7 +135,8 @@ export class SlottedPage {
       currentUpper -= item.data.length;
       this.buffer.set(item.data, currentUpper);
 
-      const pointerOffset = SlottedPage.HEADER_SIZE + item.slotIndex * SlottedPage.ITEM_POINTER_SIZE;
+      const pointerOffset =
+        SlottedPage.HEADER_SIZE + item.slotIndex * SlottedPage.ITEM_POINTER_SIZE;
       this.view.setUint16(pointerOffset, currentUpper, true);
       this.view.setUint16(pointerOffset + 2, item.data.length, true);
     }
@@ -222,8 +223,8 @@ describe('Slotted Page Storage Architecture', () => {
             const retrieved = page.get(inserted[i]!.slot);
             assert.deepEqual(retrieved, inserted[i]!.data);
           }
-        }
-      )
+        },
+      ),
     );
   });
 });

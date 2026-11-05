@@ -19,9 +19,9 @@ import {
   type UnionToIntersection,
   assertEqual,
   assertDeepEqual,
-} from "../utils/type-helpers.ts";
+} from '../utils/type-helpers.ts';
 
-console.log("=== 04: Advanced Patterns ===");
+console.log('=== 04: Advanced Patterns ===');
 
 // ============================================================================
 // 1. Nominal Typing & Branding
@@ -33,29 +33,29 @@ declare const brand: unique symbol;
 
 export type Brand<T, TBrand extends string> = T & { readonly [brand]: TBrand };
 
-export type UserId = Brand<string, "UserId">;
-export type PostId = Brand<string, "PostId">;
-export type EmailAddress = Brand<string, "EmailAddress">;
-export type UsdCents = Brand<number, "UsdCents">;
-export type EurCents = Brand<number, "EurCents">;
+export type UserId = Brand<string, 'UserId'>;
+export type PostId = Brand<string, 'PostId'>;
+export type EmailAddress = Brand<string, 'EmailAddress'>;
+export type UsdCents = Brand<number, 'UsdCents'>;
+export type EurCents = Brand<number, 'EurCents'>;
 
 // Constructor / Validator functions
 export function makeUserId(id: string): UserId {
-  if (!id.startsWith("usr_")) {
+  if (!id.startsWith('usr_')) {
     throw new Error(`Invalid user ID format: ${id}`);
   }
   return id as UserId;
 }
 
 export function makePostId(id: string): PostId {
-  if (!id.startsWith("pst_")) {
+  if (!id.startsWith('pst_')) {
     throw new Error(`Invalid post ID format: ${id}`);
   }
   return id as PostId;
 }
 
 export function makeEmail(raw: string): EmailAddress {
-  if (!raw.includes("@")) {
+  if (!raw.includes('@')) {
     throw new Error(`Invalid email: ${raw}`);
   }
   return raw.toLowerCase() as EmailAddress;
@@ -72,12 +72,12 @@ function fetchUserPosts(userId: UserId): string {
   return `Fetched posts for ${userId}`;
 }
 
-const aliceId = makeUserId("usr_100");
-const post1Id = makePostId("pst_999");
-const aliceEmail = makeEmail("Alice@Example.com");
+const aliceId = makeUserId('usr_100');
+const post1Id = makePostId('pst_999');
+const aliceEmail = makeEmail('Alice@Example.com');
 
-assertEqual(fetchUserPosts(aliceId), "Fetched posts for usr_100");
-assertEqual(aliceEmail, "alice@example.com" as EmailAddress);
+assertEqual(fetchUserPosts(aliceId), 'Fetched posts for usr_100');
+assertEqual(aliceEmail, 'alice@example.com' as EmailAddress);
 
 // Currency addition safety
 function addUsd(a: UsdCents, b: UsdCents): UsdCents {
@@ -85,7 +85,7 @@ function addUsd(a: UsdCents, b: UsdCents): UsdCents {
 }
 
 const wallet1 = makeUsd(10, 50); // 1050 cents
-const wallet2 = makeUsd(5, 25);  // 525 cents
+const wallet2 = makeUsd(5, 25); // 525 cents
 assertEqual(addUsd(wallet1, wallet2), 1575 as UsdCents);
 
 // ============================================================================
@@ -103,29 +103,29 @@ assertEqual(addUsd(wallet1, wallet2), 1575 as UsdCents);
  * TypeScript cannot collapse the literal union with `(string & {})`, preserving
  * IDE autocomplete hints while still permitting any arbitrary string!
  */
-export type LooseColor = "primary" | "secondary" | "accent" | "danger" | (string & {});
+export type LooseColor = 'primary' | 'secondary' | 'accent' | 'danger' | (string & {});
 
 // Compile-time tests
-type TestLooseColor1 = Expect<"primary" extends LooseColor ? true : false>;
-type TestLooseColor2 = Expect<"#ff00aa" extends LooseColor ? true : false>;
+type TestLooseColor1 = Expect<'primary' extends LooseColor ? true : false>;
+type TestLooseColor2 = Expect<'#ff00aa' extends LooseColor ? true : false>;
 
 function getThemeColor(color: LooseColor): string {
   switch (color) {
-    case "primary":
-      return "#0070f3";
-    case "secondary":
-      return "#7928ca";
-    case "accent":
-      return "#f5a623";
-    case "danger":
-      return "#ee0000";
+    case 'primary':
+      return '#0070f3';
+    case 'secondary':
+      return '#7928ca';
+    case 'accent':
+      return '#f5a623';
+    case 'danger':
+      return '#ee0000';
     default:
       return color; // Custom color string allowed
   }
 }
 
-assertEqual(getThemeColor("primary"), "#0070f3");
-assertEqual(getThemeColor("#123456"), "#123456");
+assertEqual(getThemeColor('primary'), '#0070f3');
+assertEqual(getThemeColor('#123456'), '#123456');
 
 // ============================================================================
 // 3. UnionToIntersection via Contravariance
@@ -142,10 +142,7 @@ type UnionOfObjects = { id: string } | { title: string } | { tags: string[] };
 type IntersectedObject = Prettify<UnionToIntersection<UnionOfObjects>>;
 
 type TestIntersection = Expect<
-  Equal<
-    IntersectedObject,
-    { id: string; title: string; tags: string[] }
-  >
+  Equal<IntersectedObject, { id: string; title: string; tags: string[] }>
 >;
 
 // Merging multiple partial objects into an intersection safely
@@ -155,21 +152,20 @@ export function mergeObjects<T extends object[]>(
   return Object.assign({}, ...objects);
 }
 
-const merged = mergeObjects({ id: "1" }, { title: "Course" }, { tags: ["ts"] });
-assertEqual(merged.id, "1");
-assertEqual(merged.title, "Course");
-assertDeepEqual(merged.tags, ["ts"]);
+const merged = mergeObjects({ id: '1' }, { title: 'Course' }, { tags: ['ts'] });
+assertEqual(merged.id, '1');
+assertEqual(merged.title, 'Course');
+assertDeepEqual(merged.tags, ['ts']);
 
 // ============================================================================
 // 4. Deep Dot-Notation Path Traversal (`Get<T, "a.b.c">`)
 // ============================================================================
 
-export type DeepGet<T, TPath extends string> =
-  TPath extends `${infer Key}.${infer Rest}`
-    ? Key extends keyof T
-      ? DeepGet<T[Key], Rest>
-      : never
-    : TPath extends keyof T
+export type DeepGet<T, TPath extends string> = TPath extends `${infer Key}.${infer Rest}`
+  ? Key extends keyof T
+    ? DeepGet<T[Key], Rest>
+    : never
+  : TPath extends keyof T
     ? T[TPath]
     : never;
 
@@ -184,25 +180,25 @@ interface AppState {
       };
     };
     settings: {
-      theme: "dark" | "light";
+      theme: 'dark' | 'light';
     };
   };
   version: number;
 }
 
-type CityType = DeepGet<AppState, "user.profile.address.city">;
-type ThemeType = DeepGet<AppState, "user.settings.theme">;
-type VersionType = DeepGet<AppState, "version">;
+type CityType = DeepGet<AppState, 'user.profile.address.city'>;
+type ThemeType = DeepGet<AppState, 'user.settings.theme'>;
+type VersionType = DeepGet<AppState, 'version'>;
 
 type TestCity = Expect<Equal<CityType, string>>;
-type TestTheme = Expect<Equal<ThemeType, "dark" | "light">>;
+type TestTheme = Expect<Equal<ThemeType, 'dark' | 'light'>>;
 type TestVersion = Expect<Equal<VersionType, number>>;
 
 export function getDeepValue<T extends object, TPath extends string>(
   obj: T,
-  path: TPath
+  path: TPath,
 ): DeepGet<T, TPath> {
-  const segments = path.split(".");
+  const segments = path.split('.');
   let current: any = obj;
 
   for (const segment of segments) {
@@ -218,23 +214,23 @@ export function getDeepValue<T extends object, TPath extends string>(
 const state: AppState = {
   user: {
     profile: {
-      firstName: "Martin",
-      lastName: "Smid",
+      firstName: 'Martin',
+      lastName: 'Smid',
       address: {
-        city: "Prague",
+        city: 'Prague',
         zip: 11000,
       },
     },
     settings: {
-      theme: "dark",
+      theme: 'dark',
     },
   },
   version: 2,
 };
 
-assertEqual(getDeepValue(state, "user.profile.address.city"), "Prague");
-assertEqual(getDeepValue(state, "user.settings.theme"), "dark");
-assertEqual(getDeepValue(state, "version"), 2);
+assertEqual(getDeepValue(state, 'user.profile.address.city'), 'Prague');
+assertEqual(getDeepValue(state, 'user.settings.theme'), 'dark');
+assertEqual(getDeepValue(state, 'version'), 2);
 
 // ============================================================================
 // 5. Ambient Declarations & Augmentation Mechanics
@@ -261,4 +257,4 @@ type TestAugmentation = Expect<
   >
 >;
 
-console.log("✓ All 04 Advanced Patterns tests passed successfully!\n");
+console.log('✓ All 04 Advanced Patterns tests passed successfully!\n');

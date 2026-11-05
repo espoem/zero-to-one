@@ -63,7 +63,10 @@ export class MVCCTransactionManager<T> {
     }
 
     // First-committer-wins check
-    if (visible.xmax !== null && (this.activeTxns.has(visible.xmax) || this.committedTxns.has(visible.xmax))) {
+    if (
+      visible.xmax !== null &&
+      (this.activeTxns.has(visible.xmax) || this.committedTxns.has(visible.xmax))
+    ) {
       throw new Error(`Write-write conflict on row ${id}: already modified by txn ${visible.xmax}`);
     }
 
@@ -153,7 +156,7 @@ export class MVCCTransactionManager<T> {
 
     if (inEdges && inEdges.size > 0 && outEdges && outEdges.size > 0) {
       throw new Error(
-        `SSI Serialization Failure (Dangerous Structure Detected): Txn ${writerTxnId} is a pivot between rw-dependencies! Aborting to prevent Write Skew.`
+        `SSI Serialization Failure (Dangerous Structure Detected): Txn ${writerTxnId} is a pivot between rw-dependencies! Aborting to prevent Write Skew.`,
       );
     }
   }
@@ -240,7 +243,7 @@ describe('Multi-Version Concurrency Control (MVCC) & Isolation', () => {
     // Cycle forms: T1 -rw-> T2 -rw-> T1. T1 becomes a pivot!
     assert.throws(
       () => mvcc.recordRwEdge(t2.txnId, t1.txnId),
-      /SSI Serialization Failure.*Dangerous Structure Detected/
+      /SSI Serialization Failure.*Dangerous Structure Detected/,
     );
   });
 });

@@ -265,9 +265,9 @@ test('Module 12: String Algorithms and Pattern Matching', async (t) => {
           assert.deepEqual(kmpActual, expected);
           assert.deepEqual(zActual, expected);
           return true;
-        }
+        },
       ),
-      { seed: 42, numRuns: 100 }
+      { seed: 42, numRuns: 100 },
     );
   });
 });

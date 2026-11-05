@@ -7,7 +7,7 @@ This glossary establishes canonical terminology for distributed systems, consens
 ## Terminology Index
 
 | English Term | Czech Equivalent | Concise Technical Definition | Primary Authority |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | **Asynchronous Network** | Asynchronní síť | A network timing model where message transmission delays and processing execution times are finite but completely unbounded. | Fischer, Lynch, Paterson (1985) |
 | **At-Least-Once Delivery** | Doručení alespoň jednou | A messaging guarantee where every message is delivered to the recipient one or more times; requires application-layer deduplication to avoid duplicate side effects. | Saltzer, Reed, Clark (End-to-End 1984) |
 | **At-Most-Once Delivery** | Doručení nejvýše jednou | A messaging guarantee where messages are delivered zero or one time, preventing duplicate processing at the risk of message loss during network failures. | Birrell & Nelson (RPC 1984) |

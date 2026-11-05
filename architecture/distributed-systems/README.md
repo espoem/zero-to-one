@@ -40,6 +40,7 @@ flowchart TD
 ```
 
 ### Module Directory
+
 1. [Module 01: System Models & Impossibility Proofs](modules/01-system-models-and-impossibility.md): Deutsch 8 fallacies, failure hierarchy (Crash-Stop to Byzantine), timing models (synchronous, asynchronous, partially synchronous), Two Generals impossibility proof, FLP bivalence proof, Gilbert-Lynch CAP, Abadi PACELC, Safety vs Liveness.
 2. [Module 02: Networks, RPC & Failure Detection](modules/02-networks-rpc-and-failure-detection.md): RPC 5 failure points, at-most-once deduplication tables, Full Jitter vs Decorrelated Jitter, Metastable failures & retry amplification storms, $\Phi$-accrual failure detector normal tail math, Gray failures, SWIM gossip protocol.
 3. [Module 03: Time, Physical Clocks & Ordering](modules/03-time-clocks-and-ordering.md): Physical clock skew & drift, LWW silent overwrite anomaly, Lamport happens-before ($\to$), Vector Clocks causal comparison, Hybrid Logical Clocks (HLC), Spanner TrueTime commit-wait $2\epsilon$, GC pause trap & fencing tokens.
@@ -74,7 +75,7 @@ flowchart TD
 This track covers foundational graduate and undergraduate distributed systems curricula and industry technical interview loops:
 
 | Examination / Program | Vendor / Institution | Target Level / Format | Syllabus Reference |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | **MIT 6.5840 (formerly 6.824)** | MIT EECS / CSAIL (Morris, Kaashoek) | Graduate / Upper Undergraduate (Consensus, Paxos, Raft, Fault Tolerance, Sharded KV) | [MIT 6.5840 Distributed Systems](https://pdos.csail.mit.edu/6.824/) |
 | **Cambridge CST Part II Distributed Systems** | University of Cambridge Computer Laboratory (Kleppmann) | Undergraduate Tripos Part II (System models, time, replication, consistency, CRDTs) | [Cambridge CST Part II Distributed Systems](https://www.cl.cam.ac.uk/teaching/current/DistSys/) |
 | **Principal/Staff Distributed Systems Loop** | Industry Standard (Google Cloud, AWS, Confluent, Cloudflare, Meta) | Staff/Principal System Design & Protocol Correctness Loop | [Distributed Systems Question Bank & Mock Exam](exams/interview.md) |

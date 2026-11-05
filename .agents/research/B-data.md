@@ -3,6 +3,7 @@
 Research date: 2026-10-28. Claims marked "(verified locally)" were checked in this sandbox by running real code (Node 22.23, npm registry as of today). Claims marked "(unverified)" could not be confirmed against a primary source.
 
 **Main findings:**
+
 1. **PGlite 0.5.12 runs PostgreSQL 18.6** (verified locally with `select version()`: `PostgreSQL 18.6 (PGlite 0.5.12) on wasm32-unknown-emscripten … 32-bit`). The existing track's PG18 claim and its PGlite use are consistent. However, `io_method` reports `sync`, so **AIO cannot be demonstrated in PGlite**.
 2. **PostgreSQL 19 RC1 came out on 2026-10-15.** GA is likely within weeks, so the PG track needs a "PG19 delta" plan now: `REPACK`, `WAIT`, `pg_plan_advice`, JIT off by default, lz4 TOAST by default.
 3. **libSQL is now labelled "Legacy" by Turso.** Its embedded engine reports **SQLite 3.45.1** (verified locally), while upstream SQLite is at **3.54.x**. The Rust "Turso Database" is at **v0.8.3**, still 0.x.
@@ -35,8 +36,8 @@ Research date: 2026-10-28. Claims marked "(verified locally)" were checked in th
 - **Authoritative syllabi used**
   - Official docs ToC (Parts I–VIII: Tutorial, SQL Language, Server Administration, Client Interfaces, Server Programming, Internals): https://www.postgresql.org/docs/18/
   - PG18 release notes and PG19 release notes (above).
-  - CMU 15-445/645 *Intro to Database Systems* (Pavlo): https://15445.courses.cs.cmu.edu/ — for storage, buffer pool, indexing, concurrency control and recovery theory.
-  - *The Internals of PostgreSQL* (Suzuki): https://www.interdb.jp/pg/
+  - CMU 15-445/645 _Intro to Database Systems_ (Pavlo): https://15445.courses.cs.cmu.edu/ — for storage, buffer pool, indexing, concurrency control and recovery theory.
+  - _The Internals of PostgreSQL_ (Suzuki): https://www.interdb.jp/pg/
   - EDB PostgreSQL certification (EDB Certified Associate / Professional): https://www.enterprisedb.com/training (domain weights not published; unverified).
   - pgvector README: https://github.com/pgvector/pgvector
   - No vendor-neutral certification exists for PostgreSQL. Interview prep comes from the docs, CMU 15-445 and DDIA.
@@ -234,7 +235,7 @@ Research date: 2026-10-28. Claims marked "(verified locally)" were checked in th
     - Use temp-dir db files and two connections to show `SQLITE_BUSY`, `BEGIN IMMEDIATE`, and checkpoint starvation (assert `-wal` size grows while a reader holds a snapshot).
     - Use `worker_threads` or child processes for multi-process lock tests.
   - Inspect file format with `dbstat`, raw page bytes read from the file in tests, and `PRAGMA page_count/freelist_count`.
-  - **Cannot prove locally:** power-loss durability (`synchronous` levels) and network FS corruption. Fallback: documented reasoning plus fault injection via a custom VFS (advanced; optional) or simulated `kill -9` mid-transaction plus `integrity_check`, which *is* provable.
+  - **Cannot prove locally:** power-loss durability (`synchronous` levels) and network FS corruption. Fallback: documented reasoning plus fault injection via a custom VFS (advanced; optional) or simulated `kill -9` mid-transaction plus `integrity_check`, which _is_ provable.
   - CLI: `sqlite3` via mise (`aqua:sqlite/sqlite`? backend availability unverified). Fallback: Homebrew `sqlite` on Mac, or rely on bindings only.
 
 - **Overlaps / dedupe**
@@ -249,7 +250,7 @@ Research date: 2026-10-28. Claims marked "(verified locally)" were checked in th
 
 - **Current stable version(s) and the state of the product**
   - **Two distinct things share the Turso name** (https://turso.tech/llms-full.txt):
-    1. **libSQL:** the open-source C *fork* of SQLite (2022–). Turso now labels it "**Legacy (libSQL) — battle-tested, ORM support**", "still supported". Its embedded engine reports **SQLite 3.45.1** (verified locally via `@libsql/client` **0.18.0**), roughly nine minor versions behind upstream 3.54. libSQL-only features:
+    1. **libSQL:** the open-source C _fork_ of SQLite (2022–). Turso now labels it "**Legacy (libSQL) — battle-tested, ORM support**", "still supported". Its embedded engine reports **SQLite 3.45.1** (verified locally via `@libsql/client` **0.18.0**), roughly nine minor versions behind upstream 3.54. libSQL-only features:
        - native vector type `F32_BLOB(n)` + `libsql_vector_idx` (DiskANN-based ANN index; creation verified locally)
        - `ALTER TABLE` extensions
        - the sqld server / Hrana protocol
@@ -262,7 +263,7 @@ Research date: 2026-10-28. Claims marked "(verified locally)" were checked in th
          - **Async I/O** (io_uring on Linux)
          - **Built-in CDC:** `PRAGMA capture_data_changes_conn('full')` → `turso_cdc` table. Accepted locally.
          - **Vector types:** `vector32/64/8/1bit` + `vector_distance_cos`. Worked locally; the docs example is brute-force; ANN index status unverified.
-         - **Turso Sync:** `@tursodatabase/sync`, local-first push/pull, where *writes are also local*, unlike libSQL embedded replicas.
+         - **Turso Sync:** `@tursodatabase/sync`, local-first push/pull, where _writes are also local_, unlike libSQL embedded replicas.
          - Encryption at rest (cloud: AES-256; local page-codec interface in 0.8.0; details unverified).
   - **Turso Cloud** (the platform):
     - Jan 2025 changes: moved to AWS; deprecated edge replicas, multi-DB schemas and `ATTACH` for new users. The new cloud server is closed-source and a new implementation, while client code stays open.
@@ -418,7 +419,7 @@ Research date: 2026-10-28. Claims marked "(verified locally)" were checked in th
     4. **Data Processing:** mappings, custom analyzers, multi-fields, reindex/update-by-query, ingest pipelines + Painless, runtime fields.
     5. **Cluster Management:** shard diagnosis/health, snapshot/restore, searchable snapshots, CCS, CCR.
   - Official docs: https://www.elastic.co/docs (Elasticsearch reference: mapping, text analysis, Query DSL, ES|QL https://www.elastic.co/docs/reference/query-languages/esql, aggregations, data streams, ILM, vector search/kNN, cluster/shard allocation).
-  - *Elasticsearch: The Definitive Guide* (concepts, dated); Lucene docs (https://lucene.apache.org/core/); *Introduction to Information Retrieval* (Manning et al., free at https://nlp.stanford.edu/IR-book/) for inverted index, TF-IDF/BM25 and evaluation.
+  - _Elasticsearch: The Definitive Guide_ (concepts, dated); Lucene docs (https://lucene.apache.org/core/); _Introduction to Information Retrieval_ (Manning et al., free at https://nlp.stanford.edu/IR-book/) for inverted index, TF-IDF/BM25 and evaluation.
 
 - **Proposed modules** (12)
   1. **Search fundamentals & IR theory:** inverted index, postings, term dictionary (FST), BM25 scoring, precision/recall, relevance vs filter context. Cross-links data-systems for indexing theory.
@@ -472,7 +473,7 @@ Research date: 2026-10-28. Claims marked "(verified locally)" were checked in th
     - Vitest + `@elastic/elasticsearch` 9.5.1.
   - **Determinism:**
     - Always `refresh: true` (or `_refresh`) before asserting search results.
-    - Single shard (`number_of_shards: 1`) for scoring assertions, since BM25 stats are per shard. A *negative test* shows a multi-shard score skew and `dfs_query_then_fetch` fixing it.
+    - Single shard (`number_of_shards: 1`) for scoring assertions, since BM25 stats are per shard. A _negative test_ shows a multi-shard score skew and `dfs_query_then_fetch` fixing it.
     - `_analyze` API assertions for analyzers.
     - `_validate/query?explain` and `explain: true` for scoring.
     - Aggregation accuracy demo with 3 shards and `shard_size: 1`.
@@ -491,10 +492,11 @@ Research date: 2026-10-28. Claims marked "(verified locally)" were checked in th
 
 ### Proposed shared foundation — `architecture/data-systems` (DDIA-style)
 
-Purpose: every concept that appears in two or more data tracks is defined *once* here, formally and with primary sources. The technology tracks then show "how PostgreSQL/SQLite/Redis/ES implements X" and link back.
+Purpose: every concept that appears in two or more data tracks is defined _once_ here, formally and with primary sources. The technology tracks then show "how PostgreSQL/SQLite/Redis/ES implements X" and link back.
 
 Primary syllabi:
-- Kleppmann, *Designing Data-Intensive Applications*, 2nd ed. (O'Reilly, 2025/2026; Kleppmann & Riccomini; exact publication date unverified)
+
+- Kleppmann, _Designing Data-Intensive Applications_, 2nd ed. (O'Reilly, 2025/2026; Kleppmann & Riccomini; exact publication date unverified)
 - CMU 15-445/645 (https://15445.courses.cs.cmu.edu/) and 15-721 (advanced)
 - MIT 6.5840 Distributed Systems (https://pdos.csail.mit.edu/6.824/)
 - Jepsen analyses (https://jepsen.io/analyses)
@@ -502,6 +504,7 @@ Primary syllabi:
 - Bailis "Highly Available Transactions"
 
 Proposed modules:
+
 1. **Data models & query languages:** relational algebra/calculus, normalization (1NF–BCNF), document vs relational vs graph vs key-value vs search/columnar, schema-on-read vs schema-on-write.
 2. **Storage engines:** heap files and slotted pages; **B-tree/B+tree/B-link** (Lehman–Yao); **LSM trees** (memtable, SSTables, compaction strategies: leveled/tiered, read/write/space amplification, Bloom filters); log-structured hash (Bitcask); in-memory engines (Redis); column stores. Mapping: PG heap+B-tree, SQLite B-tree, Lucene segment/merge (LSM-like), Redis in-memory structures.
 3. **Indexing:** primary/secondary/clustered/covering, composite key order, hash vs tree, inverted indexes (postings, BM25), spatial (R-tree, BKD), bitmap/BRIN-style summaries, **vector ANN** (flat, IVF, HNSW, DiskANN, quantization: PQ/int8/binary/BBQ; recall vs latency).
@@ -516,6 +519,7 @@ Proposed modules:
 12. **Choosing a data system:** OLTP vs OLAP vs search vs cache vs embedded; workload characterisation; a decision matrix across PG, SQLite/Turso, Redis/Valkey, ES/OpenSearch; polyglot persistence and keeping derived data in sync.
 
 Executable proofs for the foundation: small, deterministic Python/TypeScript toy implementations, each with property tests (Hypothesis / fast-check) and negative tests:
+
 - slotted page
 - B+tree
 - mini-LSM with compaction
@@ -532,7 +536,7 @@ Anomalies are then demonstrated against real engines in each track.
 ### Cross-track summary (for the orchestrator)
 
 | Track | Path | Status | Pinned versions | Local proof |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | PostgreSQL | `technologies/postgres` | Existing, restructure 10 → 13 modules, add PG19 deltas | PG 18.6 (19 RC1); PGlite 0.5.12 = PG 18.6 | PGlite (single session) + testcontainers/compose for concurrency, replication, pooling, AIO (Linux) |
 | SQLite | `technologies/sqlite` | New, 11 modules + M12 Turso | 3.54.1; better-sqlite3 bundles 3.53.4 | Fully local, multi-connection on files |
 | Turso/libSQL | `technologies/sqlite` module 12 | Module, not track (revisit at Turso 1.0) | Turso DB 0.8.3; @libsql/client 0.18.0 (SQLite 3.45.1 base) | Local npm packages; sqld via compose; cloud sync not provable offline |

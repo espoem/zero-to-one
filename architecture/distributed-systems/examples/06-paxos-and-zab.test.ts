@@ -24,7 +24,7 @@ export class PaxosCluster {
   // Phase 1: Prepare
   prepare(
     proposalNum: number,
-    acceptorIndices: number[]
+    acceptorIndices: number[],
   ): { ok: boolean; maxVal: string | null; maxNum: number } {
     let promises = 0;
     let maxVal: string | null = null;
@@ -111,7 +111,7 @@ test('Module 06: Consensus Foundations, Paxos & Flexible Paxos', async (t) => {
     // Classic Paxos requires majorities of 4 and 4.
     // Flexible Paxos allows Q1 = 5 nodes, Q2 = 2 nodes!
     const q1 = new Set([0, 1, 2, 3, 4]); // Phase 1 (election) size 5
-    const q2 = new Set([4, 5]);          // Phase 2 (write path) size 2
+    const q2 = new Set([4, 5]); // Phase 2 (write path) size 2
 
     // Q1 and Q2 intersect at node 4 (5 + 2 = 7 > 6)
     assert.equal(validateFlexibleQuorums(q1, q2), true);

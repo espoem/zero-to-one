@@ -65,7 +65,7 @@ export class BPlusTree<K extends string | number, V> {
   private insertInternal(
     node: BPlusNode<K, V>,
     key: K,
-    value: V
+    value: V,
   ): { promotedKey: K; newNode: BPlusNode<K, V> } | null {
     if (node.isLeaf) {
       const leaf = node as LeafNode<K, V>;
@@ -220,8 +220,8 @@ describe('B+Tree Indexing Engine', () => {
             .map(([key, value]) => ({ key, value }));
 
           assert.deepEqual(allRange, expectedSorted);
-        }
-      )
+        },
+      ),
     );
   });
 });

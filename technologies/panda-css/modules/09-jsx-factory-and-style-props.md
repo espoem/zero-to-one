@@ -1,7 +1,6 @@
 # Module 09 · The JSX Factory and Style Props (React and Solid)
 
-> **Verified against** `@pandacss/dev` 2.4.0, React 19.3.1, Solid 1.9.17, TypeScript 7.0.2 on 2026-10-29.
-> **Executable proof:** [`examples/react/src/`](../examples/react/src/) and [`examples/solid/src/`](../examples/solid/src/) (same app in both frameworks); fixture [`09-jsx.tsx`](../examples/fixtures/positive/09-jsx.tsx) + snapshot; [`examples/bench/jsx-style-props/`](../examples/bench/jsx-style-props/) with [`type-cost.test.ts`](../examples/tests/type-cost.test.ts); the four app builds in [`e2e-computed-style.test.ts`](../examples/tests/e2e-computed-style.test.ts).
+> **Verified against** `@pandacss/dev` 2.4.0, React 19.3.1, Solid 1.9.17, TypeScript 7.0.2 on 2026-10-29. **Executable proof:** [`examples/react/src/`](../examples/react/src/) and [`examples/solid/src/`](../examples/solid/src/) (same app in both frameworks); fixture [`09-jsx.tsx`](../examples/fixtures/positive/09-jsx.tsx) + snapshot; [`examples/bench/jsx-style-props/`](../examples/bench/jsx-style-props/) with [`type-cost.test.ts`](../examples/tests/type-cost.test.ts); the four app builds in [`e2e-computed-style.test.ts`](../examples/tests/e2e-computed-style.test.ts).
 
 With `jsxFramework` set, codegen writes `styled-system/jsx`: the `styled` factory, `Box`, one component per pattern, `createRecipeContext`, `createSlotRecipeContext`, `splitCssProps` and `isCssProperty`. Panda generates framework-specific code for `react`, `preact`, `vue` and `solid` (Qwik JSX components were removed in v2). Typing JSX itself (`IntrinsicElements`, polymorphic props) is owned by [`languages/typescript`](../../../languages/typescript/README.md).
 
@@ -32,7 +31,7 @@ At runtime, the factory component splits props into variant props, style props, 
 ### Factory props and options
 
 | Prop | Meaning |
-|---|---|
+| --- | --- |
 | `css` | Extra style object, merged **last** among styles |
 | `className` (React) / `class` (Solid) | Appended after factory classes |
 | `as` | Render another element (`<styled.button as="a" href=…>`) |
@@ -57,7 +56,7 @@ styled(component, recipe?, {
 The two example apps are the same component tree. Differences are only framework idioms:
 
 | Concern | React ([`examples/react`](../examples/react/)) | Solid ([`examples/solid`](../examples/solid/)) |
-|---|---|---|
+| --- | --- | --- |
 | Config | `jsxFramework: 'react'` | `jsxFramework: 'solid'` |
 | Class prop | `className` | `class` |
 | Recipe-bound element | `styled('button', button)` | identical |
@@ -76,17 +75,17 @@ The e2e suite builds both apps (and both with `transform: true`) and runs identi
 ## 9.3 `jsxStyleProps`: extraction surface and type cost
 
 | Mode | Style props (`bg`, `px`) | `css` / `*Css` | Pattern & recipe props | Runtime / types |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | `'all'` (default) | Yes | Yes | Yes | Largest prop types |
 | `'minimal'` | **No** | Yes | Yes | Smaller |
 | `'none'` | No; `styled.div` and `styled('div')` without recipe are invalid | `css()` function only | Recipes on `styled()` | Smallest |
 
 Every style prop is a union of tokens and CSS values on **every** JSX element's props type, so `'all'` multiplies type work in large apps (worse with `strictTokens`). We measured it with identical source in [`examples/bench/jsx-style-props`](../examples/bench/jsx-style-props/) (two trivial components, TypeScript 7.0.2 `--extendedDiagnostics`):
 
-| | Types | Instantiations |
-|---|---|---|
-| `jsxStyleProps: 'all'` | 4,967 | 8,587 |
-| `jsxStyleProps: 'minimal'` | 4,172 | 5,073 (−41 %) |
+|                            | Types | Instantiations |
+| -------------------------- | ----- | -------------- |
+| `jsxStyleProps: 'all'`     | 4,967 | 8,587          |
+| `jsxStyleProps: 'minimal'` | 4,172 | 5,073 (−41 %)  |
 
 [`type-cost.test.ts`](../examples/tests/type-cost.test.ts) re-measures and asserts `minimal` stays at least 20 % cheaper in instantiations. The absolute numbers are from a tiny project; the ratio in a large app depends on how many JSX elements carry style-prop types. (Panda's own design-notes report a generated-types rewrite for v2 with −99 % instantiations against legacy types; that benchmark is Panda's, not reproduced here.)
 
@@ -94,8 +93,8 @@ Recommendation for design systems: `'minimal'` plus `css`/`*Css` props, which ke
 
 ### Then vs now
 
-| | v1 | v2 |
-|---|---|---|
+|  | v1 | v2 |
+| --- | --- | --- |
 | Matching custom components | `jsx` arrays plus `matchTag`/`matchTagProp` callbacks | Declarative `jsxMatchTag` rules (`tag`, `from`, `props`, `ignore`); last matching rule wins |
 | Generated `.d.ts` | Large conditional types | Smaller types keyed on a clean props type; `cva`/`sva` support `isolatedDeclarations` |
 | Qwik | `styled`, `Box`, patterns generated | Not generated; use `css()`/`cva()` with `class` |
@@ -105,14 +104,14 @@ Recommendation for design systems: `'minimal'` plus `css`/`*Css` props, which ke
 ## 9.4 Writing your own style-prop component
 
 ```tsx
-import { css } from '../styled-system/css'
-import { splitCssProps } from '../styled-system/jsx'
-import type { HTMLStyledProps } from '../styled-system/types'
+import { css } from '../styled-system/css';
+import { splitCssProps } from '../styled-system/jsx';
+import type { HTMLStyledProps } from '../styled-system/types';
 
 export function Panel(props: HTMLStyledProps<'div'>) {
-  const [cssProps, rest] = splitCssProps(props)
-  const { css: cssProp, ...styleProps } = cssProps
-  return <div {...rest} className={css({ display: 'flex' }, styleProps, cssProp)} />
+  const [cssProps, rest] = splitCssProps(props);
+  const { css: cssProp, ...styleProps } = cssProps;
+  return <div {...rest} className={css({ display: 'flex' }, styleProps, cssProp)} />;
 }
 ```
 
@@ -125,7 +124,7 @@ The extraction-visible rule is about **names at the call site**: `<Carousel elem
 ## 9.5 Production failure modes
 
 | Symptom | Cause | Fix |
-|---|---|---|
+| --- | --- | --- |
 | Style prop ignored after switching to `'minimal'` | Generic style props are no longer extracted or typed | Move them into `css` |
 | `width` attribute missing on `<styled.img width=…>` | `width` is a style prop | `htmlWidth` |
 | Renamed prop (`elementWidth`) does not style | Extraction reads names at call sites | Use the utility name or `*Css` |

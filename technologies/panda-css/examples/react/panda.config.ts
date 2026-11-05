@@ -1,5 +1,5 @@
-import { defineConfig } from '@pandacss/dev'
-import { acmePreset } from '../system/preset.ts'
+import { defineConfig } from '@pandacss/dev';
+import { acmePreset } from '../system/preset.ts';
 
 /**
  * React app config (Modules 02, 09). Presets are explicit in v2: base (utilities,
@@ -19,4 +19,4 @@ export default defineConfig({
   include: ['./src/**/*.{ts,tsx}'],
   exclude: [],
   outdir: 'styled-system',
-})
+});

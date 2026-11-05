@@ -31,6 +31,7 @@ Either delete the script (README is then true) or add `scripts/integration.mjs` 
 **3. `README.md:3` — "runs against the **real** React packages (no simulations)" is not true.**
 
 Real React packages: yes. No simulations: no —
+
 - `examples/11-dom-platform/fake-view-transitions.ts` is an explicit stand-in for `document.startViewTransition`;
 - `examples/05-concurrency/concurrency.test.tsx` uses `scheduler/unstable_mock` (the module says so at §2);
 - `examples/07-rsc/` hand-registers client references and fakes `__webpack_require__`.
@@ -51,7 +52,7 @@ The tool's own guidance is "quote any text containing `()`, `[]`, `{}`, `&`, `|`
 **5. Syllabus titles do not match module H1s** (`README.md:15-30` vs `modules/*.md:1`). Seven are case-only differences; five differ in substance:
 
 | README | Module H1 |
-|---|---|
+| --- | --- |
 | 02 Fiber reconciler & commit | The Fiber Reconciler & the Commit Phase |
 | 05 Concurrency: lanes, transitions & Activity | Concurrency: Lanes, Transitions, Deferred Values & `<Activity>` |
 | 07 Server Components & Flight | Server Components & the Flight Protocol |
@@ -75,7 +76,7 @@ Confirm the rendered order visually after the check passes; if it inverted, spli
 - `CVE-2026-23870 | 2026-05` and `CVE-2026-44907 | 2026-07` — month-only dates, numerically the weakest rows in the table;
 - `CVE-2025-67779 | 2025-12-11/12` — split date.
 
-The one compliant marker is at `:240` ("*(unverified whether they contain security fixes)*"). Apply the same token to the three rows above, or resolve them against OSV/GitLab advisory pages and add the advisory IDs.
+The one compliant marker is at `:240` ("_(unverified whether they contain security fixes)_"). Apply the same token to the three rows above, or resolve them against OSV/GitLab advisory pages and add the advisory IDs.
 
 **9. `README.md:39` — "all 12 example suites".** There are 13 test files in 12 directories (`08-actions/` ships `actions.test.tsx` + `hung-action.test.tsx`). Say "all 13 suites" or "one suite per module".
 

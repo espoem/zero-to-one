@@ -5,7 +5,7 @@ Fast lookup for `technologies/react` (React 19.3.1, React Compiler 1.0, eslint-p
 ## Render model (M01–M02)
 
 | Rule | Detail |
-|---|---|
+| --- | --- |
 | Element ≠ render | `<X/>` builds `{ $$typeof, type, key, props }`; `X` runs only when React renders it |
 | Identity | position + type + key; change any → remount (state lost) |
 | Reset state | `<Form key={userId} />` |
@@ -13,33 +13,33 @@ Fast lookup for `technologies/react` (React 19.3.1, React Compiler 1.0, eslint-p
 | `key` before spread | `<p key="k" {...rest} />` (key after spread falls back to `createElement`) |
 | `0 &&` | `{n > 0 && <Badge/>}` — `0` renders as text |
 | Bailout for free | pass content as `children`; same element object ⇒ skipped |
-| Move cost | moving the last keyed item to the front moves *n−1* DOM nodes |
+| Move cost | moving the last keyed item to the front moves _n−1_ DOM nodes |
 | Commit order | before-mutation → mutation → `root.current` swap → layout → passive |
 | `ref` | a regular prop in 19; `forwardRef` unnecessary; `element.ref` removed |
 
 ## Hooks & state (M03)
 
 ```tsx
-const [v, setV] = useState(() => expensiveInit());   // lazy init
-setV(prev => prev + 1);                               // compose updates
-const [s, dispatch] = useReducer(reducer, init);      // dispatch is stable
-const value = use(Ctx);                               // may be conditional
+const [v, setV] = useState(() => expensiveInit()); // lazy init
+setV((prev) => prev + 1); // compose updates
+const [s, dispatch] = useReducer(reducer, init); // dispatch is stable
+const value = use(Ctx); // may be conditional
 const snap = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot); // cached snapshot!
-<Ctx value={v}>…</Ctx>                                // 19: context is the provider
+<Ctx value={v}>…</Ctx>; // 19: context is the provider
 ```
 
-| Gotcha | Fix |
-|---|---|
-| Rendered more/fewer hooks | hooks unconditional, top level |
-| `setN(n+1)` ×3 = +1 | `setN(x => x+1)` |
-| mutated state not shown | new object/array |
-| `getSnapshot` new object → infinite loop | return cached value |
-| interval stuck | updater or `useEffectEvent` |
+| Gotcha                                   | Fix                            |
+| ---------------------------------------- | ------------------------------ |
+| Rendered more/fewer hooks                | hooks unconditional, top level |
+| `setN(n+1)` ×3 = +1                      | `setN(x => x+1)`               |
+| mutated state not shown                  | new object/array               |
+| `getSnapshot` new object → infinite loop | return cached value            |
+| interval stuck                           | updater or `useEffectEvent`    |
 
 ## Effects (M04)
 
 | Hook | When | Use |
-|---|---|---|
+| --- | --- | --- |
 | `useInsertionEffect` | mutation phase | CSS-in-JS only |
 | `useLayoutEffect` | after DOM mutation, before paint (blocks) | measure + fix layout |
 | `useEffect` | after paint (flushed before next discrete event) | everything external |
@@ -51,23 +51,26 @@ Order: render parent→child; each effect kind child→parent. Strict Mode (dev)
 
 ```tsx
 const [isPending, start] = useTransition();
-start(async () => { await save(); startTransition(() => setDone(true)); }); // re-wrap after await
-const deferred = useDeferredValue(query, /* initialValue */ "");
-<Activity mode={visible ? "visible" : "hidden"}>…</Activity>             // 19.2
+start(async () => {
+  await save();
+  startTransition(() => setDone(true));
+}); // re-wrap after await
+const deferred = useDeferredValue(query, /* initialValue */ '');
+<Activity mode={visible ? 'visible' : 'hidden'}>…</Activity>; // 19.2
 ```
 
-| Fact | Value |
-|---|---|
-| Highest priority lane | `lanes & -lanes` |
-| Scheduler slice | 5 ms (`frameInterval`) |
-| Blocking lanes batched | Sync + InputContinuous + Default |
-| Transitions (19.3) | each lane renders alone — **untangled** (≤19.2: entangled) |
-| `<Activity hidden>` | keeps state + DOM, cleans effects, offscreen priority |
+| Fact                   | Value                                                      |
+| ---------------------- | ---------------------------------------------------------- |
+| Highest priority lane  | `lanes & -lanes`                                           |
+| Scheduler slice        | 5 ms (`frameInterval`)                                     |
+| Blocking lanes batched | Sync + InputContinuous + Default                           |
+| Transitions (19.3)     | each lane renders alone — **untangled** (≤19.2: entangled) |
+| `<Activity hidden>`    | keeps state + DOM, cleans effects, offscreen priority      |
 
 ## Suspense & SSR (M06)
 
 | API | Note |
-|---|---|
+| --- | --- |
 | `use(promise)` | promise must be cached; rejected → error boundary |
 | `renderToPipeableStream` | `onShellReady` (browsers) / `onAllReady` (bots) / `onShellError` / `onError` → digest |
 | `renderToReadableStream` | Web streams (edge; Node since 19.2) |
@@ -80,7 +83,7 @@ const deferred = useDeferredValue(query, /* initialValue */ "");
 ## Server Components (M07)
 
 | Directive / API | Meaning |
-|---|---|
+| --- | --- |
 | (none) | Server Component in the server graph; may be `async` |
 | `"use client"` | module boundary → client references |
 | `"use server"` | Server Function = public endpoint: authN, authZ, validate |
@@ -93,7 +96,9 @@ const deferred = useDeferredValue(query, /* initialValue */ "");
 ```tsx
 const [state, formAction, isPending] = useActionState(async (prev, fd) => next, initial);
 const [optimistic, addOptimistic] = useOptimistic(real, (cur, x) => [...cur, x]);
-<form action={formAction}><Submit /></form>   // Submit uses useFormStatus() INSIDE the form
+<form action={formAction}>
+  <Submit />
+</form>; // Submit uses useFormStatus() INSIDE the form
 ```
 
 Queued actions run sequentially · success resets uncontrolled fields (`onReset` fires, 19.3) · optimistic layer lives until the Action settles · **always add request timeouts** (a hung action holds back later transitions).
@@ -101,7 +106,7 @@ Queued actions run sequentially · success resets uncontrolled fields (`onReset`
 ## React Compiler 1.0 (M09)
 
 ```js
-["babel-plugin-react-compiler", { target: "19", compilationMode: "infer", panicThreshold: "none" }]
+['babel-plugin-react-compiler', { target: '19', compilationMode: 'infer', panicThreshold: 'none' }];
 // "use memo" (annotation mode) · "use no memo" (opt out) · target "17"/"18" + react-compiler-runtime
 ```
 
@@ -110,7 +115,7 @@ Lint: `reactHooks.configs.flat.recommended` → `refs`, `set-state-in-effect`, `
 ## Errors (M10)
 
 | Caught by boundaries | Not caught |
-|---|---|
+| --- | --- |
 | render, effects, lifecycles, ref callbacks, `use(rejected)` | event handlers, async code, SSR, the boundary itself |
 
 Root options: `onCaughtError`, `onUncaughtError` (root unmounted), `onRecoverableError`. Reset: `key={pathname}` or `resetKey`. Forward async errors: `setState(() => { throw e })`. 19.3: errors don't escape hidden `<Activity>`.
@@ -118,7 +123,7 @@ Root options: `onCaughtError`, `onUncaughtError` (root unmounted), `onRecoverabl
 ## DOM platform (M11)
 
 | Feature | Snippet |
-|---|---|
+| --- | --- |
 | View transition (19.3) | `<ViewTransition enter="slide" default="none">` + `startTransition(() => { addTransitionType("forward"); … })` |
 | Fragment ref (19.3) | `<Fragment ref={r}>` → `FragmentInstance` (`addEventListener`, `focus`, `observeUsing`, …) |
 | Portal | `createPortal(node, el)` — events bubble through the React tree |
@@ -130,7 +135,7 @@ Root options: `onCaughtError`, `onUncaughtError` (root unmounted), `onRecoverabl
 ## Performance, testing, upgrades (M12)
 
 | Task | How |
-|---|---|
+| --- | --- |
 | Measure | `<Profiler onRender>`, DevTools Profiler, Performance Tracks (19.2), production/profiling build |
 | Fix order | colocate state → Compiler → stable/split context → transitions → virtualise → `lazy` → RSC |
 | Test | RTL `getByRole`/`findBy*`; `await act(async …)` around suspending renders; `act` from `react` |

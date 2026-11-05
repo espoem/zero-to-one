@@ -15,7 +15,7 @@ Panda CSS is a styling engine from the Chakra UI team: you write typed style obj
 Derived from the panda-css.com v2 documentation table of contents (Get started, Styling, Recipes, Theming, Design systems, Reference) and the v2 upgrade guide. Each module ends with an Interview Drill.
 
 | # | Module | Covers | Executable proof |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 01 | [Static CSS-in-JS Mental Model and the v2 Architecture](./modules/01-mental-model-and-v2-architecture.md) | Static extraction (formal), atoms, layered stylesheet, codegen vs cssgen, runtime `css()`, source transforms (measured), Rust crate tiers, RSC/SSR | snapshots, `runtime.test.ts`, vanilla transform build |
 | 02 | [Installation and Build Integration](./modules/02-installation-and-build-integration.md) | ESM/Node ≥ 22, explicit presets, PostCSS / Vite / CLI, `prepare`, `--clean`, TS 7 CSS import, `doctor`/`check`/`debug`, CI gates, CLI Then vs now | `integration-postcss.test.ts`, `cli.test.ts`, no-preset-base config |
 | 03 | [The Styling API and Conditions](./modules/03-styling-api-and-conditions.md) | Style-object grammar, utilities, conditions, responsive keys, `css`/`css.raw`/`cx` merge semantics, property-breadth order and v2 border tiers, `css` prop pattern, `@slot` conditions | `e2e-fixtures.test.ts`, array-condition config |
@@ -30,6 +30,7 @@ Derived from the panda-css.com v2 documentation table of contents (Get started, 
 | 12 | [Migration and Upgrades](./modules/12-migration-and-upgrades.md) | Runtime CSS-in-JS and Tailwind → Panda, 0.x/1.x → 2.x checklist, version history, v2 best-practices catalogue | `migration.test.ts` + upgrade audit script |
 
 ### Out of Scope
+
 - Framework integrations other than React, Solid and Vite/PostCSS (Vue, Svelte, Astro, Angular, Qwik: identical compiler mechanics, framework-specific adapter wiring only; official documentation suffices).
 - Panda MCP server and editor agent skills (`@pandacss/mcp`: development tooling around the product rather than the styling runtime).
 - `@pandacss/preset-typography`, `positionTry()`, `viewTransition()` and `firstThatWorks()` helpers beyond mentions (thin utility wrappers over CSS features owned by [`languages/css`](../../languages/css/README.md)).
@@ -72,7 +73,7 @@ mise exec -- npm run test:update-snapshots   # only when a CSS change is intende
 `npm test` runs, without network access:
 
 | Suite | Proves |
-|---|---|
+| --- | --- |
 | `css-snapshots.test.ts` | Each positive fixture compiles (one CLI run per file) to the committed CSS in `examples/fixtures/__snapshots__/` |
 | `negative-extraction.test.ts` | Dynamic values, default/namespace imports, shadowing, unsupported helpers, JIT recipes, renamed wrappers, pattern-prop traps, and v1 → v2 misconfigurations produce **no** CSS (or the documented warning) |
 | `runtime.test.ts` | Class strings from `css`, `cx`, `cva`, `sva` and config recipes |
@@ -93,7 +94,7 @@ Last run (2026-10-29): `npm run typecheck` clean; `npm test` **118/118 passing**
 **No official certification exists for Panda CSS** (verified 2026-10-29: neither Chakra Systems, the OpenJS Foundation nor any recognised third party offers one). Per AGENTS.md, the track prepares for the recognised substitute, the **senior frontend / design-system interview format**:
 
 | Exam / format | Vendor | Guide | Version / date verified | Product version | Status | Format |
-|---|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- | --- |
 | Senior frontend technical interview (CSS-in-JS / build tooling) | Industry practice (no vendor) | [`exams/README.md`](./exams/README.md) | 2026-10-29 | Panda 2.4 | Active practice | Concept + debugging questions, 45–60 min |
 | Design-system interview / system design | Industry practice | [`exams/README.md`](./exams/README.md) | 2026-10-29 | Panda 2.4 | Active practice | Token/theming/component-API design, 45–60 min |
 | Live coding / take-home | Industry practice | [`exams/interview.md`](./exams/interview.md) hands-on tasks | 2026-10-29 | Panda 2.4 | Active practice | Build/fix/migrate a component, 45–90 min; each task has a verification test |

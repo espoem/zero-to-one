@@ -1,36 +1,41 @@
 # Brief: Terraform (`technologies/terraform`)
 
-| | |
-|---|---|
-| Phase | 3 |
-| Kind | NEW track: create from scratch |
-| Primary (author) | **Opus · claude.ai** |
-| Drafter (on request) | pi · DeepSeek |
-| Challenger | pi · Muse Spark 1.3 |
-| Verifier | Antigravity |
-| Final gate | Opus (claude.ai session) |
-| Branch / worktree | `track/terraform` · `../zto-terraform` |
-| Depends on | phase 2 foundations |
-| Research dossier | `.agents/research/E-platform.md` |
+|                      |                                        |
+| -------------------- | -------------------------------------- |
+| Phase                | 3                                      |
+| Kind                 | NEW track: create from scratch         |
+| Primary (author)     | **Opus · claude.ai**                   |
+| Drafter (on request) | pi · DeepSeek                          |
+| Challenger           | pi · Muse Spark 1.3                    |
+| Verifier             | Antigravity                            |
+| Final gate           | Opus (claude.ai session)               |
+| Branch / worktree    | `track/terraform` · `../zto-terraform` |
+| Depends on           | phase 2 foundations                    |
+| Research dossier     | `.agents/research/E-platform.md`       |
 
 ## 0. Read before starting (binding)
+
 1. `AGENTS.md`: the contract. If it conflicts with this brief, AGENTS.md wins; log the conflict in your review file.
 2. `.agents/OWNERSHIP.md`: what you own vs only cross-link.
 3. `.agents/REVIEW.md`: the checklist your work is judged against.
 4. Your global/agent instructions still apply where they do not conflict.
 
 ## 1. Owner decisions and track-specific instructions
+
 - Terraform Associate 004 targets 1.12 while the track teaches the latest: add exam-delta callouts.
 - Owns the shared policy-as-code module (OPA/Rego, CEL, Kyverno, Terraform Policy). kubernetes and argocd cross-link to it.
 - Teach the **latest stable** versions. Add **Then vs now** comparisons wherever practice changed (AGENTS.md § Version Currency).
 - Pin **all** tooling via mise (`.mise.toml` + `mise.lock`): node 26 for JS/TS, plus every CLI and runtime the examples need.
 
 ## 2. Ownership
+
 **You own (full treatment):**
+
 - IaC model, HCL, state & locking, modules, `terraform test`, OpenTofu
 - Policy-as-code (OPA/Rego, CEL, Kyverno, Terraform Policy): one shared module
 
 **Cross-link only (do not re-explain):**
+
 - (see dossier "Overlaps / dedupe")
 
 ## 3. Research dossier (verified 2026-10-27/28; re-verify before use)
@@ -106,7 +111,9 @@
 ---
 
 ## 4. Re-verify list
+
 These claims were marked unverified during research. Confirm or correct each one against a primary source before teaching it:
+
 - Licence: Terraform under **BSL 1.1 since v1.6 (Aug 2023)**; OpenTofu forked from 1.5.x under MPL-2.0; IBM acquired HashiCorp (closed Feb 2025 — from background knowledge, unverified here).
 - **Terraform Associate (004)** — https://developer.hashicorp.com/terraform/tutorials/certification-004/associate-review-004 — tests **Terraform 1.12**; 003 retired 2026-01-08 (https://notes.kodekloud.com/docs/HashiCorp-Certified-Terraform-Associate-004/Course-Introduction/Whats-New-in-the-Terraform-Associate-004-Exam/page). Objectives: (1) IaC with Terraform, (2) Terraform fundamentals (providers, state), (3) Core workflow (init/validate/plan/apply/destroy/fmt), (4) Configuration (resource vs data, references, variables/outputs, complex types, expressions/functions, dependencies, **custom conditions**, sensitive data & Vault), (5) Modules (sources, scope, versions), (6) State management (local backend, locking, remote backend, drift), (7) Maintain infra (import, state CLI, verbose logging), (8) HCP Terraform (workspaces, projects, governance, integrations). New vs 003: lifecycle rules, custom validation, **ephemeral values & write-only arguments**, expanded HCP Terraform. HashiCorp doesn't publish percentage weights (unverified that none exist).
 - Terraform Authoring & Operations Professional (exists; objectives not checked — unverified).
@@ -115,7 +122,9 @@ These claims were marked unverified during research. Confirm or correct each one
 - Cloud-like provider tests: **LocalStack v4.14.0** (AWS API emulation; note LocalStack licensing/auth-token changes for community image in 2026 — unverified, check before pinning) or MinIO for S3 backend; prove **state locking**: two concurrent applies against S3 backend with `use_lockfile = true` → second fails with lock error.
 
 ## 5. Certifications & exams
+
 Follow AGENTS.md § Certification and Exam Coverage exactly. Minimum deliverables:
+
 1. **README "Certifications & Exams" section.** Start from the exams named in the dossier above ("Authoritative syllabi used"). Re-verify each exam's code, status, guide version/date, targeted product version and domain weights on the official page. Where no certification exists, say so and use the recognised interview format.
 2. **`exams/README.md` coverage matrix.** Rows are domain/objective, weight, modules, examples, status. No ❌ at hand-off.
 3. **`exams/<exam-code>.md` question banks.**
@@ -127,11 +136,14 @@ Follow AGENTS.md § Certification and Exam Coverage exactly. Minimum deliverable
 5. **Original questions only.** No braindump content.
 
 ## 6. Code languages
+
 Per AGENTS.md § Code Example Languages:
+
 - **Primary:** pseudocode (where algorithms or protocols are described) + TypeScript (or the track's own language, for language tracks).
 - **Secondary:** Python, Rust or Nim only where it teaches something. Each language lives in `examples/<lang>/` with its own mise-pinned toolchain and native test runner, and `test` runs them all.
 
 ## 7. Workflow and definition of done
+
 1. **Primary (Opus)** works on branch `track/terraform` and sets this track's row in `.agents/STATUS.md` to 🟦.
 2. **Verify versions first.** Check every version in the dossier against its primary source today. Record the results in the README's `Verified against …` line. Resolve every item in the re-verify list below.
 3. Build in stages: README syllabus + exam matrix → modules one by one, each with its examples/tests → glossary → cheatsheet → question banks → mock exam. Delegate bulk drafting (question-bank drafts, glossary candidates, cheatsheet tables) to the **Drafter**, then correct and integrate it yourself.

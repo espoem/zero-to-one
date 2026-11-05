@@ -3,6 +3,7 @@
 ## Hand-off (primary author, 2026-10-30) — ready for challenger/verifier
 
 **Status:** brief delivered. Authored comprehensive, academically grounded, and production-grade Distributed Systems track conforming to repository standards (`AGENTS.md` and `.agents/briefs/distributed-systems.md`):
+
 - All 14 modules authored in `modules/01-*.md` through `modules/14-*.md` with unwrapped paragraphs, formal definitions (Deutsch 8 fallacies, FLP bivalence proof, Gilbert-Lynch CAP, Abadi PACELC, $\Phi$-accrual failure detector, Lamport happens-before $\to$, Vector Clocks, TrueTime commit-wait $2\epsilon$, Fencing tokens, Herlihy-Wing linearizability, Wing-Gong WGL checking algorithm, Chain Replication & CRAQ, ABD read-repair protocol, Paxos Phase 1/2, Flexible Paxos $Q_1 \cap Q_2 \neq \emptyset$, Raft state machine & Figure 8 commit rule, ZooKeeper fair lock recipe, etcd MVCC revisions, 2PC blocking coordinator analysis, Sagas, Google Percolator primary locks, Kafka High Watermark vs LEO, ISR invariants, CRDT join-semilattice algebraic properties, Deterministic Simulation Testing (DST), $3f+1$ Byzantine bound proof, PBFT 3-phase consensus, GFS 64MB chunks, AWS Aurora redo-log streaming, and Multi-Raft dynamic range migration), code snippets, and detailed Interview Drills with collapsible `<details>` blocks.
 - 14 executable test suites in `examples/01-*.test.ts` through `examples/14-*.test.ts` verifying Two Generals lossy channel, CAP CP vs AP modes, Idempotent RPC servers with deduplication tables, Full Jitter and Decorrelated Jitter backoff, $\Phi$-accrual failure detector suspicion scaling, Lamport clocks, Vector clock causal comparison, Fenced storage write rejection, Wing-Gong (WGL) linearizability checking (positive and negative non-linearizable traces), Naive quorum New-Then-Old anomaly, ABD read-repair linearizability restoration, Chain Replication tail reads, Single-Decree Paxos, Flexible Paxos asymmetric non-majority quorums, Raft election safety, log matching conflict truncation, voting restrictions, ZooKeeper fair lock queue without thundering herds, Two-Phase Commit with blocking coordinator crash, Saga rollback orchestration, Kafka High Watermark read isolation, partition count resize key remapping trap, G-Counter convergence and fast-check property tests (commutativity and associativity), OR-Set Add-Wins conflict resolution, byte-for-byte Deterministic Simulation Testing replayability with seeds, $3f + 1$ Byzantine failure bounds, PBFT 3-phase states, and Multi-Raft shard migration with linearizable hand-off.
 - `exams/README.md`: MIT 6.5840 / Cambridge CST Part II / Principal & Staff Distributed Systems Loop Matrix, 100% full coverage, 0 gaps.
@@ -12,7 +13,7 @@
 - `README.md`: updated with `Verified against Node 26.12.1, TypeScript 7.0.2 on 2026-10-30`, syllabus flowchart, and "Certifications & Academic Standards" section.
 
 | Module | State | Proof file | Tests |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 01 System Models & Impossibility | done | `examples/01-system-models-and-bounds.test.ts` | pass |
 | 02 Networks, RPC & Failure Detection | done | `examples/02-networks-rpc-and-detectors.test.ts` | pass |
 | 03 Time, Physical Clocks & Ordering | done | `examples/03-clocks-ordering-and-fencing.test.ts` | pass |
@@ -29,6 +30,7 @@
 | 14 Real-World Systems, Sharding & Capstone | done | `examples/14-sharded-kv-multi-raft.test.ts` | pass |
 
 **Tooling:**
+
 - Node 26.12.1 and TypeScript 7.0.2 pinned in `.mise.toml` and `mise.lock` (multi-platform checksums for `linux-x64` and `macos-arm64`).
 - `fast-check: 4.10.2`, `@types/node: 26.6.6`, `typescript: 7.0.2`.
 - Hermetic test runner: `mise exec -- npm test` (14 test modules, 49 unit, scenario, simulation, and property tests passing in 6.2s).

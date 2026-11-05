@@ -31,13 +31,19 @@ async function run(): Promise<void> {
     VALUES (1, 150.50);
   `);
 
-  const orderCheck = await db.query<{ total_amount: string }>('SELECT total_amount FROM orders WHERE customer_id = 1;');
-  assert.equal(Number(orderCheck.rows[0]!.total_amount), 150.50);
+  const orderCheck = await db.query<{ total_amount: string }>(
+    'SELECT total_amount FROM orders WHERE customer_id = 1;',
+  );
+  assert.equal(Number(orderCheck.rows[0]!.total_amount), 150.5);
 
   // Test 3: Referential Integrity & Cascade Deletion
   await db.query('DELETE FROM customers WHERE customer_id = 1;');
   const ordersAfterDelete = await db.query('SELECT * FROM orders WHERE customer_id = 1;');
-  assert.equal(ordersAfterDelete.rows.length, 0, 'Child orders should be deleted via ON DELETE CASCADE');
+  assert.equal(
+    ordersAfterDelete.rows.length,
+    0,
+    'Child orders should be deleted via ON DELETE CASCADE',
+  );
 
   // Test 4: Generated Columns Evaluation
   await db.exec(`
@@ -51,8 +57,14 @@ async function run(): Promise<void> {
     INSERT INTO line_items (quantity, unit_price) VALUES (4, 25.00);
   `);
 
-  const genResult = await db.query<{ line_total: string }>('SELECT line_total FROM line_items WHERE item_id = 1;');
-  assert.equal(Number(genResult.rows[0]!.line_total), 100.00, 'Generated column must evaluate accurately');
+  const genResult = await db.query<{ line_total: string }>(
+    'SELECT line_total FROM line_items WHERE item_id = 1;',
+  );
+  assert.equal(
+    Number(genResult.rows[0]!.line_total),
+    100.0,
+    'Generated column must evaluate accurately',
+  );
 
   logSuccess('02-relational-modeling-and-constraints');
 }

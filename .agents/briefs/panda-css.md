@@ -1,7 +1,7 @@
 # Brief: Panda CSS (`technologies/panda-css`)
 
-| | |
-|---|---|
+|  |  |
+| --- | --- |
 | Phase | 1 |
 | Kind | EXISTING track: restructure and update in place, keeping tests green throughout |
 | Primary (author) | **Opus · claude.ai** |
@@ -14,12 +14,14 @@
 | Research dossier | `.agents/research/A-frontend.md` |
 
 ## 0. Read before starting (binding)
+
 1. `AGENTS.md`: the contract. If it conflicts with this brief, AGENTS.md wins; log the conflict in your review file.
 2. `.agents/OWNERSHIP.md`: what you own vs only cross-link.
 3. `.agents/REVIEW.md`: the checklist your work is judged against.
 4. Your global/agent instructions still apply where they do not conflict.
 
 ## 1. Owner decisions and track-specific instructions
+
 - **Owner decision D5 = option A:** migrate the whole track to `@pandacss/dev` 2.x (2.4.0 at research time; re-check).
 - Restructure 13 → 12 modules. The final module is "Migration & upgrades", with a 0.x/1.x → v2 checklist and a version-history table.
 - Wherever practice changed (createStyleContext → recipe contexts, `panda ship` → `panda lib`, `containerSizes` → `containers`, compound-variant semantics, explicit `preset-base`), add a **Then vs now** comparison.
@@ -31,10 +33,13 @@
 - Pin **all** tooling via mise (`.mise.toml` + `mise.lock`): node 26 for JS/TS, plus every CLI and runtime the examples need.
 
 ## 2. Ownership
+
 **You own (full treatment):**
+
 - Panda extraction, recipes, slot recipes, codegen, v2 compiler
 
 **Cross-link only (do not re-explain):**
+
 - Proxy/Reflect, WeakRef/FinalizationRegistry → owned by `languages/javascript`
 - Typing JSX, components, hooks, generic/polymorphic components → owned by `languages/typescript` (M12)
 - Cascade, `@layer`, `@scope`, specificity, inheritance, value processing → owned by `languages/css`
@@ -135,7 +140,9 @@
 ---
 
 ## 4. Re-verify list
+
 These claims were marked unverified during research. Confirm or correct each one against a primary source before teaching it:
+
 - `@pandacss/dev` **2.4.0** (2026-10-22). Release history: 2.0.0 on 2026-09-29; 1.0.0 on 2025-08-05; 1.9.0 on 2026-03-08 was the last 1.x on npm `latest` (the repo `main` changelog shows 1.12.1, unverified on npm). The repo's `^0.51` dates from 2024-12-31.
 - `@park-ui/panda-preset@0.43.1`; its v2 compatibility is unverified.
 - W3C Design Tokens Format Module 2025.10 (final CG report, https://www.w3.org/community/reports/design-tokens/CG-FINAL-format-20251028/). Whether Panda can import DTCG files is unverified.
@@ -145,7 +152,9 @@ These claims were marked unverified during research. Confirm or correct each one
 - M12.2 Strategy 3 "`panda ship`" was replaced by `panda lib`/`buildinfo`. `emit-pkg` is removed; check whether `emitPackage` config is still valid (unverified).
 
 ## 5. Certifications & exams
+
 Follow AGENTS.md § Certification and Exam Coverage exactly. Minimum deliverables:
+
 1. **README "Certifications & Exams" section.** Start from the exams named in the dossier above ("Authoritative syllabi used"). Re-verify each exam's code, status, guide version/date, targeted product version and domain weights on the official page. Where no certification exists, say so and use the recognised interview format.
 2. **`exams/README.md` coverage matrix.** Rows are domain/objective, weight, modules, examples, status. No ❌ at hand-off.
 3. **`exams/<exam-code>.md` question banks.**
@@ -157,11 +166,14 @@ Follow AGENTS.md § Certification and Exam Coverage exactly. Minimum deliverable
 5. **Original questions only.** No braindump content.
 
 ## 6. Code languages
+
 Per AGENTS.md § Code Example Languages:
+
 - **Primary:** pseudocode (where algorithms or protocols are described) + TypeScript (or the track's own language, for language tracks).
 - **Secondary:** Python, Rust or Nim only where it teaches something. Each language lives in `examples/<lang>/` with its own mise-pinned toolchain and native test runner, and `test` runs them all.
 
 ## 7. Workflow and definition of done
+
 1. **Primary (Opus)** works on branch `track/panda-css` and sets this track's row in `.agents/STATUS.md` to 🟦.
 2. **Verify versions first.** Check every version in the dossier against its primary source today. Record the results in the README's `Verified against …` line. Resolve every item in the re-verify list below.
 3. Build in stages: README syllabus + exam matrix → modules one by one, each with its examples/tests → glossary → cheatsheet → question banks → mock exam. Delegate bulk drafting (question-bank drafts, glossary candidates, cheatsheet tables) to the **Drafter**, then correct and integrate it yourself.

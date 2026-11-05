@@ -1,7 +1,7 @@
 # Brief: React (`technologies/react`)
 
-| | |
-|---|---|
+|  |  |
+| --- | --- |
 | Phase | 1 |
 | Kind | EXISTING track: restructure and update in place, keeping tests green throughout |
 | Primary (author) | **Opus · claude.ai** |
@@ -14,12 +14,14 @@
 | Research dossier | `.agents/research/A-frontend.md` |
 
 ## 0. Read before starting (binding)
+
 1. `AGENTS.md`: the contract. If it conflicts with this brief, AGENTS.md wins; log the conflict in your review file.
 2. `.agents/OWNERSHIP.md`: what you own vs only cross-link.
 3. `.agents/REVIEW.md`: the checklist your work is judged against.
 4. Your global/agent instructions still apply where they do not conflict.
 
 ## 1. Owner decisions and track-specific instructions
+
 - Expand every existing module from ~70 lines to full depth (rule of thumb: 400–900 lines). Add the two new modules from the dossier.
 - Merge in the framework mechanics handed over from TypeScript modules 09–13 (see `.agents/reviews/typescript.md` § Handover once it exists).
 - Cover React 19.2/19.3 (Activity, useEffectEvent, cacheSignal, ViewTransition, Fragment refs, partial prerender), React Compiler 1.0, and the Dec-2025 RSC RCE (CVE-2025-55182) with a "Then vs now" for pre-patch RSC setups.
@@ -28,10 +30,13 @@
 - Pin **all** tooling via mise (`.mise.toml` + `mise.lock`): node 26 for JS/TS, plus every CLI and runtime the examples need.
 
 ## 2. Ownership
+
 **You own (full treatment):**
+
 - Fiber, lanes, Suspense, RSC/Flight, Actions, React Compiler
 
 **Cross-link only (do not re-explain):**
+
 - Types & coercion, scope/closures/`this`, prototypes/classes → owned by `languages/javascript`
 - Iterators, generators, async iteration, Promise/job-queue semantics (spec level) → owned by `languages/javascript`
 - ESM semantics (Module Records, live bindings, TLA), `exports` conditions at runtime → owned by `languages/javascript`
@@ -140,7 +145,9 @@
 ---
 
 ## 4. Re-verify list
+
 These claims were marked unverified during research. Confirm or correct each one against a primary source before teaching it:
+
 - `@types/react@19.3.0`. Canary is 19.3.0-canary; nothing 19.4/20 has been announced (unverified beyond the npm dist-tags).
 - Meta Front-End Developer Professional Certificate on Coursera (unverified current syllabus).
 - Reconciler/hooks/effects/transitions: `act()` + RTL in jsdom. Deterministic scheduling via `act` and the `scheduler/unstable_mock` build (unverified that it still ships in 19.3).
@@ -148,7 +155,9 @@ These claims were marked unverified during research. Confirm or correct each one
 - HTTP caching, streaming and CSP/Trusted Types theory belong to a web-platform/security track (`technologies/web-platform`, unverified track name).
 
 ## 5. Certifications & exams
+
 Follow AGENTS.md § Certification and Exam Coverage exactly. Minimum deliverables:
+
 1. **README "Certifications & Exams" section.** Start from the exams named in the dossier above ("Authoritative syllabi used"). Re-verify each exam's code, status, guide version/date, targeted product version and domain weights on the official page. Where no certification exists, say so and use the recognised interview format.
 2. **`exams/README.md` coverage matrix.** Rows are domain/objective, weight, modules, examples, status. No ❌ at hand-off.
 3. **`exams/<exam-code>.md` question banks.**
@@ -160,11 +169,14 @@ Follow AGENTS.md § Certification and Exam Coverage exactly. Minimum deliverable
 5. **Original questions only.** No braindump content.
 
 ## 6. Code languages
+
 Per AGENTS.md § Code Example Languages:
+
 - **Primary:** pseudocode (where algorithms or protocols are described) + TypeScript (or the track's own language, for language tracks).
 - **Secondary:** Python, Rust or Nim only where it teaches something. Each language lives in `examples/<lang>/` with its own mise-pinned toolchain and native test runner, and `test` runs them all.
 
 ## 7. Workflow and definition of done
+
 1. **Primary (Opus)** works on branch `track/react` and sets this track's row in `.agents/STATUS.md` to 🟦.
 2. **Verify versions first.** Check every version in the dossier against its primary source today. Record the results in the README's `Verified against …` line. Resolve every item in the re-verify list below.
 3. Build in stages: README syllabus + exam matrix → modules one by one, each with its examples/tests → glossary → cheatsheet → question banks → mock exam. Delegate bulk drafting (question-bank drafts, glossary candidates, cheatsheet tables) to the **Drafter**, then correct and integrate it yourself.

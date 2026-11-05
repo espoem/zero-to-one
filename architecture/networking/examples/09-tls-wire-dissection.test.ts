@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 export interface TLSRecordHeader {
   contentType: number; // 22 = Handshake
-  version: number;     // 0x0303 (TLS 1.2 legacy wire value in record header)
+  version: number; // 0x0303 (TLS 1.2 legacy wire value in record header)
   length: number;
 }
 
@@ -106,14 +106,15 @@ describe('Module 09: TLS 1.3 Wire Record & ClientHello Dissection', () => {
     const sniBytes = Buffer.from('api.zero-to-one.internal', 'ascii');
     const sniExtData = Buffer.concat([
       Buffer.from([0x00, sniBytes.length + 3]), // Server Name list length
-      Buffer.from([0x00]),                      // Name type = host_name
-      Buffer.from([0x00, sniBytes.length]),     // Name length
+      Buffer.from([0x00]), // Name type = host_name
+      Buffer.from([0x00, sniBytes.length]), // Name length
       sniBytes,
     ]);
 
     const suppVersionsData = Buffer.from([
-      0x02,       // List length (2 bytes)
-      0x03, 0x04, // TLS 1.3 (0x0304)
+      0x02, // List length (2 bytes)
+      0x03,
+      0x04, // TLS 1.3 (0x0304)
     ]);
 
     const extensionsPayload = Buffer.concat([
@@ -126,11 +127,11 @@ describe('Module 09: TLS 1.3 Wire Record & ClientHello Dissection', () => {
     ]);
 
     const clientHelloBody = Buffer.concat([
-      Buffer.from([0x03, 0x03]),                // Legacy client version 0x0303
-      Buffer.alloc(32, 0xaa),                   // 32-byte Client Random
-      Buffer.from([0x00]),                      // Session ID len 0
-      Buffer.from([0x00, 0x02, 0x13, 0x01]),    // Cipher suites: TLS_AES_128_GCM_SHA256 (0x1301)
-      Buffer.from([0x01, 0x00]),                // Compression methods: 1, null
+      Buffer.from([0x03, 0x03]), // Legacy client version 0x0303
+      Buffer.alloc(32, 0xaa), // 32-byte Client Random
+      Buffer.from([0x00]), // Session ID len 0
+      Buffer.from([0x00, 0x02, 0x13, 0x01]), // Cipher suites: TLS_AES_128_GCM_SHA256 (0x1301)
+      Buffer.from([0x01, 0x00]), // Compression methods: 1, null
       Buffer.from([0x00, extensionsPayload.length]),
       extensionsPayload,
     ]);

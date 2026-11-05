@@ -19,6 +19,7 @@ flowchart TD
 ```
 
 ### The Failover Dilemma: Split-Brain
+
 If the Primary experiences a network partition or a long GC pause, backups may declare the leader dead and promote a new Primary. If the old Primary recovers and continues accepting writes while the new Primary accepts conflicting writes, the system enters **Split-Brain**. Recovering requires consensus algorithms to enforce that at most one primary can hold authority in any epoch.
 
 ---
@@ -40,12 +41,15 @@ flowchart LR
 ```
 
 ### Invariants of Chain Replication
+
 1. **Writes**: Clients send all write requests to the **Head**. The Head executes the write, pushes it down the chain through middle nodes, and the **Tail** commits the write, sending the response to the client.
 2. **Reads**: Clients send all read requests strictly to the **Tail**.
 3. **Linearizability Guarantee**: Because the Tail processes all reads and is the final node to commit writes, any write acknowledged to a client has already reached the Tail. Therefore, all subsequent reads observed at the Tail are guaranteed to reflect that write in real time, achieving **Linearizability** with minimal coordination overhead.
 
 ### CRAQ: Chain Replication with Apportioned Queries
+
 In standard Chain Replication, the Tail becomes a read bottleneck. **CRAQ** (Terrace & Freedman, 2009) allows **all nodes** (Head, Middle, Tail) to serve reads directly:
+
 - Each node stores multiple object versions marked as **CLEAN** or **DIRTY**.
 - When an update arrives: the node marks the new version as `DIRTY`.
 - If a read arrives for an object with state `CLEAN`, the node serves it immediately.
@@ -70,7 +74,8 @@ flowchart LR
 ```
 
 ### Why $R + W > N$ Fails Linearizability
-It is widely believed that $R + W > N$ guarantees strong consistency. **This is false.** Quorum overlap guarantees that a read quorum observes the newest write, but it does *not* guarantee Linearizability due to concurrent or partial writes:
+
+It is widely believed that $R + W > N$ guarantees strong consistency. **This is false.** Quorum overlap guarantees that a read quorum observes the newest write, but it does _not_ guarantee Linearizability due to concurrent or partial writes:
 
 ```mermaid
 sequenceDiagram
@@ -100,13 +105,15 @@ sequenceDiagram
 ```
 
 ### The ABD Protocol (Attiya, Bar-Noy, Dolev 1995)
+
 To fix this anomaly, the **ABD Protocol** introduces a mandatory **Read-Repair** phase during reads:
+
 1. **Write Phase**:
    - Query a read quorum to discover the highest version number $v_{\max}$.
    - Send `write(val, v_max + 1)` to a write quorum $W$.
 2. **Read Phase (Two Steps)**:
    - Query a read quorum $R$ to collect values and timestamps; identify the highest timestamped value $(v, \text{val})$.
-   - **Crucial Step**: Write $(v, \text{val})$ back to a write quorum $W$ *before* returning to the client!
+   - **Crucial Step**: Write $(v, \text{val})$ back to a write quorum $W$ _before_ returning to the client!
    - Writing back guarantees that any subsequent reader will overlap with the newly repaired quorum, mathematically preserving Linearizability.
 
 ---
@@ -165,9 +172,7 @@ In a quorum system without a single leader, a concurrent write might only have r
 <details>
 <summary>3. What is the ReadIndex optimization in Raft, and what failure does it prevent?</summary>
 
-The ReadIndex optimization allows a Raft leader to serve reads from RAM without writing entries to disk.
-It prevents stale reads caused by network partitions: if a leader is partitioned from the majority, a new leader may be elected elsewhere. If the old leader served reads directly from RAM, it would return stale data.
-With ReadIndex, the leader records its `commitIndex`, sends a round of heartbeat messages to a majority of nodes to confirm it is still the valid leader, waits for its local state machine to apply up to that `commitIndex`, and only then serves the read.
+The ReadIndex optimization allows a Raft leader to serve reads from RAM without writing entries to disk. It prevents stale reads caused by network partitions: if a leader is partitioned from the majority, a new leader may be elected elsewhere. If the old leader served reads directly from RAM, it would return stale data. With ReadIndex, the leader records its `commitIndex`, sends a round of heartbeat messages to a majority of nodes to confirm it is still the valid leader, waits for its local state machine to apply up to that `commitIndex`, and only then serves the read.
 </details>
 
 <details>
@@ -175,6 +180,7 @@ With ReadIndex, the leader records its `commitIndex`, sends a round of heartbeat
 
 - **ReadIndex**: Requires a network roundtrip of heartbeats to a majority for every batch of read operations. It is completely safe under arbitrary clock drift or VM pauses, but adds network roundtrip latency.
 - **Lease Reads**: Allows the leader to serve reads immediately from memory with zero network messages as long as its physical clock lease has not expired. It achieves ultra-low latency, but relies on bounded physical clock drift: if a leader experiences a severe clock jump or a long hypervisor pause, it may serve stale reads.
+
 </details>
 
 <details>

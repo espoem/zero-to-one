@@ -2,13 +2,19 @@
  * Module 13 — a type-test suite for a small public API, written the way a library would.
  * The runtime part runs under node --test; the type assertions run under `npm run typecheck`.
  */
-import { test } from "node:test";
-import assert from "node:assert/strict";
-import { expectTypeOf } from "expect-type";
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { expectTypeOf } from 'expect-type';
 
 // --- The "library" under test ------------------------------------------------
-export interface Ok<T> { readonly ok: true; readonly value: T }
-export interface Err<E> { readonly ok: false; readonly error: E }
+export interface Ok<T> {
+  readonly ok: true;
+  readonly value: T;
+}
+export interface Err<E> {
+  readonly ok: false;
+  readonly error: E;
+}
 export type Result<T, E = Error> = Ok<T> | Err<E>;
 
 export function ok<const T>(value: T): Ok<T> {
@@ -25,38 +31,41 @@ export function unwrapOr<T, E, D>(r: Result<T, E>, fallback: D): T | D {
 }
 
 // --- Type tests: what consumers rely on ----------------------------------------
-test("inference: literals are preserved by const type parameters", () => {
+test('inference: literals are preserved by const type parameters', () => {
   expectTypeOf(ok(1)).toEqualTypeOf<Ok<1>>();
-  expectTypeOf(err("NOT_FOUND")).toEqualTypeOf<Err<"NOT_FOUND">>();
+  expectTypeOf(err('NOT_FOUND')).toEqualTypeOf<Err<'NOT_FOUND'>>();
 });
 
 // Pitfall for type tests: `const r: Result<number, "E1"> = ok(2)` is *narrowed by assignment*
 // to Ok<number>, so it does not test the union at all. Use `declare const` (type-only, no runtime value).
-declare const anyResult: Result<number, "E1">;
+declare const anyResult: Result<number, 'E1'>;
 
-test("assignment narrowing would silently weaken a type test", () => {
-  const narrowed: Result<number, "E1"> = ok(2);
+test('assignment narrowing would silently weaken a type test', () => {
+  const narrowed: Result<number, 'E1'> = ok(2);
   expectTypeOf(narrowed).toEqualTypeOf<Ok<number>>(); // the declared union is filtered to the Ok member
   expectTypeOf(map(narrowed, String)).toEqualTypeOf<Result<string, unknown>>(); // E lost
 });
 
-test("map changes the value type and keeps the error type", () => {
+test('map changes the value type and keeps the error type', () => {
   const typeOnly = () => {
-    expectTypeOf(map(anyResult, (n) => String(n))).toEqualTypeOf<Result<string, "E1">>();
+    expectTypeOf(map(anyResult, (n) => String(n))).toEqualTypeOf<Result<string, 'E1'>>();
     // The callback parameter is contextually typed from the Result.
     map(anyResult, (n) => expectTypeOf(n).toEqualTypeOf<number>());
   };
   void typeOnly; // never called: `anyResult` has no runtime value
-  assert.deepEqual(map(ok(2), (n) => n * 2), { ok: true, value: 4 });
+  assert.deepEqual(
+    map(ok(2), (n) => n * 2),
+    { ok: true, value: 4 },
+  );
 });
 
-test("unwrapOr returns a union of value and fallback types", () => {
+test('unwrapOr returns a union of value and fallback types', () => {
   const typeOnly = () => expectTypeOf(unwrapOr(anyResult, null)).toEqualTypeOf<number | null>();
   void typeOnly;
-  assert.equal(unwrapOr(err("E1"), null), null);
+  assert.equal(unwrapOr(err('E1'), null), null);
 });
 
-test("misuse is rejected (negative type tests)", () => {
+test('misuse is rejected (negative type tests)', () => {
   const typeOnly = () => {
     // @ts-expect-error — `value` only exists after narrowing on `ok`
     void anyResult.value;

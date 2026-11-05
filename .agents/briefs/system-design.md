@@ -1,35 +1,40 @@
 # Brief: System design (`architecture/system-design`)
 
-| | |
-|---|---|
-| Phase | 4 |
-| Kind | NEW track: create from scratch |
-| Primary (author) | **Opus · claude.ai** |
-| Drafter (on request) | pi · DeepSeek |
-| Challenger | pi · Muse Spark 1.3 |
-| Verifier | Antigravity |
-| Final gate | Opus (claude.ai session) |
-| Branch / worktree | `track/system-design` · `../zto-system-design` |
-| Depends on | all other tracks (built last) |
-| Research dossier | `.agents/research/D-cs.md` |
+|                      |                                                |
+| -------------------- | ---------------------------------------------- |
+| Phase                | 4                                              |
+| Kind                 | NEW track: create from scratch                 |
+| Primary (author)     | **Opus · claude.ai**                           |
+| Drafter (on request) | pi · DeepSeek                                  |
+| Challenger           | pi · Muse Spark 1.3                            |
+| Verifier             | Antigravity                                    |
+| Final gate           | Opus (claude.ai session)                       |
+| Branch / worktree    | `track/system-design` · `../zto-system-design` |
+| Depends on           | all other tracks (built last)                  |
+| Research dossier     | `.agents/research/D-cs.md`                     |
 
 ## 0. Read before starting (binding)
+
 1. `AGENTS.md`: the contract. If it conflicts with this brief, AGENTS.md wins; log the conflict in your review file.
 2. `.agents/OWNERSHIP.md`: what you own vs only cross-link.
 3. `.agents/REVIEW.md`: the checklist your work is judged against.
 4. Your global/agent instructions still apply where they do not conflict.
 
 ## 1. Owner decisions and track-specific instructions
+
 - Built **last**. Every component is a cross-link to its owning track. This track owns composition, estimation and SLO math.
 - Teach the **latest stable** versions. Add **Then vs now** comparisons wherever practice changed (AGENTS.md § Version Currency).
 - Pin **all** tooling via mise (`.mise.toml` + `mise.lock`): node 26 for JS/TS, plus every CLI and runtime the examples need.
 
 ## 2. Ownership
+
 **You own (full treatment):**
+
 - Requirements → HLD → deep dives, estimation, LB/CDN/rate-limiter/queue as components, SLO math
 
 **Cross-link only (do not re-explain):**
-- Heaps, tries, LRU/LFU implementations, B-tree *as a data structure* → owned by `algorithms/dsa`
+
+- Heaps, tries, LRU/LFU implementations, B-tree _as a data structure_ → owned by `algorithms/dsa`
 - Bloom / HyperLogLog / Count-Min math → owned by `algorithms/dsa`
 - Consistent hashing algorithms (ring, jump, rendezvous) → owned by `algorithms/dsa`
 - Caching theory (consistency, dual writes, invalidation, stampede) → owned by `architecture/data-systems`
@@ -47,9 +52,9 @@
 #### System design interviews — `architecture/system-design`
 
 - **Current stable version(s)**
-  - Books/courses (content, not software): Alex Xu, *System Design Interview Vol. 1* (2020) & *Vol. 2* (with Sahn Lam, 2022) — ByteByteGo course ToC verified (https://bytebytego.com/courses/system-design-interview/foreword): scale 0→millions, back-of-envelope, framework, rate limiter, consistent hashing, KV store, unique ID generator, URL shortener, web crawler, notification system, news feed, chat, search autocomplete, YouTube, Google Drive, proximity service, nearby friends, Google Maps, distributed message queue, metrics monitoring & alerting, ad click aggregation, hotel reservation, distributed email, S3-like object storage, gaming leaderboard, payment system, digital wallet, stock exchange. (Publication years from memory, unverified.)
+  - Books/courses (content, not software): Alex Xu, _System Design Interview Vol. 1_ (2020) & _Vol. 2_ (with Sahn Lam, 2022) — ByteByteGo course ToC verified (https://bytebytego.com/courses/system-design-interview/foreword): scale 0→millions, back-of-envelope, framework, rate limiter, consistent hashing, KV store, unique ID generator, URL shortener, web crawler, notification system, news feed, chat, search autocomplete, YouTube, Google Drive, proximity service, nearby friends, Google Maps, distributed message queue, metrics monitoring & alerting, ad click aggregation, hotel reservation, distributed email, S3-like object storage, gaming leaderboard, payment system, digital wallet, stock exchange. (Publication years from memory, unverified.)
   - **Hello Interview** "System Design in a Hurry" (https://hellointerview.com/learn/system-design/in-a-hurry/delivery): delivery framework — Requirements (~5 min, top 3 functional + 3–5 non-functional; skip estimation unless it changes the design) → Core entities (~2) → API (~5, default REST) → [optional] Data flow (~5) → High-level design (~10–15) → Deep dives (~10). Core concepts: networking, API design, data modeling, caching, sharding, consistent hashing, CAP, indexing, numbers to know. Key technologies: Redis, Elasticsearch, Kafka, Temporal, API gateway, Cassandra, DynamoDB, PostgreSQL, Flink, ZooKeeper. Patterns: real-time updates, contention, multi-step processes, scaling reads, scaling writes, large blobs, long-running tasks. 32 problem breakdowns (Bitly, Dropbox, Ticketmaster, WhatsApp, Uber, Top-K, ad click aggregator, Google Docs, payment system, ChatGPT, flash sale, …).
-  - SRE canon: Google *SRE Book* & *SRE Workbook* (https://sre.google/books/) — SLIs/SLOs/error budgets, multiwindow multi-burn-rate alerting.
+  - SRE canon: Google _SRE Book_ & _SRE Workbook_ (https://sre.google/books/) — SLIs/SLOs/error budgets, multiwindow multi-burn-rate alerting.
   - Tooling versions for labs: see executable proofs (Node 24/26, testcontainers 12.2.1; Redis/Valkey and Prometheus image tags unverified — pick at implementation time).
 - **Authoritative syllabi used**
   - Alex Xu Vol 1/2 ToC (above); Hello Interview delivery framework + core concepts/patterns/key technologies (above); DDIA 2e ch. 1 "Trade-offs in data systems architecture" & ch. 2 "Defining nonfunctional requirements"; Google SRE Book/Workbook; AWS Builders' Library (timeouts/retries/backoff with jitter, load shedding, avoiding fallback) (https://aws.amazon.com/builders-library/); "Latency numbers every programmer should know" (Jeff Dean; values dated — use updated table, e.g. Colin Scott's interactive version, values approximate).
@@ -87,7 +92,7 @@
   - Synchronized cron/TTL expiry (everything on the hour) → thundering herd; add jitter.
   - Consistent hashing without virtual nodes gives badly skewed load; adding a node with a naive `hash % N` remaps ~all keys.
   - Geohash boundary problem: nearby points across a cell edge have different prefixes → always query neighbouring cells.
-  - Payment retries without idempotency keys double-charge; timeouts from the PSP are *unknown outcome*, not failure → reconcile.
+  - Payment retries without idempotency keys double-charge; timeouts from the PSP are _unknown outcome_, not failure → reconcile.
 - **Interview hot topics**
   - Delivery framework and time management; driving the conversation and stating trade-offs.
   - Capacity estimation done quickly with explicit assumptions.
@@ -103,9 +108,9 @@
   - SLOs/observability: how you'd know it's broken; multi-region failover.
 - **Executable-proof strategy**
   - **Capacity calculators as code**: small TS module (`estimate.ts`) with unit tests reproducing each canonical problem's numbers (QPS, storage over 5 years, bandwidth, cache size); tests assert order-of-magnitude bands, documenting assumptions in test names. Deterministic, `node --test`.
-  - **Building-block micro-implementations with fake clocks** (`node:test` mock timers or injected `Clock`): token bucket, sliding-window counter, GCRA — property test (fast-check, fixed seed) that no window of length W admits > limit (and a *negative test* showing fixed-window admits 2× at the boundary); consistent hash ring with/without vnodes — assert load std-dev bound and ~K/N keys moved on node add vs `hash % N` moving ~all; single-flight cache — assert DB called once under 1 000 concurrent misses; LRU/TinyLFU hit-rate on a Zipf trace; Snowflake generator — clock-backwards test; Bloom filter FP rate within bound.
+  - **Building-block micro-implementations with fake clocks** (`node:test` mock timers or injected `Clock`): token bucket, sliding-window counter, GCRA — property test (fast-check, fixed seed) that no window of length W admits > limit (and a _negative test_ showing fixed-window admits 2× at the boundary); consistent hash ring with/without vnodes — assert load std-dev bound and ~K/N keys moved on node add vs `hash % N` moving ~all; single-flight cache — assert DB called once under 1 000 concurrent misses; LRU/TinyLFU hit-rate on a Zipf trace; Snowflake generator — clock-backwards test; Bloom filter FP rate within bound.
   - **Discrete-event queueing simulator** (seeded): M/M/1 and M/M/c to verify Little's law, show latency knee at ρ→1, retry amplification and metastable failure, hedged requests reducing p99, LIFO vs FIFO under overload, fan-out tail math (1 − 0.99ⁿ).
-  - **Redis-backed labs** via `testcontainers` 12.2.1 with a Redis or Valkey container (tag unverified): atomic distributed rate limiter in Lua (`EVALSHA`), sorted-set leaderboard, `SET NX PX` lock *plus* negative test showing lock loss under a simulated pause without fencing. Mark as integration tests (Docker/Colima required).
+  - **Redis-backed labs** via `testcontainers` 12.2.1 with a Redis or Valkey container (tag unverified): atomic distributed rate limiter in Lua (`EVALSHA`), sorted-set leaderboard, `SET NX PX` lock _plus_ negative test showing lock loss under a simulated pause without fencing. Mark as integration tests (Docker/Colima required).
   - **SLO math**: tests for error-budget and multiwindow multi-burn-rate thresholds (SRE Workbook: 14.4× over 1 h/5 min, 6× over 6 h/30 min, 1× over 3 d) (numbers from memory, unverified — confirm against https://sre.google/workbook/alerting-on-slos/). Optional: Prometheus alert rules unit-tested with `promtool test rules` in a container (version unverified).
   - **Design artifacts**: each canonical problem gets a written answer key (requirements → entities → API → HLD → deep dives) + Mermaid diagrams validated by `@mermaid-js/mermaid-cli` render in CI (version unverified) + a rubric checklist test (markdown lint that each answer contains required sections).
   - **Cannot prove locally**: real CDN behaviour, multi-region latency/failover, true scale (10⁶ QPS), managed-service limits → fallback: simulation, napkin math with cited sources, and config/plan validation in cloud tracks.
@@ -124,10 +129,10 @@
 Rule of thumb: **DSA = in-memory algorithms on one machine; data-systems = how one database/log works and how it is replicated/partitioned; distributed-systems = theory of correctness under partial failure (time, consensus, consistency, distributed transactions); system-design = composing off-the-shelf building blocks under requirements, numbers and SLOs.**
 
 | Concept | Owner (full treatment) | Others only cross-link |
-|---|---|---|
-| Hash tables, heaps, trees, tries, graphs, Bloom filter / HyperLogLog / Count-Min math, consistent-hashing *algorithm* (ring, jump hash, rendezvous) | `algorithms/dsa` | system-design uses them as building blocks |
+| --- | --- | --- |
+| Hash tables, heaps, trees, tries, graphs, Bloom filter / HyperLogLog / Count-Min math, consistent-hashing _algorithm_ (ring, jump hash, rendezvous) | `algorithms/dsa` | system-design uses them as building blocks |
 | B-tree vs LSM, WAL, compaction, indexes, MVCC implementation, isolation levels as implemented by Postgres/MySQL, encoding & schema evolution (Avro/Protobuf), leader/follower + multi-leader + leaderless (quorums, read repair, hinted handoff), sharding/rebalancing, CDC, batch & stream processing internals (DDIA 2e ch. 3–8, 11–12) | `architecture/data-systems` | distributed-systems links for replication lag anomalies; system-design links for "pick a DB" |
-| System model (crash/omission/Byzantine, sync/partial-sync/async), FLP, CAP/PACELC as formal results, clocks (physical, Lamport, vector, HLC, TrueTime), consistency-model hierarchy (Jepsen), linearizability checking, consensus (Paxos/Raft/ZAB/VR), replicated state machines, leases & fencing, failure detectors/membership/gossip, 2PC/3PC/Percolator/Spanner/Calvin, sagas as a *correctness* problem, CRDTs, delivery semantics (at-most/at-least/effectively-once), BFT (DDIA 2e ch. 9–10; MIT 6.5840) | `architecture/distributed-systems` | data-systems links "transactions → distributed txns"; system-design links "why Raft/ZK behind your lock service" |
+| System model (crash/omission/Byzantine, sync/partial-sync/async), FLP, CAP/PACELC as formal results, clocks (physical, Lamport, vector, HLC, TrueTime), consistency-model hierarchy (Jepsen), linearizability checking, consensus (Paxos/Raft/ZAB/VR), replicated state machines, leases & fencing, failure detectors/membership/gossip, 2PC/3PC/Percolator/Spanner/Calvin, sagas as a _correctness_ problem, CRDTs, delivery semantics (at-most/at-least/effectively-once), BFT (DDIA 2e ch. 9–10; MIT 6.5840) | `architecture/distributed-systems` | data-systems links "transactions → distributed txns"; system-design links "why Raft/ZK behind your lock service" |
 | Requirements → API → data model → HLD → deep dives; capacity estimation; LB/CDN/cache/rate-limiter/queue/search/blob as black boxes with knobs; canonical problems; observability, SLOs, error budgets, load shedding, backpressure (DDIA 2e ch. 1–2) | `architecture/system-design` | — |
 | Kafka **operations** (broker config, KRaft, tiered storage, sizing) | a messaging/streaming track or data-systems (whoever owns Kafka) | distributed-systems teaches log abstraction + delivery semantics only; system-design treats Kafka as a black box |
 | Observability tooling (OTel, Prometheus internals) | an SRE/observability track if proposed by another agent | system-design keeps SLO math + "what to measure" |
@@ -137,15 +142,19 @@ DDIA 2nd ed. chapter split (ToC from O'Reilly, https://www.oreilly.com/library/v
 ---
 
 ## 4. Re-verify list
+
 These claims were marked unverified during research. Confirm or correct each one against a primary source before teaching it:
-- Books/courses (content, not software): Alex Xu, *System Design Interview Vol. 1* (2020) & *Vol. 2* (with Sahn Lam, 2022) — ByteByteGo course ToC verified (https://bytebytego.com/courses/system-design-interview/foreword): scale 0→millions, back-of-envelope, framework, rate limiter, consistent hashing, KV store, unique ID generator, URL shortener, web crawler, notification system, news feed, chat, search autocomplete, YouTube, Google Drive, proximity service, nearby friends, Google Maps, distributed message queue, metrics monitoring & alerting, ad click aggregation, hotel reservation, distributed email, S3-like object storage, gaming leaderboard, payment system, digital wallet, stock exchange. (Publication years from memory, unverified.)
+
+- Books/courses (content, not software): Alex Xu, _System Design Interview Vol. 1_ (2020) & _Vol. 2_ (with Sahn Lam, 2022) — ByteByteGo course ToC verified (https://bytebytego.com/courses/system-design-interview/foreword): scale 0→millions, back-of-envelope, framework, rate limiter, consistent hashing, KV store, unique ID generator, URL shortener, web crawler, notification system, news feed, chat, search autocomplete, YouTube, Google Drive, proximity service, nearby friends, Google Maps, distributed message queue, metrics monitoring & alerting, ad click aggregation, hotel reservation, distributed email, S3-like object storage, gaming leaderboard, payment system, digital wallet, stock exchange. (Publication years from memory, unverified.)
 - Tooling versions for labs: see executable proofs (Node 24/26, testcontainers 12.2.1; Redis/Valkey and Prometheus image tags unverified — pick at implementation time).
-- **Redis-backed labs** via `testcontainers` 12.2.1 with a Redis or Valkey container (tag unverified): atomic distributed rate limiter in Lua (`EVALSHA`), sorted-set leaderboard, `SET NX PX` lock *plus* negative test showing lock loss under a simulated pause without fencing. Mark as integration tests (Docker/Colima required).
+- **Redis-backed labs** via `testcontainers` 12.2.1 with a Redis or Valkey container (tag unverified): atomic distributed rate limiter in Lua (`EVALSHA`), sorted-set leaderboard, `SET NX PX` lock _plus_ negative test showing lock loss under a simulated pause without fencing. Mark as integration tests (Docker/Colima required).
 - **SLO math**: tests for error-budget and multiwindow multi-burn-rate thresholds (SRE Workbook: 14.4× over 1 h/5 min, 6× over 6 h/30 min, 1× over 3 d) (numbers from memory, unverified — confirm against https://sre.google/workbook/alerting-on-slos/). Optional: Prometheus alert rules unit-tested with `promtool test rules` in a container (version unverified).
 - **Design artifacts**: each canonical problem gets a written answer key (requirements → entities → API → HLD → deep dives) + Mermaid diagrams validated by `@mermaid-js/mermaid-cli` render in CI (version unverified) + a rubric checklist test (markdown lint that each answer contains required sections).
 
 ## 5. Certifications & exams
+
 Follow AGENTS.md § Certification and Exam Coverage exactly. Minimum deliverables:
+
 1. **README "Certifications & Exams" section.** Start from the exams named in the dossier above ("Authoritative syllabi used"). Re-verify each exam's code, status, guide version/date, targeted product version and domain weights on the official page. Where no certification exists, say so and use the recognised interview format.
 2. **`exams/README.md` coverage matrix.** Rows are domain/objective, weight, modules, examples, status. No ❌ at hand-off.
 3. **`exams/<exam-code>.md` question banks.**
@@ -157,11 +166,14 @@ Follow AGENTS.md § Certification and Exam Coverage exactly. Minimum deliverable
 5. **Original questions only.** No braindump content.
 
 ## 6. Code languages
+
 Per AGENTS.md § Code Example Languages:
+
 - **Primary:** pseudocode (where algorithms or protocols are described) + TypeScript (or the track's own language, for language tracks).
 - **Secondary:** Python, Rust or Nim only where it teaches something. Each language lives in `examples/<lang>/` with its own mise-pinned toolchain and native test runner, and `test` runs them all.
 
 ## 7. Workflow and definition of done
+
 1. **Primary (Opus)** works on branch `track/system-design` and sets this track's row in `.agents/STATUS.md` to 🟦.
 2. **Verify versions first.** Check every version in the dossier against its primary source today. Record the results in the README's `Verified against …` line. Resolve every item in the re-verify list below.
 3. Build in stages: README syllabus + exam matrix → modules one by one, each with its examples/tests → glossary → cheatsheet → question banks → mock exam. Delegate bulk drafting (question-bank drafts, glossary candidates, cheatsheet tables) to the **Drafter**, then correct and integrate it yourself.

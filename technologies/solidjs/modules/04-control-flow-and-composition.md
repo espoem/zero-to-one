@@ -51,10 +51,10 @@ stateDiagram-v2
 
 ## 2. `<For>`: one list primitive, three keying modes
 
-2.0 merges 1.x `<For>` and `<Index>` into one `<For>` with a `keyed` prop. The callback's *shape* depends on the mode, and each argument is an accessor exactly when it can change for a preserved row:
+2.0 merges 1.x `<For>` and `<Index>` into one `<For>` with a `keyed` prop. The callback's _shape_ depends on the mode, and each argument is an accessor exactly when it can change for a preserved row:
 
 | Mode | When to use | `item` | `index` | A row is preserved when… | Proved |
-|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- |
 | default / `keyed={true}` | lists of objects with stable identity | **raw value** | **accessor** `i()` | the same object (===) is still in the list; it may move | rows move with their item; DOM node identity preserved; a new object with equal data re-creates the row |
 | `keyed={false}` | primitives, or data replaced wholesale where slot reuse is cheaper | **accessor** `item()` | **number** `i` | the slot index exists | slots reused, item accessors updated |
 | `keyed={(t) => t.id}` | data re-fetched as new objects with stable ids | **accessor** | **accessor** | the extracted key is still present | new object with the same key keeps the row |
@@ -65,11 +65,11 @@ stateDiagram-v2
 <For each={todos()} keyed={(t) => t.id} fallback={<Empty />}>{(todo) => <Row todo={todo()} />}</For>
 ```
 
-Avoid a *dynamic* boolean `keyed` (`keyed={mode()}`): the callback shape is mode-specific. Use a literal or a key function.
+Avoid a _dynamic_ boolean `keyed` (`keyed={mode()}`): the callback shape is mode-specific. Use a literal or a key function.
 
 ### 2.1 How keyed mapping works
 
-`<For>` is a thin wrapper over `mapArray(list, mapFn, { keyed, fallback })`, exported for custom list components (proved: `mapArray` maps `[1,2] → [10,20]` and re-maps after a change). A keyed mapping is a classic *list reconciliation* problem. The model below is a simplified version of the algorithm family Solid uses (prefix/suffix trimming plus a key→index map); it is not a transcription of the rc.19 source.
+`<For>` is a thin wrapper over `mapArray(list, mapFn, { keyed, fallback })`, exported for custom list components (proved: `mapArray` maps `[1,2] → [10,20]` and re-maps after a change). A keyed mapping is a classic _list reconciliation_ problem. The model below is a simplified version of the algorithm family Solid uses (prefix/suffix trimming plus a key→index map); it is not a transcription of the rc.19 source.
 
 ```text
 KEYED-MAP(old, new, rows)                 -- old/new: arrays of keys, rows: key → row owner
@@ -88,19 +88,19 @@ KEYED-MAP(old, new, rows)                 -- old/new: arrays of keys, rows: key 
   return rows ordered as new
 ```
 
-Loop invariant (middle loop): every key in `new[start..i-1]` has exactly one live row whose index accessor equals its position. Prefix/suffix trimming makes the common cases (append, remove one, swap two) O(n) with few DOM moves; the DOM side then reorders existing nodes (`reconcileArrays` in `@solidjs/web`) instead of re-creating them. That is why the test can assert the *same* `<li>` node moved.
+Loop invariant (middle loop): every key in `new[start..i-1]` has exactly one live row whose index accessor equals its position. Prefix/suffix trimming makes the common cases (append, remove one, swap two) O(n) with few DOM moves; the DOM side then reorders existing nodes (`reconcileArrays` in `@solidjs/web`) instead of re-creating them. That is why the test can assert the _same_ `<li>` node moved.
 
 #### The real rc.19 `updateKeyedMap`, annotated
 
 The model above is the textbook version. The shipped implementation (`@solidjs/signals`, `updateKeyedMap`) adds several production details worth knowing in an interview:
 
 1. **Prefix skip** — walk from the start while old and new items are `===` (or equal by key). In custom-key mode the matched row's item accessor is updated (`write(rows[start], newItems[start])`).
-2. **Suffix skip** — walk from the end the same way; matched rows are only *counted* and land at commit, to avoid copying twice.
+2. **Suffix skip** — walk from the end the same way; matched rows are only _counted_ and land at commit, to avoid copying twice.
 3. **No structural change** — if every position matched at equal length (the usual result after `reconcile`), the mapped array **keeps its identity**, so downstream consumers do not re-run at all.
 4. **Small-move fast path** — for large changed windows (> 64 items) that shrank or kept length, it probes whether the middle item moved by at most ±32 positions; if so, a specialised routine handles "drag one row" moves without building a key map. (The source notes it is a separate function so it does not deoptimise the general path; "measured 2x on reverse".)
 5. **Pure removal** — a shrinking update is first tried as a removal-only pass (no key map).
 6. **General path** — build `key → first new index` with a `next` chain for duplicate keys (scanned backwards so duplicates match in order: proved, two references to the same object get two rows and a shrink keeps the first), stage surviving rows at their new positions, queue the rest for disposal.
-7. **Create, with strong abort** — each new row runs your callback under a fresh owner (`createOwner()` + `runWithOwner`). If any callback throws, only the rows created *in this pass* are disposed and the error propagates; nothing live was touched yet.
+7. **Create, with strong abort** — each new row runs your callback under a fresh owner (`createOwner()` + `runWithOwner`). If any callback throws, only the rows created _in this pass_ are disposed and the error propagates; nothing live was touched yet.
 8. **Commit** — prefix and suffix copied, the window written in place, a fresh mapped array assigned (its new identity is the change signal), then removed rows' owners are **disposed** (proved: removing `"b"` runs `b`'s cleanup; disposing the list disposes the rest).
 
 ```mermaid
@@ -132,7 +132,7 @@ Its intended partner is a **store**: the index is a stable lookup key and reacti
 
 ### 3.1 `repeat()` and windowing
 
-`<Repeat>` is a thin wrapper over `repeat(count, map, { from, fallback })` from `solid-js`. When only `count` changes, existing entries are reused and only the tail is created or disposed; when `from` changes, the window shifts (proved: `012 → 567`). Because the index is a plain number, a row never needs to be told "your index changed"; the row's *data* changes through store reads.
+`<Repeat>` is a thin wrapper over `repeat(count, map, { from, fallback })` from `solid-js`. When only `count` changes, existing entries are reused and only the tail is created or disposed; when `from` changes, the window shifts (proved: `012 → 567`). Because the index is a plain number, a row never needs to be told "your index changed"; the row's _data_ changes through store reads.
 
 A virtualised list is therefore three pieces:
 
@@ -141,12 +141,14 @@ const [scrollTop, setScrollTop] = createSignal(0);
 const first = createMemo(() => Math.floor(scrollTop() / ROW_HEIGHT));
 const visible = createMemo(() => Math.ceil(viewportHeight() / ROW_HEIGHT) + 1);
 
-<div style={{ height: `${store.rows.length * ROW_HEIGHT}px`, position: "relative" }}
-     onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}>
+<div
+  style={{ height: `${store.rows.length * ROW_HEIGHT}px`, position: 'relative' }}
+  onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
+>
   <Repeat count={Math.min(visible(), store.rows.length - first())} from={first()}>
     {(i) => <Row style={{ top: `${i * ROW_HEIGHT}px` }} name={store.rows[i].name} />}
   </Repeat>
-</div>
+</div>;
 ```
 
 Scrolling changes `from`; rows whose index leaves the window are disposed and new ones are created at the other end. With `<For>` over a sliced array, every scroll step would run the keyed diff over the slice.
@@ -165,10 +167,10 @@ Early returns do not work in Solid: `if (!user()) return <Login />` runs once at
 ## 5. Dynamic components: the `dynamic()` factory
 
 ```tsx
-import { dynamic } from "@solidjs/web";
+import { dynamic } from '@solidjs/web';
 
 function Field() {
-  const Active = dynamic(() => (editing() ? Editor : Viewer));   // hoisted once per instance
+  const Active = dynamic(() => (editing() ? Editor : Viewer)); // hoisted once per instance
   return <Active value={value()} />;
 }
 ```
@@ -190,7 +192,7 @@ Why a factory: the returned component's identity is stable, so it composes with 
 Options from the rc.19 type docs:
 
 | Option | Effect |
-|---|---|
+| --- | --- |
 | `{ static: true }` | the source is called once, untracked, at `dynamic()` time; instances render it with no computation and no owner (hydration keys stay aligned). Use for constants |
 | `isStatic(props, "as")` | true when the caller wrote a literal (`as="button"`, a data property) and false for an expression (a getter). Feed it to `static` so a polymorphic component pays nothing for the literal case (proved: `[true, false]` and both render correctly) |
 | `{ deferStream: true }` | under SSR, hold the shell until an async source settles |
@@ -215,16 +217,18 @@ A tag that exists in both HTML and SVG (`a`, `title`, `style`, `script`) is crea
 
 ### 6.3 `Portal`
 
-`<Portal mount={el}>` renders its children into another DOM node (default `document.body`) while keeping them in the *owner* tree of the place they were written: context, cleanup and event delegation follow the owner, not the DOM position (proved: a click inside a portal mounted outside the root still reaches its handler, because the portal registers its mount point as a listener container for its render root). `Portal` throws during SSR.
+`<Portal mount={el}>` renders its children into another DOM node (default `document.body`) while keeping them in the _owner_ tree of the place they were written: context, cleanup and event delegation follow the owner, not the DOM position (proved: a click inside a portal mounted outside the root still reaches its handler, because the portal registers its mount point as a listener container for its render root). `Portal` throws during SSR.
 
 ## 7. Context
 
 Context passes values down the **owner tree**, not the DOM tree.
 
 ```tsx
-const TodosContext = createContext<TodosCtx>();          // default-less: canonical
-<TodosContext value={createTodos()}><TodoList /></TodosContext>   // the context IS the provider
-const [todos, actions] = useContext(TodosContext);        // typed TodosCtx (no | undefined)
+const TodosContext = createContext<TodosCtx>(); // default-less: canonical
+<TodosContext value={createTodos()}>
+  <TodoList />
+</TodosContext>; // the context IS the provider
+const [todos, actions] = useContext(TodosContext); // typed TodosCtx (no | undefined)
 ```
 
 Semantics (proved):
@@ -245,7 +249,7 @@ A provider stores its value on its **owner** (`setContext` on the owner record);
 
 ### 7.1 Context, not module scope, for state
 
-RFC 02 and the package cheatsheet are explicit: *module scope is shared by every request in the same process*. A store created at module scope becomes shared server state the day SSR is turned on, leaking one user's data into another's render. Create state inside a provider component (one instance per request on the server) and pass it through context. Module scope is for constants and the `createContext` call itself. [Module 08](./08-ssr-and-start-mode.md) proves the leak with a server-side test.
+RFC 02 and the package cheatsheet are explicit: _module scope is shared by every request in the same process_. A store created at module scope becomes shared server state the day SSR is turned on, leaking one user's data into another's render. Create state inside a provider component (one instance per request on the server) and pass it through context. Module scope is for constants and the `createContext` call itself. [Module 08](./08-ssr-and-start-mode.md) proves the leak with a server-side test.
 
 ## 7.2 Worked example: a headless Tabs component
 
@@ -253,26 +257,28 @@ Composition in Solid combines the pieces above: context for shared state (create
 
 ```tsx
 type TabsCtx = { active: () => string; select: (id: string) => void };
-const Tabs = createContext<TabsCtx>();               // default-less: <Tab> outside <TabList> throws
+const Tabs = createContext<TabsCtx>(); // default-less: <Tab> outside <TabList> throws
 
 export function TabList(props: { initial: string; as?: ValidComponent; children: Element }) {
   const [active, setActive] = createSignal(untrack(() => props.initial));
-  const Root = dynamic(() => props.as ?? "div", { static: isStatic(props, "as") });
+  const Root = dynamic(() => props.as ?? 'div', { static: isStatic(props, 'as') });
   return (
-    <Tabs value={{ active, select: setActive }}>       {/* state lives in the instance, not module scope */}
+    <Tabs value={{ active, select: setActive }}>
+      {' '}
+      {/* state lives in the instance, not module scope */}
       <Root role="tablist">{props.children}</Root>
     </Tabs>
   );
 }
 
 export function Tab(props: { id: string; children: Element }) {
-  const tabs = useContext(Tabs);                       // read once in the body: O(depth) lookup
+  const tabs = useContext(Tabs); // read once in the body: O(depth) lookup
   return (
     <button
       role="tab"
-      aria-selected={tabs.active() === props.id}      // binding: tracked
+      aria-selected={tabs.active() === props.id} // binding: tracked
       class={{ active: tabs.active() === props.id }}
-      onClick={() => tabs.select(props.id)}           // stable handler; decision inside
+      onClick={() => tabs.select(props.id)} // stable handler; decision inside
     >
       {props.children}
     </button>
@@ -287,7 +293,7 @@ Review checklist for the example: no destructured props; `props.initial` read wi
 ### 7.3 Failure modes proved by negative tests
 
 | Failure | Test (`04-control-flow-and-composition.test.tsx`) |
-|---|---|
+| --- | --- |
 | reading an accessor at the top of a row callback | "the callback body is an owner, not a tracking scope" (`STRICT_READ_UNTRACKED`) |
 | new identities rebuild rows | "default (keyed by identity)…" (`created` 2 → 3) |
 | missing provider | `ContextNotFoundError` (default-less form) |
@@ -297,22 +303,22 @@ Review checklist for the example: no destructured props; `props.initial` read wi
 ## 8. Then vs now
 
 | 1.x (≤ 1.9) | 2.0 RC | Migration notes |
-|---|---|---|
+| --- | --- | --- |
 | `<For>` (keyed by reference) + `<Index>` (by index) | `<For>` with `keyed`; `<Index>` removed | `<Index>` → `<For keyed={false}>`; callback args swap accessor-ness |
-| `indexArray` | `mapArray(…, { keyed: false })` | |
+| `indexArray` | `mapArray(…, { keyed: false })` |  |
 | — | `<Repeat count from>` | replaces `Array.from({length})` + `<Index>` |
 | `<Show keyed>` gave raw value | same; non-keyed gives an accessor | call `u()` in non-keyed children |
 | callback body reads "usually worked" | callback body is an owner: dev warns `STRICT_READ_UNTRACKED` | move reads into JSX / memos |
 | `<Dynamic component>` / `createDynamic` | `dynamic()` factory; `<Dynamic>` deprecated, `createDynamic` removed | hoist `dynamic()` per component |
-| `Ctx.Provider` | `<Ctx value>` | |
+| `Ctx.Provider` | `<Ctx value>` |  |
 | `useContext` typed `T \| undefined` | `T`; throws `ContextNotFoundError` | delete throwing wrapper hooks |
 | `<Suspense>`, `<SuspenseList>`, `<ErrorBoundary>` | `<Loading>`, `<Reveal>`, `<Errored>` | Module 06 |
 | `clientOnly` in SolidStart | `clientOnly` in `@solidjs/web` | Module 08 |
 
 ### 8.1 Then vs now: list rendering internals
 
-| | 1.x `<For>` / `<Index>` | 2.0 `<For>` |
-|---|---|---|
+|  | 1.x `<For>` / `<Index>` | 2.0 `<For>` |
+| --- | --- | --- |
 | Mapping helpers | `mapArray` (keyed), `indexArray` (by index) | one `mapArray` with `keyed: true \| false \| fn` |
 | Row callback args | `<For>`: raw item + index accessor; `<Index>`: item accessor + number | same shapes, now selected by `keyed`; custom key gives two accessors |
 | Unchanged-list result | new mapped array each update | identity kept when nothing moved (downstream does not re-run) |
@@ -323,7 +329,7 @@ Review checklist for the example: no destructured props; `props.initial` read wi
 ## 9. Production failure modes
 
 | Symptom | Cause | Fix |
-|---|---|---|
+| --- | --- | --- |
 | Subscriptions from removed rows keep firing | resources opened in a row without `onCleanup`/returned cleanup; or rows rendered outside `<For>` with manual `.map` in a memo | register cleanup in the row; use `<For>`/`mapArray` so rows own their lifetime |
 | `useContext` fails after an `await` in a helper | no owner after the await | read context before awaiting |
 | Rows flash / lose focus on every refetch | default keyed `<For>` over fresh objects | `keyed={(t) => t.id}` or reconcile into a store |

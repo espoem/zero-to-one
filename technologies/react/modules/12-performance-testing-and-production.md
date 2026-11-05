@@ -13,7 +13,7 @@ This module turns the mechanics of Modules 01–11 into operational practice: ho
 ### 1.1 What to measure
 
 | Metric | What it captures | React levers |
-|---|---|---|
+| --- | --- | --- |
 | **INP** (Interaction to Next Paint) | Latency from input to the next frame | Transitions/deferred values (Module 05), smaller render scope, cheaper layout effects (Module 04) |
 | **LCP** (Largest Contentful Paint) | When main content appears | Streaming SSR/RSC (Modules 06–07), preload (Module 11), less JS |
 | **CLS** (Cumulative Layout Shift) | Unexpected movement | Reserve space for Suspense fallbacks; avoid "mounted" flags; `browser()` with sized fallbacks |
@@ -24,7 +24,7 @@ This module turns the mechanics of Modules 01–11 into operational practice: ho
 
 1. **`<Profiler id onRender>`** — programmatic: `onRender(id, phase, actualDuration, baseDuration, startTime, commitTime)` after each commit of the subtree. `actualDuration` is time spent rendering this commit (memoisation lowers it); `baseDuration` estimates a full re-render without memoisation. Test "onRender reports phase and timings…" sees `mount` then `update`. Profiling in production requires the `react-dom/profiling` build.
 2. **React DevTools Profiler** — flame graph per commit, "why did this render?", highlight updates.
-3. **Performance Tracks (19.2)** in the Chrome Performance panel: a **Scheduler ⚛** track group (*Blocking*, *Transition*, *Suspense*, *Idle* — the lane groups of Module 05), showing what React worked on, when it was blocked waiting for another priority or for paint; and a **Components ⚛** track showing the component tree being rendered or having effects mounted. In the 19.3.1 dev build they are emitted with `console.timeStamp` into a custom track group. They make "why was this interaction slow?" answerable without DevTools: you see the click's blocking render, the transition that followed, and long effects.
+3. **Performance Tracks (19.2)** in the Chrome Performance panel: a **Scheduler ⚛** track group (_Blocking_, _Transition_, _Suspense_, _Idle_ — the lane groups of Module 05), showing what React worked on, when it was blocked waiting for another priority or for paint; and a **Components ⚛** track showing the component tree being rendered or having effects mounted. In the 19.3.1 dev build they are emitted with `console.timeStamp` into a custom track group. They make "why was this interaction slow?" answerable without DevTools: you see the click's blocking render, the transition that followed, and long effects.
 4. **`why-did-you-render`-style tools** — optional; prefer the Profiler.
 
 **Rule:** profile a production build (or the profiling build) with CPU throttling. Development builds do extra work (Strict Mode double renders, warnings, owner stacks) and mislead.
@@ -57,8 +57,10 @@ Invariant: every row intersecting `[scrollTop, scrollTop + viewport)` lies in th
 ## 3. Code splitting with `lazy`
 
 ```tsx
-const Chart = lazy(() => import("./Chart"));   // module level!
-<Suspense fallback={<ChartSkeleton />}><Chart /></Suspense>
+const Chart = lazy(() => import('./Chart')); // module level!
+<Suspense fallback={<ChartSkeleton />}>
+  <Chart />
+</Suspense>;
 ```
 
 `lazy` returns a component that, on first render, calls the loader, suspends until the module resolves, and caches the result **per `lazy` call** (test "lazy loads the module on first render…": one load). Calling `lazy` inside a component creates a new component type on every render — the subtree remounts and the loader runs again (test "NEGATIVE: lazy() inside a component creates a new type each render": 2 loads).
@@ -75,7 +77,7 @@ Operational notes: preload on intent (`onMouseEnter={() => import("./Chart")}`, 
 
 - `act` is exported from **`react`** since 18.3/19. `react-dom/test-utils` now only re-exports a deprecated `act` (test "react-dom/test-utils act is deprecated in favour of React.act"); the rest of `test-utils` (`Simulate`, `renderIntoDocument`, …) was **removed in 19**.
 - Use `await act(async () => …)` whenever promises are involved. Test "testing Suspense: render inside an AWAITED act…" records a pitfall observed with React 19.3.1 + RTL 16.3.3: when the initial (synchronous) `render()` suspends, the boundary never revealed after the promise resolved; rendering inside an awaited async `act` fixed it.
-- Updates outside `act` warn *"An update to C inside a test was not wrapped in act(...)"* (test "NEGATIVE: updates outside act() in a test warn"). The warning means your assertion may run before React finished.
+- Updates outside `act` warn _"An update to C inside a test was not wrapped in act(...)"_ (test "NEGATIVE: updates outside act() in a test warn"). The warning means your assertion may run before React finished.
 - The examples in this track set `IS_REACT_ACT_ENVIRONMENT` in [`examples/setup.ts`](../examples/setup.ts) and occasionally leave it to observe production scheduling (Module 03 batching, Module 10 root callbacks).
 
 ### 4.2 React Testing Library
@@ -83,7 +85,7 @@ Operational notes: preload on intent (`onMouseEnter={() => import("./Chart")}`, 
 RTL renders into jsdom and queries the DOM the way users perceive it:
 
 | Query | When |
-|---|---|
+| --- | --- |
 | `getByRole(role, { name })` | Default — also tests accessibility |
 | `getByLabelText`, `getByText` | Forms, content |
 | `queryBy*` | Asserting absence |
@@ -94,7 +96,7 @@ Principles: test behaviour through the DOM, not implementation (no reading state
 ### 4.3 Testing the hard parts
 
 | Feature | Technique | Where in this track |
-|---|---|---|
+| --- | --- | --- |
 | Suspense / `use` | Controlled promises (`deferred()`), resolve inside `act`, or `findBy*` | Modules 06, 12 |
 | Transitions / `isPending` | `await act(async () => startTransition(...))`, assert pending, resolve, assert | Module 05 |
 | Actions / forms | Click the submit button inside `act`; control the action's promise | Module 08 |
@@ -115,7 +117,7 @@ Principles: test behaviour through the DOM, not implementation (no reading state
 All rows marked ✅ are asserted by the "upgrading 18 → 19" tests.
 
 | API | Status in 19 | Replacement | Test |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `ReactDOM.render`, `hydrate`, `unmountComponentAtNode` | **Removed** | `createRoot`, `hydrateRoot`, `root.unmount()` | ✅ |
 | `ReactDOM.findDOMNode` | **Removed** | Refs, Fragment refs (19.3) | ✅ |
 | `unstable_renderSubtreeIntoContainer` | Removed | Portals | ✅ |
@@ -138,7 +140,7 @@ Behaviour changes to retest: errors are no longer re-thrown (root callbacks, Mod
 ### 5.2 Minor-version changes that bite (19.x)
 
 | Version | Change | Module |
-|---|---|---|
+| --- | --- | --- |
 | 19.1 | `useId` format `«r»` | 06 |
 | 19.2 | `useId` `_r_`; batched SSR reveals; `<Activity>`, `useEffectEvent`, `cacheSignal`, PPR APIs, Performance Tracks; eslint-plugin-react-hooks v6 flat config | 04–06 |
 | 19.3 | Untangled transitions; Strict Mode effects on hydration; conditional-`use` warning; errors don't escape hidden `<Activity>`; `onReset` on automatic form reset; `<ViewTransition>`, Fragment refs, `browser()`, Trusted Types, Context in Server Components stable | 03–11 |
@@ -173,7 +175,7 @@ The 2025–2026 RSC advisories (Module 07 §7) changed the operational stance fo
 ## 7. Version history (practitioner view)
 
 | Version | Date | What practitioners should know |
-|---|---|---|
+| --- | --- | --- |
 | 16.0 | 2017-09 | **Fiber** reconciler; error boundaries; fragments; portals |
 | 16.3 | 2018-03 | New context API, `createRef`, `forwardRef`; string refs deprecated |
 | 16.6 | 2018-10 | `memo`, `lazy`, `<Suspense>` for code splitting |
@@ -197,7 +199,7 @@ Dates of the 19.x releases are from the npm registry; earlier ones from the Reac
 ## 8. Production failure modes
 
 | Symptom | Cause | Fix |
-|---|---|---|
+| --- | --- | --- |
 | Whole page re-renders on each keystroke | State too high; inline context value | Colocate; memoise/split context; Compiler |
 | Long list scroll jank | Thousands of mounted rows | Virtualise; `content-visibility` |
 | Big initial bundle | No route/widget splitting; client-only rendering of static content | `lazy`; RSC |
@@ -214,7 +216,7 @@ Dates of the 19.x releases are from the npm registry; earlier ones from the Reac
 ## 9. Executable proofs
 
 | Claim | Test (`perf-testing.test.tsx`) |
-|---|---|
+| --- | --- |
 | Profiler phases and timings | "onRender reports phase and timings…" |
 | Context identity cost and the fix | "NEGATIVE: an inline context value…", "a memoised (stable) value…" |
 | Windowing algorithm (example, property, rendered list) | "list virtualisation…" (3 tests) |

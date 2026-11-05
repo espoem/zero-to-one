@@ -7,7 +7,7 @@ A high-density technical reference sheet covering cryptographic wire structures,
 ## 1. STRIDE Threat Matrix & DFD Element Mapping
 
 | DFD Element | Applicable STRIDE Threats | Primary Countermeasures |
-| :--- | :--- | :--- |
+| :-- | :-- | :-- |
 | **External Entity** | **S, R** (Spoofing, Repudiation) | Mutual TLS, WebAuthn, OAuth 2.1 PKCE, Digital Signatures, Audit Logging |
 | **Process** | **S, T, R, I, D, E** (All 6 threats) | Sandboxing, Seccomp, Memory safety, Input validation, Least privilege, Memory-hard KDFs |
 | **Data Store** | **T, R, I, D** (Tampering, Repudiation, Info Disclosure, DoS) | Encryption at rest (AES-GCM/KMS), Immutable append-only audit logs, RLS, Storage quotas |
@@ -18,7 +18,7 @@ A high-density technical reference sheet covering cryptographic wire structures,
 ## 2. Cryptographic Primitives & Key Sizing Matrix
 
 | Primitive Type | Algorithm | Minimum Key Size | Recommended Standard | Security Notes |
-| :--- | :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- | :-- |
 | **Symmetric AEAD** | **AES-256-GCM** | 256 bits | 96-bit Nonce, 128-bit Tag | Nonce MUST NEVER repeat under same key ($<2^{32}$ msgs). |
 | **Symmetric AEAD** | **ChaCha20-Poly1305** | 256 bits | 96-bit Nonce, 128-bit Tag | Faster on CPUs without AES-NI hardware instructions. |
 | **Message Auth** | **HMAC-SHA-256** | $\ge 256$ bits | SHA-256 | Immune to length extension attacks; use constant-time eq. |
@@ -27,13 +27,14 @@ A high-density technical reference sheet covering cryptographic wire structures,
 | **Key Agreement** | **X25519 (ECDH)** | 256 bits | Curve25519 | Constant-time, 32-byte public keys and shared secrets. |
 | **Key Derivation** | **HKDF (RFC 5869)** | Input key | SHA-256 | Two-phase: `Extract` (salt + IKM $\to$ PRK), `Expand` (PRK + info $\to$ OKM). |
 | **Post-Quantum KEM** | **ML-KEM (FIPS 203)** | 768 / 1024 | Module Lattice | Replaces classical ECDH against future quantum attacks. |
-| **Post-Quantum Sign**| **ML-DSA (FIPS 204)** | 65 / 87 | Module Lattice | Replaces RSA/ECDSA digital signatures. |
+| **Post-Quantum Sign** | **ML-DSA (FIPS 204)** | 65 / 87 | Module Lattice | Replaces RSA/ECDSA digital signatures. |
 
 ---
 
 ## 3. Password Hashing & Secrets at Rest
 
 ### Recommended Argon2id Parameters (RFC 9106 / OWASP 2026)
+
 ```ini
 Algorithm    = Argon2id (Type 2)
 Memory (m)   = 65536 KiB (64 MiB) [Interactive: 19456 KiB / 19 MiB]
@@ -45,19 +46,21 @@ KMS Pepper   = Optional 256-bit secret stored in KMS, passed as secret parameter
 ```
 
 ### Password Function Comparison
+
 | Algorithm | Memory-Hard? | GPU Resistance | Max Password Length | Status |
-| :--- | :---: | :---: | :---: | :--- |
+| :-- | :-: | :-: | :-: | :-- |
 | **Argon2id** | **Yes** | **Extreme** | Unbounded | **Gold Standard (NIST / OWASP)** |
 | **scrypt** | **Yes** | **High** | Unbounded | Approved alternative |
 | **bcrypt** | No (Cache-hard) | Medium | **Strict 72-Byte Truncation** | Legacy acceptable; avoid in new systems |
 | **PBKDF2** | **No** | **Zero** | Unbounded | Requires $>600,000$ iterations (HMAC-SHA256) |
-| **SHA-256/MD5**| **No** | **Zero** | Unbounded | **BANNED FOR PASSWORDS** |
+| **SHA-256/MD5** | **No** | **Zero** | Unbounded | **BANNED FOR PASSWORDS** |
 
 ---
 
 ## 4. X.509 v3 Certificate Layout & Verification
 
 ### X.509 Certificate ASN.1 Structure (RFC 5280)
+
 ```
 Certificate ::= SEQUENCE {
   tbsCertificate       TBSCertificate,
@@ -80,29 +83,33 @@ TBSCertificate ::= SEQUENCE {
 ```
 
 ### Critical Extensions Reference
+
 - **Basic Constraints** (`2.5.29.19`, Critical): `cA: TRUE/FALSE`, `pathLenConstraint: integer`.
 - **Subject Alternative Name (SAN)** (`2.5.29.17`): `dNSName: *.example.com`, `uRI: spiffe://...`, `iPAddress: 10.0.0.1`.
 - **Key Usage** (`2.5.29.15`, Critical): `digitalSignature`, `keyEncipherment`, `keyCertSign`, `cRLSign`.
 - **Extended Key Usage (EKU)** (`2.5.29.37`): `serverAuth (1.3.6.1.5.5.7.3.1)`, `clientAuth (1.3.6.1.5.5.7.3.2)`.
 
 ### CA/Browser Forum SC-081 Maximum Certificate Validity Roadmap
-| Issuance Date | Maximum Allowed Validity | Primary Deployment Strategy |
-| :--- | :---: | :--- |
-| Prior to March 2026 | 398 days | Manual or semi-automated renewal |
-| March 2026 – March 2027 | 200 days | Mandatory ACME / Vault orchestration |
-| March 2027 – March 2029 | 100 days | Automated CI/CD certificate pipeline |
-| **After March 2029** | **47 days** | **Fully automated ephemeral ACME renewals** |
+
+| Issuance Date           | Maximum Allowed Validity | Primary Deployment Strategy                 |
+| :---------------------- | :----------------------: | :------------------------------------------ |
+| Prior to March 2026     |         398 days         | Manual or semi-automated renewal            |
+| March 2026 – March 2027 |         200 days         | Mandatory ACME / Vault orchestration        |
+| March 2027 – March 2029 |         100 days         | Automated CI/CD certificate pipeline        |
+| **After March 2029**    |       **47 days**        | **Fully automated ephemeral ACME renewals** |
 
 ---
 
 ## 5. Modern Web & Cookie Defense Headers
 
 ### Cookie Flag Security Matrix
+
 ```http
 Set-Cookie: __Host-sid=a98f12c8e3...; Secure; HttpOnly; SameSite=Strict; Path=/; Max-Age=3600
 ```
+
 | Flag / Attribute | Rule & Behavior | Attack Mitigated |
-| :--- | :--- | :--- |
+| :-- | :-- | :-- |
 | **`__Host-` Prefix** | Must be `Secure`, no `Domain` attribute, `Path=/`, HTTPS origin only. | Subdomain tampering, cookie tossing |
 | **`HttpOnly`** | Inaccessible to JavaScript `document.cookie`. | Session theft via Cross-Site Scripting (XSS) |
 | **`Secure`** | Transmitted exclusively over encrypted HTTPS connections. | Plaintext sniffing, man-in-the-middle theft |
@@ -110,6 +117,7 @@ Set-Cookie: __Host-sid=a98f12c8e3...; Secure; HttpOnly; SameSite=Strict; Path=/;
 | **`SameSite=Lax`** | Sent on top-level navigation GET; blocked on cross-site POST/PUT. | Standard balance for public landing pages |
 
 ### Essential HTTP Security Headers
+
 ```http
 # Strict Content Security Policy with Cryptographic Nonce
 Content-Security-Policy: default-src 'self'; script-src 'self' 'nonce-R4nd0mN0nc3' 'strict-dynamic'; object-src 'none'; base-uri 'none'; frame-ancestors 'none';
@@ -130,8 +138,9 @@ Cross-Origin-Resource-Policy: same-origin
 ## 6. OAuth 2.1 & OIDC Quick Reference
 
 ### OAuth 2.1 Grant Type Matrix
+
 | Grant Type | Status in OAuth 2.1 | Client Types | Security Mechanism |
-| :--- | :---: | :--- | :--- |
+| :-- | :-: | :-- | :-- |
 | **Authorization Code** | **MANDATORY** | Public & Confidential | **Mandatory PKCE (S256)**, exact redirect URI |
 | **Client Credentials** | **Supported** | Confidential Only | Machine-to-machine mutual TLS or private key JWT |
 | **Refresh Token** | **Supported** | Public & Confidential | **Refresh Token Rotation (RTR) + Family Revocation** |
@@ -139,18 +148,19 @@ Cross-Origin-Resource-Policy: same-origin
 | **Resource Owner Password (ROPC)** | **REMOVED / FORBIDDEN** | None | Credential theft, phishing, bypasses MFA |
 
 ### PKCE S256 Formula
-$$\text{code\_verifier} = \text{CSPRNG(32 bytes, Base64URL)}$$
-$$\text{code\_challenge} = \text{BASE64URL}(\text{SHA256}(\text{code\_verifier}))$$
-$$\text{code\_challenge\_method} = \text{"S256"} \quad (\text{"plain" is strictly forbidden})$$
+
+$$\text{code\_verifier} = \text{CSPRNG(32 bytes, Base64URL)}$$ $$\text{code\_challenge} = \text{BASE64URL}(\text{SHA256}(\text{code\_verifier}))$$ $$\text{code\_challenge\_method} = \text{"S256"} \quad (\text{"plain" is strictly forbidden})$$
 
 ---
 
 ## 7. JOSE & Token Hardening
 
 ### JSON Web Signature (JWS) Structure
+
 ```
 Compact JWS: <Base64URL Header>.<Base64URL Payload>.<Base64URL Signature>
 ```
+
 - **Mandatory Validation Checklist (RFC 8725 BCP)**:
   1. Header MUST declare explicit algorithm (`alg: "RS256"` or `"EdDSA"`).
   2. Library MUST use an explicit algorithm allowlist (reject `"none"` and symmetric/asymmetric confusion).
@@ -159,6 +169,7 @@ Compact JWS: <Base64URL Header>.<Base64URL Payload>.<Base64URL Signature>
   5. Enforce explicit typing: Header `typ: "at+jwt"` for access tokens (RFC 9068) to prevent ID token confusion.
 
 ### Demonstrating Proof-of-Possession (DPoP - RFC 9449)
+
 - **Header**: `{"typ": "dpop+jwt", "alg": "ES256", "jwk": { ...client public key... }}`
 - **Payload**:
   - `htm`: HTTP Request Method (e.g., `"POST"`).
@@ -188,8 +199,9 @@ Compact JWS: <Base64URL Header>.<Base64URL Payload>.<Base64URL Signature>
 ```
 
 ### Flags Byte Breakdown (Byte Index 32)
+
 | Bit Mask | Flag Name | Meaning When Set (`1`) |
-| :---: | :--- | :--- |
+| :-: | :-- | :-- |
 | `0x01` (Bit 0) | **UP** (User Present) | Physical user interaction confirmed (capacitive touch/button). |
 | `0x04` (Bit 2) | **UV** (User Verified) | Local biometric (face/fingerprint) or PIN verified on device. |
 | `0x08` (Bit 3) | **BE** (Backup Eligibility) | Credential is multi-device / passkey capable. |
@@ -202,6 +214,7 @@ Compact JWS: <Base64URL Header>.<Base64URL Payload>.<Base64URL Signature>
 ## 9. ReBAC & Cedar Policy Syntax
 
 ### Google Zanzibar Relationship Tuple Syntax
+
 ```
 <namespace>:<object_id>#<relation>@<user_or_userset>
 
@@ -212,6 +225,7 @@ document:nda_2026#editor@folder:contracts#owner
 ```
 
 ### Cedar Policy Language Template (AWS Verified Permissions)
+
 ```cedar
 // Explicit forbid takes precedence over any permit
 forbid (

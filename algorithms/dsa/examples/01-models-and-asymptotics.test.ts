@@ -1,6 +1,6 @@
-import { describe, it } from "node:test";
-import assert from "node:assert/strict";
-import fc from "fast-check";
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
+import fc from 'fast-check';
 
 // Dynamic array simulator tracking raw memory allocations and copies
 class ResizingArray<T> {
@@ -56,8 +56,8 @@ function lowerBound(arr: number[], target: number): number {
   return left;
 }
 
-describe("Module 01: Models of Computation, Asymptotics & Amortized Analysis", () => {
-  it("proves dynamic array doubling achieves amortized O(1) insertions (Aggregate & Potential Method)", () => {
+describe('Module 01: Models of Computation, Asymptotics & Amortized Analysis', () => {
+  it('proves dynamic array doubling achieves amortized O(1) insertions (Aggregate & Potential Method)', () => {
     const N = 100_000;
     const array = new ResizingArray<number>(1);
 
@@ -69,15 +69,18 @@ describe("Module 01: Models of Computation, Asymptotics & Amortized Analysis", (
     // Theoretical limit: total copies for doubling from 1 to N is sum(2^j) < 2*N
     assert.ok(
       array.totalCopies < 2 * N,
-      `Total copies (${array.totalCopies}) must be strictly less than 2*N (${2 * N})`
+      `Total copies (${array.totalCopies}) must be strictly less than 2*N (${2 * N})`,
     );
 
     // Amortized copies per push is strictly < 2.0 (total operations per push < 3.0)
     const averageCopiesPerPush = array.totalCopies / N;
-    assert.ok(averageCopiesPerPush < 2.0, `Average copies per push (${averageCopiesPerPush}) must be < 2.0`);
+    assert.ok(
+      averageCopiesPerPush < 2.0,
+      `Average copies per push (${averageCopiesPerPush}) must be < 2.0`,
+    );
   });
 
-  it("verifies binary search lower_bound invariant: all elements before result are strictly < target", () => {
+  it('verifies binary search lower_bound invariant: all elements before result are strictly < target', () => {
     const sorted = [10, 20, 20, 20, 30, 40, 50];
 
     assert.equal(lowerBound(sorted, 5), 0); // Target smaller than all elements
@@ -87,7 +90,7 @@ describe("Module 01: Models of Computation, Asymptotics & Amortized Analysis", (
     assert.equal(lowerBound(sorted, 60), 7); // Target greater than all elements
   });
 
-  it("property test: lowerBound always returns the first index where arr[index] >= target", () => {
+  it('property test: lowerBound always returns the first index where arr[index] >= target', () => {
     fc.assert(
       fc.property(
         fc.array(fc.integer({ min: -1000, max: 1000 })),
@@ -108,9 +111,9 @@ describe("Module 01: Models of Computation, Asymptotics & Amortized Analysis", (
           if (index < sorted.length) {
             assert.ok(sorted[index]! >= target);
           }
-        }
+        },
       ),
-      { numRuns: 200 }
+      { numRuns: 200 },
     );
   });
 });

@@ -1,25 +1,27 @@
 # Brief: JavaScript (`languages/javascript`)
 
-| | |
-|---|---|
-| Phase | 1 |
-| Kind | NEW track: create from scratch |
-| Primary (author) | **Opus · claude.ai** |
-| Drafter (on request) | pi · DeepSeek |
-| Challenger | pi · Muse Spark 1.3 |
-| Verifier | Antigravity |
-| Final gate | Opus (claude.ai session) |
-| Branch / worktree | `track/javascript` · `../zto-javascript` |
-| Depends on | none (can start now) |
-| Research dossier | `.agents/research/C-runtimes.md` |
+|                      |                                          |
+| -------------------- | ---------------------------------------- |
+| Phase                | 1                                        |
+| Kind                 | NEW track: create from scratch           |
+| Primary (author)     | **Opus · claude.ai**                     |
+| Drafter (on request) | pi · DeepSeek                            |
+| Challenger           | pi · Muse Spark 1.3                      |
+| Verifier             | Antigravity                              |
+| Final gate           | Opus (claude.ai session)                 |
+| Branch / worktree    | `track/javascript` · `../zto-javascript` |
+| Depends on           | none (can start now)                     |
+| Research dossier     | `.agents/research/C-runtimes.md`         |
 
 ## 0. Read before starting (binding)
+
 1. `AGENTS.md`: the contract. If it conflicts with this brief, AGENTS.md wins; log the conflict in your review file.
 2. `.agents/OWNERSHIP.md`: what you own vs only cross-link.
 3. `.agents/REVIEW.md`: the checklist your work is judged against.
 4. Your global/agent instructions still apply where they do not conflict.
 
 ## 1. Owner decisions and track-specific instructions
+
 - This is a **foundation track**: typescript, react, solidjs and nodejs cross-link to it. Prioritise the concepts listed under "Planned shared `languages/javascript`" in the frontend dossier.
 - Decorators: the dossier saw Stage 2.7 on the TC39 list. Re-verify before teaching.
 - Own the HTML event-loop processing model (task → microtask checkpoint → rendering steps). `languages/css` owns style/layout/paint internals.
@@ -27,7 +29,9 @@
 - Pin **all** tooling via mise (`.mise.toml` + `mise.lock`): node 26 for JS/TS, plus every CLI and runtime the examples need.
 
 ## 2. Ownership
+
 **You own (full treatment):**
+
 - Types & coercion, scope/closures/`this`, prototypes/classes
 - Iterators, generators, async iteration, Promise/job-queue semantics (spec level)
 - ESM semantics (Module Records, live bindings, TLA), `exports` conditions at runtime
@@ -40,6 +44,7 @@
 - V8 shapes/ICs at the "why is my code slow" level
 
 **Cross-link only (do not re-explain):**
+
 - libuv phases, `process.nextTick`, threadpool, streams & backpressure, CJS loader, `require(esm)`, GC tuning flags → owned by `technologies/nodejs`
 - Concurrency models, locks, data races, lock-free structures (language-neutral) → owned by `algorithms/dsa` (proposed extra module, TBD)
 
@@ -134,14 +139,18 @@
 - **TC39 Signals proposal**: conceptual bridge for Solid (stage unverified).
 
 ## 4. Re-verify list
+
 These claims were marked unverified during research. Confirm or correct each one against a primary source before teaching it:
+
 - Stage 3 now (tc39/proposals README): Source Phase Imports, Deferring Module Evaluation (`import defer`), Import Text, Iterator chunking, Iterator includes, Iterator join, Error Stack Accessor, RegExp buffer boundaries (`\A \z \Z`), Await Dictionary, Dynamic Code Brand Checks, Non-extensible Applies to Private, Legacy RegExp features. Stage 2.7: **Decorators** & Decorator Metadata (listed at 2.7 in current README — surprising, verify before teaching), ShadowRealm, ESM Phase Imports, Immutable ArrayBuffers, Import Bytes. AsyncContext still Stage 2 (unverified as of Oct 2026).
 - Engine reality: V8 14.6 (Node 26) ships Temporal on by default, Upsert, `Iterator.concat`; `using` shipped in V8 since ~13.x/Chrome 134 (unverified exact version). Safari lacks Temporal per secondary press (https://lilting.ch/en/articles/nodejs-26-current-temporal-undici).
 - Cross-engine checks optional: `esvu`/`eshost-cli` to run snippets in V8/SpiderMonkey/JSC (unverified current maintenance) — fallback: document only.
 - **TC39 Signals proposal**: conceptual bridge for Solid (stage unverified).
 
 ## 5. Certifications & exams
+
 Follow AGENTS.md § Certification and Exam Coverage exactly. Minimum deliverables:
+
 1. **README "Certifications & Exams" section.** Start from the exams named in the dossier above ("Authoritative syllabi used"). Re-verify each exam's code, status, guide version/date, targeted product version and domain weights on the official page. Where no certification exists, say so and use the recognised interview format.
 2. **`exams/README.md` coverage matrix.** Rows are domain/objective, weight, modules, examples, status. No ❌ at hand-off.
 3. **`exams/<exam-code>.md` question banks.**
@@ -153,11 +162,14 @@ Follow AGENTS.md § Certification and Exam Coverage exactly. Minimum deliverable
 5. **Original questions only.** No braindump content.
 
 ## 6. Code languages
+
 Per AGENTS.md § Code Example Languages:
+
 - **Primary:** pseudocode (where algorithms or protocols are described) + TypeScript (or the track's own language, for language tracks).
 - **Secondary:** Python, Rust or Nim only where it teaches something. Each language lives in `examples/<lang>/` with its own mise-pinned toolchain and native test runner, and `test` runs them all.
 
 ## 7. Workflow and definition of done
+
 1. **Primary (Opus)** works on branch `track/javascript` and sets this track's row in `.agents/STATUS.md` to 🟦.
 2. **Verify versions first.** Check every version in the dossier against its primary source today. Record the results in the README's `Verified against …` line. Resolve every item in the re-verify list below.
 3. Build in stages: README syllabus + exam matrix → modules one by one, each with its examples/tests → glossary → cheatsheet → question banks → mock exam. Delegate bulk drafting (question-bank drafts, glossary candidates, cheatsheet tables) to the **Drafter**, then correct and integrate it yourself.

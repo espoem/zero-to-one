@@ -2,7 +2,7 @@
 
 > **Executable proof:** [`examples/typescript/02-effects-and-lifecycle.test.tsx`](../examples/typescript/02-effects-and-lifecycle.test.tsx). Every claim marked "proved" below is an assertion in that suite, run against `solid-js@2.0.0-rc.19` (development build, so diagnostics are live).
 
-[Module 01](./01-reactive-core.md) built the pure part of the graph: sources and computations. This module covers the *impure* edge of the graph, where reactive values leave the system as DOM writes, network calls, timers and logs. Solid 2.0 redesigned this edge more than anything else: effects are split into two halves, lifecycle hooks were renamed and narrowed, and a set of dev-mode diagnostics now enforce the rules that 1.x left to discipline.
+[Module 01](./01-reactive-core.md) built the pure part of the graph: sources and computations. This module covers the _impure_ edge of the graph, where reactive values leave the system as DOM writes, network calls, timers and logs. Solid 2.0 redesigned this edge more than anything else: effects are split into two halves, lifecycle hooks were renamed and narrowed, and a set of dev-mode diagnostics now enforce the rules that 1.x left to discipline.
 
 ---
 
@@ -11,17 +11,20 @@
 A 1.x effect was one function: `createEffect(() => { el.title = count(); })`. Every read anywhere in the body became a dependency, and the side effect ran in the same breath as the tracking. That shape has three problems the 2.0 RFC 01 names explicitly:
 
 1. **No dependency picture before side effects.** Effects ran interleaved, so effect A could perform a side effect based on a value that effect B's tracking was about to change.
-2. **Async cannot be held.** If a dependency is still loading, the runtime must be able to *not run* the side effect yet. With one function, it cannot know the dependencies without running the side effect.
+2. **Async cannot be held.** If a dependency is still loading, the runtime must be able to _not run_ the side effect yet. With one function, it cannot know the dependencies without running the side effect.
 3. **Accidental tracking.** A signal read inside a helper called from the effect silently became a dependency.
 
 2.0 splits every effect into a **compute** half and an **apply** half:
 
 ```ts
 createEffect(
-  () => count(),                // compute: tracked, pure, runs during the flush's compute pass
-  (value, prev) => {            // apply: untracked, imperative, runs after ALL compute halves
+  () => count(), // compute: tracked, pure, runs during the flush's compute pass
+  (value, prev) => {
+    // apply: untracked, imperative, runs after ALL compute halves
     el.title = String(value);
-    return () => { /* cleanup before the next apply and on disposal */ };
+    return () => {
+      /* cleanup before the next apply and on disposal */
+    };
   },
 );
 ```
@@ -32,15 +35,20 @@ For an effect $e$ with compute $c_e$ and apply $a_e$:
 
 - $c_e$ is a computation in the sense of Module 01: tracked, must be pure, may not write (`REACTIVE_WRITE_IN_OWNED_SCOPE`).
 - $a_e$ is called with $(v, v_{prev})$ where $v = c_e(\ldots)$. It is **untracked**: reads inside it do not subscribe (proved: a write to a signal read only in apply does not re-run the effect).
-- In one flush, *all* compute halves run (in topological order) before *any* apply half runs. So every apply sees the same committed state $\sigma_{k+1}$.
+- In one flush, _all_ compute halves run (in topological order) before _any_ apply half runs. So every apply sees the same committed state $\sigma_{k+1}$.
 - If $a_e$ returned a function $k$ last time, $k$ runs before the next $a_e$ and when the owner is disposed. Returning anything other than a function or `undefined` throws ("invalid cleanup value").
-- **Effects never compare.** Whenever $c_e$ re-runs, $a_e$ (and the previous cleanup) runs, *even if* $c_e$ returned a value equal to the last one.
+- **Effects never compare.** Whenever $c_e$ re-runs, $a_e$ (and the previous cleanup) runs, _even if_ $c_e$ returned a value equal to the last one.
 
 The last rule surprises everyone who knows memos. Proved in the suite: with compute `() => status() !== "off"`, changing `status` from `"active"` to `"busy"` returns `true` twice, and the log shows `start true, stop, start true`: a timer started in apply would be torn down and restarted. The fix is to put a memo in front and read it in compute; the memo's equality cut-off stops the re-run (proved: log stays `["start true"]`).
 
 ```ts
-const active = createMemo(() => status() !== "off");
-createEffect(() => active(), (isActive) => { /* runs only when `active` flips */ });
+const active = createMemo(() => status() !== 'off');
+createEffect(
+  () => active(),
+  (isActive) => {
+    /* runs only when `active` flips */
+  },
+);
 ```
 
 ### 1.2 Timeline of one flush
@@ -64,16 +72,16 @@ sequenceDiagram
 
 `createRenderEffect` uses the same split, but its apply runs during the render phase and **synchronously at creation** (proved: `render a` is logged before any flush, `user a` only after). That is what the JSX compiler uses for DOM bindings, so DOM nodes are correct before user effects run. App code should use `createEffect`; reach for `createRenderEffect` only when writing renderer-level bindings (custom directives that must write the DOM during render).
 
-> **Terminology note.** Earlier drafts of this track called these the "render lane" and "user lane". That is not Solid's vocabulary: in the 2.0 runtime a *lane* is an optimistic transaction overlay ([Module 07](./07-actions-and-optimistic-state.md)). The correct terms are **render effects** and **user effects** (two effect queues), which is what the RFCs and type docs use.
+> **Terminology note.** Earlier drafts of this track called these the "render lane" and "user lane". That is not Solid's vocabulary: in the 2.0 runtime a _lane_ is an optimistic transaction overlay ([Module 07](./07-actions-and-optimistic-state.md)). The correct terms are **render effects** and **user effects** (two effect queues), which is what the RFCs and type docs use.
 
 ### 1.2.1 Inside the scheduler
 
 An effect is a computed node with a type tag: `EFFECT_RENDER = 1` or `EFFECT_USER = 2` (constants in `@solidjs/signals`). Its compute half lives in the dirty heap like any memo ([Module 01 §2.2](./01-reactive-core.md#22-the-rc19-implementation-annotated)); when the compute finishes, the apply half is not called directly but **enqueued** on the queue for its type. After the heap drains and staged values commit, `GlobalQueue.flush()` runs `this.run(EFFECT_RENDER)` and then `this.run(EFFECT_USER)`. Two consequences proved in the suite:
 
-- **Queue order beats creation order.** An effect created *before* a render effect still applies *after* it (`["render 1", "user 1"]`).
+- **Queue order beats creation order.** An effect created _before_ a render effect still applies _after_ it (`["render 1", "user 1"]`).
 - **Apply waits for readiness.** If the compute half read a pending async value, the node is not ready and its apply is not enqueued; it runs once the value lands (proved: no `apply` until the deferred resolves, then `apply 7`). Effects therefore never act on half-loaded data; this is what lets async holds work ([Module 06](./06-colorless-async.md)).
 
-Render effects are different at **creation**: they run their compute *and* apply immediately so the DOM node is correct before it is inserted. `render()` creates its root insert with `schedule: true`, which instead enqueues the initial run so a root that reads async data can wait inside a transition.
+Render effects are different at **creation**: they run their compute _and_ apply immediately so the DOM node is correct before it is inserted. `render()` creates its root insert with `schedule: true`, which instead enqueues the initial run so a root that reads async data can wait inside a transition.
 
 ```mermaid
 stateDiagram-v2
@@ -92,7 +100,7 @@ stateDiagram-v2
 ### 1.3 Options
 
 | Option | Effect | Proved |
-|---|---|---|
+| --- | --- | --- |
 | `defer: true` | skip the initial apply; run on the first change | yes |
 | `name` | label in diagnostics, DevTools tracks and owner paths | — |
 | `schedule: true` | enqueue the initial run instead of running at creation, so the first apply can wait on async (used by `render()`'s root insert) | — |
@@ -114,14 +122,14 @@ createEffect(() => fetchData(id()), {
 
 Semantics from the `createEffect` JSDoc and RFC 01:
 
-- `error` runs on the same schedule and in the same writable, untracked scope as `effect`, and only for *settled* errors: a transient error that recovers before the effect phase never reaches it.
+- `error` runs on the same schedule and in the same writable, untracked scope as `effect`, and only for _settled_ errors: a transient error that recovers before the effect phase never reaches it.
 - Without an `error` handler, a compute-phase error is logged and that run is skipped. A failing non-render effect does not crash the app.
 - Rethrowing from `error` escalates to the nearest `<Errored>` boundary ([Module 06](./06-colorless-async.md)), or halts the system if there is none.
 - **Apply-phase throws are different.** They are your imperative code; use `try/catch` there. An uncaught apply throw goes to the nearest `<Errored>`, and with no boundary the whole reactive system halts (`REACTIVITY_HALTED`): no further updates are processed. The suite calls `resetErrorHalt()` after each test for exactly this reason; in an app, a halt means "crash", so put an `<Errored>` boundary near the root.
 
 ### 1.5 Writes from the apply half
 
-The apply half is an *unowned* scope, so writes are legal there (proved: an effect mirroring `source * 2` into another signal). They are queued into the same flush's continuation: dependants update before the flush returns, but the apply half's own reads keep returning settled values. This is legal, not wise. An effect that copies one signal into another is a **relay**, and the attribution engine reports it (`EFFECT_RELAY_TEAR`: the reader runs twice for one root change, once with the stale relay value). Derive with a memo instead.
+The apply half is an _unowned_ scope, so writes are legal there (proved: an effect mirroring `source * 2` into another signal). They are queued into the same flush's continuation: dependants update before the flush returns, but the apply half's own reads keep returning settled values. This is legal, not wise. An effect that copies one signal into another is a **relay**, and the attribution engine reports it (`EFFECT_RELAY_TEAR`: the reader runs twice for one root change, once with the stale relay value). Derive with a memo instead.
 
 ### 1.6 Effect patterns catalogue
 
@@ -131,29 +139,46 @@ Most effects in real apps fall into a handful of shapes. Each one below is writt
 
 ```ts
 createEffect(
-  () => ({ title: props.title, count: unread() }),        // read everything in compute
-  ({ title, count }) => { document.title = count ? `(${count}) ${title}` : title; },
+  () => ({ title: props.title, count: unread() }), // read everything in compute
+  ({ title, count }) => {
+    document.title = count ? `(${count}) ${title}` : title;
+  },
 );
 ```
 
 **Own a resource per value** (join a room, open a subscription): return the teardown; it runs before the next apply and on disposal. Proved by "pattern: an apply half that owns an external resource": rooms `a` then `b` are opened and both are closed, in order.
 
 ```ts
-createEffect(() => room(), (r) => { socket.join(r); return () => socket.leave(r); });
+createEffect(
+  () => room(),
+  (r) => {
+    socket.join(r);
+    return () => socket.leave(r);
+  },
+);
 ```
 
 **Persist state**: subscribe to everything with `deep` in compute, write in apply.
 
 ```ts
-createEffect(() => deep(settings), (plain) => localStorage.setItem("settings", JSON.stringify(plain)));
+createEffect(
+  () => deep(settings),
+  (plain) => localStorage.setItem('settings', JSON.stringify(plain)),
+);
 ```
 
 **Imperative widget with an element**: create the widget once in `onSettled` (element attached), feed it changes from an effect.
 
 ```ts
 let el!: HTMLDivElement, chart: Chart | undefined;
-onSettled(() => { chart = new Chart(el); return () => chart!.destroy(); });
-createEffect(() => snapshot(series), (data) => chart?.update(data));
+onSettled(() => {
+  chart = new Chart(el);
+  return () => chart!.destroy();
+});
+createEffect(
+  () => snapshot(series),
+  (data) => chart?.update(data),
+);
 ```
 
 **Fetching is not an effect.** `createEffect(() => id(), async (id) => setUser(await api(id)))` is the 1.x/React reflex. It loses cancellation, error routing, `<Loading>` integration and SSR serialization, and writes from a stale response can overwrite a newer one. Use an async memo ([Module 06](./06-colorless-async.md)).
@@ -182,7 +207,7 @@ Rule of thumb from the RFCs: **effects are for leaving the reactive system**. If
 ## 2. Specialised effects
 
 | Primitive | Shape | Use it for | Status |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `createEffect(compute, apply)` | split | everything in app code | canonical |
 | `createRenderEffect(compute, apply)` | split, render phase, sync at creation | renderer plumbing, custom DOM bindings | advanced |
 | `createReaction(effectFn)` | returns `track(fn)`; fires **once** per arm | "notify me the next time X changes", custom primitives | advanced |
@@ -203,8 +228,8 @@ function useViewportWidth() {
   const [width, setWidth] = createSignal(window.innerWidth);
   onSettled(() => {
     const onResize = () => setWidth(window.innerWidth);
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
   });
   return width;
 }
@@ -213,7 +238,7 @@ function useViewportWidth() {
 Three usages:
 
 1. **Setup and teardown in a component** (most common): replaces 1.x `onMount` + `onCleanup` with one block.
-2. **"Ready" hook**: analytics, focus, scroll-into-view, layout measurement after the first stable render. Unlike a ref callback, `onSettled` runs after the element is attached, so `getBoundingClientRect()` returns real numbers (refs run *before* attachment; see [Module 03](./03-components-props-and-dom.md)).
+2. **"Ready" hook**: analytics, focus, scroll-into-view, layout measurement after the first stable render. Unlike a ref callback, `onSettled` runs after the element is attached, so `getBoundingClientRect()` returns real numbers (refs run _before_ attachment; see [Module 03](./03-components-props-and-dom.md)).
 3. **Inside an event handler**: run work after the transition the event started has settled, for example `save(); onSettled(() => toast("Saved"))`.
 
 Rules (proved where noted):
@@ -244,14 +269,14 @@ const select = (id: string) => {
 };
 ```
 
-Proved in the suite: the callback has not run synchronously, runs after the scheduled microtask flush, sees the frame's inline write (`n=1`), and its own write lands. In rc.19 an explicit `flush()` does not run pending `onFlush` callbacks; they run with the scheduled flush (observed while writing the suite, not a documented guarantee). Call it from event handlers and effect callbacks. In an owned scope it still runs but warns `ON_FLUSH_IN_OWNED_SCOPE` (proved). `queueMicrotask` is not a substitute: queued before the frame's first write, it runs *before* that flush and its write joins the hold.
+Proved in the suite: the callback has not run synchronously, runs after the scheduled microtask flush, sees the frame's inline write (`n=1`), and its own write lands. In rc.19 an explicit `flush()` does not run pending `onFlush` callbacks; they run with the scheduled flush (observed while writing the suite, not a documented guarantee). Call it from event handlers and effect callbacks. In an owned scope it still runs but warns `ON_FLUSH_IN_OWNED_SCOPE` (proved). `queueMicrotask` is not a substitute: queued before the frame's first write, it runs _before_ that flush and its write joins the hold.
 
 ## 4. Invariants enforced in development
 
 The 2.0 dev build turns the rules of Modules 01–02 into coded diagnostics. Each has a severity: **error** (throws), **warn** (`console.warn`), or **info** (structured channel only). Each prints `[CODE] message`, an `in <App> › <Child> › effect` owner path and, when the compiler recorded locations, an `at src/File.tsx:18:3` line. The first report of a code links to `https://v2.solidjs.com/reference/solid-js/diagnostics/<code>` and to the `reactivity-diagnostics` skill shipped in `node_modules/solid-js/skills/`.
 
 | Code | Severity | Fires when | Fix | Proved |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | `REACTIVE_WRITE_IN_OWNED_SCOPE` | error | a signal/store write or `refresh()` inside a component body, memo, effect compute or root body | write from a handler, apply half, `onSettled` or action; derive instead of writing back | M01 suite |
 | `STRICT_READ_UNTRACKED` | warn | a reactive read at the top of a component body, in a flow-control callback body, or a store-proxy read in an apply half | read in JSX / a memo / compute; `untrack` for an intentional one-time read | yes (3 tests) |
 | `MISSING_EFFECT_FN` | error | `createEffect(fn)` with one argument | add the apply half, or use `createMemo` | yes |
@@ -290,7 +315,7 @@ flowchart LR
 ### 4.2 Failure modes proved by negative tests
 
 | Failure | Test (`02-effects-and-lifecycle.test.tsx`) |
-|---|---|
+| --- | --- |
 | single-argument effect | "single-argument createEffect is MISSING_EFFECT_FN" |
 | apply returns a non-function | "returning a non-function from an apply half…" → system halts (`REACTIVITY_HALTED`) |
 | cleanup with no owner | "onCleanup with no owner warns NO_OWNER_CLEANUP" |
@@ -303,7 +328,7 @@ flowchart LR
 ## 5. Then vs now
 
 | 1.x (≤ 1.9) | 2.0 RC | Why it changed | Migration |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `createEffect(() => { el.title = t(); })` | `createEffect(() => t(), (v) => { el.title = v; })` | dependency picture before side effects; async holds | move every read into compute; return plain values, not store proxies |
 | `createEffect(on(dep, fn, { defer: true }))` | `createEffect(() => dep(), fn, { defer: true })` | split effects make explicit deps the default | delete `on` |
 | `onMount(fn)` + `onCleanup(c)` | `onSettled(() => { fn(); return c; })` | async-aware ("after settle"), one block for setup/teardown | replace; remember refs run before attach |
@@ -314,8 +339,8 @@ flowchart LR
 
 ### 5.1 Then vs now: lifecycle timing
 
-| | 1.x | 2.0 RC |
-|---|---|---|
+|  | 1.x | 2.0 RC |
+| --- | --- | --- |
 | `onMount` / `onSettled` timing | after the component's first render was inserted (synchronously after mount, before async data) | after the owner's work has **settled**, including pending async reads under it |
 | Effect timing vs DOM | effects queued after render; `createRenderEffect` ran during render | same split, but effects never apply over not-ready data (they wait) |
 | Effect created during an effect | allowed (nested effects owned by the effect) | apply halves are unowned: creating a memo/effect/root there throws `PRIMITIVE_IN_EFFECT_CALLBACK` |
@@ -328,7 +353,7 @@ Migration consequence: code that used `onMount` to read a resource's value that 
 ## 6. Production failure modes
 
 | Symptom | Cause | Fix |
-|---|---|---|
+| --- | --- | --- |
 | Interval/subscription restarts on unrelated updates | effects never compare; compute returned an equal value | memo in front of the compute |
 | Effect never re-runs after migration | reads left in the apply half | move reads to compute |
 | Analytics fire with stale values | store proxy passed from compute and read in apply (`STRICT_READ_UNTRACKED`) | extract plain values in compute, or `deep(store)` |

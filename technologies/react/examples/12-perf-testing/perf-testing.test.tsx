@@ -2,8 +2,8 @@
 /**
  * Module 12 — Performance, testing, upgrades & production operations. react-dom@19.3.1.
  */
-import { afterEach, describe, expect, test, vi } from "vitest";
-import fc from "fast-check";
+import { afterEach, describe, expect, test, vi } from 'vitest';
+import fc from 'fast-check';
 import {
   Component,
   Profiler,
@@ -18,21 +18,21 @@ import {
   useState,
   type ProfilerOnRenderCallback,
   type ReactNode,
-} from "react";
-import * as ReactDOM from "react-dom";
-import * as React from "react";
-import { createRoot } from "react-dom/client";
-import { act as testUtilsAct } from "react-dom/test-utils";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { visibleRange } from "./virtual-window.ts";
+} from 'react';
+import * as ReactDOM from 'react-dom';
+import * as React from 'react';
+import { createRoot } from 'react-dom/client';
+import { act as testUtilsAct } from 'react-dom/test-utils';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { visibleRange } from './virtual-window.ts';
 
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
 });
 
-describe("measuring: <Profiler>", () => {
-  test("onRender reports phase and timings for each commit of the subtree", async () => {
+describe('measuring: <Profiler>', () => {
+  test('onRender reports phase and timings for each commit of the subtree', async () => {
     const commits: Array<{ id: string; phase: string; actual: number; base: number }> = [];
     const onRender: ProfilerOnRenderCallback = (id, phase, actualDuration, baseDuration) =>
       void commits.push({ id, phase, actual: actualDuration, base: baseDuration });
@@ -45,8 +45,8 @@ describe("measuring: <Profiler>", () => {
         <Counter />
       </Profiler>,
     );
-    fireEvent.click(screen.getByRole("button"));
-    expect(commits.map((c) => `${c.id}:${c.phase}`)).toEqual(["counter:mount", "counter:update"]);
+    fireEvent.click(screen.getByRole('button'));
+    expect(commits.map((c) => `${c.id}:${c.phase}`)).toEqual(['counter:mount', 'counter:update']);
     for (const c of commits) {
       expect(c.actual).toBeGreaterThanOrEqual(0);
       expect(c.base).toBeGreaterThanOrEqual(0);
@@ -54,7 +54,7 @@ describe("measuring: <Profiler>", () => {
   });
 });
 
-describe("render cost: context identity and splitting", () => {
+describe('render cost: context identity and splitting', () => {
   function setup(stable: boolean) {
     const Ctx = createContext<{ user: string; setTheme: (t: string) => void } | null>(null);
     const userRenders = vi.fn();
@@ -63,13 +63,13 @@ describe("render cost: context identity and splitting", () => {
       return <i>{use(Ctx)!.user}</i>;
     });
     function Provider({ children }: { children: ReactNode }) {
-      const [theme, setTheme] = useState("light");
-      const memoValue = useMemo(() => ({ user: "ada", setTheme }), []);
-      const value = stable ? memoValue : { user: "ada", setTheme }; // inline object = new identity each render
+      const [theme, setTheme] = useState('light');
+      const memoValue = useMemo(() => ({ user: 'ada', setTheme }), []);
+      const value = stable ? memoValue : { user: 'ada', setTheme }; // inline object = new identity each render
       return (
         <Ctx value={value}>
           <span>{theme}</span>
-          <button onClick={() => setTheme(theme === "light" ? "dark" : "light")}>toggle</button>
+          <button onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>toggle</button>
           {children}
         </Ctx>
       );
@@ -79,28 +79,30 @@ describe("render cost: context identity and splitting", () => {
         <UserBadge />
       </Provider>,
     );
-    for (let i = 0; i < 3; i++) fireEvent.click(screen.getByRole("button"));
+    for (let i = 0; i < 3; i++) fireEvent.click(screen.getByRole('button'));
     return userRenders.mock.calls.length;
   }
 
-  test("NEGATIVE: an inline context value re-renders every consumer, even under memo", () => {
+  test('NEGATIVE: an inline context value re-renders every consumer, even under memo', () => {
     expect(setup(false)).toBe(4);
   });
 
-  test("a memoised (stable) value lets unrelated consumers skip", () => {
+  test('a memoised (stable) value lets unrelated consumers skip', () => {
     expect(setup(true)).toBe(1);
   });
 });
 
-describe("list virtualisation: render only the visible window", () => {
-  test("example: 10,000 rows, 600px viewport, 30px rows → ~20 rows + overscan", () => {
-    expect(visibleRange({ scrollTop: 3000, viewport: 600, rowHeight: 30, count: 10_000, overscan: 3 })).toEqual({
+describe('list virtualisation: render only the visible window', () => {
+  test('example: 10,000 rows, 600px viewport, 30px rows → ~20 rows + overscan', () => {
+    expect(
+      visibleRange({ scrollTop: 3000, viewport: 600, rowHeight: 30, count: 10_000, overscan: 3 }),
+    ).toEqual({
       start: 97,
       end: 123,
     });
   });
 
-  test("property: the window always covers the viewport and stays within bounds", () => {
+  test('property: the window always covers the viewport and stays within bounds', () => {
     fc.assert(
       fc.property(
         fc.integer({ min: 0, max: 5000 }),
@@ -120,22 +122,28 @@ describe("list virtualisation: render only the visible window", () => {
     );
   });
 
-  test("rendering a windowed list mounts only the visible rows", () => {
+  test('rendering a windowed list mounts only the visible rows', () => {
     function Rows({ scrollTop }: { scrollTop: number }) {
-      const { start, end } = visibleRange({ scrollTop, viewport: 300, rowHeight: 30, count: 10_000, overscan: 2 });
+      const { start, end } = visibleRange({
+        scrollTop,
+        viewport: 300,
+        rowHeight: 30,
+        count: 10_000,
+        overscan: 2,
+      });
       const rows = [];
       for (let i = start; i < end; i++) rows.push(<li key={i}>row {i}</li>);
       return <ul style={{ paddingTop: start * 30 }}>{rows}</ul>;
     }
     const { container, rerender } = render(<Rows scrollTop={0} />);
-    expect(container.querySelectorAll("li")).toHaveLength(12);
+    expect(container.querySelectorAll('li')).toHaveLength(12);
     rerender(<Rows scrollTop={150_000} />);
-    expect(container.querySelector("li")!.textContent).toBe("row 4998");
+    expect(container.querySelector('li')!.textContent).toBe('row 4998');
   });
 });
 
-describe("code splitting with lazy()", () => {
-  test("lazy loads the module on first render and suspends until it resolves", async () => {
+describe('code splitting with lazy()', () => {
+  test('lazy loads the module on first render and suspends until it resolves', async () => {
     let loads = 0;
     const Chart = lazy(async () => {
       loads++;
@@ -146,12 +154,12 @@ describe("code splitting with lazy()", () => {
         <Chart />
       </Suspense>,
     );
-    expect(screen.getByText("loading chart")).toBeTruthy();
-    expect(await screen.findByText("chart")).toBeTruthy();
+    expect(screen.getByText('loading chart')).toBeTruthy();
+    expect(await screen.findByText('chart')).toBeTruthy();
     expect(loads).toBe(1);
   });
 
-  test("NEGATIVE: lazy() inside a component creates a new type each render (remount + reload)", async () => {
+  test('NEGATIVE: lazy() inside a component creates a new type each render (remount + reload)', async () => {
     let loads = 0;
     function Page({ n }: { n: number }) {
       // Deliberate anti-pattern: must be at module level.
@@ -166,31 +174,31 @@ describe("code splitting with lazy()", () => {
       );
     }
     const { rerender } = render(<Page n={1} />);
-    await screen.findByText("widget 1");
+    await screen.findByText('widget 1');
     rerender(<Page n={2} />);
-    await screen.findByText("widget 2");
+    await screen.findByText('widget 2');
     expect(loads).toBe(2);
   });
 });
 
-describe("testing with React Testing Library and act", () => {
-  test("findBy* waits for async UI; getBy* is synchronous", async () => {
+describe('testing with React Testing Library and act', () => {
+  test('findBy* waits for async UI; getBy* is synchronous', async () => {
     function Greeting() {
       const [name, setName] = useState<string | null>(null);
       return (
         <>
-          <button onClick={() => setTimeout(() => setName("Ada"), 10)}>load</button>
+          <button onClick={() => setTimeout(() => setName('Ada'), 10)}>load</button>
           {name && <p>hello {name}</p>}
         </>
       );
     }
     render(<Greeting />);
-    fireEvent.click(screen.getByRole("button", { name: "load" }));
-    expect(screen.queryByText("hello Ada")).toBeNull();
-    expect(await screen.findByText("hello Ada")).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'load' }));
+    expect(screen.queryByText('hello Ada')).toBeNull();
+    expect(await screen.findByText('hello Ada')).toBeTruthy();
   });
 
-  test("testing Suspense: render inside an AWAITED act, resolve inside act, then assert", async () => {
+  test('testing Suspense: render inside an AWAITED act, resolve inside act, then assert', async () => {
     let resolve!: (v: string) => void;
     const p = new Promise<string>((r) => (resolve = r));
     function Data() {
@@ -206,14 +214,14 @@ describe("testing with React Testing Library and act", () => {
         </Suspense>,
       );
     });
-    expect(screen.getByText("…")).toBeTruthy();
-    await act(async () => resolve("loaded"));
-    expect(screen.getByText("loaded")).toBeTruthy();
+    expect(screen.getByText('…')).toBeTruthy();
+    await act(async () => resolve('loaded'));
+    expect(screen.getByText('loaded')).toBeTruthy();
   });
 
-  test("NEGATIVE: updates outside act() in a test warn", async () => {
+  test('NEGATIVE: updates outside act() in a test warn', async () => {
     const errors: string[] = [];
-    vi.spyOn(console, "error").mockImplementation((...a) => void errors.push(a.join(" ")));
+    vi.spyOn(console, 'error').mockImplementation((...a) => void errors.push(a.join(' ')));
     let set!: (n: number) => void;
     function C() {
       const [n, s] = useState(0);
@@ -222,64 +230,77 @@ describe("testing with React Testing Library and act", () => {
     }
     render(<C />);
     set(1); // not wrapped in act
-    expect(errors.join("\n")).toMatch(/not wrapped in act/);
+    expect(errors.join('\n')).toMatch(/not wrapped in act/);
     await act(async () => {});
   });
 
-  test("react-dom/test-utils act is deprecated in favour of React.act", async () => {
+  test('react-dom/test-utils act is deprecated in favour of React.act', async () => {
     const errors: string[] = [];
-    vi.spyOn(console, "error").mockImplementation((...a) => void errors.push(a.join(" ")));
+    vi.spyOn(console, 'error').mockImplementation((...a) => void errors.push(a.join(' ')));
     await testUtilsAct(async () => {});
-    expect(errors.join("\n")).toMatch(/ReactDOMTestUtils\.act` is deprecated in favor of `React\.act`/);
+    expect(errors.join('\n')).toMatch(
+      /ReactDOMTestUtils\.act` is deprecated in favor of `React\.act`/,
+    );
   });
 });
 
-describe("upgrading 18 → 19: removed APIs", () => {
-  test("legacy root and DOM APIs are gone from react-dom", () => {
+describe('upgrading 18 → 19: removed APIs', () => {
+  test('legacy root and DOM APIs are gone from react-dom', () => {
     const rd = ReactDOM as unknown as Record<string, unknown>;
-    for (const name of ["render", "hydrate", "unmountComponentAtNode", "findDOMNode", "unstable_renderSubtreeIntoContainer"]) {
+    for (const name of [
+      'render',
+      'hydrate',
+      'unmountComponentAtNode',
+      'findDOMNode',
+      'unstable_renderSubtreeIntoContainer',
+    ]) {
       expect(rd[name], name).toBeUndefined();
     }
-    expect(typeof ReactDOM.createPortal).toBe("function");
+    expect(typeof ReactDOM.createPortal).toBe('function');
   });
 
-  test("createFactory and the bundled PropTypes are gone from react", () => {
+  test('createFactory and the bundled PropTypes are gone from react', () => {
     const r = React as unknown as Record<string, unknown>;
     expect(r.createFactory).toBeUndefined();
     expect(r.PropTypes).toBeUndefined();
   });
 
-  test("propTypes are ignored and defaultProps on function components no longer apply", async () => {
+  test('propTypes are ignored and defaultProps on function components no longer apply', async () => {
     const errors: string[] = [];
-    vi.spyOn(console, "error").mockImplementation((...a) => void errors.push(a.join(" ")));
+    vi.spyOn(console, 'error').mockImplementation((...a) => void errors.push(a.join(' ')));
     function Hello({ name }: { name?: string }) {
-      return <p>{name ?? "no default applied"}</p>;
+      return <p>{name ?? 'no default applied'}</p>;
     }
-    Object.assign(Hello, { defaultProps: { name: "default" }, propTypes: { name: () => new Error("never checked") } });
+    Object.assign(Hello, {
+      defaultProps: { name: 'default' },
+      propTypes: { name: () => new Error('never checked') },
+    });
     render(<Hello />);
-    expect(screen.getByText("no default applied")).toBeTruthy();
+    expect(screen.getByText('no default applied')).toBeTruthy();
     expect(errors).toEqual([]); // propTypes are not run
   });
 
-  test("defaultProps still work on class components", () => {
+  test('defaultProps still work on class components', () => {
     class Hello extends Component<{ name?: string }> {
-      static defaultProps = { name: "class default" };
+      static defaultProps = { name: 'class default' };
       override render() {
         return <p>{this.props.name}</p>;
       }
     }
     render(<Hello />);
-    expect(screen.getByText("class default")).toBeTruthy();
+    expect(screen.getByText('class default')).toBeTruthy();
   });
 
-  test("NEGATIVE: string refs throw", async () => {
-    vi.spyOn(console, "error").mockImplementation(() => {});
+  test('NEGATIVE: string refs throw', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
     class Legacy extends Component {
       override render() {
-        return createElement("input", { ref: "field" } as never);
+        return createElement('input', { ref: 'field' } as never);
       }
     }
-    const root = createRoot(document.createElement("div"));
-    await expect(act(async () => root.render(<Legacy />))).rejects.toThrow(/Expected ref to be a function/);
+    const root = createRoot(document.createElement('div'));
+    await expect(act(async () => root.render(<Legacy />))).rejects.toThrow(
+      /Expected ref to be a function/,
+    );
   });
 });

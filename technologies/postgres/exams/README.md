@@ -15,16 +15,16 @@ PostgreSQL is an open-source project without a single vendor-neutral foundation 
    - **Target Version**: PostgreSQL 18.x (with historical coverage of PG15–17)
    - **Format**: 65 multiple-choice, scenario-based, and architectural questions; 90 minutes; passing score 70%.
 2. **Senior Database Reliability Engineer / PostgreSQL DBA Technical Interview Loop**:
-   - Anchored in CMU 15-445/645 (Database Systems), Kleppmann's *Designing Data-Intensive Applications* (DDIA), and production post-mortems from high-throughput deployments.
+   - Anchored in CMU 15-445/645 (Database Systems), Kleppmann's _Designing Data-Intensive Applications_ (DDIA), and production post-mortems from high-throughput deployments.
 
 ---
 
 ## 2. Exam Domain Coverage Matrix
 
-*(Note: EnterpriseDB does not publish official percentage weights for each domain; the weights below represent normalized track allocations totaling 100% across the 65-question syllabus.)*
+_(Note: EnterpriseDB does not publish official percentage weights for each domain; the weights below represent normalized track allocations totaling 100% across the 65-question syllabus.)_
 
 | Domain # | Domain / Objective | Weight | Primary Module | Executable Proof | Status |
-| :-: | :--- | :-: | :--- | :--- | :-: |
+| :-: | :-- | :-: | :-- | :-- | :-: |
 | **01** | Architecture, Process Engine & Shared Memory | 7% | [01-architecture-process-memory-and-storage.md](../modules/01-architecture-process-memory-and-storage.md) | [01-architecture-and-storage.ts](../examples/01-architecture-and-storage.ts) | ✅ Full |
 | **02** | Relational Modeling, Types, TOAST & Constraints | 8% | [02-relational-modeling-types-and-constraints.md](../modules/02-relational-modeling-types-and-constraints.md) | [02-relational-modeling-and-constraints.ts](../examples/02-relational-modeling-and-constraints.ts) | ✅ Full |
 | **03** | SQL Querying, Joins, 3VL & Mutations | 8% | [03-sql-querying-filtering-and-joins.md](../modules/03-sql-querying-filtering-and-joins.md) | [03-sql-querying-and-joins.ts](../examples/03-sql-querying-and-joins.ts) | ✅ Full |
@@ -44,6 +44,7 @@ PostgreSQL is an open-source project without a single vendor-neutral foundation 
 ## 3. Exam Deltas & Version Callouts
 
 ### PostgreSQL 17 vs. PostgreSQL 18 Exam Deltas
+
 - **Synchronized Failover Slots**: Older study guides often mislabel synchronized failover slots as a PostgreSQL 18 feature. **Failover slots and `sync_replication_slots` arrived in PostgreSQL 17**. PostgreSQL 18 enhanced slot synchronization with dedicated monitoring catalog views and tuning parameters.
 - **UUID Generation**: In PostgreSQL $\le$ 17, `uuidv4()` was supported natively, but UUIDv7 required extensions. PostgreSQL 18 introduces native RFC 9562 `uuidv7()`.
 - **Generated Columns**: PostgreSQL $\le$ 17 supported only `STORED` generated columns. PostgreSQL 18 adds `VIRTUAL` generated columns.
@@ -52,6 +53,7 @@ PostgreSQL is an open-source project without a single vendor-neutral foundation 
 - **Upgrades**: PostgreSQL 18 preserves optimizer statistics (`pg_statistic`) during `pg_upgrade --link`.
 
 ### PostgreSQL 18 vs. PostgreSQL 19 Forward Deltas
+
 - **`VACUUM FULL` vs `REPACK`**: PostgreSQL 19 introduces native `REPACK` / `REPACK CONCURRENTLY`, replacing the table-locking `VACUUM FULL`.
 - **Standby Consistency**: PostgreSQL 19 introduces `WAIT FOR LSN` to guarantee read-your-writes on read replicas.
 - **Plan Stability**: PostgreSQL 19 introduces `pg_plan_advice` for native plan pinning.
@@ -63,4 +65,5 @@ PostgreSQL is an open-source project without a single vendor-neutral foundation 
 ## 4. Question Bank Navigation
 
 The complete preparation question bank, categorized by domain and difficulty (1–3), is available in:
+
 - [edb-postgres-associate-professional.md](./edb-postgres-associate-professional.md) — 65 rigorous examination questions with detailed explanations, distractor analysis, and a full mock exam.

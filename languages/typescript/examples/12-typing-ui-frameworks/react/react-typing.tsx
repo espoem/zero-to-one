@@ -24,8 +24,8 @@ import {
   type ReactNode,
   type Ref,
   type RefObject,
-} from "react";
-import { expectTypeOf } from "expect-type";
+} from 'react';
+import { expectTypeOf } from 'expect-type';
 
 // ---------------------------------------------------------------------------
 // 1. Component signatures and what a component may return
@@ -48,7 +48,7 @@ export function Greeting({ name, children }: GreetingProps) {
 
 // A component may return any ReactNode: strings, numbers, null, arrays.
 export const Count = ({ n }: { n: number }) => n;
-export const Fragmented = () => ["a", "b"];
+export const Fragmented = () => ['a', 'b'];
 
 const element = <Greeting name="Ada" />;
 expectTypeOf(element).toEqualTypeOf<JSX.Element>();
@@ -64,14 +64,14 @@ export const missingName = <Greeting />;
 // 2. Inheriting and overriding intrinsic element props
 // ---------------------------------------------------------------------------
 
-type ButtonProps = Omit<ComponentProps<"button">, "onClick"> & {
-  variant: "primary" | "ghost";
+type ButtonProps = Omit<ComponentProps<'button'>, 'onClick'> & {
+  variant: 'primary' | 'ghost';
   // Narrower than the DOM handler: we only pass the id.
   onClick: (id: string) => void;
 };
 
 export function Button({ variant, onClick, ...rest }: ButtonProps) {
-  return <button {...rest} data-variant={variant} onClick={() => onClick(rest.id ?? "")} />;
+  return <button {...rest} data-variant={variant} onClick={() => onClick(rest.id ?? '')} />;
 }
 
 export const okButton = <Button variant="ghost" onClick={(id) => id.toUpperCase()} type="submit" />;
@@ -81,22 +81,27 @@ export const badVariant = <Button variant="danger" onClick={() => {}} />;
 export const badAttr = <Button variant="primary" onClick={() => {}} hrefx="/" />;
 
 // ComponentProps<'input'> includes `ref` in React 19; ComponentPropsWithoutRef strips it.
-expectTypeOf<ComponentProps<"input">>().toHaveProperty("ref");
-expectTypeOf<ComponentPropsWithoutRef<"input">>().not.toHaveProperty("ref");
+expectTypeOf<ComponentProps<'input'>>().toHaveProperty('ref');
+expectTypeOf<ComponentPropsWithoutRef<'input'>>().not.toHaveProperty('ref');
 
 // ---------------------------------------------------------------------------
 // 3. Discriminated-union props and the destructuring trap
 // ---------------------------------------------------------------------------
 
 type ModalProps =
-  | { variant: "alert"; onConfirm: () => void }
-  | { variant: "prompt"; onSubmit: (value: string) => void; defaultValue?: string };
+  | { variant: 'alert'; onConfirm: () => void }
+  | { variant: 'prompt'; onSubmit: (value: string) => void; defaultValue?: string };
 
 export function Modal(props: ModalProps) {
   // Narrow on the props object (or on a destructured discriminant used *with* the object).
-  if (props.variant === "prompt") {
+  if (props.variant === 'prompt') {
     expectTypeOf(props.onSubmit).toEqualTypeOf<(value: string) => void>();
-    return <input defaultValue={props.defaultValue} onBlur={(e) => props.onSubmit(e.currentTarget.value)} />;
+    return (
+      <input
+        defaultValue={props.defaultValue}
+        onBlur={(e) => props.onSubmit(e.currentTarget.value)}
+      />
+    );
   }
   return <button onClick={props.onConfirm}>OK</button>;
 }
@@ -129,7 +134,7 @@ interface User {
   id: string;
   name: string;
 }
-const users: User[] = [{ id: "1", name: "Ada" }];
+const users: User[] = [{ id: '1', name: 'Ada' }];
 
 // TRow is inferred from `rows`; the callbacks are contextually typed.
 export const inferred = <Table rows={users} rowKey={(u) => u.id} renderRow={(u) => u.name} />;
@@ -144,11 +149,14 @@ export const wrongField = <Table rows={users} rowKey={(u) => u.email} renderRow=
 
 type PolymorphicProps<E extends ElementType, Own = {}> = Own & { as?: E } & Omit<
     ComponentProps<E>,
-    keyof Own | "as"
+    keyof Own | 'as'
   >;
 
-export function Text<E extends ElementType = "span">({ as, ...rest }: PolymorphicProps<E, { tone?: "muted" }>) {
-  const Tag: ElementType = as ?? "span";
+export function Text<E extends ElementType = 'span'>({
+  as,
+  ...rest
+}: PolymorphicProps<E, { tone?: 'muted' }>) {
+  const Tag: ElementType = as ?? 'span';
   return <Tag {...rest} />;
 }
 
@@ -166,7 +174,7 @@ export function HookTypes() {
   expectTypeOf(count).toEqualTypeOf<number>();
   setCount((c) => c + 1);
   // @ts-expect-error — string is not assignable to SetStateAction<number>
-  setCount("1");
+  setCount('1');
 
   const [maybeUser] = useState<User | null>(null);
   expectTypeOf(maybeUser).toEqualTypeOf<User | null>();
@@ -189,9 +197,9 @@ export function HookTypes() {
 }
 
 type CartAction =
-  | { type: "add"; sku: string; qty: number }
-  | { type: "remove"; sku: string }
-  | { type: "clear" };
+  | { type: 'add'; sku: string; qty: number }
+  | { type: 'remove'; sku: string }
+  | { type: 'clear' };
 
 interface CartState {
   readonly lines: Readonly<Record<string, number>>;
@@ -199,13 +207,15 @@ interface CartState {
 
 function cartReducer(state: CartState, action: CartAction): CartState {
   switch (action.type) {
-    case "add":
-      return { lines: { ...state.lines, [action.sku]: (state.lines[action.sku] ?? 0) + action.qty } };
-    case "remove": {
+    case 'add':
+      return {
+        lines: { ...state.lines, [action.sku]: (state.lines[action.sku] ?? 0) + action.qty },
+      };
+    case 'remove': {
       const { [action.sku]: _removed, ...rest } = state.lines;
       return { lines: rest };
     }
-    case "clear":
+    case 'clear':
       return { lines: {} };
     default: {
       const unreachable: never = action;
@@ -216,11 +226,11 @@ function cartReducer(state: CartState, action: CartAction): CartState {
 
 export function Cart() {
   const [state, dispatch] = useReducer(cartReducer, { lines: {} });
-  dispatch({ type: "add", sku: "A1", qty: 1 });
+  dispatch({ type: 'add', sku: 'A1', qty: 1 });
   // @ts-expect-error — `qty` is required for "add"
-  dispatch({ type: "add", sku: "A1" });
+  dispatch({ type: 'add', sku: 'A1' });
   // @ts-expect-error — "empty" is not an action type
-  dispatch({ type: "empty" });
+  dispatch({ type: 'empty' });
   return <pre>{JSON.stringify(state)}</pre>;
 }
 
@@ -248,7 +258,10 @@ export function SearchBox({ onSearch }: { onSearch: (q: string) => void }) {
 // 8. Refs as props (React 19) and ref-callback cleanup
 // ---------------------------------------------------------------------------
 
-export function TextInput({ ref, ...rest }: ComponentProps<"input"> & { ref?: Ref<HTMLInputElement> }) {
+export function TextInput({
+  ref,
+  ...rest
+}: ComponentProps<'input'> & { ref?: Ref<HTMLInputElement> }) {
   return <input ref={ref} {...rest} />;
 }
 
@@ -287,16 +300,16 @@ export function createSafeContext<T>(displayName: string) {
   return [Ctx, useSafe] as const;
 }
 
-const [ThemeContext, useTheme] = createSafeContext<{ mode: "light" | "dark" }>("Theme");
+const [ThemeContext, useTheme] = createSafeContext<{ mode: 'light' | 'dark' }>('Theme');
 
 export function ThemedRoot({ children }: { children: ReactNode }) {
   // React 19: the context object itself is the provider.
-  return <ThemeContext value={{ mode: "dark" }}>{children}</ThemeContext>;
+  return <ThemeContext value={{ mode: 'dark' }}>{children}</ThemeContext>;
 }
 
 export function ThemedLabel() {
   const theme = useTheme();
-  expectTypeOf(theme.mode).toEqualTypeOf<"light" | "dark">();
+  expectTypeOf(theme.mode).toEqualTypeOf<'light' | 'dark'>();
   return <span>{theme.mode}</span>;
 }
 
@@ -308,37 +321,45 @@ export function UserName({ userPromise }: { userPromise: Promise<User> }) {
   const user = use(userPromise);
   expectTypeOf(user).toEqualTypeOf<User>();
   const theme = use(ThemeContext);
-  expectTypeOf(theme).toEqualTypeOf<{ mode: "light" | "dark" } | null>();
+  expectTypeOf(theme).toEqualTypeOf<{ mode: 'light' | 'dark' } | null>();
   return <b>{user.name}</b>;
 }
 
 type SaveState =
-  | { status: "idle" }
-  | { status: "saved"; id: string }
-  | { status: "error"; message: string };
+  | { status: 'idle' }
+  | { status: 'saved'; id: string }
+  | { status: 'error'; message: string };
 
 async function saveTodo(_prev: SaveState, formData: FormData): Promise<SaveState> {
-  const title = formData.get("title");
-  if (typeof title !== "string" || title.length === 0) return { status: "error", message: "title required" };
-  return { status: "saved", id: title };
+  const title = formData.get('title');
+  if (typeof title !== 'string' || title.length === 0)
+    return { status: 'error', message: 'title required' };
+  return { status: 'saved', id: title };
 }
 
 export function TodoForm() {
-  const [state, formAction, isPending] = useActionState(saveTodo, { status: "idle" });
+  const [state, formAction, isPending] = useActionState(saveTodo, { status: 'idle' });
   expectTypeOf(state).toEqualTypeOf<SaveState>();
   expectTypeOf(formAction).toEqualTypeOf<(payload: FormData) => void>();
   expectTypeOf(isPending).toEqualTypeOf<boolean>();
 
-  const [optimistic, addOptimistic] = useOptimistic(["draft"], (list: string[], item: string) => [...list, item]);
-  addOptimistic("next");
+  const [optimistic, addOptimistic] = useOptimistic(['draft'], (list: string[], item: string) => [
+    ...list,
+    item,
+  ]);
+  addOptimistic('next');
   // @ts-expect-error — the optimistic action payload is a string
   addOptimistic(1);
 
   return (
     <form action={formAction}>
       <input name="title" />
-      {state.status === "error" && <p>{state.message}</p>}
-      <ul>{optimistic.map((t) => <li key={t}>{t}</li>)}</ul>
+      {state.status === 'error' && <p>{state.message}</p>}
+      <ul>
+        {optimistic.map((t) => (
+          <li key={t}>{t}</li>
+        ))}
+      </ul>
     </form>
   );
 }
@@ -359,7 +380,9 @@ type Serializable =
   | readonly Serializable[]
   | { readonly [key: string]: Serializable };
 
-function serverFunction<Args extends Serializable[], R extends Serializable>(fn: (...args: Args) => Promise<R>) {
+function serverFunction<Args extends Serializable[], R extends Serializable>(
+  fn: (...args: Args) => Promise<R>,
+) {
   return fn;
 }
 
@@ -371,10 +394,10 @@ export const notOk = serverFunction(async (cb: () => void) => String(cb));
 // 12. Augmenting React's JSX: custom elements and CSS custom properties
 // ---------------------------------------------------------------------------
 
-declare module "react" {
+declare module 'react' {
   namespace JSX {
     interface IntrinsicElements {
-      "my-rating": { value: number; max?: number; children?: never };
+      'my-rating': { value: number; max?: number; children?: never };
     }
   }
   interface CSSProperties {
@@ -385,4 +408,4 @@ declare module "react" {
 export const rating = <my-rating value={4} max={5} />;
 // @ts-expect-error — `value` must be a number
 export const badRating = <my-rating value="4" />;
-export const styled = <div style={{ "--accent": "tomato", color: "var(--accent)" }} />;
+export const styled = <div style={{ '--accent': 'tomato', color: 'var(--accent)' }} />;

@@ -7,6 +7,7 @@ CSS is not a single monolithic programming language or library with a global ver
 ## 1. The W3C Specification Process & The Snapshot Model
 
 ### The Modular Specification Lifecycle
+
 In the early web (CSS1 in 1996 and CSS2 in 1998), CSS was standardized as single monolithic specification documents. When CSS2.1 was finalized in 2011 after a decade of erratic browser implementations, the W3C CSSWG fundamentally restructured the standard into independent modules. The term "CSS3" was an informal marketing umbrella covering the initial batch of modularized Level 3 specifications (`css-color-3`, `css-grid-1`, `css-flexbox-1`); there is no "CSS4" or "CSS5".
 
 Every CSS module advances through five formal W3C Process Document maturity stages:
@@ -27,10 +28,11 @@ graph LR
 5. **W3C Recommendation (REC)**: The final, authoritative W3C standard. Because browser engines ship features during Candidate Recommendation, most production CSS features you use daily are in CR or CRD status rather than REC.
 
 ### The W3C CSS Snapshot
+
 To provide software implementers and developers with a cohesive reference for "what constitutes CSS today", the CSSWG publishes periodic **CSS Snapshots** as W3C Group Notes. The authoritative reference for modern web development is the **CSS Snapshot 2026** (W3C Group Note, 26 February 2026), which formally lists all stable modules that have reached Candidate Recommendation or Recommendation with demonstrated cross-engine interoperability:
 
 | Module Category | Current Definitive Specification | Snapshot Status | Primary Mechanics |
-| :--- | :--- | :---: | :--- |
+| :-- | :-- | :-: | :-- |
 | **Syntax & Cascade** | CSS Syntax 3 / CSS Cascade 5 & 6 | CR / WD | Tokenization, `@layer` priority, `@scope` proximity |
 | **Box Model & Layout** | CSS Display 3 / Flexbox 1 / Grid 2 | CR / REC | Visual formatting model, subgrid, intrinsic sizing |
 | **Positioning** | CSS Position 3 / Anchor Position 1 | CR / WD | Inset resolution, top layer, anchor coordinates |
@@ -39,6 +41,7 @@ To provide software implementers and developers with a cohesive reference for "w
 | **Animations & Motion** | CSS Transitions 1 / Animations 1 / View Transitions 1 | CR / WD | Interpolation, state transitions, shared-element morphing |
 
 ### Anatomy of a Specification Property Definition
+
 Every formal property definition table in a W3C specification dictates the normative behavior browser engines must implement. Below is an anatomical breakdown of how to read a specification table:
 
 ```
@@ -78,6 +81,7 @@ graph TD
 ```
 
 ### Baseline Status Tiers
+
 Baseline categorizes web platform features into three unambiguous operational tiers:
 
 1. **Limited Availability**: The feature is implemented in one or two browser engines, or is gated behind experimental feature flags. It is not ready for un-polyfilled, general-audience production code.
@@ -88,6 +92,7 @@ Baseline categorizes web platform features into three unambiguous operational ti
 3. **Widely Available**: Exactly **30 months** have elapsed since the feature achieved "Newly Available" status. This 30-month buffer accounts for slower enterprise upgrade cycles, long-term support (LTS) operating systems, and older mobile handsets, representing safe, frictionless deployment without polyfills or fallbacks.
 
 ### The Interop Program
+
 The **Interop Program** (e.g., Interop 2024, Interop 2025, Interop 2026) is an annual joint initiative between Apple, Google, Microsoft, Mozilla, and Bocoup. Rather than competing with proprietary CSS extensions, browser vendors agree on a targeted list of focus areas and write thousands of automated tests in `web-platform-tests`. The Interop score directly drives features from experimental status into Baseline Newly Available.
 
 ---
@@ -97,6 +102,7 @@ The **Interop Program** (e.g., Interop 2024, Interop 2025, Interop 2026) is an a
 CSS provides first-class progressive enhancement through the `@supports` at-rule (CSS Conditional Rules Level 3 & Level 4). The browser parses the condition; if the engine supports the declared syntax, the inner block is evaluated. If not, the engine ignores the block entirely without throwing runtime JavaScript errors or halting execution.
 
 ### Feature Queries Syntax
+
 ```css
 /* Property-value support check */
 @supports (display: grid) {
@@ -125,8 +131,8 @@ CSS provides first-class progressive enhancement through the `@supports` at-rule
 /* Font technology and format query */
 @supports font-format(woff2) {
   @font-face {
-    font-family: "Inter Variable";
-    src: url("/fonts/inter-var.woff2") format("woff2");
+    font-family: 'Inter Variable';
+    src: url('/fonts/inter-var.woff2') format('woff2');
   }
 }
 ```
@@ -145,7 +151,9 @@ flowchart TD
 For over a decade, CSS preprocessing relied on Node.js-based tools (PostCSS, Autoprefixer) that parsed CSS into large JavaScript object trees. Modern toolchains use compiled, native Rust engines that parse, transform, and optimize CSS at tens of thousands of lines per millisecond.
 
 ### Lightning CSS Architecture
+
 **Lightning CSS** is an extremely fast CSS parser, transformer, bundler, and minifier written in Rust. It reads your target browser matrix directly from `browserslist` or Baseline configurations and compiles modern CSS into backward-compatible CSS without runtime overhead:
+
 - **Nesting Lowering**: Lowers native CSS nesting into flat selectors or `:is()` wrappers for legacy browsers.
 - **Color Gamut Transpilation**: Converts high-dynamic-range OKLCH or Display P3 colors into sRGB `rgb()` fallbacks for older devices.
 - **Custom Media & Imports**: Resolves `@import` trees and inlines `@custom-media` queries.
@@ -182,6 +190,7 @@ console.log(code.toString());
 ```
 
 ### Linting against Baseline with Stylelint 17
+
 Stylelint 17 provides static analysis to enforce design system rules and catch invalid syntax. Combined with `stylelint-plugin-use-baseline`, teams can enforce that engineers only commit CSS properties that have reached a designated Baseline status (e.g. `widely`):
 
 ```json
@@ -206,7 +215,7 @@ Stylelint 17 provides static analysis to enforce design system rules and catch i
 ## 5. Then vs. Now: Platform Philosophy Shift
 
 | Dimension | Legacy CSS Era (2010–2018) | Modern CSS Platform (2024–2026+) |
-| :--- | :--- | :--- |
+| :-- | :-- | :-- |
 | **Release Cadence** | Monolithic "CSS3" branding; slow, multi-year W3C updates | Independent continuous modules; yearly W3C Snapshots (Snapshot 2026) |
 | **Browser Compatibility** | Vendor prefixes (`-webkit-`, `-moz-`, `-ms-`), CSS hacks (`*html`), CanIUse scraping | W3C Interop initiative, automated WPT test suites, Baseline Newly & Widely |
 | **Build Pipelines** | Heavy Node.js pipelines (Sass / Less $\rightarrow$ PostCSS $\rightarrow$ Autoprefixer) | Native Rust toolchains (Lightning CSS) with direct Baseline browser targeting |
@@ -218,7 +227,7 @@ Stylelint 17 provides static analysis to enforce design system rules and catch i
 ## 6. CSS Platform Major Milestones
 
 | Year | Spec Snapshot / Milestone | Landmark Features Released |
-| :--- | :--- | :--- |
+| :-- | :-- | :-- |
 | **2011** | CSS 2.1 Recommendation | Formal modularization of CSS; establishment of modern box formatting context |
 | **2017** | CSS Grid Layout Level 1 | Two-dimensional native grid system shipped across all engines within months |
 | **2022** | Interop 2022 / Baseline Birth | `@layer` (Cascade Layers), subgrid cross-engine push, container queries origin |
@@ -232,30 +241,35 @@ Stylelint 17 provides static analysis to enforce design system rules and catch i
 ## 7. Interview Drill: Platform, Specifications & Tooling
 
 ### Q1: Why does the term "CSS4" have no formal technical meaning in web standards?
+
 <details><summary>Answer</summary>
 
 After CSS 2.1 was finalized in 2011, the W3C CSSWG abandoned monolithic language versions in favor of independent, modular specifications. Each module (such as CSS Grid, Selectors, or Cascade) advances at its own pace through the W3C recommendation track and increments its own version level independently (e.g., `css-grid-2`, `selectors-4`). The CSSWG publishes yearly "CSS Snapshots" (e.g. CSS Snapshot 2026) to define the current stable state of the platform, but there is no overarching "CSS4" specification.
 </details>
 
 ### Q2: What exact criteria distinguish a feature marked "Baseline: Newly Available" from one marked "Baseline: Widely Available"?
+
 <details><summary>Answer</summary>
 
 "Newly Available" indicates that a feature has shipped in the stable releases of all four core browser engines: Google Chrome, Microsoft Edge, Mozilla Firefox, and Apple Safari (both desktop and mobile). "Widely Available" occurs exactly 30 months after the date a feature became Newly Available. This 30-month buffer provides a standardized operational signal that a feature can be used safely in enterprise and consumer environments without polyfills or fallbacks.
 </details>
 
 ### Q3: What is the difference between `@supports (selector: ...)` and `@supports selector(...)`?
+
 <details><summary>Answer</summary>
 
 `@supports (selector: ...)` is invalid syntax because `selector` is not a CSS property. The correct syntax defined in CSS Conditional Rules Level 4 is `@supports selector(<selector>)`. It tests whether the browser's selector engine can successfully parse and query a specific selector pattern (such as `:has(img)` or `:focus-visible`). If the browser does not support the selector, it discards the entire rule block without throwing an error.
 </details>
 
 ### Q4: In a CSS specification property definition table, what is the operational significance of the "Initial" value versus the "Inherited" descriptor?
+
 <details><summary>Answer</summary>
 
 The "Initial" value is the property's default value specified by the standard (e.g. `margin: 0`, `font-size: medium`). The "Inherited" descriptor (either `yes` or `no`) specifies whether an element inherits the computed value from its parent when no author or user styles match the element. For inherited properties (e.g. `color`, `font-family`), the value cascades down the DOM tree. For non-inherited properties (e.g. `border`, `padding`, `background`), the element receives the property's Initial value unless explicitly set.
 </details>
 
 ### Q5: Why is Lightning CSS substantially faster than traditional PostCSS pipelines, and how does it determine which vendor prefixes to generate?
+
 <details><summary>Answer</summary>
 
 Lightning CSS is written in Rust and operates on strongly typed abstract syntax trees (ASTs) in native machine code, avoiding the garbage collection pauses and object allocation overhead of JavaScript engines. It embeds a complete browser compatibility database (compatible with Browserslist and CanIUse). Based on the developer's declared browser target matrix, Lightning CSS performs a single-pass AST traversal to insert required vendor prefixes and down-level modern CSS features only for engines that strictly require it.

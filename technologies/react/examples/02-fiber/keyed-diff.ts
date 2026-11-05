@@ -7,9 +7,9 @@
  * against the real react-dom by counting DOM placement calls.
  */
 export type Op =
-  | { kind: "insert"; key: string; index: number }
-  | { kind: "move"; key: string; index: number }
-  | { kind: "delete"; key: string };
+  | { kind: 'insert'; key: string; index: number }
+  | { kind: 'move'; key: string; index: number }
+  | { kind: 'delete'; key: string };
 
 export interface DiffResult {
   ops: Op[];
@@ -33,13 +33,14 @@ export function reconcileKeyed(oldKeys: readonly string[], newKeys: readonly str
 
   // New list exhausted: everything left in the old list is deleted.
   if (i === newKeys.length) {
-    for (let k = i; k < oldKeys.length; k++) ops.push({ kind: "delete", key: oldKeys[k]! });
+    for (let k = i; k < oldKeys.length; k++) ops.push({ kind: 'delete', key: oldKeys[k]! });
     return { ops, stayed };
   }
 
   // Old list exhausted: everything left in the new list is inserted.
   if (i === oldKeys.length) {
-    for (let k = i; k < newKeys.length; k++) ops.push({ kind: "insert", key: newKeys[k]!, index: k });
+    for (let k = i; k < newKeys.length; k++)
+      ops.push({ kind: 'insert', key: newKeys[k]!, index: k });
     return { ops, stayed };
   }
 
@@ -54,19 +55,19 @@ export function reconcileKeyed(oldKeys: readonly string[], newKeys: readonly str
     const key = newKeys[j]!;
     const oldIndex = remaining.get(key);
     if (oldIndex === undefined) {
-      ops.push({ kind: "insert", key, index: j });
+      ops.push({ kind: 'insert', key, index: j });
       continue;
     }
     remaining.delete(key);
     if (oldIndex < lastPlacedIndex) {
-      ops.push({ kind: "move", key, index: j });
+      ops.push({ kind: 'move', key, index: j });
     } else {
       lastPlacedIndex = oldIndex;
       stayed.push(key);
     }
   }
 
-  for (const key of remaining.keys()) ops.push({ kind: "delete", key });
+  for (const key of remaining.keys()) ops.push({ kind: 'delete', key });
   return { ops, stayed };
 }
 

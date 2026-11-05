@@ -3,7 +3,9 @@
 ## Hand-off (primary: Opus · updated 2026-10-30 · branch `track/solidjs`)
 
 ### Depth pass (2026-10-29/30)
+
 Every module is now ≥ 400 lines (total ≈ 4 100, was ≈ 2 500), with new internals, negative tests, Then-vs-now and diagrams:
+
 - M01: annotated rc.19 engine (Link lists from alien-signals, height-bucket heap, CLEAN/CHECK/DIRTY, flush steps, adjustHeight, pull-on-read, dormancy sweep), glitch-freedom proof sketch, disposal internals; tests for dormancy, dynamic heights, unowned-effect leak, untracked snapshot read, effect feedback loop ("Potential Infinite Loop").
 - M02: effect queues (render before user), lifecycle state machine, onSettled settle semantics, diagnostics pipeline, pattern catalogue, decision flowchart; tests for queue order, apply waiting on async, onSettled after an action, invalid cleanup → halt, SETTLED_CLEANUP_UNOWNED, PRIMITIVE_IN_EFFECT_CALLBACK.
 - M03: annotated real compiler output (memoised conditionals, Show as getter props, spread/ref lowering, delegated vs native events, dev sourceNames), template cloning; tests incl. UNRECOGNIZED_INSERT_VALUE and spread re-applying handlers.
@@ -27,6 +29,7 @@ Pinned (exact): `solid-js`, `@solidjs/signals`, `@solidjs/web`, `@solidjs/compil
 Harness: `vitest.config.ts` with two projects via `@solidjs/vite-plugin` — `client` (jsdom, dev build, diagnostics live) and `server` (node, SSR build, `*.server.test.tsx`). `examples/typescript/support/diagnostics.ts` wraps the real `OBSERVE.diagnostics.capture()` plus hand-settled deferreds (no timers).
 
 Module by module (module + suite each, one commit each):
+
 - **M01 reactive core** — formal graph model, push-pull pseudocode, glitch freedom (diamond test), commits/`flush(fn)`, lazy/writable memos, ownership/unwind order, owned-write invariant. 23 tests.
 - **M02 effects & lifecycle** — split effects, render vs user effects (the old "render lane/user lane" wording was wrong: in 2.0 "lane" = optimistic overlay), error arm, `createReaction`, `createTrackedEffect` (`@deprecated` in rc.19), `onSettled`/`onCleanup`/`onFlush`, diagnostics table. 23 tests.
 - **M03 components/props/DOM** — real `@solidjs/compiler` output (template + grouped effect + getter props), props rules, `merge` undefined, attributes/class/style, removed namespaces as compile errors, delegation, handler binds once, bound tuples, refs before attach, two-phase directives, form inputs incl. `UNCOMMITTED_INPUT_OVERWRITTEN`. 22 tests.
@@ -72,7 +75,7 @@ Test status (Node 26.12.1): `npm test` → **Test Files 10 passed (10), Tests 16
 
 ## Proposals for integrator
 
-- **Root glossary**: add *Glitch freedom* (konzistence bez glitchů), *Fine-grained reactivity* (jemnozrnná reaktivita), *Optimistic update* (optimistická aktualizace), *Export condition* (exportní podmínka), *Request isolation* (izolace požadavků) — cross-cutting with react/nodejs.
+- **Root glossary**: add _Glitch freedom_ (konzistence bez glitchů), _Fine-grained reactivity_ (jemnozrnná reaktivita), _Optimistic update_ (optimistická aktualizace), _Export condition_ (exportní podmínka), _Request isolation_ (izolace požadavků) — cross-cutting with react/nodejs.
 - **Ownership**: register "Solid build variants / export-condition test postures" under `technologies/solidjs` (cross-link from nodejs for condition resolution); "frontend optimistic UI patterns" could be shared with react (React owns `useOptimistic`, Solid owns overlays).
 - **TypeScript track handover**: TS M13 13.5.4 teaches `on:click` native events — a compile error in Solid 2.0; 13.5.5 teaches `<Dynamic>` as primary — deprecated per RFC 03 (use `dynamic()`); 13.1.3 claims `flush()` from module scope after writes; fine. 13.6.3 imports `handleServerFunctionRequest` from `@solidjs/web` — correct path is `@solidjs/web/server-functions/server`. Replace 13.6.4 pointer ("7-Module", rc.8) with a link to this README.
 - **React track**: link its comparison sections to `technologies/solidjs/modules/10-migration-and-react-comparison.md#4-react-19-vs-solid-2-the-mental-models`.

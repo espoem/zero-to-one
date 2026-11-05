@@ -10,6 +10,7 @@ mise exec -- node check.mjs ../../technologies/solidjs  # one track
 ```
 
 Common fixes:
+
 - **Sequence diagrams:** `;` ends a statement, so write `#59;` inside message or note text.
 - **Edge labels and node text:** quote any text containing `()`, `[]`, `{}`, `&`, `|`, `#` or `:`, e.g. `A -->|"provides css() & styled"| B` and `N["text (x)"]`.
 - **`end` as a node id breaks flowcharts.** Rename the node or quote it.

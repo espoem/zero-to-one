@@ -1,6 +1,6 @@
-import pandacss from '@pandacss/vite'
-import { defineConfig } from 'vite'
-import solid from 'vite-plugin-solid'
+import pandacss from '@pandacss/vite';
+import { defineConfig } from 'vite';
+import solid from 'vite-plugin-solid';
 
 export default defineConfig({
   root: import.meta.dirname,
@@ -14,4 +14,4 @@ export default defineConfig({
     // only matters for tree-shaking unused components.
     rolldownOptions: { checks: { invalidAnnotation: false } },
   },
-})
+});

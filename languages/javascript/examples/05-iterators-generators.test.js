@@ -8,9 +8,17 @@ import { runNode } from './helpers/run-node.js';
 function tracked(n, log) {
   let i = 0;
   return {
-    [Symbol.iterator]() { return this; },
-    next() { log.push('next'); return i < n ? { value: i++, done: false } : { value: undefined, done: true }; },
-    return() { log.push('return'); return { value: undefined, done: true }; },
+    [Symbol.iterator]() {
+      return this;
+    },
+    next() {
+      log.push('next');
+      return i < n ? { value: i++, done: false } : { value: undefined, done: true };
+    },
+    return() {
+      log.push('return');
+      return { value: undefined, done: true };
+    },
   };
 }
 
@@ -20,9 +28,20 @@ export function run(genFn, ...args) {
     const it = genFn(...args);
     const step = (method, arg) => {
       let r;
-      try { r = it[method](arg); } catch (e) { reject(e); return; }
-      if (r.done) { resolve(r.value); return; }
-      Promise.resolve(r.value).then((v) => step('next', v), (e) => step('throw', e));
+      try {
+        r = it[method](arg);
+      } catch (e) {
+        reject(e);
+        return;
+      }
+      if (r.done) {
+        resolve(r.value);
+        return;
+      }
+      Promise.resolve(r.value).then(
+        (v) => step('next', v),
+        (e) => step('throw', e),
+      );
     };
     step('next');
   });
@@ -40,10 +59,15 @@ export function* take(iterable, n) {
 describe('Iteration protocols (§27.1.1)', () => {
   test('a hand-written iterable works with every consumer', () => {
     const range = {
-      from: 1, to: 3,
+      from: 1,
+      to: 3,
       [Symbol.iterator]() {
-        let cur = this.from; const last = this.to;
-        return { next: () => (cur <= last ? { value: cur++, done: false } : { value: undefined, done: true }) };
+        let cur = this.from;
+        const last = this.to;
+        return {
+          next: () =>
+            cur <= last ? { value: cur++, done: false } : { value: undefined, done: true },
+        };
       },
     };
     assert.deepEqual([...range], [1, 2, 3]);
@@ -51,11 +75,14 @@ describe('Iteration protocols (§27.1.1)', () => {
     const [a, b] = range;
     assert.deepEqual([a, b], [1, 2]);
     assert.equal(new Set(range).size, 3);
-    assert.deepEqual([...range], [1, 2, 3]);   // fresh iterator each time: reusable
+    assert.deepEqual([...range], [1, 2, 3]); // fresh iterator each time: reusable
   });
 
   test('NEGATIVE: generators are one-shot', () => {
-    function* g() { yield 1; yield 2; }
+    function* g() {
+      yield 1;
+      yield 2;
+    }
     const it = g();
     assert.deepEqual([...it], [1, 2]);
     assert.deepEqual([...it], []);
@@ -89,7 +116,9 @@ describe('IteratorClose (§7.4.11)', () => {
     assert.deepEqual(log, ['next', 'return']);
 
     log = [];
-    assert.throws(() => { for (const _ of tracked(5, log)) throw new Error('body'); }, /body/);
+    assert.throws(() => {
+      for (const _ of tracked(5, log)) throw new Error('body');
+    }, /body/);
     assert.deepEqual(log, ['next', 'return']);
 
     log = [];
@@ -99,17 +128,32 @@ describe('IteratorClose (§7.4.11)', () => {
 
   test('the body exception wins over an exception thrown by return()', () => {
     const it = {
-      [Symbol.iterator]() { return this; },
+      [Symbol.iterator]() {
+        return this;
+      },
       next: () => ({ value: 1, done: false }),
-      return() { throw new Error('from return'); },
+      return() {
+        throw new Error('from return');
+      },
     };
-    assert.throws(() => { for (const _ of it) throw new Error('from body'); }, /from body/);
-    assert.throws(() => { for (const _ of it) break; }, /from return/);
+    assert.throws(() => {
+      for (const _ of it) throw new Error('from body');
+    }, /from body/);
+    assert.throws(() => {
+      for (const _ of it) break;
+    }, /from return/);
   });
 
   test('a generator finally block runs when the consumer stops early', () => {
     const log = [];
-    function* g() { try { yield 1; yield 2; } finally { log.push('cleanup'); } }
+    function* g() {
+      try {
+        yield 1;
+        yield 2;
+      } finally {
+        log.push('cleanup');
+      }
+    }
     for (const _ of g()) break;
     assert.deepEqual(log, ['cleanup']);
   });
@@ -130,14 +174,26 @@ describe('Generators (§27.5)', () => {
   });
 
   test('throw() raises at the paused yield and can be caught', () => {
-    function* g() { try { yield 1; } catch (e) { yield `caught ${e}`; } }
+    function* g() {
+      try {
+        yield 1;
+      } catch (e) {
+        yield `caught ${e}`;
+      }
+    }
     const it = g();
     it.next();
     assert.deepEqual(it.throw('boom'), { value: 'caught boom', done: false });
   });
 
   test('return() runs finally; a yield inside finally suspends again', () => {
-    function* g() { try { yield 1; } finally { yield 'from finally'; } }
+    function* g() {
+      try {
+        yield 1;
+      } finally {
+        yield 'from finally';
+      }
+    }
     const it = g();
     it.next();
     assert.deepEqual(it.return(5), { value: 'from finally', done: false });
@@ -146,7 +202,10 @@ describe('Generators (§27.5)', () => {
 
   test('return() before start completes without running the body', () => {
     let ran = false;
-    function* g() { ran = true; yield 1; }
+    function* g() {
+      ran = true;
+      yield 1;
+    }
     const it = g();
     assert.deepEqual(it.return(9), { value: 9, done: true });
     assert.equal(ran, false);
@@ -155,36 +214,60 @@ describe('Generators (§27.5)', () => {
   test('NEGATIVE: re-entrant next() throws TypeError', () => {
     /** @type {Generator} */
     let it;
-    function* g() { yield it.next(); }
+    function* g() {
+      yield it.next();
+    }
     it = g();
     assert.throws(() => it.next(), TypeError);
   });
 
   test('yield* forwards and evaluates to the inner return value', () => {
-    function* inner() { yield 'a'; return 'inner-result'; }
-    function* outer() { const r = yield* inner(); yield r; }
+    function* inner() {
+      yield 'a';
+      return 'inner-result';
+    }
+    function* outer() {
+      const r = yield* inner();
+      yield r;
+    }
     assert.deepEqual([...outer()], ['a', 'inner-result']);
   });
 
   test('co-style driver turns a generator into an async function', async () => {
     const result = await run(function* (x) {
       const a = yield Promise.resolve(x + 1);
-      try { yield Promise.reject(new Error('fail')); } catch (e) { return `${a} ${/** @type {Error} */ (e).message}`; }
+      try {
+        yield Promise.reject(new Error('fail'));
+      } catch (e) {
+        return `${a} ${/** @type {Error} */ (e).message}`;
+      }
     }, 1);
     assert.equal(result, '2 fail');
   });
 
   test('infinite generators are safe with lazy consumers', () => {
-    function* naturals() { for (let n = 0; ; n++) yield n; }
+    function* naturals() {
+      for (let n = 0; ; n++) yield n;
+    }
     assert.deepEqual([...take(naturals(), 3)], [0, 1, 2]);
-    assert.deepEqual(naturals().filter((n) => n % 2).map((n) => n * n).take(3).toArray(), [1, 9, 25]);
+    assert.deepEqual(
+      naturals()
+        .filter((n) => n % 2)
+        .map((n) => n * n)
+        .take(3)
+        .toArray(),
+      [1, 9, 25],
+    );
   });
 });
 
 describe('Iterator helpers (ES2025) and Iterator.concat (ES2026)', () => {
   test('helpers are lazy: work happens per pulled element', () => {
     const log = [];
-    const it = [1, 2, 3, 4].values().map((x) => { log.push(x); return x * 2; });
+    const it = [1, 2, 3, 4].values().map((x) => {
+      log.push(x);
+      return x * 2;
+    });
     assert.deepEqual(log, []);
     assert.deepEqual(it.take(2).toArray(), [2, 4]);
     assert.deepEqual(log, [1, 2]);
@@ -193,7 +276,10 @@ describe('Iterator helpers (ES2025) and Iterator.concat (ES2026)', () => {
   test('callbacks receive (value, counter) only', () => {
     const args = [];
     ['a', 'b'].values().forEach((...a) => args.push(a));
-    assert.deepEqual(args, [['a', 0], ['b', 1]]);
+    assert.deepEqual(args, [
+      ['a', 0],
+      ['b', 1],
+    ]);
   });
 
   test('early-stopping helpers close the source', () => {
@@ -205,13 +291,30 @@ describe('Iterator helpers (ES2025) and Iterator.concat (ES2026)', () => {
 
   test('Iterator.from wraps a next()-only object', () => {
     let i = 0;
-    const nextOnly = { next: () => (i < 2 ? { value: i++, done: false } : { value: undefined, done: true }) };
-    assert.deepEqual(Iterator.from(nextOnly).map((x) => x + 10).toArray(), [10, 11]);
+    const nextOnly = {
+      next: () => (i < 2 ? { value: i++, done: false } : { value: undefined, done: true }),
+    };
+    assert.deepEqual(
+      Iterator.from(nextOnly)
+        .map((x) => x + 10)
+        .toArray(),
+      [10, 11],
+    );
   });
 
   test('NEGATIVE: iterator flatMap rejects strings returned by the mapper', () => {
-    assert.throws(() => ['ab'].values().flatMap((s) => /** @type {any} */ (s)).toArray(), TypeError);
-    assert.deepEqual(['ab'].flatMap((s) => s), ['ab']); // arrays flatten only arrays
+    assert.throws(
+      () =>
+        ['ab']
+          .values()
+          .flatMap((s) => /** @type {any} */ (s))
+          .toArray(),
+      TypeError,
+    );
+    assert.deepEqual(
+      ['ab'].flatMap((s) => s),
+      ['ab'],
+    ); // arrays flatten only arrays
   });
 
   test('Iterator.concat is lazy and validates arguments up front', () => {
@@ -223,9 +326,15 @@ describe('Iterator helpers (ES2025) and Iterator.concat (ES2026)', () => {
   });
 
   test('property: take(n) of an iterator equals slice(0, n) of the array', () => {
-    fc.assert(fc.property(fc.array(fc.integer()), fc.nat(20), (xs, n) =>
-      JSON.stringify(xs.values().take(n).toArray()) === JSON.stringify(xs.slice(0, n)) &&
-      JSON.stringify([...take(xs, n)]) === JSON.stringify(xs.slice(0, n))));
+    fc.assert(
+      fc.property(
+        fc.array(fc.integer()),
+        fc.nat(20),
+        (xs, n) =>
+          JSON.stringify(xs.values().take(n).toArray()) === JSON.stringify(xs.slice(0, n)) &&
+          JSON.stringify([...take(xs, n)]) === JSON.stringify(xs.slice(0, n)),
+      ),
+    );
   });
 });
 
@@ -238,19 +347,30 @@ describe('Async iteration (§27.1.1.3, §27.6)', () => {
           await null;
           yield* [page * 10, page * 10 + 1];
         }
-      } finally { log.push('closed'); }
+      } finally {
+        log.push('closed');
+      }
     }
     const out = [];
-    for await (const x of paginate()) { out.push(x); if (out.length === 3) break; }
+    for await (const x of paginate()) {
+      out.push(x);
+      if (out.length === 3) break;
+    }
     assert.deepEqual(out, [0, 1, 10]);
     assert.deepEqual(log, ['closed']);
   });
 
   test('concurrent next() calls on an async generator are queued in order', async () => {
-    async function* g() { yield 'a'; yield 'b'; }
+    async function* g() {
+      yield 'a';
+      yield 'b';
+    }
     const it = g();
     const results = await Promise.all([it.next(), it.next(), it.next()]);
-    assert.deepEqual(results.map((r) => r.value), ['a', 'b', undefined]);
+    assert.deepEqual(
+      results.map((r) => r.value),
+      ['a', 'b', undefined],
+    );
   });
 
   test('for await falls back to sync iterators and awaits each value', async () => {
@@ -279,7 +399,7 @@ describe('Async iteration (§27.1.1.3, §27.6)', () => {
     const r = runNode(['--input-type=module', '-e', src]);
     assert.equal(r.status, 1);
     assert.match(r.stderr, /early/);
-    assert.doesNotMatch(r.stdout, /slow/);   // the process died before the loop reached the first value
+    assert.doesNotMatch(r.stdout, /slow/); // the process died before the loop reached the first value
   });
 });
 
@@ -298,7 +418,11 @@ export function* inorderIter(root, visit = () => {}) {
   const stack = [];
   let x = root;
   while (stack.length > 0 || x) {
-    while (x) { visit(x); stack.push(x); x = x.left; }
+    while (x) {
+      visit(x);
+      stack.push(x);
+      x = x.left;
+    }
     x = stack.pop();
     yield x.key;
     x = x.right;
@@ -314,13 +438,17 @@ function bstInsert(root, key) {
 
 describe('Depth: lazy tree traversal', () => {
   test('property: both traversals yield the sorted distinct keys', () => {
-    fc.assert(fc.property(fc.uniqueArray(fc.integer(), { maxLength: 60 }), (keys) => {
-      let root = null;
-      for (const k of keys) root = bstInsert(root, k);
-      const sorted = [...keys].sort((a, b) => a - b);
-      return JSON.stringify([...inorderRecursive(root)]) === JSON.stringify(sorted) &&
-        JSON.stringify([...inorderIter(root)]) === JSON.stringify(sorted);
-    }));
+    fc.assert(
+      fc.property(fc.uniqueArray(fc.integer(), { maxLength: 60 }), (keys) => {
+        let root = null;
+        for (const k of keys) root = bstInsert(root, k);
+        const sorted = [...keys].sort((a, b) => a - b);
+        return (
+          JSON.stringify([...inorderRecursive(root)]) === JSON.stringify(sorted) &&
+          JSON.stringify([...inorderIter(root)]) === JSON.stringify(sorted)
+        );
+      }),
+    );
   });
 
   test('take(3) on a large degenerate-left tree visits only the left spine', () => {
@@ -329,7 +457,9 @@ describe('Depth: lazy tree traversal', () => {
     const n = 2000;
     for (let k = 1; k <= n; k++) root = { key: k, left: root, right: null };
     let visited = 0;
-    const first = inorderIter(root, () => visited++).take(3).toArray();
+    const first = inorderIter(root, () => visited++)
+      .take(3)
+      .toArray();
     assert.deepEqual(first, [1, 2, 3]);
     assert.equal(visited, n); // descending the spine once; nothing else materialised
   });
@@ -339,42 +469,69 @@ describe('Depth: ForIn/OfBodyEvaluation and IteratorClose', () => {
   test('NEGATIVE: a destructuring failure in the loop head closes the iterator', () => {
     const log = [];
     const it = {
-      [Symbol.iterator]() { return this; },
-      next: () => ({ value: null, done: false }),       // destructuring null throws
-      return() { log.push('return'); return {}; },
+      [Symbol.iterator]() {
+        return this;
+      },
+      next: () => ({ value: null, done: false }), // destructuring null throws
+      return() {
+        log.push('return');
+        return {};
+      },
     };
-    assert.throws(() => { for (const { a } of it) void a; }, TypeError);
+    assert.throws(() => {
+      for (const { a } of it) void a;
+    }, TypeError);
     assert.deepEqual(log, ['return']);
   });
 
   test('NEGATIVE: an exception from next() does not call return()', () => {
     const log = [];
     const it = {
-      [Symbol.iterator]() { return this; },
-      next() { throw new Error('broken'); },
-      return() { log.push('return'); return {}; },
+      [Symbol.iterator]() {
+        return this;
+      },
+      next() {
+        throw new Error('broken');
+      },
+      return() {
+        log.push('return');
+        return {};
+      },
     };
-    assert.throws(() => { for (const _ of it); }, /broken/);
+    assert.throws(() => {
+      for (const _ of it);
+    }, /broken/);
     assert.deepEqual(log, []);
   });
 
   test('NEGATIVE: a return() that yields a primitive is a TypeError on break', () => {
     const it = {
-      [Symbol.iterator]() { return this; },
+      [Symbol.iterator]() {
+        return this;
+      },
       next: () => ({ value: 1, done: false }),
       return: () => 42,
     };
-    assert.throws(() => { for (const _ of it) break; }, TypeError);
+    assert.throws(() => {
+      for (const _ of it) break;
+    }, TypeError);
   });
 
   test('NEGATIVE: yield* to an iterator without throw() closes it and throws TypeError', () => {
     const log = [];
     const inner = {
-      [Symbol.iterator]() { return this; },
+      [Symbol.iterator]() {
+        return this;
+      },
       next: () => ({ value: 'x', done: false }),
-      return() { log.push('inner closed'); return { done: true }; },
+      return() {
+        log.push('inner closed');
+        return { done: true };
+      },
     };
-    function* outer() { yield* inner; }
+    function* outer() {
+      yield* inner;
+    }
     const g = outer();
     g.next();
     assert.throws(() => g.throw(new Error('e')), TypeError);
@@ -386,19 +543,36 @@ describe('Depth: async generator request queue (§27.6) and AsyncFromSyncIterato
   test('return() issued while executing waits behind earlier requests', async () => {
     const log = [];
     async function* g() {
-      try { log.push('start'); await null; yield 1; yield 2; } finally { log.push('finally'); }
+      try {
+        log.push('start');
+        await null;
+        yield 1;
+        yield 2;
+      } finally {
+        log.push('finally');
+      }
     }
     const it = g();
     const p1 = it.next();
     const p2 = it.return('done');
     const p3 = it.next();
     const [r1, r2, r3] = await Promise.all([p1, p2, p3]);
-    assert.deepEqual([r1, r2, r3], [{ value: 1, done: false }, { value: 'done', done: true }, { value: undefined, done: true }]);
+    assert.deepEqual(
+      [r1, r2, r3],
+      [
+        { value: 1, done: false },
+        { value: 'done', done: true },
+        { value: undefined, done: true },
+      ],
+    );
     assert.deepEqual(log, ['start', 'finally']);
   });
 
   test('yield and return of a promise inside an async generator are awaited', async () => {
-    async function* g() { yield Promise.resolve('y'); return Promise.resolve('r'); }
+    async function* g() {
+      yield Promise.resolve('y');
+      return Promise.resolve('r');
+    }
     const it = g();
     assert.deepEqual(await it.next(), { value: 'y', done: false });
     assert.deepEqual(await it.next(), { value: 'r', done: true });
@@ -406,19 +580,34 @@ describe('Depth: async generator request queue (§27.6) and AsyncFromSyncIterato
 
   test('for await over a sync generator yielding a rejection throws and closes it (ES2025)', async () => {
     const log = [];
-    function* g() { try { yield Promise.reject(new Error('r')); yield 2; } finally { log.push('closed'); } }
-    await assert.rejects((async () => { for await (const _ of g()); })(), /r/);
+    function* g() {
+      try {
+        yield Promise.reject(new Error('r'));
+        yield 2;
+      } finally {
+        log.push('closed');
+      }
+    }
+    await assert.rejects(
+      (async () => {
+        for await (const _ of g());
+      })(),
+      /r/,
+    );
     assert.deepEqual(log, ['closed']);
   });
 });
 
 describe('Depth: the iteration protocol is global', () => {
   test('NEGATIVE: patching Array.prototype[Symbol.iterator] changes spread and destructuring everywhere', () => {
-    const r = runNode(['-e', `
+    const r = runNode([
+      '-e',
+      `
       const orig = Array.prototype[Symbol.iterator];
       Array.prototype[Symbol.iterator] = function* () { for (const x of orig.call(this)) yield x * 10; };
       const [a] = [1, 2];
-      console.log(JSON.stringify([[...[1, 2]], a, Array.from([3])]));`]);
+      console.log(JSON.stringify([[...[1, 2]], a, Array.from([3])]));`,
+    ]);
     assert.deepEqual(JSON.parse(r.stdout), [[10, 20], 10, [30]]);
   });
 });

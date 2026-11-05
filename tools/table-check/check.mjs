@@ -59,7 +59,7 @@ for (const root of roots) {
           if (colCount !== headerCols) {
             failedRows++;
             console.error(
-              `FAIL ${relative(process.cwd(), file)}:${lineNum} [table started L${tableStartLine}]: row has ${colCount} cols, expected ${headerCols}\n  ${stripped}`
+              `FAIL ${relative(process.cwd(), file)}:${lineNum} [table started L${tableStartLine}]: row has ${colCount} cols, expected ${headerCols}\n  ${stripped}`,
             );
           }
         }

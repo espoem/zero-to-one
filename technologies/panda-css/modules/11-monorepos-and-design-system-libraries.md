@@ -1,7 +1,6 @@
 # Module 11 · Monorepos and Shipping a Design-System Library
 
-> **Verified against** `@pandacss/dev` 2.4.0 on 2026-10-29.
-> **Executable proof:** [`examples/system/preset.ts`](../examples/system/preset.ts) (a preset shared by four Panda projects); the workspace in [`examples/monorepo/`](../examples/monorepo/): the package [`packages/ds`](../examples/monorepo/packages/ds/) built with `panda lib`, and the app [`apps/web`](../examples/monorepo/apps/web/) consuming it with `designSystem`; [`monorepo.test.ts`](../examples/tests/monorepo.test.ts).
+> **Verified against** `@pandacss/dev` 2.4.0 on 2026-10-29. **Executable proof:** [`examples/system/preset.ts`](../examples/system/preset.ts) (a preset shared by four Panda projects); the workspace in [`examples/monorepo/`](../examples/monorepo/): the package [`packages/ds`](../examples/monorepo/packages/ds/) built with `panda lib`, and the app [`apps/web`](../examples/monorepo/apps/web/) consuming it with `designSystem`; [`monorepo.test.ts`](../examples/tests/monorepo.test.ts).
 
 There are three ways to share Panda styling across packages. Choosing the right one, and wiring extraction so nothing is scanned twice or missed, is the core of this module. Workspace tooling itself (npm/pnpm workspaces, Turborepo task graphs) is generic; we only cover Panda's delta.
 
@@ -10,7 +9,7 @@ There are three ways to share Panda styling across packages. Choosing the right 
 ## 11.1 Three distribution shapes
 
 | Shape | What ships | Consumer runs Panda? | Consumer can extend the theme? | Use when |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | **Preset** (`definePreset`) | Tokens, semantic tokens, recipes, patterns, conditions: no components | Yes | Yes (`extend`) | A shared design language for several apps |
 | **Design system** (`panda lib` + `designSystem`) | Components + the config they were built with + their extracted styles (build info) + generated `styled-system` exports | Yes | Yes, and the package's types follow | A component library inside a monorepo or on npm |
 | **Stylesheet** (`panda cssgen --outfile` or `--splitting`) | Plain CSS (+ your compiled components) | No | No | Apps that do not run Panda |
@@ -30,7 +29,7 @@ export default defineConfig({
   include: ['./src/**/*.{ts,tsx}'],
   outdir: 'styled-system',
   jsxFramework: 'react',
-})
+});
 ```
 
 ```bash
@@ -49,9 +48,18 @@ dist/panda/
 ```json
 // dist/panda/lib.json (from the test run)
 {
-  "schemaVersion": 1, "name": "@acme/ds", "panda": "^2.0.0",
-  "preset": "./preset.mjs", "buildInfo": "./buildinfo.json",
-  "importMap": { "css": "@acme/ds/css", "recipes": "@acme/ds/recipes", "patterns": "@acme/ds/patterns", "jsx": "@acme/ds/jsx", "tokens": "@acme/ds/tokens" },
+  "schemaVersion": 1,
+  "name": "@acme/ds",
+  "panda": "^2.0.0",
+  "preset": "./preset.mjs",
+  "buildInfo": "./buildinfo.json",
+  "importMap": {
+    "css": "@acme/ds/css",
+    "recipes": "@acme/ds/recipes",
+    "patterns": "@acme/ds/patterns",
+    "jsx": "@acme/ds/jsx",
+    "tokens": "@acme/ds/tokens"
+  },
   "files": ["../src/Badge.tsx", "../src/Button.tsx", "../src/index.ts"]
 }
 ```
@@ -63,7 +71,7 @@ dist/panda/
 ### Then vs now: shipping a library
 
 | v0.x / 1.x | 2.x |
-|---|---|
+| --- | --- |
 | `emitPackage: true` generated `styled-system` as an installable package | Option gone (no `emitPackage` in the 2.4.0 types or compiler source) |
 | `panda emit-pkg` wrote `package.json` exports | Removed; `panda lib` syncs exports |
 | `panda ship` wrote a `panda.buildinfo.json` that apps listed in `include` | `panda lib` (full manifest) or `panda buildinfo --outfile` (build info only); apps use `designSystem` |
@@ -83,7 +91,7 @@ export default defineConfig({
   include: ['./src/**/*.{ts,tsx}'],
   outdir: 'styled-system',
   theme: { extend: { tokens: { colors: { app: { value: '#0f766e' } } } } },
-})
+});
 ```
 
 What `designSystem` does, verified by [`monorepo.test.ts`](../examples/tests/monorepo.test.ts):
@@ -94,7 +102,7 @@ What `designSystem` does, verified by [`monorepo.test.ts`](../examples/tests/mon
 4. Generates a slim local `styled-system`: the app extended tokens, so `css()` is generated locally (typed against the merged theme), while `recipes/index.js` is `export * from '@acme/ds/recipes/button'` etc. One runtime, not two.
 
 | App authors… | `css`, `cva`, `cx` | Package recipes/patterns |
-|---|---|---|
+| --- | --- | --- |
 | Nothing | Re-exported from the package | Re-exported |
 | Tokens, utilities, conditions, breakpoints | Generated locally | Re-exported |
 | `jsxFramework`/`jsxStyleProps` | Full local tree | Full local tree |
@@ -114,7 +122,7 @@ Errors you will meet: `design_system_in_include` (listing the package name in `i
 
 ### Tree-shaking the design system
 
-By default all modules in the build info are hydrated. `optimize.treeshakeDesignSystem: true` scans the app's `include` and hydrates only the exports the app imports. With an app file that imports `Button` but not `Badge`, the test shows `bg_brand.100` (Badge) present without the flag and absent with it, while `button--size_lg` stays. 2.4.0 fixed a bug where tree-shaking dropped styles of modules imported *by* an imported component (e.g. a `Label` rendered inside `Checkbox`); packages need a fresh `panda lib` for the fix.
+By default all modules in the build info are hydrated. `optimize.treeshakeDesignSystem: true` scans the app's `include` and hydrates only the exports the app imports. With an app file that imports `Button` but not `Badge`, the test shows `bg_brand.100` (Badge) present without the flag and absent with it, while `button--size_lg` stays. 2.4.0 fixed a bug where tree-shaking dropped styles of modules imported _by_ an imported component (e.g. a `Label` rendered inside `Checkbox`); packages need a fresh `panda lib` for the fix.
 
 Nested design systems (`designSystem` inside a design-system package) chain: apps configure only the leaf package.
 
@@ -125,7 +133,7 @@ Nested design systems (`designSystem` inside a design-system package) chain: app
 The two classic failure modes are opposites:
 
 | Mistake | Effect |
-|---|---|
+| --- | --- |
 | `include` too narrow (a workspace package that calls `css()` is not covered, and it is not a `designSystem`) | Its styles never reach the CSS: unstyled components |
 | `include` too wide (`../../**/*.tsx`, `node_modules`, `dist`, or a glob into a `designSystem` package's source) | Slow builds, duplicated work; with globs into `dist` you also extract compiled code |
 
@@ -141,9 +149,12 @@ Rules:
 // turbo.json (illustrative)
 {
   "tasks": {
-    "lib":     { "outputs": ["dist/panda/**", "styled-system/**"], "inputs": ["src/**", "panda.config.ts"] },
+    "lib": {
+      "outputs": ["dist/panda/**", "styled-system/**"],
+      "inputs": ["src/**", "panda.config.ts"]
+    },
     "codegen": { "outputs": ["styled-system/**"], "inputs": ["panda.config.ts"] },
-    "build":   { "dependsOn": ["^lib", "codegen"], "outputs": ["dist/**"] }
+    "build": { "dependsOn": ["^lib", "codegen"], "outputs": ["dist/**"] }
   }
 }
 ```
@@ -175,7 +186,7 @@ Export `./styles.css` (and `./styles/*` for split output) from the package. Apps
 ## 11.7 Production failure modes
 
 | Symptom | Cause | Fix / proof |
-|---|---|---|
+| --- | --- | --- |
 | Components from a shared package render unstyled | Package not in `include`, not a `designSystem`, or app `prefix`/`hash` differs | `designSystem`; leave those options unset |
 | `design_system_in_include` | Package listed in `include` | Remove it; test |
 | `design_system_buildinfo_stale` after a Panda upgrade | Old build info | `panda lib` in the package; fallback test |

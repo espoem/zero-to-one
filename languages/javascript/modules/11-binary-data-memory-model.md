@@ -1,6 +1,6 @@
 # 11 · Binary Data, Serialisation and the Memory Model
 
-> **Spec anchors (ECMA-262 17th edition):** §25.1 *ArrayBuffer Objects* (§25.1.2 resizable buffers, §25.1.6.6 `resize`, §25.1.6.8 `transfer`), §25.2 *SharedArrayBuffer Objects*, §25.3 *DataView Objects*, §23.2 *TypedArray Objects*, §10.4.5 *TypedArray Exotic Objects*, §23.3.1.1 `Uint8Array.fromBase64` (ES2026 base64/hex), §25.4 *The Atomics Object* (§25.4.13 `wait`, §25.4.14 `waitAsync`, §25.4.15 `notify`), §29 *Memory Model* (§29.1 fundamentals, §29.4 candidate executions, §29.6.6 happens-before, §29.7.3 tear free, §29.7.4 sequentially consistent, §29.8 races, §29.9 data races). ES2027 draft: `Atomics.pause`. HTML Living Standard §2.7 *Safe passing of structured data* (structured serialisation, `structuredClone`); HTML cross-origin isolation (`COOP`/`COEP`).
+> **Spec anchors (ECMA-262 17th edition):** §25.1 _ArrayBuffer Objects_ (§25.1.2 resizable buffers, §25.1.6.6 `resize`, §25.1.6.8 `transfer`), §25.2 _SharedArrayBuffer Objects_, §25.3 _DataView Objects_, §23.2 _TypedArray Objects_, §10.4.5 _TypedArray Exotic Objects_, §23.3.1.1 `Uint8Array.fromBase64` (ES2026 base64/hex), §25.4 _The Atomics Object_ (§25.4.13 `wait`, §25.4.14 `waitAsync`, §25.4.15 `notify`), §29 _Memory Model_ (§29.1 fundamentals, §29.4 candidate executions, §29.6.6 happens-before, §29.7.3 tear free, §29.7.4 sequentially consistent, §29.8 races, §29.9 data races). ES2027 draft: `Atomics.pause`. HTML Living Standard §2.7 _Safe passing of structured data_ (structured serialisation, `structuredClone`); HTML cross-origin isolation (`COOP`/`COEP`).
 >
 > **Executable proof:** [`examples/11-binary-data-memory-model.test.js`](../examples/11-binary-data-memory-model.test.js)
 
@@ -10,19 +10,19 @@ This module covers everything that crosses a boundary as bytes or as cloned valu
 
 ## 1. ArrayBuffer: raw bytes
 
-**Definition (§25.1).** An `ArrayBuffer` holds a *Data Block* (a sequence of bytes) in `[[ArrayBufferData]]` with a length. It has no element type and cannot be read directly; views interpret it.
+**Definition (§25.1).** An `ArrayBuffer` holds a _Data Block_ (a sequence of bytes) in `[[ArrayBufferData]]` with a length. It has no element type and cannot be read directly; views interpret it.
 
 ### Resizable buffers (ES2024)
 
 ```js
 const rab = new ArrayBuffer(2, { maxByteLength: 8 });
-const tracking = new Uint8Array(rab);          // length-tracking view: no explicit length
+const tracking = new Uint8Array(rab); // length-tracking view: no explicit length
 rab.resize(6);
-tracking.length;                               // 6
+tracking.length; // 6
 const fixed = new Uint8Array(rab, 0, 4);
 rab.resize(2);
-fixed.length;                                  // 0: the fixed view is now out of bounds
-rab.resize(9);                                 // RangeError: above maxByteLength
+fixed.length; // 0: the fixed view is now out of bounds
+rab.resize(9); // RangeError: above maxByteLength
 ```
 
 Engines can reserve `maxByteLength` of virtual address space up front, so growth does not copy. This is the JavaScript side of WebAssembly memory growth and of streaming parsers that append data.
@@ -32,7 +32,7 @@ Engines can reserve `maxByteLength` of virtual address space up front, so growth
 `buf.transfer(newLength?)` returns a new buffer with the contents and **detaches** the original: its `byteLength` becomes 0, `detached` is true, views on it report length 0, reads return `undefined` and writes are silently ignored; creating a new view on it throws `TypeError`. `transferToFixedLength()` does the same but yields a non-resizable buffer. Detachment also happens when a buffer is listed in the `transfer` option of `postMessage`/`structuredClone`.
 
 | Then | Now |
-|---|---|
+| --- | --- |
 | Copy into a bigger buffer by hand to grow (`new Uint8Array(bigger).set(old)`) | `new ArrayBuffer(n, { maxByteLength })` + `resize` (ES2024) |
 | Detach only via `postMessage(…, [buf])` | `buf.transfer()` (ES2024) |
 | `btoa(String.fromCharCode(...bytes))` (Latin-1 only, stack overflow on large arrays) | `bytes.toBase64()` (ES2026) |
@@ -42,10 +42,10 @@ Engines can reserve `maxByteLength` of virtual address space up front, so growth
 
 ## 2. Typed arrays and DataView
 
-**Definition (§23.2).** A *TypedArray* is a view over a buffer region with a fixed element type: `Int8`, `Uint8`, `Uint8Clamped`, `Int16`, `Uint16`, `Int32`, `Uint32`, `Float16` (ES2025), `Float32`, `Float64`, `BigInt64`, `BigUint64`.
+**Definition (§23.2).** A _TypedArray_ is a view over a buffer region with a fixed element type: `Int8`, `Uint8`, `Uint8Clamped`, `Int16`, `Uint16`, `Int32`, `Uint32`, `Float16` (ES2025), `Float32`, `Float64`, `BigInt64`, `BigUint64`.
 
 | Fact | Detail |
-|---|---|
+| --- | --- |
 | Endianness | the **platform's** byte order (little-endian on x86-64 and ARM64 in practice) |
 | Conversion on write | integers wrap modulo 2ⁿ (`Uint8` 257 → 1), `Uint8Clamped` clamps and rounds half to even, floats round to the element precision (`Float16Array` 65520 → `Infinity`, max finite is 65504) |
 | Keys | canonical numeric strings never reach the prototype; out-of-bounds reads give `undefined`, writes are ignored ([module 04](04-objects-prototypes-classes.md)) |
@@ -59,14 +59,14 @@ Engines can reserve `maxByteLength` of virtual address space up front, so growth
 ## 3. Base64 and hex (ES2026)
 
 ```js
-new Uint8Array([251, 255]).toBase64();                                   // '+/8='
+new Uint8Array([251, 255]).toBase64(); // '+/8='
 new Uint8Array([251, 255]).toBase64({ alphabet: 'base64url', omitPadding: true }); // '-_8'
-Uint8Array.fromBase64('+/8=', { alphabet: 'base64url' });                // SyntaxError: wrong alphabet
-Uint8Array.fromBase64('AQ', { lastChunkHandling: 'strict' });            // SyntaxError: missing padding
-Uint8Array.fromBase64('AQ');                                             // [1]   ('loose' is the default)
-new Uint8Array([1, 171]).toHex();                                        // '01ab'
-Uint8Array.fromHex('abc');                                               // SyntaxError: odd length
-target.setFromBase64('AQID');                                            // { read: 4, written: 3 }: decode into existing memory
+Uint8Array.fromBase64('+/8=', { alphabet: 'base64url' }); // SyntaxError: wrong alphabet
+Uint8Array.fromBase64('AQ', { lastChunkHandling: 'strict' }); // SyntaxError: missing padding
+Uint8Array.fromBase64('AQ'); // [1]   ('loose' is the default)
+new Uint8Array([1, 171]).toHex(); // '01ab'
+Uint8Array.fromHex('abc'); // SyntaxError: odd length
+target.setFromBase64('AQID'); // { read: 4, written: 3 }: decode into existing memory
 ```
 
 `lastChunkHandling` is `'loose'` (accept missing padding), `'strict'` (require canonical padding and zero overflow bits) or `'stop-before-partial'` (for streaming decoders). Prefer `'strict'` when validating untrusted input such as JWT segments (with `base64url`).
@@ -75,10 +75,10 @@ target.setFromBase64('AQID');                                            // { re
 
 ## 4. Structured serialisation and `structuredClone`
 
-**Definition (HTML §2.7).** The *structured serialize* / *deserialize* algorithms convert a value into a realm-independent record and recreate it in a target realm. They are used by `structuredClone`, `postMessage` (windows, workers, `MessageChannel`, `BroadcastChannel`), IndexedDB, `history.pushState`, and Node's `worker_threads` and `v8.serialize`.
+**Definition (HTML §2.7).** The _structured serialize_ / _deserialize_ algorithms convert a value into a realm-independent record and recreate it in a target realm. They are used by `structuredClone`, `postMessage` (windows, workers, `MessageChannel`, `BroadcastChannel`), IndexedDB, `history.pushState`, and Node's `worker_threads` and `v8.serialize`.
 
 | Supported | Not supported (`DataCloneError`) | Silently changed |
-|---|---|---|
+| --- | --- | --- |
 | primitives except Symbol (incl. BigInt, `-0`, `NaN`) | functions, classes | **prototype lost**: class instances become plain objects |
 | plain objects, arrays (incl. holes), `Map`, `Set` | Symbols (as values) | Symbol-keyed properties dropped |
 | `Date`, `RegExp` (flags, but `lastIndex` reset), boxed primitives | `WeakMap`, `WeakSet`, `WeakRef` | non-enumerable properties dropped |
@@ -91,7 +91,7 @@ target.setFromBase64('AQID');                                            // { re
 When to use what:
 
 | Need | Use |
-|---|---|
+| --- | --- |
 | deep copy of plain data in-process | `structuredClone` |
 | copy that preserves class instances | a class-specific `clone()` method or a serialisation library |
 | wire format across processes or languages | JSON (with a reviver for dates, BigInts, [module 13](13-correctness-security-pitfalls.md)) or a binary format |
@@ -104,7 +104,7 @@ Framework serialisers extend structured clone's ideas for server→client transf
 
 ## 5. SharedArrayBuffer and cross-origin isolation
 
-**Definition (§25.2).** A `SharedArrayBuffer` holds a *Shared Data Block* that can be referenced by several agents in one agent cluster at the same time. Sending it via `postMessage` or `structuredClone` shares the block instead of copying it.
+**Definition (§25.2).** A `SharedArrayBuffer` holds a _Shared Data Block_ that can be referenced by several agents in one agent cluster at the same time. Sending it via `postMessage` or `structuredClone` shares the block instead of copying it.
 
 After Spectre (January 2018), browsers disabled `SharedArrayBuffer` because it enables high-resolution timers. It returned behind **cross-origin isolation**: the page must be served with
 
@@ -123,8 +123,8 @@ ECMA-262 §29 defines which values a read of shared memory may observe when agen
 
 ### Definitions
 
-- **Events** (§29.2): every access to a Shared Data Block is a *ReadSharedMemory*, *WriteSharedMemory* or *ReadModifyWriteSharedMemory* event, with an **order**: `SeqCst` (sequentially consistent, used by `Atomics`), `Unordered` (normal reads and writes), or `Init`.
-- **Candidate execution** (§29.4): a set of events plus relations: *agent-order* (program order within one agent), *reads-bytes-from*, *synchronizes-with* (an `Atomics` write and a `SeqCst` read of it), and *happens-before*.
+- **Events** (§29.2): every access to a Shared Data Block is a _ReadSharedMemory_, _WriteSharedMemory_ or _ReadModifyWriteSharedMemory_ event, with an **order**: `SeqCst` (sequentially consistent, used by `Atomics`), `Unordered` (normal reads and writes), or `Init`.
+- **Candidate execution** (§29.4): a set of events plus relations: _agent-order_ (program order within one agent), _reads-bytes-from_, _synchronizes-with_ (an `Atomics` write and a `SeqCst` read of it), and _happens-before_.
 - **Happens-before** (§29.6.6): the transitive closure of agent-order and synchronizes-with (plus init ordering). If write W happens-before read R, and nothing writes in between, R sees W.
 - **Race** (§29.8): two events race if they access overlapping memory, at least one is a write, and neither happens-before the other.
 - **Data race** (§29.9): a race where at least one of the events is not `SeqCst` (or they access different ranges in a way atomics cannot order).
@@ -132,10 +132,10 @@ ECMA-262 §29 defines which values a read of shared memory may observe when agen
 ### What you are guaranteed
 
 | Program kind | Guarantee |
-|---|---|
+| --- | --- |
 | **Data-race-free** (every conflicting access ordered by happens-before, typically via `Atomics`) | **sequential consistency**: the program behaves as if all events were interleaved in one global order (§29.7.4, the "DRF-SC" theorem) |
 | Has data races | reads may observe a set of possible values (no "out of thin air" values, but very weak ordering); results can differ between runs, engines and CPUs |
-| Plain accesses | aligned accesses of the element size are *tear free* where the spec requires (§29.7.3): a racing 32-bit read sees one of the written values, not a mix; `Float64` and `BigInt64` accesses may tear |
+| Plain accesses | aligned accesses of the element size are _tear free_ where the spec requires (§29.7.3): a racing 32-bit read sees one of the written values, not a mix; `Float64` and `BigInt64` accesses may tear |
 
 The language guarantees no undefined behaviour in the C sense: a data race cannot crash the engine or corrupt unrelated memory. It just makes the results of the racing accesses non-deterministic.
 
@@ -152,7 +152,7 @@ plain 611766    atomic 800000    expected 800000     (one run on Node 26)
 ### The Atomics API
 
 | Function | Semantics |
-|---|---|
+| --- | --- |
 | `load`, `store` | `SeqCst` read/write |
 | `add`, `sub`, `and`, `or`, `xor`, `exchange` | atomic read-modify-write; return the **old** value |
 | `compareExchange(ta, i, expected, replacement)` | CAS: write only if the current value equals `expected`; returns the old value. Building block for lock-free structures and mutexes |
@@ -165,11 +165,12 @@ plain 611766    atomic 800000    expected 800000     (one run on Node 26)
 A minimal mutex, to show the pattern (production code should use well-tested libraries, and the theory of locks belongs to the DSA track):
 
 ```js
-const UNLOCKED = 0, LOCKED = 1;
+const UNLOCKED = 0,
+  LOCKED = 1;
 function lock(i32, idx) {
   for (let spins = 0; Atomics.compareExchange(i32, idx, UNLOCKED, LOCKED) !== UNLOCKED; spins++) {
-    if (spins < 100) Atomics.pause(spins);           // brief spin
-    else Atomics.wait(i32, idx, LOCKED);             // then sleep until notified
+    if (spins < 100) Atomics.pause(spins); // brief spin
+    else Atomics.wait(i32, idx, LOCKED); // then sleep until notified
   }
 }
 function unlock(i32, idx) {
@@ -185,7 +186,7 @@ function unlock(i32, idx) {
 ## 7. Production failure modes
 
 | Failure | Mechanism | Defence (tested) |
-|---|---|---|
+| --- | --- | --- |
 | Counter totals wrong under load with workers | data race on `a[i]++` | `Atomics.add` or per-worker counters merged at the end |
 | Main thread freezes (browser) or throws | `Atomics.wait` on a thread that cannot block | `Atomics.waitAsync` |
 | `TypeError: Cannot perform … on a detached ArrayBuffer` / silent zero-length views | buffer transferred to a worker or with `transfer()` | do not keep views after transferring; copy if both sides need the data |

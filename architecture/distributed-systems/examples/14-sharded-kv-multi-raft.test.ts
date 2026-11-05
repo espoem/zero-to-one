@@ -98,25 +98,28 @@ test('Module 14: Sharded Multi-Raft Key-Value Store & Handoff', async (t) => {
     assert.equal(group200.get(1, 'order_456'), 'DetailsB');
   });
 
-  await t.test('Shard migration freezes source group and transfers snapshot preserving linearizability', () => {
-    const group100 = new ReplicaGroup(100, [0]);
-    const group200 = new ReplicaGroup(200, []);
+  await t.test(
+    'Shard migration freezes source group and transfers snapshot preserving linearizability',
+    () => {
+      const group100 = new ReplicaGroup(100, [0]);
+      const group200 = new ReplicaGroup(200, []);
 
-    // Initial write to Shard 0 in Group 100
-    group100.put(0, 'user_profile', 'ActiveProfileData');
+      // Initial write to Shard 0 in Group 100
+      group100.put(0, 'user_profile', 'ActiveProfileData');
 
-    // Migration initiated: Group 100 freezes Shard 0 and creates snapshot
-    const snapshot = group100.freezeAndExtractShard(0);
+      // Migration initiated: Group 100 freezes Shard 0 and creates snapshot
+      const snapshot = group100.freezeAndExtractShard(0);
 
-    // Group 100 will now REJECT new writes to Shard 0 (frozen!)
-    assert.equal(group100.put(0, 'user_profile', 'NewStaleData'), false);
+      // Group 100 will now REJECT new writes to Shard 0 (frozen!)
+      assert.equal(group100.put(0, 'user_profile', 'NewStaleData'), false);
 
-    // Group 200 installs snapshot and activates Shard 0
-    group200.assignShard(0, snapshot);
+      // Group 200 installs snapshot and activates Shard 0
+      group200.assignShard(0, snapshot);
 
-    // Group 200 can now serve reads and writes with zero data loss
-    assert.equal(group200.get(0, 'user_profile'), 'ActiveProfileData');
-    assert.equal(group200.put(0, 'user_profile', 'UpdatedProfileData'), true);
-    assert.equal(group200.get(0, 'user_profile'), 'UpdatedProfileData');
-  });
+      // Group 200 can now serve reads and writes with zero data loss
+      assert.equal(group200.get(0, 'user_profile'), 'ActiveProfileData');
+      assert.equal(group200.put(0, 'user_profile', 'UpdatedProfileData'), true);
+      assert.equal(group200.get(0, 'user_profile'), 'UpdatedProfileData');
+    },
+  );
 });

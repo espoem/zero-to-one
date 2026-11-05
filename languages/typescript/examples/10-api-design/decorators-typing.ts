@@ -2,7 +2,7 @@
  * Module 10 — Typing TC39 (standard) decorators. Type-checked only (`npm run typecheck`):
  * Node 26 does not execute decorator syntax, and its type stripping rejects it.
  */
-import { expectTypeOf } from "expect-type";
+import { expectTypeOf } from 'expect-type';
 
 /** A method decorator typed against the method it decorates. */
 export function logged<This, Args extends unknown[], R>(
@@ -53,8 +53,8 @@ export class Service {
   // @ts-expect-error — `retry` only applies to methods returning a Promise
   @retry
   sync(): string {
-    return "x";
+    return 'x';
   }
 }
 
-expectTypeOf<Service["greet"]>().toEqualTypeOf<(name: string) => string>();
+expectTypeOf<Service['greet']>().toEqualTypeOf<(name: string) => string>();

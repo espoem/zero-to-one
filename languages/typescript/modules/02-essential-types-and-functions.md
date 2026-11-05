@@ -1,13 +1,12 @@
 # Module 02: Essential Types & Functions
 
-> Example and tests: [`examples/02-essential-types/essential-types.test.ts`](../examples/02-essential-types/essential-types.test.ts).
-> Run: `mise exec -- node --test examples/02-essential-types/`
+> Example and tests: [`examples/02-essential-types/essential-types.test.ts`](../examples/02-essential-types/essential-types.test.ts). Run: `mise exec -- node --test examples/02-essential-types/`
 
-This module covers the types every TypeScript file uses: primitives and literals, functions, arrays and tuples, `Set`/`Map`, `unknown` at `JSON.parse`, promises and iterators. The build pipeline that used to open this module is now [Module 01](./01-toolchain-and-compiler-model.md). The *runtime* semantics of promises, the job queue and iteration protocols belong to `languages/javascript`; here we cover only how they are typed.
+This module covers the types every TypeScript file uses: primitives and literals, functions, arrays and tuples, `Set`/`Map`, `unknown` at `JSON.parse`, promises and iterators. The build pipeline that used to open this module is now [Module 01](./01-toolchain-and-compiler-model.md). The _runtime_ semantics of promises, the job queue and iteration protocols belong to `languages/javascript`; here we cover only how they are typed.
 
 **The core idea: types are sets of values.** A type denotes the set of runtime values it admits: `string` is the set of all strings, the literal type `"GET"` is the singleton $\{\texttt{"GET"}\}$, `never` is $\varnothing$ and `unknown` is the set of all values. Assignability is (mostly) set inclusion, unions are set union, and narrowing ([Module 03](./03-unions-narrowing-and-control-flow.md)) is set difference. [Module 04](./04-objects-assignability-and-weird-parts.md) states where TypeScript deliberately departs from this model.
 
-**Inference first, annotations at boundaries.** TypeScript infers the types of initialised variables and return values. Annotate function *parameters* (they cannot be inferred from the body), exported APIs (they are contracts and make declaration emit cheap, see [Module 13](./13-library-authoring-performance-and-type-tests.md)), and values whose inferred type is narrower or wider than intended. `const x = "a"` has the literal type `"a"`; `let x = "a"` widens to `string`.
+**Inference first, annotations at boundaries.** TypeScript infers the types of initialised variables and return values. Annotate function _parameters_ (they cannot be inferred from the body), exported APIs (they are contracts and make declaration emit cheap, see [Module 13](./13-library-authoring-performance-and-type-tests.md)), and values whose inferred type is narrower or wider than intended. `const x = "a"` has the literal type `"a"`; `let x = "a"` widens to `string`.
 
 ---
 
@@ -47,6 +46,7 @@ function multiply(x: number, y: number) {
 ```
 
 **When SHOULD you explicitly annotate return types?**
+
 1. **Public APIs / Library Boundaries**: Prevents unintentional breaking contract changes.
 2. **Complex Functions with Multiple Branches**: Ensures every branch returns the intended shape.
 3. **Recursive Functions**: TypeScript often cannot infer recursive return types without assistance.
@@ -100,15 +100,16 @@ function registerHandler(event: string, cb: EventCallback): void {
 ### 2.2.1 Arrays: `T[]` vs. `Array<T>`
 
 Both syntaxes are functionally identical:
+
 ```typescript
 const scores: number[] = [90, 85, 92];
-const names: Array<string> = ["Alice", "Bob"];
+const names: Array<string> = ['Alice', 'Bob'];
 
 // Arrays of objects:
 type UserSummary = { id: string; name: string };
 const users: UserSummary[] = [
-  { id: "u_1", name: "Alice" },
-  { id: "u_2", name: "Bob" },
+  { id: 'u_1', name: 'Alice' },
+  { id: 'u_2', name: 'Bob' },
 ];
 ```
 
@@ -119,7 +120,7 @@ A tuple is an array with a fixed number of elements where each position has a sp
 ```typescript
 // Fixed tuple:
 type KeyValuePair = [string, number];
-const entry: KeyValuePair = ["port", 8080];
+const entry: KeyValuePair = ['port', 8080];
 
 // Named tuple elements (great for documentation in hovers!):
 type LatLng = [latitude: number, longitude: number];
@@ -127,12 +128,12 @@ const london: LatLng = [51.5074, -0.1278];
 
 // Optional tuple elements:
 type RequestConfig = [endpoint: string, retries?: number];
-const req1: RequestConfig = ["/api/v1/users"];
-const req2: RequestConfig = ["/api/v1/users", 3];
+const req1: RequestConfig = ['/api/v1/users'];
+const req2: RequestConfig = ['/api/v1/users', 3];
 
 // Rest elements in tuples:
 type CommandWithFlags = [command: string, ...flags: string[]];
-const gitCmd: CommandWithFlags = ["git", "commit", "-m", "Initial commit"];
+const gitCmd: CommandWithFlags = ['git', 'commit', '-m', 'Initial commit'];
 ```
 
 ### 2.2.3 Sets and Maps
@@ -141,18 +142,19 @@ const gitCmd: CommandWithFlags = ["git", "commit", "-m", "Initial commit"];
 
 ```typescript
 // Set<T>: Restricting collection items
-const allowedRoles = new Set<"admin" | "editor" | "viewer">();
-allowedRoles.add("admin");
+const allowedRoles = new Set<'admin' | 'editor' | 'viewer'>();
+allowedRoles.add('admin');
 // @ts-expect-error: "guest" is not assignable to allowed roles
-allowedRoles.add("guest");
+allowedRoles.add('guest');
 
 // Map<K, V>: Strongly-typed key/value lookups
 const cache = new Map<string, { data: string; timestamp: number }>();
-cache.set("cache_key_1", { data: "cached data", timestamp: Date.now() });
+cache.set('cache_key_1', { data: 'cached data', timestamp: Date.now() });
 
-const cachedItem = cache.get("cache_key_1");
+const cachedItem = cache.get('cache_key_1');
 //    ^? { data: string; timestamp: number } | undefined
 ```
+
 Notice that `.get(...)` on a `Map` always returns `V | undefined` because keys may not exist at runtime.
 
 ### 2.2.4 The Danger of `JSON.parse`
@@ -199,8 +201,8 @@ type UnwrappedScore = Awaited<ScorePromise>;
 ```typescript
 async function fetchDashboard() {
   const [profile, settings] = await Promise.all([
-    Promise.resolve({ name: "Alice" }),
-    Promise.resolve({ theme: "dark" as const }),
+    Promise.resolve({ name: 'Alice' }),
+    Promise.resolve({ theme: 'dark' as const }),
   ]);
   // profile: { name: string }
   // settings: { theme: "dark" }
@@ -210,15 +212,15 @@ async function fetchDashboard() {
 async function loadMetrics() {
   const results = await Promise.allSettled([
     Promise.resolve(100),
-    Promise.reject(new Error("Network failure")),
+    Promise.reject(new Error('Network failure')),
   ]);
 
   for (const res of results) {
-    if (res.status === "fulfilled") {
-      console.log("Success value:", res.value);
+    if (res.status === 'fulfilled') {
+      console.log('Success value:', res.value);
       //                            ^? (property) value: number
     } else {
-      console.error("Reason:", res.reason);
+      console.error('Reason:', res.reason);
       //                       ^? (property) reason: any
     }
   }
@@ -247,17 +249,17 @@ async function fetchUser(userId: string): Promise<UserDto> {
 
   // Validate shape before asserting or returning:
   if (
-    typeof data === "object" &&
+    typeof data === 'object' &&
     data !== null &&
-    "id" in data &&
-    "email" in data &&
-    typeof (data as Record<string, unknown>).id === "string" &&
-    typeof (data as Record<string, unknown>).email === "string"
+    'id' in data &&
+    'email' in data &&
+    typeof (data as Record<string, unknown>).id === 'string' &&
+    typeof (data as Record<string, unknown>).email === 'string'
   ) {
     return data as UserDto;
   }
 
-  throw new Error("Invalid response payload received from server");
+  throw new Error('Invalid response payload received from server');
 }
 ```
 
@@ -268,7 +270,7 @@ async function fetchUser(userId: string): Promise<UserDto> {
 Iteration protocols (`[Symbol.iterator]`, `next()`, `return()`) are specified by ECMAScript and taught in `languages/javascript`. Their types:
 
 | Type | Meaning |
-|---|---|
+| --- | --- |
 | `Iterator<T, TReturn = any, TNext = any>` | An object with `next(...[value]: [] \| [TNext]): IteratorResult<T, TReturn>` |
 | `IteratorResult<T, TReturn>` | `{ done?: false; value: T } \| { done: true; value: TReturn }`: a discriminated union on `done` |
 | `Iterable<T>` | Has `[Symbol.iterator](): Iterator<T>`; accepted by `for…of`, spread, `Array.from` |
@@ -293,7 +295,7 @@ The example's generator `ids(): Generator<number, "done", undefined>` shows `Ite
 ## Anti-Patterns vs. Best Practices
 
 | Anti-Pattern | Best Practice | Why |
-| :--- | :--- | :--- |
+| :-- | :-- | :-- |
 | **Over-annotating inferred variables**<br>`const count: number = 0;`<br>`const name: string = "Alice";` | **Rely on natural inference**<br>`const count = 0;`<br>`const name = "Alice";` | Redundant annotations clutter code and prevent TypeScript from inferring precise literal types (`"Alice"` vs `string`). |
 | **Blunt casting with `as T` on `JSON.parse`**<br>`const user = JSON.parse(str) as User;` | **Cast to `unknown` and validate**<br>`const raw: unknown = JSON.parse(str);`<br>`const user = validateUser(raw);` | `as User` suppresses all type safety; invalid JSON will crash at runtime when accessing non-existent fields. |
 | **Blocking Dev Server on `tsc` Errors**<br>Halting Vite/Next.js dev server on type errors. | **Run `tsc --noEmit` in CI/watch mode**<br>Fast bundler transpiles; `tsc` runs in separate terminal / CI. | Keeps Hot Module Replacement instantaneous while guaranteeing type verification before production deployment. |
@@ -302,12 +304,12 @@ The example's generator `ids(): Generator<number, "done", undefined>` shows `Ite
 ```typescript
 // ❌ Anti-pattern: Untyped callback
 function processBad(callback: Function) {
-  callback("something", 123); // No compile error if caller expected no args!
+  callback('something', 123); // No compile error if caller expected no args!
 }
 
 // ✅ Best practice: Precise callback type
 function processGood(callback: (message: string, code: number) => void) {
-  callback("ready", 200);
+  callback('ready', 200);
 }
 ```
 
@@ -319,8 +321,7 @@ function processGood(callback: (message: string, code: number) => void) {
 // Shared test helpers for exercises:
 type Expect<T extends true> = T;
 type Equal<X, Y> =
-  (<T>() => T extends X ? 1 : 2) extends
-  (<T>() => T extends Y ? 1 : 2) ? true : false;
+  (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y ? 1 : 2 ? true : false;
 ```
 
 ---
@@ -328,9 +329,11 @@ type Equal<X, Y> =
 ### Exercise 2.1: The Typed Event Bus
 
 #### Problem Description
+
 Implement a type-safe `EventBus` class or helper object that allows subscribing to events and dispatching them with arbitrary payload arguments. The listener must support optional listener tags for debugging.
 
 #### Starter Code
+
 ```typescript
 // TODO: Define the Listener type and event registration signature
 type Listener = unknown;
@@ -346,6 +349,7 @@ type Test1 = Expect<Equal<TestListenerType, true>>;
 ```
 
 #### Hints
+
 1. Functions in TypeScript can take rest parameters `...args: any[]`.
 2. The return type should indicate that the caller does not consume the callback's result.
 
@@ -368,7 +372,7 @@ type Test1 = Expect<Equal<TestListenerType, true>>;
 // Implementation verification:
 const bus: EventBus = {
   on(event, listener, tag) {
-    console.log(`Registered ${tag ?? "anonymous"} on ${event}`);
+    console.log(`Registered ${tag ?? 'anonymous'} on ${event}`);
   },
   emit(event, ...args) {
     console.log(`Emitting ${event} with`, args);
@@ -381,12 +385,15 @@ const bus: EventBus = {
 ### Exercise 2.2: Immutable Geo-Coordinate Cache
 
 #### Problem Description
+
 You are building an in-memory geo-location cache.
+
 1. Define a named tuple `GeoPoint` representing `[latitude: number, longitude: number, altitude?: number]`.
 2. Type a `Map` that maps a string cache key (e.g. `"berlin"`) to a `GeoPoint`.
 3. Type a `Set` of allowed region codes: `"EU" | "US" | "APAC"`.
 
 #### Starter Code
+
 ```typescript
 // TODO: Replace any with proper types
 type GeoPoint = any;
@@ -396,12 +403,15 @@ const coordinateCache = new Map();
 const activeRegions = new Set();
 
 // Tests:
-type TestGeoPoint = Expect<Equal<GeoPoint, [latitude: number, longitude: number, altitude?: number]>>;
+type TestGeoPoint = Expect<
+  Equal<GeoPoint, [latitude: number, longitude: number, altitude?: number]>
+>;
 type TestCache = Expect<Equal<typeof coordinateCache, Map<string, GeoPoint>>>;
-type TestRegions = Expect<Equal<typeof activeRegions, Set<"EU" | "US" | "APAC">>>;
+type TestRegions = Expect<Equal<typeof activeRegions, Set<'EU' | 'US' | 'APAC'>>>;
 ```
 
 #### Hints
+
 1. In named tuples, optional elements are designated with `name?: type`.
 2. `new Map<KeyType, ValueType>()` accepts type arguments directly.
 
@@ -412,21 +422,23 @@ type TestRegions = Expect<Equal<typeof activeRegions, Set<"EU" | "US" | "APAC">>
 type GeoPoint = [latitude: number, longitude: number, altitude?: number];
 
 // 2. Declare the union of allowed regions:
-type RegionCode = "EU" | "US" | "APAC";
+type RegionCode = 'EU' | 'US' | 'APAC';
 
 // 3. Instantiate the generic Map and Set:
 const coordinateCache = new Map<string, GeoPoint>();
 const activeRegions = new Set<RegionCode>();
 
 // 4. Verification:
-type TestGeoPoint = Expect<Equal<GeoPoint, [latitude: number, longitude: number, altitude?: number]>>;
+type TestGeoPoint = Expect<
+  Equal<GeoPoint, [latitude: number, longitude: number, altitude?: number]>
+>;
 type TestCache = Expect<Equal<typeof coordinateCache, Map<string, GeoPoint>>>;
-type TestRegions = Expect<Equal<typeof activeRegions, Set<"EU" | "US" | "APAC">>>;
+type TestRegions = Expect<Equal<typeof activeRegions, Set<'EU' | 'US' | 'APAC'>>>;
 
 // Usage test:
-coordinateCache.set("berlin", [52.5200, 13.4050]);
-coordinateCache.set("zugspitze", [47.4210, 10.9853, 2962]);
-activeRegions.add("EU");
+coordinateCache.set('berlin', [52.52, 13.405]);
+coordinateCache.set('zugspitze', [47.421, 10.9853, 2962]);
+activeRegions.add('EU');
 ```
 
 ---
@@ -434,9 +446,11 @@ activeRegions.add("EU");
 ### Exercise 2.3: Safe Async Batch Loader
 
 #### Problem Description
+
 Implement a typed function `batchFetchResults` that takes an array of URL endpoints, executes them concurrently using `Promise.allSettled`, and returns an object separating successful responses from failed errors.
 
 #### Starter Code
+
 ```typescript
 type BatchFetchOutput<T> = {
   fulfilled: T[];
@@ -446,14 +460,15 @@ type BatchFetchOutput<T> = {
 // TODO: Type and implement batchFetchResults
 async function batchFetchResults<T>(
   urls: string[],
-  fetcher: (url: string) => Promise<T>
+  fetcher: (url: string) => Promise<T>,
 ): Promise<BatchFetchOutput<T>> {
   // Implement here
-  throw new Error("Not implemented");
+  throw new Error('Not implemented');
 }
 ```
 
 #### Hints
+
 1. Use `await Promise.allSettled(urls.map(url => fetcher(url)))`.
 2. Inspect `item.status === "fulfilled"` to narrow the union to `PromiseFulfilledResult<T>`.
 
@@ -467,15 +482,15 @@ type BatchFetchOutput<T> = {
 
 async function batchFetchResults<T>(
   urls: string[],
-  fetcher: (url: string) => Promise<T>
+  fetcher: (url: string) => Promise<T>,
 ): Promise<BatchFetchOutput<T>> {
-  const settled = await Promise.allSettled(urls.map(url => fetcher(url)));
+  const settled = await Promise.allSettled(urls.map((url) => fetcher(url)));
 
   const fulfilled: T[] = [];
   const rejected: string[] = [];
 
   for (const result of settled) {
-    if (result.status === "fulfilled") {
+    if (result.status === 'fulfilled') {
       fulfilled.push(result.value);
     } else {
       const errorMessage =
@@ -489,7 +504,7 @@ async function batchFetchResults<T>(
 
 // Verification test:
 async function testBatch() {
-  const result = await batchFetchResults(["/a", "/b"], async (u) => ({ url: u, data: 123 }));
+  const result = await batchFetchResults(['/a', '/b'], async (u) => ({ url: u, data: 123 }));
   type TestResult = Expect<Equal<typeof result, BatchFetchOutput<{ url: string; data: number }>>>;
 }
 ```
@@ -499,9 +514,11 @@ async function testBatch() {
 ### Exercise 2.4: Safe JSON Parser with Runtime Fallback
 
 #### Problem Description
+
 Write a helper function `parseJsonWithFallback<T>` that parses a raw JSON string. If parsing fails or returns invalid non-object data, it returns a provided default fallback value. The return type must be guaranteed to be `T`.
 
 #### Starter Code
+
 ```typescript
 // TODO: Annotate and implement parseJsonWithFallback
 function parseJsonWithFallback(jsonString: any, fallback: any): any {
@@ -514,6 +531,7 @@ type TestParsed = Expect<Equal<typeof parsed, { port: number }>>;
 ```
 
 #### Hints
+
 1. Avoid typing the parameter or return as `any`.
 2. Catch errors in a `try...catch` block.
 3. Use a type predicate or validation check before casting or returning.
@@ -527,9 +545,9 @@ function parseJsonWithFallback<T>(jsonString: string, fallback: T): T {
 
     // If both fallback and parsed are objects, verify compatibility:
     if (
-      typeof parsed === "object" &&
+      typeof parsed === 'object' &&
       parsed !== null &&
-      typeof fallback === "object" &&
+      typeof fallback === 'object' &&
       fallback !== null
     ) {
       return parsed as T;
@@ -549,7 +567,7 @@ function parseJsonWithFallback<T>(jsonString: string, fallback: T): T {
 const parsedConfig = parseJsonWithFallback('{"port": 3000}', { port: 8080 });
 type TestParsed = Expect<Equal<typeof parsedConfig, { port: number }>>;
 
-const parsedNumber = parseJsonWithFallback("42", 0);
+const parsedNumber = parseJsonWithFallback('42', 0);
 type TestNumber = Expect<Equal<typeof parsedNumber, number>>;
 ```
 
@@ -564,7 +582,7 @@ type TestNumber = Expect<Equal<typeof parsedNumber, number>>;
 
 <details><summary>2. Why is a callback typed <code>() =&gt; void</code> allowed to return a number?</summary>
 
-A `void` return in a *function type* means "the caller ignores the result", so any function is assignable to it (this is what lets `arr.forEach(x => list.push(x))` compile). A function *declaration* annotated `: void` may not return a value.
+A `void` return in a _function type_ means "the caller ignores the result", so any function is assignable to it (this is what lets `arr.forEach(x => list.push(x))` compile). A function _declaration_ annotated `: void` may not return a value.
 </details>
 
 <details><summary>3. Why does <code>map.has(k)</code> not narrow <code>map.get(k)</code>?</summary>

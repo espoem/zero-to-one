@@ -19,8 +19,8 @@ Extend the value domain of a computation $c$ from $V$ to $V \cup \{\bot\}$, wher
 - **Propagation.** A computation that reads $\bot$ is itself $\bot$ for that run. So `fullName = first() + last()` over an async `first` is not ready without being declared async: that is the "colourless" part.
 
 ```ts
-const user = createMemo(() => fetchUser(id()));      // async memo — no createResource
-const title = createMemo(() => `${user().name}!`);   // sync code over async data
+const user = createMemo(() => fetchUser(id())); // async memo — no createResource
+const title = createMemo(() => `${user().name}!`); // sync code over async data
 ```
 
 You can also throw `new NotReadyError(...)` yourself to mark a derived value not ready (proved: `derived` throws until its source is set). That is a library-author tool.
@@ -31,7 +31,7 @@ Dependencies are recorded while the computation runs synchronously. After the fi
 
 ```ts
 const items = createMemo(async () => {
-  const q = query();                 // ✅ tracked
+  const q = query(); // ✅ tracked
   const res = await fetchItems();
   return res.filter((i) => i.tag === q);
 });
@@ -43,7 +43,7 @@ A computation that returns an AsyncIterable updates its value on every yield (pr
 
 ```ts
 const price = createMemo(() => from(ticker(symbol())));
-const label = createMemo(() => format(price()));      // transform downstream, not in a for-await
+const label = createMemo(() => format(price())); // transform downstream, not in a for-await
 ```
 
 ### 1.4 How "not ready" travels: the rc.19 mechanics
@@ -81,12 +81,12 @@ sequenceDiagram
 `from(source)` turns a push source into a value a computation can return:
 
 | Source shape | Example | Lifecycle |
-|---|---|---|
+| --- | --- | --- |
 | subscribe function `(next, error, complete) => unsubscribe` | WebSocket wrapper, event emitter | subscribed when the computation runs; unsubscribed when it re-runs or is disposed (proved) |
 | Observable (`Symbol.observable`, RxJS) | `from(rx$)` | same |
 | AsyncIterable | `from(stream)` | iterated; `return()` called on re-run/disposal |
 
-Keep the latest value only: a subscription is a *signal over time*, not a log. Transform downstream in another memo (`const label = createMemo(() => format(price()))`), not inside the subscription callback. Under SSR a subscription renders its first value, then the client resubscribes after hydration (`ssrSource: "hybrid"` behaviour for streams).
+Keep the latest value only: a subscription is a _signal over time_, not a log. Transform downstream in another memo (`const label = createMemo(() => format(price()))`), not inside the subscription callback. Under SSR a subscription renders its first value, then the client resubscribes after hydration (`ssrSource: "hybrid"` behaviour for streams).
 
 ## 2. `<Loading>`: branch readiness, not "is fetching"
 
@@ -96,7 +96,7 @@ Keep the latest value only: a subscription is a *signal over time*, not a log. T
 </Loading>
 ```
 
-`<Loading>` shows its fallback while its subtree *has not yet produced content* because something it reads is $\bot$. Once the branch has shown content, **revalidation keeps the content visible**: a changed input is answered in the background and the new value replaces the old one when it lands (proved: `Ada` stays on screen while id 2 loads, then `Grace` appears; the fallback never comes back).
+`<Loading>` shows its fallback while its subtree _has not yet produced content_ because something it reads is $\bot$. Once the branch has shown content, **revalidation keeps the content visible**: a changed input is answered in the background and the new value replaces the old one when it lands (proved: `Ada` stays on screen while id 2 loads, then `Grace` appears; the fallback never comes back).
 
 Why: a spinner replacing content the user was reading is worse UX than slightly stale content plus an "updating" hint. That hint is `isPending`.
 
@@ -107,21 +107,23 @@ When a write makes something on screen $\bot$ (id changes, the profile refetches
 ### 2.2 `on`: show the fallback again
 
 ```tsx
-<Loading on={id()} fallback={<Spinner />}><Comments /></Loading>
+<Loading on={id()} fallback={<Spinner />}>
+  <Comments />
+</Loading>
 ```
 
 `on` is a **dependency list**, not a key: its value is never compared, only what it reads matters. When something it reads changes, the boundary stops holding its current content and shows the fallback while its subtree is pending (proved: `c1 → spinner → c2`). Use `on={[a(), b()]}` for several dependencies. `on` takes a value: `on={() => id()}` hands the boundary a function that nothing calls, so it never notifies.
 
 The fallback **follows the frame**: it appears together with the change that caused it, not beside a page that does not yet reflect the change.
 
-**Gotcha: `LOADING_ON_OUTSIDE_HOLD`.** If the same data is also read *outside* the boundary (a header showing `comments().length` under a different `<Loading>`), that outside read holds the frame until the data lands, so the boundary's fallback can never be seen. Proved: no `spinner` ever appears, and dev warns `LOADING_ON_OUTSIDE_HOLD`. Fix the structure: move the outside read under the boundary so one hold owns the data. (Upstream note dated 2026-10-06: how a re-armed boundary treats data an earlier change still holds is "deferred to a separate change". Re-check this after each RC bump.)
+**Gotcha: `LOADING_ON_OUTSIDE_HOLD`.** If the same data is also read _outside_ the boundary (a header showing `comments().length` under a different `<Loading>`), that outside read holds the frame until the data lands, so the boundary's fallback can never be seen. Proved: no `spinner` ever appears, and dev warns `LOADING_ON_OUTSIDE_HOLD`. Fix the structure: move the outside read under the boundary so one hold owns the data. (Upstream note dated 2026-10-06: how a re-armed boundary treats data an earlier change still holds is "deferred to a separate change". Re-check this after each RC bump.)
 
 ### 2.3 `<Reveal>`: coordinating siblings
 
 `<Reveal>` (replaces `<SuspenseList>`) orders the reveal of sibling `<Loading>` boundaries:
 
 | `order` | Behaviour | Proved |
-|---|---|---|
+| --- | --- | --- |
 | `"sequential"` (default) | reveal in DOM order; a later boundary waits until every earlier one has revealed | B resolved first but stayed on its fallback until A resolved |
 | `"together"` | all keep their fallbacks until every one is ready | yes |
 | `"natural"` | each reveals on its own; useful when nested as one slot of an outer group | — |
@@ -134,10 +136,10 @@ The fallback **follows the frame**: it appears together with the change that cau
 
 `isPending(() => x())` is `true` while **a change to `x` is in flight**: an input of `x` changed and the new answer has not landed, or in-flight work declared it will change `x` (`affects`). It performs the read, so place it under the same `<Loading>` that owns `x`'s first load.
 
-**`isPending` is not 1.x `.loading`.** A re-ask of the *same* question is silent:
+**`isPending` is not 1.x `.loading`.** A re-ask of the _same_ question is silent:
 
 | Situation | `isPending` |
-|---|---|
+| --- | --- |
 | first load (boundary shows fallback) | `false` (the boundary owns it) |
 | input changed, refetch in flight | **`true`** (proved) |
 | bare `refresh(x)` / polling | **`false`** — the shown data still answers the question (proved) |
@@ -148,7 +150,7 @@ For process affordances ("saving…", a disabled reload button), use an optimist
 
 ### 3.2 `latest(fn)`
 
-`latest(id)` reads the **in-flight** value during a hold. Proved: while id 2 loads, the frame shows `committed 1 / latest 2`. Use it for a fallback or indicator that names *what* is loading. `latest` escapes the transaction but not its own lane: a `latest()` view still waits for any *rendered* async derived from it, so it is never shown beside a half-computed derivation of itself.
+`latest(id)` reads the **in-flight** value during a hold. Proved: while id 2 loads, the frame shows `committed 1 / latest 2`. Use it for a fallback or indicator that names _what_ is loading. `latest` escapes the transaction but not its own lane: a `latest()` view still waits for any _rendered_ async derived from it, so it is never shown beside a half-computed derivation of itself.
 
 ### 3.3 `createDeferred(fn)`
 
@@ -165,12 +167,12 @@ A memo that **may lag but never leads** (React's `useDeferredValue`): after its 
 
 ## 4. Cancellation
 
-Solid drops a superseded run's *result* automatically. Stopping the *work* is the run's job:
+Solid drops a superseded run's _result_ automatically. Stopping the _work_ is the run's job:
 
 ```ts
 const results = createMemo(async () => {
   const ac = new AbortController();
-  onCleanup(() => ac.abort());          // must be registered BEFORE the first await
+  onCleanup(() => ac.abort()); // must be registered BEFORE the first await
   return (await fetch(`/search?q=${query()}`, { signal: ac.signal })).json();
 });
 ```
@@ -182,16 +184,16 @@ Rules (RFC 05):
 3. **The run on screen stays live until its replacement lands.** Its subscriptions and timers keep running because it is what the user sees.
 4. **Deadlock trap:** never wait on that on-screen run's cleanup from inside the transition that replaces it (for example an action awaiting a promise resolved in a memo's `onCleanup`). The cleanup only runs after the replacement lands, and the replacement waits for you.
 
-An iterable *returned* from the compute is closed on re-run. An iterable you `for await` *inside* an async compute is yours; wrap it in `from()` so a re-run stops it.
+An iterable _returned_ from the compute is closed on re-run. An iterable you `for await` _inside_ an async compute is yours; wrap it in `from()` so a re-run stops it.
 
 ### 4.1 Races, formally
 
-Let a computation $c$ start flights $f_1, f_2, \ldots$ as its inputs change, each flight tagged with the run that started it. Solid's rule is **last-run-wins**: when $f_i$ settles, its value is accepted only if the run that started it is still the current run of $c$; otherwise it is discarded. Responses may arrive in any order, but the committed value always corresponds to the latest inputs. That removes the classic "search results for an old query overwrite the new ones" bug without any user code (proved by the out-of-order test). Cancellation (above) is the *efficiency* half: dropping the result does not stop the network request; aborting does.
+Let a computation $c$ start flights $f_1, f_2, \ldots$ as its inputs change, each flight tagged with the run that started it. Solid's rule is **last-run-wins**: when $f_i$ settles, its value is accepted only if the run that started it is still the current run of $c$; otherwise it is discarded. Responses may arrive in any order, but the committed value always corresponds to the latest inputs. That removes the classic "search results for an old query overwrite the new ones" bug without any user code (proved by the out-of-order test). Cancellation (above) is the _efficiency_ half: dropping the result does not stop the network request; aborting does.
 
 Two places where the rule does **not** protect you:
 
 - **Effects that fetch** (`createEffect(() => q(), async (q) => setResults(await search(q)))`): the effect's apply runs for every value and each `await` continuation writes whenever it resolves, so the oldest response can land last. Use an async memo.
-- **Shared caches outside the graph** keyed by input: the graph discards a stale *result*, but a cache you wrote from inside the flight is already polluted. Write caches only from the value that landed.
+- **Shared caches outside the graph** keyed by input: the graph discards a stale _result_, but a cache you wrote from inside the flight is already polluted. Write caches only from the value that landed.
 
 ### 4.2 `refresh` as a settle point
 
@@ -202,8 +204,12 @@ Two places where the rule does **not** protect you:
 Async errors flow through the graph like values and are caught by **`<Errored>`** (replaces `<ErrorBoundary>`):
 
 ```tsx
-<Errored fallback={(err, reset) => <button onClick={() => reset()}>Retry: {String(err().message)}</button>}>
-  <Loading fallback={<Spinner />}><Page /></Loading>
+<Errored
+  fallback={(err, reset) => <button onClick={() => reset()}>Retry: {String(err().message)}</button>}
+>
+  <Loading fallback={<Spinner />}>
+    <Page />
+  </Loading>
 </Errored>
 ```
 
@@ -218,10 +224,10 @@ Async errors flow through the graph like values and are caught by **`<Errored>`*
 Boundaries are UX decisions. The engine gives three answers to "something under here is not ready", and you choose per subtree:
 
 | Want | Tool |
-|---|---|
+| --- | --- |
 | show a placeholder until the subtree first has data | `<Loading fallback>` around it |
 | keep the old content, hint that it is updating | nothing extra (holds) + `isPending(() => x())` |
-| replace content with a placeholder when *this* input changes | `<Loading on={input()}>` |
+| replace content with a placeholder when _this_ input changes | `<Loading on={input()}>` |
 | show provisional real UI | `loadingValue` / `seedLoadingValue` |
 | reveal several placeholders in a controlled order | `<Reveal>` |
 | contain failures | `<Errored>` (outside the `<Loading>` it protects, so a failed first load shows the error, not an eternal spinner) |
@@ -242,12 +248,13 @@ flowchart TD
 
 ```tsx
 function Search() {
-  const [query, setQuery] = createSignal("");
-  const results = createDeferred(async () => {            // lags but never leads: no flashing
-    const q = query();                                     // read before the first await
+  const [query, setQuery] = createSignal('');
+  const results = createDeferred(async () => {
+    // lags but never leads: no flashing
+    const q = query(); // read before the first await
     if (q.length < 2) return [] as Hit[];
     const ac = new AbortController();
-    onCleanup(() => ac.abort());                           // abort superseded keystrokes
+    onCleanup(() => ac.abort()); // abort superseded keystrokes
     const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`, { signal: ac.signal });
     if (!res.ok) throw new Error(`search failed: ${res.status}`);
     return (await res.json()) as Hit[];
@@ -255,10 +262,20 @@ function Search() {
   return (
     <>
       <input value={query()} onInput={(e) => setQuery(e.currentTarget.value)} />
-      <Errored fallback={(err, reset) => <p>{err().message} <button onClick={() => reset()}>retry</button></p>}>
+      <Errored
+        fallback={(err, reset) => (
+          <p>
+            {err().message} <button onClick={() => reset()}>retry</button>
+          </p>
+        )}
+      >
         <Loading fallback={<p>Searching…</p>}>
-          <p class={{ dim: isPending(() => results()) }}>{results().length} hits for “{latest(query)}”</p>
-          <For each={results()} keyed={(h) => h.id}>{(h) => <Row hit={h()} />}</For>
+          <p class={{ dim: isPending(() => results()) }}>
+            {results().length} hits for “{latest(query)}”
+          </p>
+          <For each={results()} keyed={(h) => h.id}>
+            {(h) => <Row hit={h()} />}
+          </For>
         </Loading>
       </Errored>
     </>
@@ -287,22 +304,22 @@ sequenceDiagram
 ## 7. Then vs now
 
 | 1.x (≤ 1.9) | 2.0 RC | Why it changed | Migration |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `createResource(id, fetcher)` → `[data, { refetch, mutate }]`, typed `T \| undefined` | `createMemo(() => fetcher(id()))`, typed `T` | one model for sync and async | wrap reads in `<Loading>` |
 | `data.loading` | `<Loading>` for first load; `isPending(() => data())` for in-flight changes | loading is structural | note: bare `refresh` is not pending |
-| `data.error` / inline branching | `<Errored>` / effect `error` arm | one error path, SSR-visible | |
+| `data.error` / inline branching | `<Errored>` / effect `error` arm | one error path, SSR-visible |  |
 | `refetch()` | `refresh(data)` (returns a promise of the next quiescent state) | standalone, works on any derived source | `affects(x); refresh(x)` to read as pending |
 | `mutate(v)` | `createOptimisticStore` + `action` | granular, reconciled, race-safe | Module 07 |
 | `<Suspense>` / `<SuspenseList>` | `<Loading>` / `<Reveal>` | names match the role | revalidation no longer re-suspends |
-| `<ErrorBoundary>` + `resetErrorBoundaries` | `<Errored>`; boundaries self-heal | | |
+| `<ErrorBoundary>` + `resetErrorBoundaries` | `<Errored>`; boundaries self-heal |  |  |
 | `startTransition` / `useTransition` | built in (holds), multiple in flight | transitions are scheduling | delete; use `isPending` / optimistic APIs |
-| `createResource({ initialValue })` | `loadingValue` / `seedLoadingValue` | honest placeholders | |
+| `createResource({ initialValue })` | `loadingValue` / `seedLoadingValue` | honest placeholders |  |
 | `ssrLoadFrom`, `deferStream` on resources | `ssrSource`, `deferStream` on any computation | per-primitive SSR policy | Module 08 |
 
 ### 7.1 Then vs now: the async machinery
 
-| | 1.x | 2.0 RC |
-|---|---|---|
+|  | 1.x | 2.0 RC |
+| --- | --- | --- |
 | Where async lives | a separate primitive (`createResource`) wrapping a fetcher; readers got `T \| undefined` | any computation; readers get `T` or "not ready" |
 | Suspension mechanism | reading a resource inside `<Suspense>` incremented the boundary's counter (`SuspenseContext`) | `NotReadyError` thrown through computations, status propagated, boundaries track frame readers |
 | Race handling | resource kept the latest fetch, earlier promises ignored | last-run-wins for every computation, plus iterator close / `onCleanup` abort on supersede |
@@ -314,19 +331,19 @@ sequenceDiagram
 
 ### 7.2 Failure modes proved by negative tests
 
-| Failure | Test (`06-colorless-async.test.tsx`) |
-|---|---|
-| input read after `await` | `UNTRACKED_READ_AFTER_AWAIT` |
-| cleanup registered after `await` | stale request not aborted |
-| fallback that can never show | `LOADING_ON_OUTSIDE_HOLD` |
-| pending read in a component body | `PENDING_ASYNC_UNTRACKED_READ` → halt |
-| no boundary above async UI | `ASYNC_OUTSIDE_LOADING_BOUNDARY`, mount deferred |
-| out-of-order responses | stale answer dropped (positive proof of the guarantee) |
+| Failure                          | Test (`06-colorless-async.test.tsx`)                   |
+| -------------------------------- | ------------------------------------------------------ |
+| input read after `await`         | `UNTRACKED_READ_AFTER_AWAIT`                           |
+| cleanup registered after `await` | stale request not aborted                              |
+| fallback that can never show     | `LOADING_ON_OUTSIDE_HOLD`                              |
+| pending read in a component body | `PENDING_ASYNC_UNTRACKED_READ` → halt                  |
+| no boundary above async UI       | `ASYNC_OUTSIDE_LOADING_BOUNDARY`, mount deferred       |
+| out-of-order responses           | stale answer dropped (positive proof of the guarantee) |
 
 ## 8. Production failure modes
 
 | Symptom | Cause | Fix |
-|---|---|---|
+| --- | --- | --- |
 | Results never update when the filter changes | input read after `await` (`UNTRACKED_READ_AFTER_AWAIT`) | read inputs before the first `await` |
 | Stale requests pile up while typing (`ABANDONED_FLIGHTS` in attribution) | no cancellation, or cleanup registered after `await` | `onCleanup(() => ac.abort())` before the first `await`; `createDeferred` |
 | "Updating" indicator never shows on reload | bare `refresh` is quiet | `affects(x); refresh(x)` or an optimistic flag |
@@ -352,7 +369,7 @@ It covers branch readiness: once a branch has shown content, a change that makes
 
 <details><summary>3. Contrast `isPending` with 1.x `resource.loading`.</summary>
 
-`.loading` was true for every fetch. `isPending` is true only while a value *change* is in flight: an input changed or `affects()` declared one. A bare `refresh()` or poll is quiet. First load is `false` too, because the boundary owns it. For "saving…" use an optimistic flag.
+`.loading` was true for every fetch. `isPending` is true only while a value _change_ is in flight: an input changed or `affects()` declared one. A bare `refresh()` or poll is quiet. First load is `false` too, because the boundary owns it. For "saving…" use an optimistic flag.
 </details>
 
 <details><summary>4. Why must reads happen before the first `await` in an async memo?</summary>

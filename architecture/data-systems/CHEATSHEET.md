@@ -7,8 +7,9 @@ A high-density reference sheet for foundational storage engine design, database 
 ## 1. Relational Algebra & Normal Form Matrix
 
 ### Algebraic Primitives
+
 | Operation | Symbol | Algebraic Definition | SQL Equivalent |
-| :--- | :---: | :--- | :--- |
+| :-- | :-: | :-- | :-- |
 | **Selection** | $\sigma_\phi(R)$ | $\{t \in R \mid \phi(t)\}$ | `SELECT * FROM R WHERE phi` |
 | **Projection** | $\pi_{A_1,\dots,A_k}(R)$ | $\{t[A_1,\dots,A_k] \mid t \in R\}$ (set distinct) | `SELECT DISTINCT A1, ... FROM R` |
 | **Cartesian Product** | $R \times S$ | $\{(r, s) \mid r \in R \land s \in S\}$ | `SELECT * FROM R CROSS JOIN S` |
@@ -17,6 +18,7 @@ A high-density reference sheet for foundational storage engine design, database 
 | **Theta Join** | $R \bowtie_\theta S$ | $\sigma_\theta(R \times S)$ | `SELECT * FROM R JOIN S ON theta` |
 
 ### Normal Form Verification Checklist
+
 ```
 1NF: All attribute values atomic (no arrays/nested records, scalar domains only).
  └── 2NF: 1NF + No partial dependencies (every non-prime attribute depends on full candidate key).
@@ -31,6 +33,7 @@ A high-density reference sheet for foundational storage engine design, database 
 ## 2. Storage Engines: Slotted Pages, B+Trees & LSM-Trees
 
 ### Slotted Page Structure & Compaction
+
 ```
 +------------------------------------------------------------------------------------+
 | Page Header | Slot 0 | Slot 1 | Slot 2 | ... | Free Space | Tuple 2 | Tuple 1 | Tuple 0 |
@@ -38,10 +41,12 @@ A high-density reference sheet for foundational storage engine design, database 
 +------------------------------------------------------------------------------------+
 0             ^--- Slot Array grows DOWN --->      <--- Tuple bytes grow UP ---^     PageSize (8KB)
 ```
+
 - **Tuple ID (RID)**: `(PageNumber: 32-bit, SlotIndex: 16-bit)` indirection pointer.
 - **Compaction**: Retains slot indices; shifts remaining tuple bytes contiguous to high memory; updates `free_space_offset`.
 
 ### B+Tree Node Capacity & Split Rules
+
 - **Order $M$**: Maximum child pointers per internal node.
 - **Node Keys**: Internal node holds $M-1$ keys and $M$ pointers. Leaf node holds up to $L$ data tuples.
 - **Leaf Split**: When keys $= L+1$, split into:
@@ -52,14 +57,17 @@ A high-density reference sheet for foundational storage engine design, database 
   - **Push** (move) median key up to parent (key is removed from internal node).
 
 ### LSM-Tree Write & Read Amplification
+
 | Metric | Size-Tiered Compaction (STCS) | Leveled Compaction (LCS, $T=10$) | B+Tree (Random Writes) |
-| :--- | :---: | :---: | :---: |
+| :-- | :-: | :-: | :-: |
 | **Write Amplification ($WA$)** | Low: $O(\log_T N)$ ($\sim 2 - 8$) | High: $O(T \cdot \log_T N)$ ($\sim 10 - 30$) | Very High: $O(\text{PageSize} / \text{RowSize})$ ($\sim 30 - 100$) |
 | **Read Amplification ($RA$)** | High: Checks all runs per tier | Low: 1 SSTable per level ($\le L$) | Lowest: Exactly $h = \log_B N$ seeks ($\sim 3 - 4$) |
 | **Space Amplification ($SA$)** | High: Up to $100\%$ extra capacity | Low: Typically $\sim 10\% - 20\%$ | Moderate: 33% empty space (67% page fill) |
 
 ### The RUM Trade-Off Triangle
+
 $$\text{Read Overhead} + \text{Update Overhead} + \text{Memory/Storage Overhead} \ge \text{Constant}$$
+
 - **B+Tree**: Minimizes Read; accepts higher Update and Memory overhead.
 - **LSM-Tree**: Minimizes Update; accepts higher Read and temporary Space overhead.
 - **Fractal Tree / Inverted Index**: Minimizes Read & Update; consumes high Memory overhead.
@@ -69,13 +77,16 @@ $$\text{Read Overhead} + \text{Update Overhead} + \text{Memory/Storage Overhead}
 ## 3. Indexing & Vector Search Quick Reference
 
 ### Okapi BM25 Lexical Ranking
+
 $$\text{Score}(D, Q) = \sum_{i=1}^{n} \text{IDF}(q_i) \cdot \frac{f(q_i, D) \cdot (k_1 + 1)}{f(q_i, D) + k_1 \cdot \left(1 - b + b \cdot \frac{|D|}{\text{avgdl}}\right)}$$
+
 - $k_1 \in [1.2, 2.0]$: Term frequency saturation (higher = more sensitive to repeated terms).
 - $b \in [0.75]$: Document length penalty ($b=1 \implies$ full length penalty; $b=0 \implies$ no length normalization).
 
 ### Vector Search: Index Types & Quantization
+
 | Index / Quantizer | Search Complexity | Memory Footprint | Recall @ 10 | Primary Seam |
-| :--- | :---: | :---: | :---: | :--- |
+| :-- | :-: | :-: | :-: | :-- |
 | **Flat (Brute-Force)** | $O(N \cdot d)$ | $100\%$ (Raw float32) | $1.00$ ($100\%$) | Small datasets ($N < 50{,}000$) |
 | **IVF (Inverted File)** | $O(n_{\text{probe}} \cdot \frac{N}{K} \cdot d)$ | $100\%$ | $0.80 - 0.95$ | Medium datasets, fast build |
 | **HNSW (Hierarchical Graph)** | $O(\log N \cdot d)$ | $120\% - 150\%$ (Graph edges) | $0.95 - 0.99$ | Low latency, high memory budget |
@@ -87,6 +98,7 @@ $$\text{Score}(D, Q) = \sum_{i=1}^{n} \text{IDF}(q_i) \cdot \frac{f(q_i, D) \cdo
 ## 4. Buffer Management & OS I/O Mechanics
 
 ### Page Replacement State Machines
+
 - **CLOCK**: Frame has usage bit $u \in \{0, 1\}$.
   - On Page Hit: Set $u \leftarrow 1$ (atomic bitwise OR, no mutex lock).
   - On Page Fault: Hand sweeps circularly. If $u=1 \rightarrow u \leftarrow 0$, advance hand; If $u=0 \rightarrow$ victim found, evict.
@@ -96,8 +108,9 @@ $$\text{Score}(D, Q) = \sum_{i=1}^{n} \text{IDF}(q_i) \cdot \frac{f(q_i, D) \cdo
   - $Am$ (LRU): Promoted only if hit occurs while in $A1\text{out}$ (prevents sequential scan pollution).
 
 ### Operating System I/O Modes
+
 | Feature | Standard OS Page Cache (`read`/`write`) | Direct I/O (`O_DIRECT`) | Memory-Mapped (`mmap`) |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Buffering** | Double buffering (Kernel cache + DB pool) | Single buffer (DB buffer pool only) | OS Page cache only |
 | **WAL Invariant** | Kernel writeback may flush before WAL sync | Explicit, deterministic `fsync()` order | **Breaks invariant** (kernel evicts dirty pages) |
 | **Eviction Policy** | OS heuristic (Kernel LRU/inactive list) | Database-controlled (2Q, CLOCK, LIRS) | OS heuristic |
@@ -108,8 +121,9 @@ $$\text{Score}(D, Q) = \sum_{i=1}^{n} \text{IDF}(q_i) \cdot \frac{f(q_i, D) \cdo
 ## 5. Transactions, ACID & Isolation Anomaly Hierarchy
 
 ### Formal Anomaly Taxonomy (Berenson 1995 / Adya 1999)
+
 | Code | Anomaly Name | Conflict Pattern | Prevented By |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **$G0$** | Dirty Write | $w_1[x] \dots w_2[x] \dots (c_1 \lor a_1)$ | Read Uncommitted |
 | **$A1$** | Dirty Read | $w_1[x] \dots r_2[x] \dots (a_1 \text{ or } c_1)$ | Read Committed |
 | **$P4$ / $G\text{-upd}$** | Lost Update | $r_1[x] \dots r_2[x] \dots w_1[x] \dots w_2[x] \dots c_1$ | Snapshot Isolation |
@@ -119,7 +133,8 @@ $$\text{Score}(D, Q) = \sum_{i=1}^{n} \text{IDF}(q_i) \cdot \frac{f(q_i, D) \cdo
 | **$G\text{-read}$** | Read Skew | $r_1[x] \dots w_2[x] \dots w_2[y] \dots c_2 \dots r_1[y]$ | Snapshot Isolation |
 
 ### MVCC Snapshot Visibility Invariants
-$$\text{Visible}(T_{\text{snapshot}}, \text{row}) \iff \begin{cases} 
+
+$$ \text{Visible}(T_{\text{snapshot}}, \text{row}) \iff \begin{cases}
 \text{row.xmin} \in \text{Committed} \land \text{row.xmin} < T_{\text{snapshot.id}} \land \text{row.xmin} \notin \text{ActiveTxns} \\
 \land \; (\text{row.xmax} = 0 \lor \text{row.xmax} > T_{\text{snapshot.id}} \lor \text{row.xmax} \in \text{ActiveTxns} \lor \text{row.xmax} \in \text{Aborted})
 \end{cases}$$
@@ -144,9 +159,7 @@ Log Stream: ----C-------[Smallest recLSN in DPT]--------CRASH
 2. Redo:                +-------------------------------->+  Scan forward from min(recLSN). Repeat History.
 3. Undo:                <---------------------------------+  Scan backward. Roll back Losers. Write CLRs.
 ```
-- **Compensation Log Record (CLR)**:
-  `[LSN, TxnId, Type=CLR, UndoNextLSN=PrevLSN, Action]`
-  *Infallible idempotency: Recovery never undos a CLR.*
+- **Compensation Log Record (CLR)**: `[LSN, TxnId, Type=CLR, UndoNextLSN=PrevLSN, Action]` *Infallible idempotency: Recovery never undos a CLR.*
 
 ---
 
@@ -215,7 +228,7 @@ Encoding 300 (0x012C):
 ```
 
 ### ZigZag Signed Encoding Formula
-$$\text{ZigZag}(n) = \begin{cases} 
+$$\text{ZigZag}(n) = \begin{cases}
 (n \ll 1) \oplus (n \gg 31) & \text{for 32-bit signed integer} \\
 (n \ll 1) \oplus (n \gg 63) & \text{for 64-bit signed integer}
 \end{cases}$$
@@ -265,3 +278,4 @@ $$\text{If Partition }(P) \implies \text{Choose } [A \text{ vs } C] \quad \mathb
           - Strict ACID serializability                   - Dictionary / RLE compression
           - Examples: PostgreSQL, Spanner                 - Examples: Snowflake, ClickHouse, DuckDB
 ```
+$$

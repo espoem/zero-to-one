@@ -41,6 +41,7 @@ flowchart TD
 ```
 
 ### 1. Node Failure Hierarchy
+
 Failure models characterize how nodes deviate from their specified algorithm:
 
 ```mermaid
@@ -52,7 +53,7 @@ flowchart LR
 ```
 
 | Failure Model | Formal Definition | Operational Reality |
-|---|---|---|
+| --- | --- | --- |
 | **Crash-Stop (Fail-Stop)** | A node operates correctly until it halts. Once halted, it remains silent forever. | Server hardware power failure with permanent decommissioning. |
 | **Crash-Recovery (Fail-Recovery)** | A node may halt unexpectedly, losing volatile RAM, but can later recover using non-volatile storage (disk/WAL). | Linux kernel panic, OOM killer termination, VM reboot. |
 | **Omission Failures** | A node fails to transmit messages into the network or fails to read incoming packets from its socket buffers. | Garbage collection (GC) stop-the-world pauses, OS buffer saturation. |
@@ -61,6 +62,7 @@ flowchart LR
 ---
 
 ### 2. Network Timing Models
+
 Timing models determine what assumptions an algorithm may legally make about execution speeds and message travel delays:
 
 ```mermaid
@@ -102,6 +104,7 @@ sequenceDiagram
 ```
 
 ### Formal Proof Sketch via Contradiction
+
 1. Suppose there exists a minimum-length message exchange sequence $M = \langle m_1, m_2, \dots, m_k \rangle$ that guarantees both generals attack simultaneously with 100% confidence.
 2. Consider the final message $m_k$ sent from General $A$ to General $B$.
 3. Since the communication channel is unreliable, $m_k$ could be intercepted and lost.
@@ -113,7 +116,7 @@ sequenceDiagram
 
 ## 4. The FLP Impossibility Theorem
 
-In 1985, Fischer, Lynch, and Paterson published their landmark paper (*"Impossibility of Distributed Consensus with One Faulty Process"*), winning the Dijkstra Prize.
+In 1985, Fischer, Lynch, and Paterson published their landmark paper (_"Impossibility of Distributed Consensus with One Faulty Process"_), winning the Dijkstra Prize.
 
 > **Theorem (FLP 1985):** In an asynchronous network model, no deterministic consensus protocol can guarantee both safety and liveness in the presence of even a single unannounced crash-stop failure.
 
@@ -132,6 +135,7 @@ flowchart TD
 ```
 
 ### The Mechanism of Bivalent Configurations
+
 - A system configuration is **univalent** if all possible future executions inevitably decide the same value (0-valent or 1-valent).
 - A configuration is **bivalent** if both 0 and 1 remain reachable depending on which message is scheduled next.
 - Initial configurations are necessarily bivalent.
@@ -158,15 +162,17 @@ flowchart TD
 ```
 
 ### Precise Definitions (Gilbert & Lynch)
+
 - **Consistency ($C$)**: Equivalent strictly to **Linearizability**. Every read operation must return the value of the most recent write, or throw an error. The system behaves as if there is only a single copy of data in the universe.
 - **Availability ($A$)**: Every non-failing node must return a successful, non-error response to every request it receives.
 - **Partition Tolerance ($P$)**: The network is permitted to lose arbitrary messages between nodes for arbitrary durations.
 
 > [!IMPORTANT]
-> **"CA" is not a valid architectural choice in distributed systems.** Networks are physical entities that *will* partition. Therefore, a distributed system must choose how to behave *when* a partition occurs: either reject requests on minority partitions (CP) or serve stale/divergent data (AP).
+> **"CA" is not a valid architectural choice in distributed systems.** Networks are physical entities that _will_ partition. Therefore, a distributed system must choose how to behave _when_ a partition occurs: either reject requests on minority partitions (CP) or serve stale/divergent data (AP).
 
 ### The PACELC Theorem (Daniel Abadi, 2012)
-CAP only describes system behavior *during an active network partition*. In production systems, partitions are rare exceptions; normal operation dominates $>99.9\%$ of the time. The **PACELC Theorem** extends CAP to normal conditions:
+
+CAP only describes system behavior _during an active network partition_. In production systems, partitions are rare exceptions; normal operation dominates $>99.9\%$ of the time. The **PACELC Theorem** extends CAP to normal conditions:
 
 $$\text{If } \mathbf{P} \text{ (Partition)}, \quad \text{choose between } \mathbf{A} \text{ and } \mathbf{C}; \quad \text{Else } (\mathbf{E}), \quad \text{choose between } \mathbf{L} \text{ (Latency) and } \mathbf{C} \text{ (Consistency)}.$$
 
@@ -193,7 +199,7 @@ flowchart TD
 ```
 
 | Dimension | Safety Property | Liveness Property |
-|---|---|---|
+| --- | --- | --- |
 | **Informal Meaning** | "A bad thing never happens." | "A good thing eventually happens." |
 | **Violation Horizon** | Finite sequence of steps $t_0 \dots t_k$. | Infinite execution trace (cannot be disproven at step $k$). |
 | **Recovery** | Irrevocable. A committed split-brain write cannot be un-written. | Remediable. At any finite point, the system can still make progress. |
@@ -212,27 +218,31 @@ In the Two Generals Problem, the communication channel is unreliable (packets ar
 <details>
 <summary>2. Does the Raft or Paxos consensus protocol violate the FLP Impossibility Theorem?</summary>
 
-No. The FLP theorem applies strictly to **deterministic** consensus protocols running in a **purely asynchronous** network model.
-Raft and Paxos circumvent FLP by introducing two non-asynchronous assumptions:
+No. The FLP theorem applies strictly to **deterministic** consensus protocols running in a **purely asynchronous** network model. Raft and Paxos circumvent FLP by introducing two non-asynchronous assumptions:
+
 1. **Partial Synchrony**: They rely on timeouts to detect leader crashes and assume that after Global Stabilization Time (GST), packet delays are bounded.
 2. **Randomization**: Raft uses randomized election timeouts to break symmetric voting ties, ensuring that adversarial bivalent cycles terminate with probability 1.
+
 </details>
 
 <details>
 <summary>3. Why is calling a database 'CA' considered an architectural misnomer?</summary>
 
 In any distributed architecture, network partitions ($P$) are a physical inevitability of IP networks (fiber cuts, switch reboots, routing misconfigurations). You cannot choose "no partitions". When a partition occurs, the system is physically partitioned; it must therefore either:
+
 - Halt or return an error on the partitioned nodes (sacrificing Availability for Consistency, CP), or
-- Allow both sides of the partition to accept writes independently (sacrificing Consistency for Availability, AP).
-Systems marketed as "CA" (e.g. single-node PostgreSQL) are simply centralized non-distributed systems.
+- Allow both sides of the partition to accept writes independently (sacrificing Consistency for Availability, AP). Systems marketed as "CA" (e.g. single-node PostgreSQL) are simply centralized non-distributed systems.
+
 </details>
 
 <details>
 <summary>4. What does the PACELC theorem tell us about Cassandra versus Google Spanner during normal operation?</summary>
 
 Under normal operation (no network partition, the **Else** branch):
+
 - **Cassandra (PA/EL)**: Chooses **Latency ($L$)** over Consistency ($C$). It uses asynchronous replication and non-strict quorums to acknowledge writes rapidly without waiting for cross-region coordination.
 - **Google Spanner (PC/EC)**: Chooses **Consistency ($C$)** over Latency ($L$). It executes Paxos roundtrips and commit-wait delays using TrueTime to guarantee strict serializability, deliberately accepting higher roundtrip latency to maintain consistency.
+
 </details>
 
 <details>
@@ -240,4 +250,5 @@ Under normal operation (no network partition, the **Else** branch):
 
 - A **Safety violation** is proven by a finite execution trace ending in a specific bad state (e.g., two nodes simultaneously believing they are the leader in term 5). It requires only inspecting the state table.
 - A **Liveness violation** cannot be proven by any finite prefix. It manifests as a cycle (an infinite loop or deadlock) where the system transitions indefinitely through valid states without ever reaching the desired goal state (e.g., an infinite election split-vote loop).
+
 </details>

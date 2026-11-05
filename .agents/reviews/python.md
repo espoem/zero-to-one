@@ -3,6 +3,7 @@
 ## Hand-off (primary author, 2026-10-30) — ready for challenger/verifier
 
 **Status:** brief delivered. Authored comprehensive, academically grounded, and production-grade Python track conforming to repository standards (`AGENTS.md` and `.agents/briefs/python.md`):
+
 - All 14 modules authored in `modules/01-*.md` through `modules/14-*.md` with unwrapped paragraphs, formal definitions (CPython compilation pipeline, AST, symtable, wordcode bytecode VM, PyObject header anatomy, small int caching `[-5, 256]`, string interning, LEGB lexical scoping, dunder protocols, hash invariant, slice indices clamping, reflected arithmetic, `__slots__` layout, `__init_subclass__`, data vs non-data descriptors, `__set_name__`, C3 Linearization MRO, cooperative `super()`, ABC `__subclasshook__`, generator frame suspension, `yield from` bidirectional delegation, context manager protocol, `ExceptionGroup` and `except*`, PEP 695 type parameter syntax, automatic variance inference, `typing.Protocol`, `ParamSpec` & `Concatenate`, PEP 742 `TypeIs` bidirectional narrowing, import machinery `sys.meta_path` & `sys.modules`, circular import mechanics, PEP 810 lazy imports, PEP 420 namespace packages, PEP 659 Specialized Adaptive Interpreter, zero-cost exception tables, reference counting & PEP 683 immortal objects, cyclic GC tri-color trial deletion, `pymalloc` arenas/pools, GIL mechanics, PEP 703 free-threaded CPython `python3.15t`, thread safety in pure Python, `InterpreterPoolExecutor` subinterpreters, reactor pattern, `asyncio.TaskGroup` structured concurrency, `CancelledError` hierarchy, `asyncio.timeout`, `contextvars.ContextVar`, `asyncio.to_thread()`, `asyncio.Queue` backpressure & PEP 713 `.shutdown()`, Pytest fixtures & Hypothesis property testing, `cProfile` & `pstats` metrics, `__slots__` memory optimization, structured JSON logging, PEP 686 universal UTF-8 default mode, Unix signal orchestration, multi-stage Docker builds with `uv`, `pickle` `__reduce__` RCE exploits and mitigations, subprocess command injection defenses, and the Capstone Asynchronous Task Orchestrator), code snippets, and detailed Interview Drills with collapsible `<details>` blocks.
 - 14 executable test suites in `examples/test_01_*.py` through `examples/test_14_*.py` verifying CPython compilation pipeline, symbol table scopes, AST transformations, PyObject identity vs equality, mutable default arguments, late-binding closure traps, dunder string representations, hash invariants, sequence slicing, `__slots__` memory reduction, data vs non-data descriptor precedence, `__set_name__`, C3 linearization MRO, cooperative diamond inheritance, ABC virtual subclassing, generator `.send()` / `.throw()` / `.close()`, `yield from` subgenerator delegation, `ExitStack`, `ExceptionGroup` and `except*`, PEP 695 generic classes and type aliases, `TypeIs` bidirectional narrowing, import hooks, bytecode disassembler, reference counting, cyclic GC mark-and-sweep, GIL thread contention, free-threaded memory behavior, `asyncio.TaskGroup`, `CancelledError` handling, queue backpressure and shutdown, Pytest fixtures and Hypothesis property-based testing (shrinking and round-trip invariants), `cProfile` and `pstats` programmatic metrics, structured JSON logging, subprocess `shell=False` injection safety, path traversal protection, pickle `__reduce__` exploit with HMAC verification, and the Capstone Asynchronous Task Orchestrator.
 - `exams/README.md`: PCAP-31-03 / PCPP-32-101 / Senior & Staff Python Engineering Loop Matrix, 100% full coverage, 0 gaps.
@@ -12,7 +13,7 @@
 - `README.md`: updated with `Verified against Python 3.15.2, uv 0.13.6 on 2026-10-30`, syllabus flowchart, and "Certifications & Academic Standards" section.
 
 | Module | State | Proof file | Tests |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 01 Execution Model & Tooling | done | `examples/test_01_execution_model_and_tooling.py` | pass |
 | 02 Names, Scopes & Objects | done | `examples/test_02_names_scopes_and_objects.py` | pass |
 | 03 Data Model & Dunder Protocols | done | `examples/test_03_data_model_and_dunder_protocols.py` | pass |
@@ -29,6 +30,7 @@
 | 14 Then vs Now, Evolution & Capstone | done | `examples/test_14_then_vs_now_and_capstone.py` | pass |
 
 **Tooling:**
+
 - Python 3.15.2 and `uv` 0.13.6 pinned in `.mise.toml` and `mise.lock` (multi-platform checksums for `linux-x64` and `macos-arm64`).
 - Dependencies locked in `uv.lock`: `pytest: 9.2.0`, `pytest-asyncio: 1.4.1`, `hypothesis: 6.170.14`, `mypy: 2.4.1`, `ruff: 0.17.3`.
 - Hermetic test runner: `mise exec -- uv run pytest` (82 unit, scenario, and property-based tests passing in 0.76s).

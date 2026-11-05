@@ -19,6 +19,7 @@ Verified against the real toolchain. Versions are current and the code passes, b
 **Correct:** Python 3.15.2 is the latest patch (2026-10-25); `uv 0.13.6`, `ruff 0.17.3`, `mypy 2.4.1`, `pytest 9.2.0`, `hypothesis 6.170.14` are all current on PyPI; `mise.lock` checksums and pybi tags match; `ruff target-version = "py315"` and `mypy --python-version 3.15` are valid; `python3.15t` exists (`sys._is_gil_enabled()` → False) and `lazy import` / `-X lazy_imports` are real in 3.15.
 
 **Wrong or unverified for 3.15:**
+
 - **§1.4 disassembly is not reproducible.** Real 3.15.2 output: `LOAD_FAST_BORROW` (new in 3.14), `LOAD_CONST 0 (1.0)` (not 1), **no offset column** (`dis.dis` defaults `show_offsets=False`), and line numbers 3/4/5, not 2/3. The doc's own test file already encodes the modern behaviour (`LOAD_FAST_BORROW`, superinstructions).
 - **"Peep-Hole Optimizer" stage doesn't exist.** `Python/peephole.c` is gone; folding lives in `Python/optimizer.c` (AST) plus `flowgraph.c` (`assemble.c` does exist). Rename to "CFG optimizer + assembler".
 - **"CST → AST Lowering" is the pre-3.9 pipeline.** PEP 617 removed the intermediate CST explicitly; the PEG parser builds AST nodes directly. The diagram currently teaches the legacy parser it just deprecated.

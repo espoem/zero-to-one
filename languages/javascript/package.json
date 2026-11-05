@@ -4,9 +4,6 @@
   "private": true,
   "description": "Executable proofs for the zero-to-one JavaScript (ECMAScript 2026) track",
   "type": "module",
-  "engines": {
-    "node": ">=26"
-  },
   "scripts": {
     "test": "node --test --test-reporter=spec \"examples/**/*.test.{js,mjs,ts}\"",
     "typecheck": "tsc --noEmit -p tsconfig.json"
@@ -16,5 +13,8 @@
     "esbuild": "0.28.2",
     "fast-check": "4.10.2",
     "typescript": "7.0.2"
+  },
+  "engines": {
+    "node": ">=26"
   }
 }

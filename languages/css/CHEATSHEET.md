@@ -7,7 +7,9 @@ A high-density reference sheet covering CSS platform specifications, cascade mec
 ## 1. Selectors & Specificity Matrix
 
 ### Specificity Calculation: `(A, B, C)`
+
 $$\text{Vector: } (A, B, C)$$
+
 - **$A$ (IDs)**: `#header`, `#nav`, `#user-modal`
 - **$B$ (Classes, Attributes, Pseudo-classes)**: `.btn`, `[type="submit"]`, `:hover`, `:focus-visible`, `:nth-child(2)`
 - **$C$ (Types, Pseudo-elements)**: `div`, `span`, `p`, `::before`, `::after`, `::backdrop`
@@ -15,8 +17,9 @@ $$\text{Vector: } (A, B, C)$$
 - **Inherited properties**: Have **no specificity** (evaluated below any directly matched rule).
 
 ### Functional Pseudo-Class Specificity Rules
+
 | Pseudo-class | Specificity Behavior | Forgiving Syntax? |
-| :--- | :--- | :---: |
+| :-- | :-- | :-: |
 | `:where(s1, s2)` | Always **`(0, 0, 0)`** regardless of arguments | Yes |
 | `:is(s1, s2)` | Takes specificity of the **most specific argument** in list | Yes |
 | `:not(s1, s2)` | Takes specificity of the **most specific argument** in list | No |
@@ -24,15 +27,22 @@ $$\text{Vector: } (A, B, C)$$
 | `:nth-child(An+B of S)` | Specificity of pseudo-class $(0, 1, 0)$ + specificity of selector $S$ | No |
 
 ### Relational Selector (`:has()`) Patterns
+
 ```css
 /* Parent has direct child matching .error */
-form:has(> .error) { border-color: red; }
+form:has(> .error) {
+  border-color: red;
+}
 
 /* Preceding sibling of checked checkbox */
-label:has(+ input:checked) { font-weight: bold; }
+label:has(+ input:checked) {
+  font-weight: bold;
+}
 
 /* Grid container containing at least 5 child cards */
-.grid:has(.card:nth-child(5)) { grid-template-columns: repeat(4, 1fr); }
+.grid:has(.card:nth-child(5)) {
+  grid-template-columns: repeat(4, 1fr);
+}
 ```
 
 ---
@@ -65,6 +75,7 @@ When two or more declarations target the same element and property, the browser 
 ## 3. Cascade Layers (`@layer`) & Scoping (`@scope`)
 
 ### Layer Declaration & Evaluation
+
 ```css
 /* 1. Explicit layer order definition */
 @layer reset, base, components, utilities;
@@ -77,17 +88,26 @@ When two or more declarations target the same element and property, the browser 
 ```
 
 ### Donut Scoping (`@scope`)
+
 ```css
 /* Scope applies to .card but excludes descendants inside .content-slot */
 @scope (.card) to (.content-slot) {
-  h2 { font-size: 1.25rem; }
-  p { color: oklch(0.4 0.05 250); }
+  h2 {
+    font-size: 1.25rem;
+  }
+  p {
+    color: oklch(0.4 0.05 250);
+  }
 }
 
 /* Referencing the scope root itself using :scope */
 @scope (.alert) {
-  :scope { border: 1px solid red; }
-  :scope:hover { background-color: pink; }
+  :scope {
+    border: 1px solid red;
+  }
+  :scope:hover {
+    background-color: pink;
+  }
 }
 ```
 
@@ -96,15 +116,18 @@ When two or more declarations target the same element and property, the browser 
 ## 4. Value Processing & Viewport Units
 
 ### The 4 Value Processing Stages
+
 $$\text{Specified Value} \xrightarrow{\text{Cascade/Default}} \text{Computed Value} \xrightarrow{\text{Layout Algorithm}} \text{Used Value} \xrightarrow{\text{Device Constraints}} \text{Actual Value}$$
+
 - **Specified**: Raw value parsed from author CSS or user-agent defaults.
 - **Computed**: Inheritance resolved; relative font units (`em`, `rem`) converted to absolute `px`; URLs resolved.
 - **Used**: Layout-dependent calculations performed (percentages converted to exact `px` based on container box).
 - **Actual**: Snapped to device physical pixel grid and display hardware constraints.
 
 ### Modern Viewport Units
+
 | Unit | Description | Behavior with Dynamic Mobile Toolbars |
-| :--- | :--- | :--- |
+| :-- | :-- | :-- |
 | `vh` / `vw` | Traditional viewport height/width | May cause layout shifts or hide behind toolbars |
 | `svh` / `svw` | **Small** viewport | Fixed height when mobile toolbars are **expanded** (smallest viewable area) |
 | `lvh` / `lvw` | **Large** viewport | Fixed height when mobile toolbars are **collapsed** (largest viewable area) |
@@ -127,8 +150,8 @@ font-size: clamp(1rem, 0.75rem + 1.25vw, 2.5rem);
 
 /* Stepping & Modular arithmetic */
 padding: round(to-zero, 17px, 5px); /* 15px */
-margin-left: mod(27px, 10px);        /* 7px (same sign as divisor) */
-margin-left: rem(27px, 10px);        /* 7px (same sign as dividend) */
+margin-left: mod(27px, 10px); /* 7px (same sign as divisor) */
+margin-left: rem(27px, 10px); /* 7px (same sign as dividend) */
 
 /* Trigonometry for rotational motion / circular layouts */
 --angle: 45deg;
@@ -140,15 +163,20 @@ transform: translate(calc(100px * cos(var(--angle))), calc(100px * sin(var(--ang
 ## 6. Box Model & Block Formatting Contexts (BFC)
 
 ### Margin Collapsing Rules
+
 Vertical margins collapse between:
+
 1. **Adjacent siblings** in in-flow normal block layout.
 2. **Parent and first/last child** if there is no border, padding, inline content, or BFC establishment separating them.
 3. **Empty block boxes** with zero height, no border, no padding, and no inline content.
-- *Horizontal margins never collapse.*
-- *Flex items and Grid items never collapse margins.*
+
+- _Horizontal margins never collapse._
+- _Flex items and Grid items never collapse margins._
 
 ### Block Formatting Context (BFC) Triggers
+
 An element creates a new BFC (preventing margin collapse with ancestors and containing internal floats) if it has:
+
 - `display: flow-root;` (modern canonical trigger without side effects)
 - `display: flex;` or `display: grid;` (creates flex/grid formatting context)
 - `position: absolute;` or `position: fixed;`
@@ -161,8 +189,9 @@ An element creates a new BFC (preventing margin collapse with ancestors and cont
 ## 7. Flexbox & Grid Layout Alignment Matrix
 
 ### Box Alignment Property Matrix
+
 | Property | Applies To | Target Axis | Action |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | `justify-content` | Container | Main (Flex) / Inline (Grid) | Distributes free space between all tracks/items |
 | `align-content` | Container | Cross (Flex) / Block (Grid) | Distributes free space between multi-line rows/columns |
 | `justify-items` | Grid Container | Inline Axis | Default horizontal alignment of items inside cells |
@@ -171,6 +200,7 @@ An element creates a new BFC (preventing margin collapse with ancestors and cont
 | `align-self` | Item | Cross (Flex) / Block (Grid) | Self-alignment overriding container `align-items` |
 
 ### CSS Grid Patterns
+
 ```css
 /* Auto-responsive grid without media queries */
 .grid-responsive {
@@ -196,7 +226,9 @@ An element creates a new BFC (preventing margin collapse with ancestors and cont
 ## 8. Stacking Contexts & Top Layer
 
 ### Stacking Context Creation Triggers
+
 An element forms a new Stacking Context if it satisfies ANY of:
+
 1. Document root (`<html>`).
 2. `position: fixed;` or `position: sticky;`.
 3. `position: relative;` or `position: absolute;` with `z-index` other than `auto`.
@@ -207,12 +239,14 @@ An element forms a new Stacking Context if it satisfies ANY of:
 8. `contain: paint;` or `contain: strict;`.
 
 ### Top Layer & Native Popover API
+
 ```html
 <button popovertarget="my-menu">Open Menu</button>
 <div id="my-menu" popover>
   <p>Rendered in native HTML Top Layer above all document z-indices.</p>
 </div>
 ```
+
 ```css
 /* Styling popover and backdrop */
 [popover] {
@@ -253,7 +287,10 @@ An element forms a new Stacking Context if it satisfies ANY of:
 
 /* 4. Style query on custom properties */
 @container style(--theme: dark) {
-  .badge { background: #333; color: #fff; }
+  .badge {
+    background: #333;
+    color: #fff;
+  }
 }
 ```
 
@@ -264,7 +301,7 @@ An element forms a new Stacking Context if it satisfies ANY of:
 ```css
 /* Typed Houdini custom property registration */
 @property --gradient-angle {
-  syntax: "<angle>";
+  syntax: '<angle>';
   inherits: false;
   initial-value: 0deg;
 }
@@ -285,12 +322,15 @@ An element forms a new Stacking Context if it satisfies ANY of:
 ## 11. Color Spaces & Relative Color Syntax
 
 ### OKLCH Model
+
 $$\text{oklch}(L \quad C \quad H \quad [/\quad A])$$
+
 - **$L$ (Lightness)**: $0.0$ (pure black) to $1.0$ (pure white) — perceptually uniform.
 - **$C$ (Chroma)**: $0.0$ (grayscale) to $\sim 0.37$ (maximum saturation).
 - **$H$ (Hue Angle)**: $0^\circ \text{ to } 360^\circ$ ($0^\circ$ pink-red, $90^\circ$ yellow, $145^\circ$ green, $250^\circ$ blue).
 
 ### Relative Color Syntax (RCS)
+
 ```css
 :root {
   --brand: oklch(0.6 0.22 250);
@@ -313,15 +353,22 @@ $$\text{oklch}(L \quad C \quad H \quad [/\quad A])$$
 ## 12. Motion: Transitions, Entry & View Transitions
 
 ### Entry/Exit Animation with `@starting-style` & Discrete Transitions
+
 ```css
-dialog[open], [popover]:popover-open {
+dialog[open],
+[popover]:popover-open {
   opacity: 1;
   transform: translateY(0);
-  transition: opacity 0.3s ease, transform 0.3s ease, display 0.3s allow-discrete, overlay 0.3s allow-discrete;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease,
+    display 0.3s allow-discrete,
+    overlay 0.3s allow-discrete;
 }
 
 @starting-style {
-  dialog[open], [popover]:popover-open {
+  dialog[open],
+  [popover]:popover-open {
     opacity: 0;
     transform: translateY(-20px);
   }
@@ -329,6 +376,7 @@ dialog[open], [popover]:popover-open {
 ```
 
 ### View Transitions API
+
 ```css
 /* Name elements participating in morph transitions */
 .hero-image {
@@ -351,7 +399,9 @@ dialog[open], [popover]:popover-open {
 ```css
 /* Respect user vestibular motion preferences */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -368,8 +418,13 @@ dialog[open], [popover]:popover-open {
 }
 
 /* Keyboard-only focus indicator */
-:focus:not(:focus-visible) { outline: none; }
-:focus-visible { outline: 2px solid oklch(0.6 0.22 250); outline-offset: 2px; }
+:focus:not(:focus-visible) {
+  outline: none;
+}
+:focus-visible {
+  outline: 2px solid oklch(0.6 0.22 250);
+  outline-offset: 2px;
+}
 
 /* Visually Hidden Screen-Reader-Only Pattern */
 .sr-only {

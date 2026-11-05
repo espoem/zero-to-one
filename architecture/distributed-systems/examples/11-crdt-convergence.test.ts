@@ -159,9 +159,9 @@ test('Module 11: CRDT Convergence & Strong Eventual Consistency', async (t) => {
           const a_bc = GCounter.merge(a, bc);
           assert.equal(ab_c.value(), a_bc.value());
           return true;
-        }
+        },
       ),
-      { seed: 42, numRuns: 100 }
+      { seed: 42, numRuns: 100 },
     );
   });
 });

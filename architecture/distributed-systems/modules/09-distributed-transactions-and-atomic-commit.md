@@ -53,6 +53,7 @@ sequenceDiagram
 ```
 
 ### The Blocking Flaw of 2PC
+
 2PC is a **blocking protocol**:
 
 ```mermaid
@@ -81,20 +82,23 @@ If the coordinator crashes while participants are in the `PREPARED` state, parti
 ## 3. Three-Phase Commit (3PC) and Why It Is Unused
 
 Dale Skeen (1981) proposed **Three-Phase Commit (3PC)** to make atomic commit non-blocking by introducing a `PRE_COMMIT` phase:
+
 1. `CAN_COMMIT?` (Vote)
 2. `PRE_COMMIT` (All voted yes; prepare to commit)
 3. `DO_COMMIT` (Commit)
 
 ### Why 3PC Fails in Production
-3PC assumes a **crash-stop model with synchronous networks**.
-Under **network partitions**, 3PC fails catastrophically: if a partition separates participants, the nodes on one side of the partition may time out and decide `ABORT`, while nodes on the other side advance to `PRE_COMMIT` and decide `COMMIT`. **3PC produces split-brain data corruption under network partitions**, making it completely unsuitable for real-world IP networks.
+
+3PC assumes a **crash-stop model with synchronous networks**. Under **network partitions**, 3PC fails catastrophically: if a partition separates participants, the nodes on one side of the partition may time out and decide `ABORT`, while nodes on the other side advance to `PRE_COMMIT` and decide `COMMIT`. **3PC produces split-brain data corruption under network partitions**, making it completely unsuitable for real-world IP networks.
 
 ---
 
 ## 4. Modern Distributed Transactions: Percolator and Spanner
 
 ### 1. Google Percolator (Peng & Dabek, 2010)
+
 Percolator provides Distributed Snapshot Isolation over Bigtable without a centralized coordinator:
+
 - Uses a **Timestamp Oracle (TSO)** for read and commit timestamps.
 - Eliminates 2PC coordinator failure by designating one cell as the **Primary Lock**. All other participating cells create **Secondary Locks** that store a pointer pointing back to the Primary Lock.
 - **Roll-forward / Roll-back Recovery**: If a client crashes mid-commit, another transaction attempting to read the locked data checks the status of the Primary Lock:
@@ -113,7 +117,9 @@ flowchart TD
 ```
 
 ### 2. Google Spanner (Corbett et al., 2012)
+
 Google Spanner marries **Paxos groups** with **Two-Phase Commit**:
+
 - Data is sharded across thousands of Paxos replication groups.
 - A 2PC transaction is coordinated not between single fragile machines, but between **Paxos leader nodes**.
 - If a coordinator leader crashes, its Paxos group immediately elects a new leader that resumes the 2PC commit without blocking!
@@ -123,8 +129,7 @@ Google Spanner marries **Paxos groups** with **Two-Phase Commit**:
 
 ## 5. The Sagas Pattern: Long-Running Distributed Workflows
 
-When transactions span multiple autonomous microservices (Order Service $\to$ Payment Service $\to$ Inventory Service), holding 2PC database locks across services for seconds is disastrous for throughput.
-The **Sagas Pattern** (Garcia-Molina & Salem, 1987) decomposes a distributed transaction into a sequence of local transactions:
+When transactions span multiple autonomous microservices (Order Service $\to$ Payment Service $\to$ Inventory Service), holding 2PC database locks across services for seconds is disastrous for throughput. The **Sagas Pattern** (Garcia-Molina & Salem, 1987) decomposes a distributed transaction into a sequence of local transactions:
 
 $$T_1, T_2, \dots, T_n$$
 
@@ -151,6 +156,7 @@ sequenceDiagram
 ```
 
 ### Orchestration vs. Choreography
+
 - **Choreography**: Services publish events (e.g. `PaymentProcessed`) and listen to peer events. Simple for small workflows, but hard to trace, test, and debug as service count grows.
 - **Orchestration**: A centralized **Saga Orchestrator** (e.g. Temporal, AWS Step Functions) explicitly coordinates steps, state transitions, timeouts, and compensatory rollbacks. Highly recommended for enterprise workflows.
 
@@ -169,6 +175,7 @@ flowchart TD
 ```
 
 ### The Transactional Outbox Pattern
+
 Atomicity across database and messaging is achieved using a local database **Outbox Table**:
 
 ```mermaid
@@ -213,8 +220,7 @@ flowchart TD
 <details>
 <summary>2. How does the Transactional Outbox pattern prevent the Dual-Write anomaly?</summary>
 
-The Dual-Write anomaly occurs when an application updates a database and sends an event to a message queue in two uncoordinated steps; a crash between the two creates data drift.
-The Transactional Outbox writes the outgoing event into an `outbox` table in the *same* database transaction as the business entity. Because both records are committed in a single local ACID transaction, the event is guaranteed to be persisted if and only if the business data is saved. A separate Change Data Capture (CDC) process reliably tails the outbox table and streams events to Kafka.
+The Dual-Write anomaly occurs when an application updates a database and sends an event to a message queue in two uncoordinated steps; a crash between the two creates data drift. The Transactional Outbox writes the outgoing event into an `outbox` table in the _same_ database transaction as the business entity. Because both records are committed in a single local ACID transaction, the event is guaranteed to be persisted if and only if the business data is saved. A separate Change Data Capture (CDC) process reliably tails the outbox table and streams events to Kafka.
 </details>
 
 <details>
@@ -222,19 +228,17 @@ The Transactional Outbox writes the outgoing event into an `outbox` table in the
 
 - **Backward Recovery**: When a step fails, the saga executes compensating transactions in reverse order ($C_k, C_{k-1}, \dots$) to undo already committed local transactions and return the system to an abort state.
 - **Forward Recovery**: Used when a step cannot be undone (e.g. money transferred or email sent). The saga retries the failed step continuously (with idempotency) until it succeeds, guaranteeing that the workflow eventually terminates in a successful state.
+
 </details>
 
 <details>
 <summary>4. How does Google Percolator resolve abandoned secondary locks after a client crash?</summary>
 
-Every transaction in Percolator designates one cell as the **Primary Lock** and sets all other cells as **Secondary Locks** that point to the Primary.
-If a client crashes, another transaction attempting to access a locked cell follows the backpointer to inspect the Primary Lock.
-If the Primary Lock is marked `COMMITTED`, the reader knows the transaction succeeded and rolls the secondary lock forward. If the Primary Lock has rolled back or expired, the reader cleans up the lock, guaranteeing recovery without a dedicated coordinator.
+Every transaction in Percolator designates one cell as the **Primary Lock** and sets all other cells as **Secondary Locks** that point to the Primary. If a client crashes, another transaction attempting to access a locked cell follows the backpointer to inspect the Primary Lock. If the Primary Lock is marked `COMMITTED`, the reader knows the transaction succeeded and rolls the secondary lock forward. If the Primary Lock has rolled back or expired, the reader cleans up the lock, guaranteeing recovery without a dedicated coordinator.
 </details>
 
 <details>
 <summary>5. What is the G2 anomaly in Adya's taxonomy, and what isolation level is required to prevent it?</summary>
 
-$G_2$ represents anti-dependency cycles (also known as **Write Skew**), where transaction $T_1$ reads a state that transaction $T_2$ overwrites, and $T_2$ reads a state that $T_1$ overwrites ($T_1 \xrightarrow{rw} T_2 \xrightarrow{rw} T_1$).
-Snapshot Isolation allows $G_2$ because neither transaction modifies a row that the other modified. Preventing $G_2$ requires **Serializability** (or Strict Serializability), which tracks read-write anti-dependencies and aborts one of the conflicting transactions.
+$G_2$ represents anti-dependency cycles (also known as **Write Skew**), where transaction $T_1$ reads a state that transaction $T_2$ overwrites, and $T_2$ reads a state that $T_1$ overwrites ($T_1 \xrightarrow{rw} T_2 \xrightarrow{rw} T_1$). Snapshot Isolation allows $G_2$ because neither transaction modifies a row that the other modified. Preventing $G_2$ requires **Serializability** (or Strict Serializability), which tracks read-write anti-dependencies and aborts one of the conflicting transactions.
 </details>

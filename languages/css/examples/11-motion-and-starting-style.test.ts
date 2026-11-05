@@ -7,8 +7,11 @@ describe('Module 11: Motion, Transitions & @starting-style', () => {
     await closeSharedBrowser();
   });
 
-  it('demonstrates @starting-style defining initial entry transition states', { skip: browserSkip }, async () => {
-    const html = `
+  it(
+    'demonstrates @starting-style defining initial entry transition states',
+    { skip: browserSkip },
+    async () => {
+      const html = `
       <!DOCTYPE html>
       <html>
         <head>
@@ -35,20 +38,25 @@ describe('Module 11: Motion, Transitions & @starting-style', () => {
       </html>
     `;
 
-    const { page, cleanup } = await createPage(html);
-    try {
-      // 1. Initial display is none
-      let display = await page.locator('#panel').evaluate((el) => window.getComputedStyle(el).display);
-      assert.equal(display, 'none');
+      const { page, cleanup } = await createPage(html);
+      try {
+        // 1. Initial display is none
+        let display = await page
+          .locator('#panel')
+          .evaluate((el) => window.getComputedStyle(el).display);
+        assert.equal(display, 'none');
 
-      // 2. Add class .visible to trigger entry transition
-      await page.locator('#panel').evaluate((el) => el.classList.add('visible'));
+        // 2. Add class .visible to trigger entry transition
+        await page.locator('#panel').evaluate((el) => el.classList.add('visible'));
 
-      // The element must immediately have display: block enabled
-      display = await page.locator('#panel').evaluate((el) => window.getComputedStyle(el).display);
-      assert.equal(display, 'block', 'allow-discrete must transition display to block');
-    } finally {
-      await cleanup();
-    }
-  });
+        // The element must immediately have display: block enabled
+        display = await page
+          .locator('#panel')
+          .evaluate((el) => window.getComputedStyle(el).display);
+        assert.equal(display, 'block', 'allow-discrete must transition display to block');
+      } finally {
+        await cleanup();
+      }
+    },
+  );
 });

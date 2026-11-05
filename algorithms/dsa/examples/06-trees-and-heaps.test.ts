@@ -1,6 +1,6 @@
-import { describe, it } from "node:test";
-import assert from "node:assert/strict";
-import fc from "fast-check";
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
+import fc from 'fast-check';
 
 // Standard Min-Heap
 export class MinHeap<T> {
@@ -221,8 +221,8 @@ export class Trie {
   }
 }
 
-describe("Module 06: Trees, Heaps & Priority Queues", () => {
-  it("MinHeap buildHeap constructs heap in linear time and extracts in sorted order", () => {
+describe('Module 06: Trees, Heaps & Priority Queues', () => {
+  it('MinHeap buildHeap constructs heap in linear time and extracts in sorted order', () => {
     const numbers = [9, 4, 7, 1, -2, 6, 5];
     const heap = MinHeap.fromArray(numbers);
 
@@ -234,7 +234,7 @@ describe("Module 06: Trees, Heaps & Priority Queues", () => {
     assert.deepEqual(sorted, [-2, 1, 4, 5, 6, 7, 9]);
   });
 
-  it("Morris In-Order Traversal visits BST in sorted order in O(1) auxiliary space", () => {
+  it('Morris In-Order Traversal visits BST in sorted order in O(1) auxiliary space', () => {
     // Construct BST:
     //       4
     //     /   \
@@ -253,7 +253,7 @@ describe("Module 06: Trees, Heaps & Priority Queues", () => {
     assert.deepEqual(visited, [1, 2, 3, 4, 5, 6, 7]);
   });
 
-  it("MedianFinder computes running stream medians via Two Heaps", () => {
+  it('MedianFinder computes running stream medians via Two Heaps', () => {
     const mf = new MedianFinder();
     mf.addNum(1);
     assert.equal(mf.findMedian(), 1);
@@ -267,7 +267,7 @@ describe("Module 06: Trees, Heaps & Priority Queues", () => {
     assert.equal(mf.findMedian(), 3);
   });
 
-  it("Fenwick Tree executes point updates and range sum queries accurately", () => {
+  it('Fenwick Tree executes point updates and range sum queries accurately', () => {
     const bit = new FenwickTree(6);
     const initial = [1, 3, 5, 7, 9, 11];
 
@@ -275,25 +275,25 @@ describe("Module 06: Trees, Heaps & Priority Queues", () => {
       bit.add(i, initial[i]!);
     }
 
-    assert.equal(bit.rangeSum(0, 2), 1 + 3 + 5);      // 9
-    assert.equal(bit.rangeSum(1, 4), 3 + 5 + 7 + 9);  // 24
+    assert.equal(bit.rangeSum(0, 2), 1 + 3 + 5); // 9
+    assert.equal(bit.rangeSum(1, 4), 3 + 5 + 7 + 9); // 24
     assert.equal(bit.rangeSum(0, 5), 36);
 
     // Update index 2 by adding 6 (5 -> 11)
     bit.add(2, 6);
-    assert.equal(bit.rangeSum(0, 2), 1 + 3 + 11);     // 15
+    assert.equal(bit.rangeSum(0, 2), 1 + 3 + 11); // 15
     assert.equal(bit.rangeSum(2, 2), 11);
   });
 
-  it("Trie correctly inserts, searches full words, and matches prefixes", () => {
+  it('Trie correctly inserts, searches full words, and matches prefixes', () => {
     const trie = new Trie();
-    trie.insert("apple");
+    trie.insert('apple');
 
-    assert.equal(trie.search("apple"), true);
-    assert.equal(trie.search("app"), false);
-    assert.equal(trie.startsWith("app"), true);
+    assert.equal(trie.search('apple'), true);
+    assert.equal(trie.search('app'), false);
+    assert.equal(trie.startsWith('app'), true);
 
-    trie.insert("app");
-    assert.equal(trie.search("app"), true);
+    trie.insert('app');
+    assert.equal(trie.search('app'), true);
   });
 });

@@ -51,7 +51,7 @@ export class RaftServer {
     candidateId: number,
     candidateTerm: number,
     candidateLastIndex: number,
-    candidateLastTerm: number
+    candidateLastTerm: number,
   ): boolean {
     if (candidateTerm > this.currentTerm) {
       this.currentTerm = candidateTerm;
@@ -107,7 +107,7 @@ export class RaftServer {
     prevLogIndex: number,
     prevLogTerm: number,
     entries: RaftLogEntry[],
-    leaderCommit: number
+    leaderCommit: number,
   ): boolean {
     if (term > this.currentTerm) {
       this.currentTerm = term;
@@ -174,41 +174,38 @@ test('Module 07: Raft Consensus Invariants & Safety Verification', async (t) => 
     assert.equal(leaders.length, 1);
   });
 
-  await t.test('Log Matching Invariant: Followers truncate uncommitted conflicts upon leader sync', () => {
-    const leader = new RaftServer(0);
-    const follower = new RaftServer(1);
+  await t.test(
+    'Log Matching Invariant: Followers truncate uncommitted conflicts upon leader sync',
+    () => {
+      const leader = new RaftServer(0);
+      const follower = new RaftServer(1);
 
-    // Initial identical logs up to index 1, term 1
-    leader.currentTerm = 2;
-    leader.state = 'LEADER';
-    leader.log = [
-      { term: 0, index: 0, cmd: '__INIT__' },
-      { term: 1, index: 1, cmd: 'set x=1' },
-      { term: 2, index: 2, cmd: 'set x=2' },
-    ];
+      // Initial identical logs up to index 1, term 1
+      leader.currentTerm = 2;
+      leader.state = 'LEADER';
+      leader.log = [
+        { term: 0, index: 0, cmd: '__INIT__' },
+        { term: 1, index: 1, cmd: 'set x=1' },
+        { term: 2, index: 2, cmd: 'set x=2' },
+      ];
 
-    // Follower has uncommitted conflicting entry from an old partitioned term
-    follower.currentTerm = 2;
-    follower.log = [
-      { term: 0, index: 0, cmd: '__INIT__' },
-      { term: 1, index: 1, cmd: 'set x=1' },
-      { term: 1, index: 2, cmd: 'set x=CONFLICT' },
-    ];
+      // Follower has uncommitted conflicting entry from an old partitioned term
+      follower.currentTerm = 2;
+      follower.log = [
+        { term: 0, index: 0, cmd: '__INIT__' },
+        { term: 1, index: 1, cmd: 'set x=1' },
+        { term: 1, index: 2, cmd: 'set x=CONFLICT' },
+      ];
 
-    // Leader sends AppendEntries with prevLogIndex=1, prevLogTerm=1, entries=[{term:2, index:2, cmd:'set x=2'}]
-    const success = follower.handleAppendEntries(
-      leader.currentTerm,
-      1,
-      1,
-      [leader.log[2]!],
-      2
-    );
-    assert.equal(success, true);
+      // Leader sends AppendEntries with prevLogIndex=1, prevLogTerm=1, entries=[{term:2, index:2, cmd:'set x=2'}]
+      const success = follower.handleAppendEntries(leader.currentTerm, 1, 1, [leader.log[2]!], 2);
+      assert.equal(success, true);
 
-    // Conflict resolved: follower log matches leader identically
-    assert.equal(follower.log[2]!.cmd, 'set x=2');
-    assert.equal(follower.log[2]!.term, 2);
-  });
+      // Conflict resolved: follower log matches leader identically
+      assert.equal(follower.log[2]!.cmd, 'set x=2');
+      assert.equal(follower.log[2]!.term, 2);
+    },
+  );
 
   await t.test('Voting restriction prevents stale nodes from winning elections', () => {
     const s0 = new RaftServer(0);

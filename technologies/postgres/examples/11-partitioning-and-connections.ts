@@ -32,9 +32,9 @@ async function run(): Promise<void> {
 
   // Test 2: Partition Pruning Plan Verification
   const explainPrune = await db.query<{ 'QUERY PLAN': string }>(
-    "EXPLAIN SELECT * FROM audit_events WHERE event_date = '2026-02-14';"
+    "EXPLAIN SELECT * FROM audit_events WHERE event_date = '2026-02-14';",
   );
-  const planText = explainPrune.rows.map(r => r['QUERY PLAN']).join('\n');
+  const planText = explainPrune.rows.map((r) => r['QUERY PLAN']).join('\n');
   assert.match(planText, /audit_events_2026/);
   assert.doesNotMatch(planText, /audit_events_2025/);
 

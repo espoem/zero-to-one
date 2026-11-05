@@ -5,7 +5,7 @@ Fast lookup for the rules taught in [modules/](modules/). Every rule here is exe
 ## Types and coercion ([02](modules/02-types-values-coercion.md))
 
 | Value | `typeof` | ToBoolean | ToNumber | ToString |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | `undefined` | `"undefined"` | false | `NaN` | `"undefined"` |
 | `null` | **`"object"`** | false | `0` | `"null"` |
 | `true` / `false` | `"boolean"` | — | `1` / `0` | `"true"` / `"false"` |
@@ -21,19 +21,19 @@ Fast lookup for the rules taught in [modules/](modules/). Every rule here is exe
 
 **ToPrimitive hints:** `+` and `==` → `"default"`; arithmetic, `<`, `Number()` → `"number"` (`valueOf` first); template literals, `String()`, property keys → `"string"` (`toString` first). `Date` treats `"default"` as `"string"`.
 
-| Algorithm | Used by | NaN = NaN | +0 = −0 |
-|---|---|---|---|
-| IsStrictlyEqual | `===`, `indexOf`, `switch` | ✗ | ✓ |
-| IsLooselyEqual | `==` (coerces; `null == undefined` only) | ✗ | ✓ |
-| SameValue | `Object.is` | ✓ | ✗ |
-| SameValueZero | `includes`, `Map`/`Set` keys | ✓ | ✓ |
+| Algorithm       | Used by                                  | NaN = NaN | +0 = −0 |
+| --------------- | ---------------------------------------- | --------- | ------- |
+| IsStrictlyEqual | `===`, `indexOf`, `switch`               | ✗         | ✓       |
+| IsLooselyEqual  | `==` (coerces; `null == undefined` only) | ✗         | ✓       |
+| SameValue       | `Object.is`                              | ✓         | ✗       |
+| SameValueZero   | `includes`, `Map`/`Set` keys             | ✓         | ✓       |
 
 Numbers: `Number.MAX_SAFE_INTEGER = 2**53 - 1`; `0.1 + 0.2 = 0.30000000000000004`; `x | 0` is ToInt32 (wraps mod 2³²), not floor. BigInt: no mixing in arithmetic, `1n < 2` ok, `+1n` throws, `/` truncates.
 
 ## Declarations and scope ([03](modules/03-execution-contexts-scope-closures.md))
 
 | Declaration | Scope | Before declaration | Global property (script) |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `var` | function | `undefined` | yes |
 | `function f(){}` | function (block in strict code) | callable | yes |
 | `let` / `const` | block | **ReferenceError (TDZ)** | no |
@@ -46,14 +46,14 @@ Numbers: `Number.MAX_SAFE_INTEGER = 2**53 - 1`; `0.1 + 0.2 = 0.30000000000000004
 
 Precedence: **arrow (lexical) › `new` › `bind` › `call`/`apply` › method call `o.m()` › plain call** (`undefined` in strict code, `globalThis` in sloppy code).
 
-| Call | `this` |
-|---|---|
-| `o.m()`, `(o.m)()`, `o?.m()` | `o` |
-| `(0, o.m)()`, `const f = o.m; f()` | `undefined` (strict) |
-| `new F()` | new object (derived classes: after `super()`) |
-| `f.bind(a).bind(b)()` | `a` |
-| `new (f.bind(a))()` | new object (bound `this` ignored) |
-| class field `h = () => this` | the instance |
+| Call                               | `this`                                        |
+| ---------------------------------- | --------------------------------------------- |
+| `o.m()`, `(o.m)()`, `o?.m()`       | `o`                                           |
+| `(0, o.m)()`, `const f = o.m; f()` | `undefined` (strict)                          |
+| `new F()`                          | new object (derived classes: after `super()`) |
+| `f.bind(a).bind(b)()`              | `a`                                           |
+| `new (f.bind(a))()`                | new object (bound `this` ignored)             |
+| class field `h = () => this`       | the instance                                  |
 
 ## Objects ([04](modules/04-objects-prototypes-classes.md))
 
@@ -62,7 +62,7 @@ Precedence: **arrow (lexical) › `new` › `bind` › `call`/`apply` › method
 - `freeze` is shallow; private fields, `Map` contents and `Date` values stay mutable.
 - `[[Set]]` looks up the chain first: inherited setters run; inherited read-only properties block assignment (override mistake).
 - `Object.assign` uses `[[Set]]` (setters fire); `{...o}` defines (no setters). Both shallow, own enumerable, invoke getters.
-- Class fields are *defined* after `super()` returns; private names are not forwarded by Proxy.
+- Class fields are _defined_ after `super()` returns; private names are not forwarded by Proxy.
 - Use `Object.hasOwn`, `Array.isArray`, `Error.isError` (realm-safe), `Object.create(null)` or `Map` for dictionaries.
 
 ## Iteration ([05](modules/05-iterators-generators.md))
@@ -88,12 +88,12 @@ task → drain ALL microtasks → (rendering opportunity? → rendering task:
 
 ## Async ([07](modules/07-async-in-depth.md))
 
-| Combinator | Fulfils | Rejects | Empty input |
-|---|---|---|---|
-| `all` | all fulfil (input order) | first rejection | `[]` |
-| `allSettled` | all settle | never | `[]` |
-| `any` | first fulfilment | all reject → `AggregateError` | rejects |
-| `race` | first settles | first settles rejected | never settles |
+| Combinator   | Fulfils                  | Rejects                       | Empty input   |
+| ------------ | ------------------------ | ----------------------------- | ------------- |
+| `all`        | all fulfil (input order) | first rejection               | `[]`          |
+| `allSettled` | all settle               | never                         | `[]`          |
+| `any`        | first fulfilment         | all reject → `AggregateError` | rejects       |
+| `race`       | first settles            | first settles rejected        | never settles |
 
 No combinator cancels anything. Use `AbortSignal`: `AbortSignal.timeout(ms)`, `AbortSignal.any([a, b])`, `signal.throwIfAborted()`, `addEventListener(t, fn, { signal })`. `Promise.withResolvers()` (ES2024), `Promise.try(fn)` (ES2025). Inside `try`: `return await p`. Never `forEach(async …)`; use `for…of` + `await`, `Promise.all(map(...))`, or a bounded pool.
 
@@ -118,18 +118,25 @@ No combinator cancels anything. Use `AbortSignal`: `AbortSignal.timeout(ms)`, `A
 ## ES2027 in Node 26 ([10](modules/10-resource-management-temporal.md))
 
 ```js
-{ using a = res1(), b = res2(); }          // disposes b, then a; errors → SuppressedError
-await using conn = await pool.get();       // awaits [Symbol.asyncDispose]
-const stack = new DisposableStack(); stack.use(r); stack.defer(fn); stack.adopt(v, close); stack.move();
+{
+  using a = res1(),
+    b = res2();
+} // disposes b, then a; errors → SuppressedError
+await using conn = await pool.get(); // awaits [Symbol.asyncDispose]
+const stack = new DisposableStack();
+stack.use(r);
+stack.defer(fn);
+stack.adopt(v, close);
+stack.move();
 ```
 
-| Need | Temporal type |
-|---|---|
-| timestamp | `Instant` |
-| human time in a place, DST-correct math | `ZonedDateTime` |
-| birthday / due date | `PlainDate` |
-| opening hours | `PlainTime` |
-| amount of time | `Duration` (calendar units need `relativeTo`) |
+| Need                                    | Temporal type                                 |
+| --------------------------------------- | --------------------------------------------- |
+| timestamp                               | `Instant`                                     |
+| human time in a place, DST-correct math | `ZonedDateTime`                               |
+| birthday / due date                     | `PlainDate`                                   |
+| opening hours                           | `PlainTime`                                   |
+| amount of time                          | `Duration` (calendar units need `relativeTo`) |
 
 `zdt.add({ days: 1 })` keeps wall-clock time; `add({ hours: 24 })` adds elapsed time. Gaps/folds: `disambiguation: 'compatible' | 'earlier' | 'later' | 'reject'`. Overflow: `constrain` (default) or `reject`. Compare with `Temporal.X.compare`, never `<` (throws).
 
@@ -151,5 +158,5 @@ const stack = new DisposableStack(); stack.use(r); stack.defer(fn); stack.adopt(
 ## Node 26.12.1 feature support (pinned in [examples/01](examples/01-reading-the-spec.test.js))
 
 | Shipped | Flag only | Absent |
-|---|---|---|
+| --- | --- | --- |
 | Upsert, `JSON.rawJSON`, `Iterator.concat`, base64/hex, `Error.isError`, `Array.fromAsync`, Temporal, `using`/`DisposableStack`, `Atomics.pause`, `Promise.try`, `RegExp.escape`, `Float16Array` | `Math.sumPrecise` (`--js-sum-precise`), `import defer` (`--js-defer-import-eval`), ShadowRealm (`--harmony-shadow-realm`) | `Iterator.zip`, `Iterator.prototype.chunks`, decorator syntax, AsyncContext |

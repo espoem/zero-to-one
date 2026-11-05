@@ -24,7 +24,7 @@ export class ARIESRecoveryEngine {
     txnId: number,
     type: 'BEGIN' | 'UPDATE' | 'COMMIT' | 'CLR',
     prevLsn: number,
-    opts?: { pageId?: number; beforeVal?: number; afterVal?: number; undoNextLsn?: number }
+    opts?: { pageId?: number; beforeVal?: number; afterVal?: number; undoNextLsn?: number },
   ): LogRecord {
     const lsn = this.currentLsn++;
     const record: LogRecord = {

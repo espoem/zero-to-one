@@ -7,7 +7,7 @@ This directory contains the certification, university examination, and industry 
 ## 1. Primary Reference Curricula & Exam Standards
 
 | Curricula / Examination | Authority / Institution | Verified Baseline | Exam / Guide Reference |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | **MIT 6.5840 (formerly 6.824)** | MIT EECS / CSAIL (Morris, Kaashoek) | Spring 2024 / Current | [MIT 6.5840 Distributed Systems](https://pdos.csail.mit.edu/6.824/) |
 | **Cambridge CST Part II Distributed Systems** | University of Cambridge Computer Laboratory (Kleppmann) | 2023–2024 / Current | [Cambridge CST Part II Distributed Systems](https://www.cl.cam.ac.uk/teaching/current/DistSys/) |
 | **Principal/Staff Distributed Systems Loop** | Industry Standard (Google Cloud, AWS, Confluent, Cloudflare, Meta) | 2026 Baseline | Comprehensive Distributed Architecture, Protocol Correctness, Formal Verification & Failure Modes |
@@ -17,7 +17,7 @@ This directory contains the certification, university examination, and industry 
 ## 2. Comprehensive Domain Coverage Matrix
 
 | Domain & Topic | Weight | Curriculum Modules | Executable Proofs | Status |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | **1. System Models, Impossibility & CAP**<br>Deutsch fallacies, Failure hierarchy (Crash-Stop to Byzantine), Synchronous/Asynchronous/Partially Synchronous timing, Two Generals proof, FLP bivalence impossibility proof, Gilbert-Lynch CAP, Abadi PACELC, Safety vs Liveness | 8% | [Module 01](../modules/01-system-models-and-impossibility.md) | `01-system-models-and-bounds.test.ts` | ✅ Full |
 | **2. Networks, RPC & Failure Detection**<br>RPC 5 failure points, At-most-once deduplication tables, Full Jitter vs Decorrelated Jitter, Metastable failures & retry amplification, $\Phi$-accrual failure detector math, Gray failures, SWIM gossip protocol | 7% | [Module 02](../modules/02-networks-rpc-and-failure-detection.md) | `02-networks-rpc-and-detectors.test.ts` | ✅ Full |
 | **3. Time, Physical Clocks & Ordering**<br>Physical clock skew & drift, LWW silent overwrite anomaly, Lamport happens-before $\to$, Vector Clocks causal comparison, Hybrid Logical Clocks (HLC), Spanner TrueTime commit-wait $2\epsilon$, GC pause trap & fencing tokens | 7% | [Module 03](../modules/03-time-clocks-and-ordering.md) | `03-clocks-ordering-and-fencing.test.ts` | ✅ Full |
@@ -38,6 +38,7 @@ This directory contains the certification, university examination, and industry 
 ## 3. Question Bank Inventory
 
 The question bank lives in [`interview.md`](./interview.md):
+
 - **Total Questions**: 75 comprehensive questions covering academic theory, protocol mechanics, edge cases, and architectural trade-offs.
 - **Difficulty Distribution**:
   - Difficulty 1 (Core Foundations / Conceptual Mechanics): 25 questions.

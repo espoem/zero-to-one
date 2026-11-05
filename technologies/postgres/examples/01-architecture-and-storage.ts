@@ -17,13 +17,15 @@ async function run(): Promise<void> {
   assert.equal(blockSizeResult.rows[0]!.block_size, '8192', 'Block size must be 8192 bytes (8KB)');
 
   // Test 3: Catalog verification of tablespaces and databases
-  const dbCatalog = await db.query<{ datname: string }>('SELECT datname FROM pg_database WHERE datname = current_database();');
+  const dbCatalog = await db.query<{ datname: string }>(
+    'SELECT datname FROM pg_database WHERE datname = current_database();',
+  );
   assert.ok(dbCatalog.rows.length > 0);
 
   // Test 4: Physical storage relation fork inspection via pg_class
   await db.exec('CREATE TABLE storage_test (id INT PRIMARY KEY, payload TEXT);');
-  const classResult = await db.query<{ relfilenode: number, relhasindex: boolean }>(
-    "SELECT relfilenode, relhasindex FROM pg_class WHERE relname = 'storage_test';"
+  const classResult = await db.query<{ relfilenode: number; relhasindex: boolean }>(
+    "SELECT relfilenode, relhasindex FROM pg_class WHERE relname = 'storage_test';",
   );
   assert.ok(classResult.rows.length > 0);
   assert.equal(classResult.rows[0]!.relhasindex, true);

@@ -1,37 +1,42 @@
 # Brief: Node.js (`technologies/nodejs`)
 
-| | |
-|---|---|
-| Phase | 2 |
-| Kind | NEW track: create from scratch |
-| Primary (author) | **Opus · claude.ai** |
-| Drafter (on request) | pi · DeepSeek |
-| Challenger | pi · Muse Spark 1.3 |
-| Verifier | Antigravity |
-| Final gate | Opus (claude.ai session) |
-| Branch / worktree | `track/nodejs` · `../zto-nodejs` |
-| Depends on | languages/javascript |
-| Research dossier | `.agents/research/C-runtimes.md` |
+|                      |                                  |
+| -------------------- | -------------------------------- |
+| Phase                | 2                                |
+| Kind                 | NEW track: create from scratch   |
+| Primary (author)     | **Opus · claude.ai**             |
+| Drafter (on request) | pi · DeepSeek                    |
+| Challenger           | pi · Muse Spark 1.3              |
+| Verifier             | Antigravity                      |
+| Final gate           | Opus (claude.ai session)         |
+| Branch / worktree    | `track/nodejs` · `../zto-nodejs` |
+| Depends on           | languages/javascript             |
+| Research dossier     | `.agents/research/C-runtimes.md` |
 
 ## 0. Read before starting (binding)
+
 1. `AGENTS.md`: the contract. If it conflicts with this brief, AGENTS.md wins; log the conflict in your review file.
 2. `.agents/OWNERSHIP.md`: what you own vs only cross-link.
 3. `.agents/REVIEW.md`: the checklist your work is judged against.
 4. Your global/agent instructions still apply where they do not conflict.
 
 ## 1. Owner decisions and track-specific instructions
+
 - The JSNAD/JSNSD certifications were retired 2025-09-30. Use their former domain outlines plus the senior Node interview format; state the retirement in the README.
 - Pin Node 26 (LTS from 2026-10-28). Add a "Then vs now" for the new yearly release model from v27.
 - Teach the **latest stable** versions. Add **Then vs now** comparisons wherever practice changed (AGENTS.md § Version Currency).
 - Pin **all** tooling via mise (`.mise.toml` + `mise.lock`): node 26 for JS/TS, plus every CLI and runtime the examples need.
 
 ## 2. Ownership
+
 **You own (full treatment):**
+
 - libuv phases, `process.nextTick`, threadpool, streams & backpressure, CJS loader, `require(esm)`, GC tuning flags
 - Node runtime type stripping
 - Node-specific security (permission model, prototype pollution, `vm` is not a sandbox, ReDoS)
 
 **Cross-link only (do not re-explain):**
+
 - Iterators, generators, async iteration, Promise/job-queue semantics (spec level) → owned by `languages/javascript`
 - ESM semantics (Module Records, live bindings, TLA), `exports` conditions at runtime → owned by `languages/javascript`
 - Shared memory, Atomics, JS memory model → owned by `languages/javascript`
@@ -128,7 +133,9 @@
 ---
 
 ## 4. Re-verify list
+
 These claims were marked unverified during research. Confirm or correct each one against a primary source before teaching it:
+
 - **Permission model: Stable** since v23.5/v22.13; `--permission`, `--allow-fs-read/write`, `--allow-net`, `--allow-child-process`, `--allow-worker`, `--allow-addons`, `--allow-wasi`, `--allow-ffi` (FFI builds only), `--permission-audit` mode, config-file `permission` block, `process.permission.drop()` — https://nodejs.org/api/permissions.html (docs page is latest-line; exact version where `--allow-net`/audit/drop landed = unverified).
 - AsyncLocalStorage uses AsyncContextFrame by default since Node 24 (unverified from release notes in this pass; recalled from v24.0.0 notes).
 - Retired JSNSD: Servers & Services ~70%, Security ~30% (unverified weights) — HTTP servers, RESTful services, proxies, input validation, attack mitigation (rate limits, DoS, injection).
@@ -137,7 +144,9 @@ These claims were marked unverified during research. Confirm or correct each one
 - Not locally provable deterministically: GC timing, deopt traces (V8-version-sensitive → snapshot per pinned Node), cluster load distribution (OS-dependent on macOS vs Linux) → docker compose `node:26-slim` leg for Linux-specific behavior (SO_REUSEPORT, cgroup memory, PID 1 signals). clinic `13.0.0` exists on npm but maintenance status unverified — prefer built-in `--cpu-prof` + speedscope/DevTools.
 
 ## 5. Certifications & exams
+
 Follow AGENTS.md § Certification and Exam Coverage exactly. Minimum deliverables:
+
 1. **README "Certifications & Exams" section.** Start from the exams named in the dossier above ("Authoritative syllabi used"). Re-verify each exam's code, status, guide version/date, targeted product version and domain weights on the official page. Where no certification exists, say so and use the recognised interview format.
 2. **`exams/README.md` coverage matrix.** Rows are domain/objective, weight, modules, examples, status. No ❌ at hand-off.
 3. **`exams/<exam-code>.md` question banks.**
@@ -149,11 +158,14 @@ Follow AGENTS.md § Certification and Exam Coverage exactly. Minimum deliverable
 5. **Original questions only.** No braindump content.
 
 ## 6. Code languages
+
 Per AGENTS.md § Code Example Languages:
+
 - **Primary:** pseudocode (where algorithms or protocols are described) + TypeScript (or the track's own language, for language tracks).
 - **Secondary:** Python, Rust or Nim only where it teaches something. Each language lives in `examples/<lang>/` with its own mise-pinned toolchain and native test runner, and `test` runs them all.
 
 ## 7. Workflow and definition of done
+
 1. **Primary (Opus)** works on branch `track/nodejs` and sets this track's row in `.agents/STATUS.md` to 🟦.
 2. **Verify versions first.** Check every version in the dossier against its primary source today. Record the results in the README's `Verified against …` line. Resolve every item in the re-verify list below.
 3. Build in stages: README syllabus + exam matrix → modules one by one, each with its examples/tests → glossary → cheatsheet → question banks → mock exam. Delegate bulk drafting (question-bank drafts, glossary candidates, cheatsheet tables) to the **Drafter**, then correct and integrate it yourself.

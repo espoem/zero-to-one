@@ -91,7 +91,7 @@ describe('Consistent Hashing with Virtual Nodes', () => {
       const deviation = Math.abs(count - expectedAverage) / expectedAverage;
       assert(
         deviation < 0.25,
-        `Node ${node} has ${count} keys (expected ~${expectedAverage}, deviation: ${(deviation * 100).toFixed(1)}%)`
+        `Node ${node} has ${count} keys (expected ~${expectedAverage}, deviation: ${(deviation * 100).toFixed(1)}%)`,
       );
     }
   });
@@ -125,7 +125,7 @@ describe('Consistent Hashing with Virtual Nodes', () => {
     const migrationFraction = migratedKeys / totalKeys;
     assert(
       migrationFraction > 0.12 && migrationFraction < 0.28,
-      `Migrated fraction was ${(migrationFraction * 100).toFixed(1)}% (expected ~20%)`
+      `Migrated fraction was ${(migrationFraction * 100).toFixed(1)}% (expected ~20%)`,
     );
   });
 });

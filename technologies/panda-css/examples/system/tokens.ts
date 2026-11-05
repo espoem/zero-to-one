@@ -1,4 +1,4 @@
-import { defineTokens } from '@pandacss/dev'
+import { defineTokens } from '@pandacss/dev';
 
 /**
  * Primitive (core) tokens: the raw scale. They never change with color mode or theme.
@@ -28,4 +28,4 @@ export const tokens = defineTokens({
   durations: {
     snappy: { value: '120ms' },
   },
-})
+});

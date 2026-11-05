@@ -73,27 +73,30 @@ export class DeterministicNetworkSim {
 }
 
 test('Module 12: Deterministic Simulation Testing (DST)', async (t) => {
-  await t.test('Identical seed reproduces byte-for-byte execution trace under simulated packet drops', () => {
-    const seed = 0xdeadbeef;
+  await t.test(
+    'Identical seed reproduces byte-for-byte execution trace under simulated packet drops',
+    () => {
+      const seed = 0xdeadbeef;
 
-    // Run 1 with seed
-    const sim1 = new DeterministicNetworkSim(seed, 0.3);
-    for (let i = 0; i < 20; i++) {
-      sim1.send('nodeA', 'nodeB', `msg_${i}`);
-    }
-    sim1.runUntilEmpty();
+      // Run 1 with seed
+      const sim1 = new DeterministicNetworkSim(seed, 0.3);
+      for (let i = 0; i < 20; i++) {
+        sim1.send('nodeA', 'nodeB', `msg_${i}`);
+      }
+      sim1.runUntilEmpty();
 
-    // Run 2 with identical seed
-    const sim2 = new DeterministicNetworkSim(seed, 0.3);
-    for (let i = 0; i < 20; i++) {
-      sim2.send('nodeA', 'nodeB', `msg_${i}`);
-    }
-    sim2.runUntilEmpty();
+      // Run 2 with identical seed
+      const sim2 = new DeterministicNetworkSim(seed, 0.3);
+      for (let i = 0; i < 20; i++) {
+        sim2.send('nodeA', 'nodeB', `msg_${i}`);
+      }
+      sim2.runUntilEmpty();
 
-    // Assert that both runs produced the EXACT identical sequence of dropped and delivered messages!
-    assert.deepEqual(sim1.deliveredTrace, sim2.deliveredTrace);
-    assert.ok(sim1.deliveredTrace.length > 0);
-  });
+      // Assert that both runs produced the EXACT identical sequence of dropped and delivered messages!
+      assert.deepEqual(sim1.deliveredTrace, sim2.deliveredTrace);
+      assert.ok(sim1.deliveredTrace.length > 0);
+    },
+  );
 
   await t.test('Different seeds produce different randomized interleavings', () => {
     const simA = new DeterministicNetworkSim(12345, 0.4);

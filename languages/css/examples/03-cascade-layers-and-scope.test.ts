@@ -7,8 +7,11 @@ describe('Module 03: The Cascade, Layers & Scope', () => {
     await closeSharedBrowser();
   });
 
-  it('proves that layer order beats selector specificity for normal declarations', { skip: browserSkip }, async () => {
-    const html = `
+  it(
+    'proves that layer order beats selector specificity for normal declarations',
+    { skip: browserSkip },
+    async () => {
+      const html = `
       <!DOCTYPE html>
       <html>
         <head>
@@ -38,14 +41,21 @@ describe('Module 03: The Cascade, Layers & Scope', () => {
       </html>
     `;
 
-    const { page, cleanup } = await createPage(html);
-    try {
-      const color = await page.locator('#target').evaluate((el) => window.getComputedStyle(el).color);
-      assert.equal(color, 'rgb(0, 0, 255)', 'Higher priority layer (utilities) must beat lower layer (base)');
-    } finally {
-      await cleanup();
-    }
-  });
+      const { page, cleanup } = await createPage(html);
+      try {
+        const color = await page
+          .locator('#target')
+          .evaluate((el) => window.getComputedStyle(el).color);
+        assert.equal(
+          color,
+          'rgb(0, 0, 255)',
+          'Higher priority layer (utilities) must beat lower layer (base)',
+        );
+      } finally {
+        await cleanup();
+      }
+    },
+  );
 
   it('demonstrates the !important layer inversion rule', { skip: browserSkip }, async () => {
     const html = `
@@ -78,15 +88,24 @@ describe('Module 03: The Cascade, Layers & Scope', () => {
 
     const { page, cleanup } = await createPage(html);
     try {
-      const color = await page.locator('#target').evaluate((el) => window.getComputedStyle(el).color);
-      assert.equal(color, 'rgb(0, 128, 0)', '!important in earlier layer must defeat !important in later layer');
+      const color = await page
+        .locator('#target')
+        .evaluate((el) => window.getComputedStyle(el).color);
+      assert.equal(
+        color,
+        'rgb(0, 128, 0)',
+        '!important in earlier layer must defeat !important in later layer',
+      );
     } finally {
       await cleanup();
     }
   });
 
-  it('proves unlayered author styles beat all layered author styles', { skip: browserSkip }, async () => {
-    const html = `
+  it(
+    'proves unlayered author styles beat all layered author styles',
+    { skip: browserSkip },
+    async () => {
+      const html = `
       <!DOCTYPE html>
       <html>
         <head>
@@ -109,12 +128,15 @@ describe('Module 03: The Cascade, Layers & Scope', () => {
       </html>
     `;
 
-    const { page, cleanup } = await createPage(html);
-    try {
-      const color = await page.locator('#target').evaluate((el) => window.getComputedStyle(el).color);
-      assert.equal(color, 'rgb(0, 0, 255)', 'Unlayered style must override layered style');
-    } finally {
-      await cleanup();
-    }
-  });
+      const { page, cleanup } = await createPage(html);
+      try {
+        const color = await page
+          .locator('#target')
+          .evaluate((el) => window.getComputedStyle(el).color);
+        assert.equal(color, 'rgb(0, 0, 255)', 'Unlayered style must override layered style');
+      } finally {
+        await cleanup();
+      }
+    },
+  );
 });

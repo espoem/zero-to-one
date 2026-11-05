@@ -1,7 +1,6 @@
 # Module 09: Type-Level Programming II — Conditional, Mapped & Recursive Types
 
-> Example and tests: [`examples/09-conditional-mapped/conditional-mapped.test.ts`](../examples/09-conditional-mapped/conditional-mapped.test.ts) (distribution, `infer … extends`, code-point template inference, route params, homomorphic and remapped mapped types, union ↔ map, `DeepReadonly`). Recursion-limit fixtures live with [Module 13](./13-library-authoring-performance-and-type-tests.md).
-> Run: `mise exec -- node --test examples/09-conditional-mapped/` and `mise exec -- npm run typecheck`.
+> Example and tests: [`examples/09-conditional-mapped/conditional-mapped.test.ts`](../examples/09-conditional-mapped/conditional-mapped.test.ts) (distribution, `infer … extends`, code-point template inference, route params, homomorphic and remapped mapped types, union ↔ map, `DeepReadonly`). Recursion-limit fixtures live with [Module 13](./13-library-authoring-performance-and-type-tests.md). Run: `mise exec -- node --test examples/09-conditional-mapped/` and `mise exec -- npm run typecheck`.
 >
 > Prerequisites: [Module 08](./08-type-derivation-and-template-literals.md) (derivation, indexed access, template literal types) and [Module 07](./07-generics-and-inference.md) (generics).
 
@@ -12,6 +11,7 @@
 In Module 08, we treated types as static structures to inspect, slice, and index. In this module we step into the full computational engine of TypeScript: **Conditional Types**, **Pattern Matching with `infer`**, and **Mapped Types with Key Remapping**.
 
 Together, these three constructs elevate TypeScript from a structural checker to a Turing-complete metaprogramming system capable of:
+
 - Inspecting and destructuring arbitrary function signatures, promises, and tuple structures.
 - Transforming complex nested schemas and discriminated unions into ergonomic API interfaces.
 - Eliminating hundreds of lines of boilerplate across modern state management libraries, ORMs, and design systems.
@@ -34,6 +34,7 @@ Together, these three constructs elevate TypeScript from a structural checker to
 ### Learning Objectives
 
 By the end of this module, you will be able to:
+
 1. Master conditional types (`T extends U ? X : Y`), grasp how and why distributive conditional types operate over unions, and understand how to control distribution using 1-tuples (`[T] extends [U]`).
 2. Harness the `infer` keyword for pattern matching to extract return types, parameter lists, promise resolutions, tuple elements, and template literal string segments.
 3. Construct advanced Mapped Types with property modifiers (`readonly`, `-readonly`, `?`, `-?`), remap object keys using `as`, filter keys using `as never`, and transform objects into unions of tuples or template literals.
@@ -45,13 +46,13 @@ By the end of this module, you will be able to:
 
 **Conditional types.** `T extends U ? X : Y` is evaluated by asking whether `T` is assignable to `U`. If `T` (or `U`) still contains type parameters whose instantiation could change the answer, the type is **deferred**: it stays as a conditional type and is re-evaluated when the parameters are known. That is why `function f<T>(x: T): T extends string ? 1 : 2` cannot return `1` from its body without a cast ([Module 07](./07-generics-and-inference.md)).
 
-**Distributivity.** A conditional type whose check type is a *naked* type parameter `T` is **distributive**: instantiating it with a union applies it to each member and unions the results:
+**Distributivity.** A conditional type whose check type is a _naked_ type parameter `T` is **distributive**: instantiating it with a union applies it to each member and unions the results:
 
 $$C\langle A_1 \mid \dots \mid A_n \rangle = C\langle A_1 \rangle \mid \dots \mid C\langle A_n \rangle, \qquad C\langle \text{never} \rangle = \text{never}$$
 
 Wrapping both sides in a one-tuple (`[T] extends [U]`) or any other type constructor (`{ v: T }`) turns distribution off. The test `_wrapped` shows that `{ v: string | number } extends { v: string }` is simply false.
 
-**`infer`.** `infer X` introduces a type variable bound by **inference** against the pattern, exactly as when inferring type arguments of a call. `infer X extends C` adds a constraint: in conditional `extends` clauses (introduced in TS 4.7) the branch matches only if the inferred `X` satisfies `C`, and within template literal types (introduced in TS 4.8) the constraint also *parses* (`` `${infer N extends number}` `` turns `"42"` into `42`). For overloaded functions, inference uses the **last** overload signature (`Parameters<typeof over>` is `[x: number]`).
+**`infer`.** `infer X` introduces a type variable bound by **inference** against the pattern, exactly as when inferring type arguments of a call. `infer X extends C` adds a constraint: in conditional `extends` clauses (introduced in TS 4.7) the branch matches only if the inferred `X` satisfies `C`, and within template literal types (introduced in TS 4.8) the constraint also _parses_ (`` `${infer N extends number}` `` turns `"42"` into `42`). For overloaded functions, inference uses the **last** overload signature (`Parameters<typeof over>` is `[x: number]`).
 
 **Mapped types.** `{ [K in S]: F<K> }` builds an object type with one property per member of the key union `S`. It is **homomorphic** when `S` is `keyof T` for a type parameter `T` (or `keyof` of a type): then it copies `readonly`/`?` modifiers from `T`, maps array and tuple types to arrays and tuples (instead of mapping their methods), and distributes over unions in `T`. `+`/`-` prefixes add or remove modifiers. Key remapping `as N<K>` changes the key; remapping to `never` removes it. A remapped mapped type is still homomorphic for modifier purposes when it iterates `keyof T`.
 
@@ -77,11 +78,11 @@ Introduced in TypeScript 2.8, **Conditional Types** introduce conditional branch
 ```typescript
 type IsString<T> = T extends string ? true : false;
 
-type A = IsString<"hello">; // true
+type A = IsString<'hello'>; // true
 //   ^? type A = true
-type B = IsString<42>;      // false
+type B = IsString<42>; // false
 //   ^? type B = false
-type C = IsString<string>;  // true
+type C = IsString<string>; // true
 //   ^? type C = true
 ```
 
@@ -92,18 +93,22 @@ The relation `T extends U` checks **assignability** (subtyping). If values of ty
 Conditional types can be nested to model multi-branch decision trees:
 
 ```typescript
-type TypeCategory<T> = 
-  T extends string ? "text" :
-  T extends number ? "numeric" :
-  T extends boolean ? "boolean" :
-  T extends (...args: any[]) => any ? "function" :
-  T extends object ? "object" :
-  "other";
+type TypeCategory<T> = T extends string
+  ? 'text'
+  : T extends number
+    ? 'numeric'
+    : T extends boolean
+      ? 'boolean'
+      : T extends (...args: any[]) => any
+        ? 'function'
+        : T extends object
+          ? 'object'
+          : 'other';
 
-type Cat1 = TypeCategory<"admin">;       // "text"
-type Cat2 = TypeCategory<100>;           // "numeric"
-type Cat3 = TypeCategory<() => void>;   // "function"
-type Cat4 = TypeCategory<string[]>;      // "object"
+type Cat1 = TypeCategory<'admin'>; // "text"
+type Cat2 = TypeCategory<100>; // "numeric"
+type Cat3 = TypeCategory<() => void>; // "function"
+type Cat4 = TypeCategory<string[]>; // "object"
 ```
 
 ### Distributive Conditional Types
@@ -123,6 +128,7 @@ type MyExclude<T, U> = T extends U ? never : T;
 ```
 
 Let's trace `MyExclude<"a" | "b" | "c", "a">`:
+
 1. `"a" extends "a" ? never : "a"` ⟹ `never`
 2. `"b" extends "a" ? never : "b"` ⟹ `"b"`
 3. `"c" extends "a" ? never : "c"` ⟹ `"c"`
@@ -135,12 +141,15 @@ A powerful pattern pioneered by Matt Pocock in Total TypeScript is using `T exte
 ```typescript
 // Suppose we have a discriminated union:
 type Fruit =
-  | { name: "apple"; color: "red" }
-  | { name: "banana"; color: "yellow" }
-  | { name: "lime"; color: "green" };
+  | { name: 'apple'; color: 'red' }
+  | { name: 'banana'; color: 'yellow' }
+  | { name: 'lime'; color: 'green' };
 
 // We want to transform each variant into a label string:
-type FruitLabel<T> = T extends { name: infer Name extends string; color: infer Color extends string }
+type FruitLabel<T> = T extends {
+  name: infer Name extends string;
+  color: infer Color extends string;
+}
   ? `${Capitalize<Name>} is ${Color}`
   : never;
 
@@ -148,11 +157,11 @@ type Labels = FruitLabel<Fruit>;
 //   ^? type Labels = "Apple is red" | "Banana is yellow" | "Lime is green"
 ```
 
-Because `Fruit` is distributed one variant at a time, `infer Name` and `infer Color` bind to the specific properties of *that individual variant*, rather than unioning all names and colors together.
+Because `Fruit` is distributed one variant at a time, `infer Name` and `infer Color` bind to the specific properties of _that individual variant_, rather than unioning all names and colors together.
 
 ### Preventing Distribution with Tuples (`[T] extends [U]`)
 
-Sometimes distribution is undesirable. If you want to check whether an *entire union* as a whole is assignable to a type, wrap both sides of `extends` in a 1-tuple `[T] extends [U]`:
+Sometimes distribution is undesirable. If you want to check whether an _entire union_ as a whole is assignable to a type, wrap both sides of `extends` in a 1-tuple `[T] extends [U]`:
 
 ```typescript
 // Distributive (Checks each member individually):
@@ -194,7 +203,7 @@ The `infer` keyword allows you to declare a type variable within the `extends` c
 Let's re-implement `ReturnType<T>` and `Parameters<T>` from first principles:
 
 ```typescript
-import type { Equal, Expect } from "../examples/utils/type-helpers";
+import type { Equal, Expect } from '../examples/utils/type-helpers';
 
 // Pattern match the return type:
 type MyReturnType<T> = T extends (...args: any[]) => infer R ? R : never;
@@ -222,9 +231,7 @@ type TestFirst = Expect<Equal<GreetFirst, { name: string; age: number }>>;
 `infer` can be combined with recursion to unwrap arbitrarily nested `Promise` wrappers:
 
 ```typescript
-type DeepAwaited<T> = T extends Promise<infer Inner>
-  ? DeepAwaited<Inner>
-  : T;
+type DeepAwaited<T> = T extends Promise<infer Inner> ? DeepAwaited<Inner> : T;
 
 type NestedPromise = Promise<Promise<Promise<{ token: string }>>>;
 
@@ -281,10 +288,10 @@ type SplitBySlash<T extends string> = T extends `${infer Head}/${infer Tail}`
   ? [Head, ...SplitBySlash<Tail>]
   : [T];
 
-type RouteSegments = SplitBySlash<"users/profile/settings">;
+type RouteSegments = SplitBySlash<'users/profile/settings'>;
 //   ^? type RouteSegments = ["users", "profile", "settings"]
 
-type TestSegments = Expect<Equal<RouteSegments, ["users", "profile", "settings"]>>;
+type TestSegments = Expect<Equal<RouteSegments, ['users', 'profile', 'settings']>>;
 ```
 
 ### Extracting from Multiple Function Shapes
@@ -295,13 +302,13 @@ If a function type could take multiple shapes, pattern matching handles unions g
 type ActionResolver<T> = T extends () => infer R
   ? R
   : T extends (payload: any) => infer R
-  ? R
-  : never;
+    ? R
+    : never;
 
-type Resolver1 = ActionResolver<() => { type: "RESET" }>;
+type Resolver1 = ActionResolver<() => { type: 'RESET' }>;
 //   ^? type Resolver1 = { type: "RESET"; }
 
-type Resolver2 = ActionResolver<(id: string) => { type: "LOAD"; id: string }>;
+type Resolver2 = ActionResolver<(id: string) => { type: 'LOAD'; id: string }>;
 //   ^? type Resolver2 = { type: "LOAD"; id: string; }
 ```
 
@@ -314,7 +321,7 @@ type Resolver2 = ActionResolver<(id: string) => { type: "LOAD"; id: string }>;
 ### Fundamentals of Mapped Types
 
 ```typescript
-type Weekday = "mon" | "tue" | "wed" | "thu" | "fri";
+type Weekday = 'mon' | 'tue' | 'wed' | 'thu' | 'fri';
 
 // Map over a union:
 type WorkingHours = {
@@ -382,7 +389,7 @@ Introduced in TypeScript 4.1, the `as` clause inside a mapped type allows you to
 ```typescript
 interface DataService {
   user: { id: string; name: string };
-  settings: { theme: "light" | "dark" };
+  settings: { theme: 'light' | 'dark' };
 }
 
 // Generate getters:
@@ -424,6 +431,7 @@ type ProductData = NonFunctionProperties<Product>;
 In the open-source canvas application **Excalidraw**, elements on the canvas (rectangles, diamonds, arrows, text) have differing attributes, but all need standardized action creators and state updates.
 
 Rather than hand-writing:
+
 ```typescript
 interface Actions {
   updateRectangle: (element: RectangleElement) => void;
@@ -434,6 +442,7 @@ interface Actions {
 ```
 
 Excalidraw defines a map of element types to their representations, and uses a single mapped type with key remapping:
+
 ```typescript
 type ElementMap = {
   rectangle: { x: number; y: number; width: number; height: number };
@@ -444,10 +453,11 @@ type ElementMap = {
 type ElementUpdaters = {
   [K in keyof ElementMap as `update${Capitalize<K>}`]: (
     id: string,
-    patch: Partial<ElementMap[K]>
+    patch: Partial<ElementMap[K]>,
   ) => void;
 };
 ```
+
 This saved hundreds of lines of brittle boilerplate and eliminated bugs when new element types were added.
 
 ### Transforming Objects into Unions of Tuples or Template Literals
@@ -456,9 +466,9 @@ Mapped types can be indexed immediately by `[keyof T]` to collapse the object in
 
 ```typescript
 interface ThemeColors {
-  primary: "#4f46e5";
-  secondary: "#06b6d4";
-  danger: "#ef4444";
+  primary: '#4f46e5';
+  secondary: '#06b6d4';
+  danger: '#ef4444';
 }
 
 // 1. Transform object to a union of key-value tuples:
@@ -487,20 +497,20 @@ These four capstone challenges represent the summit of TypeScript's type transfo
 ### Challenge 1: Transform URL Path Parameters into an Object
 
 #### Problem
+
 Given a URL path string with parameter segments (e.g., `"/users/:id/posts/:postId"`), construct an object type containing only the extracted parameter names as keys with `string` values: `{ id: string; postId: string }`.
 
 #### Solution & Walkthrough
 
 ```typescript
-import type { Equal, Expect } from "../examples/utils/type-helpers";
+import type { Equal, Expect } from '../examples/utils/type-helpers';
 
 // Step 1: Recursively extract the union of parameter names from the path
-type ExtractParamNames<TPath extends string> =
-  TPath extends `${string}:${infer Rest}`
-    ? Rest extends `${infer Param}/${infer Next}`
-      ? Param | ExtractParamNames<`/${Next}`>
-      : Rest
-    : never;
+type ExtractParamNames<TPath extends string> = TPath extends `${string}:${infer Rest}`
+  ? Rest extends `${infer Param}/${infer Next}`
+    ? Param | ExtractParamNames<`/${Next}`>
+    : Rest
+  : never;
 
 // Step 2: Map the extracted param union into an object type
 type PathParams<TPath extends string> = {
@@ -508,15 +518,13 @@ type PathParams<TPath extends string> = {
 };
 
 // Verification:
-type ExtractedKeys = ExtractParamNames<"/users/:id/posts/:postId">;
+type ExtractedKeys = ExtractParamNames<'/users/:id/posts/:postId'>;
 //   ^? type ExtractedKeys = "id" | "postId"
 
-type UserPostParams = PathParams<"/users/:id/posts/:postId">;
+type UserPostParams = PathParams<'/users/:id/posts/:postId'>;
 //   ^? type UserPostParams = { id: string; postId: string; }
 
-type TestParams = Expect<
-  Equal<UserPostParams, { id: string; postId: string }>
->;
+type TestParams = Expect<Equal<UserPostParams, { id: string; postId: string }>>;
 ```
 
 ---
@@ -524,6 +532,7 @@ type TestParams = Expect<
 ### Challenge 2: Transform an Attributes Object into a Discriminated Union
 
 #### Problem
+
 Given an object interface describing entity attributes, transform it into a discriminated union where each variant has a `type` property matching the key and a `value` property matching that key's type:
 
 ```typescript
@@ -543,7 +552,7 @@ type InputAttributes = {
 #### Solution & Walkthrough
 
 ```typescript
-import type { Equal, Expect } from "../examples/utils/type-helpers";
+import type { Equal, Expect } from '../examples/utils/type-helpers';
 
 // Step 1: Create an intermediate mapped type where each property value is the desired variant
 // Step 2: Index the mapped type by [keyof T] to collapse the properties into a union
@@ -560,9 +569,9 @@ type AttributeUnion = ObjectToDiscriminatedUnion<InputAttributes>;
 type TestAttributeUnion = Expect<
   Equal<
     AttributeUnion,
-    | { type: "id"; value: string }
-    | { type: "email"; value: string }
-    | { type: "age"; value: number }
+    | { type: 'id'; value: string }
+    | { type: 'email'; value: string }
+    | { type: 'age'; value: number }
   >
 >;
 ```
@@ -572,14 +581,15 @@ type TestAttributeUnion = Expect<
 ### Challenge 3: Transform a Discriminated Union into a Key-Value Map
 
 #### Problem
+
 Take a discriminated union with unique discriminant tags and transform it into a dictionary object where keys are the discriminant values:
 
 ```typescript
 // Input:
 type AppAction =
-  | { type: "login"; username: string; token: string }
-  | { type: "logout"; timestamp: number }
-  | { type: "navigate"; route: string };
+  | { type: 'login'; username: string; token: string }
+  | { type: 'logout'; timestamp: number }
+  | { type: 'navigate'; route: string };
 
 // Desired Output:
 // {
@@ -592,13 +602,13 @@ type AppAction =
 #### Solution & Walkthrough
 
 ```typescript
-import type { Equal, Expect } from "../examples/utils/type-helpers";
+import type { Equal, Expect } from '../examples/utils/type-helpers';
 
 // We iterate over each variant in the union (Variant in U).
 // We remap each key using `as Variant["type"]`.
 // We strip the discriminant key using Omit<Variant, "type">.
 type DiscriminatedUnionToMap<U extends { type: string }> = {
-  [Variant in U as Variant["type"]]: Omit<Variant, "type">;
+  [Variant in U as Variant['type']]: Omit<Variant, 'type'>;
 };
 
 type ActionMap = DiscriminatedUnionToMap<AppAction>;
@@ -621,33 +631,32 @@ type TestActionMap = Expect<
 ### Challenge 4: Construct Recursive `DeepPartial<T>` and `DeepReadonly<T>`
 
 #### Problem
+
 TypeScript's standard `Partial<T>` and `Readonly<T>` are strictly shallow. Construct `DeepPartial<T>` and `DeepReadonly<T>` that recursively transform nested objects and arrays without corrupting primitives, functions, or special built-in classes (`Date`, `RegExp`).
 
 #### Solution & Walkthrough
 
 ```typescript
-import type { Equal, Expect } from "../examples/utils/type-helpers";
+import type { Equal, Expect } from '../examples/utils/type-helpers';
 
 // Built-ins and primitives that must not be recursed into:
 type NonObject = Function | Date | RegExp | boolean | number | string | symbol | null | undefined;
 
-export type DeepPartial<T> = 
-  T extends NonObject
-    ? T
-    : T extends Array<infer U>
+export type DeepPartial<T> = T extends NonObject
+  ? T
+  : T extends Array<infer U>
     ? Array<DeepPartial<U>>
     : T extends ReadonlyArray<infer U>
-    ? ReadonlyArray<DeepPartial<U>>
-    : { [K in keyof T]?: DeepPartial<T[K]> };
+      ? ReadonlyArray<DeepPartial<U>>
+      : { [K in keyof T]?: DeepPartial<T[K]> };
 
-export type DeepReadonly<T> =
-  T extends NonObject
-    ? T
-    : T extends Array<infer U>
+export type DeepReadonly<T> = T extends NonObject
+  ? T
+  : T extends Array<infer U>
     ? ReadonlyArray<DeepReadonly<U>>
     : T extends ReadonlyArray<infer U>
-    ? ReadonlyArray<DeepReadonly<U>>
-    : { readonly [K in keyof T]: DeepReadonly<T[K]> };
+      ? ReadonlyArray<DeepReadonly<U>>
+      : { readonly [K in keyof T]: DeepReadonly<T[K]> };
 
 // Verification:
 interface ComplexConfig {
@@ -694,13 +703,17 @@ type TestDeepPartial = Expect<
 
 Recursive conditional types (`DeepPartial`, `Length`, `RouteParams`) are evaluated by nested instantiation, and the checker stops at a fixed depth with **TS2589** "Type instantiation is excessively deep and possibly infinite". Measured on TS 7.0.2 ([Module 13](./13-library-authoring-performance-and-type-tests.md), fixture `depth/`): building a tuple non-tail-recursively fails at 48 elements; the tail-recursive version fails at 1000 iterations.
 
-A conditional type is **tail-recursive** when the recursive reference is the *entire* branch:
+A conditional type is **tail-recursive** when the recursive reference is the _entire_ branch:
 
 ```ts
 // Not tail-recursive: the recursive call is wrapped in a spread
-type BuildNT<N extends number, A extends unknown[] = []> = A["length"] extends N ? A : [...BuildNT<N, [...A, 0]>];
+type BuildNT<N extends number, A extends unknown[] = []> = A['length'] extends N
+  ? A
+  : [...BuildNT<N, [...A, 0]>];
 // Tail-recursive: accumulate in a parameter and return the call itself
-type BuildT<N extends number, A extends unknown[] = []> = A["length"] extends N ? A : BuildT<N, [...A, 0]>;
+type BuildT<N extends number, A extends unknown[] = []> = A['length'] extends N
+  ? A
+  : BuildT<N, [...A, 0]>;
 ```
 
 Rewrite with an accumulator parameter (the `Length<S, Acc>` helper in the example does this) and always give the recursion a base case that is reached for `string`/`number` (non-literal) inputs, otherwise `Length<string>` recurses forever.
@@ -709,13 +722,13 @@ Rewrite with an accumulator parameter (the `Length<S, Acc>` helper in the exampl
 
 **Then (TS ≤ 6.0).** `` S extends `${infer H}${infer T}` `` consumed one UTF-16 code unit, so `HeadTail<"😀abc">` produced `["\ud83d", "\ude00abc"]` and a `Length` helper counted the emoji as 2.
 
-**Now (TS 7.0).** Inference consumes one Unicode **code point**: `HeadTail<"😀abc">` is `["😀", "abc"]` and `Length<"a😀b">` is `3` (both asserted in the example). This matches `[...str]` at runtime but *not* `str.length` (which still counts code units, and is 4 for `"a😀b"`).
+**Now (TS 7.0).** Inference consumes one Unicode **code point**: `HeadTail<"😀abc">` is `["😀", "abc"]` and `Length<"a😀b">` is `3` (both asserted in the example). This matches `[...str]` at runtime but _not_ `str.length` (which still counts code units, and is 4 for `"a😀b"`).
 
 **Migration.** Search for type-level string utilities (lengths, reversals, splitters) whose tests use non-BMP characters; update expected values, or document that the type models code points. Pitfall: a type-level `Length` that now disagrees with the runtime `.length` it is meant to describe.
 
 ### 9.5.3 Preview: stricter distributive relations (TS 7.1 beta)
 
-TS 7.1 (beta, 2026-10-20, preview only) reports an error when a type parameter constrained to *another* type parameter is related to that parameter inside a branch where it has been distributed:
+TS 7.1 (beta, 2026-10-20, preview only) reports an error when a type parameter constrained to _another_ type parameter is related to that parameter inside a branch where it has been distributed:
 
 ```ts
 type Issue<A extends number, B extends A> = A extends B ? never : Show<A, B>;
@@ -729,7 +742,7 @@ In 7.0 this compiles, and `Issue<0 | 1, 0>` silently produced the misleading `"0
 ## Anti-Patterns vs. Best Practices
 
 | Anti-Pattern | Best Practice | Why it Matters |
-| :--- | :--- | :--- |
+| :-- | :-- | :-- |
 | **Accidental Distribution**<br>`type Check<T> = T extends string ? 1 : 2;`<br>Passing `string \| number` yields `1 \| 2`. | **Tuple-Wrapped Conditionals**<br>`type Check<T> = [T] extends [string] ? 1 : 2;` | Prevents unintentional union distribution when testing entire compound types. |
 | **Testing `never` Directly**<br>`type IsNever<T> = T extends never ? true : false;`<br>Passing `never` evaluates to `never`. | **1-Tuple Never Check**<br>`type IsNever<T> = [T] extends [never] ? true : false;` | `never` is the empty union; naked distribution bypasses conditional logic completely. |
 | **Unbounded Recursive Types**<br>Unrestricted self-referential template literal parsing without termination. | **Bounded Base-Case Fallback**<br>Ensuring terminal clauses in `infer` recursions. | Prevents TS2589: `Type instantiation is excessively deep and possibly infinite`. |
@@ -742,34 +755,30 @@ In 7.0 this compiles, and `Issue<0 | 1, 0>` silently produced the misleading `"0
 ### Exercise 1: Distributive Union Filter & Tuple Reverser
 
 #### Scenario
+
 1. Implement `FilterUnion<TUnion, TTarget>`: filters a union to only members assignable to `TTarget` using distributive conditional types.
 2. Implement `ReverseTuple<TTuple>`: reverses the order of elements in a tuple using recursion and `infer`.
 
 ```typescript
-import type { Equal, Expect } from "../examples/utils/type-helpers";
+import type { Equal, Expect } from '../examples/utils/type-helpers';
 
 // TODO: Implement FilterUnion
 type FilterUnion<TUnion, TTarget> = TUnion extends TTarget ? TUnion : never;
 
 // TODO: Implement ReverseTuple
-type ReverseTuple<TTuple extends readonly any[]> = 
-  TTuple extends [infer First, ...infer Rest]
-    ? [...ReverseTuple<Rest>, First]
-    : [];
+type ReverseTuple<TTuple extends readonly any[]> = TTuple extends [infer First, ...infer Rest]
+  ? [...ReverseTuple<Rest>, First]
+  : [];
 
 // Tests:
 type MixedUnion = string | number | boolean | (() => void) | { id: string };
 type OnlyPrimitives = FilterUnion<MixedUnion, string | number | boolean>;
 
-type TestFilterUnion = Expect<
-  Equal<OnlyPrimitives, string | number | boolean>
->;
+type TestFilterUnion = Expect<Equal<OnlyPrimitives, string | number | boolean>>;
 
-type Reversed = ReverseTuple<[1, "two", true, null]>;
+type Reversed = ReverseTuple<[1, 'two', true, null]>;
 
-type TestReversed = Expect<
-  Equal<Reversed, [null, true, "two", 1]>
->;
+type TestReversed = Expect<Equal<Reversed, [null, true, 'two', 1]>>;
 ```
 
 ---
@@ -777,34 +786,34 @@ type TestReversed = Expect<
 ### Exercise 2: Type-Safe Query String Parser
 
 #### Scenario
-Create a type helper `ParseQueryString<TQuery>` that parses a URL query string (without the leading `?`) into an object type:
-`"tab=settings&mode=dark&ref=dashboard"` ⟹ `{ tab: "settings"; mode: "dark"; ref: "dashboard" }`.
+
+Create a type helper `ParseQueryString<TQuery>` that parses a URL query string (without the leading `?`) into an object type: `"tab=settings&mode=dark&ref=dashboard"` ⟹ `{ tab: "settings"; mode: "dark"; ref: "dashboard" }`.
 
 ```typescript
-import type { Equal, Expect } from "../examples/utils/type-helpers";
+import type { Equal, Expect } from '../examples/utils/type-helpers';
 
 // Step 1: Split string by '&' into a union of "key=val" pairs
-type SplitQueryPairs<T extends string> =
-  T extends `${infer Pair}&${infer Rest}`
-    ? Pair | SplitQueryPairs<Rest>
-    : T;
+type SplitQueryPairs<T extends string> = T extends `${infer Pair}&${infer Rest}`
+  ? Pair | SplitQueryPairs<Rest>
+  : T;
 
 // Step 2: Parse key-value pairs and remap into an object
 type ParseQueryString<T extends string> = {
-  [Pair in SplitQueryPairs<T> as Pair extends `${infer Key}=${string}` ? Key : never]:
-    Pair extends `${string}=${infer Val}` ? Val : never;
+  [
+    Pair in SplitQueryPairs<T> as Pair extends `${infer Key}=${string}` ? Key : never
+  ]: Pair extends `${string}=${infer Val}` ? Val : never;
 };
 
 // Verification:
-type ParsedQuery = ParseQueryString<"tab=settings&mode=dark&ref=dashboard">;
+type ParsedQuery = ParseQueryString<'tab=settings&mode=dark&ref=dashboard'>;
 
 type TestParsedQuery = Expect<
   Equal<
     ParsedQuery,
     {
-      tab: "settings";
-      mode: "dark";
-      ref: "dashboard";
+      tab: 'settings';
+      mode: 'dark';
+      ref: 'dashboard';
     }
   >
 >;
@@ -815,12 +824,14 @@ type TestParsedQuery = Expect<
 ### Exercise 3: CRUD Action Creator Mapper
 
 #### Scenario
+
 Given a record type describing database models, create a type helper `CrudActions<TModels>` that generates CRUD methods for every model in the format:
+
 - `create{Model}: (data: Omit<TModels[Model], "id">) => TModels[Model]`
 - `get{Model}: (id: string) => TModels[Model] | null`
 
 ```typescript
-import type { Equal, Expect } from "../examples/utils/type-helpers";
+import type { Equal, Expect } from '../examples/utils/type-helpers';
 
 interface Schema {
   user: { id: string; name: string; email: string };
@@ -830,12 +841,10 @@ interface Schema {
 // TODO: Implement CrudActions
 type CrudActions<TModels> = {
   [K in keyof TModels as `create${Capitalize<string & K>}`]: (
-    data: Omit<TModels[K], "id">
+    data: Omit<TModels[K], 'id'>,
   ) => TModels[K];
 } & {
-  [K in keyof TModels as `get${Capitalize<string & K>}`]: (
-    id: string
-  ) => TModels[K] | null;
+  [K in keyof TModels as `get${Capitalize<string & K>}`]: (id: string) => TModels[K] | null;
 };
 
 type Actions = CrudActions<Schema>;
@@ -844,8 +853,16 @@ type TestActions = Expect<
   Equal<
     Actions,
     {
-      createUser: (data: { name: string; email: string }) => { id: string; name: string; email: string };
-      createProject: (data: { title: string; budget: number }) => { id: string; title: string; budget: number };
+      createUser: (data: { name: string; email: string }) => {
+        id: string;
+        name: string;
+        email: string;
+      };
+      createProject: (data: { title: string; budget: number }) => {
+        id: string;
+        title: string;
+        budget: number;
+      };
       getUser: (id: string) => { id: string; name: string; email: string } | null;
       getProject: (id: string) => { id: string; title: string; budget: number } | null;
     }
@@ -858,18 +875,18 @@ type TestActions = Expect<
 ### Exercise 4: Deep Required with Nested Objects and Arrays
 
 #### Scenario
+
 Construct `DeepRequired<T>` that traverses down all nested objects, making all optional properties required, including objects inside arrays.
 
 ```typescript
-import type { Equal, Expect } from "../examples/utils/type-helpers";
+import type { Equal, Expect } from '../examples/utils/type-helpers';
 
 type NonObject = Function | Date | RegExp | boolean | number | string | symbol | null | undefined;
 
 // TODO: Implement DeepRequired
-type DeepRequired<T> = 
-  T extends NonObject
-    ? T
-    : T extends Array<infer U>
+type DeepRequired<T> = T extends NonObject
+  ? T
+  : T extends Array<infer U>
     ? Array<DeepRequired<U>>
     : { [K in keyof T]-?: DeepRequired<T[K]> };
 

@@ -47,9 +47,18 @@ export type Sleep = (ms: number, signal?: AbortSignal) => Promise<void>;
 
 export const defaultSleep: Sleep = (ms, signal) =>
   new Promise((resolve, reject) => {
-    if (signal?.aborted) { reject(signal.reason); return; }
-    const onAbort = () => { clearTimeout(timer); reject(signal?.reason); };
-    const timer = setTimeout(() => { signal?.removeEventListener('abort', onAbort); resolve(); }, ms);
+    if (signal?.aborted) {
+      reject(signal.reason);
+      return;
+    }
+    const onAbort = () => {
+      clearTimeout(timer);
+      reject(signal?.reason);
+    };
+    const timer = setTimeout(() => {
+      signal?.removeEventListener('abort', onAbort);
+      resolve();
+    }, ms);
     signal?.addEventListener('abort', onAbort, { once: true });
   });
 
@@ -66,8 +75,15 @@ export interface RetryOptions {
 /** Retry with exponential backoff and full jitter. */
 export async function retry<T>(
   op: (attempt: number, signal: AbortSignal) => Promise<T>,
-  { retries = 3, baseMs = 100, maxMs = 5_000, signal, sleep = defaultSleep, random = Math.random,
-    isRetryable = () => true }: RetryOptions = {},
+  {
+    retries = 3,
+    baseMs = 100,
+    maxMs = 5_000,
+    signal,
+    sleep = defaultSleep,
+    random = Math.random,
+    isRetryable = () => true,
+  }: RetryOptions = {},
 ): Promise<T> {
   for (let attempt = 0; ; attempt++) {
     signal?.throwIfAborted();
@@ -94,19 +110,33 @@ export const realClock: Clock = {
 };
 
 /** Trailing-edge debounce. */
-export function debounce<A extends unknown[]>(fn: (...args: A) => void, ms: number, clock: Clock = realClock) {
+export function debounce<A extends unknown[]>(
+  fn: (...args: A) => void,
+  ms: number,
+  clock: Clock = realClock,
+) {
   let handle: unknown;
   return (...args: A) => {
     if (handle !== undefined) clock.clearTimeout(handle);
-    handle = clock.setTimeout(() => { handle = undefined; fn(...args); }, ms);
+    handle = clock.setTimeout(() => {
+      handle = undefined;
+      fn(...args);
+    }, ms);
   };
 }
 
 /** Leading-edge throttle: at most one call per `ms`. */
-export function throttle<A extends unknown[]>(fn: (...args: A) => void, ms: number, clock: Clock = realClock) {
+export function throttle<A extends unknown[]>(
+  fn: (...args: A) => void,
+  ms: number,
+  clock: Clock = realClock,
+) {
   let last = -Infinity;
   return (...args: A) => {
     const t = clock.now();
-    if (t - last >= ms) { last = t; fn(...args); }
+    if (t - last >= ms) {
+      last = t;
+      fn(...args);
+    }
   };
 }

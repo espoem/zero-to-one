@@ -20,8 +20,14 @@ async function run(): Promise<void> {
       sqrt((a[1]-b[1])^2 + (a[2]-b[2])^2 + (a[3]-b[3])^2) AS l2_dist
     FROM v;
   `);
-  assert.ok(Math.abs(Number(vectorMath.rows[0]!.cosine_sim) - 0.8) < 0.0001, 'Cosine similarity must equal 0.8');
-  assert.ok(Math.abs(Number(vectorMath.rows[0]!.l2_dist) - 0.63245) < 0.001, 'L2 distance must equal ~0.632');
+  assert.ok(
+    Math.abs(Number(vectorMath.rows[0]!.cosine_sim) - 0.8) < 0.0001,
+    'Cosine similarity must equal 0.8',
+  );
+  assert.ok(
+    Math.abs(Number(vectorMath.rows[0]!.l2_dist) - 0.63245) < 0.001,
+    'L2 distance must equal ~0.632',
+  );
 
   // Test 2: Replication Catalog Introspection (Publications & Slots)
   await db.exec(`

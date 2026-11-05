@@ -2,8 +2,8 @@
   "name": "zero-to-one-css",
   "version": "1.0.0",
   "private": true,
-  "type": "module",
   "description": "CSS and modern web platform curriculum: 14 modules, browser computed-style tests, layout verification, and senior technical interview question bank",
+  "type": "module",
   "scripts": {
     "test": "node --test --test-concurrency=4 \"examples/**/*.test.ts\"",
     "typecheck": "tsc --noEmit -p tsconfig.json"

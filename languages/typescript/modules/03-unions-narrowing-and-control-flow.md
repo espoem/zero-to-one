@@ -1,7 +1,6 @@
 # Module 03: Unions, Narrowing & Control-Flow Analysis
 
-> Examples and tests: [`examples/03-unions-narrowing/control-flow.test.ts`](../examples/03-unions-narrowing/control-flow.test.ts) (exhaustiveness, `switch (true)`, truthiness traps, destructured unions, closures, inferred predicates) and [`essentials-and-narrowing.test.ts`](../examples/03-unions-narrowing/essentials-and-narrowing.test.ts).
-> Run: `mise exec -- node --test examples/03-unions-narrowing/`
+> Examples and tests: [`examples/03-unions-narrowing/control-flow.test.ts`](../examples/03-unions-narrowing/control-flow.test.ts) (exhaustiveness, `switch (true)`, truthiness traps, destructured unions, closures, inferred predicates) and [`essentials-and-narrowing.test.ts`](../examples/03-unions-narrowing/essentials-and-narrowing.test.ts). Run: `mise exec -- node --test examples/03-unions-narrowing/`
 
 ---
 
@@ -33,30 +32,30 @@ In TypeScript, **types are sets of allowable runtime values**:
 
 ### Control-flow analysis, formally
 
-The checker gives every *reference* (a variable, parameter, or property access path like `a.b.c`) a **declared type** and, at each program point, a **narrowed type**. The binder builds a control-flow graph whose nodes are assignments, conditions and branch joins. To find the type of a reference at a point, the checker walks the graph **backwards** to the declaration:
+The checker gives every _reference_ (a variable, parameter, or property access path like `a.b.c`) a **declared type** and, at each program point, a **narrowed type**. The binder builds a control-flow graph whose nodes are assignments, conditions and branch joins. To find the type of a reference at a point, the checker walks the graph **backwards** to the declaration:
 
 - an **assignment** `x = e` sets the narrowed type to the type of `e` (filtered by the declared type);
-- a **condition** node (`typeof x === "string"`, `x !== null`, `"k" in x`, `x instanceof C`, `x.kind === "a"`, a call to a type predicate, truthiness) on the true/false edge *filters* the type: $T \mapsto T \cap P$ on the true branch and $T \mapsto T \setminus P$ on the false branch, applied per union member;
+- a **condition** node (`typeof x === "string"`, `x !== null`, `"k" in x`, `x instanceof C`, `x.kind === "a"`, a call to a type predicate, truthiness) on the true/false edge _filters_ the type: $T \mapsto T \cap P$ on the true branch and $T \mapsto T \setminus P$ on the false branch, applied per union member;
 - a **join** (after `if`/`else`, at loop heads) takes the union of incoming types;
 - a call to an **assertion function** (`asserts x is T`) or a `never`-returning function narrows everything after it.
 
-Because the analysis is per reference, these break narrowing: reassignment of the reference after the check, a property path through a function call (`getUser().name`), aliasing into a separate `let` variable, and checks performed inside a *called* function (unless that function is a predicate). TS 4.4 added **aliased conditions** (`const isStr = typeof x === "string"; if (isStr) …` narrows when `x` is `const` or a non-reassigned parameter) and 4.6 added narrowing of **destructured discriminated unions** (when destructured from a parameter or `const`, not `let`).
+Because the analysis is per reference, these break narrowing: reassignment of the reference after the check, a property path through a function call (`getUser().name`), aliasing into a separate `let` variable, and checks performed inside a _called_ function (unless that function is a predicate). TS 4.4 added **aliased conditions** (`const isStr = typeof x === "string"; if (isStr) …` narrows when `x` is `const` or a non-reassigned parameter) and 4.6 added narrowing of **destructured discriminated unions** (when destructured from a parameter or `const`, not `let`).
 
 ## Lesson 3.1: Union Types, Literal Types & Assignability
 
 ### 3.1.1 Sets of Values and Type Assignability
 
-Type assignability answers a single question: *Is set A a subset of set B?*
+Type assignability answers a single question: _Is set A a subset of set B?_
 
 If `A` is assignable to `B` (`target: B = sourceA`), every possible value in `A` is legally accepted wherever `B` is expected:
 
 ```typescript
-type Direction = "north" | "south" | "east" | "west";
+type Direction = 'north' | 'south' | 'east' | 'west';
 
-const move = "north";
+const move = 'north';
 const dir: Direction = move; // ✅ OK: "north" is in Direction
 
-const anyString = "up";
+const anyString = 'up';
 // @ts-expect-error: Type '"up"' is not assignable to type 'Direction'
 const invalidDir: Direction = anyString;
 ```
@@ -68,10 +67,10 @@ Because `"north"` is a subset of `string`, you can pass a `Direction` to a funct
 When you declare a variable with `let`, TypeScript infers a **widened** mutable primitive type. When you declare with `const`, TypeScript infers the exact **literal** type:
 
 ```typescript
-let statusLet = "loading";
+let statusLet = 'loading';
 //  ^? let statusLet: string (can be reassigned to any string)
 
-const statusConst = "loading";
+const statusConst = 'loading';
 //    ^? const statusConst: "loading" (can never change)
 ```
 
@@ -80,15 +79,15 @@ For objects and arrays, `const` only freezes the variable reference, not the int
 ```typescript
 // Without as const: properties widen to string
 const buttonConfig1 = {
-  theme: "dark",
-  size: "large",
+  theme: 'dark',
+  size: 'large',
 };
 // buttonConfig1.theme: string
 
 // With as const: deeply read-only literal types
 const buttonConfig2 = {
-  theme: "dark",
-  size: "large",
+  theme: 'dark',
+  size: 'large',
 } as const;
 // buttonConfig2.theme: "dark"
 // buttonConfig2.size: "large"
@@ -100,11 +99,11 @@ Without `"strictNullChecks": true`, `null` and `undefined` are automatically ass
 
 ```typescript
 function findUserById(id: string): { id: string; name: string } | null {
-  if (id === "root") return { id: "root", name: "Administrator" };
+  if (id === 'root') return { id: 'root', name: 'Administrator' };
   return null;
 }
 
-const user = findUserById("guest");
+const user = findUserById('guest');
 // ❌ Error: 'user' is possibly 'null'.
 console.log(user.name);
 
@@ -121,8 +120,8 @@ if (user !== null) {
 Unions combine cleanly using type aliases and template literal types:
 
 ```typescript
-type Status = "pending" | "resolved" | "rejected";
-type Stage = "dev" | "staging" | "prod";
+type Status = 'pending' | 'resolved' | 'rejected';
+type Stage = 'dev' | 'staging' | 'prod';
 
 type DeploymentKey = `${Stage}_${Status}`;
 //   ^? "dev_pending" | "dev_resolved" | "dev_rejected" |
@@ -143,9 +142,9 @@ TypeScript uses **control-flow analysis** to inspect conditional statements, loo
 ```typescript
 // 1. typeof narrowing:
 function padLeft(value: string, padding: string | number): string {
-  if (typeof padding === "number") {
+  if (typeof padding === 'number') {
     // padding is narrowed to number:
-    return " ".repeat(padding) + value;
+    return ' '.repeat(padding) + value;
   }
   // padding is narrowed to string:
   return padding + value;
@@ -164,11 +163,11 @@ type EmailUser = { email: string };
 type PhoneUser = { phone: string };
 
 function contactUser(user: EmailUser | PhoneUser) {
-  if ("email" in user) {
-    console.log("Sending email to:", user.email);
+  if ('email' in user) {
+    console.log('Sending email to:', user.email);
     //                                ^? (property) email: string
   } else {
-    console.log("Calling phone:", user.phone);
+    console.log('Calling phone:', user.phone);
     //                            ^? (property) phone: string
   }
 }
@@ -177,22 +176,25 @@ function contactUser(user: EmailUser | PhoneUser) {
 ### 3.2.2 Truthiness, Equality, and Narrowing Pitfalls
 
 #### Trap 1: `typeof null === "object"`
+
 In JavaScript, `typeof null` evaluates to `"object"`. A check for `typeof val === "object"` will still include `null`:
+
 ```typescript
 function processData(val: { count: number } | null) {
   // ❌ Bug: val could be null!
-  if (typeof val === "object") {
+  if (typeof val === 'object') {
     // val is still { count: number } | null
   }
 
   // ✅ Correct guard:
-  if (typeof val === "object" && val !== null) {
+  if (typeof val === 'object' && val !== null) {
     console.log(val.count); // val: { count: number }
   }
 }
 ```
 
 #### Trap 2: Truthiness Narrowing Eliminates `0` and `""`
+
 ```typescript
 function printLength(text: string | undefined) {
   // ❌ Dangerous if "" is a valid string:
@@ -208,19 +210,20 @@ function printLength(text: string | undefined) {
 ```
 
 #### Trap 3: Narrowing Maps Does Not Propagate to `map.get()`
+
 ```typescript
 const map = new Map<string, number>();
-map.set("counter", 1);
+map.set('counter', 1);
 
-if (map.has("counter")) {
-  const count = map.get("counter");
+if (map.has('counter')) {
+  const count = map.get('counter');
   //    ^? const count: number | undefined
   // Even though map.has() was true, map.get() is STILL number | undefined!
   // TypeScript does not track side effects across method calls on Map.
 }
 
 // ✅ Correct pattern: Store the lookup result in a local variable:
-const count = map.get("counter");
+const count = map.get('counter');
 if (count !== undefined) {
   console.log(count + 1); // count: number
 }
@@ -233,7 +236,7 @@ When a branch throws an error or calls a function returning `never`, TypeScript 
 ```typescript
 function processTransaction(id: string | null) {
   if (id === null) {
-    throw new Error("Transaction ID is required");
+    throw new Error('Transaction ID is required');
   }
 
   // Downstream, id is strictly string:
@@ -248,23 +251,23 @@ Under `useUnknownInCatchVariables` (default in modern TS), `catch` variables are
 
 ```typescript
 try {
-  JSON.parse("{ invalid json }");
+  JSON.parse('{ invalid json }');
 } catch (error: unknown) {
   // ❌ Error: 'error' is of type 'unknown'.
   // console.log(error.message);
 
   // ✅ Narrow before accessing properties:
   if (error instanceof Error) {
-    console.error("Caught error message:", error.message);
+    console.error('Caught error message:', error.message);
   } else {
-    console.error("Unknown error caught:", String(error));
+    console.error('Unknown error caught:', String(error));
   }
 }
 ```
 
 ### 3.2.5 Narrowing Scope in Closures
 
-A callback may run later, after the variable changed. The checker therefore has to decide whether a narrowing established *outside* a closure still holds *inside* it.
+A callback may run later, after the variable changed. The checker therefore has to decide whether a narrowing established _outside_ a closure still holds _inside_ it.
 
 ### Then vs now: narrowing in closures
 
@@ -273,7 +276,7 @@ A callback may run later, after the variable changed. The checker therefore has 
 ```ts
 let selectedId: string | null = load();
 if (selectedId !== null) {
-  const id = selectedId;              // workaround
+  const id = selectedId; // workaround
   setTimeout(() => id.toUpperCase());
 }
 ```
@@ -288,9 +291,12 @@ Since TS 5.3, each `case` expression of a `switch (true)` narrows like an `if` c
 
 ```ts
 switch (true) {
-  case typeof x === "string": return x.toUpperCase();
-  case Array.isArray(x):      return x.length;
-  default:                    return x.toFixed();
+  case typeof x === 'string':
+    return x.toUpperCase();
+  case Array.isArray(x):
+    return x.length;
+  default:
+    return x.toFixed();
 }
 ```
 
@@ -308,10 +314,10 @@ A **Discriminated Union** (also called a Tagged Union or Algebraic Data Type) co
 
 ```typescript
 type NetworkState =
-  | { status: "idle" }
-  | { status: "loading"; startedAt: number }
-  | { status: "success"; data: string[]; latencyMs: number }
-  | { status: "error"; error: Error };
+  | { status: 'idle' }
+  | { status: 'loading'; startedAt: number }
+  | { status: 'success'; data: string[]; latencyMs: number }
+  | { status: 'error'; error: Error };
 ```
 
 Every variant has `status`, but the literal value of `status` uniquely identifies which other fields exist.
@@ -321,13 +327,13 @@ Every variant has `status`, but the literal value of `status` uniquely identifie
 ```typescript
 function renderState(state: NetworkState): string {
   switch (state.status) {
-    case "idle":
-      return "Ready to load";
-    case "loading":
+    case 'idle':
+      return 'Ready to load';
+    case 'loading':
       return `Loading since ${state.startedAt}...`;
-    case "success":
+    case 'success':
       return `Loaded ${state.data.length} items in ${state.latencyMs}ms`;
-    case "error":
+    case 'error':
       return `Failed: ${state.error.message}`;
   }
 }
@@ -347,9 +353,9 @@ function badRender(state: NetworkState) {
 // ✅ CORRECT: Narrow first on the parent, then destructure inside each branch:
 function goodRender(state: NetworkState) {
   switch (state.status) {
-    case "success": {
+    case 'success': {
       const { data, latencyMs } = state; // Safe!
-      return data.join(", ");
+      return data.join(', ');
     }
   }
 }
@@ -368,14 +374,14 @@ export function assertNever(value: never): never {
 
 function handleState(state: NetworkState): string {
   switch (state.status) {
-    case "idle":
-      return "Idle";
-    case "loading":
-      return "Loading";
-    case "success":
-      return "Success";
-    case "error":
-      return "Error";
+    case 'idle':
+      return 'Idle';
+    case 'loading':
+      return 'Loading';
+    case 'success':
+      return 'Success';
+    case 'error':
+      return 'Error';
     default:
       // If any variant is omitted above, state is NOT never here,
       // producing an immediate compile-time error!
@@ -395,26 +401,23 @@ type ValidationResult =
   | { isValid: false; failureReason: string };
 
 // Discriminated Tuple (Result pattern):
-type TaskResult<T> =
-  | [status: "ok", data: T]
-  | [status: "error", error: Error];
+type TaskResult<T> = [status: 'ok', data: T] | [status: 'error', error: Error];
 
 function handleTask(res: TaskResult<number>) {
-  if (res[0] === "ok") {
-    console.log("Success value:", res[1]); // res[1]: number
+  if (res[0] === 'ok') {
+    console.log('Success value:', res[1]); // res[1]: number
   } else {
-    console.error("Error occurred:", res[1].message); // res[1]: Error
+    console.error('Error occurred:', res[1].message); // res[1]: Error
   }
 }
 ```
 
 ---
 
-
 ## Anti-Patterns vs. Best Practices
 
 | Anti-Pattern | Best Practice | Why |
-| :--- | :--- | :--- |
+| :-- | :-- | :-- |
 | **"The Bag of Optionals" State**<br>`{ status: string; data?: T; error?: Error; isLoading: boolean }` | **Discriminated Union**<br>`{ status: "loading" } \| { status: "success"; data: T } \| { status: "error"; error: Error }` | Eliminates impossible states (e.g. `isLoading: true` while `error` and `data` are both defined). |
 | **Blind Truthiness Guard**<br>`if (item.count) { ... }` | **Explicit Null/Undefined Guard**<br>`if (item.count !== undefined) { ... }` | Truthiness checks fail when `count === 0`, causing hard-to-detect bugs. |
 | **Typing Catch Variables as `any`**<br>`catch (err: any) { console.log(err.message); }` | **Type as `unknown` and narrow**<br>`catch (err: unknown) { if (err instanceof Error) ... }` | Thrown values in JS can be anything (strings, numbers, null, plain objects). |
@@ -432,16 +435,16 @@ type BadHttpState<T> = {
 const buggyState: BadHttpState<string> = {
   isLoading: true,
   isError: true,
-  data: "hello",
-  error: new Error("failed"),
+  data: 'hello',
+  error: new Error('failed'),
 };
 
 // ✅ Best practice: Discriminated Union makes impossible states unrepresentable:
 type GoodHttpState<T> =
-  | { status: "idle" }
-  | { status: "loading" }
-  | { status: "success"; data: T }
-  | { status: "error"; error: Error };
+  | { status: 'idle' }
+  | { status: 'loading' }
+  | { status: 'success'; data: T }
+  | { status: 'error'; error: Error };
 ```
 
 ---
@@ -452,17 +455,17 @@ type GoodHttpState<T> =
 // Shared test helpers for exercises:
 type Expect<T extends true> = T;
 type Equal<X, Y> =
-  (<T>() => T extends X ? 1 : 2) extends
-  (<T>() => T extends Y ? 1 : 2) ? true : false;
+  (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y ? 1 : 2 ? true : false;
 ```
 
 ---
 
-
 ### Exercise 3.1: The Resilient Async State Machine
 
 #### Problem Description
+
 Design a discriminated union `AsyncData<T>` that represents four distinct states:
+
 1. `"idle"`: No additional fields.
 2. `"loading"`: Has `progress: number` (0 to 100).
 3. `"success"`: Has `data: T` and `timestamp: number`.
@@ -471,21 +474,23 @@ Design a discriminated union `AsyncData<T>` that represents four distinct states
 Write an exhaustive message formatter `getDisplayMessage<T>(state: AsyncData<T>): string` utilizing an `assertNever` check in the default branch.
 
 #### Starter Code
+
 ```typescript
 // TODO: Define AsyncData<T>
 type AsyncData<T> = any;
 
 // TODO: Implement getDisplayMessage<T>
 function getDisplayMessage<T>(state: AsyncData<T>): string {
-  throw new Error("Not implemented");
+  throw new Error('Not implemented');
 }
 
 // Tests:
-type TestIdle = AsyncData<string> extends { status: "idle" } ? true : false;
+type TestIdle = AsyncData<string> extends { status: 'idle' } ? true : false;
 type Test2 = Expect<Equal<TestIdle, true>>;
 ```
 
 #### Hints
+
 1. Each variant must contain `status: "idle" | "loading" | "success" | "error"`.
 2. In the `switch`, handle every case and call `assertNever(state)` in the `default` branch.
 
@@ -494,10 +499,10 @@ type Test2 = Expect<Equal<TestIdle, true>>;
 ```typescript
 // 1. Define the discriminated union:
 type AsyncData<T> =
-  | { status: "idle" }
-  | { status: "loading"; progress: number }
-  | { status: "success"; data: T; timestamp: number }
-  | { status: "error"; error: Error };
+  | { status: 'idle' }
+  | { status: 'loading'; progress: number }
+  | { status: 'success'; data: T; timestamp: number }
+  | { status: 'error'; error: Error };
 
 // 2. Helper for exhaustiveness checking:
 function assertNever(value: never): never {
@@ -507,13 +512,13 @@ function assertNever(value: never): never {
 // 3. Exhaustive switch function:
 function getDisplayMessage<T>(state: AsyncData<T>): string {
   switch (state.status) {
-    case "idle":
-      return "System idle";
-    case "loading":
+    case 'idle':
+      return 'System idle';
+    case 'loading':
       return `Loading... ${state.progress}%`;
-    case "success":
+    case 'success':
       return `Success at ${state.timestamp}`;
-    case "error":
+    case 'error':
       return `Error: ${state.error.message}`;
     default:
       return assertNever(state);
@@ -521,8 +526,9 @@ function getDisplayMessage<T>(state: AsyncData<T>): string {
 }
 
 // Verification:
-type TestIdle = AsyncData<string> extends { status: "idle" } ? true : false;
-type TestSuccess = AsyncData<number> extends { status: "success"; data: number; timestamp: number } ? true : false;
+type TestIdle = AsyncData<string> extends { status: 'idle' } ? true : false;
+type TestSuccess =
+  AsyncData<number> extends { status: 'success'; data: number; timestamp: number } ? true : false;
 type Test1 = Expect<Equal<TestIdle, true>>;
 type Test2 = Expect<Equal<TestSuccess, true>>;
 ```
@@ -532,18 +538,24 @@ type Test2 = Expect<Equal<TestSuccess, true>>;
 ### Exercise 3.2: Normalized Pipeline Error Handler
 
 #### Problem Description
+
 Write a utility function `normalizeError` that takes an `unknown` error caught in a try/catch block and normalizes it into a standardized `{ message: string; statusCode: number }` object:
+
 - If the error is an instance of `HttpError` (a custom class with `status: number`), return its status and message.
 - If the error is a standard `Error`, return `statusCode: 500` and its message.
 - If the error is a string, return `statusCode: 500` and the string.
 - For all other unknown types, return `statusCode: 500` and `"An unexpected error occurred"`.
 
 #### Starter Code
+
 ```typescript
 class HttpError extends Error {
-  constructor(public status: number, message: string) {
+  constructor(
+    public status: number,
+    message: string,
+  ) {
     super(message);
-    this.name = "HttpError";
+    this.name = 'HttpError';
   }
 }
 
@@ -554,11 +566,12 @@ type NormalizedError = {
 
 // TODO: Implement normalizeError(error: unknown): NormalizedError
 function normalizeError(error: unknown): NormalizedError {
-  throw new Error("Not implemented");
+  throw new Error('Not implemented');
 }
 ```
 
 #### Hints
+
 1. Order your checks: test `error instanceof HttpError` before `error instanceof Error`.
 2. Check `typeof error === "string"` for string errors.
 
@@ -566,9 +579,12 @@ function normalizeError(error: unknown): NormalizedError {
 
 ```typescript
 class HttpError extends Error {
-  constructor(public status: number, message: string) {
+  constructor(
+    public status: number,
+    message: string,
+  ) {
     super(message);
-    this.name = "HttpError";
+    this.name = 'HttpError';
   }
 }
 
@@ -592,7 +608,7 @@ function normalizeError(error: unknown): NormalizedError {
     };
   }
 
-  if (typeof error === "string") {
+  if (typeof error === 'string') {
     return {
       message: error,
       statusCode: 500,
@@ -600,41 +616,45 @@ function normalizeError(error: unknown): NormalizedError {
   }
 
   return {
-    message: "An unexpected error occurred",
+    message: 'An unexpected error occurred',
     statusCode: 500,
   };
 }
 
 // Verification:
-const httpErr = normalizeError(new HttpError(404, "User not found"));
+const httpErr = normalizeError(new HttpError(404, 'User not found'));
 type TestHttp = Expect<Equal<typeof httpErr, NormalizedError>>;
 
-const standardErr = normalizeError(new Error("Disk full"));
-const stringErr = normalizeError("Database connection lost");
+const standardErr = normalizeError(new Error('Disk full'));
+const stringErr = normalizeError('Database connection lost');
 const unknownErr = normalizeError({ random: 123 });
 ```
 
 ---
 
-
 ### Exercise 3.4: Type-Safe Result Tuple Unwrapper
 
 #### Problem Description
+
 In functional programming, operations often return a Result tuple:
+
 ```typescript
 type Result<T, E = Error> = [ok: true, value: T] | [ok: false, error: E];
 ```
+
 Write a helper function `unwrapResult<T, E>(result: Result<T, E>): T` that:
+
 - If `result[0]` is `true`, returns the unwrapped value `result[1]`.
 - If `result[0]` is `false`, throws `result[1]` (if it is an `Error`) or throws a new `Error` wrapping the string representation of `result[1]`.
 
 #### Starter Code
+
 ```typescript
 type Result<T, E = Error> = [ok: true, value: T] | [ok: false, error: E];
 
 // TODO: Implement unwrapResult
 function unwrapResult<T, E>(result: Result<T, E>): T {
-  throw new Error("Not implemented");
+  throw new Error('Not implemented');
 }
 
 // Tests:
@@ -644,6 +664,7 @@ type TestUnwrapped = Expect<Equal<typeof unwrapped, number>>;
 ```
 
 #### Hints
+
 1. Check `if (result[0] === true)`. Inside this branch, `result[1]` is narrowed to `T`.
 2. In the `false` branch, narrow `result[1]` with `instanceof Error`.
 
@@ -670,11 +691,11 @@ const successResult: Result<number, string> = [true, 42];
 const unwrapped = unwrapResult(successResult);
 type TestUnwrapped = Expect<Equal<typeof unwrapped, number>>;
 
-const failureResult: Result<string, Error> = [false, new Error("Not found")];
+const failureResult: Result<string, Error> = [false, new Error('Not found')];
 try {
   unwrapResult(failureResult);
 } catch (e) {
-  console.log("Properly caught:", e);
+  console.log('Properly caught:', e);
 }
 ```
 

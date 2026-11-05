@@ -1,6 +1,6 @@
-import { describe, it } from "node:test";
-import assert from "node:assert/strict";
-import fc from "fast-check";
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
+import fc from 'fast-check';
 
 // Quicksort with 3-Way Dutch National Flag Partitioning
 export function quickSort3Way(arr: number[], low = 0, high = arr.length - 1): void {
@@ -11,9 +11,9 @@ export function quickSort3Way(arr: number[], low = 0, high = arr.length - 1): vo
   const pivot = arr[pivotIdx]!;
   [arr[low], arr[pivotIdx]] = [arr[pivotIdx]!, arr[low]!];
 
-  let lt = low;      // arr[low ... lt - 1] < pivot
-  let i = low + 1;   // arr[lt ... i - 1] === pivot
-  let gt = high;     // arr[gt + 1 ... high] > pivot
+  let lt = low; // arr[low ... lt - 1] < pivot
+  let i = low + 1; // arr[lt ... i - 1] === pivot
+  let gt = high; // arr[gt + 1 ... high] > pivot
 
   while (i <= gt) {
     if (arr[i]! < pivot) {
@@ -73,7 +73,7 @@ export function quickSelect(arr: number[], k: number): number {
       return arr[k]!;
     }
   }
-  throw new Error("k out of bounds");
+  throw new Error('k out of bounds');
 }
 
 // "Binary Search on Answer": Minimum capacity to ship packages within D days
@@ -109,31 +109,31 @@ export function shipWithinDays(weights: number[], days: number): number {
   return left;
 }
 
-describe("Module 04: Sorting, Selection & Monotone Predicate Search", () => {
-  it("3-way Quicksort sorts arrays with high duplicate density efficiently", () => {
+describe('Module 04: Sorting, Selection & Monotone Predicate Search', () => {
+  it('3-way Quicksort sorts arrays with high duplicate density efficiently', () => {
     const data = [4, 2, 4, 3, 4, 1, 4, 2, 4, 4];
     quickSort3Way(data);
     assert.deepEqual(data, [1, 2, 2, 3, 4, 4, 4, 4, 4, 4]);
   });
 
-  it("Quickselect accurately finds the k-th smallest element in O(n) average time", () => {
+  it('Quickselect accurately finds the k-th smallest element in O(n) average time', () => {
     const data = [7, 10, 4, 3, 20, 15]; // Sorted: [3, 4, 7, 10, 15, 20]
 
-    assert.equal(quickSelect([...data], 0), 3);  // 1st smallest
-    assert.equal(quickSelect([...data], 1), 4);  // 2nd smallest
-    assert.equal(quickSelect([...data], 2), 7);  // 3rd smallest
+    assert.equal(quickSelect([...data], 0), 3); // 1st smallest
+    assert.equal(quickSelect([...data], 1), 4); // 2nd smallest
+    assert.equal(quickSelect([...data], 2), 7); // 3rd smallest
     assert.equal(quickSelect([...data], 3), 10); // 4th smallest
     assert.equal(quickSelect([...data], 5), 20); // Largest
   });
 
-  it("Binary Search on Answer solves the package shipping capacity problem correctly", () => {
+  it('Binary Search on Answer solves the package shipping capacity problem correctly', () => {
     // Packages: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], Days = 5
     // Capacity 15 ships: [1..5] (15), [6, 7] (13), [8] (8), [9] (9), [10] (10) in 5 days
     const weights = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
     assert.equal(shipWithinDays(weights, 5), 15);
   });
 
-  it("property test: 3-way Quicksort always matches native Array.prototype.sort()", () => {
+  it('property test: 3-way Quicksort always matches native Array.prototype.sort()', () => {
     fc.assert(
       fc.property(fc.array(fc.integer({ min: -1000, max: 1000 })), (rawArray) => {
         const copy1 = [...rawArray];
@@ -144,7 +144,7 @@ describe("Module 04: Sorting, Selection & Monotone Predicate Search", () => {
 
         assert.deepEqual(copy1, copy2);
       }),
-      { numRuns: 150 }
+      { numRuns: 150 },
     );
   });
 });

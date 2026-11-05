@@ -109,9 +109,6 @@ describe('Module 14: W3C Design Tokens (DTCG 2025.10)', () => {
     const resolver = new DesignTokenResolver();
     resolver.loadTokens(circularData);
 
-    assert.throws(
-      () => resolver.resolveValue('color.a'),
-      /Circular dependency detected/
-    );
+    assert.throws(() => resolver.resolveValue('color.a'), /Circular dependency detected/);
   });
 });

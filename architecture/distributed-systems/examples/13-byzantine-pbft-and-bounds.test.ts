@@ -62,20 +62,23 @@ export class PbftNode {
 }
 
 test('Module 13: Byzantine Fault Tolerance & the 3f + 1 Bound', async (t) => {
-  await t.test('Mathematical 3f + 1 bound: 2f + 1 fails, 3f + 1 succeeds for Byzantine tolerance', () => {
-    // For f = 1 traitor:
-    // 2f + 1 = 3 nodes: FAILS (1 crash + 1 traitor leaves 1 honest node, tied 1 vs 1)
-    assert.equal(canTolerateByzantine(3, 1), false);
+  await t.test(
+    'Mathematical 3f + 1 bound: 2f + 1 fails, 3f + 1 succeeds for Byzantine tolerance',
+    () => {
+      // For f = 1 traitor:
+      // 2f + 1 = 3 nodes: FAILS (1 crash + 1 traitor leaves 1 honest node, tied 1 vs 1)
+      assert.equal(canTolerateByzantine(3, 1), false);
 
-    // 3f + 1 = 4 nodes: SUCCEEDS ((4 - 2) = 2 honest nodes > 1 traitor)
-    assert.equal(canTolerateByzantine(4, 1), true);
+      // 3f + 1 = 4 nodes: SUCCEEDS ((4 - 2) = 2 honest nodes > 1 traitor)
+      assert.equal(canTolerateByzantine(4, 1), true);
 
-    // For f = 2 traitors:
-    // 2f + 1 = 5 nodes: FAILS
-    assert.equal(canTolerateByzantine(5, 2), false);
-    // 3f + 1 = 7 nodes: SUCCEEDS
-    assert.equal(canTolerateByzantine(7, 2), true);
-  });
+      // For f = 2 traitors:
+      // 2f + 1 = 5 nodes: FAILS
+      assert.equal(canTolerateByzantine(5, 2), false);
+      // 3f + 1 = 7 nodes: SUCCEEDS
+      assert.equal(canTolerateByzantine(7, 2), true);
+    },
+  );
 
   await t.test('PBFT reaches Prepared state on 2f prepares and Committed on 2f + 1 commits', () => {
     // N = 4 nodes, f = 1

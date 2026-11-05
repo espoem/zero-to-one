@@ -10,23 +10,37 @@ const script = (src) => JSON.parse(JSON.stringify(vm.runInNewContext(src, {})));
 
 describe('Declaration instantiation ("hoisting", §10.2.11, §16.1.7)', () => {
   test('var is initialized to undefined, function declarations to the function', () => {
-    assert.deepEqual(script(`
+    assert.deepEqual(
+      script(`
       const r = [typeof v, typeof f];
       var v = 1;
       function f() {}
-      r;`), ['undefined', 'function']);
+      r;`),
+      ['undefined', 'function'],
+    );
   });
 
   test('NEGATIVE: let/const/class are in the TDZ until evaluated', () => {
-    assert.throws(() => script('x; let x = 1;'), (e) => e.name === 'ReferenceError');
-    assert.throws(() => script('new C(); class C {}'), (e) => e.name === 'ReferenceError');
-    assert.throws(() => script('let y = y;'), (e) => e.name === 'ReferenceError');
+    assert.throws(
+      () => script('x; let x = 1;'),
+      (e) => e.name === 'ReferenceError',
+    );
+    assert.throws(
+      () => script('new C(); class C {}'),
+      (e) => e.name === 'ReferenceError',
+    );
+    assert.throws(
+      () => script('let y = y;'),
+      (e) => e.name === 'ReferenceError',
+    );
   });
 
   test('the TDZ is temporal: a function defined earlier may read the binding later', () => {
     assert.equal(script('function readLater() { return value; } let value = 42; readLater();'), 42);
-    assert.throws(() => script('{ readLater2(); let v2 = 1; function readLater2() { return v2; } }'),
-      (e) => e.name === 'ReferenceError');
+    assert.throws(
+      () => script('{ readLater2(); let v2 = 1; function readLater2() { return v2; } }'),
+      (e) => e.name === 'ReferenceError',
+    );
   });
 
   test('NEGATIVE: default parameters cannot read later parameters (TDZ)', () => {
@@ -42,35 +56,51 @@ describe('Declaration instantiation ("hoisting", §10.2.11, §16.1.7)', () => {
     assert.equal(ctx.b, undefined);
     assert.equal(typeof ctx.c, 'function');
     // vm sandboxes use interceptors, so check descriptors in a real global (child process):
-    const r = runNode(['-e', `require('node:vm').runInThisContext('var a = 1; let b = 2;');
-      console.log(Object.getOwnPropertyDescriptor(globalThis, 'a').configurable, 'b' in globalThis)`]);
+    const r = runNode([
+      '-e',
+      `require('node:vm').runInThisContext('var a = 1; let b = 2;');
+      console.log(Object.getOwnPropertyDescriptor(globalThis, 'a').configurable, 'b' in globalThis)`,
+    ]);
     assert.equal(r.stdout.trim(), 'false false');
   });
 
   test('NEGATIVE: let colliding with an existing global var is a SyntaxError before anything runs', () => {
     // Two classic scripts sharing one global environment (GlobalDeclarationInstantiation checks).
-    const r = runNode(['-e', `
+    const r = runNode([
+      '-e',
+      `
       const vm = require('node:vm');
       vm.runInThisContext('var dup = 1;');
       try { vm.runInThisContext('globalThis.ran = true; let dup = 2;'); }
-      catch (e) { console.log(e.name, typeof globalThis.ran); }`]);
+      catch (e) { console.log(e.name, typeof globalThis.ran); }`,
+    ]);
     assert.equal(r.stdout.trim(), 'SyntaxError undefined');
   });
 
   test('module code has its own scope: top-level var is not a global property', () => {
-    const r = runNode(['--input-type=module', '-e', 'var leaked = 1; console.log(typeof globalThis.leaked)']);
+    const r = runNode([
+      '--input-type=module',
+      '-e',
+      'var leaked = 1; console.log(typeof globalThis.leaked)',
+    ]);
     assert.equal(r.stdout.trim(), 'undefined');
   });
 
   test('Annex B.3.3: sloppy block function is also var-bound in the enclosing scope', () => {
-    assert.deepEqual(script(`
+    assert.deepEqual(
+      script(`
       const r = [typeof f];
       { function f() {} }
       r.push(typeof f);
-      r;`), ['undefined', 'function']);
-    assert.deepEqual(script(`'use strict';
+      r;`),
+      ['undefined', 'function'],
+    );
+    assert.deepEqual(
+      script(`'use strict';
       { function g() {} }
-      [typeof g];`), ['undefined']);
+      [typeof g];`),
+      ['undefined'],
+    );
   });
 });
 
@@ -81,30 +111,43 @@ describe('Closures', () => {
       return { inc: () => ++n, get: () => n };
     }
     const c = counter();
-    c.inc(); c.inc();
+    c.inc();
+    c.inc();
     assert.equal(c.get(), 2);
   });
 
   test('NEGATIVE: var in a loop has one binding; let has one per iteration', () => {
     const fs = [];
     for (var i = 0; i < 3; i++) fs.push(() => i);
-    assert.deepEqual(fs.map((f) => f()), [3, 3, 3]);
+    assert.deepEqual(
+      fs.map((f) => f()),
+      [3, 3, 3],
+    );
     const gs = [];
     for (let j = 0; j < 3; j++) gs.push(() => j);
-    assert.deepEqual(gs.map((g) => g()), [0, 1, 2]);
+    assert.deepEqual(
+      gs.map((g) => g()),
+      [0, 1, 2],
+    );
   });
 
   test('per-iteration copy happens before the increment expression', () => {
     const fs = [];
     for (let i = 0; i < 2; fs.push(() => i), i++);
     // the closure pushed in the increment expression sees the *new* iteration's binding
-    assert.deepEqual(fs.map((f) => f()), [1, 2]);
+    assert.deepEqual(
+      fs.map((f) => f()),
+      [1, 2],
+    );
   });
 
   test('stale closure: a closure reads the binding it captured, not a later one', () => {
     const renders = [];
-    function render(count) { renders.push(() => count); }
-    render(1); render(2);
+    function render(count) {
+      renders.push(() => count);
+    }
+    render(1);
+    render(2);
     assert.equal(renders[0](), 1); // the first "render's" callback is stuck at 1
   });
 
@@ -133,15 +176,20 @@ describe('Closures', () => {
 });
 
 describe('this (§10.2.1.2 OrdinaryCallBindThis)', () => {
-  const obj = { name: 'obj', who() { return this?.name; } };
+  const obj = {
+    name: 'obj',
+    who() {
+      return this?.name;
+    },
+  };
 
   test('call forms decide thisArgument', () => {
     assert.equal(obj.who(), 'obj');
-    assert.equal((obj.who)(), 'obj');           // parentheses keep the Reference
+    assert.equal(obj.who(), 'obj'); // parentheses keep the Reference
     assert.equal(obj?.who(), 'obj');
-    assert.equal((0, obj.who)(), undefined);    // comma operator drops the Reference
+    assert.equal((0, obj.who)(), undefined); // comma operator drops the Reference
     const extracted = obj.who;
-    assert.equal(extracted(), undefined);       // module code is strict
+    assert.equal(extracted(), undefined); // module code is strict
     assert.equal(obj.who.call({ name: 'x' }), 'x');
   });
 
@@ -155,34 +203,48 @@ describe('this (§10.2.1.2 OrdinaryCallBindThis)', () => {
   });
 
   test('arrow functions ignore call, apply, bind and new', () => {
-    const outer = { v: 1, make() { return () => this.v; } };
+    const outer = {
+      v: 1,
+      make() {
+        return () => this.v;
+      },
+    };
     const arrow = outer.make();
     assert.equal(arrow.call({ v: 2 }), 1);
     assert.equal(arrow.bind({ v: 3 })(), 1);
-    assert.throws(() => new (/** @type {any} */ (arrow))(), TypeError);
+    assert.throws(() => new /** @type {any} */ (arrow)(), TypeError);
     assert.equal('prototype' in arrow, false);
   });
 
   test('bound functions: rebinding, new, name, length, prototype (§10.4.1)', () => {
-    function f(a, b, c) { return [this?.id, a, b, c]; }
+    function f(a, b, c) {
+      return [this?.id, a, b, c];
+    }
     const b1 = f.bind({ id: 1 }, 'a');
     const b2 = b1.bind({ id: 2 }, 'b');
-    assert.deepEqual(b2('c'), [1, 'a', 'b', 'c']);     // the first bind wins; args accumulate
+    assert.deepEqual(b2('c'), [1, 'a', 'b', 'c']); // the first bind wins; args accumulate
     assert.equal(b1.name, 'bound f');
     assert.equal(b1.length, 2);
     assert.equal(b2.name, 'bound bound f');
     assert.equal('prototype' in b1, false);
 
-    function P(x) { this.x = x; }
+    function P(x) {
+      this.x = x;
+    }
     const BoundP = P.bind({ ignored: true }, 7);
     const p = new BoundP();
-    assert.equal(p.x, 7);                               // new ignores [[BoundThis]]
+    assert.equal(p.x, 7); // new ignores [[BoundThis]]
     assert.ok(p instanceof P);
-    assert.ok(p instanceof BoundP);                     // instanceof delegates to the target
+    assert.ok(p instanceof BoundP); // instanceof delegates to the target
   });
 
   test('NEGATIVE: an extracted class method has this === undefined', () => {
-    class Counter { n = 0; inc() { return ++this.n; } }
+    class Counter {
+      n = 0;
+      inc() {
+        return ++this.n;
+      }
+    }
     const { inc } = new Counter();
     assert.throws(() => inc(), TypeError);
   });
@@ -191,7 +253,9 @@ describe('this (§10.2.1.2 OrdinaryCallBindThis)', () => {
     class Button {
       label = 'ok';
       onClick = () => this.label;
-      method() { return this?.label; }
+      method() {
+        return this?.label;
+      }
     }
     const btn = new Button();
     const { onClick, method } = btn;
@@ -199,18 +263,32 @@ describe('this (§10.2.1.2 OrdinaryCallBindThis)', () => {
     assert.equal(method(), undefined);
     assert.equal(Object.hasOwn(btn, 'onClick'), true);
     assert.equal(Object.hasOwn(Button.prototype, 'onClick'), false);
-    assert.notEqual(new Button().onClick, btn.onClick);  // one function per instance
+    assert.notEqual(new Button().onClick, btn.onClick); // one function per instance
   });
 
   test('NEGATIVE: derived constructors cannot use this before super()', () => {
     class A {}
-    class B extends A { constructor() { /** @type {any} */ (this).x = 1; super(); } }
+    class B extends A {
+      constructor() {
+        /** @type {any} */ (this).x = 1;
+        super();
+      }
+    }
     assert.throws(() => new B(), ReferenceError);
   });
 
   test('super.method() keeps the current this', () => {
-    class A { who() { return this.tag; } }
-    class B extends A { tag = 'b'; who() { return 'B:' + super.who(); } }
+    class A {
+      who() {
+        return this.tag;
+      }
+    }
+    class B extends A {
+      tag = 'b';
+      who() {
+        return 'B:' + super.who();
+      }
+    }
     assert.equal(new B().who(), 'B:b');
   });
 });
@@ -220,7 +298,10 @@ describe('Strict mode (§11.2.2)', () => {
     const ctx = {};
     vm.runInNewContext('leak = 1', ctx);
     assert.equal(ctx.leak, 1);
-    assert.throws(() => vm.runInNewContext('"use strict"; leak2 = 1', {}), (e) => e.name === 'ReferenceError');
+    assert.throws(
+      () => vm.runInNewContext('"use strict"; leak2 = 1', {}),
+      (e) => e.name === 'ReferenceError',
+    );
   });
 
   test('arguments is mapped in sloppy mode, unmapped in strict mode', () => {
@@ -232,7 +313,9 @@ describe('Strict mode (§11.2.2)', () => {
 
   test('NEGATIVE: silent failures become TypeErrors in strict code', () => {
     const frozen = Object.freeze({ x: 1 });
-    assert.throws(() => { /** @type {any} */ (frozen).x = 2; }, TypeError);
+    assert.throws(() => {
+      /** @type {any} */ (frozen).x = 2;
+    }, TypeError);
     const sloppySet = new Function('o', 'o.x = 2; return o.x;');
     assert.equal(sloppySet(frozen), 1); // silently ignored
   });

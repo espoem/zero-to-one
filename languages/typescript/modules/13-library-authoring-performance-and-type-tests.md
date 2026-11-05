@@ -1,9 +1,8 @@
 # Module 13: Library Authoring, Type Performance, Type Tests & Migration
 
-> Example and tests: [`examples/13-library-authoring/library-authoring.test.ts`](../examples/13-library-authoring/library-authoring.test.ts) with fixtures in [`examples/13-library-authoring/fixtures/`](../examples/13-library-authoring/fixtures/) (a tiny package checked by publint 0.3.25 and attw 0.18.5, recursion-limit and type-test fixtures).
-> Run: `mise exec -- node --test examples/13-library-authoring/`
+> Example and tests: [`examples/13-library-authoring/library-authoring.test.ts`](../examples/13-library-authoring/library-authoring.test.ts) with fixtures in [`examples/13-library-authoring/fixtures/`](../examples/13-library-authoring/fixtures/) (a tiny package checked by publint 0.3.25 and attw 0.18.5, recursion-limit and type-test fixtures). Run: `mise exec -- node --test examples/13-library-authoring/`
 
-Application code consumes types; library code *publishes* them. Publishing adds three obligations: the declaration files must describe the JavaScript you ship, every consumer's module resolution must find them, and the types must stay fast enough that they do not dominate your users' editor latency. This module covers those obligations, how to test types themselves, and how to migrate a code base (JavaScript → TypeScript, and 5.x → 7). It closes with the track's version history.
+Application code consumes types; library code _publishes_ them. Publishing adds three obligations: the declaration files must describe the JavaScript you ship, every consumer's module resolution must find them, and the types must stay fast enough that they do not dominate your users' editor latency. This module covers those obligations, how to test types themselves, and how to migrate a code base (JavaScript → TypeScript, and 5.x → 7). It closes with the track's version history.
 
 ---
 
@@ -11,7 +10,7 @@ Application code consumes types; library code *publishes* them. Publishing adds 
 
 ### 1.1 What a `.d.ts` file is
 
-A declaration file is the erasure dual of a JavaScript file: it keeps *only* the type-level content of a module (signatures, type aliases, interfaces, `declare` statements) and drops all bodies. For a module `M`, `tsc --declaration` emits `M.d.ts` such that type-checking a consumer against `M.d.ts` gives the same result as type-checking it against `M.ts`.
+A declaration file is the erasure dual of a JavaScript file: it keeps _only_ the type-level content of a module (signatures, type aliases, interfaces, `declare` statements) and drops all bodies. For a module `M`, `tsc --declaration` emits `M.d.ts` such that type-checking a consumer against `M.d.ts` gives the same result as type-checking it against `M.ts`.
 
 For exported declarations without annotations, the compiler must **print the inferred type**. That has three consequences:
 
@@ -31,7 +30,7 @@ The fixture `isolated-decl/` exports `function add(a: number, b: number) { retur
 
 **Now (5.5+, and especially TS 7).** `isolatedDeclarations` makes declaration emit a syntax transform. TS 7's `--builders` builds project references in parallel, and separate syntactic declaration emit removes the type-check from the critical path.
 
-**Migration.** Turning it on late produces one error per unannotated export (thousands in a large package). Enable it per package, use the editor quick fix "Add annotation of type …" in bulk, and add it to new packages from day one. **Pitfall:** annotating with an over-wide type (`: object`, `: Function`) silences the error and destroys the public API's precision. Annotate with the *named* public type.
+**Migration.** Turning it on late produces one error per unannotated export (thousands in a large package). Enable it per package, use the editor quick fix "Add annotation of type …" in bulk, and add it to new packages from day one. **Pitfall:** annotating with an over-wide type (`: object`, `: Function`) silences the error and destroys the public API's precision. Annotate with the _named_ public type.
 
 ---
 
@@ -55,7 +54,8 @@ How Node and bundlers resolve `exports` at runtime is owned by `languages/javasc
 ```
 
 Rules encoded here:
-- **`types` first.** Conditions are matched in object order. If `import` or `default` comes first, TypeScript takes that branch and looks for a `.d.ts` *next to* the `.js` file. If the declarations live elsewhere, it silently falls back. The fixture `bad-pkg/` (`"import"` before `"types"`, declarations in `./types/`) makes publint fail with "types should be the first in the object" and attw report **FallbackCondition**.
+
+- **`types` first.** Conditions are matched in object order. If `import` or `default` comes first, TypeScript takes that branch and looks for a `.d.ts` _next to_ the `.js` file. If the declarations live elsewhere, it silently falls back. The fixture `bad-pkg/` (`"import"` before `"types"`, declarations in `./types/`) makes publint fail with "types should be the first in the object" and attw report **FallbackCondition**.
 - **`"type": "module"`** makes `.js` files ESM. Without it, `tsc` with `module: nodenext` treats the sources as CommonJS; combined with `verbatimModuleSyntax` it reports **TS1287** on every `export` of a value.
 - **A `.d.ts` describes exactly one module format.** `index.d.ts` next to an ESM `index.js` is read as ESM; for a CJS build you need `index.d.cts` (or a `package.json` with `"type": "commonjs"` in that directory).
 
@@ -77,7 +77,7 @@ If both branches point at the same `index.d.ts`, TypeScript believes the CJS ent
 ### 2.3 Checking a package before publishing
 
 | Tool | Checks | Track usage |
-|---|---|---|
+| --- | --- | --- |
 | `publint` | `package.json` hygiene: condition order, missing files, `type` field, `files` coverage | `publint .` must exit 0 |
 | `@arethetypeswrong/cli` (attw) | Packs the package and resolves every entry point under `node10`, `node16-cjs`, `node16-esm`, `bundler`; reports `NoResolution`, `FallbackCondition`, `FalseESM`/`FalseCJS` (masquerading), `CJSResolvesToESM`, `UntypedResolution` | `attw --pack . --profile esm-only` must exit 0 |
 
@@ -105,14 +105,16 @@ Two fixtures ship the same JavaScript (`lib/esm/index.js` and `lib/cjs/index.cjs
 In `masq-pkg`, a CommonJS consumer resolving under `node16-cjs` matches the top-level `types` first and gets `index.d.ts`, which under `"type": "module"` describes an **ES module**, while Node will load the `.cjs` file. attw reports this as **FalseESM** ("Masquerading as ESM"); with `--profile node16` it fails, while `dual-pkg` passes (both asserted). The concrete damage: for a CommonJS file the TypeScript checker models ESM imports of CJS differently (default import = `module.exports`), so a consumer's `import x from "lib"` type-checks against the wrong shape and fails at runtime, or vice versa.
 
 Rules that follow:
+
 1. Each condition branch that points at a different JavaScript format needs its own declaration file with the matching extension (`.d.ts` for ESM under `"type": "module"`, `.d.cts` for CJS; `.d.mts` for ESM under a CJS package).
-2. Put `types` *inside* each branch, first.
+2. Put `types` _inside_ each branch, first.
 3. Generate the CJS declarations with a second `tsc` run whose output uses `.cts` sources or a nested `package.json` with `"type": "commonjs"`; renaming `.d.ts` → `.d.cts` without re-emitting is wrong when the files contain relative imports (their specifiers must end in `.cjs`).
 4. Prefer **ESM only** when your consumers run Node ≥ 22.12 (which can `require()` ESM) or bundlers; the whole problem disappears.
 
 ### 2.5 Versioning the public types
 
-Your `.d.ts` files are an API. Changes that break consumers *without* any JavaScript change:
+Your `.d.ts` files are an API. Changes that break consumers _without_ any JavaScript change:
+
 - narrowing a parameter type or widening a return type;
 - adding a required property to an interface consumers implement (or an optional one they return under `exactOptionalPropertyTypes`);
 - changing a type parameter's constraint, default or variance;
@@ -130,7 +132,7 @@ Types are code: they regress when someone widens a return type or loosens a gene
 
 `// @ts-expect-error` suppresses the error on the next line **and fails if there is no error** (**TS2578** "Unused '@ts-expect-error' directive", proven by the fixture `unused-expect-error/`). Every negative test in this track is written this way. Never use `@ts-ignore` for tests: it passes whether or not the error exists.
 
-**Pitfall:** `@ts-expect-error` accepts *any* error on that line. A test meant to prove "wrong argument type" also passes if the function name is misspelled. Keep the line minimal and add a comment naming the expected error.
+**Pitfall:** `@ts-expect-error` accepts _any_ error on that line. A test meant to prove "wrong argument type" also passes if the function name is misspelled. Keep the line minimal and add a comment naming the expected error.
 
 ### 3.2 Equality assertions
 
@@ -138,19 +140,19 @@ Assignability (`A extends B`) is too weak for tests: `any` is assignable both wa
 
 ```ts
 type Equal<X, Y> =
-  (<T>() => T extends X ? 1 : 2) extends (<T>() => T extends Y ? 1 : 2) ? true : false;
+  (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y ? 1 : 2 ? true : false;
 type Expect<T extends true> = T;
 type _t = Expect<Equal<ReturnType<typeof f>, string>>;
 ```
 
-Two generic signatures are related only if their deferred conditional types are *identical*, which distinguishes `any` from `unknown`, `readonly` from mutable, and optional from `| undefined`. The helper is in [`examples/utils/type-helpers.ts`](../examples/utils/type-helpers.ts).
+Two generic signatures are related only if their deferred conditional types are _identical_, which distinguishes `any` from `unknown`, `readonly` from mutable, and optional from `| undefined`. The helper is in [`examples/utils/type-helpers.ts`](../examples/utils/type-helpers.ts).
 
 `expect-type` (1.4.0) packages the same idea with readable failures: `expectTypeOf(x).toEqualTypeOf<T>()`, `.toExtend<T>()`, `.toHaveProperty("k")`, `.not.…`. A mismatch is reported as a compile error on the call (often "Expected 1 arguments, but got 0", because the library turns the failure into a required argument). The track found one limit while writing Module 12: `toEqualTypeOf` on large DOM types can fail on structural details of the DOM lib; assert those with an assignment instead.
 
 ### 3.3 Where type tests run
 
 | Approach | How | Notes |
-|---|---|---|
+| --- | --- | --- |
 | `tsc --noEmit` over test files | What this track does (`npm run typecheck`, and fixture tests that spawn `tsc`) | Works with TS 7 today |
 | `vitest --typecheck` with `*.test-d.ts` | Vitest spawns `tsc` and maps errors to tests | Depends on Vitest's integration with the TS 7 binary (unverified for vitest 5.0.5) |
 | Diagnostic snapshots | Spawn `tsc -p fixture`, assert error codes | Assert codes and line numbers, not full messages: message text and union order change across versions (`stableTypeOrdering`) |
@@ -162,19 +164,22 @@ Two generic signatures are related only if their deferred conditional types are 
 Writing it surfaced a pitfall worth remembering. The first draft declared test inputs as
 
 ```ts
-const r: Result<number, "E1"> = ok(2);
+const r: Result<number, 'E1'> = ok(2);
 ```
 
 and `map(r, String)` came out as `Result<string, unknown>`. The reason is **narrowing by assignment** ([Module 03](./03-unions-narrowing-and-control-flow.md)): when a variable's declared type is a union, an initializer narrows it to the union members the assigned value fits, so `r` is `Ok<number>` at every later use, the error type `E` has no inference source, and the test exercises a different type than intended. The fix is to declare test inputs without values:
 
 ```ts
-declare const anyResult: Result<number, "E1">;
-const typeOnly = () => { expectTypeOf(map(anyResult, String)).toEqualTypeOf<Result<string, "E1">>(); };
+declare const anyResult: Result<number, 'E1'>;
+const typeOnly = () => {
+  expectTypeOf(map(anyResult, String)).toEqualTypeOf<Result<string, 'E1'>>();
+};
 ```
 
-`declare const` has the declared type everywhere, and wrapping assertions that touch it in an uncalled arrow function keeps the file runnable (a declared constant has no runtime value). The example keeps one test that *documents* the narrowed behaviour, so a future reader sees why the suite is written this way.
+`declare const` has the declared type everywhere, and wrapping assertions that touch it in an uncalled arrow function keeps the file runnable (a declared constant has no runtime value). The example keeps one test that _documents_ the narrowed behaviour, so a future reader sees why the suite is written this way.
 
 Checklist for a library type-test suite:
+
 1. Test the **public** entry point (import from the package name or its `exports` path), not internal files.
 2. For every generic API, assert the inferred result for representative inputs, including literals, unions, `readonly` arrays, `never` and `any` inputs.
 3. Add one negative test per documented constraint (`@ts-expect-error` with a comment naming the expected error).
@@ -190,7 +195,7 @@ Checklist for a library type-test suite:
 The checker's work is dominated by **instantiation** (substituting type arguments into generic types) and **relation checks** (assignability between structured types). Both are cached, but caches are keyed by type identity, so code that creates many distinct types (large unions, deep conditional types, intersections of object types) defeats them.
 
 | Pattern | Why it is slow | Cheaper alternative |
-|---|---|---|
+| --- | --- | --- |
 | Big unions compared pairwise (`A \| B \| … ` vs another union) | Relation is O(n·m) member checks | Discriminated unions (checked by discriminant lookup) |
 | Intersections of object types `A & B & C` | Properties are recomputed on each access; no cache of the merged shape | `interface X extends A, B, C {}` (cached, and errors on conflicts) |
 | Deeply recursive conditional types | Each level is a new instantiation | Tail-recursive formulation; cap the depth; precompute |
@@ -199,12 +204,12 @@ The checker's work is dominated by **instantiation** (substituting type argument
 
 ### 4.2 Recursion limits
 
-The checker caps instantiation depth to protect against infinite recursion, reporting **TS2589** "Type instantiation is excessively deep and possibly infinite". Measured on 7.0.2 with the fixture `depth/` (building a tuple of length *N*):
+The checker caps instantiation depth to protect against infinite recursion, reporting **TS2589** "Type instantiation is excessively deep and possibly infinite". Measured on 7.0.2 with the fixture `depth/` (building a tuple of length _N_):
 
-| Formulation | Largest *N* that compiles | Fails at |
-|---|---|---|
-| Non-tail recursive: `[...Build<N, [...A, 0]>]` | 47 | 48 |
-| Tail recursive: `Build<N, [...A, 0]>` as the whole branch | 999 | 1000 |
+| Formulation                                               | Largest _N_ that compiles | Fails at |
+| --------------------------------------------------------- | ------------------------- | -------- |
+| Non-tail recursive: `[...Build<N, [...A, 0]>]`            | 47                        | 48       |
+| Tail recursive: `Build<N, [...A, 0]>` as the whole branch | 999                       | 1000     |
 
 The first boundary reflects an instantiation-depth limit of 100 (each element costs about two nested instantiations here); the second is the tail-recursion iteration limit of 1000 that TS has applied since 4.5. The exact internal constants are inferred from these measurements and from the 5.x source, not from 7.0 documentation (unverified for the Go port's constants; the measured boundaries are verified). A conditional type is evaluated as a loop only when the recursive reference is the entire true or false branch.
 
@@ -215,12 +220,12 @@ The first boundary reflects an instantiation-depth limit of 100 (each element co
 3. `@typescript/analyze-trace` summarises 5.x/6.x traces into "hot spots"; its compatibility with 7.0's per-checker files is unverified.
 4. In the editor, measure with the language server's own logging; a single slow file shows up as completion latency.
 
-**Performance numbers are hardware dependent.** The track asserts that the diagnostics *exist*, never how fast they are.
+**Performance numbers are hardware dependent.** The track asserts that the diagnostics _exist_, never how fast they are.
 
 ### 4.4 Reading `--extendedDiagnostics`
 
 | Line | Meaning | What a jump usually means |
-|---|---|---|
+| --- | --- | --- |
 | `Files`, `Lines` | Program size including `lib` and `@types` | An accidental `include` of generated code or `node_modules`, or `types` re-including everything |
 | `Identifiers`, `Symbols` | Binder output | Mostly proportional to code size |
 | `Types` | Distinct types created by the checker | Large unions, template-literal cross products, deep mapped types |
@@ -228,7 +233,7 @@ The first boundary reflects an instantiation-depth limit of 100 (each element co
 | `Memory used` | Peak heap | Proportional to `Types` and caches; with N checkers, caches are per checker |
 | `Parse/Bind/Check/Emit time` | Phase timings | `Check time` dominating is normal; `Parse time` dominating means too many files |
 
-A practical workflow: record these numbers in CI for each package, and fail a review (not the build) when `Instantiations` grows by an order of magnitude in one change. The traces (§4.3) then tell you *which* type is responsible.
+A practical workflow: record these numbers in CI for each package, and fail a review (not the build) when `Instantiations` grows by an order of magnitude in one change. The traces (§4.3) then tell you _which_ type is responsible.
 
 ### 4.5 Budget rules that keep types fast
 
@@ -331,13 +336,15 @@ Put `types` first in the condition object and point it at the declarations actua
 Accumulate the result in a parameter so the recursive call is the whole branch:
 
 ```ts
-type Join<T extends string[], Sep extends string, Acc extends string = ""> =
-  T extends [infer H extends string, ...infer R extends string[]]
-    ? Join<R, Sep, Acc extends "" ? H : `${Acc}${Sep}${H}`>
-    : Acc;
+type Join<T extends string[], Sep extends string, Acc extends string = ''> = T extends [
+  infer H extends string,
+  ...infer R extends string[],
+]
+  ? Join<R, Sep, Acc extends '' ? H : `${Acc}${Sep}${H}`>
+  : Acc;
 ```
 
-The template literal now wraps only the *accumulator argument*, not the recursive call, so the checker evaluates it iteratively (limit 1000) instead of nesting instantiations.
+The template literal now wraps only the _accumulator argument_, not the recursive call, so the checker evaluates it iteratively (limit 1000) instead of nesting instantiations.
 </details>
 
 ### Exercise 13.3: Find the slow type
@@ -354,7 +361,7 @@ A few files usually dominate. Typical culprits: a polymorphic component used hun
 ## 8. Version history (major releases relevant to practitioners)
 
 | Version | Date | Practitioner-relevant changes |
-|---|---|---|
+| --- | --- | --- |
 | 2.0 | 2016-09 | `strictNullChecks`, `never`, control-flow analysis |
 | 2.8 | 2018-03 | Conditional types, `infer` |
 | 3.0 | 2018-07 | `unknown`, project references, variadic-ish rest tuples |
@@ -408,7 +415,6 @@ Compare `--extendedDiagnostics` (`Instantiations`, check time) between commits, 
 
 The recursive reference must be the entire branch of the conditional (not wrapped in a tuple spread, template literal or another type). Then the checker evaluates it as a loop with a 1000-iteration limit instead of nested instantiations limited by depth (≈48 tuple elements in the measured non-tail case).
 </details>
-
 
 <details><summary>7. Outline a safe 5.x → 7.0 upgrade for a monorepo with typescript-eslint.</summary>
 

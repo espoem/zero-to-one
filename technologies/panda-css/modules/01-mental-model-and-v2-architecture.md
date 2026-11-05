@@ -1,7 +1,6 @@
 # Module 01 · Static CSS-in-JS Mental Model and the v2 Architecture
 
-> **Verified against** `@pandacss/dev` 2.4.0 (npm, published 2026-10-22) on 2026-10-28.
-> **Executable proof:** [`examples/fixtures/positive/01-atomic-dedupe.ts`](../examples/fixtures/positive/01-atomic-dedupe.ts) with its snapshot [`01-atomic-dedupe.css`](../examples/fixtures/__snapshots__/01-atomic-dedupe.css), [`examples/tests/runtime.test.ts`](../examples/tests/runtime.test.ts), and the vanilla source-transform build in [`examples/tests/e2e-computed-style.test.ts`](../examples/tests/e2e-computed-style.test.ts).
+> **Verified against** `@pandacss/dev` 2.4.0 (npm, published 2026-10-22) on 2026-10-28. **Executable proof:** [`examples/fixtures/positive/01-atomic-dedupe.ts`](../examples/fixtures/positive/01-atomic-dedupe.ts) with its snapshot [`01-atomic-dedupe.css`](../examples/fixtures/__snapshots__/01-atomic-dedupe.css), [`examples/tests/runtime.test.ts`](../examples/tests/runtime.test.ts), and the vanilla source-transform build in [`examples/tests/e2e-computed-style.test.ts`](../examples/tests/e2e-computed-style.test.ts).
 
 Panda CSS is a **build-time styling engine**. You write style objects in TypeScript; a compiler reads your source code without running it, collects every style it can prove statically, and writes one atomic stylesheet. The browser receives plain CSS plus, optionally, a small JavaScript function that turns style objects into class-name strings.
 
@@ -13,13 +12,13 @@ This module builds the mental model the rest of the track depends on: what "stat
 
 ## 1.1 Three ways to get from a style object to pixels
 
-Every CSS-in-JS system answers one question: *when* does a style object become a CSS rule in the document?
+Every CSS-in-JS system answers one question: _when_ does a style object become a CSS rule in the document?
 
 | Approach | When CSS is produced | Who produces it | Examples |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Runtime CSS-in-JS | While the app runs, on render | A JS library in the browser (or server) that serialises styles and inserts `<style>` rules | styled-components, Emotion |
 | Build-time, file-scoped | At build time, per `.css.ts` file | A bundler plugin that executes the style module | vanilla-extract, Linaria |
-| Build-time, static extraction | At build time, from the source text of every file | A compiler that *parses* (does not execute) application code | **Panda**, StyleX |
+| Build-time, static extraction | At build time, from the source text of every file | A compiler that _parses_ (does not execute) application code | **Panda**, StyleX |
 
 Panda belongs to the third family. Two consequences follow, and every later module is a refinement of them:
 
@@ -28,7 +27,7 @@ Panda belongs to the third family. Two consequences follow, and every later modu
 
 ### Formal definition: static extraction
 
-Let *S* be the set of source files matched by `include`, and *E(f)* the set of Panda **call sites** in file *f*: calls to `css`, `cva`, `sva`, pattern functions, config recipes, and JSX elements from the generated `jsx` entry point. Each call site *c* has an argument expression *a(c)*.
+Let _S_ be the set of source files matched by `include`, and _E(f)_ the set of Panda **call sites** in file _f_: calls to `css`, `cva`, `sva`, pattern functions, config recipes, and JSX elements from the generated `jsx` entry point. Each call site _c_ has an argument expression _a(c)_.
 
 Define a partial evaluation function `fold : Expr → Literal ∪ {⊥}` that maps an expression to a JSON-like literal (string, number, boolean, null, object, array, or a set of conditional branches), or to ⊥ when the value cannot be known without executing the program. Then the **extracted style set** is:
 
@@ -36,14 +35,14 @@ Define a partial evaluation function `fold : Expr → Literal ∪ {⊥}` that ma
 Styles(S) = ⋃_{f ∈ S} ⋃_{c ∈ E(f)} { fold(a(c)) | fold(a(c)) ≠ ⊥ }
 ```
 
-with one refinement: `fold` is *lenient on objects*. An object literal with some unknowable members keeps its knowable members (`{ color: 'red.500', p: props.p }` folds to `{ color: 'red.500' }`). The full fold rules (identifiers, imports, ternaries, pure helpers) are in [Module 10](./10-compiler-internals-and-debugging.md#103-the-literal-fold-what-the-compiler-can-know).
+with one refinement: `fold` is _lenient on objects_. An object literal with some unknowable members keeps its knowable members (`{ color: 'red.500', p: props.p }` folds to `{ color: 'red.500' }`). The full fold rules (identifiers, imports, ternaries, pure helpers) are in [Module 10](./10-compiler-internals-and-debugging.md#103-the-literal-fold-what-the-compiler-can-know).
 
 The emitted CSS is a function of `Styles(S)` and the config only. Runtime state can never add a rule.
 
 ### Then vs now: what "static" covers
 
-| | Panda 0.x / 1.x (≤ 1.12.1) | Panda 2.x (2.0.0, 2026-09-29 →) |
-|---|---|---|
+|  | Panda 0.x / 1.x (≤ 1.12.1) | Panda 2.x (2.0.0, 2026-09-29 →) |
+| --- | --- | --- |
 | Engine | TypeScript program via `ts-morph`, values folded by `ts-evaluator` | Native Rust compiler on [Oxc](https://oxc.rs/): one parse per file, no TypeScript program |
 | Imported values | Ignored: a style value imported from another file produced no CSS | Followed: named imports, re-exports, `export *` barrels, tsconfig path aliases, imported pure helpers and imported `css.raw()` results |
 | Default / namespace imports | Ignored | Still ignored (documented rule) |
@@ -75,10 +74,18 @@ The fixture [`01-atomic-dedupe.ts`](../examples/fixtures/positive/01-atomic-dedu
 
 ```css
 @layer utilities {
-  .p_4 { padding: var(--spacing-4); }
-  .c_brand\.600 { color: var(--colors-brand-600); }
-  .bdr_lg { border-radius: var(--radii-lg); }
-  .bg_ink\.100 { background: var(--colors-ink-100); }
+  .p_4 {
+    padding: var(--spacing-4);
+  }
+  .c_brand\.600 {
+    color: var(--colors-brand-600);
+  }
+  .bdr_lg {
+    border-radius: var(--radii-lg);
+  }
+  .bg_ink\.100 {
+    background: var(--colors-ink-100);
+  }
 }
 ```
 
@@ -99,13 +106,13 @@ Because the name is a pure function of the atom, the **same object always yields
 ### Why atomic: the trade-off table
 
 | Property | Atomic (Panda utilities) | Component-scoped classes (Panda config recipes, CSS Modules) |
-|---|---|---|
+| --- | --- | --- |
 | CSS size growth | Sub-linear: bounded by distinct atoms | Linear in components × variants |
 | HTML size | More class names per element | One or two class names |
 | Override semantics | Per property, by layer and rule order | Per rule, by specificity and order |
 | DevTools readability | Many small rules | One rule per component state |
 
-Panda uses *both*: utilities (`css`, `cva`, patterns, style props) are atomic; config recipes emit named, component-scoped classes into a lower cascade layer ([Module 07](./07-recipes-and-config-recipes.md)).
+Panda uses _both_: utilities (`css`, `cva`, patterns, style props) are atomic; config recipes emit named, component-scoped classes into a lower cascade layer ([Module 07](./07-recipes-and-config-recipes.md)).
 
 ---
 
@@ -115,8 +122,12 @@ Panda emits every rule into one of five cascade layers, declared up front:
 
 ```css
 @layer reset, base, tokens, recipes, utilities;
-@layer recipes { @layer base, slots, variants, compound_variants; }
-@layer recipes.slots { @layer base, variants, compound_variants; }
+@layer recipes {
+  @layer base, slots, variants, compound_variants;
+}
+@layer recipes.slots {
+  @layer base, variants, compound_variants;
+}
 ```
 
 These three lines open every fixture snapshot in [`examples/fixtures/__snapshots__/`](../examples/fixtures/__snapshots__/). Since layer order (not specificity) decides between layered rules (see [`languages/css`](../../../languages/css/README.md) for the cascade sort), Panda gets a precedence ladder for free:
@@ -166,8 +177,8 @@ The generated `css` function contains a serialised utility map (property → sho
 
 ```ts
 // examples/tests/runtime.test.ts
-assert.equal(css({ color: 'brand.600', p: '4' }), 'c_brand.600 p_4')
-assert.equal(css({ paddingInline: '2' }), css({ px: '2' })) // shorthand and longhand -> same atom
+assert.equal(css({ color: 'brand.600', p: '4' }), 'c_brand.600 p_4');
+assert.equal(css({ paddingInline: '2' }), css({ px: '2' })); // shorthand and longhand -> same atom
 ```
 
 ### Source transforms: removing the runtime entirely
@@ -176,17 +187,17 @@ With a bundler plugin and `transform: true`, Panda rewrites each **static** call
 
 ```ts
 // examples/vanilla/src/main.ts (you write)
-const card = css({ p: '6', bg: 'teal.100', borderRadius: 'xl', _hover: { bg: 'teal.200' } })
+const card = css({ p: '6', bg: 'teal.100', borderRadius: 'xl', _hover: { bg: 'teal.200' } });
 // the production bundle ships
-const card = `bg_teal.100 bdr_xl p_6 hover:bg_teal.200`
+const card = `bg_teal.100 bdr_xl p_6 hover:bg_teal.200`;
 ```
 
 The e2e suite builds [`examples/vanilla`](../examples/vanilla/) both ways. Measured on 2026-10-28 with Vite 8.3.5: **19,811 bytes** of JavaScript without the transform, **923 bytes** with it. The `css()` runtime is gone.
 
-The same suite also shows the limit. In the React and Solid apps, the transform rewrites the static calls, but the runtime **still ships** because some call sites are dynamic (`css(badge.raw({ tone }), cssProp)` inside the `Badge` component; the styled factory). The transformed React bundle was in fact ~3 KB *larger*. Measure before you assume a win, as the [official docs](https://panda-css.com/docs/styling/source-transforms) also advise.
+The same suite also shows the limit. In the React and Solid apps, the transform rewrites the static calls, but the runtime **still ships** because some call sites are dynamic (`css(badge.raw({ tone }), cssProp)` inside the `Badge` component; the styled factory). The transformed React bundle was in fact ~3 KB _larger_. Measure before you assume a win, as the [official docs](https://panda-css.com/docs/styling/source-transforms) also advise.
 
-| | Default | `transform: true` |
-|---|---|---|
+|  | Default | `transform: true` |
+| --- | --- | --- |
 | When CSS is generated | Build time | Build time |
 | What `css({...})` is in the bundle | A call to the generated runtime | A string literal (static calls only) |
 | Runtime shipped | Always | Only if any call site stays dynamic |
@@ -199,7 +210,7 @@ The same suite also shows the limit. In the React and Solid apps, the transform 
 Panda v2 replaced the TypeScript-based extraction path with a Rust workspace (`crates/*` in the [panda repository](https://github.com/chakra-ui/panda)). The crates form a strict tier model in which dependencies point one way only:
 
 | Tier | Crates | Responsibility |
-|---|---|---|
+| --- | --- | --- |
 | 0 · infrastructure | `pandacss_fs`, `pandacss_shared`, `pandacss_literal`, `pandacss_tracing`, `pandacss_sfc` | Filesystem trait (OS / in-memory, so it compiles to WASM), CSS property list, the `Literal` value tree, tracing, Vue/Svelte/Astro lowering to same-offset JS |
 | 1 · data | `pandacss_config`, `pandacss_tokens`, `pandacss_recipes` | Typed config, token dictionary, recipe models |
 | 2 · process | `pandacss_extractor`, `pandacss_encoder`, `pandacss_utility`, `pandacss_stylesheet`, `pandacss_codegen` | Parse + extract, atom encoding, utility metadata, CSS emission, `styled-system` generation |
@@ -212,7 +223,7 @@ The pipeline is one-way: **extract → encode → emit**. The JS host (`@pandacs
 Package map you will see in `node_modules` after `npm i -D @pandacss/dev`:
 
 | Package | Role |
-|---|---|
+| --- | --- |
 | `@pandacss/dev` | What you install: `panda` binary, `defineConfig`/`defineRecipe`/…, subpaths `/postcss`, `/node`, `/define` |
 | `@pandacss/cli` | The CLI implementation |
 | `@pandacss/compiler` + `@pandacss/compiler-<platform>` | NAPI binding + prebuilt native binary (e.g. `compiler-linux-x64-gnu`, ~11 MB) |
@@ -241,8 +252,8 @@ This is framework-neutral. In Next.js App Router, Remix/React Router, SolidStart
 
 Interviewers often ask for the comparison. Keep it to mechanics, not taste. The architectural theory is owned by [`languages/css`](../../../languages/css/README.md); Panda's delta is:
 
-| | Panda 2.x | Tailwind CSS 4.x | StyleX 0.x | styled-components / Emotion |
-|---|---|---|---|---|
+|  | Panda 2.x | Tailwind CSS 4.x | StyleX 0.x | styled-components / Emotion |
+| --- | --- | --- | --- | --- |
 | Authoring | Typed objects, JSX props, recipes | Class strings in markup, `@theme` in CSS | Typed objects (`stylex.create`) | Tagged templates / objects |
 | Detection | AST parse + constant folding | Text scan for class-like tokens | Babel/bundler plugin AST compile | Runtime |
 | Dynamic values | CSS variables, recipes, `staticCss` | CSS variables, safelist | Dynamic styles via functions compiled to CSS variables | Anything (runtime) |
@@ -255,7 +266,7 @@ Interviewers often ask for the comparison. Keep it to mechanics, not taste. The 
 ## 1.8 Production failure modes introduced by the model
 
 | # | Symptom | Root cause | Where it is proved |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 1 | Element renders unstyled, class names present in the DOM | The object was not statically knowable (prop, state, default/namespace import) | [`negative-extraction.test.ts`](../examples/tests/negative-extraction.test.ts) |
 | 2 | Override "randomly" loses | Class strings concatenated instead of merged; the winner is whichever atom comes later in the sheet | Playwright test `NEGATIVE: concatenated classes …` |
 | 3 | Recipe styles beat by an old global stylesheet | Unlayered CSS beats all layers | [`languages/css`](../../../languages/css/README.md) cascade module |
@@ -268,7 +279,7 @@ Interviewers often ask for the comparison. Keep it to mechanics, not taste. The 
 
 <details><summary>1. What exactly does "zero-runtime" mean for Panda, and where is it not true?</summary>
 
-CSS is generated at build time from the source text; the browser never serialises style objects into rules or injects `<style>` tags. However, by default the generated `css()`/`cva()` functions still run in the browser to turn objects into class strings. Source transforms (`transform: true` on the Vite/webpack/Rollup/Bun plugin) replace static call sites with string literals; the runtime disappears only if *every* call site is static. Measured in this track: 19.8 KB → 0.9 KB for an all-static app, but no reduction in a React app with dynamic `css()` calls.
+CSS is generated at build time from the source text; the browser never serialises style objects into rules or injects `<style>` tags. However, by default the generated `css()`/`cva()` functions still run in the browser to turn objects into class strings. Source transforms (`transform: true` on the Vite/webpack/Rollup/Bun plugin) replace static call sites with string literals; the runtime disappears only if _every_ call site is static. Measured in this track: 19.8 KB → 0.9 KB for an all-static app, but no reduction in a React app with dynamic `css()` calls.
 </details>
 
 <details><summary>2. Define an atom and explain why atomic CSS scales sub-linearly.</summary>

@@ -202,9 +202,9 @@ test('Module 11: Greedy Algorithms and Exchange Arguments', async (t) => {
           const vMin = fractionalKnapsack(weights, values, minCap);
           const vMax = fractionalKnapsack(weights, values, maxCap);
           return vMax >= vMin;
-        }
+        },
       ),
-      { seed: 42, numRuns: 100 }
+      { seed: 42, numRuns: 100 },
     );
   });
 });

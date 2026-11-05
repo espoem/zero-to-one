@@ -1,6 +1,6 @@
 # 04 · Objects, Prototypes and Classes
 
-> **Spec anchors (ECMA-262 17th edition):** §6.1.7 *The Object Type* (§6.1.7.2 object internal methods and their invariants), §6.2.6 *The Property Descriptor Specification Type*, §6.2.10 *PrivateElement*, §7.3.15 *SetIntegrityLevel*, §7.3.21 *OrdinaryHasInstance*, §10.1 *Ordinary Object Internal Methods* (§10.1.6 [[DefineOwnProperty]], §10.1.8 [[Get]], §10.1.9 [[Set]], §10.1.11.1 OrdinaryOwnPropertyKeys, §10.1.13 OrdinaryCreateFromConstructor), §10.4 *Built-in Exotic Object Internal Methods* (§10.4.2 Array, §10.4.4 arguments, §10.4.5 TypedArray, §10.4.6 module namespace), §13.3.5 `new`, §13.10.2 InstanceofOperator, §15.7 *Class Definitions* (§15.7.14 ClassDefinitionEvaluation), §14.7.5.9 EnumerateObjectProperties, Annex B.2.2.1 `Object.prototype.__proto__`.
+> **Spec anchors (ECMA-262 17th edition):** §6.1.7 _The Object Type_ (§6.1.7.2 object internal methods and their invariants), §6.2.6 _The Property Descriptor Specification Type_, §6.2.10 _PrivateElement_, §7.3.15 _SetIntegrityLevel_, §7.3.21 _OrdinaryHasInstance_, §10.1 _Ordinary Object Internal Methods_ (§10.1.6 [[DefineOwnProperty]], §10.1.8 [[Get]], §10.1.9 [[Set]], §10.1.11.1 OrdinaryOwnPropertyKeys, §10.1.13 OrdinaryCreateFromConstructor), §10.4 _Built-in Exotic Object Internal Methods_ (§10.4.2 Array, §10.4.4 arguments, §10.4.5 TypedArray, §10.4.6 module namespace), §13.3.5 `new`, §13.10.2 InstanceofOperator, §15.7 _Class Definitions_ (§15.7.14 ClassDefinitionEvaluation), §14.7.5.9 EnumerateObjectProperties, Annex B.2.2.1 `Object.prototype.__proto__`.
 >
 > **Executable proof:** [`examples/04-objects-prototypes-classes.test.js`](../examples/04-objects-prototypes-classes.test.js)
 
@@ -10,29 +10,29 @@ JavaScript has one object model: objects are bags of properties with a link to a
 
 ## 1. Properties and descriptors
 
-**Definition (§6.1.7.1).** A *property* is identified by a key (a String or a Symbol) and has attributes. A **data property** has `[[Value]]` and `[[Writable]]`; an **accessor property** has `[[Get]]` and `[[Set]]` (functions or undefined). Both kinds have `[[Enumerable]]` and `[[Configurable]]`.
+**Definition (§6.1.7.1).** A _property_ is identified by a key (a String or a Symbol) and has attributes. A **data property** has `[[Value]]` and `[[Writable]]`; an **accessor property** has `[[Get]]` and `[[Set]]` (functions or undefined). Both kinds have `[[Enumerable]]` and `[[Configurable]]`.
 
 | Attribute | Meaning when false |
-|---|---|
+| --- | --- |
 | `writable` | `[[Set]]` fails (silently in sloppy code, `TypeError` in strict code) |
 | `enumerable` | skipped by `for...in`, `Object.keys`, spread, `JSON.stringify` |
 | `configurable` | cannot delete, cannot change kind (data ↔ accessor), cannot change attributes, except `writable: true → false` and changing `value` while still writable |
 
 Defaults differ by API, a common source of bugs:
 
-| Created by | writable | enumerable | configurable |
-|---|---|---|---|
-| assignment `o.x = 1`, object literal | true | true | true |
-| `Object.defineProperty(o, 'x', { value: 1 })` | **false** | **false** | **false** |
-| class method | true | **false** | true |
-| class field | true | true | true |
+| Created by                                    | writable  | enumerable | configurable |
+| --------------------------------------------- | --------- | ---------- | ------------ |
+| assignment `o.x = 1`, object literal          | true      | true       | true         |
+| `Object.defineProperty(o, 'x', { value: 1 })` | **false** | **false**  | **false**    |
+| class method                                  | true      | **false**  | true         |
+| class field                                   | true      | true       | true         |
 
 The rules for changing an existing property are in `ValidateAndApplyPropertyDescriptor` (called from `[[DefineOwnProperty]]`, §10.1.6). Once non-configurable and non-writable, a property is a constant forever; the engine may rely on that.
 
 ### Integrity levels
 
 | Operation | Effect | Depth |
-|---|---|---|
+| --- | --- | --- |
 | `Object.preventExtensions(o)` | no new properties | own object only |
 | `Object.seal(o)` | + every property non-configurable | shallow |
 | `Object.freeze(o)` | + every data property non-writable (`SetIntegrityLevel(o, frozen)`, §7.3.15) | **shallow**: nested objects stay mutable |
@@ -46,7 +46,7 @@ The rules for changing an existing property are in `ValidateAndApplyPropertyDesc
 Every object, ordinary or exotic, implements these (§6.1.7.2, Table 4):
 
 | Internal method | Triggered by |
-|---|---|
+| --- | --- |
 | `[[GetPrototypeOf]]()` / `[[SetPrototypeOf]](V)` | `Object.getPrototypeOf`, `instanceof`, `__proto__` |
 | `[[IsExtensible]]()` / `[[PreventExtensions]]()` | `Object.isExtensible`, `freeze`, `seal` |
 | `[[GetOwnProperty]](P)` | `Object.getOwnPropertyDescriptor`, `hasOwn` |
@@ -97,7 +97,7 @@ OrdinarySetWithOwnDescriptor(O, P, V, Receiver, ownDesc)
 Assignment always looks up the prototype chain first. Two consequences:
 
 1. **Inherited setters intercept assignment.** `obj.x = 1` calls a setter found on a prototype instead of creating an own property.
-2. **The "override mistake"** (step *): if an *inherited* property is a non-writable data property, assignment to the instance **fails**, even though the instance has no own property of that name. This is why freezing `Object.prototype` (as hardened-JavaScript environments do) breaks innocent code like `obj.toString = () => 'x'` (TypeError in strict code). Use `Object.defineProperty` to create an own property regardless.
+2. **The "override mistake"** (step *): if an _inherited_ property is a non-writable data property, assignment to the instance **fails**, even though the instance has no own property of that name. This is why freezing `Object.prototype` (as hardened-JavaScript environments do) breaks innocent code like `obj.toString = () => 'x'` (TypeError in strict code). Use `Object.defineProperty` to create an own property regardless.
 
 Assignment (`[[Set]]`) vs definition (`[[DefineOwnProperty]]`) is also the difference between `Object.assign` (uses `[[Set]]` on the target, triggers setters) and object spread `{...src}` (defines properties on a new object, triggers no setters), and between TypeScript's legacy `useDefineForClassFields: false` and standard class fields (define semantics). See the TypeScript track for the compiler flag ([`../../typescript/`](../../typescript/)).
 
@@ -136,9 +136,9 @@ flowchart LR
 Note the two parallel chains created by `class Dog extends Animal`: instances inherit through `Dog.prototype → Animal.prototype`, and the constructors themselves inherit through `Dog → Animal` (so static methods are inherited).
 
 | API | Purpose | Notes |
-|---|---|---|
+| --- | --- | --- |
 | `Object.create(proto, descriptors?)` | create with a given prototype | `Object.create(null)` gives a dictionary with no inherited keys |
-| `Object.getPrototypeOf(o)` | read `[[Prototype]]` | |
+| `Object.getPrototypeOf(o)` | read `[[Prototype]]` |  |
 | `Object.setPrototypeOf(o, p)` | change `[[Prototype]]` after creation | invalidates engine shape assumptions; slow paths for every object sharing the shape ([module 12](12-engine-internals-v8.md)) |
 | `o.__proto__` | Annex B accessor on `Object.prototype` | absent on null-prototype objects; never use with untrusted keys ([module 13](13-correctness-security-pitfalls.md)) |
 | `{ __proto__: p }` in a literal | Annex B literal syntax: sets the prototype | the only non-deprecated `__proto__` form; a computed `['__proto__']` key creates an own property instead |
@@ -152,10 +152,10 @@ Note the two parallel chains created by `class Dog extends Animal`: instances in
 ```js
 function myNew(F, ...args) {
   if (typeof F !== 'function' || !F.prototype) throw new TypeError('not a constructor'); // simplified
-  const proto = Object(F.prototype) === F.prototype ? F.prototype : Object.prototype;   // OrdinaryCreateFromConstructor
+  const proto = Object(F.prototype) === F.prototype ? F.prototype : Object.prototype; // OrdinaryCreateFromConstructor
   const obj = Object.create(proto);
   const result = F.apply(obj, args);
-  return Object(result) === result ? result : obj;   // an object return value replaces `this`
+  return Object(result) === result ? result : obj; // an object return value replaces `this`
 }
 ```
 
@@ -182,14 +182,14 @@ function myInstanceof(v, Target) {
 
 ## 4. Classes
 
-**Definition.** A *class declaration* (§15.7) creates a constructor function whose `[[ConstructorKind]]` is *base* or *derived*, a prototype object holding methods, and the class's static members. Classes are mostly, but not entirely, sugar over constructor functions and prototypes.
+**Definition.** A _class declaration_ (§15.7) creates a constructor function whose `[[ConstructorKind]]` is _base_ or _derived_, a prototype object holding methods, and the class's static members. Classes are mostly, but not entirely, sugar over constructor functions and prototypes.
 
 ### What is genuinely new (not desugarable to ES5)
 
 | Feature | Behaviour |
-|---|---|
+| --- | --- |
 | `[[IsClassConstructor]]` | calling a class without `new` throws `TypeError` |
-| derived constructors | `this` is uninitialized until `super()` returns; the *base* constructor allocates the object using `new.target.prototype` |
+| derived constructors | `this` is uninitialized until `super()` returns; the _base_ constructor allocates the object using `new.target.prototype` |
 | subclassing built-ins | `class MyArr extends Array` gets a real Array exotic object (length magic works), because allocation happens in `Array` with `new.target` = `MyArr` |
 | `#private` names | per-class private names with hard encapsulation and brand checks |
 | `super` | methods have a `[[HomeObject]]`; `super.x` looks up from `HomeObject.[[Prototype]]` |
@@ -208,12 +208,16 @@ Consequences:
 
 ```js
 class Base {
-  constructor() { this.init(); }          // runs before Derived's fields exist
+  constructor() {
+    this.init();
+  } // runs before Derived's fields exist
   init() {}
 }
 class Derived extends Base {
   value = 'field';
-  init() { this.seen = this.value; }      // reads undefined: field not defined yet
+  init() {
+    this.seen = this.value;
+  } // reads undefined: field not defined yet
 }
 new Derived().seen; // undefined
 ```
@@ -224,8 +228,8 @@ and a field shadows a setter inherited from the base class (define semantics do 
 
 `#x` is not a property. Each class evaluation creates a fresh **Private Name**; instances get a `PrivateElement` (§6.2.10) in an internal list. Rules:
 
-- Accessing `obj.#x` when `obj` lacks it throws `TypeError` (a *brand check*). `#x in obj` (ES2022) tests without throwing.
-- Private names are lexically scoped: only code inside the class body can mention them, including static methods operating on *other* instances of the same class.
+- Accessing `obj.#x` when `obj` lacks it throws `TypeError` (a _brand check_). `#x in obj` (ES2022) tests without throwing.
+- Private names are lexically scoped: only code inside the class body can mention them, including static methods operating on _other_ instances of the same class.
 - **Proxies do not forward private names**: `new Proxy(instance, {}).method()` that reads `this.#x` throws, because the proxy object itself has no private element. This breaks naive Proxy-based reactivity and mocking of classes with private fields.
 - Private methods (`#m() {}`) and accessors are installed per instance (conceptually) but share one function object.
 - `Object.freeze` does not affect private fields; they remain writable.
@@ -243,7 +247,7 @@ and a field shadows a setter inherited from the base class (define semantics do 
 ### Then vs now
 
 | Then (ES5 and conventions) | Now |
-|---|---|
+| --- | --- |
 | `function Animal(n) { this.n = n } Animal.prototype.eat = function () {}` | `class Animal { constructor(n) { this.n = n } eat() {} }` (ES2015) |
 | `Dog.prototype = Object.create(Animal.prototype); Dog.prototype.constructor = Dog; Animal.call(this, n)` | `class Dog extends Animal { constructor(n) { super(n) } }` |
 | `_private` naming convention, or WeakMap-based privacy | `#private` fields and methods (ES2022) |
@@ -258,7 +262,7 @@ Migration pitfalls: converting a constructor function to a class makes calling i
 
 ## 5. Built-in exotic objects
 
-An *exotic object* overrides at least one essential internal method.
+An _exotic object_ overrides at least one essential internal method.
 
 ### Array exotic objects (§10.4.2)
 
@@ -272,7 +276,7 @@ Arrays override `[[DefineOwnProperty]]` to maintain the `length` invariant:
 
 ### Arguments exotic objects (§10.4.4)
 
-In sloppy functions with simple parameter lists, `arguments` is *mapped*: `arguments[0]` and the first parameter alias each other. Strict functions, and functions with default/rest/destructured parameters, get an unmapped object.
+In sloppy functions with simple parameter lists, `arguments` is _mapped_: `arguments[0]` and the first parameter alias each other. Strict functions, and functions with default/rest/destructured parameters, get an unmapped object.
 
 ### TypedArray exotic objects (§10.4.5)
 
@@ -291,7 +295,7 @@ For any key that is a **canonical numeric string** (including `"-0"`, `"1.5"`, `
 ## 6. Copying objects
 
 | Technique | Depth | Copies | Triggers | Loses |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | `{ ...src }` | shallow | own enumerable String and Symbol keys | source getters (read); **defines** on the target | prototype, non-enumerables, accessors become data |
 | `Object.assign(t, src)` | shallow | own enumerable keys | source getters, **target setters** | same |
 | `structuredClone(src)` | deep, handles cycles and shared references | data per the HTML structured serialization algorithm | source getters | prototypes (class instances become plain objects), functions (throws `DataCloneError`), Symbol keys, property attributes |
@@ -304,7 +308,7 @@ For any key that is a **canonical numeric string** (including `"-0"`, `"1.5"`, `
 ## 7. Production failure modes
 
 | Failure | Mechanism | Defence |
-|---|---|---|
+| --- | --- | --- |
 | Prototype pollution: one request changes behaviour of every object | recursive merge of untrusted JSON writes `__proto__` → `Object.prototype` | null-prototype objects, `Map`, key allow-lists, `Object.freeze(Object.prototype)` in hardened apps ([module 13](13-correctness-security-pitfalls.md)) |
 | `obj.toString = ...` throws after a security library froze intrinsics | override mistake: inherited non-writable data property blocks `[[Set]]` | `Object.defineProperty` |
 | `for (const i in arr)` iterates `'0'`, `'1'`, ... and also an added `Array.prototype.myHelper` | `for...in` iterates inherited enumerable string keys, as strings | `for...of`, `forEach`, `Object.keys` |
@@ -350,7 +354,7 @@ Both copy own enumerable properties shallowly and invoke source getters. `Object
 
 <details><summary>7. Why does a Proxy around a class instance with `#private` fields throw?</summary>
 
-Private field access checks that the *receiver* has the private element. When a method is called through the proxy, `this` is the proxy, which has no private elements; the access throws `TypeError`. Proxies only intercept the essential internal methods, and private names are not properties.
+Private field access checks that the _receiver_ has the private element. When a method is called through the proxy, `this` is the proxy, which has no private elements; the access throws `TypeError`. Proxies only intercept the essential internal methods, and private names are not properties.
 </details>
 
 <details><summary>8. What happens to `arr.length` when you do `arr[10] = 1` on an empty array, and what does `arr.forEach` see?</summary>

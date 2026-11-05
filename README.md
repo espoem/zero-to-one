@@ -28,6 +28,7 @@ zero-to-one/
 ### Track Standard
 
 Every track adheres to the uniform structure defined in [AGENTS.md](./AGENTS.md):
+
 1. `README.md` — Curriculum roadmap, prerequisites, learning outcomes, **Certifications & Exams**, and verification guide.
 2. `GLOSSARY.md` — Bilingual (English ↔ Czech) dictionary of established terms.
 3. `modules/` — Progressive chapter-by-chapter lessons, each ending with an Interview Drill.
@@ -44,7 +45,7 @@ All tooling is pinned per track with [mise](https://mise.jdx.dev/) (`.mise.toml`
 29 tracks: 13 complete, 4 in progress (Phase 2), 12 planned. Work is phased by dependency; see [.agents/PLAN.md](./.agents/PLAN.md) for the plan and [.agents/STATUS.md](./.agents/STATUS.md) for live status.
 
 | Domain | Track | Scope | Status | Path |
-| :--- | :--- | :--- | :---: | :--- |
+| :-- | :-- | :-- | :-: | :-- |
 | `languages/` | **CSS & web platform** | Cascade, layout engines, the rendering pipeline, color science, motion and design-token architecture, tested in headless Chromium | 🟢 Complete | [languages/css/](./languages/css/) |
 | `languages/` | **JavaScript** | ECMAScript 2026 from the specification up: types and coercion, execution model, async semantics, modules, metaprogramming, memory model and V8 behaviour | 🟢 Complete | [languages/javascript/](./languages/javascript/) |
 | `languages/` | **TypeScript** | The TypeScript 7 type system and toolchain: erasure, narrowing, generics, type-level programming, runtime boundaries, typing UI frameworks, shipping typed libraries | 🟢 Complete | [languages/typescript/](./languages/typescript/) |
@@ -80,7 +81,8 @@ All tooling is pinned per track with [mise](https://mise.jdx.dev/) (`.mise.toml`
 ## 3. Bilingual Terminology & Glossaries (EN ↔ CZ)
 
 To bridge technical English documentation with accurate, established Czech academic and professional terminology:
-- **[Central Systems & CS Glossary](./GLOSSARY.md)** covers universal concepts (e.g., *Referential Transparency*, *Idempotency*, *Time Complexity*, *CAP Theorem*).
+
+- **[Central Systems & CS Glossary](./GLOSSARY.md)** covers universal concepts (e.g., _Referential Transparency_, _Idempotency_, _Time Complexity_, _CAP Theorem_).
 - **[JavaScript (ECMAScript) Glossary](./languages/javascript/GLOSSARY.md)** covers specification terms, coercion, execution contexts and closures, prototypes, iteration and the event loop, modules, metaprogramming, the memory model, and engine behaviour.
 - **[TypeScript & Type-System Glossary](./languages/typescript/GLOSSARY.md)** covers type theory, compiler analysis, and language features.
 - **[CSS Platform Glossary](./languages/css/GLOSSARY.md)** covers the cascade and cascade layers, value processing, layout engines, stacking contexts, container queries, color spaces, view transitions, the rendering pipeline, and design tokens.
@@ -98,4 +100,3 @@ To bridge technical English documentation with accurate, established Czech acade
 New tracks add their glossary here when they land. All glossaries follow the discipline recorded in [AGENTS.md](./AGENTS.md): shared terms reuse the root definition and Czech translation verbatim; no fabricated neologisms.
 
 ---
-

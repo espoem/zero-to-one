@@ -1,47 +1,47 @@
 # 06 · Agents, Realms, the Job Queue and the Event Loop
 
-> **Spec anchors:** ECMA-262 17th edition §9.3 *Realms*, §9.4 *Execution Contexts*, §9.5 *Jobs and Host Operations to Enqueue Jobs* (§9.5.5 HostEnqueuePromiseJob), §9.6 *Agents*, §9.7 *Agent Clusters*, §9.8 *Forward Progress*, §27.2.1 *Promise Abstract Operations* (§27.2.1.3 CreateResolvingFunctions, §27.2.1.9 HostPromiseRejectionTracker), §27.2.2.1 NewPromiseReactionJob, §27.2.2.2 NewPromiseResolveThenableJob, §27.2.5.4.1 PerformPromiseThen, §27.7.5.3 Await, §20.5.2.1 `Error.isError`. **HTML Living Standard** §8.1.7 *Event loops* (§8.1.7.1 definitions, §8.1.7.2 queuing tasks, §8.1.7.3 processing model), §8.1.6.4 HostPromiseRejectionTracker, §8.1.6.6.4 HostEnqueuePromiseJob, §8.1.4.7 unhandled promise rejections.
+> **Spec anchors:** ECMA-262 17th edition §9.3 _Realms_, §9.4 _Execution Contexts_, §9.5 _Jobs and Host Operations to Enqueue Jobs_ (§9.5.5 HostEnqueuePromiseJob), §9.6 _Agents_, §9.7 _Agent Clusters_, §9.8 _Forward Progress_, §27.2.1 _Promise Abstract Operations_ (§27.2.1.3 CreateResolvingFunctions, §27.2.1.9 HostPromiseRejectionTracker), §27.2.2.1 NewPromiseReactionJob, §27.2.2.2 NewPromiseResolveThenableJob, §27.2.5.4.1 PerformPromiseThen, §27.7.5.3 Await, §20.5.2.1 `Error.isError`. **HTML Living Standard** §8.1.7 _Event loops_ (§8.1.7.1 definitions, §8.1.7.2 queuing tasks, §8.1.7.3 processing model), §8.1.6.4 HostPromiseRejectionTracker, §8.1.6.6.4 HostEnqueuePromiseJob, §8.1.4.7 unhandled promise rejections.
 >
 > **Executable proof:** [`examples/06-agents-realms-job-queue.test.js`](../examples/06-agents-realms-job-queue.test.js), with an executable model of the HTML processing model in [`examples/06-event-loop-model.js`](../examples/06-event-loop-model.js)
 
-ECMA-262 defines *what* a job is and *that* promise jobs must run in FIFO order after the current code finishes. It does **not** define timers, I/O, rendering, or when "after" is. The host does. This module separates the two layers precisely, because nearly every "predict the output" interview question and every UI-jank or starvation bug lives on the boundary between them.
+ECMA-262 defines _what_ a job is and _that_ promise jobs must run in FIFO order after the current code finishes. It does **not** define timers, I/O, rendering, or when "after" is. The host does. This module separates the two layers precisely, because nearly every "predict the output" interview question and every UI-jank or starvation bug lives on the boundary between them.
 
 ---
 
 ## 1. Agents and agent clusters
 
-**Definition (§9.6).** An *agent* comprises a set of ECMAScript execution contexts, an execution context stack, a running execution context, an **Agent Record**, and an *executing thread*. Code in an agent runs on one thread at a time; that is the language's single-threadedness guarantee.
+**Definition (§9.6).** An _agent_ comprises a set of ECMAScript execution contexts, an execution context stack, a running execution context, an **Agent Record**, and an _executing thread_. Code in an agent runs on one thread at a time; that is the language's single-threadedness guarantee.
 
 | Host construct | Agent? |
-|---|---|
+| --- | --- |
 | A browser tab's main thread (similar-origin window agent: all same-site windows that can reach each other share one) | yes |
 | Each `Worker`, `SharedWorker`, `ServiceWorker`, worklet | its own agent |
 | Node.js main thread; each `worker_threads.Worker` | its own agent |
-| `vm` contexts, iframes of the same agent | **not** separate agents: same thread, different *realms* |
+| `vm` contexts, iframes of the same agent | **not** separate agents: same thread, different _realms_ |
 
 **Agent cluster (§9.7).** A set of agents that can share memory (`SharedArrayBuffer`). In browsers this requires cross-origin isolation ([module 11](11-binary-data-memory-model.md)). The Agent Record's `[[CanBlock]]` says whether `Atomics.wait` may block: false on a browser main thread, true in workers and in Node's main thread.
 
-**Forward progress (§9.8).** An agent makes progress when it is not blocked, but the spec does not require fairness *between* agents beyond that. Any fairness you see comes from the host and the OS scheduler.
+**Forward progress (§9.8).** An agent makes progress when it is not blocked, but the spec does not require fairness _between_ agents beyond that. Any fairness you see comes from the host and the OS scheduler.
 
 ---
 
 ## 2. Realms
 
-**Definition (§9.3).** A *Realm Record* has `[[Intrinsics]]` (one fresh copy of every built-in: `%Array%`, `%Object.prototype%`, `%Promise%`, ...), a `[[GlobalObject]]`, a `[[GlobalEnv]]`, and `[[HostDefined]]` data. All ECMAScript code is associated with a realm, and built-in functions create objects using **the realm they belong to** (the *current realm* of the running execution context, or the function's own `[[Realm]]`).
+**Definition (§9.3).** A _Realm Record_ has `[[Intrinsics]]` (one fresh copy of every built-in: `%Array%`, `%Object.prototype%`, `%Promise%`, ...), a `[[GlobalObject]]`, a `[[GlobalEnv]]`, and `[[HostDefined]]` data. All ECMAScript code is associated with a realm, and built-in functions create objects using **the realm they belong to** (the _current realm_ of the running execution context, or the function's own `[[Realm]]`).
 
 Realms you meet in practice: each iframe and window, each `vm.createContext()` in Node, each worker (also a separate agent), and, in the future, `ShadowRealm` (Stage 2.7, behind `--harmony-shadow-realm` in V8 14.6).
 
 Consequences of separate intrinsics:
 
 | Check | Cross-realm safe? | Why |
-|---|---|---|
-| `x instanceof Array` | **no** | compares with *this* realm's `Array.prototype` |
+| --- | --- | --- |
+| `x instanceof Array` | **no** | compares with _this_ realm's `Array.prototype` |
 | `Array.isArray(x)` | yes | checks for an Array exotic object (and sees through Proxies) |
-| `x instanceof Error` | **no** | |
+| `x instanceof Error` | **no** |  |
 | `Error.isError(x)` (ES2026) | yes | checks the `[[ErrorData]]` internal slot |
 | `Object.prototype.toString.call(x)` | mostly | uses `Symbol.toStringTag`, which can be spoofed |
-| `x.constructor === Object` | no | |
-| structured clone (`postMessage`) | yes | recreates the value *in the receiving realm* |
+| `x.constructor === Object` | no |  |
+| structured clone (`postMessage`) | yes | recreates the value _in the receiving realm_ |
 
 Frameworks hit this when they receive objects from iframes, from `vm`-based test runners (Jest's environment uses `vm` contexts, so `instanceof Error` fails for errors thrown by Node core in some setups), or from libraries bundled twice (not a realm issue, but the same symptom: two different `class` objects).
 
@@ -49,13 +49,13 @@ Frameworks hit this when they receive objects from iframes, from `vm`-based test
 
 ## 3. Jobs in ECMA-262
 
-**Definition (§9.5).** A *Job* is an Abstract Closure with no parameters that initiates an ECMAScript computation when no other ECMAScript computation is running. Jobs are scheduled through host-defined operations; ECMA-262 itself uses only three:
+**Definition (§9.5).** A _Job_ is an Abstract Closure with no parameters that initiates an ECMAScript computation when no other ECMAScript computation is running. Jobs are scheduled through host-defined operations; ECMA-262 itself uses only three:
 
-| Host hook | Used for |
-|---|---|
-| `HostEnqueuePromiseJob(job, realm)` (§9.5.5) | promise reactions and thenable resolution |
-| `HostEnqueueGenericJob(job, realm)` | e.g. `Atomics.waitAsync` resolution |
-| `HostEnqueueTimeoutJob(timeoutJob, realm, ms)` | e.g. `Atomics.waitAsync` timeouts |
+| Host hook                                      | Used for                                  |
+| ---------------------------------------------- | ----------------------------------------- |
+| `HostEnqueuePromiseJob(job, realm)` (§9.5.5)   | promise reactions and thenable resolution |
+| `HostEnqueueGenericJob(job, realm)`            | e.g. `Atomics.waitAsync` resolution       |
+| `HostEnqueueTimeoutJob(timeoutJob, realm, ms)` | e.g. `Atomics.waitAsync` timeouts         |
 
 Requirements on promise jobs: they run **in FIFO order relative to each other**, and only when the execution context stack is empty. Everything else (when "empty" happens, what else runs in between) is up to the host. In HTML, `HostEnqueuePromiseJob` enqueues a **microtask**.
 
@@ -119,7 +119,7 @@ In HTML, HostEnqueuePromiseJob (§8.1.6.6.4) queues a microtask that prepares to
 Counting "ticks" as successive microtask turns after the current script ends:
 
 | Code | Its continuation runs after |
-|---|---|
+| --- | --- |
 | `Promise.resolve().then(f)` | 1 tick |
 | `await nativePromise` | **1 tick** (ES2019 change: `Await` uses `PromiseResolve`, which returns a native promise unchanged) |
 | `Promise.resolve(thenableObject).then(f)` | 2 ticks (resolve-thenable job, then the reaction) |
@@ -131,8 +131,8 @@ The practical rule: **`return await p` inside an async function is not slower th
 ### Then vs now: `await` cost
 
 | Then (ES2017–ES2018 engines) | Now (ES2019+) |
-|---|---|
-| `await v` wrapped `v` in a *new* promise and resolved it, costing 3 ticks even for a native promise | `await v` calls `PromiseResolve`, reusing native promises: 1 tick |
+| --- | --- |
+| `await v` wrapped `v` in a _new_ promise and resolved it, costing 3 ticks even for a native promise | `await v` calls `PromiseResolve`, reusing native promises: 1 tick |
 | `return await p` discouraged as "extra tick" | `return await p` recommended inside `try` (otherwise rejections bypass your `catch`) and harmless elsewhere |
 
 ### HostPromiseRejectionTracker (§27.2.1.9)
@@ -142,18 +142,18 @@ Called with operation `"reject"` when a promise is rejected **without** any hand
 - **HTML**: collects "about-to-be-notified rejected promises" and, after the microtask checkpoint, fires `unhandledrejection` on the global; a later handler fires `rejectionhandled`. The default action logs to the console.
 - **Node**: emits `process.on('unhandledRejection')` after the microtask queue drains; the default mode since Node 15 is `--unhandled-rejections=throw`, which raises it as an uncaught exception and **exits with code 1** if no listener handles it. Details of Node's modes belong to the Node.js track ([`../../../technologies/nodejs/`](../../../technologies/nodejs/)).
 
-"Unhandled" means *no handler by the time the host checks*, not "never handled". Attaching a `.catch` one macrotask later is too late in both hosts.
+"Unhandled" means _no handler by the time the host checks_, not "never handled". Attaching a `.catch` one macrotask later is too late in both hosts.
 
 ---
 
 ## 4. The HTML event loop processing model
 
-The HTML Standard (§8.1.7) defines the browser host's event loop. This track owns this section; the CSS track owns what happens *inside* style, layout and paint ([`../../css/`](../../css/)), and Node's libuv phases belong to the Node.js track.
+The HTML Standard (§8.1.7) defines the browser host's event loop. This track owns this section; the CSS track owns what happens _inside_ style, layout and paint ([`../../css/`](../../css/)), and Node's libuv phases belong to the Node.js track.
 
 ### Definitions (§8.1.7.1)
 
-- An **event loop** has one or more **task queues**. A task queue is a *set*, not a queue: the loop picks the first *runnable* task from a queue of its choosing, so the browser may prioritise (for example) input over timers. Order is guaranteed only **within** one task source.
-- A **task** has steps, a *source* (DOM manipulation, user interaction, networking, history traversal, timers, posted messages, ...), a document and a script evaluation environment settings object set.
+- An **event loop** has one or more **task queues**. A task queue is a _set_, not a queue: the loop picks the first _runnable_ task from a queue of its choosing, so the browser may prioritise (for example) input over timers. Order is guaranteed only **within** one task source.
+- A **task** has steps, a _source_ (DOM manipulation, user interaction, networking, history traversal, timers, posted messages, ...), a document and a script evaluation environment settings object set.
 - The **microtask queue** is a real FIFO queue, one per event loop. Promise reactions, `queueMicrotask` callbacks and `MutationObserver` notifications are microtasks.
 - The **performing a microtask checkpoint** flag prevents re-entrancy of the checkpoint.
 
@@ -196,7 +196,7 @@ PERFORM-MICROTASK-CHECKPOINT()
 8  unset the flag; record timing info for the microtask checkpoint
 ```
 
-**Loop invariant.** When step 2 selects the next task, the microtask queue is empty. Every task (including the rendering task) is followed by a complete drain of the microtask queue, and a microtask that enqueues another microtask extends the *current* drain. Consequently, microtasks can starve tasks and rendering forever; tasks cannot starve microtasks.
+**Loop invariant.** When step 2 selects the next task, the microtask queue is empty. Every task (including the rendering task) is followed by a complete drain of the microtask queue, and a microtask that enqueues another microtask extends the _current_ drain. Consequently, microtasks can starve tasks and rendering forever; tasks cannot starve microtasks.
 
 The checkpoint also runs outside step 7: "clean up after running script" performs a microtask checkpoint whenever the JavaScript execution context stack becomes empty, for example between two event listeners dispatched by the browser for one user click, or between two `requestAnimationFrame` callbacks. That is why a promise reaction queued in the first click listener runs **before** the second listener for a real click, but **after** the second listener when the click is dispatched by script (`el.click()`), because then the stack never empties in between.
 
@@ -207,7 +207,7 @@ The 50 ms idle cap (line 12) is the same threshold as the long-task definition: 
 The **rendering task**, for its event loop, takes the fully active documents (ancestors before descendants) and runs these steps, in this order:
 
 1. **Filter non-renderable documents**: drop documents that are render-blocked, whose visibility state is `hidden`, whose rendering is suppressed for a view transition, or whose navigable has no rendering opportunity now.
-2. **Unnecessary rendering**: drop documents where updating would have no visible effect *and* the map of animation frame callbacks is empty. The user agent may also skip documents for other reasons (for example to coalesce timer callbacks with only microtask checkpoints in between).
+2. **Unnecessary rendering**: drop documents where updating would have no visible effect _and_ the map of animation frame callbacks is empty. The user agent may also skip documents for other reasons (for example to coalesce timer callbacks with only microtask checkpoints in between).
 3. Reveal each document; flush autofocus candidates (top-level only).
 4. **Run the resize steps** (fire `resize`, CSSOM View).
 5. **Run the scroll steps** (fire `scroll`, `scrollend`, CSSOM View).
@@ -221,7 +221,7 @@ The **rendering task**, for its event loop, takes the fully active documents (an
 13. Perform pending **view transition** operations.
 14. **Run the update intersection observations steps** (`IntersectionObserver`).
 15. Record rendering time (Long Animation Frames).
-16. **Paint**: "update the rendering or user interface of *doc* and its node navigable to reflect the current state".
+16. **Paint**: "update the rendering or user interface of _doc_ and its node navigable to reflect the current state".
 17. Process top-layer removals (popovers, dialogs).
 
 Because the rendering update is itself a task, it is followed by a microtask checkpoint, and because each rAF callback is invoked from an empty stack, microtasks queued by one rAF callback run before the next rAF callback.
@@ -289,7 +289,7 @@ button.addEventListener('click', () => log('listener 2'));
 ```
 
 | Dispatch | Log |
-|---|---|
+| --- | --- |
 | user clicks the button | `listener 1`, `microtask from listener 1`, `listener 2` |
 | script calls `button.click()` | `listener 1`, `listener 2`, `microtask from listener 1` (after the calling script returns) |
 
@@ -298,7 +298,7 @@ The difference is the stack: the browser invokes each listener for a real click 
 ### Yielding to the event loop correctly
 
 | Technique | Lets input and rendering run? | Notes |
-|---|---|---|
+| --- | --- | --- |
 | `await null`, `await Promise.resolve()` | **no** | continues in the same microtask drain |
 | `queueMicrotask(next)` | **no** | same |
 | `setTimeout(next, 0)` | yes | clamped to ≥ 4 ms after 5 nested levels; low priority |
@@ -315,7 +315,7 @@ Node also drains the microtask queue after each callback from libuv, and has `pr
 ## 5. Engine mechanics: where the queues live
 
 - **V8** keeps a `MicrotaskQueue` per native context group (by default one per isolate). Promise reaction jobs are `PromiseReactionJobTask` objects, and the queue is drained by the `RunMicrotasks` builtin under a policy chosen by the embedder: Node uses `kExplicit` (the host calls it), Blink uses `kScoped` (microtasks run when the outermost script scope exits, which implements "clean up after running script"). V8 never runs microtasks on its own; the HTML checkpoint and Node's tick processing are host code.
-- **Await fast path.** Since V8 7.2 (2018), `await` on a native promise neither allocates a throwaway wrapper promise nor goes through a thenable job. This is the engine side of the ES2019 spec change: Await (§27.7.5.3) calls PromiseResolve and then **PerformPromiseThen directly**, never the user-visible `then` method. Resolving a promise *with* a promise, by contrast, looks up and calls `then` (step 4 above), so a patched `Promise.prototype.then` is observable there and costs two extra ticks. The example file proves both: a patched `then` is called 0 times by `await p` and once by `new Promise(r => r(p))`.
+- **Await fast path.** Since V8 7.2 (2018), `await` on a native promise neither allocates a throwaway wrapper promise nor goes through a thenable job. This is the engine side of the ES2019 spec change: Await (§27.7.5.3) calls PromiseResolve and then **PerformPromiseThen directly**, never the user-visible `then` method. Resolving a promise _with_ a promise, by contrast, looks up and calls `then` (step 4 above), so a patched `Promise.prototype.then` is observable there and costs two extra ticks. The example file proves both: a patched `then` is called 0 times by `await p` and once by `new Promise(r => r(p))`.
 - **Chromium** runs the HTML processing model in Blink's scheduler with prioritised task queues (input and rendering high, timers lower, background tabs throttled); `scheduler.postTask(fn, { priority })` and `scheduler.yield()` expose that priority to script.
 - **Node.js** drains `process.nextTick` callbacks first, then calls V8's `RunMicrotasks`, repeating until both are empty, after every callback from libuv (`processTicksAndRejections`). It reports unhandled rejections at the end of that drain. Phase structure and `nextTick` semantics are owned by the Node.js track ([`../../../technologies/nodejs/`](../../../technologies/nodejs/)).
 
@@ -324,24 +324,24 @@ Node also drains the microtask queue after each callback from libuv, and has `pr
 [`examples/06-event-loop-model.js`](../examples/06-event-loop-model.js) implements a deterministic simulator of the window event loop. It is a teaching model, so it simplifies on purpose:
 
 | Modelled faithfully | Simplified |
-|---|---|
+| --- | --- |
 | task sources with FIFO order within a source and an implementation-defined choice between sources (a fixed priority list) | one document, one navigable, one event loop |
 | one FIFO microtask queue, drained completely after every task, with the re-entrancy flag | every task costs 1 ms of simulated time |
 | rendering opportunities at frame boundaries queue a task on the rendering task source | rendering opportunity = every `frameMs`, never throttled |
 | hidden documents filtered out of rendering (no rAF callbacks run) | "unnecessary rendering" = no rAF callbacks pending |
 | all rAF callbacks in one frame receive the same timestamp; microtasks run between them | style, layout and paint are log entries |
 | sub-step order of the rendering task (verbose mode) | ResizeObserver depth loop not modelled |
-| idle deadline = min(idle start + 50 ms, next timer, next render deadline) | |
-| listener dispatch from user input (checkpoint after each listener) vs `el.click()` from script | |
+| idle deadline = min(idle start + 50 ms, next timer, next render deadline) |  |
+| listener dispatch from user input (checkpoint after each listener) vs `el.click()` from script |  |
 
-Tests replay the classic puzzles against it **and against Node** where the behaviour is host-independent, and show starvation: a self-re-enqueuing microtask prevents both timers and rendering forever, while a self-re-enqueuing *task* lets rendering interleave.
+Tests replay the classic puzzles against it **and against Node** where the behaviour is host-independent, and show starvation: a self-re-enqueuing microtask prevents both timers and rendering forever, while a self-re-enqueuing _task_ lets rendering interleave.
 
 ---
 
 ## 7. Production failure modes
 
 | Failure | Mechanism | Defence |
-|---|---|---|
+| --- | --- | --- |
 | UI freezes although work is "async" | a long chain of promise continuations is a single microtask drain; no rendering in between | yield to the event loop: `await scheduler.yield()` or `await new Promise(r => setTimeout(r))`; chunk work; move CPU work to a worker |
 | Infinite loop without a loop: tab hangs | microtask that enqueues itself (recursive `queueMicrotask`, or a promise chain that re-subscribes) starves tasks | bounded recursion; schedule via tasks |
 | Node process exits with code 1 under load | rejection without a handler at checkpoint time (a forgotten `await`, a `.catch` attached later) | always `await` or `.catch` immediately; lint `no-floating-promises`; global `unhandledRejection` handler for logging, not for recovery |
@@ -395,7 +395,7 @@ If every awaited value is already resolved, the whole loop runs within one micro
 
 <details><summary>8. Why is a task "queue" actually a set?</summary>
 
-The event loop chooses the first *runnable* task from a queue of its choosing; tasks whose document is not fully active are skipped, and browsers prioritise some sources (input, rendering) over others (timers). Only tasks from the same source keep their relative order.
+The event loop chooses the first _runnable_ task from a queue of its choosing; tasks whose document is not fully active are skipped, and browsers prioritise some sources (input, rendering) over others (timers). Only tasks from the same source keep their relative order.
 </details>
 
 <details><summary>9. What does `new Promise(r => r({ get then() { throw new Error('x') } }))` produce, and when does the getter run?</summary>

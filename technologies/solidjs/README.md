@@ -15,7 +15,7 @@ A zero-to-one track on **Solid 2.0** (release candidate): fine-grained reactivit
 ## Syllabus
 
 | # | Module | Covers | Proof |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 01 | [Reactive Core: Signals, Memos, Batching and Ownership](./modules/01-reactive-core.md) | graph model, push-pull, glitch freedom, microtask commits, `flush`, lazy and writable memos, ownership, the owned-write invariant | [`01-reactive-core.test.ts`](./examples/typescript/01-reactive-core.test.ts) |
 | 02 | [Effects, Lifecycle and Runtime Invariants](./modules/02-effects-and-lifecycle.md) | split effects, render vs user effects, error arm, `createReaction`, deprecated `createTrackedEffect`, `onSettled`/`onCleanup`/`onFlush`, diagnostics codes | [`02-effects-and-lifecycle.test.tsx`](./examples/typescript/02-effects-and-lifecycle.test.tsx) |
 | 03 | [Components, Props and the DOM Layer](./modules/03-components-props-and-dom.md) | compiler output, props as getters, `merge`/`omit`, attributes/class/style, root-owned events, refs and directive factories, form inputs | [`03-components-props-and-dom.test.tsx`](./examples/typescript/03-components-props-and-dom.test.tsx) |
@@ -30,11 +30,11 @@ A zero-to-one track on **Solid 2.0** (release candidate): fine-grained reactivit
 Reference: [GLOSSARY.md](./GLOSSARY.md) (EN ↔ CZ) · [CHEATSHEET.md](./CHEATSHEET.md) · [exams/](./exams/README.md).
 
 ### Out of Scope
+
 - Solid 1.x legacy APIs deprecated or removed without direct 2.0 equivalents.
 - Mobile/native application runtimes (Solid Native).
 - Styling solutions and CSS-in-JS libraries (covered in dedicated [technologies/panda-css](../panda-css/README.md) and [languages/css](../../languages/css/README.md) tracks).
-- Generic HTTP and network transport mechanics (owned by [architecture/networking](../../architecture/networking/README.md)).
-See [exams/README.md](./exams/README.md#out-of-scope-with-reason).
+- Generic HTTP and network transport mechanics (owned by [architecture/networking](../../architecture/networking/README.md)). See [exams/README.md](./exams/README.md#out-of-scope-with-reason).
 
 ## Run it
 
@@ -56,7 +56,7 @@ Every test runs against the **real published packages**: there is no shim layer.
 **No official SolidJS certification exists** (checked 2026-10-28). Following the repository rules, the track prepares for the recognised substitute, the **senior frontend interview loop** for a Solid role (knowledge screen, live coding, frontend system design, migration discussion):
 
 | Exam / format | Vendor | Guide | Targets | Status | Format |
-|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- |
 | Senior frontend interview (Solid) | none (industry format) | [exams/README.md](./exams/README.md) | Solid 2.0 RC (answers name 1.x equivalents) | n/a | 60-question bank (single, multi, scenario, hands-on with test verification), 25-question / 45-minute mock screen + 20-minute hands-on, scoring key |
 
 ## Sources

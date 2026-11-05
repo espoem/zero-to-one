@@ -10,7 +10,7 @@ Suspense is React's answer to "what should the UI show while some of it is not r
 
 ## 1. The model
 
-> **Definition 6.1 (Suspension).** During render, a component *suspends* when it needs a value that is not yet available. React abandons rendering of the subtree below the nearest enclosing `<Suspense>` boundary, renders that boundary's `fallback` instead, and **retries** the subtree when the awaited value becomes available.
+> **Definition 6.1 (Suspension).** During render, a component _suspends_ when it needs a value that is not yet available. React abandons rendering of the subtree below the nearest enclosing `<Suspense>` boundary, renders that boundary's `fallback` instead, and **retries** the subtree when the awaited value becomes available.
 
 > **Definition 6.2 (Boundary reveal).** A boundary reveals its content only when **every** component inside it (outside nested boundaries) can render. Nested boundaries reveal independently, outer before inner.
 
@@ -30,7 +30,7 @@ flowchart TD
 
 ### 1.1 The "algebraic effects" analogy — and its limit
 
-The original Suspense design was described as a poor man's **algebraic effect**: a component "performs" an effect (*I need this data*), the nearest handler (the boundary) intercepts it, and the computation is resumed later. The analogy explains the shape — a non-local exit to a handler — but React does **not** resume the suspended function from the point of suspension (JavaScript has no resumable continuations). It **re-runs the component from the top**. That is why render must be pure, and why the awaited promise must be the *same* promise on the retry.
+The original Suspense design was described as a poor man's **algebraic effect**: a component "performs" an effect (_I need this data_), the nearest handler (the boundary) intercepts it, and the computation is resumed later. The analogy explains the shape — a non-local exit to a handler — but React does **not** resume the suspended function from the point of suspension (JavaScript has no resumable continuations). It **re-runs the component from the top**. That is why render must be pure, and why the awaited promise must be the _same_ promise on the retry.
 
 Historically (React 16.6–18) the mechanism was "throw a promise". **Throwing promises from user code is not a supported API.** It still happens to work in some paths, but the documented API is `use(promise)` (React 19), Suspense-enabled libraries, `lazy`, and Server Components. Internally React now throws a private `SuspenseException` sentinel after recording the thenable, so code that catches "anything thrown" around `use` breaks (React warns when `use` is wrapped in `try/catch`).
 
@@ -55,12 +55,12 @@ React **annotates the promise object** with `status`/`value`/`reason`. On the re
 
 ### 2.2 The promise must be cached
 
-Because the component is re-run from the top, `use(fetch(url))` creates a **new** promise on every retry; each one starts pending and suspends again. Test "NEGATIVE: a promise created during render never settles the boundary" is stuck on the fallback forever. React logs *"A component was suspended by an uncached promise…"* when it can detect the swap during a synchronous replay.
+Because the component is re-run from the top, `use(fetch(url))` creates a **new** promise on every retry; each one starts pending and suspends again. Test "NEGATIVE: a promise created during render never settles the boundary" is stuck on the fallback forever. React logs _"A component was suspended by an uncached promise…"_ when it can detect the swap during a synchronous replay.
 
 Where cached promises come from:
 
 | Source | Cache lifetime |
-|---|---|
+| --- | --- |
 | Server Components: `await` directly in an async component, or `cache(fn)` (Module 07) | One server request |
 | A promise created in a Server Component and passed as a prop to a Client Component | Serialized via Flight; stable on the client |
 | A client data library (TanStack Query `useSuspenseQuery`, Relay, SWR) | Library cache, keyed |
@@ -81,7 +81,7 @@ A tempting anti-pattern reads data from a side cache when it is there and calls 
 const v = cache.get(key) ?? use(promise); // suspends once, then skips use() on the retry
 ```
 
-It hides a race: the first render suspended on `promise` while the retry renders from a different source; nothing guarantees they agree. React 19.3 warns in DEV ([react#37104](https://github.com/react/react/pull/37104)): *"This library called use() to suspend in a previous render but did not call use() when it finished… https://react.dev/warnings/conditional-use-of-use"* — test "NEGATIVE (19.3 DEV warning)…". The check fires when React retries the same fiber (it cannot see every variant). Fix: always call `use` on the cached promise (a fulfilled promise returns synchronously anyway). The documented exception is `use(browser())` (§6), which is designed to be conditional.
+It hides a race: the first render suspended on `promise` while the retry renders from a different source; nothing guarantees they agree. React 19.3 warns in DEV ([react#37104](https://github.com/react/react/pull/37104)): _"This library called use() to suspend in a previous render but did not call use() when it finished… https://react.dev/warnings/conditional-use-of-use"_ — test "NEGATIVE (19.3 DEV warning)…". The check fires when React retries the same fiber (it cannot see every variant). Fix: always call `use` on the cached promise (a fulfilled promise returns synchronously anyway). The documented exception is `use(browser())` (§6), which is designed to be conditional.
 
 ### 2.5 Reveal throttling
 
@@ -94,7 +94,7 @@ To avoid "popcorn" UIs where content pops in every few milliseconds, React holds
 ### 3.1 APIs
 
 | API | Runtime | Waits for data? | Status in 19 |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `renderToString` | any | **No** — suspended boundaries emit their fallback and are marked for client rendering | Legacy; no streaming |
 | `renderToStaticMarkup` | any | No | For non-interactive HTML (emails) |
 | `renderToPipeableStream` | Node streams | Streams | **Recommended on Node** |
@@ -113,7 +113,7 @@ The 19.2 notes recommend **Node streams on Node**: they are faster there than We
 The **shell** is everything outside any Suspense boundary plus the fallbacks of the outermost boundaries. `renderToPipeableStream(app, options)`:
 
 | Callback | Fires when | Typical action |
-|---|---|---|
+| --- | --- | --- |
 | `onShellReady()` | Shell rendered | Set status 200 and headers, `pipe(res)` — streaming starts |
 | `onShellError(err)` | An error outside every boundary | Send a static 500 page; nothing was streamed yet (test "NEGATIVE: an error outside any boundary fails the shell") |
 | `onAllReady()` | Everything rendered, including all boundaries | For crawlers and SSG: wait for this instead of `onShellReady` |
@@ -129,17 +129,23 @@ What the streaming tests observe on the wire (19.3.1):
 
 ```html
 <!-- Shell -->
-<main><h1>title</h1>
-  <!--$?--><template id="B:0"></template><i>loading</i><!--/$-->     ← pending boundary B:0 showing its fallback
+<main>
+  <h1>title</h1>
+  <!--$?--><template id="B:0"></template><i>loading</i><!--/$-->
+  ← pending boundary B:0 showing its fallback
 </main>
 
 <!-- Later chunk, when the data resolved -->
-<div hidden id="S:0"><b>data</b></div>                               ← completed segment, hidden
-<script>$RB=[];$RV=function(a){…};$RC=function(b,c){…};…("B:0","S:0")</script>   ← reveal runtime + instruction
+<div hidden id="S:0"><b>data</b></div>
+← completed segment, hidden
+<script>
+  $RB=[];$RV=function(a){…};$RC=function(b,c){…};…("B:0","S:0")
+</script>
+← reveal runtime + instruction
 ```
 
 | Marker | Meaning |
-|---|---|
+| --- | --- |
 | `<!--$-->…<!--/$-->` | Completed boundary |
 | `<!--$?-->` + `<template id="B:n">` | Pending boundary; the template is the anchor |
 | `<!--$!-->` + `<template data-dgst …>` | Boundary errored or bailed out on the server → client renders it |
@@ -150,8 +156,8 @@ The inline script moves the segment's children into place and flips the comment 
 
 ### 3.4 Then vs now: SSR
 
-| | Then | Now |
-|---|---|---|
+|  | Then | Now |
+| --- | --- | --- |
 | ≤17 | `renderToString`/`renderToNodeStream`; `<Suspense>` **unsupported on the server** (threw) | — |
 | 18 | `renderToPipeableStream`/`renderToReadableStream`: streaming with Suspense, selective hydration | — |
 | 19.0 | `prerender` APIs; `renderToNodeStream` removed; resource hoisting (Module 11) | — |
@@ -168,7 +174,7 @@ Migration from `renderToString` + data prefetch to streaming: move data loading 
 
 > **Definition 6.3 (Hydration).** `hydrateRoot(container, element)` renders `element` on the client and, instead of creating DOM, **claims** the existing server-rendered nodes in document order, attaching fibers and event listeners to them. The client render must produce the same tree the server produced.
 
-Test "matching server and client trees hydrate without re-creating DOM" checks that the `<button>` node after hydration is the *same object* the server HTML created, and that it is interactive.
+Test "matching server and client trees hydrate without re-creating DOM" checks that the `<button>` node after hydration is the _same object_ the server HTML created, and that it is interactive.
 
 ### 4.2 Selective and progressive hydration
 
@@ -180,12 +186,12 @@ With streaming, hydration is per **boundary**:
 
 ### 4.3 Mismatches
 
-If the client output differs from the server HTML, React cannot trust the DOM. Since 18 it **does not patch** individual differences: it throws away the server HTML of the nearest Suspense boundary (or the root) and **client-renders** it, reporting a recoverable error. Test "NEGATIVE: a text mismatch is reported to onRecoverableError and the tree is client-rendered" shows: `onRecoverableError` receives *"Hydration failed because the server rendered text didn't match the client"*, the `<p>` is a new node, and the client text wins. React 19 logs **one** error with a diff instead of many warnings.
+If the client output differs from the server HTML, React cannot trust the DOM. Since 18 it **does not patch** individual differences: it throws away the server HTML of the nearest Suspense boundary (or the root) and **client-renders** it, reporting a recoverable error. Test "NEGATIVE: a text mismatch is reported to onRecoverableError and the tree is client-rendered" shows: `onRecoverableError` receives _"Hydration failed because the server rendered text didn't match the client"_, the `<p>` is a new node, and the client text wins. React 19 logs **one** error with a diff instead of many warnings.
 
 Common causes and fixes:
 
 | Cause | Fix |
-|---|---|
+| --- | --- |
 | `Date.now()`, `new Date().toLocaleString()`, `Math.random()` in render | Pass the value from the server (prop/Flight); or render on the client after hydration; or `browser()` |
 | `typeof window !== "undefined"` branches in render | Same render on both sides; branch in an effect or with `browser()` |
 | Locale/time zone differences (`Intl` defaults differ) | Format with an explicit locale and time zone from the request |
@@ -200,11 +206,11 @@ Common causes and fixes:
 
 `useId()` derives an ID from the component's **position in the tree** (the path of child indices), not from a counter, so the server and client compute the same value regardless of rendering order or which boundaries streamed first. Tests: "useId: stable across server and client" and "useId on a client-only root uses the _r_ prefix".
 
-| Version | Format |
-|---|---|
-| 18.x – 19.0 | `:r0:` (server `:R…:`) |
-| 19.1 | `«r0»` |
-| **19.2+** | `_r_0_`; server-rendered IDs `_R_…_` |
+| Version     | Format                               |
+| ----------- | ------------------------------------ |
+| 18.x – 19.0 | `:r0:` (server `:R…:`)               |
+| 19.1        | `«r0»`                               |
+| **19.2+**   | `_r_0_`; server-rendered IDs `_R_…_` |
 
 Why it changed in 19.2: IDs must be valid in `view-transition-name` and XML 1.0 names (Module 11). **Pitfall:** snapshot tests and CSS/`querySelector` code that hard-coded `:r` IDs break on upgrade; never depend on the format, and use `identifierPrefix` (root option) to namespace multiple roots on one page.
 
@@ -243,11 +249,11 @@ Invariants you must uphold:
 Some components cannot render on the server (they need `window`, layout, the user's time zone) or are not worth it. Before 19.3 the workarounds were `useEffect` + `useState(false)` "mounted" flags (an extra render and a layout shift after hydration, and a mismatch if done wrong) or framework-specific `dynamic(…, { ssr: false })`.
 
 ```tsx
-import { use } from "react";
-import { browser } from "react-dom";
+import { use } from 'react';
+import { browser } from 'react-dom';
 
 function TimeZone() {
-  use(browser("needs Intl in the user's browser"));  // reason: string | function, optional
+  use(browser("needs Intl in the user's browser")); // reason: string | function, optional
   return <p>{Intl.DateTimeFormat().resolvedOptions().timeZone}</p>;
 }
 // <Suspense fallback={<i>tz…</i>}><TimeZone /></Suspense>
@@ -265,7 +271,7 @@ Semantics ([react.dev/reference/react-dom/browser](https://react.dev/reference/r
 ## 7. Production failure modes
 
 | Symptom | Cause | Fix |
-|---|---|---|
+| --- | --- | --- |
 | Spinner forever | Promise created in render (uncached) | Cache the promise; use a library or RSC |
 | Whole page flashes to a spinner on navigation | Update not in a transition; boundary too high | `startTransition`; more granular boundaries |
 | "Popcorn" UI | Many tiny boundaries | Fewer, design-level boundaries; rely on reveal batching |
@@ -283,7 +289,7 @@ Semantics ([react.dev/reference/react-dom/browser](https://react.dev/reference/r
 ## 8. Executable proofs
 
 | Claim | Test (`suspense-ssr.test.tsx`) |
-|---|---|
+| --- | --- |
 | Cached promise suspends then reveals; status-tagged promises read synchronously | "use(promise)…" tests 1–2 |
 | Uncached promise is stuck | "NEGATIVE: a promise created during render…" |
 | Rejection goes to error handling | "a rejected promise throws…" |

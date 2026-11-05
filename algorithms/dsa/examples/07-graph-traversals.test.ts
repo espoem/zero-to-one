@@ -1,5 +1,5 @@
-import { describe, it } from "node:test";
-import assert from "node:assert/strict";
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
 
 // Kahn's Algorithm for Topological Sort & Cycle Detection
 export function topologicalSortKahn(numNodes: number, edges: [number, number][]): number[] | null {
@@ -84,7 +84,7 @@ export function tarjanSCC(numNodes: number, edges: [number, number][]): number[]
 export function zeroOneBFS(
   numNodes: number,
   edges: [number, number, 0 | 1][],
-  source: number
+  source: number,
 ): number[] {
   const adj: [number, 0 | 1][][] = Array.from({ length: numNodes }, () => []);
   for (const [u, v, w] of edges) {
@@ -105,7 +105,7 @@ export function zeroOneBFS(
         if (weight === 0) {
           deque.unshift(v); // Push front for weight 0
         } else {
-          deque.push(v);    // Push back for weight 1
+          deque.push(v); // Push back for weight 1
         }
       }
     }
@@ -146,14 +146,14 @@ export function isBipartite(numNodes: number, edges: [number, number][]): boolea
   return true;
 }
 
-describe("Module 07: Graph Foundations, Traversals & Topological Sorting", () => {
+describe('Module 07: Graph Foundations, Traversals & Topological Sorting', () => {
   it("Kahn's algorithm produces valid topological sort on DAG and detects cycles", () => {
     // Valid DAG: 0 -> 1, 0 -> 2, 1 -> 3, 2 -> 3
     const dagEdges: [number, number][] = [
       [0, 1],
       [0, 2],
       [1, 3],
-      [2, 3]
+      [2, 3],
     ];
     const order = topologicalSortKahn(4, dagEdges);
     assert.ok(order !== null);
@@ -164,7 +164,7 @@ describe("Module 07: Graph Foundations, Traversals & Topological Sorting", () =>
     const cycleEdges: [number, number][] = [
       [0, 1],
       [1, 2],
-      [2, 0]
+      [2, 0],
     ];
     assert.equal(topologicalSortKahn(3, cycleEdges), null);
   });
@@ -177,17 +177,17 @@ describe("Module 07: Graph Foundations, Traversals & Topological Sorting", () =>
       [2, 0],
       [2, 3],
       [3, 4],
-      [4, 3]
+      [4, 3],
     ];
 
     const sccs = tarjanSCC(5, edges);
     assert.deepEqual(sccs, [
       [0, 1, 2],
-      [3, 4]
+      [3, 4],
     ]);
   });
 
-  it("0-1 BFS finds shortest paths in O(V + E) time without binary heap overhead", () => {
+  it('0-1 BFS finds shortest paths in O(V + E) time without binary heap overhead', () => {
     // Graph:
     // 0 --(1)--> 1 --(0)--> 2
     // 0 --(0)--> 3 --(1)--> 2
@@ -196,7 +196,7 @@ describe("Module 07: Graph Foundations, Traversals & Topological Sorting", () =>
       [0, 1, 1],
       [1, 2, 0],
       [0, 3, 0],
-      [3, 2, 1]
+      [3, 2, 1],
     ];
 
     const dist = zeroOneBFS(4, edges, 0);
@@ -206,13 +206,13 @@ describe("Module 07: Graph Foundations, Traversals & Topological Sorting", () =>
     assert.equal(dist[3], 0);
   });
 
-  it("Bipartite detection correctly identifies 2-colorable graphs vs odd-cycle graphs", () => {
+  it('Bipartite detection correctly identifies 2-colorable graphs vs odd-cycle graphs', () => {
     // Even cycle: 0 - 1 - 2 - 3 - 0 (Bipartite)
     const evenCycle: [number, number][] = [
       [0, 1],
       [1, 2],
       [2, 3],
-      [3, 0]
+      [3, 0],
     ];
     assert.equal(isBipartite(4, evenCycle), true);
 
@@ -220,7 +220,7 @@ describe("Module 07: Graph Foundations, Traversals & Topological Sorting", () =>
     const oddCycle: [number, number][] = [
       [0, 1],
       [1, 2],
-      [2, 0]
+      [2, 0],
     ];
     assert.equal(isBipartite(3, oddCycle), false);
   });

@@ -23,7 +23,8 @@ flowchart TD
 
 ## 2. Single-Decree Paxos: Protocol Mechanics
 
-Invented by Leslie Lamport in 1998 (*"The Part-Time Parliament"*) and simplified in 2001 (*"Paxos Made Simple"*), Paxos achieves agreement on a single decision using three process roles:
+Invented by Leslie Lamport in 1998 (_"The Part-Time Parliament"_) and simplified in 2001 (_"Paxos Made Simple"_), Paxos achieves agreement on a single decision using three process roles:
+
 - **Proposers**: Advocate for client values.
 - **Acceptors**: Act as the consensus memory store and voting quorum.
 - **Learners**: Observe the agreed-upon value.
@@ -58,6 +59,7 @@ sequenceDiagram
 ```
 
 ### The Two-Phase Paxos Protocol
+
 1. **Proposal Numbers**: Each proposal has a unique number $n = (\text{round}, \text{nodeId})$ ordered lexicographically such that no two proposers generate the same number.
 2. **Phase 1a (Prepare)**: Proposer picks $n$ and broadcasts `Prepare(n)` to a majority of Acceptors.
 3. **Phase 1b (Promise)**: If $n > \text{maxPromised}$, the Acceptor returns a promise never to accept proposals with numbers $< n$, and includes the highest-numbered proposal it has already accepted, if any: $(n_v, v)$.
@@ -68,6 +70,7 @@ sequenceDiagram
 5. **Phase 2b (Accepted)**: Acceptor accepts `(n, v)` unless it has already promised to reject proposals $< n$. If a majority accepts, the value is permanently **chosen**.
 
 ### The Livelock Vulnerability: Dueling Proposers
+
 Single-Decree Paxos guarantees safety under all conditions, but two concurrent proposers can livelock the system: Proposer $A$ sends `Prepare(1)`; before it sends `Accept(1)`, Proposer $B$ sends `Prepare(2)`. Acceptors promise $B$, so they reject $A$'s `Accept(1)`. Proposer $A$ immediately retries with `Prepare(3)`, causing Acceptors to reject $B$'s `Accept(2)`. This ping-pong can continue indefinitely. Multi-Paxos and Raft resolve this by introducing a **Stable Leader**.
 
 ---
@@ -107,10 +110,12 @@ flowchart LR
     end
 ```
 
-> **Flexible Paxos Theorem:** Paxos consensus requires only that **Phase 1 quorums intersect with Phase 2 quorums** ($Q_1 \cap Q_2 \neq \emptyset$). Phase 1 quorums do *not* need to intersect with each other, and Phase 2 quorums do *not* need to intersect with each other!
+> **Flexible Paxos Theorem:** Paxos consensus requires only that **Phase 1 quorums intersect with Phase 2 quorums** ($Q_1 \cap Q_2 \neq \emptyset$). Phase 1 quorums do _not_ need to intersect with each other, and Phase 2 quorums do _not_ need to intersect with each other!
 
 ### The Asymmetric Quorum Advantage
+
 In an $N = 10$ node cluster:
+
 - **Classic Paxos**: Requires majorities of $6$ nodes for Phase 1 and $6$ nodes for Phase 2.
 - **Flexible Paxos**: Set Phase 1 quorum size $|Q_1| = 9$ and Phase 2 quorum size $|Q_2| = 2$.
   - Because $9 + 2 = 11 > 10$, $Q_1$ and $Q_2$ are guaranteed to overlap on at least 1 node!
@@ -157,11 +162,14 @@ flowchart TD
 ```
 
 ### ZAB Transaction Identifiers (`zxid`)
+
 Every proposal in ZAB carries a 64-bit integer `zxid`:
+
 - **High 32 bits**: `epoch` (incremented every time a new leader is elected).
 - **Low 32 bits**: `counter` (monotonic sequence number reset to 0 at the start of each epoch).
 
 ### ZAB Guarantees
+
 1. **Reliable Delivery**: If a message is committed by the leader, it will eventually be committed by all correct followers.
 2. **Total Order**: If message $a$ is committed before message $b$ by one server, $a$ is committed before $b$ by all servers.
 3. **Causal Consistency**: If message $a$ causes message $b$, $a$ will be proposed before $b$.
@@ -182,6 +190,7 @@ If an acceptor in Phase 1b returns an already accepted value $(n_v, v)$, that va
 
 - **2PC (Atomic Commit)**: Requires **unanimous** agreement from 100% of participants. If even a single participant crashes or votes NO, the transaction must abort. 2PC is a blocking protocol: if the coordinator crashes during commit, participants are stuck holding locks indefinitely.
 - **Paxos (Consensus)**: Requires only a **majority quorum** ($\lfloor N/2 \rfloor + 1$). It makes forward progress even if a minority of nodes crash or become unreachable ($N = 2f + 1$ tolerates $f$ crash failures).
+
 </details>
 
 <details>
@@ -193,8 +202,7 @@ Classic Paxos requires majority quorums for both election ($Q_1$) and replicatio
 <details>
 <summary>4. What causes Dueling Proposers in Paxos, and how does Multi-Paxos resolve it?</summary>
 
-In basic Paxos, any node can become a proposer at any time. If Proposer $A$ issues `Prepare(1)` and Proposer $B$ concurrently issues `Prepare(2)`, acceptors reject $A$'s subsequent `Accept(1)` because they promised $B$. Proposer $A$ then issues `Prepare(3)`, preempting $B$'s `Accept(2)`. They can livelock indefinitely.
-Multi-Paxos resolves this by using an explicit leader election mechanism (or randomized timeouts) to designate a single **Stable Leader** that alone issues Phase 2 accepts.
+In basic Paxos, any node can become a proposer at any time. If Proposer $A$ issues `Prepare(1)` and Proposer $B$ concurrently issues `Prepare(2)`, acceptors reject $A$'s subsequent `Accept(1)` because they promised $B$. Proposer $A$ then issues `Prepare(3)`, preempting $B$'s `Accept(2)`. They can livelock indefinitely. Multi-Paxos resolves this by using an explicit leader election mechanism (or randomized timeouts) to designate a single **Stable Leader** that alone issues Phase 2 accepts.
 </details>
 
 <details>

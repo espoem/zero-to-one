@@ -1,7 +1,6 @@
 # Module 05 · Design Tokens and Semantic Tokens
 
-> **Verified against** `@pandacss/dev` 2.4.0, `@pandacss/preset-panda` 2.4.0 on 2026-10-29.
-> **Executable proof:** [`examples/system/tokens.ts`](../examples/system/tokens.ts), [`semantic-tokens.ts`](../examples/system/semantic-tokens.ts); fixtures [`05-tokens.ts`](../examples/fixtures/positive/05-tokens.ts) and [`05-property-registration.ts`](../examples/fixtures/positive/05-property-registration.ts) with snapshots; [`configs/property-fallback.config.ts`](../examples/fixtures/configs/property-fallback.config.ts); the strict-mode type tests in [`examples/react/src/type-tests.ts`](../examples/react/src/type-tests.ts); `panda codegen --spec` test in [`cli.test.ts`](../examples/tests/cli.test.ts); the token-chain test in [`e2e-fixtures.test.ts`](../examples/tests/e2e-fixtures.test.ts).
+> **Verified against** `@pandacss/dev` 2.4.0, `@pandacss/preset-panda` 2.4.0 on 2026-10-29. **Executable proof:** [`examples/system/tokens.ts`](../examples/system/tokens.ts), [`semantic-tokens.ts`](../examples/system/semantic-tokens.ts); fixtures [`05-tokens.ts`](../examples/fixtures/positive/05-tokens.ts) and [`05-property-registration.ts`](../examples/fixtures/positive/05-property-registration.ts) with snapshots; [`configs/property-fallback.config.ts`](../examples/fixtures/configs/property-fallback.config.ts); the strict-mode type tests in [`examples/react/src/type-tests.ts`](../examples/react/src/type-tests.ts); `panda codegen --spec` test in [`cli.test.ts`](../examples/tests/cli.test.ts); the token-chain test in [`e2e-fixtures.test.ts`](../examples/tests/e2e-fixtures.test.ts).
 
 Design-token theory (tiers, naming, the W3C Design Tokens Community Group format and its tooling) is owned by [`languages/css`](../../../languages/css/README.md) (module "CSS architecture & design tokens at scale"). Custom properties and `@property` semantics are owned by the same track (module "Custom properties, `@property` & CSS functions"). This module covers Panda's token model: how tokens are declared, referenced, compiled to custom properties, typed, and shipped.
 
@@ -9,10 +8,10 @@ Design-token theory (tiers, naming, the W3C Design Tokens Community Group format
 
 ## 5.1 Formal model
 
-A Panda **token** is a pair `(path, value)` where `path` is `category.segment(.segment)*` (for example `colors.brand.600`) and the category is one of Panda's token categories. A token dictionary *D* maps paths to values. Values may contain **references** `{path}` to other tokens, so *D* induces a directed graph *G = (paths, references)*. Panda requires *G* to be acyclic and every reference to resolve:
+A Panda **token** is a pair `(path, value)` where `path` is `category.segment(.segment)*` (for example `colors.brand.600`) and the category is one of Panda's token categories. A token dictionary _D_ maps paths to values. Values may contain **references** `{path}` to other tokens, so _D_ induces a directed graph _G = (paths, references)_. Panda requires _G_ to be acyclic and every reference to resolve:
 
 | Violation | Diagnostic |
-|---|---|
+| --- | --- |
 | `{colors.brand}` points at nothing | `config_token_missing_reference` |
 | Reference cannot be resolved | `config_token_unknown_reference` |
 | Token refers to itself | `config_token_self_reference` |
@@ -34,8 +33,14 @@ Compilation maps each token to a CSS custom property named from its path, `--<ca
     --colors-fg-default: var(--colors-ink-900);
     --spacing-gutter: var(--spacing-4);
   }
-  :where(.dark, [data-color-mode=dark]) { --colors-fg-default: var(--colors-ink-50); }
-  @media (width >= 48rem) { :where(:root, :host) { --spacing-gutter: var(--spacing-6); } }
+  :where(.dark, [data-color-mode='dark']) {
+    --colors-fg-default: var(--colors-ink-50);
+  }
+  @media (width >= 48rem) {
+    :where(:root, :host) {
+      --spacing-gutter: var(--spacing-6);
+    }
+  }
 }
 ```
 
@@ -51,9 +56,9 @@ export const tokens = defineTokens({
   colors: {
     brand: { 50: { value: '#eef2ff' }, 600: { value: '#4f46e5' } /* … */ },
   },
-  radii: { control: { value: '{radii.md}' } },   // a core token may reference another
+  radii: { control: { value: '{radii.md}' } }, // a core token may reference another
   durations: { snappy: { value: '120ms' } },
-})
+});
 
 // examples/system/semantic-tokens.ts
 export const semanticTokens = defineSemanticTokens({
@@ -62,9 +67,9 @@ export const semanticTokens = defineSemanticTokens({
     accent: { default: { value: { base: '{colors.brand.600}', _dark: '{colors.brand.500}' } } },
   },
   spacing: {
-    gutter: { value: { base: '{spacing.4}', md: '{spacing.6}' } },   // a breakpoint condition
+    gutter: { value: { base: '{spacing.4}', md: '{spacing.6}' } }, // a breakpoint condition
   },
-})
+});
 ```
 
 Rules worth memorising:
@@ -89,7 +94,7 @@ Category binding is what makes `p: '4'` mean `var(--spacing-4)` and `w: '4'` mea
 ## 5.3 Five ways to reference a token
 
 | Form | Example | Compiles to | Theme-aware? |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Category value | `color: 'brand.600'` | `var(--colors-brand-600)` | Yes |
 | Curly reference in a string | `boxShadow: '0 0 0 2px {colors.brand.100}'` | `0 0 0 2px var(--colors-brand-100)` | Yes |
 | `token()` inside a string | `border: '1px solid token(colors.danger, crimson)'` | `var(--colors-danger, crimson)` | Yes, with fallback |
@@ -107,13 +112,13 @@ The opacity modifier accepts a number (`/40`) or an `opacity` token (`/half`); a
 Composed utilities (`translate`, `scale`, `filter`, `backdropFilter`, gradients, rings) work by setting internal variables (`--translate-y`) that one composing declaration reads (`translate: var(--translate-x) var(--translate-y)`). The axis utility alone only sets the variable; opt in with the composer:
 
 ```ts
-css({ translate: 'auto', translateY: '-1', filter: 'auto', blur: 'sm' })
+css({ translate: 'auto', translateY: '-1', filter: 'auto', blur: 'sm' });
 ```
 
 ### Then vs now: universal variable reset → `@property`
 
-| | v1 | v2 |
-|---|---|---|
+|  | v1 | v2 |
+| --- | --- | --- |
 | Defaults for internal variables | A reset of about 34 variables on `*, ::before, ::after, ::backdrop` shipped in every build | Each variable is registered with `@property` (syntax, `inherits: false`, `initial-value`) in `@layer base`, **only when used** |
 | Cost | Every element carries the variables; style recalcs touch them | Only used registrations ship |
 | Browser floor | Any browser with custom properties | `@property`: Chrome 85+, Safari 16.4+, Firefox 128+. Older browsers drop the affected utilities rather than render them wrongly |
@@ -128,7 +133,7 @@ The [`05-property-registration`](../examples/fixtures/__snapshots__/05-property-
 Panda's types are generated from the dictionary, so the type checker can enforce token usage.
 
 | Option | Effect | Escape hatch |
-|---|---|---|
+| --- | --- | --- |
 | `strictTokens: true` | Token-bound properties accept only token names (`color: '#ff0000'` is a type error) | `'[#ff0000]'` |
 | `strictPropertyValues: true` | Keyword-only properties (`display`, `position`, `flexDirection`, border styles…) accept only their keywords | `'[var(--x)]'` |
 
@@ -159,7 +164,7 @@ Other knobs: `cssVarRoot` (selector for declarations), `prefix: 'acme'` or `pref
 ## 5.8 Production failure modes
 
 | Symptom | Cause | Fix / proof |
-|---|---|---|
+| --- | --- | --- |
 | A color does not switch in dark mode | `token('…')` function call folded to a raw value | `token.var()` or a category value; 05-tokens snapshot |
 | Utilities vanish on old Safari | `@property` floor | `optimize.propertyFallback`; fallback test |
 | `translateY` does nothing | Composer not enabled | `translate: 'auto'` |

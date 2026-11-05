@@ -1,6 +1,6 @@
-import { PassThrough } from "node:stream";
-import type { ReactNode } from "react";
-import { renderToPipeableStream, type RenderToPipeableStreamOptions } from "react-dom/server";
+import { PassThrough } from 'node:stream';
+import type { ReactNode } from 'react';
+import { renderToPipeableStream, type RenderToPipeableStreamOptions } from 'react-dom/server';
 
 /** Render with Node streams and collect every chunk React writes, in order. */
 export function streamChunks(
@@ -14,15 +14,15 @@ export function streamChunks(
   const shell = new Promise<string>((r) => (resolveShell = r));
   const all = new Promise<string[]>((r, j) => ((resolveAll = r), (rejectAll = j)));
   const sink = new PassThrough();
-  sink.on("data", (d: Buffer) => chunks.push(d.toString()));
-  sink.on("end", () => resolveAll(chunks));
+  sink.on('data', (d: Buffer) => chunks.push(d.toString()));
+  sink.on('end', () => resolveAll(chunks));
   const stream = renderToPipeableStream(node, {
     ...options,
     onShellReady() {
       options.onShellReady?.();
       stream.pipe(sink);
       // The shell is flushed synchronously by pipe().
-      queueMicrotask(() => resolveShell(chunks.join("")));
+      queueMicrotask(() => resolveShell(chunks.join('')));
     },
     onShellError(e) {
       options.onShellError?.(e);

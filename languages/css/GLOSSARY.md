@@ -7,7 +7,7 @@ This glossary provides authoritative English ↔ Czech definitions of core CSS p
 ## 1. CSS Platform Specs, Baseline & Tooling
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **CSS Snapshot** | **CSS Snapshot (souhrnná specifikace)** | A periodic W3C Working Group document aggregating stable CSS specifications and modules defining the official current state of CSS. | W3C CSS WG Snapshot |
 | **Baseline (Web Platform)** | **Baseline (standard webové platformy)** | A cross-browser initiative (W3C, Google, Apple, Mozilla, Microsoft) categorizing web features as "Newly available" or "Widely available" across major browser engines. | WebDX Community Group |
 | **Living Standard** | **Živý standard (Living Standard)** | A continuously maintained and updated technical specification without fixed version numbers, standard for WHATWG HTML and DOM. | WHATWG Process |
@@ -20,7 +20,7 @@ This glossary provides authoritative English ↔ Czech definitions of core CSS p
 ## 2. Syntax, Selectors & Specificity
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Specificity** | **Specificita (váha selektoru)** | A three-component vector `(A, B, C)` calculating selector weight: ID selectors ($A$), class/attribute/pseudo-class selectors ($B$), and type/pseudo-element selectors ($C$). | W3C Selectors Level 4 |
 | **Pseudo-class** | **Pseudotřída** | A state or structural selector prefixed by a single colon (`:`) targeting elements based on user interaction, state, or DOM position (e.g., `:hover`, `:checked`, `:nth-child`). | W3C Selectors Level 4 |
 | **Pseudo-element** | **Pseudoprvek** | An abstraction prefixed by double colons (`::`) representing a sub-part or generated cosmetic element not directly present in DOM source (e.g., `::before`, `::backdrop`). | W3C Selectors Level 4 |
@@ -34,7 +34,7 @@ This glossary provides authoritative English ↔ Czech definitions of core CSS p
 ## 3. Cascade, Cascade Layers & Scope
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Cascade Priority Algorithm** | **Algoritmus kaskády (prioritní řazení pravidel)** | The deterministic multi-step process resolving conflicting CSS declarations by origin & importance, context, layers, specificity, scope proximity, and order of appearance. | W3C CSS Cascading & Inheritance Level 5 |
 | **Origin & Importance** | **Původ a důležitost (Origins & Importance)** | The highest cascade criteria ordering: Transition, User-Agent `!important`, User `!important`, Author `!important`, Animation, Author normal, User normal, User-Agent normal. | W3C CSS Cascading Level 5 § 6.1 |
 | **Cascade Layer (@layer)** | **Kaskádová vrstva (@layer)** | A structured declaration grouping mechanism where unlayered styles defeat layered styles in normal declarations, and layer order inverts for `!important` declarations. | W3C CSS Cascading Level 5 § 6.4 |
@@ -47,7 +47,7 @@ This glossary provides authoritative English ↔ Czech definitions of core CSS p
 ## 4. Value Processing & Units
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Specified Value** | **Zadaná hodnota (specified value)** | The value of a property resulting from cascade resolution or inherited/default fallback before conversion. | W3C CSS Values and Units Level 4 |
 | **Computed Value** | **Vypočtená hodnota (computed value)** | The value resolved during inheritance and initial layout preparation (converting relative lengths like `em` or percentages to absolute pixels where possible without layout). | W3C CSS Values and Units Level 4 |
 | **Used Value** | **Použitá hodnota (used value)** | The final absolute value resulting from running full layout algorithms (e.g., percentage widths converted to exact pixels based on container width). | W3C CSS Values and Units Level 4 |
@@ -61,7 +61,7 @@ This glossary provides authoritative English ↔ Czech definitions of core CSS p
 ## 5. Box Model & Visual Formatting Model
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Box Sizing** | **Model dimenzování rámečku (box-sizing)** | Property determining whether width and height apply to `content-box` (excluding padding/border) or `border-box` (including padding/border). | W3C CSS Box Model Level 3 |
 | **Margin Collapsing** | **Slučování vnějších okrajů (margin collapsing)** | The visual formatting rule where adjoining vertical margins of in-flow block boxes combine into a single margin equal to the maximum positive margin. | W3C CSS2 § 8.3.1 |
 | **Block Formatting Context (BFC)** | **Blokový formátovací kontext (BFC)** | An isolated layout environment wherein block boxes are laid out vertically, margins do not collapse outside the boundary, and floats are cleared internally. | W3C CSS Display Module Level 3 |
@@ -74,7 +74,7 @@ This glossary provides authoritative English ↔ Czech definitions of core CSS p
 ## 6. Layout: Flexbox, Grid, Subgrid & Lanes
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Flexible Box Layout (Flexbox)** | **Pružné rozvržení (Flexbox)** | A 1D layout model distributing space and aligning items along a main axis and cross axis within a container. | W3C CSS Flexible Box Layout Level 1 |
 | **Flex Factor & Fractional Growth** | **Koeficient roztažení a smrštění (flex-grow / flex-shrink)** | Unitless factors determining how remaining positive space or negative overflow is proportionally distributed among flex items. | W3C CSS Flexible Box Layout Level 1 § 7 |
 | **Grid Layout** | **Mřížkové rozvržení (CSS Grid)** | A 2D layout model dividing a container into rows and columns defined by grid lines, tracks, and areas. | W3C CSS Grid Layout Module Level 2 |
@@ -87,7 +87,7 @@ This glossary provides authoritative English ↔ Czech definitions of core CSS p
 ## 7. Positioning, Stacking Contexts & Top Layer
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Stacking Context** | **Kontext vykreslování v ose Z (stacking context)** | A three-dimensional conceptual layering of HTML elements along the z-axis relative to the user, created by specific CSS properties. | W3C CSS2 Appendix E |
 | **Painter's Algorithm** | **Malířův algoritmus vykreslování** | The layer rendering order from back to front: background/borders, negative z-indexes, in-flow blocks, non-positioned floats, in-flow inlines, `z-index: 0`, and positive z-indexes. | W3C CSS2 Appendix E |
 | **HTML Top Layer** | **Vrchní systémová vrstva (HTML Top Layer)** | A specialized browser viewport stacking plane rendered entirely outside document stacking contexts, hosting `<dialog>`, popovers, and fullscreen elements. | WHATWG HTML Standard § 6.13 |
@@ -100,7 +100,7 @@ This glossary provides authoritative English ↔ Czech definitions of core CSS p
 ## 8. Containment & Container Queries
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **CSS Containment** | **Izolace podstromu (CSS Containment)** | The performance optimization allowing developers to isolate a subtree's layout, style, paint, or size from the rest of the document tree. | W3C CSS Containment Level 3 |
 | **Size Containment** | **Velikostní izolace (size containment)** | Containment guaranteeing that an element's sizing can be computed without examining its child contents. | W3C CSS Containment Level 3 § 2.1 |
 | **Inline-Size Container** | **Kontejner v řádkové ose (container-type: inline-size)** | An established query container that isolates and measures its dimension along the inline (horizontal in western typography) axis for container queries. | W3C CSS Containment Level 3 § 3 |
@@ -113,7 +113,7 @@ This glossary provides authoritative English ↔ Czech definitions of core CSS p
 ## 9. Custom Properties, Registered Properties & Functions
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **CSS Custom Property** | **Uživatelská vlastnost (CSS proměnná)** | An author-defined property prefixed with `--` whose value is substituted via `var()` and undergoes late token substitution during computed value time. | W3C CSS Custom Properties Level 1 |
 | **Guaranteed-Invalid Value** | **Zaručeně neplatná hodnota (guaranteed-invalid)** | The initial fallback state of a custom property during cycle evaluation causing declarations referencing it to become invalid at computed-value time. | W3C CSS Custom Properties Level 1 § 3.1 |
 | **Invalid at Computed-Value Time** | **Neplatnost v době výpočtu hodnot** | The CSS rule stating that if a custom property substitution yields an invalid property syntax, the property reverts to `unset` (or `initial`/`inherit`), never cascade fallback. | W3C CSS Custom Properties Level 1 § 3.2 |
@@ -125,7 +125,7 @@ This glossary provides authoritative English ↔ Czech definitions of core CSS p
 ## 10. Color Spaces, Theming & Typography
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **OKLCH Color Space** | **Barevný prostor OKLCH** | A cylindrical representation of the perceptually uniform Oklab color space specifying Lightness ($L \in [0, 1]$), Chroma ($C \ge 0$), and Hue angle ($H \in [0, 360^\circ]$). | W3C CSS Color Module Level 4 § 10 |
 | **Perceptual Uniformity** | **Vjemová rovnoměrnost (perceptual uniformity)** | The mathematical characteristic where an identical Euclidean distance between two colors in color space corresponds to an identical perceived change in human vision. | Ottosson (2020) / CIE |
 | **Color Gamut** | **Barevný gamut** | The complete subset of visible colors reproducible by a specific display device or defined within a mathematical color model (e.g., sRGB, Display P3). | W3C CSS Color Module Level 4 § 3 |
@@ -138,7 +138,7 @@ This glossary provides authoritative English ↔ Czech definitions of core CSS p
 ## 11. Motion: Transitions, Animations & View Transitions
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Discrete Property Transition** | **Přechod diskrétní vlastnosti** | Transitioning discrete properties (like `display` or `overlay`) using `transition-behavior: allow-discrete` to delay flip until transition duration expires. | W3C CSS Transitions Level 2 § 2.2 |
 | **Starting Style (@starting-style)** | **Výchozí styl (@starting-style)** | A CSS rule defining initial property values when an element is first rendered in the DOM or enters from `display: none` to enable entry transitions. | W3C CSS Transitions Level 2 § 2.3 |
 | **View Transition API** | **Rozhraní zobrazení přechodů (View Transition API)** | A browser mechanism capturing snapshots of old and new DOM states, animating between them via specialized pseudo-element pseudo-trees. | W3C CSS View Transitions Module Level 1 |
@@ -150,7 +150,7 @@ This glossary provides authoritative English ↔ Czech definitions of core CSS p
 ## 12. Responsive & Accessible CSS
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Prefers Reduced Motion** | **Uživatelská preference omezení pohybu** | A user-preference media query (`prefers-reduced-motion: reduce`) detecting operating system accessibility settings requesting minimized animations. | W3C Media Queries Level 5 § 11.1 |
 | **Forced Colors Mode** | **Režim vynucených barev (vysoký kontrast OS)** | Operating system accessibility mode overriding author colors with system colors; queried via `forced-colors: active` and managed via `system-color`. | W3C Media Queries Level 5 § 11.4 |
 | **Accessible Color Contrast** | **Přístupný barevný kontrast (WCAG 2.2 / APCA)** | The relative luminance ratio between text foreground and background (minimum 4.5:1 for normal text under WCAG AA, or APCA lightness contrast criteria). | W3C WCAG 2.2 / APCA |
@@ -162,7 +162,7 @@ This glossary provides authoritative English ↔ Czech definitions of core CSS p
 ## 13. Rendering Pipeline & Performance
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Critical Rendering Path** | **Kritická cesta vykreslování** | The sequence of stages from raw HTML/CSS parsing to pixels on screen: DOM & CSSOM $\rightarrow$ Render Tree $\rightarrow$ Layout $\rightarrow$ Paint $\rightarrow$ Composite. | Browser Architecture Standards |
 | **Style Invalidation & Recalculation** | **Neplatnost a přepočet stylů (Recalculate Style)** | The browser engine phase resolving selector matches and re-evaluating computed property values following DOM or class mutations. | Blink / WebKit Engine Internals |
 | **Reflow / Layout Thrashing** | **Znovuvyčíslení rozvržení a zahlcení (layout thrashing)** | The performance bottleneck caused by interleaving JavaScript DOM writes and layout-measuring reads (e.g. `offsetWidth`), forcing synchronous reflows. | High Performance Browser Networking |
@@ -174,7 +174,7 @@ This glossary provides authoritative English ↔ Czech definitions of core CSS p
 ## 14. CSS Architecture & Design Tokens
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Design Token** | **Návrhový token (Design Token)** | A technology-agnostic primitive key-value pair capturing a design decision (color, spacing, duration) shared across design tools and codebases. | W3C DTCG Specification |
 | **Design Tokens Community Group (DTCG)** | **Komunitní skupina pro návrhové tokeny (DTCG)** | The W3C community group standardizing token JSON exchange formats, types (`$type`), values (`$value`), and aliasing syntax (`{color.primary}`). | W3C DTCG Format Specification |
 | **Token Tiering (Global, Semantic, Component)** | **Úrovně tokenů (globální, sémantické, komponentní)** | A three-tier design token architecture: raw values (Global) $\rightarrow$ intent-based aliases (Semantic) $\rightarrow$ scoped component variables (Component). | Design Systems Architecture |

@@ -1,7 +1,6 @@
 # Module 02 · Installation and Build Integration
 
-> **Verified against** `@pandacss/dev` 2.4.0, `@pandacss/vite` 2.4.0, `postcss` 8.5.32, Vite 8.3.5, TypeScript 7.0.2, Node 26.12.1 on 2026-10-29.
-> **Executable proof:** [`examples/react/panda.config.ts`](../examples/react/panda.config.ts), [`examples/react/vite.config.ts`](../examples/react/vite.config.ts), [`examples/tests/integration-postcss.test.ts`](../examples/tests/integration-postcss.test.ts), [`examples/tests/cli.test.ts`](../examples/tests/cli.test.ts), and the misconfiguration fixtures in [`examples/fixtures/configs/`](../examples/fixtures/configs/).
+> **Verified against** `@pandacss/dev` 2.4.0, `@pandacss/vite` 2.4.0, `postcss` 8.5.32, Vite 8.3.5, TypeScript 7.0.2, Node 26.12.1 on 2026-10-29. **Executable proof:** [`examples/react/panda.config.ts`](../examples/react/panda.config.ts), [`examples/react/vite.config.ts`](../examples/react/vite.config.ts), [`examples/tests/integration-postcss.test.ts`](../examples/tests/integration-postcss.test.ts), [`examples/tests/cli.test.ts`](../examples/tests/cli.test.ts), and the misconfiguration fixtures in [`examples/fixtures/configs/`](../examples/fixtures/configs/).
 
 This module gets Panda into a build correctly the first time. The v2 release changed several defaults that used to be implicit (presets, CommonJS, cleanup of old output), so most "Panda generates nothing" reports after an upgrade trace back to this module.
 
@@ -10,7 +9,7 @@ This module gets Panda into a build correctly the first time. The v2 release cha
 ## 2.1 Requirements and packages
 
 | Requirement | Value in 2.4.0 | Why it matters |
-|---|---|---|
+| --- | --- | --- |
 | Node.js | `>= 22` (`engines` of `@pandacss/dev`) | The CLI and config loader use modern ESM loading. This track pins Node 26 via [`.mise.toml`](../.mise.toml). |
 | Module system | ESM-only: `@pandacss/dev` is `"type": "module"`, and its main entry has no `require` condition | `require('@pandacss/dev')` fails. Write `panda.config.ts` with `import`/`export`, and set `"type": "module"` (or name it `.mts`/`.mjs`). The PostCSS entry `@pandacss/dev/postcss` still ships a CJS build, so `postcss.config.cjs` works. |
 | Native binary | `@pandacss/compiler-<platform>` optional dependency | npm installs one prebuilt binary (`linux-x64-gnu`, `darwin-arm64`, `win32-x64-msvc`, …). If your package manager skips optional dependencies (`--omit=optional`, some CI caches), the compiler cannot load. |
@@ -27,8 +26,8 @@ npx panda init --postcss  # also writes postcss.config.cjs
 
 ### Then vs now: installation
 
-| | 0.x / 1.x | 2.x |
-|---|---|---|
+|  | 0.x / 1.x | 2.x |
+| --- | --- | --- |
 | Module format | CJS + ESM builds | ESM only |
 | Node | `>=20.12.0` (1.12.1 `engines`; 0.51 declared none) | `>=22` |
 | Generated runtime extension | `.mjs` by default | `.js` (configurable with `outExtension: 'ts' \| 'js' \| 'mjs'`) |
@@ -41,8 +40,8 @@ npx panda init --postcss  # also writes postcss.config.cjs
 
 ```ts
 // examples/react/panda.config.ts (abridged)
-import { defineConfig } from '@pandacss/dev'
-import { acmePreset } from '../system/preset.ts'
+import { defineConfig } from '@pandacss/dev';
+import { acmePreset } from '../system/preset.ts';
 
 export default defineConfig({
   presets: ['@pandacss/preset-base', '@pandacss/preset-panda', acmePreset],
@@ -52,7 +51,7 @@ export default defineConfig({
   include: ['./src/**/*.{ts,tsx}'],
   exclude: [],
   outdir: 'styled-system',
-})
+});
 ```
 
 ### `presets` is no longer implicit
@@ -60,7 +59,7 @@ export default defineConfig({
 **Formal rule (2.x):** the resolved config is `merge(presets[0], …, presets[n-1], userConfig)`, left to right, with your config last. Nothing is prepended.
 
 | Preset | Contributes | Without it |
-|---|---|---|
+| --- | --- | --- |
 | `@pandacss/preset-base` | Utilities and shorthands (`p`, `bg`, `color` → `colors` tokens), conditions (`_hover`, `_dark`, `_groupHover`, …), built-in patterns (`stack`, `flex`, …) | No `Flex`/`Stack`, `unknown_condition` warnings, token paths leak into CSS as invalid values |
 | `@pandacss/preset-panda` | Default theme: color palettes, spacing, sizes, radii, fonts, **breakpoints**, keyframes, text styles | No default tokens or breakpoints |
 
@@ -115,7 +114,7 @@ flowchart TB
 
 ```js
 // postcss.config.cjs
-module.exports = { plugins: { '@pandacss/dev/postcss': {} } }
+module.exports = { plugins: { '@pandacss/dev/postcss': {} } };
 ```
 
 ```css
@@ -131,11 +130,11 @@ Plugin options: `cwd`, `configPath`, `outdir`, and `allow` (regexes that let sel
 
 ```ts
 // examples/react/vite.config.ts
-import pandacss from '@pandacss/vite'
-import react from '@vitejs/plugin-react'
+import pandacss from '@pandacss/vite';
+import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [pandacss({ transform: process.env.PANDA_TRANSFORM === '1' }), react()],
-})
+});
 ```
 
 New in v2. The plugin embeds the compiler: it runs codegen, replaces the root CSS file (the one with the layer statement) with the generated CSS, and handles HMR without a separate watcher. Options: `cwd` (defaults to Vite's `root`), `configPath`, `outdir`, `transform` (source transforms, [Module 01](./01-mental-model-and-v2-architecture.md#14-two-outputs-the-stylesheet-and-the-styled-system-package)). Put it **before** the framework plugin.
@@ -147,7 +146,7 @@ Vite reports every Panda diagnostic as a warning and never fails the build. Gate
 ### Choosing
 
 | Situation | Use |
-|---|---|
+| --- | --- |
 | Vite app (React, Solid, Vue, Svelte) | `@pandacss/vite` |
 | Next.js, Remix/React Router, Astro, Storybook, anything already on PostCSS | PostCSS plugin |
 | webpack / Rollup / Rolldown / Bun / Rspack and you want `transform: true` | `@pandacss/webpack`, `@pandacss/rollup`, `@pandacss/bun` |
@@ -165,14 +164,14 @@ The generated `styled-system/` is a pure function of the config, so treat it lik
 
 `prepare` runs after `npm install`, so `tsc` and the editor have types before Vite or PostCSS ever starts. This track's [`package.json`](../package.json) runs `prepare → codegen` for the four example projects.
 
-TypeScript also has to *see* the folder. If it lives outside `src`, add it to `tsconfig.json` `include`.
+TypeScript also has to _see_ the folder. If it lives outside `src`, add it to `tsconfig.json` `include`.
 
 ### TypeScript 7 and the CSS import
 
 TypeScript 7 turns on `noUncheckedSideEffectImports` by default, so `import './index.css'` is an error (`TS2882`) unless a declaration exists. We hit exactly that while building the examples. Fix with `vite/client` types or a one-line declaration, as in [`examples/react/src/env.d.ts`](../examples/react/src/env.d.ts):
 
 ```ts
-declare module '*.css'
+declare module '*.css';
 ```
 
 ### After any upgrade: `--clean`
@@ -188,7 +187,7 @@ npx panda codegen --clean   # or: panda build --clean
 ## 2.5 Inspecting the setup: `panda doctor`, `check`, `debug`
 
 | Command | What it answers | Machine output |
-|---|---|---|
+| --- | --- | --- |
 | `panda doctor` | Does the config load? How many sources, conditions, utilities, which artifacts? | `--json` (`ok`, `errors`, `artifactIds`, `diagnostics`) |
 | `panda codegen --check` / `panda check` | Is `styled-system/` (and the CSS file) up to date? Exit 1 if missing/stale | exit code + `missing: n`, `stale: n` |
 | `panda debug` | Resolved config and per-file extraction dumps (`<file>.extract.json`) | `--json`, `--dry`, `--zip`, `--onlyConfig` |
@@ -211,7 +210,7 @@ Warnings never change the exit code by themselves; `--max-warnings <n>` does. `-
 ### Then vs now: CLI surface
 
 | v1 | v2 |
-|---|---|
+| --- | --- |
 | `panda cssgen "src/**/*.tsx"` (positional globs) | `--include <glob>` (repeatable); positional globs no longer restrict the scan |
 | `-o <dir>` for output dir | `--outdir <dir>`; on the full build `-o` means `--outfile` (CSS path) |
 | `--silent` | `--log-level silent` |
@@ -237,7 +236,7 @@ Type imports also moved: `@pandacss/dev` exports only `Config`, `Preset` and `Us
 ## 2.8 Production failure modes
 
 | Failure | Cause | Fix | Proof |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | No utilities, `unknown_condition` everywhere | `preset-base` missing after v1 → v2 | List it explicitly | `no-preset-base` negative test |
 | Old behaviour after upgrade, types and CSS disagree | Stale `.mjs` files shadow new `.js` | `panda codegen --clean` once | (documented upgrade note) |
 | Styles from a workspace package missing | `include` does not cover it | Add its source globs | [Module 11](./11-monorepos-and-design-system-libraries.md) |

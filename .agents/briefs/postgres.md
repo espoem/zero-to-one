@@ -1,7 +1,7 @@
 # Brief: PostgreSQL (`technologies/postgres`)
 
-| | |
-|---|---|
+|  |  |
+| --- | --- |
 | Phase | 1 |
 | Kind | EXISTING track: restructure and update in place, keeping tests green throughout |
 | Primary (author) | **Opus · claude.ai** |
@@ -14,12 +14,14 @@
 | Research dossier | `.agents/research/B-data.md` |
 
 ## 0. Read before starting (binding)
+
 1. `AGENTS.md`: the contract. If it conflicts with this brief, AGENTS.md wins; log the conflict in your review file.
 2. `.agents/OWNERSHIP.md`: what you own vs only cross-link.
 3. `.agents/REVIEW.md`: the checklist your work is judged against.
 4. Your global/agent instructions still apply where they do not conflict.
 
 ## 1. Owner decisions and track-specific instructions
+
 - Restructure 10 → 13 modules as in the dossier. Fix the mislabels (failover slots are PG17, and the module 08 "cascading maintenance" claim).
 - Add PG19 deltas (RC at research time) as clearly labelled "PostgreSQL 19" sections. Teach 18.x as current until 19.0 GA.
 - Keep PGlite for hermetic tests. Add `test:integration` with docker compose (pinned image tags) for multi-session MVCC/locking, replication, PgBouncer, PITR and AIO.
@@ -28,10 +30,13 @@
 - Pin **all** tooling via mise (`.mise.toml` + `mise.lock`): node 26 for JS/TS, plus every CLI and runtime the examples need.
 
 ## 2. Ownership
+
 **You own (full treatment):**
+
 - SQL injection mechanics, row-level security
 
 **Cross-link only (do not re-explain):**
+
 - Data models, relational algebra, normal forms → owned by `architecture/data-systems`
 - Storage engines: B-tree vs LSM, WAL/ARIES, compaction, buffer pools → owned by `architecture/data-systems`
 - Isolation levels & anomaly taxonomy (Adya/Berenson), MVCC theory, SSI → owned by `architecture/data-systems`
@@ -64,8 +69,8 @@
 - **Authoritative syllabi used**
   - Official docs ToC (Parts I–VIII: Tutorial, SQL Language, Server Administration, Client Interfaces, Server Programming, Internals): https://www.postgresql.org/docs/18/
   - PG18 release notes and PG19 release notes (above).
-  - CMU 15-445/645 *Intro to Database Systems* (Pavlo): https://15445.courses.cs.cmu.edu/ — for storage, buffer pool, indexing, concurrency control and recovery theory.
-  - *The Internals of PostgreSQL* (Suzuki): https://www.interdb.jp/pg/
+  - CMU 15-445/645 _Intro to Database Systems_ (Pavlo): https://15445.courses.cs.cmu.edu/ — for storage, buffer pool, indexing, concurrency control and recovery theory.
+  - _The Internals of PostgreSQL_ (Suzuki): https://www.interdb.jp/pg/
   - EDB PostgreSQL certification (EDB Certified Associate / Professional): https://www.enterprisedb.com/training (domain weights not published; unverified).
   - pgvector README: https://github.com/pgvector/pgvector
   - No vendor-neutral certification exists for PostgreSQL. Interview prep comes from the docs, CMU 15-445 and DDIA.
@@ -181,7 +186,9 @@
 ---
 
 ## 4. Re-verify list
+
 These claims were marked unverified during research. Confirm or correct each one against a primary source before teaching it:
+
 - 18.0 GA was 2025-09-25 (unverified exact day; it was Sept 2025).
 - Tooling (verified locally against the npm registry today): `@electric-sql/pglite` **0.5.12** (PG 18.6); `testcontainers` / `@testcontainers/postgresql` **12.2.1**. Docker image `postgres:18.6` (tag assumed per Docker Hub convention; unverified).
 - EDB PostgreSQL certification (EDB Certified Associate / Professional): https://www.enterprisedb.com/training (domain weights not published; unverified).
@@ -195,7 +202,9 @@ These claims were marked unverified during research. Confirm or correct each one
 - **AIO:** `io_method=io_uring` only on a Linux host or VM (the Docker Desktop VM kernel may lack io_uring; unverified). Fallback: assert `SHOW io_method`/`pg_aios` view existence plus a qualitative benchmark marked "non-deterministic, not asserted".
 
 ## 5. Certifications & exams
+
 Follow AGENTS.md § Certification and Exam Coverage exactly. Minimum deliverables:
+
 1. **README "Certifications & Exams" section.** Start from the exams named in the dossier above ("Authoritative syllabi used"). Re-verify each exam's code, status, guide version/date, targeted product version and domain weights on the official page. Where no certification exists, say so and use the recognised interview format.
 2. **`exams/README.md` coverage matrix.** Rows are domain/objective, weight, modules, examples, status. No ❌ at hand-off.
 3. **`exams/<exam-code>.md` question banks.**
@@ -207,11 +216,14 @@ Follow AGENTS.md § Certification and Exam Coverage exactly. Minimum deliverable
 5. **Original questions only.** No braindump content.
 
 ## 6. Code languages
+
 Per AGENTS.md § Code Example Languages:
+
 - **Primary:** pseudocode (where algorithms or protocols are described) + TypeScript (or the track's own language, for language tracks).
 - **Secondary:** Python, Rust or Nim only where it teaches something. Each language lives in `examples/<lang>/` with its own mise-pinned toolchain and native test runner, and `test` runs them all.
 
 ## 7. Workflow and definition of done
+
 1. **Primary (Opus)** works on branch `track/postgres` and sets this track's row in `.agents/STATUS.md` to 🟦.
 2. **Verify versions first.** Check every version in the dossier against its primary source today. Record the results in the README's `Verified against …` line. Resolve every item in the re-verify list below.
 3. Build in stages: README syllabus + exam matrix → modules one by one, each with its examples/tests → glossary → cheatsheet → question banks → mock exam. Delegate bulk drafting (question-bank drafts, glossary candidates, cheatsheet tables) to the **Drafter**, then correct and integrate it yourself.

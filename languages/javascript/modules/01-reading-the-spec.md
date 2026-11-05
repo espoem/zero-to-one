@@ -1,25 +1,25 @@
 # 01 · The Specification as a Tool
 
-> **Spec anchors:** ECMA-262 17th edition (ECMAScript 2026), §5 *Notational Conventions*, §6.2.4 *The Completion Record Specification Type*, §6.2.5 *The Reference Record Specification Type*, §16 *ECMAScript Language: Scripts and Modules*, Annex B *Additional ECMAScript Features for Web Browsers*. TC39 process document. test262.
+> **Spec anchors:** ECMA-262 17th edition (ECMAScript 2026), §5 _Notational Conventions_, §6.2.4 _The Completion Record Specification Type_, §6.2.5 _The Reference Record Specification Type_, §16 _ECMAScript Language: Scripts and Modules_, Annex B _Additional ECMAScript Features for Web Browsers_. TC39 process document. test262.
 >
 > **Executable proof:** [`examples/01-reading-the-spec.test.js`](../examples/01-reading-the-spec.test.js)
 
-Every later module in this track answers "why does JavaScript do *that*?" by pointing at a numbered section of ECMA-262. This module teaches you to read that document fluently, to know which edition you are reading, to tell a standard feature from a proposal, and to check what an engine ships today. Engines, MDN pages and blog posts are all *derived* from the specification. When they disagree, the specification and its conformance suite (test262) settle the question.
+Every later module in this track answers "why does JavaScript do _that_?" by pointing at a numbered section of ECMA-262. This module teaches you to read that document fluently, to know which edition you are reading, to tell a standard feature from a proposal, and to check what an engine ships today. Engines, MDN pages and blog posts are all _derived_ from the specification. When they disagree, the specification and its conformance suite (test262) settle the question.
 
 ---
 
 ## 1. What ECMA-262 is, and which one you are reading
 
-**Definition (ECMAScript).** ECMAScript is the general-purpose programming language defined by the Ecma International standard ECMA-262. "JavaScript" is the common name of ECMAScript as embedded in a *host* (a browser, Node.js, Deno, Bun, Cloudflare Workers) together with that host's APIs.
+**Definition (ECMAScript).** ECMAScript is the general-purpose programming language defined by the Ecma International standard ECMA-262. "JavaScript" is the common name of ECMAScript as embedded in a _host_ (a browser, Node.js, Deno, Bun, Cloudflare Workers) together with that host's APIs.
 
 There are two documents with the same text lineage:
 
 | Document | URL | Status | Use it when |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | **ECMA-262, 17th edition (ES2026)** | <https://262.ecma-international.org/17.0/> | Approved by the Ecma General Assembly in June 2026; frozen | You need a stable, citable reference. This track cites it. |
 | **The living draft** | <https://tc39.es/ecma262/> | Continuously updated; becomes ES2027 in mid-2027 | You need features that reached Stage 4 after the ES2026 cut-off (Temporal, `using`, `Atomics.pause`, `Iterator.zip`) |
 
-Editions are published yearly since ES2015 (6th edition). The edition number and the year differ by 2009: *edition = year − 2009*, so ES2026 is the 17th edition. The cut-off for a yearly edition is roughly the TC39 meeting in the first quarter of that year; anything reaching Stage 4 later waits for the next one. This is why **Temporal**, although shipped in V8 and SpiderMonkey and promoted to Stage 4 during 2026, is *ES2027* and does not appear in the 17th edition.
+Editions are published yearly since ES2015 (6th edition). The edition number and the year differ by 2009: _edition = year − 2009_, so ES2026 is the 17th edition. The cut-off for a yearly edition is roughly the TC39 meeting in the first quarter of that year; anything reaching Stage 4 later waits for the next one. This is why **Temporal**, although shipped in V8 and SpiderMonkey and promoted to Stage 4 during 2026, is _ES2027_ and does not appear in the 17th edition.
 
 Companion standards you will meet:
 
@@ -30,7 +30,7 @@ Companion standards you will meet:
 ### Then vs now: editions
 
 | Then | Now |
-|---|---|
+| --- | --- |
 | ES3 (1999), ES5 (2009), ES5.1 (2011): multi-year "big bang" editions; ES4 abandoned in 2008 | Yearly editions since ES2015 (6th edition), each containing whatever reached Stage 4 by the cut-off |
 | "ES6", "ES7" naming | Year naming (ES2015, ES2016, ...). "ES6" survives colloquially for ES2015 only |
 | Engine flags called `--harmony-*` | V8 now uses `--js-*` flags (`--js-sum-precise`, `--js-decorators`); `--harmony-*` remains for a few older features |
@@ -44,7 +44,7 @@ Migration advice: when a colleague says "ES6+", ask which specific feature they 
 You do not read ECMA-262 front to back. You navigate it. These clause numbers are stable across recent editions except where a new section was inserted; the numbers below are for the 17th edition.
 
 | Clause | Content | You go here for |
-|---|---|---|
+| --- | --- | --- |
 | §5 | Notational conventions: grammar notation, algorithm conventions, `?` and `!` | Decoding the notation |
 | §6.1 | **ECMAScript language types**: Undefined, Null, Boolean, String, Symbol, Number, BigInt, Object | "What values exist?" ([module 02](02-types-values-coercion.md)) |
 | §6.2 | **Specification types**: List, Record, Completion Record (§6.2.4), Reference Record (§6.2.5), Property Descriptor (§6.2.6), ... | Machinery the algorithms use; never visible as values |
@@ -56,9 +56,9 @@ You do not read ECMA-262 front to back. You navigate it. These clause numbers ar
 | §17 | Error handling and language extensions | What implementations may add |
 | §18–§28 | The standard library (fundamental objects, numbers and dates, text processing, collections, structured data, control abstraction, reflection) | Built-ins |
 | §29 | **Memory model** | Shared memory and `Atomics` ([module 11](11-binary-data-memory-model.md)) |
-| Annex A | Grammar summary | |
+| Annex A | Grammar summary |  |
 | **Annex B** | Additional features for web browsers: `__proto__`, HTML-like comments, legacy RegExp syntax, `escape`, `[[IsHTMLDDA]]` | Legacy weirdness that browsers must keep |
-| Annex C | The strict mode of ECMAScript (informative summary) | |
+| Annex C | The strict mode of ECMAScript (informative summary) |  |
 
 ```mermaid
 flowchart LR
@@ -83,7 +83,7 @@ flowchart LR
   API -. "built on" .-> LIB
 ```
 
-The diagram shows the most important architectural fact in the specification: **ECMA-262 does not define an event loop, timers, I/O, or modules loading from disk.** It defines *host hooks*: points where the host decides. "When does a promise reaction run?" is answered jointly by ECMA-262 §9.5 (HostEnqueuePromiseJob) and by the host (the HTML microtask queue, or Node's microtask queue drained by libuv-driven ticks).
+The diagram shows the most important architectural fact in the specification: **ECMA-262 does not define an event loop, timers, I/O, or modules loading from disk.** It defines _host hooks_: points where the host decides. "When does a promise reaction run?" is answered jointly by ECMA-262 §9.5 (HostEnqueuePromiseJob) and by the host (the HTML microtask queue, or Node's microtask queue drained by libuv-driven ticks).
 
 ---
 
@@ -102,39 +102,45 @@ There are several **goal symbols**: `Script` and `Module` (§16). The same text 
 
 ```js
 // Valid in a classic script (Annex B.1.1), SyntaxError in a module:
-x = 1 <!-- this is a comment in scripts, a syntax error in modules
+x = 1; <!-- this is a comment in scripts, a syntax error in modules
 ```
 
-**Early errors** (static semantics) are errors that must be reported before *any* code in the script or module runs. `let a; let a;` is an early error: the whole script fails to load, and nothing executes, not even the statements before the duplicate declaration.
+**Early errors** (static semantics) are errors that must be reported before _any_ code in the script or module runs. `let a; let a;` is an early error: the whole script fails to load, and nothing executes, not even the statements before the duplicate declaration.
 
 ### 3.2 Algorithm steps, `?` and `!`
 
 Algorithms are numbered steps. Two prefix operators carry most of the error-handling semantics:
 
 | Notation | Meaning | Long form |
-|---|---|---|
+| --- | --- | --- |
 | `? Op(x)` | Call `Op`; if the result is an abrupt completion (an exception, for instance), return it immediately; otherwise unwrap the value | `ReturnIfAbrupt(Op(x))` |
 | `! Op(x)` | Call `Op`; **assert** it cannot be abrupt; unwrap the value | Editorial assertion; if it fails, the spec has a bug |
 
-When you read `1. Let prim be ? ToPrimitive(input, number).`, the `?` tells you: *user code can run here and can throw*. Every `?` is a potential observable side effect. Interview-level consequence: `ToPrimitive` calls `obj[Symbol.toPrimitive]`, `valueOf` or `toString`, which are user code, so `a + b` can throw, log, or mutate state.
+When you read `1. Let prim be ? ToPrimitive(input, number).`, the `?` tells you: _user code can run here and can throw_. Every `?` is a potential observable side effect. Interview-level consequence: `ToPrimitive` calls `obj[Symbol.toPrimitive]`, `valueOf` or `toString`, which are user code, so `a + b` can throw, log, or mutate state.
 
 ### 3.3 Completion Records (§6.2.4)
 
-**Definition.** A *Completion Record* is a specification value with fields `[[Type]]` ∈ {normal, break, continue, return, throw}, `[[Value]]` (any language value, or *empty*), and `[[Target]]` (a label or *empty*). A completion whose type is not *normal* is an **abrupt completion**.
+**Definition.** A _Completion Record_ is a specification value with fields `[[Type]]` ∈ {normal, break, continue, return, throw}, `[[Value]]` (any language value, or _empty_), and `[[Target]]` (a label or _empty_). A completion whose type is not _normal_ is an **abrupt completion**.
 
 Every statement evaluates to a Completion Record. This explains control-flow puzzles precisely. The `try` statement (§14.15.3) evaluates the `finally` block and, **if the `finally` block's completion is abrupt, it replaces the completion of `try`/`catch`**:
 
 ```js
 function f() {
-  try { return 'try'; }
-  finally { return 'finally'; }   // abrupt (return) completion overrides the pending return
+  try {
+    return 'try';
+  } finally {
+    return 'finally';
+  } // abrupt (return) completion overrides the pending return
 }
 f(); // 'finally'
 
 function g() {
   for (;;) {
-    try { throw new Error('lost'); }
-    finally { break; }             // abrupt (break) overrides the pending throw: the error vanishes
+    try {
+      throw new Error('lost');
+    } finally {
+      break;
+    } // abrupt (break) overrides the pending throw: the error vanishes
   }
   return 'swallowed';
 }
@@ -143,29 +149,30 @@ g(); // 'swallowed'
 
 This is a production failure mode, not a curiosity: a `return` or `break` inside `finally` silently swallows exceptions. Linters flag it (`no-unsafe-finally`).
 
-The completion *value* of statements is also observable through `eval`:
+The completion _value_ of statements is also observable through `eval`:
 
 ```js
-eval('1; if (true) {}');   // undefined since ES2015 (UpdateEmpty rules); was 1 in ES5
+eval('1; if (true) {}'); // undefined since ES2015 (UpdateEmpty rules); was 1 in ES5
 eval('do { 2 } while (false)'); // 2
 ```
 
 ### 3.4 Reference Records (§6.2.5)
 
-A **Reference Record** is how the spec represents "the thing on the left of `=`" and unresolved identifiers. `GetValue` (§6.2.5.5) reads through a Reference, and `PutValue` (§6.2.5.6) writes through it. An *unresolvable* reference (identifier not found in any environment) throws a `ReferenceError` from `GetValue`. The `typeof` operator (§13.5.3) checks for unresolvable references **before** calling `GetValue` and returns `"undefined"`:
+A **Reference Record** is how the spec represents "the thing on the left of `=`" and unresolved identifiers. `GetValue` (§6.2.5.5) reads through a Reference, and `PutValue` (§6.2.5.6) writes through it. An _unresolvable_ reference (identifier not found in any environment) throws a `ReferenceError` from `GetValue`. The `typeof` operator (§13.5.3) checks for unresolvable references **before** calling `GetValue` and returns `"undefined"`:
 
 ```js
-typeof notDeclaredAnywhere;   // 'undefined' (no ReferenceError)
-typeof x; let x = 1;          // ReferenceError: x is in its temporal dead zone (TDZ)
+typeof notDeclaredAnywhere; // 'undefined' (no ReferenceError)
+typeof x;
+let x = 1; // ReferenceError: x is in its temporal dead zone (TDZ)
 ```
 
-The second line throws because `x` *is* resolvable: the binding exists in the Environment Record but is uninitialized ([module 03](03-execution-contexts-scope-closures.md)).
+The second line throws because `x` _is_ resolvable: the binding exists in the Environment Record but is uninitialized ([module 03](03-execution-contexts-scope-closures.md)).
 
 ### 3.5 Internal slots and internal methods
 
 Double brackets denote things that exist only in the specification:
 
-- **Internal methods** (`[[Get]]`, `[[Set]]`, `[[Call]]`, `[[Construct]]`, `[[GetPrototypeOf]]`, ...) define object behaviour. An *ordinary object* uses the default algorithms of §10.1; an *exotic object* overrides at least one. Proxies (§10.5) let user code supply them.
+- **Internal methods** (`[[Get]]`, `[[Set]]`, `[[Call]]`, `[[Construct]]`, `[[GetPrototypeOf]]`, ...) define object behaviour. An _ordinary object_ uses the default algorithms of §10.1; an _exotic object_ overrides at least one. Proxies (§10.5) let user code supply them.
 - **Internal slots** (`[[Prototype]]`, `[[Extensible]]`, `[[PromiseState]]`, `[[ArrayBufferData]]`) hold state. They are not properties: `Object.getOwnPropertyNames(promise)` never shows `[[PromiseState]]`.
 
 Brand checks rely on slots. `Map.prototype.get.call({}, 1)` throws a `TypeError` because the receiver has no `[[MapData]]` slot. This is also why `Error.isError` (ES2026, §20.5.2.1) can be reliable across realms: it checks for the `[[ErrorData]]` slot instead of the prototype chain.
@@ -173,11 +180,11 @@ Brand checks rely on slots. `Map.prototype.get.call({}, 1)` throws a `TypeError`
 ### 3.6 "Host-defined", "implementation-defined", "implementation-approximated"
 
 | Term | Meaning | Example |
-|---|---|---|
+| --- | --- | --- |
 | implementation-defined | The engine chooses and must document | Maximum length of a String (V8: about 2²⁹ − 24 code units on 64-bit) |
 | implementation-approximated | The engine approximates an ideal result | `Math.sin` precision |
 | host-defined | The host (HTML, Node) chooses | When jobs run; how modules are fetched; `HostPromiseRejectionTracker` behaviour |
-| unspecified / implementation-defined *order* | Code must not depend on it | `Array.prototype.sort` with an inconsistent comparator ([module 13](13-correctness-security-pitfalls.md)) |
+| unspecified / implementation-defined _order_ | Code must not depend on it | `Array.prototype.sort` with an inconsistent comparator ([module 13](13-correctness-security-pitfalls.md)) |
 
 ### 3.7 Abstract operations vs syntax-directed operations
 
@@ -194,14 +201,14 @@ Unlike C, ECMAScript specifies left-to-right evaluation of operands and argument
 
 ## 4. Worked reading: what does `[] + {}` produce?
 
-1. §13.8.1 *The Addition Operator*: `Evaluation` calls `EvaluateStringOrNumericBinaryExpression(AdditiveExpression, +, MultiplicativeExpression)`.
+1. §13.8.1 _The Addition Operator_: `Evaluation` calls `EvaluateStringOrNumericBinaryExpression(AdditiveExpression, +, MultiplicativeExpression)`.
 2. That evaluates both operands left to right, calls `GetValue` on each, then `? ApplyStringOrNumericBinaryOperator(lval, +, rval)` (§13.15.3).
 3. For `+`, step 1 calls `? ToPrimitive(lval)` and `? ToPrimitive(rval)` **with no hint** (the "default" hint).
 4. `ToPrimitive([])` (§7.1.1): `[]` has no `@@toPrimitive`, so `OrdinaryToPrimitive([], number)` (default is treated as number for ordinary objects) calls `valueOf` (returns the array itself, not primitive), then `toString`, giving `""`.
 5. `ToPrimitive({})` gives `"[object Object]"` the same way.
 6. If either primitive is a String, concatenate: `"" + "[object Object]"`.
 
-Result: `"[object Object]"`. At a statement start, `{} + []` parses `{}` as an empty *block*, so the expression is `+[]`, which is `0`. The difference is grammar (statement vs expression position), not coercion. [Module 02](02-types-values-coercion.md) treats every conversion rigorously.
+Result: `"[object Object]"`. At a statement start, `{} + []` parses `{}` as an empty _block_, so the expression is `+[]`, which is `0`. The difference is grammar (statement vs expression position), not coercion. [Module 02](02-types-values-coercion.md) treats every conversion rigorously.
 
 ---
 
@@ -230,19 +237,19 @@ stateDiagram-v2
 ```
 
 | Stage | Meaning | What you may do in production |
-|---|---|---|
+| --- | --- | --- |
 | 0–1 | Problem exploration | Nothing. The design will change. |
 | 2 | Design chosen, details open | Experiment behind transpilers only; expect breaking changes |
 | **2.7** | Spec text complete; validation through test262 and prototypes. Introduced in February 2024 to separate "design approved" from "tests exist" | Transpile with care; syntax may still change |
 | 3 | Implementations ship, often behind flags first | Ship if the engines you target ship it unflagged |
 | 4 | Two compatible shipping implementations; merged into the draft | Standard; safe to rely on where shipped |
 
-**Demotion happens.** At the May 2026 TC39 meeting, *Decorators* and *Decorator Metadata* were moved from Stage 3 back to Stage 2.7 (agenda item "Decorators for Stage 2.7"; the tc39/proposals README now lists both under 2.7). No engine ships decorators unflagged as of 2026-10-28; V8 14.6 has only an incomplete `--js-decorators` flag. [Module 09](09-metaprogramming.md) teaches their runtime semantics with this caveat.
+**Demotion happens.** At the May 2026 TC39 meeting, _Decorators_ and _Decorator Metadata_ were moved from Stage 3 back to Stage 2.7 (agenda item "Decorators for Stage 2.7"; the tc39/proposals README now lists both under 2.7). No engine ships decorators unflagged as of 2026-10-28; V8 14.6 has only an incomplete `--js-decorators` flag. [Module 09](09-metaprogramming.md) teaches their runtime semantics with this caveat.
 
 ### Proposal snapshot (verified against tc39/proposals on 2026-10-28)
 
 | Bucket | Proposals |
-|---|---|
+| --- | --- |
 | **In ES2026 (17th edition)** | Upsert (`Map`/`WeakMap` `getOrInsert`, `getOrInsertComputed`), JSON.parse source text access (`JSON.rawJSON`, reviver `context.source`), Iterator Sequencing (`Iterator.concat`), `Uint8Array` to/from Base64 and hex, `Math.sumPrecise`, `Error.isError`, `Array.fromAsync` |
 | **Stage 4, slated for ES2027** | Temporal, Explicit Resource Management (`using`, `await using`, `DisposableStack`), `Atomics.pause`, Joint Iteration (`Iterator.zip`), Iterator chunking, Iterator includes, Iterator join |
 | **Stage 3** | Legacy RegExp features, Source Phase Imports, Dynamic Code Brand Checks, Deferring Module Evaluation (`import defer`), Non-extensible Applies to Private, Import Text, Error Stack Accessor, RegExp Buffer Boundaries (`\A`, `\z`, `\Z`), Await Dictionary, Curtailing the power of "Thenables" |
@@ -256,10 +263,10 @@ stateDiagram-v2
 
 ## 6. Editions vs engines: feature-detect, do not assume
 
-A feature's stage says nothing about whether *your* runtime has it. Verified locally on **Node.js 26.12.1 (V8 14.6.202)** and pinned in [`examples/01-reading-the-spec.test.js`](../examples/01-reading-the-spec.test.js):
+A feature's stage says nothing about whether _your_ runtime has it. Verified locally on **Node.js 26.12.1 (V8 14.6.202)** and pinned in [`examples/01-reading-the-spec.test.js`](../examples/01-reading-the-spec.test.js):
 
 | Feature | Spec status | Node 26.12.1 / V8 14.6 |
-|---|---|---|
+| --- | --- | --- |
 | `Map.prototype.getOrInsert`, `getOrInsertComputed` | ES2026 | shipped |
 | `JSON.rawJSON`, reviver `context.source` | ES2026 | shipped |
 | `Iterator.concat` | ES2026 | shipped |
@@ -275,12 +282,11 @@ A feature's stage says nothing about whether *your* runtime has it. Verified loc
 | ShadowRealm | Stage 2.7 | behind `--harmony-shadow-realm` |
 | AsyncContext | Stage 2 | absent (Node has `AsyncLocalStorage`; see the Node.js track) |
 
-The lesson generalises: an ES2026 feature (`Math.sumPrecise`) can be missing from a runtime that ships ES2027 features (Temporal). Write feature detection against the *function*, not against the edition:
+The lesson generalises: an ES2026 feature (`Math.sumPrecise`) can be missing from a runtime that ships ES2027 features (Temporal). Write feature detection against the _function_, not against the edition:
 
 ```js
-const sum = typeof Math.sumPrecise === 'function'
-  ? (xs) => Math.sumPrecise(xs)
-  : (xs) => kahanSum(xs); // fallback, see module 02
+const sum =
+  typeof Math.sumPrecise === 'function' ? (xs) => Math.sumPrecise(xs) : (xs) => kahanSum(xs); // fallback, see module 02
 ```
 
 ---
@@ -318,7 +324,7 @@ Use test262 when the spec prose is ambiguous to you: search the repository for t
 
 ## 8. How to answer "why does X behave like this?"
 
-1. **Reproduce** in the smallest possible snippet, in the module *and* script goals if relevant (`node --input-type=module -e` vs `node -e`).
+1. **Reproduce** in the smallest possible snippet, in the module _and_ script goals if relevant (`node --input-type=module -e` vs `node -e`).
 2. **Classify** the behaviour: syntax (grammar, early error), operator semantics (§13), built-in (§18–§28), host (HTML, Node), or engine (performance, error messages, stack traces are all implementation-defined).
 3. **Find the section.** Search the multi-page spec for the operator or built-in name. Follow every `?` and abstract operation.
 4. **Confirm with test262** (search by `esid`).
@@ -329,10 +335,10 @@ Use test262 when the spec prose is ambiguous to you: search the repository for t
 
 ## 9. Strict mode and Annex B, briefly
 
-Strict mode (§11.2.2, informative summary in Annex C) is a *different language dialect* selected per function or script:
+Strict mode (§11.2.2, informative summary in Annex C) is a _different language dialect_ selected per function or script:
 
 - Modules and class bodies are always strict.
-- `"use strict"` must be the first statement of a script or function body (a *directive prologue*).
+- `"use strict"` must be the first statement of a script or function body (a _directive prologue_).
 - Strict mode turns silent failures into exceptions (assigning to a non-writable property throws `TypeError`), removes `with`, makes `this` not coerced to an object in plain calls (`undefined` instead of the global object), makes `arguments` unmapped, and forbids duplicate parameter names and octal literals.
 
 Annex B describes what browsers must support for compatibility: `Object.prototype.__proto__`, the `__proto__: value` object literal syntax, HTML-like comments in scripts, `escape`/`unescape`, `RegExp.prototype.compile`, block-level function declarations in sloppy mode with their peculiar hoisting, and `document.all`'s `[[IsHTMLDDA]]` slot (an object for which `typeof` is `"undefined"`). Node implements Annex B as well. Avoid writing new code that depends on it.
@@ -342,7 +348,7 @@ Annex B describes what browsers must support for compatibility: `Object.prototyp
 ## 10. Production failure modes from misreading the spec
 
 | Failure | Root cause in the spec | Defence |
-|---|---|---|
+| --- | --- | --- |
 | Exceptions disappear in a cleanup helper | `return`/`break` in `finally` produces an abrupt completion that replaces the throw (§14.15.3) | Never transfer control out of `finally`; lint rule `no-unsafe-finally` |
 | A whole bundle fails to load because one file has a duplicate `let` | Early errors abort evaluation of the entire Script or Module | Lint and parse in CI; split vendor code |
 | A feature works in Chrome but `TypeError: ... is not a function` in production Node | Shipping status differs per engine and per flag | Feature-detect; pin the runtime with mise; test on the pinned version |
@@ -370,7 +376,7 @@ Statements produce Completion Records. The `try` statement evaluates `finally`; 
 
 <details><summary>4. Why is `typeof undeclared` safe but `typeof x` before `let x` throws?</summary>
 
-`typeof` checks whether its operand is an *unresolvable* Reference Record and returns "undefined" without calling GetValue. A `let` binding hoisted into the scope is resolvable but uninitialized (TDZ), so GetValue is called and throws a ReferenceError.
+`typeof` checks whether its operand is an _unresolvable_ Reference Record and returns "undefined" without calling GetValue. A `let` binding hoisted into the scope is resolvable but uninitialized (TDZ), so GetValue is called and throws a ReferenceError.
 </details>
 
 <details><summary>5. Describe the TC39 stages, including 2.7. When is it safe to use a proposal in production?</summary>

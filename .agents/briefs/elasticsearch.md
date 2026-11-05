@@ -1,34 +1,39 @@
 # Brief: Elasticsearch (`technologies/elasticsearch`)
 
-| | |
-|---|---|
-| Phase | 2 |
-| Kind | NEW track: create from scratch |
-| Primary (author) | **Opus · Claude Code** |
-| Drafter (on request) | pi · DeepSeek |
-| Challenger | pi · Muse Spark 1.3 |
-| Verifier | Antigravity |
-| Final gate | Opus (claude.ai session) |
-| Branch / worktree | `track/elasticsearch` · `../zto-elasticsearch` |
-| Depends on | phase 1 foundations |
-| Research dossier | `.agents/research/B-data.md` |
+|                      |                                                |
+| -------------------- | ---------------------------------------------- |
+| Phase                | 2                                              |
+| Kind                 | NEW track: create from scratch                 |
+| Primary (author)     | **Opus · Claude Code**                         |
+| Drafter (on request) | pi · DeepSeek                                  |
+| Challenger           | pi · Muse Spark 1.3                            |
+| Verifier             | Antigravity                                    |
+| Final gate           | Opus (claude.ai session)                       |
+| Branch / worktree    | `track/elasticsearch` · `../zto-elasticsearch` |
+| Depends on           | phase 1 foundations                            |
+| Research dossier     | `.agents/research/B-data.md`                   |
 
 ## 0. Read before starting (binding)
+
 1. `AGENTS.md`: the contract. If it conflicts with this brief, AGENTS.md wins; log the conflict in your review file.
 2. `.agents/OWNERSHIP.md`: what you own vs only cross-link.
 3. `.agents/REVIEW.md`: the checklist your work is judged against.
 4. Your global/agent instructions still apply where they do not conflict.
 
 ## 1. Owner decisions and track-specific instructions
+
 - None beyond the dossier and AGENTS.md.
 - Teach the **latest stable** versions. Add **Then vs now** comparisons wherever practice changed (AGENTS.md § Version Currency).
 - Pin **all** tooling via mise (`.mise.toml` + `mise.lock`): node 26 for JS/TS, plus every CLI and runtime the examples need.
 
 ## 2. Ownership
+
 **You own (full treatment):**
+
 - (see dossier "Overlaps / dedupe")
 
 **Cross-link only (do not re-explain):**
+
 - Storage engines: B-tree vs LSM, WAL/ARIES, compaction, buffer pools → owned by `architecture/data-systems`
 - Indexing theory: inverted index, BM25, vector ANN (HNSW, IVF, quantisation) → owned by `architecture/data-systems`
 - Replication mechanics (leader/follower, multi-leader, leaderless), sharding/rebalancing, CDC → owned by `architecture/data-systems`
@@ -61,7 +66,7 @@
     4. **Data Processing:** mappings, custom analyzers, multi-fields, reindex/update-by-query, ingest pipelines + Painless, runtime fields.
     5. **Cluster Management:** shard diagnosis/health, snapshot/restore, searchable snapshots, CCS, CCR.
   - Official docs: https://www.elastic.co/docs (Elasticsearch reference: mapping, text analysis, Query DSL, ES|QL https://www.elastic.co/docs/reference/query-languages/esql, aggregations, data streams, ILM, vector search/kNN, cluster/shard allocation).
-  - *Elasticsearch: The Definitive Guide* (concepts, dated); Lucene docs (https://lucene.apache.org/core/); *Introduction to Information Retrieval* (Manning et al., free at https://nlp.stanford.edu/IR-book/) for inverted index, TF-IDF/BM25 and evaluation.
+  - _Elasticsearch: The Definitive Guide_ (concepts, dated); Lucene docs (https://lucene.apache.org/core/); _Introduction to Information Retrieval_ (Manning et al., free at https://nlp.stanford.edu/IR-book/) for inverted index, TF-IDF/BM25 and evaluation.
 
 - **Proposed modules** (12)
   1. **Search fundamentals & IR theory:** inverted index, postings, term dictionary (FST), BM25 scoring, precision/recall, relevance vs filter context. Cross-links data-systems for indexing theory.
@@ -115,7 +120,7 @@
     - Vitest + `@elastic/elasticsearch` 9.5.1.
   - **Determinism:**
     - Always `refresh: true` (or `_refresh`) before asserting search results.
-    - Single shard (`number_of_shards: 1`) for scoring assertions, since BM25 stats are per shard. A *negative test* shows a multi-shard score skew and `dfs_query_then_fetch` fixing it.
+    - Single shard (`number_of_shards: 1`) for scoring assertions, since BM25 stats are per shard. A _negative test_ shows a multi-shard score skew and `dfs_query_then_fetch` fixing it.
     - `_analyze` API assertions for analyzers.
     - `_validate/query?explain` and `explain: true` for scoring.
     - Aggregation accuracy demo with 3 shards and `shard_size: 1`.
@@ -133,13 +138,17 @@
 ---
 
 ## 4. Re-verify list
+
 These claims were marked unverified during research. Confirm or correct each one against a primary source before teaching it:
+
 - **OpenSearch:** Apache-2.0 fork of ES 7.10.2, governed by the OpenSearch Software Foundation (Linux Foundation, Sept 2024). **3.8.0 latest (2026-08-05)**, based on Lucene 10 since 3.0 (https://en.wikipedia.org/wiki/OpenSearch_(software)). An LTS program was announced (https://www.pulse.bot/devops/news/opensearch-foundation-launches-lts-versions-to-bolster-devops-stability-9822b925-1a61-48f3-981a-f991d9925baf/; details unverified).
 - testcontainers 12.2.1 with `@testcontainers/elasticsearch` (version unverified), or docker compose using `docker.elastic.co/elasticsearch/elasticsearch:9.5.5` single-node (`discovery.type=single-node`, `xpack.security.enabled=false` for tests, `ES_JAVA_OPTS=-Xms1g -Xmx1g`), or Elastic's `start-local` script (`curl -fsSL https://elastic.co/start-local | sh`; unverified current). Mac: about 2–4 GB RAM to Docker.
 - **Cannot prove locally:** paid-tier features (searchable snapshots/frozen tier, `frozen_after`, CCR need an Enterprise/trial license). A **30-day trial license** via `_license/start_trial` can enable these locally (unverified for 9.5), so mark the tests `trial-only`. ELSER/inference endpoints need ML nodes and model downloads (heavy; mark optional). Performance/capacity claims are documented, not asserted.
 
 ## 5. Certifications & exams
+
 Follow AGENTS.md § Certification and Exam Coverage exactly. Minimum deliverables:
+
 1. **README "Certifications & Exams" section.** Start from the exams named in the dossier above ("Authoritative syllabi used"). Re-verify each exam's code, status, guide version/date, targeted product version and domain weights on the official page. Where no certification exists, say so and use the recognised interview format.
 2. **`exams/README.md` coverage matrix.** Rows are domain/objective, weight, modules, examples, status. No ❌ at hand-off.
 3. **`exams/<exam-code>.md` question banks.**
@@ -151,11 +160,14 @@ Follow AGENTS.md § Certification and Exam Coverage exactly. Minimum deliverable
 5. **Original questions only.** No braindump content.
 
 ## 6. Code languages
+
 Per AGENTS.md § Code Example Languages:
+
 - **Primary:** pseudocode (where algorithms or protocols are described) + TypeScript (or the track's own language, for language tracks).
 - **Secondary:** Python, Rust or Nim only where it teaches something. Each language lives in `examples/<lang>/` with its own mise-pinned toolchain and native test runner, and `test` runs them all.
 
 ## 7. Workflow and definition of done
+
 1. **Primary (Opus)** works on branch `track/elasticsearch` and sets this track's row in `.agents/STATUS.md` to 🟦.
 2. **Verify versions first.** Check every version in the dossier against its primary source today. Record the results in the README's `Verified against …` line. Resolve every item in the re-verify list below.
 3. Build in stages: README syllabus + exam matrix → modules one by one, each with its examples/tests → glossary → cheatsheet → question banks → mock exam. Delegate bulk drafting (question-bank drafts, glossary candidates, cheatsheet tables) to the **Drafter**, then correct and integrate it yourself.

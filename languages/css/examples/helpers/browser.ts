@@ -16,7 +16,9 @@ const LAUNCH_ARGS = ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu'
 async function probe(): Promise<{ chromium: BrowserType; info: string } | string> {
   const require = createRequire(import.meta.url);
   const candidates: string[] = [];
-  try { candidates.push(require.resolve('playwright')); } catch {}
+  try {
+    candidates.push(require.resolve('playwright'));
+  } catch {}
   for (const dir of (process.env.NODE_PATH ?? '').split(delimiter).filter(Boolean)) {
     try {
       const resolved = require.resolve('playwright', { paths: [dir] });
@@ -27,7 +29,8 @@ async function probe(): Promise<{ chromium: BrowserType; info: string } | string
   for (const entry of candidates) {
     try {
       const mod = require(entry) as { chromium: BrowserType };
-      const version = (require(join(dirname(entry), 'package.json')) as { version: string }).version;
+      const version = (require(join(dirname(entry), 'package.json')) as { version: string })
+        .version;
       const browser = await mod.chromium.launch({ headless: true, args: LAUNCH_ARGS });
       const info = `playwright ${version}, chromium ${browser.version()}`;
       await browser.close();
@@ -54,7 +57,9 @@ export async function getBrowser(): Promise<Browser> {
   return cachedBrowser;
 }
 
-export async function createPage(htmlContent: string): Promise<{ page: Page; cleanup: () => Promise<void> }> {
+export async function createPage(
+  htmlContent: string,
+): Promise<{ page: Page; cleanup: () => Promise<void> }> {
   const browser = await getBrowser();
   const context = await browser.newContext();
   const page = await context.newPage();

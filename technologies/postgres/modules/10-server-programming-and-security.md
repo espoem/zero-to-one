@@ -31,6 +31,7 @@ flowchart TD
 ```
 
 ### The Transaction Management Advantage of Procedures
+
 Prior to PostgreSQL 11, long-running ETL data migrations could not commit batches incrementally without terminating the entire script. Procedures execute outside a forced transaction block:
 
 ```sql
@@ -48,10 +49,10 @@ BEGIN
             LIMIT batch_size
         );
         GET DIAGNOSTICS rows_deleted = ROW_COUNT;
-        
+
         -- Commit intermediary transaction to free locks and allow vacuuming!
         COMMIT;
-        
+
         EXIT WHEN rows_deleted = 0;
     END LOOP;
 END;
@@ -73,12 +74,13 @@ flowchart LR
         IMM["IMMUTABLE:<br/>Pure function.<br/>Cached for duration of cluster."]
         STABLE["STABLE:<br/>Cannot modify DB.<br/>Consistent within single statement scan."]
         VOL["VOLATILE:<br/>Can modify DB.<br/>Re-evaluated on every single row."]
-        
+
         IMM --> STABLE --> VOL
     end
 ```
 
 ### The Three Volatility Contracts:
+
 1. **`IMMUTABLE`**:
    - The function cannot modify database state and is guaranteed to return identical results given identical arguments forever.
    - **Mandatory for Expression Indexes**: Only `IMMUTABLE` functions can be used in `CREATE INDEX ON tbl ((fn(col)))`.
@@ -97,6 +99,7 @@ flowchart LR
 Row-level triggers (`FOR EACH ROW`) execute PL/pgSQL context switches for every modified tuple. On an update touching 50,000 rows, this invokes the trigger function 50,000 times.
 
 ### Transition Tables (Set-Based Triggers)
+
 PostgreSQL supports SQL-standard transition tables for statement-level triggers:
 
 ```sql
@@ -118,7 +121,7 @@ BEGIN
     FROM new_rows n
     JOIN old_rows o ON o.sku = n.sku
     WHERE n.quantity <> o.quantity;
-    
+
     RETURN NULL;
 END;
 $$;
@@ -135,6 +138,7 @@ EXECUTE FUNCTION audit_inventory_update();
 ## 5. Security & Privilege Architecture: RBAC & Default Privileges
 
 ### The Principle of Least Privilege
+
 Never connect applications as `superuser` or the database owner:
 
 ```sql
@@ -149,10 +153,10 @@ GRANT USAGE ON SCHEMA public TO app_runtime;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO app_runtime;
 
 -- 4. CRITICAL: Configure Default Privileges for future tables created by migrations:
-ALTER DEFAULT PRIVILEGES IN SCHEMA public 
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO app_runtime;
 
-ALTER DEFAULT PRIVILEGES IN SCHEMA public 
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
 GRANT USAGE, SELECT ON SEQUENCES TO app_runtime;
 ```
 
@@ -163,12 +167,15 @@ GRANT USAGE, SELECT ON SEQUENCES TO app_runtime;
 `SECURITY DEFINER` functions run with the privileges of the function's owner (often a superuser or DBA).
 
 ### The Attack Vector (Trojan Horse Hijack)
+
 If a `SECURITY DEFINER` function does not explicitly set its `search_path`:
+
 1. A malicious user creates a table or custom operator named `public.user_account` or `public.trim`.
 2. When an administrator calls the `SECURITY DEFINER` function, PostgreSQL resolves unqualified table/function references using the current session's `search_path`.
 3. The function inadvertently accesses the attacker's object with elevated DBA privileges, resulting in arbitrary code execution!
 
 ### The Immutable Defense
+
 Always fix `search_path` to `pg_catalog, pg_temp` on every `SECURITY DEFINER` routine:
 
 ```sql
@@ -195,15 +202,15 @@ Row-Level Security (RLS) guarantees that queries automatically filter rows witho
 ```mermaid
 flowchart TD
     App["Application Query: SELECT * FROM documents;"]
-    
+
     subgraph QueryRewriter["PostgreSQL Query Rewriter (RLS Subsystem)"]
         Policy["Check Active RLS Policy: tenant_isolation_policy"]
         Setting["Read Session Setting: current_setting('app.tenant_id')"]
         Inject["Rewrite Query: SELECT * FROM documents WHERE tenant_id = 101;"]
     end
-    
+
     Heap["Storage Engine Heap Scan"]
-    
+
     App --> QueryRewriter
     Policy --> Inject
     Setting --> Inject
@@ -212,6 +219,7 @@ flowchart TD
 ```
 
 ### Implementing Multi-Tenant RLS
+
 ```sql
 CREATE TABLE client_documents (
     id SERIAL PRIMARY KEY,
@@ -235,6 +243,7 @@ CREATE POLICY tenant_isolation_policy ON client_documents
 ```
 
 ### Application Connection Initialization
+
 Before executing queries, the application connection sets the session context:
 
 ```sql
@@ -250,6 +259,7 @@ SELECT * FROM client_documents; -- Returns strictly rows where tenant_id = 42
 ## 8. Authentication & Connection Security (PostgreSQL 18 OAuth)
 
 ### `pg_hba.conf` Rules
+
 PostgreSQL controls access via the Host-Based Authentication configuration file:
 
 ```text
@@ -260,6 +270,7 @@ hostssl production_db   oauth_user      0.0.0.0/0               oauth
 ```
 
 ### Authentication Evolutions in PostgreSQL 18:
+
 1. **MD5 Deprecation**: MD5 password authentication is officially deprecated in PostgreSQL 18 and issues explicit server warnings. `scram-sha-256` is the required standard.
 2. **Native OAuth 2.0 / OIDC Bearer Tokens**: PostgreSQL 18 natively validates OpenID Connect (OIDC) JWT bearer tokens passed by client drivers, allowing centralized identity providers (Okta, Azure Entra ID, Keycloak) to authenticate database connections without long-lived database passwords.
 
@@ -268,7 +279,7 @@ hostssl production_db   oauth_user      0.0.0.0/0               oauth
 ## 9. Then vs. Now: Server Programming & Security
 
 | Security Dimension | PostgreSQL $\le$ 14 | PostgreSQL 15–17 | PostgreSQL 18 & 19 (Current) |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Public Schema Permissions** | `PUBLIC` possessed `CREATE` in `public` schema | `CREATE` on `public` revoked by default | Hardened schema boundaries enforced |
 | **Password Hashing** | MD5 allowed by default | SCRAM-SHA-256 recommended | **MD5 deprecated with server warnings**; SCRAM-SHA-256 mandated |
 | **Federated Authentication** | Kerberos / GSSAPI only | Third-party OAuth proxies | Native **OAuth 2.0 / OIDC JWT** authentication |
@@ -282,35 +293,45 @@ hostssl production_db   oauth_user      0.0.0.0/0               oauth
 <summary>1. Explain the "search_path hijacking" vulnerability in `SECURITY DEFINER` functions and how to mitigate it.</summary>
 
 **Answer**: A `SECURITY DEFINER` function executes with the privileges of the user that owns the function (often a superuser or DBA). If the function references database objects without schema qualifications (e.g. `SELECT * FROM users`), PostgreSQL resolves the object using the active session's `search_path`. A malicious unprivileged user can create a malicious table, function, or operator in a schema earlier in the search path (such as `public`). When a privileged user invokes the `SECURITY DEFINER` function, the engine inadvertently executes the attacker's object with elevated administrative privileges. The mitigation is setting `search_path` explicitly on the function definition: `ALTER FUNCTION fn() SET search_path = pg_catalog, pg_temp;`.
+
 - Ref: [PostgreSQL Documentation: Writing SECURITY DEFINER Functions Safely](https://www.postgresql.org/docs/18/sql-createfunction.html#SQL-CREATEFUNCTION-SECURITY)
+
 </details>
 
 <details>
 <summary>2. Why is marking a function `IMMUTABLE` when it actually queries table data a critical operational error?</summary>
 
 **Answer**: An `IMMUTABLE` function contract guarantees that the function will always return identical outputs for identical arguments and has zero side-effects. The query planner relies on this contract to pre-evaluate function calls into constants and to build expression indexes (`CREATE INDEX ON tbl ((fn(col)))`). If the function queries table data or depends on configuration settings, changes in the underlying table data will **not** trigger re-indexing or cache invalidation. As a result, the index becomes corrupt, queries using the index return stale or missing rows, and query planner cost models become invalid.
+
 - Ref: [PostgreSQL Documentation: Function Volatility Categories](https://www.postgresql.org/docs/18/xfunc-volatility.html)
+
 </details>
 
 <details>
 <summary>3. What is the difference between `USING` and `WITH CHECK` clauses in Row-Level Security (RLS) policies?</summary>
 
 **Answer**:
+
 - `USING` defines the predicate for **reading** existing rows from the table (`SELECT`, and the qualification phase of `UPDATE` and `DELETE`). Rows that evaluate to false or unknown are silently filtered out as if they do not exist.
 - `WITH CHECK` defines the predicate for **writing or modifying** rows (`INSERT`, and the new row state resulting from an `UPDATE`). If an application attempts to insert or update a row such that the new values evaluate to false or unknown against `WITH CHECK`, the statement immediately fails with a security policy violation error.
 - Ref: [PostgreSQL Documentation: CREATE POLICY](https://www.postgresql.org/docs/18/sql-createpolicy.html)
+
 </details>
 
 <details>
 <summary>4. Why should table-modifying triggers use transition tables (`REFERENCING NEW TABLE`) rather than `FOR EACH ROW` triggers for batch mutations?</summary>
 
 **Answer**: A `FOR EACH ROW` trigger executes the trigger function once per modified row, incurring repeated PL/pgSQL function call context-switching overhead and executing single-row SQL queries in a loop. For a batch operation touching 100,000 rows, this invokes the trigger 100,000 times ($O(N)$ operations). A statement-level trigger with transition tables (`REFERENCING OLD TABLE AS old_rows NEW TABLE AS new_rows FOR EACH STATEMENT`) executes the trigger function **exactly once**. The entire batch of modified rows is exposed as virtual relations, allowing the trigger logic to execute a single set-oriented SQL statement, dramatically reducing execution time and transaction log volume.
+
 - Ref: [PostgreSQL Documentation: Overview of Trigger Behavior](https://www.postgresql.org/docs/18/trigger-definition.html)
+
 </details>
 
 <details>
 <summary>5. What happens if a superuser executes queries on a table with Row-Level Security (RLS) enabled?</summary>
 
 **Answer**: Superusers **always bypass Row-Level Security policies by default**. Even if an RLS policy is configured with `FOR ALL TO public USING (tenant_id = 42)`, queries executed by a superuser will observe and modify all rows across all tenants without filtering. To enforce RLS during administrative tasks, a table must be altered with `ALTER TABLE tbl FORCE ROW LEVEL SECURITY;`. However, standard superusers still retain bypass capabilities; production multi-tenant applications must strictly connect using non-superuser roles.
+
 - Ref: [PostgreSQL Documentation: Row Security Policies](https://www.postgresql.org/docs/18/ddl-rowsecurity.html)
+
 </details>

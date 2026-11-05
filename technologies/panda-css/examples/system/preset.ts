@@ -1,10 +1,10 @@
-import { definePreset } from '@pandacss/dev'
-import { alertRecipe } from './recipes/alert.slot-recipe.ts'
-import { buttonRecipe } from './recipes/button.recipe.ts'
-import { scrollablePattern } from './patterns/scrollable.pattern.ts'
-import { semanticTokens } from './semantic-tokens.ts'
-import { layerStyles, textStyles } from './text-styles.ts'
-import { tokens } from './tokens.ts'
+import { definePreset } from '@pandacss/dev';
+import { alertRecipe } from './recipes/alert.slot-recipe.ts';
+import { buttonRecipe } from './recipes/button.recipe.ts';
+import { scrollablePattern } from './patterns/scrollable.pattern.ts';
+import { semanticTokens } from './semantic-tokens.ts';
+import { layerStyles, textStyles } from './text-styles.ts';
+import { tokens } from './tokens.ts';
 
 /**
  * The "acme" design language, shared by the React app, the Solid app and the fixtures
@@ -39,4 +39,4 @@ export const acmePreset = definePreset({
   patterns: {
     extend: { scrollable: scrollablePattern },
   },
-})
+});

@@ -7,7 +7,7 @@ This glossary provides authoritative English ↔ Czech definitions of core datab
 ## 1. Engine Architecture, Process Model & Storage Layout
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Postmaster Process** | **Hlavní řídicí proces (postmaster)** | The primary daemon supervisor process in PostgreSQL that initializes shared memory, starts background workers, and forks a dedicated backend process for each incoming client connection. | PostgreSQL 18 Architecture Documentation |
 | **Backend Process** | **Backendový proces klienta** | A dedicated operating system process spawned by the postmaster to handle queries, transaction state, and local execution for a single client session. | PostgreSQL 18 Internal Architecture |
 | **Shared Buffers (`shared_buffers`)** | **Sdílená vyrovnávací paměť stránek** | A shared memory buffer pool where PostgreSQL caches disk pages (tables, indexes, free space maps) to minimize physical storage I/O. | PostgreSQL 18 Resource Consumption Guide |
@@ -33,7 +33,7 @@ This glossary provides authoritative English ↔ Czech definitions of core datab
 ## 2. Relational Modeling, Advanced Types & Constraints
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Universally Unique Identifier Version 7 (`uuidv7`)** | **Časově řazený univerzální identifikátor (`uuidv7`)** | A 128-bit identifier incorporating a 48-bit UNIX millisecond timestamp prefix, ensuring monotonic ordering and optimal B-tree index locality without fragmentation. | RFC 9562 / PostgreSQL 18 Data Types |
 | **TOAST (The Oversized-Attribute Storage Technique)** | **Technika ukládání nadrozměrných atributů (TOAST)** | PostgreSQL's mechanism that compresses and moves wide attributes exceeding 2KB out-of-line into a secondary chunked table (`pg_toast_*`) to maintain compact 8KB heap tuples. | PostgreSQL 18 Storage Internals |
 | **Virtual Generated Column** | **Virtuální generovaný sloupec** | A column defined by an expression whose value is computed dynamically upon read operations without consuming physical disk storage (the default for generated columns in PostgreSQL 18). | PostgreSQL 18 DDL Reference |
@@ -50,7 +50,7 @@ This glossary provides authoritative English ↔ Czech definitions of core datab
 ## 3. SQL Engine, Projections, Filtering & Joins
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Three-Valued Logic (3VL)** | **Tříhodnotová logika (3VL)** | The propositional logic framework evaluated by SQL (`TRUE`, `FALSE`, `UNKNOWN`/`NULL`) derived from Kleene strong logic of indeterminacy ($K_3$). | SQL Standards / Formal Logic |
 | **Null-Safe Equality (`IS DISTINCT FROM`)** | **Rovnost bezpečná vůči hodnotám NULL** | A comparison operator treating two NULL values as identical and a non-null value as distinct from NULL, returning strictly TRUE or FALSE. | SQL:1999 Standards |
 | **Cartesian Product (Cross Join)** | **Kartézský součin** | A relational join operation returning all possible row combinations between two tables without filtering on an equality predicate. | Relational Algebra / SQL Standards |
@@ -67,7 +67,7 @@ This glossary provides authoritative English ↔ Czech definitions of core datab
 ## 4. Advanced SQL, CTEs & Window Functions
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Common Table Expression (CTE)** | **Společný tabulkový výraz (CTE)** | A named temporary result set defined within an execution scope using the `WITH` keyword, improving readability and modular query composition. | PostgreSQL 18 Queries Documentation |
 | **Optimization Fence (`AS MATERIALIZED`)** | **Optimalizační bariéra** | A planner boundary that forces a CTE to be evaluated into an in-memory tuplestore rather than inlined, preventing outer predicates from pushing down. | PostgreSQL 18 Queries Reference |
 | **Data-Modifying CTE** | **DML modifikující CTE** | A CTE enclosing `INSERT`, `UPDATE`, or `DELETE` statements that writes data modifications while exposing affected tuples to downstream query expressions. | PostgreSQL 18 Advanced SQL |
@@ -83,7 +83,7 @@ This glossary provides authoritative English ↔ Czech definitions of core datab
 ## 5. Semi-Structured Data: JSONB & Full-Text Search
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **JSONB (`Binary JSON`)** | **Binární formát JSON (JSONB)** | A parsed, decomposed binary representation of JSON data supporting indexed lookups, key uniqueness enforcement, and efficient binary slicing. | PostgreSQL 18 Data Types |
 | **Containment Operator (`@>`)** | **Operátor zahrnutí (containment)** | A binary operator evaluating whether the left-hand JSONB document structural envelope completely contains the right-hand JSONB pattern. | PostgreSQL 18 JSON Reference |
 | **SQL/JSON Path Expressions** | **Cestové výrazy SQL/JSON** | Standardized language syntax (`jsonb_path_query`, `jsonb_path_exists`) evaluating JSON queries using projection filters and JSONPath predicates. | SQL:2016 Part 14 / PostgreSQL 18 |
@@ -98,7 +98,7 @@ This glossary provides authoritative English ↔ Czech definitions of core datab
 ## 6. Indexing In-Depth: B-Tree, GIN, GiST, BRIN & Skip Scans
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Lehman-Yao B-link Tree** | **B-strom dle Lehman-Yao** | High-concurrency B-tree variant with right-sibling links, permitting concurrent searches without locking during page splits. | ACM TODS 1981 / PostgreSQL B-Tree |
 | **B-Tree Skip Scan** | **Přeskakovací průchod B-stromem (skip scan)** | A PostgreSQL 18 index scan capability allowing multicolumn composite B-tree indexes to satisfy queries that omit the leading column by hopping over prefix distinct values. | PostgreSQL 18 Release Highlights |
 | **Generalized Inverted Index (GIN)** | **Zobecněný invertovaný index (GIN)** | An index structure mapping individual composite elements (JSONB keys/values, array elements, text lexemes) to lists of matching heap tuples. | PostgreSQL 18 Index Types |
@@ -114,7 +114,7 @@ This glossary provides authoritative English ↔ Czech definitions of core datab
 ## 7. Query Planning, Cost Model & Performance Tuning
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Cost-Based Optimizer (CBO)** | **Nákladový optimalizátor dotazů** | The engine subsystem estimating total I/O and CPU cost for alternative query execution paths and selecting the cheapest execution plan. | PostgreSQL 18 Planner Internals |
 | **Selinger Cost Model** | **Selingerův nákladový model** | The dynamic programming cost evaluation framework estimating plan costs through page fetches and CPU cycle weights. | IBM System R / ACM SIGMOD 1979 |
 | **Sequential Scan (`Seq Scan`)** | **Sekvenční průchod tabulkou** | An execution plan node that reads every data block of a relation sequentially from disk or cache. | PostgreSQL 18 Planner Nodes |
@@ -131,7 +131,7 @@ This glossary provides authoritative English ↔ Czech definitions of core datab
 ## 8. Concurrency Control, MVCC & Transaction Isolation
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Multi-Version Concurrency Control (MVCC)** | **Víceverzně řízené souběžné zpracování (MVCC)** | The concurrency model where data modifications create new row versions instead of overwriting existing blocks, ensuring readers do not block writers and writers do not block readers. | Database Systems Architecture |
 | **Heap-Only Tuples (HOT)** | **Úpravy pouze v haldě (HOT)** | An optimization where an updated tuple is placed on the same 8KB page without modifying secondary indexes, linking rows via an intra-page chain. | PostgreSQL 18 Storage Engine |
 | **Hint Bits** | **Nápovědné bity viditelnosti (hint bits)** | Status bits written to `t_infomask` by reader queries confirming whether `t_xmin` or `t_xmax` committed, avoiding subsequent CLOG lookups. | PostgreSQL 18 Internal Layout |
@@ -150,7 +150,7 @@ This glossary provides authoritative English ↔ Czech definitions of core datab
 ## 9. Vacuuming, Freezing, Bloat & Statistics Maintenance
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Autovacuum Daemon** | **Automatický čistící proces (autovacuum)** | The background automation subsystem monitoring table write activities, executing vacuuming to reclaim dead tuple storage and updating catalog statistics. | PostgreSQL 18 Routine Maintenance |
 | **Transaction ID (XID) Wraparound** | **Přetečení čítače transakčních ID (wraparound)** | The exhaustion of the 32-bit transaction ID horizon ($2^{31}$), requiring freezing of past tuples to prevent catastrophic silent data loss. | PostgreSQL 18 Routine Maintenance |
 | **Tuple Freezing (`FrozenTransactionId`)** | **Zmrazení starých záznamů (freezing)** | Replacing old `t_xmin` values with the special identifier 2 (`FrozenTransactionId`), marking tuples as permanently committed in the past to all transactions. | PostgreSQL 18 Storage Engine |
@@ -164,7 +164,7 @@ This glossary provides authoritative English ↔ Czech definitions of core datab
 ## 10. Server Programming, Extensibility & Security
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **PL/pgSQL Procedural Language** | **Procedurální jazyk PL/pgSQL** | The native procedural language in PostgreSQL providing control flow constructs, exception handling, and seamless SQL execution within the engine. | PostgreSQL 18 Server Programming |
 | **Execution Plan Caching** | **Cachování plánů dotazů** | The PL/pgSQL mechanism where statements are parsed once and cached, switching from generic plans to custom plans based on parameter selectivity. | PostgreSQL 18 PL/pgSQL Internals |
 | **Stored Procedure** | **Uložená procedura** | A server routine invoked via `CALL` that possesses transaction control capabilities, allowing programmatic `COMMIT` and `ROLLBACK` within the routine body. | PostgreSQL 18 Server Programming |
@@ -179,7 +179,7 @@ This glossary provides authoritative English ↔ Czech definitions of core datab
 ## 11. Declarative Partitioning, Connection Architecture & Pooling
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Declarative Partitioning** | **Deklarativní particionování** | Splitting a large table into distinct physical child tables based on Range, List, or Hash boundaries while exposing a single logical table interface. | PostgreSQL 18 Partitioning Guide |
 | **Partition Pruning** | **Ořezávání particí (partition pruning)** | An optimization where the query planner or execution engine eliminates non-matching partition tables from execution scans based on query WHERE clauses. | PostgreSQL 18 Planner Optimization |
 | **Run-Time Partition Pruning** | **Běhové ořezávání particí** | Pruning child partitions during query execution when comparison parameters or subquery results become known only at runtime. | PostgreSQL 18 Performance Guide |
@@ -194,7 +194,7 @@ This glossary provides authoritative English ↔ Czech definitions of core datab
 ## 12. Durability, Write-Ahead Logging & Point-In-Time Recovery
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **ARIES Recovery Protocol** | **Algoritmus obnovy ARIES** | The canonical recovery algorithm comprising Analysis, Redo (repeating history), and Undo phases ensuring transactional durability and consistency. | C. Mohan / IBM Research 1992 |
 | **Logical Backup (`pg_dump / pg_restore`)** | **Logická záloha (`pg_dump`)** | An extracted database snapshot containing SQL DDL statements and data copies that can be restored across heterogeneous architectures and versions. | PostgreSQL 18 Backup Guide |
 | **Base Backup (`pg_basebackup`)** | **Fyzická základní záloha** | A binary copy of the entire physical database cluster directory and associated tablespaces taken while the primary server is running. | PostgreSQL 18 Continuous Archiving |
@@ -209,7 +209,7 @@ This glossary provides authoritative English ↔ Czech definitions of core datab
 ## 13. High Availability, Replication & Modern Extensions
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Physical Streaming Replication** | **Proudové fyzické replikování** | The physical replication protocol where the primary server continuously streams Write-Ahead Log records across a network socket to standby instances. | PostgreSQL 18 High Availability |
 | **Synchronous Standby (`synchronous_commit`)** | **Synchronní replika** | A standby server requiring confirmation of WAL write, flush, or apply before the primary marks the originating client transaction as committed. | PostgreSQL 18 Replication Guide |
 | **Replication Slot** | **Replikační slot** | An automated server marker ensuring the primary node retains Write-Ahead Log segments until all connected standbys or subscribers have received them. | PostgreSQL 18 Streaming Replication |

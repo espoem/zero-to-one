@@ -1,34 +1,39 @@
 # Brief: Observability (`technologies/observability`)
 
-| | |
-|---|---|
-| Phase | 3 |
-| Kind | NEW track: create from scratch |
-| Primary (author) | **Opus · Claude Code** |
-| Drafter (on request) | pi · DeepSeek |
-| Challenger | pi · Muse Spark 1.3 |
-| Verifier | Antigravity |
-| Final gate | Opus (claude.ai session) |
-| Branch / worktree | `track/observability` · `../zto-observability` |
-| Depends on | technologies/kubernetes |
-| Research dossier | `.agents/research/E-platform.md` |
+|                      |                                                |
+| -------------------- | ---------------------------------------------- |
+| Phase                | 3                                              |
+| Kind                 | NEW track: create from scratch                 |
+| Primary (author)     | **Opus · Claude Code**                         |
+| Drafter (on request) | pi · DeepSeek                                  |
+| Challenger           | pi · Muse Spark 1.3                            |
+| Verifier             | Antigravity                                    |
+| Final gate           | Opus (claude.ai session)                       |
+| Branch / worktree    | `track/observability` · `../zto-observability` |
+| Depends on           | technologies/kubernetes                        |
+| Research dossier     | `.agents/research/E-platform.md`               |
 
 ## 0. Read before starting (binding)
+
 1. `AGENTS.md`: the contract. If it conflicts with this brief, AGENTS.md wins; log the conflict in your review file.
 2. `.agents/OWNERSHIP.md`: what you own vs only cross-link.
 3. `.agents/REVIEW.md`: the checklist your work is judged against.
 4. Your global/agent instructions still apply where they do not conflict.
 
 ## 1. Owner decisions and track-specific instructions
+
 - None beyond the dossier and AGENTS.md.
 - Teach the **latest stable** versions. Add **Then vs now** comparisons wherever practice changed (AGENTS.md § Version Currency).
 - Pin **all** tooling via mise (`.mise.toml` + `mise.lock`): node 26 for JS/TS, plus every CLI and runtime the examples need.
 
 ## 2. Ownership
+
 **You own (full treatment):**
+
 - OpenTelemetry, metrics/logs/traces, Prometheus/PromQL, LGTM, Kibana/Elastic Observability, alerting, SLO burn rates
 
 **Cross-link only (do not re-explain):**
+
 - Kubernetes control plane, workloads, Services/CNI/NetworkPolicy, RBAC, CRDs/operators, Helm/Kustomize authoring → owned by `technologies/kubernetes`
 
 ## 3. Research dossier (verified 2026-10-27/28; re-verify before use)
@@ -119,7 +124,7 @@
 ##### Structural decisions (summary)
 
 | Question | Recommendation | Rationale |
-|---|---|---|
+| --- | --- | --- |
 | Docker vs Podman | **One track `technologies/containers`** | Both are front-ends over the same OCI image/runtime/distribution specs, same kernel primitives (namespaces, cgroups v2, overlayfs, seccomp), same runtimes (runc/crun). Splitting would duplicate ~70% of content. Tool differences (daemon vs daemonless, rootless defaults, Quadlet vs compose, Buildah/Skopeo) fit in 2 modules. |
 | Kubernetes | **`technologies/kubernetes`**, prerequisite = containers | Single narrative covering CKA+CKAD; CKS content as late modules (security). |
 | Argo CD | **Standalone `technologies/argocd`, scoped as "GitOps with Argo CD (+ Argo Rollouts)"** | Too deep (controller internals, sharding, ApplicationSets, hydrator, RBAC, multi-tenancy) to be one K8s module; but should not become an "all of Argo" track — CAPA is 36% Workflows + 12% Events, which are a different problem (batch/DAG). Cover CGOA (100%) + CAPA's Argo CD 34% + Rollouts 18%; Workflows/Events = one optional appendix module. Flux only as comparison. A separate `gitops` track is not justified (principles = 1 module). |
@@ -131,14 +136,18 @@ Suggested order: containers → kubernetes → (terraform in parallel) → argoc
 ---
 
 ## 4. Re-verify list
+
 These claims were marked unverified during research. Confirm or correct each one against a primary source before teaching it:
+
 - OpenTelemetry Collector (releases repo) **v0.164.0** (2026-10-26); semantic conventions **v1.44.0**. Collector distribution is still 0.x (pdata/core modules have 1.x — unverified detail).
 - Loki **v3.7.9**, Tempo **v3.1.1** (Tempo 3.x is a major line), Mimir **3.2.3**, Alloy **v1.21.2**. **Promtail EOL March 2026** → Alloy — https://community.grafana.com/t/promtail-is-now-end-of-life-eol-how-to-migrate-to-grafana-alloy-for-existing-loki-server-deployments/162087 ; Grafana Agent also replaced by Alloy (EOL date unverified).
 - Kibana / Elasticsearch **v9.5.5** (2026-09-30); APM Server 9.5.5. Elastic Observability ingests OTel natively via EDOT (Elastic Distributions of OpenTelemetry) (feature details unverified). Elastic licence: ELv2/SSPL plus AGPLv3 option since 2024 (background knowledge, unverified here).
 - Elastic Certified Observability Engineer (Elastic training; current objectives not checked — unverified). Grafana certifications (unverified).
 
 ## 5. Certifications & exams
+
 Follow AGENTS.md § Certification and Exam Coverage exactly. Minimum deliverables:
+
 1. **README "Certifications & Exams" section.** Start from the exams named in the dossier above ("Authoritative syllabi used"). Re-verify each exam's code, status, guide version/date, targeted product version and domain weights on the official page. Where no certification exists, say so and use the recognised interview format.
 2. **`exams/README.md` coverage matrix.** Rows are domain/objective, weight, modules, examples, status. No ❌ at hand-off.
 3. **`exams/<exam-code>.md` question banks.**
@@ -150,11 +159,14 @@ Follow AGENTS.md § Certification and Exam Coverage exactly. Minimum deliverable
 5. **Original questions only.** No braindump content.
 
 ## 6. Code languages
+
 Per AGENTS.md § Code Example Languages:
+
 - **Primary:** pseudocode (where algorithms or protocols are described) + TypeScript (or the track's own language, for language tracks).
 - **Secondary:** Python, Rust or Nim only where it teaches something. Each language lives in `examples/<lang>/` with its own mise-pinned toolchain and native test runner, and `test` runs them all.
 
 ## 7. Workflow and definition of done
+
 1. **Primary (Opus)** works on branch `track/observability` and sets this track's row in `.agents/STATUS.md` to 🟦.
 2. **Verify versions first.** Check every version in the dossier against its primary source today. Record the results in the README's `Verified against …` line. Resolve every item in the re-verify list below.
 3. Build in stages: README syllabus + exam matrix → modules one by one, each with its examples/tests → glossary → cheatsheet → question banks → mock exam. Delegate bulk drafting (question-bank drafts, glossary candidates, cheatsheet tables) to the **Drafter**, then correct and integrate it yourself.

@@ -1,7 +1,6 @@
 # Module 08: Type-Level Programming I — Derivation & Template Literal Types
 
-> Examples and tests: [`examples/08-type-derivation/derivation.test.ts`](../examples/08-type-derivation/derivation.test.ts) (`typeof`/`keyof`/indexed access, `keyof` of unions and intersections, function utilities, non-distributive `Omit`, template literal types, `string & {}`) and [`type-transformations.test.ts`](../examples/08-type-derivation/type-transformations.test.ts).
-> Run: `mise exec -- node --test examples/08-type-derivation/`
+> Examples and tests: [`examples/08-type-derivation/derivation.test.ts`](../examples/08-type-derivation/derivation.test.ts) (`typeof`/`keyof`/indexed access, `keyof` of unions and intersections, function utilities, non-distributive `Omit`, template literal types, `string & {}`) and [`type-transformations.test.ts`](../examples/08-type-derivation/type-transformations.test.ts). Run: `mise exec -- node --test examples/08-type-derivation/`
 >
 > Prerequisites: [Module 05](./05-classes-mutability-and-ts-only-syntax.md) (`as const`) and [Module 07](./07-generics-and-inference.md) (generics). Conditional, mapped and recursive types continue in [Module 09](./09-conditional-mapped-and-recursive-types.md).
 
@@ -32,6 +31,7 @@ By mastering type transformations, you establish a **single source of truth**: y
 ### Learning Objectives
 
 By the end of this module, you will be able to:
+
 1. Extract types from runtime values, functions, class constructors, and async Promises using `typeof`, `ReturnType<T>`, `Parameters<T>`, `ConstructorParameters<T>`, and `Awaited<T>`.
 2. Differentiate union categories and transform unions using `Extract<T, U>`, `Exclude<T, U>`, and indexed access (`T[K]`, `T[number]`, `keyof`).
 3. Construct dynamic, strictly validated string types using Template Literal Types, string utility helpers (`Capitalize`, `Uppercase`, etc.), and cartesian product unions.
@@ -42,17 +42,17 @@ By the end of this module, you will be able to:
 ## The type operators, precisely
 
 | Operator | Input → output | Key rules |
-|---|---|---|
+| --- | --- | --- |
 | `typeof v` (in a type position) | value → its declared/inferred type | Only identifiers and property paths (`typeof a.b`), not arbitrary expressions; `typeof` of a `const` with a literal keeps the literal |
 | `keyof T` | object type → union of its keys | Index signature `[k: string]` gives `string \| number`; `keyof (A \| B)` = keys common to both; `keyof (A & B)` = union of keys; `keyof never` = `string \| number \| symbol` |
 | `T[K]` | indexed access | `K` must be assignable to `keyof T`; `T[number]` on arrays/tuples gives the element union; distributes over unions in `K` |
 | `` `${A}-${B}` `` | template literal type | Cross product over unions in `A` and `B`; placeholders accept `string`, `number`, `bigint`, `boolean`, `null`, `undefined` and literal unions |
 
-Two consequences the example proves: `keyof` of a **union** keeps only *common* keys (so a union of event shapes exposes only the discriminant), and an **intersection** of object types with a conflicting literal-typed property reduces to `never` (since TS 3.9), so `keyof (A & B)` becomes every key.
+Two consequences the example proves: `keyof` of a **union** keeps only _common_ keys (so a union of event shapes exposes only the discriminant), and an **intersection** of object types with a conflicting literal-typed property reduces to `never` (since TS 3.9), so `keyof (A & B)` becomes every key.
 
 ### Then vs now: template literal inference by code point
 
-In TS 7.0, inference of template literal placeholders (`` `${infer H}${infer T}` ``) works on Unicode code points rather than UTF-16 code units; see [Module 09](./09-conditional-mapped-and-recursive-types.md) §9.5.2 for the before/after and migration. Type-level string utilities in this module that only *build* strings (cross products, `Capitalize`) are unaffected.
+In TS 7.0, inference of template literal placeholders (`` `${infer H}${infer T}` ``) works on Unicode code points rather than UTF-16 code units; see [Module 09](./09-conditional-mapped-and-recursive-types.md) §9.5.2 for the before/after and migration. Type-level string utilities in this module that only _build_ strings (cross products, `Capitalize`) are unaffected.
 
 ---
 
@@ -67,11 +67,11 @@ The `typeof` operator is the primary bridge from Value Space into Type Space:
 ```typescript
 // Value Space
 const appConfig = {
-  endpoint: "https://api.totaltypescript.com",
+  endpoint: 'https://api.totaltypescript.com',
   timeoutMs: 5000,
   retries: 3,
   headers: {
-    "X-Client-Version": "2.4.0",
+    'X-Client-Version': '2.4.0',
   },
 } as const;
 
@@ -89,15 +89,15 @@ When working with factory functions, Redux action creators, or library hooks, yo
 `ReturnType<T>` takes a function type `T` and yields its return value:
 
 ```typescript
-import type { Equal, Expect } from "../examples/utils/type-helpers";
+import type { Equal, Expect } from '../examples/utils/type-helpers';
 
-function createUserSession(userId: string, role: "admin" | "member") {
+function createUserSession(userId: string, role: 'admin' | 'member') {
   return {
     sessionId: `sess_${Math.random().toString(36).slice(2)}`,
     user: {
       userId,
       role,
-      permissions: role === "admin" ? ["read", "write", "delete"] : ["read"],
+      permissions: role === 'admin' ? ['read', 'write', 'delete'] : ['read'],
     },
     createdAt: new Date(),
   };
@@ -114,7 +114,7 @@ type TestUserSession = Expect<
       sessionId: string;
       user: {
         userId: string;
-        role: "admin" | "member";
+        role: 'admin' | 'member';
         permissions: string[];
       };
       createdAt: Date;
@@ -134,8 +134,8 @@ type TestUserSession = Expect<
 function processPayment(
   transactionId: string,
   amount: number,
-  currency: "USD" | "EUR" | "GBP",
-  options?: { notifyCustomer?: boolean; idempotencyKey?: string }
+  currency: 'USD' | 'EUR' | 'GBP',
+  options?: { notifyCustomer?: boolean; idempotencyKey?: string },
 ): boolean {
   return true;
 }
@@ -158,7 +158,7 @@ class DatabaseConnection {
   constructor(
     public readonly host: string,
     public readonly port: number,
-    private readonly auth: { user: string; pass: string }
+    private readonly auth: { user: string; pass: string },
   ) {}
 
   connect(): void {}
@@ -179,8 +179,8 @@ Async functions always return a `Promise<T>`. If you use `ReturnType<typeof fetc
 async function fetchUserProfile(userId: string) {
   return {
     id: userId,
-    displayName: "Alex Rivera",
-    email: "alex@example.com",
+    displayName: 'Alex Rivera',
+    email: 'alex@example.com',
     lastLogin: new Date(),
   };
 }
@@ -220,9 +220,9 @@ A union type represents a value that can be one of several possibilities:
 
 ```typescript
 type AppNotification =
-  | { type: "email"; recipientEmail: string; subject: string; body: string }
-  | { type: "sms"; phoneNumber: string; message: string }
-  | { type: "push"; deviceToken: string; badgeCount: number; payload: Record<string, string> };
+  | { type: 'email'; recipientEmail: string; subject: string; body: string }
+  | { type: 'sms'; phoneNumber: string; message: string }
+  | { type: 'push'; deviceToken: string; badgeCount: number; payload: Record<string, string> };
 ```
 
 ### Extracting the Discriminator
@@ -230,10 +230,10 @@ type AppNotification =
 To extract the set of all possible tags from a discriminated union, index into the discriminant key:
 
 ```typescript
-type NotificationType = AppNotification["type"];
+type NotificationType = AppNotification['type'];
 //   ^? type NotificationType = "email" | "sms" | "push"
 
-type TestNotificationType = Expect<Equal<NotificationType, "email" | "sms" | "push">>;
+type TestNotificationType = Expect<Equal<NotificationType, 'email' | 'sms' | 'push'>>;
 ```
 
 ### Filtering Unions with `Extract<T, U>` and `Exclude<T, U>`
@@ -245,21 +245,21 @@ Under the hood, TypeScript provides two fundamental union filtering utilities:
 
 ```typescript
 type Event =
-  | { type: "click"; x: number; y: number }
-  | { type: "keydown"; key: string; code: number }
-  | { type: "focus" }
-  | { type: "blur" };
+  | { type: 'click'; x: number; y: number }
+  | { type: 'keydown'; key: string; code: number }
+  | { type: 'focus' }
+  | { type: 'blur' };
 
 // Extract only the keydown event
-type KeyEvent = Extract<Event, { type: "keydown" }>;
+type KeyEvent = Extract<Event, { type: 'keydown' }>;
 //   ^? type KeyEvent = { type: "keydown"; key: string; code: number; }
 
 // Extract all mouse/pointer events (if multiple had { type: "click" | "hover" })
-type ClickOrFocus = Extract<Event, { type: "click" | "focus" }>;
+type ClickOrFocus = Extract<Event, { type: 'click' | 'focus' }>;
 //   ^? type ClickOrFocus = { type: "click"; x: number; y: number; } | { type: "focus"; }
 
 // Exclude focus and blur events
-type ActiveInteraction = Exclude<Event, { type: "focus" | "blur" }>;
+type ActiveInteraction = Exclude<Event, { type: 'focus' | 'blur' }>;
 //   ^? type ActiveInteraction = { type: "click"; x: number; y: number; } | { type: "keydown"; key: string; code: number; }
 ```
 
@@ -281,14 +281,14 @@ interface UserAccount {
 }
 
 // 1. Direct key lookup
-type Profile = UserAccount["profile"];
+type Profile = UserAccount['profile'];
 //   ^? type Profile = { avatarUrl: string; bio: string; }
 
 // 2. Nested lookup
-type Bio = UserAccount["profile"]["bio"]; // string
+type Bio = UserAccount['profile']['bio']; // string
 
 // 3. Union key lookup (extracting multiple property types into a union)
-type AccountAttributes = UserAccount["id" | "profile"];
+type AccountAttributes = UserAccount['id' | 'profile'];
 //   ^? type AccountAttributes = string | { avatarUrl: string; bio: string; }
 
 // 4. Extracting ALL values of an object type: Obj[keyof Obj]
@@ -301,13 +301,13 @@ type AllUserAccountValues = UserAccount[keyof UserAccount];
 To convert a tuple or array to a union of its elements, index by `number`:
 
 ```typescript
-const HTTP_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE"] as const;
+const HTTP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] as const;
 
 // typeof HTTP_METHODS is: readonly ["GET", "POST", "PUT", "PATCH", "DELETE"]
-type HttpMethod = typeof HTTP_METHODS[number];
+type HttpMethod = (typeof HTTP_METHODS)[number];
 //   ^? type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE"
 
-type TestMethod = Expect<Equal<HttpMethod, "GET" | "POST" | "PUT" | "PATCH" | "DELETE">>;
+type TestMethod = Expect<Equal<HttpMethod, 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'>>;
 ```
 
 ### Converting Object Values to a Union
@@ -329,7 +329,7 @@ type StatusCodeKey = keyof typeof HTTP_STATUS_CODES;
 //   ^? type StatusCodeKey = "OK" | "CREATED" | "BAD_REQUEST" | "UNAUTHORIZED" | "NOT_FOUND" | "INTERNAL_SERVER_ERROR"
 
 // Step 2: index the object type by its keys
-type StatusCode = typeof HTTP_STATUS_CODES[StatusCodeKey];
+type StatusCode = (typeof HTTP_STATUS_CODES)[StatusCodeKey];
 //   ^? type StatusCode = 200 | 201 | 400 | 401 | 404 | 500
 
 type TestStatusCode = Expect<Equal<StatusCode, 200 | 201 | 400 | 401 | 404 | 500>>;
@@ -349,17 +349,17 @@ Template literals allow you to enforce structural requirements on strings withou
 // Must begin with a slash
 type AbsolutePath = `/${string}`;
 
-const validPath: AbsolutePath = "/api/v1/users";
+const validPath: AbsolutePath = '/api/v1/users';
 // @ts-expect-error - Missing leading slash
-const invalidPath: AbsolutePath = "api/v1/users";
+const invalidPath: AbsolutePath = 'api/v1/users';
 
 // Specific URL protocols
 type HttpsUrl = `https://${string}`;
 type S3Uri = `s3://${string}/${string}`;
 
-const assetUri: S3Uri = "s3://production-bucket/avatars/user-99.png";
+const assetUri: S3Uri = 's3://production-bucket/avatars/user-99.png';
 // @ts-expect-error - Must follow s3://<bucket>/<key>
-const badAsset: S3Uri = "s3://just-a-bucket";
+const badAsset: S3Uri = 's3://just-a-bucket';
 ```
 
 ### Cartesian Product / Permutations of Template Literal Unions
@@ -367,8 +367,8 @@ const badAsset: S3Uri = "s3://just-a-bucket";
 When you interpolate multiple unions into a template literal, TypeScript computes the full **cartesian product** of all possible combinations:
 
 ```typescript
-type Size = "sm" | "md" | "lg";
-type Variant = "primary" | "secondary" | "danger";
+type Size = 'sm' | 'md' | 'lg';
+type Variant = 'primary' | 'secondary' | 'danger';
 
 type ButtonClass = `btn-${Variant}-${Size}`;
 //   ^? type ButtonClass = "btn-primary-sm" | "btn-primary-md" | "btn-primary-lg" | "btn-secondary-sm" | ...
@@ -376,15 +376,15 @@ type ButtonClass = `btn-${Variant}-${Size}`;
 type TestButtonClass = Expect<
   Equal<
     ButtonClass,
-    | "btn-primary-sm"
-    | "btn-primary-md"
-    | "btn-primary-lg"
-    | "btn-secondary-sm"
-    | "btn-secondary-md"
-    | "btn-secondary-lg"
-    | "btn-danger-sm"
-    | "btn-danger-md"
-    | "btn-danger-lg"
+    | 'btn-primary-sm'
+    | 'btn-primary-md'
+    | 'btn-primary-lg'
+    | 'btn-secondary-sm'
+    | 'btn-secondary-md'
+    | 'btn-secondary-lg'
+    | 'btn-danger-sm'
+    | 'btn-danger-md'
+    | 'btn-danger-lg'
   >
 >;
 ```
@@ -399,7 +399,7 @@ TypeScript includes four intrinsic type helpers specifically for transforming st
 4. `Uncapitalize<StringType>`: Converts first character to lowercase.
 
 ```typescript
-type Entity = "user" | "order" | "invoice";
+type Entity = 'user' | 'order' | 'invoice';
 
 // Action string creators
 type Action = `create_${Entity}`; // "create_user" | "create_order" | "create_invoice"
@@ -410,7 +410,7 @@ type EventHandlerName = `on${Capitalize<Entity>}Changed`;
 //   ^? type EventHandlerName = "onUserChanged" | "onOrderChanged" | "onInvoiceChanged"
 
 type TestHandlers = Expect<
-  Equal<EventHandlerName, "onUserChanged" | "onOrderChanged" | "onInvoiceChanged">
+  Equal<EventHandlerName, 'onUserChanged' | 'onOrderChanged' | 'onInvoiceChanged'>
 >;
 ```
 
@@ -420,13 +420,13 @@ You can combine `Extract` with template literals to slice a subset of routes or 
 
 ```typescript
 type AppRoutes =
-  | "/home"
-  | "/about"
-  | "/admin/dashboard"
-  | "/admin/settings"
-  | "/admin/users"
-  | "/api/v1/health"
-  | "/api/v1/posts";
+  | '/home'
+  | '/about'
+  | '/admin/dashboard'
+  | '/admin/settings'
+  | '/admin/users'
+  | '/api/v1/health'
+  | '/api/v1/posts';
 
 type AdminRoutes = Extract<AppRoutes, `/admin/${string}`>;
 //   ^? type AdminRoutes = "/admin/dashboard" | "/admin/settings" | "/admin/users"
@@ -440,7 +440,7 @@ type ApiRoutes = Extract<AppRoutes, `/api/${string}`>;
 Template literal unions integrate seamlessly with `Record<K, V>` to construct strictly typed configuration maps:
 
 ```typescript
-type Direction = "top" | "right" | "bottom" | "left";
+type Direction = 'top' | 'right' | 'bottom' | 'left';
 type SpacingToken = `margin${Capitalize<Direction>}`;
 //   ^? type SpacingToken = "marginTop" | "marginRight" | "marginBottom" | "marginLeft"
 
@@ -459,7 +459,7 @@ const cardMargin: MarginConfig = {
 
 ### The `string & {}` autocompletion trick
 
-A union of literals with `string` collapses: `"primary" | "secondary" | string` *is* `string` (subtype reduction), so editors lose the suggestions. Writing `"primary" | "secondary" | (string & {})` keeps the literals as distinct members, because `string & {}` is not reduced into `string` during union construction, while any string remains assignable. It is a widely used idiom (React's `ARIARole`, CSS-in-JS libraries); it relies on current reduction behaviour rather than a documented guarantee.
+A union of literals with `string` collapses: `"primary" | "secondary" | string` _is_ `string` (subtype reduction), so editors lose the suggestions. Writing `"primary" | "secondary" | (string & {})` keeps the literals as distinct members, because `string & {}` is not reduced into `string` during union construction, while any string remains assignable. It is a widely used idiom (React's `ARIARole`, CSS-in-JS libraries); it relies on current reduction behaviour rather than a documented guarantee.
 
 ---
 
@@ -486,13 +486,13 @@ Unconstrained generics accept `any` type, including primitives, `unknown`, or `v
 // type GetId<T> = T["id"]; // ❌ Error: Type '"id"' cannot be used to index type 'T'.
 
 // Constrained (Safe):
-type GetId<T extends { id: string | number }> = T["id"];
+type GetId<T extends { id: string | number }> = T['id'];
 
 type UserId = GetId<{ id: string; name: string }>; // string
 type OrderId = GetId<{ id: number; total: number }>; // number
 
 // @ts-expect-error - Argument has no 'id' property
-type Invalid = GetId<{ name: "Item without ID" }>;
+type Invalid = GetId<{ name: 'Item without ID' }>;
 ```
 
 ### Non-Empty Arrays
@@ -508,7 +508,7 @@ function processBatch<T>(items: NonEmptyArray<T>): T {
   return firstItem;
 }
 
-processBatch(["item1", "item2"]); // OK
+processBatch(['item1', 'item2']); // OK
 
 // @ts-expect-error - Empty array is not assignable to NonEmptyArray<string>
 processBatch<string>([]);
@@ -578,7 +578,7 @@ interface UserRecord {
   createdAt: Date;
 }
 
-type PublicUser = StrictOmit<UserRecord, "passwordHash" | "salt">;
+type PublicUser = StrictOmit<UserRecord, 'passwordHash' | 'salt'>;
 //   ^? type PublicUser = { id: string; email: string; createdAt: Date; }
 
 type TestPublicUser = Expect<
@@ -598,10 +598,10 @@ type TestPublicUser = Expect<
 ## Anti-Patterns vs. Best Practices
 
 | Anti-Pattern | Best Practice | Why it Matters |
-| :--- | :--- | :--- |
+| :-- | :-- | :-- |
 | **Manual Type Duplication**<br>`interface User { ... }`<br>`const defaultUser: User = ...` | **Deriving from Source of Truth**<br>`const defaultUser = { ... } as const;`<br>`type User = typeof defaultUser;` | Prevents synchronization drift between runtime configuration and type definitions. |
 | **Loose String Types**<br>`type Route = string;`<br>`type Event = string;` | **Template Literal Constraints**<br>``type Route = `/${string}`;``<br>``type Event = `${Entity}:${Action}`;`` | Catch malformed paths, IDs, or event strings at compile-time instead of runtime. |
-| **Unconstrained Generics**<br>`type ValueOf<T> = T[keyof T];`<br>*(fails if T is primitive)* | **Constrained Generic Parameters**<br>`type ValueOf<T extends object> = T[keyof T];` | Produces clear error messages at the call site rather than cryptic internal compiler errors. |
+| **Unconstrained Generics**<br>`type ValueOf<T> = T[keyof T];`<br>_(fails if T is primitive)_ | **Constrained Generic Parameters**<br>`type ValueOf<T extends object> = T[keyof T];` | Produces clear error messages at the call site rather than cryptic internal compiler errors. |
 | **Index Signatures for Enums**<br>`const STATUS: Record<string, string> = { ... }` | **`as const` Object with Key/Value Unions**<br>`const STATUS = { ... } as const;`<br>`type Status = typeof STATUS[keyof typeof STATUS];` | Preserves exact literal types without losing autocomplete or enabling invalid keys. |
 | **Unfiltered Big Unions**<br>Passing massive unions down component trees | **`Extract` / `Exclude` Slicing**<br>`type AdminSubNav = Extract<NavItems, { role: "admin" }>;` | Keeps sub-components cleanly bounded to only the variants they handle. |
 
@@ -614,18 +614,19 @@ Put your knowledge into practice. In each exercise, examine the requirements and
 ### Exercise 1: Extracting Async Function Signature & Config Schema
 
 #### Scenario
+
 You are integrating an external microservice SDK. The SDK provides a function `fetchServiceConfig` that returns an async configuration payload. Without modifying the SDK source code, derive the concrete unpacked configuration type and the type of its first parameter.
 
 ```typescript
-import type { Equal, Expect } from "../examples/utils/type-helpers";
+import type { Equal, Expect } from '../examples/utils/type-helpers';
 
 // The SDK function (pretend this comes from node_modules)
 declare function fetchServiceConfig(
   serviceId: `svc_${string}`,
-  options: { timeoutMs: number; debug?: boolean }
+  options: { timeoutMs: number; debug?: boolean },
 ): Promise<{
   endpoint: string;
-  cluster: "us-east-1" | "eu-central-1" | "ap-southeast-1";
+  cluster: 'us-east-1' | 'eu-central-1' | 'ap-southeast-1';
   features: {
     enableMetrics: boolean;
     rateLimitPerSec: number;
@@ -644,7 +645,7 @@ type TestServiceConfig = Expect<
     ServiceConfig,
     {
       endpoint: string;
-      cluster: "us-east-1" | "eu-central-1" | "ap-southeast-1";
+      cluster: 'us-east-1' | 'eu-central-1' | 'ap-southeast-1';
       features: {
         enableMetrics: boolean;
         rateLimitPerSec: number;
@@ -661,50 +662,52 @@ type TestServiceId = Expect<Equal<ServiceId, `svc_${string}`>>;
 ### Exercise 2: Discriminated Union Slicing & Value Extraction
 
 #### Scenario
+
 Given an analytics event stream consisting of multiple event variants, create type helpers to:
+
 1. Extract only checkout-related events (`"checkout_start"` and `"checkout_complete"`).
 2. Extract the payload type of the `"error"` event without manual re-declaration.
 3. Exclude `"session_heartbeat"` from the stream.
 
 ```typescript
-import type { Equal, Expect } from "../examples/utils/type-helpers";
+import type { Equal, Expect } from '../examples/utils/type-helpers';
 
 type AnalyticsEvent =
-  | { name: "checkout_start"; cartId: string; totalAmount: number }
-  | { name: "checkout_complete"; cartId: string; transactionId: string; timestamp: number }
-  | { name: "page_view"; path: string; referrer: string }
-  | { name: "session_heartbeat"; activeSeconds: number }
-  | { name: "error"; code: number; message: string; stack?: string };
+  | { name: 'checkout_start'; cartId: string; totalAmount: number }
+  | { name: 'checkout_complete'; cartId: string; transactionId: string; timestamp: number }
+  | { name: 'page_view'; path: string; referrer: string }
+  | { name: 'session_heartbeat'; activeSeconds: number }
+  | { name: 'error'; code: number; message: string; stack?: string };
 
 // TODO: Implement CheckoutEvents
-type CheckoutEvents = Extract<AnalyticsEvent, { name: "checkout_start" | "checkout_complete" }>;
+type CheckoutEvents = Extract<AnalyticsEvent, { name: 'checkout_start' | 'checkout_complete' }>;
 
 // TODO: Implement ErrorPayload (the object shape of the "error" event)
-type ErrorPayload = Extract<AnalyticsEvent, { name: "error" }>;
+type ErrorPayload = Extract<AnalyticsEvent, { name: 'error' }>;
 
 // TODO: Implement UserInitiatedEvents (exclude "session_heartbeat")
-type UserInitiatedEvents = Exclude<AnalyticsEvent, { name: "session_heartbeat" }>;
+type UserInitiatedEvents = Exclude<AnalyticsEvent, { name: 'session_heartbeat' }>;
 
 // Type Tests:
 type TestCheckoutEvents = Expect<
   Equal<
     CheckoutEvents,
-    | { name: "checkout_start"; cartId: string; totalAmount: number }
-    | { name: "checkout_complete"; cartId: string; transactionId: string; timestamp: number }
+    | { name: 'checkout_start'; cartId: string; totalAmount: number }
+    | { name: 'checkout_complete'; cartId: string; transactionId: string; timestamp: number }
   >
 >;
 
 type TestErrorPayload = Expect<
-  Equal<ErrorPayload, { name: "error"; code: number; message: string; stack?: string }>
+  Equal<ErrorPayload, { name: 'error'; code: number; message: string; stack?: string }>
 >;
 
 type TestUserInitiatedEvents = Expect<
   Equal<
     UserInitiatedEvents,
-    | { name: "checkout_start"; cartId: string; totalAmount: number }
-    | { name: "checkout_complete"; cartId: string; transactionId: string; timestamp: number }
-    | { name: "page_view"; path: string; referrer: string }
-    | { name: "error"; code: number; message: string; stack?: string }
+    | { name: 'checkout_start'; cartId: string; totalAmount: number }
+    | { name: 'checkout_complete'; cartId: string; transactionId: string; timestamp: number }
+    | { name: 'page_view'; path: string; referrer: string }
+    | { name: 'error'; code: number; message: string; stack?: string }
   >
 >;
 ```
@@ -714,15 +717,17 @@ type TestUserInitiatedEvents = Expect<
 ### Exercise 3: Array & Const Object to Union Conversion
 
 #### Scenario
+
 A frontend team maintains design system token constants. Derive:
+
 1. `BrandColor`: union of all values in the `BRAND_COLORS` array.
 2. `Breakpoint`: union of all keys in `BREAKPOINTS`.
 3. `BreakpointValue`: union of all pixel values in `BREAKPOINTS`.
 
 ```typescript
-import type { Equal, Expect } from "../examples/utils/type-helpers";
+import type { Equal, Expect } from '../examples/utils/type-helpers';
 
-const BRAND_COLORS = ["indigo", "emerald", "amber", "rose", "cyan"] as const;
+const BRAND_COLORS = ['indigo', 'emerald', 'amber', 'rose', 'cyan'] as const;
 
 const BREAKPOINTS = {
   mobile: 375,
@@ -732,26 +737,20 @@ const BREAKPOINTS = {
 } as const;
 
 // TODO: Define BrandColor from BRAND_COLORS
-type BrandColor = typeof BRAND_COLORS[number];
+type BrandColor = (typeof BRAND_COLORS)[number];
 
 // TODO: Define Breakpoint from BREAKPOINTS keys
 type Breakpoint = keyof typeof BREAKPOINTS;
 
 // TODO: Define BreakpointValue from BREAKPOINTS values
-type BreakpointValue = typeof BREAKPOINTS[keyof typeof BREAKPOINTS];
+type BreakpointValue = (typeof BREAKPOINTS)[keyof typeof BREAKPOINTS];
 
 // Type Tests:
-type TestBrandColor = Expect<
-  Equal<BrandColor, "indigo" | "emerald" | "amber" | "rose" | "cyan">
->;
+type TestBrandColor = Expect<Equal<BrandColor, 'indigo' | 'emerald' | 'amber' | 'rose' | 'cyan'>>;
 
-type TestBreakpoint = Expect<
-  Equal<Breakpoint, "mobile" | "tablet" | "desktop" | "widescreen">
->;
+type TestBreakpoint = Expect<Equal<Breakpoint, 'mobile' | 'tablet' | 'desktop' | 'widescreen'>>;
 
-type TestBreakpointValue = Expect<
-  Equal<BreakpointValue, 375 | 768 | 1024 | 1440>
->;
+type TestBreakpointValue = Expect<Equal<BreakpointValue, 375 | 768 | 1024 | 1440>>;
 ```
 
 ---
@@ -759,12 +758,13 @@ type TestBreakpointValue = Expect<
 ### Exercise 4: Dynamic Event Handler Generator with Template Literals
 
 #### Scenario
+
 Build a type helper `EventHandlers<Events>` that takes a union of event names (e.g. `"click" | "hover" | "submit"`) and generates an object type where keys are prefixed with `"on"` and capitalized, and each value is an event handler callback function `(event: EventName) => void`.
 
 ```typescript
-import type { Equal, Expect } from "../examples/utils/type-helpers";
+import type { Equal, Expect } from '../examples/utils/type-helpers';
 
-type DomEvents = "click" | "change" | "focus";
+type DomEvents = 'click' | 'change' | 'focus';
 
 // TODO: Implement EventHandlerMap
 type EventHandlerMap<TEvents extends string> = {
@@ -778,9 +778,9 @@ type TestResultHandlers = Expect<
   Equal<
     ResultHandlers,
     {
-      onClick: (event: "click") => void;
-      onChange: (event: "change") => void;
-      onFocus: (event: "focus") => void;
+      onClick: (event: 'click') => void;
+      onChange: (event: 'change') => void;
+      onFocus: (event: 'focus') => void;
     }
   >
 >;
@@ -791,8 +791,9 @@ type TestResultHandlers = Expect<
 ### Exercise 5: Robust Generic Entity Store Helper
 
 #### Scenario
-Create a reusable type helper `EntityState<TEntity, TStatus = "idle">` representing normalized state.
-Requirements:
+
+Create a reusable type helper `EntityState<TEntity, TStatus = "idle">` representing normalized state. Requirements:
+
 1. `TEntity` must be constrained to an object possessing an `id` of type `string | number`.
 2. `TStatus` must be constrained to string literals, defaulting to `"idle" | "loading" | "success" | "error"`.
 3. The helper returns an object containing:
@@ -802,19 +803,19 @@ Requirements:
    - `selectedId`: `TEntity["id"] | null`.
 
 ```typescript
-import type { Equal, Expect } from "../examples/utils/type-helpers";
+import type { Equal, Expect } from '../examples/utils/type-helpers';
 
-type DefaultStatus = "idle" | "loading" | "success" | "error";
+type DefaultStatus = 'idle' | 'loading' | 'success' | 'error';
 
 // TODO: Implement EntityState
 type EntityState<
   TEntity extends { id: string | number },
-  TStatus extends string = DefaultStatus
+  TStatus extends string = DefaultStatus,
 > = {
-  ids: Array<TEntity["id"]>;
-  entities: Record<TEntity["id"], TEntity>;
+  ids: Array<TEntity['id']>;
+  entities: Record<TEntity['id'], TEntity>;
   status: TStatus;
-  selectedId: TEntity["id"] | null;
+  selectedId: TEntity['id'] | null;
 };
 
 // Test entity
@@ -832,14 +833,14 @@ type TestUserState = Expect<
     {
       ids: string[];
       entities: Record<string, User>;
-      status: "idle" | "loading" | "success" | "error";
+      status: 'idle' | 'loading' | 'success' | 'error';
       selectedId: string | null;
     }
   >
 >;
 
 // Custom status override:
-type StrictState = EntityState<User, "pending" | "resolved">;
+type StrictState = EntityState<User, 'pending' | 'resolved'>;
 
 type TestStrictState = Expect<
   Equal<
@@ -847,7 +848,7 @@ type TestStrictState = Expect<
     {
       ids: string[];
       entities: Record<string, User>;
-      status: "pending" | "resolved";
+      status: 'pending' | 'resolved';
       selectedId: string | null;
     }
   >

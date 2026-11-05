@@ -7,12 +7,15 @@ String processing is central to compilers, search engines, bioinformatics, and d
 ## 1. String Fundamentals and Encodings
 
 Formally, a string $S$ of length $n$ is an ordered sequence over a finite alphabet $\Sigma$: $S = s_0 s_1 \dots s_{n-1}$, where $s_i \in \Sigma$.
-- **Prefix**: $S[0 \dots k]$ where $0 \le k < n$. A *proper prefix* requires $k < n - 1$.
-- **Suffix**: $S[k \dots n-1]$ where $0 \le k < n$. A *proper suffix* requires $k > 0$.
+
+- **Prefix**: $S[0 \dots k]$ where $0 \le k < n$. A _proper prefix_ requires $k < n - 1$.
+- **Suffix**: $S[k \dots n-1]$ where $0 \le k < n$. A _proper suffix_ requires $k > 0$.
 - **Subsegment / Substring**: $S[i \dots j]$ where $0 \le i \le j < n$.
 
 ### Runtime Gotcha: Unicode and JavaScript Strings
+
 In JavaScript/V8:
+
 - Standard `.length` and index access (`s[i]`, `s.charCodeAt(i)`) operate on **UTF-16 code units** (16-bit blocks), not Unicode code points.
 - Characters outside the Basic Multilingual Plane (BMP, code points $> \text{0xFFFF}$ such as emojis or historical scripts) consume two UTF-16 code units (surrogate pairs).
 - Iterating with `for (const char of s)` or `Array.from(s)` correctly segments Unicode code points.
@@ -34,8 +37,8 @@ flowchart TD
 ```
 
 ### The $\pi$ (LPS) Array
-The array $\pi[i]$ (or `lps[i]`) stores the length of the longest proper prefix of $P[0 \dots i]$ that is also a suffix of $P[0 \dots i]$.
-$$\pi[i] = \max \{ k : 0 \le k < i \land P[0 \dots k-1] = P[i-k+1 \dots i] \}$$
+
+The array $\pi[i]$ (or `lps[i]`) stores the length of the longest proper prefix of $P[0 \dots i]$ that is also a suffix of $P[0 \dots i]$. $$\pi[i] = \max \{ k : 0 \le k < i \land P[0 \dots k-1] = P[i-k+1 \dots i] \}$$
 
 ```typescript
 export function computeLPS(pattern: string): number[] {
@@ -64,7 +67,9 @@ export function computeLPS(pattern: string): number[] {
 ```
 
 ### Matching Mechanics & $O(n + m)$ Amortized Proof
+
 During matching, if mismatch occurs after matching $j$ characters, the text pointer $i$ **never decrements**. Instead, the pattern pointer retreats to $j = \pi[j - 1]$.
+
 - In each step of the outer loop, text pointer $i$ increments by 1.
 - The pattern pointer $j$ either increments (at most $n$ times) or decrements along $\pi$ transitions.
 - Since $j$ cannot decrement more times than it increments and $j \ge 0$, the total number of decrements is bounded by $n$.
@@ -85,11 +90,11 @@ flowchart LR
 ```
 
 ### Definition of the $Z$-box
-For string $S$ of length $N$:
-$Z[i]$ is the length of the longest common prefix (LCP) between $S$ and the suffix of $S$ starting at $i$:
-$$Z[i] = \max \{ k : S[0 \dots k-1] = S[i \dots i+k-1] \}$$
+
+For string $S$ of length $N$: $Z[i]$ is the length of the longest common prefix (LCP) between $S$ and the suffix of $S$ starting at $i$: $$Z[i] = \max \{ k : S[0 \dots k-1] = S[i \dots i+k-1] \}$$
 
 The algorithm maintains a **$Z$-box** $[L, R]$, which is the interval with maximal $R$ such that $S[L \dots R] = S[0 \dots R - L]$:
+
 1. If $i > R$, compute $Z[i]$ naively by comparing characters starting from $S[0]$ and $S[i]$, then update $[L, R] = [i, i + Z[i] - 1]$.
 2. If $i \le R$, let $k = i - L$.
    - If $Z[k] < R - i + 1$, then $Z[i] = Z[k]$ immediately!
@@ -115,6 +120,7 @@ flowchart TD
 ```
 
 ### Construction
+
 1. Build a Trie over all patterns.
 2. Using **Breadth-First Search (BFS)**, construct **failure links** $\text{fail}(u)$ for every node:
    - For root children, $\text{fail}(u) = \text{root}$.
@@ -139,11 +145,10 @@ flowchart LR
 ```
 
 ### Kasai's Algorithm for $O(n)$ LCP Array
-The Longest Common Prefix (LCP) array stores the length of the common prefix between adjacent suffixes in the sorted Suffix Array:
-$$\text{LCP}[i] = \text{lcp}(S[SA[i] \dots], \ S[SA[i+1] \dots])$$
 
-**Kasai's Invariant**: If the suffix starting at index $i$ has LCP $h > 0$ with its predecessor in the Suffix Array, then the suffix starting at $i + 1$ has LCP at least $h - 1$ with its predecessor!
-Because $h$ decrements at most $n$ times and cannot exceed $n$, Kasai's algorithm constructs the full LCP array in strictly linear $O(n)$ time.
+The Longest Common Prefix (LCP) array stores the length of the common prefix between adjacent suffixes in the sorted Suffix Array: $$\text{LCP}[i] = \text{lcp}(S[SA[i] \dots], \ S[SA[i+1] \dots])$$
+
+**Kasai's Invariant**: If the suffix starting at index $i$ has LCP $h > 0$ with its predecessor in the Suffix Array, then the suffix starting at $i + 1$ has LCP at least $h - 1$ with its predecessor! Because $h$ decrements at most $n$ times and cannot exceed $n$, Kasai's algorithm constructs the full LCP array in strictly linear $O(n)$ time.
 
 ---
 
@@ -165,15 +170,16 @@ flowchart TD
 ```
 
 ### Preprocessing Trick
+
 To eliminate the distinction between odd-length (`"aba"`) and even-length (`"abba"`) palindromes:
+
 - Pad every character boundary with `#`: `"aba"` $\to$ `"#a#b#a#"`.
 - Prepend `^` and append `$` as sentinel bounds to avoid boundary condition checks.
 - If $P[i]$ is the palindromic radius at index $i$ in the transformed string, $P[i]$ equals the **exact length** of the palindrome in the original string!
 
 ### Complexity Analysis
-The inner `while` loop only increments characters that extend beyond the current right boundary $R$.
-Whenever a character is successfully matched, $R$ increases by at least 1.
-Since $R \le 2n + 2$, the total number of character comparisons is at most $2n + 2 = O(n)$.
+
+The inner `while` loop only increments characters that extend beyond the current right boundary $R$. Whenever a character is successfully matched, $R$ increases by at least 1. Since $R \le 2n + 2$, the total number of character comparisons is at most $2n + 2 = O(n)$.
 
 ---
 

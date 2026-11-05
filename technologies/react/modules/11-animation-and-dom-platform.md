@@ -17,7 +17,7 @@ React renders into the DOM, but the DOM platform keeps growing features that wor
 Three consequences are tested in jsdom with a recording stand-in for the browser API:
 
 | Behaviour | Test |
-|---|---|
+| --- | --- |
 | Mount and **urgent** updates never animate; only Transition updates call `startViewTransition` | "only Transition updates start a view transition…" |
 | `addTransitionType("forward")` inside the transition is passed to the browser as a view-transition **type** | "addTransitionType passes the cause…" |
 | React assigns an auto-generated `view-transition-name` (observed `_t_<n>_` in 19.3.1) to the element during the update | "React assigns a view-transition-name…" |
@@ -28,7 +28,7 @@ The "only Transitions animate" rule is the design: urgent feedback (typing, togg
 ### 1.2 Animation triggers
 
 | Trigger | When it fires |
-|---|---|
+| --- | --- |
 | **enter** | The `<ViewTransition>` is inserted |
 | **exit** | It is removed |
 | **update** | Its DOM content or layout changes |
@@ -38,14 +38,17 @@ Each trigger takes a **View Transition Class** (a CSS class name) or `"none"`, o
 
 ```tsx
 <ViewTransition
-  enter={{ forward: "slide-from-right", back: "slide-from-left" }}
-  exit={{ forward: "slide-to-left", back: "slide-to-right" }}
+  enter={{ forward: 'slide-from-right', back: 'slide-from-left' }}
+  exit={{ forward: 'slide-to-left', back: 'slide-to-right' }}
   default="none"
 >
   <Page />
-</ViewTransition>
+</ViewTransition>;
 
-startTransition(() => { addTransitionType("forward"); navigate(next); });
+startTransition(() => {
+  addTransitionType('forward');
+  navigate(next);
+});
 ```
 
 The classes are plain CSS on `::view-transition-old(.slide-to-left)`/`::view-transition-new(…)` pseudo-elements (CSS track). Every transition type is also set on the browser transition, so CSS can match `:active-view-transition-type(forward)`. For imperative animations, the event props `onEnter`, `onExit`, `onUpdate`, `onShare` receive the instance and can run Web Animations.
@@ -56,7 +59,9 @@ Wrapping a Suspense boundary gives a fallback → content cross-fade. The docume
 
 ```tsx
 <ViewTransition update="auto" default="none">
-  <Suspense fallback={<Skeleton />}><Content /></Suspense>
+  <Suspense fallback={<Skeleton />}>
+    <Content />
+  </Suspense>
 </ViewTransition>
 ```
 
@@ -71,8 +76,8 @@ Principles from the 19.3 announcement: fallbacks appear immediately (no animatio
 
 > **Then vs now.**
 >
-> | | Then | Now |
-> |---|---|---|
+> |  | Then | Now |
+> | --- | --- | --- |
 > | ≤ 2024 | Animation libraries measuring DOM (FLIP: First-Last-Invert-Play) in layout effects; `react-transition-group` keeping exiting children mounted; manual `document.startViewTransition(() => flushSync(...))` wrappers | — |
 > | 2025 canary/experimental | `unstable_ViewTransition`, `unstable_addTransitionType` | — |
 > | 19.3 (2026-09) | — | Stable `<ViewTransition>`, `addTransitionType` |
@@ -88,14 +93,16 @@ Before 19.3, operating on "all the elements a component renders" required a wrap
 ```tsx
 const ref = useRef<FragmentInstance>(null);
 <Fragment ref={ref}>
-  {items.map((i) => <Card key={i.id} item={i} />)}
-</Fragment>
+  {items.map((i) => (
+    <Card key={i.id} item={i} />
+  ))}
+</Fragment>;
 ```
 
 `ref.current` is a `FragmentInstance` (test "the ref is a FragmentInstance with group-level DOM methods"), whose methods apply to the fragment's **first-level host children** — even when those children are rendered by components that do not expose refs:
 
 | Method | Semantics | Test |
-|---|---|---|
+| --- | --- | --- |
 | `addEventListener` / `removeEventListener` / `dispatchEvent` | Listener attached to each first-level child; also to children added later | "addEventListener attaches to every first-level child" |
 | `focus()` / `focusLast()` / `blur()` | Focus the first/last focusable descendant (depth-first) | "focus() and focusLast() move focus…" |
 | `observeUsing(observer)` / `unobserveUsing` | Calls `observer.observe(child)` for each child — for `IntersectionObserver`/`ResizeObserver` | "observeUsing connects an observer…" |
@@ -141,13 +148,13 @@ Test "SSR: stylesheets with precedence are deduplicated and ordered…" renders 
 ### 4.3 Resource preloading APIs (`react-dom`)
 
 | API | Emits / does | Use for |
-|---|---|---|
+| --- | --- | --- |
 | `prefetchDNS(href)` | `<link rel="dns-prefetch">` | Third-party origins you may contact |
 | `preconnect(href, {crossOrigin?})` | `<link rel="preconnect">` | Origins you will contact soon |
 | `preload(href, {as, type?, crossOrigin?, fetchPriority?, …})` | `<link rel="preload">` | Fonts, hero images, data needed soon |
 | `preloadModule(href, opts)` | `<link rel="modulepreload">` | ESM chunks |
 | `preinit(href, {as: "script" \| "style", precedence?})` | Loads **and executes/applies** the script or stylesheet | Critical scripts/styles |
-| `preinitModule(href, opts)` | Loads and executes an ESM module | |
+| `preinitModule(href, opts)` | Loads and executes an ESM module |  |
 
 They can be called **during render** (in Server or Client Components), in effects, or in event handlers; React deduplicates and places the hints. Tests: "SSR: preload / preinit / preconnect called during render emit <head> hints" and "client: preload() inserts a single hint even when called repeatedly". 19.3 added `fetchPriority` for module resources.
 
@@ -160,8 +167,8 @@ They can be called **during render** (in Server or Client Components), in effect
 Before 19.3, React stringified values (`'' + value`) before writing them to the DOM, turning a `TrustedHTML` passed to `dangerouslySetInnerHTML` back into a string — which the browser then rejected, so apps could not enforce Trusted Types with React. Since **19.3** React passes these objects through unchanged.
 
 ```tsx
-const policy = trustedTypes.createPolicy("app", { createHTML: (s) => DOMPurify.sanitize(s) });
-<div dangerouslySetInnerHTML={{ __html: policy.createHTML(userHtml) }} />
+const policy = trustedTypes.createPolicy('app', { createHTML: (s) => DOMPurify.sanitize(s) });
+<div dangerouslySetInnerHTML={{ __html: policy.createHTML(userHtml) }} />;
 ```
 
 **What jsdom cannot prove:** jsdom implements neither Trusted Types nor CSP enforcement, so this behaviour has no local test in this track; it needs a real browser (see the review file's remaining work). React's own `javascript:` URL blocking (Module 01 §3.2) remains independent of Trusted Types.
@@ -171,7 +178,7 @@ const policy = trustedTypes.createPolicy("app", { createHTML: (s) => DOMPurify.s
 ## 6. What jsdom cannot prove (and how to verify in a browser)
 
 | Behaviour | Why not in jsdom | Browser check |
-|---|---|---|
+| --- | --- | --- |
 | Real view-transition animations, pseudo-elements, timing | No View Transitions API, no rendering | Playwright: assert `document.getAnimations()` during a transition; screenshot diffs |
 | `getClientRects`, `scrollIntoView`, `IntersectionObserver` callbacks on Fragment refs | No layout | Playwright with real observers |
 | Stylesheet suspension until `load` | No network loading of `<link>` | Playwright + slow network route |
@@ -182,7 +189,7 @@ const policy = trustedTypes.createPolicy("app", { createHTML: (s) => DOMPurify.s
 ## 7. Production failure modes
 
 | Symptom | Cause | Fix |
-|---|---|---|
+| --- | --- | --- |
 | Nothing animates | Update not in a transition; browser lacks the API; another VT library aborted it | `startTransition`; feature-detect; one VT system |
 | "A ViewTransition was aborted early" | Concurrent view-transition libraries | Use only `<ViewTransition>` |
 | Shared element jumps instead of morphing | Names differ or both instances mounted at once | Same `name`, remove + insert in one transition |
@@ -197,7 +204,7 @@ const policy = trustedTypes.createPolicy("app", { createHTML: (s) => DOMPurify.s
 ## 8. Executable proofs
 
 | Claim | Test (`dom-platform.test.tsx`) |
-|---|---|
+| --- | --- |
 | Only Transitions animate; types forwarded; auto names; graceful without API | "<ViewTransition>…" (4 tests) |
 | `FragmentInstance` methods: listeners, focus, observers | "Fragment refs…" (4 tests) |
 | Portals: React-tree event bubbling, context | "portals" (2 tests) |

@@ -9,12 +9,12 @@ Terms owned by other tracks are only cross-referenced: cascade, cascade layers, 
 ## 1. Build model and compiler
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Static Extraction** | **Statická extrakce** | Collecting style objects from source code by parsing it, without executing it, and emitting CSS for those that can be determined at build time. | panda-css.com/docs/get-started/why-panda |
 | **Zero-Runtime CSS-in-JS** | **CSS-in-JS bez běhového prostředí** | CSS-in-JS authoring whose CSS is generated at build time, so the browser never serialises or injects styles. In Panda a small class-name runtime remains unless source transforms remove it. | M01 |
-| **Abstract Syntax Tree (AST)** | **Abstraktní syntaktický strom** | Tree representation of source code produced by a parser; Panda v2 obtains it from the Oxc parser, one parse per file. | Aho et al., *Compilers*; oxc.rs |
+| **Abstract Syntax Tree (AST)** | **Abstraktní syntaktický strom** | Tree representation of source code produced by a parser; Panda v2 obtains it from the Oxc parser, one parse per file. | Aho et al., _Compilers_; oxc.rs |
 | **Oxc** | **Oxc (Oxidation Compiler)** | Rust toolchain for JavaScript/TypeScript (parser, semantic analysis, resolver) on which the Panda v2 compiler is built. | oxc.rs |
-| **Constant Folding** | **Skládání konstant** | Evaluating expressions whose operands are known at compile time; Panda's literal fold turns style arguments into literal values or gives up (⊥). | Aho et al., *Compilers* |
+| **Constant Folding** | **Skládání konstant** | Evaluating expressions whose operands are known at compile time; Panda's literal fold turns style arguments into literal values or gives up (⊥). | Aho et al., _Compilers_ |
 | **Literal Fold** | **Vyhodnocení literálu (literal fold)** | Panda's fold from an expression to a `Literal` (string, number, boolean, null, object, array, conditional) under fixed rules; unknown values produce no CSS. | M10; design-notes/literal-evaluator.md |
 | **Pure Function** | **Čistá funkce** | A function whose return value depends exclusively on its input arguments, producing no observable side effects. (Root glossary.) Panda folds calls to pure helpers with static arguments. | Root GLOSSARY |
 | **Cross-File Resolution** | **Rozlišení napříč soubory** | v2 feature that follows named imports, re-exports and barrels to fold values defined in other files; default and namespace imports are not followed. | M10 |
@@ -31,7 +31,7 @@ Terms owned by other tracks are only cross-referenced: cascade, cascade layers, 
 ## 2. CSS output
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Atomic CSS** | **Atomické CSS** | Architecture in which each class sets one declaration under one condition, so equal declarations share one rule across the codebase. | M01 |
 | **Atom** | **Atom** | The triple (property, value, conditions) after shorthand expansion and token resolution; one atom ↔ one CSS rule ↔ one class. | design-notes/atomic-encoding.md |
 | **Cascade Layer** | **Kaskádová vrstva** | `@layer` grouping that orders rules before specificity. Panda emits `reset, base, tokens, recipes, utilities`. Theory owned by `languages/css`. | CSS Cascade 5 |
@@ -43,7 +43,7 @@ Terms owned by other tracks are only cross-referenced: cascade, cascade layers, 
 ## 3. Styling API
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Style Object** | **Objekt stylů** | Object of properties, conditions and selectors accepted by `css()` (`SystemStyleObject`). | panda-css.com/docs/styling/writing-styles |
 | **Utility** | **Utilita** | Config entry mapping a property or shorthand to a CSS property, token category and optional transform (`px` → `padding-inline`, `spacing`). | panda-css.com/docs/theming/utilities |
 | **Shorthand** | **Zkratka (shorthand)** | Short utility name such as `p`, `bg`, `w`; distinct from CSS shorthand properties. | M03 |
@@ -57,7 +57,7 @@ Terms owned by other tracks are only cross-referenced: cascade, cascade layers, 
 ## 4. Recipes
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Recipe** | **Recept (recipe)** | Named variant model `(base, variants, compoundVariants, defaultVariants)` for one element. | panda-css.com/docs/recipes/overview |
 | **Atomic Recipe (`cva`)** | **Atomický recept (`cva`)** | Recipe defined in code; emits all variants eagerly as atomic utilities. | M07 |
 | **Config Recipe** | **Konfigurační recept** | Recipe registered in the theme; emits named classes in `@layer recipes` only for variants seen as literals (JIT). | M07 |
@@ -72,7 +72,7 @@ Terms owned by other tracks are only cross-referenced: cascade, cascade layers, 
 ## 5. Tokens and theming
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Design Token** | **Designový token** | Named design decision compiled to a CSS custom property. Theory owned by `languages/css`. | panda-css.com/docs/theming/tokens |
 | **Semantic Token** | **Sémantický token** | Token named after a role that references other tokens and may vary by condition (mode, breakpoint, theme). | M05 |
 | **Token Reference** | **Odkaz na token** | `{category.path}` inside a value, compiled to `var(--…)`, keeping the chain resolvable in the browser. | M05 |
@@ -87,7 +87,7 @@ Terms owned by other tracks are only cross-referenced: cascade, cascade layers, 
 ## 6. Distribution
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Design-System Package** | **Balíček designového systému** | Package built with `panda lib` that ships components, config, build info and generated exports; consumed via `designSystem`. | panda-css.com/docs/design-systems/overview |
 | **Manifest (`lib.json`)** | **Manifest (`lib.json`)** | `panda lib` output listing preset, build info, import map and fallback files. | M11 |
 | **Tree Shaking** | **Odstraňování nepoužitého kódu (tree shaking)** | Dropping unused exports; `optimize.treeshakeDesignSystem` applies it to design-system styles. | M11 |

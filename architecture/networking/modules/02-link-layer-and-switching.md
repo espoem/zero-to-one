@@ -17,9 +17,9 @@ The dominant link-layer framing protocol across modern terrestrial local-area ne
 ```
 
 ### Frame Field Specifications
+
 1. **Preamble (7 Bytes)**: An alternating bit pattern (`10101010` repeated 7 times, byte value `0x55`) allowing receiver clock circuitry to achieve physical bit synchronization.
-2. **Start Frame Delimiter / SFD (1 Byte)**: The byte `10101011` (`0xD5`), signalling that the immediately following bit represents the start of the destination address.
-   *(Note: Preamble and SFD are stripped by the physical layer transceiver and are never visible in OS packet captures).*
+2. **Start Frame Delimiter / SFD (1 Byte)**: The byte `10101011` (`0xD5`), signalling that the immediately following bit represents the start of the destination address. _(Note: Preamble and SFD are stripped by the physical layer transceiver and are never visible in OS packet captures)._
 3. **Destination MAC (6 Bytes)**: The 48-bit physical address of the receiving interface or multicast group.
 4. **Source MAC (6 Bytes)**: The 48-bit physical address of the transmitting interface.
 5. **EtherType (2 Bytes)**: A 16-bit multiplexing field identifying the encapsulated Layer 3 protocol payload:
@@ -29,15 +29,14 @@ The dominant link-layer framing protocol across modern terrestrial local-area ne
    - `0x8100`: IEEE 802.1Q VLAN-tagged frame
    - `0x88A8`: IEEE 802.1ad Provider Bridging (QinQ double-tagging)
 6. **Payload Data (46 to 1,500 Bytes)**: The encapsulated higher-layer packet. Because the IEEE 802.3 specification mandates a minimum frame size of 64 bytes (excluding preamble/SFD) to ensure reliable collision detection on legacy half-duplex CSMA/CD links, any payload smaller than 46 bytes must be padded with trailing zero bytes.
-7. **Frame Check Sequence / FCS (4 Bytes)**: A 32-bit Cyclic Redundancy Check (CRC-32) computed across the Destination MAC, Source MAC, EtherType, and Payload fields using the standard generator polynomial:
-   $$G(x) = x^{32} + x^{26} + x^{23} + x^{22} + x^{16} + x^{12} + x^{11} + x^{10} + x^8 + x^7 + x^5 + x^4 + x^2 + x + 1$$
-   Frames arriving with a mismatched FCS are silently dropped by the NIC hardware before reaching kernel memory.
+7. **Frame Check Sequence / FCS (4 Bytes)**: A 32-bit Cyclic Redundancy Check (CRC-32) computed across the Destination MAC, Source MAC, EtherType, and Payload fields using the standard generator polynomial: $$G(x) = x^{32} + x^{26} + x^{23} + x^{22} + x^{16} + x^{12} + x^{11} + x^{10} + x^8 + x^7 + x^5 + x^4 + x^2 + x + 1$$ Frames arriving with a mismatched FCS are silently dropped by the NIC hardware before reaching kernel memory.
 
 ---
 
 ## 2. MAC Addressing: Unicast, Multicast & Broadcast
 
 A Media Access Control (MAC) address is a 48-bit (6-octet) identifier formatted as `XX:XX:XX:XX:XX:XX` according to the IEEE EUI-48 standard. The address space is structurally divided into two halves:
+
 - **Organizationally Unique Identifier (OUI, Bits 0–23)**: Assigned by the IEEE Registration Authority to hardware vendors (e.g., Apple, Intel, Cisco).
 - **Network Interface Controller Specific (Bits 24–47)**: Assigned by the vendor uniquely per manufactured device.
 
@@ -53,11 +52,13 @@ Octet 0          Octet 1   Octet 2   Octet 3   Octet 4   Octet 5
 ```
 
 ### The I/G (Individual / Group) Bit
+
 The least significant bit ($b_0$) of the first transmitted octet governs frame distribution:
+
 - **Unicast ($b_0 = 0$)**: Target is a single physical network interface.
 - **Multicast ($b_0 = 1$)**: Target is a designated group of subscribed interfaces.
-  - *IPv4 Multicast*: Mapped into the MAC range `01:00:5E:00:00:00` to `01:00:5E:7F:FF:FF`. (Note: The low 23 bits of the IPv4 multicast address are mapped into the MAC, leaving 5 bits of address overlap where 32 distinct IP multicast addresses map to the exact same MAC).
-  - *IPv6 Multicast*: Mapped into the MAC range `33:33:XX:XX:XX:XX` using the lowest 32 bits of the IPv6 multicast address.
+  - _IPv4 Multicast_: Mapped into the MAC range `01:00:5E:00:00:00` to `01:00:5E:7F:FF:FF`. (Note: The low 23 bits of the IPv4 multicast address are mapped into the MAC, leaving 5 bits of address overlap where 32 distinct IP multicast addresses map to the exact same MAC).
+  - _IPv6 Multicast_: Mapped into the MAC range `33:33:XX:XX:XX:XX` using the lowest 32 bits of the IPv6 multicast address.
 - **Broadcast**: All 48 bits set to 1 (`FF:FF:FF:FF:FF:FF`). Every host in the Layer 2 broadcast domain must accept and process the frame.
 
 ---
@@ -87,14 +88,16 @@ sequenceDiagram
 ```
 
 ### The 3 Core Operations of Transparent Switching
-1. **Learning**: Inspect the *Source MAC* of every incoming frame. If the MAC is absent from the CAM table, add an entry `(MAC, Ingress Port, VLAN, Timestamp)`. If present, refresh the aging timer (typically 300 seconds).
-2. **Filtering & Forwarding**: Inspect the *Destination MAC*:
-   - If Destination is known and resides on the *same port* as the ingress frame, drop (filter) it.
-   - If Destination is known and resides on a *different port*, forward it exclusively out that egress port.
+
+1. **Learning**: Inspect the _Source MAC_ of every incoming frame. If the MAC is absent from the CAM table, add an entry `(MAC, Ingress Port, VLAN, Timestamp)`. If present, refresh the aging timer (typically 300 seconds).
+2. **Filtering & Forwarding**: Inspect the _Destination MAC_:
+   - If Destination is known and resides on the _same port_ as the ingress frame, drop (filter) it.
+   - If Destination is known and resides on a _different port_, forward it exclusively out that egress port.
    - If Destination is Broadcast or Multicast, replicate and forward out all ports belonging to that VLAN except the ingress port.
 3. **Flooding (Unknown Unicast)**: If Destination is a unicast address absent from the CAM table, replicate and flood the frame out all ports in the VLAN except the ingress port.
 
 ### Security Vulnerability: CAM Table Flooding (MAC Flooding)
+
 A malicious host connected to a switch port can rapidly generate tens of thousands of fake Ethernet frames per second, each with a randomized fake Source MAC address. Once the switch's hardware CAM table reaches memory capacity (exhaustion), the switch fails open: it cannot learn new addresses and falls back to **continuous unknown unicast flooding** for all traffic, turning the switched fabric into an unencrypted hub and allowing the attacker to sniff all intra-VLAN packets. Mitigation: **Port Security**, limiting a physical port to a maximum number of learned MAC addresses.
 
 ---
@@ -119,6 +122,7 @@ Standard Ethernet Frame:
 ```
 
 ### Breakdown of the 4-byte 802.1Q Tag
+
 1. **Tag Protocol Identifier (TPID, 16 bits)**: Set to `0x8100` to indicate an 802.1Q-tagged frame.
 2. **Tag Control Information (TCI, 16 bits)**:
    - **Priority Code Point (PCP, 3 bits)**: Specifies Class of Service (CoS) priority (0 to 7) defined by IEEE 802.1p for Quality of Service (QoS).
@@ -151,16 +155,20 @@ graph TD
 ```
 
 ### 1. IPv4 Address Resolution Protocol (ARP / RFC 826)
+
 ARP operates directly over Layer 2 (`EtherType = 0x0806`), bypassing IP:
+
 - **ARP Request**: Broadcast (`FF:FF:FF:FF:FF:FF`). "Who has IP `192.168.1.50`? Tell `192.168.1.10`."
 - **ARP Reply**: Unicast to requester. "I am `192.168.1.50`, my MAC is `00:1A:2B:3C:4D:5E`."
 - **Gratuitous ARP (GARP)**: An ARP request or reply where the sender IP and target IP are identical. Used for:
-  1. *IP Conflict Detection*: Checking if another host answers for the newly configured IP.
-  2. *High Availability Failover*: When a secondary firewall or load balancer assumes a Virtual IP (VIP), it broadcasts a GARP so all switches immediately update their CAM tables to the new physical port.
+  1. _IP Conflict Detection_: Checking if another host answers for the newly configured IP.
+  2. _High Availability Failover_: When a secondary firewall or load balancer assumes a Virtual IP (VIP), it broadcasts a GARP so all switches immediately update their CAM tables to the new physical port.
 - **Vulnerability**: ARP is stateless and unauthenticated. Any host can send unsolicited ARP replies (**ARP Spoofing / Poisoning**), routing victim traffic through an attacker (Man-in-the-Middle). Mitigated via switch **Dynamic ARP Inspection (DAI)**.
 
 ### 2. IPv6 Neighbor Discovery Protocol (NDP / RFC 4861)
+
 IPv6 completely eliminates broadcast frames and ARP. Instead, NDP uses standard **ICMPv6** messages running over IPv6 (`NextHeader = 58`):
+
 - **Neighbor Solicitation (NS, Type 135)**: Sent to the target's **Solicited-Node Multicast Address** (`ff02::1:ffXX:XXXX`, formed by appending the low 24 bits of the target IPv6 address to `ff02::1:ff00:0/104`).
 - **Hardware Multicast Filtering**: The NIC hardware joins the multicast group and programs its hardware receive filter. Hosts with non-matching addresses discard the frame at the MAC layer without waking the host CPU.
 - **Neighbor Advertisement (NA, Type 136)**: Unicast reply confirming IP-to-MAC association.
@@ -181,15 +189,19 @@ Standard Ethernet MTU (1500 Bytes):
 ```
 
 ### The Relationship Between MTU and TCP MSS
+
 The TCP **Maximum Segment Size (MSS)** is the maximum payload data that a host can send in a single TCP segment. During the TCP 3-way handshake, each peer announces its MSS option:
 
 $$\text{MSS} = \text{MTU} - (\text{IP Header Size} + \text{TCP Header Size})$$
+
 - On IPv4: $\text{MSS} = 1500 - (20 + 20) = \mathbf{1,460\text{ bytes}}$.
 - On IPv6: $\text{MSS} = 1500 - (40 + 20) = \mathbf{1,440\text{ bytes}}$.
 - **Jumbo Frames**: In storage area networks (iSCSI, NFS) and high-performance datacenters, MTU is increased to **9,000 bytes** ($\text{MSS} \approx 8,960\text{ bytes}$), reducing per-packet CPU interrupt overhead by 83% for bulk transfers.
 
 ### Path MTU Discovery (PMTUD / RFC 1191 & RFC 8201)
+
 Different links along an Internet routing path may have different MTUs (e.g., PPPoE links with 1,492-byte MTU, or GRE/IPsec/WireGuard tunnels introducing 20 to 80 bytes of encapsulation overhead).
+
 1. The sender sets the **DF (Don't Fragment)** bit in the IPv4 header (in IPv6, routers never fragment; all packets are implicitly DF).
 2. If a packet arrives at an intermediate router where packet size exceeds the outbound link's MTU, the router cannot fragment it.
 3. The router drops the packet and transmits an ICMP message back to the source: **ICMP Destination Unreachable, Fragmentation Needed (Type 3, Code 4)**, including the next-hop link's MTU in the ICMP header.
@@ -210,7 +222,9 @@ sequenceDiagram
 ```
 
 ### The Production Failure Mode: PMTUD Black Hole
+
 Many misconfigured corporate firewalls and cloud security groups blanket-block all incoming ICMP traffic, including ICMP Type 3 Code 4.
+
 - **Failure Cascade**:
   1. Small TCP packets (SYN, SYN-ACK, HTTP GET requests) are under 500 bytes and traverse the path cleanly.
   2. The server responds with a large HTTP/TLS response, sending full 1,500-byte packets with `DF=1`.
@@ -227,7 +241,7 @@ Many misconfigured corporate firewalls and cloud security groups blanket-block a
 ## 7. Then vs. Now: Link-Layer Evolution
 
 | Dimension | Legacy Practice (Then) | Modern Architecture (Now) | Rationale for Transition |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | **Media Access Control** | Shared half-duplex coax/hubs using CSMA/CD with collision domains and exponential backoff. | Point-to-point full-duplex switched Ethernet with dedicated transmit and receive channels. | Full-duplex switching eliminates physical packet collisions entirely; CSMA/CD is obsolete. |
 | **Address Resolution** | IPv4 ARP relying on unauthenticated broadcast flooding across the entire VLAN. | IPv6 NDP using ICMPv6 and hardware-filtered Solicited-Node Multicast addresses. | Eliminates broadcast CPU interrupts on uninterested nodes and scales to massive virtualized subnets. |
 | **MTU Standards** | Universal 1500-byte Ethernet MTU designed for 10 Mbps physical links in 1980. | 9000-byte Jumbo frames in datacenters; dynamic MTU probing via PLPMTUD (RFC 8899). | Processing 1500-byte packets at 100 Gbps requires 8.2 million packets/sec, overwhelming CPU caches. |
@@ -238,36 +252,51 @@ Many misconfigured corporate firewalls and cloud security groups blanket-block a
 ## 8. Interview Drill: Questions & Model Answers
 
 ### Q1: Explain why modern switched full-duplex Ethernet does not use the CSMA/CD collision detection algorithm.
+
 <details><summary>Answer</summary>
 
 **Dedicated Physical Channels.** CSMA/CD (Carrier Sense Multiple Access with Collision Detection) was engineered for half-duplex shared coaxial cable (10BASE2/10BASE5) or repeater hubs where all connected devices shared the same physical medium and could physically jam one another's electrical signals. Modern Ethernet switches establish point-to-point connections over twisted pair or fiber optic cabling, providing completely separate, isolated transmit ($TX$) and receive ($RX$) pairs. Because a host can transmit and receive simultaneously without signal interference, physical collisions are physically impossible.
+
 - Ref: IEEE 802.3-2022; Kurose & Ross 9th ed., Section 6.4.
+
 </details>
 
 ### Q2: What is the purpose of Gratuitous ARP (GARP), and how is it leveraged during a Virtual IP (VIP) failover in high-availability clusters?
+
 <details><summary>Answer</summary>
 
 **CAM Table State Synchronization.** A Gratuitous ARP is an ARP broadcast where the sender IP and target IP are identical, meaning a host is announcing its own IP-to-MAC mapping without being queried. During a VIP failover (such as Keepalived, VRRP, or AWS secondary ENI reassignment), when node $B$ takes over the VIP previously held by node $A$, node $B$ immediately broadcasts a Gratuitous ARP. When upstream switches receive this broadcast, they inspect the Source MAC and update their internal CAM tables, associating the VIP with node $B$'s physical switch port. Furthermore, all hosts on the local subnet update their ARP caches, preventing in-flight packets from being forwarded to the dead node $A$.
+
 - Ref: RFC 826; Stevens TCP/IP Illustrated Vol. 1.
+
 </details>
 
 ### Q3: An engineer reports that a client can connect via SSH and perform small HTTP GET requests across a VPN, but HTTPS connections to the same host hang during the TLS handshake. What is the root cause and diagnostic explanation?
+
 <details><summary>Answer</summary>
 
 **PMTUD Black Hole.** VPN tunnels (IPsec, WireGuard, GRE) add outer IP and encryption headers, reducing the tunnel's effective MTU from 1,500 bytes to approximately 1,420 bytes. Small packets (SSH keystrokes, TCP handshakes, small HTTP GETs) are well under 1,420 bytes and traverse the tunnel unhindered. However, when the server transmits its TLS certificate chain (often 3 to 6 KB), it sends full 1,500-byte segments with the `DF=1` (Don't Fragment) bit set. The VPN gateway cannot fit 1,500 bytes into its 1,420-byte tunnel without fragmenting, so it drops the packets and returns an ICMP Type 3 Code 4 ("Fragmentation Needed") packet. If a firewall along the path drops this ICMP packet, the sender never learns to reduce its packet size and retransmits 1,500-byte packets endlessly until the connection times out. The fix is enabling **TCP MSS Clamping** on the VPN gateway.
+
 - Ref: RFC 1191; RFC 8899; Luckie et al., "Measuring Path MTU Discovery Behaviour".
+
 </details>
 
 ### Q4: How does IPv6 Neighbor Discovery Protocol (NDP) avoid the CPU interrupt overhead that IPv4 ARP broadcasts impose on all hosts in a subnet?
+
 <details><summary>Answer</summary>
 
 **Solicited-Node Multicast Filtering.** In IPv4 ARP, requests are sent to the Ethernet broadcast address `FF:FF:FF:FF:FF:FF`. Every NIC in the broadcast domain must capture the frame, copy it to kernel memory, and interrupt the operating system CPU to inspect whether the target IP matches. In IPv6, Neighbor Solicitation messages are sent to the target's **Solicited-Node Multicast Address** (`ff02::1:ffXX:XXXX`). The target's NIC joins this specific multicast MAC address (`33:33:FF:XX:XX:XX`) at the hardware level. All other hosts whose addresses do not share the same lower 24 bits filter out the frame directly in the NIC hardware chip without triggering a CPU interrupt.
+
 - Ref: RFC 4861; RFC 4291 Section 2.7.1.
+
 </details>
 
 ### Q5: What is the minimum payload size of an Ethernet II frame, and why does this limitation exist?
+
 <details><summary>Answer</summary>
 
 **Minimum Slot Time and Collision Detection.** The minimum payload size is **46 bytes**, which produces a minimum frame size of **64 bytes** (14-byte Ethernet header + 46-byte payload + 4-byte FCS, excluding 8-byte preamble/SFD). In the original half-duplex CSMA/CD Ethernet specification, a transmitting station had to continue transmitting long enough for the signal to travel to the furthest end of the maximum cable span ($2.5\text{ km}$) and return if a collision occurred (the **slot time**, $51.2\,\mu\text{s}$ at 10 Mbps, corresponding to 512 bits or 64 bytes). If frames were smaller than 64 bytes, a host could finish transmitting before a collision signal returned, falsely assuming successful delivery. Although full-duplex links no longer have collisions, the 64-byte minimum frame size is retained in all modern Ethernet standards for backward compatibility.
+
 - Ref: IEEE 802.3 Section 4.2.3.1.5; Kurose & Ross 9th ed.
+
 </details>

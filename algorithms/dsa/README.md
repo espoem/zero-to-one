@@ -40,6 +40,7 @@ flowchart TD
 ```
 
 ### Module Directory
+
 1. [Module 01: Models of Computation & Asymptotic Analysis](modules/01-models-of-computation-and-asymptotics.md): Word-RAM model, Master Theorem, Akra-Bazzi, Amortized Potential Method ($\Phi(D) = 2S - C$), binary search invariants.
 2. [Module 02: Linear Data Structures & Memory Layout](modules/02-linear-structures-and-memory-layout.md): Contiguous memory vs pointers, V8 elements kinds, circular ring-buffer Deque, sentinel doubly linked list, bitwise Word-RAM primitives.
 3. [Module 03: Hashing, Hash Tables & Rolling Hash](modules/03-hashing-and-hash-tables.md): Separate chaining vs open addressing, Robin Hood hashing with DIB, HashDoS, Carter-Wegman universal hashing, Rabin-Karp.
@@ -75,7 +76,7 @@ flowchart TD
 This track provides preparation for premier academic examinations and senior technical interview loops:
 
 | Examination / Program | Vendor / Institution | Target Level / Format | Syllabus Reference |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | **MIT 6.1210 (formerly 6.006)** | MIT EECS / CSAIL | Academic Midterm & Final (Written proofs & algorithm design) | [MIT 6.1210 Introduction to Algorithms](https://toc.csail.mit.edu/node/1802) |
 | **MIT 6.1220J (formerly 6.046)** | MIT EECS / Mathematics | Advanced Undergraduate / Graduate (Advanced amortized analysis, parallel algorithms, NP-completeness) | [MIT 6.1220J Design and Analysis of Algorithms](https://toc.csail.mit.edu/node/1803) |
 | **FAANG Senior/Staff DSA Loop** | Google, Meta, Apple, Amazon | 45–60 min Live Technical Rounds (UMPIRE problem-solving, edge cases, invariants, Big-$O$ proofs) | [DSA Interview Question Bank & Mock Exam](exams/interview.md) |

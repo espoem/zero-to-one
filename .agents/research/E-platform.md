@@ -5,7 +5,7 @@ Research date: 2026-10-28. Versions verified by `git ls-remote --tags` + shallow
 ## Structural decisions (summary)
 
 | Question | Recommendation | Rationale |
-|---|---|---|
+| --- | --- | --- |
 | Docker vs Podman | **One track `technologies/containers`** | Both are front-ends over the same OCI image/runtime/distribution specs, same kernel primitives (namespaces, cgroups v2, overlayfs, seccomp), same runtimes (runc/crun). Splitting would duplicate ~70% of content. Tool differences (daemon vs daemonless, rootless defaults, Quadlet vs compose, Buildah/Skopeo) fit in 2 modules. |
 | Kubernetes | **`technologies/kubernetes`**, prerequisite = containers | Single narrative covering CKA+CKAD; CKS content as late modules (security). |
 | Argo CD | **Standalone `technologies/argocd`, scoped as "GitOps with Argo CD (+ Argo Rollouts)"** | Too deep (controller internals, sharding, ApplicationSets, hydrator, RBAC, multi-tenancy) to be one K8s module; but should not become an "all of Argo" track — CAPA is 36% Workflows + 12% Events, which are a different problem (batch/DAG). Cover CGOA (100%) + CAPA's Argo CD 34% + Rollouts 18%; Workflows/Events = one optional appendix module. Flux only as comparison. A separate `gitops` track is not justified (principles = 1 module). |
@@ -415,12 +415,14 @@ Suggested order: containers → kubernetes → (terraform in parallel) → argoc
 ---
 
 ## Cross-track shared foundations (proposed, owned elsewhere or new)
+
 - `foundations/linux` — processes, signals, filesystems, permissions, systemd, networking (iptables/nftables, DNS) — prerequisite for containers & kubernetes.
 - `foundations/distributed-systems` — consensus/Raft (etcd), replication, hash rings (Mimir/Loki), backpressure.
 - Supply-chain security (SBOM, signing, SLSA) — owned by gitlab-ci; containers + kubernetes (CKS) cross-link.
 - Policy-as-code (OPA/Rego, CEL, Kyverno) — small shared module, referenced by kubernetes security, terraform testing, argocd projects.
 
 ## Notable surprises / data-integrity caveats
+
 - Kubernetes is already at **1.37** (1.34 went EOL 2026-10-27); CKA/CKAD curricula are on v1.37, **CKS curriculum still v1.34**.
 - **Terraform 1.17.0** tagged only 7 days ago (2026-10-21); Terraform Associate 004 still targets **1.12** — exam content lags the tool by 5 minors.
 - **Ingress-NGINX retired (March 2026)** and **Promtail EOL (March 2026)** — old tutorials are now wrong.

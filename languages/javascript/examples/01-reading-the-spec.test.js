@@ -9,9 +9,13 @@ import { constants } from 'node:buffer';
 describe('Completion Records (§6.2.4, §14.15.3)', () => {
   test('an abrupt return in finally overrides the pending return', () => {
     function f() {
-      try { return 'try'; }
+      try {
+        return 'try';
+      }
       // eslint-disable-next-line no-unsafe-finally
-      finally { return 'finally'; }
+      finally {
+        return 'finally';
+      }
     }
     assert.equal(f(), 'finally');
   });
@@ -19,9 +23,13 @@ describe('Completion Records (§6.2.4, §14.15.3)', () => {
   test('NEGATIVE: break in finally silently swallows a thrown error', () => {
     function g() {
       for (;;) {
-        try { throw new Error('lost'); }
+        try {
+          throw new Error('lost');
+        }
         // eslint-disable-next-line no-unsafe-finally
-        finally { break; }
+        finally {
+          break;
+        }
       }
       return 'swallowed';
     }
@@ -33,7 +41,7 @@ describe('Completion Records (§6.2.4, §14.15.3)', () => {
     const ev = eval;
     assert.equal(ev('1; if (true) {}'), undefined); // ES2015+: `if` completes with undefined, not empty
     assert.equal(ev('do { 2 } while (false)'), 2);
-    assert.equal(ev('3; var unused;'), 3);          // var declarations complete with empty
+    assert.equal(ev('3; var unused;'), 3); // var declarations complete with empty
   });
 });
 
@@ -85,9 +93,18 @@ describe('Order of evaluation is specified left to right', () => {
   test('a()[b()] = c() evaluates a, b, c in order', () => {
     const log = [];
     const obj = {};
-    const a = () => { log.push('a'); return obj; };
-    const b = () => { log.push('b'); return 'k'; };
-    const c = () => { log.push('c'); return 1; };
+    const a = () => {
+      log.push('a');
+      return obj;
+    };
+    const b = () => {
+      log.push('b');
+      return 'k';
+    };
+    const c = () => {
+      log.push('c');
+      return 1;
+    };
     a()[b()] = c();
     assert.deepEqual(log, ['a', 'b', 'c']);
     assert.equal(obj.k, 1);
@@ -153,7 +170,12 @@ describe('Engine support matrix for the pinned runtime (Node 26.12.1 / V8 14.6)'
   });
 
   test('NEGATIVE: decorator syntax (Stage 2.7) is a SyntaxError even with --js-decorators', () => {
-    const r = runNode(['--js-decorators', '--input-type=module', '-e', 'function d(v){return v} class A { @d m() {} }']);
+    const r = runNode([
+      '--js-decorators',
+      '--input-type=module',
+      '-e',
+      'function d(v){return v} class A { @d m() {} }',
+    ]);
     assert.notEqual(r.status, 0);
     assert.match(r.stderr, /SyntaxError/);
   });

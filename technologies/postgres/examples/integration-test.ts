@@ -32,7 +32,9 @@ async function run(): Promise<void> {
 
   const reachable = await checkPostgresReachable(host, port);
   if (!reachable) {
-    console.log(`[SKIP] Integration test: Docker PostgreSQL instance not reachable on ${host}:${port}. Start with 'docker compose up -d'.`);
+    console.log(
+      `[SKIP] Integration test: Docker PostgreSQL instance not reachable on ${host}:${port}. Start with 'docker compose up -d'.`,
+    );
     process.exit(0);
   }
 
