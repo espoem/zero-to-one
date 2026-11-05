@@ -81,11 +81,19 @@ All tooling is pinned per track with [mise](https://mise.jdx.dev/) (`.mise.toml`
 
 To bridge technical English documentation with accurate, established Czech academic and professional terminology:
 - **[Central Systems & CS Glossary](./GLOSSARY.md)** covers universal concepts (e.g., *Referential Transparency*, *Idempotency*, *Time Complexity*, *CAP Theorem*).
+- **[JavaScript (ECMAScript) Glossary](./languages/javascript/GLOSSARY.md)** covers specification terms, coercion, execution contexts and closures, prototypes, iteration and the event loop, modules, metaprogramming, the memory model, and engine behaviour.
 - **[TypeScript & Type-System Glossary](./languages/typescript/GLOSSARY.md)** covers type theory, compiler analysis, and language features.
+- **[CSS Platform Glossary](./languages/css/GLOSSARY.md)** covers the cascade and cascade layers, value processing, layout engines, stacking contexts, container queries, color spaces, view transitions, the rendering pipeline, and design tokens.
+- **[Python Glossary](./languages/python/GLOSSARY.md)** covers CPython execution and bytecode, the object model and dunder protocols, descriptors and metaclasses, generators and concurrency, typing, and packaging.
 - **[React Glossary](./technologies/react/GLOSSARY.md)** covers Fiber reconciliation, concurrent priority lanes, selective hydration, the Flight protocol, Server Actions, and React Compiler lowering.
 - **[SolidJS 2.x Glossary](./technologies/solidjs/GLOSSARY.md)** covers fine-grained push-pull reactivity, glitch freedom, draft stores and projections, colorless async, optimistic transactions, and server functions.
 - **[Panda CSS Glossary](./technologies/panda-css/GLOSSARY.md)** covers static extraction, design tokens, recipes, slot recipes, and conditions.
 - **[PostgreSQL Glossary](./technologies/postgres/GLOSSARY.md)** covers the process model, shared buffers, asynchronous I/O, MVCC internals, indexing, PITR, and pgvector.
+- **[Data Structures & Algorithms Glossary](./algorithms/dsa/GLOSSARY.md)** covers complexity analysis, data structures, sorting and searching, graph algorithms, dynamic programming, greedy methods, string algorithms, and probabilistic structures.
+- **[Data Systems Glossary](./architecture/data-systems/GLOSSARY.md)** covers storage engines, indexing and vector search, isolation levels, write-ahead logging and recovery, replication, sharding, caching, serialization, and stream processing.
+- **[Distributed Systems Glossary](./architecture/distributed-systems/GLOSSARY.md)** covers system models, clocks and ordering, consistency models, replication and quorums, consensus, distributed transactions, CRDTs, and Byzantine fault tolerance.
+- **[Networking Glossary](./architecture/networking/GLOSSARY.md)** covers link layer and IP routing, BGP, TCP and congestion control, DNS, TLS on the wire, HTTP/1.1 through HTTP/3 and QUIC, load balancing, and Linux kernel networking.
+- **[Security & Identity Glossary](./architecture/security-identity/GLOSSARY.md)** covers threat modeling, cryptographic primitives, PKI and mTLS, OAuth 2.1 and OIDC, JOSE tokens, WebAuthn, authorization models, web vulnerability classes, and post-quantum security.
 
 New tracks add their glossary here when they land. All glossaries follow the discipline recorded in [AGENTS.md](./AGENTS.md): shared terms reuse the root definition and Czech translation verbatim; no fabricated neologisms.
 
