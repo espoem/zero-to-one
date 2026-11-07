@@ -1,0 +1,10 @@
+# Toolchain for technologies/kubernetes. Run everything through mise:
+#   mise install && mise exec -- npm install && mise exec -- npm test
+[tools]
+node = "26"
+"npm:typescript" = "7.0.2"
+kubectl = "1.35.0"
+kind = "0.27.0"
+helm = "3.17.0"
+kustomize = "5.6.0"
+kubeconform = "v0.6.7"
