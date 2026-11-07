@@ -66,3 +66,18 @@
 - **C3 & C4 resolved**: Locking scenarios and timeouts demonstrated in Module 08 and verified in tests.
 - **Tooling resolved**: `mise.lock` pinned with multi-platform checksums.
 - **State transition**: Track `postgres` has passed authoring, challenger review, verifier review, and final gate checks. Ready for merge.
+
+## Integration run (2026-11-06, Claude Code & Antigravity)
+
+- **Service & Environment Versions:**
+  - PostgreSQL container image: `postgres:18-alpine`
+  - Engine version verified: `PostgreSQL 18.6 on aarch64-unknown-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit`
+  - Docker Engine: 29.5.2 (Colima VM aarch64 Linux)
+  - Node.js: 26.12.1, `pg`: 8.23.1
+- **Findings and Fixes:**
+  - Fixed `docker-compose.yml`: in PostgreSQL 18+, official Docker images structure data under `/var/lib/postgresql` (per major-version directory layout compatible with `pg_ctlcluster`), refusing legacy mount `/var/lib/postgresql/data`. Updated volume mount to `pgdata:/var/lib/postgresql`.
+  - Expanded `examples/integration-test.ts`: added direct connection verification, live engine version assertion, and multi-session MVCC snapshot isolation proof (`REPEATABLE READ` preventing dirty/non-repeatable reads during concurrent updates).
+- **Results:**
+  - 13 hermetic PGlite suites: 13/13 passed.
+  - Integration suite: passed against live PostgreSQL 18.6 container.
+  - Typecheck: clean (`tsc --noEmit`).
