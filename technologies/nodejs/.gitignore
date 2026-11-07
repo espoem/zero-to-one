@@ -1,0 +1,6 @@
+node_modules/
+!examples/fixtures/**/node_modules/
+*.cpuprofile
+*.heapprofile
+*.heapsnapshot
+report.*.json

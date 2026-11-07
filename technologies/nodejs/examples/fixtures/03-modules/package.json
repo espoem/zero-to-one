@@ -1,0 +1,11 @@
+{
+  "name": "fixture-03",
+  "private": true,
+  "imports": {
+    "#internal/*": "./internal/*.cjs",
+    "#env": {
+      "node": "./env-node.cjs",
+      "default": "./env-other.cjs"
+    }
+  }
+}

@@ -1,0 +1,5 @@
+# Toolchain for technologies/nodejs. Run everything through mise:
+#   mise install && mise exec -- npm ci && mise exec -- npm test
+# Node 26.13.0 is the first 26.x "Lithium" LTS release (2026-10-28).
+[tools]
+node = "26.13.0"

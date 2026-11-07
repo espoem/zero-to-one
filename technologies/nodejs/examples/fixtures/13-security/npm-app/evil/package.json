@@ -1,0 +1,6 @@
+{
+  "name": "evil",
+  "version": "1.0.0",
+  "description": "Simulates a compromised dependency: its install script writes a marker next to the app.",
+  "scripts": { "postinstall": "node -e \"require('fs').writeFileSync(require('path').join(process.env.INIT_CWD, 'PWNED'), 'install script ran')\"" }
+}

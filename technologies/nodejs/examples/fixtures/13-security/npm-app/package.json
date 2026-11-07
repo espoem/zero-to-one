@@ -1,0 +1,1 @@
+{ "name": "fixture-13-app", "version": "1.0.0", "private": true, "dependencies": { "evil": "file:./evil" } }
