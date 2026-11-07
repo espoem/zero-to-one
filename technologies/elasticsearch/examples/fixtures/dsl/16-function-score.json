@@ -1,0 +1,17 @@
+{
+  "name": "function_score: blend relevance with popularity and recency (structure only)",
+  "semantics": "score = query_score * (sum of functions), with a gauss decay on released and a log1p field_value_factor on rating.",
+  "execute": false,
+  "request": {
+    "query": { "function_score": {
+      "query": { "match": { "description": "keyboard" } },
+      "functions": [
+        { "field_value_factor": { "field": "rating", "modifier": "log1p", "missing": 1 } },
+        { "gauss": { "released": { "origin": "now", "scale": "180d", "decay": 0.5 } } }
+      ],
+      "score_mode": "sum",
+      "boost_mode": "multiply"
+    } }
+  },
+  "expect": {}
+}

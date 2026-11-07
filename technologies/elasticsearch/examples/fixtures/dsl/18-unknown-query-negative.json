@@ -1,0 +1,6 @@
+{
+  "name": "negative: a typo in a query type is a parsing_exception",
+  "semantics": "Elasticsearch rejects unknown query names instead of ignoring them.",
+  "request": { "query": { "mtach": { "name": "mouse" } } },
+  "expect": { "validationError": "unknown query \\[mtach\\]" }
+}

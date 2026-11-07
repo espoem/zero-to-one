@@ -1,0 +1,9 @@
+{
+  "name": "date range and exists in filter context",
+  "semantics": "Dates are compared as epoch milliseconds; gte/lt bounds are inclusive/exclusive. exists matches documents with an indexed value (p6 has no tags).",
+  "request": { "query": { "bool": { "filter": [
+    { "range": { "released": { "gte": "2026-01-01", "lt": "2027-01-01" } } },
+    { "exists": { "field": "tags" } }
+  ] } } },
+  "expect": { "ids": ["p2", "p3", "p5"], "ordered": false }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "sort by price with a tiebreaker, then search_after",
+  "semantics": "search_after resumes after the last hit's sort values. A unique tiebreaker (here the keyword name) is required so no document is skipped or repeated.",
+  "request": { "size": 2, "sort": [{ "price": "asc" }, { "name.keyword": "asc" }], "search_after": [25, "Keyboard wrist rest"] },
+  "expect": { "ids": ["p6", "p2"], "ordered": true }
+}

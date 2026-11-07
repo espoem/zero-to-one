@@ -1,0 +1,3 @@
+{ "name": "LOOKUP JOIN is a left join that emits one row per match", "semantics": "languages_lookup must be an index.mode: lookup index. Language 2 has two lookup rows, so Jana and Lucie appear twice; Tomas (NULL key) keeps one row with NULL lookup columns.",
+  "query": "FROM employees | KEEP emp_no, languages | LOOKUP JOIN languages_lookup ON languages | SORT emp_no, language_name",
+  "expect": { "columns": ["emp_no", "languages", "language_name"], "rows": [[1, 2, "Czech"], [1, 2, "Slovak"], [2, 3, "German"], [3, 1, "English"], [4, null, null], [5, 2, "Czech"], [5, 2, "Slovak"]] } }

@@ -1,0 +1,6 @@
+{
+  "name": "fuzzy matching through match.fuzziness AUTO",
+  "semantics": "AUTO allows 0 edits for 1-2 chars, 1 edit for 3-5, 2 edits above 5. 'keybord' (7 chars) is one deletion away from 'keyboard'.",
+  "request": { "query": { "match": { "name": { "query": "keybord", "fuzziness": "AUTO" } } } },
+  "expect": { "ids": ["p1", "p2", "p5", "p7"], "ordered": false }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "negative: sorting on a text field",
+  "semantics": "text fields have no doc values and fielddata is disabled by default. Sort on the keyword sub-field.",
+  "request": { "sort": [{ "name": "asc" }] },
+  "expect": { "error": "Text fields are not optimised" }
+}

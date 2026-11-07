@@ -1,0 +1,3 @@
+{ "name": "NULL in predicates: three-valued logic", "semantics": "languages is NULL for Tomas, so languages < 3 is NULL and the row is dropped; IS NULL finds it.",
+  "query": "FROM employees | WHERE languages < 3 OR languages IS NULL | KEEP first_name | SORT first_name",
+  "expect": { "columns": ["first_name"], "rows": [["Eva"], ["Jana"], ["Lucie"], ["Tomas"]] } }

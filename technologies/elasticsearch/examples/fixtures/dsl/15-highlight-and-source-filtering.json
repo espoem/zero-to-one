@@ -1,0 +1,11 @@
+{
+  "name": "highlighting and _source filtering (structure only)",
+  "semantics": "The unified highlighter re-analyses or uses postings/term vectors to find fragments; _source includes/excludes trims the fetch phase. Not executed by the model; validated structurally.",
+  "execute": false,
+  "request": {
+    "query": { "match": { "description": "wireless" } },
+    "_source": { "includes": ["name", "price"] },
+    "highlight": { "pre_tags": ["<em>"], "post_tags": ["</em>"], "fields": { "description": { "fragment_size": 80, "number_of_fragments": 1 } } }
+  },
+  "expect": {}
+}

@@ -1,0 +1,6 @@
+{
+  "name": "negative: a term query with two fields is a parse error",
+  "semantics": "Single-field query types accept exactly one field. Combine fields with bool.",
+  "request": { "query": { "term": { "category": "mice", "tags": "usb" } } },
+  "expect": { "validationError": "doesn't support multiple fields" }
+}

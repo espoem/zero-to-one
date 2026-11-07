@@ -1,0 +1,6 @@
+{
+  "name": "negative: term on an analysed text field",
+  "semantics": "term does not analyse its input. 'Keyboard' with a capital K is not a term in the english-analysed index (which holds 'keyboard').",
+  "request": { "query": { "term": { "name": "Keyboard" } } },
+  "expect": { "ids": [], "ordered": false }
+}

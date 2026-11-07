@@ -1,0 +1,24 @@
+# Three-node cluster with zone attributes for allocation, awareness and failover labs.
+#   docker compose -f compose.3node.yml up -d --wait
+#   ES_URL=http://localhost:9201 ES_NODES=3 npm run test:integration
+# Allocate about 4 GB of RAM to Docker. Security disabled for the local lab only.
+x-es: &es
+  image: docker.elastic.co/elasticsearch/elasticsearch:9.5.6
+  environment: &env
+    cluster.name: zto-lab
+    discovery.seed_hosts: es1,es2,es3
+    cluster.initial_master_nodes: es1,es2,es3
+    xpack.security.enabled: 'false'
+    xpack.license.self_generated.type: trial
+    ES_JAVA_OPTS: -Xms512m -Xmx512m
+services:
+  es1:
+    <<: *es
+    environment: { <<: *env, node.name: es1, node.attr.zone: zone-a }
+    ports: ['127.0.0.1:9201:9200']
+  es2:
+    <<: *es
+    environment: { <<: *env, node.name: es2, node.attr.zone: zone-b }
+  es3:
+    <<: *es
+    environment: { <<: *env, node.name: es3, node.attr.zone: zone-a }

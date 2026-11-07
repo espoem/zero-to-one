@@ -1,0 +1,3 @@
+{ "name": "SORT puts NULLs last ascending and first descending", "semantics": "NULL is treated as larger than every value unless NULLS FIRST/LAST is given.",
+  "query": "FROM employees | KEEP first_name, languages | SORT languages DESC, first_name | LIMIT 2",
+  "expect": { "columns": ["first_name", "languages"], "rows": [["Tomas", null], ["Petr", 3]] } }

@@ -1,0 +1,27 @@
+{
+  "indices": {
+    "employees": [
+      { "emp_no": 1, "first_name": "Jana", "dept": "search", "languages": 2, "salary": 7000, "height": 1.68, "skills": ["java", "lucene"] },
+      { "emp_no": 2, "first_name": "Petr", "dept": "search", "languages": 3, "salary": 6500, "height": 1.81, "skills": ["java"] },
+      { "emp_no": 3, "first_name": "Eva", "dept": "ops", "languages": 1, "salary": 5000, "height": 1.62, "skills": ["k8s", "terraform", "java"] },
+      { "emp_no": 4, "first_name": "Tomas", "dept": "ops", "languages": null, "salary": 5500, "height": 1.90, "skills": null },
+      { "emp_no": 5, "first_name": "Lucie", "dept": "ml", "languages": 2, "salary": 8000, "height": 1.70, "skills": ["python"] }
+    ],
+    "logs-web-2026.11.03": [
+      { "@timestamp": "2026-11-03T10:00:00Z", "status": 200, "bytes": 1200, "host": "web-1" },
+      { "@timestamp": "2026-11-03T10:01:00Z", "status": 500, "bytes": 0, "host": "web-2" }
+    ],
+    "logs-web-2026.11.04": [
+      { "@timestamp": "2026-11-04T09:00:00Z", "status": 200, "bytes": 800, "host": "web-1" },
+      { "@timestamp": "2026-11-04T09:05:00Z", "status": 503, "bytes": 0, "host": "web-1" }
+    ]
+  },
+  "lookup": {
+    "languages_lookup": [
+      { "languages": 1, "language_name": "English" },
+      { "languages": 2, "language_name": "Czech" },
+      { "languages": 2, "language_name": "Slovak" },
+      { "languages": 3, "language_name": "German" }
+    ]
+  }
+}

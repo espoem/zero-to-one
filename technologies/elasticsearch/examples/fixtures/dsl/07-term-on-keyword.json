@@ -1,0 +1,6 @@
+{
+  "name": "term on the keyword sub-field: exact whole value",
+  "semantics": "keyword values are indexed verbatim, so the whole original string matches and a substring does not.",
+  "request": { "query": { "term": { "name.keyword": "Gaming mouse" } } },
+  "expect": { "ids": ["p3"], "ordered": true }
+}

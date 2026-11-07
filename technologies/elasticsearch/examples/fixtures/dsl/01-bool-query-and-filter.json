@@ -1,0 +1,17 @@
+{
+  "name": "bool: scored full-text in must, yes/no constraints in filter",
+  "semantics": "must and should are scored; filter and must_not are not scored and are cacheable. Only in-stock keyboards priced under 100 qualify; the text clause ranks them.",
+  "request": {
+    "query": {
+      "bool": {
+        "must": [{ "match": { "description": "wireless keyboard" } }],
+        "filter": [
+          { "term": { "in_stock": true } },
+          { "range": { "price": { "lt": 100 } } }
+        ],
+        "must_not": [{ "term": { "category": "bundles" } }]
+      }
+    }
+  },
+  "expect": { "ids": ["p2"], "ordered": true }
+}

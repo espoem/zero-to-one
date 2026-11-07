@@ -1,0 +1,6 @@
+{
+  "name": "match_phrase with slop",
+  "semantics": "Terms must appear in order at adjacent positions; slop allows that many position moves. 'keyboard mouse' needs slop to skip the stop-word gap left by 'and'.",
+  "request": { "query": { "match_phrase": { "name": { "query": "keyboard mouse", "slop": 1 } } } },
+  "expect": { "ids": ["p5"], "ordered": true }
+}

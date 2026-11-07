@@ -1,0 +1,23 @@
+{
+  "mapping": {
+    "properties": {
+      "name": { "type": "text", "analyzer": "english", "fields": { "keyword": { "type": "keyword" } } },
+      "description": { "type": "text", "analyzer": "english" },
+      "category": { "type": "keyword" },
+      "tags": { "type": "keyword" },
+      "price": { "type": "double" },
+      "rating": { "type": "double" },
+      "in_stock": { "type": "boolean" },
+      "released": { "type": "date" }
+    }
+  },
+  "docs": {
+    "p1": { "name": "Mechanical keyboard", "description": "A loud mechanical keyboard with brown switches", "category": "keyboards", "tags": ["usb", "rgb"], "price": 120, "rating": 4.5, "in_stock": true, "released": "2025-03-01" },
+    "p2": { "name": "Wireless keyboard", "description": "A quiet wireless keyboard for the office", "category": "keyboards", "tags": ["bluetooth"], "price": 60, "rating": 4.1, "in_stock": true, "released": "2026-01-15" },
+    "p3": { "name": "Gaming mouse", "description": "A light wireless mouse for gaming", "category": "mice", "tags": ["usb", "rgb"], "price": 80, "rating": 4.7, "in_stock": false, "released": "2026-06-10" },
+    "p4": { "name": "Office mouse", "description": "A cheap wired mouse", "category": "mice", "tags": ["usb"], "price": 15, "rating": 3.9, "in_stock": true, "released": "2024-11-20" },
+    "p5": { "name": "Keyboard and mouse combo", "description": "Wireless keyboard and mouse bundle for home and office", "category": "bundles", "tags": ["bluetooth", "usb"], "price": 90, "rating": 4.2, "in_stock": true, "released": "2026-09-01" },
+    "p6": { "name": "USB-C hub", "description": "Seven ports including HDMI", "category": "accessories", "price": 45, "rating": 4.0, "in_stock": true, "released": "2026-02-02" },
+    "p7": { "name": "Keyboard wrist rest", "description": "Memory foam rest for any keyboard", "category": "accessories", "tags": ["ergonomic"], "price": 25, "rating": 4.4, "in_stock": false, "released": "2025-07-07" }
+  }
+}

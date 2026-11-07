@@ -1,0 +1,3 @@
+{ "name": "negative: = is assignment, == is equality", "semantics": "WHERE dept = \"ops\" is a parse error; use ==.",
+  "query": "FROM employees | WHERE dept = \"ops\"",
+  "expect": { "error": "use == for equality" } }

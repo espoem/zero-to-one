@@ -1,0 +1,25 @@
+# Single-node Elasticsearch for `npm run test:integration`.
+#   docker compose up -d --wait
+#   npm run test:integration
+# Security is disabled ONLY for this local test cluster. Never do this in production (module 11).
+services:
+  es:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.5.6
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.license.self_generated.type=trial
+      - indices.lifecycle.poll_interval=1s
+      - path.repo=/tmp/es-snapshots
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+    ports:
+      - '127.0.0.1:9200:9200'
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'curl -fs http://localhost:9200/_cluster/health?wait_for_status=yellow || exit 1',
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 60

@@ -1,0 +1,6 @@
+{
+  "name": "match with operator and",
+  "semantics": "The query text is analysed with the field's analyzer (english: stop words removed, stemmed), and every resulting term must be present.",
+  "request": { "query": { "match": { "description": { "query": "the wireless keyboards", "operator": "and" } } } },
+  "expect": { "ids": ["p2", "p5"], "ordered": false }
+}

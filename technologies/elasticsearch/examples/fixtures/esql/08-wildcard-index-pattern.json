@@ -1,0 +1,3 @@
+{ "name": "FROM with an index pattern across daily indices", "semantics": "FROM accepts wildcards, comma lists and data streams. Columns are the union of all mappings.",
+  "query": "FROM logs-web-* | WHERE status >= 500 | STATS errors = COUNT(*) BY host | SORT host",
+  "expect": { "columns": ["errors", "host"], "rows": [[1, "web-1"], [1, "web-2"]] } }

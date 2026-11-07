@@ -1,0 +1,3 @@
+{ "name": "MV_EXPAND turns a multi-valued column into one row per value", "semantics": "Counting skills per value requires expansion; NULL stays a single row.",
+  "query": "FROM employees | MV_EXPAND skills | STATS n = COUNT(*) BY skills | SORT n DESC, skills | LIMIT 2",
+  "expect": { "columns": ["n", "skills"], "rows": [[3, "java"], [1, "k8s"]] } }

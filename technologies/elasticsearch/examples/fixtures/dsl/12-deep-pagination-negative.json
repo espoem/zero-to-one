@@ -1,0 +1,6 @@
+{
+  "name": "negative: from + size beyond index.max_result_window",
+  "semantics": "Each shard would have to return from+size hits to the coordinating node. The default window is 10000; use search_after with a PIT instead.",
+  "request": { "from": 9995, "size": 10, "query": { "match_all": {} } },
+  "expect": { "error": "Result window is too large" }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "bool.should next to a filter only boosts (default minimum_should_match 0)",
+  "semantics": "All mice match the filter; the rgb should clause does not restrict, it only raises the gaming mouse to the top.",
+  "request": {
+    "query": { "bool": {
+      "filter": [{ "term": { "category": "mice" } }],
+      "should": [{ "term": { "tags": "rgb" } }]
+    } }
+  },
+  "expect": { "ids": ["p3", "p4"], "ordered": true }
+}

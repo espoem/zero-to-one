@@ -1,0 +1,6 @@
+{
+  "name": "multi_match best_fields with a field boost",
+  "semantics": "best_fields scores each document by its best single field (dis_max), plus tie_breaker times the others. name^3 makes title matches dominate.",
+  "request": { "query": { "multi_match": { "query": "office", "fields": ["name^3", "description"], "type": "best_fields", "tie_breaker": 0.3 } } },
+  "expect": { "ids": ["p4", "p2", "p5"], "ordered": true }
+}

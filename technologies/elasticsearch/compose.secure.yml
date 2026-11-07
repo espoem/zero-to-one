@@ -1,0 +1,25 @@
+# Single node with security ON for the role, user and API key exam tasks (Q-ECE-063, Q-ECE-111).
+#   ES_PASSWORD=<choose a lab password> docker compose -f compose.secure.yml up -d --wait
+#   ES_PASSWORD=<same> npm run test:integration
+# HTTP TLS is off for this local lab only; the `elastic` password comes from the environment.
+services:
+  es:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.5.6
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=false
+      - xpack.license.self_generated.type=trial
+      - ELASTIC_PASSWORD=${ES_PASSWORD:?set ES_PASSWORD}
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+    ports:
+      - '127.0.0.1:9202:9200'
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'curl -fs -u elastic:$$ELASTIC_PASSWORD http://localhost:9200/_cluster/health?wait_for_status=yellow || exit 1',
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 60

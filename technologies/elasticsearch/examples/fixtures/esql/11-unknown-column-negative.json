@@ -1,0 +1,3 @@
+{ "name": "negative: columns removed by KEEP or STATS are gone", "semantics": "After STATS only the aggregate and BY columns exist; referencing salary fails verification.",
+  "query": "FROM employees | STATS c = COUNT(*) BY dept | WHERE salary > 1",
+  "expect": { "error": "Unknown column \\[salary\\]" } }

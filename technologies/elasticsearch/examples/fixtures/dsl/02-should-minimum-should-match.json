@@ -1,0 +1,11 @@
+{
+  "name": "bool.should alone: at least one clause must match",
+  "semantics": "With no must or filter, minimum_should_match defaults to 1. Adding a filter changes the default to 0, so should clauses only boost.",
+  "request": {
+    "query": { "bool": { "should": [
+      { "term": { "tags": "rgb" } },
+      { "term": { "tags": "ergonomic" } }
+    ] } }
+  },
+  "expect": { "ids": ["p1", "p3", "p7"], "ordered": false }
+}

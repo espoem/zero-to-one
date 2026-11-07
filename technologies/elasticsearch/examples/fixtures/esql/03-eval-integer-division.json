@@ -1,0 +1,3 @@
+{ "name": "EVAL with integer division", "semantics": "Dividing two integers truncates toward zero in ES|QL; make one side a double to keep the fraction.",
+  "query": "ROW a = 7, b = 2 | EVAL int_div = a / b, dbl_div = a / 2.5",
+  "expect": { "columns": ["a", "b", "int_div", "dbl_div"], "rows": [[7, 2, 3, 2.8]] } }

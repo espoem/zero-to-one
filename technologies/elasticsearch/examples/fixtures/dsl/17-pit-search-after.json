@@ -1,0 +1,12 @@
+{
+  "name": "point in time + search_after for deep, consistent pagination (structure only)",
+  "semantics": "POST /products/_pit?keep_alive=1m returns an id; every page sends the pit (no index in the URL) and the previous page's last sort values. _shard_doc is the implicit tiebreaker.",
+  "execute": false,
+  "request": {
+    "size": 100,
+    "pit": { "id": "46ToAwMDaWR5BXV1aWQy", "keep_alive": "1m" },
+    "sort": [{ "released": "desc" }, { "_shard_doc": "asc" }],
+    "search_after": [1767225600000, 4294967298]
+  },
+  "expect": {}
+}

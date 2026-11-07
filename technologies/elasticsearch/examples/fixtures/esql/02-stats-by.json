@@ -1,0 +1,3 @@
+{ "name": "STATS ... BY: aggregates first, then grouping columns", "semantics": "Unnamed aggregates are named after their expression text. Group order is not guaranteed, so SORT after STATS.",
+  "query": "FROM employees | STATS avg_salary = AVG(salary), COUNT(*) BY dept | SORT dept",
+  "expect": { "columns": ["avg_salary", "COUNT(*)", "dept"], "rows": [[8000, 1, "ml"], [5250, 2, "ops"], [6750, 2, "search"]] } }

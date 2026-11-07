@@ -1,0 +1,3 @@
+{ "name": "negative: LOOKUP JOIN needs a lookup-mode index", "semantics": "Joining against a normal (multi-shard capable) index is rejected; create the right side with index.mode: lookup.",
+  "query": "FROM employees | LOOKUP JOIN employees ON emp_no",
+  "expect": { "error": "lookup mode" } }

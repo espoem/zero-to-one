@@ -1,0 +1,3 @@
+{ "name": "RENAME and DROP", "semantics": "RENAME keeps the column position; column operations only reshape the result table, never the stored documents.",
+  "query": "FROM employees | WHERE emp_no == 1 | RENAME first_name AS name | DROP skills, height, languages, dept",
+  "expect": { "columns": ["emp_no", "name", "salary"], "rows": [[1, "Jana", 7000]] } }
