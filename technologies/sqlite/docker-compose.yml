@@ -1,0 +1,23 @@
+# Local libSQL primary for `npm run test:integration`. No account or token needed.
+# Image pinned by tag and digest: sqld 0.24.33 (40a151bd, 2025-12-19).
+services:
+  sqld:
+    image: ghcr.io/tursodatabase/libsql-server:v0.24.33@sha256:f8ca0134cdded747793888e48591aece07647d9d598d3ac229aabfa93159ca88
+    ports:
+      - '127.0.0.1:${SQLD_PORT:-18080}:8080'
+    environment:
+      SQLD_NODE: primary
+    volumes:
+      - sqld-data:/var/lib/sqld
+    healthcheck:
+      # The image has no curl or wget, so speak HTTP over bash's /dev/tcp.
+      test:
+        - CMD
+        - bash
+        - -c
+        - exec 3<>/dev/tcp/127.0.0.1/8080; printf 'GET /health HTTP/1.0\r\n\r\n' >&3; grep -q '200 OK' <&3
+      interval: 2s
+      timeout: 2s
+      retries: 15
+volumes:
+  sqld-data:

@@ -1,0 +1,15 @@
+[project]
+name = "sqlite-track-python"
+version = "0.1.0"
+description = "Python sqlite3 proofs for the SQLite track"
+requires-python = "==3.15.*"
+dependencies = []
+
+[dependency-groups]
+dev = ["pytest==9.0.3"]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+addopts = "-p no:cacheprovider"

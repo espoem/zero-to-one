@@ -1,0 +1,33 @@
+{
+  "name": "sqlite-curriculum",
+  "version": "3.54.1",
+  "private": true,
+  "description": "SQLite 3.54 curriculum: modules, executable proofs (node:test + pytest) and interview prep",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "npm run test:ts && npm run test:py",
+    "test:ts": "node --test --test-concurrency=1 \"examples/ts/*.test.ts\"",
+    "test:py": "cd examples/python && uv run --frozen --python 3.15.2 pytest -q",
+    "test:integration": "node --test \"examples/ts/integration/*.test.ts\"",
+    "lint": "oxlint -c ../../.oxlintrc.json .",
+    "fmt": "oxfmt -c ../../.oxfmtrc.json .",
+    "fmt:check": "oxfmt -c ../../.oxfmtrc.json --check ."
+  },
+  "dependencies": {
+    "@libsql/client": "0.18.0",
+    "@sqlite.org/sqlite-wasm": "3.54.1-build1",
+    "@tursodatabase/database": "0.8.3",
+    "better-sqlite3": "13.0.3"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "9.6.0",
+    "@types/node": "26.6.6",
+    "oxfmt": "0.76.0",
+    "oxlint": "1.91.0",
+    "typescript": "7.0.2"
+  },
+  "engines": {
+    "node": ">=26.12.1"
+  }
+}
