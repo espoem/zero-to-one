@@ -7,6 +7,7 @@ import assert from 'node:assert/strict';
 describe('undefined and null', () => {
   // Spec: §6.1 language types (Undefined and Null each have a single value)
   it('predict: an unassigned let wire points at undefined', () => {
+    // oxlint-disable-next-line no-unassigned-vars -- deliberate test of unassigned let binding
     let bandersnatch;
     assert.equal(bandersnatch, undefined);
     assert.equal(typeof bandersnatch, 'undefined');

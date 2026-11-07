@@ -308,7 +308,7 @@ The difference is the stack: the browser invokes each listener for a real click 
 
 ### Node.js as a host, briefly
 
-Node also drains the microtask queue after each callback from libuv, and has `process.nextTick`, a separate queue processed **before** promise microtasks. Its loop phases (timers, pending callbacks, poll, check, close) are owned by the Node.js track. For the code in this track, the relevant guarantee is the same as HTML's: synchronous code → all microtasks → next macrotask.
+Node also drains the microtask queue after each callback from libuv, and has `process.nextTick`, a separate queue processed **before** promise microtasks. Its loop phases (timers, pending callbacks, poll, check, close) are owned by the Node.js track ([`../../../technologies/nodejs/modules/02-event-loop.md`](../../../technologies/nodejs/modules/02-event-loop.md)). For the code in this track, the relevant guarantee is the same as HTML's: synchronous code → all microtasks → next macrotask.
 
 ---
 

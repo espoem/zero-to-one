@@ -1,18 +1,21 @@
-import { describe, it } from "node:test";
-import assert from "node:assert/strict";
-import fc from "fast-check";
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
+import fc from 'fast-check';
 
 // ---------------------------------------------------------------------------
 // 1. Growth factor g: total element copies < n * g / (g - 1)
 // ---------------------------------------------------------------------------
-function simulateGrowth(n: number, grow: (cap: number) => number): { copies: number; finalCap: number } {
+function simulateGrowth(
+  n: number,
+  grow: (cap: number) => number,
+): { copies: number; finalCap: number } {
   let cap = 1;
   let copies = 0;
   for (let size = 0; size < n; size++) {
     if (size === cap) {
       copies += size;
       const next = grow(cap);
-      assert.ok(next > cap, "growth policy must strictly increase capacity");
+      assert.ok(next > cap, 'growth policy must strictly increase capacity');
       cap = next;
     }
   }
@@ -22,8 +25,8 @@ function simulateGrowth(n: number, grow: (cap: number) => number): { copies: num
 // V8: JSObject::NewElementsCapacity(old) = old + (old >> 1) + kMinAddedElementsCapacity (16 at time of writing)
 const v8Grow = (cap: number) => cap + (cap >> 1) + 16;
 
-describe("Module 02 (deep): dynamic array growth factors", () => {
-  it("copies stay below n g / (g - 1) for g in {1.5, 2, 4}", () => {
+describe('Module 02 (deep): dynamic array growth factors', () => {
+  it('copies stay below n g / (g - 1) for g in {1.5, 2, 4}', () => {
     for (const g of [1.5, 2, 4]) {
       for (const n of [10, 1000, 100_000]) {
         const { copies } = simulateGrowth(n, (c) => Math.max(c + 1, Math.ceil(c * g)));
@@ -32,7 +35,7 @@ describe("Module 02 (deep): dynamic array growth factors", () => {
     }
   });
 
-  it("the V8 formula (factor 1.5 plus a constant) obeys the same bound with g = 1.5", () => {
+  it('the V8 formula (factor 1.5 plus a constant) obeys the same bound with g = 1.5', () => {
     for (const n of [10, 1000, 100_000, 1_000_000]) {
       const { copies, finalCap } = simulateGrowth(n, v8Grow);
       assert.ok(copies < n * 3, `copies=${copies}`);
@@ -40,7 +43,7 @@ describe("Module 02 (deep): dynamic array growth factors", () => {
     }
   });
 
-  it("negative test: additive growth (cap + 16) is quadratic", () => {
+  it('negative test: additive growth (cap + 16) is quadratic', () => {
     const small = simulateGrowth(10_000, (c) => c + 16).copies;
     const large = simulateGrowth(20_000, (c) => c + 16).copies;
     assert.ok(large / small > 3.5, `doubling n multiplied copies by ${large / small}`);
@@ -50,8 +53,8 @@ describe("Module 02 (deep): dynamic array growth factors", () => {
 // ---------------------------------------------------------------------------
 // 2. Array.prototype.shift as the specification defines it is a loop of Get/Set
 // ---------------------------------------------------------------------------
-describe("Module 02 (deep): specification-level cost of shift()", () => {
-  it("shift() on an array-like Proxy performs about n [[Get]] and n [[Set]] operations", () => {
+describe('Module 02 (deep): specification-level cost of shift()', () => {
+  it('shift() on an array-like Proxy performs about n [[Get]] and n [[Set]] operations', () => {
     for (const n of [10, 100, 1000]) {
       let gets = 0;
       let sets = 0;
@@ -59,11 +62,11 @@ describe("Module 02 (deep): specification-level cost of shift()", () => {
       for (let i = 0; i < n; i++) target[String(i)] = i;
       const proxy = new Proxy(target, {
         get(t, k, r) {
-          if (typeof k === "string" && /^\d+$/.test(k)) gets++;
+          if (typeof k === 'string' && /^\d+$/.test(k)) gets++;
           return Reflect.get(t, k, r);
         },
         set(t, k, v, r) {
-          if (typeof k === "string" && /^\d+$/.test(k)) sets++;
+          if (typeof k === 'string' && /^\d+$/.test(k)) sets++;
           return Reflect.set(t, k, v, r);
         },
       });
@@ -71,7 +74,7 @@ describe("Module 02 (deep): specification-level cost of shift()", () => {
       assert.equal(first, 0);
       assert.equal(gets, n); // index 0 once plus indices 1..n-1
       assert.equal(sets, n - 1);
-      assert.equal(target["length"], n - 1);
+      assert.equal(target['length'], n - 1);
     }
   });
 });
@@ -103,25 +106,28 @@ class HeadIndexQueue<T> {
   }
 }
 
-describe("Module 02 (deep): head-index queue", () => {
-  it("property: behaves like a naive queue and moves at most one element per dequeue", () => {
+describe('Module 02 (deep): head-index queue', () => {
+  it('property: behaves like a naive queue and moves at most one element per dequeue', () => {
     fc.assert(
-      fc.property(fc.array(fc.option(fc.integer(), { nil: undefined }), { maxLength: 600 }), (ops) => {
-        const q = new HeadIndexQueue<number>();
-        const model: number[] = [];
-        let dequeues = 0;
-        for (const op of ops) {
-          if (op === undefined) {
-            dequeues++;
-            assert.equal(q.dequeue(), model.shift());
-          } else {
-            q.enqueue(op);
-            model.push(op);
+      fc.property(
+        fc.array(fc.option(fc.integer(), { nil: undefined }), { maxLength: 600 }),
+        (ops) => {
+          const q = new HeadIndexQueue<number>();
+          const model: number[] = [];
+          let dequeues = 0;
+          for (const op of ops) {
+            if (op === undefined) {
+              dequeues++;
+              assert.equal(q.dequeue(), model.shift());
+            } else {
+              q.enqueue(op);
+              model.push(op);
+            }
+            assert.equal(q.length, model.length);
           }
-          assert.equal(q.length, model.length);
-        }
-        assert.ok(q.moved <= dequeues, `moved ${q.moved} > dequeues ${dequeues}`);
-      }),
+          assert.ok(q.moved <= dequeues, `moved ${q.moved} > dequeues ${dequeues}`);
+        },
+      ),
       { seed: 21, numRuns: 200 },
     );
   });
@@ -167,50 +173,58 @@ class MinStack {
   }
 }
 
-describe("Module 02 (deep): queue from two stacks, min-stack", () => {
-  it("each element is transferred at most once, but a single dequeue can cost n", () => {
+describe('Module 02 (deep): queue from two stacks, min-stack', () => {
+  it('each element is transferred at most once, but a single dequeue can cost n', () => {
     const q = new TwoStackQueue<number>();
     for (let i = 0; i < 1000; i++) q.enqueue(i);
     assert.equal(q.dequeue(), 0);
-    assert.equal(q.lastTransfer, 1000, "one dequeue moved the whole inbox");
+    assert.equal(q.lastTransfer, 1000, 'one dequeue moved the whole inbox');
     for (let i = 1; i < 1000; i++) assert.equal(q.dequeue(), i);
     assert.equal(q.transfers, 1000);
   });
 
-  it("property: FIFO order matches a model and transfers <= enqueues", () => {
+  it('property: FIFO order matches a model and transfers <= enqueues', () => {
     fc.assert(
-      fc.property(fc.array(fc.option(fc.integer(), { nil: undefined }), { maxLength: 300 }), (ops) => {
-        const q = new TwoStackQueue<number>();
-        const model: number[] = [];
-        let enq = 0;
-        for (const op of ops) {
-          if (op === undefined) assert.equal(q.dequeue(), model.shift());
-          else {
-            q.enqueue(op);
-            model.push(op);
-            enq++;
+      fc.property(
+        fc.array(fc.option(fc.integer(), { nil: undefined }), { maxLength: 300 }),
+        (ops) => {
+          const q = new TwoStackQueue<number>();
+          const model: number[] = [];
+          let enq = 0;
+          for (const op of ops) {
+            if (op === undefined) assert.equal(q.dequeue(), model.shift());
+            else {
+              q.enqueue(op);
+              model.push(op);
+              enq++;
+            }
           }
-        }
-        assert.ok(q.transfers <= enq);
-      }),
+          assert.ok(q.transfers <= enq);
+        },
+      ),
       { seed: 5, numRuns: 200 },
     );
   });
 
-  it("property: MinStack.min() equals the minimum of the live contents after every operation", () => {
+  it('property: MinStack.min() equals the minimum of the live contents after every operation', () => {
     fc.assert(
-      fc.property(fc.array(fc.option(fc.integer({ min: -20, max: 20 }), { nil: undefined }), { maxLength: 200 }), (ops) => {
-        const s = new MinStack();
-        const model: number[] = [];
-        for (const op of ops) {
-          if (op === undefined) assert.equal(s.pop(), model.pop());
-          else {
-            s.push(op);
-            model.push(op);
+      fc.property(
+        fc.array(fc.option(fc.integer({ min: -20, max: 20 }), { nil: undefined }), {
+          maxLength: 200,
+        }),
+        (ops) => {
+          const s = new MinStack();
+          const model: number[] = [];
+          for (const op of ops) {
+            if (op === undefined) assert.equal(s.pop(), model.pop());
+            else {
+              s.push(op);
+              model.push(op);
+            }
+            assert.equal(s.min(), model.length === 0 ? undefined : Math.min(...model));
           }
-          assert.equal(s.min(), model.length === 0 ? undefined : Math.min(...model));
-        }
-      }),
+        },
+      ),
       { seed: 6, numRuns: 200 },
     );
   });
@@ -233,7 +247,9 @@ function buildRho(mu: number, lambda: number): { head: LNode | null; nodes: LNod
   return { head: nodes[0] ?? null, nodes };
 }
 
-function floyd(head: LNode | null): { meetStep: number; mu: number; lambda: number; meetNode: LNode } | null {
+function floyd(
+  head: LNode | null,
+): { meetStep: number; mu: number; lambda: number; meetNode: LNode } | null {
   let slow = head;
   let fast = head;
   let steps = 0;
@@ -262,7 +278,10 @@ function floyd(head: LNode | null): { meetStep: number; mu: number; lambda: numb
   return null;
 }
 
-function reverseList(head: LNode | null, check: (prev: LNode | null, curr: LNode | null) => void): LNode | null {
+function reverseList(
+  head: LNode | null,
+  check: (prev: LNode | null, curr: LNode | null) => void,
+): LNode | null {
   let prev: LNode | null = null;
   let curr = head;
   while (curr !== null) {
@@ -275,7 +294,7 @@ function reverseList(head: LNode | null, check: (prev: LNode | null, curr: LNode
   return prev;
 }
 
-describe("Module 02 (deep): linked list algorithms", () => {
+describe('Module 02 (deep): linked list algorithms', () => {
   it("reversal keeps the invariant 'reversed prefix + untouched suffix' at every iteration", () => {
     fc.assert(
       fc.property(fc.integer({ min: 0, max: 60 }), (n) => {
@@ -295,13 +314,16 @@ describe("Module 02 (deep): linked list algorithms", () => {
         });
         const seen: number[] = [];
         for (let x = out; x; x = x.next) seen.push(x.val);
-        assert.deepEqual(seen, Array.from({ length: n }, (_, i) => n - 1 - i));
+        assert.deepEqual(
+          seen,
+          Array.from({ length: n }, (_, i) => n - 1 - i),
+        );
       }),
       { seed: 3, numRuns: 60 },
     );
   });
 
-  it("Floyd: first meeting step is the least positive multiple of lambda that is >= mu; phase 2 returns exact mu and lambda", () => {
+  it('Floyd: first meeting step is the least positive multiple of lambda that is >= mu; phase 2 returns exact mu and lambda', () => {
     for (let mu = 0; mu <= 25; mu++) {
       for (let lambda = 1; lambda <= 25; lambda++) {
         const { head } = buildRho(mu, lambda);
@@ -316,11 +338,15 @@ describe("Module 02 (deep): linked list algorithms", () => {
     }
   });
 
-  it("Floyd returns null on acyclic lists, and the meeting node is not the cycle entry in general (negative test)", () => {
+  it('Floyd returns null on acyclic lists, and the meeting node is not the cycle entry in general (negative test)', () => {
     for (let n = 0; n < 10; n++) assert.equal(floyd(buildRho(n, 0).head), null);
     const { head, nodes } = buildRho(3, 5);
     const r = floyd(head)!;
-    assert.notEqual(r.meetNode, nodes[3], "returning the meeting node would be a wrong 'cycle start'");
+    assert.notEqual(
+      r.meetNode,
+      nodes[3],
+      "returning the meeting node would be a wrong 'cycle start'",
+    );
     assert.equal(r.mu, 3);
   });
 });
@@ -361,10 +387,13 @@ function* gosper(n: number, k: number): Generator<number> {
   }
 }
 
-describe("Module 02 (deep): bit manipulation", () => {
-  it("property: SWAR popcount equals the naive loop for every uint32", () => {
+describe('Module 02 (deep): bit manipulation', () => {
+  it('property: SWAR popcount equals the naive loop for every uint32', () => {
     fc.assert(
-      fc.property(fc.integer({ min: 0, max: 0xffffffff }), (x) => popcountSwar(x) === popcountNaive(x)),
+      fc.property(
+        fc.integer({ min: 0, max: 0xffffffff }),
+        (x) => popcountSwar(x) === popcountNaive(x),
+      ),
       { seed: 9, numRuns: 500 },
     );
   });
@@ -383,7 +412,7 @@ describe("Module 02 (deep): bit manipulation", () => {
     );
   });
 
-  it("submask enumeration visits each of the 2^popcount - 1 non-empty submasks once, in decreasing order", () => {
+  it('submask enumeration visits each of the 2^popcount - 1 non-empty submasks once, in decreasing order', () => {
     for (const mask of [0b1, 0b101, 0b110110, 0b1111111, 0b10010010010]) {
       const seen = [...submasks(mask)];
       assert.equal(seen.length, 2 ** popcountSwar(mask) - 1);
@@ -409,18 +438,18 @@ describe("Module 02 (deep): bit manipulation", () => {
     }
   });
 
-  it("failure modes: shift counts wrap mod 32, 1 << 31 is negative, Math.clz32 counts leading zeros of the uint32", () => {
+  it('failure modes: shift counts wrap mod 32, 1 << 31 is negative, Math.clz32 counts leading zeros of the uint32', () => {
     assert.equal(1 << 32, 1);
     assert.equal(1 << 31, -(2 ** 31));
     assert.equal(5 >> 32, 5);
     assert.equal(Math.clz32(0), 32);
     assert.equal(Math.clz32(1), 31);
     assert.equal(Math.clz32(-1), 0);
-    assert.equal(2 ** 32 | 0, 0, "ToInt32 discards bits above 31");
+    assert.equal((2 ** 32) | 0, 0, 'ToInt32 discards bits above 31');
     assert.equal(BigInt.asUintN(64, -1n), 2n ** 64n - 1n);
   });
 
-  it("typed arrays fix the element width and wrap or clamp deterministically", () => {
+  it('typed arrays fix the element width and wrap or clamp deterministically', () => {
     assert.equal(Int32Array.BYTES_PER_ELEMENT, 4);
     assert.equal(Float64Array.BYTES_PER_ELEMENT, 8);
     assert.equal(new Int32Array([2 ** 31])[0], -(2 ** 31));

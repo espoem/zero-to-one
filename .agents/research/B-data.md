@@ -8,7 +8,7 @@ Research date: 2026-10-28. Claims marked "(verified locally)" were checked in th
 2. **PostgreSQL 19 RC1 came out on 2026-10-15.** GA is likely within weeks, so the PG track needs a "PG19 delta" plan now: `REPACK`, `WAIT`, `pg_plan_advice`, JIT off by default, lz4 TOAST by default.
 3. **libSQL is now labelled "Legacy" by Turso.** Its embedded engine reports **SQLite 3.45.1** (verified locally), while upstream SQLite is at **3.54.x**. The Rust "Turso Database" is at **v0.8.3**, still 0.x.
 4. **Redis is at 8.10.x**, under the RSALv2/SSPLv1/AGPLv3 tri-license since 8.0. Valkey is at 9.1.x, with 9.2.0-rc1 out.
-5. **Elasticsearch is at 9.5.x.** The Elastic Certified Engineer exam is still pinned to **8.1** (third-party source).
+5. **Elasticsearch is at 9.5.x.** The Elastic Certified Engineer exam targets **Elasticsearch 9.3** (verified against the official Elastic certification FAQ on 2026-11-04; earlier third-party summaries still listed 8.1).
 
 ---
 

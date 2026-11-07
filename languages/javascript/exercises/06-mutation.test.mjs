@@ -50,12 +50,13 @@ describe('the shared-address bug', () => {
 describe('const wires vs mutable objects', () => {
   // Spec: §14.3.1 let/const (const locks the wire, not the object it reaches)
   it('predict: const shrek mutates species but cannot be re-pointed', () => {
+    // oxlint-disable-next-line no-const-assign -- deliberate test proving const reassignment throws TypeError
     const shrek = { species: 'ogre' };
     shrek.species = 'human';
     assert.equal(shrek.species, 'human');
     assert.throws(() => {
       shrek = {};
-    }, TypeError); // eslint-disable-line no-const-assign
+    }, TypeError);
   });
 
   // Spec: §14.3.1 let/const

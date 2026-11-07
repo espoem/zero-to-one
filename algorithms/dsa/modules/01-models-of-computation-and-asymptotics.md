@@ -236,7 +236,7 @@ $$T(n) = \underbrace{\Theta\!\left(n^{\log_b a}\right)}_{\text{leaves: } a^{\log
 Level $j$ has $a^j$ nodes, each doing $f(n/b^j)$ work. The three cases are exactly the three ways the geometric-like series $g(n)$ can behave.
 
 | Regime | Behaviour of level cost $a^j f(n/b^j)$ as $j$ grows | Sum $g(n)$ | Winner |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | $f(n) = O(n^{\log_b a - \epsilon})$ | Grows geometrically with ratio $b^{\epsilon}$ | $O(n^{\log_b a})$ (geometric series dominated by its last term) | Leaves |
 | $f(n) = \Theta(n^{\log_b a} \log^k n)$ | Each of the $\log_b n$ levels costs $\Theta(n^{\log_b a} \log^k n)$ up to a constant | $\Theta(n^{\log_b a} \log^{k+1} n)$ (about $\log_b n$ equal terms) | Every level ties |
 | $f(n) = \Omega(n^{\log_b a + \epsilon})$ plus regularity | Shrinks geometrically: $a f(n/b) \le c f(n)$ with $c < 1$ implies level $j$ costs at most $c^j f(n)$ | $\Theta(f(n))$ (the $j = 0$ term bounds the sum; the lower bound is the root itself) | Root |
@@ -272,8 +272,7 @@ The substitution method guesses a bound and proves it by induction. It is the on
 
 **Akra-Bazzi, finished.** Section 3 left the integral implicit. For $T(n) = T(n/3) + T(2n/3) + n$ the exponent is $p = 1$, and $\int_1^n u / u^{2}\,du = \ln n$, so $T(n) = \Theta\big(n(1 + \ln n)\big) = \Theta(n \log n)$. For $T(n) = T(n/2) + T(n/4) + n$ the exponent solves $x + x^2 = 1$ with $x = 2^{-p}$, so $x = (\sqrt5 - 1)/2$ and $p = \log_2\big(2/(\sqrt5-1)\big) \approx 0.694 < 1$. Because $g(u) = u$ polynomially exceeds $u^p$, the integral is $\Theta(n^{1-p})$ and the root dominates: $T(n) = \Theta(n)$. The tests solve $p$ by bisection and check the floor/ceiling variant numerically stays inside a constant band of $n \log_2 n$ for $100 \le n \le 20000$.
 
-> [!WARNING] A band over finitely many $n$ is evidence, not proof
-> The numeric checks in `examples/` cannot prove an asymptotic claim. They exist to catch *wrong* claims (the bogus $O(n)$ for merge sort fails immediately) and to pin exact closed forms where those exist. The proofs are in the text.
+> [!WARNING] A band over finitely many $n$ is evidence, not proof The numeric checks in `examples/` cannot prove an asymptotic claim. They exist to catch _wrong_ claims (the bogus $O(n)$ for merge sort fails immediately) and to pin exact closed forms where those exist. The proofs are in the text.
 
 ---
 
@@ -291,7 +290,7 @@ $$\text{flips}(n) = 2n - \operatorname{popcount}(n),$$
 
 (each bit position $i$ flips $\lfloor n / 2^i \rfloor$ times, so the total is $\sum_i \lfloor n/2^i \rfloor = 2n - \operatorname{popcount}(n)$, a standard identity from Legendre's formula). The suite asserts it at $n = 5000$.
 
-### 8.2 Amortization is a property of an operation *set*
+### 8.2 Amortization is a property of an operation _set_
 
 Add `decrement` and the bound collapses. Start at $0111\ldots1$ ($k$ ones). `increment` yields $1000\ldots0$ at cost $k + 1$; `decrement` immediately flips them all back at cost $k + 1$. Alternating the two costs $\Theta(k)$ per operation forever, so there is no $O(1)$ amortized bound for the mixed workload. The same potential function fails because decrement can raise $\Phi$ by $k$ in one step. The test `alternating increment/decrement` asserts exactly $200 \cdot (k+1)$ flips for 200 operations at $k = 16$.
 
@@ -300,14 +299,14 @@ The dynamic array has the identical trap. If it **halves capacity as soon as $S 
 ### 8.3 Production failure modes of amortized structures
 
 - **Latency SLOs are about the worst call, not the mean.** A doubling vector inside a request path produces periodic $O(n)$ stalls. Pre-size (`new Array(n)`), or use a structure with worst-case bounds (a deque of fixed-size chunks) when the p99 matters. Amortized $O(1)$ says nothing about tail latency.
-- **Persistence breaks amortization.** If an old version of a structure can be reused, an adversary replays the expensive operation repeatedly from the same version, so the credit is spent many times. Persistent structures need worst-case bounds or lazy evaluation with memoized debts (Okasaki's *Purely Functional Data Structures*).
+- **Persistence breaks amortization.** If an old version of a structure can be reused, an adversary replays the expensive operation repeatedly from the same version, so the credit is spent many times. Persistent structures need worst-case bounds or lazy evaluation with memoized debts (Okasaki's _Purely Functional Data Structures_).
 - **Multi-threaded sharing.** One thread pays for a resize that credit from other threads' pushes funded; the per-thread bound no longer holds. See [Module 14](14-parallel-algorithms-concurrency-and-interview-execution.md).
 
 ---
 
 ## 9. Loop Invariants on a Second Algorithm: Insertion Sort
 
-Section 5 proved binary search. A loop invariant proof is only convincing once it has handled an *update* inside the loop, so here is CLRS's own first example (4e §2.1) in the book's pseudocode style:
+Section 5 proved binary search. A loop invariant proof is only convincing once it has handled an _update_ inside the loop, so here is CLRS's own first example (4e §2.1) in the book's pseudocode style:
 
 ```text
 INSERTION-SORT(A, n)
@@ -326,7 +325,7 @@ INSERTION-SORT(A, n)
 - **Maintenance:** the inner loop shifts each element greater than `key` one position right; that is the inner invariant "$A[j+2 : i]$ holds the elements of the old $A[j+1 : i-1]$ that exceed `key`, still in order". When it stops, $A[j] \le \text{key}$ (or $j = 0$), so writing `key` at $A[j+1]$ leaves $A[1 : i]$ sorted and a permutation of the original prefix.
 - **Termination:** after the loop `i = n + 1`, so the invariant says $A[1:n]$ is the sorted original array.
 
-The TypeScript version in `examples/01b-recurrences-and-amortization.test.ts` runs the invariant as an assertion *inside* every outer iteration (prefix sorted, and prefix is a multiset-equal permutation of the original prefix). That turns a paper proof into a regression test: change one comparison from `>` to `>=` and stability, not correctness, changes; delete the shift and the assertion fires on the first out-of-order input.
+The TypeScript version in `examples/01b-recurrences-and-amortization.test.ts` runs the invariant as an assertion _inside_ every outer iteration (prefix sorted, and prefix is a multiset-equal permutation of the original prefix). That turns a paper proof into a regression test: change one comparison from `>` to `>=` and stability, not correctness, changes; delete the shift and the assertion fires on the first out-of-order input.
 
 Comparison counts are exact, which makes them testable without timing: the best case (already sorted) performs $n - 1$ comparisons, the worst case (strictly decreasing) performs $\sum_{i=2}^{n}(i - 1) = n(n-1)/2$. The suite asserts both for $n \in \{2, 5, 17, 64\}$.
 
@@ -335,7 +334,7 @@ Comparison counts are exact, which makes them testable without timing: the best 
 The Word-RAM model of Section 1 promises $w$-bit integers with unit-cost arithmetic. JavaScript gives you three different machines, and mixing them is the origin of most "my correct algorithm fails on big input" bugs:
 
 | Operation | Machine you actually get | Exact range | Failure |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | `a + b`, `a * b` on `number` | IEEE 754 binary64 | integers exact up to $2^{53}$ | `2**53 + 1 === 2**53`; products beyond $2^{53}$ silently round |
 | `a \| 0`, `a >> k`, `a & b` | Convert to int32 first (`ToInt32`) | $[-2^{31}, 2^{31})$ | `(1.5e9 + 1.8e9) >> 1` is negative |
 | `a >>> k` | Convert to uint32 first (`ToUint32`) | $[0, 2^{32})$ | wraps for sums at or beyond $2^{32}$ |
@@ -348,7 +347,7 @@ The safe midpoint is `lo + Math.floor((hi - lo) / 2)` for any index below $2^{53
 ## 10. Then vs Now: Textbook and Practice
 
 | Topic | Then (CLRS 3e, 2009) | Now (CLRS 4e, 2022) | Why it matters |
-| :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- |
 | Chapter map | Amortized analysis was chapter 17; Fibonacci heaps and van Emde Boas trees were full chapters | Amortized analysis is chapter 16 and augmenting data structures is chapter 17; Fibonacci heaps and van Emde Boas trees were removed from the printed book (MIT Press transition guide) | Old course notes and interview-prep cheat sheets quote 3e numbers; cite by title when in doubt |
 | Master theorem | Case 2 stated only for $f(n) = \Theta(n^{\log_b a})$; the $\log^k$ extension lived in an exercise | Case 2 includes $\log^k n$ for $k \ge 0$, so $2T(n/2) + n\log n$ is solved directly; Akra-Bazzi appears as a section | Drill question 3 below depends on this |
 | Asymptotic chapter | "Growth of Functions" | "Characterizing Running Times" (chapter 3) | Same notation, newer framing around $O$/$\Omega$/$\Theta$ as set membership |
@@ -396,13 +395,11 @@ The amortized cost is $O(1)$. If we halved capacity when size reached $C/2$, an 
 <details>
 <summary>6. A binary counter supports both increment and decrement. What is the worst-case cost of n alternating operations, and why does the potential-function proof for increment-only not carry over?</summary>
 
-Start at $0111\ldots1$ with $k$ ones. Increment flips $k + 1$ bits to reach $1000\ldots0$; decrement flips the same $k + 1$ bits back. $n$ alternating operations therefore cost $n(k + 1) = \Theta(nk)$, not $O(n)$.
-The increment-only proof uses $\Phi = $ number of 1 bits, which gives $\hat c = 2$ because an increment lowers $\Phi$ by $t - 1$ where $t$ is the number of bits it clears. Decrement is the mirror image: it sets $t$ bits to 1 and clears one, so $\Phi$ rises by $t - 1$ and $\hat c = (t + 1) + (t - 1) = 2t$. The potential no longer pays for the operation because amortization is a property of the whole operation set, and adding `decrement` changed the set.
+Start at $0111\ldots1$ with $k$ ones. Increment flips $k + 1$ bits to reach $1000\ldots0$; decrement flips the same $k + 1$ bits back. $n$ alternating operations therefore cost $n(k + 1) = \Theta(nk)$, not $O(n)$. The increment-only proof uses $\Phi = $ number of 1 bits, which gives $\hat c = 2$ because an increment lowers $\Phi$ by $t - 1$ where $t$ is the number of bits it clears. Decrement is the mirror image: it sets $t$ bits to 1 and clears one, so $\Phi$ rises by $t - 1$ and $\hat c = (t + 1) + (t - 1) = 2t$. The potential no longer pays for the operation because amortization is a property of the whole operation set, and adding `decrement` changed the set.
 </details>
 
 <details>
 <summary>7. Show that the guess T(n) ≤ cn cannot be proved for T(n) = 2T(n/2) + 1 by direct substitution, and give a hypothesis that works.</summary>
 
-The inductive step yields $T(n) \le 2c(n/2) + 1 = cn + 1$, which exceeds $cn$ for every $c$. The statement $T(n) = O(n)$ is nevertheless true ($T(n) = 2n - 1$ with $T(1) = 1$), so the hypothesis is too weak to carry the induction.
-Strengthen it to $T(m) \le cm - d$ for all $m < n$ with $d \ge 1$. Then $T(n) \le 2(cn/2 - d) + 1 = cn - 2d + 1 \le cn - d$. The base case needs $c \cdot 1 - d \ge T(1)$, which holds for $c \ge 2$, $d = 1$. Subtracting a lower-order term is the standard repair when an additive constant accumulates one per level.
+The inductive step yields $T(n) \le 2c(n/2) + 1 = cn + 1$, which exceeds $cn$ for every $c$. The statement $T(n) = O(n)$ is nevertheless true ($T(n) = 2n - 1$ with $T(1) = 1$), so the hypothesis is too weak to carry the induction. Strengthen it to $T(m) \le cm - d$ for all $m < n$ with $d \ge 1$. Then $T(n) \le 2(cn/2 - d) + 1 = cn - 2d + 1 \le cn - d$. The base case needs $c \cdot 1 - d \ge T(1)$, which holds for $c \ge 2$, $d = 1$. Subtracting a lower-order term is the standard repair when an additive constant accumulates one per level.
 </details>

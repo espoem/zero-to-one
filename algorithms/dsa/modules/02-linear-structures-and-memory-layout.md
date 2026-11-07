@@ -185,10 +185,10 @@ Module 01 proved doubling is amortized $O(1)$. The factor itself is a design par
 
 **Lemma (growth factor).** Let capacities grow as $c_{i+1} \ge g\,c_i$ with $g > 1$, and copy the full $c_i$ elements at each growth. For $n$ appends the total number of element copies is less than $n\,g/(g-1)$.
 
-*Proof.* A growth from $c_i$ happens only when the size is $c_i < n$, so every capacity that is ever copied is smaller than $n$. The copied capacities form a sequence whose terms satisfy $c_{i} \le c_{\text{last}}\,g^{-(\text{last} - i)}$, and $c_{\text{last}} < n$. Summing the geometric series gives $\sum_i c_i < n\,(1 + g^{-1} + g^{-2} + \cdots) = n\,g/(g-1)$. $\square$
+_Proof._ A growth from $c_i$ happens only when the size is $c_i < n$, so every capacity that is ever copied is smaller than $n$. The copied capacities form a sequence whose terms satisfy $c_{i} \le c_{\text{last}}\,g^{-(\text{last} - i)}$, and $c_{\text{last}} < n$. Summing the geometric series gives $\sum_i c_i < n\,(1 + g^{-1} + g^{-2} + \cdots) = n\,g/(g-1)$. $\square$
 
 | Factor $g$ | Copies per append (bound) | Worst-case slack memory | Where it is used |
-| :---: | :---: | :---: | :--- |
+| :-: | :-: | :-: | :-- |
 | 1.5 | $< 3$ | up to $33\%$ of the buffer | V8 (`old + old/2 + 16`, see below) |
 | 2 | $< 2$ | up to $50\%$ | common textbook default |
 | 4 | $< 1.34$ | up to $75\%$ | rarely; wastes memory |
@@ -196,7 +196,7 @@ Module 01 proved doubling is amortized $O(1)$. The factor itself is a design par
 
 The V8 source (`JSObject::NewElementsCapacity` in `src/objects/js-objects.h`) computes `old_capacity + (old_capacity >> 1) + kMinAddedElementsCapacity`, a 1.5x factor plus a small constant so that tiny arrays do not reallocate on every push. The constant is currently 16 (`unverified` against the header at the time of writing; the formula shape was read from the upstream file).
 
-A folk argument says factors below the golden ratio $\varphi \approx 1.618$ let a malloc-style allocator reuse the memory freed by earlier growths, because the sum of all earlier blocks eventually exceeds the next request. It is a heuristic about *one* allocator policy, not a theorem, and V8 does not rely on it (the GC moves objects). Treat it as trivia, not as a design rule.
+A folk argument says factors below the golden ratio $\varphi \approx 1.618$ let a malloc-style allocator reuse the memory freed by earlier growths, because the sum of all earlier blocks eventually exceeds the next request. It is a heuristic about _one_ allocator policy, not a theorem, and V8 does not rely on it (the GC moves objects). Treat it as trivia, not as a design rule.
 
 Executable check in `examples/02b-linear-structures-deep.test.ts`: simulated copy counts stay below $n g/(g-1)$ for $g \in \{1.5, 2, 4\}$; the V8 formula stays below $3n$; the additive $+16$ policy multiplies its copy count by more than 3.5 when $n$ doubles, which is the signature of quadratic growth.
 
@@ -204,9 +204,9 @@ Executable check in `examples/02b-linear-structures-deep.test.ts`: simulated cop
 
 ## 7. `shift()` Revisited: Specification, V8 Reality and a Safe Queue
 
-Section 3 said `shift()` is $O(n)$. That is the cost *the specification prescribes*, and the honest statement is more nuanced.
+Section 3 said `shift()` is $O(n)$. That is the cost _the specification prescribes_, and the honest statement is more nuanced.
 
-**What ECMAScript says.** `Array.prototype.shift` reads index 0, then for each $k = 1, \ldots, \text{len} - 1$ performs `HasProperty`, `Get(k)` and `Set(k-1)` (or `DeletePropertyOrThrow` for holes), then deletes the last index and writes `length`. That is $\Theta(n)$ property operations. Because it is the *generic* algorithm, you can observe it on an array-like `Proxy`: the test counts exactly $n$ `[[Get]]` and $n - 1$ `[[Set]]` traps for $n = 10, 100, 1000$.
+**What ECMAScript says.** `Array.prototype.shift` reads index 0, then for each $k = 1, \ldots, \text{len} - 1$ performs `HasProperty`, `Get(k)` and `Set(k-1)` (or `DeletePropertyOrThrow` for holes), then deletes the last index and writes `length`. That is $\Theta(n)$ property operations. Because it is the _generic_ algorithm, you can observe it on an array-like `Proxy`: the test counts exactly $n$ `[[Get]]` and $n - 1$ `[[Set]]` traps for $n = 10, 100, 1000$.
 
 **What V8 does.** Engines are free to implement the observable behaviour any way they like. A V8 engineer on the v8-users list describes **left-trimming**: instead of moving elements, V8 moves the array's object header forward over the removed slot, so `shift()` on a regular-sized backing store does no copying. He also states that left-trimming is impossible in large object space (backing stores above the regular page size, 512 KB in his explanation, reached near 56,000 elements in his example), where each `shift()` becomes an $O(n)$ `memmove`, and that the thresholds are implementation details that may change (post date `unverified`). The practical reading:
 
@@ -227,8 +227,7 @@ DEQUEUE(Q)
 7  return x
 ```
 
-*Invariant:* $0 \le \text{head} \le |\text{items}|$ and the live queue is `items[head:]`.
-*Amortized cost:* when compaction runs, the live suffix has length $\le \text{head}$ (because $2\,\text{head} \ge |\text{items}|$), so it copies at most as many elements as were dequeued since the previous compaction. Charge one unit to each dequeue and total copying is at most the number of dequeues; every dequeue is $O(1)$ amortized. The property test asserts `moved <= dequeues` over random operation sequences and compares every result with a naive model.
+_Invariant:_ $0 \le \text{head} \le |\text{items}|$ and the live queue is `items[head:]`. _Amortized cost:_ when compaction runs, the live suffix has length $\le \text{head}$ (because $2\,\text{head} \ge |\text{items}|$), so it copies at most as many elements as were dequeued since the previous compaction. Charge one unit to each dequeue and total copying is at most the number of dequeues; every dequeue is $O(1)$ amortized. The property test asserts `moved <= dequeues` over random operation sequences and compares every result with a naive model.
 
 Compaction is still a stall of $O(\text{live size})$ for one call. Where tail latency matters, use the ring-buffer deque from Section 3 (which has worst-case $O(1)$ except at resize) or a deque of fixed-size chunks.
 
@@ -262,7 +261,7 @@ flowchart LR
 
 ### 8.2 A stack that reports its minimum in $O(1)$
 
-Store with each element the minimum of everything beneath it (`mins[i] = min(data[0..i])`). *Invariant:* `mins.length === data.length` and `mins.at(-1)` is the minimum of the live stack. `push` appends `min(x, mins.at(-1))`, `pop` removes from both arrays. Space doubles; the alternative of pushing to the `mins` stack only when a new minimum (or an equal one) appears saves space but breaks with duplicates if equal values are not pushed. The property test replays random push/pop sequences against `Math.min` of the live contents after every step, including duplicates.
+Store with each element the minimum of everything beneath it (`mins[i] = min(data[0..i])`). _Invariant:_ `mins.length === data.length` and `mins.at(-1)` is the minimum of the live stack. `push` appends `min(x, mins.at(-1))`, `pop` removes from both arrays. Space doubles; the alternative of pushing to the `mins` stack only when a new minimum (or an equal one) appears saves space but breaks with duplicates if equal values are not pushed. The property test replays random push/pop sequences against `Math.min` of the live contents after every step, including duplicates.
 
 ---
 
@@ -280,7 +279,7 @@ REVERSE(head)
 6  return prev
 ```
 
-*Invariant:* at the top of the iteration that processes the $j$-th node (0-based), `prev` is the head of the already reversed list $v_{j-1} \to \cdots \to v_0 \to \text{NIL}$ and `curr` is the untouched suffix $v_j \to \cdots$. Initially $j = 0$ and `prev` is NIL. Each iteration moves one node; on exit `curr` is NIL, so the reversed prefix is the whole list. The test checks this invariant structurally at **every** iteration for lists up to 60 nodes.
+_Invariant:_ at the top of the iteration that processes the $j$-th node (0-based), `prev` is the head of the already reversed list $v_{j-1} \to \cdots \to v_0 \to \text{NIL}$ and `curr` is the untouched suffix $v_j \to \cdots$. Initially $j = 0$ and `prev` is NIL. Each iteration moves one node; on exit `curr` is NIL, so the reversed prefix is the whole list. The test checks this invariant structurally at **every** iteration for lists up to 60 nodes.
 
 ### 9.2 Floyd's cycle detection: why it works and what it finds
 
@@ -288,11 +287,11 @@ Model the list as a "rho": a tail of $\mu$ nodes followed by a cycle of $\lambda
 
 **Theorem.** If the list has a cycle, the pointers meet at the smallest $k \ge \max(\mu, 1)$ with $\lambda \mid k$.
 
-*Proof.* A meeting requires both pointers in the cycle, so $k \ge \mu$ for the tortoise. Positions inside the cycle are taken modulo $\lambda$, and the pointers coincide iff $2k \equiv k \pmod \lambda$, i.e. $\lambda \mid k$. The smallest such $k \ge \max(\mu, 1)$ lies in $[\mu,\ \mu + \lambda - 1]$, so detection takes at most $\mu + \lambda$ iterations. $\square$
+_Proof._ A meeting requires both pointers in the cycle, so $k \ge \mu$ for the tortoise. Positions inside the cycle are taken modulo $\lambda$, and the pointers coincide iff $2k \equiv k \pmod \lambda$, i.e. $\lambda \mid k$. The smallest such $k \ge \max(\mu, 1)$ lies in $[\mu,\ \mu + \lambda - 1]$, so detection takes at most $\mu + \lambda$ iterations. $\square$
 
 **Finding the cycle start.** At the meeting step $k$ the tortoise is $k - \mu$ steps into the cycle and $k$ is a multiple of $\lambda$, so advancing $\mu$ more steps lands exactly on the entry node (because $k - \mu + \mu = k \equiv 0 \pmod \lambda$). A second pointer starting at the head and advancing in lock-step with the tortoise therefore meets it exactly at the entry after $\mu$ steps. Then $\lambda$ is recovered by walking the cycle once.
 
-The test builds all rho shapes with $0 \le \mu \le 25$ and $1 \le \lambda \le 25$, asserts the exact meeting step formula above, and asserts phase 2 returns exactly $\mu$ and $\lambda$. Negative tests: acyclic lists never meet, and returning the *meeting node* as the "cycle start" is wrong (for $\mu = 3, \lambda = 5$ the meeting node is not the entry).
+The test builds all rho shapes with $0 \le \mu \le 25$ and $1 \le \lambda \le 25$, asserts the exact meeting step formula above, and asserts phase 2 returns exactly $\mu$ and $\lambda$. Negative tests: acyclic lists never meet, and returning the _meeting node_ as the "cycle start" is wrong (for $\mu = 3, \lambda = 5$ the meeting node is not the entry).
 
 Cost: $O(\mu + \lambda)$ time and $O(1)$ space, versus $O(\mu + \lambda)$ space for the hash-set visited approach. Mutating the list (marking nodes) is **not** a safe substitute when other readers share the structure.
 
@@ -302,7 +301,7 @@ Cost: $O(\mu + \lambda)$ time and $O(1)$ space, versus $O(\mu + \lambda)$ space 
 
 Section 5 listed formulas; this section proves the ones that interviews and bitmask DP depend on.
 
-**Two's complement identity.** For a $w$-bit integer $x$, $-x \equiv \sim x + 1 \pmod{2^w}$. Hence $x \,\&\, (-x)$ isolates the lowest set bit. *Proof:* let the lowest 1 of $x$ be at position $p$, so bits $0..p-1$ of $x$ are 0. Then $\sim x$ has 1s at positions $0..p-1$, a 0 at $p$, and every higher bit complemented. Adding 1 carries through the low run of 1s (turning them to 0), sets position $p$ to 1, and leaves the higher bits complemented. So $-x$ agrees with $x$ at position $p$ and is the bitwise complement of $x$ above it; ANDing with $x$ keeps position $p$ and cancels everything above. The property test checks the identity over the full int32 range except the one input ($-2^{31}$) where negation overflows.
+**Two's complement identity.** For a $w$-bit integer $x$, $-x \equiv \sim x + 1 \pmod{2^w}$. Hence $x \,\&\, (-x)$ isolates the lowest set bit. _Proof:_ let the lowest 1 of $x$ be at position $p$, so bits $0..p-1$ of $x$ are 0. Then $\sim x$ has 1s at positions $0..p-1$, a 0 at $p$, and every higher bit complemented. Adding 1 carries through the low run of 1s (turning them to 0), sets position $p$ to 1, and leaves the higher bits complemented. So $-x$ agrees with $x$ at position $p$ and is the bitwise complement of $x$ above it; ANDing with $x$ keeps position $p$ and cancels everything above. The property test checks the identity over the full int32 range except the one input ($-2^{31}$) where negation overflows.
 
 **Kernighan's clear-lowest-bit.** $x\,\&\,(x-1)$ clears bit $p$ and leaves higher bits alone, because $x - 1$ flips bits $0..p$. The loop therefore runs popcount$(x)$ times. The Challenger fix for unsigned behaviour in the original suite stays in force: coerce with `>>> 0` when $x \ge 2^{31}$.
 
@@ -316,9 +315,9 @@ POPCOUNT32(x)
 4  return (x * 0x01010101) >> 24                  // top byte = sum of the four byte counts
 ```
 
-*Invariant after step $s$:* every field of width $2^s$ holds the popcount of the corresponding input bits. Step 1 works because for a 2-bit field $ab$ the value $2a + b - a = a + b$. In JavaScript write the multiply as `Math.imul` to get C's 32-bit wrap (a plain `*` happens to stay exact here, since $0x0F0F0F0F \cdot 0x01010101 < 2^{53}$, but the habit breaks as soon as a constant is larger), and shift with `>>> 24` so the result is read as unsigned. The property test compares it with the naive loop on 500 random uint32 values.
+_Invariant after step $s$:_ every field of width $2^s$ holds the popcount of the corresponding input bits. Step 1 works because for a 2-bit field $ab$ the value $2a + b - a = a + b$. In JavaScript write the multiply as `Math.imul` to get C's 32-bit wrap (a plain `*` happens to stay exact here, since $0x0F0F0F0F \cdot 0x01010101 < 2^{53}$, but the habit breaks as soon as a constant is larger), and shift with `>>> 24` so the result is read as unsigned. The property test compares it with the naive loop on 500 random uint32 values.
 
-**Enumerating submasks.** `for (s = mask; s > 0; s = (s - 1) & mask)` visits every non-empty submask exactly once in strictly decreasing order. *Why:* $s - 1$ flips the lowest set bit of $s$ and sets all lower bits; ANDing with `mask` keeps only bits that are in `mask`, which yields the largest submask smaller than $s$. There are $2^{\operatorname{popcount}(\text{mask})} - 1$ of them, so iterating over all masks and all their submasks costs $\sum_{\text{mask}} 2^{|\text{mask}|} = 3^n$ (each of the $n$ elements is outside the mask, in the mask but outside the submask, or in both). That $3^n$ bound is what makes subset-convolution style DP feasible for $n \approx 15$.
+**Enumerating submasks.** `for (s = mask; s > 0; s = (s - 1) & mask)` visits every non-empty submask exactly once in strictly decreasing order. _Why:_ $s - 1$ flips the lowest set bit of $s$ and sets all lower bits; ANDing with `mask` keeps only bits that are in `mask`, which yields the largest submask smaller than $s$. There are $2^{\operatorname{popcount}(\text{mask})} - 1$ of them, so iterating over all masks and all their submasks costs $\sum_{\text{mask}} 2^{|\text{mask}|} = 3^n$ (each of the $n$ elements is outside the mask, in the mask but outside the submask, or in both). That $3^n$ bound is what makes subset-convolution style DP feasible for $n \approx 15$.
 
 **Gosper's hack** enumerates all $n$-bit masks with exactly $k$ bits set in increasing order:
 
@@ -351,7 +350,7 @@ flowchart LR
 Section 2 described how an ordinary array can drift through V8's elements-kind lattice. A typed array removes the guessing by fixing the element type at construction: `Int32Array` stores 4-byte two's complement integers contiguously in an `ArrayBuffer`, `Float64Array` stores 8-byte doubles, and out-of-range stores follow the conversion rules (wrap for the integer kinds, clamp for `Uint8ClampedArray`). The test asserts `BYTES_PER_ELEMENT` and the wrap/clamp behaviour so the table below is executable rather than remembered.
 
 | Need | Use | Reason |
-| :--- | :--- | :--- |
+| :-- | :-- | :-- |
 | Dense numeric DP table, visited flags, counters | `Int32Array`, `Uint8Array`, `Float64Array` | no holes, no boxing, predictable footprint; `fill(0)` is a single call |
 | Heterogeneous items | plain `Array` | typed arrays cannot hold objects |
 | Resizable collection | plain `Array`, or a typed array plus your own size counter and the growth rule from Section 6 | a typed array's length is fixed at construction |
@@ -398,13 +397,11 @@ Sentinel nodes (or dummy head/tail nodes) serve as permanent anchor boundaries t
 <details>
 <summary>4. A teammate claims `queue.shift()` is fine because V8 left-trims arrays. How do you respond, and what do you ship instead?</summary>
 
-V8 does have a left-trimming optimization that moves the array's start instead of copying, but a V8 engineer has stated it cannot be applied once the backing store lives in large object space, and that the thresholds are implementation details. Past that point each `shift()` is an $O(n)$ `memmove`, so a BFS or event queue that works at $10^3$ elements can degrade quadratically at $10^6$. The ECMAScript algorithm itself is $\Theta(n)$ (it performs about $n$ `Get` and `Set` operations; observable on a `Proxy`).
-Ship a head-index queue with compaction when the live suffix is at most the dead prefix (amortized $O(1)$, one copy per dequeue at most) or a ring buffer. Use `shift()` only for small bounded arrays, and state the assumption in a comment.
+V8 does have a left-trimming optimization that moves the array's start instead of copying, but a V8 engineer has stated it cannot be applied once the backing store lives in large object space, and that the thresholds are implementation details. Past that point each `shift()` is an $O(n)$ `memmove`, so a BFS or event queue that works at $10^3$ elements can degrade quadratically at $10^6$. The ECMAScript algorithm itself is $\Theta(n)$ (it performs about $n$ `Get` and `Set` operations; observable on a `Proxy`). Ship a head-index queue with compaction when the live suffix is at most the dead prefix (amortized $O(1)$, one copy per dequeue at most) or a ring buffer. Use `shift()` only for small bounded arrays, and state the assumption in a comment.
 </details>
 
 <details>
 <summary>5. Prove that Floyd's tortoise and hare meet inside the cycle, and explain how the cycle entry is found afterwards.</summary>
 
-Let the tail have $\mu$ nodes and the cycle $\lambda$. After $k$ steps the tortoise is at position $k$ and the hare at $2k$. They can only coincide when both are in the cycle ($k \ge \mu$), and then they coincide iff $2k \equiv k \pmod \lambda$, i.e. $\lambda \mid k$. The first such $k \ge \max(\mu, 1)$ is at most $\mu + \lambda - 1$ (or $\lambda$ when $\mu = 0$).
-At that moment the tortoise is $k - \mu$ steps into the cycle; $k$ is a multiple of $\lambda$, so $\mu$ more steps bring it back to the entry node. Place a second pointer at the head and advance both one step at a time: after $\mu$ steps they stand on the entry together. Returning the meeting node instead is a classic wrong answer.
+Let the tail have $\mu$ nodes and the cycle $\lambda$. After $k$ steps the tortoise is at position $k$ and the hare at $2k$. They can only coincide when both are in the cycle ($k \ge \mu$), and then they coincide iff $2k \equiv k \pmod \lambda$, i.e. $\lambda \mid k$. The first such $k \ge \max(\mu, 1)$ is at most $\mu + \lambda - 1$ (or $\lambda$ when $\mu = 0$). At that moment the tortoise is $k - \mu$ steps into the cycle; $k$ is a multiple of $\lambda$, so $\mu$ more steps bring it back to the entry node. Place a second pointer at the head and advance both one step at a time: after $\mu$ steps they stand on the entry together. Returning the meeting node instead is a classic wrong answer.
 </details>

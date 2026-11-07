@@ -34,7 +34,8 @@ export class CounterServer {
     const value = this.execute();
     this.done.set(key, value);
     if (this.mode === 'dedupe-gc-naive' || this.mode === 'dedupe-gc-watermark') {
-      for (let s = (this.watermark.get(r.client) ?? 0) + 1; s <= r.ack; s++) this.done.delete(`${r.client}:${s}`);
+      for (let s = (this.watermark.get(r.client) ?? 0) + 1; s <= r.ack; s++)
+        this.done.delete(`${r.client}:${s}`);
       this.watermark.set(r.client, Math.max(this.watermark.get(r.client) ?? 0, r.ack));
     }
     return { seq: r.seq, value };
@@ -61,7 +62,7 @@ export function runRpc(
   mode: ConstructorParameters<typeof CounterServer>[0],
   ops: number,
   net: Net,
-  seed: number
+  seed: number,
 ): { server: CounterServer; sent: number; completed: number } {
   const rng = new Prng(seed);
   const server = new CounterServer(mode);
@@ -113,14 +114,17 @@ test('Module 02: at-most-once RPC under loss, delay and duplication', async (t) 
     assert.ok(r.server.executions > 50, `executions ${r.server.executions}`);
   });
 
-  await t.test('with a dedupe table every logical operation executes exactly once (200 seeds)', () => {
-    for (let seed = 1; seed <= 200; seed++) {
-      const r = runRpc('dedupe', 40, net, seed);
-      assert.equal(r.completed, 40);
-      assert.equal(r.server.executions, 40, `seed ${seed}`);
-      assert.equal(r.server.counter, 40);
-    }
-  });
+  await t.test(
+    'with a dedupe table every logical operation executes exactly once (200 seeds)',
+    () => {
+      for (let seed = 1; seed <= 200; seed++) {
+        const r = runRpc('dedupe', 40, net, seed);
+        assert.equal(r.completed, 40);
+        assert.equal(r.server.executions, 40, `seed ${seed}`);
+        assert.equal(r.server.counter, 40);
+      }
+    },
+  );
 
   await t.test('negative: GC that forgets acked entries re-executes delayed duplicates', () => {
     let violations = 0;
@@ -143,7 +147,12 @@ test('Module 02: at-most-once RPC under loss, delay and duplication', async (t) 
 /* ------------------------------------------------------------------ *
  * 2. Retry amplification and retry budgets.
  * ------------------------------------------------------------------ */
-export function leafCalls(layers: number, requests: number, attempts: number, budget: number | null): number {
+export function leafCalls(
+  layers: number,
+  requests: number,
+  attempts: number,
+  budget: number | null,
+): number {
   // Every call at the leaf fails, so every layer retries up to `attempts - 1` times.
   let incoming = requests;
   for (let l = 0; l < layers; l++) {
@@ -234,13 +243,16 @@ test('Module 02: heartbeat detector with adaptive timeout is eventually perfect 
     }
   });
 
-  await t.test('negative: a fixed timeout smaller than period + delta keeps flapping forever', () => {
-    let flapping = 0;
-    for (let seed = 1; seed <= 100; seed++) {
-      if (heartbeatRun({ ...base, seed, adaptive: false }).falseSuspicionsAfter > 0) flapping++;
-    }
-    assert.ok(flapping > 90, `flapping seeds ${flapping}`);
-  });
+  await t.test(
+    'negative: a fixed timeout smaller than period + delta keeps flapping forever',
+    () => {
+      let flapping = 0;
+      for (let seed = 1; seed <= 100; seed++) {
+        if (heartbeatRun({ ...base, seed, adaptive: false }).falseSuspicionsAfter > 0) flapping++;
+      }
+      assert.ok(flapping > 90, `flapping seeds ${flapping}`);
+    },
+  );
 
   await t.test('strong completeness: a crashed process is suspected permanently', () => {
     for (let seed = 1; seed <= 100; seed++) {
@@ -254,7 +266,8 @@ test('Module 02: heartbeat detector with adaptive timeout is eventually perfect 
  * 4. Phi accrual (exponential approximation as used by Cassandra) and SWIM indirect probing.
  * ------------------------------------------------------------------ */
 const PHI_FACTOR = 1 / Math.LN10;
-export const phiExponential = (sinceLast: number, meanInterval: number) => (PHI_FACTOR * sinceLast) / meanInterval;
+export const phiExponential = (sinceLast: number, meanInterval: number) =>
+  (PHI_FACTOR * sinceLast) / meanInterval;
 
 test('Module 02: exponential phi is -log10(P_later) and independent of variance', async (t) => {
   await t.test('phi = 8 exactly when the silence is 8 * ln(10) means long', () => {
@@ -274,11 +287,12 @@ export function swimFalsePositives(
   periods: number,
   seed: number,
   badLinkLoss: number,
-  goodLoss: number
+  goodLoss: number,
 ): { falseSuspects: number; maxMessagesPerNodePeriod: number } {
   const rng = new Prng(seed);
   // Node 0 probes node 1 over a degraded link; every other path is mostly healthy. Node 1 is ALIVE.
-  const link = (a: number, b: number) => ((a === 0 && b === 1) || (a === 1 && b === 0) ? badLinkLoss : goodLoss);
+  const link = (a: number, b: number) =>
+    (a === 0 && b === 1) || (a === 1 && b === 0) ? badLinkLoss : goodLoss;
   const ok = (a: number, b: number) => !rng.chance(link(a, b));
   let falseSuspects = 0;
   let maxMsgs = 0;
@@ -300,16 +314,22 @@ export function swimFalsePositives(
 }
 
 test('Module 02: SWIM indirect probes mask a single degraded link at constant message cost', async (t) => {
-  await t.test('k = 0 (direct only) wrongly suspects a live node most periods; k = 3 almost never', () => {
-    const direct = swimFalsePositives(50, 0, 2000, 1, 0.8, 0.02);
-    const indirect = swimFalsePositives(50, 3, 2000, 1, 0.8, 0.02);
-    assert.ok(direct.falseSuspects > 800, `direct ${direct.falseSuspects}`);
-    assert.ok(indirect.falseSuspects < 40, `indirect ${indirect.falseSuspects}`);
-  });
+  await t.test(
+    'k = 0 (direct only) wrongly suspects a live node most periods; k = 3 almost never',
+    () => {
+      const direct = swimFalsePositives(50, 0, 2000, 1, 0.8, 0.02);
+      const indirect = swimFalsePositives(50, 3, 2000, 1, 0.8, 0.02);
+      assert.ok(direct.falseSuspects > 800, `direct ${direct.falseSuspects}`);
+      assert.ok(indirect.falseSuspects < 40, `indirect ${indirect.falseSuspects}`);
+    },
+  );
   await t.test('per-period messages are bounded by 1 + 4k regardless of cluster size', () => {
     for (const n of [10, 100, 10_000]) {
       const r = swimFalsePositives(n, 3, 500, 2, 0.8, 0.02);
-      assert.ok(r.maxMessagesPerNodePeriod <= 1 + 4 * 3, `n=${n} msgs=${r.maxMessagesPerNodePeriod}`);
+      assert.ok(
+        r.maxMessagesPerNodePeriod <= 1 + 4 * 3,
+        `n=${n} msgs=${r.maxMessagesPerNodePeriod}`,
+      );
     }
   });
 });

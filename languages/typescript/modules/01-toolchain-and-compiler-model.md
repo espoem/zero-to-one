@@ -331,7 +331,7 @@ Node 26 executes `.ts` files directly: `node file.ts`. `process.features.typescr
 - No `enum`, value `namespace`, parameter properties or `import =`. `erasableSyntaxOnly` enforces this at check time.
 - `tsconfig.json` is **not read** by Node. `paths` aliases do not work at runtime; use package.json `imports` (`#/…` subpath imports, supported by TS 6.0+ under `nodenext`/`bundler`).
 
-Node 26.12.1 accepts `--experimental-strip-types` as a no-op and `--no-strip-types` to turn stripping off. It **rejects** `--experimental-transform-types` (verified locally: "bad option"). Earlier Node releases (22.7 through 23.5) used that flag to transform enums and namespaces before it was removed in favor of strict stripping. The deep treatment of Node's loader belongs to the `technologies/nodejs` track (owner per `.agents/OWNERSHIP.md`; not yet written, so no link).
+Node 26.12.1 accepts `--experimental-strip-types` as a no-op and `--no-strip-types` to turn stripping off. It **rejects** `--experimental-transform-types` (verified locally: "bad option"). Earlier Node releases (22.7 through 23.5) used that flag to transform enums and namespaces before it was removed in favor of strict stripping. The deep treatment of Node's loader belongs to the [`technologies/nodejs` track](../../../technologies/nodejs/modules/03-modules-and-packages.md#7-typescript-type-stripping).
 
 ### 6.2 `tsx` and bundlers
 

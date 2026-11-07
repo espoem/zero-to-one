@@ -42,7 +42,7 @@ All tooling is pinned per track with [mise](https://mise.jdx.dev/) (`.mise.toml`
 
 ## 2. Curriculum Roadmap & Status
 
-29 tracks: 13 complete, 4 in progress (Phase 2), 12 planned. Work is phased by dependency; see [.agents/PLAN.md](./.agents/PLAN.md) for the plan and [.agents/STATUS.md](./.agents/STATUS.md) for live status.
+29 tracks: 17 complete, 0 in progress, 12 planned. Work is phased by dependency; see [.agents/PLAN.md](./.agents/PLAN.md) for the plan and [.agents/STATUS.md](./.agents/STATUS.md) for live status.
 
 | Domain | Track | Scope | Status | Path |
 | :-- | :-- | :-- | :-: | :-- |
@@ -54,10 +54,10 @@ All tooling is pinned per track with [mise](https://mise.jdx.dev/) (`.mise.toml`
 | `technologies/` | **PostgreSQL** | PostgreSQL 18: process model, SQL and JSONB, indexing, planner, MVCC, vacuum, WAL and PITR, replication, extensions | 🟢 Complete | [technologies/postgres/](./technologies/postgres/) |
 | `technologies/` | **React** | React 19.3 runtime: Fiber, hooks, concurrent scheduling, Suspense, Server Components and Flight, Actions, React Compiler | 🟢 Complete | [technologies/react/](./technologies/react/) |
 | `technologies/` | **SolidJS** | Solid 2.0 RC: fine-grained reactivity, async and transactions, start-mode full stack, migration from 1.x and the React vs Solid comparison | 🟢 Complete | [technologies/solidjs/](./technologies/solidjs/) |
-| `technologies/` | **Elasticsearch** | Version not confirmed on elastic.co; Elastic cert still on 8.1 | 🟦 In progress (Phase 2) | `technologies/elasticsearch/` |
-| `technologies/` | **Node.js** | JSNAD/JSNSD retired 2025-09-30; new yearly release model from v27 | 🟦 In progress (Phase 2) | `technologies/nodejs/` |
-| `technologies/` | **Redis** | Tri-licence since 8.0; cert offline since Jan 2026 | 🟦 In progress (Phase 2) | `technologies/redis/` |
-| `technologies/` | **SQLite** | Turso = module 12; libSQL stuck on SQLite 3.45.1; bundled versions differ per binding | 🟦 In progress (Phase 2) | `technologies/sqlite/` |
+| `technologies/` | **Elasticsearch** | Elasticsearch 9.5 & Lucene 10: inverted index & BM25, Zen2 & NRT lifecycle, mappings, text analysis, Query DSL, ES\|QL, aggregations, ILM/DSL, HNSW/BBQ vector & hybrid RRF search, routing, operations & codecs | 🟢 Complete | [technologies/elasticsearch/](./technologies/elasticsearch/) |
+| `technologies/` | **Node.js** | Node.js 26 LTS: V8 & libuv event loop, CJS/ESM/type-stripping loaders, streams & backpressure, child processes, HTTP/undici & Fastify services, worker threads, V8 GC & diagnostics, `node:test`, security & containers | 🟢 Complete | [technologies/nodejs/](./technologies/nodejs/) |
+| `technologies/` | **Redis** | Redis 8.10 & Valkey 9.1: reactor & RESP3, listpack/intset/skiplist encodings, TTL & LFU/LRM eviction, caching & stampede defense, Lua/Functions, Streams & PEL, GCRA & locks, Query Engine & Vector Sets, RDB/MP-AOF, Sentinel & Cluster | 🟢 Complete | [technologies/redis/](./technologies/redis/) |
+| `technologies/` | **SQLite** | SQLite 3.54, libSQL & Turso: bindings & CLI, type affinity & `STRICT` tables, 4 KB page format & B-trees, rollback journal vs WAL & `wal-index`, NGQP & VDBE bytecode, FTS5/R-Tree/JSONB, concurrency, backups, OPFS/Litestream & Turso MVCC | 🟢 Complete | [technologies/sqlite/](./technologies/sqlite/) |
 | `technologies/` | **Argo CD** | CGOA fits better than CAPA (48% Workflows/Events) | 🟡 Planned (Phase 3) | `technologies/argocd/` |
 | `technologies/` | **Containers** | cgroup v1 gone in Podman 6; containerd store default in Docker 29 | 🟡 Planned (Phase 3) | `technologies/containers/` |
 | `technologies/` | **GitLab CI** | Owns SBOM/cosign/SLSA | 🟡 Planned (Phase 3) | `technologies/gitlab-ci/` |
@@ -91,6 +91,10 @@ To bridge technical English documentation with accurate, established Czech acade
 - **[SolidJS 2.x Glossary](./technologies/solidjs/GLOSSARY.md)** covers fine-grained push-pull reactivity, glitch freedom, draft stores and projections, colorless async, optimistic transactions, and server functions.
 - **[Panda CSS Glossary](./technologies/panda-css/GLOSSARY.md)** covers static extraction, design tokens, recipes, slot recipes, and conditions.
 - **[PostgreSQL Glossary](./technologies/postgres/GLOSSARY.md)** covers the process model, shared buffers, asynchronous I/O, MVCC internals, indexing, PITR, and pgvector.
+- **[Elasticsearch Glossary](./technologies/elasticsearch/GLOSSARY.md)** covers inverted indices, BM25 and norms, NRT refresh/flush/translog, mappings, analyzers, Query DSL, ES|QL, aggregations, ILM, HNSW/BBQ vector search, routing, and Lucene codecs.
+- **[Node.js Glossary](./technologies/nodejs/GLOSSARY.md)** covers V8 isolates, libuv handles and event-loop phases, CJS/ESM loaders and type stripping, Buffers and stream backpressure, child processes, HTTP/Fastify lifecycle, worker pools, V8 GC, and the permission model.
+- **[Redis & Valkey Glossary](./technologies/redis/GLOSSARY.md)** covers RESP2/RESP3 framing, internal encodings (`listpack`, `intset`, `quicklist`, span skiplist), active/lazy expiry and LFU/LRM eviction, stampede mitigation, Lua scripts, Streams and consumer groups, GCRA rate limiting, RDB/MP-AOF persistence, Sentinel, and Redis Cluster hash slots.
+- **[SQLite, libSQL & Turso Glossary](./technologies/sqlite/GLOSSARY.md)** covers storage classes and type affinity, B-tree page and cell layouts, rollback journals, WAL frames and `wal-index`, NGQP and VDBE opcodes, FTS5 and R-Tree virtual tables, Online Backup API, OPFS, WAL shipping, and embedded replicas.
 - **[Data Structures & Algorithms Glossary](./algorithms/dsa/GLOSSARY.md)** covers complexity analysis, data structures, sorting and searching, graph algorithms, dynamic programming, greedy methods, string algorithms, and probabilistic structures.
 - **[Data Systems Glossary](./architecture/data-systems/GLOSSARY.md)** covers storage engines, indexing and vector search, isolation levels, write-ahead logging and recovery, replication, sharding, caching, serialization, and stream processing.
 - **[Distributed Systems Glossary](./architecture/distributed-systems/GLOSSARY.md)** covers system models, clocks and ordering, consistency models, replication and quorums, consensus, distributed transactions, CRDTs, and Byzantine fault tolerance.

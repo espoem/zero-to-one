@@ -73,6 +73,7 @@ describe('strict vs loose vs SameValueZero', () => {
   // Spec: §7.2.14 IsStrictlyEqual (Number.isNaN is the readable NaN check)
   it('predict: Number.isNaN spots NaN while x === NaN never fires', () => {
     const size = 0 / 0;
+    // oxlint-disable-next-line use-isnan -- deliberate test proving === NaN is false
     assert.equal(size === NaN, false);
     assert.equal(Number.isNaN(size), true);
     assert.equal(size !== size, true); // the classic self-inequality detector

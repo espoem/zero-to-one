@@ -11,8 +11,12 @@ type General = 1 | 2;
 
 function view(g: General, d: number): string {
   // The sender of m_{d+1} sent it (and it was lost); messages 1..d were delivered.
-  const sent = [...Array(d + 2).keys()].filter((i) => i >= 1 && (g === 1 ? i % 2 === 1 : i % 2 === 0)).length;
-  const recv = [...Array(d + 1).keys()].filter((i) => i >= 1 && (g === 1 ? i % 2 === 0 : i % 2 === 1)).length;
+  const sent = [...Array(d + 2).keys()].filter(
+    (i) => i >= 1 && (g === 1 ? i % 2 === 1 : i % 2 === 0),
+  ).length;
+  const recv = [...Array(d + 1).keys()].filter(
+    (i) => i >= 1 && (g === 1 ? i % 2 === 0 : i % 2 === 1),
+  ).length;
   return `${sent}/${recv}`;
 }
 
@@ -22,7 +26,9 @@ export function knowledgeDepth(maxWorld: number): { depth: number[]; commonKnowl
   let level = new Set(worlds.filter((w) => w >= 1)); // phi
   const depth = worlds.map(() => 0);
   const everybodyKnows = (s: Set<number>) =>
-    new Set(worlds.filter((w) => ([1, 2] as General[]).every((g) => sees(g, w).every((x) => s.has(x)))));
+    new Set(
+      worlds.filter((w) => ([1, 2] as General[]).every((g) => sees(g, w).every((x) => s.has(x)))),
+    );
   for (const w of level) depth[w] = 0;
   let k = 0;
   for (;;) {
@@ -52,17 +58,23 @@ test('Module 01: common knowledge is unreachable over a lossy chain', async (t) 
     for (let d = 1; d <= 8; d++) assert.equal(depth[d], d - 1, `world ${d}`);
   });
 
-  await t.test('common knowledge holds in no world (the chain connects every world to d = 0)', () => {
-    const { commonKnowledge } = knowledgeDepth(12);
-    assert.deepEqual(commonKnowledge.filter(Boolean), []);
-  });
+  await t.test(
+    'common knowledge holds in no world (the chain connects every world to d = 0)',
+    () => {
+      const { commonKnowledge } = knowledgeDepth(12);
+      assert.deepEqual(commonKnowledge.filter(Boolean), []);
+    },
+  );
 
-  await t.test('indistinguishability classes interleave: G1 groups {0,1},{2,3}; G2 groups {0},{1,2},{3,4}', () => {
-    assert.equal(view(1, 0), view(1, 1));
-    assert.notEqual(view(1, 1), view(1, 2));
-    assert.equal(view(2, 1), view(2, 2));
-    assert.notEqual(view(2, 0), view(2, 1));
-  });
+  await t.test(
+    'indistinguishability classes interleave: G1 groups {0,1},{2,3}; G2 groups {0},{1,2},{3,4}',
+    () => {
+      assert.equal(view(1, 0), view(1, 1));
+      assert.notEqual(view(1, 1), view(1, 2));
+      assert.equal(view(2, 1), view(2, 2));
+      assert.notEqual(view(2, 0), view(2, 1));
+    },
+  );
 });
 
 /* ------------------------------------------------------------------ *
@@ -97,9 +109,18 @@ interface Exploration {
 export function explore(proto: Proto, inputs: number[], crashed: ReadonlySet<number>): Exploration {
   const n = inputs.length;
   const seen = new Set<string>();
-  const out: Exploration = { decisionValues: new Set(), disagreementReachable: false, stuckReachable: false, states: 0 };
+  const out: Exploration = {
+    decisionValues: new Set(),
+    disagreementReachable: false,
+    stuckReachable: false,
+    states: 0,
+  };
   type S = { recv: Map<number, number>[]; dec: (number | undefined)[]; pending: Set<string> };
-  const init: S = { recv: inputs.map((v, i) => new Map([[i, v]])), dec: inputs.map(() => undefined), pending: new Set() };
+  const init: S = {
+    recv: inputs.map((v, i) => new Map([[i, v]])),
+    dec: inputs.map(() => undefined),
+    pending: new Set(),
+  };
   for (let i = 0; i < n; i++) {
     if (crashed.has(i)) continue; // initially crashed processes never send
     for (let j = 0; j < n; j++) if (j !== i) init.pending.add(`${i}>${j}`);
@@ -113,7 +134,11 @@ export function explore(proto: Proto, inputs: number[], crashed: ReadonlySet<num
   decideAll(init);
   const key = (s: S) =>
     JSON.stringify([s.recv.map((m) => [...m].sort()), s.dec, [...s.pending].sort()]);
-  const clone = (s: S): S => ({ recv: s.recv.map((m) => new Map(m)), dec: [...s.dec], pending: new Set(s.pending) });
+  const clone = (s: S): S => ({
+    recv: s.recv.map((m) => new Map(m)),
+    dec: [...s.dec],
+    pending: new Set(s.pending),
+  });
   const stack = [init];
   while (stack.length) {
     const s = stack.pop()!;
@@ -145,35 +170,59 @@ export function explore(proto: Proto, inputs: number[], crashed: ReadonlySet<num
 const allInputs = [0, 1, 2, 3, 4, 5, 6, 7].map((m) => [m & 1, (m >> 1) & 1, (m >> 2) & 1]);
 
 test('Module 01: the FLP dilemma on two concrete protocols (exhaustive over delivery orders)', async (t) => {
-  await t.test('wait-all is safe and valid but NOT live: one initial crash leaves survivors undecided', () => {
-    for (const inputs of allInputs) {
-      const noCrash = explore(waitAll, inputs, new Set());
-      assert.equal(noCrash.disagreementReachable, false);
-      assert.equal(noCrash.stuckReachable, false);
-      assert.equal(noCrash.decisionValues.size, 1, `inputs ${inputs} is univalent without a crash`);
-      for (const c of [0, 1, 2]) {
-        const r = explore(waitAll, inputs, new Set([c]));
-        assert.equal(r.stuckReachable, true, `inputs ${inputs} crash p${c}: survivors wait forever`);
-        assert.equal(r.disagreementReachable, false);
+  await t.test(
+    'wait-all is safe and valid but NOT live: one initial crash leaves survivors undecided',
+    () => {
+      for (const inputs of allInputs) {
+        const noCrash = explore(waitAll, inputs, new Set());
+        assert.equal(noCrash.disagreementReachable, false);
+        assert.equal(noCrash.stuckReachable, false);
+        assert.equal(
+          noCrash.decisionValues.size,
+          1,
+          `inputs ${inputs} is univalent without a crash`,
+        );
+        for (const c of [0, 1, 2]) {
+          const r = explore(waitAll, inputs, new Set([c]));
+          assert.equal(
+            r.stuckReachable,
+            true,
+            `inputs ${inputs} crash p${c}: survivors wait forever`,
+          );
+          assert.equal(r.disagreementReachable, false);
+        }
       }
-    }
-  });
+    },
+  );
 
-  await t.test('wait-two-min is live under one crash but NOT safe: a schedule makes correct processes disagree', () => {
-    const r = explore(waitTwoMin, [0, 1, 1], new Set());
-    assert.equal(r.disagreementReachable, true);
-    for (const inputs of allInputs) {
-      for (const c of [0, 1, 2]) {
-        assert.equal(explore(waitTwoMin, inputs, new Set([c])).stuckReachable, false, 'always terminates with 2 live');
+  await t.test(
+    'wait-two-min is live under one crash but NOT safe: a schedule makes correct processes disagree',
+    () => {
+      const r = explore(waitTwoMin, [0, 1, 1], new Set());
+      assert.equal(r.disagreementReachable, true);
+      for (const inputs of allInputs) {
+        for (const c of [0, 1, 2]) {
+          assert.equal(
+            explore(waitTwoMin, inputs, new Set([c])).stuckReachable,
+            false,
+            'always terminates with 2 live',
+          );
+        }
       }
-    }
-  });
+    },
+  );
 
-  await t.test('(0,1,1) is bivalent under wait-two-min while (0,0,0) and (1,1,1) are univalent (validity)', () => {
-    assert.deepEqual([...explore(waitTwoMin, [0, 1, 1], new Set()).decisionValues].sort(), [0, 1]);
-    assert.deepEqual([...explore(waitTwoMin, [0, 0, 0], new Set()).decisionValues], [0]);
-    assert.deepEqual([...explore(waitTwoMin, [1, 1, 1], new Set()).decisionValues], [1]);
-  });
+  await t.test(
+    '(0,1,1) is bivalent under wait-two-min while (0,0,0) and (1,1,1) are univalent (validity)',
+    () => {
+      assert.deepEqual(
+        [...explore(waitTwoMin, [0, 1, 1], new Set()).decisionValues].sort(),
+        [0, 1],
+      );
+      assert.deepEqual([...explore(waitTwoMin, [0, 0, 0], new Set()).decisionValues], [0]);
+      assert.deepEqual([...explore(waitTwoMin, [1, 1, 1], new Set()).decisionValues], [1]);
+    },
+  );
 });
 
 /* ------------------------------------------------------------------ *
@@ -228,26 +277,39 @@ function allCrashPatterns(n: number, f: number, rounds: number): Crash[][] {
 }
 
 test('Module 01: f + 1 rounds are necessary and sufficient for synchronous crash consensus (flood-set)', async (t) => {
-  const vectors = (n: number) => [...Array(1 << n).keys()].map((m) => [...Array(n).keys()].map((i) => (m >> i) & 1));
+  const vectors = (n: number) =>
+    [...Array(1 << n).keys()].map((m) => [...Array(n).keys()].map((i) => (m >> i) & 1));
 
-  await t.test('f = 1, n = 4: one round admits a disagreeing crash pattern, two rounds never do', () => {
-    const pats1 = allCrashPatterns(4, 1, 1);
-    const bad1 = pats1.some((c) => vectors(4).some((v) => !floodSetAgrees(v, 1, c)));
-    assert.equal(bad1, true);
-    const pats2 = allCrashPatterns(4, 1, 2);
-    assert.equal(pats2.every((c) => vectors(4).every((v) => floodSetAgrees(v, 2, c))), true);
-  });
+  await t.test(
+    'f = 1, n = 4: one round admits a disagreeing crash pattern, two rounds never do',
+    () => {
+      const pats1 = allCrashPatterns(4, 1, 1);
+      const bad1 = pats1.some((c) => vectors(4).some((v) => !floodSetAgrees(v, 1, c)));
+      assert.equal(bad1, true);
+      const pats2 = allCrashPatterns(4, 1, 2);
+      assert.equal(
+        pats2.every((c) => vectors(4).every((v) => floodSetAgrees(v, 2, c))),
+        true,
+      );
+    },
+  );
 
-  await t.test('f = 2, n = 4: two rounds fail (chain of partial crashes), three rounds hold', () => {
-    const chain: Crash[] = [
-      { proc: 0, round: 1, reaches: 0b0010 }, // p0 crashes telling only p1
-      { proc: 1, round: 2, reaches: 0b0100 }, // p1 crashes telling only p2
-    ];
-    assert.equal(floodSetAgrees([0, 1, 1, 1], 2, chain), false);
-    assert.equal(floodSetAgrees([0, 1, 1, 1], 3, chain), true);
-    const pats = allCrashPatterns(4, 2, 3);
-    assert.equal(pats.every((c) => vectors(4).every((v) => floodSetAgrees(v, 3, c))), true);
-  });
+  await t.test(
+    'f = 2, n = 4: two rounds fail (chain of partial crashes), three rounds hold',
+    () => {
+      const chain: Crash[] = [
+        { proc: 0, round: 1, reaches: 0b0010 }, // p0 crashes telling only p1
+        { proc: 1, round: 2, reaches: 0b0100 }, // p1 crashes telling only p2
+      ];
+      assert.equal(floodSetAgrees([0, 1, 1, 1], 2, chain), false);
+      assert.equal(floodSetAgrees([0, 1, 1, 1], 3, chain), true);
+      const pats = allCrashPatterns(4, 2, 3);
+      assert.equal(
+        pats.every((c) => vectors(4).every((v) => floodSetAgrees(v, 3, c))),
+        true,
+      );
+    },
+  );
 });
 
 /* ------------------------------------------------------------------ *
@@ -258,7 +320,7 @@ export function benOr(
   f: number,
   crashed: ReadonlySet<number>,
   seed: number,
-  maxRounds = 500
+  maxRounds = 500,
 ): { decisions: Map<number, number>; rounds: number } {
   const n = inputs.length;
   const rng = new Prng(seed);
@@ -296,13 +358,16 @@ export function benOr(
 }
 
 test('Module 01: Ben-Or randomized consensus terminates with agreement and validity (n = 5, f = 2)', async (t) => {
-  await t.test('agreement and termination across 300 seeds with split inputs and two crashed processes', () => {
-    for (let seed = 1; seed <= 300; seed++) {
-      const r = benOr([0, 1, 0, 1, 1], 2, new Set([3, 4]), seed);
-      assert.equal(r.decisions.size, 3, `seed ${seed} should decide on every live process`);
-      assert.equal(new Set(r.decisions.values()).size, 1, `seed ${seed} agreement`);
-    }
-  });
+  await t.test(
+    'agreement and termination across 300 seeds with split inputs and two crashed processes',
+    () => {
+      for (let seed = 1; seed <= 300; seed++) {
+        const r = benOr([0, 1, 0, 1, 1], 2, new Set([3, 4]), seed);
+        assert.equal(r.decisions.size, 3, `seed ${seed} should decide on every live process`);
+        assert.equal(new Set(r.decisions.values()).size, 1, `seed ${seed} agreement`);
+      }
+    },
+  );
 
   await t.test('validity: unanimous input v can only decide v, in a single round', () => {
     for (let seed = 1; seed <= 50; seed++) {
@@ -314,8 +379,14 @@ test('Module 01: Ben-Or randomized consensus terminates with agreement and valid
     }
   });
 
-  await t.test('split inputs need more than one round for at least some seeds (randomness is doing the work)', () => {
-    const rounds = Array.from({ length: 200 }, (_, i) => benOr([0, 1, 0, 1, 1], 2, new Set(), i + 1).rounds);
-    assert.ok(Math.max(...rounds) > 1);
-  });
+  await t.test(
+    'split inputs need more than one round for at least some seeds (randomness is doing the work)',
+    () => {
+      const rounds = Array.from(
+        { length: 200 },
+        (_, i) => benOr([0, 1, 0, 1, 1], 2, new Set(), i + 1).rounds,
+      );
+      assert.ok(Math.max(...rounds) > 1);
+    },
+  );
 });

@@ -26,8 +26,12 @@ The `M` numbers refer to the proposed module lists in `research/*.md`. Authors u
 | libuv phases, `process.nextTick`, threadpool, streams & backpressure, CJS loader, `require(esm)`, GC tuning flags | `technologies/nodejs` | javascript, cloudflare, networking (DNS threadpool starvation) |
 | Node runtime type stripping | `technologies/nodejs` | typescript (`erasableSyntaxOnly`) |
 | Node-specific security hardening (permission model, `--disable-proto`, `vm` is not a sandbox) | `technologies/nodejs` | security-identity, javascript |
+| Fastify/Node service patterns (graceful shutdown, health probes for single-threaded runtimes, load shedding on loop delay) | `technologies/nodejs` (M08) | system-design, observability |
+| Node diagnostics tooling (loop delay/ELU, reports, heap-snapshot workflow, AsyncLocalStorage) | `technologies/nodejs` (M11) | observability |
+| Node single executable applications (SEA) and Node container specifics (PID 1 for Node, heap vs cgroup budgets) | `technologies/nodejs` (M14) | containers, kubernetes |
 | AbortController/AbortSignal cancellation patterns, retry/backoff with jitter, bounded concurrency pools (M07) | `languages/javascript` | nodejs, react, solidjs |
 | Prototype pollution and ReDoS mechanics at the language level (M13) | `languages/javascript` | nodejs (Node-specific hardening), security-identity |
+| Testing theory (test pyramid, property-based testing, mutation testing) | `languages/javascript` | nodejs (`node:test`), python (pytest/Hypothesis mechanics), all tracks |
 | The type system, inference, variance, declaration emit, tsconfig | `languages/typescript` | all TS-based tracks |
 | Typing JSX, components, hooks, generic/polymorphic components | `languages/typescript` (M12) | react, solidjs, panda-css |
 | Standard Schema, Zod typing of runtime boundaries | `languages/typescript` (M11) | nodejs, react, solidjs |
@@ -67,18 +71,23 @@ The `M` numbers refer to the proposed module lists in `research/*.md`. Authors u
 | Heaps, tries, LRU/LFU implementations, B-tree _as a data structure_ | `algorithms/dsa` | data-systems, redis, system-design |
 | Bloom / HyperLogLog / Count-Min math | `algorithms/dsa` | data-systems, redis, system-design |
 | Consistent hashing algorithms (ring, jump, rendezvous) | `algorithms/dsa` | data-systems (use in sharding), system-design |
-| Concurrency models, locks, data races, lock-free structures (language-neutral) | `algorithms/dsa` (proposed extra module, TBD) | javascript (Atomics), nodejs, python (GIL / free-threading), distributed-systems |
+| Concurrency models, locks, data races, lock-free structures (language-neutral) | `algorithms/dsa` (M13) | javascript (Atomics), nodejs, python (GIL / free-threading), distributed-systems |
 | Data models, relational algebra, normal forms | `architecture/data-systems` | postgres, sqlite |
 | Storage engines: B-tree vs LSM, WAL/ARIES, compaction, buffer pools | `architecture/data-systems` | postgres, sqlite, redis, elasticsearch |
 | Isolation levels & anomaly taxonomy (Adya/Berenson), MVCC theory, SSI | `architecture/data-systems` | postgres, sqlite, distributed-systems |
 | Indexing theory: inverted index, BM25, vector ANN (HNSW, IVF, quantisation) | `architecture/data-systems` | postgres (FTS, pgvector), sqlite (FTS5), redis (Query Engine), elasticsearch (Lucene realisation) |
+| Relevance evaluation metrics (nDCG, MRR, ERR) | `architecture/data-systems` | elasticsearch (`_rank_eval`) |
 | Replication mechanics (leader/follower, multi-leader, leaderless), sharding/rebalancing, CDC | `architecture/data-systems` | postgres, redis, elasticsearch, distributed-systems |
 | Caching theory (consistency, dual writes, invalidation, stampede) | `architecture/data-systems` | redis, system-design, cloudflare |
 | Encoding & schema evolution (Avro, Protobuf) | `architecture/data-systems` | system-design |
 | Stream processing, logs, Kafka operations | `architecture/data-systems` | distributed-systems (log abstraction and delivery semantics only) |
 | PostgreSQL / SQLite / Redis / Elasticsearch realisations, ops, drivers, pooling | each technology track | data-systems |
 | SQL injection mechanics, row-level security | `technologies/postgres` | security-identity |
+| Embedded/edge SQLite replication tools (Litestream, LiteFS, rqlite, cr-sqlite) and SQLite WASM / OPFS | `technologies/sqlite` (M11) | data-systems (M07), cloudflare (D1/DO) |
 | Libsql/Turso | `technologies/sqlite` (M12) | cloudflare (D1 comparison) |
+| RESP protocol, Redis data-structure encodings (listpack, intset, quicklist, span skiplist realisation), Redis expiry/eviction approximations, `SCAN` reverse-binary cursor | `technologies/redis` (M01–M03) | dsa (M13 skip list), data-systems |
+| Redis Streams consumer groups (realisation), Redis Cluster slot/redirect protocol, Sentinel, Redis↔Valkey compatibility matrix | `technologies/redis` (M06, M10–M12) | distributed-systems (M10 log theory), data-systems |
+| Lucene segment/codec internals, BM25 as implemented by Lucene, murmur3 document routing, ES\|QL semantics, retrievers/RRF in Elasticsearch | `technologies/elasticsearch` (M01, M06, M09, M10, M12) | data-systems, observability |
 
 ## Distributed systems and design
 
@@ -89,7 +98,7 @@ The `M` numbers refer to the proposed module lists in `research/*.md`. Authors u
 | Consensus (Paxos/Raft/ZAB), replicated state machines, leases & fencing, distributed locks | `architecture/distributed-systems` | kubernetes (etcd), redis (Redlock critique), system-design |
 | 2PC/3PC, Percolator/Spanner/Calvin, sagas as a correctness problem, CRDTs | `architecture/distributed-systems` | data-systems, system-design |
 | Delivery semantics (at-most / at-least / effectively-once), idempotency theory | `architecture/distributed-systems` | system-design, gitlab-ci (retries) |
-| Retry amplification, metastable failures (theory) | `architecture/distributed-systems` | system-design (patterns as components) |
+| Retry amplification, metastable failures, circuit breakers and retry budgets (theory) | `architecture/distributed-systems` | system-design (patterns as components), nodejs (runtime realisation) |
 | Byzantine Fault Tolerance ($3f+1$ bound, PBFT, Nakamoto consensus) | `architecture/distributed-systems` | security-identity, system-design |
 | Deterministic Simulation Testing (DST, FoundationDB/TigerBeetle model) | `architecture/distributed-systems` | data-systems, system-design |
 | Requirements → HLD → deep dives, estimation, LB/CDN/rate-limiter/queue as components, SLO math | `architecture/system-design` | everything |
@@ -129,7 +138,7 @@ The `M` numbers refer to the proposed module lists in `research/*.md`. Authors u
 | AWS-, GCP- and Azure-only semantics (IAM evaluation order, SCP/RCP, DynamoDB modelling, GCP hierarchy, Entra/ARM/Bicep) | each provider track | cloud-foundations |
 | Edge isolates, Workers runtime, Durable Objects, KV/R2/D1/Queues, Zero Trust | `technologies/cloudflare` | networking, distributed-systems |
 
-## Open ownership questions
+## Resolved ownership decisions (Phase 2)
 
-- Language-neutral concurrency theory: proposed as a new module in `algorithms/dsa`. Confirm before Phase 2.
-- Testing theory (test pyramid, property-based testing, mutation testing): no owner yet. Proposal: one module in `languages/javascript`, with `languages/python` owning pytest/Hypothesis mechanics.
+- Language-neutral concurrency theory (Amdahl/Gustafson, linearizability vs sequential consistency, CAS/ABA, lock-free Treiber stack and Michael-Scott queue, work-stealing Chase-Lev deque): owned by `algorithms/dsa` (M13).
+- Testing theory (test pyramid, property-based testing, mutation testing): owned by `languages/javascript`, with `languages/python` owning pytest/Hypothesis mechanics and `technologies/nodejs` owning `node:test` (M12).
