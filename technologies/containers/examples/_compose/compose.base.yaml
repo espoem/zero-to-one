@@ -1,0 +1,38 @@
+# Reusable Compose v5 base specification template for zero-to-one stacks.
+name: zero-to-one-base
+
+x-logging-defaults: &logging-defaults
+  logging:
+    driver: json-file
+    options:
+      max-size: '10m'
+      max-file: '3'
+
+x-resource-limits: &resource-limits
+  deploy:
+    resources:
+      limits:
+        cpus: '1.00'
+        memory: 512M
+      reservations:
+        cpus: '0.25'
+        memory: 128M
+
+x-security-baseline: &security-baseline
+  init: true
+  security_opt:
+    - no-new-privileges:true
+  read_only: false
+  tmpfs:
+    - /tmp:rw,noexec,nosuid
+
+services:
+  base-template:
+    <<: [*logging-defaults, *resource-limits, *security-baseline]
+    restart: 'no'
+    healthcheck:
+      test: ['CMD', 'true']
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 2s

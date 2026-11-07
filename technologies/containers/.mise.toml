@@ -1,0 +1,5 @@
+# Toolchain for technologies/containers. Run everything through mise:
+#   mise install && mise exec -- npm install && mise exec -- npm test
+[tools]
+node = "26"
+"npm:typescript" = "7.0.2"
