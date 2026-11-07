@@ -96,3 +96,22 @@ npm test            → Test Files 13 passed (13) · Tests 215 passed (215)
 - **C2 verified**: Concurrency behavior validated in test suite.
 - **Tooling resolved**: `mise.lock` generated and committed with multi-platform checksums.
 - **State transition**: Track `react` has passed authoring, challenger review, verifier review, and final gate checks. Ready for merge.
+
+## Integration run (2026-11-06, Claude Code & Antigravity)
+
+- **Service & Environment Versions:**
+  - Playwright: 1.65.0
+  - Chromium: 130+ (macOS arm64 headless)
+  - React / React DOM: 19.3.1
+  - Node.js: 26.12.1
+- **Real-Browser Integration Proofs (`examples/browser/`):**
+  - View Transitions: real CSS pseudo-element animations (`::view-transition-*`), `addTransitionType` class selection (`forward` / `back`), event props (`onEnter`, `onExit`, `onUpdate`, `onShare`), Suspense reveal animation.
+  - Competing view transitions: verified that starting a new view transition skips the active transition to finish cleanly and commits React's update without throwing.
+  - Fragment Refs: verified DOM methods (`getClientRects`, `observeUsing` via `IntersectionObserver` / `ResizeObserver`, `scrollIntoView`, `focusFirst` / `focusLast`, `compareDocumentPosition`) on real multi-element fragments.
+  - Trusted Types: verified browser-level enforcement under `Content-Security-Policy: require-trusted-types-for 'script'`, allowing `trustedHTML` created via registered policy while rejecting raw string injections at the browser level.
+  - Stylesheet Precedence: verified async stylesheet loading suspension without layout flash.
+  - Hung Actions outside `act()`: verified real scheduler behavior where a non-settling action retains optimistic state and holds subsequent transitions.
+- **Results:**
+  - Vitest hermetic suite: 13/13 files, 222/222 passed.
+  - Playwright integration suite: 20/20 browser tests passed.
+  - Typecheck: clean (`tsc --noEmit`).
