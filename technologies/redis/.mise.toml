@@ -1,0 +1,7 @@
+# Toolchain for technologies/redis. Run everything through mise:
+#   mise install && mise exec -- npm ci && mise exec -- npm test
+# Integration tests additionally need Docker (testcontainers / docker compose)
+# or an explicit REDIS_URL / REDIS_SERVER_BIN; see README "Running the examples".
+[tools]
+node = "26"
+"npm:typescript" = "7.0.2"

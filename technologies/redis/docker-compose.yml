@@ -1,0 +1,90 @@
+# Tier-2 labs for modules 10-12. Images are pinned by exact tag (verified on Docker Hub 2026-11-04):
+#   redis:8.10.3      sha256:10b9c2c0711fdeb667f4bcbf5b1175d9dc926674479c9c9f83d7675e98cd89cb (linux/amd64)
+#   valkey/valkey:9.1.3
+#
+# Single server for `npm run test:integration` (REDIS_URL=redis://localhost:6379 ZTO_DEDICATED=1):
+#   docker compose up -d redis
+# Replication + Sentinel (module 10):
+#   docker compose --profile sentinel up -d
+#   docker compose kill primary          # watch: docker compose exec sentinel-1 redis-cli -p 26379 SENTINEL GET-MASTER-ADDR-BY-NAME mymaster
+# Cluster, 3 primaries + 3 replicas (module 11):
+#   docker compose --profile cluster up -d && docker compose --profile cluster run --rm cluster-init
+# Valkey side by side (module 12):
+#   docker compose --profile valkey up -d valkey   # REDIS_URL=redis://localhost:6380
+x-redis: &redis
+  image: redis:8.10.3
+  restart: 'no'
+
+services:
+  redis:
+    <<: *redis
+    ports: ['6379:6379']
+    command: ['redis-server', '--enable-debug-command', 'yes', '--save', '', '--appendonly', 'no']
+
+  valkey:
+    image: valkey/valkey:9.1.3
+    profiles: ['valkey']
+    ports: ['6380:6379']
+    command: ['valkey-server', '--enable-debug-command', 'yes', '--save', '']
+
+  primary:
+    <<: *redis
+    profiles: ['sentinel']
+    hostname: primary
+    command:
+      [
+        'redis-server',
+        '--appendonly',
+        'yes',
+        '--min-replicas-to-write',
+        '1',
+        '--min-replicas-max-lag',
+        '10',
+      ]
+  replica-1:
+    <<: *redis
+    profiles: ['sentinel']
+    command: ['redis-server', '--replicaof', 'primary', '6379']
+    depends_on: [primary]
+  replica-2:
+    <<: *redis
+    profiles: ['sentinel']
+    command: ['redis-server', '--replicaof', 'primary', '6379']
+    depends_on: [primary]
+  sentinel-1: &sentinel
+    <<: *redis
+    profiles: ['sentinel']
+    depends_on: [primary]
+    entrypoint: ['sh', '-c']
+    command:
+      - |
+        printf 'port 26379\nsentinel resolve-hostnames yes\nsentinel monitor mymaster primary 6379 2\nsentinel down-after-milliseconds mymaster 2000\nsentinel failover-timeout mymaster 10000\n' > /tmp/s.conf
+        exec redis-server /tmp/s.conf --sentinel
+  sentinel-2: *sentinel
+  sentinel-3: *sentinel
+
+  node-1: &node
+    <<: *redis
+    profiles: ['cluster']
+    command:
+      [
+        'redis-server',
+        '--cluster-enabled',
+        'yes',
+        '--cluster-node-timeout',
+        '3000',
+        '--appendonly',
+        'yes',
+      ]
+  node-2: *node
+  node-3: *node
+  node-4: *node
+  node-5: *node
+  node-6: *node
+  cluster-init:
+    <<: *redis
+    profiles: ['cluster']
+    depends_on: [node-1, node-2, node-3, node-4, node-5, node-6]
+    entrypoint: ['sh', '-c']
+    command:
+      - sleep 2 && redis-cli --cluster create node-1:6379 node-2:6379 node-3:6379 node-4:6379 node-5:6379 node-6:6379 --cluster-replicas 1 --cluster-yes
