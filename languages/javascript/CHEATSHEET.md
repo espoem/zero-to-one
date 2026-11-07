@@ -58,6 +58,9 @@ Precedence: **arrow (lexical) › `new` › `bind` › `call`/`apply` › method
 ## Objects ([04](modules/04-objects-prototypes-classes.md))
 
 - Key order: integer indices ascending → strings by insertion → symbols by insertion.
+- `in` sees the prototype chain, `Object.hasOwn` does not; both differ from `obj.x === undefined`, which is true for a missing property and for a present one set to `undefined`.
+- `?.` and `??` guard the _read_ (`o.a?.b`, `o.a ?? d`) and never the write: `o?.a = 1` is a SyntaxError.
+- `delete obj.x` removes a property, never a value another wire still points at; on hot objects it drops V8 into dictionary mode — assign `undefined` or use a `Map` instead ([12](modules/12-engine-internals-v8.md)).
 - `defineProperty` defaults: `writable/enumerable/configurable: false`. Assignment defaults: all `true`.
 - `freeze` is shallow; private fields, `Map` contents and `Date` values stay mutable.
 - `[[Set]]` looks up the chain first: inherited setters run; inherited read-only properties block assignment (override mistake).

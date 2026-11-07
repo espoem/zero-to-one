@@ -12,6 +12,8 @@ JavaScript has one object model: objects are bags of properties with a link to a
 
 **Definition (§6.1.7.1).** A _property_ is identified by a key (a String or a Symbol) and has attributes. A **data property** has `[[Value]]` and `[[Writable]]`; an **accessor property** has `[[Get]]` and `[[Set]]` (functions or undefined). Both kinds have `[[Enumerable]]` and `[[Configurable]]`.
 
+> Reading is a walk, writing may be a creation: `[[Get]]` follows the prototype chain, while a successful `[[Set]]` that finds no own property creates one on the receiver. The wire model that makes this predictable is [module 02 §0](02-types-values-coercion.md#0-mental-models-values-wires-and-properties).
+
 | Attribute | Meaning when false |
 | --- | --- |
 | `writable` | `[[Set]]` fails (silently in sloppy code, `TypeError` in strict code) |

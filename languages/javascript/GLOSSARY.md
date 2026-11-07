@@ -29,6 +29,7 @@ Terms shared with the [root glossary](../../GLOSSARY.md) are reproduced verbatim
 
 | English Term | Czech Term | Definition & Context | Primary Reference |
 | :-- | :-- | :-- | :-- |
+| **Mental Model** | **Myšlenkový model (mentální model)** | The internal representation a reader builds of how a language mechanism works and runs to predict behaviour; it can be useful and still be wrong, which is why predictions must be checked against the specification. | Johnson-Laird, _Mental Models_ (1983); [module 02 §0](modules/02-types-values-coercion.md#0-mental-models-values-wires-and-properties) |
 | **Primitive Value** | **Primitivní hodnota** | A value of type Undefined, Null, Boolean, String, Symbol, Number or BigInt; immutable and compared by content. | ECMA-262 §6.1 |
 | **Type Coercion** | **Implicitní převod typů (koerce)** | Automatic conversion of a value to another type by an operator, performed by abstract operations such as ToPrimitive and ToNumber. | ECMA-262 §7.1 |
 | **Truthy / Falsy** | **Pravdivá / nepravdivá hodnota (truthy / falsy)** | Whether ToBoolean maps a value to true or false; the falsy values are `false`, `±0`, `0n`, `NaN`, `""`, `null`, `undefined` and `document.all`. | ECMA-262 §7.1.2 |
@@ -48,7 +49,9 @@ Terms shared with the [root glossary](../../GLOSSARY.md) are reproduced verbatim
 | **Execution Context** | **Kontext provádění** | The specification device tracking the evaluation of code: its function, realm, script or module, and lexical, variable and private environments. | ECMA-262 §9.4 |
 | **Call Stack** | **Zásobník volání** | The execution context stack; the running execution context is on top. | ECMA-262 §9.4 |
 | **Environment Record** | **Záznam prostředí (Environment Record)** | The specification type binding identifiers to values for a scope; chained through `[[OuterEnv]]`. | ECMA-262 §9.1 |
+| **Binding** | **Vazba (binding)** | The association of an identifier with a value inside an Environment Record; assignment replaces the value the binding points at, it does not copy a container. | ECMA-262 §9.1.1, §14.3.1 |
 | **Lexical Scope** | **Lexikální rozsah platnosti** | Name resolution determined by where code is written, not by where it is called from. | ECMA-262 §9.1 |
+| **Shadowing** | **Zastínění (shadowing)** | An inner binding, or an own property, hiding one of the same name in an outer environment record or further up the prototype chain; the hidden one is not modified. | ECMA-262 §9.1.1, §10.1.8 |
 | **Hoisting** | **Vyzdvihování (hoisting)** | Informal name for declaration instantiation: bindings are created before a scope's code runs. | ECMA-262 §10.2.11, §16.1.7 |
 | **Temporal Dead Zone (TDZ)** | **Časová mrtvá zóna (TDZ)** | The period between the creation of a `let`, `const` or `class` binding and its initialisation, during which access throws ReferenceError. | ECMA-262 §9.1.1.1 |
 | **Strict Mode** | **Striktní režim** | A restricted language variant (always on in modules and classes) that turns silent failures into errors and changes `this` binding. | ECMA-262 §11.2.2, Annex C |
@@ -66,6 +69,8 @@ Terms shared with the [root glossary](../../GLOSSARY.md) are reproduced verbatim
 | **Prototype** | **Prototyp** | The object referenced by an object's `[[Prototype]]` slot, from which it inherits properties. | ECMA-262 §6.1.7 |
 | **Prototype Chain** | **Řetězec prototypů** | The sequence of objects followed by property lookup through `[[Prototype]]` links until `null`. | ECMA-262 §10.1.8 |
 | **Prototypal Inheritance** | **Prototypová dědičnost** | Inheritance by delegation to a prototype object rather than by copying from a class. | ECMA-262 §4.3.1 |
+| **Null-Prototype Object** | **Objekt bez prototypu (null-prototype object)** | An object created with `Object.create(null)` or `{ __proto__: null }`, whose `[[Prototype]]` is `null`, so it inherits nothing (`toString`, `hasOwnProperty`) and is safe as a dictionary keyed by untrusted strings. | ECMA-262 §20.1.2.2, §10.1, §20.1.3.8, Annex B.3.1 |
+| **Own Property** | **Vlastní vlastnost (own property)** | A property present on the object itself rather than inherited; `Object.hasOwn` and `[[GetOwnProperty]]` test it, while `in` also sees inherited properties. | ECMA-262 §10.1.5, §7.3.12 |
 | **Ordinary / Exotic Object** | **Běžný / exotický objekt** | An object using the default internal methods versus one overriding at least one (Array, Proxy, module namespace). | ECMA-262 §10 |
 | **Class Field** | **Pole třídy** | A per-instance property declared in a class body and defined with `[[DefineOwnProperty]]` during construction. | ECMA-262 §15.7 |
 | **Private Name** | **Soukromý název (private name)** | A `#name` element accessible only inside its class body and checked by brand; not a property. | ECMA-262 §6.2.10, §15.7 |

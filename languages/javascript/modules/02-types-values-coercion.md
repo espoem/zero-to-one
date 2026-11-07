@@ -8,6 +8,80 @@ Coercion is where JavaScript has the worst reputation and the most precise speci
 
 ---
 
+## 0. Mental models: values, wires and properties
+
+Every rule in this track is easier to hold if four models are right, because a wrong model produces confident wrong predictions that no amount of syntax knowledge repairs. This section states the models, the specification mechanism each one stands for, and how to test whether yours is the right one. Everything here has a full treatment later; the point of the section is the ordering, so that the later sections attach to something.
+
+**Definition (mental model).** A _mental model_ is the internal, usually non-verbal representation a reader builds of a system and runs to predict its behaviour (Johnson-Laird, _Mental Models_, 1983; the fast pattern-matching and slow deliberate modes are Kahneman's System 1 and System 2, _Thinking, Fast and Slow_, 2011). A model can be useful and still be wrong: it was accurate for the cases it was learned from and silently fails outside them. Code reading runs on the fast mode, which is exactly why a wrong model survives for years.
+
+### Model 1: a binding is a wire, not a box
+
+The box model says a variable is a container that holds a copy of the value, so `let b = a` gives `b` its own box. The specification has no boxes: an identifier resolves through an Environment Record to a **binding**, and a binding is an association between a name and a value (ECMA-262 §9.1.1, §9.1.1.4). Assignment replaces the value the binding points at; it does not copy a container.
+
+```js
+let a = 10;
+let b = a; // b is bound to the same value 10, not to a
+a = 0; // reassignment moves a's wire; b's wire is untouched
+// a === 0, b === 10
+```
+
+```mermaid
+flowchart LR
+  subgraph after["after let a = 10#59; let b = a#59; a = 0"]
+    A["binding a"] -->|"wire"| Z["value 0"]
+    B["binding b"] -->|"wire"| T["value 10"]
+  end
+```
+
+There is no `a` inside `b`, so there is nothing for `a = 0` to reach. The same wire model explains `const` (it removes the ability to re-point the wire, not the ability to mutate the value — §14.3.1, and see [module 03 §3](03-execution-contexts-scope-closures.md#3-hoisting-formally)) and the temporal dead zone (the wire exists but is uninitialised until the declaration is evaluated).
+
+### Model 2: a value is either a primitive or an identity
+
+A primitive value (Undefined, Null, Boolean, Number, BigInt, String, Symbol) is immutable and has no identity apart from its content: `10` is `10` wherever it appears, and nothing you do to a variable can change any of its digits (ECMA-262 §6.1.1–§6.1.6.2). Every object — including arrays, functions, `Map`s and instances — is a _reference_ value: the value is an entry in a set of properties with its own identity, and two variables can point at the same object.
+
+So `"abc".toUpperCase()` does not mutate the string; it produces a new one. Property access on a primitive runs `ToObject` (§7.1.18, producing a String exotic object, §10.4.3, §22.1) to expose prototype methods, producing a temporary wrapper; explicitly constructed wrapper objects (`new String('abc')`) are persistent objects and are never strictly equal to the primitive.
+
+### Model 3: a property slot points at a value
+
+An object is a set of properties, and each property is a name (String or Symbol) plus a value or an accessor (§6.1.7.1). `sherlock.address.street` walks two properties: read `address` from `sherlock` (§10.1.8 `[[Get]]`), then read `street` from whatever that value is. Two objects holding the same _reference_ in a property are aliases, not copies:
+
+```mermaid
+flowchart LR
+  S["object sherlock"] -->|"address"| ADDR["address object"]
+  J["object john"] -->|"address"| ADDR
+```
+
+Consequences worth predicting before running anything: assigning an object property copies the _reference_, so mutating through either name is visible through both; reading a property that does not exist yields `undefined`, which is indistinguishable from a property whose value is `undefined` unless you test with `in` or `Object.hasOwn` (`[[HasProperty]]` §10.1.7, HasProperty §7.3.11, HasOwnProperty §7.3.12); and assignment to a property that exists only on the prototype behaves differently from reading it ([module 04 §2.2](04-objects-prototypes-classes.md#22-set-1019-ordinaryset-and-the-override-mistake)).
+
+### Model 4: nothing is destroyed, only unreachable
+
+There is no `delete` of values, no "the object disappears". An object lives as long as something reachable points at it; the engine reclaims it when no execution context, binding, property or internal slot reaches it any more (reachability is the specification's observable requirement; the generational collector is V8's implementation, [module 12](12-engine-internals-v8.md)). This is why a stale closure keeps a whole tree alive ([module 03 §4](03-execution-contexts-scope-closures.md#4-closures)) and why `delete obj.x` removes a _property_, never a value that something else still points at.
+
+### Where each model is proved
+
+| Model | Formal treatment | Executable proof |
+| --- | --- | --- |
+| Binding as a wire | [03 §2 Environment Records](03-execution-contexts-scope-closures.md#2-environment-records), §6.2.5 Reference Records in [01 §3.4](01-reading-the-spec.md#34-reference-records-625) | [`exercises/01-values-and-wires.test.mjs`](../exercises/01-values-and-wires.test.mjs) |
+| Primitive vs identity | §1 below, §6.1 | [`exercises/02-primitive-values.test.mjs`](../exercises/02-primitive-values.test.mjs) |
+| Objects & functions as values | [04 §1](04-objects-prototypes-classes.md#1-properties-and-descriptors), [03 §5](03-execution-contexts-scope-closures.md#5-this) | [`exercises/03-objects-and-functions.test.mjs`](../exercises/03-objects-and-functions.test.mjs) |
+| Sameness algorithms | §7 below, §7.2 | [`exercises/04-equality.test.mjs`](../exercises/04-equality.test.mjs) |
+| Property points at a value | [04 §1–§2](04-objects-prototypes-classes.md#1-properties-and-descriptors) | [`exercises/05-properties.test.mjs`](../exercises/05-properties.test.mjs) |
+| Mutating shared objects | [04 §2.2](04-objects-prototypes-classes.md#22-set-1019-ordinaryset-and-the-override-mistake) | [`exercises/06-mutation.test.mjs`](../exercises/06-mutation.test.mjs) |
+| Prototype delegation | [04 §3](04-objects-prototypes-classes.md#3-prototypes) | [`exercises/07-prototypes.test.mjs`](../exercises/07-prototypes.test.mjs) |
+| Reachability, not deletion | [03 §4](03-execution-contexts-scope-closures.md#4-closures), [12 §GC](12-engine-internals-v8.md) | `--expose-gc` + `WeakRef` in [03's suite](../examples/03-execution-contexts-scope-closures.test.js) |
+
+### Predict, then run
+
+Use this protocol on every snippet in this track, and on real code before you debug it:
+
+1. **Commit to an answer.** Say or write the exact value of every variable on the left-hand side. A prediction you did not commit to teaches nothing, because hindsight will accept either answer.
+2. **Run it.** `node -e '…'` or the exercise suite. The run costs a second; the disagreement is the whole value.
+3. **Reconcile the surprise.** Name which of the four models was wrong, not merely what the right answer was, then find the specification operation that decides it. A surprise you cannot attribute to a model is a gap, not a fix.
+
+The suites in [`exercises/`](../exercises/) are built as prediction targets: each test title states the prediction, and several assert against the answer the wrong model would have produced.
+
+---
+
 ## 1. The eight language types
 
 **Definition (§6.1).** An _ECMAScript language value_ is a value whose type is one of: **Undefined, Null, Boolean, String, Symbol, Number, BigInt, Object**. The first seven are _primitive_ types; their values are immutable and have no identity beyond their content. An Object is a collection of properties with identity.
@@ -31,7 +105,7 @@ Accessing a property on a primitive (`"abc".length`, `(1).toFixed(2)`) runs `ToO
 
 ```js
 const s = 'abc';
-s.custom = 1; // sloppy: silently lost on a temporary wrapper; strict: TypeError
+s.custom = 1; // sloppy: ignores write to primitive receiver (§10.1.9.2); strict: TypeError (§6.2.5.6 PutValue)
 typeof new String('a'); // 'object'
 new Boolean(false) ? 'truthy' : 'falsy'; // 'truthy': every object is truthy
 ```

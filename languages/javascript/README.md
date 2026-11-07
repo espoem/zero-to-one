@@ -18,7 +18,7 @@ The modules form one progressive narrative; read them in order.
 | # | Module | Core content | Spec anchors | Executable proof |
 | --- | --- | --- | --- | --- |
 | 01 | [Reading the specification](modules/01-reading-the-spec.md) | editions vs living draft, notation (`?`/`!`, Completion and Reference Records), TC39 stages incl. 2.7, proposal snapshot, engine support matrix, test262 | §5, §6.2.4–§6.2.5, Annex B | [01](examples/01-reading-the-spec.test.js) |
-| 02 | [Types, values and coercion](modules/02-types-values-coercion.md) | 8 types, IEEE 754, BigInt, UTF-16, symbols, ToPrimitive/ToNumber/…, four equality algorithms, `+`, compensated summation | §6.1, §7.1, §7.2 | [02](examples/02-types-values-coercion.test.js) |
+| 02 | [Types, values and coercion](modules/02-types-values-coercion.md) | §0 mental models (values, wires, properties, reachability, predict-then-run); 8 types, IEEE 754, BigInt, UTF-16, symbols, ToPrimitive/ToNumber/…, four equality algorithms, `+`, compensated summation | §6.1, §7.1, §7.2 | [02](examples/02-types-values-coercion.test.js) |
 | 03 | [Execution contexts, scope, closures and `this`](modules/03-execution-contexts-scope-closures.md) | Environment Records, hoisting and TDZ, closures and V8 context retention, `this` rules, `bind`, strict mode, `eval` | §9.1, §9.4, §10.2, §19.2.1 | [03](examples/03-execution-contexts-scope-closures.test.js) |
 | 04 | [Objects, prototypes and classes](modules/04-objects-prototypes-classes.md) | descriptors, `[[Get]]`/`[[Set]]` and the override mistake, key order, `new`/`instanceof`, classes, private names, exotic objects, copying | §6.1.7, §10.1, §10.4, §15.7 | [04](examples/04-objects-prototypes-classes.test.js) |
 | 05 | [Iterators, generators and async iteration](modules/05-iterators-generators.md) | protocols, IteratorClose, generators as coroutines, iterator helpers, `Iterator.concat`, async generators, `Array.fromAsync` | §7.4, §27.1, §27.5–§27.6 | [05](examples/05-iterators-generators.test.js) |
@@ -31,7 +31,7 @@ The modules form one progressive narrative; read them in order.
 | 12 | [Engine internals (V8)](modules/12-engine-internals-v8.md) | tiers (Ignition, Sparkplug, Maglev, Turbofan), hidden classes, inline caches, elements kinds, deopts, GC basics, diagnosis | V8 documentation | [12](examples/12-engine-internals-v8.test.js) |
 | 13 | [Correctness and security pitfalls](modules/13-correctness-security-pitfalls.md) | prototype pollution, ReDoS, lossless JSON, money, dates, sorting; **version history ES2015 → ES2027** | §25.5, §23.1.3.30, §22.2 | [13](examples/13-correctness-security-pitfalls.test.js) |
 
-Each module ends with an **Interview Drill** (answers in collapsible blocks). Supporting material: [GLOSSARY.md](GLOSSARY.md) (English ↔ Czech), [CHEATSHEET.md](CHEATSHEET.md), and [exams/](exams/).
+Each module ends with an **Interview Drill** (answers in collapsible blocks). Supporting material: [STUDY-PATH.md](STUDY-PATH.md) (the ten Just JavaScript episodes mapped onto these modules, plus where the book simplifies the language), [exercises/](exercises/README.md) (predict-then-run suites), [GLOSSARY.md](GLOSSARY.md) (English ↔ Czech), [CHEATSHEET.md](CHEATSHEET.md), and [exams/](exams/).
 
 **Out of scope, with owners:** libuv phases, `process.nextTick`, streams, the CommonJS loader and `require(esm)` → `technologies/nodejs`; type system → [`languages/typescript`](../typescript/); style/layout/paint internals → `languages/css`; language-neutral concurrency theory → `algorithms/dsa`; `Intl` (ECMA-402) and DOM/Web APIs beyond what async cancellation needs. See [exams/README.md](exams/README.md#syllabus-completeness-against-ecma-262-2026) for the full mapping against the ECMA-262 table of contents.
 
@@ -42,7 +42,8 @@ Tooling is pinned with mise ([`.mise.toml`](.mise.toml): Node 26.12.1). From thi
 ```bash
 mise install                    # installs the pinned Node
 mise exec -- npm ci             # TypeScript, fast-check, esbuild, @types/node (exact versions)
-mise exec -- npm test           # all suites: node --test "examples/**/*.test.{js,mjs,ts}"
+mise exec -- npm test           # all suites: node --test "examples/**/*.test.{js,mjs,ts}" "exercises/**/*.test.mjs"
+mise exec -- npm run exercises  # only the predict-then-run suites
 mise exec -- npm run typecheck  # tsc --noEmit (TypeScript 7)
 ```
 
@@ -76,10 +77,11 @@ Notes:
 
 ```
 languages/javascript/
-├── README.md, GLOSSARY.md, CHEATSHEET.md
+├── README.md, GLOSSARY.md, CHEATSHEET.md, STUDY-PATH.md
 ├── modules/          01–13, one progressive narrative
 ├── examples/         one *.test.js per module, helpers/, fixtures/08-modules/,
 │                     06-event-loop-model.js, 07-async-utils.ts, exam-solutions.js, exam-hands-on.test.js
+├── exercises/        01–07 predict-then-run suites (mental-model drills, no spec proofs)
 ├── exams/            README.md (exams, matrices, delta), interview.md (bank + mocks)
 ├── package.json, package-lock.json, tsconfig.json, .mise.toml
 ```

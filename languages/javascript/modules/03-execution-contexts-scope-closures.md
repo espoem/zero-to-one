@@ -37,6 +37,8 @@ Generators and async functions also hold a _Generator_ component. Suspending a g
 
 **Definition (§9.1).** An _Environment Record_ is a specification type that associates identifiers with variables and functions, based on the lexical nesting of the code. Each has an `[[OuterEnv]]` field (null for the global record). The chain through `[[OuterEnv]]` _is_ the scope chain.
 
+> The intuition behind this section is one sentence long: a binding is a _wire_ to a value, not a box that holds one. [Module 02 §0](02-types-values-coercion.md#0-mental-models-values-wires-and-properties) states the model and the prediction protocol; this section is its normative form.
+
 ```mermaid
 classDiagram
   class EnvironmentRecord {
