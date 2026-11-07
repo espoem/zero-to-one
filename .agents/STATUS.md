@@ -34,7 +34,7 @@ States: ⬜ brief ready → 🟦 authoring → 🟨 challenge + verify → 🟧 
 | 3 | `technologies/kubernetes` | Opus · Claude Code | `track/kubernetes` | ✅ merged | Merged 2026-11-07: 14 modules (433–718 lines), 54 hermetic + 1 integration tests passing, 75-q CKA/CKAD/CKS bank + 3 mocks, challenger & verifier gates complete. |
 | 3 | `technologies/observability` | Opus · Claude Code | `track/observability` | ✅ merged | Merged 2026-11-07: 13 modules (401–530 lines), 52 hermetic + 1 integration tests passing, 65-q PCA/OTCA bank + mock, challenger & verifier gates complete. |
 | 3 | `technologies/terraform` | Opus · claude.ai | `track/terraform` | ✅ merged | Merged 2026-11-07: 12 modules (405–520 lines), 57 hermetic + 1 integration tests passing, 65-q Associate 004 bank + mock, challenger & verifier gates complete. |
-| 4 | `architecture/cloud-foundations` | Opus · claude.ai | `track/cloud-foundations` | ⬜ brief ready |  |
+| 4 | `architecture/cloud-foundations` | Opus · claude.ai | `track/cloud-foundations` | ✅ merged | Merged 2026-11-07: 14 modules (400+ lines), 30 tests passing, MAPPING.md, 65-q exam bank + mock, challenger, verifier & final gates complete. |
 | 4 | `architecture/system-design` | Opus · claude.ai | `track/system-design` | ⬜ brief ready |  |
 | 4 | `technologies/aws` | Opus · claude.ai | `track/aws` | ⬜ brief ready |  |
 | 4 | `technologies/azure` | Opus · claude.ai | `track/azure` | ⬜ brief ready |  |
