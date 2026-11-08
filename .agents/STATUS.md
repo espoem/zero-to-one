@@ -36,7 +36,7 @@ States: ⬜ brief ready → 🟦 authoring → 🟨 challenge + verify → 🟧 
 | 3 | `technologies/terraform` | Opus · claude.ai | `track/terraform` | ✅ merged | Merged 2026-11-07: 12 modules (405–520 lines), 57 hermetic + 1 integration tests passing, 65-q Associate 004 bank + mock, challenger & verifier gates complete. |
 | 4 | `architecture/cloud-foundations` | Opus · claude.ai | `track/cloud-foundations` | ✅ merged | Merged 2026-11-07: 14 modules (400+ lines), 30 tests passing, MAPPING.md, 65-q exam bank + mock, challenger, verifier & final gates complete. |
 | 4 | `architecture/system-design` | Opus · claude.ai | `track/system-design` | ⬜ brief ready |  |
-| 4 | `technologies/aws` | Opus · claude.ai | `track/aws` | ⬜ brief ready |  |
+| 4 | `technologies/aws` | Opus / Antigravity | `main` | ✅ merged | Merged 2026-11-08: 14 modules (400+ lines), 65-q SAA-C03 bank + mock, 38 hermetic tests passing, challenger & verifier gates resolved and complete. |
 | 4 | `technologies/azure` | Opus · claude.ai | `track/azure` | ⬜ brief ready |  |
 | 4 | `technologies/cloudflare` | Opus / Antigravity | `main` | ✅ merged | Merged 2026-11-08: 12 modules, 65-q exam bank + mock, 16 hermetic + workerd tests passing, challenger & verifier gates resolved and complete. |
 | 4 | `technologies/gcp` | Opus · claude.ai | `track/gcp` | ⬜ brief ready |  |
