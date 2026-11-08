@@ -243,11 +243,9 @@ customElements.define('user-profile-card', UserProfileCard);
 
 ---
 
-## 6. Interview Drill: Architecture & Design Tokens
+## Interview Drill
 
-### Q1: Why have major frontend platforms transitioned away from runtime CSS-in-JS libraries (such as styled-components and Emotion) toward zero-runtime compilers like Panda CSS and StyleX?
-
-<details><summary>Answer</summary>
+<details><summary>1. Why have major frontend platforms transitioned away from runtime CSS-in-JS libraries (such as styled-components and Emotion) toward zero-runtime compilers like Panda CSS and StyleX?</summary>
 
 Runtime CSS-in-JS libraries evaluate style declarations in JavaScript during the component rendering cycle and inject `<style>` tags directly into the DOM document head. In modern web applications, this induces three critical bottlenecks:
 
@@ -257,30 +255,22 @@ Runtime CSS-in-JS libraries evaluate style declarations in JavaScript during the
 
 </details>
 
-### Q2: How does the W3C Design Tokens Community Group (DTCG 2025.10) specification standardize token aliases?
-
-<details><summary>Answer</summary>
+<details><summary>2. How does the W3C Design Tokens Community Group (DTCG 2025.10) specification standardize token aliases?</summary>
 
 Under the DTCG 2025.10 standard, token aliases are enclosed in curly braces containing dot-separated key paths to the referenced token (e.g. `"$value": "{color.brand.primary}"`). During compilation by tools like Style Dictionary or Terrazzo, the resolver module walks the token dependency graph, substitutes the referenced value or emits a chained CSS custom property (`var(--color-brand-primary)`), ensuring that changing the base brand token propagates universally across all semantic aliases.
 </details>
 
-### Q3: What is the architectural difference between styling a Web Component using CSS Custom Properties versus the `::part()` pseudo-element?
-
-<details><summary>Answer</summary>
+<details><summary>3. What is the architectural difference between styling a Web Component using CSS Custom Properties versus the `::part()` pseudo-element?</summary>
 
 CSS Custom Properties penetrate the Shadow DOM boundary automatically via normal CSS inheritance; they allow external pages to customize predetermined design token values (such as `--button-bg` or `--button-radius`) without exposing internal DOM structure. In contrast, `::part(<name>)` explicitly exposes a specific internal shadow DOM element for full CSS styling (allowing external stylesheets to apply arbitrary properties like `border`, `transform`, or `padding`), while still preserving encapsulation for all other unexposed shadow elements.
 </details>
 
-### Q4: Why are Constructable Stylesheets (`adoptedStyleSheets`) superior to inlining `<style>` elements inside Shadow DOM web components?
-
-<details><summary>Answer</summary>
+<details><summary>4. Why are Constructable Stylesheets (`adoptedStyleSheets`) superior to inlining `<style>` elements inside Shadow DOM web components?</summary>
 
 When `<style>` elements are embedded inside every shadow root, the browser must allocate memory and parse the CSS text independently for every single instance of the custom element (e.g. 5,000 table rows = 5,000 parsed stylesheets). Constructable Stylesheets allow an author to create a single `CSSStyleSheet` instance in memory via `sheet.replaceSync(...)` and assign it to `shadowRoot.adoptedStyleSheets` across all 5,000 instances. The browser parses the CSS once and shares the underlying parsed rule tree across all instances, saving significant memory and accelerating component instantiation.
 </details>
 
-### Q5: In an enterprise `@layer` architecture declared as `@layer reset, tokens, base, components, utilities;`, why can a utility class with specificity `(0, 1, 0)` override a complex component selector with specificity `(1, 2, 3)` without using `!important`?
-
-<details><summary>Answer</summary>
+<details><summary>5. In an enterprise `@layer` architecture declared as `@layer reset, tokens, base, components, utilities;`, why can a utility class with specificity `(0, 1, 0)` override a complex component selector with specificity `(1, 2, 3)` without using `!important`?</summary>
 
 According to the formal CSS cascade specification, Cascade Layers are evaluated at Step 4 of the precedence hierarchy, before Selector Specificity at Step 5. Within the `@layer` declaration list, later layers take precedence over earlier layers for normal declarations. Because the `utilities` layer was defined after the `components` layer, any declaration inside `utilities` wins over declarations in `components`. The cascade resolves the conflict at the layer stage and never evaluates selector specificity.
 </details>

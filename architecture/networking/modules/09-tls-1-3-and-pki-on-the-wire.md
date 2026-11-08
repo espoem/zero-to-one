@@ -292,11 +292,9 @@ In Wireshark: Navigate to **Preferences $\to$ Protocols $\to$ TLS $\to$ (Pre)-Ma
 
 ---
 
-## 9. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-### Q1: Why is static RSA key exchange completely prohibited in TLS 1.3, and how does ephemeral Diffie-Hellman provide Perfect Forward Secrecy?
-
-<details><summary>Answer</summary>
+<details><summary>1. Why is static RSA key exchange completely prohibited in TLS 1.3, and how does ephemeral Diffie-Hellman provide Perfect Forward Secrecy?</summary>
 
 **Eliminating Retrospective Decryption Risk.**
 
@@ -307,9 +305,7 @@ In Wireshark: Navigate to **Preferences $\to$ Protocols $\to$ TLS $\to$ (Pre)-Ma
 
 </details>
 
-### Q2: What is the 0-RTT Early Data replay attack in TLS 1.3, and what HTTP constraints are mandated by RFC 8470 to mitigate it?
-
-<details><summary>Answer</summary>
+<details><summary>2. What is the 0-RTT Early Data replay attack in TLS 1.3, and what HTTP constraints are mandated by RFC 8470 to mitigate it?</summary>
 
 **The Non-Idempotent Mutation Replay Attack.**
 
@@ -323,9 +319,7 @@ In Wireshark: Navigate to **Preferences $\to$ Protocols $\to$ TLS $\to$ (Pre)-Ma
 
 </details>
 
-### Q3: Explain how Encrypted Client Hello (ECH / RFC 9849) conceals the Server Name Indication (SNI) from network eavesdroppers.
-
-<details><summary>Answer</summary>
+<details><summary>3. Explain how Encrypted Client Hello (ECH / RFC 9849) conceals the Server Name Indication (SNI) from network eavesdroppers.</summary>
 
 **HPKE Dual-Hello Architecture.**
 
@@ -340,9 +334,7 @@ In Wireshark: Navigate to **Preferences $\to$ Protocols $\to$ TLS $\to$ (Pre)-Ma
 
 </details>
 
-### Q4: Why does the adoption of Post-Quantum Hybrid Cryptography (X25519MLKEM768) cause connection failures with legacy network middleboxes?
-
-<details><summary>Answer</summary>
+<details><summary>4. Why does the adoption of Post-Quantum Hybrid Cryptography (X25519MLKEM768) cause connection failures with legacy network middleboxes?</summary>
 
 **Packet MTU Fragmentation Traps.**
 
@@ -354,9 +346,7 @@ In Wireshark: Navigate to **Preferences $\to$ Protocols $\to$ TLS $\to$ (Pre)-Ma
 
 </details>
 
-### Q5: Can an engineer decrypt a modern TLS 1.3 packet capture if they possess the server's private RSA/ECDSA certificate key? Explain why or why not.
-
-<details><summary>Answer</summary>
+<details><summary>5. Can an engineer decrypt a modern TLS 1.3 packet capture if they possess the server's private RSA/ECDSA certificate key? Explain why or why not.</summary>
 
 **No. Ephemeral Key Isolation.**
 

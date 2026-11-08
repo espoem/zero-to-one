@@ -124,42 +124,36 @@ export function validateDashboardSchema(dashboard: unknown): {
 
 ---
 
-## 8. Interview Drill
+## Interview Drill
 
-<details><summary><strong>Q1. How does Grafana 13 Git Sync eliminate configuration drift in enterprise environments?</strong></summary>
+<details><summary>1. How does Grafana 13 Git Sync eliminate configuration drift in enterprise environments?</summary>
 
 Grafana 13 Git Sync treats Git repositories as the immutable source of truth for dashboards, alerting rules, and provisioning files. Changes made in the UI are either blocked (when Git Sync is configured in strict read-only mode) or synchronized back to Git via automated PR bots, ensuring that production dashboards never drift from infrastructure-as-code definitions.
-
 </details>
 
-<details><summary><strong>Q2. What are Exemplars, and how do they connect Prometheus metrics with Grafana Tempo traces?</strong></summary>
+<details><summary>2. What are Exemplars, and how do they connect Prometheus metrics with Grafana Tempo traces?</summary>
 
 Exemplars embed specific trace IDs directly into Prometheus histogram metric sample values when an event occurs. When viewing a Prometheus metric panel in Grafana, sample points appear as clickable markers. Clicking an exemplar marker opens Grafana Tempo pre-filtered to the exact trace ID, instantly explaining a metric anomaly.
-
 </details>
 
-<details><summary><strong>Q3. Why did Grafana deprecate legacy `/api` routes in favor of `/apis` in recent architecture updates?</strong></summary>
+<details><summary>3. Why did Grafana deprecate legacy `/api` routes in favor of `/apis` in recent architecture updates?</summary>
 
 Grafana modernized its backend API routing to align with Kubernetes-style API conventions (`/apis`), improving multi-tenancy isolation, RBAC enforcement consistency, and plugin extensibility.
-
 </details>
 
-<details><summary><strong>Q4. How do you implement automated dashboard provisioning in Kubernetes using ConfigMaps?</strong></summary>
+<details><summary>4. How do you implement automated dashboard provisioning in Kubernetes using ConfigMaps?</summary>
 
 Dashboards are stored as JSON files inside ConfigMaps labeled with `grafana_dashboard: "1"`. Grafana's sidecar container detects labeled ConfigMaps, mounts them into Grafana's provisioning directory (`/etc/grafana/provisioning/dashboards`), and triggers an automatic hot-reload without restarting the Grafana server pod.
-
 </details>
 
-<details><summary><strong>Q5. What security risks arise from misconfigured Grafana RBAC, and how does Grafana 13 mitigate them?</strong></summary>
+<details><summary>5. What security risks arise from misconfigured Grafana RBAC, and how does Grafana 13 mitigate them?</summary>
 
 Misconfigured RBAC can allow unauthorized users to view sensitive business metrics or tamper with alerting thresholds. Grafana 13 mitigates this by enforcing fine-grained roles at the folder and datasource level, integrated seamlessly with enterprise OIDC/SAML group claims.
-
 </details>
 
-<details><summary><strong>Q6. How do you troubleshoot a broken dashboard data source connection in Grafana?</strong></summary>
+<details><summary>6. How do you troubleshoot a broken dashboard data source connection in Grafana?</summary>
 
 Operators check datasource UID correctness in the dashboard JSON, verify network connectivity from the Grafana server pod to the datasource endpoint (e.g., Mimir or Loki), and inspect Grafana server logs (`level=error`) for authentication or TLS handshake failures.
-
 </details>
 
 ---

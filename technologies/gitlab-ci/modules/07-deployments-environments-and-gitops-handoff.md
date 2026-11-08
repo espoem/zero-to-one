@@ -540,58 +540,49 @@ The algorithm maintains mutual exclusion ($|active\_jobs| \le 1$) while guarante
 
 ---
 
-## 12. Interview Drill: Questions and Model Answers
+## Interview Drill
 
-<details>
-<summary><strong>Q1. Why should container deployments to Kubernetes clusters be decoupled from CI pipelines via GitOps rather than pushed directly using kubectl or Helm?</strong></summary>
+<details><summary>1. Why should container deployments to Kubernetes clusters be decoupled from CI pipelines via GitOps rather than pushed directly using kubectl or Helm?</summary>
 
-**Answer**: Decoupling CI and CD via GitOps enforces the principle of least privilege, eliminates configuration drift, and strengthens security:
+Decoupling CI and CD via GitOps enforces the principle of least privilege, eliminates configuration drift, and strengthens security:
 
 1. **Least Privilege**: Direct CI push requires granting CI runners administrative credentials (`kubeconfig`) to the production cluster. If any build dependency or runner container is compromised, the entire cluster is compromised. In GitOps, CI runners have write access only to a Git repository; the GitOps controller (Argo CD) runs inside the cluster with read-only access to Git.
 2. **Drift Detection and Auto-Healing**: Direct push pipelines apply changes once. If someone modifies a live deployment via `kubectl edit`, the cluster drifts until the next build. A GitOps controller continuously reconciles the cluster to match Git state, instantly correcting drift.
 3. **Auditability and Rollback**: In GitOps, every production change is a Git commit. Rolling back is an atomic `git revert`, restoring both manifests and configurations deterministically.
 
 - Ref: OpenGitOps Specification; [modules/07-deployments-environments-and-gitops-handoff.md](../modules/07-deployments-environments-and-gitops-handoff.md#4-gitops-handoff-architecture-the-clean-cicd-boundary)
-
 </details>
 
-<details>
-<summary><strong>Q2. How does `resource_group:process_mode: newest_first` prevent production regressions while optimizing CI runner capacity?</strong></summary>
+<details><summary>2. How does `resource_group:process_mode: newest_first` prevent production regressions while optimizing CI runner capacity?</summary>
 
-**Answer**: In high-velocity teams, multiple commits are merged in rapid succession. Under default or `unordered` execution, concurrent deployment jobs can finish out of order, overwriting newer code with older releases. Under `oldest_first`, every single commit must deploy sequentially, causing massive pipeline queue backlogs where runners spend hours deploying intermediate, already-obsolete commits.
+In high-velocity teams, multiple commits are merged in rapid succession. Under default or `unordered` execution, concurrent deployment jobs can finish out of order, overwriting newer code with older releases. Under `oldest_first`, every single commit must deploy sequentially, causing massive pipeline queue backlogs where runners spend hours deploying intermediate, already-obsolete commits.
 
 `newest_first` solves both problems: when a deployment job finishes, the scheduler inspects the queue of waiting jobs for that resource group. It identifies the job with the latest commit timestamp, immediately marks all older waiting jobs as `dropped` (skipped), and executes the newest job. This ensures that the live environment always advances directly to the latest verified commit while saving runner hours by discarding redundant deployments.
 
 - Ref: GitLab CI Resource Groups Documentation; [modules/07-deployments-environments-and-gitops-handoff.md](../modules/07-deployments-environments-and-gitops-handoff.md#2-resource-groups-and-concurrency-serialization)
-
 </details>
 
-<details>
-<summary><strong>Q3. Explain the function of `environment:on_stop` and `auto_stop_in` in dynamic Review App pipelines. What happens if `GIT_STRATEGY: none` is omitted from the teardown job?</strong></summary>
+<details><summary>3. Explain the function of `environment:on_stop` and `auto_stop_in` in dynamic Review App pipelines. What happens if `GIT_STRATEGY: none` is omitted from the teardown job?</summary>
 
-**Answer**: `environment:on_stop` binds an active deployment environment to a specific cleanup job. When a Merge Request is merged, closed, or manually stopped, GitLab automatically triggers the job referenced by `on_stop` to destroy the ephemeral infrastructure (e.g., executing `helm uninstall`). `auto_stop_in` defines a TTL after which GitLab automatically transitions the environment to stopped and executes the cleanup job, preventing forgotten review environments from leaking cloud spend.
+`environment:on_stop` binds an active deployment environment to a specific cleanup job. When a Merge Request is merged, closed, or manually stopped, GitLab automatically triggers the job referenced by `on_stop` to destroy the ephemeral infrastructure (e.g., executing `helm uninstall`). `auto_stop_in` defines a TTL after which GitLab automatically transitions the environment to stopped and executes the cleanup job, preventing forgotten review environments from leaking cloud spend.
 
 If `GIT_STRATEGY: none` is omitted from the teardown job, the GitLab runner will attempt to run `git fetch` or `git checkout` for the branch. However, if the Merge Request was merged with the "Delete source branch" option checked, the Git branch no longer exists on the remote repository. The runner fails during the git fetch phase before executing the script, resulting in an orphaned environment that never gets cleaned up.
 
 - Ref: [modules/07-deployments-environments-and-gitops-handoff.md](../modules/07-deployments-environments-and-gitops-handoff.md#3-dynamic-ephemeral-review-apps-and-teardown-hooks)
-
 </details>
 
-<details>
-<summary><strong>Q4. How does the GitLab HTTP backend for Terraform / OpenTofu handle distributed state locking, and why is this critical when multiple pipelines run concurrently?</strong></summary>
+<details><summary>4. How does the GitLab HTTP backend for Terraform / OpenTofu handle distributed state locking, and why is this critical when multiple pipelines run concurrently?</summary>
 
-**Answer**: Terraform state files track the mapping between declared code resources and real-world cloud provider metadata. If two executions attempt to modify state concurrently, race conditions will corrupt the JSON state file, leading to resource duplication or accidental destruction.
+Terraform state files track the mapping between declared code resources and real-world cloud provider metadata. If two executions attempt to modify state concurrently, race conditions will corrupt the JSON state file, leading to resource duplication or accidental destruction.
 
 The GitLab HTTP backend implements the Terraform remote state locking protocol. Before reading or writing state, Terraform issues an HTTP `POST` request to the lock URL (`${TF_ADDRESS}/lock`) containing a JSON payload with a unique `LockID`, operation type, and user information. GitLab atomically registers this lock in its PostgreSQL database. If another pipeline attempts to run, its lock acquisition request receives an HTTP 423 Locked status, causing it to retry or fail. Once the operation completes, Terraform issues an HTTP `DELETE` to release the lock.
 
 - Ref: OpenTofu HTTP Backend Documentation; [`../../terraform/modules/10-hcp-terraform-and-ci-workflows.md`](../../terraform/modules/10-hcp-terraform-and-ci-workflows.md)
-
 </details>
 
-<details>
-<summary><strong>Q5. Why is it dangerous to execute `terraform apply` directly against raw `.tf` files in a production CI stage rather than against a pre-generated binary `tfplan.bin` artifact?</strong></summary>
+<details><summary>5. Why is it dangerous to execute `terraform apply` directly against raw `.tf` files in a production CI stage rather than against a pre-generated binary `tfplan.bin` artifact?</summary>
 
-**Answer**: If `terraform apply` is executed without a pre-generated plan file, Terraform calculates an entirely new execution plan at the moment of apply. Between the time the developer reviewed the `terraform plan` output in the Merge Request and the time the merge pipeline runs `apply`, two drift conditions can occur:
+If `terraform apply` is executed without a pre-generated plan file, Terraform calculates an entirely new execution plan at the moment of apply. Between the time the developer reviewed the `terraform plan` output in the Merge Request and the time the merge pipeline runs `apply`, two drift conditions can occur:
 
 1. Another engineer applied changes that altered remote infrastructure state.
 2. Dynamic data sources or external API variables changed.
@@ -599,13 +590,11 @@ The GitLab HTTP backend implements the Terraform remote state locking protocol. 
 As a result, the unpinned apply step may execute destructive actions (such as recreating databases or changing subnets) that were never visible in the approved Merge Request review. Generating a binary plan (`tofu plan -out=tfplan.bin`) freezes the exact set of planned actions and the state serial number. When `tofu apply tfplan.bin` runs, OpenTofu verifies that the current state matches the plan's prerequisites; if the remote infrastructure has drifted, apply aborts cleanly without executing unintended mutations.
 
 - Ref: [modules/07-deployments-environments-and-gitops-handoff.md](../modules/07-deployments-environments-and-gitops-handoff.md#5-terraform--opentofu-pipelines-with-gitlab-managed-state)
-
 </details>
 
-<details>
-<summary><strong>Q6. How do Unified Approval Rules on Protected Environments satisfy SOC 2 / ISO 27001 separation-of-duty requirements?</strong></summary>
+<details><summary>6. How do Unified Approval Rules on Protected Environments satisfy SOC 2 / ISO 27001 separation-of-duty requirements?</summary>
 
-**Answer**: SOC 2 and ISO 27001 require that no single individual can author, approve, and deploy code to production environments. In GitLab, marking an environment as **Protected** enables Unified Approval Rules:
+SOC 2 and ISO 27001 require that no single individual can author, approve, and deploy code to production environments. In GitLab, marking an environment as **Protected** enables Unified Approval Rules:
 
 1. **Access Boundaries**: Restricts the execution of deployment jobs exclusively to designated maintainers or deployment service roles.
 2. **Independent Approval Quorum**: Requires explicit digital sign-off from designated groups (e.g., QA Team, Security Team) before the manual deployment job is unlocked.
@@ -613,13 +602,11 @@ As a result, the unpinned apply step may execute destructive actions (such as re
 4. **Immutable Audit Logging**: Every approval, rejection, and execution timestamp is preserved in GitLab audit events for external compliance verification.
 
 - Ref: [modules/07-deployments-environments-and-gitops-handoff.md](../modules/07-deployments-environments-and-gitops-handoff.md#6-protected-environments-and-multi-person-approval-gates)
-
 </details>
 
-<details>
-<summary><strong>Q7. Describe the failure mode of a GitOps handoff job that does not suppress CI execution on the target configuration repository. How do you mitigate it?</strong></summary>
+<details><summary>7. Describe the failure mode of a GitOps handoff job that does not suppress CI execution on the target configuration repository. How do you mitigate it?</summary>
 
-**Answer**: When a CI pipeline completes, the handoff job executes `git commit` and `git push` against the GitOps configuration repository to bump the container image tag. If the configuration repository has a default CI/CD pipeline configured (e.g., to run linter or manifest validation tests), the inbound push triggers a new pipeline in that repository. If that repository's pipeline triggers downstream notifications or multi-project pipelines that touch the source repository, an infinite recursive pipeline storm is created.
+When a CI pipeline completes, the handoff job executes `git commit` and `git push` against the GitOps configuration repository to bump the container image tag. If the configuration repository has a default CI/CD pipeline configured (e.g., to run linter or manifest validation tests), the inbound push triggers a new pipeline in that repository. If that repository's pipeline triggers downstream notifications or multi-project pipelines that touch the source repository, an infinite recursive pipeline storm is created.
 
 Mitigation strategies:
 
@@ -627,7 +614,6 @@ Mitigation strategies:
 2. Configure `workflow:rules` in the configuration repository to strictly ignore commits authored by the deployment bot service account (`if: $GITLAB_USER_EMAIL == "ci-bot@example.com" when: never`).
 
 - Ref: [modules/07-deployments-environments-and-gitops-handoff.md](../modules/07-deployments-environments-and-gitops-handoff.md#11-production-failure-modes--operational-gotchas)
-
 </details>
 
 ---

@@ -159,12 +159,11 @@ Robust test suites verify not only what a system does when given valid inputs, b
 
 ---
 
-## 6. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-<details>
-<summary>1. How does Hypothesis's "shrinking" mechanism work when a property test fails?</summary>
+<details><summary>1. How does Hypothesis's "shrinking" mechanism work when a property test fails?</summary>
 
-**Answer:** When Hypothesis generates a randomized input that falsifies an invariant assertion, that initial input is usually large, messy, and complex (e.g. a list of 85 random negative integers containing Unicode strings and edge values). Instead of reporting that noisy input, Hypothesis begins a deterministic shrinking loop:
+When Hypothesis generates a randomized input that falsifies an invariant assertion, that initial input is usually large, messy, and complex (e.g. a list of 85 random negative integers containing Unicode strings and edge values). Instead of reporting that noisy input, Hypothesis begins a deterministic shrinking loop:
 
 1. It tries removing elements from sequences.
 2. It tries reducing numbers towards zero or smaller magnitudes.
@@ -172,16 +171,14 @@ Robust test suites verify not only what a system does when given valid inputs, b
 
 </details>
 
-<details>
-<summary>2. What is "Mock Drift", and how does `autospec` protect against it?</summary>
+<details><summary>2. What is "Mock Drift", and how does `autospec` protect against it?</summary>
 
-**Answer:** Mock Drift occurs when a mock object's simulated interface becomes out of sync with the evolving real implementation. Because standard `unittest.mock.MagicMock` is dynamic and accepts arbitrary method calls and arguments, if a production method is renamed or its parameter signature changes, tests using standard mocks will continue to pass, providing false confidence while production code fails. `autospec=True` (or `create_autospec()`) introspects the real target class or function via the `inspect` module. It binds the mock to the target's exact signature: attempting to access non-existent methods raises `AttributeError`, and calling methods with incorrect parameter counts or names raises `TypeError` immediately during test execution.
+Mock Drift occurs when a mock object's simulated interface becomes out of sync with the evolving real implementation. Because standard `unittest.mock.MagicMock` is dynamic and accepts arbitrary method calls and arguments, if a production method is renamed or its parameter signature changes, tests using standard mocks will continue to pass, providing false confidence while production code fails. `autospec=True` (or `create_autospec()`) introspects the real target class or function via the `inspect` module. It binds the mock to the target's exact signature: attempting to access non-existent methods raises `AttributeError`, and calling methods with incorrect parameter counts or names raises `TypeError` immediately during test execution.
 </details>
 
-<details>
-<summary>3. Why are generator fixtures with `yield` preferred over manual setup/teardown methods in pytest?</summary>
+<details><summary>3. Why are generator fixtures with `yield` preferred over manual setup/teardown methods in pytest?</summary>
 
-**Answer:** Generator fixtures encapsulate setup and teardown within a single, localized scope.
+Generator fixtures encapsulate setup and teardown within a single, localized scope.
 
 1. **Locality of Behavior**: Setup and teardown code reside side-by-side in the same function, making resource lifecycle management immediately clear.
 2. **Guaranteed Teardown**: Pytest guarantees that the code following the `yield` statement executes even if the test function fails, times out, or raises an unexpected exception.
@@ -189,18 +186,14 @@ Robust test suites verify not only what a system does when given valid inputs, b
 
 </details>
 
-<details>
-<summary>4. What is the difference between testing an invariant versus testing an example?</summary>
-
-**Answer:**
+<details><summary>4. What is the difference between testing an invariant versus testing an example?</summary>
 
 - **Example-based testing** checks a single point in the state space: given input $X$, assert output $Y$. It verifies that known happy-paths and known historical bug inputs work, but cannot prove that the behavior holds across the infinite remainder of the domain.
 - **Invariant (Property-based) testing** asserts universal truths about the algorithm's behavior across the entire domain space: for all valid inputs, the result must satisfy property $P$. Examples include round-trip invertibility ($\text{decode}(\text{encode}(x)) == x$), idempotence ($f(f(x)) == f(x)$), conservation of quantities, or sortedness. It allows automated fuzzing engines like Hypothesis to explore thousands of adversarial edge cases automatically.
 
 </details>
 
-<details>
-<summary>5. How should deprecations be tested in Python libraries?</summary>
+<details><summary>5. How should deprecations be tested in Python libraries?</summary>
 
-**Answer:** Deprecations should be tested using `pytest.warns(DeprecationWarning, match=...)`. This asserts both that invoking the deprecated function or passing a deprecated parameter emits a `DeprecationWarning` and that the warning message contains clear migration instructions for users. In CI environments, Python should be executed with `-W error` (or `filterwarnings = ["error"]` in `pyproject.toml`) to treat unexpected warnings as test failures, while explicitly testing anticipated deprecations with `pytest.warns()`.
+Deprecations should be tested using `pytest.warns(DeprecationWarning, match=...)`. This asserts both that invoking the deprecated function or passing a deprecated parameter emits a `DeprecationWarning` and that the warning message contains clear migration instructions for users. In CI environments, Python should be executed with `-W error` (or `filterwarnings = ["error"]` in `pyproject.toml`) to treat unexpected warnings as test failures, while explicitly testing anticipated deprecations with `pytest.warns()`.
 </details>

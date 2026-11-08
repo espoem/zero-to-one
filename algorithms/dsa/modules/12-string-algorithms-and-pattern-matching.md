@@ -183,34 +183,29 @@ The inner `while` loop only increments characters that extend beyond the current
 
 ---
 
-## 7. Interview Drill: String Algorithms
+## Interview Drill
 
-<details>
-<summary>1. In KMP, why does the text pointer i never backtrack when a mismatch occurs?</summary>
+<details><summary>1. In KMP, why does the text pointer i never backtrack when a mismatch occurs?</summary>
 
 The precomputed $\pi$ (LPS) table identifies the longest proper prefix of the pattern that is identical to the suffix of the currently matched segment. When a mismatch occurs at pattern index $j$, we already know that the preceding characters match. Sliding the pattern forward to align prefix $\pi[j-1]$ with that matched suffix preserves all potential matching alignments without ever re-reading characters from the text.
 </details>
 
-<details>
-<summary>2. What is the Z-algorithm and how does it differ conceptually from KMP?</summary>
+<details><summary>2. What is the Z-algorithm and how does it differ conceptually from KMP?</summary>
 
 While KMP computes the longest prefix-suffix table of the pattern and matches it against text sequentially, the Z-algorithm computes the Longest Common Prefix ($Z[i]$) between the entire string and every suffix starting at index $i$. By concatenating $P + \text{"\$"} + T$, any index where $Z[i] = |P|$ represents an exact occurrence of $P$ in $T$. The Z-algorithm maintains an explicit window $[L, R]$ of the farthest reach so far.
 </details>
 
-<details>
-<summary>3. Why is Kasai's LCP algorithm O(n) rather than O(n^2)?</summary>
+<details><summary>3. Why is Kasai's LCP algorithm O(n) rather than O(n^2)?</summary>
 
 Kasai's algorithm processes suffixes in order of their original text positions ($i = 0, 1, \dots, n-1$) rather than their sorted suffix array positions. When moving from suffix $i$ to suffix $i + 1$, stripping the first character can reduce the common prefix length by at most 1 ($h \ge h_{\text{prev}} - 1$). Since $h$ decrements at most $n$ times across the entire loop and $h \le n$, the total number of increments is at most $2n$, proving $O(n)$ complexity.
 </details>
 
-<details>
-<summary>4. How does Manacher's algorithm avoid separate logic for even-length palindromes?</summary>
+<details><summary>4. How does Manacher's algorithm avoid separate logic for even-length palindromes?</summary>
 
 It inserts a delimiter (such as `#`) between every adjacent character pair and around the ends of the string. Every even-length palindrome in the original string becomes an odd-length palindrome centered on a `#` delimiter, while every odd-length palindrome remains centered on an original character. This unifies both cases into a single mathematical framework.
 </details>
 
-<details>
-<summary>5. When should you use Aho-Corasick instead of running KMP multiple times?</summary>
+<details><summary>5. When should you use Aho-Corasick instead of running KMP multiple times?</summary>
 
 When searching for multiple patterns $\{P_1, \dots, P_k\}$ simultaneously in a long text. Running KMP $k$ times costs $O(k \cdot |T| + \sum |P_i|)$. If $k = 10,000$ and $|T| = 1,000,000$, KMP would scan $10^{10}$ characters. Aho-Corasick constructs a trie with failure transitions and scans the text in a single pass taking $O(|T| + \sum |P_i| + \text{matches})$, processing the same query in fractions of a second.
 </details>

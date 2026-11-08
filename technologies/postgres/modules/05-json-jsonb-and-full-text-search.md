@@ -255,54 +255,35 @@ flowchart TD
 
 ---
 
-## 9. Interview Drill
+## Interview Drill
 
-<details>
-<summary>1. Explain the architectural and performance differences between `json` and `jsonb` data types in PostgreSQL.</summary>
+<details><summary>1. Explain the architectural and performance differences between `json` and `jsonb` data types in PostgreSQL.</summary>
 
-**Answer**: `json` stores an exact copy of the input text, preserving formatting, whitespace, and duplicate keys. Every query inspecting a `json` column must parse the text from scratch, resulting in $O(N)$ CPU parsing overhead per read. In contrast, `jsonb` parses the document at write time into an internal decomposed binary format. Keys are sorted, whitespace is discarded, and duplicate keys are removed. `jsonb` supports binary search key lookup ($O(\log K)$) and GIN indexing, making it vastly superior for querying, filtering, and indexing.
-
-- Ref: [PostgreSQL Documentation: JSON Types](https://www.postgresql.org/docs/18/datatype-json.html)
-
+`json` stores an exact copy of the input text, preserving formatting, whitespace, and duplicate keys. Every query inspecting a `json` column must parse the text from scratch, resulting in $O(N)$ CPU parsing overhead per read. In contrast, `jsonb` parses the document at write time into an internal decomposed binary format. Keys are sorted, whitespace is discarded, and duplicate keys are removed. `jsonb` supports binary search key lookup ($O(\log K)$) and GIN indexing, making it vastly superior for querying, filtering, and indexing.
 </details>
 
-<details>
-<summary>2. When should you use `jsonb_path_ops` instead of the default `jsonb_ops` in a GIN index?</summary>
+<details><summary>2. When should you use `jsonb_path_ops` instead of the default `jsonb_ops` in a GIN index?</summary>
 
-**Answer**: `jsonb_ops` (the default) creates independent index entries for every key, value, and sub-path in the document. It supports containment (`@>`) as well as key-existence operators (`?`, `?|`, `?&`). However, this produces large index files. `jsonb_path_ops` computes a single 32-bit hash for each leaf path-value combination (e.g., hash of `$.address.zip = 94107`). It only supports the containment operator (`@>`), but generates indexes that are 30% to 50% smaller on disk and significantly faster to scan. Use `jsonb_path_ops` when queries only filter via `@>`.
-
-- Ref: [PostgreSQL Documentation: GIN Internals: jsonb_ops](https://www.postgresql.org/docs/18/datatype-json.html#JSON-INDEXING)
-
+`jsonb_ops` (the default) creates independent index entries for every key, value, and sub-path in the document. It supports containment (`@>`) as well as key-existence operators (`?`, `?|`, `?&`). However, this produces large index files. `jsonb_path_ops` computes a single 32-bit hash for each leaf path-value combination (e.g., hash of `$.address.zip = 94107`). It only supports the containment operator (`@>`), but generates indexes that are 30% to 50% smaller on disk and significantly faster to scan. Use `jsonb_path_ops` when queries only filter via `@>`.
 </details>
 
-<details>
-<summary>3. Why can't a standard B-tree index accelerate `WHERE description ILIKE '%engine%'`, and how does `pg_trgm` solve this?</summary>
+<details><summary>3. Why can't a standard B-tree index accelerate `WHERE description ILIKE '%engine%'`, and how does `pg_trgm` solve this?</summary>
 
-**Answer**: A B-tree index sorts keys lexicographically from left to right. When a search query specifies a leading wildcard (`%engine%`), the prefix is unknown, preventing the B-tree from seeking to a specific starting position in the leaf pages; the engine must fall back to a full sequential table scan. The `pg_trgm` extension breaks strings into 3-character slices (trigrams). A GIN index on trigrams (`USING gin (description gin_trgm_ops)`) maps individual trigrams to the rows containing them. During a wildcard query, PostgreSQL extracts trigrams from the search pattern and performs an index lookup on the matching trigrams, identifying candidate rows in $O(\log N)$ time.
-
-- Ref: [PostgreSQL Documentation: pg_trgm](https://www.postgresql.org/docs/18/pgtrgm.html)
-
+A B-tree index sorts keys lexicographically from left to right. When a search query specifies a leading wildcard (`%engine%`), the prefix is unknown, preventing the B-tree from seeking to a specific starting position in the leaf pages; the engine must fall back to a full sequential table scan. The `pg_trgm` extension breaks strings into 3-character slices (trigrams). A GIN index on trigrams (`USING gin (description gin_trgm_ops)`) maps individual trigrams to the rows containing them. During a wildcard query, PostgreSQL extracts trigrams from the search pattern and performs an index lookup on the matching trigrams, identifying candidate rows in $O(\log N)$ time.
 </details>
 
-<details>
-<summary>4. What is the function of the SQL/JSON standard `JSON_TABLE` function?</summary>
+<details><summary>4. What is the function of the SQL/JSON standard `JSON_TABLE` function?</summary>
 
-**Answer**: `JSON_TABLE` is a SQL:2016 standard function that maps complex, nested JSON data into a virtual relational table directly within a SQL query. It takes a JSON document and a path expression identifying array rows, and allows you to declare explicit SQL column names and types for each extracted attribute using `COLUMNS (...) PATH '...'`. This eliminates the need for procedural unpacking or complex JSON array unnesting.
-
-- Ref: [PostgreSQL Documentation: JSON Functions: JSON_TABLE](https://www.postgresql.org/docs/18/functions-json.html#FUNCTIONS-SQLJSON-TABLE)
-
+`JSON_TABLE` is a SQL:2016 standard function that maps complex, nested JSON data into a virtual relational table directly within a SQL query. It takes a JSON document and a path expression identifying array rows, and allows you to declare explicit SQL column names and types for each extracted attribute using `COLUMNS (...) PATH '...'`. This eliminates the need for procedural unpacking or complex JSON array unnesting.
 </details>
 
-<details>
-<summary>5. At what architectural threshold should an engineering team graduate from PostgreSQL Full-Text Search to a dedicated engine like Elasticsearch?</summary>
+<details><summary>5. At what architectural threshold should an engineering team graduate from PostgreSQL Full-Text Search to a dedicated engine like Elasticsearch?</summary>
 
-**Answer**: Graduate to Elasticsearch/OpenSearch when:
+Graduate to Elasticsearch/OpenSearch when:
 
 1. Search volume or index size exceeds PostgreSQL's RAM, causing search queries to starve the transactional OLTP buffer pool.
 2. The system requires advanced multi-lingual NLP (lemmatization, compound word splitting, phonetic matching like Double Metaphone) not supported by PostgreSQL's Snowball stemmer.
 3. You require complex BM25 scoring with term frequency/inverse document frequency (TF/IDF) tuned across distributed shards.
 4. You require multi-cluster distributed sharding and horizontal scaling for billions of log records or documents. Keep search in PostgreSQL when ACID transactional consistency and zero dual-write lag between the primary data and the search index are paramount.
-
-- Ref: [PostgreSQL Documentation: Full Text Search](https://www.postgresql.org/docs/18/textsearch.html)
 
 </details>

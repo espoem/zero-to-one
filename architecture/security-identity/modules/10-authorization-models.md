@@ -247,36 +247,31 @@ app.get('/api/v1/invoices/:id', authenticateUser, async (req, res) => {
 
 ---
 
-## 8. Interview Drill: Authorization Systems & Zanzibar
+## Interview Drill
 
-<details>
-<summary>1. Explain the "New-Enemy Problem" in distributed authorization systems, and describe how Google Zanzibar solves it using Zookies.</summary>
+<details><summary>1. Explain the "New-Enemy Problem" in distributed authorization systems, and describe how Google Zanzibar solves it using Zookies.</summary>
 
 The New-Enemy Problem is a race condition arising from replication lag in globally distributed databases. Consider: Alice removes Bob's access to a private document at timestamp $t_1$. Shortly after, Alice adds highly sensitive corporate trade secrets to the document at timestamp $t_2$. If an authorization database replica in another region receives the document update ($t_2$) before replication completes the ACL revocation ($t_1$), Bob queries the document. The lagged replica evaluates Bob against the old ACL snapshot, sees Bob as an authorized viewer, and serves Alice's sensitive data to Bob (her "new enemy"). Zanzibar solves this using **Zookies**: cryptographic consistency tokens containing the commit timestamp of the latest authorization mutation ($t \ge t_1$). When Alice updates the document, the application receives a Zookie and passes it to subsequent readers. When Bob attempts to read, Zanzibar mandates that the evaluation must execute against an authorization snapshot whose timestamp is at least as recent as the Zookie ($t_{\text{snapshot}} \ge t_{\text{zookie}}$). If the local replica has not yet replicated $t_1$, it must pause and wait, preventing Bob from seeing the document.
 </details>
 
-<details>
-<summary>2. Why does AWS Cedar implement a "Forbid-Overrides-Permit" evaluation model, and how does this support organizational security guardrails?</summary>
+<details><summary>2. Why does AWS Cedar implement a "Forbid-Overrides-Permit" evaluation model, and how does this support organizational security guardrails?</summary>
 
 In Cedar, if any matching policy evaluates to `forbid`, access is denied unconditionally, even if twenty independent `permit` policies explicitly authorize the action. This architecture enables central security teams to establish immutable **Security Guardrails** that cannot be overridden by application teams: For example, central security can deploy a single global policy: `forbid (principal, action, resource) when { context.mfaVerified == false };` Regardless of what permissive policies individual microservice developers write (`permit(principal, action, resource);`), the forbid rule strictly overrides them, guaranteeing that unauthenticated MFA requests are rejected across the entire enterprise.
 </details>
 
-<details>
-<summary>3. Differentiate between a Policy Enforcement Point (PEP) and a Policy Decision Point (PDP).</summary>
+<details><summary>3. Differentiate between a Policy Enforcement Point (PEP) and a Policy Decision Point (PDP).</summary>
 
 - **PEP (Policy Enforcement Point)**: The infrastructural boundary or middleware that intercepts the incoming user request. It does _not_ contain authorization logic; its job is gathering contextual parameters (user ID, requested resource, HTTP method), querying the PDP, and strictly enforcing the binary outcome (routing the request if permitted, returning HTTP 403 if denied).
 - **PDP (Policy Decision Point)**: The centralized, isolated decision engine (such as OpenFGA, Cedar, or OPA). It takes inputs from the PEP, consults external attributes (PIP) and stored policies, evaluates the rules in memory, and returns a deterministic `permit` or `forbid` answer back to the PEP.
 
 </details>
 
-<details>
-<summary>4. What is the fundamental root cause of Broken Object-Level Authorization (BOLA / IDOR), and why do standard authentication middleware checks fail to detect it?</summary>
+<details><summary>4. What is the fundamental root cause of Broken Object-Level Authorization (BOLA / IDOR), and why do standard authentication middleware checks fail to detect it?</summary>
 
 The root cause of BOLA is confusing **Authentication** with **Object-Level Authorization**. Standard authentication middleware verifies that the incoming request has a valid, cryptographically intact session cookie or JWT signed by the trusted IdP. Once verified, the middleware attaches `req.user` and calls `next()`. However, BOLA occurs _after_ authentication: the application code reads an object identifier from the URL (e.g. `GET /api/documents/:id`) and queries the database using `SELECT * FROM documents WHERE id = :id`. The code fails to verify whether the authenticated user (`req.user.id`) actually _owns_ or has _permission_ to view that specific record. The request is fully authenticated, but completely unauthorized at the object level.
 </details>
 
-<details>
-<summary>5. How does Relationship-Based Access Control (ReBAC) eliminate the "Role Explosion" problem common in classic RBAC?</summary>
+<details><summary>5. How does Relationship-Based Access Control (ReBAC) eliminate the "Role Explosion" problem common in classic RBAC?</summary>
 
 In classic RBAC, permissions are statically bound to flat role names. To represent contextual enterprise sharing (e.g. "Editors of a folder can edit all files in that folder and its subfolders"), RBAC requires provisioning distinct roles for every folder and project combination, leading to thousands of unmanageable roles. ReBAC expresses access dynamically as paths in a directed graph using **Object-Relation-User tuples** and **Userset Rewrites**. Instead of assigning roles, the system stores relationships (`document#parent@folder`, `user#member@team`). The authorization engine traverses the graph dynamically at evaluation time, allowing complex inheritance and sharing models to scale across billions of objects with zero role proliferation.
 </details>

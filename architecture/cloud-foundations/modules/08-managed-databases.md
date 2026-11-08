@@ -131,34 +131,29 @@ The zero RPO vs. async lag data loss calculation, failover timeline equations, a
 
 ---
 
-## 9. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-<details>
-<summary>1. Why does an Amazon RDS Multi-AZ synchronous standby deployment achieve an RPO of 0, while an asynchronous read replica does not?</summary>
+<details><summary>1. Why does an Amazon RDS Multi-AZ synchronous standby deployment achieve an RPO of 0, while an asynchronous read replica does not?</summary>
 
 In an RDS Multi-AZ synchronous standby deployment, write transactions use synchronous physical block-level replication: when the primary writes a page, the write is replicated across private low-latency links to the standby storage in AZ-b before the transaction is acknowledged as committed to the client. If AZ-a fails catastrophically, the standby storage contains 100% of committed transactions (RPO = 0). An asynchronous read replica relies on asynchronous WAL streaming: writes are acknowledged on the primary immediately, creating a replication lag window ($\Delta t$). If the primary crashes, transactions in transit are lost (RPO > 0).
 </details>
 
-<details>
-<summary>2. How does Google Cloud Spanner achieve external serializable consistency across global regions without distributed deadlocks?</summary>
+<details><summary>2. How does Google Cloud Spanner achieve external serializable consistency across global regions without distributed deadlocks?</summary>
 
 Spanner utilizes the TrueTime API, which leverages GPS receivers and atomic clocks in Google datacenters to bound clock uncertainty to $\epsilon \approx 1 - 7\text{ ms}$. When a transaction writes, Spanner assigns a commit timestamp $t$ and pauses execution for $2\epsilon$ ("commit wait") before releasing locks and acknowledging to the client. This guarantees that any subsequent transaction anywhere on Earth receives a timestamp strictly greater than $t$, ensuring monotonic global order without central coordinators.
 </details>
 
-<details>
-<summary>3. What is a "hot partition" in DynamoDB, and what architectural pattern prevents it?</summary>
+<details><summary>3. What is a "hot partition" in DynamoDB, and what architectural pattern prevents it?</summary>
 
 A hot partition occurs when write or read traffic is disproportionately concentrated on a single partition key value (e.g., partitioning by a static status string or current date). Because physical storage partitions are capped at 1,000 write capacity units (WCU) and 3,000 read capacity units (RCU), the single physical partition throttles with `ProvisionedThroughputExceededException`, even if the overall table has vast unused capacity. The pattern to prevent this is choosing high-cardinality keys (e.g., UUIDs) or applying synthetic "write sharding" (appending random suffix digits `_0` through `_9` to the key).
 </details>
 
-<details>
-<summary>4. Why do serverless architectures (like AWS Lambda) require connection proxies when communicating with relational databases?</summary>
+<details><summary>4. Why do serverless architectures (like AWS Lambda) require connection proxies when communicating with relational databases?</summary>
 
 Relational databases allocate dedicated process/thread memory per connection ($\approx 5 - 10\text{ MB}$ per connection in PostgreSQL) and enforce a strict ceiling on `max_connections` (typically 100–200). When serverless Lambda functions scale outward to handle incoming bursts, 1,000 concurrent Lambda instances open 1,000 separate database connections, instantly exhausting database connection limits and crashing the server. Connection proxies (like RDS Proxy or Hyperdrive) maintain a stable pool of persistent connections and multiplex thousands of ephemeral serverless requests over that pool.
 </details>
 
-<details>
-<summary>5. What components determine the Recovery Time Objective (RTO) during an automated database failover?</summary>
+<details><summary>5. What components determine the Recovery Time Objective (RTO) during an automated database failover?</summary>
 
 Total RTO is determined by: (1) Fault detection time—the duration required for health checks to confirm primary unresponsiveness (typically 15–30 seconds); (2) Promotion time—the duration required to promote the standby instance and mount storage (typically 20–30 seconds); (3) Client propagation latency—the time required for client DNS caches and connection pools to flush and resolve the database endpoint to the new primary IP (governed by DNS TTL).
 </details>

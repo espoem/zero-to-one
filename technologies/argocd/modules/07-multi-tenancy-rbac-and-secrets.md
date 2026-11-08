@@ -290,40 +290,34 @@ Multi-tenancy and runtime security in Argo CD do not operate in a vacuum. They i
 
 ---
 
-## 10. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. How do AppProjects enforce multi-tenancy security in Argo CD, and what happens if an application specifies an unlisted destination namespace?</strong></summary>
+<details><summary>1. How do AppProjects enforce multi-tenancy security in Argo CD, and what happens if an application specifies an unlisted destination namespace?</summary>
 
 An `AppProject` enforces multi-tenancy by restricting source repositories, target cluster/namespace destinations, and allowed Kubernetes API resource kinds. If an application attempts to deploy resources into a namespace not explicitly listed in the project's `spec.destinations`, the Argo CD `application-controller` rejects the sync operation with a validation error (`destination namespace not permitted`), preventing unauthorized cross-tenant resource creation.
 </details>
 
-<details>
-<summary><strong>Q2. What were the major breaking changes introduced in Argo CD v3.x regarding Casbin RBAC?</strong></summary>
+<details><summary>2. What were the major breaking changes introduced in Argo CD v3.x regarding Casbin RBAC?</summary>
 
 In Argo CD v3.x, fine-grained RBAC permissions were decoupled. Previously, granting `sync` or `update` access on an application implicitly granted permissions to view pod logs or execute remote shell commands (`exec`). In v3.x, sub-resource access (such as `logs` and `exec`) must be explicitly declared in Casbin policies, improving security posture by adhering to the principle of least privilege.
 </details>
 
-<details>
-<summary><strong>Q3. How does Mozilla SOPS integrate with Argo CD without storing plaintext secrets in Git?</strong></summary>
+<details><summary>3. How does Mozilla SOPS integrate with Argo CD without storing plaintext secrets in Git?</summary>
 
 Mozilla SOPS encrypts sensitive YAML keys using envelope encryption backed by external KMS providers (AWS, GCP, Vault). Argo CD utilizes Configuration Management Plugins (CMPs) running as sidecars in the `argocd-repo-server`. When rendering manifests, the CMP executes `sops --decrypt` in memory, outputting plaintext manifests to the repo-server cache for diffing, ensuring plaintext secrets never touch Git storage or disk unencrypted.
 </details>
 
-<details>
-<summary><strong>Q4. Explain the difference between Mozilla SOPS and External Secrets Operator (ESO) in a GitOps workflow.</strong></summary>
+<details><summary>4. Explain the difference between Mozilla SOPS and External Secrets Operator (ESO) in a GitOps workflow.</summary>
 
 SOPS stores encrypted secret ciphertext directly within the Git repository; decryption happens at manifest generation time on the Argo CD repo-server using KMS keys. ESO stores zero secret ciphertext in Git; the Git repository contains only an `ExternalSecret` custom resource reference, and the controller running inside the target cluster fetches secrets directly from an external vault at runtime.
 </details>
 
-<details>
-<summary><strong>Q5. What is API Server Request Impersonation in Argo CD v3.5+, and why is it crucial for enterprise compliance?</strong></summary>
+<details><summary>5. What is API Server Request Impersonation in Argo CD v3.5+, and why is it crucial for enterprise compliance?</summary>
 
 API Server Request Impersonation enables the `application-controller` to execute Kubernetes mutating operations while impersonating the user who initiated the sync (or a project-scoped service account) rather than using its own cluster-admin service account. This ensures Kubernetes audit logs accurately reflect human or system identities, satisfying stringent enterprise compliance and security auditing mandates.
 </details>
 
-<details>
-<summary><strong>Q6. How do you troubleshoot a Casbin policy denial when a developer reports they cannot sync a production application?</strong></summary>
+<details><summary>6. How do you troubleshoot a Casbin policy denial when a developer reports they cannot sync a production application?</summary>
 
 First, inspect the Argo CD API server logs for authorization failure traces. Next, test the user's effective permissions using the Argo CD CLI command `argocd admin settings rbac can-end-user-do <username> <action> <resource>`. Verify that the user's OIDC group claims correctly map to the expected Casbin role (`g, group-name, role-name`) in `argocd-rbac-cm`.
 </details>

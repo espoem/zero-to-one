@@ -214,39 +214,29 @@ In the browser's CSS Object Model (CSSOM), any declarations that appear after a 
 
 ---
 
-## 6. Interview Drill: Syntax, Selectors & Specificity
+## Interview Drill
 
-### Q1: Given the selector `:is(.alert, #notification) p`, what is its exact specificity tuple $(A, B, C)$?
-
-<details><summary>Answer</summary>
+<details><summary>1. Given the selector `:is(.alert, #notification) p`, what is its exact specificity tuple $(A, B, C)$?</summary>
 
 The specificity tuple is `(1, 0, 1)`. The functional pseudo-class `:is()` takes the specificity of its most specific argument. Between `.alert` (specificity `(0, 1, 0)`) and `#notification` (specificity `(1, 0, 0)`), the highest is `#notification` with `A=1`. The descendant element `p` contributes `C=1`. Therefore, the combined specificity is $A=1, B=0, C=1$.
 </details>
 
-### Q2: Why does `div:has(> img)` have a specificity of `(0, 0, 2)` while `div:where(> img)` has a specificity of `(0, 0, 1)`?
-
-<details><summary>Answer</summary>
+<details><summary>2. Why does `div:has(> img)` have a specificity of `(0, 0, 2)` while `div:where(> img)` has a specificity of `(0, 0, 1)`?</summary>
 
 `:has()` adopts the specificity of the most specific selector in its relative selector argument list. In `div:has(> img)`, `div` is an element `(0, 0, 1)` and `img` is an element `(0, 0, 1)`, yielding a total specificity of `(0, 0, 2)`. In contrast, `:where()` _always_ has a specificity of exactly `(0, 0, 0)` regardless of what selectors appear inside its argument list; only the outer `div` contributes to specificity, resulting in `(0, 0, 1)`.
 </details>
 
-### Q3: What is the fundamental difference between an unforgiving selector list and a forgiving selector list when encountering an unsupported pseudo-class?
-
-<details><summary>Answer</summary>
+<details><summary>3. What is the fundamental difference between an unforgiving selector list and a forgiving selector list when encountering an unsupported pseudo-class?</summary>
 
 In an unforgiving selector list (such as standard comma-separated rules: `h1, h2, :unsupported`), if the browser engine fails to parse any single selector in the list, the entire rule block is considered invalid and discarded. In a forgiving selector list (used inside `:is()` and `:where()`), the parser evaluates each selector independently; unsupported or invalid selectors are dropped silently, while all valid selectors in the list continue to match and apply styles.
 </details>
 
-### Q4: Why does `:user-invalid` represent a superior UX pattern over the standard `:invalid` pseudo-class for form inputs?
-
-<details><summary>Answer</summary>
+<details><summary>4. Why does `:user-invalid` represent a superior UX pattern over the standard `:invalid` pseudo-class for form inputs?</summary>
 
 The `:invalid` pseudo-class evaluates the validity constraints of an input immediately upon DOM parsing. If an input has a `required` attribute, it is immediately invalid on initial page load, causing red error states to appear before the user has even focused the input. In contrast, `:user-invalid` only matches if the field is invalid _and_ the user has actively interacted with it (altered its value, blurred focus, or attempted to submit the parent form), preventing premature error presentation.
 </details>
 
-### Q5: In native CSS nesting, what is the role of `CSSNestedDeclarations` in the CSSOM?
-
-<details><summary>Answer</summary>
+<details><summary>5. In native CSS nesting, what is the role of `CSSNestedDeclarations` in the CSSOM?</summary>
 
 When CSS nesting was initially standardized, author declarations placed after a nested child rule were inadvertently hoisted to the beginning of the parent style rule in the CSSOM, altering the intended cascade order. The CSS Cascading and Inheritance Level 6 specification introduced `CSSNestedDeclarations` as an internal CSSOM grouping node. Declarations appearing after a nested rule are grouped into a `CSSNestedDeclarations` object that preserves their exact source order and cascade position relative to preceding rules.
 </details>

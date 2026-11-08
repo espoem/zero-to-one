@@ -400,49 +400,41 @@ Invariant 3: If PLEG relist duration exceeds 3 minutes, the kubelet flags itself
 
 ---
 
-## 11. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. Explain why a Pod with low average CPU utilization can still suffer heavy CFS CPU throttling.</strong></summary>
+<details><summary>1. Explain why a Pod with low average CPU utilization can still suffer heavy CFS CPU throttling.</summary>
 
 The Linux kernel Completely Fair Scheduler (CFS) enforces CPU limits over short time windows called quota periods (typically 100ms or `100,000 microseconds`). A CPU limit of `1000m` equates to 100ms of CPU execution time per 100ms period. If a multi-threaded application spawns 8 threads to process a traffic burst, those 8 threads running concurrently can exhaust the 100ms budget in just 12.5 milliseconds (8 threads $\times$ 12.5ms = 100ms). For the remaining 87.5 milliseconds of that period, the Linux kernel completely suspends all process execution for that container. Even though average utilization over a 1-minute Prometheus sampling window appears low (e.g., 20%), the application suffered severe latency stalls during the throttled portion of each 100ms cycle.
 </details>
 
-<details>
-<summary><strong>Q2. What is PLEG, how does it detect container transitions, and what is the consequence when it becomes unhealthy?</strong></summary>
+<details><summary>2. What is PLEG, how does it detect container transitions, and what is the consequence when it becomes unhealthy?</summary>
 
 PLEG (Pod Lifecycle Event Generator) is the internal subsystem within the kubelet responsible for maintaining an accurate, timely model of container states. Because container runtimes historically lacked push notifications, PLEG queries the CRI runtime via `ListContainers()` every 1 second, compares the returned container states against its previous in-memory cache, and emits lifecycle events (e.g., `ContainerStarted`, `ContainerDied`) to the kubelet's `SyncLoop`. If container runtime calls block (due to disk I/O saturation or kernel lockups) and PLEG cannot complete its relist loop within 3 minutes, the kubelet marks itself unhealthy, terminates node lease renewals, and the control plane flags the node as `NotReady`, evicting its pods.
 </details>
 
-<details>
-<summary><strong>Q3. How is the OOMScoreAdjust calculated for Burstable pods, and how does it compare to Guaranteed and BestEffort pods?</strong></summary>
+<details><summary>3. How is the OOMScoreAdjust calculated for Burstable pods, and how does it compare to Guaranteed and BestEffort pods?</summary>
 
 - **Guaranteed**: Hardcoded to `OOMScoreAdjust = -997`. It is virtually immune to OOM termination unless host system daemons face complete starvation.
 - **BestEffort**: Hardcoded to `OOMScoreAdjust = 1000`. It is the first target killed by the kernel during memory exhaustion.
 - **Burstable**: Dynamically calculated using the formula: $$\text{OOMScoreAdjust} = 1000 - \left\lfloor \frac{\text{Pod Memory Request}}{\text{Node Allocatable Memory}} \times 1000 \right\rfloor$$ This yields a score between 2 and 999. Workloads that reserve a large portion of node memory receive a lower score (e.g., reserving 80% yields 200), ensuring they are protected over workloads that reserve only a tiny fraction of node memory.
-
 </details>
 
-<details>
-<summary><strong>Q4. What is the fundamental difference between `kube-proxy` in iptables mode versus an eBPF-based dataplane like Cilium?</strong></summary>
+<details><summary>4. What is the fundamental difference between `kube-proxy` in iptables mode versus an eBPF-based dataplane like Cilium?</summary>
 
 `kube-proxy` in iptables mode relies on writing thousands of sequential packet filtering rules into the Linux kernel `nat` table. Because iptables rules are evaluated sequentially ($O(N)$ complexity), packet processing latency increases significantly as the number of Services and Endpoints grows, and regenerating the rule table under rapid pod churn consumes heavy CPU. An eBPF dataplane bypasses iptables entirely. It attaches eBPF bytecode directly to network driver hooks (XDP) or socket operations (`sock_ops`), performing $O(1)$ hash map lookups to translate Service IPs directly to Pod IPs. Socket-level load balancing rewrites the destination address during the initial `connect()` syscall, avoiding connection tracking (conntrack) and netfilter packet traversal overhead entirely.
 </details>
 
-<details>
-<summary><strong>Q5. What is a Static Pod, how does the kubelet manage it without an API server, and what happens if you delete its Mirror Pod?</strong></summary>
+<details><summary>5. What is a Static Pod, how does the kubelet manage it without an API server, and what happens if you delete its Mirror Pod?</summary>
 
 A Static Pod is defined by placing a manifest file directly in the node's local filesystem directory (e.g., `/etc/kubernetes/manifests/`), monitored by the kubelet's directory file watcher. The kubelet reads the manifest, binds it directly to the local node, and manages its lifecycle through the CRI runtime without involving the `kube-scheduler`. To provide visibility, the kubelet creates an ephemeral, read-only "Mirror Pod" in `kube-apiserver`. If an administrator runs `kubectl delete pod` against the Mirror Pod, the API server deletes the mirror record, but the kubelet observes that the local manifest file still exists on disk and immediately recreates the Mirror Pod. The pod can only be stopped by deleting the YAML file from the node's host filesystem.
 </details>
 
-<details>
-<summary><strong>Q6. Why did Kubernetes mandate cgroup v2 via KEP-5573 (FailCgroupV1)?</strong></summary>
+<details><summary>6. Why did Kubernetes mandate cgroup v2 via KEP-5573 (FailCgroupV1)?</summary>
 
 cgroup v1 suffered from critical architectural limitations: resource controllers (CPU, memory, blkio) operated in separate, uncoordinated hierarchies; memory used by kernel page cache during block I/O was not properly charged to container cgroups; and OOM management was fragmented. cgroup v2 provides a unified single hierarchy where all controllers act on the exact same process tree. This enables accurate memory accounting (including kernel structures and page caches), Pressure Stall Information (PSI) metrics, rootless container security, and predictable OOM killer semantics.
 </details>
 
-<details>
-<summary><strong>Q7. How do hard and soft eviction thresholds differ during node memory pressure?</strong></summary>
+<details><summary>7. How do hard and soft eviction thresholds differ during node memory pressure?</summary>
 
 Hard eviction thresholds (e.g., `memory.available < 100Mi`) trigger immediate, ungraceful termination. The kubelet does not honor `terminationGracePeriodSeconds`, setting it to 0 and instructing the CRI runtime to kill container processes immediately to prevent a kernel-level panic. Soft eviction thresholds (e.g., `memory.available < 500Mi`) require the condition to persist for a configured duration (`eviction-soft-grace-period`, e.g., 90s). If the condition persists throughout that window, the kubelet initiates eviction while honoring the pod's configured graceful termination period.
 </details>

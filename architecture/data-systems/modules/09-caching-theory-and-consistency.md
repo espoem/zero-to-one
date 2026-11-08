@@ -228,12 +228,11 @@ graph TD
 
 ---
 
-## 8. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1: Formulate the mathematical proof of why application code should "Update Database, Then Delete Cache" rather than "Update Database, Then Update Cache".</strong></summary>
+<details><summary>1. Formulate the mathematical proof of why application code should "Update Database, Then Delete Cache" rather than "Update Database, Then Update Cache".</summary>
 
-**Answer:** Suppose two concurrent threads, Writer 1 and Writer 2, update the same entity:
+Suppose two concurrent threads, Writer 1 and Writer 2, update the same entity:
 
 1. Under an **"Update Cache"** approach:
    - Writer 1 writes value $A$ to DB.
@@ -250,10 +249,9 @@ graph TD
 
 </details>
 
-<details>
-<summary><strong>Q2: How does the XFetch algorithm prevent cache stampedes without relying on distributed locks?</strong></summary>
+<details><summary>2. How does the XFetch algorithm prevent cache stampedes without relying on distributed locks?</summary>
 
-**Answer:** The XFetch algorithm evaluates a probabilistic condition during routine read operations:
+The XFetch algorithm evaluates a probabilistic condition during routine read operations:
 
 $$\Delta - \beta \cdot \delta \cdot \ln(\text{rand}()) > \text{TTL}$$
 
@@ -262,10 +260,7 @@ Where $\Delta$ is the remaining lifetime of the key, $\delta$ is the delta compu
 Because $\ln(\text{rand}())$ is negative, the probability that the condition evaluates to true is nearly zero when the key is fresh, but increases smoothly and exponentially as the key approaches its expiration deadline ($\Delta \to 0$). Under high read traffic, exactly one client will randomly evaluate this condition to true in the window immediately preceding expiration, triggering an **asynchronous background recomputation** that refreshes the key's TTL. The key never expires, completely preventing concurrent thundering herds without any distributed mutex locking.
 </details>
 
-<details>
-<summary><strong>Q3: Explain the difference between Cache Penetration, Cache Breakdown, and Cache Avalanche.</strong></summary>
-
-**Answer:**
+<details><summary>3. Explain the difference between Cache Penetration, Cache Breakdown, and Cache Avalanche.</summary>
 
 - **Cache Penetration**: Queries request keys that **do not exist** in either the cache or the database. Every request bypasses the cache and hits the database. (Mitigated by caching NULL values with short TTLs or using Bloom filters).
 - **Cache Breakdown**: A **single ultra-hot key** expires from the cache. High concurrent traffic hits the database simultaneously to recompute that single key. (Mitigated by mutex locks or the XFetch algorithm).
@@ -273,10 +268,9 @@ Because $\ln(\text{rand}())$ is negative, the probability that the condition eva
 
 </details>
 
-<details>
-<summary><strong>Q4: Why does Least Frequently Used (LFU) eviction suffer from historic frequency bias, and how does Window TinyLFU solve it?</strong></summary>
+<details><summary>4. Why does Least Frequently Used (LFU) eviction suffer from historic frequency bias, and how does Window TinyLFU solve it?</summary>
 
-**Answer:** LFU maintains an access counter for each key. An item that was accessed 100,000 times yesterday (e.g. a viral news story) accumulates a massive counter. Even after its traffic drops to zero today, its counter remains far higher than a newly popular item accessed 50 times today. Standard LFU will repeatedly evict the newly popular item to keep the dead viral item.
+LFU maintains an access counter for each key. An item that was accessed 100,000 times yesterday (e.g. a viral news story) accumulates a massive counter. Even after its traffic drops to zero today, its counter remains far higher than a newly popular item accessed 50 times today. Standard LFU will repeatedly evict the newly popular item to keep the dead viral item.
 
 **Window TinyLFU** solves this via two innovations:
 
@@ -285,10 +279,9 @@ Because $\ln(\text{rand}())$ is negative, the probability that the condition eva
 
 </details>
 
-<details>
-<summary><strong>Q5: What is the Effective Memory Access Time formula, and what does it reveal about database load when hit ratio drops from 99% to 95%?</strong></summary>
+<details><summary>5. What is the Effective Memory Access Time formula, and what does it reveal about database load when hit ratio drops from 99% to 95%?</summary>
 
-**Answer:** The formula is:
+The formula is:
 
 $$T_{\text{eff}} = H \cdot T_{\text{cache}} + (1 - H) \cdot T_{\text{db}}$$
 
@@ -304,10 +297,9 @@ $$\frac{0.05}{0.01} = 5\times \quad (500\% \text{ load increase})$$
 This non-linear amplification frequently pushes overloaded databases beyond connection pool limits into total cascading failure.
 </details>
 
-<details>
-<summary><strong>Q6: How does Change Data Capture (CDC) provide resilient cache invalidation compared to application-level invalidation?</strong></summary>
+<details><summary>6. How does Change Data Capture (CDC) provide resilient cache invalidation compared to application-level invalidation?</summary>
 
-**Answer:** In application-level invalidation, if an application server crashes, encounters an unhandled exception, or experiences a network partition after committing to the database but before calling `Cache.del()`, the cache is never invalidated and remains permanently stale.
+In application-level invalidation, if an application server crashes, encounters an unhandled exception, or experiences a network partition after committing to the database but before calling `Cache.del()`, the cache is never invalidated and remains permanently stale.
 
 In **CDC-driven invalidation**:
 

@@ -226,44 +226,39 @@ Dates of the 19.x releases are from the npm registry; earlier ones from the Reac
 
 ---
 
-## 10. Interview Drill
+## Interview Drill
 
-<details><summary><strong>1. A page is slow when typing in a search box. How do you diagnose and fix it?</strong></summary>
+<details><summary>1. A page is slow when typing in a search box. How do you diagnose and fix it?</summary>
 
 Profile a production build with the React Profiler/Performance Tracks to see what renders per keystroke. Typical fixes in order: colocate the input state so only the search area re-renders; let the Compiler (or `memo`) skip unchanged subtrees; render results with `useDeferredValue` so typing stays urgent; virtualise the result list; debounce network requests.
 </details>
 
-<details><summary><strong>2. Why can a context make <code>memo</code> useless, and how do you fix it?</strong></summary>
+<details><summary>2. Why can a context make <code>memo</code> useless, and how do you fix it?</summary>
 
 Context consumers re-render whenever the provider value changes identity, regardless of `memo`. An inline object value changes identity on every provider render. Memoise the value, split fast- and slow-changing data into separate contexts, or use an external store with selector subscriptions.
 </details>
 
-<details><summary><strong>3. What does <code>act</code> do and when do you need the async form?</strong></summary>
+<details><summary>3. What does <code>act</code> do and when do you need the async form?</summary>
 
 It runs the callback and flushes all React work it caused (renders, effects, Suspense retries) before returning, so assertions see a settled UI. Use `await act(async () => …)` whenever promises, Suspense, transitions or actions are involved. RTL's `render`, `fireEvent` and `findBy*` wrap act for you, but async React work still needs awaiting.
 </details>
 
-<details><summary><strong>4. List the APIs removed in React 19 that most often break upgrades.</strong></summary>
+<details><summary>4. List the APIs removed in React 19 that most often break upgrades.</summary>
 
 `ReactDOM.render`/`hydrate`/`unmountComponentAtNode`, `findDOMNode`, string refs, legacy context, `createFactory`, `defaultProps` on function components (ignored), `propTypes` checks (ignored), most of `react-dom/test-utils`, `renderToNodeStream`, UMD builds.
 </details>
 
-<details><summary><strong>5. How do you split code in React and what are the pitfalls?</strong></summary>
+<details><summary>5. How do you split code in React and what are the pitfalls?</summary>
 
 `lazy(() => import(...))` at module level plus a Suspense boundary, by route and heavy widget; RSC splits client code per `"use client"` boundary automatically. Pitfalls: `lazy` inside a component (remount and reload every render), missing error boundaries for chunk-load failures after deploys, and waterfalls when a lazy component also fetches data — preload on intent.
 </details>
 
-<details><summary><strong>6. What are Performance Tracks?</strong></summary>
+<details><summary>6. What are Performance Tracks?</summary>
 
 Since React 19.2, custom tracks in the Chrome Performance panel: a Scheduler track group showing React work by priority (blocking, transition, suspense, idle) and when it waits, and a Components track showing which components render or mount effects. They connect an interaction to the React work it caused.
 </details>
 
-<details><summary><strong>7. How do you keep a React Server Components app secure operationally?</strong></summary>
+<details><summary>7. How do you keep a React Server Components app secure operationally?</summary>
 
 Patch quickly (automated updates, security PRs auto-merged on green CI), keep `react`/`react-dom`/`react-server-dom-*` in lockstep, gate CI on the patched floor, harden Server Functions (auth, authorisation, validation, size/rate limits, timeouts), and use CSP/Trusted Types on the client.
-</details>
-
-<details><summary><strong>8. How does list virtualisation work?</strong></summary>
-
-Compute which rows intersect the viewport from the scroll offset and row heights, render only those plus an overscan margin, and position them with padding/transforms inside a full-height container. Work and DOM size become proportional to the viewport, not the list length; variable heights need measurement and scroll anchoring.
 </details>

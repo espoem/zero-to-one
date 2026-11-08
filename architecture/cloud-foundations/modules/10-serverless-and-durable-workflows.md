@@ -124,34 +124,29 @@ The reverse compensating transaction execution order and exponential backoff jit
 
 ---
 
-## 8. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-<details>
-<summary>1. How does `ReportBatchItemFailures` prevent duplicate message processing when consuming SQS queues with Lambda?</summary>
+<details><summary>1. How does `ReportBatchItemFailures` prevent duplicate message processing when consuming SQS queues with Lambda?</summary>
 
 Without `ReportBatchItemFailures`, throwing an exception during the processing of a single message causes the entire batch (e.g., 10 messages) to fail. The event source mapping marks all 10 messages as unacknowledged and returns them to the queue. When redelivered, the 9 previously successful messages are executed again, causing duplicate operations. With `ReportBatchItemFailures`, the function returns an array containing only the failed message ID. The event source mapping deletes the 9 successful messages from the queue and leaves only the single failed message for redelivery.
 </details>
 
-<details>
-<summary>2. Explain the difference between Orchestration and Choreography in distributed sagas.</summary>
+<details><summary>2. Explain the difference between Orchestration and Choreography in distributed sagas.</summary>
 
 In Choreography, services communicate asynchronously via pub/sub events without a central coordinator: Service A completes an action and emits an event, which triggers Service B. This offers high decoupling, but makes tracking overall business state difficult. In Orchestration, a dedicated state machine (such as AWS Step Functions) explicitly commands each service to execute, waits for response payloads, handles branching logic, and directly triggers compensating transactions in reverse order if a step fails.
 </details>
 
-<details>
-<summary>3. Why is "Full Jitter" superior to plain exponential backoff in mitigating retry storms?</summary>
+<details><summary>3. Why is "Full Jitter" superior to plain exponential backoff in mitigating retry storms?</summary>
 
 Plain exponential backoff increases the delay exponentially ($1\text{s}, 2\text{s}, 4\text{s}, 8\text{s}$), but all failed clients that crashed at the same time will calculate the exact same delay. Consequently, clients retry in synchronized stampedes, repeatedly overwhelming the recovering dependency. Full Jitter randomizes the backoff interval uniformly between $0$ and the exponential ceiling ($\text{random}(0, \text{backoff})$). This flattens the retry curve into a smooth, continuous stream of requests, giving the recovering backend headroom to heal.
 </details>
 
-<details>
-<summary>4. What is a Compensating Transaction in the Saga pattern, and why can it not simply rely on database ROLLBACK?</summary>
+<details><summary>4. What is a Compensating Transaction in the Saga pattern, and why can it not simply rely on database ROLLBACK?</summary>
 
 In a distributed microservice architecture, each service has its own independent database; there is no global distributed transaction coordinator or shared ACID boundary. Once Service A commits its local transaction to disk (e.g., reserving hotel inventory), that commit cannot be undone with a SQL `ROLLBACK` after the connection has closed. A compensating transaction is an explicit business operation (e.g., `cancelHotelReservation()`) that logically reverses the observable side effects of the earlier committed action.
 </details>
 
-<details>
-<summary>5. When should Step Functions Standard Workflows be chosen over Express Workflows?</summary>
+<details><summary>5. When should Step Functions Standard Workflows be chosen over Express Workflows?</summary>
 
 Standard Workflows should be chosen for long-running processes (up to 1 year), workflows requiring human-in-the-loop approvals, processes needing exactly-once task execution, or where a full visual audit history of every state transition is mandatory. Express Workflows should be chosen for high-volume, short-duration event-processing workloads (up to 5 minutes) that handle thousands of events per second at lower cost with at-least-once execution semantics.
 </details>

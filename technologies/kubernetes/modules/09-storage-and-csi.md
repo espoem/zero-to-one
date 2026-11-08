@@ -499,70 +499,55 @@ spec:
 
 ---
 
-## 13. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. What is the fundamental difference between `volumeBindingMode: Immediate` and `volumeBindingMode: WaitForFirstConsumer`, and why is `Immediate` dangerous in multi-zone clusters?</strong></summary>
+<details><summary>1. What is the fundamental difference between `volumeBindingMode: Immediate` and `volumeBindingMode: WaitForFirstConsumer`, and why is `Immediate` dangerous in multi-zone clusters?</summary>
 
 Under `Immediate` binding, a PVC is bound to a PV and dynamically provisioned as soon as the PVC manifest is created, without considering where the consumer Pod will be placed. In a multi-zone cluster, the storage provider creates the volume in an arbitrary zone (e.g., `zone-a`). When the Pod is subsequently scheduled, if `zone-a` lacks compute resources, carries taints, or is restricted by affinity rules, the scheduler cannot place the Pod in `zone-b` because the volume is physically locked to `zone-a`. The Pod remains stuck in `Pending` forever due to a `VolumeNodeAffinity` conflict.
 
 `WaitForFirstConsumer` delays volume provisioning and binding until the Pod is evaluated by `kube-scheduler`. The scheduler selects a viable node across the entire cluster, taking compute and topology into account, and then instructs the CSI provisioner to create the volume in that exact selected zone.
 </details>
 
-<details>
-<summary><strong>Q2. How does the `ReadWriteOncePod` (RWOP) access mode differ from standard `ReadWriteOnce` (RWO), and what failure mode does it prevent?</strong></summary>
+<details><summary>2. How does the `ReadWriteOncePod` (RWOP) access mode differ from standard `ReadWriteOnce` (RWO), and what failure mode does it prevent?</summary>
 
 `ReadWriteOnce` (`RWO`) grants read-write access to a single _Node_, not a single _Pod_. If two Pods reference the same RWO PVC and both land on the same worker node, both Pods can mount the volume and write to it simultaneously. During a rolling deployment or ReplicaSet update, an old Pod and a new Pod co-located on the same node may write concurrently to an ext4/xfs block device, causing silent data and filesystem corruption.
 
 `ReadWriteOncePod` (`RWOP`) strictly restricts read-write access to a single _Pod_ across the entire cluster. If a second Pod attempts to mount the same PVC (even on the same node), kubelet immediately blocks the mount operation until the first Pod terminates completely.
 </details>
 
-<details>
-<summary><strong>Q3. Explain the architectural separation between `NodeStageVolume` and `NodePublishVolume` in the CSI NodeServer specification.</strong></summary>
+<details><summary>3. Explain the architectural separation between `NodeStageVolume` and `NodePublishVolume` in the CSI NodeServer specification.</summary>
 
 The two-phase mount architecture separates host-level block device preparation from container-level mount namespace injection:
 
 1. **`NodeStageVolume`**: Operates at the host/node level. When a block device is attached to a node, `NodeStageVolume` formats the raw device with a filesystem (if unformatted) and mounts it to a single global staging directory (`/var/lib/kubelet/plugins/.../globalmount`). This operation runs once per node, regardless of how many Pods consume the volume.
 2. **`NodePublishVolume`**: Operates at the Pod level. It creates a Linux bind mount from the global staging path into the specific container's filesystem mount point inside `/var/lib/kubelet/pods/<pod-uid>/volumes/...`. If multiple Pods on the same node share a volume (e.g., in `ROX` mode), `NodePublishVolume` is invoked once per Pod, binding against the single pre-staged mount point.
-
 </details>
 
-<details>
-<summary><strong>Q4. How does Kubernetes execute an online PVC resize, and what component performs the filesystem expansion?</strong></summary>
+<details><summary>4. How does Kubernetes execute an online PVC resize, and what component performs the filesystem expansion?</summary>
 
 Online volume expansion is an asynchronous, two-phase process:
 
 1. **Control Plane Block Expansion**: The user increases `spec.resources.requests.storage` on the PVC. The `csi-resizer` sidecar detects the change and calls `ControllerExpandVolume` on the storage provider's control plane to expand the underlying block LUN (e.g., AWS EBS volume). Once resized, the PV capacity is updated, and the PVC receives condition `FileSystemResizePending: True`.
 2. **Node Filesystem Expansion**: The `kubelet` on the node running the workload detects the condition and invokes `NodeExpandVolume` on the local CSI node plugin. The node plugin executes operating system utilities (`resize2fs` or `xfs_growfs`) to grow the filesystem while mounted. Upon success, kubelet updates `pvc.status.capacity` and removes the pending condition.
-
 </details>
 
-<details>
-<summary><strong>Q5. What is the difference between `VolumeSnapshot` and `VolumeGroupSnapshot` (promoted to GA in Kubernetes v1.36)?</strong></summary>
+<details><summary>5. What is the difference between `VolumeSnapshot` and `VolumeGroupSnapshot` (promoted to GA in Kubernetes v1.36)?</summary>
 
 A standard `VolumeSnapshot` operates on a single `PersistentVolumeClaim`. If an application utilizes multiple volumes (e.g., a database with separate data and Write-Ahead Log (WAL) disks), taking two individual snapshots sequentially creates a time delta between the two snapshots. Under heavy write traffic, this time gap leads to transaction log divergence and crash inconsistency upon restore.
 
 `VolumeGroupSnapshot` (promoted to GA in v1.36 under KEP-3476) groups multiple PVCs into a single consistency group. The CSI driver coordinates with the storage backend to take an atomic, crash-consistent point-in-time snapshot across all associated volumes simultaneously, guaranteeing database recovery integrity.
 </details>
 
-<details>
-<summary><strong>Q6. If a worker node crashes abruptly, why does a stateful Pod frequently get stuck in `ContainerCreating` on another node with a Multi-Attach error?</strong></summary>
+<details><summary>6. If a worker node crashes abruptly, why does a stateful Pod frequently get stuck in `ContainerCreating` on another node with a Multi-Attach error?</summary>
 
 Cloud block storage (like AWS EBS or Azure Disk) can only be attached to one virtual machine at a time. When Node-A crashes abruptly without a clean shutdown, its cloud block attachment remains registered in the cloud provider's API. When the Kubernetes control plane reschedules the Pod to Node-B, the `csi-attacher` attempts to call `ControllerPublishVolume` to attach the disk to Node-B. The cloud provider rejects the call because the disk is still locked to Node-A. The Pod remains in `ContainerCreating` until the node controller confirms Node-A's lease has fully expired, tears down the old `VolumeAttachment`, and issues a forced detach to the cloud API.
 </details>
 
-<details>
-<summary><strong>Q7. What is the function of the `fsGroupChangePolicy` attribute in a Pod's `securityContext`?</strong></summary>
+<details><summary>7. What is the function of the `fsGroupChangePolicy` attribute in a Pod's `securityContext`?</summary>
 
 When a Pod with an `fsGroup` defined mounts a persistent volume, kubelet recursively traverses every file and directory on the volume to change ownership and permissions to match the specified GID. On large volumes containing millions of small files (e.g., 1TB of Git repositories or media), this recursive `chown`/`chmod` operation can take 15 to 45 minutes, causing pod startup timeouts and probe failures.
 
 Setting `fsGroupChangePolicy: "OnRootMismatch"` instructs kubelet to check only the root directory of the volume. If the root directory's permissions already match the desired `fsGroup`, kubelet skips the recursive traversal entirely, reducing stateful Pod startup latency from minutes to milliseconds.
-</details>
-
-<details>
-<summary><strong>Q8. In a StatefulSet, what is the impact of configuring `persistentVolumeClaimRetentionPolicy.whenScaled: Delete`?</strong></summary>
-
-By default, Kubernetes retains PVCs when a StatefulSet is scaled down to prevent unintentional data loss. If `persistentVolumeClaimRetentionPolicy.whenScaled: Delete` is configured, scaling down the StatefulSet (e.g., reducing replicas from 5 to 3) will automatically trigger deletion of the PVCs associated with the removed ordinals (`data-3` and `data-4`). If the underlying `StorageClass` has `reclaimPolicy: Delete`, the associated cloud storage disks are also permanently deleted, reclaiming unused capacity and preventing orphaned storage cloud costs.
 </details>
 
 ---

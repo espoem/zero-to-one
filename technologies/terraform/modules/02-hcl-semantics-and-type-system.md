@@ -485,73 +485,59 @@ If the underlying provider API treats the ordering of nested blocks as significa
 
 ---
 
-## 10. Interview Drill: Deep-Dive Architectural Questions
+## Interview Drill
 
-<details>
-<summary><strong>Q1. Explain the formal distinction between `null` and `cty.UnknownVal` in the HCL2 evaluation engine.</strong></summary>
+<details><summary>1. Explain the formal distinction between `null` and `cty.UnknownVal` in the HCL2 evaluation engine.</summary>
 
-**Answer**: In HCL2, `null` represents the intentional absence of a value; it is a terminal, concrete scalar indicating that an attribute should not be set or sent to a provider API. In contrast, `cty.UnknownVal` is an algebraic placeholder indicating that a value will exist in reality, has a definite type constraint (e.g., `string` or `object`), but whose physical contents are mathematically undecidable at plan time because the resource has not yet been provisioned by the cloud hypervisor. Unlike `null`, which can be checked via `var.val == null`, comparing an unknown value to anything yields an unknown boolean value under Kleene logic.
+In HCL2, `null` represents the intentional absence of a value; it is a terminal, concrete scalar indicating that an attribute should not be set or sent to a provider API. In contrast, `cty.UnknownVal` is an algebraic placeholder indicating that a value will exist in reality, has a definite type constraint (e.g., `string` or `object`), but whose physical contents are mathematically undecidable at plan time because the resource has not yet been provisioned by the cloud hypervisor. Unlike `null`, which can be checked via `var.val == null`, comparing an unknown value to anything yields an unknown boolean value under Kleene logic.
 
 - Ref: HashiCorp `cty` Type System Specification.
-
 </details>
 
-<details>
-<summary><strong>Q2. How does Kleene three-valued logic resolve the expression `true || unknown` versus `false || unknown`? Why is this distinction vital for Terraform?</strong></summary>
+<details><summary>2. How does Kleene three-valued logic resolve the expression `true || unknown` versus `false || unknown`? Why is this distinction vital for Terraform?</summary>
 
-**Answer**: Kleene logic evaluates `true || unknown` to `true` because the truth of a disjunction is dominated by a `true` operand regardless of whether the unknown operand resolves to `true` or `false` at apply time. Conversely, `false || unknown` evaluates to `unknown` because the outcome strictly depends on the deferred value. This distinction is critical for Terraform's plan phase: it allows the execution engine to evaluate condition expressions and feature flags speculatively without halting execution when only a subset of inputs is deferred.
+Kleene logic evaluates `true || unknown` to `true` because the truth of a disjunction is dominated by a `true` operand regardless of whether the unknown operand resolves to `true` or `false` at apply time. Conversely, `false || unknown` evaluates to `unknown` because the outcome strictly depends on the deferred value. This distinction is critical for Terraform's plan phase: it allows the execution engine to evaluate condition expressions and feature flags speculatively without halting execution when only a subset of inputs is deferred.
 
 - Ref: Kleene, S. C., _Introduction to Metamathematics_.
-
 </details>
 
-<details>
-<summary><strong>Q3. Why does HCL2 enforce arbitrary-precision decimal numbers instead of standard IEEE 754 floating-point numbers?</strong></summary>
+<details><summary>3. Why does HCL2 enforce arbitrary-precision decimal numbers instead of standard IEEE 754 floating-point numbers?</summary>
 
-**Answer**: Standard IEEE 754 binary floating-point numbers (`float64`) cannot precisely represent many decimal fractions (e.g., $0.1 + 0.2 = 0.30000000000000004$). In infrastructure management, numbers frequently represent monetary budgets, disk allocations in gigabytes, CIDR subnet masks, or discrete port numbers. Floating-point roundoff errors could result in off-by-one errors during subnet allocation or cause spurious drift detection during state diffing. HCL2 implements numbers using Go's `big.Float` and `big.Int`, guaranteeing exact decimal precision across all arithmetic evaluations.
+Standard IEEE 754 binary floating-point numbers (`float64`) cannot precisely represent many decimal fractions (e.g., $0.1 + 0.2 = 0.30000000000000004$). In infrastructure management, numbers frequently represent monetary budgets, disk allocations in gigabytes, CIDR subnet masks, or discrete port numbers. Floating-point roundoff errors could result in off-by-one errors during subnet allocation or cause spurious drift detection during state diffing. HCL2 implements numbers using Go's `big.Float` and `big.Int`, guaranteeing exact decimal precision across all arithmetic evaluations.
 
 - Ref: HCL2 Language Specification & `cty.Number` Implementation.
-
 </details>
 
-<details>
-<summary><strong>Q4. What is the operational difference between the attribute splat operator `.*` and the full splat operator `[*]`?</strong></summary>
+<details><summary>4. What is the operational difference between the attribute splat operator `.*` and the full splat operator `[*]`?</summary>
 
-**Answer**: The attribute splat operator `.*` is a legacy HCL1 construct that operates strictly on list types and expects attributes to exist on every element; applying it to `null` or a scalar value produces a runtime error. The modern HCL2 full splat operator `[*]` introduces safe handling: if applied to a scalar value, it treats the scalar as a single-element list and applies the traversal; if applied to `null`, it returns an empty tuple (`[]`) rather than failing. This makes `[*]` safe for handling optional module inputs.
+The attribute splat operator `.*` is a legacy HCL1 construct that operates strictly on list types and expects attributes to exist on every element; applying it to `null` or a scalar value produces a runtime error. The modern HCL2 full splat operator `[*]` introduces safe handling: if applied to a scalar value, it treats the scalar as a single-element list and applies the traversal; if applied to `null`, it returns an empty tuple (`[]`) rather than failing. This makes `[*]` safe for handling optional module inputs.
 
 - Ref: Terraform Language Expressions: Splat Expressions.
-
 </details>
 
-<details>
-<summary><strong>Q5. Under what architectural circumstances should an engineer avoid using `dynamic` blocks inside a resource definition?</strong></summary>
+<details><summary>5. Under what architectural circumstances should an engineer avoid using `dynamic` blocks inside a resource definition?</summary>
 
-**Answer**: Engineers should avoid `dynamic` blocks when:
+Engineers should avoid `dynamic` blocks when:
 
 1. The cloud provider offers standalone resources representing the same concept (e.g., using `aws_security_group_rule` instead of nested `dynamic "ingress"` blocks). Standalone resources evaluate as independent vertices in the DAG, allowing concurrent provisioning and eliminating blast-radius coupling.
 2. Deeply nested dynamic blocks (multiple levels) are required. Nested dynamic loops produce complex, unreadable code and exponential AST evaluation overhead.
 3. The iteration depends on a computed unknown collection, which aborts the plan phase.
 
 - Ref: HashiCorp Best Practices: Dynamic Blocks.
-
 </details>
 
-<details>
-<summary><strong>Q6. How does Terraform 1.3+ handle optional attributes and default values within structural `object()` types?</strong></summary>
+<details><summary>6. How does Terraform 1.3+ handle optional attributes and default values within structural `object()` types?</summary>
 
-**Answer**: Prior to Terraform 1.3, declaring an attribute as optional via `optional(T)` resulted in a `null` value if omitted by the caller, requiring verbose downstream fallback logic like `var.config.timeout != null ? var.config.timeout : 30`. Terraform 1.3 introduced an optional second parameter to the `optional()` modifier: `optional(type, default_value)`. When the caller omits the attribute from the assigned object, the HCL type unification engine automatically injects the specified default value during AST decoding, guaranteeing that consuming modules always receive a fully populated structural type.
+Prior to Terraform 1.3, declaring an attribute as optional via `optional(T)` resulted in a `null` value if omitted by the caller, requiring verbose downstream fallback logic like `var.config.timeout != null ? var.config.timeout : 30`. Terraform 1.3 introduced an optional second parameter to the `optional()` modifier: `optional(type, default_value)`. When the caller omits the attribute from the assigned object, the HCL type unification engine automatically injects the specified default value during AST decoding, guaranteeing that consuming modules always receive a fully populated structural type.
 
 - Ref: Terraform 1.3 Release Notes & Object Type Specification.
-
 </details>
 
-<details>
-<summary><strong>Q7. Explain why passing an unknown value into `for_each` causes Terraform to abort during the plan phase, but passing an unknown value into a resource attribute does not.</strong></summary>
+<details><summary>7. Explain why passing an unknown value into `for_each` causes Terraform to abort during the plan phase, but passing an unknown value into a resource attribute does not.</summary>
 
-**Answer**: Passing an unknown value into a resource attribute (e.g., `ami = data.aws_ami.ubuntu.id`) is acceptable because the DAG vertex representing the resource already exists; the engine simply records the attribute as `(known after apply)` in the plan. In contrast, `for_each` defines the identity and cardinality of graph vertices themselves. For every key in `for_each`, Terraform must create a discrete node in the DAG (`aws_instance.web["a"]`, `aws_instance.web["b"]`). If `for_each` receives an unknown value, the graph engine cannot determine how many vertices to construct, what their unique string addresses are, or what dependency edges to wire. Because the DAG topology must be fully determined before scheduling the plan walk, execution aborts immediately.
+Passing an unknown value into a resource attribute (e.g., `ami = data.aws_ami.ubuntu.id`) is acceptable because the DAG vertex representing the resource already exists; the engine simply records the attribute as `(known after apply)` in the plan. In contrast, `for_each` defines the identity and cardinality of graph vertices themselves. For every key in `for_each`, Terraform must create a discrete node in the DAG (`aws_instance.web["a"]`, `aws_instance.web["b"]`). If `for_each` receives an unknown value, the graph engine cannot determine how many vertices to construct, what their unique string addresses are, or what dependency edges to wire. Because the DAG topology must be fully determined before scheduling the plan walk, execution aborts immediately.
 
 - Ref: Terraform Core Graph Engine Internals.
-
 </details>
 
 ---

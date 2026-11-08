@@ -321,11 +321,9 @@ TCP Receiver Buffer: BLOCKS ALL STREAMS! (Streams 4 and 5 must wait for retransm
 
 ---
 
-## 10. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-### Q1: Explain how an HTTP Request Smuggling (CL.TE) vulnerability occurs between a front-end reverse proxy and a backend server.
-
-<details><summary>Answer</summary>
+<details><summary>1. Explain how an HTTP Request Smuggling (CL.TE) vulnerability occurs between a front-end reverse proxy and a backend server.</summary>
 
 **Desynchronization of Message Delimiters.**
 
@@ -338,9 +336,7 @@ TCP Receiver Buffer: BLOCKS ALL STREAMS! (Streams 4 and 5 must wait for retransm
 
 </details>
 
-### Q2: How does HPACK (RFC 7541) compress HTTP headers without introducing the CRIME side-channel security vulnerability?
-
-<details><summary>Answer</summary>
+<details><summary>2. How does HPACK (RFC 7541) compress HTTP headers without introducing the CRIME side-channel security vulnerability?</summary>
 
 **Deterministic Two-Table Lookups Over Entropy Compression.**
 
@@ -353,9 +349,7 @@ TCP Receiver Buffer: BLOCKS ALL STREAMS! (Streams 4 and 5 must wait for retransm
 
 </details>
 
-### Q3: Describe the mechanics of the HTTP/2 Rapid Reset attack (CVE-2023-44487). Why did standard stream concurrency limits fail to protect servers?
-
-<details><summary>Answer</summary>
+<details><summary>3. Describe the mechanics of the HTTP/2 Rapid Reset attack (CVE-2023-44487). Why did standard stream concurrency limits fail to protect servers?</summary>
 
 **Zero-Duration Stream State Reset.**
 
@@ -368,9 +362,7 @@ TCP Receiver Buffer: BLOCKS ALL STREAMS! (Streams 4 and 5 must wait for retransm
 
 </details>
 
-### Q4: What is the purpose of the 9-byte HTTP/2 frame header, and what is the significance of Stream Identifier `0x00`?
-
-<details><summary>Answer</summary>
+<details><summary>4. What is the purpose of the 9-byte HTTP/2 frame header, and what is the significance of Stream Identifier `0x00`?</summary>
 
 **Universal Frame Demuxing and Connection-Level Control.**
 
@@ -384,9 +376,7 @@ TCP Receiver Buffer: BLOCKS ALL STREAMS! (Streams 4 and 5 must wait for retransm
 
 </details>
 
-### Q5: Why can HTTP/2 perform worse than HTTP/1.1 on high-loss mobile networks? What physical transport bottleneck is responsible?
-
-<details><summary>Answer</summary>
+<details><summary>5. Why can HTTP/2 perform worse than HTTP/1.1 on high-loss mobile networks? What physical transport bottleneck is responsible?</summary>
 
 **Transport-Layer Head-of-Line Blocking.**
 

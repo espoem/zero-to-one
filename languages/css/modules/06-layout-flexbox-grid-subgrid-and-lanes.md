@@ -208,39 +208,29 @@ To solve this disconnect, CSSWG standardized the **`reading-flow`** property (CS
 
 ---
 
-## 7. Interview Drill: Layout, Flexbox, Grid & Subgrid
+## Interview Drill
 
-### Q1: Why does a flex item containing a long unbroken string overflow its flex container even when styled with `flex: 1 1 0px`?
-
-<details><summary>Answer</summary>
+<details><summary>1. Why does a flex item containing a long unbroken string overflow its flex container even when styled with `flex: 1 1 0px`?</summary>
 
 Under the CSS Flexible Box Layout specification, a flex item's `min-width` defaults to `auto` rather than `0`. For flex items, `min-width: auto` calculates the item's minimum size as its `min-content` size (the width of the longest unbreakable word or element). Even though `flex-shrink: 1` and `flex-basis: 0` allow shrinking, the item cannot shrink below its minimum width. The solution is explicitly overriding the minimum size with `min-width: 0` (or `min-inline-size: 0`).
 </details>
 
-### Q2: What is the formal difference between `grid-template-columns: 1fr 1fr` and `grid-template-columns: minmax(0, 1fr) minmax(0, 1fr)`?
-
-<details><summary>Answer</summary>
+<details><summary>2. What is the formal difference between `grid-template-columns: 1fr 1fr` and `grid-template-columns: minmax(0, 1fr) minmax(0, 1fr)`?</summary>
 
 By specification, `1fr` is defined as `minmax(auto, 1fr)`. If a child element in that grid column has an intrinsic `min-content` size greater than the fractional space (such as a wide table or unformatted `<pre>` block), the column will expand to fit the content, breaking the equal distribution of tracks. In contrast, `minmax(0, 1fr)` explicitly sets the minimum track bound to zero, ensuring that neither column can exceed its exact 50% share of available container space regardless of content size.
 </details>
 
-### Q3: How does Subgrid differ from a standard nested CSS Grid?
-
-<details><summary>Answer</summary>
+<details><summary>3. How does Subgrid differ from a standard nested CSS Grid?</summary>
 
 A standard nested CSS Grid creates a completely independent grid coordinate system whose row and column track sizing has no relationship to the parent grid. In contrast, an element using `grid-template-rows: subgrid` or `grid-template-columns: subgrid` adopts the exact row or column tracks of its parent grid across the tracks it spans. This allows child elements inside separate grid items to align with each other across the entire parent layout (e.g. aligning card footers across cards of varying text lengths).
 </details>
 
-### Q4: Why is using CSS `order` or `flex-direction: row-reverse` an accessibility risk, and how does `reading-flow` address it?
-
-<details><summary>Answer</summary>
+<details><summary>4. Why is using CSS `order` or `flex-direction: row-reverse` an accessibility risk, and how does `reading-flow` address it?</summary>
 
 CSS visual reordering properties change the rendered position of elements on the screen without updating the underlying DOM node order. Screen readers, search engines, and keyboard Tab key navigation follow DOM order, resulting in focus jumping erratically across the screen in a sequence that contradicts visual presentation (violating WCAG 1.3.2). The modern `reading-flow` property instructs the browser to traverse the accessibility tree and keyboard focus in the order dictated by computed layout coordinates.
 </details>
 
-### Q5: What is the architectural consensus regarding native Masonry layout in CSSWG?
-
-<details><summary>Answer</summary>
+<details><summary>5. What is the architectural consensus regarding native Masonry layout in CSSWG?</summary>
 
 The CSSWG formally integrated masonry layout into the CSS Grid specification (CSS Grid Level 3) under the display value `display: grid-lanes`. It allows grid containers to define rigid tracks along one axis (such as columns defined with `repeat(auto-fill, minmax(200px, 1fr))`), while the cross axis packs items into whichever lane has the shortest accumulated height, reusing standard Grid placement and alignment primitives without JavaScript.
 </details>

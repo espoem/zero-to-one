@@ -213,39 +213,39 @@ const policy = trustedTypes.createPolicy('app', { createHTML: (s) => DOMPurify.s
 
 ---
 
-## 9. Interview Drill
+## Interview Drill
 
-<details><summary><strong>1. Why does <code>&lt;ViewTransition&gt;</code> only animate Transition updates?</strong></summary>
+<details><summary>1. Why does <code>&lt;ViewTransition&gt;</code> only animate Transition updates?</summary>
 
 Urgent updates (typing, toggles) must reflect input immediately; animating them adds latency. Navigation-like updates are already transitions, can be interrupted and prepared in the background, so React can start a browser view transition, apply the mutations in its update callback and animate old → new snapshots.
 </details>
 
-<details><summary><strong>2. What does <code>addTransitionType</code> do?</strong></summary>
+<details><summary>2. What does <code>addTransitionType</code> do?</summary>
 
 It records why a transition happened (e.g. "forward"/"back"). React passes the types to the browser view transition (matchable with `:active-view-transition-type()`) and lets `<ViewTransition>` choose per-type classes for enter/exit/update/share.
 </details>
 
-<details><summary><strong>3. What is a Fragment ref and when would you use one?</strong></summary>
+<details><summary>3. What is a Fragment ref and when would you use one?</summary>
 
 Since 19.3, `<Fragment ref>` gives a `FragmentInstance` whose methods (event listeners, focus, observers, rect measurement, scroll) apply to the fragment's first-level DOM children. Use it to observe visibility, manage focus or attach listeners to a group of elements without a wrapper div and without the children exposing refs.
 </details>
 
-<details><summary><strong>4. How do events behave in portals?</strong></summary>
+<details><summary>4. How do events behave in portals?</summary>
 
 They bubble through the React component tree, not the DOM tree, so a parent component's handlers see events from portal content rendered elsewhere in the DOM; context also flows into portals.
 </details>
 
-<details><summary><strong>5. How does React 19 handle <code>&lt;title&gt;</code> and stylesheets rendered inside components?</strong></summary>
+<details><summary>5. How does React 19 handle <code>&lt;title&gt;</code> and stylesheets rendered inside components?</summary>
 
 Metadata tags are hoisted into the document head on client and server. Stylesheets with a `precedence` prop are deduplicated by href, ordered by precedence, emitted in the head during SSR, and on the client suspend the boundary until loaded to avoid unstyled flashes.
 </details>
 
-<details><summary><strong>6. <code>preload</code> vs <code>preinit</code>?</strong></summary>
+<details><summary>6. <code>preload</code> vs <code>preinit</code>?</summary>
 
 `preload` only fetches a resource early (a hint); `preinit` fetches and executes a script or applies a stylesheet. Both can be called in render and are deduplicated by React.
 </details>
 
-<details><summary><strong>7. Why couldn't React apps enforce Trusted Types before 19.3?</strong></summary>
+<details><summary>7. Why couldn't React apps enforce Trusted Types before 19.3?</summary>
 
 React converted values to strings before writing them to sinks like `innerHTML`, destroying `TrustedHTML` objects, so the browser rejected them under `require-trusted-types-for`. 19.3 passes Trusted Types objects through unchanged.
 </details>

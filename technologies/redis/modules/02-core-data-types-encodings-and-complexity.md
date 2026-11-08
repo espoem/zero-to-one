@@ -356,7 +356,7 @@ The old commands (`ZRANGEBYSCORE`, `RPOPLPUSH` …) still work and are marked de
 
 ---
 
-## 9. Interview Drill
+## Interview Drill
 
 <details><summary>1. Design a real-time game leaderboard with "top 10" and "my rank".</summary>
 
@@ -391,19 +391,4 @@ Redis 7.0 replaced ziplist with listpack because inserting into a ziplist could 
 <details><summary>7. Why is `SINTER` of a 10-element set and a 10-million-element set cheap, and `SUNION` of them not?</summary>
 
 `SINTER` iterates the smallest set and probes the others in $O(1)$: about 10 probes. `SUNION` must touch every element of every set: $O(N)$ with $N$ = 10 M, and it materialises the result. For counts only, use `SINTERCARD`, or on 8.10+ `SUNIONCARD`.
-</details>
-
-<details><summary>8. How do you expire one field of a hash, and what changes for replication and migration?</summary>
-
-On 7.4+ use `HPEXPIRE key ms FIELDS 1 field` (or `HSETEX`/`HGETEX` on 8.0+). Field expirations replicate like key expirations (the primary sends `HDEL` when a field expires). RDB files with field TTLs need Redis ≥ 7.4, so a dataset using them cannot be loaded by Redis 7.2 or be assumed loadable by Valkey 8; Valkey 9.0 implements the same commands but has its own RDB versioning.
-</details>
-
-<details><summary>9. A teammate says "Redis picks a random element with SRANDMEMBER, so it is a fair lottery". What do you answer?</summary>
-
-For small `listpack` and `intset` sets the pick is uniform over positions. For a `hashtable` set Redis uses `dictGetFairRandomKey`, which draws from a window of up to 15 consecutive entries to compensate for uneven bucket chains. That is fairer than the older "random bucket, then random chain element" draw but is not an exactly uniform sample, and the sampling window depends on table layout. For anything audited, assign a random score to each entrant in a zset (or shuffle client-side with a seeded, logged PRNG) so the outcome is reproducible and checkable.
-</details>
-
-<details><summary>10. You must prove to a sceptic that a small hash is stored as a listpack and not as a dict. How?</summary>
-
-`OBJECT ENCODING` gives the name. For evidence, `DUMP key` returns the RDB payload whose first byte is the RDB type (16 for a hash listpack, 25 for a hash listpack with field TTLs, 4 for a plain hash) and whose body is the listpack blob itself: a 4-byte total length, a 2-byte element count, entries with their own back-lengths, and an `0xFF` terminator. The track's `encodeListpack` reproduces those bytes exactly for strings and integers of every width, so you can compare byte for byte. The same payload shows why growing one entry never rewrites its neighbours, unlike ziplist.
 </details>

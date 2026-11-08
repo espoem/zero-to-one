@@ -345,7 +345,7 @@ Mixed fleets (some nodes on Valkey or Redis < 8.4) keep the Lua forms; select th
 
 ---
 
-## 8. Interview Drill
+## Interview Drill
 
 <details><summary>1. Design caching for a product page backed by PostgreSQL, 50 k reads/s, prices change a few times a day.</summary>
 
@@ -380,34 +380,4 @@ Requests for keys that do not exist in the SoT always miss and hit the database.
 <details><summary>7. A cache instance is at `maxmemory` with `noeviction`. Symptoms and fix?</summary>
 
 Writes fail with `-OOM command not allowed`; if the application treats Redis errors as misses, every request now loads from the SoT, and the DB load spikes. Switch to `allkeys-lfu`/`allkeys-lru` (it is a cache), add memory, and alert at 80 % of `maxmemory`.
-</details>
-
-<details><summary>8. Your team switched from "delete cache, then update DB" to "update DB, then delete cache" and says the race is gone. What do you tell them?</summary>
-
-It is reduced, not gone. Enumerating every schedule of one reader (read DB, write cache) against one writer: the old order leaves a stale cache in 4 of 6 schedules, the new order in 1 of 6. The remaining one is a reader that read the old row before the update and writes it after the delete, which needs a pause between the two reader steps that is longer than the writer's critical section. It is rare per request and certain at scale, so keep a TTL on every entry, and add versioned writes or CDC-driven invalidation where stale data is expensive.
-</details>
-
-<details><summary>9. A near cache built on `CLIENT TRACKING` serves a stale value forever after a burst of writes. Name three causes.</summary>
-
-(1) A reply that raced with its own invalidation was cached, because the client did not mark the read pending and drop the reply when an invalidation for the key arrived in between. (2) Default tracking forgets a key after one invalidation, and the client updated the near cache from its own write instead of reading again, so it is no longer tracked. (3) The connection dropped and the client kept its near cache, although invalidations sent during the outage were lost; a reconnect must flush. Also check `NOLOOP` was not hiding invalidations the client needed, and that the tracking table did not overflow (`tracking-table-max-keys`), which causes extra invalidations, not missing ones.
-</details>
-
-<details><summary>10. When would you choose stale-while-revalidate over a lock that makes other callers wait?</summary>
-
-When a stale value for a bounded time is acceptable and tail latency matters more than freshness: catalogue pages, aggregates, feature configuration. Readers never wait, and one caller refreshes. The cost is a longer physical TTL (more memory), a staleness bound of soft TTL plus refresh time, and a cold path (after the hard TTL, or after a flush) that still needs the lock-and-wait or single-flight logic. For data that must be exact at read time, use neither and read the source of truth.
-</details>
-
-<details><summary>11. You add `clientSideCache` to `node-redis` and see no effect. What do you check?</summary>
-
-That the client is created with `RESP: 3` (the option is documented only for RESP3 connections), that the server supports client tracking (6.0+), that the reads are plain cacheable read commands rather than commands in a transaction or blocking commands, that `CLIENT TRACKINGINFO` on the connection shows `on`, and that a proxy in between (some managed offerings or poolers) does not strip push frames. Then measure with `INFO stats` (`total_commands_processed`) before and after repeated reads, as the integration test does, instead of trusting latency.
-</details>
-
-<details><summary>12. A product manager asks for "instant" invalidation on price changes with Redis as a cache. What can you promise?</summary>
-
-With server-assisted client-side caching, an invalidation reaches connected clients after the write is applied, typically within a network round trip, but nothing is guaranteed during disconnects (clients must flush), and the shared Redis cache itself is only as fresh as the delete that follows the commit (§ 4). So: bounded staleness measured in milliseconds in the normal case, TTL-bounded in the worst case. Anything stricter, such as a price that must never be shown stale at checkout, must be read from the source of truth at the point of decision.
-</details>
-
-<details><summary>13. How would you design bulk invalidation of "all product pages" without `SCAN`?</summary>
-
-Namespace versioning: include a generation in every key (`cache:product:v7:42`) and `INCR` the generation to orphan every old key in O(1); give all keys a TTL so the orphans disappear; initialise the counter explicitly because an absent counter reads as the default but `INCR` creates it at 1, which makes the first bump a no-op. The alternative, `SCAN MATCH` plus `UNLINK` in batches, is $O(N)$ over the whole keyspace and competes with live traffic.
 </details>

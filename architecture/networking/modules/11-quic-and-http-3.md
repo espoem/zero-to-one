@@ -259,11 +259,9 @@ In standard Linux distributions, default UDP socket receive buffers (`net.core.r
 
 ---
 
-## 10. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-### Q1: Why did the creators of QUIC build the protocol on top of UDP instead of defining a new Layer 4 transport protocol number in the IP header?
-
-<details><summary>Answer</summary>
+<details><summary>1. Why did the creators of QUIC build the protocol on top of UDP instead of defining a new Layer 4 transport protocol number in the IP header?</summary>
 
 **Overcoming Internet Middlebox Ossification.**
 
@@ -276,9 +274,7 @@ In standard Linux distributions, default UDP socket receive buffers (`net.core.r
 
 </details>
 
-### Q2: How does QUIC's Connection Migration preserve active downloads when a smartphone switches from Wi-Fi to a cellular network?
-
-<details><summary>Answer</summary>
+<details><summary>2. How does QUIC's Connection Migration preserve active downloads when a smartphone switches from Wi-Fi to a cellular network?</summary>
 
 **Decoupling Connection Identity from the IP 4-Tuple.**
 
@@ -290,9 +286,7 @@ In standard Linux distributions, default UDP socket receive buffers (`net.core.r
 
 </details>
 
-### Q3: What is the UDP amplification attack, and how does QUIC mathematically mitigate it during the initial handshake?
-
-<details><summary>Answer</summary>
+<details><summary>3. What is the UDP amplification attack, and how does QUIC mathematically mitigate it during the initial handshake?</summary>
 
 **The 3x Transmission Ratio Cap and Initial Packet Padding.**
 
@@ -304,9 +298,7 @@ In standard Linux distributions, default UDP socket receive buffers (`net.core.r
 
 </details>
 
-### Q4: Explain why HTTP/2's HPACK compression algorithm could not be used in HTTP/3, and describe how QPACK resolves the problem.
-
-<details><summary>Answer</summary>
+<details><summary>4. Explain why HTTP/2's HPACK compression algorithm could not be used in HTTP/3, and describe how QPACK resolves the problem.</summary>
 
 **Dynamic Table Synchronization and Inter-Stream Head-of-Line Blocking.**
 
@@ -320,9 +312,7 @@ In standard Linux distributions, default UDP socket receive buffers (`net.core.r
 
 </details>
 
-### Q5: If an edge server deployed with default Linux kernel network settings terminates HTTP/3 traffic at 10 Gbps, why does it experience severe packet loss? What sysctl parameter must be tuned?
-
-<details><summary>Answer</summary>
+<details><summary>5. If an edge server deployed with default Linux kernel network settings terminates HTTP/3 traffic at 10 Gbps, why does it experience severe packet loss? What sysctl parameter must be tuned?</summary>
 
 **UDP Socket Receive Buffer Sizing.**
 

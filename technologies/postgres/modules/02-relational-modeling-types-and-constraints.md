@@ -288,57 +288,35 @@ PostgreSQL sequences allocate numbers via lock-free shared memory atomic increme
 
 ---
 
-## 9. Interview Drill
+## Interview Drill
 
-<details>
-<summary>1. Why does an unindexed foreign key column represent a severe availability risk on high-throughput database clusters?</summary>
+<details><summary>1. Why does an unindexed foreign key column represent a severe availability risk on high-throughput database clusters?</summary>
 
-**Answer**: When a row in the parent table is deleted or has its primary key updated, PostgreSQL must ensure referential integrity by checking whether referencing child rows exist. Without an index on the child table's foreign key column, the planner must execute a full sequential scan over the entire child table. Crucially, during this scan, the engine acquires a `SHARE` row-level or table-level lock on the child table. On a table with millions of rows, this scan takes seconds or minutes, stalling all concurrent `INSERT`, `UPDATE`, and `DELETE` transactions on the child table and precipitating connection pool exhaustion.
-
-- Ref: [PostgreSQL Documentation: Foreign Keys](https://www.postgresql.org/docs/18/ddl-constraints.html#DDL-CONSTRAINTS-FK)
-
+When a row in the parent table is deleted or has its primary key updated, PostgreSQL must ensure referential integrity by checking whether referencing child rows exist. Without an index on the child table's foreign key column, the planner must execute a full sequential scan over the entire child table. Crucially, during this scan, the engine acquires a `SHARE` row-level or table-level lock on the child table. On a table with millions of rows, this scan takes seconds or minutes, stalling all concurrent `INSERT`, `UPDATE`, and `DELETE` transactions on the child table and precipitating connection pool exhaustion.
 </details>
 
-<details>
-<summary>2. Explain how UUIDv7 eliminates the index fragmentation and write amplification caused by UUIDv4.</summary>
+<details><summary>2. Explain how UUIDv7 eliminates the index fragmentation and write amplification caused by UUIDv4.</summary>
 
-**Answer**: UUIDv4 is 128 bits of pseudo-random data. In a B-tree index, randomly distributed keys are inserted uniformly across all existing leaf pages. Once an index exceeds `shared_buffers`, almost every insert requires loading a different 8KB leaf page from disk, causing massive random I/O and frequent B-tree page splits. In contrast, UUIDv7 encodes a 48-bit millisecond Unix timestamp in its most significant bits. New keys are monotonically increasing, meaning new index entries consistently append to the rightmost leaf page of the B-tree. This preserves spatial and temporal cache locality, eliminates random disk reads, and drastically reduces page splitting.
-
-- Ref: [RFC 9562: Universally Unique IDentifiers](https://datatracker.ietf.org/doc/rfc9562/)
-
+UUIDv4 is 128 bits of pseudo-random data. In a B-tree index, randomly distributed keys are inserted uniformly across all existing leaf pages. Once an index exceeds `shared_buffers`, almost every insert requires loading a different 8KB leaf page from disk, causing massive random I/O and frequent B-tree page splits. In contrast, UUIDv7 encodes a 48-bit millisecond Unix timestamp in its most significant bits. New keys are monotonically increasing, meaning new index entries consistently append to the rightmost leaf page of the B-tree. This preserves spatial and temporal cache locality, eliminates random disk reads, and drastically reduces page splitting.
 </details>
 
-<details>
-<summary>3. What is the two-step pattern for adding a foreign key or check constraint to a multi-million-row production table without downtime?</summary>
-
-**Answer**:
+<details><summary>3. What is the two-step pattern for adding a foreign key or check constraint to a multi-million-row production table without downtime?</summary>
 
 1. Execute `ALTER TABLE ... ADD CONSTRAINT ... NOT VALID;`. This acquires an `ACCESS EXCLUSIVE` lock only for milliseconds to update the catalog; it immediately enforces referential integrity on all subsequent writes without checking existing rows.
 2. Execute `ALTER TABLE ... VALIDATE CONSTRAINT ...;`. This scans the table to verify existing rows against the constraint, but only acquires a `SHARE UPDATE EXCLUSIVE` lock. This lock allows concurrent `SELECT`, `INSERT`, `UPDATE`, and `DELETE` operations, preventing production service disruptions.
 
-- Ref: [PostgreSQL Documentation: ALTER TABLE](https://www.postgresql.org/docs/18/sql-altertable.html)
-
 </details>
 
-<details>
-<summary>4. What are the four TOAST storage strategies and how do you configure them?</summary>
-
-**Answer**:
+<details><summary>4. What are the four TOAST storage strategies and how do you configure them?</summary>
 
 1. `PLAIN`: Disables compression and out-of-line storage; data must fit on the 8KB page.
 2. `EXTENDED`: Enables compression and out-of-line storage in the TOAST table (default for variable types like `text` and `jsonb`).
 3. `EXTERNAL`: Enables out-of-line storage but disables compression (ideal for pre-compressed assets like images or encrypted blobs).
 4. `MAIN`: Compresses inline, moving out-of-line only as a last resort. Strategies are configured per column via `ALTER TABLE tbl ALTER COLUMN col SET STORAGE <STRATEGY>;`.
 
-- Ref: [PostgreSQL Documentation: TOAST](https://www.postgresql.org/docs/18/storage-toast.html)
-
 </details>
 
-<details>
-<summary>5. Why can you not guarantee a gapless sequence using PostgreSQL sequences or identity columns?</summary>
+<details><summary>5. Why can you not guarantee a gapless sequence using PostgreSQL sequences or identity columns?</summary>
 
-**Answer**: PostgreSQL sequences optimize for high concurrency by allocating sequence values (`nextval()`) in shared memory without transaction-level locking. If Transaction A calls `nextval()`, receives ID `100`, and subsequently rolls back, that value is permanently discarded and cannot be recycled without blocking other transactions. Sequences also cache allocations in memory per session if `CACHE` is specified. If the server crashes or restarts, cached unused sequence values are lost. True gapless sequences require explicit serialization locking via `SELECT current_number FROM sequence_table FOR UPDATE`, which forces serial single-threaded execution.
-
-- Ref: [PostgreSQL Documentation: Sequence Manipulation Functions](https://www.postgresql.org/docs/18/functions-sequence.html)
-
+PostgreSQL sequences optimize for high concurrency by allocating sequence values (`nextval()`) in shared memory without transaction-level locking. If Transaction A calls `nextval()`, receives ID `100`, and subsequently rolls back, that value is permanently discarded and cannot be recycled without blocking other transactions. Sequences also cache allocations in memory per session if `CACHE` is specified. If the server crashes or restarts, cached unused sequence values are lost. True gapless sequences require explicit serialization locking via `SELECT current_number FROM sequence_table FOR UPDATE`, which forces serial single-threaded execution.
 </details>

@@ -371,7 +371,7 @@ Dates before 2024 are given by year only; Redis 8.x quarters are from the "What'
 
 ---
 
-## 10. Interview Drill
+## Interview Drill
 
 <details><summary>1. How do you secure a Redis instance?</summary>
 
@@ -406,19 +406,4 @@ THP off (fork latency and 2 MB copy-on-write), `vm.overcommit_memory=1` (fork su
 <details><summary>7. How do ACL selectors in Redis 7.0+ differ from root user rules?</summary>
 
 Root user rules apply a single left-to-right evaluation across commands, keys, and channels. If the root rules deny an operation, Redis evaluates secondary selectors enclosed in parentheses `(...)` in declaration order. If any individual selector allows the command, all target keys, and all targeted channels, the command is granted execution. This allows expressing composite permissions such as "read-only on cache:* but read-write on orders:*".
-</details>
-
-<details><summary>8. Why does vm.overcommit_memory = 0 cause fork to fail even with plenty of free RAM?</summary>
-
-In mode 0 (heuristic overcommit), the Linux kernel estimates whether sufficient RAM is available to satisfy the virtual address space requested by `fork()`. Because `fork()` duplicates the parent's page tables, an instance with 30 GB RSS requests a virtual allocation of another 30 GB. If unallocated RAM and swap totals less than 30 GB, the kernel returns `ENOMEM`, even though copy-on-write ensures only a fraction of pages will actually be copied. Setting `vm.overcommit_memory = 1` disables the heuristic and permits `fork()` unconditionally.
-</details>
-
-<details><summary>9. What is the operational difference between DELEX in Redis 8.4 and DELIFEQ in Valkey 9.0?</summary>
-
-Both commands implement atomic compare-and-delete (deleting a key only if its current value matches a specified string). However, their command syntax and wire names differ completely: Redis 8.4 introduced `DELEX key IFEQ value`, whereas Valkey 9.0 implemented `DELIFEQ key value`. Applications migrating between the two engines must either maintain a Lua script abstraction or translate command invocations dynamically.
-</details>
-
-<details><summary>10. How does Redis 8.6+ certificate-based authentication (tls-auth-clients-user) function?</summary>
-
-When `tls-auth-clients-user` is configured (for example with `subject:CN`), Redis inspects the client's X.509 certificate during the mTLS handshake, extracts the Common Name from the Subject field, and automatically maps the connection to the corresponding ACL username. The client is authenticated immediately upon TLS negotiation without needing to issue an `AUTH` command with a plaintext or hashed password.
 </details>

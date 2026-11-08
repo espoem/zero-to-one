@@ -431,10 +431,9 @@ Invariant 3: Any HTTP 410 Gone error triggers an immediate cache flush and relis
 
 ---
 
-## 10. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. Walk through the complete lifecycle of an HTTP POST request to create a Pod, tracing through every control plane stage.</strong></summary>
+<details><summary>1. Walk through the complete lifecycle of an HTTP POST request to create a Pod, tracing through every control plane stage.</summary>
 
 1. **Transport**: The request arrives over TLS at `kube-apiserver`.
 2. **Authentication**: Authenticators inspect the request (client certs, OIDC, or bound service account JWT). A canonical `user.Info` identity is established.
@@ -443,49 +442,40 @@ Invariant 3: Any HTTP 410 Gone error triggers an immediate cache flush and relis
 5. **Schema Validation**: The API server decodes the payload into an internal Go struct and validates it against the OpenAPI v3 schema and structural constraints.
 6. **Validating Admission**: Validating webhooks, Pod Security Standards, and CEL ValidatingAdmissionPolicies evaluate business invariants.
 7. **Storage**: The object is serialized into Protocol Buffers and committed via an atomic `etcdv3.Txn`. If etcd commits successfully, `kube-apiserver` returns HTTP 201 Created to the client and broadcasts the `ADDED` event across its active Watch streams.
-
 </details>
 
-<details>
-<summary><strong>Q2. What is the fundamental difference between `resourceVersion=""`, `resourceVersion="0"`, and `resourceVersion="<exact>"` on a LIST query?</strong></summary>
+<details><summary>2. What is the fundamental difference between `resourceVersion=""`, `resourceVersion="0"`, and `resourceVersion="<exact>"` on a LIST query?</summary>
 
 - `resourceVersion=""` (omitted): Guarantees linearizable, strongly consistent reads. The API server bypasses its in-memory watch cache and executes a full quorum read against etcd.
 - `resourceVersion="0"`: Guarantees eventual consistency. The API server fulfills the request directly from its in-memory watch cache. The data is returned with ultra-low latency, but may be slightly behind etcd if the watch cache is catching up.
 - `resourceVersion="<exact>"`: Directs the API server to return data at least as fresh as the specified revision. If the watch cache is at or ahead of that revision, it serves from cache; otherwise, it waits or queries etcd.
-
 </details>
 
-<details>
-<summary><strong>Q3. Why does etcd use an append-only B+ tree (bbolt) where keys are revisions rather than Kubernetes resource paths?</strong></summary>
+<details><summary>3. Why does etcd use an append-only B+ tree (bbolt) where keys are revisions rather than Kubernetes resource paths?</summary>
 
 By indexing records by `(revision.main, revision.sub)` rather than string keys, etcd natively implements Multi-Version Concurrency Control (MVCC). Every write operation is simply an append to the end of the bbolt tree, eliminating expensive in-place page rewrites. This enables fast, non-blocking snapshot reads and streaming watch replays: a client can ask for "all events that occurred between revision 5,000 and 6,000", which corresponds to a simple, sequential range scan over the bbolt disk pages. The mapping from human-readable keys (`/registry/pods/...`) to revisions is maintained in an in-memory B-Tree (`treeIndex`).
 </details>
 
-<details>
-<summary><strong>Q4. How does the `SharedIndexInformer` prevent thousands of controllers from overwhelming the API server?</strong></summary>
+<details><summary>4. How does the `SharedIndexInformer` prevent thousands of controllers from overwhelming the API server?</summary>
 
 The SharedIndexInformer multiplexes API server connections. Instead of each controller establishing its own independent HTTP watch connection and maintaining separate memory copies, a SharedInformer maintains a single watch connection per resource type. It populates a single, shared, thread-safe in-memory cache (`Indexer`). Individual controllers register lightweight event callbacks against the shared informer, reading objects from the shared local cache via pointer lookups with zero network overhead.
 </details>
 
-<details>
-<summary><strong>Q5. What is the purpose of Watch Bookmarks (KEP-1040), and what pathology do they solve?</strong></summary>
+<details><summary>5. What is the purpose of Watch Bookmarks (KEP-1040), and what pathology do they solve?</summary>
 
 When a client watches resources with a specific label selector, and cluster activity occurs on other resources, the global etcd revision advances while the client observes zero events. If the client disconnects and reconnects using its last observed revision, that revision may have already been compacted out of the API server's cache window, causing an HTTP 410 Gone error and forcing an expensive full relist. Watch Bookmarks solve this by periodically emitting synthetic bookmark events containing the latest global `resourceVersion`. This advances the client's tracking pointer even when no user-visible resources have changed, keeping its reconnect revision within the active cache window.
 </details>
 
-<details>
-<summary><strong>Q6. What happens when etcd reaches its storage quota, and how do you recover?</strong></summary>
+<details><summary>6. What happens when etcd reaches its storage quota, and how do you recover?</summary>
 
 When the bbolt database file reaches the configured `--quota-backend-bytes` limit (default 2 GiB), etcd triggers the `NOSPACE` alarm and drops into read-only mode. All write, update, and delete requests from `kube-apiserver` fail with `etcdserver: mvcc: database space exceeded`. To recover:
 
 1. Compact historical revisions via `etcdctl compact <latest_rev>`.
 2. Reclaim physical disk space by running `etcdctl defrag` on each etcd node.
 3. Disarm the alarm via `etcdctl alarm disarm`.
-
 </details>
 
-<details>
-<summary><strong>Q7. Why should event handlers inside a custom controller never perform network I/O or blocking operations?</strong></summary>
+<details><summary>7. Why should event handlers inside a custom controller never perform network I/O or blocking operations?</summary>
 
 Event handlers (`OnAdd`, `OnUpdate`, `OnDelete`) execute synchronously on the informer's event dispatch goroutine. If a handler blocks on a slow network call, database query, or sleep loop, it halts the entire informer pipeline. The internal `DeltaFIFO` stops draining, the reflector queue fills up, and the API server watch connection may time out. If the delay exceeds the compaction threshold, the watch connection crashes with an HTTP 410 Gone error. Handlers must only extract the resource key and enqueue it into a `WorkQueue` for asynchronous processing by worker goroutines.
 </details>

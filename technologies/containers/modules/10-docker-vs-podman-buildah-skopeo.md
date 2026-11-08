@@ -400,85 +400,61 @@ podman-database migrate
 
 ---
 
-## 12. Interview Drill: Deep Technical Questions
+## Interview Drill
 
-<details>
-<summary><strong>Q1. Explain why mounting `/var/run/docker.sock` inside a container provides equivalent privileges to passwordless `sudo` on the host machine.</strong></summary>
+<details><summary>1. Explain why mounting `/var/run/docker.sock` inside a container provides equivalent privileges to passwordless `sudo` on the host machine.</summary>
 
-**Answer:** The UNIX domain socket `/var/run/docker.sock` is the control surface for the Docker daemon (`dockerd`), which runs with full `root` privileges in the host's initial user, mount, and PID namespaces. Any client inside a container that can communicate with this socket can issue standard Docker API commands. An attacker can instruct `dockerd` to launch a new container configured with:
+The UNIX domain socket `/var/run/docker.sock` is the control surface for the Docker daemon (`dockerd`), which runs with full `root` privileges in the host's initial user, mount, and PID namespaces. Any client inside a container that can communicate with this socket can issue standard Docker API commands. An attacker can instruct `dockerd` to launch a new container configured with:
 
 1. `--privileged` (granting all Linux capabilities and disabling seccomp/AppArmor).
 2. `-v /:/host-root` (bind-mounting the entire host root filesystem).
 3. `chroot /host-root` (escaping the container filesystem). The attacker now possesses unrestricted read/write access to host configuration files, SSH keys, shadow passwords, and raw storage block devices, completely bypassing all container isolation boundaries.
-
 </details>
 
-<details>
-<summary><strong>Q2. How does Podman track the original human user's identity in the Linux kernel audit subsystem, whereas Docker obscures it?</strong></summary>
+<details><summary>2. How does Podman track the original human user's identity in the Linux kernel audit subsystem, whereas Docker obscures it?</summary>
 
-**Answer:** The Linux kernel maintains an immutable security attribute for every process called `loginuid` (`/proc/self/loginuid`). When a human user logs into a Linux system via SSH or console, PAM sets this value to their numeric user ID (e.g., 1001). Subsequent child processes inherit this `loginuid`.
+The Linux kernel maintains an immutable security attribute for every process called `loginuid` (`/proc/self/loginuid`). When a human user logs into a Linux system via SSH or console, PAM sets this value to their numeric user ID (e.g., 1001). Subsequent child processes inherit this `loginuid`.
 
 - In **Podman**, the CLI executes as a standard child process of the user's terminal session, and `conmon` is forked directly. The container process inherits the human's `loginuid`. When the container executes system calls, the kernel's `auditd` logs record `auid=1001`.
 - In **Docker**, the CLI merely transmits a REST request over a socket to `dockerd`. The container is forked and spawned by `dockerd` (running as root). Consequently, the kernel records `auid=0` (root) or unset (`4294967295`), completely erasing forensic traceability of which developer launched the container.
-
 </details>
 
-<details>
-<summary><strong>Q3. What is the operational purpose of `conmon` in the Podman architecture, and why is it not replaced by the OCI runtime (`crun`)?</strong></summary>
+<details><summary>3. What is the operational purpose of `conmon` in the Podman architecture, and why is it not replaced by the OCI runtime (`crun`)?</summary>
 
-**Answer:** OCI runtimes like `runc` and `crun` are designed to be short-lived: they configure kernel namespaces, cgroups, and capabilities, execute `execve` to transition into the container binary, and exit. They are not long-running daemons. `conmon` serves as the lightweight, persistent supervisor that remains active for the lifespan of the container:
+OCI runtimes like `runc` and `crun` are designed to be short-lived: they configure kernel namespaces, cgroups, and capabilities, execute `execve` to transition into the container binary, and exit. They are not long-running daemons. `conmon` serves as the lightweight, persistent supervisor that remains active for the lifespan of the container:
 
 1. **PTY & Console Handling**: It holds the master side of the pseudo-terminal (pty) open, streaming stdin, stdout, and stderr to disk logs or socket connections.
 2. **Exit Code Retention**: When the container process terminates, `conmon` captures the exact exit code and writes it to an exit file, ensuring the exit status is available even if Podman CLI is not running.
 3. **Daemonless Independence**: By offloading process supervision to a tiny (~2 MB) C program, Podman avoids running a massive Go-based runtime daemon while preventing zombie process leaks.
-
 </details>
 
-<details>
-<summary><strong>Q4. Describe how systemd Quadlet improves upon the legacy `podman generate systemd` mechanism.</strong></summary>
+<details><summary>4. Describe how systemd Quadlet improves upon the legacy `podman generate systemd` mechanism.</summary>
 
-**Answer:** `podman generate systemd` produced static systemd unit files containing hardcoded container IDs and complex, brittle shell command lines. If an operator modified or recreated the container, the systemd unit became desynchronized and broke. **Quadlet** operates as a native systemd generator. Operators write declarative, high-level `.container` or `.pod` files. During `systemctl daemon-reload` or system boot, Quadlet dynamically compiles these declarations into native systemd `.service` files in `/run/systemd/generator/`. It automatically generates proper cgroup v2 slices, handles clean teardown and replacement via `--replace`, wires up journald logging, and enables declarative auto-updates (`AutoUpdate=registry`) with automated rollback.
-
+`podman generate systemd` produced static systemd unit files containing hardcoded container IDs and complex, brittle shell command lines. If an operator modified or recreated the container, the systemd unit became desynchronized and broke. **Quadlet** operates as a native systemd generator. Operators write declarative, high-level `.container` or `.pod` files. During `systemctl daemon-reload` or system boot, Quadlet dynamically compiles these declarations into native systemd `.service` files in `/run/systemd/generator/`. It automatically generates proper cgroup v2 slices, handles clean teardown and replacement via `--replace`, wires up journald logging, and enables declarative auto-updates (`AutoUpdate=registry`) with automated rollback.
 </details>
 
-<details>
-<summary><strong>Q5. How does `--userns=keep-id` resolve host bind-mount permission issues in rootless Podman?</strong></summary>
+<details><summary>5. How does `--userns=keep-id` resolve host bind-mount permission issues in rootless Podman?</summary>
 
-**Answer:** By default in a rootless user namespace, the user's host UID (e.g., 1000) is mapped to UID 0 (root) inside the container, while container UID 1000 is mapped to subordinate UID 100999 on the host. If an application inside the container runs as unprivileged user 1000, any file it attempts to write to a bind-mounted host directory (owned by host UID 1000) will fail with `Permission denied` because the host sees the write originating from UID 100999. `--userns=keep-id` modifies the namespace UID mapping table (`/proc/self/uid_map`) so that the host user's UID (1000) is explicitly mapped to UID 1000 inside the container. When the container process (running as UID 1000) writes to the mounted host directory, the host kernel verifies that the writer's host UID is 1000, permitting normal read/write operations without complex `chown` workarounds.
-
+By default in a rootless user namespace, the user's host UID (e.g., 1000) is mapped to UID 0 (root) inside the container, while container UID 1000 is mapped to subordinate UID 100999 on the host. If an application inside the container runs as unprivileged user 1000, any file it attempts to write to a bind-mounted host directory (owned by host UID 1000) will fail with `Permission denied` because the host sees the write originating from UID 100999. `--userns=keep-id` modifies the namespace UID mapping table (`/proc/self/uid_map`) so that the host user's UID (1000) is explicitly mapped to UID 1000 inside the container. When the container process (running as UID 1000) writes to the mounted host directory, the host kernel verifies that the writer's host UID is 1000, permitting normal read/write operations without complex `chown` workarounds.
 </details>
 
-<details>
-<summary><strong>Q6. Why did Podman 6.0 completely remove support for BoltDB in favor of SQLite?</strong></summary>
+<details><summary>6. Why did Podman 6.0 completely remove support for BoltDB in favor of SQLite?</summary>
 
-**Answer:** BoltDB is an embedded key-value store that suffered from concurrency and performance limitations under multi-threaded and multi-process workloads:
+BoltDB is an embedded key-value store that suffered from concurrency and performance limitations under multi-threaded and multi-process workloads:
 
 1. **Concurrency Bottlenecks**: BoltDB allows multiple concurrent readers but enforces a strict single-writer lock, causing lock contention and timeout errors when multiple Podman CLI commands executed simultaneously.
 2. **Crash Resilience & Data Integrity**: SQLite's Write-Ahead Logging (WAL) mode provides vastly superior ACID transaction performance, crash recovery, and multi-process concurrent access.
 3. **Rich Query Capabilities**: Storing container, image, and network metadata in a relational database allows Podman to execute fast indexed lookups, filtering, and state integrity checks across thousands of local containers.
-
 </details>
 
-<details>
-<summary><strong>Q7. What is the role of the `infra` (pause) container in a Podman pod?</strong></summary>
+<details><summary>7. What is the role of the `infra` (pause) container in a Podman pod?</summary>
 
-**Answer:** The `infra` container (typically running `catatonit` or a pause binary) is the anchor process for the entire Pod:
+The `infra` container (typically running `catatonit` or a pause binary) is the anchor process for the entire Pod:
 
 1. It initializes and holds open the shared kernel namespaces (Network, IPC, UTS).
 2. It binds and publishes host network ports (e.g., `-p 8080:80`).
 3. If an application container inside the pod crashes, is stopped, or is upgraded, the shared network namespace, IP address, and port allocations remain fully preserved because the `infra` container remains alive.
 4. It acts as subreaper (PID 1) within the shared PID namespace (if enabled) to reap zombie processes spawned by dead containers in the pod.
-
-</details>
-
-<details>
-<summary><strong>Q8. Contrast the network virtualization used by Docker Desktop on macOS with Podman Machine.</strong></summary>
-
-**Answer:** Because macOS cannot run Linux containers natively, both tools run an embedded Linux virtual machine:
-
-- **Docker Desktop**: Uses Apple's Virtualization.framework or HyperKit to run an Alpine-based VM. It routes networking through a proprietary user-space network virtualization engine (`vpnkit`), translating IP packets to macOS socket calls to allow containers to access corporate VPNs transparently.
-- **Podman Machine**: Provisions an immutable Fedora CoreOS (FCOS) VM managed via `vfkit`. It handles network routing using **`gvproxy`** and **`pasta`**, providing high-performance user-mode socket forwarding between the macOS host and the Linux VM without requiring third-party kernel network extensions.
-
 </details>
 
 ---

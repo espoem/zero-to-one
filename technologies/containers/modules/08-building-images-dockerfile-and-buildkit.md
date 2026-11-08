@@ -422,73 +422,47 @@ RUN apt-get update && apt-get install -y --no-install-recommends large-package \
 
 ---
 
-## 13. Interview Drill: Deep Technical Questions
+## Interview Drill
 
-<details>
-<summary><strong>Q1. Explain the architectural difference between how the legacy Docker builder and BuildKit process a multi-stage Dockerfile containing three independent stages.</strong></summary>
+<details><summary>1. Explain the architectural difference between how the legacy Docker builder and BuildKit process a multi-stage Dockerfile containing three independent stages.</summary>
 
-**Answer:** The legacy Docker builder evaluates instructions sequentially from line 1 to the end. For three independent stages (A, B, and C), it builds stage A sequentially, then stage B sequentially, and finally stage C, writing intermediate layer snapshots to disk at every step even if stage B is never utilized by stage C. BuildKit compiles the Dockerfile into a Low-Level Builder (LLB) directed acyclic graph. It traverses the graph from the target output backwards, automatically pruning any unreferenced stages from the schedule. For stages that are needed, BuildKit analyzes the graph's independent branches and executes them concurrently across multiple CPU threads. If stage A and stage B share no data dependencies, their source downloads, package installations, and compilations execute in parallel.
-
+The legacy Docker builder evaluates instructions sequentially from line 1 to the end. For three independent stages (A, B, and C), it builds stage A sequentially, then stage B sequentially, and finally stage C, writing intermediate layer snapshots to disk at every step even if stage B is never utilized by stage C. BuildKit compiles the Dockerfile into a Low-Level Builder (LLB) directed acyclic graph. It traverses the graph from the target output backwards, automatically pruning any unreferenced stages from the schedule. For stages that are needed, BuildKit analyzes the graph's independent branches and executes them concurrently across multiple CPU threads. If stage A and stage B share no data dependencies, their source downloads, package installations, and compilations execute in parallel.
 </details>
 
-<details>
-<summary><strong>Q2. Why does `RUN --mount=type=cache,target=/var/cache/apt` not increase the final image size even if 500 MB of deb packages are stored during the build?</strong></summary>
+<details><summary>2. Why does `RUN --mount=type=cache,target=/var/cache/apt` not increase the final image size even if 500 MB of deb packages are stored during the build?</summary>
 
-**Answer:** A BuildKit cache mount binds an isolated directory from BuildKit's host cache storage directly into the execution container's mount namespace during the duration of that specific `RUN` step. The mount point exists outside the container's copy-on-write (CoW) overlay snapshotter. When the command completes, BuildKit unmounts the cache volume before committing the filesystem snapshot as an image layer. Consequently, none of the files written into the cache directory are committed to the layer archive; they remain safely cached on the builder host for reuse in future builds.
-
+A BuildKit cache mount binds an isolated directory from BuildKit's host cache storage directly into the execution container's mount namespace during the duration of that specific `RUN` step. The mount point exists outside the container's copy-on-write (CoW) overlay snapshotter. When the command completes, BuildKit unmounts the cache volume before committing the filesystem snapshot as an image layer. Consequently, none of the files written into the cache directory are committed to the layer archive; they remain safely cached on the builder host for reuse in future builds.
 </details>
 
-<details>
-<summary><strong>Q3. A developer changes one comment in a source file, and the entire `RUN go build` step re-runs despite using Go's build cache. Why did this occur, and how do you prevent it?</strong></summary>
+<details><summary>3. A developer changes one comment in a source file, and the entire `RUN go build` step re-runs despite using Go's build cache. Why did this occur, and how do you prevent it?</summary>
 
-**Answer:** If the Dockerfile executed `COPY . .` prior to `RUN go build`, the modified comment mutated the cryptographic content hash of the source tree. This generated a new cache key for the `COPY` step, invalidating its cache. Because cache invalidation cascades to all downstream nodes in the LLB DAG, the subsequent `RUN go build` step was forced to re-execute. To prevent this while accelerating builds, use a persistent compiler cache mount: `RUN --mount=type=cache,target=/root/.cache/go-build go build -o /bin/app .` While the `RUN` step still executes because its parent layer changed, Go's compiler inspects the mounted cache, identifies that the AST of the code is unchanged (or only one package changed), and links the binary in sub-second time rather than performing a clean recompile.
-
+If the Dockerfile executed `COPY . .` prior to `RUN go build`, the modified comment mutated the cryptographic content hash of the source tree. This generated a new cache key for the `COPY` step, invalidating its cache. Because cache invalidation cascades to all downstream nodes in the LLB DAG, the subsequent `RUN go build` step was forced to re-execute. To prevent this while accelerating builds, use a persistent compiler cache mount: `RUN --mount=type=cache,target=/root/.cache/go-build go build -o /bin/app .` While the `RUN` step still executes because its parent layer changed, Go's compiler inspects the mounted cache, identifies that the AST of the code is unchanged (or only one package changed), and links the binary in sub-second time rather than performing a clean recompile.
 </details>
 
-<details>
-<summary><strong>Q4. How does `execve` behavior differ when using JSON array syntax versus string syntax for the `CMD` instruction?</strong></summary>
+<details><summary>4. How does `execve` behavior differ when using JSON array syntax versus string syntax for the `CMD` instruction?</summary>
 
-**Answer:** JSON array syntax (`CMD ["node", "server.js"]`) triggers the `execve` system call directly with the argument vector `argv = ["node", "server.js"]`. The process executes directly as PID 1 inside the container's PID namespace, allowing it to receive operating system signals (`SIGTERM`, `SIGINT`) natively. String syntax (`CMD node server.js`) causes the builder to prepend `/bin/sh -c`. The kernel invokes `execve("/bin/sh", ["/bin/sh", "-c", "node server.js"])`. The shell becomes PID 1, and the Node application runs as an unmanaged child process. Because standard POSIX shells do not forward signals to sub-processes, graceful shutdown mechanisms fail, leading to forceful process termination upon timeout.
-
+JSON array syntax (`CMD ["node", "server.js"]`) triggers the `execve` system call directly with the argument vector `argv = ["node", "server.js"]`. The process executes directly as PID 1 inside the container's PID namespace, allowing it to receive operating system signals (`SIGTERM`, `SIGINT`) natively. String syntax (`CMD node server.js`) causes the builder to prepend `/bin/sh -c`. The kernel invokes `execve("/bin/sh", ["/bin/sh", "-c", "node server.js"])`. The shell becomes PID 1, and the Node application runs as an unmanaged child process. Because standard POSIX shells do not forward signals to sub-processes, graceful shutdown mechanisms fail, leading to forceful process termination upon timeout.
 </details>
 
-<details>
-<summary><strong>Q5. What are the operational pitfalls of building ARM64 images on AMD64 CI runners using QEMU emulation compared to native cross-compilers?</strong></summary>
-
-**Answer:**
+<details><summary>5. What are the operational pitfalls of building ARM64 images on AMD64 CI runners using QEMU emulation compared to native cross-compilers?</summary>
 
 1. **Performance**: Emulating every ARM64 CPU instruction in user-space via QEMU imposes a 500% to 2000% (5×–20×) runtime performance penalty, turning a 2-minute native compilation into a 30-minute pipeline bottleneck.
 2. **Instability & Deadlocks**: Multi-threaded runtimes with aggressive memory models (such as Golang's runtime scheduler, Rust's jemalloc, or V8's garbage collector) frequently encounter race conditions, missing kernel `binfmt_misc` flags (`F` flag required for chroot execution), or emulation deadlocks under QEMU.
 3. **Remediation**: Use multi-stage native cross-compilation (`FROM --platform=$BUILDPLATFORM ...`) or deploy native multi-architecture builder clusters (e.g., an ARM64 worker node joined to the Buildx builder instance).
-
 </details>
 
-<details>
-<summary><strong>Q6. How does `SOURCE_DATE_EPOCH` guarantee bit-for-bit reproducibility in OCI container images?</strong></summary>
+<details><summary>6. How does `SOURCE_DATE_EPOCH` guarantee bit-for-bit reproducibility in OCI container images?</summary>
 
-**Answer:** Standard POSIX tar archivers store file modification timestamps (`mtime`), user IDs, group IDs, and filesystem traversal order inside the tar header. Even if file contents are identical, differences in checkout times or inode allocation alter the binary tar stream, resulting in divergent SHA-256 layer digests. `SOURCE_DATE_EPOCH` standardizes this environment by:
+Standard POSIX tar archivers store file modification timestamps (`mtime`), user IDs, group IDs, and filesystem traversal order inside the tar header. Even if file contents are identical, differences in checkout times or inode allocation alter the binary tar stream, resulting in divergent SHA-256 layer digests. `SOURCE_DATE_EPOCH` standardizes this environment by:
 
 1. Clamping all file `mtime` values to a fixed Unix timestamp (e.g., the Git commit time).
 2. Forcing the tar archiver to sort directory entries lexicographically by filename.
 3. Normalizing file ownership (UID/GID) to static values (e.g., 0:0). Because all inputs to the cryptographic hashing function are identical, the resulting OCI layer digests and manifest digests are bit-for-bit reproducible.
-
 </details>
 
-<details>
-<summary><strong>Q7. Describe how Buildah executes container builds without running a central root daemon.</strong></summary>
+<details><summary>7. Describe how Buildah executes container builds without running a central root daemon.</summary>
 
-**Answer:** Buildah utilizes Linux kernel unprivileged user namespaces (`user_namespaces(7)`). When invoking `buildah unshare`, Buildah creates an isolated user and mount namespace where the unprivileged user is mapped to UID 0 (root) inside the namespace. Buildah directly mounts the container's root filesystem (using kernel OverlayFS or user-space FUSE-overlayfs) onto a host directory. Commands are executed directly against this root filesystem using standard Linux system calls (`clone`, `chroot`, `execve`), with standard cgroup and namespace boundaries. Once complete, Buildah serializes the directory into OCI layer tarballs and writes directly to local container storage (`/var/lib/containers/storage` or `~/.local/share/containers/storage`) or pushes to an OCI registry via Skopeo libraries, completely bypassing background daemons and exposed control sockets.
-
-</details>
-
-<details>
-<summary><strong>Q8. What happens when a build references an external image via `FROM alpine:3.20` without specifying an image digest?</strong></summary>
-
-**Answer:** Relying on a tag (`alpine:3.20`) introduces two severe risks:
-
-1. **Non-Determinism**: Tags are mutable pointers. Upstream maintainers regularly update `alpine:3.20` to patch security vulnerabilities. If a build executes today and is rebuilt three months later, the underlying base image digest may differ, breaking reproducibility and potentially introducing breaking ABI changes.
-2. **Cache Poisoning**: If a local runner has already cached the tag locally, it will not check upstream for critical security updates unless explicitly instructed via `--pull`. To enforce deterministic and secure builds, pin base images by their cryptographic SHA-256 manifest digest: `FROM alpine:3.20@sha256:beefdb72251a3a...`
-
+Buildah utilizes Linux kernel unprivileged user namespaces (`user_namespaces(7)`). When invoking `buildah unshare`, Buildah creates an isolated user and mount namespace where the unprivileged user is mapped to UID 0 (root) inside the namespace. Buildah directly mounts the container's root filesystem (using kernel OverlayFS or user-space FUSE-overlayfs) onto a host directory. Commands are executed directly against this root filesystem using standard Linux system calls (`clone`, `chroot`, `execve`), with standard cgroup and namespace boundaries. Once complete, Buildah serializes the directory into OCI layer tarballs and writes directly to local container storage (`/var/lib/containers/storage` or `~/.local/share/containers/storage`) or pushes to an OCI registry via Skopeo libraries, completely bypassing background daemons and exposed control sockets.
 </details>
 
 ---

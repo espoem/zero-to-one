@@ -363,11 +363,9 @@ tofu plan -exclude=module.datadog_monitors
 
 ---
 
-## 9. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-### Q1: Why is separating environments using distinct directories superior to using Terraform CLI workspaces in production enterprises?
-
-<details><summary>Answer</summary>
+<details><summary>1. Why is separating environments using distinct directories superior to using Terraform CLI workspaces in production enterprises?</summary>
 
 **IAM Privilege Separation, Accidental Apply Prevention, and Version Independence.**
 
@@ -377,12 +375,9 @@ tofu plan -exclude=module.datadog_monitors
   2. **Zero Context Error**: An engineer must explicitly navigate to `environments/prod/` or pass `--chdir=environments/prod/`.
   3. **Independent Upgrades**: Development and staging directories can upgrade provider or module versions to test compatibility weeks before promoting the changes to production.
 - Ref: Production Infrastructure as Code Design Patterns; Google Cloud Architecture Framework.
-
 </details>
 
-### Q2: What is client-side state encryption in OpenTofu, and what security vulnerability does it eliminate compared to standard S3 server-side encryption?
-
-<details><summary>Answer</summary>
+<details><summary>2. What is client-side state encryption in OpenTofu, and what security vulnerability does it eliminate compared to standard S3 server-side encryption?</summary>
 
 **Zero-Knowledge Remote Storage vs Plaintext Secrets at Rest.**
 
@@ -390,12 +385,9 @@ tofu plan -exclude=module.datadog_monitors
 - **OpenTofu Client-Side Encryption**: Encrypts the state JSON payload locally in the runner's memory using AES-GCM before the HTTP request leaves the machine.
 - The payload stored in the S3 bucket is unreadable ciphertext. Even if an attacker gains root access to the S3 bucket or steals a database backup, they cannot decrypt the state without possessing explicit KMS decrypt permissions on the encryption key.
 - Ref: OpenTofu Security Architecture: State Encryption Specification.
-
 </details>
 
-### Q3: What triggered the creation of OpenTofu in August 2023, and what are the primary legal constraints imposed by the BSL 1.1 license?
-
-<details><summary>Answer</summary>
+<details><summary>3. What triggered the creation of OpenTofu in August 2023, and what are the primary legal constraints imposed by the BSL 1.1 license?</summary>
 
 **The HashiCorp BSL 1.1 Shift and the Competitive Use Prohibition.**
 
@@ -403,12 +395,9 @@ tofu plan -exclude=module.datadog_monitors
 - **BSL 1.1 Constraints**: The license grants free use for non-production and internal production infrastructure. However, it explicitly prohibits **competitive use**: any vendor offering a commercial product or service that competes with HashiCorp's paid offerings (e.g., cloud management platforms, managed Terraform-as-a-Service) is forbidden from using or embedding the software.
 - In response, a coalition of cloud vendors and community engineers forked the last MPL-2.0 release (1.5.5) to create **OpenTofu**, donating it to the Linux Foundation and CNCF to preserve a vendor-neutral, permanently open-source IaC engine.
 - Ref: Linux Foundation OpenTofu Charter; HashiCorp Licensing FAQ.
-
 </details>
 
-### Q4: How does OpenTofu's `-exclude` flag differ from Terraform's `-target` flag during emergency operations?
-
-<details><summary>Answer</summary>
+<details><summary>4. How does OpenTofu's `-exclude` flag differ from Terraform's `-target` flag during emergency operations?</summary>
 
 **Inverted Execution Selection vs Fragile Subgraph Targeting.**
 
@@ -416,12 +405,9 @@ tofu plan -exclude=module.datadog_monitors
 - **`-exclude` (OpenTofu)**: Runs the entire standard, holistic infrastructure plan, but surgically omits specific problematic resources (e.g., `tofu apply -exclude=module.failing_monitoring`).
 - All other resources, drift checks, and dependent updates execute normally. This allows engineers to deploy critical hotfixes without having configuration updates blocked by an unrelated degraded cloud API.
 - Ref: OpenTofu CLI Documentation: Exclude Flag.
-
 </details>
 
-### Q5: Why is `data.terraform_remote_state` considered an anti-pattern for inter-tier communication in enterprise architectures?
-
-<details><summary>Answer</summary>
+<details><summary>5. Why is `data.terraform_remote_state` considered an anti-pattern for inter-tier communication in enterprise architectures?</summary>
 
 **Excessive Permission Surface and Brittle Schema Coupling.**
 
@@ -429,12 +415,9 @@ tofu plan -exclude=module.datadog_monitors
 - **Brittle Coupling**: `terraform_remote_state` binds consuming modules directly to the output naming conventions of the upstream module. If the upstream team refactors an output name, all downstream states break during planning.
 - **Decoupled Alternative**: Upstream tiers should write connection parameters to a dedicated parameter store (AWS SSM Parameter Store, Consul, or Vault). Downstream tiers query the store directly, enforcing strict least-privilege security and clean contract boundaries.
 - Ref: HashiCorp Architecture Guidance: State Decoupling.
-
 </details>
 
-### Q6: How does OpenTofu's dynamic `prevent_destroy` resolve a major operational limitation of upstream Terraform?
-
-<details><summary>Answer</summary>
+<details><summary>6. How does OpenTofu's dynamic `prevent_destroy` resolve a major operational limitation of upstream Terraform?</summary>
 
 **Environment-Aware Lifecycle Protection Without Code Duplication.**
 
@@ -442,12 +425,9 @@ tofu plan -exclude=module.datadog_monitors
 - This forced teams to duplicate module code or manually edit HCL files when spinning up or tearing down ephemeral staging environments.
 - OpenTofu allows dynamic expressions in `lifecycle` blocks. A platform team can declare `prevent_destroy = var.is_production`, ensuring that production databases are safeguarded against accidental deletion while identical code in development allows automated ephemeral teardowns.
 - Ref: OpenTofu Core Improvements: Dynamic Lifecycle Arguments.
-
 </details>
 
-### Q7: Explain the concept of a Fencing Token in distributed state locking and why a simple boolean lock is insufficient.
-
-<details><summary>Answer</summary>
+<details><summary>7. Explain the concept of a Fencing Token in distributed state locking and why a simple boolean lock is insufficient.</summary>
 
 **Protection Against Stale Lock Owners and GC Pauses.**
 
@@ -458,21 +438,6 @@ tofu plan -exclude=module.datadog_monitors
 - Storage backends reject any write request carrying a fencing token lower than the highest token observed so far.
 - Even if a stale, unfrozen process attempts to write state, its outdated fencing token is rejected, preventing state corruption.
 - Ref: Kleppmann, "Designing Data-Intensive Applications"; Herlihy & Wing, Linearizability Theory.
-
-</details>
-
-### Q8: What major capability did Terraform 1.10 introduce to protect secrets from being persisted in the `.tfstate` file?
-
-<details><summary>Answer</summary>
-
-**Ephemeral Values and Write-Only Arguments.**
-
-- Prior to Terraform 1.10, marking an input variable as `sensitive = true` only redacted the value from CLI terminal logs and plan output; the secret was still written in plaintext inside the `.tfstate` file.
-- Terraform 1.10 introduced **ephemeral values** (`ephemeral = true` on variables and outputs) and **write-only arguments** on resources.
-- Ephemeral values exist only in volatile process memory during plan and apply execution and are discarded immediately upon run completion.
-- The Terraform Core engine guarantees that ephemeral values are never serialized into the permanent state file or saved plan artifacts on disk, preventing credential leakage in storage backends.
-- Ref: HashiCorp Terraform 1.10 Release Notes: Ephemeral Values Specification.
-
 </details>
 
 ---

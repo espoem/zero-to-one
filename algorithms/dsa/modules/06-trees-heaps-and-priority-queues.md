@@ -186,16 +186,14 @@ flowchart TD
 
 ---
 
-## 6. Interview Drill: Trees, Heaps & Priority Queues
+## Interview Drill
 
-<details>
-<summary>1. Why does buildHeap take O(n) time while inserting n elements one-by-one takes O(n log n)?</summary>
+<details><summary>1. Why does buildHeap take O(n) time while inserting n elements one-by-one takes O(n log n)?</summary>
 
 When building a heap by inserting elements one-by-one, each insertion adds an element at the bottom (leaf level) and sifts up. Half the elements ($n/2$) reside at the leaf level and must sift up $\log n$ levels, leading to $\sum \log n = O(n \log n)$. In `buildHeap`, the algorithm processes bottom-up: half the elements ($n/2$) are leaves and sift down 0 levels; one-quarter ($n/4$) sift down 1 level; one-eighth ($n/8$) sift down 2 levels. Because the vast majority of nodes reside near the bottom and have tiny sift distances, the sum $\sum h / 2^h$ converges to a constant, yielding strictly $O(n)$ time.
 </details>
 
-<details>
-<summary>2. How can you find the running median of a data stream in O(1) read time and O(log n) insertion time?</summary>
+<details><summary>2. How can you find the running median of a data stream in O(1) read time and O(log n) insertion time?</summary>
 
 Use **Two Heaps**:
 
@@ -210,8 +208,7 @@ Use **Two Heaps**:
 
 </details>
 
-<details>
-<summary>3. In an Indexed Priority Queue, what auxiliary structures are maintained and why?</summary>
+<details><summary>3. In an Indexed Priority Queue, what auxiliary structures are maintained and why?</summary>
 
 Standard binary heaps do not support finding an arbitrary element in $O(\log n)$ time; finding an element to update its key requires an $O(n)$ linear scan. An **Indexed Priority Queue** maintains three synchronized arrays:
 
@@ -221,8 +218,7 @@ Standard binary heaps do not support finding an arbitrary element in $O(\log n)$
 
 </details>
 
-<details>
-<summary>4. What is the fundamental advantage of a Fenwick Tree over a Segment Tree?</summary>
+<details><summary>4. What is the fundamental advantage of a Fenwick Tree over a Segment Tree?</summary>
 
 A Fenwick Tree (BIT) uses **substantially less memory and exhibits faster cache performance**.
 
@@ -231,8 +227,7 @@ A Fenwick Tree (BIT) uses **substantially less memory and exhibits faster cache 
 
 </details>
 
-<details>
-<summary>5. Explain the Morris In-Order Traversal invariant and how it restores the original tree structure.</summary>
+<details><summary>5. Explain the Morris In-Order Traversal invariant and how it restores the original tree structure.</summary>
 
 In Morris Traversal, when visiting node $X$:
 

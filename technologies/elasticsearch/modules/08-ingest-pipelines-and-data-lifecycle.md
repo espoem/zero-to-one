@@ -416,46 +416,39 @@ Migration pitfall: moving from alias-based rollover to data streams requires rei
 
 ---
 
-## 10. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. How do you change the mapping of a field in a live index without downtime?</strong></summary>
+<details><summary>1. How do you change the mapping of a field in a live index without downtime?</summary>
 
 Create a new index with the new mapping, `_reindex` (sliced, async) into it, catch up writes made in the meantime, then atomically swap the alias the application uses with `POST _aliases` (remove old, add new). Delete the old index after verification.
 </details>
 
-<details>
-<summary><strong>Q2. What happens when a processor fails in an ingest pipeline?</strong></summary>
+<details><summary>2. What happens when a processor fails in an ingest pipeline?</summary>
 
 If `ignore_failure`, the pipeline continues. Otherwise a processor-level `on_failure` runs and the pipeline continues; else a pipeline-level `on_failure` runs and ends the pipeline (often rerouting to a dead-letter index); else the document is rejected and, in a bulk request, only that item fails.
 </details>
 
-<details>
-<summary><strong>Q3. Why is my index still on hot nodes after 60 days with a 7-day warm phase?</strong></summary>
+<details><summary>3. Why is my index still on hot nodes after 60 days with a 7-day warm phase?</summary>
 
 `min_age` counts from rollover, and the index never rolled over (no write alias, empty index, or a rollover step error), or ILM is in an error step. Check `_ilm/explain`, fix the cause, `_ilm/retry`.
 </details>
 
-<details>
-<summary><strong>Q4. Data stream versus alias with rollover?</strong></summary>
+<details><summary>4. Data stream versus alias with rollover?</summary>
 
 Data streams package the pattern: template-driven creation, automatic write index, `@timestamp` requirement, backing index naming, lifecycle integration. They are append-only. Use an alias with indices when documents are updated by id frequently.
 </details>
 
-<details>
-<summary><strong>Q5. ILM or data stream lifecycle?</strong></summary>
+<details><summary>5. ILM or data stream lifecycle?</summary>
 
 Data stream lifecycle for retention and downsampling with minimal configuration; ILM when you need tier migration, shrink, force merge, searchable snapshots, or index-level control.
 </details>
 
-<details>
-<summary><strong>Q6. Why might <code>_update_by_query</code> leave the index half-updated?</strong></summary>
+<details><summary>6. Why might <code>_update_by_query</code> leave the index half-updated?</summary>
 
 It processes a snapshot; a concurrent change causes a version conflict, which aborts the operation without rolling back processed batches. Use `conflicts=proceed` and design the script to be idempotent.
 </details>
 
-<details>
-<summary><strong>Q7. Cold versus frozen tier?</strong></summary>
+<details><summary>7. Cold versus frozen tier?</summary>
 
 Both use searchable snapshots. Cold fully mounts shards on local disk (no replicas needed, near-warm latency); frozen partially mounts with a shared block cache and fetches from the object store on demand (cheapest, slow on misses).
 </details>

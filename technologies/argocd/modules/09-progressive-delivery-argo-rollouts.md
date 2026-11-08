@@ -198,40 +198,34 @@ Progressive delivery relies heavily on modern Kubernetes networking and traffic 
 
 ---
 
-## 9. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. How does Argo Rollouts differ from a native Kubernetes Deployment rolling update?</strong></summary>
+<details><summary>1. How does Argo Rollouts differ from a native Kubernetes Deployment rolling update?</summary>
 
 While a native Kubernetes Deployment only supports rolling updates via pod replica scaling (`maxSurge` and `maxUnavailable`), Argo Rollouts introduces the `Rollout` CRD supporting sophisticated traffic splitting (via Gateway API or service meshes), continuous automated metric verification (`AnalysisTemplates`), and instant automated rollback upon failure detection.
 </details>
 
-<details>
-<summary><strong>Q2. Explain the relationship between AnalysisTemplate and AnalysisRun.</strong></summary>
+<details><summary>2. Explain the relationship between AnalysisTemplate and AnalysisRun.</summary>
 
 An `AnalysisTemplate` is a reusable, parameterized blueprint defining metric providers, queries, and success conditions. An `AnalysisRun` is the concrete, instantiated execution of an `AnalysisTemplate` triggered by a Rollout during a canary step, recording real-time measurement values and pass/fail results.
 </details>
 
-<details>
-<summary><strong>Q3. What happens if an AnalysisRun fails during a canary pause step?</strong></summary>
+<details><summary>3. What happens if an AnalysisRun fails during a canary pause step?</summary>
 
 When an `AnalysisRun` fails consecutive measurement checks beyond the configured `failureLimit`, the Argo Rollouts controller automatically triggers an abort workflow, shifting 100% of traffic back to the stable baseline ReplicaSet and scaling down the canary ReplicaSet.
 </details>
 
-<details>
-<summary><strong>Q4. How does Argo Rollouts manage traffic splitting when using Gateway API?</strong></summary>
+<details><summary>4. How does Argo Rollouts manage traffic splitting when using Gateway API?</summary>
 
 Argo Rollouts interacts with Gateway API `HTTPRoute` resources by dynamically modifying traffic weight rules, routing a specified percentage of client requests to the canary service and the remainder to the stable service without requiring pod replica count imbalances.
 </details>
 
-<details>
-<summary><strong>Q5. What is the purpose of the Argo Rollouts Experiment feature?</strong></summary>
+<details><summary>5. What is the purpose of the Argo Rollouts Experiment feature?</summary>
 
 The Experiment feature allows running multiple simultaneous replica sets (e.g., testing two different candidate versions concurrently) against a fraction of live traffic for a fixed duration to compare performance metrics before promoting a winner.
 </details>
 
-<details>
-<summary><strong>Q6. How do you perform a Blue/Green deployment promotion without downtime using Argo Rollouts?</strong></summary>
+<details><summary>6. How do you perform a Blue/Green deployment promotion without downtime using Argo Rollouts?</summary>
 
 In a Blue/Green deployment, Argo Rollouts creates preview and active services pointing to preview and active ReplicaSets respectively. Once automated analysis or manual sign-off completes, the controller switches the active service selector to point directly to the new ReplicaSet, achieving zero-downtime atomic promotion.
 </details>

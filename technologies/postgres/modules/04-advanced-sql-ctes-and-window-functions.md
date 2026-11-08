@@ -279,52 +279,32 @@ GROUP BY account_id;
 
 ---
 
-## 9. Interview Drill
+## Interview Drill
 
-<details>
-<summary>1. How did PostgreSQL 12 change CTE optimization, and when must you use `AS MATERIALIZED`?</summary>
+<details><summary>1. How did PostgreSQL 12 change CTE optimization, and when must you use `AS MATERIALIZED`?</summary>
 
-**Answer**: Prior to PostgreSQL 12, all CTEs were optimization fences: the engine materialized the CTE into a temporary worktable, preventing the planner from pushing outer `WHERE` predicates into the CTE. In PostgreSQL 12+, non-recursive side-effect-free CTEs are automatically inlined and flattened into the parent query, allowing joint join reordering and index predicate pushdown. You should explicitly declare a CTE `AS MATERIALIZED` when the CTE is referenced multiple times in the outer query (preventing the engine from computing it more than once) or when you deliberately want to prevent the optimizer from generating a complex combined plan.
-
-- Ref: [PostgreSQL Documentation: Queries: WITH](https://www.postgresql.org/docs/18/queries-with.html)
-
+Prior to PostgreSQL 12, all CTEs were optimization fences: the engine materialized the CTE into a temporary worktable, preventing the planner from pushing outer `WHERE` predicates into the CTE. In PostgreSQL 12+, non-recursive side-effect-free CTEs are automatically inlined and flattened into the parent query, allowing joint join reordering and index predicate pushdown. You should explicitly declare a CTE `AS MATERIALIZED` when the CTE is referenced multiple times in the outer query (preventing the engine from computing it more than once) or when you deliberately want to prevent the optimizer from generating a complex combined plan.
 </details>
 
-<details>
-<summary>2. Explain the fundamental difference between `ROWS BETWEEN`, `RANGE BETWEEN`, and `GROUPS BETWEEN` in a window frame.</summary>
-
-**Answer**:
+<details><summary>2. Explain the fundamental difference between `ROWS BETWEEN`, `RANGE BETWEEN`, and `GROUPS BETWEEN` in a window frame.</summary>
 
 - `ROWS BETWEEN` specifies frame boundaries as a physical count of rows before or after the current row (e.g., `ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING`).
 - `RANGE BETWEEN` specifies boundaries as a logical offset relative to the value of the `ORDER BY` expression (e.g., `RANGE BETWEEN INTERVAL '1 day' PRECEDING AND CURRENT ROW`). Identical values of the `ORDER BY` key are treated as peers.
 - `GROUPS BETWEEN` specifies boundaries as an offset of distinct peer groups of `ORDER BY` values (e.g., `GROUPS BETWEEN 2 PRECEDING AND CURRENT ROW` includes all rows belonging to the current group and the preceding two distinct groups of sort keys).
-- Ref: [PostgreSQL Documentation: Window Function Calls](https://www.postgresql.org/docs/18/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS)
 
 </details>
 
-<details>
-<summary>3. Why is `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` dangerous for running totals when timestamps are not unique?</summary>
+<details><summary>3. Why is `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` dangerous for running totals when timestamps are not unique?</summary>
 
-**Answer**: Because `RANGE` treats rows with identical values of the sorting key as peers. If five transactions share the exact same timestamp, the window frame extends through the end of the peer group. As a result, all five rows will display the identical cumulative total (the sum including all five rows) rather than an incremental row-by-row running balance. To guarantee strictly progressive running totals, you must specify `ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` and include a secondary unique tiebreaker in the `ORDER BY` clause.
-
-- Ref: [PostgreSQL Documentation: Window Functions](https://www.postgresql.org/docs/18/tutorial-window.html)
-
+Because `RANGE` treats rows with identical values of the sorting key as peers. If five transactions share the exact same timestamp, the window frame extends through the end of the peer group. As a result, all five rows will display the identical cumulative total (the sum including all five rows) rather than an incremental row-by-row running balance. To guarantee strictly progressive running totals, you must specify `ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` and include a secondary unique tiebreaker in the `ORDER BY` clause.
 </details>
 
-<details>
-<summary>4. How does a recursive CTE prevent infinite loops using the SQL:2016 `CYCLE` clause?</summary>
+<details><summary>4. How does a recursive CTE prevent infinite loops using the SQL:2016 `CYCLE` clause?</summary>
 
-**Answer**: In cyclic graphs (e.g., $A \rightarrow B \rightarrow A$), recursion continues indefinitely unless terminated. The `CYCLE column SET is_cycle USING path` clause directs the engine to maintain an array of visited values for `column`. If a newly produced row contains a value already present in the path array, the engine sets the boolean column `is_cycle` to `true` and suppresses further recursive evaluation on that branch, allowing the query to terminate safely without application-level loop guards.
-
-- Ref: [PostgreSQL Documentation: WITH Queries: Cycle Detection](https://www.postgresql.org/docs/18/queries-with.html#QUERIES-WITH-CYCLE)
-
+In cyclic graphs (e.g., $A \rightarrow B \rightarrow A$), recursion continues indefinitely unless terminated. The `CYCLE column SET is_cycle USING path` clause directs the engine to maintain an array of visited values for `column`. If a newly produced row contains a value already present in the path array, the engine sets the boolean column `is_cycle` to `true` and suppresses further recursive evaluation on that branch, allowing the query to terminate safely without application-level loop guards.
 </details>
 
-<details>
-<summary>5. What is the operational advantage of `FILTER (WHERE ...)` over `CASE WHEN` inside aggregate functions?</summary>
+<details><summary>5. What is the operational advantage of `FILTER (WHERE ...)` over `CASE WHEN` inside aggregate functions?</summary>
 
-**Answer**: The `FILTER (WHERE condition)` clause is SQL-standard and directly instructs the aggregation node to discard non-matching tuples before feeding them into the accumulator. With `CASE WHEN condition THEN val ELSE NULL END`, the expression must still be evaluated for every tuple and passed to the aggregate function, which checks for `NULL`. The `FILTER` syntax is more concise, less error-prone with count functions (`COUNT(val)` vs `COUNT(*)`), and optimizes execution speed in the executor.
-
-- Ref: [PostgreSQL Documentation: Aggregate Expressions](https://www.postgresql.org/docs/18/sql-expressions.html#SYNTAX-AGGREGATES)
-
+The `FILTER (WHERE condition)` clause is SQL-standard and directly instructs the aggregation node to discard non-matching tuples before feeding them into the accumulator. With `CASE WHEN condition THEN val ELSE NULL END`, the expression must still be evaluated for every tuple and passed to the aggregate function, which checks for `NULL`. The `FILTER` syntax is more concise, less error-prone with count functions (`COUNT(val)` vs `COUNT(*)`), and optimizes execution speed in the executor.
 </details>

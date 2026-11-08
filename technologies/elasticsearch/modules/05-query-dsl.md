@@ -351,52 +351,39 @@ The response carries `is_running` and `is_partial`; partial aggregation results 
 
 ---
 
-## 13. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. What is the default <code>minimum_should_match</code> of a bool query?</strong></summary>
+<details><summary>1. What is the default <code>minimum_should_match</code> of a bool query?</summary>
 
 1 if the bool has no `must` or `filter` clause and has `should` clauses; otherwise 0, so `should` clauses only add score. Set it explicitly when you mean something else.
 </details>
 
-<details>
-<summary><strong>Q2. Explain <code>best_fields</code>, <code>most_fields</code> and <code>cross_fields</code>.</strong></summary>
+<details><summary>2. Explain <code>best_fields</code>, <code>most_fields</code> and <code>cross_fields</code>.</summary>
 
 `best_fields` takes the best single-field score (dis_max with tie_breaker) for terms that belong together in one field. `most_fields` sums field scores, for one text indexed several ways. `cross_fields` is term-centric: each term may match in any field, with blended idf, for entities split across fields such as first and last name.
 </details>
 
-<details>
-<summary><strong>Q3. Why is <code>from + size</code> limited, and what do you use instead?</strong></summary>
+<details><summary>3. Why is <code>from + size</code> limited, and what do you use instead?</summary>
 
 Every shard must return `from + size` hits to the coordinating node, which sorts `shards × (from + size)` entries. Cost grows linearly with depth. Use `search_after` with a unique tiebreaker, with a PIT for consistency.
 </details>
 
-<details>
-<summary><strong>Q4. What does a point in time guarantee, and what does it cost?</strong></summary>
+<details><summary>4. What does a point in time guarantee, and what does it cost?</summary>
 
 All pages see the same segments, so documents do not move between pages due to refreshes. The cost is that the referenced segments cannot be deleted after merges until the PIT expires or is deleted.
 </details>
 
-<details>
-<summary><strong>Q5. How does <code>function_score</code> combine scores?</strong></summary>
+<details><summary>5. How does <code>function_score</code> combine scores?</summary>
 
 Each function computes a value for the document; `score_mode` combines the function values (multiply, sum, avg, first, max, min); `boost_mode` combines that result with the query score (multiply, replace, sum, avg, max, min). Decay functions are parameterised so that at `offset + scale` the factor equals `decay`.
 </details>
 
-<details>
-<summary><strong>Q6. Why is a template parameter rendered as invalid JSON?</strong></summary>
+<details><summary>6. Why is a template parameter rendered as invalid JSON?</summary>
 
 Mustache substitutes raw text before JSON parsing. String parameters must be quoted in the template, arrays and objects need `{{#toJson}}`. Debug with `_render/template`.
 </details>
 
-<details>
-<summary><strong>Q7. A dashboard query with <code>now-15m</code> is slow and never cached. Why?</strong></summary>
+<details><summary>7. A dashboard query with <code>now-15m</code> is slow and never cached. Why?</summary>
 
 Unrounded `now` resolves to a different millisecond per request, so the filter is unique and Elasticsearch does not cache it. Round (`now-15m/m`) to make consecutive requests share the cached filter.
-</details>
-
-<details>
-<summary><strong>Q8. When would you use async search?</strong></summary>
-
-For searches that may outlast an HTTP timeout: long time ranges, frozen-tier or cross-cluster searches, heavy aggregations. The client gets partial results and polls by id; results are stored until `keep_alive` expires.
 </details>

@@ -322,11 +322,9 @@ sequenceDiagram
 
 ---
 
-## 10. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-### Q1: Given the CIDR block `172.24.16.0/20`, determine the network mask, broadcast address, and total usable host addresses.
-
-<details><summary>Answer</summary>
+<details><summary>1. Given the CIDR block `172.24.16.0/20`, determine the network mask, broadcast address, and total usable host addresses.</summary>
 
 **Calculations:**
 
@@ -340,9 +338,7 @@ sequenceDiagram
 
 </details>
 
-### Q2: How does a router determine which route to select when a packet's destination matches both `10.0.0.0/8` and `10.20.0.0/16`?
-
-<details><summary>Answer</summary>
+<details><summary>2. How does a router determine which route to select when a packet's destination matches both `10.0.0.0/8` and `10.20.0.0/16`?</summary>
 
 **Longest Prefix Match (LPM).** The router selects the route with the most specific prefix (the longest matching bitmask length). Between `10.0.0.0/8` (8 matching leading bits) and `10.20.0.0/16` (16 matching leading bits), the prefix length of 16 is longer and more specific. Therefore, the router forwards the packet according to the `10.20.0.0/16` route entry. If a metric or administrative distance differs, LPM still takes absolute precedence: a router only evaluates metrics between routes of _identical_ prefix length.
 
@@ -350,9 +346,7 @@ sequenceDiagram
 
 </details>
 
-### Q3: Why did IPv6 eliminate the Header Checksum field, and what component assumes responsibility for packet integrity?
-
-<details><summary>Answer</summary>
+<details><summary>3. Why did IPv6 eliminate the Header Checksum field, and what component assumes responsibility for packet integrity?</summary>
 
 **Processing Efficiency and Layer Redundancy.** In IPv4, every router along a path had to decrement the TTL field, forcing the router CPU or hardware to recompute the IPv4 header checksum at every single hop. This became a major performance bottleneck in high-throughput gigabit and terabit core switches. Because Layer 2 protocols (Ethernet, Wi-Fi) enforce strict error checking via 32-bit CRC Frame Check Sequences (FCS), and Layer 4 protocols (TCP, UDP) compute end-to-end checksums over both the payload and an IP pseudo-header, the Layer 3 header checksum was redundant. IPv6 eliminated the field entirely, allowing routers to decrement `Hop Limit` without recomputing a checksum.
 
@@ -360,9 +354,7 @@ sequenceDiagram
 
 </details>
 
-### Q4: Explain the mechanics of a traceroute run using UDP probes versus modern TCP SYN traceroute. Why is TCP SYN traceroute often superior in production?
-
-<details><summary>Answer</summary>
+<details><summary>4. Explain the mechanics of a traceroute run using UDP probes versus modern TCP SYN traceroute. Why is TCP SYN traceroute often superior in production?</summary>
 
 **Probe Probing and Firewall Filtering.**
 
@@ -373,9 +365,7 @@ sequenceDiagram
 
 </details>
 
-### Q5: Describe the Happy Eyeballs v2 (RFC 8305) connection establishment process. What problem does it solve for users on dual-stack networks?
-
-<details><summary>Answer</summary>
+<details><summary>5. Describe the Happy Eyeballs v2 (RFC 8305) connection establishment process. What problem does it solve for users on dual-stack networks?</summary>
 
 **Mitigating IPv6 Black Holes.** When a host has both IPv4 and IPv6 Internet connectivity, bad routing or broken tunnels on IPv6 would historically cause client applications (browsers, curl) to hang for 30 seconds waiting for an IPv6 TCP handshake to timeout before falling back to IPv4. Happy Eyeballs v2 resolves this by:
 

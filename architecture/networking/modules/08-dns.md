@@ -285,11 +285,9 @@ graph TD
 
 ---
 
-## 11. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-### Q1: Why is a CNAME record strictly prohibited at the zone apex (`example.com`), and how does the modern HTTPS Resource Record (RFC 9460) solve this problem?
-
-<details><summary>Answer</summary>
+<details><summary>1. Why is a CNAME record strictly prohibited at the zone apex (`example.com`), and how does the modern HTTPS Resource Record (RFC 9460) solve this problem?</summary>
 
 **The CNAME Exclusivity Rule (RFC 1034 §3.6.2).**
 
@@ -300,9 +298,7 @@ graph TD
 
 </details>
 
-### Q2: What is the purpose of the 2 most significant bits in a DNS label length byte evaluating to `11` (`0xC0`), and how does domain name pointer compression work?
-
-<details><summary>Answer</summary>
+<details><summary>2. What is the purpose of the 2 most significant bits in a DNS label length byte evaluating to `11` (`0xC0`), and how does domain name pointer compression work?</summary>
 
 **Message Compression via Wire Pointers (RFC 1035).**
 
@@ -314,9 +310,7 @@ graph TD
 
 </details>
 
-### Q3: Explain why a production Node.js application making heavy outbound HTTP requests might experience extreme event loop lag and stalled file system operations when using default network settings.
-
-<details><summary>Answer</summary>
+<details><summary>3. Explain why a production Node.js application making heavy outbound HTTP requests might experience extreme event loop lag and stalled file system operations when using default network settings.</summary>
 
 **Libuv Threadpool Starvation via `dns.lookup()`.**
 
@@ -330,9 +324,7 @@ graph TD
 
 </details>
 
-### Q4: In DNSSEC, what is the role of the DS (Delegation Signer) record, and how does it establish the trust relationship between a parent and child zone?
-
-<details><summary>Answer</summary>
+<details><summary>4. In DNSSEC, what is the role of the DS (Delegation Signer) record, and how does it establish the trust relationship between a parent and child zone?</summary>
 
 **The Cryptographic Anchor Between Parent and Child.**
 
@@ -345,9 +337,7 @@ graph TD
 
 </details>
 
-### Q5: What is Negative Caching in DNS (RFC 2308), how is its expiration timer determined, and what operational issue does it frequently cause during software deployments?
-
-<details><summary>Answer</summary>
+<details><summary>5. What is Negative Caching in DNS (RFC 2308), how is its expiration timer determined, and what operational issue does it frequently cause during software deployments?</summary>
 
 **Caching Non-Existence via SOA Minimum.**
 

@@ -384,40 +384,34 @@ EVALUATE-FLAKY-TEST-SCORE(TestExecutionRuns, VarianceThreshold)
 
 ---
 
-## 10. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. How does Greedy Longest Processing Time (LPT) partitioning solve the "straggler problem" in parallel CI test jobs?</strong></summary>
+<details><summary>1. How does Greedy Longest Processing Time (LPT) partitioning solve the "straggler problem" in parallel CI test jobs?</summary>
 
 The straggler problem occurs when test execution durations follow a non-uniform (Pareto) distribution, and naive splitting (such as round-robin or file-count modulo) clusters multiple long-running integration tests onto a single worker node. That worker takes far longer than the others, bottlenecking total pipeline latency. Greedy LPT scheduling solves this by first sorting all test suites in descending order of historical execution duration (retrieved from previous JUnit XML reports). It then iterates through the sorted tests, greedily assigning each test to whichever worker currently has the lowest accumulated runtime load. Mathematically proven by Graham's theorem, this guarantees an approximation bound within 4/3 of the optimal offline schedule, balancing worker utilization and drastically reducing makespan.
 </details>
 
-<details>
-<summary><strong>Q2. What is the difference between scalar regex coverage extraction and Cobertura report ingestion in GitLab CI?</strong></summary>
+<details><summary>2. What is the difference between scalar regex coverage extraction and Cobertura report ingestion in GitLab CI?</summary>
 
 Scalar regex coverage extraction uses the `coverage:` keyword to execute a regular expression match against the job's raw terminal stdout logs (e.g., finding the text `Statements: 84.5%`). It extracts a single number used for project analytics, dashboard badges, and simple merge checks. In contrast, Cobertura report ingestion (`artifacts:reports:coverage_report:cobertura`) parses a structured XML file detailing exactly which files, functions, and lines of code were executed during the test run. GitLab uses this detailed structural data to render inline visual annotations directly inside the Merge Request diff view, highlighting untested lines in red to guide code reviewers.
 </details>
 
-<details>
-<summary><strong>Q3. Formally define a "Flaky Test" and explain how statistical flakiness scoring identifies it.</strong></summary>
+<details><summary>3. Formally define a "Flaky Test" and explain how statistical flakiness scoring identifies it.</summary>
 
 A flaky test is formally defined as a test that exhibits non-deterministic execution outcomes (both `PASS` and `FAIL`) when executed against the exact same immutable Git commit SHA $c$ under identical environment conditions. To detect flakiness empirically, a platform engine computes the variance (entropy) of test results across $K$ consecutive runs on that commit: $\sigma^2 = p(1 - p)$, where $p$ is the empirical failure rate ($p = \text{fails} / K$). If a test always passes ($p=0$) or always fails ($p=1$), the variance is 0. If the test exhibits intermittent failure ($0 < p < 1$), its variance rises (peaking at $\sigma^2 = 0.25$ when $p=0.5$). When $\sigma^2$ exceeds a defined threshold (e.g., 0.05), the test is classified as flaky.
 </details>
 
-<details>
-<summary><strong>Q4. What is the operational difference between `retry: max` and isolating a test into a quarantined suite?</strong></summary>
+<details><summary>4. What is the operational difference between `retry: max` and isolating a test into a quarantined suite?</summary>
 
 Setting `retry: max` (such as `retry: 2`) instructs the runner to automatically re-execute the entire job if it fails. While this can mitigate transient runner network glitches, using it for test failures is an anti-pattern: it masks genuine race conditions, wastes compute time running all passing tests repeatedly, and prolongs pipeline duration. In contrast, isolating a test into a quarantined suite separates the non-deterministic test from the core verification gate. The quarantined test executes in a separate job configured with `allow_failure: true`, allowing telemetry to continue collecting data without blocking PR merges or derailing Merge Trains, while creating a tracked defect ticket for engineers to fix the underlying concurrency bug.
 </details>
 
-<details>
-<summary><strong>Q5. How does a Merge Train guarantee that code merged to `main` does not suffer from semantic merge conflicts?</strong></summary>
+<details><summary>5. How does a Merge Train guarantee that code merged to `main` does not suffer from semantic merge conflicts?</summary>
 
 In standard CI, feature branches are tested in isolation against their own commit history. If two developers merge branches that do not have text conflicts but break semantic contracts (e.g., modifying a function signature vs. calling that function with old arguments), `main` is broken upon merge. Merge Trains prevent this by executing speculative integration pipelines: each Merge Request is queued in an ordered train. The pipeline for Car $N$ executes against an ephemeral Git reference that speculatively merges the target branch plus all preceding Merge Requests in the train: $\text{Base} \oplus \text{MR}_1 \oplus \dots \oplus \text{MR}_N$. If Car $N$ fails tests, it is immediately ejected from the train, ensuring that only combinations that pass verification together can ever land on `main`.
 </details>
 
-<details>
-<summary><strong>Q6. What happens in a Merge Train when a middle car fails, and how does the train recover?</strong></summary>
+<details><summary>6. What happens in a Merge Train when a middle car fails, and how does the train recover?</summary>
 
 Suppose three Merge Requests (MR-1, MR-2, MR-3) are running concurrently in a Merge Train as Car 1, Car 2, and Car 3. If Car 2 fails its pipeline, the speculative baseline for Car 3 ($\text{Base} \oplus \text{MR}_1 \oplus \text{MR}_2 \oplus \text{MR}_3$) is invalidated. The Merge Train engine immediately:
 
@@ -425,18 +419,15 @@ Suppose three Merge Requests (MR-1, MR-2, MR-3) are running concurrently in a Me
 2. Aborts the running pipeline for Car 3.
 3. Automatically rebases Car 3 onto Car 1 ($\text{Base} \oplus \text{MR}_1 \oplus \text{MR}_3$).
 4. Dispatches a new speculative pipeline for Car 3 without requiring manual developer intervention.
-
 </details>
 
-<details>
-<summary><strong>Q7. What are the common failure modes associated with JUnit XML artifact ingestion in GitLab CI?</strong></summary>
+<details><summary>7. What are the common failure modes associated with JUnit XML artifact ingestion in GitLab CI?</summary>
 
 The most frequent failure modes include:
 
 1. **ANSI Color Escape Sequences**: Test runners that output colored terminal formatting directly into `<failure>` or `<system-out>` tags embed non-ASCII control characters (`\x1b[31m`) that invalidate XML parsers, causing GitLab to drop the report silently.
 2. **Missing `testcase` `classname` or `name` attributes**: GitLab's ingestion engine requires standard JUnit attributes to correlate test cases across commits. If an unconventional reporter omits `name` or `time`, the widget fails to render diffs.
 3. **Huge XML Payload Sizes**: Extremely large test suites that write megabytes of stack traces into a single XML file can exceed GitLab's artifact ingestion size limits, causing report truncation.
-
 </details>
 
 ---

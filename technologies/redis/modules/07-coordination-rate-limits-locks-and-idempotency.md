@@ -429,7 +429,7 @@ HANDLE-IDEMPOTENT-REQUEST(req):
 
 ---
 
-## 7. Interview Drill
+## Interview Drill
 
 <details><summary>1. Design a rate limiter of 100 requests per minute per API key on Redis.</summary>
 
@@ -464,9 +464,4 @@ A fixed window resets at boundaries, so a client can send L requests at the end 
 <details><summary>7. How does GCRA eliminate the memory and conversion overhead of token buckets?</summary>
 
 A token bucket stores two fields (tokens and last_refill_timestamp), requiring an $O(1)$ Hash and multiple string-to-float conversions in Lua. GCRA maps the leaky-bucket model to a single 64-bit integer timestamp: the Theoretical Arrival Time (TAT). A request at time $t$ is admitted iff $t \ge \text{TAT} - \tau$ (where $\tau = B \times T$ is burst tolerance), setting $\text{TAT}_{\text{new}} = \max(t, \text{TAT}) + T$. It needs only a single string key per client.
-</details>
-
-<details><summary>8. How do you implement global logout across all active sessions in Redis?</summary>
-
-Store each session as a hash `sess:<session_id>` with a TTL, and record its ID in a user-indexed set `user:<user_id>:sessions`. To log out everywhere, read all session IDs from the user's set with `SMEMBERS`, asynchronously unlink them with `UNLINK`, and delete the set. Handle lazy cleanup of expired sessions when reading the set.
 </details>

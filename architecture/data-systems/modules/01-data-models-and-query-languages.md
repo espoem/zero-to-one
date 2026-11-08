@@ -297,28 +297,25 @@ sequenceDiagram
 
 ---
 
-## 7. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1: Why is BCNF strictly stronger than 3NF, and what trade-off occurs when decomposing into BCNF?</strong></summary>
+<details><summary>1. Why is BCNF strictly stronger than 3NF, and what trade-off occurs when decomposing into BCNF?</summary>
 
-**Answer:** BCNF requires that for _every_ non-trivial functional dependency $X \to Y$, $X$ must be a superkey. 3NF relaxes this requirement by permitting $X$ to not be a superkey _provided_ that every attribute in $Y$ is a prime attribute (part of some candidate key).
+BCNF requires that for _every_ non-trivial functional dependency $X \to Y$, $X$ must be a superkey. 3NF relaxes this requirement by permitting $X$ to not be a superkey _provided_ that every attribute in $Y$ is a prime attribute (part of some candidate key).
 
 The critical trade-off is **dependency preservation**. While any relational schema can be decomposed into 3NF such that the decomposition is both lossless-join and dependency-preserving, decomposing into BCNF is guaranteed to be lossless-join but **may fail to preserve functional dependencies**. When dependencies are lost in BCNF, enforcing integrity across updates requires inter-table joins, negating the performance benefits of normalization.
 </details>
 
-<details>
-<summary><strong>Q2: Explain Codd's Equivalence Theorem and its practical implication in relational query optimizers.</strong></summary>
+<details><summary>2. Explain Codd's Equivalence Theorem and its practical implication in relational query optimizers.</summary>
 
-**Answer:** Codd's Equivalence Theorem proves that safe expressions written in declarative Tuple Relational Calculus, Domain Relational Calculus, and procedural Relational Algebra possess identical expressive power.
+Codd's Equivalence Theorem proves that safe expressions written in declarative Tuple Relational Calculus, Domain Relational Calculus, and procedural Relational Algebra possess identical expressive power.
 
 In practical database engines, users write declarative SQL queries (grounded in relational calculus). The engine parses this SQL into an abstract syntax tree and lowers it into an initial Relational Algebra plan tree. Because relational algebra possesses algebraic identities (commutativity and associativity of joins, pushdown of selections and projections), the query optimizer can systematically rewrite and cost alternative algebraic plan trees to discover the optimal physical execution plan without altering the declarative semantics specified by the user.
 </details>
 
-<details>
-<summary><strong>Q3: When should an architect choose an embedded document model over a normalized relational model?</strong></summary>
+<details><summary>3. When should an architect choose an embedded document model over a normalized relational model?</summary>
 
-**Answer:** An embedded document model is optimal when:
+An embedded document model is optimal when:
 
 1. **Access pattern alignment**: The parent entity and its nested children are almost always retrieved and updated together (strong 1-to-few aggregate boundary).
 2. **Physical disk locality**: Contiguous disk storage of the aggregate eliminates multiple random I/O index lookups and join processing.
@@ -327,28 +324,25 @@ In practical database engines, users write declarative SQL queries (grounded in 
 Conversely, normalized relational models are strictly required when child entities have unbounded cardinality, when child entities are queried independently of parents, or when many-to-many relationships exist that would require denormalized duplicate writes across multiple documents.
 </details>
 
-<details>
-<summary><strong>Q4: What causes spurious tuples during relational table decomposition, and how is it mathematically prevented?</strong></summary>
+<details><summary>4. What causes spurious tuples during relational table decomposition, and how is it mathematically prevented?</summary>
 
-**Answer:** Spurious tuples occur when a table is decomposed into two subrelations along attribute sets that do not share a common candidate key. When the two tables are subsequently joined back together, the absence of a unique constraint causes rows to match with unintended rows, generating phantom records that were never present in the original dataset.
+Spurious tuples occur when a table is decomposed into two subrelations along attribute sets that do not share a common candidate key. When the two tables are subsequently joined back together, the absence of a unique constraint causes rows to match with unintended rows, generating phantom records that were never present in the original dataset.
 
 Lossless-join decomposition is mathematically guaranteed if and only if the intersection of the attribute sets of the decomposed relations functionally determines at least one of the full attribute sets:
 
 $$A(R_1) \cap A(R_2) \to A(R_1) \quad \text{or} \quad A(R_1) \cap A(R_2) \to A(R_2)$$
 </details>
 
-<details>
-<summary><strong>Q5: What is index-free adjacency in graph databases, and how does it compare to relational foreign keys?</strong></summary>
+<details><summary>5. What is index-free adjacency in graph databases, and how does it compare to relational foreign keys?</summary>
 
-**Answer:** In traditional relational databases, traversing a relationship requires consulting an index (e.g. a B-tree lookup on a child foreign key column), which incurs $O(\log N)$ computational cost per hop where $N$ is the total number of rows in the target table.
+In traditional relational databases, traversing a relationship requires consulting an index (e.g. a B-tree lookup on a child foreign key column), which incurs $O(\log N)$ computational cost per hop where $N$ is the total number of rows in the target table.
 
 In a graph engine with **index-free adjacency**, nodes maintain direct memory pointers or physical disk record IDs to their adjacent edges and neighbor nodes. Traversing an edge requires dereferencing an already known pointer in $O(1)$ constant time, completely independent of the total graph size. For multi-hop traversals of depth $k$, graph engines scale as $O(d^k)$ (where $d$ is the average degree of visited nodes), whereas relational joins scale as $O(k \cdot \log N)$.
 </details>
 
-<details>
-<summary><strong>Q6: How do modern multi-model database engines render dedicated document stores obsolete for general web workloads?</strong></summary>
+<details><summary>6. How do modern multi-model database engines render dedicated document stores obsolete for general web workloads?</summary>
 
-**Answer:** Modern relational engines (e.g. PostgreSQL, SQLite, Spanner) incorporate binary JSON types (`JSONB`) with decomposed binary storage, specialized index operator classes (GIN path indexing), and standard SQL/JSON path syntax (`jsonb_path_query`).
+Modern relational engines (e.g. PostgreSQL, SQLite, Spanner) incorporate binary JSON types (`JSONB`) with decomposed binary storage, specialized index operator classes (GIN path indexing), and standard SQL/JSON path syntax (`jsonb_path_query`).
 
 This architecture provides the document model's schema flexibility and hierarchical aggregate locality within specific columns, while preserving strict relational schema guarantees, foreign key referential integrity, multi-table joins, and full ACID multi-statement transaction guarantees across the rest of the database schema. Dedicated document stores often trade away cross-collection referential integrity and multi-document consistency without delivering superior throughput.
 </details>

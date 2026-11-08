@@ -350,7 +350,7 @@ Reading the libSQL row of the README against this table explains most "works loc
 
 ---
 
-## 11. Interview Drill
+## Interview Drill
 
 <details><summary>1. How does SQLite evaluate a recursive CTE, and why does <code>UNION</code> terminate on a cyclic graph while <code>UNION ALL</code> may not?</summary>
 
@@ -385,19 +385,4 @@ With `ORDER BY` and no frame, the default frame is `RANGE BETWEEN UNBOUNDED PREC
 <details><summary>7. A report shows NULL for "last day of the month" on one server but works on another. What do you check?</summary>
 
 The SQLite version of each binding. The `'end of month'` modifier exists only from 3.54.0, and unknown modifiers make date functions return NULL instead of raising. Either upgrade the binding or use the portable idiom `date(x, 'start of month', '+1 month', '-1 day')`.
-</details>
-
-<details><summary>8. What does <code>SELECT name, max(score) FROM s</code> return in SQLite, and is it safe to rely on?</summary>
-
-It returns the `name` from the row with the maximum score: a documented SQLite extension that applies when the query has exactly one `min()` or `max()` aggregate. It is safe within SQLite under that condition, but it is not portable (PostgreSQL rejects it), and with other aggregates the bare column's row is arbitrary.
-</details>
-
-<details><summary>9. Why is <code>first || ' ' || last</code> NULL for some users, and what are two fixes?</summary>
-
-`||` propagates NULL: if `last` (or `first`) is NULL, the whole expression is NULL. Fix with `concat_ws(' ', first, last)` (3.44+), which skips NULL arguments, or wrap each operand in `coalesce(x, '')`.
-</details>
-
-<details><summary>10. Why prefer <code>INSERT ... RETURNING id</code> over calling <code>last_insert_rowid()</code> afterwards?</summary>
-
-`last_insert_rowid()` is per connection and reports the most recent successful insert on that connection, including inserts done by triggers or by other code sharing the connection between your two calls. `RETURNING` reports the rows that this very statement inserted, atomically, and works for multi-row inserts. It needs 3.35.0 or newer.
 </details>

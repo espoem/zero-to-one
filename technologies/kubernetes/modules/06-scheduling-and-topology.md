@@ -449,43 +449,36 @@ Invariant 3: Reserve stage atomically updates in-memory node capacity before the
 
 ---
 
-## 12. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. Walk through the difference between the Scheduling Cycle and the Binding Cycle in the Scheduling Framework.</strong></summary>
+<details><summary>1. Walk through the difference between the Scheduling Cycle and the Binding Cycle in the Scheduling Framework.</summary>
 
 The Scheduling Cycle is synchronous and strictly serialized. It evaluates one pod at a time across all nodes, running `PreFilter`, `Filter`, `PostFilter`, `PreScore`, `Score`, and `Reserve` plugins. The serialization ensures that two concurrent scheduling passes do not reserve the same physical resources on a node. Once the node is selected and resources are reserved in local memory, the Pod transitions to the Binding Cycle. The Binding Cycle runs asynchronously in an independent background goroutine, executing `Permit`, `PreBind`, `Bind` (sending the HTTP Binding request to the API server), and `PostBind`. This separation keeps the scheduling cycle running at maximum throughput without blocking on network I/O to etcd.
 </details>
 
-<details>
-<summary><strong>Q2. How does Pod Topology Spread Constraint calculation differ from standard PodAntiAffinity?</strong></summary>
+<details><summary>2. How does Pod Topology Spread Constraint calculation differ from standard PodAntiAffinity?</summary>
 
 PodAntiAffinity is a blunt, binary constraint: it places at most one pod matching a label per topology domain (such as host or zone). Pod Topology Spread Constraints enforce a proportional mathematical distribution. It calculates the skew: $$\text{Skew}(z) = \left( C(z) + 1 \right) - \min_{t \in T} C(t)$$ and allows multiple pods per domain as long as the difference between the most populated domain and the least populated domain does not exceed `maxSkew`. This allows graceful, even scaling across multiple availability zones or racks without artificial cluster capacity locks.
 </details>
 
-<details>
-<summary><strong>Q3. What is the difference between `NoSchedule`, `PreferNoSchedule`, and `NoExecute` taint effects?</strong></summary>
+<details><summary>3. What is the difference between `NoSchedule`, `PreferNoSchedule`, and `NoExecute` taint effects?</summary>
 
 - `NoSchedule`: Hard scheduling filter. The scheduler will not place new pods on the node unless they possess a matching toleration. Pods already running on the node remain unaffected.
 - `PreferNoSchedule`: Soft scheduling score. The scheduler attempts to avoid placing pods on the node, but will do so if no alternative capacity exists.
 - `NoExecute`: Hard execution filter and eviction trigger. If applied to a node, any running pod lacking a matching toleration is evicted immediately. If a toleration defines `tolerationSeconds`, the pod is permitted to remain running on the node until the timer expires.
-
 </details>
 
-<details>
-<summary><strong>Q4. How does `kubectl drain` interact with PodDisruptionBudgets (PDBs), and what causes drain commands to hang?</strong></summary>
+<details><summary>4. How does `kubectl drain` interact with PodDisruptionBudgets (PDBs), and what causes drain commands to hang?</summary>
 
 `kubectl drain` does not issue hard `DELETE` calls against pods. Instead, it submits requests to the Pod Eviction subresource (`POST /api/v1/namespaces/prod/pods/name/eviction`). The API server evaluates active PDBs matching the pod's labels. If evicting the pod would cause healthy replica counts to drop below the PDB's `minAvailable` (or exceed `maxUnavailable`), the API server rejects the eviction with HTTP 429 Too Many Requests. The drain command retries periodically and hangs indefinitely until new pods become ready elsewhere in the cluster to satisfy the budget.
 </details>
 
-<details>
-<summary><strong>Q5. What is the role of `matchLabelKeys` in Pod Topology Spread Constraints during rolling updates?</strong></summary>
+<details><summary>5. What is the role of `matchLabelKeys` in Pod Topology Spread Constraints during rolling updates?</summary>
 
 During a Deployment rolling update, pods from both the old ReplicaSet and the new ReplicaSet run concurrently. If a topology constraint evaluates only generic labels (`app: web`), the presence of terminating old pods can falsely inflate the count in a zone, causing the scheduler to skew new pods away from that zone. `matchLabelKeys: ["pod-template-hash"]` directs the scheduler to evaluate topology counts strictly among pods sharing the same dynamic template hash, calculating skew exclusively within the incoming deployment revision.
 </details>
 
-<details>
-<summary><strong>Q6. How does the scheduler handle preemption when multiple low-priority pods are available as victims?</strong></summary>
+<details><summary>6. How does the scheduler handle preemption when multiple low-priority pods are available as victims?</summary>
 
 During `PostFilter`, the scheduler evaluates nodes where evicting lower-priority pods clears enough resources for the high-priority pod. It applies heuristic optimizations:
 
@@ -493,11 +486,9 @@ During `PostFilter`, the scheduler evaluates nodes where evicting lower-priority
 2. It prefers evicting pods with the lowest possible priority values.
 3. It respects PodDisruptionBudgets wherever possible, avoiding violating PDBs unless no other combination of nodes and victims can satisfy the incoming workload.
 4. Once selected, victim pods receive a `deletionTimestamp` to initiate graceful termination, and the node is reserved.
-
 </details>
 
-<details>
-<summary><strong>Q7. Why is Dynamic Resource Allocation (DRA) replacing the legacy Device Plugin framework?</strong></summary>
+<details><summary>7. Why is Dynamic Resource Allocation (DRA) replacing the legacy Device Plugin framework?</summary>
 
 The legacy Device Plugin framework only supported scalar integer resource counting (`vendor.com/gpu: 2`). Modern accelerators (such as NVIDIA H100s, Google TPUs, and network DPUs) require complex multi-dimensional configuration: specifying GPU memory slices, NVLink interconnect topologies, PCIe bus placement, and sharing policies. DRA uses structured `ResourceClaim` and `DeviceClass` objects, allowing workloads to request specific hardware topologies that the scheduler evaluates holistically alongside CPU and memory placement.
 </details>

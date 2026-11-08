@@ -400,11 +400,9 @@ Acceptance tests are gated behind the `TF_ACC=1` environment variable. When exec
 
 ---
 
-## 9. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-### Q1: Why does Terraform execute providers as independent child operating system processes over gRPC rather than linking them as dynamic shared libraries (`.so`)?
-
-<details><summary>Answer</summary>
+<details><summary>1. Why does Terraform execute providers as independent child operating system processes over gRPC rather than linking them as dynamic shared libraries (`.so`)?</summary>
 
 **Memory Fault Isolation, Licensing Segregation, and Dependency Decoupling.**
 
@@ -412,12 +410,9 @@ Acceptance tests are gated behind the `TF_ACC=1` environment variable. When exec
 - **Licensing**: Terraform Core (under BSL 1.1) can invoke providers licensed under Apache 2.0 or commercial licenses without violating open-source copyleft boundaries across the IPC transport.
 - **Dependency Hell**: Linking dozens of disparate cloud SDKs into one binary would create unresolvable Go module version conflicts and multi-gigabyte binary bloat.
 - Ref: HashiCorp go-plugin Architectural Whitepaper; Terraform Core Provider Subsystem Design.
-
 </details>
 
-### Q2: What are the three states in the Terraform Plugin Framework ternary logic model, and why is `Unknown` distinct from `Null`?
-
-<details><summary>Answer</summary>
+<details><summary>2. What are the three states in the Terraform Plugin Framework ternary logic model, and why is `Unknown` distinct from `Null`?</summary>
 
 **Known, Null, and Unknown Tri-State Logic.**
 
@@ -426,12 +421,9 @@ Acceptance tests are gated behind the `TF_ACC=1` environment variable. When exec
 - **Unknown**: A placeholder indicating that a value will exist, but its exact content cannot be known until the resource is physically created during `terraform apply` (e.g., an auto-generated RDS hostname or EC2 private IP).
 - `Unknown` is distinct from `Null` because downstream dependent resources need to know during the planning phase that a valid value _will_ be provided. If an attribute were treated as `Null`, downstream validation rules (e.g., checking string length or IP formatting) would falsely fail or assume the argument was omitted.
 - Ref: Terraform Plugin Framework Specification: Types and Values.
-
 </details>
 
-### Q3: What occurs when a provider's `ReadResource` method encounters an HTTP 404 Not Found error from a cloud API, and what is the required implementation?
-
-<details><summary>Answer</summary>
+<details><summary>3. What occurs when a provider's `ReadResource` method encounters an HTTP 404 Not Found error from a cloud API, and what is the required implementation?</summary>
 
 **State Pruning for Drift Remediation.**
 
@@ -440,12 +432,9 @@ Acceptance tests are gated behind the `TF_ACC=1` environment variable. When exec
 - Instead, the provider must call `resp.State.RemoveResource(ctx)` and return cleanly with empty diagnostics.
 - This instructs Terraform Core to remove the resource address from the refreshed state. During the subsequent planning phase, Terraform detects that the resource is declared in configuration but absent from state, correctly scheduling a `Create` action to recreate the missing asset.
 - Ref: Terraform Provider Development Guide: Implementing Read.
-
 </details>
 
-### Q4: Explain the cause and operational consequence of the error: "Provider produced inconsistent result after apply".
-
-<details><summary>Answer</summary>
+<details><summary>4. Explain the cause and operational consequence of the error: "Provider produced inconsistent result after apply".</summary>
 
 **Contract Breach Between Plan and Apply.**
 
@@ -455,12 +444,9 @@ Acceptance tests are gated behind the `TF_ACC=1` environment variable. When exec
 - If a provider author inadvertently modifies a known value during `Apply` (e.g., normalizing an input string or applying a server-side default that was not marked `Computed` in schema), Core detects the divergence and aborts with `Provider produced inconsistent result after apply`.
 - This fail-safe prevents silent configuration corruption.
 - Ref: HashiCorp Terraform Core Engine Invariants.
-
 </details>
 
-### Q5: How does the `RequiresReplace` plan modifier alter the Terraform Directed Acyclic Graph (DAG)?
-
-<details><summary>Answer</summary>
+<details><summary>5. How does the `RequiresReplace` plan modifier alter the Terraform Directed Acyclic Graph (DAG)?</summary>
 
 **Action Transformation from In-Place Update to Destroy-and-Create.**
 
@@ -470,12 +456,9 @@ Acceptance tests are gated behind the `TF_ACC=1` environment variable. When exec
 - In the execution graph, Core splits the resource execution into two distinct operations: a `Destroy` node and a `Create` node.
 - Depending on the resource's `lifecycle` settings, Core orders the graph as either `Destroy-then-Create` (default) or `Create-before-Destroy` (`create_before_destroy = true`), ensuring all downstream dependencies are re-evaluated against the new resource instance.
 - Ref: Terraform Plugin Framework Documentation: Plan Modifiers.
-
 </details>
 
-### Q6: What is the role of `TF_ACC` in provider development and CI pipelines?
-
-<details><summary>Answer</summary>
+<details><summary>6. What is the role of `TF_ACC` in provider development and CI pipelines?</summary>
 
 **Gating Real Cloud Acceptance Tests from Hermetic Unit Tests.**
 
@@ -484,12 +467,9 @@ Acceptance tests are gated behind the `TF_ACC=1` environment variable. When exec
 - The testing framework checks `os.Getenv("TF_ACC")`. If `TF_ACC` is not set to `1` or `true`, all acceptance test cases are skipped automatically during standard `go test ./...` invocations.
 - CI pipelines set `TF_ACC=1` only in dedicated integration testing environments equipped with cloud sandbox credentials.
 - Ref: HashiCorp Provider Acceptance Testing Specification.
-
 </details>
 
-### Q7: How does gRPC Protocol v6 handle dynamic values whose structural schema is not statically known at Protobuf compile time?
-
-<details><summary>Answer</summary>
+<details><summary>7. How does gRPC Protocol v6 handle dynamic values whose structural schema is not statically known at Protobuf compile time?</summary>
 
 **MessagePack Binary Payloads Paired with Dynamic Type Signatures.**
 
@@ -499,22 +479,6 @@ Acceptance tests are gated behind the `TF_ACC=1` environment variable. When exec
 - Accompanying the payload is a serialized type signature describing the attribute structure (primitive types, list elements, object attribute maps).
 - The receiving engine (Core or Provider) uses the type signature to unpack and validate the MessagePack stream in-memory, achieving structural typing without requiring dynamic Protobuf re-compilation.
 - Ref: Terraform Provider Protocol v6 Wire Specification.
-
-</details>
-
-### Q8: What is the purpose of `UpgradeResourceState` RPC in the provider lifecycle?
-
-<details><summary>Answer</summary>
-
-**State Schema Migration Across Major Provider Upgrades.**
-
-- As cloud APIs evolve, provider authors change attribute schemas (e.g., renaming `disk_size` to `storage_gb` or converting a flat string to a complex object block).
-- Existing state files in production contain data structured according to older schema versions (recorded in the state's `schema_version` integer).
-- When Terraform Core reads an older state file during `terraform plan`, it invokes the provider's `UpgradeResourceState` RPC, passing the raw state JSON and the recorded version.
-- The provider executes custom Go migration logic to translate legacy attribute layouts into the current schema version before Core compiles the planning graph.
-- This prevents breaking upgrades and state file corruption.
-- Ref: Terraform Plugin Framework: State Upgraders.
-
 </details>
 
 ---

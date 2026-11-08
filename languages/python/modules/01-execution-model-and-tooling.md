@@ -230,12 +230,11 @@ When launching CPython, the runtime evaluates environment variables and command-
 
 ---
 
-## 7. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-<details>
-<summary>1. What happens under the hood when a Python source file is imported for the first time?</summary>
+<details><summary>1. What happens under the hood when a Python source file is imported for the first time?</summary>
 
-**Answer:** When module `foo` is imported:
+When module `foo` is imported:
 
 1. Python checks `sys.modules` to see if `foo` is already loaded. If found, it returns the cached module object immediately.
 2. If not found, CPython iterates over `sys.meta_path` finders (e.g., `PathFinder`).
@@ -247,16 +246,14 @@ When launching CPython, the runtime evaluates environment variables and command-
 
 </details>
 
-<details>
-<summary>2. Why does Python determine variable scopes at compile time rather than runtime?</summary>
+<details><summary>2. Why does Python determine variable scopes at compile time rather than runtime?</summary>
 
-**Answer:** CPython determines variable scope during the symbol table compilation phase to optimize variable access in the virtual machine. By knowing at compile time that a variable is local to a function, the compiler can emit `LOAD_FAST` and `STORE_FAST` instructions instead of `LOAD_NAME` or `LOAD_GLOBAL`. `LOAD_FAST` accesses the local variable via an $O(1)$ offset into a fixed-size C array on the evaluation frame (`frame->f_localsplus`), bypassing dictionary hashing and key comparisons. If scope were dynamic, every single variable lookup would require dynamic hash table lookups across local, enclosing, global, and builtin dictionaries.
+CPython determines variable scope during the symbol table compilation phase to optimize variable access in the virtual machine. By knowing at compile time that a variable is local to a function, the compiler can emit `LOAD_FAST` and `STORE_FAST` instructions instead of `LOAD_NAME` or `LOAD_GLOBAL`. `LOAD_FAST` accesses the local variable via an $O(1)$ offset into a fixed-size C array on the evaluation frame (`frame->f_localsplus`), bypassing dictionary hashing and key comparisons. If scope were dynamic, every single variable lookup would require dynamic hash table lookups across local, enclosing, global, and builtin dictionaries.
 </details>
 
-<details>
-<summary>3. What is the cause of `UnboundLocalError: local variable referenced before assignment`, and how is it resolved?</summary>
+<details><summary>3. What is the cause of `UnboundLocalError: local variable referenced before assignment`, and how is it resolved?</summary>
 
-**Answer:** Because variable scopes are determined at compile time, if an assignment statement (e.g., `x = 1`) appears _anywhere_ inside a function body, the compiler marks `x` as a local variable for the _entire_ function scope. If code references `x` prior to that assignment line, the virtual machine executes `LOAD_FAST` for `x`. Because the local variable slot contains a null pointer (uninitialized), the VM raises `UnboundLocalError`. To resolve this:
+Because variable scopes are determined at compile time, if an assignment statement (e.g., `x = 1`) appears _anywhere_ inside a function body, the compiler marks `x` as a local variable for the _entire_ function scope. If code references `x` prior to that assignment line, the virtual machine executes `LOAD_FAST` for `x`. Because the local variable slot contains a null pointer (uninitialized), the VM raises `UnboundLocalError`. To resolve this:
 
 - If modifying a global variable, declare `global x` at the top of the function.
 - If modifying a variable from an enclosing outer function, declare `nonlocal x`.
@@ -264,16 +261,14 @@ When launching CPython, the runtime evaluates environment variables and command-
 
 </details>
 
-<details>
-<summary>4. What are the key architectural advantages of the PEG parser introduced in PEP 617?</summary>
+<details><summary>4. What are the key architectural advantages of the PEG parser introduced in PEP 617?</summary>
 
-**Answer:** The legacy LL(1) parser was restricted to looking ahead at most one token and required grammar rules to be deterministic without backtracking. This created severe grammar restrictions: grammar designers could not use left-recursion, multi-statement compound constructs in context managers, or rich syntax without adding synthetic tokens. The PEG (Parsing Expression Grammar) parser eliminates the 1-token limitation, supports unlimited backtracking, handles direct and indirect left recursion via memoization (Packrat parsing), and allows clean implementation of complex modern syntax such as `match/case` structural pattern matching and parenthesized context managers.
+The legacy LL(1) parser was restricted to looking ahead at most one token and required grammar rules to be deterministic without backtracking. This created severe grammar restrictions: grammar designers could not use left-recursion, multi-statement compound constructs in context managers, or rich syntax without adding synthetic tokens. The PEG (Parsing Expression Grammar) parser eliminates the 1-token limitation, supports unlimited backtracking, handles direct and indirect left recursion via memoization (Packrat parsing), and allows clean implementation of complex modern syntax such as `match/case` structural pattern matching and parenthesized context managers.
 </details>
 
-<details>
-<summary>5. Why is `uv` significantly faster than legacy `pip` and `pip-tools`?</summary>
+<details><summary>5. Why is `uv` significantly faster than legacy `pip` and `pip-tools`?</summary>
 
-**Answer:** `uv` achieves orders-of-magnitude faster performance through several systems-level design decisions:
+`uv` achieves orders-of-magnitude faster performance through several systems-level design decisions:
 
 1. **Implementation Language**: Written in Rust, with zero garbage collection overhead and multi-threaded parallel computation.
 2. **PubGrub Algorithm**: Uses an optimized Rust implementation of the PubGrub version-solving algorithm with fast backtracking.

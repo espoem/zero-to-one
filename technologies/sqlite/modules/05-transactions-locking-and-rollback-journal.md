@@ -359,7 +359,7 @@ Internally, statement-level atomicity, savepoints and the `ABORT` algorithm use 
 
 ---
 
-## 11. Interview Drill
+## Interview Drill
 
 <details><summary>1. List SQLite's lock states and explain why PENDING exists.</summary>
 
@@ -394,29 +394,4 @@ Serializable between connections. In rollback mode, locking is two-phase at data
 <details><summary>7. Why is closing an unrelated file descriptor on the database file dangerous on Unix?</summary>
 
 POSIX advisory locks are per process and per file. Closing any descriptor for the file releases all the process's locks on it, including SQLite's. Another process can then write concurrently and corrupt the database. SQLite guards its own descriptors, but cannot protect against other code in the process opening and closing the file.
-</details>
-
-<details><summary>8. Compare the DELETE, TRUNCATE, PERSIST and MEMORY journal modes.</summary>
-
-All four are rollback (undo) journals. DELETE unlinks the journal at commit; TRUNCATE truncates it to zero; PERSIST zeroes its header and leaves the content. They differ in the filesystem operation at the commit point, and therefore in speed. MEMORY keeps the journal in RAM, so a crash during a transaction leaves a partially updated database. That is not atomic, and the test proves it.
-</details>
-
-<details><summary>9. An API endpoint streams rows with <code>for (const row of stmt.iterate())</code> and returns early on the first match. Writers start timing out. Why?</summary>
-
-If the loop exits by `return` from inside a callback or the iterator is otherwise abandoned without `return()` being called, the statement is never reset. Its read transaction stays open, holding SHARED in rollback mode, which blocks every writer's commit, or holding a WAL snapshot, which blocks checkpoints. A `break` or `return` directly inside `for...of` calls `iterator.return()` and is safe; a manually driven iterator must call it explicitly.
-</details>
-
-<details><summary>10. Is a transaction that writes to two ATTACHed databases atomic?</summary>
-
-In rollback-journal mode, yes: SQLite writes a super-journal listing every per-file journal, so a crash is rolled back or committed consistently across all files. In WAL mode, no: each file commits atomically on its own, but a crash can leave one file committed and the other not.
-</details>
-
-<details><summary>11. Prove that a crash after the database file has been partly overwritten cannot leave a mix of old and new pages.</summary>
-
-Database pages are written only after the journal holding the original image of every page the transaction can change has been fsynced (and the directory synced). A crash during the database writes therefore leaves a hot journal that contains the original of every page that might have changed. Recovery copies them all back, which is idempotent, so it restores exactly the old state even if it is interrupted and repeated. Only after the database is fsynced is the journal removed, which is the atomic commit point.
-</details>
-
-<details><summary>12. What does <code>PRAGMA locking_mode = EXCLUSIVE</code> buy, and what does it cost?</summary>
-
-The connection keeps its file locks between transactions, so it skips lock acquisition and cache re-validation on each transaction. In WAL mode, set before the first access, it also avoids the shared-memory wal-index, which allows WAL on systems without shared memory. The cost is that no other connection or process can use the database while it is held.
 </details>

@@ -154,40 +154,34 @@ Environment promotion and image updating integrate closely with CI pipelines and
 
 ---
 
-## 9. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. Why is the branch-per-environment repository pattern discouraged in enterprise GitOps architectures?</strong></summary>
+<details><summary>1. Why is the branch-per-environment repository pattern discouraged in enterprise GitOps architectures?</summary>
 
 The branch-per-environment pattern leads to severe merge conflict explosions as environments drift, obscures audit trails because commit hashes diverge across branches, and complicates branch protection rules, making it difficult to enforce that only verified changes reach production.
 </details>
 
-<details>
-<summary><strong>Q2. What is the Source Hydrator pattern, and what performance bottleneck does it solve in Argo CD?</strong></summary>
+<details><summary>2. What is the Source Hydrator pattern, and what performance bottleneck does it solve in Argo CD?</summary>
 
 The Source Hydrator pattern decouples manifest rendering from cluster reconciliation. Instead of forcing the `argocd-repo-server` to compile heavy Helm charts or execute recursive Kustomize builds on every poll, a CI pipeline pre-renders static, immutable Kubernetes YAML manifests. This eliminates repo-server CPU/memory bottlenecks and accelerates reconciliation performance at scale.
 </details>
 
-<details>
-<summary><strong>Q3. How does Argo CD Image Updater automate environment promotions?</strong></summary>
+<details><summary>3. How does Argo CD Image Updater automate environment promotions?</summary>
 
 Argo CD Image Updater runs as a companion controller that inspects running workloads, queries container registries for newer tag versions matching specified semantic version constraints (e.g., semver, semver-sub, or digest), and automatically updates the image reference in the Git repository via direct commit or pull request.
 </details>
 
-<details>
-<summary><strong>Q4. How do you prevent infinite CI/CD loops when an automated tool commits version bumps back to the Git repository?</strong></summary>
+<details><summary>4. How do you prevent infinite CI/CD loops when an automated tool commits version bumps back to the Git repository?</summary>
 
 Infinite loops are prevented by including explicit skip markers in commit messages (such as `[skip ci]` or `[ci skip]`), configuring CI branch triggers to ignore commits authored by the GitOps bot service account, and restricting bot write permissions to specific overlay directories.
 </details>
 
-<details>
-<summary><strong>Q5. Compare monorepository versus polyrepository topologies for GitOps manifest storage.</strong></summary>
+<details><summary>5. Compare monorepository versus polyrepository topologies for GitOps manifest storage.</summary>
 
 A monorepository stores all application manifests and environment overlays in a single repository, simplifying cross-service transactions and global governance at the cost of broader repository write permissions. A polyrepository structure assigns a dedicated repository to each service or team, improving team autonomy but increasing coordination overhead for multi-service releases.
 </details>
 
-<details>
-<summary><strong>Q6. How does a GitOps promoter ensure that a failing staging deployment blocks production promotion?</strong></summary>
+<details><summary>6. How does a GitOps promoter ensure that a failing staging deployment blocks production promotion?</summary>
 
 An automated promoter evaluates verification signals (such as Prometheus health metrics, integration test suite exit codes, or Argo Rollouts AnalysisRun statuses) in the staging environment. Only when staging returns a definitive success status does the promoter trigger the manifest update for the production environment.
 </details>

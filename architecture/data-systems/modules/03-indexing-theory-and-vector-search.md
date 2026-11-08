@@ -268,12 +268,11 @@ Uncompressed high-dimensional vectors require massive memory: $1,000,000$ OpenAI
 
 ---
 
-## 7. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1: What is the fundamental difference between a clustered and an unclustered index, and how does it affect secondary index lookup latency?</strong></summary>
+<details><summary>1. What is the fundamental difference between a clustered and an unclustered index, and how does it affect secondary index lookup latency?</summary>
 
-**Answer:** In a **clustered index** (e.g. MySQL InnoDB), the leaf pages of the index contain the physical row data itself. In an **unclustered index** (e.g. PostgreSQL), the table data is stored in an independent heap file, and indexes contain pointers (Tuple IDs / `ctid`) to pages in that heap file.
+In a **clustered index** (e.g. MySQL InnoDB), the leaf pages of the index contain the physical row data itself. In an **unclustered index** (e.g. PostgreSQL), the table data is stored in an independent heap file, and indexes contain pointers (Tuple IDs / `ctid`) to pages in that heap file.
 
 This fundamentally impacts secondary indexes:
 
@@ -282,10 +281,9 @@ This fundamentally impacts secondary indexes:
 
 </details>
 
-<details>
-<summary><strong>Q2: Explain the purpose and mathematics of term frequency saturation in Okapi BM25 compared to classical TF-IDF.</strong></summary>
+<details><summary>2. Explain the purpose and mathematics of term frequency saturation in Okapi BM25 compared to classical TF-IDF.</summary>
 
-**Answer:** In classical TF-IDF, term frequency weight scales linearly or logarithmically with the count of term occurrences ($tf$). Under pure linear scaling, a document containing a keyword 100 times is scored 10 times higher than a document containing it 10 times, even if the repetition is spam or redundant.
+In classical TF-IDF, term frequency weight scales linearly or logarithmically with the count of term occurrences ($tf$). Under pure linear scaling, a document containing a keyword 100 times is scored 10 times higher than a document containing it 10 times, even if the repetition is spam or redundant.
 
 Okapi BM25 replaces linear scaling with a **hyperbolic saturation curve**:
 
@@ -294,10 +292,9 @@ $$\frac{f(q, D) \cdot (k_1 + 1)}{f(q, D) + k_1 \cdot \left(1 - b + b \cdot \frac
 As term frequency $f(q, D) \to \infty$, this term approaches an asymptote of $k_1 + 1$ (typically $2.2$ when $k_1 = 1.2$). This ensures that once a document mentions a search term several times, subsequent mentions yield diminishing marginal relevance gains.
 </details>
 
-<details>
-<summary><strong>Q3: Why do spatial tree structures like KD-trees and R-trees fail when searching high-dimensional vector spaces ($d > 100$)?</strong></summary>
+<details><summary>3. Why do spatial tree structures like KD-trees and R-trees fail when searching high-dimensional vector spaces ($d > 100$)?</summary>
 
-**Answer:** This failure is caused by the **Curse of Dimensionality**:
+This failure is caused by the **Curse of Dimensionality**:
 
 1. **Exponential Volume Expansion**: In high-dimensional spaces, the volume of the space grows exponentially ($V \propto r^d$). The data points become exponentially sparse.
 2. **Equidistance Phenomenon**: As dimension $d$ increases, the distance between any query point and its nearest neighbor approaches the distance to its furthest neighbor ($\lim_{d \to \infty} \frac{D_{\max} - D_{\min}}{D_{\min}} = 0$).
@@ -305,10 +302,9 @@ As term frequency $f(q, D) \to \infty$, this term approaches an asymptote of $k_
 
 </details>
 
-<details>
-<summary><strong>Q4: Describe how the Hierarchical Navigable Small World (HNSW) graph achieves logarithmic search complexity.</strong></summary>
+<details><summary>4. Describe how the Hierarchical Navigable Small World (HNSW) graph achieves logarithmic search complexity.</summary>
 
-**Answer:** HNSW achieves $O(\log N)$ search complexity by combining the concept of **Navigable Small World graphs** (graphs with high local clustering and short average path lengths) with the hierarchical multi-layer skip-list principle:
+HNSW achieves $O(\log N)$ search complexity by combining the concept of **Navigable Small World graphs** (graphs with high local clustering and short average path lengths) with the hierarchical multi-layer skip-list principle:
 
 1. Vectors are assigned to hierarchical layers probabilistically. The top layers contain very few vectors connected by long-distance edges ("highways"), while the bottom layer (Layer 0) contains all vectors with fine-grained local connectivity.
 2. Search begins at the topmost layer. It executes greedy routing: evaluating candidate neighbors and hopping to the neighbor closest to the query vector until no closer neighbor exists (a local minimum at that layer).
@@ -317,10 +313,9 @@ As term frequency $f(q, D) \to \infty$, this term approaches an asymptote of $k_
 
 </details>
 
-<details>
-<summary><strong>Q5: How does Product Quantization (PQ) compress dense vector embeddings, and how does Asymmetric Distance Computation (ADC) work?</strong></summary>
+<details><summary>5. How does Product Quantization (PQ) compress dense vector embeddings, and how does Asymmetric Distance Computation (ADC) work?</summary>
 
-**Answer:** Product Quantization compresses vectors by decomposing the vector space into a Cartesian product of low-dimensional subspaces:
+Product Quantization compresses vectors by decomposing the vector space into a Cartesian product of low-dimensional subspaces:
 
 1. A $d$-dimensional vector (e.g. $d = 1024$) is split into $m$ sub-vectors of dimension $d/m$ (e.g. $m = 64$ sub-vectors of dimension 16).
 2. For each subspace, $k$-means clustering identifies $k = 256$ centroids. Each centroid is assigned an 8-bit ID ($0–255$).
@@ -329,10 +324,9 @@ As term frequency $f(q, D) \to \infty$, this term approaches an asymptote of $k_
 **Asymmetric Distance Computation (ADC)** evaluates distance without decompressing the database vectors: the uncompressed query vector $q$ is projected into each of the $m$ subspaces, and its Euclidean distance to all 256 centroids is computed once and stored in an in-memory lookup table ($m \times 256$). The distance between query $q$ and any quantized database vector is computed simply by summing $m$ precalculated lookups from the table, requiring zero floating-point multiplications.
 </details>
 
-<details>
-<summary><strong>Q6: Explain the "Covering Index" optimization and why it produces drastic performance gains in OLTP databases.</strong></summary>
+<details><summary>6. Explain the "Covering Index" optimization and why it produces drastic performance gains in OLTP databases.</summary>
 
-**Answer:** A covering index is a secondary index that contains all columns required by a specific query (both filter columns and projected columns), typically implemented via the `INCLUDE` clause:
+A covering index is a secondary index that contains all columns required by a specific query (both filter columns and projected columns), typically implemented via the `INCLUDE` clause:
 
 ```sql
 CREATE INDEX idx_orders_covering ON orders (user_id) INCLUDE (total_amount, status);

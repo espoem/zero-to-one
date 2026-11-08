@@ -152,36 +152,31 @@ flowchart TD
 
 ---
 
-## 6. Interview Drill: Distributed Messaging & Logs
+## Interview Drill
 
-<details>
-<summary>1. In Kafka, why does aacks=all` not guarantee durability if min.insync.replicas is set to 1?</summary>
+<details><summary>1. In Kafka, why does aacks=all` not guarantee durability if min.insync.replicas is set to 1?</summary>
 
 `acks=all` means the leader waits for acknowledgments from all members currently in the In-Sync Replicas (ISR) set. If followers crash or fall behind, the leader removes them from the ISR. If `min.insync.replicas` is configured to 1, the leader becomes the sole member of the ISR. The leader commits the write locally, confirms to the producer that `acks=all` was satisfied, and immediately crashes. Because no other node possessed the message, the acknowledged data is permanently lost. Durability requires `min.insync.replicas >= 2`.
 </details>
 
-<details>
-<summary>2. Why does Kafka guarantee message ordering only within a partition and not across an entire topic?</summary>
+<details><summary>2. Why does Kafka guarantee message ordering only within a partition and not across an entire topic?</summary>
 
 Kafka achieves massive horizontal throughput by distributing partitions across different physical broker nodes. Enforcing a total global ordering across all partitions would require a single centralized sequencer to timestamp and coordinate every write, reintroducing the exact single-machine bottleneck that partitioning was designed to eliminate. Restricting order to individual partitions allows each partition to append at maximum disk sequential write speeds independently.
 </details>
 
-<details>
-<summary>3. What is the difference between an Idempotent Producer and Transactional Exactly-Once in Kafka?</summary>
+<details><summary>3. What is the difference between an Idempotent Producer and Transactional Exactly-Once in Kafka?</summary>
 
 - **Idempotent Producer**: Deduplicates retried messages within a single partition during network glitches. It does not provide multi-partition atomicity.
 - **Transactional Exactly-Once**: Coordinates atomic read-process-write loops across multiple topic partitions and consumer offset commits. Either all emitted messages and the consumed offset are committed together, or none are, guaranteeing that an application failure mid-processing rolls back the entire batch.
 
 </details>
 
-<details>
-<summary>4. What problem do Share Groups (KIP-932) solve in Kafka 4.2?</summary>
+<details><summary>4. What problem do Share Groups (KIP-932) solve in Kafka 4.2?</summary>
 
 In standard Kafka consumer groups, a partition can be assigned to only one consumer at a time. If a topic has 3 partitions, spinning up 10 consumers leaves 7 consumers completely idle. Share Groups bring queue-like semantics to Kafka by allowing multiple consumers to pull and process individual messages concurrently from the same partition, enabling dynamic scale-out worker pools without having to artificially over-partition topics.
 </details>
 
-<details>
-<summary>5. How does the KIP-848 consumer rebalance protocol eliminate stop-the-world pauses in large clusters?</summary>
+<details><summary>5. How does the KIP-848 consumer rebalance protocol eliminate stop-the-world pauses in large clusters?</summary>
 
 In classic consumer groups, any membership change forces all consumers to revoke their partitions and pause processing while a member election runs. Under KIP-848, the partition assignor logic runs on the broker coordinator. Consumers communicate state via periodic heartbeats. When a rebalance occurs, the broker reassigns partitions incrementally: consumers continue processing their existing assigned partitions without interruption, receiving new partition assignments seamlessly on subsequent heartbeat cycles.
 </details>

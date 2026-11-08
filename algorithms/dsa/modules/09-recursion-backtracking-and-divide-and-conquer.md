@@ -104,22 +104,19 @@ flowchart LR
 
 ---
 
-## 5. Interview Drill: Recursion, Backtracking & Divide-and-Conquer
+## Interview Drill
 
-<details>
-<summary>1. In Backtracking, why is it critical to create a deep copy of the path before adding it to the final result list?</summary>
+<details><summary>1. In Backtracking, why is it critical to create a deep copy of the path before adding it to the final result list?</summary>
 
 In JavaScript, arrays are reference types passed by pointer. The `path` array is mutated in-place across recursive calls (`path.push()`, `path.pop()`). If code executes `result.push(path)` without copying, every entry in `result` will hold a reference to the **exact same array object**. When the algorithm completes and unwinds to the root, `path` becomes empty (`[]`), causing `result` to contain hundreds of empty arrays `[[], [], []]`. Writing `result.push([...path])` or `result.push(path.slice())` creates an immutable snapshot of the current state.
 </details>
 
-<details>
-<summary>2. Explain how pruning converts exponential backtracking into polynomial time on solvable Sudoku boards.</summary>
+<details><summary>2. Explain how pruning converts exponential backtracking into polynomial time on solvable Sudoku boards.</summary>
 
 A naive $9 \times 9$ board has up to $81$ empty cells, representing $9^{81} \approx 1.9 \times 10^{77}$ combinations. Pruning checks row, column, and $3 \times 3$ box constraints before recursing. If only 1 number is valid for a cell, the branching factor drops from 9 to 1. Combined with the "Minimum Remaining Values" (MRV) heuristic (always picking the cell with the fewest legal candidates first), the search tree shrinks dramatically, allowing standard Sudoku puzzles to solve in a few hundred iterations (< 2 milliseconds).
 </details>
 
-<details>
-<summary>3. Can Meet-in-the-Middle solve the 4-Sum problem in O(n^2) time?</summary>
+<details><summary>3. Can Meet-in-the-Middle solve the 4-Sum problem in O(n^2) time?</summary>
 
 **Yes.** Instead of checking all $\binom{n}{4} = O(n^4)$ quadruplets:
 
@@ -130,14 +127,12 @@ A naive $9 \times 9$ board has up to $81$ empty cells, representing $9^{81} \app
 
 </details>
 
-<details>
-<summary>4. What is the Master Theorem recurrence for the Closest Pair of Points in 2D space, and why does the strip check only compare 7 points?</summary>
+<details><summary>4. What is the Master Theorem recurrence for the Closest Pair of Points in 2D space, and why does the strip check only compare 7 points?</summary>
 
 Recurrence: $$T(n) = 2 T(n/2) + O(n) \implies \Theta(n \log n)$$ After finding the minimum distance $\delta = \min(\delta_L, \delta_R)$ in left and right halves, points within $\delta$ of the vertical dividing line are gathered into a strip sorted by y-coordinate. **Geometric Packing Invariant**: In a $\delta \times 2\delta$ rectangle across the dividing line, all points in the left half are at least $\delta$ apart from each other, and similarly for the right half. At most **7 points** can physically fit into this area without two points being closer than $\delta$. Thus, each point in the strip needs to be compared against at most 7 subsequent points, keeping the combine step strictly $O(n)$.
 </details>
 
-<details>
-<summary>5. What is the difference between Divide-and-Conquer and Dynamic Programming?</summary>
+<details><summary>5. What is the difference between Divide-and-Conquer and Dynamic Programming?</summary>
 
 - **Divide-and-Conquer** splits a problem into **independent, non-overlapping** subproblems (e.g. Merge Sort splits into disjoint left and right halves). Each subproblem is solved independently; no caching or memoization is needed.
 - **Dynamic Programming** is used when subproblems **overlap heavily** (e.g. Fibonacci, shortest paths, knapsack). Solving subproblems independently would duplicate exponential work; DP caches subproblem solutions in a table to ensure each subproblem is computed exactly once.

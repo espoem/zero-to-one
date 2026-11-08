@@ -172,10 +172,9 @@ In Push-based MFA (e.g. Duo, Okta Verify), an attacker who steals a user's passw
 
 ---
 
-## 8. Interview Drill: WebAuthn & Multi-Factor Security
+## Interview Drill
 
-<details>
-<summary>1. An attacker establishes a reverse proxy phishing site at `https://login-secure-bank.com` that mirrors the real banking site `https://bank.com`. Explain the exact cryptographic reason why WebAuthn passkey authentication will fail when the victim visits the phishing site.</summary>
+<details><summary>1. An attacker establishes a reverse proxy phishing site at `https://login-secure-bank.com` that mirrors the real banking site `https://bank.com`. Explain the exact cryptographic reason why WebAuthn passkey authentication will fail when the victim visits the phishing site.</summary>
 
 When the victim attempts to log in on `https://login-secure-bank.com`, the browser's native WebAuthn implementation executes:
 
@@ -187,28 +186,24 @@ When the victim attempts to log in on `https://login-secure-bank.com`, the brows
 
 </details>
 
-<details>
-<summary>2. Why do cloud-synchronized passkeys (such as those in Apple iCloud Keychain or Google Password Manager) typically report a Sign Counter of 0, and how must a server handle this?</summary>
+<details><summary>2. Why do cloud-synchronized passkeys (such as those in Apple iCloud Keychain or Google Password Manager) typically report a Sign Counter of 0, and how must a server handle this?</summary>
 
 In the original FIDO2 standard designed for single-device hardware tokens (like YubiKeys), the authenticator maintained a strictly monotonic hardware counter incremented on every signature. If a counter ever decreased or repeated, the server assumed the physical token had been cloned. With multi-device synced passkeys, the private key is replicated across multiple independent devices (e.g. an iPhone and a MacBook) that may be offline and unable to synchronize a shared counter in real time. To prevent legitimate logins on one device from triggering false-positive clone alarms on another device, cloud-synced authenticators explicitly set `SignCount = 0` on all signatures. Servers must inspect the `BE` (Backup Eligibility) and `BS` (Backup State) flags in `authenticatorData`: if the credential is a synced passkey (`BS = 1`) or reports `SignCount = 0`, the server must bypass strict monotonic counter comparison.
 </details>
 
-<details>
-<summary>3. What is the difference between User Presence (UP) and User Verification (UV) in WebAuthn authenticator flags?</summary>
+<details><summary>3. What is the difference between User Presence (UP) and User Verification (UV) in WebAuthn authenticator flags?</summary>
 
 - **User Presence (UP)**: The authenticator verifies that a human physically interacted with the device (e.g. simply touching a gold capacitive contact on a YubiKey). It does _not_ verify the human's identity—anyone touching the key satisfies UP.
 - **User Verification (UV)**: The authenticator locally verifies the _specific authorized user's identity_ via a biometric sensor (TouchID, FaceID) or device PIN/password. In high-security authorization flows (e.g. financial transactions or sudo access), the Relying Party specifies `userVerification: "required"` in its options. The server confirms that Bit 2 (`UV`) is asserted (`1`) in `authenticatorData`. If the user only tapped a key without biometric/PIN verification, the server rejects the assertion.
 
 </details>
 
-<details>
-<summary>4. Explain how the WebAuthn Level 3 PRF (Pseudo-Random Function) extension enables client-side zero-knowledge encryption.</summary>
+<details><summary>4. Explain how the WebAuthn Level 3 PRF (Pseudo-Random Function) extension enables client-side zero-knowledge encryption.</summary>
 
 The PRF extension allows a web application to use the user's hardware passkey to derive symmetric encryption keys. The application provides a cryptographically random salt to `navigator.credentials.get()`. The authenticator uses its internal hardware HMAC engine to compute a 256-bit symmetric key derived from a secret seed bound to that passkey and the salt. The web application uses this symmetric key to encrypt or decrypt sensitive data locally in the browser (e.g. an end-to-end encrypted notes vault) using AES-256-GCM. The server never sees the plaintext data or the symmetric key, and the key cannot be exported or derived without the user physically authenticating via their biometric passkey.
 </details>
 
-<details>
-<summary>5. How does MFA Number Matching defeat Push Notification Fatigue attacks?</summary>
+<details><summary>5. How does MFA Number Matching defeat Push Notification Fatigue attacks?</summary>
 
 In an MFA Fatigue attack, an attacker spams a user with dozens of push notifications ("Approve Login? [Yes] [No]"), hoping the user will accidentally or impatiently tap "Yes" to silence their phone. In Number Matching, the login web page displays an unpredictable two-digit number (e.g. `74`). The push notification on the user's phone does not offer a simple "Yes/No" button; instead, it presents an input field requiring the user to look at the login screen and manually type `74` into the phone. Because the automated attacker cannot communicate the dynamic number to the user, the user cannot blindly approve the request, neutralizing push fatigue attacks.
 </details>

@@ -452,32 +452,27 @@ Invariant 3: Egress DNS rules must evaluate UDP and TCP port 53 to prevent name 
 
 ---
 
-## 13. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. Explain the four fundamental invariants of the Kubernetes network model.</strong></summary>
+<details><summary>1. Explain the four fundamental invariants of the Kubernetes network model.</summary>
 
 1. All pods can communicate with all other pods across all nodes in the cluster without relying on Network Address Translation (NAT).
 2. All host agents and daemons on a node (including the kubelet) can communicate directly with all pods on that same node.
 3. The IP address that a Pod sees as its own identity inside its network namespace is identical to the IP address used by all other pods and nodes to address it.
 4. Pods with `hostNetwork: true` share the host's network namespace and IP address, avoiding virtual ethernet translation.
-
 </details>
 
-<details>
-<summary><strong>Q2. How does a Service ClusterIP work under the hood if it is not bound to a physical network interface?</strong></summary>
+<details><summary>2. How does a Service ClusterIP work under the hood if it is not bound to a physical network interface?</summary>
 
 A ClusterIP is a purely virtual IP address managed within the Linux kernel packet filtering and routing tables (configured via iptables, IPVS, or eBPF). When a container transmits a packet targeting a ClusterIP, the host Linux kernel intercepts the packet before it hits physical wire. The kernel executes Destination Network Address Translation (DNAT), rewriting the destination ClusterIP and port to the real IP and port of an active, healthy Pod selected from the Service's `EndpointSlice`. The modified packet is then forwarded over the physical or overlay network to the target pod's node.
 </details>
 
-<details>
-<summary><strong>Q3. What scalability bottleneck forced Kubernetes to replace the `Endpoints` API with `EndpointSlices`?</strong></summary>
+<details><summary>3. What scalability bottleneck forced Kubernetes to replace the `Endpoints` API with `EndpointSlices`?</summary>
 
 The original `Endpoints` API stored all backend pod IP and port mappings in a single, monolithic object. For a Service with thousands of replicas, this object grew into several megabytes. Whenever any single pod was added, restarted, or terminated, the entire multi-megabyte object was re-serialized, committed to etcd, and broadcasted to every node in the cluster running `kube-proxy`. In large clusters, this caused extreme network congestion, high etcd write latency, and node CPU starvation. `EndpointSlices` split endpoints into bounded chunks of at most 100 endpoints per slice, ensuring that pod lifecycle changes trigger lightweight micro-updates targeting only the affected slice.
 </details>
 
-<details>
-<summary><strong>Q4. Walk through the `ndots:5` resolution sequence for an external domain like `api.stripe.com`, and explain how to mitigate its latency penalty.</strong></summary>
+<details><summary>4. Walk through the `ndots:5` resolution sequence for an external domain like `api.stripe.com`, and explain how to mitigate its latency penalty.</summary>
 
 When a pod queries `api.stripe.com`, the local resolver counts the dots in the name (2 dots). Because $2 < \text{ndots:5}$, the resolver assumes the domain is relative and appends each search path declared in `/etc/resolv.conf` before querying the root domain:
 
@@ -486,17 +481,14 @@ When a pod queries `api.stripe.com`, the local resolver counts the dots in the n
 3. `api.stripe.com.cluster.local` (fails)
 4. `api.stripe.com.<cloud-search-domain>` (fails)
 5. `api.stripe.com.` (succeeds) This generates 4 wasted DNS queries per external lookup, overloading CoreDNS and triggering UDP conntrack race conditions. **Mitigation**: Append a trailing dot to the domain name in application configurations (`api.stripe.com.`), which indicates an absolute FQDN and skips search domains completely, or configure a custom `dnsConfig` on the Pod with `options: [{name: "ndots", value: "2"}]`.
-
 </details>
 
-<details>
-<summary><strong>Q5. How do standard NetworkPolicies handle an isolated pod that has no matching rules for incoming traffic?</strong></summary>
+<details><summary>5. How do standard NetworkPolicies handle an isolated pod that has no matching rules for incoming traffic?</summary>
 
 When a Pod is selected by the `podSelector` of any NetworkPolicy with `policyTypes: ["Ingress"]`, the Pod transitions from the default-allow state into **isolated mode**. In this mode, Kubernetes enforces a closed-world security boundary: all incoming traffic that is not explicitly permitted by at least one matching rule across all active NetworkPolicies is dropped silently by the CNI dataplane (silent drop, with no TCP RST or ICMP port unreachable returned).
 </details>
 
-<details>
-<summary><strong>Q6. What is the syntactic difference in NetworkPolicy between an array of selector items versus a single map containing multiple selector keys?</strong></summary>
+<details><summary>6. What is the syntactic difference in NetworkPolicy between an array of selector items versus a single map containing multiple selector keys?</summary>
 
 In NetworkPolicy `from` or `to` blocks:
 
@@ -514,11 +506,9 @@ In NetworkPolicy `from` or `to` blocks:
       podSelector: { matchLabels: { role: admin } }
   ```
   Permits traffic **only** from pods labeled `role: admin` that are simultaneously located within namespaces labeled `team: ops`.
-
 </details>
 
-<details>
-<summary><strong>Q7. Why does creating a default-deny Egress NetworkPolicy break application startup, and how must it be resolved?</strong></summary>
+<details><summary>7. Why does creating a default-deny Egress NetworkPolicy break application startup, and how must it be resolved?</summary>
 
 A default-deny Egress policy blocks **all** outbound network packets originating from the pod. Because DNS resolution requires transmitting UDP and TCP packets to port 53 on the CoreDNS cluster IP (`10.96.0.10`), the pod cannot perform DNS lookups. Applications that connect to external databases, APIs, or internal microservices fail immediately with hostname resolution errors. To resolve this, every egress NetworkPolicy must include an explicit rule allowing egress traffic to port 53 (UDP and TCP) targeting the `kube-dns` service endpoints.
 </details>

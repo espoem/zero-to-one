@@ -176,10 +176,9 @@ flowchart TD
 
 ---
 
-## 7. Interview Drill: CRDTs & Local-First
+## Interview Drill
 
-<details>
-<summary>1. What are the three mathematical properties a state merge function must satisfy to guarantee Strong Eventual Consistency?</summary>
+<details><summary>1. What are the three mathematical properties a state merge function must satisfy to guarantee Strong Eventual Consistency?</summary>
 
 The merge operator $\sqcup$ must form a join-semilattice, satisfying:
 
@@ -189,28 +188,24 @@ The merge operator $\sqcup$ must form a join-semilattice, satisfying:
 
 </details>
 
-<details>
-<summary>2. Why can a G-Counter not support decrement operations?</summary>
+<details><summary>2. Why can a G-Counter not support decrement operations?</summary>
 
 A G-Counter relies on the monotonic growth property of join-semilattices: merging two counters takes the maximum value seen for each node index ($\max(V_A[i], V_B[i])$). If decrements were permitted, a smaller value would be interpreted as an older state during merge, causing the larger (pre-decrement) value to win and resurrecting the subtracted count. Supporting decrements requires a PN-Counter, which maintains two separate G-Counters for additions and subtractions.
 </details>
 
-<details>
-<summary>3. In an Observed-Remove Set (OR-Set), how does the system resolve concurrent add and delete operations for the same element?</summary>
+<details><summary>3. In an Observed-Remove Set (OR-Set), how does the system resolve concurrent add and delete operations for the same element?</summary>
 
 The OR-Set assigns a unique tag (e.g. UUID) to every add operation. When an element is deleted, the delete operation records and neutralizes only the specific tags that were observed at that replica at the time of deletion. If another node concurrently adds the same element, it generates a fresh, distinct tag. When the two replicas merge, the fresh tag was not included in the delete's tombstone list, so the element remains present in the set. **Adds win over concurrent deletes**.
 </details>
 
-<details>
-<summary>4. What is the difference between a State-based CRDT (CvRDT) and an Operation-based CRDT (CmRDT)?</summary>
+<details><summary>4. What is the difference between a State-based CRDT (CvRDT) and an Operation-based CRDT (CmRDT)?</summary>
 
 - **State-based (CvRDT)**: Replicas transmit their entire state (or delta-state) to peers. Merging requires only standard unreliable transport (packets can be dropped, duplicated, or reordered) because the merge operator is commutative, associative, and idempotent. However, state payloads can be large.
 - **Operation-based (CmRDT)**: Replicas transmit small operation deltas (e.g. `addChar(x)`). Payloads are tiny, but the underlying network transport must guarantee **reliable, exactly-once, causal delivery**, which requires maintaining version vectors and retransmission buffers.
 
 </details>
 
-<details>
-<summary>5. How does a Local-First application differ fundamentally from a traditional cloud-hosted Single Page Application (SPA)?</summary>
+<details><summary>5. How does a Local-First application differ fundamentally from a traditional cloud-hosted Single Page Application (SPA)?</summary>
 
 In a traditional cloud SPA, the client is a dumb terminal: clicking "Save" sends an HTTP request over the network while displaying a loading spinner. If the user is offline, the app is unusable; if the cloud server shuts down, the user loses their data. In a Local-First application, the primary source of truth resides on the local device (e.g. SQLite or IndexedDB). All reads and writes execute against local storage instantaneously with zero network latency. A background sync engine uses CRDTs to replicate data opportunistically when connectivity is available, guaranteeing that the application remains fully functional offline.
 </details>

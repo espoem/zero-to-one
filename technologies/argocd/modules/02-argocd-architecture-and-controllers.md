@@ -129,54 +129,48 @@ function runApplicationControllerWorker(shardId: number, totalShards: number): v
 2. **Redis Cache Invalidation Desync**: When Redis experiences memory pressure or eviction policy misconfigurations (e.g., `volatile-lru` without proper TTLs), stale manifest caches can cause the controller to compare outdated desired states against live clusters.
 3. **Cluster Watch Cache Exhaustion**: Monitoring excessive namespaces or unnecessary CRD kinds across managed clusters bloats the controller's informer cache, leading to high memory consumption and slow reconciliation loops. Use `resource.exclusions` to ignore high-churn resource types like event logs.
 
-## 7. Interview Drill
+## Interview Drill
 
-<details><summary><strong>Q1. What is the precise division of labor between the Argo CD Repo Server and the Application Controller?</strong></summary>
+<details><summary>1. What is the precise division of labor between the Argo CD Repo Server and the Application Controller?</summary>
 
-**Answer:** The Repo Server is responsible exclusively for cloning Git repositories, fetching Helm charts, and executing manifest generation (Helm, Kustomize, CMPs) to produce raw Kubernetes YAML manifests, caching the results in Redis. The Application Controller watches live cluster state, retrieves rendered manifests from the repo-server (or cache), calculates diffs, and applies sync operations against target Kubernetes API servers.
+The Repo Server is responsible exclusively for cloning Git repositories, fetching Helm charts, and executing manifest generation (Helm, Kustomize, CMPs) to produce raw Kubernetes YAML manifests, caching the results in Redis. The Application Controller watches live cluster state, retrieves rendered manifests from the repo-server (or cache), calculates diffs, and applies sync operations against target Kubernetes API servers.
 
 - Ref: [Module 02 Introduction](#1-introduction-and-core-architectural-components)
-
 </details>
 
-<details><summary><strong>Q2. How does Argo CD handle scaling when managing thousands of applications across multiple clusters?</strong></summary>
+<details><summary>2. How does Argo CD handle scaling when managing thousands of applications across multiple clusters?</summary>
 
-**Answer:** Argo CD scales through application controller sharding (`ARGOCD_CONTROLLER_SHARD` and replica counts) combined with consistent hashing of application names, horizontal autoscaling of `argocd-repo-server` instances, and external Redis clustering to share manifest generation caches.
+Argo CD scales through application controller sharding (`ARGOCD_CONTROLLER_SHARD` and replica counts) combined with consistent hashing of application names, horizontal autoscaling of `argocd-repo-server` instances, and external Redis clustering to share manifest generation caches.
 
 - Ref: [Module 02 Deep Dive](#2-deep-dive-into-subsystems-and-data-flow)
-
 </details>
 
-<details><summary><strong>Q3. What purpose does the `AppProject` CRD serve in multi-tenant Argo CD architectures?</strong></summary>
+<details><summary>3. What purpose does the `AppProject` CRD serve in multi-tenant Argo CD architectures?</summary>
 
-**Answer:** `AppProject` provides logical isolation, restricting which Git repositories can be used as sources, which clusters and namespaces can be targeted as destinations, which resource kinds are permitted or forbidden, and scoping Casbin RBAC policies for tenant teams.
+`AppProject` provides logical isolation, restricting which Git repositories can be used as sources, which clusters and namespaces can be targeted as destinations, which resource kinds are permitted or forbidden, and scoping Casbin RBAC policies for tenant teams.
 
 - Ref: [Module 02 Custom Resource Definitions](#3-custom-resource-definitions-crds)
-
 </details>
 
-<details><summary><strong>Q4. Why does the repo-server utilize Redis instead of generating manifests during every reconciliation loop?</strong></summary>
+<details><summary>4. Why does the repo-server utilize Redis instead of generating manifests during every reconciliation loop?</summary>
 
-**Answer:** Manifest generation (especially executing Helm template rendering and Kustomize builds) is CPU-intensive. Caching rendered output in Redis keyed by Git commit SHA and parameter hashes prevents redundant work during the 3-minute periodic reconciliation cycle.
+Manifest generation (especially executing Helm template rendering and Kustomize builds) is CPU-intensive. Caching rendered output in Redis keyed by Git commit SHA and parameter hashes prevents redundant work during the 3-minute periodic reconciliation cycle.
 
 - Ref: [Module 02 Deep Dive](#2-deep-dive-into-subsystems-and-data-flow)
-
 </details>
 
-<details><summary><strong>Q5. What is the risk of not configuring `resource.exclusions` in large Kubernetes clusters?</strong></summary>
+<details><summary>5. What is the risk of not configuring `resource.exclusions` in large Kubernetes clusters?</summary>
 
-**Answer:** Without resource exclusions, Argo CD informers watch high-churn resource types such as `Endpoints`, `Events`, and Lease objects across all managed clusters, exhausting controller memory and saturating CPU with unnecessary reconciliation events.
+Without resource exclusions, Argo CD informers watch high-churn resource types such as `Endpoints`, `Events`, and Lease objects across all managed clusters, exhausting controller memory and saturating CPU with unnecessary reconciliation events.
 
 - Ref: [Module 02 Production Failure Modes](#6-production-failure-modes-and-gotchas)
-
 </details>
 
-<details><summary><strong>Q6. How do modern v3 multi-source applications differ from legacy single-source applications?</strong></summary>
+<details><summary>6. How do modern v3 multi-source applications differ from legacy single-source applications?</summary>
 
-**Answer:** Legacy applications supported a single Git repository source per Application, forcing users to create wrapper charts or complex Kustomize repos to combine Helm charts with custom overlays. Modern v3 applications support a `sources:` array, enabling direct combination of Helm charts with external value files or overlay repositories.
+Legacy applications supported a single Git repository source per Application, forcing users to create wrapper charts or complex Kustomize repos to combine Helm charts with custom overlays. Modern v3 applications support a `sources:` array, enabling direct combination of Helm charts with external value files or overlay repositories.
 
 - Ref: [Module 02 Version History](#5-version-history-and-then-vs-now)
-
 </details>
 
 ## 8. Proof Map

@@ -129,40 +129,34 @@ The broader Argo ecosystem integrates seamlessly across continuous delivery, Kub
 
 ---
 
-## 9. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. What is the primary architectural difference between Argo Workflows and traditional CI/CD pipeline servers?</strong></summary>
+<details><summary>1. What is the primary architectural difference between Argo Workflows and traditional CI/CD pipeline servers?</summary>
 
 Argo Workflows executes every task as an isolated container pod scheduled directly onto the Kubernetes control plane, leveraging native Kubernetes scheduling, volume mounts, and security isolation, whereas traditional CI servers run monolithic worker daemons executing shell scripts.
 </details>
 
-<details>
-<summary><strong>Q2. How do EventSources and Sensors interact in Argo Events?</strong></summary>
+<details><summary>2. How do EventSources and Sensors interact in Argo Events?</summary>
 
 An `EventSource` listens to external event triggers (webhooks, SQS, Kafka) and publishes normalized CloudEvents to a messaging bus (NATS). A `Sensor` consumes those events, evaluates them against defined filter criteria, and triggers downstream Kubernetes actions such as creating an Argo Workflow or syncing an Argo CD application.
 </details>
 
-<details>
-<summary><strong>Q3. What are the four core projects comprising the CNCF Certified Argo Project Associate (CAPA) syllabus?</strong></summary>
+<details><summary>3. What are the four core projects comprising the CNCF Certified Argo Project Associate (CAPA) syllabus?</summary>
 
 The four core projects are Argo Workflows (workflow orchestration), Argo CD (declarative GitOps continuous delivery), Argo Rollouts (progressive delivery and canary deployments), and Argo Events (event-driven automation).
 </details>
 
-<details>
-<summary><strong>Q4. How does Argo Workflows handle data passing between steps in a DAG?</strong></summary>
+<details><summary>4. How does Argo Workflows handle data passing between steps in a DAG?</summary>
 
 Argo Workflows passes data between steps using artifact repositories (such as S3 or GCS object storage). Output artifacts produced by one container step are uploaded to object storage and mounted as input artifacts in downstream dependent container steps.
 </details>
 
-<details>
-<summary><strong>Q5. What breaking changes occurred in Argo CD v3.0 regarding resource tracking?</strong></summary>
+<details><summary>5. What breaking changes occurred in Argo CD v3.0 regarding resource tracking?</summary>
 
 Argo CD v3.0 shifted the default resource tracking method from label-based tracking (`app.kubernetes.io/instance`) to annotation-based tracking (`argocd.argoproj.io/tracking-id`), preventing label collision issues in multi-tenant clusters.
 </details>
 
-<details>
-<summary><strong>Q6. How do you configure automatic garbage collection for completed Argo Workflows pods?</strong></summary>
+<details><summary>6. How do you configure automatic garbage collection for completed Argo Workflows pods?</summary>
 
 Automatic garbage collection is configured using `spec.ttlStrategy` within the `Workflow` manifest, specifying expiration durations after workflow completion (`secondsAfterCompletion`, `secondsAfterSuccess`, or `secondsAfterFailure`).
 </details>

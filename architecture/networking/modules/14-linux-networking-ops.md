@@ -479,11 +479,9 @@ Output Interpretation:
 
 ---
 
-## 11. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-### Q1: In the output of `ss -lnt`, what do the `Recv-Q` and `Send-Q` columns indicate? How does this differ from their meaning on an established connection?
-
-<details><summary>Answer</summary>
+<details><summary>1. In the output of `ss -lnt`, what do the `Recv-Q` and `Send-Q` columns indicate? How does this differ from their meaning on an established connection?</summary>
 
 **Inversion Between Listening and Established Sockets.**
 
@@ -498,9 +496,7 @@ Output Interpretation:
 
 </details>
 
-### Q2: Why does `nftables` evaluate sets of hundreds of IP addresses in $O(1)$ constant time while legacy `iptables` degrades linearly ($O(N)$)?
-
-<details><summary>Answer</summary>
+<details><summary>2. Why does `nftables` evaluate sets of hundreds of IP addresses in $O(1)$ constant time while legacy `iptables` degrades linearly ($O(N)$)?</summary>
 
 **Native Kernel Set Structures vs. Linear Chain Traversal.**
 
@@ -512,9 +508,7 @@ Output Interpretation:
 
 </details>
 
-### Q3: An infrastructure engineer notices that a high-traffic NAT gateway is dropping UDP packets, yet CPU utilization is at 15% and network bandwidth is at 20% of capacity. Kernel dmesg logs: `nf_conntrack: table full, dropping packet`. What is the root cause and remedy?
-
-<details><summary>Answer</summary>
+<details><summary>3. An infrastructure engineer notices that a high-traffic NAT gateway is dropping UDP packets, yet CPU utilization is at 15% and network bandwidth is at 20% of capacity. Kernel dmesg logs: `nf_conntrack: table full, dropping packet`. What is the root cause and remedy?</summary>
 
 **Connection Tracking Table Saturation.**
 
@@ -530,9 +524,7 @@ Output Interpretation:
 
 </details>
 
-### Q4: How do virtual ethernet (`veth`) pairs and network namespaces (`netns`) enable network isolation in container runtimes like Docker and Kubernetes?
-
-<details><summary>Answer</summary>
+<details><summary>4. How do virtual ethernet (`veth`) pairs and network namespaces (`netns`) enable network isolation in container runtimes like Docker and Kubernetes?</summary>
 
 **Virtual Point-to-Point Cable Bridging Namespaces.**
 
@@ -548,9 +540,7 @@ Output Interpretation:
 
 </details>
 
-### Q5: In the `curl -w` diagnostic breakdown, what does a large discrepancy between `time_appconnect` and `time_starttransfer` indicate?
-
-<details><summary>Answer</summary>
+<details><summary>5. In the `curl -w` diagnostic breakdown, what does a large discrepancy between `time_appconnect` and `time_starttransfer` indicate?</summary>
 
 **Application Server Processing Bottleneck (TTFB).**
 
@@ -562,9 +552,7 @@ Output Interpretation:
 
 </details>
 
-### Q6: How does WireGuard's Cryptokey Routing design fundamentally differ from IPsec's Security Policy Database (SPD) and Security Association (SA)?
-
-<details><summary>Answer</summary>
+<details><summary>6. How does WireGuard's Cryptokey Routing design fundamentally differ from IPsec's Security Policy Database (SPD) and Security Association (SA)?</summary>
 
 **Simplicity and Deterministic IP-Key Binding.**
 
@@ -579,9 +567,7 @@ Output Interpretation:
 
 </details>
 
-### Q7: Explain why VXLAN encapsulation adds exactly 50 bytes of wire overhead to every packet, and describe what happens when guest interfaces run with standard 1500-byte MTU on an unconfigured underlay network.
-
-<details><summary>Answer</summary>
+<details><summary>7. Explain why VXLAN encapsulation adds exactly 50 bytes of wire overhead to every packet, and describe what happens when guest interfaces run with standard 1500-byte MTU on an unconfigured underlay network.</summary>
 
 **Encapsulation Overhead & Underlay MTU Black Holes.**
 
@@ -601,9 +587,7 @@ Output Interpretation:
 
 </details>
 
-### Q8: Why can a Web Application Firewall (WAF) detect an SQL injection attack in an HTTPS request, whereas an `nftables` stateful firewall cannot?
-
-<details><summary>Answer</summary>
+<details><summary>8. Why can a Web Application Firewall (WAF) detect an SQL injection attack in an HTTPS request, whereas an `nftables` stateful firewall cannot?</summary>
 
 **Transport Layer vs. Application Layer Protocol Inspection.**
 

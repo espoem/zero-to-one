@@ -302,54 +302,39 @@ Semantics ([react.dev/reference/react-dom/browser](https://react.dev/reference/r
 
 ---
 
-## 9. Interview Drill
+## Interview Drill
 
-<details><summary><strong>1. How does Suspense work under the hood?</strong></summary>
+<details><summary>1. How does Suspense work under the hood?</summary>
 
 A component calls `use(promise)`; if the promise is not fulfilled, React tags it with status fields, subscribes, and unwinds rendering to the nearest `<Suspense>` boundary by throwing an internal sentinel. The boundary commits its fallback (or, in a transition, React keeps the old UI). When the promise settles, React schedules a retry and re-renders the subtree from the top; `use` now returns the value synchronously. It resembles an algebraic effect but React re-executes rather than resumes.
 </details>
 
-<details><summary><strong>2. Why must the promise passed to <code>use</code> be cached?</strong></summary>
+<details><summary>2. Why must the promise passed to <code>use</code> be cached?</summary>
 
 The component is re-run on retry; a promise created in render is a new pending promise every time, so the boundary never resolves. Promises must come from a cache that outlives renders: RSC (`await`/`cache`), a promise passed from a Server Component, a data library, or your own keyed cache.
 </details>
 
-<details><summary><strong>3. RSC vs SSR — what is the difference?</strong></summary>
+<details><summary>3. RSC vs SSR — what is the difference?</summary>
 
 SSR (`react-dom/server`) renders the whole tree — including Client Components — to HTML for a fast first paint, then the client hydrates everything. RSC renders Server Components on the server to a serialized tree (Flight) that the client reconciles; their code never ships. They compose: a framework renders RSC to Flight, then SSR renders that tree plus Client Components to HTML. Module 07.
 </details>
 
-<details><summary><strong>4. What are the shell, <code>onShellReady</code> and <code>onAllReady</code>?</strong></summary>
+<details><summary>4. What are the shell, <code>onShellReady</code> and <code>onAllReady</code>?</summary>
 
 The shell is the HTML outside all Suspense boundaries plus outermost fallbacks. `onShellReady` fires when it is ready — start piping to browsers. `onAllReady` fires when every boundary has finished — use it for crawlers or static generation. Errors outside boundaries go to `onShellError`; errors inside boundaries go to `onError` and the boundary is client-rendered.
 </details>
 
-<details><summary><strong>5. What happens on a hydration mismatch in React 18/19?</strong></summary>
+<details><summary>5. What happens on a hydration mismatch in React 18/19?</summary>
 
 React discards the server HTML for the nearest Suspense boundary (or root), client-renders it, and reports a recoverable error (`onRecoverableError`), logging a single diff in 19. It does not patch individual nodes. `suppressHydrationWarning` silences one level and keeps the server value.
 </details>
 
-<details><summary><strong>6. Name five causes of hydration mismatches.</strong></summary>
+<details><summary>6. Name five causes of hydration mismatches.</summary>
 
 Time (`Date.now`, `toLocaleString`), randomness, `typeof window` branches in render, locale/time-zone defaults, invalid HTML nesting rewritten by the parser, counter-based IDs instead of `useId`, external stores without a matching server snapshot, and browser extensions.
 </details>
 
-<details><summary><strong>7. What is selective hydration?</strong></summary>
+<details><summary>7. What is selective hydration?</summary>
 
 With streaming, each Suspense boundary hydrates independently as its HTML and code arrive. If the user interacts with an unhydrated boundary, React hydrates it first at a higher priority and replays the discrete event afterwards.
-</details>
-
-<details><summary><strong>8. Explain partial pre-rendering in React 19.2.</strong></summary>
-
-`prerender` with an abort signal produces a static `prelude` (cacheable at a CDN) plus serialisable `postponed` state describing unfinished holes. At request time, `resume`/`resumeToPipeableStream` renders only the holes and streams their segments and reveal instructions after the cached prelude. The resumed tree must match the prerendered shell.
-</details>
-
-<details><summary><strong>9. How do you render a component only in the browser in React 19.3 without a mismatch?</strong></summary>
-
-Call `use(browser(reason))` inside it and wrap it in `<Suspense>`. The server emits the fallback and reports to `onBrowserBailout`; the client renders it after hydration without a recoverable error. Previously: a "mounted" state flag set in an effect, or framework `ssr: false`.
-</details>
-
-<details><summary><strong>10. Why did <code>useId</code> output change in 19.2, and what breaks?</strong></summary>
-
-From `:r:`/`«r»` to `_r_`, so IDs are valid view-transition names and XML names. Anything that hard-coded the format — snapshots, CSS selectors, `querySelector` with escaped colons — breaks. Treat IDs as opaque.
 </details>

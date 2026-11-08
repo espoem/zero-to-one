@@ -180,12 +180,11 @@ graph TD
 
 ---
 
-## 7. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1: Why does simple modulo hashing (`hash(key) % N`) cause severe operational failure when scaling a database cluster, and how does Consistent Hashing solve it?</strong></summary>
+<details><summary>1. Why does simple modulo hashing (`hash(key) % N`) cause severe operational failure when scaling a database cluster, and how does Consistent Hashing solve it?</summary>
 
-**Answer:** Under simple modulo hashing, the node assignment for key $k$ is determined by $\text{hash}(k) \bmod N$. If cluster capacity is altered by adding or removing a single node ($N \to N + 1$), almost every key in the database hashes to a completely different result because the divisor changes:
+Under simple modulo hashing, the node assignment for key $k$ is determined by $\text{hash}(k) \bmod N$. If cluster capacity is altered by adding or removing a single node ($N \to N + 1$), almost every key in the database hashes to a completely different result because the divisor changes:
 
 $$\text{hash}(k) \pmod N \ne \text{hash}(k) \pmod{N+1}$$
 
@@ -194,10 +193,7 @@ Consequently, scaling a 10-node cluster to 11 nodes forces a catastrophic rebala
 **Consistent Hashing** resolves this by mapping both nodes and keys to an independent, fixed circular ring (e.g. $0$ to $2^{32}-1$). A key is assigned to the next node encountered moving clockwise. When a node is added or removed, only the keys belonging to the immediate adjacent segment of the ring are moved. On average, only $\frac{1}{N}$ of the total database keys are migrated, allowing seamless horizontal scaling.
 </details>
 
-<details>
-<summary><strong>Q2: Compare the read and write trade-offs of Local Secondary Indexes (document-partitioned) versus Global Secondary Indexes (term-partitioned).</strong></summary>
-
-**Answer:**
+<details><summary>2. Compare the read and write trade-offs of Local Secondary Indexes (document-partitioned) versus Global Secondary Indexes (term-partitioned).</summary>
 
 - **Local Secondary Indexes (Document-Partitioned)**:
   - _Write Path_: Highly efficient. The secondary index is stored on the same shard as the row. An insert or update is completely local to that single machine, requiring zero distributed transactions.
@@ -208,10 +204,9 @@ Consequently, scaling a 10-node cluster to 11 nodes forces a catastrophic rebala
 
 </details>
 
-<details>
-<summary><strong>Q3: Explain the "Scatter-Gather Tail Latency Amplification" phenomenon and formulate its mathematical probability.</strong></summary>
+<details><summary>3. Explain the "Scatter-Gather Tail Latency Amplification" phenomenon and formulate its mathematical probability.</summary>
 
-**Answer:** When a query omits the partition key in a document-partitioned database, the coordinator must fan out the request to all $N$ shards and wait for the slowest response before returning.
+When a query omits the partition key in a document-partitioned database, the coordinator must fan out the request to all $N$ shards and wait for the slowest response before returning.
 
 If each independent shard has a probability $p$ of completing within a normal latency threshold (e.g. $p = 0.99$ for the 99th percentile), the probability that _all_ $N$ shards respond within that threshold is $p^N$. Conversely, the probability that **at least one shard encounters a tail-latency stall** is:
 
@@ -224,10 +219,9 @@ $$P(\text{Slow Response}) = 1 - (0.99)^{100} \approx 63.4\%$$
 Even though every individual node performs well $99\%$ of the time, nearly two-thirds ($63.4\%$) of all scatter-gather user queries will experience the 99th-percentile tail latency.
 </details>
 
-<details>
-<summary><strong>Q4: What is the purpose of Virtual Nodes (Vnodes) in a Consistent Hashing architecture?</strong></summary>
+<details><summary>4. What is the purpose of Virtual Nodes (Vnodes) in a Consistent Hashing architecture?</summary>
 
-**Answer:** Without virtual nodes, physical servers are mapped to a single point on the consistent hashing ring. Due to the stochastic nature of hashing, three physical nodes can easily be placed close together, leaving one node responsible for $70\%$ of the ring while the others receive almost no traffic (severe load imbalance).
+Without virtual nodes, physical servers are mapped to a single point on the consistent hashing ring. Due to the stochastic nature of hashing, three physical nodes can easily be placed close together, leaving one node responsible for $70\%$ of the ring while the others receive almost no traffic (severe load imbalance).
 
 **Virtual Nodes** solve this by assigning each physical machine $V$ distinct points across the ring (e.g. $V = 128$ or $256$). This ensures that:
 
@@ -237,10 +231,9 @@ Even though every individual node performs well $99\%$ of the time, nearly two-t
 
 </details>
 
-<details>
-<summary><strong>Q5: How does Redis Cluster route client requests across its 16,384 hash slots, and how do client redirections (`MOVED` vs `ASK`) work?</strong></summary>
+<details><summary>5. How does Redis Cluster route client requests across its 16,384 hash slots, and how do client redirections (`MOVED` vs `ASK`) work?</summary>
 
-**Answer:** Redis Cluster divides its keyspace into exactly 16,384 logical **Hash Slots**:
+Redis Cluster divides its keyspace into exactly 16,384 logical **Hash Slots**:
 
 $$\text{Slot} = \text{CRC16}(\text{key}) \pmod{16384}$$
 
@@ -251,10 +244,9 @@ Physical nodes divide ownership of these 16,384 slots. When a client sends a que
 
 </details>
 
-<details>
-<summary><strong>Q6: How do hash tags (e.g. `{user123}:orders`) enforce multi-key transactional locality in partitioned data systems?</strong></summary>
+<details><summary>6. How do hash tags (e.g. `{user123}:orders`) enforce multi-key transactional locality in partitioned data systems?</summary>
 
-**Answer:** In partitioned databases like Redis Cluster, multi-key operations (transactions, `MGET`, Lua scripts) are strictly prohibited if the participating keys belong to different shards (triggering a `CROSSSLOT` error).
+In partitioned databases like Redis Cluster, multi-key operations (transactions, `MGET`, Lua scripts) are strictly prohibited if the participating keys belong to different shards (triggering a `CROSSSLOT` error).
 
 A **hash tag** overrides standard hashing by instructing the engine to hash _only the substring contained within curly braces `{}`_:
 

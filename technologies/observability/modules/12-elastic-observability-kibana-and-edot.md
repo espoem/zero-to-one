@@ -116,42 +116,36 @@ export class ESQLSimulator {
 
 ---
 
-## 8. Interview Drill
+## Interview Drill
 
-<details><summary><strong>Q1. When should an organization choose the Grafana LGTM stack versus Elastic Observability?</strong></summary>
+<details><summary>1. When should an organization choose the Grafana LGTM stack versus Elastic Observability?</summary>
 
 Organizations choose Grafana LGTM when operating heavily on Kubernetes with native Prometheus/PromQL expertise, preferring cheap object storage (S3/GCS) for logs and traces, and wanting modular open-source decoupling. Organizations choose Elastic Observability when they already operate Elasticsearch for full-text search, require advanced machine learning anomaly detection, need powerful ad-hoc text search across arbitrary log fields using ES\|QL, and prefer a unified single-vendor interface (Kibana).
-
 </details>
 
-<details><summary><strong>Q2. What is EDOT (Elastic Distributions of OpenTelemetry)?</strong></summary>
+<details><summary>2. What is EDOT (Elastic Distributions of OpenTelemetry)?</summary>
 
 EDOT consists of Elastic-curated, enterprise-tested OpenTelemetry collector distributions and SDKs pre-configured with semantic conventions, security patches, and optimal exporters to ingest telemetry natively into Elasticsearch Data Streams.
-
 </details>
 
-<details><summary><strong>Q3. Explain how ES\|QL differs from Elasticsearch Query DSL.</strong></summary>
+<details><summary>3. Explain how ES\|QL differs from Elasticsearch Query DSL.</summary>
 
 ES\|QL is a pipe-based query language inspired by modern data processing pipelines (similar to SQL or LogQL). Instead of nested JSON queries (Query DSL), ES\|QL processes data sequentially through pipes (`| filter`, `| stats`, `| sort`), making complex aggregations and tabular data transformations significantly easier to read and write.
-
 </details>
 
-<details><summary><strong>Q4. How do Elastic Data Streams manage log and trace data retention automatically?</strong></summary>
+<details><summary>4. How do Elastic Data Streams manage log and trace data retention automatically?</summary>
 
 Elastic Data Streams utilize Index Lifecycle Management (ILM) policies to transition indices automatically across Hot (NVMe SSD), Warm (standard disk), Cold (searchable snapshots), and Delete phases based on age or storage size thresholds.
-
 </details>
 
-<details><summary><strong>Q5. What causes a field mapping explosion in Elasticsearch, and how do you prevent it?</strong></summary>
+<details><summary>5. What causes a field mapping explosion in Elasticsearch, and how do you prevent it?</summary>
 
 Mapping explosions occur when log producers send documents with dynamic, uncontrolled keys (e.g., user-submitted form parameters or random UUIDs as keys). Each unique key creates a new field in the Elasticsearch mapping. This is prevented by enforcing strict index templates and ECS (Elastic Common Schema) guidelines, or disabling dynamic mapping for unstructured fields.
-
 </details>
 
-<details><summary><strong>Q6. How does Kibana Lens simplify dashboard creation for operators?</strong></summary>
+<details><summary>6. How does Kibana Lens simplify dashboard creation for operators?</summary>
 
 Kibana Lens provides a drag-and-drop visualization builder that automatically infers field types from Elasticsearch mappings, suggesting optimal chart types (bars, lines, heatmaps) and generating underlying ES\|QL or aggregations instantly without manual JSON authoring.
-
 </details>
 
 ---

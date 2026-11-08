@@ -182,44 +182,39 @@ Disable double submits with `useFormStatus().pending`, but do not rely on it alo
 
 ---
 
-## 9. Interview Drill
+## Interview Drill
 
-<details><summary><strong>1. What is an Action in React 19?</strong></summary>
+<details><summary>1. What is an Action in React 19?</summary>
 
 An (often async) function run inside a transition — via `startTransition`/`useTransition`, a form `action`/`formAction`, or `useActionState`. React tracks it as pending until its promise settles, commits its state updates as a transition, integrates with forms (FormData, pending status, reset), and coordinates optimistic state.
 </details>
 
-<details><summary><strong>2. Why might <code>useFormStatus</code> always return <code>pending: false</code>?</strong></summary>
+<details><summary>2. Why might <code>useFormStatus</code> always return <code>pending: false</code>?</summary>
 
 It reads the status of the parent `<form>`; it must be called in a component rendered inside the form. Calling it in the component that renders the `<form>` (or outside) has no parent form, so it is never pending.
 </details>
 
-<details><summary><strong>3. How does <code>useActionState</code> handle two quick submissions?</strong></summary>
+<details><summary>3. How does <code>useActionState</code> handle two quick submissions?</summary>
 
 It queues them: the second call starts after the first settles and receives the first result as `previousState`. This prevents out-of-order overwrites for that piece of state.
 </details>
 
-<details><summary><strong>4. How does <code>useOptimistic</code> roll back on failure?</strong></summary>
+<details><summary>4. How does <code>useOptimistic</code> roll back on failure?</summary>
 
 It doesn't roll back explicitly: optimistic entries exist only while the Action that added them is pending. When it settles, the layer is dropped and the real state is shown. If the action failed and did not update real state, the UI returns to the previous value. If it never settles, the optimistic value stays.
 </details>
 
-<details><summary><strong>5. What happens if an async action's request hangs?</strong></summary>
+<details><summary>5. What happens if an async action's request hangs?</summary>
 
 The transition stays pending: `isPending` stays true, optimistic state stays visible, and (observed in 19.3.1) later transitions are entangled with the pending action scope and do not commit; urgent updates still work. Always add timeouts and turn them into error states.
 </details>
 
-<details><summary><strong>6. How do forms with Server Functions work without JavaScript?</strong></summary>
+<details><summary>6. How do forms with Server Functions work without JavaScript?</summary>
 
 The server renders the form with a real action endpoint and hidden fields identifying the Server Function; a plain POST is decoded with `decodeAction`/`decodeFormState`, the function runs, and the response renders the new state. After hydration the same form submits as an Action without navigation. A client-function action, by contrast, renders a throwing `javascript:` placeholder and only replays submissions after hydration.
 </details>
 
-<details><summary><strong>7. Should validation errors be thrown or returned from an action?</strong></summary>
+<details><summary>7. Should validation errors be thrown or returned from an action?</summary>
 
 Returned as state: they are expected outcomes and the form should show them inline. Throwing sends the error to the nearest error boundary and cancels queued actions; reserve that for unexpected failures. Validation must still happen on the server.
-</details>
-
-<details><summary><strong>8. Why do state updates after <code>await</code> inside <code>startTransition</code> need wrapping?</strong></summary>
-
-React can only associate updates with a transition while the synchronous scope is on the stack; after an `await` the continuation runs outside it (no AsyncContext in JS yet), so the update would get a normal priority unless wrapped in `startTransition` again.
 </details>

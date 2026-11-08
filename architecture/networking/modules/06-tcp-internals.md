@@ -335,11 +335,9 @@ The standard 3-way handshake introduces a 1-RTT latency tax before application d
 
 ---
 
-## 11. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-### Q1: Explain why the interaction between Nagle's algorithm and Delayed ACKs causes a 40 ms latency stall on write-write-read application patterns.
-
-<details><summary>Answer</summary>
+<details><summary>1. Explain why the interaction between Nagle's algorithm and Delayed ACKs causes a 40 ms latency stall on write-write-read application patterns.</summary>
 
 **Deadlock Between Buffering and Delayed ACK.**
 
@@ -356,9 +354,7 @@ The standard 3-way handshake introduces a 1-RTT latency tax before application d
 
 </details>
 
-### Q2: Why must the active closer of a TCP connection transition into the `TIME_WAIT` state, and why is the timer duration set to $2 \times \text{MSL}$?
-
-<details><summary>Answer</summary>
+<details><summary>2. Why must the active closer of a TCP connection transition into the `TIME_WAIT` state, and why is the timer duration set to $2 \times \text{MSL}$?</summary>
 
 **Wandering Packets and Final ACK Delivery.** The `TIME_WAIT` state lasts for $2 \times \text{MSL}$ ($2 \times 30\text{s} = 60\text{s}$ on Linux) for two mandatory reasons:
 
@@ -369,9 +365,7 @@ The standard 3-way handshake introduces a 1-RTT latency tax before application d
 
 </details>
 
-### Q3: How do SYN Cookies protect a server against a SYN Flood DoS attack without allocating memory in the SYN Queue?
-
-<details><summary>Answer</summary>
+<details><summary>3. How do SYN Cookies protect a server against a SYN Flood DoS attack without allocating memory in the SYN Queue?</summary>
 
 **Stateless Sequence Number Encoding.** Under a SYN Flood, the server's SYN Queue is completely filled with half-open connections from spoofed IPs. When SYN Cookies are active (`net.ipv4.tcp_syncookies = 1`):
 
@@ -384,9 +378,7 @@ The standard 3-way handshake introduces a 1-RTT latency tax before application d
 
 </details>
 
-### Q4: What was `tcp_tw_recycle`, and why was it permanently removed from the Linux kernel in version 4.12?
-
-<details><summary>Answer</summary>
+<details><summary>4. What was `tcp_tw_recycle`, and why was it permanently removed from the Linux kernel in version 4.12?</summary>
 
 **NAT Client Connection Drops.**
 
@@ -398,9 +390,7 @@ The standard 3-way handshake introduces a 1-RTT latency tax before application d
 
 </details>
 
-### Q5: How does RACK-TLP (RFC 8985) improve loss recovery compared to classic Fast Retransmit?
-
-<details><summary>Answer</summary>
+<details><summary>5. How does RACK-TLP (RFC 8985) improve loss recovery compared to classic Fast Retransmit?</summary>
 
 **Time-Based Loss Detection Over Duplicate ACK Counting.**
 

@@ -209,42 +209,36 @@ export function evaluateBurnRateAlert(
 
 ---
 
-## 8. Interview Drill
+## Interview Drill
 
-<details><summary><strong>Q1. Why do we use multi-window multi-burn-rate alerts instead of simply alerting when error rate exceeds 0.1%?</strong></summary>
+<details><summary>1. Why do we use multi-window multi-burn-rate alerts instead of simply alerting when error rate exceeds 0.1%?</summary>
 
 Simple threshold alerts (`error_rate > 0.001`) either trigger constant false positives during minor transient glitches or take days to alert on slow leaks that will exhaust the entire monthly error budget. Multi-window multi-burn-rate alerts check both a short window (e.g., 5m) and a long window (e.g., 1h) against proportional budget depletion thresholds (e.g., 2% consumption). This guarantees high confidence that an outage is real before paging the on-call engineer while keeping Time-to-Detect under 3 minutes for severe outages.
-
 </details>
 
-<details><summary><strong>Q2. How do you construct an SLI for a latency-sensitive RPC service handling variable payload sizes?</strong></summary>
+<details><summary>2. How do you construct an SLI for a latency-sensitive RPC service handling variable payload sizes?</summary>
 
 Latency SLIs must be defined as the ratio of successful requests completing below a defined latency threshold (e.g., 250ms) over total valid requests. In Prometheus, this is implemented using histogram quantile buckets: `sum(rate(rpc_duration_seconds_bucket{le="0.25"}[5m])) / sum(rate(rpc_duration_seconds_count[5m]))`. Valid requests exclude client-side cancellation and invalid authentication parameters.
-
 </details>
 
-<details><summary><strong>Q3. What is the relationship between Error Budgets and engineering velocity?</strong></summary>
+<details><summary>3. What is the relationship between Error Budgets and engineering velocity?</summary>
 
 Error budgets act as an objective contract between product development and operations. If the error budget is healthy (unexhausted), engineering teams have unconstrained velocity to ship new features. If the error budget is exhausted, policy dictates that feature deployments freeze and all engineering effort must pivot to reliability improvements, bug fixes, and test automation until the error budget recovers.
-
 </details>
 
-<details><summary><strong>Q4. How do tools like Sloth and Pyrra simplify Prometheus alerting rule maintenance?</strong></summary>
+<details><summary>4. How do tools like Sloth and Pyrra simplify Prometheus alerting rule maintenance?</summary>
 
 Sloth and Pyrra abstract away the complex mathematical boilerplate required for multi-window burn-rate Prometheus recording and alerting rules. Engineers define high-level business objectives (e.g., `objective: 99.9`) in a clean declarative Custom Resource or YAML file, and the generator compiles them into optimized, battle-tested PromQL rule files ready for ingestion by Prometheus or Mimir.
-
 </details>
 
-<details><summary><strong>Q5. What happens if your Prometheus scrape interval is 15 seconds, but your short alerting window is 1 minute?</strong></summary>
+<details><summary>5. What happens if your Prometheus scrape interval is 15 seconds, but your short alerting window is 1 minute?</summary>
 
 A 1-minute window contains only 4 data points per time series. While mathematically valid, transient network packet drops or GC pauses can drop one scrape, reducing sample size to 3 points and causing noise. Best practice dictates that short windows should be at least 4 to 5 times the scrape interval (e.g., 5-minute window for a 15-second scrape interval).
-
 </details>
 
-<details><summary><strong>Q6. How do you handle scheduled database maintenance windows in SLO calculations?</strong></summary>
+<details><summary>6. How do you handle scheduled database maintenance windows in SLO calculations?</summary>
 
 Scheduled maintenance windows agreed upon by stakeholders are typically excluded from error budget calculations by filtering out metrics during the maintenance window using PromQL boolean selectors or by pausing SLO evaluation pipelines via maintenance annotations in tools like Pyrra.
-
 </details>
 
 ---

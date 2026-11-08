@@ -249,51 +249,31 @@ console.log(res.rows[0]);
 
 ---
 
-## 9. Interview Drill
+## Interview Drill
 
-<details>
-<summary>1. Explain why `SELECT * FROM tbl WHERE col NOT IN (SELECT other_col FROM other_tbl)` returns zero rows if `other_col` contains a single NULL.</summary>
+<details><summary>1. Explain why `SELECT * FROM tbl WHERE col NOT IN (SELECT other_col FROM other_tbl)` returns zero rows if `other_col` contains a single NULL.</summary>
 
-**Answer**: In SQL's Three-Valued Logic, `val NOT IN (subquery)` expands to a series of inequalities joined by `AND`: `val <> x1 AND val <> x2 AND val <> NULL`. Any comparison against `NULL` evaluates to `UNKNOWN`. In boolean logic, `TRUE AND UNKNOWN` yields `UNKNOWN`, and `FALSE AND UNKNOWN` yields `FALSE`. Because a `WHERE` filter only admits rows that evaluate strictly to `TRUE`, the entire condition fails for every row in the outer table, returning an empty result set. The safe production idiom is `WHERE NOT EXISTS (SELECT 1 FROM other_tbl WHERE other_col = tbl.col)`.
-
-- Ref: [PostgreSQL Documentation: Subquery Expressions](https://www.postgresql.org/docs/18/functions-subquery.html)
-
+In SQL's Three-Valued Logic, `val NOT IN (subquery)` expands to a series of inequalities joined by `AND`: `val <> x1 AND val <> x2 AND val <> NULL`. Any comparison against `NULL` evaluates to `UNKNOWN`. In boolean logic, `TRUE AND UNKNOWN` yields `UNKNOWN`, and `FALSE AND UNKNOWN` yields `FALSE`. Because a `WHERE` filter only admits rows that evaluate strictly to `TRUE`, the entire condition fails for every row in the outer table, returning an empty result set. The safe production idiom is `WHERE NOT EXISTS (SELECT 1 FROM other_tbl WHERE other_col = tbl.col)`.
 </details>
 
-<details>
-<summary>2. Compare Hash Join and Nested Loop Join algorithms in terms of resource consumption and ideal workloads.</summary>
-
-**Answer**:
+<details><summary>2. Compare Hash Join and Nested Loop Join algorithms in terms of resource consumption and ideal workloads.</summary>
 
 - **Nested Loop Join** runs in $O(N \log M)$ time when the inner relation has an index on the join key. It consumes virtually zero memory ($O(1)$) and streams rows immediately without startup cost, making it ideal for low-latency OLTP queries with small outer result sets.
 - **Hash Join** runs in $O(N + M)$ time. It must first read the entire inner relation into an in-memory hash table in `work_mem` before probing can begin. If the inner relation exceeds `work_mem`, it spills into multi-batch temporary disk files, causing high I/O latency. It is ideal for large, unsorted datasets where indexes are absent.
-- Ref: [PostgreSQL Internals: Query Processing](https://www.interdb.jp/pg/tutorial.html)
 
 </details>
 
-<details>
-<summary>3. Why does `OFFSET 5000000 LIMIT 20` cause database server performance degradation, and how does Keyset Pagination solve it?</summary>
+<details><summary>3. Why does `OFFSET 5000000 LIMIT 20` cause database server performance degradation, and how does Keyset Pagination solve it?</summary>
 
-**Answer**: `OFFSET 5000000` forces the database engine to perform $O(N)$ work: it must scan, read, and evaluate 5,000,020 rows through the index or heap, discard the first 5,000,000 rows, and return the final 20. This causes massive buffer cache churn and CPU utilization. Keyset pagination replaces `OFFSET` with a seek predicate: `WHERE (sort_col, id) < ($last_val, $last_id) ORDER BY sort_col DESC, id DESC LIMIT 20`. This allows the B-tree index to seek directly to the target leaf node in $O(\log N)$ time and stream the subsequent 20 rows in $O(1)$ constant time.
-
-- Ref: [Use The Index, Luke: Paging Through Results](https://use-the-index-luke.com/sql/partial-results/fetch-next-page)
-
+`OFFSET 5000000` forces the database engine to perform $O(N)$ work: it must scan, read, and evaluate 5,000,020 rows through the index or heap, discard the first 5,000,000 rows, and return the final 20. This causes massive buffer cache churn and CPU utilization. Keyset pagination replaces `OFFSET` with a seek predicate: `WHERE (sort_col, id) < ($last_val, $last_id) ORDER BY sort_col DESC, id DESC LIMIT 20`. This allows the B-tree index to seek directly to the target leaf node in $O(\log N)$ time and stream the subsequent 20 rows in $O(1)$ constant time.
 </details>
 
-<details>
-<summary>4. What client-side JavaScript/Node.js bug occurs when using PostgreSQL 18's `RETURNING old.col, new.col` without aliasing?</summary>
+<details><summary>4. What client-side JavaScript/Node.js bug occurs when using PostgreSQL 18's `RETURNING old.col, new.col` without aliasing?</summary>
 
-**Answer**: Node.js PostgreSQL drivers (`pg`, `@electric-sql/pglite`) instantiate query result rows as standard JavaScript objects where property keys correspond to the returned column names. If a query requests `RETURNING old.status, new.status`, both columns in the wire protocol carry the name `status`. The JavaScript engine creates an object `{ status: ... }` and overwrites the first property with the second. As a result, `old.status` is lost. The mandatory fix is explicit column aliasing: `RETURNING old.status AS old_status, new.status AS new_status`.
-
-- Ref: [PostgreSQL 18 Release Notes](https://www.postgresql.org/docs/18/release-18.html)
-
+Node.js PostgreSQL drivers (`pg`, `@electric-sql/pglite`) instantiate query result rows as standard JavaScript objects where property keys correspond to the returned column names. If a query requests `RETURNING old.status, new.status`, both columns in the wire protocol carry the name `status`. The JavaScript engine creates an object `{ status: ... }` and overwrites the first property with the second. As a result, `old.status` is lost. The mandatory fix is explicit column aliasing: `RETURNING old.status AS old_status, new.status AS new_status`.
 </details>
 
-<details>
-<summary>5. How does a `LATERAL` join differ from an ordinary inner or left join?</summary>
+<details><summary>5. How does a `LATERAL` join differ from an ordinary inner or left join?</summary>
 
-**Answer**: In an ordinary join, the right-hand relation is independent and cannot reference attributes from the left-hand relation within the `FROM` clause. A `LATERAL` join acts like a correlated subquery in the `FROM` list: the subquery is evaluated dynamically for each row emitted by the preceding table. This allows combining per-row set calculations (e.g. top-N recent records per customer) or expanding array/JSON attributes per row while maintaining push-down index scan efficiencies.
-
-- Ref: [PostgreSQL Documentation: Queries: LATERAL](https://www.postgresql.org/docs/18/queries-table-expressions.html#QUERIES-LATERAL)
-
+In an ordinary join, the right-hand relation is independent and cannot reference attributes from the left-hand relation within the `FROM` clause. A `LATERAL` join acts like a correlated subquery in the `FROM` list: the subquery is evaluated dynamically for each row emitted by the preceding table. This allows combining per-row set calculations (e.g. top-N recent records per customer) or expanding array/JSON attributes per row while maintaining push-down index scan efficiencies.
 </details>

@@ -394,46 +394,39 @@ Migration pitfall: switching a field from index-time to search-time synonyms req
 
 ---
 
-## 11. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. Describe the analysis chain and where offsets and positions come from.</strong></summary>
+<details><summary>1. Describe the analysis chain and where offsets and positions come from.</summary>
 
 Zero or more char filters rewrite the string while tracking offset corrections; one tokenizer emits tokens with offsets and position increments; token filters transform the stream. Positions are the running sum of increments; offsets are corrected back to the original input so highlighting works on the stored text.
 </details>
 
-<details>
-<summary><strong>Q2. Why might <code>match_phrase</code> fail after adding a stop filter?</strong></summary>
+<details><summary>2. Why might <code>match_phrase</code> fail after adding a stop filter?</summary>
 
 The stop filter leaves position gaps. A phrase whose words were adjacent in the query after stop removal may be separated in the index by the removed words' positions. Use `slop`, keep stop words, or index a shingle field.
 </details>
 
-<details>
-<summary><strong>Q3. Index-time or search-time synonyms?</strong></summary>
+<details><summary>3. Index-time or search-time synonyms?</summary>
 
 Search time, with `synonym_graph` and an updateable analyzer or the Synonyms API: no reindex on change, correct multi-word handling, undistorted term statistics. Index-time synonyms can be marginally faster at query time but are rigid.
 </details>
 
-<details>
-<summary><strong>Q4. Build autocomplete for product names. What are the pitfalls?</strong></summary>
+<details><summary>4. Build autocomplete for product names. What are the pitfalls?</summary>
 
 Edge n-gram analyzer at index time, standard at search time (or `search_as_you_type` with `bool_prefix`). Pitfalls: n-grams at search time (false positives), `max_gram` too small for long words, index growth, and needing a separate un-n-grammed field for exact-match boosting.
 </details>
 
-<details>
-<summary><strong>Q5. Users search Czech place names with and without diacritics. Design the mapping.</strong></summary>
+<details><summary>5. Users search Czech place names with and without diacritics. Design the mapping.</summary>
 
 A `text` field with a custom analyzer (`standard` tokenizer, `lowercase`, `asciifolding`, optionally `czech_stem`), plus a `keyword` sub-field with a `lowercase`+`asciifolding` normalizer for exact filters, plus an unfolded sub-field boosted higher so that correct diacritics rank first.
 </details>
 
-<details>
-<summary><strong>Q6. What is a normalizer, and why can it not contain a stemmer?</strong></summary>
+<details><summary>6. What is a normalizer, and why can it not contain a stemmer?</summary>
 
 A keyword-tokenizer analyzer for `keyword` fields restricted to per-character filters, so that each value still maps to exactly one term. Stemmers, synonyms and n-grams can change the token count or produce multiple terms, which breaks the one-value-one-term contract of keyword fields and doc values.
 </details>
 
-<details>
-<summary><strong>Q7. How do you debug "document X is not found by query Y"?</strong></summary>
+<details><summary>7. How do you debug "document X is not found by query Y"?</summary>
 
 `GET index/_analyze` with `field` for the document's text and for the query text; compare terms. Then `_validate/query?explain` to see the rewritten Lucene query, and `_explain` on the document id to see why it did or did not match.
 </details>

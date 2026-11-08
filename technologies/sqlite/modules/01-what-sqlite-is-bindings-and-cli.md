@@ -352,7 +352,7 @@ The 2026 releases add a new chapter: 3.53.x and 3.54.0 contain "countless fixes 
 
 ---
 
-## 12. Interview Drill
+## Interview Drill
 
 <details><summary>1. Define SQLite in one sentence an architect would accept, and justify each adjective.</summary>
 
@@ -387,19 +387,4 @@ It guarantees every branch was taken both ways, and every condition in a decisio
 <details><summary>7. How can you tell, from a corrupt customer file alone, which SQLite version last wrote it?</summary>
 
 Read bytes 96–99 of the 100-byte header: `SQLITE_VERSION_NUMBER` of the last library that modified the file, valid together with the change counter at offset 24 (offset 92 holds the counter value it is valid for). The magic string at bytes 0–15 confirms it is a SQLite file at all.
-</details>
-
-<details><summary>8. Two tests each open <code>:memory:</code> and expect to share a table. Why do they fail, and what is the fix?</summary>
-
-Each `:memory:` open creates a new private database owned by that connection. Use one connection, a temporary file, or a named shared in-memory database (`file:name?mode=memory&cache=shared`, or `file:/name?vfs=memdb`) when two connections in one process must see the same data.
-</details>
-
-<details><summary>9. Why do better-sqlite3 and <code>node:sqlite</code> expose synchronous APIs, and when is that wrong?</summary>
-
-A typical statement runs in microseconds; hopping to a thread pool would cost as much as the work. Synchronous calls also make a transaction atomic with respect to other JavaScript, because nothing else runs on the event loop in the middle of it. It is wrong when individual queries are slow (large scans, `VACUUM`, big aggregations): they block every other request. Move those to a worker thread with its own connection, or bound them with `LIMIT` and pagination.
-</details>
-
-<details><summary>10. <code>SQLITE_BUSY</code> versus <code>SQLITE_LOCKED</code>: what is the difference and which can a busy timeout fix?</summary>
-
-`SQLITE_BUSY` means a _different connection_ holds a conflicting file lock; a busy handler can wait for it, except in cases such as `SQLITE_BUSY_SNAPSHOT`, where waiting can never succeed. `SQLITE_LOCKED` means the conflict is _inside the same connection_ (or shared cache), for example dropping a table with an active statement on it. No amount of waiting helps; fix the code path.
 </details>

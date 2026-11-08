@@ -400,32 +400,25 @@ VERIFY-COSIGN-SIGNATURE(ImageDigest, RegistryRef, ExpectedIdentity, RekorServer,
 
 ---
 
-## 13. Interview Drill: Deep Technical Questions
+## Interview Drill
 
-<details>
-<summary><strong>Q1. Explain the exact mechanism by which a seccomp-BPF filter intercepts and rejects a system call before it reaches the Linux kernel execution handler.</strong></summary>
+<details><summary>1. Explain the exact mechanism by which a seccomp-BPF filter intercepts and rejects a system call before it reaches the Linux kernel execution handler.</summary>
 
-**Answer:** When a process executes a system call (e.g., via the `syscall` assembly instruction in x86_64), the CPU transitions from user space (Ring 3) to kernel space (Ring 0).
+When a process executes a system call (e.g., via the `syscall` assembly instruction in x86_64), the CPU transitions from user space (Ring 3) to kernel space (Ring 0).
 
 1. The kernel's system call entry handler (`sys_enter`) inspects the task structure (`task_struct`) to determine if the `TIF_SECCOMP` thread flag is set.
 2. If seccomp is active, the kernel invokes the attached Berkeley Packet Filter (BPF) program, passing a pointer to `struct seccomp_data` (containing the system call number, architecture, instruction pointer, and 6 register arguments).
 3. The BPF bytecode executes directly inside the kernel, evaluating the system call against its rule set.
 4. If the rule matches a disallowed action (e.g., `SCMP_ACT_ERRNO(EPERM)`), the BPF engine immediately halts execution and returns the verdict to `sys_enter`.
 5. The kernel skips the system call dispatch table completely, writes `-EPERM` into the return register (`%rax`), and returns control directly to user space. The actual kernel handler is never executed.
-
 </details>
 
-<details>
-<summary><strong>Q2. Why does running a container as rootless completely protect the host machine even if an attacker successfully executes a kernel privilege escalation exploit inside the container?</strong></summary>
+<details><summary>2. Why does running a container as rootless completely protect the host machine even if an attacker successfully executes a kernel privilege escalation exploit inside the container?</summary>
 
-**Answer:** In rootless mode, the container runs entirely inside an unprivileged **User Namespace** (`user_namespaces(7)`). Inside this user namespace, the application process possesses UID 0 and has full root capabilities _scoped solely to that namespace_. However, the Linux kernel strictly tracks the **owning user namespace** of all system resources. On the host operating system (the initial user namespace), the process's effective UID is the unprivileged host user (e.g., UID 1000), and its host capability bounding set is completely empty (`0x0`). If the attacker escapes the container namespaces and attempts to modify host files (e.g., `/etc/shadow`), create host device nodes, or manipulate host network interfaces, the kernel validates the process's credentials against the initial user namespace. Because the process is merely UID 1000 on the host, the kernel rejects all administrative operations with `EPERM`.
-
+In rootless mode, the container runs entirely inside an unprivileged **User Namespace** (`user_namespaces(7)`). Inside this user namespace, the application process possesses UID 0 and has full root capabilities _scoped solely to that namespace_. However, the Linux kernel strictly tracks the **owning user namespace** of all system resources. On the host operating system (the initial user namespace), the process's effective UID is the unprivileged host user (e.g., UID 1000), and its host capability bounding set is completely empty (`0x0`). If the attacker escapes the container namespaces and attempts to modify host files (e.g., `/etc/shadow`), create host device nodes, or manipulate host network interfaces, the kernel validates the process's credentials against the initial user namespace. Because the process is merely UID 1000 on the host, the kernel rejects all administrative operations with `EPERM`.
 </details>
 
-<details>
-<summary><strong>Q3. Walk through the keyless signing and verification exchange in Sigstore/Cosign, explaining why long-lived private keys are unnecessary.</strong></summary>
-
-**Answer:**
+<details><summary>3. Walk through the keyless signing and verification exchange in Sigstore/Cosign, explaining why long-lived private keys are unnecessary.</summary>
 
 1. **OIDC Token Acquisition**: The signer (e.g., a CI runner) authenticates with its identity provider (GitLab/GitHub) and receives an OpenID Connect (OIDC) JWT proving its identity and repository context.
 2. **Keypair Generation**: The signer generates a temporary public/private keypair directly in RAM.
@@ -433,49 +426,33 @@ VERIFY-COSIGN-SIGNATURE(ImageDigest, RegistryRef, ExpectedIdentity, RekorServer,
 4. **Transparency Logging (Rekor)**: The signer signs the artifact's SHA-256 digest with its in-memory private key and submits the signature, certificate, and artifact hash to **Rekor** (an immutable, append-only Merkle transparency log). Rekor records the entry and returns a Signed Entry Timestamp (SET).
 5. **Key Destruction**: The signer deletes the ephemeral private key from RAM immediately.
 6. **Verification**: The verifier (e.g., a Kubernetes admission controller) checks that the signature was generated by the public key in the certificate, validates the certificate chain against Fulcio's root, checks that the signer identity matches policy, and queries Rekor to verify that the certificate was logged during its brief 10-minute validity window.
-
 </details>
 
-<details>
-<summary><strong>Q4. What is the operational difference between the `:z` and `:Z` volume mount flags on systems enforcing SELinux?</strong></summary>
+<details><summary>4. What is the operational difference between the `:z` and `:Z` volume mount flags on systems enforcing SELinux?</summary>
 
-**Answer:** SELinux assigns security context labels to filesystem inodes to enforce mandatory access controls.
+SELinux assigns security context labels to filesystem inodes to enforce mandatory access controls.
 
 - **`:z` (Shared Relabeling)**: Instructs the container runtime to relabel the host directory with the generic shared container label `container_file_t`. Any container running under the standard `container_t` domain can access, read, and write this directory. This is used when multiple independent containers must share volume storage.
 - **`:Z` (Private Relabeling)**: Instructs the runtime to relabel the host directory with a unique Multi-Category Security (MCS) category label (e.g., `system_u:object_r:container_file_t:s0:c123,c456`) that matches only the specific container mounting it. All other containers on the host are strictly blocked by SELinux from accessing the directory, guaranteeing private volume isolation.
-
 </details>
 
-<details>
-<summary><strong>Q5. How does a Distroless image neutralize Living-off-the-Land (LotL) attacks during a container compromise?</strong></summary>
+<details><summary>5. How does a Distroless image neutralize Living-off-the-Land (LotL) attacks during a container compromise?</summary>
 
-**Answer:** In a Living-off-the-Land attack, an adversary who discovers an application vulnerability (such as command injection or deserialization flaw) does not need to upload custom compiled malware. Instead, they invoke pre-installed system binaries: using `/bin/sh` to chain commands, `curl` or `wget` to download remote stages, `nc` to establish reverse TCP shells, or package managers (`apt`, `apk`) to install attack tooling. A **Distroless** image contains zero package managers, zero shells, and zero general utilities; it contains only the compiled application binary and essential runtime libraries. When an attacker attempts to spawn `/bin/sh` or execute `curl`, the system call fails with `ENOENT` (File not found). Without an interactive shell or network downloaders, the attacker's ability to execute payloads or pivot across the network is severely crippled.
-
+In a Living-off-the-Land attack, an adversary who discovers an application vulnerability (such as command injection or deserialization flaw) does not need to upload custom compiled malware. Instead, they invoke pre-installed system binaries: using `/bin/sh` to chain commands, `curl` or `wget` to download remote stages, `nc` to establish reverse TCP shells, or package managers (`apt`, `apk`) to install attack tooling. A **Distroless** image contains zero package managers, zero shells, and zero general utilities; it contains only the compiled application binary and essential runtime libraries. When an attacker attempts to spawn `/bin/sh` or execute `curl`, the system call fails with `ENOENT` (File not found). Without an interactive shell or network downloaders, the attacker's ability to execute payloads or pivot across the network is severely crippled.
 </details>
 
-<details>
-<summary><strong>Q6. Explain the purpose of `PR_SET_NO_NEW_PRIVS` and give an example of an attack vector it mitigates.</strong></summary>
+<details><summary>6. Explain the purpose of `PR_SET_NO_NEW_PRIVS` and give an example of an attack vector it mitigates.</summary>
 
-**Answer:** `PR_SET_NO_NEW_PRIVS` is a Linux kernel thread flag configured via `prctl(2)`. Once set, the kernel guarantees that neither the process nor any of its descendants can ever acquire privileges that exceed the privileges of the calling process, even across `execve(2)`. **Attack Vector Mitigated**: Suppose an unprivileged container process exploits a setuid binary inside the container (e.g., a vulnerable version of `pkexec` or `chfn`). Normally, executing a setuid binary transitions the effective UID of the process to the file owner (root). With `PR_SET_NO_NEW_PRIVS` active, the kernel disables setuid execution: the binary executes, but the process remains with its original unprivileged UID, neutralizing the local privilege escalation attempt.
-
+`PR_SET_NO_NEW_PRIVS` is a Linux kernel thread flag configured via `prctl(2)`. Once set, the kernel guarantees that neither the process nor any of its descendants can ever acquire privileges that exceed the privileges of the calling process, even across `execve(2)`. **Attack Vector Mitigated**: Suppose an unprivileged container process exploits a setuid binary inside the container (e.g., a vulnerable version of `pkexec` or `chfn`). Normally, executing a setuid binary transitions the effective UID of the process to the file owner (root). With `PR_SET_NO_NEW_PRIVS` active, the kernel disables setuid execution: the binary executes, but the process remains with its original unprivileged UID, neutralizing the local privilege escalation attempt.
 </details>
 
-<details>
-<summary><strong>Q7. Why can high-severity CVE alerts reported by container image vulnerability scanners sometimes be safely dismissed as false positives?</strong></summary>
+<details><summary>7. Why can high-severity CVE alerts reported by container image vulnerability scanners sometimes be safely dismissed as false positives?</summary>
 
-**Answer:** Static vulnerability scanners (such as Trivy or Grype) inspect installed package manifests (e.g., Debian `dpkg` database, Alpine `apk` database) and match installed package versions against National Vulnerability Database (NVD) entries. This produces false positives because:
+Static vulnerability scanners (such as Trivy or Grype) inspect installed package manifests (e.g., Debian `dpkg` database, Alpine `apk` database) and match installed package versions against National Vulnerability Database (NVD) entries. This produces false positives because:
 
 1. **Uncalled Code Paths**: The vulnerable function in a shared library (e.g., an unused protocol in `libcurl`) is never imported, linked, or invoked by the application binary.
 2. **Upstream Security Backports**: Enterprise distributions (Red Hat, Debian, Ubuntu) regularly backport security patches into older package versions without incrementing the upstream version number. Generic scanners that look only at upstream version strings falsely flag the backported package as vulnerable.
 3. **Build-Time Tools in Dev Images**: Compilers or dev headers flagged with CVEs in intermediate build stages are completely absent from the final multi-stage runtime image.
-
-</details>
-
-<details>
-<summary><strong>Q8. Describe how an attacker can leverage an exposed `CAP_DAC_OVERRIDE` capability to escalate privileges on a container host.</strong></summary>
-
-**Answer:** `CAP_DAC_OVERRIDE` bypasses all Linux Discretionary Access Control (DAC) permission checks: the kernel ignores POSIX read, write, and execute bits (`rwxrwxrwx`) for all files and directories. If a container holds `CAP_DAC_OVERRIDE` and has any host directory bind-mounted (even with read-only application intent or owned by host root with `0600` permissions), the container process can overwrite sensitive host files. For instance, if `/etc` is accessible, the attacker can append a new root user to `/etc/passwd` or modify `/etc/crontab` to execute arbitrary reverse shells on the host, achieving complete privilege escalation.
-
 </details>
 
 ---

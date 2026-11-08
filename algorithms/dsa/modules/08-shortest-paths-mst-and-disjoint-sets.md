@@ -135,10 +135,9 @@ flowchart TD
 
 ---
 
-## 6. Interview Drill: Shortest Paths, MST & DSU
+## Interview Drill
 
-<details>
-<summary>1. Can Dijkstra's algorithm work if all edge weights are decreased by a constant C to eliminate negative numbers?</summary>
+<details><summary>1. Can Dijkstra's algorithm work if all edge weights are decreased by a constant C to eliminate negative numbers?</summary>
 
 **No, adding or subtracting a constant across all edges changes the shortest path!** If path $P_1$ uses 1 edge of weight 10, and path $P_2$ uses 10 edges of weight 1 each, both paths initially have length 10. If we add a constant $+5$ to all edges:
 
@@ -147,28 +146,24 @@ flowchart TD
 
 </details>
 
-<details>
-<summary>2. Why does Kruskal's algorithm sort edges while Prim's algorithm does not require pre-sorting?</summary>
+<details><summary>2. Why does Kruskal's algorithm sort edges while Prim's algorithm does not require pre-sorting?</summary>
 
 Kruskal's algorithm operates on the global edge set: it processes edges in globally increasing order of weight and uses DSU to prevent cycles, which requires sorting all $E$ edges upfront ($O(E \log E)$). Prim's algorithm operates locally by expanding a single connected tree: it uses a Priority Queue to dynamically extract the smallest-weight edge crossing the cut between the tree and the remaining unvisited vertices.
 </details>
 
-<details>
-<summary>3. In Floyd-Warshall, why must the k-loop (intermediate node) be the outermost loop?</summary>
+<details><summary>3. In Floyd-Warshall, why must the k-loop (intermediate node) be the outermost loop?</summary>
 
 The dynamic programming definition is $D^{(k)}[i][j]$: shortest path using intermediate nodes strictly from $\{0 \dots k\}$. For $D^{(k)}[i][j]$ to be computed correctly, all subproblems $D^{(k-1)}[i][k]$ and $D^{(k-1)}[k][j]$ must have already been finalized for all pairs $(i, j)$ across the entire graph. Placing the $k$-loop inside would attempt to calculate paths through node $k$ before paths through previous intermediate nodes were known, producing incorrect lengths.
 </details>
 
-<details>
-<summary>4. What is the difference between an admissible heuristic and a consistent heuristic in A* search?</summary>
+<details><summary>4. What is the difference between an admissible heuristic and a consistent heuristic in A* search?</summary>
 
 - **Admissible**: The heuristic never overestimates the true cost to reach the goal: $h(n) \le d(n, \text{goal})$ for all $n$. Admissibility guarantees that A* tree search finds an optimal shortest path.
 - **Consistent (Monotonic)**: For every node $n$ and neighbor $p$, $h(n) \le c(n, p) + h(p)$, and $h(\text{goal}) = 0$ (satisfies the triangle inequality). Consistency guarantees that when A* graph search visits a node, its shortest path is already finalized, meaning nodes never need to be re-opened in the closed set.
 
 </details>
 
-<details>
-<summary>5. How can Disjoint-Set Union be used to detect cycles in an undirected graph online?</summary>
+<details><summary>5. How can Disjoint-Set Union be used to detect cycles in an undirected graph online?</summary>
 
 Initialize DSU with each vertex in its own set. Process each undirected edge $(u, v)$ as it arrives:
 

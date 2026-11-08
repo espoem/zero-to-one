@@ -163,36 +163,31 @@ Because 0-weight edges do not advance the current path cost, pushing them to the
 
 ---
 
-## 7. Interview Drill: Graph Foundations & Traversals
+## Interview Drill
 
-<details>
-<summary>1. In Kahn's algorithm, what does it mean if the queue becomes empty before all vertices are added to the topological sort?</summary>
+<details><summary>1. In Kahn's algorithm, what does it mean if the queue becomes empty before all vertices are added to the topological sort?</summary>
 
 It proves that the directed graph contains at least one **directed cycle**. Every vertex in a cycle has an in-degree of at least 1 (incoming edge from the previous node in the cycle). None of the cycle nodes can ever have their in-degree reduced to 0, preventing them from entering the queue. Kahn's algorithm thus doubles as a definitive cycle detection mechanism: `result.length === V ? topologicalOrder : hasCycle`.
 </details>
 
-<details>
-<summary>2. How does 0-1 BFS maintain the shortest path invariant without using a priority queue?</summary>
+<details><summary>2. How does 0-1 BFS maintain the shortest path invariant without using a priority queue?</summary>
 
 In standard BFS, all edges have weight 1, so the queue is monotonically ordered by distance: nodes at distance $d$ are followed by nodes at distance $d+1$. In 0-1 BFS, traversing a 0-weight edge leads to distance $d + 0 = d$. Pushing this to the **front** of the deque ensures it is processed before any node at distance $d + 1$. Traversing a 1-weight edge leads to distance $d + 1$. Pushing this to the **back** of the deque places it behind all distance $d$ nodes. Thus, the deque contains elements at only two distances at any moment ($d$ and $d+1$), strictly preserving non-decreasing order in $O(1)$ operations per edge.
 </details>
 
-<details>
-<summary>3. Why can an undirected graph be bipartite if and only if it contains no odd-length cycles?</summary>
+<details><summary>3. Why can an undirected graph be bipartite if and only if it contains no odd-length cycles?</summary>
 
 A bipartite graph can be partitioned into two independent sets $U$ and $V$ such that all edges connect a node in $U$ to a node in $V$ (2-colorable). Traversing an edge alternates color: $U \to V \to U \to V$. Any path of length $k$ returning to the starting node must make an even number of color flips to return to the original color. An odd-length cycle forces an edge to connect two nodes of the identical color, violating bipartiteness.
 </details>
 
-<details>
-<summary>4. What is the difference between a Cross Edge and a Back Edge in directed DFS?</summary>
+<details><summary>4. What is the difference between a Cross Edge and a Back Edge in directed DFS?</summary>
 
 - A **Back Edge** points from a descendant to an **ancestor** currently active on the DFS stack. A back edge proves the existence of a directed cycle.
 - A **Cross Edge** points from a node to an already-finished node that is neither an ancestor nor a descendant (it connects two separate branches or disjoint trees in the DFS forest). Cross edges do not indicate a cycle.
 
 </details>
 
-<details>
-<summary>5. How does Multi-Source BFS work, and what problem does it solve?</summary>
+<details><summary>5. How does Multi-Source BFS work, and what problem does it solve?</summary>
 
 In Multi-Source BFS, all initial starting source nodes are pushed into the queue simultaneously at time $t = 0$. The BFS expands outwards from all sources in lockstep, computing the shortest distance from **any** source to every other node in the graph in a single $O(V + E)$ pass. This eliminates running BFS repeatedly from each individual source, which would cost $O(S \times (V + E))$. Classic applications include computing proximity fields on grid maps (e.g. distance to nearest hospital or zombie outbreak simulation).
 </details>

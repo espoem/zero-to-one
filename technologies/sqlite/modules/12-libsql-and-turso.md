@@ -404,7 +404,7 @@ The central constraint of classic SQLite is that WAL mode permits **strictly one
 
 ---
 
-## 7. Interview Drill
+## Interview Drill
 
 <details><summary>1. What is the difference between libSQL and Turso Database?</summary>
 

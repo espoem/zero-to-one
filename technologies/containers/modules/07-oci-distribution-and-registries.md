@@ -381,12 +381,9 @@ spec:
 
 ---
 
-## 10. Interview Drill: Deep Technical Questions
+## Interview Drill
 
-<details>
-<summary><strong>Q1. Walk through the exact HTTP interaction when an OCI client attempts to pull an image from an authenticated private registry for the very first time.</strong></summary>
-
-**Answer:**
+<details><summary>1. Walk through the exact HTTP interaction when an OCI client attempts to pull an image from an authenticated private registry for the very first time.</summary>
 
 1. The client sends an unauthenticated `GET /v2/my-repo/my-app/manifests/v1.0.0` with an `Accept` header containing accepted manifest media types.
 2. The registry rejects the request with `401 Unauthorized` and returns a `Www-Authenticate` header specifying the auth server location and required scope: `Bearer realm="https://auth.infra/token",service="registry.infra",scope="repository:my-repo/my-app:pull"`
@@ -395,79 +392,56 @@ spec:
 5. The client re-executes the original manifest request, attaching `Authorization: Bearer <jwt>`.
 6. The registry verifies the JWT signature using the auth server's public key, checks the scope claim, and returns `200 OK` with the manifest body and its `Docker-Content-Digest` header.
 7. The client parses the manifest's layer descriptors and initiates `GET /v2/my-repo/my-app/blobs/<layer-digest>` requests using the same bearer token.
-
 </details>
 
-<details>
-<summary><strong>Q2. How does the OCI Distribution Specification prevent a client from uploading corrupted or truncated filesystem layers during a chunked upload?</strong></summary>
+<details><summary>2. How does the OCI Distribution Specification prevent a client from uploading corrupted or truncated filesystem layers during a chunked upload?</summary>
 
-**Answer:** Data integrity is enforced at three distinct layers:
+Data integrity is enforced at three distinct layers:
 
 1. **Range Validation**: During intermediate `PATCH` requests, the client MUST provide the `Content-Range: <start>-<end>` header. The registry asserts that `<start>` matches its internal current byte offset exactly. If there is a gap or overlap, the registry rejects the chunk with `416 Range Not Satisfiable`.
 2. **Size Enforcement**: The final `PUT` request includes the total expected byte size either in the URL query or via the cumulative length of all committed chunks.
 3. **Cryptographic Commitment**: The final `PUT /v2/<name>/blobs/uploads/<uuid>?digest=<algorithm>:<hash>` forces the registry to compute the cryptographic hash across the concatenated stream of stored chunks. Only if the registry's independently calculated digest strictly matches the client-supplied digest parameter does the registry move the blob into permanent content-addressable storage and return `201 Created`.
-
 </details>
 
-<details>
-<summary><strong>Q3. Why is deleting an image tag via the registry API fundamentally different from freeing disk space in registry storage?</strong></summary>
+<details><summary>3. Why is deleting an image tag via the registry API fundamentally different from freeing disk space in registry storage?</summary>
 
-**Answer:** In the OCI Distribution model, deleting a tag or manifest (`DELETE /v2/<name>/manifests/<reference>`) merely deletes the logical reference or tag pointer within that repository's namespace. The underlying filesystem layers and configuration files are content-addressed blobs stored independently. Because blobs can be shared across multiple manifests, tags, and even repositories (via deduplication), the registry cannot immediately delete the underlying blobs upon manifest deletion without causing data loss for other images. Reclaiming physical storage requires running an offline or online **Garbage Collection (GC)** process. The GC traverses all active manifests, builds a set of reachable blob digests, and marks and sweeps all unreachable blobs from storage.
-
+In the OCI Distribution model, deleting a tag or manifest (`DELETE /v2/<name>/manifests/<reference>`) merely deletes the logical reference or tag pointer within that repository's namespace. The underlying filesystem layers and configuration files are content-addressed blobs stored independently. Because blobs can be shared across multiple manifests, tags, and even repositories (via deduplication), the registry cannot immediately delete the underlying blobs upon manifest deletion without causing data loss for other images. Reclaiming physical storage requires running an offline or online **Garbage Collection (GC)** process. The GC traverses all active manifests, builds a set of reachable blob digests, and marks and sweeps all unreachable blobs from storage.
 </details>
 
-<details>
-<summary><strong>Q4. Explain how Skopeo is able to inspect the labels and environment variables of an image without downloading its 10 GB filesystem layers.</strong></summary>
+<details><summary>4. Explain how Skopeo is able to inspect the labels and environment variables of an image without downloading its 10 GB filesystem layers.</summary>
 
-**Answer:** An image's labels, environment variables, entrypoint, and architecture are stored inside the **image configuration JSON** blob, not within the root filesystem layers. Skopeo exploits the decoupled architecture of the OCI specification:
+An image's labels, environment variables, entrypoint, and architecture are stored inside the **image configuration JSON** blob, not within the root filesystem layers. Skopeo exploits the decoupled architecture of the OCI specification:
 
 1. Skopeo fetches the manifest metadata (`GET /v2/<name>/manifests/<tag>`), which is typically only 2–4 KB.
 2. The manifest contains a `config` descriptor specifying the digest and media type of the configuration object (e.g., `application/vnd.oci.image.config.v1+json`).
 3. Skopeo issues a `GET /v2/<name>/blobs/<config-digest>`, downloading solely this small JSON document (~2–8 KB).
 4. Skopeo parses the configuration JSON to extract `Config.Labels`, `Config.Env`, and other metadata, outputting the result to stdout without ever querying or streaming the layer blobs.
-
 </details>
 
-<details>
-<summary><strong>Q5. What is the OCI v1.1 Referrers API, and how does it solve the problem of attaching supply-chain metadata to an immutable image?</strong></summary>
+<details><summary>5. What is the OCI v1.1 Referrers API, and how does it solve the problem of attaching supply-chain metadata to an immutable image?</summary>
 
-**Answer:** Prior to OCI v1.1, attaching a signature or SBOM required either mutating the image manifest (breaking its immutable digest) or creating tag naming conventions (e.g., `sha256-<digest>.sig`), which polluted the repository tag space and made atomic discovery difficult. OCI v1.1 introduces:
+Prior to OCI v1.1, attaching a signature or SBOM required either mutating the image manifest (breaking its immutable digest) or creating tag naming conventions (e.g., `sha256-<digest>.sig`), which polluted the repository tag space and made atomic discovery difficult. OCI v1.1 introduces:
 
 1. The `subject` field inside the OCI Manifest specification, allowing an artifact manifest to declare a direct parent pointer to an existing target manifest's digest.
 2. The `/v2/<name>/referrers/<digest>` API endpoint. When queried with an image's digest, the registry returns an index of all manifests that have declared that digest as their `subject`. This enables bidirectional graph traversal: downstream tools can discover all signatures, attestations, and SBOMs attached to an image without modifying the target image or scanning external databases.
-
 </details>
 
-<details>
-<summary><strong>Q6. How does a registry pull-through cache operate, and what happens when an upstream image is deleted or modified?</strong></summary>
+<details><summary>6. How does a registry pull-through cache operate, and what happens when an upstream image is deleted or modified?</summary>
 
-**Answer:** A pull-through cache acts as an intercepting proxy between the client and an upstream remote registry (e.g., Docker Hub):
+A pull-through cache acts as an intercepting proxy between the client and an upstream remote registry (e.g., Docker Hub):
 
 1. **Cache Miss**: When a client requests a manifest, the cache proxies the request to the upstream registry, verifies authentication, downloads and caches both the manifest and the underlying blobs locally, and returns them to the client.
 2. **Cache Hit**: Subsequent requests for that digest or tag are served directly from local cache storage, bypassing upstream network transit and rate limits.
 3. **Upstream Changes**: For mutable tags (e.g., `:latest`), the cache sends a conditional HTTP request (`HEAD` or `GET` with `If-None-Match: <etag>`) upstream to check if the manifest digest has changed. If the upstream image is deleted, cache behavior depends on configuration: it can either continue serving the cached artifact (providing build resilience) or return `404 Not Found` if strict upstream synchronization is enforced.
-
 </details>
 
-<details>
-<summary><strong>Q7. What are the security risks associated with enabling unauthenticated cross-repository blob mounting on a multi-tenant registry?</strong></summary>
+<details><summary>7. What are the security risks associated with enabling unauthenticated cross-repository blob mounting on a multi-tenant registry?</summary>
 
-**Answer:** If a registry permits cross-repository blob mounting (`?mount=<digest>&from=<source_repo>`) without validating the caller's read permissions on `source_repo`, it introduces an **information disclosure oracle**:
+If a registry permits cross-repository blob mounting (`?mount=<digest>&from=<source_repo>`) without validating the caller's read permissions on `source_repo`, it introduces an **information disclosure oracle**:
 
 1. An attacker can guess or brute-force candidate digests of proprietary layers (e.g., containing proprietary binaries or confidential configuration files).
 2. The attacker requests a mount of that digest into their own private repository.
 3. If the mount succeeds (`201 Created`), the attacker downloads the blob directly from their own repository, bypassing read restrictions on the victim's repository. To mitigate this, the OCI specification mandates that registries MUST verify that the client possesses authenticated `pull` permissions on the source repository before fulfilling a cross-repository mount request.
-
-</details>
-
-<details>
-<summary><strong>Q8. Why can HTTP/2 multiplexing provide significant performance improvements during image pulls, and what is its bottleneck?</strong></summary>
-
-**Answer:** An OCI image typically consists of multiple independent layer blobs (often 5 to 20 layers). Under HTTP/1.1, clients either pull layers sequentially or open multiple TCP connections (subject to browser/client connection limits and repeated TLS handshakes). With HTTP/2:
-
-- Multiple layer downloads are multiplexed concurrently over a single underlying TCP connection, eliminating connection setup latency and TCP slow-start overhead across streams.
-- The bottleneck shifts from connection establishment to single-connection TCP head-of-line blocking: if a single packet is dropped on a lossy network, the entire TCP window stalls, delaying all multiplexed layer streams simultaneously. Under HTTP/3 (QUIC over UDP), independent QUIC streams eliminate this cross-stream head-of-line blocking entirely.
-
 </details>
 
 ---

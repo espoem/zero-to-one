@@ -329,54 +329,39 @@ The anti-pattern to avoid in interviews and code alike: **copying server data in
 
 ---
 
-## 11. Interview Drill
+## Interview Drill
 
-<details><summary><strong>1. Why can't hooks be called conditionally? Explain with the data structure.</strong></summary>
+<details><summary>1. Why can't hooks be called conditionally? Explain with the data structure.</summary>
 
 Hook state is a singly linked list on the fiber, matched to hook calls only by call order. On update React walks the previous list in lockstep with the new calls; a skipped or extra call shifts every later hook onto the wrong node (or runs off the end: "Rendered more hooks…" / "fewer hooks…"). `use()` is exempt for promise/context reads because it does not rely on a positional node for its value.
 </details>
 
-<details><summary><strong>2. What does <code>setState</code> actually do?</strong></summary>
+<details><summary>2. What does <code>setState</code> actually do?</summary>
 
 It requests a lane for the update (based on the event or `startTransition`), creates an update object, appends it to the hook's circular pending queue, marks `lanes`/`childLanes` up to the root, and schedules the root. If nothing else is pending it computes the next state eagerly and, if `Object.is`-equal to the current state, skips scheduling entirely. The state changes only when the next render processes the queue.
 </details>
 
-<details><summary><strong>3. A transition enqueues <code>n => n + 10</code>, then a click enqueues <code>n => n * 2</code>. Starting from 0, what renders?</strong></summary>
+<details><summary>3. A transition enqueues <code>n => n + 10</code>, then a click enqueues <code>n => n * 2</code>. Starting from 0, what renders?</summary>
 
 The urgent render skips the transition update and applies `*2` to the base 0 → shows 0. The transition render rebases: it replays both in enqueue order → `(0 + 10) * 2 = 20`. Updaters may run more than once, so they must be pure.
 </details>
 
-<details><summary><strong>4. What changed with batching in React 18, and what can break when upgrading?</strong></summary>
+<details><summary>4. What changed with batching in React 18, and what can break when upgrading?</summary>
 
 With `createRoot`, updates are batched everywhere (timeouts, promises, native events), not just in React event handlers. Code that read the DOM right after `setState` in a timeout, relying on a synchronous render, now sees the old DOM. Fix with `flushSync` for that specific case or move the DOM read to a layout effect.
 </details>
 
-<details><summary><strong>5. What is a stale closure in React and how do you fix one?</strong></summary>
+<details><summary>5. What is a stale closure in React and how do you fix one?</summary>
 
 A callback created in render N captures render N's state/props; if it runs later (interval, subscription, async continuation) it uses old values. Fixes by preference: functional updater/dispatch (no need to read state), include the value in dependencies, `useEffectEvent` for non-reactive reads inside effects, or a ref updated in an effect for imperative "latest value" needs.
 </details>
 
-<details><summary><strong>6. Define tearing. Why did it become possible in React 18 and how does <code>useSyncExternalStore</code> prevent it?</strong></summary>
+<details><summary>6. Define tearing. Why did it become possible in React 18 and how does <code>useSyncExternalStore</code> prevent it?</summary>
 
 Tearing: one commit shows the same external source at different versions. Concurrent rendering yields between components, so a mutable store can change mid-render. `useSyncExternalStore` records each snapshot it rendered, re-reads them before committing a concurrent render, and if any changed it discards the render and re-renders synchronously; store-change notifications always schedule a sync update.
 </details>
 
-<details><summary><strong>7. Why must <code>getSnapshot</code> return a cached value?</strong></summary>
+<details><summary>7. Why must <code>getSnapshot</code> return a cached value?</summary>
 
 React compares snapshots with `Object.is` to detect changes. A fresh object on every call looks like a change on every check, causing an endless re-render loop ("Maximum update depth exceeded"). Return an immutable snapshot that changes identity only when the data changes.
-</details>
-
-<details><summary><strong>8. When would you choose <code>useReducer</code> over <code>useState</code>?</strong></summary>
-
-When the next state depends on multiple pieces of current state, when transitions have rules (state machine), when many handlers update the same state, or when you want to test logic without rendering. Benefits: a stable `dispatch`, centralised pure logic, illegal transitions can return the same state (no re-render).
-</details>
-
-<details><summary><strong>9. Why does every consumer of a context re-render even when wrapped in <code>memo</code>?</strong></summary>
-
-Context propagation does not go through props; when the provider's value changes by `Object.is`, React marks every fiber that read that context, regardless of `memo`. If the value is an inline object, its identity changes every provider render. Memoise the value, split rarely- and frequently-changing data into separate contexts, or use an external store with selectors.
-</details>
-
-<details><summary><strong>10. Where should server data live in a React app and why not <code>useState</code> + <code>useEffect</code>?</strong></summary>
-
-In a server-cache layer (TanStack Query/SWR, a framework loader, or Server Components). Copying it into component state duplicates the source of truth, creates fetch races and waterfalls, and re-implements caching, dedupe and invalidation badly. The cache layer exposes it via Suspense or `useSyncExternalStore`-backed hooks.
 </details>

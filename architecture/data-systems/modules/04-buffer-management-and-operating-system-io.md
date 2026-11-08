@@ -234,28 +234,25 @@ graph LR
 
 ---
 
-## 8. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1: What is the "Double Buffering" problem, and why do high-performance database engines bypass the OS page cache using O_DIRECT?</strong></summary>
+<details><summary>1. What is the "Double Buffering" problem, and why do high-performance database engines bypass the OS page cache using O_DIRECT?</summary>
 
-**Answer:** The double buffering problem occurs when a database engine runs on top of standard buffered operating system I/O. The operating system kernel caches 8KB disk blocks in the kernel **Page Cache**, while the database engine simultaneously caches those exact same blocks in its user-space **Buffer Pool**.
+The double buffering problem occurs when a database engine runs on top of standard buffered operating system I/O. The operating system kernel caches 8KB disk blocks in the kernel **Page Cache**, while the database engine simultaneously caches those exact same blocks in its user-space **Buffer Pool**.
 
 This duplicates cached data in RAM, effectively cutting the usable memory capacity in half and forcing premature page evictions. Furthermore, the database engine cannot control when the operating system writes dirty page cache blocks to disk, which risks violating the Write-Ahead Logging (WAL) invariant. Using the `O_DIRECT` flag instructs the OS kernel to bypass the page cache completely, transferring data directly between storage controllers and user-space buffer pool frames via DMA.
 </details>
 
-<details>
-<summary><strong>Q2: Explain the purpose of the "Pin Count" (or reference count) in a buffer frame, and what happens if a page with Pin Count > 0 is selected for eviction.</strong></summary>
+<details><summary>2. Explain the purpose of the "Pin Count" (or reference count) in a buffer frame, and what happens if a page with Pin Count > 0 is selected for eviction.</summary>
 
-**Answer:** The Pin Count tracks the number of concurrent query execution threads currently reading or modifying tuples inside that specific memory frame.
+The Pin Count tracks the number of concurrent query execution threads currently reading or modifying tuples inside that specific memory frame.
 
 A page with $\text{Pin Count} > 0$ **must never be evicted**. If a buffer replacement algorithm (e.g. CLOCK or LRU) examines a frame whose pin count is greater than zero, it skips that frame and continues searching for a victim whose pin count is exactly zero. Evicting a pinned page would corrupt active execution memory, as worker threads would read or write data belonging to the newly loaded page that overwrote the frame.
 </details>
 
-<details>
-<summary><strong>Q3: How does the 2Q replacement policy prevent sequential scan buffer pool thrashing compared to naive LRU?</strong></summary>
+<details><summary>3. How does the 2Q replacement policy prevent sequential scan buffer pool thrashing compared to naive LRU?</summary>
 
-**Answer:** Naive LRU places every newly accessed page at the head of a single LRU list. A sequential scan over a table larger than the buffer pool will push every page into the list, evicting the entire existing hot working set even though the scanned pages will only be read once.
+Naive LRU places every newly accessed page at the head of a single LRU list. A sequential scan over a table larger than the buffer pool will push every page into the list, evicting the entire existing hot working set even though the scanned pages will only be read once.
 
 The **2Q policy** resolves this by splitting memory into two queues:
 
@@ -265,20 +262,18 @@ The **2Q policy** resolves this by splitting memory into two queues:
 When a page is first read, it enters $A1_{\text{in}}$. If it is never accessed again (typical of sequential scans), it simply slides out of $A1_{\text{in}}$ and is evicted without ever touching $Am$. Only if a page receives a _second_ reference while in the queue is it promoted to $Am$. This insulates hot working-set pages in $Am$ from single-pass scan thrashing.
 </details>
 
-<details>
-<summary><strong>Q4: Why was the Linux "fsyncgate" vulnerability so catastrophic for database durability, and what is the proper engineering remedy?</strong></summary>
+<details><summary>4. Why was the Linux "fsyncgate" vulnerability so catastrophic for database durability, and what is the proper engineering remedy?</summary>
 
-**Answer:** During the "fsyncgate" vulnerability, if background kernel writeback failed due to an I/O error, the Linux kernel discarded the dirty state of the page in the page cache and recorded the error code in the file inode.
+During the "fsyncgate" vulnerability, if background kernel writeback failed due to an I/O error, the Linux kernel discarded the dirty state of the page in the page cache and recorded the error code in the file inode.
 
 When the database engine subsequently called `fsync()`, the first call returned `EIO` and **cleared the error bit**. If the database retried `fsync()`, the subsequent call returned **0 (Success)**! The database engine assumed the write had succeeded, when in reality the kernel had dropped the dirty block from memory without persisting it to disk.
 
 The proper engineering remedy is: **a failed `fsync()` must never be retried**. The database engine must immediately trigger a fatal process panic (`PANIC`), terminating the server to force recovery from the sequential Write-Ahead Log upon restart.
 </details>
 
-<details>
-<summary><strong>Q5: Summarize why the CMU CIDR 2022 paper argued against using MMAP in database management systems.</strong></summary>
+<details><summary>5. Summarize why the CMU CIDR 2022 paper argued against using MMAP in database management systems.</summary>
 
-**Answer:** Crotty et al. demonstrated that `mmap` creates four fundamental architectural liabilities:
+Crotty et al. demonstrated that `mmap` creates four fundamental architectural liabilities:
 
 1. **Transactional Safety**: The OS kernel can flush dirty pages to disk at any time under memory pressure, violating the ARIES Steal/Write-Ahead rule and risking disk corruption before WAL records are flushed.
 2. **I/O Stalls**: Page faults trap into the kernel synchronously, blocking the calling thread. In event-driven or coroutine architectures, this halts the entire thread and freezes unrelated concurrent tasks.
@@ -287,10 +282,9 @@ The proper engineering remedy is: **a failed `fsync()` must never be retried**. 
 
 </details>
 
-<details>
-<summary><strong>Q6: How does Linux `io_uring` achieve orders-of-magnitude higher I/O throughput compared to traditional POSIX AIO and synchronous read/write calls?</strong></summary>
+<details><summary>6. How does Linux `io_uring` achieve orders-of-magnitude higher I/O throughput compared to traditional POSIX AIO and synchronous read/write calls?</summary>
 
-**Answer:** Traditional POSIX I/O requires a context switch into the kernel for every single `read()` or `write()` system call. Even POSIX AIO (`io_submit`) incurs system-call overhead per batch and frequently blocks synchronously on filesystem inode locks.
+Traditional POSIX I/O requires a context switch into the kernel for every single `read()` or `write()` system call. Even POSIX AIO (`io_submit`) incurs system-call overhead per batch and frequently blocks synchronously on filesystem inode locks.
 
 `io_uring` replaces system calls with two **lock-free ring buffers** in shared memory:
 

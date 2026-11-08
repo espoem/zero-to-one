@@ -103,11 +103,9 @@ When deploying GitOps at enterprise scale with Argo CD, practitioners frequently
 2. **Resource Tracking Conflicts (v2 to v3 Migration)**: Upgrading clusters from v2.x to v3.x introduces tracking annotation updates. If existing workloads are tracked solely by labels, changing tracking modes without running migration hooks can result in orphaned resources or duplicate reconciliation loops.
 3. **Secret Sprawl in Repositories**: Storing raw Base64-encoded Kubernetes secrets directly in Git violates OpenGitOps immutability and security axioms; operators must enforce Sealed Secrets, External Secrets Operator, or SOPS-encrypted manifests decrypted via sidecar CMPs.
 
-## 7. Interview Drill
+## Interview Drill
 
-<details><summary><strong>Q1. What are the four official OpenGitOps principles established by the CNCF?</strong></summary>
-
-**Answer:**
+<details><summary>1. What are the four official OpenGitOps principles established by the CNCF?</summary>
 
 1. **Declarative**: The desired state of a system must be expressed declaratively.
 2. **Versioned and Immutable**: The desired state must be stored in a version control system that guarantees immutability and auditability.
@@ -115,47 +113,41 @@ When deploying GitOps at enterprise scale with Argo CD, practitioners frequently
 4. **Continuously Reconciled**: Software agents must continuously observe actual system state and attempt to reconcile it with the desired state.
 
 - Ref: [OpenGitOps Specifications](https://opengitops.dev/)
-
 </details>
 
-<details><summary><strong>Q2. How does Argo CD's pull-based model improve cluster security compared to traditional push-based CI/CD pipelines?</strong></summary>
+<details><summary>2. How does Argo CD's pull-based model improve cluster security compared to traditional push-based CI/CD pipelines?</summary>
 
-**Answer:** In a push-based model, external CI systems require persistent, high-privilege cluster-admin credentials stored in external secrets stores. If the CI platform is compromised, attackers gain full cluster access. In Argo CD's pull model, an agent runs inside the cluster and makes outbound connections to the Git repository using read-only credentials, eliminating inbound cluster exposure and restricting blast radius.
+In a push-based model, external CI systems require persistent, high-privilege cluster-admin credentials stored in external secrets stores. If the CI platform is compromised, attackers gain full cluster access. In Argo CD's pull model, an agent runs inside the cluster and makes outbound connections to the Git repository using read-only credentials, eliminating inbound cluster exposure and restricting blast radius.
 
 - Ref: [Module 01 Architecture Comparison](#2-push-vs-pull-cicd-architecture)
-
 </details>
 
-<details><summary><strong>Q3. What is the architectural difference between Argo CD's Repo Server and Flux's controller design?</strong></summary>
+<details><summary>3. What is the architectural difference between Argo CD's Repo Server and Flux's controller design?</summary>
 
-**Answer:** Argo CD centralizes manifest generation (running Helm, Kustomize, and CMPs) inside a dedicated `argocd-repo-server` microservice, communicating via gRPC with the application controller. Flux v2 decentralizes this by embedding manifest generation directly into dedicated, single-purpose controllers (`kustomize-controller`, `helm-controller`) running in-cluster.
+Argo CD centralizes manifest generation (running Helm, Kustomize, and CMPs) inside a dedicated `argocd-repo-server` microservice, communicating via gRPC with the application controller. Flux v2 decentralizes this by embedding manifest generation directly into dedicated, single-purpose controllers (`kustomize-controller`, `helm-controller`) running in-cluster.
 
 - Ref: [Module 01 Architecture Comparison](#3-argo-cd-vs-flux-architecture-comparison)
-
 </details>
 
-<details><summary><strong>Q4. Explain the mathematical formulation of the reconciliation operator in GitOps.</strong></summary>
+<details><summary>4. Explain the mathematical formulation of the reconciliation operator in GitOps.</summary>
 
-**Answer:** Let desired state in Git be $D(t)$ and live cluster state be $L(t)$ within state space $S$. The reconciliation operator $\Delta(D(t), L(t))$ computes corrective actions to minimize the divergence metric $d(D(t), L(t))$ such that $\lim_{t \to \infty} d(D(t), L(t)) = 0$.
+Let desired state in Git be $D(t)$ and live cluster state be $L(t)$ within state space $S$. The reconciliation operator $\Delta(D(t), L(t))$ computes corrective actions to minimize the divergence metric $d(D(t), L(t))$ such that $\lim_{t \to \infty} d(D(t), L(t)) = 0$.
 
 - Ref: [Module 01 Introduction](#1-introduction-and-formal-foundations)
-
 </details>
 
-<details><summary><strong>Q5. Why did Argo CD v3 transition from instance labels to tracking annotations?</strong></summary>
+<details><summary>5. Why did Argo CD v3 transition from instance labels to tracking annotations?</summary>
 
-**Answer:** Instance labels (`argocd.argoproj.io/instance`) were frequently mutated by external tooling, triggered unnecessary Kubernetes watch events, and caused collision issues in multi-tenant environments. Tracking annotations (`argocd.argoproj.io/tracking-id`) provide robust, structured metadata tracking without interfering with user-defined labels.
+Instance labels (`argocd.argoproj.io/instance`) were frequently mutated by external tooling, triggered unnecessary Kubernetes watch events, and caused collision issues in multi-tenant environments. Tracking annotations (`argocd.argoproj.io/tracking-id`) provide robust, structured metadata tracking without interfering with user-defined labels.
 
 - Ref: [Module 01 Version History](#5-version-history-and-then-vs-now)
-
 </details>
 
-<details><summary><strong>Q6. What production risks arise when combining `selfHeal: true` and `prune: true` without guardrails?</strong></summary>
+<details><summary>6. What production risks arise when combining `selfHeal: true` and `prune: true` without guardrails?</summary>
 
-**Answer:** If a developer introduces a syntax error, empties a directory, or removes a resource declaration in Git, the controller interprets the absence as an intent to delete the live resource. With `selfHeal` and `prune` active, production workloads are automatically terminated and purged.
+If a developer introduces a syntax error, empties a directory, or removes a resource declaration in Git, the controller interprets the absence as an intent to delete the live resource. With `selfHeal` and `prune` active, production workloads are automatically terminated and purged.
 
 - Ref: [Module 01 Production Failure Modes](#6-production-failure-modes-and-gotchas)
-
 </details>
 
 ## 8. Proof Map

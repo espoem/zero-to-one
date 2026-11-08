@@ -211,11 +211,9 @@ When two peer devices behind NATs need to establish direct peer-to-peer audio/vi
 
 ---
 
-## 8. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-### Q1: Explain how Direct Server Return (DSR) operates in a Layer 4 load balancer, and why it is vastly more scalable than standard Destination NAT.
-
-<details><summary>Answer</summary>
+<details><summary>1. Explain how Direct Server Return (DSR) operates in a Layer 4 load balancer, and why it is vastly more scalable than standard Destination NAT.</summary>
 
 **Asymmetric Egress Bypass via Layer 2 MAC Rewriting.**
 
@@ -231,9 +229,7 @@ When two peer devices behind NATs need to establish direct peer-to-peer audio/vi
 
 </details>
 
-### Q2: What is an `X-Forwarded-For` spoofing vulnerability, and how should an application server safely extract the real client IP?
-
-<details><summary>Answer</summary>
+<details><summary>2. What is an `X-Forwarded-For` spoofing vulnerability, and how should an application server safely extract the real client IP?</summary>
 
 **Blind Leftmost Header Parsing Vulnerability.**
 
@@ -245,9 +241,7 @@ When two peer devices behind NATs need to establish direct peer-to-peer audio/vi
 
 </details>
 
-### Q3: In HTTP caching (RFC 9111), what is the difference between `no-cache` and `no-store`?
-
-<details><summary>Answer</summary>
+<details><summary>3. In HTTP caching (RFC 9111), what is the difference between `no-cache` and `no-store`?</summary>
 
 **Revalidation Mandate vs. Absolute Non-Persistence.**
 
@@ -257,9 +251,7 @@ When two peer devices behind NATs need to establish direct peer-to-peer audio/vi
 
 </details>
 
-### Q4: How does the Maglev consistent hashing algorithm maintain connection affinity to backend servers without storing connection tracking state in memory?
-
-<details><summary>Answer</summary>
+<details><summary>4. How does the Maglev consistent hashing algorithm maintain connection affinity to backend servers without storing connection tracking state in memory?</summary>
 
 **Deterministic Permutation Hashing Across Prime Tables.**
 
@@ -273,9 +265,7 @@ When two peer devices behind NATs need to establish direct peer-to-peer audio/vi
 
 </details>
 
-### Q5: Why is WebRTC peer-to-peer media streaming impossible between two clients that are both behind Symmetric NATs using only STUN? What protocol is required as a fallback?
-
-<details><summary>Answer</summary>
+<details><summary>5. Why is WebRTC peer-to-peer media streaming impossible between two clients that are both behind Symmetric NATs using only STUN? What protocol is required as a fallback?</summary>
 
 **Dynamic Mapping per Destination Tuple.**
 

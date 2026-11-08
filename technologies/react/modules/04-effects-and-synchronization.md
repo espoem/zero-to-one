@@ -260,49 +260,39 @@ When an [`<Activity mode="hidden">`](https://react.dev/reference/react/Activity)
 
 ---
 
-## 11. Interview Drill
+## Interview Drill
 
-<details><summary><strong>1. <code>useEffect</code> vs <code>useLayoutEffect</code> vs an event handler: how do you choose?</strong></summary>
+<details><summary>1. <code>useEffect</code> vs <code>useLayoutEffect</code> vs an event handler: how do you choose?</summary>
 
 If the code runs because the user did something (submit, click), put it in the event handler. If it synchronises with an external system because of what was rendered, use `useEffect` (after paint, non-blocking). Use `useLayoutEffect` only when you must read layout and correct the DOM before the user sees the frame (positioning a tooltip); it blocks paint and hurts INP.
 </details>
 
-<details><summary><strong>2. In what order do effects of a parent and a child run on mount and on unmount?</strong></summary>
+<details><summary>2. In what order do effects of a parent and a child run on mount and on unmount?</summary>
 
 Mount: render parent→child; insertion, layout and passive effects each child→parent (completion order). Unmount: React walks the deleted subtree top-down, running insertion/layout cleanups (parent then child) in the mutation phase, then passive cleanups parent then child.
 </details>
 
-<details><summary><strong>3. Why does my effect run twice in development? Should I prevent it?</strong></summary>
+<details><summary>3. Why does my effect run twice in development? Should I prevent it?</summary>
 
 Strict Mode mounts, unmounts and remounts to check that setup→cleanup→setup is equivalent to one setup. Don't prevent it with a ref flag; implement the cleanup so the effect is idempotent. Since 19.3 this also happens on hydration.
 </details>
 
-<details><summary><strong>4. What problem does <code>useEffectEvent</code> solve, and what is it not for?</strong></summary>
+<details><summary>4. What problem does <code>useEffectEvent</code> solve, and what is it not for?</summary>
 
 It lets an effect read the latest props/state inside a callback without making them dependencies — for logic that is an _event_ fired from an effect (e.g. show a toast with the current theme when connected). It is not for removing genuinely reactive values (like the URL to fetch) from deps; that reintroduces stale data. It cannot be called during render or passed to other components.
 </details>
 
-<details><summary><strong>5. What changed about ref callbacks in React 19?</strong></summary>
+<details><summary>5. What changed about ref callbacks in React 19?</summary>
 
 They can return a cleanup function, which React calls on detach instead of calling the ref with `null`. Inline ref callbacks still detach/attach each render because their identity changes. String refs and `element.ref` were removed; function components receive `ref` as a prop.
 </details>
 
-<details><summary><strong>6. How do you prevent race conditions when fetching in an effect?</strong></summary>
+<details><summary>6. How do you prevent race conditions when fetching in an effect?</summary>
 
 Use a cleanup-scoped `ignore` flag so responses for superseded requests are dropped, and abort the request with `AbortController` in the cleanup. Better: move fetching to a framework loader, Server Components or a server-cache library that handles races, caching and dedupe.
 </details>
 
-<details><summary><strong>7. Name four situations where you should not use an effect.</strong></summary>
+<details><summary>7. Name four situations where you should not use an effect.</summary>
 
 Deriving data from props/state (compute in render), resetting state on prop change (use a key), handling user events (use the handler), notifying a parent of a state change (do it in the handler/lift state), chaining state updates, and subscribing to external stores (use `useSyncExternalStore`).
-</details>
-
-<details><summary><strong>8. Why are passive effects flushed before the next click is processed?</strong></summary>
-
-So that subscriptions and synchronisation set up for the frame the user saw are in place before the user's next interaction is handled; otherwise an event could see a world where the previous commit's effects never ran. React flushes pending passive effects before processing a new discrete update.
-</details>
-
-<details><summary><strong>9. What happens to effects inside <code>&lt;Activity mode="hidden"&gt;</code>?</strong></summary>
-
-Their cleanups run when the subtree is hidden (state and DOM are preserved), and their setups run again when it becomes visible. Correct, idempotent effects need no changes.
 </details>

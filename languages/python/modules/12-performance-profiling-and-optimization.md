@@ -139,48 +139,41 @@ When an algorithm cannot be vectorized cleanly (such as custom graph traversals,
 
 ---
 
-## 5. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-<details>
-<summary>1. Why do statistical sampling profilers like `py-spy` introduce less distortion than `cProfile`?</summary>
+<details><summary>1. Why do statistical sampling profilers like `py-spy` introduce less distortion than `cProfile`?</summary>
 
-**Answer:** `cProfile` is a deterministic tracing profiler that hooks every function call and return event via CPython's internal profiling API (`sys.setprofile()`). Executing hook logic on every function call adds fixed runtime overhead per call. In codebases with many small, fast function calls, this fixed overhead accumulates disproportionately on leaf functions, distorting the profile and causing small functions to appear as false bottlenecks (the Observer Effect). `py-spy` is an out-of-process sampling profiler. It operates without modifying or hooking the target Python process: it inspects the CPython process's memory space and call stack at fixed periodic intervals (e.g. 100 Hz). The target program executes at 98–99% of its native speed, yielding realistic flamegraphs that accurately reflect production wall-clock latency.
+`cProfile` is a deterministic tracing profiler that hooks every function call and return event via CPython's internal profiling API (`sys.setprofile()`). Executing hook logic on every function call adds fixed runtime overhead per call. In codebases with many small, fast function calls, this fixed overhead accumulates disproportionately on leaf functions, distorting the profile and causing small functions to appear as false bottlenecks (the Observer Effect). `py-spy` is an out-of-process sampling profiler. It operates without modifying or hooking the target Python process: it inspects the CPython process's memory space and call stack at fixed periodic intervals (e.g. 100 Hz). The target program executes at 98–99% of its native speed, yielding realistic flamegraphs that accurately reflect production wall-clock latency.
 </details>
 
-<details>
-<summary>2. How does local variable caching optimize performance in CPython loops?</summary>
+<details><summary>2. How does local variable caching optimize performance in CPython loops?</summary>
 
-**Answer:** In CPython, global functions and module attributes (e.g. `math.sin` or `len`) require dynamic dictionary lookups:
+In CPython, global functions and module attributes (e.g. `math.sin` or `len`) require dynamic dictionary lookups:
 
 1. `LOAD_GLOBAL` searches the module's `__dict__` hash table, falling back to `builtins.__dict__` if not found.
 2. If accessing an attribute (like `math.sin`), `LOAD_ATTR` inspects the module object's dictionary. In contrast, local variables inside a function are allocated slots in a fixed-size C array on the evaluation frame (`f_localsplus`) at compile time. Local variable access emits `LOAD_FAST`, which performs an $O(1)$ direct array index lookup without hashing, string comparisons, or dictionary probes. Caching a global reference in a local variable before a loop replaces millions of dynamic hash table searches with single-cycle array lookups.
 
 </details>
 
-<details>
-<summary>3. Why is `"".join(list_of_strings)` asymptotically superior to repeated `+=` string concatenation?</summary>
+<details><summary>3. Why is `"".join(list_of_strings)` asymptotically superior to repeated `+=` string concatenation?</summary>
 
-**Answer:** Python strings are immutable sequences of bytes. When concatenating strings using `+=` inside a loop of $N$ chunks of length $K$, the string grows incrementally: length $K, 2K, 3K, \dots, NK$. At each step, Python must allocate a new heap buffer and copy all previously accumulated bytes. The total work performed is: $$\sum_{i=1}^N i \cdot K = K \cdot \frac{N(N + 1)}{2} = O(K \cdot N^2)$$ This quadratic time and memory copying degrades severely as $N$ grows. In contrast, `"".join(chunks)` makes two linear passes:
+Python strings are immutable sequences of bytes. When concatenating strings using `+=` inside a loop of $N$ chunks of length $K$, the string grows incrementally: length $K, 2K, 3K, \dots, NK$. At each step, Python must allocate a new heap buffer and copy all previously accumulated bytes. The total work performed is: $$\sum_{i=1}^N i \cdot K = K \cdot \frac{N(N + 1)}{2} = O(K \cdot N^2)$$ This quadratic time and memory copying degrades severely as $N$ grows. In contrast, `"".join(chunks)` makes two linear passes:
 
 1. Pass 1: Sums the lengths of all strings in the collection to compute the exact total buffer size $N \cdot K$.
 2. Pass 2: Allocates a single heap buffer of that exact size and copies all chunks directly via C-level `memcpy`. Total work is $O(K \cdot N)$ (strictly linear time), utilizing memory with maximal cache efficiency.
 
 </details>
 
-<details>
-<summary>4. What is the difference between `tottime` and `cumtime` in `cProfile` output?</summary>
-
-**Answer:**
+<details><summary>4. What is the difference between `tottime` and `cumtime` in `cProfile` output?</summary>
 
 - `tottime` (Total Time): The aggregate execution time spent strictly within that specific function body, excluding all time spent executing any sub-functions or child calls made from within it. Functions with high `tottime` represent internal CPU bottlenecks (e.g. complex math, heavy nested loops, compression).
 - `cumtime` (Cumulative Time): The total execution time spent in that function _including_ all sub-functions and downstream calls made by it. A high `cumtime` function is often an orchestrator (like an HTTP handler or controller) whose work consists of calling out to other services, databases, or algorithms.
 
 </details>
 
-<details>
-<summary>5. When should an engineering team choose to write a native C/Rust extension instead of optimizing Python code?</summary>
+<details><summary>5. When should an engineering team choose to write a native C/Rust extension instead of optimizing Python code?</summary>
 
-**Answer:** A native extension (e.g. via PyO3 in Rust) should be chosen only when:
+A native extension (e.g. via PyO3 in Rust) should be chosen only when:
 
 1. **Profiling Evidence**: Profiling demonstrates that a CPU-bound bottleneck accounts for a major portion of overall system latency and cannot be eliminated via algorithmic improvements.
 2. **Non-Vectorizable Logic**: The computation cannot be expressed efficiently as bulk matrix or columnar vector operations in NumPy or Polars (e.g. pointer-heavy graph algorithms, custom binary protocol parsers, state machines).

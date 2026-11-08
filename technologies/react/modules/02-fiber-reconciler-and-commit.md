@@ -414,49 +414,39 @@ Run: `npm test -- examples/02-fiber`.
 
 ---
 
-## 10. Interview Drill
+## Interview Drill
 
-<details><summary><strong>1. What problem did Fiber solve that the stack reconciler could not?</strong></summary>
+<details><summary>1. What problem did Fiber solve that the stack reconciler could not?</summary>
 
 The stack reconciler kept traversal state on the JS call stack, so a render could not pause, yield to input, or be abandoned for higher-priority work. Fiber reifies each frame as a heap object linked by `child`/`sibling`/`return`, so the walk is a loop whose entire state is one pointer (`workInProgress`). That enables time slicing, priorities (lanes), Suspense retries, and concurrent rendering.
 </details>
 
-<details><summary><strong>2. Explain double buffering in React. What is <code>alternate</code>?</strong></summary>
+<details><summary>2. Explain double buffering in React. What is <code>alternate</code>?</summary>
 
 Each fiber can have a counterpart in the other tree: the current tree (on screen, `root.current`) and the work-in-progress tree. `alternate` links them. Rendering mutates only WIP fibers, recycling `current.alternate` objects; commit swaps `root.current = finishedWork`. Benefits: abandoned renders leave the screen consistent, steady-state updates allocate little, and the visible switch is atomic.
 </details>
 
-<details><summary><strong>3. Why is React's diff O(n) instead of the O(n³) tree edit distance, and what does it give up?</strong></summary>
+<details><summary>3. Why is React's diff O(n) instead of the O(n³) tree edit distance, and what does it give up?</summary>
 
 It assumes different element types produce different trees (no cross-type subtree diffing) and uses keys to match siblings. It gives up minimality: a type change discards a subtree that may have been reusable, and list moves are not minimal (greedy `lastPlacedIndex`, not LIS). In exchange each update is linear and predictable.
 </details>
 
-<details><summary><strong>4. Walk through what happens when a keyed list <code>[a,b,c,d,e]</code> becomes <code>[e,a,b,c,d]</code>.</strong></summary>
+<details><summary>4. Walk through what happens when a keyed list <code>[a,b,c,d,e]</code> becomes <code>[e,a,b,c,d]</code>.</summary>
 
 Pass 1: `a ≠ e`, so the prefix is empty. Pass 2: old indices mapped by key. `e` has old index 4 ≥ lastPlacedIndex 0 → stays, lastPlacedIndex = 4. `a` (0), `b` (1), `c` (2), `d` (3) are all < 4 → each is marked as a move. Commit performs 4 DOM placements although moving `e` alone would suffice. Moving the first item to the end costs only 1.
 </details>
 
-<details><summary><strong>5. When exactly does React skip rendering a component?</strong></summary>
+<details><summary>5. When exactly does React skip rendering a component?</summary>
 
 In `beginWork`, if the props object is referentially the same, legacy context is unchanged, and the fiber has no pending update in the render lanes, it bails out; if `childLanes` also has no overlap, the whole subtree is skipped. `memo` adds a shallow props comparison; `setState` with an `Object.is`-equal value bails out (possibly after one confirming render); context changes force consumers to render even under `memo`.
 </details>
 
-<details><summary><strong>6. Why does the commit phase not yield, while the render phase can?</strong></summary>
+<details><summary>6. Why does the commit phase not yield, while the render phase can?</summary>
 
 Render is pure and private (WIP tree), so it can be paused or discarded. Commit mutates the host and runs effects that observe it; yielding mid-commit would show a partially updated UI and let user events observe inconsistent DOM. So commit is synchronous; only passive effects are deferred to a later task.
 </details>
 
-<details><summary><strong>7. In what order do layout effects run for a parent and its child, and why?</strong></summary>
+<details><summary>7. In what order do layout effects run for a parent and its child, and why?</summary>
 
 Child first. The commit traverses depth-first and fires layout effects on completion, i.e. on the way up, so a parent's layout effect can rely on its children's DOM and refs being ready. Cleanups during updates run in the mutation phase before any new layout setup.
-</details>
-
-<details><summary><strong>8. What replaced the effect list in React 18 and why should you care?</strong></summary>
-
-`subtreeFlags` bubbled during `completeWork`; commit walks the tree and skips subtrees whose `subtreeFlags` are empty. It made hiding/showing subtrees (Suspense fallbacks, Offscreen/Activity) expressible. You care mainly to recognise outdated explanations.
-</details>
-
-<details><summary><strong>9. A list row contains an embedded <code>&lt;iframe&gt;</code> player. After "move to top" it reloads. Why?</strong></summary>
-
-The row was moved in the DOM (`insertBefore`), which is a removal followed by an insertion; browsers reload a re-inserted iframe (and pause a re-inserted media element). With React's heuristic, moving an item to the top of a keyed list can even move _every other_ row. Avoid physical moves (render in stable order and position with CSS) or accept the reset.
 </details>

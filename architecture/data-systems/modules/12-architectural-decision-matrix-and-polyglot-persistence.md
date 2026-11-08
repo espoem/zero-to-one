@@ -215,12 +215,9 @@ graph TD
 
 ---
 
-## 7. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1: Contrast OLTP and OLAP workloads across access patterns, transaction requirements, and physical storage engine layout.</strong></summary>
-
-**Answer:**
+<details><summary>1. Contrast OLTP and OLAP workloads across access patterns, transaction requirements, and physical storage engine layout.</summary>
 
 - **OLTP (Online Transaction Processing)**:
   - _Access Patterns_: High concurrency (thousands of QPS); operations read or mutate a tiny handful of rows by primary key or indexed foreign key.
@@ -233,10 +230,9 @@ graph TD
 
 </details>
 
-<details>
-<summary><strong>Q2: Explain why application-level "Dual Writes" guarantee data corruption in polyglot persistence architectures, and describe the production remedy.</strong></summary>
+<details><summary>2. Explain why application-level "Dual Writes" guarantee data corruption in polyglot persistence architectures, and describe the production remedy.</summary>
 
-**Answer:** Application-level dual writes occur when application endpoint code writes to a primary database and subsequently issues a network call to update a secondary system (e.g. `await db.insert()` followed by `await elasticsearch.index()`).
+Application-level dual writes occur when application endpoint code writes to a primary database and subsequently issues a network call to update a secondary system (e.g. `await db.insert()` followed by `await elasticsearch.index()`).
 
 This guarantees corruption because the two systems lack distributed two-phase commit:
 
@@ -251,10 +247,9 @@ The production remedy is **CDC-Driven Synchronization**:
 
 </details>
 
-<details>
-<summary><strong>Q3: How does the PACELC theorem expand upon the classical CAP theorem?</strong></summary>
+<details><summary>3. How does the PACELC theorem expand upon the classical CAP theorem?</summary>
 
-**Answer:** The CAP theorem is binary and considers system behavior _only during active network partitions_ ($P$): a system must choose between Availability ($A$) and Consistency ($C$). However, in well-engineered cloud networks, network partitions are rare; systems spend $99.99\%$ of their operational lifetime running normally.
+The CAP theorem is binary and considers system behavior _only during active network partitions_ ($P$): a system must choose between Availability ($A$) and Consistency ($C$). However, in well-engineered cloud networks, network partitions are rare; systems spend $99.99\%$ of their operational lifetime running normally.
 
 Daniel Abadi's **PACELC theorem** expands CAP by addressing normal operation:
 
@@ -267,10 +262,9 @@ PACELC states that even when the network is healthy, a distributed database must
 
 </details>
 
-<details>
-<summary><strong>Q4: Why should software engineering teams default to PostgreSQL before adopting specialized NoSQL or document databases?</strong></summary>
+<details><summary>4. Why should software engineering teams default to PostgreSQL before adopting specialized NoSQL or document databases?</summary>
 
-**Answer:** Modern PostgreSQL is a **converged multi-model database engine**. It eliminates the operational complexity of managing multiple heterogeneous databases during early-to-mid stage architecture:
+Modern PostgreSQL is a **converged multi-model database engine**. It eliminates the operational complexity of managing multiple heterogeneous databases during early-to-mid stage architecture:
 
 1. **Relational & ACID Core**: Provides unbreakable referential integrity, schema validation, and serializable transactions.
 2. **Semi-Structured Document Support**: Native binary `JSONB` with indexable jsonpath expressions and GIN indexes provides document-store flexibility without sacrificing relational joins.
@@ -280,10 +274,9 @@ PACELC states that even when the network is healthy, a distributed database must
 Defaulting to PostgreSQL avoids the massive engineering overhead of maintaining cross-database CDC pipelines, dual-write consistency, and heterogeneous deployment infrastructure until measured performance bottlenecks demand specialized engines.
 </details>
 
-<details>
-<summary><strong>Q5: What is DuckDB, and why has it emerged as the leading embedded analytical storage engine?</strong></summary>
+<details><summary>5. What is DuckDB, and why has it emerged as the leading embedded analytical storage engine?</summary>
 
-**Answer:** DuckDB is an in-process, columnar analytical SQL database management system—often termed the **"SQLite for Analytics"**.
+DuckDB is an in-process, columnar analytical SQL database management system—often termed the **"SQLite for Analytics"**.
 
 It has emerged as the industry standard for analytical client workloads because:
 
@@ -293,10 +286,9 @@ It has emerged as the industry standard for analytical client workloads because:
 
 </details>
 
-<details>
-<summary><strong>Q6: Under what conditions does an architect require a true distributed SQL database (such as Google Cloud Spanner or CockroachDB) over a single-node PostgreSQL primary with read replicas?</strong></summary>
+<details><summary>6. Under what conditions does an architect require a true distributed SQL database (such as Google Cloud Spanner or CockroachDB) over a single-node PostgreSQL primary with read replicas?</summary>
 
-**Answer:** A single-node primary with read replicas can comfortably handle $99\%$ of web workloads (often scaling to $50,000+$ write IOPS and hundreds of thousands of read QPS).
+A single-node primary with read replicas can comfortably handle $99\%$ of web workloads (often scaling to $50,000+$ write IOPS and hundreds of thousands of read QPS).
 
 An architect requires distributed SQL only when:
 

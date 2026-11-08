@@ -188,12 +188,9 @@ sequenceDiagram
 
 ---
 
-## 7. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1: Contrast Protocol Buffers and Apache Avro in terms of wire overhead and schema dependency during deserialization.</strong></summary>
-
-**Answer:**
+<details><summary>1. Contrast Protocol Buffers and Apache Avro in terms of wire overhead and schema dependency during deserialization.</summary>
 
 - **Protocol Buffers**:
   - _Wire Format_: Uses **tagged binary encoding**. Each field is prefixed with a tag header combining the field number and wire type. Field names are omitted, but field numbers are transmitted with every attribute.
@@ -204,10 +201,9 @@ sequenceDiagram
 
 </details>
 
-<details>
-<summary><strong>Q2: How does ZigZag encoding prevent small negative integers from consuming 10 bytes under variable-length quantity (Varint) encoding?</strong></summary>
+<details><summary>2. How does ZigZag encoding prevent small negative integers from consuming 10 bytes under variable-length quantity (Varint) encoding?</summary>
 
-**Answer:** In standard two's complement binary representation, negative integers have their high-order bits set to $1$ (e.g., `-1` is `0xFFFFFFFFFFFFFFFF` in 64-bit). Under standard Varint encoding, the continuation bit (MSB) must be set for every 7-bit chunk that contains non-zero bits, causing `-1` to consume a full 10 bytes of space.
+In standard two's complement binary representation, negative integers have their high-order bits set to $1$ (e.g., `-1` is `0xFFFFFFFFFFFFFFFF` in 64-bit). Under standard Varint encoding, the continuation bit (MSB) must be set for every 7-bit chunk that contains non-zero bits, causing `-1` to consume a full 10 bytes of space.
 
 ZigZag encoding solves this by mathematically interleaving positive and negative numbers into unsigned values:
 
@@ -221,10 +217,7 @@ $$\text{ZigZag}(n) = (n \ll 1) \oplus (n \gg 63)$$
 A small negative number like `-1` maps to the tiny unsigned integer `1`, which encodes in a **single Varint byte** (`00000001`), completely eliminating the 10-byte penalty for signed negative values.
 </details>
 
-<details>
-<summary><strong>Q3: Explain the difference between Backward Compatibility and Forward Compatibility in schema evolution.</strong></summary>
-
-**Answer:**
+<details><summary>3. Explain the difference between Backward Compatibility and Forward Compatibility in schema evolution.</summary>
 
 - **Backward Compatibility**: A newer code version (reading with a new schema) can successfully read and deserialize data produced by an older code version (written with an old schema).
   - _Rule_: Any newly added field must have a default value or be optional; otherwise, the new code will fail when reading historical records where the field is missing.
@@ -233,10 +226,9 @@ A small negative number like `-1` maps to the tiny unsigned integer `1`, which e
 
 </details>
 
-<details>
-<summary><strong>Q4: Why does adding a required field without a default value break backward compatibility?</strong></summary>
+<details><summary>4. Why does adding a required field without a default value break backward compatibility?</summary>
 
-**Answer:** If a service updates its schema to add a new field marked as `required` with no default value:
+If a service updates its schema to add a new field marked as `required` with no default value:
 
 1. When the new service reads historical data stored in the database or messages produced by older services, the payload will not contain this new field.
 2. Because the field is declared `required` and has no default value, the deserialization engine cannot populate the field.
@@ -245,10 +237,9 @@ A small negative number like `-1` maps to the tiny unsigned integer `1`, which e
 Therefore, adding a required field with no default is a **breaking backward-incompatible change**.
 </details>
 
-<details>
-<summary><strong>Q5: What is the purpose of Confluent Schema Registry in Kafka architectures, and what is the structure of its 5-byte message prefix?</strong></summary>
+<details><summary>5. What is the purpose of Confluent Schema Registry in Kafka architectures, and what is the structure of its 5-byte message prefix?</summary>
 
-**Answer:** Sending full JSON or Avro schemas with every message would bloat small event payloads by $10\times$ to $50\times$.
+Sending full JSON or Avro schemas with every message would bloat small event payloads by $10\times$ to $50\times$.
 
 The Schema Registry centralizes schema storage. When producing, the serializer registers the schema, retrieves a unique 32-bit Schema ID, and prepends a **5-byte header** to the payload:
 
@@ -259,10 +250,9 @@ The Schema Registry centralizes schema storage. When producing, the serializer r
 The consumer inspects the 4-byte ID, queries the Schema Registry once to retrieve and cache the schema, and subsequently decodes all messages using that cached schema. This combines extreme binary compaction with strict centralized schema governance.
 </details>
 
-<details>
-<summary><strong>Q6: Why must a developer never delete a field tag in Protocol Buffers without marking it as `reserved`?</strong></summary>
+<details><summary>6. Why must a developer never delete a field tag in Protocol Buffers without marking it as `reserved`?</summary>
 
-**Answer:** In Protocol Buffers, data fields are identified on the wire strictly by their numeric **Field Tag (Field Number)**, never by their string name.
+In Protocol Buffers, data fields are identified on the wire strictly by their numeric **Field Tag (Field Number)**, never by their string name.
 
 If a developer deletes `optional string old_token = 5;` from a `.proto` file without reserving tag 5:
 

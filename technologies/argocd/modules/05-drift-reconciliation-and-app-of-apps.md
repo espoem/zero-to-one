@@ -116,54 +116,48 @@ function scheduleNextReconciliation(app: Application): void {
 2. **Mutating Webhook Infinite Sync Fights**: If an admission controller injects labels or environment variables that are not ignored in `ignoreDifferences`, self-healing triggers an endless loop of corrective syncs.
 3. **App-of-Apps Circular Dependencies**: In complex umbrella App-of-Apps hierarchies, misconfigured sync waves can cause child applications to be deleted and recreated during parent synchronization passes, causing production outages.
 
-## 6. Interview Drill
+## Interview Drill
 
-<details><summary><strong>Q1. How does polling jitter prevent thundering herd problems in large Argo CD deployments?</strong></summary>
+<details><summary>1. How does polling jitter prevent thundering herd problems in large Argo CD deployments?</summary>
 
-**Answer:** Polling jitter adds a random time offset ($J$) to the base reconciliation interval ($T_{base}$) for each application. This distributes git checkouts and api calls evenly over time, preventing thousands of applications from querying Git repositories simultaneously.
+Polling jitter adds a random time offset ($J$) to the base reconciliation interval ($T_{base}$) for each application. This distributes git checkouts and api calls evenly over time, preventing thousands of applications from querying Git repositories simultaneously.
 
 - Ref: [Module 05 Introduction](#1-introduction-and-drift-detection-mechanics)
-
 </details>
 
-<details><summary><strong>Q2. What role do Kubernetes finalizers play when deleting an Argo CD Application resource?</strong></summary>
+<details><summary>2. What role do Kubernetes finalizers play when deleting an Argo CD Application resource?</summary>
 
-**Answer:** Argo CD attaches the `resources-finalizer.argocd.argoproj.io` finalizer to Application resources. When an Application is deleted, the finalizer blocks object removal until all managed Kubernetes workloads are successfully pruned from the cluster, preventing accidental resource abandonment.
+Argo CD attaches the `resources-finalizer.argocd.argoproj.io` finalizer to Application resources. When an Application is deleted, the finalizer blocks object removal until all managed Kubernetes workloads are successfully pruned from the cluster, preventing accidental resource abandonment.
 
 - Ref: [Module 05 Deep Dive](#2-deep-dive-into-reconciliation-patterns)
-
 </details>
 
-<details><summary><strong>Q3. Why do mutating admission webhooks cause perpetual out-of-sync states in Argo CD?</strong></summary>
+<details><summary>3. Why do mutating admission webhooks cause perpetual out-of-sync states in Argo CD?</summary>
 
-**Answer:** Mutating webhooks modify resource specifications during admission (e.g., injecting Istio sidecars or default environment variables). The live cluster state (`L(t)`) then includes fields absent from the desired Git manifest (`D(t)`), creating a permanent diff.
+Mutating webhooks modify resource specifications during admission (e.g., injecting Istio sidecars or default environment variables). The live cluster state (`L(t)`) then includes fields absent from the desired Git manifest (`D(t)`), creating a permanent diff.
 
 - Ref: [Module 05 Production Failure Modes](#5-production-failure-modes-and-gotchas)
-
 </details>
 
-<details><summary><strong>Q4. What are the operational limitations of the traditional App-of-Apps pattern?</strong></summary>
+<details><summary>4. What are the operational limitations of the traditional App-of-Apps pattern?</summary>
 
-**Answer:** The App-of-Apps pattern relies on nested Application CRs managed by a parent application. It suffers from complex sync wave ordering issues, difficult multi-cluster targeting, and lack of parameterization across different environments, which ApplicationSets were designed to solve.
+The App-of-Apps pattern relies on nested Application CRs managed by a parent application. It suffers from complex sync wave ordering issues, difficult multi-cluster targeting, and lack of parameterization across different environments, which ApplicationSets were designed to solve.
 
 - Ref: [Module 05 Version History](#4-version-history-and-then-vs-now)
-
 </details>
 
-<details><summary><strong>Q5. How do repository webhooks optimize Argo CD drift detection compared to scheduled polling?</strong></summary>
+<details><summary>5. How do repository webhooks optimize Argo CD drift detection compared to scheduled polling?</summary>
 
-**Answer:** Webhooks push instant notification payloads from Git providers to Argo CD's API server upon code pushes. This triggers an immediate application refresh, bypassing the 3-minute polling delay and providing near-instantaneous deployment feedback.
+Webhooks push instant notification payloads from Git providers to Argo CD's API server upon code pushes. This triggers an immediate application refresh, bypassing the 3-minute polling delay and providing near-instantaneous deployment feedback.
 
 - Ref: [Module 05 Deep Dive](#2-deep-dive-into-reconciliation-patterns)
-
 </details>
 
-<details><summary><strong>Q6. What happens if an operator manually removes the Argo CD finalizer before deleting an Application?</strong></summary>
+<details><summary>6. What happens if an operator manually removes the Argo CD finalizer before deleting an Application?</summary>
 
-**Answer:** Removing the finalizer allows the Kubernetes API server to delete the Application resource immediately without invoking Argo CD's cleanup routines. All deployed Kubernetes workloads remain running in the cluster but become orphaned and unmanaged.
+Removing the finalizer allows the Kubernetes API server to delete the Application resource immediately without invoking Argo CD's cleanup routines. All deployed Kubernetes workloads remain running in the cluster but become orphaned and unmanaged.
 
 - Ref: [Module 05 Deep Dive](#2-deep-dive-into-reconciliation-patterns)
-
 </details>
 
 ## 7. Proof Map

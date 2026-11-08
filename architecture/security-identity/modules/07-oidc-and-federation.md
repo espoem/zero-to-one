@@ -224,16 +224,14 @@ This provides non-repudiation and complete auditability: Service B knows that Us
 
 ---
 
-## 9. Interview Drill: OIDC & Identity Federation
+## Interview Drill
 
-<details>
-<summary>1. A developer builds a Single Page Application and validates the user's identity by fetching the user's profile from `/userinfo` using the OAuth access token. Why is this technically NOT an OIDC authentication proof?</summary>
+<details><summary>1. A developer builds a Single Page Application and validates the user's identity by fetching the user's profile from `/userinfo` using the OAuth access token. Why is this technically NOT an OIDC authentication proof?</summary>
 
 An OAuth access token is an authorization credential minted for the Resource Server; it does not contain cryptographic assertions designed for the client application. Relying solely on `/userinfo` creates an identity injection vulnerability: an attacker who captures an access token minted for a _different application_ (under the same identity provider) can pass that token to the vulnerable SPA. The SPA calls `/userinfo`, receives the victim's profile, and logs the attacker in as the victim. OIDC authentication requires the client to receive and cryptographically validate an **ID Token** (JWT). The ID Token explicitly includes the client's unique identifier in its **`aud` (Audience)** claim, proving that the authentication assertion was minted specifically and exclusively for that client application.
 </details>
 
-<details>
-<summary>2. Explain how the "nOAuth" vulnerability in multi-tenant identity providers leads to account takeover, and how developers prevent it.</summary>
+<details><summary>2. Explain how the "nOAuth" vulnerability in multi-tenant identity providers leads to account takeover, and how developers prevent it.</summary>
 
 In "nOAuth", an attacker registers an unverified email address (e.g. `victim@company.com`) on a multi-tenant cloud IdP where they control a tenant. The attacker initiates SSO login to a vulnerable SaaS application. The SaaS application receives the ID token, reads `email: "victim@company.com"`, and automatically links the federated login to the existing corporate user account based on the email string match, without checking the `email_verified` claim. To prevent this:
 
@@ -243,14 +241,12 @@ In "nOAuth", an attacker registers an unverified email address (e.g. `victim@com
 
 </details>
 
-<details>
-<summary>3. Why is Back-Channel Logout vastly more reliable than Front-Channel Logout in modern web browsers?</summary>
+<details><summary>3. Why is Back-Channel Logout vastly more reliable than Front-Channel Logout in modern web browsers?</summary>
 
 Front-Channel Logout relies on the user's browser rendering hidden `<iframe>` tags pointing to each application's logout URL. Modern browsers (Safari ITP, Firefox Enhanced Tracking Protection, Chrome) strictly partition or block third-party cookies inside embedded iframes by default. As a result, the logout iframes execute without session cookies, failing to clear the user's active session. Furthermore, if the user closes their laptop or terminates the browser before the iframes finish loading, remaining sessions stay active. Back-Channel Logout executes direct server-to-server HTTP POST requests between the IdP and the application backends using cryptographically signed Logout Tokens, guaranteeing immediate and complete session termination completely independent of browser state.
 </details>
 
-<details>
-<summary>4. What is the mathematical calculation for the `at_hash` claim in an OIDC ID token, and what vulnerability does it prevent?</summary>
+<details><summary>4. What is the mathematical calculation for the `at_hash` claim in an OIDC ID token, and what vulnerability does it prevent?</summary>
 
 The `at_hash` provides a cryptographic binding between the ID Token and the Access Token issued alongside it. It is calculated by:
 
@@ -260,8 +256,7 @@ The `at_hash` provides a cryptographic binding between the ID Token and the Acce
 
 </details>
 
-<details>
-<summary>5. How does OAuth Token Exchange (RFC 8693) enforce the Principle of Least Privilege in a multi-tier microservice architecture?</summary>
+<details><summary>5. How does OAuth Token Exchange (RFC 8693) enforce the Principle of Least Privilege in a multi-tier microservice architecture?</summary>
 
 When an end user logs in, they may grant a wide set of permissions (e.g. `profile`, `email`, `billing`, `orders`). If the edge service (Order Service) simply forwards the user's wide access token to downstream services (e.g. Inventory Service, Analytics Service), any compromised downstream microservice can use that wide token to execute unauthorized billing mutations. Token Exchange allows the Order Service to trade the user's wide token at the Authorization Server for an ephemeral, tightly-scoped downstream token minted exclusively for `aud: https://inventory.internal` with `scope: inventory:read`. The downstream service receives only the minimal permissions necessary to execute its discrete task.
 </details>

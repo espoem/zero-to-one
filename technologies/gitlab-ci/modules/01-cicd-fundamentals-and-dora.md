@@ -421,46 +421,39 @@ workflow:
 
 ---
 
-## 10. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. Explain the operational and technical difference between Continuous Delivery and Continuous Deployment.</strong></summary>
+<details><summary>1. Explain the operational and technical difference between Continuous Delivery and Continuous Deployment.</summary>
 
 Continuous Delivery ensures that every change integrated into the mainline repository is automatically built, tested, packaged, and verified in a staging environment such that it is continuously in a production-releasable state. However, the final deployment trigger to production remains a deliberate, manual business decision (such as an approval click or scheduled release window). In Continuous Deployment, there is zero human gatekeeping: every commit that successfully traverses the automated pipeline is deployed directly into production immediately. Continuous Deployment requires comprehensive automated verification (unit, integration, contract, security, smoke, and canary telemetry) to safely delegate full release authority to the pipeline.
 </details>
 
-<details>
-<summary><strong>Q2. Why does Trunk-Based Development scale better than GitFlow in high-velocity platform engineering teams?</strong></summary>
+<details><summary>2. Why does Trunk-Based Development scale better than GitFlow in high-velocity platform engineering teams?</summary>
 
 GitFlow relies on long-lived branches (`develop`, `feature/*`, `release/*`) that accumulate structural drift over days or weeks. This drift creates an $O(n^2)$ merge conflict probability curve, leads to painful "merge hell," and introduces integration freezes before releases. Furthermore, testing against `develop` does not guarantee stability on `main` due to disparate commit histories. Trunk-Based Development eliminates drift by requiring all developers to integrate short-lived branches (<24h) directly into `main`. Incomplete features are managed via feature flags or Branch by Abstraction. Every integration is verified against the true trunk state, dramatically shrinking batch size, reducing lead time, and enabling continuous production deployments.
 </details>
 
-<details>
-<summary><strong>Q3. How does GitLab CI prevent duplicate pipelines from running when a developer pushes a commit to a branch that has an active Merge Request?</strong></summary>
+<details><summary>3. How does GitLab CI prevent duplicate pipelines from running when a developer pushes a commit to a branch that has an active Merge Request?</summary>
 
 By default, without custom workflow rules, pushing to a branch with an open Merge Request can trigger two separate pipelines: a branch pipeline (`CI_PIPELINE_SOURCE == "push"`) and a merge request pipeline (`CI_PIPELINE_SOURCE == "merge_request_event"`). To eliminate this waste, modern GitLab configurations implement top-level `workflow:rules`. By specifying an explicit rule checking `$CI_OPEN_MERGE_REQUESTS`, the pipeline compiler detects whether an MR exists for the branch. If an MR exists, the branch pipeline evaluation yields `when: never`, ensuring only the Merge Request pipeline executes.
 </details>
 
-<details>
-<summary><strong>Q4. How is Lead Time for Changes (LTFC) formally calculated in DORA, and what are common pitfalls in measuring it?</strong></summary>
+<details><summary>4. How is Lead Time for Changes (LTFC) formally calculated in DORA, and what are common pitfalls in measuring it?</summary>
 
 DORA defines Lead Time for Changes as the total elapsed duration from the moment code is committed (the Git authored timestamp) until that specific commit is running successfully in production. A common pitfall is measuring only the pipeline execution time (e.g., 20 minutes of CI/CD runtime) while ignoring the days the code sat unmerged in code review or waiting for a deployment freeze window. Another pitfall is taking a simple arithmetic mean instead of the median; an outlier PR that sat stagnant for six months will severely distort the mean, whereas the median accurately captures typical engineering cycle time.
 </details>
 
-<details>
-<summary><strong>Q5. What is the "Branch by Abstraction" pattern, and what problem does it solve in CI/CD?</strong></summary>
+<details><summary>5. What is the "Branch by Abstraction" pattern, and what problem does it solve in CI/CD?</summary>
 
 Branch by Abstraction is a technique used in Trunk-Based Development to make large, complex architectural changes or subsystem replacements without creating long-lived feature branches. The developer introduces an abstract interface (seam) in front of the existing legacy implementation, integrates it directly into `main`, and then builds the new implementation behind that same interface in small, daily commits. A runtime toggle or feature flag routes traffic between the old and new engines. Once the new engine is verified in production, the toggle is permanently switched, the legacy implementation is deleted, and the interface is simplified—all without ever branching off trunk for more than a day.
 </details>
 
-<details>
-<summary><strong>Q6. Describe the internal event chain within GitLab from the moment a Git push is received on the server to the execution of a job on a runner.</strong></summary>
+<details><summary>6. Describe the internal event chain within GitLab from the moment a Git push is received on the server to the execution of a job on a runner.</summary>
 
 When a push hits `gitlab-shell` or GitLab Workhorse, the server initiates Git hooks managed by Gitaly. The `post-receive` hook notifies the GitLab Rails internal API, which enqueues an asynchronous `PipelineProcessWorker` job in Redis. Sidekiq picks up the job and invokes `Ci::CreatePipelineService`. This service fetches `.gitlab-ci.yml`, recursively resolves `include` files and components, expands references/extends, evaluates `rules:` logic, and builds an adjacency list of jobs to check for DAG cycles. Upon cycle validation, it commits the `ci_pipelines` and `ci_builds` database records in PostgreSQL. Finally, registered GitLab Runners long-polling the `/api/v4/jobs/request` endpoint match eligible jobs based on tags and concurrency limits, lease the job build token, and pull the job payload for execution.
 </details>
 
-<details>
-<summary><strong>Q7. How do Change Failure Rate (CFR) and Mean Time to Recovery (MTTR) balance Deployment Frequency (DF) in engineering health analysis?</strong></summary>
+<details><summary>7. How do Change Failure Rate (CFR) and Mean Time to Recovery (MTTR) balance Deployment Frequency (DF) in engineering health analysis?</summary>
 
 Deployment Frequency is a throughput (velocity) metric, whereas CFR and MTTR are stability (quality) metrics. If an organization optimizes solely for Deployment Frequency, developers might release broken code in rapid micro-batches, resulting in high velocity but disastrous customer availability. CFR ensures that speed does not compromise quality by tracking the proportion of releases that cause production degradation. MTTR ensures that when incidents inevitably occur, automated rollback, telemetry, and low lead times allow the team to restore service almost instantaneously. Together, they form an equilibrium demonstrating true engineering maturity.
 </details>

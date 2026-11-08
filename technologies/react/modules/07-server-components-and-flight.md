@@ -300,49 +300,39 @@ The version-gate tests ("the version gate itself…", "the installed react-serve
 
 ---
 
-## 10. Interview Drill
+## Interview Drill
 
-<details><summary><strong>1. What is a React Server Component and what can't it do?</strong></summary>
+<details><summary>1. What is a React Server Component and what can't it do?</summary>
 
 A component that runs only in the server module graph (build time or per request), can be async and access server resources directly, and ships no JavaScript; its output is serialised as Flight. It cannot use state, effects, event handlers, browser APIs or context consumption, and Client Components cannot import it (it must be passed as props/children).
 </details>
 
-<details><summary><strong>2. What does <code>"use client"</code> actually do?</strong></summary>
+<details><summary>2. What does <code>"use client"</code> actually do?</summary>
 
 It marks a module boundary between the server and client graphs. When imported from the server graph, the module's exports become client references (id + export name); the bundler puts the module and everything it imports into the client bundle. Client Components are still server-rendered to HTML by SSR; the directive is about module graphs, not "client-only rendering".
 </details>
 
-<details><summary><strong>3. Explain RSC vs SSR.</strong></summary>
+<details><summary>3. Explain RSC vs SSR.</summary>
 
 SSR renders the full tree to HTML for first paint and then hydrates all components on the client. RSC renders only Server Components to a serialised tree (Flight) whose code never ships; it can re-render on the server later and the client reconciles the new tree while preserving client state. Frameworks combine them: RSC → Flight → SSR → HTML plus inlined Flight.
 </details>
 
-<details><summary><strong>4. What is in a Flight row?</strong></summary>
+<details><summary>4. What is in a Flight row?</summary>
 
 `id:tag?payload` lines: element arrays `["$", type, key, props]`, `I` rows for client module references, string references like `$L` (lazy), `$@` (promise), `$S` (symbol), `$D`/`$n`/`$Q`/`$W` for Date/BigInt/Map/Set, `$h` for server references, `E` error rows with digests, binary rows, and DEV-only debug rows. Rows stream out of order and fill holes; the format is version-specific.
 </details>
 
-<details><summary><strong>5. What can you pass from a Server Component to a Client Component?</strong></summary>
+<details><summary>5. What can you pass from a Server Component to a Client Component?</summary>
 
 Serialisable values: primitives (including undefined, NaN, BigInt), plain objects/arrays, Map, Set, Date, typed arrays, FormData, promises, JSX, client references and Server Functions. Not plain functions, class instances, or non-registered symbols. Everything passed is visible to the client.
 </details>
 
-<details><summary><strong>6. Why are Server Functions a security risk and what must every one do?</strong></summary>
+<details><summary>6. Why are Server Functions a security risk and what must every one do?</summary>
 
 They are public HTTP endpoints with attacker-controlled arguments; hiding a button prevents nothing. Each must authenticate from the server-side session, authorise the specific resource, validate arguments at runtime, avoid returning secrets, and be rate/size limited. Bound arguments travel through the client and are untrusted too.
 </details>
 
-<details><summary><strong>7. Describe CVE-2025-55182 and how you would respond.</strong></summary>
+<details><summary>7. Describe CVE-2025-55182 and how you would respond.</summary>
 
 A CVSS 10 unauthenticated RCE in the RSC reply decoder (`react-server-dom-*` 19.0.0–19.2.0), reachable in any RSC app even without Server Functions; fixed in 19.0.1/19.1.2/19.2.1, with follow-up DoS and source-exposure fixes through 2026 (current floors 19.0.8/19.1.9/19.2.8, or any 19.3). Response: upgrade the framework/`react-server-dom-*` in lockstep with react, redeploy, rotate secrets hard-coded in server functions, add a CI version gate and update bot, and treat the endpoint as untrusted input.
-</details>
-
-<details><summary><strong>8. How do <code>cache</code> and <code>cacheSignal</code> work?</strong></summary>
-
-`cache(fn)` memoises by arguments within one server request, deduplicating calls across components; it must be created at module level. `cacheSignal()` returns an AbortSignal that aborts when the render completes, is aborted or fails, so in-flight work can be cancelled; it is `null` outside a render. Both are Server Component APIs.
-</details>
-
-<details><summary><strong>9. Your Client Component needs data that is slow to load. How do you avoid blocking the Server Component?</strong></summary>
-
-Start the fetch in the Server Component without awaiting it and pass the promise as a prop; Flight streams it (`$@`), and the Client Component reads it with `use(promise)` inside a Suspense boundary. The server render and the HTML shell are not blocked.
 </details>

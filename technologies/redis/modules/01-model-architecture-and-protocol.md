@@ -409,7 +409,7 @@ Integration tests in this module run unchanged on Redis 7.x, so they were execut
 
 ---
 
-## 8. Interview Drill
+## Interview Drill
 
 <details><summary>1. "Redis is single-threaded, so why is it fast, and when is that a problem?"</summary>
 
@@ -444,9 +444,4 @@ The client library queued or retried commands across the reconnect. An `INCR` wh
 <details><summary>7. Explain the Redis vs Valkey licensing story in one minute, and how it affects a migration.</summary>
 
 Redis was BSD through 7.2. 7.4 moved to RSALv2/SSPLv1; the Linux Foundation forked 7.2.4 as Valkey (BSD). Redis 8.0 added AGPLv3 as an option and bundled Search, JSON, TimeSeries and probabilistic types. Using unmodified Redis is unrestricted in practice; modifying it and serving it over a network triggers AGPL source-offer obligations, and RSAL forbids offering it as a managed service. Migration caveat: RDB files written by Redis ≥ 7.4 use a newer RDB version that Valkey cannot be assumed to load, and module commands differ.
-</details>
-
-<details><summary>8. How would you reduce the latency of 50 000 small reads from a service 1 ms away?</summary>
-
-Batch: `MGET` (single slot in Cluster) or pipeline in bounded windows (e.g. 500–1 000), await each window, and keep the connection count small. Model: $\lceil n/w\rceil \cdot \text{RTT} + n \cdot S$. With $w$ large, server time dominates; past that, shard or move data closer.
 </details>

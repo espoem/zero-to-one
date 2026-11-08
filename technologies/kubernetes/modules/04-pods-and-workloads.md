@@ -421,16 +421,14 @@ Invariant 3: Rolling updates complete only when TargetRS.Replicas == D.Spec.Repl
 
 ---
 
-## 11. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. How do Native Sidecars (KEP-753) resolve the batch Job termination deadlock problem?</strong></summary>
+<details><summary>1. How do Native Sidecars (KEP-753) resolve the batch Job termination deadlock problem?</summary>
 
 Under the legacy model, sidecars were standard containers declared in `spec.containers[]`. When a batch computation completed in the primary container, the sidecar container continued running indefinitely, preventing the Pod from entering the `Succeeded` phase. Native Sidecars are declared inside `spec.initContainers[]` with `restartPolicy: Always`. The kubelet understands their lifecycle semantics: when all standard containers in `spec.containers[]` have terminated with exit code 0, the kubelet automatically sends a `SIGTERM` signal to the native sidecar containers in reverse order, allowing them to terminate cleanly and enabling the Pod to enter the `Succeeded` phase.
 </details>
 
-<details>
-<summary><strong>Q2. What is the exact sequence of events when a Pod is terminated, and why is a `preStop` sleep hook necessary in production?</strong></summary>
+<details><summary>2. What is the exact sequence of events when a Pod is terminated, and why is a `preStop` sleep hook necessary in production?</summary>
 
 When a Pod is deleted:
 
@@ -440,8 +438,7 @@ When a Pod is deleted:
 Because Stream A requires several seconds to propagate across all cluster nodes, sending `SIGTERM` immediately causes the application to shut down while external load balancers and internal proxies are still routing traffic to its IP. A `preStop: exec: command: ["sleep", "15"]` delays `SIGTERM` by 15 seconds, ensuring the dataplane has completely stopped routing traffic to the Pod before the application closes its listening sockets.
 </details>
 
-<details>
-<summary><strong>Q3. Explain the difference between `livenessProbe`, `readinessProbe`, and `startupProbe`, and give a dangerous anti-pattern for liveness probes.</strong></summary>
+<details><summary>3. Explain the difference between `livenessProbe`, `readinessProbe`, and `startupProbe`, and give a dangerous anti-pattern for liveness probes.</summary>
 
 - `startupProbe`: Protects slow-starting containers. It disables liveness and readiness probes until it passes, preventing early container termination during warm-up.
 - `livenessProbe`: Evaluates internal process health. Failure restarts the container process via the CRI runtime.
@@ -450,30 +447,25 @@ Because Stream A requires several seconds to propagate across all cluster nodes,
 **Anti-Pattern**: Checking downstream external dependencies (such as a database or external cache) in a `livenessProbe`. If the database suffers a brief network blip, all microservice replicas fail their liveness probes simultaneously, triggering a catastrophic cascading restart storm across the entire fleet.
 </details>
 
-<details>
-<summary><strong>Q4. How does a StatefulSet guarantee stable network identities, and what role does a Headless Service play?</strong></summary>
+<details><summary>4. How does a StatefulSet guarantee stable network identities, and what role does a Headless Service play?</summary>
 
 A StatefulSet assigns a deterministic, ordinal-indexed hostname to each Pod (`$(name)-$(ordinal)`). When paired with a Headless Service (`spec.clusterIP: None`), CoreDNS creates an `A` record for each individual Pod pointing directly to the Pod's IP address (`$(pod-name).$(headless-service-name).$(namespace).svc.cluster.local`). Unlike standard Services that route to a virtual ClusterIP and balance traffic across arbitrary healthy pods, the Headless Service enables direct point-to-point addressing of specific cluster members (e.g., targeting the primary vs replica nodes in a database cluster).
 </details>
 
-<details>
-<summary><strong>Q5. What mathematical constraints govern `maxSurge` and `maxUnavailable` during a Deployment rolling update?</strong></summary>
+<details><summary>5. What mathematical constraints govern `maxSurge` and `maxUnavailable` during a Deployment rolling update?</summary>
 
 During a rolling update of a Deployment with desired replica count $R$:
 
 - Maximum simultaneous pods running at any point: $$\text{Max Allowed Pods} = R + \text{maxSurge}$$
 - Minimum available pods guaranteed to be operational at any point: $$\text{Min Available Pods} = R - \text{maxUnavailable}$$ For example, if $R=4$, `maxSurge=1`, and `maxUnavailable=0`, the Deployment controller creates 1 new pod before terminating any old pods, ensuring total active pods never exceeds 5 and ready pods never drops below 4.
-
 </details>
 
-<details>
-<summary><strong>Q6. How do Indexed Jobs differ from standard Jobs, and what parameter exposes the index to application code?</strong></summary>
+<details><summary>6. How do Indexed Jobs differ from standard Jobs, and what parameter exposes the index to application code?</summary>
 
 In standard non-indexed Jobs, all pods execute an identical specification, typically coordinating work items through an external message queue until the total completions count is met. In Indexed Jobs (`spec.completionMode: Indexed`), each Pod is assigned an explicit, deterministic integer index in the range $[0, \text{spec.completions}-1]$. The kubelet injects this index into the container environment as `JOB_COMPLETION_INDEX`. This allows each worker to deterministically partition datasets, shards, or parameter sets without external coordination.
 </details>
 
-<details>
-<summary><strong>Q7. What is a StatefulSet Partitioned Rolling Update, and when would you use it?</strong></summary>
+<details><summary>7. What is a StatefulSet Partitioned Rolling Update, and when would you use it?</summary>
 
 In a StatefulSet, `spec.updateStrategy.rollingUpdate.partition` defines an ordinal boundary. When an update is applied, only pods with an ordinal index greater than or equal to the partition value are updated. Pods with an ordinal less than the partition remain on the previous template version. This enables canary releases on stateful distributed systems (e.g., updating only `cassandra-4` on a 5-node cluster to verify schema stability and disk format changes before rolling out to the remaining nodes).
 </details>

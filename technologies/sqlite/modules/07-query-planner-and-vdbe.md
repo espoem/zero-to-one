@@ -383,7 +383,7 @@ Mechanics of key opcodes in this pipeline:
 
 ---
 
-## 12. Interview Drill
+## Interview Drill
 
 <details><summary>1. What is the VDBE, and what does <code>EXPLAIN</code> show that <code>EXPLAIN QUERY PLAN</code> does not?</summary>
 
@@ -418,14 +418,4 @@ Run `PRAGMA optimize = 0x10002` right after opening each long-lived connection, 
 <details><summary>7. When is a partial index chosen, and what is its advantage?</summary>
 
 Only when the planner can prove from the query's `WHERE` clause, using simple syntactic rules, that every row the query needs satisfies the index's `WHERE` predicate. Usually that means the same term written literally in the query; do not rely on a bound parameter. The advantage is size and write cost: an index over 2 % of rows is tiny, fits in cache, and is only maintained when matching rows change.
-</details>
-
-<details><summary>8. How do you force or forbid a particular plan in SQLite?</summary>
-
-`INDEXED BY idx` forces an index (and errors if it cannot be used), `NOT INDEXED` forbids indexes for a table, unary `+col` disqualifies a single term from index use, `CROSS JOIN` fixes the join order, and `likelihood()` / `unlikely()` adjust selectivity estimates. Shipping a fixed `sqlite_stat1`, with QPSG builds, stabilises plans further.
-</details>
-
-<details><summary>9. Why might a prepared statement's plan change in the middle of a process's life?</summary>
-
-When the schema cookie changes (another connection created an index, ran `ANALYZE`, or changed a table), the statement's `Transaction` opcode detects it, and a statement prepared with `sqlite3_prepare_v2/v3` is automatically re-prepared, possibly with a different plan. With `SQLITE_ENABLE_STAT4`, bound parameter values can also trigger re-preparation, because a better plan may exist for the specific value.
 </details>

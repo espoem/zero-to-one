@@ -243,12 +243,11 @@ graph TD
 
 ---
 
-## 8. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1: What is the fundamental difference between a traditional message queue (like RabbitMQ) and a distributed commit log (like Apache Kafka)?</strong></summary>
+<details><summary>1. What is the fundamental difference between a traditional message queue (like RabbitMQ) and a distributed commit log (like Apache Kafka)?</summary>
 
-**Answer:** The fundamental distinction lies in their **storage and consumption models**:
+The fundamental distinction lies in their **storage and consumption models**:
 
 - **Traditional Message Queue**: Uses **destructive consumption**. When a consumer reads and acknowledges a message, the broker permanently deletes it from storage. It is designed for task dispatching between competing consumers. Once consumed, messages cannot be replayed by other services.
 - **Distributed Commit Log**: Uses **non-destructive, append-only persistent storage**. Messages are stored sequentially in disk segments and retained according to time or size policies (e.g. 7 days or 1TB), completely independent of consumer consumption. Consumers track their own read progress via **offsets**.
@@ -256,10 +255,9 @@ graph TD
 This permits multiple independent systems to consume the same stream at their own pace, and allows new services to reset their offset to zero to replay the entire history of events.
 </details>
 
-<details>
-<summary><strong>Q2: Explain the Stream-Table Duality and how Log Compaction leverages this duality to maintain state.</strong></summary>
+<details><summary>2. Explain the Stream-Table Duality and how Log Compaction leverages this duality to maintain state.</summary>
 
-**Answer:** The Stream-Table Duality establishes that a stream and a table are two representations of the same underlying data:
+The Stream-Table Duality establishes that a stream and a table are two representations of the same underlying data:
 
 - **Stream $\to$ Table**: An event stream records every mutation over time. Aggregating or folding that stream from the beginning produces the current state table.
 - **Table $\to$ Stream**: Taking the continuous delta change log (CDC) of a state table produces an event stream.
@@ -267,10 +265,9 @@ This permits multiple independent systems to consume the same stream at their ow
 **Log Compaction** leverages this by enforcing that for a specific topic, the broker retains **the latest value for every key** indefinitely, purging older intermediate updates for that key. This allows the topic to act as a durable, compact backup of a state table. A newly launched stream worker can reconstruct its entire local state store in minutes by consuming only the latest compacted state per key, rather than replaying millions of historical raw transactions.
 </details>
 
-<details>
-<summary><strong>Q3: How does Apache Kafka achieve Exactly-Once Semantics (EOS) in a stream-processing read-process-write pipeline?</strong></summary>
+<details><summary>3. How does Apache Kafka achieve Exactly-Once Semantics (EOS) in a stream-processing read-process-write pipeline?</summary>
 
-**Answer:** Kafka achieves EOS through the coordinated combination of two mechanisms:
+Kafka achieves EOS through the coordinated combination of two mechanisms:
 
 1. **Idempotent Producers**: The producer is assigned a 64-bit Producer ID (PID). Each batch of messages sent to a partition carries a sequence number. The broker detects and discards duplicate network retransmissions, guaranteeing that network retries never write duplicate messages to a partition.
 2. **Two-Phase Commit Distributed Transactions**: The stream processing engine coordinates an atomic transaction spanning:
@@ -280,10 +277,9 @@ This permits multiple independent systems to consume the same stream at their ow
 A Transaction Coordinator writes a commit marker across the participating partitions. Downstream consumers running in `read_committed` mode buffer uncommitted messages and expose them to application logic only after the commit marker arrives. If a worker crashes mid-stream, uncommitted messages and offsets are aborted together, ensuring zero loss and zero duplicate state updates.
 </details>
 
-<details>
-<summary><strong>Q4: Why does ordering in Apache Kafka hold only within a partition, and how does key-based hashing guarantee causal ordering for business entities?</strong></summary>
+<details><summary>4. Why does ordering in Apache Kafka hold only within a partition, and how does key-based hashing guarantee causal ordering for business entities?</summary>
 
-**Answer:** Kafka partitions are independent physical append-only logs hosted on different broker nodes. While each individual partition maintains a single sequential append head with strictly increasing monotonic offsets, there is no global clock or cross-partition barrier synchronization. Therefore, messages written across different partitions have no relative ordering guarantees.
+Kafka partitions are independent physical append-only logs hosted on different broker nodes. While each individual partition maintains a single sequential append head with strictly increasing monotonic offsets, there is no global clock or cross-partition barrier synchronization. Therefore, messages written across different partitions have no relative ordering guarantees.
 
 To enforce ordering for a specific business entity (e.g. a customer account), the producer assigns the entity ID as the message **Key**. The producer client computes:
 
@@ -292,10 +288,9 @@ $$\text{Partition} = \text{hash}(\text{Key}) \pmod{\text{Total Partitions}}$$
 Because the hash function is deterministic, every single event for that specific customer is guaranteed to be appended to the **exact same partition**, ensuring that the customer's events are processed in strict, uncompromised causal order.
 </details>
 
-<details>
-<summary><strong>Q5: What is a Watermark in event-time stream processing, and how does it balance latency versus completeness?</strong></summary>
+<details><summary>5. What is a Watermark in event-time stream processing, and how does it balance latency versus completeness?</summary>
 
-**Answer:** In stream processing, network delays cause events to arrive out of chronological order (a message with Event Time 12:01 might arrive after a message with Event Time 12:04).
+In stream processing, network delays cause events to arrive out of chronological order (a message with Event Time 12:01 might arrive after a message with Event Time 12:04).
 
 A **Watermark** is a control event flowing through the data stream that carries a timestamp $T$, asserting the completion heuristic: _"The engine assumes no further events with Event Time $t < T$ will arrive."_
 
@@ -306,10 +301,9 @@ When $\text{Watermark}(T = 12:05)$ arrives at a window operator, the operator im
 
 </details>
 
-<details>
-<summary><strong>Q6: What causes a "Consumer Rebalance Storm" in Apache Kafka, and how does the Cooperative Sticky Assignor mitigate it?</strong></summary>
+<details><summary>6. What causes a "Consumer Rebalance Storm" in Apache Kafka, and how does the Cooperative Sticky Assignor mitigate it?</summary>
 
-**Answer:** A Consumer Rebalance Storm occurs when one or more consumer workers take longer to process a batch of messages than the configured `max.poll.interval.ms`.
+A Consumer Rebalance Storm occurs when one or more consumer workers take longer to process a batch of messages than the configured `max.poll.interval.ms`.
 
 The Kafka broker assumes the worker has died, evicts it from the consumer group, and triggers a group-wide **rebalance**. Under the legacy **Eager Rebalance protocol**, _all_ consumers in the group must revoke _all_ their assigned partitions, stop processing, and re-join the group. While rebalancing, the backlog grows; when workers re-acquire partitions, they face larger message batches, take longer to process, timeout again, and trigger another rebalance in a catastrophic death spiral.
 

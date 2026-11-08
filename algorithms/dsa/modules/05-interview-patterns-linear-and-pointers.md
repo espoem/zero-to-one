@@ -150,16 +150,14 @@ function cyclicSort(nums: number[]): void {
 
 ---
 
-## 6. Interview Drill: Linear & Two Pointers
+## Interview Drill
 
-<details>
-<summary>1. In the "Subarray Sum Equals K" problem, why must a hash map be initialized with { 0: 1 }?</summary>
+<details><summary>1. In the "Subarray Sum Equals K" problem, why must a hash map be initialized with { 0: 1 }?</summary>
 
 The hash map stores `prefixSum -> frequency`. The condition for a valid subarray ending at index $i$ is: $$\text{currentPrefixSum} - \text{target} = \text{previousPrefixSum}$$ If a subarray starting from index 0 itself sums to `target` (e.g. `currentPrefixSum === target`), then `currentPrefixSum - target = 0`. Initializing `{ 0: 1 }` represents an empty prefix before index 0 with sum 0, ensuring subarrays starting from the beginning of the array are counted.
 </details>
 
-<details>
-<summary>2. Explain how to detect the start of a cycle in an array where each index points to nums[i], without modifying the array or using extra memory.</summary>
+<details><summary>2. Explain how to detect the start of a cycle in an array where each index points to nums[i], without modifying the array or using extra memory.</summary>
 
 Treat the array as a functional linked list where `next(i) = nums[i]`. By the Pigeonhole Principle, if an array of size $n + 1$ contains values in range $[1, n]$, a duplicate value exists, creating a cycle.
 
@@ -170,8 +168,7 @@ Treat the array as a functional linked list where `next(i) = nums[i]`. By the Pi
 
 </details>
 
-<details>
-<summary>3. In the Sliding Window Maximum problem, why does the deque store indices rather than values?</summary>
+<details><summary>3. In the Sliding Window Maximum problem, why does the deque store indices rather than values?</summary>
 
 Storing indices provides two critical capabilities:
 
@@ -180,14 +177,12 @@ Storing indices provides two critical capabilities:
 
 </details>
 
-<details>
-<summary>4. Why does Cyclic Sort achieve O(n) running time even though it contains a while loop with swaps?</summary>
+<details><summary>4. Why does Cyclic Sort achieve O(n) running time even though it contains a while loop with swaps?</summary>
 
 Every time a swap occurs (`swap(nums[i], nums[correctIdx])`), the element `nums[i]` is moved to its correct home index `correctIdx`. Once an element is placed in its correct position, it is never moved again. Because there are $n$ elements, there can be at most $n - 1$ swaps. The loop increments `i` when an element is already in place. The total number of loop iterations is bounded by $n \text{ (advancing i)} + (n - 1) \text{ (swaps)} \le 2n = O(n)$.
 </details>
 
-<details>
-<summary>5. How does a Difference Array handle overlapping interval updates in O(1) per update?</summary>
+<details><summary>5. How does a Difference Array handle overlapping interval updates in O(1) per update?</summary>
 
 A difference array records the derivative (rate of change) of the array rather than the absolute values:
 

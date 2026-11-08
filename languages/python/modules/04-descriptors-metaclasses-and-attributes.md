@@ -246,12 +246,11 @@ assert isinstance(CustomList(), SizedIterable)
 
 ---
 
-## 5. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-<details>
-<summary>1. Explain the attribute resolution order in Python from instance to class and fallback.</summary>
+<details><summary>1. Explain the attribute resolution order in Python from instance to class and fallback.</summary>
 
-**Answer:** When evaluating `obj.attr`, CPython executes the following priority order:
+When evaluating `obj.attr`, CPython executes the following priority order:
 
 1. Search `type(obj).__mro__` for an attribute named `attr`. If found and it is a **Data Descriptor** (defines `__set__` or `__delete__`), invoke its `__get__(obj, type(obj))` method.
 2. Otherwise, check the instance dictionary `obj.__dict__` (or its slotted array). If `attr` exists, return its value.
@@ -262,20 +261,18 @@ assert isinstance(CustomList(), SizedIterable)
 
 </details>
 
-<details>
-<summary>2. Why does a method call `obj.method()` pass `self` automatically, while `Class.method()` does not?</summary>
+<details><summary>2. Why does a method call `obj.method()` pass `self` automatically, while `Class.method()` does not?</summary>
 
-**Answer:** Because functions are non-data descriptors implementing `__get__`.
+Because functions are non-data descriptors implementing `__get__`.
 
 - When accessed via an instance (`obj.method`), `function.__get__(obj, Class)` is evaluated. It returns a `types.MethodType` object: a callable wrapper that binds the instance `obj` as the first argument (`self`) to the underlying C function.
 - When accessed via the class (`Class.method`), `function.__get__(None, Class)` is evaluated. Because the instance argument is `None`, `__get__` returns the underlying bare `function` object without binding. Invoking `Class.method()` therefore requires passing the instance explicitly: `Class.method(obj)`.
 
 </details>
 
-<details>
-<summary>3. What is C3 Linearization, and why did Python adopt it over earlier MRO algorithms?</summary>
+<details><summary>3. What is C3 Linearization, and why did Python adopt it over earlier MRO algorithms?</summary>
 
-**Answer:** C3 Linearization is an algorithm for calculating a deterministic topological sort of classes in a multiple-inheritance hierarchy. Python adopted C3 in version 2.3 because earlier MRO algorithms (DFS pre-order in Python 2.1, and an early BFS hybrid in Python 2.2) suffered from monotonicity and local precedence violations:
+C3 Linearization is an algorithm for calculating a deterministic topological sort of classes in a multiple-inheritance hierarchy. Python adopted C3 in version 2.3 because earlier MRO algorithms (DFS pre-order in Python 2.1, and an early BFS hybrid in Python 2.2) suffered from monotonicity and local precedence violations:
 
 1. In Python 2.1 DFS, diamond inheritance hierarchies visited base classes before subclasses, causing method overriding to fail.
 2. C3 guarantees **Monotonicity**: if class $A$ precedes class $B$ in any parent's MRO, $A$ must precede $B$ in all descendant MROs.
@@ -284,10 +281,9 @@ assert isinstance(CustomList(), SizedIterable)
 
 </details>
 
-<details>
-<summary>4. What is the difference between `super()` in single inheritance vs multiple inheritance?</summary>
+<details><summary>4. What is the difference between `super()` in single inheritance vs multiple inheritance?</summary>
 
-**Answer:** In single inheritance, `super()` trivially delegates to the single immediate parent class. In multiple inheritance, `super()` does **not** call the parent class; it calls the **next class in the instance's MRO**. This means:
+In single inheritance, `super()` trivially delegates to the single immediate parent class. In multiple inheritance, `super()` does **not** call the parent class; it calls the **next class in the instance's MRO**. This means:
 
 - The target of `super()` cannot be determined by inspecting the class alone; it depends dynamically on the `__mro__` of the runtime instance (`type(self)`).
 - A class method using `super()` may invoke a peer sibling class with which it shares no direct inheritance ancestry (cooperative multiple inheritance).
@@ -295,10 +291,9 @@ assert isinstance(CustomList(), SizedIterable)
 
 </details>
 
-<details>
-<summary>5. When should you use a Metaclass instead of `__init_subclass__` or Class Decorators?</summary>
+<details><summary>5. When should you use a Metaclass instead of `__init_subclass__` or Class Decorators?</summary>
 
-**Answer:** Use `__init_subclass__` or class decorators by default. A Metaclass is strictly required only when you must:
+Use `__init_subclass__` or class decorators by default. A Metaclass is strictly required only when you must:
 
 1. Intercept or customize the class namespace dictionary _before_ the class body is evaluated (via `__prepare__`, e.g. enforcing ordered enum definitions or tracking declaration order).
 2. Alter or reject class construction before the `type` object is instantiated (in `__new__`).

@@ -246,11 +246,9 @@ graph TD
 
 ---
 
-## 9. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-### Q1: Why does the WebSocket specification (RFC 6455) strictly require client-to-server frames to be masked, while server-to-client frames remain unmasked?
-
-<details><summary>Answer</summary>
+<details><summary>1. Why does the WebSocket specification (RFC 6455) strictly require client-to-server frames to be masked, while server-to-client frames remain unmasked?</summary>
 
 **Preventing Proxy Cache Poisoning Attacks.**
 
@@ -262,9 +260,7 @@ graph TD
 
 </details>
 
-### Q2: What is the gRPC Layer 4 load balancing problem, and how do client-side load balancing and Envoy proxies resolve it?
-
-<details><summary>Answer</summary>
+<details><summary>2. What is the gRPC Layer 4 load balancing problem, and how do client-side load balancing and Envoy proxies resolve it?</summary>
 
 **HTTP/2 Long-Lived Connection Pinning.**
 
@@ -278,9 +274,7 @@ graph TD
 
 </details>
 
-### Q3: How does the cryptographic handshake in RFC 6455 prove that a server actually understands the WebSocket protocol?
-
-<details><summary>Answer</summary>
+<details><summary>3. How does the cryptographic handshake in RFC 6455 prove that a server actually understands the WebSocket protocol?</summary>
 
 **The Sec-WebSocket-Key / Accept Verification.**
 
@@ -296,9 +290,7 @@ graph TD
 
 </details>
 
-### Q4: Why are gRPC status codes (`grpc-status`) delivered in HTTP/2 Trailing Headers rather than standard initial response headers?
-
-<details><summary>Answer</summary>
+<details><summary>4. Why are gRPC status codes (`grpc-status`) delivered in HTTP/2 Trailing Headers rather than standard initial response headers?</summary>
 
 **Deferred Status in Long-Running Streams.**
 
@@ -311,9 +303,7 @@ graph TD
 
 </details>
 
-### Q5: Describe the architectural advantages of Server-Sent Events (SSE) over WebSockets for Large Language Model (LLM) token streaming.
-
-<details><summary>Answer</summary>
+<details><summary>5. Describe the architectural advantages of Server-Sent Events (SSE) over WebSockets for Large Language Model (LLM) token streaming.</summary>
 
 **Simplicity, HTTP Infrastructure Compatibility, and Native Reconnection.**
 

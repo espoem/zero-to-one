@@ -249,11 +249,9 @@ Many misconfigured corporate firewalls and cloud security groups blanket-block a
 
 ---
 
-## 8. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-### Q1: Explain why modern switched full-duplex Ethernet does not use the CSMA/CD collision detection algorithm.
-
-<details><summary>Answer</summary>
+<details><summary>1. Explain why modern switched full-duplex Ethernet does not use the CSMA/CD collision detection algorithm.</summary>
 
 **Dedicated Physical Channels.** CSMA/CD (Carrier Sense Multiple Access with Collision Detection) was engineered for half-duplex shared coaxial cable (10BASE2/10BASE5) or repeater hubs where all connected devices shared the same physical medium and could physically jam one another's electrical signals. Modern Ethernet switches establish point-to-point connections over twisted pair or fiber optic cabling, providing completely separate, isolated transmit ($TX$) and receive ($RX$) pairs. Because a host can transmit and receive simultaneously without signal interference, physical collisions are physically impossible.
 
@@ -261,9 +259,7 @@ Many misconfigured corporate firewalls and cloud security groups blanket-block a
 
 </details>
 
-### Q2: What is the purpose of Gratuitous ARP (GARP), and how is it leveraged during a Virtual IP (VIP) failover in high-availability clusters?
-
-<details><summary>Answer</summary>
+<details><summary>2. What is the purpose of Gratuitous ARP (GARP), and how is it leveraged during a Virtual IP (VIP) failover in high-availability clusters?</summary>
 
 **CAM Table State Synchronization.** A Gratuitous ARP is an ARP broadcast where the sender IP and target IP are identical, meaning a host is announcing its own IP-to-MAC mapping without being queried. During a VIP failover (such as Keepalived, VRRP, or AWS secondary ENI reassignment), when node $B$ takes over the VIP previously held by node $A$, node $B$ immediately broadcasts a Gratuitous ARP. When upstream switches receive this broadcast, they inspect the Source MAC and update their internal CAM tables, associating the VIP with node $B$'s physical switch port. Furthermore, all hosts on the local subnet update their ARP caches, preventing in-flight packets from being forwarded to the dead node $A$.
 
@@ -271,9 +267,7 @@ Many misconfigured corporate firewalls and cloud security groups blanket-block a
 
 </details>
 
-### Q3: An engineer reports that a client can connect via SSH and perform small HTTP GET requests across a VPN, but HTTPS connections to the same host hang during the TLS handshake. What is the root cause and diagnostic explanation?
-
-<details><summary>Answer</summary>
+<details><summary>3. An engineer reports that a client can connect via SSH and perform small HTTP GET requests across a VPN, but HTTPS connections to the same host hang during the TLS handshake. What is the root cause and diagnostic explanation?</summary>
 
 **PMTUD Black Hole.** VPN tunnels (IPsec, WireGuard, GRE) add outer IP and encryption headers, reducing the tunnel's effective MTU from 1,500 bytes to approximately 1,420 bytes. Small packets (SSH keystrokes, TCP handshakes, small HTTP GETs) are well under 1,420 bytes and traverse the tunnel unhindered. However, when the server transmits its TLS certificate chain (often 3 to 6 KB), it sends full 1,500-byte segments with the `DF=1` (Don't Fragment) bit set. The VPN gateway cannot fit 1,500 bytes into its 1,420-byte tunnel without fragmenting, so it drops the packets and returns an ICMP Type 3 Code 4 ("Fragmentation Needed") packet. If a firewall along the path drops this ICMP packet, the sender never learns to reduce its packet size and retransmits 1,500-byte packets endlessly until the connection times out. The fix is enabling **TCP MSS Clamping** on the VPN gateway.
 
@@ -281,9 +275,7 @@ Many misconfigured corporate firewalls and cloud security groups blanket-block a
 
 </details>
 
-### Q4: How does IPv6 Neighbor Discovery Protocol (NDP) avoid the CPU interrupt overhead that IPv4 ARP broadcasts impose on all hosts in a subnet?
-
-<details><summary>Answer</summary>
+<details><summary>4. How does IPv6 Neighbor Discovery Protocol (NDP) avoid the CPU interrupt overhead that IPv4 ARP broadcasts impose on all hosts in a subnet?</summary>
 
 **Solicited-Node Multicast Filtering.** In IPv4 ARP, requests are sent to the Ethernet broadcast address `FF:FF:FF:FF:FF:FF`. Every NIC in the broadcast domain must capture the frame, copy it to kernel memory, and interrupt the operating system CPU to inspect whether the target IP matches. In IPv6, Neighbor Solicitation messages are sent to the target's **Solicited-Node Multicast Address** (`ff02::1:ffXX:XXXX`). The target's NIC joins this specific multicast MAC address (`33:33:FF:XX:XX:XX`) at the hardware level. All other hosts whose addresses do not share the same lower 24 bits filter out the frame directly in the NIC hardware chip without triggering a CPU interrupt.
 
@@ -291,9 +283,7 @@ Many misconfigured corporate firewalls and cloud security groups blanket-block a
 
 </details>
 
-### Q5: What is the minimum payload size of an Ethernet II frame, and why does this limitation exist?
-
-<details><summary>Answer</summary>
+<details><summary>5. What is the minimum payload size of an Ethernet II frame, and why does this limitation exist?</summary>
 
 **Minimum Slot Time and Collision Detection.** The minimum payload size is **46 bytes**, which produces a minimum frame size of **64 bytes** (14-byte Ethernet header + 46-byte payload + 4-byte FCS, excluding 8-byte preamble/SFD). In the original half-duplex CSMA/CD Ethernet specification, a transmitting station had to continue transmitting long enough for the signal to travel to the furthest end of the maximum cable span ($2.5\text{ km}$) and return if a collision occurred (the **slot time**, $51.2\,\mu\text{s}$ at 10 Mbps, corresponding to 512 bits or 64 bytes). If frames were smaller than 64 bytes, a host could finish transmitting before a collision signal returned, falsely assuming successful delivery. Although full-duplex links no longer have collisions, the 64-byte minimum frame size is retained in all modern Ethernet standards for backward compatibility.
 

@@ -390,7 +390,7 @@ Messaging in Redis has evolved from raw list manipulations to sophisticated, hor
 
 ---
 
-## 7. Interview Drill
+## Interview Drill
 
 <details><summary>1. Pub/Sub vs Streams: when would you use each?</summary>
 

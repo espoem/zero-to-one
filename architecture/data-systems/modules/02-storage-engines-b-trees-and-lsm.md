@@ -285,54 +285,48 @@ Because adjacent values in a single column belong to the identical domain, they 
 
 ---
 
-## 8. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1: Explain how the slotted-page architecture enables physical record updates without invalidating secondary index entries.</strong></summary>
+<details><summary>1. Explain how the slotted-page architecture enables physical record updates without invalidating secondary index entries.</summary>
 
-**Answer:** Secondary indexes in a slotted-page engine do not store the physical byte offset of a record on disk; instead, they store a logical Tuple ID (`ctid`) consisting of `(page_number, item_slot_index)`.
+Secondary indexes in a slotted-page engine do not store the physical byte offset of a record on disk; instead, they store a logical Tuple ID (`ctid`) consisting of `(page_number, item_slot_index)`.
 
 Inside the page, the item pointer array at the top of the block maps `item_slot_index` to the physical byte offset of the tuple at the bottom of the block. If an update lengthens or shortens the tuple, or if the page is defragmented to reclaim dead space, the engine can move the tuple anywhere within that 8KB page and simply update the 32-bit item pointer entry. Because the `item_slot_index` remains unchanged, every external secondary index continues to point to the correct tuple without requiring index updates.
 </details>
 
-<details>
-<summary><strong>Q2: How does the Lehman-Yao B-link tree achieve high-concurrency read operations during concurrent node splits?</strong></summary>
+<details><summary>2. How does the Lehman-Yao B-link tree achieve high-concurrency read operations during concurrent node splits?</summary>
 
-**Answer:** In standard B+trees, splitting a node requires locking the parent and holding locks up the path to install the new divider key.
+In standard B+trees, splitting a node requires locking the parent and holding locks up the path to install the new divider key.
 
 The Lehman-Yao B-link tree solves this by adding a **high-key** and a **right-sibling pointer** to every node in the tree. When a node splits, its upper half of keys is moved to a new sibling node, and the original node's right-sibling pointer is linked to the new node. A reader traversing the tree compares its target search key against the node's high-key. If the search key is greater than the high key, the reader immediately navigates across the horizontal right-sibling pointer to the new node. This allows page splits to occur bottom-up in two independent half-actions without holding parent locks, permitting readers to execute completely unblocked.
 </details>
 
-<details>
-<summary><strong>Q3: Why do LSM-trees offer significantly higher write throughput than B+trees on solid-state drives?</strong></summary>
+<details><summary>3. Why do LSM-trees offer significantly higher write throughput than B+trees on solid-state drives?</summary>
 
-**Answer:** B+trees use an in-place update model: updating a 50-byte record requires reading an entire 8KB or 16KB page, modifying it in cache, and later writing the full 8KB block back to disk (causing a Write Amplification Factor of 50 to 100+). Furthermore, writes occur at random physical offsets across disk files.
+B+trees use an in-place update model: updating a 50-byte record requires reading an entire 8KB or 16KB page, modifying it in cache, and later writing the full 8KB block back to disk (causing a Write Amplification Factor of 50 to 100+). Furthermore, writes occur at random physical offsets across disk files.
 
 LSM-trees convert all write operations into sequential appends. Writes are immediately appended to an in-memory memtable and an on-disk sequential log. Disk writes occur in large, sequential batches when immutable memtables are flushed as contiguous Sorted String Tables (SSTables). Sequential writes maximize NVMe flash controller parallelism, avoid flash memory erase-cycle thrashing, and achieve much lower initial write amplification.
 </details>
 
-<details>
-<summary><strong>Q4: What is the purpose of Bloom filters in an LSM storage engine, and what query types benefit from them?</strong></summary>
+<details><summary>4. What is the purpose of Bloom filters in an LSM storage engine, and what query types benefit from them?</summary>
 
-**Answer:** Because LSM-trees store data across multiple SSTable files, reading a key might require checking every SSTable on disk to locate the latest version. A Bloom filter is an in-memory probabilistic bit array associated with each SSTable file that tests set membership.
+Because LSM-trees store data across multiple SSTable files, reading a key might require checking every SSTable on disk to locate the latest version. A Bloom filter is an in-memory probabilistic bit array associated with each SSTable file that tests set membership.
 
 Bloom filters have zero false negatives: if the filter reports a key is absent, it is guaranteed not to exist in that SSTable, allowing the engine to skip reading the SSTable from disk entirely. Point lookups (`GET key`) benefit dramatically from Bloom filters. However, **range scans (`SCAN key1 TO key2`) cannot use Bloom filters**, because Bloom filters hash exact discrete keys and cannot test whether keys within an arbitrary continuous interval exist in the file.
 </details>
 
-<details>
-<summary><strong>Q5: Formulate the Write Amplification Factor (WAF) and explain why it matters for SSD hardware longevity.</strong></summary>
+<details><summary>5. Formulate the Write Amplification Factor (WAF) and explain why it matters for SSD hardware longevity.</summary>
 
-**Answer:** The Write Amplification Factor is defined as:
+The Write Amplification Factor is defined as:
 
 $$\text{WAF} = \frac{\text{Bytes Written to Physical Storage Media}}{\text{Bytes Issued by User Application}}$$
 
 On SSDs, flash memory cannot be overwritten in place; it must be erased in large blocks (typically 2MB–8MB) before individual 4KB pages can be programmed. High database WAF (caused by repeated page rewrites in B+trees or aggressive compactions in LSM-trees) exhausts the finite Program/Erase (P/E) endurance cycles of NAND flash cells (typically 1,000–3,000 cycles for TLC/QLC flash), causing premature physical drive failure and hardware write throttling.
 </details>
 
-<details>
-<summary><strong>Q6: Why are column-oriented storage engines vastly superior to row-oriented engines for analytical aggregation queries?</strong></summary>
+<details><summary>6. Why are column-oriented storage engines vastly superior to row-oriented engines for analytical aggregation queries?</summary>
 
-**Answer:** Analytical aggregation queries (e.g. `SELECT country, SUM(revenue) FROM sales GROUP BY country`) access a small subset of columns across billions of rows.
+Analytical aggregation queries (e.g. `SELECT country, SUM(revenue) FROM sales GROUP BY country`) access a small subset of columns across billions of rows.
 
 In a row-oriented database, the engine must read every entire tuple from disk into memory, loading unused columns (customer names, descriptions, addresses) and saturating disk and memory bandwidth. In a column-oriented engine, only the contiguous blocks for `country` and `revenue` are read from disk, reducing I/O volume by $90\%+$. Furthermore, contiguous column arrays compress exceptionally well (RLE, dictionary encoding) and allow CPUs to process multiple rows per cycle via SIMD vector execution.
 </details>

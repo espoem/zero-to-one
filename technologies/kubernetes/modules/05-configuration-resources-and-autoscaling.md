@@ -390,46 +390,39 @@ Invariant 3: Scale-down recommendations are delayed by the duration of the stabi
 
 ---
 
-## 10. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. Explain the mathematical formula used by the HPA to calculate desired replicas, and explain the purpose of the tolerance band.</strong></summary>
+<details><summary>1. Explain the mathematical formula used by the HPA to calculate desired replicas, and explain the purpose of the tolerance band.</summary>
 
 The HPA calculates desired replicas using the equation: $$\text{desiredReplicas} = \left\lceil \text{currentReplicas} \times \left( \frac{\text{currentMetricValue}}{\text{desiredMetricValue}} \right) \right\rceil$$ The tolerance band (default 10% or 0.10) prevents metric thrashing or rapid scaling oscillations caused by minor statistical noise. If the ratio of current metric to desired metric falls within $[0.90, 1.10]$, the HPA treats the system as balanced and makes no adjustments to the replica count.
 </details>
 
-<details>
-<summary><strong>Q2. How does In-Place Pod Vertical Scaling (KEP-1287) differ from traditional resource updates?</strong></summary>
+<details><summary>2. How does In-Place Pod Vertical Scaling (KEP-1287) differ from traditional resource updates?</summary>
 
 Traditionally, modifying container CPU or memory requests and limits required deleting and recreating the Pod, incurring application downtime, cache flushing, and connection resets. Under KEP-1287, the `resources` field in `spec.containers[]` is mutable in place. If `resizePolicy` is set to `RestartNotRequired`, the kubelet dynamically adjusts the container's cgroup v2 parameters (`cpu.max`, `memory.max`) via the CRI `UpdateContainerResources` gRPC interface without terminating the container process or disturbing the pod sandbox.
 </details>
 
-<details>
-<summary><strong>Q3. Why is storing a Secret in Base64 format inherently insecure without Encryption at Rest?</strong></summary>
+<details><summary>3. Why is storing a Secret in Base64 format inherently insecure without Encryption at Rest?</summary>
 
 Base64 is a reversible, unkeyed encoding scheme designed to transmit binary data across text protocols, not a cryptographic cipher. Anyone with `get` permissions on Secrets in a namespace can instantly decode the data into plaintext. Furthermore, if etcd storage disks are unencrypted, raw secret text is written to disk in plaintext, exposing credentials to host disk compromise, snapshot theft, and unauthorized etcd direct queries.
 </details>
 
-<details>
-<summary><strong>Q4. How does the triple-symlink directory structure of volume-mounted ConfigMaps prevent applications from reading torn configuration files?</strong></summary>
+<details><summary>4. How does the triple-symlink directory structure of volume-mounted ConfigMaps prevent applications from reading torn configuration files?</summary>
 
 When a ConfigMap is mounted as a volume, the kubelet creates a versioned directory (`..2026_11_07_timestamp`), writes the files into it, and links an intermediate `..data` symlink to that directory. Application file mounts point through the `..data` symlink. When the ConfigMap updates, the kubelet populates a completely new timestamped directory and updates the `..data` symlink using an atomic filesystem rename syscall (`rename(2)`). Because the symlink swap is atomic in the Linux VFS, the application never observes partially written, truncated, or inconsistent files during updates.
 </details>
 
-<details>
-<summary><strong>Q5. What is the fundamental operational conflict between running HPA and VPA concurrently on the same workload?</strong></summary>
+<details><summary>5. What is the fundamental operational conflict between running HPA and VPA concurrently on the same workload?</summary>
 
 If both HPA and VPA are configured to monitor the same resource (such as CPU), they enter an unstable positive feedback loop. When traffic surges, HPA scales out replicas while VPA increases container CPU requests. As new replicas come online, average CPU utilization per pod plummets. In response, HPA aggressively scales replicas down while VPA shrinks container CPU allocations. This creates severe performance oscillations and crashes. They should only be paired if they monitor completely orthogonal dimensions (e.g., HPA scaling horizontally on HTTP request rate, while VPA tunes memory allocations).
 </details>
 
-<details>
-<summary><strong>Q6. How does setting `immutable: true` on ConfigMaps improve cluster control plane scalability?</strong></summary>
+<details><summary>6. How does setting `immutable: true` on ConfigMaps improve cluster control plane scalability?</summary>
 
 Normally, the kubelet maintains long-lived watch connections against the API server to detect mutations to mounted ConfigMaps and Secrets. In massive clusters with thousands of pods, these watch connections consume significant API server memory and CPU. Marking a ConfigMap `immutable: true` guarantees that the data will never change. The API server rejects mutations, and the kubelet deactivates watch connections for that object, drastically reducing watch load on etcd and the API server.
 </details>
 
-<details>
-<summary><strong>Q7. How does a `LimitRange` differ fundamentally from a `ResourceQuota`?</strong></summary>
+<details><summary>7. How does a `LimitRange` differ fundamentally from a `ResourceQuota`?</summary>
 
 A `LimitRange` enforces constraints on **individual** resources (per-Pod or per-Container). It injects default requests/limits if omitted and enforces minimum/maximum boundaries and limit-to-request ratios on single objects. A `ResourceQuota` enforces constraints on the **aggregate** consumption across an entire namespace. It tracks the cumulative sum of all requests, limits, or object counts (e.g., total CPU requests $\le 100$ cores across the whole namespace), blocking the creation of new pods if the total namespace allocation exceeds the hard quota ceiling.
 </details>

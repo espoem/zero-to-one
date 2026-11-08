@@ -238,39 +238,29 @@ Stylelint 17 provides static analysis to enforce design system rules and catch i
 
 ---
 
-## 7. Interview Drill: Platform, Specifications & Tooling
+## Interview Drill
 
-### Q1: Why does the term "CSS4" have no formal technical meaning in web standards?
-
-<details><summary>Answer</summary>
+<details><summary>1. Why does the term "CSS4" have no formal technical meaning in web standards?</summary>
 
 After CSS 2.1 was finalized in 2011, the W3C CSSWG abandoned monolithic language versions in favor of independent, modular specifications. Each module (such as CSS Grid, Selectors, or Cascade) advances at its own pace through the W3C recommendation track and increments its own version level independently (e.g., `css-grid-2`, `selectors-4`). The CSSWG publishes yearly "CSS Snapshots" (e.g. CSS Snapshot 2026) to define the current stable state of the platform, but there is no overarching "CSS4" specification.
 </details>
 
-### Q2: What exact criteria distinguish a feature marked "Baseline: Newly Available" from one marked "Baseline: Widely Available"?
-
-<details><summary>Answer</summary>
+<details><summary>2. What exact criteria distinguish a feature marked "Baseline: Newly Available" from one marked "Baseline: Widely Available"?</summary>
 
 "Newly Available" indicates that a feature has shipped in the stable releases of all four core browser engines: Google Chrome, Microsoft Edge, Mozilla Firefox, and Apple Safari (both desktop and mobile). "Widely Available" occurs exactly 30 months after the date a feature became Newly Available. This 30-month buffer provides a standardized operational signal that a feature can be used safely in enterprise and consumer environments without polyfills or fallbacks.
 </details>
 
-### Q3: What is the difference between `@supports (selector: ...)` and `@supports selector(...)`?
-
-<details><summary>Answer</summary>
+<details><summary>3. What is the difference between `@supports (selector: ...)` and `@supports selector(...)`?</summary>
 
 `@supports (selector: ...)` is invalid syntax because `selector` is not a CSS property. The correct syntax defined in CSS Conditional Rules Level 4 is `@supports selector(<selector>)`. It tests whether the browser's selector engine can successfully parse and query a specific selector pattern (such as `:has(img)` or `:focus-visible`). If the browser does not support the selector, it discards the entire rule block without throwing an error.
 </details>
 
-### Q4: In a CSS specification property definition table, what is the operational significance of the "Initial" value versus the "Inherited" descriptor?
-
-<details><summary>Answer</summary>
+<details><summary>4. In a CSS specification property definition table, what is the operational significance of the "Initial" value versus the "Inherited" descriptor?</summary>
 
 The "Initial" value is the property's default value specified by the standard (e.g. `margin: 0`, `font-size: medium`). The "Inherited" descriptor (either `yes` or `no`) specifies whether an element inherits the computed value from its parent when no author or user styles match the element. For inherited properties (e.g. `color`, `font-family`), the value cascades down the DOM tree. For non-inherited properties (e.g. `border`, `padding`, `background`), the element receives the property's Initial value unless explicitly set.
 </details>
 
-### Q5: Why is Lightning CSS substantially faster than traditional PostCSS pipelines, and how does it determine which vendor prefixes to generate?
-
-<details><summary>Answer</summary>
+<details><summary>5. Why is Lightning CSS substantially faster than traditional PostCSS pipelines, and how does it determine which vendor prefixes to generate?</summary>
 
 Lightning CSS is written in Rust and operates on strongly typed abstract syntax trees (ASTs) in native machine code, avoiding the garbage collection pauses and object allocation overhead of JavaScript engines. It embeds a complete browser compatibility database (compatible with Browserslist and CanIUse). Based on the developer's declared browser target matrix, Lightning CSS performs a single-pass AST traversal to insert required vendor prefixes and down-level modern CSS features only for engines that strictly require it.
 </details>

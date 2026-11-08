@@ -156,10 +156,9 @@ Whenever a problem asks to minimize a maximum or maximize a minimum (e.g., _Capa
 
 ---
 
-## 6. Interview Drill: Sorting, Selection & Search Invariants
+## Interview Drill
 
-<details>
-<summary>1. Why does V8's Array.prototype.sort() use TimSort rather than Quicksort?</summary>
+<details><summary>1. Why does V8's Array.prototype.sort() use TimSort rather than Quicksort?</summary>
 
 Prior to V8 v7.0, V8 used a hybrid of Quicksort and Insertion Sort. However, Quicksort has two major flaws in production:
 
@@ -168,20 +167,17 @@ Prior to V8 v7.0, V8 used a hybrid of Quicksort and Insertion Sort. However, Qui
 
 </details>
 
-<details>
-<summary>2. Why does 3-way partitioning (Dutch National Flag) run in O(n) time on an array where all elements are identical?</summary>
+<details><summary>2. Why does 3-way partitioning (Dutch National Flag) run in O(n) time on an array where all elements are identical?</summary>
 
 In standard Lomuto partitioning, an array with identical elements forces all elements into one side of the partition, degrading Quicksort to $O(n^2)$. In 3-way partitioning, elements are partitioned into three contiguous regions: $< \text{pivot}$, $== \text{pivot}$, and $> \text{pivot}$. When all elements are identical, every element lands in the $== \text{pivot}$ middle region in a single linear pass ($O(n)$). The recursive subproblems for $< \text{pivot}$ and $> \text{pivot}$ are empty, terminating the algorithm immediately.
 </details>
 
-<details>
-<summary>3. In the Median-of-Medians algorithm, why must the group size be at least 5? Why not groups of 3?</summary>
+<details><summary>3. In the Median-of-Medians algorithm, why must the group size be at least 5? Why not groups of 3?</summary>
 
 If groups of 3 are used, the recurrence becomes: $$T(n) = T(n/3) + T(2n/3) + O(n)$$ The sum of the subproblem fractions is $1/3 + 2/3 = 1$. By the Akra-Bazzi theorem, this recurrence evaluates to $O(n \log n)$, losing linear worst-case performance! With groups of 5, the recurrence is $T(n) \le T(n/5) + T(7n/10) + O(n)$. Because $1/5 + 7/10 = 9/10 < 1$, the recursion tree shrinks geometrically, guaranteeing $O(n)$ total time.
 </details>
 
-<details>
-<summary>4. What is the difference between lower_bound and upper_bound in C++ std / algorithmic search?</summary>
+<details><summary>4. What is the difference between lower_bound and upper_bound in C++ std / algorithmic search?</summary>
 
 - `lower_bound(target)`: Returns an iterator pointing to the **first** element that is **$\ge$ target** (equivalent to `A[i] < target` predicate boundary).
 - `upper_bound(target)`: Returns an iterator pointing to the **first** element that is **strictly $>$ target** (equivalent to `A[i] <= target` predicate boundary). For array `[10, 20, 20, 20, 30]`:
@@ -190,8 +186,7 @@ If groups of 3 are used, the recurrence becomes: $$T(n) = T(n/3) + T(2n/3) + O(n
 
 </details>
 
-<details>
-<summary>5. How does Counting Sort achieve O(n + k) time, and why cannot it be used for arbitrary floating-point numbers?</summary>
+<details><summary>5. How does Counting Sort achieve O(n + k) time, and why cannot it be used for arbitrary floating-point numbers?</summary>
 
 Counting Sort avoids comparisons by counting the occurrences of each discrete integer key in an auxiliary array of size $k$ (where $k = \text{max} - \text{min} + 1$). It computes prefix sums of the counts to determine each element's exact final index in the output array in $O(n + k)$ time. It cannot be used for arbitrary floating-point numbers because floats cannot be mapped directly to discrete, dense array indices; the range of possible floating-point values is continuous and astronomical, requiring an array of infinite or prohibitive size.
 </details>

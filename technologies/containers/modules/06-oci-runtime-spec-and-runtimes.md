@@ -472,16 +472,14 @@ OCI-LIFECYCLE-TRANSITION(containerBundle, initialOp)
 
 ---
 
-## 11. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. Explain the architectural division of labor between a high-level runtime like containerd and a low-level runtime like `runc`.</strong></summary>
+<details><summary>1. Explain the architectural division of labor between a high-level runtime like containerd and a low-level runtime like `runc`.</summary>
 
 A high-level runtime (`containerd`, `CRI-O`, `dockerd`) manages the end-to-end lifecycle of containers across a system: it downloads and verifies OCI image layers from remote registries, manages content-addressable storage snapshotters, unpacks image filesystems into directory trees, configures network namespaces via CNI, and translates Kubernetes CRI requests. A low-level runtime (`runc`, `crun`) has no networking, image-pulling, or storage-downloading capabilities. It accepts a pre-configured OCI Runtime Bundle on disk (`config.json` and `rootfs/`) and interfaces directly with Linux kernel system calls (`clone`, `unshare`, `setns`, `pivot_root`, and cgroups v2) to spawn the containerized process.
 </details>
 
-<details>
-<summary><strong>Q2. Why is `containerd-shim-v2` necessary, and what operational failures would occur if containerd parented container processes directly?</strong></summary>
+<details><summary>2. Why is `containerd-shim-v2` necessary, and what operational failures would occur if containerd parented container processes directly?</summary>
 
 If containerd were the direct parent of all container processes on a host:
 
@@ -491,37 +489,31 @@ If containerd were the direct parent of all container processes on a host:
 `containerd-shim-v2` acts as a per-pod or per-container subreaper daemon. It holds the container's standard I/O pipes, collects its exit status code, and forwards signals. This allows containerd to restart or crash without impacting running container workloads.
 </details>
 
-<details>
-<summary><strong>Q3. What problem does Cgo constructor execution (`__attribute__((constructor))`) solve in `runc`?</strong></summary>
+<details><summary>3. What problem does Cgo constructor execution (`__attribute__((constructor))`) solve in `runc`?</summary>
 
 Linux namespace system calls (`setns` and `unshare`) operate at the thread level, not the process level. The Go programming language features an M:N user-space scheduler that automatically initializes a pool of operating system threads before the `main()` function is ever executed. If Go code attempted to call `setns`, only a single thread would enter the new namespace, leaving the Go runtime in an undefined, corrupted state where goroutines hopping across threads would randomly execute in different namespaces. To bypass this, `runc` compiles a C bootstrap function (`nsenter.c`) with a constructor attribute that runs during ELF loading before the Go runtime initializes, ensuring namespace transitions occur safely while the process is strictly single-threaded.
 </details>
 
-<details>
-<summary><strong>Q4. Contrast the architectural design of `crun` with `runc` and highlight its primary performance advantages.</strong></summary>
+<details><summary>4. Contrast the architectural design of `crun` with `runc` and highlight its primary performance advantages.</summary>
 
 `runc` is implemented in Go (requiring a Cgo bootstrap constructor) and consumes 15MB–30MB of memory per spawn. `crun` is implemented in pure C with zero runtime dependencies and no garbage collector. Its primary advantages include:
 
 1. **Memory Footprint**: `crun` consumes less than 2MB of memory during container creation, enabling high container density on edge devices.
 2. **Startup Speed**: `crun` instantiates containers in approximately 1.5ms, roughly 10x faster than `runc`.
 3. **Native cgroups v2 and systemd Integration**: `crun` interfaces directly with Linux kernel cgroup v2 APIs and systemd D-Bus IPC without the overhead of Go runtime layers.
-
 </details>
 
-<details>
-<summary><strong>Q5. How does gVisor (`runsc`) provide container sandboxing, and what is its primary performance trade-off?</strong></summary>
+<details><summary>5. How does gVisor (`runsc`) provide container sandboxing, and what is its primary performance trade-off?</summary>
 
 gVisor provides sandboxing through system call interception. It implements an independent application kernel written in Go called the "Sentry" that runs in user space (Ring 3). When the containerized process invokes a system call, it is trapped (using KVM or `ptrace`) and handled entirely inside the Sentry's memory space. Only a narrow, vetted subset of safe system calls are ever forwarded to the underlying host Linux kernel. The primary trade-off is **system call latency**: applications that execute frequent, high-throughput system calls (such as Redis or raw socket network proxies) experience significant performance penalties due to interception and user-space emulation overhead.
 </details>
 
-<details>
-<summary><strong>Q6. How does Kata Containers achieve hardware-enforced isolation while presenting the standard OCI container interface?</strong></summary>
+<details><summary>6. How does Kata Containers achieve hardware-enforced isolation while presenting the standard OCI container interface?</summary>
 
 Kata Containers implements the OCI Runtime Specification, meaning it accepts standard OCI bundles and integrates seamlessly with containerd and Kubernetes CRI. However, instead of spawning processes directly on the host kernel using namespaces, Kata launches an ultra-lightweight **MicroVM** (powered by QEMU, Cloud-Hypervisor, or Firecracker) with a minimal dedicated guest Linux kernel. The container workload executes inside this microVM. Isolation is enforced by hardware CPU virtualization extensions (Intel VMX / AMD SVM), guaranteeing that a kernel vulnerability compromise inside the guest cannot escape to the physical host.
 </details>
 
-<details>
-<summary><strong>Q7. What was the root cause of CVE-2019-5736, and how do modern runtimes prevent container processes from overwriting host binaries?</strong></summary>
+<details><summary>7. What was the root cause of CVE-2019-5736, and how do modern runtimes prevent container processes from overwriting host binaries?</summary>
 
 In CVE-2019-5736, when an administrator executed `docker exec`, the host `runc` binary entered the container's mount namespace to initialize execution. A malicious container process holding root privileges opened `/proc/[runc_pid]/exe` (which references the host `runc` binary on disk) with write intent (`O_WRONLY`) and overwrote the host `runc` binary with malicious code. When the host subsequently ran any container, the attacker's code executed as host root. Modern runtimes mitigate this by using `memfd_create(2)` to create an anonymous, sealed in-memory file descriptor containing a copy of the runtime binary and executing from that sealed descriptor, preventing any writes to the binary on the host disk.
 </details>

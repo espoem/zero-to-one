@@ -698,34 +698,29 @@ The algorithm verifies whether `leaf_hash` is present at index `leaf_index` with
 
 ---
 
-## 12. Interview Drill: Questions and Model Answers
+## Interview Drill
 
-<details>
-<summary><strong>Q1. Explain the architectural difference between key-based Cosign signing and Sigstore keyless signing. Why is keyless considered superior for enterprise CI/CD?</strong></summary>
+<details><summary>1. Explain the architectural difference between key-based Cosign signing and Sigstore keyless signing. Why is keyless considered superior for enterprise CI/CD?</summary>
 
-**Answer**: In key-based signing, a static private cryptographic key (e.g., RSA or ECDSA) is stored in a secret management system or CI variable. The CI runner accesses this key to sign the image digest. If the key is exfiltrated, an attacker can sign malicious images retroactively or into the future, and rotating the key requires updating all verification clients across all clusters.
+In key-based signing, a static private cryptographic key (e.g., RSA or ECDSA) is stored in a secret management system or CI variable. The CI runner accesses this key to sign the image digest. If the key is exfiltrated, an attacker can sign malicious images retroactively or into the future, and rotating the key requires updating all verification clients across all clusters.
 
 Keyless signing uses ephemeral, in-memory ECDSA key pairs generated dynamically inside the CI runner process. The runner proves its identity by presenting an OpenID Connect (OIDC) JWT minted by GitLab CI to Fulcio (a short-lived Certificate Authority). Fulcio validates the token, extracts the claims (repository, pipeline ID, branch), and issues an X.509 certificate binding the ephemeral public key to that specific CI job identity with a 10-minute validity period. The signature and certificate are submitted to Rekor, a public append-only Merkle tree transparency log. The private key is immediately zeroed in memory. Keyless signing is superior because it eliminates long-lived secret management, provides non-repudiable audit trails via transparency logs, and cryptographically binds the signature to the exact build pipeline context.
 
 - Ref: Sigstore Architecture Specification; [modules/06-supply-chain-security-sbom-cosign-slsa.md](../modules/06-supply-chain-security-sbom-cosign-slsa.md#4-keyless-sigstore-cosign-v3-architecture--oidc-federation)
-
 </details>
 
-<details>
-<summary><strong>Q2. How does the OCI v1.1 Referrers API improve upon legacy signature storage conventions in container registries?</strong></summary>
+<details><summary>2. How does the OCI v1.1 Referrers API improve upon legacy signature storage conventions in container registries?</summary>
 
-**Answer**: Legacy Cosign v1 stored signatures as companion images tagged with the hash of the image digest followed by `.sig` (e.g., `sha256-4b971a...sig`). This polluted the image tag namespace, broke tag pagination, and caused accidental deletion during tag-based cleanup or retention policies. Furthermore, registries had no awareness of the relationship between the image and its signature.
+Legacy Cosign v1 stored signatures as companion images tagged with the hash of the image digest followed by `.sig` (e.g., `sha256-4b971a...sig`). This polluted the image tag namespace, broke tag pagination, and caused accidental deletion during tag-based cleanup or retention policies. Furthermore, registries had no awareness of the relationship between the image and its signature.
 
 The OCI Image Specification v1.1 introduces the `subject` field in image manifests and the Referrers API (`/v2/<name>/referrers/<digest>`). Signatures, SBOMs, and SLSA attestations are pushed as independent artifacts whose `subject` descriptor points to the target container image digest. Registries index this relationship natively. Clients can query all artifacts referring to an image in a single API call, and registries can enforce cascade deletion and garbage collection rules, ensuring signatures persist as long as the parent image exists.
 
 - Ref: OCI Image Specification v1.1; [`technologies/containers/modules/05-oci-image-spec.md`](../../containers/modules/05-oci-image-spec.md)
-
 </details>
 
-<details>
-<summary><strong>Q3. What is the difference between an SBOM and SLSA Provenance? Can an SBOM substitute for SLSA?</strong></summary>
+<details><summary>3. What is the difference between an SBOM and SLSA Provenance? Can an SBOM substitute for SLSA?</summary>
 
-**Answer**: An SBOM and SLSA Provenance address orthogonal supply-chain concerns and cannot substitute for one another:
+An SBOM and SLSA Provenance address orthogonal supply-chain concerns and cannot substitute for one another:
 
 - **SBOM (Software Bill of Materials)**: Answers **"What is in the artifact?"** It is a component and dependency inventory listing all packages, libraries, files, licenses, and known vulnerabilities (e.g., CycloneDX or SPDX).
 - **SLSA Provenance**: Answers **"How was the artifact produced?"** It is an attestation of the build process itself, documenting the source repository URI, the exact Git commit SHA, the build recipe or entrypoint, environment variables, runner identity, and builder software version.
@@ -733,24 +728,20 @@ The OCI Image Specification v1.1 introduces the `subject` field in image manifes
 An attacker could generate a valid, pristine SBOM for an artifact compiled from backdoored source code. SLSA Provenance proves that the artifact was generated deterministically by an authorized, untampered build service from an approved Git commit.
 
 - Ref: SLSA v1.0 Specification; [modules/06-supply-chain-security-sbom-cosign-slsa.md](../modules/06-supply-chain-security-sbom-cosign-slsa.md#5-in-toto-and-slsa-v10-provenance-attestation)
-
 </details>
 
-<details>
-<summary><strong>Q4. How does Rekor's Merkle tree guarantee that a revoked or expired certificate cannot be used to forge a signature?</strong></summary>
+<details><summary>4. How does Rekor's Merkle tree guarantee that a revoked or expired certificate cannot be used to forge a signature?</summary>
 
-**Answer**: Rekor is an append-only, tamper-evident transparency log modeled after RFC 6962. When Cosign submits a signature, Rekor verifies that the Fulcio certificate was valid at that exact moment in time, assigns it an entry index, and incorporates the hash of the payload, signature, and certificate into its cryptographic Merkle tree. Rekor returns a Signed Entry Timestamp (SET) containing the log index, tree size, and a cryptographic signature from Rekor's private key.
+Rekor is an append-only, tamper-evident transparency log modeled after RFC 6962. When Cosign submits a signature, Rekor verifies that the Fulcio certificate was valid at that exact moment in time, assigns it an entry index, and incorporates the hash of the payload, signature, and certificate into its cryptographic Merkle tree. Rekor returns a Signed Entry Timestamp (SET) containing the log index, tree size, and a cryptographic signature from Rekor's private key.
 
 During verification, an admission controller (like Kyverno) checks the inclusion proof against Rekor's public key and the signed tree head. Because entries in the Merkle tree are immutable and time-stamped, an attacker cannot backdate a signature after a key or token expires. Rekor proves that the signature existed within the 10-minute validity window of the Fulcio certificate.
 
 - Ref: RFC 6962 Transparency Logs; [modules/06-supply-chain-security-sbom-cosign-slsa.md](../modules/06-supply-chain-security-sbom-cosign-slsa.md#8-algorithm-merkle-tree-inclusion-proof-verification)
-
 </details>
 
-<details>
-<summary><strong>Q5. How do you prevent a malicious developer from using their personal feature branch pipeline to sign a production container image using GitLab OIDC?</strong></summary>
+<details><summary>5. How do you prevent a malicious developer from using their personal feature branch pipeline to sign a production container image using GitLab OIDC?</summary>
 
-**Answer**: Identity in GitLab CI keyless signing is not anonymous; the OIDC token issued to the runner embeds precise contextual claims: `ref` (branch name), `ref_protected` (`true`/`false`), `ref_type`, and `environment`.
+Identity in GitLab CI keyless signing is not anonymous; the OIDC token issued to the runner embeds precise contextual claims: `ref` (branch name), `ref_protected` (`true`/`false`), `ref_type`, and `environment`.
 
 To prevent unauthorized signing:
 
@@ -758,29 +749,24 @@ To prevent unauthorized signing:
 2. **Admission Controller Layer**: The verifying admission controller (Kyverno or Sigstore Policy Controller) must not merely verify that _some_ signature exists; it must enforce a strict policy on the subject certificate claims. Specifically, the policy requires that the Certificate SAN or OID extension `1.3.6.1.4.1.57264.1.11` (Source Repository Ref) equals `refs/heads/main` and that the Issuer equals the enterprise GitLab instance. Even if a developer runs Cosign on a feature branch, the generated certificate will embed `refs/heads/feature-x`, causing the admission controller to reject admission.
 
 - Ref: [modules/06-supply-chain-security-sbom-cosign-slsa.md](../modules/06-supply-chain-security-sbom-cosign-slsa.md#7-kubernetes-admission-enforcement-kyverno--sigstore-policy-controller)
-
 </details>
 
-<details>
-<summary><strong>Q6. Why must container builds use rootless BuildKit or Kaniko rather than Docker-in-Docker when implementing secure SLSA L3 build pipelines?</strong></summary>
+<details><summary>6. Why must container builds use rootless BuildKit or Kaniko rather than Docker-in-Docker when implementing secure SLSA L3 build pipelines?</summary>
 
-**Answer**: Docker-in-Docker (DinD) requires running the runner container in `--privileged` mode, granting it access to the host kernel's device nodes, capability sets, and namespace switching primitives. A malicious build step or compromised dependency can exploit this to escape the container, compromise the runner host, and tamper with other builds, cache volumes, or the host's OIDC tokens, violating SLSA L3 environment isolation.
+Docker-in-Docker (DinD) requires running the runner container in `--privileged` mode, granting it access to the host kernel's device nodes, capability sets, and namespace switching primitives. A malicious build step or compromised dependency can exploit this to escape the container, compromise the runner host, and tamper with other builds, cache volumes, or the host's OIDC tokens, violating SLSA L3 environment isolation.
 
 Rootless BuildKit executes entirely within an unprivileged user namespace where container UID 0 maps to an unprivileged host UID (e.g., UID 1000). Even if a malicious build script gains root within the build sandbox, it has zero privileges on the host operating system kernel, preventing host compromise and cross-build tampering.
 
 - Ref: [`technologies/containers/modules/12-security-and-supply-chain.md`](../../containers/modules/12-security-and-supply-chain.md)
-
 </details>
 
-<details>
-<summary><strong>Q7. What is VEX (Vulnerability Exploitability eXchange) and why is it critical when consuming CycloneDX SBOMs?</strong></summary>
+<details><summary>7. What is VEX (Vulnerability Exploitability eXchange) and why is it critical when consuming CycloneDX SBOMs?</summary>
 
-**Answer**: An SBOM lists all packages and transitive dependencies in an application. Traditional vulnerability scanners match this inventory against CVE databases and generate hundreds of alerts. However, the vast majority of disclosed CVEs in dependencies are not exploitable in the context of the consuming application because the vulnerable functions or code paths are never called, compiled, or initialized.
+An SBOM lists all packages and transitive dependencies in an application. Traditional vulnerability scanners match this inventory against CVE databases and generate hundreds of alerts. However, the vast majority of disclosed CVEs in dependencies are not exploitable in the context of the consuming application because the vulnerable functions or code paths are never called, compiled, or initialized.
 
 VEX is a machine-readable companion assertion format (native to CycloneDX and supported in OpenVEX) that allows software authors to state the operational status of a vulnerability (e.g., `not_affected`, `affected`, `fixed`, `under_investigation`) accompanied by an architectural justification (e.g., `code_not_reachable`, `inline_mitigations_exist`). Consuming an SBOM alongside a VEX document eliminates false-positive noise, allowing SecOps and platform teams to focus remediation efforts exclusively on exploitable flaws.
 
 - Ref: OWASP CycloneDX v1.6 VEX Specification; [modules/06-supply-chain-security-sbom-cosign-slsa.md](../modules/06-supply-chain-security-sbom-cosign-slsa.md#3-software-bill-of-materials-sbom-cyclonedx-v16-vs-spdx-v2330)
-
 </details>
 
 ---

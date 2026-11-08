@@ -374,7 +374,7 @@ What is the precise difference between **Serializability** (from database transa
 - Why not B: Serializability does not enforce real-time precedence; an execution can be serializable without being linearizable.
 - Why not C: Both are safety properties.
 - Why not D: The definitions are mathematical specifications, independent of implementation protocols.
-- Ref: [modules/04-consistency-models-and-linearizability.md](../modules/04-consistency-models-and-linearizability.md#6-interview-drill-consistency-models--linearizability), Kleppmann (DDIA 2e Chapter 7 & 9)
+- Ref: [modules/04-consistency-models-and-linearizability.md](../modules/04-consistency-models-and-linearizability.md#interview-drill), Kleppmann (DDIA 2e Chapter 7 & 9)
 
 </details>
 

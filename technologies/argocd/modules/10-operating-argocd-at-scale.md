@@ -113,40 +113,34 @@ Operating Argo CD at scale connects closely with Kubernetes cluster architecture
 
 ---
 
-## 9. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. How does Argo CD distribute application reconciliation load across multiple controller replicas?</strong></summary>
+<details><summary>1. How does Argo CD distribute application reconciliation load across multiple controller replicas?</summary>
 
 Argo CD uses **Controller Sharding** based on consistent hashing. By setting `ARGOCD_CONTROLLER_SHARDS`, each controller pod calculates a stable hash of the application name and namespace modulo the total shard count, ensuring each shard reconciles only its assigned subset of applications.
 </details>
 
-<details>
-<summary><strong>Q2. What role does Redis play in the Argo CD high-availability architecture?</strong></summary>
+<details><summary>2. What role does Redis play in the Argo CD high-availability architecture?</summary>
 
 Redis acts as a distributed cache and state store for the Argo CD control plane, caching repository contents, manifest generation outputs, and cluster resource states across multiple API servers, repo servers, and controllers.
 </details>
 
-<details>
-<summary><strong>Q3. Why is resource exclusion critical when managing large-scale Kubernetes clusters with Argo CD?</strong></summary>
+<details><summary>3. Why is resource exclusion critical when managing large-scale Kubernetes clusters with Argo CD?</summary>
 
 Resource exclusions (configured in `argocd-cm`) prevent Argo CD from tracking high-churn, ephemeral cluster resources (such as `Event` objects, node status metrics, or cert-manager generated secrets), preventing unnecessary database growth and reconciliation CPU cycles.
 </details>
 
-<details>
-<summary><strong>Q4. How do you perform a disaster recovery backup and restoration of an Argo CD instance?</strong></summary>
+<details><summary>4. How do you perform a disaster recovery backup and restoration of an Argo CD instance?</summary>
 
 Backups are performed using the CLI utility `argocd admin export > backup.yaml`, which exports all applications, projects, repository credentials, and settings as a declarative YAML stream. Restoration is executed by applying the backup file into a fresh cluster instance using `kubectl apply -f backup.yaml`.
 </details>
 
-<details>
-<summary><strong>Q5. What causes `argocd-repo-server` memory exhaustion, and how do you mitigate it?</strong></summary>
+<details><summary>5. What causes `argocd-repo-server` memory exhaustion, and how do you mitigate it?</summary>
 
 Memory exhaustion is typically caused by cloning extremely large Git repositories or rendering massive Helm charts with deep recursion. Mitigation strategies include increasing container memory limits, splitting monolithic repositories into polyrepos, and leveraging pre-rendered manifest hydrator patterns.
 </details>
 
-<details>
-<summary><strong>Q6. How does Server-Side Apply (SSA) improve Argo CD upgrades and CRD management?</strong></summary>
+<details><summary>6. How does Server-Side Apply (SSA) improve Argo CD upgrades and CRD management?</summary>
 
 Server-Side Apply delegates field ownership tracking to the Kubernetes API server rather than client-side annotation management, preventing conflicts when multiple controllers or users mutate shared custom resources during upgrades.
 </details>

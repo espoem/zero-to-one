@@ -355,28 +355,24 @@ When control plane static pods crash or fail to launch:
 
 ---
 
-## 12. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. Explain the architectural difference between exit code 137 caused by OOMKilled vs exit code 137 caused by graceful shutdown timeouts.</strong></summary>
+<details><summary>1. Explain the architectural difference between exit code 137 caused by OOMKilled vs exit code 137 caused by graceful shutdown timeouts.</summary>
 
 Both scenarios result in process termination via `SIGKILL` (Signal 9, producing exit code $128 + 9 = 137$):
 
 - **OOMKilled**: Triggered by the Linux kernel cgroup memory controller when a container exceeds its `resources.limits.memory` limit. Kubelet observes the kernel cgroup event and sets `lastState.terminated.reason = "OOMKilled"` in the container status.
 - **Graceful Shutdown Timeout**: Occurs when a Pod is being deleted or a liveness probe fails. Kubelet sends `SIGTERM` (Signal 15) and starts the `terminationGracePeriodSeconds` timer (default 30 seconds). If the application fails to cleanly terminate before the timer expires, kubelet forcibly terminates the process with `SIGKILL`. In this case, `lastState.terminated.reason` is typically `Error` or empty, NOT `OOMKilled`.
-
 </details>
 
-<details>
-<summary><strong>Q2. How does `kubectl debug --target` enable inspection of distroless or scratch containers that lack shell binaries?</strong></summary>
+<details><summary>2. How does `kubectl debug --target` enable inspection of distroless or scratch containers that lack shell binaries?</summary>
 
 `kubectl debug --target=<container-name>` leverages Linux **Process Namespace Sharing**. When invoked, kubelet injects an ephemeral container (using an image containing debugging tools like `nicolaka/netshoot`) into the target Pod. By setting the ephemeral container's target to the application container, both containers share the exact same Linux PID namespace.
 
 From the debug container's shell, running `ps aux` displays the application's processes. Furthermore, the application container's entire root filesystem is directly accessible via the Linux proc virtual filesystem at `/proc/<target-pid>/root/`, allowing inspection of configuration files, certificates, and runtime locks without altering the original immutable image.
 </details>
 
-<details>
-<summary><strong>Q3. What is the root cause of the infamous CoreDNS `plugin/loop: Loop detected` crash loop, and how is it resolved?</strong></summary>
+<details><summary>3. What is the root cause of the infamous CoreDNS `plugin/loop: Loop detected` crash loop, and how is it resolved?</summary>
 
 Modern Linux distributions run `systemd-resolved`, which configures `/etc/resolv.conf` to point to a local stub listener on `127.0.0.53`. When kubelet starts CoreDNS, it copies host `/etc/resolv.conf` into CoreDNS's forward plugin.
 
@@ -385,16 +381,14 @@ CoreDNS receives a query, forwards it to `127.0.0.53` (which is localhost inside
 Resolution: Configure kubelet with `--resolv-conf=/run/systemd/resolve/resolv.conf`, which points directly to real upstream nameservers (e.g., corporate DNS or 8.8.8.8) rather than the local loopback stub.
 </details>
 
-<details>
-<summary><strong>Q4. What is `StorageVersionMigration` (promoted to GA in Kubernetes v1.37), and why is it essential for cluster lifecycle management?</strong></summary>
+<details><summary>4. What is `StorageVersionMigration` (promoted to GA in Kubernetes v1.37), and why is it essential for cluster lifecycle management?</summary>
 
 When an API resource transitions from Beta to GA (e.g., `CronJob` moving from `batch/v1beta1` to `batch/v1`), newer Kubernetes releases change the default storage version in `etcd`. However, objects written under the old version remain serialized in `etcd` in the legacy schema until rewritten.
 
 If a cluster is upgraded to a version where the old API version is completely deleted from the code, `kube-apiserver` can no longer deserialize the stored bytes, causing corrupted objects and cluster panic. `StorageVersionMigration` (promoted to GA in v1.37) automates background read-and-rewrite cycles, safely upgrading all legacy stored records in `etcd` to the active storage version before deprecated schemas are removed.
 </details>
 
-<details>
-<summary><strong>Q5. In the CKA exam, if a Service exists but curl commands to its ClusterIP time out, what are the exact triage steps to locate the failure?</strong></summary>
+<details><summary>5. In the CKA exam, if a Service exists but curl commands to its ClusterIP time out, what are the exact triage steps to locate the failure?</summary>
 
 Follow this systematic 4-step triage sequence:
 
@@ -404,37 +398,20 @@ Follow this systematic 4-step triage sequence:
 2. **Inspect Target Port**: Verify that the Service's `spec.ports[].targetPort` matches the actual port the container application is listening on.
 3. **Inspect NetworkPolicies**: Check if an egress policy on the client pod or an ingress policy on the server pod is dropping traffic.
 4. **Inspect Kube-Proxy**: Check kube-proxy DaemonSet logs on the client node to verify iptables/IPVS/eBPF rules were successfully programmed.
-
 </details>
 
-<details>
-<summary><strong>Q6. Why does a Pod remain stuck in `Pending` when a persistent volume is configured with `volumeBindingMode: WaitForFirstConsumer`?</strong></summary>
+<details><summary>6. Why does a Pod remain stuck in `Pending` when a persistent volume is configured with `volumeBindingMode: WaitForFirstConsumer`?</summary>
 
 Under `WaitForFirstConsumer`, the persistent volume is intentionally NOT provisioned or bound when the PVC is created. Binding is delayed until the `kube-scheduler` selects a specific node for the Pod consuming the claim.
 
 If the Pod is stuck in `Pending`, the scheduler has not yet found a node that satisfies the Pod's compute requests, taints/tolerations, and node affinity rules. The PVC will remain `Pending` until compute scheduling succeeds. Triage the failure using `kubectl describe pod <pod-name>` to view the scheduler's `FailedScheduling` events.
 </details>
 
-<details>
-<summary><strong>Q7. What is Pressure Stall Information (PSI), and why did Kubernetes integrate it into the kubelet eviction subsystem?</strong></summary>
+<details><summary>7. What is Pressure Stall Information (PSI), and why did Kubernetes integrate it into the kubelet eviction subsystem?</summary>
 
 Traditional kubelet eviction relied on raw resource thresholds (e.g., available memory percentage or CPU load averages). These metrics fail to differentiate between harmless high cache usage and active performance degradation.
 
 PSI (Pressure Stall Information) is a Linux kernel facility that measures the percentage of CPU execution time lost while tasks wait for hardware resources (CPU scheduling delays, paging memory from swap/disk, block I/O stalls). By monitoring PSI metrics via cgroups v2, kubelet detects actual system thrashing and starvation in real time, making eviction and pod resizing decisions based on real user latency impact rather than blunt allocation percentages.
-</details>
-
-<details>
-<summary><strong>Q8. In the CKA exam, how do you recover a worker node whose status is `NotReady` due to a failed kubelet service?</strong></summary>
-
-1. SSH to the affected worker node.
-2. Inspect kubelet service status: `sudo systemctl status kubelet`.
-3. Read the journalctl logs for failure errors: `sudo journalctl -u kubelet -e --no-pager`.
-4. Common failure causes:
-   - **Swap enabled**: Kubernetes fails to start if swap is active. Run `sudo swapoff -a` and comment out swap entries in `/etc/fstab`.
-   - **CRI runtime socket error**: Verify containerd is active (`sudo systemctl status containerd`) and check that `/etc/default/kubelet` or `/var/lib/kubelet/kubeadm-flags.env` points to the correct container runtime socket (`unix:///run/containerd/containerd.sock`).
-   - **Broken configuration YAML**: Check syntax in `/var/lib/kubelet/config.yaml`.
-5. After remediation, restart the daemon: `sudo systemctl daemon-reload && sudo systemctl restart kubelet`.
-
 </details>
 
 ---

@@ -248,12 +248,11 @@ To ensure correctness, the lock service must return a strictly monotonically inc
 
 ---
 
-## 8. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1: Prove mathematically why a leaderless quorum system with $W + R > N$ guarantees that a read operation observes the latest committed write.</strong></summary>
+<details><summary>1. Prove mathematically why a leaderless quorum system with $W + R > N$ guarantees that a read operation observes the latest committed write.</summary>
 
-**Answer:** Let $S_{\text{write}}$ be the set of nodes that acknowledge a successful write operation ($|S_{\text{write}}| = W$). Let $S_{\text{read}}$ be the set of nodes queried during a read operation ($|S_{\text{read}}| = R$). Both sets are subsets of the total replica set $S$ of size $N$.
+Let $S_{\text{write}}$ be the set of nodes that acknowledge a successful write operation ($|S_{\text{write}}| = W$). Let $S_{\text{read}}$ be the set of nodes queried during a read operation ($|S_{\text{read}}| = R$). Both sets are subsets of the total replica set $S$ of size $N$.
 
 According to the Pigeonhole Principle, if the sum of the cardinalities of two subsets of a universal set exceeds the cardinality of the universal set:
 
@@ -266,10 +265,9 @@ $$S_{\text{write}} \cap S_{\text{read}} \ne \emptyset$$
 Therefore, at least one node in the read set is guaranteed to belong to the write set that acknowledged the latest write. Because every write is tagged with a monotonically increasing version number or timestamp, the client evaluates all responses and selects the highest version, guaranteeing strong read-your-writes consistency.
 </details>
 
-<details>
-<summary><strong>Q2: Explain the Read-Your-Writes consistency anomaly and outline two production mitigations in a single-leader read-replica architecture.</strong></summary>
+<details><summary>2. Explain the Read-Your-Writes consistency anomaly and outline two production mitigations in a single-leader read-replica architecture.</summary>
 
-**Answer:** The **Read-Your-Writes anomaly** occurs when a client writes data to the primary database, receives a commit acknowledgment, immediately issues a read query, and fails to observe its own write. This occurs because the read query was routed to an asynchronous read replica that is trailing behind the primary due to replication lag.
+The **Read-Your-Writes anomaly** occurs when a client writes data to the primary database, receives a commit acknowledgment, immediately issues a read query, and fails to observe its own write. This occurs because the read query was routed to an asynchronous read replica that is trailing behind the primary due to replication lag.
 
 Two production mitigations:
 
@@ -278,20 +276,16 @@ Two production mitigations:
 
 </details>
 
-<details>
-<summary><strong>Q3: Why are distributed locks implemented via Redis Redlock unsafe without fencing tokens, as demonstrated by Martin Kleppmann?</strong></summary>
+<details><summary>3. Why are distributed locks implemented via Redis Redlock unsafe without fencing tokens, as demonstrated by Martin Kleppmann?</summary>
 
-**Answer:** Redlock assumes that locks have physical expiration timeouts (leases, e.g. 10 seconds). In real-world computing environments, processes experience **asynchronous pauses** beyond application control: long garbage collection Stop-The-World pauses, page faults, CPU throttling, or network delays.
+Redlock assumes that locks have physical expiration timeouts (leases, e.g. 10 seconds). In real-world computing environments, processes experience **asynchronous pauses** beyond application control: long garbage collection Stop-The-World pauses, page faults, CPU throttling, or network delays.
 
 If Client 1 acquires a lock, pauses during a 15-second GC pause, its lock lease expires in Redis. Client 2 then acquires the exact same lock and begins writing to shared storage. When Client 1 awakens from its pause, it falsely assumes its lock is still valid and issues its write, corrupting data because two clients write concurrently without mutual exclusion.
 
 A **fencing token** resolves this: the lock service returns a strictly monotonically increasing counter with every lock grant. Storage rejects any write carrying a token lower than the highest token it has already processed, safely blocking Client 1's stale write.
 </details>
 
-<details>
-<summary><strong>Q4: Contrast physical streaming replication with logical replication in terms of operational flexibility and performance.</strong></summary>
-
-**Answer:**
+<details><summary>4. Contrast physical streaming replication with logical replication in terms of operational flexibility and performance.</summary>
 
 - **Physical Streaming Replication**: Streams byte-for-byte binary WAL records to standbys, ensuring the replica's disk layout is an exact clone of the primary.
   - _Pros_: Extremely low CPU overhead; absolute fidelity; fast apply rates.
@@ -302,10 +296,9 @@ A **fencing token** resolves this: the lock service returns a strictly monotonic
 
 </details>
 
-<details>
-<summary><strong>Q5: What is the Transactional Outbox pattern, and why is it essential when microservices publish database changes to Kafka?</strong></summary>
+<details><summary>5. What is the Transactional Outbox pattern, and why is it essential when microservices publish database changes to Kafka?</summary>
 
-**Answer:** The Transactional Outbox pattern solves the **dual-write problem**: if an application attempts to write to a relational database and publish an event to a Kafka broker in two separate network calls, a crash between the two operations leaves the system in an inconsistent state (either the database committed but the event was lost, or the event was published but the database rolled back).
+The Transactional Outbox pattern solves the **dual-write problem**: if an application attempts to write to a relational database and publish an event to a Kafka broker in two separate network calls, a crash between the two operations leaves the system in an inconsistent state (either the database committed but the event was lost, or the event was published but the database rolled back).
 
 In the Outbox pattern:
 
@@ -315,10 +308,9 @@ In the Outbox pattern:
 This guarantees that messages are published if and only if the database transaction commits, achieving at-least-once message delivery without distributed 2PC transactions.
 </details>
 
-<details>
-<summary><strong>Q6: How does Raft consensus prevent split-brain state during a network partition?</strong></summary>
+<details><summary>6. How does Raft consensus prevent split-brain state during a network partition?</summary>
 
-**Answer:** Raft prevents split-brain by requiring that any valid leader election and any log commitment must receive positive votes from a **strict majority quorum** of the total configured cluster nodes:
+Raft prevents split-brain by requiring that any valid leader election and any log commitment must receive positive votes from a **strict majority quorum** of the total configured cluster nodes:
 
 $$\text{Quorum} = \left\lfloor \frac{N}{2} \right\rfloor + 1$$
 

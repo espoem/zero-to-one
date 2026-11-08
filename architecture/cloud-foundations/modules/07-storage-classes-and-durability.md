@@ -130,34 +130,29 @@ The storage tiering early deletion penalties and WORM object lock durability pro
 
 ---
 
-## 9. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-<details>
-<summary>1. What does 11 nines (99.999999999%) durability mean in practical engineering terms, and why does it not protect against data deletion?</summary>
+<details><summary>1. What does 11 nines (99.999999999%) durability mean in practical engineering terms, and why does it not protect against data deletion?</summary>
 
 Eleven nines of annual durability means that if an enterprise stores 10 million objects in S3, on average they can expect to lose a single object due to physical hardware corruption or bit rot once every 10,000 years. It measures physical media resilience achieved via erasure coding across independent Availability Zones. However, durability does not evaluate the semantic intent of API commands: if an authenticated administrator or compromised access key issues `s3:DeleteObject`, the storage engine deletes the object. Protection against deletion requires Bucket Versioning combined with Object Lock in Compliance Mode.
 </details>
 
-<details>
-<summary>2. Explain the early deletion fee penalty in cold storage tiers like Amazon S3 Glacier.</summary>
+<details><summary>2. Explain the early deletion fee penalty in cold storage tiers like Amazon S3 Glacier.</summary>
 
 Cold storage tiers (such as S3 Glacier Flexible Retrieval with a 90-day minimum retention, or Deep Archive with 180 days) offer deeply discounted monthly storage rates in exchange for a commitment to hold data long-term. If an object is deleted, overwritten, or transitioned to another tier before the minimum retention duration has elapsed, the cloud provider bills a prorated "early deletion fee" for the remaining days. Deleting 1,000 GB on day 10 of a 90-day tier bills for the 10 days stored plus an early deletion charge for the remaining 80 days.
 </details>
 
-<details>
-<summary>3. How does Envelope Encryption work, and why is it used instead of encrypting data directly with a master key?</summary>
+<details><summary>3. How does Envelope Encryption work, and why is it used instead of encrypting data directly with a master key?</summary>
 
 Envelope encryption encrypts customer data with an ephemeral Data Key (AES-256), and then encrypts that Data Key with a root Customer Master Key (CMK) managed inside an HSM. It is used because: (1) Hardware Security Modules (HSMs) have physical throughput limits and cannot encrypt gigabytes of payload data directly without throttling; (2) Transferring large datasets over the network into an HSM creates massive latency; (3) Envelope encryption limits the blast radius of key wear-out, ensuring the root master key is used only to encrypt small 256-bit data keys.
 </details>
 
-<details>
-<summary>4. What is the fundamental difference between Object Lock in Governance Mode versus Compliance Mode?</summary>
+<details><summary>4. What is the fundamental difference between Object Lock in Governance Mode versus Compliance Mode?</summary>
 
 In Governance Mode, objects are protected from deletion by users without special permissions, but users with the explicit IAM permission `s3:BypassGovernanceRetention` can delete the object or disable the lock. In Compliance Mode, the lock is completely immutable: no user—including the AWS account root user, full administrators, or cloud provider support—can delete the locked object version or shorten the retention duration until the configured retention date has passed.
 </details>
 
-<details>
-<summary>5. When should an architect choose Block Storage (EBS) over File Storage (EFS)?</summary>
+<details><summary>5. When should an architect choose Block Storage (EBS) over File Storage (EFS)?</summary>
 
 Block Storage (EBS) should be selected for high-performance single-instance workloads, such as relational databases (PostgreSQL, MySQL, SQL Server) and distributed datastores, that require sub-millisecond I/O latency, raw block device filesystem formatting, and dedicated provisioned IOPS (`gp3`/`io2`). File Storage (EFS) should be selected when shared, concurrent multi-instance read/write access (POSIX filesystem) is required across hundreds of VMs or Kubernetes pods simultaneously over NFS.
 </details>

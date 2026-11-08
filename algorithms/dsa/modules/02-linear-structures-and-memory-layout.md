@@ -360,48 +360,41 @@ Section 2 described how an ordinary array can drift through V8's elements-kind l
 
 ---
 
-## 12. Interview Drill: Linear Structures & Memory Layout
+## Interview Drill
 
-<details>
-<summary>1. Why is Array.prototype.shift() an O(n) operation in JavaScript, and what data structure should be used instead for FIFO queues?</summary>
+<details><summary>1. Why is Array.prototype.shift() an O(n) operation in JavaScript, and what data structure should be used instead for FIFO queues?</summary>
 
 `Array.prototype.shift()` removes the element at index 0. Because a standard array stores elements in contiguous memory, removing index 0 requires the runtime to shift all remaining $n - 1$ elements one memory slot to the left to maintain contiguous indexing. For a FIFO queue, an engineer should use a **Circular Ring-Buffer Deque** or a linked list with head/tail pointers, both of which execute dequeue operations in $O(1)$ amortized time.
 </details>
 
-<details>
-<summary>2. What is the difference between JavaScript's >> (Sign-propagating right shift) and >>> (Zero-fill right shift)?</summary>
+<details><summary>2. What is the difference between JavaScript's >> (Sign-propagating right shift) and >>> (Zero-fill right shift)?</summary>
 
 - `>>` is an arithmetic right shift: it preserves the sign bit of a 32-bit signed integer. If the input is negative, 1s are shifted in from the left.
 - `>>>` is a logical right shift: it always shifts in 0s from the left regardless of the sign bit, and crucially, coerces the output to an **unsigned 32-bit integer** in the range $[0, 2^{32} - 1]$. For example, `(-1) >> 1 === -1`, while `(-1) >>> 1 === 2147483647`.
 
 </details>
 
-<details>
-<summary>3. Why does Brian Kernighan's algorithm count set bits in O(k) time rather than O(w) time where w is word size?</summary>
+<details><summary>3. Why does Brian Kernighan's algorithm count set bits in O(k) time rather than O(w) time where w is word size?</summary>
 
 Kernighan's algorithm uses the identity `x & (x - 1)`: Subtracting 1 from a binary number flips the lowest set bit to 0 and all trailing 0s to 1. Performing a bitwise AND between $x$ and $x - 1$ clears the lowest set bit and leaves all higher bits unchanged. Because each iteration of the loop `x = x & (x - 1)` eliminates exactly one set bit, the loop runs in $O(k)$ iterations where $k$ is the number of set bits (popcount), rather than checking all 32 or 64 bits sequentially.
 </details>
 
-<details>
-<summary>4. How does V8 handle holey arrays, and why does reading a hole cause significant performance deoptimization?</summary>
+<details><summary>4. How does V8 handle holey arrays, and why does reading a hole cause significant performance deoptimization?</summary>
 
 When an array has an uninitialized or deleted index (a "hole"), its element kind transitions to a `HOLEY_*` kind. When code accesses `arr[i]` on a holey array and the slot contains the internal `the_hole` sentinel, V8 cannot simply return `undefined`. By ECMAScript specification, it must search up the prototype chain (`Array.prototype`, `Object.prototype`) to ensure no getter or property exists with key `i`. This breaks inline caches (ICs) and causes V8 to deoptimize compiled JIT code back to interpreted bytecode.
 </details>
 
-<details>
-<summary>5. Explain the purpose of using sentinel dummy nodes in a doubly linked list.</summary>
+<details><summary>5. Explain the purpose of using sentinel dummy nodes in a doubly linked list.</summary>
 
 Sentinel nodes (or dummy head/tail nodes) serve as permanent anchor boundaries that never hold application data. They eliminate special-case edge handling when inserting or deleting elements at the boundaries (empty list, insertion at head, deletion at tail). All insertions and deletions become uniform operations between two guaranteed non-null nodes (`node.prev` and `node.next`), eliminating null-pointer dereferences and reducing branching in inner loops.
 </details>
 
-<details>
-<summary>4. A teammate claims `queue.shift()` is fine because V8 left-trims arrays. How do you respond, and what do you ship instead?</summary>
+<details><summary>6. A teammate claims `queue.shift()` is fine because V8 left-trims arrays. How do you respond, and what do you ship instead?</summary>
 
 V8 does have a left-trimming optimization that moves the array's start instead of copying, but a V8 engineer has stated it cannot be applied once the backing store lives in large object space, and that the thresholds are implementation details. Past that point each `shift()` is an $O(n)$ `memmove`, so a BFS or event queue that works at $10^3$ elements can degrade quadratically at $10^6$. The ECMAScript algorithm itself is $\Theta(n)$ (it performs about $n$ `Get` and `Set` operations; observable on a `Proxy`). Ship a head-index queue with compaction when the live suffix is at most the dead prefix (amortized $O(1)$, one copy per dequeue at most) or a ring buffer. Use `shift()` only for small bounded arrays, and state the assumption in a comment.
 </details>
 
-<details>
-<summary>5. Prove that Floyd's tortoise and hare meet inside the cycle, and explain how the cycle entry is found afterwards.</summary>
+<details><summary>7. Prove that Floyd's tortoise and hare meet inside the cycle, and explain how the cycle entry is found afterwards.</summary>
 
 Let the tail have $\mu$ nodes and the cycle $\lambda$. After $k$ steps the tortoise is at position $k$ and the hare at $2k$. They can only coincide when both are in the cycle ($k \ge \mu$), and then they coincide iff $2k \equiv k \pmod \lambda$, i.e. $\lambda \mid k$. The first such $k \ge \max(\mu, 1)$ is at most $\mu + \lambda - 1$ (or $\lambda$ when $\mu = 0$). At that moment the tortoise is $k - \mu$ steps into the cycle; $k$ is a multiple of $\lambda$, so $\mu$ more steps bring it back to the entry node. Place a second pointer at the head and advance both one step at a time: after $\mu$ steps they stand on the entry together. Returning the meeting node instead is a classic wrong answer.
 </details>

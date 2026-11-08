@@ -214,44 +214,39 @@ Test "existing useMemo is kept and its deps are checked against the inferred one
 
 ---
 
-## 9. Interview Drill
+## Interview Drill
 
-<details><summary><strong>1. What does the React Compiler actually do?</strong></summary>
+<details><summary>1. What does the React Compiler actually do?</summary>
 
 At build time it analyses each component/hook (HIR, SSA, effect inference), groups values into reactive scopes with inferred dependencies, and emits code that caches each scope's results in a per-instance array (`_c(n)` / `useMemoCache`), recomputing only when a dependency changes by `!==`. Cached JSX elements let React skip re-rendering unchanged subtrees without `memo`.
 </details>
 
-<details><summary><strong>2. Does the compiler make <code>useMemo</code>/<code>useCallback</code>/<code>memo</code> obsolete?</strong></summary>
+<details><summary>2. Does the compiler make <code>useMemo</code>/<code>useCallback</code>/<code>memo</code> obsolete?</summary>
 
 Mostly for new code: its memoisation is as precise or more (it can memoise conditionally and per scope). Keep manual memo where you need precise identity control (effect dependencies) and leave existing memo in place unless tests cover its removal, because removal can change output.
 </details>
 
-<details><summary><strong>3. What happens when code breaks the Rules of React?</strong></summary>
+<details><summary>3. What happens when code breaks the Rules of React?</summary>
 
 If the compiler detects it (ref read in render, conditional hooks, etc.), it skips that function and leaves it unoptimised — silently by default. If it cannot detect it (e.g. mutating props via a method), it may compile it and the cached output can be stale. Hence the lint rules, logging and tests.
 </details>
 
-<details><summary><strong>4. How would you adopt the compiler in a large existing codebase?</strong></summary>
+<details><summary>4. How would you adopt the compiler in a large existing codebase?</summary>
 
 Enable the `react-hooks` recommended lint preset and fix violations; install the compiler pinned exactly; start with `compilationMode: "annotation"` or `sources` limited to a directory, or use `gating` behind a feature flag; log `CompileError` events in CI; measure with the Profiler; widen gradually; keep existing manual memo.
 </details>
 
-<details><summary><strong>5. Can you use the compiler with React 18?</strong></summary>
+<details><summary>5. Can you use the compiler with React 18?</summary>
 
 Yes. Set `target: "18"` (or `"17"`) and add `react-compiler-runtime`, which provides the cache hook the generated code imports.
 </details>
 
-<details><summary><strong>6. Why can the compiler memoise after an early return but <code>useMemo</code> cannot?</strong></summary>
+<details><summary>6. Why can the compiler memoise after an early return but <code>useMemo</code> cannot?</summary>
 
 `useMemo` is a hook and must be called unconditionally in the same order. The compiler's cache is a single hook call at the top (`_c(n)`); individual scopes are just guarded blocks in the control-flow graph, so they can live inside branches or after early returns.
 </details>
 
-<details><summary><strong>7. What are <code>"use memo"</code> and <code>"use no memo"</code>?</strong></summary>
+<details><summary>7. What are <code>"use memo"</code> and <code>"use no memo"</code>?</summary>
 
 Function-level directives: `"use memo"` opts a function in when `compilationMode` is `"annotation"`; `"use no memo"` opts a function out in any mode, as a temporary escape hatch.
-</details>
-
-<details><summary><strong>8. Name four compiler-powered lint rules and the bug each catches.</strong></summary>
-
-`refs` (reading refs during render), `set-state-in-effect` (synchronous setState in effects → cascading renders), `static-components` (components created during render → remounts), `purity` (impure calls like `Math.random()` in render), `immutability` (mutating props/state), `set-state-in-render`, `preserve-manual-memoization`, `incompatible-library`.
 </details>

@@ -390,64 +390,39 @@ Design rules that follow:
 
 ---
 
-## 14. Interview Drill: Networks, RPC & Failure Detection
+## Interview Drill
 
-<details>
-<summary>1. In an at-least-once RPC protocol, why does an idempotency key need to be assigned by the client rather than the server?</summary>
+<details><summary>1. In an at-least-once RPC protocol, why does an idempotency key need to be assigned by the client rather than the server?</summary>
 
 If the server generated the idempotency key, the initial request might be lost in transit before reaching the server, or the server's reply containing the generated key might be dropped. The client would then be forced to retry without a key, creating a duplicate server-side record. When the client generates a unique UUIDv4 key _before_ transmitting the request, all subsequent retries carry the identical identifier, allowing the server to reliably recognize retries.
 </details>
 
-<details>
-<summary>2. Why does Full Jitter outperform No-Jitter in reducing peak server load during a recovery spike?</summary>
+<details><summary>2. Why does Full Jitter outperform No-Jitter in reducing peak server load during a recovery spike?</summary>
 
 Without jitter, all clients that experienced an error at time $t_0$ calculate identical deterministic backoff intervals ($t_0 + 200\text{ms}$, $t_0 + 400\text{ms}$). They sleep for the same duration and strike the recovering server simultaneously in tight, synchronized waves. Full Jitter chooses a random sleep time uniformly across $[0, \text{maxBackoff}]$, smoothing discrete load spikes into a flat, continuous request stream.
 </details>
 
-<details>
-<summary>3. How does the Phi-Accrual failure detector differ from a static threshold detector, and why is this useful in cloud environments?</summary>
+<details><summary>3. How does the Phi-Accrual failure detector differ from a static threshold detector, and why is this useful in cloud environments?</summary>
 
 A static detector uses a hardcoded timeout (e.g. 5 seconds) which either generates false alarms during routine network congestion or delays failure detection for unacceptable periods. The $\Phi$-accrual detector continuously measures the distribution of heartbeat inter-arrival times and estimates the probability that a heartbeat is merely delayed versus the node being dead. Cloud environments with unpredictable virtualized network jitter can adjust thresholds dynamically without code changes.
 </details>
 
-<details>
-<summary>4. What is a Gray Failure and why do traditional ping-based health checks fail to detect it?</summary>
+<details><summary>4. What is a Gray Failure and why do traditional ping-based health checks fail to detect it?</summary>
 
 A gray failure occurs when a component is neither fully functional nor completely dead. Traditional health checks query simple, lightweight endpoints (e.g. `GET /healthz`) that return `200 OK` directly from memory or test basic network reachability. However, the service may be failing complex user queries, dropping specific packet sizes, suffering thread-pool deadlocks, or experiencing severe disk I/O timeouts.
 </details>
 
-<details>
-<summary>5. How does the SWIM protocol achieve O(1) message overhead per node period regardless of cluster size?</summary>
+<details><summary>5. How does the SWIM protocol achieve O(1) message overhead per node period regardless of cluster size?</summary>
 
 In each protocol period $T$, a node only probes a fixed, constant number of peers (1 direct ping, and at most $k$ indirect ping-requests if the first fails), rather than broadcasting to the entire cluster. Membership updates and suspicion states are piggybacked on top of routine ping/ack messages using epidemic gossip dissemination. Consequently, the bandwidth consumed per node is independent of total cluster size $N$.
 </details>
 
-<details>
-<summary>6. Your dedupe table deletes an entry once the client's ack covers it. Show an execution that still double-applies a request, and fix it.</summary>
+<details><summary>6. Your dedupe table deletes an entry once the client's ack covers it. Show an execution that still double-applies a request, and fix it.</summary>
 
 The client sends $(c, 5)$; the network duplicates it; one copy is processed and acknowledged, the next request $(c, 6)$ carries `ack = 5`, and the server deletes the entry for $(c,5)$. The second copy of $(c,5)$, delayed in a switch buffer, now arrives, finds no entry and executes again. Fix: keep a per-client watermark and answer any request with $s \le \text{watermark}$ with a stale-rejection rather than executing. The watermark is one integer per client, so memory stays bounded.
 </details>
 
-<details>
-<summary>7. Why must the deduplication table of a Raft-replicated service be part of the replicated state machine?</summary>
+<details><summary>7. Why must the deduplication table of a Raft-replicated service be part of the replicated state machine?</summary>
 
 If it lives only in the leader's memory, a leader change leaves the next leader without it. A client that timed out against the old leader retries on the new one, which has no record and re-executes an operation that is already in the log. Applying session registration, request results and session expiry through log entries makes every replica's table identical and deterministic, including across snapshot and restart. Expiry must be driven by timestamps stored in the log, not each replica's local clock.
-</details>
-
-<details>
-<summary>8. A fixed 15 ms heartbeat timeout works in the lab and flaps in production. Characterise the detector class you have, and what changes it into one that is eventually correct.</summary>
-
-A fixed timeout shorter than heartbeat period plus the worst-case post-stabilisation delay is not even eventually accurate: it will falsely suspect a correct process infinitely often. It has strong completeness (a crashed process is eventually suspected) but not eventual strong accuracy, so it is not in ◇P. Increasing the timeout on every false suspicion makes it converge to a value above period plus delay bound after GST, giving ◇P, which is enough to implement the $\Omega$ leader oracle used by consensus.
-</details>
-
-<details>
-<summary>9. Three services each retry a failing dependency up to 3 times. What load reaches the bottom service, and what single mechanism bounds it?</summary>
-
-$3^3 = 27$ times the offered load in the worst case, because attempts multiply across layers. A retry budget (retries limited to a fraction $b$ of requests, for example 10 percent, applied at every client) bounds the multiplier to $(1+b)^3 \approx 1.33$. Complementary mechanisms are deadline propagation, which stops work on requests nobody is waiting for, and load shedding at the bottom service.
-</details>
-
-<details>
-<summary>10. SWIM detects a failure in an expected constant number of periods regardless of cluster size. Where does that come from, and what does it not guarantee?</summary>
-
-Each of the $n-1$ healthy members independently picks the failed member with probability $\approx 1/(n-1)$ per period, so the probability that nobody does is $\approx 1/e$ and the expected detection time is $e/(e-1) \approx 1.58$ periods. It does not guarantee agreement on the failure: suspicion is gossiped with a timeout and can be refuted by an incarnation number, so membership is eventually consistent, and a slow prober can falsely accuse others (the problem Lifeguard addresses).
 </details>

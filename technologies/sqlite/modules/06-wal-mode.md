@@ -370,7 +370,7 @@ The production-ready descendant of the idea is **Turso Database's MVCC mode**, w
 
 ---
 
-## 12. Interview Drill
+## Interview Drill
 
 <details><summary>1. Explain WAL mode in terms of undo and redo, and why readers stop blocking writers.</summary>
 
@@ -405,24 +405,4 @@ PASSIVE copies as much as possible without waiting for anyone, and is what autom
 <details><summary>7. Does WAL mode let two transactions write at the same time?</summary>
 
 No. There is still one WAL write lock. WAL removes reader/writer blocking, not writer/writer serialisation. Concurrent writers exist only in the unmerged `begin-concurrent` branch and in Turso Database's MVCC mode.
-</details>
-
-<details><summary>8. Describe the WAL-reset bug and what it teaches about testing.</summary>
-
-A race present from 3.7.0 to 3.51.2: when two connections in different threads or processes wrote or checkpointed at nearly the same moment, a WAL reset could interleave with a second checkpoint so that a transaction was skipped and the database corrupted. Fixed in 3.51.3 and 3.53.0+, with backports to 3.44.6 and 3.50.7. It survived 100 % MC/DC coverage because coverage criteria do not enumerate concurrent interleavings.
-</details>
-
-<details><summary>9. Your backup job copies <code>app.db</code> every hour with <code>cp</code>. What is wrong?</summary>
-
-In WAL mode, recent commits live only in `app.db-wal` until a checkpoint, so the copy misses them. Copying both files is not atomic either, since a checkpoint or commit can happen in between, and copying while a checkpoint writes pages yields a torn file. Use `VACUUM INTO`, the online backup API, or a WAL-shipping tool such as Litestream.
-</details>
-
-<details><summary>10. Why is a WAL commit usually faster than a rollback-journal commit, even with one connection?</summary>
-
-A WAL commit appends each changed page once, sequentially, to one file, and needs at most one fsync (none with `synchronous=NORMAL`). A rollback-journal commit copies each original page to the journal, syncs it, writes each new page into the database at random offsets, syncs again, and then deletes or truncates the journal, which is a metadata operation. The cost of WAL is moved to checkpoints, which can run in the background.
-</details>
-
-<details><summary>11. When would you deliberately stay with the rollback journal instead of WAL?</summary>
-
-When the database is distributed read-only (on read-only media, or opened with no write access to the directory, unless `immutable=1` is acceptable); when the file must sit on a network filesystem used by one host at a time, where WAL is unsupported; when a transaction must be atomic across several attached files; or for a single-connection tool where the extra `-wal` and `-shm` files are a nuisance. For anything concurrent on a local disk, WAL is the better default.
 </details>

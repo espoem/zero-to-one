@@ -155,10 +155,9 @@ When sliding a window of length $k$ from $S[i \dots i+k-1]$ to $S[i+1 \dots i+k]
 
 ---
 
-## 6. Interview Drill: Hashing & Hash Tables
+## Interview Drill
 
-<details>
-<summary>1. In open addressing, why cannot an element simply be deleted by clearing the slot to null?</summary>
+<details><summary>1. In open addressing, why cannot an element simply be deleted by clearing the slot to null?</summary>
 
 In open addressing, if slot $i$ is cleared to `null`, any subsequent search for a key that collided with the deleted element and probed past slot $i$ will terminate prematurely upon seeing `null`, falsely concluding that the key is not in the table. To fix this, deletion must write a special sentinel marker called a **Tombstone** (or `DELETED` flag).
 
@@ -168,26 +167,22 @@ In open addressing, if slot $i$ is cleared to `null`, any subsequent search for 
 
 </details>
 
-<details>
-<summary>2. Why is the prime number 2^31 - 1 (Mersenne prime M31) widely favored in rolling hash implementations?</summary>
+<details><summary>2. Why is the prime number 2^31 - 1 (Mersenne prime M31) widely favored in rolling hash implementations?</summary>
 
 $2^{31} - 1$ ($2,147,483,647$) is a prime number that allows fast modular reduction without slow hardware integer division: Because $2^{31} \equiv 1 \pmod{2^{31} - 1}$, any 62-bit integer $X$ can be reduced modulo $2^{31} - 1$ using bit shifts and addition: $$X = (X \gg 31) + (X \ \& \ (2^{31} - 1))$$ If the result $\ge 2^{31} - 1$, subtract $2^{31} - 1$ once. This replaces expensive 64-bit division instructions with fast bitwise operations.
 </details>
 
-<details>
-<summary>3. What is Robin Hood hashing, and how does it improve lookup performance over standard linear probing?</summary>
+<details><summary>3. What is Robin Hood hashing, and how does it improve lookup performance over standard linear probing?</summary>
 
 Robin Hood hashing is an open addressing collision resolution technique where elements track their Distance to Initial Bucket (DIB). During insertion, if the incoming element has a larger DIB than the current occupant of a slot, the incoming element takes the slot and displaces the occupant to probe further. This equalizes probe lengths across all elements and dramatically reduces the variance of probe sequences. Crucially, it enables unsuccessful searches to terminate early: as soon as the search probe's current distance exceeds the stored element's DIB, the search halts and returns "not found" without scanning the rest of the cluster.
 </details>
 
-<details>
-<summary>4. Why does JavaScript's Map use SameValueZero equality instead of strict ===?</summary>
+<details><summary>4. Why does JavaScript's Map use SameValueZero equality instead of strict ===?</summary>
 
 Under strict equality `===`, `NaN === NaN` evaluates to `false`. If a hash map used `===`, a key stored as `NaN` could never be retrieved (`map.get(NaN)` would return `undefined`). `SameValueZero` specifies that `NaN` is identical to `NaN`, allowing `map.set(NaN, "value")` and `map.get(NaN)` to work intuitively, while treating `+0` and `-0` as identical keys (unlike `SameValue` / `Object.is()`, which distinguishes `+0` from `-0`).
 </details>
 
-<details>
-<summary>5. What is the difference between primary clustering and secondary clustering?</summary>
+<details><summary>5. What is the difference between primary clustering and secondary clustering?</summary>
 
 - **Primary Clustering** occurs in Linear Probing: long contiguous blocks of occupied slots form. Any key whose initial hash lands anywhere within the block or immediately adjacent to it will extend the block by 1, accelerating cluster growth and degrading performance to $O(n)$.
 - **Secondary Clustering** occurs in Quadratic Probing: while keys do not form contiguous physical blocks, any two keys that share the same initial hash ($h(k_1) = h(k_2)$) will trace the exact same probe sequence through the table. Double hashing eliminates secondary clustering by using a second hash function to determine step size.

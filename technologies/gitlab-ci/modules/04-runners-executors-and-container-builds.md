@@ -405,46 +405,39 @@ CALCULATE-FLEETING-CAPACITY(QueueDepth, ActiveVMs, ScalingPolicy)
 
 ---
 
-## 10. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. Explain the architectural trade-offs between the Shell, Docker, and Kubernetes GitLab Runner executors.</strong></summary>
+<details><summary>1. Explain the architectural trade-offs between the Shell, Docker, and Kubernetes GitLab Runner executors.</summary>
 
 The Shell executor executes commands directly on the runner host operating system as the `gitlab-runner` user. It offers near-zero startup latency, but provides zero filesystem or process isolation: files from previous jobs linger on disk, and a rogue job can compromise the host. The Docker executor creates a fresh, isolated container for each job, providing filesystem immutability and clean environments, but still shares the host Linux kernel and Docker daemon. The Kubernetes executor creates a dynamic Pod per job on a Kubernetes cluster, providing clean isolation, native cluster autoscaling, and granular network and resource policies, but introduces additional startup latency (3–10 seconds) for Pod scheduling and init container execution.
 </details>
 
-<details>
-<summary><strong>Q2. Why is configuring `privileged = true` in the Docker executor considered a catastrophic security vulnerability?</strong></summary>
+<details><summary>2. Why is configuring `privileged = true` in the Docker executor considered a catastrophic security vulnerability?</summary>
 
 Setting `privileged = true` completely dissolves the Linux container isolation sandbox. The container engine grants the container process all 40+ Linux kernel capabilities (`CAP_SYS_ADMIN`, `CAP_SYS_RAWIO`, etc.), disables AppArmor and Seccomp syscall filtering profiles, and grants unrestricted read/write access to all host block devices under `/dev`. An unprivileged developer writing a `.gitlab-ci.yml` script can mount the host's root hard drive partition (`mount /dev/sda1 /mnt`), chroot into the host root, read all host secrets, access runner authentication tokens, and execute arbitrary code as host root.
 </details>
 
-<details>
-<summary><strong>Q3. How does rootless BuildKit eliminate the need for privileged containers when building Docker images in CI?</strong></summary>
+<details><summary>3. How does rootless BuildKit eliminate the need for privileged containers when building Docker images in CI?</summary>
 
 Rootless BuildKit executes the `buildkitd` daemon entirely within a Linux **User Namespace** (`CLONE_NEWUSER`). Inside the user namespace, the build process has the illusion of being root (UID 0) to manage chroots and filesystem ownership, but the host Linux kernel maps this virtual UID 0 to an unprivileged, non-root UID (such as UID 1000) on the host. If a malicious Dockerfile exploits an image parsing vulnerability to escape the BuildKit sandbox, the attacker arrives on the host operating system as an unprivileged user without kernel capabilities or raw device access, neutralizing the privilege escalation attack.
 </details>
 
-<details>
-<summary><strong>Q4. How does the Docker-Autoscaler and Fleeting architecture improve on the retired `docker-machine` executor?</strong></summary>
+<details><summary>4. How does the Docker-Autoscaler and Fleeting architecture improve on the retired `docker-machine` executor?</summary>
 
 `docker-machine` was an abandoned tool with severe bugs, poor instance lifecycle management, and unpatched security issues. The modern Docker-Autoscaler executor utilizes the Fleeting plugin framework. Fleeting communicates natively with cloud provider auto-scaling APIs (AWS EC2, GCP GCE, Azure VMSS) via dedicated plugins. It supports proactive pre-warmed idle VM pools (reducing job startup delay), fine-grained instance recycling (`max_use_count = 1` ensures pristine, zero-leakage environments), scheduled time-of-day scale-to-zero capabilities, and robust instance health reaping, drastically improving stability and reducing cloud infrastructure costs.
 </details>
 
-<details>
-<summary><strong>Q5. How does distributed caching work in autoscaled runner fleets, and why does traffic bypass the GitLab coordinator?</strong></summary>
+<details><summary>5. How does distributed caching work in autoscaled runner fleets, and why does traffic bypass the GitLab coordinator?</summary>
 
 In an autoscaled fleet, runner VMs are ephemeral and destroyed frequently, making local disk caching useless across builds. Distributed caching configures runners to stream cache archives directly to an external object storage bucket (such as AWS S3 or MinIO). When a job completes, the runner packs the cache directory into an archive and uploads it directly to S3 via presigned URLs or cloud IAM roles. Downstream runners in subsequent pipelines query S3 directly to download and unpack the cache. This traffic intentionally bypasses the GitLab Rails coordinator to prevent gigabytes of cache I/O from saturating the coordinator's web network interfaces and CPU.
 </details>
 
-<details>
-<summary><strong>Q6. What is the difference between Runner Registration Tokens and modern Runner Authentication Tokens (`glrt-`)?</strong></summary>
+<details><summary>6. What is the difference between Runner Registration Tokens and modern Runner Authentication Tokens (`glrt-`)?</summary>
 
 Registration tokens were static, shared secrets associated with a project, group, or instance. Anyone who acquired a registration token could register an unvetted runner daemon against the GitLab instance, creating serious security blind spots. Modern Runner Authentication Tokens (`glrt-` prefix) invert this workflow: an administrator or project owner creates the runner entry in advance within the GitLab UI or API, assigning its tags, executor type, and security policies. GitLab generates a unique, single-use authentication token that can be revoked individually without affecting any other runners, providing strict access control and auditability.
 </details>
 
-<details>
-<summary><strong>Q7. What is the operational purpose of the `services:` block in a job definition, and how does networking function between the job and the service?</strong></summary>
+<details><summary>7. What is the operational purpose of the `services:` block in a job definition, and how does networking function between the job and the service?</summary>
 
 The `services:` keyword instructs the runner's container engine to spin up one or more supplementary sidecar containers (e.g., PostgreSQL, Redis, local MinIO) alongside the primary build container for the duration of the job. In the Docker executor, the runner creates a private, isolated Docker bridge network for the job. Both the job container and the service containers attach to this bridge network. The runner configures local DNS resolution so the job container can address the service container using its image name or alias as a network hostname (e.g., connecting to `postgres:5432`). When the job terminates, the service containers are automatically stopped and destroyed.
 </details>

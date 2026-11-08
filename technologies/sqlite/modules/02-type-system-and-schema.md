@@ -354,7 +354,7 @@ SELECT name FROM pragma_table_list WHERE strict = 1;  -- 3.37+: which tables are
 
 ---
 
-## 10. Interview Drill
+## Interview Drill
 
 <details><summary>1. A colleague says "SQLite ignores column types." Correct them precisely.</summary>
 
@@ -389,14 +389,4 @@ Foreign-key enforcement is per connection and off by default in the library. The
 <details><summary>7. Explain how SQLite decides whether <code>n = '10'</code> is true when <code>n</code> holds the integer 10.</summary>
 
 Before comparing, it applies affinity. `n` is a column with INTEGER affinity and `'10'` is a literal with none, so NUMERIC affinity is applied to the literal, which becomes the integer 10, and the comparison is true. Two literals `'10' = 10` get no conversion, and TEXT is never equal to INTEGER, so that is false.
-</details>
-
-<details><summary>8. What does <code>INSERT OR REPLACE</code> actually do, and why is it dangerous with foreign keys?</summary>
-
-On a uniqueness conflict it deletes the conflicting row(s) and then inserts the new row. Columns not provided get their defaults, a new rowid may be used, and the delete triggers FK actions such as `ON DELETE CASCADE`, which can silently remove child rows. Use `INSERT ... ON CONFLICT(key) DO UPDATE SET ...` for an in-place update.
-</details>
-
-<details><summary>9. Why should you store money as integer cents in SQLite?</summary>
-
-There is no decimal type. `DECIMAL(10,2)` has NUMERIC affinity and stores IEEE doubles (or integers), so sums such as 0.1 + 0.2 are inexact. Integer minor units are exact up to 2⁶³ − 1, and they sort and compare correctly. Convert at the edges, and use BigInt mode in JavaScript if amounts can exceed 2⁵³.
 </details>

@@ -106,34 +106,29 @@ The multi-account policy inheritance and break-glass invariants are verified in 
 
 ---
 
-## 9. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-<details>
-<summary>1. Why can an SCP attached to an OU not be overridden by the root user of a child account within that OU?</summary>
+<details><summary>1. Why can an SCP attached to an OU not be overridden by the root user of a child account within that OU?</summary>
 
 SCPs operate at the AWS Organizations management plane, which sits above individual accounts. The authorization engine evaluates the organization boundary _before_ examining any local account policies. Because explicit denies in SCPs are absolute filters that define the outer perimeter of allowable permissions, not even the local account root user or an administrator with `AdministratorAccess` (`*:*`) can execute an action that is denied by an inherited SCP.
 </details>
 
-<details>
-<summary>2. Why are detective guardrails alone insufficient for critical security compliance?</summary>
+<details><summary>2. Why are detective guardrails alone insufficient for critical security compliance?</summary>
 
 Detective controls (such as AWS Config or Azure Policy Audit) operate asynchronously post-deployment. When a developer accidentally launches an S3 bucket with public read access or a security group opening port 22 to `0.0.0.0/0`, the detective scanner detects the violation only after the resource is live. This creates a window of vulnerability (often lasting 30 seconds to several minutes) during which automated internet port scanners can discover and exfiltrate data. Preventive guardrails reject the API request synchronously before the resource exists.
 </details>
 
-<details>
-<summary>3. Describe the architectural design of a cloud Break-Glass account.</summary>
+<details><summary>3. Describe the architectural design of a cloud Break-Glass account.</summary>
 
 A Break-Glass account provides emergency access during major identity provider failures. It consists of a dedicated standalone account with direct administrative access, decoupled from the corporate SAML/OIDC identity provider. Authentication relies on complex, randomized passwords split between two custodians, secured with physical hardware MFA stored in a secure safe. Any authentication event immediately triggers an out-of-band P0 alert to the SOC via an automated event bus.
 </details>
 
-<details>
-<summary>4. What problems occur when an enterprise deploys all workloads into a single cloud account?</summary>
+<details><summary>4. What problems occur when an enterprise deploys all workloads into a single cloud account?</summary>
 
 A single-account architecture suffers from: (1) Uncontained blast radius—a compromised credential exposes the entire company; (2) Shared API rate limits and service quotas—development automated testing can exhaust API limits and cause production outages; (3) Inflated audit scope—the entire environment must be inspected for PCI/HIPAA compliance; (4) Complex IAM policies—thousands of conflicting policies lead to accidental privilege escalation.
 </details>
 
-<details>
-<summary>5. How does a Landing Zone handle centralized audit log immutability?</summary>
+<details><summary>5. How does a Landing Zone handle centralized audit log immutability?</summary>
 
 The Landing Zone configures all member accounts to stream CloudTrail and VPC Flow Logs directly into an S3 bucket located inside a dedicated, isolated Log Archive Account. The destination bucket is configured with S3 Object Lock in Compliance Mode, MFA Delete, and a bucket policy that denies `s3:DeleteObject` and `s3:PutLifecycleConfiguration` to all principals, guaranteeing that audit trails cannot be altered or wiped even by compromised administrators.
 </details>

@@ -580,10 +580,9 @@ spec:
 
 ---
 
-## 11. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. Why does Gateway API split traffic management into three distinct resource categories (GatewayClass, Gateway, Route), whereas Ingress combined them into one?</strong></summary>
+<details><summary>1. Why does Gateway API split traffic management into three distinct resource categories (GatewayClass, Gateway, Route), whereas Ingress combined them into one?</summary>
 
 Gateway API uses a role-oriented design that reflects real-world enterprise organizational hierarchies:
 
@@ -594,24 +593,20 @@ Gateway API uses a role-oriented design that reflects real-world enterprise orga
 In contrast, the legacy `Ingress` resource forced cluster operators to grant developers edit access to the same monolithic YAML file, leading to constant merge conflicts, security vulnerabilities, and vendor-specific annotation bloat.
 </details>
 
-<details>
-<summary><strong>Q2. What security risk does `ReferenceGrant` solve, and how does it function when an HTTPRoute targets a Service in another namespace?</strong></summary>
+<details><summary>2. What security risk does `ReferenceGrant` solve, and how does it function when an HTTPRoute targets a Service in another namespace?</summary>
 
 In Kubernetes, allowing resources in one namespace to arbitrarily reference resources in another namespace introduces a major cross-tenant authorization vulnerability. For example, a malicious tenant could point an ingress route at an internal administrative service in another namespace or attach to a corporate wildcard TLS secret.
 
 `ReferenceGrant` enforces a bi-directional trust handshake. When an `HTTPRoute` in `namespace-a` specifies a `backendRef` located in `namespace-b`, the Gateway controller checks for an existing `ReferenceGrant` inside `namespace-b`. That grant must explicitly state that `HTTPRoute` resources from `namespace-a` are authorized to bind to target `Service` objects in `namespace-b`. If the grant is missing or misconfigured, the controller refuses to program the route and marks the condition `ResolvedRefs: False` with reason `RefNotPermitted`.
 </details>
 
-<details>
-<summary><strong>Q3. Explain the difference between `tls.mode: Terminate` and `tls.mode: Passthrough` in Gateway API, and identify which route object must be used for Passthrough.</strong></summary>
+<details><summary>3. Explain the difference between `tls.mode: Terminate` and `tls.mode: Passthrough` in Gateway API, and identify which route object must be used for Passthrough.</summary>
 
 - **`tls.mode: Terminate`**: The Gateway proxy decrypts the incoming TLS handshake at the edge listener using a referenced `Secret` containing the private key and certificate. The proxy can inspect, manipulate (rewrite, add headers), and route the Layer 7 HTTP/gRPC request. For this mode, `HTTPRoute` or `GRPCRoute` is used.
 - **`tls.mode: Passthrough`**: The Gateway proxy does NOT decrypt the TLS connection. Instead, it inspects the TLS ClientHello Server Name Indication (SNI) header at Layer 4 and forwards the raw encrypted TLS byte stream directly to the backend pod. The backend pod terminates the TLS connection. For this mode, `TLSRoute` must be used.
-
 </details>
 
-<details>
-<summary><strong>Q4. How does Gateway API resolve path matching conflicts between two rules with overlapping prefixes, such as `/users` and `/users/profile`?</strong></summary>
+<details><summary>4. How does Gateway API resolve path matching conflicts between two rules with overlapping prefixes, such as `/users` and `/users/profile`?</summary>
 
 Gateway API eliminates controller-specific arbitrary matching behavior by establishing a strict, deterministic precedence specification:
 
@@ -620,22 +615,18 @@ Gateway API eliminates controller-specific arbitrary matching behavior by establ
 3. If path match criteria are identical, header match count takes precedence (more matched headers beat fewer).
 4. If still tied, query parameter count takes precedence.
 5. If completely identical, the older resource (earliest `creationTimestamp`) wins, followed by lexicographical tie-breaking on `namespace/name`.
-
 </details>
 
-<details>
-<summary><strong>Q5. What was the driving rationale behind the official retirement of Ingress-NGINX in March 2026?</strong></summary>
+<details><summary>5. What was the driving rationale behind the official retirement of Ingress-NGINX in March 2026?</summary>
 
 Ingress-NGINX was built as an early reference controller over a decade ago, relying on complex Lua scripts injected into OpenResty/NGINX worker configurations. Over time, several architectural flaws proved unsustainable:
 
 1. **Security Vulnerabilities**: Complex regex-based annotations and arbitrary Lua code execution snippets caused repeated critical CVEs, allowing tenant container escapes or root proxy takeover.
 2. **Monolithic Complexity**: A single syntax error in one tenant's annotation could crash the NGINX master process or prevent reload across all tenants.
 3. **Standardization**: Gateway API achieved full GA and standard adoption, providing a vastly superior, secure, typed, multi-tenant abstraction supported by modern, memory-safe, or battle-tested data planes (Envoy, Cilium eBPF).
-
 </details>
 
-<details>
-<summary><strong>Q6. How does `BackendTLSPolicy` enforce Zero-Trust networking between the Gateway edge proxy and backend pods?</strong></summary>
+<details><summary>6. How does `BackendTLSPolicy` enforce Zero-Trust networking between the Gateway edge proxy and backend pods?</summary>
 
 Historically, traffic between an ingress controller and backend pods travelled unencrypted (`HTTP`), exposing sensitive plaintext payloads to any compromised process or packet sniffer on the cluster pod network.
 
@@ -643,38 +634,13 @@ Historically, traffic between an ingress controller and backend pods travelled u
 
 1. `caCertificateRefs`: A ConfigMap containing the internal corporate root or intermediate Certificate Authority bundle.
 2. `hostname`: The expected SAN hostname inside the certificate presented by the pod. During the TLS handshake, the Gateway proxy verifies that the pod's certificate is valid, not expired, and signed by the designated internal CA.
-
 </details>
 
-<details>
-<summary><strong>Q7. What is `ListenerSet` (graduated to Standard in Gateway API v1.5), and what operational challenge does it resolve?</strong></summary>
+<details><summary>7. What is `ListenerSet` (graduated to Standard in Gateway API v1.5), and what operational challenge does it resolve?</summary>
 
 In large multi-tenant clusters, a central `Gateway` resource could accumulate dozens or hundreds of listeners (different ports, SNI hostnames, and TLS certs). Having all listeners in a single monolithic `Gateway` manifest created constant Git merge conflicts across platform teams, reached etcd object size limits, and made atomic updates hazardous.
 
 `ListenerSet` decouples listener definitions from the root `Gateway`. It allows independent teams to declare and attach listener sets targeting a parent Gateway from separate YAML files or separate namespaces, enabling horizontal, decentralized listener scaling.
-</details>
-
-<details>
-<summary><strong>Q8. In the CKA v1.37 exam, how would you configure a canary release distributing 80% traffic to `service-v1` and 20% traffic to `service-v2` using Gateway API?</strong></summary>
-
-In an `HTTPRoute` manifest, define a single rule matching the desired hostname/path, and provide multiple entries under the `backendRefs` array with proportional `weight` values:
-
-```yaml
-rules:
-  - matches:
-      - path:
-          type: PathPrefix
-          value: /
-    backendRefs:
-      - name: service-v1
-        port: 8080
-        weight: 80
-      - name: service-v2
-        port: 8080
-        weight: 20
-```
-
-The Gateway API controller programs the underlying proxy to divide incoming connection requests across the endpoints of both services using a 4:1 weighted distribution.
 </details>
 
 ---

@@ -136,42 +136,36 @@ export class ConsistentHashRing {
 
 ---
 
-## 7. Interview Drill
+## Interview Drill
 
-<details><summary><strong>Q1. How does Grafana Tempo achieve sub-second trace retrieval across petabytes of data without maintaining an inverted index?</strong></summary>
+<details><summary>1. How does Grafana Tempo achieve sub-second trace retrieval across petabytes of data without maintaining an inverted index?</summary>
 
 Tempo relies on direct object storage (S3/GCS) storage of compressed blocks. Instead of indexing every span attribute or token, Tempo indexes only trace IDs in lightweight block-level Bloom filters and index files. When a TraceQL query specifies a trace ID, Tempo queries the block index directly, downloads the exact compressed block from object storage, and streams the spans into memory.
-
 </details>
 
-<details><summary><strong>Q2. Explain how Grafana Mimir uses consistent hashing and replication rings to scale metric ingestion horizontally.</strong></summary>
+<details><summary>2. Explain how Grafana Mimir uses consistent hashing and replication rings to scale metric ingestion horizontally.</summary>
 
 Mimir distributors hash incoming metric time series signatures against a consistent hash ring populated by ingester virtual nodes. To guarantee high availability and fault tolerance, each time series is written concurrently to \(RF = 3\) consecutive ingesters on the ring. If an ingester fails, the ring rebalances ownership automatically without dropping active remote write traffic.
-
 </details>
 
-<details><summary><strong>Q3. What is the role of the Tempo Metrics Generator, and what signals does it produce?</strong></summary>
+<details><summary>3. What is the role of the Tempo Metrics Generator, and what signals does it produce?</summary>
 
 The Tempo Metrics Generator consumes spans streamed from distributors and extracts aggregated RED metrics (Request rate, Error rate, Duration histograms) and Service Graphs (dependency topologies between microservices), forwarding them via Prometheus Remote Write to Mimir or Prometheus.
-
 </details>
 
-<details><summary><strong>Q4. How does TraceQL differ from traditional log or query languages like SQL?</strong></summary>
+<details><summary>4. How does TraceQL differ from traditional log or query languages like SQL?</summary>
 
 TraceQL is hierarchical and tree-aware. Instead of treating records as isolated rows or log lines, TraceQL queries evaluate parent-child span relationships, durations, and attribute conditions across distributed execution paths using structural combiners like `>`.
-
 </details>
 
-<details><summary><strong>Q5. What happens when a Mimir ingester crashes and restarts?</strong></summary>
+<details><summary>5. What happens when a Mimir ingester crashes and restarts?</summary>
 
 Mimir ingesters maintain a local Write-Ahead Log (WAL) on persistent disk. Upon restart, the ingester replays the WAL to recover in-memory time series chunks before re-joining the consistent hash ring, ensuring zero data loss during node restarts.
-
 </details>
 
-<details><summary><strong>Q6. How do you correlate a Prometheus metric anomaly with a distributed trace in Tempo?</strong></summary>
+<details><summary>6. How do you correlate a Prometheus metric anomaly with a distributed trace in Tempo?</summary>
 
 Engineers use **Exemplars**. Prometheus metrics embed the specific trace ID of a representative request inside the metric sample value. In Grafana dashboards, clicking an exemplar sample point opens the exact distributed trace in Tempo, instantly bridging macro-level metric degradation with micro-level span analysis.
-
 </details>
 
 ---

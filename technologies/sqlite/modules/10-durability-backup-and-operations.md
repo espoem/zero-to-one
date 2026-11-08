@@ -392,7 +392,7 @@ All page-level schemes use the per-page **reserved bytes** for an IV and MAC, wh
 
 ---
 
-## 10. Interview Drill
+## Interview Drill
 
 <details><summary>1. How do you back up a SQLite database that is being written to?</summary>
 

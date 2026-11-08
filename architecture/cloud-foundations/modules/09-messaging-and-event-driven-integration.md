@@ -131,34 +131,29 @@ The SQS visibility timeout expiration, poison message dead-letter queue routing,
 
 ---
 
-## 8. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-<details>
-<summary>1. Why is an SQS Visibility Timeout shorter than the application processing time dangerous?</summary>
+<details><summary>1. Why is an SQS Visibility Timeout shorter than the application processing time dangerous?</summary>
 
 The visibility timeout hides a dequeued message from other competing workers while the current worker processes it. If a transaction takes 45 seconds to complete but the visibility timeout is set to 30 seconds, the message becomes visible again in the queue at the 30-second mark. A second worker dequeues the same message and begins processing it concurrently, resulting in duplicate processing, race conditions, and wasted compute resources.
 </details>
 
-<details>
-<summary>2. Explain why true "exactly-once" delivery cannot exist in distributed cloud networks without consumer idempotency.</summary>
+<details><summary>2. Explain why true "exactly-once" delivery cannot exist in distributed cloud networks without consumer idempotency.</summary>
 
 In distributed systems, the network is inherently unreliable. When a message broker delivers a message to a worker and the worker completes the task, it sends an acknowledgment back to the broker. If a network packet drop or timeout occurs before the acknowledgment reaches the broker, the broker must assume the worker failed and redelivers the message to ensure at-least-once delivery. Therefore, duplicate receipts are inevitable; "exactly-once" processing semantics can be achieved only if the consumer application enforces idempotency by recording transaction keys.
 </details>
 
-<details>
-<summary>3. What problem does the Transactional Outbox Pattern solve in microservices?</summary>
+<details><summary>3. What problem does the Transactional Outbox Pattern solve in microservices?</summary>
 
 It eliminates the "dual-write" failure mode. If a service writes to an application database and then publishes an event to SQS in two separate network calls, a process crash or network drop between the two operations leaves the system in an inconsistent state: the database state committed, but downstream services were never notified. The outbox pattern writes both the business entity and the outgoing event into the same local database transaction. A separate relay process reads the outbox table and guarantees publication to the message broker.
 </details>
 
-<details>
-<summary>4. What is a "poison message" in a queue, and how does a Dead Letter Queue (DLQ) protect the system?</summary>
+<details><summary>4. What is a "poison message" in a queue, and how does a Dead Letter Queue (DLQ) protect the system?</summary>
 
 A poison message is a malformed or corrupted message that triggers an unhandled exception or crash in consumer code every time it is read. Without a DLQ, the message returns to the queue upon visibility timeout expiry and is repeatedly picked up by workers, thrashing CPU resources and blocking other legitimate messages. A DLQ tracks `receiveCount`; when attempts exceed a configured threshold, the message is automatically moved to the DLQ, unblocking the main queue and alerting engineers for inspection.
 </details>
 
-<details>
-<summary>5. How does a Pub/Sub Topic differ from a Message Queue in terms of consumer topology?</summary>
+<details><summary>5. How does a Pub/Sub Topic differ from a Message Queue in terms of consumer topology?</summary>
 
 A message queue implements a point-to-point competing consumer pattern: multiple workers listen to the same queue, but each individual message is processed by exactly one worker. A Pub/Sub topic implements a one-to-many fan-out pattern: when a message is published to a topic, a copy of the message is fanned out and pushed to all active subscribers (e.g., multiple independent queues belonging to billing, notifications, and analytics services).
 </details>

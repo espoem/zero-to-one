@@ -276,53 +276,34 @@ pg_upgrade \
 
 ---
 
-## 9. Interview Drill
+## Interview Drill
 
-<details>
-<summary>1. Explain the "Torn Page" phenomenon. Why does setting `full_page_writes = off` represent a critical risk to ACID durability?</summary>
+<details><summary>1. Explain the "Torn Page" phenomenon. Why does setting `full_page_writes = off` represent a critical risk to ACID durability?</summary>
 
-**Answer**: PostgreSQL reads and writes data in 8KB blocks, while operating system filesystems and hardware storage controllers write data in smaller 4KB (or 512-byte) sectors. If a physical server loses power or the operating system crashes while PostgreSQL is writing an 8KB block to disk, the OS may successfully write the first 4KB sector while leaving the second 4KB sector unwritten. This leaves an 8KB block in a corrupted, half-written state known as a "torn page". Normal WAL records only store delta diffs (e.g. "update byte at offset 20"). Replaying a delta diff onto a torn page fails because internal page headers are invalid. `full_page_writes = on` forces PostgreSQL to write the entire 8KB page image to WAL on the first modification following each checkpoint. During crash recovery, the 8KB image overwrites the torn page, restoring block integrity. Disabling it risks unrecoverable data corruption.
-
-- Ref: [PostgreSQL Documentation: Reliability and the Write-Ahead Log](https://www.postgresql.org/docs/18/wal-reliability.html)
-
+PostgreSQL reads and writes data in 8KB blocks, while operating system filesystems and hardware storage controllers write data in smaller 4KB (or 512-byte) sectors. If a physical server loses power or the operating system crashes while PostgreSQL is writing an 8KB block to disk, the OS may successfully write the first 4KB sector while leaving the second 4KB sector unwritten. This leaves an 8KB block in a corrupted, half-written state known as a "torn page". Normal WAL records only store delta diffs (e.g. "update byte at offset 20"). Replaying a delta diff onto a torn page fails because internal page headers are invalid. `full_page_writes = on` forces PostgreSQL to write the entire 8KB page image to WAL on the first modification following each checkpoint. During crash recovery, the 8KB image overwrites the torn page, restoring block integrity. Disabling it risks unrecoverable data corruption.
 </details>
 
-<details>
-<summary>2. How do you tune checkpoints to eliminate severe periodic I/O latency spikes on write-heavy database clusters?</summary>
+<details><summary>2. How do you tune checkpoints to eliminate severe periodic I/O latency spikes on write-heavy database clusters?</summary>
 
-**Answer**: Checkpoints flush all dirty `shared_buffers` pages to disk. To prevent I/O saturation:
+Checkpoints flush all dirty `shared_buffers` pages to disk. To prevent I/O saturation:
 
 1. Increase `checkpoint_timeout` to 15 or 30 minutes (reducing checkpoint frequency).
 2. Increase `max_wal_size` (e.g. 32GB to 64GB) so checkpoints are driven by time rather than premature WAL volume exhaustion.
 3. Configure `checkpoint_completion_target = 0.9`. This instructs the checkpointer to throttle and spread its disk write operations across 90% of the `checkpoint_timeout` interval (e.g., across 27 minutes of a 30-minute window). This smooths out write throughput, leaving disk bandwidth available for client queries.
 
-- Ref: [PostgreSQL Documentation: Checkpoints](https://www.postgresql.org/docs/18/wal-configuration.html)
-
 </details>
 
-<details>
-<summary>3. What is the role of the Timeline ID ($TLI$) and history files in Point-In-Time Recovery?</summary>
+<details><summary>3. What is the role of the Timeline ID ($TLI$) and history files in Point-In-Time Recovery?</summary>
 
-**Answer**: When a database is promoted from recovery or standby mode to a read-write primary, it branches its WAL history into a new Timeline (incrementing the integer Timeline ID, $TLI$). This prevents the new primary from generating WAL segments with names identical to those created by the old primary, which would collide in the WAL archive. The timeline history file (`.history`) records the exact LSN where the branch occurred. When other standbys or recovery procedures replay WAL, they consult the history file to know exactly when to switch from reading parent timeline WAL files to replaying the child timeline files.
-
-- Ref: [PostgreSQL Documentation: Continuous Archiving: Timelines](https://www.postgresql.org/docs/18/continuous-archiving.html#BACKUP-TIMELINES)
-
+When a database is promoted from recovery or standby mode to a read-write primary, it branches its WAL history into a new Timeline (incrementing the integer Timeline ID, $TLI$). This prevents the new primary from generating WAL segments with names identical to those created by the old primary, which would collide in the WAL archive. The timeline history file (`.history`) records the exact LSN where the branch occurred. When other standbys or recovery procedures replay WAL, they consult the history file to know exactly when to switch from reading parent timeline WAL files to replaying the child timeline files.
 </details>
 
-<details>
-<summary>4. How does `pg_upgrade --link` achieve near-instantaneous major version upgrades, and what major performance improvement was introduced in PostgreSQL 18?</summary>
+<details><summary>4. How does `pg_upgrade --link` achieve near-instantaneous major version upgrades, and what major performance improvement was introduced in PostgreSQL 18?</summary>
 
-**Answer**: `pg_upgrade --link` avoids copying data files between versions. Instead, it creates filesystem hard links pointing the new cluster's data files to the exact same physical disk blocks as the old cluster's data files. The upgrade finishes in seconds, even on multi-terabyte databases. Historically, the major drawback was that the new cluster had an empty statistics catalog, forcing administrators to run full-cluster `ANALYZE` commands while queries suffered from terrible generic plans. In **PostgreSQL 18**, `pg_upgrade` automatically transfers optimizer statistics (`pg_statistic`), allowing the upgraded cluster to immediately execute queries with accurate, high-performance plans.
-
-- Ref: [PostgreSQL 18 Release Notes: pg_upgrade](https://www.postgresql.org/docs/18/release-18.html)
-
+`pg_upgrade --link` avoids copying data files between versions. Instead, it creates filesystem hard links pointing the new cluster's data files to the exact same physical disk blocks as the old cluster's data files. The upgrade finishes in seconds, even on multi-terabyte databases. Historically, the major drawback was that the new cluster had an empty statistics catalog, forcing administrators to run full-cluster `ANALYZE` commands while queries suffered from terrible generic plans. In **PostgreSQL 18**, `pg_upgrade` automatically transfers optimizer statistics (`pg_statistic`), allowing the upgraded cluster to immediately execute queries with accurate, high-performance plans.
 </details>
 
-<details>
-<summary>5. How does native incremental backup in PostgreSQL 17+ differ from traditional physical backups?</summary>
+<details><summary>5. How does native incremental backup in PostgreSQL 17+ differ from traditional physical backups?</summary>
 
-**Answer**: Traditional physical backups (`pg_basebackup`) copy the entire `$PGDATA` directory (full backup) every time. In PostgreSQL 17+, `pg_basebackup --incremental=<manifest>` reads the backup manifest of the previous backup and only backs up the 8KB disk blocks that have been modified since that manifest was created. This reduces backup duration and storage consumption by over 90% for typical workloads. The incremental backups can then be merged with the base backup using `pg_combinebackup` to synthesize a complete, standalone restorable cluster.
-
-- Ref: [PostgreSQL Documentation: pg_basebackup](https://www.postgresql.org/docs/18/app-pgbasebackup.html)
-
+Traditional physical backups (`pg_basebackup`) copy the entire `$PGDATA` directory (full backup) every time. In PostgreSQL 17+, `pg_basebackup --incremental=<manifest>` reads the backup manifest of the previous backup and only backs up the 8KB disk blocks that have been modified since that manifest was created. This reduces backup duration and storage consumption by over 90% for typical workloads. The incremental backups can then be merged with the base backup using `pg_combinebackup` to synthesize a complete, standalone restorable cluster.
 </details>

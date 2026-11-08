@@ -238,12 +238,9 @@ Operating systems and storage hardware write data in physical sectors (typically
 
 ---
 
-## 8. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1: Define the Steal and No-Force buffer pool management policies and explain why modern DBMS architectures universally adopt them.</strong></summary>
-
-**Answer:**
+<details><summary>1. Define the Steal and No-Force buffer pool management policies and explain why modern DBMS architectures universally adopt them.</summary>
 
 - **Steal Policy**: Allows the buffer manager to evict dirty, unpinned pages belonging to uncommitted active transactions to non-volatile disk storage in order to free memory frames for other transactions.
 - **No-Force Policy**: Permits a transaction to commit without requiring all of its modified dirty data pages to be flushed to disk at commit time; only its sequential log records must be flushed.
@@ -255,10 +252,9 @@ Modern databases adopt **Steal / No-Force** because it maximizes both memory eff
 
 </details>
 
-<details>
-<summary><strong>Q2: Walk through the three passes of the ARIES recovery algorithm and state the specific purpose of each pass.</strong></summary>
+<details><summary>2. Walk through the three passes of the ARIES recovery algorithm and state the specific purpose of each pass.</summary>
 
-**Answer:** The three passes of ARIES are:
+The three passes of ARIES are:
 
 1. **Analysis Pass**: Scans forward from the last checkpoint to the end of the log. It reconstructs the **Transaction Table** (identifying active loser transactions at crash) and the **Dirty Page Table** (identifying dirty pages and calculating $\min(\text{rec\_lsn})$ where Redo must start).
 2. **Redo Pass ("Repeating History")**: Scans forward from $\min(\text{rec\_lsn})$ to the end of the log. It reapplies the modifications of _all_ transactions (both committed and uncommitted) to restore the exact physical database state preceding the crash. It uses page LSNs to make redo operations strictly idempotent.
@@ -266,20 +262,18 @@ Modern databases adopt **Steal / No-Force** because it maximizes both memory eff
 
 </details>
 
-<details>
-<summary><strong>Q3: What is a Compensation Log Record (CLR) in ARIES, and what critical guarantee does it provide during recursive crashes?</strong></summary>
+<details><summary>3. What is a Compensation Log Record (CLR) in ARIES, and what critical guarantee does it provide during recursive crashes?</summary>
 
-**Answer:** A Compensation Log Record (CLR) is a WAL record written during the Undo pass when an operation performed by an aborted or loser transaction is rolled back.
+A Compensation Log Record (CLR) is a WAL record written during the Undo pass when an operation performed by an aborted or loser transaction is rolled back.
 
 A CLR contains a critical field called **`undo_next_lsn`**, which points to the `prev_lsn` of the log record that was just undone. The fundamental rule of CLRs is: **CLRs are never undone**.
 
 If the database crashes _during the recovery process itself_, the subsequent restart recovery re-executes Analysis and Redo, but during the Undo pass, when it encounters a CLR, it immediately jumps to the record specified by `undo_next_lsn`, completely skipping already-undone work. This guarantees that recovery progress is strictly monotonic and **never enters an infinite recovery crash loop**.
 </details>
 
-<details>
-<summary><strong>Q4: Explain how Group Commit resolves the throughput bottleneck of physical `fsync()` calls on transactional storage.</strong></summary>
+<details><summary>4. Explain how Group Commit resolves the throughput bottleneck of physical `fsync()` calls on transactional storage.</summary>
 
-**Answer:** Under high-concurrency workloads, if every committing transaction thread independently issues `fsync()` on the WAL file, the storage controller is overwhelmed by write-barrier stalls, capping commit throughput at the physical drive's IOPS limit (e.g. 500–1000 syncs/sec).
+Under high-concurrency workloads, if every committing transaction thread independently issues `fsync()` on the WAL file, the storage controller is overwhelmed by write-barrier stalls, capping commit throughput at the physical drive's IOPS limit (e.g. 500–1000 syncs/sec).
 
 **Group Commit** resolves this via leader-follower coordination:
 
@@ -290,20 +284,18 @@ If the database crashes _during the recovery process itself_, the subsequent res
 
 </details>
 
-<details>
-<summary><strong>Q5: What is a "Torn Page", why does it break physiological WAL recovery, and how does PostgreSQL prevent it?</strong></summary>
+<details><summary>5. What is a "Torn Page", why does it break physiological WAL recovery, and how does PostgreSQL prevent it?</summary>
 
-**Answer:** A torn page occurs when power fails or an OS crashes while the storage system is writing a database page (e.g. 8KB) composed of multiple smaller physical disk sectors (e.g. 512B or 4KB). The resulting block on disk contains a corrupt mixture of old and new data bytes.
+A torn page occurs when power fails or an OS crashes while the storage system is writing a database page (e.g. 8KB) composed of multiple smaller physical disk sectors (e.g. 512B or 4KB). The resulting block on disk contains a corrupt mixture of old and new data bytes.
 
 Torn pages break physiological WAL logging because physiological logging assumes the page is structurally valid (that page headers, slot offsets, and line pointers are intact) so that logical updates can be applied inside the block.
 
 PostgreSQL prevents torn-page corruption via **Full Page Images (FPI)**: upon the first modification of any page after a checkpoint, PostgreSQL writes a complete 8KB snapshot of the page into the WAL stream. During crash recovery, if an 8KB block is torn, the recovery engine restores the complete pristine 8KB image from the WAL before replaying subsequent delta log records.
 </details>
 
-<details>
-<summary><strong>Q6: How does a Fuzzy Checkpoint differ from a Sharp Checkpoint, and how does it avoid freezing transactional query processing?</strong></summary>
+<details><summary>6. How does a Fuzzy Checkpoint differ from a Sharp Checkpoint, and how does it avoid freezing transactional query processing?</summary>
 
-**Answer:** A **Sharp Checkpoint** halts all active transactions, flushes every dirty buffer frame in memory to disk, writes a checkpoint marker, and resumes transactions. This causes severe, multi-second application latency spikes on systems with large buffer pools.
+A **Sharp Checkpoint** halts all active transactions, flushes every dirty buffer frame in memory to disk, writes a checkpoint marker, and resumes transactions. This causes severe, multi-second application latency spikes on systems with large buffer pools.
 
 A **Fuzzy Checkpoint** does not flush all dirty pages synchronously:
 

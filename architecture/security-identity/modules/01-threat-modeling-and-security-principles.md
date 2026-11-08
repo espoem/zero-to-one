@@ -186,16 +186,14 @@ The 2025 edition of the OWASP Top 10 reflects modern cloud-native architectures,
 
 ---
 
-## 8. Interview Drill: Senior Infrastructure & Security Engineering
+## Interview Drill
 
-<details>
-<summary>1. An engineer proposes calculating a "DREAD score" to prioritize three newly discovered API vulnerabilities. Why would a Principal Security Architect reject this approach?</summary>
+<details><summary>1. An engineer proposes calculating a "DREAD score" to prioritize three newly discovered API vulnerabilities. Why would a Principal Security Architect reject this approach?</summary>
 
 DREAD calculates a score by taking the arithmetic mean of five subjective ordinal metrics: Damage, Reproducibility, Exploitability, Affected Users, and Discoverability. First, averaging ordinal values violates basic mathematical measurement theory because the qualitative intervals between points are non-linear and arbitrary. Second, including "Discoverability" rewards "security through obscurity"—treating a vulnerability as lower risk merely because it has not yet been discovered by an external scanner. Modern systems engineering replaces DREAD with empirical vulnerability forecasting: **CVSS v4.0** for intrinsic severity, **EPSS** for the probabilistic likelihood of in-the-wild exploitation within 30 days, and **SSVC (Stakeholder-Specific Vulnerability Categorization)** to generate deterministic operational outcomes (e.g. Act immediately vs Attend).
 </details>
 
-<details>
-<summary>2. Explain the difference between Fail-Safe Defaults and Complete Mediation, and provide a concrete software failure example for each.</summary>
+<details><summary>2. Explain the difference between Fail-Safe Defaults and Complete Mediation, and provide a concrete software failure example for each.</summary>
 
 - **Fail-Safe Defaults**: Dictates that the baseline state of any decision must be denial of access, and any exceptional or unexpected error condition must result in rejection (`fail-closed`).
   - _Failure Example_: An authorization middleware wraps access evaluation in a `try...catch` block. When a database timeout occurs, the catch block catches the error, logs a warning, and inadvertently calls `next()` instead of `return res.status(500)`, allowing an unauthenticated user to access the route (an A10:2025 failure).
@@ -204,8 +202,7 @@ DREAD calculates a score by taking the arithmetic mean of five subjective ordina
 
 </details>
 
-<details>
-<summary>3. In an architecture review, an engineering lead argues that an internal microservice running inside an AWS Private VPC does not need TLS or authentication because "it's behind the VPC firewall." How do you challenge this using STRIDE?</summary>
+<details><summary>3. In an architecture review, an engineering lead argues that an internal microservice running inside an AWS Private VPC does not need TLS or authentication because "it's behind the VPC firewall." How do you challenge this using STRIDE?</summary>
 
 Relying solely on network perimeter boundaries violates Defense in Depth and fails multiple STRIDE categories:
 
@@ -215,14 +212,12 @@ Relying solely on network perimeter boundaries violates Defense in Depth and fai
 
 </details>
 
-<details>
-<summary>4. Why was Server-Side Request Forgery (SSRF) merged into category A01:2025 (Broken Access Control) in the OWASP Top 10:2025 update?</summary>
+<details><summary>4. Why was Server-Side Request Forgery (SSRF) merged into category A01:2025 (Broken Access Control) in the OWASP Top 10:2025 update?</summary>
 
 In previous OWASP editions (such as 2021), SSRF had its own standalone category (A10:2021). However, architectural root-cause analysis revealed that SSRF is fundamentally a broken access control mechanism: the software application acts as an unauthorized proxy, allowing an unprivileged user to bypass network boundary access controls and reach protected systems (such as the cloud instance metadata service at `169.254.169.254` or internal loopback admin consoles). By recognizing SSRF as an access control failure rather than a distinct protocol error, security teams apply unified authorization mediation and egress boundary filtering.
 </details>
 
-<details>
-<summary>5. How does the OWASP ASVS 5.0 level structure assist an engineering organization in balancing security rigor against developmental velocity?</summary>
+<details><summary>5. How does the OWASP ASVS 5.0 level structure assist an engineering organization in balancing security rigor against developmental velocity?</summary>
 
 ASVS 5.0 explicitly defines three progressive verification tiers:
 

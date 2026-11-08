@@ -435,16 +435,14 @@ This is also the formal reason Raft's guarantees split as they do. Election Safe
 
 ---
 
-## 13. Interview Drill: System Models & Impossibility
+## Interview Drill
 
-<details>
-<summary>1. Why is the Two Generals Problem fundamentally different from the Byzantine Generals Problem?</summary>
+<details><summary>1. Why is the Two Generals Problem fundamentally different from the Byzantine Generals Problem?</summary>
 
 In the Two Generals Problem, the communication channel is unreliable (packets are lost or delayed), but the processes themselves are completely honest and trustworthy (crash-stop). In the Byzantine Generals Problem, the communication network is assumed to be reliable, but the processes themselves may be traitors, sending contradictory messages or intentionally sabotaging agreement.
 </details>
 
-<details>
-<summary>2. Does the Raft or Paxos consensus protocol violate the FLP Impossibility Theorem?</summary>
+<details><summary>2. Does the Raft or Paxos consensus protocol violate the FLP Impossibility Theorem?</summary>
 
 No. The FLP theorem applies strictly to **deterministic** consensus protocols running in a **purely asynchronous** network model. Raft and Paxos circumvent FLP by introducing two non-asynchronous assumptions:
 
@@ -453,8 +451,7 @@ No. The FLP theorem applies strictly to **deterministic** consensus protocols ru
 
 </details>
 
-<details>
-<summary>3. Why is calling a database 'CA' considered an architectural misnomer?</summary>
+<details><summary>3. Why is calling a database 'CA' considered an architectural misnomer?</summary>
 
 In any distributed architecture, network partitions ($P$) are a physical inevitability of IP networks (fiber cuts, switch reboots, routing misconfigurations). You cannot choose "no partitions". When a partition occurs, the system is physically partitioned; it must therefore either:
 
@@ -463,8 +460,7 @@ In any distributed architecture, network partitions ($P$) are a physical inevita
 
 </details>
 
-<details>
-<summary>4. What does the PACELC theorem tell us about Cassandra versus Google Spanner during normal operation?</summary>
+<details><summary>4. What does the PACELC theorem tell us about Cassandra versus Google Spanner during normal operation?</summary>
 
 Under normal operation (no network partition, the **Else** branch):
 
@@ -473,34 +469,19 @@ Under normal operation (no network partition, the **Else** branch):
 
 </details>
 
-<details>
-<summary>5. How can a model checker determine whether an invariant failure is a safety violation or a liveness violation?</summary>
+<details><summary>5. How can a model checker determine whether an invariant failure is a safety violation or a liveness violation?</summary>
 
 - A **Safety violation** is proven by a finite execution trace ending in a specific bad state (e.g., two nodes simultaneously believing they are the leader in term 5). It requires only inspecting the state table.
 - A **Liveness violation** cannot be proven by any finite prefix. It manifests as a cycle (an infinite loop or deadlock) where the system transitions indefinitely through valid states without ever reaching the desired goal state (e.g., an infinite election split-vote loop).
 
 </details>
 
-<details>
-<summary>6. After three messages are delivered on the two-generals chain, which level of mutual knowledge do the generals have, and why can they still not both attack safely?</summary>
+<details><summary>6. After three messages are delivered on the two-generals chain, which level of mutual knowledge do the generals have, and why can they still not both attack safely?</summary>
 
 Delivered messages $m_1..m_d$ yield exactly $E^{d-1}\varphi$ for $\varphi$ = "$m_1$ was sent and delivered". Each additional delivery adds one level of "everybody knows that everybody knows...", but attacking simultaneously requires $C\varphi = \bigcap_k E^k\varphi$. Because the sender of the last message cannot distinguish "it arrived" from "it was lost", the indistinguishability graph connects every world to the one where nothing was delivered, so $C\varphi$ is empty at every finite depth. Practical protocols avoid needing it by making one side's action unilateral and retryable.
 </details>
 
-<details>
-<summary>7. Why does a synchronous crash-tolerant consensus protocol need f + 1 rounds, and what does the worst-case adversary do?</summary>
+<details><summary>7. Why does a synchronous crash-tolerant consensus protocol need f + 1 rounds, and what does the worst-case adversary do?</summary>
 
 Among $f+1$ rounds at most $f$ contain a crash, so at least one round is crash-free, and in that round every live process gets the same information, after which flooding yields identical value sets. With only $f$ rounds the adversary crashes one process per round, each time after informing only the _next_ process in a chain, so the minority value reaches one live process in the last round and nobody else. Those two processes decide differently. The executable check enumerates all such patterns for $n=4$.
-</details>
-
-<details>
-<summary>8. Ben-Or consensus decides without a leader or timeouts. What stops it from violating agreement, and what only holds with probability 1?</summary>
-
-Agreement is a pure safety argument: with $n > 2f$ and $n-f$-sized quorums, two distinct non-⊥ proposals cannot exist in one round, and a process that decides $v$ saw $f+1$ matching proposals, which intersects every other process's $(n-f)$-sample, forcing everyone to adopt $v$. Termination is probabilistic: if no one can adopt a proposal, independent coin flips eventually align. FLP is not contradicted because the algorithm is not deterministic; the bad adversarial run still exists but has probability zero.
-</details>
-
-<details>
-<summary>9. Is MongoDB "CP"? What is wrong with answering that question with a single label?</summary>
-
-CAP labels are defined only for atomic registers under a specific partition model; real products expose configurable write concern, read concern and read preference. Abadi's PACELC lists MongoDB as PA/EC by default, while Kleppmann's critique recommends naming the exact consistency model (for example linearizable writes with `majority` write concern plus stale reads from secondaries) rather than a CAP letter pair.
 </details>

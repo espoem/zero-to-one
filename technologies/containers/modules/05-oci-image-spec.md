@@ -423,46 +423,39 @@ RESOLVE-AND-VALIDATE-OCI-IMAGE(indexBlob, targetPlatform, blobStore)
 
 ---
 
-## 10. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. Explain the architectural difference between an OCI Image Index and an OCI Image Manifest.</strong></summary>
+<details><summary>1. Explain the architectural difference between an OCI Image Index and an OCI Image Manifest.</summary>
 
 An Image Manifest (`application/vnd.oci.image.manifest.v1+json`) describes a concrete, single-architecture container image. It binds an image configuration JSON blob to an ordered list of filesystem layer descriptors (`tar+gzip` or `tar+zstd`). An Image Index (`application/vnd.oci.image.index.v1+json`), or "fat manifest", sits one level higher in the abstraction hierarchy: it points to an array of individual Image Manifests, each tagged with specific platform constraints (such as `os: "linux"`, `architecture: "amd64"` or `architecture: "arm64"`). Runtimes evaluate the Image Index to automatically pull the manifest matching the host node's architecture.
 </details>
 
-<details>
-<summary><strong>Q2. Why does an OCI Image Configuration contain both layer descriptor digests in the manifest and `diff_ids` in the configuration JSON?</strong></summary>
+<details><summary>2. Why does an OCI Image Configuration contain both layer descriptor digests in the manifest and `diff_ids` in the configuration JSON?</summary>
 
 The layer descriptor digest in the manifest represents the cryptographic hash of the **compressed wire payload** (e.g., `tar+gzip` or `tar+zstd`) as stored in the registry. Because compression can vary (different algorithms, compression levels, or chunking strategies), the same filesystem state can produce different compressed digests. The `diff_id` in `config.rootfs.diff_ids` represents the cryptographic hash of the **uncompressed filesystem changeset** (the raw tar stream). The runtime verifies the descriptor digest upon network download, decompresses the stream, and asserts that the uncompressed bytes match the `diff_id`, ensuring transport integrity and verifying that layers unpack to the expected filesystem state.
 </details>
 
-<details>
-<summary><strong>Q3. What architectural enhancement was introduced in OCI Image Specification v1.1 to support supply-chain artifacts like SBOMs and signatures?</strong></summary>
+<details><summary>3. What architectural enhancement was introduced in OCI Image Specification v1.1 to support supply-chain artifacts like SBOMs and signatures?</summary>
 
 OCI v1.1 introduced the `subject` descriptor field inside the Image Manifest and established the **Referrers API** (`/v2/<name>/referrers/<digest>`). In OCI v1.0, storing non-image artifacts required hacking custom tags (e.g., `app:v1.0.sig`), polluting repository namespaces. In OCI v1.1, an artifact (such as a Cosign signature or SPDX SBOM) can be pushed as a standard manifest whose `subject` field contains the descriptor of the target container image. The registry indexes this relationship, allowing security scanners to query all attached artifacts directly using the target image's digest.
 </details>
 
-<details>
-<summary><strong>Q4. How does the `SOURCE_DATE_EPOCH` specification guarantee bit-for-bit reproducible container image builds?</strong></summary>
+<details><summary>4. How does the `SOURCE_DATE_EPOCH` specification guarantee bit-for-bit reproducible container image builds?</summary>
 
 Standard container builds are non-deterministic because filesystem tarballs record file modification timestamps (`mtime`) at build time, and the configuration JSON records the current UTC build timestamp. `SOURCE_DATE_EPOCH` standardizes an environment variable containing a fixed UNIX timestamp (typically the timestamp of the latest Git commit). Build engines (like BuildKit and Buildah) clamp all file `mtime` values to this timestamp, sort directory file entries deterministically, and write this fixed time to the image configuration history. This ensures that two builds executed from identical source code produce identical binary blobs and identical SHA-256 digests.
 </details>
 
-<details>
-<summary><strong>Q5. Why is referencing a container image by tag (e.g., `:v1.2.0` or `:latest`) fundamentally less secure than referencing it by digest (e.g., `@sha256:...`)?</strong></summary>
+<details><summary>5. Why is referencing a container image by tag (e.g., `:v1.2.0` or `:latest`) fundamentally less secure than referencing it by digest (e.g., `@sha256:...`)?</summary>
 
 Tags are mutable pointers. A tag can be reassigned or overwritten in a registry at any moment, either intentionally by an operator or maliciously by an attacker who compromises the registry credentials. An image referenced by tag provides zero guarantee that the code running today matches the code that was tested yesterday. A cryptographic digest (`sha256:...`) is an immutable mathematical hash of the manifest content. Referencing an image by digest guarantees that the exact verified bits are deployed and eliminates tag poisoning attacks.
 </details>
 
-<details>
-<summary><strong>Q6. Why does executing `RUN rm -rf /tmp/build-cache` in a subsequent Dockerfile instruction fail to reduce the final container image size?</strong></summary>
+<details><summary>6. Why does executing `RUN rm -rf /tmp/build-cache` in a subsequent Dockerfile instruction fail to reduce the final container image size?</summary>
 
 OCI images are composed of immutable, additive filesystem layers. If Instruction 1 (`RUN ./build.sh`) writes 500MB of temporary cache files to disk, those 500MB are permanently frozen into that layer's compressed blob. When Instruction 2 (`RUN rm -rf /tmp/build-cache`) executes, it cannot alter the underlying historical layer; it merely writes whiteout markers (`.wh...`) into the new, second layer. When the image is pulled, clients must still download the full 500MB layer blob over the network. To reduce image size, file creation and deletion must occur within the **same** `RUN` instruction or utilize multi-stage builds.
 </details>
 
-<details>
-<summary><strong>Q7. What is the operational benefit of using Zstandard (`zstd:chunked`) compression over standard `gzip` in modern OCI image registries?</strong></summary>
+<details><summary>7. What is the operational benefit of using Zstandard (`zstd:chunked`) compression over standard `gzip` in modern OCI image registries?</summary>
 
 Standard `gzip` requires decompressing a layer sequentially from beginning to end before any file within it can be accessed. In contrast, Zstandard (`zstd`) offers significantly higher decompression throughput. When configured with chunking formats (such as `zstd:chunked`), layers include an index of seekable chunks. This enables modern snapshotters (such as `stargz` or containerd's native lazy-pulling snapshotters) to fetch individual files on-demand using HTTP Range requests, allowing containers to start executing within milliseconds before the entire multi-gigabyte image has finished downloading.
 </details>

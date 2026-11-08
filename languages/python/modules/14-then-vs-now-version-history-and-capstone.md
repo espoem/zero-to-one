@@ -217,24 +217,21 @@ class AsyncOrchestrator:
 
 ---
 
-## 4. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-<details>
-<summary>1. How does PEP 695 generic syntax improve upon legacy `typing.TypeVar` definitions?</summary>
+<details><summary>1. How does PEP 695 generic syntax improve upon legacy `typing.TypeVar` definitions?</summary>
 
-**Answer:** Legacy generic typing required manual scoping via module-level `TypeVar` instances (`T = TypeVar("T")`) and explicit inheritance from `typing.Generic[T]`. This boilerplate polluted the module namespace, led to bugs when `TypeVar` instances were reused across unrelated classes, and required manual declaration of variance (`covariant=True`, `contravariant=True`). PEP 695 integrates type parameters directly into Python grammar (`class Box[T]:`, `def process[T](val: T) -> T:`). Type parameters are automatically scoped to the specific class or function, variance is computed automatically by the type checker based on actual usage, and type aliases use clean `type Name[T] = list[T]` syntax rather than `typing.TypeAlias`.
+Legacy generic typing required manual scoping via module-level `TypeVar` instances (`T = TypeVar("T")`) and explicit inheritance from `typing.Generic[T]`. This boilerplate polluted the module namespace, led to bugs when `TypeVar` instances were reused across unrelated classes, and required manual declaration of variance (`covariant=True`, `contravariant=True`). PEP 695 integrates type parameters directly into Python grammar (`class Box[T]:`, `def process[T](val: T) -> T:`). Type parameters are automatically scoped to the specific class or function, variance is computed automatically by the type checker based on actual usage, and type aliases use clean `type Name[T] = list[T]` syntax rather than `typing.TypeAlias`.
 </details>
 
-<details>
-<summary>2. Why does `asyncio.TaskGroup` prevent the orphan task leaks common with `asyncio.gather()`?</summary>
+<details><summary>2. Why does `asyncio.TaskGroup` prevent the orphan task leaks common with `asyncio.gather()`?</summary>
 
-**Answer:** When using `asyncio.gather(*tasks)`, if one child task raises an unhandled exception, `gather()` immediately re-raises that exception to the caller. However, the remaining concurrent child tasks are **not** cancelled automatically; they continue running in the background as unmanaged, orphaned coroutines that can leak memory, consume database connections, and attempt state mutations after the orchestrating workflow has already failed. `asyncio.TaskGroup` enforces structured concurrency. Its asynchronous context manager guarantees that upon exiting the `async with` block (whether by normal completion or an exception in any task), all child tasks spawned within the group are immediately cancelled and awaited. The block cannot exit until every child task has fully terminated, and all exceptions are gathered and raised as an `ExceptionGroup`.
+When using `asyncio.gather(*tasks)`, if one child task raises an unhandled exception, `gather()` immediately re-raises that exception to the caller. However, the remaining concurrent child tasks are **not** cancelled automatically; they continue running in the background as unmanaged, orphaned coroutines that can leak memory, consume database connections, and attempt state mutations after the orchestrating workflow has already failed. `asyncio.TaskGroup` enforces structured concurrency. Its asynchronous context manager guarantees that upon exiting the `async with` block (whether by normal completion or an exception in any task), all child tasks spawned within the group are immediately cancelled and awaited. The block cannot exit until every child task has fully terminated, and all exceptions are gathered and raised as an `ExceptionGroup`.
 </details>
 
-<details>
-<summary>3. What is `asyncio.Queue.shutdown()` (introduced in Python 3.13) and what problem does it solve?</summary>
+<details><summary>3. What is `asyncio.Queue.shutdown()` (introduced in Python 3.13) and what problem does it solve?</summary>
 
-**Answer:** Before Python 3.13, shutting down producer-consumer worker pools required awkward sentinel conventions (such as putting `None` into the queue for each worker) or abruptly cancelling worker tasks while they might still have unprocessed tasks in the queue. `Queue.shutdown(immediate=False)` transitions the queue into a shut-down state:
+Before Python 3.13, shutting down producer-consumer worker pools required awkward sentinel conventions (such as putting `None` into the queue for each worker) or abruptly cancelling worker tasks while they might still have unprocessed tasks in the queue. `Queue.shutdown(immediate=False)` transitions the queue into a shut-down state:
 
 1. Any subsequent `put()` operations immediately raise `asyncio.QueueShutDown`.
 2. Existing items in the queue can still be consumed via `get()`. Once the queue is completely drained, any subsequent `get()` raises `asyncio.QueueShutDown`.
@@ -242,18 +239,14 @@ class AsyncOrchestrator:
 
 </details>
 
-<details>
-<summary>4. What are the key architectural differences between Python 3.11's Faster CPython specialization and Python 3.13's Free-Threading?</summary>
-
-**Answer:**
+<details><summary>4. What are the key architectural differences between Python 3.11's Faster CPython specialization and Python 3.13's Free-Threading?</summary>
 
 - **PEP 659 (Specializing Adaptive Interpreter, Python 3.11+)**: Focuses on single-threaded execution speed. It profiles bytecode execution inline and dynamically replaces generic opcodes (like `BINARY_OP` or `LOAD_ATTR`) with specialized, monomorphic quickened instructions (like `BINARY_OP_ADD_INT` or `LOAD_ATTR_INSTANCE_VALUE`) when data types are uniform, bypassing dynamic dispatch and dictionary probing.
 - **PEP 703 (Free-Threaded CPython, Python 3.13+)**: Focuses on multi-threaded parallel execution. It removes the Global Interpreter Lock (GIL) by replacing global reference count increments with mimalloc thread-safe local allocation, biased reference counting, and thread-safe internal locks. This allows pure Python threads to execute concurrently across multiple CPU cores on multi-threaded builds (`python3.15t`).
 
 </details>
 
-<details>
-<summary>5. How does `contextvars.ContextVar` solve the state corruption problems of `threading.local` in asynchronous systems?</summary>
+<details><summary>5. How does `contextvars.ContextVar` solve the state corruption problems of `threading.local` in asynchronous systems?</summary>
 
-**Answer:** `threading.local` stores state keyed by the OS thread ID. In an asynchronous event loop, thousands of independent coroutines (e.g. concurrent HTTP request handlers) are interleaved across a single OS thread. If code uses `threading.local` to store request-scoped data (like user ID or trace ID), coroutines will overwrite each other's state on context switches, causing critical data leaks and race conditions. `contextvars.ContextVar` stores state keyed by the execution context of the specific asynchronous task or call chain. When a new coroutine is scheduled or a task is created (`loop.create_task()` or `TaskGroup.create_task()`), CPython automatically creates a copy-on-write snapshot of the current context. Each coroutine receives its own isolated context branch, ensuring thread-safe and coroutine-safe context propagation.
+`threading.local` stores state keyed by the OS thread ID. In an asynchronous event loop, thousands of independent coroutines (e.g. concurrent HTTP request handlers) are interleaved across a single OS thread. If code uses `threading.local` to store request-scoped data (like user ID or trace ID), coroutines will overwrite each other's state on context switches, causing critical data leaks and race conditions. `contextvars.ContextVar` stores state keyed by the execution context of the specific asynchronous task or call chain. When a new coroutine is scheduled or a task is created (`loop.create_task()` or `TaskGroup.create_task()`), CPython automatically creates a copy-on-write snapshot of the current context. Each coroutine receives its own isolated context branch, ensuring thread-safe and coroutine-safe context propagation.
 </details>

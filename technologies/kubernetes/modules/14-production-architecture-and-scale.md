@@ -372,73 +372,56 @@ spec:
 
 ---
 
-## 12. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. How does API Priority and Fairness (APF) utilize Shuffle Sharding to protect Kubernetes from the "noisy neighbor" problem?</strong></summary>
+<details><summary>1. How does API Priority and Fairness (APF) utilize Shuffle Sharding to protect Kubernetes from the "noisy neighbor" problem?</summary>
 
 APF assigns incoming requests to a specific `PriorityLevelConfiguration` containing a pool of virtual queues (e.g., 64 queues). Instead of placing all requests into a single global queue or a single assigned queue, APF hashes the caller's identity (e.g., username or ServiceAccount) to deterministically select a "hand" of multiple queues (e.g., 4 queues). The request is placed in the queue with the shortest depth.
 
 Because of combinatorial mathematics, the probability of an abusive tenant's selected 4 queues completely overlapping with another innocent tenant's 4 queues is astronomically low ($\approx 1 \text{ in } 635,000$). While the abusive tenant saturates their own queues, the innocent tenant's requests hash to unaffected queues and execute with zero starvation.
 </details>
 
-<details>
-<summary><strong>Q2. What is the fundamental architectural advantage of Karpenter over the legacy Kubernetes Cluster Autoscaler?</strong></summary>
+<details><summary>2. What is the fundamental architectural advantage of Karpenter over the legacy Kubernetes Cluster Autoscaler?</summary>
 
 The legacy Cluster Autoscaler is bound to cloud provider Auto Scaling Groups (ASGs). It scales by incrementing the desired VM count of pre-configured, homogeneous instance groups, incurring 3 to 6 minutes of VM boot and join latency while causing inefficient bin-packing.
 
 Karpenter is completely group-less. It observes pending, unschedulable pods directly and evaluates their exact resource requirements (CPU, RAM, GPU, architecture, topology constraints). In sub-second time, Karpenter calls cloud Fleet APIs directly to launch the single most cost-effective, custom-sized instance matching the workload. Furthermore, Karpenter continuously runs consolidation loops, dynamically replacing underutilized nodes to cut infrastructure spending.
 </details>
 
-<details>
-<summary><strong>Q3. Explain the difference between etcd compaction and etcd defragmentation. Why does running compaction alone not free disk space on the host?</strong></summary>
+<details><summary>3. Explain the difference between etcd compaction and etcd defragmentation. Why does running compaction alone not free disk space on the host?</summary>
 
 - **Compaction**: Operates at the logical MVCC index level. It removes past historical versions of keys prior to a given revision. The freed space is marked as "free" in etcd's internal memory-mapped B-Tree free-list, allowing new keys to overwrite that space without expanding the file. However, compaction does NOT shrink the physical file on the host filesystem.
 - **Defragmentation**: Rewrites the physical `snap/db` database file sequentially on disk to release free-list blocks back to the Linux host filesystem. Because defragmentation takes an exclusive lock on the etcd database, it must be performed sequentially on each member to preserve cluster availability.
-
 </details>
 
-<details>
-<summary><strong>Q4. What is the official Kubernetes node scalability limit, and what architectural bottlenecks prevent a single cluster from scaling to 50,000 nodes?</strong></summary>
+<details><summary>4. What is the official Kubernetes node scalability limit, and what architectural bottlenecks prevent a single cluster from scaling to 50,000 nodes?</summary>
 
 The official upstream limit is **5,000 nodes** and **150,000 pods**. Beyond this threshold, several core architectural subsystems break down:
 
 1. **API Server Watch Cache & Memory**: Thousands of kubelets maintaining active HTTP/2 watch connections consume gigabytes of apiserver RAM, causing garbage collection latency spikes.
 2. **etcd MVCC Throughput**: etcd's single-Raft-group architecture can process approximately 10,000 to 20,000 write transactions per second. Millions of node status updates and pod heartbeats exceed this write bandwidth.
 3. **Control Plane Fanout**: Monolithic Endpoint updates and NetworkPolicy recalculations generate an $O(\text{nodes} \times \text{pods})$ update cascade across the network.
-
 </details>
 
-<details>
-<summary><strong>Q5. How does a Virtual Cluster (vCluster) provide hard multi-tenancy on shared infrastructure?</strong></summary>
+<details><summary>5. How does a Virtual Cluster (vCluster) provide hard multi-tenancy on shared infrastructure?</summary>
 
 A `vCluster` runs a fully functional, lightweight control plane (`kube-apiserver` and SQLite or etcd) as an ordinary Pod inside a namespace on the host Kubernetes cluster.
 
 Tenants connect exclusively to their virtual API server. Within their virtual cluster, tenants possess full `cluster-admin` privileges: they can create their own namespaces, RBAC roles, and CRDs without polluting or conflicting with the host cluster. A lightweight synchronization controller translates virtual workload pods down to the host cluster's scheduler and worker nodes, delivering the security isolation of dedicated clusters at a fraction of the cost.
 </details>
 
-<details>
-<summary><strong>Q6. What occurred in Kubernetes v1.35 regarding Linux cgroups, and why does kubelet fail to start on legacy Linux hosts?</strong></summary>
+<details><summary>6. What occurred in Kubernetes v1.35 regarding Linux cgroups, and why does kubelet fail to start on legacy Linux hosts?</summary>
 
 In Kubernetes v1.35, the feature gate `FailCgroupV1` was enabled by default (`FailCgroupV1=true`). The upstream Kubernetes project has deprecated Linux cgroup v1 in favor of cgroup v2, which provides superior memory accounting, PSI metrics, and rootless isolation.
 
 If a worker node host boots with legacy cgroup v1, the v1.35+ kubelet will immediately throw a fatal error on startup and refuse to run. Linux distributions must be configured to boot with cgroup v2 enabled via systemd kernel parameters.
 </details>
 
-<details>
-<summary><strong>Q7. Why is routing Kubernetes Events to a secondary, dedicated etcd cluster considered an essential best practice for large-scale clusters?</strong></summary>
+<details><summary>7. Why is routing Kubernetes Events to a secondary, dedicated etcd cluster considered an essential best practice for large-scale clusters?</summary>
 
 In high-scale clusters, `Event` objects represent over 80% of all write operations in the entire cluster. Events have a high churn rate (default 1-hour TTL) and rapid write frequency.
 
 If events share the primary etcd cluster with core objects (Pods, Secrets, Deployments), the massive write volume generates constant Raft disk I/O, increases write amplification, and forces aggressive compaction cycles. Separating events onto an independent etcd cluster using `--etcd-servers-overrides=/events#...` protects the core cluster state from latency degradation and storage quota exhaustion.
-</details>
-
-<details>
-<summary><strong>Q8. In the CKA exam, what is the effect of running `kubectl cordon <node>` vs `kubectl drain <node>`?</strong></summary>
-
-- **`kubectl cordon <node>`**: Marks the target node as unschedulable (`spec.unschedulable: true`). Existing Pods running on the node continue running undisturbed, but `kube-scheduler` will not place any new Pods on that node.
-- **`kubectl drain <node>`**: First marks the node as unschedulable (cordons it), and then safely evicts all existing Pods running on the node (respecting `PodDisruptionBudgets`), forcing them to be rescheduled on other available nodes in the cluster.
-
 </details>
 
 ---

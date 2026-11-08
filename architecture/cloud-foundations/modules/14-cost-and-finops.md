@@ -134,34 +134,29 @@ The hidden network charge calculations (NAT gateway processing, cross-AZ traffic
 
 ---
 
-## 9. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-<details>
-<summary>1. How can a chatty microservice architecture generate a network bill that vastly exceeds its virtual machine compute costs?</summary>
+<details><summary>1. How can a chatty microservice architecture generate a network bill that vastly exceeds its virtual machine compute costs?</summary>
 
 In cloud hyperscalers, data transferred across Availability Zone boundaries in the same region is billed at $\approx \$0.01$/GB in each direction ($\approx \$0.02$/GB roundtrip), and outbound internet traffic routed through a NAT Gateway incurs a $\$0.045$/GB processing fee. If a microservice cluster transfers 50 TB of uncompressed inter-service RPC payloads across AZs and downloads 20 TB of dependencies through a NAT Gateway, the network transfer fees total $\$1,000 + \$900 = \$1,900$, while the underlying c6g.xlarge instances hosting the services may cost only $\$98$/month.
 </details>
 
-<details>
-<summary>2. Why are cost allocation tags not retroactive in cloud billing engines?</summary>
+<details><summary>2. Why are cost allocation tags not retroactive in cloud billing engines?</summary>
 
 Cloud billing engines generate meter records and usage logs in near real time, attaching metadata tags present on the resource at the exact moment of usage. When the billing ledger processes records, it attributes spend according to those stamped tags. Applying tags to an existing resource two weeks later applies only to future meter records. Historical billing records remain forever assigned to the "Untagged / Unallocated" category.
 </details>
 
-<details>
-<summary>3. Differentiate between Compute Savings Plans and EC2 Instance Savings Plans in AWS.</summary>
+<details><summary>3. Differentiate between Compute Savings Plans and EC2 Instance Savings Plans in AWS.</summary>
 
 Compute Savings Plans provide the greatest flexibility: they commit to an hourly spend (e.g., $\$10$/hour) and automatically apply across all instance families (C, M, R, T), operating systems, AWS regions, and even container/serverless compute (AWS Fargate and AWS Lambda), yielding up to 66% discounts. EC2 Instance Savings Plans provide deeper discounts (up to 72%), but require committing to a specific instance family (e.g., `c6g`) within a specific region (e.g., `us-east-1`), forfeiting cross-family and cross-region portability.
 </details>
 
-<details>
-<summary>4. What is the fundamental difference between Showback and Chargeback in organizational FinOps?</summary>
+<details><summary>4. What is the fundamental difference between Showback and Chargeback in organizational FinOps?</summary>
 
 Showback provides financial visibility by reporting granular cloud costs directly to engineering teams and department leaders, raising cost consciousness and enabling benchmarking without financial debiting. Chargeback goes a step further by directly deducting actual cloud expenditure from each business unit's internal financial budget, turning cloud spend into a direct P&L line item that impacts department bonuses and operational budgets.
 </details>
 
-<details>
-<summary>5. Explain the concept of Unit Economics in cloud engineering and why it is superior to tracking total monthly spend.</summary>
+<details><summary>5. Explain the concept of Unit Economics in cloud engineering and why it is superior to tracking total monthly spend.</summary>
 
 Tracking total cloud spend is misleading because total spend naturally increases when a business experiences rapid customer growth. Unit economics normalizes cloud spend by dividing total expenditure by a core business value metric (e.g., cloud spend per processed transaction, per active subscriber, or per ride booked). If total cloud spend grows by 20% while total customer transactions grow by 100%, the unit cost per transaction has decreased by 40%, proving that the underlying architecture has achieved greater operational efficiency and economies of scale.
 </details>

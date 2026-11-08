@@ -209,36 +209,31 @@ flowchart TD
 
 ---
 
-## 8. Interview Drill: Distributed Transactions & Sagas
+## Interview Drill
 
-<details>
-<summary>1. Why is Two-Phase Commit considered an anti-pattern across microservice boundaries?</summary>
+<details><summary>1. Why is Two-Phase Commit considered an anti-pattern across microservice boundaries?</summary>
 
 2PC requires all participating services to acquire exclusive row-level database locks during Phase 1 (`PREPARE`) and hold them until Phase 2 (`COMMIT`). In a microservices architecture, network latency between services and third-party dependencies would hold database locks for hundreds of milliseconds or seconds, collapsing database throughput. Furthermore, if the coordinator crashes, all services are blocked indefinitely holding locks, violating service autonomy and fault isolation.
 </details>
 
-<details>
-<summary>2. How does the Transactional Outbox pattern prevent the Dual-Write anomaly?</summary>
+<details><summary>2. How does the Transactional Outbox pattern prevent the Dual-Write anomaly?</summary>
 
 The Dual-Write anomaly occurs when an application updates a database and sends an event to a message queue in two uncoordinated steps; a crash between the two creates data drift. The Transactional Outbox writes the outgoing event into an `outbox` table in the _same_ database transaction as the business entity. Because both records are committed in a single local ACID transaction, the event is guaranteed to be persisted if and only if the business data is saved. A separate Change Data Capture (CDC) process reliably tails the outbox table and streams events to Kafka.
 </details>
 
-<details>
-<summary>3. What is the fundamental difference between forward recovery and backward recovery in a Saga?</summary>
+<details><summary>3. What is the fundamental difference between forward recovery and backward recovery in a Saga?</summary>
 
 - **Backward Recovery**: When a step fails, the saga executes compensating transactions in reverse order ($C_k, C_{k-1}, \dots$) to undo already committed local transactions and return the system to an abort state.
 - **Forward Recovery**: Used when a step cannot be undone (e.g. money transferred or email sent). The saga retries the failed step continuously (with idempotency) until it succeeds, guaranteeing that the workflow eventually terminates in a successful state.
 
 </details>
 
-<details>
-<summary>4. How does Google Percolator resolve abandoned secondary locks after a client crash?</summary>
+<details><summary>4. How does Google Percolator resolve abandoned secondary locks after a client crash?</summary>
 
 Every transaction in Percolator designates one cell as the **Primary Lock** and sets all other cells as **Secondary Locks** that point to the Primary. If a client crashes, another transaction attempting to access a locked cell follows the backpointer to inspect the Primary Lock. If the Primary Lock is marked `COMMITTED`, the reader knows the transaction succeeded and rolls the secondary lock forward. If the Primary Lock has rolled back or expired, the reader cleans up the lock, guaranteeing recovery without a dedicated coordinator.
 </details>
 
-<details>
-<summary>5. What is the G2 anomaly in Adya's taxonomy, and what isolation level is required to prevent it?</summary>
+<details><summary>5. What is the G2 anomaly in Adya's taxonomy, and what isolation level is required to prevent it?</summary>
 
 $G_2$ represents anti-dependency cycles (also known as **Write Skew**), where transaction $T_1$ reads a state that transaction $T_2$ overwrites, and $T_2$ reads a state that $T_1$ overwrites ($T_1 \xrightarrow{rw} T_2 \xrightarrow{rw} T_1$). Snapshot Isolation allows $G_2$ because neither transaction modifies a row that the other modified. Preventing $G_2$ requires **Serializability** (or Strict Serializability), which tracks read-write anti-dependencies and aborts one of the conflicting transactions.
 </details>

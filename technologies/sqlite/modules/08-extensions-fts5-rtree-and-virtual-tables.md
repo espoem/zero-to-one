@@ -352,7 +352,7 @@ The last row is the quiet one. An index stores keys in the order the collation d
 
 ---
 
-## 9. Interview Drill
+## Interview Drill
 
 <details><summary>1. How does FTS5 store its index, and why does it need periodic merging?</summary>
 
@@ -387,24 +387,4 @@ Through `xBestIndex`: the planner offers the usable constraints and the requeste
 <details><summary>7. What does an R*Tree index answer, and what does it not?</summary>
 
 It answers containment and overlap queries over N-dimensional bounding boxes, in logarithmic time, for example "which boxes intersect this window". It does not test exact geometry, so a second filter (Geopoly or application code) is needed for polygons. Coordinates are stored as 32-bit floats, rounded outward, unless `rtree_i32` is used.
-</details>
-
-<details><summary>8. Why is loading extensions disabled by default, and how do the Node bindings expose it?</summary>
-
-An extension is native code running inside the process with full privileges, and the SQL `load_extension()` function would let anyone who can run SQL load a library. It is therefore off unless enabled through the C API. better-sqlite3 exposes `db.loadExtension(path)`. `node:sqlite` requires `allowExtension: true` at construction, then `enableLoadExtension(true)` / `loadExtension()`.
-</details>
-
-<details><summary>9. Reproduce <code>bm25()</code> by hand for a one-term query. Which constants and counts do you need, and where does SQLite keep them?</summary>
-
-You need _N_ (rows), _n(q)_ (rows containing the term, from `fts5vocab` row type or an index scan), the term frequency per row (column-weighted occurrence count, from `fts5vocab` instance type), each row's length |_d_| and the average length (`doc_docsize`, one varint per column), and the constants *k*₁ = 1.2 and _b_ = 0.75. The score is the negated sum of `idf · f(k₁+1) / (f + k₁(1 − b + b|d|/avgdl))`, with `idf = ln((N − n + 0.5)/(n + 0.5))` replaced by `1e-6` when it is not positive. The track's reference implementation matches the built-in to 1e-12.
-</details>
-
-<details><summary>10. A search page is slow after months of one-row writes, though the table is only 200 MB. How do you confirm and fix it?</summary>
-
-Each committed write adds a level-0 segment and automerge is incremental, so many segments accumulate. Confirm by decoding the structure record (`SELECT block FROM t_data WHERE id = 10`) or by timing the same query after `INSERT INTO t(t) VALUES ('optimize')`. Fix: batch writes into transactions, and schedule `optimize` (or incremental `merge` commands) in a maintenance window, because it rewrites the index under the write lock.
-</details>
-
-<details><summary>11. Why does a trigram search box return nothing for the first two keystrokes, and what are the options?</summary>
-
-A trigram index stores 3-character grams, so shorter queries have nothing to look up and return no rows (not an error). Options: start searching at three characters, serve one- and two-character input from a prefix query on a word-level FTS5 table or an indexed `LIKE 'ab%'`, or add `prefix='2'` to a word-level index.
 </details>

@@ -1433,7 +1433,7 @@ Why is `contextvars.ContextVar` superior to `threading.local` for tracking reque
 - Why not A: `ContextVar` is in-memory.
 - Why not C: `threading.local` is still active for purely multi-threaded code.
 - Why not D: `ContextVar` stores any Python object.
-- Ref: [modules/14-then-vs-now-version-history-and-capstone.md](../modules/14-then-vs-now-version-history-and-capstone.md#4-interview-drill-questions--model-answers), https://docs.python.org/3/library/contextvars.html
+- Ref: [modules/14-then-vs-now-version-history-and-capstone.md](../modules/14-then-vs-now-version-history-and-capstone.md#interview-drill), https://docs.python.org/3/library/contextvars.html
 
 </details>
 

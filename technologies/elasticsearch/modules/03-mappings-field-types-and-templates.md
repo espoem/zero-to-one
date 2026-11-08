@@ -358,52 +358,39 @@ Migration pitfall: legacy and composable templates can both match the same index
 
 ---
 
-## 10. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. Why can't you change a field from <code>text</code> to <code>keyword</code> in place?</strong></summary>
+<details><summary>1. Why can't you change a field from <code>text</code> to <code>keyword</code> in place?</summary>
 
 The existing segments contain an inverted index built with an analyzer and no doc values; `keyword` needs un-analysed terms and doc values. Segments are immutable and the mapping must describe all of them, so the update is rejected. Create a new index, reindex, swap an alias.
 </details>
 
-<details>
-<summary><strong>Q2. What does dynamic mapping do with a JSON string and why is that costly?</strong></summary>
+<details><summary>2. What does dynamic mapping do with a JSON string and why is that costly?</summary>
 
 It maps it as `text` with a `keyword` sub-field (`ignore_above: 256`), unless it matches a date format. Every string is indexed twice, for full text and for exact match/aggregation. Explicit mappings pick one.
 </details>
 
-<details>
-<summary><strong>Q3. Explain object vs nested with a failing example.</strong></summary>
+<details><summary>3. Explain object vs nested with a failing example.</summary>
 
 Arrays of objects are flattened into parallel multi-valued fields, so a query for `first=John AND last=White` matches a doc with John Smith and Alice White. `nested` indexes each element as a hidden document in the same block and requires a `nested` query, keeping per-element conditions together at the cost of extra Lucene docs and whole-block reindexing.
 </details>
 
-<details>
-<summary><strong>Q4. What are doc values, and when would you disable them?</strong></summary>
+<details><summary>4. What are doc values, and when would you disable them?</summary>
 
 A columnar, on-disk doc → values structure written at index time for everything except `text`, used for sorting, aggregations and scripts. Disable them on fields you only search or display (saves disk), knowing you cannot sort or aggregate later without reindexing.
 </details>
 
-<details>
-<summary><strong>Q5. How do you protect a cluster from mapping explosion when keys come from users?</strong></summary>
+<details><summary>5. How do you protect a cluster from mapping explosion when keys come from users?</summary>
 
 Do not let user keys become field names: use `flattened`, a nested key/value structure, `dynamic: false` or `strict` with a whitelist, and an ingest pipeline that drops unknown keys. Keep `total_fields.limit` as a guard rail, not a knob.
 </details>
 
-<details>
-<summary><strong>Q6. When are runtime fields the right tool?</strong></summary>
+<details><summary>6. When are runtime fields the right tool?</summary>
 
 For exploration, rarely used computed values, or fixing a mapping mistake without a reindex. They cost CPU per candidate per query, so combine them with selective indexed filters and promote frequently used ones to indexed fields.
 </details>
 
-<details>
-<summary><strong>Q7. Two index templates match a new index. Which one applies?</strong></summary>
+<details><summary>7. Two index templates match a new index. Which one applies?</summary>
 
 Only the composable template with the highest `priority`; equal priorities with overlapping patterns are rejected at creation. Share settings through component templates. Verify with `_simulate_index`.
-</details>
-
-<details>
-<summary><strong>Q8. What is synthetic source and what do you lose with it?</strong></summary>
-
-`_source` reconstructed from doc values/stored fields instead of stored verbatim. You save disk, but array order, duplicate keyword values, number formatting and some field layouts are not preserved, and fields without doc values need special handling. It is the default for logsdb and TSDS.
 </details>

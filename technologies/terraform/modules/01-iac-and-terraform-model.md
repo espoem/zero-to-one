@@ -433,72 +433,58 @@ When this occurs, the gRPC IPC socket disconnects abruptly. Terraform Core canno
 
 ---
 
-## 9. Interview Drill: Deep-Dive Architectural Questions
+## Interview Drill
 
-<details>
-<summary><strong>Q1. Explain the formal algorithmic purpose of Transitive Reduction in Terraform's DAG engine. Why is topological sorting alone insufficient?</strong></summary>
+<details><summary>1. Explain the formal algorithmic purpose of Transitive Reduction in Terraform's DAG engine. Why is topological sorting alone insufficient?</summary>
 
-**Answer**: Topological sorting establishes a valid sequential execution order for a DAG, but it does not optimize concurrent execution. In a complex configuration, redundant edges accumulate naturally (e.g., edge $(A, C)$ alongside edges $(A, B)$ and $(B, C)$). If a dynamic thread pool schedules tasks where any vertex with in-degree 0 is runnable, redundant edges artificially constrain the scheduler. Vertex $C$ would be forced to wait on $A$ through two separate dependency paths, consuming scheduler memory and locking worker threads. Transitive reduction eliminates every edge $(u, v)$ for which an alternate directed path of length $\ge 2$ exists from $u$ to $v$. This produces the minimal reachability-equivalent graph $G_{\text{TR}}$, maximizing the number of concurrently eligible leaf vertices during graph walks.
+Topological sorting establishes a valid sequential execution order for a DAG, but it does not optimize concurrent execution. In a complex configuration, redundant edges accumulate naturally (e.g., edge $(A, C)$ alongside edges $(A, B)$ and $(B, C)$). If a dynamic thread pool schedules tasks where any vertex with in-degree 0 is runnable, redundant edges artificially constrain the scheduler. Vertex $C$ would be forced to wait on $A$ through two separate dependency paths, consuming scheduler memory and locking worker threads. Transitive reduction eliminates every edge $(u, v)$ for which an alternate directed path of length $\ge 2$ exists from $u$ to $v$. This produces the minimal reachability-equivalent graph $G_{\text{TR}}$, maximizing the number of concurrently eligible leaf vertices during graph walks.
 
 - Ref: Aho, Garey, & Ullman, _The Transitive Reduction of a Directed Graph_ (SIAM Journal on Computing).
-
 </details>
 
-<details>
-<summary><strong>Q2. How does the gRPC plugin architecture prevent provider execution failures from corrupting Terraform Core, and what performance trade-off does it introduce?</strong></summary>
+<details><summary>2. How does the gRPC plugin architecture prevent provider execution failures from corrupting Terraform Core, and what performance trade-off does it introduce?</summary>
 
-**Answer**: Terraform Core and provider plugins execute in separate OS processes and separate virtual memory spaces. Communication occurs over local loopback sockets or Unix domain sockets using Protocol Buffers over gRPC. If a provider plugin crashes due to a null-pointer dereference, memory corruption, or operating system SIGSEGV, Terraform Core intercepts the broken IPC connection without crashing its own runtime, corrupting its heap, or abandoning state file locks. The trade-off is IPC serialization overhead: every resource schema, configuration value, and state attribute must be serialized into Protocol Buffer messages, transferred across the socket boundary, and deserialized for every single graph vertex. For configurations with 10,000+ resources, IPC serialization accounts for a noticeable percentage of total plan latency.
+Terraform Core and provider plugins execute in separate OS processes and separate virtual memory spaces. Communication occurs over local loopback sockets or Unix domain sockets using Protocol Buffers over gRPC. If a provider plugin crashes due to a null-pointer dereference, memory corruption, or operating system SIGSEGV, Terraform Core intercepts the broken IPC connection without crashing its own runtime, corrupting its heap, or abandoning state file locks. The trade-off is IPC serialization overhead: every resource schema, configuration value, and state attribute must be serialized into Protocol Buffer messages, transferred across the socket boundary, and deserialized for every single graph vertex. For configurations with 10,000+ resources, IPC serialization accounts for a noticeable percentage of total plan latency.
 
 - Ref: HashiCorp `go-plugin` Architecture & Specification.
-
 </details>
 
-<details>
-<summary><strong>Q3. Contrast the drift detection and reconciliation models of Terraform versus Kubernetes Crossplane.</strong></summary>
+<details><summary>3. Contrast the drift detection and reconciliation models of Terraform versus Kubernetes Crossplane.</summary>
 
-**Answer**: Terraform uses an episodic, client-driven reconciliation model. It calculates drift only when an operator or CI/CD runner explicitly invokes `terraform plan` or `terraform apply`. Between executions, external out-of-band mutations to cloud infrastructure remain undetected. In contrast, Crossplane utilizes a continuous, server-driven reconciliation loop hosted inside a Kubernetes cluster. Custom controllers continuously poll cloud provider APIs at bounded intervals (e.g., every 60 seconds). When drift is detected between the declared Kubernetes Custom Resource (CR) in etcd and the actual cloud API, Crossplane automatically applies corrective mutations to bring the physical infrastructure back into compliance without human intervention.
+Terraform uses an episodic, client-driven reconciliation model. It calculates drift only when an operator or CI/CD runner explicitly invokes `terraform plan` or `terraform apply`. Between executions, external out-of-band mutations to cloud infrastructure remain undetected. In contrast, Crossplane utilizes a continuous, server-driven reconciliation loop hosted inside a Kubernetes cluster. Custom controllers continuously poll cloud provider APIs at bounded intervals (e.g., every 60 seconds). When drift is detected between the declared Kubernetes Custom Resource (CR) in etcd and the actual cloud API, Crossplane automatically applies corrective mutations to bring the physical infrastructure back into compliance without human intervention.
 
 - Ref: Kubernetes Operator Pattern & Crossplane Architecture Documentation.
-
 </details>
 
-<details>
-<summary><strong>Q4. What is the "magic cookie" in Terraform provider execution, and what operational failure does it prevent?</strong></summary>
+<details><summary>4. What is the "magic cookie" in Terraform provider execution, and what operational failure does it prevent?</summary>
 
-**Answer**: The magic cookie is a predefined environment variable key-value pair (`TF_PLUGIN_MAGIC_COOKIE`) injected by Terraform Core into the child process environment upon invoking `execve()`. When a provider binary starts, its entry point verifies the presence and exact value of this token before allocating resources or binding network sockets. If the variable is absent, the binary prints an explanatory message and immediately terminates. This prevents human operators or automated scripts from executing provider binaries directly inside an interactive shell, which would otherwise launch an unauthenticated gRPC listener bound to a local TCP port.
+The magic cookie is a predefined environment variable key-value pair (`TF_PLUGIN_MAGIC_COOKIE`) injected by Terraform Core into the child process environment upon invoking `execve()`. When a provider binary starts, its entry point verifies the presence and exact value of this token before allocating resources or binding network sockets. If the variable is absent, the binary prints an explanatory message and immediately terminates. This prevents human operators or automated scripts from executing provider binaries directly inside an interactive shell, which would otherwise launch an unauthenticated gRPC listener bound to a local TCP port.
 
 - Ref: `hashicorp/go-plugin` Handshake Specification.
-
 </details>
 
-<details>
-<summary><strong>Q5. Under what conditions will a syntactically valid HCL configuration fail during Terraform's graph compilation phase?</strong></summary>
+<details><summary>5. Under what conditions will a syntactically valid HCL configuration fail during Terraform's graph compilation phase?</summary>
 
-**Answer**: Graph compilation occurs after HCL syntax parsing. A syntactically valid configuration fails during graph compilation if:
+Graph compilation occurs after HCL syntax parsing. A syntactically valid configuration fails during graph compilation if:
 
 1. A circular dependency exists across resources (e.g., resource $A$ requires an output from resource $B$, which requires an output from resource $A$).
 2. A resource's `count` or `for_each` meta-argument depends on a computed attribute whose value cannot be determined until apply time (an "unknown value"). Because the graph compiler must know the exact number of vertices to instantiate at plan time, unknown vertex multiplicity prevents DAG construction and aborts execution.
 
 - Ref: Terraform Core Graph Builder Internals.
-
 </details>
 
-<details>
-<summary><strong>Q6. How did the 2023 HashiCorp license transition impact the architectural evolution of OpenTofu?</strong></summary>
+<details><summary>6. How did the 2023 HashiCorp license transition impact the architectural evolution of OpenTofu?</summary>
 
-**Answer**: HashiCorp moved Terraform from the Mozilla Public License 2.0 (MPL-2.0) to the Business Source License 1.1 (BSL), prohibiting commercial competitive hosting. In response, the open-source community created OpenTofu under the Linux Foundation with an MPL-2.0 license. Architecturally, OpenTofu has introduced independent features: native client-side state file and plan file encryption at rest using AES-GCM (supporting AWS KMS, GCP KMS, and custom keys), support for OCI registries for direct module/provider distribution, and dynamically evaluated lifecycle rules (e.g., `prevent_destroy = var.protected`).
+HashiCorp moved Terraform from the Mozilla Public License 2.0 (MPL-2.0) to the Business Source License 1.1 (BSL), prohibiting commercial competitive hosting. In response, the open-source community created OpenTofu under the Linux Foundation with an MPL-2.0 license. Architecturally, OpenTofu has introduced independent features: native client-side state file and plan file encryption at rest using AES-GCM (supporting AWS KMS, GCP KMS, and custom keys), support for OCI registries for direct module/provider distribution, and dynamically evaluated lifecycle rules (e.g., `prevent_destroy = var.protected`).
 
 - Ref: OpenTofu Foundation Charter & Technical Specifications.
-
 </details>
 
-<details>
-<summary><strong>Q7. What is the operational impact of setting `-parallelism=1` versus `-parallelism=100` during `terraform apply`?</strong></summary>
+<details><summary>7. What is the operational impact of setting `-parallelism=1` versus `-parallelism=100` during `terraform apply`?</summary>
 
-**Answer**: Setting `-parallelism=1` forces strictly sequential, single-threaded graph execution. While this eliminates cloud API rate limiting and provides linear console log output, execution time scales linearly ($O(N)$), resulting in unacceptable multi-hour deployment times for large enterprise infrastructures. Conversely, setting `-parallelism=100` permits up to 100 concurrent worker threads to execute ready graph vertices. This frequently triggers cloud provider API throttling (HTTP 429), exhausts OS file descriptors, and saturates local socket pools during gRPC communication. The default setting of 10 balances throughput against provider API quotas.
+Setting `-parallelism=1` forces strictly sequential, single-threaded graph execution. While this eliminates cloud API rate limiting and provides linear console log output, execution time scales linearly ($O(N)$), resulting in unacceptable multi-hour deployment times for large enterprise infrastructures. Conversely, setting `-parallelism=100` permits up to 100 concurrent worker threads to execute ready graph vertices. This frequently triggers cloud provider API throttling (HTTP 429), exhausts OS file descriptors, and saturates local socket pools during gRPC communication. The default setting of 10 balances throughput against provider API quotas.
 
 - Ref: Terraform CLI Execution Parameter Reference.
-
 </details>
 
 ---

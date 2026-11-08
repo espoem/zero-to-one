@@ -359,64 +359,39 @@ This matters in interviews because it inverts some classic advice: on serverless
 
 ---
 
-## 8. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. Explain refresh, flush and translog fsync, and which one makes a write durable.</strong></summary>
+<details><summary>1. Explain refresh, flush and translog fsync, and which one makes a write durable.</summary>
 
 Refresh makes buffered documents searchable by writing a new segment to the page cache (not fsynced). The translog fsync (per request by default) makes the write durable before it is acknowledged. Flush is a Lucene commit that fsyncs segments and trims the translog, which only shortens recovery. Durability comes from the translog.
 </details>
 
-<details>
-<summary><strong>Q2. Why is GET by id realtime while search is near-real-time?</strong></summary>
+<details><summary>2. Why is GET by id realtime while search is near-real-time?</summary>
 
 GET is routed to one shard and served from the live version map/translog state for that id (refreshing the needed state if necessary). Search scans segments through a reader opened at the last refresh, and a refresh is a global per-shard event with real cost.
 </details>
 
-<details>
-<summary><strong>Q3. Is Elasticsearch replication quorum-based? What does <code>wait_for_active_shards</code> guarantee?</strong></summary>
+<details><summary>3. Is Elasticsearch replication quorum-based? What does <code>wait_for_active_shards</code> guarantee?</summary>
 
 No, it is primary-backup: the primary waits for every in-sync replica and the master removes failed replicas from the in-sync set. `wait_for_active_shards` only checks before the write starts that enough copies are active; it does not guarantee how many copies acknowledged the write.
 </details>
 
-<details>
-<summary><strong>Q4. What are _seq_no, local checkpoint, global checkpoint and primary term used for?</strong></summary>
+<details><summary>4. What are _seq_no, local checkpoint, global checkpoint and primary term used for?</summary>
 
 `_seq_no` orders operations per shard; local checkpoint is the highest contiguous seq no a copy has processed; global checkpoint is the minimum local checkpoint over in-sync copies, below which all copies agree. Primary term increments on primary failover and fences stale primaries. Together they enable OCC, ops-based recovery and replica resync after failover.
 </details>
 
-<details>
-<summary><strong>Q5. Why does disk usage not drop after a large delete_by_query?</strong></summary>
+<details><summary>5. Why does disk usage not drop after a large delete_by_query?</summary>
 
 Deletes only flip live-doc bits; segment files stay until merges rewrite them. The tiered merge policy eventually prefers segments with many deletes. For read-only indices use `_forcemerge?only_expunge_deletes=true`.
 </details>
 
-<details>
-<summary><strong>Q6. When would you use <code>dfs_query_then_fetch</code>?</strong></summary>
+<details><summary>6. When would you use <code>dfs_query_then_fetch</code>?</summary>
 
 When relevance must be consistent across shards and the index is small or unevenly distributed (custom routing, few docs per shard). It costs an extra round trip per search, so for large uniform indices the shard-local statistics are close enough.
 </details>
 
-<details>
-<summary><strong>Q7. What changed in 9.5's batched query phase, and why is it safe?</strong></summary>
+<details><summary>7. What changed in 9.5's batched query phase, and why is it safe?</summary>
 
 The coordinating node sends one query-phase request per data node instead of per shard; each node reduces its shards' results first. Top-k merge and most aggregation reductions are associative and commutative, so grouping does not change results, only network and memory cost.
-</details>
-
-<details>
-<summary><strong>Q8. How does Zen2 prevent split brain, and what is the operational cost?</strong></summary>
-
-Elections and cluster-state commits need a majority of the voting configuration, which the master maintains automatically as master-eligible nodes join and leave. Two disjoint majorities cannot exist. The cost is that losing a majority makes the cluster unavailable rather than diverging.
-</details>
-
-<details>
-<summary><strong>Q9. How does Adaptive Replica Selection (ARS) choose which shard copy handles a search query?</strong></summary>
-
-ARS calculates an EWMA score $\text{ARS\_Score}(c) = \mu(c) + 2\sigma(c) + q(c)\mu(c)$ for each candidate copy, factoring in past request latency $\mu$, latency variance $\sigma$, and active queue depth $q$. The coordinating node routes to the copy with the lowest score, routing around nodes undergoing JVM garbage collection or slow disk merges without waiting for hard timeouts.
-</details>
-
-<details>
-<summary><strong>Q10. What is ops-based peer recovery and how do retention leases make it possible?</strong></summary>
-
-Ops-based recovery replays missing sequence numbers from the primary's translog/soft-deletes rather than copying full segment files over the network. It requires the recovering replica's local checkpoint to be at or above the minimum sequence number pinned by an active `_history_retention_lease`. If the replica was offline beyond the retention window, recovery must fall back to file-based copying.
 </details>

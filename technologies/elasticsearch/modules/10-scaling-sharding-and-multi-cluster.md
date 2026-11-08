@@ -373,46 +373,39 @@ CCR relies on Lucene soft-delete tombstones and shard history retention leases:
 
 ---
 
-## 9. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. Give Elasticsearch's routing formula and explain number_of_routing_shards.</strong></summary>
+<details><summary>1. Give Elasticsearch's routing formula and explain number_of_routing_shards.</summary>
 
 `shard = floorMod(murmur3(_routing), routing_shards) / (routing_shards / primaries)`, with `_routing` defaulting to `_id`, hashed as UTF-16LE. Routing shards is a multiple of the primaries (default: largest power-of-two multiple ≤ 1024), so splitting by a factor maps each source shard's documents onto a fixed set of target shards.
 </details>
 
-<details>
-<summary><strong>Q2. Why can't you change the number of primary shards of an existing index?</strong></summary>
+<details><summary>2. Why can't you change the number of primary shards of an existing index?</summary>
 
 Routing is modulo the shard count; changing it would remap most documents, so lookups by id would go to the wrong shard. Use `_split`/`_shrink` (which respect the routing construction), reindex, or rollover.
 </details>
 
-<details>
-<summary><strong>Q3. How do you size shards for 2 TB/day of logs kept 30 days?</strong></summary>
+<details><summary>3. How do you size shards for 2 TB/day of logs kept 30 days?</summary>
 
 Roll over by `max_primary_shard_size: 50gb`; with replicas, ~2 TB/day means about 40 primaries' worth of data per day. Use enough primaries per backing index to parallelise ingest across hot nodes (e.g. equal to the number of hot nodes), and let rollover control shard size. 30 days × ~40 primaries × 2 copies ≈ 2,400 shards: acceptable across a correctly sized cluster, and ILM can shrink older indices.
 </details>
 
-<details>
-<summary><strong>Q4. Awareness versus forced awareness?</strong></summary>
+<details><summary>4. Awareness versus forced awareness?</summary>
 
 Awareness spreads copies across zones. Forced awareness additionally refuses to allocate all copies into the remaining zone when one fails, leaving replicas unassigned instead of overloading the survivor.
 </details>
 
-<details>
-<summary><strong>Q5. When is custom routing a good idea?</strong></summary>
+<details><summary>5. When is custom routing a good idea?</summary>
 
 When most queries are scoped to a key (tenant, user) and the key distribution is not too skewed: one-shard searches and co-location. Use `routing_partition_size` or no routing for skewed keys, and require routing in the mapping.
 </details>
 
-<details>
-<summary><strong>Q6. CCS or CCR for a team in another region that needs low-latency reads?</strong></summary>
+<details><summary>6. CCS or CCR for a team in another region that needs low-latency reads?</summary>
 
 CCR: a local read-only follower gives local latency and survives WAN outages. CCS queries the remote cluster each time, paying WAN latency, but needs no extra storage and no license.
 </details>
 
-<details>
-<summary><strong>Q7. How do you decommission a data node safely?</strong></summary>
+<details><summary>7. How do you decommission a data node safely?</summary>
 
 Exclude it with `cluster.routing.allocation.exclude._name`, wait until `_cat/shards` shows no shards on it (and the cluster is green), then stop it and remove the exclusion. If it is master-eligible, also remove it from the voting configuration with `POST _cluster/voting_config_exclusions`.
 </details>

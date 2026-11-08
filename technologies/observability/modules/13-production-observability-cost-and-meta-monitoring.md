@@ -112,42 +112,36 @@ export class CardinalityGovernanceEngine {
 
 ---
 
-## 8. Interview Drill
+## Interview Drill
 
-<details><summary><strong>Q1. What is cardinality explosion, and how do you detect and remediate it in Prometheus and Loki?</strong></summary>
+<details><summary>1. What is cardinality explosion, and how do you detect and remediate it in Prometheus and Loki?</summary>
 
 Cardinality explosion occurs when dynamic attributes (like user IDs, request UUIDs, or client IPs) are added as metric labels or Loki stream labels, creating millions of unique time series or streams. This causes OOM crashes in Prometheus/Mimir ingesters and Loki indexers. Detection involves querying top series counts (`topk(10, count by (__name__)({__name__=~".*"}))`). Remediation involves dropping offending labels via relabeling rules, migrating high-cardinality attributes to Loki Structured Metadata, or moving them to trace span attributes.
-
 </details>
 
-<details><summary><strong>Q2. Why is meta-monitoring critical for enterprise observability platforms?</strong></summary>
+<details><summary>2. Why is meta-monitoring critical for enterprise observability platforms?</summary>
 
 Meta-monitoring ensures that the telemetry pipeline itself is healthy. If your primary monitoring cluster goes down or experiences scrape lag, you need independent alerts firing via a separate meta-monitoring instance so operations teams know that observability infrastructure is failing before business applications are impacted.
-
 </details>
 
-<details><summary><strong>Q3. How do OpenTelemetry Collector memory limiters prevent OOM crashes?</strong></summary>
+<details><summary>3. How do OpenTelemetry Collector memory limiters prevent OOM crashes?</summary>
 
 The `memory_limiter` processor monitors heap memory usage inside the OTel Collector. When memory usage approaches the configured soft limit, it triggers internal garbage collection pauses; if memory reaches the hard limit, it drops incoming telemetry batches or rejects requests upstream, preventing kernel OOM kills.
-
 </details>
 
-<details><summary><strong>Q4. What is eBPF-based auto-instrumentation, and how does it compare to SDK-based instrumentation?</strong></summary>
+<details><summary>4. What is eBPF-based auto-instrumentation, and how does it compare to SDK-based instrumentation?</summary>
 
 eBPF (Extended Berkeley Packet Filter) attaches probes directly to the Linux kernel network socket calls and runtime function entries. This enables automatic collection of HTTP, gRPC, and database spans without modifying application source code or recompiling binaries. However, SDK-based instrumentation provides richer business context, custom metrics, and explicit baggage propagation that kernel probes cannot automatically infer.
-
 </details>
 
-<details><summary><strong>Q5. How does continuous profiling (e.g., Pyroscope) differ from distributed tracing?</strong></summary>
+<details><summary>5. How does continuous profiling (e.g., Pyroscope) differ from distributed tracing?</summary>
 
 Distributed tracing tracks request lifecycles across microservice boundaries and measures time spent waiting or executing at the RPC level. Continuous profiling samples CPU instruction pointers and memory allocations across the entire process runtime at regular intervals (e.g., 100Hz), exposing exact functions, lines of code, and call stacks consuming CPU cycles or causing memory leaks.
-
 </details>
 
-<details><summary><strong>Q6. What are the key architectural improvements in Prometheus 3 compared to Prometheus 2?</strong></summary>
+<details><summary>6. What are the key architectural improvements in Prometheus 3 compared to Prometheus 2?</summary>
 
 Prometheus 3 introduces native UTF-8 metric and label names, native OpenTelemetry (OTLP) metric ingestion, Remote Write 2.0 protocol improvements, and a completely redesigned web UI with enhanced exploration capabilities.
-
 </details>
 
 ---

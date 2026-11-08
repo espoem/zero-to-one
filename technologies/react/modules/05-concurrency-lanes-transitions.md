@@ -250,49 +250,39 @@ When the Performance panel shows long tasks, the fix is usually smaller componen
 
 ---
 
-## 9. Interview Drill
+## Interview Drill
 
-<details><summary><strong>1. What is a lane and why a bitmask?</strong></summary>
+<details><summary>1. What is a lane and why a bitmask?</summary>
 
 A lane is one bit in a 31-bit mask representing a priority/batch; each update has one lane, fibers and roots carry the union of their pending lanes. Bitmasks make union, removal, intersection and "highest priority" (`lanes & -lanes`) single instructions, and allow batching several priorities into one render — something the earlier single `expirationTime` number could not express.
 </details>
 
-<details><summary><strong>2. How does React yield, and what happens to an interrupted render?</strong></summary>
+<details><summary>2. How does React yield, and what happens to an interrupted render?</summary>
 
 The concurrent work loop checks `shouldYield()` (5 ms slices) between fibers and returns a continuation to the scheduler. If no more urgent work arrived, the next slice resumes from the saved `workInProgress`. If a higher-priority update arrived, React renders and commits it first and later restarts the transition from scratch; the partial work is discarded.
 </details>
 
-<details><summary><strong>3. What exactly does <code>startTransition</code> change in the UI?</strong></summary>
+<details><summary>3. What exactly does <code>startTransition</code> change in the UI?</summary>
 
 Its updates get a transition lane: they render in the background, can be interrupted, and React will not replace already-visible content with a Suspense fallback — it keeps the old UI and reports `isPending` until the new UI is ready. Urgent updates (typing) are processed in between.
 </details>
 
-<details><summary><strong>4. What changed with transitions in React 19.3?</strong></summary>
+<details><summary>4. What changed with transitions in React 19.3?</summary>
 
 Transitions became independent: each transition lane renders on its own, so a transition suspended on slow data no longer blocks unrelated transitions. Before (19.0–19.2), all pending transition lanes were rendered together. Updates that must appear together should be in one `startTransition`.
 </details>
 
-<details><summary><strong>5. Why must updates after an <code>await</code> inside an async transition be wrapped again?</strong></summary>
+<details><summary>5. Why must updates after an <code>await</code> inside an async transition be wrapped again?</summary>
 
 React tracks the current transition in a synchronous scope; JavaScript has no async context propagation across `await` (AsyncContext is still a proposal), so code after the `await` runs outside the scope and its updates would get a default lane. Wrap them in `startTransition`.
 </details>
 
-<details><summary><strong>6. <code>useDeferredValue</code> vs debouncing?</strong></summary>
+<details><summary>6. <code>useDeferredValue</code> vs debouncing?</summary>
 
 `useDeferredValue` renders immediately with the old value and then in the background with the new one, restarting if the value changes again; no fixed delay and no work for values that are skipped, but it does not reduce network requests. Debouncing delays the update by a fixed time and reduces requests but adds latency even on fast devices. They are often combined: debounce the fetch, defer the rendering.
 </details>
 
-<details><summary><strong>7. How is <code>&lt;Activity mode="hidden"&gt;</code> different from <code>display: none</code> and from conditional rendering?</strong></summary>
+<details><summary>7. How is <code>&lt;Activity mode="hidden"&gt;</code> different from <code>display: none</code> and from conditional rendering?</summary>
 
 Conditional rendering destroys state and DOM. CSS hiding keeps state, DOM and running effects. `<Activity>` keeps state and DOM but unmounts effects and processes updates at the lowest (offscreen) priority, enabling pre-rendering without side effects.
-</details>
-
-<details><summary><strong>8. Your search input lags when the result list is large. Walk through the fix.</strong></summary>
-
-Profile first. If the list re-renders on each keystroke, keep `query` urgent for the input, pass `useDeferredValue(query)` to the list, and make sure the list bails out when its prop is unchanged (`memo` or Compiler). If a single row is slow, concurrency won't help: optimise or virtualise. Optionally debounce fetching and show `query !== deferredQuery` as a stale indicator.
-</details>
-
-<details><summary><strong>9. What can concurrent rendering not fix?</strong></summary>
-
-A single slow component (no yielding inside a fiber), expensive commits (synchronous DOM mutation), external-store updates (always sync), and total CPU cost (concurrency can increase it through restarts).
 </details>

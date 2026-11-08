@@ -202,10 +202,9 @@ In privacy-preserving identity systems (e.g. digital driving licenses, verifiabl
 
 ---
 
-## 8. Interview Drill: Token Security & DPoP
+## Interview Drill
 
-<details>
-<summary>1. Explain the step-by-step mechanics of an RS256 vs HS256 Algorithm Confusion attack against a poorly configured JWT verification routine.</summary>
+<details><summary>1. Explain the step-by-step mechanics of an RS256 vs HS256 Algorithm Confusion attack against a poorly configured JWT verification routine.</summary>
 
 1. A vulnerable server expects tokens signed via asymmetric RS256 (RSA private key signs, public key verifies), but its verification code reads the algorithm dynamically from the incoming token header.
 2. An attacker downloads the server's public RSA key (which is public by design, hosted on `/.well-known/jwks.json`).
@@ -217,26 +216,22 @@ In privacy-preserving identity systems (e.g. digital driving licenses, verifiabl
 
 </details>
 
-<details>
-<summary>2. Why are bearer tokens considered high risk, and how does DPoP (RFC 9449) solve the bearer token exfiltration problem?</summary>
+<details><summary>2. Why are bearer tokens considered high risk, and how does DPoP (RFC 9449) solve the bearer token exfiltration problem?</summary>
 
 Bearer tokens function like cash: whoever possesses the token can present it to an API and successfully execute transactions. If a bearer token is exfiltrated from an application's memory, logged in an HTTP proxy access log, or intercepted via a compromised TLS terminating gateway, an attacker can use it from any IP address anywhere in the world. DPoP eliminates bearer token vulnerability by **sender-constraining** the token. The client generates an asymmetric key pair (e.g. Ed25519) stored in local private memory. When obtaining an access token, the token is cryptographically bound to the client's public key thumbprint (`jkt`). On every subsequent API request, the client must generate and sign an ephemeral **DPoP Proof JWT** containing the HTTP method, the exact URL, and the hash of the access token (`ath`). Even if an attacker steals the access token, they cannot use it because they lack the client's private key required to generate matching DPoP proofs for their requests.
 </details>
 
-<details>
-<summary>3. What is the purpose of the `ath` (Access Token Hash) claim inside a DPoP Proof JWT?</summary>
+<details><summary>3. What is the purpose of the `ath` (Access Token Hash) claim inside a DPoP Proof JWT?</summary>
 
 Without the `ath` claim, a DPoP proof would only be bound to the HTTP method and destination URL (`htm` and `htu`), not to the specific access token. If an attacker intercepts a legitimate DPoP proof and a lower-privileged access token, they could attempt to pair the legitimate DPoP proof with a stolen, higher-privileged access token. The `ath` claim is calculated as `Base64URL(SHA-256(access_token))`. The Resource Server confirms that the hash of the presented access token matches the `ath` claim in the signed DPoP proof. This creates an unbreakable, two-way cryptographic binding: the proof is valid only for that specific access token, and the token is valid only with that specific proof.
 </details>
 
-<details>
-<summary>4. What is the `typ: "at+jwt"` header specified in RFC 9068, and what vulnerability does it mitigate?</summary>
+<details><summary>4. What is the `typ: "at+jwt"` header specified in RFC 9068, and what vulnerability does it mitigate?</summary>
 
 RFC 9068 specifies the explicit media type `at+jwt` for JWT access tokens. Without explicit typing, both ID Tokens and Access Tokens share the generic header `{"alg": "RS256", "typ": "JWT"}`. In a **Token Confusion Attack**, an attacker takes a legitimate user's ID Token (which was minted for the frontend client application) and transmits it to a backend microservice API as an access token. If the microservice only verifies the cryptographic signature against the common IdP JWKS, it might accept the ID token as an authorization credential and execute actions. By mandating `typ: "at+jwt"`, the Resource Server verifies that the token was explicitly minted by the Authorization Server as an Access Token, immediately rejecting ID tokens.
 </details>
 
-<details>
-<summary>5. How does Selective Disclosure JWT (SD-JWT, RFC 9901) preserve privacy when presenting verifiable credentials?</summary>
+<details><summary>5. How does Selective Disclosure JWT (SD-JWT, RFC 9901) preserve privacy when presenting verifiable credentials?</summary>
 
 In standard JWTs, all claims are stored in plaintext in the signed payload. Sharing the token exposes all personal attributes to the verifier. In SD-JWT, the Issuer hashes each attribute individually with a unique cryptographically random salt and includes only the array of salted hashes (`_sd: [...]`) in the signed token payload. The user (Holder) receives the disclosure strings for all attributes. When proving an assertion to a third party (e.g. proving they are over 21 to buy alcohol), the user presents the signed SD-JWT accompanied **only** by the disclosure string for the age claim. The verifier hashes the disclosed age attribute with its salt, confirms the hash matches one of the digests in the signed `_sd` array, and verifies the Issuer's digital signature. The verifier confirms the age assertion with mathematical certainty while learning zero information about the user's name, address, or license number.
 </details>

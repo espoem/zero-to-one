@@ -377,46 +377,39 @@ Migration pitfall: Elasticsearch SQL and ES|QL look similar but differ in NULL o
 
 ---
 
-## 8. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. How does ES|QL execute differently from a DSL search?</strong></summary>
+<details><summary>1. How does ES|QL execute differently from a DSL search?</summary>
 
 It compiles to a logical then physical plan of operators over column blocks. Data nodes read doc values through a Lucene source operator, push filters into Lucene, compute partial aggregations, and the coordinator finalises. The DSL instead runs a scored query-then-fetch over hits and builds an aggregation tree.
 </details>
 
-<details>
-<summary><strong>Q2. Why does <code>FROM logs | WHERE level != "debug"</code> return fewer rows than expected?</strong></summary>
+<details><summary>2. Why does <code>FROM logs | WHERE level != "debug"</code> return fewer rows than expected?</summary>
 
 Rows where `level` is NULL evaluate the predicate to NULL and are dropped. Three-valued logic; add `OR level IS NULL`.
 </details>
 
-<details>
-<summary><strong>Q3. What are the row limits of ES|QL and what do they apply to?</strong></summary>
+<details><summary>3. What are the row limits of ES|QL and what do they apply to?</summary>
 
 Default 1,000 output rows without `LIMIT`, at most 10,000 with it (configurable cluster settings). They apply to output only; aggregations see all rows.
 </details>
 
-<details>
-<summary><strong>Q4. Explain LOOKUP JOIN's requirements and semantics.</strong></summary>
+<details><summary>4. Explain LOOKUP JOIN's requirements and semantics.</summary>
 
 The right side is an `index.mode: lookup` index (single shard). It is a left outer join on equality; each matching lookup document produces a row, unmatched rows get NULLs, lookup columns override same-named ones, and output order is unspecified.
 </details>
 
-<details>
-<summary><strong>Q5. When would you still choose the Query DSL?</strong></summary>
+<details><summary>5. When would you still choose the Query DSL?</summary>
 
 For user-facing ranked search: highlighting, deep pagination with PIT, nested documents, suggesters, composite aggregation over all buckets, retrievers for hybrid search. ES|QL is for analytics and investigation.
 </details>
 
-<details>
-<summary><strong>Q6. Why might <code>WHERE MATCH(...)</code> after <code>STATS</code> be rejected?</strong></summary>
+<details><summary>6. Why might <code>WHERE MATCH(...)</code> after <code>STATS</code> be rejected?</summary>
 
 Full-text functions on indexed fields must be pushed down to Lucene, which is only possible before commands that change the row set into something not backed by the index. After `STATS` there are no documents to search.
 </details>
 
-<details>
-<summary><strong>Q7. What does <code>7 / 2</code> return in ES|QL?</strong></summary>
+<details><summary>7. What does <code>7 / 2</code> return in ES|QL?</summary>
 
 `3`: integer division truncates toward zero. Use `7 / 2.0` or `TO_DOUBLE` for 3.5.
 </details>

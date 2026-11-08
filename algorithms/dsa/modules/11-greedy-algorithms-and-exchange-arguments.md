@@ -192,16 +192,14 @@ Greedy algorithms fail whenever a locally optimal choice locks the system out of
 
 ---
 
-## 8. Interview Drill: Greedy Algorithms
+## Interview Drill
 
-<details>
-<summary>1. What is an Exchange Argument and how does it prove greedy correctness?</summary>
+<details><summary>1. What is an Exchange Argument and how does it prove greedy correctness?</summary>
 
 An Exchange Argument assumes the existence of a hypothetical optimal solution $O$ that differs from greedy solution $G$. It locates the first point of divergence, replaces the optimal choice with the greedy choice, and mathematically demonstrates that the resulting solution $O'$ remains valid without worsening the objective value. Repeated applications transform $O$ into $G$, proving $G$ is also optimal.
 </details>
 
-<details>
-<summary>2. Why does interval scheduling sort by end time rather than start time or duration?</summary>
+<details><summary>2. Why does interval scheduling sort by end time rather than start time or duration?</summary>
 
 - Sorting by start time fails on long intervals (an early start can span the entire day, blocking many short intervals).
 - Sorting by shortest duration fails when an isolated short interval conflicts with two non-overlapping intervals on either side.
@@ -209,22 +207,19 @@ An Exchange Argument assumes the existence of a hypothetical optimal solution $O
 
 </details>
 
-<details>
-<summary>3. Can Fractional Knapsack be solved with greedy, and why does 0/1 Knapsack fail with the same strategy?</summary>
+<details><summary>3. Can Fractional Knapsack be solved with greedy, and why does 0/1 Knapsack fail with the same strategy?</summary>
 
 - **Fractional Knapsack**: Greedy sorting by value-to-weight ratio ($v_i / w_i$) is optimal because we can take fractional amounts of the highest density items until capacity is filled.
 - **0/1 Knapsack**: Fails greedily because taking a high-density item may leave unused "slack" capacity that cannot be filled by smaller items, yielding a lower total value than combining lower-density items that pack the knapsack completely.
 
 </details>
 
-<details>
-<summary>4. Why does the Gas Station problem have a unique solution whenever total gas >= total cost?</summary>
+<details><summary>4. Why does the Gas Station problem have a unique solution whenever total gas >= total cost?</summary>
 
 If total gas $\ge$ total cost, the cumulative net fuel across a full loop is non-negative. If we plot the running net balance along the circle, the optimal starting point is the station immediately following the global minimum of the net balance curve, ensuring the tank never dips below zero at any point in the cycle.
 </details>
 
-<details>
-<summary>5. What are the three matroid axioms and what do they guarantee?</summary>
+<details><summary>5. What are the three matroid axioms and what do they guarantee?</summary>
 
 A matroid $(S, \mathcal{I})$ requires:
 

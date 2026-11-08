@@ -182,22 +182,19 @@ flowchart TD
 
 ---
 
-## 7. Interview Drill: Time, Clocks & Ordering
+## Interview Drill
 
-<details>
-<summary>1. Why can a Lamport scalar clock not be used to detect whether two events are concurrent?</summary>
+<details><summary>1. Why can a Lamport scalar clock not be used to detect whether two events are concurrent?</summary>
 
 A Lamport clock produces a total order where every event has a scalar number $L(e)$. While it satisfies $a \to b \implies L(a) < L(b)$, the reverse does not hold. If $L(a) < L(b)$, it is impossible to determine whether $a$ causally influenced $b$ or if they occurred completely independently in isolated partitions. Detecting true concurrency requires Vector Clocks where both vectors fail to dominate each other.
 </details>
 
-<details>
-<summary>2. Why does Google Spanner require physical atomic clocks and GPS receivers instead of standard NTP?</summary>
+<details><summary>2. Why does Google Spanner require physical atomic clocks and GPS receivers instead of standard NTP?</summary>
 
 Standard NTP over commodity networks can drift by tens or hundreds of milliseconds, and can jump backwards during adjustments. Spanner's Commit-Wait rule requires transactions to pause for the maximum uncertainty window ($2\epsilon$) before committing. If $\epsilon = 200\text{ms}$, every transaction would incur a 400ms latency penalty. GPS and atomic clocks bound uncertainty $\epsilon \le 7\text{ms}$, making commit-wait delays acceptable (~10–14ms).
 </details>
 
-<details>
-<summary>3. In vector clocks, what is the exact mathematical condition indicating that event a causally preceded event b?</summary>
+<details><summary>3. In vector clocks, what is the exact mathematical condition indicating that event a causally preceded event b?</summary>
 
 Vector $V_a$ causally precedes $V_b$ ($V_a \to V_b$) if and only if:
 
@@ -206,14 +203,12 @@ Vector $V_a$ causally precedes $V_b$ ($V_a \to V_b$) if and only if:
 
 </details>
 
-<details>
-<summary>4. Why does a distributed lease fail to protect shared storage if client-side timeouts are trusted?</summary>
+<details><summary>4. Why does a distributed lease fail to protect shared storage if client-side timeouts are trusted?</summary>
 
 A client cannot guarantee that its execution thread will not be paused between checking the timer and writing to storage. Stop-the-world garbage collection pauses, OS thread context-switching, page faults, or hypervisor CPU throttling can pause a process for seconds or minutes. During this pause, the lease expires on the server and is granted to another node. When the first process resumes, it executes its write, causing split-brain data corruption.
 </details>
 
-<details>
-<summary>5. How do fencing tokens resolve the lease expiration trap?</summary>
+<details><summary>5. How do fencing tokens resolve the lease expiration trap?</summary>
 
 Fencing tokens move enforcement from the client to the storage service. The lock manager issues a monotonically incrementing token with every lease grant. When writing to storage, the client passes its token. The storage layer remembers the highest token it has processed and rejects any write presenting a lower token, neutralizing stale writes from paused former lock holders.
 </details>

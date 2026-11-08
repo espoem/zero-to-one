@@ -375,52 +375,39 @@ Elasticsearch implements these in the **Ranking Evaluation API** (`_rank_eval`) 
 
 ---
 
-## 10. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. What exactly is stored in a Lucene inverted index for a <code>text</code> field?</strong></summary>
+<details><summary>1. What exactly is stored in a Lucene inverted index for a <code>text</code> field?</summary>
 
 A term dictionary (sorted by UTF-8 bytes, indexed by an FST over on-disk blocks) mapping each term to its postings. Postings hold delta-encoded doc ids, term frequencies and positions (`index_options: positions` is the default for `text`), with per-block impact metadata for top-k skipping. Alongside it, the field has a one-byte length norm per document. Doc values are _not_ written for `text` fields.
 </details>
 
-<details>
-<summary><strong>Q2. Write Lucene's BM25 formula and explain each statistic's scope.</strong></summary>
+<details><summary>2. Write Lucene's BM25 formula and explain each statistic's scope.</summary>
 
 $\mathrm{idf}\cdot \mathit{tf}/(\mathit{tf} + k_1(1 - b + b\,|d|/\mathrm{avgdl}))$ with $\mathrm{idf} = \ln(1 + (N - n + 0.5)/(n + 0.5))$. $N$ is the number of docs in the shard with that field, $n$ the doc frequency in the shard (deleted docs included until merged), $\mathrm{avgdl}$ the shard's average field length, $|d|$ the doc's length as decoded from the one-byte norm. Scope is the shard unless DFS is used.
 </details>
 
-<details>
-<summary><strong>Q3. Why can Lucene's idf never be negative, and why does that matter?</strong></summary>
+<details><summary>3. Why can Lucene's idf never be negative, and why does that matter?</summary>
 
 The `+1` inside the log keeps the argument above 1. With the classic RSJ idf, a term in more than half of the documents gets negative weight, so adding it to a query could push documents that contain it _below_ documents that do not. Lucene's variant guarantees monotonicity: matching an extra query term never lowers a score.
 </details>
 
-<details>
-<summary><strong>Q4. Two identical documents in the same index have different scores. How?</strong></summary>
+<details><summary>4. Two identical documents in the same index have different scores. How?</summary>
 
 They live on different shards (per-shard statistics), or one shard has deleted versions of documents containing the query terms that inflate $n_t$ until merged. Diagnose with `explain: true` and compare `n`, `N` and `avgdl` in the explanation; fix with DFS, one shard, or by accepting the variance.
 </details>
 
-<details>
-<summary><strong>Q5. What is the difference between query and filter context, beyond scoring?</strong></summary>
+<details><summary>5. What is the difference between query and filter context, beyond scoring?</summary>
 
 Filter clauses produce a doc-id set without scores, which lets Elasticsearch cache them per segment in the node query cache and lets Lucene evaluate them lazily and cheaply. Query clauses compute BM25 for every candidate. Matching semantics are identical.
 </details>
 
-<details>
-<summary><strong>Q6. Why did <code>hits.total</code> become an object with <code>relation</code> in 7.0?</strong></summary>
+<details><summary>6. Why did <code>hits.total</code> become an object with <code>relation</code> in 7.0?</summary>
 
 To allow block-max WAND: once the count is not needed exactly, Lucene skips postings blocks whose maximum impact cannot beat the current top-k threshold. The default `track_total_hits: 10000` counts exactly up to 10,000 then reports `gte`.
 </details>
 
-<details>
-<summary><strong>Q7. Your <code>range</code> query on a <code>keyword</code> field returns surprising results for non-ASCII values. Why?</strong></summary>
+<details><summary>7. Your <code>range</code> query on a <code>keyword</code> field returns surprising results for non-ASCII values. Why?</summary>
 
 Keyword terms are compared as unsigned UTF-8 bytes, which differs from UTF-16 or locale-aware collation. Characters outside the BMP and some CJK/full-width characters sort differently than the application expects. Use a numeric or date field for ranges, or an ICU collation keyword field for linguistic order.
-</details>
-
-<details>
-<summary><strong>Q8. How would you prove to a product manager that a relevance change is an improvement?</strong></summary>
-
-Build a judgement list (queries with graded relevant documents), run `_rank_eval` with nDCG@10 and MRR before and after the change on the same index snapshot, and report the deltas per query, not only the average. Treat a change that improves the mean but regresses head queries as suspicious.
 </details>

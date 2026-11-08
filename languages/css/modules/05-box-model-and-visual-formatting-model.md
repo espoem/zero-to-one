@@ -225,39 +225,29 @@ CSS Overflow Module Level 3 introduces `overflow: clip`:
 
 ---
 
-## 8. Interview Drill: Box Model & Visual Formatting Model
+## Interview Drill
 
-### Q1: What is the exact purpose of `display: flow-root`, and how does it replace legacy clearfix hacks?
-
-<details><summary>Answer</summary>
+<details><summary>1. What is the exact purpose of `display: flow-root`, and how does it replace legacy clearfix hacks?</summary>
 
 `display: flow-root` generates a block-level element that establishes a new independent Block Formatting Context (BFC). In legacy CSS, containing floated children or preventing external margin collapsing required the "clearfix hack" (`::after` pseudo-elements with `clear: both`) or `overflow: hidden` (which accidentally cropped absolute popups or shadows). `display: flow-root` accomplishes this natively without modifying overflow behavior or introducing empty DOM pseudo-elements.
 </details>
 
-### Q2: Why does an element's top margin sometimes push its parent container down from the outside, rather than pushing the child down inside the parent?
-
-<details><summary>Answer</summary>
+<details><summary>2. Why does an element's top margin sometimes push its parent container down from the outside, rather than pushing the child down inside the parent?</summary>
 
 This is the Parent-Child Margin Collapse anomaly. When a parent element has no border, no padding, no inline content separating it from its first child, and does not establish a BFC, the top margin of the first in-flow child collapses with the top margin of the parent. The resulting combined margin is positioned outside the parent container, pushing the parent itself down relative to its ancestors. Setting `padding-top: 1px`, `border-top: 1px solid transparent`, or `display: flow-root` on the parent isolates the context and prevents collapse.
 </details>
 
-### Q3: What is the semantic difference between `display: block` and `display: block flow-root` under the modern two-value display specification?
-
-<details><summary>Answer</summary>
+<details><summary>3. What is the semantic difference between `display: block` and `display: block flow-root` under the modern two-value display specification?</summary>
 
 `display: block` (shorthand for `display: block flow`) generates a block-level outer box that participates in the parent's formatting context, and formats its children using normal block and inline flow _without_ creating an independent BFC (meaning internal margins can collapse with external siblings). In contrast, `display: block flow-root` generates a block-level outer box whose inner display type creates a new, self-contained Block Formatting Context, isolating internal margins and containing internal floats.
 </details>
 
-### Q4: Why is `overflow: clip` preferred over `overflow: hidden` when you want to crop decorative background elements without enabling scroll behavior?
-
-<details><summary>Answer</summary>
+<details><summary>4. Why is `overflow: clip` preferred over `overflow: hidden` when you want to crop decorative background elements without enabling scroll behavior?</summary>
 
 `overflow: hidden` establishes a scroll container in the browser's compositor; the element is technically scrollable via JavaScript (`element.scrollTo()`) or assistive input focus shifts. In contrast, `overflow: clip` strictly clips rendering at the overflow-clip edge without creating a scroll container. Programmatic scrolling is disabled, which conserves GPU compositor layer resources and prevents accidental scroll position shifts.
 </details>
 
-### Q5: How do logical properties like `margin-inline-start` differ from physical properties like `margin-left` when rendering multilingual documents?
-
-<details><summary>Answer</summary>
+<details><summary>5. How do logical properties like `margin-inline-start` differ from physical properties like `margin-left` when rendering multilingual documents?</summary>
 
 Physical properties like `margin-left` are hardcoded to the physical left side of the screen regardless of language or script. In contrast, logical properties like `margin-inline-start` dynamically evaluate the element's writing mode and direction (`direction: ltr` vs. `direction: rtl`, and horizontal vs. vertical writing modes). In left-to-right English, `margin-inline-start` maps to the left; in right-to-left Arabic or Hebrew, it automatically maps to the right, eliminating the need for mirrored stylesheets.
 </details>

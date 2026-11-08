@@ -147,12 +147,9 @@ In production deployments, relying on loose version ranges (e.g. `pydantic>=2.0`
 
 ---
 
-## 6. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-<details>
-<summary>1. Describe the exact sequence of steps CPython takes during an import statement.</summary>
-
-**Answer:**
+<details><summary>1. Describe the exact sequence of steps CPython takes during an import statement.</summary>
 
 1. Check `sys.modules`: if the module name exists, return the cached module object immediately.
 2. Iterate through `sys.meta_path` finders (`BuiltinImporter`, `FrozenImporter`, `PathFinder`) invoking `finder.find_spec(fullname, path, target)`.
@@ -164,26 +161,19 @@ In production deployments, relying on loose version ranges (e.g. `pydantic>=2.0`
 
 </details>
 
-<details>
-<summary>2. Why does Python insert a module into `sys.modules` before executing `exec_module()`?</summary>
+<details><summary>2. Why does Python insert a module into `sys.modules` before executing `exec_module()`?</summary>
 
-**Answer:** To prevent infinite recursion during circular imports. If module $A$ imports module $B$, and module $B$ imports module $A$: If Python waited until $A$ finished executing before caching it in `sys.modules`, then when $B$ imported $A$, Python would treat $A$ as unvisited, find its source file, create another instance of $A$, and attempt to execute it again. This would produce an infinite import loop exhausting recursion depth. By caching the partially initialized module object in `sys.modules` immediately, any nested import of $A$ returns the existing module reference, breaking the infinite cycle.
+To prevent infinite recursion during circular imports. If module $A$ imports module $B$, and module $B$ imports module $A$: If Python waited until $A$ finished executing before caching it in `sys.modules`, then when $B$ imported $A$, Python would treat $A$ as unvisited, find its source file, create another instance of $A$, and attempt to execute it again. This would produce an infinite import loop exhausting recursion depth. By caching the partially initialized module object in `sys.modules` immediately, any nested import of $A$ returns the existing module reference, breaking the infinite cycle.
 </details>
 
-<details>
-<summary>3. What is a Namespace Package (PEP 420), and how does it differ from a regular package?</summary>
-
-**Answer:**
+<details><summary>3. What is a Namespace Package (PEP 420), and how does it differ from a regular package?</summary>
 
 - A **regular package** contains an `__init__.py` file in its directory. Its `__file__` attribute points to that `__init__.py`, and its `__path__` is a static list containing that single directory path.
 - A **namespace package** (PEP 420) omits `__init__.py`. Its `__file__` is `None`, and its `__path__` is an iterable `_NamespacePath` object. A namespace package can span multiple physically separated directories across `sys.path`. When code imports submodules of a namespace package, Python searches all directories across `sys.path` that share that namespace name, allowing distinct packages (e.g. `company-auth` and `company-billing`) to be distributed and installed independently while sharing the top-level `company` import prefix.
 
 </details>
 
-<details>
-<summary>4. What are the key architectural advantages of Wheels over Source Distributions (sdists)?</summary>
-
-**Answer:**
+<details><summary>4. What are the key architectural advantages of Wheels over Source Distributions (sdists)?</summary>
 
 1. **Security**: Installing a Wheel requires only unpacking a ZIP archive; it never executes arbitrary Python code (`setup.py`). Installing an sdist requires executing the build backend.
 2. **Speed**: Wheels are pre-built; they bypass compilation, code generation, and C extension compilation, making installation 10–100x faster.
@@ -191,10 +181,7 @@ In production deployments, relying on loose version ranges (e.g. `pydantic>=2.0`
 
 </details>
 
-<details>
-<summary>5. How does PEP 810 lazy importing differ from traditional dynamic imports via `importlib.import_module()`?</summary>
-
-**Answer:**
+<details><summary>5. How does PEP 810 lazy importing differ from traditional dynamic imports via `importlib.import_module()`?</summary>
 
 - `importlib.import_module("foo")` is an imperative function call executed at runtime. It loads the module eagerly at the moment of the function call, and requires passing the module name as a string, losing static type checker visibility and IDE autocomplete.
 - `lazy import foo` (PEP 810) is a declarative syntax statement evaluated at module level. It registers the module symbol in the local namespace and allows static type checkers (mypy/pyright) to inspect types normally. However, the physical loading, parsing, and bytecode execution of the module are deferred automatically until the first attribute on `foo` is accessed.

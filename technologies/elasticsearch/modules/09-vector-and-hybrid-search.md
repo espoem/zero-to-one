@@ -375,46 +375,39 @@ Migration pitfall: changing `index_options` from `int8_hnsw` to `bbq_hnsw` is al
 
 ---
 
-## 10. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. Why does Elasticsearch need oversampling with BBQ?</strong></summary>
+<details><summary>1. Why does Elasticsearch need oversampling with BBQ?</summary>
 
 One-bit codes give coarse distance estimates, so the true neighbours are often just outside the top k by estimated distance. Retrieving `k × oversample` candidates with the codes and rescoring them with the stored float vectors restores most of the recall at a small cost.
 </details>
 
-<details>
-<summary><strong>Q2. What do <code>k</code> and <code>num_candidates</code> control?</strong></summary>
+<details><summary>2. What do <code>k</code> and <code>num_candidates</code> control?</summary>
 
 `num_candidates` is the per-shard HNSW search beam (more = better recall, more latency); `k` is how many nearest neighbours each shard returns and the final hit count from kNN.
 </details>
 
-<details>
-<summary><strong>Q3. How does filtered kNN work and why is it better than post-filtering?</strong></summary>
+<details><summary>3. How does filtered kNN work and why is it better than post-filtering?</summary>
 
 The filter is evaluated first as a bitset; the HNSW search only collects documents in it (and falls back to exact search when the set is small). It always returns `k` matching documents if they exist, whereas post-filtering the global top candidates can return fewer.
 </details>
 
-<details>
-<summary><strong>Q4. Explain RRF and when you would choose a linear combination instead.</strong></summary>
+<details><summary>4. Explain RRF and when you would choose a linear combination instead.</summary>
 
 RRF sums $1/(60 + \text{rank})$ over retrievers, using ranks only, so it needs no score calibration and is robust. A linear combination of normalised scores can be better when you have judgement data to tune weights and normalisation.
 </details>
 
-<details>
-<summary><strong>Q5. Estimate memory for 50 M vectors of 768 dims with int8 HNSW.</strong></summary>
+<details><summary>5. Estimate memory for 50 M vectors of 768 dims with int8 HNSW.</summary>
 
 About $50\text{M} \times (768 + 4)$ bytes ≈ 39 GB for quantised vectors, plus the graph ($\approx 50\text{M} \times 16 \times 4$ bytes ≈ 3.2 GB at level 0, more for upper levels), plus float vectors on disk (≈ 154 GB) not needed in RAM unless rescoring touches them. Spread over data nodes' page cache.
 </details>
 
-<details>
-<summary><strong>Q6. Dense vectors, ELSER or BM25 for a Czech-language knowledge base?</strong></summary>
+<details><summary>6. Dense vectors, ELSER or BM25 for a Czech-language knowledge base?</summary>
 
 ELSER is English-centric, so use a multilingual dense embedding model (via the inference API or `semantic_text` with that endpoint) combined with a Czech-analysed BM25 field through RRF, then evaluate with judgement lists.
 </details>
 
-<details>
-<summary><strong>Q7. Why does Lucene search one HNSW graph per segment, and what does that imply?</strong></summary>
+<details><summary>7. Why does Lucene search one HNSW graph per segment, and what does that imply?</summary>
 
 Segments are immutable and independently searchable, so each has its own graph built at flush/merge. Queries search all segment graphs and merge results: many segments mean more graph searches, merges rebuild graphs (CPU), and force merge improves query latency.
 </details>

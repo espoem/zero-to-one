@@ -634,76 +634,60 @@ spec:
 
 ---
 
-## 15. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. What is the fundamental difference between legacy ServiceAccount tokens and modern Bound ServiceAccount Tokens, and why are legacy tokens a severe security liability?</strong></summary>
+<details><summary>1. What is the fundamental difference between legacy ServiceAccount tokens and modern Bound ServiceAccount Tokens, and why are legacy tokens a severe security liability?</summary>
 
 Legacy tokens were static, non-expiring JWTs stored as standard `Secret` objects in `etcd`. They possessed infinite validity, had no audience restrictions (`aud`), and were not cryptographically bound to the lifecycle of the Pod consuming them. If an attacker exfiltrated a legacy token, they retained unauthorized API access indefinitely until an administrator manually discovered and deleted the Secret.
 
 Modern Bound ServiceAccount Tokens (generated via the `TokenRequest` API) are short-lived (default 1 hour), projected directly into container memory without creating static Secrets, restricted to specific target audiences (preventing token relay attacks), and cryptographically bound to the Pod's UID. When the Pod terminates, the API server immediately rejects the token even if its expiration timestamp has not elapsed.
 </details>
 
-<details>
-<summary><strong>Q2. How do User Namespaces (promoted to GA in Kubernetes v1.36) protect the host node from container breakout vulnerabilities?</strong></summary>
+<details><summary>2. How do User Namespaces (promoted to GA in Kubernetes v1.36) protect the host node from container breakout vulnerabilities?</summary>
 
 In traditional Linux containers without user namespaces, UID 0 (root) inside the container is identical to UID 0 (root) on the host kernel. If an attacker escapes the container filesystem (via a kernel exploit or dangerous host mount), they arrive on the host with full root privileges.
 
 User Namespaces (`hostUsers: false`) map the container's UID/GID space to an unprivileged range on the host (e.g., container UID 0 maps to host UID 100000). While the process operates as root inside the container boundary, the host kernel views and constrains every syscall under the unprivileged host UID. If the process breaks out, it possesses zero administrative privileges on the host system.
 </details>
 
-<details>
-<summary><strong>Q3. Why is `ValidatingAdmissionPolicy` (CEL) architecturally superior to deploying external admission webhooks like OPA Gatekeeper?</strong></summary>
+<details><summary>3. Why is `ValidatingAdmissionPolicy` (CEL) architecturally superior to deploying external admission webhooks like OPA Gatekeeper?</summary>
 
 External admission webhooks execute as HTTP servers inside or outside the cluster. When evaluating high-throughput object mutations, external webhooks introduce network latency, TLS certificate expiration hazards, and catastrophic single-point-of-failure risks: if the webhook Pod is down and `failurePolicy: Fail` is configured, the cluster cannot create or update any resources.
 
 `ValidatingAdmissionPolicy` evaluates rules in-tree directly within the `kube-apiserver` process using the Common Expression Language (CEL). It executes in microseconds with zero network overhead, has no external dependencies, eliminates webhook deadlock loops during cluster bootstrap, and requires no auxiliary controllers.
 </details>
 
-<details>
-<summary><strong>Q4. In RBAC, what is the danger of granting a user the `escalate` verb on `roles` or `clusterroles`?</strong></summary>
+<details><summary>4. In RBAC, what is the danger of granting a user the `escalate` verb on `roles` or `clusterroles`?</summary>
 
 By design, Kubernetes RBAC prevents privilege escalation: an API user cannot create or update a Role containing permissions that the user does not personally already possess.
 
 Granting the `escalate` verb explicitly bypasses this security check. A user with `escalate` permissions on `clusterroles` can create a new ClusterRole granting `*` on `*` (cluster-admin) or add dangerous permissions to their own role, escalating their privileges to full cluster compromise.
 </details>
 
-<details>
-<summary><strong>Q5. What are the three profiles defined in the Pod Security Standards (PSS), and what is the key difference between Baseline and Restricted?</strong></summary>
+<details><summary>5. What are the three profiles defined in the Pod Security Standards (PSS), and what is the key difference between Baseline and Restricted?</summary>
 
 The three PSS profiles are:
 
 1. **`Privileged`**: Completely unrestricted; permits host namespaces, privileged containers, and raw device access (intended for system CNI/CSI daemons).
 2. **`Baseline`**: Prevents known privilege escalations with minimal application friction. Disallows privileged mode, `hostPID`, `hostIPC`, `hostNetwork`, and `hostPath` mounts, but allows containers to run as root by default.
 3. **`Restricted`**: Hardened Zero-Trust profile. In addition to Baseline rules, it strictly requires `runAsNonRoot: true`, drops all Linux capabilities except `NET_BIND_SERVICE`, enforces `readOnlyRootFilesystem: true`, restricts volume types to safe primitives, and requires `seccompProfile: RuntimeDefault`.
-
 </details>
 
-<details>
-<summary><strong>Q6. How does Falco detect runtime container compromises, and what is the difference between its eBPF probe and kernel module?</strong></summary>
+<details><summary>6. How does Falco detect runtime container compromises, and what is the difference between its eBPF probe and kernel module?</summary>
 
 Falco intercepts low-level Linux kernel system calls (such as `execve`, `openat`, `socket`, `ptrace`) at the operating system boundary and evaluates them against declarative rules to detect abnormal behavior (e.g., spawning a shell inside a container, modifying `/etc/shadow`, opening outbound connections to cloud metadata endpoints).
 
 - **Kernel Module (`falco.ko`)**: A traditional dynamically loadable kernel module inserted into the host kernel. Offers high performance but requires kernel headers matching the exact host OS and carries stability risks if a panic occurs.
 - **eBPF Probe**: Modern, safe architecture. Runs sandboxed eBPF bytecode verified by the kernel's in-tree eBPF verifier before execution. It cannot crash the host kernel, supports modern immutable distributions, and functions in environments where custom kernel module loading is prohibited.
-
 </details>
 
-<details>
-<summary><strong>Q7. What is envelope encryption in the context of Kubernetes Secrets encryption at rest with KMS v2?</strong></summary>
+<details><summary>7. What is envelope encryption in the context of Kubernetes Secrets encryption at rest with KMS v2?</summary>
 
 Envelope encryption is a two-tier cryptographic architecture that avoids sending sensitive data payloads over the network to external key management services:
 
 1. The `kube-apiserver` generates a local, random symmetric **Data Encryption Key (DEK)** to encrypt the Secret payload locally using AES-GCM.
 2. The apiserver sends only the small DEK to an external Key Management Service (KMS, such as AWS KMS or HashiCorp Vault), which encrypts the DEK using a master **Key Encryption Key (KEK)** residing securely inside an HSM.
 3. The encrypted DEK and the encrypted payload are stored together in `etcd`. To decrypt, the apiserver requests the KMS to decrypt the DEK, and then uses the decrypted DEK in memory to read the Secret.
-
-</details>
-
-<details>
-<summary><strong>Q8. In the CKS exam, why must you never configure `level: RequestResponse` for Secrets in an audit policy?</strong></summary>
-
-Setting `level: RequestResponse` instructs the API server to log the full HTTP request and response bodies. For Secret resources, this logs the base64-encoded secret data directly into `/var/log/kubernetes/audit.log` in plaintext. Anyone with read access to the audit log files (or centralized log aggregation platforms like Elasticsearch or Splunk) can immediately read all cluster passwords, tokens, and private keys. Secrets must always be logged at `level: Metadata` or excluded entirely.
 </details>
 
 ---

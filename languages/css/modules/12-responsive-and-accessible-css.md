@@ -186,39 +186,29 @@ flowchart LR
 
 ---
 
-## 6. Interview Drill: Responsive & Accessible CSS
+## Interview Drill
 
-### Q1: Why is replacing `outline` with `box-shadow` for focus rings considered a critical accessibility defect in Windows High Contrast Mode?
-
-<details><summary>Answer</summary>
+<details><summary>1. Why is replacing `outline` with `box-shadow` for focus rings considered a critical accessibility defect in Windows High Contrast Mode?</summary>
 
 In Windows High Contrast Mode (Forced Colors Mode), the operating system strips all CSS `box-shadow` and `text-shadow` declarations from the page to ensure clarity and high-contrast rendering. If an author removes `outline` and relies exclusively on `box-shadow` for focus rings, keyboard users in Forced Colors Mode receive zero visual indicator when tabbing through links and inputs. Authors should always use CSS `outline` (or `outline: 2px solid transparent` paired with a high-contrast fallback) for focus indicators, as outlines are explicitly preserved by the engine.
 </details>
 
-### Q2: What is the operational distinction between `:focus` and `:focus-visible`?
-
-<details><summary>Answer</summary>
+<details><summary>2. What is the operational distinction between `:focus` and `:focus-visible`?</summary>
 
 `:focus` fires whenever an element receives focus through any mechanism, including mouse clicks, touch gestures, and keyboard navigation. This often results in unwanted focus halos when mouse users click on buttons. `:focus-visible` matches only when the browser's heuristic determines that visual focus is helpful—primarily when the user navigates using a keyboard (e.g. Tab key) or assistive input device, providing accessible navigation for keyboard users while maintaining clean visuals for pointer users.
 </details>
 
-### Q3: How does `field-sizing: content` eliminate legacy JavaScript input-resizing scripts?
-
-<details><summary>Answer</summary>
+<details><summary>3. How does `field-sizing: content` eliminate legacy JavaScript input-resizing scripts?</summary>
 
 By default, `<input>` and `<textarea>` elements have fixed, UA-defined dimensions. In legacy CSS, expanding a textarea dynamically as a user typed required JavaScript listening to the `input` event, querying `scrollHeight`, and setting inline pixel heights. `field-sizing: content` instructs the browser's layout engine to treat the form control's contents as intrinsic sizing constraints, allowing the input or textarea to automatically expand and shrink in both inline and block directions to fit the user's typed text natively.
 </details>
 
-### Q4: In responsive design, why is using `min-width: 0` on flex items a prerequisite for responsive text truncation?
-
-<details><summary>Answer</summary>
+<details><summary>4. In responsive design, why is using `min-width: 0` on flex items a prerequisite for responsive text truncation?</summary>
 
 Flex items have an implicit default of `min-width: auto`, which clamps their minimum size to their `min-content` width. If a flex item contains a long text element styled with `text-overflow: ellipsis; white-space: nowrap; overflow: hidden;`, the flex item refuses to shrink below the natural width of the text string, causing the flex item to overflow its parent rather than truncating. Setting `min-width: 0` removes the `min-content` restriction, allowing the flex item to shrink to fit the container and triggering text truncation.
 </details>
 
-### Q5: What does the `image-set()` function achieve, and how does it optimize bandwidth across different device screens?
-
-<details><summary>Answer</summary>
+<details><summary>5. What does the `image-set()` function achieve, and how does it optimize bandwidth across different device screens?</summary>
 
 `image-set()` allows authors to define a list of alternative image sources directly within CSS background properties, annotated with display pixel densities (e.g. `1x`, `2x`) and format mime-types (e.g. `image/avif`, `image/webp`). The browser inspects the user's hardware device pixel ratio (DPR) and network conditions, and fetches only the single most appropriate image file, preventing high-density devices from showing blurry images while sparing standard devices from downloading oversized 4K image assets.
 </details>

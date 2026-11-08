@@ -412,7 +412,7 @@ The embedded interpreter is Lua 5.3 (fengari) while Redis embeds Lua 5.1; the tr
 
 ---
 
-## 8. Interview Drill
+## Interview Drill
 
 <details><summary>1. Does Redis `MULTI/EXEC` roll back if a command fails?</summary>
 

@@ -209,46 +209,40 @@ For deep fundamentals on inverted indices, text analyzers, and storage engines, 
 
 ---
 
-## 10. Interview Drill
+## Interview Drill
 
-<details><summary><strong>Q1. Why is Grafana Loki significantly cheaper to operate at scale than Elasticsearch for log aggregation?</strong></summary>
+<details><summary>1. Why is Grafana Loki significantly cheaper to operate at scale than Elasticsearch for log aggregation?</summary>
 
 Loki does not build an inverted index over the content of log lines. It indexes only metadata labels (e.g., `{app="foo", env="prod"}`) using a compact TSDB index, while storing raw compressed log chunks in cheap object storage (S3/GCS). Elasticsearch, by contrast, builds a full-text inverted index over every token and field, which frequently doubles or triples storage costs and requires substantial RAM for JVM heap indexing.
-
 </details>
 
-<details><summary><strong>Q2. What is Structured Metadata in Loki 3.x, and why was it introduced?</strong></summary>
+<details><summary>2. What is Structured Metadata in Loki 3.x, and why was it introduced?</summary>
 
 Structured Metadata allows engineers to attach indexed key-value attributes (such as `trace_id` or `user_id`) to log lines without making them stream-defining labels. Historically, putting high-cardinality attributes into labels caused a cardinality explosion, crashing Loki ingesters. Structured metadata provides fast querying on arbitrary attributes while keeping the label hash ring small and stable.
-
 </details>
 
-<details><summary><strong>Q3. How do you migrate from Promtail to Grafana Alloy for Kubernetes log collection?</strong></summary>
+<details><summary>3. How do you migrate from Promtail to Grafana Alloy for Kubernetes log collection?</summary>
 
 Migration involves replacing Promtail DaemonSets with Grafana Alloy DaemonSets. Alloy uses `discovery.kubernetes` to discover pods, `discovery.relabel` to select target log files, `loki.source.file` to tail disk logs, `loki.process` stages to parse JSON and assign structured metadata, and `loki.write` to forward logs via OTLP or Loki push APIs.
-
 </details>
 
-<details><summary><strong>Q4. Write a LogQL query to calculate the 95th percentile request latency extracted from JSON logs.</strong></summary>
+<details><summary>4. Write a LogQL query to calculate the 95th percentile request latency extracted from JSON logs.</summary>
 
 LogQL metric queries convert log fields into numerical series using parsers:
 
 ```logql
 quantile_over_time(0.95, {job="payment-api"} | json | unwrap latency_ms [5m])
 ```
-
 </details>
 
-<details><summary><strong>Q5. What happens when a Loki stream receives log lines out of order?</strong></summary>
+<details><summary>5. What happens when a Loki stream receives log lines out of order?</summary>
 
 Loki ingesters enforce strict ordering within log streams. Out-of-order log lines older than the configured `reject_old_samples` window (default typically 1 hour) are rejected with a 400 Bad Request error. Clients must ensure proper batching and time synchronization (NTP) to prevent log rejection.
-
 </details>
 
-<details><summary><strong>Q6. How does Loki handle multiline stack traces in log collection?</strong></summary>
+<details><summary>6. How does Loki handle multiline stack traces in log collection?</summary>
 
 Grafana Alloy and Promtail use multiline staging rules in their log collection configuration to match regex patterns marking the start of a log entry (e.g., ISO 8601 timestamps), buffering subsequent lines until the next header is matched before forwarding them as a single log event.
-
 </details>
 
 ---

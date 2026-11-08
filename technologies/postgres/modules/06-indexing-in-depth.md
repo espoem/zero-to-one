@@ -221,49 +221,29 @@ WHERE c.relam = 403 -- B-tree access method OID
 
 ---
 
-## 8. Interview Drill
+## Interview Drill
 
-<details>
-<summary>1. Explain the Lehman-Yao B-link tree algorithm and why it improves concurrency over standard B-trees.</summary>
+<details><summary>1. Explain the Lehman-Yao B-link tree algorithm and why it improves concurrency over standard B-trees.</summary>
 
-**Answer**: In standard B-trees, splitting an overflowing page requires holding write locks on the page, its parent, and potentially ancestral nodes up to the root, which blocks concurrent readers. The Lehman-Yao B-link tree adds a "high key" and a "right-link" pointer to every page. When a page splits, the right-link connects the old page to the newly created sibling page, and the high key indicates the maximum value remaining on the old page. A concurrent reader looking for a key higher than the high key simply follows the right-link to the new sibling page without needing to lock or re-traverse parent nodes, eliminating top-down tree locking bottlenecks.
-
-- Ref: [PostgreSQL Source: src/backend/access/nbtree/README](https://git.postgresql.org/gitweb/?p=postgresql.git;a=blob;f=src/backend/access/nbtree/README)
-
+In standard B-trees, splitting an overflowing page requires holding write locks on the page, its parent, and potentially ancestral nodes up to the root, which blocks concurrent readers. The Lehman-Yao B-link tree adds a "high key" and a "right-link" pointer to every page. When a page splits, the right-link connects the old page to the newly created sibling page, and the high key indicates the maximum value remaining on the old page. A concurrent reader looking for a key higher than the high key simply follows the right-link to the new sibling page without needing to lock or re-traverse parent nodes, eliminating top-down tree locking bottlenecks.
 </details>
 
-<details>
-<summary>2. Why might an "Index-Only Scan" still generate substantial random disk reads to the table heap?</summary>
+<details><summary>2. Why might an "Index-Only Scan" still generate substantial random disk reads to the table heap?</summary>
 
-**Answer**: An Index-Only Scan retrieves all requested column values directly from the index. However, because PostgreSQL indexes do not store transaction visibility metadata (`xmin` or `xmax`), the engine must verify whether the indexed tuple version is visible to the active snapshot. It consults the **Visibility Map (`_vm`)**. If the corresponding 8KB heap page has its "all-visible" bit set, the tuple is guaranteed to be visible, and the heap is not accessed. If the bit is not set (because of un-vacuumed dead tuples or recent writes), the engine must perform a heap fetch to read the tuple header on disk, degrading performance.
-
-- Ref: [PostgreSQL Documentation: Index-Only Scans](https://www.postgresql.org/docs/18/indexes-index-only-scans.html)
-
+An Index-Only Scan retrieves all requested column values directly from the index. However, because PostgreSQL indexes do not store transaction visibility metadata (`xmin` or `xmax`), the engine must verify whether the indexed tuple version is visible to the active snapshot. It consults the **Visibility Map (`_vm`)**. If the corresponding 8KB heap page has its "all-visible" bit set, the tuple is guaranteed to be visible, and the heap is not accessed. If the bit is not set (because of un-vacuumed dead tuples or recent writes), the engine must perform a heap fetch to read the tuple header on disk, degrading performance.
 </details>
 
-<details>
-<summary>3. What happens if a `CREATE INDEX CONCURRENTLY` command fails halfway through execution, and how do you remediate it?</summary>
+<details><summary>3. What happens if a `CREATE INDEX CONCURRENTLY` command fails halfway through execution, and how do you remediate it?</summary>
 
-**Answer**: If `CREATE INDEX CONCURRENTLY` encounters a failure (e.g. deadlock, unique constraint violation, client cancellation), the transaction aborts, but the partially built index remains in the database catalog marked `INVALID` (`pg_index.indisvalid = false`). The query planner will never choose an invalid index for queries. However, the storage engine **must still update the invalid index on every subsequent `INSERT`, `UPDATE`, and `DELETE`**, causing write amplification and bloat. Remediation requires dropping the failed index (`DROP INDEX CONCURRENTLY <index_name>;`) and re-issuing the creation command.
-
-- Ref: [PostgreSQL Documentation: CREATE INDEX: Building Indexes Concurrently](https://www.postgresql.org/docs/18/sql-createindex.html#SQL-CREATEINDEX-CONCURRENTLY)
-
+If `CREATE INDEX CONCURRENTLY` encounters a failure (e.g. deadlock, unique constraint violation, client cancellation), the transaction aborts, but the partially built index remains in the database catalog marked `INVALID` (`pg_index.indisvalid = false`). The query planner will never choose an invalid index for queries. However, the storage engine **must still update the invalid index on every subsequent `INSERT`, `UPDATE`, and `DELETE`**, causing write amplification and bloat. Remediation requires dropping the failed index (`DROP INDEX CONCURRENTLY <index_name>;`) and re-issuing the creation command.
 </details>
 
-<details>
-<summary>4. When is a BRIN index dramatically superior to a B-tree index, and when does it fail?</summary>
+<details><summary>4. When is a BRIN index dramatically superior to a B-tree index, and when does it fail?</summary>
 
-**Answer**: A Block Range Index (BRIN) is superior for very large tables where data is physically clustered on disk in the same order as the indexed column (e.g., auto-incrementing IDs or append-only time-series data). Instead of indexing every row, BRIN stores the minimum and maximum values for clusters of 128 physical pages (1MB). On a 100GB table, a BRIN index can be just a few megabytes (fitting in RAM/L3 cache) versus 20GB+ for a B-tree. However, BRIN fails completely on randomly updated or un-correlated data: if every 128-page block contains a wide range of values (min 0, max 1,000,000), the optimizer must scan every block anyway, rendering the index useless.
-
-- Ref: [PostgreSQL Documentation: BRIN Indexes](https://www.postgresql.org/docs/18/brin-intro.html)
-
+A Block Range Index (BRIN) is superior for very large tables where data is physically clustered on disk in the same order as the indexed column (e.g., auto-incrementing IDs or append-only time-series data). Instead of indexing every row, BRIN stores the minimum and maximum values for clusters of 128 physical pages (1MB). On a 100GB table, a BRIN index can be just a few megabytes (fitting in RAM/L3 cache) versus 20GB+ for a B-tree. However, BRIN fails completely on randomly updated or un-correlated data: if every 128-page block contains a wide range of values (min 0, max 1,000,000), the optimizer must scan every block anyway, rendering the index useless.
 </details>
 
-<details>
-<summary>5. How does PostgreSQL 18's B-Tree Skip Scan optimize queries that omit leading columns in composite indexes?</summary>
+<details><summary>5. How does PostgreSQL 18's B-Tree Skip Scan optimize queries that omit leading columns in composite indexes?</summary>
 
-**Answer**: With a composite index on `(A, B)`, previous PostgreSQL versions could only use the index if the query supplied a filter condition on the leading column `A`. In PostgreSQL 18, if `A` has low cardinality (e.g., a status enum or boolean), the planner utilizes B-tree Skip Scan. It seeks to the first distinct value of `A`, executes a binary search for the filter condition on `B`, and then hops directly to the next distinct value of `A` using the index. This avoids scanning un-matched leaf pages and eliminates the historical requirement of creating redundant single-column indexes on `B`.
-
-- Ref: [PostgreSQL 18 Release Notes](https://www.postgresql.org/docs/18/release-18.html)
-
+With a composite index on `(A, B)`, previous PostgreSQL versions could only use the index if the query supplied a filter condition on the leading column `A`. In PostgreSQL 18, if `A` has low cardinality (e.g., a status enum or boolean), the planner utilizes B-tree Skip Scan. It seeks to the first distinct value of `A`, executes a binary search for the filter condition on `B`, and then hops directly to the next distinct value of `A` using the index. This avoids scanning un-matched leaf pages and eliminates the historical requirement of creating redundant single-column indexes on `B`.
 </details>

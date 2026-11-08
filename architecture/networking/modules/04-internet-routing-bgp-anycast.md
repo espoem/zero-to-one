@@ -267,11 +267,9 @@ Time t5: Amsterdam server sends TCP RST (Connection Aborted)!
 
 ---
 
-## 8. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-### Q1: In the BGP path selection algorithm, explain why `LOCAL_PREF` is evaluated before `AS_PATH` length, and describe how network operators use it.
-
-<details><summary>Answer</summary>
+<details><summary>1. In the BGP path selection algorithm, explain why `LOCAL_PREF` is evaluated before `AS_PATH` length, and describe how network operators use it.</summary>
 
 **Economic Policy Over Distance.** BGP is an economic policy routing protocol rather than a shortest-path algorithm. `LOCAL_PREF` is evaluated at Step 2 (highest preferred), whereas `AS_PATH` length is evaluated at Step 4. This ordering allows network operators to enforce economic preferences:
 
@@ -281,9 +279,7 @@ Time t5: Amsterdam server sends TCP RST (Connection Aborted)!
 
 </details>
 
-### Q2: What is an RPKI ROA, and how does Route Origin Validation (ROV) prevent a malicious sub-prefix BGP hijack?
-
-<details><summary>Answer</summary>
+<details><summary>2. What is an RPKI ROA, and how does Route Origin Validation (ROV) prevent a malicious sub-prefix BGP hijack?</summary>
 
 **Cryptographic Prefix Authority.** A Route Origin Authorization (ROA) is an X.509 digitally signed object created by the legitimate IP prefix holder in an RIR database. It explicitly binds an IP prefix (e.g., `198.51.100.0/22`) to an authorized originating ASN (e.g., `AS 64500`) and defines a `maxLength` (e.g., `/22`).
 
@@ -294,9 +290,7 @@ Time t5: Amsterdam server sends TCP RST (Connection Aborted)!
 
 </details>
 
-### Q3: Explain the fundamental difference between eBGP and iBGP peering with respect to default TTL and route propagation rules.
-
-<details><summary>Answer</summary>
+<details><summary>3. Explain the fundamental difference between eBGP and iBGP peering with respect to default TTL and route propagation rules.</summary>
 
 **Scope and Split-Horizon Constraints.**
 
@@ -312,9 +306,7 @@ Time t5: Amsterdam server sends TCP RST (Connection Aborted)!
 
 </details>
 
-### Q4: Why is BGP Anycast ideal for DNS and NTP, but challenging for long-lived stateful TCP connections?
-
-<details><summary>Answer</summary>
+<details><summary>4. Why is BGP Anycast ideal for DNS and NTP, but challenging for long-lived stateful TCP connections?</summary>
 
 **Stateful Connection Disruption on Routing Shift.**
 
@@ -324,9 +316,7 @@ Time t5: Amsterdam server sends TCP RST (Connection Aborted)!
 
 </details>
 
-### Q5: What is the Multi-Exit Discriminator (MED) in BGP, and how does its propagation scope differ from LOCAL_PREF?
-
-<details><summary>Answer</summary>
+<details><summary>5. What is the Multi-Exit Discriminator (MED) in BGP, and how does its propagation scope differ from LOCAL_PREF?</summary>
 
 **Inbound Guidance Across an Interconnect.**
 

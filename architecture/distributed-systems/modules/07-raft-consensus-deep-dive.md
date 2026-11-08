@@ -173,34 +173,29 @@ If a leader is partitioned from the majority, it might not receive followers' me
 
 ---
 
-## 7. Interview Drill: Raft Consensus
+## Interview Drill
 
-<details>
-<summary>1. In Raft, why must election timeouts be randomized (e.g. between 150ms and 300ms)?</summary>
+<details><summary>1. In Raft, why must election timeouts be randomized (e.g. between 150ms and 300ms)?</summary>
 
 If all nodes shared a deterministic timeout (e.g. exactly 200ms), when the leader crashes, all followers would become candidates simultaneously. They would vote for themselves and broadcast `RequestVote` RPCs at the identical millisecond, resulting in a **Split Vote** where no candidate obtains a majority. Randomizing timeouts across a range ensures that one follower's timer will fire substantially earlier than the others, allowing it to collect votes and establish leadership before peers begin competing.
 </details>
 
-<details>
-<summary>2. Why does the RequestVote RPC reject a candidate whose log is shorter or has an older term than the receiver's log?</summary>
+<details><summary>2. Why does the RequestVote RPC reject a candidate whose log is shorter or has an older term than the receiver's log?</summary>
 
 This enforces the **Leader Completeness** safety property: any server that wins an election must already contain all committed log entries from all previous terms. Because committing an entry requires a majority quorum, and electing a leader requires a majority quorum, the two quorums must overlap by at least one node. The voting restriction ensures that this overlapping node will vote NO if the candidate's log lacks the committed entry.
 </details>
 
-<details>
-<summary>3. Why can a Raft leader never commit an entry from an earlier term by counting replicas?</summary>
+<details><summary>3. Why can a Raft leader never commit an entry from an earlier term by counting replicas?</summary>
 
 As shown in Figure 8 of the Raft paper, an entry from a previous term that reaches a majority might still be overwritten by a future leader if the current leader crashes before committing an entry from its own term. The leader cannot distinguish whether the older entry was genuinely committed or merely replicated before an uncommitted leader crashed. Only when a leader commits an entry from its _current_ term can it be mathematically certain that no future leader could possibly be elected without that entry.
 </details>
 
-<details>
-<summary>4. What happens if a Raft follower receives an AppendEntries request with prevLogIndex and prevLogTerm that do not match its local log?</summary>
+<details><summary>4. What happens if a Raft follower receives an AppendEntries request with prevLogIndex and prevLogTerm that do not match its local log?</summary>
 
 The follower rejects the request (`success: false`). This triggers the leader's recovery mechanism: the leader decrements `nextIndex` for that follower and re-sends `AppendEntries` with an earlier `prevLogIndex`. This process repeats until a matching index is located. Once a match is found, the follower overwrites any conflicting subsequent entries and appends the leader's new entries, restoring the **Log Matching Invariant**.
 </details>
 
-<details>
-<summary>5. How does the Pre-Vote extension prevent an isolated node from disrupting a healthy cluster upon reconnection?</summary>
+<details><summary>5. How does the Pre-Vote extension prevent an isolated node from disrupting a healthy cluster upon reconnection?</summary>
 
 An isolated node that cannot communicate with the leader repeatedly times out and increments its `currentTerm`. Without Pre-Vote, reconnecting this node forces all healthy nodes (including the leader) to update their term and step down. With Pre-Vote, the isolated node enters a non-disruptive trial phase without incrementing its actual term. Because the healthy majority is receiving heartbeats from the legitimate leader, they reject the pre-vote. The partitioned node remains blocked from advancing its term, protecting the active leader from disruption.
 </details>

@@ -206,10 +206,9 @@ An organization that has never executed an emergency credential rotation drill w
 
 ---
 
-## 8. Interview Drill: SecOps & Incident Response
+## Interview Drill
 
-<details>
-<summary>1. A junior developer includes `logger.info("User Login Request: ", req.body)` in the authentication controller. What critical security compliance violation does this create, and how must it be resolved?</summary>
+<details><summary>1. A junior developer includes `logger.info("User Login Request: ", req.body)` in the authentication controller. What critical security compliance violation does this create, and how must it be resolved?</summary>
 
 This creates a severe **Sensitive Data in Logs Violation (OWASP A09:2025)** and violates GDPR, HIPAA, and PCI-DSS compliance. `req.body` contains the user's plaintext password in cleartext. Once logged, the user's master password is permanently stored in application log files, transmitted across third-party log aggregation pipelines (Datadog, Splunk), and exposed to every developer and support engineer with log access. _Resolution_:
 
@@ -219,22 +218,19 @@ This creates a severe **Sensitive Data in Logs Violation (OWASP A09:2025)** and 
 
 </details>
 
-<details>
-<summary>2. Explain the fundamental difference between CVSS v4.0 and EPSS, and why using both together is superior to using CVSS alone.</summary>
+<details><summary>2. Explain the fundamental difference between CVSS v4.0 and EPSS, and why using both together is superior to using CVSS alone.</summary>
 
 - **CVSS v4.0** measures **theoretical severity** based on intrinsic software characteristics (e.g. Can it be exploited over the network? Does it require privileges? What is the impact on confidentiality, integrity, and availability?). It answers: _"How bad would it be if exploited?"_
 - **EPSS (Exploit Prediction Scoring System)** measures **empirical probability** based on real-world threat intelligence. It answers: _"What is the statistical likelihood that an attacker will actively exploit this in the wild within 30 days?"_ _The Synergy_: Tens of thousands of CVEs have CVSS scores $> 7.0$, but fewer than 5% of all CVEs are ever weaponized in real-world attacks. Relying on CVSS alone causes severe engineering burnout. Prioritizing vulnerabilities that have both high CVSS _and_ high EPSS ($P > 0.10$) allows teams to remediate 90% of real-world threats with minimal wasted effort.
 
 </details>
 
-<details>
-<summary>3. Describe how an automated SIEM rule detects an "Impossible Travel" anomaly and what automated remediation should occur.</summary>
+<details><summary>3. Describe how an automated SIEM rule detects an "Impossible Travel" anomaly and what automated remediation should occur.</summary>
 
 The SIEM ingests authentication events containing the user's authenticated ID, source IP address, geolocation (latitude and longitude), and timestamp. When an authentication occurs, the SIEM queries the user's previous authentication event: $$\text{Speed} = \frac{\text{GreatCircleDistance}(\text{Coord}_1, \text{Coord}_2)}{\text{Timestamp}_2 - \text{Timestamp}_1}$$ If the required travel velocity exceeds realistic physical limits (e.g. $> 900\text{ km/h}$, such as logging in from London and then 15 minutes later from Singapore), the rule triggers. _Automated Remediation_: The system invalidates all existing session cookies and refresh tokens for that user ID, locks the account temporarily, and sends an out-of-band notification to the user requiring a phishing-resistant WebAuthn biometric verification to unlock the session.
 </details>
 
-<details>
-<summary>4. Why must an authorization server maintain zero-downtime dual-key support during an asymmetric JWKS key rotation drill?</summary>
+<details><summary>4. Why must an authorization server maintain zero-downtime dual-key support during an asymmetric JWKS key rotation drill?</summary>
 
 In asymmetric token systems, the Authorization Server signs tokens with a private key, and downstream microservices verify signatures using the public key fetched from the JWKS endpoint. If the AS abruptly rotates its key and begins signing tokens with a new private key _before_ downstream microservices have updated their cached JWKS, every single downstream API call will fail signature verification with an "Unknown Key ID" error, inducing a complete production outage. _Zero-Downtime Dual-Key Procedure_:
 
@@ -246,8 +242,7 @@ In asymmetric token systems, the Authorization Server signs tokens with a privat
 
 </details>
 
-<details>
-<summary>5. What is the role of WORM (Write Once, Read Many) storage in enterprise security audit logging?</summary>
+<details><summary>5. What is the role of WORM (Write Once, Read Many) storage in enterprise security audit logging?</summary>
 
 In an advanced persistent threat (APT) compromise, an attacker who gains root access to an infrastructure server immediately attempts to cover their tracks by editing, truncating, or deleting application log files (`rm -rf /var/log/*`, modifying audit trails). WORM storage (such as AWS S3 Object Lock in Compliance Mode) enforces immutable storage policies at the physical hardware layer: once a log record is written, **no user—not even the AWS root account or a compromised administrator—can delete, overwrite, or alter the file** until the retention period (e.g. 7 years) expires. This guarantees forensic tamper evidence and legal admissibility.
 </details>

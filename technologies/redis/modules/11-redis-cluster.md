@@ -381,7 +381,7 @@ Valkey 9.0 (announced October 2025) shipped two cluster features Redis does not 
 
 ---
 
-## 10. Interview Drill
+## Interview Drill
 
 <details><summary>1. How does Redis Cluster decide which node stores a key?</summary>
 
@@ -416,19 +416,4 @@ Redis 8.4 (`CLUSTER MIGRATION`) and Valkey 9.0 move a whole slot as a stream whi
 <details><summary>7. Your cluster is `CLUSTER DOWN` although only one shard failed. Why?</summary>
 
 `cluster-require-full-coverage yes` (default) stops all queries when any slot is uncovered (a primary with no replica able to take over). Set it to `no` to keep serving the covered slots, add replicas, and spread them across failure domains.
-</details>
-
-<details><summary>8. How does Redis Cluster resolve epoch collisions?</summary>
-
-When two master nodes claim conflicting slot allocations at the same `configEpoch`, the collision is broken deterministically by node identifier comparison: the node with the lexicographically smaller Node ID increments its `currentEpoch`, assigns `configEpoch = currentEpoch`, and broadcasts the higher epoch over the cluster bus. The higher epoch supersedes the colliding configuration repository-wide.
-</details>
-
-<details><summary>9. Why do replicas calculate an election delay before requesting failover votes?</summary>
-
-Replicas delay election initiation using $\text{Delay} = 500\text{ ms} + \text{random}(0..500\text{ ms}) + \text{rank} \times 1000\text{ ms}$. The rank is based on replication offset. Rank 0 indicates the replica with the most recent replication data. This ensures the most up-to-date replica solicits votes first, winning the election and minimizing data loss, while simultaneously preventing split-vote deadlocks among multiple sibling replicas.
-</details>
-
-<details><summary>10. What is the wire-level purpose of the ASKING command during resharding?</summary>
-
-When a slot is undergoing migration, keys are transferred incrementally. When a client queries the source node for a key that has already moved, the source returns `-ASK <slot> <target>`. The target node is in `IMPORTING` state and rejects direct queries with `-MOVED` because it is not yet the authoritative owner of the slot. Sending `ASKING` sets a one-time connection flag on the target (`CLIENT_ASKING`), allowing the immediately following command for that migrating slot to execute successfully.
 </details>

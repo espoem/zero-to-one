@@ -412,50 +412,42 @@ Understanding the progression of declarative API paradigms prevents architectura
 
 ---
 
-## 11. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. Explain the architectural difference between an edge-triggered and a level-triggered control system, and explain why Kubernetes chose the latter.</strong></summary>
+<details><summary>1. Explain the architectural difference between an edge-triggered and a level-triggered control system, and explain why Kubernetes chose the latter.</summary>
 
 An edge-triggered system reacts strictly to state changes (transitions or delta events such as "Pod terminated"). If a network failure, process restart, or message queue drop occurs during an event transmission, the edge-triggered consumer loses awareness of the transition and enters a state of permanent desynchronization. A level-triggered system continuously inspects the current actual state (the "level") of the system against the desired state. Even if dozens of transient events are dropped during a network partition, the subsequent level-triggered evaluation loop observes that the observed state differs from the desired spec ($r \ne y$) and issues corrective actuation. Kubernetes chose level-triggered reconciliation because distributed networks are fundamentally unreliable, making eventual consistency through continuous state resynchronization the only fault-tolerant architectural choice.
 </details>
 
-<details>
-<summary><strong>Q2. What is the precise role of `metadata.resourceVersion`, and what happens under the hood when two clients update the same object concurrently?</strong></summary>
+<details><summary>2. What is the precise role of `metadata.resourceVersion`, and what happens under the hood when two clients update the same object concurrently?</summary>
 
 `metadata.resourceVersion` is an opaque string corresponding to the internal etcd 64-bit monotonically increasing MVCC revision. It is the core mechanism enabling Optimistic Concurrency Control (OCC). When a client fetches an object, it receives the current `resourceVersion`. When issuing a `PUT` or `UPDATE` request, `kube-apiserver` verifies whether the incoming `resourceVersion` matches the current revision stored in etcd. If another client updated the object in the interim, the versions do not match. The API server rejects the update with an HTTP 409 Conflict error. The client must re-fetch the latest object revision, re-apply its business logic mutations, and re-attempt the write.
 </details>
 
-<details>
-<summary><strong>Q3. How does Server-Side Apply (SSA) differentiate between an atomic list and an associative map list?</strong></summary>
+<details><summary>3. How does Server-Side Apply (SSA) differentiate between an atomic list and an associative map list?</summary>
 
 SSA relies on OpenAPI v3 schema extensions defined on the target resource. If an array is annotated with `x-kubernetes-list-type: atomic`, the array is treated as a monolithic primitive: any manager modifying a single element claims ownership of the entire array, replacing previous values. If annotated with `x-kubernetes-list-type: map` and `x-kubernetes-list-map-keys: ["keyName"]` (such as `containers` keyed by `name`), the API server treats the array as an associative map. Each element is tracked independently in `metadata.managedFields` using the key syntax `k:{"name":"value"}`. This allows multiple controllers to own distinct items within the same array without conflict.
 </details>
 
-<details>
-<summary><strong>Q4. What is the difference between `Background` and `Foreground` cascading deletion in the Garbage Collector?</strong></summary>
+<details><summary>4. What is the difference between `Background` and `Foreground` cascading deletion in the Garbage Collector?</summary>
 
 In `Background` cascading deletion, `kube-apiserver` immediately deletes the parent object from etcd. The Garbage Collector then asynchronously discovers orphaned child resources (whose `ownerReferences` point to the deleted parent UID) and issues deletion calls in worker threads. In `Foreground` deletion, the parent object is not deleted immediately. The API server adds the `foregroundDeletion` finalizer and sets a `deletionTimestamp`. The parent remains visible in a `Terminating` state while the Garbage Collector systematically deletes all child resources where `blockOwnerDeletion: true`. Only after all child objects have been completely removed from etcd does the Garbage Collector strip the `foregroundDeletion` finalizer, allowing the parent to be physically purged.
 </details>
 
-<details>
-<summary><strong>Q5. Why is updating the `/status` subresource preferred over updating the root object document in custom controllers?</strong></summary>
+<details><summary>5. Why is updating the `/status` subresource preferred over updating the root object document in custom controllers?</summary>
 
 Updating via `/status` provides two critical architectural safeguards:
 
 1. **RBAC Isolation**: Controllers can be granted least-privilege permission to mutate `/status` without granting write access to `.spec`, preventing a compromised or buggy controller from altering desired application configurations.
 2. **Generation Integrity**: Modifying `.spec` increments `metadata.generation`. Modifying `/status` via its subresource updates observed state without incrementing `metadata.generation`. This allows controllers to record `status.observedGeneration = metadata.generation`, signaling to clients that the controller has fully reconciled the user's latest declared spec.
-
 </details>
 
-<details>
-<summary><strong>Q6. How does a finalizer prevent resource deletion, and what is the exact API sequence required to unblock it?</strong></summary>
+<details><summary>6. How does a finalizer prevent resource deletion, and what is the exact API sequence required to unblock it?</summary>
 
 When an object has one or more string entries in `metadata.finalizers[]`, a `DELETE` API call does not remove the object from etcd. Instead, `kube-apiserver` populates `metadata.deletionTimestamp`. The object enters a `Terminating` state. The controller responsible for that finalizer key watches for objects with non-nil `deletionTimestamp`, executes external teardown operations (such as unbinding hardware volumes or removing load balancer routing rules), and then issues a `PATCH` request to remove its specific key from `metadata.finalizers[]`. Once the array is completely empty, the API server executes the physical deletion from etcd.
 </details>
 
-<details>
-<summary><strong>Q7. What causes a `metadata.annotations: Too long` error during `kubectl apply`, and how does Server-Side Apply structurally resolve it?</strong></summary>
+<details><summary>7. What causes a `metadata.annotations: Too long` error during `kubectl apply`, and how does Server-Side Apply structurally resolve it?</summary>
 
 Client-Side Apply (CSA) stores the entire JSON text of the previously applied manifest in `metadata.annotations["kubectl.kubernetes.io/last-applied-configuration"]` to perform client-side 3-way merges. When a resource definition (such as a large CRD or detailed Deployment) exceeds the 256 KiB annotation size limit imposed by etcd, the write is rejected. Server-Side Apply resolves this structurally by eliminating the `last-applied-configuration` annotation entirely. The API server manages state merging server-side and stores field ownership tracking in the compact, optimized `metadata.managedFields` schema, completely circumventing annotation limits.
 </details>

@@ -142,34 +142,29 @@ The CIDR subnetting math, overlap detection algorithms, and peering non-transiti
 
 ---
 
-## 10. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-<details>
-<summary>1. Why does a `/24` subnet in an AWS VPC yield only 251 usable IP addresses instead of 256?</summary>
+<details><summary>1. Why does a `/24` subnet in an AWS VPC yield only 251 usable IP addresses instead of 256?</summary>
 
 In standard IPv4 networking, 2 addresses are reserved per subnet (the network address `.0` and the broadcast address `.255`). Cloud providers reserve 3 additional addresses for internal software-defined infrastructure: `.1` is assigned to the VPC default router, `.2` is reserved for the base VPC DNS resolver (Amazon Route 53 Resolver), and `.3` is reserved for future internal provider usage. Therefore, $256 - 5 = 251$ usable addresses remain.
 </details>
 
-<details>
-<summary>2. Why does traffic between two peered VPCs fail to route transitively through an intermediate VPC?</summary>
+<details><summary>2. Why does traffic between two peered VPCs fail to route transitively through an intermediate VPC?</summary>
 
 VPC Peering is designed at the SDN hypervisor layer to be point-to-point and non-transitive. Packets whose destination IP address does not belong to the direct peering partner are dropped by the VPC routing engine. An intermediate VPC cannot act as an edge router or forward packets on behalf of third-party networks unless a transit hub (like AWS Transit Gateway or a software router with IP forwarding enabled) is introduced.
 </details>
 
-<details>
-<summary>3. What is the fundamental difference between a Security Group and a Network ACL in terms of state tracking?</summary>
+<details><summary>3. What is the fundamental difference between a Security Group and a Network ACL in terms of state tracking?</summary>
 
 Security Groups are stateful firewalls attached at the network interface level. When an incoming packet matches an inbound Allow rule, the connection tracking engine records the flow and automatically permits outgoing response packets on the return path, regardless of outbound rules. Network ACLs are stateless firewalls evaluated at the subnet boundary. Every packet is evaluated independently; to allow an HTTP GET request and its response, an admin must configure both an inbound rule for port 80/443 _and_ an outbound rule for ephemeral ports (`1024-65535`).
 </details>
 
-<details>
-<summary>4. How do VPC Gateway Endpoints differ from Interface Endpoints (PrivateLink)?</summary>
+<details><summary>4. How do VPC Gateway Endpoints differ from Interface Endpoints (PrivateLink)?</summary>
 
 Gateway Endpoints (available for AWS S3 and DynamoDB) modify the VPC route table to direct traffic to service prefix lists across the internal AWS backbone. They are completely free of charge, require no private IP allocation, and do not support on-premises Direct Connect access. Interface Endpoints (AWS PrivateLink) provision a physical Elastic Network Interface (ENI) with a private IP address in the customer subnet, incur hourly and data-processing charges, and allow on-premises systems to query the endpoint via private DNS over VPN or Direct Connect.
 </details>
 
-<details>
-<summary>5. How does deploying an S3 Gateway Endpoint eliminate NAT Gateway data processing fees?</summary>
+<details><summary>5. How does deploying an S3 Gateway Endpoint eliminate NAT Gateway data processing fees?</summary>
 
 When private subnet workloads communicate with Amazon S3 without a VPC endpoint, traffic is addressed to S3's public IP range and routed through the NAT Gateway, incurring a $\$0.045$/GB data processing fee. Adding an S3 Gateway Endpoint installs a high-priority route in the subnet route table for S3's prefix list, redirecting traffic directly across the internal provider network fabric, completely bypassing the NAT Gateway and eliminating the per-GB charge.
 </details>

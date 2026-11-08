@@ -318,59 +318,40 @@ WHERE NOT blocked_locks.granted;
 
 ---
 
-## 9. Interview Drill
+## Interview Drill
 
-<details>
-<summary>1. How do Synchronized Failover Slots in PostgreSQL 17+ solve the historical problem of running Change Data Capture (CDC) across high-availability failovers?</summary>
+<details><summary>1. How do Synchronized Failover Slots in PostgreSQL 17+ solve the historical problem of running Change Data Capture (CDC) across high-availability failovers?</summary>
 
-**Answer**: Historically, logical replication slots resided strictly in memory and catalogs on the primary server. If the primary failed and a physical standby was promoted to primary, the logical replication slots did not exist on the promoted node. Downstream CDC pipelines (such as Debezium or Kafka Connect) could not resume streaming and were forced to perform full, expensive re-snapshots of the entire database. PostgreSQL 17 introduced `sync_replication_slots = true` and failover slots (`ALTER SUBSCRIPTION ... SET (failover = true)`). The standby continuously synchronizes the LSN commit positions of logical replication slots from the primary. When the standby is promoted, the logical slots are immediately ready, allowing CDC consumers to reconnect seamlessly without missing or duplicating events.
-
-- Ref: [PostgreSQL Documentation: Synchronized Replication Slots](https://www.postgresql.org/docs/18/logical-replication-failover.html)
-
+Historically, logical replication slots resided strictly in memory and catalogs on the primary server. If the primary failed and a physical standby was promoted to primary, the logical replication slots did not exist on the promoted node. Downstream CDC pipelines (such as Debezium or Kafka Connect) could not resume streaming and were forced to perform full, expensive re-snapshots of the entire database. PostgreSQL 17 introduced `sync_replication_slots = true` and failover slots (`ALTER SUBSCRIPTION ... SET (failover = true)`). The standby continuously synchronizes the LSN commit positions of logical replication slots from the primary. When the standby is promoted, the logical slots are immediately ready, allowing CDC consumers to reconnect seamlessly without missing or duplicating events.
 </details>
 
-<details>
-<summary>2. Why can an abandoned or disconnected replication slot cause a total database cluster outage, and how do you prevent it?</summary>
+<details><summary>2. Why can an abandoned or disconnected replication slot cause a total database cluster outage, and how do you prevent it?</summary>
 
-**Answer**: A replication slot guarantees that the primary server will not remove any WAL segment that has not yet been acknowledged by the replica or subscriber. If a replica crashes, is decommissioned, or loses network connectivity while its replication slot remains registered in the primary's catalog, the primary stops deleting WAL files. WAL segments accumulate in `pg_wal` until the physical storage volume is 100% full. At that point, PostgreSQL cannot write new WAL records and initiates an emergency shutdown, causing a cluster-wide outage. The mandatory prevention is configuring `max_slot_wal_keep_size` (e.g. `64GB`) in `postgresql.conf`. If an inactive slot accumulates more than this threshold, PostgreSQL invalidates the slot and resumes WAL deletion, preserving primary availability.
-
-- Ref: [PostgreSQL Documentation: Replication Slots](https://www.postgresql.org/docs/18/warm-standby.html#STREAMING-REPLICATION-SLOTS)
-
+A replication slot guarantees that the primary server will not remove any WAL segment that has not yet been acknowledged by the replica or subscriber. If a replica crashes, is decommissioned, or loses network connectivity while its replication slot remains registered in the primary's catalog, the primary stops deleting WAL files. WAL segments accumulate in `pg_wal` until the physical storage volume is 100% full. At that point, PostgreSQL cannot write new WAL records and initiates an emergency shutdown, causing a cluster-wide outage. The mandatory prevention is configuring `max_slot_wal_keep_size` (e.g. `64GB`) in `postgresql.conf`. If an inactive slot accumulates more than this threshold, PostgreSQL invalidates the slot and resumes WAL deletion, preserving primary availability.
 </details>
 
-<details>
-<summary>3. Explain the difference between `synchronous_commit = on`, `remote_write`, and `remote_apply` in streaming replication.</summary>
-
-**Answer**:
+<details><summary>3. Explain the difference between `synchronous_commit = on`, `remote_write`, and `remote_apply` in streaming replication.</summary>
 
 - `remote_write`: The primary transaction commit waits until the standby has received the WAL bytes over the network socket and written them into the standby's operating system page cache. The transaction is durable against a primary crash and standby application crash, but not against a standby power loss.
 - `on`: The primary commit waits until the standby has written the WAL records to non-volatile disk storage using an `fsync` system call. Guarantees zero data loss (RPO = 0) even if the primary is destroyed.
 - `remote_apply`: The primary commit waits until the standby has not only flushed the WAL to disk, but the standby's startup process has physically replayed the WAL into the standby's `shared_buffers` and storage. This guarantees **read-your-writes consistency**: a query sent immediately to the standby is guaranteed to observe the modifications made by the primary transaction.
-- Ref: [PostgreSQL Documentation: Asynchronous Commit](https://www.postgresql.org/docs/18/wal-async-commit.html)
 
 </details>
 
-<details>
-<summary>4. Compare HNSW and IVFFlat index architectures in `pgvector`.</summary>
-
-**Answer**:
+<details><summary>4. Compare HNSW and IVFFlat index architectures in `pgvector`.</summary>
 
 - **IVFFlat** partitions vector space into Voronoi cells using k-means clustering. At query time, only vectors in the centroids closest to the query vector are probed (`ivfflat.probes`). It builds quickly and consumes modest memory, but has lower recall accuracy (90%–95%) and **must be built only after data is loaded** into the table, because training clusters on an empty table produces skewed, ineffective centroids.
 - **HNSW** builds a multi-layer hierarchical proximity graph where higher layers have long-range skips and lower layers have dense local connections. It achieves superior query throughput and recall (> 98%), and can be built on an empty table with incremental inserts. However, it requires significantly more memory to hold graph pointers and takes substantially longer to build.
-- Ref: [pgvector Official Documentation](https://github.com/pgvector/pgvector)
 
 </details>
 
-<details>
-<summary>5. How does Patroni prevent "Split-Brain" scenarios during an automated failover event?</summary>
+<details><summary>5. How does Patroni prevent "Split-Brain" scenarios during an automated failover event?</summary>
 
-**Answer**: Patroni uses a Distributed Consensus Store (DCS, e.g. `etcd` or Consul) backed by the Raft consensus algorithm. The primary Patroni node acquires a leader key in the DCS with a time-to-live (TTL, e.g. 10s) and must continually renew its heartbeat lease every 2 seconds. If network partition separates the primary:
+Patroni uses a Distributed Consensus Store (DCS, e.g. `etcd` or Consul) backed by the Raft consensus algorithm. The primary Patroni node acquires a leader key in the DCS with a time-to-live (TTL, e.g. 10s) and must continually renew its heartbeat lease every 2 seconds. If network partition separates the primary:
 
 1. The primary fails to renew its lease; Patroni immediately demotes the primary to read-only or shuts it down.
 2. The remaining nodes elect a new leader only if they represent a consensus quorum in the DCS.
 3. The standby with the highest WAL LSN is promoted.
 4. Fencing (STONITH) or software watchdog devices forcibly isolate the old primary, guaranteeing that two nodes can never concurrently accept write traffic on the same database cluster.
-
-- Ref: [Patroni Documentation: Architecture & High Availability](https://patroni.readthedocs.io/)
 
 </details>

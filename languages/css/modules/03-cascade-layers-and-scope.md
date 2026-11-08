@@ -246,39 +246,29 @@ initial default    computed value   inherited; else      User/UA origin   previo
 
 ---
 
-## 6. Interview Drill: The Cascade, Layers & Scope
+## Interview Drill
 
-### Q1: In normal (non-important) author declarations, why does an unlayered rule with specificity `(0, 0, 1)` override a rule inside an `@layer` that has specificity `(1, 0, 0)`?
-
-<details><summary>Answer</summary>
+<details><summary>1. In normal (non-important) author declarations, why does an unlayered rule with specificity `(0, 0, 1)` override a rule inside an `@layer` that has specificity `(1, 0, 0)`?</summary>
 
 According to the formal cascade sort order, Cascade Layers (Step 4) are evaluated before Selector Specificity (Step 5). For normal author declarations, unlayered styles have higher precedence than all layered styles. Because the unlayered rule wins at the layer evaluation step, the cascade algorithm halts and never compares selector specificity. The single element selector `(0, 0, 1)` wins over the ID selector `(1, 0, 0)` in the layer.
 </details>
 
-### Q2: How does the presence of `!important` alter the precedence order of Cascade Layers?
-
-<details><summary>Answer</summary>
+<details><summary>2. How does the presence of `!important` alter the precedence order of Cascade Layers?</summary>
 
 When declarations contain `!important`, the precedence order between cascade layers inverts completely. For normal declarations, later layers override earlier layers (e.g., `utilities` beats `base`). For `!important` declarations, earlier layers override later layers (e.g., `base !important` beats `utilities !important`). This mechanism ensures that foundational constraints or reset rules marked as critical cannot be inadvertently clobbered by downstream utility layers.
 </details>
 
-### Q3: What is "donut scoping" in `@scope`, and how does it prevent leaking styles into nested components?
-
-<details><summary>Answer</summary>
+<details><summary>3. What is "donut scoping" in `@scope`, and how does it prevent leaking styles into nested components?</summary>
 
 Donut scoping is achieved using the `@scope (<root>) to (<limit>)` syntax. The first argument defines the scoping root where matching begins, and the `to` argument defines a scoping limit (the donut hole) where matching stops. Any element inside the subtree that matches or sits inside the limit selector is excluded from the scoped rules. This allows a container component (like an article or card) to style its own typography and layout without bleeding styles into embedded sub-components (such as comments or embedded widgets).
 </details>
 
-### Q4: What is the exact difference between `unset` and `revert-layer`?
-
-<details><summary>Answer</summary>
+<details><summary>4. What is the exact difference between `unset` and `revert-layer`?</summary>
 
 `unset` resets a property based on its natural inheritance: it inherits from the parent element if the property is naturally inherited (like `color`), or resets to the property's specification initial value if non-inherited (like `padding`). In contrast, `revert-layer` does not look at inheritance or initial values; it rolls back the cascade evaluation to the value declared in the immediate preceding (lower-priority) cascade layer. If no earlier layer exists, it falls back to the user or browser default.
 </details>
 
-### Q5: If two conflicting rules inside `@scope` match an element with identical specificity and no `!important` flags, how does the engine break the tie?
-
-<details><summary>Answer</summary>
+<details><summary>5. If two conflicting rules inside `@scope` match an element with identical specificity and no `!important` flags, how does the engine break the tie?</summary>
 
 The engine evaluates Scope Proximity (Step 6 of the cascade). It measures the physical distance (number of DOM ancestor hops) between the matched element and the scoping root of each rule. The rule whose scoping root is closer in proximity to the matched element wins. Order of appearance is only evaluated if both scoping roots are at the exact same distance.
 </details>

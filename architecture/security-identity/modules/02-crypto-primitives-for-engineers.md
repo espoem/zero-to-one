@@ -255,28 +255,24 @@ flowchart TD
 
 ---
 
-## 9. Interview Drill: Applied Cryptography
+## Interview Drill
 
-<details>
-<summary>1. A developer implements a webhook verification handler using `if (computedHmac === clientHmac)`. How can an attacker exploit this vulnerability over an internet connection?</summary>
+<details><summary>1. A developer implements a webhook verification handler using `if (computedHmac === clientHmac)`. How can an attacker exploit this vulnerability over an internet connection?</summary>
 
 Standard string equality `===` evaluates characters sequentially and terminates execution immediately upon encountering the first mismatching character (early-exit). An attacker sends thousands of requests measuring the round-trip latency with high-precision statistical sampling. An HMAC guess whose first byte is correct will take several clock cycles longer to fail than a guess whose first byte is wrong. By iterating over all 256 possible values for byte 0, the attacker isolates the value that generates the statistically highest average response time. The attacker then fixes byte 0 and iterates through byte 1, repeating this process linearly ($\mathcal{O}(256 \times 32)$ rather than $\mathcal{O}(256^{32})$) to forge valid signatures without ever knowing the HMAC secret key.
 </details>
 
-<details>
-<summary>2. Explain the mathematical reason why an attacker can decrypt ciphertext if a 96-bit Nonce is reused in AES-GCM.</summary>
+<details><summary>2. Explain the mathematical reason why an attacker can decrypt ciphertext if a 96-bit Nonce is reused in AES-GCM.</summary>
 
 In AES-GCM, encryption is executed in Counter Mode ($C_i = P_i \oplus S_i$), where keystream $S_i = \text{AES}_K(\text{Nonce} \parallel i)$. Because the keystream is a pure function of $(K, \text{Nonce})$, reusing the nonce generates the exact same keystream for two messages. When an attacker XORs the two ciphertexts: $$C_1 \oplus C_2 = (P_1 \oplus S) \oplus (P_2 \oplus S) = P_1 \oplus P_2$$ The keystream completely cancels out, immediately exposing the XOR difference of the original plaintexts. Furthermore, the authentication tag $T$ is computed using the GHASH polynomial over $\text{GF}(2^{128})$ with a secret hash key $H$. Reusing the nonce allows the attacker to subtract the tags, formulate a polynomial equation in $H$, and solve for $H$, granting the ability to forge valid authentication tags for arbitrary spoofed payloads.
 </details>
 
-<details>
-<summary>3. Why is $H(\text{secret} \parallel \text{message})$ an insecure MAC when $H$ is SHA-256, but secure when $H$ is SHA-3?</summary>
+<details><summary>3. Why is $H(\text{secret} \parallel \text{message})$ an insecure MAC when $H$ is SHA-256, but secure when $H$ is SHA-3?</summary>
 
 SHA-256 utilizes the Merkle-Damgård construction, where the output hash digest is identical to the internal state of the compression function after processing the final padded message block. Because of this, an observer who sees $H(\text{secret} \parallel \text{message})$ can use that hash as the starting internal state vector, append additional message blocks, and calculate a mathematically valid hash for the extended message without knowing the secret prefix (a Length Extension Attack). SHA-3 uses the Keccak **sponge construction** (absorbing and squeezing). It absorbs input into a large internal state (1600 bits) but squeezes out only a truncated subset (e.g. 256 bits). Because the internal state is hidden and larger than the output digest, length extension is mathematically impossible.
 </details>
 
-<details>
-<summary>4. What is the role of HKDF-Extract versus HKDF-Expand in key derivation?</summary>
+<details><summary>4. What is the role of HKDF-Extract versus HKDF-Expand in key derivation?</summary>
 
 HKDF separates key derivation into two orthogonal phases:
 
@@ -285,8 +281,7 @@ HKDF separates key derivation into two orthogonal phases:
 
 </details>
 
-<details>
-<summary>5. How does Envelope Encryption prevent security performance bottlenecks and simplify key rotation?</summary>
+<details><summary>5. How does Envelope Encryption prevent security performance bottlenecks and simplify key rotation?</summary>
 
 In Envelope Encryption, large data volumes are encrypted locally using a symmetric Data Encryption Key (DEK) via high-speed hardware AES-NI instructions. The DEK is ephemeral and used only for that record. The central KMS/HSM is only called to encrypt or decrypt the tiny 32-byte DEK using a master Key Encryption Key (KEK). This resolves two critical operational problems:
 

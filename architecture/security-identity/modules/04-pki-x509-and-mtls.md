@@ -173,34 +173,29 @@ When Service A calls Service B over mTLS:
 
 ---
 
-## 7. Interview Drill: PKI & Workload Identity
+## Interview Drill
 
-<details>
-<summary>1. A microservice team configures a certificate with `Common Name: api.corp.internal` but omits the Subject Alternative Name (SAN) extension. Modern clients reject the connection with an invalid certificate error. Why?</summary>
+<details><summary>1. A microservice team configures a certificate with `Common Name: api.corp.internal` but omits the Subject Alternative Name (SAN) extension. Modern clients reject the connection with an invalid certificate error. Why?</summary>
 
 Under RFC 6125 and RFC 5280, modern TLS implementations (including Chrome, Firefox, Go `crypto/tls`, and Node.js) have completely deprecated the use of the `Common Name` (CN) field for subject identity validation. Validating against CN was ambiguous because the field was historically a human-readable display string without strict syntax rules or multi-domain support. Modern clients require that all domain names, IP addresses, and URI identities be explicitly enumerated within the **Subject Alternative Name (SAN)** extension (`dNSName` or `iPAddress`). If the SAN extension is absent, the client treats the certificate as having no valid identities and aborts the connection.
 </details>
 
-<details>
-<summary>2. Why does "soft-fail" OCSP revocation checking fail to protect users against an active Man-in-the-Middle attacker?</summary>
+<details><summary>2. Why does "soft-fail" OCSP revocation checking fail to protect users against an active Man-in-the-Middle attacker?</summary>
 
 In soft-fail OCSP checking, if the client cannot reach the CA's OCSP responder (due to network timeout, DNS resolution failure, or server error), the client assumes the certificate is valid and proceeds with the connection. An active Man-in-the-Middle attacker who has compromised a revoked certificate and key simply drops or intercepts all outgoing client traffic to the CA's OCSP responder IP address or port 80. The client experiences an OCSP timeout, "soft-fails", and accepts the attacker's compromised, revoked certificate without warning. Only hard-fail with OCSP Must-Staple or centralized CRLite sets defeats this attack.
 </details>
 
-<details>
-<summary>3. What is the role of the `BasicConstraints` extension, and what catastrophic security vulnerability occurs if an intermediate CA issues a certificate with `cA: TRUE` to a public web server?</summary>
+<details><summary>3. What is the role of the `BasicConstraints` extension, and what catastrophic security vulnerability occurs if an intermediate CA issues a certificate with `cA: TRUE` to a public web server?</summary>
 
 The `BasicConstraints` extension dictates whether a certificate belongs to a Certification Authority (`cA: TRUE`) or an end-entity leaf node (`cA: FALSE`). If a CA accidentally issues a certificate with `cA: TRUE` to a customer's web server, that customer now possesses a valid intermediate Certification Authority key recognized by all browsers that trust the root. The customer can use their private key to sign fraudulent, validly-chained certificates for _any domain in the world_ (e.g. `google.com`, `bankofamerica.com`), completely breaking the global PKI trust model.
 </details>
 
-<details>
-<summary>4. Explain how SPIFFE IDs solve the ephemeral IP problem in Kubernetes microservice security.</summary>
+<details><summary>4. Explain how SPIFFE IDs solve the ephemeral IP problem in Kubernetes microservice security.</summary>
 
 In dynamic container orchestrators like Kubernetes, pods are created and destroyed continuously, recycling ephemeral IP addresses every few minutes. Relying on IP-based firewall rules (Layer 3/4) to authenticate microservices is fragile, slow to propagate, and susceptible to IP spoofing. SPIFFE assigns each logical workload an immutable URI identity string (`spiffe://cluster.local/ns/prod/sa/payment-service`) encoded directly into an ephemeral X.509 certificate issued via mTLS. When pods communicate, identity is verified cryptographically via the mTLS handshake regardless of which physical node or IP address the pod occupies.
 </details>
 
-<details>
-<summary>5. How will CA/Browser Forum Ballot SC-081 impact enterprise PKI operations over the next three years?</summary>
+<details><summary>5. How will CA/Browser Forum Ballot SC-081 impact enterprise PKI operations over the next three years?</summary>
 
 Ballot SC-081 systematically reduces the maximum validity period of public TLS certificates:
 

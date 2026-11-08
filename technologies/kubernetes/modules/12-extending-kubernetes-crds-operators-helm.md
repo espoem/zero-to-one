@@ -550,37 +550,31 @@ spec:
 
 ---
 
-## 12. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. Why is enabling the `/status` subresource mandatory in production CRDs, and what happens when it is omitted?</strong></summary>
+<details><summary>1. Why is enabling the `/status` subresource mandatory in production CRDs, and what happens when it is omitted?</summary>
 
 Enabling the `/status` subresource provides three critical architectural guarantees:
 
 1. **Separation of Concerns & RBAC**: It creates a dedicated API endpoint (`.../customresources/NAME/status`). Administrators can grant developers write access to the resource (`spec`) while restricting status modifications strictly to the automated Operator ServiceAccount.
 2. **Preventing Race Conditions**: When `/status` is omitted, any user updating `.spec` accidentally overwrites the controller's `.status` conditions if they submit a stale YAML manifest.
 3. **Generation Increment Isolation**: Modifying `.spec` increments `metadata.generation`. Modifying `/status` does NOT increment generation. This allows the controller's reconciler to distinguish between user intent changes (which require action) and status updates (which should not re-trigger reconciliation).
-
 </details>
 
-<details>
-<summary><strong>Q2. How does `x-kubernetes-validations` (CEL) replace the need for admission webhooks in CRD design?</strong></summary>
+<details><summary>2. How does `x-kubernetes-validations` (CEL) replace the need for admission webhooks in CRD design?</summary>
 
 Historically, enforcing rules such as "field A must be less than field B" or "field C is immutable after creation" required building and deploying custom validating admission webhook servers. Webhooks introduced network overhead, latency, and single-point-of-failure risks.
 
 `x-kubernetes-validations` allows Common Expression Language (CEL) rules to be declared directly inside the CRD's OpenAPI v3 schema. The `kube-apiserver` compiles and evaluates these expressions in-process during standard schema validation, rejecting invalid requests instantly without network round-trips.
 </details>
 
-<details>
-<summary><strong>Q3. Explain the difference between an edge-triggered system and a level-triggered system in the context of Kubernetes Operators.</strong></summary>
+<details><summary>3. Explain the difference between an edge-triggered system and a level-triggered system in the context of Kubernetes Operators.</summary>
 
 - **Edge-Triggered**: The controller reacts to _state transitions_ (edges), such as "PodCreated" or "DiskDeleted", and receives the event payload. If the controller is offline or a network blip drops the event message, the system remains permanently out of sync.
 - **Level-Triggered**: The controller reacts to the _current level of state_ (observed reality vs desired declaration). The workqueue delivers only the key (`namespace/name`). The reconciler fetches the latest object from the cache, compares desired state with actual state, and executes idempotent actions to eliminate the delta. Even if 50 intermediate events are dropped, the next reconcile evaluates the absolute current state, ensuring eventual consistency.
-
 </details>
 
-<details>
-<summary><strong>Q4. What is a Finalizer in Kubernetes, and what sequence of events occurs when an object with a finalizer is deleted?</strong></summary>
+<details><summary>4. What is a Finalizer in Kubernetes, and what sequence of events occurs when an object with a finalizer is deleted?</summary>
 
 A finalizer (`metadata.finalizers`) is an asynchronous pre-delete hook used by controllers to clean up external dependencies (e.g., cloud storage volumes, DNS records) before an object is removed from `etcd`:
 
@@ -589,50 +583,26 @@ A finalizer (`metadata.finalizers`) is an asynchronous pre-delete hook used by c
 3. The Operator executes external cleanup operations (e.g., making AWS API calls).
 4. Once external cleanup succeeds, the Operator patches the object to remove its string from `metadata.finalizers`.
 5. When the finalizer list becomes empty, `kube-apiserver` permanently purges the object from `etcd`.
-
 </details>
 
-<details>
-<summary><strong>Q5. How does Kustomize's `secretGenerator` automate rolling updates of Deployments without using external tools?</strong></summary>
+<details><summary>5. How does Kustomize's `secretGenerator` automate rolling updates of Deployments without using external tools?</summary>
 
 Kustomize's `secretGenerator` calculates a cryptographic hash of the generated secret's data and appends that hash to the resource name (e.g., `db-secret-k7m9g2b4`). When referencing this secret in a Deployment manifest, Kustomize updates the Deployment's `volumeMounts` or `envFrom` to reference the newly hashed name.
 
 Because the Pod template specification changed (referencing a new Secret name), `kube-apiserver` detects a modification to `spec.template`, which increments `metadata.generation` and triggers a clean, automated rolling update of the Deployment's ReplicaSet.
 </details>
 
-<details>
-<summary><strong>Q6. In Helm 4, how are release metadata and state tracked, and how does this differ from Helm 2?</strong></summary>
+<details><summary>6. In Helm 4, how are release metadata and state tracked, and how does this differ from Helm 2?</summary>
 
 - **Helm 2**: Used **Tiller**, a centralized server-side pod running with `cluster-admin` privileges in `kube-system`. Tiller presented a major security vulnerability (any user with access to Tiller could bypass RBAC and take over the cluster).
 - **Helm 4**: Operates strictly client-side. There is zero server-side daemon. Helm interacts directly with `kube-apiserver` using the client's local credentials. Release state and revision history are stored as standard Kubernetes `Secret` objects in the target application namespace (`sh.helm.release.v1.<release>.v<revision>`), protected by native Kubernetes RBAC.
-
 </details>
 
-<details>
-<summary><strong>Q7. What is the role of the `SharedInformer` cache in `controller-runtime`, and why should an Operator never query `kube-apiserver` directly for GET/LIST requests?</strong></summary>
+<details><summary>7. What is the role of the `SharedInformer` cache in `controller-runtime`, and why should an Operator never query `kube-apiserver` directly for GET/LIST requests?</summary>
 
 A `SharedInformer` maintains a thread-safe, local in-memory cache of objects populated by a persistent HTTP/2 watch stream.
 
 If dozens of running Operator worker threads executed direct GET and LIST requests against `kube-apiserver` for every reconciliation pass, `kube-apiserver` and `etcd` would experience severe CPU exhaustion and serialization latency bottlenecks. The `SharedInformer` satisfies all read operations from local memory cache, reserving API server network traffic strictly for write mutations.
-</details>
-
-<details>
-<summary><strong>Q8. In the CKA exam, how do you override values in a Helm chart deployment without modifying the underlying `values.yaml` file?</strong></summary>
-
-You can override values using either individual `--set` flags or by supplying an external environment values file with `-f`:
-
-```bash
-# Using --set for specific scalar overrides
-helm install my-app oci://registry.example.com/charts/my-app \
-  --set replicaCount=5 \
-  --set image.tag=v2.1.0
-
-# Using an external values file to override multiple sections
-helm upgrade my-app oci://registry.example.com/charts/my-app \
-  -f values-production.yaml
-```
-
-CLI `--set` flags take highest precedence, followed by custom values files (`-f`), followed by the chart's internal default `values.yaml`.
 </details>
 
 ---

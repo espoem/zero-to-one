@@ -164,36 +164,29 @@ flowchart TD
 
 ---
 
-## 6. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-<details>
-<summary>1. Why does multi-threading in standard CPython fail to speed up CPU-bound programs?</summary>
+<details><summary>1. Why does multi-threading in standard CPython fail to speed up CPU-bound programs?</summary>
 
-**Answer:** Because of the Global Interpreter Lock (GIL). In standard CPython, only one native OS thread can hold the GIL and execute Python bytecode instructions at any given instant. When running a CPU-bound workload across multiple threads, the operating system distributes the threads across multiple CPU cores. However, only the single thread currently holding the GIL can execute; all other threads block waiting for the mutex. Furthermore, the threads continuously compete to acquire and release the lock at every switch interval ($5\text{ms}$), introducing thread-context-switching overhead that causes multi-threaded CPU-bound programs to run _slower_ than a single-threaded equivalent.
+Because of the Global Interpreter Lock (GIL). In standard CPython, only one native OS thread can hold the GIL and execute Python bytecode instructions at any given instant. When running a CPU-bound workload across multiple threads, the operating system distributes the threads across multiple CPU cores. However, only the single thread currently holding the GIL can execute; all other threads block waiting for the mutex. Furthermore, the threads continuously compete to acquire and release the lock at every switch interval ($5\text{ms}$), introducing thread-context-switching overhead that causes multi-threaded CPU-bound programs to run _slower_ than a single-threaded equivalent.
 </details>
 
-<details>
-<summary>2. Why does `multiprocessing` with the `fork` start method cause deadlocks in multi-threaded programs?</summary>
+<details><summary>2. Why does `multiprocessing` with the `fork` start method cause deadlocks in multi-threaded programs?</summary>
 
-**Answer:** The POSIX `fork()` system call duplicates the calling process's memory space via copy-on-write, but it duplicates **only the single thread that invoked `fork()`**; all other threads in the parent process disappear in the child. If any of those other threads held a lock (such as a database connection pool lock, a logging lock, or an internal memory allocator mutex) at the exact instant `fork()` was called, that lock remains marked as "acquired" in the child's memory. However, the thread that held the lock does not exist in the child and will never release it. The moment any code in the child process attempts to acquire that lock, the child process deadlocks permanently.
+The POSIX `fork()` system call duplicates the calling process's memory space via copy-on-write, but it duplicates **only the single thread that invoked `fork()`**; all other threads in the parent process disappear in the child. If any of those other threads held a lock (such as a database connection pool lock, a logging lock, or an internal memory allocator mutex) at the exact instant `fork()` was called, that lock remains marked as "acquired" in the child's memory. However, the thread that held the lock does not exist in the child and will never release it. The moment any code in the child process attempts to acquire that lock, the child process deadlocks permanently.
 </details>
 
-<details>
-<summary>3. What is the difference between Biased Reference Counting and traditional reference counting in free-threaded Python?</summary>
+<details><summary>3. What is the difference between Biased Reference Counting and traditional reference counting in free-threaded Python?</summary>
 
-**Answer:** Traditional reference counting modifies `ob_refcnt` using atomic CPU instructions (such as `LOCK XADD` on x86-64), which forces multi-core CPU caches to synchronize on every single reference increment or decrement, severely degrading multi-threaded scalability. Biased Reference Counting (BRC, PEP 703) assigns an "owner thread" to each object (the thread that allocated it). When the owner thread increments or decrements the reference count, it uses fast, non-atomic instructions without synchronization. When non-owning threads access the object, they update a secondary atomic reference counter. When the owner thread prepares to deallocate the object, it merges both counters. This eliminates 80–90% of atomic synchronization overhead on thread-local objects.
+Traditional reference counting modifies `ob_refcnt` using atomic CPU instructions (such as `LOCK XADD` on x86-64), which forces multi-core CPU caches to synchronize on every single reference increment or decrement, severely degrading multi-threaded scalability. Biased Reference Counting (BRC, PEP 703) assigns an "owner thread" to each object (the thread that allocated it). When the owner thread increments or decrements the reference count, it uses fast, non-atomic instructions without synchronization. When non-owning threads access the object, they update a secondary atomic reference counter. When the owner thread prepares to deallocate the object, it merges both counters. This eliminates 80–90% of atomic synchronization overhead on thread-local objects.
 </details>
 
-<details>
-<summary>4. Why does an operation like `counter += 1` require explicit locking even under the GIL?</summary>
+<details><summary>4. Why does an operation like `counter += 1` require explicit locking even under the GIL?</summary>
 
-**Answer:** Because `counter += 1` is not an atomic operation at the bytecode level. It decomposes into four discrete instructions: `LOAD_GLOBAL`, `LOAD_CONST`, `BINARY_OP`, and `STORE_GLOBAL`. If Thread 1 executes `LOAD_GLOBAL` (reading value 10) and is preempted by the CPython switch interval before executing `STORE_GLOBAL`, Thread 2 can run, read value 10, increment it, and store 11. When Thread 1 resumes, it adds 1 to its previously loaded value (10) and writes 11 back, silently overwriting Thread 2's update. The GIL guarantees only that individual CPython bytecode instructions do not corrupt memory; it does not protect multi-instruction application transactions.
+Because `counter += 1` is not an atomic operation at the bytecode level. It decomposes into four discrete instructions: `LOAD_GLOBAL`, `LOAD_CONST`, `BINARY_OP`, and `STORE_GLOBAL`. If Thread 1 executes `LOAD_GLOBAL` (reading value 10) and is preempted by the CPython switch interval before executing `STORE_GLOBAL`, Thread 2 can run, read value 10, increment it, and store 11. When Thread 1 resumes, it adds 1 to its previously loaded value (10) and writes 11 back, silently overwriting Thread 2's update. The GIL guarantees only that individual CPython bytecode instructions do not corrupt memory; it does not protect multi-instruction application transactions.
 </details>
 
-<details>
-<summary>5. How do Subinterpreters (PEP 734) differ from standard Multiprocessing?</summary>
-
-**Answer:**
+<details><summary>5. How do Subinterpreters (PEP 734) differ from standard Multiprocessing?</summary>
 
 - **Multiprocessing**: Spawns independent operating system processes. Each process has its own separate virtual memory address space. Sharing data requires serializing objects into byte streams (`pickle`) and passing them through IPC pipes or Unix domain sockets, which incurs significant CPU serialization overhead.
 - **Subinterpreters**: Run multiple isolated CPython interpreters within the **same** operating system process and address space. Each subinterpreter possesses its own isolated GIL and namespace, enabling concurrent multi-core execution without process boundaries. They communicate through in-memory communication channels and shared memory buffers, avoiding OS process IPC overhead.

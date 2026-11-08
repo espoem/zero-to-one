@@ -216,34 +216,29 @@ The maximum amount of flow passing from source $s$ to sink $t$ equals the minimu
 
 ---
 
-## 8. Interview Drill: Probabilistic Data Structures & Caches
+## Interview Drill
 
-<details>
-<summary>1. Why can a standard Bloom Filter never produce false negatives?</summary>
+<details><summary>1. Why can a standard Bloom Filter never produce false negatives?</summary>
 
 When an item is inserted, all $k$ hash function indices are unconditionally set to 1. If an item was truly inserted, every one of its $k$ hash indices must be 1. Therefore, if any of the $k$ queried bit positions contains a 0, the item could never have been inserted into the filter.
 </details>
 
-<details>
-<summary>2. How does an LFU Cache achieve O(1) time complexity for both get and put operations?</summary>
+<details><summary>2. How does an LFU Cache achieve O(1) time complexity for both get and put operations?</summary>
 
 It maintains a map from keys to nodes, and a secondary map from frequencies to doubly linked lists of nodes. A pointer `minFreq` tracks the smallest active frequency. When a node is accessed, it is removed from its current frequency list and added to frequency $+ 1$ in $O(1)$. When evicting, the tail node of `freqMap[minFreq]` is removed in $O(1)$, updating `minFreq` if necessary.
 </details>
 
-<details>
-<summary>3. Why are virtual nodes required in Consistent Hash Rings?</summary>
+<details><summary>3. Why are virtual nodes required in Consistent Hash Rings?</summary>
 
 In a standard ring with few physical nodes, random hash placement can leave large gaps on the ring, causing severe load imbalances where one physical node handles a disproportionate volume of keys. Virtual nodes assign dozens or hundreds of distinct ring tokens to each physical server, evenly interleaving their partitions across the ring according to the law of large numbers.
 </details>
 
-<details>
-<summary>4. What are the space and time advantages of Jump Consistent Hash over a Karger Hash Ring?</summary>
+<details><summary>4. What are the space and time advantages of Jump Consistent Hash over a Karger Hash Ring?</summary>
 
 Jump Consistent Hash requires zero memory ($O(1)$ space) because it does not maintain a ring topology or virtual node lookups in a binary search tree. It calculates the target bucket mathematically in $O(\ln k)$ time with optimal key distribution and minimal reassignment ($1/k$ keys moved when bucket count changes from $k - 1$ to $k$). However, it only supports adding/removing the highest-indexed bucket (no arbitrary node removal).
 </details>
 
-<details>
-<summary>5. In Reservoir Sampling, why does each element have an equal probability of k/N of being in the reservoir?</summary>
+<details><summary>5. In Reservoir Sampling, why does each element have an equal probability of k/N of being in the reservoir?</summary>
 
 By induction: For the $N$-th element, it is chosen with probability $k / N$. For any element already in the reservoir, its probability of remaining is: $$\mathbb{P}(\text{kept}) = 1 - \left( \frac{k}{N} \cdot \frac{1}{k} \right) = \frac{N - 1}{N}$$ Multiplying by its induction probability $\frac{k}{N-1}$ yields: $$\frac{k}{N-1} \cdot \frac{N-1}{N} = \frac{k}{N}$$ Thus all elements have identical probability $k / N$.
 </details>

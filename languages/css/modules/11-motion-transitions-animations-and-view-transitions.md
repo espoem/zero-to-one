@@ -249,39 +249,29 @@ The `prefers-reduced-motion` media query must always be implemented:
 
 ---
 
-## 6. Interview Drill: Motion & View Transitions
+## Interview Drill
 
-### Q1: Why did transitions on properties like `opacity` historically fail to animate when an element switched from `display: none` to `display: block`, and how does `@starting-style` resolve this?
-
-<details><summary>Answer</summary>
+<details><summary>1. Why did transitions on properties like `opacity` historically fail to animate when an element switched from `display: none` to `display: block`, and how does `@starting-style` resolve this?</summary>
 
 When an element transitions from `display: none`, it has no initial computed style box in the layout tree. In the single layout frame where `display: block` and `opacity: 1` are applied, the browser establishes the element's computed styles for both the start and target values simultaneously; having no prior rendered frame with `opacity: 0`, the engine cannot interpolate, causing the element to appear instantly. `@starting-style` defines an explicit set of initial values that the browser applies in the exact frame the element receives its display type, providing the starting baseline needed for the transition to interpolate.
 </details>
 
-### Q2: What is the purpose of `transition-behavior: allow-discrete`?
-
-<details><summary>Answer</summary>
+<details><summary>2. What is the purpose of `transition-behavior: allow-discrete`?</summary>
 
 In standard CSS, properties with discrete values (such as `display`, `visibility`, or `overlay`) cannot be transitioned; they swap values instantaneously. Setting `transition-behavior: allow-discrete` enables these properties to participate in transition timelines. For example, during an exit animation, `display` remains `block` throughout the transition duration and only flips to `none` at the very end of the animation, preventing the element from vanishing prematurely.
 </details>
 
-### Q3: What is the mechanical difference between `animation-timeline: scroll()` and `animation-timeline: view()`?
-
-<details><summary>Answer</summary>
+<details><summary>3. What is the mechanical difference between `animation-timeline: scroll()` and `animation-timeline: view()`?</summary>
 
 `scroll()` creates a Scroll Progress Timeline tied to the scroll offset of a scroll container (from 0% at the top to 100% at the bottom). In contrast, `view()` creates a View Progress Timeline tied to the relative position of a specific target element as it enters, traverses, and leaves the visible scrollport of its scroll container, making `view()` ideal for reveal-on-scroll effects and parallax elements.
 </details>
 
-### Q4: Why does having two elements on the same page with the same `view-transition-name` cause a view transition to abort?
-
-<details><summary>Answer</summary>
+<details><summary>4. Why does having two elements on the same page with the same `view-transition-name` cause a view transition to abort?</summary>
 
 The View Transitions specification mandates that every `view-transition-name` within a transition must resolve to an unambiguous 1-to-1 mapping between the outgoing state (`::view-transition-old`) and the incoming state (`::view-transition-new`). If the browser encounters duplicate `view-transition-name` values, it cannot determine which element should morph to which snapshot, resulting in an ambiguous state graph. To preserve deterministic behavior, the engine immediately aborts the view transition and updates the DOM synchronously without animation.
 </details>
 
-### Q5: How do Scroll-Driven Animations maintain 60fps/120fps performance even when the browser's JavaScript main thread is completely saturated?
-
-<details><summary>Answer</summary>
+<details><summary>5. How do Scroll-Driven Animations maintain 60fps/120fps performance even when the browser's JavaScript main thread is completely saturated?</summary>
 
 Traditional JavaScript scroll animations execute on the browser's main thread and are blocked whenever script execution or layout recalc runs. In contrast, CSS Scroll-Driven Animations link the scroll timeline directly to compositor properties (`transform`, `opacity`) inside the browser's GPU compositor process. The compositor reads hardware touch and wheel inputs and recalculates the animation timeline on the compositor thread without querying the main thread, resulting in silky-smooth motion immune to main-thread jank.
 </details>

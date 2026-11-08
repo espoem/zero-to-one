@@ -241,40 +241,31 @@ except* KeyError as eg:
 
 ---
 
-## 7. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-<details>
-<summary>1. What is the fundamental difference between an Iterable and an Iterator in Python?</summary>
-
-**Answer:**
+<details><summary>1. What is the fundamental difference between an Iterable and an Iterator in Python?</summary>
 
 - An **Iterable** is an object capable of returning its members one at a time. It implements `__iter__()` returning a new iterator object (e.g., `list`, `dict`, `set`, `str`). An iterable can be iterated over multiple times, each time producing an independent iterator starting from the beginning.
 - An **Iterator** is an active stateful stream object. It implements both `__next__()` (returning the next element or raising `StopIteration`) and `__iter__()` (returning `self`). An iterator represents a single traversal over an iterable: once exhausted, calling `next()` repeatedly raises `StopIteration`; it cannot be reset or rewound.
 
 </details>
 
-<details>
-<summary>2. Why does calling a generator function not execute the code inside it immediately?</summary>
+<details><summary>2. Why does calling a generator function not execute the code inside it immediately?</summary>
 
-**Answer:** During bytecode compilation, if CPython detects the `yield` or `yield from` keyword inside a function body, it flags the code object with `CO_GENERATOR`. When the function is invoked, CPython inspects the code object flags: noticing `CO_GENERATOR`, it does not create a standard evaluation frame on the call stack. Instead, it allocates a heap-resident `PyGenObject` wrapping the function's code object and arguments, and returns this generator immediately in the `GEN_CREATED` state. The function body begins executing only when the caller invokes `next(gen)` or `gen.send(None)`.
+During bytecode compilation, if CPython detects the `yield` or `yield from` keyword inside a function body, it flags the code object with `CO_GENERATOR`. When the function is invoked, CPython inspects the code object flags: noticing `CO_GENERATOR`, it does not create a standard evaluation frame on the call stack. Instead, it allocates a heap-resident `PyGenObject` wrapping the function's code object and arguments, and returns this generator immediately in the `GEN_CREATED` state. The function body begins executing only when the caller invokes `next(gen)` or `gen.send(None)`.
 </details>
 
-<details>
-<summary>3. What happens if a generator catches `GeneratorExit` and attempts to yield another value?</summary>
+<details><summary>3. What happens if a generator catches `GeneratorExit` and attempts to yield another value?</summary>
 
-**Answer:** When a generator is garbage collected or explicitly closed via `gen.close()`, CPython raises a `GeneratorExit` exception inside the suspended frame. The generator is permitted to catch this exception in a `try/finally` or `except GeneratorExit` block to perform cleanup (e.g., closing files, releasing locks). However, the contract of `close()` strictly forbids further value production. If the generator catches `GeneratorExit` and executes another `yield expr`, CPython detects this violation and raises `RuntimeError: generator ignored GeneratorExit`.
+When a generator is garbage collected or explicitly closed via `gen.close()`, CPython raises a `GeneratorExit` exception inside the suspended frame. The generator is permitted to catch this exception in a `try/finally` or `except GeneratorExit` block to perform cleanup (e.g., closing files, releasing locks). However, the contract of `close()` strictly forbids further value production. If the generator catches `GeneratorExit` and executes another `yield expr`, CPython detects this violation and raises `RuntimeError: generator ignored GeneratorExit`.
 </details>
 
-<details>
-<summary>4. How does `yield from` handle return values from subgenerators?</summary>
+<details><summary>4. How does `yield from` handle return values from subgenerators?</summary>
 
-**Answer:** When a generator contains `return val`, CPython terminates the generator by raising `StopIteration(val)`, storing the return value in the exception's `.value` attribute. When using `result = yield from subgenerator()`, the `yield from` protocol intercepts the `StopIteration` exception raised by the subgenerator, extracts the `.value` attribute, and assigns it to `result`. This allows subgenerators to yield intermediate streaming items while cleanly returning a final summary or status value to the delegating generator.
+When a generator contains `return val`, CPython terminates the generator by raising `StopIteration(val)`, storing the return value in the exception's `.value` attribute. When using `result = yield from subgenerator()`, the `yield from` protocol intercepts the `StopIteration` exception raised by the subgenerator, extracts the `.value` attribute, and assigns it to `result`. This allows subgenerators to yield intermediate streaming items while cleanly returning a final summary or status value to the delegating generator.
 </details>
 
-<details>
-<summary>5. How does `except*` differ from traditional `except` when handling an `ExceptionGroup`?</summary>
-
-**Answer:**
+<details><summary>5. How does `except*` differ from traditional `except` when handling an `ExceptionGroup`?</summary>
 
 - Traditional `except ExceptionType as e` checks the group as a single monolithic object. If the group matches, the single `except` block executes, and no other `except` blocks are evaluated.
 - `except* ExceptionType as eg` decomposes the `ExceptionGroup`. It extracts _all_ exceptions within the group matching `ExceptionType` and binds them as a new `ExceptionGroup` to `eg`. The remaining unhandled exceptions in the group are passed along to subsequent `except*` clauses. This allows multiple `except*` blocks to execute in the same `try` statement, handling heterogeneous concurrent errors independently while preserving full causal trace trees for any unhandled exceptions.

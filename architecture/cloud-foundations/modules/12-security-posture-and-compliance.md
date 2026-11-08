@@ -151,34 +151,29 @@ The policy-as-code guardrails blocking public S3 buckets and open SSH ingress on
 
 ---
 
-## 9. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-<details>
-<summary>1. What is the difference between a Key Management Service (KMS) and a Secrets Manager?</summary>
+<details><summary>1. What is the difference between a Key Management Service (KMS) and a Secrets Manager?</summary>
 
 A Key Management Service (KMS) manages the lifecycle of cryptographic root keys (generation, rotation, and authorization) backed by FIPS-validated Hardware Security Modules (HSMs). KMS never stores arbitrary plaintext secrets; it executes cryptographic operations (encrypt, decrypt, sign, verify). A Secrets Manager stores and retrieves arbitrary sensitive strings (such as database passwords, API tokens, and TLS private keys), encrypting them at rest with a KMS key and providing automated rotation scripts.
 </details>
 
-<details>
-<summary>2. Why are CloudTrail Data Events not enabled by default across all S3 buckets in an AWS account?</summary>
+<details><summary>2. Why are CloudTrail Data Events not enabled by default across all S3 buckets in an AWS account?</summary>
 
 Management events record control plane actions (e.g., creating a bucket, updating IAM policies) and are included by default. Data events record data plane operations (e.g., `s3:GetObject`, `s3:PutObject`, `lambda:Invoke`). In high-throughput architectures, data plane operations can reach billions of requests per day. Logging every single object read and write generates massive ingestion and storage bills ($0.10 per 100,000 events in CloudTrail). Therefore, data events must be enabled selectively on compliance-critical buckets.
 </details>
 
-<details>
-<summary>3. What is a "Data Perimeter" in cloud security architecture?</summary>
+<details><summary>3. What is a "Data Perimeter" in cloud security architecture?</summary>
 
 A Data Perimeter is a set of overarching guardrails (implemented via SCPs, Resource Control Policies, VPC endpoint policies, and network firewalls) that enforces three rules: (1) Only trusted identities (company employees and IAM roles) can access data; (2) Trusted identities can access only trusted resources (preventing employees from copying data to external personal AWS accounts); (3) Data can be accessed only from trusted network locations (corporate VPCs or VPNs).
 </details>
 
-<details>
-<summary>4. How does Policy-as-Code (such as OPA/Rego) improve security compared to detective cloud scanners?</summary>
+<details><summary>4. How does Policy-as-Code (such as OPA/Rego) improve security compared to detective cloud scanners?</summary>
 
 Detective cloud scanners (like AWS Config or Azure Policy Audit) evaluate resources _after_ deployment. If an engineer applies an insecure configuration (e.g., opening port 22 to `0.0.0.0/0`), the resource is live on the public internet for several minutes before the scanner detects it and alerts security. Policy-as-Code evaluates the declarative IaC plan (e.g., `terraform plan -out=plan.json`) inside the CI/CD pipeline _before_ deployment, rejecting non-compliant configurations with a failed build so the vulnerable resource is never provisioned.
 </details>
 
-<details>
-<summary>5. Explain how keyless container image signing (Cosign / Sigstore) protects Kubernetes production clusters.</summary>
+<details><summary>5. Explain how keyless container image signing (Cosign / Sigstore) protects Kubernetes production clusters.</summary>
 
 Keyless signing uses OpenID Connect (OIDC) to authenticate the CI/CD runner. When the pipeline builds an image, it requests an ephemeral cryptographic certificate tied to the repository and branch name from a public/private Sigstore CA (Fulcio), signs the image digest, and publishes the signature to an immutable transparency log (Rekor). When Kubernetes schedules the pod, an admission controller (e.g., Kyverno) intercepts the request and verifies that the image carries a cryptographic signature from the verified CI/CD identity. Unsigned or modified images are immediately rejected.
 </details>

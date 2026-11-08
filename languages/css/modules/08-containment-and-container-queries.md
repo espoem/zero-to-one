@@ -194,39 +194,29 @@ flowchart TD
 
 ---
 
-## 7. Interview Drill: Containment & Container Queries
+## Interview Drill
 
-### Q1: What is the "Self-Sizing Paradox" in CSS container queries, and how does the browser specification prevent it?
-
-<details><summary>Answer</summary>
+<details><summary>1. What is the "Self-Sizing Paradox" in CSS container queries, and how does the browser specification prevent it?</summary>
 
 If a container's size depended on the size of its children, and its children adjusted their size based on the container's size via container queries, the browser's layout engine would enter an infinite cyclic dependency loop. To prevent this, the specification mandates that setting `container-type: inline-size` applies strict inline-size containment: the container's width is calculated as if it had no children, requiring its width to be defined explicitly or dictated by its parent containing block. Additionally, elements are prohibited from querying themselves; they can only query ancestor containers.
 </details>
 
-### Q2: What happens if you place an element with `container-type: inline-size` inside an auto-width flex item without specifying a width or flex basis?
-
-<details><summary>Answer</summary>
+<details><summary>2. What happens if you place an element with `container-type: inline-size` inside an auto-width flex item without specifying a width or flex basis?</summary>
 
 The flex item will collapse to a width of `0px`. Because `container-type: inline-size` applies inline-size containment, the container cannot derive its intrinsic size from its children (its min-content and max-content widths become zero). In an auto-sizing flex context where the parent shrinks to fit the item's content, the parent sees a content width of zero, resulting in a zero-width element. The fix is ensuring the flex item stretches (`align-self: stretch` or `flex: 1`) or assigning an explicit width.
 </details>
 
-### Q3: How do Style Container Queries (`@container style(...)`) differ fundamentally from Size Container Queries?
-
-<details><summary>Answer</summary>
+<details><summary>3. How do Style Container Queries (`@container style(...)`) differ fundamentally from Size Container Queries?</summary>
 
 Size Container Queries require the ancestor element to explicitly declare `container-type` (such as `inline-size` or `size`), which introduces size containment and isolates layout. In contrast, Style Container Queries evaluate the computed values of CSS custom properties (e.g. `@container style(--theme: dark)`). Style queries require no `container-type` declaration and do not apply size containment; every element in the DOM tree automatically acts as a style container for its descendants.
 </details>
 
-### Q4: Why is `contain-intrinsic-size` mandatory when applying `content-visibility: auto` to elements in a scrollable list?
-
-<details><summary>Answer</summary>
+<details><summary>4. Why is `contain-intrinsic-size` mandatory when applying `content-visibility: auto` to elements in a scrollable list?</summary>
 
 When an element with `content-visibility: auto` scrolls out of the viewport, the browser completely skips layout and painting for its subtree, causing the element's rendered height to collapse to `0px`. Without an intrinsic size placeholder, collapsing thousands of off-screen items drastically shortens the total scrollable height of the page, causing the scrollbar to violently jump, resize, and miscalculate scroll offsets. `contain-intrinsic-size` assigns a reserved virtual placeholder height to off-screen elements, preserving stable scrollbar dimensions.
 </details>
 
-### Q5: Can an element query a specific named container rather than the immediate nearest container ancestor?
-
-<details><summary>Answer</summary>
+<details><summary>5. Can an element query a specific named container rather than the immediate nearest container ancestor?</summary>
 
 Yes. An ancestor can assign a container name using `container-name: <name>`. When writing container queries, specifying `@container <name> (<condition>)` instructs the selector engine to bypass any intermediate anonymous containers and match specifically against the named ancestor container.
 </details>

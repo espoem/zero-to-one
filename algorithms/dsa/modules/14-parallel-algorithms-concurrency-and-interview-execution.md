@@ -201,28 +201,24 @@ In live coding interviews, many candidates choose Python for concise standard li
 
 ---
 
-## 5. Interview Drill: Parallelism & Interview Execution
+## Interview Drill
 
-<details>
-<summary>1. In the Work-Span model, what does it mean if an algorithm has Work T_1 = O(n log n) and Span T_infinity = O(log n)?</summary>
+<details><summary>1. In the Work-Span model, what does it mean if an algorithm has Work T_1 = O(n log n) and Span T_infinity = O(log n)?</summary>
 
 It means that running on a single processor, the algorithm performs $O(n \log n)$ total operations. On an idealized machine with infinite processors, the longest chain of dependent operations can be finished in $O(\log n)$ parallel steps. The parallelism is: $$P = \frac{T_1}{T_\infty} = \frac{O(n \log n)}{O(\log n)} = O(n)$$ According to Brent's Theorem, on $p$ cores, it achieves near-linear speedup as long as $p \ll n$.
 </details>
 
-<details>
-<summary>2. How does the ABA problem occur in lock-free concurrent programming, and how is it resolved?</summary>
+<details><summary>2. How does the ABA problem occur in lock-free concurrent programming, and how is it resolved?</summary>
 
 Thread 1 reads pointer $A$ and is preempted. Thread 2 pops $A$, pushes $B$, and pushes $A$ back onto the stack. When Thread 1 wakes up, it runs CAS comparing current pointer with $A$. The comparison succeeds, but internal data structures referenced by $A$ may have been freed, reused, or modified. It is resolved using **tagged/versioned pointers** where each pointer is paired with a monotonically incrementing counter `(ptr, counter)`. Double-width CAS fails because the version number changed from $v \to v + 2$.
 </details>
 
-<details>
-<summary>3. Why is queue.shift() in JavaScript an anti-pattern during a technical coding interview?</summary>
+<details><summary>3. Why is queue.shift() in JavaScript an anti-pattern during a technical coding interview?</summary>
 
 In JavaScript, standard arrays are backed by contiguous memory vectors. `array.shift()` removes the first element and shifts all remaining $n - 1$ elements one index to the left in memory, taking $O(n)$ time. In a BFS traversal visiting $V$ vertices and $E$ edges, using `queue.shift()` degrades total running time from $O(V + E)$ to quadratic $O(V^2 + E)$, causing large test cases to time out. Candidates must use an index pointer (`let head = 0`) or a circular ring buffer deque.
 </details>
 
-<details>
-<summary>4. What are the five boundary edge cases every candidate should test during the Review phase of UMPIRE?</summary>
+<details><summary>4. What are the five boundary edge cases every candidate should test during the Review phase of UMPIRE?</summary>
 
 1. **Empty input / Zero bounds**: `nums = []`, `k = 0`, `root = null`.
 2. **Single element**: `nums = [1]`, single-node tree or graph.
@@ -232,8 +228,7 @@ In JavaScript, standard arrays are backed by contiguous memory vectors. `array.s
 
 </details>
 
-<details>
-<summary>5. When should you use a Python tuple vs a JavaScript string when storing coordinates in a Set or Map?</summary>
+<details><summary>5. When should you use a Python tuple vs a JavaScript string when storing coordinates in a Set or Map?</summary>
 
 In Python, tuples `(r, c)` are immutable and natively hashable by value, allowing direct usage in `set()` or `dict()`. In JavaScript, objects and arrays are compared strictly by reference identity (`[1, 2] !== [1, 2]`), so `set.has([1, 2])` is always `false`. In JavaScript, coordinates must either be encoded as strings (`` `${r},${c}` ``) or packed into a single numeric index (`r * numCols + c`), which avoids string allocation overhead.
 </details>

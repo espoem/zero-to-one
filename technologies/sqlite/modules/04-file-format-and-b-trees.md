@@ -352,7 +352,7 @@ The file format itself has not changed incompatibly since 3.0.0. Newer features 
 
 ---
 
-## 12. Interview Drill
+## Interview Drill
 
 <details><summary>1. Why is a rowid table a B+tree but an index a B-tree, and what does that cost?</summary>
 
@@ -387,14 +387,4 @@ When the file must give space back (mobile apps, embedded devices) but you want 
 <details><summary>7. How do you find which table or index is using the most space?</summary>
 
 Query the `dbstat` virtual table grouped by `name` for pages, payload and unused bytes, or run `.diskused` in the 3.54 CLI (which replaces `sqlite3_analyzer`). Compare `PRAGMA freelist_count` against `page_count` for reclaimable space.
-</details>
-
-<details><summary>8. What is the lock-byte page, and why does it exist?</summary>
-
-The page that contains byte offset 2³⁰ (1 GiB). SQLite never stores data there because the locking protocol takes byte-range locks in that region, and Windows enforces mandatory locks that would block reads and writes of the bytes. Only files larger than 1 GiB have it.
-</details>
-
-<details><summary>9. Why are monotonically increasing <code>INTEGER PRIMARY KEY</code> inserts faster than random UUID keys?</summary>
-
-New rows always go to the right-most leaf. SQLite's balance-quick path handles a full right-most leaf by starting a new page instead of splitting and redistributing, so pages stay full and writes stay local. Random keys land anywhere, splitting half-full pages throughout the tree, which costs more page writes, more journal or WAL traffic, and a lower cache hit rate.
 </details>

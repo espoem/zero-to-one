@@ -499,46 +499,39 @@ default:
 
 ---
 
-## 11. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. What is the fundamental latency difference between synchronous stages and an asynchronous DAG in GitLab CI?</strong></summary>
+<details><summary>1. What is the fundamental latency difference between synchronous stages and an asynchronous DAG in GitLab CI?</summary>
 
 In a synchronous stage model, every stage acts as a global barrier: all jobs in stage $s_i$ must terminate successfully before any job in stage $s_{i+1}$ can be scheduled. The duration of each stage is determined by its slowest job (the straggler), and total pipeline latency is the sum of these stage maxima ($\sum \max \tau(j)$). In an asynchronous DAG pipeline configured with `needs:`, job scheduling is governed by individual causal dependencies. A job in a downstream stage begins the instant its specific prerequisite jobs finish, bypassing the stage barrier. The total pipeline duration is reduced to the critical path length of the graph, eliminating idle runner time caused by unrelated slow jobs.
 </details>
 
-<details>
-<summary><strong>Q2. How does setting `needs: []` alter the execution order of a job in GitLab CI?</strong></summary>
+<details><summary>2. How does setting `needs: []` alter the execution order of a job in GitLab CI?</summary>
 
 Setting `needs: []` (an empty array) signals to the pipeline compiler that the job has zero causal dependencies anywhere in the pipeline. It completely detaches the job from its assigned stage. The job transitions to the `pending` state immediately upon pipeline creation, running concurrently with jobs in the very first stage (`build`), even if the job itself is assigned to `deploy` or `cleanup`. Furthermore, `needs: []` prevents the job from downloading any artifacts from previous stages.
 </details>
 
-<details>
-<summary><strong>Q3. Explain the difference between GitLab CI Artifacts and Caches in terms of storage, consistency, and lifecycle.</strong></summary>
+<details><summary>3. Explain the difference between GitLab CI Artifacts and Caches in terms of storage, consistency, and lifecycle.</summary>
 
 Artifacts are designed for guaranteed, deterministic inter-job communication and permanent build output archival. They are uploaded to GitLab object storage, tracked in PostgreSQL, downloadable via the GitLab Web UI/API, and protected by strict consistency (if an artifact upload fails, the job fails). In contrast, Cache is an ephemeral optimization designed to speed up builds across runs (e.g., storing package directories like `node_modules`). Cache is stored in an S3/MinIO bucket on the runner, operates on best-effort consistency (a cache upload/download failure never halts a job), can be expired or evicted at any time, and is not accessible via the GitLab UI.
 </details>
 
-<details>
-<summary><strong>Q4. How does the 10-tier variable precedence hierarchy resolve conflicts between `.gitlab-ci.yml` variables and Project CI/CD settings variables?</strong></summary>
+<details><summary>4. How does the 10-tier variable precedence hierarchy resolve conflicts between `.gitlab-ci.yml` variables and Project CI/CD settings variables?</summary>
 
 Variables defined in the project settings (`Settings > CI/CD > Variables`, Tier 4) have higher precedence than variables declared inside the `.gitlab-ci.yml` file (`variables:` in YAML, Tier 7 for global and Tier 8 for job-level). If a variable `DATABASE_URL` is set to `postgres://prod` in project settings and defined as `postgres://dev` in `.gitlab-ci.yml`, the job receives `postgres://prod`. However, manual pipeline runs via the Web UI (Tier 3) or trigger tokens via API (Tier 1) take precedence over project settings variables, allowing operators to override configuration for custom runs.
 </details>
 
-<details>
-<summary><strong>Q5. What is a "Semantic Merge Conflict," and how do Merge Trains prevent it?</strong></summary>
+<details><summary>5. What is a "Semantic Merge Conflict," and how do Merge Trains prevent it?</summary>
 
 A semantic merge conflict occurs when two concurrent branches merge cleanly at the Git text level without syntax conflict markers, but the combination of their changes breaks code compilation or test invariants (e.g., one branch modifies a function's required parameters while another branch adds a call to that function using the old parameters). Traditional CI runs tests only on the feature branch in isolation. Merge Trains eliminate this by executing speculative integration pipelines: each Merge Request is queued in a train and tested against an ephemeral ref representing the target branch plus all preceding Merge Requests in the train ($C_0 \oplus \text{MR}_1 \oplus \text{MR}_2$). If tests fail, the offending MR is dropped from the train, preventing broken states from ever landing on `main`.
 </details>
 
-<details>
-<summary><strong>Q6. Why must `rules:changes` be used with extreme caution on branch pipelines compared to merge request pipelines?</strong></summary>
+<details><summary>6. Why must `rules:changes` be used with extreme caution on branch pipelines compared to merge request pipelines?</summary>
 
 In Merge Request pipelines (`CI_PIPELINE_SOURCE == "merge_request_event"`), GitLab automatically compares the MR source branch against the target branch tip (`refs/heads/main`). `rules:changes` inspects the entire cumulative diff of the feature. However, in a standard branch push pipeline (`CI_PIPELINE_SOURCE == "push"`), GitLab defaults to comparing the pushed commit against its immediate parent commit (`HEAD~1`). If a developer pushes a branch containing multiple commits, or if a branch is pushed for the first time without a parent reference, `rules:changes` may evaluate against only the latest single commit, leading to jobs being unexpectedly skipped. To fix this, engineers must explicitly define `compare_to: "refs/heads/main"`.
 </details>
 
-<details>
-<summary><strong>Q7. What are the constraints for masking a variable in GitLab CI, and how do you handle complex secrets like private keys?</strong></summary>
+<details><summary>7. What are the constraints for masking a variable in GitLab CI, and how do you handle complex secrets like private keys?</summary>
 
 To be masked in job console logs, a variable must: (1) be a single line containing no newlines or carriage returns, (2) have a minimum length of 8 characters, and (3) consist exclusively of Base64-compatible characters (`[a-zA-Z0-9_+=/@:.~-]`). Multi-line secrets (such as PEM RSA/Ed25519 private keys or complex JSON service account files) cannot be masked natively. To secure them, engineers must either: store them as **File-type Variables** (which GitLab injects as a temporary file path rather than an environment variable, preventing accidental shell echo), base64-encode the payload, or authenticate via keyless OpenID Connect (OIDC) tokens.
 </details>

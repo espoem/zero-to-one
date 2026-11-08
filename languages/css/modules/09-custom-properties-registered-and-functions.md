@@ -169,39 +169,29 @@ The **CSS Functions and Mixins Module Level 1** standardizes custom author-defin
 
 ---
 
-## 6. Interview Drill: Custom Properties & Functions
+## Interview Drill
 
-### Q1: What is the "Invalid at Computed-Value Time" (IACVT) rule, and why does `color: var(--missing, bad-value)` cause an element to inherit its parent's color instead of using a previous CSS rule?
-
-<details><summary>Answer</summary>
+<details><summary>1. What is the "Invalid at Computed-Value Time" (IACVT) rule, and why does `color: var(--missing, bad-value)` cause an element to inherit its parent's color instead of using a previous CSS rule?</summary>
 
 Because CSS custom property syntax allows arbitrary token streams, the browser cannot validate whether a variable is semantically valid for a property during initial parsing. The declaration containing `var()` wins the cascade based on normal specificity. During the computed-value phase, when the variable is substituted and found to be invalid, the cascade has already executed; the engine cannot backtrack to earlier declarations. By specification, the declaration is treated as `unset`, which causes inherited properties (like `color`) to inherit from their parent, or non-inherited properties (like `background`) to revert to their initial value.
 </details>
 
-### Q2: Why is it impossible to animate a standard custom property `--angle: 0deg` to `--angle: 360deg` without using the `@property` API?
-
-<details><summary>Answer</summary>
+<details><summary>2. Why is it impossible to animate a standard custom property `--angle: 0deg` to `--angle: 360deg` without using the `@property` API?</summary>
 
 Without `@property`, the browser treats custom properties as raw, untyped strings of CSS tokens. The animation and transition subsystem has no knowledge that `"0deg"` represents an angular geometric quantity rather than arbitrary text; it cannot calculate intermediate mathematical interpolation frames between string tokens. Registering the property with `syntax: "<angle>"` provides the engine with semantic type metadata, enabling the interpolation engine to compute smooth numerical transitions from 0 to 360 degrees.
 </details>
 
-### Q3: What happens if two different third-party component libraries declare an `@property` rule for the same variable name `--accent` with conflicting syntax?
-
-<details><summary>Answer</summary>
+<details><summary>3. What happens if two different third-party component libraries declare an `@property` rule for the same variable name `--accent` with conflicting syntax?</summary>
 
 Registered custom properties share a single global registration namespace in the document. The specification dictates a "first registration wins" rule: the first `@property --accent` definition parsed by the browser becomes active, and all subsequent `@property --accent` declarations are discarded and ignored. This can cause the second component library to malfunction if it expected a different syntax or initial value.
 </details>
 
-### Q4: If an `@property` definition sets `inherits: false`, how does that affect child elements accessing that custom property?
-
-<details><summary>Answer</summary>
+<details><summary>4. If an `@property` definition sets `inherits: false`, how does that affect child elements accessing that custom property?</summary>
 
 When `inherits: false` is declared, the custom property behaves like a non-inherited property (similar to `border` or `padding`). It is only available directly on the specific element where it is explicitly declared. Child descendants will NOT inherit the value from parent elements; if a child accesses `var(--prop)`, it receives the registered `initial-value` rather than the parent's value.
 </details>
 
-### Q5: How does a native `@function` differ from a Sass function?
-
-<details><summary>Answer</summary>
+<details><summary>5. How does a native `@function` differ from a Sass function?</summary>
 
 A Sass function executes once during the build step on a development machine or CI pipeline, baking a static evaluated value into the output CSS file. It cannot inspect runtime variables, viewport sizes, or dynamic user states. In contrast, a native CSS `@function` executes dynamically inside the browser engine during the style computation phase; it can accept runtime custom properties, calculate dynamic viewport-relative math, and react in real-time to DOM changes.
 </details>

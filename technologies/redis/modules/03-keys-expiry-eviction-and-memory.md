@@ -346,7 +346,7 @@ Migration advice: when moving a cache from LRU to LFU on a live server, switch w
 
 ---
 
-## 8. Interview Drill
+## Interview Drill
 
 <details><summary>1. How does Redis expire keys? Can an expired key still use memory?</summary>
 
@@ -381,24 +381,4 @@ A Morris-style probabilistic counter: increment with probability $1/((c-5)\cdot 
 <details><summary>7. What do `mem_fragmentation_ratio` 0.8 and 2.3 tell you?</summary>
 
 0.8: RSS is less than allocated memory, so pages are swapped out; latency will be terrible; fix memory pressure immediately. 2.3: heavy fragmentation (or a small dataset with a large baseline); consider `activedefrag yes` or rotating instances.
-</details>
-
-<details><summary>8. A key's TTL disappeared after a deploy. What likely happened?</summary>
-
-New code overwrote it with plain `SET` (which clears the TTL) instead of `SET … KEEPTTL` or `SET … EX`. `INCR`/`HSET`-style in-place modifications keep TTLs; `SET`/`GETSET` replace the value and drop it.
-</details>
-
-<details><summary>9. Writes fail with OOM under `allkeys-lru`, yet `evicted_keys` is climbing. How is that possible, and what do you change?</summary>
-
-Eviction has a per-call time budget, `maxmemory-eviction-tenacity` (default 10, which is 500 µs). Under a burst of large writes the loop can evict keys all budget long and still be over the limit; the command then fails or a background timer continues the work. Raise the tenacity (each step is about 15 % more time above 10) at the cost of write latency, add headroom (`maxmemory` closer to 70 % of RAM so a burst does not outrun the evictor), reduce the size of single writes, and turn on `lazyfree-lazy-eviction` so that evicting a big value is cheap. Also check the three situations in which eviction is skipped entirely: a script past its time limit, a load in progress, and a client pause.
-</details>
-
-<details><summary>10. How would you prove that your LFU configuration tracks what you think it tracks?</summary>
-
-Set `lfu-log-factor 0` on a throwaway server: the counter becomes exactly 5 plus the number of reads, so `OBJECT FREQ` is a deterministic oracle for "was this key touched" (the track's integration test does exactly that, and shows `OBJECT` does not touch the key). Then restore the factor and use the closed form $E[H_c] = f(c-5)(c-6)/2 + (c-5)$ to translate a counter into an expected access count, remembering that the decay is applied lazily when the counter is read.
-</details>
-
-<details><summary>11. What can you learn about key sizes from the server itself, without `SCAN`?</summary>
-
-On 8.0+ `INFO keysizes` returns power-of-two histograms per database and type: value length for strings and element counts for lists, sets, sorted sets and hashes. On 8.6+ enabling `key-memory-histograms` adds memory-size histograms. They are maintained incrementally, so the call is cheap and always current; they identify the size class of the largest keys but not their names, so the follow-up is `SCAN … TYPE` with `MEMORY USAGE` on candidates.
 </details>

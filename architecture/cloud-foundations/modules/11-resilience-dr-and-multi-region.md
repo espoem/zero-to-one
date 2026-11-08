@@ -148,34 +148,29 @@ The shuffle sharding combinatorial calculations, deterministic customer node ass
 
 ---
 
-## 9. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-<details>
-<summary>1. How does Shuffle Sharding reduce the blast radius of a "poison pill" tenant compared to standard round-robin load balancing?</summary>
+<details><summary>1. How does Shuffle Sharding reduce the blast radius of a "poison pill" tenant compared to standard round-robin load balancing?</summary>
 
 In standard round-robin load balancing across 8 nodes, a poison pill tenant that crashes every node it touches will eventually be routed to all 8 nodes, knocking the entire cluster offline and impacting 100% of tenants. In shuffle sharding with a shard size of 2, the tenant is restricted to a deterministic combination of 2 nodes ($\binom{8}{2} = 28$ possible virtual shards). When the poison pill crashes its 2 assigned nodes, only customers assigned to that exact same combination are affected ($1/28 \approx 3.57\%$). The remaining 6 nodes continue serving the other 96.4% of tenants with zero disruption.
 </details>
 
-<details>
-<summary>2. Why can relying on control-plane API calls during a disaster recovery failover cause secondary failover collapse?</summary>
+<details><summary>2. Why can relying on control-plane API calls during a disaster recovery failover cause secondary failover collapse?</summary>
 
 During a major Availability Zone or regional incident, thousands of cloud customers experience failures simultaneously. If a disaster recovery plan requires calling control-plane APIs (e.g., creating 50 new EC2 instances, provisioning new EBS volumes, or modifying IAM policies), these APIs face massive rate-limiting (throttling) and backend capacity exhaustion. Statically stable architectures pre-provision standby compute and pre-configure IAM policies and DNS routing controls in advance, ensuring that failovers operate purely on the data plane without issuing a single control-plane API call.
 </details>
 
-<details>
-<summary>3. Contrast the Pilot Light disaster recovery strategy with the Warm Standby strategy in terms of cost and RTO.</summary>
+<details><summary>3. Contrast the Pilot Light disaster recovery strategy with the Warm Standby strategy in terms of cost and RTO.</summary>
 
 In a Pilot Light strategy, critical database state is continuously replicated to the secondary region, but the application compute fleet is scaled to zero (idle). It has low ongoing infrastructure costs, but has an RTO of 15–45 minutes because virtual machines or container clusters must be spun up and booted before traffic can be served. In a Warm Standby strategy, a scaled-down but fully functional version of the entire application fleet runs 24/7 in the secondary region. It costs more, but achieves an RTO of 2–5 minutes because the fleet is already warm and only needs to autoscale upward to handle the incoming load.
 </details>
 
-<details>
-<summary>4. What is a Cell-Based Architecture, and why does it set a hard ceiling on maximum cell size?</summary>
+<details><summary>4. What is a Cell-Based Architecture, and why does it set a hard ceiling on maximum cell size?</summary>
 
 A Cell-Based Architecture breaks a large distributed system into independent, self-contained, isolated mini-stacks (cells), each containing its own web, compute, and database resources without cross-cell state dependencies. It sets a hard maximum cell size (e.g., 2,500 tenants) to permanently cap the maximum possible blast radius of any bug, operational error, or database corruption. When the business expands, instead of scaling existing cells into complex, fragile monoliths, engineers provision additional independent cells.
 </details>
 
-<details>
-<summary>5. What is Chaos Engineering, and why should it be executed in production environments?</summary>
+<details><summary>5. What is Chaos Engineering, and why should it be executed in production environments?</summary>
 
 Chaos Engineering is the discipline of experimenting on a system to build confidence in the system's capability to withstand turbulent conditions in production. It proactively injects controlled failures (such as killing database instances, severing network connections between AZs, or adding synthetic latency) into staging and production. It is executed in production because staging environments rarely replicate real-world production traffic volumes, network topologies, third-party latencies, and data distributions.
 </details>

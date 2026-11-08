@@ -199,39 +199,29 @@ When an ancestor element declares `container-type: inline-size` or `size`, its c
 
 ---
 
-## 6. Interview Drill: Value Processing & Units
+## Interview Drill
 
-### Q1: What is the exact difference between a property's "Computed Value" and its "Used Value"?
-
-<details><summary>Answer</summary>
+<details><summary>1. What is the exact difference between a property's "Computed Value" and its "Used Value"?</summary>
 
 The Computed Value is determined during the style calculation phase prior to layout; relative units like `rem` and `em` are converted to absolute pixels, and keywords like `inherit` are resolved. The Used Value is calculated during the subsequent layout phase when geometry is computed; properties that depend on containing block dimensions (such as percentages on `width`, `height`, or `margin-inline: auto`) can only be resolved to final pixel lengths once the box tree layout is finalized.
 </details>
 
-### Q2: Why does `window.getComputedStyle(element).width` return `"300px"` even if the stylesheet declares `width: 50%`?
-
-<details><summary>Answer</summary>
+<details><summary>2. Why does `window.getComputedStyle(element).width` return `"300px"` even if the stylesheet declares `width: 50%`?</summary>
 
 According to the CSSOM specification, `getComputedStyle()` does not return the strict Computed Value for all properties. For layout-dependent properties (including `width`, `height`, `left`, and `top`), it returns the "Resolved Value", which is defined as the Used Value (the final pixel width after layout computation). To inspect the author's declared value string, one must read the element's style attribute (`element.style.width`) or inspect the matching CSSOM rule.
 </details>
 
-### Q3: On mobile web browsers, what layout bug occurs when using `height: 100vh`, and how do `100svh` and `100dvh` resolve it?
-
-<details><summary>Answer</summary>
+<details><summary>3. On mobile web browsers, what layout bug occurs when using `height: 100vh`, and how do `100svh` and `100dvh` resolve it?</summary>
 
 The legacy `100vh` unit is calculated based on the maximum screen height where browser URL bars and toolbars are completely hidden. When the page initially loads with the toolbar visible, the bottom portion of a `100vh` element is covered by the browser chrome, cutting off call-to-action buttons. `100svh` evaluates the viewport height when the toolbar is fully expanded, ensuring content is never clipped. `100dvh` scales dynamically as the user scrolls and the address bar retracts.
 </details>
 
-### Q4: When would an engineer use the `lh` unit instead of `em`?
-
-<details><summary>Answer</summary>
+<details><summary>4. When would an engineer use the `lh` unit instead of `em`?</summary>
 
 The `em` unit is relative to the element's `font-size`, whereas the `lh` unit is relative to the element's computed `line-height`. When implementing a vertical rhythm or baseline grid, sizing icons, vertical margins, or input heights using `1lh` guarantees that the component matches the exact vertical height of a single line of text, preventing misalignments regardless of line-height scaling.
 </details>
 
-### Q5: In the calculation `clamp(1rem, 5vw, 3rem)`, under what exact viewport width will the element's size begin to grow larger than `1rem` (assuming `1rem = 16px`)?
-
-<details><summary>Answer</summary>
+<details><summary>5. In the calculation `clamp(1rem, 5vw, 3rem)`, under what exact viewport width will the element's size begin to grow larger than `1rem` (assuming `1rem = 16px`)?</summary>
 
 The value `5vw` will exceed `1rem` (16px) when $5\% \times \text{viewport width} > 16\text{px}$. Solving for viewport width: $\text{width} > 16 / 0.05 = 320\text{px}$. Therefore, on viewports narrower than 320px, the clamp clamps to the minimum bound of 1rem (16px); between 320px and 960px ($3 \times 16 / 0.05$), it scales dynamically with `5vw`; above 960px, it clamps to the maximum bound of 3rem (48px).
 </details>

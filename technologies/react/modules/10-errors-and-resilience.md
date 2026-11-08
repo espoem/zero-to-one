@@ -165,44 +165,39 @@ Practical consequences: put an error boundary **inside** pre-rendered `<Activity
 
 ---
 
-## 9. Interview Drill
+## Interview Drill
 
-<details><summary><strong>1. What do error boundaries catch, and what don't they catch?</strong></summary>
+<details><summary>1. What do error boundaries catch, and what don't they catch?</summary>
 
 They catch errors thrown while rendering, in lifecycle methods, effects and ref callbacks of their descendants (including rejected promises read with `use`). They don't catch errors in event handlers, asynchronous code (timers, after `await`), server rendering, or in the boundary itself.
 </details>
 
-<details><summary><strong>2. Why does React unmount the tree on an uncaught render error instead of keeping the last UI?</strong></summary>
+<details><summary>2. Why does React unmount the tree on an uncaught render error instead of keeping the last UI?</summary>
 
 Because a stale or partially updated UI can be dangerously wrong (showing incorrect data that users act on). An explicit failure is safer; boundaries let you limit how much is unmounted.
 </details>
 
-<details><summary><strong>3. Why <code>getDerivedStateFromError</code> and <code>componentDidCatch</code> both?</strong></summary>
+<details><summary>3. Why <code>getDerivedStateFromError</code> and <code>componentDidCatch</code> both?</summary>
 
 The first runs during render and must be pure — it only computes fallback state. The second runs in commit and is for side effects such as logging, and receives the component stack.
 </details>
 
-<details><summary><strong>4. What are <code>onCaughtError</code>, <code>onUncaughtError</code> and <code>onRecoverableError</code>?</strong></summary>
+<details><summary>4. What are <code>onCaughtError</code>, <code>onUncaughtError</code> and <code>onRecoverableError</code>?</summary>
 
 React 19 root options for centralised reporting: errors handled by a boundary, errors with no boundary (root unmounted), and errors React recovered from itself (hydration mismatch → client render, a concurrent render that succeeded on synchronous retry). Defaults are `console.error` and `reportError`.
 </details>
 
-<details><summary><strong>5. How do you show an error boundary for a failed fetch in an event handler?</strong></summary>
+<details><summary>5. How do you show an error boundary for a failed fetch in an event handler?</summary>
 
 Catch it and either render an error state locally, or forward it into rendering with `setState(() => { throw error; })` (what `showBoundary` in react-error-boundary does), so the nearest boundary catches it.
 </details>
 
-<details><summary><strong>6. How do you reset an error boundary on navigation?</strong></summary>
+<details><summary>6. How do you reset an error boundary on navigation?</summary>
 
 Give it `key={pathname}` (remount) or implement `resetKeys` by comparing a prop in `getDerivedStateFromProps` and clearing the error. Combine with fixing the cause (cache invalidation) or the error will recur.
 </details>
 
-<details><summary><strong>7. What changed for errors inside <code>&lt;Activity mode="hidden"&gt;</code> in 19.3?</strong></summary>
+<details><summary>7. What changed for errors inside <code>&lt;Activity mode="hidden"&gt;</code> in 19.3?</summary>
 
 Errors in hidden content no longer escape to outer boundaries while hidden; the error surfaces when the content becomes visible. Before, a hidden pre-rendered screen could trigger a visible fallback.
-</details>
-
-<details><summary><strong>8. Where would you place error boundaries in a dashboard app?</strong></summary>
-
-At the app shell (last resort with reporting), per route (reset on navigation), and per independent widget/third-party embed, usually paired with each Suspense boundary so that loading and failure regions coincide.
 </details>

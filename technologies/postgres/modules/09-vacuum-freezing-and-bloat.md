@@ -215,57 +215,37 @@ It rebuilds the relation and its indexes in the background using logical decodin
 
 ---
 
-## 9. Interview Drill
+## Interview Drill
 
-<details>
-<summary>1. Explain the Heap-Only Tuple (HOT) optimization. What are its two requirements, and how do you configure a table to maximize HOT?</summary>
+<details><summary>1. Explain the Heap-Only Tuple (HOT) optimization. What are its two requirements, and how do you configure a table to maximize HOT?</summary>
 
-**Answer**: HOT eliminates write amplification caused by `UPDATE`s on tables with secondary indexes. Normally, every update creates a new tuple and adds a new entry pointing to it across every index on the table. With HOT:
+HOT eliminates write amplification caused by `UPDATE`s on tables with secondary indexes. Normally, every update creates a new tuple and adds a new entry pointing to it across every index on the table. With HOT:
 
 1. The new tuple version is placed on the **exact same 8KB page** as the previous version.
 2. The line pointer (`ItemIdData`) of the old version is converted into an intra-page redirect pointer pointing to the new version.
 3. Secondary indexes do not need updates; they continue pointing to the original line pointer. Requirements: (1) The new tuple must fit on the same page, and (2) No column referenced by any index on the table can be modified. Configuration: Reduce table `fillfactor` (e.g. `ALTER TABLE t SET (fillfactor = 80);`), leaving 20% of every page free for future in-page updates.
 
-- Ref: [PostgreSQL Documentation: Storage: HOT](https://www.postgresql.org/docs/18/storage-hot.html)
-
 </details>
 
-<details>
-<summary>2. Why does default autovacuum configuration fail on tables with tens of millions of rows?</summary>
+<details><summary>2. Why does default autovacuum configuration fail on tables with tens of millions of rows?</summary>
 
-**Answer**: The autovacuum activation threshold is: `threshold + (scale_factor * reltuples)`. With defaults (`threshold = 50, scale_factor = 0.2`), autovacuum triggers only after 20% of the table's rows have been deleted or updated. On a 100-million-row table, autovacuum will not wake up until **20 million rows** have died. This allows gigabytes of dead tuples to accumulate, causing severe cache dilution and table bloat. The fix is setting aggressive per-table thresholds: `ALTER TABLE t SET (autovacuum_vacuum_scale_factor = 0.01, autovacuum_vacuum_threshold = 5000);`.
-
-- Ref: [PostgreSQL Documentation: Routine Vacuuming](https://www.postgresql.org/docs/18/routine-vacuuming.html#AUTOVACUUM)
-
+The autovacuum activation threshold is: `threshold + (scale_factor * reltuples)`. With defaults (`threshold = 50, scale_factor = 0.2`), autovacuum triggers only after 20% of the table's rows have been deleted or updated. On a 100-million-row table, autovacuum will not wake up until **20 million rows** have died. This allows gigabytes of dead tuples to accumulate, causing severe cache dilution and table bloat. The fix is setting aggressive per-table thresholds: `ALTER TABLE t SET (autovacuum_vacuum_scale_factor = 0.01, autovacuum_vacuum_threshold = 5000);`.
 </details>
 
-<details>
-<summary>3. What is Transaction ID (XID) wraparound, and what happens if a database cluster reaches the critical wraparound threshold?</summary>
+<details><summary>3. What is Transaction ID (XID) wraparound, and what happens if a database cluster reaches the critical wraparound threshold?</summary>
 
-**Answer**: PostgreSQL uses 32-bit unsigned transaction IDs compared modulo-$2^{31}$. A transaction ID can only be safely compared against past transactions up to 2.1 billion transactions ago. If older transactions are not "frozen" (marked with `HEAP_XMIN_FROZEN` or `FrozenTransactionId = 2`), the transaction counter wraps around, making ancient committed tuples appear to be in the future, rendering data completely invisible. If the system approaches 3 million transactions remaining before wraparound (`xidWarnLimit`), PostgreSQL emits continuous server log warnings. If it reaches 1 million transactions remaining (`xidStopLimit`), PostgreSQL halts the assignment of new transaction IDs, refusing all write commands and queries consuming an XID. Existing connections remain active and read-only queries continue to function. Recovery requires starting single-user standalone mode (`postgres --single`) and executing a manual vacuum freeze.
-
-- Ref: [PostgreSQL Documentation: Routine Vacuuming: Wraparound](https://www.postgresql.org/docs/18/routine-vacuuming.html#VACUUM-FOR-WRAPAROUND)
-
+PostgreSQL uses 32-bit unsigned transaction IDs compared modulo-$2^{31}$. A transaction ID can only be safely compared against past transactions up to 2.1 billion transactions ago. If older transactions are not "frozen" (marked with `HEAP_XMIN_FROZEN` or `FrozenTransactionId = 2`), the transaction counter wraps around, making ancient committed tuples appear to be in the future, rendering data completely invisible. If the system approaches 3 million transactions remaining before wraparound (`xidWarnLimit`), PostgreSQL emits continuous server log warnings. If it reaches 1 million transactions remaining (`xidStopLimit`), PostgreSQL halts the assignment of new transaction IDs, refusing all write commands and queries consuming an XID. Existing connections remain active and read-only queries continue to function. Recovery requires starting single-user standalone mode (`postgres --single`) and executing a manual vacuum freeze.
 </details>
 
-<details>
-<summary>4. Name three things that can block autovacuum from freeing dead tuples across an entire PostgreSQL database.</summary>
-
-**Answer**:
+<details><summary>4. Name three things that can block autovacuum from freeing dead tuples across an entire PostgreSQL database.</summary>
 
 1. **Long-running transactions**: Any open transaction (including an idle read-only transaction or an uncommitted `pg_dump`) pins the `backend_xmin` horizon. Autovacuum cannot reclaim any tuple version deleted after that transaction started.
 2. **Abandoned or inactive replication slots**: If a logical or physical replication slot is disconnected, PostgreSQL retains all WAL and pins the database `xmin` horizon to prevent the replica from losing required data.
 3. **Orphaned prepared transactions**: A two-phase commit transaction (`PREPARE TRANSACTION`) that was never followed by `COMMIT PREPARED` or `ROLLBACK PREPARED` remains active indefinitely across server restarts, holding the `xmin` horizon open.
 
-- Ref: [PostgreSQL Documentation: System Activity Monitoring](https://www.postgresql.org/docs/18/monitoring-stats.html)
-
 </details>
 
-<details>
-<summary>5. How does PostgreSQL 19's `REPACK` change table maintenance compared to `VACUUM FULL`?</summary>
+<details><summary>5. How does PostgreSQL 19's `REPACK` change table maintenance compared to `VACUUM FULL`?</summary>
 
-**Answer**: `VACUUM FULL` rewrites a table to eliminate bloat and return space to the operating system filesystem, but it acquires an **`ACCESS EXCLUSIVE`** lock on the table. This lock blocks all concurrent `SELECT`, `INSERT`, `UPDATE`, and `DELETE` operations, taking the table offline for the duration of the rebuild. PostgreSQL 19's native `REPACK` / `REPACK CONCURRENTLY` rebuilds the table and indexes online in the background using logical change tracking, acquiring only brief locks at the start and completion of the rebuild, allowing production application queries to proceed uninterrupted.
-
-- Ref: [PostgreSQL 19 Release Notes](https://www.postgresql.org/docs/19/release-19.html)
-
+`VACUUM FULL` rewrites a table to eliminate bloat and return space to the operating system filesystem, but it acquires an **`ACCESS EXCLUSIVE`** lock on the table. This lock blocks all concurrent `SELECT`, `INSERT`, `UPDATE`, and `DELETE` operations, taking the table offline for the duration of the rebuild. PostgreSQL 19's native `REPACK` / `REPACK CONCURRENTLY` rebuilds the table and indexes online in the background using logical change tracking, acquiring only brief locks at the start and completion of the rebuild, allowing production application queries to proceed uninterrupted.
 </details>

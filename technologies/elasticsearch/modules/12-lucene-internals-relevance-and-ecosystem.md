@@ -363,52 +363,39 @@ When reading a blog post or Stack Overflow answer, date it against this table: a
 
 ---
 
-## 8. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. How are postings compressed, and why do rare terms cost more per posting?</strong></summary>
+<details><summary>1. How are postings compressed, and why do rare terms cost more per posting?</summary>
 
 Doc ids are stored as gaps in blocks of 128, each bit-packed at the width of its largest gap (PFOR, with exceptions), plus a variable-length tail. Rare terms have large gaps, so each posting needs more bits; common terms have small gaps and pack densely.
 </details>
 
-<details>
-<summary><strong>Q2. Why is <code>rare AND common</code> fast in Lucene?</strong></summary>
+<details><summary>2. Why is <code>rare AND common</code> fast in Lucene?</summary>
 
 The conjunction leads with the cheapest iterator and calls `advance(target)` on the others, which uses skip data to jump over whole blocks; cost is roughly proportional to the rare term's postings times a logarithmic skip cost, not to the common term's length.
 </details>
 
-<details>
-<summary><strong>Q3. How do you measure whether a relevance change is an improvement?</strong></summary>
+<details><summary>3. How do you measure whether a relevance change is an improvement?</summary>
 
 A graded judgement list over representative queries, `_rank_eval` with nDCG@10 (and MRR or ERR) before and after on the same data, inspection of per-query deltas and unrated docs, then an online A/B test.
 </details>
 
-<details>
-<summary><strong>Q4. Name three practical differences between Elasticsearch 9 and OpenSearch 3.</strong></summary>
+<details><summary>4. Name three practical differences between Elasticsearch 9 and OpenSearch 3.</summary>
 
 Licensing (ELv2/SSPL/AGPLv3 with paid tiers versus Apache 2.0); query languages (ES|QL versus PPL); vector stack (Lucene HNSW with BBQ, retrievers and `semantic_text` versus the k-NN plugin with Faiss/Lucene engines and neural search pipelines); lifecycle (ILM/data stream lifecycle versus ISM); and incompatible clients.
 </details>
 
-<details>
-<summary><strong>Q5. When would you not add Elasticsearch next to PostgreSQL?</strong></summary>
+<details><summary>5. When would you not add Elasticsearch next to PostgreSQL?</summary>
 
 When search is a small, transactionally coupled feature over data that fits one database and basic ranking is enough: PostgreSQL FTS with GIN, `pg_trgm` and `pgvector` avoids a second distributed system and its sync pipeline.
 </details>
 
-<details>
-<summary><strong>Q6. What does <code>_forcemerge?max_num_segments=1</code> change on disk, and when is it harmful?</strong></summary>
+<details><summary>6. What does <code>_forcemerge?max_num_segments=1</code> change on disk, and when is it harmful?</summary>
 
 All segments are rewritten into one, deleted documents are purged, compression and search speed improve. It is harmful on indices still being written: the huge segment exceeds `max_merged_segment` and is no longer merged normally, so new deletes accumulate, and the rewrite costs I/O and invalidates snapshot deduplication.
 </details>
 
-<details>
-<summary><strong>Q7. Why can't Elasticsearch filter stored fields on disk without decompressing the full document block?</strong></summary>
+<details><summary>7. Why can't Elasticsearch filter stored fields on disk without decompressing the full document block?</summary>
 
 Stored fields (`.fdt`) are compressed in multi-document blocks using LZ4 or Zstandard. Even when requesting a single field via `_source: ["title"]`, Lucene must fetch and decompress the entire compressed chunk from disk into memory before extracting the specified field. To avoid decompression overhead during search filtering or sorting, use columnar `doc_values` (`.dvd`), which are stored individually per field.
-</details>
-
-<details>
-<summary><strong>Q8. Contrast OpenSearch's vector search architecture with Elasticsearch's Lucene 10 approach.</strong></summary>
-
-OpenSearch implements vector search through a separate `k-NN` plugin that delegates graph operations to external C++ libraries (such as Faiss) via JNI, managing vector indexes outside of core Lucene segments. Elasticsearch implements vector search directly within core Lucene as native segment files (`.vec`, `.vex`, `.veq`), supporting native BBQ and int8 quantization, unified translog durability, and seamless segment merging during `TieredMergePolicy` sweeps.
 </details>

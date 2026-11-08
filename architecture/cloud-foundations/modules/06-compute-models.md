@@ -130,34 +130,29 @@ The spot interruption notification window and FaaS cold start vs. warm invocatio
 
 ---
 
-## 9. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-<details>
-<summary>1. Why is autoscaling queue-worker pools based on average CPU utilization an architectural anti-pattern?</summary>
+<details><summary>1. Why is autoscaling queue-worker pools based on average CPU utilization an architectural anti-pattern?</summary>
 
 CPU utilization does not correlate with backlog depth. If an SQS queue suddenly receives 100,000 messages while only 1 worker instance is running, that worker's CPU may peg at 100%, but the autoscaler will slowly increment capacity by 1 or 2 nodes per cooldown period. Conversely, if 100 workers each process I/O-bound jobs waiting on database locks, CPU utilization will hover at 10%, causing the autoscaler to prematurely scale in the fleet despite a mounting backlog. The correct metric is Backlog Per Worker (`ApproximateNumberOfMessagesVisible / NumberOfHealthyWorkers`).
 </details>
 
-<details>
-<summary>2. Explain the execution phases of a FaaS cold start and how global scope code optimization helps.</summary>
+<details><summary>2. Explain the execution phases of a FaaS cold start and how global scope code optimization helps.</summary>
 
 A cold start consists of three phases: (1) System provisioning (downloading container/zip and creating the MicroVM); (2) INIT phase (booting the language runtime, executing code outside the handler, establishing SDK clients and database connections); (3) EXEC phase (running the handler function for the specific event). Code placed in global scope outside the handler executes only once during the INIT phase. For subsequent warm invocations, the MicroVM is reused and skips the INIT phase entirely, directly running the handler with pre-warmed connection pools.
 </details>
 
-<details>
-<summary>3. How does Scale-In Protection prevent data loss in batch-processing worker fleets?</summary>
+<details><summary>3. How does Scale-In Protection prevent data loss in batch-processing worker fleets?</summary>
 
 During peak hours, an autoscaling group scales outward to process jobs. When the metric subsides, the autoscaler initiates a scale-in event to terminate surplus nodes. If an instance is in the middle of a non-idempotent 30-minute video encoding or payroll batch job, terminating it causes job failure and data corruption. Enabling Scale-In Protection allows the worker application to lock itself via API upon picking up a job, preventing the autoscaler from terminating it until the job completes and the protection flag is cleared.
 </details>
 
-<details>
-<summary>4. What architectural constraints must a workload satisfy to safely run on Spot / Preemptible instances?</summary>
+<details><summary>4. What architectural constraints must a workload satisfy to safely run on Spot / Preemptible instances?</summary>
 
 Workloads must be: (1) **Stateless**: No persistent local disk state that cannot be lost; (2) **Horizontally Scalable**: Able to shrink and grow dynamically; (3) **Interruption-Tolerant**: Capable of detecting the 2-minute (AWS) or 30-second (GCP/Azure) termination signal, checkpointing progress, and gracefully releasing locks; (4) **Idempotent**: Able to restart interrupted tasks on surviving nodes without duplicate side effects.
 </details>
 
-<details>
-<summary>5. Why does compiling for ARM64 (Graviton/Axion) yield significant cloud cost savings?</summary>
+<details><summary>5. Why does compiling for ARM64 (Graviton/Axion) yield significant cloud cost savings?</summary>
 
 ARM processors operate with higher instruction-per-clock (IPC) efficiency and consume less electrical power and cooling than equivalent x86-64 chips. Cloud providers pass these efficiency savings to customers: ARM instance types are priced approximately 20% lower per hour while delivering equal or superior performance for web servers, microservices, and in-memory databases, resulting in up to 40% better overall price-performance.
 </details>

@@ -382,11 +382,9 @@ The `-detailed-exitcode` flag provides deterministic exit statuses:
 
 ---
 
-## 9. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-### Q1: Explain the mathematical relationship between Desired Configuration ($C$), Stored State ($S$), and Remote Reality ($R$), and define how drift ($\Delta_{\text{drift}}$) is formally detected.
-
-<details><summary>Answer</summary>
+<details><summary>1. Explain the mathematical relationship between Desired Configuration ($C$), Stored State ($S$), and Remote Reality ($R$), and define how drift ($\Delta_{\text{drift}}$) is formally detected.</summary>
 
 **The Tripartite Reconciliation Calculus.**
 
@@ -397,12 +395,9 @@ The `-detailed-exitcode` flag provides deterministic exit statuses:
 - In `terraform plan -refresh-only`, Terraform displays $\Delta_{\text{drift}}$ and proposes modifying $S$ to match $R$ ($S' = R$) without applying any changes from $C$.
 - In a standard `terraform plan`, Terraform first refreshes $S \to S'$, and then computes the planning delta: $\Delta_{\text{plan}} = C \setminus S'$.
 - Ref: HashiCorp Terraform State Operations Architecture; OpenTofu State Engine Design.
-
 </details>
 
-### Q2: Why is the declarative `import` block superior to the legacy imperative `terraform import` CLI command in collaborative GitOps environments?
-
-<details><summary>Answer</summary>
+<details><summary>2. Why is the declarative `import` block superior to the legacy imperative `terraform import` CLI command in collaborative GitOps environments?</summary>
 
 **Peer Reviewability, Speculative Planning, and State Safety.**
 
@@ -410,24 +405,18 @@ The `-detailed-exitcode` flag provides deterministic exit statuses:
 - **Speculative Planning**: Running `terraform plan` with an `import` block generates a dry-run speculative execution plan that details the exact attribute mappings before any state mutation occurs. Imperative import mutates the remote state immediately upon command execution.
 - **Config Generation**: Combined with `-generate-config-out`, declarative import automatically generates valid, schema-compliant HCL source code, preventing human transcription errors that lead to accidental resource recreation.
 - Ref: Terraform Language Documentation: Importing Infrastructure.
-
 </details>
 
-### Q3: What is the exact behavior of a `removed` block when `lifecycle { destroy = false }` is specified versus when it is omitted?
-
-<details><summary>Answer</summary>
+<details><summary>3. What is the exact behavior of a `removed` block when `lifecycle { destroy = false }` is specified versus when it is omitted?</summary>
 
 **State Forgetting vs Physical Teardown.**
 
 - **When `destroy = false`**: Terraform removes the resource instance from the `.tfstate` file during `terraform apply`. It does NOT issue any API calls to destroy the resource in the cloud. The physical cloud infrastructure (e.g., EC2 instance, S3 bucket, RDS cluster) continues running unmanaged.
 - **When omitted (or `destroy = true`)**: The default behavior of a `removed` block is identical to deleting the resource block from HCL. Terraform generates a `Destroy` plan action and issues the provider's `DeleteResource` API call to tear down the live physical cloud asset during `apply`.
 - Ref: Terraform Language Reference: Removed Blocks.
-
 </details>
 
-### Q4: How does `terraform plan -minimal-refresh` (introduced in Terraform 1.17) prevent cloud provider API rate limit exhaustion?
-
-<details><summary>Answer</summary>
+<details><summary>4. How does `terraform plan -minimal-refresh` (introduced in Terraform 1.17) prevent cloud provider API rate limit exhaustion?</summary>
 
 **Dependency Subgraph Targeted Refresh.**
 
@@ -436,12 +425,9 @@ The `-detailed-exitcode` flag provides deterministic exit statuses:
 - It then walks the dependency graph to construct a restricted subgraph containing only the modified nodes and their direct upstream and downstream dependencies.
 - It executes refresh RPC calls _only_ for nodes within that subgraph. Untouched, independent resources retain their existing state attributes without querying cloud APIs, cutting network overhead and avoiding rate limits.
 - Ref: HashiCorp Terraform 1.17 Release Notes: Minimal Refresh Architecture.
-
 </details>
 
-### Q5: In what scenario does running `terraform apply -refresh-only` with automated `-auto-approve` cause catastrophic state loss?
-
-<details><summary>Answer</summary>
+<details><summary>5. In what scenario does running `terraform apply -refresh-only` with automated `-auto-approve` cause catastrophic state loss?</summary>
 
 **Transient Cloud API 404s Interpreted as Deletions.**
 
@@ -450,12 +436,9 @@ The `-detailed-exitcode` flag provides deterministic exit statuses:
 - The refresh-only apply automatically purges the resource from `.tfstate`.
 - On the next standard `terraform plan`, Terraform believes the resource no longer exists and attempts to create it from scratch. This causes naming collisions, resource duplications, and corrupts multi-tenant infrastructure.
 - Ref: Production SRE Post-Mortems: Automated Drift Remediation Pitfalls.
-
 </details>
 
-### Q6: How does the `terraform query` command (introduced in Terraform 1.14) assist in eliminating "shadow infrastructure"?
-
-<details><summary>Answer</summary>
+<details><summary>6. How does the `terraform query` command (introduced in Terraform 1.14) assist in eliminating "shadow infrastructure"?</summary>
 
 **Native Provider Inventory Discovery.**
 
@@ -464,12 +447,9 @@ The `-detailed-exitcode` flag provides deterministic exit statuses:
 - Platform teams can scan cloud accounts to discover shadow infrastructure provisioned manually via the cloud console or external scripts.
 - The discovered resource IDs can immediately be fed into declarative `import` blocks to bring the shadow infrastructure under version-controlled IaC governance.
 - Ref: Terraform 1.14 Core Feature Specification.
-
 </details>
 
-### Q7: What is the purpose of the `-detailed-exitcode` flag when running drift detection in automated CI pipelines?
-
-<details><summary>Answer</summary>
+<details><summary>7. What is the purpose of the `-detailed-exitcode` flag when running drift detection in automated CI pipelines?</summary>
 
 **Deterministic Machine-Readable Pipeline Branching.**
 
@@ -480,19 +460,6 @@ The `-detailed-exitcode` flag provides deterministic exit statuses:
   - `2`: Succeeded with non-empty diff (drift or configuration differences exist).
 - CI/CD pipelines can evaluate the exit code in shell scripts: code `2` can trigger a notification to security teams or open an automated reconciliation ticket, while code `0` silently passes.
 - Ref: Terraform CLI Specification: Plan Command Flags.
-
-</details>
-
-### Q8: How does Terraform 1.16's `lifecycle { destroy = false }` attribute on live resources differ from the legacy `lifecycle { prevent_destroy = true }`?
-
-<details><summary>Answer</summary>
-
-**Compiler-Level Invariant vs Runtime Command Guard.**
-
-- `prevent_destroy = true` was a runtime safety guard. If an operator ran a plan that included a destruction action (e.g., due to an in-place replacement), Terraform generated the plan and then aborted during validation with an error. Crucially, running `terraform destroy` would fail unless the operator manually removed `prevent_destroy` from the code.
-- `destroy = false` (introduced in 1.16) is a structural invariant enforced by the graph compiler. The compiler refuses to emit a destruction action node into the execution DAG under any circumstances. Even if an operator runs `terraform destroy`, resources marked `destroy = false` are excluded from the destruction graph, preserving critical persistence assets permanently.
-- Ref: HashiCorp Terraform 1.16 Core Engine Updates.
-
 </details>
 
 ---

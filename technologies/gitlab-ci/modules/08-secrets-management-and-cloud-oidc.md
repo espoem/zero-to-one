@@ -503,12 +503,11 @@ The algorithm evaluates signature verification in $O(1)$ cryptographic time, che
 
 ---
 
-## 10. Interview Drill: Questions and Model Answers
+## Interview Drill
 
-<details>
-<summary><strong>Q1. Explain why storing static AWS IAM Access Keys in GitLab CI/CD Project Variables is an anti-pattern. How does OIDC keyless federation solve the problem?</strong></summary>
+<details><summary>1. Explain why storing static AWS IAM Access Keys in GitLab CI/CD Project Variables is an anti-pattern. How does OIDC keyless federation solve the problem?</summary>
 
-**Answer**: Storing static IAM access keys creates multiple attack vectors:
+Storing static IAM access keys creates multiple attack vectors:
 
 1. **Permanent Validity**: Static keys do not expire automatically; they remain valid until manually rotated or revoked.
 2. **Blast Radius**: If a developer inadvertently exposes the key in logs or a runner VM is compromised, an attacker can use the key from anywhere on the internet.
@@ -517,13 +516,11 @@ The algorithm evaluates signature verification in $O(1)$ cryptographic time, che
 OIDC keyless federation eliminates static secrets. The GitLab runner requests an ephemeral JWT dynamically minted by GitLab. The runner passes this JWT to AWS STS via `AssumeRoleWithWebIdentity`. AWS validates the cryptographic signature against GitLab's public JWKS endpoint and verifies that the `sub` claim matches the authorized repository and branch. AWS returns temporary credentials (valid for 15 to 60 minutes) that expire automatically. CloudTrail logs the full federated identity context, providing complete traceability.
 
 - Ref: AWS IAM OIDC Documentation; [modules/08-secrets-management-and-cloud-oidc.md](../modules/08-secrets-management-and-cloud-oidc.md#4-keyless-cloud-federation-complete-implementations)
-
 </details>
 
-<details>
-<summary><strong>Q2. What are the strict syntax requirements for GitLab Variable Masking, and why does base64 encoding defeat the masking filter?</strong></summary>
+<details><summary>2. What are the strict syntax requirements for GitLab Variable Masking, and why does base64 encoding defeat the masking filter?</summary>
 
-**Answer**: GitLab requires a variable value to satisfy strict criteria to be masked:
+GitLab requires a variable value to satisfy strict criteria to be masked:
 
 - Minimum length of 8 characters.
 - Must not contain whitespace.
@@ -533,24 +530,20 @@ OIDC keyless federation eliminates static secrets. The GitLab runner requests an
 Base64 defeats masking because the masking engine performs literal string matching against the raw value $V$. If a script executes `echo "$SECRET" | base64`, the output stream contains $f(V)$, the base64-encoded representation. Because $f(V)$ is a completely different character sequence than $V$, the masking engine does not detect a match, and the encoded secret is printed to the job log.
 
 - Ref: GitLab CI Masking Engine Documentation; [modules/08-secrets-management-and-cloud-oidc.md](../modules/08-secrets-management-and-cloud-oidc.md#the-masking-engine-mathematical-limitations-and-bypass-vectors)
-
 </details>
 
-<details>
-<summary><strong>Q3. Why was `CI_JOB_JWT` removed from GitLab, and how does `id_tokens` provide superior cryptographic isolation?</strong></summary>
+<details><summary>3. Why was `CI_JOB_JWT` removed from GitLab, and how does `id_tokens` provide superior cryptographic isolation?</summary>
 
-**Answer**: `CI_JOB_JWT` had a fixed, non-configurable audience claim (`aud`). When integrating with cloud providers like AWS, GCP, and Vault, each service recommends or mandates verifying a specific audience string. If multiple cloud providers share a token with a generic audience, a compromised provider could theoretically use that token to impersonate the workload against another service (token relay attack).
+`CI_JOB_JWT` had a fixed, non-configurable audience claim (`aud`). When integrating with cloud providers like AWS, GCP, and Vault, each service recommends or mandates verifying a specific audience string. If multiple cloud providers share a token with a generic audience, a compromised provider could theoretically use that token to impersonate the workload against another service (token relay attack).
 
 The `id_tokens` keyword allows developers to declare multiple distinct tokens with tailored audiences within the same job block (e.g., one token with `aud: "https://aws.amazon.com"` and another with `aud: "https://vault.example.com"`). Each cloud provider receives a cryptographically signed JWT that is strictly invalid if presented to any other service.
 
 - Ref: GitLab 16.0 Release Notes; [modules/08-secrets-management-and-cloud-oidc.md](../modules/08-secrets-management-and-cloud-oidc.md#3-openid-connect-oidc--id_tokens-architecture)
-
 </details>
 
-<details>
-<summary><strong>Q4. How do you configure an AWS IAM Trust Policy to allow deployments only from protected branches while permitting feature branches to run read-only validation jobs?</strong></summary>
+<details><summary>4. How do you configure an AWS IAM Trust Policy to allow deployments only from protected branches while permitting feature branches to run read-only validation jobs?</summary>
 
-**Answer**: Create two distinct IAM roles:
+Create two distinct IAM roles:
 
 1. `GitLabDeployerRole` (Write access to S3/ECS/EKS): In the trust policy, condition the `sts:AssumeRoleWithWebIdentity` action on:
    ```json
@@ -575,13 +568,11 @@ The `id_tokens` keyword allows developers to declare multiple distinct tokens wi
 Feature branches can assume the validator role to check configurations, but only protected branches (like `main`) satisfy the `ref_protected: "true"` claim required to assume the deployer role.
 
 - Ref: [modules/08-secrets-management-and-cloud-oidc.md](../modules/08-secrets-management-and-cloud-oidc.md#1-amazon-web-services-aws-iam-oidc-federation)
-
 </details>
 
-<details>
-<summary><strong>Q5. How does Google Cloud Workload Identity Federation eliminate the need for downloaded service account JSON keys?</strong></summary>
+<details><summary>5. How does Google Cloud Workload Identity Federation eliminate the need for downloaded service account JSON keys?</summary>
 
-**Answer**: Traditionally, applications outside GCP authenticated by creating a Service Account Key (a permanent RSA private key stored in a JSON file) and mounting it into the CI environment. If leaked, these keys granted permanent access until manually revoked.
+Traditionally, applications outside GCP authenticated by creating a Service Account Key (a permanent RSA private key stored in a JSON file) and mounting it into the CI environment. If leaked, these keys granted permanent access until manually revoked.
 
 Workload Identity Federation creates an identity translation bridge:
 
@@ -591,24 +582,20 @@ Workload Identity Federation creates an identity translation bridge:
 4. The federated token is used to impersonate a Google Cloud Service Account via `generateAccessToken`. The returned OAuth2 access token is short-lived (1 hour max) and generated dynamically in RAM, completely eliminating static JSON private keys.
 
 - Ref: Google Cloud Workload Identity Federation Documentation; [modules/08-secrets-management-and-cloud-oidc.md](../modules/08-secrets-management-and-cloud-oidc.md#2-google-cloud-platform-workload-identity-federation)
-
 </details>
 
-<details>
-<summary><strong>Q6. What role does OpenBao play in the native GitLab Secrets Manager introduced in GitLab 18.x/19.x?</strong></summary>
+<details><summary>6. What role does OpenBao play in the native GitLab Secrets Manager introduced in GitLab 18.x/19.x?</summary>
 
-**Answer**: OpenBao is the Linux Foundation open-source, community-governed fork of HashiCorp Vault created following the license change to BSL. GitLab integrates OpenBao directly into the core platform architecture to provide a native, zero-configuration Secrets Manager.
+OpenBao is the Linux Foundation open-source, community-governed fork of HashiCorp Vault created following the license change to BSL. GitLab integrates OpenBao directly into the core platform architecture to provide a native, zero-configuration Secrets Manager.
 
 Architecturally, OpenBao serves as the internal secrets storage and encryption engine for GitLab. Secrets created via the GitLab UI or API are stored using envelope encryption managed by OpenBao, protected by master keys in Cloud KMS or HSMs. When a pipeline runs with `secrets:`, GitLab coordinates with OpenBao to inject decrypted secrets directly into the runner process memory over mTLS, eliminating the need for teams to deploy, operate, and maintain independent external Vault clusters.
 
 - Ref: Linux Foundation OpenBao Project; [modules/08-secrets-management-and-cloud-oidc.md](../modules/08-secrets-management-and-cloud-oidc.md#5-gitlab-native-secrets-manager-openbao-integration)
-
 </details>
 
-<details>
-<summary><strong>Q7. What is the operational impact of clock skew between a GitLab Runner and an external OIDC relying party (e.g., AWS STS or Vault)?</strong></summary>
+<details><summary>7. What is the operational impact of clock skew between a GitLab Runner and an external OIDC relying party (e.g., AWS STS or Vault)?</summary>
 
-**Answer**: OIDC ID tokens contain time-bound claims: `iat` (issued at), `nbf` (not before), and `exp` (expiration). GitLab sets `exp` to 300 seconds (5 minutes) after `iat`.
+OIDC ID tokens contain time-bound claims: `iat` (issued at), `nbf` (not before), and `exp` (expiration). GitLab sets `exp` to 300 seconds (5 minutes) after `iat`.
 
 If the clock on the GitLab server, the runner host, or the cloud provider STS server is out of synchronization by even 60–120 seconds:
 
@@ -616,7 +603,6 @@ If the clock on the GitLab server, the runner host, or the cloud provider STS se
 - If the runner/server clock is **behind** STS, the token's 300-second validity window may have already elapsed from STS's perspective, rejecting it with `Token has expired`. Ensuring all infrastructure nodes synchronize against authoritative NTP servers is mandatory for reliable OIDC operations.
 
 - Ref: [modules/08-secrets-management-and-cloud-oidc.md](../modules/08-secrets-management-and-cloud-oidc.md#9-production-failure-modes--operational-gotchas)
-
 </details>
 
 ---

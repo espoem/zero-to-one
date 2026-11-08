@@ -161,36 +161,31 @@ When building cloud storage where the storage server itself is untrusted or pote
 
 ---
 
-## 8. Interview Drill: Byzantine Fault Tolerance & Open Systems
+## Interview Drill
 
-<details>
-<summary>1. Why can a Crash-Fault-Tolerant system survive with 2f + 1 nodes, while a Byzantine system strictly requires 3f + 1 nodes?</summary>
+<details><summary>1. Why can a Crash-Fault-Tolerant system survive with 2f + 1 nodes, while a Byzantine system strictly requires 3f + 1 nodes?</summary>
 
 In a CFT system, a failed node simply halts: it never sends contradictory or malicious messages. If $f$ nodes crash in a cluster of $2f + 1$, the remaining $f + 1$ nodes form an absolute majority of the original cluster. In a BFT system, $f$ nodes might crash (silent), while another $f$ nodes might be active traitors lying to peers. To make progress, the system must act upon receiving $N - f$ messages. If $N = 2f + 1$, only $(2f + 1) - f = f + 1$ messages arrive; of these, $f$ could be from traitors and only 1 from an honest node, making consensus impossible. For honest nodes to strictly outvote traitors ($(N - 2f) > f$), $N$ must be at least $3f + 1$.
 </details>
 
-<details>
-<summary>2. How does Proof-of-Work solve John Douceur's Sybil Attack in open permissionless networks?</summary>
+<details><summary>2. How does Proof-of-Work solve John Douceur's Sybil Attack in open permissionless networks?</summary>
 
 In an open network where anyone can create accounts or IP addresses for free, an attacker can generate millions of fake identities to win majority voting. Proof-of-Work ties voting power to the laws of thermodynamics: creating a block requires consuming real-world electrical energy and compute power to solve a cryptographic hash puzzle. An attacker cannot multiply their voting power simply by spawning virtual identities; they must acquire more physical hash power than the rest of the honest network combined ($> 50\%$).
 </details>
 
-<details>
-<summary>3. What is the difference between deterministic finality in PBFT and probabilistic finality in Nakamoto Consensus?</summary>
+<details><summary>3. What is the difference between deterministic finality in PBFT and probabilistic finality in Nakamoto Consensus?</summary>
 
 - **PBFT (Deterministic Finality)**: Once a transaction completes the Commit phase ($2f + 1$ signed commits received), it is permanently finalized. It can never be rolled back or reordered under any circumstances.
 - **Nakamoto Consensus (Probabilistic Finality)**: A block appended to the chain is never 100% final in a strict mathematical sense. There is always a theoretical possibility that an attacker could compute a longer private chain and broadcast it. However, with every subsequent block appended to the chain, the probability of an attacker overtaking the honest chain decays exponentially towards zero.
 
 </details>
 
-<details>
-<summary>4. Why does PBFT have poor scalability when cluster node count N grows to hundreds or thousands of nodes?</summary>
+<details><summary>4. Why does PBFT have poor scalability when cluster node count N grows to hundreds or thousands of nodes?</summary>
 
 PBFT requires two all-to-all broadcast phases during every transaction: the Prepare phase and the Commit phase. In an all-to-all broadcast, every node transmits messages to every other node, generating $O(N^2)$ network messages per consensus round. While $O(N^2)$ is fast for $N = 4$ or $N = 7$ nodes, for $N = 1,000$ nodes, a single transaction generates over $1,000,000$ network messages, saturating network switches and collapsing throughput.
 </details>
 
-<details>
-<summary>5. Under what conditions should an engineering team choose Raft over a BFT protocol like PBFT?</summary>
+<details><summary>5. Under what conditions should an engineering team choose Raft over a BFT protocol like PBFT?</summary>
 
 Raft should be chosen whenever all nodes reside within a **single administrative trust boundary** (such as internal corporate datacenters, AWS VPCs, or Kubernetes clusters). Because internal nodes are managed by the same organization and protected by network firewalls, the risk of nodes sending deliberately forged, malicious, or contradictory messages is virtually zero. Raft provides orders of magnitude higher throughput and lower latency ($O(N)$ message complexity, $2f+1$ nodes, zero cryptographic signature verification overhead) compared to BFT protocols.
 </details>

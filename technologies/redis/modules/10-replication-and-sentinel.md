@@ -382,7 +382,7 @@ Migration pitfalls: tooling that greps `INFO` for `slave` keeps working, tooling
 
 ---
 
-## 9. Interview Drill
+## Interview Drill
 
 <details><summary>1. Can Redis lose a write that it acknowledged?</summary>
 
@@ -417,19 +417,4 @@ Before 4.0 a new primary had a new replication ID, so siblings could not continu
 <details><summary>7. What is the purpose of second_repl_offset in PSYNC2?</summary>
 
 When a replica is promoted to primary, it records its current replication offset as `second_repl_offset` and copies its old `master_replid` into `master_replid2`. When other sibling replicas reconnect, they request partial resync using the old primary's `replid`. The new primary verifies that the requested offset does not exceed `second_repl_offset`. This guarantees that the sibling only receives bytes from the valid, common branch of historical execution before switching to the new primary's stream.
-</details>
-
-<details><summary>8. How does repl-diskless-load swapdb prevent read downtime during a full resync?</summary>
-
-Under `swapdb`, the replica continues serving client read requests from its existing in-memory database while simultaneously reading and parsing the incoming RDB socket stream into separate temporary database pointers. Only when the socket transfer is 100% complete and validated does Redis execute an atomic memory pointer swap. The old dataset is then reclaimed asynchronously in the background `bio` lazy-free thread, eliminating the service outage during data transfer.
-</details>
-
-<details><summary>9. Why can a deployment with 5 Sentinels and quorum=2 fail to complete a failover?</summary>
-
-While 2 Sentinels suffice to declare `ODOWN` (detection), leader election strictly mandates obtaining authorization from a majority of all configured Sentinels ($\lfloor 5/2 \rfloor + 1 = 3$). If a network partition isolates 2 Sentinels on the side detecting the primary failure, they reach quorum for `ODOWN` but cannot gather the 3 votes required for leader election, preventing failover from occurring.
-</details>
-
-<details><summary>10. What causes the full-resync loop under heavy write loads in Redis <= 7?</summary>
-
-During a full resynchronization, writes occurring on the primary while the child process writes the RDB snapshot are buffered into the replica's client output buffer. If write throughput exceeds replication transfer speed, the accumulated bytes exceed `client-output-buffer-limit replica`. The primary abruptly closes the replica socket; the replica reconnects, finds its offset missing from the backlog, and requests another full resync, entering an infinite loop.
 </details>

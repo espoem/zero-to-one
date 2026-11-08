@@ -412,50 +412,42 @@ generate-pipeline:
 
 ---
 
-## 9. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. Explain why YAML anchors cannot be used across multiple files with `include:`, and how `!reference` tags solve this limitation.</strong></summary>
+<details><summary>1. Explain why YAML anchors cannot be used across multiple files with `include:`, and how `!reference` tags solve this limitation.</summary>
 
 YAML anchors (`&anchor` and `*anchor`) are a specification feature of the standard YAML parser operating on a single document stream. When GitLab processes `include:` statements, each file is parsed into a discrete memory AST before the custom deep-merging engine combines them. Because the anchor dictionary is cleared between individual file parses, an anchor defined in `included.yml` does not exist in the parser's symbol table when `main.yml` is parsed, resulting in an "unknown anchor" syntax error. The `!reference [job, key]` tag is a custom GitLab extension that operates on the consolidated, post-merge GitLab configuration tree. It allows a job to query and copy any arbitrary dictionary or array block from another job anywhere in the merged pipeline hierarchy, successfully crossing file boundaries.
 </details>
 
-<details>
-<summary><strong>Q2. What is the fundamental difference between component interpolation syntax (`$[[ inputs.key ]]`) and runner variable expansion (`$KEY`)?</strong></summary>
+<details><summary>2. What is the fundamental difference between component interpolation syntax (`$[[ inputs.key ]]`) and runner variable expansion (`$KEY`)?</summary>
 
 Component interpolation (`$[[ inputs.key ]]`) occurs strictly at compile time on the GitLab server (Rails backend) before the YAML configuration is validated, persisted to the database, or dispatched. It allows dynamic manipulation of structural YAML tokens—such as job names, stage assignments, rules conditions, or list elements—based on strongly typed schema inputs declared in `spec:inputs`. Runner variable expansion (`$KEY` or `${KEY}`) occurs at execution time inside the runner worker process (within the container or shell environment). Runner variables cannot alter pipeline structure or DAG dependencies; they are accessible only within job lifecycle scripts (`before_script`, `script`, `after_script`).
 </details>
 
-<details>
-<summary><strong>Q3. How does GitLab CI's deep-merge algorithm handle array fields versus dictionary fields when combining included files?</strong></summary>
+<details><summary>3. How does GitLab CI's deep-merge algorithm handle array fields versus dictionary fields when combining included files?</summary>
 
 GitLab CI's deep-merge algorithm distinguishes sharply between associative maps (dictionaries) and lists (arrays):
 
 1. **Dictionaries**: Merged recursively. If both the base template and the extending job declare a dictionary (such as `variables:`), keys from both dictionaries are combined. If a key collision occurs, the extending (higher-level) job's value overwrites the base value.
 2. **Arrays**: Overwritten completely. If a base template defines `script:` or `before_script:` with five commands, and the extending job defines `script:` with one command, the extending array completely discards and replaces the base array. Arrays are never automatically concatenated.
-
 </details>
 
-<details>
-<summary><strong>Q4. What is a Dynamic Child Pipeline, and what architectural problem does it solve in large-scale monorepos?</strong></summary>
+<details><summary>4. What is a Dynamic Child Pipeline, and what architectural problem does it solve in large-scale monorepos?</summary>
 
 A Dynamic Child Pipeline is a pipeline whose configuration YAML is not committed to source control as a static file, but is instead generated programmatically at runtime by an upstream parent job (using tools like Node.js, Python, or Helm) and stored as a job artifact. The parent pipeline then invokes `trigger: include: artifact: generated.yml, job: generate_job` to instantiate the child pipeline dynamically. In large monorepos, this solves multiple architectural bottlenecks: it bypasses GitLab's static YAML parsing size limits (5MB), eliminates the visual clutter of hundreds of un-executed jobs, drastically cuts down Sidekiq queue contention, and allows teams to dynamically construct pipelines containing only the microservices affected by the specific Git diff.
 </details>
 
-<details>
-<summary><strong>Q5. Why is the `strategy: depend` directive critical when configuring downstream or child pipelines?</strong></summary>
+<details><summary>5. Why is the `strategy: depend` directive critical when configuring downstream or child pipelines?</summary>
 
 By default, when a parent job defines a `trigger:` to launch a downstream child or multi-project pipeline, the trigger job operates in a "fire-and-forget" mode: as soon as the child pipeline is successfully created in the database, the parent trigger job immediately transitions to `status = success`. If any jobs inside the child pipeline subsequently crash or fail quality gates, the parent pipeline remains marked as successful, allowing broken code to be merged into protected branches. Specifying `strategy: depend` forces the parent trigger job to remain in the `running` state, mirroring the child pipeline's lifecycle in real-time, and propagating a failure or cancellation from the child back up to the parent.
 </details>
 
-<details>
-<summary><strong>Q6. How does the CI/CD Catalog enforce semantic versioning and immutability for enterprise components?</strong></summary>
+<details><summary>6. How does the CI/CD Catalog enforce semantic versioning and immutability for enterprise components?</summary>
 
 The CI/CD Catalog treats component repositories as versioned software packages. When a component project is tagged with a Git tag conforming to Semantic Versioning (e.g., `v1.2.0`), GitLab's release orchestrator indexes the component in the organization's Catalog. Consumers reference the component using explicit version specifiers: exact tags (`@1.2.0`), minor ranges (`@~latest`), or major floating tags (`@1`). Because Git tags on protected catalog repositories are immutable, platform teams can guarantee that upstream updates do not introduce silent breaking changes into downstream pipelines.
 </details>
 
-<details>
-<summary><strong>Q7. Describe a failure mode that occurs when combining `extends` with `before_script` in an organizational compliance pipeline.</strong></summary>
+<details><summary>7. Describe a failure mode that occurs when combining `extends` with `before_script` in an organizational compliance pipeline.</summary>
 
 Platform security teams often define a base hidden job (e.g., `.compliance_base`) that runs mandatory security checks and credential isolation in `before_script`. When application development teams extend this job (`extends: .compliance_base`) and define their own local `before_script` (e.g., `before_script: [npm install]`), GitLab CI's array-overwrite merge rule activates: the local application's `before_script` array completely overrides the compliance `before_script` array. As a result, the compliance commands never execute, creating a silent security vulnerability. The remediation is to use `!reference [.compliance_base, before_script]` to explicitly chain scripts, or to move compliance enforcement into mandatory pipeline components or scan execution policies.
 </details>

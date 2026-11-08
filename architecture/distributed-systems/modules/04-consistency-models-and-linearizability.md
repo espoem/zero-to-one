@@ -137,16 +137,14 @@ Herlihy and Wing proved that linearizability is **composible** ($P$-compositiona
 
 ---
 
-## 6. Interview Drill: Consistency Models & Linearizability
+## Interview Drill
 
-<details>
-<summary>1. What is the fundamental difference between Linearizability and Sequential Consistency?</summary>
+<details><summary>1. What is the fundamental difference between Linearizability and Sequential Consistency?</summary>
 
 Both require that all nodes observe an identical, valid sequential interleaving of operations. However, **Linearizability** imposes a global real-time constraint: if operation $B$ is invoked after operation $A$ has completed in real time, $A$ must precede $B$ in the sequence. **Sequential Consistency** has no concept of physical real time; it only requires that operations within the same process respect program order. A sequentially consistent system is legally allowed to return days-old data, provided all nodes observe the updates in the identical order.
 </details>
 
-<details>
-<summary>2. Why does a quorum system with R + W > N fail to guarantee linearizability by itself?</summary>
+<details><summary>2. Why does a quorum system with R + W > N fail to guarantee linearizability by itself?</summary>
 
 While $R + W > N$ ensures that the read quorum overlaps with the write quorum by at least one node (Pigeonhole Principle), overlapping is not sufficient for linearizability. Consider a write $W(x, 1)$ currently updating replicas: it has updated 1 node out of 3.
 
@@ -155,20 +153,17 @@ While $R + W > N$ ensures that the read quorum overlaps with the write quorum by
 
 </details>
 
-<details>
-<summary>3. Can a system provide Causal Consistency during a total network partition?</summary>
+<details><summary>3. Can a system provide Causal Consistency during a total network partition?</summary>
 
 Yes. Under the PACELC / availability taxonomy, Causal Consistency belongs to the **Sticky-Available** class. Because causal consistency only requires respecting the happens-before relationship ($\to$) and allows independent concurrent operations ($a \parallel b$) to be merged later, nodes on either side of a network partition can continue to accept reads and writes without coordinating, preserving causality locally.
 </details>
 
-<details>
-<summary>4. What is Write Skew, and why does Snapshot Isolation allow it while Serializability prevents it?</summary>
+<details><summary>4. What is Write Skew, and why does Snapshot Isolation allow it while Serializability prevents it?</summary>
 
 Write Skew occurs when two concurrent transactions read overlapping datasets, verify a joint invariant (e.g. "at least one doctor must be on call"), and make disjoint updates (Doctor $A$ goes off call; Doctor $B$ goes off call). Under **Snapshot Isolation**, each transaction reads a consistent snapshot of the database taken before the transaction began. Because they modify different rows (Doctor $A$ vs Doctor $B$), there are no row-level write-write conflicts, and both commit successfully. However, the final state violates the invariant (zero doctors on call). **Serializability** prevents write skew by detecting read-write dependencies (via Two-Phase Locking or Serializable Snapshot Isolation SSI) and aborting one of the transactions.
 </details>
 
-<details>
-<summary>5. Why is linearizability testing NP-complete, and how do verification tools make it practical?</summary>
+<details><summary>5. Why is linearizability testing NP-complete, and how do verification tools make it practical?</summary>
 
 When operations overlap concurrently in time, their linearization points can be assigned in any order. For $n$ concurrent operations, there are $n!$ potential sequential interleavings that must be searched. Verification tools make this tractable via two principles:
 

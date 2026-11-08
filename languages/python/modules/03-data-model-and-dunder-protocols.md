@@ -227,34 +227,26 @@ In modern Python architectures (PEP 814 / Python 3.15+), immutable dictionary ma
 
 ---
 
-## 9. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-<details>
-<summary>1. Why must `__hash__` return an integer, and what happens if two equal objects return different hashes?</summary>
+<details><summary>1. Why must `__hash__` return an integer, and what happens if two equal objects return different hashes?</summary>
 
-**Answer:** `__hash__` must return a 64-bit integer representing the object's hash code for use in hash-based collections (`dict` and `set`). If two equal objects ($a == b$) produce different hash values, the fundamental hashing invariant is violated. When $a$ is added to a dictionary (`d[a] = 1`), it is placed in bucket $h_1 = \text{hash}(a) \pmod N$. When querying `d[b]`, the dictionary looks in bucket $h_2 = \text{hash}(b) \pmod N$. Because $h_1 \neq h_2$, the dictionary searches the wrong bucket and fails to locate the key, incorrectly claiming the key does not exist even though $a == b$. Furthermore, adding both $a$ and $b$ to a set will result in duplicate equal elements existing simultaneously in the set, corrupting collection integrity.
+`__hash__` must return a 64-bit integer representing the object's hash code for use in hash-based collections (`dict` and `set`). If two equal objects ($a == b$) produce different hash values, the fundamental hashing invariant is violated. When $a$ is added to a dictionary (`d[a] = 1`), it is placed in bucket $h_1 = \text{hash}(a) \pmod N$. When querying `d[b]`, the dictionary looks in bucket $h_2 = \text{hash}(b) \pmod N$. Because $h_1 \neq h_2$, the dictionary searches the wrong bucket and fails to locate the key, incorrectly claiming the key does not exist even though $a == b$. Furthermore, adding both $a$ and $b$ to a set will result in duplicate equal elements existing simultaneously in the set, corrupting collection integrity.
 </details>
 
-<details>
-<summary>2. What is the difference between `__getattr__` and `__getattribute__`?</summary>
-
-**Answer:**
+<details><summary>2. What is the difference between `__getattr__` and `__getattribute__`?</summary>
 
 - `__getattribute__(self, name: str)`: Called **unconditionally** for _every_ attribute access on the object (`obj.attr`). It is responsible for resolving descriptors, checking `__dict__`, and traversing the class hierarchy. Overriding it requires caution; calling `self.attr` inside it causes infinite recursion. Developers must call `super().__getattribute__(name)`.
 - `__getattr__(self, name: str)`: A fallback method called **only** when `__getattribute__` fails to locate the attribute via standard descriptor lookup and dictionary lookup (i.e. when `AttributeError` would otherwise be raised). It is used to implement lazy evaluation, dynamic proxying, and default attribute values.
 
 </details>
 
-<details>
-<summary>3. Why should binary arithmetic methods return `NotImplemented` instead of raising `TypeError`?</summary>
+<details><summary>3. Why should binary arithmetic methods return `NotImplemented` instead of raising `TypeError`?</summary>
 
-**Answer:** When Python evaluates `a + b`, it calls `a.__add__(b)`. If `a` does not recognize the type of `b` and raises `TypeError`, evaluation halts immediately with an exception. However, if `a.__add__(b)` returns `NotImplemented`, the virtual machine catches this sentinel and immediately checks if `b` knows how to interact with `a` by invoking `b.__radd__(a)`. Returning `NotImplemented` allows cooperative inter-type arithmetic (for example, allowing a custom `Vector` class to be multiplied by a standard `int` or `float` regardless of which operand is on the left).
+When Python evaluates `a + b`, it calls `a.__add__(b)`. If `a` does not recognize the type of `b` and raises `TypeError`, evaluation halts immediately with an exception. However, if `a.__add__(b)` returns `NotImplemented`, the virtual machine catches this sentinel and immediately checks if `b` knows how to interact with `a` by invoking `b.__radd__(a)`. Returning `NotImplemented` allows cooperative inter-type arithmetic (for example, allowing a custom `Vector` class to be multiplied by a standard `int` or `float` regardless of which operand is on the left).
 </details>
 
-<details>
-<summary>4. What are the memory and inheritance implications of using `__slots__`?</summary>
-
-**Answer:**
+<details><summary>4. What are the memory and inheritance implications of using `__slots__`?</summary>
 
 - **Memory**: Replaces the per-instance `__dict__` with a compact, fixed C array of pointers managed by C descriptors. This reduces per-instance memory consumption by 60–70% and prevents the dynamic creation of undeclared attributes.
 - **Inheritance**: If a class defines `__slots__` and its subclass does not define `__slots__`, instances of the subclass will allocate a standard `__dict__`, negating memory savings. To maintain memory optimization, every class throughout the inheritance hierarchy must explicitly declare `__slots__` (even an empty tuple `__slots__ = ()` if introducing no new attributes).
@@ -262,8 +254,7 @@ In modern Python architectures (PEP 814 / Python 3.15+), immutable dictionary ma
 
 </details>
 
-<details>
-<summary>5. How does `__init_subclass__` simplify framework architecture compared to metaclasses?</summary>
+<details><summary>5. How does `__init_subclass__` simplify framework architecture compared to metaclasses?</summary>
 
-**Answer:** Before `__init_subclass__` (PEP 487), customizing class definition (such as enforcing method implementations, auto-registering plugins, or injecting attributes) required writing a custom metaclass inheriting from `type`. Metaclasses suffer from the "metaclass conflict": if a class inherits from two base classes that define different metaclasses, Python raises `TypeError` unless a unified metaclass is created. `__init_subclass__` is a standard class method executed whenever a class is derived from the parent. It receives the newly created subclass as its first argument and accepts arbitrary keyword arguments passed in the class definition header (`class MyPlugin(BasePlugin, name="auth"):`). It solves 95% of plugin registration and validation use cases without introducing metaclass complexity or inheritance conflicts.
+Before `__init_subclass__` (PEP 487), customizing class definition (such as enforcing method implementations, auto-registering plugins, or injecting attributes) required writing a custom metaclass inheriting from `type`. Metaclasses suffer from the "metaclass conflict": if a class inherits from two base classes that define different metaclasses, Python raises `TypeError` unless a unified metaclass is created. `__init_subclass__` is a standard class method executed whenever a class is derived from the parent. It receives the newly created subclass as its first argument and accepts arbitrary keyword arguments passed in the class definition header (`class MyPlugin(BasePlugin, name="auth"):`). It solves 95% of plugin registration and validation use cases without introducing metaclass complexity or inheritance conflicts.
 </details>

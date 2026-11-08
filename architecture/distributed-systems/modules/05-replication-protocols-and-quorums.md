@@ -155,36 +155,31 @@ flowchart TD
 
 ---
 
-## 6. Interview Drill: Replication Protocols & Quorums
+## Interview Drill
 
-<details>
-<summary>1. In Chain Replication, why does serving reads strictly from the Tail guarantee linearizability?</summary>
+<details><summary>1. In Chain Replication, why does serving reads strictly from the Tail guarantee linearizability?</summary>
 
 In Chain Replication, writes must flow through the entire chain (Head $\to$ Middle $\to$ Tail) before the client receives an acknowledgment. If a client has received confirmation that a write succeeded, that write has already been applied at the Tail. Because all subsequent reads are routed strictly to the Tail, the Tail will immediately return that write or a newer write, strictly satisfying the real-time precedence requirement of Linearizability.
 </details>
 
-<details>
-<summary>2. Why does the ABD protocol require a two-phase read (read followed by write-back)?</summary>
+<details><summary>2. Why does the ABD protocol require a two-phase read (read followed by write-back)?</summary>
 
 In a quorum system without a single leader, a concurrent write might only have reached a minority of nodes when the writer pauses or crashes. If Client 1 reads from a quorum that hits one of these updated nodes, it learns the new value. If Client 1 simply returned that value, a subsequent Client 2 might query a different quorum that misses the updated node and returns the old value (time travel!). By forcing Client 1 to write the new value back to a full write quorum before returning, Client 1 guarantees that all future quorum reads will observe the new value.
 </details>
 
-<details>
-<summary>3. What is the ReadIndex optimization in Raft, and what failure does it prevent?</summary>
+<details><summary>3. What is the ReadIndex optimization in Raft, and what failure does it prevent?</summary>
 
 The ReadIndex optimization allows a Raft leader to serve reads from RAM without writing entries to disk. It prevents stale reads caused by network partitions: if a leader is partitioned from the majority, a new leader may be elected elsewhere. If the old leader served reads directly from RAM, it would return stale data. With ReadIndex, the leader records its `commitIndex`, sends a round of heartbeat messages to a majority of nodes to confirm it is still the valid leader, waits for its local state machine to apply up to that `commitIndex`, and only then serves the read.
 </details>
 
-<details>
-<summary>4. What are the operational trade-offs of Lease Reads compared to ReadIndex?</summary>
+<details><summary>4. What are the operational trade-offs of Lease Reads compared to ReadIndex?</summary>
 
 - **ReadIndex**: Requires a network roundtrip of heartbeats to a majority for every batch of read operations. It is completely safe under arbitrary clock drift or VM pauses, but adds network roundtrip latency.
 - **Lease Reads**: Allows the leader to serve reads immediately from memory with zero network messages as long as its physical clock lease has not expired. It achieves ultra-low latency, but relies on bounded physical clock drift: if a leader experiences a severe clock jump or a long hypervisor pause, it may serve stale reads.
 
 </details>
 
-<details>
-<summary>5. How does CRAQ allow non-tail nodes to serve linearizable reads without overloading the tail?</summary>
+<details><summary>5. How does CRAQ allow non-tail nodes to serve linearizable reads without overloading the tail?</summary>
 
 CRAQ assigns a status of `CLEAN` or `DIRTY` to object versions on each node. When an update is propagating down the chain, intermediate nodes mark the new version as `DIRTY`. If a node receives a read request for an object whose latest version is `CLEAN`, it can serve the read locally with zero network overhead. If the object is `DIRTY`, it sends a tiny lightweight version-query probe to the Tail to determine which version is officially committed, offloading payload bandwidth from the Tail.
 </details>

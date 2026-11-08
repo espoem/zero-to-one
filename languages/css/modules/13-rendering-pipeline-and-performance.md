@@ -186,11 +186,9 @@ To optimize First Contentful Paint (FCP), modern build pipelines extract **Criti
 
 ---
 
-## 8. Interview Drill: Rendering Pipeline & Performance
+## Interview Drill
 
-### Q1: Walk through the primary stages of the browser rendering pipeline from HTML/CSS receipt to pixel display.
-
-<details><summary>Answer</summary>
+<details><summary>1. Walk through the primary stages of the browser rendering pipeline from HTML/CSS receipt to pixel display.</summary>
 
 The browser executes seven sequential stages:
 
@@ -204,30 +202,22 @@ The browser executes seven sequential stages:
 
 </details>
 
-### Q2: What is "Layout Thrashing", and how does it degrade application performance?
-
-<details><summary>Answer</summary>
+<details><summary>2. What is "Layout Thrashing", and how does it degrade application performance?</summary>
 
 Layout Thrashing (Forced Synchronous Layout) occurs when JavaScript alternates between modifying DOM styles (writes) and querying geometric layout properties (reads like `offsetHeight` or `getBoundingClientRect()`). Under normal conditions, the browser batches DOM mutations and delays layout until the end of the frame. When JavaScript reads a layout property after a style write, the browser cannot return the measurement without executing layout immediately. Alternating reads and writes inside a loop forces the engine to re-run full layout multiple times within a single frame, dropping frame rates to single digits.
 </details>
 
-### Q3: Why does animating `transform: translateX(100px)` achieve 120fps while animating `left: 100px` causes severe jank?
-
-<details><summary>Answer</summary>
+<details><summary>3. Why does animating `transform: translateX(100px)` achieve 120fps while animating `left: 100px` causes severe jank?</summary>
 
 Modifying `left` alters the geometric position of an element in normal flow, invalidating the Layout stage of the pipeline. On every single frame, the engine must recalculate the geometry of the element, re-evaluate surrounding content (Reflow), and re-record draw instructions (Repaint) on the CPU main thread. In contrast, `transform` is a compositor-only property; it invalidates neither layout nor paint. The GPU compositor simply alters the transformation matrix of the existing GPU layer texture and composites it at hardware refresh rates without blocking the main thread.
 </details>
 
-### Q4: How can an engineer diagnose CSS selector performance issues using browser DevTools?
-
-<details><summary>Answer</summary>
+<details><summary>4. How can an engineer diagnose CSS selector performance issues using browser DevTools?</summary>
 
 In Chromium DevTools, navigate to the **Performance** panel, open Record Settings, and enable **Enable CSS selector stats**. Record an interaction trace, expand the **Recalculate Style** flame chart slice, and inspect the **Selector Stats** tab. The panel displays the exact number of elements matched, fast-reject counts, and total CPU execution time spent per CSS selector rule, allowing engineers to identify slow, unconstrained selectors (such as broad `:has()` relational queries or deeply nested universal combinators).
 </details>
 
-### Q5: What is the "Layer Explosion" problem associated with the `will-change` property?
-
-<details><summary>Answer</summary>
+<details><summary>5. What is the "Layer Explosion" problem associated with the `will-change` property?</summary>
 
 When an author sets `will-change: transform`, the browser promotes the element to a dedicated composited GPU layer. Each layer allocates a physical bitmap buffer in GPU video memory (VRAM), scaled by the screen's Device Pixel Ratio (DPR). If `will-change` is applied indiscriminately to hundreds of elements, the accumulated VRAM allocation can consume hundreds of megabytes of mobile memory, triggering browser stutter, GPU thrashing, and abrupt out-of-memory tab crashes.
 </details>

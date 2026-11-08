@@ -469,46 +469,39 @@ PID1-SUPERVISOR(targetCmd, targetArgs, targetEnv)
 
 ---
 
-## 11. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. Why does an unhandled SIGTERM signal terminate an ordinary Linux process, but have zero effect on a process running as PID 1?</strong></summary>
+<details><summary>1. Why does an unhandled SIGTERM signal terminate an ordinary Linux process, but have zero effect on a process running as PID 1?</summary>
 
 Under the Linux signal architecture (`signal(7)` and `pid_namespaces(7)`), PID 1 serves as the system init process. To prevent accidental system collapse caused by unexpected signals, the kernel applies a special rule: signals are delivered to PID 1 only if PID 1 has registered an explicit custom signal handler for that signal. If no handler is registered, the kernel drops the signal and does not apply the default termination action. Only `SIGKILL` and `SIGSTOP` delivered from an ancestor (parent) PID namespace can forcibly terminate PID 1.
 </details>
 
-<details>
-<summary><strong>Q2. What is a zombie process, why does it exist in the kernel, and what happens if PID 1 fails to reap it?</strong></summary>
+<details><summary>2. What is a zombie process, why does it exist in the kernel, and what happens if PID 1 fails to reap it?</summary>
 
 A zombie process (`TASK_ZOMBIE`) is a process that has completed execution via `exit()`, but still retains an entry in the kernel's process table (`task_struct`). It exists so its parent process can read its termination status and exit code via `waitpid()`. When its parent terminates prematurely, the zombie is reparented to PID 1 of its PID namespace. If PID 1 does not call `waitpid()`, the zombie process entry remains permanently in kernel memory. Eventually, the system exhausts its maximum process ID quota (`/proc/sys/kernel/pid_max`), preventing any process on the host from spawning new tasks (`fork: Cannot allocate memory` / `EAGAIN`).
 </details>
 
-<details>
-<summary><strong>Q3. Explain the security difference between `chroot(2)` and `pivot_root(2)`.</strong></summary>
+<details><summary>3. Explain the security difference between `chroot(2)` and `pivot_root(2)`.</summary>
 
 `chroot(2)` merely updates the root directory pointer (`task->fs->root`) of the calling process to a new location. It does not alter the underlying mount namespace or mount table. An attacker with `CAP_SYS_CHROOT` can escape a chroot jail by using `fchdir(2)` on a preserved file descriptor pointing outside the jail and issuing a second `chroot`. In contrast, `pivot_root(2)` moves the entire root mount of the mount namespace, allowing the old root to be unmounted (`umount2(old_root, MNT_DETACH)`). Once the old root is detached, the host filesystem tree is entirely absent from the VFS namespace, making directory traversal escapes physically impossible.
 </details>
 
-<details>
-<summary><strong>Q4. How do user namespaces enable "rootless" container execution without compromising host security?</strong></summary>
+<details><summary>4. How do user namespaces enable "rootless" container execution without compromising host security?</summary>
 
 User namespaces (`CLONE_NEWUSER`) decouple UID and GID numbers inside the container from those on the host. An unprivileged user on the host can map their own host UID (or an allocated subordinate range from `/etc/subuid`, e.g., UIDs 100000–165535) to UID 0 inside the container. Inside the namespace, the process possesses full Linux capabilities (`CAP_SYS_ADMIN`, `CAP_NET_ADMIN`) over resources owned by that namespace. However, if the process attempts to interact with resources outside the namespace (such as host files or raw network sockets), the host kernel evaluates permissions against the real, unprivileged host UID (e.g., UID 100000), preventing unauthorized host modifications.
 </details>
 
-<details>
-<summary><strong>Q5. What happens when an unprivileged process calls `unshare(CLONE_NEWPID)` versus `clone(..., CLONE_NEWPID)`?</strong></summary>
+<details><summary>5. What happens when an unprivileged process calls `unshare(CLONE_NEWPID)` versus `clone(..., CLONE_NEWPID)`?</summary>
 
 When `clone(..., CLONE_NEWPID)` is called, a new child process is spawned, and that child becomes PID 1 of a newly instantiated PID namespace. When an existing process calls `unshare(CLONE_NEWPID)`, the calling process **does not** enter a new PID namespace itself (a process's PID namespace membership cannot change after creation). Instead, it designates that all future children spawned by this calling process will belong to the newly created PID namespace, with the first child becoming PID 1.
 </details>
 
-<details>
-<summary><strong>Q6. Why did Docker and Podman move away from running shell scripts directly as container entrypoints?</strong></summary>
+<details><summary>6. Why did Docker and Podman move away from running shell scripts directly as container entrypoints?</summary>
 
 When a shell script is executed as PID 1 (especially via the Dockerfile shell form `ENTRYPOINT /entrypoint.sh`), standard POSIX shells do not forward received signals (such as `SIGTERM`) to child background processes, and they do not automatically reap orphaned child processes that get reparented to them. This results in the container hanging for the full graceful shutdown grace period before being violently killed by `SIGKILL`, and causes zombie processes to leak during execution. Modern best practice mandates using exec form with an init binary (`ENTRYPOINT ["tini", "--", "/entrypoint.sh"]`).
 </details>
 
-<details>
-<summary><strong>Q7. What is the function of the Cgroup namespace (`CLONE_NEWCGROUP`), and what vulnerability does it mitigate?</strong></summary>
+<details><summary>7. What is the function of the Cgroup namespace (`CLONE_NEWCGROUP`), and what vulnerability does it mitigate?</summary>
 
 The cgroup namespace virtualizes the view of `/proc/self/cgroup`. Without a cgroup namespace, a container process can read its own `/proc/self/cgroup` file and observe the complete host path hierarchy (e.g., `/docker/containers/<uuid>`). This leaks information about the host's slice organization, systemd setup, and co-located workloads. The cgroup namespace masks the host path, presenting the container's own cgroup root as `/`. This prevents container processes from discovering host layout details or exploiting relative path traversal vulnerabilities against parent cgroups.
 </details>

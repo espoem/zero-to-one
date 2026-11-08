@@ -128,16 +128,14 @@ $$DP(\text{mask}, u) = \min_{v \notin \text{mask}} \left( D[u][v] + DP(\text{mas
 
 ---
 
-## 6. Interview Drill: Dynamic Programming
+## Interview Drill
 
-<details>
-<summary>1. In 0/1 Knapsack, why must the 1-D array be traversed in reverse, whereas in Unbounded Knapsack it must be traversed forwards?</summary>
+<details><summary>1. In 0/1 Knapsack, why must the 1-D array be traversed in reverse, whereas in Unbounded Knapsack it must be traversed forwards?</summary>
 
 In 0/1 Knapsack, each item can be chosen at most once. Traversing backwards ensures that when computing $dp[w] = \max(dp[w], dp[w - \text{weight}] + \text{val})$, the term $dp[w - \text{weight}]$ has not yet been updated for the current item and represents state from the previous item. In Unbounded Knapsack, an item can be chosen multiple times. Traversing forwards means $dp[w - \text{weight}]$ has already had the current item included, allowing the algorithm to chain multiple copies of the same item into the optimal solution.
 </details>
 
-<details>
-<summary>2. Why does the tails array in the O(n log n) LIS algorithm not necessarily represent the actual subsequence elements?</summary>
+<details><summary>2. Why does the tails array in the O(n log n) LIS algorithm not necessarily represent the actual subsequence elements?</summary>
 
 The `tails` array records the minimal tail element for each subsequence length, not the actual sequence of elements. For example, for input `[2, 5, 3, 7, 101, 18]`:
 
@@ -147,22 +145,19 @@ The `tails` array records the minimal tail element for each subsequence length, 
 
 </details>
 
-<details>
-<summary>3. How can you reduce the space complexity of Longest Common Subsequence from O(m * n) to O(min(m, n))?</summary>
+<details><summary>3. How can you reduce the space complexity of Longest Common Subsequence from O(m * n) to O(min(m, n))?</summary>
 
 In the recurrence $DP[i][j] = f(DP[i-1][j-1], DP[i-1][j], DP[i][j-1])$, row $i$ depends strictly on the current row $i$ and the immediately preceding row $i - 1$. Rows $i - 2, i - 3, \dots$ are never referenced again. By maintaining only two rows (`prevRow` and `currRow`), or a single row updating from right to left while preserving the top-left diagonal in a temporary variable, space drops to $O(\min(m, n))$.
 </details>
 
-<details>
-<summary>4. What is the difference between Memoization and Tabulation?</summary>
+<details><summary>4. What is the difference between Memoization and Tabulation?</summary>
 
 - **Memoization (Top-Down)**: Solves the original problem by calling recursive subproblems and caching results in a map/table. It only computes subproblems that are strictly necessary to answer the query (lazy evaluation). However, it incurs function call overhead and call-stack limits.
 - **Tabulation (Bottom-Up)**: Iteratively fills a table starting from base cases up to the target state in topological order. It eliminates recursive call-stack overhead and enables memory reduction (e.g. rolling variables), but computes all intermediate subproblems even if some are unneeded.
 
 </details>
 
-<details>
-<summary>5. How can you determine if a problem can be solved with a Greedy algorithm rather than Dynamic Programming?</summary>
+<details><summary>5. How can you determine if a problem can be solved with a Greedy algorithm rather than Dynamic Programming?</summary>
 
 A problem can be solved greedily if it satisfies the **Greedy-Choice Property**: a globally optimal solution can be reached by making locally optimal (greedy) choices at each step without ever needing to backtrack or evaluate multiple possibilities. If a local choice narrows or invalidates the optimal choices for remaining subproblems (e.g. Coin Change with arbitrary denominations where taking the largest coin leaves an impossible or suboptimal remainder), Greedy fails and Dynamic Programming is required.
 </details>

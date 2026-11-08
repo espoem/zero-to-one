@@ -187,16 +187,14 @@ Developers frequently confuse the operational roles of `state`, `code_challenge`
 
 ---
 
-## 8. Interview Drill: OAuth 2.1 Engineering
+## Interview Drill
 
-<details>
-<summary>1. A security engineer reviews a confidential backend microservice that uses the Authorization Code flow with a secret `client_secret`. The developer asks: "Since we are a confidential client with a server-side secret, can we skip PKCE?" How do you respond?</summary>
+<details><summary>1. A security engineer reviews a confidential backend microservice that uses the Authorization Code flow with a secret `client_secret`. The developer asks: "Since we are a confidential client with a server-side secret, can we skip PKCE?" How do you respond?</summary>
 
 Under OAuth 2.1 and RFC 9700, the answer is an emphatic **NO**. PKCE is strictly mandatory for _all_ clients, including confidential clients. While confidential clients authenticate to the token endpoint using `client_secret` (or mTLS), that authentication only proves the identity of the client calling `/token`. It does _not_ prove that the client redeeming the code was the exact entity that _initiated_ the authorization request at `/authorize`. PKCE cryptographically binds the authorization request to the token redemption request via the one-way `code_verifier` $\leftrightarrow$ `code_challenge` commitment. Omitting PKCE leaves confidential clients vulnerable to authorization code injection and cross-site code injection attacks.
 </details>
 
-<details>
-<summary>2. Explain the step-by-step mechanics of an Authorization Server Mix-Up attack and how RFC 9207 prevents it.</summary>
+<details><summary>2. Explain the step-by-step mechanics of an Authorization Server Mix-Up attack and how RFC 9207 prevents it.</summary>
 
 In a multi-IdP client (e.g. supporting Google and a rogue AS `evil.com`):
 
@@ -208,8 +206,7 @@ In a multi-IdP client (e.g. supporting Google and a rogue AS `evil.com`):
 
 </details>
 
-<details>
-<summary>3. Why did OAuth 2.1 completely eliminate the Implicit Grant type?</summary>
+<details><summary>3. Why did OAuth 2.1 completely eliminate the Implicit Grant type?</summary>
 
 The Implicit Grant (`response_type=token`) returned access tokens directly in the URI hash fragment (`#access_token=...`) of the HTTP 302 redirect. URI fragments are fundamentally insecure transport vectors:
 
@@ -220,14 +217,12 @@ The Implicit Grant (`response_type=token`) returned access tokens directly in th
 
 </details>
 
-<details>
-<summary>4. What happens when an attacker redeems an already-used refresh token under Refresh Token Rotation (RTR)?</summary>
+<details><summary>4. What happens when an attacker redeems an already-used refresh token under Refresh Token Rotation (RTR)?</summary>
 
 Under RFC 9700 §4.14, the Authorization Server tracks token family lineage. When a legitimate client redeems Refresh Token 1 (RT1), the AS invalidates RT1 and issues RT2. If an attacker subsequently presents RT1 (which they previously exfiltrated), the AS detects that an already-invalidated token is being presented—a direct signal that credential theft has occurred. Rather than simply returning a single error, the AS triggers **Automated Family Revocation**: it immediately invalidates RT1, RT2, and all active access tokens derived from that family. Both the attacker and the legitimate user are locked out, neutralizing the attacker's access and alerting the legitimate user to re-authenticate.
 </details>
 
-<details>
-<summary>5. Why does OAuth 2.1 forbid using `code_challenge_method=plain` in PKCE?</summary>
+<details><summary>5. Why does OAuth 2.1 forbid using `code_challenge_method=plain` in PKCE?</summary>
 
 When `code_challenge_method=plain` is used, `code_challenge = code_verifier`. The `code_challenge` is transmitted in the query string of the initial `/authorize` GET request, which traverses browser history, access logs, and HTTP proxies. If an attacker intercepts or reads the `/authorize` URL, they obtain the plaintext `code_verifier` immediately, completely defeating the purpose of PKCE. OAuth 2.1 mandates `code_challenge_method=S256`, which requires sending a one-way cryptographic SHA-256 hash. The plaintext `code_verifier` is never exposed in the front-channel URL.
 </details>

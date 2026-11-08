@@ -250,28 +250,24 @@ flowchart TD
 
 ---
 
-## 7. Interview Drill: Principal Security Systems Architect
+## Interview Drill
 
-<details>
-<summary>1. A financial institution asks: "Since quantum computers capable of breaking RSA/ECC don't exist yet, why should our engineering team invest in Post-Quantum Cryptography migration today?" How do you answer?</summary>
+<details><summary>1. A financial institution asks: "Since quantum computers capable of breaking RSA/ECC don't exist yet, why should our engineering team invest in Post-Quantum Cryptography migration today?" How do you answer?</summary>
 
 The immediate threat is **"Harvest Now, Decrypt Later" (HNDL)**. Adversaries and intelligence agencies are intercepting and storing massive volumes of encrypted TLS wire traffic today. If financial transactions, personal identity records, or trade secrets must remain confidential for 10 to 30 years, that confidentiality is already compromised if protected solely by classical RSA or ECC. When a cryptographically relevant quantum computer is eventually built, historical recorded traffic will be decrypted retrospectively. Deploying hybrid post-quantum key exchange (such as `X25519MLKEM768`, RFC 10024) today ensures that traffic recorded on the wire today cannot be decrypted by future quantum machines.
 </details>
 
-<details>
-<summary>2. Explain how Cryptographic Erasure (Crypto-Shredding) achieves legally compliant GDPR Article 17 deletion on immutable, append-only storage systems.</summary>
+<details><summary>2. Explain how Cryptographic Erasure (Crypto-Shredding) achieves legally compliant GDPR Article 17 deletion on immutable, append-only storage systems.</summary>
 
 Immutable storage systems (such as WORM S3 buckets, Kafka distributed logs, and historical tape backups) cannot physically delete individual database records without destroying the cryptographic hash chain or file integrity of the backup. In Crypto-Shredding, all personal data for User $U$ is encrypted using a unique, dedicated symmetric User Key (KEK) managed in an external KMS. When the user exercises their Right to Erasure, the KMS permanently destroys that specific User Key. Without the key, the ciphertext residing in the immutable backups is mathematically irreversible ($\mathcal{O}(2^{256})$ work factor), rendering the personal data permanently unrecoverable and satisfying GDPR compliance without mutating the immutable storage media.
 </details>
 
-<details>
-<summary>3. Why is Workload Identity Federation (OIDC) fundamentally superior to storing static IAM access keys in CI/CD build environments?</summary>
+<details><summary>3. Why is Workload Identity Federation (OIDC) fundamentally superior to storing static IAM access keys in CI/CD build environments?</summary>
 
 Static IAM keys (`AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`) are permanent credentials. They frequently leak via developer dotfiles, accidental git commits, build log outputs, or compromised runner machines, granting attackers persistent unauthorized cloud access until a human manually rotates them. Workload Identity Federation uses ephemeral OpenID Connect (OIDC) tokens. The CI/CD runner requests a short-lived signed JWT from the CI platform asserting the repository and branch. The cloud provider validates the JWT against the CI platform's public JWKS and issues short-lived temporary credentials (valid for 15 minutes). No static keys are ever created, stored, or managed by humans, completely eliminating credential leak vectors.
 </details>
 
-<details>
-<summary>4. What are the core assumptions of the Dolev-Yao threat model used in formal protocol verification?</summary>
+<details><summary>4. What are the core assumptions of the Dolev-Yao threat model used in formal protocol verification?</summary>
 
 The Dolev-Yao model assumes that the communication network is entirely controlled by an active adversary:
 
@@ -281,8 +277,7 @@ The Dolev-Yao model assumes that the communication network is entirely controlle
 
 </details>
 
-<details>
-<summary>5. Describe the end-to-end token and session lifecycle in the Backend-For-Frontend (BFF) architecture and explain why it provides the highest assurance against XSS.</summary>
+<details><summary>5. Describe the end-to-end token and session lifecycle in the Backend-For-Frontend (BFF) architecture and explain why it provides the highest assurance against XSS.</summary>
 
 In the BFF pattern (RFC 10017):
 

@@ -177,36 +177,31 @@ Every proposal in ZAB carries a 64-bit integer `zxid`:
 
 ---
 
-## 7. Interview Drill: Paxos & ZAB
+## Interview Drill
 
-<details>
-<summary>1. In Phase 2a of Single-Decree Paxos, why is a proposer forbidden from choosing its own value if an acceptor reported an accepted value in Phase 1b?</summary>
+<details><summary>1. In Phase 2a of Single-Decree Paxos, why is a proposer forbidden from choosing its own value if an acceptor reported an accepted value in Phase 1b?</summary>
 
 If an acceptor in Phase 1b returns an already accepted value $(n_v, v)$, that value might have already been accepted by a majority of acceptors and decided in an earlier round without the current proposer's knowledge. Overwriting it with a new value would violate the fundamental **Agreement** invariant (two different values could be decided). The proposer must adopt the value with the highest proposal number to preserve historical consensus.
 </details>
 
-<details>
-<summary>2. What is the difference between Paxos and Two-Phase Commit (2PC)?</summary>
+<details><summary>2. What is the difference between Paxos and Two-Phase Commit (2PC)?</summary>
 
 - **2PC (Atomic Commit)**: Requires **unanimous** agreement from 100% of participants. If even a single participant crashes or votes NO, the transaction must abort. 2PC is a blocking protocol: if the coordinator crashes during commit, participants are stuck holding locks indefinitely.
 - **Paxos (Consensus)**: Requires only a **majority quorum** ($\lfloor N/2 \rfloor + 1$). It makes forward progress even if a minority of nodes crash or become unreachable ($N = 2f + 1$ tolerates $f$ crash failures).
 
 </details>
 
-<details>
-<summary>3. How does Flexible Paxos improve write performance in cloud database clusters?</summary>
+<details><summary>3. How does Flexible Paxos improve write performance in cloud database clusters?</summary>
 
 Classic Paxos requires majority quorums for both election ($Q_1$) and replication ($Q_2$). In Flexible Paxos, as long as $Q_1$ and $Q_2$ intersect on at least one node, consensus is preserved. Because leader failover is rare while client writes happen thousands of times per second, Flexible Paxos sets $Q_1$ large (e.g. 5 out of 6 nodes) and $Q_2$ small (2 out of 6 nodes). This reduces the number of network acknowledgments required on the write path, significantly lowering latency and eliminating tail latency caused by slow cloud nodes.
 </details>
 
-<details>
-<summary>4. What causes Dueling Proposers in Paxos, and how does Multi-Paxos resolve it?</summary>
+<details><summary>4. What causes Dueling Proposers in Paxos, and how does Multi-Paxos resolve it?</summary>
 
 In basic Paxos, any node can become a proposer at any time. If Proposer $A$ issues `Prepare(1)` and Proposer $B$ concurrently issues `Prepare(2)`, acceptors reject $A$'s subsequent `Accept(1)` because they promised $B$. Proposer $A$ then issues `Prepare(3)`, preempting $B$'s `Accept(2)`. They can livelock indefinitely. Multi-Paxos resolves this by using an explicit leader election mechanism (or randomized timeouts) to designate a single **Stable Leader** that alone issues Phase 2 accepts.
 </details>
 
-<details>
-<summary>5. How does the 64-bit zxid in ZAB ensure that stale leaders cannot corrupt followers after a network partition heals?</summary>
+<details><summary>5. How does the 64-bit zxid in ZAB ensure that stale leaders cannot corrupt followers after a network partition heals?</summary>
 
 The high 32 bits of `zxid` represent the `epoch`, which strictly increases on every leader election. When an old, partitioned leader attempts to issue a proposal, followers reject it because their current epoch is higher than the stale proposal's epoch. Furthermore, during synchronization (Phase 2), any uncommitted entries from previous epochs on lagging followers are cleanly truncated to match the new leader's committed state.
 </details>

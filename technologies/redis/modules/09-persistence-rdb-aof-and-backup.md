@@ -435,7 +435,7 @@ tail -f /var/log/redis/redis-server.log | grep -E "DB loaded from append only fi
 
 ---
 
-## 8. Interview Drill
+## Interview Drill
 
 <details><summary>1. RDB vs AOF: trade-offs?</summary>
 
@@ -470,19 +470,4 @@ The last background save failed (disk full, permissions, fork failure) and `stop
 <details><summary>7. Explain the bio thread fsync stall: how can appendfsync everysec block the main thread?</summary>
 
 When `appendfsync everysec` is used, the main thread writes to the page cache in `beforeSleep()` and dispatches `fsync()` to a background `bio` thread. If a previous background `fsync()` is still executing, the main thread delays `write(2)`. However, if the background `fsync()` has been running for longer than 2 seconds, Redis forces the main thread to call `write(2)` directly. Because Linux locks inode metadata during active `fsync(2)`, this `write(2)` blocks synchronously on the main thread, freezing all clients.
-</details>
-
-<details><summary>8. How does WAITAOF differ from WAIT, and does it guarantee distributed linearizability?</summary>
-
-`WAIT numreplicas timeout` blocks until `numreplicas` acknowledge receiving the replication stream offset in memory. `WAITAOF numlocal numreplicas timeout` blocks until the write is synced to the AOF on disk locally (`numlocal`) and on `numreplicas`. Neither guarantees distributed linearizability: if `WAITAOF` times out, the write is not rolled back, and during failover, Sentinel or Cluster promotes the replica with highest offset regardless of which node satisfied the `WAITAOF` barrier.
-</details>
-
-<details><summary>9. Why does enabling Linux Transparent Huge Pages (THP) cause severe latency spikes in Redis?</summary>
-
-With THP enabled, the kernel manages memory in 2 MB huge pages instead of 4 KB standard pages. During copy-on-write triggered by `BGSAVE` or `BGREWRITEAOF`, modifying a single byte forces the kernel to copy an entire 2 MB page (a 512x memory and CPU amplification). Furthermore, if memory is fragmented, the main thread blocks while `khugepaged` performs synchronous page compaction, stalling request processing for tens of milliseconds.
-</details>
-
-<details><summary>10. What is the wire-level purpose of the RDB opcode 0xFB (RESIZEDB)?</summary>
-
-The `0xFB` opcode precedes key-value records for a database and contains two length-encoded integers: the total size of the keyspace hash table and the total size of the expires hash table. During RDB loading at start-up, this opcode allows Redis to pre-allocate dictionary buckets in a single memory allocation (`dictExpand`), eliminating incremental rehashing overhead and hash collisions during dataset hydration.
 </details>

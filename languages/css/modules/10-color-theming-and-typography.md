@@ -219,39 +219,29 @@ p {
 
 ---
 
-## 7. Interview Drill: Color, Theming & Typography
+## Interview Drill
 
-### Q1: Why is the OKLCH color space considered mathematically superior to HSL for building accessible design system palettes?
-
-<details><summary>Answer</summary>
+<details><summary>1. Why is the OKLCH color space considered mathematically superior to HSL for building accessible design system palettes?</summary>
 
 HSL is perceptually non-uniform: two colors with identical Lightness values (such as $50\%$ in HSL) can have radically different perceived brightnesses (e.g. pure yellow appears blindingly bright while pure blue appears dark). Consequently, calculating WCAG contrast ratios in HSL requires custom per-hue adjustments. In contrast, OKLCH is based on human visual perception; Lightness ($L$) is strictly uniform across all hues ($H$). An OKLCH color with $L = 0.70$ has the exact same luminance whether it is red, yellow, green, or blue, making automated contrast calculation and accessible palette generation completely reliable.
 </details>
 
-### Q2: How does CSS Relative Color Syntax (RCS) work, and how would you use it to create a 20% transparent variant of an unknown color variable?
-
-<details><summary>Answer</summary>
+<details><summary>2. How does CSS Relative Color Syntax (RCS) work, and how would you use it to create a 20% transparent variant of an unknown color variable?</summary>
 
 Relative Color Syntax allows authors to deconstruct an existing base color using the `from <color>` keyword, which exposes the color's constituent channels as local variables. To generate a 20% transparent variant (80% opacity) of an arbitrary color stored in `--brand`, you write `oklch(from var(--brand) l c h / 0.8)`. The browser extracts the Lightness ($l$), Chroma ($c$), and Hue ($h$) of `--brand` and emits a new color with an alpha channel of 0.8.
 </details>
 
-### Q3: What is the purpose of the `light-dark()` function, and what prerequisite CSS property must be set on an ancestor for it to work?
-
-<details><summary>Answer</summary>
+<details><summary>3. What is the purpose of the `light-dark()` function, and what prerequisite CSS property must be set on an ancestor for it to work?</summary>
 
 The `light-dark(lightColor, darkColor)` function conditionally returns its first argument when the element is rendered in a light color scheme, or its second argument when rendered in a dark color scheme. For `light-dark()` to operate, the element or an ancestor must declare the `color-scheme` property with both modes enabled (e.g. `color-scheme: light dark`). If `color-scheme` is omitted, the browser defaults to light mode and only the first value is evaluated.
 </details>
 
-### Q4: Why must `<link rel="preload" as="font">` always include the `crossorigin` attribute even when loading a font hosted on the exact same domain?
-
-<details><summary>Answer</summary>
+<details><summary>4. Why must `<link rel="preload" as="font">` always include the `crossorigin` attribute even when loading a font hosted on the exact same domain?</summary>
 
 The W3C specification mandates that web fonts must be fetched using Anonymous CORS mode. If a developer preloads a font using `<link rel="preload" as="font" href="...">` without the `crossorigin` attribute, the browser fetches the file with standard credentialed request headers. When the CSS engine subsequently parses the `@font-face` rule, it initiates an Anonymous CORS request; because the cached preload does not match the anonymous CORS context, the browser discards the preload and fetches the font a second time, wasting bandwidth and delaying rendering.
 </details>
 
-### Q5: What problem does `text-wrap: balance` solve, and why do browser engines restrict its application to short blocks of text?
-
-<details><summary>Answer</summary>
+<details><summary>5. What problem does `text-wrap: balance` solve, and why do browser engines restrict its application to short blocks of text?</summary>
 
 `text-wrap: balance` runs an iterative algorithmic layout pass that calculates the optimum line breaks across a text element to ensure all lines have approximately equal character lengths, eliminating unsightly single-word orphan lines at the end of headings. Because balancing lines requires multiple speculative layout passes, applying it to thousands of words in long body paragraphs would cause significant layout thrashing; browser engines therefore clamp `text-wrap: balance` to elements with a maximum of 4 to 6 lines of text.
 </details>

@@ -114,34 +114,29 @@ The DNS failover timeline calculations, JVM caching latency bounds, and L4 vs. L
 
 ---
 
-## 9. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-<details>
-<summary>1. When should an architect choose a Network Load Balancer (Layer 4) over an Application Load Balancer (Layer 7)?</summary>
+<details><summary>1. When should an architect choose a Network Load Balancer (Layer 4) over an Application Load Balancer (Layer 7)?</summary>
 
 An architect should select a Layer 4 Network Load Balancer (NLB) when: (1) The application requires non-HTTP protocols (e.g., raw TCP, UDP, gaming protocols, VoIP, or proprietary binary RPCs); (2) The workload demands extreme, unpredictable traffic spikes (millions of requests per second) where an ALB would require pre-warming; (3) Ultra-low sub-millisecond latency is required; (4) The backend instances require preserving the client's source IP address directly in the TCP packet without parsing `X-Forwarded-For` HTTP headers; (5) Static, fixed public IP addresses are required for client firewall allowlisting.
 </details>
 
-<details>
-<summary>2. How does connection draining (deregistration delay) prevent HTTP 502/504 errors during rolling deployments?</summary>
+<details><summary>2. How does connection draining (deregistration delay) prevent HTTP 502/504 errors during rolling deployments?</summary>
 
 When an autoscaling group or CI/CD pipeline deploys a new version, old instances must be terminated. If an instance is abruptly stopped while processing an in-flight request, the TCP connection drops and the client receives an HTTP 502 Bad Gateway. Connection draining instructs the load balancer to immediately stop directing _new_ requests to the terminating instance, while allowing active in-flight requests to complete within a bounded grace period (e.g., 300 seconds) before sending the final SIGTERM/SIGKILL signals.
 </details>
 
-<details>
-<summary>3. Why is cache invalidation considered an anti-pattern compared to content-hashed asset versioning in CDNs?</summary>
+<details><summary>3. Why is cache invalidation considered an anti-pattern compared to content-hashed asset versioning in CDNs?</summary>
 
 CDN cache invalidation is slow, eventually consistent, and expensive: invalidation requests can take several minutes to propagate across hundreds of global edge POPs, during which users receive inconsistent mixes of old and new assets. Furthermore, cloud providers charge fees for large invalidation batches. Content-hashed versioning (e.g., `main.4f1b2c.js`) guarantees instant cache coherence: because the new release has a unique URL, edge POPs fetch the new asset immediately on first request, while old cached assets naturally age out.
 </details>
 
-<details>
-<summary>4. Why can DNS-based global failover not guarantee an immediate, zero-downtime failover during an Availability Zone or regional catastrophe?</summary>
+<details><summary>4. Why can DNS-based global failover not guarantee an immediate, zero-downtime failover during an Availability Zone or regional catastrophe?</summary>
 
 DNS is an eventually consistent, distributed caching system. Even if an administrator sets a low TTL (e.g., 60 seconds), many intermediate recursive DNS resolvers and client runtimes (such as Java JVMs or mobile operating systems) cache IP addresses for longer durations or ignore TTL expiry entirely. Consequently, clients continue sending HTTP requests to the failed IP address long after the authoritative DNS server has updated the record.
 </details>
 
-<details>
-<summary>5. What is the "Cache Key Inflation" problem in CDN configuration, and how does it degrade performance?</summary>
+<details><summary>5. What is the "Cache Key Inflation" problem in CDN configuration, and how does it degrade performance?</summary>
 
 Cache key inflation occurs when excessive or highly volatile request components (such as all query parameters, dynamic cookies, or client `User-Agent` headers) are included in the CDN cache key. Because almost every incoming request carries slight variations in these headers, the CDN treats them as distinct resources and cannot serve cached responses. This collapses the cache hit ratio, floods the origin backend server with redundant traffic, and negates the latency benefits of the CDN.
 </details>

@@ -375,49 +375,39 @@ Run: `npm test -- examples/01-elements`.
 
 ---
 
-## 10. Interview Drill
+## Interview Drill
 
-<details><summary><strong>1. What is the difference between a React element, a component and a component instance?</strong></summary>
+<details><summary>1. What is the difference between a React element, a component and a component instance?</summary>
 
 An **element** is an immutable plain object `{ $$typeof, type, key, props }` describing what to render. A **component** is the function (or class) referenced by `element.type`. An **instance** is the stateful thing React creates when an element of that type is rendered at a position: it owns hook state, effects and DOM, and is represented internally by a fiber (Module 02). Many elements over time can refer to the same instance if position, type and key match.
 </details>
 
-<details><summary><strong>2. What does <code>&lt;Foo a={1} key="x"&gt;hi&lt;/Foo&gt;</code> compile to with the automatic runtime, and why is <code>key</code> separate?</strong></summary>
+<details><summary>2. What does <code>&lt;Foo a={1} key="x"&gt;hi&lt;/Foo&gt;</code> compile to with the automatic runtime, and why is <code>key</code> separate?</summary>
 
 `jsx(Foo, { a: 1, children: "hi" }, "x")` imported from `react/jsx-runtime`. `key` is identity metadata for the parent's reconciliation, not data for `Foo`; extracting it at compile time avoids copying props at runtime and is why `props.key` is `undefined`. With a spread before `key` the compiler cannot prove `key` is not in the spread and falls back to `createElement`.
 </details>
 
-<details><summary><strong>3. Why does React put <code>$$typeof: Symbol(...)</code> on elements?</strong></summary>
+<details><summary>3. Why does React put <code>$$typeof: Symbol(...)</code> on elements?</summary>
 
 To stop JSON-injection XSS. If a server renders a user-controlled object as a child, duck typing would accept a forged `{type, props:{dangerouslySetInnerHTML}}`. Symbols cannot be serialised to JSON, so a parsed object can never carry the brand, and React rejects it with "Objects are not valid as a React child".
 </details>
 
-<details><summary><strong>4. Why must components be pure? Give two concrete React features that break if they are not.</strong></summary>
+<details><summary>4. Why must components be pure? Give two concrete React features that break if they are not.</summary>
 
 React may call a component several times per commit or discard its output. Concurrent rendering (an interrupted transition is restarted), Suspense (a suspended render is retried), Strict Mode (double render), and the React Compiler (which caches JSX based on inputs and assumes the same inputs give the same output) all rely on it. A side effect in render runs an unspecified number of times, and a compiler-memoised component that reads a mutable global will show stale output.
 </details>
 
-<details><summary><strong>5. You see a component's <code>console.log</code> twice in development. Bug?</strong></summary>
+<details><summary>5. You see a component's <code>console.log</code> twice in development. Bug?</summary>
 
 Probably Strict Mode's intentional double render (React 19 dims the second log). It is a bug only if the double call has a visible effect — which means render is impure. Fix the impurity; never try to detect the second call.
 </details>
 
-<details><summary><strong>6. How do you reset all state of a <code>&lt;ProfileForm&gt;</code> when the selected user changes?</strong></summary>
+<details><summary>6. How do you reset all state of a <code>&lt;ProfileForm&gt;</code> when the selected user changes?</summary>
 
 Give it a key: `<ProfileForm key={userId} />`. A key change is an identity change, so React unmounts the old instance and mounts a fresh one. Syncing state in a `useEffect` on `userId` renders once with stale state and then again — slower and glitchy.
 </details>
 
-<details><summary><strong>7. What changed about <code>ref</code> in React 19, and what is the migration risk?</strong></summary>
+<details><summary>7. What changed about <code>ref</code> in React 19, and what is the migration risk?</summary>
 
 `ref` is a regular prop for function components; `forwardRef` is unnecessary. `element.ref` is removed (warning getter), string refs are removed, and ref callbacks may return a cleanup function (Module 04). Risk: components that spread `{...props}` now forward `ref` too; and code that read `element.ref` must read `element.props.ref`.
-</details>
-
-<details><summary><strong>8. Why is <code>{items.length && &lt;List/&gt;}</code> a bug and how does it relate to the Node grammar?</strong></summary>
-
-`&&` returns its left operand when falsy. `0` is a number, and numbers are valid nodes that render as text, so React prints `0`. `false`, `null` and `undefined` render nothing. Use a boolean condition.
-</details>
-
-<details><summary><strong>9. What happens if a library bundles its own React 18 and you render its elements in a React 19 app?</strong></summary>
-
-Its elements carry `Symbol.for('react.element')`; React 19 throws "A React Element from an older version of React was rendered". Even before 19, two React copies break hooks (each copy has its own dispatcher: "Invalid hook call"). The fix is a single React copy via peer dependencies and deduplication.
 </details>

@@ -166,36 +166,31 @@ In dynamic container environments (Kubernetes), IP addresses churn constantly.
 
 ---
 
-## 7. Interview Drill: Distributed Coordination & Locks
+## Interview Drill
 
-<details>
-<summary>1. Why is Redlock insufficient for mission-critical storage writes where correctness is non-negotiable?</summary>
+<details><summary>1. Why is Redlock insufficient for mission-critical storage writes where correctness is non-negotiable?</summary>
 
 Redlock relies on two invalid assumptions: synchronized physical clocks and bounded execution times. If a process experiences a stop-the-world garbage collection pause or hypervisor CPU throttling after acquiring a lock, its lease can expire without the client's knowledge. Another client can acquire the lock and write to storage. When the first process resumes, it executes its write, corrupting data. Because Redlock tokens are opaque strings that cannot be ordered by storage engines, downstream storage cannot detect or reject stale writes.
 </details>
 
-<details>
-<summary>2. How do fencing tokens guarantee safety even if a client holds a stale lock and attempts to write?</summary>
+<details><summary>2. How do fencing tokens guarantee safety even if a client holds a stale lock and attempts to write?</summary>
 
 Fencing tokens move enforcement from the client to the storage service. The lock service issues a monotonically increasing integer token with every lease grant. Downstream storage tracks the highest token it has accepted. If a paused client resumes and submits a write with an older token, the storage engine detects that `token < highest_token` and immediately aborts the write with an error, preventing silent data corruption.
 </details>
 
-<details>
-<summary>3. In ZooKeeper, how does watching the preceding sequential znode eliminate the Thundering Herd problem?</summary>
+<details><summary>3. In ZooKeeper, how does watching the preceding sequential znode eliminate the Thundering Herd problem?</summary>
 
 In a naive implementation, all waiting clients set a watch on the main lock znode. When the lock is released, all waiting nodes wake up simultaneously, overwhelming ZooKeeper with thousands of concurrent read requests. By using sequential znodes, each candidate watches only the znode immediately preceding its own number in the queue. When the active lock is deleted, exactly one client (the next in line) receives a notification, ensuring $O(1)$ network and CPU overhead.
 </details>
 
-<details>
-<summary>4. What is the difference between an Ephemeral znode in ZooKeeper and a standard Persistent znode?</summary>
+<details><summary>4. What is the difference between an Ephemeral znode in ZooKeeper and a standard Persistent znode?</summary>
 
 - **Persistent znode**: Remains in the ZooKeeper tree permanently until an explicit `delete` API call removes it.
 - **Ephemeral znode**: Bound to the active client session that created it. If the client disconnects or fails to send heartbeats within the session timeout period, ZooKeeper automatically deletes the znode. This makes ephemeral znodes ideal for leader election, membership tracking, and distributed locks.
 
 </details>
 
-<details>
-<summary>5. How does etcd implement distributed locks using its revision and transaction (Txn) APIs?</summary>
+<details><summary>5. How does etcd implement distributed locks using its revision and transaction (Txn) APIs?</summary>
 
 In etcd, every write operation increments a global 64-bit integer called `mod_revision`. A client creates a key with a time-bounded Lease. It then executes an atomic transaction: `IF (create_revision == 0) THEN (put key with lease) ELSE (get key)`. If successful, the client's key has the lowest `mod_revision`. The client uses `mod_revision` as its fencing token. Waiting clients set a watch on the key prefix to observe releases.
 </details>

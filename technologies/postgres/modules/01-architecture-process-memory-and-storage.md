@@ -204,54 +204,33 @@ Starting with PostgreSQL 18, `initdb` enables **data checksums by default** (`da
 
 ---
 
-## 8. Interview Drill
+## Interview Drill
 
-<details>
-<summary>1. Why does PostgreSQL utilize a multi-process architecture instead of a multi-threaded architecture?</summary>
+<details><summary>1. Why does PostgreSQL utilize a multi-process architecture instead of a multi-threaded architecture?</summary>
 
-**Answer**: PostgreSQL was originally architected at UC Berkeley (Ingres/POSTGRES project) when operating system thread implementations were unstable and non-standard. The multi-process model provides total address space isolation: a segmentation fault or memory corruption in one client backend cannot crash the server or corrupt other connections. However, processes introduce memory overhead per connection (typically 5–10MB per backend) and high context switching costs, which necessitates dedicated connection pooling (e.g., PgBouncer) in high-concurrency environments.
-
-- Ref: [PostgreSQL Internals (Suzuki)](https://www.interdb.jp/pg/)
-
+PostgreSQL was originally architected at UC Berkeley (Ingres/POSTGRES project) when operating system thread implementations were unstable and non-standard. The multi-process model provides total address space isolation: a segmentation fault or memory corruption in one client backend cannot crash the server or corrupt other connections. However, processes introduce memory overhead per connection (typically 5–10MB per backend) and high context switching costs, which necessitates dedicated connection pooling (e.g., PgBouncer) in high-concurrency environments.
 </details>
 
-<details>
-<summary>2. Explain the phenomenon of "double buffering" in PostgreSQL. Why is setting `shared_buffers` to 90% of RAM an anti-pattern?</summary>
+<details><summary>2. Explain the phenomenon of "double buffering" in PostgreSQL. Why is setting `shared_buffers` to 90% of RAM an anti-pattern?</summary>
 
-**Answer**: PostgreSQL utilizes standard buffered operating system read and write calls (unless Direct I/O is enabled). When a page is read from storage, the OS kernel caches it in the OS page cache before copying it into PostgreSQL's `shared_buffers`. If `shared_buffers` is allocated 90% of system RAM, nearly all cached pages are duplicated across both caches, wasting memory. Furthermore, memory starvation for private backend structures (`work_mem`, connection stacks) triggers OS kernel Out-Of-Memory (OOM) kills. The standard recommended allocation is 25% to 40% of physical RAM for `shared_buffers`, leaving the remainder for the OS cache and query work memory.
-
-- Ref: [PostgreSQL Documentation: Resource Consumption](https://www.postgresql.org/docs/18/runtime-config-resource.html)
-
+PostgreSQL utilizes standard buffered operating system read and write calls (unless Direct I/O is enabled). When a page is read from storage, the OS kernel caches it in the OS page cache before copying it into PostgreSQL's `shared_buffers`. If `shared_buffers` is allocated 90% of system RAM, nearly all cached pages are duplicated across both caches, wasting memory. Furthermore, memory starvation for private backend structures (`work_mem`, connection stacks) triggers OS kernel Out-Of-Memory (OOM) kills. The standard recommended allocation is 25% to 40% of physical RAM for `shared_buffers`, leaving the remainder for the OS cache and query work memory.
 </details>
 
-<details>
-<summary>3. What is the purpose of the line pointer (`ItemIdData`) array in the 8KB page? Why don't indexes point directly to byte offsets?</summary>
+<details><summary>3. What is the purpose of the line pointer (`ItemIdData`) array in the 8KB page? Why don't indexes point directly to byte offsets?</summary>
 
-**Answer**: The line pointer array decouples logical tuple addressing from physical byte locations. An item pointer (`ctid = (block_number, offset_number)`) points to line pointer `offset_number` in the page header, not to raw byte coordinates. When tuples are updated in-place via Heap-Only Tuples (HOT) or defragmented within the page, only the internal byte offsets in `ItemIdData` are adjusted. Secondary indexes do not require updates because their target `(block, offset)` remains unchanged.
-
-- Ref: [PostgreSQL Source: src/include/storage/bufpage.h](https://git.postgresql.org/gitweb/?p=postgresql.git;a=blob;f=src/include/storage/bufpage.h)
-
+The line pointer array decouples logical tuple addressing from physical byte locations. An item pointer (`ctid = (block_number, offset_number)`) points to line pointer `offset_number` in the page header, not to raw byte coordinates. When tuples are updated in-place via Heap-Only Tuples (HOT) or defragmented within the page, only the internal byte offsets in `ItemIdData` are adjusted. Secondary indexes do not require updates because their target `(block, offset)` remains unchanged.
 </details>
 
-<details>
-<summary>4. What are the four forks of a PostgreSQL relation and what is the function of each?</summary>
-
-**Answer**:
+<details><summary>4. What are the four forks of a PostgreSQL relation and what is the function of each?</summary>
 
 1. **Main Fork**: The actual data blocks containing physical rows or index nodes.
 2. **Free Space Map (`_fsm`)**: A binary tree tracking free space per page to rapidly locate blocks with room for new inserts.
 3. **Visibility Map (`_vm`)**: Tracks all-visible (all tuples visible to all transactions, enabling Index-Only Scans) and all-frozen bits per page.
 4. **Initialization Fork (`_init`)**: Exists only on unlogged tables; used to reset the table to empty during crash recovery without reading WAL.
 
-- Ref: [PostgreSQL Documentation: Database Physical Storage](https://www.postgresql.org/docs/18/storage-file-layout.html)
-
 </details>
 
-<details>
-<summary>5. What changes occurred in PostgreSQL 18 regarding data checksums and I/O architecture?</summary>
+<details><summary>5. What changes occurred in PostgreSQL 18 regarding data checksums and I/O architecture?</summary>
 
-**Answer**: PostgreSQL 18 enables cluster data checksums by default during `initdb` to protect against undetected bit-rot on storage devices. It also integrates an Asynchronous I/O (AIO) framework (`io_method = worker / io_uring`) allowing asynchronous batch operations across read and write pathways, moving towards auto-scaling I/O workers in PostgreSQL 19.
-
-- Ref: [PostgreSQL 18 Release Notes](https://www.postgresql.org/docs/18/release-18.html)
-
+PostgreSQL 18 enables cluster data checksums by default during `initdb` to protect against undetected bit-rot on storage devices. It also integrates an Asynchronous I/O (AIO) framework (`io_method = worker / io_uring`) allowing asynchronous batch operations across read and write pathways, moving towards auto-scaling I/O workers in PostgreSQL 19.
 </details>

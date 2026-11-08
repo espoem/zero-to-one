@@ -287,51 +287,31 @@ hostssl production_db   oauth_user      0.0.0.0/0               oauth
 
 ---
 
-## 10. Interview Drill
+## Interview Drill
 
-<details>
-<summary>1. Explain the "search_path hijacking" vulnerability in `SECURITY DEFINER` functions and how to mitigate it.</summary>
+<details><summary>1. Explain the "search_path hijacking" vulnerability in `SECURITY DEFINER` functions and how to mitigate it.</summary>
 
-**Answer**: A `SECURITY DEFINER` function executes with the privileges of the user that owns the function (often a superuser or DBA). If the function references database objects without schema qualifications (e.g. `SELECT * FROM users`), PostgreSQL resolves the object using the active session's `search_path`. A malicious unprivileged user can create a malicious table, function, or operator in a schema earlier in the search path (such as `public`). When a privileged user invokes the `SECURITY DEFINER` function, the engine inadvertently executes the attacker's object with elevated administrative privileges. The mitigation is setting `search_path` explicitly on the function definition: `ALTER FUNCTION fn() SET search_path = pg_catalog, pg_temp;`.
-
-- Ref: [PostgreSQL Documentation: Writing SECURITY DEFINER Functions Safely](https://www.postgresql.org/docs/18/sql-createfunction.html#SQL-CREATEFUNCTION-SECURITY)
-
+A `SECURITY DEFINER` function executes with the privileges of the user that owns the function (often a superuser or DBA). If the function references database objects without schema qualifications (e.g. `SELECT * FROM users`), PostgreSQL resolves the object using the active session's `search_path`. A malicious unprivileged user can create a malicious table, function, or operator in a schema earlier in the search path (such as `public`). When a privileged user invokes the `SECURITY DEFINER` function, the engine inadvertently executes the attacker's object with elevated administrative privileges. The mitigation is setting `search_path` explicitly on the function definition: `ALTER FUNCTION fn() SET search_path = pg_catalog, pg_temp;`.
 </details>
 
-<details>
-<summary>2. Why is marking a function `IMMUTABLE` when it actually queries table data a critical operational error?</summary>
+<details><summary>2. Why is marking a function `IMMUTABLE` when it actually queries table data a critical operational error?</summary>
 
-**Answer**: An `IMMUTABLE` function contract guarantees that the function will always return identical outputs for identical arguments and has zero side-effects. The query planner relies on this contract to pre-evaluate function calls into constants and to build expression indexes (`CREATE INDEX ON tbl ((fn(col)))`). If the function queries table data or depends on configuration settings, changes in the underlying table data will **not** trigger re-indexing or cache invalidation. As a result, the index becomes corrupt, queries using the index return stale or missing rows, and query planner cost models become invalid.
-
-- Ref: [PostgreSQL Documentation: Function Volatility Categories](https://www.postgresql.org/docs/18/xfunc-volatility.html)
-
+An `IMMUTABLE` function contract guarantees that the function will always return identical outputs for identical arguments and has zero side-effects. The query planner relies on this contract to pre-evaluate function calls into constants and to build expression indexes (`CREATE INDEX ON tbl ((fn(col)))`). If the function queries table data or depends on configuration settings, changes in the underlying table data will **not** trigger re-indexing or cache invalidation. As a result, the index becomes corrupt, queries using the index return stale or missing rows, and query planner cost models become invalid.
 </details>
 
-<details>
-<summary>3. What is the difference between `USING` and `WITH CHECK` clauses in Row-Level Security (RLS) policies?</summary>
-
-**Answer**:
+<details><summary>3. What is the difference between `USING` and `WITH CHECK` clauses in Row-Level Security (RLS) policies?</summary>
 
 - `USING` defines the predicate for **reading** existing rows from the table (`SELECT`, and the qualification phase of `UPDATE` and `DELETE`). Rows that evaluate to false or unknown are silently filtered out as if they do not exist.
 - `WITH CHECK` defines the predicate for **writing or modifying** rows (`INSERT`, and the new row state resulting from an `UPDATE`). If an application attempts to insert or update a row such that the new values evaluate to false or unknown against `WITH CHECK`, the statement immediately fails with a security policy violation error.
-- Ref: [PostgreSQL Documentation: CREATE POLICY](https://www.postgresql.org/docs/18/sql-createpolicy.html)
 
 </details>
 
-<details>
-<summary>4. Why should table-modifying triggers use transition tables (`REFERENCING NEW TABLE`) rather than `FOR EACH ROW` triggers for batch mutations?</summary>
+<details><summary>4. Why should table-modifying triggers use transition tables (`REFERENCING NEW TABLE`) rather than `FOR EACH ROW` triggers for batch mutations?</summary>
 
-**Answer**: A `FOR EACH ROW` trigger executes the trigger function once per modified row, incurring repeated PL/pgSQL function call context-switching overhead and executing single-row SQL queries in a loop. For a batch operation touching 100,000 rows, this invokes the trigger 100,000 times ($O(N)$ operations). A statement-level trigger with transition tables (`REFERENCING OLD TABLE AS old_rows NEW TABLE AS new_rows FOR EACH STATEMENT`) executes the trigger function **exactly once**. The entire batch of modified rows is exposed as virtual relations, allowing the trigger logic to execute a single set-oriented SQL statement, dramatically reducing execution time and transaction log volume.
-
-- Ref: [PostgreSQL Documentation: Overview of Trigger Behavior](https://www.postgresql.org/docs/18/trigger-definition.html)
-
+A `FOR EACH ROW` trigger executes the trigger function once per modified row, incurring repeated PL/pgSQL function call context-switching overhead and executing single-row SQL queries in a loop. For a batch operation touching 100,000 rows, this invokes the trigger 100,000 times ($O(N)$ operations). A statement-level trigger with transition tables (`REFERENCING OLD TABLE AS old_rows NEW TABLE AS new_rows FOR EACH STATEMENT`) executes the trigger function **exactly once**. The entire batch of modified rows is exposed as virtual relations, allowing the trigger logic to execute a single set-oriented SQL statement, dramatically reducing execution time and transaction log volume.
 </details>
 
-<details>
-<summary>5. What happens if a superuser executes queries on a table with Row-Level Security (RLS) enabled?</summary>
+<details><summary>5. What happens if a superuser executes queries on a table with Row-Level Security (RLS) enabled?</summary>
 
-**Answer**: Superusers **always bypass Row-Level Security policies by default**. Even if an RLS policy is configured with `FOR ALL TO public USING (tenant_id = 42)`, queries executed by a superuser will observe and modify all rows across all tenants without filtering. To enforce RLS during administrative tasks, a table must be altered with `ALTER TABLE tbl FORCE ROW LEVEL SECURITY;`. However, standard superusers still retain bypass capabilities; production multi-tenant applications must strictly connect using non-superuser roles.
-
-- Ref: [PostgreSQL Documentation: Row Security Policies](https://www.postgresql.org/docs/18/ddl-rowsecurity.html)
-
+Superusers **always bypass Row-Level Security policies by default**. Even if an RLS policy is configured with `FOR ALL TO public USING (tenant_id = 42)`, queries executed by a superuser will observe and modify all rows across all tenants without filtering. To enforce RLS during administrative tasks, a table must be altered with `ALTER TABLE tbl FORCE ROW LEVEL SECURITY;`. However, standard superusers still retain bypass capabilities; production multi-tenant applications must strictly connect using non-superuser roles.
 </details>

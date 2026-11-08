@@ -382,7 +382,7 @@ Migration path: the dialect differences that bite are covered in this track (aff
 
 ---
 
-## 9. Interview Drill
+## Interview Drill
 
 <details><summary>1. How can SQLite run in a browser and persist data?</summary>
 
@@ -417,9 +417,4 @@ Measure where the time goes. If write transactions are short, one SQLite writer 
 <details><summary>7. How does Cloudflare D1 maintain read-your-writes consistency across globally distributed edge replicas?</summary>
 
 D1 uses session bookmark tokens. When a write completes against the primary database, the response carries a signed bookmark encoding the transaction's commit position. When subsequent client read requests include this bookmark via `db.withSession(bookmark)`, the Cloudflare edge router forwards the query only to edge replicas that have caught up to that specific commit sequence, preventing time travel or stale reads.
-</details>
-
-<details><summary>8. What failure mode occurs when a LiteFS primary node loses its distributed lease?</summary>
-
-If high network latency or an unhandled GC pause delays the primary's lease renewal heartbeat to Consul, the lease expires. A secondary node is elected primary and begins accepting writes. If the old primary continues processing buffered write transactions before detecting its lost lease, the database state forks into two incompatible branches, causing split-brain that cannot be reconciled automatically.
 </details>

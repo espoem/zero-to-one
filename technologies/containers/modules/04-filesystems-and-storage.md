@@ -383,10 +383,9 @@ OVERLAY-MERGE-READDIR(upperDir, lowerDirs)
 
 ---
 
-## 10. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. Explain the four directory components required to establish an OverlayFS union mount and state the critical filesystem invariant between them.</strong></summary>
+<details><summary>1. Explain the four directory components required to establish an OverlayFS union mount and state the critical filesystem invariant between them.</summary>
 
 An OverlayFS mount requires:
 
@@ -398,46 +397,38 @@ An OverlayFS mount requires:
 **Critical Invariant**: `workdir` and `upperdir` must reside on the exact same underlying physical filesystem (same superblock). If they span different filesystem mounts, creating the OverlayFS mount fails with `EXDEV` ("Invalid cross-device link") because the kernel cannot perform atomic directory renaming between them.
 </details>
 
-<details>
-<summary><strong>Q2. What is an OverlayFS "whiteout", how is it physically represented on disk, and why is it necessary?</strong></summary>
+<details><summary>2. What is an OverlayFS "whiteout", how is it physically represented on disk, and why is it necessary?</summary>
 
 A whiteout is a tombstone marker used to simulate file deletion in a union mount. Because the underlying image layers in `lowerdir` are mounted strictly read-only, the kernel cannot physically erase inodes from lower layers when a container deletes a file. Instead, the kernel creates a special character device node in `upperdir` with major number 0 and minor number 0 (`0/0`) possessing the identical filename. When directory listing system calls (`readdir`, `getdents64`) traverse the union mount, the OverlayFS driver detects the `0/0` character device in `upperdir` and masks the file from the merged directory listing, making it appear deleted.
 </details>
 
-<details>
-<summary><strong>Q3. Describe the "copy-up" operation in OverlayFS and explain why running a database engine inside an image layer causes catastrophic performance degradation.</strong></summary>
+<details><summary>3. Describe the "copy-up" operation in OverlayFS and explain why running a database engine inside an image layer causes catastrophic performance degradation.</summary>
 
 Copy-up occurs when an application attempts to write to or modify an existing file that currently resides in a read-only `lowerdir`. Before the write can execute, the kernel synchronously copies the file's entire metadata, permissions, extended attributes, and data payload from `lowerdir` into `upperdir`. If a database engine (such as PostgreSQL or SQLite) operates on a 10GB database file stored within an image layer, the very first write operation halts execution while the kernel synchronously duplicates the entire 10GB file to the container's writable layer. This leads to massive disk I/O thrashing, storage amplification, and multi-second latency freezes.
 </details>
 
-<details>
-<summary><strong>Q4. How do Linux 5.12+ idmapped mounts solve the permission mismatch problem in rootless containers without requiring recursive `chown`?</strong></summary>
+<details><summary>4. How do Linux 5.12+ idmapped mounts solve the permission mismatch problem in rootless containers without requiring recursive `chown`?</summary>
 
 In rootless containers, the container process runs as UID 0 inside its user namespace, but is mapped to an unprivileged subordinate UID (e.g., UID 100000) on the host. When mounting a host directory owned by developer host UID 1000, standard UNIX permission checks fail (`100000 != 1000`). Idmapped mounts (`mount_setattr(2)` with `MOUNT_ATTR_IDMAP`) configure the kernel VFS layer to dynamically translate UID and GID representations specifically at the mount point boundary. The physical files on disk remain owned by UID 1000, but when accessed through the idmapped mount, the kernel presents them as owned by UID 0 inside the container. This eliminates the need for slow, destructive recursive `chown` operations on host directories.
 </details>
 
-<details>
-<summary><strong>Q5. What is the operational difference between the `:z` and `:Z` volume mount flags on an SELinux-enforcing host?</strong></summary>
+<details><summary>5. What is the operational difference between the `:z` and `:Z` volume mount flags on an SELinux-enforcing host?</summary>
 
 Both flags configure automatic SELinux relabeling of host directories mounted into containers:
 
 - `:z` applies the shared container label `system_u:object_r:container_file_t:s0`. This allows multiple distinct container instances running on the host to concurrently read and write to the mounted directory.
 - `:Z` applies the private container label with the specific container's unique Multi-Category Security (MCS) category pair (e.g., `container_file_t:s0:c123,c456`). This restricts access exclusively to that single container instance. Using `:Z` on shared directories or host system paths (like `/etc` or `/var/log`) can break host services by locking out host daemons.
-
 </details>
 
-<details>
-<summary><strong>Q6. How does containerd's snapshotter architecture differ fundamentally from Docker's legacy graph drivers?</strong></summary>
+<details><summary>6. How does containerd's snapshotter architecture differ fundamentally from Docker's legacy graph drivers?</summary>
 
 Legacy Docker graph drivers coupled image layer management, layer downloading, and rootfs mounting into a single monolithic driver tightly bound to the Docker daemon. Containerd decomposes this into two modular systems:
 
 1. **Content Store**: A content-addressable store containing immutable, cryptographically verified layer blobs (compressed tarballs).
 2. **Snapshotter Subsystem**: A pluggable interface that unpacks content blobs into concrete on-disk filesystem trees, managing parent-child committed (read-only) snapshots and active (read-write container) snapshots. This allows containerd to swap storage drivers (e.g., `overlayfs`, `btrfs`, `zfs`) and support advanced snapshotters like `stargz` for lazy pulling without altering the underlying image content storage.
-
 </details>
 
-<details>
-<summary><strong>Q7. Why is `securityContext.readOnlyRootFilesystem: true` considered a premier container hardening standard, and how does it interact with application storage?</strong></summary>
+<details><summary>7. Why is `securityContext.readOnlyRootFilesystem: true` considered a premier container hardening standard, and how does it interact with application storage?</summary>
 
 Configuring `readOnlyRootFilesystem: true` instructs the container runtime to mount the root OverlayFS filesystem (`/`) without an active, writable `upperdir`. Any attempt by an attacker or malware to modify system binaries, install rootkits, inject persistence scripts into `/etc`, or alter shared libraries is immediately rejected by the kernel with `EROFS` ("Read-only file system"). However, applications that require write access for temporary files, caches, or logs must explicitly define and mount external writable volumes (such as `emptyDir` or `tmpfs` at `/tmp` and `/var/run`), forcing explicit architectural boundaries around mutable state.
 </details>

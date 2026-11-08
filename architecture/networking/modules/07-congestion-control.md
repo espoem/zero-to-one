@@ -338,11 +338,9 @@ ESTAB  0  0  192.168.1.100:54210  203.0.113.50:443
 
 ---
 
-## 10. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-### Q1: Why does Additive Increase / Multiplicative Decrease (AIMD) guarantee convergence to both efficiency and fairness, whereas Multiplicative Increase / Multiplicative Decrease (MIMD) does not?
-
-<details><summary>Answer</summary>
+<details><summary>1. Why does Additive Increase / Multiplicative Decrease (AIMD) guarantee convergence to both efficiency and fairness, whereas Multiplicative Increase / Multiplicative Decrease (MIMD) does not?</summary>
 
 **Geometric Vector Convergence.** In Chiu and Jain's phase plot (where axes represent the allocation of two competing flows $x_1$ and $x_2$):
 
@@ -356,9 +354,7 @@ ESTAB  0  0  192.168.1.100:54210  203.0.113.50:443
 
 </details>
 
-### Q2: Explain the Bufferbloat phenomenon. Why do loss-based congestion control algorithms like Reno and CUBIC cause it?
-
-<details><summary>Answer</summary>
+<details><summary>2. Explain the Bufferbloat phenomenon. Why do loss-based congestion control algorithms like Reno and CUBIC cause it?</summary>
 
 **Queue Saturation to Packet Drop.**
 
@@ -370,9 +366,7 @@ ESTAB  0  0  192.168.1.100:54210  203.0.113.50:443
 
 </details>
 
-### Q3: How does BBR estimate the Bottleneck Bandwidth (`BtlBw`) and Round-Trip Propagation Time (`RTprop`), and why can it not measure both simultaneously?
-
-<details><summary>Answer</summary>
+<details><summary>3. How does BBR estimate the Bottleneck Bandwidth (`BtlBw`) and Round-Trip Propagation Time (`RTprop`), and why can it not measure both simultaneously?</summary>
 
 **The Heisenberg-like Uncertainty of Network Measurement.**
 
@@ -386,9 +380,7 @@ ESTAB  0  0  192.168.1.100:54210  203.0.113.50:443
 
 </details>
 
-### Q4: In CUBIC (RFC 9438), what is the purpose of the parameter $W_{\text{max}}$, and how does the cubic curve behave when $t < K$ versus $t > K$?
-
-<details><summary>Answer</summary>
+<details><summary>4. In CUBIC (RFC 9438), what is the purpose of the parameter $W_{\text{max}}$, and how does the cubic curve behave when $t < K$ versus $t > K$?</summary>
 
 **Target Memory and Stability Concavity.**
 
@@ -400,9 +392,7 @@ ESTAB  0  0  192.168.1.100:54210  203.0.113.50:443
 
 </details>
 
-### Q5: How does Explicit Congestion Notification (ECN) allow an AQM router to signal congestion without dropping packets? What headers and flags are modified?
-
-<details><summary>Answer</summary>
+<details><summary>5. How does Explicit Congestion Notification (ECN) allow an AQM router to signal congestion without dropping packets? What headers and flags are modified?</summary>
 
 **In-Band Congestion Feedback via IP and TCP Flags.**
 
@@ -415,9 +405,7 @@ ESTAB  0  0  192.168.1.100:54210  203.0.113.50:443
 
 </details>
 
-### Q6: What is the fundamental operational difference between the Token Bucket algorithm and the Leaky Bucket algorithm in traffic shaping?
-
-<details><summary>Answer</summary>
+<details><summary>6. What is the fundamental operational difference between the Token Bucket algorithm and the Leaky Bucket algorithm in traffic shaping?</summary>
 
 **Burst Tolerance vs Constant Smoothing.**
 

@@ -238,54 +238,33 @@ Query plan instability caused by minor statistics fluctuations has long been a p
 
 ---
 
-## 10. Interview Drill
+## Interview Drill
 
-<details>
-<summary>1. Why should `random_page_cost` be changed from 4.0 to 1.1 on modern production database servers?</summary>
+<details><summary>1. Why should `random_page_cost` be changed from 4.0 to 1.1 on modern production database servers?</summary>
 
-**Answer**: `random_page_cost` measures the estimated cost of reading an arbitrary 8KB disk page relative to a sequential page read (`seq_page_cost = 1.0`). The default value of 4.0 was established for spinning platter hard disk drives, where physical actuator arm seek latency made random reads significantly more expensive than sequential streaming reads. On modern NVMe SSDs and cloud block storage, random read access latency is almost identical to sequential read access latency. Leaving `random_page_cost = 4.0` severely biases the cost optimizer against index scans, causing it to choose inefficient sequential table scans. Setting it to 1.1 aligns planner estimates with physical hardware reality.
-
-- Ref: [PostgreSQL Documentation: Planner Cost Constants](https://www.postgresql.org/docs/18/runtime-config-query.html#GUC-RANDOM-PAGE-COST)
-
+`random_page_cost` measures the estimated cost of reading an arbitrary 8KB disk page relative to a sequential page read (`seq_page_cost = 1.0`). The default value of 4.0 was established for spinning platter hard disk drives, where physical actuator arm seek latency made random reads significantly more expensive than sequential streaming reads. On modern NVMe SSDs and cloud block storage, random read access latency is almost identical to sequential read access latency. Leaving `random_page_cost = 4.0` severely biases the cost optimizer against index scans, causing it to choose inefficient sequential table scans. Setting it to 1.1 aligns planner estimates with physical hardware reality.
 </details>
 
-<details>
-<summary>2. Explain how correlated columns lead to catastrophic query execution plans, and how `CREATE STATISTICS` fixes the issue.</summary>
+<details><summary>2. Explain how correlated columns lead to catastrophic query execution plans, and how `CREATE STATISTICS` fixes the issue.</summary>
 
-**Answer**: By default, the PostgreSQL optimizer assumes attribute value independence: $P(A \land B) = P(A) \times P(B)$. For correlated columns (such as `city = 'San Francisco'` and `state = 'California'`), this formula multiplies probabilities together, resulting in an extreme underestimate of matching rows (e.g. estimating 10 rows when there are actually 100,000). Believing the result set is tiny, the planner selects a Nested Loop join. At execution time, the engine loops 100,000 times instead of 10, causing query time to explode. `CREATE STATISTICS ... (dependencies, mcv) ON colA, colB FROM table` gathers multivariate joint distribution telemetry, allowing the optimizer to accurately estimate row counts and select Hash or Merge joins.
-
-- Ref: [PostgreSQL Documentation: Multivariate Statistics](https://www.postgresql.org/docs/18/planner-stats.html#PLANNER-STATS-EXTENDED)
-
+By default, the PostgreSQL optimizer assumes attribute value independence: $P(A \land B) = P(A) \times P(B)$. For correlated columns (such as `city = 'San Francisco'` and `state = 'California'`), this formula multiplies probabilities together, resulting in an extreme underestimate of matching rows (e.g. estimating 10 rows when there are actually 100,000). Believing the result set is tiny, the planner selects a Nested Loop join. At execution time, the engine loops 100,000 times instead of 10, causing query time to explode. `CREATE STATISTICS ... (dependencies, mcv) ON colA, colB FROM table` gathers multivariate joint distribution telemetry, allowing the optimizer to accurately estimate row counts and select Hash or Merge joins.
 </details>
 
-<details>
-<summary>3. Describe the prepared statement generic plan flip mechanism and why it can trigger sudden query latency cliffs.</summary>
+<details><summary>3. Describe the prepared statement generic plan flip mechanism and why it can trigger sudden query latency cliffs.</summary>
 
-**Answer**: When a query is prepared, PostgreSQL generates parameter-specific custom plans for the first five executions. On the sixth execution, it compares the average cost of custom plans with the estimated cost of a generic plan (which plans without knowing parameter values). If the generic plan is on average cheaper, the server freezes the generic plan for all subsequent executions. If data is heavily skewed (e.g. 99% inactive, 1% active), a generic plan that assumes the common status may be chosen. When an execution subsequently queries for the rare status, the generic plan executes an inappropriate sequential scan instead of an index lookup, causing latency to spike dramatically.
-
-- Ref: [PostgreSQL Documentation: PREPARE: Plan Caching](https://www.postgresql.org/docs/18/sql-prepare.html)
-
+When a query is prepared, PostgreSQL generates parameter-specific custom plans for the first five executions. On the sixth execution, it compares the average cost of custom plans with the estimated cost of a generic plan (which plans without knowing parameter values). If the generic plan is on average cheaper, the server freezes the generic plan for all subsequent executions. If data is heavily skewed (e.g. 99% inactive, 1% active), a generic plan that assumes the common status may be chosen. When an execution subsequently queries for the rare status, the generic plan executes an inappropriate sequential scan instead of an index lookup, causing latency to spike dramatically.
 </details>
 
-<details>
-<summary>4. What are the key metrics to evaluate in `EXPLAIN (ANALYZE, BUFFERS)` output to identify I/O bottlenecks?</summary>
-
-**Answer**:
+<details><summary>4. What are the key metrics to evaluate in `EXPLAIN (ANALYZE, BUFFERS)` output to identify I/O bottlenecks?</summary>
 
 1. `shared hit` vs `shared read`: `shared hit` indicates pages retrieved directly from memory (`shared_buffers`), while `read` indicates pages that were not in PostgreSQL memory and required kernel filesystem reads. A high `read` count relative to `hit` indicates cache misses and disk I/O.
 2. `rows` (estimated) vs `actual rows`: A divergence of more than an order of magnitude indicates outdated or inaccurate statistics, suggesting `ANALYZE` or `CREATE STATISTICS` is needed.
 3. `loops`: Execution counters on nested loop nodes. The actual time and row count of an inner node must be multiplied by `loops` to determine its true cost.
 4. `dirtied` / `written`: Indicates the volume of memory pages altered or flushed to disk by the query.
 
-- Ref: [PostgreSQL Documentation: Using EXPLAIN](https://www.postgresql.org/docs/18/using-explain.html)
-
 </details>
 
-<details>
-<summary>5. Why did PostgreSQL 19 change the default setting of `jit` to `off`?</summary>
+<details><summary>5. Why did PostgreSQL 19 change the default setting of `jit` to `off`?</summary>
 
-**Answer**: JIT (Just-In-Time) compilation uses LLVM to compile expressions and tuple deforming into native machine code. While beneficial for long-running analytical queries (OLAP) processing millions of rows, JIT introduces a compilation latency overhead of 10ms to 50ms per query. For typical OLTP web workloads where queries are expected to execute in under 5ms, JIT compilation frequently took 10x longer than the actual execution of the query, degrading system throughput and exhausting CPU capacity. By defaulting `jit = off` in PostgreSQL 19, transactional performance is protected out of the box.
-
-- Ref: [PostgreSQL 19 Release Notes](https://www.postgresql.org/docs/19/release-19.html)
-
+JIT (Just-In-Time) compilation uses LLVM to compile expressions and tuple deforming into native machine code. While beneficial for long-running analytical queries (OLAP) processing millions of rows, JIT introduces a compilation latency overhead of 10ms to 50ms per query. For typical OLTP web workloads where queries are expected to execute in under 5ms, JIT compilation frequently took 10x longer than the actual execution of the query, degrading system throughput and exhausting CPU capacity. By defaulting `jit = off` in PostgreSQL 19, transactional performance is protected out of the box.
 </details>

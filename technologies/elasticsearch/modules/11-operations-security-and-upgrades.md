@@ -378,46 +378,39 @@ A major rolling upgrade (such as 8.19 to 9.5) requires structured operational di
 
 ---
 
-## 9. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. The cluster is yellow. Walk through your diagnosis.</strong></summary>
+<details><summary>1. The cluster is yellow. Walk through your diagnosis.</summary>
 
 `_cluster/health` → `_cat/shards` filtered to UNASSIGNED with `unassigned.reason` → `_cluster/allocation/explain` for one of them → act on the decider (disk watermark, same-shard/not enough nodes, allocation filters, tier preference, awareness, max retries then `reroute?retry_failed=true`).
 </details>
 
-<details>
-<summary><strong>Q2. What happens at 85%, 90% and 95% disk usage?</strong></summary>
+<details><summary>2. What happens at 85%, 90% and 95% disk usage?</summary>
 
 Low: no new shards allocated to the node. High: shards relocate away. Flood: indices with a shard on the node get `read_only_allow_delete`, blocking writes; released automatically once usage drops below the high watermark.
 </details>
 
-<details>
-<summary><strong>Q3. How large should the JVM heap be on a 128 GB data node?</strong></summary>
+<details><summary>3. How large should the JVM heap be on a 128 GB data node?</summary>
 
 Usually leave the automatic sizing. If set by hand, ~31 GB (below the compressed-oops threshold), leaving the rest to the page cache that Lucene's mmapped files need; more heap does not speed up search and can slow it.
 </details>
 
-<details>
-<summary><strong>Q4. How do you give an ingestion service minimal permissions?</strong></summary>
+<details><summary>4. How do you give an ingestion service minimal permissions?</summary>
 
 An API key with role descriptors granting `create_doc` and `auto_configure` on its data stream pattern only, with an expiration, rotated via the API. No read, no delete, no cluster privileges.
 </details>
 
-<details>
-<summary><strong>Q5. Are Elasticsearch snapshots full or incremental?</strong></summary>
+<details><summary>5. Are Elasticsearch snapshots full or incremental?</summary>
 
 Both: each snapshot is logically complete and independently restorable, but physically only new segment files are uploaded; deleting a snapshot removes only unreferenced files.
 </details>
 
-<details>
-<summary><strong>Q6. Plan an upgrade from 8.15 to 9.5.</strong></summary>
+<details><summary>6. Plan an upgrade from 8.15 to 9.5.</summary>
 
 Snapshot. Upgrade to the latest 8.19 patch (rolling). Run the Upgrade Assistant / deprecation API, fix critical issues, reindex or archive 7.x-created indices. Snapshot again. Rolling upgrade to 9.5.x: data tiers from frozen to hot, master-eligible nodes last, disabling replica allocation per node and waiting for green between nodes. Upgrade clients last.
 </details>
 
-<details>
-<summary><strong>Q7. A primary shard has no valid copy. What are your options?</strong></summary>
+<details><summary>7. A primary shard has no valid copy. What are your options?</summary>
 
 Restore that index from a snapshot (preferred). Otherwise `allocate_stale_primary` to use an outdated copy, or `allocate_empty_primary` to give up the shard's data, both with `accept_data_loss: true` and a post-mortem.
 </details>

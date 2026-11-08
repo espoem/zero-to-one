@@ -142,34 +142,29 @@ flowchart TD
 
 ---
 
-## 6. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-<details>
-<summary>1. How does the Specializing Adaptive Interpreter (PEP 659) improve execution speed in Python 3.11+?</summary>
+<details><summary>1. How does the Specializing Adaptive Interpreter (PEP 659) improve execution speed in Python 3.11+?</summary>
 
-**Answer:** PEP 659 introduces runtime instruction specialization. Instead of executing generic, type-agnostic bytecode instructions that repeatedly inspect types and dictionary lookups on every loop iteration, CPython tracks execution counts. When an instruction (like `BINARY_OP` or `LOAD_ATTR`) executes repeatedly with the identical operand types, CPython rewrites the bytecode instruction in-place to a specialized variant (`BINARY_OP_ADD_INT`, `LOAD_ATTR_SLOT`). These specialized instructions skip MRO traversal and dynamic dispatch, executing direct C primitive operations in a single step. If an unexpected type arrives, a guard check triggers safe de-optimization back to the generic opcode.
+PEP 659 introduces runtime instruction specialization. Instead of executing generic, type-agnostic bytecode instructions that repeatedly inspect types and dictionary lookups on every loop iteration, CPython tracks execution counts. When an instruction (like `BINARY_OP` or `LOAD_ATTR`) executes repeatedly with the identical operand types, CPython rewrites the bytecode instruction in-place to a specialized variant (`BINARY_OP_ADD_INT`, `LOAD_ATTR_SLOT`). These specialized instructions skip MRO traversal and dynamic dispatch, executing direct C primitive operations in a single step. If an unexpected type arrives, a guard check triggers safe de-optimization back to the generic opcode.
 </details>
 
-<details>
-<summary>2. Why can Reference Counting alone not manage all memory in CPython?</summary>
+<details><summary>2. Why can Reference Counting alone not manage all memory in CPython?</summary>
 
-**Answer:** Reference counting cannot collect **isolated reference cycles**. If object $A$ holds a reference to object $B$, and object $B$ holds a reference to object $A$, both objects have an `ob_refcnt` of at least 1. If all external references to $A$ and $B$ from active frames, local variables, and global scopes are deleted, the objects become completely unreachable by application code. However, because their mutual references keep their reference counts at 1, reference counting alone will never deallocate them, causing a permanent memory leak. CPython requires a secondary Cyclic Garbage Collector to detect and destroy isolated cycles.
+Reference counting cannot collect **isolated reference cycles**. If object $A$ holds a reference to object $B$, and object $B$ holds a reference to object $A$, both objects have an `ob_refcnt` of at least 1. If all external references to $A$ and $B$ from active frames, local variables, and global scopes are deleted, the objects become completely unreachable by application code. However, because their mutual references keep their reference counts at 1, reference counting alone will never deallocate them, causing a permanent memory leak. CPython requires a secondary Cyclic Garbage Collector to detect and destroy isolated cycles.
 </details>
 
-<details>
-<summary>3. What is an Immortal Object (PEP 683), and what problem does it solve in multi-core systems?</summary>
+<details><summary>3. What is an Immortal Object (PEP 683), and what problem does it solve in multi-core systems?</summary>
 
-**Answer:** An immortal object is an object whose reference count is set to a special sentinel bit pattern (`_Py_IMMORTAL_REFCNT`), instructing the runtime to bypass `Py_INCREF` and `Py_DECREF` operations entirely. In multi-core and multi-threaded systems (including subinterpreters and free-threaded Python), shared immutable singletons like `None`, `True`, `False`, and small integers were previously modified by every thread that accessed them. Writing to `ob_refcnt` dirtied the CPU cache line holding the object, causing continuous **cache line bouncing** and invalidations across CPU cores. Immortal objects make singletons truly read-only, allowing them to reside in shared CPU caches and copy-on-write memory pages without invalidation.
+An immortal object is an object whose reference count is set to a special sentinel bit pattern (`_Py_IMMORTAL_REFCNT`), instructing the runtime to bypass `Py_INCREF` and `Py_DECREF` operations entirely. In multi-core and multi-threaded systems (including subinterpreters and free-threaded Python), shared immutable singletons like `None`, `True`, `False`, and small integers were previously modified by every thread that accessed them. Writing to `ob_refcnt` dirtied the CPU cache line holding the object, causing continuous **cache line bouncing** and invalidations across CPU cores. Immortal objects make singletons truly read-only, allowing them to reside in shared CPU caches and copy-on-write memory pages without invalidation.
 </details>
 
-<details>
-<summary>4. How does Python's Zero-Cost Exception Handling work compared to legacy Python?</summary>
+<details><summary>4. How does Python's Zero-Cost Exception Handling work compared to legacy Python?</summary>
 
-**Answer:** Legacy Python required executing `SETUP_FINALLY` and `POP_BLOCK` instructions to push and pop handler contexts onto a runtime stack whenever a `try` block was entered and exited, adding CPU overhead to every executed `try` statement even when no error occurred. Zero-cost exception handling eliminates all runtime instructions when entering a `try` block. Instead, the compiler generates a static lookup table mapping bytecode offset ranges to exception handler targets. During normal execution, code runs with zero overhead. Only when an exception occurs does the VM inspect the exception table to find the handler corresponding to the current instruction offset (`f_lasti`).
+Legacy Python required executing `SETUP_FINALLY` and `POP_BLOCK` instructions to push and pop handler contexts onto a runtime stack whenever a `try` block was entered and exited, adding CPU overhead to every executed `try` statement even when no error occurred. Zero-cost exception handling eliminates all runtime instructions when entering a `try` block. Instead, the compiler generates a static lookup table mapping bytecode offset ranges to exception handler targets. During normal execution, code runs with zero overhead. Only when an exception occurs does the VM inspect the exception table to find the handler corresponding to the current instruction offset (`f_lasti`).
 </details>
 
-<details>
-<summary>5. How does `pymalloc` mitigate memory fragmentation in CPython?</summary>
+<details><summary>5. How does `pymalloc` mitigate memory fragmentation in CPython?</summary>
 
-**Answer:** CPython applications continuously allocate and deallocate millions of small, short-lived objects (integers, strings, tuples). Passing all these allocations directly to the OS `malloc()` creates severe memory fragmentation, as small allocations interleave with large ones, preventing the OS from reclaiming contiguous virtual memory. `pymalloc` handles all allocations $\le 512$ bytes. It requests large 256 KB memory Arenas from the OS, slices them into 4 KB Pools, and subdivides each pool into fixed-size Blocks (size classes in multiples of 16 bytes: 16, 32, 48 ... 512 bytes). Allocations and deallocations simply update a pool-local free list pointer in $O(1)$ time, completely shielding the operating system allocator from small object churn and preventing virtual memory fragmentation.
+CPython applications continuously allocate and deallocate millions of small, short-lived objects (integers, strings, tuples). Passing all these allocations directly to the OS `malloc()` creates severe memory fragmentation, as small allocations interleave with large ones, preventing the OS from reclaiming contiguous virtual memory. `pymalloc` handles all allocations $\le 512$ bytes. It requests large 256 KB memory Arenas from the OS, slices them into 4 KB Pools, and subdivides each pool into fixed-size Blocks (size classes in multiples of 16 bytes: 16, 32, 48 ... 512 bytes). Allocations and deallocations simply update a pool-local free list pointer in $O(1)$ time, completely shielding the operating system allocator from small object churn and preventing virtual memory fragmentation.
 </details>

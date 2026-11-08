@@ -224,60 +224,40 @@ flowchart TD
 
 ---
 
-## 8. Interview Drill
+## Interview Drill
 
-<details>
-<summary>1. Why can PostgreSQL not enforce a global unique constraint across child partitions in declarative partitioning?</summary>
+<details><summary>1. Why can PostgreSQL not enforce a global unique constraint across child partitions in declarative partitioning?</summary>
 
-**Answer**: In PostgreSQL declarative partitioning, child partitions are distinct physical relations (`pg_class` entries) with their own independent B-tree index files. A B-tree index is physically local to its partition. Because there are no cross-table "global" index structures in PostgreSQL, verifying uniqueness for a newly inserted tuple would require probing the B-tree indexes of every existing partition, converting single-row $O(\log N)$ inserts into expensive cross-table distributed checks. Therefore, PostgreSQL mandates that any unique or primary key constraint on a partitioned table must include all columns of the partition key, guaranteeing that uniqueness can be validated strictly within a single partition's local index.
-
-- Ref: [PostgreSQL Documentation: Table Partitioning: Limitations](https://www.postgresql.org/docs/18/ddl-partitioning.html#DDL-PARTITIONING-DECLARATIVE-LIMITATIONS)
-
+In PostgreSQL declarative partitioning, child partitions are distinct physical relations (`pg_class` entries) with their own independent B-tree index files. A B-tree index is physically local to its partition. Because there are no cross-table "global" index structures in PostgreSQL, verifying uniqueness for a newly inserted tuple would require probing the B-tree indexes of every existing partition, converting single-row $O(\log N)$ inserts into expensive cross-table distributed checks. Therefore, PostgreSQL mandates that any unique or primary key constraint on a partitioned table must include all columns of the partition key, guaranteeing that uniqueness can be validated strictly within a single partition's local index.
 </details>
 
-<details>
-<summary>2. Why does setting `max_connections = 5000` severely degrade PostgreSQL server throughput compared to using a connection pooler like PgBouncer?</summary>
+<details><summary>2. Why does setting `max_connections = 5000` severely degrade PostgreSQL server throughput compared to using a connection pooler like PgBouncer?</summary>
 
-**Answer**: PostgreSQL uses a process-per-connection architecture. 5,000 direct connections create 5,000 distinct operating system processes. Each process consumes 5MB to 10MB of baseline RAM (totalling 25GB to 50GB before query execution) and allocates per-operation `work_mem`. When thousands of processes actively compete for CPU cores, the operating system kernel spends the vast majority of CPU cycles performing process context-switching, TLB cache invalidation, and shared memory lock arbitration (`LWLock`) rather than executing SQL. PgBouncer terminates client TCP sockets in an event-driven loop and multiplexes queries into a pool of 32 to 64 backend processes, matching CPU core capacity and maximizing execution throughput.
-
-- Ref: [PostgreSQL Documentation: Number of Database Connections](https://wiki.postgresql.org/wiki/Number_Of_Database_Connections)
-
+PostgreSQL uses a process-per-connection architecture. 5,000 direct connections create 5,000 distinct operating system processes. Each process consumes 5MB to 10MB of baseline RAM (totalling 25GB to 50GB before query execution) and allocates per-operation `work_mem`. When thousands of processes actively compete for CPU cores, the operating system kernel spends the vast majority of CPU cycles performing process context-switching, TLB cache invalidation, and shared memory lock arbitration (`LWLock`) rather than executing SQL. PgBouncer terminates client TCP sockets in an event-driven loop and multiplexes queries into a pool of 32 to 64 backend processes, matching CPU core capacity and maximizing execution throughput.
 </details>
 
-<details>
-<summary>3. What hazards occur when using PgBouncer in Transaction Pooling mode, and how do you prevent them?</summary>
+<details><summary>3. What hazards occur when using PgBouncer in Transaction Pooling mode, and how do you prevent them?</summary>
 
-**Answer**: In Transaction Pooling mode, a PostgreSQL backend connection is released back to the pool immediately upon `COMMIT` or `ROLLBACK`. Any session-level state modified during the transaction is either lost for subsequent queries or leaks to another client that acquires the same backend. Specific hazards:
+In Transaction Pooling mode, a PostgreSQL backend connection is released back to the pool immediately upon `COMMIT` or `ROLLBACK`. Any session-level state modified during the transaction is either lost for subsequent queries or leaks to another client that acquires the same backend. Specific hazards:
 
 1. `SET search_path` or `SET TimeZone` are discarded or leak across sessions (fix: use `SET LOCAL` inside transaction blocks).
 2. Temporary tables (`CREATE TEMP TABLE`) are tied to backend process lifetime and become inaccessible or leak.
 3. `LISTEN/NOTIFY` fails because notification channels require a persistent connection (fix: dedicate a small session-pooled connection group for listeners).
 4. Session-level advisory locks (`pg_advisory_lock`) remain held on the backend after the client disconnects (fix: strictly use `pg_advisory_xact_lock()`).
 
-- Ref: [PgBouncer Documentation: Pooling Modes](https://www.pgbouncer.org/features.html)
-
 </details>
 
-<details>
-<summary>4. Why is `idle_in_transaction_session_timeout` considered one of the most critical availability parameters in PostgreSQL?</summary>
+<details><summary>4. Why is `idle_in_transaction_session_timeout` considered one of the most critical availability parameters in PostgreSQL?</summary>
 
-**Answer**: When an application opens a transaction (`BEGIN`), performs a query or write, and then leaves the connection idle without issuing `COMMIT` or `ROLLBACK` (often due to application crashes, network timeouts, or slow external API calls), that session holds open an active transaction ID (`backend_xmin`). This pins the cluster-wide oldest active `xmin` horizon. Autovacuum cannot reclaim any dead tuple versions deleted after that transaction started across **any table in the entire database**. Within hours, tables and indexes bloat catastrophically, and the cluster risks Transaction ID wraparound. Setting `idle_in_transaction_session_timeout = '60s'` forcibly terminates orphaned sessions, protecting cluster health.
-
-- Ref: [PostgreSQL Documentation: Client Connection Defaults](https://www.postgresql.org/docs/18/runtime-config-client.html#GUC-IDLE-IN-TRANSACTION-SESSION-TIMEOUT)
-
+When an application opens a transaction (`BEGIN`), performs a query or write, and then leaves the connection idle without issuing `COMMIT` or `ROLLBACK` (often due to application crashes, network timeouts, or slow external API calls), that session holds open an active transaction ID (`backend_xmin`). This pins the cluster-wide oldest active `xmin` horizon. Autovacuum cannot reclaim any dead tuple versions deleted after that transaction started across **any table in the entire database**. Within hours, tables and indexes bloat catastrophically, and the cluster risks Transaction ID wraparound. Setting `idle_in_transaction_session_timeout = '60s'` forcibly terminates orphaned sessions, protecting cluster health.
 </details>
 
-<details>
-<summary>5. Describe the Expand-Contract pattern for safely migrating a column from `VARCHAR(16)` to `UUID` on a live production table without downtime.</summary>
-
-**Answer**:
+<details><summary>5. Describe the Expand-Contract pattern for safely migrating a column from `VARCHAR(16)` to `UUID` on a live production table without downtime.</summary>
 
 1. **Expand**: Add a new column with the target type: `ALTER TABLE t ADD COLUMN id_v2 UUID;`.
 2. **Dual-Write**: Deploy application code (v1) that writes new records to both `id` and `id_v2`, while continuing to read from `id`.
 3. **Backfill**: Execute an asynchronous background script that updates historical rows in small batches (`UPDATE t SET id_v2 = id::uuid WHERE id_v2 IS NULL LIMIT 1000; COMMIT;`), committing incrementally to avoid bloat and locking.
 4. **Cutover**: Deploy application code (v2) that reads and writes exclusively from `id_v2`.
 5. **Contract**: Once v1 is completely decommissioned, drop the old column: `ALTER TABLE t DROP COLUMN id;`.
-
-- Ref: [Evolutionary Database Design (Fowler & Sadalage)](https://martinfowler.com/articles/evodb.html)
 
 </details>

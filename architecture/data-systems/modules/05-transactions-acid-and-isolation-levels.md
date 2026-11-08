@@ -232,12 +232,11 @@ In OCC (Kung & Robinson, 1981), transactions execute without acquiring locks:
 
 ---
 
-## 7. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1: Formulate the Write Skew anomaly and explain why standard Snapshot Isolation fails to prevent it.</strong></summary>
+<details><summary>1. Formulate the Write Skew anomaly and explain why standard Snapshot Isolation fails to prevent it.</summary>
 
-**Answer:** Write Skew occurs when two concurrent transactions read an overlapping dataset, evaluate a shared integrity constraint, and subsequently perform disjoint writes that collectively violate the constraint.
+Write Skew occurs when two concurrent transactions read an overlapping dataset, evaluate a shared integrity constraint, and subsequently perform disjoint writes that collectively violate the constraint.
 
 Mathematically, the history is:
 
@@ -248,10 +247,9 @@ Snapshot Isolation prevents write-write conflicts using the **first-committer-wi
 However, in Write Skew, Transaction 1 writes strictly to item $x$, and Transaction 2 writes strictly to item $y$. Because their write sets are completely disjoint ($\text{WriteSet}(T_1) \cap \text{WriteSet}(T_2) = \emptyset$), the first-committer-wins check detects no collision, allowing both transactions to commit and leaving the database in an invalid state.
 </details>
 
-<details>
-<summary><strong>Q2: Why did Berenson et al. conclude that the ANSI SQL:1992 isolation definitions were fundamentally flawed?</strong></summary>
+<details><summary>2. Why did Berenson et al. conclude that the ANSI SQL:1992 isolation definitions were fundamentally flawed?</summary>
 
-**Answer:** Berenson et al. demonstrated that ANSI SQL:1992 suffered from two fundamental flaws:
+Berenson et al. demonstrated that ANSI SQL:1992 suffered from two fundamental flaws:
 
 1. **Pessimistic Locking Bias**: The ANSI standard framed its three phenomena ($P1$ Dirty Read, $P2$ Non-Repeatable Read, $P3$ Phantom) assuming a lock-based (2PL) database architecture, defining them strictly in terms of lock acquisition timings.
 2. **Failure to Cover Multi-Version Engines**: The ANSI definitions completely omitted **Snapshot Isolation** (SI). Under the ANSI definitions, SI appeared to qualify as "Serializable" because it prevents $P1, P2,$ and $P3$ on existing rows. However, SI permits **Write Skew**, which is not serializable.
@@ -259,10 +257,9 @@ However, in Write Skew, Transaction 1 writes strictly to item $x$, and Transacti
 Consequently, databases claiming "Repeatable Read" or "Serializable" under ANSI standards routinely permit severe non-serial anomalies.
 </details>
 
-<details>
-<summary><strong>Q3: How does Serializable Snapshot Isolation (SSI) prevent Write Skew without acquiring shared read locks?</strong></summary>
+<details><summary>3. How does Serializable Snapshot Isolation (SSI) prevent Write Skew without acquiring shared read locks?</summary>
 
-**Answer:** SSI avoids read locks by tracking **$rw$-antidependency edges** in a dynamic dependency graph in memory. An $rw$-antidependency $T_1 \xrightarrow{rw} T_2$ occurs when transaction $T_1$ reads a version of an item, and concurrent transaction $T_2$ writes a newer version of that item (meaning $T_1$ must precede $T_2$ in serial order).
+SSI avoids read locks by tracking **$rw$-antidependency edges** in a dynamic dependency graph in memory. An $rw$-antidependency $T_1 \xrightarrow{rw} T_2$ occurs when transaction $T_1$ reads a version of an item, and concurrent transaction $T_2$ writes a newer version of that item (meaning $T_1$ must precede $T_2$ in serial order).
 
 Theoretical analysis shows that any non-serializable cycle in Snapshot Isolation must contain a **dangerous structure**: two consecutive $rw$-antidependency edges:
 
@@ -271,10 +268,9 @@ $$T_1 \xrightarrow{rw} T_2 \xrightarrow{rw} T_3$$
 During execution, when the SSI manager detects a transaction participating as the pivot ($T_2$) in two consecutive $rw$-edges, it aborts one of the transactions with a `serialization_failure`. This guarantees serializability while allowing readers to execute purely out of MVCC snapshots without taking S-locks.
 </details>
 
-<details>
-<summary><strong>Q4: Explain the difference between Strict Two-Phase Locking (S2PL) and Rigorous Two-Phase Locking (SS2PL).</strong></summary>
+<details><summary>4. Explain the difference between Strict Two-Phase Locking (S2PL) and Rigorous Two-Phase Locking (SS2PL).</summary>
 
-**Answer:** In standard 2PL, a transaction cannot acquire new locks once it begins releasing locks (Growing Phase $\to$ Shrinking Phase).
+In standard 2PL, a transaction cannot acquire new locks once it begins releasing locks (Growing Phase $\to$ Shrinking Phase).
 
 - **Strict 2PL (S2PL)** requires that all **exclusive (X) write locks** must be held until the transaction fully commits or aborts. Shared (S) read locks can be released during the shrinking phase. Holding X-locks prevents **cascading aborts** (where uncommitted writes read by other transactions force subsequent aborts).
 - **Rigorous 2PL (SS2PL / Strong Strict 2PL)** requires that **all locks (both shared S-locks and exclusive X-locks)** must be held until the transaction completes. No locks are released during execution.
@@ -282,10 +278,9 @@ During execution, when the SSI manager detects a transaction participating as th
 Rigorous 2PL guarantees that the serializability order of transactions is identical to their commit order, but causes higher lock contention and lock wait times.
 </details>
 
-<details>
-<summary><strong>Q5: What are the three phases of Optimistic Concurrency Control (OCC), and under what workload conditions does OCC outperform 2PL?</strong></summary>
+<details><summary>5. What are the three phases of Optimistic Concurrency Control (OCC), and under what workload conditions does OCC outperform 2PL?</summary>
 
-**Answer:** OCC divides transaction execution into three phases:
+OCC divides transaction execution into three phases:
 
 1. **Read Phase**: The transaction reads data without acquiring locks and writes changes to a private workspace in memory.
 2. **Validation Phase**: At commit time, the engine checks whether the transaction's read set overlaps with the write sets of concurrent transactions that committed since this transaction started.
@@ -294,10 +289,9 @@ Rigorous 2PL guarantees that the serializability order of transactions is identi
 OCC outperforms 2PL in **low-contention, read-dominated workloads** where transactions rarely access the same keys concurrently. In these environments, OCC incurs zero lock-manager mutex overhead and avoids deadlocks completely. However, under high write contention, OCC causes severe abort-and-retry storms.
 </details>
 
-<details>
-<summary><strong>Q6: How do Wait-Die and Wound-Wait deadlock prevention algorithms differ in how they prioritize transactions based on age?</strong></summary>
+<details><summary>6. How do Wait-Die and Wound-Wait deadlock prevention algorithms differ in how they prioritize transactions based on age?</summary>
 
-**Answer:** Both algorithms assign monotonically increasing timestamps to transactions when they begin ($T_{\text{old}} < T_{\text{young}}$):
+Both algorithms assign monotonically increasing timestamps to transactions when they begin ($T_{\text{old}} < T_{\text{young}}$):
 
 - **Wait-Die (Non-preemptive)**:
   - If $T_{\text{old}}$ requests a lock held by $T_{\text{young}}$: $T_{\text{old}}$ is permitted to **wait**.

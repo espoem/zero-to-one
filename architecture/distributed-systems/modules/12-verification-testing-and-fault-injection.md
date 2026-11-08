@@ -113,30 +113,26 @@ While DST and TLA+ operate before code ships, **Chaos Engineering** tests resili
 
 ---
 
-## 6. Interview Drill: Verification & Deterministic Testing
+## Interview Drill
 
-<details>
-<summary>1. Why is single-threaded Deterministic Simulation Testing superior to multi-threaded integration testing for distributed algorithms?</summary>
+<details><summary>1. Why is single-threaded Deterministic Simulation Testing superior to multi-threaded integration testing for distributed algorithms?</summary>
 
 Multi-threaded testing depends on the host operating system's thread scheduler, which is inherently non-deterministic. When a multi-threaded test catches an elusive race condition, re-running it almost never reproduces the failure, turning debugging into guesswork. In contrast, a deterministic simulator runs in a single thread driven by a seeded pseudo-random number generator (PRNG). Every network delay, packet drop, disk write latency, and context switch is a deterministic function of the seed. If a bug is caught on step 10,000, passing the same seed reproduces the identical failure byte-for-byte in a debugger every single time.
 </details>
 
-<details>
-<summary>2. How does Kyle Kingsbury's Jepsen test for linearizability violations?</summary>
+<details><summary>2. How does Kyle Kingsbury's Jepsen test for linearizability violations?</summary>
 
 Jepsen client processes concurrently execute read and write operations against the cluster while a "Nemesis" injects network partitions and node crashes. Jepsen records every operation's invocation timestamp, return timestamp, and result. After the run, a linearizability checker (such as Porcupine or Knossos) parses the recorded history using the Wing-Gong algorithm, searching for a legal sequential execution order that respects the real-time precedence of all operations. If no valid linearization exists, Jepsen outputs the exact minimal sequence of operations that broke linearizability.
 </details>
 
-<details>
-<summary>3. In TLA+, what is the difference between an Invariant and a Temporal Property?</summary>
+<details><summary>3. In TLA+, what is the difference between an Invariant and a Temporal Property?</summary>
 
 - **Invariant (Safety Property)**: A state predicate that must evaluate to `TRUE` in every single reachable state of the system (e.g. `TypeOK`, `NoTwoLeadersInSameTerm`). It can be violated in a single step and is checked by evaluating the state table.
 - **Temporal Property (Liveness Property)**: A formula in temporal logic asserting behavior across sequences of states over time (e.g. $\Box \Diamond \text{LeaderElected}$, meaning "it is always true that eventually a leader will be elected"). It cannot be violated in a finite state and is checked by searching for cycles (strongly connected components) in the state graph.
 
 </details>
 
-<details>
-<summary>4. What are the limitations of TLA+ model checking, and how do engineers manage state space explosion?</summary>
+<details><summary>4. What are the limitations of TLA+ model checking, and how do engineers manage state space explosion?</summary>
 
 TLC exhaustively enumerates all reachable states. As the number of nodes, buffer sizes, or message queues increases, the number of states explodes exponentially ($O(k^N)$), quickly exhausting physical memory. Engineers manage this by:
 
@@ -145,8 +141,7 @@ TLC exhaustively enumerates all reachable states. As the number of nodes, buffer
 
 </details>
 
-<details>
-<summary>5. How does TigerBeetle's VOPR verify storage durability under power cuts?</summary>
+<details><summary>5. How does TigerBeetle's VOPR verify storage durability under power cuts?</summary>
 
 TigerBeetle's VOPR (Viewstamped Operation Replicator) runs real consensus engine code on top of a simulated virtual disk. The simulator randomly terminates nodes without warning, resets volatile memory, and inspects the virtual disk to ensure that all data written before the crash was either properly flushed via simulated `fsync` or detected as torn/incomplete by recovery checksums, guaranteeing that crash-recovery never introduces amnesia or corrupts state machine state.
 </details>

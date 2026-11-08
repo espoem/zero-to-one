@@ -251,12 +251,11 @@ Available `annotationlib.Format` formats:
 
 ---
 
-## 8. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-<details>
-<summary>1. What is the difference between `is` and `==`, and when is it safe to use `is`?</summary>
+<details><summary>1. What is the difference between `is` and `==`, and when is it safe to use `is`?</summary>
 
-**Answer:** `is` tests pointer identity (`id(a) == id(b)`): whether both references point to the exact same physical memory address on the heap. `==` tests value equality by invoking `a.__eq__(b)`. `is` is safe and recommended only when checking against known singleton instances whose identity is guaranteed to be unique throughout interpreter execution:
+`is` tests pointer identity (`id(a) == id(b)`): whether both references point to the exact same physical memory address on the heap. `==` tests value equality by invoking `a.__eq__(b)`. `is` is safe and recommended only when checking against known singleton instances whose identity is guaranteed to be unique throughout interpreter execution:
 
 1. `val is None`
 2. `flag is True` or `flag is False`
@@ -265,10 +264,9 @@ Available `annotationlib.Format` formats:
 
 </details>
 
-<details>
-<summary>2. Why does `a = ([1, 2], 3); a[0] += [4]` both modify the list and raise a `TypeError`?</summary>
+<details><summary>2. Why does `a = ([1, 2], 3); a[0] += [4]` both modify the list and raise a `TypeError`?</summary>
 
-**Answer:** This is the famous Python "augmented assignment on tuple" anomaly.
+This is the famous Python "augmented assignment on tuple" anomaly.
 
 1. The expression `a[0] += [4]` translates to `a[0].__iadd__([4])` followed by `a[0] = result`.
 2. First, `__iadd__` executes on the mutable list `a[0]`. It mutates the list in-place by appending `4`, and returns the reference to `a[0]`. The list is now `[1, 2, 4]`.
@@ -277,26 +275,21 @@ Available `annotationlib.Format` formats:
 
 </details>
 
-<details>
-<summary>3. How do closures maintain access to outer variables in CPython after the outer function has returned?</summary>
+<details><summary>3. How do closures maintain access to outer variables in CPython after the outer function has returned?</summary>
 
-**Answer:** When CPython's symbol table detects that an inner function references a variable from an enclosing scope, the compiler marks that variable as a **cell variable** (`DEF_CELL`) in the outer function and a **free variable** (`DEF_FREE`) in the inner function. Instead of storing the variable in a fast local stack slot, CPython allocates a heap-resident `PyCellObject`. Both the outer function's local frame and the inner function's closure tuple (`func.__closure__`) hold a reference to this cell object. When the outer function returns and its call frame is destroyed, the `PyCellObject` survives on the heap because the inner function's closure keeps a positive reference count. When the inner function executes, it reads and writes to the cell's `ob_ref` pointer via `LOAD_DEREF` and `STORE_DEREF`.
+When CPython's symbol table detects that an inner function references a variable from an enclosing scope, the compiler marks that variable as a **cell variable** (`DEF_CELL`) in the outer function and a **free variable** (`DEF_FREE`) in the inner function. Instead of storing the variable in a fast local stack slot, CPython allocates a heap-resident `PyCellObject`. Both the outer function's local frame and the inner function's closure tuple (`func.__closure__`) hold a reference to this cell object. When the outer function returns and its call frame is destroyed, the `PyCellObject` survives on the heap because the inner function's closure keeps a positive reference count. When the inner function executes, it reads and writes to the cell's `ob_ref` pointer via `LOAD_DEREF` and `STORE_DEREF`.
 </details>
 
-<details>
-<summary>4. How does `nonlocal` differ from `global` in nested scopes?</summary>
-
-**Answer:**
+<details><summary>4. How does `nonlocal` differ from `global` in nested scopes?</summary>
 
 - `global x` instructs the compiler that references and assignments to `x` in the current block should bind directly to the top-level module namespace dictionary (`__dict__`). It bypasses all intermediate enclosing scopes.
 - `nonlocal x` instructs the compiler to search backwards through enclosing lexical function scopes (from innermost to outermost) for an existing binding of `x`. It binds to that specific enclosing scope's cell variable without reaching the global module namespace. If no matching enclosing variable exists, `nonlocal` raises a compile-time `SyntaxError`.
 
 </details>
 
-<details>
-<summary>5. What problem does PEP 661 / sentinel objects solve, and how are sentinels properly implemented?</summary>
+<details><summary>5. What problem does PEP 661 / sentinel objects solve, and how are sentinels properly implemented?</summary>
 
-**Answer:** When an API needs to distinguish between a parameter that was explicitly passed as `None` versus a parameter that was omitted entirely, using `arg=None` as the default fails. To resolve this, engineers use a unique sentinel object:
+When an API needs to distinguish between a parameter that was explicitly passed as `None` versus a parameter that was omitted entirely, using `arg=None` as the default fails. To resolve this, engineers use a unique sentinel object:
 
 ```python
 _MISSING = object()

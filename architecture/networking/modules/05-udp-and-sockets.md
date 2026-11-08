@@ -232,11 +232,9 @@ On 40 Gbps and 100 Gbps networks, operating systems cannot afford to execute an 
 
 ---
 
-## 8. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-### Q1: What happens under the hood when an application invokes `connect()` on a UDP socket? Does any network traffic traverse the wire?
-
-<details><summary>Answer</summary>
+<details><summary>1. What happens under the hood when an application invokes `connect()` on a UDP socket? Does any network traffic traverse the wire?</summary>
 
 **Local Kernel State Binding Only.** Calling `connect()` on a UDP socket (`SOCK_DGRAM`) transmits **zero packets across the physical wire**. Unlike TCP, there is no 3-way handshake. The operating system kernel performs three local state operations:
 
@@ -248,9 +246,7 @@ On 40 Gbps and 100 Gbps networks, operating systems cannot afford to execute an 
 
 </details>
 
-### Q2: Why is the UDP checksum optional in IPv4 but strictly mandatory in IPv6?
-
-<details><summary>Answer</summary>
+<details><summary>2. Why is the UDP checksum optional in IPv4 but strictly mandatory in IPv6?</summary>
 
 **Elimination of the Layer 3 Header Checksum.** In IPv4, every router verified and updated the 16-bit IPv4 Header Checksum at every hop. Therefore, the destination IP address and protocol fields were guaranteed uncorrupted by Layer 3, making the transport-layer UDP checksum optional. In IPv6, the designers completely eliminated the Layer 3 Header Checksum to maximize router forwarding speed. If UDP checksums remained optional in IPv6, a single-bit memory corruption in the IP address or UDP destination port could cause a packet to be delivered silently to an incorrect application process, corrupting memory or causing security boundary violations. RFC 8200 therefore mandates that IPv6 UDP packets must compute the checksum.
 
@@ -258,9 +254,7 @@ On 40 Gbps and 100 Gbps networks, operating systems cannot afford to execute an 
 
 </details>
 
-### Q3: Explain why `epoll` scales to tens of thousands of concurrent connections with $O(1)$ complexity while `select` degrades with $O(N)$ complexity.
-
-<details><summary>Answer</summary>
+<details><summary>3. Explain why `epoll` scales to tens of thousands of concurrent connections with $O(1)$ complexity while `select` degrades with $O(N)$ complexity.</summary>
 
 **State Preservation vs Per-Call Buffer Passing.**
 
@@ -270,9 +264,7 @@ On 40 Gbps and 100 Gbps networks, operating systems cannot afford to execute an 
 
 </details>
 
-### Q4: An administrator observes that a high-traffic web server has zero CPU saturation and ample free RAM, yet clients intermittently experience 1-second to 3-second connection latency spikes. What kernel socket metric should be investigated, and what is the failure mechanism?
-
-<details><summary>Answer</summary>
+<details><summary>4. An administrator observes that a high-traffic web server has zero CPU saturation and ample free RAM, yet clients intermittently experience 1-second to 3-second connection latency spikes. What kernel socket metric should be investigated, and what is the failure mechanism?</summary>
 
 **Listen Queue (Accept Queue) Overflow.**
 
@@ -284,9 +276,7 @@ On 40 Gbps and 100 Gbps networks, operating systems cannot afford to execute an 
 
 </details>
 
-### Q5: What is the difference between Level-Triggered (LT) and Edge-Triggered (ET) event notification in `epoll`, and what programming trap occurs if Edge-Triggered mode is used improperly?
-
-<details><summary>Answer</summary>
+<details><summary>5. What is the difference between Level-Triggered (LT) and Edge-Triggered (ET) event notification in `epoll`, and what programming trap occurs if Edge-Triggered mode is used improperly?</summary>
 
 **State Readiness vs State Transition.**
 

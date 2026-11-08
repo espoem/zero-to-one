@@ -248,49 +248,29 @@ SELECT pg_advisory_unlock(1001);
 
 ---
 
-## 9. Interview Drill
+## Interview Drill
 
-<details>
-<summary>1. Explain the "Lock Queue Pileup" phenomenon and why a simple `ALTER TABLE` can bring down a production web application.</summary>
+<details><summary>1. Explain the "Lock Queue Pileup" phenomenon and why a simple `ALTER TABLE` can bring down a production web application.</summary>
 
-**Answer**: PostgreSQL uses a FIFO queue for lock acquisition. When a statement requests a lock that conflicts with an active lock (e.g. an `ALTER TABLE` requesting `ACCESS EXCLUSIVE` while a slow `SELECT` holds `ACCESS SHARE`), the requesting transaction is enqueued. Critically, **any subsequent incoming transaction requesting a lock that conflicts with the enqueued transaction must also wait behind it in the queue**. Because `ACCESS EXCLUSIVE` conflicts with `ACCESS SHARE`, every subsequent `SELECT` query is blocked. Within seconds, all application connection pool slots fill up waiting on the lock queue, causing a complete application outage. The fix is setting a strict `lock_timeout` (e.g. `2s`) before running DDL.
-
-- Ref: [PostgreSQL Documentation: Explicit Locking](https://www.postgresql.org/docs/18/explicit-locking.html)
-
+PostgreSQL uses a FIFO queue for lock acquisition. When a statement requests a lock that conflicts with an active lock (e.g. an `ALTER TABLE` requesting `ACCESS EXCLUSIVE` while a slow `SELECT` holds `ACCESS SHARE`), the requesting transaction is enqueued. Critically, **any subsequent incoming transaction requesting a lock that conflicts with the enqueued transaction must also wait behind it in the queue**. Because `ACCESS EXCLUSIVE` conflicts with `ACCESS SHARE`, every subsequent `SELECT` query is blocked. Within seconds, all application connection pool slots fill up waiting on the lock queue, causing a complete application outage. The fix is setting a strict `lock_timeout` (e.g. `2s`) before running DDL.
 </details>
 
-<details>
-<summary>2. Why does a purely read-only `SELECT` statement sometimes mark 8KB pages as dirty and cause disk I/O?</summary>
+<details><summary>2. Why does a purely read-only `SELECT` statement sometimes mark 8KB pages as dirty and cause disk I/O?</summary>
 
-**Answer**: PostgreSQL uses "Hint Bits" inside each tuple's header (`HeapTupleHeaderData.t_infomask`). When a tuple is first inserted or modified, its commit status is unknown on the page itself; determining whether the tuple committed requires querying the Commit Log (`pg_xact`). The first reader transaction that inspects the tuple checks `pg_xact` and immediately writes hint bits (e.g., `HEAP_XMIN_COMMITTED`) directly onto the tuple header on the 8KB page so future queries avoid the `pg_xact` lookup. Modifying these bits modifies the page bytes in `shared_buffers`, marking the page as dirty and requiring the checkpointer or background writer to flush it to disk.
-
-- Ref: [PostgreSQL Internals: Hint Bits](https://www.interdb.jp/pg/tutorial.html)
-
+PostgreSQL uses "Hint Bits" inside each tuple's header (`HeapTupleHeaderData.t_infomask`). When a tuple is first inserted or modified, its commit status is unknown on the page itself; determining whether the tuple committed requires querying the Commit Log (`pg_xact`). The first reader transaction that inspects the tuple checks `pg_xact` and immediately writes hint bits (e.g., `HEAP_XMIN_COMMITTED`) directly onto the tuple header on the 8KB page so future queries avoid the `pg_xact` lookup. Modifying these bits modifies the page bytes in `shared_buffers`, marking the page as dirty and requiring the checkpointer or background writer to flush it to disk.
 </details>
 
-<details>
-<summary>3. What is the Cahill-Rohm-Fekete theorem, and how does PostgreSQL implement Serializable Snapshot Isolation (SSI)?</summary>
+<details><summary>3. What is the Cahill-Rohm-Fekete theorem, and how does PostgreSQL implement Serializable Snapshot Isolation (SSI)?</summary>
 
-**Answer**: The Cahill-Rohm-Fekete theorem (2008) mathematically proves that any non-serializable execution under Snapshot Isolation must contain a cycle in the Serialization Graph containing two consecutive read-write anti-dependency edges ($T_1 \xrightarrow{rw} T_2 \xrightarrow{rw} T_3$). Transaction $T_2$ is termed a "pivot". PostgreSQL implements SSI by tracking read access in shared memory using non-blocking `SIREAD` locks (stored in a lock-free lock table). When a transaction modifies a tuple previously read by a concurrent transaction, an $rw$-edge is recorded. If a transaction becomes a pivot with both incoming and outgoing $rw$-edges, the engine terminates one of the transactions with a `40001` serialization failure, guaranteeing conflict serializability without read locks.
-
-- Ref: [Michael Cahill et al., "Serializable Isolation for Snapshot Databases", ACM SIGMOD 2008](https://dl.acm.org/doi/10.1145/1376616.1376690)
-
+The Cahill-Rohm-Fekete theorem (2008) mathematically proves that any non-serializable execution under Snapshot Isolation must contain a cycle in the Serialization Graph containing two consecutive read-write anti-dependency edges ($T_1 \xrightarrow{rw} T_2 \xrightarrow{rw} T_3$). Transaction $T_2$ is termed a "pivot". PostgreSQL implements SSI by tracking read access in shared memory using non-blocking `SIREAD` locks (stored in a lock-free lock table). When a transaction modifies a tuple previously read by a concurrent transaction, an $rw$-edge is recorded. If a transaction becomes a pivot with both incoming and outgoing $rw$-edges, the engine terminates one of the transactions with a `40001` serialization failure, guaranteeing conflict serializability without read locks.
 </details>
 
-<details>
-<summary>4. How does `SELECT ... FOR UPDATE SKIP LOCKED` prevent worker contention in message processing architectures?</summary>
+<details><summary>4. How does `SELECT ... FOR UPDATE SKIP LOCKED` prevent worker contention in message processing architectures?</summary>
 
-**Answer**: In standard `SELECT ... FOR UPDATE`, if Worker 1 locks Row 1, a concurrent Worker 2 attempting to lock Row 1 will block and wait until Worker 1 commits or aborts. With `SKIP LOCKED`, Worker 2 checks whether candidate rows are currently locked by other sessions; if a row is locked, Worker 2 immediately ignores it and moves to the next eligible row in the index or table. This completely eliminates lock wait times, lock contention, and deadlock hazards between concurrent workers, enabling horizontal scaling of queue consumers directly in PostgreSQL.
-
-- Ref: [PostgreSQL Documentation: Locking Clauses](https://www.postgresql.org/docs/18/sql-select.html#SQL-FOR-UPDATE-SHARE)
-
+In standard `SELECT ... FOR UPDATE`, if Worker 1 locks Row 1, a concurrent Worker 2 attempting to lock Row 1 will block and wait until Worker 1 commits or aborts. With `SKIP LOCKED`, Worker 2 checks whether candidate rows are currently locked by other sessions; if a row is locked, Worker 2 immediately ignores it and moves to the next eligible row in the index or table. This completely eliminates lock wait times, lock contention, and deadlock hazards between concurrent workers, enabling horizontal scaling of queue consumers directly in PostgreSQL.
 </details>
 
-<details>
-<summary>5. What is the difference between `FOR UPDATE` and `FOR NO KEY UPDATE`?</summary>
+<details><summary>5. What is the difference between `FOR UPDATE` and `FOR NO KEY UPDATE`?</summary>
 
-**Answer**: `FOR UPDATE` acquires the strongest row-level lock on the tuple, conflicting with all other row-level locks (`FOR UPDATE`, `FOR NO KEY UPDATE`, `FOR SHARE`, `FOR KEY SHARE`). It is acquired automatically by `DELETE` and `UPDATE` operations that modify columns with unique or primary key constraints. `FOR NO KEY UPDATE` is a weaker lock acquired by `UPDATE` operations that do not modify any unique index columns. Crucially, `FOR NO KEY UPDATE` does not conflict with `FOR KEY SHARE` (which is acquired by foreign key integrity checks on child tables), allowing concurrent inserts into child tables without blocking updates to non-key attributes on parent rows.
-
-- Ref: [PostgreSQL Documentation: Row-Level Locks](https://www.postgresql.org/docs/18/explicit-locking.html#LOCKING-ROWS)
-
+`FOR UPDATE` acquires the strongest row-level lock on the tuple, conflicting with all other row-level locks (`FOR UPDATE`, `FOR NO KEY UPDATE`, `FOR SHARE`, `FOR KEY SHARE`). It is acquired automatically by `DELETE` and `UPDATE` operations that modify columns with unique or primary key constraints. `FOR NO KEY UPDATE` is a weaker lock acquired by `UPDATE` operations that do not modify any unique index columns. Crucially, `FOR NO KEY UPDATE` does not conflict with `FOR KEY SHARE` (which is acquired by foreign key integrity checks on child tables), allowing concurrent inserts into child tables without blocking updates to non-key attributes on parent rows.
 </details>

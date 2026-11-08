@@ -375,12 +375,9 @@ RESOLVE-DNS-QUERY(QueryName, QueryType, NetworkContext)
 
 ---
 
-## 12. Interview Drill: Deep Technical Questions
+## Interview Drill
 
-<details>
-<summary><strong>Q1. Trace the complete lifecycle of a network packet sent from a container to the public Internet, detailing every interface, routing decision, and netfilter chain traversed.</strong></summary>
-
-**Answer:**
+<details><summary>1. Trace the complete lifecycle of a network packet sent from a container to the public Internet, detailing every interface, routing decision, and netfilter chain traversed.</summary>
 
 1. **Container Namespace**: The application writes to a TCP socket. The container kernel consults its local routing table, identifies the default route (`0.0.0.0/0 via 172.17.0.1 dev eth0`), performs ARP to resolve `172.17.0.1`'s MAC, frames the packet, and emits it on `eth0`.
 2. **veth Interconnect**: The packet immediately traverses the kernel veth virtual wire and appears on the host interface `vethXXXX` attached to bridge `docker0`.
@@ -389,74 +386,49 @@ RESOLVE-DNS-QUERY(QueryName, QueryType, NetworkContext)
 5. **Netfilter FORWARD Chain**: The packet traverses the `FORWARD` chain. Filter rules (including `DOCKER-USER` and `DOCKER-ISOLATION-STAGE`) verify that the traffic is permitted.
 6. **Netfilter POSTROUTING Chain**: The packet hits the `POSTROUTING` chain in the `nat` table. It matches Docker's `MASQUERADE` rule. The kernel's `conntrack` subsystem allocates an ephemeral port, records the mapping tuple, and rewrites the packet's source IP from `172.17.0.2` to the host's public IP `198.51.100.10`.
 7. **Physical Transmission**: The packet is framed with the upstream physical gateway's MAC address and transmitted out the host's physical adapter `eth0`.
-
 </details>
 
-<details>
-<summary><strong>Q2. Why does a published container port (`-p 8080:80`) bypass standard UFW firewall rules on an Ubuntu host by default?</strong></summary>
+<details><summary>2. Why does a published container port (`-p 8080:80`) bypass standard UFW firewall rules on an Ubuntu host by default?</summary>
 
-**Answer:** UFW configures filtering rules primarily within the `ufw-user-input` chain, which is linked from netfilter's `INPUT` chain. However, when Docker publishes a port, it installs a Destination NAT (DNAT) rule in the `PREROUTING` chain of the `nat` table, rewriting the destination IP to the container's private bridge IP (`172.17.0.2`). When the host kernel performs the post-PREROUTING routing decision, it observes that the destination IP is no longer a local host IP, but an IP routed across the `docker0` bridge. Consequently, the packet is routed through the **`FORWARD` chain** rather than the `INPUT` chain. Because UFW's default blocking rules live in `INPUT`, they are never evaluated for the forwarded container traffic. Docker's internal `FORWARD` rules accept the packet, exposing the port to the public network.
-
+UFW configures filtering rules primarily within the `ufw-user-input` chain, which is linked from netfilter's `INPUT` chain. However, when Docker publishes a port, it installs a Destination NAT (DNAT) rule in the `PREROUTING` chain of the `nat` table, rewriting the destination IP to the container's private bridge IP (`172.17.0.2`). When the host kernel performs the post-PREROUTING routing decision, it observes that the destination IP is no longer a local host IP, but an IP routed across the `docker0` bridge. Consequently, the packet is routed through the **`FORWARD` chain** rather than the `INPUT` chain. Because UFW's default blocking rules live in `INPUT`, they are never evaluated for the forwarded container traffic. Docker's internal `FORWARD` rules accept the packet, exposing the port to the public network.
 </details>
 
-<details>
-<summary><strong>Q3. Explain the mechanical difference between `slirp4netns` and `pasta` in rootless container networking, and explain why `pasta` provides superior throughput.</strong></summary>
+<details><summary>3. Explain the mechanical difference between `slirp4netns` and `pasta` in rootless container networking, and explain why `pasta` provides superior throughput.</summary>
 
-**Answer:** Rootless containers lack `CAP_NET_ADMIN` to create host-level `veth` pairs and bridges.
+Rootless containers lack `CAP_NET_ADMIN` to create host-level `veth` pairs and bridges.
 
 - **`slirp4netns`**: Spawns a user-space daemon that attaches to a TAP device inside the container. When the container sends IP packets, `slirp4netns` reads raw Ethernet/IP frames from `/dev/net/tun`, parses the protocols in user space, and makes standard user-space socket calls on the host. Every byte must be copied across the kernel-user boundary, and every TCP state machine transition is simulated in software, creating massive CPU overhead and latency.
 - **`pasta` (Pack A Subtle Tap Abstraction)**: Operates without simulating a full virtual TCP/IP stack. It maps container sockets to host sockets using the Linux kernel's **`splice(2)`** system call. `splice` moves data between two file descriptors (the container TAP/socket and the host socket) directly within kernel memory pipes without copying data to user space. This zero-copy architecture dramatically reduces context switches, lowers CPU utilization, and achieves near-native throughput.
-
 </details>
 
-<details>
-<summary><strong>Q4. How does Docker's embedded DNS server (`127.0.0.11`) implement load balancing across multiple containers sharing the same network alias?</strong></summary>
+<details><summary>4. How does Docker's embedded DNS server (`127.0.0.11`) implement load balancing across multiple containers sharing the same network alias?</summary>
 
-**Answer:** When multiple containers are connected to the same user-defined bridge network and share the same network alias (e.g., `--network-alias api`), Docker's embedded DNS daemon records multiple A-records mapping that name to the individual container IP addresses. When a client container queries `api`, the embedded DNS server returns all matching IP addresses but **rotates their order** using a round-robin algorithm on each subsequent query. Client applications that select the first IP in the returned DNS A-record list naturally distribute their connection requests evenly across the pool of target containers.
-
+When multiple containers are connected to the same user-defined bridge network and share the same network alias (e.g., `--network-alias api`), Docker's embedded DNS daemon records multiple A-records mapping that name to the individual container IP addresses. When a client container queries `api`, the embedded DNS server returns all matching IP addresses but **rotates their order** using a round-robin algorithm on each subsequent query. Client applications that select the first IP in the returned DNS A-record list naturally distribute their connection requests evenly across the pool of target containers.
 </details>
 
-<details>
-<summary><strong>Q5. What causes a "hairpin NAT" failure in containerized environments, and how does the kernel resolve it?</strong></summary>
+<details><summary>5. What causes a "hairpin NAT" failure in containerized environments, and how does the kernel resolve it?</summary>
 
-**Answer:** A hairpin NAT failure occurs when a container attempts to access another container (or itself) on the same bridge network by connecting to the host's public IP address and published port (`-p 8080:80`).
+A hairpin NAT failure occurs when a container attempts to access another container (or itself) on the same bridge network by connecting to the host's public IP address and published port (`-p 8080:80`).
 
 1. The container (`172.17.0.2`) sends a packet destined for `HostIP:8080`.
 2. Netfilter's `PREROUTING` DNAT rewrites the destination back to `172.17.0.2:80`.
 3. The kernel attempts to route the packet. The source is `172.17.0.2` and the destination is `172.17.0.2`, both residing on the same physical bridge port (`veth`).
 4. By default, Linux bridges reject transmitting a packet out the exact same interface it arrived on to prevent switching loops.
 5. **Resolution**: The kernel requires **hairpin mode** enabled on the bridge port (`brctl hairpin docker0 vethXXXX on` or `ip link set dev vethXXXX type bridge_slave hairpin on`). Additionally, netfilter must apply SNAT to rewrite the source IP to the bridge IP (`172.17.0.1`), ensuring the return traffic routes back through the bridge.
-
 </details>
 
-<details>
-<summary><strong>Q6. Why should an engineer choose `macvlan` or `ipvlan` over standard `bridge` networking, and what are their limitations?</strong></summary>
+<details><summary>6. Why should an engineer choose `macvlan` or `ipvlan` over standard `bridge` networking, and what are their limitations?</summary>
 
-**Answer:** **Advantages**: `macvlan` and `ipvlan` connect containers directly to the host's physical network interface without intermediate software bridges or Netfilter NAT translation. This yields near-native hardware line-rate throughput, minimal latency, and allows containers to receive native IP addresses directly routable from the corporate physical network. **Limitations**:
+**Advantages**: `macvlan` and `ipvlan` connect containers directly to the host's physical network interface without intermediate software bridges or Netfilter NAT translation. This yields near-native hardware line-rate throughput, minimal latency, and allows containers to receive native IP addresses directly routable from the corporate physical network. **Limitations**:
 
 1. **Host-to-Container Inaccessibility**: By default, the Linux kernel prevents the host itself from communicating directly with its own child `macvlan` interfaces over the physical NIC (requires creating a dedicated `macvlan` interface on the host).
 2. **Switch MAC Exhaustion**: `macvlan` assigns a unique MAC address to every container. Enterprise network switches often restrict the number of MAC addresses per physical switch port (port security), causing switch port shutdown.
 3. **`ipvlan` Alternative**: `ipvlan` solves MAC exhaustion by sharing the physical host's single MAC address across all containers, multiplexing traffic exclusively at Layer 3 (IP).
-
 </details>
 
-<details>
-<summary><strong>Q7. Describe the internal structure of Netavark and how it differs from traditional CNI plugins.</strong></summary>
+<details><summary>7. Describe the internal structure of Netavark and how it differs from traditional CNI plugins.</summary>
 
-**Answer:** Traditional CNI plugins (e.g., bridge, portmap, host-local) are independent C or Go binaries invoked sequentially via fork-exec on every container lifecycle event. They configure network interfaces using shell invocations of `iptables` and maintain state across multiple disconnected JSON files. **Netavark** is a unified, high-performance systems tool written in Rust. Instead of calling external command-line utilities, it interacts directly with Linux kernel Netlink sockets and the modern native `nftables` API via kernel library bindings. It performs IP address allocation, interface configuration, routing setup, and firewall rule installation in a single atomic execution pass, drastically accelerating container startup times and eliminating lock contention.
-
-</details>
-
-<details>
-<summary><strong>Q8. What is the impact of an MTU mismatch between a container's virtual interface and an underlying cloud network overlay?</strong></summary>
-
-**Answer:** If the container `eth0` is configured with the standard Ethernet MTU of 1500 bytes, but the host transmits traffic over an encapsulated tunnel (such as VXLAN, Geneve, or WireGuard) with an MTU of 1450 bytes:
-
-- Packets smaller than 1450 bytes (TCP handshakes, small HTTP GETs) transmit successfully.
-- When an application transmits a full payload (e.g., an 8 KB HTTP response), the container kernel fragments it into 1500-byte packets marked with the "Don't Fragment" (DF) bit.
-- The host encapsulation layer cannot fit the 1500-byte packet plus tunnel headers into the physical link and drops the packet.
-- If ICMP Type 3 Code 4 ("Fragmentation Needed and DF set") packets are dropped by network firewalls, Path MTU Discovery (PMTUD) fails, causing the TCP connection to stall indefinitely in a "black hole" state.
-
+Traditional CNI plugins (e.g., bridge, portmap, host-local) are independent C or Go binaries invoked sequentially via fork-exec on every container lifecycle event. They configure network interfaces using shell invocations of `iptables` and maintain state across multiple disconnected JSON files. **Netavark** is a unified, high-performance systems tool written in Rust. Instead of calling external command-line utilities, it interacts directly with Linux kernel Netlink sockets and the modern native `nftables` API via kernel library bindings. It performs IP address allocation, interface configuration, routing setup, and firewall rule installation in a single atomic execution pass, drastically accelerating container startup times and eliminating lock contention.
 </details>
 
 ---

@@ -188,10 +188,9 @@ For GitOps workflows where infrastructure configuration files must reside in Git
 
 ---
 
-## 7. Interview Drill: Credential Engineering & Secrets Operations
+## Interview Drill
 
-<details>
-<summary>1. A developer argues: "We don't need Argon2id because we pre-hash all passwords with SHA-256 before feeding them into bcrypt, which solves bcrypt's 72-byte limit and makes it super fast." Critique this architecture.</summary>
+<details><summary>1. A developer argues: "We don't need Argon2id because we pre-hash all passwords with SHA-256 before feeding them into bcrypt, which solves bcrypt's 72-byte limit and makes it super fast." Critique this architecture.</summary>
 
 This proposal exhibits multiple fatal flaws:
 
@@ -201,8 +200,7 @@ This proposal exhibits multiple fatal flaws:
 
 </details>
 
-<details>
-<summary>2. Explain how a Pepper differs from a Salt, where each is stored, and what threat model a Pepper defends against.</summary>
+<details><summary>2. Explain how a Pepper differs from a Salt, where each is stored, and what threat model a Pepper defends against.</summary>
 
 - **Salt**: A random bitstring (16+ bytes) generated uniquely for each user. It is stored directly alongside the hash in the database. Its purpose is to ensure that two identical passwords produce completely different hashes, destroying the utility of precomputed Rainbow Tables.
 - **Pepper**: A single high-entropy secret key (256 bits) applied across all password hashes. It is **never** stored in the database; it resides in a secure external hardware enclave (Cloud KMS or HSM).
@@ -210,20 +208,17 @@ This proposal exhibits multiple fatal flaws:
 
 </details>
 
-<details>
-<summary>3. In HIBP's $k$-anonymity API, why does the client send only the first 5 characters of the SHA-1 hash, and how does this protect user privacy?</summary>
+<details><summary>3. In HIBP's $k$-anonymity API, why does the client send only the first 5 characters of the SHA-1 hash, and how does this protect user privacy?</summary>
 
 A 5-character hexadecimal prefix represents $16^5 = 1,048,576$ possible buckets. Given the hundreds of millions of compromised passwords in existence, each 5-character prefix is shared by hundreds or thousands of completely different passwords. When the client transmits `GET /range/8382E`, the HIBP server only learns that the user's password falls into a bucket containing thousands of potential values. The server cannot determine which specific suffix in that bucket the user entered. The final search matching the 35-character suffix occurs entirely on the client's local machine, ensuring the user's password never leaves the application boundary.
 </details>
 
-<details>
-<summary>4. What are Dynamic Secrets, and why are they fundamentally superior to static database passwords stored in environment variables?</summary>
+<details><summary>4. What are Dynamic Secrets, and why are they fundamentally superior to static database passwords stored in environment variables?</summary>
 
 Static credentials stored in environment variables (`DATABASE_PASSWORD=secret`) persist indefinitely. If an attacker breaches the application server or exploits a log injection vulnerability, that password remains valid until a human manually rotates it. Dynamic secrets managers (such as HashiCorp Vault) do not store pre-existing database credentials. When an application starts, it authenticates to Vault, which connects to PostgreSQL and dynamically executes: `CREATE ROLE app_worker_123 WITH LOGIN PASSWORD 'rand' VALID UNTIL 'in 1 hour';` Vault hands these ephemeral credentials to the application. If the credentials leak, they automatically expire within an hour. Furthermore, every application instance receives a unique database username, enabling granular forensic audit attribution.
 </details>
 
-<details>
-<summary>5. Why does NIST SP 800-63B explicitly advise AGAINST periodic mandatory password expiration (e.g. forcing users to change passwords every 90 days)?</summary>
+<details><summary>5. Why does NIST SP 800-63B explicitly advise AGAINST periodic mandatory password expiration (e.g. forcing users to change passwords every 90 days)?</summary>
 
 Empirical security research across millions of enterprise users demonstrated that forcing periodic password resets causes users to select predictable, mathematically weaker password patterns (e.g. `Spring2025!` $\to$ `Summer2025!`). NIST SP 800-63B recommends:
 

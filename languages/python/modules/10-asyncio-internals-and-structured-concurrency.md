@@ -230,30 +230,24 @@ In producer-consumer streaming pipelines, fast producers can easily overwhelm sl
 
 ---
 
-## 8. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-<details>
-<summary>1. What happens if you call a blocking synchronous function (like `time.sleep(5)`) inside an `async def` coroutine?</summary>
+<details><summary>1. What happens if you call a blocking synchronous function (like `time.sleep(5)`) inside an `async def` coroutine?</summary>
 
-**Answer:** Calling a blocking synchronous function inside a coroutine freezes the entire CPython event loop for that duration (5 seconds). Because the event loop executes cooperatively on a single thread, it cannot poll I/O selectors, dispatch ready tasks, evaluate timeouts, or respond to network packets while the synchronous function holds the CPU thread. All concurrent network connections stall, timers fire late, and health check heartbeats fail. Blocking operations must always be delegated to background threads using `asyncio.to_thread()` or `loop.run_in_executor()`.
+Calling a blocking synchronous function inside a coroutine freezes the entire CPython event loop for that duration (5 seconds). Because the event loop executes cooperatively on a single thread, it cannot poll I/O selectors, dispatch ready tasks, evaluate timeouts, or respond to network packets while the synchronous function holds the CPU thread. All concurrent network connections stall, timers fire late, and health check heartbeats fail. Blocking operations must always be delegated to background threads using `asyncio.to_thread()` or `loop.run_in_executor()`.
 </details>
 
-<details>
-<summary>2. Why does `asyncio.CancelledError` inherit from `BaseException` rather than `Exception`?</summary>
+<details><summary>2. Why does `asyncio.CancelledError` inherit from `BaseException` rather than `Exception`?</summary>
 
-**Answer:** Prior to Python 3.8, `CancelledError` inherited from `Exception`. In production code, developers frequently write generic exception handlers: `except Exception as e: logger.error(e)`. This caused generic handlers to inadvertently catch and swallow `CancelledError`, preventing the coroutine from unwinding and terminating. By making `CancelledError` inherit directly from `BaseException` (like `KeyboardInterrupt` and `SystemExit`), standard `except Exception` blocks ignore it, allowing the cancellation signal to propagate cleanly through task hierarchies and ensure proper shutdown.
+Prior to Python 3.8, `CancelledError` inherited from `Exception`. In production code, developers frequently write generic exception handlers: `except Exception as e: logger.error(e)`. This caused generic handlers to inadvertently catch and swallow `CancelledError`, preventing the coroutine from unwinding and terminating. By making `CancelledError` inherit directly from `BaseException` (like `KeyboardInterrupt` and `SystemExit`), standard `except Exception` blocks ignore it, allowing the cancellation signal to propagate cleanly through task hierarchies and ensure proper shutdown.
 </details>
 
-<details>
-<summary>3. Why is `threading.local` dangerous in async code, and what replaces it?</summary>
+<details><summary>3. Why is `threading.local` dangerous in async code, and what replaces it?</summary>
 
-**Answer:** `threading.local` associates data with the physical OS thread. In `asyncio`, thousands of independent, concurrent coroutines run interleaved on the _same_ physical OS thread. If one coroutine sets a thread-local variable, that value becomes immediately visible to—and will overwrite the state of—all other coroutines executing on that thread, causing severe race conditions and data leaks across tenant requests. It is replaced by `contextvars.ContextVar`, which associates data with the logical coroutine context. Each `asyncio.Task` maintains its own isolated context dictionary that automatically copies on task creation and isolates mutations.
+`threading.local` associates data with the physical OS thread. In `asyncio`, thousands of independent, concurrent coroutines run interleaved on the _same_ physical OS thread. If one coroutine sets a thread-local variable, that value becomes immediately visible to—and will overwrite the state of—all other coroutines executing on that thread, causing severe race conditions and data leaks across tenant requests. It is replaced by `contextvars.ContextVar`, which associates data with the logical coroutine context. Each `asyncio.Task` maintains its own isolated context dictionary that automatically copies on task creation and isolates mutations.
 </details>
 
-<details>
-<summary>4. What are the key architectural advantages of `asyncio.TaskGroup` over `asyncio.gather()`?</summary>
-
-**Answer:**
+<details><summary>4. What are the key architectural advantages of `asyncio.TaskGroup` over `asyncio.gather()`?</summary>
 
 1. **Guaranteed Scoping**: When an `async with asyncio.TaskGroup()` block exits, all tasks created within the group are guaranteed to have completed, failed, or been cancelled. Tasks can never leak beyond the scope.
 2. **Immediate Sibling Cancellation**: If any task inside a `TaskGroup` raises an unhandled exception, the task group automatically and immediately cancels all other still-running tasks in the group, preventing wasted CPU and unanchored orphan execution.
@@ -261,8 +255,7 @@ In producer-consumer streaming pipelines, fast producers can easily overwhelm sl
 
 </details>
 
-<details>
-<summary>5. How does `asyncio.Queue(maxsize=N)` implement backpressure?</summary>
+<details><summary>5. How does `asyncio.Queue(maxsize=N)` implement backpressure?</summary>
 
-**Answer:** When an `asyncio.Queue` is initialized with a positive `maxsize`, it limits the number of items that can be buffered simultaneously. When the queue reaches `maxsize`, any subsequent call to `await queue.put(item)` suspends the producer coroutine: the task is removed from the event loop's ready queue and placed on an internal wait list. The producer remains suspended until a consumer coroutine calls `await queue.get()` and removes an item, which wakes up the producer. This forces the producer's production rate to match the consumer's consumption rate, preventing unbounded memory growth.
+When an `asyncio.Queue` is initialized with a positive `maxsize`, it limits the number of items that can be buffered simultaneously. When the queue reaches `maxsize`, any subsequent call to `await queue.put(item)` suspends the producer coroutine: the task is removed from the event loop's ready queue and placed on an internal wait list. The producer remains suspended until a consumer coroutine calls `await queue.get()` and removes an item, which wakes up the producer. This forces the producer's production rate to match the consumer's consumption rate, preventing unbounded memory growth.
 </details>

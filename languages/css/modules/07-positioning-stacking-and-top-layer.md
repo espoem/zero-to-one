@@ -212,39 +212,29 @@ flowchart TD
 
 ---
 
-## 6. Interview Drill: Positioning, Stacking & Top Layer
+## Interview Drill
 
-### Q1: Why does setting `transform: scale(1)` on a parent element prevent child elements with `position: fixed` from adhering to the browser viewport?
-
-<details><summary>Answer</summary>
+<details><summary>1. Why does setting `transform: scale(1)` on a parent element prevent child elements with `position: fixed` from adhering to the browser viewport?</summary>
 
 According to the CSS Transforms Module, applying any `transform` other than `none` causes the element to act as the containing block for all its descendants, including elements with `position: fixed` or `position: absolute`. Instead of positioning relative to the initial containing block (the viewport), the fixed child is positioned relative to the transformed parent's padding box and moves along with the parent when the page scrolls.
 </details>
 
-### Q2: An element has `z-index: 1000000`, yet it appears visually beneath an element with `z-index: 5`. What structural mechanism explains this?
-
-<details><summary>Answer</summary>
+<details><summary>2. An element has `z-index: 1000000`, yet it appears visually beneath an element with `z-index: 5`. What structural mechanism explains this?</summary>
 
 The two elements belong to different stacking contexts. The element with `z-index: 1000000` is nested inside an ancestor that created a stacking context with an effective z-index lower than the second element's stacking context (e.g. parent has `z-index: 1` vs `z-index: 5`). Because the parent stacking context is painted beneath the second stacking context, all of its internal children—regardless of how high their local `z-index` values are—are flattened into that parent layer and rendered underneath.
 </details>
 
-### Q3: What is the operational advantage of the browser's "Top Layer" compared to rendering modal overlays at the root of the standard DOM tree?
-
-<details><summary>Answer</summary>
+<details><summary>3. What is the operational advantage of the browser's "Top Layer" compared to rendering modal overlays at the root of the standard DOM tree?</summary>
 
 Elements in the Top Layer (such as `<dialog>` and `[popover]`) are rendered on an independent internal display plane managed directly by the browser's compositing engine. They render above all elements in the document tree, completely bypassing parent stacking contexts, clipping boundaries (`overflow: hidden`), and transformed containing blocks. The Top Layer also provides native backdrop dimming (`::backdrop`), accessibility focus trapping, and light-dismiss handling without JavaScript.
 </details>
 
-### Q4: When should an engineer use `isolation: isolate`?
-
-<details><summary>Answer</summary>
+<details><summary>4. When should an engineer use `isolation: isolate`?</summary>
 
 `isolation: isolate` is used to establish a new, isolated stacking context on an element without applying arbitrary visual side effects (such as lowering `opacity` or adding dummy `transform` values). It is standard practice in component-based architectures to apply `isolation: isolate` to the root container of a component (such as a card or navigation bar) to guarantee that internal z-index layering inside the component never bleeds out to interfere with other components on the page.
 </details>
 
-### Q5: How does CSS Anchor Positioning handle viewport collision without JavaScript?
-
-<details><summary>Answer</summary>
+<details><summary>5. How does CSS Anchor Positioning handle viewport collision without JavaScript?</summary>
 
 CSS Anchor Positioning uses the `@position-try` at-rule combined with the `position-try-fallbacks` property. The author defines preferred positions using `position-area` (e.g. `bottom span-right`) and lists fallback configurations (e.g. `@position-try --top { position-area: top span-right; }`). When the browser's layout engine detects that the anchored element would overflow the viewport bounds, it automatically evaluates and applies the first fallback rule that fits cleanly on screen.
 </details>

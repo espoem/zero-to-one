@@ -148,34 +148,29 @@ flowchart TD
 
 ---
 
-## 9. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-<details>
-<summary>1. How does static stability differ from high availability, and why is it critical during a cloud provider outage?</summary>
+<details><summary>1. How does static stability differ from high availability, and why is it critical during a cloud provider outage?</summary>
 
 High availability is the property where a system remains accessible and operational over time (e.g., 99.99% uptime). Static stability is the specific architectural design pattern where a system continues serving existing traffic without requiring state mutations or control-plane API calls when dependencies degrade. During a cloud provider outage, the control plane (e.g., launching new VMs, creating DNS records, or scaling instance groups) is frequently overwhelmed or failing. Statically stable architectures pre-allocate capacity across multiple Availability Zones so that an AZ failure requires zero API calls or scaling operations to survive.
 </details>
 
-<details>
-<summary>2. Under NIST SP 800-145, why is a private datacenter running VMware vSphere without an API or billing metering not considered cloud computing?</summary>
+<details><summary>2. Under NIST SP 800-145, why is a private datacenter running VMware vSphere without an API or billing metering not considered cloud computing?</summary>
 
 NIST SP 800-145 requires all five essential characteristics: on-demand self-service, broad network access, resource pooling, rapid elasticity, and measured service. A static virtualization cluster that requires human ticket submission for VM provisioning lacks on-demand self-service. If it lacks automated resource metering and dynamic usage-based accounting, it fails the measured service requirement. Virtualization alone is simply server consolidation, not cloud computing.
 </details>
 
-<details>
-<summary>3. What is the fundamental security difference between IaaS and PaaS under the shared responsibility model?</summary>
+<details><summary>3. What is the fundamental security difference between IaaS and PaaS under the shared responsibility model?</summary>
 
 In IaaS (such as AWS EC2 or Azure VMs), the customer owns and is solely responsible for guest operating system patching, kernel updates, firewall rule configuration on the host, middleware runtimes, and local identity security. In PaaS (such as AWS RDS or Azure App Service), the cloud provider assumes full responsibility for host provisioning, operating system patching, runtime security, and physical database engine maintenance; the customer is responsible only for application code, database schema, data classification, and IAM access controls.
 </details>
 
-<details>
-<summary>4. Why are Availability Zone identifiers (e.g., `us-east-1a`) physically randomized across different cloud customer accounts?</summary>
+<details><summary>4. Why are Availability Zone identifiers (e.g., `us-east-1a`) physically randomized across different cloud customer accounts?</summary>
 
 To prevent resource starvation and power imbalance in specific physical datacenters. If every customer's `us-east-1a` mapped to the exact same physical building, `us-east-1a` would be constantly overloaded while `us-east-1f` remained underutilized. Cloud providers map the logical identifier `us-east-1a` to different physical AZ IDs (e.g., `use1-az1` vs. `use1-az2`) for each independent cloud account.
 </details>
 
-<details>
-<summary>5. Explain the difference between a soft quota and a hard service limit in cloud operations.</summary>
+<details><summary>5. Explain the difference between a soft quota and a hard service limit in cloud operations.</summary>
 
 A soft quota is an administrative ceiling imposed by the provider to prevent accidental over-provisioning or runaway billing (such as a maximum of 5 VPCs per region or 32 vCPUs for a new account). Soft quotas can be increased upon request via the Service Quotas console. A hard limit is a physical, architectural, or protocol-level barrier that cannot be increased under any circumstances (such as the 5 reserved IP addresses in an IPv4 subnet, the 256 KB message size limit in SQS, or the 64 KB DNS UDP packet boundary).
 </details>

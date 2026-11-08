@@ -109,34 +109,29 @@ The SLO error budget consumption calculations and compounding log retention cost
 
 ---
 
-## 8. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-<details>
-<summary>1. Explain the difference between an SLI, an SLO, and an SLA.</summary>
+<details><summary>1. Explain the difference between an SLI, an SLO, and an SLA.</summary>
 
 An SLI (Service Level Indicator) is a quantifiable metric measuring real-time performance (e.g., successful request percentage: $99.92\%$). An SLO (Service Level Objective) is the internal target reliability goal agreed upon by engineering and product teams over a specific window (e.g., $99.9\%$ over 30 days). An SLA (Service Level Agreement) is the formal legal/contractual commitment made to paying customers, which includes financial penalties or credits if unfulfilled (e.g., $99.5\%$ with a 10% credit payout). To preserve a safety buffer, the SLO is always set higher than the SLA.
 </details>
 
-<details>
-<summary>2. Why does Multi-Window Multi-Burn-Rate alerting prevent alert fatigue compared to simple error rate thresholds?</summary>
+<details><summary>2. Why does Multi-Window Multi-Burn-Rate alerting prevent alert fatigue compared to simple error rate thresholds?</summary>
 
 Simple error rate thresholds (e.g., error rate > 1% for 5 minutes) suffer from two failure modes: they fire alerts on brief, transient spikes that resolve on their own before an engineer wakes up, and they fail to detect low-level, slow burns (e.g., 0.5% errors over 3 days) that steadily wipe out the monthly error budget. Multi-window multi-burn-rate alerting measures the rate of budget consumption and requires both a short-term window (verifying the failure is currently happening) and a long-term window (verifying significant budget impact) to agree before paging on-call personnel.
 </details>
 
-<details>
-<summary>3. Why is leaving the default retention setting on Amazon CloudWatch log groups dangerous?</summary>
+<details><summary>3. Why is leaving the default retention setting on Amazon CloudWatch log groups dangerous?</summary>
 
 The default retention policy in CloudWatch is "Never Expire". In a high-traffic production application, logs continuously accumulate indefinitely on high-performance storage ($0.03/GB-month). Over 2–3 years, an organization accumulates tens of terabytes of obsolete debug logs, resulting in thousands of dollars in monthly storage charges for data that is never queried. Best practice mandates setting explicit retention policies (14 or 30 days) in IaC modules.
 </details>
 
-<details>
-<summary>4. What is the role of the OpenTelemetry (OTel) Collector in a multi-cloud enterprise architecture?</summary>
+<details><summary>4. What is the role of the OpenTelemetry (OTel) Collector in a multi-cloud enterprise architecture?</summary>
 
 The OpenTelemetry Collector serves as a vendor-neutral proxy that receives, processes, and exports telemetry data (metrics, traces, logs). It decouples application code from vendor-specific backends: application libraries emit telemetry using standardized OTLP protocols to the local collector. The collector performs tail-sampling, sensitive PII redaction, label enrichment, and then fans out telemetry to multiple destinations (e.g., CloudWatch, Prometheus, Datadog, and cold S3 archives) without requiring changes to application code.
 </details>
 
-<details>
-<summary>5. What is the "Error Budget Policy", and what action is mandated when the budget is exhausted?</summary>
+<details><summary>5. What is the "Error Budget Policy", and what action is mandated when the budget is exhausted?</summary>
 
 An Error Budget Policy is a formal organizational contract between product management and engineering. It establishes that the allowable room for unreliability ($100\% - \text{SLO}$) is an operational currency. When the error budget is exhausted before the end of the rolling 30-day window, the policy mandates that all new feature deployments and non-essential releases are frozen. Engineering capacity is redirected exclusively toward bug fixes, automated testing, infrastructure hardening, and reliability improvements until the budget recovers.
 </details>

@@ -257,36 +257,29 @@ def get_safe_file_content(base_dir: Path, user_supplied_path: str) -> str:
 
 ---
 
-## 6. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-<details>
-<summary>1. Why is `pickle` inherently insecure for parsing data from untrusted clients, and why can't input sanitization fix it?</summary>
+<details><summary>1. Why is `pickle` inherently insecure for parsing data from untrusted clients, and why can't input sanitization fix it?</summary>
 
-**Answer:** `pickle` is not a passive data serialization format like JSON or Protocol Buffers; it is an interpreted byte-oriented stack machine language. The pickle bytecode specification includes opcodes (such as `REDUCE` and `GLOBAL`) designed specifically to look up arbitrary module attributes and call arbitrary callables with supplied arguments to reconstruct objects. By implementing the `__reduce__()` protocol on a serialized class, an attacker can specify any callable (e.g. `posix.system`, `subprocess.Popen`) and its arguments. When `pickle.loads()` deserializes the stream, it executes the callable during reconstruction. Input sanitization is ineffective because the exploit is an intentional core feature of the protocol's object reconstruction design.
+`pickle` is not a passive data serialization format like JSON or Protocol Buffers; it is an interpreted byte-oriented stack machine language. The pickle bytecode specification includes opcodes (such as `REDUCE` and `GLOBAL`) designed specifically to look up arbitrary module attributes and call arbitrary callables with supplied arguments to reconstruct objects. By implementing the `__reduce__()` protocol on a serialized class, an attacker can specify any callable (e.g. `posix.system`, `subprocess.Popen`) and its arguments. When `pickle.loads()` deserializes the stream, it executes the callable during reconstruction. Input sanitization is ineffective because the exploit is an intentional core feature of the protocol's object reconstruction design.
 </details>
 
-<details>
-<summary>2. How does `shell=False` prevent command injection when using `subprocess.run()`?</summary>
+<details><summary>2. How does `shell=False` prevent command injection when using `subprocess.run()`?</summary>
 
-**Answer:** When `shell=True`, Python passes the entire command string to the system command interpreter (e.g. `/bin/sh -c "<command>"`). The shell parses metacharacters (`;`, `&`, `|`, `$()`, backticks), allowing an attacker who controls part of the string to terminate the initial command and inject secondary arbitrary commands. When `shell=False` (the default) and the command is passed as a list of strings (`["id", username]`), Python bypasses the shell entirely. It makes a direct system call (`execve` on POSIX or `CreateProcess` on Windows) to the executable (`/usr/bin/id`), passing the list elements directly as the `argv` array. Metacharacters inside `username` are treated strictly as literal data characters within that single argument string and cannot be evaluated as shell syntax.
+When `shell=True`, Python passes the entire command string to the system command interpreter (e.g. `/bin/sh -c "<command>"`). The shell parses metacharacters (`;`, `&`, `|`, `$()`, backticks), allowing an attacker who controls part of the string to terminate the initial command and inject secondary arbitrary commands. When `shell=False` (the default) and the command is passed as a list of strings (`["id", username]`), Python bypasses the shell entirely. It makes a direct system call (`execve` on POSIX or `CreateProcess` on Windows) to the executable (`/usr/bin/id`), passing the list elements directly as the `argv` array. Metacharacters inside `username` are treated strictly as literal data characters within that single argument string and cannot be evaluated as shell syntax.
 </details>
 
-<details>
-<summary>3. What changes with PEP 686 in Python 3.15 regarding default text encoding?</summary>
+<details><summary>3. What changes with PEP 686 in Python 3.15 regarding default text encoding?</summary>
 
-**Answer:** Prior to PEP 686, standard Python file operations (`open()`, `sys.stdin`, `sys.stdout`) used the operating system's locale-dependent encoding (e.g. `cp1252` on Windows, or `ASCII` on misconfigured Linux containers). This led to silent data corruption or `UnicodeDecodeError` when code tested on UTF-8 systems ran in environments with different locale defaults. Starting with PEP 686 in Python 3.15, CPython enables UTF-8 mode by default across all platforms. `open("data.txt", "r")` defaults to `encoding="utf-8"` regardless of system locale, standard streams use UTF-8, and predictable cross-platform behavior is guaranteed out of the box.
+Prior to PEP 686, standard Python file operations (`open()`, `sys.stdin`, `sys.stdout`) used the operating system's locale-dependent encoding (e.g. `cp1252` on Windows, or `ASCII` on misconfigured Linux containers). This led to silent data corruption or `UnicodeDecodeError` when code tested on UTF-8 systems ran in environments with different locale defaults. Starting with PEP 686 in Python 3.15, CPython enables UTF-8 mode by default across all platforms. `open("data.txt", "r")` defaults to `encoding="utf-8"` regardless of system locale, standard streams use UTF-8, and predictable cross-platform behavior is guaranteed out of the box.
 </details>
 
-<details>
-<summary>4. Why should signal handlers in asynchronous applications be registered via `loop.add_signal_handler()` rather than `signal.signal()`?</summary>
+<details><summary>4. Why should signal handlers in asynchronous applications be registered via `loop.add_signal_handler()` rather than `signal.signal()`?</summary>
 
-**Answer:** `signal.signal()` registers a low-level synchronous callback that CPython invokes on the main thread at an arbitrary point between bytecode instructions. Executing complex asynchronous logic, awaiting coroutines, or directly interacting with the asyncio event loop inside a raw `signal.signal` handler can cause re-entrancy issues, deadlocks, or state corruption. `loop.add_signal_handler()` integrates signal delivery directly into the asyncio event loop's reactor mechanism (using a self-pipe or signalfd on POSIX). When a signal arrives, the loop wakes up and executes the registered callback cleanly as part of its normal event loop turn, allowing safe manipulation of asyncio events, task cancellation, and structured shutdown.
+`signal.signal()` registers a low-level synchronous callback that CPython invokes on the main thread at an arbitrary point between bytecode instructions. Executing complex asynchronous logic, awaiting coroutines, or directly interacting with the asyncio event loop inside a raw `signal.signal` handler can cause re-entrancy issues, deadlocks, or state corruption. `loop.add_signal_handler()` integrates signal delivery directly into the asyncio event loop's reactor mechanism (using a self-pipe or signalfd on POSIX). When a signal arrives, the loop wakes up and executes the registered callback cleanly as part of its normal event loop turn, allowing safe manipulation of asyncio events, task cancellation, and structured shutdown.
 </details>
 
-<details>
-<summary>5. What are the key Docker best practices for Python microservices using `uv`?</summary>
-
-**Answer:**
+<details><summary>5. What are the key Docker best practices for Python microservices using `uv`?</summary>
 
 1. **Multi-Stage Builds**: Separate the build environment (compilation headers, `uv` binary, build dependencies) from the final minimal runtime image.
 2. **Bytecode Pre-compilation**: Set `UV_COMPILE_BYTECODE=1` during `uv sync` to compile `.pyc` files ahead-of-time, eliminating JIT bytecode compilation overhead during cold container startup.

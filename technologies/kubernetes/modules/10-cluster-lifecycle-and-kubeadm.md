@@ -491,18 +491,15 @@ scheduler:
 
 ---
 
-## 13. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. What is the fundamental difference between `kubeadm upgrade apply` and `kubeadm upgrade node`, and where is each executed?</strong></summary>
+<details><summary>1. What is the fundamental difference between `kubeadm upgrade apply` and `kubeadm upgrade node`, and where is each executed?</summary>
 
 - **`kubeadm upgrade apply`**: Executed ONLY on the **first control plane node** in the cluster. It checks the upgrade plan, pulls control plane component images, updates the cluster configuration stored in the `kubeadm-config` ConfigMap in `kube-system`, upgrades control plane static pod manifests on the local node, and upgrades cluster-wide addons (CoreDNS and kube-proxy).
 - **`kubeadm upgrade node`**: Executed on all **secondary control plane nodes** and all **worker nodes**. It does NOT update cluster-wide ConfigMaps or addons; it only updates local kubelet configuration files and local static pod manifests.
-
 </details>
 
-<details>
-<summary><strong>Q2. Why is an etcd cluster of 4 nodes architecturally inferior to a cluster of 3 nodes?</strong></summary>
+<details><summary>2. Why is an etcd cluster of 4 nodes architecturally inferior to a cluster of 3 nodes?</summary>
 
 According to Raft consensus quorum mathematics ($Q = \lfloor N/2 \rfloor + 1$):
 
@@ -512,16 +509,14 @@ According to Raft consensus quorum mathematics ($Q = \lfloor N/2 \rfloor + 1$):
 Adding the 4th node adds zero additional fault tolerance. However, because 3 positive votes are now required instead of 2, the 4-node cluster is strictly more vulnerable to network partitions and latency degradation. Therefore, etcd clusters should always consist of an odd number of members (3 or 5).
 </details>
 
-<details>
-<summary><strong>Q3. Explain the version skew rule between `kube-apiserver` and `kubelet`. Can a worker node run a newer kubelet than the API server?</strong></summary>
+<details><summary>3. Explain the version skew rule between `kube-apiserver` and `kubelet`. Can a worker node run a newer kubelet than the API server?</summary>
 
 In Kubernetes, `kubelet` is supported up to **three minor versions older** than `kube-apiserver` ($N$, $N-1$, $N-2$, $N-3$). For example, a v1.37 API server can manage v1.34, v1.35, v1.36, and v1.37 worker node kubelets.
 
 However, a kubelet must **never be newer** than `kube-apiserver`. A newer kubelet may attempt to register API objects, node status fields, or feature gates that the older API server does not recognize, resulting in node registration failures or rejected heartbeat leases.
 </details>
 
-<details>
-<summary><strong>Q4. What is the exact purpose of the ServiceAccount key pair (`sa.key` and `sa.pub`), and why are they distinct from the Kubernetes Root CA?</strong></summary>
+<details><summary>4. What is the exact purpose of the ServiceAccount key pair (`sa.key` and `sa.pub`), and why are they distinct from the Kubernetes Root CA?</summary>
 
 The ServiceAccount key pair is an asymmetric cryptographic pair (RSA or ECDSA) used exclusively for signing and verifying JSON Web Tokens (JWT) issued to Pods via the `TokenRequest` projection API:
 
@@ -531,38 +526,21 @@ The ServiceAccount key pair is an asymmetric cryptographic pair (RSA or ECDSA) u
 They are kept separate from the Root CA because compromising the SA signing key only compromises token verification, whereas compromising the Root CA allows an attacker to forge client certificates with `system:masters` cluster administrative access.
 </details>
 
-<details>
-<summary><strong>Q5. How does `kubelet` discover and run static pods like `kube-apiserver` and `etcd` without an active API server?</strong></summary>
+<details><summary>5. How does `kubelet` discover and run static pods like `kube-apiserver` and `etcd` without an active API server?</summary>
 
 `kubelet` monitors a local filesystem directory configured via `staticPodPath` in `/var/lib/kubelet/config.yaml` (default: `/etc/kubernetes/manifests`). Kubelet's file watch mechanism reads standard Pod YAML manifests in that directory and communicates directly with the local container runtime (via the CRI socket) to launch the containers.
 
 Once the API server is initialized and reachable, kubelet creates a "mirror Pod" on the API server for each static pod so that operators can observe their status via `kubectl get pods -n kube-system`. However, mirror pods cannot be modified or deleted via the API server; modifying them requires editing the YAML files directly on the host node.
 </details>
 
-<details>
-<summary><strong>Q6. During an etcd snapshot restore, why must static pod manifests be moved out of `/etc/kubernetes/manifests` before executing the restore command?</strong></summary>
+<details><summary>6. During an etcd snapshot restore, why must static pod manifests be moved out of `/etc/kubernetes/manifests` before executing the restore command?</summary>
 
 If static pod manifests remain in `/etc/kubernetes/manifests`, `kube-apiserver` and `etcd` are actively running. If an operator attempts to overwrite the etcd database directory while etcd has active file locks or memory-mapped WAL files open, database file corruption occurs. Furthermore, if apiserver is running, clients continue sending writes that conflict with the snapshot state. Moving manifests out causes kubelet to cleanly terminate the processes, guaranteeing that disk writes have halted before snapshot data is unpacked.
 </details>
 
-<details>
-<summary><strong>Q7. What is the role of `front-proxy-ca.crt` and `front-proxy-client.crt`?</strong></summary>
+<details><summary>7. What is the role of `front-proxy-ca.crt` and `front-proxy-client.crt`?</summary>
 
 They power the **Kubernetes Aggregation Layer**, which allows external extension API servers (such as `metrics-server` or custom API servers) to be reached through the primary `kube-apiserver` endpoint. When a user requests `/apis/metrics.k8s.io/v1beta1`, `kube-apiserver` acts as a reverse proxy, authenticating the user and proxying the request to `metrics-server`. To prove to `metrics-server` that the proxy connection originated from the trusted apiserver and not an imposter, `kube-apiserver` presents `front-proxy-client.crt` signed by `front-proxy-ca.crt`.
-</details>
-
-<details>
-<summary><strong>Q8. In the CKA exam, what flags must be passed to `kubectl drain` when draining a control plane node?</strong></summary>
-
-When draining a control plane node, standard workloads, DaemonSets, and local emptyDir volumes must be handled explicitly:
-
-```bash
-kubectl drain <control-plane-node> --ignore-daemonsets --delete-emptydir-data --force
-```
-
-- `--ignore-daemonsets`: Necessary because control plane nodes run system DaemonSets (like `kube-proxy` or CNI pods) that cannot be evicted.
-- `--delete-emptydir-data`: Necessary if any pods use ephemeral `emptyDir` storage, which is deleted upon pod eviction.
-
 </details>
 
 ---

@@ -391,28 +391,24 @@ CFS-ENFORCE-BANDWIDTH-QUOTA(cgroup, periodLengthUs, quotaLimitUs)
 
 ---
 
-## 10. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. How does the "No Internal Processes" rule in cgroups v2 prevent the resource allocation ambiguities present in cgroups v1?</strong></summary>
+<details><summary>1. How does the "No Internal Processes" rule in cgroups v2 prevent the resource allocation ambiguities present in cgroups v1?</summary>
 
 In cgroups v1, a cgroup directory could host running processes while simultaneously containing child sub-cgroups. This created fundamental ambiguities when applying resource limits: if an interior node had a 2GB limit and its two child cgroups had 1GB limits each, it was ambiguous how processes running in the parent node competed with the child trees for memory and scheduling bandwidth. cgroups v2 eliminates this ambiguity by enforcing that only leaf nodes can contain processes (`cgroup.procs`), while interior nodes can only contain child directories and enable controllers via `cgroup.subtree_control`. This guarantees that resource distribution follows a strict, well-defined tree hierarchy.
 </details>
 
-<details>
-<summary><strong>Q2. Explain the operational difference between `memory.high` and `memory.max` in cgroups v2.</strong></summary>
+<details><summary>2. Explain the operational difference between `memory.high` and `memory.max` in cgroups v2.</summary>
 
 `memory.max` is the absolute hard limit. If a cgroup exceeds `memory.max` and page cache reclaim cannot free sufficient memory, the kernel immediately triggers the memcg OOM killer to terminate processes. In contrast, `memory.high` is a soft throttling boundary. When usage crosses `memory.high`, the kernel does not kill processes; instead, it forces allocating processes within that cgroup into synchronous page reclaim and proportionally throttles their CPU allocation. This slows down the rate of memory allocation, providing the application an opportunity to stabilize or allowing external supervisors to trigger proactive auto-scaling.
 </details>
 
-<details>
-<summary><strong>Q3. Why is CPU throttling under CFS quota often observed in containers whose average CPU utilization is well below their allocated limit?</strong></summary>
+<details><summary>3. Why is CPU throttling under CFS quota often observed in containers whose average CPU utilization is well below their allocated limit?</summary>
 
 CFS quota enforcement operates over discrete periodic windows (typically 100 milliseconds). If an application uses multiple threads (for example, 16 worker threads on a host with 16 cores), all 16 threads can run simultaneously. If the container has a limit of 1.0 CPU core (100ms of quota per 100ms period), the 16 threads running concurrently will consume the entire 100ms quota in only `100 / 16 = 6.25ms` of real wall-clock time. For the remaining 93.75ms of that period, the kernel deschedules and freezes all 16 threads. Even though average utilization over a 1-minute window appears low, the application experiences severe latency spikes during the throttled portion of each 100ms cycle.
 </details>
 
-<details>
-<summary><strong>Q4. How does Pressure Stall Information (PSI) differentiate between high resource utilization and actual resource starvation?</strong></summary>
+<details><summary>4. How does Pressure Stall Information (PSI) differentiate between high resource utilization and actual resource starvation?</summary>
 
 Utilization metrics simply measure whether a resource is busy (e.g., 95% CPU or 90% memory used), which often reflects healthy, efficient system utilization. PSI measures **lost execution time**:
 
@@ -422,8 +418,7 @@ Utilization metrics simply measure whether a resource is busy (e.g., 95% CPU or 
 A system with 98% memory usage and 0% memory PSI is operating with optimal cache efficiency; a system with 70% memory usage and 40% `full` memory PSI is in critical thrashing collapse.
 </details>
 
-<details>
-<summary><strong>Q5. When a container terminates with exit code 137, how can you definitively determine whether it was killed by the kernel memcg OOM killer or by an orchestrator timeout?</strong></summary>
+<details><summary>5. When a container terminates with exit code 137, how can you definitively determine whether it was killed by the kernel memcg OOM killer or by an orchestrator timeout?</summary>
 
 Exit code 137 simply indicates termination by `SIGKILL` ($128 + 9 = 137$). To determine the root cause:
 
@@ -434,14 +429,12 @@ Exit code 137 simply indicates termination by `SIGKILL` ($128 + 9 = 137$). To de
 If these indicators are absent, the container was killed by an external signal, typically an orchestrator (`docker stop` or Kubernetes Kubelet) sending `SIGKILL` after the application failed to exit within its graceful shutdown grace period following an initial `SIGTERM`.
 </details>
 
-<details>
-<summary><strong>Q6. Why did buffered file I/O throttling fail in cgroups v1, and how does cgroups v2 solve this architectural defect?</strong></summary>
+<details><summary>6. Why did buffered file I/O throttling fail in cgroups v1, and how does cgroups v2 solve this architectural defect?</summary>
 
 In Linux, writes to disk are buffered in the kernel page cache (dirty pages) and written to physical storage asynchronously by kernel background flusher threads (`kworker`). In cgroups v1, because the `memory` and `blkio` controllers were in separate hierarchies, the kernel flusher threads had no mechanism to associate dirty pages with the specific blkio cgroup that generated the write. All asynchronous writebacks were attributed to the root cgroup, bypassing container I/O throttles. In cgroups v2, the unified hierarchy ensures that memory pages track the cgroup ownership of their allocating process; when flusher threads write those pages to disk, the I/O operations are charged directly against the originating cgroup's `io.max` and `io.weight` limits.
 </details>
 
-<details>
-<summary><strong>Q7. What is the danger of using the `cgroupfs` driver instead of the `systemd` cgroup driver in production Kubernetes clusters?</strong></summary>
+<details><summary>7. What is the danger of using the `cgroupfs` driver instead of the `systemd` cgroup driver in production Kubernetes clusters?</summary>
 
 On systemd-managed Linux systems, systemd is PID 1 and maintains authoritative control over the `/sys/fs/cgroup/` hierarchy. When container runtimes use the `cgroupfs` driver, they bypass systemd and directly manipulate cgroup directories on disk. This results in a split-brain state: systemd does not recognize these directories as managed units. When system maintenance occurs (such as package upgrades, `systemctl daemon-reload`, or slice adjustments), systemd scans the tree and may unexpectedly remove, throttle, or reorganize unmanaged cgroups, causing unexplained container crashes and node instability.
 </details>

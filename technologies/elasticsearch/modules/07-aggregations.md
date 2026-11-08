@@ -360,64 +360,39 @@ Breadth-first versus depth-first collection: deep `terms` trees with high cardin
 
 ---
 
-## 11. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. Why are terms aggregation counts approximate, and what do the error fields mean?</strong></summary>
+<details><summary>1. Why are terms aggregation counts approximate, and what do the error fields mean?</summary>
 
 Each shard returns only its top `shard_size` terms, so a term just below the cut-off on every shard can be globally the largest yet missing or undercounted. `doc_count_error_upper_bound` sums, per shard, the count of the last term returned; the per-bucket variant sums that over shards that did not return the bucket's term, bounding how much the bucket may be undercounted.
 </details>
 
-<details>
-<summary><strong>Q2. How do you get every bucket of a high-cardinality field?</strong></summary>
+<details><summary>2. How do you get every bucket of a high-cardinality field?</summary>
 
 A `composite` aggregation with `after_key` pagination: exact, constant memory per page, streamable from shards in key order. Not `terms` with a huge size.
 </details>
 
-<details>
-<summary><strong>Q3. Why can cardinality be distributed while exact distinct counting cannot be cheaply?</strong></summary>
+<details><summary>3. Why can cardinality be distributed while exact distinct counting cannot be cheaply?</summary>
 
 Exact distinct counts need the set of values from every shard (memory proportional to cardinality). HLL sketches have fixed size and merge by register-wise max, so the merged sketch equals the sketch of the union; only the estimate is approximate.
 </details>
 
-<details>
-<summary><strong>Q4. What does a shard return for an avg aggregation?</strong></summary>
+<details><summary>4. What does a shard return for an avg aggregation?</summary>
 
 The sum and the count. The coordinator divides total sum by total count. Returning shard averages would weight shards equally regardless of their document counts.
 </details>
 
-<details>
-<summary><strong>Q5. Implement faceted navigation where selecting a brand filters hits but not the brand counts.</strong></summary>
+<details><summary>5. Implement faceted navigation where selecting a brand filters hits but not the brand counts.</summary>
 
 Query for the text, `terms` aggregation on brand, and the brand selection in `post_filter`. For several facets, each facet aggregation wraps a `filter` that applies all other facets' selections.
 </details>
 
-<details>
-<summary><strong>Q6. Which circuit breakers protect aggregations, and what happens when one trips?</strong></summary>
+<details><summary>6. Which circuit breakers protect aggregations, and what happens when one trips?</summary>
 
 The request breaker (60% heap) for per-request structures, and the parent breaker (95%, real memory). A trip aborts the request with `circuit_breaking_exception` (HTTP 429) instead of risking an OutOfMemoryError for the whole node.
 </details>
 
-<details>
-<summary><strong>Q7. When is the shard request cache used?</strong></summary>
+<details><summary>7. When is the shard request cache used?</summary>
 
 For requests with `size: 0` (by default), keyed by the request body, per shard, invalidated when the shard refreshes with changes. Unrounded `now` defeats it; read-only indices benefit most.
-</details>
-
-<details>
-<summary><strong>Q8. What is the difference between sibling and parent pipeline aggregations?</strong></summary>
-
-Sibling pipeline aggregations (`avg_bucket`, `max_bucket`, `stats_bucket`) sit alongside a multi-bucket parent aggregation and compute a single summary value across all generated buckets. Parent pipeline aggregations (`derivative`, `cumulative_sum`, `bucket_selector`, `bucket_sort`) are nested inside a multi-bucket parent to compute a metric per bucket or filter/sort the bucket list directly.
-</details>
-
-<details>
-<summary><strong>Q9. When should you choose HDRHistogram over TDigest for calculating percentiles?</strong></summary>
-
-Choose HDRHistogram when evaluating strict service latency SLOs requiring guaranteed relative error bounds across positive integer metrics (e.g. microseconds or milliseconds) and lossless exact merging across shards. Choose TDigest when measuring arbitrary continuous metrics with extreme tail precision (p99.9+) across an unbounded range with minimal per-bucket memory overhead.
-</details>
-
-<details>
-<summary><strong>Q10. Why is <code>collect_mode: breadth_first</code> critical when nesting multi-bucket aggregations on high-cardinality fields?</strong></summary>
-
-Under the default `depth_first` collection, Elasticsearch instantiates all sub-aggregations for all candidate parent buckets before pruning, causing an $O(B_1 \times B_2)$ memory explosion. `breadth_first` prunes parent buckets to `shard_size` first and only evaluates child aggregations for surviving winners.
 </details>

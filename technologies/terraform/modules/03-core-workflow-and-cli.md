@@ -425,57 +425,46 @@ In enterprise repositories with thousands of resources, running `terraform plan`
 
 ---
 
-## 11. Interview Drill: Deep-Dive Architectural Questions
+## Interview Drill
 
-<details>
-<summary><strong>Q1. Explain the cryptographic and operational differences between `h1:` and `zh:` hashes in `.terraform.lock.hcl`.</strong></summary>
+<details><summary>1. Explain the cryptographic and operational differences between `h1:` and `zh:` hashes in `.terraform.lock.hcl`.</summary>
 
-**Answer**: A `zh:` hash is the SHA-256 digest of the official distribution `.zip` archive downloaded from the provider registry. It matches the checksum published in the registry's GPG-signed `SHA256SUMS` manifest, verifying that the downloaded archive has not been modified in transit. An `h1:` hash is a directory-tree hash computed across the unpacked files of the provider binary on local disk. Terraform lexicographically sorts all file paths in the extracted directory, hashes each file's contents, and computes a root SHA-256 digest. This ensures that provider files have not been modified or corrupted on disk post-extraction.
+A `zh:` hash is the SHA-256 digest of the official distribution `.zip` archive downloaded from the provider registry. It matches the checksum published in the registry's GPG-signed `SHA256SUMS` manifest, verifying that the downloaded archive has not been modified in transit. An `h1:` hash is a directory-tree hash computed across the unpacked files of the provider binary on local disk. Terraform lexicographically sorts all file paths in the extracted directory, hashes each file's contents, and computes a root SHA-256 digest. This ensures that provider files have not been modified or corrupted on disk post-extraction.
 
 - Ref: HashiCorp Terraform Dependency Lock File Documentation.
-
 </details>
 
-<details>
-<summary><strong>Q2. Why is running `terraform apply -auto-approve` considered an operational hazard in production CI/CD pipelines compared to `terraform apply <planfile>`?</strong></summary>
+<details><summary>2. Why is running `terraform apply -auto-approve` considered an operational hazard in production CI/CD pipelines compared to `terraform apply <planfile>`?</summary>
 
-**Answer**: Running `terraform apply -auto-approve` causes Terraform to re-evaluate HCL source files, re-query cloud APIs during a fresh refresh pass, and generate a new plan immediately before applying. If infrastructure drift occurred or if an out-of-band modification was made between the review step and execution, the apply phase will execute operations that were never reviewed or approved by human operators. In contrast, applying a saved plan file (`terraform apply tfplan`) guarantees strict atomicity: Terraform verifies that the state's lineage and serial match the plan's preconditions, and applies the exact pre-computed mutations without re-reading configuration or recalculating drift.
+Running `terraform apply -auto-approve` causes Terraform to re-evaluate HCL source files, re-query cloud APIs during a fresh refresh pass, and generate a new plan immediately before applying. If infrastructure drift occurred or if an out-of-band modification was made between the review step and execution, the apply phase will execute operations that were never reviewed or approved by human operators. In contrast, applying a saved plan file (`terraform apply tfplan`) guarantees strict atomicity: Terraform verifies that the state's lineage and serial match the plan's preconditions, and applies the exact pre-computed mutations without re-reading configuration or recalculating drift.
 
 - Ref: Terraform Production Pipeline Security Standards.
-
 </details>
 
-<details>
-<summary><strong>Q3. How does Terraform 1.17's `-minimal-refresh` optimize planning latency compared to standard refresh?</strong></summary>
+<details><summary>3. How does Terraform 1.17's `-minimal-refresh` optimize planning latency compared to standard refresh?</summary>
 
-**Answer**: Standard refresh performs synchronous read queries against cloud APIs for every single resource recorded in `.tfstate`, regardless of whether those resources are touched by configuration changes. In architectures with thousands of resources, this causes massive API latency and triggers provider rate limits. Terraform 1.17's `-minimal-refresh` analyzes the configuration diff and execution graph prior to issuing API calls. It only refreshes resources whose configurations have changed or whose downstream dependants require up-to-date output attributes. Unaffected subgraphs are assumed to be unchanged, reducing plan execution time by orders of magnitude.
+Standard refresh performs synchronous read queries against cloud APIs for every single resource recorded in `.tfstate`, regardless of whether those resources are touched by configuration changes. In architectures with thousands of resources, this causes massive API latency and triggers provider rate limits. Terraform 1.17's `-minimal-refresh` analyzes the configuration diff and execution graph prior to issuing API calls. It only refreshes resources whose configurations have changed or whose downstream dependants require up-to-date output attributes. Unaffected subgraphs are assumed to be unchanged, reducing plan execution time by orders of magnitude.
 
 - Ref: Terraform 1.17 Release Notes & CLI Execution Specifications.
-
 </details>
 
-<details>
-<summary><strong>Q4. Why did HashiCorp deprecate `terraform taint` in favor of `terraform apply -replace`?</strong></summary>
+<details><summary>4. Why did HashiCorp deprecate `terraform taint` in favor of `terraform apply -replace`?</summary>
 
-**Answer**: `terraform taint` was an imperative command that immediately mutated the persisted state file, marking the resource instance as tainted. If the operator subsequently ran `terraform plan` and decided not to proceed, or if the CI runner failed, the resource remained tainted in the remote state, forcing recreation on any subsequent execution by any team member. `terraform apply -replace="<addr>"` shifts replacement into the declarative planning phase. It instructs the planner to propose a replacement action within the speculative plan, leaving the state file untouched until the approved plan is applied.
+`terraform taint` was an imperative command that immediately mutated the persisted state file, marking the resource instance as tainted. If the operator subsequently ran `terraform plan` and decided not to proceed, or if the CI runner failed, the resource remained tainted in the remote state, forcing recreation on any subsequent execution by any team member. `terraform apply -replace="<addr>"` shifts replacement into the declarative planning phase. It instructs the planner to propose a replacement action within the speculative plan, leaving the state file untouched until the approved plan is applied.
 
 - Ref: HashiCorp Core Engine Architecture & Taint Deprecation Notice.
-
 </details>
 
-<details>
-<summary><strong>Q5. What failure mode occurs if multiple parallel CI runners share a single `TF_PLUGIN_CACHE_DIR` without filesystem locking?</strong></summary>
+<details><summary>5. What failure mode occurs if multiple parallel CI runners share a single `TF_PLUGIN_CACHE_DIR` without filesystem locking?</summary>
 
-**Answer**: Terraform's plugin cache mechanism does not implement cross-process or cross-host file locking. When multiple CI runners execute `terraform init` concurrently, they may simultaneously determine that a specific provider archive (e.g., `aws_v5.40.0.zip`) is absent from the cache and begin downloading and writing to the identical file path on shared disk. This results in race conditions where files are partially written, truncated, or interleaved, corrupting the cached archive and causing subsequent jobs to crash with invalid ZIP header or unexpected EOF errors.
+Terraform's plugin cache mechanism does not implement cross-process or cross-host file locking. When multiple CI runners execute `terraform init` concurrently, they may simultaneously determine that a specific provider archive (e.g., `aws_v5.40.0.zip`) is absent from the cache and begin downloading and writing to the identical file path on shared disk. This results in race conditions where files are partially written, truncated, or interleaved, corrupting the cached archive and causing subsequent jobs to crash with invalid ZIP header or unexpected EOF errors.
 
 - Ref: Terraform CLI Configuration: Provider Plugin Cache.
-
 </details>
 
-<details>
-<summary><strong>Q6. Under what circumstances does `terraform validate` pass successfully yet `terraform plan` fails immediately afterward?</strong></summary>
+<details><summary>6. Under what circumstances does `terraform validate` pass successfully yet `terraform plan` fails immediately afterward?</summary>
 
-**Answer**: `terraform validate` performs purely static analysis: it checks HCL syntax, verifies that resource attributes match provider schemas, and confirms that referenced identifiers exist in scope. It does not communicate with the remote state backend, does not authenticate to cloud APIs, and does not evaluate values that depend on live infrastructure. Consequently, `terraform validate` will pass, but `terraform plan` will fail if:
+`terraform validate` performs purely static analysis: it checks HCL syntax, verifies that resource attributes match provider schemas, and confirms that referenced identifiers exist in scope. It does not communicate with the remote state backend, does not authenticate to cloud APIs, and does not evaluate values that depend on live infrastructure. Consequently, `terraform validate` will pass, but `terraform plan` will fail if:
 
 1. Cloud credentials are invalid or expired.
 2. The remote backend state lock cannot be acquired.
@@ -483,16 +472,13 @@ In enterprise repositories with thousands of resources, running `terraform plan`
 4. An external data source query fails (e.g., querying an AMI that does not exist).
 
 - Ref: Terraform CLI Commands: Validate vs. Plan.
-
 </details>
 
-<details>
-<summary><strong>Q7. Why is using Terraform CLI workspaces for multi-environment isolation (e.g., Dev vs. Prod) considered an anti-pattern?</strong></summary>
+<details><summary>7. Why is using Terraform CLI workspaces for multi-environment isolation (e.g., Dev vs. Prod) considered an anti-pattern?</summary>
 
-**Answer**: Workspaces segregate state files, but share identical HCL configuration files and identical remote backend configurations. In real-world enterprise architectures, Development and Production environments frequently require different IAM trust roles, different cloud accounts/subscriptions, and different architectural sizing. Forcing multiple environments into a single workspace-driven codebase encourages complex conditional logic (e.g., `count = terraform.workspace == "prod" ? 5 : 1`), increases code complexity, and couples the blast radius: a corrupted backend configuration or erroneous apply in the shared working directory can impact production directly. Best practice mandates separate directory structures with isolated state backends for distinct environments.
+Workspaces segregate state files, but share identical HCL configuration files and identical remote backend configurations. In real-world enterprise architectures, Development and Production environments frequently require different IAM trust roles, different cloud accounts/subscriptions, and different architectural sizing. Forcing multiple environments into a single workspace-driven codebase encourages complex conditional logic (e.g., `count = terraform.workspace == "prod" ? 5 : 1`), increases code complexity, and couples the blast radius: a corrupted backend configuration or erroneous apply in the shared working directory can impact production directly. Best practice mandates separate directory structures with isolated state backends for distinct environments.
 
 - Ref: HashiCorp Enterprise Architecture: Multi-Environment Workspaces vs. Directories.
-
 </details>
 
 ---

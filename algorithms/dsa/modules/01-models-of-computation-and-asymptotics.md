@@ -357,34 +357,29 @@ Migration pitfall: do not mix chapter numbers from two editions in the same note
 
 ---
 
-## 11. Interview Drill: Models of Computation & Asymptotics
+## Interview Drill
 
-<details>
-<summary>1. Is it true that f(n) = O(g(n)) implies g(n) = Ω(f(n))? Provide a formal proof.</summary>
+<details><summary>1. Is it true that f(n) = O(g(n)) implies g(n) = Ω(f(n))? Provide a formal proof.</summary>
 
 **Yes.** By definition, $f(n) = O(g(n))$ means there exist constants $c > 0$ and $n_0 > 0$ such that $0 \le f(n) \le c \cdot g(n)$ for all $n \ge n_0$. Dividing by $c$ (since $c > 0$): $$\frac{1}{c} \cdot f(n) \le g(n) \implies g(n) \ge c' \cdot f(n) \quad \text{where } c' = \frac{1}{c} > 0$$ This satisfies the definition of $g(n) \in \Omega(f(n))$ with constant $c' = 1/c$ and threshold $n_0$.
 </details>
 
-<details>
-<summary>2. Why does computing mid = (left + right) / 2 represent a dangerous bug in production systems, and how is it corrected?</summary>
+<details><summary>2. Why does computing mid = (left + right) / 2 represent a dangerous bug in production systems, and how is it corrected?</summary>
 
 In fixed-width integer arithmetic (such as 32-bit signed integers in Java, C++, or Rust, and 32-bit bitwise math in JavaScript), if `left` and `right` are both large (e.g. `left = 1.5e9`, `right = 1.8e9`), their sum $left + right = 3.3 \times 10^9$ exceeds $2^{31} - 1 = 2,147,483,647$. This causes integer overflow into negative values, resulting in an out-of-bounds array access. The correct calculation is: $$\text{mid} = \text{left} + \left\lfloor \frac{\text{right} - \text{left}}{2} \right\rfloor$$ In JavaScript/TypeScript with 64-bit IEEE 754 floats, safe integers extend to $2^{53} - 1$, but using `left + Math.floor((right - left) / 2)` or `(left + right) >>> 1` is standard practice to preserve portability and prevent overflow.
 </details>
 
-<details>
-<summary>3. Can the Master Theorem solve T(n) = 2T(n/2) + n log n? Explain why or why not.</summary>
+<details><summary>3. Can the Master Theorem solve T(n) = 2T(n/2) + n log n? Explain why or why not.</summary>
 
 **No, standard Case 3 of the classical Master Theorem does not apply directly.** Here $a = 2, b = 2 \implies n^{\log_2 2} = n^1 = n$. The non-recursive work is $f(n) = n \log n$. Although $f(n)$ is asymptotically larger than $n$, it is not **polynomially** larger: $\frac{f(n)}{n^{\log_b a}} = \frac{n \log n}{n} = \log n$, which is strictly slower than $n^\epsilon$ for any $\epsilon > 0$. However, the **Extended Master Theorem (Case 2 generalized)** handles $f(n) = \Theta(n^{\log_b a} \log^k n)$. Here $k = 1$, so: $$T(n) = \Theta(n^{\log_b a} \log^{k+1} n) = \Theta(n \log^2 n)$$
 </details>
 
-<details>
-<summary>4. What is the amortized cost per pop operation in a dynamic array that halves its capacity when size reaches capacity / 4?</summary>
+<details><summary>4. What is the amortized cost per pop operation in a dynamic array that halves its capacity when size reaches capacity / 4?</summary>
 
 The amortized cost is $O(1)$. If we halved capacity when size reached $C/2$, an adversary could alternate between inserting and deleting around the boundary, forcing repeated $O(n)$ reallocations and degrading amortized cost to $O(n)$. By waiting until $S = C/4$ before shrinking to $C/2$, the array is guaranteed to have at least $C/4$ elements of headroom before it can double or halve again. Using the potential function: $$\Phi(D) = \begin{cases} 2S - C & \text{if } S \ge C/2 \\ C/2 - S & \text{if } S < C/2 \end{cases}$$ The potential is 0 immediately after halving and grows to $C/4$ before the next resize, providing sufficient stored credits to absorb the $O(S)$ copying cost.
 </details>
 
-<details>
-<summary>5. Explain the difference between worst-case analysis and amortized analysis.</summary>
+<details><summary>5. Explain the difference between worst-case analysis and amortized analysis.</summary>
 
 - **Worst-case analysis** bounds the execution cost of a **single** invocation of an operation under the most adversarial possible input. For example, a single insertion into a dynamic array has a worst-case cost of $O(n)$ due to buffer copying.
 - **Amortized analysis** bounds the **average cost per operation over any arbitrary sequence of operations** in the worst case. Even if a single insertion takes $O(n)$, any sequence of $k$ operations is guaranteed to run in $O(k)$ total time, yielding an amortized cost of $O(1)$ per operation.
@@ -392,14 +387,12 @@ The amortized cost is $O(1)$. If we halved capacity when size reached $C/2$, an 
 
 </details>
 
-<details>
-<summary>6. A binary counter supports both increment and decrement. What is the worst-case cost of n alternating operations, and why does the potential-function proof for increment-only not carry over?</summary>
+<details><summary>6. A binary counter supports both increment and decrement. What is the worst-case cost of n alternating operations, and why does the potential-function proof for increment-only not carry over?</summary>
 
 Start at $0111\ldots1$ with $k$ ones. Increment flips $k + 1$ bits to reach $1000\ldots0$; decrement flips the same $k + 1$ bits back. $n$ alternating operations therefore cost $n(k + 1) = \Theta(nk)$, not $O(n)$. The increment-only proof uses $\Phi = $ number of 1 bits, which gives $\hat c = 2$ because an increment lowers $\Phi$ by $t - 1$ where $t$ is the number of bits it clears. Decrement is the mirror image: it sets $t$ bits to 1 and clears one, so $\Phi$ rises by $t - 1$ and $\hat c = (t + 1) + (t - 1) = 2t$. The potential no longer pays for the operation because amortization is a property of the whole operation set, and adding `decrement` changed the set.
 </details>
 
-<details>
-<summary>7. Show that the guess T(n) ≤ cn cannot be proved for T(n) = 2T(n/2) + 1 by direct substitution, and give a hypothesis that works.</summary>
+<details><summary>7. Show that the guess T(n) ≤ cn cannot be proved for T(n) = 2T(n/2) + 1 by direct substitution, and give a hypothesis that works.</summary>
 
 The inductive step yields $T(n) \le 2c(n/2) + 1 = cn + 1$, which exceeds $cn$ for every $c$. The statement $T(n) = O(n)$ is nevertheless true ($T(n) = 2n - 1$ with $T(1) = 1$), so the hypothesis is too weak to carry the induction. Strengthen it to $T(m) \le cm - d$ for all $m < n$ with $d \ge 1$. Then $T(n) \le 2(cn/2 - d) + 1 = cn - 2d + 1 \le cn - d$. The base case needs $c \cdot 1 - d \ge T(1)$, which holds for $c \ge 2$, $d = 1$. Subtracting a lower-order term is the standard repair when an additive constant accumulates one per level.
 </details>

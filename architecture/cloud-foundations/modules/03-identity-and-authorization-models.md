@@ -139,34 +139,29 @@ The deterministic IAM policy evaluation engine, ABAC condition matching, and OID
 
 ---
 
-## 8. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-<details>
-<summary>1. In what scenario can an action be allowed even if an IAM user's attached policy does not contain an Allow statement for that action?</summary>
+<details><summary>1. In what scenario can an action be allowed even if an IAM user's attached policy does not contain an Allow statement for that action?</summary>
 
 In a same-account scenario, an action can be authorized if a **Resource-Based Policy** (such as an S3 Bucket Policy, KMS Key Policy, or SQS Queue Policy) explicitly grants the principal permission to perform that action. For intra-account access, the authorization engine evaluates the union of identity-based policies and resource-based policies; an affirmative Allow in either policy authorizes the request (provided no explicit Deny exists).
 </details>
 
-<details>
-<summary>2. How does Attribute-Based Access Control (ABAC) prevent "role explosion" in large engineering organizations?</summary>
+<details><summary>2. How does Attribute-Based Access Control (ABAC) prevent "role explosion" in large engineering organizations?</summary>
 
 In traditional RBAC, creating a new development team or project requires authoring distinct roles and policies for each team. In ABAC, a single generic policy is written using condition keys (e.g., allow `s3:GetObject` if `aws:PrincipalTag/Department == aws:ResourceTag/Department`). When a new team or resource is added, administrators simply apply the appropriate tags to the principal and resource. The policy dynamically authorizes matching tags without requiring any modification to the IAM policy definitions.
 </details>
 
-<details>
-<summary>3. Why is OIDC workload identity federation more secure than rotating static access keys every 90 days?</summary>
+<details><summary>3. Why is OIDC workload identity federation more secure than rotating static access keys every 90 days?</summary>
 
 Rotating static keys leaves a continuous 90-day window of vulnerability if a key is intercepted, leaked, or cached in log files. OIDC Workload Identity Federation completely eliminates static secrets: the CI/CD runner presents an ephemeral JWT that is validated cryptographically by the cloud STS service, which issues temporary credentials valid for only 15–60 minutes. There are no secrets stored on disk or in environment variables that can be leaked.
 </details>
 
-<details>
-<summary>4. Explain the mechanics of the Confused Deputy problem and how `sts:ExternalId` mitigates it.</summary>
+<details><summary>4. Explain the mechanics of the Confused Deputy problem and how `sts:ExternalId` mitigates it.</summary>
 
 The confused deputy problem occurs when a trusted third-party service with elevated privileges is tricked by a malicious customer into executing actions on another customer's resources. An `sts:ExternalId` is a shared secret agreed upon between the customer and the third-party SaaS vendor. When the SaaS assumes the customer's role, it must supply that unique external ID in the STS request. Because other tenants cannot guess or provide another customer's unique external ID, the SaaS cannot be coerced into unauthorized cross-tenant role assumption.
 </details>
 
-<details>
-<summary>5. What is the authorization outcome if a request matches an Allow in an IAM policy, an Allow in a Resource policy, and an explicit Deny in an SCP?</summary>
+<details><summary>5. What is the authorization outcome if a request matches an Allow in an IAM policy, an Allow in a Resource policy, and an explicit Deny in an SCP?</summary>
 
 The request is unconditionally Denied (`DENIED_EXPLICIT`). In cloud authorization algebra, an explicit Deny in any applicable policy (including SCPs, permission boundaries, identity policies, or resource policies) immediately acts as an absorbing element that overrides all concurrent or downstream Allow statements.
 </details>

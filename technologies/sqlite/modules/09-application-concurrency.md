@@ -409,7 +409,7 @@ CHOOSE-TOPOLOGY(service)
 
 ---
 
-## 11. Interview Drill
+## Interview Drill
 
 <details><summary>1. Estimate the write capacity of an SQLite-backed API and say what destroys it.</summary>
 

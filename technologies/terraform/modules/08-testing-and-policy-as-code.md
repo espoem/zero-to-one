@@ -531,11 +531,9 @@ policy "enforce_s3_encryption" {
 
 ---
 
-## 10. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-### Q1: Why is the Common Expression Language (CEL) intentionally designed to be non-Turing-complete, and why is this critical for Kubernetes admission control?
-
-<details><summary>Answer</summary>
+<details><summary>1. Why is the Common Expression Language (CEL) intentionally designed to be non-Turing-complete, and why is this critical for Kubernetes admission control?</summary>
 
 **Deterministic Linear Complexity and Denial-of-Service Prevention.**
 
@@ -544,12 +542,9 @@ policy "enforce_s3_encryption" {
 - This would hang the API server thread, starve the goroutine pool, and induce cluster-wide control plane collapse.
 - CEL is non-Turing-complete: it guarantees termination, memory bounds, and linear $O(N)$ execution time relative to payload size. The Kubernetes API server can evaluate thousands of CEL rules per second in-process with sub-millisecond latencies and zero risk of algorithmic hangs.
 - Ref: Google CEL Specification; Kubernetes ValidatingAdmissionPolicy Design Document.
-
 </details>
 
-### Q2: How does `terraform test` with `mock_provider` differ from traditional end-to-end testing frameworks like Terratest?
-
-<details><summary>Answer</summary>
+<details><summary>2. How does `terraform test` with `mock_provider` differ from traditional end-to-end testing frameworks like Terratest?</summary>
 
 **In-Memory Unit Simulation vs Live Cloud Integration.**
 
@@ -557,12 +552,9 @@ policy "enforce_s3_encryption" {
 - **`terraform test` with `mock_provider`**: Runs natively inside the Terraform CLI engine without compiling Go binaries or authenticating to cloud providers. It intercepts provider RPC calls, synthesizing mock resource IDs, ARNs, and computed attributes in-memory. Runs execute in milliseconds, cost zero dollars, and run hermetically inside air-gapped CI pipelines.
 - Terratest remains valuable for final acceptance testing, while `terraform test` serves as the high-velocity unit and regression test suite.
 - Ref: Terraform Language Documentation: Unit Testing with Mock Providers.
-
 </details>
 
-### Q3: Explain why validating `resource_changes` in `tfplan.json` requires checking the `actions` array before inspecting `change.after`.
-
-<details><summary>Answer</summary>
+<details><summary>3. Explain why validating `resource_changes` in `tfplan.json` requires checking the `actions` array before inspecting `change.after`.</summary>
 
 **Null Dereference Prevention on Destroy Actions.**
 
@@ -571,24 +563,18 @@ policy "enforce_s3_encryption" {
 - When an action is `["delete"]` (destroy), the resource will no longer exist after application. Consequently, the Terraform engine populates `change.before` with the current state and sets `change.after = null`.
 - If an OPA/Rego or Conftest policy attempts to access `resource.change.after.attribute` without verifying that `actions` contains `create` or `update`, the evaluation engine evaluates `null.attribute`, triggering a runtime exception that crashes the policy check.
 - Ref: HashiCorp Terraform Plan JSON Schema Specification.
-
 </details>
 
-### Q4: What is the operational difference between Gatekeeper's Webhook architecture and Kubernetes ValidatingAdmissionPolicy?
-
-<details><summary>Answer</summary>
+<details><summary>4. What is the operational difference between Gatekeeper's Webhook architecture and Kubernetes ValidatingAdmissionPolicy?</summary>
 
 **In-Process Zero-Hop Evaluation vs External Webhook RPC.**
 
 - **Gatekeeper**: Operates as an out-of-tree mutating/validating webhook controller running in dedicated pods. Every Kubernetes API request requires `kube-apiserver` to marshal the resource into an `AdmissionReview` JSON document, transmit it across the cluster network over HTTPS, wait for Gatekeeper's OPA engine to evaluate Rego, and receive the response. This introduces 5–30 ms of network latency, creates TLS certificate management overhead, and represents a cluster failure point if Gatekeeper pods are unreachable.
 - **ValidatingAdmissionPolicy (VAP)**: Evaluates CEL expressions natively in-process within the `kube-apiserver` binary. There is zero network round-trip, zero TLS serialization overhead, and latency is under 0.1 ms. If an outage affects worker nodes, VAP continues operating uninterrupted inside the control plane.
 - Ref: Kubernetes Documentation: Validating Admission Policy.
-
 </details>
 
-### Q5: In Sentinel and Terraform Policy, what distinguishes `soft-mandatory` from `hard-mandatory` enforcement levels?
-
-<details><summary>Answer</summary>
+<details><summary>5. In Sentinel and Terraform Policy, what distinguishes `soft-mandatory` from `hard-mandatory` enforcement levels?</summary>
 
 **Administrative Override Authority.**
 
@@ -596,12 +582,9 @@ policy "enforce_s3_encryption" {
 - **Hard-Mandatory**: Strict, non-overrideable governance. If a hard-mandatory policy fails, the run is permanently blocked. No operator, regardless of privilege, can override the decision. The code or configuration must be modified and re-planned to achieve compliance before deployment.
 - **Advisory**: Does not block execution; surfaces warnings in the run UI for visibility.
 - Ref: HashiCorp Sentinel Runtime Framework Documentation.
-
 </details>
 
-### Q6: How does `expect_failures` in `terraform test` verify module input validation contracts?
-
-<details><summary>Answer</summary>
+<details><summary>6. How does `expect_failures` in `terraform test` verify module input validation contracts?</summary>
 
 **Deterministic Negative Testing.**
 
@@ -610,12 +593,9 @@ policy "enforce_s3_encryption" {
 - In a `.tftest.hcl` run block, declaring `expect_failures = [var.cidr_block]` instructs the test runner that the run is considered successful _only if_ the validation condition on `var.cidr_block` evaluates to false during the plan phase.
 - If the invalid input is unexpectedly accepted, the test run fails, signaling a broken security contract.
 - Ref: Terraform Testing Specification: Negative Test Scenarios.
-
 </details>
 
-### Q7: Why is Kyverno preferred over OPA Gatekeeper for policy enforcement when mutation and resource generation are required?
-
-<details><summary>Answer</summary>
+<details><summary>7. Why is Kyverno preferred over OPA Gatekeeper for policy enforcement when mutation and resource generation are required?</summary>
 
 **Declarative Kubernetes YAML Native vs Datalog Scripting.**
 
@@ -623,20 +603,6 @@ policy "enforce_s3_encryption" {
 - **Mutation**: Kyverno supports simple, readable declarative JSON patches and strategic merge patches directly in YAML. Gatekeeper requires complex `Assign` and `AssignMetadata` definitions or Rego mutation scripts.
 - **Generation**: Kyverno can automatically generate new Kubernetes resources (e.g., generating default `NetworkPolicies` or `ResourceQuotas` upon Namespace creation). Gatekeeper cannot generate resources; it only validates or mutates incoming requests.
 - Ref: Kyverno Architecture Overview; CNCF Policy Working Group Reports.
-
-</details>
-
-### Q8: What new capability does Terraform 1.17 GA introduce for policy enforcement in local developer environments?
-
-<details><summary>Answer</summary>
-
-**Decoupled CLI-Driven Policy Evaluation (`-policies` Flag).**
-
-- Prior to Terraform 1.17, native policy evaluation (Sentinel or HCP OPA integrations) was tethered strictly to HCP Terraform remote execution. Developers running `terraform plan` locally on their workstations had no native way to execute the platform's policy suites before pushing to Git.
-- Terraform 1.17 GA introduced the native `-policies` command-line flag on `terraform plan`, `terraform apply`, and `terraform query`.
-- Platform teams can package standardized HCL policy suites and distribute them across developer workstations and self-hosted CI runners. Developers receive instantaneous feedback on compliance violations directly in their terminal before committing code.
-- Ref: HashiCorp Terraform 1.17 Release Notes and Policy Specification.
-
 </details>
 
 ---

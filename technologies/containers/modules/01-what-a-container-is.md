@@ -355,55 +355,46 @@ Container architecture has continuously moved toward modularization, strict stan
 
 ---
 
-## 10. Interview Drill
+## Interview Drill
 
-<details>
-<summary><strong>Q1. Explain why the statement "a container is a lightweight virtual machine" is architecturally inaccurate.</strong></summary>
+<details><summary>1. Explain why the statement "a container is a lightweight virtual machine" is architecturally inaccurate.</summary>
 
 A virtual machine virtualizes the physical hardware interface. It relies on a hypervisor (such as KVM or QEMU) and CPU virtualization extensions (Intel VMX / AMD SVM) to execute an independent guest operating system with its own dedicated kernel, memory management, and device drivers. A container is simply a standard Linux OS process executing directly on the host CPU in user space (Ring 3), constrained by software policies in the single host Linux kernel: namespaces (which limit what the process can see), cgroups (which limit what resources the process can consume), and seccomp/capabilities (which limit what system calls the process can execute). Containers share the host kernel, host memory management, and host page cache.
 </details>
 
-<details>
-<summary><strong>Q2. How does the attack surface of a container differ fundamentally from that of a virtual machine?</strong></summary>
+<details><summary>2. How does the attack surface of a container differ fundamentally from that of a virtual machine?</summary>
 
 In a virtual machine, the guest interacts with the hypervisor across a narrow, highly structured interface (typically 30 to 50 hypervisor traps and emulated hardware device drivers). Escaping a VM requires exploiting bugs in device emulation (like virtio or floppy drivers) or hypervisor memory management. In a container, the boundary between the container process and the host is the entire Linux system call interface, which consists of more than 450 system calls. Any vulnerability or unhandled edge case in the host Linux kernel (such as a local privilege escalation bug in netfilter, eBPF, or memory compaction) can be exploited from within the container to achieve complete control of the host.
 </details>
 
-<details>
-<summary><strong>Q3. What is the role of `containerd-shim-v2`, and why is it necessary to have a separate process for each container?</strong></summary>
+<details><summary>3. What is the role of `containerd-shim-v2`, and why is it necessary to have a separate process for each container?</summary>
 
 The shim acts as a lightweight daemon decoupling the container process from the high-level container manager (such as `containerd` or `dockerd`). Its responsibilities include:
 
 1. **Daemon Independence**: It allows `containerd` to be restarted or upgraded during maintenance without terminating running containers.
 2. **Subreaper / Zombie Management**: It acts as the parent process to the container workload, reaping orphaned child processes and capturing the container's exit code when it terminates.
 3. **I/O Persistence**: It keeps the `stdin`, `stdout`, and `stderr` pipes and pseudo-terminals open even when client connections disconnect.
-
 </details>
 
-<details>
-<summary><strong>Q4. Why does running a Docker container on macOS incur significant I/O performance penalties when mounting host volumes?</strong></summary>
+<details><summary>4. Why does running a Docker container on macOS incur significant I/O performance penalties when mounting host volumes?</summary>
 
 macOS runs the Darwin/XNU kernel, which cannot natively execute Linux binaries or provide Linux namespaces and cgroups. Therefore, Docker Desktop or Colima must boot a lightweight Linux virtual machine on top of macOS using Apple's Hypervisor/Virtualization framework. When a host directory is bind-mounted into a container, every filesystem operation must cross the hypervisor boundary via protocols such as VirtioFS or 9P. These protocols require complex coordination between macOS host VFS caches and Linux guest page caches, leading to latency and CPU overhead for operations involving thousands of small files (like `node_modules`).
 </details>
 
-<details>
-<summary><strong>Q5. What problem in the Go runtime forced `runc` to implement a Cgo bootstrap constructor (`nsenter`)?</strong></summary>
+<details><summary>5. What problem in the Go runtime forced `runc` to implement a Cgo bootstrap constructor (`nsenter`)?</summary>
 
 Linux namespace assignment system calls, specifically `setns(2)` and `unshare(2)`, operate on the calling **thread**, not necessarily the entire multi-threaded process. The Go runtime is inherently multi-threaded: its M:N scheduler initializes and spawns multiple OS operating system threads (`M`) before the `main()` function is ever executed. If Go code attempted to invoke `setns` from standard Go routines, only a single thread would enter the new namespace, leaving the Go runtime in an inconsistent, undefined state where goroutines hopping across threads would randomly execute in different namespaces. To circumvent this, `runc` uses a C constructor (`__attribute__((constructor))`) that intercepts process startup before the Go runtime initializes, safely performing the namespace cloning and pivoting while still single-threaded.
 </details>
 
-<details>
-<summary><strong>Q6. How do sandboxed runtimes like gVisor (`runsc`) and Kata Containers address the container shared-kernel security issue?</strong></summary>
+<details><summary>6. How do sandboxed runtimes like gVisor (`runsc`) and Kata Containers address the container shared-kernel security issue?</summary>
 
 Both technologies prevent untrusted container code from directly executing system calls against the host Linux kernel:
 
 - **gVisor (`runsc`)**: Implements an application kernel in user space ("Sentry"). When the container process invokes a syscall, it is intercepted (using `ptrace` or KVM) and handled entirely inside gVisor's memory space. Only a minimal, vetted subset of safe system calls are ever forwarded to the underlying host kernel.
 - **Kata Containers**: Wraps each container or Kubernetes Pod inside a hardware-isolated, ultra-lightweight microVM with its own dedicated guest Linux kernel. The container runs on the guest kernel, so a kernel panic or vulnerability compromise is trapped inside the microVM and cannot escape to the physical host.
-
 </details>
 
-<details>
-<summary><strong>Q7. What are the operational risks of mounting the host Docker socket (`/var/run/docker.sock`) into an application container?</strong></summary>
+<details><summary>7. What are the operational risks of mounting the host Docker socket (`/var/run/docker.sock`) into an application container?</summary>
 
 The Docker daemon runs with root privileges on the host. The socket provides full control over the Docker Engine REST API. Any process with write access to this socket can command the daemon to launch a new privileged container, mount any arbitrary host directory (such as `/root`, `/etc`, or `/`), disable security profiles (seccomp, AppArmor), and execute code as root on the host system. It is an immediate privilege escalation path equivalent to granting passwordless `sudo` access.
 </details>

@@ -136,54 +136,48 @@ function reconcileApplicationSet(appSet: ApplicationSet): void {
 2. **Template Substitution Syntax Failures**: Incorrect Go template syntax (e.g., misspelled parameter keys like `{{cluster.nam}}`) causes generation failures, stalling reconciliation for the entire ApplicationSet.
 3. **Progressive Sync Stalls on Unhealthy Clusters**: If a progressive sync wave targets a cluster that fails health checks, subsequent rollout waves are blocked indefinitely unless timeout or skip policies are configured.
 
-## 6. Interview Drill
+## Interview Drill
 
-<details><summary><strong>Q1. How do ApplicationSets improve upon the traditional App-of-Apps pattern?</strong></summary>
+<details><summary>1. How do ApplicationSets improve upon the traditional App-of-Apps pattern?</summary>
 
-**Answer:** ApplicationSets replace static nested App-of-Apps hierarchies with dynamic controllers and generators (List, Cluster, Git, Matrix). They automatically synthesize and manage parameterized Application resources across clusters and repositories from a single declarative manifest.
+ApplicationSets replace static nested App-of-Apps hierarchies with dynamic controllers and generators (List, Cluster, Git, Matrix). They automatically synthesize and manage parameterized Application resources across clusters and repositories from a single declarative manifest.
 
 - Ref: [Module 06 Introduction](#1-introduction-and-architectural-scaling-paradigms)
-
 </details>
 
-<details><summary><strong>Q2. What is the difference between a Matrix generator and a Merge generator in ApplicationSets?</strong></summary>
+<details><summary>2. What is the difference between a Matrix generator and a Merge generator in ApplicationSets?</summary>
 
-**Answer:** A Matrix generator computes the Cartesian product of two child generators, generating an instance for every possible combination. A Merge generator combines parameters from multiple generators by matching a unifying key (such as cluster name), allowing base parameters to be overridden by specific child overrides.
+A Matrix generator computes the Cartesian product of two child generators, generating an instance for every possible combination. A Merge generator combines parameters from multiple generators by matching a unifying key (such as cluster name), allowing base parameters to be overridden by specific child overrides.
 
 - Ref: [Module 06 Deep Dive](#2-deep-dive-into-applicationset-generators)
-
 </details>
 
-<details><summary><strong>Q3. How do Progressive Syncs prevent widespread outages when updating multi-cluster deployments?</strong></summary>
+<details><summary>3. How do Progressive Syncs prevent widespread outages when updating multi-cluster deployments?</summary>
 
-**Answer:** Progressive Syncs roll out application updates in controlled waves across clusters grouped by labels. The controller waits for applications in the current wave to achieve healthy status before proceeding to subsequent rollout waves.
+Progressive Syncs roll out application updates in controlled waves across clusters grouped by labels. The controller waits for applications in the current wave to achieve healthy status before proceeding to subsequent rollout waves.
 
 - Ref: [Module 06 Deep Dive](#2-deep-dive-into-applicationset-generators)
-
 </details>
 
-<details><summary><strong>Q4. What security risks arise from misconfigured Matrix generators in multi-tenant environments?</strong></summary>
+<details><summary>4. What security risks arise from misconfigured Matrix generators in multi-tenant environments?</summary>
 
-**Answer:** Misconfigured Matrix generators can accidentally synthesize thousands of applications targeting unauthorized tenant namespaces or external clusters, potentially exhausting etcd storage and cluster resources.
+Misconfigured Matrix generators can accidentally synthesize thousands of applications targeting unauthorized tenant namespaces or external clusters, potentially exhausting etcd storage and cluster resources.
 
 - Ref: [Module 06 Production Failure Modes](#5-production-failure-modes-and-gotchas)
-
 </details>
 
-<details><summary><strong>Q5. How does the Cluster generator discover available target clusters?</strong></summary>
+<details><summary>5. How does the Cluster generator discover available target clusters?</summary>
 
-**Answer:** The Cluster generator automatically scans Kubernetes Secrets in the Argo CD control plane namespace that carry the label `argocd.argoproj.io/secret-type: cluster`, extracting cluster server URLs and metadata for parameter substitution.
+The Cluster generator automatically scans Kubernetes Secrets in the Argo CD control plane namespace that carry the label `argocd.argoproj.io/secret-type: cluster`, extracting cluster server URLs and metadata for parameter substitution.
 
 - Ref: [Module 06 Deep Dive](#2-deep-dive-into-applicationset-generators)
-
 </details>
 
-<details><summary><strong>Q6. What happens when an item is removed from an ApplicationSet Git generator directory?</strong></summary>
+<details><summary>6. What happens when an item is removed from an ApplicationSet Git generator directory?</summary>
 
-**Answer:** When an item (such as a service directory) is removed from Git, the ApplicationSet controller evaluates the updated parameter set, omits the corresponding Application from desired state, and prunes the generated Application (and its managed workloads) if pruning is enabled.
+When an item (such as a service directory) is removed from Git, the ApplicationSet controller evaluates the updated parameter set, omits the corresponding Application from desired state, and prunes the generated Application (and its managed workloads) if pruning is enabled.
 
 - Ref: [Module 06 Control Loop Internals](#3-control-loop-internals-and-pseudocode)
-
 </details>
 
 ## 7. Proof Map

@@ -508,25 +508,22 @@ The algorithm executes in $O(|V| + |E|)$ time and $O(|V|)$ space, identifying th
 
 ---
 
-## 12. Interview Drill: Questions and Model Answers
+## Interview Drill
 
-<details>
-<summary><strong>Q1. Explain the mathematical difference between a stage-based pipeline and a Directed Acyclic Graph (DAG) pipeline using `needs`. Under what conditions does the DAG yield the greatest latency reduction?</strong></summary>
+<details><summary>1. Explain the mathematical difference between a stage-based pipeline and a Directed Acyclic Graph (DAG) pipeline using `needs`. Under what conditions does the DAG yield the greatest latency reduction?</summary>
 
-**Answer**: In a stage-based pipeline, total execution time $T_{\text{stage}}$ is the sum of the maximum job durations within each sequential stage: $T_{\text{stage}} = \sum_{i=1}^m \max_{j \in s_i} t(j)$. A single slow job in stage $S_k$ delays all jobs in stage $S_{k+1}$, even if they have no logical dependency on that slow job.
+In a stage-based pipeline, total execution time $T_{\text{stage}}$ is the sum of the maximum job durations within each sequential stage: $T_{\text{stage}} = \sum_{i=1}^m \max_{j \in s_i} t(j)$. A single slow job in stage $S_k$ delays all jobs in stage $S_{k+1}$, even if they have no logical dependency on that slow job.
 
 In a DAG pipeline using `needs`, jobs execute as soon as their specific prerequisite jobs succeed, regardless of stage boundaries. Total duration $T_{\text{DAG}}$ equals the critical path: $T_{\text{DAG}} = \max_{p \in \mathcal{P}} \sum_{j \in p} t(j)$, where $\mathcal{P}$ represents all directed paths through the graph.
 
 The DAG yields the greatest latency reduction in heterogeneous pipelines containing mixed workloads: for example, where a fast frontend build (1 min) and a slow database integration test (25 mins) sit in the test stage, while a frontend deployment sitting in the deploy stage needs only the frontend build. Under a stage model, deployment waits 25 minutes; under a DAG model, deployment executes at $T = 1\text{ min} + t(\text{deploy})$.
 
 - Ref: [modules/09-pipeline-performance-monorepos-and-operations.md](../modules/09-pipeline-performance-monorepos-and-operations.md#1-pipeline-execution-models-stages-vs-needs-directed-acyclic-graph-dag)
-
 </details>
 
-<details>
-<summary><strong>Q2. How do Dynamic Child Pipelines overcome the scalability limits of static `.gitlab-ci.yml` configurations in enterprise monorepos?</strong></summary>
+<details><summary>2. How do Dynamic Child Pipelines overcome the scalability limits of static `.gitlab-ci.yml` configurations in enterprise monorepos?</summary>
 
-**Answer**: In monorepos with hundreds of microservices, managing all builds in a static `.gitlab-ci.yml` creates multiple failures:
+In monorepos with hundreds of microservices, managing all builds in a static `.gitlab-ci.yml` creates multiple failures:
 
 1. **File Size and Complexity**: The YAML file exceeds maximum parser memory limits (5 MB) and becomes humanly unmaintainable.
 2. **Rule Evaluation Overhead**: GitLab must evaluate complex `rules:changes` matrices across tens of thousands of files on every push, increasing pipeline creation latency.
@@ -534,24 +531,20 @@ The DAG yields the greatest latency reduction in heterogeneous pipelines contain
 Dynamic Child Pipelines decouple pipeline generation from execution. An initial lightweight analyzer job inspects the Git diff (`git diff --name-only $CI_MERGE_REQUEST_DIFF_BASE_SHA HEAD`), determines which services were affected, and programmatically generates a minimal `.gitlab-ci-dynamic.yml` file containing jobs _only_ for the affected services. A downstream trigger job (`trigger:include:artifact`) executes this dynamic file as an isolated child pipeline. This keeps the root configuration small, reduces pipeline creation time, and isolates failures.
 
 - Ref: [modules/09-pipeline-performance-monorepos-and-operations.md](../modules/09-pipeline-performance-monorepos-and-operations.md#dynamic-child-pipelines-the-enterprise-monorepo-pattern)
-
 </details>
 
-<details>
-<summary><strong>Q3. Why does setting `CI_DEBUG_TRACE: "true"` create a catastrophic security risk, and why is this setting particularly dangerous when configured at the Group level?</strong></summary>
+<details><summary>3. Why does setting `CI_DEBUG_TRACE: "true"` create a catastrophic security risk, and why is this setting particularly dangerous when configured at the Group level?</summary>
 
-**Answer**: `CI_DEBUG_TRACE: "true"` enables shell execution tracing (`set -x` in bash/sh). In this mode, the shell prints every command, expanded parameter, and intermediate assignment to stdout before execution.
+`CI_DEBUG_TRACE: "true"` enables shell execution tracing (`set -x` in bash/sh). In this mode, the shell prints every command, expanded parameter, and intermediate assignment to stdout before execution.
 
 While GitLab's masking engine replaces exact matches of masked variable strings with `[MASKED]`, shell execution tracing routinely exposes variables when they are transformed, sliced, passed into subshells, or converted into command arguments (e.g., `curl -u $USER:$PASSWORD`). Furthermore, if configured at the Group level, this setting is inherited by all subgroups and repositories. Any build job running in any project across the enterprise will dump all decrypted environment variables and script operations into readable job logs, leading to mass credential exfiltration.
 
 - Ref: [modules/09-pipeline-performance-monorepos-and-operations.md](../modules/09-pipeline-performance-monorepos-and-operations.md#1-the-catastrophic-ci_debug_tracetrue-hazard)
-
 </details>
 
-<details>
-<summary><strong>Q4. How does the Next-Generation Fleeting runner autoscaling engine differ from the deprecated Docker Machine architecture?</strong></summary>
+<details><summary>4. How does the Next-Generation Fleeting runner autoscaling engine differ from the deprecated Docker Machine architecture?</summary>
 
-**Answer**: The legacy `docker-machine` executor operated by running an abandoned, unmaintained CLI tool that provisioned dedicated compute instances via SSH. It suffered from severe memory leaks, slow spin-up times (3–5 minutes per VM), poor failure recovery, and lacked integration with modern cloud-native auto-scaling primitives.
+The legacy `docker-machine` executor operated by running an abandoned, unmaintained CLI tool that provisioned dedicated compute instances via SSH. It suffered from severe memory leaks, slow spin-up times (3–5 minutes per VM), poor failure recovery, and lacked integration with modern cloud-native auto-scaling primitives.
 
 The modern **Fleeting** engine is an actively maintained, modular Go architecture. Instead of managing individual virtual machines directly, Fleeting interfaces directly with cloud provider Auto Scaling Groups (AWS ASGs, GCP Instance Groups, Azure VMSS). Key improvements include:
 
@@ -561,13 +554,11 @@ The modern **Fleeting** engine is an actively maintained, modular Go architectur
 4. **Executor Modularity**: Powers both `docker-autoscaler` (for container workloads) and `instance` (for direct VM workloads).
 
 - Ref: GitLab Fleeting Architecture Documentation; [modules/09-pipeline-performance-monorepos-and-operations.md](../modules/09-pipeline-performance-monorepos-and-operations.md#4-runner-fleet-autoscaling-spot-instances-and-cost-economics)
-
 </details>
 
-<details>
-<summary><strong>Q5. What is the behavior of `rules:changes` when evaluated on a scheduled pipeline or a new Git tag push, and how do you prevent unexpected test runs?</strong></summary>
+<details><summary>5. What is the behavior of `rules:changes` when evaluated on a scheduled pipeline or a new Git tag push, and how do you prevent unexpected test runs?</summary>
 
-**Answer**: In GitLab CI, `rules:changes` calculates file modifications by computing a diff against a reference commit. In a Merge Request, it compares against the merge base. However, for pipelines running on newly created branches, Git tags, or scheduled cron triggers, there is no single target branch to diff against. In these contexts, `rules:changes` defaults to evaluating as **TRUE for all files**.
+In GitLab CI, `rules:changes` calculates file modifications by computing a diff against a reference commit. In a Merge Request, it compares against the merge base. However, for pipelines running on newly created branches, Git tags, or scheduled cron triggers, there is no single target branch to diff against. In these contexts, `rules:changes` defaults to evaluating as **TRUE for all files**.
 
 As a consequence, scheduled nightly pipelines or tag release pipelines will trigger every path-filtered job in the repository. To prevent this, always pair `rules:changes` with explicit `if` conditions checking the pipeline source:
 
@@ -582,24 +573,20 @@ rules:
 ```
 
 - Ref: [modules/09-pipeline-performance-monorepos-and-operations.md](../modules/09-pipeline-performance-monorepos-and-operations.md#the-scheduled--tag-pipeline-hazard)
-
 </details>
 
-<details>
-<summary><strong>Q6. How does combining `cache:key:files` with `policy: pull` optimize CI cache hit ratios and network egress in large teams?</strong></summary>
+<details><summary>6. How does combining `cache:key:files` with `policy: pull` optimize CI cache hit ratios and network egress in large teams?</summary>
 
-**Answer**: Setting `cache:key:files: [package-lock.json]` generates a deterministic cache key derived from the SHA-256 hash of the lockfile. This ensures that all branches using the exact same dependencies share the identical cache archive in object storage, eliminating cache thrashing.
+Setting `cache:key:files: [package-lock.json]` generates a deterministic cache key derived from the SHA-256 hash of the lockfile. This ensures that all branches using the exact same dependencies share the identical cache archive in object storage, eliminating cache thrashing.
 
 By default, jobs use `policy: pull-push`: they download the cache at the beginning and compress/upload it back to object storage at the end of the job. In test and lint stages, jobs only _read_ dependencies; they do not alter the lockfile. Setting `policy: pull` instructs the runner to download the cache but skip the compression and upload phase upon completion. In a team running hundreds of concurrent test jobs, this saves terabytes of network egress bandwidth and cuts 1–3 minutes off every job run.
 
 - Ref: [modules/09-pipeline-performance-monorepos-and-operations.md](../modules/09-pipeline-performance-monorepos-and-operations.md#optimizing-distributed-cache-hit-ratios)
-
 </details>
 
-<details>
-<summary><strong>Q7. How does the `interruptible: true` keyword reduce cloud compute expenditure, and on which jobs should it never be applied?</strong></summary>
+<details><summary>7. How does the `interruptible: true` keyword reduce cloud compute expenditure, and on which jobs should it never be applied?</summary>
 
-**Answer**: In rapid iterative development, engineers often push multiple commits to an active Merge Request branch before earlier pipelines finish. Without `interruptible: true`, all pipelines run to completion, consuming runner capacity to validate intermediate commits that will never be merged.
+In rapid iterative development, engineers often push multiple commits to an active Merge Request branch before earlier pipelines finish. Without `interruptible: true`, all pipelines run to completion, consuming runner capacity to validate intermediate commits that will never be merged.
 
 When a job has `interruptible: true`, GitLab automatically cancels the running job as soon as a new pipeline is created for that same ref. This frees runner slots immediately for other developers and can reduce total CI cloud spend by 20% to 40%.
 
@@ -612,7 +599,6 @@ When a job has `interruptible: true`, GitLab automatically cancels the running j
 Interrupting these jobs midway leaves infrastructure in an inconsistent, partially deployed, or locked state.
 
 - Ref: [modules/09-pipeline-performance-monorepos-and-operations.md](../modules/09-pipeline-performance-monorepos-and-operations.md#cost-economics-and-pipeline-interruption)
-
 </details>
 
 ---

@@ -388,7 +388,7 @@ Porting rule: an application using only `JSON.*`, `BF.*` and vector KNN queries 
 
 ---
 
-## 9. Interview Drill
+## Interview Drill
 
 <details><summary>1. How would you implement product search with filters on Redis 8?</summary>
 
@@ -423,14 +423,4 @@ A set is exact and enumerable but costs memory proportional to the number of mem
 <details><summary>7. Why does adding selective relational filters to an HNSW vector query risk collapsing search recall?</summary>
 
 HNSW graph navigation searches for nearest neighbors by traversing connected nodes that are close in vector space. When a highly selective relational filter (e.g. `@city:{paris}`) matches only 0.1 % of documents, the entry points and greedy routing hops encounter nodes that are disqualified by the filter, creating dead ends in graph traversal. Modern Redis Query Engine addresses this via iterative relational pre-filtering and hybrid query planners that fall back to brute-force FLAT scans when filter selectivity is high.
-</details>
-
-<details><summary>8. How do RedisBloom scalable Bloom filters avoid catastrophic false positive spikes when capacity is exceeded?</summary>
-
-When a Bloom filter fills up, inserting more elements into the same bit array causes false-positive rates to surge exponentially. RedisBloom solves this by creating chained sub-filters. When capacity is reached, it dynamically allocates a new sub-filter with capacity scaled by `EXPANSION` (default 2) and a tighter error probability tightened by factor $r$ (default 0.85). Lookups probe each sub-filter sequentially, keeping the compound false-positive rate bounded by $\sum p_i < 2p$.
-</details>
-
-<details><summary>9. What is the performance pitfall of using recursive descent (`$..field`) in Redis JSON?</summary>
-
-Recursive descent scans every object key and array element throughout the entire document subtree regardless of depth. In large, deeply nested JSON documents (e.g., product catalogs or AST dumps), this converts an $O(1)$ direct property lookup into an $O(N)$ tree traversal on the single command thread, delaying all other queued client operations. Use precise, anchored JSONPath selectors whenever the document schema is known.
 </details>

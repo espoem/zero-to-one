@@ -450,74 +450,44 @@ web:
 
 ---
 
-## 14. Interview Drill: Deep Technical Questions
+## Interview Drill
 
-<details>
-<summary><strong>Q1. Explain the exact difference between `condition: service_started`, `condition: service_healthy`, and `condition: service_completed_successfully` in Compose.</strong></summary>
-
-**Answer:**
+<details><summary>1. Explain the exact difference between `condition: service_started`, `condition: service_healthy`, and `condition: service_completed_successfully` in Compose.</summary>
 
 - `condition: service_started`: The default behavior. Compose initiates the dependency's `execve` call. Once the container transitions to the `running` state in the container runtime, Compose immediately begins spawning the dependent container. It does NOT guarantee that the application inside is ready to accept traffic.
 - `condition: service_healthy`: Compose blocks the dependent service from starting until the target container's healthcheck command executes successfully and the runtime updates the container health status from `starting` to `healthy`.
 - `condition: service_completed_successfully`: Compose blocks the dependent service until the target container executes its command and terminates with an exit code of `0`. If the container exits with any non-zero exit code, Compose aborts the startup sequence. This is typically used for database migration or setup jobs.
-
 </details>
 
-<details>
-<summary><strong>Q2. How does Compose resolve a conflict when a variable is defined in both a project `.env` file and the host shell environment?</strong></summary>
+<details><summary>2. How does Compose resolve a conflict when a variable is defined in both a project `.env` file and the host shell environment?</summary>
 
-**Answer:** According to the Compose precedence hierarchy, the **host shell environment takes precedence** over the project's `.env` file. The project `.env` file serves as default values for variable interpolation within `compose.yaml`. If the host shell exports that same variable name (e.g., `export PORT=9000`), the shell value overrides the `.env` value (e.g., `PORT=8080`), and Compose injects `9000` into the configuration.
-
+According to the Compose precedence hierarchy, the **host shell environment takes precedence** over the project's `.env` file. The project `.env` file serves as default values for variable interpolation within `compose.yaml`. If the host shell exports that same variable name (e.g., `export PORT=9000`), the shell value overrides the `.env` value (e.g., `PORT=8080`), and Compose injects `9000` into the configuration.
 </details>
 
-<details>
-<summary><strong>Q3. Why was the top-level `version:` attribute deprecated in modern Compose specifications?</strong></summary>
+<details><summary>3. Why was the top-level `version:` attribute deprecated in modern Compose specifications?</summary>
 
-**Answer:** The `version:` string (e.g., `'2.4'`, `'3.8'`) coupled the file format to specific Docker Engine release versions and created artificial fragmentation. For example, version 3 removed features like `cpu_shares` and resource limits (restricting them to Swarm deployments) that version 2 supported. The open **Compose Specification** unified the schema into a single, unversioned specification. The engine parses all supported configuration directives directly; any unrecognized or unsupported properties trigger a clear schema validation error based on the current engine's capabilities rather than a rigid schema version tag.
-
+The `version:` string (e.g., `'2.4'`, `'3.8'`) coupled the file format to specific Docker Engine release versions and created artificial fragmentation. For example, version 3 removed features like `cpu_shares` and resource limits (restricting them to Swarm deployments) that version 2 supported. The open **Compose Specification** unified the schema into a single, unversioned specification. The engine parses all supported configuration directives directly; any unrecognized or unsupported properties trigger a clear schema validation error based on the current engine's capabilities rather than a rigid schema version tag.
 </details>
 
-<details>
-<summary><strong>Q4. How does the modern `include:` directive solve the relative path problem that plagued multi-file `-f` overrides?</strong></summary>
+<details><summary>4. How does the modern `include:` directive solve the relative path problem that plagued multi-file `-f` overrides?</summary>
 
-**Answer:** When using classical multi-file arguments (`docker compose -f file1.yaml -f ../service/file2.yaml`), Compose resolves all relative paths (such as `build: .` or volume bind mounts) relative to the **working directory of the command invocation or the first compose file**. This broke modular configurations when combining services across different subdirectories. With `include:`, each included compose file is evaluated in its **own directory context**. Relative build contexts and volume mounts declared inside an included file resolve relative to that specific file's filesystem path, allowing independent microservice compose files to be composed without path corruption.
-
+When using classical multi-file arguments (`docker compose -f file1.yaml -f ../service/file2.yaml`), Compose resolves all relative paths (such as `build: .` or volume bind mounts) relative to the **working directory of the command invocation or the first compose file**. This broke modular configurations when combining services across different subdirectories. With `include:`, each included compose file is evaluated in its **own directory context**. Relative build contexts and volume mounts declared inside an included file resolve relative to that specific file's filesystem path, allowing independent microservice compose files to be composed without path corruption.
 </details>
 
-<details>
-<summary><strong>Q5. What occurs when two services in a Compose file declare identical `ports: ["8080:80"]`?</strong></summary>
+<details><summary>5. What occurs when two services in a Compose file declare identical `ports: ["8080:80"]`?</summary>
 
-**Answer:** The Compose engine compiles the configuration successfully during AST validation. However, during execution, the first service binds to the host's physical network adapter on port 8080. When the second service attempts to start, the host kernel rejects the `bind(2)` system call with `EADDRINUSE` (`port is already allocated`), and Compose reports a container startup failure.
-
+The Compose engine compiles the configuration successfully during AST validation. However, during execution, the first service binds to the host's physical network adapter on port 8080. When the second service attempts to start, the host kernel rejects the `bind(2)` system call with `EADDRINUSE` (`port is already allocated`), and Compose reports a container startup failure.
 </details>
 
-<details>
-<summary><strong>Q6. How does Compose Watch (`develop: watch: ...`) improve upon traditional bind-mounted code sharing during local development?</strong></summary>
+<details><summary>6. How does Compose Watch (`develop: watch: ...`) improve upon traditional bind-mounted code sharing during local development?</summary>
 
-**Answer:** Traditional bind mounts mount host directories directly over container directories. On non-Linux hosts (macOS, Windows), crossing the hypervisor boundary with thousands of small file reads (such as `node_modules` or Python virtual environments) incurs massive I/O virtualization latency. Furthermore, host-compiled binaries often conflict with container Linux ABIs. Compose Watch runs a lightweight host-side file watcher. When an operator modifies a file in `./src`, Compose actively streams only the changed file bytes into the running container filesystem. It avoids hypervisor bind-mount translation overhead and allows fine-grained rules (e.g., `sync` source files, but trigger an automated container `rebuild` when `package.json` changes).
-
+Traditional bind mounts mount host directories directly over container directories. On non-Linux hosts (macOS, Windows), crossing the hypervisor boundary with thousands of small file reads (such as `node_modules` or Python virtual environments) incurs massive I/O virtualization latency. Furthermore, host-compiled binaries often conflict with container Linux ABIs. Compose Watch runs a lightweight host-side file watcher. When an operator modifies a file in `./src`, Compose actively streams only the changed file bytes into the running container filesystem. It avoids hypervisor bind-mount translation overhead and allows fine-grained rules (e.g., `sync` source files, but trigger an automated container `rebuild` when `package.json` changes).
 </details>
 
-<details>
-<summary><strong>Q7. Describe the deep-merge behavior of Compose when an override file defines an `environment` mapping versus a `command` array.</strong></summary>
-
-**Answer:**
+<details><summary>7. Describe the deep-merge behavior of Compose when an override file defines an `environment` mapping versus a `command` array.</summary>
 
 - **`environment` (Dictionary/Map)**: Compose performs a recursive deep merge. If the base file defines `{ A: 1, B: 2 }` and the override file defines `{ B: 3, C: 4 }`, the resulting environment passed to the container is `{ A: 1, B: 3, C: 4 }`. Colliding keys are updated with the override value, and unique keys are preserved.
 - **`command` (Array/Scalar)**: Compose performs a **complete replacement**. If the base file defines `command: ["server", "--port", "80"]` and the override defines `command: ["server", "--debug"]`, the entire array is replaced. The arguments are not concatenated; the resulting command is strictly `["server", "--debug"]`.
-
-</details>
-
-<details>
-<summary><strong>Q8. When should an engineering team migrate an application from Docker Compose to an orchestrator like Kubernetes?</strong></summary>
-
-**Answer:** Teams must migrate when requirements exceed the single-node boundary:
-
-1. **Multi-Node Scheduling**: When workload compute or memory demands exceed the physical capacity of a single server, requiring automatic placement across a cluster.
-2. **High Availability & Self-Healing**: When the failure of a single physical server must automatically trigger pod rescheduling and traffic re-routing without human intervention.
-3. **Traffic Splitting & Zero-Downtime Rollouts**: When production deployments require canary releases, blue-green cutovers, or automated rollbacks based on error rates.
-4. **Dynamic Scaling**: When workloads require Horizontal Pod Autoscaling (HPA) driven by CPU, memory, or queue depth.
-
 </details>
 
 ---

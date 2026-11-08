@@ -272,11 +272,9 @@ Despite paying for a 10 Gbps pipe, a single TCP stream achieves less than 0.07% 
 
 ---
 
-## 7. Interview Drill: Questions & Model Answers
+## Interview Drill
 
-### Q1: Why is the OSI model described as an architectural taxonomy rather than an implementation standard?
-
-<details><summary>Answer</summary>
+<details><summary>1. Why is the OSI model described as an architectural taxonomy rather than an implementation standard?</summary>
 
 **Operational vs Conceptual Design.** The OSI model defines a clean 7-layer theoretical separation of concerns, but no major commercial operating system ever implemented it directly. The Internet evolved on the 4-layer TCP/IP suite (RFC 1122), where Layers 5 (Session) and 6 (Presentation) were absorbed entirely into user-space application runtimes. Furthermore, high-performance modern architectures deliberately break layer boundaries: NIC hardware performs L4 TCP segmentation offload (TSO) and L3 checksum verification, while eBPF filters packets at Layer 2/3 before the kernel network stack even allocates an `sk_buff`.
 
@@ -284,9 +282,7 @@ Despite paying for a 10 Gbps pipe, a single TCP stream achieves less than 0.07% 
 
 </details>
 
-### Q2: A 1 Gbps link connects two datacenters separated by 2,000 km of optical fiber. What is the one-way transmission delay and propagation delay for a standard 1,500-byte frame?
-
-<details><summary>Answer</summary>
+<details><summary>2. A 1 Gbps link connects two datacenters separated by 2,000 km of optical fiber. What is the one-way transmission delay and propagation delay for a standard 1,500-byte frame?</summary>
 
 **Calculations:**
 
@@ -297,9 +293,7 @@ Despite paying for a 10 Gbps pipe, a single TCP stream achieves less than 0.07% 
 
 </details>
 
-### Q3: What is the magic number in a standard libpcap header, and how does a parser use it to determine file endianness?
-
-<details><summary>Answer</summary>
+<details><summary>3. What is the magic number in a standard libpcap header, and how does a parser use it to determine file endianness?</summary>
 
 **Endianness Detection.** The first 4 bytes of a standard libpcap global header contain the magic number `0xa1b2c3d4`. When a parser reads these 4 bytes into a 32-bit unsigned integer:
 
@@ -310,9 +304,7 @@ Despite paying for a 10 Gbps pipe, a single TCP stream achieves less than 0.07% 
 
 </details>
 
-### Q4: If a transatlantic connection has an RTT of 70 ms and a bottleneck link speed of 40 Gbps, calculate the required TCP window size to achieve 100% link utilization.
-
-<details><summary>Answer</summary>
+<details><summary>4. If a transatlantic connection has an RTT of 70 ms and a bottleneck link speed of 40 Gbps, calculate the required TCP window size to achieve 100% link utilization.</summary>
 
 **Bandwidth-Delay Product:** $$\text{BDP} = R \times \text{RTT}$$ $$\text{BDP} = 40 \times 10^9\text{ bps} \times 0.070\text{ s} = 2.8 \times 10^9\text{ bits} = 350,000,000\text{ bytes} \approx 333.78\text{ MiB}$$ To fully saturate this link without stalling for ACKs, the sender and receiver must negotiate TCP Window Scaling (RFC 7323) and allocate at least $350\text{ MB}$ of socket buffer space (`net.ipv4.tcp_wmem` and `net.ipv4.tcp_rmem`). With historical unscaled 16-bit windows (max 64 KB), the maximum achievable throughput is only $7.49\text{ Mbps}$, utilizing less than 0.02% of available bandwidth.
 
@@ -320,9 +312,7 @@ Despite paying for a 10 Gbps pipe, a single TCP stream achieves less than 0.07% 
 
 </details>
 
-### Q5: In packet capture analysis, what is the difference between `incl_len` and `orig_len` in the packet record header? Under what condition are they unequal?
-
-<details><summary>Answer</summary>
+<details><summary>5. In packet capture analysis, what is the difference between `incl_len` and `orig_len` in the packet record header? Under what condition are they unequal?</summary>
 
 **Snapshot Truncation.**
 
