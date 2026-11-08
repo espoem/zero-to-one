@@ -39,7 +39,7 @@ States: ⬜ brief ready → 🟦 authoring → 🟨 challenge + verify → 🟧 
 | 4 | `technologies/aws` | Opus / Antigravity | `main` | ✅ merged | Merged 2026-11-08: 14 modules (400+ lines), 65-q SAA-C03 bank + mock, 38 hermetic tests passing, challenger & verifier gates resolved and complete. |
 | 4 | `technologies/azure` | Opus · claude.ai | `track/azure` | ⬜ brief ready |  |
 | 4 | `technologies/cloudflare` | Opus / Antigravity | `main` | ✅ merged | Merged 2026-11-08: 12 modules, 65-q exam bank + mock, 16 hermetic + workerd tests passing, challenger & verifier gates resolved and complete. |
-| 4 | `technologies/gcp` | Opus · claude.ai | `track/gcp` | ⬜ brief ready |  |
+| 4 | `technologies/gcp` | Opus / Antigravity | `main` | ✅ merged | Merged 2026-11-08: 10 modules (400+ lines), 65-q ACE bank + mock, full PCA matrix, 30 hermetic tests passing, challenger & verifier gates resolved and complete. |
 
 ## Dependencies
 
