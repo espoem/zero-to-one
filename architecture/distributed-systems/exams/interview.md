@@ -6,9 +6,9 @@ This bank contains 75 rigorous questions covering distributed systems theory, pr
 
 ## Part 1: Domain Question Banks (Questions 1–75)
 
-### Domain 1: System Models, Impossibility & CAP
+## Domain 1: System Models, Impossibility & CAP
 
-#### Q-DIST-001 · System Models · difficulty 1 · single
+### Q-DIST-001 · System Models · difficulty 1 · single
 
 Which of the following describes the fundamental distinction between an asynchronous network model and a partially synchronous network model?
 
@@ -28,7 +28,7 @@ Which of the following describes the fundamental distinction between an asynchro
 
 </details>
 
-#### Q-DIST-002 · Impossibility Proofs · difficulty 2 · scenario
+### Q-DIST-002 · Impossibility Proofs · difficulty 2 · scenario
 
 In the classic Two Generals Problem, General A sends a message $m_1$ ("Attack at dawn") across an unreliable channel that drops an unknown fraction of messages. General B receives $m_1$ and responds with ACK $a_1$. Why can the two generals never reach common knowledge of an attack agreement across a purely lossy channel in bounded time?
 
@@ -48,7 +48,7 @@ In the classic Two Generals Problem, General A sends a message $m_1$ ("Attack at
 
 </details>
 
-#### Q-DIST-003 · Impossibility Proofs · difficulty 3 · single
+### Q-DIST-003 · Impossibility Proofs · difficulty 3 · single
 
 What is the precise statement and consequence of the Fischer-Lynch-Paterson (FLP) impossibility result (1985)?
 
@@ -68,7 +68,7 @@ What is the precise statement and consequence of the Fischer-Lynch-Paterson (FLP
 
 </details>
 
-#### Q-DIST-004 · CAP & PACELC · difficulty 1 · single
+### Q-DIST-004 · CAP & PACELC · difficulty 1 · single
 
 In Daniel Abadi's PACELC theorem, what does the acronym stand for?
 
@@ -86,7 +86,7 @@ In Daniel Abadi's PACELC theorem, what does the acronym stand for?
 
 </details>
 
-#### Q-DIST-005 · Formal Properties · difficulty 2 · single
+### Q-DIST-005 · Formal Properties · difficulty 2 · single
 
 In Lamport's classification of distributed system properties, which of the following is a **Safety** property, and which is a **Liveness** property?
 
@@ -108,9 +108,9 @@ In Lamport's classification of distributed system properties, which of the follo
 
 ---
 
-### Domain 2: Networks, RPC & Failure Detection
+## Domain 2: Networks, RPC & Failure Detection
 
-#### Q-DIST-006 · RPC Semantics · difficulty 2 · scenario
+### Q-DIST-006 · RPC Semantics · difficulty 2 · scenario
 
 A payments service experiences a network timeout while calling a third-party billing gateway. The network packet containing the payment request actually reached the gateway and was processed, but the TCP connection was reset before the HTTP response reached the caller. If the caller blindly retries the HTTP request without an idempotency key, what happens?
 
@@ -130,7 +130,7 @@ A payments service experiences a network timeout while calling a third-party bil
 
 </details>
 
-#### Q-DIST-007 · Jitter & Retries · difficulty 2 · single
+### Q-DIST-007 · Jitter & Retries · difficulty 2 · single
 
 In a large distributed microservice mesh experiencing downstream database overload, why is Full Jitter or Decorrelated Jitter strictly preferred over standard Exponential Backoff without jitter?
 
@@ -150,7 +150,7 @@ In a large distributed microservice mesh experiencing downstream database overlo
 
 </details>
 
-#### Q-DIST-008 · Metastable Failures · difficulty 3 · scenario
+### Q-DIST-008 · Metastable Failures · difficulty 3 · scenario
 
 A downstream cache cluster restarts after a power failure. During the reboot, all upstream application servers experience cache misses and forward their read traffic directly to the primary database. The database CPU hits 100%, causing queries to time out. Upstream services retry their timed-out queries with exponential backoff. Even after the cache cluster finishes booting and is fully operational, the system remains stuck at 100% database CPU and high error rates. What is this phenomenon called, and how can it be permanently broken?
 
@@ -170,7 +170,7 @@ A downstream cache cluster restarts after a power failure. During the reboot, al
 
 </details>
 
-#### Q-DIST-009 · Failure Detection · difficulty 2 · single
+### Q-DIST-009 · Failure Detection · difficulty 2 · single
 
 How does the $\Phi$-Accrual Failure Detector (Hayashibara et al.) differ from a traditional binary heartbeat failure detector?
 
@@ -190,7 +190,7 @@ How does the $\Phi$-Accrual Failure Detector (Hayashibara et al.) differ from a 
 
 </details>
 
-#### Q-DIST-010 · Gossip Protocols · difficulty 2 · single
+### Q-DIST-010 · Gossip Protocols · difficulty 2 · single
 
 In the SWIM (Structured Weakly-Consistent Infection-Style Process Group Membership) gossip protocol, how does indirect probing resolve the false suspicion caused by localized network packet loss?
 
@@ -212,9 +212,9 @@ In the SWIM (Structured Weakly-Consistent Infection-Style Process Group Membersh
 
 ---
 
-### Domain 3: Logical Time, Physical Clocks & Ordering
+## Domain 3: Logical Time, Physical Clocks & Ordering
 
-#### Q-DIST-011 · Physical Clocks · difficulty 1 · scenario
+### Q-DIST-011 · Physical Clocks · difficulty 1 · scenario
 
 Two distinct database nodes, Node 1 and Node 2, synchronize their physical time using standard NTP across the public Internet. Node 1's clock is running 25ms fast relative to UTC, while Node 2's clock is running 30ms slow. Client A writes `x = 1` to Node 1 at physical UTC time $t=1000$. Client B reads `x = 1` from Node 1, and subsequently writes `x = 2` to Node 2 at physical UTC time $t=1010$. Both nodes resolve conflicts using Last-Write-Wins (LWW) based on their local physical timestamps. What is the value of $x$ according to LWW?
 
@@ -234,7 +234,7 @@ Two distinct database nodes, Node 1 and Node 2, synchronize their physical time 
 
 </details>
 
-#### Q-DIST-012 · Logical Clocks · difficulty 2 · single
+### Q-DIST-012 · Logical Clocks · difficulty 2 · single
 
 Given Lamport timestamps $L(a)$ and $L(b)$ for two events $a$ and $b$, what can be definitively concluded if $L(a) < L(b)$?
 
@@ -254,7 +254,7 @@ Given Lamport timestamps $L(a)$ and $L(b)$ for two events $a$ and $b$, what can 
 
 </details>
 
-#### Q-DIST-013 · Vector Clocks · difficulty 2 · scenario
+### Q-DIST-013 · Vector Clocks · difficulty 2 · scenario
 
 In a 3-node cluster ($A, B, C$), event $x$ has vector timestamp $V(x) = [A: 2, B: 1, C: 0]$ and event $y$ has vector timestamp $V(y) = [A: 1, B: 2, C: 0]$. What is the causal relationship between $x$ and $y$?
 
@@ -274,7 +274,7 @@ In a 3-node cluster ($A, B, C$), event $x$ has vector timestamp $V(x) = [A: 2, B
 
 </details>
 
-#### Q-DIST-014 · Google Spanner TrueTime · difficulty 3 · single
+### Q-DIST-014 · Google Spanner TrueTime · difficulty 3 · single
 
 In Google Spanner, the TrueTime API returns a time interval $[t_{\text{earliest}}, t_{\text{latest}}]$ such that the absolute UTC physical time $t_{\text{absolute}}$ is guaranteed to fall within the interval, with maximum error bound $\epsilon \approx 1\text{--}7\text{ms}$. How does Spanner guarantee external consistency (linearizability across transactions) using TrueTime?
 
@@ -294,7 +294,7 @@ In Google Spanner, the TrueTime API returns a time interval $[t_{\text{earliest}
 
 </details>
 
-#### Q-DIST-015 · Fencing Tokens · difficulty 2 · scenario
+### Q-DIST-015 · Fencing Tokens · difficulty 2 · scenario
 
 Client 1 acquires a distributed lock with a 10-second TTL from a coordination service to update a critical file on network storage. Immediately after acquiring the lock, Client 1 experiences a 15-second Stop-The-World (STW) garbage collection pause. During this pause, the lock expires and Client 2 acquires the lock, writes data to storage, and releases it. Client 1 resumes execution from its GC pause and proceeds to execute its write. How do fencing tokens prevent Client 1 from corrupting Client 2's write?
 
@@ -314,7 +314,7 @@ Client 1 acquires a distributed lock with a 10-second TTL from a coordination se
 
 </details>
 
-#### Q-DIST-016 · Hybrid Logical Clocks · difficulty 2 · single
+### Q-DIST-016 · Hybrid Logical Clocks · difficulty 2 · single
 
 What is the primary motivation for Hybrid Logical Clocks (HLC, Kulkarni et al.) compared to pure physical clocks or pure Lamport logical clocks?
 
@@ -336,9 +336,9 @@ What is the primary motivation for Hybrid Logical Clocks (HLC, Kulkarni et al.) 
 
 ---
 
-### Domain 4: Consistency Models & Linearizability
+## Domain 4: Consistency Models & Linearizability
 
-#### Q-DIST-017 · Linearizability Definition · difficulty 2 · single
+### Q-DIST-017 · Linearizability Definition · difficulty 2 · single
 
 According to the formal definition of Linearizability by Maurice Herlihy and Jeannette Wing (1990), what two conditions must every concurrent execution history satisfy?
 
@@ -358,7 +358,7 @@ According to the formal definition of Linearizability by Maurice Herlihy and Jea
 
 </details>
 
-#### Q-DIST-018 · Serializability vs Linearizability · difficulty 2 · single
+### Q-DIST-018 · Serializability vs Linearizability · difficulty 2 · single
 
 What is the precise difference between **Serializability** (from database transactions) and **Linearizability** (from distributed systems)?
 
@@ -378,7 +378,7 @@ What is the precise difference between **Serializability** (from database transa
 
 </details>
 
-#### Q-DIST-019 · Linearizability Checking · difficulty 3 · scenario
+### Q-DIST-019 · Linearizability Checking · difficulty 3 · scenario
 
 Consider the following execution trace on a single register initially set to `0`:
 
@@ -400,7 +400,7 @@ Consider the following execution trace on a single register initially set to `0`
 
 </details>
 
-#### Q-DIST-020 · Linearizability Verification · difficulty 3 · single
+### Q-DIST-020 · Linearizability Verification · difficulty 3 · single
 
 In the Wing-Gong (WGL) linearizability checking algorithm, what computational complexity class does verifying whether a general concurrent history of $n$ operations is linearizable belong to?
 
@@ -420,7 +420,7 @@ In the Wing-Gong (WGL) linearizability checking algorithm, what computational co
 
 </details>
 
-#### Q-DIST-021 · Session Guarantees · difficulty 2 · single
+### Q-DIST-021 · Session Guarantees · difficulty 2 · single
 
 A user updates their profile picture on a social network. Upon refreshing the page, the user is routed to a different read replica that has not yet received the replication stream, and observes their old profile picture. Which client session guarantee was violated?
 
@@ -440,7 +440,7 @@ A user updates their profile picture on a social network. Upon refreshing the pa
 
 </details>
 
-#### Q-DIST-022 · Composability · difficulty 2 · single
+### Q-DIST-022 · Composability · difficulty 2 · single
 
 What is the **Locality (P-Compositionality)** property of Linearizability, and how does it contrast with Sequential Consistency?
 
@@ -462,9 +462,9 @@ What is the **Locality (P-Compositionality)** property of Linearizability, and h
 
 ---
 
-### Domain 5: Replication Protocols & Quorums
+## Domain 5: Replication Protocols & Quorums
 
-#### Q-DIST-023 · Replication Models · difficulty 1 · single
+### Q-DIST-023 · Replication Models · difficulty 1 · single
 
 In asynchronous primary-backup replication, what risk is fundamentally accepted in exchange for minimal client write latency?
 
@@ -484,7 +484,7 @@ In asynchronous primary-backup replication, what risk is fundamentally accepted 
 
 </details>
 
-#### Q-DIST-024 · Chain Replication · difficulty 2 · scenario
+### Q-DIST-024 · Chain Replication · difficulty 2 · scenario
 
 In standard Chain Replication (Schneider, van Renesse 2004), client writes are sent to the **Head** node and forwarded down the chain to the **Tail** node. Where are read requests sent to guarantee linearizable reads without coordination?
 
@@ -504,7 +504,7 @@ In standard Chain Replication (Schneider, van Renesse 2004), client writes are s
 
 </details>
 
-#### Q-DIST-025 · CRAQ · difficulty 2 · single
+### Q-DIST-025 · CRAQ · difficulty 2 · single
 
 How does Chain Replication with Apportioned Queries (CRAQ, Terrace & Freedman 2009) increase read throughput without sacrificing linearizability?
 
@@ -524,7 +524,7 @@ How does Chain Replication with Apportioned Queries (CRAQ, Terrace & Freedman 20
 
 </details>
 
-#### Q-DIST-026 · Quorum Anomalies · difficulty 3 · scenario
+### Q-DIST-026 · Quorum Anomalies · difficulty 3 · scenario
 
 In a leaderless Dynamo-style cluster of $N=3$ replicas configured with write quorum $W=2$ and read quorum $R=2$, the quorum overlap condition $R + W > N$ ($2 + 2 = 4 > 3$) holds. All replicas initially hold value $v_0$. A client begins writing value $v_1$ with a newer timestamp: replica $N_1$ accepts and persists $v_1$, but the write has not yet reached replicas $N_2$ and $N_3$. Reader 1 reads from read quorum $\{N_1, N_2\}$. It receives $N_1: v_1$ and $N_2: v_0$, and returns the newer value $v_1$ to its caller. Immediately after Reader 1 completes, Reader 2 reads from read quorum $\{N_2, N_3\}$. What value does Reader 2 observe, and what anomaly does this demonstrate?
 
@@ -544,7 +544,7 @@ In a leaderless Dynamo-style cluster of $N=3$ replicas configured with write quo
 
 </details>
 
-#### Q-DIST-027 · ABD Protocol · difficulty 2 · single
+### Q-DIST-027 · ABD Protocol · difficulty 2 · single
 
 How does the Attiya-Bar-Noy-Dolev (ABD, 1995) protocol eliminate the "New-Then-Old" anomaly to provide a linearizable read/write register over an asynchronous quorum system?
 
@@ -564,7 +564,7 @@ How does the Attiya-Bar-Noy-Dolev (ABD, 1995) protocol eliminate the "New-Then-O
 
 </details>
 
-#### Q-DIST-028 · Consensus Reads · difficulty 2 · single
+### Q-DIST-028 · Consensus Reads · difficulty 2 · single
 
 In a consensus-based replicated state machine (such as Raft or Multi-Paxos), why can a leader NOT simply serve read requests by reading its own local memory without network communication?
 
@@ -586,9 +586,9 @@ In a consensus-based replicated state machine (such as Raft or Multi-Paxos), why
 
 ---
 
-### Domain 6: Consensus Foundations, Paxos & ZAB
+## Domain 6: Consensus Foundations, Paxos & ZAB
 
-#### Q-DIST-029 · Consensus Properties · difficulty 1 · single
+### Q-DIST-029 · Consensus Properties · difficulty 1 · single
 
 Which of the following defines the four fundamental formal correctness properties of the Distributed Consensus problem?
 
@@ -608,7 +608,7 @@ Which of the following defines the four fundamental formal correctness propertie
 
 </details>
 
-#### Q-DIST-030 · Single-Decree Paxos · difficulty 2 · scenario
+### Q-DIST-030 · Single-Decree Paxos · difficulty 2 · scenario
 
 In Single-Decree Paxos, Proposer 1 sends `Prepare(n=100)` to Acceptors $\{A_1, A_2, A_3\}$. Acceptor $A_1$ responds with `Promise(100, accepted_n=null, accepted_v=null)`. Acceptor $A_2$ responds with `Promise(100, accepted_n=80, accepted_v="foo")`. Acceptor $A_3$ responds with `Promise(100, accepted_n=90, accepted_v="bar")`. What value must Proposer 1 send in its Phase 2a `Accept(n=100, v)` message?
 
@@ -628,7 +628,7 @@ In Single-Decree Paxos, Proposer 1 sends `Prepare(n=100)` to Acceptors $\{A_1, A
 
 </details>
 
-#### Q-DIST-031 · Paxos Livelock · difficulty 2 · single
+### Q-DIST-031 · Paxos Livelock · difficulty 2 · single
 
 What causes the "Dueling Proposers" livelock condition in Single-Decree Paxos, and how is it resolved in production implementations?
 
@@ -648,7 +648,7 @@ What causes the "Dueling Proposers" livelock condition in Single-Decree Paxos, a
 
 </details>
 
-#### Q-DIST-032 · Flexible Paxos · difficulty 3 · single
+### Q-DIST-032 · Flexible Paxos · difficulty 3 · single
 
 What breakthrough theoretical observation was proven by Heidi Howard et al. in **Flexible Paxos** (2016)?
 
@@ -668,7 +668,7 @@ What breakthrough theoretical observation was proven by Heidi Howard et al. in *
 
 </details>
 
-#### Q-DIST-033 · ZooKeeper Atomic Broadcast · difficulty 2 · single
+### Q-DIST-033 · ZooKeeper Atomic Broadcast · difficulty 2 · single
 
 In the ZooKeeper Atomic Broadcast (ZAB) protocol, what are the two components of the 64-bit transaction identifier $zxid$?
 
@@ -686,7 +686,7 @@ In the ZooKeeper Atomic Broadcast (ZAB) protocol, what are the two components of
 
 </details>
 
-#### Q-DIST-034 · Multi-Paxos · difficulty 2 · single
+### Q-DIST-034 · Multi-Paxos · difficulty 2 · single
 
 In Multi-Paxos, what optimization allows steady-state client writes to commit in a single network round-trip (1 RTT)?
 
@@ -708,9 +708,9 @@ In Multi-Paxos, what optimization allows steady-state client writes to commit in
 
 ---
 
-### Domain 7: Raft Consensus Deep Dive
+## Domain 7: Raft Consensus Deep Dive
 
-#### Q-DIST-035 · Raft State Machine · difficulty 1 · single
+### Q-DIST-035 · Raft State Machine · difficulty 1 · single
 
 What are the three possible roles that a node can occupy in a Raft consensus cluster?
 
@@ -730,7 +730,7 @@ What are the three possible roles that a node can occupy in a Raft consensus clu
 
 </details>
 
-#### Q-DIST-036 · Raft Leader Election · difficulty 2 · scenario
+### Q-DIST-036 · Raft Leader Election · difficulty 2 · scenario
 
 In a 5-node Raft cluster, Candidate $C_1$ sends a `RequestVote(term=4, candidateId=1, lastLogIndex=8, lastLogTerm=3)` to Node $N_2$. Node $N_2$'s current log has `lastLogIndex=9, lastLogTerm=3`. Node $N_2$'s current term is 3. Does Node $N_2$ grant its vote to Candidate $C_1$, and why?
 
@@ -750,7 +750,7 @@ In a 5-node Raft cluster, Candidate $C_1$ sends a `RequestVote(term=4, candidate
 
 </details>
 
-#### Q-DIST-037 · Raft Figure 8 Trap · difficulty 3 · scenario
+### Q-DIST-037 · Raft Figure 8 Trap · difficulty 3 · scenario
 
 In Raft, Leader $L$ in Term 4 replicates an entry from a prior term (Term 2) to a majority of nodes. Why does Raft's commit rule **strictly forbid** the leader from committing the Term 2 entry by counting replicas directly, requiring instead that the leader commit an entry from its _current term_ (Term 4) by counting replicas?
 
@@ -768,7 +768,7 @@ In Raft, Leader $L$ in Term 4 replicates an entry from a prior term (Term 2) to 
 
 </details>
 
-#### Q-DIST-038 · Raft Durability Invariants · difficulty 2 · single
+### Q-DIST-038 · Raft Durability Invariants · difficulty 2 · single
 
 Which three state variables **must** be synchronously flushed to non-volatile disk (`fsync`) before a Raft node can respond to an RPC?
 
@@ -787,7 +787,7 @@ Which three state variables **must** be synchronously flushed to non-volatile di
 
 </details>
 
-#### Q-DIST-039 · Raft Pre-Vote Extension · difficulty 2 · single
+### Q-DIST-039 · Raft Pre-Vote Extension · difficulty 2 · single
 
 What problem does the **Pre-Vote** extension solve in production Raft systems?
 
@@ -807,7 +807,7 @@ What problem does the **Pre-Vote** extension solve in production Raft systems?
 
 </details>
 
-#### Q-DIST-040 · Check Quorum · difficulty 2 · single
+### Q-DIST-040 · Check Quorum · difficulty 2 · single
 
 How does the **Check-Quorum** mechanism protect a Raft leader that has been partitioned off from its followers?
 
@@ -829,9 +829,9 @@ How does the **Check-Quorum** mechanism protect a Raft leader that has been part
 
 ---
 
-### Domain 8: Distributed Coordination & Locks
+## Domain 8: Distributed Coordination & Locks
 
-#### Q-DIST-041 · Redlock Critique · difficulty 3 · single
+### Q-DIST-041 · Redlock Critique · difficulty 3 · single
 
 In Martin Kleppmann's formal critique of the Redis Redlock algorithm (2016), what fundamental theoretical flaw was identified regarding its use of physical time?
 
@@ -851,7 +851,7 @@ In Martin Kleppmann's formal critique of the Redis Redlock algorithm (2016), wha
 
 </details>
 
-#### Q-DIST-042 · Thundering Herd in Locks · difficulty 2 · single
+### Q-DIST-042 · Thundering Herd in Locks · difficulty 2 · single
 
 In Apache ZooKeeper, how does the Standard Distributed Lock Recipe avoid the "Thundering Herd" problem when thousands of clients compete for a single lock?
 
@@ -871,7 +871,7 @@ In Apache ZooKeeper, how does the Standard Distributed Lock Recipe avoid the "Th
 
 </details>
 
-#### Q-DIST-043 · Ephemeral Nodes · difficulty 1 · single
+### Q-DIST-043 · Ephemeral Nodes · difficulty 1 · single
 
 What is an **Ephemeral Node** in Apache ZooKeeper or etcd lease mechanism, and when is it automatically removed?
 
@@ -891,7 +891,7 @@ What is an **Ephemeral Node** in Apache ZooKeeper or etcd lease mechanism, and w
 
 </details>
 
-#### Q-DIST-044 · etcd Revisions · difficulty 2 · single
+### Q-DIST-044 · etcd Revisions · difficulty 2 · single
 
 In `etcd` v3, how do 64-bit cluster **Revisions** enable lock-free atomic Compare-And-Swap (CAS) transactions?
 
@@ -911,7 +911,7 @@ In `etcd` v3, how do 64-bit cluster **Revisions** enable lock-free atomic Compar
 
 </details>
 
-#### Q-DIST-045 · Distributed Barriers · difficulty 2 · scenario
+### Q-DIST-045 · Distributed Barriers · difficulty 2 · scenario
 
 In a distributed batch processing framework, 10 worker nodes must process intermediate data and synchronize before proceeding to the next processing phase. How is a **Double Barrier** implemented using a distributed coordination service?
 
@@ -933,9 +933,9 @@ In a distributed batch processing framework, 10 worker nodes must process interm
 
 ---
 
-### Domain 9: Distributed Transactions & Atomic Commit
+## Domain 9: Distributed Transactions & Atomic Commit
 
-#### Q-DIST-046 · Two-Phase Commit Blocking · difficulty 2 · scenario
+### Q-DIST-046 · Two-Phase Commit Blocking · difficulty 2 · scenario
 
 In a Two-Phase Commit (2PC) protocol with 1 Coordinator and 3 Participants, all participants vote `YES` in Phase 1 (Prepare) and transition to the `PREPARED` state, holding local row locks. The Coordinator writes `COMMIT` to its write-ahead log, but crashes before sending the `Commit` message to any participant. What state are the participants left in?
 
@@ -956,7 +956,7 @@ In a Two-Phase Commit (2PC) protocol with 1 Coordinator and 3 Participants, all 
 
 </details>
 
-#### Q-DIST-047 · Three-Phase Commit · difficulty 3 · single
+### Q-DIST-047 · Three-Phase Commit · difficulty 3 · single
 
 Why is the Three-Phase Commit (3PC, Skeen 1981) protocol rarely deployed in real-world distributed database systems across networks?
 
@@ -976,7 +976,7 @@ Why is the Three-Phase Commit (3PC, Skeen 1981) protocol rarely deployed in real
 
 </details>
 
-#### Q-DIST-048 · Google Percolator · difficulty 3 · scenario
+### Q-DIST-048 · Google Percolator · difficulty 3 · scenario
 
 In Google's Percolator transaction protocol (Peng & Dabek 2016), how are distributed transactions committed atomically across Bigtable without a centralized transaction manager?
 
@@ -996,7 +996,7 @@ In Google's Percolator transaction protocol (Peng & Dabek 2016), how are distrib
 
 </details>
 
-#### Q-DIST-049 · Sagas vs 2PC · difficulty 2 · single
+### Q-DIST-049 · Sagas vs 2PC · difficulty 2 · single
 
 What is the fundamental architectural difference between an ACID 2PC transaction and a **Saga** (Garcia-Molina & Salem 1987) in a microservices architecture?
 
@@ -1016,7 +1016,7 @@ What is the fundamental architectural difference between an ACID 2PC transaction
 
 </details>
 
-#### Q-DIST-050 · Transactional Outbox · difficulty 2 · single
+### Q-DIST-050 · Transactional Outbox · difficulty 2 · single
 
 What failure mode does the **Transactional Outbox** pattern solve when a service must both update a database and publish an event to an Apache Kafka message broker?
 
@@ -1036,7 +1036,7 @@ What failure mode does the **Transactional Outbox** pattern solve when a service
 
 </details>
 
-#### Q-DIST-051 · Spanner Distributed Transactions · difficulty 3 · single
+### Q-DIST-051 · Spanner Distributed Transactions · difficulty 3 · single
 
 In Google Spanner, how are cross-shard distributed transactions executed while guaranteeing strict serializability?
 
@@ -1058,9 +1058,9 @@ In Google Spanner, how are cross-shard distributed transactions executed while g
 
 ---
 
-### Domain 10: Messaging, Distributed Logs & Partitioning
+## Domain 10: Messaging, Distributed Logs & Partitioning
 
-#### Q-DIST-052 · Kafka High Watermark · difficulty 2 · single
+### Q-DIST-052 · Kafka High Watermark · difficulty 2 · single
 
 In an Apache Kafka partition, what is the distinction between the **Log End Offset (LEO)** and the **High Watermark (HW)**?
 
@@ -1080,7 +1080,7 @@ In an Apache Kafka partition, what is the distinction between the **Log End Offs
 
 </details>
 
-#### Q-DIST-053 · Kafka Durability Configuration · difficulty 2 · scenario
+### Q-DIST-053 · Kafka Durability Configuration · difficulty 2 · scenario
 
 A financial audit topic in Kafka requires zero message loss upon single broker failure. The topic is configured with replication factor 3. The producer sets `acks=all`. However, the broker configuration has `min.insync.replicas=1`. Why does this configuration fail to protect against message loss?
 
@@ -1100,7 +1100,7 @@ A financial audit topic in Kafka requires zero message loss upon single broker f
 
 </details>
 
-#### Q-DIST-054 · Producer Idempotence · difficulty 2 · single
+### Q-DIST-054 · Producer Idempotence · difficulty 2 · single
 
 How does Apache Kafka's Idempotent Producer eliminate duplicate records upon network retry?
 
@@ -1120,7 +1120,7 @@ How does Apache Kafka's Idempotent Producer eliminate duplicate records upon net
 
 </details>
 
-#### Q-DIST-055 · Partition Resizing Trap · difficulty 3 · scenario
+### Q-DIST-055 · Partition Resizing Trap · difficulty 3 · scenario
 
 An e-commerce system partitions order events by `order_id` across 10 Kafka partitions using the standard hash partitioner: $\text{partition} = \text{murmur2}(\text{order\_id}) \pmod{10}$. Due to traffic growth, an engineer increases the partition count from 10 to 20. What critical distributed systems invariant is immediately broken for subsequent orders?
 
@@ -1140,7 +1140,7 @@ An e-commerce system partitions order events by `order_id` across 10 Kafka parti
 
 </details>
 
-#### Q-DIST-056 · Cooperative Rebalancing · difficulty 2 · single
+### Q-DIST-056 · Cooperative Rebalancing · difficulty 2 · single
 
 What was the primary performance defect of Kafka's legacy Eager Consumer Rebalance Protocol, and how did KIP-848 / KIP-429 Cooperative Rebalancing resolve it?
 
@@ -1160,7 +1160,7 @@ What was the primary performance defect of Kafka's legacy Eager Consumer Rebalan
 
 </details>
 
-#### Q-DIST-057 · Kafka 4.2 Share Groups · difficulty 2 · single
+### Q-DIST-057 · Kafka 4.2 Share Groups · difficulty 2 · single
 
 What new consumption paradigm was introduced in Kafka 4.2 via KIP-932 (Share Groups)?
 
@@ -1182,9 +1182,9 @@ What new consumption paradigm was introduced in Kafka 4.2 via KIP-932 (Share Gro
 
 ---
 
-### Domain 11: CRDTs & Strong Eventual Consistency
+## Domain 11: CRDTs & Strong Eventual Consistency
 
-#### Q-DIST-058 · CRDT Mathematical Foundations · difficulty 2 · single
+### Q-DIST-058 · CRDT Mathematical Foundations · difficulty 2 · single
 
 What three algebraic properties must the merge operator ($\sqcup$) of a state-based Conflict-Free Replicated Data Type (CvRDT) satisfy to form a join-semilattice?
 
@@ -1203,7 +1203,7 @@ What three algebraic properties must the merge operator ($\sqcup$) of a state-ba
 
 </details>
 
-#### Q-DIST-059 · PN-Counter Mechanics · difficulty 1 · single
+### Q-DIST-059 · PN-Counter Mechanics · difficulty 1 · single
 
 How does a PN-Counter (Positive-Negative Counter) achieve correct increments and decrements in a state-based CRDT without losing concurrent updates?
 
@@ -1222,7 +1222,7 @@ How does a PN-Counter (Positive-Negative Counter) achieve correct increments and
 
 </details>
 
-#### Q-DIST-060 · OR-Set Add-Wins · difficulty 2 · scenario
+### Q-DIST-060 · OR-Set Add-Wins · difficulty 2 · scenario
 
 In an Observed-Removed Set (OR-Set) CRDT with Add-Wins semantics, Replica A and Replica B both initially contain element $e$. Client 1 concurrently calls `remove(e)` on Replica A, while Client 2 calls `add(e)` on Replica B. When Replica A and Replica B merge their states, what is the resulting state of element $e$?
 
@@ -1242,7 +1242,7 @@ In an Observed-Removed Set (OR-Set) CRDT with Add-Wins semantics, Replica A and 
 
 </details>
 
-#### Q-DIST-061 · CRDT Sequence Tombstones · difficulty 2 · single
+### Q-DIST-061 · CRDT Sequence Tombstones · difficulty 2 · single
 
 In collaborative text editing sequence CRDTs (such as RGA or Yjs), what problem arises from character deletion, and how is it mitigated in production?
 
@@ -1262,7 +1262,7 @@ In collaborative text editing sequence CRDTs (such as RGA or Yjs), what problem 
 
 </details>
 
-#### Q-DIST-062 · Local-First Software · difficulty 1 · single
+### Q-DIST-062 · Local-First Software · difficulty 1 · single
 
 Which of the following is one of the seven foundational ideals of **Local-First Software** formulated by Martin Kleppmann et al. (2019)?
 
@@ -1284,9 +1284,9 @@ Which of the following is one of the seven foundational ideals of **Local-First 
 
 ---
 
-### Domain 12: Verification, DST & Fault Injection
+## Domain 12: Verification, DST & Fault Injection
 
-#### Q-DIST-063 · Deterministic Simulation Testing · difficulty 3 · scenario
+### Q-DIST-063 · Deterministic Simulation Testing · difficulty 3 · scenario
 
 FoundationDB and TigerBeetle test their distributed storage engines using **Deterministic Simulation Testing (DST)** (also known as TigerBeetle's VOPR). How does DST allow a single developer machine to discover race conditions that would take months to manifest in production?
 
@@ -1306,7 +1306,7 @@ FoundationDB and TigerBeetle test their distributed storage engines using **Dete
 
 </details>
 
-#### Q-DIST-064 · Jepsen Testing · difficulty 2 · single
+### Q-DIST-064 · Jepsen Testing · difficulty 2 · single
 
 In Kyle Kingsbury's **Jepsen** distributed systems testing framework, what is the role of the **Nemesis** component?
 
@@ -1326,7 +1326,7 @@ In Kyle Kingsbury's **Jepsen** distributed systems testing framework, what is th
 
 </details>
 
-#### Q-DIST-065 · TLA+ Formal Verification · difficulty 3 · single
+### Q-DIST-065 · TLA+ Formal Verification · difficulty 3 · single
 
 How does Leslie Lamport's **TLA+** (Temporal Logic of Actions) and its model checker **TLC** help distributed systems engineers prevent production design bugs?
 
@@ -1346,7 +1346,7 @@ How does Leslie Lamport's **TLA+** (Temporal Logic of Actions) and its model che
 
 </details>
 
-#### Q-DIST-066 · State Space Explosion · difficulty 2 · single
+### Q-DIST-066 · State Space Explosion · difficulty 2 · single
 
 When using a formal model checker like TLC, what is the **State Space Explosion** problem, and how is it practically managed?
 
@@ -1366,7 +1366,7 @@ When using a formal model checker like TLC, what is the **State Space Explosion*
 
 </details>
 
-#### Q-DIST-067 · Chaos Engineering · difficulty 1 · single
+### Q-DIST-067 · Chaos Engineering · difficulty 1 · single
 
 What is the core principle of **Chaos Engineering** (pioneered by Netflix with Chaos Monkey)?
 
@@ -1387,9 +1387,9 @@ What is the core principle of **Chaos Engineering** (pioneered by Netflix with C
 
 ---
 
-### Domain 13: Byzantine Fault Tolerance & Open Systems
+## Domain 13: Byzantine Fault Tolerance & Open Systems
 
-#### Q-DIST-068 · Byzantine Fault Model · difficulty 1 · single
+### Q-DIST-068 · Byzantine Fault Model · difficulty 1 · single
 
 What characterizes a **Byzantine Fault** (Lamport, Shostak, Pease 1982) compared to a Crash-Stop or Crash-Recovery fault?
 
@@ -1409,7 +1409,7 @@ What characterizes a **Byzantine Fault** (Lamport, Shostak, Pease 1982) compared
 
 </details>
 
-#### Q-DIST-069 · Byzantine Mathematical Bound · difficulty 3 · scenario
+### Q-DIST-069 · Byzantine Mathematical Bound · difficulty 3 · scenario
 
 Prove why a system of $N$ nodes can tolerate at most $f$ Byzantine faulty nodes only if $N \ge 3f + 1$ (e.g. why $N = 3$ fails to tolerate $f = 1$ traitor).
 
@@ -1427,7 +1427,7 @@ Prove why a system of $N$ nodes can tolerate at most $f$ Byzantine faulty nodes 
 
 </details>
 
-#### Q-DIST-070 · Practical Byzantine Fault Tolerance · difficulty 2 · single
+### Q-DIST-070 · Practical Byzantine Fault Tolerance · difficulty 2 · single
 
 In Castro and Liskov's **Practical Byzantine Fault Tolerance (PBFT)** algorithm (1999), what are the three phases of consensus executed in a view?
 
@@ -1447,7 +1447,7 @@ In Castro and Liskov's **Practical Byzantine Fault Tolerance (PBFT)** algorithm 
 
 </details>
 
-#### Q-DIST-071 · Nakamoto Consensus · difficulty 2 · single
+### Q-DIST-071 · Nakamoto Consensus · difficulty 2 · single
 
 How does Bitcoin's Nakamoto Consensus (2008) solve Byzantine consensus in an open, permissionless system where anyone can join and Sybil attacks would trivialise classical quorum voting?
 
@@ -1469,9 +1469,9 @@ How does Bitcoin's Nakamoto Consensus (2008) solve Byzantine consensus in an ope
 
 ---
 
-### Domain 14: Real-World Systems, Sharding & Capstone Architecture
+## Domain 14: Real-World Systems, Sharding & Capstone Architecture
 
-#### Q-DIST-072 · Google File System · difficulty 2 · single
+### Q-DIST-072 · Google File System · difficulty 2 · single
 
 In the Google File System (GFS, Ghemawat et al. 2003), why did the architects choose a massive 64 MB chunk size, and what trade-off did they accept?
 
@@ -1491,7 +1491,7 @@ In the Google File System (GFS, Ghemawat et al. 2003), why did the architects ch
 
 </details>
 
-#### Q-DIST-073 · AWS Aurora Architecture · difficulty 3 · single
+### Q-DIST-073 · AWS Aurora Architecture · difficulty 3 · single
 
 What was the foundational architectural insight behind Amazon Aurora (Verbitski et al. SIGMOD 2017) regarding the relationship between the database engine and the storage layer?
 
@@ -1511,7 +1511,7 @@ What was the foundational architectural insight behind Amazon Aurora (Verbitski 
 
 </details>
 
-#### Q-DIST-074 · Dynamo Architecture · difficulty 2 · single
+### Q-DIST-074 · Dynamo Architecture · difficulty 2 · single
 
 In Amazon's original Dynamo system (DeCandia et al. SOSP 2007), what mechanisms were combined to guarantee "Always-Writable" shopping cart availability during network partitions?
 
@@ -1531,7 +1531,7 @@ In Amazon's original Dynamo system (DeCandia et al. SOSP 2007), what mechanisms 
 
 </details>
 
-#### Q-DIST-075 · Multi-Raft Sharding & Handoff · difficulty 3 · scenario
+### Q-DIST-075 · Multi-Raft Sharding & Handoff · difficulty 3 · scenario
 
 In a sharded distributed database running **Multi-Raft** (such as CockroachDB or TiKV), Range 42 (keys `[m, p)`) must be migrated from Replica Group $\{N_1, N_2, N_3\}$ to Replica Group $\{N_4, N_5, N_6\}$ to rebalance load. How does the system transfer ownership of the range while strictly preserving linearizability and preventing split-brain writes?
 

@@ -894,7 +894,7 @@ Prove that per-request data read through the request event is isolated between t
 
 Wrap each render in `provideRequestEvent({ request, locals: { user } }, () => renderToStream(...))`, read `getRequestEvent().locals.user` before the first `await` in an async memo, run both concurrently with different delays, assert each HTML contains its own user.
 
-- Verification: `examples/typescript/08-ssr-and-server-functions.server.test.tsx`, test "per-request state through the request event stays isolated".
+- Ref: [modules/08-ssr-and-start-mode.md](../modules/08-ssr-and-start-mode.md#32-hydration-policy-per-computation), test "per-request state through the request event stays isolated" in `examples/typescript/08-ssr-and-server-functions.server.test.tsx`
 
 </details>
 
@@ -992,7 +992,7 @@ Write a test that fails if a component reads a prop at the top of its body.
 
 Render the component in the dev build inside `OBSERVE.diagnostics.capture()` and assert the captured codes contain `STRICT_READ_UNTRACKED` (negative test) and not for the fixed component.
 
-- Verification: `examples/typescript/02-effects-and-lifecycle.test.tsx`, tests "a top-level reactive read in a component body warns…" and "untrack marks an intentional one-time read".
+- Ref: [modules/02-effects-and-lifecycle.md](../modules/02-effects-and-lifecycle.md), tests "a top-level reactive read in a component body warns…" and "untrack marks an intentional one-time read" in `examples/typescript/02-effects-and-lifecycle.test.tsx`
 
 </details>
 
@@ -1090,7 +1090,7 @@ Demonstrate, on both runtimes, that nested roots changed ownership semantics bet
 
 Create a nested root with an `onCleanup` inside a parent root on each runtime, dispose the parent, and assert the inner cleanup ran only in 2.0.
 
-- Verification: `examples/typescript/10-solid1-vs-solid2.test.ts`, test "nested roots: detached in 1.x, owned by the parent in 2.0".
+- Ref: [modules/10-migration-and-react-comparison.md](../modules/10-migration-and-react-comparison.md#3-migration-map), test "nested roots: detached in 1.x, owned by the parent in 2.0" in `examples/typescript/10-solid1-vs-solid2.test.ts`
 
 </details>
 

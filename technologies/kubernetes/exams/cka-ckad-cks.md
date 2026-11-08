@@ -108,8 +108,6 @@ A persistent volume claim (PVC) remains in `Pending` state despite a StorageClas
 
 ### Q-K8S-006 · CKA Troubleshooting · difficulty 2 · hands-on
 
-### Q-K8S-006 · CKA Troubleshooting · difficulty 2 · hands-on
-
 Execute a live debugging session on a crashing Pod named `api-server-xyz` using an ephemeral debug container attached to its namespace without restarting the pod.
 
 - A) `kubectl debug api-server-xyz -it --image=busybox:1.36 --target=app`

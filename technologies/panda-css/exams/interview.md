@@ -6,7 +6,7 @@ Original questions for the senior frontend / design-system interview format (see
 
 ## D1 · Static extraction and the v2 compiler (12)
 
-### Q-INT-001 · D1 · difficulty 1 · single
+### Q-PANDA-001 · D1 · difficulty 1 · single
 
 What does Panda need in order to generate CSS for `css({ color: 'red.500' })`?
 
@@ -26,7 +26,7 @@ What does Panda need in order to generate CSS for `css({ color: 'red.500' })`?
 
 </details>
 
-### Q-INT-002 · D1 · difficulty 1 · multi
+### Q-PANDA-002 · D1 · difficulty 1 · multi
 
 Which of these produce CSS in Panda 2.4? (Select all that apply.)
 
@@ -46,7 +46,7 @@ Which of these produce CSS in Panda 2.4? (Select all that apply.)
 
 </details>
 
-### Q-INT-003 · D1 · difficulty 2 · single
+### Q-PANDA-003 · D1 · difficulty 2 · single
 
 Formally, what is an atom in Panda's encoder?
 
@@ -66,7 +66,7 @@ Formally, what is an atom in Panda's encoder?
 
 </details>
 
-### Q-INT-004 · D1 · difficulty 2 · scenario
+### Q-PANDA-004 · D1 · difficulty 2 · scenario
 
 A teammate writes `function local(css) { return css({ color: 'pink.300' }) }` in a file that also imports `css` from `styled-system/css`. `pink.300` never appears in the CSS. Why?
 
@@ -85,7 +85,7 @@ A teammate writes `function local(css) { return css({ color: 'pink.300' }) }` in
 
 </details>
 
-### Q-INT-005 · D1 · difficulty 2 · single
+### Q-PANDA-005 · D1 · difficulty 2 · single
 
 Which statement about the generated `css()` function at runtime is true?
 
@@ -104,7 +104,7 @@ Which statement about the generated `css()` function at runtime is true?
 
 </details>
 
-### Q-INT-006 · D1 · difficulty 2 · multi
+### Q-PANDA-006 · D1 · difficulty 2 · multi
 
 Which constructs does the v2 literal fold support? (Select all that apply.)
 
@@ -124,7 +124,7 @@ Which constructs does the v2 literal fold support? (Select all that apply.)
 
 </details>
 
-### Q-INT-007 · D1 · difficulty 3 · scenario
+### Q-PANDA-007 · D1 · difficulty 3 · scenario
 
 A file has a syntax error near the end (an unclosed object). The build passes, the file's styles vanish, and the log shows `warning js_parse_error`. A colleague says "Oxc recovers, so only the broken call is lost." Is that guaranteed?
 
@@ -143,7 +143,7 @@ A file has a syntax error near the end (an unclosed object). The build passes, t
 
 </details>
 
-### Q-INT-008 · D1 · difficulty 2 · ordering
+### Q-PANDA-008 · D1 · difficulty 2 · ordering
 
 Order the v2 per-file pipeline stages.
 
@@ -161,7 +161,7 @@ Order the v2 per-file pipeline stages.
 
 </details>
 
-### Q-INT-009 · D1 · difficulty 2 · single
+### Q-PANDA-009 · D1 · difficulty 2 · single
 
 In v2, how do you remove the built-in `spacer` pattern from `preset-base`?
 
@@ -181,7 +181,7 @@ In v2, how do you remove the built-in `spacer` pattern from `preset-base`?
 
 </details>
 
-### Q-INT-010 · D1 · difficulty 3 · single
+### Q-PANDA-010 · D1 · difficulty 3 · single
 
 Which v1 hook capability has **no** v2 equivalent?
 
@@ -199,7 +199,7 @@ Which v1 hook capability has **no** v2 equivalent?
 
 </details>
 
-### Q-INT-011 · D1 · difficulty 2 · hands-on
+### Q-PANDA-011 · D1 · difficulty 2 · hands-on
 
 Using `panda debug`, show that a default-imported style value leaves nothing to extract while a named-import chain through a barrel is folded.
 <details><summary>Answer</summary>
@@ -211,7 +211,7 @@ Run `panda debug --include negative/default-import.ts --outdir <tmp> --json` in 
 
 </details>
 
-### Q-INT-012 · D1 · difficulty 3 · scenario
+### Q-PANDA-012 · D1 · difficulty 3 · scenario
 
 After changing `outdir` from `styled-system` to `ds-gen`, a whole app loses its styles; nothing warns. Code still imports from `../styled-system/css` (stale but present files). Explain.
 
@@ -233,7 +233,7 @@ After changing `outdir` from `styled-system` to `ds-gen`, a whole app loses its 
 
 ## D2 · Setup, build integration and tooling (6)
 
-### Q-INT-013 · D2 · difficulty 1 · single
+### Q-PANDA-013 · D2 · difficulty 1 · single
 
 A v2 config lists only `presets: ['@acme/preset']`. What happens?
 
@@ -252,7 +252,7 @@ A v2 config lists only `presets: ['@acme/preset']`. What happens?
 
 </details>
 
-### Q-INT-014 · D2 · difficulty 2 · single
+### Q-PANDA-014 · D2 · difficulty 2 · single
 
 How does `@pandacss/dev/postcss` decide which CSS file to replace?
 
@@ -269,7 +269,7 @@ How does `@pandacss/dev/postcss` decide which CSS file to replace?
 
 </details>
 
-### Q-INT-015 · D2 · difficulty 2 · multi
+### Q-PANDA-015 · D2 · difficulty 2 · multi
 
 Which belong in a CI job for a Vite + Panda app? (Select all that apply.)
 
@@ -287,7 +287,7 @@ Which belong in a CI job for a Vite + Panda app? (Select all that apply.)
 
 </details>
 
-### Q-INT-016 · D2 · difficulty 2 · scenario
+### Q-PANDA-016 · D2 · difficulty 2 · scenario
 
 After upgrading to v2, Vite serves old behaviour for `styled-system/css` and types disagree with runtime. What is the most likely cause and fix?
 
@@ -305,7 +305,7 @@ After upgrading to v2, Vite serves old behaviour for `styled-system/css` and typ
 
 </details>
 
-### Q-INT-017 · D2 · difficulty 3 · scenario
+### Q-PANDA-017 · D2 · difficulty 3 · scenario
 
 You enable `transform: true` in `@pandacss/vite` for a React app. The bundle grows by ~3 KB. Explain how that can happen and how to decide.
 <details><summary>Answer</summary>
@@ -317,7 +317,7 @@ The transform rewrites only static call sites. Dynamic sites (e.g. `css(badge.ra
 
 </details>
 
-### Q-INT-018 · D2 · difficulty 2 · single
+### Q-PANDA-018 · D2 · difficulty 2 · single
 
 `tsc` reports `TS2882` on `import './index.css'` after moving to TypeScript 7. Why?
 
@@ -338,7 +338,7 @@ The transform rewrites only static call sites. Dynamic sites (e.g. `css(badge.ra
 
 ## D3 · Styling API, conditions and cascade (9)
 
-### Q-INT-019 · D3 · difficulty 1 · single
+### Q-PANDA-019 · D3 · difficulty 1 · single
 
 What does `css({ color: 'orange.700' }, { color: 'orange.300' })` return?
 
@@ -355,7 +355,7 @@ What does `css({ color: 'orange.700' }, { color: 'orange.300' })` return?
 
 </details>
 
-### Q-INT-020 · D3 · difficulty 2 · scenario
+### Q-PANDA-020 · D3 · difficulty 2 · scenario
 
 An element has `class="c_orange.300 c_orange.700"` built by string concatenation, with `orange.300` written last on purpose. It renders `orange.700`. Why?
 
@@ -372,7 +372,7 @@ An element has `class="c_orange.300 c_orange.700"` built by string concatenation
 
 </details>
 
-### Q-INT-021 · D3 · difficulty 2 · single
+### Q-PANDA-021 · D3 · difficulty 2 · single
 
 Why does `css({ bg: 'red.500' })` override a config recipe's background even if the recipe selector is more specific?
 
@@ -389,7 +389,7 @@ Why does `css({ bg: 'red.500' })` override a config recipe's background even if 
 
 </details>
 
-### Q-INT-022 · D3 · difficulty 3 · scenario
+### Q-PANDA-022 · D3 · difficulty 3 · scenario
 
 In v1, `cx(css({ borderWidth: '1px', borderStyle: 'solid' }), css({ borderInlineEnd: '0' }))` produced an open bracket. In v2 the box is closed again. What changed and what is the fix?
 <details><summary>Answer</summary>
@@ -401,7 +401,7 @@ v2 sorts atoms by property breadth and puts all border shorthands in one tier; t
 
 </details>
 
-### Q-INT-023 · D3 · difficulty 1 · multi
+### Q-PANDA-023 · D3 · difficulty 1 · multi
 
 Which keys inside a style object are treated as conditions or selectors (not CSS properties)? (Select all that apply.)
 
@@ -419,7 +419,7 @@ Which keys inside a style object are treated as conditions or selectors (not CSS
 
 </details>
 
-### Q-INT-024 · D3 · difficulty 2 · single
+### Q-PANDA-024 · D3 · difficulty 2 · single
 
 `_groupHover` styles never apply. What is missing most often?
 
@@ -436,7 +436,7 @@ Which keys inside a style object are treated as conditions or selectors (not CSS
 
 </details>
 
-### Q-INT-025 · D3 · difficulty 2 · scenario
+### Q-PANDA-025 · D3 · difficulty 2 · scenario
 
 `<Grid columns={1} md={{ columns: 3 }} />` makes paragraphs flow into three text columns on tablets, but the grid stays single-column. Explain and fix.
 <details><summary>Answer</summary>
@@ -448,7 +448,7 @@ The `md` object is a style-prop condition, not a pattern prop, so the grid trans
 
 </details>
 
-### Q-INT-026 · D3 · difficulty 2 · single
+### Q-PANDA-026 · D3 · difficulty 2 · single
 
 How are container queries declared and queried in Panda 2.x?
 
@@ -466,7 +466,7 @@ How are container queries declared and queried in Panda 2.x?
 
 </details>
 
-### Q-INT-027 · D3 · difficulty 3 · hands-on
+### Q-PANDA-027 · D3 · difficulty 3 · hands-on
 
 Define a `hoverActive` condition that applies hover styles on pointer devices and active styles on touch devices, under one name. Verify it compiles to two independent media blocks.
 <details><summary>Answer</summary>
@@ -489,7 +489,7 @@ Each path to `@slot` becomes its own block. The v1 array form (`['@media …', '
 
 ## D4 · Design tokens and theming (9)
 
-### Q-INT-028 · D4 · difficulty 1 · single
+### Q-PANDA-028 · D4 · difficulty 1 · single
 
 How does a semantic token with `{ base: '{colors.ink.900}', _dark: '{colors.ink.50}' }` compile?
 
@@ -506,7 +506,7 @@ How does a semantic token with `{ base: '{colors.ink.900}', _dark: '{colors.ink.
 
 </details>
 
-### Q-INT-029 · D4 · difficulty 2 · scenario
+### Q-PANDA-029 · D4 · difficulty 2 · scenario
 
 `css({ borderColor: token('colors.brand.700') })` does not change in dark mode, but `css({ borderColor: 'brand.700' })` would. Why?
 <details><summary>Answer</summary>
@@ -518,7 +518,7 @@ The generated `token()` call folds at build time to the token's raw value (`bord
 
 </details>
 
-### Q-INT-030 · D4 · difficulty 2 · multi
+### Q-PANDA-030 · D4 · difficulty 2 · multi
 
 Which statements about `strictTokens` are true? (Select all that apply.)
 
@@ -536,7 +536,7 @@ Which statements about `strictTokens` are true? (Select all that apply.)
 
 </details>
 
-### Q-INT-031 · D4 · difficulty 2 · single
+### Q-PANDA-031 · D4 · difficulty 2 · single
 
 Which conditions can a semantic token use?
 
@@ -553,7 +553,7 @@ Which conditions can a semantic token use?
 
 </details>
 
-### Q-INT-032 · D4 · difficulty 3 · scenario
+### Q-PANDA-032 · D4 · difficulty 3 · scenario
 
 You ship an on-demand theme with `injectTheme` and enable `optimize.removeUnusedTokens`. The theme's accent renders transparent. Explain.
 <details><summary>Answer</summary>
@@ -565,7 +565,7 @@ The on-demand theme references primitives (e.g. `--colors-black`) that nothing s
 
 </details>
 
-### Q-INT-033 · D4 · difficulty 2 · single
+### Q-PANDA-033 · D4 · difficulty 2 · single
 
 What does `defineThemeContract` give you?
 
@@ -582,7 +582,7 @@ What does `defineThemeContract` give you?
 
 </details>
 
-### Q-INT-034 · D4 · difficulty 2 · scenario
+### Q-PANDA-034 · D4 · difficulty 2 · scenario
 
 Users with a stored dark preference see a light flash on every SSR page load. Propose two fixes.
 <details><summary>Answer</summary>
@@ -593,7 +593,7 @@ Users with a stored dark preference see a light flash on every SSR page load. Pr
 
 </details>
 
-### Q-INT-035 · D4 · difficulty 3 · single
+### Q-PANDA-035 · D4 · difficulty 3 · single
 
 After upgrading to v2, utilities using `translate`/`filter` disappear in Safari 15 but work in Chrome. Why, and what is the opt-in fix?
 
@@ -611,7 +611,7 @@ After upgrading to v2, utilities using `translate`/`filter` disappear in Safari 
 
 </details>
 
-### Q-INT-036 · D4 · difficulty 2 · single
+### Q-PANDA-036 · D4 · difficulty 2 · single
 
 `css({ textStyle: 'heading', fontSize: 'sm' })`: which font size applies?
 
@@ -632,7 +632,7 @@ After upgrading to v2, utilities using `translate`/`filter` disappear in Safari 
 
 ## D5 · Recipes and component architecture (12)
 
-### Q-INT-037 · D5 · difficulty 1 · single
+### Q-PANDA-037 · D5 · difficulty 1 · single
 
 What is the main CSS difference between `cva` and a config recipe?
 
@@ -649,7 +649,7 @@ What is the main CSS difference between `cva` and a config recipe?
 
 </details>
 
-### Q-INT-038 · D5 · difficulty 2 · scenario
+### Q-PANDA-038 · D5 · difficulty 2 · scenario
 
 `<Button size="lg">` works in Storybook but in the app `<Button size={size}>` renders without size styles, although the class `button--size_lg` is on the element. Explain and give three fixes.
 <details><summary>Answer</summary>
@@ -661,7 +661,7 @@ Config recipes are JIT: only literal variant values are emitted. Storybook's lit
 
 </details>
 
-### Q-INT-039 · D5 · difficulty 2 · single
+### Q-PANDA-039 · D5 · difficulty 2 · single
 
 A wrapper `function Action(p) { return <button className={button(p)} /> }` is used as `<Action size="lg" />`. Why is `size=lg` missing?
 
@@ -678,7 +678,7 @@ A wrapper `function Action(p) { return <button className={button(p)} /> }` is us
 
 </details>
 
-### Q-INT-040 · D5 · difficulty 3 · multi
+### Q-PANDA-040 · D5 · difficulty 3 · multi
 
 Which statements about compound variants in Panda 2.x config recipes are true? (Select all that apply.)
 
@@ -698,7 +698,7 @@ Which statements about compound variants in Panda 2.x config recipes are true? (
 
 </details>
 
-### Q-INT-041 · D5 · difficulty 2 · single
+### Q-PANDA-041 · D5 · difficulty 2 · single
 
 What does `colorPalette: 'red'` emit on an element?
 
@@ -715,7 +715,7 @@ What does `colorPalette: 'red'` emit on an element?
 
 </details>
 
-### Q-INT-042 · D5 · difficulty 2 · single
+### Q-PANDA-042 · D5 · difficulty 2 · single
 
 Which replaced `createStyleContext` in v2?
 
@@ -732,7 +732,7 @@ Which replaced `createStyleContext` in v2?
 
 </details>
 
-### Q-INT-043 · D5 · difficulty 2 · scenario
+### Q-PANDA-043 · D5 · difficulty 2 · scenario
 
 A Dialog root from a headless library renders no DOM element. Which helper wraps it and why?
 <details><summary>Answer</summary>
@@ -743,7 +743,7 @@ A Dialog root from a headless library renders no DOM element. Which helper wraps
 
 </details>
 
-### Q-INT-044 · D5 · difficulty 2 · hands-on
+### Q-PANDA-044 · D5 · difficulty 2 · hands-on
 
 Build an `Alert` compound component (`Root`, `Title`, `Description`) from the `alert` slot recipe for React **and** Solid. Show that the root does not forward `status` to the DOM and that a part rendered outside the root throws.
 <details><summary>Answer</summary>
@@ -764,7 +764,7 @@ Identical source for both frameworks; the generated helpers differ internally.
 
 </details>
 
-### Q-INT-045 · D5 · difficulty 2 · single
+### Q-PANDA-045 · D5 · difficulty 2 · single
 
 Why should a Solid component accepting a `css` prop use `splitProps` instead of destructuring?
 
@@ -781,7 +781,7 @@ Why should a Solid component accepting a `css` prop use `splitProps` instead of 
 
 </details>
 
-### Q-INT-046 · D5 · difficulty 3 · single
+### Q-PANDA-046 · D5 · difficulty 3 · single
 
 In this track's benchmark, how did `jsxStyleProps: 'minimal'` compare to `'all'` on type-check work, and why?
 
@@ -798,7 +798,7 @@ In this track's benchmark, how did `jsxStyleProps: 'minimal'` compare to `'all'`
 
 </details>
 
-### Q-INT-047 · D5 · difficulty 2 · multi
+### Q-PANDA-047 · D5 · difficulty 2 · multi
 
 Which prop names does extraction read on JSX call sites? (Select all that apply.)
 
@@ -817,7 +817,7 @@ Which prop names does extraction read on JSX call sites? (Select all that apply.
 
 </details>
 
-### Q-INT-048 · D5 · difficulty 3 · scenario
+### Q-PANDA-048 · D5 · difficulty 3 · scenario
 
 Design the override API for a `Card` with parts `root`, `header`, `body` in a design system used by 30 teams. Requirements: per-part overrides, no specificity wars, typed, extractable.
 <details><summary>Answer</summary>
@@ -832,7 +832,7 @@ Use a config slot recipe (`defineSlotRecipe`) for named, layered classes and JIT
 
 ## D6 · Design-system delivery and monorepos (6)
 
-### Q-INT-049 · D6 · difficulty 1 · single
+### Q-PANDA-049 · D6 · difficulty 1 · single
 
 What does `panda lib` produce?
 
@@ -849,7 +849,7 @@ What does `panda lib` produce?
 
 </details>
 
-### Q-INT-050 · D6 · difficulty 2 · scenario
+### Q-PANDA-050 · D6 · difficulty 2 · scenario
 
 An app sets `designSystem: '@acme/ds'` and also adds `'@acme/ds'` to `include` "to be safe". What happens?
 <details><summary>Answer</summary>
@@ -861,7 +861,7 @@ The build errors with `design_system_in_include`. The package is loaded through 
 
 </details>
 
-### Q-INT-051 · D6 · difficulty 2 · single
+### Q-PANDA-051 · D6 · difficulty 2 · single
 
 How does an app get the package's component styles without scanning the package's source?
 
@@ -878,7 +878,7 @@ How does an app get the package's component styles without scanning the package'
 
 </details>
 
-### Q-INT-052 · D6 · difficulty 3 · scenario
+### Q-PANDA-052 · D6 · difficulty 3 · scenario
 
 An app sets `hash: true` for production; components from the design system render unstyled. Explain.
 <details><summary>Answer</summary>
@@ -889,7 +889,7 @@ The package's classes are baked into its build (runtime and build info) with its
 
 </details>
 
-### Q-INT-053 · D6 · difficulty 2 · multi
+### Q-PANDA-053 · D6 · difficulty 2 · multi
 
 Which reduce CSS shipped by an app that uses 3 of 60 design-system components? (Select all that apply.)
 
@@ -907,7 +907,7 @@ Which reduce CSS shipped by an app that uses 3 of 60 design-system components? (
 
 </details>
 
-### Q-INT-054 · D6 · difficulty 2 · ordering
+### Q-PANDA-054 · D6 · difficulty 2 · ordering
 
 Order the CI tasks for a monorepo with a design-system package and an app.
 
@@ -928,7 +928,7 @@ Order the CI tasks for a monorepo with a design-system package and an app.
 
 ## D7 · Migration and upgrades (6)
 
-### Q-INT-055 · D7 · difficulty 1 · single
+### Q-PANDA-055 · D7 · difficulty 1 · single
 
 How do you migrate `color: ${(p) => p.$color}` (user-chosen color) from styled-components?
 
@@ -945,7 +945,7 @@ How do you migrate `color: ${(p) => p.$color}` (user-chosen color) from styled-c
 
 </details>
 
-### Q-INT-056 · D7 · difficulty 2 · multi
+### Q-PANDA-056 · D7 · difficulty 2 · multi
 
 Which v1 → v2 changes produce **no** error and no warning? (Select all that apply.)
 
@@ -965,7 +965,7 @@ Which v1 → v2 changes produce **no** error and no warning? (Select all that ap
 
 </details>
 
-### Q-INT-057 · D7 · difficulty 2 · scenario
+### Q-PANDA-057 · D7 · difficulty 2 · scenario
 
 During a gradual migration, a migrated Panda component inside a legacy Emotion parent loses its padding to the parent's descendant selector. Explain and fix.
 <details><summary>Answer</summary>
@@ -976,7 +976,7 @@ Emotion's injected CSS is unlayered, and unlayered declarations beat all layered
 
 </details>
 
-### Q-INT-058 · D7 · difficulty 2 · single
+### Q-PANDA-058 · D7 · difficulty 2 · single
 
 What replaced Tailwind's `tailwind-merge` in a Panda codebase?
 
@@ -994,7 +994,7 @@ What replaced Tailwind's `tailwind-merge` in a Panda codebase?
 
 </details>
 
-### Q-INT-059 · D7 · difficulty 3 · hands-on
+### Q-PANDA-059 · D7 · difficulty 3 · hands-on
 
 Write a static audit that flags v1 idioms v2 ignores silently, and prove it finds them in a v1 project while reporting nothing for a clean v2 project.
 <details><summary>Answer</summary>
@@ -1006,7 +1006,7 @@ See `examples/scripts/v2-upgrade-audit.ts`: regex rules over source files with c
 
 </details>
 
-### Q-INT-060 · D7 · difficulty 2 · single
+### Q-PANDA-060 · D7 · difficulty 2 · single
 
 Why can a project move from Panda 0.51 directly to 2.4?
 
@@ -1031,11 +1031,11 @@ A 60-minute senior frontend / design-system loop. Answer without notes, then sco
 
 | Block | Time | Questions | Points each | Points |
 | --- | --- | --- | --- | --- |
-| 1. Warm-up concepts (answer in ≤ 1 minute each) | 8 min | Q-INT-001, 003, 013, 019, 028, 037, 049, 055 | 2 | 16 |
-| 2. Precision checks (multi-select: all correct options, no wrong ones) | 10 min | Q-INT-002, 006, 030, 040, 053, 056 | 3 | 18 |
-| 3. Debugging scenarios (explain cause and fix aloud) | 20 min | Q-INT-007, 012, 020, 025, 032, 038, 050, 057 | 4 | 32 |
-| 4. Design discussion | 12 min | Q-INT-048, Q-INT-017 | 8 | 16 |
-| 5. Hands-on (live) | 10 min | Q-INT-022 (or Q-INT-044 for component-heavy roles) | 18 | 18 |
+| 1. Warm-up concepts (answer in ≤ 1 minute each) | 8 min | Q-PANDA-001, 003, 013, 019, 028, 037, 049, 055 | 2 | 16 |
+| 2. Precision checks (multi-select: all correct options, no wrong ones) | 10 min | Q-PANDA-002, 006, 030, 040, 053, 056 | 3 | 18 |
+| 3. Debugging scenarios (explain cause and fix aloud) | 20 min | Q-PANDA-007, 012, 020, 025, 032, 038, 050, 057 | 4 | 32 |
+| 4. Design discussion | 12 min | Q-PANDA-048, Q-PANDA-017 | 8 | 16 |
+| 5. Hands-on (live) | 10 min | Q-PANDA-022 (or Q-PANDA-044 for component-heavy roles) | 18 | 18 |
 | **Total** | **60 min** | **25** |  | **100** |
 
 ### Scoring key

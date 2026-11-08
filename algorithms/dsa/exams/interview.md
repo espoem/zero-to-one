@@ -6,9 +6,9 @@ This bank contains 75 rigorous questions covering algorithmic theory, runtime me
 
 ## Part 1: Domain Question Banks (Questions 1–75)
 
-### Domain 1: Models of Computation & Asymptotic Analysis
+## Domain 1: Models of Computation & Asymptotic Analysis
 
-#### Q-DSA-001 · Models of Computation · difficulty 1 · single
+### Q-DSA-001 · Models of Computation · difficulty 1 · single
 
 In the Word-RAM model of computation with word size $w$ bits, what is the required relationship between $w$ and input size $n$ for array indexing to execute in $O(1)$ time?
 
@@ -28,7 +28,7 @@ In the Word-RAM model of computation with word size $w$ bits, what is the requir
 
 </details>
 
-#### Q-DSA-002 · Asymptotic Analysis · difficulty 2 · single
+### Q-DSA-002 · Asymptotic Analysis · difficulty 2 · single
 
 Given the recurrence $T(n) = 3T(n/4) + n \log n$, what is the asymptotic bound via the Master Theorem?
 
@@ -48,7 +48,7 @@ Given the recurrence $T(n) = 3T(n/4) + n \log n$, what is the asymptotic bound v
 
 </details>
 
-#### Q-DSA-003 · Amortized Analysis · difficulty 2 · scenario
+### Q-DSA-003 · Amortized Analysis · difficulty 2 · scenario
 
 In the Potential Method of amortized analysis, potential function $\Phi$ is defined as $\Phi(D) = 2S - C$, where $S$ is the number of elements and $C$ is the allocated capacity of a dynamic array. Initially $S = 0, C = 0$. When the array is full ($S = C$) and an element is inserted, capacity doubles to $2C$. What is the amortized cost $\hat{c}_i = c_i + \Phi(D_i) - \Phi(D_{i-1})$ of this doubling insertion?
 
@@ -67,7 +67,7 @@ In the Potential Method of amortized analysis, potential function $\Phi$ is defi
 
 </details>
 
-#### Q-DSA-004 · Invariant Verification · difficulty 2 · multi
+### Q-DSA-004 · Invariant Verification · difficulty 2 · multi
 
 Which of the following conditions MUST hold for a binary search lower_bound invariant `[lo, hi)` over array $A$ and target $x$? (Select all that apply)
 
@@ -85,7 +85,7 @@ Which of the following conditions MUST hold for a binary search lower_bound inva
 
 </details>
 
-#### Q-DSA-005 · Amortized Bounds · difficulty 3 · single
+### Q-DSA-005 · Amortized Bounds · difficulty 3 · single
 
 If an array dynamically expands by a constant additive term $k$ (e.g. adding 100 slots whenever full) instead of multiplying by a factor $\alpha > 1$, what is the amortized cost per insertion over $N$ insertions?
 
@@ -107,9 +107,9 @@ If an array dynamically expands by a constant additive term $k$ (e.g. adding 100
 
 ---
 
-### Domain 2: Linear Data Structures & Memory Layout
+## Domain 2: Linear Data Structures & Memory Layout
 
-#### Q-DSA-006 · JavaScript Runtime · difficulty 1 · single
+### Q-DSA-006 · JavaScript Runtime · difficulty 1 · single
 
 Why does `array.shift()` on a standard JavaScript Array in Node.js/V8 exhibit $O(n)$ time complexity?
 
@@ -129,7 +129,7 @@ Why does `array.shift()` on a standard JavaScript Array in Node.js/V8 exhibit $O
 
 </details>
 
-#### Q-DSA-007 · Ring Buffer Mechanics · difficulty 2 · single
+### Q-DSA-007 · Ring Buffer Mechanics · difficulty 2 · single
 
 In a circular ring-buffer Deque of capacity $C = 2^k$, what is the bitwise formula to advance the pointer `head` forward by 1 index with $O(1)$ wrap-around?
 
@@ -149,7 +149,7 @@ In a circular ring-buffer Deque of capacity $C = 2^k$, what is the bitwise formu
 
 </details>
 
-#### Q-DSA-008 · Bitwise Math · difficulty 2 · single
+### Q-DSA-008 · Bitwise Math · difficulty 2 · single
 
 What is the mathematical effect of the expression `x & (-x)` in two's complement integer arithmetic?
 
@@ -169,7 +169,7 @@ What is the mathematical effect of the expression `x & (-x)` in two's complement
 
 </details>
 
-#### Q-DSA-009 · Linked List Design · difficulty 2 · single
+### Q-DSA-009 · Linked List Design · difficulty 2 · single
 
 What primary architectural advantage does a Doubly Linked List with dummy Sentinel `head` and `tail` nodes provide?
 
@@ -189,7 +189,7 @@ What primary architectural advantage does a Doubly Linked List with dummy Sentin
 
 </details>
 
-#### Q-DSA-010 · Bitwise Operations · difficulty 3 · scenario
+### Q-DSA-010 · Bitwise Operations · difficulty 3 · scenario
 
 In JavaScript, why does executing `x = (x & (x - 1))` on a 32-bit unsigned integer `x = 0xffffffff` produce a signed negative number `-2` if not explicitly coerced with `>>> 0`?
 
@@ -211,9 +211,9 @@ In JavaScript, why does executing `x = (x & (x - 1))` on a 32-bit unsigned integ
 
 ---
 
-### Domain 3: Hashing, Hash Tables & Rolling Hash
+## Domain 3: Hashing, Hash Tables & Rolling Hash
 
-#### Q-DSA-011 · Hash Table Collisions · difficulty 1 · single
+### Q-DSA-011 · Hash Table Collisions · difficulty 1 · single
 
 What is the primary difference between Separate Chaining and Open Addressing in hash table collision resolution?
 
@@ -233,7 +233,7 @@ What is the primary difference between Separate Chaining and Open Addressing in 
 
 </details>
 
-#### Q-DSA-012 · Robin Hood Hashing · difficulty 2 · single
+### Q-DSA-012 · Robin Hood Hashing · difficulty 2 · single
 
 What invariant does Robin Hood Hashing maintain during open addressing insertion?
 
@@ -253,7 +253,7 @@ What invariant does Robin Hood Hashing maintain during open addressing insertion
 
 </details>
 
-#### Q-DSA-013 · HashDoS Vulnerability · difficulty 2 · single
+### Q-DSA-013 · HashDoS Vulnerability · difficulty 2 · single
 
 How does an adversary execute a Hash Flooding Denial of Service (HashDoS) attack against a web application?
 
@@ -273,7 +273,7 @@ How does an adversary execute a Hash Flooding Denial of Service (HashDoS) attack
 
 </details>
 
-#### Q-DSA-014 · Rolling Hash Mechanics · difficulty 2 · single
+### Q-DSA-014 · Rolling Hash Mechanics · difficulty 2 · single
 
 In the Rabin-Karp rolling hash algorithm for base $B$ and prime modulus $M$, when sliding a window of length $m$ forward from $S[i \dots i+m-1]$ to $S[i+1 \dots i+m]$, what is the formula to compute the new hash $H_{i+1}$ from $H_i$ in $O(1)$ time?
 
@@ -293,7 +293,7 @@ In the Rabin-Karp rolling hash algorithm for base $B$ and prime modulus $M$, whe
 
 </details>
 
-#### Q-DSA-015 · ECMAScript Map Semantics · difficulty 2 · single
+### Q-DSA-015 · ECMAScript Map Semantics · difficulty 2 · single
 
 What equality algorithm does JavaScript `Map.prototype.get(key)` use to compare keys?
 
@@ -315,9 +315,9 @@ What equality algorithm does JavaScript `Map.prototype.get(key)` use to compare 
 
 ---
 
-### Domain 4: Sorting, Selection & Search Invariants
+## Domain 4: Sorting, Selection & Search Invariants
 
-#### Q-DSA-016 · Comparison Sort Lower Bound · difficulty 1 · single
+### Q-DSA-016 · Comparison Sort Lower Bound · difficulty 1 · single
 
 What is the theoretical worst-case lower bound for any comparison-based sorting algorithm on $n$ elements, and what mathematical structure proves it?
 
@@ -337,7 +337,7 @@ What is the theoretical worst-case lower bound for any comparison-based sorting 
 
 </details>
 
-#### Q-DSA-017 · Quicksort Partitioning · difficulty 2 · single
+### Q-DSA-017 · Quicksort Partitioning · difficulty 2 · single
 
 Why does Dijkstra's 3-Way Partitioning (Dutch National Flag) outperform standard Lomuto or Hoare partitioning on arrays with many duplicate elements?
 
@@ -357,7 +357,7 @@ Why does Dijkstra's 3-Way Partitioning (Dutch National Flag) outperform standard
 
 </details>
 
-#### Q-DSA-018 · Quickselect Complexity · difficulty 2 · single
+### Q-DSA-018 · Quickselect Complexity · difficulty 2 · single
 
 What is the average time complexity and worst-case time complexity of Quickselect (Hoare's Selection Algorithm) to find the $k$-th smallest element?
 
@@ -377,7 +377,7 @@ What is the average time complexity and worst-case time complexity of Quickselec
 
 </details>
 
-#### Q-DSA-019 · Binary Search on Answer · difficulty 2 · single
+### Q-DSA-019 · Binary Search on Answer · difficulty 2 · single
 
 When applying "Binary Search on Answer" to an optimization problem, what mathematical property MUST the feasibility function $f(\text{candidate})$ exhibit?
 
@@ -397,7 +397,7 @@ When applying "Binary Search on Answer" to an optimization problem, what mathema
 
 </details>
 
-#### Q-DSA-020 · TimSort Mechanics · difficulty 3 · single
+### Q-DSA-020 · TimSort Mechanics · difficulty 3 · single
 
 What architectural technique does TimSort (used by Python and V8's `Array.prototype.sort`) use to achieve $O(n)$ running time on partially sorted real-world data?
 
@@ -419,9 +419,9 @@ What architectural technique does TimSort (used by Python and V8's `Array.protot
 
 ---
 
-### Domain 5: Linear Interview Patterns & Two Pointers
+## Domain 5: Linear Interview Patterns & Two Pointers
 
-#### Q-DSA-021 · Sliding Window Preconditions · difficulty 2 · single
+### Q-DSA-021 · Sliding Window Preconditions · difficulty 2 · single
 
 Why does the variable-size sliding window pattern ("expand right, shrink left while condition violated") fail to find the longest subarray summing to $k$ when the array contains negative numbers?
 
@@ -441,7 +441,7 @@ Why does the variable-size sliding window pattern ("expand right, shrink left wh
 
 </details>
 
-#### Q-DSA-022 · Cycle Detection · difficulty 2 · single
+### Q-DSA-022 · Cycle Detection · difficulty 2 · single
 
 In Floyd's Cycle-Finding Algorithm (Tortoise and Hare), when slow and fast pointers meet inside a cycle, why does moving slow to the list head while keeping fast at the meeting point and advancing both by 1 step guarantee they meet at the cycle entrance?
 
@@ -461,7 +461,7 @@ In Floyd's Cycle-Finding Algorithm (Tortoise and Hare), when slow and fast point
 
 </details>
 
-#### Q-DSA-023 · Difference Arrays · difficulty 2 · single
+### Q-DSA-023 · Difference Arrays · difficulty 2 · single
 
 Given an array of zeros of length $n$, what data structure executes $m$ arbitrary range additions `add(left, right, val)` in $O(1)$ time per update and produces the final array in $O(n)$ time?
 
@@ -481,7 +481,7 @@ Given an array of zeros of length $n$, what data structure executes $m$ arbitrar
 
 </details>
 
-#### Q-DSA-024 · Monotonic Stack Complexity · difficulty 2 · single
+### Q-DSA-024 · Monotonic Stack Complexity · difficulty 2 · single
 
 What is the amortized time complexity of finding the Next Greater Element for all $n$ elements using a Monotonic Decreasing Stack?
 
@@ -501,7 +501,7 @@ What is the amortized time complexity of finding the Next Greater Element for al
 
 </details>
 
-#### Q-DSA-025 · Cyclic Sort Invariant · difficulty 2 · single
+### Q-DSA-025 · Cyclic Sort Invariant · difficulty 2 · single
 
 For an array of length $n$ containing numbers from $1$ to $n$, what is the termination invariant of Cyclic Sort?
 
@@ -523,9 +523,9 @@ For an array of length $n$ containing numbers from $1$ to $n$, what is the termi
 
 ---
 
-### Domain 6: Trees, Balanced BSTs & Priority Queues
+## Domain 6: Trees, Balanced BSTs & Priority Queues
 
-#### Q-DSA-026 · Morris Traversal · difficulty 3 · single
+### Q-DSA-026 · Morris Traversal · difficulty 3 · single
 
 How does Morris In-Order Traversal achieve $O(1)$ auxiliary space without recursion or an explicit stack?
 
@@ -545,7 +545,7 @@ How does Morris In-Order Traversal achieve $O(1)$ auxiliary space without recurs
 
 </details>
 
-#### Q-DSA-027 · Red-Black Tree Invariants · difficulty 2 · multi
+### Q-DSA-027 · Red-Black Tree Invariants · difficulty 2 · multi
 
 Which of the following are mandatory invariants of a valid Red-Black Tree? (Select all that apply)
 
@@ -562,7 +562,7 @@ Which of the following are mandatory invariants of a valid Red-Black Tree? (Sele
 
 </details>
 
-#### Q-DSA-028 · Linear Heap Construction · difficulty 2 · single
+### Q-DSA-028 · Linear Heap Construction · difficulty 2 · single
 
 Why is `buildHeap` (calling `siftDown` bottom-up from index $\lfloor n/2 \rfloor$ down to $0$) bounded by $O(n)$ time, whereas inserting $n$ elements sequentially into an initially empty heap takes $O(n \log n)$?
 
@@ -582,7 +582,7 @@ Why is `buildHeap` (calling `siftDown` bottom-up from index $\lfloor n/2 \rfloor
 
 </details>
 
-#### Q-DSA-029 · Fenwick Tree Lowbit · difficulty 2 · single
+### Q-DSA-029 · Fenwick Tree Lowbit · difficulty 2 · single
 
 In a 1-indexed Fenwick Tree (Binary Indexed Tree) of size $n$, how do you advance the index during a point update operation `add(i, delta)`?
 
@@ -602,7 +602,7 @@ In a 1-indexed Fenwick Tree (Binary Indexed Tree) of size $n$, how do you advanc
 
 </details>
 
-#### Q-DSA-030 · Median from Data Stream · difficulty 2 · scenario
+### Q-DSA-030 · Median from Data Stream · difficulty 2 · scenario
 
 How can the running median of a numerical stream be retrieved in $O(1)$ time with $O(\log n)$ updates?
 
@@ -624,9 +624,9 @@ How can the running median of a numerical stream be retrieved in $O(1)$ time wit
 
 ---
 
-### Domain 7: Graph Foundations, Traversals & Topological Sorting
+## Domain 7: Graph Foundations, Traversals & Topological Sorting
 
-#### Q-DSA-031 · Stack Safety in Graph Traversals · difficulty 2 · single
+### Q-DSA-031 · Stack Safety in Graph Traversals · difficulty 2 · single
 
 Why is recursive Depth-First Search (DFS) dangerous on large graph inputs (e.g. $10^5$ nodes) in Node.js/V8, and how is it resolved?
 
@@ -646,7 +646,7 @@ Why is recursive Depth-First Search (DFS) dangerous on large graph inputs (e.g. 
 
 </details>
 
-#### Q-DSA-032 · DFS Edge Classification · difficulty 2 · single
+### Q-DSA-032 · DFS Edge Classification · difficulty 2 · single
 
 In a directed graph, which edge type indicates the presence of a directed cycle during Depth-First Search?
 
@@ -666,7 +666,7 @@ In a directed graph, which edge type indicates the presence of a directed cycle 
 
 </details>
 
-#### Q-DSA-033 · Topological Sorting · difficulty 1 · single
+### Q-DSA-033 · Topological Sorting · difficulty 1 · single
 
 Which algorithm detects cycles while computing a topological sort of a Directed Acyclic Graph (DAG) using vertex in-degrees?
 
@@ -686,7 +686,7 @@ Which algorithm detects cycles while computing a topological sort of a Directed 
 
 </details>
 
-#### Q-DSA-034 · 0-1 BFS Mechanics · difficulty 2 · single
+### Q-DSA-034 · 0-1 BFS Mechanics · difficulty 2 · single
 
 When finding shortest paths in a graph where edge weights are restricted to $\{0, 1\}$, why can 0-1 BFS run in $O(V + E)$ time without a priority queue?
 
@@ -706,7 +706,7 @@ When finding shortest paths in a graph where edge weights are restricted to $\{0
 
 </details>
 
-#### Q-DSA-035 · Strongly Connected Components · difficulty 3 · single
+### Q-DSA-035 · Strongly Connected Components · difficulty 3 · single
 
 What condition triggers the extraction of a Strongly Connected Component (SCC) in Tarjan's linear-time algorithm?
 
@@ -728,9 +728,9 @@ What condition triggers the extraction of a Strongly Connected Component (SCC) i
 
 ---
 
-### Domain 8: Shortest Paths, MST & Disjoint-Set Union
+## Domain 8: Shortest Paths, MST & Disjoint-Set Union
 
-#### Q-DSA-036 · Dijkstra Failure Modes · difficulty 2 · single
+### Q-DSA-036 · Dijkstra Failure Modes · difficulty 2 · single
 
 Why does Dijkstra's algorithm fail to produce correct shortest paths on graphs containing negative-weight edges?
 
@@ -750,7 +750,7 @@ Why does Dijkstra's algorithm fail to produce correct shortest paths on graphs c
 
 </details>
 
-#### Q-DSA-037 · Bellman-Ford Invariant · difficulty 2 · single
+### Q-DSA-037 · Bellman-Ford Invariant · difficulty 2 · single
 
 In a graph with $V$ vertices, why does Bellman-Ford relax all edges exactly $V - 1$ times to guarantee finding all shortest paths (assuming no negative cycles)?
 
@@ -770,7 +770,7 @@ In a graph with $V$ vertices, why does Bellman-Ford relax all edges exactly $V -
 
 </details>
 
-#### Q-DSA-038 · Disjoint Set Union Complexity · difficulty 2 · single
+### Q-DSA-038 · Disjoint Set Union Complexity · difficulty 2 · single
 
 What is the amortized time complexity per operation of a Disjoint Set Union (DSU) data structure implementing BOTH Path Compression and Union by Rank?
 
@@ -790,7 +790,7 @@ What is the amortized time complexity per operation of a Disjoint Set Union (DSU
 
 </details>
 
-#### Q-DSA-039 · Kruskal vs Prim · difficulty 2 · single
+### Q-DSA-039 · Kruskal vs Prim · difficulty 2 · single
 
 When should Kruskal's algorithm be chosen over Prim's algorithm for finding a Minimum Spanning Tree?
 
@@ -810,7 +810,7 @@ When should Kruskal's algorithm be chosen over Prim's algorithm for finding a Mi
 
 </details>
 
-#### Q-DSA-040 · Floyd-Warshall DP Formulation · difficulty 2 · single
+### Q-DSA-040 · Floyd-Warshall DP Formulation · difficulty 2 · single
 
 In the Floyd-Warshall all-pairs shortest paths algorithm, what is the meaning of the outer loop variable $k$ from $0$ to $V-1$?
 
@@ -831,9 +831,9 @@ In the Floyd-Warshall all-pairs shortest paths algorithm, what is the meaning of
 
 ---
 
-### Domain 9: Recursion, Backtracking & Divide-and-Conquer
+## Domain 9: Recursion, Backtracking & Divide-and-Conquer
 
-#### Q-DSA-041 · Backtracking Template · difficulty 1 · single
+### Q-DSA-041 · Backtracking Template · difficulty 1 · single
 
 What are the three canonical stages of the recursive Backtracking state-space exploration template?
 
@@ -853,7 +853,7 @@ What are the three canonical stages of the recursive Backtracking state-space ex
 
 </details>
 
-#### Q-DSA-042 · Bitmask Pruning in N-Queens · difficulty 2 · single
+### Q-DSA-042 · Bitmask Pruning in N-Queens · difficulty 2 · single
 
 In the N-Queens problem, how can column and diagonal attacks be checked in $O(1)$ time without scanning an $N \times N$ board?
 
@@ -873,7 +873,7 @@ In the N-Queens problem, how can column and diagonal attacks be checked in $O(1)
 
 </details>
 
-#### Q-DSA-043 · Meet-in-the-Middle · difficulty 2 · single
+### Q-DSA-043 · Meet-in-the-Middle · difficulty 2 · single
 
 How does the Meet-in-the-Middle technique reduce the complexity of the $O(2^N)$ Subset Sum problem for $N = 40$?
 
@@ -893,7 +893,7 @@ How does the Meet-in-the-Middle technique reduce the complexity of the $O(2^N)$ 
 
 </details>
 
-#### Q-DSA-044 · Karatsuba Multiplication · difficulty 2 · single
+### Q-DSA-044 · Karatsuba Multiplication · difficulty 2 · single
 
 What is the asymptotic time complexity of Karatsuba's divide-and-conquer multiplication of two $n$-digit integers, and why does it beat the grade-school $O(n^2)$ method?
 
@@ -913,7 +913,7 @@ What is the asymptotic time complexity of Karatsuba's divide-and-conquer multipl
 
 </details>
 
-#### Q-DSA-045 · Closest Pair of Points · difficulty 3 · single
+### Q-DSA-045 · Closest Pair of Points · difficulty 3 · single
 
 In the $O(n \log n)$ divide-and-conquer algorithm for finding the Closest Pair of 2D Points, when inspecting the strip around the dividing line with minimum distance $\delta = \min(\delta_L, \delta_R)$, at most how many points must each point be compared against?
 
@@ -934,9 +934,9 @@ In the $O(n \log n)$ divide-and-conquer algorithm for finding the Closest Pair o
 
 ---
 
-### Domain 10: Dynamic Programming: Foundations to Advanced Dimensions
+## Domain 10: Dynamic Programming: Foundations to Advanced Dimensions
 
-#### Q-DSA-046 · Knapsack Loops · difficulty 2 · single
+### Q-DSA-046 · Knapsack Loops · difficulty 2 · single
 
 When optimizing the space of 0/1 Knapsack to a 1-D array `dp[w]`, why MUST capacity $w$ be traversed backwards from $W$ down to $w_i$?
 
@@ -956,7 +956,7 @@ When optimizing the space of 0/1 Knapsack to a 1-D array `dp[w]`, why MUST capac
 
 </details>
 
-#### Q-DSA-047 · LIS Patience Sorting · difficulty 2 · single
+### Q-DSA-047 · LIS Patience Sorting · difficulty 2 · single
 
 In the $O(n \log n)$ Longest Increasing Subsequence algorithm using Patience Sorting, what does each entry `tails[len]` store?
 
@@ -976,7 +976,7 @@ In the $O(n \log n)$ Longest Increasing Subsequence algorithm using Patience Sor
 
 </details>
 
-#### Q-DSA-048 · Edit Distance Recurrence · difficulty 2 · single
+### Q-DSA-048 · Edit Distance Recurrence · difficulty 2 · single
 
 What is the recurrence relation for Levenshtein Edit Distance $DP[i][j]$ when characters $S_1[i-1] \neq S_2[j-1]$?
 
@@ -996,7 +996,7 @@ What is the recurrence relation for Levenshtein Edit Distance $DP[i][j]$ when ch
 
 </details>
 
-#### Q-DSA-049 · Bitmask DP Complexity · difficulty 2 · single
+### Q-DSA-049 · Bitmask DP Complexity · difficulty 2 · single
 
 For the Traveling Salesperson Problem on $n = 20$ vertices, what are the time complexities of the Held-Karp Bitmask DP versus naive brute force?
 
@@ -1014,7 +1014,7 @@ For the Traveling Salesperson Problem on $n = 20$ vertices, what are the time co
 
 </details>
 
-#### Q-DSA-050 · Space Optimization · difficulty 1 · single
+### Q-DSA-050 · Space Optimization · difficulty 1 · single
 
 In the Longest Common Subsequence (LCS) recurrence $DP[i][j]$, why can the space complexity be reduced from $O(m \cdot n)$ to $O(\min(m, n))$?
 
@@ -1036,9 +1036,9 @@ In the Longest Common Subsequence (LCS) recurrence $DP[i][j]$, why can the space
 
 ---
 
-### Domain 11: Greedy Algorithms & Exchange Arguments
+## Domain 11: Greedy Algorithms & Exchange Arguments
 
-#### Q-DSA-051 · Exchange Argument Principle · difficulty 2 · single
+### Q-DSA-051 · Exchange Argument Principle · difficulty 2 · single
 
 What is the core logical mechanism of an Exchange Argument proof in greedy algorithm analysis?
 
@@ -1058,7 +1058,7 @@ What is the core logical mechanism of an Exchange Argument proof in greedy algor
 
 </details>
 
-#### Q-DSA-052 · Interval Scheduling Sorting Criterion · difficulty 2 · single
+### Q-DSA-052 · Interval Scheduling Sorting Criterion · difficulty 2 · single
 
 In the Interval Scheduling problem (selecting the maximum number of mutually non-overlapping intervals), why must intervals be sorted by finish time $f_i$ rather than start time $s_i$ or duration?
 
@@ -1078,7 +1078,7 @@ In the Interval Scheduling problem (selecting the maximum number of mutually non
 
 </details>
 
-#### Q-DSA-053 · Huffman Tree Construction · difficulty 2 · single
+### Q-DSA-053 · Huffman Tree Construction · difficulty 2 · single
 
 What data structure is used to build a Huffman Coding tree in $O(n \log n)$ time?
 
@@ -1098,7 +1098,7 @@ What data structure is used to build a Huffman Coding tree in $O(n \log n)$ time
 
 </details>
 
-#### Q-DSA-054 · Coin Change Counterexample · difficulty 1 · single
+### Q-DSA-054 · Coin Change Counterexample · difficulty 1 · single
 
 For coin denominations $[1, 3, 4]$ and target $6$, what does the standard greedy approach choose versus the optimal solution?
 
@@ -1115,7 +1115,7 @@ For coin denominations $[1, 3, 4]$ and target $6$, what does the standard greedy
 
 </details>
 
-#### Q-DSA-055 · Matroid Theory & Greed · difficulty 3 · single
+### Q-DSA-055 · Matroid Theory & Greed · difficulty 3 · single
 
 What does the Rado-Edmonds Theorem prove regarding matroids?
 
@@ -1137,9 +1137,9 @@ What does the Rado-Edmonds Theorem prove regarding matroids?
 
 ---
 
-### Domain 12: String Algorithms & Pattern Matching
+## Domain 12: String Algorithms & Pattern Matching
 
-#### Q-DSA-056 · KMP Failure Function · difficulty 2 · single
+### Q-DSA-056 · KMP Failure Function · difficulty 2 · single
 
 What does the $\pi$ (LPS) array in the Knuth-Morris-Pratt (KMP) algorithm represent for pattern $P[0 \dots m-1]$?
 
@@ -1156,7 +1156,7 @@ What does the $\pi$ (LPS) array in the Knuth-Morris-Pratt (KMP) algorithm repres
 
 </details>
 
-#### Q-DSA-057 · KMP Linear Running Time · difficulty 2 · single
+### Q-DSA-057 · KMP Linear Running Time · difficulty 2 · single
 
 Why is the matching phase of KMP strictly bounded by $O(n)$ time even though the pattern index can decrement inside a `while` loop?
 
@@ -1173,7 +1173,7 @@ Why is the matching phase of KMP strictly bounded by $O(n)$ time even though the
 
 </details>
 
-#### Q-DSA-058 · Z-Algorithm Definition · difficulty 2 · single
+### Q-DSA-058 · Z-Algorithm Definition · difficulty 2 · single
 
 What does $Z[i]$ represent in the Z-Algorithm for string $S$?
 
@@ -1190,7 +1190,7 @@ What does $Z[i]$ represent in the Z-Algorithm for string $S$?
 
 </details>
 
-#### Q-DSA-059 · Kasai's LCP Invariant · difficulty 3 · single
+### Q-DSA-059 · Kasai's LCP Invariant · difficulty 3 · single
 
 Why does Kasai's algorithm construct the Longest Common Prefix (LCP) array from a Suffix Array in $O(n)$ time rather than $O(n^2)$?
 
@@ -1207,7 +1207,7 @@ Why does Kasai's algorithm construct the Longest Common Prefix (LCP) array from 
 
 </details>
 
-#### Q-DSA-060 · Manacher's Linear Palindrome Trick · difficulty 2 · single
+### Q-DSA-060 · Manacher's Linear Palindrome Trick · difficulty 2 · single
 
 How does Manacher's Algorithm handle both odd-length (`"aba"`) and even-length (`"abba"`) palindromes without branch splitting?
 
@@ -1226,9 +1226,9 @@ How does Manacher's Algorithm handle both odd-length (`"aba"`) and even-length (
 
 ---
 
-### Domain 13: Probabilistic Data Structures, Caches & Randomization
+## Domain 13: Probabilistic Data Structures, Caches & Randomization
 
-#### Q-DSA-061 · Bloom Filter Guarantees · difficulty 1 · single
+### Q-DSA-061 · Bloom Filter Guarantees · difficulty 1 · single
 
 What guarantees does a standard Bloom Filter make regarding False Positives and False Negatives?
 
@@ -1245,7 +1245,7 @@ What guarantees does a standard Bloom Filter make regarding False Positives and 
 
 </details>
 
-#### Q-DSA-062 · Count-Min Sketch Query · difficulty 2 · single
+### Q-DSA-062 · Count-Min Sketch Query · difficulty 2 · single
 
 In a Count-Min Sketch of depth $d$ and width $w$, why does the query operation take the MINIMUM across all $d$ hashed row cells rather than the average or maximum?
 
@@ -1262,7 +1262,7 @@ In a Count-Min Sketch of depth $d$ and width $w$, why does the query operation t
 
 </details>
 
-#### Q-DSA-063 · HyperLogLog Aggregation · difficulty 2 · single
+### Q-DSA-063 · HyperLogLog Aggregation · difficulty 2 · single
 
 Why does HyperLogLog use the Harmonic Mean rather than the Geometric or Arithmetic Mean when combining estimates across its $m$ registers?
 
@@ -1279,7 +1279,7 @@ Why does HyperLogLog use the Harmonic Mean rather than the Geometric or Arithmet
 
 </details>
 
-#### Q-DSA-064 · Consistent Hashing Node Churn · difficulty 2 · single
+### Q-DSA-064 · Consistent Hashing Node Churn · difficulty 2 · single
 
 In a Consistent Hash Ring with $N$ nodes and $K$ keys, what fraction of keys must be relocated on average when a node is added or removed?
 
@@ -1296,7 +1296,7 @@ In a Consistent Hash Ring with $N$ nodes and $K$ keys, what fraction of keys mus
 
 </details>
 
-#### Q-DSA-065 · Reservoir Sampling Uniformity · difficulty 2 · single
+### Q-DSA-065 · Reservoir Sampling Uniformity · difficulty 2 · single
 
 In Reservoir Sampling of $k$ items from a stream of unknown size $N$, when item $i$ arrives ($i \ge k$), what is the probability that it replaces an item in the reservoir?
 
@@ -1315,9 +1315,9 @@ In Reservoir Sampling of $k$ items from a stream of unknown size $N$, when item 
 
 ---
 
-### Domain 14: Parallel Algorithms, Concurrency & Interview Execution
+## Domain 14: Parallel Algorithms, Concurrency & Interview Execution
 
-#### Q-DSA-066 · Work-Span Definitions · difficulty 1 · single
+### Q-DSA-066 · Work-Span Definitions · difficulty 1 · single
 
 In the Work-Span model of parallel computing, what do $T_1$ and $T_\infty$ represent?
 
@@ -1334,7 +1334,7 @@ In the Work-Span model of parallel computing, what do $T_1$ and $T_\infty$ repre
 
 </details>
 
-#### Q-DSA-067 · Brent's Theorem Upper Bound · difficulty 2 · single
+### Q-DSA-067 · Brent's Theorem Upper Bound · difficulty 2 · single
 
 According to Brent's Theorem, what is the upper bound on execution time $T_p$ for an algorithm with Work $T_1$ and Span $T_\infty$ running on $p$ processors with a greedy scheduler?
 
@@ -1351,7 +1351,7 @@ According to Brent's Theorem, what is the upper bound on execution time $T_p$ fo
 
 </details>
 
-#### Q-DSA-068 · Lock-Free CAS Mechanics · difficulty 2 · single
+### Q-DSA-068 · Lock-Free CAS Mechanics · difficulty 2 · single
 
 What does the atomic Compare-And-Swap (CAS) instruction do?
 
@@ -1368,7 +1368,7 @@ What does the atomic Compare-And-Swap (CAS) instruction do?
 
 </details>
 
-#### Q-DSA-069 · The ABA Problem · difficulty 2 · single
+### Q-DSA-069 · The ABA Problem · difficulty 2 · single
 
 How does the ABA Problem manifest in lock-free concurrent programming, and how is it resolved?
 
@@ -1385,7 +1385,7 @@ How does the ABA Problem manifest in lock-free concurrent programming, and how i
 
 </details>
 
-#### Q-DSA-070 · UMPIRE Framework · difficulty 1 · single
+### Q-DSA-070 · UMPIRE Framework · difficulty 1 · single
 
 In the UMPIRE technical interview framework, what do the letters stand for?
 
@@ -1409,7 +1409,7 @@ In the UMPIRE technical interview framework, what do the letters stand for?
 
 </details>
 
-#### Q-DSA-071 · Multi-Threaded Data Race · difficulty 2 · single
+### Q-DSA-071 · Multi-Threaded Data Race · difficulty 2 · single
 
 What is the formal definition of a **data race** in concurrent memory models?
 
@@ -1426,7 +1426,7 @@ What is the formal definition of a **data race** in concurrent memory models?
 
 </details>
 
-#### Q-DSA-072 · Python vs JS Interview Idioms · difficulty 1 · single
+### Q-DSA-072 · Python vs JS Interview Idioms · difficulty 1 · single
 
 In a live coding interview, why is Python's `heapq` preferred over JavaScript for priority queue problems unless a heap class is pre-provided?
 
@@ -1443,7 +1443,7 @@ In a live coding interview, why is Python's `heapq` preferred over JavaScript fo
 
 </details>
 
-#### Q-DSA-073 · Coordinate Encoding Optimization · difficulty 2 · single
+### Q-DSA-073 · Coordinate Encoding Optimization · difficulty 2 · single
 
 When tracking visited cells in a 2D grid graph of size $R \times C$ ($C \le 1000$), why is packing coordinates as `r * C + c` superior to string template keys `` `${r},${c}` ``?
 
@@ -1460,7 +1460,7 @@ When tracking visited cells in a 2D grid graph of size $R \times C$ ($C \le 1000
 
 </details>
 
-#### Q-DSA-074 · Parallel Merge Sort Scalability · difficulty 3 · single
+### Q-DSA-074 · Parallel Merge Sort Scalability · difficulty 3 · single
 
 In Parallel Merge Sort, why does parallelizing only the two recursive sort calls while leaving the merge step sequential fail to achieve massive multicore scalability?
 
@@ -1477,7 +1477,7 @@ In Parallel Merge Sort, why does parallelizing only the two recursive sort calls
 
 </details>
 
-#### Q-DSA-075 · Boundary Testing Rigor · difficulty 2 · multi
+### Q-DSA-075 · Boundary Testing Rigor · difficulty 2 · multi
 
 Which of the following test inputs represent critical boundary edge cases that candidates must verify before declaring an algorithm complete? (Select all that apply)
 
