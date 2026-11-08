@@ -193,6 +193,29 @@ On NAT gateways, Kubernetes nodes, or servers subjected to high-volume UDP traff
   sysctl -w net.netfilter.nf_conntrack_max=1048576
   ```
 
+### Stateful Packet Filtering vs. Web Application Firewalls (WAF)
+
+Network security architectures enforce controls across distinct layers of the OSI stack, separating transport-level stateful packet filtering from Layer 7 application payload inspection:
+
+```mermaid
+flowchart LR
+    Traffic["Incoming Ingress Traffic"] --> L4FW["Layer 3/4 Stateful Firewall<br/>(nftables / Security Group)"]
+    L4FW -->|"Drop Unwanted Ports / Invalid State"| BlockL4["403 / TCP RST / Drop"]
+    L4FW -->|"Permitted: TCP 443 ESTABLISHED"| WAF["Layer 7 Web App Firewall<br/>(TLS Terminated / OWASP CRS)"]
+    WAF -->|"Block SQLi, XSS, Path Traversal"| BlockL7["HTTP 403 Forbidden"]
+    WAF -->|"Sanitized Clean HTTP Request"| App["Backend Application Pod"]
+```
+
+| Security Dimension | Stateful Packet Filter (`nftables` / Cloud SG) | Web Application Firewall (WAF / OWASP ModSecurity) |
+| :-- | :-- | :-- |
+| **Operational Layer** | Layer 3 (Network) & Layer 4 (Transport). | Layer 7 (Application). |
+| **Inspection Scope** | IP 5-tuple: Source/Dest IP, Source/Dest Port, Protocol, TCP flags, Connection State. | Full HTTP URI, query parameters, headers, cookies, and decoded JSON/multipart request bodies. |
+| **TLS Visibility** | Blind to encrypted payload: cannot inspect plaintext inside HTTPS streams. | Terminates TLS session directly (or sits behind TLS reverse proxy) to perform Deep Packet Inspection (DPI). |
+| **Threat Mitigation** | Port scans, SYN floods, unauthorized subnet access, IP spoofing, invalid connection states. | OWASP Top 10: SQL injection (`' OR 1=1--`), Cross-Site Scripting (XSS), Log4j RCE, path traversal, API abuse. |
+| **Performance Overhead** | Sub-microsecond latency, evaluated at wire speed in Linux kernel or NIC hardware. | Several milliseconds latency: requires request body buffering, regex evaluation, and token parsing. |
+
+In production defense-in-depth architectures, Cloud Security Groups and `nftables` lock down exposed Layer 4 ports (admitting only TCP port 443), while an edge WAF terminates TLS and inspects HTTP payloads before routing traffic to internal microservice clusters.
+
 ---
 
 ## 5. Network Isolation: Namespaces (`netns`) & Virtual Ethernet (`veth`)
@@ -250,7 +273,116 @@ ip netns exec worker-ns ping -c 2 10.100.1.1
 
 ---
 
-## 6. Traffic Control (`tc`) & Network Emulation (`netem`)
+## 6. VPNs & Modern Tunneling: WireGuard Mechanics
+
+Virtual Private Networks (VPNs) create secure, encrypted overlay links across untrusted public IP networks. In historical infrastructure, VPNs relied on IPsec (IKEv1/IKEv2) or OpenVPN (Layer 2 TAP / Layer 3 TUN over user-space OpenSSL). Built directly into the Linux kernel (v5.6+), **WireGuard** (RFC 8439 / Noise Protocol Framework) replaces legacy multi-hundred-thousand-line IPsec codebases with a minimal, high-performance ~4,000-line kernel implementation.
+
+### Cryptokey Routing & The Noise Protocol
+
+WireGuard abstracts network security through **Cryptokey Routing**: it associates public encryption keys directly with authorized internal IP addresses (`AllowedIPs`), operating as an ordinary Layer 3 network interface (`wg0`):
+
+```mermaid
+flowchart LR
+    subgraph HostA["Endpoint A (10.8.0.1)"]
+        direction TB
+        AppA["Application Flow"] --> RouteA["Kernel Routing Table<br/>(10.8.0.0/24 -> wg0)"]
+        RouteA --> WgA["wg0 Interface<br/>(Noise Protocol Handshake)"]
+    end
+
+    subgraph Tunnel["Public Internet (UDP Port 51820)"]
+        direction TB
+        WgA -->|"Outer UDP:51820<br/>(ChaCha20-Poly1305 Encrypted)"| WgB["wg0 Interface<br/>(Cryptokey Verification)"]
+    end
+
+    subgraph HostB["Endpoint B (10.8.0.2)"]
+        direction TB
+        WgB --> RouteB["Decapsulated IP Packet<br/>(Verified: saddr in AllowedIPs)"]
+        RouteB --> AppB["Application Service"]
+    end
+```
+
+The protocol mechanics establish high-assurance guarantees:
+
+1. **1-RTT Handshake**: Utilizes the Noise Protocol Framework (`Noise_IKpsk2`) over standard UDP port 51820, establishing ephemeral symmetric session keys via Curve25519 ECDH in a single round-trip.
+2. **Modern Cryptographic Suite**: Mandates **ChaCha20** for symmetric encryption, **Poly1305** for message authentication (AEAD), **BLAKE2s** for cryptographic hashing, and **SipHash24** for hash table lookups, avoiding legacy cipher negotiation vulnerabilities.
+3. **Silent Operation (Stealth)**: WireGuard never responds to unauthenticated packets. If an incoming packet lacks valid cryptographic credentials or timestamp replay protection, it is silently dropped without emitting ICMP errors or TCP RSTs, rendering WireGuard endpoints invisible to port scans.
+
+```bash
+# Inspect WireGuard interface configuration and active handshake telemetry
+wg show
+# Output:
+# interface: wg0
+#   public key: 4BqL...=
+#   private key: (hidden)
+#   listening port: 51820
+# peer: 9vZw...=
+#   endpoint: 203.0.113.10:51820
+#   allowed ips: 10.8.0.2/32
+#   latest handshake: 42 seconds ago
+#   transfer: 1.42 MiB received, 4.18 MiB sent
+```
+
+> [!WARNING]
+> **Production Pitfall: Overlapping RFC 1918 Subnets in Split Tunnels** A pervasive VPN operational failure occurs when configuring remote client split-tunneling where the enterprise office subnet (`192.168.1.0/24`) collides with the remote employee's home local area network (`192.168.1.0/24`). Because the local route table prioritizes the local subnet interface metric, packets destined for office corporate servers route to the employee's local home router instead, triggering connection timeouts and split-tunnel routing ambiguity. Production enterprise VPNs mandate non-conflicting carrier-grade or dedicated RFC 1918 blocks (e.g., `10.240.0.0/16` or `172.16.0.0/12`).
+
+---
+
+## 7. Cloud Virtualization & Overlay Networks: VXLAN (RFC 7348)
+
+In modern hyperscale cloud datacenters and Kubernetes Container Network Interfaces (CNIs such as Cilium and Flannel), physical leaf-spine switches operate as a purely Layer 3 IP routing underlay. To provide isolated, multi-tenant Layer 2 broadcast domains without physical recabling or spanning-tree limits, modern infrastructure utilizes **Virtual eXtensible Local Area Network (VXLAN / RFC 7348)**.
+
+### The Breakdown of IEEE 802.1Q VLANs
+
+Traditional datacenter isolation relied on IEEE 802.1Q VLANs. However:
+
+- VLAN headers allocate a 12-bit VLAN Identifier (VID), strictly capping network segmentation at **4,096 VLANs**—wholly inadequate for multi-tenant cloud platforms hosting millions of customer networks.
+- VLANs require Layer 2 adjacency across switches, forcing datacenters into fragile Spanning Tree Protocol (STP) topologies that disable redundant links to prevent broadcast storms.
+
+### VXLAN Encapsulation & The 50-Byte MTU Overhead Trap
+
+VXLAN encapsulates guest Layer 2 Ethernet frames directly inside standard Layer 4 UDP datagrams transmitted across the Layer 3 underlay:
+
+```
++---------------------------------------------------------------------------------------------------+
+| Outer Ethernet Header (14 Bytes): Dst MAC | Src MAC | EtherType (0x0800 = IPv4)                   |
+| +-----------------------------------------------------------------------------------------------+ |
+| | Outer IPv4 Header (20 Bytes): Src VTEP IP | Dst VTEP IP | Protocol 17 (UDP)                   | |
+| | +-------------------------------------------------------------------------------------------+ | |
+| | | Outer UDP Header (8 Bytes): Src Port (Flow Hash) | Dst Port (4789) | UDP Length           | | |
+| | | +---------------------------------------------------------------------------------------+ | | |
+| | | | VXLAN Header (8 Bytes): Flags | 24-bit VXLAN Network Identifier (VNI = 16.7M Segments)| | | |
+| | | | +-----------------------------------------------------------------------------------+ | | | |
+| | | | | Inner Guest Ethernet Frame: Dst MAC | Src MAC | EtherType | IP Payload | FCS      | | | | |
+| | | | +-----------------------------------------------------------------------------------+ | | | |
+| | | +---------------------------------------------------------------------------------------+ | | |
+| | +-------------------------------------------------------------------------------------------+ | |
+| +-----------------------------------------------------------------------------------------------+ |
+| Outer Frame Check Sequence (FCS / CRC32 - 4 Bytes)                                                |
++---------------------------------------------------------------------------------------------------+
+```
+
+Key architectural components:
+
+1. **24-bit VXLAN Network Identifier (VNI)**: Expands the segment namespace from 4,096 to **$2^{24} = 16,777,216$ virtual networks**, enabling granular multi-tenancy.
+2. **VXLAN Tunnel Endpoint (VTEP)**: The software (Linux kernel `vxlan` driver) or hardware entity (datacenter top-of-rack ASIC) that terminates the overlay. The VTEP inspects inner MAC addresses, encapsulates frames with the appropriate VNI, and routes UDP packets to the destination VTEP.
+3. **Entropy Source Port Hashing**: The outer UDP source port is dynamically computed as a hash of the inner Layer 3/4 headers. This allows the physical Layer 3 underlay routers to load-balance VXLAN tunnels across multiple Equal-Cost Multi-Path (ECMP) fiber links without inspecting inner packet payloads.
+
+```bash
+# Create a Linux VXLAN overlay device with VNI 100 on UDP port 4789
+ip link add vxlan0 type vxlan id 100 dstport 4789 dev eth0
+ip addr add 10.200.1.1/24 dev vxlan0
+ip link set dev vxlan0 up
+```
+
+> [!CAUTION]
+> **The 50-Byte MTU Fragmentation Trap** The outer headers of a VXLAN packet consume **50 bytes of wire overhead** ($14\text{B Outer Ethernet} + 20\text{B Outer IPv4} + 8\text{B UDP} + 8\text{B VXLAN}$). If the physical underlay network enforces the standard 1500-byte Ethernet MTU, and a guest virtual machine or container attempts to send a standard 1500-byte packet, the resulting 1550-byte outer packet exceeds the underlay MTU. This triggers catastrophic underlay router IP fragmentation (severely degrading forwarding performance) or silent packet drops if the Don't Fragment (DF) bit is set. Production datacenters must either:
+>
+> 1. Configure the physical underlay to support **Jumbo Frames** ($\text{MTU} \ge 1600\text{ bytes}$), or
+> 2. Clamp the guest interface MTU down to **1450 bytes** (`1500 - 50 = 1450`).
+
+---
+
+## 8. Traffic Control (`tc`) & Network Emulation (`netem`)
 
 To test how applications behave under degraded network conditions (e.g., testing QUIC connection migration or TCP CUBIC behavior on lossy satellite links), engineers use the Linux **Traffic Control (`tc`)** subsystem and the **`netem` (Network Emulation)** queuing discipline (`qdisc`).
 
@@ -273,7 +405,7 @@ tc qdisc del dev eth0 root
 
 ---
 
-## 7. The End-to-End Network Troubleshooting Runbook
+## 9. The End-to-End Network Troubleshooting Runbook
 
 When an engineer receives an alert stating _"Service API latency has spiked to 1.5 seconds"_, naive engineers jump to guessing application code. A systematic network engineer applies the **Deterministic Layered Troubleshooting Runbook**:
 
@@ -322,7 +454,7 @@ Output Interpretation:
 
 ---
 
-## 8. Then vs. Now: Linux Networking Ops Evolution
+## 10. Then vs. Now: Linux Networking Ops Evolution
 
 | Dimension | Legacy Practice (Then) | Modern Architecture (Now) | Rationale for Transition |
 | :-- | :-- | :-- | :-- |
@@ -334,7 +466,7 @@ Output Interpretation:
 
 ---
 
-## 9. Interview Drill: Questions & Model Answers
+## 11. Interview Drill: Questions & Model Answers
 
 ### Q1: In the output of `ss -lnt`, what do the `Recv-Q` and `Send-Q` columns indicate? How does this differ from their meaning on an established connection?
 
@@ -414,5 +546,56 @@ Output Interpretation:
 - The difference ($\text{time\_starttransfer} - \text{time\_appconnect}$) measures the exact duration the server spent processing the request: reading backend database rows, running application code, or calling external APIs.
 - If `time_appconnect` is small (e.g., 50 ms) and `time_starttransfer` is large (e.g., 1.8 seconds), it proves definitively that **the network, routing, TCP, and TLS layers are completely healthy**, and the latency problem resides entirely within the backend application server or database.
 - Ref: curl manual (`curl --write-out`); High Performance Browser Networking.
+
+</details>
+
+### Q6: How does WireGuard's Cryptokey Routing design fundamentally differ from IPsec's Security Policy Database (SPD) and Security Association (SA)?
+
+<details><summary>Answer</summary>
+
+**Simplicity and Deterministic IP-Key Binding.**
+
+- In IPsec, packet forwarding requires consulting a complex, multi-tiered Security Policy Database (SPD) and Security Association Database (SAD) negotiated dynamically via IKEv1/IKEv2 daemon daemons in user space. Complex policy selectors (subnets, protocols, ports) map to dynamically renegotiated crypto SAs with separate SPI identifiers.
+- WireGuard discards the entire SA/SPD paradigm in favor of **Cryptokey Routing**:
+  1. The WireGuard interface (`wg0`) acts as a standard Layer 3 IP interface in the kernel routing table.
+  2. The configuration simply binds a peer's permanent public key directly to an `AllowedIPs` list of IP prefixes (e.g. `AllowedIPs = 10.8.0.2/32`).
+  3. When sending: if the destination IP matches `10.8.0.2`, the packet is encrypted using the session key associated with that specific public key.
+  4. When receiving: when a packet decrypts successfully with a peer's key, the plaintext inner packet's source IP is verified against `AllowedIPs`. If it does not match, the packet is instantly dropped.
+- This creates an inviolable cryptographic guarantee: a peer can never spoof an IP address outside its explicitly assigned `AllowedIPs`.
+- Ref: Donenfeld, "WireGuard: Next Generation Kernel Network Tunnel", NDSS 2017.
+
+</details>
+
+### Q7: Explain why VXLAN encapsulation adds exactly 50 bytes of wire overhead to every packet, and describe what happens when guest interfaces run with standard 1500-byte MTU on an unconfigured underlay network.
+
+<details><summary>Answer</summary>
+
+**Encapsulation Overhead & Underlay MTU Black Holes.**
+
+- **The 50-Byte Calculation**:
+  - Outer Ethernet Header: 14 bytes (6B Dst MAC + 6B Src MAC + 2B EtherType `0x0800`).
+  - Outer IPv4 Header: 20 bytes (fixed base header without options).
+  - Outer UDP Header: 8 bytes (Src Port hash, Dst Port 4789, Length, Checksum).
+  - VXLAN Header: 8 bytes (Flags, 24-bit VNI, reserved bytes).
+  - Total overhead: $14 + 20 + 8 + 8 = 50\text{ bytes}$.
+- **The Failure**:
+  - If a guest VM or container transmits a standard Ethernet packet with MTU 1500 bytes (e.g., a 1460-byte TCP MSS payload + 40 bytes IP/TCP headers), the VTEP encapsulates it into an outer UDP/IP packet of $1500 + 50 = 1550\text{ bytes}$.
+  - If the physical underlay leaf-spine switches have not been configured for Jumbo Frames (standard MTU 1500 bytes):
+    - If the outer packet has DF=1 (Don't Fragment), the physical switch silently drops the packet.
+    - If PMTUD is blocked by firewalls, the TCP connection hangs indefinitely during large data transfers (e.g. TLS certificates or HTTP POSTs) while small SYN/ACK packets (60 bytes) pass without issue.
+  - **Remedy**: Cloud datacenters mandate physical underlay MTU of at least 1600 bytes, or CNIs automatically clamp guest interface MTU to 1450 bytes.
+- Ref: RFC 7348 Section 5; Mahalingam et al., "VXLAN: A Framework for Overlaying Virtualized Layer 2 Networks over Layer 3 Networks".
+
+</details>
+
+### Q8: Why can a Web Application Firewall (WAF) detect an SQL injection attack in an HTTPS request, whereas an `nftables` stateful firewall cannot?
+
+<details><summary>Answer</summary>
+
+**Transport Layer vs. Application Layer Protocol Inspection.**
+
+- **`nftables` operates at Layer 3/4**: It inspects packet headers (IP addresses, TCP ports, connection tracking states `NEW`/`ESTABLISHED`). Once a TCP handshake completes on port 443, the packet payload contains opaque, encrypted TLS ciphertext (`Application Data` records). `nftables` has no access to TLS encryption keys, cannot decrypt the stream, and cannot assemble TCP byte streams across fragmented packets. To `nftables`, malicious SQL injection payload `' OR '1'='1` appears as random binary ciphertext.
+- **WAF operates at Layer 7**: The WAF terminates the TLS session directly using the server's certificate and private key. It reassembles the TCP byte stream, decrypts the TLS record layer, parses the HTTP/1.1 or HTTP/2 protocol frames, URL-decodes the request parameters, and evaluates the plaintext request body against regex rule sets (such as OWASP ModSecurity Core Rule Set) looking for SQL syntactic patterns before passing clean traffic to upstream application servers.
+- Ref: OWASP Web Application Firewall Guide; RFC 9110 HTTP Semantics.
 
 </details>

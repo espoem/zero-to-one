@@ -66,6 +66,41 @@ As application data traverses down the protocol stack toward the physical medium
 +-------------------------------------------------------------------------------------------------+
 ```
 
+### Packet Switching vs. Circuit Switching & Statistical Multiplexing
+
+The architectural foundation of the Internet rests upon **packet switching** rather than the **circuit switching** model used in legacy Public Switched Telephone Networks (PSTN). In a circuit-switched network, a dedicated, continuous physical or time-slotted communication path (via Frequency-Division Multiplexing [FDM] or Time-Division Multiplexing [TDM]) is pre-allocated between endpoints before transmission begins. While circuit switching provides deterministic transmission latency and guaranteed bandwidth, it suffers from severe resource underutilization during idle periods (the "bursty" nature of application traffic) and requires blocking connection setup overhead.
+
+In a packet-switched network, application messages are partitioned into discrete, independent chunks termed **packets** (Protocol Data Units). Intermediate network routers forward packets hop-by-hop using a **store-and-forward** transmission mechanism: the router must receive the entire packet before it can begin transmitting the first bit onto the outbound egress link.
+
+```mermaid
+flowchart LR
+    subgraph CircuitSwitching["Circuit Switching (Pre-Allocated Dedicated Path)"]
+        direction LR
+        HostA["Host A"] -->|"Dedicated Bandwidth Reservation (FDM / TDM)"| Node1["Switch 1"]
+        Node1 -->|"Dedicated Time Slot (Fixed Latency, Idle Waste)"| Node2["Switch 2"]
+        Node2 -->|"Dedicated Circuit"| HostB["Host B"]
+    end
+
+    subgraph PacketSwitching["Packet Switching (Dynamic Store-and-Forward)"]
+        direction LR
+        Src["Host A"] -->|"Packet P1 (Header + Payload)"| R1["Router R1"]
+        R1 -->|"Statistical Multiplexing (Shared Queue)"| R2["Router R2"]
+        R2 -->|"Dynamic Path Selection (Independent Routing)"| Dst["Host B"]
+    end
+```
+
+Packet switching achieves superior link efficiency through **statistical multiplexing**: independent data flows dynamically share transmission capacity on demand. If $N$ independent users each require bandwidth $B$ during active periods but are active only a fraction of time $p$, the probability that more than $k$ users transmit simultaneously on a shared link of capacity $C = k \cdot B$ follows the binomial distribution:
+
+$$P(\text{congestion}) = \sum_{i=k+1}^{N} \binom{N}{i} p^i (1 - p)^{N - i}$$
+
+For example, on a 1 Gbps link with users requiring 100 Mbps when active, circuit switching strictly caps capacity at 10 simultaneous users. Under statistical multiplexing where users are active 10% of the time ($p = 0.1$), 35 users can share the same link with a congestion probability of less than 0.0004 (0.04%), increasing infrastructure utilization by 350%.
+
+However, statistical multiplexing introduces trade-offs that dictate modern internet systems engineering:
+
+1. **Queueing Latency and Bufferbloat**: If momentary aggregate burst arrivals exceed link transmission speed, packets must wait in router buffers (FIFO queues), introducing variable queueing delay $d_{\text{queue}}$ and potential tail-drop packet loss.
+2. **Packet Reordering**: Because routers evaluate routing tables independently (via Equal-Cost Multi-Path [ECMP] or dynamic interior gateway updates), individual packets within the same flow may traverse different physical links, arriving out of order at the destination.
+3. **TCP Fast Retransmit Triggering**: When receiving out-of-order packets, the TCP receiver immediately emits Duplicate ACKs. If packets are reordered beyond the threshold (conventionally 3 Duplicate ACKs), the sender mistakenly infers packet loss and triggers unnecessary Fast Retransmit and congestion window throttling.
+
 ---
 
 ## 2. Binary Framing, Byte Order & Endianness

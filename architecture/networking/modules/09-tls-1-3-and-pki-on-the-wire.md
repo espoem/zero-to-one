@@ -69,6 +69,52 @@ The client speculatively transmits its public `key_share` for its most preferred
 - Instead, it responds with a **`HelloRetryRequest` (HRR)**, instructing the client to provide a `key_share` for the server's preferred group.
 - The client re-sends `ClientHello` with the requested group. The handshake succeeds, but incurs an extra round trip (**2-RTT total**).
 
+### Mutual TLS (mTLS) & Zero Trust Identity on the Wire
+
+Standard TLS provides **one-way authentication**: the client cryptographically validates the server's X.509 certificate, but the server accepts connections from any anonymous TCP peer. In modern cloud-native architectures, container orchestration (Kubernetes service meshes like Istio and Linkerd), and Zero Trust network perimeters, **Mutual TLS (mTLS)** mandates bidirectional cryptographic authentication.
+
+Under TLS 1.3 (RFC 8446 Section 4.4.2), the server demands client authentication by injecting a **`CertificateRequest`** handshake message into its first flight immediately following `EncryptedExtensions`:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    Client->>Server: ClientHello [X25519 KeyShare, SNI, ALPN]
+    Server->>Client: ServerHello [X25519 KeyShare, Cipher]
+    Note over Server: Encrypted Handshake Traffic
+    Server->>Client: {EncryptedExtensions}
+    Server->>Client: {CertificateRequest} [certificate_authorities, signature_algorithms]
+    Server->>Client: {Certificate} [Server X.509 Chain]
+    Server->>Client: {CertificateVerify} [Signature over Transcript]
+    Server->>Client: {Finished}
+    Note over Client: Client Proves Identity
+    Client->>Server: {Certificate} [Client X.509 Chain / SPIFFE ID]
+    Client->>Server: {CertificateVerify} [Client Signature over Transcript]
+    Client->>Server: {Finished}
+    Note over Client,Server: Bidirectional Workload Identity Established!
+```
+
+The client responds in its next flight with:
+
+1. **`Certificate`**: The client's X.509 public certificate chain. In microservice environments, this certificate carries a **SPIFFE ID** (Secure Production Identity Framework for Everyone) encoded as a URI inside the Subject Alternative Name (SAN) extension (e.g., `spiffe://cluster.local/ns/prod/sa/order-service`).
+2. **`CertificateVerify`**: A digital signature computed using the client's private key over the entire SHA-256/SHA-384 transcript of all preceding handshake messages. Because the signature covers the server's ephemeral key exchange, it prevents replay attacks.
+3. **`Finished`**: The HMAC verifying handshake message integrity.
+
+```bash
+# Verify an internal mTLS service using client certificates
+openssl s_client -connect order-service.prod.svc:8443 \
+  -cert /etc/certs/client.crt \
+  -key /etc/certs/client.key \
+  -CAfile /etc/certs/mesh-ca.crt \
+  -tls1_3
+```
+
+> [!WARNING]
+> **Production Pitfalls: mTLS Outages in Service Meshes**
+>
+> 1. **Silent Certificate Expiration**: Short-lived mTLS certificates (e.g., 24-hour lifetimes issued by cert-manager or HashiCorp Vault) will trigger immediate `SSL_do_handshake() failed (SSL: error:0A000086:SSL routines::certificate verify failed)` connection resets across all east-west traffic if automated background rotation daemons stall.
+> 2. **Missing Intermediate CA Chains**: If the client sends only its leaf certificate and omits intermediate issuing CAs, the server will reject the handshake with `unknown_ca` (Alert 48).
+> 3. **Host Clock Drift**: Distributed nodes with NTP sync failures whose local clocks drift beyond the certificate's `notBefore` or `notAfter` boundaries will instantly fail validity checks.
+
 ---
 
 ## 3. The TLS 1.3 Key Schedule (HKDF)

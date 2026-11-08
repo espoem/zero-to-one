@@ -63,3 +63,16 @@
 ## Resolution of findings (2026-10-30)
 
 All findings resolved before final gate. Track is verified, tested, fully documented, and ready for fast-forward merge into `main`.
+
+---
+
+## Deepening: 30 Must-Know Networking Concepts & Senior Interview Bank (2026-11-08)
+
+Integrated research across curriculum modules, glossary, cheatsheet, and exams:
+
+- Modules expanded: Packet switching & statistical multiplexing (Mod 01), Token/Leaky bucket & rate limiting (Mod 07), mTLS & SPIFFE (Mod 09), CORS on the wire (Mod 10), WAF vs stateful firewall, WireGuard Noise IK & cryptokey routing, VXLAN 50-byte MTU overhead trap (Mod 14).
+- Bilingual `GLOSSARY.md`: 15 new formal terms with Czech equivalents and RFC references.
+- `CHEATSHEET.md`: Added Section 11 (30 Must-Know Networking Concepts Master Matrix).
+- `exams/interview.md`: 60 original questions across 5 domains with model answers and distractor analyses, plus 30-question mock examination.
+- Automated verification: `scripts/validate-concepts.ts` verifying all 30 concepts and questions deterministically.
+- All 33 track tests passing hermetically; repository gate `npm run check` passing with 0 errors across 1,104 files.

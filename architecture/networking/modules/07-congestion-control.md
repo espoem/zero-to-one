@@ -231,7 +231,73 @@ Standard ECN still drops the congestion window by 30% to 50% upon receiving an E
 
 ---
 
-## 7. Linux Socket Inspection: Deciphering `ss -ti`
+## 7. Traffic Shaping, Token Bucket Algorithms & Rate Limiting
+
+While congestion control algorithms run inside the transport layer of endpoint hosts to infer bottleneck capacity, network edge infrastructure and intermediate routers enforce **traffic policing** and **traffic shaping** to protect upstream services from denial-of-service floods, enforce service-level agreements (SLAs), and eliminate noisy-neighbor tenant starvation.
+
+### Token Bucket vs. Leaky Bucket Mechanics
+
+Two foundational algorithms govern packet rate limiting and smoothing:
+
+```mermaid
+flowchart TD
+    subgraph TokenBucket["Token Bucket (Allows Bounded Bursts)"]
+        direction TB
+        Gen["Token Generator<br/>(Refill Rate r tokens/sec)"] -->|"Tokens added up to Capacity B"| Bucket[("Token Bucket<br/>(Max Capacity B tokens)")]
+        Arrival["Incoming Packets"] --> Gate{"Sufficient<br/>Tokens?"}
+        Bucket -.->|"Consume tokens"| Gate
+        Gate -->|"Yes (Tokens present)"| Conform["Transmitted Immediately<br/>(Peak Rate = Wire Speed)"]
+        Gate -->|"No (Empty bucket)"| DropOrWait["Dropped (Policer)<br/>or Queued (Shaper)"]
+    end
+
+    subgraph LeakyBucket["Leaky Bucket (Strict Constant Egress Rate)"]
+        direction TB
+        BurstIn["Bursty Packet Inflow"] --> FifoQ[("FIFO Buffer Queue<br/>(Finite Capacity C)")]
+        FifoQ -->|"Constant Leak Rate<br/>(Exact Fixed Speed r)"| SmoothOut["Constant Smooth Output"]
+        FifoQ -->|"Buffer Overflow"| Discard["Tail Dropped Packets"]
+    end
+```
+
+| Dimension | Token Bucket Algorithm | Leaky Bucket Algorithm |
+| :-- | :-- | :-- |
+| **Burst Tolerance** | **Permits bounded bursts**: Can transmit at wire speed up to bucket capacity $B$ if tokens have accumulated. | **Zero burst tolerance**: Enforces a strict, constant-rate output regardless of upstream burstiness. |
+| **Refill Mechanism** | Tokens continuously refill the bucket at rate $r$ tokens/sec up to maximum capacity $B$. | Packets enter a FIFO queue and leak out at a constant rate $r$ bytes/sec. |
+| **Empty / Full State** | When empty, incoming packets must either wait for new tokens (shaping) or be immediately dropped (policing). | When the queue is full, subsequent arriving packets are immediately tail-dropped. |
+| **Mathematical Bound** | Maximum bytes $M$ transmitted in any time interval $T$: $M(T) = B + r \cdot T$. | Maximum rate is permanently clamped to $r$ bytes/sec ($\lim_{T \to 0} \frac{M(T)}{T} = r$). |
+| **Primary Use Case** | Cloud API gateways (Envoy, NGINX), AWS/GCP token bucket limits, and TCP traffic shaping. | Constant Bit Rate (CBR) audio/video encoding, ATM networks, and strict egress policing. |
+
+### Linux Traffic Control: `tc-tbf` (Token Bucket Filter)
+
+In the Linux kernel, traffic shaping is configured via the `tc` subsystem using the Token Bucket Filter (`tbf`) queueing discipline:
+
+```bash
+# Clamp egress bandwidth on eth0 to 20 Mbps with a 10 KB burst buffer and max latency of 50ms
+tc qdisc add dev eth0 root tbf rate 20mbit burst 10kb latency 50ms
+```
+
+### Application-Layer Rate Limiting & DDoS Mitigation
+
+Modern reverse proxies (Envoy, HAProxy) and edge CDNs (Cloudflare) enforce rate limiting at Layer 7 using distributed in-memory stores (e.g., Redis sliding-window counters or local token buckets). When a client exceeds its allocation, the server returns an **HTTP 429 Too Many Requests** response tagged with rate-limiting telemetry headers:
+
+```http
+HTTP/1.1 429 Too Many Requests
+Retry-After: 30
+X-RateLimit-Limit: 1000
+X-RateLimit-Remaining: 0
+X-RateLimit-Reset: 1731024000
+Content-Type: application/json
+
+{"error": "rate_limit_exceeded", "message": "API allocation depleted. Retry in 30 seconds."}
+```
+
+At Layer 3/4, volumetric denial-of-service floods (such as UDP reflection and SYN floods) saturate kernel memory before socket processing can occur. Advanced architectures deploy **eBPF with XDP (eXpress Data Path)** directly at the network interface card (NIC) driver level. By executing packet inspection in the device driver ring buffer, malicious traffic is discarded via `XDP_DROP` in sub-microsecond time, processing over 20 million packets per second per CPU core without allocating Linux kernel `sk_buff` data structures.
+
+> [!WARNING]
+> **Production Pitfall: Carrier-Grade NAT (CGNAT) Rate-Limiting Collisions** Implementing rate limiting purely based on client source IP (`req.ip`) in internet-facing APIs frequently causes mass outages for legitimate mobile and broadband users. Under Carrier-Grade NAT (CGNAT / RFC 6598 `100.64.0.0/10`), thousands of independent mobile cellular subscribers share a single public IPv4 egress IP address. Rate-limiting by raw IP causes one abusive scraper on a cellular network to exhaust the shared token pool, resulting in widespread HTTP 429 errors for all innocent users on that mobile carrier. Robust rate limiters key on cryptographically authenticated tokens (e.g., API keys, OAuth client IDs, or session cookies) rather than transient Layer 3 IP addresses.
+
+---
+
+## 8. Linux Socket Inspection: Deciphering `ss -ti`
 
 Network systems engineers inspect active TCP congestion states using `ss -ti`:
 
@@ -261,7 +327,7 @@ ESTAB  0  0  192.168.1.100:54210  203.0.113.50:443
 
 ---
 
-## 8. Then vs. Now: Congestion Control Evolution
+## 9. Then vs. Now: Congestion Control Evolution
 
 | Dimension | Legacy Practice (Then) | Modern Architecture (Now) | Rationale for Transition |
 | :-- | :-- | :-- | :-- |
@@ -272,7 +338,7 @@ ESTAB  0  0  192.168.1.100:54210  203.0.113.50:443
 
 ---
 
-## 9. Interview Drill: Questions & Model Answers
+## 10. Interview Drill: Questions & Model Answers
 
 ### Q1: Why does Additive Increase / Multiplicative Decrease (AIMD) guarantee convergence to both efficiency and fairness, whereas Multiplicative Increase / Multiplicative Decrease (MIMD) does not?
 
@@ -346,5 +412,18 @@ ESTAB  0  0  192.168.1.100:54210  203.0.113.50:443
 4. **Sender Backoff**: When the sender receives an ACK with `ECE=1`, it reduces its congestion window (`cwnd`) as if a packet loss had occurred. It then sets the **`CWR` (Congestion Window Reduced)** flag in its next data packet to acknowledge the signal, allowing the receiver to stop asserting `ECE`. Zero packets are dropped, avoiding retransmission overhead while preventing queue overflow.
 
 - Ref: RFC 3168; Floyd, "TCP and Explicit Congestion Notification".
+
+</details>
+
+### Q6: What is the fundamental operational difference between the Token Bucket algorithm and the Leaky Bucket algorithm in traffic shaping?
+
+<details><summary>Answer</summary>
+
+**Burst Tolerance vs Constant Smoothing.**
+
+- **Token Bucket**: Accumulates tokens up to bucket depth $B$ at refill rate $r$. When a burst arrives, if enough tokens exist, packets transmit immediately at full wire line rate. It **allows bounded traffic bursts** up to $B$ bytes while enforcing long-term average rate $r$.
+- **Leaky Bucket**: Places packets into a finite FIFO queue and releases them at a strictly constant rate $r$, regardless of arrival volume. It **completely smooths bursts** into an unvarying stream, introducing artificial queueing delay to all burst packets and tail-dropping excess arrivals once the queue fills.
+- **Engineering Application**: Token bucket is favored by cloud API gateways and web services where legitimate burstiness (e.g. initial page loads, API batch calls) should proceed without unnecessary serialization delays.
+- Ref: Kurose & Ross 9th ed., Section 7.5; Stevens TCP/IP Illustrated Vol. 1.
 
 </details>

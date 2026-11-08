@@ -19,6 +19,40 @@ graph TD
 
 Regardless of whether an endpoint communicates over plaintext HTTP/1.1, binary HTTP/2, or UDP-encapsulated HTTP/3, the higher-level application contract—headers, cookies, status codes, and idempotency guarantees—remains semantically identical.
 
+### Cross-Origin Resource Sharing (CORS) on the Wire & Preflight Handshake
+
+A critical application-layer boundary enforced by modern web browsers is the **Same-Origin Policy (SOP)**: client-side JavaScript executing in origin A (`https://app.example.com:443`) is strictly prohibited from reading HTTP responses from origin B (`https://api.example.com:443`) unless origin B explicitly permits it via **Cross-Origin Resource Sharing (CORS)** headers.
+
+Two origins are identical if and only if their **Scheme**, **Host**, and **Port** tuples match exactly. For cross-origin requests, browsers categorize operations into **Simple Requests** and **Preflighted Requests**:
+
+1. **Simple Requests**: Standard `GET`, `HEAD`, or `POST` requests carrying only basic headers (`Accept`, `Accept-Language`, `Content-Language`) and simple content types (`text/plain`, `multipart/form-data`, `application/x-www-form-urlencoded`). The browser sends the request immediately with an `Origin: https://app.example.com` header. If the response lacks `Access-Control-Allow-Origin`, the browser suppresses the response from JavaScript.
+2. **Preflighted Requests**: Any request that mutates state with non-simple verbs (`PUT`, `DELETE`, `PATCH`), carries custom application headers (`Authorization`, `X-Custom-Header`), or transmits JSON payloads (`Content-Type: application/json`).
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Browser as Browser (Origin: https://app.dev)
+    participant Server as API Server (api.example.com)
+    Note over Browser,Server: 1. Preflight OPTIONS Handshake
+    Browser->>Server: OPTIONS /v1/users HTTP/1.1<br/>Origin: https://app.dev<br/>Access-Control-Request-Method: POST<br/>Access-Control-Request-Headers: authorization, content-type
+    Server->>Browser: HTTP/1.1 204 No Content<br/>Access-Control-Allow-Origin: https://app.dev<br/>Access-Control-Allow-Methods: GET, POST, OPTIONS<br/>Access-Control-Allow-Headers: Authorization, Content-Type<br/>Access-Control-Max-Age: 86400
+    Note over Browser: Preflight Approved & Cached (86400s)
+    Note over Browser,Server: 2. Actual Data Transmission
+    Browser->>Server: POST /v1/users HTTP/1.1<br/>Origin: https://app.dev<br/>Authorization: Bearer eyJ...<br/>Content-Type: application/json<br/><br/>{"username": "admin"}
+    Server->>Browser: HTTP/1.1 201 Created<br/>Access-Control-Allow-Origin: https://app.dev<br/><br/>{"id": 42}
+```
+
+```bash
+# Debugging CORS preflight headers directly via CLI
+curl -i -X OPTIONS https://api.example.com/v1/users \
+  -H "Origin: https://app.dev" \
+  -H "Access-Control-Request-Method: POST" \
+  -H "Access-Control-Request-Headers: Authorization, Content-Type"
+```
+
+> [!WARNING]
+> **Production Pitfall: Wildcard Origin with Credentials** A common production error occurs when configuring CORS for authenticated single-page applications: returning `Access-Control-Allow-Origin: *` alongside `Access-Control-Allow-Credentials: true`. The W3C Fetch standard explicitly mandates that browsers **must reject** any response where credentials (cookies, HTTP basic auth, TLS client certs) are permitted if the origin is a wildcard `*`. The server must dynamically reflect the exact incoming `Origin` header (after verifying it against an internal allowlist) in `Access-Control-Allow-Origin` and append `Vary: Origin` to ensure downstream HTTP caches do not serve cached responses across different client origins.
+
 ---
 
 ## 2. HTTP/1.1 Wire Mechanics: Chunked Transfer & Pipelining

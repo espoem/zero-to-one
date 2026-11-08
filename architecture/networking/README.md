@@ -31,6 +31,8 @@ This curriculum provides 100% full coverage for both official industry certifica
 
 - **Target Roles**: Staff / Principal Site Reliability Engineer (SRE), Network Infrastructure Engineer, Cloud Systems Architect.
 - **Focus**: Deep-dive mechanical trade-offs: BGP Anycast stateful TCP collapse, Maglev consistent hashing, CUBIC vs BBR congestion control models, epoll edge vs level-triggered socket scheduling, Nagle / Delayed ACK deadlocks, HTTP Request Smuggling, and Post-Quantum hybrid TLS 1.3 MTU fragmentation.
+- **Interview Question Bank**: [exams/interview.md](./exams/interview.md) (60 original senior/staff questions across all 30 must-know networking concepts + 30-question 90-minute mock examination with scoring rubrics and distractor analysis).
+- **Cheatsheet & Concept Matrix**: [CHEATSHEET.md](./CHEATSHEET.md#11-30-must-know-networking-concepts-master-matrix) (30 Must-Know Networking Concepts Master Matrix mapping layers, primary RFCs, wire headers/ports, CLI diagnostics, and production failure modes).
 
 ---
 

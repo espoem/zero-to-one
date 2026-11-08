@@ -86,3 +86,19 @@ The CompTIA Network+ N10-009 certification partitions network engineering into f
 > - **Wire Standards**: Consolidated TCP (RFC 9293), TLS 1.3 default, and modern HTTP/2 and HTTP/3 architectures are tested directly.
 
 All 14 curriculum modules fully reflect the N10-009 active syllabus with 100% coverage and zero gaps.
+
+---
+
+## 5. Senior Systems Engineering Technical Interview Bank
+
+In addition to official vendor certification coverage, this track includes a dedicated **Senior Systems Engineering Networking Technical Interview Preparation Bank** in [`exams/interview.md`](./interview.md), covering the 30 must-know networking concepts across 5 domains:
+
+| Domain | Concepts Covered | Practice Questions | Coverage Status |
+| :-- | :-- | :-: | :-: |
+| **Domain 1: Architecture & Models** | OSI 7-Layer, TCP/IP Suite, Packet Switching, Encapsulation, MTU/Fragmentation, MAC vs. IP | 12 | ✅ Full |
+| **Domain 2: Core Protocols & Transport** | TCP 3-Way Handshake, UDP, QUIC & HTTP/3, ICMP, ARP, TLS 1.3 | 12 | ✅ Full |
+| **Domain 3: Addressing & Routing** | IPv4 vs. IPv6, CIDR/Subnetting, NAT/PAT, DHCP DORA, BGP-4, Anycast & Multicast | 12 | ✅ Full |
+| **Domain 4: Resolution & Web Protocols** | DNS Hierarchy, Reverse Proxy vs. LB, CDNs, WebSockets, gRPC/HTTP-2, CORS | 12 | ✅ Full |
+| **Domain 5: Security & Infrastructure** | Zero Trust & mTLS, WireGuard, Stateful FW vs. WAF, Token Bucket, QoS/Shaping, VXLAN | 12 | ✅ Full |
+
+Each question includes difficulty rating (1–3), deep architectural explanations, distractor rationales, failure mode analysis, and links to the teaching modules. A full 30-question, 90-minute mock examination with scoring rubrics is provided.
