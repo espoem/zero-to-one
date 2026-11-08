@@ -52,9 +52,11 @@ export function auditQuestionBanks(globPattern = "**/exams/*.md"): {
     const raw = readFileSync(file, "utf8");
     const lines = raw.split("\n");
 
-    // Split file by Mock Exam section if present to isolate question bank from free-form interview simulation scenarios
-    const parts = raw.split(/\n(?=## .*Mock Exam|## Timed Mock|## Part 2: Timed Mock)/i);
-    const bankPart = parts[0];
+    // Split file by Mock Exam section if present to isolate question bank from free-form interview simulation scenarios (unless mock exam contains Q- items)
+    const hasMockQ = /\n## .*(Mock Exam|Timed Mock)[\s\S]*?\n###+ Q-/i.test(raw);
+    const bankPart = hasMockQ
+      ? raw
+      : raw.split(/\n(?=## .*Mock Exam|## Timed Mock|## Part 2: Timed Mock)/i)[0];
 
     // Check for level-4 questions in bankPart
     const bankLines = bankPart.split("\n");
@@ -162,7 +164,8 @@ export function auditQuestionBanks(globPattern = "**/exams/*.md"): {
 }
 
 if (import.meta.main) {
-  const result = auditQuestionBanks();
+  const targetPattern = process.argv[2] || "**/exams/*.md";
+  const result = auditQuestionBanks(targetPattern);
   console.log(`Audited ${result.totalQuestions} questions across ${result.filesScanned} files.`);
   console.log(`Detected ${result.issues.length} schema issues.\n`);
 

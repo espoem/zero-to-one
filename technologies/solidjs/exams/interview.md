@@ -300,6 +300,9 @@ Why does `function Title({ title }) { return <h1>{title}</h1>; }` never update?
 
 **A.** Dev also warns `STRICT_READ_UNTRACKED`.
 
+- Why not B: Solid DOM elements update reactively via fine-grained bindings when reads occur in tracking scopes.
+- Why not C: Solid props proxies are reactive accessor wrappers, not frozen JavaScript objects.
+- Why not D: The compiler preserves parameter names and function signatures as written.
 - Ref: [modules/03-components-props-and-dom.md](../modules/03-components-props-and-dom.md#rule-2--in-the-child-read-propsx-where-you-need-it-never-destructure)
 
 </details>
@@ -317,6 +320,9 @@ Why does `function Title({ title }) { return <h1>{title}</h1>; }` never update?
 
 **B.** In 2.0 `undefined` is a real value that overrides; 1.x `mergeProps` skipped it.
 
+- Why not A: In Solid 2.0, explicit `undefined` overrides default values rather than being skipped as in 1.x.
+- Why not C: `null` is a distinct primitive value and is not substituted for `undefined`.
+- Why not D: `merge()` safely evaluates prop objects without throwing runtime exceptions.
 - Ref: [modules/03-components-props-and-dom.md](../modules/03-components-props-and-dom.md#21-merge-and-omit), RFC 04 "merge"
 
 </details>
@@ -354,6 +360,9 @@ Which replaces `<div use:tooltip={{ text: "Save" }} />`?
 
 **A.** Directives are ref factories; `use:` is a compile error that names this replacement.
 
+- Why not B: The `directive:` attribute prefix is not supported syntax in Solid 2.0 JSX.
+- Why not C: Setting a plain attribute passes the value as a DOM attribute or prop rather than attaching an element ref hook.
+- Why not D: Solid 2.0 refactored directives into ref factories rather than array-based `use` bindings.
 - Ref: [modules/03-components-props-and-dom.md](../modules/03-components-props-and-dom.md#5-refs-and-directives), RFC 07
 
 </details>
@@ -409,6 +418,9 @@ A polled list re-creates every row (focus lost, animations restart) although the
 
 **B.** `undefined` means "not provided"; this is still a default-less context. Use `null` for optional contexts.
 
+- Why not A: In Solid 2.0, contexts created with `undefined` default value throw `ContextNotFoundError` when accessed outside a Provider.
+- Why not C: Context does not substitute `null` when no fallback value is configured.
+- Why not D: `useContext` compiles cleanly; the error is raised at runtime when the context hierarchy is queried.
 - Ref: [modules/04-control-flow-and-composition.md](../modules/04-control-flow-and-composition.md#7-context), RFC 02
 
 </details>
@@ -460,6 +472,9 @@ What does returning a value from a store setter do?
 
 **B.** Keyed reconciliation needs `reconcile` or a projection.
 
+- Why not A: Keyed reconciliation across deep structures requires calling `reconcile()` explicitly.
+- Why not C: Returning a value from a store setter performs a shallow replacement of the object or array.
+- Why not D: The store proxy retains its stable object reference identity during property replacements.
 - Ref: [modules/05-stores-and-projections.md](../modules/05-stores-and-projections.md#21-returning-a-value-shallow-replacement), RFC 04
 
 </details>
@@ -512,6 +527,9 @@ A projection's derive wraps its reads in `try { … } catch { /* ignore */ }`. I
 
 **B.** Use `isPending()` to branch on readiness instead.
 
+- Why not A: Projections are fully supported in server-side builds for calculating derived store states.
+- Why not C: Solid 2.0 supports asynchronous server-side streaming rendering.
+- Why not D: `try/catch` is valid JavaScript, but catching all errors indiscriminately intercepts internal flow-control exceptions like `NotReadyError`.
 - Ref: [modules/05-stores-and-projections.md](../modules/05-stores-and-projections.md#42-async-and-subscriptions-in-projections), RFC 04
 
 </details>
@@ -582,6 +600,9 @@ Which makes `isPending(() => user())` read `true`?
 
 **C.** A bare re-ask is quiet; `affects` declares the change. First load belongs to the boundary.
 
+- Why not A: Calling `refresh` alone triggers an in-place background re-ask without marking the signal as pending.
+- Why not B: Polling requests execute silently in the background without flipping `isPending` state.
+- Why not D: Initial data loading triggers the `<Loading>` boundary fallback rather than setting accessor-level `isPending`.
 - Ref: [modules/06-colorless-async.md](../modules/06-colorless-async.md#31-ispendingfn), RFC 05 "isPending"
 
 </details>
@@ -606,6 +627,9 @@ What is wrong?
 
 **B.** Read inputs before the first `await`.
 
+- Why not A: The code exhibits an untracked dependency bug because the reactive read occurs after the asynchronous boundary.
+- Why not C: Async memos fully support arbitrary transformation, mapping, and array filtering operations.
+- Why not D: `from()` is used to convert Observables or external event streams, not async memo callbacks.
 - Ref: [modules/06-colorless-async.md](../modules/06-colorless-async.md#12-tracking-stops-at-the-first-await)
 
 </details>
@@ -662,6 +686,9 @@ In `<Reveal>` (default order) with boundaries A then B, B's data resolves first.
 
 **B.** Sequential reveal: later boundaries wait for earlier ones.
 
+- Why not A: In default sequential order, subsequent boundaries do not reveal content before preceding boundaries resolve.
+- Why not C: Revealing both contents before boundary A settles would break top-to-bottom layout consistency.
+- Why not D: Boundary fallbacks are rendered immediately while data promises remain pending.
 - Ref: [modules/06-colorless-async.md](../modules/06-colorless-async.md#23--coordinating-siblings), RFC 03
 
 </details>
@@ -679,6 +706,9 @@ How does an `<Errored>` boundary recover after its data source failed?
 
 **B.** `resetErrorBoundaries` is removed; boundaries self-heal.
 
+- Why not A: Boundaries provide granular error containment without requiring a full application reload.
+- Why not C: `resetErrorBoundaries()` is a removed Solid 1.x global API.
+- Why not D: `<Errored>` boundaries are designed to self-heal when their upstream dependencies emit successful updates.
 - Ref: [modules/06-colorless-async.md](../modules/06-colorless-async.md#5-errors)
 
 </details>
@@ -696,6 +726,9 @@ Why are 2.0 actions written as generators (`action(function* () { … yield api.
 
 **B.**
 
+- Why not A: Generator functions do not have inherently faster runtime execution characteristics than Promises.
+- Why not C: Solid 2.0 targets modern ECMAScript runtimes and does not support legacy Internet Explorer.
+- Why not D: Browser cancellation APIs (like `AbortController`) operate independently of generator syntax.
 - Ref: [modules/07-actions-and-optimistic-state.md](../modules/07-actions-and-optimistic-state.md#2-action), RFC 06
 
 </details>
@@ -713,6 +746,9 @@ An optimistic write is made inside an action whose request then fails. What does
 
 **B.** The overlay is discarded at settle; the committed state never changed.
 
+- Why not A: Optimistic state is scoped to transaction lifecycles and automatically reverts upon failure.
+- Why not C: Reverting an optimistic write returns the UI to its prior committed state rather than displaying a loading indicator.
+- Why not D: Solid does not substitute stale cache data for failed transactional state updates.
 - Ref: [modules/07-actions-and-optimistic-state.md](../modules/07-actions-and-optimistic-state.md#3-optimistic-primitives), test "a failed action reverts the optimistic write"
 
 </details>
@@ -763,6 +799,9 @@ You are starting a new Solid 2.0 full-stack app (October 2026). What do you inst
 
 **B.** `@solidjs/start@2.1.0` peers on `solid-js ^1.9.15`: it is the Solid 1.9 metaframework.
 
+- Why not A: `@solidjs/start@latest` targets the Solid 1.x runtime ecosystem rather than Solid 2.0.
+- Why not C: `vite-plugin-solid@2` is the legacy plugin package superseded by `@solidjs/vite-plugin`.
+- Why not D: Next.js is a React metaframework, not the official serving architecture for Solid 2.0.
 - Ref: [modules/08-ssr-and-start-mode.md](../modules/08-ssr-and-start-mode.md#1-the-20-full-stack-layout)
 
 </details>
@@ -780,6 +819,9 @@ After enabling SSR, user A occasionally sees user B's name. The app keeps `const
 
 **B.** (D can also leak, but the code shown is the cause.)
 
+- Why not A: Cross-session leakage occurs on the server during request handling before client hydration runs.
+- Why not C: Seroval accurately serializes state objects and does not mingle disparate request scopes.
+- Why not D: Module-level variables persist across concurrent requests within the Node.js process regardless of caching layers.
 - Ref: [modules/08-ssr-and-start-mode.md](../modules/08-ssr-and-start-mode.md#4-request-isolation-the-leak-you-only-see-in-production), test "module-scope state leaks between concurrent requests"
 
 </details>
@@ -797,6 +839,9 @@ After enabling SSR, user A occasionally sees user B's name. The app keeps `const
 
 **C.** The stream object is also a thenable; this replaces `renderToStringAsync`.
 
+- Why not A: `renderToStream` returns an object that acts as a ReadableStream while also implementing Promise (thenable) semantics resolving to the full HTML string.
+- Why not B: Awaiting the thenable stream waits for all suspense boundaries to settle, returning the complete document rather than just the initial shell.
+- Why not D: The returned Promise resolves to the stringified HTML document.
 - Ref: [modules/08-ssr-and-start-mode.md](../modules/08-ssr-and-start-mode.md#31-entry-points), RFC 12
 
 </details>
@@ -814,6 +859,9 @@ A product page streams; the product is fetched under `<Loading>` and the 404 pag
 
 **B.** `httpStatus` is a shell-time API. (`renderMode: "async"` in middleware for bots is a valid broader alternative, but D's "every request" gives up streaming for all users.)
 
+- Why not A: `httpStatus` is an SSR server primitive specifically designed to set HTTP response status codes.
+- Why not C: Throwing a Response directly within a streaming component breaks the streaming pipeline unless captured by router action boundaries.
+- Why not D: Enforcing async mode globally disables streaming performance benefits for all users.
 - Ref: [modules/08-ssr-and-start-mode.md](../modules/08-ssr-and-start-mode.md#33-status-and-headers-from-the-tree), RFC 12
 
 </details>
@@ -849,6 +897,9 @@ A server function is called with a `Date` argument and the client throws before 
 
 **B.** Results use the seroval codec, arguments are JSON unless rich arguments are enabled.
 
+- Why not A: Server functions support rich JavaScript objects when explicit codecs are enabled.
+- Why not C: Codec configurations are bundled consistently across the application build.
+- Why not D: Server function arguments are transmitted in the HTTP request payload rather than URL query parameters.
 - Ref: [modules/08-ssr-and-start-mode.md](../modules/08-ssr-and-start-mode.md#52-the-runtime-and-the-wire), test "results are encoded with the seroval codec …"
 
 </details>
@@ -866,6 +917,9 @@ Why is `"use server"` described as the privacy mechanism?
 
 **B.**
 
+- Why not A: Function code is excluded entirely from client bundles rather than encrypted.
+- Why not C: Transport security is enforced by TLS/HTTPS at the server gateway, not by compiler directives.
+- Why not D: `"use server"` marks specific callable server actions rather than isolating an entire file as server-only.
 - Ref: [modules/08-ssr-and-start-mode.md](../modules/08-ssr-and-start-mode.md#51-compilation), RFC 10
 
 </details>
@@ -883,6 +937,9 @@ A hydrated memo does `const token = await getToken(); return fetch(url, { header
 
 **B.** Start the request synchronously or read the token synchronously.
 
+- Why not A: React Strict Mode is not present in Solid applications.
+- Why not C: `ssrSource` configuration does not override asynchronous hydration tracking boundaries.
+- Why not D: `<Loading>` boundaries preserve server-rendered HTML during hydration rather than issuing duplicate fetches.
 - Ref: [modules/08-ssr-and-start-mode.md](../modules/08-ssr-and-start-mode.md#32-hydration-policy-per-computation), RFC 05 "The tracking run"
 
 </details>
@@ -913,6 +970,9 @@ A Jest setup without special configuration imports `solid-js`. Which build does 
 
 **B.** Use `@solidjs/vite-plugin`'s Vitest integration or set browser + development conditions.
 
+- Why not A: Plain Node defaults to `"node"` or `"default"` export conditions, bypassing browser-specific client reactivity bundles.
+- Why not C: The `observe` build requires explicit export condition opt-in.
+- Why not D: Node successfully resolves `package.json` exports, but picks the server export entry point.
 - Ref: [modules/09-testing-debugging-performance.md](../modules/09-testing-debugging-performance.md#2-build-variants-are-export-conditions), test "plain Node resolves the server build"
 
 </details>
@@ -930,6 +990,9 @@ A Jest setup without special configuration imports `solid-js`. Which build does 
 
 **B.** Writes commit at the flush; `findBy*` queries also work. A timeout works but is slow and flaky.
 
+- Why not A: `setTimeout` introduces non-deterministic delays and slows test suites.
+- Why not C: Re-rendering the component creates a new DOM instance rather than waiting for pending reactive updates.
+- Why not D: Calling `cleanup()` unmounts reactive scopes and tears down DOM elements.
 - Ref: [modules/09-testing-debugging-performance.md](../modules/09-testing-debugging-performance.md#14-component-tests)
 
 </details>
@@ -947,6 +1010,9 @@ What is the `observe` build?
 
 **B.** Dev guards (e.g. owned writes) are not present there.
 
+- Why not A: The `observe` build avoids verbose console logging to ensure high runtime performance.
+- Why not C: The observe build targets client runtime monitoring rather than server-only execution.
+- Why not D: Observe diagnostics integrate with open telemetry and production telemetry sinks beyond browser DevTools.
 - Ref: [modules/09-testing-debugging-performance.md](../modules/09-testing-debugging-performance.md#2-build-variants-are-export-conditions)
 
 </details>
@@ -964,6 +1030,9 @@ With attribution enabled, you see `EFFECT_RELAY_TEAR` for an effect that writes 
 
 **B.**
 
+- Why not A: The diagnostic indicates an architectural state tear between signals, not an unhandled exception.
+- Why not C: Changing equality comparators does not eliminate intermediate inconsistent states caused by effect-driven writes.
+- Why not D: Deferring the update to `onSettled` maintains duplicate renders and fails to solve reactive tearing.
 - Ref: [modules/09-testing-debugging-performance.md](../modules/09-testing-debugging-performance.md#3-debugging-why-did-this-run), test "an effect relaying one signal into another…"
 
 </details>
@@ -1011,6 +1080,9 @@ Which 1.x API maps to `<For keyed={false}>`?
 
 **A.**
 
+- Why not B: `<Key>` is not a Solid control flow component.
+- Why not C: `<Repeat>` is an iteration primitive from other UI libraries, not Solid.
+- Why not D: `<SuspenseList>` coordinates loading boundaries rather than iterating over list items.
 - Ref: [modules/10-migration-and-react-comparison.md](../modules/10-migration-and-react-comparison.md#3-migration-map)
 
 </details>
@@ -1045,6 +1117,9 @@ Why are stale closures a common React bug but not a Solid bug?
 
 **B.**
 
+- Why not A: Solid components are standard JavaScript functions that execute once upon initialization.
+- Why not C: Closures and arrow functions are common idiomatic constructs in Solid JSX event handlers.
+- Why not D: Solid compiles JSX into DOM operations while preserving normal JavaScript closures.
 - Ref: [modules/10-migration-and-react-comparison.md](../modules/10-migration-and-react-comparison.md#41-unit-of-re-execution)
 
 </details>
@@ -1062,6 +1137,9 @@ A team migrating to Solid 2 also upgrades `@kobalte/core` to `2.0.0-alpha.4`. In
 
 **B.** Align RC versions or use an override until the library bumps; audit peer ranges before migrating.
 
+- Why not A: Kobalte works natively with Vite in Solid projects.
+- Why not C: Kobalte is an accessible component library built specifically for Solid.
+- Why not D: Kobalte provides client and SSR UI components rather than server-only logic.
 - Ref: [modules/10-migration-and-react-comparison.md](../modules/10-migration-and-react-comparison.md#2-ecosystem-compatibility-as-of-2026-10-28)
 
 </details>
@@ -1079,6 +1157,9 @@ In React 19 the equivalent of Solid's `isPending(() => results())` while a new q
 
 **A.** React makes transitions opt-in; Solid holds by default and exposes per-read pending state.
 
+- Why not B: `useEffect` executes after DOM render and does not track concurrent pending transitions.
+- Why not C: `React.memo` prevents unnecessary re-renders of pure components based on prop equality.
+- Why not D: `useRef` provides mutable instance storage without triggering or reflecting rendering states.
 - Ref: [modules/10-migration-and-react-comparison.md](../modules/10-migration-and-react-comparison.md#43-async-transitions-and-actions)
 
 </details>

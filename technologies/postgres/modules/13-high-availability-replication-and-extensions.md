@@ -305,6 +305,19 @@ WHERE NOT blocked_locks.granted;
 
 ---
 
+## Version History & Architectural Evolution
+
+| Version / Milestone | Year | Architectural Shifts & Key Capabilities | Deprecations & Breaking Hazards |
+| --- | :-: | --- | --- |
+| **PostgreSQL 14** | 2021 | Multirange data types; LZ4 compression for TOAST and WAL; B-tree bottom-up index deletion reducing bloat; query pipeline mode in `libpq`; `pg_amcheck` index corruption diagnostics. | MD5 password authentication deprecated; query cancelation on standby recovery conflicts enabled by default. |
+| **PostgreSQL 15** | 2022 | SQL-standard `MERGE` statement; Zstandard (`zstd`) compression for WAL and `pg_basebackup`; ICU default collations; `jsonlog` structured logging; logical replication row-filtering predicates and column projection lists. | Public schema default `CREATE` privilege revoked from `PUBLIC` (`REVOKE CREATE ON SCHEMA public FROM PUBLIC`); Python 2 support permanently removed from PL/Python. |
+| **PostgreSQL 16** | 2023 | Logical replication from standby nodes; bidirectional logical replication with origin filtering; SIMD-accelerated CPU operations; `pg_stat_io` fine-grained storage telemetry across backends, targets, and I/O contexts. | `promote_trigger_file` configuration removed; legacy `vacuum_cost_limit` calculations revised. |
+| **PostgreSQL 17** | 2024 | Radix tree memory structure for `VACUUM` (slashing index scan memory by up to 20×); native physical incremental backups (`pg_combinebackup`); SQL/JSON `JSON_TABLE` constructors; synchronized failover replication slots (`sync_replication_slots`). | Obsolete `db_user_namespace` parameter removed; older replication connection string parameters deprecated. |
+| **PostgreSQL 18** | 2025 | Native RFC 9562 `uuidv7()` generation; Virtual Generated Columns (`GENERATED ALWAYS AS (...) VIRTUAL`); Asynchronous Direct I/O subsystem (`io_method = worker \| io_uring`); unified `RETURNING OLD / NEW` mutation auditing; retained optimizer statistics across `pg_upgrade --link`. | Default page checksums enforced at `initdb`; legacy non-checksum clusters require explicit migration. |
+| **PostgreSQL 19** | 2026 | Native logical replication of sequences (`ADD ALL SEQUENCES`); client read-your-writes synchronization via `WAIT FOR LSN`; online `REPACK` primitives; native vector quantization hooks and parallel HNSW index construction. | Obsolete recovery target parameters replaced by unified target LSN syntax; legacy synchronous replication fallback behavior tightened. |
+
+---
+
 ## 9. Interview Drill
 
 <details>

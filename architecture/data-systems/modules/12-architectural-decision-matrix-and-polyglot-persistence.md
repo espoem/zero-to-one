@@ -202,6 +202,19 @@ graph TD
 
 ---
 
+## Version History & Architectural Evolution
+
+| Version / Milestone | Year | Architectural Shifts & Key Capabilities | Deprecations & Breaking Hazards |
+| --- | :-: | --- | --- |
+| **B-Trees & Slotted Pages** (Bayer-McCreight / Lehman-Yao) | 1972–1981 | In-place updates on fixed-size pages; Lehman-Yao B-link trees providing high-concurrency traversals without read-locking parent nodes; slotted page layouts managing variable-length rows. | High write amplification on solid-state drives due to small random page overwrites; internal page fragmentation and table bloat requiring aggressive vacuuming. |
+| **Log-Structured Merge-Trees** (O'Neil et al. / Bigtable / RocksDB) | 1996–2012 | Append-only sequential disk writes via in-memory MemTables flushed to immutable SSTables; background compaction (Leveled vs. Size-Tiered); high write-throughput ingestion. | High read amplification requiring Bloom filters; compaction write stalls during heavy burst ingestion; high disk space overhead for garbage collection. |
+| **Columnar Storage & Vectorized Query Engines** (C-Store / Parquet / Arrow) | 2005–2016 | Column-oriented physical storage; lightweight dictionary encoding, Run-Length Encoding (RLE), and bit-packing; SIMD vectorized scan execution; Apache Parquet open format standard. | Inefficient row-at-a-time point lookups and updates; high serialization latency when transposing columnar batches to row-oriented clients. |
+| **Distributed Consensus & Hybrid Cloud Storage** (Spanner / Aurora) | 2012–2017 | Spanner TrueTime globally distributed strict serializable transactions; Aurora log-is-the-database architecture streaming redo logs directly to multi-AZ self-healing storage fleets. | Distributed commit latency overhead; vendor lock-in on specialized hardware or proprietary cloud storage control planes. |
+| **Open Lakehouse Table Formats** (Iceberg / Delta Lake / Hudi) | 2018–2023 | ACID transaction isolation on object storage (S3/GCS); snapshot isolation metadata trees; hidden partitioning; schema evolution without rewriting data files; time-travel queries. | Hive directory partitioning (`/year=.../month=...`) deprecated; object storage eventual consistency race conditions eliminated; manifest file bloat requiring periodic snapshot expiration. |
+| **Unified Lakehouse, Vector ANN & Modern HTAP** | 2024–2026 | Apache Iceberg REST Catalog convergence across Snowflake, Databricks, and BigQuery; DuckDB in-process analytical execution; native Vector Approximate Nearest Neighbor indexes (HNSW, DiskANN) inside relational databases; Real-Time Hybrid Transactional/Analytical Processing (HTAP). | Multi-engine concurrent writes to Lakehouse tables risk commit conflicts and optimistic locking retries; naive unindexed vector scans exhaust GPU/CPU memory bandwidth. |
+
+---
+
 ## 7. Interview Drill
 
 <details>

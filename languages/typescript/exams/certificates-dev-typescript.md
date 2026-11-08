@@ -452,6 +452,9 @@ Under `strict`, what is the type of `e` in `catch (e) {}`?
 
 **B.** `Promise.all` maps over the tuple, preserving positions, and awaits each.
 
+- Why not A: `Promise.all` preserves per-element tuple types rather than collapsing results into a union.
+- Why not C: TypeScript infers specific constituent types rather than falling back to `unknown`.
+- Why not D: `await` unwraps the outer Promise layer returned by `Promise.all`.
 - Ref: [modules/02](../modules/02-essential-types-and-functions.md), https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-5.html
 
 </details>
@@ -506,6 +509,9 @@ In TS 5.6+ with `strict`, what is `it.next().value` when `done` is `true` for `c
 
 **B.** An explicitly declared `void` (or `Promise<void>`) return type forbids returning a value; the "void means ignored" rule applies to function _types_ used as callbacks, not to declared return types.
 
+- Why not A: An explicit `void` return type on a function declaration strictly forbids returning non-undefined values.
+- Why not C: TypeScript treats returning a number from a `void`-declared function as a type error rather than silently coercing the return value.
+- Why not D: This is a static type-checking error emitted by the compiler, not a runtime exception.
 - Ref: [modules/02](../modules/02-essential-types-and-functions.md), https://www.typescriptlang.org/docs/handbook/2/functions.html#return-type-void
 
 </details>
@@ -584,6 +590,9 @@ Which value can be bound with `using r = …`?
 
 **B.** `using` requires `Disposable | null | undefined`.
 
+- Why not A: Explicit resource management under `using` binds to the well-known `Symbol.dispose` protocol rather than an arbitrary `close()` method.
+- Why not C: Asynchronous resources like Promises require `await using` and `Symbol.asyncDispose`.
+- Why not D: Bare functions do not implement the Disposable interface required by `using`.
 - Ref: [modules/10](../modules/10-type-safe-api-design-patterns.md#lesson-105-typing-explicit-resource-management), https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-2.html
 
 </details>
@@ -811,6 +820,9 @@ Which declaration triggers TS2636 (variance annotation contradicts usage)?
 
 **B.** Naked type parameter → distributive.
 
+- Why not A: Naked type parameters distribute over union members individually, yielding `string[] | number[]` instead of an array of unions.
+- Why not C: `T` matches `unknown`, so the true branch evaluates for each union member rather than resolving to `never`.
+- Why not D: Distribution preserves the constituent member types rather than widening to `unknown[]`.
 - Ref: [modules/09](../modules/09-conditional-mapped-and-recursive-types.md#formal-semantics-in-brief), https://www.typescriptlang.org/docs/handbook/2/conditional-types.html#distributive-conditional-types
 
 </details>
@@ -828,6 +840,9 @@ Which declaration triggers TS2636 (variance annotation contradicts usage)?
 
 **C.** Distribution over the empty union yields `never`. Use `[T] extends [never]`.
 
+- Why not A: Conditional types distribute over union components, and `never` is an empty union with zero components, producing `never`.
+- Why not B: The false branch is never reached because an empty union does not evaluate any branches.
+- Why not D: The evaluation produces `never` directly, not the `boolean` union `true | false`.
 - Ref: [modules/09](../modules/09-conditional-mapped-and-recursive-types.md)
 
 </details>
@@ -902,6 +917,9 @@ In TypeScript 7.0, what is `HeadTail<"😀ab">` for ``type HeadTail<S> = S exten
 
 **B.** 7.0 infers by code point. A was the ≤ 6.0 behaviour (exam delta: older material shows A).
 
+- Why not A: Splitting into UTF-16 surrogate code units was the legacy behavior in TypeScript 6 and earlier.
+- Why not C: The template literal pattern successfully matches any non-empty string.
+- Why not D: TypeScript template literal inference preserves string literal types rather than widening to `[string, string]`.
 - Ref: [modules/09](../modules/09-conditional-mapped-and-recursive-types.md#952-then-vs-now-template-literal-inference-by-code-point-ts-70), https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/
 
 </details>
@@ -919,6 +937,9 @@ Which version is tail-recursive (evaluated as a loop with a 1000-iteration limit
 
 **B.** The recursive reference must be the whole branch. A wraps it in a spread and hits TS2589 at ~48 elements in 7.0.2.
 
+- Why not A: Wrapping the recursive call in an outer tuple spread prevents tail-call elimination in the type checker.
+- Why not C: Only the direct tail-position call in B qualifies for tail-recursion optimization.
+- Why not D: TypeScript 4.5+ natively detects and optimizes tail-recursive conditional types up to 1000 iterations.
 - Ref: [modules/13](../modules/13-library-authoring-performance-and-type-tests.md#42-recursion-limits), https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-5.html
 
 </details>
@@ -936,6 +957,9 @@ Which version is tail-recursive (evaluated as a loop with a 1000-iteration limit
 
 **B.** Measured in 7.0.2: 50,000 members compile, 100,000 fail with "too complex to represent".
 
+- Why not A: Template literal types fully support unions within replacement interpolations.
+- Why not C: The failure is due to union size combinatorics rather than recursive type evaluation depth.
+- Why not D: Template literal interpolation converts string and number literals identically.
 - Ref: [modules/08](../modules/08-type-derivation-and-template-literals.md)
 
 </details>
@@ -953,6 +977,9 @@ What does `` `${infer N extends number}` `` do when matched against `"42"`?
 
 **B.** Constrained `infer` in a template literal parses the text into the literal type.
 
+- Why not A: The constraint `extends number` matches any numeric string pattern and parses it.
+- Why not C: Constrained `infer` resolves to the narrowest literal type matching the string text rather than widening to `number`.
+- Why not D: The `extends number` clause parses the matched characters into a numeric literal type `42` rather than preserving the string `"42"`.
 - Ref: [modules/09](../modules/09-conditional-mapped-and-recursive-types.md), https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-8.html
 
 </details>
@@ -1060,6 +1087,9 @@ In React 19 types, why does `<div ref={(el) => (node = el)} />` fail to compile?
 
 **B.** React 19 types the callback return as `void | (() => void)`.
 
+- Why not A: React 19 continues to support ref callbacks in addition to object refs created by `useRef`.
+- Why not C: The error arises from the callback's return expression, not the mutability modifier of the variable.
+- Why not D: `el` is properly typed as `HTMLDivElement | null`.
 - Ref: [modules/12](../modules/12-typing-ui-frameworks.md#33-ref-callbacks-may-return-a-cleanup)
 
 </details>
@@ -1077,6 +1107,9 @@ Why should `"types"` be the first key in an `exports` condition object?
 
 **B.** publint flags it; attw reports `FallbackCondition` when declarations are not adjacent.
 
+- Why not A: JSON objects have arbitrary key ordering, but export resolution algorithms process keys sequentially.
+- Why not C: Node.js evaluates conditions against the current runtime environment rather than stopping at the first key.
+- Why not D: npm accepts valid package.json manifests regardless of condition order, though type checkers will fail to resolve types correctly.
 - Ref: [modules/13](../modules/13-library-authoring-performance-and-type-tests.md#21-the-minimal-correct-esm-only-package), https://www.typescriptlang.org/docs/handbook/modules/reference.html#packagejson-exports
 
 </details>
@@ -1094,6 +1127,9 @@ What does `isolatedDeclarations` require?
 
 **B.** It enables per-file declaration emit; violations are TS9007–TS9013-family errors (TS9013 in the track's fixture).
 
+- Why not A: `isolatedDeclarations` permits standard module imports between files.
+- Why not C: Multiple public and private declarations may coexist in a single source file.
+- Why not D: `isolatedDeclarations` requires declaration generation (`declaration: true`) to be enabled.
 - Ref: [modules/13](../modules/13-library-authoring-performance-and-type-tests.md#12-isolateddeclarations), https://www.typescriptlang.org/tsconfig#isolatedDeclarations
 
 </details>
@@ -1111,6 +1147,9 @@ A dual package points both `import` and `require` at `dist/index.d.ts` (ESM). CJ
 
 **B.** A `.d.ts` is interpreted in one module format; each format needs its own declarations (or ship ESM only).
 
+- Why not A: `NoResolution` indicates a missing entry point, whereas here resolution succeeds with the incorrect module format.
+- Why not C: `typesVersions` was a legacy redirection mechanism superseded by modern package export conditions.
+- Why not D: Pointing CJS `require` at ESM declaration files causes default export mismatch errors in consuming projects.
 - Ref: [modules/13](../modules/13-library-authoring-performance-and-type-tests.md#22-dual-esmcjs-packages-and-masquerading), https://arethetypeswrong.github.io
 
 </details>
@@ -1128,6 +1167,9 @@ Exporting `const router = createRouter({ … })` without an annotation yields TS
 
 **B.** The emitted `.d.ts` would need a path into another package's internals.
 
+- Why not A: `skipLibCheck` skips checking declaration files of dependencies, but does not fix local declaration emission errors.
+- Why not C: Disabling `declaration` prevents publishing library type definitions entirely rather than fixing the unnamed type.
+- Why not D: Switching between named and default exports does not eliminate the requirement for public return type annotations.
 - Ref: [modules/13](../modules/13-library-authoring-performance-and-type-tests.md#11-what-a-dts-file-is)
 
 </details>
@@ -1145,6 +1187,9 @@ Why are `// @ts-expect-error` lines preferred over `// @ts-ignore` in type tests
 
 **B.**
 
+- Why not A: Both directives are handled during comment parsing and have negligible impact on compilation speed.
+- Why not C: `@ts-expect-error` suppresses only the diagnostic on the immediate subsequent line.
+- Why not D: `@ts-expect-error` works across both TypeScript and JavaScript files.
 - Ref: [modules/13](../modules/13-library-authoring-performance-and-type-tests.md#31-ts-expect-error-as-a-negative-test)
 
 </details>
@@ -1162,6 +1207,9 @@ What is the main source of TypeScript 7's speed-up?
 
 **B.** 7.7×–11.9× full-build speed-ups were reported at the default `--checkers 4`.
 
+- Why not A: TypeScript 7 maintains type system backwards compatibility without dropping core features.
+- Why not C: TypeScript 7 performs full type checking and semantic analysis.
+- Why not D: The speedup applies to full clean builds as well as incremental compilation.
 - Ref: [modules/01](../modules/01-toolchain-and-compiler-model.md#3-typescript-7-the-native-compiler), https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/
 
 </details>
@@ -1197,6 +1245,9 @@ Your typescript-eslint setup breaks after moving to TS 7.0. Why?
 
 **B.** Alias `typescript` to `npm:@typescript/typescript6@^6.0.2` and keep 7.0's `tsc` (e.g. via `@typescript/native`).
 
+- Why not A: ESLint supports TypeScript syntax via TypeScript-ESTree parser integrations.
+- Why not C: Strict compiler flags do not prevent typescript-eslint from running.
+- Why not D: TypeScript 7 fully produces and consumes `.d.ts` declaration files.
 - Ref: [modules/01](../modules/01-toolchain-and-compiler-model.md#5-no-classic-api-in-70-and-the-60-bridge)
 
 </details>
@@ -1232,6 +1283,9 @@ After upgrading to 7.0, snapshot tests of generated `.d.ts` files fail although 
 
 **B.** Regenerate snapshots once; assert codes rather than message text.
 
+- Why not A: Deterministic union ordering is an intentional compiler optimization, not a regression.
+- Why not C: Strict flags enforce type safety checks without altering declaration serialization order.
+- Why not D: `rootDir` configures project file hierarchies and has no effect on internal type sorting.
 - Ref: [modules/01](../modules/01-toolchain-and-compiler-model.md#33-determinism-stabletypeordering)
 
 </details>
@@ -1249,6 +1303,9 @@ Which is a parser in the sense of "parse, don't validate"?
 
 **B.** It returns a more precise type that records the evidence.
 
+- Why not A: `isEmail` acts as a boolean predicate without refining or capturing domain guarantees in the type system.
+- Why not C: `as Email` is an unchecked type assertion that bypasses validation entirely without examining data at runtime.
+- Why not D: `assert` throws on invalid inputs without transforming the string into a refined branded type.
 - Ref: [modules/11](../modules/11-runtime-boundaries-validation.md#11-parse-dont-validate)
 
 </details>
@@ -1266,6 +1323,9 @@ In Zod 4, what is the difference between `.default(v)` and `.prefault(v)` on `un
 
 **B.** Exam delta: Zod 3's `.default` behaved like Zod 4's `.prefault`.
 
+- Why not A: `.default` and `.prefault` differ fundamentally in whether the fallback value passes through schema transformations.
+- Why not C: Both methods are active and supported in Zod 4.
+- Why not D: `.default` succeeds and provides the fallback value when receiving `undefined`.
 - Ref: [modules/11](../modules/11-runtime-boundaries-validation.md#21-default-vs-prefault-zod-4-semantics), https://zod.dev/v4/changelog
 
 </details>
@@ -1300,6 +1360,9 @@ A JS project type-checked with JSDoc uses `@enum` and Closure-style `function(st
 
 **B.** 7.0 reworked JSDoc support; `@enum` is not special and Closure function syntax is unsupported.
 
+- Why not A: TypeScript 7 rewrote the compiler frontend, deprecating legacy JSDoc type constructs.
+- Why not C: TS 7 continues to support `checkJs` for type-checking standard JavaScript files.
+- Why not D: Legacy JSDoc comments are not automatically transformed into modern TypeScript annotations.
 - Ref: [modules/13](../modules/13-library-authoring-performance-and-type-tests.md#5-javascript-with-jsdoc-checkjs-in-ts-7)
 
 </details>
@@ -1317,6 +1380,9 @@ Why must a React/Solid server function validate its arguments even when they are
 
 **A.**
 
+- Why not B: TypeScript natively types asynchronous functions via `Promise<T>`.
+- Why not C: Data serialization does not change the static compile-time type definitions.
+- Why not D: Omitting server validation allows malicious clients to invoke endpoints with arbitrary payloads.
 - Ref: [modules/11](../modules/11-runtime-boundaries-validation.md#54-server-functions-and-rpc), [modules/12](../modules/12-typing-ui-frameworks.md#38-server-function-arguments-a-type-level-serializability-constraint)
 
 </details>

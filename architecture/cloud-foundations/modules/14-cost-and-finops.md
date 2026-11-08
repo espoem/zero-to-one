@@ -122,6 +122,18 @@ The hidden network charge calculations (NAT gateway processing, cross-AZ traffic
 
 ---
 
+## Version History & Architectural Evolution
+
+| Version / Milestone | Year | Architectural Shifts & Key Capabilities | Deprecations & Breaking Hazards |
+| --- | :-: | --- | --- |
+| **Generation 1: Flat IaaS & EC2-Classic** | 2006–2012 | Unpartitioned flat Layer 2/3 networks; public IPv4 addresses assigned directly to virtual instances; manual VM provisioning; static unallocated monthly invoices. | EC2-Classic completely retired; absence of private subnets and security groups exposed instances directly to the public internet. |
+| **Generation 2: Virtual Private Clouds (VPC) & Reserved Instances** | 2009–2015 | Software-Defined Networking (SDN); RFC 1918 private subnets; stateful Security Groups and stateless NACLs; 1-year and 3-year standard Reserved Instances (RIs) offering up to 72% discounts. | Static RIs locked teams to specific instance families and availability zones; NAT instances became CPU bottlenecks before managed NAT Gateways. |
+| **Generation 3: Managed Kubernetes & Compute Savings Plans** | 2014–2020 | Container orchestration (EKS, GKE, AKS); CNI overlay networks; flexible Compute Savings Plans and Flexible CUDs decoupling commitments from instance types; FinOps Foundation established. | Unmanaged cluster resource overprovisioning (CPU/RAM requests vs. limits); multi-tenant shared cluster costs invisible without dedicated allocation tools (Kubecost). |
+| **Generation 4: Serverless Containers & Automated Bin-Packing** | 2018–2023 | Scale-to-zero serverless runtimes (AWS Fargate, Cloud Run, Lambda); Karpenter just-in-time Kubernetes node autoscaling; automated spot instance interruption handling. | Cold start latencies; ephemeral compute connection exhaustion against relational databases requiring serverless proxies; egress markup fees on API gateways. |
+| **Generation 5: Edge Wasm, Sustainable FinOps & FOCUS 1.0** | 2024–2026 | Sub-millisecond WebAssembly isolates at the edge (Cloudflare Workers, Fastly Compute); FinOps Open Cost and Usage Specification (FOCUS v1.0/v1.1) standardizing multi-cloud billing schemas; unit economics tied to business KPIs and carbon emissions. | Complex multi-cloud billing reconciliation without unified FOCUS pipelines; egress vendor lock-in penalized by modern zero-egress alternatives (Cloudflare R2). |
+
+---
+
 ## 9. Interview Drill: Questions & Model Answers
 
 <details>

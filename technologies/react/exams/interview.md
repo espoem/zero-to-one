@@ -257,6 +257,9 @@ What does `useSyncExternalStore` do when a store changes during a concurrent ren
 
 **B.** It re-reads snapshots before committing a concurrent render; a mismatch triggers a synchronous re-render, so the UI never tears (tested: `011` vs `111`).
 
+- Why not A: Ignoring external updates during concurrent render would lead to visual tearing and inconsistent UI state.
+- Why not C: React requires strict point-in-time snapshot consistency rather than merging disparate state versions.
+- Why not D: React handles snapshot mismatches gracefully by falling back to synchronous rendering instead of throwing.
 - Ref: [modules/03 §7](../modules/03-state-hooks-and-closures.md), https://react.dev/reference/react/useSyncExternalStore
 
 </details>
@@ -424,6 +427,9 @@ React 19.3. Transition A sets state that suspends on a slow promise. While A is 
 
 **B.** Since 19.3 each transition lane renders independently ("untangled"). On 19.0–19.2 the answer was A (entangled). Tested.
 
+- Why not A: In React 19.3+, transitions are untangled into independent lanes rather than blocking all other concurrent transitions.
+- Why not C: Suspending within a transition preserves current content instead of replacing the page with a fallback.
+- Why not D: React schedules transitions concurrently without dropping valid pending updates.
 - Ref: [modules/05 §3.4](../modules/05-concurrency-lanes-transitions.md), https://react.dev/blog/2026/09/09/react-19-3
 
 </details>
@@ -496,6 +502,9 @@ Which are true for `<Activity mode="hidden">`? (Select all.)
 
 **B.** Promises passed to `use` must be cached across renders (RSC, a data library, a keyed cache).
 
+- Why not A: `use` can read promises in Client Components as well as Server Components.
+- Why not C: `use` unwraps any standard Promise, regardless of whether its value is JSON or another data structure.
+- Why not D: A missing error boundary would unmount the tree on rejection rather than keeping the suspense fallback indefinitely.
 - Ref: [modules/06 §2.2](../modules/06-suspense-streaming-ssr-and-hydration.md), https://react.dev/reference/react/use
 
 </details>
@@ -937,6 +946,9 @@ Which Rules-of-React violation is NOT caught by Compiler 1.0 + `react-hooks` 7 r
 
 **C.** It compiles successfully and lints clean; memoised JSX keyed on the unchanged array reference can go stale.
 
+- Why not A: Conditional hook calls are strictly flagged by the `react-hooks/rules-of-hooks` linter rule.
+- Why not B: Reading or mutating `ref.current` during render is flagged as a side-effect violation.
+- Why not D: Non-deterministic calls like `Math.random()` during render violate compiler purity constraints and are flagged.
 - Ref: [modules/09 §3](../modules/09-react-compiler.md)
 
 </details>
@@ -954,6 +966,9 @@ Should you remove existing `useMemo`/`useCallback` when enabling the compiler?
 
 **B.** Per the 1.0 announcement.
 
+- Why not A: Blindly removing manual memoisation can destabilise downstream hooks or dependency arrays if callers relied on exact object identity.
+- Why not C: `useCallback` provides reference stability for event handlers and dependencies, so removing it without tests risks subtle regressions.
+- Why not D: Existing `useMemo` and `useCallback` hooks remain valid and do not cause compiler errors.
 - Ref: [modules/09 §6](../modules/09-react-compiler.md), https://react.dev/blog/2025/10/07/react-compiler-1
 
 </details>
@@ -971,6 +986,9 @@ Should you remove existing `useMemo`/`useCallback` when enabling the compiler?
 
 **B.** Memoise or split the value (tested: 4 vs 1 renders).
 
+- Why not A: `memo` works as intended, but context subscription updates bypass intermediate component memoisation when the context value changes.
+- Why not C: Context consumers only re-render if they read the specific context whose value identity changed.
+- Why not D: State setter functions returned by `useState` have stable identities across renders.
 - Ref: [modules/12 §2](../modules/12-performance-testing-and-production.md)
 
 </details>
@@ -1006,6 +1024,9 @@ A list has 10,000 rows. What does virtualisation change?
 
 **B.** Declare `lazy` at module level (tested).
 
+- Why not A: Calling `lazy` inside render creates a new wrapper component type on every render pass, destroying sub-tree state rather than optimizing loading.
+- Why not C: Declaring `lazy` inside a component is syntactically valid JavaScript and compiles without error.
+- Why not D: Re-creating the component type on every render causes continuous unmounting, remounting, and visual flicker.
 - Ref: [modules/12 §3](../modules/12-performance-testing-and-production.md)
 
 </details>
@@ -1076,6 +1097,9 @@ After upgrading to React 19, `Button.defaultProps = { size: "m" }` on a function
 
 **B.** Function-component `defaultProps` are ignored in 19 (classes still support them); `propTypes` are ignored too.
 
+- Why not A: There is no `React.defaultProps` API on the top-level React export.
+- Why not C: Downgrading avoids adopting React 19 rather than resolving the deprecated pattern in modern React code.
+- Why not D: `propTypes` are also deprecated and ignored on function components in React 19.
 - Ref: [modules/12 §5.1](../modules/12-performance-testing-and-production.md)
 
 </details>
@@ -1093,6 +1117,9 @@ A test logs "An update to X inside a test was not wrapped in act(...)". What doe
 
 **B.**
 
+- Why not A: Unwrapped updates indicate asynchronous state changes completed after the test harness finished asserting DOM state.
+- Why not C: The warning indicates untracked concurrent state dispatch in tests, not a memory leak.
+- Why not D: Strict Mode runs effects twice in development, but does not emit `act(...)` warnings on its own.
 - Ref: [modules/12 §4.1](../modules/12-performance-testing-and-production.md), https://react.dev/reference/react/act
 
 </details>
@@ -1110,6 +1137,9 @@ An error boundary around a route shows its fallback; the user navigates to anoth
 
 **B.** Children are unmounted while the fallback shows; only resetting the boundary helps (tested).
 
+- Why not A: `forceUpdate` cannot be called on children that are unmounted while the fallback renders.
+- Why not C: Error boundaries catch errors during the render phase of descendants; wrapping children with `try/catch` cannot catch declarative JSX errors.
+- Why not D: `onUncaughtError` is a root-level callback for logging uncaught errors, not a mechanism to reset boundary UI state.
 - Ref: [modules/10 §4](../modules/10-errors-and-resilience.md)
 
 </details>
@@ -1167,6 +1197,9 @@ A click inside a modal rendered with `createPortal(…, document.body)` triggers
 
 **B.** Check containment in the portal node or stop propagation.
 
+- Why not A: Portals participate fully in the synthetic React event system rather than breaking delegation.
+- Why not C: The modal is mounted in the DOM; otherwise the click event could not have originated from it.
+- Why not D: Event propagation according to the virtual component tree is deliberate React architecture, not a browser bug.
 - Ref: [modules/11 §3](../modules/11-animation-and-dom-platform.md), https://react.dev/reference/react-dom/createPortal
 
 </details>

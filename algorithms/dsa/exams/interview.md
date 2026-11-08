@@ -1111,6 +1111,9 @@ For coin denominations $[1, 3, 4]$ and target $6$, what does the standard greedy
 
 **A.** The greedy approach takes the largest coin $\le 6$: picks $4$. Remaining target is $2$. Next picks $1$, then $1$, totaling 3 coins ($4 + 1 + 1$). The optimal approach chooses two 3-value coins ($3 + 3 = 6$), totaling 2 coins. This proves greedy fails on arbitrary coin denominations.
 
+- Why not B: Greedy starts by choosing the largest denomination ($4$), resulting in $4 + 1 + 1$ rather than picking $3 + 3$.
+- Why not C: Greedy chooses the local optimum $4$, missing the global optimum of two $3$ coins.
+- Why not D: Greedy finds the valid combination $4 + 1 + 1 = 6$, but it uses more coins than necessary.
 - Ref: [modules/11-greedy-algorithms-and-exchange-arguments.md](../modules/11-greedy-algorithms-and-exchange-arguments.md)
 
 </details>
@@ -1152,6 +1155,9 @@ What does the $\pi$ (LPS) array in the Knuth-Morris-Pratt (KMP) algorithm repres
 
 **B.** The $\pi$ (or LPS) array stores $\pi[i] = \max \{ k : 0 \le k < i \land P[0 \dots k-1] = P[i-k+1 \dots i] \}$. When a mismatch occurs during text search, $\pi$ tells the algorithm the longest prefix that matches the suffix of the current match, allowing the pattern to slide forward without backtracking the text index.
 
+- Why not A: The $\pi$ array measures prefix-suffix character equality rather than linguistic properties like vowel counts.
+- Why not C: Character frequencies are tracked by histogram arrays or frequency maps, not KMP prefix arrays.
+- Why not D: The index of the first mismatch depends on the searched text at runtime, whereas $\pi$ is computed solely from the pattern.
 - Ref: [modules/12-string-algorithms-and-pattern-matching.md](../modules/12-string-algorithms-and-pattern-matching.md)
 
 </details>
@@ -1169,6 +1175,9 @@ Why is the matching phase of KMP strictly bounded by $O(n)$ time even though the
 
 **B.** In each step of the outer loop, the text index $i$ increases by 1 ($n$ times). In each step, pattern pointer $j$ increases by at most 1. Because $j \ge 0$, $j$ can decrement at most as many times as it has increased ($j \le n$). The total number of decrements across the entire execution is bounded by $n$, proving amortized $O(n)$ time.
 
+- Why not A: KMP is a single-threaded sequential algorithm that requires no parallel execution.
+- Why not C: The $O(n)$ bound is an algorithmic property of pointer amortisation, independent of V8 string engine optimizations.
+- Why not D: KMP does not use modular arithmetic; text sliding is guided strictly by precomputed failure transitions.
 - Ref: [modules/12-string-algorithms-and-pattern-matching.md](../modules/12-string-algorithms-and-pattern-matching.md)
 
 </details>
@@ -1186,6 +1195,9 @@ What does $Z[i]$ represent in the Z-Algorithm for string $S$?
 
 **B.** For a string $S$, $Z[i]$ is the length of the longest common prefix (LCP) between $S$ and the suffix $S[i \dots |S|-1]$. The Z-algorithm maintains a window $[L, R]$ with maximal $R$, allowing $Z[i]$ to be computed in strictly linear $O(|S|)$ time.
 
+- Why not A: $Z[i]$ measures substring match lengths from the start of the string rather than character classifications.
+- Why not C: Substring hash codes are used in Rabin-Karp rolling hashes, not the integer lengths stored in the Z-array.
+- Why not D: Edit distance accounts for insertions and deletions, whereas $Z[i]$ counts exact character matches.
 - Ref: [modules/12-string-algorithms-and-pattern-matching.md](../modules/12-string-algorithms-and-pattern-matching.md)
 
 </details>
@@ -1203,6 +1215,9 @@ Why does Kasai's algorithm construct the Longest Common Prefix (LCP) array from 
 
 **B.** Stripping the first character from suffix $i$ to form suffix $i + 1$ can reduce the shared prefix length with its predecessor by at most 1. Because $h$ decrements at most $n$ times across the loop and cannot exceed $n$, the total number of character increments across all steps is bounded by $2n$, proving strictly linear $O(n)$ time.
 
+- Why not A: Alphabet adjacency does not bound prefix matching lengths across arbitrary string suffixes.
+- Why not C: Kasai's algorithm operates deterministically on suffix arrays and inverse suffix arrays without Bloom filters.
+- Why not D: Suffix prefix lengths are compared directly using character indices rather than Fourier transforms.
 - Ref: [modules/12-string-algorithms-and-pattern-matching.md](../modules/12-string-algorithms-and-pattern-matching.md)
 
 </details>
@@ -1220,6 +1235,9 @@ How does Manacher's Algorithm handle both odd-length (`"aba"`) and even-length (
 
 **A.** Padding with `#` transforms `"aba"` to `"#a#b#a#"` (length 7, center `b`) and `"abba"` to `"#a#b#b#a#"` (length 9, center `#`). Every palindrome in the original string maps directly to an odd-length palindrome centered on a character or `#` delimiter in the transformed string, unifying both cases into a single mathematical radius search.
 
+- Why not B: Rabin-Karp computes rolling hashes and does not eliminate distinct branch logic for even vs odd palindrome centers.
+- Why not C: Squaring character codes produces large numeric values without unifying palindrome parity.
+- Why not D: Running KMP backwards searches for reversed substrings but does not find all maximal palindromic radii.
 - Ref: [modules/12-string-algorithms-and-pattern-matching.md](../modules/12-string-algorithms-and-pattern-matching.md)
 
 </details>
@@ -1241,6 +1259,9 @@ What guarantees does a standard Bloom Filter make regarding False Positives and 
 
 **B.** A Bloom filter guarantees zero false negatives: if an item was inserted, all $k$ hashed bit positions were set to 1, so querying an inserted item will always return `true`. However, hash collisions can cause all $k$ bits to be 1 even if an item was never inserted, producing a bounded false positive probability $p \approx (1 - e^{-kn/m})^k$.
 
+- Why not A: A standard Bloom filter can produce false positives due to bit-level hash collisions across keys.
+- Why not C: Hash collisions in finite bit arrays prevent Bloom filters from offering zero false positives.
+- Why not D: True members always match all set hash positions, guaranteeing zero false negatives.
 - Ref: [modules/13-probabilistic-data-structures-and-randomized-algorithms.md](../modules/13-probabilistic-data-structures-and-randomized-algorithms.md)
 
 </details>
@@ -1258,6 +1279,9 @@ In a Count-Min Sketch of depth $d$ and width $w$, why does the query operation t
 
 **B.** Every insertion increments row counters. Collisions with other keys only add positive counts to cells, meaning $\text{matrix}[i][h_i(x)] \ge a_x$ for all rows $i$. The true frequency $a_x$ is bounded from below, so taking the minimum across all independent rows isolates the cell with the least collision noise.
 
+- Why not A: Computing the minimum requires visiting all $d$ array rows, which does not reduce CPU instruction counts.
+- Why not C: Standard Count-Min sketches track non-negative frequency counts from increment streams.
+- Why not D: Count-Min sketch matrix cells store integer counter increments rather than IEEE-754 floating-point numbers.
 - Ref: [modules/13-probabilistic-data-structures-and-randomized-algorithms.md](../modules/13-probabilistic-data-structures-and-randomized-algorithms.md)
 
 </details>
@@ -1275,6 +1299,9 @@ Why does HyperLogLog use the Harmonic Mean rather than the Geometric or Arithmet
 
 **B.** Flajolet et al. demonstrated that single random outliers (a key happening to hash to 30 leading zeros in an otherwise small dataset) skew arithmetic and geometric means upward. The harmonic mean gives greater weight to smaller values, neutralizing high-zero outliers and achieving standard error $1.04 / \sqrt{m}$.
 
+- Why not A: The harmonic mean requires computing reciprocal sums and a division, which is not faster than arithmetic averages.
+- Why not C: Arithmetic means operate directly on integer values and sum counts.
+- Why not D: Geometric means of positive real numbers do not require complex numbers.
 - Ref: [modules/13-probabilistic-data-structures-and-randomized-algorithms.md](../modules/13-probabilistic-data-structures-and-randomized-algorithms.md)
 
 </details>
@@ -1292,6 +1319,9 @@ In a Consistent Hash Ring with $N$ nodes and $K$ keys, what fraction of keys mus
 
 **A.** In traditional modulo hashing (`hash % N`), changing $N$ to $N + 1$ remaps nearly $100\%$ of keys. In a Consistent Hash Ring (Karger et al.), adding or removing a node affects only the keys belonging to the adjacent partition on the ring, relocating an optimal fraction of only $K / N$ keys ($1/N$ of the total).
 
+- Why not B: Remapping half of all keys would be prohibitively expensive during cluster rebalancing.
+- Why not C: Relocating $(N - 1)/N$ keys is the worst-case behavior of standard modular hashing (`hash % N`), which consistent hashing avoids.
+- Why not D: $K / 2$ scales proportionally with total keys rather than distributing remapped partitions across $N$ nodes.
 - Ref: [modules/13-probabilistic-data-structures-and-randomized-algorithms.md](../modules/13-probabilistic-data-structures-and-randomized-algorithms.md)
 
 </details>
@@ -1309,6 +1339,9 @@ In Reservoir Sampling of $k$ items from a stream of unknown size $N$, when item 
 
 **B.** At 0-indexed step $i$, generating a random integer $r \in [0, i]$ and replacing a reservoir item if $r < k$ selects the incoming item with probability $k / (i + 1)$. Inductively, every item seen so far has an exact, uniform $k / (i + 1)$ probability of being in the reservoir.
 
+- Why not A: $1 / N$ requires knowing total stream size $N$ in advance, which is unknown in streaming reservoir sampling.
+- Why not C: A constant replacement probability of $1 / 2$ would heavily bias the reservoir toward later stream items.
+- Why not D: Exponential decay $k / 2^i$ under-samples later items and violates uniform selection.
 - Ref: [modules/13-probabilistic-data-structures-and-randomized-algorithms.md](../modules/13-probabilistic-data-structures-and-randomized-algorithms.md)
 
 </details>
@@ -1330,6 +1363,9 @@ In the Work-Span model of parallel computing, what do $T_1$ and $T_\infty$ repre
 
 **B.** $T_1$ (Work) is the total number of operations performed across all threads. $T_\infty$ (Span or Critical Path Length) is the length of the longest chain of sequential dependencies. The ratio $P = T_1 / T_\infty$ represents the maximum theoretical parallelism.
 
+- Why not A: Clock frequency and memory latency are physical hardware specifications, not algorithmic DAG metrics.
+- Why not C: Initialization and garbage collection are runtime lifecycle phases rather than computational complexity bounds.
+- Why not D: $T_1$ and $T_\infty$ characterize total work and critical path depth across the entire DAG, not specific loop iterations.
 - Ref: [modules/14-parallel-algorithms-concurrency-and-interview-execution.md](../modules/14-parallel-algorithms-concurrency-and-interview-execution.md)
 
 </details>
@@ -1347,6 +1383,9 @@ According to Brent's Theorem, what is the upper bound on execution time $T_p$ fo
 
 **B.** Brent's Theorem proves that a greedy scheduler guarantees execution time $T_p \le \frac{T_1 - T_\infty}{p} + T_\infty$. As long as the processor count $p \ll T_1 / T_\infty$, the first term $\frac{T_1}{p}$ dominates, achieving near-linear parallel speedup.
 
+- Why not A: $T_1 \cdot p$ represents total processor-capacity rather than an execution time bound.
+- Why not C: Execution time can never be faster than the critical path span $T_\infty$, even with infinite processors.
+- Why not D: Parallel execution under greedy scheduling scales with work divided by processors, not logarithmic processor steps.
 - Ref: [modules/14-parallel-algorithms-concurrency-and-interview-execution.md](../modules/14-parallel-algorithms-concurrency-and-interview-execution.md)
 
 </details>
@@ -1364,6 +1403,9 @@ What does the atomic Compare-And-Swap (CAS) instruction do?
 
 **B.** CAS is a hardware atomic read-modify-write primitive: `CAS(address, expected, desired)`. If `*address == expected`, it updates `*address = desired` and returns `true`. If another thread modified the value, CAS fails and returns `false`, allowing lock-free retry loops without blocking mutexes.
 
+- Why not A: CAS performs a conditional swap based on value comparison rather than an unconditional swap.
+- Why not C: CAS is an atomic CPU instruction that executes entirely in user space without kernel mutex acquisition.
+- Why not D: CAS updates a specific cache line via hardware cache coherence protocols rather than invalidating the entire L1 cache.
 - Ref: [modules/14-parallel-algorithms-concurrency-and-interview-execution.md](../modules/14-parallel-algorithms-concurrency-and-interview-execution.md)
 
 </details>
@@ -1381,6 +1423,9 @@ How does the ABA Problem manifest in lock-free concurrent programming, and how i
 
 **B.** Thread 1 reads value $A$ at memory location $M$. While preempted, Thread 2 modifies $M$ to $B$, and then back to $A$. When Thread 1 runs CAS, it compares $M$ with $A$ and succeeds, even though underlying data structures referenced by $A$ may have been freed or reallocated. Pairing each pointer with an incrementing 64-bit version counter ensures that `(A, v1)` fails to match `(A, v2)`.
 
+- Why not A: The ABA problem concerns subtle logical state mutations between identical values, not integer pointer overflows.
+- Why not C: ABA is a data corruption bug in lock-free algorithms, not a thread deadlock condition.
+- Why not D: Memory fences prevent instruction reordering but do not prevent another thread from restoring an earlier pointer value.
 - Ref: [modules/14-parallel-algorithms-concurrency-and-interview-execution.md](../modules/14-parallel-algorithms-concurrency-and-interview-execution.md)
 
 </details>
@@ -1405,6 +1450,9 @@ In the UMPIRE technical interview framework, what do the letters stand for?
 5. **Review**: Dry-run with concrete examples and boundary cases.
 6. **Evaluate**: Articulate Time and Space complexities and trade-offs.
 
+- Why not B: Universal, Monadic, and Primitive describe programming language type theory concepts rather than interview steps.
+- Why not C: Unit, Module, Integration, and Regression are software testing hierarchy terms.
+- Why not D: Update, Mutate, Process, and Retrieve describe database transaction lifecycle phases.
 - Ref: [modules/14-parallel-algorithms-concurrency-and-interview-execution.md](../modules/14-parallel-algorithms-concurrency-and-interview-execution.md)
 
 </details>
@@ -1422,6 +1470,9 @@ What is the formal definition of a **data race** in concurrent memory models?
 
 **B.** In the C++20, Java, and Rust memory models, a data race occurs when two or more memory actions in different threads access the same memory location concurrently, at least one is a write, and no synchronization (e.g. mutex, atomic acquire-release fence) orders them. Data races cause undefined behavior.
 
+- Why not A: Variable processor clock speeds across cores are normal hardware behaviors that do not define data races.
+- Why not C: Thread pool exhaustion causes task starvation or queuing delays, not data races.
+- Why not D: Lock hold durations affect latency and contention, but holding a valid lock explicitly prevents data races.
 - Ref: [modules/14-parallel-algorithms-concurrency-and-interview-execution.md](../modules/14-parallel-algorithms-concurrency-and-interview-execution.md)
 
 </details>
@@ -1439,6 +1490,9 @@ In a live coding interview, why is Python's `heapq` preferred over JavaScript fo
 
 **B.** Unlike Python (`heapq`), Java (`PriorityQueue`), or C++ (`std::priority_queue`), JavaScript has no built-in binary heap or priority queue. Implementing `MinHeap` consumes 10–15 minutes of interview time. In TypeScript environments, candidates must either use pre-provided data structures or clarify with the interviewer if a heap can be stubbed.
 
+- Why not A: Standard Python executes via an interpreted runtime (CPython) and is generally slower than compiled C++.
+- Why not C: Priority queue operations (`heappop`, `heappush`) take logarithmic $O(\log n)$ time, not $O(1)$.
+- Why not D: JavaScript fully supports recursive functions and standard call stack mechanics.
 - Ref: [modules/14-parallel-algorithms-concurrency-and-interview-execution.md](../modules/14-parallel-algorithms-concurrency-and-interview-execution.md)
 
 </details>
@@ -1456,6 +1510,9 @@ When tracking visited cells in a 2D grid graph of size $R \times C$ ($C \le 1000
 
 **B.** String interpolation `` `${r},${c}` `` allocates a new string object and computes its hash for every neighbor check. In a $1000 \times 1000$ grid with $4 \times 10^6$ transitions, this creates massive heap allocation and GC pauses. Packing into a 32-bit integer `r * C + c` (or using a flat 1-D typed array `new Uint8Array(R * C)`) executes in zero-allocation CPU cycles.
 
+- Why not A: Integer arithmetic can overflow if bounds are violated, whereas strings guarantee uniqueness across comma-separated values.
+- Why not C: V8 provides optimized internal string hashing mechanisms for object property access.
+- Why not D: Template strings can format arbitrary numerical coordinates without a cap of 100.
 - Ref: [modules/14-parallel-algorithms-concurrency-and-interview-execution.md](../modules/14-parallel-algorithms-concurrency-and-interview-execution.md)
 
 </details>
@@ -1473,6 +1530,9 @@ In Parallel Merge Sort, why does parallelizing only the two recursive sort calls
 
 **A.** By the Span Law, execution time can never be faster than the critical path $T_\infty$. If merging takes $O(n)$ sequential time, $T_\infty = O(n)$. Total work is $T_1 = O(n \log n)$. The maximum theoretical parallelism is $\frac{T_1}{T_\infty} = \frac{O(n \log n)}{O(n)} = O(\log n)$. For $n = 10^6$, $\log_2 n \approx 20$, meaning adding more than 20 cores yields diminishing returns. A fully parallel merge using binary search partitions reduces span to $O(\log^3 n)$, unlocking parallelism of $O(n / \log^2 n)$.
 
+- Why not B: Standard Merge Sort is a stable sorting algorithm.
+- Why not C: Processor throttling is a thermal management mechanism unrelated to theoretical algorithm span limits.
+- Why not D: Multi-threaded runtimes allow threads to share memory in the same address space.
 - Ref: [modules/14-parallel-algorithms-concurrency-and-interview-execution.md](../modules/14-parallel-algorithms-concurrency-and-interview-execution.md)
 
 </details>

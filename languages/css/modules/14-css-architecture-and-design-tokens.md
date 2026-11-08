@@ -230,6 +230,19 @@ customElements.define('user-profile-card', UserProfileCard);
 
 ---
 
+## Version History & Architectural Evolution
+
+| Version / Milestone | Year | Architectural Shifts & Key Capabilities | Deprecations & Breaking Hazards |
+| --- | :-: | --- | --- |
+| **CSS 2021** | 2021 | Wide adoption of `:is()` and zero-specificity `:where()`; `aspect-ratio` native property; CSS Grid subgrid level 2 drafting; CSS Color 4 wide-gamut specifications. | Browser vendor prefixes (`-webkit-`, `-moz-`) phased out in evergreen browsers for standard flex/grid layouts. |
+| **CSS 2022** | 2022 | Cascade Layers (`@layer`) formalizing cascade order; Container Queries (`@container`) size queries on inline dimensions; CSS Color 4 spaces (`lch()`, `lab()`, `hwb()`); `display: flow-root` standardized. | `!important` inversion inside `@layer`: an `!important` rule in an earlier layer unexpectedly overrides subsequent layers. |
+| **CSS 2023** | 2023 | Native CSS Nesting without preprocessors; relational `:has()` parent and sibling querying; dynamic viewport units (`dvh`, `svh`, `lvh`); trigonometric math functions (`sin()`, `cos()`, `tan()`). | Initial CSS nesting required leading `&` or symbols before relaxed syntax; older build tools choke on unescaped relaxed nesting. |
+| **CSS 2024** | 2024 | Web Platform Baseline 2024: OKLCH perceptual color space and Relative Color Syntax (`oklch(from ...)`); typed CSS Houdini properties (`@property`); HTML Top Layer with Popover API; single-page View Transitions API (`startViewTransition`). | Unregistered CSS custom properties interpolate discretely without smooth transitions; legacy sRGB displays clip wide-gamut colors without gamut mapping. |
+| **CSS 2025** | 2025 | Multi-page View Transitions (`@view-transition`); entry and exit animation control via `@starting-style` and `transition-behavior: allow-discrete`; CSS Anchor Positioning (`anchor()`, `position-anchor`); W3C DTCG 2025.10 token format. | Disallowed anchor position references break layout silently if target elements lack proper anchor name registrations. |
+| **CSS 2026** | 2026 | Custom CSS Functions and Mixins (`@function`, `@mixin`); native CSS masonry layout (`display: masonry`); Scroll-driven animations (`animation-timeline: scroll() \| view()`); `@scope` donut scoping universally widely available. | Mixing `@scope` boundary limits with deep shadow DOM encapsulation boundaries can produce empty style matches without developer warnings. |
+
+---
+
 ## 6. Interview Drill: Architecture & Design Tokens
 
 ### Q1: Why have major frontend platforms transitioned away from runtime CSS-in-JS libraries (such as styled-components and Emotion) toward zero-runtime compilers like Panda CSS and StyleX?

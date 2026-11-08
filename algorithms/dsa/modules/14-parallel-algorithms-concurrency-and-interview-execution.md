@@ -188,6 +188,19 @@ In live coding interviews, many candidates choose Python for concise standard li
 
 ---
 
+## Version History & Architectural Evolution
+
+| Version / Milestone | Year | Architectural Shifts & Key Capabilities | Deprecations & Breaking Hazards |
+| --- | :-: | --- | --- |
+| **Word-RAM Model & Bitwise Parallelism** (Fredman-Willard / Hagerup) | 1990–1998 | Computational model where words of $w \ge \log n$ bits execute $O(1)$ arithmetic and bitwise operations; Fusion Trees achieving $o(n \log n)$ integer sorting; constant-time find-first-set / trailing zero operations. | Pure pointer machine assumptions fail to predict performance on real CPU registers; algorithms relying on huge word widths exceeding physical ALU limits break real-world runtime bounds. |
+| **Cache-Oblivious Model & Memory Hierarchies** (Frigo, Leiserson, Prokop et al.) | 1999–2002 | Algorithms optimal across all levels of an unknown memory hierarchy ($M$ cache size, $B$ block size) without hardware parameter tuning; van Emde Boas cache-oblivious tree layouts; Funnelsort. | Recursive layout and divide-and-conquer function call overhead can dominate cache benefits on small inputs; non-contiguous memory allocations degrade TLB performance. |
+| **Lock-Free Concurrency & Safe Memory Reclamation** (Michael-Scott / Herlihy) | 1996–2004 | Lock-free queues (MS-Queue) and stacks (Treiber Stack) using Compare-And-Swap (CAS); Hazard Pointers and Epoch-Based Reclamation (EBR) solving concurrent use-after-free and ABA memory hazards. | Raw pointer CAS susceptible to the ABA corruption disaster; thread spinning during severe contention causes CPU cache line bouncing and performance degradation below simple mutexes. |
+| **Parallel Work-Stealing Runtimes & DAG Schedulers** (Cilk / ForkJoin) | 2005–2014 | Multicore Work-Span scheduling ($T_1, T_\infty$); Cilk work-stealing provably bounding execution time $T_p \le T_1 / p + T_\infty$; Java ForkJoin framework; lock-free deque task queues. | Naive recursive task spawning induces severe GC pressure and thread stack allocation overhead; span bottlenecks ($T_\infty$) prevent linear scaling across high core counts. |
+| **Modern SIMD Vectorization & Cache-Conscious Structures** | 2015–2022 | AVX-512 and ARM NEON data-parallel SIMD intrinsics; SWAR (SIMD Within A Register); contiguous Swiss Tables (Robin Hood hashing with 1-byte control metadata bytes); fast bit-manipulation extensions (BMI2). | Scalar algorithms and pointer-heavy linked nodes suffer massive memory latency stalls due to cache misses; SIMD vectorization requires strict memory boundary alignment. |
+| **Quantum Asymptotics & Post-Quantum Complexity** | 2024–2026 | Shor's algorithm ($O((\log N)^2 \cdot \log \log N)$ quantum integer factorization) breaking classical RSA/ECC hardness; Grover's algorithm providing quadratic speedup ($O(\sqrt{N})$) for unstructured search; Post-Quantum lattice cryptography (SVP/LWE) establishing quantum-resistant asymptotic lower bounds. | Classical cryptographic assumptions of polynomial hardness shattered; quantum computing error rates requiring fault-tolerant surface codes before asymptotic gains materialize in practice. |
+
+---
+
 ## 5. Interview Drill: Parallelism & Interview Execution
 
 <details>

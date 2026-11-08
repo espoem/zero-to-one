@@ -265,6 +265,9 @@ How does `@pandacss/dev/postcss` decide which CSS file to replace?
 
 **B.** Other files pass through unchanged.
 
+- Why not A: PostCSS processes any CSS file containing the layer-order statement regardless of whether it is named `index.css`.
+- Why not C: `cssRoot` does not govern PostCSS replacement; the layer statement acts as the explicit replacement anchor.
+- Why not D: Replacing every CSS file would overwrite unrelated application stylesheets that lack the Panda layer header.
 - Ref: [M02 §2.3.2](../modules/02-installation-and-build-integration.md#232-postcss), `integration-postcss.test.ts`, https://panda-css.com/docs/get-started/postcss
 
 </details>
@@ -330,6 +333,9 @@ The transform rewrites only static call sites. Dynamic sites (e.g. `css(badge.ra
 
 **B.**
 
+- Why not A: Panda generates TypeScript definitions for token paths, recipes, and utilities, but not raw CSS file imports.
+- Why not C: CSS imports are supported across modern bundlers (Vite, Webpack), but TypeScript requires ambient module declarations under side-effect checks.
+- Why not D: TS2882 is a TypeScript type-checker diagnostic, not a CSS parsing or layer-statement error.
 - Ref: [M02 §2.4](../modules/02-installation-and-build-integration.md#typescript-7-and-the-css-import), `examples/react/src/env.d.ts`
 
 </details>
@@ -351,6 +357,9 @@ What does `css({ color: 'orange.700' }, { color: 'orange.300' })` return?
 
 **B.** Objects merge left to right before encoding; the last value wins per property.
 
+- Why not A: Panda does not concatenate conflicting utility classes; it performs an object merge before generating class names.
+- Why not C: `css()` merges style objects left-to-right, meaning properties in later arguments overwrite earlier ones.
+- Why not D: Passing multiple style objects with duplicate keys is standard composition and valid in Panda CSS.
 - Ref: [M03 §3.3](../modules/03-styling-api-and-conditions.md#33-composition-cssa-b-cssraw-cx), `runtime.test.ts`
 
 </details>
@@ -368,6 +377,9 @@ An element has `class="c_orange.300 c_orange.700"` built by string concatenation
 
 **B.** Merge style objects with `css(a, b)` instead of concatenating classes.
 
+- Why not A: Browsers do not resolve CSS conflicts by HTML class attribute order; stylesheet cascade order takes precedence.
+- Why not C: Both `orange.300` and `orange.700` are valid tokens that emit generated utility classes.
+- Why not D: Deterministic stylesheet ordering of equal-specificity utilities is standard CSS cascade behavior, not a bug.
 - Ref: [M03 §3.3](../modules/03-styling-api-and-conditions.md#cx-is-not-a-merge), Playwright test `NEGATIVE: concatenated classes …`
 
 </details>
@@ -385,6 +397,9 @@ Why does `css({ bg: 'red.500' })` override a config recipe's background even if 
 
 **B.**
 
+- Why not A: Panda utilities do not rely on `!important` flags for normal recipe overrides.
+- Why not C: Recipes are declared in `@layer recipes` rather than relying on `:where()` specificity lowering.
+- Why not D: Utilities are emitted as atomic CSS rules inside `@layer utilities`, not as inline HTML styles.
 - Ref: [M01 §1.3](../modules/01-mental-model-and-v2-architecture.md#13-the-layered-stylesheet); cascade theory in `languages/css`
 
 </details>
@@ -432,6 +447,9 @@ Which keys inside a style object are treated as conditions or selectors (not CSS
 
 **B.** Group/peer conditions emit `.group:is(:hover, [data-hover]) .cls` and `.peer:… ~ .cls`.
 
+- Why not A: `jsxFramework` configures component factory bindings and has no influence on CSS condition selector generation.
+- Why not C: Modern browsers natively support `:hover` without polyfills.
+- Why not D: `staticCss` pre-generates classes ahead of time, but the runtime selector still requires the `.group` ancestor in the DOM.
 - Ref: [M03 §3.2](../modules/03-styling-api-and-conditions.md#families), `e2e-fixtures.test.ts`
 
 </details>
@@ -502,6 +520,9 @@ How does a semantic token with `{ base: '{colors.ink.900}', _dark: '{colors.ink.
 
 **B.**
 
+- Why not A: Semantic tokens compile into CSS custom properties, not separate atomic classes per usage.
+- Why not C: Semantic tokens are resolved into CSS variables at build time without runtime JavaScript lookups.
+- Why not D: Variables are declared on root selectors and conditions in the stylesheet rather than duplicated per component.
 - Ref: [M05 §5.1](../modules/05-design-tokens.md#51-formal-model), `05-tokens` snapshot
 
 </details>
@@ -549,6 +570,9 @@ Which conditions can a semantic token use?
 
 **B.** The variable is declared on the root or a themed ancestor; element-state conditions do not fit that model.
 
+- Why not A: Element pseudo-classes like `_hover` cannot be bound to static root CSS variable declarations.
+- Why not C: Semantic tokens support media queries, container queries, and theme selector conditions beyond `_dark`.
+- Why not D: Semantic tokens support parent selector conditions such as `_dark` or `[data-theme]` in addition to breakpoints.
 - Ref: [M05 §5.2](../modules/05-design-tokens.md#52-declaring-tokens), https://panda-css.com/docs/theming/tokens
 
 </details>
@@ -578,6 +602,9 @@ What does `defineThemeContract` give you?
 
 **B.**
 
+- Why not A: Theme contracts provide compile-time type enforcement rather than executing runtime assertions.
+- Why not C: Dark mode variants must be declared explicitly and are not synthesized automatically by contracts.
+- Why not D: Contracts enforce schema compliance without altering the minification or size of emitted CSS.
 - Ref: [M06 §6.3](../modules/06-color-mode-and-theming.md#theme-contract), `configs/themes.config.ts` (`brokenTheme`)
 
 </details>
@@ -624,6 +651,9 @@ After upgrading to v2, utilities using `translate`/`filter` disappear in Safari 
 
 **B.**
 
+- Why not A: Composition text styles reside in a nested sublayer (`utilities.compositions`), which yields to unnested utilities.
+- Why not C: JavaScript object key order has no effect on CSS cascade layer precedence.
+- Why not D: Combining composition styles with direct utility overrides is valid syntax and compiles cleanly.
 - Ref: [M06 §6.4](../modules/06-color-mode-and-theming.md#64-compositions-text-styles-layer-styles-animation-styles), `e2e-fixtures.test.ts`
 
 </details>
@@ -645,6 +675,9 @@ What is the main CSS difference between `cva` and a config recipe?
 
 **B.**
 
+- Why not A: `cva` generates atomic utility classes, whereas config recipes emit dedicated BEM-like class names in `@layer recipes`.
+- Why not C: `cva` executes runtime atomic composition while config recipes are statically extracted into stylesheet layers by the build tool.
+- Why not D: Config recipes fully support `compoundVariants` matching combinations of variant properties.
 - Ref: [M07 §7.1](../modules/07-recipes-and-config-recipes.md#71-the-recipe-model), `07-recipes` snapshot
 
 </details>
@@ -674,6 +707,9 @@ A wrapper `function Action(p) { return <button className={button(p)} /> }` is us
 
 **B.** Add `'Action'` to the recipe's `jsx`, rename the wrapper, or use `staticCss`.
 
+- Why not A: Calling `button(p)` works at runtime, but static JSX extraction tracks tag names against recipe configuration.
+- Why not C: Wrappers are supported when their component identifier is registered in the recipe's `jsx` array or configured via `staticCss`.
+- Why not D: Recipe variant values can be strings, numbers, or booleans depending on recipe definitions.
 - Ref: [M07 §7.3](../modules/07-recipes-and-config-recipes.md#jit-emission-and-its-three-failure-modes), `negative/recipe-renamed-wrapper.tsx`
 
 </details>
@@ -711,6 +747,9 @@ What does `colorPalette: 'red'` emit on an element?
 
 **B.**
 
+- Why not A: `colorPalette` sets scoped CSS variables rather than assigning a single static text color rule.
+- Why not C: Theme blocks define global design token scales, whereas `colorPalette` rebinds virtual palette tokens locally.
+- Why not D: `colorPalette` is an atomic utility that is extracted whenever referenced in source code.
 - Ref: [M07 §7.5](../modules/07-recipes-and-config-recipes.md#75-virtual-colors-colorpalette), `08-slot-recipes` snapshot
 
 </details>
@@ -728,6 +767,9 @@ Which replaced `createStyleContext` in v2?
 
 **B.** `defineParts` was removed too.
 
+- Why not A: React's native `createContext` lacks recipe slot mapping and class name composition utilities.
+- Why not C: `defineParts` was the legacy v1 anatomy helper and was removed in favor of `sva` and recipe contexts.
+- Why not D: `sva` defines slot recipes but does not provide an embedded `.context()` method.
 - Ref: [M08 §8.2](../modules/08-slot-recipes-and-recipe-contexts.md#then-vs-now), `cli.test.ts` (doctor artifacts)
 
 </details>
@@ -777,6 +819,9 @@ Why should a Solid component accepting a `css` prop use `splitProps` instead of 
 
 **B.** Extraction reads the `css` prop at the call site either way.
 
+- Why not A: Panda extracts style props statically from JSX call sites regardless of how the component implementation unpacks props.
+- Why not C: Solid supports standard JavaScript rest parameters, but destructuring triggers reactive tracking loss.
+- Why not D: JSX attribute evaluation order in Solid has no bearing on reactive prop tracking.
 - Ref: [M09 §9.2](../modules/09-jsx-factory-and-style-props.md#92-react-and-solid-side-by-side), `examples/solid/src/Badge.tsx`
 
 </details>
@@ -794,6 +839,9 @@ In this track's benchmark, how did `jsxStyleProps: 'minimal'` compare to `'all'`
 
 **B.** 8,587 → 5,073 instantiations on identical source (tiny project; ratio depends on app size).
 
+- Why not A: Restricting the prop surface removes hundreds of style attribute types from every JSX element, drastically reducing type-checking cost.
+- Why not C: `css` prop checking does not increase overall compile times compared to checking every possible CSS property on every tag.
+- Why not D: The primary benefit is compile-time TypeScript type instantiation reduction, not runtime execution speed.
 - Ref: [M09 §9.3](../modules/09-jsx-factory-and-style-props.md#93-jsxstyleprops-extraction-surface-and-type-cost), `type-cost.test.ts`
 
 </details>
@@ -845,6 +893,9 @@ What does `panda lib` produce?
 
 **B.**
 
+- Why not A: `panda lib` outputs package manifests, preset modules, and build metadata in addition to CSS assets.
+- Why not C: Storybook bundles are generated by Storybook's own compiler tooling, not the Panda CLI.
+- Why not D: Building an npm tarball is handled by `npm pack`, not `panda lib`.
 - Ref: [M11 §11.2](../modules/11-monorepos-and-design-system-libraries.md#112-building-a-design-system-with-panda-lib), `monorepo.test.ts`
 
 </details>
@@ -874,6 +925,9 @@ How does an app get the package's component styles without scanning the package'
 
 **B.** The app run reported only its own files parsed, yet emitted the package's classes.
 
+- Why not A: Direct CSS imports bypass consumer theme token compilation and cause duplicate utility rules.
+- Why not C: Consumers do not invoke `panda lib` on external node modules; they consume pre-emitted library metadata.
+- Why not D: `staticCss: '*'` forces generation of all possible classes, causing immense stylesheet bloat.
 - Ref: [M11 §11.3](../modules/11-monorepos-and-design-system-libraries.md#113-consuming-a-design-system)
 
 </details>
@@ -941,6 +995,9 @@ How do you migrate `color: ${(p) => p.$color}` (user-chosen color) from styled-c
 
 **B.** Finite sets become variants instead.
 
+- Why not A: Passing runtime variable properties into `css()` prevents static extraction and generates invalid atomic classes.
+- Why not C: Pre-generating all arbitrary color values via `staticCss` is infeasible for unbounded dynamic colors.
+- Why not D: Panda is a build-time static extraction tool and does not inject dynamic runtime `<style>` tags.
 - Ref: [M12 §12.1](../modules/12-migration-and-upgrades.md#121-from-runtime-css-in-js-styled-components-emotion-stitches), bridge test in `e2e-fixtures.test.ts`
 
 </details>
@@ -1019,6 +1076,9 @@ Why can a project move from Panda 0.51 directly to 2.4?
 
 **B.** If the project adopted `createStyleContext` (added in 1.0), that is part of the v2 migration.
 
+- Why not A: Panda 2.x introduces architectural changes to parser extraction, recipe contexts, and layering rather than reusing the 0.x engine.
+- Why not C: The CLI provides diagnostic assistance (`panda doctor`), but does not perform full automated configuration rewrites.
+- Why not D: Stepping sequentially through every 1.x minor is unnecessary because v2 migration documents the direct upgrade path.
 - Ref: [M12 §12.3](../modules/12-migration-and-upgrades.md#0x--1x)
 
 </details>

@@ -237,6 +237,19 @@ flowchart TD
 
 ---
 
+## Version History & Architectural Evolution
+
+| Version / Milestone | Year | Architectural Shifts & Key Capabilities | Deprecations & Breaking Hazards |
+| --- | :-: | --- | --- |
+| **TLS 1.2 $\to$ TLS 1.3** (RFC 8446) | 2018 | Handshake latency reduced from 2-RTT to 1-RTT (with 0-RTT PSK resumption); mandatory forward secrecy via ephemeral Diffie-Hellman; encrypted handshake metadata and extensions. | Static RSA key exchange and CBC cipher suites purged; MD5 and SHA-1 signatures forbidden; renegotiation handshake eliminated. |
+| **WebAuthn Level 1 $\to$ Level 2** (W3C Rec) | 2019–2021 | Hardware-backed FIDO2 / CTAP2 authenticators; public-key cryptography origin-bound to the browser domain; phishing-resistant credential assertions; enterprise attestation formats. | Legacy U2F raw JavaScript APIs deprecated; authenticators without user presence verification rejected. |
+| **OAuth 2.0 $\to$ OAuth 2.1** (IETF Draft / BCP) | 2021–2024 | Mandatory PKCE (RFC 7636) for all authorization code clients; mandatory Refresh Token Rotation (RTR); sender-constraining via DPoP (RFC 9449) and mTLS (RFC 8705); exact redirect URI matching. | Resource Owner Password Credentials (ROPC) grant removed; Implicit Grant permanently eliminated; wildcard redirect URIs strictly prohibited. |
+| **WebAuthn Level 3 & Passkeys** (W3C L3) | 2023–2025 | Multi-device synchronized passkeys via end-to-end encrypted cloud keychains; Pseudo-Random Function (PRF) extension for client-side encryption key derivation; largeBlob storage. | Shared master passwords and SMS/TOTP two-factor fallback deprecated as susceptible to adversary-in-the-middle (AiTM) phishing proxies. |
+| **Post-Quantum Cryptography** (NIST FIPS 203/204/205) | 2024 | Standardization of ML-KEM (Kyber, FIPS 203), ML-DSA (Dilithium, FIPS 204), and SLH-DSA (SPHINCS+, FIPS 205); hybrid post-quantum TLS key exchange (`X25519MLKEM768`, RFC 10024). | Classical discrete logarithm and RSA factoring primitives vulnerable to Shor's algorithm under future Cryptographically Relevant Quantum Computers (CRQC). |
+| **Post-Quantum Wire Mandates & OIDC Federation** | 2025–2026 | Federal and browser mandates against "Harvest Now, Decrypt Later" (HNDL); SPIFFE/SPIRE automated mTLS; Workload Identity Federation replacing static IAM keys across CI/CD and cloud platforms. | Static, long-lived cloud API secrets and access keys actively flagged as critical vulnerabilities; classical-only TLS cipher configurations rejected by modern edge proxies. |
+
+---
+
 ## 7. Interview Drill: Principal Security Systems Architect
 
 <details>

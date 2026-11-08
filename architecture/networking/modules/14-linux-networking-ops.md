@@ -466,6 +466,19 @@ Output Interpretation:
 
 ---
 
+## Version History & Architectural Evolution
+
+| Version / Milestone | Year | Architectural Shifts & Key Capabilities | Deprecations & Breaking Hazards |
+| --- | :-: | --- | --- |
+| **HTTP/1.1 & Classic Linux Sockets** (RFC 2616 / RFC 7230) | 1999–2011 | Persistent TCP keep-alive connections; chunked transfer encoding; `select()` and `poll()` socket polling; legacy `ioctl()` network interface configuration (`ifconfig`, `route`). | Application-level Head-of-Line (HoL) blocking on pipelined requests; $O(N)$ socket file-descriptor exhaustion; ASCII header overhead on every round-trip. |
+| **Linux Epoll & Kernel Namespaces** | 2002–2013 | Introduction of `epoll` (`EPOLLIN`, `EPOLLOUT`, edge vs. level triggering) solving the C10K concurrency problem; Linux network namespaces (`netns`) and `veth` virtual Ethernet pairs providing foundational container network isolation. | `/proc/net/tcp` linear parsing tools (`netstat`) cause multi-second kernel stalls under large socket volumes (> 100k open connections). |
+| **HTTP/2 & RFC 7540** | 2015 | Binary framing layer; full multiplexing of parallel streams over a single TCP connection; HPACK table header compression; stream priority trees and flow control frames. | Single TCP packet loss halts all multiplexed streams simultaneously due to kernel-level TCP byte-stream Head-of-Line blocking; HTTP/2 Server Push deprecated due to cache races. |
+| **Linux Kernel eBPF & XDP Subsystems** | 2016–2019 | eBPF bytecode execution inside the Linux kernel; eXpress Data Path (XDP) running packet filters at the network device driver RX ring before `sk_buff` allocation; `nftables` bytecode VM replacing `iptables`. | Legacy linear `iptables` rulesets incur severe $O(N)$ CPU scaling penalties under complex Kubernetes service meshes; raw packet pointers require strict eBPF verifier alignment. |
+| **TLS 1.3 & WireGuard** (RFC 8446 / Linux 5.6) | 2018–2020 | TLS 1.3 1-RTT handshake (and 0-RTT PSK resumption); encrypted handshake metadata; WireGuard in-kernel cryptokey routing replacing complex IPsec IKEv2 daemons. | Legacy static RSA key exchange and CBC cipher suites purged; 0-RTT replay vulnerability hazards require explicit anti-replay server cache validation. |
+| **HTTP/3 & QUIC** (RFC 9000 / RFC 9114) | 2021–2026 | Transport shifted from TCP to UDP; native stream-level multiplexing without TCP Head-of-Line blocking; integrated TLS 1.3 encryption; 64-bit Connection IDs enabling seamless WiFi-to-cellular connection migration. | UDP traffic rate-limiting or blocking by conservative enterprise middleboxes; increased user-space CPU utilization for high-throughput packet processing relative to in-kernel TCP offload. |
+
+---
+
 ## 11. Interview Drill: Questions & Model Answers
 
 ### Q1: In the output of `ss -lnt`, what do the `Recv-Q` and `Send-Q` columns indicate? How does this differ from their meaning on an established connection?

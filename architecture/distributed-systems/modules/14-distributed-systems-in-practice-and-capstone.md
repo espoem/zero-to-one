@@ -138,6 +138,19 @@ When a new replica group is added, the Shard Controller rebalances shard ownersh
 
 ---
 
+## Version History & Architectural Evolution
+
+| Version / Milestone | Year | Architectural Shifts & Key Capabilities | Deprecations & Breaking Hazards |
+| --- | :-: | --- | --- |
+| **Viewstamped Replication & Classic Paxos** (Oki-Liskov / Lamport) | 1988–1998 | Foundational State Machine Replication (SMR); primary-backup view changes; Single-Decree Synod protocol; Multi-Paxos steady-state leader optimization. | Dueling proposers livelock in basic Paxos without randomized leader election; severe specification ambiguity regarding membership changes and log compaction. |
+| **Google Chubby, Bigtable & GFS** | 2004–2006 | Industrialization of Paxos for coarse-grained distributed locking; relaxed consistency file systems with 64 MB append-only chunks; SSTables and distributed sparse multidimensional tables. | Single-master metadata bottleneck in GFS; master failover latency; non-linearizable record append duplicates under network partitions. |
+| **CRDT Foundations & Strong Eventual Consistency** (Shapiro et al.) | 2011 | Formalization of Conflict-Free Replicated Data Types (CvRDT join-semilattices, CmRDT operation commutativity); guaranteed convergence without central consensus coordination. | Tombstone accumulation causing unbounded memory growth; inability to enforce global multi-key integrity constraints (such as uniqueness invariants) without coordination. |
+| **Google Spanner & TrueTime** (Corbett et al.) | 2012 | Globally distributed transactions combining Multi-Paxos with Two-Phase Commit (2PC); atomic/GPS hardware clocks bounding clock skew ($\epsilon$); commit-wait ($2\epsilon$) achieving external consistency (strict serializability). | Transaction commit latency bounded below by $2\epsilon$; physical clock drift or GPS antenna failure stalls commits during uncertainty window spikes. |
+| **Raft Consensus Protocol** (Ongaro & Ousterhout) | 2014 | Deconstructed consensus designed for understandability; randomized election timers; strong leader invariant; joint consensus cluster membership reconfiguration. | Figure 8 corner case: a leader cannot commit log entries from previous terms by counting replicas alone without committing an entry from its own current term. |
+| **Flexible Paxos, EPaxos & Local-First CRDTs** | 2016–2026 | Asymmetric quorum intersection ($Q_{\text{write}} \cap Q_{\text{read}} \neq \emptyset$) enabling sub-majority write quorums; leaderless 1-RTT consensus for non-interfering commands; high-performance Local-First CRDT engines (Yjs, Automerge, Loro) with state compression. | High conflict rates in leaderless protocols (EPaxos) trigger fallback paths that degrade throughput below standard Multi-Paxos; split-brain hazards in uncoordinated peer-to-peer topologies. |
+
+---
+
 ## 4. Interview Drill: Distributed Systems in Practice
 
 <details>

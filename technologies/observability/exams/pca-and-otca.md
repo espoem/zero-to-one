@@ -161,6 +161,9 @@ What is the purpose of the `group_left` modifier in PromQL binary vector matchin
 
 **B.** `group_left` enables many-to-one matching operations, permitting a higher-cardinality left vector to be enriched with metadata labels from a lower-cardinality right vector.
 
+- Why not A: Inner joins across identical label sets do not require vector matching modifiers like `group_left`.
+- Why not C: `group_left` preserves existing labels and enriches matching series with selected right-vector labels rather than dropping them.
+- Why not D: Numeric filtering is performed with scalar comparison operators (`> 0`), not vector matching modifiers.
 - Ref: [modules/06-promql-mastery-and-recording-rules.md](../modules/06-promql-mastery-and-recording-rules.md), https://prometheus.io/docs/prometheus/latest/querying/operators/#vector-matching
 
 </details>
@@ -178,6 +181,9 @@ What is the primary function of `promtool test rules` in a CI/CD pipeline?
 
 **B.** `promtool test rules` executes unit tests against YAML rule files using declared input series and expected rule evaluation outputs, catching syntax errors and logic bugs before deployment.
 
+- Why not A: k6 is an external load-testing tool unrelated to Prometheus rule evaluation testing.
+- Why not C: CNI network policies are tested and validated through Kubernetes networking tools, not `promtool`.
+- Why not D: Storage performance benchmarks require specialized load-testing harnesses rather than offline unit rule evaluators.
 - Ref: [modules/07-alerting-architecture-and-alertmanager.md](../modules/07-alerting-architecture-and-alertmanager.md), https://prometheus.io/docs/prometheus/latest/command-line/promtool/
 
 </details>
@@ -195,6 +201,9 @@ In Alertmanager, what does the `group_by` directive control in a routing block?
 
 **B.** `group_by` aggregates related incoming alerts sharing specified label keys into a single combined notification message, preventing notification storms during large-scale incidents.
 
+- Why not A: Gossip encryption keys and ciphers are configured under Alertmanager cluster settings, not alert routing blocks.
+- Why not C: Scrape frequency is determined by `scrape_interval` in Prometheus configuration, not Alertmanager.
+- Why not D: Storage sharding in Mimir is managed by the Cortex ring hash architecture, not Alertmanager alert grouping.
 - Ref: [modules/07-alerting-architecture-and-alertmanager.md](../modules/07-alerting-architecture-and-alertmanager.md), https://prometheus.io/docs/alerting/latest/configuration/
 
 </details>
@@ -212,6 +221,9 @@ Which exposition format is native to Prometheus and OpenMetrics for scraping met
 
 **B.** Prometheus and OpenMetrics scrape targets over HTTP using a line-oriented plain text exposition format containing sample lines accompanied by `# HELP` and `# TYPE` metadata comments.
 
+- Why not A: XML SOAP is a verbose remote procedure protocol, not a streaming metrics exposition format.
+- Why not C: Flat CSV lacks structured label dimensions and type metadata comments required by Prometheus.
+- Why not D: YAML is used for agent and collector configuration files, not high-throughput HTTP scraping.
 - Ref: [modules/05-prometheus-internals-and-tsdb.md](../modules/05-prometheus-internals-and-tsdb.md), https://openmetrics.io/
 
 </details>
@@ -229,6 +241,9 @@ What is the fundamental architectural distinction between the OpenTelemetry API 
 
 **B.** The OpenTelemetry API provides abstract interfaces and no-op implementations so library authors can instrument code without pulling in heavy telemetry processing dependencies; the SDK implements those interfaces with concrete batching, sampling, and export pipelines.
 
+- Why not A: Exporters and concrete batching logic belong to the SDK, while the API contains no-op defaults.
+- Why not C: Both the API and the SDK exist across multiple supported languages, including Go, Java, Python, and JavaScript.
+- Why not D: The API is a permanently supported foundation designed specifically to decouple library instrumentation from SDK lifecycles.
 - Ref: [modules/02-opentelemetry-model-and-propagation.md](../modules/02-opentelemetry-model-and-propagation.md), https://opentelemetry.io/docs/specs/otel/
 
 </details>
@@ -265,6 +280,9 @@ What purpose do W3C `traceparent` HTTP headers serve in distributed tracing?
 
 **B.** The W3C `traceparent` header transmits the active Trace ID, Parent Span ID, and sampling decision across network boundaries, allowing downstream services to continue the exact same distributed trace tree.
 
+- Why not A: In-flight encryption is negotiated by TLS at the transport layer, not by application-level tracing headers.
+- Why not C: Resource quotas belong to Kubernetes Pod and Node specifications, not distributed tracing metadata.
+- Why not D: Ingress routing decisions depend on URL paths and Host headers rather than distributed tracing identifiers.
 - Ref: [modules/02-opentelemetry-model-and-propagation.md](../modules/02-opentelemetry-model-and-propagation.md), https://www.w3.org/TR/trace-context/
 
 </details>
@@ -282,6 +300,9 @@ A Node.js microservice architecture utilizes asynchronous queue workers. Enginee
 
 **B.** Asynchronous operations in Node.js require proper context propagation (such as `AsyncLocalStorage` in the OpenTelemetry Node.js SDK) to maintain active span context across asynchronous promise boundaries and callback queues. Without it, execution slips out of context.
 
+- Why not A: Event loop starvation increases latency and delays execution, but does not unlink established asynchronous context.
+- Why not C: Prometheus scrape intervals control metric polling frequency and have no effect on in-process trace propagation.
+- Why not D: CNI plugins handle layer 3 network packet routing and do not parse or truncate layer 7 HTTP headers.
 - Ref: [modules/03-instrumentation-nodejs-and-python.md](../modules/03-instrumentation-nodejs-and-python.md), https://opentelemetry.io/docs/languages/js/instrumentation/
 
 </details>
@@ -299,6 +320,9 @@ What is the primary function of the `memory_limiter` processor in the OpenTeleme
 
 **B.** The `memory_limiter` processor monitors RSS memory usage and proactively drops data or forces GC when usage crosses configured percentage thresholds, protecting the Collector from Out-Of-Memory (OOM) termination under backpressure.
 
+- Why not A: The OpenTelemetry Collector is an unaccelerated telemetry pipeline and does not manage GPU memory allocations.
+- Why not C: Caching query results is handled by query frontend tiers like Grafana or Thanos, not collector processors.
+- Why not D: Connection pooling and concurrency limits are configured in individual exporter connection blocks.
 - Ref: [modules/04-opentelemetry-collector-and-alloy.md](../modules/04-opentelemetry-collector-and-alloy.md), https://github.com/open-telemetry/opentelemetry-collector/blob/main/processor/memorylimiterprocessor/README.md
 
 </details>
@@ -316,6 +340,9 @@ An OpenTelemetry Collector pipeline collects high-volume traces from 500 microse
 
 **B.** The `tail_sampling` processor buffers spans of a trace in memory until the entire trace is complete (or timeout is reached), evaluating policies across all spans (e.g., error status or duration) before making a keep/drop decision.
 
+- Why not A: The `batch` processor aggregates spans into larger payloads for transmission efficiency, but does not inspect trace completion or errors to make sampling decisions.
+- Why not C: The `memory_limiter` processor guards against process memory exhaustion and cannot evaluate span error tags or latency policies.
+- Why not D: Head-based filtering decisions occur at the root span before downstream error status or total duration is known.
 - Ref: [modules/04-opentelemetry-collector-and-alloy.md](../modules/04-opentelemetry-collector-and-alloy.md), https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/processor/tailsamplingprocessor/README.md
 
 </details>
@@ -333,6 +360,9 @@ What configuration language does Grafana Alloy use to define observability pipel
 
 **B.** Grafana Alloy uses the River configuration language, a block-structured declarative syntax designed for composing telemetry components.
 
+- Why not A: Grafana Alloy adopted River rather than JSONC for expressing component wiring and variable relationships.
+- Why not C: XML Schemas are W3C data definitions, not an execution configuration language for telemetry pipelines.
+- Why not D: SQL DDL manages relational database schemas, not pipeline configuration in Grafana Alloy.
 - Ref: [modules/04-opentelemetry-collector-and-alloy.md](../modules/04-opentelemetry-collector-and-alloy.md), https://grafana.com/docs/alloy/latest/reference/river/
 
 </details>
@@ -350,6 +380,9 @@ Which metric temporality model defines counters that monotonically increase sinc
 
 **B.** Cumulative temporality metrics accumulate continuously from process startup, requiring backend rate calculations to handle counter resets upon restart.
 
+- Why not A: Delta temporality reports only the count or change observed during the most recent measurement window.
+- Why not C: Ephemeral temporality is not a standardized metric concept in the OpenTelemetry metrics specification.
+- Why not D: Batching is a transport dispatch optimization rather than a temporal measurement model.
 - Ref: [modules/02-opentelemetry-model-and-propagation.md](../modules/02-opentelemetry-model-and-propagation.md), https://opentelemetry.io/docs/specs/otel/metrics/datamodel/
 
 </details>
@@ -367,6 +400,9 @@ When debugging an OpenTelemetry Collector pipeline that appears to be dropping t
 
 **A.** The `debug` exporter prints incoming telemetry payloads (metrics, logs, traces) directly to standard output at configurable verbosity levels (`basic` or `detailed`), making it invaluable for pipeline debugging.
 
+- Why not B: `ping` tests lower-level ICMP reachability rather than telemetry payload reception or pipeline processing.
+- Why not C: `kubectl debug` creates debugging containers without surfacing the collector's internal telemetry stream.
+- Why not D: `amtool check-config` validates Alertmanager configurations, not OpenTelemetry Collector pipelines.
 - Ref: [modules/13-production-observability-cost-and-meta-monitoring.md](../modules/13-production-observability-cost-and-meta-monitoring.md), https://github.com/open-telemetry/opentelemetry-collector/tree/main/exporter/debugexporter
 
 </details>
@@ -384,6 +420,9 @@ What is the difference between `rate()` and `irate()` in PromQL?
 
 **A.** `rate()` averages increases over the full range window (ideal for alerting and smoothing), whereas `irate()` calculates instantaneous rate from the final two points (good for high-frequency dashboard graphs, but too noisy for alerts).
 
+- Why not B: Both functions operate specifically on counter metrics rather than gauges or histograms directly.
+- Why not C: Neither function requires subqueries; both execute over time-series range vectors.
+- Why not D: `irate()` calculates instantaneous rate from the last two points, unlike `rate()` which averages over the full window.
 - Ref: [modules/06-promql-mastery-and-recording-rules.md](../modules/06-promql-mastery-and-recording-rules.md), https://prometheus.io/docs/prometheus/latest/querying/functions/#rate
 
 </details>
@@ -401,6 +440,9 @@ What capability was introduced in Prometheus 3.0 regarding metric and label name
 
 **B.** Prometheus 3.0 introduced full UTF-8 support for metric and label names, allowing internationalization and rich domain terminology in telemetry.
 
+- Why not A: Strict ASCII characters and underscores were the legacy requirement prior to Prometheus 3.0.
+- Why not C: Prometheus relies on OpenMetrics and Prometheus text exposition formats without mandatory JSON schemas.
+- Why not D: Prometheus stores labels as plain text strings in TSDB blocks without automatic cryptographic encryption.
 - Ref: [modules/05-prometheus-internals-and-tsdb.md](../modules/05-prometheus-internals-and-tsdb.md), https://prometheus.io/blog/2024/11/14/prometheus-3-0/
 
 </details>
@@ -418,6 +460,9 @@ What is the function of the `for` duration clause in a Prometheus alerting rule?
 
 **B.** The `for` clause prevents transient flapping by requiring the expression to evaluate to true continuously for the designated time duration before the alert fires.
 
+- Why not A: Alertmanager notification delays are configured via `group_wait` and `group_interval`, not Prometheus rules.
+- Why not C: TSDB retention is governed by storage retention flags on the Prometheus server, not rule duration clauses.
+- Why not D: Scrape timeouts are configured per scrape job using `scrape_timeout`.
 - Ref: [modules/07-alerting-architecture-and-alertmanager.md](../modules/07-alerting-architecture-and-alertmanager.md), https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/
 
 </details>
@@ -435,6 +480,9 @@ Which OpenTelemetry Collector component acts as a router or load balancer across
 
 **B.** The `loadbalancing` exporter routes spans of the same trace ID consistently to the same downstream collector instance (essential for tail-based sampling where all spans of a trace must land on the same collector node).
 
+- Why not A: The `memory_limiter` processor prevents OOM crashes by monitoring heap usage, not routing spans.
+- Why not C: The `otlphttp` receiver accepts inbound OTLP HTTP payloads rather than balancing outbound traffic.
+- Why not D: The `debug` exporter logs telemetry to stdout for local inspection.
 - Ref: [modules/04-opentelemetry-collector-and-alloy.md](../modules/04-opentelemetry-collector-and-alloy.md), https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/exporter/loadbalancingexporter/README.md
 
 </details>
@@ -452,6 +500,9 @@ An SRE team designs an SLO for an API service requiring 99.9% successful request
 
 **C.** An SLO of 99.9% leaves an error budget of $0.1\%$ ($0.001$). For $100,000,000$ total requests, $100,000,000 \times 0.001 = 100,000$ failed requests.
 
+- Why not A: 1,000 failed requests out of 100M represents a 99.999% SLO error budget.
+- Why not B: 10,000 failed requests out of 100M represents a 99.99% SLO error budget.
+- Why not D: 1,000,000 failed requests out of 100M represents a 99% SLO error budget.
 - Ref: [modules/08-slos-error-budgets-and-burn-rates.md](../modules/08-slos-error-budgets-and-burn-rates.md), https://sre.google/workbook/implementing-slos/
 
 </details>

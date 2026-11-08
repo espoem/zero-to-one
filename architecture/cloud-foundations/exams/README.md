@@ -15,4 +15,4 @@ This matrix maps foundational cloud architecture domains across AWS Solutions Ar
 
 ## Question Banks
 
-- **[Cloud Architecture Practice Bank & Mock Exam (75 Questions)](../exams/cloud-architecture-interview.md)**: Comprehensive scenario question bank covering multi-cloud enterprise architecture, trade-offs, distractor analyses, and a 65-question timed mock exam with full scoring key and remediation breakdown.
+- **[Cloud Architecture Practice Bank & Mock Exam (65 Questions)](../exams/cloud-architecture-interview.md)**: Comprehensive scenario question bank covering multi-cloud enterprise architecture, trade-offs, distractor analyses, and a 65-question timed mock exam with full scoring key and remediation breakdown.
