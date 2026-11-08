@@ -38,7 +38,7 @@ States: ⬜ brief ready → 🟦 authoring → 🟨 challenge + verify → 🟧 
 | 4 | `architecture/system-design` | Opus · claude.ai | `track/system-design` | ⬜ brief ready |  |
 | 4 | `technologies/aws` | Opus · claude.ai | `track/aws` | ⬜ brief ready |  |
 | 4 | `technologies/azure` | Opus · claude.ai | `track/azure` | ⬜ brief ready |  |
-| 4 | `technologies/cloudflare` | Opus · claude.ai | `track/cloudflare` | ⬜ brief ready |  |
+| 4 | `technologies/cloudflare` | Opus / Antigravity | `main` | ✅ merged | Merged 2026-11-08: 12 modules, 65-q exam bank + mock, 16 hermetic + workerd tests passing, challenger & verifier gates resolved and complete. |
 | 4 | `technologies/gcp` | Opus · claude.ai | `track/gcp` | ⬜ brief ready |  |
 
 ## Dependencies

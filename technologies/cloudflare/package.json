@@ -1,0 +1,30 @@
+{
+  "name": "zero-to-one-cloudflare",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Executable proofs, edge isolate simulations, and architectural models for the Zero-to-One Cloudflare track",
+  "type": "module",
+  "scripts": {
+    "test": "npm run test:unit && npm run test:workerd",
+    "test:unit": "node --experimental-strip-types --test \"examples/0[1-5]*.test.ts\"",
+    "test:workerd": "vitest run examples/06-workerd-bindings.test.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "oxlint -c ../../.oxlintrc.json .",
+    "fmt": "oxfmt -c ../../.oxfmtrc.json .",
+    "fmt:check": "oxfmt -c ../../.oxfmtrc.json --check ."
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-plugin": "1.6.0",
+    "@cloudflare/workers-types": "5.20261108.1",
+    "@types/node": "26.6.6",
+    "fast-check": "4.10.2",
+    "oxfmt": "0.76.0",
+    "oxlint": "1.91.0",
+    "typescript": "7.0.2",
+    "vitest": "5.0.5",
+    "wrangler": "4.158.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

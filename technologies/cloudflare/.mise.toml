@@ -1,0 +1,9 @@
+# Toolchain for technologies/cloudflare. Run everything through it:
+#   mise install && mise exec -- npm ci && mise exec -- npm test
+[tools]
+node = "22.14.0"
+"npm:typescript" = "7.0.2"
+"npm:wrangler" = "4.158.0"
+
+[settings]
+lockfile = true

@@ -1,0 +1,12 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "zero-to-one-cloudflare-tests",
+  "main": "examples/lib/worker-entrypoint.ts",
+  "compatibility_date": "2026-11-08",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "kv_namespaces": [
+    { "binding": "TEST_KV", "id": "test-kv-id" }
+  ]
+}
