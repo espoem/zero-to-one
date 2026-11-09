@@ -392,6 +392,7 @@ Karpenter is completely group-less. It observes pending, unschedulable pods dire
 
 - **Compaction**: Operates at the logical MVCC index level. It removes past historical versions of keys prior to a given revision. The freed space is marked as "free" in etcd's internal memory-mapped B-Tree free-list, allowing new keys to overwrite that space without expanding the file. However, compaction does NOT shrink the physical file on the host filesystem.
 - **Defragmentation**: Rewrites the physical `snap/db` database file sequentially on disk to release free-list blocks back to the Linux host filesystem. Because defragmentation takes an exclusive lock on the etcd database, it must be performed sequentially on each member to preserve cluster availability.
+
 </details>
 
 <details><summary>4. What is the official Kubernetes node scalability limit, and what architectural bottlenecks prevent a single cluster from scaling to 50,000 nodes?</summary>
@@ -401,6 +402,7 @@ The official upstream limit is **5,000 nodes** and **150,000 pods**. Beyond this
 1. **API Server Watch Cache & Memory**: Thousands of kubelets maintaining active HTTP/2 watch connections consume gigabytes of apiserver RAM, causing garbage collection latency spikes.
 2. **etcd MVCC Throughput**: etcd's single-Raft-group architecture can process approximately 10,000 to 20,000 write transactions per second. Millions of node status updates and pod heartbeats exceed this write bandwidth.
 3. **Control Plane Fanout**: Monolithic Endpoint updates and NetworkPolicy recalculations generate an $O(\text{nodes} \times \text{pods})$ update cascade across the network.
+
 </details>
 
 <details><summary>5. How does a Virtual Cluster (vCluster) provide hard multi-tenancy on shared infrastructure?</summary>

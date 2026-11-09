@@ -310,7 +310,7 @@ An attacker transmits thousands of spoofed `SYN` packets per second without ever
 When the SYN Queue overflows, modern Linux kernels activate **SYN Cookies** (`net.ipv4.tcp_syncookies = 1`):
 
 - The server **does not allocate any memory** for the half-open connection.
-- Instead, it encodes the connection state (MSS, timestamp, cryptographic hash) directly into the 32-bit `ISN` of its `SYN-ACK` reply: $$\text{ISN}_{\text{cookie}} = \operatorname{HMAC}(\text{SrcIP}, \text{DstIP}, \text{SrcPort}, \text{DstPort}, t, \text{Secret}) + \text{MSS Index}$$
+- Instead, it encodes the connection state (MSS, timestamp, cryptographic hash) directly into the 32-bit `ISN` of its `SYN-ACK` reply: $$\text{ISN}_{\text{cookie}} = \mathrm{HMAC}(\text{SrcIP}, \text{DstIP}, \text{SrcPort}, \text{DstPort}, t, \text{Secret}) + \text{MSS Index}$$
 - When a legitimate client sends its final `ACK` (`AckNumber = \text{ISN}_{\text{cookie}} + 1`), the server subtracts 1, recomputes the HMAC, verifies mathematical validity, and allocates the socket connection on the fly.
 
 ### TCP Fast Open (TFO / RFC 7413)
@@ -370,7 +370,7 @@ The standard 3-way handshake introduces a 1-RTT latency tax before application d
 **Stateless Sequence Number Encoding.** Under a SYN Flood, the server's SYN Queue is completely filled with half-open connections from spoofed IPs. When SYN Cookies are active (`net.ipv4.tcp_syncookies = 1`):
 
 - The server does not allocate an `sk_buff` or connection tracking block.
-- Instead, it generates a synthetic Initial Sequence Number ($\text{ISN}$) for its `SYN-ACK` reply: $$\text{ISN} = \operatorname{Hash}(\text{SrcIP}, \text{DstIP}, \text{SrcPort}, \text{DstPort}, t, \text{Secret}) + \text{MSS Table Index}$$
+- Instead, it generates a synthetic Initial Sequence Number ($\text{ISN}$) for its `SYN-ACK` reply: $$\text{ISN} = \mathrm{Hash}(\text{SrcIP}, \text{DstIP}, \text{SrcPort}, \text{DstPort}, t, \text{Secret}) + \text{MSS Table Index}$$
 - The server sends the `SYN-ACK` and discards all local state immediately.
 - If the client is legitimate, it returns a final `ACK` containing $\text{AckNumber} = \text{ISN} + 1$.
 - The server extracts the sequence number, subtracts 1, recomputes the cryptographic hash, and verifies authenticity. If valid, it reconstructs the connection and allocates the socket directly in the Accept Queue.

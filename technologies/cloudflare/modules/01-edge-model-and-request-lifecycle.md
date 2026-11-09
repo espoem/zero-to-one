@@ -21,9 +21,10 @@ flowchart TD
 ```
 
 ### Ingress Packet Dispatch
+
 1. **Topological Routing**: Intermediate Tier 1 and Tier 2 transit providers route client IP packets along the shortest Autonomous System (AS) path directly to the physically or topologically closest Cloudflare edge router.
-2. **L4 Ingress (Unimog)**: Incoming TCP SYN packets arrive at edge switch fabrics and are distributed across a cluster of bare-metal Linux servers running Cloudflare's proprietary Layer 4 load balancer (*Unimog*). Unimog uses consistent hashing with connection tracking to distribute packets across server cores without terminating TCP state.
-3. **L7 Ingress**: The connection terminates at Cloudflare's Layer 7 reverse proxy layer (*Pingora*), where TLS 1.3 handshakes, SNI inspection, and ALPN negotiations (HTTP/2 or HTTP/3 over QUIC) occur.
+2. **L4 Ingress (Unimog)**: Incoming TCP SYN packets arrive at edge switch fabrics and are distributed across a cluster of bare-metal Linux servers running Cloudflare's proprietary Layer 4 load balancer (_Unimog_). Unimog uses consistent hashing with connection tracking to distribute packets across server cores without terminating TCP state.
+3. **L7 Ingress**: The connection terminates at Cloudflare's Layer 7 reverse proxy layer (_Pingora_), where TLS 1.3 handshakes, SNI inspection, and ALPN negotiations (HTTP/2 or HTTP/3 over QUIC) occur.
 
 ---
 
@@ -51,6 +52,7 @@ flowchart TD
 ```
 
 ### Pipeline Precedence Rules
+
 - **L3/L4 Protection & Edge DDoS**: Evaluated immediately in the Linux kernel via eBPF/XDP filters. Malicious volumetric floods are dropped before socket allocation.
 - **Web Application Firewall (WAF)**: Evaluates URI path, payload headers, client IP threat score, and OWASP rule sets. If a request triggers a `BLOCK` or `MANAGED_CHALLENGE` action, it terminates prior to executing Worker logic.
 - **Zone HTTP Cache**: By default, standard static assets (images, stylesheets, fonts) evaluate against the zone cache. However, when a Worker is bound via a Route pattern (e.g., `example.com/*`), the Worker executes **before** the zone cache, granting user code total programmatic authority over cache lookups, header mutations, and bypass criteria.
@@ -76,30 +78,35 @@ export default {
     const url = new URL(request.url);
 
     // Early termination / Validation
-    if (request.method === "POST" && !request.headers.has("Content-Type")) {
-      return new Response("Missing Content-Type Header", { status: 400 });
+    if (request.method === 'POST' && !request.headers.has('Content-Type')) {
+      return new Response('Missing Content-Type Header', { status: 400 });
     }
 
     // Execute background telemetry without blocking response return
-    ctx.waitUntil(
-      logRequestTelemetry(request.headers.get("cf-ray"), url.pathname, Date.now())
-    );
+    ctx.waitUntil(logRequestTelemetry(request.headers.get('cf-ray'), url.pathname, Date.now()));
 
     // Pass-through failover safety
     ctx.passThroughOnException();
 
-    return new Response(JSON.stringify({ status: "healthy", region: request.cf?.colo ?? "UNKNOWN" }), {
-      headers: { "Content-Type": "application/json" }
-    });
-  }
+    return new Response(
+      JSON.stringify({ status: 'healthy', region: request.cf?.colo ?? 'UNKNOWN' }),
+      {
+        headers: { 'Content-Type': 'application/json' },
+      },
+    );
+  },
 };
 
-async function logRequestTelemetry(cfRay: string | null, path: string, timestamp: number): Promise<void> {
+async function logRequestTelemetry(
+  cfRay: string | null,
+  path: string,
+  timestamp: number,
+): Promise<void> {
   // Simulates asynchronous logging to remote analytics sink
-  await fetch("https://telemetry.internal/collect", {
-    method: "POST",
+  await fetch('https://telemetry.internal/collect', {
+    method: 'POST',
     body: JSON.stringify({ cfRay, path, timestamp }),
-    headers: { "Content-Type": "application/json" }
+    headers: { 'Content-Type': 'application/json' },
   });
 }
 ```
@@ -109,15 +116,19 @@ async function logRequestTelemetry(cfRay: string | null, path: string, timestamp
 ## 4. Asynchronous Request Lifecycles: `ctx.waitUntil()` and `ctx.passThroughOnException()`
 
 ### The `ctx.waitUntil()` Contract
+
 In traditional long-lived server processes (such as Node.js or Go), background tasks can be spawned asynchronously by detaching promises or goroutines. In an isolate-based edge runtime, returning a `Response` signals that the client transaction has concluded. If an asynchronous operation is in flight and is not awaited, `workerd` suspends or destroys the isolate, abruptly terminating pending promises.
 
 `ctx.waitUntil(promise: Promise<unknown>)` extends the operational lifetime of the isolate invocation:
+
 - The HTTP response stream flushes to the client immediately without waiting for the background promise.
 - The isolate remains active until every promise passed to `ctx.waitUntil()` resolves or rejects.
 - Platform constraints: Background execution in `waitUntil` is subject to a strict 30-second post-response wall-clock timeout and standard CPU quota limits.
 
 ### Fail-Open Resilience: `ctx.passThroughOnException()`
+
 For critical zero-downtime routing, `ctx.passThroughOnException()` modifies the runtime error boundary:
+
 - If unhandled JavaScript exceptions occur within the Worker (such as an unhandled null dereference or syntax crash), Cloudflare catches the fault, suppresses the generic Error 1101 page, and transparently proxies the original client HTTP request to the designated origin server.
 - This fail-open behavior guarantees that upstream origin infrastructure handles traffic if edge code encounters unexpected runtime bugs.
 
@@ -147,6 +158,7 @@ flowchart TD
 ```
 
 ### Automated Placement Engine
+
 1. **Telemetry Sampling**: Cloudflare analyzes the subrequests made by the Worker, computing the time spent waiting on origin servers versus time serving edge content.
 2. **Relocation Dispatch**: When Smart Placement is enabled in `wrangler.jsonc` (`"smart_placement": { "enabled": true }`), the client's Anycast connection is terminated at the local edge, but request execution is dynamically forwarded to a Cloudflare data center geographically adjacent to the backend database.
 3. **Latency Inversion**: By paying the 200 ms cross-ocean round-trip cost exactly once during initial payload transfer, all subsequent database subrequests execute with sub-millisecond local latency.
@@ -187,54 +199,57 @@ export default {
     // Failover safety: proxy directly to origin if edge logic encounters unexpected runtime error
     ctx.passThroughOnException();
 
-    const clientIp = request.headers.get("cf-connecting-ip") ?? "0.0.0.0";
-    const apiKey = request.headers.get("x-api-key");
+    const clientIp = request.headers.get('cf-connecting-ip') ?? '0.0.0.0';
+    const apiKey = request.headers.get('x-api-key');
 
     if (!apiKey) {
-      return new Response(JSON.stringify({ error: "Missing x-api-key header" }), {
+      return new Response(JSON.stringify({ error: 'Missing x-api-key header' }), {
         status: 401,
-        headers: { "Content-Type": "application/json" }
+        headers: { 'Content-Type': 'application/json' },
       });
     }
 
     // Check revoked token blocklist in KV (read-heavy, eventual consistency is acceptable)
     const isRevoked = await env.REVOCATION_KV.get(`revoked:${apiKey}`, { cacheTtl: 300 });
     if (isRevoked !== null) {
-      return new Response(JSON.stringify({ error: "API key has been revoked" }), {
+      return new Response(JSON.stringify({ error: 'API key has been revoked' }), {
         status: 403,
-        headers: { "Content-Type": "application/json" }
+        headers: { 'Content-Type': 'application/json' },
       });
     }
 
     // Forward sanitized request to protected origin
     const originUrl = new URL(request.url);
-    originUrl.hostname = "internal-origin.corp";
+    originUrl.hostname = 'internal-origin.corp';
 
     const forwardedHeaders = new Headers(request.headers);
-    forwardedHeaders.set("X-Edge-PoP", request.cf?.colo ?? "UNKNOWN");
-    forwardedHeaders.set("X-Edge-Client-IP", clientIp);
-    forwardedHeaders.set("X-Gateway-Verified", "true");
+    forwardedHeaders.set('X-Edge-PoP', request.cf?.colo ?? 'UNKNOWN');
+    forwardedHeaders.set('X-Edge-Client-IP', clientIp);
+    forwardedHeaders.set('X-Gateway-Verified', 'true');
 
     const originResponse = await fetch(originUrl.toString(), {
       method: request.method,
       headers: forwardedHeaders,
-      body: request.body
+      body: request.body,
     });
 
     // Asynchronously log audit telemetry without delaying the client response
-    ctx.waitUntil(
-      logAuditEntry(clientIp, originUrl.pathname, originResponse.status, Date.now())
-    );
+    ctx.waitUntil(logAuditEntry(clientIp, originUrl.pathname, originResponse.status, Date.now()));
 
     return originResponse;
-  }
+  },
 };
 
-async function logAuditEntry(ip: string, path: string, status: number, timestamp: number): Promise<void> {
-  await fetch("https://telemetry.internal/audit", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ip, path, status, timestamp })
+async function logAuditEntry(
+  ip: string,
+  path: string,
+  status: number,
+  timestamp: number,
+): Promise<void> {
+  await fetch('https://telemetry.internal/audit', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ip, path, status, timestamp }),
   });
 }
 ```

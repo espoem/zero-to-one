@@ -382,6 +382,7 @@ apply:
 - The unreviewed apply will execute changes that were never inspected or approved by human reviewers or policy engines.
 - In contrast, running `terraform plan -out=tfplan.binary` freezes the exact sequence of planned mutations. When `terraform apply tfplan.binary` is invoked, Terraform verifies that the state has not diverged from the frozen plan snapshot. If divergence has occurred, execution safely aborts.
 - Ref: HashiCorp Terraform Enterprise Best Practices; Continuous Delivery for Infrastructure.
+
 </details>
 
 <details><summary>2. How does Atlantis prevent conflicting state modifications across concurrent pull requests touching the same directory?</summary>
@@ -393,6 +394,7 @@ apply:
 - If a second pull request is opened that touches the same directory, Atlantis checks its lock table, detects an active lock held by the first PR, and refuses to run.
 - It posts an explanatory message to the second PR indicating who holds the lock and halts further operations until the first PR is either merged and applied, or the lock is manually discarded.
 - Ref: Atlantis Documentation: Locking Architecture.
+
 </details>
 
 <details><summary>3. How does keyless OpenID Connect (OIDC) authentication eliminate the risks associated with static cloud credentials in CI/CD runners?</summary>
@@ -405,6 +407,7 @@ apply:
 - The cloud STS validates the token's digital signature against the CI platform's public JWKS keys and evaluates IAM trust policies.
 - If authorized, STS issues temporary cloud credentials valid for a maximum of one hour. No static secrets are ever stored in the repository or runner configuration.
 - Ref: RFC 7519 (JSON Web Token); AWS IAM OIDC Identity Providers.
+
 </details>
 
 <details><summary>4. In HCP Terraform, what is the architectural difference between a Workspace and an open-source CLI workspace?</summary>
@@ -414,6 +417,7 @@ apply:
 - **CLI Workspaces (`terraform workspace new`)**: Merely changes the state file key path within the same remote backend (e.g., `env:/prod/terraform.tfstate`). All workspaces share the exact same backend configuration, cloud credentials, provider access, and local directory. Operators routinely make disastrous errors by running apply while pointing to the wrong workspace.
 - **HCP Terraform Workspaces**: Autonomous administrative units. Each workspace possesses its own isolated state file, distinct VCS branch mapping, dedicated environment variables, separate RBAC access permissions, distinct Sentinel/OPA policy bindings, and individual execution history logs.
 - Ref: HashiCorp Cloud Platform Architecture Guide.
+
 </details>
 
 <details><summary>5. What is the purpose of cryptographic SHA256 checksumming between the `plan` and `apply` stages of a CI pipeline?</summary>
@@ -424,6 +428,7 @@ apply:
 - If plan artifacts are stored in shared or multi-tenant artifact repositories, a malicious actor or compromised intermediate job could replace `tfplan.binary` with an altered payload designed to provision backdoor credentials or delete security groups.
 - Generating a `sha256sum` immediately upon plan completion and verifying that hash in the privileged `apply` stage mathematically guarantees that the binary executed is bit-for-bit identical to the reviewed artifact.
 - Ref: NIST SP 800-204 (Security Strategies for Microservices-based Application Systems).
+
 </details>
 
 <details><summary>6. How does the GitLab HTTP backend handle distributed state locking during plan and apply operations?</summary>
@@ -436,6 +441,7 @@ apply:
 - If another process already holds the lock, GitLab returns `HTTP 423 Locked`. Terraform halts execution and enters a backoff retry loop (`retry_wait_min`).
 - Upon operation completion, Terraform issues an `HTTP DELETE` request to `unlock_address` carrying the Lock ID to release mutual exclusion.
 - Ref: HashiCorp Terraform HTTP Backend Protocol Specification; GitLab Managed State Documentation.
+
 </details>
 
 <details><summary>7. What are HCP Terraform "Run Tasks" and at what phase of the pipeline do they execute?</summary>
@@ -448,6 +454,7 @@ apply:
 - The external service evaluates the plan and returns a structured response: status (`passed` or `failed`), a diagnostic message, and a URL link to a detailed analysis report.
 - Platform administrators can configure Run Tasks as advisory or mandatory, blocking the run if security vulnerabilities or cost overruns exceed predefined budgets.
 - Ref: HCP Terraform Run Tasks Integration Guide.
+
 </details>
 
 ---

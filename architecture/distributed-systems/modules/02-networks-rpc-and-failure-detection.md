@@ -326,7 +326,7 @@ HEARTBEAT-DETECTOR(q monitors p):         // sender: every π ticks, send "alive
   on heartbeat from p: if p ∈ suspected then unsuspect(p); Δ_q <- Δ_q + increment
 ```
 
-**Eventual strong accuracy.** After GST, delays are at most $\delta$, so consecutive arrivals are at most $\pi + \delta$ ticks apart. Every false suspicion raises $\Delta_q$ by a fixed increment; after finitely many suspicions $\Delta_q \ge \pi + \delta$ and no further false suspicion occurs. **Strong completeness.** A crashed process stops sending, so $\text{now} - \text{last\_arrival}$ grows without bound and eventually exceeds any finite $\Delta_q$, permanently.
+**Eventual strong accuracy.** After GST, delays are at most $\delta$, so consecutive arrivals are at most $\pi + \delta$ ticks apart. Every false suspicion raises $\Delta_q$ by a fixed increment; after finitely many suspicions $\Delta_q \ge \pi + \delta$ and no further false suspicion occurs. **Strong completeness.** A crashed process stops sending, so $\text{now} - \text{last-arrival}$ grows without bound and eventually exceeds any finite $\Delta_q$, permanently.
 
 The simulation draws delays uniformly in $[1,400]$ before GST and $[1,20]$ after, with $\pi = 10$ and initial $\Delta_q = 15$. Over 100 seeds the adaptive detector produces **zero** false suspicions after $GST + 500$, a crashed sender is suspected at the horizon in every run, and the negative control (fixed $\Delta_q = 15 < \pi + \delta$) still flaps after GST on more than 90 of the 100 seeds. This is the executable form of "you must adapt the timeout, or you do not have eventual accuracy".
 

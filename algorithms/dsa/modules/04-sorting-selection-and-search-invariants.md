@@ -152,7 +152,7 @@ function binarySearchFirstTrue(
 
 ### "Binary Search on Answer"
 
-Whenever a problem asks to minimize a maximum or maximize a minimum (e.g., _Capacity to Ship Packages Within D Days_, _Koko Eating Bananas_, _Split Array Largest Sum_), if $P(x)$ ("Is it possible with capacity $x$?") is monotonic ($P(x) \implies P(x+1)$), the problem reduces to Binary Search over the answer range $[1, \text{max\_possible}]$.
+Whenever a problem asks to minimize a maximum or maximize a minimum (e.g., _Capacity to Ship Packages Within D Days_, _Koko Eating Bananas_, _Split Array Largest Sum_), if $P(x)$ ("Is it possible with capacity $x$?") is monotonic ($P(x) \implies P(x+1)$), the problem reduces to Binary Search over the answer range $[1, \text{max-possible}]$.
 
 ---
 

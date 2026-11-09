@@ -148,7 +148,7 @@ When `neighbor_id` has already been visited along the path, `is_cycle` evaluates
 
 A window function operates on a partition of rows without collapsing them into a single row. The exact rows evaluated are governed by the **Window Frame**:
 
-$$\{ \text{ROWS} \mid \text{RANGE} \mid \text{GROUPS} \} \quad \text{BETWEEN} \quad \text{frame\_start} \quad \text{AND} \quad \text{frame\_end}$$
+$$\{ \text{ROWS} \mid \text{RANGE} \mid \text{GROUPS} \} \quad \text{BETWEEN} \quad \text{frame-start} \quad \text{AND} \quad \text{frame-end}$$
 
 ```mermaid
 flowchart LR

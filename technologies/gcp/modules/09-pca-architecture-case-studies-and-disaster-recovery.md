@@ -226,10 +226,10 @@ Designing for catastrophic failure requires balancing the business cost of downt
 
 | Disaster Recovery Pattern | Target RTO | Target RPO | Relative Cost | Architectural Google Cloud Implementation Blueprint |
 | :-- | :-- | :-- | :-- | :-- |
-| **Backup and Restore (Cold Standby)** | Hours to Days | 24 Hours | \$ (Lowest) | Nightly Compute Engine snapshot schedules replicated to a secondary region. Automated Cloud SQL daily backups and Cloud Storage Nearline archives. Resources provisioned only after disaster declaration via Terraform. |
-| **Pilot Light (Warm Minimal)** | 10–30 Minutes | < 15 Minutes | \$\$ | Core data tier running continuously in secondary region (Cloud SQL Cross-Region Read Replica or Dual-Region Storage with Turbo Replication). Compute Engine instance templates prepared; MIG minimum size set to 0. |
-| **Warm Standby (Scaled Down)** | < 10 Minutes | < 1 Minute | \$\$\$ | Scaled-down compute fleet running continuously in secondary region (MIG running 20% capacity behind global load balancer). Database replica warm. Scaling triggers automatically upon primary failure. |
-| **Multi-Region Hot Standby (Active-Active)** | Near Zero (< 30s) | Zero (0) | \$\$\$\$ (Highest) | Multi-Region Global External Application Load Balancer routing traffic dynamically across two active regions. **Cloud Spanner** multi-region instance providing synchronous Paxos commits across regions. |
+| **Backup and Restore (Cold Standby)** | Hours to Days | 24 Hours | `$` (Lowest) | Nightly Compute Engine snapshot schedules replicated to a secondary region. Automated Cloud SQL daily backups and Cloud Storage Nearline archives. Resources provisioned only after disaster declaration via Terraform. |
+| **Pilot Light (Warm Minimal)** | 10–30 Minutes | < 15 Minutes | `$$` | Core data tier running continuously in secondary region (Cloud SQL Cross-Region Read Replica or Dual-Region Storage with Turbo Replication). Compute Engine instance templates prepared; MIG minimum size set to 0. |
+| **Warm Standby (Scaled Down)** | < 10 Minutes | < 1 Minute | `$$$` | Scaled-down compute fleet running continuously in secondary region (MIG running 20% capacity behind global load balancer). Database replica warm. Scaling triggers automatically upon primary failure. |
+| **Multi-Region Hot Standby (Active-Active)** | Near Zero (< 30s) | Zero (0) | `$$$$` (Highest) | Multi-Region Global External Application Load Balancer routing traffic dynamically across two active regions. **Cloud Spanner** multi-region instance providing synchronous Paxos commits across regions. |
 
 ```mermaid
 flowchart TD

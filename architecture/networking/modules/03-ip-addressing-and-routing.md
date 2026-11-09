@@ -80,10 +80,11 @@ Where $m$ is the prefix length (the number of leading bits identifying the netwo
 For any IPv4 network with prefix length $m$:
 
 1. **Subnet Mask**: An unsigned 32-bit integer with $m$ leading `1` bits and $32 - m$ trailing `0` bits:
-   $$ \text{Mask} = \begin{cases}
-   0 & \text{if } m = 0 \\
-   \sim ((1 \ll (32 - m)) - 1) & \text{if } 1 \le m \le 32
-   \end{cases}$$
+   $$
+   \text{Mask} = \begin{cases}
+     0 & \text{if } m = 0 \\
+     \sim ((1 \ll (32 - m)) - 1) & \text{if } 1 \le m \le 32
+   \end{cases}
    $$
 2. **Network Address**: The lowest address in the range, representing the subnet identity: $$\text{Network} = \text{IP} \;\&\; \text{Mask}$$
 3. **Broadcast Address**: The highest address in the range, used to broadcast to all hosts in the subnet: $$\text{Broadcast} = \text{Network} \;|\; (\sim \text{Mask})$$
@@ -105,7 +106,7 @@ For any IPv4 network with prefix length $m$:
 
 When a router forwards an incoming packet, its forwarding table contains multiple overlapping routing entries (e.g., a default route `0.0.0.0/0`, an enterprise prefix `10.0.0.0/8`, a regional branch `10.20.0.0/16`, and a server subnet `10.20.30.0/24`). The fundamental forwarding invariant of the Internet is **Longest Prefix Match (LPM)**:
 
-$$\text{Selected Route} = \operatorname*{argmax}_{R \in \text{Routes}, \, \text{DstIP} \in R} (\text{PrefixLength}(R))$$
+$$\text{Selected Route} = \mathop{\mathrm{argmax}}_{R \in \text{Routes}, \, \text{DstIP} \in R} (\text{PrefixLength}(R))$$
 
 The router MUST forward the packet along the route with the most specific (longest bitmask) prefix matching the destination IP.
 
@@ -264,7 +265,7 @@ ip route add default scope global \
     nexthop via 10.0.0.1 dev eth1 weight 1
 ```
 
-To prevent packet reordering within an active TCP stream (which triggers false fast retransmits and destroys congestion window throughput), the kernel hashes the packet's **5-tuple**: $$\text{Path Hash} = \operatorname{Hash}(\text{Src IP}, \text{Dst IP}, \text{Protocol}, \text{Src Port}, \text{Dst Port}) \pmod{\text{Total Paths}}$$ All packets belonging to the same TCP flow produce the identical hash value and traverse the identical path deterministically.
+To prevent packet reordering within an active TCP stream (which triggers false fast retransmits and destroys congestion window throughput), the kernel hashes the packet's **5-tuple**: $$\text{Path Hash} = \mathrm{Hash}(\text{Src IP}, \text{Dst IP}, \text{Protocol}, \text{Src Port}, \text{Dst Port}) \pmod{\text{Total Paths}}$$ All packets belonging to the same TCP flow produce the identical hash value and traverse the identical path deterministically.
 
 ---
 

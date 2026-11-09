@@ -42,7 +42,7 @@ AWS KMS categorizes cryptographic keys into three distinct ownership and managem
 
 | Key Category | Created By | Key Policy Configurable? | Automatic Rotation | Customer Cost | Cross-Account Usable? |
 | --- | --- | :-: | :-: | :-: | :-: |
-| **Customer Managed Keys (CMKs)** | Customer | Yes (Full Control) | Optional (Every 365 or 90–2560 days) | \$1.00/month + API requests | Yes (Via Key Policy & Grants) |
+| **Customer Managed Keys (CMKs)** | Customer | Yes (Full Control) | Optional (Every 365 or 90–2560 days) | $1.00/month + API requests | Yes (Via Key Policy & Grants) |
 | **AWS Managed Keys** | AWS (e.g., `aws/s3`) | View Only (Not editable) | Automatic (Every 365 days / 3 years depending on service) | Free monthly key fee + API requests | No (Account internal only) |
 | **AWS Owned Keys** | AWS Internal | No (Invisible in KMS console) | Fully managed by AWS internal schedule | Free (Zero customer cost or API billing) | N/A (Internal service fabric only) |
 
@@ -151,7 +151,7 @@ flowchart LR
 
 When Amazon S3 encrypts objects using Server-Side Encryption with AWS KMS (SSE-KMS), every individual object upload (`PUT`) and download (`GET`) traditionally issued an independent API call to KMS (`GenerateDataKey` or `Decrypt`). In workloads processing millions of transactions per day, this created two critical bottlenecks:
 
-1. **API Cost Accumulation**: KMS charges \$0.03 per 10,000 requests, rapidly turning KMS into the dominant line item on S3 storage bills.
+1. **API Cost Accumulation**: KMS charges $0.03 per 10,000 requests, rapidly turning KMS into the dominant line item on S3 storage bills.
 2. **KMS Service Quotas**: Default KMS requests-per-second quotas (typically 5,500 to 50,000 req/s depending on region) were rapidly exhausted by distributed analytics clusters (e.g., EMR, Athena, Spark).
 
 ```mermaid
@@ -259,7 +259,7 @@ AWS Secrets Manager executes rotation through an automated four-stage state mach
 | **Maximum Value Size** | 64 KB | 4 KB | 8 KB |
 | **KMS Encryption** | Always encrypted (CMK or `aws/secretsmanager`) | Optional (`SecureString` type) | Optional (`SecureString` type) |
 | **Cross-Account Access** | Native resource-based policies on secret | No resource policies (Requires RAM or IAM roles) | No resource policies |
-| **Pricing Model** | \$0.40 / secret / month + \$0.05 / 10k API calls | Free for standard storage; standard API free | \$0.05 / advanced param / month + \$0.05 / 10k calls |
+| **Pricing Model** | $0.40 / secret / month + $0.05 / 10k API calls | Free for standard storage; standard API free | $0.05 / advanced param / month + $0.05 / 10k calls |
 
 ---
 
@@ -299,7 +299,7 @@ flowchart TD
 AWS CloudTrail records API calls made by users, roles, and AWS services across an entire organization:
 
 - **Management Events**: Control plane operations that configure infrastructure (e.g., `ec2:RunInstances`, `s3:CreateBucket`, `iam:CreateRole`). Delivered to S3 by default with one free trail per region.
-- **Data Events**: High-volume resource data plane operations (e.g., `s3:GetObject`, `s3:PutObject`, `lambda:Invoke`, `dynamodb:PutItem`). Disabled by default due to high event volumes; charged at \$0.10 per 100,000 events.
+- **Data Events**: High-volume resource data plane operations (e.g., `s3:GetObject`, `s3:PutObject`, `lambda:Invoke`, `dynamodb:PutItem`). Disabled by default due to high event volumes; charged at $0.10 per 100,000 events.
 - **Log File Integrity Validation**: CloudTrail generates digest files containing cryptographic hashes (SHA-256 with RSA digital signatures) of all delivered log files every hour, enabling mathematical proof that logs have not been modified or deleted.
 - **CloudTrail Lake**: A managed, immutable data lake that aggregates multi-account audit logs across regions and enables SQL queries without building custom ETL pipelines.
 
@@ -349,7 +349,7 @@ AWS WAF inspects HTTP/HTTPS traffic directed at Amazon CloudFront, Application L
 ### AWS Shield Standard vs Shield Advanced
 
 - **AWS Shield Standard**: Automatic, perimeter-wide DDoS defense active across all AWS customers at no additional cost. Mitigates common Layer 3 (Network) and Layer 4 (Transport) attacks (e.g., SYN floods, UDP reflection attacks) at AWS edge locations.
-- **AWS Shield Advanced**: Enterprise-tier protection (\$3,000/month flat fee + data transfer) providing Layer 7 DDoS mitigation, direct 24/7 engagement with the **AWS Shield Response Team (SRT)**, automated WAF rule creation during active DDoS events, and financial **DDoS Cost Protection** to refund scaling spike costs incurred on EC2, ALB, CloudFront, or Route 53 during an attack.
+- **AWS Shield Advanced**: Enterprise-tier protection ($3,000/month flat fee + data transfer) providing Layer 7 DDoS mitigation, direct 24/7 engagement with the **AWS Shield Response Team (SRT)**, automated WAF rule creation during active DDoS events, and financial **DDoS Cost Protection** to refund scaling spike costs incurred on EC2, ALB, CloudFront, or Route 53 during an attack.
 
 ---
 

@@ -559,6 +559,7 @@ Enabling the `/status` subresource provides three critical architectural guarant
 1. **Separation of Concerns & RBAC**: It creates a dedicated API endpoint (`.../customresources/NAME/status`). Administrators can grant developers write access to the resource (`spec`) while restricting status modifications strictly to the automated Operator ServiceAccount.
 2. **Preventing Race Conditions**: When `/status` is omitted, any user updating `.spec` accidentally overwrites the controller's `.status` conditions if they submit a stale YAML manifest.
 3. **Generation Increment Isolation**: Modifying `.spec` increments `metadata.generation`. Modifying `/status` does NOT increment generation. This allows the controller's reconciler to distinguish between user intent changes (which require action) and status updates (which should not re-trigger reconciliation).
+
 </details>
 
 <details><summary>2. How does `x-kubernetes-validations` (CEL) replace the need for admission webhooks in CRD design?</summary>
@@ -572,6 +573,7 @@ Historically, enforcing rules such as "field A must be less than field B" or "fi
 
 - **Edge-Triggered**: The controller reacts to _state transitions_ (edges), such as "PodCreated" or "DiskDeleted", and receives the event payload. If the controller is offline or a network blip drops the event message, the system remains permanently out of sync.
 - **Level-Triggered**: The controller reacts to the _current level of state_ (observed reality vs desired declaration). The workqueue delivers only the key (`namespace/name`). The reconciler fetches the latest object from the cache, compares desired state with actual state, and executes idempotent actions to eliminate the delta. Even if 50 intermediate events are dropped, the next reconcile evaluates the absolute current state, ensuring eventual consistency.
+
 </details>
 
 <details><summary>4. What is a Finalizer in Kubernetes, and what sequence of events occurs when an object with a finalizer is deleted?</summary>
@@ -583,6 +585,7 @@ A finalizer (`metadata.finalizers`) is an asynchronous pre-delete hook used by c
 3. The Operator executes external cleanup operations (e.g., making AWS API calls).
 4. Once external cleanup succeeds, the Operator patches the object to remove its string from `metadata.finalizers`.
 5. When the finalizer list becomes empty, `kube-apiserver` permanently purges the object from `etcd`.
+
 </details>
 
 <details><summary>5. How does Kustomize's `secretGenerator` automate rolling updates of Deployments without using external tools?</summary>
@@ -596,6 +599,7 @@ Because the Pod template specification changed (referencing a new Secret name), 
 
 - **Helm 2**: Used **Tiller**, a centralized server-side pod running with `cluster-admin` privileges in `kube-system`. Tiller presented a major security vulnerability (any user with access to Tiller could bypass RBAC and take over the cluster).
 - **Helm 4**: Operates strictly client-side. There is zero server-side daemon. Helm interacts directly with `kube-apiserver` using the client's local credentials. Release state and revision history are stored as standard Kubernetes `Secret` objects in the target application namespace (`sh.helm.release.v1.<release>.v<revision>`), protected by native Kubernetes RBAC.
+
 </details>
 
 <details><summary>7. What is the role of the `SharedInformer` cache in `controller-runtime`, and why should an Operator never query `kube-apiserver` directly for GET/LIST requests?</summary>

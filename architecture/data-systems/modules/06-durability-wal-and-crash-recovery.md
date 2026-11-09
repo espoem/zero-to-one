@@ -59,7 +59,7 @@ sequenceDiagram
 
 A database engine must enforce the **WAL Invariant** at all times:
 
-$$\text{flushed\_to\_disk\_lsn} \ge \text{page\_lsn}$$
+$$\text{flushed-to-disk-lsn} \ge \text{page-lsn}$$
 
 Before any dirty page in the buffer pool can be written to physical storage (whether during buffer eviction or routine background writing), the engine must verify that all WAL log records up to that page's `page_lsn` have already been written and **fsynced to persistent storage**. If this rule were violated and a crash occurred, the table file on disk would contain changes from uncommitted transactions with no corresponding log records to undo them.
 
@@ -102,16 +102,16 @@ The Analysis pass scans forward through the WAL starting from the most recent **
 - **Objectives**:
   1. Reconstruct the **Transaction Table**: identifies all transactions that were active (uncommitted) at the moment of the crash. These transactions are classified as **Losers**.
   2. Reconstruct the **Dirty Page Table (DPT)**: tracks every page that was modified in memory but not yet flushed to disk. For each dirty page, the DPT records its `rec_lsn` (the earliest LSN that dirtied the page).
-  3. Determine the minimum `rec_lsn` across all pages in the DPT ($\min(\text{rec\_lsn})$), which marks the exact starting point for the subsequent Redo pass.
+  3. Determine the minimum `rec_lsn` across all pages in the DPT ($\min(\text{rec-lsn})$), which marks the exact starting point for the subsequent Redo pass.
 
 ### 2. The Redo Pass ("Repeating History")
 
-The Redo pass scans forward through the WAL from $\min(\text{rec\_lsn})$ all the way to the end of the log.
+The Redo pass scans forward through the WAL from $\min(\text{rec-lsn})$ all the way to the end of the log.
 
 - **The "Repeating History" Principle**: ARIES re-executes the actions of **all transactions**—including transactions that later aborted, and transactions that were active losers when the crash occurred! This restores the exact physical byte state of the database to the precise millisecond preceding the crash.
 - **Idempotency Check**: To avoid re-applying changes already present in pages flushed before the crash, the engine compares the log record's `lsn` with the page's on-disk `page_lsn`:
-  - If $\text{page\_lsn} \ge \text{record\_lsn}$, the modification is already present on disk; **the log record is skipped**.
-  - If $\text{page\_lsn} < \text{record\_lsn}$, the engine reapplies the redo action and sets $\text{page\_lsn} = \text{record\_lsn}$.
+  - If $\text{page-lsn} \ge \text{record-lsn}$, the modification is already present on disk; **the log record is skipped**.
+  - If $\text{page-lsn} < \text{record-lsn}$, the engine reapplies the redo action and sets $\text{page-lsn} = \text{record-lsn}$.
 
 ### 3. The Undo Pass (Rolling Back Loser Transactions)
 
@@ -256,8 +256,8 @@ Modern databases adopt **Steal / No-Force** because it maximizes both memory eff
 
 The three passes of ARIES are:
 
-1. **Analysis Pass**: Scans forward from the last checkpoint to the end of the log. It reconstructs the **Transaction Table** (identifying active loser transactions at crash) and the **Dirty Page Table** (identifying dirty pages and calculating $\min(\text{rec\_lsn})$ where Redo must start).
-2. **Redo Pass ("Repeating History")**: Scans forward from $\min(\text{rec\_lsn})$ to the end of the log. It reapplies the modifications of _all_ transactions (both committed and uncommitted) to restore the exact physical database state preceding the crash. It uses page LSNs to make redo operations strictly idempotent.
+1. **Analysis Pass**: Scans forward from the last checkpoint to the end of the log. It reconstructs the **Transaction Table** (identifying active loser transactions at crash) and the **Dirty Page Table** (identifying dirty pages and calculating $\min(\text{rec-lsn})$ where Redo must start).
+2. **Redo Pass ("Repeating History")**: Scans forward from $\min(\text{rec-lsn})$ to the end of the log. It reapplies the modifications of _all_ transactions (both committed and uncommitted) to restore the exact physical database state preceding the crash. It uses page LSNs to make redo operations strictly idempotent.
 3. **Undo Pass**: Scans backward from the end of the log, reversing the updates of all loser transactions identified in Analysis. For every undone action, it writes a Compensation Log Record (CLR) to ensure that undo actions are never repeated if the system crashes again during recovery.
 
 </details>

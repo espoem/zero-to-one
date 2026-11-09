@@ -25,6 +25,7 @@ flowchart TD
 ```
 
 ### Actor Lifecycle and Placement
+
 1. **Deriving an ID**: Durable Object IDs are deterministic strings derived from names (`idFromName("room-42")`) or unique cryptographically generated IDs (`newUniqueId()`).
 2. **Global Coordination**: When a Worker invokes an actor stub (`env.CHAT_ROOM.get(id).fetch()`), Cloudflare's internal control plane routes the request directly to the data center hosting that specific actor instance.
 3. **Automatic Instantiation**: If the actor is not currently in memory, `workerd` automatically spins up a new V8 isolate at the optimal data center, initializes its state, and delivers the invocation.
@@ -60,9 +61,11 @@ sequenceDiagram
 ```
 
 ### The Input Gate Rule
+
 - While an actor executes synchronous JavaScript code or waits for local storage operations (`this.ctx.storage.sql` or `get`/`put`), the **Input Gate is locked**. Incoming calls are queued in memory, guaranteeing serial execution.
 
 ### The Interleaving Gotcha (External Async I/O)
+
 - **CRITICAL**: If an actor method awaits an **external asynchronous operation** (such as an external `fetch()` subrequest or an unconstrained promise), the **Input Gate opens**.
 - While waiting for the external network response, queued incoming requests can execute on the actor thread, interleaving with the active method.
 - **Rule**: Never assume internal state remains unchanged across an external `await fetch()`. State must be re-validated after an external await.
@@ -74,7 +77,7 @@ sequenceDiagram
 Modern Durable Objects are backed by an embedded, highly optimized **SQLite** engine rather than legacy key-value stores.
 
 ```typescript
-import { DurableObject } from "cloudflare:workers";
+import { DurableObject } from 'cloudflare:workers';
 
 export class BankAccount extends DurableObject {
   constructor(ctx: DurableObjectState, env: Env) {
@@ -90,31 +93,35 @@ export class BankAccount extends DurableObject {
     `);
   }
 
-  async transfer(fromId: string, toId: string, amount: number): Promise<{ success: boolean; error?: string }> {
+  async transfer(
+    fromId: string,
+    toId: string,
+    amount: number,
+  ): Promise<{ success: boolean; error?: string }> {
     // Synchronous transaction execution with automatic rollback
     try {
       const result = this.ctx.storage.transactionSync(() => {
         // 1. Calculate current balance
         const balanceCursor = this.ctx.storage.sql.exec(
-          "SELECT COALESCE(SUM(amount), 0) as balance FROM ledger WHERE account_id = ?",
-          fromId
+          'SELECT COALESCE(SUM(amount), 0) as balance FROM ledger WHERE account_id = ?',
+          fromId,
         );
         const currentBalance = balanceCursor.toArray()[0]?.balance as number;
 
         if (currentBalance < amount) {
-          throw new Error("Insufficient Funds");
+          throw new Error('Insufficient Funds');
         }
 
         // 2. Perform double-entry transfer
         this.ctx.storage.sql.exec(
-          "INSERT INTO ledger (account_id, amount) VALUES (?, ?)",
+          'INSERT INTO ledger (account_id, amount) VALUES (?, ?)',
           fromId,
-          -amount
+          -amount,
         );
         this.ctx.storage.sql.exec(
-          "INSERT INTO ledger (account_id, amount) VALUES (?, ?)",
+          'INSERT INTO ledger (account_id, amount) VALUES (?, ?)',
           toId,
-          amount
+          amount,
         );
 
         return true;
@@ -123,7 +130,7 @@ export class BankAccount extends DurableObject {
       return { success: result };
     } catch (err: unknown) {
       // Any uncaught error inside transactionSync rolls back all mutations atomically
-      const msg = err instanceof Error ? err.message : "Transaction failed";
+      const msg = err instanceof Error ? err.message : 'Transaction failed';
       return { success: false, error: msg };
     }
   }
@@ -148,13 +155,14 @@ export class CacheCleaner extends DurableObject {
 
   // Invoked automatically by Cloudflare edge infrastructure at the scheduled time
   async alarm(): Promise<void> {
-    console.log("Durable Object Alarm Fired: Executing Maintenance");
+    console.log('Durable Object Alarm Fired: Executing Maintenance');
     await this.purgeExpiredSessions();
   }
 }
 ```
 
 ### Alarm Semantics
+
 - **Persistence Across Eviction**: If the actor is evicted from memory, Cloudflare's edge alarm scheduler remembers the scheduled timestamp and instantiates the actor to invoke `alarm()`.
 - **Single Alarm per Object**: Calling `setAlarm()` overwrites any existing alarm for that instance.
 - **Retry Semantics**: If an alarm handler throws an unhandled error, the runtime automatically retries with exponential backoff.
@@ -191,10 +199,10 @@ export class ChatRoom extends DurableObject {
     const [client, server] = Object.values(webSocketPair);
 
     // Register WebSocket with the Hibernation API
-    this.ctx.acceptWebSocket(server, ["general-chat"]);
+    this.ctx.acceptWebSocket(server, ['general-chat']);
 
     // Set auto-hibernating connection metadata
-    server.serializeAttachment({ userId: "user_42", joinedAt: Date.now() });
+    server.serializeAttachment({ userId: 'user_42', joinedAt: Date.now() });
 
     return new Response(null, { status: 101, webSocket: client });
   }
@@ -210,7 +218,7 @@ export class ChatRoom extends DurableObject {
   }
 
   async webSocketClose(ws: WebSocket, code: number, reason: string): Promise<void> {
-    ws.close(code, "Durable Object Closed Connection");
+    ws.close(code, 'Durable Object Closed Connection');
   }
 }
 ```
@@ -220,15 +228,19 @@ export class ChatRoom extends DurableObject {
 ## 6. Location Hints, Jurisdictions, and Sharding Topologies
 
 ### Jurisdictional Restrictions (Compliance)
+
 For strict regulatory compliance (such as EU GDPR or FedRAMP), Durable Objects can be restricted to specific geographical regions:
+
 ```typescript
 // Guarantees that the actor instance and SQLite storage remain physically inside the EU
-const id = env.BANKING_DO.newUniqueId({ jurisdiction: "eu" });
+const id = env.BANKING_DO.newUniqueId({ jurisdiction: 'eu' });
 const stub = env.BANKING_DO.get(id);
 ```
 
 ### High-Throughput Sharding Patterns
+
 Because an individual Durable Object executes on a single thread in a single data center, its throughput ceiling is approximately **1,000 to 2,000 requests per second**. Applications exceeding this throughput must shard state:
+
 - **Tenant Sharding**: Shard by customer ID (`env.DO.idFromName(tenantId)`).
 - **Time/Bucket Sharding**: Shard metrics or counters across $N$ sub-actors:
   ```typescript

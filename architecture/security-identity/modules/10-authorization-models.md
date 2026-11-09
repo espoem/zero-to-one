@@ -55,7 +55,7 @@ To avoid copying permissions across millions of nested objects, Zanzibar evaluat
 
 1. **Direct Relation**: Check if `user:alice` has a direct tuple on the object.
 2. **Computed Userset**: A relation implies another relation (e.g. an `owner` is automatically an `editor`, and an `editor` is automatically a `viewer`): $$\text{viewer} = \text{self} \cup \text{editor} \cup \text{owner}$$
-3. **Tuple-to-Userset (Namespace Inheritance)**: A relation is inherited from a parent object: $$\text{document:doc_1\#viewer} = \text{folder:folder_A\#viewer}$$
+3. **Tuple-to-Userset (Namespace Inheritance)**: A relation is inherited from a parent object: $$\text{document:doc-1\#viewer} = \text{folder:folder-A\#viewer}$$
 
 ```mermaid
 graph TD

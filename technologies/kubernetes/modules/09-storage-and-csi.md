@@ -521,6 +521,7 @@ The two-phase mount architecture separates host-level block device preparation f
 
 1. **`NodeStageVolume`**: Operates at the host/node level. When a block device is attached to a node, `NodeStageVolume` formats the raw device with a filesystem (if unformatted) and mounts it to a single global staging directory (`/var/lib/kubelet/plugins/.../globalmount`). This operation runs once per node, regardless of how many Pods consume the volume.
 2. **`NodePublishVolume`**: Operates at the Pod level. It creates a Linux bind mount from the global staging path into the specific container's filesystem mount point inside `/var/lib/kubelet/pods/<pod-uid>/volumes/...`. If multiple Pods on the same node share a volume (e.g., in `ROX` mode), `NodePublishVolume` is invoked once per Pod, binding against the single pre-staged mount point.
+
 </details>
 
 <details><summary>4. How does Kubernetes execute an online PVC resize, and what component performs the filesystem expansion?</summary>
@@ -529,6 +530,7 @@ Online volume expansion is an asynchronous, two-phase process:
 
 1. **Control Plane Block Expansion**: The user increases `spec.resources.requests.storage` on the PVC. The `csi-resizer` sidecar detects the change and calls `ControllerExpandVolume` on the storage provider's control plane to expand the underlying block LUN (e.g., AWS EBS volume). Once resized, the PV capacity is updated, and the PVC receives condition `FileSystemResizePending: True`.
 2. **Node Filesystem Expansion**: The `kubelet` on the node running the workload detects the condition and invokes `NodeExpandVolume` on the local CSI node plugin. The node plugin executes operating system utilities (`resize2fs` or `xfs_growfs`) to grow the filesystem while mounted. Upon success, kubelet updates `pvc.status.capacity` and removes the pending condition.
+
 </details>
 
 <details><summary>5. What is the difference between `VolumeSnapshot` and `VolumeGroupSnapshot` (promoted to GA in Kubernetes v1.36)?</summary>

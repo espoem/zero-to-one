@@ -671,6 +671,7 @@ The three PSS profiles are:
 1. **`Privileged`**: Completely unrestricted; permits host namespaces, privileged containers, and raw device access (intended for system CNI/CSI daemons).
 2. **`Baseline`**: Prevents known privilege escalations with minimal application friction. Disallows privileged mode, `hostPID`, `hostIPC`, `hostNetwork`, and `hostPath` mounts, but allows containers to run as root by default.
 3. **`Restricted`**: Hardened Zero-Trust profile. In addition to Baseline rules, it strictly requires `runAsNonRoot: true`, drops all Linux capabilities except `NET_BIND_SERVICE`, enforces `readOnlyRootFilesystem: true`, restricts volume types to safe primitives, and requires `seccompProfile: RuntimeDefault`.
+
 </details>
 
 <details><summary>6. How does Falco detect runtime container compromises, and what is the difference between its eBPF probe and kernel module?</summary>
@@ -679,6 +680,7 @@ Falco intercepts low-level Linux kernel system calls (such as `execve`, `openat`
 
 - **Kernel Module (`falco.ko`)**: A traditional dynamically loadable kernel module inserted into the host kernel. Offers high performance but requires kernel headers matching the exact host OS and carries stability risks if a panic occurs.
 - **eBPF Probe**: Modern, safe architecture. Runs sandboxed eBPF bytecode verified by the kernel's in-tree eBPF verifier before execution. It cannot crash the host kernel, supports modern immutable distributions, and functions in environments where custom kernel module loading is prohibited.
+
 </details>
 
 <details><summary>7. What is envelope encryption in the context of Kubernetes Secrets encryption at rest with KMS v2?</summary>
@@ -688,6 +690,7 @@ Envelope encryption is a two-tier cryptographic architecture that avoids sending
 1. The `kube-apiserver` generates a local, random symmetric **Data Encryption Key (DEK)** to encrypt the Secret payload locally using AES-GCM.
 2. The apiserver sends only the small DEK to an external Key Management Service (KMS, such as AWS KMS or HashiCorp Vault), which encrypts the DEK using a master **Key Encryption Key (KEK)** residing securely inside an HSM.
 3. The encrypted DEK and the encrypted payload are stored together in `etcd`. To decrypt, the apiserver requests the KMS to decrypt the DEK, and then uses the decrypted DEK in memory to read the Secret.
+
 </details>
 
 ---

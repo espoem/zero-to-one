@@ -63,7 +63,7 @@ graph TD
 
 - **Within a Partition**: The log provides a **strict, total monotonic ordering** guarantee. If event $E_1$ has offset 42 and event $E_2$ has offset 43 in Partition 0, all consumers reading Partition 0 will observe $E_1$ before $E_2$.
 - **Across Partitions**: There is **no global ordering guarantee**. Events across different partitions can be consumed in arbitrary order depending on network latency and consumer thread scheduling.
-- **Key-Based Routing**: Producers compute partition assignments via a deterministic hash: $\text{partition} = \text{hash}(\text{key}) \pmod{\text{num\_partitions}}$. All events sharing the identical business key (e.g. `customer_id`) are routed to the same partition, guaranteeing **strict causal ordering per customer**.
+- **Key-Based Routing**: Producers compute partition assignments via a deterministic hash: $\text{partition} = \text{hash}(\text{key}) \pmod{\text{num-partitions}}$. All events sharing the identical business key (e.g. `customer_id`) are routed to the same partition, guaranteeing **strict causal ordering per customer**.
 
 ### Consumer Groups and Cooperative Rebalancing
 

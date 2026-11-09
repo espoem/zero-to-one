@@ -14,37 +14,30 @@ Cloudflare's primary configuration format is `wrangler.jsonc` (JSON with Comment
   "name": "checkout-service",
   "main": "src/index.ts",
   "compatibility_date": "2026-11-01",
-  "compatibility_flags": [
-    "nodejs_compat"
-  ],
+  "compatibility_flags": ["nodejs_compat"],
   "vars": {
     "ENVIRONMENT": "development",
-    "API_VERSION": "v2"
+    "API_VERSION": "v2",
   },
-  "kv_namespaces": [
-    { "binding": "CONFIG_KV", "id": "0123456789abcdef0123456789abcdef" }
-  ],
+  "kv_namespaces": [{ "binding": "CONFIG_KV", "id": "0123456789abcdef0123456789abcdef" }],
   "d1_databases": [
-    { "binding": "DB", "database_name": "orders_db", "database_id": "xxxx-xxxx-xxxx" }
+    { "binding": "DB", "database_name": "orders_db", "database_id": "xxxx-xxxx-xxxx" },
   ],
   "env": {
     "production": {
       "name": "checkout-service-prod",
-      "routes": [
-        { "pattern": "api.example.com/checkout/*", "zone_name": "example.com" }
-      ],
+      "routes": [{ "pattern": "api.example.com/checkout/*", "zone_name": "example.com" }],
       "vars": {
-        "ENVIRONMENT": "production"
+        "ENVIRONMENT": "production",
       },
-      "kv_namespaces": [
-        { "binding": "CONFIG_KV", "id": "fedcba9876543210fedcba9876543210" }
-      ]
-    }
-  }
+      "kv_namespaces": [{ "binding": "CONFIG_KV", "id": "fedcba9876543210fedcba9876543210" }],
+    },
+  },
 }
 ```
 
 ### Environment Inheritance and Overrides
+
 - **Top-Level Definitions**: Default properties apply to the default (development or staging) environment.
 - **The `env` Block**: Named environments (e.g., `production`, `staging`, `preview`) inherit top-level settings and selectively override bindings, routes, and environment variables.
 - **Deploying Environments**: `wrangler deploy --env production` applies the configuration defined inside `env.production`.
@@ -64,6 +57,7 @@ flowchart LR
 ```
 
 ### Type Drift Prevention
+
 1. **Running Type Generation**: Executing `npx wrangler types` inspects `wrangler.jsonc` and outputs an ambient interface `Env` inside `worker-configuration.d.ts`:
    ```typescript
    interface Env {
@@ -87,6 +81,7 @@ flowchart LR
 `wrangler dev` executes code locally using an embedded `workerd` process powered by **Miniflare 3+**.
 
 ### Local Mode vs Remote Mode
+
 - **Local Mode (Default: `wrangler dev`)**:
   - `workerd` runs entirely on the developer's workstation.
   - Bindings (KV, D1, R2, Queues) use local ephemeral or persisted SQLite and filesystem stores inside `.wrangler/state/v3/`.
@@ -97,7 +92,9 @@ flowchart LR
   - Essential when testing proprietary edge features that cannot be emulated locally (such as specific WAF rule chains or real Anycast routing).
 
 ### Vite Integration (`@cloudflare/vite-plugin`)
+
 Modern frontend and full-stack frameworks (Remix, SvelteKit, Astro, Hono) integrate via `@cloudflare/vite-plugin`:
+
 - HMR (Hot Module Replacement) executes with sub-second feedback.
 - Vite unifies the client bundle and edge server build into a single compilation pipeline.
 - Automatically handles server-side rendering (SSR) within `workerd` directly inside the Vite development server.
@@ -122,6 +119,7 @@ flowchart TD
 ```
 
 ### Deployment Commands
+
 1. **Upload Version without Cutover**:
    ```bash
    wrangler versions upload --message "Add optimized database connection pooling"
@@ -174,6 +172,7 @@ resource "cloudflare_workers_route" "api_route" {
 ```
 
 ### Breaking Changes in Provider v5
+
 - Strict 1:1 parity with current Cloudflare REST v4 API schemas.
 - Deprecated monolithic blocks replaced with explicit modular resources.
 - Native support for Workers Versioning, Dispatch Namespaces, and Workers Static Assets.

@@ -193,7 +193,7 @@ FT.AGGREGATE idx:product "@city:{paris}"
 
 `FT.HYBRID` (Redis 8.4+) merges sparse keyword matching (BM25) and dense semantic vector search (KNN) into a unified ranking using Reciprocal Rank Fusion (RRF):
 
-$$\text{RRF\_Score}(d) = \sum_{m \in \{\text{text}, \text{vector}\}} \frac{1}{k + r_m(d)}$$
+$$\text{RRF-Score}(d) = \sum_{m \in \{\text{text}, \text{vector}\}} \frac{1}{k + r_m(d)}$$
 
 where $r_m(d)$ is the document's rank within search method $m$, and $k$ is a smoothing constant (typically $k = 60$). RRF eliminates score scale mismatch between unbounded BM25 scores and normalized vector cosine distances, producing robust rankings across diverse user queries.
 
@@ -313,7 +313,7 @@ Probabilistic data structures provide bounded trade-offs between memory footprin
 ##### 1. Bloom Filter (`BF.RESERVE`)
 
 - **False-positive probability ($p$)**: Given $m$ bits of memory, $k$ hash functions, and $n$ inserted elements: $$p \approx \left(1 - e^{-kn/m}\right)^k$$
-- **Optimal number of hash functions ($k^\*$)**: Minimizes false positives for a given bit-per-element ratio $m/n$: $$k^* = \frac{m}{n} \ln 2 \approx 0.693 \times \frac{m}{n}$$
+- **Optimal number of hash functions ($k^{\ast}$)**: Minimizes false positives for a given bit-per-element ratio $m/n$: $$k^{\ast} = \frac{m}{n} \ln 2 \approx 0.693 \times \frac{m}{n}$$
 - **Optimal bits per element ($m/n$)**: Required bits to guarantee false-positive rate $p$: $$\frac{m}{n} = -\frac{\ln p}{(\ln 2)^2} \approx -1.4427 \log_2 p \approx -2.081 \ln p$$
 
 | Target False Positive $p$ | Bits per Element ($m/n$) | Optimal Hashes $k$ | RAM for 10M Items | RAM for 100M Items |

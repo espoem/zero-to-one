@@ -21,6 +21,7 @@ flowchart LR
 ```
 
 ### Architectural Properties
+
 - **Zero Public Internet Exposure**: Callee Workers do not require public DNS routes or `workers.dev` URLs. They can remain completely private, accessible exclusively via Service Bindings.
 - **In-Process Optimization**: When the caller and callee execute on the same physical host, `workerd` passes arguments via structured cloning in memory without network hops.
 - **Independent Lifecycles**: Each Worker maintains its own discrete `wrangler.jsonc`, compatibility flags, versioning, and environment secrets.
@@ -34,7 +35,7 @@ Historically, Service Bindings required constructing synthetic `Request` objects
 ### The Callee Service (`auth-service`)
 
 ```typescript
-import { WorkerEntrypoint } from "cloudflare:workers";
+import { WorkerEntrypoint } from 'cloudflare:workers';
 
 export interface UserSession {
   userId: string;
@@ -45,14 +46,14 @@ export interface UserSession {
 export class AuthService extends WorkerEntrypoint<Env> {
   // Directly exposed typed RPC method
   async validateToken(token: string): Promise<UserSession> {
-    if (!token.startsWith("tok_live_")) {
-      return { userId: "", role: "anonymous", valid: false };
+    if (!token.startsWith('tok_live_')) {
+      return { userId: '', role: 'anonymous', valid: false };
     }
 
     // Query private KV or D1 bound to this auth worker
     const userData = await this.env.AUTH_KV.get(`session:${token}`);
     if (!userData) {
-      return { userId: "", role: "anonymous", valid: false };
+      return { userId: '', role: 'anonymous', valid: false };
     }
 
     const parsed = JSON.parse(userData);
@@ -61,7 +62,7 @@ export class AuthService extends WorkerEntrypoint<Env> {
 
   // Standard HTTP entrypoint for public requests (optional)
   async fetch(request: Request): Promise<Response> {
-    return new Response("Auth Service Private RPC Interface", { status: 200 });
+    return new Response('Auth Service Private RPC Interface', { status: 200 });
   }
 }
 
@@ -71,8 +72,8 @@ export default AuthService;
 ### The Caller Service (`api-gateway`)
 
 ```typescript
-import { WorkerEntrypoint } from "cloudflare:workers";
-import type { AuthService } from "../../auth-service/src/index.ts";
+import { WorkerEntrypoint } from 'cloudflare:workers';
+import type { AuthService } from '../../auth-service/src/index.ts';
 
 export interface Env {
   AUTH_SERVICE: Service<AuthService>;
@@ -80,21 +81,21 @@ export interface Env {
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-    const authHeader = request.headers.get("Authorization");
-    const token = authHeader?.replace("Bearer ", "") ?? "";
+    const authHeader = request.headers.get('Authorization');
+    const token = authHeader?.replace('Bearer ', '') ?? '';
 
     // Invoke remote method directly with native TypeScript typing
     const session = await env.AUTH_SERVICE.validateToken(token);
 
     if (!session.valid) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
-        headers: { "Content-Type": "application/json" }
+        headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    return Response.json({ status: "authorized", userId: session.userId, role: session.role });
-  }
+    return Response.json({ status: 'authorized', userId: session.userId, role: session.role });
+  },
 };
 ```
 
@@ -129,23 +130,23 @@ export default {
     for (const event of events) {
       const payload = {
         scriptName: event.scriptName,
-        outcome: event.event?.status ?? "unknown",
+        outcome: event.event?.status ?? 'unknown',
         cpuTimeMs: event.cpuTime,
         wallTimeMs: event.eventTimestamp,
         logs: event.logs.map((l) => ({ level: l.level, message: l.message })),
-        exceptions: event.exceptions.map((e) => ({ name: e.name, message: e.message }))
+        exceptions: event.exceptions.map((e) => ({ name: e.name, message: e.message })),
       };
 
       // Ship telemetry to Datadog or Splunk via background subrequest
       ctx.waitUntil(
-        fetch("https://http-intake.logs.datadoghq.com/api/v2/logs", {
-          method: "POST",
+        fetch('https://http-intake.logs.datadoghq.com/api/v2/logs', {
+          method: 'POST',
           body: JSON.stringify(payload),
-          headers: { "Content-Type": "application/json", "DD-API-KEY": env.DATADOG_KEY }
-        })
+          headers: { 'Content-Type': 'application/json', 'DD-API-KEY': env.DATADOG_KEY },
+        }),
       );
     }
-  }
+  },
 };
 ```
 
@@ -156,6 +157,7 @@ export default {
 SaaS providers frequently allow their enterprise customers to upload custom JavaScript plugins or logic (e.g., Shopify custom scripts or Zapier edge automations). Running customer-supplied code inside a shared global Worker is dangerous.
 
 **Workers for Platforms** introduces **Dispatch Namespaces**:
+
 - **Dynamic Worker Deployment**: The SaaS host dynamically creates, updates, and deletes tenant Workers programmatically via API calls without redeploying the core platform.
 - **Dynamic Ingress Dispatch**: The host Worker inspects the incoming hostname or request header and dynamically dispatches to the tenant's isolated Worker:
   ```typescript
@@ -165,12 +167,12 @@ SaaS providers frequently allow their enterprise customers to upload custom Java
 
   export default {
     async fetch(request: Request, env: Env): Promise<Response> {
-      const tenantId = request.headers.get("x-tenant-id") ?? "default";
+      const tenantId = request.headers.get('x-tenant-id') ?? 'default';
 
       // Programmatically obtain customer-specific isolate stub
       const customerWorker = env.DISPATCH.get(tenantId);
       return await customerWorker.fetch(request);
-    }
+    },
   };
   ```
 - **Strict Quotas**: Each customer Worker executes inside its own discrete 128 MB isolate sandbox with dedicated CPU limits.
@@ -182,6 +184,7 @@ SaaS providers frequently allow their enterprise customers to upload custom Java
 While V8 isolates provide sub-millisecond execution for standard web APIs and JavaScript, legacy workloads often require specialized runtimes (such as Python data science libraries, FFmpeg, LibreOffice, or custom C++ binaries).
 
 In April 2026, Cloudflare launched **Cloudflare Containers (Sandboxes GA)**:
+
 - **Durable Object–Fronted Containers**: Containers are managed and invoked through Durable Objects.
 - **Fast Micro-Container Boot**: Sandboxes boot within seconds directly at the edge, scaling down to zero when idle.
 - **Unified Capability Mesh**: Containers communicate with edge Workers over internal Service Bindings.
@@ -210,9 +213,9 @@ In April 2026, Cloudflare launched **Cloudflare Containers (Sandboxes GA)**:
 ## 8. Architectural Case Study: Modular E-Commerce Gateway with RPC
 
 ```typescript
-import { WorkerEntrypoint } from "cloudflare:workers";
-import type { PaymentService } from "../../payment-service/src/index.ts";
-import type { InventoryService } from "../../inventory-service/src/index.ts";
+import { WorkerEntrypoint } from 'cloudflare:workers';
+import type { PaymentService } from '../../payment-service/src/index.ts';
+import type { InventoryService } from '../../inventory-service/src/index.ts';
 
 export interface Env {
   PAYMENT_RPC: Service<PaymentService>;
@@ -221,27 +224,34 @@ export interface Env {
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-    if (request.method !== "POST") return new Response("Method Not Allowed", { status: 405 });
+    if (request.method !== 'POST') return new Response('Method Not Allowed', { status: 405 });
 
-    const { itemId, paymentMethod, amount } = await request.json<{ itemId: string; paymentMethod: string; amount: number }>();
+    const { itemId, paymentMethod, amount } = await request.json<{
+      itemId: string;
+      paymentMethod: string;
+      amount: number;
+    }>();
 
     // 1. Check inventory via direct RPC stub (< 1 ms latency)
     const available = await env.INVENTORY_RPC.checkStock(itemId);
     if (!available) {
-      return Response.json({ error: "Item Out of Stock" }, { status: 409 });
+      return Response.json({ error: 'Item Out of Stock' }, { status: 409 });
     }
 
     // 2. Execute payment via direct RPC stub
     const paymentResult = await env.PAYMENT_RPC.charge(paymentMethod, amount);
     if (!paymentResult.success) {
-      return Response.json({ error: "Payment Declined", reason: paymentResult.error }, { status: 402 });
+      return Response.json(
+        { error: 'Payment Declined', reason: paymentResult.error },
+        { status: 402 },
+      );
     }
 
     // 3. Confirm inventory reservation asynchronously
     ctx.waitUntil(env.INVENTORY_RPC.decrementStock(itemId));
 
-    return Response.json({ status: "success", transactionId: paymentResult.transactionId });
-  }
+    return Response.json({ status: 'success', transactionId: paymentResult.transactionId });
+  },
 };
 ```
 

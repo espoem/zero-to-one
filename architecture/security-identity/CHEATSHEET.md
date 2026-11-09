@@ -149,7 +149,7 @@ Cross-Origin-Resource-Policy: same-origin
 
 ### PKCE S256 Formula
 
-$$\text{code\_verifier} = \text{CSPRNG(32 bytes, Base64URL)}$$ $$\text{code\_challenge} = \text{BASE64URL}(\text{SHA256}(\text{code\_verifier}))$$ $$\text{code\_challenge\_method} = \text{"S256"} \quad (\text{"plain" is strictly forbidden})$$
+$$\text{code-verifier} = \text{CSPRNG(32 bytes, Base64URL)}$$ $$\text{code-challenge} = \text{BASE64URL}(\text{SHA256}(\text{code-verifier}))$$ $$\text{code-challenge-method} = \text{"S256"} \quad (\text{"plain" is strictly forbidden})$$
 
 ---
 

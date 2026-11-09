@@ -376,7 +376,7 @@ flowchart TD
 
 ### Mathematical Key Derivation
 
-SigV4 never uses the raw secret access key directly to sign requests. Instead, it derives a scoped, ephemeral signing key using four sequential HMAC-SHA256 operations: $$k_{\text{Date}} = \text{HMAC-SHA256}(\text{"AWS4"} + \text{SecretKey}, \text{DateStamp})$$ $$k_{\text{Region}} = \text{HMAC-SHA256}(k_{\text{Date}}, \text{Region})$$ $$k_{\text{Service}} = \text{HMAC-SHA256}(k_{\text{Region}}, \text{Service})$$ $$k_{\text{Signing}} = \text{HMAC-SHA256}(k_{\text{Service}}, \text{"aws4\_request"})$$
+SigV4 never uses the raw secret access key directly to sign requests. Instead, it derives a scoped, ephemeral signing key using four sequential HMAC-SHA256 operations: $$k_{\text{Date}} = \text{HMAC-SHA256}(\text{"AWS4"} + \text{SecretKey}, \text{DateStamp})$$ $$k_{\text{Region}} = \text{HMAC-SHA256}(k_{\text{Date}}, \text{Region})$$ $$k_{\text{Service}} = \text{HMAC-SHA256}(k_{\text{Region}}, \text{Service})$$ $$k_{\text{Signing}} = \text{HMAC-SHA256}(k_{\text{Service}}, \text{"aws4-request"})$$
 
 The final cryptographic signature is computed as: $$\text{Signature} = \text{HMAC-SHA256}(k_{\text{Signing}}, \text{StringToSign})$$
 

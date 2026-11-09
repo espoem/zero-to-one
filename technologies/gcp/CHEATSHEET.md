@@ -154,6 +154,6 @@ bq query \
 | **Cloud Spanner** | Primary Key Design | Anti-pattern: Monotonically increasing keys | Single split (tablet) overload leading to CPU saturation and severe write throttling. |
 | **Cloud Pub/Sub** | Default Ack Deadline | 10 seconds (configurable 10s to 600s) | Redelivery storms and duplicated processing when long-running tasks exceed 10 seconds. |
 | **Cloud Pub/Sub** | Ordering Keys + Failed Message | Strict sequence preservation | Entire ordering key stream halts (head-of-line blocking) until failed message acks or DLQ routes. |
-| **BigQuery** | On-Demand Query Billing | \$6.25 per TiB scanned (minimum 10 MiB) | Unpartitioned `SELECT *` with `LIMIT 10` scans and bills the entire petabyte table dataset. |
+| **BigQuery** | On-Demand Query Billing | $6.25 per TiB scanned (minimum 10 MiB) | Unpartitioned `SELECT *` with `LIMIT 10` scans and bills the entire petabyte table dataset. |
 | **Firestore** | Mode Selection (Native vs Datastore) | Permanent one-way choice per database | Cannot change database mode in place; requires project or database recreation. |
 | **VPC Peering** | Route Transitivity | Strictly Non-Transitive | Peered VPC A cannot reach VPC C through intermediate VPC B without VPN or Interconnect. |

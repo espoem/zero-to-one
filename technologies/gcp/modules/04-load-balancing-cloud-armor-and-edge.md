@@ -37,7 +37,7 @@ flowchart TD
 2. A client executing a TCP handshake with `34.120.100.50` is automatically routed by internet BGP hops to the nearest physical Google edge location.
 3. **TCP and TLS Termination at the Edge**:
    - The TCP 3-way handshake and TLS 1.3 negotiation terminate directly on the local **Google Front End (GFE)** server within the edge PoP, minimizing the round-trip time (RTT) experienced by the client.
-   - For example, a user in Frankfurt handshakes with the Frankfurt GFE in $< 5\text{ms}$, rather than waiting $90\text{ms}$ for packets to traverse the Atlantic Ocean to an origin server in Iowa.
+   - For example, a user in Frankfurt handshakes with the Frankfurt GFE in < 5 ms, rather than waiting 90 ms for packets to traverse the Atlantic Ocean to an origin server in Iowa.
 4. **Backbone Transit**: Once the HTTP request payload is received and verified, the GFE proxies the request across Google's high-speed, private dedicated fiber backbone to the nearest healthy regional backend capable of handling the request.
 
 ---
@@ -143,7 +143,7 @@ Cloud CDN supports three distinct caching policies configured on the backend ser
 
 The **Cache Key** is the unique identifier computed for each incoming request to look up cached objects:
 
-$$\text{CacheKey} = (\text{Host}, \text{URI Path}, \operatorname{SortedQueryParameters}, \operatorname{SelectedHeaders})$$
+$$\text{CacheKey} = (\text{Host}, \text{URI Path}, \mathrm{SortedQueryParameters}, \mathrm{SelectedHeaders})$$
 
 To prevent cache fragmentation, administrators can customize cache keys to exclude irrelevant query string parameters (such as marketing tracking tags `utm_source`, `utm_medium`):
 

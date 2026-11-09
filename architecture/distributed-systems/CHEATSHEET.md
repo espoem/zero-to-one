@@ -28,7 +28,7 @@ A high-density operational reference covering fundamental theorems, formal bound
 ### Retry Backoff & Jitter Formulas
 
 - **Full Jitter (AWS Brooker)**: $$t_{\text{sleep}} = \text{random}(0, \min(M, b \cdot 2^i))$$
-- **Decorrelated Jitter**: $$t_{\text{sleep}} = \min(M, \text{random}(b, \text{prev\_sleep} \cdot 3))$$
+- **Decorrelated Jitter**: $$t_{\text{sleep}} = \min(M, \text{random}(b, \text{prev-sleep} \cdot 3))$$
 - **Retry Budget Standard**: $$\text{Retries allowed} \le \text{Total requests} \times 0.10 \quad (\text{Max 10\% outbound retries})$$
 
 ### $\Phi$-Accrual Failure Detector Math
@@ -71,7 +71,7 @@ $$\Phi = -\log_{10}(P_{\text{later}}(t - t_{\text{last}}))$$
 
 ### Fencing Token Invariant
 
-$$\text{Storage checks: Reject write if } \text{token} \le \text{max\_token\_observed}$$
+$$\text{Storage checks: Reject write if } \text{token} \le \text{max-token-observed}$$
 
 - Prevents STW garbage collection pauses and hypervisor preemptions from corrupting files.
 

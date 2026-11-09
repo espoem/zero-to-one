@@ -133,7 +133,7 @@ flowchart LR
 
 ### Key Innovations of Nakamoto Consensus
 
-1. **Proof-of-Work (PoW)**: Generating a valid block header requires finding a cryptographic nonce such that: $$\text{SHA256}(\text{SHA256}(\text{block\_header})) < \text{Target}$$ This transforms voting power from "one identity, one vote" to **"one CPU cycle, one vote"**, defeating Sybil attacks.
+1. **Proof-of-Work (PoW)**: Generating a valid block header requires finding a cryptographic nonce such that: $$\text{SHA256}(\text{SHA256}(\text{block-header})) < \text{Target}$$ This transforms voting power from "one identity, one vote" to **"one CPU cycle, one vote"**, defeating Sybil attacks.
 2. **The Longest-Chain Rule**: Replicas treat the valid chain with the highest cumulative Proof-of-Work as the ground truth. Transient forks caused by network propagation delays resolve naturally as miners converge on the longest branch.
 3. **Probabilistic Finality**: Unlike PBFT (which provides instant deterministic finality once $2f + 1$ commits are collected), Nakamoto consensus provides **probabilistic finality**: as subsequent blocks are appended, the probability $P$ of an attacker re-writing history decays exponentially: $$P \approx \sum_{k=0}^\infty \frac{\lambda^k e^{-\lambda}}{k!} \left( \frac{q}{p} \right)^{\max(z - k, 0)}$$ Waiting 6 block confirmations makes the probability of reversal practically zero.
 

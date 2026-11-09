@@ -914,9 +914,9 @@ Which of the following conditions prevent autovacuum from cleaning dead tuple ve
 What formula dictates when the autovacuum daemon launches a vacuum worker on table $R$?
 
 - A) $\text{Dead Tuples} > 1,000,000$
-- B) $\text{Dead Tuples} > \text{autovacuum\_vacuum\_threshold} + (\text{autovacuum\_vacuum\_scale\_factor} \times \text{reltuples})$
-- C) $\text{Heap Size} > \text{shared\_buffers} / 2$
-- D) $\text{Time Elapsed} > \text{checkpoint\_timeout} \times 2$
+- B) $\text{Dead Tuples} > \text{autovacuum-vacuum-threshold} + (\text{autovacuum-vacuum-scale-factor} \times \text{reltuples})$
+- C) $\text{Heap Size} > \text{shared-buffers} / 2$
+- D) $\text{Time Elapsed} > \text{checkpoint-timeout} \times 2$
 
 <details><summary>Answer</summary>
 

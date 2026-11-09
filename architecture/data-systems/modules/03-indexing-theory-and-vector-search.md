@@ -157,12 +157,13 @@ $$x^* = \arg\min_{x \in X} \text{dist}(q, x)$$
 For $N = 10,000,000$ vectors of dimension $d = 1536$, a single exact query requires evaluating $15.36 \times 10^9$ floating-point operations. Spatial partitioning trees (KD-Trees) collapse under the **Curse of Dimensionality** (at $d > 20$, all points become roughly equidistant). Modern database systems therefore deploy **Approximate Nearest Neighbor (ANN)** indexing.
 
 ```mermaid
-graph TD
+flowchart TD
     subgraph ANN Algorithmic Spectrum
         IVF["IVF (Inverted File Index): Clustering Space via Voronoi Cells"]
         HNSW["HNSW: Multi-Layer Proximity Skip Graph (High Recall, RAM Intensive)"]
         DiskANN["DiskANN: Vamana Graph Optimized for NVMe SSD Random Reads"]
         Quant["Vector Quantization: Scalar (SQ8) & Product (PQ) Compression"]
+        IVF ~~~ HNSW ~~~ DiskANN ~~~ Quant
     end
 ```
 

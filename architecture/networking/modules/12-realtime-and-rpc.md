@@ -46,7 +46,7 @@ To prevent accidental protocol upgrades caused by caching proxies, the handshake
 
 1. The client sends a randomized 16-byte base64-encoded string in `Sec-WebSocket-Key`.
 2. The server concatenates this key with a globally fixed magic GUID string: $$\text{Magic GUID} = \texttt{"258EAFA5-E914-47DA-95CA-C5AB0DC85B11"}$$
-3. The server computes the SHA-1 cryptographic hash of the concatenated string and returns it base64-encoded in `Sec-WebSocket-Accept`: $$\text{Accept Header} = \operatorname{Base64}(\operatorname{SHA-1}(\text{Sec-WebSocket-Key} + \text{Magic GUID}))$$
+3. The server computes the SHA-1 cryptographic hash of the concatenated string and returns it base64-encoded in `Sec-WebSocket-Accept`: $$\text{Accept Header} = \mathrm{Base64}(\mathrm{SHA\text{-}1}(\text{Sec-WebSocket-Key} + \text{Magic GUID}))$$
 4. The client verifies the hash. If the hash matches, the connection transitions to raw binary framing.
 
 ---

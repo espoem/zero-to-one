@@ -7,6 +7,7 @@ Operating mission-critical systems at the edge requires rigorous observability, 
 ## 1. Observability: Workers Logs, Logpush, and Distributed Tracing
 
 Observability in an isolate-based edge runtime spans three distinct telemetry tiers:
+
 1. **Interactive Real-Time Logs (`wrangler tail`)**: Streams live console logs and unhandled exceptions directly to developer terminals.
 2. **Workers Logs & Tail Workers**: Automated ingestion of structured execution events and unhandled errors into customer-managed Workers or storage sinks.
 3. **Cloudflare Logpush**: Enterprise high-throughput streaming pipelines that ship batched JSON log events to external SIEMs (Datadog, Splunk, BigQuery, Snowflake, AWS S3) in near real-time.
@@ -24,27 +25,28 @@ flowchart TD
 ```
 
 ### Distributed Tracing (OpenTelemetry)
+
 Modern Workers support distributed tracing via OpenTelemetry (OTel). Trace contexts (`traceparent` headers per W3C Trace Context) propagate seamlessly across edge subrequests, enabling end-to-end distributed span visualization.
 
 ```typescript
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-    const traceparent = request.headers.get("traceparent");
+    const traceparent = request.headers.get('traceparent');
 
     // Initiate or continue distributed span
     const spanContext = parseTraceparent(traceparent);
 
     const childHeaders = new Headers(request.headers);
     if (spanContext) {
-      childHeaders.set("traceparent", generateChildTraceparent(spanContext));
+      childHeaders.set('traceparent', generateChildTraceparent(spanContext));
     }
 
-    const response = await fetch("https://api.internal/v1/orders", {
-      headers: childHeaders
+    const response = await fetch('https://api.internal/v1/orders', {
+      headers: childHeaders,
     });
 
     return response;
-  }
+  },
 };
 ```
 
@@ -72,6 +74,7 @@ Architecting resilient edge services requires designing within `workerd`'s hard 
 Cloudflare Workers differs from traditional cloud compute (AWS Lambda / EC2) by billing active **CPU-milliseconds** rather than total wall-clock execution duration.
 
 ### Cost Model Components
+
 1. **Request Invocations**: Billed per million requests.
 2. **CPU-Time (Duration)**: Billed per million CPU-milliseconds consumed by the isolate. Time spent awaiting external I/O (database queries, network subrequests) consumes **0 ms CPU** and incurs no compute cost.
 3. **Durable Objects Billing**:
@@ -80,7 +83,7 @@ Cloudflare Workers differs from traditional cloud compute (AWS Lambda / EC2) by 
    - Read/write storage units.
 4. **WebSocket Hibernation Savings**:
    - Holding 10,000 idle WebSockets open with traditional compute costs hundreds of dollars per month in memory duration.
-   - With WebSocket Hibernation, idle connections consume **\$0.00 in memory duration**, waking the actor only when messages arrive.
+   - With WebSocket Hibernation, idle connections consume **$0.00 in memory duration**, waking the actor only when messages arrive.
 
 ---
 
@@ -102,6 +105,7 @@ flowchart LR
 ```
 
 ### Step-by-Step Migration Checklist
+
 1. **Update `wrangler.jsonc`**: Replace the legacy Pages configuration with the `assets` block:
    ```jsonc
    {
@@ -112,9 +116,9 @@ flowchart LR
        "directory": "./dist",
        "binding": "ASSETS",
        "not_found_handling": "single-page-application",
-       "run_worker_first": false
+       "run_worker_first": false,
      },
-     "main": "src/index.ts"
+     "main": "src/index.ts",
    }
    ```
 2. **Port Routing and Ports**:
@@ -175,7 +179,7 @@ export interface Env {
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const startTime = Date.now();
-    const cfRay = request.headers.get("cf-ray") ?? "unknown";
+    const cfRay = request.headers.get('cf-ray') ?? 'unknown';
 
     const response = await fetch(request);
 
@@ -186,28 +190,28 @@ export default {
         path: new URL(request.url).pathname,
         status: response.status,
         durationMs: Date.now() - startTime,
-        clientIp: maskIp(request.headers.get("cf-connecting-ip") ?? "0.0.0.0")
-      })
+        clientIp: maskIp(request.headers.get('cf-connecting-ip') ?? '0.0.0.0'),
+      }),
     );
 
     return response;
-  }
+  },
 };
 
 function maskIp(ip: string): string {
   // Anonymize IP to comply with GDPR data minimization
-  const parts = ip.split(".");
+  const parts = ip.split('.');
   if (parts.length === 4) {
     return `${parts[0]}.${parts[1]}.0.0`;
   }
-  return "masked-ipv6";
+  return 'masked-ipv6';
 }
 
 async function recordExecutionTelemetry(env: Env, data: Record<string, unknown>): Promise<void> {
   // Ships structured metric points to Cloudflare Analytics Engine
   env.AUDIT_LOGS.writeDataPoint({
     blobs: [data.cfRay as string, data.path as string, data.clientIp as string],
-    doubles: [data.status as number, data.durationMs as number]
+    doubles: [data.status as number, data.durationMs as number],
   });
 }
 ```

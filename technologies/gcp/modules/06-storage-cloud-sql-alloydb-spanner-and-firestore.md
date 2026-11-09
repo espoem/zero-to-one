@@ -35,9 +35,9 @@ Cloud Storage organizes data into four pricing tiers based on access frequency:
 | Storage Class | Minimum Retention Period | Retrieval Fees | Typical Access Frequency | Target Use Case |
 | --- | --- | --- | --- | --- |
 | **Standard** | None (0 days) | **$0.00** (Free) | Multiple times per day or month. | Web assets, active databases, streaming media, BigQuery raw ingestion. |
-| **Nearline** | 30 days | \$0.01 per GB | Less than once per month. | Monthly backups, quarterly compliance reports, low-frequency multimedia. |
-| **Coldline** | 90 days | \$0.02 per GB | Less than once per year. | Annual disaster recovery images, historical archives, legal records. |
-| **Archive** | 365 days | \$0.05 per GB | Less than once every several years. | Regulatory archives, tape replacement, long-term forensic logs. |
+| **Nearline** | 30 days | $0.01 per GB | Less than once per month. | Monthly backups, quarterly compliance reports, low-frequency multimedia. |
+| **Coldline** | 90 days | $0.02 per GB | Less than once per year. | Annual disaster recovery images, historical archives, legal records. |
+| **Archive** | 365 days | $0.05 per GB | Less than once every several years. | Regulatory archives, tape replacement, long-term forensic logs. |
 
 > [!TIP]
 > **Cloud Storage Autoclass**: Rather than authoring complex, brittle lifecycle rules that transition objects based on age alone, administrators enable **Autoclass**. Autoclass inspects individual object access patterns: objects not accessed for 30 days transition to Nearline, 90 days to Coldline, and 365 days to Archive. When an archived object is accessed, Autoclass transitions it back to Standard **without charging any data retrieval or transition fees**.
@@ -295,7 +295,7 @@ flowchart TD
 Bigtable has strictly **one single index**: the sorted lexicographical **Row Key**. There are no secondary indexes, no foreign keys, and no cross-row transactions.
 
 1. **Row Keys Must Avoid Monotonic Sequential Values**: Avoid leading with sequential timestamps (`2026-11-08-001`). Prepend a high-cardinality prefix (`device_id#timestamp`) or hash to distribute writes across all cluster nodes.
-2. **Reverse Timestamps for Latest-First Queries**: To query the most recent telemetry readings efficiently, author row keys using reverse timestamps: $$\text{ReverseTimestamp} = \text{Long.MAX\_VALUE} - \text{TimestampMillis}$$ Scanning by `device_id#` will immediately return the latest measurements at the top of the range scan.
+2. **Reverse Timestamps for Latest-First Queries**: To query the most recent telemetry readings efficiently, author row keys using reverse timestamps: $$\text{ReverseTimestamp} = \text{Long.MAX-VALUE} - \text{TimestampMillis}$$ Scanning by `device_id#` will immediately return the latest measurements at the top of the range scan.
 3. **Column Families**: Group related columns with similar access frequencies into common column families to optimize disk compression and memory caching.
 
 ---

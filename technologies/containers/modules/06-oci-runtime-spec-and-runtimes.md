@@ -501,6 +501,7 @@ Linux namespace system calls (`setns` and `unshare`) operate at the thread level
 1. **Memory Footprint**: `crun` consumes less than 2MB of memory during container creation, enabling high container density on edge devices.
 2. **Startup Speed**: `crun` instantiates containers in approximately 1.5ms, roughly 10x faster than `runc`.
 3. **Native cgroups v2 and systemd Integration**: `crun` interfaces directly with Linux kernel cgroup v2 APIs and systemd D-Bus IPC without the overhead of Go runtime layers.
+
 </details>
 
 <details><summary>5. How does gVisor (`runsc`) provide container sandboxing, and what is its primary performance trade-off?</summary>

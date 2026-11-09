@@ -21,7 +21,7 @@ FROM employees
 
 **Definition (pipeline semantics).** A query is a **source command** $s$ followed by processing commands $c_1, \dots, c_n$. Each command is a function from tables to tables, and the query denotes
 
-$$\llbracket s \mid c_1 \mid \dots \mid c_n \rrbracket = c_n \circ \dots \circ c_1(\llbracket s \rrbracket)$$
+$$[\![ s \mid c_1 \mid \dots \mid c_n ]\!] = c_n \circ \dots \circ c_1([\![ s ]\!])$$
 
 A **table** is an ordered list of named, typed columns and a bag of rows. Unlike SQL, the order of commands is the order of evaluation: `WHERE` after `STATS` filters groups (what SQL calls `HAVING`), and a column dropped by `KEEP` is gone for every later command (negative fixture `11-unknown-column-negative`).
 

@@ -30,6 +30,7 @@ flowchart TD
 ```
 
 ### The Tiered Cache Hierarchy
+
 - **Direct Origin Fetching (Without Tiered Cache)**: When a cache miss occurs in Vienna, Prague, and Warsaw, each data center independently opens a TCP/TLS connection to the origin server, resulting in redundant origin egress and high load.
 - **Hierarchical Aggregation (With Tiered Cache)**: Lower-tier edge data centers route cache misses to a designated regional upper-tier data center (such as Frankfurt for Central Europe). The upper-tier data center caches the asset; subsequent misses from neighboring lower-tier data centers hit the upper-tier cache rather than reaching the origin.
 - **Cache Hit Ratio (CHR) Impact**: Tiered Cache typically raises cache hit ratios by 15% to 35% on dynamic or long-tail content while drastically reducing origin egress bandwidth charges.
@@ -65,7 +66,7 @@ export default {
     if (response) {
       // Add custom header to prove edge cache hit
       const headers = new Headers(response.headers);
-      headers.set("X-Cache-Status", "HIT-EDGE");
+      headers.set('X-Cache-Status', 'HIT-EDGE');
       return new Response(response.body, { status: response.status, headers });
     }
 
@@ -76,18 +77,20 @@ export default {
     if (response.status === 200) {
       // Responses stored in Cache API MUST include explicit Cache-Control headers
       const responseToCache = new Response(response.clone().body, response);
-      responseToCache.headers.set("Cache-Control", "public, max-age=600");
+      responseToCache.headers.set('Cache-Control', 'public, max-age=600');
 
       ctx.waitUntil(cache.put(cacheKey, responseToCache));
     }
 
     return response;
-  }
+  },
 };
 ```
 
 ### Critical Invariant: Per-Colo Scope
+
 The Cache API is **local to the specific edge data center (PoP)** executing the request.
+
 - Writing a response via `cache.put()` in London stores the data exclusively on London edge NVMe/RAM clusters.
 - A request arriving at the Frankfurt PoP 10 milliseconds later will miss `caches.default` and query origin unless Tiered Cache or custom replication is utilized.
 - Programmatic `cache.delete()` purges the entry only from that local data center; it does **not** broadcast a global cache invalidation.
@@ -105,12 +108,12 @@ export default {
 
     // Normalize query string: sort keys and strip tracking parameters (e.g. utm_source)
     url.searchParams.sort();
-    url.searchParams.delete("utm_source");
-    url.searchParams.delete("fbclid");
+    url.searchParams.delete('utm_source');
+    url.searchParams.delete('fbclid');
 
     // Fetch upstream with specialized caching instructions
     const response = await fetch(url.toString(), {
-      method: "GET",
+      method: 'GET',
       cf: {
         // Enforce a custom normalized cache key
         cacheKey: url.toString(),
@@ -120,18 +123,18 @@ export default {
 
         // Status-code-specific TTL rules
         cacheTtlByStatus: {
-          "200-299": 3600,
-          "404": 60,
-          "500-599": 0 // Never cache server errors
+          '200-299': 3600,
+          '404': 60,
+          '500-599': 0, // Never cache server errors
         },
 
         // Request cache bypass
-        cacheEverything: true
-      }
+        cacheEverything: true,
+      },
     });
 
     return response;
-  }
+  },
 };
 ```
 
@@ -140,16 +143,21 @@ export default {
 ## 5. Modern Edge Acceleration: Stale-While-Revalidate and 103 Early Hints
 
 ### Stale-While-Revalidate (RFC 5861)
+
 When an origin returns:
+
 ```http
 Cache-Control: max-age=60, stale-while-revalidate=300
 ```
+
 - Between 0 and 60 seconds: Response is fresh; served directly from edge cache.
 - Between 61 and 360 seconds (the 300 s grace window): Response is stale, but Cloudflare edge **serves the stale response immediately** to the client (sub-10 ms TTFB). Simultaneously, the edge dispatches a background subrequest to fetch the updated representation from the origin.
 - Beyond 360 seconds: Asset is completely expired; next request blocks on origin fetch.
 
 ### 103 Early Hints
+
 HTTP status `103 Early Hints` enables speculative resource preloading:
+
 1. Edge sends a `103 Early Hints` response containing `Link: </style.css>; rel=preload; as=style` before origin compute finishes.
 2. The browser parser initiates the TCP/TLS connection and downloads stylesheets while the origin server runs backend database queries.
 3. Once origin finishes, the primary `200 OK` response stream arrives; required fonts and stylesheets are already loaded in the browser.
@@ -187,15 +195,15 @@ export default {
     // Normalize URL cache key
     const normalizedUrl = new URL(url.pathname, url.origin);
     const cacheKey = new Request(normalizedUrl.toString(), {
-      method: "GET",
-      headers: { "Accept": request.headers.get("Accept") ?? "*/*" }
+      method: 'GET',
+      headers: { Accept: request.headers.get('Accept') ?? '*/*' },
     });
 
     const cache = caches.default;
     const cachedResponse = await cache.match(cacheKey);
 
     if (cachedResponse) {
-      const cachedDate = cachedResponse.headers.get("Date");
+      const cachedDate = cachedResponse.headers.get('Date');
       const ageMs = cachedDate ? Date.now() - new Date(cachedDate).getTime() : 0;
 
       // If cached for longer than 60 seconds, trigger background revalidation
@@ -204,29 +212,32 @@ export default {
       }
 
       const responseHeaders = new Headers(cachedResponse.headers);
-      responseHeaders.set("X-Cache-Status", "HIT-STALE");
-      return new Response(cachedResponse.body, { status: cachedResponse.status, headers: responseHeaders });
+      responseHeaders.set('X-Cache-Status', 'HIT-STALE');
+      return new Response(cachedResponse.body, {
+        status: cachedResponse.status,
+        headers: responseHeaders,
+      });
     }
 
     // Cache Miss: Synchronous origin fetch
     const originResponse = await fetch(request);
     if (originResponse.status === 200) {
       const clone = new Response(originResponse.clone().body, originResponse);
-      clone.headers.set("Cache-Control", "public, max-age=300");
-      clone.headers.set("Date", new Date().toUTCString());
+      clone.headers.set('Cache-Control', 'public, max-age=300');
+      clone.headers.set('Date', new Date().toUTCString());
       ctx.waitUntil(cache.put(cacheKey, clone));
     }
 
     return originResponse;
-  }
+  },
 };
 
 async function revalidateCache(cacheKey: Request, cache: Cache): Promise<void> {
   const freshResponse = await fetch(cacheKey.url);
   if (freshResponse.status === 200) {
     const freshClone = new Response(freshResponse.body, freshResponse);
-    freshClone.headers.set("Cache-Control", "public, max-age=300");
-    freshClone.headers.set("Date", new Date().toUTCString());
+    freshClone.headers.set('Cache-Control', 'public, max-age=300');
+    freshClone.headers.set('Date', new Date().toUTCString());
     await cache.put(cacheKey, freshClone);
   }
 }

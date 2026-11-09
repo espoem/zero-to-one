@@ -152,17 +152,17 @@ flowchart TD
 
 | Traffic Path | Ingress Cost | Egress Cost | Total Effective Cost | Architectural Mitigation |
 | --- | :-: | :-: | :-: | --- |
-| **Intra-AZ (Same AZ, Private IP)** | Free (\$0.00) | Free (\$0.00) | **\$0.00 / GB** | Co-locate latency-sensitive microservices in same AZ. |
-| **Inter-AZ (Same Region)** | \$0.01 / GB | \$0.01 / GB | **\$0.02 / GB** | Deploy AZ-aware routing; balance read replicas per AZ. |
-| **Inter-Region (e.g., us-east-1 to eu-west-1)** | Free (\$0.00) | \$0.02 / GB | **\$0.02 / GB** | Compress payloads; batch cross-region replication. |
-| **Internet Data Transfer Out (DTO)** | Free (\$0.00) | \$0.09 / GB | **\$0.09 / GB** | Front public endpoints with Amazon CloudFront (\$0.02–\$0.085/GB). |
-| **NAT Gateway Processing Fee** | \$0.045 / GB | \$0.045 / GB | **\$0.045/GB + \$0.045/hr** | Route S3 & DynamoDB traffic via free **Gateway VPC Endpoints**. |
+| **Intra-AZ (Same AZ, Private IP)** | Free ($0.00) | Free ($0.00) | **$0.00 / GB** | Co-locate latency-sensitive microservices in same AZ. |
+| **Inter-AZ (Same Region)** | $0.01 / GB | $0.01 / GB | **$0.02 / GB** | Deploy AZ-aware routing; balance read replicas per AZ. |
+| **Inter-Region (e.g., us-east-1 to eu-west-1)** | Free ($0.00) | $0.02 / GB | **$0.02 / GB** | Compress payloads; batch cross-region replication. |
+| **Internet Data Transfer Out (DTO)** | Free ($0.00) | $0.09 / GB | **$0.09 / GB** | Front public endpoints with Amazon CloudFront ($0.02–$0.085/GB). |
+| **NAT Gateway Processing Fee** | $0.045 / GB | $0.045 / GB | **$0.045/GB + $0.045/hr** | Route S3 & DynamoDB traffic via free **Gateway VPC Endpoints**. |
 
 ### 2. The NAT Gateway Anti-Pattern
 
-A standard AWS bill-shock scenario occurs when private workloads stream terabytes of analytical data or backup archives to Amazon S3 or DynamoDB through an AWS NAT Gateway. In addition to standard data transfer fees, NAT Gateways assess a **\$0.045 per GB data processing fee** plus \$0.045 per hour per gateway.
+A standard AWS bill-shock scenario occurs when private workloads stream terabytes of analytical data or backup archives to Amazon S3 or DynamoDB through an AWS NAT Gateway. In addition to standard data transfer fees, NAT Gateways assess a **$0.045 per GB data processing fee** plus $0.045 per hour per gateway.
 
-**The Architectural Fix**: Provisioning free **Gateway VPC Endpoints** for Amazon S3 and Amazon DynamoDB in the VPC route tables. Gateway endpoints route traffic over the AWS private network backbone, bypassing NAT Gateways entirely and slashing data transfer fees to **\$0.00 per GB**.
+**The Architectural Fix**: Provisioning free **Gateway VPC Endpoints** for Amazon S3 and Amazon DynamoDB in the VPC route tables. Gateway endpoints route traffic over the AWS private network backbone, bypassing NAT Gateways entirely and slashing data transfer fees to **$0.00 per GB**.
 
 ---
 
@@ -204,7 +204,7 @@ AWS Compute Optimizer analyzes historical CloudWatch resource utilization metric
 
 | Evaluation Dimension | Compute Savings Plans | EC2 Instance Savings Plans | Standard Reserved Instances | Convertible Reserved Instances |
 | --- | --- | --- | --- | --- |
-| **Commitment Commitment** | Hourly \$ spend (e.g., \$50/hr) | Hourly \$ spend (e.g., \$50/hr) | Specific instance attributes | Specific instance attributes |
+| **Commitment Commitment** | Hourly $ spend (e.g., $50/hr) | Hourly $ spend (e.g., $50/hr) | Specific instance attributes | Specific instance attributes |
 | **Term Duration** | 1 or 3 Years | 1 or 3 Years | 1 or 3 Years | 1 or 3 Years |
 | **Maximum Discount** | Up to 66% | Up to 72% | Up to 72% | Up to 66% |
 | **Services Covered** | EC2, ECS Fargate, AWS Lambda | EC2 Instances Only | EC2 Instances Only | EC2 Instances Only |
@@ -269,9 +269,9 @@ flowchart LR
 Lifecycle configuration rules automate data tier transitions and cleanup:
 
 - **Storage Tier Transitions**: Transitions objects through colder tiers as access frequency decreases:
-  - `S3 Standard` $\rightarrow$ `S3 Standard-Infrequent Access (IA)` (30 days minimum storage charge, \$0.01/GB retrieval fee).
+  - `S3 Standard` $\rightarrow$ `S3 Standard-Infrequent Access (IA)` (30 days minimum storage charge, $0.01/GB retrieval fee).
   - `S3 Standard-IA` $\rightarrow$ `S3 Glacier Flexible Retrieval` (90 days minimum, minutes-to-hours retrieval).
-  - `S3 Glacier` $\rightarrow$ `S3 Glacier Deep Archive` (\$0.00099/GB/month; lowest storage cost in the cloud, 180 days minimum storage duration, 12-hour retrieval SLA).
+  - `S3 Glacier` $\rightarrow$ `S3 Glacier Deep Archive` ($0.00099/GB/month; lowest storage cost in the cloud, 180 days minimum storage duration, 12-hour retrieval SLA).
 - **AbortIncompleteMultipartUpload**: When large multi-part uploads fail or stall, orphaned parts remain in the bucket indefinitely, consuming billable storage space while remaining invisible to standard `ListObjects` queries. Enforcing an `AbortIncompleteMultipartUpload` rule (e.g., aborting stalled uploads after 7 days) eliminates this common storage leak.
 - **Noncurrent Version Expiration**: In versioned buckets, overwriting or deleting an object creates noncurrent versions that accumulate indefinitely. Lifecycle policies must define `NoncurrentVersionExpiration` rules (e.g., retaining noncurrent versions for 30 days or keeping only the 3 most recent versions).
 
@@ -293,7 +293,7 @@ For datasets with unknown, unpredictable, or changing access patterns, **Amazon 
   - **Archive Instant Access Tier**: Automatically moves objects after 90 consecutive days of zero read access, delivering a 68% storage cost reduction with millisecond retrieval performance.
   - **Optional Asynchronous Archive Tiers**: Archive Access (configurable from 90 to 730 days) and Deep Archive Access (configurable from 180 to 730 days), matching Glacier and Deep Archive pricing.
 - **Zero Retrieval Charges**: Unlike S3 Standard-IA or Glacier, accessing an object in Intelligent-Tiering incurs **zero data retrieval fees**; the object simply moves back to the Frequent Access tier automatically upon read.
-- **FinOps Rule of Thumb (The Small Object Anti-Pattern)**: S3 Intelligent-Tiering assesses a monthly monitoring and automation charge of **\$0.0025 per 1,000 objects**. Furthermore, objects smaller than 128 KB are ineligible for auto-tiering and remain permanently in the Frequent Access tier. Enabling Intelligent-Tiering on buckets storing millions of tiny files ($< 128$ KB) creates an anti-pattern where monitoring fees exceed total monthly storage expenditure.
+- **FinOps Rule of Thumb (The Small Object Anti-Pattern)**: S3 Intelligent-Tiering assesses a monthly monitoring and automation charge of **$0.0025 per 1,000 objects**. Furthermore, objects smaller than 128 KB are ineligible for auto-tiering and remain permanently in the Frequent Access tier. Enabling Intelligent-Tiering on buckets storing millions of tiny files ($< 128$ KB) creates an anti-pattern where monitoring fees exceed total monthly storage expenditure.
 
 ---
 
@@ -351,7 +351,7 @@ Selecting the appropriate compute, storage, and networking cost optimization str
 | **Spot Elasticity** | EC2 Spot Instances (Capacity-Optimized) | 70% to 90% | Medium | Workload must be fault-tolerant and handle 2-minute interruption notices. |
 | **ARM Silicon Modernization** | AWS Graviton4 Instances / Lambda ARM64 | 20% to 40% | Low to Medium | Requires multi-arch container compilation (`linux/arm64`). |
 | **S3 Storage Tiering** | S3 Lifecycle Transitions & Intelligent-Tiering | 40% to 95% | Very Low | Cold archive tiers impose retrieval fees and asynchronous retrieval latencies. |
-| **VPC Data Transfer** | Gateway VPC Endpoints for S3/DynamoDB | 100% of NAT Fees | Very Low | Replaces \$0.045/GB NAT Gateway charges with free AWS backbone routing. |
+| **VPC Data Transfer** | Gateway VPC Endpoints for S3/DynamoDB | 100% of NAT Fees | Very Low | Replaces $0.045/GB NAT Gateway charges with free AWS backbone routing. |
 | **FinOps Analytics** | CUR 2.0 with Amazon Athena | 10% to 30% (Waste Elimination) | Medium | Requires SQL analytics queries and active Cost Allocation Tag governance. |
 
 ---
@@ -360,7 +360,7 @@ Selecting the appropriate compute, storage, and networking cost optimization str
 
 <details><summary>1. What is the fundamental difference between Compute Savings Plans and EC2 Instance Savings Plans?</summary>
 
-Compute Savings Plans provide the highest flexibility, committing to an hourly spend (e.g., \$50/hour) for 1 or 3 years. They offer up to a 66% discount and automatically apply across Amazon EC2, AWS Fargate, and AWS Lambda regardless of instance family, size, operating system, tenancy, or AWS region. EC2 Instance Savings Plans commit to an hourly spend on a specific instance family within a designated region (e.g., `c7g` in `us-east-1`), offering deeper discounts of up to 72% but restricting flexibility to that single instance family and geographic region.
+Compute Savings Plans provide the highest flexibility, committing to an hourly spend (e.g., $50/hour) for 1 or 3 years. They offer up to a 66% discount and automatically apply across Amazon EC2, AWS Fargate, and AWS Lambda regardless of instance family, size, operating system, tenancy, or AWS region. EC2 Instance Savings Plans commit to an hourly spend on a specific instance family within a designated region (e.g., `c7g` in `us-east-1`), offering deeper discounts of up to 72% but restricting flexibility to that single instance family and geographic region.
 
 - Ref: [modules/14-cost-optimization-finops-and-version-history.md#4-compute-optimization-compute-optimizer-commitments-and-spot-fleets](14-cost-optimization-finops-and-version-history.md#4-compute-optimization-compute-optimizer-commitments-and-spot-fleets), https://docs.aws.amazon.com/savingsplans/latest/userguide/what-is-savings-plans.html
 
@@ -400,7 +400,7 @@ When an application initiates an S3 multi-part upload and fails to complete it (
 
 <details><summary>6. How does routing S3 traffic through a Gateway VPC Endpoint eliminate massive NAT Gateway data processing bills?</summary>
 
-When private EC2 instances or containers access Amazon S3 without a VPC endpoint, the traffic routes through an AWS NAT Gateway. In addition to standard hourly NAT instance fees, AWS charges a \$0.045 per GB data processing fee for all traffic passing through the NAT Gateway. By adding a free Gateway VPC Endpoint for S3 to the subnet route table, traffic destined for S3 routes directly over the AWS private internal backbone, completely bypassing the NAT Gateway and reducing data processing fees for S3 traffic from \$0.045/GB to \$0.00/GB.
+When private EC2 instances or containers access Amazon S3 without a VPC endpoint, the traffic routes through an AWS NAT Gateway. In addition to standard hourly NAT instance fees, AWS charges a $0.045 per GB data processing fee for all traffic passing through the NAT Gateway. By adding a free Gateway VPC Endpoint for S3 to the subnet route table, traffic destined for S3 routes directly over the AWS private internal backbone, completely bypassing the NAT Gateway and reducing data processing fees for S3 traffic from $0.045/GB to $0.00/GB.
 
 - Ref: [modules/14-cost-optimization-finops-and-version-history.md#3-network-egress--data-transfer-cost-optimization](14-cost-optimization-finops-and-version-history.md#3-network-egress--data-transfer-cost-optimization), https://docs.aws.amazon.com/vpc/latest/privatelink/vpc-endpoints-s3.html
 

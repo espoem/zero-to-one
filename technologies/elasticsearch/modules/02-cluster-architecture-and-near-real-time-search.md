@@ -224,9 +224,9 @@ Segments are immutable, so:
 
 The `TieredMergePolicy` evaluates candidate segment sets to minimize total write amplification while aggressively reclaiming tombstones:
 
-- **Candidate scoring:** For candidate segment sets, Lucene calculates a heuristic merge score: $$\text{Merge Score} = \text{skew} \cdot \text{total\_size} \cdot (1.0 - \text{deletes\_ratio})$$ Lower scores are prioritized. Segments with high delete ratios produce smaller scores and are selected first.
+- **Candidate scoring:** For candidate segment sets, Lucene calculates a heuristic merge score: $$\text{Merge Score} = \text{skew} \cdot \text{total-size} \cdot (1.0 - \text{deletes-ratio})$$ Lower scores are prioritized. Segments with high delete ratios produce smaller scores and are selected first.
 - **Segment size thresholds:** The policy respects `index.merge.policy.max_merged_segment` (default 5 GB). Segments exceeding this size are excluded from automatic merging to prevent massive I/O storms.
-- **Merge thread bounding:** `index.merge.scheduler.max_thread_count` defaults to $\min(4, \lceil \text{CPU\_cores} / 2 \rceil)$ for SSDs. If background merges cannot keep up with high-throughput indexing, Elasticsearch artificially throttles indexing threads by inserting micro-sleeps, preventing run-away segment proliferation.
+- **Merge thread bounding:** `index.merge.scheduler.max_thread_count` defaults to $\min(4, \lceil \text{CPU-cores} / 2 \rceil)$ for SSDs. If background merges cannot keep up with high-throughput indexing, Elasticsearch artificially throttles indexing threads by inserting micro-sleeps, preventing run-away segment proliferation.
 
 **`_forcemerge`.** Merging to one segment (`max_num_segments=1`) is right for read-only indices (it maximises compression and search speed and purges all deletes). It is wrong for indices still being written: a giant segment is excluded from normal merging (the 5 GB `max_merged_segment` limit), so its future deletes linger. ILM runs force merge in the warm phase for exactly this reason.
 
@@ -266,7 +266,7 @@ sequenceDiagram
 
 ARS ranks candidate shard copies using exponentially weighted moving average (EWMA) metrics calculated by the coordinating node:
 
-$$\text{ARS\_Score}(c) = \mu(c) + 2 \cdot \sigma(c) + q(c) \cdot \mu(c)$$
+$$\text{ARS-Score}(c) = \mu(c) + 2 \cdot \sigma(c) + q(c) \cdot \mu(c)$$
 
 where:
 

@@ -328,11 +328,11 @@ type Equal<X, Y> =
 
 ### Exercise 2.1: The Typed Event Bus
 
-#### Problem Description
+**Problem Description**
 
 Implement a type-safe `EventBus` class or helper object that allows subscribing to events and dispatching them with arbitrary payload arguments. The listener must support optional listener tags for debugging.
 
-#### Starter Code
+**Starter Code**
 
 ```typescript
 // TODO: Define the Listener type and event registration signature
@@ -348,12 +348,12 @@ type TestListenerType = Listener extends (event: string, ...args: any[]) => void
 type Test1 = Expect<Equal<TestListenerType, true>>;
 ```
 
-#### Hints
+**Hints**
 
 1. Functions in TypeScript can take rest parameters `...args: any[]`.
 2. The return type should indicate that the caller does not consume the callback's result.
 
-#### Step-by-Step Solution
+**Step-by-Step Solution**
 
 ```typescript
 // 1. Define the listener as a callable function accepting the event name and rest parameters:
@@ -384,7 +384,7 @@ const bus: EventBus = {
 
 ### Exercise 2.2: Immutable Geo-Coordinate Cache
 
-#### Problem Description
+**Problem Description**
 
 You are building an in-memory geo-location cache.
 
@@ -392,7 +392,7 @@ You are building an in-memory geo-location cache.
 2. Type a `Map` that maps a string cache key (e.g. `"berlin"`) to a `GeoPoint`.
 3. Type a `Set` of allowed region codes: `"EU" | "US" | "APAC"`.
 
-#### Starter Code
+**Starter Code**
 
 ```typescript
 // TODO: Replace any with proper types
@@ -410,12 +410,12 @@ type TestCache = Expect<Equal<typeof coordinateCache, Map<string, GeoPoint>>>;
 type TestRegions = Expect<Equal<typeof activeRegions, Set<'EU' | 'US' | 'APAC'>>>;
 ```
 
-#### Hints
+**Hints**
 
 1. In named tuples, optional elements are designated with `name?: type`.
 2. `new Map<KeyType, ValueType>()` accepts type arguments directly.
 
-#### Step-by-Step Solution
+**Step-by-Step Solution**
 
 ```typescript
 // 1. Declare the named tuple with an optional third element:
@@ -445,11 +445,11 @@ activeRegions.add('EU');
 
 ### Exercise 2.3: Safe Async Batch Loader
 
-#### Problem Description
+**Problem Description**
 
 Implement a typed function `batchFetchResults` that takes an array of URL endpoints, executes them concurrently using `Promise.allSettled`, and returns an object separating successful responses from failed errors.
 
-#### Starter Code
+**Starter Code**
 
 ```typescript
 type BatchFetchOutput<T> = {
@@ -467,12 +467,12 @@ async function batchFetchResults<T>(
 }
 ```
 
-#### Hints
+**Hints**
 
 1. Use `await Promise.allSettled(urls.map(url => fetcher(url)))`.
 2. Inspect `item.status === "fulfilled"` to narrow the union to `PromiseFulfilledResult<T>`.
 
-#### Step-by-Step Solution
+**Step-by-Step Solution**
 
 ```typescript
 type BatchFetchOutput<T> = {
@@ -513,11 +513,11 @@ async function testBatch() {
 
 ### Exercise 2.4: Safe JSON Parser with Runtime Fallback
 
-#### Problem Description
+**Problem Description**
 
 Write a helper function `parseJsonWithFallback<T>` that parses a raw JSON string. If parsing fails or returns invalid non-object data, it returns a provided default fallback value. The return type must be guaranteed to be `T`.
 
-#### Starter Code
+**Starter Code**
 
 ```typescript
 // TODO: Annotate and implement parseJsonWithFallback
@@ -530,13 +530,13 @@ const parsed = parseJsonWithFallback('{"port": 3000}', { port: 8080 });
 type TestParsed = Expect<Equal<typeof parsed, { port: number }>>;
 ```
 
-#### Hints
+**Hints**
 
 1. Avoid typing the parameter or return as `any`.
 2. Catch errors in a `try...catch` block.
 3. Use a type predicate or validation check before casting or returning.
 
-#### Step-by-Step Solution
+**Step-by-Step Solution**
 
 ```typescript
 function parseJsonWithFallback<T>(jsonString: string, fallback: T): T {

@@ -439,6 +439,7 @@ Because the block no longer exists in configuration, Terraform does not read the
 When `count = length(var.list)` is used, resource instances are indexed by sequential integers: `resource[0]`, `resource[1]`, `resource[2]`. If an element in the middle of the list is deleted (e.g., removing index 1), all subsequent elements shift down by one position. In the next plan, Terraform compares each integer address to its previous state. Resource `[1]` now contains the configuration of what was previously `[2]`. If the resource requires immutable recreation on name changes (such as databases or virtual machines), Terraform destroys and recreates every shifted instance, causing widespread outages. In contrast, `for_each` indexes resources by unique, immutable string keys (`resource["web"]`, `resource["db"]`). Deleting an item removes only that specific key from the map, leaving all other instances untouched.
 
 - Ref: Terraform Language: Meta-Arguments: `for_each`.
+
 </details>
 
 <details><summary>2. What occurs when an explicit `depends_on` meta-argument is placed on a data source? Why is this often an anti-pattern?</summary>
@@ -446,6 +447,7 @@ When `count = length(var.list)` is used, resource instances are indexed by seque
 Placing `depends_on` on a data source forces Terraform Core to defer the reading of that data source from the plan phase to the apply phase, even if all input arguments are known static strings. During the plan phase, because the data source has not been read, every single attribute returned by the data source is marked as unknown (`cty.UnknownVal`). This cascades unknown values to any resource, local variable, or module that consumes the data source's outputs. If any downstream resource uses those outputs in `count` or `for_each`, the plan phase fails entirely. `depends_on` should only be placed on data sources when querying infrastructure created within the same apply run.
 
 - Ref: HashiCorp Documentation: Data Sources: Evaluation Order.
+
 </details>
 
 <details><summary>3. Why does `create_before_destroy = true` fail when applied to resources with hardcoded unique names?</summary>
@@ -453,6 +455,7 @@ Placing `depends_on` on a data source forces Terraform Core to defer the reading
 `create_before_destroy` inverts the execution graph, instructing the engine to create the replacement resource before terminating the existing resource. If the resource specifies a hardcoded unique name (such as `name = "my-bucket"` for an S3 bucket or IAM role), the cloud API rejects the creation of the replacement resource with an `AlreadyExists` error because the existing resource is still active. The apply fails immediately, and the old resource is never reached for destruction. To resolve this, practitioners must use `name_prefix` instead of `name`, allowing the cloud provider or Terraform to append a unique suffix to the new instance.
 
 - Ref: Terraform Resource Lifecycle: `create_before_destroy`.
+
 </details>
 
 <details><summary>4. How does Terraform 1.16's `lifecycle { destroy = false }` differ from legacy `prevent_destroy = true`?</summary>
@@ -460,6 +463,7 @@ Placing `depends_on` on a data source forces Terraform Core to defer the reading
 Legacy `prevent_destroy = true` is a compile-time assertion evaluated only when a resource block exists in the configuration and is planned for destruction. If a developer deletes the entire resource block from the `.tf` file, Terraform Core treats the resource as an untracked instance in state, bypassing the `prevent_destroy` directive and destroying the physical infrastructure. Terraform 1.16's `lifecycle { destroy = false }` embeds destruction prohibition deeper into the state and schema engine, preventing destruction even if the configuration block is deleted, unless explicitly unmanaged via a `removed` block.
 
 - Ref: Terraform 1.16 Release Notes & Lifecycle Improvements.
+
 </details>
 
 <details><summary>5. Why is defining `provider` blocks inside child modules prohibited in modern Terraform architectures?</summary>
@@ -470,6 +474,7 @@ Placing `provider` blocks inside child modules violates modular decoupling:
 2. It introduces state teardown deadlocks: if the child module is removed from the configuration, the provider credentials and region settings are removed with it, preventing Terraform Core from initializing the provider required to destroy the child resources. Providers should always be declared in the root module and passed to child modules via the `providers` map.
 
 - Ref: HashiCorp Module Authoring Best Practices.
+
 </details>
 
 <details><summary>6. How does the `replace_triggered_by` meta-argument improve upon legacy `null_resource` triggers?</summary>
@@ -477,6 +482,7 @@ Placing `provider` blocks inside child modules violates modular decoupling:
 In legacy Terraform, forcing the recreation of a resource when an external file or value changed required defining a `null_resource` with a `triggers` map, and wiring downstream resources to depend on the `null_resource`. This was brittle, cluttered state, and required third-party provider plugins. Introduced in Terraform 1.2, `replace_triggered_by` allows a managed resource to natively monitor attributes of any other resource, local value, or `terraform_data` block. When any referenced value changes, Terraform automatically plans a replacement action without intermediate wrapper resources.
 
 - Ref: Terraform 1.2 Release Notes: `replace_triggered_by`.
+
 </details>
 
 <details><summary>7. Under what circumstances does `ignore_changes = all` introduce critical security vulnerabilities?</summary>
@@ -484,6 +490,7 @@ In legacy Terraform, forcing the recreation of a resource when an external file 
 `ignore_changes = all` instructs Terraform to ignore drift on every attribute of a resource after creation. If security-critical attributes—such as an S3 bucket's public access block, a security group's ingress rules, or a database's encryption settings—are subsequently modified out-of-band (e.g., by a compromised credential or misconfigured script), Terraform will never detect, report, or remediate the vulnerability. Furthermore, intentional security updates made in the HCL configuration will be silently ignored. Best practice mandates explicitly enumerating only the specific dynamic attributes intended to drift (e.g., `ignore_changes = [tags["LastModified"], desired_capacity]`).
 
 - Ref: CIS Benchmark for Infrastructure as Code Security.
+
 </details>
 
 ---

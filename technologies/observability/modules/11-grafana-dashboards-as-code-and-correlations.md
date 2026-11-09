@@ -20,7 +20,7 @@ flowchart TD
 
 ## 2. Exemplar Correlations and Cross-Signal Navigation
 
-Observability value is maximized when operators can instantly transition between orthogonal telemetry signals (Metrics \(\leftrightarrow\) Logs \(\leftrightarrow\) Traces). Grafana 13 unifies these signals through **Exemplars** and **Data Source Connections**.
+Observability value is maximized when operators can instantly transition between orthogonal telemetry signals (Metrics $\leftrightarrow$ Logs $\leftrightarrow$ Traces). Grafana 13 unifies these signals through **Exemplars** and **Data Source Connections**.
 
 - **Metrics to Traces (Exemplars)**: Prometheus metric histograms record exemplar trace IDs alongside latency buckets. Clicking a data point on a Grafana panel opens the matching trace in Grafana Tempo.
 - **Traces to Logs**: Span attributes in Tempo link directly to Grafana Loki queries filtered by `trace_id`, isolating log lines generated during that exact span execution.
@@ -104,7 +104,7 @@ export function validateDashboardSchema(dashboard: unknown): {
 | :-- | :-- | :-- |
 | **Dashboard Authoring** | Manual UI click-ops stored in Postgres/MySQL DB | **Git Sync GA** with declarative JSON/YAML files |
 | **Schema Version** | Legacy dashboard schema (v30+) | **Dynamic Dashboards Schema** optimized for modular plugins |
-| **Cross-Signal Navigation** | Manual copy-pasting of trace IDs and timestamps | Native **Exemplar Correlations** (Metrics \(\leftrightarrow\) Traces \(\leftrightarrow\) Logs) |
+| **Cross-Signal Navigation** | Manual copy-pasting of trace IDs and timestamps | Native **Exemplar Correlations** (Metrics $\leftrightarrow$ Traces $\leftrightarrow$ Logs) |
 | **Provisioning** | Static file provisioning with limited reload capabilities | Automated real-time Git synchronization with webhook triggers |
 
 ---

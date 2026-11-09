@@ -4,7 +4,7 @@
 
 As enterprise Kubernetes footprints scale to hundreds of clusters and thousands of tenant namespaces, managing individual `Application` manifests becomes administratively intractable. The **ApplicationSet** controller solves this challenge by introducing dynamic generator abstractions that automatically synthesize, update, and manage multiple `Application` resources from a single declarative specification. The ApplicationSet controller evaluates input generators, substitutes parameters using Go templates, and applies the generated `Application` objects against the cluster.
 
-Mathematically, let a generator be a mapping function $F: I \to P^_$, where $I$ is the input parameter space (cluster lists, Git directory structures, pull request metadata) and $P^_$ is a set of parameter substitutions. The templating engine applies these parameters to a prototype Application template $T$, producing a set of desired applications $\mathcal{A} = \{T(p) \mid p \in P^*\}$.
+Mathematically, let a generator be a mapping function $F: I \to P^{\ast}$, where $I$ is the input parameter space (cluster lists, Git directory structures, pull request metadata) and $P^{\ast}$ is a set of parameter substitutions. The templating engine applies these parameters to a prototype Application template $T$, producing a set of desired applications $\mathcal{A} = \{T(p) \mid p \in P^{\ast}\}$.
 
 ```mermaid
 flowchart TD
@@ -143,6 +143,7 @@ function reconcileApplicationSet(appSet: ApplicationSet): void {
 ApplicationSets replace static nested App-of-Apps hierarchies with dynamic controllers and generators (List, Cluster, Git, Matrix). They automatically synthesize and manage parameterized Application resources across clusters and repositories from a single declarative manifest.
 
 - Ref: [Module 06 Introduction](#1-introduction-and-architectural-scaling-paradigms)
+
 </details>
 
 <details><summary>2. What is the difference between a Matrix generator and a Merge generator in ApplicationSets?</summary>
@@ -150,6 +151,7 @@ ApplicationSets replace static nested App-of-Apps hierarchies with dynamic contr
 A Matrix generator computes the Cartesian product of two child generators, generating an instance for every possible combination. A Merge generator combines parameters from multiple generators by matching a unifying key (such as cluster name), allowing base parameters to be overridden by specific child overrides.
 
 - Ref: [Module 06 Deep Dive](#2-deep-dive-into-applicationset-generators)
+
 </details>
 
 <details><summary>3. How do Progressive Syncs prevent widespread outages when updating multi-cluster deployments?</summary>
@@ -157,6 +159,7 @@ A Matrix generator computes the Cartesian product of two child generators, gener
 Progressive Syncs roll out application updates in controlled waves across clusters grouped by labels. The controller waits for applications in the current wave to achieve healthy status before proceeding to subsequent rollout waves.
 
 - Ref: [Module 06 Deep Dive](#2-deep-dive-into-applicationset-generators)
+
 </details>
 
 <details><summary>4. What security risks arise from misconfigured Matrix generators in multi-tenant environments?</summary>
@@ -164,6 +167,7 @@ Progressive Syncs roll out application updates in controlled waves across cluste
 Misconfigured Matrix generators can accidentally synthesize thousands of applications targeting unauthorized tenant namespaces or external clusters, potentially exhausting etcd storage and cluster resources.
 
 - Ref: [Module 06 Production Failure Modes](#5-production-failure-modes-and-gotchas)
+
 </details>
 
 <details><summary>5. How does the Cluster generator discover available target clusters?</summary>
@@ -171,6 +175,7 @@ Misconfigured Matrix generators can accidentally synthesize thousands of applica
 The Cluster generator automatically scans Kubernetes Secrets in the Argo CD control plane namespace that carry the label `argocd.argoproj.io/secret-type: cluster`, extracting cluster server URLs and metadata for parameter substitution.
 
 - Ref: [Module 06 Deep Dive](#2-deep-dive-into-applicationset-generators)
+
 </details>
 
 <details><summary>6. What happens when an item is removed from an ApplicationSet Git generator directory?</summary>
@@ -178,6 +183,7 @@ The Cluster generator automatically scans Kubernetes Secrets in the Argo CD cont
 When an item (such as a service directory) is removed from Git, the ApplicationSet controller evaluates the updated parameter set, omits the corresponding Application from desired state, and prunes the generated Application (and its managed workloads) if pruning is enabled.
 
 - Ref: [Module 06 Control Loop Internals](#3-control-loop-internals-and-pseudocode)
+
 </details>
 
 ## 7. Proof Map

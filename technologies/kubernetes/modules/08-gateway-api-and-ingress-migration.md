@@ -604,6 +604,7 @@ In Kubernetes, allowing resources in one namespace to arbitrarily reference reso
 
 - **`tls.mode: Terminate`**: The Gateway proxy decrypts the incoming TLS handshake at the edge listener using a referenced `Secret` containing the private key and certificate. The proxy can inspect, manipulate (rewrite, add headers), and route the Layer 7 HTTP/gRPC request. For this mode, `HTTPRoute` or `GRPCRoute` is used.
 - **`tls.mode: Passthrough`**: The Gateway proxy does NOT decrypt the TLS connection. Instead, it inspects the TLS ClientHello Server Name Indication (SNI) header at Layer 4 and forwards the raw encrypted TLS byte stream directly to the backend pod. The backend pod terminates the TLS connection. For this mode, `TLSRoute` must be used.
+
 </details>
 
 <details><summary>4. How does Gateway API resolve path matching conflicts between two rules with overlapping prefixes, such as `/users` and `/users/profile`?</summary>
@@ -615,6 +616,7 @@ Gateway API eliminates controller-specific arbitrary matching behavior by establ
 3. If path match criteria are identical, header match count takes precedence (more matched headers beat fewer).
 4. If still tied, query parameter count takes precedence.
 5. If completely identical, the older resource (earliest `creationTimestamp`) wins, followed by lexicographical tie-breaking on `namespace/name`.
+
 </details>
 
 <details><summary>5. What was the driving rationale behind the official retirement of Ingress-NGINX in March 2026?</summary>
@@ -624,6 +626,7 @@ Ingress-NGINX was built as an early reference controller over a decade ago, rely
 1. **Security Vulnerabilities**: Complex regex-based annotations and arbitrary Lua code execution snippets caused repeated critical CVEs, allowing tenant container escapes or root proxy takeover.
 2. **Monolithic Complexity**: A single syntax error in one tenant's annotation could crash the NGINX master process or prevent reload across all tenants.
 3. **Standardization**: Gateway API achieved full GA and standard adoption, providing a vastly superior, secure, typed, multi-tenant abstraction supported by modern, memory-safe, or battle-tested data planes (Envoy, Cilium eBPF).
+
 </details>
 
 <details><summary>6. How does `BackendTLSPolicy` enforce Zero-Trust networking between the Gateway edge proxy and backend pods?</summary>
@@ -634,6 +637,7 @@ Historically, traffic between an ingress controller and backend pods travelled u
 
 1. `caCertificateRefs`: A ConfigMap containing the internal corporate root or intermediate Certificate Authority bundle.
 2. `hostname`: The expected SAN hostname inside the certificate presented by the pod. During the TLS handshake, the Gateway proxy verifies that the pod's certificate is valid, not expired, and signed by the designated internal CA.
+
 </details>
 
 <details><summary>7. What is `ListenerSet` (graduated to Standard in Gateway API v1.5), and what operational challenge does it resolve?</summary>

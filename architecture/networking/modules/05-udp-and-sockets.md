@@ -131,7 +131,7 @@ graph TD
 Introduced in Linux 3.9, the **`SO_REUSEPORT`** socket option allows multiple independent sockets on the same machine to bind to the exact same IP and Port:
 
 - The Linux kernel maintains an array of listening sockets for that port.
-- When an incoming packet arrives, the kernel computes a deterministic hash of the 4-tuple: $$\text{Target Socket} = \operatorname{Hash}(\text{Src IP}, \text{Src Port}, \text{Dst IP}, \text{Dst Port}) \pmod{\text{Num Sockets}}$$
+- When an incoming packet arrives, the kernel computes a deterministic hash of the 4-tuple: $$\text{Target Socket} = \mathrm{Hash}(\text{Src IP}, \text{Src Port}, \text{Dst IP}, \text{Dst Port}) \pmod{\text{Num Sockets}}$$
 - Incoming TCP handshakes or UDP datagrams are dispatched directly to the target worker without lock contention or context switching.
 
 ---

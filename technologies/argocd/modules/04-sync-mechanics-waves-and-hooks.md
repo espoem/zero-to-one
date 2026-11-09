@@ -124,6 +124,7 @@ function executeSyncPipeline(app: Application, diff: DiffResult): SyncResult {
 Argo CD applies normalization functions that strip volatile metadata, status subresources, managed fields, and paths explicitly listed in the application's `ignoreDifferences` specification. This prevents false-positive diffs caused by controllers mutating resources after deployment.
 
 - Ref: [Module 04 Introduction](#1-introduction-and-synchronization-fundamentals)
+
 </details>
 
 <details><summary>2. What are the advantages of Server-Side Apply (SSA) over client-side apply in Argo CD v3?</summary>
@@ -131,6 +132,7 @@ Argo CD applies normalization functions that strip volatile metadata, status sub
 SSA shifts field ownership and conflict resolution to the Kubernetes API server, eliminating the 262KB annotation size limit imposed by `kubectl.kubernetes.io/last-applied-configuration` on large Custom Resources and providing robust multi-controller field merging.
 
 - Ref: [Module 04 Deep Dive](#2-deep-dive-into-sync-mechanics-and-features)
+
 </details>
 
 <details><summary>3. Explain the execution order of sync waves and lifecycle hooks during synchronization.</summary>
@@ -138,6 +140,7 @@ SSA shifts field ownership and conflict resolution to the Kubernetes API server,
 Argo CD processes resources grouped by sync wave integers, starting from lowest (negative) to highest. Within each wave, PreSync hooks execute first, followed by standard resources, and PostSync hooks execute upon wave health confirmation.
 
 - Ref: [Module 04 Deep Dive](#2-deep-dive-into-sync-mechanics-and-features)
+
 </details>
 
 <details><summary>4. Why do CRDs and Custom Resources require separation into different sync waves?</summary>
@@ -145,6 +148,7 @@ Argo CD processes resources grouped by sync wave integers, starting from lowest 
 The Kubernetes API server requires time to register the dynamic REST endpoint for a newly applied CRD. If a Custom Resource is submitted in the same wave before the API endpoint is registered, the API server rejects the CR creation with a "no matches for kind" error.
 
 - Ref: [Module 04 Production Failure Modes](#5-production-failure-modes-and-gotchas)
+
 </details>
 
 <details><summary>5. How are custom resource health checks implemented in Argo CD?</summary>
@@ -152,6 +156,7 @@ The Kubernetes API server requires time to register the dynamic REST endpoint fo
 Custom resource health checks are implemented via Lua scripts configured within the `resource.custom.health` section of the `argocd-cm` ConfigMap. The script inspects live JSON resource structures and returns health status enums (`Healthy`, `Progressing`, `Degraded`).
 
 - Ref: [Module 04 Deep Dive](#2-deep-dive-into-sync-mechanics-and-features)
+
 </details>
 
 <details><summary>6. What happens if a Hook Job lacks a proper `hook-delete-policy` annotation?</summary>
@@ -159,6 +164,7 @@ Custom resource health checks are implemented via Lua scripts configured within 
 Without a deletion policy (`HookSucceeded`, `HookFailed`), hook resources persist indefinitely in the cluster. On subsequent syncs, Argo CD attempts to recreate or re-apply the Job, resulting in immutable field errors because Kubernetes Job specs cannot be modified.
 
 - Ref: [Module 04 Production Failure Modes](#5-production-failure-modes-and-gotchas)
+
 </details>
 
 ## 7. Proof Map

@@ -69,6 +69,7 @@ flowchart TD
         BE["2. Back Edge: Edge to an active ancestor on the recursion stack (CYCLE!)"]
         FE["3. Forward Edge: Edge to a completed descendant not via tree edge"]
         CE["4. Cross Edge: Edge to a completed vertex in another branch/tree"]
+        TE ~~~ BE ~~~ FE ~~~ CE
     end
 ```
 

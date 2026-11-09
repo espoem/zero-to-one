@@ -41,7 +41,7 @@ Grafana Mimir provides a horizontally scalable, highly available, multi-tenant P
 
 ### 2.1 Consistent Hashing and Replication in Mimir Ingesters
 
-Mimir ingesters participate in a consistent hash ring (powered by memberlist or Consul). Every incoming time series is mapped to a token space using the series fingerprint (hash of metric name and label set). To ensure durability and high availability during node failures, Mimir replicates each time series across a configurable replication factor \(RF = 3\).
+Mimir ingesters participate in a consistent hash ring (powered by memberlist or Consul). Every incoming time series is mapped to a token space using the series fingerprint (hash of metric name and label set). To ensure durability and high availability during node failures, Mimir replicates each time series across a configurable replication factor $RF = 3$.
 
 ```mermaid
 flowchart LR
@@ -145,7 +145,7 @@ Tempo relies on direct object storage (S3/GCS) storage of compressed blocks. Ins
 
 <details><summary>2. Explain how Grafana Mimir uses consistent hashing and replication rings to scale metric ingestion horizontally.</summary>
 
-Mimir distributors hash incoming metric time series signatures against a consistent hash ring populated by ingester virtual nodes. To guarantee high availability and fault tolerance, each time series is written concurrently to \(RF = 3\) consecutive ingesters on the ring. If an ingester fails, the ring rebalances ownership automatically without dropping active remote write traffic.
+Mimir distributors hash incoming metric time series signatures against a consistent hash ring populated by ingester virtual nodes. To guarantee high availability and fault tolerance, each time series is written concurrently to $RF = 3$ consecutive ingesters on the ring. If an ingester fails, the ring rebalances ownership automatically without dropping active remote write traffic.
 </details>
 
 <details><summary>3. What is the role of the Tempo Metrics Generator, and what signals does it produce?</summary>

@@ -449,6 +449,7 @@ JSON array syntax (`CMD ["node", "server.js"]`) triggers the `execve` system cal
 1. **Performance**: Emulating every ARM64 CPU instruction in user-space via QEMU imposes a 500% to 2000% (5×–20×) runtime performance penalty, turning a 2-minute native compilation into a 30-minute pipeline bottleneck.
 2. **Instability & Deadlocks**: Multi-threaded runtimes with aggressive memory models (such as Golang's runtime scheduler, Rust's jemalloc, or V8's garbage collector) frequently encounter race conditions, missing kernel `binfmt_misc` flags (`F` flag required for chroot execution), or emulation deadlocks under QEMU.
 3. **Remediation**: Use multi-stage native cross-compilation (`FROM --platform=$BUILDPLATFORM ...`) or deploy native multi-architecture builder clusters (e.g., an ARM64 worker node joined to the Buildx builder instance).
+
 </details>
 
 <details><summary>6. How does `SOURCE_DATE_EPOCH` guarantee bit-for-bit reproducibility in OCI container images?</summary>
@@ -458,6 +459,7 @@ Standard POSIX tar archivers store file modification timestamps (`mtime`), user 
 1. Clamping all file `mtime` values to a fixed Unix timestamp (e.g., the Git commit time).
 2. Forcing the tar archiver to sort directory entries lexicographically by filename.
 3. Normalizing file ownership (UID/GID) to static values (e.g., 0:0). Because all inputs to the cryptographic hashing function are identical, the resulting OCI layer digests and manifest digests are bit-for-bit reproducible.
+
 </details>
 
 <details><summary>7. Describe how Buildah executes container builds without running a central root daemon.</summary>

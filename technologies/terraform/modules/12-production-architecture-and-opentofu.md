@@ -183,7 +183,7 @@ In response to the BSL license change, a coalition of technology companies and c
 1. **Fork from MPL-2.0**: OpenTofu forked cleanly from the last open-source MPL-2.0 commit of Terraform (v1.5.5).
 2. **Linux Foundation Sponsorship**: In September 2023, OpenTofu was formally accepted under the Linux Foundation, establishing neutral, community-owned governance.
 3. **CNCF Acceptance**: OpenTofu subsequently joined the Cloud Native Computing Foundation (CNCF), guaranteeing that the core IaC engine remains open and free from vendor lock-in.
-4. **IBM Acquisition of HashiCorp**: In April 2024, IBM announced the acquisition of HashiCorp for \$6.4 billion; the transaction formally closed in **February 2025**, placing Terraform under IBM's enterprise software umbrella.
+4. **IBM Acquisition of HashiCorp**: In April 2024, IBM announced the acquisition of HashiCorp for $6.4 billion; the transaction formally closed in **February 2025**, placing Terraform under IBM's enterprise software umbrella.
 
 ---
 
@@ -288,7 +288,7 @@ tofu plan -exclude=module.datadog_monitors
 | **OpenTofu 1.8** | August 2024 | Support for `.tofu` file extension; dynamic provider configurations; early variable evaluation. |
 | **Terraform 1.10** | November 2024 | Introduces **ephemeral values** and **write-only arguments** to protect secrets in state memory. |
 | **OpenTofu 1.9–1.12** | Early 2025 | KMS key rotation; multi-key decryption; high-throughput graph evaluations; CNCF incubation milestones. |
-| **Terraform 1.11** | February 2025 | Performance optimizations; DAG compilation efficiency. IBM formally closes \$6.4B acquisition of HashiCorp. |
+| **Terraform 1.11** | February 2025 | Performance optimizations; DAG compilation efficiency. IBM formally closes $6.4B acquisition of HashiCorp. |
 | **Terraform 1.12** | May 2025 | **Baseline for HashiCorp Certified: Terraform Associate (004) exam**. Production stability release. |
 | **Terraform 1.14** | Early 2026 | Introduces `terraform query` command for asset and shadow infrastructure discovery. |
 | **Terraform 1.15** | April 2026 | Supports variables in module `source` and `version` expressions; native `deprecated` attribute on variables/outputs. |
@@ -375,6 +375,7 @@ tofu plan -exclude=module.datadog_monitors
   2. **Zero Context Error**: An engineer must explicitly navigate to `environments/prod/` or pass `--chdir=environments/prod/`.
   3. **Independent Upgrades**: Development and staging directories can upgrade provider or module versions to test compatibility weeks before promoting the changes to production.
 - Ref: Production Infrastructure as Code Design Patterns; Google Cloud Architecture Framework.
+
 </details>
 
 <details><summary>2. What is client-side state encryption in OpenTofu, and what security vulnerability does it eliminate compared to standard S3 server-side encryption?</summary>
@@ -385,6 +386,7 @@ tofu plan -exclude=module.datadog_monitors
 - **OpenTofu Client-Side Encryption**: Encrypts the state JSON payload locally in the runner's memory using AES-GCM before the HTTP request leaves the machine.
 - The payload stored in the S3 bucket is unreadable ciphertext. Even if an attacker gains root access to the S3 bucket or steals a database backup, they cannot decrypt the state without possessing explicit KMS decrypt permissions on the encryption key.
 - Ref: OpenTofu Security Architecture: State Encryption Specification.
+
 </details>
 
 <details><summary>3. What triggered the creation of OpenTofu in August 2023, and what are the primary legal constraints imposed by the BSL 1.1 license?</summary>
@@ -395,6 +397,7 @@ tofu plan -exclude=module.datadog_monitors
 - **BSL 1.1 Constraints**: The license grants free use for non-production and internal production infrastructure. However, it explicitly prohibits **competitive use**: any vendor offering a commercial product or service that competes with HashiCorp's paid offerings (e.g., cloud management platforms, managed Terraform-as-a-Service) is forbidden from using or embedding the software.
 - In response, a coalition of cloud vendors and community engineers forked the last MPL-2.0 release (1.5.5) to create **OpenTofu**, donating it to the Linux Foundation and CNCF to preserve a vendor-neutral, permanently open-source IaC engine.
 - Ref: Linux Foundation OpenTofu Charter; HashiCorp Licensing FAQ.
+
 </details>
 
 <details><summary>4. How does OpenTofu's `-exclude` flag differ from Terraform's `-target` flag during emergency operations?</summary>
@@ -405,6 +408,7 @@ tofu plan -exclude=module.datadog_monitors
 - **`-exclude` (OpenTofu)**: Runs the entire standard, holistic infrastructure plan, but surgically omits specific problematic resources (e.g., `tofu apply -exclude=module.failing_monitoring`).
 - All other resources, drift checks, and dependent updates execute normally. This allows engineers to deploy critical hotfixes without having configuration updates blocked by an unrelated degraded cloud API.
 - Ref: OpenTofu CLI Documentation: Exclude Flag.
+
 </details>
 
 <details><summary>5. Why is `data.terraform_remote_state` considered an anti-pattern for inter-tier communication in enterprise architectures?</summary>
@@ -415,6 +419,7 @@ tofu plan -exclude=module.datadog_monitors
 - **Brittle Coupling**: `terraform_remote_state` binds consuming modules directly to the output naming conventions of the upstream module. If the upstream team refactors an output name, all downstream states break during planning.
 - **Decoupled Alternative**: Upstream tiers should write connection parameters to a dedicated parameter store (AWS SSM Parameter Store, Consul, or Vault). Downstream tiers query the store directly, enforcing strict least-privilege security and clean contract boundaries.
 - Ref: HashiCorp Architecture Guidance: State Decoupling.
+
 </details>
 
 <details><summary>6. How does OpenTofu's dynamic `prevent_destroy` resolve a major operational limitation of upstream Terraform?</summary>
@@ -425,6 +430,7 @@ tofu plan -exclude=module.datadog_monitors
 - This forced teams to duplicate module code or manually edit HCL files when spinning up or tearing down ephemeral staging environments.
 - OpenTofu allows dynamic expressions in `lifecycle` blocks. A platform team can declare `prevent_destroy = var.is_production`, ensuring that production databases are safeguarded against accidental deletion while identical code in development allows automated ephemeral teardowns.
 - Ref: OpenTofu Core Improvements: Dynamic Lifecycle Arguments.
+
 </details>
 
 <details><summary>7. Explain the concept of a Fencing Token in distributed state locking and why a simple boolean lock is insufficient.</summary>
@@ -438,6 +444,7 @@ tofu plan -exclude=module.datadog_monitors
 - Storage backends reject any write request carrying a fencing token lower than the highest token observed so far.
 - Even if a stale, unfrozen process attempts to write state, its outdated fencing token is rejected, preventing state corruption.
 - Ref: Kleppmann, "Designing Data-Intensive Applications"; Herlihy & Wing, Linearizability Theory.
+
 </details>
 
 ---

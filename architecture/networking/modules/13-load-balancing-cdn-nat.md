@@ -258,7 +258,7 @@ When two peer devices behind NATs need to establish direct peer-to-peer audio/vi
 - Maglev establishes a lookup table of prime size $M$ (e.g., 65,537 slots).
 - For each backend server $B_i$, it computes two independent hash values to produce a pseudo-random permutation sequence of table slots: $$\text{offset} = h_1(B_i) \pmod M, \quad \text{skip} = (h_2(B_i) \pmod{M - 1}) + 1$$
 - The servers take turns filling empty slots in the master table according to their permutation preferences until all $M$ slots are filled.
-- When a packet arrives at _any_ Maglev node, the node computes the hash of the packet's 5-tuple: $$\text{Index} = \operatorname{Hash}(\text{5-tuple}) \pmod M$$
+- When a packet arrives at _any_ Maglev node, the node computes the hash of the packet's 5-tuple: $$\text{Index} = \mathrm{Hash}(\text{5-tuple}) \pmod M$$
 - The entry at that index directly specifies the backend server.
 - Because all Maglev nodes compute the exact same mathematical table, every node maps the packet to the identical backend without communicating with each other. If a backend fails, its slots are evenly redistributed among remaining backends, leaving all other backend assignments intact.
 - Ref: Eisenbud et al., "Maglev: A Fast and Reliable Software Network Load Balancer", Google (ACM EuroSys 2016).

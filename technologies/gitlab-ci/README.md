@@ -37,8 +37,6 @@ The curriculum is structured into 9 rigorous modules:
 
 ## Certifications & Exams
 
-## Certifications & Exams
-
 This track prepares engineers for the following examinations and professional roles:
 
 1. **GitLab Certified CI/CD Associate**:

@@ -8,9 +8,11 @@ Prometheus is the de facto standard metric monitoring engine for cloud-native in
 
 Prometheus stores all data as time series identified by a metric name and a set of key-value pairs (labels). Formally, a time series is defined as:
 
-\[ S = \{ (t_1, v_1), (t_2, v_2), \dots, (t_n, v_n) \} \]
+$$
+S = \{ (t_1, v_1), (t_2, v_2), \dots, (t_n, v_n) \}
+$$
 
-where \(t_i\) is a discrete Unix timestamp in milliseconds and \(v_i\) is a 64-bit float value. Prometheus ingests data via pull-based scraping of HTTP endpoints exposing plaintext text formats, OpenMetrics exposition formats, or native OTLP/Protobuf streams. Prometheus 3.0 adds native support for UTF-8 characters in metric names and label keys, lifting previous ASCII restrictions (e.g., allowing labels like `kubernetes.io/pod.name` without mangling dots to underscores).
+where $t_i$ is a discrete Unix timestamp in milliseconds and $v_i$ is a 64-bit float value. Prometheus ingests data via pull-based scraping of HTTP endpoints exposing plaintext text formats, OpenMetrics exposition formats, or native OTLP/Protobuf streams. Prometheus 3.0 adds native support for UTF-8 characters in metric names and label keys, lifting previous ASCII restrictions (e.g., allowing labels like `kubernetes.io/pod.name` without mangling dots to underscores).
 
 ## Scrape Mechanics, Service Discovery, and Relabeling
 
@@ -44,7 +46,7 @@ flowchart TD
 
 ## Native Histograms
 
-Classic Prometheus histograms require users to pre-define static bucket boundaries (e.g., `le="0.1"`, `le="0.5"`, `le="1.0"`). Choosing poor boundaries makes p99 quantile calculations inaccurate or impossible. **Native Histograms** (introduced in Prometheus 2.40+ and fully matured in Prometheus 3.x) eliminate static buckets by using exponential bucket schemas where bucket boundaries grow by a geometric factor \(2^{-2^s}\) (where \(s\) is the schema resolution factor). Native histograms store thousands of observations in a compact memory footprint with high mathematical precision, allowing PromQL to compute exact quantiles across dynamically shifting latency distributions.
+Classic Prometheus histograms require users to pre-define static bucket boundaries (e.g., `le="0.1"`, `le="0.5"`, `le="1.0"`). Choosing poor boundaries makes p99 quantile calculations inaccurate or impossible. **Native Histograms** (introduced in Prometheus 2.40+ and fully matured in Prometheus 3.x) eliminate static buckets by using exponential bucket schemas where bucket boundaries grow by a geometric factor $2^{-2^s}$ (where $s$ is the schema resolution factor). Native histograms store thousands of observations in a compact memory footprint with high mathematical precision, allowing PromQL to compute exact quantiles across dynamically shifting latency distributions.
 
 ## Then vs Now
 
@@ -75,11 +77,11 @@ END PROCEDURE
 
 ### Loop Invariant and Formal Proof
 
-**Initialization**: Prior to the first iteration of the loop, the cardinality set \(C\) is empty, and no telemetry records have been processed, satisfying the cardinality bound \(0 \le |C| \le ext{MaxCardinality}\).
+**Initialization**: Prior to the first iteration of the loop, the cardinality set $C$ is empty, and no telemetry records have been processed, satisfying the cardinality bound $0 \le |C| \le \text{MaxCardinality}$.
 
-**Maintenance**: At the start of each iteration, if an incoming record contains a label key already present in \(C\) or if \(|C| < ext{MaxCardinality}\), the record is safely buffered and \(C\) is updated. If the cardinality threshold is reached and a novel key arrives, the record is dropped, preserving the invariant \(|C| \le ext{MaxCardinality}\).
+**Maintenance**: At the start of each iteration, if an incoming record contains a label key already present in $C$ or if $|C| < \text{MaxCardinality}$, the record is safely buffered and $C$ is updated. If the cardinality threshold is reached and a novel key arrives, the record is dropped, preserving the invariant $|C| \le \text{MaxCardinality}$.
 
-**Termination**: When the stream \(S\) is fully consumed, the algorithm terminates with all retained metrics strictly bounded within the permitted cardinality ceiling.
+**Termination**: When the stream $S$ is fully consumed, the algorithm terminates with all retained metrics strictly bounded within the permitted cardinality ceiling.
 
 ## Production Configuration and Implementation
 
@@ -144,7 +146,7 @@ Incoming samples are ingested into an in-memory **Head Block** while simultaneou
 
 <details><summary><strong>Q2. What problem do Native Histograms solve compared to classic Prometheus histogram buckets? How do exponential schemas work?</strong></summary>
 
-Classic histograms require operators to pre-define static bucket boundaries (e.g., `le="0.1"`, `le="1.0"`). If traffic latency shifts outside those boundaries, quantile calculations become inaccurate. Native Histograms use exponential bucket schemas where bucket boundaries grow by a geometric factor \(2^{-2^s}\). This allows Prometheus to dynamically record thousands of observations with high mathematical precision across any latency range without requiring manual bucket tuning.
+Classic histograms require operators to pre-define static bucket boundaries (e.g., `le="0.1"`, `le="1.0"`). If traffic latency shifts outside those boundaries, quantile calculations become inaccurate. Native Histograms use exponential bucket schemas where bucket boundaries grow by a geometric factor $2^{-2^s}$. This allows Prometheus to dynamically record thousands of observations with high mathematical precision across any latency range without requiring manual bucket tuning.
 </details>
 
 <details><summary><strong>Q3. Write a Prometheus relabeling snippet that drops any target where the Kubernetes namespace is not `production` or `staging`.</strong></summary>

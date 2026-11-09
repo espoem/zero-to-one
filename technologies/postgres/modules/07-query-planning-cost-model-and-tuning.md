@@ -40,11 +40,11 @@ flowchart TD
 
 ### Fundamental Cost Formulas
 
-For a Sequential Scan of relation $R$: $$\text{Cost}_{\text{SeqScan}} = (N_{\text{pages}} \times \text{seq\_page\_cost}) + (N_{\text{tuples}} \times \text{cpu\_tuple\_cost}) + (N_{\text{tuples}} \times \text{cpu\_operator\_cost})$$
+For a Sequential Scan of relation $R$: $$\text{Cost}_{\text{SeqScan}} = (N_{\text{pages}} \times \text{seq-page-cost}) + (N_{\text{tuples}} \times \text{cpu-tuple-cost}) + (N_{\text{tuples}} \times \text{cpu-operator-cost})$$
 
-For an Index Scan using a B-Tree: $$\text{Cost}_{\text{IndexScan}} = \text{Cost}_{\text{BTreeTraverse}} + (N_{\text{index\_pages}} \times \text{random\_page\_cost}) + (N_{\text{matched\_tuples}} \times \text{Cost}_{\text{HeapFetch}})$$
+For an Index Scan using a B-Tree: $$\text{Cost}_{\text{IndexScan}} = \text{Cost}_{\text{BTreeTraverse}} + (N_{\text{index-pages}} \times \text{random-page-cost}) + (N_{\text{matched-tuples}} \times \text{Cost}_{\text{HeapFetch}})$$
 
-Where heap fetch cost incorporates correlation ($r$) and buffer cache hit ratio: $$\text{Cost}_{\text{HeapFetch}} = \text{random\_page\_cost} \times (1 - \text{HitRatio}) \times (1 - |r|) + \text{seq\_page\_cost} \times |r| + \text{cpu\_tuple\_cost}$$
+Where heap fetch cost incorporates correlation ($r$) and buffer cache hit ratio: $$\text{Cost}_{\text{HeapFetch}} = \text{random-page-cost} \times (1 - \text{HitRatio}) \times (1 - |r|) + \text{seq-page-cost} \times |r| + \text{cpu-tuple-cost}$$
 
 ### Calibrating for Modern NVMe SSDs
 

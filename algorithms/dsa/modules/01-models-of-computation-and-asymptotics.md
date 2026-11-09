@@ -141,6 +141,7 @@ flowchart TD
         Agg["1. Aggregate Method: T_total(n) / n"]
         Acc["2. Accounting Method: Store credits on data tokens"]
         Pot["3. Potential Method: Phi(D_i) energetic state function"]
+        Agg ~~~ Acc ~~~ Pot
     end
 ```
 
@@ -286,9 +287,9 @@ Section 4 analysed one structure with all three methods. Two more cases show whe
 
 Define $\Phi(D) = $ number of 1 bits. Suppose an increment turns $t$ trailing 1s into 0s and one 0 into 1. Actual cost $c_i = t + 1$, $\Phi_i - \Phi_{i-1} = 1 - t$, hence $\hat c_i = (t + 1) + (1 - t) = 2$. Since $\Phi \ge 0 = \Phi_0$, the total cost of $n$ increments from zero is at most $2n$. The exact total is the identity
 
-$$\text{flips}(n) = 2n - \operatorname{popcount}(n),$$
+$$\text{flips}(n) = 2n - \mathrm{popcount}(n),$$
 
-(each bit position $i$ flips $\lfloor n / 2^i \rfloor$ times, so the total is $\sum_i \lfloor n/2^i \rfloor = 2n - \operatorname{popcount}(n)$, a standard identity from Legendre's formula). The suite asserts it at $n = 5000$.
+(each bit position $i$ flips $\lfloor n / 2^i \rfloor$ times, so the total is $\sum_i \lfloor n/2^i \rfloor = 2n - \mathrm{popcount}(n)$, a standard identity from Legendre's formula). The suite asserts it at $n = 5000$.
 
 ### 8.2 Amortization is a property of an operation _set_
 

@@ -331,15 +331,15 @@ flowchart TD
 
 2. **Lead Time for Changes (LTFC)**: The elapsed clock time from code commit authoring to that code successfully executing in production. It is calculated as:
 
-   $$\text{LTFC} = t_{\text{production\_deploy}} - t_{\text{commit\_authored}}$$
+   $$\text{LTFC} = t_{\text{production-deploy}} - t_{\text{commit-authored}}$$
 
 3. **Change Failure Rate (CFR)**: The percentage of deployments to production that subsequently require remediation (hotfix, rollback, immediate patch, or incident declaration):
 
-   $$\text{CFR} = \frac{N_{\text{failed\_deploys}}}{N_{\text{total\_deploys}}} \times 100\%$$
+   $$\text{CFR} = \frac{N_{\text{failed-deploys}}}{N_{\text{total-deploys}}} \times 100\%$$
 
 4. **Mean Time to Recovery / Restore (MTTR)**: The average or median time taken to restore full service availability following an unexpected production impairment or outage:
 
-   $$\text{MTTR} = \frac{1}{M} \sum_{i=1}^M \left( t_{\text{incident\_resolved}, i} - t_{\text{incident\_opened}, i} \right)$$
+   $$\text{MTTR} = \frac{1}{M} \sum_{i=1}^M \left( t_{\text{incident-resolved}, i} - t_{\text{incident-opened}, i} \right)$$
 
 ### 6.2 Industry Performance Clusters
 

@@ -496,11 +496,11 @@ These four capstone challenges represent the summit of TypeScript's type transfo
 
 ### Challenge 1: Transform URL Path Parameters into an Object
 
-#### Problem
+**Problem**
 
 Given a URL path string with parameter segments (e.g., `"/users/:id/posts/:postId"`), construct an object type containing only the extracted parameter names as keys with `string` values: `{ id: string; postId: string }`.
 
-#### Solution & Walkthrough
+**Solution & Walkthrough**
 
 ```typescript
 import type { Equal, Expect } from '../examples/utils/type-helpers';
@@ -531,7 +531,7 @@ type TestParams = Expect<Equal<UserPostParams, { id: string; postId: string }>>;
 
 ### Challenge 2: Transform an Attributes Object into a Discriminated Union
 
-#### Problem
+**Problem**
 
 Given an object interface describing entity attributes, transform it into a discriminated union where each variant has a `type` property matching the key and a `value` property matching that key's type:
 
@@ -549,7 +549,7 @@ type InputAttributes = {
 // | { type: "age"; value: number }
 ```
 
-#### Solution & Walkthrough
+**Solution & Walkthrough**
 
 ```typescript
 import type { Equal, Expect } from '../examples/utils/type-helpers';
@@ -580,7 +580,7 @@ type TestAttributeUnion = Expect<
 
 ### Challenge 3: Transform a Discriminated Union into a Key-Value Map
 
-#### Problem
+**Problem**
 
 Take a discriminated union with unique discriminant tags and transform it into a dictionary object where keys are the discriminant values:
 
@@ -599,7 +599,7 @@ type AppAction =
 // }
 ```
 
-#### Solution & Walkthrough
+**Solution & Walkthrough**
 
 ```typescript
 import type { Equal, Expect } from '../examples/utils/type-helpers';
@@ -630,11 +630,11 @@ type TestActionMap = Expect<
 
 ### Challenge 4: Construct Recursive `DeepPartial<T>` and `DeepReadonly<T>`
 
-#### Problem
+**Problem**
 
 TypeScript's standard `Partial<T>` and `Readonly<T>` are strictly shallow. Construct `DeepPartial<T>` and `DeepReadonly<T>` that recursively transform nested objects and arrays without corrupting primitives, functions, or special built-in classes (`Date`, `RegExp`).
 
-#### Solution & Walkthrough
+**Solution & Walkthrough**
 
 ```typescript
 import type { Equal, Expect } from '../examples/utils/type-helpers';
@@ -754,7 +754,7 @@ In 7.0 this compiles, and `Issue<0 | 1, 0>` silently produced the misleading `"0
 
 ### Exercise 1: Distributive Union Filter & Tuple Reverser
 
-#### Scenario
+**Scenario**
 
 1. Implement `FilterUnion<TUnion, TTarget>`: filters a union to only members assignable to `TTarget` using distributive conditional types.
 2. Implement `ReverseTuple<TTuple>`: reverses the order of elements in a tuple using recursion and `infer`.
@@ -785,7 +785,7 @@ type TestReversed = Expect<Equal<Reversed, [null, true, 'two', 1]>>;
 
 ### Exercise 2: Type-Safe Query String Parser
 
-#### Scenario
+**Scenario**
 
 Create a type helper `ParseQueryString<TQuery>` that parses a URL query string (without the leading `?`) into an object type: `"tab=settings&mode=dark&ref=dashboard"` ⟹ `{ tab: "settings"; mode: "dark"; ref: "dashboard" }`.
 
@@ -823,7 +823,7 @@ type TestParsedQuery = Expect<
 
 ### Exercise 3: CRUD Action Creator Mapper
 
-#### Scenario
+**Scenario**
 
 Given a record type describing database models, create a type helper `CrudActions<TModels>` that generates CRUD methods for every model in the format:
 
@@ -874,7 +874,7 @@ type TestActions = Expect<
 
 ### Exercise 4: Deep Required with Nested Objects and Arrays
 
-#### Scenario
+**Scenario**
 
 Construct `DeepRequired<T>` that traverses down all nested objects, making all optional properties required, including objects inside arrays.
 

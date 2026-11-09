@@ -235,7 +235,7 @@ Compose determines the project name by evaluating:
 
 ### Resource Naming Formula
 
-Every resource managed by Compose is prefixed with the project name: $$\text{Container Name} = \text{ProjectName} + \text{"-"} + \text{ServiceName} + \text{"-"} + \text{InstanceIndex}$$ $$\text{Network Name} = \text{ProjectName} + \text{"_"} + \text{NetworkName}$$ $$\text{Volume Name} = \text{ProjectName} + \text{"_"} + \text{VolumeName}$$
+Every resource managed by Compose is prefixed with the project name: $$\text{Container Name} = \text{ProjectName} + \text{"-"} + \text{ServiceName} + \text{"-"} + \text{InstanceIndex}$$ $$\text{Network Name} = \text{ProjectName} + \text{"-"} + \text{NetworkName}$$ $$\text{Volume Name} = \text{ProjectName} + \text{"-"} + \text{VolumeName}$$
 
 This namespacing guarantees that executing `docker compose -p pr-104 up` and `docker compose -p pr-105 up` instantiates two completely disjoint, isolated network and storage environments on the same host machine without collision.
 
@@ -457,6 +457,7 @@ web:
 - `condition: service_started`: The default behavior. Compose initiates the dependency's `execve` call. Once the container transitions to the `running` state in the container runtime, Compose immediately begins spawning the dependent container. It does NOT guarantee that the application inside is ready to accept traffic.
 - `condition: service_healthy`: Compose blocks the dependent service from starting until the target container's healthcheck command executes successfully and the runtime updates the container health status from `starting` to `healthy`.
 - `condition: service_completed_successfully`: Compose blocks the dependent service until the target container executes its command and terminates with an exit code of `0`. If the container exits with any non-zero exit code, Compose aborts the startup sequence. This is typically used for database migration or setup jobs.
+
 </details>
 
 <details><summary>2. How does Compose resolve a conflict when a variable is defined in both a project `.env` file and the host shell environment?</summary>
@@ -488,6 +489,7 @@ Traditional bind mounts mount host directories directly over container directori
 
 - **`environment` (Dictionary/Map)**: Compose performs a recursive deep merge. If the base file defines `{ A: 1, B: 2 }` and the override file defines `{ B: 3, C: 4 }`, the resulting environment passed to the container is `{ A: 1, B: 3, C: 4 }`. Colliding keys are updated with the override value, and unique keys are preserved.
 - **`command` (Array/Scalar)**: Compose performs a **complete replacement**. If the base file defines `command: ["server", "--port", "80"]` and the override defines `command: ["server", "--debug"]`, the entire array is replaced. The arguments are not concatenated; the resulting command is strictly `["server", "--debug"]`.
+
 </details>
 
 ---

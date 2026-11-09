@@ -386,6 +386,7 @@ RESOLVE-DNS-QUERY(QueryName, QueryType, NetworkContext)
 5. **Netfilter FORWARD Chain**: The packet traverses the `FORWARD` chain. Filter rules (including `DOCKER-USER` and `DOCKER-ISOLATION-STAGE`) verify that the traffic is permitted.
 6. **Netfilter POSTROUTING Chain**: The packet hits the `POSTROUTING` chain in the `nat` table. It matches Docker's `MASQUERADE` rule. The kernel's `conntrack` subsystem allocates an ephemeral port, records the mapping tuple, and rewrites the packet's source IP from `172.17.0.2` to the host's public IP `198.51.100.10`.
 7. **Physical Transmission**: The packet is framed with the upstream physical gateway's MAC address and transmitted out the host's physical adapter `eth0`.
+
 </details>
 
 <details><summary>2. Why does a published container port (`-p 8080:80`) bypass standard UFW firewall rules on an Ubuntu host by default?</summary>
@@ -399,6 +400,7 @@ Rootless containers lack `CAP_NET_ADMIN` to create host-level `veth` pairs and b
 
 - **`slirp4netns`**: Spawns a user-space daemon that attaches to a TAP device inside the container. When the container sends IP packets, `slirp4netns` reads raw Ethernet/IP frames from `/dev/net/tun`, parses the protocols in user space, and makes standard user-space socket calls on the host. Every byte must be copied across the kernel-user boundary, and every TCP state machine transition is simulated in software, creating massive CPU overhead and latency.
 - **`pasta` (Pack A Subtle Tap Abstraction)**: Operates without simulating a full virtual TCP/IP stack. It maps container sockets to host sockets using the Linux kernel's **`splice(2)`** system call. `splice` moves data between two file descriptors (the container TAP/socket and the host socket) directly within kernel memory pipes without copying data to user space. This zero-copy architecture dramatically reduces context switches, lowers CPU utilization, and achieves near-native throughput.
+
 </details>
 
 <details><summary>4. How does Docker's embedded DNS server (`127.0.0.11`) implement load balancing across multiple containers sharing the same network alias?</summary>
@@ -415,6 +417,7 @@ A hairpin NAT failure occurs when a container attempts to access another contain
 3. The kernel attempts to route the packet. The source is `172.17.0.2` and the destination is `172.17.0.2`, both residing on the same physical bridge port (`veth`).
 4. By default, Linux bridges reject transmitting a packet out the exact same interface it arrived on to prevent switching loops.
 5. **Resolution**: The kernel requires **hairpin mode** enabled on the bridge port (`brctl hairpin docker0 vethXXXX on` or `ip link set dev vethXXXX type bridge_slave hairpin on`). Additionally, netfilter must apply SNAT to rewrite the source IP to the bridge IP (`172.17.0.1`), ensuring the return traffic routes back through the bridge.
+
 </details>
 
 <details><summary>6. Why should an engineer choose `macvlan` or `ipvlan` over standard `bridge` networking, and what are their limitations?</summary>
@@ -424,6 +427,7 @@ A hairpin NAT failure occurs when a container attempts to access another contain
 1. **Host-to-Container Inaccessibility**: By default, the Linux kernel prevents the host itself from communicating directly with its own child `macvlan` interfaces over the physical NIC (requires creating a dedicated `macvlan` interface on the host).
 2. **Switch MAC Exhaustion**: `macvlan` assigns a unique MAC address to every container. Enterprise network switches often restrict the number of MAC addresses per physical switch port (port security), causing switch port shutdown.
 3. **`ipvlan` Alternative**: `ipvlan` solves MAC exhaustion by sharing the physical host's single MAC address across all containers, multiplexing traffic exclusively at Layer 3 (IP).
+
 </details>
 
 <details><summary>7. Describe the internal structure of Netavark and how it differs from traditional CNI plugins.</summary>

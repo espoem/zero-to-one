@@ -24,6 +24,7 @@ flowchart TD
 ```
 
 ### Core Architecture Components
+
 1. **Single-Primary Leader**: All write operations (`INSERT`, `UPDATE`, `DELETE`, schema migrations) route synchronously to a designated primary database cluster. This ensures atomic write serialization and eliminates distributed split-brain conflicts.
 2. **Edge Read Replicas**: Write-Ahead Logs (WAL) are streamed asynchronously across Cloudflare's global edge network. Local read replicas in major data centers answer read queries (`SELECT`) with single-digit millisecond latency.
 3. **Database Size Constraints**: Standard D1 databases support schemas up to **10 GB** (500 MB on the free tier), optimized for low-latency relational application data.
@@ -73,43 +74,46 @@ export default {
     const url = new URL(request.url);
 
     // Extract client session bookmark if present
-    const cookieHeader = request.headers.get("Cookie") ?? "";
+    const cookieHeader = request.headers.get('Cookie') ?? '';
     const bookmarkMatch = cookieHeader.match(/d1_bm=([^;]+)/);
     const clientBookmark = bookmarkMatch ? bookmarkMatch[1] : undefined;
 
     // Initialize session-consistent database handle
     const sessionDb = clientBookmark ? env.DB.withSession(clientBookmark) : env.DB;
 
-    if (request.method === "POST" && url.pathname === "/orders") {
+    if (request.method === 'POST' && url.pathname === '/orders') {
       const order = await request.json<{ id: string; item: string; price: number }>();
 
       // Execute write on primary
-      const result = await sessionDb.prepare(
-        "INSERT INTO orders (id, item, price, created_at) VALUES (?, ?, ?, datetime('now'))"
-      ).bind(order.id, order.item, order.price).run();
+      const result = await sessionDb
+        .prepare(
+          "INSERT INTO orders (id, item, price, created_at) VALUES (?, ?, ?, datetime('now'))",
+        )
+        .bind(order.id, order.item, order.price)
+        .run();
 
       // Retrieve bookmark representing the write commit point
       const newBookmark = sessionDb.getBookmark();
 
       return new Response(JSON.stringify({ success: true, meta: result.meta }), {
         headers: {
-          "Content-Type": "application/json",
-          "Set-Cookie": `d1_bm=${newBookmark}; Path=/; HttpOnly; SameSite=Lax`
-        }
+          'Content-Type': 'application/json',
+          'Set-Cookie': `d1_bm=${newBookmark}; Path=/; HttpOnly; SameSite=Lax`,
+        },
       });
     }
 
-    if (request.method === "GET" && url.pathname === "/orders") {
+    if (request.method === 'GET' && url.pathname === '/orders') {
       // Guaranteed to read at or ahead of clientBookmark (read-your-writes consistency)
-      const { results } = await sessionDb.prepare(
-        "SELECT id, item, price, created_at FROM orders ORDER BY created_at DESC LIMIT 50"
-      ).all();
+      const { results } = await sessionDb
+        .prepare('SELECT id, item, price, created_at FROM orders ORDER BY created_at DESC LIMIT 50')
+        .all();
 
       return Response.json(results);
     }
 
-    return new Response("Not Found", { status: 404 });
-  }
+    return new Response('Not Found', { status: 404 });
+  },
 };
 ```
 
@@ -124,18 +128,18 @@ export async function executeAtomicTransfer(
   db: D1Database,
   sourceAccount: string,
   destAccount: string,
-  amount: number
+  amount: number,
 ): Promise<D1Result[]> {
   // All statements inside batch() execute within a single transaction
   // If any query fails, the entire batch automatically rolls back
   const statements = [
-    db.prepare("UPDATE accounts SET balance = balance - ? WHERE id = ?").bind(amount, sourceAccount),
-    db.prepare("UPDATE accounts SET balance = balance + ? WHERE id = ?").bind(amount, destAccount),
-    db.prepare("INSERT INTO transfer_audit (from_acc, to_acc, amount) VALUES (?, ?, ?)").bind(
-      sourceAccount,
-      destAccount,
-      amount
-    )
+    db
+      .prepare('UPDATE accounts SET balance = balance - ? WHERE id = ?')
+      .bind(amount, sourceAccount),
+    db.prepare('UPDATE accounts SET balance = balance + ? WHERE id = ?').bind(amount, destAccount),
+    db
+      .prepare('INSERT INTO transfer_audit (from_acc, to_acc, amount) VALUES (?, ?, ?)')
+      .bind(sourceAccount, destAccount, amount),
   ];
 
   return await db.batch(statements);
@@ -147,6 +151,7 @@ export async function executeAtomicTransfer(
 ## 4. D1 Time Travel and Disaster Recovery
 
 D1 incorporates continuous automated snapshotting and Write-Ahead Log archiving known as **Time Travel**.
+
 - **Point-in-Time Recovery (PITR)**: Restores a D1 database to any designated historical minute within the **30-day retention window**.
 - **Undelete Window**: Databases deleted via the CLI or dashboard are preserved in an undelete grace period for **7 days** (as of October 2026 platform standards), after which storage blocks are shredded.
 - **CLI Commands**:
@@ -162,7 +167,9 @@ D1 incorporates continuous automated snapshotting and Write-Ahead Log archiving 
 While D1 solves distributed relational requirements at the edge, organizations frequently operate large legacy relational databases hosted in regional clouds (AWS RDS PostgreSQL, Google Cloud SQL, Supabase, Neon).
 
 ### The Edge-to-Origin Database Bottleneck
+
 Connecting to a central database directly from edge Workers exhibits severe architectural failure modes:
+
 1. **Connection Storms**: Serverless edge scaling spins up thousands of concurrent isolates across hundreds of PoPs, overwhelming regional database connection limits (`max_connections`).
 2. **Handshake Overhead**: Negotiating TCP and TLS handshakes across cross-continental links adds 150 ms to 300 ms of latency before a single SQL statement executes.
 
@@ -183,12 +190,13 @@ flowchart TD
 ```
 
 ### Hyperdrive Architectural Mechanics
+
 - **Global Connection Pooling**: Hyperdrive maintains pre-warmed, authenticated connection pools from Cloudflare edge PoPs directly to the origin database.
 - **Protocol-Aware Query Caching**: Hyperdrive understands PostgreSQL and MySQL wire protocols. It automatically caches read queries that do not modify state (when appropriate), returning cached rows directly from the nearest PoP.
 - **Worker Driver Integration**: Workers use standard libraries (like `postgres.js` or `pg`) connecting through the connection string generated by `env.HYPERDRIVE.connectionString`.
 
 ```typescript
-import postgres from "postgres";
+import postgres from 'postgres';
 
 export interface Env {
   HYPERDRIVE: Hyperdrive;
@@ -199,7 +207,7 @@ export default {
     // Hyperdrive provides a pre-configured connection string with edge pooling
     const sql = postgres(env.HYPERDRIVE.connectionString, {
       max: 5, // Local pool limit per isolate
-      idle_timeout: 30
+      idle_timeout: 30,
     });
 
     // Queries execute over persistent, pre-established connections
@@ -208,7 +216,7 @@ export default {
     `;
 
     return Response.json(users);
-  }
+  },
 };
 ```
 
@@ -238,7 +246,7 @@ export default {
 The following pattern illustrates an edge checkout architecture using D1 for rapid edge session caching and Hyperdrive for centralized inventory deduction on a regional PostgreSQL cluster.
 
 ```typescript
-import postgres from "postgres";
+import postgres from 'postgres';
 
 export interface Env {
   LOCAL_DB: D1Database;
@@ -249,13 +257,19 @@ export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
 
-    if (request.method === "POST" && url.pathname === "/checkout") {
-      const { cartId, userId, amount } = await request.json<{ cartId: string; userId: string; amount: number }>();
+    if (request.method === 'POST' && url.pathname === '/checkout') {
+      const { cartId, userId, amount } = await request.json<{
+        cartId: string;
+        userId: string;
+        amount: number;
+      }>();
 
       // 1. Validate cart locally in edge D1 database (sub-millisecond read)
-      const cart = await env.LOCAL_DB.prepare("SELECT * FROM carts WHERE id = ?").bind(cartId).first();
+      const cart = await env.LOCAL_DB.prepare('SELECT * FROM carts WHERE id = ?')
+        .bind(cartId)
+        .first();
       if (!cart) {
-        return new Response("Cart Not Found", { status: 404 });
+        return new Response('Cart Not Found', { status: 404 });
       }
 
       // 2. Commit transaction to central PostgreSQL via Hyperdrive
@@ -267,7 +281,7 @@ export default {
             UPDATE inventory SET stock = stock - 1 WHERE item_id = ${cart.item_id} AND stock > 0 RETURNING stock
           `;
           if (!inventory) {
-            throw new Error("Out of Stock");
+            throw new Error('Out of Stock');
           }
 
           // Create permanent order record
@@ -279,18 +293,23 @@ export default {
 
         // 3. Update edge D1 session asynchronously
         ctx.waitUntil(
-          env.LOCAL_DB.prepare("UPDATE carts SET status = 'completed' WHERE id = ?").bind(cartId).run()
+          env.LOCAL_DB.prepare("UPDATE carts SET status = 'completed' WHERE id = ?")
+            .bind(cartId)
+            .run(),
         );
 
-        return Response.json({ status: "success", orderId: orderResult.id });
+        return Response.json({ status: 'success', orderId: orderResult.id });
       } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : "Checkout Failed";
-        return new Response(JSON.stringify({ error: msg }), { status: 400, headers: { "Content-Type": "application/json" } });
+        const msg = err instanceof Error ? err.message : 'Checkout Failed';
+        return new Response(JSON.stringify({ error: msg }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
       }
     }
 
-    return new Response("Not Found", { status: 404 });
-  }
+    return new Response('Not Found', { status: 404 });
+  },
 };
 ```
 

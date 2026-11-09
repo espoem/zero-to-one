@@ -18,10 +18,10 @@
 | **Include** | Zahrnutí | A YAML directive (`include:local`, `include:project`, `include:remote`) used to compose modular pipeline files into a single execution graph. | GitLab CI/CD Include |
 | **Job** | Úloha | The fundamental atomic unit of execution in a GitLab CI/CD pipeline, containing scripts, rules, and execution parameters. | GitLab CI/CD Jobs |
 | **Keyless Signing** | Bezklíčové podepisování | Cryptographic signing of artifacts without long-lived private keys, relying on ephemeral keys bound to verified OIDC identities. | Sigstore Cosign |
-| **Lead Time for Changes** | Doba pro změnu | A DORA metric measuring the duration from code commit entering version control to successful production deployment. | DORA Metrics |
+| **Lead Time for Changes** | Doba realizace změny (Lead Time for Changes) | A DORA metric measuring the duration from code commit entering version control to successful production deployment. | DORA Metrics |
 | **Matrix Parallelism** | Maticová paralelizace | A pipeline feature (`parallel: matrix`) that generates combinatorial job variants across multiple environmental or testing axes. | GitLab CI/CD Matrix |
 | **Merge Request (MR)** | Žádost o sloučení | GitLab's atomic code review construct where changes are proposed, reviewed, tested, and gated before merging into main. | GitLab Code Review |
-| **Merge Train** | Vlak sloučení | An automated queue of merge requests tested together sequentially against the target branch HEAD to prevent broken master builds. | GitLab Merge Trains |
+| **Merge Train** | Merge train (fronta pro postupné slučování) | An automated queue of merge requests tested together sequentially against the target branch HEAD to prevent broken master builds. | GitLab Merge Trains |
 | **Needs** | Závislosti (`needs`) | A keyword that defines explicit data or job dependencies in a pipeline DAG, bypassing stage ordering barriers. | GitLab CI/CD Needs |
 | **OIDC (OpenID Connect)** | OpenID Connect | An identity layer built on OAuth 2.0 enabling clients to verify user identity and obtain secure claims via ID tokens. | OAuth/OIDC RFC |
 | **Pipeline** | Pipeline | The top-level orchestration structure in GitLab containing stages, jobs, rules, and execution graphs triggered by git events. | GitLab CI/CD Pipelines |
@@ -32,7 +32,7 @@
 | **Runner** | Runner | A lightweight Go daemon that polls GitLab instances for pending jobs, executes them in configured environments, and reports status. | GitLab Runner |
 | **SAST** | SAST | Static Application Security Testing; automated scanning of source code for vulnerabilities and insecure coding patterns. | DevSecOps Standards |
 | **SCA** | SCA | Software Composition Analysis; scanning project dependencies for known Common Vulnerabilities and Exposures (CVEs). | DevSecOps Standards |
-| **Secret Detection** | Detekce tajemství | Automated scanning processes that prevent hardcoded API keys, private keys, and passwords from being committed to repositories. | Security Scanning |
+| **Secret Detection** | Detekce citlivých údajů (Secret Detection) | Automated scanning processes that prevent hardcoded API keys, private keys, and passwords from being committed to repositories. | Security Scanning |
 | **SLSA (Supply-chain Levels for Software Artifacts)** | SLSA | A security framework establishing tamper-proof software supply chains through verifiable build provenance. | SLSA Specification |
 | **SPDX** | SPDX | The Software Package Data Exchange standard for communicating software bill of materials and licensing data. | Linux Foundation SPDX |
 | **Stage** | Fáze | A logical sequential grouping of jobs in a traditional pipeline where all jobs in a stage must complete before the next stage starts. | GitLab CI/CD Stages |

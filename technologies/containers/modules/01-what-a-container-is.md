@@ -374,6 +374,7 @@ The shim acts as a lightweight daemon decoupling the container process from the 
 1. **Daemon Independence**: It allows `containerd` to be restarted or upgraded during maintenance without terminating running containers.
 2. **Subreaper / Zombie Management**: It acts as the parent process to the container workload, reaping orphaned child processes and capturing the container's exit code when it terminates.
 3. **I/O Persistence**: It keeps the `stdin`, `stdout`, and `stderr` pipes and pseudo-terminals open even when client connections disconnect.
+
 </details>
 
 <details><summary>4. Why does running a Docker container on macOS incur significant I/O performance penalties when mounting host volumes?</summary>
@@ -392,6 +393,7 @@ Both technologies prevent untrusted container code from directly executing syste
 
 - **gVisor (`runsc`)**: Implements an application kernel in user space ("Sentry"). When the container process invokes a syscall, it is intercepted (using `ptrace` or KVM) and handled entirely inside gVisor's memory space. Only a minimal, vetted subset of safe system calls are ever forwarded to the underlying host kernel.
 - **Kata Containers**: Wraps each container or Kubernetes Pod inside a hardware-isolated, ultra-lightweight microVM with its own dedicated guest Linux kernel. The container runs on the guest kernel, so a kernel panic or vulnerability compromise is trapped inside the microVM and cannot escape to the physical host.
+
 </details>
 
 <details><summary>7. What are the operational risks of mounting the host Docker socket (`/var/run/docker.sock`) into an application container?</summary>

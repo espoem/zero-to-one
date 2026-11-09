@@ -442,6 +442,7 @@ Invariant 3: Any HTTP 410 Gone error triggers an immediate cache flush and relis
 5. **Schema Validation**: The API server decodes the payload into an internal Go struct and validates it against the OpenAPI v3 schema and structural constraints.
 6. **Validating Admission**: Validating webhooks, Pod Security Standards, and CEL ValidatingAdmissionPolicies evaluate business invariants.
 7. **Storage**: The object is serialized into Protocol Buffers and committed via an atomic `etcdv3.Txn`. If etcd commits successfully, `kube-apiserver` returns HTTP 201 Created to the client and broadcasts the `ADDED` event across its active Watch streams.
+
 </details>
 
 <details><summary>2. What is the fundamental difference between `resourceVersion=""`, `resourceVersion="0"`, and `resourceVersion="<exact>"` on a LIST query?</summary>
@@ -449,6 +450,7 @@ Invariant 3: Any HTTP 410 Gone error triggers an immediate cache flush and relis
 - `resourceVersion=""` (omitted): Guarantees linearizable, strongly consistent reads. The API server bypasses its in-memory watch cache and executes a full quorum read against etcd.
 - `resourceVersion="0"`: Guarantees eventual consistency. The API server fulfills the request directly from its in-memory watch cache. The data is returned with ultra-low latency, but may be slightly behind etcd if the watch cache is catching up.
 - `resourceVersion="<exact>"`: Directs the API server to return data at least as fresh as the specified revision. If the watch cache is at or ahead of that revision, it serves from cache; otherwise, it waits or queries etcd.
+
 </details>
 
 <details><summary>3. Why does etcd use an append-only B+ tree (bbolt) where keys are revisions rather than Kubernetes resource paths?</summary>
@@ -473,6 +475,7 @@ When the bbolt database file reaches the configured `--quota-backend-bytes` limi
 1. Compact historical revisions via `etcdctl compact <latest_rev>`.
 2. Reclaim physical disk space by running `etcdctl defrag` on each etcd node.
 3. Disarm the alarm via `etcdctl alarm disarm`.
+
 </details>
 
 <details><summary>7. Why should event handlers inside a custom controller never perform network I/O or blocking operations?</summary>

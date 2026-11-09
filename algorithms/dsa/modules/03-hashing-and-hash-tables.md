@@ -37,7 +37,7 @@ Because $|\mathcal{U}| \gg m$, the **Pigeonhole Principle** guarantees that coll
 
 1. **Uniformity (Simple Uniform Hashing Assumption)**: Any given key is equally likely to hash into any of the $m$ slots, independently of where any other key has hashed.
 2. **Avalanche Effect**: Flipping a single bit in the key should flip each output bit with 50% probability, preventing correlated clustering.
-3. **Deterministic Evaluation**: $h(k)$ must evaluate in $O(\text{key\_length})$ time and return identical outputs for identical keys.
+3. **Deterministic Evaluation**: $h(k)$ must evaluate in $O(\text{key-length})$ time and return identical outputs for identical keys.
 
 ---
 
@@ -95,7 +95,7 @@ All key-value pairs are stored directly in the table array itself ($m \ge n \imp
 
 Robin Hood hashing is an open addressing variant that minimizes the variance of probe sequence lengths:
 
-- Each slot stores its **Distance to Initial Bucket (DIB)**: $\text{DIB} = (\text{curr\_slot} - h(k) + m) \pmod m$.
+- Each slot stores its **Distance to Initial Bucket (DIB)**: $\text{DIB} = (\text{curr-slot} - h(k) + m) \pmod m$.
 - During insertion, if the incoming element has a larger DIB than the element currently occupying the slot ($\text{DIB}_{\text{new}} > \text{DIB}_{\text{existing}}$), the incoming element **steals the slot** ("robs the rich to give to the poor"), and the displaced element continues probing.
 - **Result**: Guarantees very low maximum probe lengths, making search failures exit early as soon as $\text{DIB}_{\text{probe}} < \text{DIB}_{\text{slot}}$.
 

@@ -418,6 +418,7 @@ Both flags configure automatic SELinux relabeling of host directories mounted in
 
 - `:z` applies the shared container label `system_u:object_r:container_file_t:s0`. This allows multiple distinct container instances running on the host to concurrently read and write to the mounted directory.
 - `:Z` applies the private container label with the specific container's unique Multi-Category Security (MCS) category pair (e.g., `container_file_t:s0:c123,c456`). This restricts access exclusively to that single container instance. Using `:Z` on shared directories or host system paths (like `/etc` or `/var/log`) can break host services by locking out host daemons.
+
 </details>
 
 <details><summary>6. How does containerd's snapshotter architecture differ fundamentally from Docker's legacy graph drivers?</summary>
@@ -426,6 +427,7 @@ Legacy Docker graph drivers coupled image layer management, layer downloading, a
 
 1. **Content Store**: A content-addressable store containing immutable, cryptographically verified layer blobs (compressed tarballs).
 2. **Snapshotter Subsystem**: A pluggable interface that unpacks content blobs into concrete on-disk filesystem trees, managing parent-child committed (read-only) snapshots and active (read-write container) snapshots. This allows containerd to swap storage drivers (e.g., `overlayfs`, `btrfs`, `zfs`) and support advanced snapshotters like `stargz` for lazy pulling without altering the underlying image content storage.
+
 </details>
 
 <details><summary>7. Why is `securityContext.readOnlyRootFilesystem: true` considered a premier container hardening standard, and how does it interact with application storage?</summary>

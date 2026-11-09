@@ -484,6 +484,7 @@ variable "certificate_arn" {
 - However, Terraform's execution engine compiles the provider plugin initialization and configuration graph _before_ dynamic resource evaluation occurs. The provider lifecycle cannot depend on dynamic expressions that might require provider reads to resolve.
 - Furthermore, during destruction, if a module instance is removed, its internal provider configuration disappears from the config tree before the resources managed by that provider can be safely torn down.
 - Ref: HashiCorp Terraform Core Architectural Specification; Module Providers Guidance.
+
 </details>
 
 <details><summary>2. How does a declarative `moved` block differ fundamentally from executing `terraform state mv` via the CLI?</summary>
@@ -494,6 +495,7 @@ variable "certificate_arn" {
 - A `moved` block is declarative, immutable code committed alongside HCL changes. When any operator or CI runner runs `terraform plan`, Terraform detects that the state contains the `from` address while the config contains the `to` address. It automatically performs the address translation in-memory during plan computation without modifying the cloud infrastructure.
 - The state migration occurs automatically and atomically upon `terraform apply`.
 - Ref: Terraform Language Documentation: Refactoring.
+
 </details>
 
 <details><summary>3. How do OpenTofu OCI module sources improve supply chain security compared to traditional Git-based module sources?</summary>
@@ -507,6 +509,7 @@ variable "certificate_arn" {
   2. **Vulnerability & Compliance Scanning**: OCI registries can scan module packages for embedded secrets, unencrypted configs, and misconfigurations using Trivy or Grype.
   3. **Unified Identity**: Workers authenticate to OCI registries using short-lived container registry credentials or cloud IAM roles, avoiding persistent Git deployment keys.
 - Ref: OpenTofu Specification: OCI Registry Support.
+
 </details>
 
 <details><summary>4. What is the exact sequence of evaluation when chaining multiple `moved` blocks (e.g., A -> B and B -> C)?</summary>
@@ -518,6 +521,7 @@ variable "certificate_arn" {
 - For each resource address currently recorded in state, Terraform walks the outgoing edges in the graph until reaching a sink node (a node with out-degree zero).
 - If state contains resource $A$, and the graph contains $A \to B$ and $B \to C$, Terraform evaluates the chain transitively and migrates the resource directly from address $A$ to address $C$ in the proposed plan.
 - Ref: Terraform Language Engine Internals.
+
 </details>
 
 <details><summary>5. In what scenario does a module output `precondition` prevent cloud provider drift from corrupting downstream infrastructure?</summary>
@@ -529,6 +533,7 @@ variable "certificate_arn" {
 - Adding a `precondition` to the output block (e.g., verifying that the role contains a specific trust policy document) causes Terraform to halt execution immediately during the IAM module phase.
 - This prevents the plan/apply cycle from executing the downstream Kubernetes module with an invalid ARN, avoiding partial rollouts and silent security regressions.
 - Ref: Terraform Language Reference: Custom Conditions.
+
 </details>
 
 <details><summary>6. Why is `count` on child modules considered dangerous when sizing compute resources based on a variable list?</summary>
@@ -541,6 +546,7 @@ variable "certificate_arn" {
 - Stateful resources (databases, storage volumes, DNS records) will experience catastrophic destruction and recreation.
 - Using `for_each` with deterministic string keys (e.g., availability zones or service names) ensures that each instance retains a stable address independent of array positioning.
 - Ref: Terraform Language Reference: Module Meta-Arguments.
+
 </details>
 
 <details><summary>7. Explain how Terraform resolves relative file paths inside child modules when using `file()` or `templatefile()` functions.</summary>
@@ -552,6 +558,7 @@ variable "certificate_arn" {
 - Module authors must explicitly qualify local paths using `path.module`: `${path.module}/scripts/bootstrap.sh`.
 - `path.module` returns the filesystem path to the child module's directory, `path.root` returns the path to the root module, and `path.cwd` returns the current operating system working directory.
 - Ref: Terraform Language Reference: Filesystem and Workspace Context.
+
 </details>
 
 ---

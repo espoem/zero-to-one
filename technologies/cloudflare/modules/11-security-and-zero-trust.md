@@ -19,22 +19,28 @@ flowchart TD
 ```
 
 ### Turnstile Bot Mitigation
+
 Cloudflare Turnstile replaces traditional interactive CAPTCHAs (image identification) with non-interactive cryptographic proof-of-work and behavioral signals.
+
 - **Client Integration**:
   ```html
   <div class="cf-turnstile" data-sitekey="0x4AAAAAAABBBBBB12345"></div>
   ```
 - **Worker Verification**:
   ```typescript
-  export async function verifyTurnstileToken(secretKey: string, token: string, ip: string): Promise<boolean> {
+  export async function verifyTurnstileToken(
+    secretKey: string,
+    token: string,
+    ip: string,
+  ): Promise<boolean> {
     const formData = new FormData();
-    formData.append("secret", secretKey);
-    formData.append("response", token);
-    formData.append("remoteip", ip);
+    formData.append('secret', secretKey);
+    formData.append('response', token);
+    formData.append('remoteip', ip);
 
-    const res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
-      method: "POST",
-      body: formData
+    const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST',
+      body: formData,
     });
 
     const outcome = await res.json<{ success: boolean }>();
@@ -61,10 +67,11 @@ flowchart LR
 ```
 
 ### Cryptographic JWT Verification in Workers
+
 When a request passes Cloudflare Access, edge proxies attach an identity assertion JWT in the `Cf-Access-Jwt-Assertion` header. Applications and Workers must cryptographically verify this token to ensure requests were not spoofed by bypassing the proxy.
 
 ```typescript
-import { createRemoteJWKSet, jwtVerify } from "jose";
+import { createRemoteJWKSet, jwtVerify } from 'jose';
 
 export interface Env {
   ACCESS_TEAM_NAME: string; // e.g. "mycompany"
@@ -73,30 +80,32 @@ export interface Env {
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-    const jwt = request.headers.get("Cf-Access-Jwt-Assertion");
+    const jwt = request.headers.get('Cf-Access-Jwt-Assertion');
 
     if (!jwt) {
-      return new Response("Missing Cloudflare Access JWT Assertion", { status: 401 });
+      return new Response('Missing Cloudflare Access JWT Assertion', { status: 401 });
     }
 
     try {
       // Fetch public keys directly from Cloudflare Access JWKS endpoint
-      const jwksUrl = new URL(`https://${env.ACCESS_TEAM_NAME}.cloudflareaccess.com/cdn-cgi/access/certs`);
+      const jwksUrl = new URL(
+        `https://${env.ACCESS_TEAM_NAME}.cloudflareaccess.com/cdn-cgi/access/certs`,
+      );
       const JWKS = createRemoteJWKSet(jwksUrl);
 
       // Verify signature, expiration, and audience tag
       const { payload } = await jwtVerify(jwt, JWKS, {
         issuer: `https://${env.ACCESS_TEAM_NAME}.cloudflareaccess.com`,
-        audience: env.ACCESS_POLICY_AUD
+        audience: env.ACCESS_POLICY_AUD,
       });
 
       console.log(`Authenticated corporate user: ${payload.email}`);
       return new Response(`Welcome, ${payload.email}! Internal API Access Granted.`);
     } catch (err) {
-      console.error("JWT Verification Failed:", err);
-      return new Response("Invalid Security Assertion", { status: 403 });
+      console.error('JWT Verification Failed:', err);
+      return new Response('Invalid Security Assertion', { status: 403 });
     }
-  }
+  },
 };
 ```
 
@@ -124,6 +133,7 @@ flowchart TD
 ```
 
 ### Core Architecture of `cloudflared`
+
 1. **Outbound-Only Connectivity**: The `cloudflared` daemon runs inside the private network. It initiates outbound connections over UDP port 7844 (QUIC) or TCP port 443 (HTTP/2) to the nearest Cloudflare data centers.
 2. **Zero Open Inbound Ports**: Corporate firewalls can block **all incoming TCP/UDP connections**. No public IP addresses are mapped to the origin machine.
 3. **Automatic Reconnection and Multi-Route Failover**: If an edge link degrades, `cloudflared` automatically establishes redundant connections to neighboring edge data centers.
@@ -155,21 +165,23 @@ sequenceDiagram
 ```
 
 ### Inspecting Client Certificates in Workers
+
 In a Worker, client certificate metadata is accessible on the `request.cf` object:
+
 ```typescript
 export default {
   async fetch(request: Request): Promise<Response> {
     const cert = request.cf?.tlsClientAuth;
 
-    if (!cert || cert.certVerified !== "SUCCESS") {
-      return new Response("mTLS Authentication Required", { status: 403 });
+    if (!cert || cert.certVerified !== 'SUCCESS') {
+      return new Response('mTLS Authentication Required', { status: 403 });
     }
 
     const clientSubject = cert.certSubjectDN;
     console.log(`Verified mTLS Client DN: ${clientSubject}`);
 
     return new Response(`Authenticated B2B Client: ${clientSubject}`);
-  }
+  },
 };
 ```
 
@@ -178,6 +190,7 @@ export default {
 ## 5. Secrets Management and Mandated Host Boundaries
 
 Workers execute inside secure software isolates. To prevent secret exfiltration:
+
 - Secrets are encrypted at rest using envelope encryption and injected strictly into the `env` object at isolate runtime instantiation.
 - Secrets must never be committed to git repositories or hardcoded in `wrangler.jsonc`.
 - **Host Mandates**: All external API calls containing bearer tokens or credentials must enforce strict HTTPS host allowlists to prevent Server-Side Request Forgery (SSRF) data leaks.
@@ -206,7 +219,7 @@ Workers execute inside secure software isolates. To prevent secret exfiltration:
 ## 8. Architectural Case Study: Zero-Trust Administrative Bastion
 
 ```typescript
-import { createRemoteJWKSet, jwtVerify } from "jose";
+import { createRemoteJWKSet, jwtVerify } from 'jose';
 
 export interface Env {
   TEAM_DOMAIN: string;
@@ -217,28 +230,30 @@ export interface Env {
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     // 1. Enforce mTLS or Access JWT
-    const jwt = request.headers.get("Cf-Access-Jwt-Assertion");
+    const jwt = request.headers.get('Cf-Access-Jwt-Assertion');
     if (!jwt) {
-      return new Response("Unauthorized Zero Trust Access", { status: 401 });
+      return new Response('Unauthorized Zero Trust Access', { status: 401 });
     }
 
     // 2. Validate cryptographic signature
-    const JWKS = createRemoteJWKSet(new URL(`https://${env.TEAM_DOMAIN}.cloudflareaccess.com/cdn-cgi/access/certs`));
+    const JWKS = createRemoteJWKSet(
+      new URL(`https://${env.TEAM_DOMAIN}.cloudflareaccess.com/cdn-cgi/access/certs`),
+    );
     const { payload } = await jwtVerify(jwt, JWKS, {
       issuer: `https://${env.TEAM_DOMAIN}.cloudflareaccess.com`,
-      audience: env.APP_AUD
+      audience: env.APP_AUD,
     });
 
     // 3. Enforce corporate email domain authorization
     const email = payload.email as string;
-    if (!email.endsWith("@company.com")) {
-      return new Response("Forbidden: Domain unauthorized", { status: 403 });
+    if (!email.endsWith('@company.com')) {
+      return new Response('Forbidden: Domain unauthorized', { status: 403 });
     }
 
     // 4. Dispatch to stateful administration actor
-    const adminStub = env.ADMIN_DO.get(env.ADMIN_DO.idFromName("cluster-admin"));
+    const adminStub = env.ADMIN_DO.get(env.ADMIN_DO.idFromName('cluster-admin'));
     return await adminStub.fetch(request);
-  }
+  },
 };
 ```
 

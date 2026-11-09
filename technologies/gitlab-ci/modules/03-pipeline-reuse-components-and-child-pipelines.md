@@ -430,6 +430,7 @@ GitLab CI's deep-merge algorithm distinguishes sharply between associative maps 
 
 1. **Dictionaries**: Merged recursively. If both the base template and the extending job declare a dictionary (such as `variables:`), keys from both dictionaries are combined. If a key collision occurs, the extending (higher-level) job's value overwrites the base value.
 2. **Arrays**: Overwritten completely. If a base template defines `script:` or `before_script:` with five commands, and the extending job defines `script:` with one command, the extending array completely discards and replaces the base array. Arrays are never automatically concatenated.
+
 </details>
 
 <details><summary>4. What is a Dynamic Child Pipeline, and what architectural problem does it solve in large-scale monorepos?</summary>

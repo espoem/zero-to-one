@@ -419,6 +419,7 @@ Suppose three Merge Requests (MR-1, MR-2, MR-3) are running concurrently in a Me
 2. Aborts the running pipeline for Car 3.
 3. Automatically rebases Car 3 onto Car 1 ($\text{Base} \oplus \text{MR}_1 \oplus \text{MR}_3$).
 4. Dispatches a new speculative pipeline for Car 3 without requiring manual developer intervention.
+
 </details>
 
 <details><summary>7. What are the common failure modes associated with JUnit XML artifact ingestion in GitLab CI?</summary>
@@ -428,6 +429,7 @@ The most frequent failure modes include:
 1. **ANSI Color Escape Sequences**: Test runners that output colored terminal formatting directly into `<failure>` or `<system-out>` tags embed non-ASCII control characters (`\x1b[31m`) that invalidate XML parsers, causing GitLab to drop the report silently.
 2. **Missing `testcase` `classname` or `name` attributes**: GitLab's ingestion engine requires standard JUnit attributes to correlate test cases across commits. If an unconventional reporter omits `name` or `time`, the widget fails to render diffs.
 3. **Huge XML Payload Sizes**: Extremely large test suites that write megabytes of stack traces into a single XML file can exceed GitLab's artifact ingestion size limits, causing report truncation.
+
 </details>
 
 ---

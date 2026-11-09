@@ -51,11 +51,11 @@ Authoring the `technologies/gcp` track per `.agents/briefs/gcp.md` and `AGENTS.m
 
 ## Challenger (Muse Spark 1.3)
 
-### Summary
+### Challenger Summary
 
 Adversarial audit of Modules 01–10, simulation test models (`examples/lib/gcp-models.ts`), and question bank `exams/ace.md`. The track exhibits exceptional technical depth, precise distributed systems mechanics (TrueTime clock uncertainty derivations, Spanner tablet range splitting, BigQuery Dremel tree execution, and Cloud NAT port exhaustion modeling), strictly unwrapped prose, and valid Mermaid diagrams. Key findings identified scoring key answer and domain discrepancies in `exams/ace.md`, line count thresholds in early drafts of modules 06, 08, and 10, Mermaid 12 literal semicolon breakages, and unreferenced properties in test fixtures. All findings have been remediated and verified.
 
-### Findings
+### Challenger Findings
 
 - [x] **P1** `technologies/gcp/exams/ace.md`: Mock exam scoring key for `Q-ACE-009` listed option `**B**`, whereas the question text and explanation proved option `**A**` (Cloud NAT port exhaustion due to default static allocation of 64 ports per VM). Additionally, the initial scoring table domain mappings for questions 4–28 were shifted relative to question headers. -> Fully regenerated the 65-question scoring key directly from verified question headers, answers, and focus topics. 0 mismatches verified.
 - [x] **P2** `technologies/gcp/modules/06-storage-cloud-sql-alloydb-spanner-and-firestore.md`: Initial draft had 394 lines, falling below the mandatory > 400 lines threshold. -> Added Q6 (Cloud Storage Turbo Replication 15-minute RPO SLA), Q7 (Spanner Table Interleaving vs Foreign Keys performance), and Q8 (Memorystore HA and Private IP architectures), bringing module 06 to 448 lines.
@@ -67,11 +67,11 @@ Adversarial audit of Modules 01–10, simulation test models (`examples/lib/gcp-
 
 ## Verifier (Antigravity)
 
-### Summary
+### Verifier Summary
 
 Independent verification of primary source claims, platform version currency, link integrity, markdown formatting standards, and test determinism. All claims match current Google Cloud documentation and product announcements as of 2026-11-08.
 
-### Findings
+### Verifier Findings
 
 - [x] **P1** `technologies/gcp/exams/README.md`: Lines 36 and 48 contained relative links to Module 09 formatted as `modules/09-...` instead of `../modules/09-...`, causing broken link errors in `tools/link-check`. -> Corrected both links to `../modules/09-pca-architecture-case-studies-and-disaster-recovery.md`.
 - [x] **P1** `technologies/gcp/modules/06-storage-cloud-sql-alloydb-spanner-and-firestore.md`: Heading anchor citations in interview drill references (`#3-cloud-spanner-truetime-interleaving-and-key-hotspot-mitigation` and `#6-cloud-memorystore-low-latency-caching-architectures`) failed resolution. -> Updated anchor slugs to `#3-cloud-spanner-globally-distributed-relational-database` and `#2-cloud-sql-high-availability--alloydb-architecture`. Verified 170 / 170 links resolving with 0 errors.

@@ -2,47 +2,59 @@
 
 ## 1. Formal Foundations of SLOs and Error Budgets
 
-Service Level Objectives (SLOs) transform operational telemetry from reactive symptom monitoring into proactive reliability engineering. Following the formal definitions established in the Google SRE Workbook, reliability is quantified over a rolling or calendar time window \(T\) via Service Level Indicators (SLIs). Let an SLI be expressed as the ratio of successful events to total valid events over window \(T\):
+Service Level Objectives (SLOs) transform operational telemetry from reactive symptom monitoring into proactive reliability engineering. Following the formal definitions established in the Google SRE Workbook, reliability is quantified over a rolling or calendar time window $T$ via Service Level Indicators (SLIs). Let an SLI be expressed as the ratio of successful events to total valid events over window $T$:
 
-\[ \text{SLI} = \frac{\sum \text{Successful Events}}{\sum \text{Total Events}} \]
+$$
+\text{SLI} = \frac{\sum \text{Successful Events}}{\sum \text{Total Events}}
+$$
 
-An SLO establishes a target reliability threshold \(R\) (e.g., \(R = 0.999\) or 99.9% availability) over time window \(T\). The **Error Budget** \(B\) represents the complement of the SLO target over \(T\), quantifying the permissible fraction of failures:
+An SLO establishes a target reliability threshold $R$ (e.g., $R = 0.999$ or 99.9% availability) over time window $T$. The **Error Budget** $B$ represents the complement of the SLO target over $T$, quantifying the permissible fraction of failures:
 
-\[ B = 1 - R \]
+$$
+B = 1 - R
+$$
 
-When absolute event counts are considered, the error budget total count \(N_{\text{error}}\) is:
+When absolute event counts are considered, the error budget total count $N_{\text{error}}$ is:
 
-\[ N_{\text{error}} = (1 - R) \times N_{\text{total}} \]
+$$
+N_{\text{error}} = (1 - R) \times N_{\text{total}}
+$$
 
 ### 1.1 Multi-Window Multi-Burn-Rate Alerting Mathematics
 
-Naive alerting on error budgets (such as paging whenever error rate exceeds \(1 - R\)) suffers from high false-positive rates for brief traffic anomalies and unacceptably slow detection times for fast-burning outages. The Google SRE multi-window, multi-burn-rate alerting algorithm solves this by detecting rates of error budget depletion across multiple time horizons simultaneously. A **Burn Rate** \(r\) is defined as the rate at which the error budget is being consumed relative to the SLO timeframe:
+Naive alerting on error budgets (such as paging whenever error rate exceeds $1 - R$) suffers from high false-positive rates for brief traffic anomalies and unacceptably slow detection times for fast-burning outages. The Google SRE multi-window, multi-burn-rate alerting algorithm solves this by detecting rates of error budget depletion across multiple time horizons simultaneously. A **Burn Rate** $r$ is defined as the rate at which the error budget is being consumed relative to the SLO timeframe:
 
-\[ r = \frac{\text{Actual Error Rate}}{1 - R} \]
+$$
+r = \frac{\text{Actual Error Rate}}{1 - R}
+$$
 
-If an outage occurs with burn rate \(r = 1\), the entire error budget is exhausted exactly at the end of window \(T\). If \(r = 14.4\), the entire error budget is consumed in \(\frac{1}{14.4} \times T\). For a 30-day window, this equals \(\approx 50\) hours. To minimize false positives while bounding time-to-detect (TTD) and time-to-reset (TTR), alerting rules are configured using two concurrent windows (short window \(w_s\) and long window \(w_l\)) checking whether the average burn rate over both windows exceeds threshold \(k\).
+If an outage occurs with burn rate $r = 1$, the entire error budget is exhausted exactly at the end of window $T$. If $r = 14.4$, the entire error budget is consumed in $\frac{1}{14.4} \times T$. For a 30-day window, this equals $\approx 50$ hours. To minimize false positives while bounding time-to-detect (TTD) and time-to-reset (TTR), alerting rules are configured using two concurrent windows (short window $w_s$ and long window $w_l$) checking whether the average burn rate over both windows exceeds threshold $k$.
 
-Let \(B(w)\) be the fraction of error budget consumed over window \(w\). An alert fires at time \(t\) if and only if:
+Let $B(w)$ be the fraction of error budget consumed over window $w$. An alert fires at time $t$ if and only if:
 
-\[ B(w_s) \ge \theta \quad \text{and} \quad B(w_l) \ge \theta \]
+$$
+B(w_s) \ge \theta \quad \text{and} \quad B(w_l) \ge \theta
+$$
 
-where \(\theta\) is the fraction of the total error budget consumed over the respective window at burn rate \(r\):
+where $\theta$ is the fraction of the total error budget consumed over the respective window at burn rate $r$:
 
-\[ \theta = r \times \frac{w}{T} \]
+$$
+\theta = r \times \frac{w}{T}
+$$
 
 #### SRE Multi-Window Alerting Parameter Matrix
 
-| Alert Severity | Burn Rate (\(r\)) | Budget Consumed (%) | Long Window (\(w_l\)) | Short Window (\(w_s\)) | Time to Detect (TTD) | Time to Reset (TTR) | Action |
+| Alert Severity | Burn Rate ($r$) | Budget Consumed (%) | Long Window ($w_l$) | Short Window ($w_s$) | Time to Detect (TTD) | Time to Reset (TTR) | Action |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| **Page (P1)** | \(14.4\) | \(2\%\) | \(1\text{h}\) | \(5\text{m}\) | \(2.5\text{m}\) | \(1\text{h}\) | Immediate page to on-call |
-| **Page (P2)** | \(6\) | \(5\%\) | \(6\text{h}\) | \(30\text{m}\) | \(14.8\text{m}\) | \(6\text{h}\) | Urgent operator notification |
-| **Ticket (P3)** | \(1\) | \(10\%\) | \(3\text{d}\) | \(6\text{h}\) | \(14.8\text{h}\) | \(3\text{d}\) | Create Jira ticket for sprint |
+| **Page (P1)** | 14.4 | 2% | 1h | 5m | 2.5m | 1h | Immediate page to on-call |
+| **Page (P2)** | 6 | 5% | 6h | 30m | 14.8m | 6h | Urgent operator notification |
+| **Ticket (P3)** | 1 | 10% | 3d | 6h | 14.8h | 3d | Create Jira ticket for sprint |
 
 ---
 
 ## 2. SLI Specification Patterns for HTTP and gRPC
 
-Defining correct SLIs requires categorizing operations into valid requests (\(V\)) and good/successful requests (\(G\)). For HTTP/gRPC microservices, bad requests (client errors like HTTP 400 or gRPC `INVALID_ARGUMENT`) must be excluded from the denominator unless they represent server-side failures (e.g., malformed responses generated by server bugs).
+Defining correct SLIs requires categorizing operations into valid requests ($V$) and good/successful requests ($G$). For HTTP/gRPC microservices, bad requests (client errors like HTTP 400 or gRPC `INVALID_ARGUMENT`) must be excluded from the denominator unless they represent server-side failures (e.g., malformed responses generated by server bugs).
 
 ```mermaid
 flowchart TD

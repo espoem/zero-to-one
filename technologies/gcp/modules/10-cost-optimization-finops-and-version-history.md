@@ -160,7 +160,7 @@ Committed Use Discounts offer deep discounts in exchange for a contractual commi
    - Ideal for stable, steady-state workloads (databases, core GKE node pools).
    - Provides up to 57% discount for general compute, and up to 70% for memory-optimized instances.
 2. **Flexible Spend-Based CUDs**:
-   - Commits to a minimum dollar-per-hour spend across all compute services (e.g. committing to spend \$50/hour).
+   - Commits to a minimum dollar-per-hour spend across all compute services (e.g. committing to spend $50/hour).
    - Applies automatically across multiple machine families (N1, N2, N2D, C2, C3), Google Kubernetes Engine (Standard and Autopilot), and Cloud Run worldwide.
    - Provides up to 28% discount for 1-year commitments, and up to 46% discount for 3-year commitments.
 
@@ -201,7 +201,7 @@ Cloud Storage offers multiple storage classes designed for varying access freque
 To automate optimization, Google Cloud provides **Cloud Storage Autoclass**:
 
 - **Mechanism**: Autoclass inspects read patterns on individual objects and transitions them to colder tiers as they age without access. If an object in Archive storage is read, Autoclass transitions it back to Standard storage automatically at zero retrieval cost.
-- **Management Fee**: Autoclass charges an operational fee (\$0.0025 per 1,000 objects enabled per month).
+- **Management Fee**: Autoclass charges an operational fee ($0.0025 per 1,000 objects enabled per month).
 
 > [!CAUTION]
 > **The Early Deletion Minimum Duration Trap**: Storage classes colder than Standard enforce mandatory minimum storage durations: **30 days for Nearline**, **90 days for Coldline**, and **365 days for Archive**. If an application or lifecycle rule creates an object in Coldline and deletes or overwrites it after 10 days, Google Cloud charges for the remaining 80 days of Coldline storage as an early deletion fee. Writing short-lived, transient files directly to Coldline or Archive storage results in massive cost amplification.
@@ -210,7 +210,7 @@ To automate optimization, Google Cloud provides **Cloud Storage Autoclass**:
 
 BigQuery pricing operates on two discrete economic models:
 
-- **On-Demand Pricing**: Billed at \$6.25 per TB of data scanned across queried columns.
+- **On-Demand Pricing**: Billed at $6.25 per TB of data scanned across queried columns.
   - Optimization: Replace `SELECT *` with explicit column projections; enforce `PARTITION BY` and `require_partition_filter = true`; configure `maximum_bytes_billed` in query job configurations.
 - **BigQuery Editions (Capacity Commitments)**: Billed per slot-hour across compute reservation pools (Standard, Enterprise, Enterprise Plus).
   - Optimization: Isolate interactive executive reporting from batch ETL pipelines using separate reservation pools; set baseline slots to handle average daily load; enable autoscaling slots with strict maximum limits to absorb transient peak queries.

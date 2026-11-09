@@ -388,7 +388,7 @@ When applying "Binary Search on Answer" to an optimization problem, what mathema
 
 <details><summary>Answer</summary>
 
-**B.** Binary search operates on a monotone predicate where all inputs $\le x^_$ evaluate to `false` (or `true`) and all inputs $> x^_$ evaluate to `true` (or `false`). This single step-change boundary guarantees that comparing at midpoint allows discarding half of the remaining search space.
+**B.** Binary search operates on a monotone predicate where all inputs $\le x^{\ast}$ evaluate to `false` (or `true`) and all inputs $> x^{\ast}$ evaluate to `true` (or `false`). This single step-change boundary guarantees that comparing at midpoint allows discarding half of the remaining search space.
 
 - Why not A: Discrete integer domains are non-differentiable.
 - Why not C: Periodic functions have multiple roots, breaking the binary halving invariant.

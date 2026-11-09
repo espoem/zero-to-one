@@ -29,9 +29,7 @@ flowchart LR
 {
   "name": "payment-processor",
   "queues": {
-    "producers": [
-      { "binding": "AUDIT_QUEUE", "queue": "audit-events" }
-    ],
+    "producers": [{ "binding": "AUDIT_QUEUE", "queue": "audit-events" }],
     "consumers": [
       {
         "queue": "audit-events",
@@ -39,10 +37,10 @@ flowchart LR
         "max_batch_timeout": 5,
         "max_retries": 3,
         "dead_letter_queue": "audit-events-dlq",
-        "max_concurrency": 20
-      }
-    ]
-  }
+        "max_concurrency": 20,
+      },
+    ],
+  },
 }
 ```
 
@@ -62,16 +60,16 @@ export interface AuditEvent {
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const event: AuditEvent = {
-      userId: "user_101",
-      action: "PASSWORD_RESET",
-      timestamp: Date.now()
+      userId: 'user_101',
+      action: 'PASSWORD_RESET',
+      timestamp: Date.now(),
     };
 
     // Buffer to queue asynchronously without delaying HTTP response
     ctx.waitUntil(env.AUDIT_QUEUE.send(event));
 
-    return new Response("Event accepted", { status: 202 });
-  }
+    return new Response('Event accepted', { status: 202 });
+  },
 };
 ```
 
@@ -95,11 +93,12 @@ export default {
         msg.retry({ delaySeconds: Math.min(300, Math.pow(2, msg.attempts) * 5) });
       }
     }
-  }
+  },
 };
 ```
 
 ### The Unhandled Batch Exception Hazard
+
 - If an unhandled exception escapes the `queue()` handler without per-message `msg.ack()`, Cloudflare Queues assumes the **entire batch failed**.
 - All messages in that batch—including those that already processed successfully—are marked for redelivery.
 - **Rule**: Always wrap per-message processing inside `try/catch` blocks and invoke `msg.ack()` or `msg.retry()` explicitly to avoid redundant work.
@@ -141,7 +140,7 @@ sequenceDiagram
 ## 4. Writing Workflows: `step.do`, `step.sleep`, and Determinism Rules
 
 ```typescript
-import { WorkflowEntrypoint, WorkflowEvent, WorkflowStep } from "cloudflare:workers";
+import { WorkflowEntrypoint, WorkflowEvent, WorkflowStep } from 'cloudflare:workers';
 
 export interface OrderPayload {
   orderId: string;
@@ -155,27 +154,27 @@ export class OrderFulfillmentWorkflow extends WorkflowEntrypoint<Env, OrderPaylo
 
     // 1. Step 1: Charge customer with automatic retry policy
     const chargeResult = await step.do(
-      "charge-customer",
+      'charge-customer',
       {
-        retries: { limit: 3, delay: "5 seconds", backoff: "exponential" },
-        timeout: "30 seconds"
+        retries: { limit: 3, delay: '5 seconds', backoff: 'exponential' },
+        timeout: '30 seconds',
       },
       async () => {
         return await processPaymentGateway(userId, amount);
-      }
+      },
     );
 
     // 2. Step 2: Durable Sleep (isolate is evicted; zero compute cost during sleep)
-    await step.sleep("wait-for-inventory-allocation", "1 hour");
+    await step.sleep('wait-for-inventory-allocation', '1 hour');
 
     // 3. Step 3: Fulfill physical shipment
-    const trackingNumber = await step.do("ship-order", async () => {
+    const trackingNumber = await step.do('ship-order', async () => {
       return await reserveWarehouseItem(orderId, chargeResult.transactionId);
     });
 
     // 4. Step 4: Await External Webhook / Event
-    const approval = await step.waitForEvent("customer-confirmation", {
-      timeout: "7 days"
+    const approval = await step.waitForEvent('customer-confirmation', {
+      timeout: '7 days',
     });
 
     console.log(`Workflow complete for order ${orderId}, tracking: ${trackingNumber}`);
@@ -184,7 +183,9 @@ export class OrderFulfillmentWorkflow extends WorkflowEntrypoint<Env, OrderPaylo
 ```
 
 ### The Rule of Determinism
+
 Because Workflows resume by replaying code from the top:
+
 1. **Never generate non-deterministic state outside `step.do`**: Functions like `Math.random()`, `crypto.randomUUID()`, or `Date.now()` called outside a step will evaluate to a **different value** on every replay.
 2. **Move side effects into `step.do`**: Database queries, network requests, and external API calls must be wrapped inside `step.do`. The return value must be JSON-serializable.
 
@@ -198,8 +199,8 @@ For recurring cron jobs (e.g., hourly database vacuuming, nightly log aggregatio
 {
   "name": "nightly-cleanup",
   "triggers": {
-    "crons": ["0 0 * * *", "*/15 * * * *"]
-  }
+    "crons": ["0 0 * * *", "*/15 * * * *"],
+  },
 }
 ```
 
@@ -212,7 +213,7 @@ export default {
     console.log(`Cron pattern matched: ${event.cron}`);
 
     ctx.waitUntil(performDatabaseMaintenance(env));
-  }
+  },
 };
 ```
 
@@ -253,15 +254,15 @@ export default {
         // Launch a discrete, durable workflow instance per order
         await env.ORDER_WORKFLOW.create({
           id: `order_${order.orderId}`,
-          params: order
+          params: order,
         });
         msg.ack();
       } catch (err) {
-        console.error("Failed to launch workflow for order:", err);
+        console.error('Failed to launch workflow for order:', err);
         msg.retry({ delaySeconds: 10 });
       }
     }
-  }
+  },
 };
 ```
 

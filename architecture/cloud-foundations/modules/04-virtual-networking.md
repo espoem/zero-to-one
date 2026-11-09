@@ -166,5 +166,5 @@ Gateway Endpoints (available for AWS S3 and DynamoDB) modify the VPC route table
 
 <details><summary>5. How does deploying an S3 Gateway Endpoint eliminate NAT Gateway data processing fees?</summary>
 
-When private subnet workloads communicate with Amazon S3 without a VPC endpoint, traffic is addressed to S3's public IP range and routed through the NAT Gateway, incurring a $\$0.045$/GB data processing fee. Adding an S3 Gateway Endpoint installs a high-priority route in the subnet route table for S3's prefix list, redirecting traffic directly across the internal provider network fabric, completely bypassing the NAT Gateway and eliminating the per-GB charge.
+When private subnet workloads communicate with Amazon S3 without a VPC endpoint, traffic is addressed to S3's public IP range and routed through the NAT Gateway, incurring a $0.045/GB data processing fee. Adding an S3 Gateway Endpoint installs a high-priority route in the subnet route table for S3's prefix list, redirecting traffic directly across the internal provider network fabric, completely bypassing the NAT Gateway and eliminating the per-GB charge.
 </details>

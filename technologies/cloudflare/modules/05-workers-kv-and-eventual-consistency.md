@@ -7,6 +7,7 @@ Cloudflare Workers KV is a globally distributed, low-latency, key-value data sto
 ## 1. Internal Architecture: Central Storage and Distributed Edge Caches
 
 Workers KV is physically partitioned into two distinct infrastructure tiers:
+
 1. **Central Durable Store**: A globally centralized, highly available transactional storage tier (backed by distributed clusters situated in core regions). Writes to Workers KV always commit synchronously to this central store before returning success to the caller.
 2. **Edge PoP Caches**: Distributed read caches collocated within every Cloudflare Point of Presence (PoP) worldwide.
 
@@ -34,6 +35,7 @@ flowchart TD
 ```
 
 ### Read Lifecycle Mechanics
+
 - **Edge Cache Hit**: When a Worker invokes `await env.KV.get("config:tier")`, the local data center's memory and NVMe cache is queried. If the key exists and its local TTL has not expired, the value is returned in under **1 millisecond**.
 - **Edge Cache Miss**: If the key is not present locally, the edge node queries the central durable store over Cloudflare's private backbone network. The fetched value is returned to the Worker and simultaneously cached locally for future requests.
 
@@ -42,6 +44,7 @@ flowchart TD
 ## 2. Eventual Consistency and Propagation Latency
 
 Because edge PoPs cache values locally, Workers KV exhibits **eventual consistency**.
+
 - When a write (`env.KV.put()`) occurs, the change is written to the central store.
 - Existing edge caches worldwide are **not** updated synchronously. Instead, an asynchronous invalidation message propagates across the network.
 - Edge caches continue serving the previously cached value until either:
@@ -54,6 +57,7 @@ Because edge PoPs cache values locally, Workers KV exhibits **eventual consisten
 ## 3. Negative-Lookup Caching
 
 A frequent source of production bugs is **negative-lookup caching**:
+
 - If a client requests a key that does **not** exist in the KV namespace (`await env.KV.get("user:999")`), the central store reports a miss (`null`).
 - To protect the central store from being overwhelmed by cache stampedes on missing keys, the local edge PoP caches this negative result (`null`) for the duration of `cacheTtl`.
 - If another process creates `"user:999"` immediately afterward, queries arriving at that specific edge PoP will continue returning `null` until the negative cache TTL expires.
@@ -98,21 +102,25 @@ export interface UserMetadata {
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     // 1. Put with TTL and custom JSON metadata (metadata max 1024 bytes)
-    await env.SETTINGS_KV.put("user:42", JSON.stringify({ name: "Alice", email: "alice@example.com" }), {
-      expirationTtl: 86400, // Expires in 24 hours
-      metadata: { role: "admin", tier: "enterprise", lastUpdated: Date.now() }
-    });
+    await env.SETTINGS_KV.put(
+      'user:42',
+      JSON.stringify({ name: 'Alice', email: 'alice@example.com' }),
+      {
+        expirationTtl: 86400, // Expires in 24 hours
+        metadata: { role: 'admin', tier: 'enterprise', lastUpdated: Date.now() },
+      },
+    );
 
     // 2. Read with explicit cacheTtl and metadata retrieval
-    const { value, metadata } = await env.SETTINGS_KV.getWithMetadata<UserMetadata>("user:42", {
-      type: "json",
-      cacheTtl: 300 // Cache locally at edge for 5 minutes
+    const { value, metadata } = await env.SETTINGS_KV.getWithMetadata<UserMetadata>('user:42', {
+      type: 'json',
+      cacheTtl: 300, // Cache locally at edge for 5 minutes
     });
 
     // 3. Paginated prefix listing
     const listResult = await env.SETTINGS_KV.list({
-      prefix: "user:",
-      limit: 100
+      prefix: 'user:',
+      limit: 100,
     });
 
     for (const key of listResult.keys) {
@@ -120,7 +128,7 @@ export default {
     }
 
     return Response.json({ value, metadata, totalListed: listResult.keys.length });
-  }
+  },
 };
 ```
 
@@ -152,6 +160,7 @@ flowchart TD
 ```
 
 ### Critical Anti-Patterns in Workers KV
+
 1. **Atomic Counters / Rate Limiting**:
    - `const val = await env.KV.get('counter'); await env.KV.put('counter', val + 1);`
    - **Failure**: Lost updates occur under concurrency because KV lacks atomic increments or Compare-And-Swap (CAS).
@@ -195,38 +204,48 @@ export interface FeatureFlags {
 const DEFAULT_FLAGS: FeatureFlags = {
   enableNewCheckout: false,
   maintenanceMode: false,
-  betaFeatures: []
+  betaFeatures: [],
 };
 
 // Warm isolate memory cache (sub-millisecond lookup)
 let memoryCache: { flags: FeatureFlags; cachedAt: number } | null = null;
 
 export default {
-  async fetch(request: Request, env: { CONFIG_KV: KVNamespace }, ctx: ExecutionContext): Promise<Response> {
+  async fetch(
+    request: Request,
+    env: { CONFIG_KV: KVNamespace },
+    ctx: ExecutionContext,
+  ): Promise<Response> {
     const now = Date.now();
 
     // 1. Isolate Memory Cache Check (valid for 10 seconds)
     if (memoryCache && now - memoryCache.cachedAt < 10_000) {
-      return Response.json({ flags: memoryCache.flags, source: "isolate-memory" });
+      return Response.json({ flags: memoryCache.flags, source: 'isolate-memory' });
     }
 
     try {
       // 2. Workers KV Read with 5-minute edge cache TTL
-      const flags = await env.CONFIG_KV.get<FeatureFlags>("flags:global", {
-        type: "json",
-        cacheTtl: 300
+      const flags = await env.CONFIG_KV.get<FeatureFlags>('flags:global', {
+        type: 'json',
+        cacheTtl: 300,
       });
 
       const effectiveFlags = flags ?? DEFAULT_FLAGS;
       memoryCache = { flags: effectiveFlags, cachedAt: now };
 
-      return Response.json({ flags: effectiveFlags, source: flags ? "edge-kv" : "default-fallback" });
+      return Response.json({
+        flags: effectiveFlags,
+        source: flags ? 'edge-kv' : 'default-fallback',
+      });
     } catch (err) {
       // 3. Graceful degradation on network or binding failure
-      console.error("KV Read Error:", err);
-      return Response.json({ flags: memoryCache?.flags ?? DEFAULT_FLAGS, source: "emergency-fallback" });
+      console.error('KV Read Error:', err);
+      return Response.json({
+        flags: memoryCache?.flags ?? DEFAULT_FLAGS,
+        source: 'emergency-fallback',
+      });
     }
-  }
+  },
 };
 ```
 

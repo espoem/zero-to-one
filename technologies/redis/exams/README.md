@@ -8,7 +8,7 @@ This directory holds the exam coverage matrix for the Redis track and the prepar
 
 | Exam | Vendor | Status | Format | Product version |
 | --- | --- | --- | --- | --- |
-| **Redis Certified Associate Developer** | Redis Ltd. | **Active** (relaunched; registration open on [redis.io/certifications/developer](https://redis.io/certifications/developer/)) | 65 questions, 90 minutes, passing score 70 %, online, AI-proctored via Kryterion Webassessor, English only, \$175 per attempt, 14-day wait before a retake, valid 2 years | Redis 8.x / 7.x core commands |
+| **Redis Certified Associate Developer** | Redis Ltd. | **Active** (relaunched; registration open on [redis.io/certifications/developer](https://redis.io/certifications/developer/)) | 65 questions, 90 minutes, passing score 70 %, online, AI-proctored via Kryterion Webassessor, English only, $175 per attempt, 14-day wait before a retake, valid 2 years | Redis 8.x / 7.x core commands |
 | Redis Certified Associate Cloud Operator | Redis Ltd. | Listed on [redis.io/certifications](https://redis.io/certifications) | Same delivery model | Redis Cloud (out of scope: product-specific operations) |
 | Redis Certified Associate Software Operator | Redis Ltd. | Listed on [redis.io/certifications](https://redis.io/certifications) | Same delivery model | Redis Software (out of scope: commercial product) |
 | Redis Certified Developer (2019 programme) | Redis Ltd. | **Retired**: registrations closed June 2024, certificates expired 31 Dec 2024 | — | — |

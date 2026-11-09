@@ -440,6 +440,7 @@ Updating via `/status` provides two critical architectural safeguards:
 
 1. **RBAC Isolation**: Controllers can be granted least-privilege permission to mutate `/status` without granting write access to `.spec`, preventing a compromised or buggy controller from altering desired application configurations.
 2. **Generation Integrity**: Modifying `.spec` increments `metadata.generation`. Modifying `/status` via its subresource updates observed state without incrementing `metadata.generation`. This allows controllers to record `status.observedGeneration = metadata.generation`, signaling to clients that the controller has fully reconciled the user's latest declared spec.
+
 </details>
 
 <details><summary>6. How does a finalizer prevent resource deletion, and what is the exact API sequence required to unblock it?</summary>

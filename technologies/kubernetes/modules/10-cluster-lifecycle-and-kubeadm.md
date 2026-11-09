@@ -497,6 +497,7 @@ scheduler:
 
 - **`kubeadm upgrade apply`**: Executed ONLY on the **first control plane node** in the cluster. It checks the upgrade plan, pulls control plane component images, updates the cluster configuration stored in the `kubeadm-config` ConfigMap in `kube-system`, upgrades control plane static pod manifests on the local node, and upgrades cluster-wide addons (CoreDNS and kube-proxy).
 - **`kubeadm upgrade node`**: Executed on all **secondary control plane nodes** and all **worker nodes**. It does NOT update cluster-wide ConfigMaps or addons; it only updates local kubelet configuration files and local static pod manifests.
+
 </details>
 
 <details><summary>2. Why is an etcd cluster of 4 nodes architecturally inferior to a cluster of 3 nodes?</summary>

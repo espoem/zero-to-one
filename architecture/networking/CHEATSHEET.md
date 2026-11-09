@@ -193,7 +193,7 @@ Common Options: MSS (Kind 2, Len 4), Window Scale (Kind 3, Len 3), SACK Permitte
   - $C = 0.4$ (scaling factor), $\beta = 0.7$ (multiplicative decrease factor on loss)
 - **BBR Control Targets (Kleinrock Point)**:
   - In-Flight Target: $\text{BDP} = \text{BtlBw} \times \text{RTprop}$
-  - Pacing Rate: $\text{Rate} = \text{pacing\_gain} \times \text{BtlBw}$
+  - Pacing Rate: $\text{Rate} = \text{pacing-gain} \times \text{BtlBw}$
 
 ---
 

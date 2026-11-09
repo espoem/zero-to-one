@@ -1122,7 +1122,7 @@ How does Apache Kafka's Idempotent Producer eliminate duplicate records upon net
 
 ### Q-DIST-055 · Partition Resizing Trap · difficulty 3 · scenario
 
-An e-commerce system partitions order events by `order_id` across 10 Kafka partitions using the standard hash partitioner: $\text{partition} = \text{murmur2}(\text{order\_id}) \pmod{10}$. Due to traffic growth, an engineer increases the partition count from 10 to 20. What critical distributed systems invariant is immediately broken for subsequent orders?
+An e-commerce system partitions order events by `order_id` across 10 Kafka partitions using the standard hash partitioner: $\text{partition} = \text{murmur2}(\text{order-id}) \pmod{10}$. Due to traffic growth, an engineer increases the partition count from 10 to 20. What critical distributed systems invariant is immediately broken for subsequent orders?
 
 - A) Existing consumer groups will crash with OutOfMemory exceptions.
 - B) Total ordering per `order_id` is broken: subsequent events for existing order IDs will hash to different partitions ($\pmod{20} \neq \pmod{10}$), causing consumer services to process updates out of order relative to initial creation events.
@@ -1567,13 +1567,13 @@ In a sharded distributed database running **Multi-Raft** (such as CockroachDB or
 
 You are the Principal Systems Architect designing a globally distributed, multi-region metadata repository for an AI agent platform. The system operates across 3 geographic regions: `us-east`, `eu-west`, and `ap-northeast`.
 
-#### Requirements:
+**Requirements:**
 
 1. **P99 Read Latency**: $< 5\text{ms}$ within the local region for 95% of reads.
 2. **Write Invariant**: System state must be strictly linearizable for workspace tenancy configurations and security credentials.
 3. **Partition Resilience**: The system must remain available for reads and writes even if one entire geographic region suffers a total submarine fiber blackout.
 
-#### Questions:
+**Questions:**
 
 1. **Protocol Selection & Invariant Proof (10 Points)**:
    - Which consensus and replication architecture satisfies these constraints: Multi-Paxos/Raft with regional followers, Spanner-style TrueTime Paxos, or Dynamo-style CRDTs? Prove why your selection satisfies the write invariant and partition resilience, while explaining why the other two options fail.
@@ -1584,7 +1584,7 @@ You are the Principal Systems Architect designing a globally distributed, multi-
 
 <details><summary>Scoring Rubric & Model Answer</summary>
 
-#### Model Answer:
+**Model Answer:**
 
 **1. Protocol Selection & Invariant Proof (10 Points)**:
 
@@ -1629,7 +1629,7 @@ A critical authentication and authorization service handles 50,000 requests/sec.
 - Upstream microservices retry every failed request 3 times with a 200ms fixed timeout.
 - Even after the Redis cache is confirmed healthy and reachable, the database CPU remains pegged at 100% and the system does not recover after 30 minutes.
 
-#### Questions:
+**Questions:**
 
 1. **Feedback Loop Identification (8 Points)**:
    - Identify the two distinct sustaining feedback loops that maintain this metastable failure state even after the trigger (the network blip) has resolved.
@@ -1640,7 +1640,7 @@ A critical authentication and authorization service handles 50,000 requests/sec.
 
 <details><summary>Scoring Rubric & Model Answer</summary>
 
-#### Model Answer:
+**Model Answer:**
 
 **1. Feedback Loop Identification (8 Points)**:
 
@@ -1659,7 +1659,7 @@ A critical authentication and authorization service handles 50,000 requests/sec.
 - **(b) Retry Budgets**: Client libraries must enforce a strict retry budget: retries may consume at most 10% of total outbound requests. Once retry tokens are exhausted, requests fail fast.
 - **(c) Full / Decorrelated Jitter**: Backoff intervals must be randomized: $t = \text{random}(0, \min(M, b \cdot 2^i))$ to permanently desynchronize client retries.
 - **(d) Deadline Propagation**: Attach a deadline timestamp header (e.g., `X-Request-Deadline: <epoch_ms>`). If a database query worker pulls a request from its queue whose deadline has already elapsed, it immediately drops the request without executing SQL.
-- **(e) Cache Stampede Defense (XFetch)**: Use the probabilistic early recomputation algorithm: $$\Delta - \beta \cdot \ln(\text{random}(0, 1)) \times \text{compute\_time} \ge \text{TTL}$$ Background workers refresh cache keys _before_ they expire, eliminating stampedes. In addition, lock single-flight mutexes (like Go's `singleflight`) per key to ensure only one database query executes for a missed session key.
+- **(e) Cache Stampede Defense (XFetch)**: Use the probabilistic early recomputation algorithm: $$\Delta - \beta \cdot \ln(\text{random}(0, 1)) \times \text{compute-time} \ge \text{TTL}$$ Background workers refresh cache keys _before_ they expire, eliminating stampedes. In addition, lock single-flight mutexes (like Go's `singleflight`) per key to ensure only one database query executes for a missed session key.
 
 **Scoring Guide**:
 
@@ -1683,7 +1683,7 @@ Below is a concurrent execution trace of four operations on a single distributed
 | $O_4$ | Client 4 | `read()` | 190 | 220 | `1` |
 | $O_5$ | Client 5 | `read()` | 230 | 260 | `1` |
 
-#### Questions:
+**Questions:**
 
 1. **Real-Time Precedence Constraints (8 Points)**:
    - Identify all pairs of operations $(A, B)$ that have a strict real-time precedence order ($A <_{real} B$, meaning $res(A) < inv(B)$).
@@ -1696,7 +1696,7 @@ Below is a concurrent execution trace of four operations on a single distributed
 
 <details><summary>Scoring Rubric & Model Answer</summary>
 
-#### Model Answer:
+**Model Answer:**
 
 **1. Real-Time Precedence Constraints (8 Points)**: An operation $A$ strictly precedes $B$ ($A <_{real} B$) iff $t_{\text{res}}(A) < t_{\text{inv}}(B)$:
 
@@ -1731,7 +1731,7 @@ Below is a concurrent execution trace of four operations on a single distributed
 **3. Algorithmic Complexity (7 Points)**:
 
 - **WGL Exploration**: Wing-Gong maintains a set of concurrent events and recursively searches for a linearized operation from the set of currently "eligible" operations (operations whose invocation has occurred and whose predecessors have finished). It matches operations against the sequential register specification.
-- **Pruning**: WGL memoizes pairs of $(\text{history\_prefix\_set}, \text{register\_state})$. If a search branch reaches a state that has already been explored with the same consumed operation set, it prunes the branch immediately.
+- **Pruning**: WGL memoizes pairs of $(\text{history-prefix-set}, \text{register-state})$. If a search branch reaches a state that has already been explored with the same consumed operation set, it prunes the branch immediately.
 - **Complexity**: In the worst-case, testing linearizability is **NP-complete** ($O(2^N)$ branch exploration).
 
 **Scoring Guide**:
@@ -1755,7 +1755,7 @@ During the rebalance:
    - Component Left: $\{N_1, N_4\}$
    - Component Right: $\{N_2, N_3\}$
 
-#### Questions:
+**Questions:**
 
 1. **Single-Server Membership Change Vulnerability (8 Points)**:
    - Why is transitioning from $\{N_1, N_2, N_3\}$ directly to $\{N_1, N_2, N_4\}$ unsafe if nodes switch their configurations at different times without Joint Consensus? Describe the exact split-brain scenario.
@@ -1766,7 +1766,7 @@ During the rebalance:
 
 <details><summary>Scoring Rubric & Model Answer</summary>
 
-#### Model Answer:
+**Model Answer:**
 
 **1. Single-Server Membership Change Vulnerability (8 Points)**:
 

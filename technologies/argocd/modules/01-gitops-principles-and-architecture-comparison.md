@@ -113,6 +113,7 @@ When deploying GitOps at enterprise scale with Argo CD, practitioners frequently
 4. **Continuously Reconciled**: Software agents must continuously observe actual system state and attempt to reconcile it with the desired state.
 
 - Ref: [OpenGitOps Specifications](https://opengitops.dev/)
+
 </details>
 
 <details><summary>2. How does Argo CD's pull-based model improve cluster security compared to traditional push-based CI/CD pipelines?</summary>
@@ -120,6 +121,7 @@ When deploying GitOps at enterprise scale with Argo CD, practitioners frequently
 In a push-based model, external CI systems require persistent, high-privilege cluster-admin credentials stored in external secrets stores. If the CI platform is compromised, attackers gain full cluster access. In Argo CD's pull model, an agent runs inside the cluster and makes outbound connections to the Git repository using read-only credentials, eliminating inbound cluster exposure and restricting blast radius.
 
 - Ref: [Module 01 Architecture Comparison](#2-push-vs-pull-cicd-architecture)
+
 </details>
 
 <details><summary>3. What is the architectural difference between Argo CD's Repo Server and Flux's controller design?</summary>
@@ -127,6 +129,7 @@ In a push-based model, external CI systems require persistent, high-privilege cl
 Argo CD centralizes manifest generation (running Helm, Kustomize, and CMPs) inside a dedicated `argocd-repo-server` microservice, communicating via gRPC with the application controller. Flux v2 decentralizes this by embedding manifest generation directly into dedicated, single-purpose controllers (`kustomize-controller`, `helm-controller`) running in-cluster.
 
 - Ref: [Module 01 Architecture Comparison](#3-argo-cd-vs-flux-architecture-comparison)
+
 </details>
 
 <details><summary>4. Explain the mathematical formulation of the reconciliation operator in GitOps.</summary>
@@ -134,6 +137,7 @@ Argo CD centralizes manifest generation (running Helm, Kustomize, and CMPs) insi
 Let desired state in Git be $D(t)$ and live cluster state be $L(t)$ within state space $S$. The reconciliation operator $\Delta(D(t), L(t))$ computes corrective actions to minimize the divergence metric $d(D(t), L(t))$ such that $\lim_{t \to \infty} d(D(t), L(t)) = 0$.
 
 - Ref: [Module 01 Introduction](#1-introduction-and-formal-foundations)
+
 </details>
 
 <details><summary>5. Why did Argo CD v3 transition from instance labels to tracking annotations?</summary>
@@ -141,6 +145,7 @@ Let desired state in Git be $D(t)$ and live cluster state be $L(t)$ within state
 Instance labels (`argocd.argoproj.io/instance`) were frequently mutated by external tooling, triggered unnecessary Kubernetes watch events, and caused collision issues in multi-tenant environments. Tracking annotations (`argocd.argoproj.io/tracking-id`) provide robust, structured metadata tracking without interfering with user-defined labels.
 
 - Ref: [Module 01 Version History](#5-version-history-and-then-vs-now)
+
 </details>
 
 <details><summary>6. What production risks arise when combining `selfHeal: true` and `prune: true` without guardrails?</summary>
@@ -148,6 +153,7 @@ Instance labels (`argocd.argoproj.io/instance`) were frequently mutated by exter
 If a developer introduces a syntax error, empties a directory, or removes a resource declaration in Git, the controller interprets the absence as an intent to delete the live resource. With `selfHeal` and `prune` active, production workloads are automatically terminated and purged.
 
 - Ref: [Module 01 Production Failure Modes](#6-production-failure-modes-and-gotchas)
+
 </details>
 
 ## 8. Proof Map

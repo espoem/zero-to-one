@@ -519,6 +519,7 @@ In a DAG pipeline using `needs`, jobs execute as soon as their specific prerequi
 The DAG yields the greatest latency reduction in heterogeneous pipelines containing mixed workloads: for example, where a fast frontend build (1 min) and a slow database integration test (25 mins) sit in the test stage, while a frontend deployment sitting in the deploy stage needs only the frontend build. Under a stage model, deployment waits 25 minutes; under a DAG model, deployment executes at $T = 1\text{ min} + t(\text{deploy})$.
 
 - Ref: [modules/09-pipeline-performance-monorepos-and-operations.md](../modules/09-pipeline-performance-monorepos-and-operations.md#1-pipeline-execution-models-stages-vs-needs-directed-acyclic-graph-dag)
+
 </details>
 
 <details><summary>2. How do Dynamic Child Pipelines overcome the scalability limits of static `.gitlab-ci.yml` configurations in enterprise monorepos?</summary>
@@ -531,6 +532,7 @@ In monorepos with hundreds of microservices, managing all builds in a static `.g
 Dynamic Child Pipelines decouple pipeline generation from execution. An initial lightweight analyzer job inspects the Git diff (`git diff --name-only $CI_MERGE_REQUEST_DIFF_BASE_SHA HEAD`), determines which services were affected, and programmatically generates a minimal `.gitlab-ci-dynamic.yml` file containing jobs _only_ for the affected services. A downstream trigger job (`trigger:include:artifact`) executes this dynamic file as an isolated child pipeline. This keeps the root configuration small, reduces pipeline creation time, and isolates failures.
 
 - Ref: [modules/09-pipeline-performance-monorepos-and-operations.md](../modules/09-pipeline-performance-monorepos-and-operations.md#dynamic-child-pipelines-the-enterprise-monorepo-pattern)
+
 </details>
 
 <details><summary>3. Why does setting `CI_DEBUG_TRACE: "true"` create a catastrophic security risk, and why is this setting particularly dangerous when configured at the Group level?</summary>
@@ -540,6 +542,7 @@ Dynamic Child Pipelines decouple pipeline generation from execution. An initial 
 While GitLab's masking engine replaces exact matches of masked variable strings with `[MASKED]`, shell execution tracing routinely exposes variables when they are transformed, sliced, passed into subshells, or converted into command arguments (e.g., `curl -u $USER:$PASSWORD`). Furthermore, if configured at the Group level, this setting is inherited by all subgroups and repositories. Any build job running in any project across the enterprise will dump all decrypted environment variables and script operations into readable job logs, leading to mass credential exfiltration.
 
 - Ref: [modules/09-pipeline-performance-monorepos-and-operations.md](../modules/09-pipeline-performance-monorepos-and-operations.md#1-the-catastrophic-ci_debug_tracetrue-hazard)
+
 </details>
 
 <details><summary>4. How does the Next-Generation Fleeting runner autoscaling engine differ from the deprecated Docker Machine architecture?</summary>
@@ -554,6 +557,7 @@ The modern **Fleeting** engine is an actively maintained, modular Go architectur
 4. **Executor Modularity**: Powers both `docker-autoscaler` (for container workloads) and `instance` (for direct VM workloads).
 
 - Ref: GitLab Fleeting Architecture Documentation; [modules/09-pipeline-performance-monorepos-and-operations.md](../modules/09-pipeline-performance-monorepos-and-operations.md#4-runner-fleet-autoscaling-spot-instances-and-cost-economics)
+
 </details>
 
 <details><summary>5. What is the behavior of `rules:changes` when evaluated on a scheduled pipeline or a new Git tag push, and how do you prevent unexpected test runs?</summary>
@@ -573,6 +577,7 @@ rules:
 ```
 
 - Ref: [modules/09-pipeline-performance-monorepos-and-operations.md](../modules/09-pipeline-performance-monorepos-and-operations.md#the-scheduled--tag-pipeline-hazard)
+
 </details>
 
 <details><summary>6. How does combining `cache:key:files` with `policy: pull` optimize CI cache hit ratios and network egress in large teams?</summary>
@@ -582,6 +587,7 @@ Setting `cache:key:files: [package-lock.json]` generates a deterministic cache k
 By default, jobs use `policy: pull-push`: they download the cache at the beginning and compress/upload it back to object storage at the end of the job. In test and lint stages, jobs only _read_ dependencies; they do not alter the lockfile. Setting `policy: pull` instructs the runner to download the cache but skip the compression and upload phase upon completion. In a team running hundreds of concurrent test jobs, this saves terabytes of network egress bandwidth and cuts 1–3 minutes off every job run.
 
 - Ref: [modules/09-pipeline-performance-monorepos-and-operations.md](../modules/09-pipeline-performance-monorepos-and-operations.md#optimizing-distributed-cache-hit-ratios)
+
 </details>
 
 <details><summary>7. How does the `interruptible: true` keyword reduce cloud compute expenditure, and on which jobs should it never be applied?</summary>
@@ -599,6 +605,7 @@ When a job has `interruptible: true`, GitLab automatically cancels the running j
 Interrupting these jobs midway leaves infrastructure in an inconsistent, partially deployed, or locked state.
 
 - Ref: [modules/09-pipeline-performance-monorepos-and-operations.md](../modules/09-pipeline-performance-monorepos-and-operations.md#cost-economics-and-pipeline-interruption)
+
 </details>
 
 ---

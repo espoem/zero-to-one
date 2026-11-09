@@ -392,6 +392,7 @@ spec:
 5. The client re-executes the original manifest request, attaching `Authorization: Bearer <jwt>`.
 6. The registry verifies the JWT signature using the auth server's public key, checks the scope claim, and returns `200 OK` with the manifest body and its `Docker-Content-Digest` header.
 7. The client parses the manifest's layer descriptors and initiates `GET /v2/my-repo/my-app/blobs/<layer-digest>` requests using the same bearer token.
+
 </details>
 
 <details><summary>2. How does the OCI Distribution Specification prevent a client from uploading corrupted or truncated filesystem layers during a chunked upload?</summary>
@@ -401,6 +402,7 @@ Data integrity is enforced at three distinct layers:
 1. **Range Validation**: During intermediate `PATCH` requests, the client MUST provide the `Content-Range: <start>-<end>` header. The registry asserts that `<start>` matches its internal current byte offset exactly. If there is a gap or overlap, the registry rejects the chunk with `416 Range Not Satisfiable`.
 2. **Size Enforcement**: The final `PUT` request includes the total expected byte size either in the URL query or via the cumulative length of all committed chunks.
 3. **Cryptographic Commitment**: The final `PUT /v2/<name>/blobs/uploads/<uuid>?digest=<algorithm>:<hash>` forces the registry to compute the cryptographic hash across the concatenated stream of stored chunks. Only if the registry's independently calculated digest strictly matches the client-supplied digest parameter does the registry move the blob into permanent content-addressable storage and return `201 Created`.
+
 </details>
 
 <details><summary>3. Why is deleting an image tag via the registry API fundamentally different from freeing disk space in registry storage?</summary>
@@ -416,6 +418,7 @@ An image's labels, environment variables, entrypoint, and architecture are store
 2. The manifest contains a `config` descriptor specifying the digest and media type of the configuration object (e.g., `application/vnd.oci.image.config.v1+json`).
 3. Skopeo issues a `GET /v2/<name>/blobs/<config-digest>`, downloading solely this small JSON document (~2–8 KB).
 4. Skopeo parses the configuration JSON to extract `Config.Labels`, `Config.Env`, and other metadata, outputting the result to stdout without ever querying or streaming the layer blobs.
+
 </details>
 
 <details><summary>5. What is the OCI v1.1 Referrers API, and how does it solve the problem of attaching supply-chain metadata to an immutable image?</summary>
@@ -424,6 +427,7 @@ Prior to OCI v1.1, attaching a signature or SBOM required either mutating the im
 
 1. The `subject` field inside the OCI Manifest specification, allowing an artifact manifest to declare a direct parent pointer to an existing target manifest's digest.
 2. The `/v2/<name>/referrers/<digest>` API endpoint. When queried with an image's digest, the registry returns an index of all manifests that have declared that digest as their `subject`. This enables bidirectional graph traversal: downstream tools can discover all signatures, attestations, and SBOMs attached to an image without modifying the target image or scanning external databases.
+
 </details>
 
 <details><summary>6. How does a registry pull-through cache operate, and what happens when an upstream image is deleted or modified?</summary>
@@ -433,6 +437,7 @@ A pull-through cache acts as an intercepting proxy between the client and an ups
 1. **Cache Miss**: When a client requests a manifest, the cache proxies the request to the upstream registry, verifies authentication, downloads and caches both the manifest and the underlying blobs locally, and returns them to the client.
 2. **Cache Hit**: Subsequent requests for that digest or tag are served directly from local cache storage, bypassing upstream network transit and rate limits.
 3. **Upstream Changes**: For mutable tags (e.g., `:latest`), the cache sends a conditional HTTP request (`HEAD` or `GET` with `If-None-Match: <etag>`) upstream to check if the manifest digest has changed. If the upstream image is deleted, cache behavior depends on configuration: it can either continue serving the cached artifact (providing build resilience) or return `404 Not Found` if strict upstream synchronization is enforced.
+
 </details>
 
 <details><summary>7. What are the security risks associated with enabling unauthenticated cross-repository blob mounting on a multi-tenant registry?</summary>
@@ -442,6 +447,7 @@ If a registry permits cross-repository blob mounting (`?mount=<digest>&from=<sou
 1. An attacker can guess or brute-force candidate digests of proprietary layers (e.g., containing proprietary binaries or confidential configuration files).
 2. The attacker requests a mount of that digest into their own private repository.
 3. If the mount succeeds (`201 Created`), the attacker downloads the blob directly from their own repository, bypassing read restrictions on the victim's repository. To mitigate this, the OCI specification mandates that registries MUST verify that the client possesses authenticated `pull` permissions on the source repository before fulfilling a cross-repository mount request.
+
 </details>
 
 ---

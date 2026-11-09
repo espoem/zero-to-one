@@ -104,8 +104,8 @@ graph TD
 - Frames are arranged in a logical circular ring. Each frame possesses an atomic 1-bit or counter `usage_bit`.
 - When a page is accessed by a query, its `usage_bit` is set to $1$ via an atomic CAS instruction without acquiring global list locks.
 - When an eviction is needed, the **clock hand** sweeps sequentially through the ring:
-  - If a frame has $\text{usage\_bit} = 1$, the clock hand flips it to $0$ and advances.
-  - If a frame has $\text{usage\_bit} = 0$ and $\text{pin\_count} = 0$, this frame is selected as the **eviction victim**.
+  - If a frame has $\text{usage-bit} = 1$, the clock hand flips it to $0$ and advances.
+  - If a frame has $\text{usage-bit} = 0$ and $\text{pin-count} = 0$, this frame is selected as the **eviction victim**.
 
 ### 3. Advanced Scan-Resistant Policies: 2Q and LIRS
 

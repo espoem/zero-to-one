@@ -613,7 +613,7 @@ Put your knowledge into practice. In each exercise, examine the requirements and
 
 ### Exercise 1: Extracting Async Function Signature & Config Schema
 
-#### Scenario
+**Scenario**
 
 You are integrating an external microservice SDK. The SDK provides a function `fetchServiceConfig` that returns an async configuration payload. Without modifying the SDK source code, derive the concrete unpacked configuration type and the type of its first parameter.
 
@@ -661,7 +661,7 @@ type TestServiceId = Expect<Equal<ServiceId, `svc_${string}`>>;
 
 ### Exercise 2: Discriminated Union Slicing & Value Extraction
 
-#### Scenario
+**Scenario**
 
 Given an analytics event stream consisting of multiple event variants, create type helpers to:
 
@@ -716,7 +716,7 @@ type TestUserInitiatedEvents = Expect<
 
 ### Exercise 3: Array & Const Object to Union Conversion
 
-#### Scenario
+**Scenario**
 
 A frontend team maintains design system token constants. Derive:
 
@@ -757,7 +757,7 @@ type TestBreakpointValue = Expect<Equal<BreakpointValue, 375 | 768 | 1024 | 1440
 
 ### Exercise 4: Dynamic Event Handler Generator with Template Literals
 
-#### Scenario
+**Scenario**
 
 Build a type helper `EventHandlers<Events>` that takes a union of event names (e.g. `"click" | "hover" | "submit"`) and generates an object type where keys are prefixed with `"on"` and capitalized, and each value is an event handler callback function `(event: EventName) => void`.
 
@@ -790,7 +790,7 @@ type TestResultHandlers = Expect<
 
 ### Exercise 5: Robust Generic Entity Store Helper
 
-#### Scenario
+**Scenario**
 
 Create a reusable type helper `EntityState<TEntity, TStatus = "idle">` representing normalized state. Requirements:
 

@@ -19,7 +19,7 @@ A single Redis process is a single point of failure. Replication copies a primar
 - **Replication offset (`master_repl_offset`)**: an unsigned 64-bit monotonically increasing byte counter indicating the cumulative volume of replication stream bytes produced by the primary. Replicas maintain a matching `slave_repl_offset`.
 - **Replication backlog**: a fixed-size circular ring buffer allocated in memory on the primary (`repl-backlog-size`, default 1 MB) storing recent stream bytes so disconnected replicas can resume with a partial resynchronisation.
 - **Dual-stream replication**: the architectural enhancement introduced in Redis 8.0 that decouples bulk snapshot streaming from ongoing command streaming over separate channels to prevent output buffer exhaustion.
-- **Replication backlog window**: the interval $[\text{repl\_backlog\_first\_byte\_offset}, \text{master\_repl\_offset}]$ currently held in the primary's ring buffer.
+- **Replication backlog window**: the interval $[\text{repl-backlog-first-byte-offset}, \text{master-repl-offset}]$ currently held in the primary's ring buffer.
 
 ### 1.2 The handshake
 
@@ -115,7 +115,7 @@ The replication backlog is maintained as a contiguous ring buffer in memory. The
 - `repl_backlog_active`: 1 if active, 0 if no replicas connected and backlog timer expired (`repl-backlog-ttl`, default 3600 seconds).
 - `repl_backlog_size`: Configured maximum buffer capacity in bytes.
 - `repl_backlog_first_byte_offset`: The lowest replication stream offset still stored in the buffer. Any request for an offset below this threshold triggers `+FULLRESYNC`.
-- `repl_backlog_histlen`: Current accumulated byte count stored in the ring buffer ($\le \text{repl\_backlog\_size}$).
+- `repl_backlog_histlen`: Current accumulated byte count stored in the ring buffer ($\le \text{repl-backlog-size}$).
 
 To guarantee that network partitions, Sentinel failovers, or rolling upgrades never degrade into full resynchronisations, calculate minimum backlog capacity using the following formula:
 

@@ -20,6 +20,7 @@ flowchart TD
         EventsAPI["Events Stream (v1/events & events.k8s.io/v1)"]
         KDebug["kubectl debug (Ephemeral Containers & Process Namespace Sharing)"]
         KLogs["kubectl logs (Standard out/err Container Log FIFO Buffers)"]
+        MetricsAPI ~~~ KubeletCadvisor ~~~ EventsAPI ~~~ KDebug ~~~ KLogs
     end
 
     subgraph AppTelemetry["2. Enterprise Telemetry (Cross-Linked: technologies/observability)"]
@@ -27,6 +28,7 @@ flowchart TD
         PromThanos["Prometheus / Thanos / Mimir (Long-term TSDB & PromQL)"]
         LGTM["Grafana Dashboards & Alertmanager (SLO Burn Rates)"]
         Elastic["Elasticsearch / FluentBit / Loki (Centralized Log Indexing)"]
+        OTel ~~~ PromThanos ~~~ LGTM ~~~ Elastic
     end
 
     CoreK8sObservability -.->|"Scraped & Exported to"| AppTelemetry
@@ -363,6 +365,7 @@ Both scenarios result in process termination via `SIGKILL` (Signal 9, producing 
 
 - **OOMKilled**: Triggered by the Linux kernel cgroup memory controller when a container exceeds its `resources.limits.memory` limit. Kubelet observes the kernel cgroup event and sets `lastState.terminated.reason = "OOMKilled"` in the container status.
 - **Graceful Shutdown Timeout**: Occurs when a Pod is being deleted or a liveness probe fails. Kubelet sends `SIGTERM` (Signal 15) and starts the `terminationGracePeriodSeconds` timer (default 30 seconds). If the application fails to cleanly terminate before the timer expires, kubelet forcibly terminates the process with `SIGKILL`. In this case, `lastState.terminated.reason` is typically `Error` or empty, NOT `OOMKilled`.
+
 </details>
 
 <details><summary>2. How does `kubectl debug --target` enable inspection of distroless or scratch containers that lack shell binaries?</summary>
@@ -398,6 +401,7 @@ Follow this systematic 4-step triage sequence:
 2. **Inspect Target Port**: Verify that the Service's `spec.ports[].targetPort` matches the actual port the container application is listening on.
 3. **Inspect NetworkPolicies**: Check if an egress policy on the client pod or an ingress policy on the server pod is dropping traffic.
 4. **Inspect Kube-Proxy**: Check kube-proxy DaemonSet logs on the client node to verify iptables/IPVS/eBPF rules were successfully programmed.
+
 </details>
 
 <details><summary>6. Why does a Pod remain stuck in `Pending` when a persistent volume is configured with `volumeBindingMode: WaitForFirstConsumer`?</summary>

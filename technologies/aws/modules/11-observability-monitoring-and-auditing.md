@@ -39,7 +39,7 @@ flowchart TD
 
 ### 2. Custom Metrics & Pricing Constraints
 
-Publishing metrics via the `PutMetricData` API costs \$0.30 per custom metric per month for the first 10,000 metrics, plus \$0.01 per 1,000 `PutMetricData` requests. In microservice architectures emitting thousands of dimensions, calling `PutMetricData` synchronously introduces:
+Publishing metrics via the `PutMetricData` API costs $0.30 per custom metric per month for the first 10,000 metrics, plus $0.01 per 1,000 `PutMetricData` requests. In microservice architectures emitting thousands of dimensions, calling `PutMetricData` synchronously introduces:
 
 1. **Network Overhead**: Additional HTTP round-trips in request-handling worker threads.
 2. **Cost Explosions**: Combinatorial dimension cardinality (e.g., `CustomerId` $\times$ `OrderId` $\times$ `StatusCode`) creating millions of unique metric streams.
@@ -114,7 +114,7 @@ Instead of making network calls to `monitoring.amazonaws.com`, the application s
 ### Advantages of Embedded Metric Format
 
 1. **Zero Execution Latency**: Writing to `stdout` takes less than 1 millisecond and never blocks application worker threads or database connections.
-2. **Zero `PutMetricData` Costs**: CloudWatch extracts metrics asynchronously from the log ingestion stream at no additional charge. Users pay standard CloudWatch Logs ingestion fees (\$0.50/GB) and standard custom metric storage fees, saving 100% of `PutMetricData` API call costs.
+2. **Zero `PutMetricData` Costs**: CloudWatch extracts metrics asynchronously from the log ingestion stream at no additional charge. Users pay standard CloudWatch Logs ingestion fees ($0.50/GB) and standard custom metric storage fees, saving 100% of `PutMetricData` API call costs.
 3. **Correlation by Design**: Because high-cardinality metadata (such as `OrderId`, `CustomerId`, and `TraceId`) resides in the exact same log event as the metric values, developers can jump directly from a CloudWatch metric anomaly to the precise log event that produced it.
 
 ---
@@ -361,12 +361,12 @@ Selecting the optimal observability and alerting pattern requires evaluating tra
 
 | Telemetry Modality | Primary Ingestion Mechanism | Granularity / Resolution | Cost Driver | Best Use Case |
 | --- | --- | --- | --- | --- |
-| **CloudWatch Standard Metrics** | AWS Native Polling / `PutMetricData` | 1 minute (5-minute default) | \$0.30 / metric / month + API calls | Infrastructure capacity planning, EC2/RDS health |
-| **High-Resolution Custom Metrics** | `PutMetricData` (StorageResolution: 1) | 1 second to 30 seconds | \$0.30 / metric / month + frequent API calls | Sub-minute auto-scaling, critical financial transactions |
-| **Embedded Metric Format (EMF)** | stdout JSON in Lambda / Fargate | Real-time (1 second) | Standard log ingestion (\$0.50/GB) | High-volume microservices, serverless cost optimization |
-| **CloudWatch Logs Insights** | On-demand ad-hoc SQL query | Millisecond timestamps | \$0.005 per GB of log data scanned | Root-cause incident forensics, ad-hoc log querying |
-| **CloudWatch Metric Streams** | Firehose push from CloudWatch | Near real-time (< 1 minute) | \$0.003 / 1,000 metric updates + Firehose | Streaming telemetry to Datadog, Splunk, or S3 Data Lake |
-| **AWS X-Ray / ADOT Tracing** | UDP daemon / OTLP gRPC collector | Sampled request paths | \$5.00 / million traces recorded | Distributed microservice latency bottleneck diagnosis |
+| **CloudWatch Standard Metrics** | AWS Native Polling / `PutMetricData` | 1 minute (5-minute default) | $0.30 / metric / month + API calls | Infrastructure capacity planning, EC2/RDS health |
+| **High-Resolution Custom Metrics** | `PutMetricData` (StorageResolution: 1) | 1 second to 30 seconds | $0.30 / metric / month + frequent API calls | Sub-minute auto-scaling, critical financial transactions |
+| **Embedded Metric Format (EMF)** | stdout JSON in Lambda / Fargate | Real-time (1 second) | Standard log ingestion ($0.50/GB) | High-volume microservices, serverless cost optimization |
+| **CloudWatch Logs Insights** | On-demand ad-hoc SQL query | Millisecond timestamps | $0.005 per GB of log data scanned | Root-cause incident forensics, ad-hoc log querying |
+| **CloudWatch Metric Streams** | Firehose push from CloudWatch | Near real-time (< 1 minute) | $0.003 / 1,000 metric updates + Firehose | Streaming telemetry to Datadog, Splunk, or S3 Data Lake |
+| **AWS X-Ray / ADOT Tracing** | UDP daemon / OTLP gRPC collector | Sampled request paths | $5.00 / million traces recorded | Distributed microservice latency bottleneck diagnosis |
 
 ---
 

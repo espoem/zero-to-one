@@ -22,9 +22,9 @@ flowchart TD
 
 ### The Three Hidden Network Traps
 
-1. **NAT Gateway Data Processing Fee**: While NAT Gateways have a base hourly charge, the primary trap is the **data processing fee**: cloud providers charge $\approx \$0.045$ per GB processed. If a batch compute cluster running in private subnets downloads 50 TB of public container images, package dependencies, or public datasets, the company pays over $\$2,250$ in pure NAT processing overhead alone!
-2. **Inter-Availability Zone (Cross-AZ) Traffic**: In standard cloud regional deployments, network packets crossing Availability Zone boundaries are billed at $\approx \$0.01$ per GB in each direction ($\approx \$0.02$/GB roundtrip). Chatty microservices communicating across AZs over uncompressed JSON can easily exceed the cost of the virtual machines hosting them.
-3. **Public Egress Asymmetry**: Cloud providers charge $\$0.00$ for data transferred _into_ their network (ingress), but charge $\approx \$0.08 - \$0.09$ per GB for data transferred _out_ to the public internet (egress). Bandwidth-heavy distribution platforms face compounding monthly egress penalties.
+1. **NAT Gateway Data Processing Fee**: While NAT Gateways have a base hourly charge, the primary trap is the **data processing fee**: cloud providers charge ≈ $0.045 per GB processed. If a batch compute cluster running in private subnets downloads 50 TB of public container images, package dependencies, or public datasets, the company pays over $2,250 in pure NAT processing overhead alone!
+2. **Inter-Availability Zone (Cross-AZ) Traffic**: In standard cloud regional deployments, network packets crossing Availability Zone boundaries are billed at ≈ $0.01 per GB in each direction (≈ $0.02/GB roundtrip). Chatty microservices communicating across AZs over uncompressed JSON can easily exceed the cost of the virtual machines hosting them.
+3. **Public Egress Asymmetry**: Cloud providers charge $0.00 for data transferred _into_ their network (ingress), but charge ≈ $0.08–$0.09 per GB for data transferred _out_ to the public internet (egress). Bandwidth-heavy distribution platforms face compounding monthly egress penalties.
 
 ## 2. Commitment Discounts: Savings Plans and Reserved Instances
 
@@ -32,8 +32,8 @@ For predictable baseline workloads running 24/7, paying standard on-demand hourl
 
 | Commitment Instrument | Term Commitment | Typical Discount | Flexibility / Portability | Best Suited For |
 | :-- | :-- | :-- | :-- | :-- |
-| **Compute Savings Plans** | 1 or 3 Years ($\$X$/hour spend) | Up to $66\%$ | Highest: Automatically applies across instance families, regions, OS, and Fargate/Lambda | Dynamic organizations with evolving instance architectures |
-| **EC2 Instance Savings Plans** | 1 or 3 Years ($\$X$/hour on instance family) | Up to $72\%$ | Medium: Locked to a specific instance family (e.g. `c6g`) in a specific region | Stable workloads committed to a specific processor tier |
+| **Compute Savings Plans** | 1 or 3 Years ($X/hour spend) | Up to $66\%$ | Highest: Automatically applies across instance families, regions, OS, and Fargate/Lambda | Dynamic organizations with evolving instance architectures |
+| **EC2 Instance Savings Plans** | 1 or 3 Years ($X/hour on instance family) | Up to $72\%$ | Medium: Locked to a specific instance family (e.g. `c6g`) in a specific region | Stable workloads committed to a specific processor tier |
 | **Standard Reserved Instances (RIs)** | 1 or 3 Years (Fixed instances) | Up to $72\%$ | Low: Locked to instance type and region (can be sold on AWS RI Marketplace) | Legacy infrastructure with completely predictable sizing |
 | **Committed Use Discounts (GCP CUDs)** | 1 or 3 Years | Up to $70\%$ | High: Available as Resource-based or Spend-based across Google Cloud services | Steady-state Compute Engine and GKE clusters |
 
@@ -50,7 +50,7 @@ flowchart LR
 
 ## 3. Unit Economics: Beyond Absolute Cloud Spend
 
-Tracking absolute monthly cloud expenditure (e.g., "our AWS bill was \$150,000 this month") is an incomplete and misleading metric. If the business grew revenue by 300% over the same period, an increase in cloud spend is expected and healthy.
+Tracking absolute monthly cloud expenditure (e.g., "our AWS bill was $150,000 this month") is an incomplete and misleading metric. If the business grew revenue by 300% over the same period, an increase in cloud spend is expected and healthy.
 
 **Unit Economics** normalizes cloud infrastructure spend against fundamental business output metrics:
 
@@ -58,9 +58,9 @@ $$\text{Unit Cost} = \frac{\text{Total Cloud Spend}}{\text{Business Value Metric
 
 ### Canonical Unit Metric Examples
 
-- **E-Commerce**: Infrastructure cost per completed checkout transaction (e.g., target: $\le \$0.04$ per order).
+- **E-Commerce**: Infrastructure cost per completed checkout transaction (e.g., target: ≤ $0.04 per order).
 - **Fintech**: Infrastructure cost per processed payment API call.
-- **SaaS Enterprise**: Infrastructure cost per monthly active tenant (e.g., target: $\le \$12.50$ per customer).
+- **SaaS Enterprise**: Infrastructure cost per monthly active tenant (e.g., target: ≤ $12.50 per customer).
 - **Streaming Media**: Infrastructure cost per streamed video hour.
 
 If total cloud spend increases by 20% while business transactions increase by 100%, unit cost drops by 40%—demonstrating superior architectural efficiency and operational scaling.
@@ -138,7 +138,7 @@ The hidden network charge calculations (NAT gateway processing, cross-AZ traffic
 
 <details><summary>1. How can a chatty microservice architecture generate a network bill that vastly exceeds its virtual machine compute costs?</summary>
 
-In cloud hyperscalers, data transferred across Availability Zone boundaries in the same region is billed at $\approx \$0.01$/GB in each direction ($\approx \$0.02$/GB roundtrip), and outbound internet traffic routed through a NAT Gateway incurs a $\$0.045$/GB processing fee. If a microservice cluster transfers 50 TB of uncompressed inter-service RPC payloads across AZs and downloads 20 TB of dependencies through a NAT Gateway, the network transfer fees total $\$1,000 + \$900 = \$1,900$, while the underlying c6g.xlarge instances hosting the services may cost only $\$98$/month.
+In cloud hyperscalers, data transferred across Availability Zone boundaries in the same region is billed at ≈ $0.01/GB in each direction (≈ $0.02/GB roundtrip), and outbound internet traffic routed through a NAT Gateway incurs a $0.045/GB processing fee. If a microservice cluster transfers 50 TB of uncompressed inter-service RPC payloads across AZs and downloads 20 TB of dependencies through a NAT Gateway, the network transfer fees total $1,000 + $900 = $1,900, while the underlying c6g.xlarge instances hosting the services may cost only $98/month.
 </details>
 
 <details><summary>2. Why are cost allocation tags not retroactive in cloud billing engines?</summary>
@@ -148,7 +148,7 @@ Cloud billing engines generate meter records and usage logs in near real time, a
 
 <details><summary>3. Differentiate between Compute Savings Plans and EC2 Instance Savings Plans in AWS.</summary>
 
-Compute Savings Plans provide the greatest flexibility: they commit to an hourly spend (e.g., $\$10$/hour) and automatically apply across all instance families (C, M, R, T), operating systems, AWS regions, and even container/serverless compute (AWS Fargate and AWS Lambda), yielding up to 66% discounts. EC2 Instance Savings Plans provide deeper discounts (up to 72%), but require committing to a specific instance family (e.g., `c6g`) within a specific region (e.g., `us-east-1`), forfeiting cross-family and cross-region portability.
+Compute Savings Plans provide the greatest flexibility: they commit to an hourly spend (e.g., $10/hour) and automatically apply across all instance families (C, M, R, T), operating systems, AWS regions, and even container/serverless compute (AWS Fargate and AWS Lambda), yielding up to 66% discounts. EC2 Instance Savings Plans provide deeper discounts (up to 72%), but require committing to a specific instance family (e.g., `c6g`) within a specific region (e.g., `us-east-1`), forfeiting cross-family and cross-region portability.
 </details>
 
 <details><summary>4. What is the fundamental difference between Showback and Chargeback in organizational FinOps?</summary>

@@ -193,7 +193,7 @@ flowchart TD
 
 | Kubernetes Manifest Field | cgroup v2 File | Kernel Semantics | Mathematical / Algorithmic Effect |
 | :-- | :-- | :-- | :-- |
-| `spec.containers[].resources.requests.cpu` | `cpu.weight` | Proportional CPU share allocation | Normalized scale $[1, 10000]$. $\text{weight} = \left\lfloor \frac{\text{request\_milli} \times 10000}{1000 \times \text{cores}} \right\rfloor$. |
+| `spec.containers[].resources.requests.cpu` | `cpu.weight` | Proportional CPU share allocation | Normalized scale $[1, 10000]$. $\text{weight} = \left\lfloor \frac{\text{request-milli} \times 10000}{1000 \times \text{cores}} \right\rfloor$. |
 | `spec.containers[].resources.limits.cpu` | `cpu.max` | Hard CFS quota limit per period | Format: `"$MAX $PERIOD"`. E.g., `200000 100000` limits execution to 200ms per 100ms wall-clock period (2 CPU cores). |
 | `spec.containers[].resources.requests.memory` | `memory.min` / `memory.low` | Hard & soft memory guarantees | `memory.min` protects pages from reclaim under pressure; `memory.low` provides best-effort protection against background reclaim. |
 | `spec.containers[].resources.limits.memory` | `memory.max` | Hard memory boundary | If `memory.current > memory.max`, the Linux kernel invokes OOM-killer immediately against processes in that cgroup. |
@@ -417,6 +417,7 @@ PLEG (Pod Lifecycle Event Generator) is the internal subsystem within the kubele
 - **Guaranteed**: Hardcoded to `OOMScoreAdjust = -997`. It is virtually immune to OOM termination unless host system daemons face complete starvation.
 - **BestEffort**: Hardcoded to `OOMScoreAdjust = 1000`. It is the first target killed by the kernel during memory exhaustion.
 - **Burstable**: Dynamically calculated using the formula: $$\text{OOMScoreAdjust} = 1000 - \left\lfloor \frac{\text{Pod Memory Request}}{\text{Node Allocatable Memory}} \times 1000 \right\rfloor$$ This yields a score between 2 and 999. Workloads that reserve a large portion of node memory receive a lower score (e.g., reserving 80% yields 200), ensuring they are protected over workloads that reserve only a tiny fraction of node memory.
+
 </details>
 
 <details><summary>4. What is the fundamental difference between `kube-proxy` in iptables mode versus an eBPF-based dataplane like Cilium?</summary>

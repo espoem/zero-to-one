@@ -1,0 +1,12 @@
+{
+  "name": "katex-check",
+  "private": true,
+  "description": "Validates every LaTeX / KaTeX math block and inline span in Markdown files for GitHub rendering compatibility.",
+  "type": "module",
+  "scripts": {
+    "check": "node check.mjs ../.."
+  },
+  "dependencies": {
+    "katex": "0.16.21"
+  }
+}

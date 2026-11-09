@@ -137,6 +137,7 @@ flowchart TD
         Ring["1. Karger Hash Ring: Keys & Nodes mapped to 2^32 ring with virtual nodes"]
         Jump["2. Jump Consistent Hash: O(1) space, O(ln k) time, strictly minimal movement"]
         HRW["3. Rendezvous Hashing (HRW): Highest random weight per node"]
+        Ring ~~~ Jump ~~~ HRW
     end
 ```
 

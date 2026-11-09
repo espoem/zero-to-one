@@ -259,7 +259,7 @@ Failure detection and promotion proceed through precise algorithmic steps:
 - **`FAIL` (Confirmed Failure)**: When a node accumulates gossip `PFAIL` reports from a **majority of master nodes** within $2 \times \text{cluster-node-timeout}$, it promotes the flag to `FAIL` and broadcasts a `FAIL` packet immediately to all bus connections.
 - **Replica election delay**: Replicas of the failed primary do not start elections simultaneously. Each replica calculates an intentional election delay:
 
-$$\text{Election Delay} = 500\text{ ms} + \text{random}(0..500\text{ ms}) + \text{replica\_rank} \times 1000\text{ ms}$$
+$$\text{Election Delay} = 500\text{ ms} + \text{random}(0..500\text{ ms}) + \text{replica-rank} \times 1000\text{ ms}$$
 
 Where `replica_rank` is determined by comparing `slave_repl_offset` among sibling replicas. The replica with the highest offset (most up to date) has rank 0 and fires its election request after $500..1000\text{ ms}$. Replicas that lag behind wait additional seconds, preventing split votes and election churn.
 

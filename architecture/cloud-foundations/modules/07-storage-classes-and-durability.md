@@ -35,11 +35,11 @@ Cloud object storage offers tiered pricing based on access frequency:
 
 | Storage Class Tier | Base Storage Cost | Retrieval Fee Per GB | Minimum Retention Duration | First-Byte Read Latency |
 | :-- | :-- | :-- | :-- | :-- |
-| **Standard / Hot** | $\approx \$0.023$ / GB-mo | $\$0.00$ | None (0 Days) | Milliseconds ($\approx 10 - 50\text{ ms}$) |
-| **Infrequent Access (Cool)** | $\approx \$0.0125$ / GB-mo | $\approx \$0.01$ / GB | 30 Days | Milliseconds |
-| **Glacier Instant Retrieval** | $\approx \$0.004$ / GB-mo | $\approx \$0.03$ / GB | 90 Days | Milliseconds |
-| **Glacier Flexible (Cold)** | $\approx \$0.0036$ / GB-mo | $\approx \$0.01$ / GB | 90 Days | Minutes to Hours ($1 - 5\text{ hours}$) |
-| **Deep Archive** | $\approx \$0.00099$ / GB-mo | $\approx \$0.02$ / GB | 180 Days | Hours ($12 - 48\text{ hours}$) |
+| **Standard / Hot** | ≈ $0.023 / GB-mo | $0.00 | None (0 Days) | Milliseconds ($\approx 10 - 50\text{ ms}$) |
+| **Infrequent Access (Cool)** | ≈ $0.0125 / GB-mo | ≈ $0.01 / GB | 30 Days | Milliseconds |
+| **Glacier Instant Retrieval** | ≈ $0.004 / GB-mo | ≈ $0.03 / GB | 90 Days | Milliseconds |
+| **Glacier Flexible (Cold)** | ≈ $0.0036 / GB-mo | ≈ $0.01 / GB | 90 Days | Minutes to Hours ($1 - 5\text{ hours}$) |
+| **Deep Archive** | ≈ $0.00099 / GB-mo | ≈ $0.02 / GB | 180 Days | Hours ($12 - 48\text{ hours}$) |
 
 ### The Early Deletion Penalty Trap
 

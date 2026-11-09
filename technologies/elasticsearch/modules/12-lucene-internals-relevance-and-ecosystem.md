@@ -145,7 +145,7 @@ Where:
 
 `segments_per_tier` defines how many segments of roughly equal size are allowed before triggering a merge. For an index of total size $S$, the steady-state segment count scales logarithmically:
 
-$$N_{\text{segments}} \approx \text{segments\_per\_tier} \cdot \log_{10}\left(\frac{S}{\text{floor\_segment}}\right)$$
+$$N_{\text{segments}} \approx \text{segments-per-tier} \cdot \log_{10}\left(\frac{S}{\text{floor-segment}}\right)$$
 
 #### OS page cache vs JVM heap budget
 

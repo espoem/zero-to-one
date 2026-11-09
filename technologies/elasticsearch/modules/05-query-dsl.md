@@ -132,7 +132,7 @@ A `bool` with only `must_not` matches every other document with score 0 (test `m
 ### 4.2 Other compound queries
 
 - **`constant_score`**: wraps a filter and gives every match the `boost` (test `constant_score gives every match exactly the boost`).
-- **`dis_max`**: $S = \max_i S_i + \text{tie\_breaker} \cdot \big(\sum_i S_i - \max_i S_i\big)$.
+- **`dis_max`**: $S = \max_i S_i + \text{tie-breaker} \cdot \big(\sum_i S_i - \max_i S_i\big)$.
 - **`boosting`**: `positive` query, with matches of `negative` multiplied by `negative_boost` (demote, do not exclude).
 - **`function_score`**: combines a query score with functions (`field_value_factor`, decay functions `gauss`/`exp`/`linear`, `random_score`, `script_score`, `weight`), with `score_mode` (how functions combine: `multiply`, `sum`, `avg`, `first`, `max`, `min`) and `boost_mode` (how the result combines with the query score: also `replace`). Fixture `16-function-score` blends relevance with `log1p(rating)` and a Gaussian recency decay:
 

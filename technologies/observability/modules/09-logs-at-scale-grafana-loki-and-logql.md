@@ -184,7 +184,7 @@ export class LokiIngesterSimulator {
 | **Index Architecture** | Full-text inverted index over every token and field | Label index (TSDB) + unindexed compressed log chunks in object storage |
 | **Storage Cost** | High (50%–150% storage overhead for inverted index) | Ultra-low (object storage S3/GCS; index is small fraction of raw size) |
 | **High-Cardinality Fields** | Indexed natively, causing severe JVM heap pressure | Handled via **Structured Metadata** (indexed without stream explosion) |
-| **Agent Ecosytem** | Filebeat / Fluentd / Logstash | Promtail (EOL Mar 2026) \(\rightarrow\) **Grafana Alloy** |
+| **Agent Ecosytem** | Filebeat / Fluentd / Logstash | Promtail (EOL Mar 2026) $\rightarrow$ **Grafana Alloy** |
 
 ---
 
@@ -233,6 +233,7 @@ LogQL metric queries convert log fields into numerical series using parsers:
 ```logql
 quantile_over_time(0.95, {job="payment-api"} | json | unwrap latency_ms [5m])
 ```
+
 </details>
 
 <details><summary>5. What happens when a Loki stream receives log lines out of order?</summary>

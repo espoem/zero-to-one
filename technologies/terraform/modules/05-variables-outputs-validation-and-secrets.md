@@ -373,6 +373,7 @@ During planning, `aws_eip.lb.public_ip` evaluates to `cty.UnknownVal`. Terraform
 Setting `sensitive = true` instructs Terraform Core's UI and logging subsystems to redact the value from standard output, execution plans, and console logs, replacing it with `(sensitive value)`. However, `sensitive = true` does not perform cryptographic encryption on the underlying data. When Terraform persists resource metadata to the state backend (such as an S3 bucket or local `.tfstate` file), the sensitive attribute is written in cleartext, unencrypted JSON. Any user or service account with read access to the state file can extract the password directly. True protection requires client-side state encryption (as in OpenTofu), access-controlled remote backends, or Terraform 1.10+ ephemeral values and write-only arguments.
 
 - Ref: HashiCorp Security Advisory: Sensitive Data in State.
+
 </details>
 
 <details><summary>2. How do Terraform 1.10's `ephemeral` variables and Terraform 1.11's `_wo` write-only arguments eliminate secret persistence in `.tfstate`?</summary>
@@ -380,6 +381,7 @@ Setting `sensitive = true` instructs Terraform Core's UI and logging subsystems 
 `ephemeral = true` on a variable mandates that the value exist strictly in volatile memory during the active execution turn. The compiler strictly forbids ephemeral values from being serialized into plan files or standard state resources. Terraform 1.11 pairs this with write-only provider arguments (`_wo`). When an ephemeral secret is passed to a `_wo` argument, Terraform Core transmits the value over the gRPC IPC boundary directly to the provider's `ApplyResourceChange` RPC. The provider sends the secret over TLS to the cloud API, but omits the attribute when returning the resulting state payload back to Core. As a result, the secret is never persisted to `.tfplan` or `.tfstate`.
 
 - Ref: Terraform 1.10 & 1.11 Release Notes: Ephemeral & Write-Only Attributes.
+
 </details>
 
 <details><summary>3. Contrast the operational lifecycle and failure behavior of `precondition`, `postcondition`, and `check` blocks.</summary>
@@ -389,6 +391,7 @@ Setting `sensitive = true` instructs Terraform Core's UI and logging subsystems 
 3. `check`: Continuous, out-of-band monitoring evaluated during every plan and apply. If an assertion in a `check` block evaluates to `false`, Terraform emits a diagnostic warning to the console, but **never aborts** graph execution or alters state.
 
 - Ref: Terraform Language: Custom Conditions Specification.
+
 </details>
 
 <details><summary>4. List the variable definition sources in order of evaluation precedence from highest to lowest.</summary>
@@ -403,6 +406,7 @@ From highest precedence (overrides all others) to lowest:
 6. Default values defined in the `variable` block.
 
 - Ref: Terraform CLI: Variable Definition Precedence.
+
 </details>
 
 <details><summary>5. What occurs if a variable is declared with `nullable = false` and a caller explicitly assigns `var_name = null`?</summary>
@@ -410,6 +414,7 @@ From highest precedence (overrides all others) to lowest:
 When `nullable = false` is configured, Terraform forbids explicit assignment of `null`. If a default value is defined, Terraform does not fail; it automatically discards the `null` assignment and substitutes the declared default value. If no default value is defined, Terraform raises an immediate type validation error during the plan phase, stating that the variable does not permit null values.
 
 - Ref: Terraform Language: Variable Configuration Attributes: `nullable`.
+
 </details>
 
 <details><summary>6. Why does evaluating a `precondition` that depends on an unknown value abort execution during `terraform plan`?</summary>
@@ -417,6 +422,7 @@ When `nullable = false` is configured, Terraform forbids explicit assignment of 
 Preconditions are fatal assertion gates. If a precondition's condition expression references an attribute marked `(known after apply)`, the expression evaluates to an unknown boolean (`cty.UnknownVal`) under Kleene logic. Terraform cannot definitively determine whether the invariant is satisfied or violated. To prevent provisioning infrastructure based on unvalidated assumptions, Terraform rejects the plan with an error indicating that the precondition cannot be verified until apply time.
 
 - Ref: Terraform Core Evaluation Engine: Condition Evaluation.
+
 </details>
 
 <details><summary>7. How does HashiCorp Vault integrate with Terraform to provide dynamic, short-lived credentials rather than static secrets?</summary>
@@ -424,6 +430,7 @@ Preconditions are fatal assertion gates. If a precondition's condition expressio
 Rather than storing static cloud credentials in Terraform variables or configuration files, Terraform leverages the Vault provider (`vault_aws_access_credentials`). Terraform authenticates to Vault using a machine identity (e.g., OIDC or AWS IAM auth) and requests an ephemeral credential lease. Vault dynamically generates short-lived IAM access keys with a bounded time-to-live (e.g., 15 minutes). Terraform consumes these credentials to provision infrastructure, and upon completion of the apply phase, Vault automatically revokes the IAM keys, eliminating long-term credential leakage.
 
 - Ref: HashiCorp Vault Secrets Engine for AWS.
+
 </details>
 
 ---

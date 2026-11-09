@@ -139,6 +139,7 @@ function generateMultiSourceManifests(sources: ApplicationSource[]): KubernetesM
 Multi-source applications allow combining a remote Helm chart repository source with a separate Git repository containing environment-specific values files or patches. This decouples upstream vendor chart lifecycles from internal enterprise configuration overlays without requiring umbrella charts or Git submodules.
 
 - Ref: [Module 03 Deep Dive](#2-deep-dive-into-supported-source-types)
+
 </details>
 
 <details><summary>2. What causes endless synchronization loops when deploying Helm charts via Argo CD?</summary>
@@ -146,6 +147,7 @@ Multi-source applications allow combining a remote Helm chart repository source 
 Endless sync loops occur when Helm templates utilize non-deterministic functions such as `randAlphaNum`, `uuidv4`, or `now`. Every time Argo CD reconciles, the repo-server re-renders the templates, producing different checksums that diverge from live resources.
 
 - Ref: [Module 03 Production Failure Modes](#5-production-failure-modes-and-gotchas)
+
 </details>
 
 <details><summary>3. When should an operator choose a sidecar Config Management Plugin (CMP) over built-in Kustomize or Helm support?</summary>
@@ -153,6 +155,7 @@ Endless sync loops occur when Helm templates utilize non-deterministic functions
 Operators choose sidecar CMPs when utilizing proprietary or niche manifest generation tools such as Pulumi YAML, Jsonnet, CDK8s, or custom organizational generators that are not natively supported by Argo CD's built-in engines.
 
 - Ref: [Module 03 Deep Dive](#2-deep-dive-into-supported-source-types)
+
 </details>
 
 <details><summary>4. Explain the security isolation model of Argo CD Config Management Plugins.</summary>
@@ -160,6 +163,7 @@ Operators choose sidecar CMPs when utilizing proprietary or niche manifest gener
 CMPs run as independent sidecar containers alongside `argocd-repo-server`. They communicate with the repo-server over a local gRPC socket, ensuring that custom plugin code executes within isolated container boundaries with controlled filesystem access.
 
 - Ref: [Module 03 Deep Dive](#2-deep-dive-into-supported-source-types)
+
 </details>
 
 <details><summary>5. How does Argo CD handle `targetRevision` semantics when pinned to Git tags versus branches?</summary>
@@ -167,6 +171,7 @@ CMPs run as independent sidecar containers alongside `argocd-repo-server`. They 
 Pinning to a Git tag or exact commit SHA guarantees immutable and reproducible deployments. Pinning to a branch name (e.g., `main`) tracks HEAD; any push to that branch automatically triggers reconciliation, which is suitable for staging environments but risky for production.
 
 - Ref: [Module 03 Deep Dive](#2-deep-dive-into-supported-source-types)
+
 </details>
 
 <details><summary>6. What is the role of `repo-server` caching in multi-source manifest generation?</summary>
@@ -174,6 +179,7 @@ Pinning to a Git tag or exact commit SHA guarantees immutable and reproducible d
 The repo-server computes content hashes combining commit SHAs of all referenced sources and parameter sets, querying Redis to retrieve previously rendered manifest sets, avoiding redundant clone and rendering operations during periodic reconciliation cycles.
 
 - Ref: [Module 03 Introduction](#1-introduction-and-manifest-source-paradigms)
+
 </details>
 
 ## 7. Proof Map

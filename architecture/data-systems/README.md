@@ -99,26 +99,6 @@ Full certification domain mappings and question banks:
 - **[exams/README.md](./exams/README.md)**: Examination coverage matrix mapping all 12 domains to modules and executable tests with 100% full coverage (zero gaps).
 - **[exams/interview.md](./exams/interview.md)**: 65 original technical interview questions across difficulty levels 1–3, with comprehensive explanations, distractor analysis, and a 60-minute full mock examination with scoring rubrics.
 
-### [Module 09 — Caching Theory, Cache Stampedes & Invalidation](./modules/09-caching-theory-and-consistency.md)
-
-- **Concepts**: Cache topologies (Cache-Aside, Read-Through, Write-Through, Write-Back), cache invalidation dual-write race conditions, the Cache Stampede (Thundering Herd) failure mode, probabilistic early expiration via the XFetch algorithm, and Window TinyLFU (W-TinyLFU) frequency admission filtering.
-- **Runnable Example**: [`examples/09-cache-xfetch.test.ts`](./examples/09-cache-xfetch.test.ts)
-
-### [Module 10 — Encoding, Binary Serialization & Schema Evolution](./modules/10-encoding-serialization-and-schema-evolution.md)
-
-- **Concepts**: Text vs. binary encoding formats, Variable-Length Quantity (Varint) 7-bit continuation masks, ZigZag signed integer bitwise mapping, Protocol Buffers wire types and field tags, Apache Avro tagless binary encoding and schema resolution, schema evolution compatibility rules (Backward, Forward, Full), and Schema Registries in distributed event streaming.
-- **Runnable Example**: [`examples/10-schema-evolution.test.ts`](./examples/10-schema-evolution.test.ts)
-
-### [Module 11 — Stream Processing, Event Logs & Compaction](./modules/11-stream-processing-and-event-logs.md)
-
-- **Concepts**: The append-only commit log abstraction, consumer groups and partition assignment rebalancing (Eager vs. Incremental Cooperative), the Stream-Table Duality ($\text{Table} = \int \text{Stream} \, dt$), log compaction and tombstone retention windows, processing-time vs. event-time, Watermark progress tracking, and Exactly-Once Semantics (EOS).
-- **Runnable Example**: [`examples/11-stream-table-duality.test.ts`](./examples/11-stream-table-duality.test.ts)
-
-### [Module 12 — Architectural Decision Matrix, CAP/PACELC & Polyglot Persistence](./modules/12-architectural-decision-matrix-and-polyglot-persistence.md)
-
-- **Concepts**: Workload taxonomy (OLTP vs. OLAP vs. HTAP), Brewer's CAP Theorem formal bounds, Abadi's PACELC classification (Spanner PC/EC vs. Cassandra/Dynamo PA/EL), the comprehensive architectural decision matrix, and polyglot persistence design patterns.
-- **Runnable Examples**: All test suites (01–12)
-
 ---
 
 ## 3. Fast-Lookup References & Glossaries

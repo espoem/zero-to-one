@@ -1571,7 +1571,7 @@ What is the primary operational advantage of pre-compiling bytecode via `UV_COMP
 
 ### Scenario 1: Debugging Memory Leaks & The CPython Object Model (10 Points)
 
-#### Problem Statement:
+**Problem Statement:**
 
 A production streaming microservice processes 50,000 JSON events per second. Over 6 hours, memory consumption grows monotonically from 200MB to 16GB until the Kubernetes OOM-killer terminates the pod. An engineer captured the following class definitions from the core pipeline:
 
@@ -1592,7 +1592,7 @@ class EventNode:
         print(f"Cleaning up event {self.event_id}")
 ```
 
-#### Questions:
+**Questions:**
 
 1. Explain why this design leads to unbounded memory growth in Python, identifying the exact interaction between reference counting, reference cycles, and the `__del__` method. (4 Points)
 2. In Python 3.4+ (PEP 442), how did cyclic GC handling of `__del__` change, and why did this service still experience memory bloat? (3 Points)
@@ -1637,7 +1637,7 @@ class EventNode:
 
 ### Scenario 2: High-Throughput Async Pipeline with Backpressure (10 Points)
 
-#### Problem Statement:
+**Problem Statement:**
 
 An asynchronous ingest service receives events via a WebSocket connection and persists them to PostgreSQL. Under traffic spikes, the following implementation crashes with `OutOfMemoryError`:
 
@@ -1648,7 +1648,7 @@ async def on_message(ws, db_pool):
         asyncio.create_task(process_and_save(raw_msg, db_pool))
 ```
 
-#### Questions:
+**Questions:**
 
 1. Identify the fundamental architectural defect and explain how unbounded task creation bypasses database connection pool limits. (3 Points)
 2. Explain the difference in failure handling between `asyncio.gather()` and `asyncio.TaskGroup()`. (3 Points)
@@ -1699,11 +1699,11 @@ async def ingest_pipeline(ws, db_pool, max_concurrency: int = 20, max_queue: int
 
 ### Scenario 3: Metaprogramming & Type Safety with PEP 695 & Descriptors (10 Points)
 
-#### Problem Statement:
+**Problem Statement:**
 
 An enterprise framework requires a validation library where data classes validate field types and bounds at runtime while remaining completely transparent to static type checkers like `mypy` and `pyright`.
 
-#### Questions:
+**Questions:**
 
 1. Explain why descriptors must define `__set_name__` (PEP 487) when managing instance attributes, and what bug occurs if attribute names are hardcoded. (3 Points)
 2. Explain the difference between `TypeGuard` and PEP 742 `TypeIs` when designing type validators. (3 Points)
@@ -1749,11 +1749,11 @@ class ValidatedField[T]:
 
 ### Scenario 4: Concurrency Architecture: Free-Threading vs Subinterpreters vs Multiprocessing (10 Points)
 
-#### Problem Statement:
+**Problem Statement:**
 
 You are designing a high-compute fraud detection engine that evaluates complex machine learning feature pipelines over incoming banking transactions. The system runs on a 64-core Linux server and requires sub-10ms response times.
 
-#### Questions:
+**Questions:**
 
 1. Analyze the performance, IPC latency, and memory isolation trade-offs of the three primary Python concurrency models:
    - Traditional `multiprocessing` (with `spawn`).

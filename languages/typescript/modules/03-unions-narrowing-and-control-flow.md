@@ -462,7 +462,7 @@ type Equal<X, Y> =
 
 ### Exercise 3.1: The Resilient Async State Machine
 
-#### Problem Description
+**Problem Description**
 
 Design a discriminated union `AsyncData<T>` that represents four distinct states:
 
@@ -473,7 +473,7 @@ Design a discriminated union `AsyncData<T>` that represents four distinct states
 
 Write an exhaustive message formatter `getDisplayMessage<T>(state: AsyncData<T>): string` utilizing an `assertNever` check in the default branch.
 
-#### Starter Code
+**Starter Code**
 
 ```typescript
 // TODO: Define AsyncData<T>
@@ -489,12 +489,12 @@ type TestIdle = AsyncData<string> extends { status: 'idle' } ? true : false;
 type Test2 = Expect<Equal<TestIdle, true>>;
 ```
 
-#### Hints
+**Hints**
 
 1. Each variant must contain `status: "idle" | "loading" | "success" | "error"`.
 2. In the `switch`, handle every case and call `assertNever(state)` in the `default` branch.
 
-#### Step-by-Step Solution
+**Step-by-Step Solution**
 
 ```typescript
 // 1. Define the discriminated union:
@@ -537,7 +537,7 @@ type Test2 = Expect<Equal<TestSuccess, true>>;
 
 ### Exercise 3.2: Normalized Pipeline Error Handler
 
-#### Problem Description
+**Problem Description**
 
 Write a utility function `normalizeError` that takes an `unknown` error caught in a try/catch block and normalizes it into a standardized `{ message: string; statusCode: number }` object:
 
@@ -546,7 +546,7 @@ Write a utility function `normalizeError` that takes an `unknown` error caught i
 - If the error is a string, return `statusCode: 500` and the string.
 - For all other unknown types, return `statusCode: 500` and `"An unexpected error occurred"`.
 
-#### Starter Code
+**Starter Code**
 
 ```typescript
 class HttpError extends Error {
@@ -570,12 +570,12 @@ function normalizeError(error: unknown): NormalizedError {
 }
 ```
 
-#### Hints
+**Hints**
 
 1. Order your checks: test `error instanceof HttpError` before `error instanceof Error`.
 2. Check `typeof error === "string"` for string errors.
 
-#### Step-by-Step Solution
+**Step-by-Step Solution**
 
 ```typescript
 class HttpError extends Error {
@@ -634,7 +634,7 @@ const unknownErr = normalizeError({ random: 123 });
 
 ### Exercise 3.4: Type-Safe Result Tuple Unwrapper
 
-#### Problem Description
+**Problem Description**
 
 In functional programming, operations often return a Result tuple:
 
@@ -647,7 +647,7 @@ Write a helper function `unwrapResult<T, E>(result: Result<T, E>): T` that:
 - If `result[0]` is `true`, returns the unwrapped value `result[1]`.
 - If `result[0]` is `false`, throws `result[1]` (if it is an `Error`) or throws a new `Error` wrapping the string representation of `result[1]`.
 
-#### Starter Code
+**Starter Code**
 
 ```typescript
 type Result<T, E = Error> = [ok: true, value: T] | [ok: false, error: E];
@@ -663,12 +663,12 @@ const unwrapped = unwrapResult(successResult);
 type TestUnwrapped = Expect<Equal<typeof unwrapped, number>>;
 ```
 
-#### Hints
+**Hints**
 
 1. Check `if (result[0] === true)`. Inside this branch, `result[1]` is narrowed to `T`.
 2. In the `false` branch, narrow `result[1]` with `instanceof Error`.
 
-#### Step-by-Step Solution
+**Step-by-Step Solution**
 
 ```typescript
 type Result<T, E = Error> = [ok: true, value: T] | [ok: false, error: E];

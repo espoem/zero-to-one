@@ -1218,7 +1218,7 @@ A healthcare conglomerate must retain digital patient medical charts for 10 year
 
 <details><summary>Answer</summary>
 
-**C.** Amazon S3 Glacier Deep Archive is AWS's lowest-cost cloud storage tier (costing approximately \$0.00099 per GB-month). Designed for long-term data retention (7 to 10+ years) where retrieval delays of 12 to 48 hours are acceptable, it provides the optimal price point for regulatory medical archives.
+**C.** Amazon S3 Glacier Deep Archive is AWS's lowest-cost cloud storage tier (costing approximately $0.00099 per GB-month). Designed for long-term data retention (7 to 10+ years) where retrieval delays of 12 to 48 hours are acceptable, it provides the optimal price point for regulatory medical archives.
 
 - Why not A: Standard-IA costs roughly 10× more per gigabyte per month than Glacier Deep Archive for long-term retention.
 - Why not B: Glacier Instant Retrieval is designed for millisecond retrievals and costs approximately 4× more for storage than Glacier Deep Archive.

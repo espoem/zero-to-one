@@ -12,51 +12,45 @@ A rapid reference for configuring `wrangler.jsonc`, managing capability bindings
   "name": "edge-service-api",
   "main": "src/index.ts",
   "compatibility_date": "2026-11-01",
-  "compatibility_flags": [
-    "nodejs_compat"
-  ],
+  "compatibility_flags": ["nodejs_compat"],
   "assets": {
     "directory": "./public",
     "binding": "ASSETS",
-    "not_found_handling": "single-page-application"
+    "not_found_handling": "single-page-application",
   },
-  "kv_namespaces": [
-    { "binding": "CACHE_KV", "id": "0123456789abcdef0123456789abcdef" }
-  ],
+  "kv_namespaces": [{ "binding": "CACHE_KV", "id": "0123456789abcdef0123456789abcdef" }],
   "durable_objects": {
-    "bindings": [
-      { "name": "CHAT_ROOM", "class_name": "ChatRoom" }
-    ]
+    "bindings": [{ "name": "CHAT_ROOM", "class_name": "ChatRoom" }],
   },
-  "migrations": [
-    { "tag": "v1", "new_sqlite_classes": ["ChatRoom"] }
-  ],
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["ChatRoom"] }],
   "d1_databases": [
-    { "binding": "DB", "database_name": "prod-db", "database_id": "xxxx-xxxx-xxxx" }
+    { "binding": "DB", "database_name": "prod-db", "database_id": "xxxx-xxxx-xxxx" },
   ],
-  "r2_buckets": [
-    { "binding": "BUCKET", "bucket_name": "media-storage" }
-  ],
+  "r2_buckets": [{ "binding": "BUCKET", "bucket_name": "media-storage" }],
   "queues": {
-    "producers": [
-      { "binding": "INGEST_QUEUE", "queue": "ingest-events" }
-    ],
+    "producers": [{ "binding": "INGEST_QUEUE", "queue": "ingest-events" }],
     "consumers": [
-      { "queue": "ingest-events", "max_batch_size": 50, "max_batch_timeout": 5, "max_retries": 3, "dead_letter_queue": "ingest-events-dlq" }
-    ]
+      {
+        "queue": "ingest-events",
+        "max_batch_size": 50,
+        "max_batch_timeout": 5,
+        "max_retries": 3,
+        "dead_letter_queue": "ingest-events-dlq",
+      },
+    ],
   },
   "workflows": [
-    { "name": "order-fulfillment", "binding": "FULFILLMENT_WORKFLOW", "class_name": "OrderWorkflow" }
+    {
+      "name": "order-fulfillment",
+      "binding": "FULFILLMENT_WORKFLOW",
+      "class_name": "OrderWorkflow",
+    },
   ],
-  "services": [
-    { "binding": "AUTH_SERVICE", "service": "auth-worker" }
-  ],
-  "hyperdrive": [
-    { "binding": "HYPERDRIVE", "id": "yyyyyyyyyyyyyyyy" }
-  ],
+  "services": [{ "binding": "AUTH_SERVICE", "service": "auth-worker" }],
+  "hyperdrive": [{ "binding": "HYPERDRIVE", "id": "yyyyyyyyyyyyyyyy" }],
   "vars": {
-    "ENVIRONMENT": "production"
-  }
+    "ENVIRONMENT": "production",
+  },
 }
 ```
 
@@ -87,14 +81,12 @@ A rapid reference for configuring `wrangler.jsonc`, managing capability bindings
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     // Extend execution life beyond response return
-    ctx.waitUntil(
-      logAnalyticsEvent(request.headers.get("cf-ray"), Date.now())
-    );
+    ctx.waitUntil(logAnalyticsEvent(request.headers.get('cf-ray'), Date.now()));
 
     // Failover directly to origin if uncaught runtime exception occurs
     ctx.passThroughOnException();
 
-    return new Response("OK", { status: 200 });
+    return new Response('OK', { status: 200 });
   },
 
   async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
@@ -110,7 +102,7 @@ export default {
         msg.retry({ delaySeconds: 10 });
       }
     }
-  }
+  },
 };
 ```
 
@@ -122,29 +114,36 @@ export default {
 
 ```typescript
 // Read with explicit cache TTL and response type
-const data = await env.CACHE_KV.get<UserProfile>("user:42", { type: "json", cacheTtl: 300 });
+const data = await env.CACHE_KV.get<UserProfile>('user:42', { type: 'json', cacheTtl: 300 });
 
 // Put with TTL expiration and custom metadata
-await env.CACHE_KV.put("session:abc", JSON.stringify(session), {
+await env.CACHE_KV.put('session:abc', JSON.stringify(session), {
   expirationTtl: 86400,
-  metadata: { role: "admin", createdAt: Date.now() }
+  metadata: { role: 'admin', createdAt: Date.now() },
 });
 
 // Paginated listing
-const { keys, cursor, list_complete } = await env.CACHE_KV.list({ prefix: "session:", limit: 100 });
+const { keys, cursor, list_complete } = await env.CACHE_KV.list({ prefix: 'session:', limit: 100 });
 ```
 
 ### Durable Objects (`env.DO`)
 
 ```typescript
 export class ChatRoom implements DurableObject {
-  constructor(private state: DurableObjectState, private env: Env) {}
+  constructor(
+    private state: DurableObjectState,
+    private env: Env,
+  ) {}
 
   async fetch(request: Request): Promise<Response> {
     // In-memory SQLite transaction with automatic rollback
     const result = this.state.storage.transactionSync(() => {
-      this.state.storage.sql.exec("INSERT INTO messages (user, text) VALUES (?, ?)", "Alice", "Hello");
-      return this.state.storage.sql.exec("SELECT count(*) as total FROM messages").toArray();
+      this.state.storage.sql.exec(
+        'INSERT INTO messages (user, text) VALUES (?, ?)',
+        'Alice',
+        'Hello',
+      );
+      return this.state.storage.sql.exec('SELECT count(*) as total FROM messages').toArray();
     });
 
     // Schedule an alarm
@@ -155,7 +154,9 @@ export class ChatRoom implements DurableObject {
 
   async alarm(): Promise<void> {
     // Scheduled actor maintenance
-    this.state.storage.sql.exec("DELETE FROM messages WHERE created_at < datetime('now', '-7 days')");
+    this.state.storage.sql.exec(
+      "DELETE FROM messages WHERE created_at < datetime('now', '-7 days')",
+    );
   }
 }
 ```
@@ -165,36 +166,41 @@ export class ChatRoom implements DurableObject {
 ```typescript
 // Parameterized query execution
 const { results, success, meta } = await env.DB.prepare(
-  "SELECT id, username, email FROM users WHERE org_id = ? AND status = ?"
-).bind(orgId, "active").all<UserRow>();
+  'SELECT id, username, email FROM users WHERE org_id = ? AND status = ?',
+)
+  .bind(orgId, 'active')
+  .all<UserRow>();
 
 // Batch execution in a single network round-trip
 const batchResults = await env.DB.batch([
-  env.DB.prepare("UPDATE accounts SET balance = balance - ? WHERE id = ?").bind(100, accountA),
-  env.DB.prepare("UPDATE accounts SET balance = balance + ? WHERE id = ?").bind(100, accountB),
+  env.DB.prepare('UPDATE accounts SET balance = balance - ? WHERE id = ?').bind(100, accountA),
+  env.DB.prepare('UPDATE accounts SET balance = balance + ? WHERE id = ?').bind(100, accountB),
 ]);
 
 // Read-your-writes sequential consistency with Sessions API
 const bookmark = session.getBookmark();
 const sessionDb = env.DB.withSession(bookmark);
-const freshData = await sessionDb.prepare("SELECT balance FROM accounts WHERE id = ?").bind(accountA).first();
+const freshData = await sessionDb
+  .prepare('SELECT balance FROM accounts WHERE id = ?')
+  .bind(accountA)
+  .first();
 ```
 
 ### R2 Object Storage (`env.BUCKET`)
 
 ```typescript
 // Put binary stream with custom metadata and Content-Type
-await env.BUCKET.put("reports/monthly.pdf", pdfStream, {
-  httpMetadata: { contentType: "application/pdf" },
-  customMetadata: { generatedBy: "billing-cron" }
+await env.BUCKET.put('reports/monthly.pdf', pdfStream, {
+  httpMetadata: { contentType: 'application/pdf' },
+  customMetadata: { generatedBy: 'billing-cron' },
 });
 
 // Get object stream
-const object = await env.BUCKET.get("reports/monthly.pdf");
-if (!object) return new Response("Not Found", { status: 404 });
+const object = await env.BUCKET.get('reports/monthly.pdf');
+if (!object) return new Response('Not Found', { status: 404 });
 
 // Multipart Upload for large objects
-const multipart = await env.BUCKET.createMultipartUpload("backups/large.tar.gz");
+const multipart = await env.BUCKET.createMultipartUpload('backups/large.tar.gz');
 const part1 = await multipart.uploadPart(1, chunk1);
 await multipart.complete([{ partNumber: 1, etag: part1.etag }]);
 ```
@@ -214,4 +220,4 @@ await multipart.complete([{ partNumber: 1, etag: part1.etag }]);
 | KV Max Value Size | 25 MiB | 25 MiB |
 | KV Eventual Propagation Delay | 60 s edge TTL default | 60 s edge TTL default |
 | D1 Max Database Size | 500 MB | 10 GB (standard tier) |
-| R2 Egress Bandwidth Fees | \$0.00 / GB | \$0.00 / GB (zero egress fee model) |
+| R2 Egress Bandwidth Fees | $0.00 / GB | $0.00 / GB (zero egress fee model) |

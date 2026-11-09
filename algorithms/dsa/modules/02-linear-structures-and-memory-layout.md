@@ -116,7 +116,7 @@ flowchart LR
 
 ### Invariants & Wrap-Around Math
 
-For an array of capacity $C$: $$\text{next\_index} = (\text{index} + 1) \pmod C$$ $$\text{prev\_index} = (\text{index} - 1 + C) \pmod C$$
+For an array of capacity $C$: $$\text{next-index} = (\text{index} + 1) \pmod C$$ $$\text{prev-index} = (\text{index} - 1 + C) \pmod C$$
 
 When $C$ is a power of 2 ($C = 2^k$), the expensive modulo operation `% C` can be replaced with the ultra-fast bitwise AND mask: $$\text{index} \pmod C \equiv \text{index} \ \& \ (C - 1)$$
 
@@ -317,7 +317,7 @@ POPCOUNT32(x)
 
 _Invariant after step $s$:_ every field of width $2^s$ holds the popcount of the corresponding input bits. Step 1 works because for a 2-bit field $ab$ the value $2a + b - a = a + b$. In JavaScript write the multiply as `Math.imul` to get C's 32-bit wrap (a plain `*` happens to stay exact here, since $0x0F0F0F0F \cdot 0x01010101 < 2^{53}$, but the habit breaks as soon as a constant is larger), and shift with `>>> 24` so the result is read as unsigned. The property test compares it with the naive loop on 500 random uint32 values.
 
-**Enumerating submasks.** `for (s = mask; s > 0; s = (s - 1) & mask)` visits every non-empty submask exactly once in strictly decreasing order. _Why:_ $s - 1$ flips the lowest set bit of $s$ and sets all lower bits; ANDing with `mask` keeps only bits that are in `mask`, which yields the largest submask smaller than $s$. There are $2^{\operatorname{popcount}(\text{mask})} - 1$ of them, so iterating over all masks and all their submasks costs $\sum_{\text{mask}} 2^{|\text{mask}|} = 3^n$ (each of the $n$ elements is outside the mask, in the mask but outside the submask, or in both). That $3^n$ bound is what makes subset-convolution style DP feasible for $n \approx 15$.
+**Enumerating submasks.** `for (s = mask; s > 0; s = (s - 1) & mask)` visits every non-empty submask exactly once in strictly decreasing order. _Why:_ $s - 1$ flips the lowest set bit of $s$ and sets all lower bits; ANDing with `mask` keeps only bits that are in `mask`, which yields the largest submask smaller than $s$. There are $2^{\mathrm{popcount}(\text{mask})} - 1$ of them, so iterating over all masks and all their submasks costs $\sum_{\text{mask}} 2^{|\text{mask}|} = 3^n$ (each of the $n$ elements is outside the mask, in the mask but outside the submask, or in both). That $3^n$ bound is what makes subset-convolution style DP feasible for $n \approx 15$.
 
 **Gosper's hack** enumerates all $n$-bit masks with exactly $k$ bits set in increasing order:
 

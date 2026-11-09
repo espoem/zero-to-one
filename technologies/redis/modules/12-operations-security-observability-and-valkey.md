@@ -244,7 +244,7 @@ Linux provides three memory overcommit modes configured via `/proc/sys/vm/overco
 
 - Mode 0 (Heuristic overcommit, kernel default): The kernel estimates whether sufficient RAM is available to satisfy the virtual memory requested during `fork()`. Because `fork()` duplicates the parent's virtual address space, an instance with 30 GB RSS requests a virtual allocation of 30 GB. If available free RAM plus swap is less than 30 GB, the kernel rejects `fork()` with `ENOMEM`, even if zero pages would actually be modified during the snapshot!
 - Mode 1 (Always overcommit, **mandatory for Redis**): The kernel permits `fork()` unconditionally, allowing copy-on-write to function as designed.
-- Mode 2 (Strict no overcommit): Restricts total allocations to $\text{CommitLimit} = \text{Swap} + \text{RAM} \times \text{overcommit\_ratio}$.
+- Mode 2 (Strict no overcommit): Restricts total allocations to $\text{CommitLimit} = \text{Swap} + \text{RAM} \times \text{overcommit-ratio}$.
 
 Socket listen queues require `/proc/sys/net/core/somaxconn` to match or exceed `tcp-backlog` (511 default; recommend 65535 in production). When connection bursts arrive, if the kernel socket backlog is smaller than the burst, the kernel silently drops TCP SYN packets, forcing client-side TCP connection retry timeouts (typically 1–3 seconds).
 

@@ -89,7 +89,7 @@ To prevent an attacker from swapping or injecting an access token alongside a le
 
 1. Hash the raw access token using the algorithm matching the ID token's signing algorithm (e.g. SHA-256 for RS256).
 2. Take the **left-most half** of the hash digest (the first 16 bytes for a 32-byte SHA-256 hash).
-3. Base64URL-encode those 16 bytes: $$\text{at\_hash} = \text{Base64URL}\Big(\text{LeftmostHalf}(\text{SHA-256}(\text{access\_token}))\Big)$$
+3. Base64URL-encode those 16 bytes: $$\text{at-hash} = \text{Base64URL}\Big(\text{LeftmostHalf}(\text{SHA-256}(\text{access-token}))\Big)$$
 4. The client computes this hash and confirms that it matches the `at_hash` claim in the ID token.
 
 ---

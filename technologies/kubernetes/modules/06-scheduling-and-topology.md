@@ -8,7 +8,7 @@
 
 ## 1. Formal Foundations: The Scheduling Problem in Distributed Systems
 
-In distributed systems theory, scheduling is an instance of the multi-dimensional vector bin packing problem (an NP-hard combinatorial optimization problem). Given a set of $M$ heterogeneous worker nodes with residual resource vectors $\mathbf{R}_j = \langle \text{cpu}_j, \text{mem}_j, \text{disk}_j, \dots \rangle$ and a stream of incoming pods with resource demand vectors $\mathbf{D}_i = \langle \text{req\_cpu}_i, \text{req\_mem}_i, \dots \rangle$ and placement constraint predicates $\mathbf{C}_i$, the objective of the scheduler is to find an assignment function $f: \text{Pod}_i \to \text{Node}_j$ that satisfies all hard constraints while optimizing cluster-wide objective metrics (fault domain dispersion, power efficiency, cache locality, and balanced allocation).
+In distributed systems theory, scheduling is an instance of the multi-dimensional vector bin packing problem (an NP-hard combinatorial optimization problem). Given a set of $M$ heterogeneous worker nodes with residual resource vectors $\mathbf{R}_j = \langle \text{cpu}_j, \text{mem}_j, \text{disk}_j, \dots \rangle$ and a stream of incoming pods with resource demand vectors $\mathbf{D}_i = \langle \text{req-cpu}_i, \text{req-mem}_i, \dots \rangle$ and placement constraint predicates $\mathbf{C}_i$, the objective of the scheduler is to find an assignment function $f: \text{Pod}_i \to \text{Node}_j$ that satisfies all hard constraints while optimizing cluster-wide objective metrics (fault domain dispersion, power efficiency, cache locality, and balanced allocation).
 
 ```mermaid
 flowchart TD
@@ -466,6 +466,7 @@ PodAntiAffinity is a blunt, binary constraint: it places at most one pod matchin
 - `NoSchedule`: Hard scheduling filter. The scheduler will not place new pods on the node unless they possess a matching toleration. Pods already running on the node remain unaffected.
 - `PreferNoSchedule`: Soft scheduling score. The scheduler attempts to avoid placing pods on the node, but will do so if no alternative capacity exists.
 - `NoExecute`: Hard execution filter and eviction trigger. If applied to a node, any running pod lacking a matching toleration is evicted immediately. If a toleration defines `tolerationSeconds`, the pod is permitted to remain running on the node until the timer expires.
+
 </details>
 
 <details><summary>4. How does `kubectl drain` interact with PodDisruptionBudgets (PDBs), and what causes drain commands to hang?</summary>
@@ -486,6 +487,7 @@ During `PostFilter`, the scheduler evaluates nodes where evicting lower-priority
 2. It prefers evicting pods with the lowest possible priority values.
 3. It respects PodDisruptionBudgets wherever possible, avoiding violating PDBs unless no other combination of nodes and victims can satisfy the incoming workload.
 4. Once selected, victim pods receive a `deletionTimestamp` to initiate graceful termination, and the node is reserved.
+
 </details>
 
 <details><summary>7. Why is Dynamic Resource Allocation (DRA) replacing the legacy Device Plugin framework?</summary>

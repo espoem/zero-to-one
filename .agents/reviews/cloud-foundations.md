@@ -51,6 +51,6 @@ The foundation track `architecture/cloud-foundations` establishes the vendor-neu
 
 ## Claims Least Sure Of (For Challenger & Verifier Review)
 
-- **Cross-AZ Pricing Symmetry**: Billed at $\approx \$0.01$/GB in each direction on AWS and Azure (total $\approx \$0.02$/GB for roundtrip client-server inter-AZ calls). GCP cross-zone egress in the same region is also $\$0.01$/GB.
-- **NAT Gateway Processing Fee**: Assumed standard AWS rate of $\$0.045$/GB processed across all US/EU regions (some regions like São Paulo are higher).
+- **Cross-AZ Pricing Symmetry**: Billed at ≈ $0.01/GB in each direction on AWS and Azure (total ≈ $0.02/GB for roundtrip client-server inter-AZ calls). GCP cross-zone egress in the same region is also $0.01/GB.
+- **NAT Gateway Processing Fee**: Assumed standard AWS rate of $0.045/GB processed across all US/EU regions (some regions like São Paulo are higher).
 - **Default CloudWatch Retention**: Verified that AWS CloudWatch log groups default to "Never Expire" unless explicitly configured with a retention policy.

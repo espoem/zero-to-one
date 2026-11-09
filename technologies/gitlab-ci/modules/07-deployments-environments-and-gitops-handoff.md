@@ -300,7 +300,7 @@ Managing cloud infrastructure (AWS, GCP, Azure) via Infrastructure-as-Code requi
 
 ### The GitLab HTTP Backend Mechanics
 
-The state file is stored securely inside GitLab, addressed via the Project REST API: $$\text{Endpoint: } \$\{CI\_API\_V4\_URL\}/projects/\$\{CI\_PROJECT\_ID\}/terraform/state/\$\{TF\_STATE\_NAME\}$$
+The state file is stored securely inside GitLab, addressed via the Project REST API: `Endpoint: ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/terraform/state/${TF_STATE_NAME}`
 
 The HTTP backend handles:
 
@@ -551,6 +551,7 @@ Decoupling CI and CD via GitOps enforces the principle of least privilege, elimi
 3. **Auditability and Rollback**: In GitOps, every production change is a Git commit. Rolling back is an atomic `git revert`, restoring both manifests and configurations deterministically.
 
 - Ref: OpenGitOps Specification; [modules/07-deployments-environments-and-gitops-handoff.md](../modules/07-deployments-environments-and-gitops-handoff.md#4-gitops-handoff-architecture-the-clean-cicd-boundary)
+
 </details>
 
 <details><summary>2. How does `resource_group:process_mode: newest_first` prevent production regressions while optimizing CI runner capacity?</summary>
@@ -560,6 +561,7 @@ In high-velocity teams, multiple commits are merged in rapid succession. Under d
 `newest_first` solves both problems: when a deployment job finishes, the scheduler inspects the queue of waiting jobs for that resource group. It identifies the job with the latest commit timestamp, immediately marks all older waiting jobs as `dropped` (skipped), and executes the newest job. This ensures that the live environment always advances directly to the latest verified commit while saving runner hours by discarding redundant deployments.
 
 - Ref: GitLab CI Resource Groups Documentation; [modules/07-deployments-environments-and-gitops-handoff.md](../modules/07-deployments-environments-and-gitops-handoff.md#2-resource-groups-and-concurrency-serialization)
+
 </details>
 
 <details><summary>3. Explain the function of `environment:on_stop` and `auto_stop_in` in dynamic Review App pipelines. What happens if `GIT_STRATEGY: none` is omitted from the teardown job?</summary>
@@ -569,6 +571,7 @@ In high-velocity teams, multiple commits are merged in rapid succession. Under d
 If `GIT_STRATEGY: none` is omitted from the teardown job, the GitLab runner will attempt to run `git fetch` or `git checkout` for the branch. However, if the Merge Request was merged with the "Delete source branch" option checked, the Git branch no longer exists on the remote repository. The runner fails during the git fetch phase before executing the script, resulting in an orphaned environment that never gets cleaned up.
 
 - Ref: [modules/07-deployments-environments-and-gitops-handoff.md](../modules/07-deployments-environments-and-gitops-handoff.md#3-dynamic-ephemeral-review-apps-and-teardown-hooks)
+
 </details>
 
 <details><summary>4. How does the GitLab HTTP backend for Terraform / OpenTofu handle distributed state locking, and why is this critical when multiple pipelines run concurrently?</summary>
@@ -578,6 +581,7 @@ Terraform state files track the mapping between declared code resources and real
 The GitLab HTTP backend implements the Terraform remote state locking protocol. Before reading or writing state, Terraform issues an HTTP `POST` request to the lock URL (`${TF_ADDRESS}/lock`) containing a JSON payload with a unique `LockID`, operation type, and user information. GitLab atomically registers this lock in its PostgreSQL database. If another pipeline attempts to run, its lock acquisition request receives an HTTP 423 Locked status, causing it to retry or fail. Once the operation completes, Terraform issues an HTTP `DELETE` to release the lock.
 
 - Ref: OpenTofu HTTP Backend Documentation; [`../../terraform/modules/10-hcp-terraform-and-ci-workflows.md`](../../terraform/modules/10-hcp-terraform-and-ci-workflows.md)
+
 </details>
 
 <details><summary>5. Why is it dangerous to execute `terraform apply` directly against raw `.tf` files in a production CI stage rather than against a pre-generated binary `tfplan.bin` artifact?</summary>
@@ -590,6 +594,7 @@ If `terraform apply` is executed without a pre-generated plan file, Terraform ca
 As a result, the unpinned apply step may execute destructive actions (such as recreating databases or changing subnets) that were never visible in the approved Merge Request review. Generating a binary plan (`tofu plan -out=tfplan.bin`) freezes the exact set of planned actions and the state serial number. When `tofu apply tfplan.bin` runs, OpenTofu verifies that the current state matches the plan's prerequisites; if the remote infrastructure has drifted, apply aborts cleanly without executing unintended mutations.
 
 - Ref: [modules/07-deployments-environments-and-gitops-handoff.md](../modules/07-deployments-environments-and-gitops-handoff.md#5-terraform--opentofu-pipelines-with-gitlab-managed-state)
+
 </details>
 
 <details><summary>6. How do Unified Approval Rules on Protected Environments satisfy SOC 2 / ISO 27001 separation-of-duty requirements?</summary>
@@ -602,6 +607,7 @@ SOC 2 and ISO 27001 require that no single individual can author, approve, and d
 4. **Immutable Audit Logging**: Every approval, rejection, and execution timestamp is preserved in GitLab audit events for external compliance verification.
 
 - Ref: [modules/07-deployments-environments-and-gitops-handoff.md](../modules/07-deployments-environments-and-gitops-handoff.md#6-protected-environments-and-multi-person-approval-gates)
+
 </details>
 
 <details><summary>7. Describe the failure mode of a GitOps handoff job that does not suppress CI execution on the target configuration repository. How do you mitigate it?</summary>
@@ -614,6 +620,7 @@ Mitigation strategies:
 2. Configure `workflow:rules` in the configuration repository to strictly ignore commits authored by the deployment bot service account (`if: $GITLAB_USER_EMAIL == "ci-bot@example.com" when: never`).
 
 - Ref: [modules/07-deployments-environments-and-gitops-handoff.md](../modules/07-deployments-environments-and-gitops-handoff.md#11-production-failure-modes--operational-gotchas)
+
 </details>
 
 ---

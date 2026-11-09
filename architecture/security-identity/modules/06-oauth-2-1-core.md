@@ -83,7 +83,7 @@ sequenceDiagram
 ```
 
 1. **`code_verifier`**: The client generates a high-entropy cryptographically random string (43 to 128 characters from unreserved URI characters: `[A-Z]`, `[a-z]`, `[0-9]`, `-`, `.`, `_`, `~`) using a CSPRNG.
-2. **`code_challenge`**: The client computes the SHA-256 hash of the `code_verifier` and encodes it in URL-safe base64 without padding: $$\text{code\_challenge} = \text{Base64URL}\Big(\text{SHA-256}(\text{code\_verifier})\Big)$$
+2. **`code_challenge`**: The client computes the SHA-256 hash of the `code_verifier` and encodes it in URL-safe base64 without padding: $$\text{code-challenge} = \text{Base64URL}\Big(\text{SHA-256}(\text{code-verifier})\Big)$$
 3. The client transmits the `code_challenge` and `code_challenge_method=S256` in the initial `/authorize` query. (Note: `code_challenge_method=plain` is strictly forbidden in OAuth 2.1).
 4. The Authorization Server stores the `code_challenge` bound to the issued authorization code.
 5. When trading the code at `/token`, the client transmits the raw `code_verifier`.

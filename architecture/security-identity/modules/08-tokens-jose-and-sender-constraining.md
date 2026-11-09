@@ -155,7 +155,7 @@ sequenceDiagram
 1. **The DPoP Proof Header**: On every API request, the client creates an ephemeral, single-use signed JWT containing:
    - `htm`: The HTTP method matching the request (`GET`, `POST`).
    - `htu`: The HTTP target URI without query parameters (`https://api.example.com/v1/orders`).
-   - `ath`: **Access Token Hash** ($\text{ath} = \text{Base64URL}(\text{SHA-256}(\text{access\_token})))$, cryptographically binding the proof to that specific token.
+   - `ath`: **Access Token Hash** ($\text{ath} = \text{Base64URL}(\text{SHA-256}(\text{access-token})))$, cryptographically binding the proof to that specific token.
    - `jti`: Unique random identifier ensuring the proof cannot be replayed across multiple requests.
 2. **Server-Enforced Nonce**: To prevent pre-generation replay attacks, the Resource Server can return `DPoP-Nonce: <nonce>` in an HTTP 401 response; the client must re-sign the proof including the server's nonce.
 
@@ -182,7 +182,7 @@ In privacy-preserving identity systems (e.g. digital driving licenses, verifiabl
 
 **RFC 9901 (SD-JWT)** introduces **Selective Disclosure**:
 
-1. The Issuer hashes individual claims with unique random salts: $$\text{Digest}_i = \text{SHA-256}(\text{salt}_i \parallel \text{claim\_name} \parallel \text{claim\_value})$$
+1. The Issuer hashes individual claims with unique random salts: $$\text{Digest}_i = \text{SHA-256}(\text{salt}_i \parallel \text{claim-name} \parallel \text{claim-value})$$
 2. The signed JWT payload contains only an array of hashes (`_sd: [Digest_1, Digest_2, ...]`), completely concealing the underlying values.
 3. The Holder receives the disclosure strings (`Base64URL(salt, name, value)`).
 4. When proving age to a verifier, the Holder transmits the signed SD-JWT plus **only the disclosure string for the `age_over_21` claim**.

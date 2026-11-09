@@ -284,7 +284,7 @@ GET /docs/_search
 
 ### 6.1 RRF
 
-$$\mathrm{RRF}(d) = \sum_{r \in R} \frac{1}{k + \mathrm{rank}_r(d)}, \qquad k = \texttt{rank\_constant} = 60$$
+$$\mathrm{RRF}(d) = \sum_{r \in R} \frac{1}{k + \mathrm{rank}_r(d)}, \qquad k = 60$$
 
 (Cormack, Clarke and Büttcher, SIGIR 2009). Only ranks matter, so retrievers with incomparable score scales (BM25 ≈ 5–30, cosine-based scores in [0, 1]) combine without tuning. The rank constant $k = 60$ acts as a dampening factor. The derivative of score with respect to rank is:
 

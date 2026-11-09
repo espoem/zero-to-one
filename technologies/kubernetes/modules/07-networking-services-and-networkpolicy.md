@@ -116,7 +116,7 @@ A Service's `spec.clusterIP` is **not a physical IP address**. It is not bound t
 ### 3.2 Service Types
 
 1. **`ClusterIP` (Default)**: Allocates an internal virtual IP from the cluster CIDR (`--service-cluster-ip-range`). Accessible only from within the cluster.
-2. **`NodePort`**: Allocates a static port from a dedicated cluster-wide range (default `30000-32767`). Every node in the cluster proxies that port to the underlying Service: $$\text{Client} \longrightarrow \text{Any\_Node\_IP}:31234 \xrightarrow{\text{DNAT}} \text{Pod\_IP}:8080$$
+2. **`NodePort`**: Allocates a static port from a dedicated cluster-wide range (default `30000-32767`). Every node in the cluster proxies that port to the underlying Service: $$\text{Client} \longrightarrow \text{Any-Node-IP}:31234 \xrightarrow{\text{DNAT}} \text{Pod-IP}:8080$$
 3. **`LoadBalancer`**: Interacts with the cloud-controller-manager to provision an external cloud load balancer (AWS NLB, GCP Network Load Balancer, Azure LB) that forwards external traffic into the Service's `NodePort` or directly to pods.
 4. **`ExternalName`**: Bypasses proxying entirely. Maps the Service to a DNS `CNAME` record (e.g., `my-db.external.database.com`).
 5. **`Headless` (`spec.clusterIP: None`)**: Allocates no virtual IP. CoreDNS returns the individual `A` records of all healthy backing pods directly, enabling point-to-point addressing for stateful applications.
@@ -460,6 +460,7 @@ Invariant 3: Egress DNS rules must evaluate UDP and TCP port 53 to prevent name 
 2. All host agents and daemons on a node (including the kubelet) can communicate directly with all pods on that same node.
 3. The IP address that a Pod sees as its own identity inside its network namespace is identical to the IP address used by all other pods and nodes to address it.
 4. Pods with `hostNetwork: true` share the host's network namespace and IP address, avoiding virtual ethernet translation.
+
 </details>
 
 <details><summary>2. How does a Service ClusterIP work under the hood if it is not bound to a physical network interface?</summary>
@@ -481,6 +482,7 @@ When a pod queries `api.stripe.com`, the local resolver counts the dots in the n
 3. `api.stripe.com.cluster.local` (fails)
 4. `api.stripe.com.<cloud-search-domain>` (fails)
 5. `api.stripe.com.` (succeeds) This generates 4 wasted DNS queries per external lookup, overloading CoreDNS and triggering UDP conntrack race conditions. **Mitigation**: Append a trailing dot to the domain name in application configurations (`api.stripe.com.`), which indicates an absolute FQDN and skips search domains completely, or configure a custom `dnsConfig` on the Pod with `options: [{name: "ndots", value: "2"}]`.
+
 </details>
 
 <details><summary>5. How do standard NetworkPolicies handle an isolated pod that has no matching rules for incoming traffic?</summary>
@@ -506,6 +508,7 @@ In NetworkPolicy `from` or `to` blocks:
       podSelector: { matchLabels: { role: admin } }
   ```
   Permits traffic **only** from pods labeled `role: admin` that are simultaneously located within namespaces labeled `team: ops`.
+
 </details>
 
 <details><summary>7. Why does creating a default-deny Egress NetworkPolicy break application startup, and how must it be resolved?</summary>

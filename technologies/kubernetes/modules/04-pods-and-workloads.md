@@ -458,6 +458,7 @@ During a rolling update of a Deployment with desired replica count $R$:
 
 - Maximum simultaneous pods running at any point: $$\text{Max Allowed Pods} = R + \text{maxSurge}$$
 - Minimum available pods guaranteed to be operational at any point: $$\text{Min Available Pods} = R - \text{maxUnavailable}$$ For example, if $R=4$, `maxSurge=1`, and `maxUnavailable=0`, the Deployment controller creates 1 new pod before terminating any old pods, ensuring total active pods never exceeds 5 and ready pods never drops below 4.
+
 </details>
 
 <details><summary>6. How do Indexed Jobs differ from standard Jobs, and what parameter exposes the index to application code?</summary>

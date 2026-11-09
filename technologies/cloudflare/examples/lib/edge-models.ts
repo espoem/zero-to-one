@@ -35,7 +35,9 @@ export class IsolateExecutionHarness {
 
   allocate(bytes: number): void {
     if (this.allocatedBytes + bytes > this.limits.maxMemoryBytes) {
-      throw new IsolateLimitExceededError(`Memory limit of ${this.limits.maxMemoryBytes / (1024 * 1024)} MB exceeded`);
+      throw new IsolateLimitExceededError(
+        `Memory limit of ${this.limits.maxMemoryBytes / (1024 * 1024)} MB exceeded`,
+      );
     }
     this.allocatedBytes += bytes;
   }
@@ -47,7 +49,9 @@ export class IsolateExecutionHarness {
   consumeCpu(ms: number): void {
     this.cpuTimeMs += ms;
     if (this.cpuTimeMs > this.limits.maxCpuTimeMs) {
-      throw new IsolateLimitExceededError(`CPU-time limit of ${this.limits.maxCpuTimeMs} ms exceeded`);
+      throw new IsolateLimitExceededError(
+        `CPU-time limit of ${this.limits.maxCpuTimeMs} ms exceeded`,
+      );
     }
   }
 
@@ -82,7 +86,10 @@ export class EdgePoPKVStore<T = unknown> {
     this.defaultCacheTtlMs = defaultCacheTtlMs;
   }
 
-  async get(key: string, nowMs: number = Date.now()): Promise<{ value: T | null; hit: 'edge-cache' | 'central' | 'negative-cache' }> {
+  async get(
+    key: string,
+    nowMs: number = Date.now(),
+  ): Promise<{ value: T | null; hit: 'edge-cache' | 'central' | 'negative-cache' }> {
     const cached = this.localCache.get(key);
     if (cached && nowMs - cached.cachedAtMs < cached.ttlMs) {
       if (cached.value === null) {
@@ -118,7 +125,10 @@ export class EdgePoPKVStore<T = unknown> {
 }
 
 export class CentralKVStore<T = unknown> {
-  private readonly primary = new Map<string, { value: T; metadata?: Record<string, unknown>; updatedAtMs: number }>();
+  private readonly primary = new Map<
+    string,
+    { value: T; metadata?: Record<string, unknown>; updatedAtMs: number }
+  >();
   private readonly pops = new Map<string, EdgePoPKVStore<T>>();
 
   createPoP(popId: string, cacheTtlMs?: number): EdgePoPKVStore<T> {
@@ -135,7 +145,9 @@ export class CentralKVStore<T = unknown> {
     this.primary.delete(key);
   }
 
-  readPrimary(key: string): { value: T; metadata?: Record<string, unknown>; updatedAtMs: number } | undefined {
+  readPrimary(
+    key: string,
+  ): { value: T; metadata?: Record<string, unknown>; updatedAtMs: number } | undefined {
     return this.primary.get(key);
   }
 
@@ -166,7 +178,12 @@ export class DurableObjectActor {
   }
 
   // SQLite transaction simulation
-  async sqlTransaction<R>(operation: (tx: { get: (k: string) => string | undefined; put: (k: string, v: string) => void }) => Promise<R>): Promise<R> {
+  async sqlTransaction<R>(
+    operation: (tx: {
+      get: (k: string) => string | undefined;
+      put: (k: string, v: string) => void;
+    }) => Promise<R>,
+  ): Promise<R> {
     const backup = new Map(this.storage);
     const stagedChanges = new Map<string, string>();
 
@@ -224,7 +241,7 @@ export class DurableObjectActor {
    * While computing synchronously, input gate holds back incoming calls.
    * While awaiting external I/O (e.g. fetch), input gate opens, allowing concurrent invocation!
    */
-  async executeWithGates<T>(label: string, externalIo?: () => Promise<void>): Promise<void> {
+  async executeWithGates(label: string, externalIo?: () => Promise<void>): Promise<void> {
     this.activeOperations++;
     this.callLog.push(`start:${label}:active=${this.activeOperations}`);
 
@@ -294,7 +311,11 @@ export class D1DatabaseWithSessions {
    * Guarantees read-your-writes by ensuring the queried replica has applied at least the bookmark version.
    * If the replica is lagging behind bookmark, it either syncs or routes to primary!
    */
-  sessionRead(replica: D1ReplicaNode, id: string, bookmark?: string): { record: D1Record | undefined; source: 'replica' | 'primary' } {
+  sessionRead(
+    replica: D1ReplicaNode,
+    id: string,
+    bookmark?: string,
+  ): { record: D1Record | undefined; source: 'replica' | 'primary' } {
     const targetVersion = bookmark ? parseInt(bookmark.replace('bm_v', ''), 10) : 0;
 
     if (replica.currentVersion >= targetVersion) {
@@ -317,8 +338,14 @@ export interface R2Part {
 }
 
 export class R2BucketSimulator {
-  private readonly objects = new Map<string, { body: Uint8Array; etag: string; metadata?: Record<string, string> }>();
-  private readonly multipartSessions = new Map<string, { key: string; parts: Map<number, R2Part> }>();
+  private readonly objects = new Map<
+    string,
+    { body: Uint8Array; etag: string; metadata?: Record<string, string> }
+  >();
+  private readonly multipartSessions = new Map<
+    string,
+    { key: string; parts: Map<number, R2Part> }
+  >();
 
   put(key: string, body: Uint8Array, metadata?: Record<string, string>): { etag: string } {
     const etag = `"${Buffer.from(body).toString('hex').slice(0, 16)}"`;
@@ -346,7 +373,10 @@ export class R2BucketSimulator {
     return { etag };
   }
 
-  completeMultipartUpload(uploadId: string, partsOrder: { partNumber: number; etag: string }[]): { key: string; etag: string; size: number } {
+  completeMultipartUpload(
+    uploadId: string,
+    partsOrder: { partNumber: number; etag: string }[],
+  ): { key: string; etag: string; size: number } {
     const session = this.multipartSessions.get(uploadId);
     if (!session) throw new Error('Invalid upload ID');
 

@@ -10,7 +10,7 @@ Text analysis turns a string into the terms that the inverted index stores and t
 
 $$A = F_m \circ \dots \circ F_1 \circ T \circ C_k \circ \dots \circ C_1$$
 
-where each **char filter** $C_i : \Sigma^* \to \Sigma^_$ rewrites the character stream (and records an offset correction), exactly one **tokenizer** $T : \Sigma^_ \to (\mathit{Tok})^_$ splits it into tokens, and each **token filter** $F_j : (\mathit{Tok})^_ \to (\mathit{Tok})^*$ rewrites, removes or adds tokens. A token is
+where each **char filter** $C_i : \Sigma^{\ast} \to \Sigma^{\ast}$ rewrites the character stream (and records an offset correction), exactly one **tokenizer** $T : \Sigma^{\ast} \to (\mathit{Tok})^{\ast}$ splits it into tokens, and each **token filter** $F_j : (\mathit{Tok})^{\ast} \to (\mathit{Tok})^{\ast}$ rewrites, removes or adds tokens. A token is
 
 $$\mathit{Tok} = (\mathit{term}, \mathit{startOffset}, \mathit{endOffset}, \mathit{type}, \mathit{posInc}, \mathit{posLength})$$
 

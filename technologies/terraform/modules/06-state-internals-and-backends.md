@@ -30,6 +30,7 @@ flowchart TD
         P["2. Performance Caching:\nPrevents querying 10,000 cloud APIs on every plan"]
         D["3. Teardown Ordering:\nPreserves dependency history when resources are deleted from code"]
         L["4. Distributed Locking:\nPrevents concurrent CI runners from corrupting infrastructure"]
+        M ~~~ P ~~~ D ~~~ L
     end
 ```
 
@@ -465,6 +466,7 @@ moved {
 `lineage` is an RFC 4122 UUID generated when a state file is first created. It represents the permanent cryptographic identity of the infrastructure instance. If an operator attempts to push or merge a state file with a different lineage, Terraform rejects the operation, preventing cross-environment state overwrites (e.g., accidentally applying staging state to production). `serial` is a 64-bit monotonically increasing counter tracking state mutation transactions. Terraform utilizes `serial` for Optimistic Concurrency Control (OCC): when committing state, Core verifies that the remote serial matches the baseline read at the start of the transaction. If the remote serial has advanced, the commit fails, preventing lost updates from concurrent writers.
 
 - Ref: Terraform State File Format Specification v4.
+
 </details>
 
 <details><summary>2. How does Terraform 1.10's native S3 lockfile (`use_lockfile = true`) eliminate the requirement for Amazon DynamoDB?</summary>
@@ -472,6 +474,7 @@ moved {
 Historically, Amazon S3 lacked atomic conditional write primitives, requiring an external coordination service (DynamoDB with conditional `attribute_not_exists`) to manage distributed mutual exclusion. In 2024, Amazon S3 introduced conditional writes via HTTP `PUT` requests using header `If-None-Match: *`. Terraform 1.10 leveraged this by writing an ephemeral lock object (`<key>.tflock`) directly to S3. If another process holds the lock, S3 rejects the conditional write with HTTP `412 Precondition Failed`. This provides atomic, distributed mutual exclusion entirely within S3, simplifying backend infrastructure and eliminating DynamoDB costs and IAM permissions.
 
 - Ref: Terraform 1.10 Release Notes & S3 Conditional Writes Specification.
+
 </details>
 
 <details><summary>3. Contrast declarative `moved` blocks against imperative `terraform state mv` commands. Why are `moved` blocks superior in team environments?</summary>
@@ -479,6 +482,7 @@ Historically, Amazon S3 lacked atomic conditional write primitives, requiring an
 `terraform state mv` is an imperative command executed locally against the active remote state file. It is decoupled from version control: if an engineer runs `state mv` locally, other team members' branches and CI runners will fail until the corresponding HCL code rename is merged. If a branch is rolled back, the state remains modified. In contrast, `moved` blocks are declarative statements embedded directly in version-controlled `.tf` files. They undergo peer review in pull requests, execute atomically during the standard CI plan/apply cycle, and seamlessly migrate state across all developer workstations and environments without manual terminal intervention.
 
 - Ref: HashiCorp Documentation: Refactoring with Moved Blocks.
+
 </details>
 
 <details><summary>4. What is the operational danger of executing `terraform force-unlock`? Under what strict conditions is it safe to execute?</summary>
@@ -486,6 +490,7 @@ Historically, Amazon S3 lacked atomic conditional write primitives, requiring an
 `terraform force-unlock` forcefully tears down the distributed mutual exclusion lock in the remote backend. If executed while another process is actively planning or applying, it enables concurrent writers, producing split-brain state corruption and permanent loss of managed resources. It is safe to execute _only_ after confirming that the process identified in the lock metadata (`Who`, `Created`, `Path`) is completely dead—verifying that the CI job aborted, the host instance was terminated, and no network sockets or background processes remain active.
 
 - Ref: Terraform CLI: `force-unlock` Safety Protocol.
+
 </details>
 
 <details><summary>5. How does OpenTofu's client-side state encryption differ fundamentally from S3 server-side encryption (SSE-KMS)?</summary>
@@ -493,6 +498,7 @@ Historically, Amazon S3 lacked atomic conditional write primitives, requiring an
 S3 Server-Side Encryption (SSE-KMS) encrypts data only at rest within storage hardware. The state payload is transmitted over TLS to S3 as plaintext, decrypted by AWS, and stored. Any IAM principal in the AWS account possessing `s3:GetObject` permissions can read the decrypted state file and extract embedded credentials. In contrast, OpenTofu client-side encryption encrypts the state in client RAM using AES-256-GCM before transmitting it over the network. The backend stores purely unreadable ciphertext. An attacker with full read access to the S3 bucket cannot decrypt the state without explicit access to the KMS decryption key.
 
 - Ref: OpenTofu Architecture: State & Plan Encryption.
+
 </details>
 
 <details><summary>6. How does a `removed` block with `lifecycle { destroy = false }` protect infrastructure when retiring code?</summary>
@@ -500,6 +506,7 @@ S3 Server-Side Encryption (SSE-KMS) encrypts data only at rest within storage ha
 Historically, removing a resource block from HCL caused Terraform to classify the resource as orphaned in state, scheduling it for physical deletion in the cloud provider. Introduced in Terraform 1.7, `removed { from = <addr> lifecycle { destroy = false } }` instructs Terraform Core to remove the resource from the state file during the next apply without calling the provider's `DeleteResource` API. The physical infrastructure remains running in the cloud, unmanaged, while the code is cleanly retired from the repository.
 
 - Ref: Terraform 1.7 Release Notes: `removed` Blocks.
+
 </details>
 
 <details><summary>7. Why can't Terraform store state directly inside Git alongside `.tf` configuration files?</summary>
@@ -511,6 +518,7 @@ Storing state in Git introduces three critical failures:
 3. **State Freshness**: Git pull/push cycles are manual. Applying against an un-pulled, stale local state file risks executing destructive operations against live infrastructure.
 
 - Ref: Production IaC Architectural Antipatterns.
+
 </details>
 
 ---

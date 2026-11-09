@@ -106,7 +106,7 @@ By grouping related parent and child entities under the same partition key, sing
 DynamoDB `Query` operations evaluate sort key conditions on a single attribute. To query across multiple dimensions without secondary indexes, engineers construct composite sort keys:
 
 - Schema: `STATUS#<status>#DATE#<timestamp>` (e.g., `STATUS#PENDING#DATE#2026-11-08T18:00:00Z`).
-- Query: Retrieve all pending orders after November 1st using: $$\text{SK begins\_with}(\text{"STATUS\#PENDING\#DATE\#2026-11"})$$
+- Query: Retrieve all pending orders after November 1st using: $$\text{SK begins-with}(\text{"STATUS\#PENDING\#DATE\#2026-11"})$$
 
 ---
 

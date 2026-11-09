@@ -4,7 +4,10 @@ import { IsolateExecutionHarness, IsolateLimitExceededError } from './lib/edge-m
 
 describe('Module 01 & 02: Edge Runtime & Isolate Lifecycle Limits', () => {
   it('allows execution within memory and CPU limits', () => {
-    const harness = new IsolateExecutionHarness({ maxMemoryBytes: 128 * 1024 * 1024, maxCpuTimeMs: 10 });
+    const harness = new IsolateExecutionHarness({
+      maxMemoryBytes: 128 * 1024 * 1024,
+      maxCpuTimeMs: 10,
+    });
     harness.allocate(32 * 1024 * 1024);
     harness.consumeCpu(4);
 
@@ -14,7 +17,10 @@ describe('Module 01 & 02: Edge Runtime & Isolate Lifecycle Limits', () => {
   });
 
   it('rejects heap allocations exceeding 128 MB with Error 1102', () => {
-    const harness = new IsolateExecutionHarness({ maxMemoryBytes: 128 * 1024 * 1024, maxCpuTimeMs: 10 });
+    const harness = new IsolateExecutionHarness({
+      maxMemoryBytes: 128 * 1024 * 1024,
+      maxCpuTimeMs: 10,
+    });
     harness.allocate(100 * 1024 * 1024);
 
     assert.throws(
@@ -31,7 +37,10 @@ describe('Module 01 & 02: Edge Runtime & Isolate Lifecycle Limits', () => {
   });
 
   it('terminates execution when CPU time exceeds quota (Free tier 10ms)', () => {
-    const harness = new IsolateExecutionHarness({ maxMemoryBytes: 128 * 1024 * 1024, maxCpuTimeMs: 10 });
+    const harness = new IsolateExecutionHarness({
+      maxMemoryBytes: 128 * 1024 * 1024,
+      maxCpuTimeMs: 10,
+    });
     harness.consumeCpu(8);
 
     assert.throws(

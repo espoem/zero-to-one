@@ -546,7 +546,7 @@ Output Interpretation:
 
 - `time_appconnect`: The timestamp (in seconds) when the **TLS handshake completes** (the secure transport pipe is fully established and the HTTP request has been sent).
 - `time_starttransfer`: The timestamp when the client receives the **very first byte of the HTTP response headers** (Time to First Byte / TTFB).
-- The difference ($\text{time\_starttransfer} - \text{time\_appconnect}$) measures the exact duration the server spent processing the request: reading backend database rows, running application code, or calling external APIs.
+- The difference ($\text{time-starttransfer} - \text{time-appconnect}$) measures the exact duration the server spent processing the request: reading backend database rows, running application code, or calling external APIs.
 - If `time_appconnect` is small (e.g., 50 ms) and `time_starttransfer` is large (e.g., 1.8 seconds), it proves definitively that **the network, routing, TCP, and TLS layers are completely healthy**, and the latency problem resides entirely within the backend application server or database.
 - Ref: curl manual (`curl --write-out`); High Performance Browser Networking.
 

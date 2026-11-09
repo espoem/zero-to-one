@@ -1,6 +1,6 @@
 # Module 08: R2 Object Storage and S3 Compatibility
 
-Object storage is the backbone of modern web applications, housing unstructured assets like media, logs, backups, and machine learning models. Traditional cloud providers (such as Amazon Web Services with S3) employ aggressive data egress fees (typically \$0.05 to \$0.09 per gigabyte transferred to the internet), creating vendor lock-in and punishing multi-cloud architectures. **Cloudflare R2** eliminates data egress bandwidth fees completely while providing full S3 API compatibility and high-performance native capability bindings for Workers.
+Object storage is the backbone of modern web applications, housing unstructured assets like media, logs, backups, and machine learning models. Traditional cloud providers (such as Amazon Web Services with S3) employ aggressive data egress fees (typically $0.05 to $0.09 per gigabyte transferred to the internet), creating vendor lock-in and punishing multi-cloud architectures. **Cloudflare R2** eliminates data egress bandwidth fees completely while providing full S3 API compatibility and high-performance native capability bindings for Workers.
 
 ---
 
@@ -23,7 +23,8 @@ flowchart TD
 ```
 
 ### Economic Model
-- **Bandwidth Egress**: **\$0.00 / GB** across all global operations.
+
+- **Bandwidth Egress**: **$0.00 / GB** across all global operations.
 - **Storage Pricing**: Billed strictly for the stored volume per gigabyte-month (with a free tier of 10 GB/month).
 - **Operation Classes**:
   - **Class A Operations** (Mutations: `PutObject`, `CopyObject`, `CreateMultipartUpload`, `ListObjects`): Billed per million operations.
@@ -47,44 +48,44 @@ export default {
     const key = url.pathname.slice(1);
 
     // 1. GET: Stream object directly to client with HTTP range support
-    if (request.method === "GET") {
+    if (request.method === 'GET') {
       const object = await env.MEDIA_BUCKET.get(key, {
         range: request.headers,
-        onlyIf: request.headers
+        onlyIf: request.headers,
       });
 
       if (!object) {
-        return new Response("Object Not Found", { status: 404 });
+        return new Response('Object Not Found', { status: 404 });
       }
 
       const headers = new Headers();
       object.writeHttpMetadata(headers);
-      headers.set("ETag", object.httpEtag);
+      headers.set('ETag', object.httpEtag);
 
       return new Response(object.body, { headers });
     }
 
     // 2. PUT: Stream upload directly into R2 with custom metadata
-    if (request.method === "PUT") {
-      const contentType = request.headers.get("Content-Type") ?? "application/octet-stream";
+    if (request.method === 'PUT') {
+      const contentType = request.headers.get('Content-Type') ?? 'application/octet-stream';
 
       const uploaded = await env.MEDIA_BUCKET.put(key, request.body, {
         httpMetadata: { contentType },
         customMetadata: {
-          uploadedBy: "edge-worker",
-          clientIp: request.headers.get("cf-connecting-ip") ?? "unknown"
-        }
+          uploadedBy: 'edge-worker',
+          clientIp: request.headers.get('cf-connecting-ip') ?? 'unknown',
+        },
       });
 
       return Response.json({
         key: uploaded.key,
         etag: uploaded.httpEtag,
-        size: uploaded.size
+        size: uploaded.size,
       });
     }
 
-    return new Response("Method Not Allowed", { status: 405 });
-  }
+    return new Response('Method Not Allowed', { status: 405 });
+  },
 };
 ```
 
@@ -114,26 +115,26 @@ sequenceDiagram
 ### Implementing Presigned URLs via `@aws-sdk/s3-request-presigner`
 
 ```typescript
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 export async function createUploadPresignedUrl(
   accountId: string,
   accessKeyId: string,
   secretAccessKey: string,
   bucketName: string,
-  objectKey: string
+  objectKey: string,
 ): Promise<string> {
   const s3 = new S3Client({
-    region: "auto",
+    region: 'auto',
     endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
-    credentials: { accessKeyId, secretAccessKey }
+    credentials: { accessKeyId, secretAccessKey },
   });
 
   const command = new PutObjectCommand({
     Bucket: bucketName,
     Key: objectKey,
-    ContentType: "application/pdf"
+    ContentType: 'application/pdf',
   });
 
   // URL expires in 900 seconds (15 minutes)
@@ -151,7 +152,7 @@ Uploading files larger than 100 MB requires the **Multipart Upload Protocol**.
 export async function performMultipartUpload(
   bucket: R2Bucket,
   key: string,
-  chunks: Uint8Array[]
+  chunks: Uint8Array[],
 ): Promise<R2Object> {
   // 1. Initialize session
   const multipart = await bucket.createMultipartUpload(key);
@@ -185,6 +186,7 @@ export async function performMultipartUpload(
 ```
 
 ### Multipart Invariants
+
 - **Minimum Part Size**: Every part except the final part must be at least **5 MiB** (5,242,880 bytes).
 - **Ascending Manifest**: When completing the upload, parts must be listed in strictly ascending order (`1, 2, 3...`).
 - **Orphaned Storage Cleanup**: Uncompleted multipart sessions consume billable storage until aborted. Lifecycle rules should be configured to abort incomplete multipart uploads after 7 days.
@@ -206,6 +208,7 @@ flowchart LR
 ```
 
 ### Event Payload Schema
+
 ```json
 {
   "account": "0123456789abcdef",
@@ -225,6 +228,7 @@ flowchart LR
 ## 6. Lifecycle Policies and Storage Classes
 
 To optimize long-term storage costs, R2 supports automated **Lifecycle Rules**:
+
 - **Infrequent Access (IA)**: Automatically transitions objects that have not been read for 30, 60, or 90 days to a lower storage price tier.
 - **Automated Object Expiration**: Deletes ephemeral files (e.g., temporary zip exports or daily log archives) after $N$ days.
 - **Incomplete Multipart Aborts**: Automatically cleans up stalled multipart sessions after a configured number of days.
@@ -235,7 +239,7 @@ To optimize long-term storage costs, R2 supports automated **Lifecycle Rules**:
 
 | Dimension | Then (Amazon S3 Standard) | Now (Cloudflare R2 2026) | Why It Changed |
 | --- | --- | --- | --- |
-| Bandwidth Egress Fees | \$0.05 to \$0.09 per GB transferred | \$0.00 per GB (Zero Egress) | Egress fees were artificial vendor lock-in taxes that penalized distributed and multi-cloud systems. |
+| Bandwidth Egress Fees | $0.05 to $0.09 per GB transferred | $0.00 per GB (Zero Egress) | Egress fees were artificial vendor lock-in taxes that penalized distributed and multi-cloud systems. |
 | Edge Worker Access | Heavy AWS SDK signing libraries over public HTTP | Native in-engine C++ capability bindings (`env.BUCKET`) | Native bindings eliminate SDK bundle bloat, zero out HTTP serialization, and execute at in-memory speed. |
 | Event Architecture | Complex AWS SNS -> SQS -> Lambda routing | Native 1-click binding: R2 Event Notifications -> Cloudflare Queues | Greatly simplified infrastructure, eliminated cross-cloud latency, and reduced IAM policy overhead. |
 | S3 API Compatibility | Proprietary AWS standard | Full S3-compatible REST API subset (`SigV4`) | Enables drop-in replacement with existing tools (Cyberduck, Terraform, Boto3, AWS CLI). |
@@ -254,7 +258,7 @@ To optimize long-term storage costs, R2 supports automated **Lifecycle Rules**:
 
 <details><summary>1. What is the economic and operational advantage of Cloudflare R2's zero-egress pricing model?</summary>
 
-Traditional cloud providers charge between \$0.05 and \$0.09 per gigabyte when clients download objects from storage to the internet. For video streaming, data warehousing, or software distribution, egress fees frequently dwarf actual storage costs and create financial lock-in. R2 charges \$0.00 for data egress bandwidth, billing only for storage volume and standard Class A/B API operations. This allows architects to build multi-cloud architectures, stream heavy media, and train AI models across different providers without bandwidth penalties.
+Traditional cloud providers charge between $0.05 and $0.09 per gigabyte when clients download objects from storage to the internet. For video streaming, data warehousing, or software distribution, egress fees frequently dwarf actual storage costs and create financial lock-in. R2 charges $0.00 for data egress bandwidth, billing only for storage volume and standard Class A/B API operations. This allows architects to build multi-cloud architectures, stream heavy media, and train AI models across different providers without bandwidth penalties.
 
 </details>
 

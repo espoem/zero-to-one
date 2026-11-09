@@ -8,17 +8,6 @@ For foundational cryptographic principles, PKI, and mutual TLS, consult [`archit
 
 ---
 
-## 2. Cosign v2 vs v3 Architecture & SBOM Generation ("Then vs Now")
-
-| Dimension | Cosign v2 (Legacy) | Cosign v3 (Current & Recommended) |
-| :-- | :-- | :-- |
-| **Signature Storage** | Tag-based attachments (`sha256-<digest>.sig`) polluting registry tags and causing race conditions. | OCI v1.1 Referrers API and native Protobuf Sigstore Bundles (`application/vnd.dev.sigstore.bundle.v0.3+json`). |
-| **SBOM & Attestation** | `cosign attach sbom` / `cosign sign --attachment sbom` creating fragile detached artifacts. | `cosign attest --type cyclonedx --predicate sbom.cdx.json` writing cryptographically bound attestations. |
-| **Transparency Log** | Rekor v1 SHA-256 Merkle tree append-only logs. | Rekor v2 tile-based Merkle tree storage with optimized RFC 6962 inclusion proofs and checkpoints. |
-| **Verification Tooling** | `cosign verify` and `cosign verify-attestation`. | `cosign verify`, `cosign verify-attestation`, and native `glab attestation verify`. |
-
----
-
 ## 1. Threat Modeling the Software Supply Chain
 
 Supply-chain attacks target vulnerabilities across three distinct operational planes: the **Source Plane**, the **Build Plane**, and the **Distribution and Runtime Plane**. The canonical framework for categorizing these threats is the Supply-chain Levels for Software Artifacts (SLSA v1.0) specification and CNCF Software Supply Chain Best Practices.
@@ -77,17 +66,6 @@ flowchart TD
 3. **Dependency Confusion and Typosquatting (Threat F)**: Exploiting package managers (npm, PyPI, Go modules, Maven) to fetch malicious public packages masquerading as internal private modules. Mitigation: Scoped registries, lockfile checksum verification, SCA scanning with policy gates.
 4. **Artifact Tampering in Transit (Threat G)**: Modifying container layers or binaries within the OCI registry after compilation but prior to deployment. Mitigation: Digest-based immutability (`image@sha256:...`), cryptographic signatures bound to artifact digests, transparency log verification.
 5. **Unauthorized Deployment (Threat H)**: Bypassing the CI/CD pipeline entirely and deploying unverified container images directly to Kubernetes clusters. Mitigation: Validating admission webhooks (Kyverno, Sigstore Policy Controller) rejecting unsigned images.
-
----
-
-## 2. Cosign v2 vs v3 Architecture & SBOM Generation ("Then vs Now")
-
-| Dimension | Cosign v2 (Legacy) | Cosign v3 (Current & Recommended) |
-| :-- | :-- | :-- |
-| **Signature Storage** | Tag-based attachments (`sha256-<digest>.sig`) polluting registry tags and causing race conditions. | OCI v1.1 Referrers API and native Protobuf Sigstore Bundles (`application/vnd.dev.sigstore.bundle.v0.3+json`). |
-| **SBOM & Attestation** | `cosign attach sbom` / `cosign sign --attachment sbom` creating fragile detached artifacts. | `cosign attest --type cyclonedx --predicate sbom.cdx.json` writing cryptographically bound attestations. |
-| **Transparency Log** | Rekor v1 SHA-256 Merkle tree append-only logs. | Rekor v2 tile-based Merkle tree storage with optimized RFC 6962 inclusion proofs and checkpoints. |
-| **Verification Tooling** | `cosign verify` and `cosign verify-attestation`. | `cosign verify`, `cosign verify-attestation`, and native `glab attestation verify`. |
 
 ---
 
@@ -160,17 +138,6 @@ Secret Detection operates using rules based on **Gitleaks**, scanning repository
 
 ---
 
-## 2. Cosign v2 vs v3 Architecture & SBOM Generation ("Then vs Now")
-
-| Dimension | Cosign v2 (Legacy) | Cosign v3 (Current & Recommended) |
-| :-- | :-- | :-- |
-| **Signature Storage** | Tag-based attachments (`sha256-<digest>.sig`) polluting registry tags and causing race conditions. | OCI v1.1 Referrers API and native Protobuf Sigstore Bundles (`application/vnd.dev.sigstore.bundle.v0.3+json`). |
-| **SBOM & Attestation** | `cosign attach sbom` / `cosign sign --attachment sbom` creating fragile detached artifacts. | `cosign attest --type cyclonedx --predicate sbom.cdx.json` writing cryptographically bound attestations. |
-| **Transparency Log** | Rekor v1 SHA-256 Merkle tree append-only logs. | Rekor v2 tile-based Merkle tree storage with optimized RFC 6962 inclusion proofs and checkpoints. |
-| **Verification Tooling** | `cosign verify` and `cosign verify-attestation`. | `cosign verify`, `cosign verify-attestation`, and native `glab attestation verify`. |
-
----
-
 ## 3. Software Bill of Materials (SBOM): CycloneDX v1.6 vs. SPDX v2.3/3.0
 
 An SBOM is a formal, machine-readable inventory of software components, libraries, modules, licenses, and transitive relationships that constitute a software artifact.
@@ -220,17 +187,6 @@ generate_sbom:
         - gl-sbom-container.cdx.json
     expire_in: 30 days
 ```
-
----
-
-## 2. Cosign v2 vs v3 Architecture & SBOM Generation ("Then vs Now")
-
-| Dimension | Cosign v2 (Legacy) | Cosign v3 (Current & Recommended) |
-| :-- | :-- | :-- |
-| **Signature Storage** | Tag-based attachments (`sha256-<digest>.sig`) polluting registry tags and causing race conditions. | OCI v1.1 Referrers API and native Protobuf Sigstore Bundles (`application/vnd.dev.sigstore.bundle.v0.3+json`). |
-| **SBOM & Attestation** | `cosign attach sbom` / `cosign sign --attachment sbom` creating fragile detached artifacts. | `cosign attest --type cyclonedx --predicate sbom.cdx.json` writing cryptographically bound attestations. |
-| **Transparency Log** | Rekor v1 SHA-256 Merkle tree append-only logs. | Rekor v2 tile-based Merkle tree storage with optimized RFC 6962 inclusion proofs and checkpoints. |
-| **Verification Tooling** | `cosign verify` and `cosign verify-attestation`. | `cosign verify`, `cosign verify-attestation`, and native `glab attestation verify`. |
 
 ---
 
@@ -323,20 +279,9 @@ When Fulcio issues the certificate, it embeds the GitLab OIDC claims into standa
 
 Rekor is an append-only, tamper-evident transparency log based on RFC 6962. It guarantees that a public key or certificate was valid at the precise moment of signing, preventing attackers from retroactively signing malicious code with revoked credentials.
 
-The log maintains a binary Merkle tree. Every entry creates a signed log root (Tree Head): $$\text{STH} = (\text{tree\_size}, \text{timestamp}, \text{root\_hash}, \text{signature}_{\text{rekor\_key}})$$
+The log maintains a binary Merkle tree. Every entry creates a signed log root (Tree Head): $$\text{STH} = (\text{tree-size}, \text{timestamp}, \text{root-hash}, \text{signature}_{\text{rekor-key}})$$
 
 The client verifies the **Inclusion Proof**: a path of $O(\log N)$ sibling hashes proving that the entry exists at leaf index $i$ in a tree of size $N$.
-
----
-
-## 2. Cosign v2 vs v3 Architecture & SBOM Generation ("Then vs Now")
-
-| Dimension | Cosign v2 (Legacy) | Cosign v3 (Current & Recommended) |
-| :-- | :-- | :-- |
-| **Signature Storage** | Tag-based attachments (`sha256-<digest>.sig`) polluting registry tags and causing race conditions. | OCI v1.1 Referrers API and native Protobuf Sigstore Bundles (`application/vnd.dev.sigstore.bundle.v0.3+json`). |
-| **SBOM & Attestation** | `cosign attach sbom` / `cosign sign --attachment sbom` creating fragile detached artifacts. | `cosign attest --type cyclonedx --predicate sbom.cdx.json` writing cryptographically bound attestations. |
-| **Transparency Log** | Rekor v1 SHA-256 Merkle tree append-only logs. | Rekor v2 tile-based Merkle tree storage with optimized RFC 6962 inclusion proofs and checkpoints. |
-| **Verification Tooling** | `cosign verify` and `cosign verify-attestation`. | `cosign verify`, `cosign verify-attestation`, and native `glab attestation verify`. |
 
 ---
 
@@ -405,17 +350,6 @@ Cosign attaches provenance using the **in-toto v1.0 Statement Specification** wr
   }
 }
 ```
-
----
-
-## 2. Cosign v2 vs v3 Architecture & SBOM Generation ("Then vs Now")
-
-| Dimension | Cosign v2 (Legacy) | Cosign v3 (Current & Recommended) |
-| :-- | :-- | :-- |
-| **Signature Storage** | Tag-based attachments (`sha256-<digest>.sig`) polluting registry tags and causing race conditions. | OCI v1.1 Referrers API and native Protobuf Sigstore Bundles (`application/vnd.dev.sigstore.bundle.v0.3+json`). |
-| **SBOM & Attestation** | `cosign attach sbom` / `cosign sign --attachment sbom` creating fragile detached artifacts. | `cosign attest --type cyclonedx --predicate sbom.cdx.json` writing cryptographically bound attestations. |
-| **Transparency Log** | Rekor v1 SHA-256 Merkle tree append-only logs. | Rekor v2 tile-based Merkle tree storage with optimized RFC 6962 inclusion proofs and checkpoints. |
-| **Verification Tooling** | `cosign verify` and `cosign verify-attestation`. | `cosign verify`, `cosign verify-attestation`, and native `glab attestation verify`. |
 
 ---
 
@@ -503,17 +437,6 @@ sign_and_attest:
 
 ---
 
-## 2. Cosign v2 vs v3 Architecture & SBOM Generation ("Then vs Now")
-
-| Dimension | Cosign v2 (Legacy) | Cosign v3 (Current & Recommended) |
-| :-- | :-- | :-- |
-| **Signature Storage** | Tag-based attachments (`sha256-<digest>.sig`) polluting registry tags and causing race conditions. | OCI v1.1 Referrers API and native Protobuf Sigstore Bundles (`application/vnd.dev.sigstore.bundle.v0.3+json`). |
-| **SBOM & Attestation** | `cosign attach sbom` / `cosign sign --attachment sbom` creating fragile detached artifacts. | `cosign attest --type cyclonedx --predicate sbom.cdx.json` writing cryptographically bound attestations. |
-| **Transparency Log** | Rekor v1 SHA-256 Merkle tree append-only logs. | Rekor v2 tile-based Merkle tree storage with optimized RFC 6962 inclusion proofs and checkpoints. |
-| **Verification Tooling** | `cosign verify` and `cosign verify-attestation`. | `cosign verify`, `cosign verify-attestation`, and native `glab attestation verify`. |
-
----
-
 ## 7. Kubernetes Admission Enforcement (Kyverno & Sigstore Policy Controller)
 
 Verification must occur before container images execute on cluster nodes. Kyverno intercepts pod creation requests via Kubernetes Validating Admission Webhooks and verifies cryptographic signatures and SLSA provenance against the Fulcio certificate authority.
@@ -557,17 +480,6 @@ spec:
 
 ---
 
-## 2. Cosign v2 vs v3 Architecture & SBOM Generation ("Then vs Now")
-
-| Dimension | Cosign v2 (Legacy) | Cosign v3 (Current & Recommended) |
-| :-- | :-- | :-- |
-| **Signature Storage** | Tag-based attachments (`sha256-<digest>.sig`) polluting registry tags and causing race conditions. | OCI v1.1 Referrers API and native Protobuf Sigstore Bundles (`application/vnd.dev.sigstore.bundle.v0.3+json`). |
-| **SBOM & Attestation** | `cosign attach sbom` / `cosign sign --attachment sbom` creating fragile detached artifacts. | `cosign attest --type cyclonedx --predicate sbom.cdx.json` writing cryptographically bound attestations. |
-| **Transparency Log** | Rekor v1 SHA-256 Merkle tree append-only logs. | Rekor v2 tile-based Merkle tree storage with optimized RFC 6962 inclusion proofs and checkpoints. |
-| **Verification Tooling** | `cosign verify` and `cosign verify-attestation`. | `cosign verify`, `cosign verify-attestation`, and native `glab attestation verify`. |
-
----
-
 ## 8. Algorithm: Merkle Tree Inclusion Proof Verification
 
 Rekor transparency logging relies on RFC 6962 Merkle tree proofs. The algorithm below presents the formal verification of an inclusion proof in CLRS pseudocode.
@@ -603,17 +515,6 @@ The algorithm verifies whether `leaf_hash` is present at index `leaf_index` with
 
 ---
 
-## 2. Cosign v2 vs v3 Architecture & SBOM Generation ("Then vs Now")
-
-| Dimension | Cosign v2 (Legacy) | Cosign v3 (Current & Recommended) |
-| :-- | :-- | :-- |
-| **Signature Storage** | Tag-based attachments (`sha256-<digest>.sig`) polluting registry tags and causing race conditions. | OCI v1.1 Referrers API and native Protobuf Sigstore Bundles (`application/vnd.dev.sigstore.bundle.v0.3+json`). |
-| **SBOM & Attestation** | `cosign attach sbom` / `cosign sign --attachment sbom` creating fragile detached artifacts. | `cosign attest --type cyclonedx --predicate sbom.cdx.json` writing cryptographically bound attestations. |
-| **Transparency Log** | Rekor v1 SHA-256 Merkle tree append-only logs. | Rekor v2 tile-based Merkle tree storage with optimized RFC 6962 inclusion proofs and checkpoints. |
-| **Verification Tooling** | `cosign verify` and `cosign verify-attestation`. | `cosign verify`, `cosign verify-attestation`, and native `glab attestation verify`. |
-
----
-
 ## 9. Then vs. Now: Supply-Chain Paradigm Shifts
 
 | Architectural Dimension | Legacy CI/CD Supply Chain (Pre-2022) | Modern Cloud-Native Standard (2026 / GitLab 19.5) |
@@ -628,7 +529,7 @@ The algorithm verifies whether `leaf_hash` is present at index `leaf_index` with
 
 ---
 
-## 2. Cosign v2 vs v3 Architecture & SBOM Generation ("Then vs Now")
+### Cosign v2 vs v3 Architecture & SBOM Generation
 
 | Dimension | Cosign v2 (Legacy) | Cosign v3 (Current & Recommended) |
 | :-- | :-- | :-- |
@@ -645,17 +546,6 @@ The algorithm verifies whether `leaf_hash` is present at index `leaf_index` with
 > **Exam Delta (CKS - Certified Kubernetes Security Specialist)**: The CNCF CKS certification (Supply Chain Security domain, 20% weight) currently tests candidate knowledge of static vulnerability scanning with Trivy, container footprint reduction via Distroless base images, and runtime admission using Kubernetes ImagePolicyWebhook or baseline OPA Gatekeeper.
 >
 > In production enterprise environments running GitLab 19.5 and Kubernetes 1.35+, manual ImagePolicyWebhook configurations are superseded by dynamic admission controllers (Kyverno, Sigstore Policy Controller) that perform keyless Cosign v3 cryptographic validation against Fulcio roots and Rekor transparency logs. Candidates should master both models: the exam's Trivy CLI flags (`trivy image --severity HIGH,CRITICAL`) and modern production OIDC keyless attestation pipelines.
-
----
-
-## 2. Cosign v2 vs v3 Architecture & SBOM Generation ("Then vs Now")
-
-| Dimension | Cosign v2 (Legacy) | Cosign v3 (Current & Recommended) |
-| :-- | :-- | :-- |
-| **Signature Storage** | Tag-based attachments (`sha256-<digest>.sig`) polluting registry tags and causing race conditions. | OCI v1.1 Referrers API and native Protobuf Sigstore Bundles (`application/vnd.dev.sigstore.bundle.v0.3+json`). |
-| **SBOM & Attestation** | `cosign attach sbom` / `cosign sign --attachment sbom` creating fragile detached artifacts. | `cosign attest --type cyclonedx --predicate sbom.cdx.json` writing cryptographically bound attestations. |
-| **Transparency Log** | Rekor v1 SHA-256 Merkle tree append-only logs. | Rekor v2 tile-based Merkle tree storage with optimized RFC 6962 inclusion proofs and checkpoints. |
-| **Verification Tooling** | `cosign verify` and `cosign verify-attestation`. | `cosign verify`, `cosign verify-attestation`, and native `glab attestation verify`. |
 
 ---
 
@@ -687,17 +577,6 @@ The algorithm verifies whether `leaf_hash` is present at index `leaf_index` with
 
 ---
 
-## 2. Cosign v2 vs v3 Architecture & SBOM Generation ("Then vs Now")
-
-| Dimension | Cosign v2 (Legacy) | Cosign v3 (Current & Recommended) |
-| :-- | :-- | :-- |
-| **Signature Storage** | Tag-based attachments (`sha256-<digest>.sig`) polluting registry tags and causing race conditions. | OCI v1.1 Referrers API and native Protobuf Sigstore Bundles (`application/vnd.dev.sigstore.bundle.v0.3+json`). |
-| **SBOM & Attestation** | `cosign attach sbom` / `cosign sign --attachment sbom` creating fragile detached artifacts. | `cosign attest --type cyclonedx --predicate sbom.cdx.json` writing cryptographically bound attestations. |
-| **Transparency Log** | Rekor v1 SHA-256 Merkle tree append-only logs. | Rekor v2 tile-based Merkle tree storage with optimized RFC 6962 inclusion proofs and checkpoints. |
-| **Verification Tooling** | `cosign verify` and `cosign verify-attestation`. | `cosign verify`, `cosign verify-attestation`, and native `glab attestation verify`. |
-
----
-
 ## Interview Drill
 
 <details><summary>1. Explain the architectural difference between key-based Cosign signing and Sigstore keyless signing. Why is keyless considered superior for enterprise CI/CD?</summary>
@@ -707,6 +586,7 @@ In key-based signing, a static private cryptographic key (e.g., RSA or ECDSA) is
 Keyless signing uses ephemeral, in-memory ECDSA key pairs generated dynamically inside the CI runner process. The runner proves its identity by presenting an OpenID Connect (OIDC) JWT minted by GitLab CI to Fulcio (a short-lived Certificate Authority). Fulcio validates the token, extracts the claims (repository, pipeline ID, branch), and issues an X.509 certificate binding the ephemeral public key to that specific CI job identity with a 10-minute validity period. The signature and certificate are submitted to Rekor, a public append-only Merkle tree transparency log. The private key is immediately zeroed in memory. Keyless signing is superior because it eliminates long-lived secret management, provides non-repudiable audit trails via transparency logs, and cryptographically binds the signature to the exact build pipeline context.
 
 - Ref: Sigstore Architecture Specification; [modules/06-supply-chain-security-sbom-cosign-slsa.md](../modules/06-supply-chain-security-sbom-cosign-slsa.md#4-keyless-sigstore-cosign-v3-architecture--oidc-federation)
+
 </details>
 
 <details><summary>2. How does the OCI v1.1 Referrers API improve upon legacy signature storage conventions in container registries?</summary>
@@ -716,6 +596,7 @@ Legacy Cosign v1 stored signatures as companion images tagged with the hash of t
 The OCI Image Specification v1.1 introduces the `subject` field in image manifests and the Referrers API (`/v2/<name>/referrers/<digest>`). Signatures, SBOMs, and SLSA attestations are pushed as independent artifacts whose `subject` descriptor points to the target container image digest. Registries index this relationship natively. Clients can query all artifacts referring to an image in a single API call, and registries can enforce cascade deletion and garbage collection rules, ensuring signatures persist as long as the parent image exists.
 
 - Ref: OCI Image Specification v1.1; [`technologies/containers/modules/05-oci-image-spec.md`](../../containers/modules/05-oci-image-spec.md)
+
 </details>
 
 <details><summary>3. What is the difference between an SBOM and SLSA Provenance? Can an SBOM substitute for SLSA?</summary>
@@ -728,6 +609,7 @@ An SBOM and SLSA Provenance address orthogonal supply-chain concerns and cannot 
 An attacker could generate a valid, pristine SBOM for an artifact compiled from backdoored source code. SLSA Provenance proves that the artifact was generated deterministically by an authorized, untampered build service from an approved Git commit.
 
 - Ref: SLSA v1.0 Specification; [modules/06-supply-chain-security-sbom-cosign-slsa.md](../modules/06-supply-chain-security-sbom-cosign-slsa.md#5-in-toto-and-slsa-v10-provenance-attestation)
+
 </details>
 
 <details><summary>4. How does Rekor's Merkle tree guarantee that a revoked or expired certificate cannot be used to forge a signature?</summary>
@@ -737,6 +619,7 @@ Rekor is an append-only, tamper-evident transparency log modeled after RFC 6962.
 During verification, an admission controller (like Kyverno) checks the inclusion proof against Rekor's public key and the signed tree head. Because entries in the Merkle tree are immutable and time-stamped, an attacker cannot backdate a signature after a key or token expires. Rekor proves that the signature existed within the 10-minute validity window of the Fulcio certificate.
 
 - Ref: RFC 6962 Transparency Logs; [modules/06-supply-chain-security-sbom-cosign-slsa.md](../modules/06-supply-chain-security-sbom-cosign-slsa.md#8-algorithm-merkle-tree-inclusion-proof-verification)
+
 </details>
 
 <details><summary>5. How do you prevent a malicious developer from using their personal feature branch pipeline to sign a production container image using GitLab OIDC?</summary>
@@ -749,6 +632,7 @@ To prevent unauthorized signing:
 2. **Admission Controller Layer**: The verifying admission controller (Kyverno or Sigstore Policy Controller) must not merely verify that _some_ signature exists; it must enforce a strict policy on the subject certificate claims. Specifically, the policy requires that the Certificate SAN or OID extension `1.3.6.1.4.1.57264.1.11` (Source Repository Ref) equals `refs/heads/main` and that the Issuer equals the enterprise GitLab instance. Even if a developer runs Cosign on a feature branch, the generated certificate will embed `refs/heads/feature-x`, causing the admission controller to reject admission.
 
 - Ref: [modules/06-supply-chain-security-sbom-cosign-slsa.md](../modules/06-supply-chain-security-sbom-cosign-slsa.md#7-kubernetes-admission-enforcement-kyverno--sigstore-policy-controller)
+
 </details>
 
 <details><summary>6. Why must container builds use rootless BuildKit or Kaniko rather than Docker-in-Docker when implementing secure SLSA L3 build pipelines?</summary>
@@ -758,6 +642,7 @@ Docker-in-Docker (DinD) requires running the runner container in `--privileged` 
 Rootless BuildKit executes entirely within an unprivileged user namespace where container UID 0 maps to an unprivileged host UID (e.g., UID 1000). Even if a malicious build script gains root within the build sandbox, it has zero privileges on the host operating system kernel, preventing host compromise and cross-build tampering.
 
 - Ref: [`technologies/containers/modules/12-security-and-supply-chain.md`](../../containers/modules/12-security-and-supply-chain.md)
+
 </details>
 
 <details><summary>7. What is VEX (Vulnerability Exploitability eXchange) and why is it critical when consuming CycloneDX SBOMs?</summary>
@@ -767,18 +652,8 @@ An SBOM lists all packages and transitive dependencies in an application. Tradit
 VEX is a machine-readable companion assertion format (native to CycloneDX and supported in OpenVEX) that allows software authors to state the operational status of a vulnerability (e.g., `not_affected`, `affected`, `fixed`, `under_investigation`) accompanied by an architectural justification (e.g., `code_not_reachable`, `inline_mitigations_exist`). Consuming an SBOM alongside a VEX document eliminates false-positive noise, allowing SecOps and platform teams to focus remediation efforts exclusively on exploitable flaws.
 
 - Ref: OWASP CycloneDX v1.6 VEX Specification; [modules/06-supply-chain-security-sbom-cosign-slsa.md](../modules/06-supply-chain-security-sbom-cosign-slsa.md#3-software-bill-of-materials-sbom-cyclonedx-v16-vs-spdx-v2330)
+
 </details>
-
----
-
-## 2. Cosign v2 vs v3 Architecture & SBOM Generation ("Then vs Now")
-
-| Dimension | Cosign v2 (Legacy) | Cosign v3 (Current & Recommended) |
-| :-- | :-- | :-- |
-| **Signature Storage** | Tag-based attachments (`sha256-<digest>.sig`) polluting registry tags and causing race conditions. | OCI v1.1 Referrers API and native Protobuf Sigstore Bundles (`application/vnd.dev.sigstore.bundle.v0.3+json`). |
-| **SBOM & Attestation** | `cosign attach sbom` / `cosign sign --attachment sbom` creating fragile detached artifacts. | `cosign attest --type cyclonedx --predicate sbom.cdx.json` writing cryptographically bound attestations. |
-| **Transparency Log** | Rekor v1 SHA-256 Merkle tree append-only logs. | Rekor v2 tile-based Merkle tree storage with optimized RFC 6962 inclusion proofs and checkpoints. |
-| **Verification Tooling** | `cosign verify` and `cosign verify-attestation`. | `cosign verify`, `cosign verify-attestation`, and native `glab attestation verify`. |
 
 ---
 

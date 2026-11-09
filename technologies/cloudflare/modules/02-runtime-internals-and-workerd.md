@@ -47,9 +47,11 @@ flowchart TD
 `workerd` (pronounced "worker-dee") is the open-source C++ application server that executes Cloudflare Workers. It is architected around the principles of object-capability security and event-driven nanoservices.
 
 ### Capability-Based Security Model
+
 In conventional server runtimes, an application gains access to resources (databases, network sockets, secret keys) via ambient authority: ambient environment variables (e.g., `process.env.DATABASE_URL`), global network access (`socket()` syscalls), or file paths. If an attacker injects code via a compromised npm package, that code inherits all ambient permissions.
 
 `workerd` strictly eliminates ambient authority:
+
 - An isolate cannot open raw TCP/UDP sockets or access arbitrary network destinations unless explicitly granted a capability.
 - External dependencies—such as KV stores, D1 SQL databases, R2 buckets, and inter-worker RPC channels—are injected explicitly into the Worker's `env` object at instantiation.
 - An isolate cannot inspect or interact with neighboring isolates inside the same host process unless explicitly connected via a **Service Binding**.
@@ -64,15 +66,14 @@ To prevent engine improvements from breaking legacy customer applications, `work
 {
   "name": "payment-api",
   "compatibility_date": "2026-11-01",
-  "compatibility_flags": [
-    "nodejs_compat",
-    "transformstream_enable_standard_constructor"
-  ]
+  "compatibility_flags": ["nodejs_compat", "transformstream_enable_standard_constructor"],
 }
 ```
 
 ### `nodejs_compat` Mechanics
+
 Historically, Workers supported only standard browser Web APIs (`fetch`, `Crypto`, `Streams`). Modern `workerd` provides native support for Node.js core APIs via the `nodejs_compat` compatibility flag:
+
 - Native C++ bindings implement Node.js primitives directly inside `workerd`: `node:buffer`, `node:crypto`, `node:events`, `node:async_hooks`, `node:stream`, and `node:util`.
 - It eliminates the need for bulky webpack/esbuild polyfills, dramatically reducing bundle size and isolate memory footprint.
 - Unimplemented Node.js APIs (such as `child_process`, raw `cluster`, or POSIX file system mutations via `node:fs` write) throw informative runtime exceptions.
@@ -102,6 +103,7 @@ sequenceDiagram
 ```
 
 ### Quota Enforcement Rules
+
 1. **CPU Time**: Measures the actual clock cycles consumed by the CPU core while executing the isolate's JavaScript instructions.
    - **Free Plan**: Hard ceiling of **10 ms** per request.
    - **Paid Standard Plan**: Default limit of **30 s** of continuous CPU execution (configurable up to 5 minutes for asynchronous queue consumers and workflows).
@@ -120,6 +122,7 @@ Because thousands of mutually untrusted customer isolates share the memory addre
 Spectre attacks rely on speculative branch execution in modern CPUs. An attacker trains the branch predictor to speculatively read unauthorized host memory and then measures microscopic differences in CPU cache latency to deduce the secret bytes.
 
 ### Defense Mechanisms in `workerd`
+
 1. **High-Resolution Timer Coarsening**:
    - Spectre attacks require ultra-precise timing measurements (nanosecond resolution) to differentiate CPU L1/L2 cache hits from cache misses.
    - `workerd` explicitly coarsens timing primitives (`performance.now()`, `Date.now()`) to a resolution of **5 microseconds to 20 microseconds**.
@@ -158,13 +161,13 @@ The following example demonstrates building a high-throughput, memory-bounded JS
 ```typescript
 export default {
   async fetch(request: Request, env: unknown, ctx: ExecutionContext): Promise<Response> {
-    if (request.method !== "POST") {
-      return new Response("Method Not Allowed", { status: 405 });
+    if (request.method !== 'POST') {
+      return new Response('Method Not Allowed', { status: 405 });
     }
 
-    const contentLength = parseInt(request.headers.get("content-length") ?? "0", 10);
+    const contentLength = parseInt(request.headers.get('content-length') ?? '0', 10);
     if (contentLength > 20 * 1024 * 1024) {
-      return new Response("Payload Exceeds 20 MB Limit", { status: 413 });
+      return new Response('Payload Exceeds 20 MB Limit', { status: 413 });
     }
 
     let bytesProcessed = 0;
@@ -173,22 +176,22 @@ export default {
         bytesProcessed += chunk.byteLength;
         // Enforce hard streaming ceiling to prevent heap saturation
         if (bytesProcessed > 20 * 1024 * 1024) {
-          controller.error(new Error("Stream exceeded memory safety envelope"));
+          controller.error(new Error('Stream exceeded memory safety envelope'));
           return;
         }
         controller.enqueue(chunk);
       },
       flush() {
         console.log(`Stream complete. Total bytes safely streamed: ${bytesProcessed}`);
-      }
+      },
     });
 
     const transformedStream = request.body?.pipeThrough(byteCountingStream);
 
     return new Response(transformedStream, {
-      headers: { "Content-Type": "application/octet-stream" }
+      headers: { 'Content-Type': 'application/octet-stream' },
     });
-  }
+  },
 };
 ```
 

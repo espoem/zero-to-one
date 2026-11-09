@@ -292,7 +292,7 @@ sequenceDiagram
 
 ### Signature Version 4 Derivation
 
-The application constructs a canonical HTTP request (method, URI, query parameters, headers) and derives a signing key through a series of chained HMAC-SHA256 calculations: $$\text{DateKey} = \text{HMAC-SHA256}(\text{"AWS4"} + \text{SecretKey}, \text{DateStamp})$$ $$\text{RegionKey} = \text{HMAC-SHA256}(\text{DateKey}, \text{Region})$$ $$\text{ServiceKey} = \text{HMAC-SHA256}(\text{RegionKey}, \text{"s3"})$$ $$\text{SigningKey} = \text{HMAC-SHA256}(\text{ServiceKey}, \text{"aws4_request"})$$
+The application constructs a canonical HTTP request (method, URI, query parameters, headers) and derives a signing key through a series of chained HMAC-SHA256 calculations: $$\text{DateKey} = \text{HMAC-SHA256}(\text{"AWS4"} + \text{SecretKey}, \text{DateStamp})$$ $$\text{RegionKey} = \text{HMAC-SHA256}(\text{DateKey}, \text{Region})$$ $$\text{ServiceKey} = \text{HMAC-SHA256}(\text{RegionKey}, \text{"s3"})$$ $$\text{SigningKey} = \text{HMAC-SHA256}(\text{ServiceKey}, \text{"aws4-request"})$$
 
 ### The Token Expiration Boundary Trap
 
@@ -380,7 +380,7 @@ flowchart TD
 
 ### Throughput Modes: Elastic vs Provisioned vs Bursting
 
-1. **Elastic Throughput (Recommended)**: Automatically scales throughput up and down based on active workload I/O demand. Customers pay strictly for the data read (e.g., \$0.03/GB) and written (e.g., \$0.06/GB), completely eliminating the need to monitor credit balances or provision unused throughput.
+1. **Elastic Throughput (Recommended)**: Automatically scales throughput up and down based on active workload I/O demand. Customers pay strictly for the data read (e.g., $0.03/GB) and written (e.g., $0.06/GB), completely eliminating the need to monitor credit balances or provision unused throughput.
 2. **Provisioned Throughput**: Dedicates a fixed throughput bandwidth (MB/s) regardless of the amount of data stored, ideal for applications with high throughput-to-storage ratios.
 3. **Bursting Throughput**: Baseline throughput scales linearly at 50 KB/s per GB of standard storage. Workloads accumulate burst credits during idle periods to burst up to 100 MB/s, but risk severe I/O throttling when credit buckets deplete.
 

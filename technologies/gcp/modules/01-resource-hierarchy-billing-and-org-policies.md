@@ -30,10 +30,12 @@ flowchart TD
 Let $V$ denote the set of all nodes in a Google Cloud organizational graph, and let $E \subset V \times V$ represent the set of directed edges pointing from a parent container to a child container. The resource hierarchy forms a rooted directed tree $T = (V, E, r)$ where:
 
 1. $r \in V$ is the unique Organization root corresponding to a verified Google Workspace or Cloud Identity domain.
-2. For every child node $u \in V \setminus \{r\}$, there exists a unique in-degree of 1: $\operatorname{deg}^-(u) = 1$, defining a unique parent function $P(u) = v$ where $(v, u) \in E$.
+2. For every child node $u \in V \setminus \{r\}$, there exists a unique in-degree of 1: $\mathrm{deg}^-(u) = 1$, defining a unique parent function $P(u) = v$ where $(v, u) \in E$.
 3. The ancestry path of any resource $x \in V$ is defined as the unique sequence:
 
-$$\operatorname{Ancestry}(x) = (x_0, x_1, \dots, x_k)$$
+$$
+\mathrm{Ancestry}(x) = (x_0, x_1, \dots, x_k)
+$$
 
 where $x_0 = x$, $x_k = r$, and $x_{i+1} = P(x_i)$ for all $0 \le i < k$.
 
@@ -214,7 +216,13 @@ Google Cloud supports three distinct structural constraint models:
 
 When a child container inherits a list constraint from an ancestor, administrators configure how the child policy resolves using `inheritFromParent`:
 
-$$\operatorname{EffectivePolicy}(u) = \begin{cases} \operatorname{ExplicitRules}(u), & \text{if } \text{inheritFromParent} = \text{false} \\ \operatorname{ParentPolicy}(P(u)) \cup \operatorname{ExplicitRules}(u), & \text{if } \text{inheritFromParent} = \text{true} \text{ and } \text{allowlist} \\ \operatorname{ParentPolicy}(P(u)) \setminus \operatorname{ExplicitRules}(u), & \text{if } \text{deny rules applied} \end{cases}$$
+$$
+\mathrm{EffectivePolicy}(u) = \begin{cases}
+  \mathrm{ExplicitRules}(u), & \text{if } \text{inheritFromParent} = \text{false} \\
+  \mathrm{ParentPolicy}(P(u)) \cup \mathrm{ExplicitRules}(u), & \text{if } \text{inheritFromParent} = \text{true} \text{ and } \text{allowlist} \\
+  \mathrm{ParentPolicy}(P(u)) \setminus \mathrm{ExplicitRules}(u), & \text{if } \text{deny rules applied}
+\end{cases}
+$$
 
 ### Custom Constraint Definition with CEL
 

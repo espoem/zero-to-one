@@ -167,7 +167,7 @@ The JWT is signed by GitLab's private RSA/ECDSA key and verifiable via the publi
 }
 ```
 
-The `sub` (subject) claim uniquely identifies the execution context: $$\text{sub} = \text{"project\_path:"} \parallel \text{project\_path} \parallel \text{":ref\_type:"} \parallel \text{ref\_type} \parallel \text{":ref:"} \parallel \text{ref}$$
+The `sub` (subject) claim uniquely identifies the execution context: $$\text{sub} = \text{"project-path:"} \parallel \text{project-path} \parallel \text{":ref-type:"} \parallel \text{ref-type} \parallel \text{":ref:"} \parallel \text{ref}$$
 
 ---
 
@@ -516,6 +516,7 @@ Storing static IAM access keys creates multiple attack vectors:
 OIDC keyless federation eliminates static secrets. The GitLab runner requests an ephemeral JWT dynamically minted by GitLab. The runner passes this JWT to AWS STS via `AssumeRoleWithWebIdentity`. AWS validates the cryptographic signature against GitLab's public JWKS endpoint and verifies that the `sub` claim matches the authorized repository and branch. AWS returns temporary credentials (valid for 15 to 60 minutes) that expire automatically. CloudTrail logs the full federated identity context, providing complete traceability.
 
 - Ref: AWS IAM OIDC Documentation; [modules/08-secrets-management-and-cloud-oidc.md](../modules/08-secrets-management-and-cloud-oidc.md#4-keyless-cloud-federation-complete-implementations)
+
 </details>
 
 <details><summary>2. What are the strict syntax requirements for GitLab Variable Masking, and why does base64 encoding defeat the masking filter?</summary>
@@ -530,6 +531,7 @@ GitLab requires a variable value to satisfy strict criteria to be masked:
 Base64 defeats masking because the masking engine performs literal string matching against the raw value $V$. If a script executes `echo "$SECRET" | base64`, the output stream contains $f(V)$, the base64-encoded representation. Because $f(V)$ is a completely different character sequence than $V$, the masking engine does not detect a match, and the encoded secret is printed to the job log.
 
 - Ref: GitLab CI Masking Engine Documentation; [modules/08-secrets-management-and-cloud-oidc.md](../modules/08-secrets-management-and-cloud-oidc.md#the-masking-engine-mathematical-limitations-and-bypass-vectors)
+
 </details>
 
 <details><summary>3. Why was `CI_JOB_JWT` removed from GitLab, and how does `id_tokens` provide superior cryptographic isolation?</summary>
@@ -539,6 +541,7 @@ Base64 defeats masking because the masking engine performs literal string matchi
 The `id_tokens` keyword allows developers to declare multiple distinct tokens with tailored audiences within the same job block (e.g., one token with `aud: "https://aws.amazon.com"` and another with `aud: "https://vault.example.com"`). Each cloud provider receives a cryptographically signed JWT that is strictly invalid if presented to any other service.
 
 - Ref: GitLab 16.0 Release Notes; [modules/08-secrets-management-and-cloud-oidc.md](../modules/08-secrets-management-and-cloud-oidc.md#3-openid-connect-oidc--id_tokens-architecture)
+
 </details>
 
 <details><summary>4. How do you configure an AWS IAM Trust Policy to allow deployments only from protected branches while permitting feature branches to run read-only validation jobs?</summary>
@@ -568,6 +571,7 @@ Create two distinct IAM roles:
 Feature branches can assume the validator role to check configurations, but only protected branches (like `main`) satisfy the `ref_protected: "true"` claim required to assume the deployer role.
 
 - Ref: [modules/08-secrets-management-and-cloud-oidc.md](../modules/08-secrets-management-and-cloud-oidc.md#1-amazon-web-services-aws-iam-oidc-federation)
+
 </details>
 
 <details><summary>5. How does Google Cloud Workload Identity Federation eliminate the need for downloaded service account JSON keys?</summary>
@@ -582,6 +586,7 @@ Workload Identity Federation creates an identity translation bridge:
 4. The federated token is used to impersonate a Google Cloud Service Account via `generateAccessToken`. The returned OAuth2 access token is short-lived (1 hour max) and generated dynamically in RAM, completely eliminating static JSON private keys.
 
 - Ref: Google Cloud Workload Identity Federation Documentation; [modules/08-secrets-management-and-cloud-oidc.md](../modules/08-secrets-management-and-cloud-oidc.md#2-google-cloud-platform-workload-identity-federation)
+
 </details>
 
 <details><summary>6. What role does OpenBao play in the native GitLab Secrets Manager introduced in GitLab 18.x/19.x?</summary>
@@ -591,6 +596,7 @@ OpenBao is the Linux Foundation open-source, community-governed fork of HashiCor
 Architecturally, OpenBao serves as the internal secrets storage and encryption engine for GitLab. Secrets created via the GitLab UI or API are stored using envelope encryption managed by OpenBao, protected by master keys in Cloud KMS or HSMs. When a pipeline runs with `secrets:`, GitLab coordinates with OpenBao to inject decrypted secrets directly into the runner process memory over mTLS, eliminating the need for teams to deploy, operate, and maintain independent external Vault clusters.
 
 - Ref: Linux Foundation OpenBao Project; [modules/08-secrets-management-and-cloud-oidc.md](../modules/08-secrets-management-and-cloud-oidc.md#5-gitlab-native-secrets-manager-openbao-integration)
+
 </details>
 
 <details><summary>7. What is the operational impact of clock skew between a GitLab Runner and an external OIDC relying party (e.g., AWS STS or Vault)?</summary>
@@ -603,6 +609,7 @@ If the clock on the GitLab server, the runner host, or the cloud provider STS se
 - If the runner/server clock is **behind** STS, the token's 300-second validity window may have already elapsed from STS's perspective, rejecting it with `Token has expired`. Ensuring all infrastructure nodes synchronize against authoritative NTP servers is mandatory for reliable OIDC operations.
 
 - Ref: [modules/08-secrets-management-and-cloud-oidc.md](../modules/08-secrets-management-and-cloud-oidc.md#9-production-failure-modes--operational-gotchas)
+
 </details>
 
 ---

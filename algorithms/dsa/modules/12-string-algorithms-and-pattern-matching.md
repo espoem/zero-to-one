@@ -79,7 +79,7 @@ During matching, if mismatch occurs after matching $j$ characters, the text poin
 
 ## 3. The Z-Algorithm
 
-The **Z-Algorithm** finds matches by computing the $Z$-array for the concatenated string $S = P + \text{"\$"} + T$, where `$` is a delimiter character not present in $P$ or $T$.
+The **Z-Algorithm** finds matches by computing the $Z$-array for the concatenated string $S = P + \text{\textdollar} + T$, where `$` is a delimiter character not present in $P$ or $T$.
 
 ```mermaid
 flowchart LR
@@ -192,7 +192,7 @@ The precomputed $\pi$ (LPS) table identifies the longest proper prefix of the pa
 
 <details><summary>2. What is the Z-algorithm and how does it differ conceptually from KMP?</summary>
 
-While KMP computes the longest prefix-suffix table of the pattern and matches it against text sequentially, the Z-algorithm computes the Longest Common Prefix ($Z[i]$) between the entire string and every suffix starting at index $i$. By concatenating $P + \text{"\$"} + T$, any index where $Z[i] = |P|$ represents an exact occurrence of $P$ in $T$. The Z-algorithm maintains an explicit window $[L, R]$ of the farthest reach so far.
+While KMP computes the longest prefix-suffix table of the pattern and matches it against text sequentially, the Z-algorithm computes the Longest Common Prefix ($Z[i]$) between the entire string and every suffix starting at index $i$. By concatenating $P + \text{\textdollar} + T$, any index where $Z[i] = |P|$ represents an exact occurrence of $P$ in $T$. The Z-algorithm maintains an explicit window $[L, R]$ of the farthest reach so far.
 </details>
 
 <details><summary>3. Why is Kasai's LCP algorithm O(n) rather than O(n^2)?</summary>

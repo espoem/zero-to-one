@@ -60,7 +60,7 @@ $$L(s) = \max_{j \in J(s)} \tau(j)$$
 
 The total pipeline latency under the synchronous stage barrier model is the direct sum of stage maxima:
 
-$$L_{\text{stage\_pipeline}} = \sum_{i=1}^k \max_{j \in J(s_i)} \tau(j)$$
+$$L_{\text{stage-pipeline}} = \sum_{i=1}^k \max_{j \in J(s_i)} \tau(j)$$
 
 Under this model, fast jobs are artificially delayed. In the diagram above, `Build Frontend` finishes in 4 minutes, but `Frontend Unit` cannot begin until minute 8 because `Build Backend` takes 8 minutes.
 

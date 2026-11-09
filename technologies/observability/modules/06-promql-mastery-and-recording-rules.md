@@ -13,7 +13,7 @@ PromQL operates on two fundamental data types:
 
 ## Rate Extrapolation and Counter Reset Handling
 
-Counters in Prometheus only increase and reset to zero upon service restarts. To compute per-second rates from cumulative counters, engineers use `rate()` or `increase()`. `rate(v[d])` calculates the per-second average rate of increase of the time series over the range vector duration \(d\). Crucially, PromQL automatically handles counter resets: if a counter drops from 1,000 to 0 due to an application restart, `rate()` detects the discontinuity and assumes the counter incremented by 1,000 plus the new value. Mathematical extrapolation ensures that if the range vector boundaries do not land precisely on scrape timestamps, linear extrapolation estimates the exact value at the range edges.
+Counters in Prometheus only increase and reset to zero upon service restarts. To compute per-second rates from cumulative counters, engineers use `rate()` or `increase()`. `rate(v[d])` calculates the per-second average rate of increase of the time series over the range vector duration $d$. Crucially, PromQL automatically handles counter resets: if a counter drops from 1,000 to 0 due to an application restart, `rate()` detects the discontinuity and assumes the counter incremented by 1,000 plus the new value. Mathematical extrapolation ensures that if the range vector boundaries do not land precisely on scrape timestamps, linear extrapolation estimates the exact value at the range edges.
 
 ```mermaid
 flowchart TD
@@ -63,11 +63,11 @@ END PROCEDURE
 
 ### Loop Invariant and Formal Proof
 
-**Initialization**: Prior to the first iteration of the loop, the cardinality set \(C\) is empty, and no telemetry records have been processed, satisfying the cardinality bound \(0 \le |C| \le ext{MaxCardinality}\).
+**Initialization**: Prior to the first iteration of the loop, the cardinality set $C$ is empty, and no telemetry records have been processed, satisfying the cardinality bound $0 \le |C| \le \text{MaxCardinality}$.
 
-**Maintenance**: At the start of each iteration, if an incoming record contains a label key already present in \(C\) or if \(|C| < ext{MaxCardinality}\), the record is safely buffered and \(C\) is updated. If the cardinality threshold is reached and a novel key arrives, the record is dropped, preserving the invariant \(|C| \le ext{MaxCardinality}\).
+**Maintenance**: At the start of each iteration, if an incoming record contains a label key already present in $C$ or if $|C| < \text{MaxCardinality}$, the record is safely buffered and $C$ is updated. If the cardinality threshold is reached and a novel key arrives, the record is dropped, preserving the invariant $|C| \le \text{MaxCardinality}$.
 
-**Termination**: When the stream \(S\) is fully consumed, the algorithm terminates with all retained metrics strictly bounded within the permitted cardinality ceiling.
+**Termination**: When the stream $S$ is fully consumed, the algorithm terminates with all retained metrics strictly bounded within the permitted cardinality ceiling.
 
 ## Production Configuration and Implementation
 

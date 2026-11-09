@@ -277,7 +277,7 @@ Instances in a private subnet must download software patches from external publi
 
 ### Q-CLOUD-014 · High-Performing Cloud Networks · difficulty 3 · scenario
 
-An enterprise backend running in a private subnet communicates with Amazon S3. The company notices astronomical charges on their monthly bill for NAT Gateway Data Processing ($0.045/GB) because workers ingest 100 TB of analytics data from S3 every month. How can the architect reduce this cost to \$0 immediately?
+An enterprise backend running in a private subnet communicates with Amazon S3. The company notices astronomical charges on their monthly bill for NAT Gateway Data Processing ($0.045/GB) because workers ingest 100 TB of analytics data from S3 every month. How can the architect reduce this cost to $0 immediately?
 
 - A) Deploy an S3 Gateway VPC Endpoint and update the private route table
 - B) Move all backend worker instances into the public subnet
@@ -529,7 +529,7 @@ What is the primary role of a Dead Letter Queue (DLQ) in an asynchronous event-d
 
 ### Q-CLOUD-026 · Cost Optimization & FinOps Operations · difficulty 2 · scenario
 
-A Kubernetes cluster running in `us-east-1` spans three Availability Zones (`us-east-1a`, `us-east-1b`, `us-east-1c`). The microservices communicate heavily over gRPC, transferring 100 TB of internal service-to-service payloads monthly across AZ boundaries. The team notices a \$2,000 monthly charge under "Inter-Zone Data Transfer". How can the architect reduce this cost while retaining high availability?
+A Kubernetes cluster running in `us-east-1` spans three Availability Zones (`us-east-1a`, `us-east-1b`, `us-east-1c`). The microservices communicate heavily over gRPC, transferring 100 TB of internal service-to-service payloads monthly across AZ boundaries. The team notices a $2,000 monthly charge under "Inter-Zone Data Transfer". How can the architect reduce this cost while retaining high availability?
 
 - A) Move all microservices into a single availability zone
 - B) Implement topology-aware routing (Kubernetes Topology Aware Routing) to prefer in-zone pod endpoints while failing over cross-AZ only when local pods are unavailable
@@ -538,7 +538,7 @@ A Kubernetes cluster running in `us-east-1` spans three Availability Zones (`us-
 
 <details><summary>Answer</summary>
 
-**B.** Inter-AZ data transfer is billed at $\approx \$0.01$/GB in each direction ($\approx \$0.02$/GB roundtrip). Enabling Kubernetes Topology Aware Routing instructs the cluster proxy to route traffic to pod endpoints within the same availability zone whenever available, eliminating inter-AZ transfer costs during normal operations while retaining multi-AZ resilience if a zone fails.
+**B.** Inter-AZ data transfer is billed at ≈ $0.01/GB in each direction (≈ $0.02/GB roundtrip). Enabling Kubernetes Topology Aware Routing instructs the cluster proxy to route traffic to pod endpoints within the same availability zone whenever available, eliminating inter-AZ transfer costs during normal operations while retaining multi-AZ resilience if a zone fails.
 
 - Why not A: Consolidating all services into a single AZ destroys high availability and creates a catastrophic single point of failure.
 - Why not C: NAT gateways are for outbound internet traffic and add additional data processing costs ($0.045/GB), not internal pod traffic.
@@ -578,7 +578,7 @@ A company generates 200 GB of application logs per day into Amazon CloudWatch Lo
 
 <details><summary>Answer</summary>
 
-**C.** By default, Amazon CloudWatch log groups have an infinite retention policy ("Never Expire"). Over 2 years, 200 GB/day accumulates over 146 TB of log data that is continuously billed for monthly storage ($0.03/GB-month = \$4,380/month just for holding raw logs). Setting a 14- or 30-day retention in IaC prevents this compounding cost.
+**C.** By default, Amazon CloudWatch log groups have an infinite retention policy ("Never Expire"). Over 2 years, 200 GB/day accumulates over 146 TB of log data that is continuously billed for monthly storage ($0.03/GB-month = $4,380/month just for holding raw logs). Setting a 14- or 30-day retention in IaC prevents this compounding cost.
 
 - Why not A: CloudWatch never purges logs unless a retention period is explicitly defined.
 - Why not B: CloudWatch does not automatically transition logs to Glacier.
@@ -609,7 +609,7 @@ What is the core distinction between **Showback** and **Chargeback** in FinOps o
 
 ### Q-CLOUD-030 · Cost Optimization & FinOps Operations · difficulty 2 · scenario
 
-A video streaming platform serves 50 PB of video downloads per month to public internet users. To avoid traditional cloud hyperscaler egress fees ($\approx \$0.08 - \$0.09$/GB, which would cost $\approx \$4.5\text{ million/month}$), which cloud storage architecture should be evaluated?
+A video streaming platform serves 50 PB of video downloads per month to public internet users. To avoid traditional cloud hyperscaler egress fees (≈ $0.08–$0.09/GB, which would cost ≈ $4.5 million/month), which cloud storage architecture should be evaluated?
 
 - A) S3 Glacier Flexible Retrieval
 - B) Egress-free object storage such as Cloudflare R2 paired with global CDN caching
@@ -1222,10 +1222,10 @@ A multi-tier microservice architecture deployed on an Amazon EKS cluster spans t
 
 <details><summary>Answer</summary>
 
-**A.** In cloud provider networks, packets crossing Availability Zone boundaries incur data transfer fees in both directions ($\approx \$0.01$/GB egress and $\$0.01$/GB ingress). Placing read replicas in each AZ and directing frontend pods to query their local in-zone replica keeps high-volume cache reads entirely within the local zone, avoiding inter-AZ transfer fees entirely during normal operations while retaining multi-AZ failover resilience.
+**A.** In cloud provider networks, packets crossing Availability Zone boundaries incur data transfer fees in both directions (≈ $0.01/GB egress and $0.01/GB ingress). Placing read replicas in each AZ and directing frontend pods to query their local in-zone replica keeps high-volume cache reads entirely within the local zone, avoiding inter-AZ transfer fees entirely during normal operations while retaining multi-AZ failover resilience.
 
 - Why not B: Moving all workloads into a single AZ eliminates AZ data transfer costs but destroys high availability, creating a single point of failure.
-- Why not C: NAT Gateways are for outbound internet routing and add $\$0.045$/GB in data processing fees on top of base costs.
+- Why not C: NAT Gateways are for outbound internet routing and add $0.045/GB in data processing fees on top of base costs.
 - Why not D: UDP packets crossing AZ boundaries still incur standard inter-AZ transfer charges, and Redis requires TCP for reliable communication.
 - Ref: [modules/14-cost-and-finops.md](../modules/14-cost-and-finops.md#the-three-hidden-network-traps), [AWS Inter-AZ Data Transfer Pricing](https://aws.amazon.com/ec2/pricing/on-demand/)
 
@@ -1242,7 +1242,7 @@ An enterprise ingests 5 TB of application and container debug logs daily into Am
 
 <details><summary>Answer</summary>
 
-**A.** CloudWatch Logs storage costs $\$0.03$/GB-month. S3 Standard costs $\$0.023$/GB-month, and Glacier Flexible Retrieval costs only $\$0.0036$/GB-month (an 88% reduction). Setting CloudWatch retention to 14 days ensures operational logs remain queryable in CloudWatch Insights during active debugging, while Kinesis Data Firehose continuously exports historical data into S3 with lifecycle transitions to Glacier, satisfying the 365-day compliance mandate at a fraction of the cost.
+**A.** CloudWatch Logs storage costs $0.03/GB-month. S3 Standard costs $0.023/GB-month, and Glacier Flexible Retrieval costs only $0.0036/GB-month (an 88% reduction). Setting CloudWatch retention to 14 days ensures operational logs remain queryable in CloudWatch Insights during active debugging, while Kinesis Data Firehose continuously exports historical data into S3 with lifecycle transitions to Glacier, satisfying the 365-day compliance mandate at a fraction of the cost.
 
 - Why not B: Writing logs only to ephemeral container storage loses critical forensic data upon container crash or restart and violates compliance.
 - Why not C: Using `GetLogEvents` API calls in Lambda incurs heavy API request throttling, high compute execution costs, and expensive DynamoDB write units.

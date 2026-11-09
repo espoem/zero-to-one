@@ -83,7 +83,7 @@ Now, subsequent `UPDATE`s place new versions on the same page, chaining line poi
 
 ## 4. Autovacuum Daemon Mechanics & Mathematical Tuning
 
-Autovacuum launches a worker process on a table when the count of dead tuples exceeds: $$\text{Threshold} = \text{autovacuum\_vacuum\_threshold} + (\text{autovacuum\_vacuum\_scale\_factor} \times \text{reltuples})$$
+Autovacuum launches a worker process on a table when the count of dead tuples exceeds: $$\text{Threshold} = \text{autovacuum-vacuum-threshold} + (\text{autovacuum-vacuum-scale-factor} \times \text{reltuples})$$
 
 ### The Default Scale Factor Failure
 

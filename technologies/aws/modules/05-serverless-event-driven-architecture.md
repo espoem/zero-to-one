@@ -464,7 +464,7 @@ flowchart TD
 | **State Persistence** | Synchronously checkpointed to persistent storage at every transition. | Execution runs entirely in-memory; checkpoints are omitted. |
 | **Execution History** | Full visual step-by-step history retained in AWS Console for 90 days. | Emitted to Amazon CloudWatch Logs Insights or OpenSearch. |
 | **Execution Semantics** | Exactly-once state transitions; at-least-once service calls. | Asynchronous: at-most-once. Synchronous: at-least-once. |
-| **Pricing Model** | \$0.025 per 1,000 state transitions. | \$1.00 per 1M requests + \$0.00001667 per GB-second of execution time. |
+| **Pricing Model** | $0.025 per 1,000 state transitions. | $1.00 per 1M requests + $0.00001667 per GB-second of execution time. |
 
 ### Distributed Map State for Large-Scale Parallel Processing
 
@@ -577,7 +577,7 @@ Legacy DLQs configured via `DeadLetterConfig` route only the raw original event 
 
 <details><summary>3. What is the execution and billing difference between AWS Step Functions Standard Workflows and Express Workflows?</summary>
 
-Standard Workflows are designed for long-running (up to 1 year), auditable business processes. They checkpoint state synchronously to persistent distributed storage at every transition, guarantee at-least-once execution with exactly-once state transitions, retain a 90-day visual audit history in the console, and are billed per state transition (\$0.025 per 1,000 transitions). Express Workflows are designed for high-volume, event-driven streaming workloads (up to 5 minutes duration) running over 100,000 executions per second. They run entirely in-memory without persistent disk checkpoints, emit execution logs to CloudWatch Logs, and are billed based on execution duration and memory consumed.
+Standard Workflows are designed for long-running (up to 1 year), auditable business processes. They checkpoint state synchronously to persistent distributed storage at every transition, guarantee at-least-once execution with exactly-once state transitions, retain a 90-day visual audit history in the console, and are billed per state transition ($0.025 per 1,000 transitions). Express Workflows are designed for high-volume, event-driven streaming workloads (up to 5 minutes duration) running over 100,000 executions per second. They run entirely in-memory without persistent disk checkpoints, emit execution logs to CloudWatch Logs, and are billed based on execution duration and memory consumed.
 
 - Ref: [modules/05-serverless-event-driven-architecture.md#8-aws-step-functions-workflow-orchestration](05-serverless-event-driven-architecture.md#8-aws-step-functions-workflow-orchestration), https://docs.aws.amazon.com/step-functions/latest/dg/concepts-standard-vs-express.html
 

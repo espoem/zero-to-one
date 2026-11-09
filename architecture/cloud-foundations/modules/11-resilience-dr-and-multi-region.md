@@ -30,10 +30,10 @@ Disaster recovery architectures trade cost against Recovery Point Objective (RPO
 
 | Strategy | RTO (Time to Recover) | RPO (Data Loss Window) | Relative Cost | Operational Mechanics |
 | :-- | :-- | :-- | :-- | :-- |
-| **Backup & Restore** | Hours to Days | Hours (Last Snapshot) | $\$$ (Lowest) | Nightly or hourly snapshots replicated to cold storage in Region B; IaC re-provisions compute upon disaster declaration. |
-| **Pilot Light** | 10 to 60 Minutes | Minutes (Replication Lag) | $\$ \$$ | Critical databases replicate continuously to Region B; minimal core infrastructure provisioned; compute fleet is scaled to zero. |
-| **Warm Standby** | 2 to 10 Minutes | Seconds to Minutes | $\$ \$ \$$ | A scaled-down functional copy of the entire application stack runs 24/7 in Region B; autoscales to full capacity on failover. |
-| **Multi-Region Active-Active** | Near Zero ($< 30\text{ s}$) | Near Zero / Zero | $\$ \$ \$ \$$ (Highest) | Full production capacity serves live traffic simultaneously across both regions; requests routed dynamically via Anycast or latency DNS. |
+| **Backup & Restore** | Hours to Days | Hours (Last Snapshot) | `$` (Lowest) | Nightly or hourly snapshots replicated to cold storage in Region B; IaC re-provisions compute upon disaster declaration. |
+| **Pilot Light** | 10 to 60 Minutes | Minutes (Replication Lag) | `$$` | Critical databases replicate continuously to Region B; minimal core infrastructure provisioned; compute fleet is scaled to zero. |
+| **Warm Standby** | 2 to 10 Minutes | Seconds to Minutes | `$$$` | A scaled-down functional copy of the entire application stack runs 24/7 in Region B; autoscales to full capacity on failover. |
+| **Multi-Region Active-Active** | Near Zero ($< 30\text{ s}$) | Near Zero / Zero | `$$$$` (Highest) | Full production capacity serves live traffic simultaneously across both regions; requests routed dynamically via Anycast or latency DNS. |
 
 ```mermaid
 flowchart LR

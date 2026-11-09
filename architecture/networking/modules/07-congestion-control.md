@@ -184,7 +184,7 @@ Engineered by Van Jacobson, Neal Cardwell, and Yuchung Cheng at Google, **BBR (d
 
 Traditional TCP bursts an entire window of packets into the NIC back-to-back, overwhelming shallow router buffers. BBR uses kernel pacing timers (`SO_MAX_PACING_RATE`) via the Fair Queueing (FQ) scheduler, spacing packet transmissions evenly across the entire RTT:
 
-$$\text{pacing\_rate} = \text{pacing\_gain} \times \text{BtlBw}$$
+$$\text{pacing-rate} = \text{pacing-gain} \times \text{BtlBw}$$
 
 ---
 

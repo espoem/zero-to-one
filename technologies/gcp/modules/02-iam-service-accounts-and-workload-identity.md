@@ -138,7 +138,7 @@ flowchart TD
 2. **Deny Policies Cannot Deny Admin Privileges**: Google Cloud deliberately prevents Deny policies from blocking certain critical organization management permissions (such as `resourcemanager.organizations.setIamPolicy`) to avoid locking administrators out of remediating policy misconfigurations.
 3. **Allow Inheritance is Additive (Union)**: Allow policies inherit down the tree monotonically. If an engineer is granted `roles/storage.objectViewer` at the Folder level, no Project-level Allow policy beneath that Folder can strip or revoke that permission:
 
-$$\operatorname{EffectiveAllow}(r) = \bigcup_{u \in \operatorname{Ancestry}(r)} \operatorname{AllowBindings}(u)$$
+$$\mathrm{EffectiveAllow}(r) = \bigcup_{u \in \mathrm{Ancestry}(r)} \mathrm{AllowBindings}(u)$$
 
 4. **Default Deny**: In the absence of an explicit Allow policy binding that matches the principal and evaluates its condition to `true`, the system denies access by default.
 
