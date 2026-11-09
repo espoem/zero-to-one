@@ -11,7 +11,7 @@
     "check": "npm run fmt:check && npm run lint && npm run lint:md",
     "lint:wrap": "node tools/wrap-check/check.mjs .",
     "lint:tables": "node tools/table-check/check.mjs .",
-    "lint:links": "LINK_CHECK_PENDING=technologies/aws,technologies/gcp,technologies/azure,architecture/system-design node tools/link-check/check.mjs .",
+    "lint:links": "LINK_CHECK_PENDING=technologies/azure,architecture/system-design node tools/link-check/check.mjs .",
     "lint:mermaid": "node tools/mermaid-check/check.mjs .",
     "lint:katex": "node tools/katex-check/check.mjs .",
     "lint:headings": "node tools/heading-check/check.mjs ."

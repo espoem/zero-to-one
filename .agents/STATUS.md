@@ -35,11 +35,20 @@ States: ⬜ brief ready → 🟦 authoring → 🟨 challenge + verify → 🟧 
 | 3 | `technologies/observability` | Opus · Claude Code | `track/observability` | ✅ merged | Merged 2026-11-07: 13 modules (401–530 lines), 52 hermetic + 1 integration tests passing, 65-q PCA/OTCA bank + mock, challenger & verifier gates complete. |
 | 3 | `technologies/terraform` | Opus · claude.ai | `track/terraform` | ✅ merged | Merged 2026-11-07: 12 modules (405–520 lines), 57 hermetic + 1 integration tests passing, 65-q Associate 004 bank + mock, challenger & verifier gates complete. |
 | 4 | `architecture/cloud-foundations` | Opus · claude.ai | `track/cloud-foundations` | ✅ merged | Merged 2026-11-07: 14 modules (400+ lines), 30 tests passing, MAPPING.md, 65-q exam bank + mock, challenger, verifier & final gates complete. |
-| 4 | `architecture/system-design` | Opus · claude.ai | `track/system-design` | ⬜ brief ready |  |
 | 4 | `technologies/aws` | Opus / Antigravity | `main` | ✅ merged | Merged 2026-11-08: 14 modules (400+ lines), 65-q SAA-C03 bank + mock, 38 hermetic tests passing, challenger & verifier gates resolved and complete. |
-| 4 | `technologies/azure` | Opus · claude.ai | `track/azure` | ⬜ brief ready |  |
-| 4 | `technologies/cloudflare` | Opus / Antigravity | `main` | ✅ merged | Merged 2026-11-08: 12 modules, 65-q exam bank + mock, 16 hermetic + workerd tests passing, challenger & verifier gates resolved and complete. |
 | 4 | `technologies/gcp` | Opus / Antigravity | `main` | ✅ merged | Merged 2026-11-08: 10 modules (400+ lines), 65-q ACE bank + mock, full PCA matrix, 30 hermetic tests passing, challenger & verifier gates resolved and complete. |
+| 4 | `technologies/cloudflare` | Opus / Antigravity | `main` | ✅ merged | Merged 2026-11-08: 12 modules, 65-q exam bank + mock, 16 hermetic + workerd tests passing, challenger & verifier gates resolved and complete. |
+| 4 | `technologies/azure` | Opus · claude.ai | `track/azure` | ⬜ brief ready | Brief ready in `.agents/briefs/azure.md`. Target: AZ-104, AZ-305, AI-200, 9–12 modules, 65-q bank. |
+| 4 | `architecture/system-design` | Opus · claude.ai | `track/system-design` | ⬜ brief ready | Built last (composes all tracks). Brief ready in `.agents/briefs/system-design.md`. Target: 14 modules, Staff loop bank. |
+
+## Progress Summary (as of 2026-11-09)
+
+- **Total Tracks**: 29
+- **Completed & Merged**: 27 tracks (Phase 1: 10/10, Phase 2: 7/7, Phase 3: 6/6, Phase 4: 4/6)
+- **Remaining**: 2 tracks (`technologies/azure`, `architecture/system-design`)
+- **Total Authored Modules**: 340 modules (all verified, >= 400 lines average, with interview drills)
+- **Total Exam Questions**: 1,939 questions (all original with distractor rationales and mock exams)
+- **Verification Gates**: 100% clean (`npm run check` green, 0 broken links, 0 table/katex/mermaid errors)
 
 ## Dependencies
 
