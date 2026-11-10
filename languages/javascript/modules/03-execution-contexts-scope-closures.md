@@ -96,6 +96,35 @@ classDiagram
 
 Resolution is **lexical**: the chain is fixed by where the code is written, not by who calls it. The only constructs that make resolution dynamic are `with` and sloppy direct `eval` (which can add `var` bindings to the calling function's scope). Both defeat engine optimisations ([module 12](12-engine-internals-v8.md)).
 
+### Parameter binding: values, not variables
+
+A call evaluates each argument expression to a **value** and binds that value to the parameter in the new function Environment Record (`FunctionDeclarationInstantiation`, §10.2.11). The caller's variable is never passed:
+
+```js
+function double(x) {
+  x = x * 2;
+}
+let money = 10;
+double(money);
+money; // 10 — x was bound to the value 10, not to money
+```
+
+For a primitive, the same immutable value is bound: reassigning the parameter cannot affect the caller. For an object, the value is a _reference_, so the parameter and the caller's variable point at the **same object**; mutating it is visible through both, but reassigning the parameter still only moves the parameter's wire:
+
+```js
+function addAge(person) {
+  person.age = person.age + 1;
+}
+function replace(person) {
+  person = { age: 0 };
+}
+const user = { age: 30 };
+addAge(user); // user.age === 31 (shared object mutated)
+replace(user); // user.age === 31 (the parameter was re-pointed, not user)
+```
+
+There is no "pass by reference" to a variable in JavaScript: `replace` cannot make `user` point at a new object. To replace the object, return it and reassign at the call site.
+
 ---
 
 ## 3. Hoisting, formally

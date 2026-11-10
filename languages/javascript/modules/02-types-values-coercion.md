@@ -99,6 +99,8 @@ The suites in [`exercises/`](../exercises/) are built as prediction targets: eac
 
 `typeof` (§13.5.3) is a table lookup on the type, with two special cases: callables report `"function"`, and objects with the Annex B `[[IsHTMLDDA]]` slot (only `document.all` in browsers) report `"undefined"`. There is no reliable `typeof` test for "array" (use `Array.isArray`, which sees through Proxies) or for "null" (use `=== null`).
 
+> **A common miscount.** Beginner texts sometimes say "nine types" by listing functions separately. The specification has **eight** language types; a function is an Object with a `[[Call]]` internal method, and `typeof` is what reports `"function"`. Counting `typeof` results gives eight labels (`"undefined"`, `"object"`, `"function"`, `"boolean"`, `"number"`, `"bigint"`, `"string"`, `"symbol"`), not nine types.
+
 ### Primitives behave like values, wrappers behave like objects
 
 Accessing a property on a primitive (`"abc".length`, `(1).toFixed(2)`) runs `ToObject` (§7.1.18) to create a temporary wrapper (`String`, `Number`, ...) whose prototype provides the methods. The wrapper is not observable unless you create it explicitly:

@@ -23,7 +23,7 @@ Knowledge is **deduplicated**: each concept has exactly one owner track, and eve
 | Root | Track | Mods | State | Phase |
 | --- | --- | --: | --- | :-: |
 | languages | `typescript` | 13 | ✅ merged: TS 7.0.2, dedupe 09–13 to typing only, 72-q bank, 132 tests | 1 |
-| languages | `javascript` | 13 | ✅ merged: **foundation**: ECMA-262 2026 / Node 26.13, 78-q bank, 355 tests | 1 |
+| languages | `javascript` | 13 | ✅ merged: **foundation**: ECMA-262 2026 / Node 26.13, 100-q bank (Just JavaScript adaptation 2026-11-09), 355 tests | 1 |
 | languages | `python` | 14 | ✅ merged: Python 3.15.2 / uv 0.13.6, PCAP/PCPP1 75-q bank, 82 tests | 2 |
 | languages | `css` | 14 | ✅ merged: **foundation** (D7): cascade, layout, `@property`, view transitions, 75-q bank, 26 Chromium tests | 1 |
 | technologies | `react` | 12 | ✅ merged: React 19.3.1, Fiber/Flight/Actions/Compiler, 65-q bank, 228 tests | 1 |
@@ -177,6 +177,7 @@ brief → Opus authors on track/<name> (Drafter used for bulk drafts)
 | D8 | **Opus is the primary agent.** DeepSeek drafts, Muse Spark challenges, Antigravity verifies. All three are companions or helpers, never final authors. Git history is sanitized for paths, secrets and personal info. | ✅ decided 2026-10-28 |
 | D7 | Add a CSS & web-platform foundation track, `languages/css`. Panda keeps only Panda-specific mechanics. | ✅ decided |
 | D6 | AGENTS.md now requires certification/exam coverage: an exam list, a domain→module matrix, question banks with answers, and mock exams (`exams/` directory in every track). | ✅ decided, AGENTS.md updated 2026-10-28 |
+| D9 | Adapt the free _Just JavaScript_ course (ten episodes, eight quizzes) into `languages/javascript`. The quiz payload is public (`__NEXT_DATA__` → `props.pageProps.source.compiledSource`); extract topics into the existing modules and exam bank (now Q-JSI-007–016, 025–027, 041–049 after the 2026-11-10 renumbering) with official sources winning over the book's simplifications. `STUDY-PATH.md` stays as the track-level bridge. | ✅ decided 2026-11-09 |
 
 ### D4: code languages
 

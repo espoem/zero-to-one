@@ -4,7 +4,9 @@ Dan Abramov's _Just JavaScript_ (illustrated by Maggie Appleton, <https://justja
 
 Read this page when you are learning the language for the first time, or when a prediction you were confident about turned out wrong. Read the modules when you need the normative answer.
 
-> **Status of the mapping (2026-11-05).** Episode texts were read from the public lesson pages. The eight episodes' interactive quizzes are rendered client-side and were not captured, so quiz items are marked _unknown_ here rather than guessed. The book's chapters on `Object`s, prototype chains and equality, which the free lessons sketch, are covered by the modules cited below.
+> **Status of the mapping (updated 2026-11-09).** Episode texts and all eight quizzes were read from the public pages. The quiz payload is embedded in each `/quiz/<slug>` page's `__NEXT_DATA__` JSON (`props.pageProps.source.compiledSource`), so every item was captured directly rather than guessed. The items were used as a coverage checklist for the new questions in [exams/interview.md](exams/interview.md) (Q-JSI-007–016, 025–027, 041–049), which are original and spec-anchored, not copies. The book's chapters on `Object`s, prototype chains and equality, which the free lessons sketch, are covered by the modules cited below.
+
+> **Structure note (2026-11-09).** This is the repository's only "bridge" file: no other track maps an external course onto its modules. The alternative was folding it into the track README, but the README is already the syllabus and exam reference, and the JS track also carries a second standard supplement ([`exercises/`](exercises/README.md)). **Recommendation: keep** the file as a track-level supplement and keep its episode map — the episodes are the book's own unit, and the map is what a reader following the book needs. The question bank, not this page, is where the book's topics are extracted into the track's structure.
 
 ## Episode map
 

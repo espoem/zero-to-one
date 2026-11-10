@@ -2,6 +2,8 @@
 
 Auditor: `opencode-go/deepseek-v4.1-flash` Target: `languages/javascript` Date: 2026-10-31
 
+> **Note (2026-11-10).** The exam bank was renumbered sequentially in reading order; question IDs below are pre-renumbering.
+
 ---
 
 ## Verified compliant

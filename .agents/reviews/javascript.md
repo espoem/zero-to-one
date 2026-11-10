@@ -1,5 +1,7 @@
 # Review: languages/javascript
 
+> **Renumbering (2026-11-10).** The exam bank was renumbered sequentially in reading order; all question IDs in this file use the new numbering.
+
 ## Hand-off (primary · Opus · 2026-10-29)
 
 **State: ready for challenge and verification (🟨 requested; the author may not edit STATUS.md).** Every deliverable in the brief exists, tests are green, and the remaining items are listed below.
@@ -77,7 +79,7 @@ No test depends on a race manifesting or on wall-clock thresholds. Data-race tes
 
 ## Challenger review (Challenger companion · 2026-10-30)
 
-- **C1 (P2 - Classes domain coverage gap)**: Mock B previously had to borrow questions 010 and 014 as fillers because only 7 dedicated class questions were in the bank (marked 🟡 in `exams/README.md`). Added 5 dedicated class questions (Q-JSI-074 to Q-JSI-078) covering `static { ... }` block timing, `#field in obj` brand checks, derived constructor object returns, static inheritance with `super.method()`, and private method isolation against prototype pollution. Updated Mock B to use 074 and 075, eliminating fillers. The coverage matrix row is now ✅ full.
+- **C1 (P2 - Classes domain coverage gap)**: Mock B previously had to borrow questions 020 and 024 as fillers because only 7 dedicated class questions were in the bank (marked 🟡 in `exams/README.md`). Added 5 dedicated class questions (Q-JSI-036 to Q-JSI-040) covering `static { ... }` block timing, `#field in obj` brand checks, derived constructor object returns, static inheritance with `super.method()`, and private method isolation against prototype pollution. Updated Mock B to use 036 and 037, eliminating fillers. The coverage matrix row is now ✅ full.
 - **C2 (P2 - Toolchain environment boundary)**: Running `npm test` against system Node 24 fails 12 tests because modern ES2026/ES2027 features (`Temporal`, `Map.prototype.getOrInsert`, `Uint8Array.fromBase64`, V8 14.6 deopt intrinsics) require Node 26. Running under `mise exec -- npm test` with the pinned `node = "26.12.1"` resolves all dependencies and passes 355/355 tests with 0 failures.
 - **C3 (P3 - Spec references and Stage 2.7 status)**: Verified that TC39 Decorators and Decorator Metadata sit at Stage 2.7 as of 2026; proposal claims in M09 and test assertions match the engine flags.
 
@@ -92,6 +94,37 @@ No test depends on a race manifesting or on wall-clock thresholds. Data-race tes
 
 ## Resolution of findings (2026-10-30)
 
-- **C1 resolved**: Added Q-JSI-074–078 to `interview.md`, updated Mock B to use dedicated class questions, and updated `exams/README.md` to full coverage (✅).
+- **C1 resolved**: Added Q-JSI-036–040 to `interview.md`, updated Mock B to use dedicated class questions, and updated `exams/README.md` to full coverage (✅).
 - **C2 resolved**: Pinned `mise.lock` with Node 26.12.1 platform checksums to guarantee consistent execution.
 - **State transition**: Track `javascript` has passed authoring, challenger review, verifier review, and final gate checks. Ready for merge.
+
+## Just JavaScript adaptation (2026-11-09, branch `track/javascript-just-javascript`)
+
+**What was done.** The ten `/learn` episodes and all eight `/quiz` payloads were read from the public pages. The quiz payload is embedded in each quiz page's `__NEXT_DATA__` JSON (`props.pageProps.source.compiledSource`), so the 116 items were captured directly; the previous "quizzes not captured" note in `STUDY-PATH.md` was wrong and is corrected. The items were used as a coverage checklist, not copied: 22 original questions (Q-JSI-007–016, 025–027, 041–049) were added to `exams/interview.md`, mapped to the interview domains and tagged with JSA-41-01 sections. Module 02 §1 gained a note correcting the "nine types" miscount; module 03 §2 gained a "Parameter binding: values, not variables" subsection (pass-by-value vs reference copying). `exams/README.md`, the track README, `.agents/PLAN.md` and `.agents/STATUS.md` are updated.
+
+**Structure evaluation for `STUDY-PATH.md`.** It is the repository's only bridge file (no other track maps an external course onto its modules). Folding it into the README was rejected: the README is already the syllabus and exam reference, and the JS track already carries a second standard supplement (`exercises/`). Recommendation: **keep** it as a track-level supplement with its episode map. Recorded in the file.
+
+**What was not done.** No new modules or exam files; the existing 78 questions were not rewritten; no changes outside `languages/javascript/` and the two `.agents` files. The book's beginner register and analogies were deliberately not imported (official sources win).
+
+**Least-certain claims.** The JSA section tags on Q-JSI-007–016, 025–027, 041–049 are by section theme; the exam's detailed objective lists were not public. The "nine types" note reflects ECMA-262 §6.1; the eight-type count is stable across editions.
+
+## Challenger review (main model, fresh context · 2026-11-10)
+
+A fresh-context challenger running the main model attacked the 22 new questions. It executed every snippet under Node 26.12.1 and confirmed all claimed outputs; it raised 12 findings. Resolutions:
+
+| ID | Severity | Finding | Resolution |
+| --- | --- | --- | --- |
+| C1 | P2 | Q-008 claimed the eight types were "stable since ES1"; ES1 had six standard types | **Fixed** — replaced with "there has never been a separate Function type". |
+| C2 | P2 | Q-025/026 Ref lines cited module 03 §1, but the parameter-binding treatment is §2 | **Fixed** — §1 → §2. |
+| C3 | P2 | Q-027 cited module 03 §5 (`this`) for function identity | **Fixed** — now module 02 §0 (primitive vs identity) + module 04 §1; domain retagged to "Scope and closures". |
+| C4 | P3 | Q-042 option D (`Object.keys`) only detects own enumerable properties | **Fixed** — stem now says "own enumerable property". |
+| C5 | P3 | Q-048/049 difficulty tags too high | **Fixed** — Q-048 → 1, Q-049 → 2. |
+| C6 | P3 | JSA `Built-in Objects` tags on equality/type questions | **Accepted** — consistent with the existing precedent: Q-002 (equality) is already mapped to Built-in Objects in `exams/README.md`. The four JSA sections are coarse. |
+| C7 | P3 | Partial duplication (Q-011/013 vs Q-002; Q-049 vs Q-089; Q-043 vs Q-028) | **Accepted** — framing is differentiated: Q-011/013 are detection idioms and the `Object.is`/`===` difference; Q-049 is a direct `__proto__` write vs Q-089's `JSON.parse`+merge gadget; Q-043 is the basic assignment rule vs Q-028's override mistake. |
+| C8 | P3 | Q-007 Ref cited module 02 §4 (UTF-16), not the strict-write mechanism | **Fixed** — §4 dropped; §1 only. |
+| C9 | P3 | Module 03 "the value is copied" contradicted the wire model; `GetValue` imprecise | **Fixed** — rephrased to "the same immutable value is bound" and "each argument expression is evaluated to a value". |
+| C10 | P3 | Five-option `multi` questions; Q-027 domain header | **Accepted / fixed** — five options match the existing bank (Q-002, Q-006); Q-027 retagged to the D2 domain. |
+| C11 | P3 | Q-046 called `__proto__` "deprecated"; ECMA-262 does not deprecate it | **Fixed** — now "legacy Annex B accessor". |
+| C12 | P3 | Q-027/044/045/048 explanations did not name the spec operation | **Fixed** — `OrdinaryFunctionCreate`, `[[Set]]`, `[[Get]]` named. |
+
+**Verdict:** all 22 answers are factually correct and match Node 26.12.1. The three P2 items are resolved; the change is safe to merge after this pass. No new ownership rows were needed.

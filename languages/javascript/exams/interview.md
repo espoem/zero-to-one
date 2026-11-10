@@ -13,9 +13,9 @@ The interview format has no official weights. These weights reflect how often ea
 
 | #   | Domain                                      | Weight | Questions |
 | --- | ------------------------------------------- | ------ | --------- |
-| D1  | Types, values and coercion                  | 8%     | 6         |
-| D2  | Scope, closures and `this`                  | 12%    | 8         |
-| D3  | Objects, prototypes and classes             | 16%    | 13        |
+| D1  | Types, values and coercion                  | 8%     | 16        |
+| D2  | Scope, closures and `this`                  | 12%    | 11        |
+| D3  | Objects, prototypes and classes             | 16%    | 22        |
 | D4  | Iterators and generators                    | 8%     | 5         |
 | D5  | Event loop and job queue                    | 12%    | 9         |
 | D6  | Async patterns                              | 12%    | 9         |
@@ -24,7 +24,7 @@ The interview format has no official weights. These weights reflect how often ea
 | D9  | Modern ECMAScript (ES2024–ES2027)           | 6%     | 5         |
 | D10 | Performance and security                    | 10%    | 6         |
 | H   | Hands-on coding tasks (span D2, D3, D5, D6) | —      | 6         |
-|     | **Total**                                   | 100%   | **78**    |
+|     | **Total**                                   | 100%   | **100**   |
 
 ---
 
@@ -151,11 +151,224 @@ Which statements about BigInt are true? (Select all that apply.)
 
 </details>
 
+### Q-JSI-007 · Types and coercion · difficulty 2 · single
+
+```js
+let s = 'hello';
+s[0] = 'H';
+console.log(s);
+```
+
+In a strict-mode ES module, what happens on the second line?
+
+- A) `s` becomes `'Hello'`.
+- B) The write is silently ignored; `s` stays `'hello'`.
+- C) `TypeError`.
+- D) `ReferenceError`.
+
+<details><summary>Answer</summary>
+
+**C.** `s` is a primitive String. Index properties on a String exotic object are read-only, and the assignment goes through `PutValue`; in strict code a failed write throws `TypeError` (sloppy code ignores it). The primitive itself is immutable either way.
+
+- Why not A: primitives are immutable; there is no way to change a string in place.
+- Why not B: silent failure is the sloppy-mode behaviour; modules are strict.
+- Why not D: `s` is declared and initialised; the error is the write, not the binding.
+- Ref: [modules/02-types-values-coercion.md](../modules/02-types-values-coercion.md) §1, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String · JSA: Built-in Objects
+
+</details>
+
+### Q-JSI-008 · Types and coercion · difficulty 1 · single
+
+A beginner text says "there are nine types of values in JavaScript". How many language types does ECMA-262 define, and why does `typeof` sometimes report a ninth?
+
+- A) Nine; the specification has a separate Function type.
+- B) Eight; functions are Objects with a `[[Call]]` internal method, and `typeof` labels callables `"function"`.
+- C) Eight; the ninth is the undeclared type.
+- D) Nine; the specification added a Function type in ES2015.
+
+<details><summary>Answer</summary>
+
+**B.** §6.1 lists Undefined, Null, Boolean, String, Symbol, Number, BigInt and Object. A function is an Object with a `[[Call]]` internal method; `typeof` (§13.5.3) is a table lookup that returns `"function"` for callables.
+
+- Why not A: there is no Function language type; `"function"` is a `typeof` result, not a type.
+- Why not C: undeclared identifiers are a resolution error, not a type.
+- Why not D: there has never been a separate Function type; functions have always been Objects with a `[[Call]]` internal method.
+- Ref: [modules/02-types-values-coercion.md](../modules/02-types-values-coercion.md) §1, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#language_types · JSA: Built-in Objects
+
+</details>
+
+### Q-JSI-009 · Types and coercion · difficulty 2 · single
+
+```js
+const s = new String('ab');
+console.log(s === 'ab', typeof s, s instanceof String);
+```
+
+- A) `false "string" false`
+- B) `false "object" true`
+- C) `true "object" true`
+- D) `false "object" false`
+
+<details><summary>Answer</summary>
+
+**B.** `new String` creates a String exotic object (an Object), so it is not strictly equal to the primitive, `typeof` reports `"object"`, and `instanceof String` is true. Property access on the primitive uses a temporary wrapper, not this persistent object.
+
+- Why not A: `typeof` of a String object is `"object"`, not `"string"`.
+- Why not C: `===` between an Object and a String is false (different types, no coercion).
+- Why not D: the object's prototype is `String.prototype`, so `instanceof String` is true.
+- Ref: [modules/02-types-values-coercion.md](../modules/02-types-values-coercion.md) §1, [modules/04-objects-prototypes-classes.md](../modules/04-objects-prototypes-classes.md) §5, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String · JSA: Built-in Objects
+
+</details>
+
+### Q-JSI-010 · Types and coercion · difficulty 2 · multi
+
+Which expressions reliably detect that `x` is `NaN`? (Select all that apply.)
+
+- A) `Number.isNaN(x)`
+- B) `Object.is(x, NaN)`
+- C) `x !== x`
+- D) `isNaN(x)`
+- E) `x === NaN`
+
+<details><summary>Answer</summary>
+
+**A, B, C.** `Number.isNaN` does not coerce; `Object.is` uses SameValue, under which NaN equals NaN; `x !== x` is true only for NaN.
+
+- Why not D: the global `isNaN` coerces first, so `isNaN('abc')` is `true`.
+- Why not E: `===` uses IsStrictlyEqual, under which NaN is never equal to anything.
+- Ref: [modules/02-types-values-coercion.md](../modules/02-types-values-coercion.md) §2 and §7, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isNaN · JSA: Built-in Objects
+
+</details>
+
+### Q-JSI-011 · Types and coercion · difficulty 3 · single
+
+Which expression distinguishes `+0` from `-0`?
+
+- A) `x === 0`
+- B) `Object.is(x, -0)`
+- C) `x < 0`
+- D) `Number.isNegative(x)`
+
+<details><summary>Answer</summary>
+
+**B.** `Object.is` uses SameValue, which treats `+0` and `-0` as different values.
+
+- Why not A: `===` uses IsStrictlyEqual, under which `+0 === -0` is `true`.
+- Why not C: neither is less than zero.
+- Why not D: `Number.isNegative` does not exist; `Math.sign(-0)` is `-0`, and `1 / -0` is `-Infinity`.
+- Ref: [modules/02-types-values-coercion.md](../modules/02-types-values-coercion.md) §2 and §7, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/is · JSA: Built-in Objects
+
+</details>
+
+### Q-JSI-012 · Types and coercion · difficulty 3 · multi
+
+Which of these loose-equality comparisons are `true`? (Select all that apply.)
+
+- A) `[[]] == ''`
+- B) `true == [1]`
+- C) `false == [0]`
+- D) `null == 0`
+- E) `undefined == null`
+
+<details><summary>Answer</summary>
+
+**A, B, C, E.** `[[]]` ToPrimitive-hints to `''`, so `'' == ''`. `true == [1]` becomes `1 == 1`. `false == [0]` becomes `0 == 0`. `undefined == null` is the one null/undefined pair that IsLooselyEqual accepts.
+
+- Why not D: `null` is loosely equal only to `undefined` (and itself); `null == 0` is `false`.
+- Ref: [modules/02-types-values-coercion.md](../modules/02-types-values-coercion.md) §7.1, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Equality_comparisons_and_sameness · JSA: Built-in Objects
+
+</details>
+
+### Q-JSI-013 · Types and coercion · difficulty 2 · single
+
+What is the difference between `Object.is(a, b)` and `a === b`?
+
+- A) `Object.is` coerces; `===` does not.
+- B) They are identical in every case.
+- C) `Object.is` treats NaN as equal to NaN and `+0` as different from `-0`; `===` does the opposite.
+- D) `Object.is` is another name for loose equality.
+
+<details><summary>Answer</summary>
+
+**C.** `Object.is` uses SameValue (§7.2.9): NaN equals NaN, and `+0` and `-0` are distinct. `===` uses IsStrictlyEqual (§7.2.14): NaN equals nothing, and `+0` equals `-0`.
+
+- Why not A: neither coerces; both are strict algorithms.
+- Why not B: the two special cases differ.
+- Why not D: loose equality is `==`, which coerces.
+- Ref: [modules/02-types-values-coercion.md](../modules/02-types-values-coercion.md) §7, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Equality_comparisons_and_sameness · JSA: Built-in Objects
+
+</details>
+
+### Q-JSI-014 · Types and coercion · difficulty 1 · single
+
+What does `x == null` test?
+
+- A) `x` is `null`.
+- B) `x` is `undefined`.
+- C) `x` is `null` or `undefined`.
+- D) `x` is falsy.
+
+<details><summary>Answer</summary>
+
+**C.** IsLooselyEqual returns `true` for the `null`/`undefined` pair, so the idiom tests both at once.
+
+- Why not A: it also matches `undefined`.
+- Why not B: it also matches `null`.
+- Why not D: `0`, `''`, `false` and `NaN` are falsy but not loosely equal to `null`.
+- Ref: [modules/02-types-values-coercion.md](../modules/02-types-values-coercion.md) §7.1, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Equality_comparisons_and_sameness · JSA: Built-in Objects
+
+</details>
+
+### Q-JSI-015 · Types and coercion · difficulty 2 · single
+
+```js
+console.log(Number.isSafeInteger(2 ** 53));
+```
+
+- A) `true`
+- B) `false`
+- C) `RangeError`
+- D) `NaN`
+
+<details><summary>Answer</summary>
+
+**B.** `2 ** 53` is `9007199254740992`, one above `Number.MAX_SAFE_INTEGER` (`2 ** 53 - 1`). Not every integer at that magnitude is representable in binary64.
+
+- Why not A: `Number.isSafeInteger` requires an integer in `[MIN_SAFE_INTEGER, MAX_SAFE_INTEGER]`.
+- Why not C: the argument is a finite Number; no error is thrown.
+- Why not D: the result is a Boolean.
+- Ref: [modules/02-types-values-coercion.md](../modules/02-types-values-coercion.md) §2, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isSafeInteger · JSA: Built-in Objects
+
+</details>
+
+### Q-JSI-016 · Types and coercion · difficulty 2 · single
+
+```js
+const s = '👍🏽';
+console.log(s.length, [...s].length);
+```
+
+- A) `2 2`
+- B) `4 2`
+- C) `2 4`
+- D) `4 4`
+
+<details><summary>Answer</summary>
+
+**B.** `.length` counts UTF-16 code units: the thumbs-up and the skin-tone modifier are two surrogate pairs, so 4. Spread iterates by code point, so 2.
+
+- Why not A: `.length` is code units, not code points.
+- Why not C: the order is reversed.
+- Why not D: spread combines surrogate pairs.
+- Ref: [modules/02-types-values-coercion.md](../modules/02-types-values-coercion.md) §4, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/length · JSA: Built-in Objects
+
+</details>
+
 ---
 
 ## D2 · Scope, closures and `this`
 
-### Q-JSI-007 · Scope and closures · difficulty 1 · single
+### Q-JSI-017 · Scope and closures · difficulty 1 · single
 
 What does this print?
 
@@ -181,7 +394,7 @@ console.log(fs.map((f) => f()).join(','));
 
 </details>
 
-### Q-JSI-008 · Scope and closures · difficulty 2 · single
+### Q-JSI-018 · Scope and closures · difficulty 2 · single
 
 Which line throws?
 
@@ -211,7 +424,7 @@ console.log(readLater()); // line 5
 
 </details>
 
-### Q-JSI-009 · `this` · difficulty 2 · single
+### Q-JSI-019 · `this` · difficulty 2 · single
 
 In an ES module:
 
@@ -243,7 +456,7 @@ What is `results`?
 
 </details>
 
-### Q-JSI-010 · `this` · difficulty 2 · multi
+### Q-JSI-020 · `this` · difficulty 2 · multi
 
 Which statements about `fn.bind(a)` are true? (Select all that apply.)
 
@@ -263,7 +476,7 @@ Which statements about `fn.bind(a)` are true? (Select all that apply.)
 
 </details>
 
-### Q-JSI-011 · Scope and closures · difficulty 3 · scenario
+### Q-JSI-021 · Scope and closures · difficulty 3 · scenario
 
 A Node service's memory grows per request. A heap snapshot shows large `Buffer`s retained through a `context` of a small `() => 'ok'` callback stored in a long-lived cache. The callback never mentions the buffer. What is the most likely mechanism?
 
@@ -283,7 +496,7 @@ A Node service's memory grows per request. A heap snapshot shows large `Buffer`s
 
 </details>
 
-### Q-JSI-012 · `this` · difficulty 1 · scenario
+### Q-JSI-022 · `this` · difficulty 1 · scenario
 
 A class component passes `onClick={this.handleClick}`, and the handler throws `Cannot read properties of undefined (reading 'setState')`. Which fix is correct?
 
@@ -303,7 +516,7 @@ A class component passes `onClick={this.handleClick}`, and the handler throws `C
 
 </details>
 
-### Q-JSI-013 · Scope and closures · difficulty 3 · single
+### Q-JSI-023 · Scope and closures · difficulty 3 · single
 
 In a sloppy-mode function, `eval('var added = 1')` followed by `typeof added` gives `"number"`. What does the same code give inside a strict-mode function?
 
@@ -323,7 +536,7 @@ In a sloppy-mode function, `eval('var added = 1')` followed by `typeof added` gi
 
 </details>
 
-### Q-JSI-014 · Scope and closures · difficulty 2 · single
+### Q-JSI-024 · Scope and closures · difficulty 2 · single
 
 Why does `let x = 1` at the top level of a classic script not create `globalThis.x`?
 
@@ -343,11 +556,89 @@ Why does `let x = 1` at the top level of a classic script not create `globalThis
 
 </details>
 
+### Q-JSI-025 · Scope and closures · difficulty 2 · single
+
+```js
+function double(x) {
+  x = x * 2;
+}
+let money = 10;
+double(money);
+console.log(money);
+```
+
+- A) `20`
+- B) `10`
+- C) `NaN`
+- D) `ReferenceError`
+
+<details><summary>Answer</summary>
+
+**B.** The argument expression `money` is evaluated to its value (`10`) and bound to the parameter `x`. Reassigning `x` rebinds the parameter binding; the caller's `money` binding is untouched. Primitives are immutable and passed by value.
+
+- Why not A: that would require passing the variable, which JavaScript does not do.
+- Why not C: `10 * 2` is a valid Number.
+- Why not D: both bindings are in scope.
+- Ref: [modules/03-execution-contexts-scope-closures.md](../modules/03-execution-contexts-scope-closures.md) §2, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions#function_parameters · JSA: Advanced Functions
+
+</details>
+
+### Q-JSI-026 · Scope and closures · difficulty 2 · single
+
+```js
+function addAge(person) {
+  person.age = person.age + 1;
+}
+const user = { age: 30 };
+addAge(user);
+console.log(user.age);
+```
+
+- A) `30`
+- B) `31`
+- C) `NaN`
+- D) `TypeError`
+
+<details><summary>Answer</summary>
+
+**B.** The parameter is bound to the same object value: the reference is copied, not the object. Mutating `person.age` mutates the shared object, which `user` still points at.
+
+- Why not A: that would be true only if the object were copied.
+- Why not C: `30 + 1` is a valid Number.
+- Why not D: `person` is an object, so property assignment is allowed.
+- Ref: [modules/03-execution-contexts-scope-closures.md](../modules/03-execution-contexts-scope-closures.md) §1, [modules/02-types-values-coercion.md](../modules/02-types-values-coercion.md) §0, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions#function_parameters · JSA: Advanced Functions
+
+</details>
+
+### Q-JSI-027 · Scope and closures · difficulty 2 · single
+
+```js
+const f = function () {};
+const g = f;
+console.log(f === g, f === function () {});
+```
+
+- A) `true true`
+- B) `true false`
+- C) `false false`
+- D) `false true`
+
+<details><summary>Answer</summary>
+
+**B.** `g` is bound to the same function value as `f`, so `f === g`. A function expression evaluates to a new function object (`OrdinaryFunctionCreate`) each time it runs, so the second expression is a distinct value.
+
+- Why not A: the second expression creates a fresh function object.
+- Why not C: `f` and `g` point at the same value.
+- Why not D: `f === g` is true.
+- Ref: [modules/04-objects-prototypes-classes.md](../modules/04-objects-prototypes-classes.md) §1, [modules/02-types-values-coercion.md](../modules/02-types-values-coercion.md) §0, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/function · JSA: Advanced Functions
+
+</details>
+
 ---
 
 ## D3 · Objects, prototypes and classes
 
-### Q-JSI-015 · Objects and prototypes · difficulty 2 · single
+### Q-JSI-028 · Objects and prototypes · difficulty 2 · single
 
 ```js
 const proto = Object.freeze({
@@ -377,7 +668,7 @@ What happens on the last line?
 
 </details>
 
-### Q-JSI-016 · Objects and prototypes · difficulty 1 · single
+### Q-JSI-029 · Objects and prototypes · difficulty 1 · single
 
 What does `Object.keys({ b: 1, 2: 1, a: 1, 1: 1 })` return?
 
@@ -397,7 +688,7 @@ What does `Object.keys({ b: 1, 2: 1, a: 1, 1: 1 })` return?
 
 </details>
 
-### Q-JSI-017 · Classes · difficulty 2 · single
+### Q-JSI-030 · Classes · difficulty 2 · single
 
 ```js
 class Base {
@@ -431,7 +722,7 @@ console.log(new Derived().seen);
 
 </details>
 
-### Q-JSI-018 · Classes · difficulty 3 · scenario
+### Q-JSI-031 · Classes · difficulty 3 · scenario
 
 A reactive library wraps class instances in a `Proxy`. Calling a method that reads `this.#count` through the proxy throws `TypeError: Cannot read private member`. Why?
 
@@ -451,7 +742,7 @@ A reactive library wraps class instances in a `Proxy`. Calling a method that rea
 
 </details>
 
-### Q-JSI-019 · Objects and prototypes · difficulty 2 · multi
+### Q-JSI-032 · Objects and prototypes · difficulty 2 · multi
 
 Which differences between `Object.assign(target, src)` and `{ ...src }` are real? (Select all that apply.)
 
@@ -471,7 +762,7 @@ Which differences between `Object.assign(target, src)` and `{ ...src }` are real
 
 </details>
 
-### Q-JSI-020 · Objects and prototypes · difficulty 2 · single
+### Q-JSI-033 · Objects and prototypes · difficulty 2 · single
 
 Why is `value instanceof Array` unreliable for arrays received from an iframe or a `vm` context?
 
@@ -491,7 +782,7 @@ Why is `value instanceof Array` unreliable for arrays received from an iframe or
 
 </details>
 
-### Q-JSI-021 · Objects and prototypes · difficulty 1 · single
+### Q-JSI-034 · Objects and prototypes · difficulty 1 · single
 
 What do `Object.freeze` guarantees cover?
 
@@ -511,7 +802,7 @@ What do `Object.freeze` guarantees cover?
 
 </details>
 
-### Q-JSI-022 · Classes · difficulty 2 · single
+### Q-JSI-035 · Classes · difficulty 2 · single
 
 Why does `class Stack extends Array {}` produce instances whose `length` updates automatically, while the ES5 pattern `function Stack() { Array.call(this); } Stack.prototype = Object.create(Array.prototype)` does not?
 
@@ -531,7 +822,7 @@ Why does `class Stack extends Array {}` produce instances whose `length` updates
 
 </details>
 
-### Q-JSI-074 · Classes · difficulty 2 · single
+### Q-JSI-036 · Classes · difficulty 2 · single
 
 When does a `static { ... }` class initialisation block execute in JavaScript?
 
@@ -551,7 +842,7 @@ When does a `static { ... }` class initialisation block execute in JavaScript?
 
 </details>
 
-### Q-JSI-075 · Classes · difficulty 2 · single
+### Q-JSI-037 · Classes · difficulty 2 · single
 
 Given a class with a private field `#secret`, which syntax correctly performs a private brand check without throwing if `obj` is an instance of a different class or a primitive?
 
@@ -580,7 +871,7 @@ class Vault {
 
 </details>
 
-### Q-JSI-076 · Classes · difficulty 3 · single
+### Q-JSI-038 · Classes · difficulty 3 · single
 
 ```js
 class Base {
@@ -616,7 +907,7 @@ What is printed?
 
 </details>
 
-### Q-JSI-077 · Classes · difficulty 2 · single
+### Q-JSI-039 · Classes · difficulty 2 · single
 
 ```js
 class Animal {
@@ -648,7 +939,7 @@ What is printed?
 
 </details>
 
-### Q-JSI-078 · Classes · difficulty 3 · scenario
+### Q-JSI-040 · Classes · difficulty 3 · scenario
 
 A security team audits a library where an instance method `#verifyToken()` was implemented as a private method:
 
@@ -679,11 +970,219 @@ An attacker successfully pollutes `Object.prototype` and `AuthManager.prototype`
 
 </details>
 
+### Q-JSI-041 · Objects and prototypes · difficulty 2 · single
+
+```js
+const proto = { teeth: 32 };
+const obj = Object.create(proto);
+console.log(obj.teeth, Object.hasOwn(obj, 'teeth'), 'teeth' in obj);
+```
+
+- A) `32 false true`
+- B) `32 true true`
+- C) `undefined false false`
+- D) `32 false false`
+
+<details><summary>Answer</summary>
+
+**A.** `[[Get]]` walks the prototype chain and finds `teeth` on `proto`, so the read is `32`. `Object.hasOwn` checks only own properties, so it is `false`; `in` includes inherited properties, so it is `true`.
+
+- Why not B: `teeth` is not an own property of `obj`.
+- Why not C: the read finds the inherited property.
+- Why not D: `in` sees the inherited property.
+- Ref: [modules/04-objects-prototypes-classes.md](../modules/04-objects-prototypes-classes.md) §2.1 and §3, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwn · JSA: Classless Objects
+
+</details>
+
+### Q-JSI-042 · Objects and prototypes · difficulty 2 · multi
+
+Which of these distinguish an own enumerable property from an inherited one? (Select all that apply.)
+
+- A) `Object.hasOwn(obj, 'x')`
+- B) `obj.hasOwnProperty('x')`
+- C) `'x' in obj`
+- D) `Object.keys(obj).includes('x')`
+- E) `obj.x !== undefined`
+
+<details><summary>Answer</summary>
+
+**A, B, D.** `Object.hasOwn` and `hasOwnProperty` check only own properties; `Object.keys` lists own enumerable string keys.
+
+- Why not C: `in` walks the prototype chain.
+- Why not E: an inherited property (or an own property whose value is not `undefined`) also satisfies it.
+- Ref: [modules/04-objects-prototypes-classes.md](../modules/04-objects-prototypes-classes.md) §2.3 and §3, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/in · JSA: Classless Objects
+
+</details>
+
+### Q-JSI-043 · Objects and prototypes · difficulty 2 · single
+
+```js
+const human = { teeth: 32 };
+const gwen = { __proto__: human };
+gwen.teeth = 31;
+console.log(human.teeth, gwen.teeth, Object.hasOwn(gwen, 'teeth'));
+```
+
+- A) `32 31 true`
+- B) `31 31 true`
+- C) `32 31 false`
+- D) `31 31 false`
+
+<details><summary>Answer</summary>
+
+**A.** Assignment creates an own property on the receiver (`gwen`); it does not write to the prototype. `human.teeth` is unchanged, and `gwen` now has an own `teeth`.
+
+- Why not B: assignment never writes to the prototype.
+- Why not C: `gwen` does have an own `teeth` after the assignment.
+- Why not D: the prototype is unchanged and `gwen` has an own property.
+- Ref: [modules/04-objects-prototypes-classes.md](../modules/04-objects-prototypes-classes.md) §2.2 and §3, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Working_with_objects#prototype_inheritance · JSA: Classless Objects
+
+</details>
+
+### Q-JSI-044 · Objects and prototypes · difficulty 2 · scenario
+
+```js
+const sherlock = { surname: 'Holmes', address: { city: 'London' } };
+const john = { surname: 'Watson', address: sherlock.address };
+john.address.city = 'Malibu';
+console.log(sherlock.address.city);
+```
+
+- A) `"London"`
+- B) `"Malibu"`
+- C) `undefined`
+- D) `TypeError`
+
+<details><summary>Answer</summary>
+
+**B.** Both `address` properties point at the same object value. `[[Set]]` on `john.address.city` writes the `city` property of that shared object, which `sherlock` still reaches.
+
+- Why not A: the object was mutated, not copied.
+- Why not C: the property exists and holds `"Malibu"`.
+- Why not D: `john.address` is an object, so the write is allowed.
+- Ref: [modules/02-types-values-coercion.md](../modules/02-types-values-coercion.md) §0, [modules/04-objects-prototypes-classes.md](../modules/04-objects-prototypes-classes.md) §1, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Working_with_objects · JSA: Classless Objects
+
+</details>
+
+### Q-JSI-045 · Objects and prototypes · difficulty 1 · single
+
+```js
+const shrek = { species: 'ogre' };
+shrek.species = 'human';
+console.log(shrek.species);
+```
+
+- A) `'ogre'`
+- B) `'human'`
+- C) `TypeError`
+- D) `ReferenceError`
+
+<details><summary>Answer</summary>
+
+**B.** `const` prevents reassigning the variable binding, not mutating the object it points to. `[[Set]]` writes the own `species` property, which is writable, so the assignment succeeds.
+
+- Why not A: the property was reassigned.
+- Why not C: `const` does not freeze the object.
+- Why not D: `shrek` is declared and initialised.
+- Ref: [modules/02-types-values-coercion.md](../modules/02-types-values-coercion.md) §0, [modules/04-objects-prototypes-classes.md](../modules/04-objects-prototypes-classes.md) §1, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/const · JSA: Classless Objects
+
+</details>
+
+### Q-JSI-046 · Objects and prototypes · difficulty 2 · single
+
+What is the difference between `__proto__` and `prototype`?
+
+- A) They are the same property.
+- B) `__proto__` is an object's `[[Prototype]]` (what it inherits from); `prototype` is a property of constructor functions that `new` reads to set the new object's `[[Prototype]]`.
+- C) `prototype` is an object's `[[Prototype]]`; `__proto__` is the constructor's property.
+- D) `__proto__` is standard; `prototype` is deprecated.
+
+<details><summary>Answer</summary>
+
+**B.** `__proto__` is the Annex B accessor on `Object.prototype` for `[[Prototype]]`. `prototype` is an ordinary property on functions; `new` uses it in `OrdinaryCreateFromConstructor` (§10.1.13) as the new object's prototype.
+
+- Why not A: they live on different objects and mean different things.
+- Why not C: the roles are reversed.
+- Why not D: `__proto__` is the legacy Annex B accessor; `prototype` is a normal function property.
+- Ref: [modules/04-objects-prototypes-classes.md](../modules/04-objects-prototypes-classes.md) §3, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/proto · JSA: Classless Objects
+
+</details>
+
+### Q-JSI-047 · Objects and prototypes · difficulty 2 · single
+
+```js
+const dict = Object.create(null);
+dict.toString = 'x';
+console.log('toString' in dict, dict.hasOwnProperty);
+```
+
+- A) `true function`
+- B) `true undefined`
+- C) `false undefined`
+- D) `false function`
+
+<details><summary>Answer</summary>
+
+**B.** `dict` has a `null` prototype, so `toString` is an own property created by the assignment, and `hasOwnProperty` is not inherited. Use `Object.hasOwn` instead.
+
+- Why not A: `hasOwnProperty` is not on a null-prototype object.
+- Why not C: `toString` is an own property, so `in` is true.
+- Why not D: `in` sees the own property.
+- Ref: [modules/04-objects-prototypes-classes.md](../modules/04-objects-prototypes-classes.md) §3, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create · JSA: Classless Objects
+
+</details>
+
+### Q-JSI-048 · Objects and prototypes · difficulty 1 · single
+
+```js
+const obj = {};
+console.log(obj.boat);
+console.log(obj.boat.name);
+```
+
+What happens?
+
+- A) `undefined`, then `undefined`
+- B) `undefined`, then `TypeError`
+- C) `TypeError` on the first line
+- D) `null`, then `TypeError`
+
+<details><summary>Answer</summary>
+
+**B.** `[[Get]]` on a missing property returns `undefined`. The second line is a `[[Get]]` on `undefined`, which throws `TypeError`.
+
+- Why not A: the second read is on `undefined`, which throws.
+- Why not C: the first read is a normal missing-property read.
+- Why not D: a missing property yields `undefined`, not `null`.
+- Ref: [modules/04-objects-prototypes-classes.md](../modules/04-objects-prototypes-classes.md) §2.1, [modules/02-types-values-coercion.md](../modules/02-types-values-coercion.md) §0, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Working_with_objects · JSA: Classless Objects
+
+</details>
+
+### Q-JSI-049 · Objects and prototypes · difficulty 2 · scenario
+
+A library runs `obj.__proto__.smell = 'banana'` on a plain object. What is the effect, and what is the defence?
+
+- A) It adds an own `smell` property to `obj`; no defence is needed.
+- B) It mutates `Object.prototype`, so every object in the realm appears to have `smell`; use null-prototype objects, `Map`, key allow-lists, or freeze `Object.prototype`.
+- C) It throws `TypeError`.
+- D) It creates a new object.
+
+<details><summary>Answer</summary>
+
+**B.** `__proto__` is the accessor on `Object.prototype`; writing through it mutates the shared prototype (prototype pollution). Every object that inherits from `Object.prototype` now appears to have `smell`.
+
+- Why not A: the write goes to the prototype, not the object.
+- Why not C: the accessor's setter accepts the write.
+- Why not D: no new object is created; an existing shared one is mutated.
+- Ref: [modules/04-objects-prototypes-classes.md](../modules/04-objects-prototypes-classes.md) §7, [modules/13-correctness-security-pitfalls.md](../modules/13-correctness-security-pitfalls.md) §1, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/proto · JSA: Classless Objects
+
+</details>
+
 ---
 
 ## D4 · Iterators and generators
 
-### Q-JSI-023 · Iterators · difficulty 2 · multi
+### Q-JSI-050 · Iterators · difficulty 2 · multi
 
 In which situations does a consumer call the iterator's `return()` method? (Select all that apply.)
 
@@ -703,7 +1202,7 @@ In which situations does a consumer call the iterator's `return()` method? (Sele
 
 </details>
 
-### Q-JSI-024 · Generators · difficulty 2 · single
+### Q-JSI-051 · Generators · difficulty 2 · single
 
 ```js
 function* g() {
@@ -732,7 +1231,7 @@ What is `r`?
 
 </details>
 
-### Q-JSI-025 · Iterators · difficulty 1 · single
+### Q-JSI-052 · Iterators · difficulty 1 · single
 
 Why does a second `for...of` over the same generator object produce no iterations?
 
@@ -752,7 +1251,7 @@ Why does a second `for...of` over the same generator object produce no iteration
 
 </details>
 
-### Q-JSI-026 · Iterators · difficulty 2 · multi
+### Q-JSI-053 · Iterators · difficulty 2 · multi
 
 Which statements about iterator helpers (`Iterator.prototype.map/filter/take/...`) are true? (Select all that apply.)
 
@@ -772,7 +1271,7 @@ Which statements about iterator helpers (`Iterator.prototype.map/filter/take/...
 
 </details>
 
-### Q-JSI-027 · Async iteration · difficulty 3 · scenario
+### Q-JSI-054 · Async iteration · difficulty 3 · scenario
 
 A Node script does `for await (const r of [slowFetch(), failingFetch()])`. `failingFetch()` rejects after 5 ms; `slowFetch()` resolves after 50 ms. The process exits with code 1 before printing anything. Why?
 
@@ -796,7 +1295,7 @@ A Node script does `for await (const r of [slowFetch(), failingFetch()])`. `fail
 
 ## D5 · Event loop and job queue
 
-### Q-JSI-028 · Event loop · difficulty 1 · ordering
+### Q-JSI-055 · Event loop · difficulty 1 · ordering
 
 Put the logs in order:
 
@@ -823,7 +1322,7 @@ console.log('D');
 
 </details>
 
-### Q-JSI-029 · Event loop · difficulty 2 · ordering
+### Q-JSI-056 · Event loop · difficulty 2 · ordering
 
 Put the logs in order:
 
@@ -854,7 +1353,7 @@ console.log('4');
 
 </details>
 
-### Q-JSI-030 · Event loop · difficulty 3 · ordering
+### Q-JSI-057 · Event loop · difficulty 3 · ordering
 
 Order the settle notifications (all started in the same synchronous turn):
 
@@ -877,7 +1376,7 @@ Order the settle notifications (all started in the same synchronous turn):
 
 </details>
 
-### Q-JSI-031 · Event loop · difficulty 2 · single
+### Q-JSI-058 · Event loop · difficulty 2 · single
 
 Where does a `requestAnimationFrame` callback run in the HTML event loop?
 
@@ -897,7 +1396,7 @@ Where does a `requestAnimationFrame` callback run in the HTML event loop?
 
 </details>
 
-### Q-JSI-032 · Event loop · difficulty 2 · scenario
+### Q-JSI-059 · Event loop · difficulty 2 · scenario
 
 A page freezes and never repaints while a "background" job processes 200,000 items with `await Promise.resolve()` between items. What is wrong?
 
@@ -917,7 +1416,7 @@ A page freezes and never repaints while a "background" job processes 200,000 ite
 
 </details>
 
-### Q-JSI-033 · Event loop · difficulty 2 · single
+### Q-JSI-060 · Event loop · difficulty 2 · single
 
 In Node 26, a promise is rejected without a handler, and `.catch()` is attached inside a `setTimeout(..., 0)` callback. With default settings, what happens?
 
@@ -937,7 +1436,7 @@ In Node 26, a promise is rejected without a handler, and `.catch()` is attached 
 
 </details>
 
-### Q-JSI-034 · Event loop · difficulty 3 · multi
+### Q-JSI-061 · Event loop · difficulty 3 · multi
 
 Which statements about ECMA-262 jobs and HTML task queues are true? (Select all that apply.)
 
@@ -957,7 +1456,7 @@ Which statements about ECMA-262 jobs and HTML task queues are true? (Select all 
 
 </details>
 
-### Q-JSI-035 · Event loop · difficulty 2 · single
+### Q-JSI-062 · Event loop · difficulty 2 · single
 
 `MutationObserver` callbacks are delivered...
 
@@ -977,7 +1476,7 @@ Which statements about ECMA-262 jobs and HTML task queues are true? (Select all 
 
 </details>
 
-### Q-JSI-036 · Event loop · difficulty 2 · single
+### Q-JSI-063 · Event loop · difficulty 2 · single
 
 Inside an async function's `try` block, why is `return await p` preferred to `return p`?
 
@@ -1001,7 +1500,7 @@ Inside an async function's `try` block, why is `return await p` preferred to `re
 
 ## D6 · Async patterns
 
-### Q-JSI-037 · Async patterns · difficulty 1 · single
+### Q-JSI-064 · Async patterns · difficulty 1 · single
 
 What does `Promise.all` do when one input rejects while others are still pending?
 
@@ -1021,7 +1520,7 @@ What does `Promise.all` do when one input rejects while others are still pending
 
 </details>
 
-### Q-JSI-038 · Async patterns · difficulty 2 · multi
+### Q-JSI-065 · Async patterns · difficulty 2 · multi
 
 Which statements about the combinators are true? (Select all that apply.)
 
@@ -1041,7 +1540,7 @@ Which statements about the combinators are true? (Select all that apply.)
 
 </details>
 
-### Q-JSI-039 · Async patterns · difficulty 2 · scenario
+### Q-JSI-066 · Async patterns · difficulty 2 · scenario
 
 A job imports 50,000 records with `await Promise.all(records.map(upload))`. Production sees `EMFILE` errors and HTTP 429 responses. What is the best fix?
 
@@ -1061,7 +1560,7 @@ A job imports 50,000 records with `await Promise.all(records.map(upload))`. Prod
 
 </details>
 
-### Q-JSI-040 · Async patterns · difficulty 2 · single
+### Q-JSI-067 · Async patterns · difficulty 2 · single
 
 How do you give a `fetch` a 5-second timeout while still honouring the caller's `AbortSignal`?
 
@@ -1081,7 +1580,7 @@ How do you give a `fetch` a 5-second timeout while still honouring the caller's 
 
 </details>
 
-### Q-JSI-041 · Async patterns · difficulty 1 · single
+### Q-JSI-068 · Async patterns · difficulty 1 · single
 
 What does `[1, 2, 3].forEach(async (x) => { await save(x); })` return, and when?
 
@@ -1101,7 +1600,7 @@ What does `[1, 2, 3].forEach(async (x) => { await save(x); })` return, and when?
 
 </details>
 
-### Q-JSI-042 · Async patterns · difficulty 2 · single
+### Q-JSI-069 · Async patterns · difficulty 2 · single
 
 What is the difference between `Promise.try(fn)` (ES2025) and `Promise.resolve().then(fn)`?
 
@@ -1121,7 +1620,7 @@ What is the difference between `Promise.try(fn)` (ES2025) and `Promise.resolve()
 
 </details>
 
-### Q-JSI-043 · Async patterns · difficulty 3 · scenario
+### Q-JSI-070 · Async patterns · difficulty 3 · scenario
 
 A retry helper retries every failure 5 times with delays of exactly 1, 2, 4, 8, 16 s. During an outage, the recovering service is knocked over again at regular intervals. Which change addresses the cause?
 
@@ -1141,7 +1640,7 @@ A retry helper retries every failure 5 times with delays of exactly 1, 2, 4, 8, 
 
 </details>
 
-### Q-JSI-044 · Async patterns · difficulty 2 · multi
+### Q-JSI-071 · Async patterns · difficulty 2 · multi
 
 Which are good practices for a cancellable async function? (Select all that apply.)
 
@@ -1161,7 +1660,7 @@ Which are good practices for a cancellable async function? (Select all that appl
 
 </details>
 
-### Q-JSI-045 · Async patterns · difficulty 3 · single
+### Q-JSI-072 · Async patterns · difficulty 3 · single
 
 What is the status of AsyncContext, and what do Node applications use today for request-scoped context across `await`?
 
@@ -1185,7 +1684,7 @@ What is the status of AsyncContext, and what do Node applications use today for 
 
 ## D7 · Modules
 
-### Q-JSI-046 · Modules · difficulty 2 · single
+### Q-JSI-073 · Modules · difficulty 2 · single
 
 `counter.js` exports `export let count = 0; export function inc() { count++; }`. `main.js` does `import { count, inc } from './counter.js'; inc(); console.log(count);`. What is printed?
 
@@ -1205,7 +1704,7 @@ What is the status of AsyncContext, and what do Node applications use today for 
 
 </details>
 
-### Q-JSI-047 · Modules · difficulty 2 · scenario
+### Q-JSI-074 · Modules · difficulty 2 · scenario
 
 After moving an import line, the app crashes at startup with `ReferenceError: Cannot access 'User' before initialization` in `admin.js`, which contains `class Admin extends User`. `user.js` imports `admin.js`. What is happening?
 
@@ -1225,7 +1724,7 @@ After moving an import line, the app crashes at startup with `ReferenceError: Ca
 
 </details>
 
-### Q-JSI-048 · Modules · difficulty 3 · ordering
+### Q-JSI-075 · Modules · difficulty 3 · ordering
 
 `entry.js` imports `consumer.js` then `sibling.js`. `consumer.js` imports `slow.js`, which logs `slow:start`, awaits a 30 ms timer at top level, then logs `slow:end`. Each other module logs its name. Order the logs.
 
@@ -1245,7 +1744,7 @@ After moving an import line, the app crashes at startup with `ReferenceError: Ca
 
 </details>
 
-### Q-JSI-049 · Modules · difficulty 2 · multi
+### Q-JSI-076 · Modules · difficulty 2 · multi
 
 A package's `exports` is `{ ".": { "development": "./dev.js", "node": "./node.js", "default": "./index.js" } }`. Which statements are true? (Select all that apply.)
 
@@ -1265,7 +1764,7 @@ A package's `exports` is `{ ".": { "development": "./dev.js", "node": "./node.js
 
 </details>
 
-### Q-JSI-050 · Modules · difficulty 1 · single
+### Q-JSI-077 · Modules · difficulty 1 · single
 
 Why must a JSON module be imported with `with { type: 'json' }`?
 
@@ -1289,7 +1788,7 @@ Why must a JSON module be imported with `with { type: 'json' }`?
 
 ## D8 · Metaprogramming, memory and binary data
 
-### Q-JSI-051 · Metaprogramming · difficulty 2 · single
+### Q-JSI-078 · Metaprogramming · difficulty 2 · single
 
 Why should a Proxy `get` trap forward with `Reflect.get(target, key, receiver)` rather than `target[key]`?
 
@@ -1309,7 +1808,7 @@ Why should a Proxy `get` trap forward with `Reflect.get(target, key, receiver)` 
 
 </details>
 
-### Q-JSI-052 · Metaprogramming · difficulty 3 · single
+### Q-JSI-079 · Metaprogramming · difficulty 3 · single
 
 `new Proxy(Object.freeze({ x: 1 }), { get: () => 2 }).x` evaluates to...
 
@@ -1329,7 +1828,7 @@ Why should a Proxy `get` trap forward with `Reflect.get(target, key, receiver)` 
 
 </details>
 
-### Q-JSI-053 · Memory · difficulty 2 · multi
+### Q-JSI-080 · Memory · difficulty 2 · multi
 
 Which statements about `WeakRef` and `FinalizationRegistry` are true? (Select all that apply.)
 
@@ -1349,7 +1848,7 @@ Which statements about `WeakRef` and `FinalizationRegistry` are true? (Select al
 
 </details>
 
-### Q-JSI-054 · Binary data · difficulty 2 · multi
+### Q-JSI-081 · Binary data · difficulty 2 · multi
 
 Which statements about `structuredClone` are true? (Select all that apply.)
 
@@ -1368,7 +1867,7 @@ Which statements about `structuredClone` are true? (Select all that apply.)
 
 </details>
 
-### Q-JSI-055 · Memory model · difficulty 3 · scenario
+### Q-JSI-082 · Memory model · difficulty 3 · scenario
 
 Four workers each run `counter[0]++` 100,000 times on an `Int32Array` over a `SharedArrayBuffer`. The total is often below 400,000. Which statement is correct?
 
@@ -1388,7 +1887,7 @@ Four workers each run `counter[0]++` 100,000 times on an `Int32Array` over a `Sh
 
 </details>
 
-### Q-JSI-056 · Metaprogramming · difficulty 3 · single
+### Q-JSI-083 · Metaprogramming · difficulty 3 · single
 
 What is the TC39 status of decorators as of 2026-10-28, and can Node 26 run `@decorator` syntax natively?
 
@@ -1411,7 +1910,7 @@ What is the TC39 status of decorators as of 2026-10-28, and can Node 26 run `@de
 
 ## D9 · Modern ECMAScript (ES2024–ES2027)
 
-### Q-JSI-057 · Modern ECMAScript · difficulty 2 · single
+### Q-JSI-084 · Modern ECMAScript · difficulty 2 · single
 
 In Europe/Prague, 2026-03-29 has 23 hours. `zdt` is 2026-03-28T12:00 in Prague. Which is true?
 
@@ -1431,7 +1930,7 @@ In Europe/Prague, 2026-03-29 has 23 hours. `zdt` is 2026-03-28T12:00 in Prague. 
 
 </details>
 
-### Q-JSI-058 · Modern ECMAScript · difficulty 2 · single
+### Q-JSI-085 · Modern ECMAScript · difficulty 2 · single
 
 In a block with `using a = A; using b = B;`, the body throws `E0`, and `b`'s dispose throws `E1`. What propagates?
 
@@ -1451,7 +1950,7 @@ In a block with `using a = A; using b = B;`, the body throws `E0`, and `b`'s dis
 
 </details>
 
-### Q-JSI-059 · Modern ECMAScript · difficulty 1 · multi
+### Q-JSI-086 · Modern ECMAScript · difficulty 1 · multi
 
 Which of these are part of ES2026? (Select all that apply.)
 
@@ -1470,7 +1969,7 @@ Which of these are part of ES2026? (Select all that apply.)
 
 </details>
 
-### Q-JSI-060 · Modern ECMAScript · difficulty 3 · scenario
+### Q-JSI-087 · Modern ECMAScript · difficulty 3 · scenario
 
 Code that calls `Math.sumPrecise` works in a browser but throws `TypeError: Math.sumPrecise is not a function` on Node 26.12.1, although Node 26 ships Temporal. Why?
 
@@ -1490,7 +1989,7 @@ Code that calls `Math.sumPrecise` works in a browser but throws `TypeError: Math
 
 </details>
 
-### Q-JSI-061 · Modern ECMAScript · difficulty 2 · single
+### Q-JSI-088 · Modern ECMAScript · difficulty 2 · single
 
 Which way of building a constructor that acquires several resources releases the already-acquired ones if a later acquisition throws, and keeps them on success?
 
@@ -1514,7 +2013,7 @@ Which way of building a constructor that acquires several resources releases the
 
 ## D10 · Performance and security
 
-### Q-JSI-062 · Security · difficulty 2 · scenario
+### Q-JSI-089 · Security · difficulty 2 · scenario
 
 After a recursive `merge(config, JSON.parse(body))`, every object in the process has `isAdmin === true`. Which fix addresses the root cause?
 
@@ -1534,7 +2033,7 @@ After a recursive `merge(config, JSON.parse(body))`, every object in the process
 
 </details>
 
-### Q-JSI-063 · Security · difficulty 2 · single
+### Q-JSI-090 · Security · difficulty 2 · single
 
 Which regular expression is vulnerable to catastrophic backtracking on inputs like `"aaaa…a!"`?
 
@@ -1553,7 +2052,7 @@ Which regular expression is vulnerable to catastrophic backtracking on inputs li
 
 </details>
 
-### Q-JSI-064 · Performance · difficulty 2 · multi
+### Q-JSI-091 · Performance · difficulty 2 · multi
 
 Which changes typically make a hot V8 property-access site faster? (Select all that apply.)
 
@@ -1573,7 +2072,7 @@ Which changes typically make a hot V8 property-access site faster? (Select all t
 
 </details>
 
-### Q-JSI-065 · Performance · difficulty 3 · single
+### Q-JSI-092 · Performance · difficulty 3 · single
 
 `--trace-deopt` repeatedly shows `reason: not a Smi` for a hot `add(p, q)` function. What does it indicate?
 
@@ -1593,7 +2092,7 @@ Which changes typically make a hot V8 property-access site faster? (Select all t
 
 </details>
 
-### Q-JSI-066 · Correctness · difficulty 1 · single
+### Q-JSI-093 · Correctness · difficulty 1 · single
 
 What does `[10, 1, 2].sort()` return?
 
@@ -1612,7 +2111,7 @@ What does `[10, 1, 2].sort()` return?
 
 </details>
 
-### Q-JSI-067 · Correctness · difficulty 3 · multi
+### Q-JSI-094 · Correctness · difficulty 3 · multi
 
 Which comparators violate the "consistent comparator" contract, making the sort order implementation-defined? (Select all that apply.)
 
@@ -1643,7 +2142,7 @@ SOLUTIONS=./my-solutions.js node --test examples/exam-hands-on.test.js
 
 from the track directory (the path is resolved relative to `examples/`). Reference solutions are in [`examples/exam-solutions.js`](../examples/exam-solutions.js).
 
-### Q-JSI-068 · Async patterns · difficulty 2 · hands-on
+### Q-JSI-095 · Async patterns · difficulty 2 · hands-on
 
 **H1.** Implement `promiseAll(iterable)` with the semantics of `Promise.all`: results in input order, non-promise values allowed, `[]` for empty input, rejection with the first reason. Time: 15 minutes.
 
@@ -1656,7 +2155,7 @@ from the track directory (the path is resolved relative to `examples/`). Referen
 
 </details>
 
-### Q-JSI-069 · Async patterns · difficulty 2 · hands-on
+### Q-JSI-096 · Async patterns · difficulty 2 · hands-on
 
 **H2.** Implement `mapWithConcurrency(items, limit, fn)`: run `fn(item, index)` with at most `limit` calls in flight and return results in input order; reject if any call rejects. Time: 20 minutes.
 
@@ -1669,7 +2168,7 @@ from the track directory (the path is resolved relative to `examples/`). Referen
 
 </details>
 
-### Q-JSI-070 · Event loop · difficulty 1 · hands-on
+### Q-JSI-097 · Event loop · difficulty 1 · hands-on
 
 **H3.** Implement a trailing-edge `debounce(fn, ms, clock)` where `clock` provides `setTimeout` and `clearTimeout`. Time: 10 minutes.
 
@@ -1682,7 +2181,7 @@ from the track directory (the path is resolved relative to `examples/`). Referen
 
 </details>
 
-### Q-JSI-071 · Scope and closures · difficulty 3 · hands-on
+### Q-JSI-098 · Scope and closures · difficulty 3 · hands-on
 
 **H4.** Implement `myBind(fn, thisArg, ...args)` without `Function.prototype.bind`: partial application, `name` = `"bound " + fn.name`, `length` reduced by the bound arguments, and `new` ignoring the bound `this`. Time: 20 minutes.
 
@@ -1695,7 +2194,7 @@ from the track directory (the path is resolved relative to `examples/`). Referen
 
 </details>
 
-### Q-JSI-072 · Objects and prototypes · difficulty 3 · hands-on
+### Q-JSI-099 · Objects and prototypes · difficulty 3 · hands-on
 
 **H5.** Implement `deepClone(value)` supporting cycles, shared references, arrays, plain objects, class instances (keep the prototype), `Map`, `Set` and `Date`. Time: 25 minutes.
 
@@ -1708,7 +2207,7 @@ from the track directory (the path is resolved relative to `examples/`). Referen
 
 </details>
 
-### Q-JSI-073 · Event loop · difficulty 2 · hands-on
+### Q-JSI-100 · Event loop · difficulty 2 · hands-on
 
 **H6.** Implement `createSignal(initial)` returning `{ get, set, subscribe }`, where several synchronous `set` calls produce **one** notification in a microtask with the latest value, and setting a value that is `Object.is`-equal to the current one notifies nothing. Time: 15 minutes.
 
@@ -1731,8 +2230,8 @@ from the track directory (the path is resolved relative to `examples/`). Referen
 
 | Part | Questions | Domain mix |
 | --- | --- | --- |
-| 1 | 002, 004, 008, 009, 011, 015, 017, 020, 023, 027, 029, 030, 032, 037, 039, 040, 046, 047, 055, 062 | D1 ×2, D2 ×3, D3 ×3, D4 ×2, D5 ×3, D6 ×3, D7 ×2, D8 ×1, D10 ×1 |
-| 2 | 069 (H2) | D6 |
+| 1 | 002, 004, 018, 019, 021, 028, 030, 033, 050, 054, 056, 057, 059, 064, 066, 067, 073, 074, 082, 089 | D1 ×2, D2 ×3, D3 ×3, D4 ×2, D5 ×3, D6 ×3, D7 ×2, D8 ×1, D10 ×1 |
+| 2 | 096 (H2) | D6 |
 
 **Scoring key:**
 
@@ -1746,10 +2245,10 @@ Mirrors the published structure of OpenEDG JS Institute's JSA-41-01 (40 items, 6
 
 | JSA section (weight) | Items | Questions |
 | --- | --- | --- |
-| Classless Objects (25%) | 10 | 015, 016, 019, 021, 051, 052, 053, 054, 062, 064 |
-| Classes and Class-Based Approach (23%) | 9 | 012, 017, 018, 020, 022, 056, 061, 074, 075 |
-| Built-in Objects (27%) | 11 | 002, 004, 006, 026, 038, 057, 058, 059, 060, 066, 067 |
-| Advanced Functions (25%) | 10 | 007, 008, 009, 011, 013, 024, 025, 029, 041, 042 |
+| Classless Objects (25%) | 10 | 028, 029, 032, 034, 078, 079, 080, 081, 089, 091 |
+| Classes and Class-Based Approach (23%) | 9 | 022, 030, 031, 033, 035, 036, 037, 083, 088 |
+| Built-in Objects (27%) | 11 | 002, 004, 006, 053, 065, 084, 085, 086, 087, 093, 094 |
+| Advanced Functions (25%) | 10 | 017, 018, 019, 021, 023, 051, 052, 056, 068, 069 |
 
 **Coverage:** All 9 items in the Classes section are dedicated class questions from the bank.
 
