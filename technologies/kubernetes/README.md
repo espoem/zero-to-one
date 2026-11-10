@@ -1,6 +1,6 @@
 # Kubernetes Curriculum & Architecture Guide
 
-Verified against Kubernetes 1.37.2 ("Garhwal"), Gateway API 1.6.3, etcd 3.7.3, containerd 2.4.2, Helm 4.3.1, Kustomize 5.8.3, kind 0.33.0, k3d 5.9.0, kubeconform 0.8.0, Chainsaw 0.2.15, Kyverno 1.19.2, KWOK 0.8.0, Node 26.13.0, TypeScript 7.0.2 on 2026-11-07.
+Verified against Kubernetes 1.37.2 ("Garhwal"), Gateway API 1.7.0, etcd 3.7.3, containerd 2.4.2, Helm 4.3.1, Kustomize 5.8.3, kind 0.33.0, k3d 5.9.0, kubeconform 0.8.0, Chainsaw 0.2.15, Kyverno 1.19.2, KWOK 0.8.0, Node 26.13.0, TypeScript 7.0.2 on 2026-11-07.
 
 ## Overview & Prerequisites
 
@@ -25,7 +25,7 @@ Before starting this track, ensure you are familiar with the foundations covered
 | [`modules/05-configuration-resources-and-autoscaling.md`](modules/05-configuration-resources-and-autoscaling.md) | Configuration, Resource Management, and Autoscaling | ConfigMaps, Secrets, in-place pod resize, quotas, HPA (scale-to-zero), and VPA. |
 | [`modules/06-scheduling-and-topology.md`](modules/06-scheduling-and-topology.md) | Scheduling Architecture | Filter/score scheduler pipeline, node affinity, taints, topology spread, preemption, PDBs, and DRA. |
 | [`modules/07-networking-services-and-networkpolicy.md`](modules/07-networking-services-and-networkpolicy.md) | Kubernetes Networking | CNI model, Services, EndpointSlices, CoreDNS search paths (`ndots:5`), and NetworkPolicy semantics. |
-| [`modules/08-gateway-api-and-ingress-migration.md`](modules/08-gateway-api-and-ingress-migration.md) | Gateway API v1.6 and Traffic Management | Role-oriented routing, HTTP/TCP/TLSRoute, ReferenceGrant, and Ingress-NGINX retirement migration. |
+| [`modules/08-gateway-api-and-ingress-migration.md`](modules/08-gateway-api-and-ingress-migration.md) | Gateway API v1.7 and Traffic Management | Role-oriented routing, HTTP/TCP/TLSRoute, HTTPRoute retries, ReferenceGrant, and Ingress-NGINX retirement migration. |
 | [`modules/09-storage-and-csi.md`](modules/09-storage-and-csi.md) | Persistent Storage and CSI Architecture | PV/PVC binding, WaitForFirstConsumer, volumeBindingMode, CSI architecture, and VolumeGroupSnapshots. |
 | [`modules/10-cluster-lifecycle-and-kubeadm.md`](modules/10-cluster-lifecycle-and-kubeadm.md) | Cluster Lifecycle with kubeadm | PKI certificates, stacked vs external etcd HA, version skew policies, upgrades, and etcd snapshot backup/restore. |
 | [`modules/11-security-hardening-and-cks.md`](modules/11-security-hardening-and-cks.md) | Cluster and Runtime Security (CKS) | RBAC hardening, Pod Security Standards, user namespaces, CEL ValidatingAdmissionPolicy, audit logs, and Falco. |
@@ -44,25 +44,27 @@ Before starting this track, ensure you are familiar with the foundations covered
 
 This track prepares candidates for three official Linux Foundation / CNCF certifications:
 
-- **Verified against Official CNCF Exam Guides** (Curriculum Version: `v1.35`, Verified Date: `2026-11-07`).
+- **Verified against Official CNCF Exam Guides** (Curriculum Version: `v1.37`, Verified Date: `2026-11-10`).
 
 1. **Certified Kubernetes Administrator (CKA)**:
    - **Official Exam Guide**: [CNCF CKA Exam Guide](https://www.cncf.io/certification/cka/) ([Curriculum Repo](https://github.com/cncf/curriculum))
-   - **Status**: Active, targeting Kubernetes v1.35 / v1.37.
+   - **Status**: Active, targeting Kubernetes v1.37.
    - **Format**: 2 hours, 15–20 performance-based command-line tasks.
    - **Passing Score**: 66%.
    - **Domains**: Troubleshooting (30%), Cluster Architecture, Installation & Configuration (25%), Services & Networking (20%), Workloads & Scheduling (15%), Storage (10%).
 
 2. **Certified Kubernetes Application Developer (CKAD)**:
    - **Official Exam Guide**: [CNCF CKAD Exam Guide](https://www.cncf.io/certification/ckad/) ([Curriculum Repo](https://github.com/cncf/curriculum))
-   - **Status**: Active, targeting Kubernetes v1.35 / v1.37.
+   - **Status**: Active, targeting Kubernetes v1.37.
    - **Format**: 2 hours, 15–20 performance-based command-line tasks.
    - **Passing Score**: 66%.
    - **Domains**: Application Environment, Configuration & Security (25%), Application Design & Build (20%), Application Deployment (20%), Services & Networking (20%), Application Observability & Maintenance (15%).
 
 3. **Certified Kubernetes Security Specialist (CKS)**:
    - **Official Exam Guide**: [CNCF CKS Exam Guide](https://www.cncf.io/certification/cks/) ([Curriculum Repo](https://github.com/cncf/curriculum))
-   - **Status**: Active, targeting Kubernetes v1.35 (Exam Delta v1.35 vs v1.37 documented in modules). Requires active CKA certification.
+   - **Status**: Active, targeting Kubernetes v1.37. Requires a passed CKA certification (the CKA does not need to be active).
    - **Format**: 2 hours, 15–20 performance-based command-line tasks.
    - **Passing Score**: 67%.
    - **Domains**: Minimize Microservice Vulnerabilities (20%), Supply Chain Security (20%), Monitoring, Logging & Runtime Security (20%), Cluster Setup (15%), Cluster Hardening (15%), System Hardening (10%).
+
+The `exams/` directory contains 186 original practice questions (61 CKA, 61 CKAD, 64 CKS), three full mock exams with scoring keys, a 12-question interview bank for topics outside certification scope, and a coverage matrix mapping every domain to modules and verification suites. See [`exams/README.md`](exams/README.md).

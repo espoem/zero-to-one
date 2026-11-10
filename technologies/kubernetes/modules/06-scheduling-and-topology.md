@@ -404,13 +404,13 @@ Invariant 3: Reserve stage atomically updates in-memory node capacity before the
 
 ---
 
-## 10. Exam Delta: CKA/CKAD (v1.37) vs. CKS (v1.34)
+## 10. Exam Delta: CKA/CKAD/CKS (v1.37)
 
 > [!IMPORTANT]
 > **Certification Delta & Workload Placement:**
 >
 > - **CKA & CKAD (Curriculum v1.37)**: Requires mastery of manual node assignment (`spec.nodeName`), node selectors (`nodeSelector`), node affinity (`requiredDuringScheduling...`), taints and tolerations (`kubectl taint nodes node1 key=value:NoSchedule`), and authoring `PodDisruptionBudget` manifests. Troubleshooting scenarios require diagnosing unschedulable `Pending` pods by inspecting filter failures in `kubectl describe pod`.
-> - **CKS (Curriculum v1.34)**: Focuses on node isolation security. Candidates are tested on using taints and tolerations to isolate untrusted user workloads onto dedicated, hardened nodes (e.g., `sandbox=true:NoSchedule`). CKS tests verifying that master/control-plane nodes retain the standard `node-role.kubernetes.io/control-plane:NoSchedule` taint to prevent regular workloads from co-locating with sensitive control plane binaries.
+> - **CKS (Curriculum v1.37)**: Focuses on node isolation security. Candidates are tested on using taints and tolerations to isolate untrusted user workloads onto dedicated, hardened nodes (e.g., `sandbox=true:NoSchedule`). CKS tests verifying that master/control-plane nodes retain the standard `node-role.kubernetes.io/control-plane:NoSchedule` taint to prevent regular workloads from co-locating with sensitive control plane binaries.
 
 ---
 

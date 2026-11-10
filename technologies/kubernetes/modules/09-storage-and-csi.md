@@ -389,7 +389,7 @@ Invariant 2: Capacity over-provisioning is permitted, but under-provisioning is 
 
 ---
 
-## 10. Exam Delta: CKA v1.37 vs. CKS v1.34
+## 10. Exam Delta: CKA v1.37 vs. CKS v1.37
 
 > [!NOTE]
 > **CKA (Curriculum v1.37)**:
@@ -401,7 +401,7 @@ Invariant 2: Capacity over-provisioning is permitted, but under-provisioning is 
 >   3. Perform an **online PVC resize** by patching `spec.resources.requests.storage` and verifying the filesystem size inside the running container.
 >   4. Create a `VolumeSnapshot` from an existing PVC and provision a restored PVC using the snapshot as `dataSource`.
 >
-> **CKS (Curriculum v1.34)**:
+> **CKS (Curriculum v1.37)**:
 >
 > - Storage is examined under **Cluster Hardening** and **Minimize Microservice Vulnerabilities**.
 > - Primary focus: Restricting insecure volume mounts. In the CKS, using `hostPath` volumes is considered a severe security violation because it allows container processes to escape to the host root filesystem (`/etc/shadow`, `/var/run/docker.sock`).

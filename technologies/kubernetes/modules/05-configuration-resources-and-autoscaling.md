@@ -353,12 +353,12 @@ Invariant 3: Scale-down recommendations are delayed by the duration of the stabi
 
 ---
 
-## 8. Exam Delta: CKA/CKAD (v1.37) vs. CKS (v1.34)
+## 8. Exam Delta: CKA/CKAD/CKS (v1.37)
 
 > [!IMPORTANT]
 >
 > - **CKAD & CKA (Curriculum v1.37)**: Requires candidates to configure ConfigMaps and Secrets as environment variables and volume mounts, configure `ResourceQuota` and `LimitRange` objects, and create HPA autoscalers using `kubectl autoscale deployment --cpu-percent=80 --min=2 --max=10`. Candidates must troubleshoot HPA configurations where target workloads lack `resources.requests`.
-> - **CKS (Curriculum v1.34)**: Focuses strictly on Secret data protection and EncryptionConfiguration. Candidates are required to author `/etc/kubernetes/encryption-config.yaml`, configure `aescbc` or `kms` encryption providers, update `--encryption-provider-config` on `kube-apiserver`, and execute a cluster-wide Secret re-encryption command (`kubectl get secrets -A -o json \| kubectl replace -f -`).
+> - **CKS (Curriculum v1.37)**: Focuses strictly on Secret data protection and EncryptionConfiguration. Candidates are required to author `/etc/kubernetes/encryption-config.yaml`, configure `aescbc` or `kms` encryption providers, update `--encryption-provider-config` on `kube-apiserver`, and execute a cluster-wide Secret re-encryption command (`kubectl get secrets -A -o json \| kubectl replace -f -`).
 
 ---
 

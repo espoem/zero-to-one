@@ -253,7 +253,7 @@ When submitted, the storage migration controller performs a read-and-write cycle
 
 ---
 
-## 9. Exam Delta: CKA v1.37 vs. CKS v1.34
+## 9. Exam Delta: CKA v1.37 vs. CKS v1.37
 
 > [!NOTE]
 > **CKA (Curriculum v1.37) — Troubleshooting is 30% of the Total Exam Score!**:
@@ -265,7 +265,7 @@ When submitted, the storage migration controller performs a read-and-write cycle
 >   3. **Resolving Network Policy Blockades**: Identifying why a frontend pod cannot reach a backend pod by inspecting `NetworkPolicy` ingress/egress rules and port specifications.
 >   4. **Diagnosing Service Misconfigurations**: Fixing Services with 0 endpoints caused by label selector typos or failing readiness probes.
 >
-> **CKS (Curriculum v1.34)**:
+> **CKS (Curriculum v1.37)**:
 >
 > - Exam tests troubleshooting from a **runtime security and threat response perspective**:
 >   1. Inspecting container escapes and unauthorized binaries using Falco logs.

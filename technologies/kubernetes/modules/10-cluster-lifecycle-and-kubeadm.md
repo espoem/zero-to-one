@@ -1,6 +1,6 @@
 # Module 10: Cluster Lifecycle with kubeadm: PKI Certificates, Stacked vs External HA etcd, Version Skew, Upgrades, and Snapshot Restore
 
-> **Primary sources:** Kubernetes Documentation ([kubeadm Cluster Architecture](https://kubernetes.io/docs/reference/setup-tools/kubeadm/), [PKI Certificates and Requirements](https://kubernetes.io/docs/setup/best-practices/certificates/), [Operating etcd Clusters for Kubernetes](https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-etcd/), [Version Skew Policy](https://kubernetes.io/releases/version-skew-policy/)); CNCF Curriculum ([CKA Curriculum v1.37](https://github.com/cncf/curriculum), [CKS Curriculum v1.34](https://github.com/cncf/curriculum)).
+> **Primary sources:** Kubernetes Documentation ([kubeadm Cluster Architecture](https://kubernetes.io/docs/reference/setup-tools/kubeadm/), [PKI Certificates and Requirements](https://kubernetes.io/docs/setup/best-practices/certificates/), [Operating etcd Clusters for Kubernetes](https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-etcd/), [Version Skew Policy](https://kubernetes.io/releases/version-skew-policy/)); CNCF Curriculum ([CKA Curriculum v1.37](https://github.com/cncf/curriculum), [CKS Curriculum v1.37](https://github.com/cncf/curriculum)).
 >
 > **Executable proof:** [`examples/ts/10-cluster-lifecycle-and-kubeadm.test.ts`](../examples/ts/10-cluster-lifecycle-and-kubeadm.test.ts) asserts kubeadm phase state machines, certificate chain verification, version skew matrix constraints, and etcd snapshot disaster recovery procedures.
 >
@@ -104,6 +104,41 @@ kubeadm certs renew all
 crictl rmp -f $(crictl pods --name kube-apiserver -q)
 ```
 
+### 2.3 kubeconfig: Cluster Access Configuration
+
+Every `kubectl` command targets a cluster through a **kubeconfig** file. The default path is `~/.kube/config`, but the `KUBECONFIG` environment variable overrides it and accepts a colon-separated list of files that kubectl merges. kubeadm writes the admin kubeconfig to `/etc/kubernetes/admin.conf` during `init`.
+
+The file contains four top-level sections:
+
+| Section | Purpose | Key fields |
+| :-- | :-- | :-- |
+| `clusters` | API server endpoints and CA bundles | `server`, `certificate-authority(-data)`, `insecure-skip-tls-verify` |
+| `users` | Client credentials | `client-certificate(-data)`, `client-key(-data)`, `token`, `exec` |
+| `contexts` | A binding of one cluster, one user, and a default namespace | `cluster`, `user`, `namespace` |
+| `current-context` | The context selected for every command | The name of one entry in `contexts` |
+
+A context is the unit of switching. The following commands read and modify the active kubeconfig:
+
+```bash
+kubectl config get-contexts                              # List contexts and mark the current one
+kubectl config use-context staging-admin                 # Switch current-context
+kubectl config get-clusters                              # List defined clusters
+kubectl config set-context --current --namespace=shop    # Change the default namespace
+kubectl config view --minify                             # Show only the current context
+```
+
+Authentication methods, in descending order of production preference:
+
+1. **Client certificates** — an X.509 client certificate signed by the cluster CA; the certificate's `O` (organization) field supplies the RBAC group. kubeadm uses this for the admin user.
+2. **Exec-based credential plugins** — kubectl runs an external command (for example `aws eks get-token`) and uses its standard output as a bearer token. This is how EKS, GKE, and AKS authentication works.
+3. **OIDC** — an identity token validated by the API server's `--oidc-*` flags.
+4. **Static bearer tokens** — long-lived and difficult to rotate; avoid them.
+
+Workloads that run inside the cluster do not need a kubeconfig. The kubelet projects a ServiceAccount token, the CA bundle, and the API server address into every Pod at `/var/run/secrets/kubernetes.io/serviceaccount/`. The official client libraries detect this directory and build an in-cluster config automatically.
+
+> [!CAUTION]
+> **Kubeconfig handling:** the admin kubeconfig is a single file that grants full cluster access. Store it in a secrets manager, never commit it, and set `chmod 600`. Prefer short-lived exec-based credentials or per-team contexts over sharing the admin file. A leaked kubeconfig is a cluster compromise.
+
 ---
 
 ## 3. High-Availability Control Plane: Stacked vs. External etcd
@@ -161,10 +196,12 @@ $$F = \left\lfloor \frac{N - 1}{2} \right\rfloor$$
 | Cluster Size ($N$) | Quorum Needed ($Q$) | Failure Tolerance ($F$) | Rationale |
 | :-- | :-- | :-- | :-- |
 | 1 | 1 | 0 | Single point of failure; zero redundancy. |
-| 2 | 2 | 0 | **Anti-pattern!** Requires both nodes alive; 1 failure breaks quorum, but network split causes split-brain. |
+| 2 | 2 | 0 | **Anti-pattern!** Requires both members alive; one failure loses quorum, and a network split leaves neither side with a majority, so the cluster has zero fault tolerance. |
 | 3 | 2 | 1 | Standard production baseline; tolerates 1 node failure. |
 | 4 | 3 | 1 | **Anti-pattern!** Tolerates 1 node failure (same as 3 nodes), but requires 3 votes, increasing network partition risk. |
 | 5 | 3 | 2 | Recommended high-scale deployment; tolerates 2 simultaneous failures. |
+
+**Outage behavior.** Quorum determines write availability. With quorum, etcd elects a leader and serves both reads and writes. Without quorum, no leader can be elected, so etcd rejects all write requests and the API server cannot persist any change. Reads may still be served from a member's local state, but they can be stale; clients must not treat them as authoritative. A separate failure mode is the `NOSPACE` alarm: when the backend database exceeds `--quota-backend-bytes` (default 2 GiB), etcd raises the alarm and enters read-only mode, rejecting writes even with quorum. Recovery requires compaction, defragmentation, and disarming the alarm.
 
 ---
 
@@ -351,6 +388,21 @@ sequenceDiagram
 
 ---
 
+### 6.3 Disaster Recovery Design Beyond etcd
+
+etcd snapshots protect the cluster's desired state, but a production disaster recovery plan must also cover the control plane, the worker fleet, and application data:
+
+| Layer | Protection | Recovery objective |
+| :-- | :-- | :-- |
+| Control plane | Deploy multiple control plane nodes across availability zones; use external etcd or a stacked topology with odd member counts. | RTO: minutes; RPO: seconds. |
+| Resource definitions | Keep all manifests in a Git repository (GitOps) so the desired state can be reapplied to a fresh cluster. | RPO: zero if the Git repository is authoritative. |
+| Persistent data | Back up volume data with CSI snapshots or a storage-level tool; test restore into a new cluster. | RPO: defined by the backup cadence. |
+| Secrets and configuration | Export Secrets and ConfigMaps continuously for offline recovery, because they live only in etcd. | RPO: zero if exported continuously. |
+
+A restore drill must verify the entire path: snapshot restore, API server startup, scheduler and controller manager readiness, and a sample workload becoming Ready. Restoring etcd alone does not prove the cluster is recoverable.
+
+---
+
 ## 7. Managed Kubernetes vs. Self-Managed kubeadm Architecture
 
 | Capability | Self-Managed kubeadm | AWS EKS | Google GKE | Azure AKS |
@@ -412,7 +464,7 @@ Invariant 2: Control plane upgrade must retain etcd quorum at every sequential s
 
 ---
 
-## 10. Exam Delta: CKA v1.37 vs. CKS v1.34
+## 10. Exam Delta: CKA v1.37 vs. CKS v1.37
 
 > [!NOTE]
 > **CKA (Curriculum v1.37)**:
@@ -424,9 +476,9 @@ Invariant 2: Control plane upgrade must retain etcd quorum at every sequential s
 >   3. Restore an existing etcd snapshot and update the static pod manifest to point to the restored data directory.
 >   4. Inspect and renew certificates about to expire using `kubeadm certs check-expiration` and `kubeadm certs renew`.
 >
-> **CKS (Curriculum v1.34)**:
+> **CKS (Curriculum v1.37)**:
 >
-> - Exam targets Kubernetes **v1.34** under **Cluster Hardening** and **Cluster Setup**.
+> - Exam targets Kubernetes **v1.37** under **Cluster Hardening** and **Cluster Setup**.
 > - Primary focus:
 >   1. Restricting access to the apiserver, verifying that insecure ports and anonymous authentication are disabled.
 >   2. Executing CIS Kubernetes Benchmarks using `kube-bench` and remediating file permissions on `/etc/kubernetes/manifests` and PKI directories (e.g., ensuring `chmod 600` on private keys).

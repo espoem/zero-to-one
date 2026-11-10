@@ -335,7 +335,7 @@ Historically, external HTTP traffic entered the cluster via the **Ingress** reso
 
 - The most ubiquitous implementation was **Ingress-NGINX**.
 - **Ingress-NGINX is officially retired as of March 2026** (receiving zero further software updates or CVE patches).
-- Modern Kubernetes production deployments have migrated entirely to the **Gateway API (v1.6.3)**, which provides role-oriented traffic management, native header routing, and multi-tenant security. The comprehensive architecture and migration playbook are covered in Module 08.
+- Modern Kubernetes production deployments have migrated entirely to the **Gateway API (v1.7.0)**, which provides role-oriented traffic management, native header routing, and multi-tenant security. The comprehensive architecture and migration playbook are covered in Module 08.
 
 ---
 
@@ -401,13 +401,13 @@ Invariant 3: Egress DNS rules must evaluate UDP and TCP port 53 to prevent name 
 
 ---
 
-## 11. Exam Delta: CKA/CKAD (v1.37) vs. CKS (v1.34)
+## 11. Exam Delta: CKA/CKAD/CKS (v1.37)
 
 > [!IMPORTANT]
 > **Certification Delta & Network Security Hardening:**
 >
 > - **CKA & CKAD (Curriculum v1.37)**: Requires candidates to author Services (ClusterIP, NodePort), troubleshoot CoreDNS resolution failures using ephemeral debug containers (`kubectl run test --rm -it --image=busybox:1.28 -- nslookup my-svc`), and construct multi-selector NetworkPolicies. Candidates must understand the difference between array elements (OR) and combined map keys (AND) in NetworkPolicy rules.
-> - **CKS (Curriculum v1.34)**: Focuses heavily on implementing a Zero-Trust network security perimeter. Candidates are required to create a cluster-wide or namespace-wide **Default-Deny Ingress and Egress** policy, and systematically punch minimal, least-privilege egress holes allowing strictly CoreDNS resolution (`UDP/TCP 53` to `kube-system/kube-dns`) and authorized egress database connections.
+> - **CKS (Curriculum v1.37)**: Focuses heavily on implementing a Zero-Trust network security perimeter. Candidates are required to create a cluster-wide or namespace-wide **Default-Deny Ingress and Egress** policy, and systematically punch minimal, least-privilege egress holes allowing strictly CoreDNS resolution (`UDP/TCP 53` to `kube-system/kube-dns`) and authorized egress database connections.
 
 ---
 

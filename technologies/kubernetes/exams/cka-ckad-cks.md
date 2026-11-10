@@ -1,10 +1,10 @@
 # Certification Question Bank & Mock Exams (CKA, CKAD, CKS)
 
-This question bank contains 75 original practice questions covering the Certified Kubernetes Administrator (CKA), Certified Kubernetes Application Developer (CKAD), and Certified Kubernetes Security Specialist (CKS) syllabi, followed by three complete mock exams.
+This question bank contains 186 original practice questions (61 CKA, 61 CKAD, 64 CKS) covering the Certified Kubernetes Administrator (CKA), Certified Kubernetes Application Developer (CKAD), and Certified Kubernetes Security Specialist (CKS) syllabi, followed by three complete mock exams.
 
 ---
 
-## Part 1: CKA Question Bank (Q-K8S-001 to Q-K8S-025)
+## Part 1: CKA Question Bank (Q-K8S-001 to Q-K8S-061)
 
 ### Q-K8S-001 · CKA Troubleshooting · difficulty 1 · single
 
@@ -122,7 +122,8 @@ Execute a live debugging session on a crashing Pod named `api-server-xyz` using 
 - Why not B: `kubectl exec` fails if the container runtime is dead or missing debugging binaries.
 - Why not C: `rollout restart` restarts the workload, losing transient crash state.
 - Why not D: Force replacement deletes and recreates the pod.
-- Ref: [modules/13-observability-and-troubleshooting.md](../modules/13-observability-and-troubleshooting.md), https://kubernetes.io/docs/tasks/debug/debug-application/debugging-ephemeral-containers/
+- Ref: [modules/13-observability-and-troubleshooting.md](../modules/13-observability-and-troubleshooting.md), https://kubernetes.io/docs/concepts/workloads/pods/ephemeral-containers/
+- Verification: [`examples/ts/15-hands-on-verification.test.ts`](../examples/ts/15-hands-on-verification.test.ts) › "evaluateEphemeralDebugTarget resolves the target container"
 
 </details>
 
@@ -220,7 +221,7 @@ A cluster node transitions to `NotReady`. Which log file or journal service on t
 - Why not A: Nginx logs are application-specific.
 - Why not C: Etcd static pod manifest defines etcd, not kubelet runtime errors.
 - Why not D: Cluster events show control plane summaries, but worker node internal failures require direct node journal inspection.
-- Ref: [modules/13-observability-and-troubleshooting.md](../modules/13-observability-and-troubleshooting.md), https://kubernetes.io/docs/tasks/debug/debug-cluster/troubleshooting/
+- Ref: [modules/13-observability-and-troubleshooting.md](../modules/13-observability-and-troubleshooting.md), https://kubernetes.io/docs/tasks/debug/debug-cluster/
 
 </details>
 
@@ -325,7 +326,7 @@ What does an exit code of `137` in a container status typically indicate?
 - Why not A: Syntax errors yield standard application exit codes (e.g., 1 or 255).
 - Why not C: Exit 0 indicates success.
 - Why not D: Missing config files usually yield application startup exit codes (1).
-- Ref: [modules/13-observability-and-troubleshooting.md](../modules/13-observability-and-troubleshooting.md), https://kubernetes.io/docs/tasks/debug/debug-application/determine-memory-consumption/
+- Ref: [modules/13-observability-and-troubleshooting.md](../modules/13-observability-and-troubleshooting.md), https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
 
 </details>
 
@@ -365,7 +366,7 @@ An administrator needs to troubleshoot why DNS resolution for internal services 
 - Why not A: `/etc/hosts` maps static hostname IPs.
 - Why not C: Kubelet config defines node daemon settings.
 - Why not D: CNI config defines network bridging.
-- Ref: [modules/07-networking-services-and-networkpolicy.md](../modules/07-networking-services-and-networkpolicy.md), https://kubernetes.io/docs/tasks/admin-cluster/dns-debugging-resolution/
+- Ref: [modules/07-networking-services-and-networkpolicy.md](../modules/07-networking-services-and-networkpolicy.md), https://kubernetes.io/docs/tasks/administer-cluster/dns-debugging-resolution/
 
 </details>
 
@@ -510,9 +511,729 @@ Which component is responsible for communicating with storage backend APIs to pr
 
 ---
 
-## Part 2: CKAD Question Bank (Q-K8S-026 to Q-K8S-050)
+### Q-K8S-026 · CKA Troubleshooting · difficulty 1 · single
 
-### Q-K8S-026 · CKAD Application Environment · difficulty 1 · single
+A Pod remains in `Pending` with the event `FailedScheduling: 0/3 nodes are available: 3 Insufficient memory`. What is the most likely cause?
+
+- A) The container image referenced by the Pod does not exist in the registry.
+- B) No node has enough allocatable memory to satisfy the Pod's `resources.requests.memory`.
+- C) The Pod's `livenessProbe` is failing repeatedly.
+- D) The kubelet on every node has stopped reporting heartbeats.
+
+<details><summary>Answer</summary>
+
+**B.** The scheduler's `NodeResourcesFit` filter removes nodes whose allocatable memory is below the Pod's requested memory, so the Pod cannot be placed.
+
+- Why not A: a missing image produces `ImagePullBackOff` after the Pod is scheduled, not `FailedScheduling`.
+- Why not C: probes run only after the container starts; they never block scheduling.
+- Why not D: NotReady nodes are filtered out, but the event would name node readiness rather than insufficient memory.
+- Ref: [modules/06-scheduling-and-topology.md](../modules/06-scheduling-and-topology.md), https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
+
+</details>
+
+### Q-K8S-027 · CKA Troubleshooting · difficulty 2 · scenario
+
+A Deployment's Pods are in `CrashLoopBackOff`. `kubectl logs` shows `Error: Cannot find module '/app/server.js'`. What is the most likely cause?
+
+- A) The Pod's `resources.limits.memory` is too low.
+- B) The container image was rebuilt without copying the application code into the image.
+- C) The Pod's `readinessProbe` is misconfigured.
+- D) The node is under memory pressure and evicting the Pod.
+
+<details><summary>Answer</summary>
+
+**B.** The application entrypoint is missing from the image, so the container exits immediately and the kubelet restarts it with exponential backoff.
+
+- Why not A: a low memory limit causes `OOMKilled` (exit code 137), not a missing-module error.
+- Why not C: a failing readiness probe removes the Pod from Service endpoints but does not restart the container.
+- Why not D: node pressure causes eviction with a `Disrupting` event, not a missing file.
+- Ref: [modules/13-observability-and-troubleshooting.md](../modules/13-observability-and-troubleshooting.md), https://kubernetes.io/docs/tasks/debug/debug-application/debug-pods/
+
+</details>
+
+### Q-K8S-028 · CKA Troubleshooting · difficulty 2 · scenario
+
+A Pod is in `ImagePullBackOff`. `kubectl describe pod` shows `Failed to pull image "registry.example.com/app:v9": manifest unknown`. What is the most likely cause?
+
+- A) The node's container runtime is not running.
+- B) The image tag `v9` does not exist in the registry.
+- C) The Pod's ServiceAccount lacks RBAC permissions.
+- D) The node has insufficient disk space.
+
+<details><summary>Answer</summary>
+
+**B.** `manifest unknown` means the registry has no such tag; the image reference is wrong or the tag was deleted.
+
+- Why not A: a stopped runtime produces a runtime sandbox error, not `manifest unknown`.
+- Why not C: RBAC controls API calls, not registry pulls; image pulls use the node's registry credentials.
+- Why not D: insufficient disk produces `InsufficientDeviceSpace` or `no space left on device`.
+- Ref: [modules/13-observability-and-troubleshooting.md](../modules/13-observability-and-troubleshooting.md), https://kubernetes.io/docs/tasks/debug/debug-application/debug-pods/
+
+</details>
+
+### Q-K8S-029 · CKA Troubleshooting · difficulty 3 · scenario
+
+A three-member etcd cluster loses two members to a network partition. What is the immediate effect on the Kubernetes control plane?
+
+- A) The API server continues to serve reads and writes from the remaining member.
+- B) The API server can serve reads from the remaining member but rejects all writes.
+- C) The cluster loses quorum, the API server can no longer persist changes, and reads may be stale.
+- D) The scheduler takes over etcd's role and serves cached state.
+
+<details><summary>Answer</summary>
+
+**C.** etcd requires a majority quorum ($Q = \lfloor N/2 \rfloor + 1 = 2$ for $N=3$) to accept writes and elect a leader. With one member left, the cluster loses quorum, the API server cannot persist changes, and reads may be stale.
+
+- Why not A: a single member cannot form a quorum, so the cluster cannot accept writes.
+- Why not B: the primary failure is quorum loss; etcd does not continue serving consistent writes.
+- Why not D: the scheduler has no etcd replacement and depends on the API server.
+- Ref: [modules/10-cluster-lifecycle-and-kubeadm.md](../modules/10-cluster-lifecycle-and-kubeadm.md), https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-etcd/
+
+</details>
+
+### Q-K8S-030 · CKA Troubleshooting · difficulty 2 · scenario
+
+After applying a NetworkPolicy with `policyTypes: [Ingress, Egress]` and `egress: []` to a namespace, Pods can no longer resolve external hostnames. Why?
+
+- A) The NetworkPolicy blocks the kubelet's health checks.
+- B) The empty egress rule denies all outbound traffic, including DNS queries to CoreDNS.
+- C) The NetworkPolicy disables the CNI plugin.
+- D) The Pods' `/etc/resolv.conf` was rewritten.
+
+<details><summary>Answer</summary>
+
+**B.** NetworkPolicy rules are additive; an empty `egress: []` denies all egress, including UDP and TCP port 53 to the DNS Service.
+
+- Why not A: kubelet probes are node-to-Pod traffic, not affected by the Pod's egress policy.
+- Why not C: NetworkPolicy does not disable the CNI; it only programs rules the CNI enforces.
+- Why not D: `resolv.conf` is set by the kubelet at Pod creation and is not changed by NetworkPolicy.
+- Ref: [modules/07-networking-services-and-networkpolicy.md](../modules/07-networking-services-and-networkpolicy.md), https://kubernetes.io/docs/concepts/services-networking/network-policies/
+
+</details>
+
+### Q-K8S-031 · CKA Troubleshooting · difficulty 2 · scenario
+
+A worker node is `NotReady`. `journalctl -u kubelet` shows `x509: certificate has expired or is not yet valid`. What is the most likely cause?
+
+- A) The node's container runtime socket is missing.
+- B) The kubelet client certificate has expired.
+- C) The API server's etcd is full.
+- D) The node's CNI plugin crashed.
+
+<details><summary>Answer</summary>
+
+**B.** The kubelet's client certificate authenticates it to the API server; an expired certificate causes the API server to reject the kubelet's heartbeats, marking the node `NotReady`.
+
+- Why not A: a missing runtime socket produces runtime errors, not x509 errors.
+- Why not C: etcd being full produces `NOSPACE` errors on writes, not kubelet x509 errors.
+- Why not D: a crashed CNI produces network errors, not certificate errors.
+- Ref: [modules/10-cluster-lifecycle-and-kubeadm.md](../modules/10-cluster-lifecycle-and-kubeadm.md), https://kubernetes.io/docs/tasks/debug/debug-cluster/
+
+</details>
+
+### Q-K8S-032 · CKA Troubleshooting · difficulty 3 · scenario
+
+A Pod is stuck in `Terminating` after `kubectl delete pod`. `kubectl get pod` shows a `metadata.finalizers` entry whose controller no longer exists. What is the correct recovery?
+
+- A) Restart the kubelet on the node.
+- B) `kubectl patch pod <name> --type=merge -p '{"metadata":{"finalizers":null}}'` to remove the stale finalizer.
+- C) Delete the node object.
+- D) Recreate the Pod with the same name.
+
+<details><summary>Answer</summary>
+
+**B.** A finalizer blocks deletion until its controller removes it; if the controller is gone, an administrator can remove the finalizer manually.
+
+- Why not A: restarting the kubelet does not clear finalizers; the API server still blocks deletion.
+- Why not C: deleting the node object does not delete the Pod and causes other problems.
+- Why not D: the Pod still exists, so recreation fails with an already-exists error.
+- Ref: [modules/01-declarative-api-and-reconciliation.md](../modules/01-declarative-api-and-reconciliation.md), https://kubernetes.io/docs/concepts/architecture/garbage-collection/
+
+</details>
+
+### Q-K8S-033 · CKA Troubleshooting · difficulty 2 · scenario
+
+A Pod is evicted with the event `The node was low on resource: memory`. What determines whether a Pod is evicted first under node memory pressure?
+
+- A) The Pod's `spec.priorityClassName`.
+- B) The Pod's QoS class and whether its memory usage exceeds its requests.
+- C) The Pod's creation time.
+- D) The Pod's `restartPolicy`.
+
+<details><summary>Answer</summary>
+
+**B.** The kubelet ranks Pods for eviction by QoS class (BestEffort first, then Burstable, then Guaranteed) and by whether usage exceeds requests.
+
+- Why not A: PriorityClass affects preemption and scheduling, not eviction order.
+- Why not C: creation time does not determine eviction order.
+- Why not D: `restartPolicy` determines whether the kubelet restarts the container, not eviction priority.
+- Ref: [modules/03-node-internals.md](../modules/03-node-internals.md), https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/
+
+</details>
+
+### Q-K8S-034 · CKA Troubleshooting · difficulty 1 · single
+
+Which command lists only the events that involve a specific Pod named `web-0`?
+
+- A) `kubectl get events --field-selector involvedObject.name=web-0`
+- B) `kubectl get events --filter pod=web-0`
+- C) `kubectl describe pod web-0 --events`
+- D) `kubectl logs web-0 --events`
+
+<details><summary>Answer</summary>
+
+**A.** `--field-selector` with `involvedObject.name` filters events by the involved object.
+
+- Why not B: `--filter` is not a kubectl flag.
+- Why not C: `describe pod` shows events but has no `--events` flag.
+- Why not D: `logs` has no `--events` flag.
+- Ref: [modules/13-observability-and-troubleshooting.md](../modules/13-observability-and-troubleshooting.md), https://kubernetes.io/docs/tasks/debug/debug-cluster/
+
+</details>
+
+### Q-K8S-035 · CKA Troubleshooting · difficulty 3 · scenario
+
+After etcd hits its backend quota, `kubectl apply` fails with `etcdserver: mvcc: database space exceeded`. What is the correct recovery sequence?
+
+- A) Restart the API server, then etcd.
+- B) Disarm the NOSPACE alarm, compact etcd, then defragment.
+- C) Compact and defragment etcd, then disarm the NOSPACE alarm.
+- D) Delete old Pods until the quota is freed.
+
+<details><summary>Answer</summary>
+
+**C.** Compaction rewrites the database to the latest revision, defragmentation reclaims the freed space, and disarming the alarm restores writes.
+
+- Why not A: restarting does not reclaim space or disarm the alarm.
+- Why not B: disarming the alarm before compaction leaves the database full and writes still fail.
+- Why not D: deleting Pods does not reduce etcd's physical database size; defragmentation is required.
+- Ref: [modules/14-production-architecture-and-scale.md](../modules/14-production-architecture-and-scale.md), https://etcd.io/docs/v3.7/op-guide/maintenance/
+
+</details>
+
+### Q-K8S-036 · CKA Troubleshooting · difficulty 2 · scenario
+
+A Pod is in `ContainerCreating` with the event `FailedMount: unable to mount volume "data": mount failed: exit status 32`. What is the most likely cause?
+
+- A) The Pod's `livenessProbe` is failing.
+- B) The PersistentVolumeClaim is not bound or the CSI node plugin cannot mount the volume.
+- C) The Pod's ServiceAccount is missing.
+- D) The node's CNI plugin is down.
+
+<details><summary>Answer</summary>
+
+**B.** `FailedMount` comes from the kubelet's volume manager; the PVC is not bound or the CSI node mount failed.
+
+- Why not A: probes run only after mounting.
+- Why not C: ServiceAccounts do not affect volume mounts.
+- Why not D: CNI issues produce network errors, not mount errors.
+- Ref: [modules/09-storage-and-csi.md](../modules/09-storage-and-csi.md), https://kubernetes.io/docs/concepts/storage/persistent-volumes/
+
+</details>
+
+### Q-K8S-037 · CKA Troubleshooting · difficulty 2 · hands-on
+
+A node named `worker-2` is reported `NotReady`. Which command displays the node's conditions (`Ready`, `MemoryPressure`, `DiskPressure`, `PIDPressure`) and their reasons?
+
+- A) `kubectl get node worker-2`
+- B) `kubectl describe node worker-2`
+- C) `kubectl top node worker-2`
+- D) `kubectl get events --field-selector involvedObject.name=worker-2`
+
+<details><summary>Answer</summary>
+
+**B.** `kubectl describe node` prints the conditions table with status, last heartbeat, and reason.
+
+- Why not A: `get node` shows only the STATUS column and labels.
+- Why not C: `top node` shows resource usage, not conditions.
+- Why not D: events show recent happenings, not the full conditions table.
+- Ref: [modules/13-observability-and-troubleshooting.md](../modules/13-observability-and-troubleshooting.md), https://kubernetes.io/docs/concepts/architecture/nodes/
+- Verification: [`examples/ts/15-hands-on-verification.test.ts`](../examples/ts/15-hands-on-verification.test.ts) › "classifyNodeConditions reports Ready and NotReady from the Ready condition"
+
+</details>
+
+### Q-K8S-038 · CKA Troubleshooting · difficulty 2 · scenario
+
+A Pod's external DNS lookups are consistently slow, while internal lookups such as `kubernetes.default.svc.cluster.local` are fast. `kubectl exec` shows `/etc/resolv.conf` contains `search default.svc.cluster.local svc.cluster.local cluster.local` and `options ndots:5`. Why are the external lookups slow?
+
+- A) The Pod's NetworkPolicy blocks UDP 53.
+- B) `api.stripe.com` has fewer than five dots, so the resolver issues several search-domain queries before the absolute lookup succeeds.
+- C) CoreDNS is not running.
+- D) The Pod's ServiceAccount lacks DNS permissions.
+
+<details><summary>Answer</summary>
+
+**B.** With `ndots:5`, a name with fewer than five dots is first tried as `api.stripe.com.default.svc.cluster.local` and with the other search domains, adding several failed queries before the absolute lookup succeeds; the extra round trips dominate the latency.
+
+- Why not A: if UDP 53 were blocked, the internal name would also fail.
+- Why not C: CoreDNS being down would break internal resolution too.
+- Why not D: DNS resolution does not use ServiceAccount permissions.
+- Ref: [modules/07-networking-services-and-networkpolicy.md](../modules/07-networking-services-and-networkpolicy.md), https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/
+
+</details>
+
+### Q-K8S-039 · CKA Cluster Architecture · difficulty 1 · single
+
+What role does a node play in a Kubernetes cluster?
+
+- A) A logical grouping of Pods that share storage and network.
+- B) A worker machine, physical or virtual, that runs Pods and is managed by the control plane.
+- C) A control plane component that schedules Pods.
+- D) A namespace-scoped workload controller.
+
+<details><summary>Answer</summary>
+
+**B.** A node is a worker machine; the kubelet runs on it and reports to the control plane.
+
+- Why not A: that describes a Pod.
+- Why not C: that describes the scheduler.
+- Why not D: that describes a controller such as a Deployment.
+- Ref: [modules/03-node-internals.md](../modules/03-node-internals.md), https://kubernetes.io/docs/concepts/architecture/nodes/
+
+</details>
+
+### Q-K8S-040 · CKA Cluster Architecture · difficulty 1 · single
+
+What is the primary purpose of a Kubernetes Namespace?
+
+- A) To isolate network traffic between Pods.
+- B) To provide a virtual cluster boundary for naming and RBAC scope within a physical cluster.
+- C) To allocate CPU and memory quotas to Nodes.
+- D) To define the Pod's restart policy.
+
+<details><summary>Answer</summary>
+
+**B.** Namespaces partition cluster resources by name and provide the scope for RBAC and ResourceQuota.
+
+- Why not A: network isolation is provided by NetworkPolicy.
+- Why not C: quotas are attached to namespaces, not nodes, and CPU and memory allocation is set by requests and limits.
+- Why not D: `restartPolicy` is a Pod field.
+- Ref: [modules/14-production-architecture-and-scale.md](../modules/14-production-architecture-and-scale.md), https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/
+
+</details>
+
+### Q-K8S-041 · CKA Cluster Architecture · difficulty 2 · scenario
+
+An administrator has two clusters (`staging` and `production`) in `~/.kube/config` and needs to switch the active cluster without editing the file. Which command changes the current context?
+
+- A) `kubectl config use-context staging-admin`
+- B) `kubectl config set-cluster staging`
+- C) `kubectl config set-credentials staging`
+- D) `kubectl cluster-info --context staging-admin`
+
+<details><summary>Answer</summary>
+
+**A.** `kubectl config use-context` sets `current-context`, which selects the cluster, user, and namespace used by subsequent commands.
+
+- Why not B: `set-cluster` defines or modifies a cluster entry, not the active context.
+- Why not C: `set-credentials` defines a user entry.
+- Why not D: `cluster-info` displays information and does not change the context.
+- Ref: [modules/10-cluster-lifecycle-and-kubeadm.md](../modules/10-cluster-lifecycle-and-kubeadm.md), https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/
+
+</details>
+
+### Q-K8S-042 · CKA Cluster Architecture · difficulty 2 · single
+
+Which three top-level sections of a kubeconfig file does a context bind together?
+
+- A) `clusters`, `users`, and `contexts`
+- B) `pods`, `services`, and `namespaces`
+- C) `apiVersion`, `kind`, and `metadata`
+- D) `certificates`, `tokens`, and `passwords`
+
+<details><summary>Answer</summary>
+
+**A.** A context references a cluster, a user, and a namespace; `current-context` selects the active context.
+
+- Why not B: those are API resources, not kubeconfig sections.
+- Why not C: those are object metadata fields.
+- Why not D: those are credential types, not top-level kubeconfig sections.
+- Ref: [modules/10-cluster-lifecycle-and-kubeadm.md](../modules/10-cluster-lifecycle-and-kubeadm.md), https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/
+
+</details>
+
+### Q-K8S-043 · CKA Cluster Architecture · difficulty 3 · scenario
+
+A production cluster runs a stacked etcd control plane with three control plane nodes. One node fails. Which statement is true?
+
+- A) The cluster loses quorum and all writes fail.
+- B) The cluster retains quorum and continues serving reads and writes.
+- C) The cluster loses quorum but continues serving writes from the cached API server.
+- D) The cluster automatically removes the failed member and rebalances.
+
+<details><summary>Answer</summary>
+
+**B.** A three-member etcd tolerates one failure ($Q=2$); the remaining two members retain quorum and continue serving.
+
+- Why not A: losing one of three members leaves a majority.
+- Why not C: without quorum, etcd does not accept writes.
+- Why not D: etcd does not automatically remove members; an administrator must remove the failed member.
+- Ref: [modules/10-cluster-lifecycle-and-kubeadm.md](../modules/10-cluster-lifecycle-and-kubeadm.md), https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-etcd/
+
+</details>
+
+### Q-K8S-044 · CKA Cluster Architecture · difficulty 2 · ordering
+
+Order the steps to upgrade a kubeadm control plane node from v1.36 to v1.37: upgrade the kubeadm binary, run `kubeadm upgrade apply v1.37.2`, drain the node, upgrade the kubelet and kubectl binaries, uncordon the node.
+
+- A) 1, 3, 2, 4, 5
+- B) 1, 2, 3, 4, 5
+- C) 3, 1, 2, 4, 5
+- D) 1, 3, 4, 2, 5
+
+<details><summary>Answer</summary>
+
+**B.** Upgrade the kubeadm binary, apply the control plane upgrade, drain the node, upgrade the kubelet and kubectl, then uncordon.
+
+- Why not A: the upgrade must be applied before draining, or the node's workloads are disrupted without the new control plane.
+- Why not C: draining before upgrading kubeadm leaves the node unable to apply the upgrade.
+- Why not D: the kubelet upgrade happens after the control plane upgrade, not before.
+- Ref: [modules/10-cluster-lifecycle-and-kubeadm.md](../modules/10-cluster-lifecycle-and-kubeadm.md), https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/
+
+</details>
+
+### Q-K8S-045 · CKA Cluster Architecture · difficulty 3 · scenario
+
+An administrator needs to restore an etcd snapshot after a catastrophic failure. What does `etcdctl snapshot restore` produce?
+
+- A) A new etcd data directory that can be used to start a replacement cluster.
+- B) A YAML backup of all Kubernetes objects.
+- C) A compressed copy of the API server's watch cache.
+- D) A new set of PKI certificates.
+
+<details><summary>Answer</summary>
+
+**A.** `snapshot restore` writes a new etcd data directory containing the snapshot's state; the replacement cluster's etcd is started against it.
+
+- Why not B: etcd stores its own format, not Kubernetes YAML.
+- Why not C: the watch cache is in memory and is not backed up.
+- Why not D: PKI is separate from etcd data.
+- Ref: [modules/10-cluster-lifecycle-and-kubeadm.md](../modules/10-cluster-lifecycle-and-kubeadm.md), https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-etcd/
+
+</details>
+
+### Q-K8S-046 · CKA Cluster Architecture · difficulty 2 · single
+
+According to the Kubernetes version skew policy, which statement is true?
+
+- A) The kubelet may be up to three minor versions behind the control plane.
+- B) The kubelet must not be newer than the control plane and may be up to two minor versions older.
+- C) kubectl must be the exact same version as the API server.
+- D) The scheduler may be one minor version newer than the API server.
+
+<details><summary>Answer</summary>
+
+**A.** The kubelet may be up to three minor versions older than `kube-apiserver` and must not be newer (kubelet older than 1.25 may only be up to two).
+
+- Why not B: the supported skew is three minor versions, not two.
+- Why not C: kubectl may be one minor version older or newer than the API server.
+- Why not D: control plane components must not be newer than the API server.
+- Ref: [modules/10-cluster-lifecycle-and-kubeadm.md](../modules/10-cluster-lifecycle-and-kubeadm.md), https://kubernetes.io/releases/version-skew-policy/
+
+</details>
+
+### Q-K8S-047 · CKA Cluster Architecture · difficulty 2 · scenario
+
+The scheduler Pod on a control plane node is crash-looping. What is the immediate effect on the cluster?
+
+- A) Existing Pods continue running, but new Pods remain `Pending`.
+- B) All Pods are evicted.
+- C) The API server stops accepting writes.
+- D) The kubelet stops reporting node status.
+
+<details><summary>Answer</summary>
+
+**A.** The scheduler only assigns nodes to new Pods; existing workloads and the API server continue.
+
+- Why not B: Pods are not evicted by a scheduler failure.
+- Why not C: the API server is independent of the scheduler.
+- Why not D: the kubelet is independent of the scheduler.
+- Ref: [modules/02-control-plane-internals.md](../modules/02-control-plane-internals.md), https://kubernetes.io/docs/concepts/overview/components/
+
+</details>
+
+### Q-K8S-048 · CKA Cluster Architecture · difficulty 3 · scenario
+
+The API server is unavailable. Which statement about the running Pods is true?
+
+- A) All Pods stop immediately because the kubelet loses its heartbeat.
+- B) Running Pods continue to run, but no new changes can be applied or queried.
+- C) The scheduler takes over and continues to place Pods from its cache.
+- D) etcd automatically promotes a new API server.
+
+<details><summary>Answer</summary>
+
+**B.** Pods run under the kubelet's local control; the API server is required for desired-state changes and queries, not for already-running containers.
+
+- Why not A: the kubelet does not stop containers when the API server is unreachable.
+- Why not C: the scheduler cannot place Pods without the API server.
+- Why not D: etcd does not run the API server.
+- Ref: [modules/02-control-plane-internals.md](../modules/02-control-plane-internals.md), https://kubernetes.io/docs/concepts/overview/components/
+
+</details>
+
+### Q-K8S-049 · CKA Services & Networking · difficulty 1 · single
+
+What is the primary role of `kube-proxy` on each node?
+
+- A) To assign IP addresses to Pods.
+- B) To maintain the network rules that allow traffic to reach Service IPs on the correct backend Pods.
+- C) To resolve DNS names for Pods.
+- D) To mount persistent volumes.
+
+<details><summary>Answer</summary>
+
+**B.** kube-proxy watches Services and Endpoints and programs iptables, nftables, or IPVS rules to load-balance Service traffic.
+
+- Why not A: IP assignment is done by the CNI.
+- Why not C: DNS is handled by CoreDNS.
+- Why not D: volume mounting is done by the kubelet and CSI.
+- Ref: [modules/03-node-internals.md](../modules/03-node-internals.md), https://kubernetes.io/docs/concepts/services-networking/service/#proxy-mode
+
+</details>
+
+### Q-K8S-050 · CKA Services & Networking · difficulty 2 · single
+
+Which Service type allocates a stable IP reachable only from inside the cluster?
+
+- A) NodePort
+- B) LoadBalancer
+- C) ClusterIP
+- D) ExternalName
+
+<details><summary>Answer</summary>
+
+**C.** ClusterIP is the default and is reachable only within the cluster.
+
+- Why not A: NodePort exposes the Service on every node's IP.
+- Why not B: LoadBalancer provisions an external load balancer.
+- Why not D: ExternalName maps to an external DNS name via CNAME.
+- Ref: [modules/07-networking-services-and-networkpolicy.md](../modules/07-networking-services-and-networkpolicy.md), https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
+
+</details>
+
+### Q-K8S-051 · CKA Services & Networking · difficulty 2 · scenario
+
+A namespace has a NetworkPolicy that selects all Pods with `policyTypes: [Egress]` and no egress rules. What is the effect?
+
+- A) All ingress traffic is allowed.
+- B) All egress traffic from the selected Pods is denied.
+- C) All traffic to kube-dns is allowed.
+- D) The Pods lose their IP addresses.
+
+<details><summary>Answer</summary>
+
+**B.** An empty egress rule list denies all egress; DNS must be explicitly allowed.
+
+- Why not A: the policy type is Egress, so ingress is unaffected and defaults to allowed.
+- Why not C: DNS is egress and must be allowed explicitly.
+- Why not D: NetworkPolicy does not change Pod networking.
+- Ref: [modules/07-networking-services-and-networkpolicy.md](../modules/07-networking-services-and-networkpolicy.md), https://kubernetes.io/docs/concepts/services-networking/network-policies/
+
+</details>
+
+### Q-K8S-052 · CKA Services & Networking · difficulty 3 · scenario
+
+A StatefulSet with a headless Service (`clusterIP: None`) is created. What DNS record is created for each Pod?
+
+- A) A single A record for the Service name.
+- B) An A record per Pod in the form `<pod-name>.<service-name>.<namespace>.svc.cluster.local`.
+- C) A CNAME record pointing to the node IP.
+- D) No DNS records are created.
+
+<details><summary>Answer</summary>
+
+**B.** A headless Service returns the Pod IPs directly, and each StatefulSet Pod gets a stable per-Pod DNS name.
+
+- Why not A: a ClusterIP Service gets a single A record; a headless Service does not.
+- Why not C: ExternalName uses CNAME, not headless.
+- Why not D: CoreDNS creates records for headless Services.
+- Ref: [modules/07-networking-services-and-networkpolicy.md](../modules/07-networking-services-and-networkpolicy.md), https://kubernetes.io/docs/concepts/services-networking/service/#headless-services
+
+</details>
+
+### Q-K8S-053 · CKA Services & Networking · difficulty 2 · single
+
+What is the effect of the `ndots:5` option in a Pod's `/etc/resolv.conf`?
+
+- A) DNS queries are limited to five per second.
+- B) A name with fewer than five dots is first tried with each search domain before being treated as absolute.
+- C) The Pod uses five different DNS servers.
+- D) DNS queries time out after five seconds.
+
+<details><summary>Answer</summary>
+
+**B.** With `ndots:5`, a query with fewer than five dots is expanded with the search list first.
+
+- Why not A: `ndots` is a dot threshold, not a rate limit.
+- Why not C: the nameserver list is separate from `ndots`.
+- Why not D: the timeout is controlled by the `timeout` option.
+- Ref: [modules/07-networking-services-and-networkpolicy.md](../modules/07-networking-services-and-networkpolicy.md), https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/
+
+</details>
+
+### Q-K8S-054 · CKA Services & Networking · difficulty 2 · scenario
+
+A Service of type `ExternalName` has `externalName: db.example.com`. What happens when a Pod connects to the Service name?
+
+- A) The connection is load-balanced across Pods.
+- B) The DNS lookup returns a CNAME record for `db.example.com`.
+- C) The connection is routed to a NodePort.
+- D) The Service allocates a ClusterIP.
+
+<details><summary>Answer</summary>
+
+**B.** ExternalName Services return a CNAME to the external name; no ClusterIP or endpoints are allocated.
+
+- Why not A: there are no backend Pods.
+- Why not C: NodePort is a different Service type.
+- Why not D: ExternalName does not allocate a ClusterIP.
+- Ref: [modules/07-networking-services-and-networkpolicy.md](../modules/07-networking-services-and-networkpolicy.md), https://kubernetes.io/docs/concepts/services-networking/service/#externalname
+
+</details>
+
+### Q-K8S-055 · CKA Services & Networking · difficulty 3 · scenario
+
+A cluster uses `kube-proxy` in IPVS mode. Compared to iptables mode, what is the main advantage?
+
+- A) IPVS scales better for clusters with thousands of Services because it uses a hash table instead of sequential rule traversal.
+- B) IPVS encrypts Service traffic.
+- C) IPVS assigns Pod IPs.
+- D) IPVS replaces the CNI.
+
+<details><summary>Answer</summary>
+
+**A.** IPVS uses a hash table for Service lookup, reducing the cost of large rule sets compared to iptables' sequential traversal.
+
+- Why not B: kube-proxy does not encrypt traffic.
+- Why not C: IP assignment is the CNI's job.
+- Why not D: the CNI is separate from kube-proxy.
+- Ref: [modules/03-node-internals.md](../modules/03-node-internals.md), https://kubernetes.io/docs/concepts/services-networking/service/#proxy-mode-ipvs
+
+</details>
+
+### Q-K8S-056 · CKA Workloads & Scheduling · difficulty 1 · single
+
+When a Deployment is created, which controller creates and manages the ReplicaSets?
+
+- A) The kubelet
+- B) The Deployment controller
+- C) The scheduler
+- D) The EndpointSlice controller
+
+<details><summary>Answer</summary>
+
+**B.** The Deployment controller creates ReplicaSets to realize the desired Pod template.
+
+- Why not A: the kubelet runs Pods on nodes.
+- Why not C: the scheduler assigns nodes to Pods.
+- Why not D: EndpointSlices track Service backends.
+- Ref: [modules/04-pods-and-workloads.md](../modules/04-pods-and-workloads.md), https://kubernetes.io/docs/concepts/workloads/controllers/deployment/
+
+</details>
+
+### Q-K8S-057 · CKA Workloads & Scheduling · difficulty 2 · scenario
+
+A node is tainted `dedicated=gpu:NoSchedule`. Which Pod spec allows a Pod to be scheduled on that node?
+
+- A) `tolerations: [{key: "dedicated", operator: "Equal", value: "gpu", effect: "NoSchedule"}]`
+- B) `nodeSelector: {dedicated: gpu}`
+- C) `affinity: {nodeAffinity: {requiredDuringSchedulingIgnoredDuringExecution: {...}}}`
+- D) `priorityClassName: high-priority`
+
+<details><summary>Answer</summary>
+
+**A.** A toleration matching the taint's key, value, and effect allows the Pod to be scheduled on the tainted node.
+
+- Why not B: `nodeSelector` does not override a taint.
+- Why not C: node affinity does not tolerate a taint.
+- Why not D: PriorityClass affects preemption, not taints.
+- Ref: [modules/06-scheduling-and-topology.md](../modules/06-scheduling-and-topology.md), https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+
+</details>
+
+### Q-K8S-058 · CKA Workloads & Scheduling · difficulty 2 · single
+
+Which resource automatically scales a Deployment's replica count based on CPU utilization?
+
+- A) VerticalPodAutoscaler
+- B) HorizontalPodAutoscaler
+- C) ClusterAutoscaler
+- D) PodDisruptionBudget
+
+<details><summary>Answer</summary>
+
+**B.** The HPA adjusts replicas to match the target CPU or custom utilization.
+
+- Why not A: VPA adjusts Pod resource requests, not replica count.
+- Why not C: ClusterAutoscaler adjusts node count, not Pod replicas.
+- Why not D: PDB limits voluntary disruptions.
+- Ref: [modules/05-configuration-resources-and-autoscaling.md](../modules/05-configuration-resources-and-autoscaling.md), https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+
+</details>
+
+### Q-K8S-059 · CKA Workloads & Scheduling · difficulty 3 · scenario
+
+A Pod with `resources.requests.memory: 8Gi` is `Pending` on a cluster with three nodes, each with 4Gi allocatable memory. Which scheduling stage is failing?
+
+- A) Scoring
+- B) Filtering
+- C) Binding
+- D) Preemption
+
+<details><summary>Answer</summary>
+
+**B.** The `NodeResourcesFit` filter removes nodes that cannot satisfy the Pod's memory request, so no node remains to score.
+
+- Why not A: scoring runs only on nodes that pass filtering.
+- Why not C: binding runs only after a node is chosen.
+- Why not D: preemption is attempted only if configured and after filtering.
+- Ref: [modules/06-scheduling-and-topology.md](../modules/06-scheduling-and-topology.md), https://kubernetes.io/docs/concepts/scheduling-eviction/scheduling-framework/
+
+</details>
+
+### Q-K8S-060 · CKA Storage · difficulty 2 · single
+
+Which field in a StorageClass enables expansion of a PersistentVolume's filesystem?
+
+- A) `allowVolumeExpansion: true`
+- B) `volumeBindingMode: Immediate`
+- C) `reclaimPolicy: Retain`
+- D) The `provisioner` field set to `volume-expansion`
+
+<details><summary>Answer</summary>
+
+**A.** `allowVolumeExpansion` must be true for the PVC to request a larger size; the CSI driver handles online or offline expansion.
+
+- Why not B: binding mode controls when provisioning happens.
+- Why not C: reclaim policy controls what happens when the PVC is deleted.
+- Why not D: the provisioner field names the CSI driver; it does not enable expansion.
+- Ref: [modules/09-storage-and-csi.md](../modules/09-storage-and-csi.md), https://kubernetes.io/docs/concepts/storage/storage-classes/#volume-expansion
+
+</details>
+
+### Q-K8S-061 · CKA Services & Networking · difficulty 2 · multi
+
+Which Service types expose a Service to clients outside the cluster? (Select all that apply)
+
+- A) NodePort
+- B) LoadBalancer
+- C) ClusterIP
+- D) ExternalName
+
+<details><summary>Answer</summary>
+
+**A and B.** NodePort exposes the Service on every node's IP, and LoadBalancer provisions an external load balancer.
+
+- Why not C: ClusterIP allocates an internal IP reachable only inside the cluster.
+- Why not D: ExternalName maps to an external DNS name via CNAME; it does not expose the Service itself.
+- Ref: [modules/07-networking-services-and-networkpolicy.md](../modules/07-networking-services-and-networkpolicy.md), https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
+
+</details>
+
+## Part 2: CKAD Question Bank (Q-K8S-062 to Q-K8S-122)
+
+### Q-K8S-062 · CKAD Application Environment · difficulty 1 · single
 
 How can a container consume key-value pairs stored in a Kubernetes ConfigMap as environment variables?
 
@@ -531,7 +1252,7 @@ How can a container consume key-value pairs stored in a Kubernetes ConfigMap as 
 
 </details>
 
-### Q-K8S-027 · CKAD Application Design & Build · difficulty 2 · scenario
+### Q-K8S-063 · CKAD Application Design & Build · difficulty 2 · scenario
 
 An application developer needs to define a custom API resource type `CronTab` in their cluster. Which resource kind defines this custom API schema?
 
@@ -551,7 +1272,7 @@ An application developer needs to define a custom API resource type `CronTab` in
 
 </details>
 
-### Q-K8S-028 · CKAD Application Deployment · difficulty 2 · single
+### Q-K8S-064 · CKAD Application Deployment · difficulty 2 · single
 
 During a rolling update of a Deployment, which two parameters control the maximum number of pods created above the desired replica count and the maximum unavailable pods?
 
@@ -569,7 +1290,7 @@ During a rolling update of a Deployment, which two parameters control the maximu
 
 </details>
 
-### Q-K8S-029 · CKAD Services & Networking · difficulty 2 · scenario
+### Q-K8S-065 · CKAD Services & Networking · difficulty 2 · scenario
 
 An application developer wants to route incoming HTTP traffic based on hostname (`api.example.com`) and path prefix (`/v1`) using the modern Kubernetes traffic standard. Which resource should they create?
 
@@ -589,7 +1310,7 @@ An application developer wants to route incoming HTTP traffic based on hostname 
 
 </details>
 
-### Q-K8S-030 · CKAD Application Observability · difficulty 2 · single
+### Q-K8S-066 · CKAD Application Observability · difficulty 2 · single
 
 Which pod probe configuration checks whether a container has completed its startup phase before liveness probes take over?
 
@@ -609,7 +1330,7 @@ Which pod probe configuration checks whether a container has completed its start
 
 </details>
 
-### Q-K8S-031 · CKAD Application Environment · difficulty 2 · scenario
+### Q-K8S-067 · CKAD Application Environment · difficulty 2 · scenario
 
 Why is storing sensitive database passwords in Kubernetes ConfigMaps considered an insecure practice?
 
@@ -628,7 +1349,7 @@ Why is storing sensitive database passwords in Kubernetes ConfigMaps considered 
 
 </details>
 
-### Q-K8S-032 · CKAD Application Design & Build · difficulty 2 · hands-on
+### Q-K8S-068 · CKAD Application Design & Build · difficulty 2 · hands-on
 
 Create a Helm 4 chart installation command named `my-release` from an OCI registry repository `oci://ghcr.io/org/charts/app` with version `2.1.0` in namespace `production`.
 
@@ -645,10 +1366,11 @@ Create a Helm 4 chart installation command named `my-release` from an OCI regist
 - Why not C: Kustomize processes YAML overlays.
 - Why not D: Docker runs OCI container images, not helm charts.
 - Ref: [modules/12-extending-kubernetes-crds-operators-helm.md](../modules/12-extending-kubernetes-crds-operators-helm.md), https://helm.sh/docs/topics/registries/
+- Verification: [`examples/ts/15-hands-on-verification.test.ts`](../examples/ts/15-hands-on-verification.test.ts) › "evaluateHelmChart validates the chart structure"
 
 </details>
 
-### Q-K8S-033 · CKAD Application Deployment · difficulty 2 · single
+### Q-K8S-069 · CKAD Application Deployment · difficulty 2 · single
 
 What is the primary difference between a Job and a CronJob in Kubernetes?
 
@@ -668,7 +1390,7 @@ What is the primary difference between a Job and a CronJob in Kubernetes?
 
 </details>
 
-### Q-K8S-034 · CKAD Services & Networking · difficulty 2 · scenario
+### Q-K8S-070 · CKAD Services & Networking · difficulty 2 · scenario
 
 An application developer creates a headless service (`clusterIP: None`) for a StatefulSet. What is the key characteristic of a headless service?
 
@@ -687,7 +1409,7 @@ An application developer creates a headless service (`clusterIP: None`) for a St
 
 </details>
 
-### Q-K8S-035 · CKAD Application Observability · difficulty 2 · scenario
+### Q-K8S-071 · CKAD Application Observability · difficulty 2 · scenario
 
 A developer needs to retrieve logs from a terminated container in a multi-container pod named `web-app` for debugging. Which flag ensures logs from the previous instantiation are fetched?
 
@@ -705,7 +1427,7 @@ A developer needs to retrieve logs from a terminated container in a multi-contai
 
 </details>
 
-### Q-K8S-036 · CKAD Application Environment · difficulty 2 · single
+### Q-K8S-072 · CKAD Application Environment · difficulty 2 · single
 
 What object associates a ServiceAccount with token permissions for secure workload authentication?
 
@@ -723,7 +1445,7 @@ What object associates a ServiceAccount with token permissions for secure worklo
 
 </details>
 
-### Q-K8S-037 · CKAD Application Design & Build · difficulty 2 · scenario
+### Q-K8S-073 · CKAD Application Design & Build · difficulty 2 · scenario
 
 A developer wants to customize base Kubernetes manifests for staging and production environments without duplicating YAML files or using templating engines. Which tool is purpose-built for this?
 
@@ -742,7 +1464,7 @@ A developer wants to customize base Kubernetes manifests for staging and product
 
 </details>
 
-### Q-K8S-038 · CKAD Application Deployment · difficulty 2 · scenario
+### Q-K8S-074 · CKAD Application Deployment · difficulty 2 · scenario
 
 An application requires database migrations to run successfully to completion before the main web server container starts. How should this be structured in the Pod spec?
 
@@ -762,7 +1484,7 @@ An application requires database migrations to run successfully to completion be
 
 </details>
 
-### Q-K8S-039 · CKAD Services & Networking · difficulty 2 · single
+### Q-K8S-075 · CKAD Services & Networking · difficulty 2 · single
 
 What does the `ndots:5` default setting in Kubernetes pod `/etc/resolv.conf` mean for DNS resolution?
 
@@ -776,11 +1498,11 @@ What does the `ndots:5` default setting in Kubernetes pod `/etc/resolv.conf` mea
 **B.** `ndots:5` triggers search path expansions for any domain containing fewer than 5 dots, generating extra DNS queries before querying the absolute FQDN.
 
 - Why not A, C, D: These misinterpret ndots semantics.
-- Ref: [modules/07-networking-services-and-networkpolicy.md](../modules/07-networking-services-and-networkpolicy.md), https://kubernetes.io/docs/tasks/admin-cluster/dns-custom-nameservers/
+- Ref: [modules/07-networking-services-and-networkpolicy.md](../modules/07-networking-services-and-networkpolicy.md), https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/
 
 </details>
 
-### Q-K8S-040 · CKAD Application Observability · difficulty 2 · single
+### Q-K8S-076 · CKAD Application Observability · difficulty 2 · single
 
 Which API resource exposes CPU and memory resource usage metrics for pods and nodes collected by metrics-server?
 
@@ -800,7 +1522,7 @@ Which API resource exposes CPU and memory resource usage metrics for pods and no
 
 </details>
 
-### Q-K8S-041 · CKAD Application Environment · difficulty 2 · scenario
+### Q-K8S-077 · CKAD Application Environment · difficulty 2 · scenario
 
 How can a Pod securely mount a Kubernetes Secret as an encrypted-at-rest filesystem volume rather than environment variables?
 
@@ -816,11 +1538,11 @@ How can a Pod securely mount a Kubernetes Secret as an encrypted-at-rest filesys
 - Why not B: `envFrom` populates environment variables.
 - Why not C: `hostPath` exposes node filesystem paths insecurely.
 - Why not D: `docker cp` is an imperative anti-pattern.
-- Ref: [modules/05-configuration-resources-and-autoscaling.md](../modules/05-configuration-resources-and-autoscaling.md), https://kubernetes.io/docs/tasks/inject-data-application/distribute-credentials-secure-volume/
+- Ref: [modules/05-configuration-resources-and-autoscaling.md](../modules/05-configuration-resources-and-autoscaling.md), https://kubernetes.io/docs/tasks/inject-data-application/distribute-credentials-secure/
 
 </details>
 
-### Q-K8S-042 · CKAD Application Design & Build · difficulty 2 · single
+### Q-K8S-078 · CKAD Application Design & Build · difficulty 2 · single
 
 What is the purpose of the `status` subresource in CustomResourceDefinitions (CRDs)?
 
@@ -839,7 +1561,7 @@ What is the purpose of the `status` subresource in CustomResourceDefinitions (CR
 
 </details>
 
-### Q-K8S-043 · CKAD Application Deployment · difficulty 2 · scenario
+### Q-K8S-079 · CKAD Application Deployment · difficulty 2 · scenario
 
 An application deployment experiences frequent cascading failures where restarting web servers immediately hammers a degraded database. Which pattern or configuration prevents this?
 
@@ -857,7 +1579,7 @@ An application deployment experiences frequent cascading failures where restarti
 
 </details>
 
-### Q-K8S-044 · CKAD Services & Networking · difficulty 2 · single
+### Q-K8S-080 · CKAD Services & Networking · difficulty 2 · single
 
 What is the function of an Ingress or Gateway API HTTPRoute `backendRef`?
 
@@ -875,7 +1597,7 @@ What is the function of an Ingress or Gateway API HTTPRoute `backendRef`?
 
 </details>
 
-### Q-K8S-045 · CKAD Application Observability · difficulty 2 · scenario
+### Q-K8S-081 · CKAD Application Observability · difficulty 2 · scenario
 
 A developer wants to scale deployment pods horizontally based on CPU utilization. Which resource object accomplishes this automatically?
 
@@ -895,7 +1617,7 @@ A developer wants to scale deployment pods horizontally based on CPU utilization
 
 </details>
 
-### Q-K8S-046 · CKAD Application Environment · difficulty 2 · single
+### Q-K8S-082 · CKAD Application Environment · difficulty 2 · single
 
 What is the effect of setting `spec.containers[*].resources.requests.cpu: "500m"` on a Pod container?
 
@@ -915,7 +1637,7 @@ What is the effect of setting `spec.containers[*].resources.requests.cpu: "500m"
 
 </details>
 
-### Q-K8S-047 · CKAD Application Design & Build · difficulty 2 · scenario
+### Q-K8S-083 · CKAD Application Design & Build · difficulty 2 · scenario
 
 A developer packages an application as a reusable Kubernetes artifact containing templates, default values, and helper functions. What is this packaging format called?
 
@@ -935,7 +1657,7 @@ A developer packages an application as a reusable Kubernetes artifact containing
 
 </details>
 
-### Q-K8S-048 · CKAD Application Deployment · difficulty 2 · single
+### Q-K8S-084 · CKAD Application Deployment · difficulty 2 · single
 
 What happens to a Deployment's ReplicaSets when a rolling update completes successfully?
 
@@ -954,7 +1676,7 @@ What happens to a Deployment's ReplicaSets when a rolling update completes succe
 
 </details>
 
-### Q-K8S-049 · CKAD Services & Networking · difficulty 2 · scenario
+### Q-K8S-085 · CKAD Services & Networking · difficulty 2 · scenario
 
 An application developer needs to ensure that external traffic entering a Gateway API HTTPRoute is redirected from HTTP to HTTPS. Where is TLS termination configured?
 
@@ -972,7 +1694,7 @@ An application developer needs to ensure that external traffic entering a Gatewa
 
 </details>
 
-### Q-K8S-050 · CKAD Application Observability · difficulty 2 · single
+### Q-K8S-086 · CKAD Application Observability · difficulty 2 · single
 
 What is the function of the `terminationGracePeriodSeconds` field in a Pod specification?
 
@@ -993,9 +1715,727 @@ What is the function of the `terminationGracePeriodSeconds` field in a Pod speci
 
 ---
 
-## Part 3: CKS Question Bank (Q-K8S-051 to Q-K8S-075)
+### Q-K8S-087 · CKAD Application Environment · difficulty 1 · single
 
-### Q-K8S-051 · CKS Minimize Microservice Vulnerabilities · difficulty 2 · single
+Which Pod spec field mounts a ConfigMap as a filesystem volume?
+
+- A) `spec.containers[*].envFrom`
+- B) `spec.volumes[*].configMap.name`
+- C) `spec.containers[*].resources.configMap`
+- D) `spec.serviceAccountName`
+
+<details><summary>Answer</summary>
+
+**B.** A volume with a `configMap` source is mounted into the container through `volumeMounts`.
+
+- Why not A: `envFrom` injects keys as environment variables, not files.
+- Why not C: resources do not reference ConfigMaps.
+- Why not D: ServiceAccount is for API authentication.
+- Ref: [modules/05-configuration-resources-and-autoscaling.md](../modules/05-configuration-resources-and-autoscaling.md), https://kubernetes.io/docs/concepts/configuration/configmap/
+
+</details>
+
+### Q-K8S-088 · CKAD Application Environment · difficulty 2 · scenario
+
+An application must read a TLS private key from a Secret. Which approach keeps the key out of environment variables and the container image?
+
+- A) Store the key in a ConfigMap and reference it with `envFrom`.
+- B) Mount the Secret as a volume and read the key from the mounted file.
+- C) Pass the key as a command-line argument.
+- D) Store the key in a label on the Deployment.
+
+<details><summary>Answer</summary>
+
+**B.** Mounting the Secret as a volume writes the key to a tmpfs file that the application reads at runtime.
+
+- Why not A: ConfigMaps are not designed for sensitive data, and `envFrom` puts the value in the process environment.
+- Why not C: command-line arguments are visible in the process list and the Pod spec.
+- Why not D: labels are metadata and are not mounted into Pods.
+- Ref: [modules/05-configuration-resources-and-autoscaling.md](../modules/05-configuration-resources-and-autoscaling.md), https://kubernetes.io/docs/concepts/configuration/secret/
+
+</details>
+
+### Q-K8S-089 · CKAD Application Environment · difficulty 3 · scenario
+
+A namespace has a ResourceQuota that limits `requests.cpu` to `2` and `limits.memory` to `4Gi`. A Deployment requests `500m` CPU and `1Gi` memory per replica. How many replicas can the namespace run?
+
+- A) 2
+- B) 4
+- C) 8
+- D) The quota does not limit replicas.
+
+<details><summary>Answer</summary>
+
+**B.** `2 / 0.5 = 4` replicas by CPU and `4Gi / 1Gi = 4` by memory; the lower bound is 4.
+
+- Why not A: 2 is the CPU quota in cores, not the replica count.
+- Why not C: 8 would exceed the CPU quota.
+- Why not D: ResourceQuota enforces aggregate requests and limits across the namespace.
+- Ref: [modules/05-configuration-resources-and-autoscaling.md](../modules/05-configuration-resources-and-autoscaling.md), https://kubernetes.io/docs/concepts/policy/resource-quotas/
+
+</details>
+
+### Q-K8S-090 · CKAD Application Environment · difficulty 1 · single
+
+What is the purpose of a LimitRange?
+
+- A) To limit the number of Pods in a namespace.
+- B) To set default requests and limits for containers that do not specify them.
+- C) To restrict which images can be pulled.
+- D) To enforce network isolation.
+
+<details><summary>Answer</summary>
+
+**B.** A LimitRange provides default resource requests and limits and can enforce minimum and maximum values.
+
+- Why not A: ResourceQuota limits aggregate resources and object counts.
+- Why not C: image policies are enforced by admission controllers.
+- Why not D: NetworkPolicy enforces network isolation.
+- Ref: [modules/05-configuration-resources-and-autoscaling.md](../modules/05-configuration-resources-and-autoscaling.md), https://kubernetes.io/docs/concepts/policy/limit-range/
+
+</details>
+
+### Q-K8S-091 · CKAD Application Environment · difficulty 2 · scenario
+
+A container must not run as root. Which `securityContext` field enforces this?
+
+- A) `runAsNonRoot: true`
+- B) `allowPrivilegeEscalation: false`
+- C) `readOnlyRootFilesystem: true`
+- D) `privileged: false`
+
+<details><summary>Answer</summary>
+
+**A.** `runAsNonRoot: true` causes the kubelet to reject a container that runs as UID 0.
+
+- Why not B: `allowPrivilegeEscalation` prevents gaining more privileges than the parent, not running as root.
+- Why not C: a read-only root filesystem prevents writes, not root execution.
+- Why not D: `privileged: false` is the default and does not prevent root.
+- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+
+</details>
+
+### Q-K8S-092 · CKAD Application Environment · difficulty 3 · single
+
+Which ServiceAccount token type is bound to a Pod, has an audience, and expires automatically?
+
+- A) The legacy service-account token with no expiration.
+- B) A bound ServiceAccount token projected into the Pod.
+- C) A static token defined in a Secret.
+- D) An OIDC token from the cloud provider.
+
+<details><summary>Answer</summary>
+
+**B.** Bound tokens are audience-bound, have an expiration, and are projected into the Pod.
+
+- Why not A: legacy tokens do not expire by default.
+- Why not C: static tokens are long-lived and not audience-bound.
+- Why not D: OIDC tokens are for cloud identity, not in-cluster API authentication.
+- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
+
+</details>
+
+### Q-K8S-093 · CKAD Application Environment · difficulty 1 · single
+
+Which field injects all keys from a ConfigMap as environment variables?
+
+- A) `env`
+- B) `envFrom`
+- C) `valueFrom`
+- D) `configMapKeyRef`
+
+<details><summary>Answer</summary>
+
+**B.** `envFrom` injects every key in the ConfigMap as an environment variable.
+
+- Why not A: `env` requires one entry per variable.
+- Why not C: `valueFrom` is used inside an `env` entry.
+- Why not D: `configMapKeyRef` references a single key.
+- Ref: [modules/05-configuration-resources-and-autoscaling.md](../modules/05-configuration-resources-and-autoscaling.md), https://kubernetes.io/docs/concepts/configuration/configmap/
+
+</details>
+
+### Q-K8S-094 · CKAD Application Environment · difficulty 3 · scenario
+
+A Pod's readiness probe fails after a configuration change. What happens to the Pod's traffic and state?
+
+- A) The Pod is restarted.
+- B) The Pod is removed from Service endpoints but keeps running.
+- C) The Pod is evicted from the node.
+- D) The Pod's Deployment is rolled back.
+
+<details><summary>Answer</summary>
+
+**B.** A failing readiness probe removes the Pod from the Service's ready endpoints; the container keeps running.
+
+- Why not A: only the liveness probe restarts the container.
+- Why not C: eviction is driven by node pressure, not probes.
+- Why not D: rollback is a manual or automated action, not a probe effect.
+- Ref: [modules/04-pods-and-workloads.md](../modules/04-pods-and-workloads.md), https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes
+
+</details>
+
+### Q-K8S-095 · CKAD Application Environment · difficulty 2 · single
+
+Which Secret type is used to store credentials for pulling images from a private registry?
+
+- A) `Opaque`
+- B) `kubernetes.io/tls`
+- C) `kubernetes.io/dockerconfigjson`
+- D) `bootstrap.kubernetes.io/token`
+
+<details><summary>Answer</summary>
+
+**C.** `kubernetes.io/dockerconfigjson` holds the Docker registry credentials consumed by the kubelet.
+
+- Why not A: Opaque is for arbitrary key-value data.
+- Why not B: TLS stores a certificate and key.
+- Why not D: bootstrap tokens are for node joining.
+- Ref: [modules/05-configuration-resources-and-autoscaling.md](../modules/05-configuration-resources-and-autoscaling.md), https://kubernetes.io/docs/concepts/configuration/secret/#secret-types
+
+</details>
+
+### Q-K8S-096 · CKAD Application Environment · difficulty 3 · scenario
+
+A team sets `immutable: true` on a ConfigMap that an application mounts as a volume. What happens when they try to update the ConfigMap with `kubectl edit`?
+
+- A) The update succeeds and the Pod sees the new data on the next restart.
+- B) The API server rejects the update.
+- C) The update succeeds but the kubelet does not propagate it.
+- D) The update succeeds only if the Pod is deleted.
+
+<details><summary>Answer</summary>
+
+**B.** Immutable ConfigMaps reject updates; the API server returns an error.
+
+- Why not A: immutable means the API server rejects mutations.
+- Why not C: the update never reaches the API server.
+- Why not D: deleting the Pod does not make the ConfigMap mutable.
+- Ref: [modules/05-configuration-resources-and-autoscaling.md](../modules/05-configuration-resources-and-autoscaling.md), https://kubernetes.io/docs/concepts/configuration/configmap/
+
+</details>
+
+### Q-K8S-097 · CKAD Application Design & Build · difficulty 1 · single
+
+What is the smallest deployable unit in Kubernetes that can contain one or more containers sharing a network namespace and storage?
+
+- A) A Deployment
+- B) A Pod
+- C) A Service
+- D) A Namespace
+
+<details><summary>Answer</summary>
+
+**B.** A Pod is the atomic unit; its containers share the network namespace and can share volumes.
+
+- Why not A: a Deployment manages Pods.
+- Why not C: a Service provides a stable network endpoint.
+- Why not D: a Namespace is a virtual cluster boundary.
+- Ref: [modules/04-pods-and-workloads.md](../modules/04-pods-and-workloads.md), https://kubernetes.io/docs/concepts/workloads/pods/
+
+</details>
+
+### Q-K8S-098 · CKAD Application Design & Build · difficulty 3 · scenario
+
+A Pod needs to run a log collector alongside the application container, sharing the application's volumes and lifecycle. Which container type is the modern approach?
+
+- A) An init container
+- B) A native sidecar container with `restartPolicy: Always`
+- C) A second Deployment
+- D) A DaemonSet
+
+<details><summary>Answer</summary>
+
+**B.** A native sidecar is a regular container with `restartPolicy: Always` in the Pod spec, sharing the Pod's lifecycle.
+
+- Why not A: init containers run to completion before the main container starts.
+- Why not C: a second Deployment creates separate Pods.
+- Why not D: a DaemonSet runs one Pod per node.
+- Ref: [modules/04-pods-and-workloads.md](../modules/04-pods-and-workloads.md), https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/
+
+</details>
+
+### Q-K8S-099 · CKAD Application Design & Build · difficulty 2 · single
+
+What is the key difference between a built-in resource and a CustomResourceDefinition (CRD)?
+
+- A) Built-in resources are cluster-scoped; CRDs are namespace-scoped.
+- B) Built-in resources are shipped with Kubernetes; CRDs extend the API with new resource types.
+- C) Built-in resources cannot be validated; CRDs can.
+- D) Built-in resources are stored in etcd; CRDs are not.
+
+<details><summary>Answer</summary>
+
+**B.** CRDs let users define new API resources; built-in resources are part of Kubernetes.
+
+- Why not A: both built-in and custom resources can be cluster- or namespace-scoped.
+- Why not C: built-in resources have schema validation too.
+- Why not D: both are persisted in etcd.
+- Ref: [modules/12-extending-kubernetes-crds-operators-helm.md](../modules/12-extending-kubernetes-crds-operators-helm.md), https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/
+
+</details>
+
+### Q-K8S-100 · CKAD Application Design & Build · difficulty 1 · single
+
+Which file is required in every Helm chart and defines the chart name, version, and API version?
+
+- A) `values.yaml`
+- B) `Chart.yaml`
+- C) `Chart.lock`
+- D) `values.schema.json`
+
+<details><summary>Answer</summary>
+
+**B.** `Chart.yaml` is required and defines the chart metadata.
+
+- Why not A: `values.yaml` is optional and defaults to empty.
+- Why not C: `Chart.lock` is generated when dependencies are present.
+- Why not D: `values.schema.json` is optional validation.
+- Ref: [modules/12-extending-kubernetes-crds-operators-helm.md](../modules/12-extending-kubernetes-crds-operators-helm.md), https://helm.sh/docs/topics/charts/
+
+</details>
+
+### Q-K8S-101 · CKAD Application Design & Build · difficulty 1 · single
+
+Which Kustomize file defines the base resources and overlays for an environment?
+
+- A) `kustomization.yaml`
+- B) `kubeadm-config.yaml`
+- C) `Chart.yaml`
+- D) `values.yaml`
+
+<details><summary>Answer</summary>
+
+**A.** `kustomization.yaml` lists resources, patches, and configurations.
+
+- Why not B: that is a kubeadm cluster config.
+- Why not C: that is Helm metadata.
+- Why not D: that is Helm values.
+- Ref: [modules/12-extending-kubernetes-crds-operators-helm.md](../modules/12-extending-kubernetes-crds-operators-helm.md), https://kubernetes.io/docs/tasks/manage-kubernetes-objects/kustomization/
+
+</details>
+
+### Q-K8S-102 · CKAD Application Design & Build · difficulty 3 · scenario
+
+An operator reconciles a custom resource. The controller receives an event, computes the desired state, and applies it. What keeps the controller's view of the world correct despite cache delays?
+
+- A) The controller polls the API server every second.
+- B) The level-triggered reconcile re-reads the observed state on each pass, and the informer's watch events wake it when objects change.
+- C) The controller reads directly from etcd.
+- D) The controller disables the watch cache.
+
+<details><summary>Answer</summary>
+
+**B.** The controller is level-triggered: the informer's watch cache delivers change events as wake-up hints, and each reconcile re-reads the observed state, so a stale cache is corrected on the next event or resync.
+
+- Why not A: polling is not how controllers receive events.
+- Why not C: only the API server reads etcd directly.
+- Why not D: disabling the cache removes the efficiency benefit and is not required.
+- Ref: [modules/12-extending-kubernetes-crds-operators-helm.md](../modules/12-extending-kubernetes-crds-operators-helm.md), https://kubernetes.io/docs/concepts/architecture/controller/
+
+</details>
+
+### Q-K8S-103 · CKAD Application Design & Build · difficulty 3 · scenario
+
+A Pod must pull an image from a private registry. Which Secret type and Pod field are required?
+
+- A) An Opaque Secret and `spec.imagePullSecrets`
+- B) A `kubernetes.io/dockerconfigjson` Secret and `spec.imagePullSecrets`
+- C) A TLS Secret and `spec.containers[*].imagePullPolicy`
+- D) A basic-auth Secret and `spec.registryCredentials`
+
+<details><summary>Answer</summary>
+
+**B.** The `kubernetes.io/dockerconfigjson` Secret holds registry credentials and is referenced in `imagePullSecrets`.
+
+- Why not A: Opaque Secrets do not carry the Docker config format.
+- Why not C: TLS Secrets are for certificates, and `imagePullPolicy` controls pull behavior, not credentials.
+- Why not D: `spec.registryCredentials` is not a Pod field.
+- Ref: [modules/05-configuration-resources-and-autoscaling.md](../modules/05-configuration-resources-and-autoscaling.md), https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+
+</details>
+
+### Q-K8S-104 · CKAD Application Deployment · difficulty 1 · single
+
+How do Deployments and StatefulSets differ in the guarantees they provide?
+
+- A) Deployments are for stateless workloads; StatefulSets give each Pod a stable identity and stable storage.
+- B) Deployments are cluster-scoped; StatefulSets are namespace-scoped.
+- C) Deployments use ReplicaSets; StatefulSets use DaemonSets.
+- D) Deployments support rollbacks; StatefulSets do not.
+
+<details><summary>Answer</summary>
+
+**A.** StatefulSets provide stable network identity and per-Pod persistent storage; Deployments do not.
+
+- Why not B: both are namespace-scoped.
+- Why not C: StatefulSets manage Pods directly, not DaemonSets.
+- Why not D: StatefulSets support partitioned rollouts.
+- Ref: [modules/04-pods-and-workloads.md](../modules/04-pods-and-workloads.md), https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/
+
+</details>
+
+### Q-K8S-105 · CKAD Application Deployment · difficulty 2 · scenario
+
+A rollout introduced a bad image. Which command rolls the Deployment back to the previous ReplicaSet?
+
+- A) `kubectl rollout undo deployment/web`
+- B) `kubectl rollout restart deployment/web`
+- C) `kubectl delete deployment/web`
+- D) `kubectl scale deployment/web --replicas=0`
+
+<details><summary>Answer</summary>
+
+**A.** `kubectl rollout undo` reverts to the previous revision.
+
+- Why not B: restart recreates Pods with the same bad image.
+- Why not C: deleting the Deployment removes it entirely.
+- Why not D: scaling to zero stops traffic but does not roll back.
+- Ref: [modules/04-pods-and-workloads.md](../modules/04-pods-and-workloads.md), https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-back-a-deployment
+
+</details>
+
+### Q-K8S-106 · CKAD Application Deployment · difficulty 1 · single
+
+Which field controls how many old ReplicaSets Kubernetes retains for rollback?
+
+- A) `spec.revisionHistoryLimit`
+- B) `spec.strategy.rollingUpdate.maxSurge`
+- C) `spec.minReadySeconds`
+- D) `spec.progressDeadlineSeconds`
+
+<details><summary>Answer</summary>
+
+**A.** `revisionHistoryLimit` bounds the number of old ReplicaSets.
+
+- Why not B: maxSurge controls the surge during an update.
+- Why not C: minReadySeconds controls how long a Pod must be ready before it counts.
+- Why not D: progressDeadlineSeconds bounds the rollout duration.
+- Ref: [modules/04-pods-and-workloads.md](../modules/04-pods-and-workloads.md), https://kubernetes.io/docs/concepts/workloads/controllers/deployment/
+
+</details>
+
+### Q-K8S-107 · CKAD Application Deployment · difficulty 2 · scenario
+
+A team runs a blue/green deployment using two Deployments and a Service. How do they switch traffic from blue to green?
+
+- A) Delete the blue Deployment.
+- B) Update the Service's `spec.selector` to match the green Deployment's labels.
+- C) Scale the blue Deployment to zero.
+- D) Change the Service type to ExternalName.
+
+<details><summary>Answer</summary>
+
+**B.** The Service selects Pods by label; changing the selector moves traffic to the green Pods.
+
+- Why not A: deleting blue removes the rollback target.
+- Why not C: scaling blue to zero does not direct traffic to green unless the selector matches both.
+- Why not D: ExternalName maps to an external DNS name.
+- Ref: [modules/04-pods-and-workloads.md](../modules/04-pods-and-workloads.md), https://kubernetes.io/docs/concepts/services-networking/service/
+
+</details>
+
+### Q-K8S-108 · CKAD Application Deployment · difficulty 3 · scenario
+
+A canary rollout must send 10% of HTTP traffic to a new version. Which Gateway API mechanism expresses this?
+
+- A) Two HTTPRoutes with different hostnames.
+- B) A single HTTPRoute with two `backendRefs` and weights 90 and 10.
+- C) A Service with two selectors.
+- D) A NetworkPolicy that filters 10% of packets.
+
+<details><summary>Answer</summary>
+
+**B.** HTTPRoute `backendRefs` support `weight` for traffic splitting.
+
+- Why not A: different hostnames route by name, not by percentage.
+- Why not C: a Service selector chooses one set of Pods.
+- Why not D: NetworkPolicy allows or denies traffic; it does not split by weight.
+- Ref: [modules/08-gateway-api-and-ingress-migration.md](../modules/08-gateway-api-and-ingress-migration.md), https://kubernetes.io/docs/concepts/services-networking/gateway/
+
+</details>
+
+### Q-K8S-109 · CKAD Application Deployment · difficulty 2 · scenario
+
+A Job's container exits with a transient error. Which field limits how many times Kubernetes retries the Pod before marking the Job failed?
+
+- A) `spec.backoffLimit`
+- B) `spec.activeDeadlineSeconds`
+- C) `spec.completions`
+- D) `spec.parallelism`
+
+<details><summary>Answer</summary>
+
+**A.** `backoffLimit` bounds the number of retries.
+
+- Why not B: activeDeadlineSeconds bounds the total Job duration.
+- Why not C: completions is the number of Pods that must succeed.
+- Why not D: parallelism is the number of Pods running concurrently.
+- Ref: [modules/04-pods-and-workloads.md](../modules/04-pods-and-workloads.md), https://kubernetes.io/docs/concepts/workloads/controllers/job/
+
+</details>
+
+### Q-K8S-110 · CKAD Application Deployment · difficulty 2 · scenario
+
+A CronJob must not run overlapping instances if the previous run is still active. Which policy enforces this?
+
+- A) `concurrencyPolicy: Forbid`
+- B) `concurrencyPolicy: Replace`
+- C) `startingDeadlineSeconds: 60`
+- D) `successfulJobsHistoryLimit: 3`
+
+<details><summary>Answer</summary>
+
+**A.** `Forbid` skips a new run when the previous one is still active.
+
+- Why not B: `Replace` replaces the active Job.
+- Why not C: startingDeadlineSeconds bounds how late a missed schedule can start.
+- Why not D: successfulJobsHistoryLimit bounds retained Jobs.
+- Ref: [modules/04-pods-and-workloads.md](../modules/04-pods-and-workloads.md), https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/
+
+</details>
+
+### Q-K8S-111 · CKAD Services & Networking · difficulty 1 · single
+
+How does a Service select the Pods that receive its traffic?
+
+- A) By the Pods' names.
+- B) By a label selector that matches the Pods' labels.
+- C) By the Pods' node names.
+- D) By the Pods' container ports.
+
+<details><summary>Answer</summary>
+
+**B.** The Service's `spec.selector` matches Pod labels.
+
+- Why not A: names are not used for selection.
+- Why not C: node names are not used.
+- Why not D: ports forward traffic, they do not select Pods.
+- Ref: [modules/07-networking-services-and-networkpolicy.md](../modules/07-networking-services-and-networkpolicy.md), https://kubernetes.io/docs/concepts/services-networking/service/#selector
+
+</details>
+
+### Q-K8S-112 · CKAD Services & Networking · difficulty 2 · scenario
+
+Which HTTPRoute path match routes only the exact URL `/api/v1/users`?
+
+- A) `path: {type: PathPrefix, value: /api}`
+- B) `path: {type: Exact, value: /api/v1/users}`
+- C) `hostname: {value: api.example.com}`
+- D) `method: GET`
+
+<details><summary>Answer</summary>
+
+**B.** An `Exact` path match routes the exact URL path.
+
+- Why not A: PathPrefix `/api` matches all paths beginning with `/api`, which is broader than required.
+- Why not C: hostname matches the request host, not the path.
+- Why not D: method matches the HTTP method, not the path.
+- Ref: [modules/08-gateway-api-and-ingress-migration.md](../modules/08-gateway-api-and-ingress-migration.md), https://kubernetes.io/docs/concepts/services-networking/gateway/
+
+</details>
+
+### Q-K8S-113 · CKAD Services & Networking · difficulty 2 · single
+
+Which Gateway API resource allows a backend in namespace `team-a` to reference a Service in namespace `team-b`?
+
+- A) `GatewayClass`
+- B) `HTTPRoute`
+- C) `ReferenceGrant`
+- D) `BackendTLSPolicy`
+
+<details><summary>Answer</summary>
+
+**C.** A ReferenceGrant authorizes cross-namespace references.
+
+- Why not A: GatewayClass defines the controller implementation.
+- Why not B: HTTPRoute defines routes but cannot authorize cross-namespace backends by itself.
+- Why not D: BackendTLSPolicy configures TLS to the backend.
+- Ref: [modules/08-gateway-api-and-ingress-migration.md](../modules/08-gateway-api-and-ingress-migration.md), https://kubernetes.io/docs/concepts/services-networking/gateway/
+
+</details>
+
+### Q-K8S-114 · CKAD Services & Networking · difficulty 3 · scenario
+
+A developer wants to allow only the `frontend` Pods to reach the `backend` Pods on port 8080. Which NetworkPolicy fields are required?
+
+- A) `podSelector` selecting the backend and an `ingress` rule selecting the frontend.
+- B) `podSelector` selecting the frontend and an `egress` rule selecting the backend.
+- C) Both A and B are required.
+- D) A NetworkPolicy cannot select by namespace.
+
+<details><summary>Answer</summary>
+
+**A.** The policy attaches to the backend Pods and allows ingress from the frontend Pods.
+
+- Why not B: that policy would restrict the frontend's egress, not the backend's ingress.
+- Why not C: only the backend's ingress policy is required for this requirement.
+- Why not D: NetworkPolicy can select by namespace using `namespaceSelector`.
+- Ref: [modules/07-networking-services-and-networkpolicy.md](../modules/07-networking-services-and-networkpolicy.md), https://kubernetes.io/docs/concepts/services-networking/network-policies/
+
+</details>
+
+### Q-K8S-115 · CKAD Services & Networking · difficulty 1 · single
+
+What DNS name does a Pod use to reach a Service named `catalog` in the `shop` namespace?
+
+- A) `catalog.shop.svc.cluster.local`
+- B) `catalog.svc.cluster.local`
+- C) `shop.catalog.svc.cluster.local`
+- D) `catalog.shop.pod.cluster.local`
+
+<details><summary>Answer</summary>
+
+**A.** The fully qualified Service DNS name is `<service>.<namespace>.svc.cluster.local`.
+
+- Why not B: that omits the namespace.
+- Why not C: the order is service then namespace.
+- Why not D: Pods have their own DNS format, not the Service format.
+- Ref: [modules/07-networking-services-and-networkpolicy.md](../modules/07-networking-services-and-networkpolicy.md), https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/
+
+</details>
+
+### Q-K8S-116 · CKAD Services & Networking · difficulty 3 · scenario
+
+Two HTTPRoute rules match a request: one with `PathPrefix /` and one with `Exact /health`. Which rule takes precedence?
+
+- A) The `PathPrefix /` rule always wins.
+- B) The `Exact /health` rule wins for `/health`.
+- C) The rule created first wins.
+- D) Gateway API load-balances between the two rules.
+
+<details><summary>Answer</summary>
+
+**B.** Exact matches take precedence over prefix matches, so `/health` routes to the Exact rule.
+
+- Why not A: prefix matches are lower precedence than exact matches.
+- Why not C: creation order does not determine precedence.
+- Why not D: matching is deterministic, not load-balanced.
+- Ref: [modules/08-gateway-api-and-ingress-migration.md](../modules/08-gateway-api-and-ingress-migration.md), https://kubernetes.io/docs/concepts/services-networking/gateway/
+
+</details>
+
+### Q-K8S-117 · CKAD Services & Networking · difficulty 2 · scenario
+
+Which Service type provisions an external load balancer from the cloud provider?
+
+- A) ClusterIP
+- B) NodePort
+- C) LoadBalancer
+- D) ExternalName
+
+<details><summary>Answer</summary>
+
+**C.** LoadBalancer provisions a cloud load balancer and assigns an external IP.
+
+- Why not A: ClusterIP is internal only.
+- Why not B: NodePort exposes a port on each node.
+- Why not D: ExternalName maps to an external DNS name.
+- Ref: [modules/07-networking-services-and-networkpolicy.md](../modules/07-networking-services-and-networkpolicy.md), https://kubernetes.io/docs/concepts/services-networking/service/#loadbalancer
+
+</details>
+
+### Q-K8S-118 · CKAD Application Observability · difficulty 1 · single
+
+Which command streams a container's logs in real time?
+
+- A) `kubectl logs -f <pod>`
+- B) `kubectl logs --previous <pod>`
+- C) `kubectl describe pod <pod>`
+- D) `kubectl exec <pod> -- tail -f /var/log/app.log`
+
+<details><summary>Answer</summary>
+
+**A.** `-f` follows the log stream.
+
+- Why not B: `--previous` reads the previous container's logs.
+- Why not C: `describe` shows metadata and events, not logs.
+- Why not D: that tails a file inside the container, not the container log stream.
+- Ref: [modules/13-observability-and-troubleshooting.md](../modules/13-observability-and-troubleshooting.md), https://kubernetes.io/docs/tasks/debug/debug-application/debug-pods/
+
+</details>
+
+### Q-K8S-119 · CKAD Application Observability · difficulty 2 · single
+
+Which command displays the current CPU and memory usage of Pods?
+
+- A) `kubectl top pods`
+- B) `kubectl get pods`
+- C) `kubectl describe pods`
+- D) `kubectl logs --metrics`
+
+<details><summary>Answer</summary>
+
+**A.** `kubectl top pods` reads from the Metrics API.
+
+- Why not B: `get pods` shows status and labels, not usage.
+- Why not C: `describe` shows events and spec, not live usage.
+- Why not D: `logs` has no `--metrics` flag.
+- Ref: [modules/13-observability-and-troubleshooting.md](../modules/13-observability-and-troubleshooting.md), https://kubernetes.io/docs/tasks/debug/debug-cluster/
+
+</details>
+
+### Q-K8S-120 · CKAD Application Observability · difficulty 2 · scenario
+
+A rollout is stuck because new Pods never become ready. Which command best reveals why the Pods are not ready?
+
+- A) `kubectl get deployments`
+- B) `kubectl describe pod <new-pod>`
+- C) `kubectl top nodes`
+- D) `kubectl get services`
+
+<details><summary>Answer</summary>
+
+**B.** `describe pod` shows the readiness probe failures and events.
+
+- Why not A: `get deployments` shows replica counts, not probe details.
+- Why not C: `top nodes` shows node usage, not Pod readiness.
+- Why not D: `get services` shows endpoints, not the cause.
+- Ref: [modules/13-observability-and-troubleshooting.md](../modules/13-observability-and-troubleshooting.md), https://kubernetes.io/docs/tasks/debug/debug-application/debug-pods/
+
+</details>
+
+### Q-K8S-121 · CKAD Application Observability · difficulty 3 · scenario
+
+A Deployment's Pods are running but the application returns 500 errors. The liveness and readiness probes pass, and the logs show no errors. Which is the most likely cause?
+
+- A) The Pods' resource limits are too high.
+- B) The application depends on an external service or configuration that is unavailable or incorrect.
+- C) The Deployment's `replicas` field is too low.
+- D) The Service selector is empty.
+
+<details><summary>Answer</summary>
+
+**B.** Passing probes with no application errors in the logs points to a dependency or configuration problem.
+
+- Why not A: high limits do not cause 500 errors.
+- Why not C: low replicas reduce capacity but do not cause 500s.
+- Why not D: an empty selector would cause no endpoints, not 500s from running Pods.
+- Ref: [modules/13-observability-and-troubleshooting.md](../modules/13-observability-and-troubleshooting.md), https://kubernetes.io/docs/tasks/debug/debug-application/debug-pods/
+
+</details>
+
+### Q-K8S-122 · CKAD Application Environment · difficulty 2 · multi
+
+Which fields belong in a container `securityContext`? (Select all that apply)
+
+- A) `runAsNonRoot`
+- B) `allowPrivilegeEscalation`
+- C) `imagePullPolicy`
+- D) `capabilities`
+
+<details><summary>Answer</summary>
+
+**A, B, and D.** `runAsNonRoot`, `allowPrivilegeEscalation`, and `capabilities` are all container `securityContext` fields.
+
+- Why not C: `imagePullPolicy` is a container field, not a `securityContext` field.
+- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+
+</details>
+
+## Part 3: CKS Question Bank (Q-K8S-123 to Q-K8S-186)
+
+### Q-K8S-123 · CKS Minimize Microservice Vulnerabilities · difficulty 2 · single
 
 Which Pod Security Standard profile provides the most restrictive security posture, disallowing privilege escalation and enforcing non-root execution?
 
@@ -1015,7 +2455,7 @@ Which Pod Security Standard profile provides the most restrictive security postu
 
 </details>
 
-### Q-K8S-052 · CKS Supply Chain Security · difficulty 2 · scenario
+### Q-K8S-124 · CKS Supply Chain Security · difficulty 2 · scenario
 
 An enterprise security team requires all container images deployed to the cluster to be cryptographically signed and verified before admission. Which tool or policy engine validates container signatures at admission time?
 
@@ -1033,7 +2473,7 @@ An enterprise security team requires all container images deployed to the cluste
 
 </details>
 
-### Q-K8S-053 · CKS Monitoring, Logging & Runtime Security · difficulty 2 · scenario
+### Q-K8S-125 · CKS Monitoring, Logging & Runtime Security · difficulty 2 · scenario
 
 Which runtime security tool monitors system calls against kernel security profiles (e.g., detecting unexpected shell spawning inside a container) in real time?
 
@@ -1052,7 +2492,7 @@ Which runtime security tool monitors system calls against kernel security profil
 
 </details>
 
-### Q-K8S-054 · CKS Cluster Setup · difficulty 2 · single
+### Q-K8S-126 · CKS Cluster Setup · difficulty 2 · single
 
 What is the primary purpose of enabling encryption at rest for Kubernetes Secrets in etcd?
 
@@ -1072,7 +2512,7 @@ What is the primary purpose of enabling encryption at rest for Kubernetes Secret
 
 </details>
 
-### Q-K8S-055 · CKS Cluster Hardening · difficulty 2 · scenario
+### Q-K8S-127 · CKS Cluster Hardening · difficulty 2 · scenario
 
 An administrator auditing RBAC permissions discovers a ClusterRole containing `verbs: ["*"]` and `resources: ["*"]` bound to a general developer group. Which security principle does this violate?
 
@@ -1090,7 +2530,7 @@ An administrator auditing RBAC permissions discovers a ClusterRole containing `v
 
 </details>
 
-### Q-K8S-056 · CKS System Hardening · difficulty 2 · single
+### Q-K8S-128 · CKS System Hardening · difficulty 2 · single
 
 What kernel-level security mechanism restricts the system calls a container process is allowed to make?
 
@@ -1108,7 +2548,7 @@ What kernel-level security mechanism restricts the system calls a container proc
 
 </details>
 
-### Q-K8S-057 · CKS Minimize Microservice Vulnerabilities · difficulty 2 · scenario
+### Q-K8S-129 · CKS Minimize Microservice Vulnerabilities · difficulty 2 · scenario
 
 How does enabling user namespaces (`hostUsers: false`) enhance container isolation in Kubernetes 1.37?
 
@@ -1126,7 +2566,7 @@ How does enabling user namespaces (`hostUsers: false`) enhance container isolati
 
 </details>
 
-### Q-K8S-058 · CKS Supply Chain Security · difficulty 2 · single
+### Q-K8S-130 · CKS Supply Chain Security · difficulty 2 · single
 
 What is a Software Bill of Materials (SBOM)?
 
@@ -1144,7 +2584,7 @@ What is a Software Bill of Materials (SBOM)?
 
 </details>
 
-### Q-K8S-059 · CKS Monitoring, Logging & Runtime Security · difficulty 2 · scenario
+### Q-K8S-131 · CKS Monitoring, Logging & Runtime Security · difficulty 2 · scenario
 
 Where are Kubernetes API server audit logs configured and written on a control plane node?
 
@@ -1162,7 +2602,7 @@ Where are Kubernetes API server audit logs configured and written on a control p
 
 </details>
 
-### Q-K8S-060 · CKS Cluster Setup · difficulty 2 · single
+### Q-K8S-132 · CKS Cluster Setup · difficulty 2 · single
 
 What is the purpose of the CIS Kubernetes Benchmark?
 
@@ -1180,7 +2620,7 @@ What is the purpose of the CIS Kubernetes Benchmark?
 
 </details>
 
-### Q-K8S-061 · CKS Cluster Hardening · difficulty 2 · scenario
+### Q-K8S-133 · CKS Cluster Hardening · difficulty 2 · scenario
 
 An auditor needs to verify whether any ServiceAccounts possess overly permissive `cluster-admin` bindings. Which Kubernetes command lists cluster role bindings?
 
@@ -1198,7 +2638,7 @@ An auditor needs to verify whether any ServiceAccounts possess overly permissive
 
 </details>
 
-### Q-K8S-062 · CKS System Hardening · difficulty 2 · single
+### Q-K8S-134 · CKS System Hardening · difficulty 2 · single
 
 What Linux kernel capability allows a process to bypass all kernel permission checks, representing a major security risk if retained by a container?
 
@@ -1217,7 +2657,7 @@ What Linux kernel capability allows a process to bypass all kernel permission ch
 
 </details>
 
-### Q-K8S-063 · CKS Minimize Microservice Vulnerabilities · difficulty 2 · scenario
+### Q-K8S-135 · CKS Minimize Microservice Vulnerabilities · difficulty 2 · scenario
 
 A developer configures a Pod security context with `allowPrivilegeEscalation: false`. What security protection does this provide?
 
@@ -1235,7 +2675,7 @@ A developer configures a Pod security context with `allowPrivilegeEscalation: fa
 
 </details>
 
-### Q-K8S-064 · CKS Supply Chain Security · difficulty 2 · single
+### Q-K8S-136 · CKS Supply Chain Security · difficulty 2 · single
 
 What is the primary function of admission controllers in the Kubernetes API server request lifecycle?
 
@@ -1253,7 +2693,7 @@ What is the primary function of admission controllers in the Kubernetes API serv
 
 </details>
 
-### Q-K8S-065 · CKS Monitoring, Logging & Runtime Security · difficulty 2 · scenario
+### Q-K8S-137 · CKS Monitoring, Logging & Runtime Security · difficulty 2 · scenario
 
 An incident responder needs to investigate network socket activity and process execution anomalies on a potentially compromised worker node. Which tool provides eBPF-based kernel tracing across container workloads?
 
@@ -1271,7 +2711,7 @@ An incident responder needs to investigate network socket activity and process e
 
 </details>
 
-### Q-K8S-066 · CKS Cluster Setup · difficulty 2 · single
+### Q-K8S-138 · CKS Cluster Setup · difficulty 2 · single
 
 Why should anonymous requests (`--anonymous-auth=false`) be disabled or restricted on the kube-apiserver?
 
@@ -1289,7 +2729,7 @@ Why should anonymous requests (`--anonymous-auth=false`) be disabled or restrict
 
 </details>
 
-### Q-K8S-067 · CKS Cluster Hardening · difficulty 2 · scenario
+### Q-K8S-139 · CKS Cluster Hardening · difficulty 2 · scenario
 
 What is the security risk of mounting the Docker socket (`/var/run/docker.sock`) or container runtime socket inside an application container?
 
@@ -1307,7 +2747,7 @@ What is the security risk of mounting the Docker socket (`/var/run/docker.sock`)
 
 </details>
 
-### Q-K8S-068 · CKS System Hardening · difficulty 2 · single
+### Q-K8S-140 · CKS System Hardening · difficulty 2 · single
 
 What Linux security module provides mandatory access control (MAC) policies, often configured via AppArmor profiles in Kubernetes?
 
@@ -1325,7 +2765,7 @@ What Linux security module provides mandatory access control (MAC) policies, oft
 
 </details>
 
-### Q-K8S-069 · CKS Minimize Microservice Vulnerabilities · difficulty 2 · scenario
+### Q-K8S-141 · CKS Minimize Microservice Vulnerabilities · difficulty 2 · scenario
 
 A security policy mandates that all containers must drop all default Linux capabilities and retain only `NET_BIND_SERVICE`. How is this expressed in the container securityContext?
 
@@ -1343,7 +2783,7 @@ A security policy mandates that all containers must drop all default Linux capab
 
 </details>
 
-### Q-K8S-070 · CKS Supply Chain Security · difficulty 2 · single
+### Q-K8S-142 · CKS Supply Chain Security · difficulty 2 · single
 
 What is the primary role of admission webhooks using Common Expression Language (`ValidatingAdmissionPolicy`) compared to webhook servers?
 
@@ -1361,7 +2801,7 @@ What is the primary role of admission webhooks using Common Expression Language 
 
 </details>
 
-### Q-K8S-071 · CKS Monitoring, Logging & Runtime Security · difficulty 2 · scenario
+### Q-K8S-143 · CKS Monitoring, Logging & Runtime Security · difficulty 2 · scenario
 
 An auditor reviewing audit logs notices numerous `Forbidden` responses on sensitive resources (Secrets, ClusterRoles). What security risk does this highlight?
 
@@ -1379,7 +2819,7 @@ An auditor reviewing audit logs notices numerous `Forbidden` responses on sensit
 
 </details>
 
-### Q-K8S-072 · CKS Cluster Setup · difficulty 2 · single
+### Q-K8S-144 · CKS Cluster Setup · difficulty 2 · single
 
 Why is securing kubeconfig files with strict file permissions (e.g., `chmod 600`) critical for cluster security?
 
@@ -1397,7 +2837,7 @@ Why is securing kubeconfig files with strict file permissions (e.g., `chmod 600`
 
 </details>
 
-### Q-K8S-073 · CKS Cluster Hardening · difficulty 2 · scenario
+### Q-K8S-145 · CKS Cluster Hardening · difficulty 2 · scenario
 
 An administrator wants to prevent accidental deletion of a production namespace `finance`. Which object or field provides this protection?
 
@@ -1415,7 +2855,7 @@ An administrator wants to prevent accidental deletion of a production namespace 
 
 </details>
 
-### Q-K8S-074 · CKS System Hardening · difficulty 2 · single
+### Q-K8S-146 · CKS System Hardening · difficulty 2 · single
 
 What is the benefit of mounting container root filesystems as read-only (`readOnlyRootFilesystem: true`)?
 
@@ -1433,7 +2873,7 @@ What is the benefit of mounting container root filesystems as read-only (`readOn
 
 </details>
 
-### Q-K8S-075 · CKS Monitoring, Logging & Runtime Security · difficulty 2 · scenario
+### Q-K8S-147 · CKS Monitoring, Logging & Runtime Security · difficulty 2 · scenario
 
 An automated vulnerability scanner flags a container image for containing a high-severity CVE in an OS package. What is the most effective remediation strategy?
 
@@ -1447,31 +2887,876 @@ An automated vulnerability scanner flags a container image for containing a high
 **A.** Patching base images and rebuilding container artifacts remediates vulnerabilities at the source of the software supply chain.
 
 - Why not B, C, D: Ignoring vulnerabilities, deleting CoreDNS, or changing grace periods does not patch package CVEs.
-- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://kubernetes.io/docs/concepts/policy/security-best-practices/
+- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://kubernetes.io/docs/concepts/security/
 
 </details>
 
 ---
 
+### Q-K8S-148 · CKS Minimize Microservice Vulnerabilities · difficulty 1 · single
+
+Which Pod Security Standard profile is the most permissive and is intended for system- and infrastructure-level workloads managed by trusted users?
+
+- A) restricted
+- B) baseline
+- C) privileged
+- D) default
+
+<details><summary>Answer</summary>
+
+**C.** The privileged profile is unrestricted and is intended for system- and infrastructure-level workloads managed by privileged, trusted users.
+
+- Why not A: restricted is the most restrictive profile.
+- Why not B: baseline is moderately restrictive.
+- Why not D: default is not a Pod Security Standard profile name.
+- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://kubernetes.io/docs/concepts/security/pod-security-standards/
+
+</details>
+
+### Q-K8S-149 · CKS Minimize Microservice Vulnerabilities · difficulty 2 · scenario
+
+A namespace is labeled `pod-security.kubernetes.io/enforce: restricted`. What happens when a Pod that runs as root is created in that namespace?
+
+- A) The Pod is created but audited.
+- B) The Pod is rejected by the API server.
+- C) The Pod is created with a warning event.
+- D) The Pod is automatically mutated to run as non-root.
+
+<details><summary>Answer</summary>
+
+**B.** The `enforce` label causes the API server to reject Pods that violate the profile.
+
+- Why not A: auditing is the `audit` label, not `enforce`.
+- Why not C: warning is the `warn` label.
+- Why not D: Pod Security Admission does not mutate Pods; it only admits or rejects.
+- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://kubernetes.io/docs/concepts/security/pod-security-admission/
+
+</details>
+
+### Q-K8S-150 · CKS Minimize Microservice Vulnerabilities · difficulty 3 · scenario
+
+A Pod must use a custom seccomp profile stored at `/var/lib/kubelet/seccomp/profiles/custom.json` on the node. Which `securityContext` field and value reference it?
+
+- A) `seccompProfile: {type: RuntimeDefault}`
+- B) `seccompProfile: {type: Localhost, localhostProfile: profiles/custom.json}`
+- C) `seccompProfile: {type: Unconfined}`
+- D) `seccompProfile: {type: Default}`
+
+<details><summary>Answer</summary>
+
+**B.** `Localhost` references a profile file on the node; `localhostProfile` names the file relative to the seccomp profile root.
+
+- Why not A: RuntimeDefault uses the container runtime's default profile, not a custom file.
+- Why not C: Unconfined disables seccomp.
+- Why not D: `Default` is not a valid seccomp profile type.
+- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://kubernetes.io/docs/tutorials/security/seccomp/
+
+</details>
+
+### Q-K8S-151 · CKS Minimize Microservice Vulnerabilities · difficulty 3 · scenario
+
+A Pod sets `hostUsers: false` in its `securityContext`. What does this enable?
+
+- A) The Pod's containers run as UID 0 mapped to a non-root UID on the host.
+- B) The Pod can mount the host's `/proc` filesystem.
+- C) The Pod's ServiceAccount token is disabled.
+- D) The Pod is exempt from Pod Security Standards.
+
+<details><summary>Answer</summary>
+
+**A.** User namespaces map the container's root UID to a non-root host UID, so a container escape does not grant host root.
+
+- Why not B: user namespaces do not grant host `/proc` access.
+- Why not C: the ServiceAccount token is unrelated to user namespaces.
+- Why not D: Pod Security Standards still apply; `hostUsers: false` is required by the restricted profile.
+- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://kubernetes.io/docs/concepts/workloads/pods/user-namespaces/
+
+</details>
+
+### Q-K8S-152 · CKS Minimize Microservice Vulnerabilities · difficulty 2 · scenario
+
+A container retains the `CAP_NET_RAW` capability. What is the primary risk?
+
+- A) The container can read arbitrary files on the host.
+- B) The container can craft raw network packets, enabling ARP spoofing or ping floods.
+- C) The container can modify its own image.
+- D) The container can escalate to host root automatically.
+
+<details><summary>Answer</summary>
+
+**B.** CAP_NET_RAW allows raw socket creation, which can be used for network attacks.
+
+- Why not A: file access is governed by file permissions and other capabilities.
+- Why not C: the image is read-only at runtime.
+- Why not D: capabilities do not automatically escalate to host root.
+- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+
+</details>
+
+### Q-K8S-153 · CKS Minimize Microservice Vulnerabilities · difficulty 1 · single
+
+What is the security risk of setting `privileged: true` on a container?
+
+- A) The container cannot access the network.
+- B) The container gains all capabilities and access to host devices, effectively running as root on the host.
+- C) The container's image is pulled over an unencrypted connection.
+- D) The container's logs are not collected.
+
+<details><summary>Answer</summary>
+
+**B.** A privileged container has full capabilities and host device access.
+
+- Why not A: privileged containers have full network access.
+- Why not C: image pulls use the runtime's transport.
+- Why not D: logs are collected normally.
+- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://kubernetes.io/docs/concepts/security/pod-security-standards/
+
+</details>
+
+### Q-K8S-154 · CKS Minimize Microservice Vulnerabilities · difficulty 3 · scenario
+
+A team wants to see which Pods would violate the restricted profile without blocking them. Which namespace labels enable this?
+
+- A) `pod-security.kubernetes.io/audit: restricted` and `pod-security.kubernetes.io/warn: restricted`
+- B) `pod-security.kubernetes.io/enforce: restricted`
+- C) `pod-security.kubernetes.io/audit: privileged`
+- D) `pod-security.kubernetes.io/warn: baseline`
+
+<details><summary>Answer</summary>
+
+**A.** The `audit` and `warn` labels report violations without rejecting Pods.
+
+- Why not B: `enforce` rejects violating Pods.
+- Why not C: auditing privileged would not detect restricted violations.
+- Why not D: warning on baseline would not detect restricted violations.
+- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://kubernetes.io/docs/concepts/security/pod-security-admission/
+
+</details>
+
+### Q-K8S-155 · CKS Minimize Microservice Vulnerabilities · difficulty 3 · scenario
+
+A Pod mounts `hostPath: /var/run/docker.sock` (or the container runtime socket). What is the primary risk?
+
+- A) The Pod can read and write arbitrary host files.
+- B) The Pod can control the container runtime and escape to the host.
+- C) The Pod's network performance degrades.
+- D) The Pod cannot be scheduled.
+
+<details><summary>Answer</summary>
+
+**B.** Mounting the runtime socket lets the Pod create privileged containers on the host, leading to container escape.
+
+- Why not A: hostPath to the socket does not grant arbitrary file access.
+- Why not C: network performance is unaffected.
+- Why not D: hostPath does not affect scheduling.
+- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://kubernetes.io/docs/concepts/storage/volumes/#hostpath
+
+</details>
+
+### Q-K8S-156 · CKS Supply Chain Security · difficulty 1 · single
+
+Which image reference pins an image to an immutable content digest?
+
+- A) `registry.example.com/app:latest`
+- B) `registry.example.com/app:v1.2.3`
+- C) `registry.example.com/app@sha256:4f7c...`
+- D) `registry.example.com/app:prod`
+
+<details><summary>Answer</summary>
+
+**C.** The `@sha256:` digest references the image manifest by content hash.
+
+- Why not A: `latest` is a mutable tag.
+- Why not B: version tags are mutable.
+- Why not D: environment tags are mutable.
+- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://kubernetes.io/docs/concepts/containers/
+
+</details>
+
+### Q-K8S-157 · CKS Supply Chain Security · difficulty 2 · scenario
+
+A team verifies image signatures with cosign using OIDC identity (keyless) instead of a static key. What does keyless verification bind the signature to?
+
+- A) The image digest and the builder's OIDC identity from the certificate transparency log.
+- B) The image tag and the registry hostname.
+- C) The cluster's ServiceAccount.
+- D) The node's container runtime.
+
+<details><summary>Answer</summary>
+
+**A.** Keyless signing uses short-lived certificates tied to an OIDC identity and records them in the transparency log.
+
+- Why not B: tags are mutable and not part of the signature binding.
+- Why not C: ServiceAccounts are in-cluster identities.
+- Why not D: the runtime does not sign images.
+- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://kubernetes.io/docs/tasks/administer-cluster/verify-signed-artifacts/
+
+</details>
+
+### Q-K8S-158 · CKS Supply Chain Security · difficulty 1 · single
+
+Which tool scans container images for known OS and package vulnerabilities?
+
+- A) cosign
+- B) Trivy
+- C) kubectl
+- D) etcdctl
+
+<details><summary>Answer</summary>
+
+**B.** Trivy is a vulnerability scanner for images and filesystems.
+
+- Why not A: cosign verifies signatures, not vulnerabilities.
+- Why not C: kubectl manages the cluster.
+- Why not D: etcdctl manages etcd.
+- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://trivy.dev/
+
+</details>
+
+### Q-K8S-159 · CKS Supply Chain Security · difficulty 3 · scenario
+
+A Kyverno `ClusterPolicy` must reject any Pod whose image is not signed. Which policy rule type performs this?
+
+- A) A `validate` rule that checks the image digest.
+- B) A `verifyImages` rule that checks the image signature.
+- C) A `mutate` rule that adds a label.
+- D) A `generate` rule that creates a ConfigMap.
+
+<details><summary>Answer</summary>
+
+**B.** Kyverno's `verifyImages` rule verifies image signatures and attestations at admission.
+
+- Why not A: a validate rule can check fields but cannot verify a cryptographic signature.
+- Why not C: mutation does not verify signatures.
+- Why not D: generation does not verify signatures.
+- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://kyverno.io/docs/
+
+</details>
+
+### Q-K8S-160 · CKS Supply Chain Security · difficulty 2 · scenario
+
+A team needs to produce an SBOM for every image as part of the build. Which statement about SBOM attestations is true?
+
+- A) An SBOM attestation is stored in the image registry and can be verified at admission.
+- B) An SBOM is only useful after deployment.
+- C) An SBOM attestation replaces image signing.
+- D) An SBOM is generated by the kubelet.
+
+<details><summary>Answer</summary>
+
+**A.** SBOM attestations are stored alongside the image and can be verified by admission policies.
+
+- Why not B: SBOMs are used at admission to block vulnerable images.
+- Why not C: SBOM and signature attestations are complementary.
+- Why not D: SBOMs are generated at build time, not by the kubelet.
+- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://kubernetes.io/docs/tasks/administer-cluster/verify-signed-artifacts/
+
+</details>
+
+### Q-K8S-161 · CKS Supply Chain Security · difficulty 3 · scenario
+
+A Pod must pull an image from a private registry. The Secret exists in the Pod's namespace, but the Pod spec does not reference it. What happens?
+
+- A) The image pull succeeds because the registry credentials are cluster-wide.
+- B) The image pull fails with `Unauthorized` because the Pod does not reference the Secret in `imagePullSecrets`.
+- C) The image pull succeeds because the kubelet uses the node's credentials.
+- D) The Pod is scheduled but the container never starts.
+
+<details><summary>Answer</summary>
+
+**B.** The kubelet uses the Pod's `imagePullSecrets`; without the reference, the pull is unauthenticated.
+
+- Why not A: registry credentials are namespace-scoped Secrets.
+- Why not C: the node's credentials are not used unless configured as a cluster-wide default.
+- Why not D: the Pod starts but the container stays in `ImagePullBackOff`.
+- Ref: [modules/05-configuration-resources-and-autoscaling.md](../modules/05-configuration-resources-and-autoscaling.md), https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+
+</details>
+
+### Q-K8S-162 · CKS Supply Chain Security · difficulty 1 · single
+
+Which `imagePullPolicy` always pulls the image from the registry, even if a local copy exists?
+
+- A) IfNotPresent
+- B) Never
+- C) Always
+- D) Default
+
+<details><summary>Answer</summary>
+
+**C.** `Always` forces a registry pull on every container start.
+
+- Why not A: IfNotPresent pulls only when the image is absent locally.
+- Why not B: Never uses only the local image.
+- Why not D: Default is not a valid policy value.
+- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://kubernetes.io/docs/concepts/containers/
+
+</details>
+
+### Q-K8S-163 · CKS Supply Chain Security · difficulty 3 · scenario
+
+A build system produces SLSA provenance for each image. What does the provenance attestation contain?
+
+- A) The image's vulnerability scan results.
+- B) The build inputs, builder identity, and build steps that produced the image.
+- C) The image's runtime logs.
+- D) The cluster's RBAC configuration.
+
+<details><summary>Answer</summary>
+
+**B.** SLSA provenance records the build's inputs, builder, and steps.
+
+- Why not A: vulnerability results are separate attestations.
+- Why not C: runtime logs are not part of the build provenance.
+- Why not D: RBAC is cluster configuration, not build metadata.
+- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://kubernetes.io/docs/tasks/administer-cluster/verify-signed-artifacts/
+
+</details>
+
+### Q-K8S-164 · CKS Monitoring, Logging & Runtime Security · difficulty 1 · single
+
+Which audit policy stage logs only the request metadata, not the request or response bodies?
+
+- A) RequestResponse
+- B) Metadata
+- C) None
+- D) Detailed
+
+<details><summary>Answer</summary>
+
+**B.** The Metadata stage logs request metadata without bodies.
+
+- Why not A: RequestResponse logs both bodies.
+- Why not C: None disables logging for the request.
+- Why not D: Detailed is not a valid stage.
+- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://kubernetes.io/docs/tasks/debug/debug-cluster/audit/
+
+</details>
+
+### Q-K8S-165 · CKS Monitoring, Logging & Runtime Security · difficulty 2 · scenario
+
+An audit policy must log every read of a Secret in the `finance` namespace. Which rule matches?
+
+- A) A rule with `resources: [{group: "", resources: ["secrets"]}]`, `namespace: finance`, and `verb: get` at stage Metadata.
+- B) A rule with `resources: [{group: "", resources: ["pods"]}]`.
+- C) A rule with `verbs: ["*"]` and stage None.
+- D) A rule with `resources: [{group: "apps", resources: ["deployments"]}]`.
+
+<details><summary>Answer</summary>
+
+**A.** The rule selects Secrets in the finance namespace and logs the get verb at the Metadata stage.
+
+- Why not B: that selects Pods, not Secrets.
+- Why not C: stage None disables logging.
+- Why not D: that selects Deployments.
+- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://kubernetes.io/docs/tasks/debug/debug-cluster/audit/
+
+</details>
+
+### Q-K8S-166 · CKS Monitoring, Logging & Runtime Security · difficulty 1 · single
+
+Which Falco rule field specifies the condition that triggers an alert?
+
+- A) `condition`
+- B) `output`
+- C) `priority`
+- D) `description`
+
+<details><summary>Answer</summary>
+
+**A.** The `condition` field defines the event filter that triggers the rule.
+
+- Why not B: `output` defines the message, not the trigger.
+- Why not C: `priority` sets the severity.
+- Why not D: `description` is documentation.
+- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://falco.org/docs/
+
+</details>
+
+### Q-K8S-167 · CKS Monitoring, Logging & Runtime Security · difficulty 3 · scenario
+
+A runtime security tool uses eBPF to trace syscalls. What is the main advantage over ptrace-based tracing?
+
+- A) eBPF runs in user space and is slower.
+- B) eBPF programs run in the kernel with low overhead and can filter events before they reach user space.
+- C) eBPF requires recompiling the kernel.
+- D) eBPF can only trace network traffic.
+
+<details><summary>Answer</summary>
+
+**B.** eBPF programs run in a sandboxed kernel environment with low overhead and can aggregate events efficiently.
+
+- Why not A: eBPF runs in the kernel, not user space.
+- Why not C: eBPF does not require kernel recompilation.
+- Why not D: eBPF can trace syscalls, not just network traffic.
+- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://ebpf.io/
+
+</details>
+
+### Q-K8S-168 · CKS Monitoring, Logging & Runtime Security · difficulty 2 · scenario
+
+A security team needs audit logs to survive a compromised control plane. Which approach best protects them?
+
+- A) Store logs only on the control plane node's disk.
+- B) Forward logs to an external, immutable store with write-once semantics.
+- C) Increase the audit log level to RequestResponse.
+- D) Disable audit logging to reduce disk usage.
+
+<details><summary>Answer</summary>
+
+**B.** An external immutable store prevents an attacker who controls the control plane from deleting the logs.
+
+- Why not A: a compromised control plane can delete local logs.
+- Why not C: a higher level increases detail but not durability.
+- Why not D: disabling logging removes the evidence.
+- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://kubernetes.io/docs/tasks/debug/debug-cluster/audit/
+
+</details>
+
+### Q-K8S-169 · CKS Monitoring, Logging & Runtime Security · difficulty 3 · scenario
+
+A Pod suddenly consumes 100% CPU and opens outbound connections to an unknown IP. Which runtime security capability detects this?
+
+- A) A static image scan.
+- B) A runtime policy that alerts on unexpected process execution and network connections.
+- C) A Pod Security Standards baseline check.
+- D) An RBAC audit.
+
+<details><summary>Answer</summary>
+
+**B.** Runtime security monitors process execution and network activity to detect cryptomining behavior.
+
+- Why not A: static scans run at build time and cannot detect runtime behavior.
+- Why not C: Pod Security Standards control Pod settings, not runtime behavior.
+- Why not D: RBAC audits API calls, not process behavior.
+- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://falco.org/docs/
+
+</details>
+
+### Q-K8S-170 · CKS Monitoring, Logging & Runtime Security · difficulty 1 · single
+
+Which component exposes audit log metrics that can trigger alerts?
+
+- A) The API server's audit backend and policy engine.
+- B) The scheduler.
+- C) The kubelet.
+- D) CoreDNS.
+
+<details><summary>Answer</summary>
+
+**A.** The API server's audit backend emits logs and metrics that Alertmanager can use.
+
+- Why not B: the scheduler does not handle audit logs.
+- Why not C: the kubelet handles node-level logs, not API audit logs.
+- Why not D: CoreDNS handles DNS.
+- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://kubernetes.io/docs/tasks/debug/debug-cluster/audit/
+
+</details>
+
+### Q-K8S-171 · CKS Cluster Setup · difficulty 1 · single
+
+Which kube-apiserver flag enables both node and RBAC authorization?
+
+- A) `--authorization-mode=AlwaysAllow`
+- B) `--authorization-mode=Node,RBAC`
+- C) `--authorization-mode=Node`
+- D) `--authorization-mode=RBAC,AlwaysDeny`
+
+<details><summary>Answer</summary>
+
+**B.** `Node,RBAC` chains the node authorizer and the RBAC authorizer.
+
+- Why not A: AlwaysAllow disables authorization.
+- Why not C: Node alone does not handle RBAC.
+- Why not D: AlwaysDeny denies everything.
+- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://kubernetes.io/docs/reference/access-authn-authz/authorization/
+
+</details>
+
+### Q-K8S-172 · CKS Cluster Setup · difficulty 2 · scenario
+
+A cluster uses a KMS v2 plugin for Secrets encryption at rest. What is encrypted with the KMS key?
+
+- A) The entire etcd database.
+- B) A data encryption key (DEK) that encrypts the Secret values.
+- C) The API server's TLS certificate.
+- D) The kubelet's client certificate.
+
+<details><summary>Answer</summary>
+
+**B.** KMS v2 uses envelope encryption: the KMS key encrypts a DEK, which encrypts the Secret.
+
+- Why not A: only Secrets and configured resources are encrypted, not the whole database.
+- Why not C: TLS certificates are not encrypted with the KMS key.
+- Why not D: kubelet certificates are not encrypted with the KMS key.
+- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/
+
+</details>
+
+### Q-K8S-173 · CKS Cluster Setup · difficulty 1 · single
+
+Which command triggers a certificate renewal for a kubeadm cluster?
+
+- A) `kubeadm certs renew all`
+- B) `kubectl rotate-certs`
+- C) `kubeadm alpha certs renew`
+- D) `kubectl certificate renew`
+
+<details><summary>Answer</summary>
+
+**A.** `kubeadm certs renew all` renews the cluster's certificates.
+
+- Why not B: `kubectl rotate-certs` is not a command.
+- Why not C: `kubeadm alpha certs` is not the current command path.
+- Why not D: `kubectl certificate renew` is not a command.
+- Ref: [modules/10-cluster-lifecycle-and-kubeadm.md](../modules/10-cluster-lifecycle-and-kubeadm.md), https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-certs/
+
+</details>
+
+### Q-K8S-174 · CKS Cluster Setup · difficulty 3 · scenario
+
+Which combination of kube-apiserver flags is the most secure for authentication and authorization?
+
+- A) `--anonymous-auth=true --authorization-mode=AlwaysAllow`
+- B) `--anonymous-auth=false --authorization-mode=Node,RBAC`
+- C) `--anonymous-auth=true --authorization-mode=Node`
+- D) `--anonymous-auth=false --authorization-mode=AlwaysAllow`
+
+<details><summary>Answer</summary>
+
+**B.** Disabling anonymous auth and enabling Node,RBAC enforces authenticated, authorized access.
+
+- Why not A: anonymous auth and AlwaysAllow disable security.
+- Why not C: anonymous auth is enabled and RBAC is missing.
+- Why not D: AlwaysAllow disables authorization.
+- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://kubernetes.io/docs/reference/access-authn-authz/authorization/
+
+</details>
+
+### Q-K8S-175 · CKS Cluster Setup · difficulty 2 · scenario
+
+A bootstrap token has `usage-bootstrap-authentication: true` and `usage-bootstrap-signing: true`. What is the risk of leaving it valid after the node joins?
+
+- A) The token can be used to join additional nodes or sign certificate signing requests.
+- B) The token encrypts Secrets.
+- C) The token grants cluster-admin.
+- D) The token has no effect after the node joins.
+
+<details><summary>Answer</summary>
+
+**A.** A valid bootstrap token can still join nodes; it should be expired or deleted after use.
+
+- Why not B: bootstrap tokens do not encrypt Secrets.
+- Why not C: bootstrap tokens are for node joining, not cluster-admin.
+- Why not D: the token remains valid until its expiration.
+- Ref: [modules/10-cluster-lifecycle-and-kubeadm.md](../modules/10-cluster-lifecycle-and-kubeadm.md), https://kubernetes.io/docs/reference/access-authn-authz/bootstrap-tokens/
+
+</details>
+
+### Q-K8S-176 · CKS Cluster Hardening · difficulty 1 · single
+
+Which RBAC verb is the most dangerous because it allows a subject to grant itself additional permissions?
+
+- A) `get`
+- B) `list`
+- C) `escalate`
+- D) `watch`
+
+<details><summary>Answer</summary>
+
+**C.** The `escalate` verb allows a subject to create or update a Role or ClusterRole with more permissions than it holds.
+
+- Why not A: `get` only reads.
+- Why not B: `list` only reads.
+- Why not D: `watch` only watches.
+- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://kubernetes.io/docs/reference/access-authn-authz/rbac/
+
+</details>
+
+### Q-K8S-177 · CKS Cluster Hardening · difficulty 2 · scenario
+
+A Pod does not need to call the Kubernetes API. Which setting prevents it from automatically receiving a ServiceAccount token?
+
+- A) `spec.automountServiceAccountToken: false`
+- B) `spec.serviceAccountName: ""`
+- C) `spec.containers[*].securityContext.runAsNonRoot: true`
+- D) `spec.volumes: []`
+
+<details><summary>Answer</summary>
+
+**A.** `automountServiceAccountToken: false` disables the automatic token projection.
+
+- Why not B: an empty `serviceAccountName` is invalid.
+- Why not C: `runAsNonRoot` does not affect token mounting.
+- Why not D: volumes do not control token projection.
+- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
+
+</details>
+
+### Q-K8S-178 · CKS Cluster Hardening · difficulty 1 · single
+
+Which label aggregates a custom ClusterRole into the default `admin` role?
+
+- A) `rbac.authorization.k8s.io/aggregate-to-admin: "true"`
+- B) `rbac.authorization.k8s.io/aggregate-to-view: "true"`
+- C) `rbac.authorization.k8s.io/aggregate-to-edit: "true"`
+- D) `rbac.authorization.k8s.io/aggregate-to-cluster-admin: "true"`
+
+<details><summary>Answer</summary>
+
+**A.** The `aggregate-to-admin` label combines the custom role into the default `admin` ClusterRole.
+
+- Why not B: that aggregates into `view`.
+- Why not C: that aggregates into `edit`.
+- Why not D: there is no `aggregate-to-cluster-admin` label.
+- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://kubernetes.io/docs/reference/access-authn-authz/rbac/
+
+</details>
+
+### Q-K8S-179 · CKS Cluster Hardening · difficulty 3 · scenario
+
+A team needs to enforce a policy that rejects Pods without a `team` label. Which admission mechanism is the simplest and most maintainable?
+
+- A) A mutating webhook that adds the label.
+- B) A ValidatingAdmissionPolicy with a CEL expression.
+- C) A Kyverno policy that patches the label.
+- D) A scheduler plugin.
+
+<details><summary>Answer</summary>
+
+**B.** ValidatingAdmissionPolicy uses CEL expressions built into the API server, avoiding a webhook service.
+
+- Why not A: a mutating webhook adds the label rather than rejecting the Pod.
+- Why not C: Kyverno is an external controller; a built-in policy is simpler.
+- Why not D: scheduler plugins do not reject Pods for missing labels.
+- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://kubernetes.io/docs/reference/access-authn-authz/validating-admission-policy/
+
+</details>
+
+### Q-K8S-180 · CKS Cluster Hardening · difficulty 2 · scenario
+
+Which NetworkPolicy best protects the API server from unexpected Pod traffic?
+
+- A) A default-deny ingress policy on the `kube-system` namespace that allows only known control plane components.
+- B) A policy that allows all egress from Pods.
+- C) A policy that allows all ingress to the API server.
+- D) A policy that disables the CNI.
+
+<details><summary>Answer</summary>
+
+**A.** A default-deny ingress policy restricts traffic to the control plane to known sources.
+
+- Why not B: egress policies do not protect the API server's ingress.
+- Why not C: allowing all ingress removes the protection.
+- Why not D: disabling the CNI breaks all cluster networking.
+- Ref: [modules/07-networking-services-and-networkpolicy.md](../modules/07-networking-services-and-networkpolicy.md), https://kubernetes.io/docs/concepts/services-networking/network-policies/
+
+</details>
+
+### Q-K8S-181 · CKS System Hardening · difficulty 1 · single
+
+Which Linux capability is considered the most dangerous because it grants a wide range of administrative operations, including mounting filesystems and modifying namespaces?
+
+- A) `CAP_NET_BIND_SERVICE`
+- B) `CAP_SYS_ADMIN`
+- C) `CAP_CHOWN`
+- D) `CAP_SETUID`
+
+<details><summary>Answer</summary>
+
+**B.** CAP_SYS_ADMIN is a broad capability that allows many administrative operations.
+
+- Why not A: CAP_NET_BIND_SERVICE only allows binding to low ports.
+- Why not C: CAP_CHOWN only allows changing file ownership.
+- Why not D: CAP_SETUID only allows changing UIDs.
+- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+
+</details>
+
+### Q-K8S-182 · CKS System Hardening · difficulty 2 · scenario
+
+A Pod must use an AppArmor profile named `runtime/default`. Which annotation enables this?
+
+- A) `container.apparmor.security.beta.kubernetes.io/<container>: runtime/default`
+- B) `securityContext.apparmorProfile: runtime/default`
+- C) `metadata.annotations.apparmor: default`
+- D) `spec.apparmorProfile: runtime/default`
+
+<details><summary>Answer</summary>
+
+**A.** AppArmor is configured per container through the `container.apparmor.security.beta.kubernetes.io` annotation.
+
+- Why not B: `securityContext` has no `apparmorProfile` field.
+- Why not C: the annotation key must be per container.
+- Why not D: there is no Pod-level `apparmorProfile` field.
+- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://kubernetes.io/docs/tutorials/security/apparmor/
+
+</details>
+
+### Q-K8S-183 · CKS Cluster Hardening · difficulty 2 · hands-on
+
+Audit the cluster for ClusterRoles that grant the `escalate` verb and remove that verb from a developer role. Which procedure is correct?
+
+- A) Inspect the role's `rules[].verbs`, then patch the role to remove only the `escalate` verb while keeping the other permissions.
+- B) Delete the ClusterRole entirely.
+- C) Delete every binding that references the role.
+- D) Run `kubectl auth can-i escalate roles` as the developer.
+
+<details><summary>Answer</summary>
+
+**A.** Inspect the role's rules and patch out only the `escalate` verb, preserving the developer's legitimate permissions.
+
+- Why not B: deleting the role removes all of its permissions, breaking legitimate access.
+- Why not C: deleting bindings removes access entirely rather than removing the escalation verb.
+- Why not D: `kubectl auth can-i` checks a subject's permissions, not which verbs a role grants.
+- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://kubernetes.io/docs/reference/access-authn-authz/rbac/
+- Verification: [`examples/ts/15-hands-on-verification.test.ts`](../examples/ts/15-hands-on-verification.test.ts) › "auditRbacEscalate finds the escalate verb"
+
+</details>
+
+### Q-K8S-184 · CKS System Hardening · difficulty 2 · hands-on
+
+Configure a container to drop all capabilities and add only `NET_BIND_SERVICE`, then verify the effective set. Which `securityContext` achieves this?
+
+- A) `capabilities: {drop: ["ALL"], add: ["NET_BIND_SERVICE"]}`
+- B) `capabilities: {add: ["ALL"]}`
+- C) `privileged: true`
+- D) `capabilities: {drop: ["NET_BIND_SERVICE"]}`
+
+<details><summary>Answer</summary>
+
+**A.** `drop: ["ALL"]` removes the default capability set, and `add: ["NET_BIND_SERVICE"]` restores only the required capability.
+
+- Why not B: adding ALL grants every capability.
+- Why not C: `privileged: true` grants all capabilities and host device access.
+- Why not D: dropping only NET_BIND_SERVICE leaves the other default capabilities in place.
+- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+- Verification: [`examples/ts/15-hands-on-verification.test.ts`](../examples/ts/15-hands-on-verification.test.ts) › "evaluateCapabilities resolves the effective set"
+
+</details>
+
+### Q-K8S-185 · CKS Supply Chain Security · difficulty 3 · hands-on
+
+Verify an image signature with cosign and reject an unsigned image before admission. Which sequence is correct?
+
+- A) Run `cosign verify --key <key> <image>` and configure an admission policy that fails when verification fails.
+- B) Run `cosign sign <image>` and redeploy the Pod.
+- C) Run `kubectl verify image <image>` and restart the Pod.
+- D) Run `kubeconform -v <image>` and label the namespace.
+
+<details><summary>Answer</summary>
+
+**A.** cosign verifies the signature against a key, and an admission policy enforces the result before the Pod is created.
+
+- Why not B: signing an image does not verify an existing image.
+- Why not C: `kubectl verify image` is not a kubectl command.
+- Why not D: kubeconform validates Kubernetes manifests, not image signatures.
+- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://kubernetes.io/docs/tasks/administer-cluster/verify-signed-artifacts/
+- Verification: [`examples/ts/15-hands-on-verification.test.ts`](../examples/ts/15-hands-on-verification.test.ts) › "verifyImageSignature validates the digest"
+
+</details>
+
+### Q-K8S-186 · CKS Cluster Hardening · difficulty 2 · multi
+
+Which RBAC verbs should be restricted to prevent privilege escalation? (Select all that apply)
+
+- A) `escalate`
+- B) `bind`
+- C) `get`
+- D) `list`
+
+<details><summary>Answer</summary>
+
+**A and B.** The `escalate` and `bind` verbs let a subject grant itself or others additional permissions.
+
+- Why not C: `get` only reads a resource.
+- Why not D: `list` only lists resources.
+- Ref: [modules/11-security-hardening-and-cks.md](../modules/11-security-hardening-and-cks.md), https://kubernetes.io/docs/reference/access-authn-authz/rbac/
+
+</details>
+
 ## Part 4: Mock Exams & Scoring Keys
+
+Each mock exam follows the real exam's format, time limit, and domain mix. The real exam's exact task count is not published, so the mock uses a representative count. Every task lists a runnable verification in `examples/ts/`: the shared suite `15-hands-on-verification.test.ts` models the task's decision logic deterministically, and tasks that require a running cluster are integration tasks that skip cleanly when no cluster is reachable.
 
 ### Mock Exam 1: Certified Kubernetes Administrator (CKA)
 
-- **Format**: 120 minutes, 17 performance-based hands-on tasks.
-- **Passing Score**: 66%.
-- **Domain Coverage**: Troubleshooting (30%), Cluster Architecture & Configuration (25%), Services & Networking (20%), Workloads & Scheduling (15%), Storage (10%).
-- **Scoring Key**: Each task is evaluated via automated test scripts (`examples/ts/`) validating API state, pod running status, and network connectivity.
+- **Format**: 120 minutes, 17 performance-based tasks.
+- **Passing score**: 66% on the real exam; pass this mock at 12 of 17 tasks (70.6%).
+- **Domain mix**: Troubleshooting 5 · Cluster Architecture 4 · Services & Networking 4 · Workloads & Scheduling 2 · Storage 2.
+
+| # | Domain | Task | Verification |
+| :-- | :-- | :-- | :-- |
+| 1 | Troubleshooting | A Pod `api-7d9` is stuck in `Pending`. Run `kubectl describe pod api-7d9`, identify the `FailedScheduling` reason, and lower the memory request so the Pod schedules. | `examples/ts/13-observability-and-troubleshooting.test.ts` › "troubleshooting triage accurately diagnoses Pending scheduling deadlock" |
+| 2 | Troubleshooting | A Pod `web-5c` is in `CrashLoopBackOff`. Retrieve the previous container's logs, identify the missing configuration key, and fix it. | `examples/ts/13-observability-and-troubleshooting.test.ts` › "troubleshooting triage accurately diagnoses CrashLoopBackOff" |
+| 3 | Troubleshooting | A Deployment `frontend` is on a bad revision. Roll it back to the previous ReplicaSet and verify the Pods are healthy. | `examples/ts/15-hands-on-verification.test.ts` › "evaluateRollbackTarget selects the previous ReplicaSet" |
+| 4 | Troubleshooting | A node `worker-2` is `NotReady`. Inspect its conditions and the kubelet journal, and identify the expired client certificate. | `examples/ts/15-hands-on-verification.test.ts` › "classifyNodeConditions reports Ready and NotReady from the Ready condition" |
+| 5 | Troubleshooting | Verify an etcd snapshot file and identify a corrupted backup before using it for recovery. | `examples/ts/10-cluster-lifecycle-and-kubeadm.test.ts` › "etcd snapshot backup verification detects corrupt or empty backups" |
+| 6 | Cluster Architecture | Create a kubeconfig context for a second cluster and switch `current-context` to it without editing the file manually. | `examples/ts/15-hands-on-verification.test.ts` › "evaluateKubeconfigContext selects the active context" |
+| 7 | Cluster Architecture | Take an etcd snapshot using the cluster's TLS certificates and verify its hash. | `examples/ts/10-cluster-lifecycle-and-kubeadm.test.ts` › "etcd snapshot backup verification detects corrupt or empty backups" |
+| 8 | Cluster Architecture | Check the expiration date of every cluster certificate and report any that expire within 30 days. | `examples/ts/15-hands-on-verification.test.ts` › "evaluateCertificateExpiry computes days remaining" |
+| 9 | Cluster Architecture | Restore an etcd snapshot into a new data directory and point the etcd static pod at it. | Lab walkthrough: [modules/10-cluster-lifecycle-and-kubeadm.md](../modules/10-cluster-lifecycle-and-kubeadm.md) §6.2 |
+| 10 | Services & Networking | Create a Service that selects the `app=web` Pods and verify that its endpoints match the ready Pods. | `examples/ts/15-hands-on-verification.test.ts` › "evaluateServiceEndpoints matches the label selector" |
+| 11 | Services & Networking | Apply a NetworkPolicy that allows only the `frontend` Pods to reach the `backend` Pods on port 8080, and verify the isolation. | `examples/ts/15-hands-on-verification.test.ts` › "evaluateNetworkPolicyIngress allows the frontend Pods" |
+| 12 | Services & Networking | A Pod cannot resolve external hostnames. Inspect `/etc/resolv.conf`, explain the `ndots:5` behavior, and test an absolute lookup. | `examples/ts/07-networking-services-and-networkpolicy.test.ts` › "CoreDNS ndots:5 causes external domains with <5 dots to query cluster search domains first" |
+| 13 | Services & Networking | Create a Gateway API HTTPRoute that routes `GET /api/v1` to the `api` Service and verify the route becomes Accepted. | `examples/ts/08-gateway-api-and-ingress-migration.test.ts` › "intra-namespace routing succeeds without ReferenceGrant" |
+| 14 | Workloads & Scheduling | Create a Deployment with 3 replicas and scale it to 5, then verify the ReplicaSet and Pods. | `examples/ts/15-hands-on-verification.test.ts` › "evaluateDeploymentScaling reaches the desired replicas" |
+| 15 | Workloads & Scheduling | Taint a node `dedicated=gpu:NoSchedule` and add a toleration to a Pod so it schedules there. | `examples/ts/06-scheduling-and-topology.test.ts` › "scheduler filter pipeline filters nodes by resources, nodeSelector, and taints" |
+| 16 | Storage | Create a PersistentVolumeClaim with a StorageClass and bind it to a Pod, then verify the mount. | `examples/ts/09-storage-and-csi.test.ts` › "WaitForFirstConsumer delays PVC binding until scheduler chooses the pod node zone" |
+| 17 | Storage | Expand a PVC from 5Gi to 10Gi and verify the filesystem resize. | `examples/ts/15-hands-on-verification.test.ts` › "evaluateVolumeExpansion validates the requested size" |
+
+**Scoring key**: each task is pass/fail; 1 point per task; pass at 12 points (66% real-exam threshold; 70.6% of 17 tasks).
 
 ### Mock Exam 2: Certified Kubernetes Application Developer (CKAD)
 
-- **Format**: 120 minutes, 16 performance-based hands-on tasks.
-- **Passing Score**: 66%.
-- **Domain Coverage**: Application Environment & Security (25%), Design & Build (20%), Deployment (20%), Services & Networking (20%), Observability & Maintenance (15%).
-- **Scoring Key**: Evaluated against expected resource manifests, ingress routing rules, and probe success states.
+- **Format**: 120 minutes, 16 performance-based tasks.
+- **Passing score**: 66% on the real exam; pass this mock at 11 of 16 tasks (68.75%).
+- **Domain mix**: Application Environment 4 · Design & Build 3 · Deployment 3 · Services & Networking 3 · Observability & Maintenance 3.
+
+| # | Domain | Task | Verification |
+| :-- | :-- | :-- | :-- |
+| 1 | Application Environment | Create a ConfigMap and consume all its keys as environment variables in a Pod. | `examples/ts/15-hands-on-verification.test.ts` › "evaluateConfigMapEnvInjection expands all keys" |
+| 2 | Application Environment | Create a Secret and mount it as a volume at `/etc/tls`, then read the key from the Pod. | `examples/ts/15-hands-on-verification.test.ts` › "evaluateSecretVolumeMount mounts the Secret" |
+| 3 | Application Environment | Set a container `securityContext` with `runAsNonRoot: true`, `allowPrivilegeEscalation: false`, and `readOnlyRootFilesystem: true`. | `examples/ts/11-security-hardening-and-cks.test.ts` › "negative test: Pod Security Admission restricted level requires runAsNonRoot, dropped capabilities, and seccomp" |
+| 4 | Application Environment | Create a ResourceQuota that limits `requests.cpu` to `2` and verify that a third 500m replica is rejected. | `examples/ts/15-hands-on-verification.test.ts` › "evaluateResourceQuota enforces the aggregate limit" |
+| 5 | Design & Build | Define a CRD `CronTab` and create a custom resource that satisfies its schema. | `examples/ts/15-hands-on-verification.test.ts` › "validateCrdInstance accepts a conforming custom resource" |
+| 6 | Design & Build | Author a Helm chart with a `ConfigMap` template and render it with `helm template`. | `examples/ts/15-hands-on-verification.test.ts` › "evaluateHelmChart validates the chart structure" |
+| 7 | Design & Build | Create a Kustomize overlay that adds a `prod` label and a replica patch to a base. | `examples/ts/15-hands-on-verification.test.ts` › "evaluateKustomizeOverlay applies labels and replicas" |
+| 8 | Deployment | Perform a rolling update of a Deployment by changing the image, and verify the new ReplicaSet reaches the desired replicas. | `examples/ts/04-pods-and-workloads.test.ts` › "deployment rollout bounds respect maxSurge and maxUnavailable constraints" |
+| 9 | Deployment | Roll back a Deployment to the previous revision and verify the Pods use the old image. | `examples/ts/15-hands-on-verification.test.ts` › "evaluateRollbackTarget selects the previous ReplicaSet" |
+| 10 | Deployment | Create a Job with `backoffLimit: 3` and a CronJob with `concurrencyPolicy: Forbid`. | `examples/ts/15-hands-on-verification.test.ts` › "evaluateJobPolicy enforces backoff and concurrency" |
+| 11 | Services & Networking | Expose a Deployment with a Service and verify the DNS name resolves from another Pod. | `examples/ts/15-hands-on-verification.test.ts` › "evaluateServiceEndpoints matches the label selector" |
+| 12 | Services & Networking | Create a Gateway API HTTPRoute with an exact path match for `/health`. | `examples/ts/08-gateway-api-and-ingress-migration.test.ts` › "intra-namespace routing succeeds without ReferenceGrant" |
+| 13 | Services & Networking | Apply a NetworkPolicy that allows only the `frontend` Pods to reach the `backend` Pods. | `examples/ts/15-hands-on-verification.test.ts` › "evaluateNetworkPolicyIngress allows the frontend Pods" |
+| 14 | Observability & Maintenance | Configure a startup probe, a liveness probe, and a readiness probe on a slow-starting container. | `examples/ts/04-pods-and-workloads.test.ts` › "probe state machine: startup probe gates liveness and readiness until success" |
+| 15 | Observability & Maintenance | Retrieve logs from a crashed container using the previous instantiation. | `examples/ts/13-observability-and-troubleshooting.test.ts` › "troubleshooting triage accurately diagnoses CrashLoopBackOff" |
+| 16 | Observability & Maintenance | Attach an ephemeral debug container to a running Pod without restarting it. | `examples/ts/15-hands-on-verification.test.ts` › "evaluateEphemeralDebugTarget resolves the target container" |
+
+**Scoring key**: each task is pass/fail; 1 point per task; pass at 11 points (66% real-exam threshold; 68.75% of 16 tasks).
 
 ### Mock Exam 3: Certified Kubernetes Security Specialist (CKS)
 
-- **Format**: 120 minutes, 16 performance-based hands-on tasks (requires active CKA).
-- **Passing Score**: 67%.
-- **Domain Coverage**: Minimize Microservice Vulnerabilities (20%), Supply Chain Security (20%), Monitoring, Logging & Runtime Security (20%), Cluster Setup (15%), Cluster Hardening (15%), System Hardening (10%).
-- **Scoring Key**: Evaluated against Pod Security Standards enforcement, Falco rules, RBAC bindings, and secret encryption configuration.
+- **Format**: 120 minutes, 16 performance-based tasks (requires a passed CKA certification; the CKA does not need to be active).
+- **Passing score**: 67% on the real exam; pass this mock at 11 of 16 tasks (68.75%).
+- **Domain mix**: Minimize Microservice Vulnerabilities 3 · Supply Chain Security 3 · Monitoring, Logging & Runtime Security 3 · Cluster Setup 2 · Cluster Hardening 3 · System Hardening 2.
+
+| # | Domain | Task | Verification |
+| :-- | :-- | :-- | :-- |
+| 1 | Minimize Microservice Vulnerabilities | Apply the restricted Pod Security Standard to a namespace and verify that a root-running Pod is rejected. | `examples/ts/11-security-hardening-and-cks.test.ts` › "negative test: Pod Security Admission restricted level requires runAsNonRoot, dropped capabilities, and seccomp" |
+| 2 | Minimize Microservice Vulnerabilities | Enable user namespaces for a Pod and verify the UID mapping. | `examples/ts/15-hands-on-verification.test.ts` › "evaluateUserNamespaces reports the mapping" |
+| 3 | Minimize Microservice Vulnerabilities | Configure a seccomp profile for a container and verify the effective type. | `examples/ts/15-hands-on-verification.test.ts` › "evaluateSeccompProfile resolves the profile" |
+| 4 | Supply Chain Security | Verify an image signature with cosign and reject an unsigned image. | `examples/ts/15-hands-on-verification.test.ts` › "verifyImageSignature validates the digest" |
+| 5 | Supply Chain Security | Create a `kubernetes.io/dockerconfigjson` Secret and reference it in `imagePullSecrets`. | `examples/ts/15-hands-on-verification.test.ts` › "evaluateImagePullSecret authenticates the pull" |
+| 6 | Supply Chain Security | Scan an image for critical CVEs and report the findings. | `examples/ts/15-hands-on-verification.test.ts` › "scanImageVulnerabilities flags critical CVEs" |
+| 7 | Monitoring, Logging & Runtime Security | Enable audit logging with a policy that records Secret reads at the Metadata stage. | `examples/ts/15-hands-on-verification.test.ts` › "evaluateAuditPolicy matches the rule and stage" |
+| 8 | Monitoring, Logging & Runtime Security | Deploy a runtime security tool and verify it detects an unexpected shell. | `examples/ts/15-hands-on-verification.test.ts` › "evaluateRuntimeDetection flags the syscall" |
+| 9 | Monitoring, Logging & Runtime Security | Forward audit logs to an external immutable store. | `examples/ts/15-hands-on-verification.test.ts` › "evaluateLogForwarding targets the external store" |
+| 10 | Cluster Setup | Enable encryption at rest for Secrets using a KMS provider. | `examples/ts/15-hands-on-verification.test.ts` › "evaluateEncryptionAtRest reports the provider" |
+| 11 | Cluster Setup | Verify that the API server uses `Node,RBAC` authorization and anonymous auth is disabled. | `examples/ts/15-hands-on-verification.test.ts` › "evaluateAuthorizationMode reports the secure mode" |
+| 12 | Cluster Hardening | Audit all ClusterRoles for wildcard verbs or resources and report the findings. | `examples/ts/11-security-hardening-and-cks.test.ts` › "RBAC evaluator enforces least privilege and handles wildcards" |
+| 13 | Cluster Hardening | Disable automatic ServiceAccount token mounting for a Pod that does not call the API. | `examples/ts/15-hands-on-verification.test.ts` › "evaluateServiceAccountTokenMounting disables the token" |
+| 14 | Cluster Hardening | Audit RBAC for the `escalate` verb and remove it from developer roles. | `examples/ts/15-hands-on-verification.test.ts` › "auditRbacEscalate finds the escalate verb" |
+| 15 | System Hardening | Drop all capabilities and add only `NET_BIND_SERVICE`. | `examples/ts/15-hands-on-verification.test.ts` › "evaluateCapabilities resolves the effective set" |
+| 16 | System Hardening | Mount the container root filesystem read-only and verify writes fail. | `examples/ts/15-hands-on-verification.test.ts` › "evaluateReadOnlyRootFilesystem reports the posture" |
+
+**Scoring key**: each task is pass/fail; 1 point per task; pass at 11 points (67% real-exam threshold; 68.75% of 16 tasks).

@@ -362,13 +362,13 @@ Invariant 3: If PLEG relist duration exceeds 3 minutes, the kubelet flags itself
 
 ---
 
-## 9. Exam Delta: CKA (v1.37) vs. CKS (v1.34)
+## 9. Exam Delta: CKA/CKS (v1.37)
 
 > [!IMPORTANT]
 > **Certification Delta & Node Security Configuration:**
 >
 > - **CKA (Curriculum v1.37)**: Requires mastery of the kubelet configuration file (`/var/lib/kubelet/config.yaml`). Candidates are expected to diagnose failed nodes where cgroup drivers are mismatched (`cgroupDriver: systemd`), inspect PLEG errors via `journalctl -u kubelet`, and configure eviction thresholds (`evictionHard: {"memory.available": "500Mi"}`).
-> - **CKS (Curriculum v1.34)**: Focuses strictly on node hardening and API lockdown. Questions test disabling the unauthenticated read-only port (`readOnlyPort: 0`, which historically ran on port 10255), enforcing webhook authentication and authorization on the kubelet server (`authentication.anonymous.enabled: false` and `authorization.mode: Webhook`), and auditing file permissions on `/var/lib/kubelet/config.yaml` (`600` owned by `root:root`).
+> - **CKS (Curriculum v1.37)**: Focuses strictly on node hardening and API lockdown. Questions test disabling the unauthenticated read-only port (`readOnlyPort: 0`, which historically ran on port 10255), enforcing webhook authentication and authorization on the kubelet server (`authentication.anonymous.enabled: false` and `authorization.mode: Webhook`), and auditing file permissions on `/var/lib/kubelet/config.yaml` (`600` owned by `root:root`).
 
 ---
 

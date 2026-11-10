@@ -30,6 +30,19 @@ Distributed systems frameworks generally adopt one of two reactive paradigms for
 
 Kubernetes implements a level-triggered control paradigm. While the `kube-apiserver` exposes an HTTP/2 streaming chunked `Watch` API that emits delta events (`ADDED`, `MODIFIED`, `DELETED`) for sub-millisecond responsiveness, every Kubernetes controller uses those events strictly as unbuffered wake-up hints to trigger a full reconciliation pass against an in-memory cached view (`Lister`) backed by an etcd resource revision boundary.
 
+### 1.2 Containers vs. Host Processes
+
+Before Kubernetes, an application was deployed by installing it on a host: packages were added to the running OS, configuration files were edited in place, and scaling meant provisioning another server and repeating the process. Two hosts configured by hand drift apart, and the application's dependency on a specific host state makes replacement slow and error-prone.
+
+A container packages the application with its runtime, libraries, and configuration into a single immutable image. The container runs the same way on any node with a compatible runtime, so scaling is "run another container," not "build another server." Kubernetes adds the control loop: the desired replica count and image are declared, and the scheduler and controllers make the cluster converge to that declaration.
+
+| Aspect | Host deployment | Container deployment |
+| :-- | :-- | :-- |
+| Unit of deployment | A configured server. | An image plus a Pod spec. |
+| Scaling | Provision and configure another server. | Increase the replica count. |
+| Configuration change | Edit files on the host. | Build a new image or update a ConfigMap. |
+| Rollback | Reverse the manual changes. | `kubectl rollout undo`. |
+
 ---
 
 ## 2. The Kubernetes Object Model: Anatomical Dissection
@@ -374,13 +387,13 @@ Understanding the progression of declarative API paradigms prevents architectura
 
 ---
 
-## 9. Exam Delta: CKA/CKAD (v1.37) vs. CKS (v1.34)
+## 9. Exam Delta: CKA/CKAD/CKS (v1.37)
 
 > [!IMPORTANT]
 > **Certification Delta & Environment Divergence:**
 >
 > - **CKA & CKAD (Curriculum v1.37)**: Fully expect and test Server-Side Apply semantics. When troubleshooting resource mutations or applying manifests with `--server-side`, candidates must inspect `metadata.managedFields` to identify conflicting field managers. Imperative `kubectl apply` questions expect familiarity with SSA field conflicts and how `--force-conflicts` resolves HTTP 409 rejections.
-> - **CKS (Curriculum v1.34)**: Lags at Kubernetes v1.34. In CKS scenarios, security auditing questions frequently examine legacy `kubectl.kubernetes.io/last-applied-configuration` annotations to audit whether sensitive plaintext secrets were inadvertently committed and serialized directly into object metadata. Furthermore, CKS tests finalizer hijacking as a mechanism to prevent malicious or accidental pod deletion during forensic data acquisition.
+> - **CKS (Curriculum v1.37)**: In CKS scenarios, security auditing questions frequently examine legacy `kubectl.kubernetes.io/last-applied-configuration` annotations to audit whether sensitive plaintext secrets were inadvertently committed and serialized directly into object metadata. Furthermore, CKS tests finalizer hijacking as a mechanism to prevent malicious or accidental pod deletion during forensic data acquisition.
 
 ---
 

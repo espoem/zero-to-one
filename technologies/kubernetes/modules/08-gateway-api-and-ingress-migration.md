@@ -1,6 +1,6 @@
-# Module 08: Gateway API v1.6 and Traffic Management: Role-Oriented Routing, TLS/TCPRoute, ReferenceGrant, and Ingress-NGINX Retirement
+# Module 08: Gateway API v1.7 and Traffic Management: Role-Oriented Routing, TLS/TCPRoute, HTTPRoute Retries, ReferenceGrant, and Ingress-NGINX Retirement
 
-> **Primary sources:** Kubernetes Gateway API Specification ([v1.6.3](https://gateway-api.sigs.k8s.io/)); Kubernetes Official Blog ([Gateway API v1.5 Release](https://kubernetes.io/blog/2026/04/21/gateway-api-v1-5/), [Gateway API v1.6 Release](https://kubernetes.io/zh-cn/blog/2026/08/03/gateway-api-v1-6-release/), [Ingress-NGINX Retirement Statement](https://kubernetes.io/blog/2026/01/29/ingress-nginx-statement/)); CNCF Curriculum ([CKA v1.37](https://github.com/cncf/curriculum), [CKAD v1.37](https://github.com/cncf/curriculum)); `ingress2gateway` Project Documentation ([Kubernetes SIGs](https://github.com/kubernetes-sigs/ingress2gateway)).
+> **Primary sources:** Kubernetes Gateway API Specification ([v1.7.0](https://gateway-api.sigs.k8s.io/)); Kubernetes Official Blog ([Gateway API v1.5 Release](https://kubernetes.io/blog/2026/04/21/gateway-api-v1-5/), [Gateway API v1.6 Release](https://kubernetes.io/zh-cn/blog/2026/08/03/gateway-api-v1-6-release/), [Gateway API v1.7 Release](https://github.com/kubernetes-sigs/gateway-api/releases/tag/v1.7.0), [Ingress-NGINX Retirement Statement](https://kubernetes.io/blog/2026/01/29/ingress-nginx-statement/)); CNCF Curriculum ([CKA v1.37](https://github.com/cncf/curriculum), [CKAD v1.37](https://github.com/cncf/curriculum)); `ingress2gateway` Project Documentation ([Kubernetes SIGs](https://github.com/kubernetes-sigs/ingress2gateway)).
 >
 > **Executable proof:** [`examples/ts/08-gateway-api-and-ingress-migration.test.ts`](../examples/ts/08-gateway-api-and-ingress-migration.test.ts) asserts Gateway API data models, Route precedence evaluation algorithms, cross-namespace ReferenceGrant validation, and Ingress translation ASTs.
 
@@ -261,6 +261,40 @@ spec:
           port: 5432
 ```
 
+### 3.4 HTTPRoute Retries (GEP-1731, Standard in v1.7)
+
+Gateway API v1.7 graduated HTTPRoute retries (GEP-1731) to the Standard channel. An HTTPRoute rule can declare a `retries` object that controls how the implementation retries failed requests:
+
+```yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: checkout-retry
+spec:
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /checkout
+      retries:
+        codes: [500, 502, 503, 504]
+        attempts: 3
+        backoff: 100ms
+      backendRefs:
+        - name: checkout
+          port: 8080
+```
+
+| Field | Meaning | Notes |
+| :-- | :-- | :-- |
+| `codes` | HTTP response codes that trigger a retry. | Common choices are 500, 502, 503, and 504. |
+| `attempts` | Maximum number of retry attempts per request. | The total attempts include the original request. |
+| `backoff` | Base delay between attempts. | Implementation-specific, especially jitter; not a strict guarantee. |
+
+Retries are a client-visible behavior change: idempotent requests are safer to retry, and non-idempotent routes (for example `POST` payments) should use a conservative policy or disable retries. The `HTTPRouteRetryCodes` and `HTTPRouteRetryConnectionError` conformance features accompany the graduation.
+
+> **Then vs now:** before v1.7, retry policy was implementation-specific (for example an annotation on an Ingress controller). Since v1.7 it is part of the standard HTTPRoute API, so the same manifest works across conformant implementations.
+
 ---
 
 ## 4. Cross-Namespace Security: ReferenceGrant
@@ -362,7 +396,7 @@ On January 29, 2026, the Kubernetes project published the formal retirement anno
 
 ### 6.1 Then vs. Now: Architectural Comparison
 
-| Architectural Dimension | Ingress-NGINX (Retired March 2026) | Gateway API v1.6 Standard (Current) |
+| Architectural Dimension | Ingress-NGINX (Retired March 2026) | Gateway API v1.7 Standard (Current) |
 | :-- | :-- | :-- |
 | **API Specification** | Monolithic `networking.k8s.io/v1` `Ingress` | Role-partitioned: `GatewayClass`, `Gateway`, `Route`, `ReferenceGrant` |
 | **Maintenance & Security** | Project retired; zero security patches; high CVE risk | Actively maintained by SIG-Network; formal Conformance Suite |
@@ -439,7 +473,7 @@ Invariant 2: Path match evaluation must preserve UTF-8 normalized byte-level pre
 16:     return Response(404, "Not Found")
 17: end if
 18:
-19: // Sort candidates by Gateway API v1.6 Precedence Tuple:
+19: // Sort candidates by Gateway API v1.7 Precedence Tuple:
 20: // (HostnameType, PathType, PathLength, HeaderCount, QueryParamCount, CreationTime, ResourceKey)
 21: sortedCandidates ← Sort(candidates, PrecedenceComparator)
 22: winningMatch ← sortedCandidates[0]
@@ -449,7 +483,7 @@ Invariant 2: Path match evaluation must preserve UTF-8 normalized byte-level pre
 
 ---
 
-## 8. Exam Delta: CKA / CKAD v1.37 vs. CKS v1.34
+## 8. Exam Delta: CKA / CKAD / CKS v1.37
 
 Candidates preparing for certification exams must note the significant syllabus divergence across versions:
 
@@ -460,9 +494,9 @@ Candidates preparing for certification exams must note the significant syllabus 
 > - You are expected to configure `Gateway`, `HTTPRoute`, path-based routing, canary backend traffic splitting (`weight`), and cross-namespace `ReferenceGrant`.
 > - Ingress-NGINX specific questions are deprecated; questions present Gateway API resources or basic `networking.k8s.io/v1` Ingress without proprietary annotations.
 >
-> **CKS (Certified Kubernetes Security Specialist, Curriculum v1.34)**:
+> **CKS (Certified Kubernetes Security Specialist, Curriculum v1.37)**:
 >
-> - The CKS curriculum remains anchored to Kubernetes **v1.34**.
+> - The CKS curriculum is aligned with Kubernetes **v1.37**.
 > - CKS tests Ingress network security primarily via `NetworkPolicy` restrictions (isolating ingress controller pods), TLS secret management, and Pod Security Standards applied to proxy daemons.
 > - While CKS does not yet grade Gateway API `ReferenceGrant` mechanics in its practical scoring scripts, understanding `ReferenceGrant` is essential for securing multi-tenant clusters in modern production environments.
 

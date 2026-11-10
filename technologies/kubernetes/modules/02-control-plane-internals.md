@@ -389,13 +389,13 @@ Invariant 3: Any HTTP 410 Gone error triggers an immediate cache flush and relis
 
 ---
 
-## 8. Exam Delta: CKA/CKAD (v1.37) vs. CKS (v1.34)
+## 8. Exam Delta: CKA/CKAD/CKS (v1.37)
 
 > [!IMPORTANT]
 > **Certification Delta & Environment Divergence:**
 >
 > - **CKA (Curriculum v1.37)**: Requires mastery of the API server configuration flags (`/etc/kubernetes/manifests/kube-apiserver.yaml`). Candidates must configure `--enable-admission-plugins` and configure etcd encryption at rest (`--encryption-provider-config`). Questions heavily test troubleshooting API server crashes caused by malformed manifest syntax or expired control plane certificates.
-> - **CKS (Curriculum v1.34)**: Focuses heavily on the control plane security boundary. Candidates are tested on configuring Kubernetes Advanced Audit Policies (`--audit-policy-file` and `--audit-log-path`) to log request stages (`RequestReceived`, `ResponseStarted`, `ResponseComplete`). Furthermore, CKS tests configuring Node Restriction and ImagePolicyWebhook admission plugins, which target older webhook configurations rather than the newer CEL ValidatingAdmissionPolicies introduced in v1.30+.
+> - **CKS (Curriculum v1.37)**: Focuses heavily on the control plane security boundary. Candidates are tested on configuring Kubernetes Advanced Audit Policies (`--audit-policy-file` and `--audit-log-path`) to log request stages (`RequestReceived`, `ResponseStarted`, `ResponseComplete`). Furthermore, CKS tests configuring Node Restriction and ImagePolicyWebhook admission plugins, which target older webhook configurations rather than the newer CEL ValidatingAdmissionPolicies introduced in v1.30+.
 
 ---
 

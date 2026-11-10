@@ -1,6 +1,6 @@
 # Module 14: Production Kubernetes at Scale: Multi-Tenancy, Karpenter, API Priority and Fairness, etcd Tuning, and Version History
 
-> **Primary sources:** Kubernetes Documentation ([Kubernetes Scalability Thresholds](https://kubernetes.io/docs/setup/best-practices/cluster-large/), [API Priority and Fairness](https://kubernetes.io/docs/concepts/cluster-administration/flow-control/), [Multi-Tenancy Guide](https://kubernetes.io/docs/concepts/security/multi-tenancy/), [Operating etcd Clusters](https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-etcd/)); Karpenter Project Documentation ([v1.0+ Architecture & NodePools](https://karpenter.sh/docs/)); Kubernetes Release Notes ([v1.30–v1.37 Releases](https://kubernetes.io/releases/)); CNCF Curriculum ([CKA Curriculum v1.37](https://github.com/cncf/curriculum), [CKS Curriculum v1.34](https://github.com/cncf/curriculum)).
+> **Primary sources:** Kubernetes Documentation ([Kubernetes Scalability Thresholds](https://kubernetes.io/docs/setup/best-practices/cluster-large/), [API Priority and Fairness](https://kubernetes.io/docs/concepts/cluster-administration/flow-control/), [Multi-Tenancy Guide](https://kubernetes.io/docs/concepts/security/multi-tenancy/), [Operating etcd Clusters](https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-etcd/)); Karpenter Project Documentation ([v1.0+ Architecture & NodePools](https://karpenter.sh/docs/)); Kubernetes Release Notes ([v1.30–v1.37 Releases](https://kubernetes.io/releases/)); CNCF Curriculum ([CKA Curriculum v1.37](https://github.com/cncf/curriculum), [CKS Curriculum v1.37](https://github.com/cncf/curriculum)).
 >
 > **Executable proof:** [`examples/ts/14-production-architecture-and-scale.test.ts`](../examples/ts/14-production-architecture-and-scale.test.ts) asserts APF shuffle sharding distributions, Karpenter bin-packing optimization algorithms, etcd compaction math, and version compatibility matrices.
 >
@@ -126,6 +126,23 @@ spec:
     expireAfter: 720h # 30-day node turnover for OS patching
 ```
 
+### 3.3 Cost Optimization and FinOps
+
+Kubernetes cost is dominated by the worker nodes that satisfy Pod requests. Because the scheduler places Pods based on `requests`, not actual usage, requests are the primary cost lever: a workload that requests 4 CPUs but uses 0.5 CPUs still reserves 4 CPUs of node capacity.
+
+| Lever | Mechanism | Trade-off |
+| :-- | :-- | :-- |
+| Right-sizing | Set `requests` close to actual usage and `limits` to the acceptable burst ceiling. | Too-low requests cause eviction or CPU throttling. |
+| Autoscaling | HPA for Pod count, Karpenter or Cluster Autoscaler for node count. | Scale-to-zero needs the metrics pipeline and warm-up time. |
+| Consolidation | Karpenter's consolidation replaces underutilized nodes with smaller or fewer instances. | Consolidation can cause brief Pod disruption. |
+| Spot / preemptible | Run fault-tolerant workloads on spot capacity with a fallback to on-demand. | Spot interruption requires graceful draining. |
+| Namespace attribution | Label namespaces and aggregate requests, limits, and actual usage per team. | Requires a metering pipeline. |
+
+A practical sequence is: measure actual usage with `kubectl top` or the Metrics API, lower `requests` toward the observed P95, enable HPA, then let Karpenter consolidate the freed capacity. Repeat on a cadence, because usage drifts.
+
+> [!IMPORTANT]
+> **Requests are reservations, not ceilings.** Lowering a `limit` without lowering a `request` does not reduce cost, because the scheduler still reserves the request. The `request` is the cost driver.
+
 ---
 
 ## 4. API Priority and Fairness (APF): Protecting the Control Plane
@@ -223,11 +240,12 @@ The following definitive matrix documents the evolution of major Kubernetes feat
 | **v1.31** | August 2024 | AppArmor GA; cgroup v2 memory pressure improvements; image volume source promoted to Beta; native sidecar containers fully stabilized. | In-tree cloud provider removal nearing completion. |
 | **v1.32** | December 2024 | Enhanced ValidatingAdmissionPolicy CEL capabilities; fine-grained kubelet API authorization; dynamic resource allocation enhancements. | Legacy in-tree volume plugins deprecated. |
 | **v1.33** | April 2025 | In-tree cloud provider code completely removed; DRA core improvements; OpenAPI v3 client generation stabilized. | Strict cgroup v2 warnings enabled. |
-| **v1.34** | August 2025 | **Official CKS Curriculum Baseline**; In-place Pod resize beta; CEL admission parameter binding enhancements; PSI eviction thresholds stabilized. | Foundation version for all CKS security exams. |
+| **v1.34** | August 2025 | In-place Pod resize beta; CEL admission parameter binding enhancements; PSI eviction thresholds stabilized. | Precursor to the cgroup v2 enforcement in v1.35. |
 | **v1.35** | December 2025 | **`FailCgroupV1=true` by default**: Kubelet strictly refuses to start on Linux hosts using cgroup v1; code scheduled for removal in $\ge 1.38$. | Legacy cgroup v1 operating systems unsupported. |
 | **v1.36** | April 2026 | **User Namespaces GA** (`hostUsers: false`); **VolumeGroupSnapshots GA**; Fine-grained kubelet authz GA; Service `ExternalIPs` deprecated. | Ingress-NGINX officially retired (March 2026). |
-| **v1.37** | August 2026 | **"Garhwal" Release**: **Metrics API GA** (`metrics.k8s.io/v1beta1`); **StorageVersionMigration GA**; HPA scale-to-zero Beta; Pod certificates Beta. | Current production stable benchmark. |
+| **v1.37** | August 2026 | **"Garhwal" Release**: **Metrics API GA** (`metrics.k8s.io/v1beta1`); **StorageVersionMigration GA**; HPA scale-to-zero Beta; Pod certificates Beta; **CKS Curriculum Baseline**. | Current production stable benchmark. |
 | **Gateway API 1.6** | August 2026 | `TCPRoute` and `UDPRoute` graduated to Standard `v1`; experimental resources moved to `gateway.networking.x-k8s.io` with `X` prefix. | Standard replacement for deprecated Ingress. |
+| **Gateway API 1.7** | October 2026 | **HTTPRoute Retries (GEP-1731)** graduated to Standard; experimental additions include Gateway address routability (GEP-5093), session persistence on `XBackend` (GEP-1619), and pre-routing filters (GEP-5224). | Retry policy is part of the standard HTTPRoute API. |
 | **Helm 4.3** | 2026 | Helm 4 is the current major generation; fully OCI-native chart distribution, client-side release management, zero Tiller dependencies. | CNCF de facto packaging standard. |
 
 ---
@@ -280,11 +298,11 @@ Invariant 2: Requests must be enqueued into the queue with minimum depth among t
 | **API Concurrency Control** | Global `--max-requests-inflight` gates causing total lockouts | API Priority and Fairness (APF) with Shuffle Sharding queue pools |
 | **Linux Cgroups Baseline** | Legacy cgroup v1 with poor memory accounting and no PSI | cgroup v2 mandatory (`FailCgroupV1=true`) with kernel PSI metrics |
 | **Service Endpoint Scaling** | Monolithic `Endpoints` objects causing $O(N^2)$ watch fanout | `EndpointSlices` chunked into 100 endpoints per slice |
-| **Traffic Ingress** | Ingress-NGINX with single-point-of-failure NGINX worker reloads | Gateway API v1.6 with dynamic horizontal `ListenerSet` scaling |
+| **Traffic Ingress** | Ingress-NGINX with single-point-of-failure NGINX worker reloads | Gateway API v1.7 with dynamic horizontal `ListenerSet` scaling |
 
 ---
 
-## 9. Exam Delta: CKA v1.37 vs. CKS v1.34
+## 9. Exam Delta: CKA v1.37 vs. CKS v1.37
 
 > [!NOTE]
 > **CKA (Curriculum v1.37)**:
@@ -294,9 +312,9 @@ Invariant 2: Requests must be enqueued into the queue with minimum depth among t
 >   2. Configuring `ResourceQuotas` and `LimitRanges` to prevent multi-tenant cluster resource starvation.
 >   3. Debugging horizontal autoscalers (HPA) and verifying metrics availability via the GA Metrics API.
 >
-> **CKS (Curriculum v1.34)**:
+> **CKS (Curriculum v1.37)**:
 >
-> - Exam remains anchored to **v1.34**, testing multi-tenancy and scale from an adversarial isolation perspective:
+> - The exam is aligned with Kubernetes **v1.37**, testing multi-tenancy and scale from an adversarial isolation perspective:
 >   1. Restricting tenant access using hardened RBAC roles without privilege escalation verbs.
 >   2. Isolating multi-tenant workloads using Pod Security Admission (`Restricted` profile) and NetworkPolicies.
 >   3. Auditing API Priority and Fairness settings to verify that untrusted tenants cannot starve system controllers.

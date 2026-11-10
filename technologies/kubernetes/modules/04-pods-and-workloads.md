@@ -370,6 +370,22 @@ Invariant 3: Rolling updates complete only when TargetRS.Replicas == D.Spec.Repl
 35. End Function
 ```
 
+### 7.1 Immutable Infrastructure: Replace, Do Not Patch
+
+**Definition.** Immutable infrastructure treats a deployed unit as read-only: configuration and code changes are never applied in place. Instead, a new unit is built and the old unit is replaced. In Kubernetes, the unit is the Pod (and, at the node level, the node image).
+
+| Aspect | Mutable pattern | Immutable pattern |
+| :-- | :-- | :-- |
+| Application update | `kubectl exec` into a Pod and edit files, or copy a new binary to the node. | Build a new image, push it, and roll the Deployment. |
+| Configuration change | Edit a file inside a running container. | Update the ConfigMap or Secret and roll the workload. |
+| Node patching | SSH into the node and apply OS packages. | Replace the node with a new instance from an updated image. |
+| Rollback | Reverse the in-place edit manually. | `kubectl rollout undo` to the previous ReplicaSet or image tag. |
+
+The Deployment controller is the mechanism that makes this safe: a rolling update creates new Pods, waits for readiness, and only then terminates old Pods. If the new version fails, the old ReplicaSet remains available for an immediate rollback.
+
+> [!NOTE]
+> **Why it matters:** in-place mutations are invisible to the desired state, so a subsequent `kubectl apply` silently reverts them. Immutable replacement keeps the observed state aligned with the declared state and makes rollbacks deterministic.
+
 ---
 
 ## 8. Historical Evolution: Then vs. Now
@@ -383,13 +399,13 @@ Invariant 3: Rolling updates complete only when TargetRS.Replicas == D.Spec.Repl
 
 ---
 
-## 9. Exam Delta: CKA/CKAD (v1.37) vs. CKS (v1.34)
+## 9. Exam Delta: CKA/CKAD/CKS (v1.37)
 
 > [!IMPORTANT]
 > **Certification Delta & Workload Constraints:**
 >
 > - **CKAD & CKA (Curriculum v1.37)**: Heavily tests Native Sidecars syntax (`restartPolicy: Always` in `initContainers`), rollout management (`kubectl rollout undo`, `kubectl rollout pause/resume`), and debugging CrashLoopBackOff states caused by failing startup/liveness probes. Candidates are required to author multi-container pods with shared `emptyDir` volumes.
-> - **CKS (Curriculum v1.34)**: Focuses strictly on Workload Security Profiles. Questions require securing Pod specifications by enforcing `securityContext`: configuring `readOnlyRootFilesystem: true`, dropping all Linux capabilities (`capabilities: drop: ["ALL"]`), setting `runAsNonRoot: true`, and assigning `seccompProfile: type: RuntimeDefault`. CKS tests preventing privilege escalation and host namespace leaks (`hostPID: true`, `hostNetwork: true`).
+> - **CKS (Curriculum v1.37)**: Focuses strictly on Workload Security Profiles. Questions require securing Pod specifications by enforcing `securityContext`: configuring `readOnlyRootFilesystem: true`, dropping all Linux capabilities (`capabilities: drop: ["ALL"]`), setting `runAsNonRoot: true`, and assigning `seccompProfile: type: RuntimeDefault`. CKS tests preventing privilege escalation and host namespace leaks (`hostPID: true`, `hostNetwork: true`).
 
 ---
 

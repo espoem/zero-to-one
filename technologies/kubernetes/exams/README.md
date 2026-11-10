@@ -2,6 +2,16 @@
 
 This document maps official Linux Foundation / CNCF certification domains for CKA, CKAD, and CKS to the curriculum modules and verification test suites in `technologies/kubernetes`.
 
+## Question banks
+
+| Bank | File | Questions | Coverage |
+| :-- | :-- | :-- | :-- |
+| CKA / CKAD / CKS | `cka-ckad-cks.md` | 186 (61 CKA, 61 CKAD, 64 CKS) | Every domain at or above its official weight; difficulty 1-3; three full mock exams with scoring keys. |
+| Interview format | `interview.md` | 12 | Topics outside certification scope: cost, multi-tenancy, immutable infrastructure, organizational change. |
+| Roadmap mapping | `roadmap-coverage.md` | 50 source questions | Maps the roadmap.sh Kubernetes interview guide onto modules, existing questions, and the new banks. |
+
+Every hands-on task in the mock exams has a runnable verification in `examples/ts/`; the shared suite is `examples/ts/15-hands-on-verification.test.ts`.
+
 ## 1. Certified Kubernetes Administrator (CKA v1.37) Coverage Matrix
 
 | Domain & Weight | Objective / Topic | Covered Modules | Verification Suites | Status |
@@ -26,7 +36,7 @@ This document maps official Linux Foundation / CNCF certification domains for CK
 
 ---
 
-## 3. Certified Kubernetes Security Specialist (CKS v1.34) Coverage Matrix
+## 3. Certified Kubernetes Security Specialist (CKS v1.37) Coverage Matrix
 
 | Domain & Weight | Objective / Topic | Covered Modules | Verification Suites | Status |
 | :-- | :-- | :-- | :-- | :-- |
@@ -37,9 +47,12 @@ This document maps official Linux Foundation / CNCF certification domains for CK
 | **Cluster Hardening (15%)** | RBAC privilege auditing, secret encryption at rest, and admission control webhooks. | Module 11 | `examples/ts/11-security-hardening-and-cks.test.ts` | ✅ Full |
 | **System Hardening (10%)** | Kernel hardening, seccomp profiles, AppArmor, and reducing node attack surface. | Module 03, Module 11 | `examples/ts/03-node-internals.test.ts`<br/>`examples/ts/11-security-hardening-and-cks.test.ts` | ✅ Full |
 
+> [!NOTE]
+> **Upstream inconsistency:** the CNCF CKS web page lists Cluster Setup 10% and System Hardening 15%, while the CKS v1.37 curriculum PDF lists Cluster Setup 15% and System Hardening 10%. This track follows the curriculum PDF, which is the exam's authoritative syllabus.
+
 ---
 
 ## Exam Delta Callouts
 
 > [!IMPORTANT]
-> **CKS v1.34 vs Kubernetes v1.37 Curriculum Delta**: The official CKS certification exam currently references Kubernetes v1.34 objectives, whereas this curriculum teaches Kubernetes v1.37. Practitioners must note that user namespaces (`hostUsers: false`) and CEL `ValidatingAdmissionPolicy` are fully General Availability in 1.37 (whereas v1.34 had them in beta/alpha), and Ingress-NGINX is retired as of March 2026, replaced entirely by Gateway API v1.6.
+> **CKS curriculum alignment**: The CNCF CKS curriculum was updated to Kubernetes v1.37 (the v1.34 curriculum is archived under `old-versions/`). This track teaches Kubernetes v1.37, so the CKS exam and the curriculum are aligned. User namespaces (`hostUsers: false`, GA since v1.36) and CEL `ValidatingAdmissionPolicy` (GA since v1.30) are fully supported in v1.37, and Ingress-NGINX is retired as of March 2026, replaced entirely by Gateway API v1.6.

@@ -126,6 +126,7 @@ Every track MUST cover the official certifications and exams for its topic. Wher
      </details>
      ```
 
+   - **Numbering.** Question IDs are sequential in reading order within each bank file (`Q-<EXAM>-001`, `Q-<EXAM>-002`, …) with no gaps and no out-of-order insertions. When adding questions, append them in reading order or renumber the bank in the same change. Never leave a bank with non-sequential IDs.
    - **Mock exam:** at least one full mock exam section that matches the real exam's question count, time limit and domain mix, with a scoring key.
 5. **Integrity.** Write only original questions. Never reproduce, paraphrase or solicit actual exam content ("braindumps"); that breaches certification NDAs. Base questions on the public exam guide objectives and the official documentation.
 6. **Upkeep.** Re-check exam guides when you update a track. Retirements, renamed codes and changed domain weights update the README, the matrix and the question banks in the same change.

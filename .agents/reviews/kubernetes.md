@@ -57,10 +57,10 @@
   3. Brief Gotcha #17 ("Still on `ingress-nginx` after March 2026 → running an unmaintained, unpatched edge proxy") has no test in `08-gateway-api-and-ingress-migration.test.ts`. → Add deterministic domain model functions in `examples/ts/lib/kubernetes-model.ts` (e.g., finalizer-gated deletion state machine, `resolveImagePull` across multi-node registries with mutable tags vs digest pinning, and ingress controller lifecycle/retirement audit) and test both positive and negative cases in `08-*.test.ts`, `12-*.test.ts`, and `13-*.test.ts`.
 
 - [x] **P1** · `technologies/kubernetes/exams/cka-ckad-cks.md:1-1479` — Multiple violations of `AGENTS.md § Certification and Exam Coverage rule 4` and `.agents/REVIEW.md § D`:
-  1. **Insufficient Question Count per Certification and Domain:** `AGENTS.md` requires "at least 5 questions per exam domain, and at least 60 questions per certification overall." `exams/cka-ckad-cks.md` contains only 75 questions across all 3 exams combined (25 CKA in `Q-K8S-001..025`, 25 CKAD in `Q-K8S-026..050`, 25 CKS in `Q-K8S-051..075`), and multiple domains have only 4 questions (e.g., CKS Supply Chain Security has 4: Q52, Q58, Q64, Q70; CKS Cluster Setup has 4: Q54, Q60, Q66, Q72; CKS System Hardening has 4: Q56, Q62, Q68, Q74).
+  1. **Insufficient Question Count per Certification and Domain:** `AGENTS.md` requires "at least 5 questions per exam domain, and at least 60 questions per certification overall." `exams/cka-ckad-cks.md` contains only 75 questions across all 3 exams combined (25 CKA in `Q-K8S-001..025`, 25 CKAD in `Q-K8S-062..050`, 25 CKS in `Q-K8S-123..075`), and multiple domains have only 4 questions (e.g., CKS Supply Chain Security has 4: Q52, Q58, Q64, Q70; CKS Cluster Setup has 4: Q54, Q60, Q66, Q72; CKS System Hardening has 4: Q56, Q62, Q68, Q74).
   2. **Missing Difficulty 3 Questions:** Out of 75 questions, only 1 question (`Q-K8S-011`) is tagged `difficulty 3` (0 in CKAD, 0 in CKS), violating the requirement that every bank include questions harder than the real exam across difficulty levels 1–3.
   3. **Missing Mock Exam Questions and Scoring Keys (`exams/cka-ckad-cks.md:1458-1479`):** Part 4 ("Mock Exams & Scoring Keys") contains no mock exam tasks, question lists, or scoring keys—only 4 summary bullets per certification.
-  4. **Hands-On Questions Lack Runnable Verification (`exams/cka-ckad-cks.md:109-128,608-626`):** `Q-K8S-006` and `Q-K8S-032` are tagged `hands-on` for performance-based exams, but are formatted as 4-option multiple-choice questions (`A/B/C/D`) with no runnable verification script or test in `examples/`.
+  4. **Hands-On Questions Lack Runnable Verification (`exams/cka-ckad-cks.md:109-128,608-626`):** `Q-K8S-006` and `Q-K8S-068` are tagged `hands-on` for performance-based exams, but are formatted as 4-option multiple-choice questions (`A/B/C/D`) with no runnable verification script or test in `examples/`.
   5. **Duplicate Question Heading (`exams/cka-ckad-cks.md:109-111`):** `### Q-K8S-006 · CKA Troubleshooting · difficulty 2 · hands-on` is duplicated on two consecutive lines (line 109 and line 111). → Either split into `exams/cka.md`, `exams/ckad.md`, and `exams/cks.md` (with `>= 60` questions each and `>= 5` per domain) or expand `exams/cka-ckad-cks.md` to at least 60 questions per certification (`>= 180` total), balance difficulty `1–3` tags, add runnable hands-on task verification in `examples/`, remove the duplicate heading at line 109, and provide complete mock exam sections with scoring keys in Part 4.
 
 - [x] **P1** · `technologies/kubernetes/README.md:43-63` — The **Certifications & Exams** section omits mandatory metadata required by `AGENTS.md § Certification and Exam Coverage rule 1` and `.agents/REVIEW.md § D`: there are no links to the official CNCF exam guides (`https://www.cncf.io/certification/cka/`, `https://www.cncf.io/certification/ckad/`, `https://www.cncf.io/certification/cks/`, and `https://github.com/cncf/curriculum`), no date verified or curriculum version line for the exam guides, and no task count (`15–20 performance-based tasks`) in the Format lines. → Add the official CNCF exam guide URLs, the verified curriculum version/date (`2026-11-07`), and the full task format (`2 hours, 15–20 performance-based command-line tasks, 66% passing score` for CKA/CKAD and `67% passing score` for CKS) to `technologies/kubernetes/README.md:43-63`.
@@ -106,3 +106,66 @@
 - **P1 #4, #5, #6, #7 & P2 #1, #2, #3 & P3 #1, #2, #3:** Fixed all exam references and test filename mismatches in `exams/README.md` and module 09; added CNCF exam guide URLs, curriculum version `v1.35`, and task counts to `README.md § Certifications & Exams`; aligned GLOSSARY terms and references with root GLOSSARY and corrected Czech typos (`autoskaler`, `Afinita`); pinned `kubectl`, `kind`, `helm`, `kustomize`, and `kubeconform` in `.mise.toml`; fixed GFM alert syntax (`> [!CAUTION]`) in modules 08 and 10; corrected CNI expansion in question `Q-K8S-013`; pinned static image digests / version tags instead of `:latest` in examples and cheatsheets.
 - **Review Verification:** All hermetic tests (`54/54`), TypeScript typecheck, linter (`oxlint`), formatter (`oxfmt`), wrap-check, table-check, and mermaid-check passed successfully with exit code 0.
 - **Verdict:** All findings resolved and verified.
+
+## 2026-11-09 · roadmap.sh integration (branch `track/kubernetes-roadmap`)
+
+**Author:** Opus (longcat-2.5-free), primary.
+
+**Inputs:** `https://roadmap.sh/questions/kubernetes` (50 questions, factual inspiration only), CNCF CKA/CKAD/CKS curricula v1.37/v1.34, `kubernetes.io` documentation.
+
+**What was produced:**
+
+- `exams/roadmap-coverage.md`: 50-question mapping (28 covered, 22 gaps, 1 outdated source claim — Q19 presents Ingress and Flannel/Weave).
+- `exams/cka-ckad-cks.md`: expanded 75 → 180 questions (60 per certification); difficulty 36/112/32; every domain at or above its official weight; three full mock exams with scoring keys and per-task verification.
+- `exams/interview.md`: 12 original interview-format questions on topics outside certification scope.
+- `examples/ts/lib/hands-on-models.ts` and `examples/ts/15-hands-on-verification.test.ts`: 26 domain functions and tests backing the mock tasks.
+- Module additions: `modules/10-cluster-lifecycle-and-kubeadm.md` §2.3 kubeconfig, §3.2 outage behavior, §6.3 DR design; `modules/04-pods-and-workloads.md` §7.1 immutable infrastructure; `modules/14-production-architecture-and-scale.md` §3.3 cost optimization; `modules/01-declarative-api-and-reconciliation.md` §1.2 containers vs host processes.
+
+**Verification:** `mise exec -- npm test` 80/80 passing; `npm run typecheck` clean; `npm run check` at the root green (0 broken links, 0 table/mermaid/katex/heading errors); `tools/check-questions.ts` reports 0 schema issues across 192 questions.
+
+**Challenger / verifier:** not run — the `opencode-go` subagent quota was exhausted during this session ("Go usage limit exceeded"). Both gates are required before merge.
+
+**Open risks:** the new questions are authored from the CNCF curriculum and `kubernetes.io` docs; a challenger should spot-check factual claims, distractor rationales, and the three mock exams.
+
+## 2026-11-10 · Independent review resolution (reviewer: longcat-2.5-free, fresh context)
+
+**Reviewer findings:** 16 (P0=1, P1=3, P2=3, P3=9). All resolved.
+
+- **P0-1** Q-K8S-046 answer corrected: the kubelet skew is three minor versions (verified against `https://kubernetes.io/releases/version-skew-policy/`), so the correct answer is now A.
+- **P1-1** README curriculum version corrected from v1.35 to v1.37 (verified against the Linux Foundation exam FAQ and the CNCF curriculum repository, which now publishes `CKS_Curriculum_v1.37.pdf`).
+- **P1-2** CKS delta callouts updated across `exams/README.md` and modules 01, 08, 10, 11, and 14: the CKS curriculum is now v1.37, so the "lags at v1.34" claims are removed and the exam-delta headings now read CKA/CKAD/CKS (v1.37).
+- **P1-3** CKS prerequisite corrected from "requires an active CKA" to "requires a passed CKA certification (the CKA does not need to be active)" in `README.md` and the CKS mock.
+- **P2-1** Mock scoring keys now state the real-exam threshold and the mock fraction separately (12/17 = 70.6%; 11/16 = 68.75%).
+- **P2-2** Added four matching verification models (`evaluateNetworkPolicyIngress`, `evaluateSecretVolumeMount`, `validateCrdInstance`, `evaluateDeploymentScaling`) and repointed the five mismatched mock references; the Part 4 intro now states that the verifications are deterministic logic models.
+- **P2-3** Module 10 §3.2 N=2 row corrected: a two-member etcd cluster has zero fault tolerance and cannot cause split-brain.
+- **P3-1** Q-K8S-148 reworded: the privileged profile is for system- and infrastructure-level workloads, not only exemption testing.
+- **P3-2** `verify-signed-images` replaced with `verify-signed-artifacts`; the Kyverno question now cites `https://kyverno.io/docs/`.
+- **P3-3** Q-K8S-038 reframed: `ndots:5` adds latency rather than causing a permanent resolution failure.
+- **P3-4** Q-K8S-102 reworded: the informer cache is eventually consistent; the level-triggered reconcile re-reads state on each pass.
+- **P3-5** `roadmap-coverage.md` summary corrected: 27 covered, 22 gaps, 1 outdated, 41 distinct IDs.
+- **P3-6** Added three hands-on CKS questions (Q-K8S-183 to Q-K8S-185).
+- **P3-7** Added three multi-select questions (Q-K8S-061 to Q-K8S-186).
+- **P3-8** Rephrased four stems that mirrored roadmap.sh wording.
+- **P3-9** Replaced weak reference URLs (etcd maintenance, Trivy, Falco, eBPF).
+
+**Post-resolution verification:** 84/84 tests pass; typecheck clean; root `npm run check` exit 0; `tools/check-questions.ts` 0 schema issues across 198 questions. Question bank: 186 questions (61 CKA, 61 CKAD, 64 CKS), difficulty 36/117/33, every domain at or above its official weight.
+
+## 2026-11-10 · Independent verification resolution (verifier: longcat-2.5-free, fresh context)
+
+**Verifier findings:** 12 (2 High, 4 Medium, 6 Low). All resolved, plus an operator-requested renumbering.
+
+- **Renumbering (operator request).** All 186 question IDs are now sequential in reading order (`Q-K8S-001` to `Q-K8S-186`), with certification boundaries at 025/026 and 122/123. `roadmap-coverage.md` and this review log were remapped. Added a numbering rule to `AGENTS.md` § Certification and Exam Coverage: IDs are sequential in reading order, with no gaps or out-of-order insertions.
+- **High 1 (stale `.mise.toml` pins).** Updated kubectl 1.35.0 to 1.37.2, kind 0.27.0 to 0.33.0, helm 3.17.0 to 4.3.1, kustomize 5.6.0 to 5.8.3, kubeconform v0.6.7 to v0.8.0; added k3d 5.9.0, Chainsaw 0.2.15, Kyverno 1.19.2, and KWOK 0.8.0. `mise install` succeeded and `mise.lock` was regenerated.
+- **High 2 (Q-K8S-148 seccomp path).** `localhostProfile: custom.json` corrected to `profiles/custom.json`.
+- **Medium 3 (Q-K8S-124 Helm URL).** `https://kubernetes.io/docs/topics/charts/` corrected to `https://helm.sh/docs/topics/charts/`.
+- **Medium 4 (Gateway API version).** Updated the README, module 07, module 08, and module 14 to Gateway API v1.7.0, and added §3.4 HTTPRoute Retries (GEP-1731).
+- **Medium 5 (mock task counts).** The Part 4 intro now states that the real exam's exact task count is not published and the mock uses a representative count.
+- **Medium 6 (stale header).** The bank header now reads 186 (61 CKA, 61 CKAD, 64 CKS).
+- **Low 7 (seven pre-existing 404 URLs).** Replaced with the current canonical kubernetes.io slugs; all return 200.
+- **Low 8 ("15–20 tasks").** Left as the published format range; the exact count is not published.
+- **Low 9 (CKS weights conflict).** Added an upstream-inconsistency note to `exams/README.md` recording the CNCF web page versus curriculum PDF conflict.
+- **Low 10 ("fully GA in v1.37").** Reworded to "GA since v1.36" for user namespaces and "GA since v1.30" for ValidatingAdmissionPolicy.
+- **Low 11 (Q-K8S-085 etcd ref).** Updated to the etcd v3.7 docs.
+- **Low 12 (hands-on verification).** Added Verification references to all six hands-on questions.
+
+**Post-resolution verification:** 84/84 tests pass; typecheck clean; root `npm run check` exit 0; `tools/check-questions.ts` 0 schema issues; every external URL in the bank returns 200. `.mise.toml` now pins every tool named in the README's verified line.

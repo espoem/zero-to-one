@@ -1,6 +1,6 @@
 # Module 11: Cluster and Runtime Security (CKS): RBAC, Pod Security Standards, User Namespaces, CEL Admission, Audit Logs, and Falco
 
-> **Primary sources:** CNCF Certified Kubernetes Security Specialist (CKS) Curriculum ([v1.34](https://github.com/cncf/curriculum)); Kubernetes Documentation ([RBAC Authorization](https://kubernetes.io/docs/reference/access-authn-authz/rbac/), [Pod Security Standards](https://kubernetes.io/docs/concepts/security/pod-security-standards/), [User Namespaces GA in v1.36](https://kubernetes.io/docs/concepts/workloads/pods/user-namespaces/), [ValidatingAdmissionPolicy](https://kubernetes.io/docs/reference/access-authn-authz/validating-admission-policy/), [Audit Logging](https://kubernetes.io/docs/tasks/debug/debug-cluster/audit/)); Falco Documentation ([Rules & Architecture](https://falco.org/docs/)); CIS Kubernetes Benchmark ([v1.8.0](https://www.cisecurity.org/benchmark/kubernetes)).
+> **Primary sources:** CNCF Certified Kubernetes Security Specialist (CKS) Curriculum ([v1.37](https://github.com/cncf/curriculum)); Kubernetes Documentation ([RBAC Authorization](https://kubernetes.io/docs/reference/access-authn-authz/rbac/), [Pod Security Standards](https://kubernetes.io/docs/concepts/security/pod-security-standards/), [User Namespaces GA in v1.36](https://kubernetes.io/docs/concepts/workloads/pods/user-namespaces/), [ValidatingAdmissionPolicy](https://kubernetes.io/docs/reference/access-authn-authz/validating-admission-policy/), [Audit Logging](https://kubernetes.io/docs/tasks/debug/debug-cluster/audit/)); Falco Documentation ([Rules & Architecture](https://falco.org/docs/)); CIS Kubernetes Benchmark ([v1.8.0](https://www.cisecurity.org/benchmark/kubernetes)).
 >
 > **Executable proof:** [`examples/ts/11-security-hardening-and-cks.test.ts`](../examples/ts/11-security-hardening-and-cks.test.ts) asserts RBAC graph reachability, Pod Security Standard admission rejections, CEL policy evaluation, and Falco rule AST matching.
 >
@@ -514,14 +514,14 @@ Invariant 2: Evaluation halts immediately on first Deny if failurePolicy = Fail.
 
 ---
 
-## 12. Exam Delta: CKS v1.34 Curriculum Alignment
+## 12. Exam Delta: CKS v1.37 Curriculum Alignment
 
-Candidates preparing for the **Certified Kubernetes Security Specialist (CKS)** must recognize the explicit curriculum version boundary:
+Candidates preparing for the **Certified Kubernetes Security Specialist (CKS)** must recognize the curriculum version:
 
 > [!NOTE]
-> **CKS Curriculum Lags at Kubernetes v1.34**: While CKA and CKAD have moved to Kubernetes v1.37, the official CNCF CKS exam remains anchored to **v1.34**.
+> **CKS Curriculum Aligned at Kubernetes v1.37**: The CNCF CKS curriculum has been updated to Kubernetes v1.37, matching CKA and CKAD.
 >
-> **Core Tested Domains in CKS v1.34**:
+> **Core Tested Domains in CKS v1.37**:
 >
 > 1. **Cluster Hardening (15%)**: RBAC least-privilege, securing the apiserver, configuring CIS benchmark fixes (`kube-bench`), rotating certificates.
 > 2. **Cluster Setup (15%)**: Restricting network access via NetworkPolicy, auditing apiserver configuration, configuring Encryption at Rest with `EncryptionConfiguration`.
@@ -529,7 +529,7 @@ Candidates preparing for the **Certified Kubernetes Security Specialist (CKS)** 
 > 4. **Supply Chain Security (20%)**: Static analysis of Dockerfiles, scanning container images for vulnerabilities using **Trivy**, verifying image signatures.
 > 5. **Monitoring, Logging & Runtime Security (20%)**: Configuring and parsing `kube-apiserver` audit logs, writing custom **Falco** rules to detect suspicious syscall activity.
 >
-> _Exam Note_: User Namespaces (`hostUsers: false`) reached GA in v1.36 and are therefore NOT scored in CKS v1.34 practical exam tasks, but remain essential knowledge for modern production deployments.
+> _Exam Note_: User Namespaces (`hostUsers: false`) reached GA in v1.36 and are part of the CKS v1.37 curriculum.
 
 ---
 

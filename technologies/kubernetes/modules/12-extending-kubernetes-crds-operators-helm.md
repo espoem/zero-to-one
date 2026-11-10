@@ -440,7 +440,7 @@ Invariant 3: Reconcile must be strictly idempotent: f(x) = f(f(x)).
 
 ---
 
-## 9. Exam Delta: CKA / CKAD v1.37 vs. CKS v1.34
+## 9. Exam Delta: CKA / CKAD / CKS v1.37
 
 > [!NOTE]
 > **CKA / CKAD (Curriculum v1.37)**:
@@ -452,7 +452,7 @@ Invariant 3: Reconcile must be strictly idempotent: f(x) = f(f(x)).
 > - **Kustomize**: You must know how to deploy applications using `kubectl apply -k <directory>` and inspect generated manifests using `kubectl kustomize <directory>`.
 > - **CRDs**: Inspecting custom resources and verifying subresource statuses using `kubectl get <plural> -o wide`.
 >
-> **CKS (Curriculum v1.34)**:
+> **CKS (Curriculum v1.37)**:
 >
 > - Exam tests extending Kubernetes from a **security audit perspective**:
 >   1. Auditing CRD schemas and validating webhook configurations to ensure they cannot bypass admission controls.
