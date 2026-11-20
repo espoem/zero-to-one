@@ -41,13 +41,13 @@ States: ⬜ brief ready → 🟦 authoring → 🟨 challenge + verify → 🟧 
 | 4 | `technologies/cloudflare` | Opus / Antigravity | `main` | ✅ merged | Merged 2026-11-08: 12 modules, 65-q exam bank + mock, 16 hermetic + workerd tests passing, challenger & verifier gates resolved and complete. |
 | 4 | `technologies/azure` | Opus / Antigravity | `track/azure` | ✅ merged | Merged 2026-11-20: 10 modules (6,500+ lines), 62 hermetic + 1 Azurite integration tests passing, 190-q AZ-104/AZ-305/AI-200 banks + 3 mocks, verifier & Grok-4.7 challenger findings resolved. |
 | 4 | `architecture/system-design` | Opus / Antigravity | `track/system-design` | ✅ merged | Merged 2026-11-20: 14 modules (6,600+ lines), 33 hermetic + 3 optional Redis integration tests passing, 70-q Staff/Principal bank + 50-q mock + 2× 60m design loops, verifier & pro challenger findings resolved. |
-| 5 | `architecture/functional-programming` | Antigravity | `track/scala-fp` | 🟪 final gate | Verified 2026-11-20: 12 modules (424–483 lines each), 52-term glossary, 65-q bank + mock, 26 TS + 12 Scala 3 tests passing; challenger & verifier gates resolved and clean. |
-| 5 | `languages/scala` | Antigravity | `track/scala-fp` | 🟪 final gate | Verified 2026-11-20: 10 modules (400–453 lines each; Scala 3.10.1 / 3.9 LTS / JDK 25 / Cats 2.13 / CE3 3.7.1 / FS2 3.16.0 / ZIO 2.1.26), 57-term glossary, 65-q EPFL/interview bank + mock, 25 Scala 3 tests passing; challenger & verifier gates resolved and clean. |
+| 5 | `architecture/functional-programming` | Antigravity | `track/scala-fp` | ✅ merged | Merged 2026-11-20: 12 modules (424–483 lines each), 52-term glossary, 65-q bank + mock, 26 TS + 12 Scala 3 tests passing; challenger & verifier gates resolved and clean. |
+| 5 | `languages/scala` | Antigravity | `track/scala-fp` | ✅ merged | Merged 2026-11-20: 10 modules (400–453 lines each; Scala 3.10.1 / 3.9 LTS / JDK 25 / Cats 2.13 / CE3 3.7.1 / FS2 3.16.0 / ZIO 2.1.26), 57-term glossary, 65-q EPFL/interview bank + mock, 25 Scala 3 tests passing; challenger & verifier gates resolved and clean. |
 
 ## Progress Summary (as of 2026-11-20)
 
 - **Total Tracks**: 31
-- **Completed & Merged**: 29 tracks (Phase 1: 10/10, Phase 2: 7/7, Phase 3: 6/6, Phase 4: 6/6) + 2 Phase 5 tracks at final gate on `track/scala-fp` (`architecture/functional-programming`, `languages/scala`)
+- **Completed & Merged**: 31 tracks (Phase 1: 10/10, Phase 2: 7/7, Phase 3: 6/6, Phase 4: 6/6, Phase 5: 2/2)
 - **Remaining**: 0 tracks
 - **Total Authored Modules**: 386 modules (all verified, >= 400 lines average, with interview drills)
 - **Total Exam Questions**: 2,329+ questions (all original with distractor rationales and mock exams)

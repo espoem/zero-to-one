@@ -25,7 +25,7 @@ Knowledge is **deduplicated**: each concept has exactly one owner track, and eve
 | languages | `typescript` | 13 | ✅ merged: TS 7.0.2, dedupe 09–13 to typing only, 72-q bank, 132 tests | 1 |
 | languages | `javascript` | 13 | ✅ merged: **foundation**: ECMA-262 2026 / Node 26.13, 100-q bank (Just JavaScript adaptation 2026-11-09), 355 tests | 1 |
 | languages | `python` | 14 | ✅ merged: Python 3.15.2 / uv 0.13.6, PCAP/PCPP1 75-q bank, 82 tests | 2 |
-| languages | `scala` | 10 | 🟪 final gate: Scala 3.10.1 / 3.9 LTS / JDK 25, Cats/CE3/FS2/ZIO, 65-q EPFL/interview bank, 25 tests | 5 |
+| languages | `scala` | 10 | ✅ merged: Scala 3.10.1 / 3.9 LTS / JDK 25, Cats/CE3/FS2/ZIO, 65-q EPFL/interview bank, 25 tests | 5 |
 | languages | `css` | 14 | ✅ merged: **foundation** (D7): cascade, layout, `@property`, view transitions, 75-q bank, 26 Chromium tests | 1 |
 | technologies | `react` | 12 | ✅ merged: React 19.3.1, Fiber/Flight/Actions/Compiler, 65-q bank, 228 tests | 1 |
 | technologies | `solidjs` | 10 | ✅ merged: SolidJS 2.0-rc.19, fine-grained reactivity, 60-q bank, 216 tests | 1 |
@@ -51,7 +51,7 @@ Knowledge is **deduplicated**: each concept has exactly one owner track, and eve
 | architecture | `networking` | 14 | ✅ merged: **foundation**: RFC 9846 TLS 1.3, ECH, QUIC/HTTP3, 135-q bank, 33 tests | 1 |
 | architecture | `security-identity` | 14 | ✅ merged: **foundation**: OWASP 2025, ASVS 5.0, OAuth 2.1, 75-q Security+ bank, 54 tests | 1 |
 | architecture | `cloud-foundations` | 14 | ✅ merged: **foundation**: provider-neutral, AWS/GCP/Azure mapping, 65-q bank, 30 tests | 4 |
-| architecture | `functional-programming` | 12 | 🟪 final gate: **foundation**: FP in Scala Ch. 1–15, λ-calculus, laws, `Free`/`ST`/streaming, 65-q bank, 38 TS+Scala tests | 5 |
+| architecture | `functional-programming` | 12 | ✅ merged: **foundation**: FP in Scala Ch. 1–15, λ-calculus, laws, `Free`/`ST`/streaming, 65-q bank, 38 TS+Scala tests | 5 |
 | architecture | `system-design` | 14 | ✅ merged: **capstone**: composes all 28 tracks, estimation, SLO math, LLM serving, 70-q Staff bank + 2 mock loops, 33 tests | 4 |
 
 Module lists, gotchas, interview topics and proof strategy for each track: see the matching `.agents/research/*.md` section and `.agents/briefs/*.md`.
@@ -72,7 +72,7 @@ Many tracks assume these foundations as prerequisites:
 | 2 | Runtimes and data stores (`nodejs`, `python`, `sqlite`, `redis`, `elasticsearch`, `dsa`, `distributed-systems`) | ✅ Merged | 7 tracks, 92 modules, 529 exam questions, all tests passing |
 | 3 | Platform and DevOps (`containers`, `kubernetes`, `terraform`, `argocd`, `gitlab-ci`, `observability`) | ✅ Merged | 6 tracks, 71 modules, 392 exam questions, all tests passing |
 | 4 | Cloud & System Design (`cloud-foundations`, `aws`, `gcp`, `cloudflare`, `azure`, `system-design`) | ✅ Merged | 6 of 6 tracks complete (74 modules, 520 exam questions), all tests passing |
-| 5 | Functional Programming & Scala 3 (`functional-programming`, `scala`) | 🟪 Final Gate | 2 tracks (22 modules, 130 exam questions, 63 TS + Scala 3 tests) grounded in _FP in Scala_ & updated to Scala 3.10.1 / 3.9 LTS |
+| 5 | Functional Programming & Scala 3 (`functional-programming`, `scala`) | ✅ Merged | 2 tracks (22 modules, 130 exam questions, 63 TS + Scala 3 tests) grounded in _FP in Scala_ & updated to Scala 3.10.1 / 3.9 LTS |
 
 ### Phase 4 Remaining Tracks & Missing Deliverables
 
