@@ -42,7 +42,7 @@ All tooling is pinned per track with [mise](https://mise.jdx.dev/) (`.mise.toml`
 
 ## 2. Curriculum Roadmap & Status
 
-29 tracks: 28 complete, 0 in progress, 1 planned. Work is phased by dependency; see [.agents/PLAN.md](./.agents/PLAN.md) for the plan and [.agents/STATUS.md](./.agents/STATUS.md) for live status.
+29 tracks: 29 complete, 0 in progress, 0 planned. All four phases are complete; see [.agents/PLAN.md](./.agents/PLAN.md) for the master plan and [.agents/STATUS.md](./.agents/STATUS.md) for the completed status board.
 
 | Domain | Track | Scope | Status | Path |
 | :-- | :-- | :-- | :-: | :-- |
@@ -74,7 +74,7 @@ All tooling is pinned per track with [mise](https://mise.jdx.dev/) (`.mise.toml`
 | `architecture/` | **Security & identity** | Threat modeling, applied cryptography, PKI and mTLS, sessions, OAuth 2.1/OIDC, WebAuthn, authorization models, vulnerability classes and supply chain | 🟢 Complete | [architecture/security-identity/](./architecture/security-identity/) |
 | `architecture/` | **Distributed systems** | System models and impossibility results, clocks, consistency, replication, Paxos/Raft consensus, distributed transactions, CRDTs, deterministic simulation | 🟢 Complete | [architecture/distributed-systems/](./architecture/distributed-systems/) |
 | `architecture/` | **Cloud Foundations** | Provider-neutral cloud foundations: shared responsibility, IAM primitives, VPC/CIDR, storage tiers, serverless, Well-Architected framework, FinOps, and service mapping | 🟢 Complete | [architecture/cloud-foundations/](./architecture/cloud-foundations/) |
-| `architecture/` | **System design** | End-to-end distributed system design, requirements distillation, estimation & capacity planning, component synthesis, fault tolerance, and Staff/Principal interview mastery | 🟡 Planned (Phase 4) | `architecture/system-design/` |
+| `architecture/` | **System design** | End-to-end distributed system design, requirements distillation, estimation & capacity planning, component synthesis, fault tolerance, LLM serving, and Staff/Principal interview mastery | 🟢 Complete | [architecture/system-design/](./architecture/system-design/) |
 
 ---
 
@@ -111,6 +111,7 @@ To bridge technical English documentation with accurate, established Czech acade
 - **[Google Cloud Platform Glossary](./technologies/gcp/GLOSSARY.md)** covers GCP resource hierarchy, IAM conditions and Workload Identity, Andromeda SDN, BigQuery Dremel/Capacitor, and GKE architecture.
 - **[Cloudflare Edge Architecture Glossary](./technologies/cloudflare/GLOSSARY.md)** covers `workerd` V8 isolates, capability bindings, actor-model Durable Objects, edge storage (KV, R2, D1), and Zero Trust network security.
 - **[Microsoft Azure Glossary](./technologies/azure/GLOSSARY.md)** covers Entra ID, Azure RBAC/ABAC, Azure Policy, Deployment Stacks, Private Link split-horizon DNS, post-2026-03-31 default outbound access retirement, Container Apps/KEDA, Service Bus, Storage redundancy/SAS, Cosmos DB partitioning/consistency, Key Vault, and BCDR.
+- **[System Design Glossary](./architecture/system-design/GLOSSARY.md)** covers back-of-the-envelope capacity math, Little's Law, P2C load balancing, CDN origin shield, cache stampede/single-flight/XFetch/Memcache leases, keyset pagination, UUIDv7/Snowflake IDs, GCRA, LIFO load shedding, geohash/H3/S2, virtual waiting rooms, double-entry payment reconciliation, SRE burn-rate alerts, LMAX sequencers, and LLM serving (KV cache, PagedAttention, continuous batching).
 
 New tracks add their glossary here when they land. All glossaries follow the discipline recorded in [AGENTS.md](./AGENTS.md): shared terms reuse the root definition and Czech translation verbatim; no fabricated neologisms.
 

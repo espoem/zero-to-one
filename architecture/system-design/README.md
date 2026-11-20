@@ -2,7 +2,7 @@
 
 A capstone engineering curriculum synthesizing networking, storage engines, distributed consensus, caching, asynchronous messaging, cloud foundations, and observability into production system architectures, quantitative back-of-the-envelope capacity modeling, SLO engineering, and Staff/Principal design mastery.
 
-Verified against Node.js 26.13.0, TypeScript 7.0.2, `fast-check` 4.10.3, `testcontainers` 12.2.2, `@mermaid-js/mermaid-cli` 12.2.0, Redis 8.10.3 / Valkey 9.2.0, Prometheus 3.16.0 (LTS 3.13.5), Google SRE Workbook (Ch. 5 Alerting on SLOs), DDIA 2e, Alex Xu *System Design Interview* Vol. 1 (2020) & Vol. 2 (2022), and AWS Builders' Library on 2026-11-20.
+Verified against locally pinned tooling (Node.js 26.13.0, TypeScript 7.0.2, `fast-check` 4.10.3, `oxfmt` 0.76.0, `oxlint` 1.91.0, Mermaid 11.17.2 / 12.2.0) and referenced upstream systems & primary literature (Redis 8.10.3 / Valkey 9.2.0, Prometheus 3.16.0 [LTS 3.13.5], Google SRE Workbook Ch. 5 Alerting on SLOs, DDIA 2e, Alex Xu _System Design Interview_ Vol. 1 [2020] & Vol. 2 [2022], and AWS Builders' Library) on 2026-11-20.
 
 ---
 

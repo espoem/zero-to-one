@@ -40,16 +40,16 @@ States: ⬜ brief ready → 🟦 authoring → 🟨 challenge + verify → 🟧 
 | 4 | `technologies/gcp` | Opus / Antigravity | `main` | ✅ merged | Merged 2026-11-08: 10 modules (400+ lines), 65-q ACE bank + mock, full PCA matrix, 30 hermetic tests passing, challenger & verifier gates resolved and complete. |
 | 4 | `technologies/cloudflare` | Opus / Antigravity | `main` | ✅ merged | Merged 2026-11-08: 12 modules, 65-q exam bank + mock, 16 hermetic + workerd tests passing, challenger & verifier gates resolved and complete. |
 | 4 | `technologies/azure` | Opus / Antigravity | `track/azure` | ✅ merged | Merged 2026-11-20: 10 modules (6,500+ lines), 62 hermetic + 1 Azurite integration tests passing, 190-q AZ-104/AZ-305/AI-200 banks + 3 mocks, verifier & Grok-4.7 challenger findings resolved. |
-| 4 | `architecture/system-design` | Opus / Antigravity | `track/system-design` | 🟦 authoring | Authoring in `../zto-system-design`: 14 modules, TS calculators/simulators + Redis integration, 70-q Staff loop bank + 2 timed mock loops. |
+| 4 | `architecture/system-design` | Opus / Antigravity | `track/system-design` | ✅ merged | Merged 2026-11-20: 14 modules (6,600+ lines), 33 hermetic + 3 optional Redis integration tests passing, 70-q Staff/Principal bank + 50-q mock + 2× 60m design loops, verifier & pro challenger findings resolved. |
 
 ## Progress Summary (as of 2026-11-20)
 
 - **Total Tracks**: 29
-- **Completed & Merged**: 28 tracks (Phase 1: 10/10, Phase 2: 7/7, Phase 3: 6/6, Phase 4: 5/6)
-- **Remaining**: 1 track (`architecture/system-design`)
-- **Total Authored Modules**: 350 modules (all verified, >= 400 lines average, with interview drills)
-- **Total Exam Questions**: 2,129 questions (all original with distractor rationales and mock exams)
-- **Verification Gates**: 100% clean (`npm run check` green, 0 broken links, 0 table/katex/mermaid errors)
+- **Completed & Merged**: 29 tracks (Phase 1: 10/10, Phase 2: 7/7, Phase 3: 6/6, Phase 4: 6/6)
+- **Remaining**: 0 tracks
+- **Total Authored Modules**: 364 modules (all verified, >= 400 lines average, with interview drills)
+- **Total Exam Questions**: 2,199+ questions (all original with distractor rationales and mock exams)
+- **Verification Gates**: 100% clean (`npm run check` green, 0 broken links, 0 pending links, 0 table/katex/mermaid errors)
 
 ## Dependencies
 

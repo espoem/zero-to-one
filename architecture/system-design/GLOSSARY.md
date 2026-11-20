@@ -1,0 +1,131 @@
+# System Design Bilingual Terminology Glossary (English ↔ Czech)
+
+A standardized English ↔ Czech terminology index for distributed system design, capacity modeling, caching, rate limiting, resilience engineering, geospatial indexing, transactional correctness, SLO observability, and LLM serving. Shared foundational terms preserve the canonical definitions and Czech equivalents from the [root glossary](../../GLOSSARY.md) verbatim.
+
+---
+
+## 1. Capacity Modeling, Latency & Edge Networking
+
+| Canonical English Term | Czech Equivalent | Concise English Definition | Primary Source / Reference |
+| :-- | :-- | :-- | :-- |
+| **Back-of-the-Envelope Estimation** | **Řádový odhad kapacity** | Rapid order-of-magnitude calculation of throughput (QPS), storage footprint, network bandwidth, memory, and compute capacity using powers of two and hardware latency constants to validate feasibility before detailed design. | Bentley (_Programming Pearls_), Xu (_System Design Interview_) |
+| **Little's Law** | **Littleův zákon** | A queueing theory theorem stating that the long-term average number of items in a stable system equals the average arrival rate multiplied by the average time an item spends in the system ($L = \lambda W$). | Little (_Operations Research_, 1961) |
+| **Tail Latency** | **Koncová latence (latence na horních percentilech)** | The high-percentile response time (typically p95, p99, or p99.9) experienced by the slowest fraction of requests, which dominates user-facing latency in large-scale fan-out architectures. | Dean & Barroso (_The Tail at Scale_, CACM 2013) |
+| **Fan-Out Amplification** | **Zesílení koncové latence při rozvětvení** | The compounding degradation of end-to-end tail latency when a single request fans out in parallel to $n$ independent backends, governed by $P(\text{slow}) = 1 - (1 - p)^n$ where $p$ is the per-call tail probability. | Dean & Barroso (_The Tail at Scale_, CACM 2013) |
+| **Hedged Request** | **Zajištěný (duplicitní) požadavek** | A tail-latency mitigation technique where a client dispatches a duplicate request to another replica if the primary request has not responded within a short threshold (e.g., the 95th-percentile latency), accepting the first reply and canceling the slower one. | Dean & Barroso (_The Tail at Scale_, CACM 2013) |
+| **Power of Two Random Choices (P2C)** | **Síla dvou náhodných voleb (P2C)** | A randomized load-balancing algorithm that samples two backend servers uniformly at random and routes the request to the one with lower active load, reducing maximum queue imbalance from $\Theta(\ln n / \ln \ln n)$ to $\Theta(\ln \ln n)$. | Mitzenmacher (_IEEE TPDS_, 2001) |
+| **Origin Shield** | **Ochranný mezicache uzel (Origin Shield)** | A dedicated intermediate caching layer positioned between globally distributed CDN edge PoPs and the origin server to coalesce cache misses across edges and absorb traffic spikes before they hit the origin. | Cloudflare / Fastly / AWS CloudFront Architecture |
+
+---
+
+## 2. Caching Strategies, Eviction & Stampede Defense
+
+| Canonical English Term | Czech Equivalent | Concise English Definition | Primary Source / Reference |
+| :-- | :-- | :-- | :-- |
+| **Cache-Aside** | **Strategie cache-aside (líné načítání do cache)** | A caching pattern in which the application checks the cache first, loads missing entries from the primary data store on a miss, and explicitly populates the cache before returning the value. | Nishtala et al. (_NSDI_, 2013), AWS Caching Best Practices |
+| **Read-Through** | **Průchozí čtení (read-through)** | A caching pattern where the cache provider itself intercepts read misses, transparently fetches the missing record from the backing store, stores it, and returns it to the caller. | Caching Architecture Patterns |
+| **Write-Through** | **Průběžný zápis (write-through)** | A synchronous caching pattern where every write updates both the cache and the underlying database before acknowledging success, ensuring strong cache consistency at the cost of higher write latency. | Hennessy & Patterson, Caching Patterns |
+| **Write-Behind** | **Odložený zápis (write-behind / write-back)** | An asynchronous caching pattern that acknowledges writes immediately after updating the cache and batches dirty entries to the backing store later, trading durability during cache failure for lower write latency and coalesced I/O. | Hennessy & Patterson, Caching Patterns |
+| **Cache Stampede (Thundering Herd)** | **Lavina požadavků na cache (problém dupajícího stáda)** | A cascading overload event triggered when a popular cached key expires or is evicted, causing hundreds or thousands of concurrent requests to miss simultaneously and hammer the backing database. | Nishtala et al. (_NSDI_, 2013) |
+| **Single-Flight (Request Coalescing)** | **Slučování souběžných požadavků (single-flight)** | A concurrency pattern that deduplicates concurrent in-flight misses for the same cache key within a process or shard so only one backend fetch executes and all waiting callers share its result. | Go `golang.org/x/sync/singleflight` |
+| **Probabilistic Early Expiration (XFetch)** | **Pravděpodobnostní předčasná expirace (XFetch)** | A lock-free stampede-prevention algorithm where each read probabilistically recomputes a cached entry before its nominal TTL expires, weighted by recomputation time $\delta$ and an exponential random factor. | Vattani, Chierichetti & Lowenstein (_VLDB_, 2015) |
+| **Stale-While-Revalidate (SWR)** | **Vrácení zastaralé hodnoty při obnově na pozadí (SWR)** | An HTTP and application caching policy that serves an expired cached response immediately while asynchronously refreshing the entry in the background, masking recomputation latency from callers. | RFC 5861 |
+| **Memcache Lease** | **Pronájem v Memcache (Memcache Lease)** | A 64-bit token mechanism introduced by Facebook that limits thundering-herd fills to one client per key and invalidates stale concurrent sets triggered by race conditions between reads and database updates. | Nishtala et al. (_Scaling Memcache at Facebook_, NSDI 2013) |
+| **W-TinyLFU** | **Algoritmus W-TinyLFU** | A scan-resistant, near-optimal cache admission and eviction policy combining a small LRU admission window with a Count-Min Sketch frequency filter (TinyLFU) fronting a segmented LRU main cache. | Einziger, Friedman & Manes (_ACM TOS_, 2017) |
+| **Hot Key (Celebrity Key)** | **Horký klíč (klíč celebrity)** | A single cache or partition key receiving disproportionately skewed read or write traffic that saturates the network interface or single-threaded event loop of its owning shard. | Nishtala et al. (_NSDI_, 2013) |
+
+---
+
+## 3. Data Modeling, Partitioning, Pagination & Distributed IDs
+
+| Canonical English Term | Czech Equivalent | Concise English Definition | Primary Source / Reference |
+| :-- | :-- | :-- | :-- |
+| **Read-Your-Writes Consistency** | **Konzistence čtení vlastních zápisů (Read-Your-Writes)** | A session consistency guarantee ensuring that after a client performs a write, any subsequent read by the same client observes that write or a newer version rather than stale replica state. | Terry et al. (_Bayou_, 1994), Kleppmann (_DDIA_) |
+| **Consistent Hashing** | **Konzistentní hašování** | A distributed partitioning scheme mapping both keys and nodes onto a logical hash ring so adding or removing a node relocates only $O(K/N)$ keys on average instead of rehashing the entire keyspace. | Karger et al. (_STOC_, 1997) |
+| **Virtual Nodes (Vnodes)** | **Virtuální uzly (vnodes)** | Multiple logical ring tokens assigned to each physical node in consistent hashing to smooth key distribution variance, balance heterogeneous hardware capacity, and parallelize recovery across peers. | Stoica et al. (_Chord_, 2001), DeCandia et al. (_Dynamo_, SOSP 2007) |
+| **Sharded Counter** | **Shardovaný čítač (rozprostřený čítač)** | A write-scaling technique that splits a single high-contention counter into $K$ independent sub-counters across shards, routing increments randomly and summing sub-counters on read. | Cloud Spanner / Distributed Data Patterns |
+| **Keyset (Cursor) Pagination** | **Stránkování pomocí kurzoru (keyset pagination)** | A stable pagination technique using an indexed seek predicate (e.g., `WHERE (created_at, id) < (:ts, :id)`) that executes in $O(\log N)$ index time without skipping or duplicating rows under concurrent writes. | Winand (_SQL Performance Explained_) |
+| **Offset Pagination** | **Stránkování pomocí posunu (offset pagination)** | A positional pagination query (`LIMIT m OFFSET n`) that scans and discards $n$ rows on every page request, degrading linearly to $O(n)$ depth and drifting when rows are inserted or deleted concurrently. | SQL Standard, Winand (_SQL Performance Explained_) |
+| **UUIDv7** | **Identifikátor UUIDv7** | A 128-bit universally unique identifier combining a 48-bit Unix epoch millisecond timestamp in the most significant bits with 74 bits of randomness to preserve B-tree insertion locality and chronological sorting. | RFC 9562 |
+| **Snowflake ID** | **Identifikátor Snowflake** | A 64-bit time-ordered distributed identifier encoding a 1-bit sign bit, a 41-bit millisecond timestamp, a 10-bit worker/datacenter ID, and a 12-bit per-millisecond sequence counter, vulnerable to duplicates if wall clocks step backwards. | Twitter Engineering (_Snowflake_, 2010) |
+| **Idempotency Key** | **Klíč idempotence** | A client-generated unique token attached to a mutating request so the server can safely deduplicate retries and return the original stored outcome without re-executing side effects. | Stripe Engineering, IETF Draft `Idempotency-Key` |
+
+---
+
+## 4. Asynchrony, Messaging & Durable Execution
+
+| Canonical English Term | Czech Equivalent | Concise English Definition | Primary Source / Reference |
+| :-- | :-- | :-- | :-- |
+| **Fan-Out on Write** | **Rozesílání při zápisu (fan-out on write)** | A feed delivery strategy (push model) that precomputes and pushes newly authored items into every follower's materialized timeline at write time, giving $O(1)$ reads at the expense of high write amplification for high-follower accounts. | Twitter / Instagram Feed Architecture |
+| **Fan-Out on Read** | **Skládání při čtení (fan-out on read)** | A feed delivery strategy (pull model) that stores posts per author and merges followed timelines dynamically at read time, eliminating write amplification for celebrities at the cost of higher read latency. | Twitter / Instagram Feed Architecture |
+| **Transactional Outbox** | **Vzor transakční odchozí pošta (transactional outbox)** | A reliable event-publishing pattern that persists domain mutations and outgoing event records atomically inside the same local ACID database transaction, with an asynchronous relay publishing those events to a message broker. | Richardson (_Microservices Patterns_, 2018) |
+| **Dead-Letter Queue (DLQ)** | **Fronta nedoručitelných zpráv (DLQ)** | A dedicated isolation queue where messages that repeatedly fail processing or exceed their maximum delivery count are routed so they do not block healthy consumer throughput. | Hohpe & Woolf (_Enterprise Integration Patterns_) |
+| **Poison Pill Message** | **Jedovatá zpráva (poison pill message)** | A malformed or unprocessable message that triggers an unhandled crash or deterministic failure in every consumer that reads it, causing an infinite redelivery loop unless quarantined into a DLQ. | Distributed Messaging Patterns |
+| **Durable Execution (Workflow Engine)** | **Trvanlivé provádění (engine odolných pracovních postupů)** | An execution runtime that persists every step outcome, timer, and signal to an append-only event history log so long-running workflows survive process crashes and resume deterministically via replay without duplicating completed side effects. | Temporal / Azure Durable Functions Architecture |
+
+---
+
+## 5. Rate Limiting, Overload Control & Resilience
+
+| Canonical English Term | Czech Equivalent | Concise English Definition | Primary Source / Reference |
+| :-- | :-- | :-- | :-- |
+| **Token Bucket** | **Žetonový kbelík (token bucket)** | A rate-limiting algorithm that refills tokens into a bounded bucket at rate $r$ up to burst capacity $b$, permitting controlled traffic bursts when tokens have accumulated. | Tanenbaum (_Computer Networks_), RFC 2697 |
+| **Leaky Bucket** | **Děravý kbelík (leaky bucket)** | A traffic-shaping and rate-limiting algorithm that queues incoming requests in a fixed-capacity FIFO buffer and drains them at a constant steady rate, smoothing bursts into uniform output. | Turner (_IEEE Communications_, 1986) |
+| **Fixed Window Counter** | **Počítadlo pevného časového okna** | A simple rate limiter that increments a counter per discrete time interval (e.g., minute boundary), suffering from a boundary burst flaw where up to $2\times$ the limit can pass across adjacent window edges. | Rate-Limiting Algorithms |
+| **Sliding Window Counter** | **Počítadlo klouzavého časového okna** | A memory-efficient approximate rate limiter that estimates rolling-window usage by taking a weighted sum of the previous fixed window's count and the current window's count. | Cloudflare Rate Limiting Architecture |
+| **Generic Cell Rate Algorithm (GCRA)** | **Algoritmus GCRA (Generic Cell Rate Algorithm)** | A virtual-scheduling leaky-bucket rate limiter storing a single Theoretical Arrival Time (TAT) timestamp per key instead of counters or token lists, enabling exact burst and rate enforcement in $O(1)$ space. | ATM Forum UNI 3.1, Brandur Leach (_Rate Limiting, Cells, and GCRA_) |
+| **Load Shedding** | **Shazování zátěže (load shedding)** | An overload defense mechanism that proactively rejects excess incoming requests when queue depth, event-loop delay, or resource utilization crosses a critical threshold. | Beyer et al. (_Site Reliability Engineering_) |
+| **LIFO Queueing** | **Řazení LIFO při přetížení** | An overload queue discipline that serves the newest arriving requests first (often paired with short request deadlines or CoDel) so freshly viable requests succeed instead of wasting work on stale timed-out requests at the head of a FIFO queue. | Nichols & Jacobson (_CoDel_, CACM 2012), AWS Builders' Library |
+| **Retry Budget** | **Rozpočet opakovaných pokusů (retry budget)** | A client-side cap limiting outbound retries to a small fraction (typically $\le 10\%$) of total requests or active concurrency so retries cannot amplify an upstream brownout into a retry storm. | Beyer et al. (_Site Reliability Engineering_) |
+| **Circuit Breaker** | **Jistič (circuit breaker)** | A fault-isolation pattern or memory safeguard that trips to fail fast when an upstream dependency degrades or when a node's memory reservation approaches exhaustion. | Nygard (_Release It!_) |
+| **Bulkhead Pattern** | **Vzor přepážky (bulkhead)** | A fault-containment pattern that partitions thread pools, connection pools, queues, or compute quotas by dependency or tenant so saturation in one compartment cannot exhaust resources needed by others. | Nygard (_Release It!_) |
+| **Metastable Failure** | **Metastabilní selhání** | A self-sustaining degraded state in a distributed system triggered by a transient overload or fault, where feedback loops such as retry amplification or cache misses keep the system broken even after the initial trigger disappears. | Bronson et al. (_OSDI_, 2022) |
+
+---
+
+## 6. Geospatial Indexing & Large Blob Storage
+
+| Canonical English Term | Czech Equivalent | Concise English Definition | Primary Source / Reference |
+| :-- | :-- | :-- | :-- |
+| **Geohash** | **Geohash** | A hierarchical spatial encoding that interleaves latitude and longitude bits onto a Z-order space-filling curve encoded in base-32 strings; simple for prefix lookups, but requires 8-neighbor queries and suffers from precision discontinuities across boundaries. | Niemeyer (_Geohash_, 2008) |
+| **Quadtree** | **Čtyřstrom (quadtree)** | An in-memory hierarchical spatial tree that recursively subdivides a 2D bounding box into four quadrants whenever a leaf exceeds a point-density threshold, adapting cell resolution naturally to skewed geographic density. | Finkel & Bentley (_Acta Informatica_, 1974) |
+| **Uber H3** | **Hexagonální mřížka Uber H3** | A discrete global grid system projecting the Earth onto an icosahedron divided into hierarchical hexagons, eliminating diagonal distance distortion because every hexagon shares an identical center-to-center distance with all six neighbors. | Brodsky (_Uber Engineering H3_, 2018) |
+| **Google S2** | **Sférická geometrická knihovna Google S2** | A spherical geometry index projecting the Earth onto the six faces of a cube and indexing cells along a Hilbert space-filling curve as 64-bit integers with superior spatial locality and exact spherical predicates. | Veach (_Google S2 Geometry_) |
+| **Content-Defined Chunking (CDC)** | **Dělení na bloky řízené obsahem (CDC)** | A deduplicating file-chunking technique using a rolling hash (e.g., Rabin fingerprint or FastCDC) to locate content-dependent cut points so local byte insertions only invalidate adjacent chunks rather than shifting every downstream offset. | Muthitacharoen et al. (_LBFS_, SOSP 2001) |
+| **Presigned URL** | **Předpodepsaná adresa URL (presigned URL)** | A time-limited, cryptographically signed object-storage URL permitting a client to upload or download a specific blob directly against object storage without proxying payloads through application servers or exposing long-lived credentials. | AWS S3 / Cloud Object Storage Specifications |
+| **Erasure Coding** | **Kódování s vymazáním (erasure coding)** | A storage redundancy scheme (such as Reed-Solomon $(k, m)$) that splits objects into $k$ data fragments and $m$ parity fragments so any $k$ fragments reconstruct the object, achieving higher durability at far lower storage overhead than full $3\times$ replication. | Plank (_Software: Practice and Experience_), Ghemawat et al. |
+
+---
+
+## 7. High-Contention Systems, Financial Correctness & Collaborative State
+
+| Canonical English Term | Czech Equivalent | Concise English Definition | Primary Source / Reference |
+| :-- | :-- | :-- | :-- |
+| **Pessimistic Locking** | **Pesimistické zamykání** | A concurrency strategy that acquires exclusive row or resource locks before reading or modifying state (e.g., `SELECT ... FOR UPDATE SKIP LOCKED`), serializing conflicting writers upfront under heavy contention. | Gray et al. (_System R_), PostgreSQL Documentation |
+| **Optimistic Concurrency Control (OCC)** | **Optimistické řízení souběhu (OCC)** | A non-blocking concurrency protocol where transactions execute against a snapshot or version token and validate at write/commit time that no concurrent modification occurred. | Kung & Robinson (1981) |
+| **Virtual Waiting Room** | **Virtuální čekárna** | An edge admission-control queue that holds excess flash-sale or ticket-drop visitors outside core application infrastructure and admits bounded batches via signed FIFO queue tokens to prevent origin collapse. | High-Contention Edge Architectures |
+| **Fencing Token** | **Ohraničující token (fencing token)** | A monotonically increasing sequence number issued with each lock or lease acquisition; storage resources reject writes carrying a token lower than the highest token already observed. | Kleppmann (_Designing Data-Intensive Applications_) |
+| **Double-Entry Ledger** | **Podvojná účetní kniha (double-entry ledger)** | An immutable append-only financial accounting ledger where every monetary transfer records balanced debit and credit entries across accounts whose global sum remains invariant at zero. | Accounting Principles, Kleppmann / Modern Treasury |
+| **Payment Reconciliation** | **Párování a odsouhlasení plateb (reconciliace)** | An asynchronous verification pipeline comparing internal ledger records against external payment service provider (PSP) settlement reports and bank statements to detect and resolve missing, duplicated, or mismatched transactions. | Payment Systems Architecture |
+| **Operational Transformation (OT)** | **Operační transformace (OT)** | A collaborative editing algorithm that transforms concurrent local edit operations against remote operations before applying them, typically relying on a central server to establish a total transformation order. | Ellis & Gibbs (_SIGMOD_, 1989) |
+| **CRDT** | **Bezkontfliktní replikovaný datový typ (CRDT)** | A distributed data structure whose concurrent updates across replicas merge deterministically without central coordination via commutative, associative, and idempotent algebraic join-semilattice rules. | Shapiro et al. (_INRIA_, 2011) |
+| **LMAX Disruptor / Sequencer** | **LMAX Disruptor / sekvencer** | A mechanical-sympathy, lock-free inter-thread messaging architecture built around a pre-allocated ring buffer and single-writer monotonic sequencer that avoids cache-line false sharing and kernel contention for ultra-low-latency matching engines. | Thompson et al. (_LMAX Disruptor_, 2011) |
+
+---
+
+## 8. Observability, SLO Engineering & LLM Inference Serving
+
+| Canonical English Term | Czech Equivalent | Concise English Definition | Primary Source / Reference |
+| :-- | :-- | :-- | :-- |
+| **Service Level Indicator (SLI)** | **Indikátor úrovně služby (SLI)** | A carefully defined quantitative measure of some aspect of service behavior (typically expressed as the ratio of good events to valid events, such as successful fast responses). | Beyer et al. (_Site Reliability Engineering_) |
+| **Service Level Objective (SLO)** | **Cíl úrovně služby (SLO)** | A target reliability threshold or range for an SLI measured over a rolling or calendar compliance window (e.g., 99.9% of valid requests succeed within 250 ms over 28 days). | Beyer et al. (_Site Reliability Engineering_) |
+| **Error Budget** | **Chybový rozpočet (error budget)** | The permissible unreliability margin equal to $1 - \text{SLO}$ over the compliance window, governing the trade-off between feature velocity and reliability investment. | Beyer et al. (_Site Reliability Engineering_) |
+| **Multi-Window Multi-Burn-Rate Alert** | **Víceoknové upozornění podle rychlosti čerpání rozpočtu** | An SRE alerting rule that pages only when both a long window and a shorter sub-window (typically $1/12$ of the long window) simultaneously exceed a target error-budget burn rate, balancing fast detection against reset noise. | Beyer et al. (_Google SRE Workbook_, Ch. 5) |
+| **Label Cardinality Explosion** | **Exploze kardinality štítků metrik** | A time-series database failure mode caused by attaching unbounded values (such as `user_id`, `request_id`, or raw URLs) to metric labels, creating millions of distinct active series that exhaust TSDB RAM and index capacity. | Prometheus Documentation |
+| **Static Stability** | **Statická stabilita** | A resilience property where a system continues serving existing workloads cleanly during control-plane or dependency failures without requiring new allocations, configuration fetches, or mode transitions. | MacCárthaigh (_AWS Builders' Library_) |
+| **Graceful Degradation** | **Řízená degradace služeb (graceful degradation)** | An operational fallback strategy that sheds expensive non-essential features (e.g., personalized recommendations or live counts) under partial failure or overload while preserving core critical user journeys. | Systems Reliability Engineering |
+| **KV Cache** | **KV cache (mezipaměť klíč–hodnota v pozornosti)** | Per-token Key and Value activation tensors stored in GPU HBM across autoregressive decoding steps so previously processed prompt and generated tokens do not have to be recomputed on every output token. | Vaswani et al. (_Attention Is All You Need_), Pope et al. (_MLSys_, 2023) |
+| **PagedAttention** | **Stránkovaná pozornost (PagedAttention)** | A GPU memory-management algorithm inspired by OS virtual memory that stores a sequence's KV cache in non-contiguous fixed-size blocks via a block table, eliminating internal and external VRAM fragmentation. | Kwon et al. (_vLLM / SOSP_, 2023) |
+| **Continuous Batching** | **Průběžné dávkování (continuous batching)** | An iteration-level LLM scheduling technique that injects newly arriving requests and evicts finished sequences at every decode step rather than waiting for an entire static batch to complete. | Yu et al. (_Orca / OSDI_, 2022) |
+| **Time to First Token (TTFT)** | **Čas do prvního tokenu (TTFT)** | The latency from request arrival until the first output token streams to the client, dominated by prompt tokenization, queueing delay, and the compute-bound prefill phase. | LLM Serving Benchmarks |
+| **Inter-Token Latency (ITL)** | **Latence mezi tokeny (ITL)** | The average time between consecutive generated tokens during the autoregressive decode phase (also referred to as time per output token), dominated by HBM memory-bandwidth transfers of model weights and the KV cache. | LLM Serving Benchmarks |

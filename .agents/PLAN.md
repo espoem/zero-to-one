@@ -1,6 +1,6 @@
 # Zero-to-One — Master Plan v1 (2026-10-28)
 
-Status: **IN PROGRESS (Phase 4)**. Phase 0, 1, 2, and 3 are complete and merged to `main`. Phase 4 has 5 of 6 tracks complete (`cloud-foundations`, `aws`, `gcp`, `cloudflare`, `azure`). Only 1 track remains: `architecture/system-design`.
+Status: **COMPLETE (29/29 tracks)**. Phase 0, 1, 2, 3, and 4 are all complete and merged to `main`, with `LINK_CHECK_PENDING` cleared and every verification gate green.
 
 Inputs: six research dossiers in `.agents/research/` (A-frontend, B-data, C-runtimes, D-cs, E-platform, F-cloud). Their versions were checked against primary sources on 2026-10-27/28. Claims they could not check are marked `(unverified)` and **must be re-verified by the authoring agent before they are taught**.
 
@@ -18,7 +18,7 @@ Every track reaches "master of the domain" depth as defined in `AGENTS.md`:
 
 Knowledge is **deduplicated**: each concept has exactly one owner track, and every other track cross-links to it (§4).
 
-## 2. Target taxonomy: 29 tracks (28 complete, 1 planned) and 350+ modules
+## 2. Target taxonomy: 29 tracks (29 complete, 0 planned) and 364 modules
 
 | Root | Track | Mods | State | Phase |
 | --- | --- | --: | --- | :-: |
@@ -50,7 +50,7 @@ Knowledge is **deduplicated**: each concept has exactly one owner track, and eve
 | architecture | `networking` | 14 | ✅ merged: **foundation**: RFC 9846 TLS 1.3, ECH, QUIC/HTTP3, 135-q bank, 33 tests | 1 |
 | architecture | `security-identity` | 14 | ✅ merged: **foundation**: OWASP 2025, ASVS 5.0, OAuth 2.1, 75-q Security+ bank, 54 tests | 1 |
 | architecture | `cloud-foundations` | 14 | ✅ merged: **foundation**: provider-neutral, AWS/GCP/Azure mapping, 65-q bank, 30 tests | 4 |
-| architecture | `system-design` | 14 | ⬜ brief ready: **last**: composes every track, estimation, SLO math, Staff loop | 4 |
+| architecture | `system-design` | 14 | ✅ merged: **capstone**: composes all 28 tracks, estimation, SLO math, LLM serving, 70-q Staff bank + 2 mock loops, 33 tests | 4 |
 
 Module lists, gotchas, interview topics and proof strategy for each track: see the matching `.agents/research/*.md` section and `.agents/briefs/*.md`.
 
@@ -69,7 +69,7 @@ Many tracks assume these foundations as prerequisites:
 | 1 | Foundations (`javascript`, `css`, `data-systems`, `networking`, `security-identity`) & existing track updates (`typescript`, `react`, `solidjs`, `panda-css`, `postgres`) | ✅ Merged | 10 tracks, 127 modules, 696 exam questions, all tests passing |
 | 2 | Runtimes and data stores (`nodejs`, `python`, `sqlite`, `redis`, `elasticsearch`, `dsa`, `distributed-systems`) | ✅ Merged | 7 tracks, 92 modules, 529 exam questions, all tests passing |
 | 3 | Platform and DevOps (`containers`, `kubernetes`, `terraform`, `argocd`, `gitlab-ci`, `observability`) | ✅ Merged | 6 tracks, 71 modules, 392 exam questions, all tests passing |
-| 4 | Cloud & System Design (`cloud-foundations`, `aws`, `gcp`, `cloudflare`, `azure` complete; `system-design` planned) | 🔄 In Progress | 5 of 6 tracks complete (60 modules, 450 exam questions); 1 track remaining |
+| 4 | Cloud & System Design (`cloud-foundations`, `aws`, `gcp`, `cloudflare`, `azure`, `system-design`) | ✅ Merged | 6 of 6 tracks complete (74 modules, 520 exam questions), all tests passing |
 
 ### Phase 4 Remaining Tracks & Missing Deliverables
 

@@ -102,6 +102,8 @@ The `M` numbers refer to the proposed module lists in `research/*.md`. Authors u
 | Byzantine Fault Tolerance ($3f+1$ bound, PBFT, Nakamoto consensus) | `architecture/distributed-systems` | security-identity, system-design |
 | Deterministic Simulation Testing (DST, FoundationDB/TigerBeetle model) | `architecture/distributed-systems` | data-systems, system-design |
 | Requirements → HLD → deep dives, estimation, LB/CDN/rate-limiter/queue as components, SLO math | `architecture/system-design` | everything |
+| LLM inference serving architecture (prefill vs decode, KV-cache VRAM math, PagedAttention, continuous batching, TTFT/ITL) | `architecture/system-design` (M02, M14) | cloud tracks (AI-200 / Bedrock / Vertex wiring only) |
+| Virtual Waiting Room admission control, Content-Defined Chunking (FastCDC/Rabin), double-entry payment reconciliation | `architecture/system-design` (M09, M10, M12, M14) | data-systems, distributed-systems |
 
 ## Networking and security
 

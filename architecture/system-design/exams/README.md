@@ -1,6 +1,6 @@
 # System Design Interview Coverage Matrix & Grading Rubric
 
-No official vendor certification covers general distributed system design (cloud-specific architecture exams live in [`technologies/aws`](../../technologies/aws/), [`technologies/gcp`](../../technologies/gcp/), and [`technologies/azure`](../../technologies/azure/)). This track prepares engineers for the **Senior / Staff / Principal System Design Interview Loop**, mapping every competency domain to syllabus modules, runnable TypeScript proofs, and the 70-question preparation bank in [`interview.md`](interview.md).
+No official vendor certification covers general distributed system design (cloud-specific architecture exams live in [`technologies/aws`](../../../technologies/aws/), [`technologies/gcp`](../../../technologies/gcp/), and [`technologies/azure`](../../../technologies/azure/)). This track prepares engineers for the **Senior / Staff / Principal System Design Interview Loop**, mapping every competency domain to syllabus modules, runnable TypeScript proofs, and the 70-question preparation bank in [`interview.md`](interview.md).
 
 ---
 
