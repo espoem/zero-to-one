@@ -2,7 +2,7 @@
 
 This preparation bank tests Senior, Staff, and Principal distributed system design competency across the seven domains defined in [`exams/README.md`](README.md). Every question is original and grounded in primary engineering literature, official protocol RFCs, and production postmortems.
 
-- **Bank scope**: **70 questions** (`Q-SD-001`–`Q-SD-070`) covering quantitative capacity modeling, edge/API design, caching/partitioning, asynchrony/resilience, specialized indexing/financial correctness, SLO observability/DR, and end-to-end canonical architectures.
+- **Bank scope**: **75 questions** (`Q-SD-001`–`Q-SD-075`) covering quantitative capacity modeling, edge/API design, caching/partitioning, asynchrony/resilience, specialized indexing/financial correctness, SLO observability/DR, end-to-end canonical architectures, and progressive scaling / blast-radius case studies.
 - **Difficulty calibration**: Level `1` tests foundational mechanics, Level `2` tests Senior-level trade-off reasoning, and Level `3` tests Staff/Principal failure modes, subtle race conditions, and quantitative traps.
 - **Timed practice**: Complete the [50-Question Written Architecture Drill](#timed-mock-exam-written-architecture-drill-50-questions--75-minutes) under a strict 75-minute timer, then run the [two 60-minute Staff/Principal design loops](#timed-mock-design-loops-2--60-minute-staffprincipal-simulations) against the explicit 0–4 grading rubrics.
 
@@ -1420,6 +1420,109 @@ When architecting **S3-scale durable object storage** (exabyte capacity, 11 nine
 - Why not C: 11-way cross-continent synchronous SQLite replication collapses write latency and throughput, and "11 nines" (99.999999999%) refers to annual object durability against correlated hardware/bit-rot faults, not 11 literal copies.
 - Why not D: Uncompressed JSON time-series samples bloat storage and memory bandwidth >15×, making 10M samples/sec economically unviable.
 - Ref: [modules/14-canonical-designs-transactional-and-staff.md](../modules/14-canonical-designs-transactional-and-staff.md), [modules/13-canonical-designs-realtime-geo-and-streams.md](../modules/13-canonical-designs-realtime-geo-and-streams.md), https://www.vldb.org/pvldb/vol8/p1816-teller.pdf
+
+</details>
+
+---
+
+## Domain 8: Progressive Scaling & Case-Study Deep Dives (`Q-SD-071`–`Q-SD-075`)
+
+### Q-SD-071 · Progressive Scaling & Blast-Radius Architecture · difficulty 3 · scenario
+
+A stateless order service is load-tested on $N$ identical nodes. Throughput follows Gunther's Universal Scalability Law, $C(N) = \frac{N}{1 + \alpha(N-1) + \beta N(N-1)}$, with contention $\alpha = 0.05$ and coherency $\beta = 0.005$. Which statement is correct?
+
+- A) Throughput peaks at $N \approx 64$, so adding nodes up to 64 always increases capacity because $\alpha$ and $\beta$ are small.
+- B) Throughput peaks near $N_{\max} \approx 13.8$ at about $5.47\times$ single-node throughput; at $N = 64$ the model predicts about $2.63\times$, so scaling out past the peak enters retrograde scaling and lowers total throughput.
+- C) Throughput stays linear up to 64 nodes because the USL exhibits retrograde scaling only when $\beta = 0$.
+- D) At $N = 64$ throughput is $64\times$ single-node capacity, because $\alpha$ and $\beta$ affect request latency rather than throughput.
+
+<details><summary>Answer</summary>
+
+**B.** The peak occurs at $N_{\max} = \sqrt{(1-\alpha)/\beta} = \sqrt{190} \approx 13.78$, where $C(14) \approx 5.47$; at $N = 64$ the denominator is $1 + 0.05(63) + 0.005(64)(63) = 24.31$, yielding $C(64) \approx 2.63$, less than half the peak throughput.
+
+- Why not A: The peak is near 13.8 nodes, not 64; the quadratic coherency term $\beta N(N-1) = 20.16$ dominates at $N = 64$, driving throughput down.
+- Why not C: Retrograde scaling requires $\beta > 0$; setting $\beta = 0$ collapses USL into Amdahl's Law, which approaches an asymptote of $1/\alpha = 20$ without ever regressing.
+- Why not D: $C(N) \le N$ always, and $64\times$ requires both $\alpha = 0$ and $\beta = 0$; contention and coherency directly reduce effective throughput.
+- Ref: [modules/15-scale-from-zero-to-millions.md](../modules/15-scale-from-zero-to-millions.md#12-gunthers-universal-scalability-law-usl-and-retrograde-scaling), https://www.perfdynamics.com/Manifesto/USLscalability.html
+
+</details>
+
+### Q-SD-072 · Progressive Scaling & Blast-Radius Architecture · difficulty 2 · single
+
+A web tier runs 12 instances across three Availability Zones with sticky sessions that store each authenticated user's session state in local instance memory. One AZ fails abruptly, and autoscaling replaces the lost instances. What is the correct architectural fix?
+
+- A) Keep local sticky sessions because the load balancer reroutes users to surviving instances without dropping session state.
+- B) Externalize sessions to a multi-AZ Valkey or Redis cluster keyed by session ID (or short-lived signed tokens), making the web tier strictly stateless so any instance can serve any request.
+- C) Keep local sessions and enable Auto Scaling scale-in protection, which preserves in-memory state across an AZ outage.
+- D) Keep local sessions and rely on load-balancer cookie affinity so replacement instances automatically replay session state from local disk.
+
+<details><summary>Answer</summary>
+
+**B.** Losing one of three AZs terminates 4 of 12 instances and destroys one-third of locally stored sessions immediately; externalizing session state to a multi-AZ replicated Valkey/Redis cluster decouples session durability from web-node lifecycle and autoscaling.
+
+- Why not A: Load-balancer failover reroutes HTTP traffic to healthy hosts, but those hosts lack the in-memory session data, forcing affected users to log in again.
+- Why not C: Scale-in protection only prevents deliberate autoscaler termination of healthy hosts and cannot prevent hardware or AZ failures.
+- Why not D: Affinity cookies only identify a backend host; they do not persist or replicate arbitrary server-side session memory across replacement instances.
+- Ref: [modules/15-scale-from-zero-to-millions.md](../modules/15-scale-from-zero-to-millions.md#23-stage-45-caching-cdn-edge-offload-and-stateless-web-tier), https://valkey.io/documentation/
+
+</details>
+
+### Q-SD-073 · Progressive Scaling & Blast-Radius Architecture · difficulty 3 · scenario
+
+A user updates their display name on a PostgreSQL primary. The immediate redirect reads from an asynchronous streaming read replica whose WAL replay lag spikes to 300 ms, rendering the old display name. Which fix guarantees read-your-writes for that user at the lowest system-wide latency cost?
+
+- A) Set `synchronous_commit = remote_apply` globally for every write transaction across all replicas.
+- B) Capture `pg_current_wal_lsn()` after the user's write, attach that watermark to the user's session/cookie, and route subsequent reads to a replica only when `pg_last_wal_replay_lsn()` meets or exceeds that LSN (otherwise falling back to the primary).
+- C) Provision twice as many asynchronous read replicas because adding replicas lowers per-replica WAL replay lag.
+- D) Insert a fixed `500 ms` `sleep()` in the client after every write before issuing the redirect.
+
+<details><summary>Answer</summary>
+
+**B.** LSN pinning enforces read-your-writes strictly for sessions that just mutated state without adding synchronous cross-AZ commit latency to unrelated traffic; reads revert to replicas automatically once the replica's replay LSN catches up.
+
+- Why not A: Enforcing `remote_apply` globally pays full replica network + apply round-trip latency on every write in the entire system and blocks writes if a synchronous replica stalls.
+- Why not C: Adding more async replicas increases WAL shipping fan-out load on the primary rather than speeding up single-replica replay.
+- Why not D: Hardcoded client sleeps add unnecessary latency to every mutation and still return stale reads whenever replica lag spikes past 500 ms.
+- Ref: [modules/15-scale-from-zero-to-millions.md](../modules/15-scale-from-zero-to-millions.md#22-stage-23-load-balancers-and-database-read-replication), https://www.postgresql.org/docs/current/functions-admin.html
+
+</details>
+
+### Q-SD-074 · Progressive Scaling & Blast-Radius Architecture · difficulty 3 · scenario
+
+Eight worker nodes serve thousands of SaaS tenants. One malicious tenant sends a poison-pill request that crashes every worker node it touches. Which statement accurately compares fixed sharding versus shuffle sharding when each tenant receives $k = 2$ workers?
+
+- A) Both 4 disjoint pairs and shuffle sharding expose 25% of tenants to total outage because the poison tenant still crashes 2 of 8 nodes.
+- B) Shuffle sharding creates $\binom{8}{2} = 28$ distinct 2-node virtual shards, reducing the fraction of other tenants completely sharing the poison tenant's exact pair from $1/4$ (`25%`) down to $1/28$ (`~3.57%`) at identical hardware cost.
+- C) Shuffle sharding reduces total fleet capacity lost during the poison-pill attack from 25% down to 3.57%.
+- D) Shuffle sharding with $k = 2$ yields $2^8 = 256$ virtual shards, cutting exact-overlap blast radius to `0.39%`.
+
+<details><summary>Answer</summary>
+
+**B.** Under fixed sharding into 4 disjoint pairs, 25% of all tenants share the exact two poisoned workers and go completely down; under shuffle sharding ($N = 8, k = 2$), only $1 / \binom{8}{2} = 1/28 \approx 3.57\%$ of tenants share both poisoned workers, while the remaining tenants keep at least one healthy worker for failover.
+
+- Why not A: Although 2 of 8 physical nodes still crash, shuffle sharding ensures ~96.4% of tenants still have at least one unaffected node to retry against.
+- Why not C: Physical fleet capacity impacted is still 2 of 8 nodes (25%); the 7× reduction applies to _tenant total-outage blast radius_, not physical node survival.
+- Why not D: $2^8 = 256$ counts all subsets of any size, whereas fixed-size $k = 2$ assignments follow $\binom{8}{2} = 28$.
+- Ref: [modules/15-scale-from-zero-to-millions.md](../modules/15-scale-from-zero-to-millions.md#32-shuffle-sharding-combinatorics), https://aws.amazon.com/builders-library/workload-isolation-using-shuffle-sharding/
+
+</details>
+
+### Q-SD-075 · Progressive Scaling & Blast-Radius Architecture · difficulty 2 · multi
+
+A stateless API fleet scales strictly on average CPU utilization with a 15-second evaluation interval and zero scale-down cooldown (`stabilizationWindowSeconds: 0`). New pods require 90 seconds to initialize JIT compilation and warm local metadata caches before serving at full throughput. Which **two** failure modes does this autoscaler configuration trigger during bursty traffic?
+
+- A) **Scale-out overshoot**: during the 90-second warm-up, CPU remains elevated on existing pods across ~6 evaluation cycles, causing naive policies that ignore in-flight booting capacity to launch far more pods than needed.
+- B) **Oscillation (flapping/thrashing)**: as soon as the newly warmed fleet drives average CPU briefly below the scale-in threshold, zero cooldown terminates pods immediately, leaving the fleet under-provisioned for the next wave.
+- C) **HTTP 500 rejection by load balancers**: L7 load balancers automatically emit 500 errors whenever any pod has an uptime under 90 seconds.
+- D) **Permanent deadlock**: Kubernetes refuses to schedule pods whenever `stabilizationWindowSeconds` is set to 0.
+
+<details><summary>Answer</summary>
+
+**A, B.** Cold-start delay longer than the control-loop interval causes repeated scale-out triggers before capacity comes online, and zero scale-down hysteresis causes immediate teardown on transient dips, producing destructive capacity oscillation.
+
+- Why not C: Load balancers gate routing on configured readiness probes (`/readyz`), not arbitrary uptime thresholds.
+- Why not D: `stabilizationWindowSeconds: 0` is syntactically valid in Kubernetes HPA; it disables scale-down damping rather than blocking scheduling.
+- Ref: [modules/15-scale-from-zero-to-millions.md](../modules/15-scale-from-zero-to-millions.md#25-stage-9-telemetry-automation-and-autoscaling-stability), https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
 
 </details>
 

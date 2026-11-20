@@ -270,7 +270,7 @@ flowchart LR
 
 ---
 
-## 6. Top 19 Production Failure Modes & One-Line Fixes
+## 6. Top 23 Production Failure Modes & One-Line Fixes
 
 | # | Failure Mode | How It Breaks Production | One-Line Fix |
 | :-- | :-- | :-- | :-- |
@@ -293,3 +293,7 @@ flowchart LR
 | **17** | **Consistent Hashing Without Vnodes** | Assigning 1 ring point per server causes severe key imbalance and cascading neighbor overload on node failure. | Assign `100–200` virtual nodes per physical host proportional to node capacity. |
 | **18** | **Geohash Boundary Edge Blindness** | Nearby points across a geohash grid line share no common prefix and vanish from naive prefix queries. | Query the center cell plus all 8 surrounding neighbor geohash prefixes (or use S2/H3 rings). |
 | **19** | **PSP Timeout Double-Charge** | Client treats a payment gateway network timeout as failure and submits a fresh charge, double-billing the user. | Treat timeouts as `UNKNOWN`, attach stable `Idempotency-Key`s, and resolve via async PSP polling/reconciliation. |
+| **20** | **USL Retrograde Scaling Collapse** | Adding nodes beyond $N_{\max} = \sqrt{(1-\alpha)/\beta}$ increases cross-node coherency chatter and _reduces_ aggregate RPS. | Partition shared state into cells/shards to eliminate coherency ($\beta \to 0$) before scaling node count further. |
+| **21** | **Sticky-Session AZ Evacuation Storm** | In-memory web-tier sessions drop `1/3` of logged-in users during a single-AZ failure or rolling deploy. | Externalize sessions to multi-AZ Valkey/Redis or short-lived signed tokens so the web tier is strictly stateless. |
+| **22** | **Async Replica Promotion Data Loss** | Promoting a lagging async replica after primary crash drops uncommitted/unreplicated WAL transactions and risks split-brain. | Fence the old primary (STONITH/lease), audit WAL LSN lag before promotion, or use semi-sync quorum for `RPO = 0`. |
+| **23** | **Autoscaler Cold-Start Thrashing** | Tight CPU thresholds without cooldown hysteresis launch redundant nodes during boot lag and terminate them on brief dips. | Account for in-flight booting pods, widen scale-in hysteresis, enforce cooldown windows, and scale on queue depth (KEDA). |

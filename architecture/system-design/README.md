@@ -22,6 +22,44 @@ Verified against locally pinned tooling (Node.js 26.13.0, TypeScript 7.0.2, `fas
 12. [Module 12: Canonical Designs I — Read-Heavy, Feed, and Content Systems](modules/12-canonical-designs-read-heavy-and-content.md) — End-to-end Staff-level worked designs with quantitative sizing and failure analysis: URL shortener, News Feed / Instagram, YouTube / Netflix (transcoding, ABR, CDN), Dropbox / Google Drive (chunking, dedupe, sync), Web Crawler, and Search Autocomplete.
 13. [Module 13: Canonical Designs II — Real-Time, Geospatial, and Write-Heavy Systems](modules/13-canonical-designs-realtime-geo-and-streams.md) — End-to-end Staff-level worked designs: Chat / WhatsApp (WebSockets, presence, ordering, receipts), Notification System, Uber / Proximity / Nearby Friends, Ad Click Aggregator & Top-K streaming, Metrics Monitoring Platform, and Distributed Job Scheduler.
 14. [Module 14: Canonical Designs III — Transactional, Infrastructure, and LLM Serving Systems](modules/14-canonical-designs-transactional-and-staff.md) — End-to-end Staff/Principal worked designs: Ticketmaster / Flash Sale, Payment System & Digital Wallet, Stock Exchange Matching Engine (sequencer / LMAX), Google Docs (OT vs CRDT), Rate Limiter as a Service, S3-like Object Storage, and LLM Serving / ChatGPT (prefill vs decode, KV-cache VRAM math, PagedAttention, continuous batching, SSE streaming), plus Then vs Now architectural evolution history.
+15. [Module 15: Scale From Zero to Millions of Users — Progressive Architectural Evolution](modules/15-scale-from-zero-to-millions.md) — Formal scaling laws (Amdahl, Gustafson, Gunther's Universal Scalability Law and retrograde scaling), 9-stage progressive evolution from single server to 10M+ DAU, LSN-pinned read-your-writes, stateless session externalization, cell-based architecture, shuffle sharding combinatorics, static stability, autoscaler hysteresis, bespoke SVG blueprints, and a comprehensive 2021-vs-2026 infrastructure comparison.
+
+---
+
+## ByteByteGo / _System Design Interview_ (Vol. 1 & 2) 28-Chapter Coverage Matrix
+
+Every chapter from Alex Xu & Sahn Lam's _System Design Interview_ Vol. 1 & 2 (plus the primary papers and engineering blogs cited inside `liquidslr/system-design-notes`) maps onto either a dedicated deep-dive module or a deepened canonical section. Wave A delivers dedicated standalone modules for previously missing or compressed case studies; Wave B deepens the remaining 18 topics with bespoke SVGs, 2021-vs-2026 technology surveys, and primary-source verification.
+
+| # | Source Chapter | Target Module / Section | Wave | Status |
+| :-: | --- | --- | :-: | :-: |
+| 01 | Scale From Zero to Millions | [Module 15](modules/15-scale-from-zero-to-millions.md) (`15-scale-evolution-blueprint.svg`, `15-scaling-2021-vs-2026.svg`, `examples/09`) | A | ✅ Complete |
+| 02 | Back-of-the-Envelope Estimation | [Module 02](modules/02-back-of-the-envelope-estimation.md) | B | 🟡 Core complete · Wave B SVG/2021-vs-2026 queued |
+| 03 | System Design Framework | [Module 01](modules/01-framing-requirements-and-delivery.md) | B | 🟡 Core complete · Wave B SVG/2021-vs-2026 queued |
+| 04 | Rate Limiter | [Module 08](modules/08-rate-limiting-load-shedding-and-resilience.md), [Module 14](modules/14-canonical-designs-transactional-and-staff.md) | B | 🟡 Core complete · Wave B SVG/primary refs queued |
+| 05 | Consistent Hashing | [Module 06](modules/06-scaling-reads-writes-and-partitioning.md) | B | 🟡 Core complete · Wave B SVG/primary refs queued |
+| 06 | Key-Value Store (Dynamo) | Dedicated Module 16 (planned next in Wave A) | A | ⬜ Queued |
+| 07 | Unique-ID Generator | [Module 04](modules/04-api-design-data-modeling-and-id-generation.md) | B | 🟡 Core complete · Wave B SVG/primary refs queued |
+| 08 | URL Shortener | [Module 12 §1](modules/12-canonical-designs-read-heavy-and-content.md#1-url-shortener-bitly) | B | 🟡 Core complete · Wave B SVG/2021-vs-2026 queued |
+| 09 | Web Crawler | [Module 12 §5](modules/12-canonical-designs-read-heavy-and-content.md#5-web-crawler) | B | 🟡 Core complete · Wave B SVG/primary refs queued |
+| 10 | Notification System | [Module 13 §2](modules/13-canonical-designs-realtime-geo-and-streams.md#2-multi-channel-notification-system) | B | 🟡 Core complete · Wave B SVG/2021-vs-2026 queued |
+| 11 | News Feed System | [Module 12 §2](modules/12-canonical-designs-read-heavy-and-content.md#2-news-feed-and-instagram) | B | 🟡 Core complete · Wave B SVG/2021-vs-2026 queued |
+| 12 | Chat System | [Module 13 §1](modules/13-canonical-designs-realtime-geo-and-streams.md#1-real-time-messaging-chat--whatsapp) | B | 🟡 Core complete · Wave B SVG/primary refs queued |
+| 13 | Search Autocomplete | [Module 12 §6](modules/12-canonical-designs-read-heavy-and-content.md#6-search-autocomplete--typeahead) | B | 🟡 Core complete · Wave B SVG/primary refs queued |
+| 14 | YouTube | [Module 12 §3](modules/12-canonical-designs-read-heavy-and-content.md#3-youtube--netflix-video-streaming) | B | 🟡 Core complete · Wave B SVG/primary refs queued |
+| 15 | Google Drive | [Module 12 §4](modules/12-canonical-designs-read-heavy-and-content.md#4-dropbox--google-drive-file-sync) | B | 🟡 Core complete · Wave B SVG/2021-vs-2026 queued |
+| 16 | Proximity Service | Dedicated Module 22 (expanding [Module 13 §3](modules/13-canonical-designs-realtime-geo-and-streams.md#3-geospatial-dispatch-uber-proximity-service--nearby-friends)) | A | ⬜ Queued |
+| 17 | Nearby Friends | Dedicated Module 23 (expanding [Module 13 §3](modules/13-canonical-designs-realtime-geo-and-streams.md#3-geospatial-dispatch-uber-proximity-service--nearby-friends)) | A | ⬜ Queued |
+| 18 | Google Maps | Dedicated Module 17 (Wave A) | A | ⬜ Queued |
+| 19 | Distributed Message Queue | Dedicated Module 18 (Wave A) | A | ⬜ Queued |
+| 20 | Metrics Monitoring & Alerting | [Module 13 §5](modules/13-canonical-designs-realtime-geo-and-streams.md#5-metrics-monitoring-platform), [Module 11](modules/11-reliability-slos-observability-and-dr.md) | B | 🟡 Core complete · Wave B SVG/2021-vs-2026 queued |
+| 21 | Ad Click Event Aggregation | [Module 13 §4](modules/13-canonical-designs-realtime-geo-and-streams.md#4-ad-click-aggregator--real-time-top-k) | B | 🟡 Core complete · Wave B SVG/2021-vs-2026 queued |
+| 22 | Hotel Reservation System | Dedicated Module 19 (Wave A) | A | ⬜ Queued |
+| 23 | Distributed Email Service | Dedicated Module 20 (Wave A) | A | ⬜ Queued |
+| 24 | S3-Like Object Storage | [Module 14 §5](modules/14-canonical-designs-transactional-and-staff.md#5-core-infrastructure-rate-limiter-as-a-service--s3-like-object-storage) | B | 🟡 Core complete · Wave B SVG/2021-vs-2026 queued |
+| 25 | Real-Time Gaming Leaderboard | Dedicated Module 21 (expanding [Module 09](modules/09-search-geospatial-and-specialized-components.md)) | A | ⬜ Queued |
+| 26 | Payment System | [Module 14 §2](modules/14-canonical-designs-transactional-and-staff.md#2-payment-system--digital-wallet) | B | 🟡 Core complete · Wave B SVG/2021-vs-2026 queued |
+| 27 | Digital Wallet | Dedicated Module 24 (Raft event-sourced CQRS ledger, expanding [Module 14 §2](modules/14-canonical-designs-transactional-and-staff.md#2-payment-system--digital-wallet)) | A | ⬜ Queued |
+| 28 | Stock Exchange | [Module 14 §3](modules/14-canonical-designs-transactional-and-staff.md#3-ultra-low-latency-stock-exchange-matching-engine) | B | 🟡 Core complete · Wave B SVG/2021-vs-2026 queued |
 
 ---
 
@@ -69,4 +107,5 @@ The universally recognized evaluation format for this track is the **Senior / St
 
 - **Format**: Structured scenario drills, trade-off and failure-mode questions (single choice, multiple select, ordering, quantitative estimation), and full 60-minute timed design loops graded against an explicit Staff/Principal rubric.
 - **Coverage Matrix & Rubric**: [`exams/README.md`](exams/README.md) maps every competency domain and canonical interview archetype to its teaching modules and executable proofs.
-- **Question Bank & Mock Loops**: [`exams/interview.md`](exams/interview.md) contains **70 original questions** (`Q-SD-001`–`Q-SD-070`) with distractor rationales plus **two complete 60-minute timed mock design loops** with Staff/Principal grading rubrics and scoring keys.
+- **Question Bank & Mock Loops**: [`exams/interview.md`](exams/interview.md) contains **75 original questions** (`Q-SD-001`–`Q-SD-075`) with distractor rationales plus **two complete 60-minute timed mock design loops** with Staff/Principal grading rubrics and scoring keys.
+- **Architect Certification Bridge Bank**: [`exams/architect-certs-bridge.md`](exams/architect-certs-bridge.md) maps system-design architectures onto **AWS SAP-C02**, **GCP PCA**, **Azure AZ-305**, and **CNCF/SRE** scenario domains (growing sequentially with every Wave A & B topic toward 60+ questions and a full bridge mock exam).

@@ -5,7 +5,7 @@
   "description": "Capacity calculators, rate-limiter and cache proofs, discrete-event queueing simulator, payment ledger invariants, and SRE SLO burn-rate tests for Zero-to-One System Design",
   "type": "module",
   "scripts": {
-    "test": "node --experimental-strip-types --test \"examples/0[1-7]-*.test.ts\"",
+    "test": "node --experimental-strip-types --test \"examples/0[1-79]-*.test.ts\" \"examples/[1-9][0-9]-*.test.ts\"",
     "test:integration": "node --experimental-strip-types --test \"examples/08-*.test.ts\"",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "oxlint -c ../../.oxlintrc.json .",

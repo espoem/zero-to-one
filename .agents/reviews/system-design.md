@@ -49,3 +49,17 @@ Verdict: **approve** (after full remediation of all P0, P1, P2, and P3 findings 
 
 - `architecture/system-design`: `mise exec -- npm test` (33/33 pass, 0 fail, 0 skipped), `mise exec -- npm run test:integration` (3/3 clean skip without Redis/Valkey), `typecheck` (exit 0), `lint` (0 warnings/errors), `fmt:check` (exit 0).
 - Repository root (`main` after fast-forward merge): `bun tools/check-questions.ts "architecture/system-design/exams/interview.md"` (70/70 questions, 0 issues), `npm run check` (`oxfmt --check`, `oxlint`, `wrap-check`, `table-check`, `link-check` with ZERO pending tracks, `mermaid-check` v11+v12, `katex-check`, `heading-check`) all exit 0.
+
+---
+
+## ByteByteGo & Primary-Source Expansion — Wave A Topic 01 (`track/system-design-bytebytego`, 2026-11-20)
+
+- **Coordinator / Integrator / SVG & Proof Author**: Antigravity (root)
+- **Prose Draft**: `opencode` (`opencode-go/hy4-flash-free`, corrected by root for Amdahl/Gustafson variable inversion, shuffle-sharding baseline, and Proof Map alignment)
+- **Exam & Cert Bridge Questions Draft**: `claude` CLI (`haiku`, `--max-turns 1`)
+- **Independent Cross-Family Challenger**: `opencode` (`opencode-go/muse-spark-1.3-contributor`, `muse` family)
+- **Challenger Findings Resolved**:
+  - [x] **P2** `examples/lib/scaling-models.ts`: separated explicit `trackInflightBoots` from `scaleDownCooldownTicks` and added explicit `sessionStoreFailed` parameter + negative SPOF test in `examples/09-scaling-evolution.test.ts`.
+  - [x] **P2** `assets/15-scale-evolution-blueprint.svg` & `assets/15-scaling-2021-vs-2026.svg`: shortened/wrapped overflowing bottom-strip and footer lines and tightened sub-label text widths to fit cleanly inside box bounds.
+  - [x] **P2** `modules/15-scale-from-zero-to-millions.md`: deferred formal Amdahl/Gustafson derivation to `algorithms/dsa/modules/14-parallel-algorithms-concurrency-and-interview-execution.md` per `.agents/OWNERSHIP.md`, keeping Gunther's USL full.
+  - [x] **P3** `modules/15-scale-from-zero-to-millions.md`, `exams/architect-certs-bridge.md`, `exams/interview.md`: fixed `oxfmt` escaped underscore inside KaTeX (`$N_{\max}$`), clarified `Q-CERT-001` worker-pool shuffle-sharding phrasing, and added exact section `#anchor` links to all 11 new question references.
