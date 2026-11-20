@@ -1,0 +1,23 @@
+# Toolchain for languages/scala. Run everything through it:
+#   mise install && mise run test
+[tools]
+java = "temurin-25.0.5+8.0.LTS"
+scala = "3.10.1"
+
+[settings]
+lockfile = true
+
+[tasks.test]
+run = "scala test examples"
+
+[tasks.typecheck]
+run = "scala compile --test examples"
+
+[tasks.lint]
+run = "scala compile --test -Werror -Wunused:all examples"
+
+[tasks.fmt]
+run = "scala fmt examples"
+
+[tasks."fmt:check"]
+run = "scala fmt --check examples"

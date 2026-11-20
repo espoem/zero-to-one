@@ -16,13 +16,13 @@ zero-to-one/
 ├── GLOSSARY.md        # Central bilingual (EN ↔ CZ) computer science & systems glossary
 ├── README.md          # This roadmap
 ├── .agents/           # Multi-agent coordination: PLAN, OWNERSHIP, STATUS, briefs, reviews, research
-├── languages/         # typescript · javascript · python · css
+├── languages/         # typescript · javascript · python · css · scala
 ├── technologies/      # react · solidjs · panda-css · postgres · nodejs · sqlite · redis · elasticsearch ·
 │                      # containers · kubernetes · argocd · terraform · gitlab-ci · observability ·
 │                      # aws · gcp · azure · cloudflare
 ├── algorithms/        # dsa
 └── architecture/      # data-systems · distributed-systems · networking · security-identity ·
-                       # cloud-foundations · system-design
+                       # cloud-foundations · functional-programming · system-design
 ```
 
 ### Track Standard
@@ -42,7 +42,7 @@ All tooling is pinned per track with [mise](https://mise.jdx.dev/) (`.mise.toml`
 
 ## 2. Curriculum Roadmap & Status
 
-29 tracks: 29 complete, 0 in progress, 0 planned. All four phases are complete; see [.agents/PLAN.md](./.agents/PLAN.md) for the master plan and [.agents/STATUS.md](./.agents/STATUS.md) for the completed status board.
+31 tracks: 31 complete, 0 in progress, 0 planned. All five phases are complete; see [.agents/PLAN.md](./.agents/PLAN.md) for the master plan and [.agents/STATUS.md](./.agents/STATUS.md) for the status board.
 
 | Domain | Track | Scope | Status | Path |
 | :-- | :-- | :-- | :-: | :-- |
@@ -50,6 +50,7 @@ All tooling is pinned per track with [mise](https://mise.jdx.dev/) (`.mise.toml`
 | `languages/` | **JavaScript** | ECMAScript 2026 from the specification up: types and coercion, execution model, async semantics, modules, metaprogramming, memory model and V8 behaviour | 🟢 Complete | [languages/javascript/](./languages/javascript/) |
 | `languages/` | **TypeScript** | The TypeScript 7 type system and toolchain: erasure, narrowing, generics, type-level programming, runtime boundaries, typing UI frameworks, shipping typed libraries | 🟢 Complete | [languages/typescript/](./languages/typescript/) |
 | `languages/` | **Python** | Python 3.15 from CPython internals and bytecode to PEP 695 typing, structured concurrency and free-threading | 🟢 Complete | [languages/python/](./languages/python/) |
+| `languages/` | **Scala 3** | Scala 3.10 / 3.9 LTS on OpenJDK 25: TASTy & JVM lowering, `enum` ADTs, declaration-site variance, `given`/`using` contextual abstractions, `opaque`/match types & type lambdas, `inline`/Mirror macros, Capture Checking & Ox, Cats 2.13, Cats Effect 3.7, FS2 3.16, and ZIO 2 | 🟢 Complete | [languages/scala/](./languages/scala/) |
 | `technologies/` | **Panda CSS** | Panda CSS 2.x: build-time style extraction, tokens, recipes, the Oxc-based compiler, design-system distribution and migration from 0.x/1.x | 🟢 Complete | [technologies/panda-css/](./technologies/panda-css/) |
 | `technologies/` | **PostgreSQL** | PostgreSQL 18: process model, SQL and JSONB, indexing, planner, MVCC, vacuum, WAL and PITR, replication, extensions | 🟢 Complete | [technologies/postgres/](./technologies/postgres/) |
 | `technologies/` | **React** | React 19.3 runtime: Fiber, hooks, concurrent scheduling, Suspense, Server Components and Flight, Actions, React Compiler | 🟢 Complete | [technologies/react/](./technologies/react/) |
@@ -74,6 +75,7 @@ All tooling is pinned per track with [mise](https://mise.jdx.dev/) (`.mise.toml`
 | `architecture/` | **Security & identity** | Threat modeling, applied cryptography, PKI and mTLS, sessions, OAuth 2.1/OIDC, WebAuthn, authorization models, vulnerability classes and supply chain | 🟢 Complete | [architecture/security-identity/](./architecture/security-identity/) |
 | `architecture/` | **Distributed systems** | System models and impossibility results, clocks, consistency, replication, Paxos/Raft consensus, distributed transactions, CRDTs, deterministic simulation | 🟢 Complete | [architecture/distributed-systems/](./architecture/distributed-systems/) |
 | `architecture/` | **Cloud Foundations** | Provider-neutral cloud foundations: shared responsibility, IAM primitives, VPC/CIDR, storage tiers, serverless, Well-Architected framework, FinOps, and service mapping | 🟢 Complete | [architecture/cloud-foundations/](./architecture/cloud-foundations/) |
+| `architecture/` | **Functional Programming** | Pure functional programming from first principles: referential transparency, λ-calculus, persistent structures, totality, laziness & corecursion, `State`, `Par`, property-based testing, parser combinators, `Monoid`/`Functor`/`Monad`/`Applicative`/`Traverse`, trampolining/`Free`, rank-2 `ST`, and pull-based streaming | 🟢 Complete | [architecture/functional-programming/](./architecture/functional-programming/) |
 | `architecture/` | **System design** | End-to-end distributed system design, requirements distillation, estimation & capacity planning, component synthesis, fault tolerance, LLM serving, and Staff/Principal interview mastery | 🟢 Complete | [architecture/system-design/](./architecture/system-design/) |
 
 ---
@@ -87,6 +89,7 @@ To bridge technical English documentation with accurate, established Czech acade
 - **[TypeScript & Type-System Glossary](./languages/typescript/GLOSSARY.md)** covers type theory, compiler analysis, and language features.
 - **[CSS Platform Glossary](./languages/css/GLOSSARY.md)** covers the cascade and cascade layers, value processing, layout engines, stacking contexts, container queries, color spaces, view transitions, the rendering pipeline, and design tokens.
 - **[Python Glossary](./languages/python/GLOSSARY.md)** covers CPython execution and bytecode, the object model and dunder protocols, descriptors and metaclasses, generators and concurrency, typing, and packaging.
+- **[Scala 3 Glossary](./languages/scala/GLOSSARY.md)** covers TASTy, `enum` ADTs and GADTs, declaration-site variance, `given`/`using` contextual abstractions, `opaque` and match types, type lambdas, `inline`/Mirror macros, Capture Checking, fibers, Cats/Cats Effect 3, FS2, and ZIO 2.
 - **[React Glossary](./technologies/react/GLOSSARY.md)** covers Fiber reconciliation, concurrent priority lanes, selective hydration, the Flight protocol, Server Actions, and React Compiler lowering.
 - **[SolidJS 2.x Glossary](./technologies/solidjs/GLOSSARY.md)** covers fine-grained push-pull reactivity, glitch freedom, draft stores and projections, colorless async, optimistic transactions, and server functions.
 - **[Panda CSS Glossary](./technologies/panda-css/GLOSSARY.md)** covers static extraction, design tokens, recipes, slot recipes, and conditions.
@@ -107,6 +110,7 @@ To bridge technical English documentation with accurate, established Czech acade
 - **[Networking Glossary](./architecture/networking/GLOSSARY.md)** covers link layer and IP routing, BGP, TCP and congestion control, DNS, TLS on the wire, HTTP/1.1 through HTTP/3 and QUIC, load balancing, and Linux kernel networking.
 - **[Security & Identity Glossary](./architecture/security-identity/GLOSSARY.md)** covers threat modeling, cryptographic primitives, PKI and mTLS, OAuth 2.1 and OIDC, JOSE tokens, WebAuthn, authorization models, web vulnerability classes, and post-quantum security.
 - **[Cloud Foundations Glossary](./architecture/cloud-foundations/GLOSSARY.md)** covers provider-neutral cloud concepts, shared responsibility, IAM evaluation, VPC/CIDR topologies, storage tiers, serverless paradigms, and FinOps.
+- **[Functional Programming Glossary](./architecture/functional-programming/GLOSSARY.md)** covers referential transparency, λ-calculus, parametricity, structural sharing, algebraic data types, laziness and corecursion, algebraic type classes (`Monoid`, `Functor`, `Applicative`, `Monad`, `Traverse`), trampolining, `Free` monads, rank-2 `ST`, and pull-based stream transducers.
 - **[AWS Architecture Glossary](./technologies/aws/GLOSSARY.md)** covers AWS IAM policies and evaluation order, VPC peering and transit gateways, Nitro virtualization, DynamoDB partitioning, and Well-Architected resilience.
 - **[Google Cloud Platform Glossary](./technologies/gcp/GLOSSARY.md)** covers GCP resource hierarchy, IAM conditions and Workload Identity, Andromeda SDN, BigQuery Dremel/Capacitor, and GKE architecture.
 - **[Cloudflare Edge Architecture Glossary](./technologies/cloudflare/GLOSSARY.md)** covers `workerd` V8 isolates, capability bindings, actor-model Durable Objects, edge storage (KV, R2, D1), and Zero Trust network security.
