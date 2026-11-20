@@ -39,7 +39,7 @@ States: ⬜ brief ready → 🟦 authoring → 🟨 challenge + verify → 🟧 
 | 4 | `technologies/aws` | Opus / Antigravity | `main` | ✅ merged | Merged 2026-11-08: 14 modules (400+ lines), 65-q SAA-C03 bank + mock, 38 hermetic tests passing, challenger & verifier gates resolved and complete. |
 | 4 | `technologies/gcp` | Opus / Antigravity | `main` | ✅ merged | Merged 2026-11-08: 10 modules (400+ lines), 65-q ACE bank + mock, full PCA matrix, 30 hermetic tests passing, challenger & verifier gates resolved and complete. |
 | 4 | `technologies/cloudflare` | Opus / Antigravity | `main` | ✅ merged | Merged 2026-11-08: 12 modules, 65-q exam bank + mock, 16 hermetic + workerd tests passing, challenger & verifier gates resolved and complete. |
-| 4 | `technologies/azure` | Opus · claude.ai | `track/azure` | ⬜ brief ready | Brief ready in `.agents/briefs/azure.md`. Target: AZ-104, AZ-305, AI-200, 9–12 modules, 65-q bank. |
+| 4 | `technologies/azure` | Opus / Antigravity | `track/azure` | 🟦 authoring | Authoring in `../zto-azure`: 10 modules, TS executable proofs + Azurite integration, AZ-104/AZ-305/AI-200 banks. |
 | 4 | `architecture/system-design` | Opus · claude.ai | `track/system-design` | ⬜ brief ready | Built last (composes all tracks). Brief ready in `.agents/briefs/system-design.md`. Target: 14 modules, Staff loop bank. |
 
 ## Progress Summary (as of 2026-11-09)
