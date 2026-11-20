@@ -42,7 +42,7 @@ All tooling is pinned per track with [mise](https://mise.jdx.dev/) (`.mise.toml`
 
 ## 2. Curriculum Roadmap & Status
 
-29 tracks: 27 complete, 0 in progress, 2 planned. Work is phased by dependency; see [.agents/PLAN.md](./.agents/PLAN.md) for the plan and [.agents/STATUS.md](./.agents/STATUS.md) for live status.
+29 tracks: 28 complete, 0 in progress, 1 planned. Work is phased by dependency; see [.agents/PLAN.md](./.agents/PLAN.md) for the plan and [.agents/STATUS.md](./.agents/STATUS.md) for live status.
 
 | Domain | Track | Scope | Status | Path |
 | :-- | :-- | :-- | :-: | :-- |
@@ -67,7 +67,7 @@ All tooling is pinned per track with [mise](https://mise.jdx.dev/) (`.mise.toml`
 | `technologies/` | **AWS** | AWS cloud architecture: IAM evaluation, VPC networking, compute, storage, databases, resilience, and SAA-C03 / SAP-C03 domains | 🟢 Complete | [technologies/aws/](./technologies/aws/) |
 | `technologies/` | **GCP** | Google Cloud Platform architecture: resource hierarchy, IAM, VPC, GKE, BigQuery, operations, security, and ACE / PCA exam domains | 🟢 Complete | [technologies/gcp/](./technologies/gcp/) |
 | `technologies/` | **Cloudflare** | Cloudflare edge platform: Workers & workerd, V8 isolates, Durable Objects, KV, R2, D1, Hyperdrive, Queues, and Zero Trust security | 🟢 Complete | [technologies/cloudflare/](./technologies/cloudflare/) |
-| `technologies/` | **Azure** | Microsoft Azure enterprise cloud architecture: Entra ID, ARM/Bicep, VNets, compute, storage, databases, and AZ-104 / AZ-305 / AI-200 | 🟡 Planned (Phase 4) | `technologies/azure/` |
+| `technologies/` | **Azure** | Microsoft Azure enterprise cloud architecture: Entra ID, RBAC/ABAC, ARM/Bicep & Deployment Stacks, VNets & Private Link DNS, Container Apps, Functions, Service Bus, Storage, Cosmos DB, and AZ-104 / AZ-305 / AI-200 | 🟢 Complete | [technologies/azure/](./technologies/azure/) |
 | `algorithms/` | **DSA** | Algorithm design, complexity analysis and data structures with proofs, invariants and TypeScript test suites | 🟢 Complete | [algorithms/dsa/](./algorithms/dsa/) |
 | `architecture/` | **Data systems** | Storage engines, indexing, transactions and isolation, WAL and recovery, replication, sharding, caching, encoding and stream processing | 🟢 Complete | [architecture/data-systems/](./architecture/data-systems/) |
 | `architecture/` | **Networking** | The protocol stack from Ethernet, IP and BGP through TCP, DNS, TLS 1.3, HTTP/1.1 to HTTP/3 and QUIC, load balancing and Linux network operations | 🟢 Complete | [architecture/networking/](./architecture/networking/) |
@@ -110,6 +110,7 @@ To bridge technical English documentation with accurate, established Czech acade
 - **[AWS Architecture Glossary](./technologies/aws/GLOSSARY.md)** covers AWS IAM policies and evaluation order, VPC peering and transit gateways, Nitro virtualization, DynamoDB partitioning, and Well-Architected resilience.
 - **[Google Cloud Platform Glossary](./technologies/gcp/GLOSSARY.md)** covers GCP resource hierarchy, IAM conditions and Workload Identity, Andromeda SDN, BigQuery Dremel/Capacitor, and GKE architecture.
 - **[Cloudflare Edge Architecture Glossary](./technologies/cloudflare/GLOSSARY.md)** covers `workerd` V8 isolates, capability bindings, actor-model Durable Objects, edge storage (KV, R2, D1), and Zero Trust network security.
+- **[Microsoft Azure Glossary](./technologies/azure/GLOSSARY.md)** covers Entra ID, Azure RBAC/ABAC, Azure Policy, Deployment Stacks, Private Link split-horizon DNS, post-2026-03-31 default outbound access retirement, Container Apps/KEDA, Service Bus, Storage redundancy/SAS, Cosmos DB partitioning/consistency, Key Vault, and BCDR.
 
 New tracks add their glossary here when they land. All glossaries follow the discipline recorded in [AGENTS.md](./AGENTS.md): shared terms reuse the root definition and Czech translation verbatim; no fabricated neologisms.
 

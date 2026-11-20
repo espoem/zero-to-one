@@ -1,6 +1,6 @@
 # Zero-to-One — Master Plan v1 (2026-10-28)
 
-Status: **IN PROGRESS (Phase 4)**. Phase 0, 1, 2, and 3 are complete and merged to `main`. Phase 4 has 4 of 6 tracks complete (`cloud-foundations`, `aws`, `gcp`, `cloudflare`). Only 2 tracks remain: `technologies/azure` and `architecture/system-design`.
+Status: **IN PROGRESS (Phase 4)**. Phase 0, 1, 2, and 3 are complete and merged to `main`. Phase 4 has 5 of 6 tracks complete (`cloud-foundations`, `aws`, `gcp`, `cloudflare`, `azure`). Only 1 track remains: `architecture/system-design`.
 
 Inputs: six research dossiers in `.agents/research/` (A-frontend, B-data, C-runtimes, D-cs, E-platform, F-cloud). Their versions were checked against primary sources on 2026-10-27/28. Claims they could not check are marked `(unverified)` and **must be re-verified by the authoring agent before they are taught**.
 
@@ -18,7 +18,7 @@ Every track reaches "master of the domain" depth as defined in `AGENTS.md`:
 
 Knowledge is **deduplicated**: each concept has exactly one owner track, and every other track cross-links to it (§4).
 
-## 2. Target taxonomy: 29 tracks (27 complete, 2 planned) and 340+ modules
+## 2. Target taxonomy: 29 tracks (28 complete, 1 planned) and 350+ modules
 
 | Root | Track | Mods | State | Phase |
 | --- | --- | --: | --- | :-: |
@@ -42,7 +42,7 @@ Knowledge is **deduplicated**: each concept has exactly one owner track, and eve
 | technologies | `observability` | 13 | ✅ merged: OTel, Prometheus, Grafana LGTM, alert burn rates, 65-q PCA/OTCA bank, 53 tests | 3 |
 | technologies | `aws` | 14 | ✅ merged: AWS architecture, IAM, VPC, resilience, 65-q SAA-C03 bank, 38 tests | 4 |
 | technologies | `gcp` | 10 | ✅ merged: Google Cloud architecture, IAM, Andromeda, BigQuery, 65-q ACE/PCA bank, 30 tests | 4 |
-| technologies | `azure` | 9 | ⬜ brief ready: AZ-104, AZ-305, AI-200 (AZ-204 retired), Entra ID, ARM/Bicep | 4 |
+| technologies | `azure` | 10 | ✅ merged: AZ-104/AZ-305/AI-200 (AZ-204 retired), Entra ID/RBAC, ARM/Bicep/Stacks, Private Link, Cosmos DB, 190-q bank, 62 tests | 4 |
 | technologies | `cloudflare` | 12 | ✅ merged: Workers/workerd, Durable Objects, D1/R2/KV/Queues, 65-q bank, 16 tests | 4 |
 | algorithms | `dsa` | 14 | ✅ merged: CLRS 4e / MIT 6.1210, 75-q bank, 169+ TS/Python/Rust/Nim tests | 2 |
 | architecture | `data-systems` | 12 | ✅ merged: **foundation**: DDIA 2e ch. 3–8, 11–13, storage/WAL/MVCC, 65-q bank, 31 tests | 1 |
@@ -69,7 +69,7 @@ Many tracks assume these foundations as prerequisites:
 | 1 | Foundations (`javascript`, `css`, `data-systems`, `networking`, `security-identity`) & existing track updates (`typescript`, `react`, `solidjs`, `panda-css`, `postgres`) | ✅ Merged | 10 tracks, 127 modules, 696 exam questions, all tests passing |
 | 2 | Runtimes and data stores (`nodejs`, `python`, `sqlite`, `redis`, `elasticsearch`, `dsa`, `distributed-systems`) | ✅ Merged | 7 tracks, 92 modules, 529 exam questions, all tests passing |
 | 3 | Platform and DevOps (`containers`, `kubernetes`, `terraform`, `argocd`, `gitlab-ci`, `observability`) | ✅ Merged | 6 tracks, 71 modules, 392 exam questions, all tests passing |
-| 4 | Cloud & System Design (`cloud-foundations`, `aws`, `gcp`, `cloudflare` complete; `azure`, `system-design` planned) | 🔄 In Progress | 4 of 6 tracks complete (50 modules, 260 exam questions); 2 tracks remaining |
+| 4 | Cloud & System Design (`cloud-foundations`, `aws`, `gcp`, `cloudflare`, `azure` complete; `system-design` planned) | 🔄 In Progress | 5 of 6 tracks complete (60 modules, 450 exam questions); 1 track remaining |
 
 ### Phase 4 Remaining Tracks & Missing Deliverables
 

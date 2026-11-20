@@ -5,7 +5,7 @@
   "description": "Executable proofs, Azure RBAC/Policy/networking models, Cosmos DB and Service Bus simulators for the Zero-to-One Azure track",
   "type": "module",
   "scripts": {
-    "test": "node --experimental-strip-types --test \"examples/[0-8][0-9]-*.test.ts\"",
+    "test": "node --experimental-strip-types --test \"examples/0[1-8]-*.test.ts\"",
     "test:integration": "node --experimental-strip-types --test \"examples/09-*.test.ts\"",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "oxlint -c ../../.oxlintrc.json .",
