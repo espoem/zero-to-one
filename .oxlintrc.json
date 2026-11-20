@@ -77,6 +77,12 @@
       "rules": {
         "no-unused-vars": "off"
       }
+    },
+    {
+      "files": ["languages/typescript/examples/14-strict-fp-es2024-vs-es6/web/src/data/catalog.ts"],
+      "rules": {
+        "import/default": "off"
+      }
     }
   ]
 }
