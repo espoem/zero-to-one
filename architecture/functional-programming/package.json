@@ -1,0 +1,26 @@
+{
+  "name": "@zero-to-one/functional-programming",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Executable algebraic-law proofs, persistent structures, lazy streams, Par deadlock counterexamples, parser combinators, trampolining, and rank-2 ST proofs for Zero-to-One Functional Programming",
+  "type": "module",
+  "scripts": {
+    "test": "npm run test:ts && npm run test:scala",
+    "test:ts": "node --experimental-strip-types --test \"examples/typescript/*.test.ts\"",
+    "test:scala": "scala test examples/scala",
+    "typecheck": "tsc --noEmit -p tsconfig.json && scala compile --test examples/scala",
+    "lint": "oxlint -c ../../.oxlintrc.json . && scala compile --test -Werror examples/scala",
+    "fmt": "oxfmt -c ../../.oxfmtrc.json . && scala fmt examples/scala",
+    "fmt:check": "oxfmt -c ../../.oxfmtrc.json --check . && scala fmt --check examples/scala"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.6",
+    "fast-check": "4.10.3",
+    "oxfmt": "0.76.0",
+    "oxlint": "1.91.0",
+    "typescript": "7.0.2"
+  },
+  "engines": {
+    "node": ">=26"
+  }
+}

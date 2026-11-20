@@ -1,0 +1,10 @@
+# Toolchain for architecture/functional-programming. Run everything through it:
+#   mise install && mise exec -- npm ci && mise exec -- npm test
+[tools]
+node = "26.13.0"
+"npm:typescript" = "7.0.2"
+java = "temurin-25.0.5+8.0.LTS"
+scala = "3.10.1"
+
+[settings]
+lockfile = true
