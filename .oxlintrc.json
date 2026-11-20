@@ -14,6 +14,8 @@
     "**/node_modules/**",
     "**/styled-system/**",
     "**/dist/**",
+    "**/.scala-build/**",
+    "**/.bsp/**",
     "technologies/panda-css/examples/fixtures/negative/**"
   ],
   "rules": {

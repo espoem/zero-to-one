@@ -8,6 +8,10 @@ build/
 out/
 *.tsbuildinfo
 target/
+.scala-build/
+.bsp/
+.bloop/
+.metals/
 __pycache__/
 .pytest_cache/
 .mypy_cache/
