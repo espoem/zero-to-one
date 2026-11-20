@@ -2,7 +2,7 @@
 
 A single progressive course on the TypeScript type system and its toolchain: erasure and the native compiler, narrowing and assignability, generics and inference, type-level programming, API design, runtime boundaries, typing UI frameworks, and shipping typed libraries.
 
-Verified against TypeScript 7.0.2 (7.1.0-beta noted as preview), Node 26.12.1, Zod 4.6.7, `@standard-schema/spec` 1.1.0, `@types/react` 19.3.0, `solid-js`/`@solidjs/web` 2.0.0-rc.19, `@types/node` 26.6.6, expect-type 1.4.0, `@arethetypeswrong/cli` 0.18.5, publint 0.3.25 on 2026-10-31.
+Verified against TypeScript 7.0.2 (7.1.0-beta noted as preview), Node 26.12.1, Zod 4.6.7, `@standard-schema/spec` 1.1.0, `@types/react` 19.3.0, `solid-js`/`@solidjs/web` 2.0.0-rc.19 (Module 12) and 2.0.3 GA (Module 14 web lab), `@tanstack/table-core` 9.3.1, `@solid-primitives/{storage,media,clipboard}` 5.0.0/4.0.0/2.0.0, `@types/node` 26.6.6, expect-type 1.4.0, `@arethetypeswrong/cli` 0.18.5, publint 0.3.25 on 2026-11-20.
 
 **Ownership.** This track owns the type system, inference, variance, declaration emit, tsconfig, the typing of JSX/components/hooks, and Standard Schema/Zod typing (see `.agents/OWNERSHIP.md`). Runtime semantics are cross-linked instead of re-explained: JavaScript language semantics (`this`, closures, promises, ESM, `using`, decorators at runtime) belong to `languages/javascript`, Node's type stripping and loader to `technologies/nodejs`, React internals to [technologies/react](../../technologies/react/README.md), and Solid's reactive runtime to [technologies/solidjs](../../technologies/solidjs/README.md).
 
@@ -23,6 +23,7 @@ Verified against TypeScript 7.0.2 (7.1.0-beta noted as preview), Node 26.12.1, Z
 | 11 | [Runtime Boundaries: Validation and Standard Schema](./modules/11-runtime-boundaries-validation.md) | Parse-don't-validate, Zod 4 input/output types, Zod 3→4, Standard Schema, typed fetch and env | [`11-runtime-boundaries`](./examples/11-runtime-boundaries/) |
 | 12 | [Typing UI Frameworks: React & SolidJS](./modules/12-typing-ui-frameworks.md) | How JSX is checked, React 19 and Solid 2.0 RC component/prop/hook/event/ref typing | [`12-typing-ui-frameworks`](./examples/12-typing-ui-frameworks/) |
 | 13 | [Library Authoring, Performance, and Type Testing](./modules/13-library-authoring-performance-and-type-tests.md) | Declaration emit, `isolatedDeclarations`, `exports`/`types`, attw/publint, type tests, performance limits, migration, version history | [`13-library-authoring`](./examples/13-library-authoring/) |
+| 14 | [Strict Functional Programming Library Design: ES2024 vs ES6](./modules/14-strict-fp-library-es2024-vs-es6.md) | Parallel `#strata/es2024` & `#strata/es6` internal libraries (Underscore/Lodash/Ramda facades), ADTs, transducers, lenses, FSMs + `Symbol.dispose`, `DotPath<T>`, defect audit, SolidJS 2.x learning app | [`14-strict-fp-es2024-vs-es6`](./examples/14-strict-fp-es2024-vs-es6/) |
 
 Also: [GLOSSARY.md](./GLOSSARY.md) (EN ↔ CZ), [CHEATSHEET.md](./CHEATSHEET.md), [exams/](./exams/README.md).
 
@@ -56,8 +57,12 @@ Domain weights are not published. The coverage matrix, exam delta (TS 7 vs older
 mise install                      # node 26 + typescript 7.0.2 (see .mise.toml)
 mise exec -- npm ci
 mise exec -- npm test             # node --test over examples/**/*.test.ts
-mise exec -- npm run typecheck    # tsc 7 on the track + the React and Solid JSX projects
-mise exec -- node --test examples/09-conditional-mapped/   # one module
+mise exec -- npm run typecheck    # tsc 7 on the track, React/Solid JSX projects, and ES2024 + ES6 strict FP profiles
+mise exec -- node --test examples/14-strict-fp-es2024-vs-es6/  # ES2024 vs ES6 parity & type suites
+
+# Interactive SolidJS 2.0.3 + TanStack Table v9 learning page (Module 14)
+cd examples/14-strict-fp-es2024-vs-es6/web
+mise exec -- npm ci && mise exec -- npm test && mise exec -- npm run dev
 ```
 
 Lint and format checks run against the shared root configs: `npm run lint` and `npm run fmt:check` (`npm run fmt` applies the formatting).

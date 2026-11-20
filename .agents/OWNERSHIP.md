@@ -36,6 +36,7 @@ The `M` numbers refer to the proposed module lists in `research/*.md`. Authors u
 | Typing JSX, components, hooks, generic/polymorphic components | `languages/typescript` (M12) | react, solidjs, panda-css |
 | Standard Schema, Zod typing of runtime boundaries | `languages/typescript` (M11) | nodejs, react, solidjs |
 | Type tests, declaration emit checks, attw/publint packaging checks (M13) | `languages/typescript` | all TS-based tracks |
+| Strict FP type-system patterns in TypeScript (Option/Result ADTs, `DotPath<T>`, `Evolver<T>`, typed `Lens`/`Transducer`, explicit FSMs, internal `#` subpath imports, ES2024-vs-ES6 compiler profile parity) (M14) | `languages/typescript` | `architecture/functional-programming` (language-neutral FP theory), `languages/javascript` (runtime semantics), `algorithms/dsa` (LRU, Fisher–Yates), `technologies/solidjs` (Solid 2.x UI) |
 | Python data model, typing, asyncio, CPython internals, packaging (uv) | `languages/python` | dsa (Python idioms), all Python examples |
 | Python-specific security (pickle, framework security) | `languages/python` | security-identity |
 | Referential transparency, substitution model, λ-calculus, parametricity & free theorems, persistent data structures & structural sharing (cons-lists, trees, catamorphisms, amortised queues), algebraic error handling (`Option`, `Either`, `Validated`), strictness vs laziness & corecursion (`unfold`, deforestation) | `architecture/functional-programming` (M01–M04) | `languages/scala`, `languages/typescript`, `algorithms/dsa` |

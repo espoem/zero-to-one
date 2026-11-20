@@ -11,7 +11,7 @@ States: ⬜ brief ready → 🟦 authoring → 🟨 challenge + verify → 🟧 
 
 | Phase | Track | Primary | Branch | State | Notes |
 | :-: | --- | --- | --- | --- | --- |
-| 1 | `languages/typescript` | Opus · claude.ai | `track/typescript` | ✅ merged | Merged 2026-10-30: 132 tests passing, TS 7.0.2 pinned, 72-q bank, challenger & verifier gates complete. |
+| 1 | `languages/typescript` | Opus · claude.ai | `track/typescript-strata-fp` | ✅ merged | Merged 2026-10-30; extended 2026-11-20 with Module 14: parallel internal `#strata/es2024` & `#strata/es6` strict FP libraries (all 7 domains + 4 facades, `isolatedDeclarations`, strict ES2015 gate), 31 new parity/law/type tests (163 total), 78-q bank + H-003, and interactive SolidJS 2.0.3 + TanStack Table v9 + `@solid-primitives` learning app. |
 | 1 | `technologies/panda-css` | Opus · claude.ai | `track/panda-css` | ✅ merged | Merged 2026-10-30: 118 tests passing (45 in Chromium), Panda 2.4.0, 60-q bank, challenger & verifier gates complete. |
 | 1 | `technologies/postgres` | Opus · claude.ai | `track/postgres` | ✅ merged | Merged 2026-10-30 (integration updated 2026-11-07): 13 modules, 13 PGlite hermetic + 11 live PG 18.6 integration tests passing, 65-q EDB bank, challenger & verifier gates complete. |
 | 1 | `technologies/react` | Opus · claude.ai | `track/react` | ✅ merged | Merged 2026-10-30 (Playwright integration updated 2026-11-07): 222 unit + 6 Chromium Playwright tests passing, React 19.3.1, 65-q bank, challenger & verifier gates complete. |
@@ -49,8 +49,8 @@ States: ⬜ brief ready → 🟦 authoring → 🟨 challenge + verify → 🟧 
 - **Total Tracks**: 31
 - **Completed & Merged**: 31 tracks (Phase 1: 10/10, Phase 2: 7/7, Phase 3: 6/6, Phase 4: 6/6, Phase 5: 2/2)
 - **Remaining**: 0 tracks
-- **Total Authored Modules**: 386 modules (all verified, >= 400 lines average, with interview drills)
-- **Total Exam Questions**: 2,329+ questions (all original with distractor rationales and mock exams)
+- **Total Authored Modules**: 387 modules (all verified, >= 400 lines average, with interview drills)
+- **Total Exam Questions**: 2,335+ questions (all original with distractor rationales and mock exams)
 - **Verification Gates**: 100% clean (`npm run check` green, 0 broken links, 0 pending links, 0 table/katex/mermaid errors)
 
 ## Dependencies

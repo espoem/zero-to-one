@@ -126,3 +126,18 @@ Where Czech practice has no established translation, the English term is used in
 | **JSX Import Source** | (EN term used) | The package whose `jsx-runtime` module provides the JSX namespace and runtime (`react`, `@solidjs/web`). | TS tsconfig reference |
 | **Polymorphic Component** | **Polymorfní komponenta** | A component whose rendered element and accepted props are chosen by an `as`-style prop. | [Module 12](./modules/12-typing-ui-frameworks.md) |
 | **Accessor (Solid)** | **Accessor** (EN term used) | The function type `() => T` returned by Solid signals and memos; read by calling it. Runtime semantics: technologies/solidjs. | Solid documentation |
+
+---
+
+## 9. Functional Programming & Strict Library Patterns
+
+| English Term | Czech Term | Definition & Context | Primary Reference |
+| :-- | :-- | :-- | :-- |
+| **Algebraic Data Type (ADT)** | **Algebraický datový typ** | A composite type formed by products (records/tuples) and tagged sums (`Option<T>`, `Result<T, E>`), enabling exhaustive narrowing with `assertNever`. | Pierce, _Types and Programming Languages_; [Module 14](./modules/14-strict-fp-library-es2024-vs-es6.md) |
+| **Transducer** | **Transducer** (přenosový transformátor) | A composable higher-order transformation on step-reducing functions (`<Acc>(next) => step`) that fuses map/filter/take stages into a single pass without intermediate arrays. | Hickey (Clojure Transducers); [Module 14](./modules/14-strict-fp-library-es2024-vs-es6.md) |
+| **Functional Lens (Optic)** | **Funkcionální čočka** (optika) | A composable `(get, set)` pair focusing on a sub-part of an immutable structure while satisfying the GetPut, PutGet, and PutPut equational laws. | Foster et al. (2007); [Module 14](./modules/14-strict-fp-library-es2024-vs-es6.md) |
+| **Structural Sharing** | **Strukturální sdílení** | Reusing unmodified subtrees by reference when producing a new immutable copy along a modified path. | Okasaki, _Purely Functional Data Structures_ |
+| **Trampoline** | **Trampolína** | An iterative driver loop evaluating thunked `Bounce<T>` steps (`done \| more`) to execute deep tail recursion in $O(1)$ stack space on runtimes without PTC. | [Module 14](./modules/14-strict-fp-library-es2024-vs-es6.md) |
+| **Subpath Imports (`#…`)** | **Podcestové interní importy** | Private package-internal import aliases declared under `"imports"` in `package.json`, resolved natively by Node.js, TypeScript `NodeNext`, and Vite without publishing. | Node.js Packages specification |
+| **Explicit Finite-State Machine (FSM)** | **Explicitní konečný automat** | Modeling stateful wrappers (`once`, `debounce`, `throttle`) as a discriminated union of valid states whose payloads exist only in the states where they are defined. | [Module 14](./modules/14-strict-fp-library-es2024-vs-es6.md) |
+| **Prototype-Pollution Guard** | **Ochrana proti znečištění prototypu** | Rejecting unsafe dynamic property segments (`__proto__`, `constructor`, `prototype`) before deep path assignment or recursive object merging. | [Module 14](./modules/14-strict-fp-library-es2024-vs-es6.md); [JavaScript M13](../javascript/modules/13-correctness-security-pitfalls.md) |

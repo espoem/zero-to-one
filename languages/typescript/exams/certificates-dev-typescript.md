@@ -1387,6 +1387,105 @@ Why must a React/Solid server function validate its arguments even when they are
 
 </details>
 
+### Q-TSC-S-036 · Designing types others will use · difficulty 3 · single
+
+A recursive utility type is defined as `type DotPath<T> = T extends Record<string, unknown> ? ... : never;`. When passed `interface Config { host: string; tls: { port: number } }`, what does `DotPath<Config>` evaluate to, and why?
+
+- A) `"host" | "tls" | "tls.port"`, because interfaces and object type aliases have identical assignability to `Record<string, unknown>`.
+- B) `never`, because `interface` declarations are open to declaration merging and lack an implicit string index signature, so `Config extends Record<string, unknown>` is `false`.
+- C) `string`, because TypeScript widens recursive template literal types when checking interfaces.
+- D) Compile error `TS2589`, because `Config` is cyclic.
+
+<details><summary>Answer</summary>
+
+**B.** Interfaces do not receive an implicit index signature because another declaration could merge incompatible members later. Constraining `DotPath<T>` with `T extends object` (excluding built-in leaves such as `Date`, `RegExp`, `Map`, `Set`, functions, and arrays) works for both `interface` and `type` definitions.
+
+- Why not A: Only closed `type` aliases satisfy `Record<string, unknown>` implicitly; `interface` types do not.
+- Why not C: TypeScript does not widen a failing conditional type branch to `string`; it takes the false branch (`never`).
+- Why not D: `Config` has finite depth 2 and is not cyclic.
+- Ref: [modules/14](../modules/14-strict-fp-library-es2024-vs-es6.md#6-reference-defect-audit-five-bugs-caught-and-fixed-by-verification), [modules/04](../modules/04-objects-assignability-and-weird-parts.md)
+
+</details>
+
+### Q-TSC-S-037 · Designing types others will use · difficulty 2 · single
+
+Under `"isolatedDeclarations": true` and `"declaration": true`, an internal library exports `export const lodash = Object.freeze({ ...underscore, flatten: Arr.flatten });` without a type annotation. What happens during `tsc` checking?
+
+- A) Succeeds, because `Object.freeze` provides a contextual type.
+- B) Fails with `TS9010`/`TS9013`, requiring an explicit type annotation on `lodash` (and `Omit<UnderscoreFacade, 'flatten'>` when extending `UnderscoreFacade` with an incompatible `flatten` signature).
+- C) Succeeds only when `erasableSyntaxOnly` is disabled.
+- D) Emits `any` silently in the `.d.ts` output.
+
+<details><summary>Answer</summary>
+
+**B.** Isolated declarations forbid expression-level inference on exported variables so `.d.ts` files can be generated per-file without running full type checking. Annotating `lodash: LodashFacade` where `LodashFacade extends Omit<UnderscoreFacade, 'flatten'>` resolves both `TS9010`/`TS9013` and the `TS2430` override conflict.
+
+- Why not A: `Object.freeze` is a generic call expression, which `isolatedDeclarations` cannot infer without an explicit annotation.
+- Why not C: `erasableSyntaxOnly` governs runtime-erased syntax, not declaration emit inference.
+- Why not D: `isolatedDeclarations` reports hard errors (`TS9010`/`TS9013`) rather than silently emitting `any`.
+- Ref: [modules/14](../modules/14-strict-fp-library-es2024-vs-es6.md#12-dual-compiler-enforcement-profiles), [modules/13](../modules/13-library-authoring-performance-and-type-tests.md#1-declaration-emit)
+
+</details>
+
+### Q-TSC-S-038 · Designing types others will use · difficulty 2 · single
+
+Which `tsconfig.json` configuration statically guarantees that a teaching module written for ES6 (ECMAScript 2015) cannot call `Object.hasOwn`, `Object.groupBy`, `Array.prototype.toSorted`, or `Symbol.dispose`?
+
+- A) `"target": "ES2015"` alone with default `"lib"` and `"types": ["node"]`.
+- B) `"target": "ES2015"`, `"lib": ["ES2015"]`, and `"types": []` (with a minimal declaration only for `setTimeout`/`clearTimeout`).
+- C) `"erasableSyntaxOnly": true` and `"strict": true`.
+- D) `"module": "CommonJS"` and `"noEmit": true`.
+
+<details><summary>Answer</summary>
+
+**B.** Setting `"lib": ["ES2015"]` and `"types": []` strips every ES2016–ES2024 and `@types/node` global declaration from the checker, turning any post-ES2015 runtime call into an immediate `TS2339` compile error.
+
+- Why not A: `@types/node` pulls in newer ES lib references (including ES2022–ES2024 globals), defeating the ES2015 library gate.
+- Why not C: `erasableSyntaxOnly` checks TypeScript-only syntax, not ECMAScript standard library version boundaries.
+- Why not D: Module format does not restrict available standard library globals.
+- Ref: [modules/14](../modules/14-strict-fp-library-es2024-vs-es6.md#12-dual-compiler-enforcement-profiles)
+
+</details>
+
+### Q-TSC-S-039 · Designing types others will use · difficulty 2 · multi
+
+Which two design changes eliminate impossible states and timer leaks in a strict `debounce` utility?
+
+- A) Replace `{ leading?: boolean; trailing?: boolean }` with `type DebounceMode = { edge: 'trailing' } | { edge: 'leading' } | { edge: 'both' }`.
+- B) Store `timerId?: number`, `pendingArgs?: Args`, and `disposed: boolean` as separate mutable variables.
+- C) Model the internal lifecycle as a 5-state discriminated union guarded by `assertNever` and implement `[Symbol.dispose]` (`Disposable`).
+- D) Cast `pendingArgs as any` inside the timer callback to simplify control flow.
+
+<details><summary>Answer</summary>
+
+**A, C.** `DebounceMode` eliminates the degenerate `{ leading: false, trailing: false }` configuration, while a discriminated-union FSM ties `timerId` and `pendingArgs` strictly to the states where they exist and `[Symbol.dispose]` guarantees deterministic timer cleanup with `using`.
+
+- Why not B: Separate booleans and optional fields create impossible state combinations that the type checker cannot reject.
+- Why not D: Casting to `any` bypasses exhaustiveness and strict null checking.
+- Ref: [modules/14](../modules/14-strict-fp-library-es2024-vs-es6.md#3-explicit-finite-state-machines--resource-disposal-once-debounce-throttle-trampoline)
+
+</details>
+
+### Q-TSC-S-040 · Authoring and shipping typed libraries · difficulty 2 · single
+
+You want to import an internal, non-publishable TypeScript utility library as `#strata/es2024` and `#strata/es6/object` across Node 26 tests, `tsc` (`moduleResolution: "NodeNext"`), and Vite without publishing to npm. What is the standard configuration mechanism?
+
+- A) Add `"exports": { "#strata/*": "./lib/*.ts" }` in `package.json`.
+- B) Add `"imports": { "#strata/es2024": "./.../lib/es2024/index.ts", "#strata/es2024/*": "./.../lib/es2024/*.ts" }` in `package.json` (and mirror the alias in Vite/browser `tsconfig` where needed).
+- C) Set `"baseUrl": "."` in TypeScript 7 `tsconfig.json`.
+- D) Install the folder via `npm link` into the global `node_modules`.
+
+<details><summary>Answer</summary>
+
+**B.** Node.js subpath `"imports"` (`#`-prefixed specifiers in `package.json`) are designed specifically for private internal package mappings and are natively understood by Node 26 and TypeScript `NodeNext`.
+
+- Why not A: `"exports"` defines the public entry points for external consumers and forbids `#`-prefixed keys.
+- Why not C: Standalone `baseUrl` was removed in TypeScript 7.0 ([Module 01](../modules/01-toolchain-and-compiler-model.md)) and is not understood by Node.js at runtime.
+- Why not D: `npm link` mutates global environment state and violates isolated workspace hygiene.
+- Ref: [modules/14](../modules/14-strict-fp-library-es2024-vs-es6.md#11-internal-subpath-imports-strata-without-publishing), [modules/06](../modules/06-modules-declarations-and-tsconfig.md)
+
+</details>
+
 ---
 
 ## Hands-on challenges
@@ -1410,6 +1509,17 @@ Implement `createEmitter<Events>()` with `on(name, listener): Disposable`, `off`
 Reference solution and verification: [`examples/exams/h002-typed-emitter.test.ts`](../examples/exams/h002-typed-emitter.test.ts). Key points: `K extends keyof Events`, conditional rest parameters `Events[K] extends void ? [] : [Events[K]]`, returning a `Disposable`.
 
 - Ref: [modules/10](../modules/10-type-safe-api-design-patterns.md), [modules/07](../modules/07-generics-and-inference.md)
+
+</details>
+
+### Q-TSC-H-003 · Designing types others will use · difficulty 3 · hands-on
+
+Implement parallel ES2024 (`#strata/es2024`) and ES6 (`#strata/es6`, compiling under `lib: ["ES2015"]`) versions of `isEqual`, `debounce`, `groupBy`, and `lensIndex`, proving bijective `Set`/`Map` structural equality, 5-state FSM disposal (`Symbol.dispose` vs `usingResource`), and all three Lens laws.
+<details><summary>Answer</summary>
+
+Reference implementation and verification: [`examples/14-strict-fp-es2024-vs-es6/strict-fp-parity.test.ts`](../examples/14-strict-fp-es2024-vs-es6/strict-fp-parity.test.ts) and [`examples/14-strict-fp-es2024-vs-es6/strict-fp-types.test.ts`](../examples/14-strict-fp-es2024-vs-es6/strict-fp-types.test.ts) (run `mise exec -- npm run typecheck` and `mise exec -- node --test examples/14-strict-fp-es2024-vs-es6/*.test.ts`).
+
+- Ref: [modules/14](../modules/14-strict-fp-library-es2024-vs-es6.md)
 
 </details>
 

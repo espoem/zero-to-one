@@ -37,16 +37,16 @@ Weights: not published by the vendor; the bank uses equal weights (5 questions p
 | Senior | How the type system works | n/p | 04, 07 | `04-assignability`, `07-generics` | S-001..S-005 | ✅ |
 | Senior | Conditional and mapped types | n/p | 09 | `09-conditional-mapped` | S-006..S-010 | ✅ |
 | Senior | Type-level programming | n/p | 08, 09 | `08-type-derivation`, `09-conditional-mapped` | S-011..S-015 | ✅ |
-| Senior | Designing types others will use | n/p | 07, 10, 12 | `10-api-design`, `12-typing-ui-frameworks` | S-016..S-020 | ✅ |
-| Senior | Authoring and shipping typed libraries | n/p | 06, 13 | `13-library-authoring` | S-021..S-025 | ✅ |
+| Senior | Designing types others will use | n/p | 07, 10, 12, 14 | `10-api-design`, `12-typing-ui-frameworks`, `14-strict-fp-es2024-vs-es6` | S-016..S-020, S-036..S-040 | ✅ |
+| Senior | Authoring and shipping typed libraries | n/p | 06, 13, 14 | `13-library-authoring`, `14-strict-fp-es2024-vs-es6` | S-021..S-025 | ✅ |
 | Senior | Performance and the native compiler | n/p | 01, 13 | `01-toolchain`, `13-library-authoring` | S-026..S-030 | ✅ |
 | Senior | Runtime validation and migration | n/p | 11, 13 | `11-runtime-boundaries` | S-031..S-035 | ✅ |
-| Mid/Senior | Coding challenges (hands-on) | n/p | 09, 10, 11 | [`examples/exams/`](../examples/exams/) | H-001, H-002 | ✅ |
+| Mid/Senior | Coding challenges (hands-on) | n/p | 09, 10, 11, 14 | [`examples/exams/`](../examples/exams/), [`examples/14-strict-fp-es2024-vs-es6/`](../examples/14-strict-fp-es2024-vs-es6/) | H-001, H-002, H-003 | ✅ |
 
 n/p = not published.
 
 ## Question bank
 
-- [`certificates-dev-typescript.md`](./certificates-dev-typescript.md): 70 original questions (35 Mid, 35 Senior; ≥ 5 per domain), 2 hands-on challenges with verification tests, and a full mock exam (40 questions + 2 challenges, 135 min) with a scoring key.
+- [`certificates-dev-typescript.md`](./certificates-dev-typescript.md): 75 original questions (35 Mid, 40 Senior; ≥ 5 per domain), 3 hands-on challenges with verification tests, and a full mock exam (40 questions + 2 challenges, 135 min) with a scoring key.
 
 All questions are original and written from the public topic list and the TypeScript documentation. No exam content was seen or used.

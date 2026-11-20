@@ -242,3 +242,16 @@ Receiving tracks should cross-link back to **TS M12** (`languages/typescript/mod
 - **C1 verified**: All TS 7.0.2 compiler model tests pass cleanly under Node 26.
 - **C2 verified**: Standard Schema v1 examples confirmed against official spec.
 - **State transition**: Track `typescript` has passed authoring, challenger review, verifier review, and final gate checks. Ready for merge.
+
+## Module 14 Extension — Strict FP ES2024 vs ES6 Internal Libraries & SolidJS 2.x Learning App (2026-11-20)
+
+- **Branch**: `track/typescript-strata-fp`
+- **Scope**: Incorporated the ES2024 strict TypeScript utility library specification and Strata FP unified Underscore/Lodash/Ramda architecture into `languages/typescript` as Module 14 ([`modules/14-strict-fp-library-es2024-vs-es6.md`](../../languages/typescript/modules/14-strict-fp-library-es2024-vs-es6.md)) with two parallel, non-publishable internal libraries (`#strata/es2024` and `#strata/es6`) wired via `package.json` `"imports"` subpath mappings and an interactive SolidJS 2.0.3 learning page under `examples/14-strict-fp-es2024-vs-es6/web/`.
+- **Source Audit & Defects Fixed (5/5)**:
+  1. `isEqual` Set bijective matching (`Uint8Array` visited bitmap prevents duplicate object false positives).
+  2. `isEqual` Map structural object-key lookup (replaces reference-only `map.has(k)`).
+  3. `DotPath<T>`, `getPath`, `lensProp`, `evolve` constrained to `T extends object` (excluding `BuiltinLeaf`) with depth cap `PrevDepth`, fixing silent `never` collapse on TypeScript `interface` types.
+  4. `words`/`kebabCase` ES6 regex aligned to split trailing digit tokens (`XMLHttpRequest2` → `xml-http-request-2`).
+  5. Full `isolatedDeclarations: true` + `exactOptionalPropertyTypes: true` + `erasableSyntaxOnly: true` enforcement across both `tsconfig.es2024.json` and `tsconfig.es6.json` (`lib: ["ES2015"]`, `types: []`), plus `DebounceMode` + `[Symbol.dispose]` vs ES6 `usingResource`.
+- **UI Stack Verified**: `solid-js@2.0.3`, `@solidjs/web@2.0.3`, `@solidjs/vite-plugin@3.0.1`, `@tanstack/table-core@9.3.1` (with `memoDrivenReactivity` avoiding `REACTIVE_WRITE_IN_OWNED_SCOPE`), `@solid-primitives/storage@5.0.0`, `@solid-primitives/media@4.0.0`, `@solid-primitives/clipboard@2.0.0`, Vite `8.3.8`, Vitest `5.1.1`.
+- **Verification**: All `languages/typescript` typecheck profiles (5 `tsc` projects), `node --test` suites, SolidJS Vitest + Vite production build, root `npm run check`, and leak scan passed cleanly.

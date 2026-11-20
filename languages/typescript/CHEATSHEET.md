@@ -162,3 +162,21 @@ Zod 4: top-level formats (`z.email()`), `{ error }` param, `.default` short-circ
 ```
 
 `types` first · one `.d.ts` per format (`.d.cts` for CJS) · `isolatedDeclarations` for fast emit · check with `publint` and `attw --pack . --profile esm-only` · type tests: `@ts-expect-error` (TS2578 when stale), `expectTypeOf(x).toEqualTypeOf<T>()`.
+
+---
+
+## 11. Strict FP Internal Library (ES2024 vs ES6) — [Module 14](./modules/14-strict-fp-library-es2024-vs-es6.md)
+
+```ts
+import { groupBy, sortBy, debounce, composeLens, lensProp, lensIndex } from '#strata/es2024';
+import { groupBy as groupByEs6, usingResource } from '#strata/es6';
+```
+
+| Capability | ES2024 (`#strata/es2024`) | ES6 (`#strata/es6`, `lib: ["ES2015"]`) |
+| --- | --- | --- |
+| Grouping | `Object.groupBy` / `Map.groupBy` | Manual `Map<K, T[]>` accumulator loop |
+| Pure array edits | `toSorted`, `toReversed`, `toSpliced`, `.with()` | Defensive `slice()` + `.sort()` / `.splice()` / indexed write |
+| Own-key check | `Object.hasOwn(obj, key)` | `Object.prototype.hasOwnProperty.call(obj, key)` |
+| Scoped timer cleanup | `using d = debounce(fn, 300)` (`[Symbol.dispose]`) | `usingResource(debounce(fn, 300), (d) => …)` (`try/finally`) |
+| Word tokenization | Unicode `\p{Lu}` / `\p{Ll}` / `\p{Diacritic}` | Latin regex + `[\u0300-\u036f]` after `normalize('NFD')` |
+| `DotPath<T>` constraint | `T extends object` (works on `interface` & `type`, depth-capped) | Identical type-level guarantee |
