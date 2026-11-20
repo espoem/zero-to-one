@@ -1,0 +1,24 @@
+# System Design Interview Coverage Matrix & Grading Rubric
+
+No official vendor certification covers general distributed system design (cloud-specific architecture exams live in [`technologies/aws`](../../technologies/aws/), [`technologies/gcp`](../../technologies/gcp/), and [`technologies/azure`](../../technologies/azure/)). This track prepares engineers for the **Senior / Staff / Principal System Design Interview Loop**, mapping every competency domain to syllabus modules, runnable TypeScript proofs, and the 70-question preparation bank in [`interview.md`](interview.md).
+
+---
+
+## 1. Senior / Staff / Principal System Design Competency Matrix
+
+| Competency Domain & Evaluation Objectives | Weight | Target Modules | Runnable Proofs / Examples | Coverage Status |
+| --- | :-: | --- | --- | :-: |
+| **Requirements, Estimation & Capacity Modeling**<br>Distill functional/non-functional requirements; drive 45–60 min timeboxing; compute QPS (avg/peak), 5-year storage, bandwidth, 80/20 cache sizing, Little's Law ($L = \lambda W$), and LLM KV-cache memory bounds with explicit assumptions. | 15% | Modules 01, 02 | `examples/01-capacity-estimation.test.ts` | ✅ full |
+| **Edge, API Design, Data Modeling & ID Generation**<br>Compose DNS, L4/L7 load balancing (P2C, consistent hashing), HTTP/2–3, WebSockets/SSE, CDNs (origin shield, cache-leak prevention), REST/gRPC/GraphQL, keyset vs offset pagination, storage selection, and Snowflake/UUIDv7 ID generation with clock-rollback defense. | 15% | Modules 03, 04 | `examples/04-ids-pagination-and-geo.test.ts` | ✅ full |
+| **Caching, Scaling Reads/Writes & Partitioning**<br>Select cache-aside/write-through/write-behind, W-TinyLFU eviction, single-flight and XFetch stampede defense, Memcache leases against stale-write races, hot-key splitting, read-your-writes routing, sharding keys, consistent hashing with vnodes, and sharded counters. | 15% | Modules 05, 06 | `examples/03-caching-and-hashing.test.ts` | ✅ full |
+| **Asynchrony, Rate Limiting & Resilience Engineering**<br>Choose queues vs logs, hybrid celebrity fan-out, backpressure, DLQs, transactional outbox, Temporal workflows; design Token Bucket/Sliding Window/GCRA limiters (avoiding fixed-window 2× bursts) and Redis Lua limiters; prevent tail-latency amplification, retry storms, and metastable overload with LIFO load shedding and hedged requests. | 15% | Modules 07, 08 | `examples/02-rate-limiters.test.ts`, `examples/05-queueing-and-tail-latency.test.ts`, `examples/08-redis-integration.test.ts` | ✅ full |
+| **Specialized Indexing, Contention & Financial Correctness**<br>Design typeahead tries, geospatial indexes (Geohash neighbor trap, Quadtree, S2, H3), Count-Min Top-K, real-time leaderboards, multipart presigned blob uploads; solve flash-sale contention (TTL holds, OCC, waiting rooms, fencing) and payment correctness (idempotency keys, double-entry ledger, PSP unknown-outcome reconciliation). | 15% | Modules 09, 10 | `examples/04-ids-pagination-and-geo.test.ts`, `examples/06-contention-and-payments.test.ts` | ✅ full |
+| **Observability, SLO Math & Disaster Recovery**<br>Define SLIs/SLOs/error budgets; design Google SRE multi-window multi-burn-rate alerts (`14.4×` 1h/5m, `6×` 6h/30m, `1×` 3d/6h); aggregate histograms rather than averaging p99s; prevent label cardinality OOMs and deep health-check fleet ejections; design multi-region RPO/RTO failover. | 10% | Module 11 | `examples/07-slo-burn-rates-and-health.test.ts` | ✅ full |
+| **End-to-End Canonical Architectures & Staff Deep Dives**<br>Synthesize full architectures under pushback across read-heavy content systems (URL shortener, News Feed, YouTube, Dropbox, Crawler), real-time/geo/streaming (WhatsApp, Notifications, Uber, Ad Clicks, Monitoring, Scheduler), and transactional/AI systems (Ticketmaster, Payments, Stock Exchange, Google Docs, S3, LLM Serving). | 15% | Modules 12, 13, 14 | `examples/01..07-*.test.ts` | ✅ full |
+
+---
+
+## 2. Interview Preparation Bank & Mock Loops
+
+- **Question Bank**: [`interview.md`](interview.md) — **70 original questions** (`Q-SD-001`–`Q-SD-070`) spanning all 7 domains (scenario, single-choice, multiple-select, ordering, and quantitative trade-offs), complete distractor rationales, module references, and primary literature citations.
+- **Timed Mock Design Loops**: Two complete **60-minute Staff/Principal mock loops** in [`interview.md`](interview.md) (one high-contention transactional/global architecture + one real-time AI/streaming architecture) with phase-by-phase timing targets, red-flag anti-patterns, and explicit Staff/Principal scoring rubrics.
