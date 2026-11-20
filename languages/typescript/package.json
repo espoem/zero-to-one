@@ -4,8 +4,14 @@
   "private": true,
   "description": "zero-to-one TypeScript track: runnable examples, type tests and compiler-fixture tests for TypeScript 7",
   "type": "module",
+  "imports": {
+    "#strata/es2024": "./examples/14-strict-fp-es2024-vs-es6/lib/es2024/index.ts",
+    "#strata/es2024/*": "./examples/14-strict-fp-es2024-vs-es6/lib/es2024/*.ts",
+    "#strata/es6": "./examples/14-strict-fp-es2024-vs-es6/lib/es6/index.ts",
+    "#strata/es6/*": "./examples/14-strict-fp-es2024-vs-es6/lib/es6/*.ts"
+  },
   "scripts": {
-    "typecheck": "tsc -p . && tsc -p examples/12-typing-ui-frameworks/react && tsc -p examples/12-typing-ui-frameworks/solid",
+    "typecheck": "tsc -p . && tsc -p examples/12-typing-ui-frameworks/react && tsc -p examples/12-typing-ui-frameworks/solid && tsc -p examples/14-strict-fp-es2024-vs-es6/tsconfig.es2024.json && tsc -p examples/14-strict-fp-es2024-vs-es6/tsconfig.es6.json",
     "test": "node --test \"examples/**/*.test.ts\"",
     "test:module": "node --test",
     "lint": "oxlint -c ../../.oxlintrc.json .",

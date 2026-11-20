@@ -19,6 +19,8 @@
   "exclude": [
     "examples/**/fixtures/**",
     "examples/12-typing-ui-frameworks/react/**",
-    "examples/12-typing-ui-frameworks/solid/**"
+    "examples/12-typing-ui-frameworks/solid/**",
+    "examples/14-strict-fp-es2024-vs-es6/web/**",
+    "examples/14-strict-fp-es2024-vs-es6/es6-env.d.ts"
   ]
 }
