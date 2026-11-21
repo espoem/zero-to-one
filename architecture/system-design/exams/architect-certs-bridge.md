@@ -3,7 +3,7 @@
 No single vendor-neutral certification tests general distributed system design, so vendor-specific IAM, CLI, and control-plane trivia stay in [`technologies/aws`](../../../technologies/aws/), [`technologies/gcp`](../../../technologies/gcp/), and [`technologies/azure`](../../../technologies/azure/). This bridge bank maps the architectural patterns, quantitative trade-offs, and failure modes taught across `architecture/system-design` directly onto Senior/Architect certification scenario domains (**AWS Solutions Architect – Professional `SAP-C02`**, **Google Cloud Professional Cloud Architect `PCA`**, **Microsoft Azure Solutions Architect Expert `AZ-305`**, and **CNCF / SRE Resilience**).
 
 - **Sequential Growth Plan**: Built sequentially alongside Wave A & Wave B topic completions (target: **60+ original scenario questions** plus a full timed certification bridge mock exam upon completion of the 28-topic expansion).
-- **Current Coverage**: **36 questions** (`Q-CERT-001`–`Q-CERT-036`) covering Topic 01 (`Scale From Zero to Millions` — Module 15), Topic 02 (`Distributed Key-Value Store` — Module 16), Topic 03 (`Google Maps` — Module 17), Topic 04 (`Distributed Message Queue` — Module 18), Topic 05 (`Hotel Reservation System` — Module 19), and Topic 06 (`Distributed Email Service` — Module 20).
+- **Current Coverage**: **42 questions** (`Q-CERT-001`–`Q-CERT-042`) covering Topic 01 (`Scale From Zero to Millions` — Module 15), Topic 02 (`Distributed Key-Value Store` — Module 16), Topic 03 (`Google Maps` — Module 17), Topic 04 (`Distributed Message Queue` — Module 18), Topic 05 (`Hotel Reservation System` — Module 19), Topic 06 (`Distributed Email Service` — Module 20), and Topic 07 (`Real-time Gaming Leaderboard` — Module 21).
 
 ---
 
@@ -750,5 +750,128 @@ Select **two** genuine architectural improvements when modernizing a 2021 email 
 - Why not C: Random `email_id` partitioning destroys per-user data locality, forcing expensive cross-shard scatter-gather scans on every folder load and search query.
 - Why not D: Base64 _increases_ byte size by `33.33%` (`4` ASCII bytes per `3` binary bytes); decoding Base64 to raw binary is what saves storage.
 - Ref: [modules/20-distributed-email-service.md](../modules/20-distributed-email-service.md#6-production-gotchas-sre-guardrails-and-2021-vs-2026-comparison), https://www.rfc-editor.org/rfc/rfc8620, https://www.rfc-editor.org/rfc/rfc8461
+
+</details>
+
+---
+
+## Module 21: Real-Time Gaming Leaderboard, Sharded Sorted Sets & Cloud Rankings (`Q-CERT-037`–`Q-CERT-042`)
+
+### Q-CERT-037 · AWS SAP-C02: Serverless Gaming Leaderboard with ElastiCache for Valkey & Write-Sharded DynamoDB · difficulty 3 · scenario
+
+A gaming studio deploys a serverless seasonal leaderboard on AWS (`5M` DAU, `2,894 QPS` peak match completions, `2,500 QPS` peak leaderboard reads). Authoritative game servers submit signed match outcomes through Amazon API Gateway and AWS Lambda. Live global rank and `±4` relative neighbor queries must return in `< 10 ms` from Amazon ElastiCache for Valkey, while every match outcome and durable seasonal score is persisted in Amazon DynamoDB. Which architecture prevents client score spoofing, duplicate retry inflation, and DynamoDB Global Secondary Index (GSI) hot-partition throttling?
+
+- A) Require game servers (never game clients) to submit mTLS/HMAC-signed payloads with a deterministic `match_id` to API Gateway; have Lambda execute a conditional DynamoDB write (`attribute_not_exists(match_id)`) into `match_results` before running an atomic Valkey Lua script updating the 53-bit composite score in the ElastiCache ZSET; and partition the DynamoDB seasonal leaderboard GSI using **Write Sharding** (`gsi_pk = "season#2026-11#" + (hash(user_id) % 32)`, `gsi_sk = composite_score`) so writes distribute across 32 physical partitions rather than throttling a single `1,000 WCU/s` partition key.
+- B) Embed long-lived IAM credentials inside the mobile game client so clients call `ZINCRBY` on ElastiCache directly and write to an unsharded DynamoDB GSI keyed on `gsi_pk = "season#2026-11"`.
+- C) Write match results only to DynamoDB and run an hourly AWS Glue job that scans the entire table and overwrites ElastiCache once per hour.
+- D) Create one ElastiCache ZSET key per player (`leaderboard:<user_id>`) and compute global rank by running `KEYS leaderboard:*` inside Lambda on every read request.
+
+<details><summary>Answer</summary>
+
+**A.** Terminating authoritative game-server requests at API Gateway + Lambda enforces the anti-cheat trust boundary, while a DynamoDB conditional write on `match_id` guarantees idempotent retry deduplication before mutating the ElastiCache for Valkey ZSET via an atomic Lua script. Because a naive DynamoDB GSI keyed solely on `"season#2026-11"` funnels 100% of current-season writes onto a single physical partition (`1,000 WCU/s` ceiling), write-sharding the GSI partition key across 32 suffixes (`0..31`) scales write capacity to `32,000 WCU/s` while ElastiCache serves sub-millisecond $O(\log N)$ `ZREVRANK` and `ZREVRANGE` reads.
+
+- Why not B: Client-embedded IAM credentials allow players to forge arbitrary scores, and an unsharded season GSI partition key hits DynamoDB's `1,000 WCU/s` per-partition hot-key limit at `2,894 QPS` peak writes.
+- Why not C: Hourly batch scans violate the real-time leaderboard requirement and consume massive DynamoDB RCU capacity.
+- Why not D: A per-player ZSET cannot rank players against one another, and running `KEYS *` blocks the Valkey event loop in $O(N)$ time.
+- Ref: [modules/21-realtime-gaming-leaderboard.md](../modules/21-realtime-gaming-leaderboard.md#2-high-level-architecture-api-contracts-and-anti-cheat-trust-boundaries), https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-partition-key-sharding.html
+
+</details>
+
+### Q-CERT-038 · AWS SAP-C02: Valkey Memory Sizing, Copy-on-Write Headroom & Sharded Rank Queries · difficulty 3 · single
+
+An ElastiCache for Valkey leaderboard stores `25,000,000` (`25M`) monthly active players in a sorted set (`OBJ_ENCODING_SKIPLIST`, `~128 B/member` = `~3.20 GB` active RAM) and takes periodic background RDB snapshots (`BGSAVE` via `fork()`) during peak evening tournaments. As the game expands toward `500M` DAU across a 16-shard cluster, which memory provisioning and global rank query design is required?
+
+- A) Provision exactly `3.20 GB` of node RAM with `reserved-memory-percent = 0` because `fork()` shares memory pages with zero overhead during heavy writes.
+- B) Provision **`~6.40 GB`** per `25M`-member shard (`2x` active ZSET footprint, enforcing ElastiCache `reserved-memory-percent >= 25–50%` headroom) so Copy-on-Write (`CoW`) page duplication during `fork()` RDB snapshots cannot trigger OOM or swap thrashing, and compute exact global rank across shards using `ZREVRANK` + $\sum \text{ZCARD}$ on higher score-range shards (or `ZSCORE` + parallel `ZCOUNT` across hash shards).
+- C) Size the cluster using `26 B/member` (`650 MB`) and compute global rank by calling `INFO keyspace` on each shard and summing the `keys=` counts.
+- D) Compute global rank on a 16-shard hash-partitioned cluster by calling `ZREVRANK` on all 16 shards and summing the 16 returned integers.
+
+<details><summary>Answer</summary>
+
+**B.** A `25M`-member ZSET in `OBJ_ENCODING_SKIPLIST` consumes `~128 B/member` (`~3.20 GB`) across `dictEntry`, `zskiplistNode`, `sds`, and `jemalloc` metadata. When `BGSAVE` calls `fork()`, the Linux kernel shares memory pages Copy-on-Write (`CoW`); under heavy score-update traffic (`2,894 QPS`), parent mutations dirty pages across the skip list and hash table, duplicating up to `100%` of the working set (`~6.40 GB` peak). Across a sharded cluster, exact global rank uses `ZREVRANK` + $\sum \text{ZCARD}$ of higher score-range shards, or 1 `ZSCORE` + $M$ parallel `ZCOUNT(shard_i, "(" + composite, "+inf")` calls across hash shards.
+
+- Why not A: With zero CoW headroom, heavy write traffic during an active `fork()` snapshot duplicates dirtied pages until the node hits `maxmemory` or OOM.
+- Why not C: `26 B/member` ignores 64-bit pointer overhead (`~5x` underestimate), and `INFO keyspace` reports top-level database key counts (`1`), not ZSET member cardinality (`ZCARD`).
+- Why not D: On a hash-partitioned cluster, `ZREVRANK` returns `nil` on the 15 shards that do not hold the user; summing local ranks across independent shards is invalid (`ZCOUNT` by score is required).
+- Ref: [modules/21-realtime-gaming-leaderboard.md](../modules/21-realtime-gaming-leaderboard.md#1-requirements-capacity-estimation-and-realistic-zset-memory-sizing), https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/redis-memory-management.html
+
+</details>
+
+### Q-CERT-039 · GCP PCA: Global Tournament Leaderboard on Memorystore for Valkey, Cloud Run & Cloud SQL/Spanner · difficulty 3 · scenario
+
+A global esports platform runs authoritative match servers on GKE (Agones) and ingests match results through Cloud Run into Google Cloud Memorystore for Valkey and a durable relational database (Cloud Spanner or Cloud SQL). Ties must break deterministically in favor of the player who achieved the score earliest, and the platform must support deterministic disaster recovery if the Memorystore instance is recreated. Which design satisfies all requirements?
+
+- A) Cloud Run verifies the Agones server's mTLS/HMAC signature, performs an idempotent insert of `(match_id, user_id, points, match_ts_ms)` into Cloud Spanner / Cloud SQL (`ON CONFLICT (match_id) DO NOTHING`), and invokes an atomic Lua script on Memorystore for Valkey that packs the 21-bit integer score and 32-bit inverted relative timestamp (`2^32 - 1 - elapsedMs`) into a 53-bit IEEE-754 safe integer; on disaster recovery, a batch replay of `match_results` ordered by `match_ts_ms` deterministically reconstructs the exact ZSET rankings.
+- B) Game clients POST scores directly to Cloud Run, which packs a 32-bit score and 32-bit epoch timestamp into a 64-bit integer and passes it to `ZADD` without a backing database.
+- C) Cloud Run streams match events to BigQuery only, and client apps run `SELECT RANK() OVER (ORDER BY score DESC) FROM leaderboard` directly against BigQuery at `2,500 QPS`.
+- D) Cloud Run updates the composite score using raw `ZINCRBY` (`ZINCRBY leaderboard 1 user_id`) so the lower 32 timestamp bits increment by 1 on every win.
+
+<details><summary>Answer</summary>
+
+**A.** Cloud Run enforces server-only ingestion and deduplicates `match_id` in Cloud Spanner / Cloud SQL before executing the atomic Valkey Lua update. Packing `score * 2^32 + (2^32 - 1 - elapsedMs)` with `score < 2^21` stays within IEEE-754 binary64's 53-bit exact integer ceiling ($2^{53} - 1$), preserving earliest-achiever tie-breaking, and storing immutable `match_ts_ms` in the relational ledger enables bit-for-bit deterministic ZSET reconstruction during disaster recovery.
+
+- Why not B: Client-submitted scores break anti-cheat security, and packing 64 bits into an IEEE-754 binary64 float rounds off the lower 11 timestamp bits.
+- Why not C: BigQuery is an analytical OLAP warehouse with multi-hundred-millisecond query latency and slot limits, unsuitable for `2,500 QPS` real-time $O(\log N)$ player rank lookups.
+- Why not D: Calling raw `ZINCRBY 1` on a bit-packed composite score increments the low timestamp bits instead of shifting the points delta by $2^{32}$ and refreshing the achievement timestamp.
+- Ref: [modules/21-realtime-gaming-leaderboard.md](../modules/21-realtime-gaming-leaderboard.md#3-storage-engine-evolution-relational-sql-vs-valkey-sorted-sets-and-53-bit-tie-breaking), https://cloud.google.com/memorystore/docs/valkey/overview
+
+</details>
+
+### Q-CERT-040 · Azure AZ-305: Real-Time Gaming Backend with Azure Managed Redis & Cosmos DB · difficulty 2 · scenario
+
+An Azure gaming backend uses Azure Functions to ingest match completions, Azure Managed Redis (Enterprise tier) to serve real-time ZSET leaderboards, and Azure Cosmos DB for NoSQL to store durable match history and player profiles. A developer proposes partitioning the Cosmos DB `match_history` container by `/season_month` (e.g., `"2026-11"`). How should you revise this design?
+
+- A) Partition the Cosmos DB `match_history` container by `/user_id` (or synthetic `/match_id` with a write-sharded GSI/change-feed view for seasonal rollups) so current-month writes distribute across thousands of logical and physical partitions instead of hitting Cosmos DB's `10,000 RU/s` single-partition ceiling and `20 GB` logical partition cap, while serving live $O(\log N)$ rank and `±4` neighbor queries from Azure Managed Redis Sorted Sets.
+- B) Keep `/season_month` as the Cosmos DB partition key because enabling Cosmos DB Autoscale automatically removes the `20 GB` storage limit and `10,000 RU/s` throughput limit of a single logical partition.
+- C) Remove Azure Managed Redis and run `SELECT COUNT(1) FROM c WHERE c.score > @userScore` cross-partition queries in Cosmos DB on every leaderboard view at `2,500 QPS`.
+- D) Store all `25M` player scores inside a single JSON document in Cosmos DB and update it with optimistic concurrency (`_etag`) on every match completion.
+
+<details><summary>Answer</summary>
+
+**A.** In Azure Cosmos DB, a single logical partition key value cannot exceed `20 GB` of storage or `10,000 RU/s` of physical partition throughput. Partitioning by `/season_month` funnels 100% of current-month match writes (`~50M matches/day`) into one logical partition (`"2026-11"`), causing immediate `429 TooManyRequests` throttling and storage overflow. Partitioning by high-cardinality `/user_id` spreads writes evenly while co-locating each player's personal match history, and Azure Managed Redis handles the $O(\log N)$ ZSET ranking path.
+
+- Why not B: Cosmos DB Autoscale scales total container RU/s across many partitions, not the physical ceiling of a single hot logical partition key.
+- Why not C: Cross-partition `COUNT` queries over `25M` items consume massive RU/s and scan latency ($O(N)$), whereas a Redis ZSET computes `ZREVRANK` in $O(\log N)$ sub-millisecond time.
+- Why not D: Cosmos DB items are capped at `2 MB`, and updating one document at `2,894 QPS` collapses under OCC `_etag` contention.
+- Ref: [modules/21-realtime-gaming-leaderboard.md](../modules/21-realtime-gaming-leaderboard.md#5-season-rollover-disaster-recovery-and-serverless-vs-self-managed-topologies), https://learn.microsoft.com/en-us/azure/cosmos-db/partitioning-overview
+
+</details>
+
+### Q-CERT-041 · CNCF / SRE: Leaderboard Memory Fragmentation, Async UNLINK Rollover & Anti-Cheat Guardrails · difficulty 3 · single
+
+At `00:00:00 UTC` on the first of the month, a seasonal rotation job deletes the old `25M`-member leaderboard (`DEL leaderboard:2026-10`) on the Valkey primary. Immediately, leaderboard API `p99` latency spikes above `3,200 ms`, health checks flap, and during the subsequent score-range resharding a player appears simultaneously in two range shards. Which operational fixes and SRE guardrails resolve both incidents?
+
+- A) Replace synchronous `DEL` with asynchronous **`UNLINK`** after atomically flipping the active season alias pointer so the `25M`-node skip list is deallocated on a background lazy-free thread (`p99 < 15 ms`), enforce an alert on **`leaderboard_ghost_duplicate_users == 0`** with idempotent cross-shard `ZREM` + `ZADD` migration verification, and maintain `>= 50%` Copy-on-Write (`CoW`) memory headroom (`mem_fragmentation_ratio < 1.4`).
+- B) Keep `DEL` on the main thread, increase Kubernetes `livenessProbe` timeouts to `60 seconds`, and ignore duplicate shard entries because `ZREVRANK` automatically deduplicates across keys.
+- C) Configure `maxmemory-policy allkeys-random` so Valkey randomly evicts active players whenever a season ends.
+- D) Restart the Valkey cluster every month at midnight with `FLUSHALL SYNC` on the command thread.
+
+<details><summary>Answer</summary>
+
+**A.** Synchronous `DEL` on a `25M`-member sorted set frees `50M+` `zskiplistNode`, `dictEntry`, and `sds` allocations on the single-threaded Valkey command loop, blocking all clients for `1.5–4.0 seconds`. Creating the new season ZSET, flipping the active season alias, and calling **`UNLINK`** detaches the key in $O(1)$ time and reclaims memory asynchronously on a background bio thread. Simultaneously, tracking `leaderboard_ghost_duplicate_users == 0` detects and repairs any partial cross-shard range migration (`ZREM` old shard + `ZADD` new shard).
+
+- Why not B: Raising probe timeouts hides a multi-second stop-the-world outage without fixing it, and each range shard is an independent ZSET key that cannot auto-deduplicate members present in another key.
+- Why not C: Random eviction silently drops legitimate ranked players from the active tournament season.
+- Why not D: `FLUSHALL SYNC` blocks the command thread and wipes cached user profiles, idempotency locks, and active state.
+- Ref: [modules/21-realtime-gaming-leaderboard.md](../modules/21-realtime-gaming-leaderboard.md#6-production-gotchas-sre-guardrails-and-2021-vs-2026-comparison), https://valkey.io/commands/unlink/
+
+</details>
+
+### Q-CERT-042 · Multi-Cloud Architecture: 2021 vs. 2026 Leaderboard Modernization · difficulty 2 · multi
+
+Select **two** genuine architectural advancements when modernizing a 2021 gaming leaderboard (Redis 6 single-threaded I/O, naive float decimal tie-breaking `score + 1/ts`, synchronous `DEL` rollover, and client-trusted score endpoints) to a 2026 production architecture.
+
+- A) Replacing lossy float-decimal tie-breaking with an **atomic Lua 53-bit IEEE-754 safe integer composite** ($S \cdot 2^{32} + (2^{32} - 1 - \Delta t_{\text{ms}})$ for $S < 2^{21}$) on **Valkey 9** (multi-threaded network I/O) eliminates floating-point rounding drift and scales single-node throughput cleanly.
+- B) Enforcing **server-authoritative signed `match_id` ingestion** alongside a **hybrid Exact ZSET Top-1,000 + mergeable DDSketch percentile engine** and **zero-downtime `UNLINK` season rollover** closes client MITM score spoofing, answers tail-percentile queries in $O(1)$ memory, and eliminates monthly rollover freezes.
+- C) Moving score authority back to unauthenticated mobile client HTTP calls reduces backend game-server CPU usage by `100%` with zero security trade-offs.
+- D) Packing a full 64-bit integer score and a 64-bit nanosecond timestamp into a single 128-bit Valkey ZSET double eliminates the 53-bit significand limit without changing data types.
+
+<details><summary>Answer</summary>
+
+**A, B.** Modern 2026 leaderboards run on Valkey 9 with multi-threaded I/O and atomic Lua 53-bit safe-integer composite scores (`21-bit` points + `32-bit` inverted season-relative milliseconds $\le 2^{53} - 1$), accept score updates exclusively from mTLS/HMAC-signed authoritative game servers with `match_id` deduplication, combine exact ZSET Top-1,000 boards with mergeable DDSketch quantile approximation for `500M`-DAU tail percentiles, and rotate seasons via non-blocking `UNLINK`.
+
+- Why not C: Allowing unauthenticated clients to submit scores trivially enables Man-in-the-Middle (MITM) leaderboard forgery.
+- Why not D: Valkey ZSET scores are 64-bit IEEE-754 binary64 doubles (with a 53-bit significand), not 128-bit floats.
+- Ref: [modules/21-realtime-gaming-leaderboard.md](../modules/21-realtime-gaming-leaderboard.md#6-production-gotchas-sre-guardrails-and-2021-vs-2026-comparison), https://valkey.io/commands/eval/
 
 </details>

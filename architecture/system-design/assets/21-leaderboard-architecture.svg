@@ -1,0 +1,150 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 700" width="1160" height="700" role="img" aria-labelledby="title desc">
+  <title id="title">Real-Time Gaming Leaderboard — End-to-End Architecture &amp; Sharded Topologies</title>
+  <desc id="desc">Architecture of a real-time gaming leaderboard showing server-authoritative anti-cheat score submission, Valkey/Redis ZSET dual hash-table and skip-list internals with 53-bit IEEE-754 composite tie-breaking, user profile hash cache and match_results DR persistence, and 500M-DAU sharding via Score-Range ZCARD prefix sums vs Hash-Sharded ZSCORE + parallel ZCOUNT.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569"/>
+    </marker>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect x="0" y="0" width="1160" height="700" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1160" height="58" rx="12" fill="#0f172a"/>
+  <rect x="0" y="42" width="1160" height="16" fill="#0f172a"/>
+  <text x="24" y="28" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#f8fafc">Real-Time Gaming Leaderboard — Architecture (5M DAU / 25M MAU -&gt; 500M DAU Scale-Out)</text>
+  <text x="24" y="47" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#94a3b8">Server-Authoritative Anti-Cheat · Valkey ZSET (Hash + Skip List) · 53-Bit Tie-Breaker · Score-Range ZCARD vs. Hash ZCOUNT Sharding</text>
+
+  <!-- COLUMN 1: CLIENTS & AUTHORITATIVE GAME SERVER -->
+  <rect x="20" y="76" width="245" height="318" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="34" y="100" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1e3a8a">1. Anti-Cheat Trust Boundary</text>
+
+  <rect x="34" y="114" width="217" height="84" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="44" y="133" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#1e40af">Game Clients (Mobile / PC)</text>
+  <text x="44" y="150" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#059669">GET /v1/scores (Top 10)</text>
+  <text x="44" y="166" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#059669">GET /v1/scores/{id} (+/-4 rank)</text>
+  <text x="44" y="182" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#dc2626">NEVER calls POST /v1/scores!</text>
+
+  <rect x="34" y="210" width="217" height="94" rx="6" fill="#ffffff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="44" y="229" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#1e3a8a">Authoritative Game Servers</text>
+  <text x="44" y="246" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Validates match telemetry &amp; win</text>
+  <text x="44" y="262" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#1e40af">Issues match_id (UUIDv7)</text>
+  <text x="44" y="278" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Signs HMAC-SHA256 / mTLS RPC</text>
+  <text x="44" y="294" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#059669">Defeats client MITM proxies</text>
+
+  <rect x="34" y="314" width="217" height="66" rx="6" fill="#dbeafe" stroke="#3b82f6" stroke-width="1"/>
+  <text x="44" y="333" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e3a8a">Optional Kafka Match Stream</text>
+  <text x="44" y="350" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Fans out match wins to Anti-Cheat,</text>
+  <text x="44" y="366" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Analytics &amp; Leaderboard consumers</text>
+
+  <!-- COLUMN 2: LEADERBOARD SERVICE & VALKEY ZSET ENGINE -->
+  <rect x="290" y="76" width="465" height="318" rx="10" fill="#f0fdf4" stroke="#10b981" stroke-width="1.5"/>
+  <text x="306" y="100" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#065f46">2. Leaderboard Service &amp; Valkey ZSET Engine (~2,894 Peak QPS)</text>
+
+  <!-- Leaderboard API & Lua Ingestor -->
+  <rect x="306" y="114" width="433" height="114" rx="8" fill="#ffffff" stroke="#059669" stroke-width="1.8"/>
+  <rect x="306" y="114" width="433" height="24" rx="8" fill="#059669"/>
+  <rect x="306" y="128" width="433" height="10" fill="#059669"/>
+  <text x="316" y="130" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#ffffff">Stateless Leaderboard Service (Cloud Run / Lambda / K8s)</text>
+  <text x="316" y="151" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" font-weight="700" fill="#065f46">POST /v1/scores: verify HMAC + dedupe match_id</text>
+  <text x="316" y="168" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Atomic Lua script updates 53-bit IEEE-754 composite score:</text>
+  <text x="316" y="185" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#1e3a8a">composite = score * 2^32 + (MAX_REL_MS - elapsed_ms)</text>
+  <text x="316" y="202" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">21-bit score (up to 2.09M pts) + 32-bit inverted ms (~49.7 days)</text>
+  <text x="316" y="218" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#047857">Zero float rounding loss; earlier achiever wins all ties!</text>
+
+  <!-- Valkey ZSET Dual Structure -->
+  <rect x="306" y="240" width="433" height="140" rx="8" fill="#ffffff" stroke="#10b981" stroke-width="1.5"/>
+  <rect x="306" y="240" width="433" height="24" rx="8" fill="#d1fae5"/>
+  <rect x="306" y="254" width="433" height="10" fill="#d1fae5"/>
+  <text x="316" y="256" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">Valkey 9 / Redis Sorted Set (ZSET: dict + zskiplist)</text>
+  <text x="316" y="277" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#334155">1. Hash Table (dict): user_id -&gt; compositeScore in O(1)</text>
+  <text x="316" y="294" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#334155">2. Skip List (zskiplist): sorted scores + span rank weights</text>
+  <text x="316" y="311" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#047857">ZADD / ZREVRANK: O(log N) | ZREVRANGE 0 9: O(log N + M)</text>
+  <text x="316" y="328" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Realistic RAM (25M MAU): ~128 B/member = 3.2 GB active ZSET</text>
+  <text x="316" y="345" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#b45309">Provision 2x (~6.4 GB) for fork() Copy-on-Write RDB/AOF!</text>
+  <text x="316" y="364" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#065f46">Monthly key: leaderboard:2026-11 (reclaimed via async UNLINK)</text>
+
+  <!-- COLUMN 3: PROFILE CACHE & RELATIONAL DR STORE -->
+  <rect x="780" y="76" width="360" height="318" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="794" y="100" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#92400e">3. Hydration Cache &amp; DR Ledger</text>
+
+  <rect x="794" y="114" width="332" height="118" rx="6" fill="#ffffff" stroke="#fcd34d" stroke-width="1.5"/>
+  <text x="804" y="133" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#b45309">Valkey User Profile Cache (Hashes)</text>
+  <text x="804" y="151" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#334155">key: user:profile:{user_id}</text>
+  <text x="804" y="167" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#334155">fields: display_name, avatar, clan</text>
+  <text x="804" y="185" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Hydrates Top 10 &amp; +/-4 neighbor rows</text>
+  <text x="804" y="201" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">in 1 pipelined round-trip (zero DB hit)</text>
+  <text x="804" y="218" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#059669">Hot Top-10 response L1-cached (1s TTL)</text>
+
+  <rect x="794" y="244" width="332" height="136" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="804" y="263" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#92400e">Relational / NoSQL DR Store (PostgreSQL)</text>
+  <text x="804" y="281" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#334155">1. users (user_id, profile metadata)</text>
+  <text x="804" y="297" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#334155">2. match_results (match_id PK, user_id,</text>
+  <text x="804" y="313" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#334155">   season, points_delta, achieved_at)</text>
+  <text x="804" y="331" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Never queried for live ORDER BY rank!</text>
+  <text x="804" y="347" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Rebuilds Valkey ZSET deterministically</text>
+  <text x="804" y="365" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#b45309">after total cluster loss via WAL/SQL</text>
+
+  <!-- Arrows top -->
+  <line x1="251" y1="150" x2="304" y2="150" stroke="#2563eb" stroke-width="2" marker-end="url(#arr-blue)"/>
+  <line x1="251" y1="250" x2="304" y2="180" stroke="#059669" stroke-width="2.2" marker-end="url(#arr-green)"/>
+  <line x1="739" y1="165" x2="792" y2="165" stroke="#d97706" stroke-width="1.8" stroke-dasharray="4,3" marker-end="url(#arr-amber)"/>
+  <line x1="739" y1="210" x2="792" y2="295" stroke="#059669" stroke-width="2" marker-end="url(#arr-green)"/>
+
+  <!-- BOTTOM LEFT: SCORE-RANGE SHARDING (500M DAU) -->
+  <rect x="20" y="412" width="555" height="268" rx="10" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="34" y="436" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#5b21b6">4. Sharding Option A: Score-Range Partitioning (500M DAU · 289k QPS)</text>
+
+  <rect x="34" y="450" width="165" height="92" rx="6" fill="#ffffff" stroke="#c4b5fd" stroke-width="1.2"/>
+  <text x="44" y="469" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10.5" font-weight="700" fill="#5b21b6">Shard 1: [1..100)</text>
+  <text x="44" y="486" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Casual tier (sub-shard</text>
+  <text x="44" y="502" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">or omit score = 0)</text>
+  <text x="44" y="522" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" font-weight="700" fill="#6d28d9">ZCARD = 18,000,000</text>
+
+  <rect x="212" y="450" width="165" height="92" rx="6" fill="#ffffff" stroke="#8b5cf6" stroke-width="1.5"/>
+  <text x="222" y="469" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10.5" font-weight="700" fill="#5b21b6">Shard 2: [100..900)</text>
+  <text x="222" y="486" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Mid-tier active players</text>
+  <text x="222" y="502" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#047857">Local ZREVRANK(u)</text>
+  <text x="222" y="522" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" font-weight="700" fill="#6d28d9">ZCARD = 6,500,000</text>
+
+  <rect x="390" y="450" width="170" height="92" rx="6" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="400" y="469" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10.5" font-weight="700" fill="#4c1d95">Shard 3: [900..inf)</text>
+  <text x="400" y="486" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#059669">Top-10 queries ONLY</text>
+  <text x="400" y="502" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#059669">this shard! (No fanout)</text>
+  <text x="400" y="522" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" font-weight="700" fill="#4c1d95">ZCARD = 500,000</text>
+
+  <rect x="34" y="554" width="526" height="110" rx="6" fill="#ffffff" stroke="#8b5cf6" stroke-width="1.2"/>
+  <text x="46" y="574" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#4c1d95">Global Rank &amp; Boundary Migration Rules (Correcting ByteByteGo):</text>
+  <text x="46" y="592" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#065f46">GlobalRank(u in Shard 2) = 1 + ZREVRANK(Shard 2, u) + ZCARD(Shard 3)</text>
+  <text x="46" y="610" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#dc2626">Correction: Use O(1) ZCARD (member count), NEVER INFO keyspace (key count)!</text>
+  <text x="46" y="628" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Boundary Crossing: When score jumps 895 -&gt; 910, atomically ZREM Shard 2</text>
+  <text x="46" y="646" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">and ZADD Shard 3 + update user_shard_map to prevent ghost duplicate ranks!</text>
+
+  <!-- BOTTOM RIGHT: HASH SHARDING & DYNAMODB WRITE-SHARDED GSI -->
+  <rect x="595" y="412" width="545" height="268" rx="10" fill="#fff1f2" stroke="#e11d48" stroke-width="1.5"/>
+  <text x="610" y="436" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#9f1239">5. Sharding Option B (Hash Cluster) &amp; Option C (Write-Sharded NoSQL)</text>
+
+  <rect x="610" y="450" width="515" height="104" rx="6" fill="#ffffff" stroke="#fda4af" stroke-width="1.2"/>
+  <text x="620" y="470" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#be123c">Option B: Valkey Cluster Hash Sharding (CRC16(user_id) % 16384)</text>
+  <text x="620" y="488" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Uniform write spread; zero cross-shard player migration on score increase</text>
+  <text x="620" y="505" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Top-K: Parallel ZREVRANGE 0 (K-1) across S shards + K-way min-heap merge</text>
+  <text x="620" y="522" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#065f46">Exact Rank: s = ZSCORE(owner, u) -&gt; 1 + sum(ZCOUNT(shard_i, (s, +inf))</text>
+  <text x="620" y="539" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#dc2626">Never sum ZREVRANK across hash shards (returns nil on S-1 shards!)</text>
+
+  <rect x="610" y="564" width="515" height="100" rx="6" fill="#ffffff" stroke="#e11d48" stroke-width="1.5"/>
+  <text x="620" y="584" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#9f1239">Option C: DynamoDB Write-Sharded GSI + DDSketch Percentiles</text>
+  <text x="620" y="602" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#334155">GSI PK: "2026-11#" + (user_id % 32) | GSI SK: score (avoids 1k WCU hot key)</text>
+  <text x="620" y="619" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Top-10 uses 32-way scatter-gather; B-trees lack O(log N) skip-list rank spans</text>
+  <text x="620" y="636" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#059669">Long-tail players (#1,001..500M) served via DDSketch ("Top 5% Tier")</text>
+  <text x="620" y="652" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Eliminates expensive multi-million-row count scans on disk-backed NoSQL</text>
+</svg>

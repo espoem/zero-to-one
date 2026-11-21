@@ -270,7 +270,7 @@ flowchart LR
 
 ---
 
-## 6. Top 43 Production Failure Modes & One-Line Fixes
+## 6. Top 47 Production Failure Modes & One-Line Fixes
 
 | # | Failure Mode | How It Breaks Production | One-Line Fix |
 | :-- | :-- | :-- | :-- |
@@ -317,3 +317,7 @@ flowchart LR
 | **41** | **Undecoded Base64 Attachment Storage Bloat** | Persisting raw MIME Base64 text in S3 wastes `+33.3%` (`4/3` expansion) of petabyte storage and breaks hash deduplication across different line wraps. | Decode Base64 to canonical raw binary at the SMTP/API edge before computing `SHA-256` and writing to Content-Addressed Storage (CAS). |
 | **42** | **SPF 10-Lookup `permerror` & Unaligned DMARC Spoof** | Nested SaaS `include:` records exceed RFC 7208's 10-DNS-lookup cap (`permerror`), or passing SPF without DMARC `From:` alignment admits phishing spoofs. | Delegate subdomains per sender to keep SPF `<= 10` lookups, enforce DMARC `From:` alignment (`p=quarantine/reject`), and validate RFC 8617 ARC on forwards. |
 | **43** | **Unrouted Per-User Search Scatter-Gather Collapse** | Indexing emails by `email_id` without `_routing = user_id` fans every single-user search out across all `100+` Elasticsearch shards. | Set `_routing = user_id` on every index/query request so 1 user's mailbox lives on 1 shard, or embed a co-located per-user LSM inverted index. |
+| **44** | **Client-Direct Score MITM Spoofing** | Game client submits its own `POST /v1/scores` payload; players intercept TLS with a proxy and forge arbitrary leaderboard ranks. | Reject client score writes completely; accept score updates only from authoritative Game Servers signed via mTLS/HMAC with an idempotent `match_id`. |
+| **45** | **Valkey `fork()` CoW OOM from `26 B` Undersizing** | Sizing a `25M`-member ZSET at `26 B/member` (`650 MB`) ignores `~128 B` 64-bit skiplist+dict overhead (`3.20 GB`) and OOM-kills during `fork()` RDB snapshots. | Size 64-bit ZSETs at `~128 B/member` and provision `2×` physical RAM (`~6.40 GB` for `25M` members) for Copy-on-Write snapshot page duplication. |
+| **46** | **`> 53-Bit` Float Tie-Break Rounding & Raw `ZINCRBY` Corruption** | Packing `> 53` bits into an IEEE-754 double rounds off low timestamp bits, and calling raw `ZINCRBY` adds points into the low timestamp bits. | Pack a 53-bit integer composite (`21-bit` score $\cdot 2^{32} + (2^{32}-1-\Delta t_{\text{ms}}) \le 2^{53}-1$) and mutate it exclusively via an atomic Valkey Lua script. |
+| **47** | **Score-Range Ghost Duplicates & `INFO keyspace` / `ZREVRANK` Sum Bugs** | Partial cross-shard score move leaves a user in 2 range shards; reading `INFO keyspace` returns `1` key instead of member count, and summing `ZREVRANK` across hash shards yields nonsense. | Execute idempotent `ZREM` + `ZADD` range migrations (`ghost_duplicates == 0`), use `ZCARD` on upper range shards, and use `ZSCORE` + parallel `ZCOUNT` on hash shards. |

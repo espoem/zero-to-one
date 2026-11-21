@@ -2,7 +2,7 @@
 
 This preparation bank tests Senior, Staff, and Principal distributed system design competency across the seven domains defined in [`exams/README.md`](README.md). Every question is original and grounded in primary engineering literature, official protocol RFCs, and production postmortems.
 
-- **Bank scope**: **100 questions** (`Q-SD-001`–`Q-SD-100`) covering quantitative capacity modeling, edge/API design, caching/partitioning, asynchrony/resilience, specialized indexing/financial correctness, SLO observability/DR, end-to-end canonical architectures, progressive scaling, distributed key-value stores, planetary-scale geospatial navigation, distributed message queue internals, high-contention hotel reservation and overbooking systems, and planetary distributed email services.
+- **Bank scope**: **105 questions** (`Q-SD-001`–`Q-SD-105`) covering quantitative capacity modeling, edge/API design, caching/partitioning, asynchrony/resilience, specialized indexing/financial correctness, SLO observability/DR, end-to-end canonical architectures, progressive scaling, distributed key-value stores, planetary-scale geospatial navigation, distributed message queue internals, high-contention hotel reservation and overbooking systems, planetary distributed email services, and real-time gaming leaderboards.
 - **Difficulty calibration**: Level `1` tests foundational mechanics, Level `2` tests Senior-level trade-off reasoning, and Level `3` tests Staff/Principal failure modes, subtle race conditions, and quantitative traps.
 - **Timed practice**: Complete the [50-Question Written Architecture Drill](#timed-mock-exam-written-architecture-drill-50-questions--75-minutes) under a strict 75-minute timer, then run the [two 60-minute Staff/Principal design loops](#timed-mock-design-loops-2--60-minute-staffprincipal-simulations) against the explicit 0–4 grading rubrics.
 
@@ -2050,6 +2050,115 @@ Select **two** accurate architectural statements contrasting write-heavy per-use
 - Why not C: Scattering a single user's emails across all `100` shards forces a `100-shard` fan-out on every search query, multiplying tail latency and CPU overhead by `100x`.
 - Why not D: Web search is overwhelmingly read-heavy over a shared global corpus, whereas email search is write-heavy over isolated per-user partitions.
 - Ref: [modules/20-distributed-email-service.md](../modules/20-distributed-email-service.md#5-write-heavy-per-user-email-search-elasticsearch-vs-custom-lsm-indexes), https://www.rfc-editor.org/rfc/rfc8620
+
+</details>
+
+---
+
+### Q-SD-101 · Real-Time Leaderboards, Ranking & Sharded Sorted Sets · difficulty 3 · scenario
+
+A ranked game serves `5,000,000` (`5M`) DAU and `25,000,000` (`25M`) MAU, where each DAU completes an average of `10` matches per day with a `5x` diurnal peak multiplier. Estimate the average and peak score-update write QPS (correcting ByteByteGo Chapter 25's `50M DAU` calculation typo), and size the physical memory required for a single global Valkey/Redis Sorted Set (`ZSET`) holding `25M` active monthly players, including Copy-on-Write (`CoW`) headroom for background RDB snapshots via `fork()`.
+
+- A) Average write QPS is `~579` and peak write QPS is `~2,894`; the ZSET requires `650 MB` at `26 B` per member (`1.30 GB` with snapshot headroom).
+- B) Average write QPS is `~578.7` (`5M * 10 / 86,400`) and peak write QPS is `~2,893.5`; accounting for 64-bit `OBJ_ENCODING_SKIPLIST` pointers (`zskiplistNode` + `dictEntry` + `sds` + `jemalloc` = `~128 B/member`), `25M` members occupy `~3.20 GB` of active RAM and require `~6.40 GB` provisioned per shard (`2x` `fork()` Copy-on-Write RDB snapshot headroom).
+- C) Average write QPS is `~5,787` and peak write QPS is `~28,935` (`50,000,000 * 10 / 86,400`); the ZSET occupies `~3.20 GB` active RAM (`~6.40 GB` with snapshot headroom).
+- D) Average write QPS is `~578.7` and peak write QPS is `~2,893.5`; `650 MB` is sufficient with zero snapshot headroom because the `fork()` child process shares 100% of memory pages even while the parent mutates every page.
+
+<details><summary>Answer</summary>
+
+**B.** At `5,000,000` DAU (`5 * 10^6 / 86,400 ≈ 57.87` users/s) and `10` matches/day, average score updates are `578.70 QPS` and the `5x` peak is `2,893.52 QPS` (ByteByteGo Chapter 25 states `5M DAU` in requirements but plugs `5 * 10^7 = 50M` into the denominator, inflating QPS by `10x`). On the memory tier, `26 B × 25M = 650 MB` counts only raw payload bytes (`24-char` ID + `16-bit` score) and ignores 64-bit `OBJ_ENCODING_SKIPLIST` structure overhead (`dictEntry` + `zskiplistNode` forward/span pointers + `sds` + `jemalloc` arena overhead $\approx 128\text{ B/member}$), which brings active ZSET memory to `3.20 GB` and requires **`6.40 GB`** (`2x` CoW headroom) so write-heavy page dirtying during `fork()` RDB snapshots cannot trigger an Linux OOM kill.
+
+- Why not A: `26 B/member` (`650 MB`) omits 64-bit hash-table and skip-list node overhead, underestimating real Valkey/Redis RAM by nearly `5x`.
+- Why not C: `5,787` average and `28,935` peak QPS reproduce the `5 * 10^7` (`50M DAU`) arithmetic typo from the chapter text instead of the stated `5M DAU`.
+- Why not D: Copy-on-Write (`CoW`) duplicates a 4 KB memory page whenever the parent process mutates a ZSET node on that page during an active `fork()` RDB save; under write-heavy leaderboard traffic, up to `100%` of ZSET pages can be dirtied.
+- Ref: [modules/21-realtime-gaming-leaderboard.md](../modules/21-realtime-gaming-leaderboard.md#1-requirements-capacity-estimation-and-realistic-zset-memory-sizing), https://redis.io/docs/latest/operate/oss_and_stack/management/optimization/memory-optimization/
+
+</details>
+
+---
+
+### Q-SD-102 · Real-Time Leaderboards, Ranking & Sharded Sorted Sets · difficulty 3 · single
+
+A gaming backend packs a 32-bit integer score and a 32-bit epoch timestamp into a 64-bit integer and passes it as a Valkey Sorted Set (`ZSET`) score so that ties break deterministically in favor of the player who reached the score earliest. Why does this corrupt tie-break ordering in production, and what is the mathematically exact solution?
+
+- A) Valkey ZSET scores are IEEE-754 binary64 floating-point numbers with a 53-bit significand (exact integer precision up to $2^{53} - 1 = 9{,}007{,}199{,}254{,}740{,}991$), so packing 64 bits rounds off the lower 11 timestamp bits; instead, encode a 53-bit safe integer composite $\text{Composite} = S \cdot 2^{32} + ((2^{32} - 1) - \Delta t_{\text{ms}})$ where $S < 2^{21}$ (`2,097,151` max points) and $\Delta t_{\text{ms}} \in [0, 2^{32}-1]$ is milliseconds elapsed since season start (`~49.7 days`), and update it inside an atomic Lua script rather than calling raw `ZINCRBY`.
+- B) `ZADD` truncates floating-point numbers at 32 bits unless the score is formatted as a hexadecimal string.
+- C) Because Valkey breaks ties lexicographically by member ID, moving the timestamp prefix into the member string (`<timestamp>:<user_id>`) allows `ZINCRBY` to update the player in place in $O(\log N)$ time without changing keys.
+- D) IEEE-754 binary64 floats represent all 64-bit integers exactly, so the only bug is failing to enable `zset-max-listpack-entries`.
+
+<details><summary>Answer</summary>
+
+**A.** Because Valkey and Redis store ZSET scores as IEEE-754 double-precision (`binary64`) floats, only 53 bits of significand exist (`Number.MAX_SAFE_INTEGER = 9,007,199,254,740,991`). Any integer above $2^{53} - 1$ loses its low bits to round-to-even quantization, causing players who finished milliseconds apart to collide or invert ranks. Allocating the upper 21 bits to integer points ($S < 2^{21}$) and the lower 32 bits to inverted season-relative milliseconds ($2^{32} - 1 - \Delta t_{\text{ms}}$) keeps every composite score $\le 2^{53} - 1$, ranks earlier achievers higher under `ZREVRANK`, and must be updated via an atomic Lua script (`EVALSHA`) that unpacks $S = \lfloor C / 2^{32} \rfloor$, adds $\Delta S$, and writes the new composite with refreshed $\Delta t_{\text{ms}}$.
+
+- Why not B: `ZADD` always parses scores into 64-bit IEEE-754 doubles regardless of string formatting.
+- Why not C: Embedding a timestamp inside the ZSET member name changes the member key on every match win, requiring the caller to know the previous timestamp just to remove the old member entry.
+- Why not D: A 64-bit IEEE-754 float uses 1 sign bit and 11 exponent bits, leaving only 53 significand bits (`52` explicit + `1` implicit leading bit), never 64 bits of integer precision.
+- Ref: [modules/21-realtime-gaming-leaderboard.md](../modules/21-realtime-gaming-leaderboard.md#3-storage-engine-evolution-relational-sql-vs-valkey-sorted-sets-and-53-bit-tie-breaking), https://doi.org/10.1109/IEEESTD.2019.8766229
+
+</details>
+
+---
+
+### Q-SD-103 · Real-Time Leaderboards, Ranking & Sharded Sorted Sets · difficulty 3 · scenario
+
+A tournament game scales `100x` to `500,000,000` (`500M`) DAU (`~289,352 QPS` peak writes, `~64 GB` active ZSET state), exceeding a single Valkey primary. The team evaluates partitioning the leaderboard across $M = 16$ shards and needs an exact 1-based global rank for any player along with a failure-safe shard-migration contract. Which analysis is correct?
+
+- A) Under **Hash Partitioning** (`CRC16(user_id) % 16`), a player's global rank equals the sum of `ZREVRANK` across all 16 shards because every shard stores a local rank for every player.
+- B) Under **Score-Range Partitioning** (disjoint score intervals `[1..100], [101..200], ...`), a player's global 1-based rank is $1 + \text{ZREVRANK}(\text{shard}_k, u) + \sum_{j > k} \text{ZCARD}(\text{shard}_j)$ (correcting ByteByteGo's `INFO keyspace` error, since `INFO keyspace` returns database key count rather than ZSET member cardinality), and crossing a shard boundary requires an idempotent two-step cross-shard migration saga (`ZREM` old shard + `ZADD` new shard + secondary `user -> shard` map) so a player never remains duplicated across two shards.
+- C) Under **Score-Range Partitioning**, the number of higher-ranked players in upper shards should be read from `INFO keyspace` (`db0:keys=...`), which returns the exact member cardinality of a ZSET key.
+- D) Under **Hash Partitioning**, global rank is computed by calling `ZRANK` on the home shard and adding `ZCARD` of all other 15 shards.
+
+<details><summary>Answer</summary>
+
+**B.** In **Score-Range Partitioning**, each shard owns a contiguous, disjoint score band, so every member in a strictly higher band $\text{shard}_j$ ($j > k$) outranks every member in $\text{shard}_k$. Thus the exact global 1-based rank is $1 + \text{ZREVRANK}(\text{shard}_k, u) + \sum_{j > k} \text{ZCARD}(\text{shard}_j)$, where `ZCARD` returns the sorted-set member cardinality in $O(1)$ time (whereas ByteByteGo Chapter 25's suggestion of `INFO keyspace` returns the count of top-level keys in the database, which is `1`, not the member count inside the ZSET!). Because a score increment that crosses a band boundary spans two distinct Valkey Cluster hash slots, it cannot run inside a single multi-key Lua script and requires an idempotent migration (`ZREM` old shard + `ZADD` new shard + secondary `user -> shard` lookup update) backed by a ghost-duplicate audit (`count == 0`). (By contrast, under **Hash Partitioning**, exact global rank requires 1 `ZSCORE` on the home shard followed by 16 parallel `ZCOUNT(shard_i, "(" + composite, "+inf")` calls.)
+
+- Why not A: Under Hash Partitioning, a player exists on only one home shard (`ZREVRANK` returns `nil` on the other 15 shards), and summing local ranks across independent shards is mathematically meaningless; hash shards require `ZCOUNT(shard_i, "(" + compositeScore, "+inf")`.
+- Why not C: `INFO keyspace` reports how many top-level keys exist in the Valkey database (`keys=1`), not how many players belong to a ZSET (`ZCARD`).
+- Why not D: `ZRANK` is ascending (lowest score first) and adding `ZCARD` of other hash shards counts players with lower scores as if they outranked the target player.
+- Ref: [modules/21-realtime-gaming-leaderboard.md](../modules/21-realtime-gaming-leaderboard.md#4-sharding-to-500m-dau-score-range-partitioning-hash-sharding-and-nosql-write-sharding), https://valkey.io/commands/zcard/
+
+</details>
+
+---
+
+### Q-SD-104 · Real-Time Leaderboards, Ranking & Sharded Sorted Sets · difficulty 2 · ordering
+
+Order the end-to-end execution steps of a secure, idempotent leaderboard score update and relative `±4` neighbor rank query.
+
+- A) Mobile client calls `POST /v1/scores` directly with `points=1` → Leaderboard Service runs raw `ZINCRBY` → relational `match_results` row is logged asynchronously → client fetches neighbors with `ZRANGE`.
+- B) Authoritative Game Server validates match victory, assigns deterministic `match_id`, and signs payload via mTLS/HMAC → Leaderboard Service verifies signature, checks/inserts `match_id` idempotently in durable `match_results` store → Leaderboard Service executes atomic Valkey Lua script updating the 53-bit composite score → Client queries Top-10 and `±4` neighbors via `ZREVRANK` + `ZREVRANGE(max(0, r-4), r+4)` hydrated against the User Profile Hash cache.
+- C) Game Server writes directly to Valkey ZSET from the match loop → Leaderboard Service checks `match_id` deduplication afterward → Game Server persists `match_results` row → Client queries `ZREVRANK`.
+- D) Authoritative Game Server signs payload → Leaderboard Service runs `ZADD` before checking `match_id` deduplication → Leaderboard Service logs `match_results` → Client queries `INFO keyspace` for rank.
+
+<details><summary>Answer</summary>
+
+**B.** To prevent client-side Man-in-the-Middle (MITM) score spoofing, the mobile/desktop client is never permitted to submit scores. Only the authoritative Game Server validates the win, generates a deterministic `match_id`, and sends an mTLS/HMAC-signed request to the Leaderboard Service. The Leaderboard Service verifies the signature and records `match_id` idempotently in the durable `match_results` ledger before invoking the atomic Valkey Lua script that updates the player's 53-bit composite score. Read queries then execute $O(\log N)$ `ZREVRANK` and `ZREVRANGE` (`[max(0, r-4), r+4]`) and batch-hydrate display metadata via `HMGET` from the User Profile Hash cache.
+
+- Why not A: Allowing the game client to call `POST /v1/scores` directly lets anyone forge arbitrary score increments with `curl` or a proxy.
+- Why not C: Mutating Valkey before verifying `match_id` idempotency causes network retries to double-count points, and exposing storage credentials directly to game server instances violates least-privilege boundaries.
+- Why not D: Running `ZADD` before `match_id` deduplication breaks retry idempotency, and `INFO keyspace` cannot compute player rank.
+- Ref: [modules/21-realtime-gaming-leaderboard.md](../modules/21-realtime-gaming-leaderboard.md#2-high-level-architecture-api-contracts-and-anti-cheat-trust-boundaries), https://valkey.io/commands/eval/
+
+</details>
+
+---
+
+### Q-SD-105 · Real-Time Leaderboards, Ranking & Sharded Sorted Sets · difficulty 3 · multi
+
+Select **two** sound operational designs for a NoSQL leaderboard backup index (DynamoDB Global Secondary Index), zero-downtime monthly season rollover, and deterministic disaster recovery.
+
+- A) Partition the DynamoDB Global Secondary Index (GSI) using **Write Sharding** (`gsi_pk = "leaderboard#2026-11#" + (hash(user_id) % S)` with $S = 32$ and `gsi_sk = composite_score`) so writes spread across 32 partitions instead of throttling a single `1,000 WCU/s` hot partition, and pair exact ZSET Top-1,000 queries with mergeable **DDSketch** quantile sketches for massive-tail percentile badges.
+- B) Use a single unsharded GSI partition key (`gsi_pk = "leaderboard#2026-11"`) and enable DynamoDB On-Demand billing, which removes the `1,000 WCU/s` per-partition hardware ceiling on a single partition key.
+- C) At monthly season rollover (`00:00:00 UTC`), instantiate the new season ZSET (`leaderboard:2026-12`), atomically flip the active season alias pointer, archive the prior season's winners to durable storage, and reclaim the `25M`-member old ZSET asynchronously via **`UNLINK`** so the single-threaded Valkey event loop never stalls on an $O(N)$ synchronous `DEL`.
+- D) If all Valkey nodes fail, rebuild the live leaderboard by replaying the `match_results` log using the recovery worker's current `Date.now()` wall-clock timestamp as $\Delta t_{\text{ms}}$.
+
+<details><summary>Answer</summary>
+
+**A, C.** Appending a deterministic write-shard suffix (`0..31`) to the GSI partition key spreads current-season writes evenly across 32 physical DynamoDB partitions (queried via a 32-way scatter-gather $k$-way merge), while mergeable DDSketch quantile structures answer tail percentile badges ("Top 5%") in $O(1)$ space. At season boundaries, flipping the season key and calling `UNLINK` reclaims the `3.20 GB` / `25M`-node skip list on a background lazy-free bio thread instead of freezing the Valkey command loop for `1.5–4 seconds` with synchronous `DEL`.
+
+- Why not B: DynamoDB On-Demand billing scales table-wide capacity across many partitions, but a single hot partition key (`"leaderboard#2026-11"`) is still bounded by the physical per-partition limit of `1,000 WCU/s`.
+- Why not D: Substituting `Date.now()` during disaster recovery overwrites the historical match achievement times and scrambles every tie-break order; replay must use the immutable `match_ts_ms` recorded in `match_results`.
+- Ref: [modules/21-realtime-gaming-leaderboard.md](../modules/21-realtime-gaming-leaderboard.md#5-season-rollover-disaster-recovery-and-serverless-vs-self-managed-topologies), https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-partition-key-sharding.html
 
 </details>
 

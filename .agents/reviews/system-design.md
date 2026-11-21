@@ -147,3 +147,18 @@ Verdict: **approve** (after full remediation of all P0, P1, P2, and P3 findings 
   - [x] **P2** `examples/lib/email-models.ts` & `examples/14-email-service.test.ts`: replaced lifetime cumulative counters in `DeliverabilityPoolGuard` with a bounded rolling sliding window of FBL batches (`maxRollingBatches`), proving both circuit-breaker trip on `>= 0.3%` complaints and automatic rolling recovery.
   - [x] **P2** `assets/20-email-architecture.svg`: shortened Step 2 and Step 4 lines inside the `433px` send/receive boxes so all text sits cleanly inside container boundaries with zero overflow.
   - [x] **P2/P3** `modules/20-distributed-email-service.md` & `exams/interview.md` (`Q-SD-096`): distinguished system-flag bitmasks from dynamic `label_ids` sets in the Bigtable/Spanner Gmail comparison, stated $O(1)$ partition lookup plus $O(K)$ sequential clustering scan for $K$ unread messages, and clarified `+33.33%` Base64 expansion over raw binary (`25%` of the encoded `25 MB` wire payload).
+
+---
+
+## ByteByteGo & Primary-Source Expansion — Wave A Topic 07 (`25. Real-time Gaming Leaderboard`, Module 21, 2026-11-21)
+
+- **Coordinator / Integrator / SVG & Proof Author**: Antigravity (`argon-builder`)
+- **Prose Draft**: `opencode` (`opencode-go/hy4-flash-free` from `/tmp --auto`, expanded from 330 to 463 lines by `argon-builder` with 64-bit `OBJ_ENCODING_SKIPLIST` byte breakdown, 53-bit IEEE-754 safe integer tie-breaking proofs, Score-Range vs Hash Sharding vs 32-way Write-Sharded DynamoDB GSI architecture, SRE guardrails, and verbatim TS code)
+- **Exam & Cert Bridge Questions Draft**: `claude` CLI (`haiku`, `--max-turns 1`, integrated as `Q-SD-101`–`105` in `exams/interview.md` and `Q-CERT-037`–`042` in `exams/architect-certs-bridge.md`)
+- **Independent Cross-Family Challenger**: `opencode` (`opencode-go/muse-spark-1.3-contributor`, `muse` family)
+- **Challenger Findings Resolved**:
+  - [x] **P0** `modules/21-realtime-gaming-leaderboard.md` & `examples/15-leaderboard.test.ts`: unified the `100x` planetary scale-out tier at `500M DAU / 500M+ active seasonal members (MAU)` so `MAU >= DAU` holds everywhere and `500M × 128 B = 64.0 GB` active ZSET RAM (`128.0 GB` with `2×` `fork()` CoW headroom) is consistent across Section 1, the sizing table, Section 4, `Q-SD-103`, `21-leaderboard-architecture.svg`, and `15-leaderboard.test.ts`.
+  - [x] **P1** `modules/21-realtime-gaming-leaderboard.md`: corrected the single-node Valkey CPU headroom ratio from `> 30x` to `~14x–21x` over combined peak read+write load (`~5,787 ops/s` vs `80k–120k ops/s`, or `~28x–41x` over peak writes alone).
+  - [x] **P1** `modules/21-realtime-gaming-leaderboard.md`: explicitly noted the reverse-lexicographical tie-break adjustment (`otherId > userId`) on equal-millisecond composite scores alongside the `ZCOUNT(shard_i, (s, +inf))` hash-shard global rank formula, matching `HashShardedLeaderboard.getGlobalRank`.
+  - [x] **P1** `modules/21-realtime-gaming-leaderboard.md`: added an explicit bit-budget delta callout contrasting Module 21's `21-bit score + 32-bit milliseconds` (`2^32` divisor, 1 ms resolution over `~49.71 days`) against Module 09 §5.1's `28-bit score + 25-bit seconds` (`2^25` divisor, 1 s resolution over `~1.06 years`).
+  - [x] **P2** `modules/21-realtime-gaming-leaderboard.md` & `examples/lib/leaderboard-models.ts`: qualified Score-Range Top-$K$ zero scatter-gather with early-season spillover when the top bracket holds $< K$ players (matching `RangeShardedLeaderboard.getTopK`), and unexported internal helper interfaces in `leaderboard-models.ts` per `slop-guard`.
