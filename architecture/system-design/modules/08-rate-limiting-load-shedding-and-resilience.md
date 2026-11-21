@@ -22,11 +22,110 @@ The key dimensions determine the failure mode you are defending against:
 
 The response contract matters as much as the decision. A rejection should return `429 Too Many Requests` with `Retry-After`, and an allowance should expose `X-RateLimit-Limit`, `X-RateLimit-Remaining`, and `X-RateLimit-Reset` so clients can throttle themselves before they are rejected. A limiter that silently drops work, or that returns `500` instead of `429`, forces clients into blind retries and turns a controlled rejection into a retry storm.
 
+### 1.1 Primary Literature and Systems Foundations Matrix
+
+Production rate limiting and admission control draw on foundational computer science theory across queueing systems, telecommunications traffic policing, and distributed consensus. The matrix below anchors every concept in its primary literature:
+
+| Specification / Paper | Authors / Organization & Year | Core Contribution & Formal Algorithm | State & Computational Complexity | Production Systems Adoption |
+| --- | --- | --- | --- | --- |
+| **ATM Forum Traffic Management Specification 4.0 / UNI 3.1** | The ATM Forum (1996) | Generic Cell Rate Algorithm (GCRA); continuous-state leaky bucket formalizing Theoretical Arrival Time (TAT), emission interval $T = 1/R$, and cell delay variation tolerance $\tau = (B-1)T$. | State: 1 timestamp ($\text{TAT}$) per key; Space: $O(1)$; Time: $O(1)$ single-pass evaluation. | Telecommunications ATM switches, modern cloud cache limiters (`redis-cell`, Valkey, Envoy RLS). |
+| **Rate Limiting with Redis and GCRA** | Brandur Leach (Stripe / brandur.org, 2017) | Open-source `redis-cell` module; proves GCRA exact equivalence to token bucket in distributed systems without background refill timers or multi-key race conditions. | State: Single 64-bit integer timestamp per key; Space: $O(1)$ (8 bytes); Time: $O(1)$ single atomic Redis command. | Defacto blueprint for low-memory atomic Redis/Valkey rate limiting across modern cloud backends. |
+| **How We Built Rate Limiting Capable of Scale** | Cloudflare Engineering (2017) | Sliding Window Counter approximation combining counts from current and previous fixed windows weighted by elapsed fraction: $\hat{c} = c_{\text{prev}} \cdot (1 - e/W) + c_{\text{cur}}$. | State: 2 integer counters + window start timestamp; Space: $O(1)$; Time: $O(1)$ arithmetic. | Cloudflare global edge network policing millions of domains at line rate without per-request log bloat. |
+| **uber-go/ratelimit** | Uber Engineering (2016) | High-throughput Leaky Bucket implementation in Go using atomic lazy clock advancement (`time.Sleep` until next emission slot) without active background worker goroutines. | State: Single atomic `int64` timestamp of last granted slot; Space: $O(1)$; Time: $O(1)$ non-blocking atomic CAS. | Microservice egress rate limiting, client-side RPC traffic shaping across Uber fleets. |
+| **Scaling Your API with Rate Limiters** | Paul Tarjan et al. (Stripe, 2015) | Four-tier admission architecture: Request Rate Limiter, Concurrent Requests Limiter, Fleet Usage Load Shedder, and Worker Usage Load Shedder. | State: Redis sorted sets and Lua scripts with tier-specific fail-open and fail-closed policies. | Universal blueprint for SaaS billing tiers, DDoS mitigation, and graceful degradation under payment surges. |
+| **Site Reliability Engineering & The SRE Workbook (Ch. 21 & 22)** | Betsy Beyer et al. (Google SRE, 2016 / 2018) | Formalization of overload dynamics and client-side adaptive throttling: rejection probability $P_{\text{drop}} = \max\left(0, \frac{\text{requests} - K \cdot \text{accepts}}{\text{requests} + 1}\right)$. | State: Rolling window of requests and accepts per backend cluster; Space: $O(1)$ per cluster; Time: $O(1)$. | gRPC core client library, Envoy upstream cluster circuit breaker, Google internal Stubby RPC. |
+| **Metastable Failures in Distributed Systems** | Bronson et al. (OSDI 2022) | Formal characterization of self-sustaining overload states where feedback loops (retry amplification, cache invalidation storms) persist after root trigger clears. | State: Distributed dependency graphs, queue state machines, and retry budget contracts. | AWS Builders' Library, resilient system design, retry budget enforcement, and push-back load shedding. |
+| **System Design Interview — An Insider's Guide (Vol. 1, Ch. 4)** | Alex Xu (ByteByteGo, 2020) | Comprehensive design of distributed rate limiter: algorithm taxonomy (5 classic patterns), client vs server vs gateway placement, and Redis cluster caching. | State: In-memory distributed counter cache with multi-DC eventual consistency. | Standard industry interview reference and systems engineering training curriculum. |
+
+### 1.2 Protocol Standards: HTTP 429, Retry-After, and X-RateLimit vs. IETF RateLimit Headers
+
+The HTTP response headers returned by a rate limiter form the contract between the admission-control layer and calling clients. When a request is throttled or admitted, standardized headers enable well-behaved clients to dynamically throttle their dispatch rate before encountering rejections.
+
+#### HTTP Status Codes: 429 vs. 503 Semantics
+
+RFC 6585 Section 4 specifies `HTTP 429 Too Many Requests` as the canonical status code for client rate-limiting violations. A rate limiter must strictly return `429` rather than `HTTP 503 Service Unavailable` or `HTTP 500 Internal Server Error`. The semantic distinction is critical:
+
+- `HTTP 429 Too Many Requests`: Indicates that the specific client (identified by IP, token, or API key) has exceeded their assigned quota within a given time period. RFC 6585 explicitly mandates that the response SHOULD include a `Retry-After` header indicating how long to wait before making a new request. Compliant clients and HTTP SDKs recognize `429` as a rate violation and back off without retrying immediately.
+- `HTTP 503 Service Unavailable`: Indicates that the server or upstream cluster is temporarily unable to handle the request due to maintenance or capacity overload. RFC 9110 states that `503` implies a server-side condition that is expected to be transient. When clients receive `503`, many default SDK retry interceptors treat `503` as transient and retryable, immediately scheduling exponential backoff retries (verify per-SDK retry/idempotency configuration). Returning `503` for client-side rate limit violations can therefore trigger an immediate retry storm, transforming a controlled throttling event into a self-inflicted DDoS.
+
+#### The `Retry-After` Header
+
+RFC 9110 Section 10.2.3 defines `Retry-After`, which takes one of two formats:
+
+1. **Delta-seconds**: An integer number of seconds to delay before retrying (e.g., `Retry-After: 30`).
+2. **HTTP-date**: An absolute GMT timestamp (e.g., `Retry-After: Fri, 31 Dec 2026 23:59:59 GMT`).
+
+In modern API and microservice architectures, delta-seconds is strongly preferred because it is entirely immune to client-server clock skew. An absolute timestamp evaluated on a client whose local clock lags the server by 30 seconds will cause the client to retry prematurely, triggering repeated rejections.
+
+#### De-Facto Legacy Headers: `X-RateLimit-*`
+
+Prior to formal IETF standardization, industry practice converged around ad-hoc `X-RateLimit-*` headers popularized by Twitter and GitHub:
+
+- `X-RateLimit-Limit`: The maximum number of requests allowed within the current quota window (e.g., `X-RateLimit-Limit: 1000`).
+- `X-RateLimit-Remaining`: The number of remaining requests permitted within the current window (e.g., `X-RateLimit-Remaining: 42`).
+- `X-RateLimit-Reset`: The Unix epoch timestamp (seconds or milliseconds) at which the current window resets and quota is restored (e.g., `X-RateLimit-Reset: 1774963200`).
+
+While ubiquitous, `X-RateLimit-*` headers suffer from severe interoperability defects: implementations diverge between epoch seconds and epoch milliseconds, header names vary (`X-RateLimit-*` vs. `X-Rate-Limit-*`), and clients have no standard mechanism to discover quota partition boundaries (e.g., whether the limit applies per second, per minute, or per endpoint).
+
+#### IETF `RateLimit-*` Draft Headers and `Retry-After` (RFC 9110 §10.2.3)
+
+While `Retry-After` is standardized in RFC 9110 Section 10.2.3, the IETF HTTPAPI Working Group standardized modern quota signaling in `draft-ietf-httpapi-ratelimit-headers`:
+
+- `RateLimit-Limit`: The quota limit in request units allocated for the current window (e.g., `RateLimit-Limit: 100`).
+- `RateLimit-Remaining`: The remaining quota units available in the current window (e.g., `RateLimit-Remaining: 15`).
+- `RateLimit-Reset`: The integer number of delta-seconds remaining until the quota window resets (e.g., `RateLimit-Reset: 12`). Standardizing on delta-seconds eliminates client-server clock skew vulnerabilities.
+- `RateLimit-Policy`: Quota metadata describing the parameters and partitions of the policy (e.g., `RateLimit-Policy: 100;w=60;burst=20;comment="user quota"`), allowing automated API SDKs to configure local client token buckets matching the server's exact parameters.
+
+### 1.3 Architectural Placement: Client vs. Server vs. API Gateway (ByteByteGo Chapter 4 Analysis)
+
+In ByteByteGo (System Design Interview Vol. 1, Chapter 4), Alex Xu evaluates three architectural locations where rate-limiting logic can reside: client-side, server-side in-application middleware, and an API Gateway / reverse proxy tier. The choice of placement dictates trust boundaries, compute efficiency, and failure containment across distributed microservices.
+
+```mermaid
+flowchart TD
+    subgraph ClientTier["1. Client Tier (Untrusted)"]
+        Client["Client App / Browser / Mobile SDK"]
+    end
+    subgraph EdgeTier["2. API Gateway / Ingress Edge (Centralized Policy)"]
+        Gateway["Envoy / Kong / Cloudflare Edge<br/>(L7 Reverse Proxy & RLS Daemon)"]
+        SharedCache[("Distributed Cache<br/>Valkey / Redis GCRA")]
+        Gateway <-->|"gRPC / RESP check"| SharedCache
+    end
+    subgraph AppTier["3. Application Tier (Decentralized / Microservices)"]
+        App1["Service Pod A (In-Process Middleware)"]
+        App2["Service Pod B (In-Process Middleware)"]
+        DB[("Database / Downstream")]
+        App1 --> DB
+        App2 --> DB
+    end
+    Client -->|"Internet (TLS 1.3)"| Gateway
+    Gateway -->|"Filtered Traffic (HTTP/2 / gRPC)"| App1
+    Gateway -->|"Filtered Traffic (HTTP/2 / gRPC)"| App2
+    Client -.->|"Bypasses SDK (Attacker/Bot)"| Gateway
+```
+
+#### Placement Evaluation Matrix
+
+| Architectural Tier | Implementation Mechanism | Trust Boundary | Compute & Overhead Impact | Failure Modes & Limitations | Ideal Use Case |
+| --- | --- | --- | --- | --- | --- |
+| **Client-Side SDK** | Mobile SDK / Frontend JS interceptor / gRPC client channel interceptor | **Untrusted**. Clients control execution and runtime memory. | Zero server compute; sheds traffic before entering egress network. | Malicious actors easily bypass client code via curl/scripts; clock tampering; cannot coordinate across multiple devices. | Voluntary client pacing; polite API consumption; backoff honoring `Retry-After`. |
+| **In-Application Middleware** | Express, Spring Boot, or Django middleware filters inside service containers | **Trusted**. Executes within private application network. | High server CPU overhead: requires full TLS handshake, HTTP payload parsing, and route matching before rejecting. | Duplicates limiter logic across polyglot microservice fleets; uncoordinated local counters behind LBs cause $N \times L$ over-admission. | Complex domain-specific quotas requiring user database lookups (e.g., monthly billing tiers, Stripe worker load shedding). |
+| **API Gateway / Ingress Tier** | L7 Reverse Proxy (Envoy, Kong, AWS API Gateway, Cloudflare Edge) | **Trusted**. Centralized perimeter defense at network boundary. | Minimal backend overhead: terminates TLS and rejects early with `429` before downstream app pods consume CPU or threads. | Requires external distributed cache (Redis/Valkey) or gRPC RLS hop; coarse-grained unless JWT tokens are decoded at edge. | Global perimeter defense; IP-based anti-scraping; credential stuffing protection; cross-cutting API token throttling. |
+
+#### Architectural Recommendation: The Layered Perimeter Pattern
+
+Modern distributed architectures reject an "either/or" choice in favor of a **three-tier defense-in-depth model**:
+
+1. **Edge Ingress / WAF Tier**: Cloudflare or AWS CloudFront terminates TLS and executes coarse IP-based and geographical sliding-window rate limiting to block volumetric Layer 7 DDoS and bot scraping at line rate.
+2. **API Gateway / Envoy Tier**: The perimeter API Gateway decodes authentication tokens (JWTs) and executes GCRA rate limiting against Redis/Valkey clusters for per-user and per-API-key quota enforcement, returning `429` and `Retry-After` before requests touch downstream microservice pods.
+3. **Internal Microservice Tier**: Individual backend services employ local adaptive concurrency limits (Netflix Gradient2) and bulkheads to bound in-flight database connections and protect internal queues from cross-service cascade failures.
+
 ---
 
 ## 2. Rate Limiting Algorithms and Formal Proofs
 
 The algorithms below are implemented and proven in `../examples/02-rate-limiters.test.ts` using a deterministic `FakeClock`. The negative tests matter as much as the positive ones: a limiter that passes the happy path can still admit a double-rate burst at a window boundary.
+
+![Rate Limiting Algorithms: Mechanics, Edge Cases & Mathematical Invariants](../assets/08-rate-limiter-algorithms.svg)
 
 ### 2.1 Token Bucket
 
@@ -70,7 +169,9 @@ The cost is memory and time. The state is $O(L)$ per key — for a limit of 1,00
 
 The sliding window counter keeps only two integers per key: the count in the current window and the count in the previous window. At time $t$, with $e$ elapsed in the current window, the estimate is:
 
-$$\hat{c} = c_{prev} \cdot \left(1 - \frac{e}{W}\right) + c_{cur}$$
+$$
+\hat{c} = c_{prev} \cdot \left(1 - \frac{e}{W}\right) + c_{cur}
+$$
 
 The previous window's count is weighted by the fraction of it that still overlaps the sliding window. This is an approximation: it assumes the previous window's requests were uniformly distributed, so it can over- or under-count near the boundary, but it uses $O(1)$ memory per key and $O(1)$ time per decision. In the example, the limiter rejects the 2× boundary burst that defeats the fixed window, because the weighted previous count keeps the estimate at the limit. The error is bounded by the previous window's count times the smaller of the two weights, so it never exceeds $c_{prev}$; for a well-provisioned limit this is far more accurate than a fixed window and far cheaper than a log.
 
@@ -120,7 +221,7 @@ The decision order is: downstream tolerance first, key cardinality second, opera
 | --- | --- | --- | --- | --- | --- | --- |
 | Fixed window counter | window id + count | $O(1)$ | Full limit per window | **Yes: 2× burst across boundary** | Exact per fixed window only | None |
 | Sliding window log | last $L$ timestamps | $O(L)$ | Full limit per window | No | Exact over sliding window | None |
-| Sliding window counter | two counts | $O(1)$ | Weighted approximation | No (rejects 2× burst) | Approximate | None |
+| Sliding window counter | two counts | $O(1)$ | Weighted approximation | Mitigates (error $\le c_{\text{prev}} \cdot \min(e/W, 1 - e/W)$) | Approximate | None |
 | Token bucket | tokens + timestamp | $O(1)$ | Capacity $B$, then rate $R$ | No | Exact invariant | Lazy refill on arrival |
 | Leaky bucket | queue level + timestamp | $O(1)$ | Never exceeds outflow $R$ | No | Exact outflow | Lazy drain on arrival |
 | GCRA | one TAT timestamp | $O(1)$ | $B$ burst, then one per $T$ | No | Exact invariant | **None** |
@@ -173,6 +274,66 @@ The trade-offs are latency and availability. Every limited request now pays an e
 
 The common compromise is fail open with a local fallback limiter and a circuit breaker, so a Redis blip degrades to per-node protection rather than a total outage. Operational hazards remain: a hot key concentrates on one hash slot, a long Lua script blocks the single-threaded event loop for every client, and key memory grows without TTLs. Redis Lua scripting and the five Redis limiter realisations are owned by [`technologies/redis`](../../../technologies/redis/README.md); the system-design delta is the distributed architecture and the fail-open/fail-closed decision. The integration proof lives in `../examples/08-redis-integration.test.ts`.
 
+### 3.2.1 Atomic Lua Defense Against INCR/EXPIRE and Sliding Window Log Races
+
+Two catastrophic race conditions plague distributed rate limiters when operations are naively executed across multiple network round trips:
+
+#### The `INCR` + `EXPIRE` Immortal Key Leak
+
+In naive implementations of fixed window or counter limiters, developers frequently write two separate Redis commands:
+
+```python
+# Naive race condition vulnerability
+count = redis.incr(key)
+if count == 1:
+    redis.expire(key, 60)
+```
+
+If the application process crashes, is killed by an out-of-memory (OOM) killer, or suffers an abrupt network timeout between `INCR` and `EXPIRE`, the key is created with **no expiration** (`TTL = -1`). The counter increments indefinitely with subsequent requests and never resets. Once it crosses the limit, the user or API key is permanently locked out of the service until an operator manually discovers and flushes the key. The fix is either leak-free TTL setup via `SET key 1 EX 60 NX` followed by `INCR` (TTL is preserved on `INCR`, though two commands are still non-atomic for concurrent counting), or wrapping the entire check-increment-expire sequence inside a single atomic Lua script executed via `EVALSHA`.
+
+#### The Sliding Window Log Sorted Set (ZSET) Race Condition
+
+A sliding window log implemented across separate round trips (`ZREMRANGEBYSCORE` $\to$ `ZCARD` $\to$ `ZADD`) suffers from a classic Time-of-Check to Time-of-Use (TOCTOU) concurrency defect. If two client requests arrive simultaneously when `ZCARD` equals $L - 1$, both round trips observe that capacity remains, both issue `ZADD`, and $L + 1$ requests are admitted. The production solution is a complete atomic Lua script:
+
+```lua
+-- Atomic Sliding Window Log in Redis/Valkey (EVALSHA)
+-- KEYS[1] = limiter key (e.g., "ratelimit:login:{user_123}")
+-- ARGV[1] = current_time_ms (from server monotonic clock or Redis TIME)
+-- ARGV[2] = window_ms (e.g., 60000 for 1 minute)
+-- ARGV[3] = limit (e.g., 100)
+
+local key          = KEYS[1]
+local now_ms       = tonumber(ARGV[1])
+local window_ms    = tonumber(ARGV[2])
+local limit        = tonumber(ARGV[3])
+local clear_before = now_ms - window_ms
+
+-- Step 1: Atomically prune elements older than the rolling window
+redis.call('ZREMRANGEBYSCORE', key, '-inf', clear_before)
+
+-- Step 2: Count remaining active timestamps within the rolling window
+local current_count = redis.call('ZCARD', key)
+
+if current_count < limit then
+  -- Step 3a: Under limit - record arrival timestamp as both member and score
+  redis.call('ZADD', key, now_ms, tostring(now_ms) .. ':' .. tostring(redis.call('INCR', key .. ':seq')))
+  redis.call('EXPIRE', key, math.ceil(window_ms / 1000) + 1)
+  redis.call('EXPIRE', key .. ':seq', math.ceil(window_ms / 1000) + 1)
+  return {1, limit - current_count - 1, 0} -- {admitted, remaining, retry_after_sec}
+else
+  -- Step 3b: Over limit - compute exact seconds until the oldest timestamp expires
+  local oldest = redis.call('ZRANGE', key, 0, 0, 'WITHSCORES')
+  local retry_after_sec = 0
+  if #oldest > 0 then
+    local oldest_time = tonumber(string.match(oldest[1], '^(%d+)')) or tonumber(oldest[2])
+    retry_after_sec = math.max(0, math.ceil(((oldest_time + window_ms) - now_ms) / 1000))
+  end
+  return {0, 0, retry_after_sec} -- {admitted, remaining=0, retry_after_sec}
+end
+```
+
+Executing this logic within a single `EVALSHA` call guarantees that Redis's single-threaded command processor evaluates the pruning, counting, and insertion atomically, eliminating all TOCTOU over-admission.
+
 ### 3.3 Local-Quota Batching and Hierarchical Synchronization
 
 At 1M+ RPS, a Redis hop per request is too expensive: even at 0.2 ms per operation, 1M RPS consumes 200 seconds of Redis time per second, requiring a large cluster and adding tail latency to every request. The remedy is **local-quota batching** (hierarchical synchronization).
@@ -199,7 +360,7 @@ The rules that keep a limiter correct under bad time:
 - Use a **server-side monotonic clock** for the decision, or Redis `TIME` inside the Lua script, so client clocks cannot inflate a quota. Redis `TIME` is atomic with the script but adds a command; a caller-server timestamp is cheaper but trusts the caller's clock.
 - If the clock steps backwards, **clamp** the new time to the last observed time rather than allowing a negative elapsed interval. A negative interval would refill a token bucket beyond capacity or push a GCRA TAT into the past, granting a free burst.
 - For GCRA, an out-of-order arrival with $t < \text{TAT} - \tau$ is rejected, which is correct; do not try to reorder arrivals, because the limiter's job is to police the stream as observed.
-- Set a **key TTL** at least as long as the window. A TTL shorter than the window silently resets the limiter and admits a fresh burst; a TTL much longer than the window grows memory without helping. A common choice is $2W$ so a key survives one idle window and expires after two.
+- Set a **key TTL** at least as long as the window. A TTL shorter than the window silently resets the limiter and admits a fresh burst; a TTL much longer than the window grows memory without helping. A common choice for generic window limiters is $2W$ so a key survives one idle window and expires after two, whereas GCRA Lua scripts use $\text{period} + \tau$ because $\text{TAT}$ advances at most $B \cdot T = \tau + T$ ahead of `now`.
 - In a Redis Cluster, all keys touched by one Lua script must live in the same hash slot; use hash tags (`{tenant-a}:user-1`) or the script will fail with a cross-slot error.
 
 ### 3.5 Observing the Limiter
@@ -213,6 +374,44 @@ A limiter that cannot be observed cannot be tuned. The minimum telemetry set is:
 
 Metric labels must stay bounded: do not put `user_id` or raw URL paths into labels (the cardinality trap owned by [the observability track](../../../technologies/observability/README.md)); aggregate by route template, tenant, and region, and put identifiers in logs and traces. Rejections are a controlled outcome, not an error: alert on a rising rejection rate (a client or an abuse campaign) and on limiter unavailability (a protection gap), but do not page on a single `429`.
 
+### 3.6 Multi-Data-Center Synchronization and Edge Topologies
+
+Deploying rate limiters across multi-region and multi-cloud architectures introduces physical speed-of-light constraints and partition vulnerabilities that make a single global state authority impractical.
+
+```mermaid
+flowchart TD
+    subgraph RegionWest["Region: US-West"]
+        EdgeW["Envoy Ingress"] --> LocalCacheW[("Local Valkey GCRA")]
+        LocalCacheW --> PodW["Application Pods"]
+    end
+    subgraph RegionEast["Region: US-East"]
+        EdgeE["Envoy Ingress"] --> LocalCacheE[("Local Valkey GCRA")]
+        LocalCacheE --> PodE["Application Pods"]
+    end
+    subgraph EdgeCompute["Cloudflare Edge PoPs"]
+        CF["Cloudflare Worker"] --> DO["Durable Object (Stateful Actor)"]
+    end
+    LocalCacheW <-->|"Async Delta Batch Sync (Kafka / WAN mesh)"| LocalCacheE
+    CF -->|"Origin Forward"| EdgeW
+    CF -->|"Origin Forward"| EdgeE
+```
+
+#### Multi-DC Architectural Topologies
+
+1. **Centralized WAN Redis Cluster (Anti-Pattern)**:
+   - Hosting a single Redis cluster in one primary region (e.g., `us-east-1`) and having edge proxies in Europe and Asia execute synchronous Lua checks adds $70\text{ ms} - 180\text{ ms}$ of latency to every single incoming request.
+   - If the cross-region WAN link degrades or the primary region fails, the global edge must either fail closed (shutting down all international operations) or fail open (exposing backend databases to unthrottled surges).
+2. **Static Regional Quota Partitioning**:
+   - The global quota $L$ is statically partitioned across $M$ regional data centers based on historical traffic weight: $L_r = w_r \cdot L$ (e.g., US-East receives 50%, US-West 30%, EU-Central 20%).
+   - **Failure Mode**: Rigidity under traffic skews. During regional DNS failovers or night-time diurnal shifts, users in one region are aggressively throttled despite ample global capacity lying idle in other regions.
+3. **Asynchronous Cross-DC Synchronization with Delta Batching**:
+   - Each data center enforces rate limits locally against a regional in-memory Valkey/Redis instance using GCRA.
+   - Background worker processes periodically aggregate admitted request deltas ($\Delta c_r$) over a brief interval (e.g., $T_{\text{sync}} = 500\text{ ms}$) and broadcast these deltas across data centers via Kafka or a lightweight peer-to-peer mesh.
+   - **Trade-off Analysis**: This design embraces **eventual consistency**. During WAN network partitions or replication lag, total admissions can transiently overshoot the global ceiling by at most $M \cdot \Delta c \cdot T_{\text{sync}}$. Because rate limiting is an admission-control defense rather than an ACID financial ledger, accepting a bounded $3\%\text{--}5\%$ overshoot during transient network anomalies is vastly superior to imposing $150\text{ ms}$ latency penalties or risking global downtime.
+4. **Edge Computing with State Locality (Cloudflare Durable Objects)**:
+   - Modern edge compute platforms (Cloudflare Workers, Fastly Compute) employ consistent hashing on client identifiers (`user_id` or `api_key`) to route requests to a single stateful edge actor (e.g., a Cloudflare Durable Object).
+   - Rate limiting decisions evaluate in-memory within $< 1\text{ ms}$ directly at the edge Point of Presence (PoP), terminating unauthorized or throttled traffic before packets ever traverse the origin backhaul network.
+
 ---
 
 ## 4. Load Shedding, Queueing Theory, and Tail Latency Proofs
@@ -223,13 +422,17 @@ Rate limiting prevents overload at the edge; load shedding contains it when the 
 
 For an M/M/1 queue with arrival rate $\lambda$ and service rate $\mu$, utilization is $\rho = \lambda / \mu$. The mean queue wait and mean sojourn time are:
 
-$$W_q = \frac{\rho}{\mu (1 - \rho)} \qquad W = \frac{1}{\mu - \lambda}$$
+$$
+W_q = \frac{\rho}{\mu (1 - \rho)} \qquad W = \frac{1}{\mu - \lambda}
+$$
 
 The critical property is the denominator $1 - \rho$. At $\rho = 0.5$, $W_q = 1/\mu$ — the wait equals one service time. At $\rho = 0.8$, $W_q = 4/\mu$. At $\rho = 0.95$, $W_q = 19/\mu$. As $\rho \to 1$, $W_q \to \infty$ while throughput remains $\mu$. This is the **latency knee**: a server is not "almost fine" at 95% utilization; it is already paying twenty times its service time in queueing delay, and a small traffic increase pushes it over the cliff.
 
 For $c$ identical servers (M/M/c), $\rho = \lambda / (c\mu)$ and the mean wait is:
 
-$$W_q = \frac{P_{\text{wait}}}{c\mu - \lambda}$$
+$$
+W_q = \frac{P_{\text{wait}}}{c\mu - \lambda}
+$$
 
 where $P_{\text{wait}}$ is the Erlang C probability that an arrival must queue. The same $1/(c\mu - \lambda)$ blow-up appears. Capacity planning therefore targets a utilization ceiling — often 60–70% for latency-sensitive services — so that a traffic spike or a failing instance does not push the surviving capacity past the knee. Little's Law, $L = \lambda W$, converts the latency target into a concurrency bound: a service with $\lambda = 10{,}000$ requests/s and a $100\text{ ms}$ latency budget may hold at most $L = 1{,}000$ requests in flight; beyond that, either latency or rejection must grow.
 
@@ -251,7 +454,9 @@ The policy must be designed before the incident. If the system sheds arbitrarily
 
 A request that calls $n$ downstream services in parallel inherits the worst of all of them. If each downstream is slow with probability $p$ (for example $p = 0.01$ at the $p_{99}$ tail), the probability that at least one of $n$ independent calls is slow is:
 
-$$P(\text{slow}) = 1 - (1 - p)^n$$
+$$
+P(\text{slow}) = 1 - (1 - p)^n
+$$
 
 For $n = 100$ and $p = 0.01$, $P(\text{slow}) = 1 - 0.99^{100} \approx 0.634$. A service that calls one hundred dependencies, each of which is "99% fast", is slow on roughly 63% of its requests. This is the "tail at scale" amplification: the fan-out multiplier turns per-dependency tail latencies into a dominant user-visible latency.
 
@@ -287,13 +492,32 @@ sequenceDiagram
 
 Rate limiting and concurrency limiting are complementary: a rate limiter bounds arrivals per key, while a concurrency limit bounds how many requests may be inflight against a dependency at once. Little's Law connects them: with latency $W$, the maximum sustainable throughput at concurrency $L$ is $\lambda_{\max} = L / W$. A dependency that suddenly slows from $50\text{ ms}$ to $500\text{ ms}$ cannot sustain the same concurrency, so either throughput falls or the queue grows; an adaptive concurrency limit detects the slowdown and reduces $L$ before the queue explodes.
 
-Two families of algorithms are common:
+#### Google SRE Client-Side Adaptive Throttling
 
-- **Vegas-style**: estimate queueing delay from the difference between the observed round-trip time and the minimum observed round-trip time; increase concurrency while the queue is empty and decrease it when queueing appears.
-- **Gradient-style**: compare the RTT gradient against a target; add concurrency when the gradient is flat and remove it when the gradient turns upward.
-- **Netflix Concurrency Limits**: estimate the sustainable inflight capacity from a rolling window of latencies and set the limit to a multiple of that estimate.
+When a backend cluster is overloaded, Google SRE (Site Reliability Engineering, Ch. 21) introduces client-side adaptive throttling. Instead of relying solely on the server to reject requests, each client tracks the rolling history of requests sent ($R_{\text{total}}$) and requests successfully accepted by the backend ($R_{\text{accept}}$). When the acceptance ratio drops below a threshold multiplier $K$, the client probabilistically drops outgoing requests locally:
 
-Compose the layers: a rate limiter at the edge for tenant fairness, an adaptive concurrency limit per dependency for overload protection, and a bulkhead (a separate thread or connection pool) per dependency so one slow dependency cannot starve the others.
+$$
+P_{\text{drop}} = \max\left(0, \frac{\text{requests} - K \cdot \text{accepts}}{\text{requests} + 1}\right)
+$$
+
+The standard tuning parameter is $K = 2$ (or $K = 1.5$ for aggressive protection). With $K = 2$, the client permits normal traffic as long as the backend accepts at least 50% of requests. As backend health deteriorates, $P_{\text{drop}}$ increases dynamically, preventing rejected requests from consuming network bandwidth or backend parsing CPU. Adding 1 to the denominator prevents division by zero when starting up.
+
+#### Dynamic Concurrency Algorithms: Netflix Gradient2
+
+Rather than hardcoding static in-flight concurrency caps, Netflix Concurrency Limits dynamically adjusts concurrency using congestion feedback:
+
+- **Vegas-Style**: Compares observed RTT against the minimum baseline latency observed over a long rolling window ($\text{RTT}_{\text{min}}$). When queueing delay appears ($\text{RTT}_{\text{measured}} - \text{RTT}_{\text{min}} > \alpha$), concurrency shrinks.
+- **Gradient2**: Evaluates the ratio between uncongested baseline latency and current measured latency:
+
+$$
+\text{gradient} = \frac{\text{RTT}_{\text{min}}}{\text{RTT}_{\text{measured}}}
+$$
+
+$$
+\text{limit}_{t+1} = \text{limit}_t \cdot \text{gradient} + \text{margin}
+$$
+
+When downstream queues fill, $\text{RTT}_{\text{measured}}$ increases, driving $\text{gradient} < 1.0$. This pulls the inflight limit down multiplicatively. When latency recovers, the additive margin allows concurrency to probe upward linearly. This classic Additive Increase, Multiplicative Decrease (AIMD) dynamic protects downstream databases without requiring manual tuning during incidents.
 
 ### 4.6 Worked Tail-Latency Example
 
@@ -317,7 +541,7 @@ The theory of retry amplification and metastable failure is owned by [`architect
 
 A retry is a reasonable response to a transient failure and a catastrophic response to a sustained one. The danger is multiplication across layers. If three service layers each retry a failed call three times, the worst-case offered load is $3^3 = 27\times$ the original traffic: the top layer's three attempts each trigger three attempts in the middle layer, each of which triggers three in the bottom layer. A brief blip at the bottom becomes a 27-fold load at the bottom, which collapses it, which causes more timeouts, which causes more retries.
 
-This is a **metastable failure**: a transient trigger pushes the system into an overloaded state that is sustained by its own internal feedback. Even after the original trigger clears, the retry traffic alone exceeds capacity, so the system never recovers without operator intervention. The AWS Builders' Library pattern is to break the feedback loop, not to hope the trigger was brief.
+This is a **metastable failure** (formalized by Bronson et al., OSDI 2022): a transient trigger pushes the system from a stable, high-throughput operating state into an overloaded attractor state that is sustained by its own internal feedback loops. Even after the original trigger clears (e.g., a database failover completes or an external API recovers), the retry traffic, lock contention, and cache-stampede queries alone exceed total capacity. The system cannot recover without active operator intervention to break the loop.
 
 The defenses, in order of importance:
 
@@ -346,7 +570,9 @@ A retry budget turns an unbounded amplification into a bounded one. Let $A$ be t
 
 Full jitter is the companion rule. The sleep before attempt $k$ is:
 
-$$\text{sleep}_k = \text{random}(0, \min(\text{cap}, \text{base} \cdot 2^k))$$
+$$
+\text{sleep}_k = \text{random}(0, \min(\text{cap}, \text{base} \cdot 2^k))
+$$
 
 The exponential term grows the expected wait; the uniform random term decorrelates the retries of many clients. Without jitter, every client retries at the same backoff boundary and the retries arrive as a periodic herd; with full jitter, the retry stream is spread across the whole backoff interval.
 
@@ -372,6 +598,21 @@ The practical rules:
 | **Current** | GCRA / sliding window counter; centralized Redis Lua with fail-open fallback; hierarchical local quota at 1M+ RPS. | LIFO / CoDel / adaptive concurrency limits; priority tiers; explicit shed with `429` and `Retry-After`. | Full jitter, retry budgets, per-dependency breakers and bulkheads, end-to-end deadline propagation. |
 
 The pattern is the same as in Module 07: make the failure explicit, bound it, and move the policy from implicit hope to an enforceable contract.
+
+![Rate Limiting & Resilience Architecture Evolution: 2021 Default vs. 2026 Modern Standard](../assets/08-resilience-2021-vs-2026.svg)
+
+### 6.1 Architectural Evolution of Admission Control and Resilience (2021 vs. 2026)
+
+Between 2021 and 2026, distributed systems experienced a profound shift from bespoke application middleware and brittle distributed counters toward cloud-native gateway rate-limiting services, edge actor computing, and queueing-aware adaptive concurrency control:
+
+| Architectural Dimension | 2021 Legacy Default (Pain Points) | 2026 Modern Standard (Primary Shifts) | Production Impact & Rationale |
+| --- | --- | --- | --- |
+| **1. Enforcement Tier & Placement** | Bespoke In-App Middleware (Express, Spring Boot, Django filters) per microservice; fragmented logic; uncoordinated per-node local counters behind load balancers allow $N \times L$ over-admission. | Envoy / Gateway API Global Rate Limit Service (RLS); Envoy L7 rate-limit filter streams gRPC descriptors to an out-of-process RLS daemon; declarative Kubernetes Gateway API `RateLimitPolicy` CRDs. | Centralizes quota governance; decouples admission rules from polyglot app code; terminates abusive floods at the perimeter before app pods parse payloads. |
+| **2. Edge & Multi-DC Topologies** | Centralized Redis Cluster across WAN; cross-region round trips add $50\text{ ms} - 150\text{ ms}$ latency to every request; fail-closed causes global cascading outages; high cross-AZ egress bills. | Edge Computing with State Locality (Cloudflare Workers + Durable Objects / Fastly Compute); sub-millisecond edge evaluation; hierarchical local-quota batching with asynchronous cross-region delta sync. | Eliminates cross-region WAN hops on critical path; moves defense to edge PoPs closest to users; bounds replication overshoot while guaranteeing regional survivability. |
+| **3. Counter Atomicity & State Model** | Redis Naive `INCR` + Separate `EXPIRE` race condition (crashes leave immortal keys with `TTL = -1`); `GET`-then-`SET` lost updates; memory bloat from multi-megabyte Sliding Window Log ZSETs. | Valkey / Redis Lua `EVALSHA` Single-Key GCRA; atomic check-and-update executed in 1 round trip; auto-TTL via `PX`; single 64-bit integer TAT per key ($O(1)$ memory, 8 bytes). | Eliminates TOCTOU concurrency bugs; caps state to 8 bytes per key ($1\text{M}$ active users consume $< 16\text{ MB}$ RAM); eliminates background refill threads. |
+| **4. HTTP Protocols & Client Guidance** | Ad-hoc, fragmented `X-RateLimit-*` headers; ambiguous Unix epoch seconds vs milliseconds; no standard policy discovery; clients retry blindly upon receiving `429`. | IETF RFC 6585 & Draft Standard `RateLimit-*` (`RateLimit-Policy`, `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset`); structured `Retry-After` in delta-seconds. | Standardizes client SDK backoff; delta-seconds eliminates client-server clock skew failures; `RateLimit-Policy` enables automated client-side token bucket calibration. |
+| **5. Overload Detection & Concurrency** | Static Request-Rate Limits (RPS); blind to downstream database latency degradation; slow queries saturate thread and connection pools even under low request rates. | Adaptive Concurrency Limits rooted in Little's Law ($L = \lambda W$); Netflix Gradient2 / Vegas algorithms monitor RTT gradient inflation and dynamically throttle in-flight concurrency. | Automatically sheds load as downstream dependencies slow down, preserving service goodput without manual operational intervention during incidents. |
+| **6. Queue Discipline & Load Shedding** | FIFO Queueing with Blind Timeouts; server CPU wasted processing already-abandoned requests; goodput collapses to near zero; layered retries create $3^3 = 27\times$ metastable storms. | Priority AIMD Load Shedding & LIFO/CoDel Service; sheds batch/crawler tiers first; LIFO serves fresh requests within client deadline; 10% retry budgets prevent metastable loops. | Preserves high goodput during massive traffic surges; breaks self-sustaining retry feedback loops; ensures revenue-critical checkout traffic succeeds. |
 
 ---
 
