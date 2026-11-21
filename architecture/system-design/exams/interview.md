@@ -2,7 +2,7 @@
 
 This preparation bank tests Senior, Staff, and Principal distributed system design competency across the seven domains defined in [`exams/README.md`](README.md). Every question is original and grounded in primary engineering literature, official protocol RFCs, and production postmortems.
 
-- **Bank scope**: **85 questions** (`Q-SD-001`–`Q-SD-085`) covering quantitative capacity modeling, edge/API design, caching/partitioning, asynchrony/resilience, specialized indexing/financial correctness, SLO observability/DR, end-to-end canonical architectures, progressive scaling, distributed key-value stores, and planetary-scale geospatial navigation.
+- **Bank scope**: **90 questions** (`Q-SD-001`–`Q-SD-090`) covering quantitative capacity modeling, edge/API design, caching/partitioning, asynchrony/resilience, specialized indexing/financial correctness, SLO observability/DR, end-to-end canonical architectures, progressive scaling, distributed key-value stores, planetary-scale geospatial navigation, and distributed message queue internals.
 - **Difficulty calibration**: Level `1` tests foundational mechanics, Level `2` tests Senior-level trade-off reasoning, and Level `3` tests Staff/Principal failure modes, subtle race conditions, and quantitative traps.
 - **Timed practice**: Complete the [50-Question Written Architecture Drill](#timed-mock-exam-written-architecture-drill-50-questions--75-minutes) under a strict 75-minute timer, then run the [two 60-minute Staff/Principal design loops](#timed-mock-design-loops-2--60-minute-staffprincipal-simulations) against the explicit 0–4 grading rubrics.
 
@@ -1723,6 +1723,115 @@ Which **two** operational hazards arise when pushing real-time adaptive reroutes
 - Why not C: Asymmetric key-exchange CPU across `2M` simultaneous TLS 1.3 handshakes easily saturates L7 gateways and triggers cascading timeouts.
 - Why not D: Client GPU rendering affects local frame rate, not server-side routing stability or gateway socket churn.
 - Ref: [modules/17-google-maps.md](../modules/17-google-maps.md#5-production-gotchas-and-failure-modes), https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/
+
+</details>
+
+---
+
+### Q-SD-086 · Distributed Message Queues & Event Streaming Internals · difficulty 3 · scenario
+
+A partition has `RF=3` and a producer uses `acks=all`. A rack failure leaves one follower in sync and the other out of sync, and then the leader crashes. Which configuration guarantees that no acknowledged message is lost and that a stale replica is never elected leader?
+
+- A) `acks=all`, `min.insync.replicas=1`, `unclean.leader.election.enable=true`
+- B) `acks=all`, `min.insync.replicas=2`, `unclean.leader.election.enable=false`
+- C) `acks=1`, `min.insync.replicas=2`, `unclean.leader.election.enable=false`
+- D) `acks=all`, `min.insync.replicas=2`, `unclean.leader.election.enable=true`
+
+<details><summary>Answer</summary>
+
+**B.** `acks=all` makes the leader wait for the current ISR. `min.insync.replicas=2` ensures a write is acknowledged only after at least two replicas hold it, rejecting writes with `NotEnoughReplicasException` whenever ISR size falls below two. `unclean.leader.election.enable=false` ensures only an in-sync replica can become leader, so a stale replica never truncates acknowledged data; the partition goes offline instead, trading availability for durability.
+
+- Why not A: With `min.insync.replicas=1`, `acks=all` waits only for the lone leader when the ISR shrinks to one, so acknowledged data can exist on a single broker and unclean election can promote a stale replica that discards it.
+- Why not C: `acks=1` acknowledges as soon as the leader appends locally before any follower fetches the batch, so a leader crash can lose acknowledged records regardless of `min.insync.replicas`.
+- Why not D: With unclean election enabled, if all in-sync replicas become unavailable, an out-of-sync follower lacking acknowledged writes can be elected leader and permanently truncate committed records.
+- Ref: [modules/18-distributed-message-queue.md](../modules/18-distributed-message-queue.md#3-producer-flow-replication-isr-and-kip-101-leader-epoch-safety), https://kafka.apache.org/documentation/#replication
+
+</details>
+
+---
+
+### Q-SD-087 · Distributed Message Queues & Event Streaming Internals · difficulty 3 · single
+
+A three-broker partition fails over from leader A to follower B. Before KIP-101, a returning broker truncated its log to its own High Watermark (HWM) upon rejoining as a follower. Which statement accurately explains how KIP-101 Leader Epoch eliminates the resulting log divergence?
+
+- A) It advances the HWM eagerly on followers before fetches complete so followers never lag behind the leader.
+- B) A returning follower queries the new leader with `OffsetsForLeaderEpoch` for the end offset of its last known epoch and truncates to that offset, aligning with the leader's epoch history instead of a potentially stale local HWM.
+- C) It replaces the ISR list with a static majority Raft quorum for every data partition.
+- D) It removes the need for `min.insync.replicas` because every epoch is durably committed on append.
+
+<details><summary>Answer</summary>
+
+**B.** Each leader term carries a monotonically increasing epoch recorded alongside its start offset. A returning broker sends `OffsetsForLeaderEpoch` to the current leader to find the exact end offset of its last epoch in the leader's history and truncates any diverged tail beyond that point before fetching. Because a broker's local HWM can lag or diverge across rapid failovers, truncating strictly to local HWM can retain records the new leader never committed or drop valid records.
+
+- Why not A: The HWM tracks committed replicated offsets and cannot be advanced before followers fetch; KIP-101 changes truncation semantics rather than HWM advancement rules.
+- Why not C: KIP-101 preserves ISR-based partition replication rather than converting data partitions into per-partition Raft groups.
+- Why not D: Leader epochs make failover truncation deterministic, whereas `min.insync.replicas` enforces write quorum durability before returning an acknowledgement.
+- Ref: [modules/18-distributed-message-queue.md](../modules/18-distributed-message-queue.md#3-producer-flow-replication-isr-and-kip-101-leader-epoch-safety), https://cwiki.apache.org/confluence/display/KAFKA/KIP-101+-+Alter+Replication+Protocol+to+use+Leader+Epoch+rather+than+High+Watermark+for+Truncation
+
+</details>
+
+---
+
+### Q-SD-088 · Distributed Message Queues & Event Streaming Internals · difficulty 3 · scenario
+
+A cluster ingests `1M msg/s` of `1 KB` records (`1 GB/s` raw) with `RF=3`, `3x` `zstd` compression, `14-day` retention, and `3` independent consumer groups across 3 AWS AZs (`$0.02/GB` cross-AZ transfer). Cloud billing shows `~$34,560/mo` in inter-broker cross-AZ replication plus `~$34,560/mo` in cross-AZ consumer fetches (`~$69,120/mo` combined). Which architecture addresses **both** cross-AZ cost drivers and long-term local disk cost?
+
+- A) Enable KIP-392 rack-aware follower fetching alone so consumers read from same-AZ followers.
+- B) Enable KIP-405 tiered storage alone on the 14-day topics, eliminating all inter-broker replication traffic by a factor of `RF`.
+- C) Enable KIP-392 so consumers read from same-AZ replicas (`$0` consumer cross-AZ tax), use KIP-405 tiered storage for historical segments, and move replayable high-volume streams onto diskless S3-native brokers (such as WarpStream or AutoMQ) that eliminate inter-broker cross-AZ replication.
+- D) Lower `RF` to `2` and switch to maximum-level `zstd` compression to cut cross-AZ transfer without changing broker architecture.
+
+<details><summary>Answer</summary>
+
+**C.** Cross-AZ transfer has two separate halves at `3x` compression: `2/3 GB/s` of follower replication (`~$34,560/mo`) and `2/3 GB/s` of cross-AZ consumer reads across three groups (`~$34,560/mo`). KIP-392 eliminates the consumer-fetch half by routing reads to same-AZ followers, while diskless S3-native brokers eliminate inter-broker cross-AZ replication altogether by persisting batches directly to multi-AZ object storage. KIP-405 tiered storage separately decouples 14-day retention from expensive local NVMe/EBS volumes.
+
+- Why not A: KIP-392 removes cross-AZ consumer fetches, but inter-broker leader-to-follower replication (`~$34,560/mo`) still crosses AZ boundaries on every write.
+- Why not B: Tiered storage offloads closed historical segments to object storage; active segments are still replicated across AZs by brokers, so steady-state replication transfer remains unchanged.
+- Why not D: Dropping to `RF=2` sacrifices fault tolerance under concurrent broker maintenance plus AZ failure, and extreme compression levels spike producer/broker CPU for marginal ratio gains beyond `3x`.
+- Ref: [modules/18-distributed-message-queue.md](../modules/18-distributed-message-queue.md#1-requirements-messaging-models-and-quantitative-capacity-sizing), https://cwiki.apache.org/confluence/display/KAFKA/KIP-392%3A+Allow+consumers+to+fetch+from+closest+replica
+
+</details>
+
+---
+
+### Q-SD-089 · Distributed Message Queues & Event Streaming Internals · difficulty 2 · ordering
+
+Order the lifecycle steps of a KIP-98 idempotent, transactional write from producer dispatch until a `read_committed` consumer observes the batch.
+
+- A) Leader appends batch → producer attaches `PID`, epoch, and sequence numbers → LSO advances → `COMMIT` marker written → `read_committed` consumer exposes batch
+- B) Producer attaches `PID`, epoch, and sequence numbers → leader appends batch → transaction coordinator writes `COMMIT` control marker → LSO advances past the marker → `read_committed` consumer exposes batch
+- C) `COMMIT` control marker written → producer attaches `PID`, epoch, and sequence numbers → leader appends batch → LSO advances → `read_committed` consumer exposes batch
+- D) Producer attaches `PID`, epoch, and sequence numbers → leader appends batch → `read_committed` consumer exposes batch → `COMMIT` control marker written → LSO advances
+
+<details><summary>Answer</summary>
+
+**B.** The producer stamps every batch with its `PID`, producer epoch, and per-partition monotonic sequence so the partition leader deduplicates retries and fences zombie epochs. The leader appends the batch while keeping it hidden from `read_committed` consumers until the transaction coordinator commits by writing a `COMMIT` control marker into the partition log, advancing the Last Stable Offset (LSO) and releasing the batch to `read_committed` consumers.
+
+- Why not A: The producer must attach `PID`, epoch, and sequence before sending, and the LSO cannot advance past an open transaction before its `COMMIT` marker is written.
+- Why not C: A `COMMIT` marker closes an already-appended transactional batch; writing it first leaves nothing to commit.
+- Why not D: Exposing a batch before the `COMMIT` marker and LSO advancement violates `read_committed` isolation by leaking aborted or in-flight writes.
+- Ref: [modules/18-distributed-message-queue.md](../modules/18-distributed-message-queue.md#3-producer-flow-replication-isr-and-kip-101-leader-epoch-safety), https://cwiki.apache.org/confluence/display/KAFKA/KIP-98+-+Exactly+Once+Delivery+and+Transactional+Messaging
+
+</details>
+
+---
+
+### Q-SD-090 · Distributed Message Queues & Event Streaming Internals · difficulty 3 · multi
+
+Select **two** genuine architectural benefits of KRaft (Apache Kafka 4.0+), KIP-848, and KIP-932 Share Groups compared with a legacy ZooKeeper-coordinated cluster using eager consumer rebalancing.
+
+- A) KRaft stores cluster metadata in an internal Raft-replicated `@metadata` log, removing the external ZooKeeper ensemble and cutting controller failover latency from minutes to sub-second at high partition counts.
+- B) KIP-848 shifts consumer group partition assignment to the broker-side group coordinator with incremental heartbeat reconciliation, eliminating group-wide stop-the-world rebalance pauses.
+- C) KIP-932 Share Groups preserve strict total ordering of records within a partition across all competing workers simultaneously.
+- D) KRaft eliminates partition ISR replication because the metadata Raft quorum replicates every user topic payload automatically.
+
+<details><summary>Answer</summary>
+
+**A, B.** KRaft removes ZooKeeper and its dual-metadata split-brain hazards while allowing fast event-sourced controller failovers at `1M+` partitions, and KIP-848 eliminates global stop-the-world rebalance barriers by having the broker coordinator reconcile only changed partition assignments incrementally.
+
+- Why not C: Share Groups intentionally trade strict per-partition ordering for point-to-point competing-worker parallelism with per-record acknowledgement, breaking the `consumers <= partitions` ceiling.
+- Why not D: KRaft replicates cluster metadata only (`@metadata`); user topic partitions still replicate via leader-follower ISR protocols.
+- Ref: [modules/18-distributed-message-queue.md](../modules/18-distributed-message-queue.md#4-consumer-pull-protocol-rebalancing-evolution-coordination-and-advanced-broker-features), https://cwiki.apache.org/confluence/display/KAFKA/KIP-500%3A+Replace+ZooKeeper+with+a+Self-Managed+Metadata+Quorum
 
 </details>
 

@@ -98,3 +98,20 @@ Verdict: **approve** (after full remediation of all P0, P1, P2, and P3 findings 
   - [x] **P2/P3** `assets/17-google-maps-architecture.svg`: fixed Box B complexity label from `O(1)` to `O(depth)` ancestor lookups + `6-9 metro / <= z_base+1 max`, and shortened zoom-strip bullets so all text sits comfortably inside box bounds.
   - [x] **P3** `exams/architect-certs-bridge.md` (`Q-CERT-014`): aligned shard sizing with Module 17's `1.16M/s` peak (`~1,160` shards) and cited the `1 MB/s/shard` throughput limit alongside `1,000 rec/s/shard`.
   - [x] **P3** `modules/17-google-maps.md` & `examples/lib/maps-models.ts`: fixed malformed `_*A* Speedup..._*` Proof Map markup and tightened `latLonToTile` zoom bound to `[0, 21]`.
+
+---
+
+## ByteByteGo & Primary-Source Expansion — Wave A Topic 04 (`19. Distributed Message Queue`, Module 18, 2026-11-21)
+
+- **Coordinator / Integrator / SVG & Proof Author**: Antigravity (root)
+- **Prose Draft**: `opencode` (`opencode-go/hy4-flash-free` from `/tmp --auto`, expanded and corrected by root to remove leaked CJK token `分裂`, fix KIP-848 vs KIP-98 attribution, escape dollar amounts, and sync verbatim TS proofs)
+- **Exam & Cert Bridge Questions Draft**: `claude` CLI (`haiku`, `--max-turns 1`, aligned Q-SD-088 cross-AZ totals and official Kafka docs anchor)
+- **Independent Cross-Family Challenger**: `opencode` (`opencode-go/muse-spark-1.3-contributor`, `muse` family)
+- **Challenger Findings Resolved**:
+  - [x] **P0 (false-positive XML escape, valid P1 overflow)** `assets/18-mq-2021-vs-2026.svg:104`: `&lt; 3.9` was already XML-escaped (`xmllint` clean), but the 173-char footer text risked clipping in the 1120 px strip; shortened footer copy cleanly inside bounds.
+  - [x] **P1** `modules/18-distributed-message-queue.md`: renamed `firstTimestamp` to `baseTimestamp` and added missing `maxTimestamp (8 B)` row to the `RecordBatch` wire table (`61 B` fixed header).
+  - [x] **P1/P3** `assets/18-message-queue-architecture.svg`: shortened Section 2 title and bottom cloud-economics lines to eliminate container overflow, and spelled out `replica.lag.time.max.ms`.
+  - [x] **P2** `examples/lib/message-queue-models.ts` & `examples/12-message-queue.test.ts`: upgraded `reconcileReplica` to iterative multi-epoch KIP-101 `OffsetsForLeaderEpoch` lookup and replaced the hand-forced HWM test with authentic lagged-HWM data-loss + multi-epoch divergence proofs.
+  - [x] **P2** `examples/lib/message-queue-models.ts` & `examples/12-message-queue.test.ts`: replaced unbounded `log.find()` with a bounded `O(1)` 5-sequence `Map` matching KIP-98 `max.in.flight.requests.per.connection <= 5`, and tested both in-window dedupe and evicted-sequence rejection.
+  - [x] **P2** `examples/lib/message-queue-models.ts`, `examples/12-message-queue.test.ts`, `modules/18-distributed-message-queue.md`: added exact `delay = 16` revolution-boundary test to `HierarchicalTimingWheel`, removed unused `nowTick` getter (`slop-guard`), synced inline `readByOffset` snippet verbatim with source, and qualified KIP-405 (`2020`, EA in `3.6`) and KIP-932 (`EA/Preview` in `4.x`).
+  - [x] **P3** `exams/interview.md` & `exams/architect-certs-bridge.md`: updated header scope counts to `90` (`Q-SD-001`–`Q-SD-090`) and `24` (`Q-CERT-001`–`Q-CERT-024`).

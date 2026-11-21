@@ -113,6 +113,7 @@ The `M` numbers refer to the proposed module lists in `research/*.md`. Authors u
 | Progressive 0→10M scaling blueprints, Gunther's USL capacity composition, cell-based architecture, shuffle sharding combinatorics, static stability composition | `architecture/system-design` (M15) | algorithms/dsa (Amdahl/Gustafson M14), cloud tracks |
 | Distributed KV store system-design composition (Dynamo/Cassandra/DynamoDB coordinator rings, sloppy quorum + hinted handoff composition, Merkle anti-entropy ops, Phi Accrual operational tuning) | `architecture/system-design` (M16) | data-systems (LSM/WAL/replication internals), distributed-systems (CAP/clocks/Paxos/Raft theory), algorithms/dsa (consistent hashing/Bloom math) |
 | Planetary mapping & navigation composition (Web Mercator tile pyramid sizing, MVT/PMTiles delivery, hierarchical routing tiles, CH vs CRP trade-offs, HMM map matching, GNN Supersegment ETA, super-tile adaptive rerouting) | `architecture/system-design` (M17) | algorithms/dsa (Dijkstra/A* proofs), networking (CDN/WebSockets) |
+| Distributed message queue broker architecture from first principles (segmented commit log + sparse index sizing, zero-copy `sendfile`/TLS trade-offs, ISR + KIP-101 leader epoch composition, KIP-848/932/405/392 broker evolution, hierarchical timing wheels, cross-AZ replication economics) | `architecture/system-design` (M18) | data-systems (stream processing & page-cache theory M04/M11), distributed-systems (log abstraction, Raft & delivery semantics theory M07/M10) |
 
 ## Networking and security
 

@@ -3,7 +3,7 @@
 No single vendor-neutral certification tests general distributed system design, so vendor-specific IAM, CLI, and control-plane trivia stay in [`technologies/aws`](../../../technologies/aws/), [`technologies/gcp`](../../../technologies/gcp/), and [`technologies/azure`](../../../technologies/azure/). This bridge bank maps the architectural patterns, quantitative trade-offs, and failure modes taught across `architecture/system-design` directly onto Senior/Architect certification scenario domains (**AWS Solutions Architect – Professional `SAP-C02`**, **Google Cloud Professional Cloud Architect `PCA`**, **Microsoft Azure Solutions Architect Expert `AZ-305`**, and **CNCF / SRE Resilience**).
 
 - **Sequential Growth Plan**: Built sequentially alongside Wave A & Wave B topic completions (target: **60+ original scenario questions** plus a full timed certification bridge mock exam upon completion of the 28-topic expansion).
-- **Current Coverage**: **18 questions** (`Q-CERT-001`–`Q-CERT-018`) covering Topic 01 (`Scale From Zero to Millions` — Module 15), Topic 02 (`Distributed Key-Value Store` — Module 16), and Topic 03 (`Google Maps` — Module 17).
+- **Current Coverage**: **24 questions** (`Q-CERT-001`–`Q-CERT-024`) covering Topic 01 (`Scale From Zero to Millions` — Module 15), Topic 02 (`Distributed Key-Value Store` — Module 16), Topic 03 (`Google Maps` — Module 17), and Topic 04 (`Distributed Message Queue` — Module 18).
 
 ---
 
@@ -373,5 +373,136 @@ Which **two** concrete architectural improvements result from modernizing a 2021
 - Why not C: Even compressed global vector archives are tens to hundreds of gigabytes—too large for mobile devices, so CDN edge caching remains essential.
 - Why not D: GNN ETA models fuse live HMM-matched GPS probes with historical patterns; offline weights alone cannot detect an unexpected crash that happened two minutes ago.
 - Ref: [modules/17-google-maps.md](../modules/17-google-maps.md#6-technology-comparison-then-vs-now-2021-vs-2026), https://github.com/protomaps/PMTiles
+
+</details>
+
+---
+
+### Q-CERT-019 · AWS SAP-C02: Amazon MSK, Kinesis & SQS Selection · difficulty 3 · scenario
+
+An e-commerce platform must ingest `1M msg/s` of `1 KB` order events with strict per-order-key ordering, `14-day` multi-consumer replay, and strict controls on cross-AZ data-transfer costs. Which AWS messaging architecture is the best fit?
+
+- A) Amazon SQS FIFO queues sharded across thousands of queues with messages deleted upon consumption.
+- B) Amazon Kinesis Data Streams on-demand relying on default 24-hour retention for replay.
+- C) Amazon MSK (Apache Kafka) with KIP-405 Tiered Storage for 14-day retention and KIP-392 rack-aware follower fetching for same-AZ consumer reads.
+- D) A single Amazon SQS Standard queue configured with a 14-day message retention period and a dead-letter queue.
+
+<details><summary>Answer</summary>
+
+**C.** Amazon MSK provides a partitioned append-only log with per-key ordering, independent consumer-group offsets, and multi-consumer replay. Tiered Storage offloads 14-day historical segments off broker EBS volumes into S3-backed storage, and KIP-392 lets consumers fetch from same-AZ replicas to cut cross-AZ consumer transfer fees.
+
+- Why not A: SQS FIFO is a destructive queue (messages are deleted upon acknowledgement), so it cannot support multi-consumer replay, and managing `1M msg/s` across sharded FIFO queues adds severe operational overhead.
+- Why not B: Kinesis Data Streams defaults to 24-hour retention (requiring extended retention billing for 14 days), needs `~1,000` shards at `1M msg/s` / `1 GB/s`, and lacks KIP-392 rack-aware follower fetching to curb cross-AZ consumer reads.
+- Why not D: SQS Standard does not guarantee strict ordering, and its 14-day retention controls unread expiry rather than post-acknowledgement replay.
+- Ref: [modules/18-distributed-message-queue.md](../modules/18-distributed-message-queue.md#6-technology-comparison-then-vs-now-2021-vs-2026), https://docs.aws.amazon.com/msk/latest/developerguide/what-is-msk.html
+
+</details>
+
+---
+
+### Q-CERT-020 · AWS SAP-C02: Zero-Copy, TLS & Broker I/O Sizing · difficulty 3 · single
+
+A high-throughput Kafka cluster on AWS enables TLS encryption between clients and brokers while multiple downstream analytics consumers perform cold catch-up replays from 7 days ago. Which statement accurately explains the resulting I/O and CPU bottleneck?
+
+- A) NIC hardware automatically encrypts `sendfile()` DMA buffers without JVM configuration, and cold replays are served entirely from RAM.
+- B) Standard JVM user-space TLS runs transparently inside the kernel page cache, so `sendfile()` remains active and disk throughput is irrelevant.
+- C) User-space TLS forces brokers to copy log bytes from the kernel page cache into user-space/JVM memory for encryption before writing to the socket—disabling zero-copy `sendfile()`—while cold catch-up reads miss the hot page cache and hit sequential NVMe/EBS disk bandwidth.
+- D) TLS encrypts only KRaft metadata RPCs, leaving consumer fetch payloads on the plaintext `sendfile()` zero-copy path.
+
+<details><summary>Answer</summary>
+
+**C.** Standard broker TLS executes in user space (JVM), requiring bytes to leave the kernel page cache, get encrypted in user buffers, and copy back into kernel socket buffers, which disables `sendfile()` zero-copy and increases CPU and GC pressure (unless kernel TLS `kTLS` is enabled). Meanwhile, 7-day-old segments are no longer hot in RAM, so cold replays compete for sequential disk bandwidth and can evict hot tail segments from the page cache.
+
+- Why not A: Standard Linux/JVM brokers do not offload TLS into NIC hardware automatically, and 7-day historical segments exceed hot page-cache RAM.
+- Why not B: User-space TLS does not execute inside the kernel page cache; `sendfile()` works directly only when the kernel owns the full data path (plaintext or `kTLS`).
+- Why not D: Kafka TLS encrypts the entire TCP transport including produce and fetch record batches, not only metadata RPCs.
+- Ref: [modules/18-distributed-message-queue.md](../modules/18-distributed-message-queue.md#2-high-level-architecture-segmented-commit-log-and-zero-copy-io), https://kafka.apache.org/documentation/#design_filesystem
+
+</details>
+
+---
+
+### Q-CERT-021 · GCP PCA: Cloud Pub/Sub & Managed Kafka Architecture · difficulty 2 · scenario
+
+A payments engineering team migrating to Google Cloud operates existing Apache Kafka producers, Kafka Connect pipelines, and consumer groups that rely on partition-level offset replay, and cannot rewrite client applications during migration. Which Google Cloud service fits best?
+
+- A) Cloud Pub/Sub pull subscriptions with ordering keys and dead-letter topics.
+- B) Google Cloud Managed Service for Apache Kafka, preserving Kafka wire protocol, partition semantics, Kafka Connect compatibility, and consumer-group offset replay.
+- C) Cloud Pub/Sub with dead-letter topics and default unordered delivery.
+- D) Cloud Tasks queues dispatching HTTP webhooks with exponential backoff.
+
+<details><summary>Answer</summary>
+
+**B.** Managed Service for Apache Kafka speaks the native Kafka protocol and preserves partitioned commit-log semantics, consumer-group offsets, and Kafka Connect integrations without requiring client rewrites.
+
+- Why not A: Cloud Pub/Sub provides serverless pull subscriptions, per-key ordering, and seek/replay, but it does not speak the native Kafka wire protocol or support Kafka consumer-group partition mechanics directly without client migration.
+- Why not C: Unordered Pub/Sub drops both protocol compatibility and ordering guarantees.
+- Why not D: Cloud Tasks is an HTTP task dispatcher, not a durable replayable partitioned event log.
+- Ref: [modules/18-distributed-message-queue.md](../modules/18-distributed-message-queue.md#6-technology-comparison-then-vs-now-2021-vs-2026), https://cloud.google.com/managed-service-for-apache-kafka/docs/overview
+
+</details>
+
+---
+
+### Q-CERT-022 · Azure AZ-305: Azure Event Hubs vs. Service Bus · difficulty 2 · scenario
+
+An enterprise fulfillment backend dispatches individual order commands to a pool of competing workers. Requirements include per-message lock and acknowledgement, automatic isolation of poison messages into a dead-letter queue after 5 failed attempts, and FIFO ordering per customer session. Which Azure messaging service is the right choice?
+
+- A) Azure Event Hubs with Capture to ADLS Gen2, because Capture retains historical Parquet/Avro files.
+- B) Azure Service Bus Premium queues configured with message sessions and built-in dead-letter queues.
+- C) Azure Event Hubs configured with one independent consumer group per worker process.
+- D) Azure Event Hubs with workers polling Capture files directly from ADLS Gen2 as a task queue.
+
+<details><summary>Answer</summary>
+
+**B.** Azure Service Bus is an enterprise point-to-point message broker offering competing-consumer delivery, per-message peek-lock settlement, built-in dead-letter queues after `MaxDeliveryCount`, and session-scoped FIFO ordering.
+
+- Why not A: Event Hubs is a partitioned append-only log using partition-level offset checkpointing rather than per-message locks or native dead-letter queues; Capture is an archival feature for analytics.
+- Why not C: Giving each worker its own Event Hubs consumer group broadcasts every event to every worker (duplicate command execution) rather than load-balancing competing consumers.
+- Why not D: Polling batch Capture files in object storage provides neither low-latency command dispatch nor per-message locking/DLQ semantics.
+- Ref: [modules/18-distributed-message-queue.md](../modules/18-distributed-message-queue.md#6-technology-comparison-then-vs-now-2021-vs-2026), https://learn.microsoft.com/en-us/azure/service-bus-messaging/message-sessions
+
+</details>
+
+---
+
+### Q-CERT-023 · CNCF / SRE: Message Queue Observability & Rebalance Stability · difficulty 3 · single
+
+Which alerting configuration best reflects symptom-based SRE SLIs for a mission-critical distributed message queue cluster?
+
+- A) Page immediately whenever average broker CPU exceeds `80%` or whenever a rolling broker restart changes cluster node count temporarily.
+- B) Page immediately on `OfflinePartitionsCount > 0`; alert on sustained `UnderReplicatedPartitions > 0`, rising consumer-group lag slope, and elevated rebalance rate.
+- C) Page on every single consumer rebalance log entry while omitting consumer lag because lag belongs exclusively to downstream application teams.
+- D) Monitor only median (`p50`) producer acknowledgement latency, assuming healthy `p50` guarantees durability and consumer progress.
+
+<details><summary>Answer</summary>
+
+**B.** `OfflinePartitionsCount > 0` signals active leaderless partitions (hard unavailability) requiring an immediate page; sustained `UnderReplicatedPartitions > 0` signals shrinking durability headroom; rising lag slope detects consumers falling behind ingest; and elevated rebalance rate catches poison-pill or `max.poll.interval.ms` death spirals early.
+
+- Why not A: Broker CPU and planned rolling restarts are cause-level signals that trigger noisy false pages while missing silent durability loss or consumer stalls.
+- Why not C: Individual planned rebalances during deployments are normal, whereas ignoring consumer lag blinds SREs to broken downstream processing.
+- Why not D: Median produce latency can stay `< 5 ms` even while half the consumers are stalled in a rebalance loop or a follower has dropped out of ISR.
+- Ref: [modules/18-distributed-message-queue.md](../modules/18-distributed-message-queue.md#5-production-gotchas-failure-modes-and-sre-guardrails), https://sre.google/sre-book/monitoring-distributed-systems/
+
+</details>
+
+---
+
+### Q-CERT-024 · Multi-Cloud Architecture: 2021 vs. 2026 Messaging Modernization · difficulty 2 · multi
+
+Which **two** concrete architectural improvements result from modernizing a 2021 Kafka cluster (external ZooKeeper, eager consumer rebalancing, local-disk-only storage) to a 2026 architecture using KRaft, KIP-848, and KIP-405 Tiered Storage or diskless S3-native brokers?
+
+- A) KRaft removes the external ZooKeeper cluster, eliminating dual-metadata failure modes and enabling sub-second controller failovers at `1M+` partitions.
+- B) KIP-848 replaces eager stop-the-world client-leader rebalancing with broker-driven incremental reconciliation, eliminating whole-group processing pauses during deployments and autoscaling.
+- C) Legacy ZooKeeper eager rebalancing guarantees stronger per-partition message ordering than KIP-848.
+- D) Enabling KIP-405 Tiered Storage removes the need for active-segment replication, allowing `min.insync.replicas=1` with zero data-loss risk.
+
+<details><summary>Answer</summary>
+
+**A, B.** KRaft consolidates metadata into an internal Raft quorum for faster failover and simpler operations, and KIP-848 eliminates global stop-the-world rebalance stalls by reconciling partition deltas incrementally on the broker coordinator.
+
+- Why not C: Partition ordering is governed by the append-only partition log and single-owner assignment; eager rebalancing does not strengthen ordering, it merely halts the entire consumer group during transitions.
+- Why not D: KIP-405 offloads closed immutable segments to object storage; active open segments still rely on broker ISR replication (`RF=3`, `min.insync.replicas=2`) for write durability.
+- Ref: [modules/18-distributed-message-queue.md](../modules/18-distributed-message-queue.md#6-technology-comparison-then-vs-now-2021-vs-2026), https://cwiki.apache.org/confluence/display/KAFKA/KIP-848%3A+The+Next+Generation+of+the+Consumer+Rebalance+Protocol
 
 </details>
