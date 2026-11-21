@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 600" width="1160" height="600" role="img" aria-labelledby="title desc">
+  <title id="title">System Design Interviews: 2021 vs 2026</title>
+  <desc id="desc">Comparison of 2021 whiteboard CRUD-and-scale interview expectations with 2026 Staff and Principal expectations: FinOps cross-AZ cost, cell-based static stability, SLO burn rates, LLM serving with KV cache, and adversarial interrogation.</desc>
+
+  <rect x="0" y="0" width="1160" height="600" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1160" height="56" rx="12" fill="#0f172a"/>
+  <rect x="0" y="40" width="1160" height="16" rx="0" fill="#0f172a"/>
+  <text x="24" y="27" font-family="ui-sans-serif, system-ui, sans-serif" font-size="18" font-weight="700" fill="#f8fafc">System Design Interviews: 2021 Whiteboard vs. 2026 Staff/Principal Bar</text>
+  <text x="24" y="46" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" fill="#94a3b8">From box-and-arrow CRUD at scale to quantified cost, blast-radius, error-budget, and AI-serving reasoning</text>
+  <rect x="20" y="70" width="210" height="32" rx="6" fill="#e2e8f0"/>
+  <text x="34" y="91" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1e293b">Evaluation Axis</text>
+  <rect x="242" y="70" width="440" height="32" rx="6" fill="#fee2e2" stroke="#fca5a5" stroke-width="1"/>
+  <text x="256" y="91" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#991b1b">2021 Whiteboard Default</text>
+  <rect x="694" y="70" width="446" height="32" rx="6" fill="#dcfce7" stroke="#86efac" stroke-width="1"/>
+  <text x="708" y="91" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#166534">2026 Staff/Principal Expectation</text>
+  <rect x="20" y="112" width="210" height="62" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="32" y="138" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">1. Cost Model</text>
+  <text x="32" y="156" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Cloud bill</text>
+  <rect x="242" y="112" width="440" height="62" rx="6" fill="#fff5f5" stroke="#fecaca" stroke-width="1"/>
+  <text x="254" y="138" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#991b1b">2021</text>
+  <text x="254" y="158" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">Cost ignored; 'just add replicas'</text>
+  <rect x="694" y="112" width="446" height="62" rx="6" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1"/>
+  <text x="706" y="138" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#166534">2026</text>
+  <text x="706" y="158" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">FinOps: cross-AZ transfer priced per GB; AZ-local reads</text>
+  <rect x="20" y="182" width="210" height="62" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="32" y="208" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">2. Failure Domain</text>
+  <text x="32" y="226" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Blast radius</text>
+  <rect x="242" y="182" width="440" height="62" rx="6" fill="#fff5f5" stroke="#fecaca" stroke-width="1"/>
+  <text x="254" y="208" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#991b1b">2021</text>
+  <text x="254" y="228" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">Multi-AZ load balancer, one global stack</text>
+  <rect x="694" y="182" width="446" height="62" rx="6" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1"/>
+  <text x="706" y="208" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#166534">2026</text>
+  <text x="706" y="228" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Cell-based, statically stable; no control-plane at failover</text>
+  <rect x="20" y="252" width="210" height="62" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="32" y="278" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">3. Reliability</text>
+  <text x="32" y="296" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Targets</text>
+  <rect x="242" y="252" width="440" height="62" rx="6" fill="#fff5f5" stroke="#fecaca" stroke-width="1"/>
+  <text x="254" y="278" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#991b1b">2021</text>
+  <text x="254" y="298" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">'Five nines' stated as an adjective</text>
+  <rect x="694" y="252" width="446" height="62" rx="6" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1"/>
+  <text x="706" y="278" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#166534">2026</text>
+  <text x="706" y="298" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">SLOs, SLIs, multi-window burn-rate alerts, error budgets</text>
+  <rect x="20" y="322" width="210" height="62" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="32" y="348" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">4. Workload Mix</text>
+  <text x="32" y="366" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Hot topic</text>
+  <rect x="242" y="322" width="440" height="62" rx="6" fill="#fff5f5" stroke="#fecaca" stroke-width="1"/>
+  <text x="254" y="348" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#991b1b">2021</text>
+  <text x="254" y="368" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">URL shortener, feed, chat: CRUD + cache</text>
+  <rect x="694" y="322" width="446" height="62" rx="6" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1"/>
+  <text x="706" y="348" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#166534">2026</text>
+  <text x="706" y="368" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">LLM serving: KV cache, batching, GPU cost per token</text>
+  <rect x="20" y="392" width="210" height="62" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="32" y="418" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">5. Interviewer Style</text>
+  <text x="32" y="436" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Pushback</text>
+  <rect x="242" y="392" width="440" height="62" rx="6" fill="#fff5f5" stroke="#fecaca" stroke-width="1"/>
+  <text x="254" y="418" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#991b1b">2021</text>
+  <text x="254" y="438" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">Scripted follow-ups, friendly Q&amp;A</text>
+  <rect x="694" y="392" width="446" height="62" rx="6" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1"/>
+  <text x="706" y="418" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#166534">2026</text>
+  <text x="706" y="438" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Adversarial: 10x spike, residency, grey failure, 50% cut</text>
+  <rect x="20" y="462" width="210" height="62" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="32" y="488" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">6. Written Artifact</text>
+  <text x="32" y="506" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Evidence</text>
+  <rect x="242" y="462" width="440" height="62" rx="6" fill="#fff5f5" stroke="#fecaca" stroke-width="1"/>
+  <text x="254" y="488" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#991b1b">2021</text>
+  <text x="254" y="508" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">Diagram only; decisions stay verbal</text>
+  <rect x="694" y="462" width="446" height="62" rx="6" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1"/>
+  <text x="706" y="488" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#166534">2026</text>
+  <text x="706" y="508" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">ADRs with rejected options and 10x reversal triggers</text>
+  <rect x="20" y="540" width="1120" height="44" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.2"/>
+  <text x="34" y="559" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#92400e">Transition Trap: reciting 2026 buzzwords without numbers scores lower than a correct 2021 design.</text>
+  <text x="34" y="575" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#92400e">Each claim needs a measurement point, a threshold, and a cost.</text>
+</svg>

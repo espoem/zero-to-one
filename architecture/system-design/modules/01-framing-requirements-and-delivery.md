@@ -50,15 +50,15 @@ flowchart LR
 
 **Latency distributions.** Always specify at least p50, p95, p99, and p99.9. The tail percentiles are the ones that bite in production: a service with p50 of 10 ms and p99.9 of 4 s is a service that occasionally ruins a user's day and drives retry storms. State the measurement point (edge, load balancer, application, database) and the traffic mix (cached vs uncached, authenticated vs anonymous). A single "latency < 100 ms" target hides more than it reveals.
 
-**Availability nines and exact downtime budgets.** Map nines to concrete downtime so that the budget is legible to stakeholders. The table below is the reference; memorise the right-hand column because every SLA conversation eventually asks for it.
+**Availability nines and exact downtime budgets.** Map nines to concrete downtime so that the budget is legible to stakeholders. The table below is the reference (monthly figures use a 30.44-day average calendar month, whereas 30-day SLO burn-rate math uses 720 hours); memorise the right-hand column because every SLA conversation eventually asks for it.
 
-| Availability         | Downtime per year  | Downtime per month | Downtime per week |
-| -------------------- | ------------------ | ------------------ | ----------------- |
-| 99% (two nines)      | 3 days 15 h 36 min | 7 h 18 min         | 1 h 41 min        |
-| 99.9% (three nines)  | 8 h 45 min 57 s    | 43 min 49 s        | 10 min 4 s        |
-| 99.99% (four nines)  | 52 min 36 s        | 4 min 23 s         | 1 min 0 s         |
-| 99.999% (five nines) | 5 min 15 s         | 26 s               | 6 s               |
-| 99.9999% (six nines) | 32 s               | 2.6 s              | 0.6 s             |
+| Availability         | Downtime per year  | Downtime per month (30.44 d) | Downtime per week |
+| -------------------- | ------------------ | ---------------------------- | ----------------- |
+| 99% (two nines)      | 3 days 15 h 36 min | 7 h 18 min                   | 1 h 41 min        |
+| 99.9% (three nines)  | 8 h 45 min 57 s    | 43 min 49 s                  | 10 min 4 s        |
+| 99.99% (four nines)  | 52 min 36 s        | 4 min 23 s                   | 1 min 0 s         |
+| 99.999% (five nines) | 5 min 15 s         | 26 s                         | 6 s               |
+| 99.9999% (six nines) | 32 s               | 2.6 s                        | 0.6 s             |
 
 Availability is not a property of a single component; it is the product of the availability of every component on the critical path, including DNS, TLS termination, the load balancer, the application tier, the database, and the cache. A system with five 99.9% components in series has 99.5% availability. State the target per endpoint, not per system, and state whether it is measured as request success rate or as time-based uptime.
 
@@ -107,7 +107,9 @@ Notice the **cache-hit-rate constraint** revealed by this budget. If the cache m
 
 **Parallel fan-out budget correction:** When a single service endpoint scatters across $k$ parallel subcalls (for example, hydrating user profile, social graph, post bodies, and ranker scores in parallel), the overall step succeeds within budget $T$ only if **every** mandatory branch finishes within $T$. To hold the combined fan-out step at p99 ($p_{\text{combined}} = 0.01$), each independent branch must meet a stricter per-branch tail probability:
 
-$$p_{\text{branch}} = 1 - (1 - 0.01)^{1/k}$$
+$$
+p_{\text{branch}} = 1 - (1 - 0.01)^{1/k}
+$$
 
 For $k = 4$ mandatory parallel branches, $p_{\text{branch}} \approx 0.0025$, meaning every downstream dependency must hold **p99.75 <= budget** rather than p99 <= budget. Where a downstream tail cannot meet p99.75 natively, use **hedged requests** (fire a duplicate read to a second replica if the first has not responded by its local p95 latency, capping hedge traffic at ~5% via a token bucket) or mark non-critical enrichments as **soft-deadline optional** that degrade to empty/default fields at `t = 45 ms`. Cross-link capacity sizing to [Module 02](./02-back-of-the-envelope-estimation.md), edge termination to [Module 03](./03-networking-edge-and-cdn-composition.md), and stampede defense to [Module 05](./05-caching-strategies-and-invalidation.md).
 
@@ -380,6 +382,74 @@ flowchart TD
 | Reliability metric | Server uptime percentage (node ping) | Request-success SLIs, composite dependency availability ($\prod A_i$), and multi-window burn-rate error budgets | A host can report "up" while serving 500s or exhausting downstream pools |
 | Decision tracking | Verbal consensus or diagrams without alternatives | Short ADRs recording context, decision, consequences, rejected alternatives, and 10x reversal triggers | Prevents re-litigating settled choices when load or staff changes |
 | Live table / engine cutover | Maintenance windows with blocking dumps and manual switchover | Expand-Contract + CDC backfill + shadow reconciliation + fenced epoch cutover with warm reverse-CDC rollback | Zero-downtime SLAs leave no room for multi-hour maintenance locks |
+
+---
+
+## 9. Primary Literature & Source Matrix
+
+Every claim in this module traces to one of the sources below. The "Used for" column states which section depends on the source, so a reader can check the claim at its origin. Versions and dates were taken from the publisher pages listed here; treat the Hello Interview timings as a community convention, not a specification.
+
+| Source | Type | Used for | Sections |
+| --- | --- | --- | --- |
+| Alex Xu, _System Design Interview: An Insider's Guide_ (ByteByteGo), Chapter 3 "A Framework for System Design Interviews" | Book | The four steps: understand and scope, high-level design with buy-in, deep dive, wrap-up | §3, §10 |
+| Martin Kleppmann and Chris Riccomini, _Designing Data-Intensive Applications_, 2nd ed. (O'Reilly, 2026) | Book | Reliability, scalability, maintainability vocabulary; faults versus failures; load parameters | §2 |
+| Hello Interview, system design delivery framework | Community guide | Requirements, entities, API, data flow, high-level design, deep dives sequence and timings | §3, §10 |
+| Google, _Site Reliability Engineering Workbook_, Chapter 5 "Alerting on SLOs" | Book (public) | Multi-window, multi-burn-rate alerting and error-budget policy | §1.2, §11 |
+| AWS Builders' Library, "Static stability using Availability Zones" | Engineering article | Static stability: no control-plane dependency during failover | §11 |
+| AWS Well-Architected Framework, Reliability Pillar, and the whitepaper "Reducing the Scope of Impact with Cell-Based Architecture" | Whitepaper | Cells as a blast-radius boundary with a thin routing layer | §11 |
+| FinOps Foundation, FinOps Framework | Framework | Unit economics and cost-per-request accountability for engineers | §11 |
+| Kwon et al., "Efficient Memory Management for Large Language Model Serving with PagedAttention" (SOSP 2023) | Paper | KV cache as the dominant GPU memory consumer in LLM serving; paged allocation | §11 |
+| Nygard, _Release It!_, 2nd ed. | Book | Grey failure, timeouts, bulkheads, circuit breakers used in the adversarial pivots | §7 |
+
+> [!NOTE]
+> The source matrix names publishers and chapters, not page numbers. Re-verify edition and chapter titles against the publisher page before quoting them in an exam answer.
+
+---
+
+## 10. ByteByteGo 4-Step Dos/Don'ts & Timebox Calibration
+
+ByteByteGo's framework predates the Staff/Principal bar described in §4. It remains the best minimal skeleton, but its published timeboxes assume a 45-minute loop and a Senior grading rubric. The delta below keeps the four steps and recalibrates the clock and the evidence.
+
+![ByteByteGo 4-step framework with timeboxes and Senior/Staff/Principal signal](../assets/01-framework-4step-flow.svg)
+
+| Step | ByteByteGo timebox (45 min) | Do | Don't | Staff/Principal recalibration |
+| --- | --- | --- | --- | --- |
+| 1. Understand the problem and establish design scope | 3-10 min | Ask about users, scale, platforms, existing constraints; write assumptions where the interviewer can see them | Start drawing before the first question; ask ten questions and wait for each answer | Cap at 5 min. State NFRs as numbers (percentile, window, threshold) and offer defaults instead of asking |
+| 2. Propose high-level design and get buy-in | 10-15 min | Draw boxes, name stores, walk two or three use cases, ask "does this match what you expect?" | Detail a component before the interviewer agrees on the overall shape; estimate numbers that cannot change the design | Attach one requirement to each box and state the consistency model per data class |
+| 3. Design deep dive | 10-25 min | Let the interviewer steer, or pick the two hardest components yourself; quantify the bottleneck | Spend the time re-describing the boxes; treat the deep dive as a feature list | Treat it as the graded phase: 20 min or more, with failure modes, cost, and a rollback story |
+| 4. Wrap-up | 3-5 min | Name bottlenecks you did not fix, error handling, monitoring, the 10x scale path | End with "that's it"; claim there are no weaknesses | Close with SLIs you would page on and the first ADR you would revisit at 10x load |
+
+**Timebox arithmetic.** With a 45-minute loop and 5 minutes for greeting and questions at the end, 40 minutes remain. ByteByteGo's ranges sum to between $3+10+10+3 = 26$ and $10+15+25+5 = 55$ minutes, so they cannot all sit at their upper bound. The practical rule is that steps 1, 2, and 4 consume at most 5, 12, and 3 minutes, which leaves 20 minutes for step 3.
+
+**Exam delta.** There is no vendor certification for the interview itself. The recognised format is the senior or staff system-design round, so the matrix in [exams/README.md](../exams/README.md) should be read with this recalibration in mind.
+
+---
+
+## 11. Then vs. Now (2021 vs. 2026): How the Interview Bar Moved
+
+![System design interviews: 2021 whiteboard versus 2026 Staff/Principal expectations](../assets/01-interviews-2021-vs-2026.svg)
+
+| Axis | 2021 default | 2026 Staff/Principal expectation | Verify against |
+| --- | --- | --- | --- |
+| Cost | Replica count chosen for latency only | Cross-AZ data transfer priced per GB and designed out with AZ-local reads and replication batching; cost per request stated | FinOps Foundation framework; provider pricing page |
+| Failure domain | Multi-AZ behind one load balancer and one global control plane | Cells with a thin router; statically stable data plane that needs no control-plane call to survive an AZ loss | AWS Builders' Library; cell-based architecture whitepaper |
+| Reliability | "Five nines" as an adjective | SLIs, SLOs, error budgets, and multi-window burn-rate alerts with a stated page threshold | SRE Workbook, Chapter 5 |
+| Workload | URL shortener, feed, chat | LLM serving: KV cache sizing, continuous batching, GPU cost per token, prefix caching | PagedAttention paper (SOSP 2023) |
+| Interviewer | Scripted follow-ups | Adversarial interrogation: 10x spike, data residency, grey failure, 50% budget cut (see §7) | Module 01 §7 |
+| Artifact | Diagram | Diagram plus ADR with rejected alternatives and reversal triggers | Module 01 §5.1 |
+
+**Burn-rate worked example.** For a 99.9% availability SLO over 30 days the error budget is $1 - 0.999 = 0.001$ of requests. A burn rate of $14.4$ consumes $2\%$ of the monthly budget in one hour, because $14.4 \times 1\,\text{h} / 720\,\text{h} = 0.02$. This is the fast-burn page threshold used in the SRE Workbook example (verified against the Workbook, Chapter 5).
+
+**KV cache sizing sketch.** Per token, the KV cache stores a key and a value vector for every layer, so its size is $2 \times L \times H_{kv} \times d_h \times b$ bytes, where $L$ is the layer count, $H_{kv}$ the number of key-value heads, $d_h$ the head dimension, and $b$ the bytes per element. State the model's numbers aloud, multiply by context length and concurrent sequences, and compare with GPU memory before choosing a batch size.
+
+**Pitfalls when moving from 2021 habits to 2026 expectations:**
+
+- **Buzzword stacking.** Saying "cells, SLO burn rates, and KV cache" without a number, a measurement point, or a trade-off scores below a correct, quantified 2021-style design.
+- **Static stability claimed, control plane used.** If failover requires calling an autoscaler, a DNS API, or a configuration service, the design is not statically stable. Pre-provision the capacity that survives the loss of one AZ.
+- **Cost as an afterthought.** Cross-AZ replication cost scales with write volume times replica count in other AZs. Quote it before the interviewer asks.
+- **Burn-rate alerts on a single window.** A single short window pages on blips; a single long window pages late. Pair them, as the SRE Workbook does.
+- **LLM serving treated as stateless HTTP.** KV cache is per-sequence state; routing, eviction, and prefix reuse are stateful decisions, and sticky routing interacts with cell boundaries.
+- **Over-correcting.** Do not replace a simple design with cells and multi-region just because the 2026 bar mentions them. Use the rejection-rationale discipline of §5.3 and justify each addition with a requirement.
 
 ---
 
