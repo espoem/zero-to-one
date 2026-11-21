@@ -30,13 +30,13 @@ We anchor our quantitative sizing to ByteByteGo Chapter 16's scale parameters (`
 
 1. **Search Read QPS vs. Business CRUD Write QPS (`> 50:1` to `1,000:1` Asymmetry)**:
    - **Total Daily Searches**: $100{,}000{,}000 \times 5 = 500{,}000{,}000\text{ searches/day}$.
-   - **Average Search QPS**: $$\text{Search QPS}_{\text{avg}} = \frac{500{,}000{,}000}{86{,}400\text{ s}} \approx \mathbf{5{,}787.04\text{ QPS}} \quad (\approx 5{,}000\text{ QPS textbook mental anchor})$$
-   - **Peak Search QPS (`5x` diurnal dining/commute rush)**: $$\text{Search QPS}_{\text{peak}} = 5{,}787.04 \times 5 \approx \mathbf{28{,}935.19\text{ QPS}}$$
+   - **Average Search QPS**: $\text{Search QPS}_{\text{avg}} = \frac{500{,}000{,}000}{86{,}400\text{ s}} \approx \mathbf{5{,}787.04\text{ QPS}} \quad (\approx 5{,}000\text{ QPS textbook mental anchor})$
+   - **Peak Search QPS (`5x` diurnal dining/commute rush)**: $\text{Search QPS}_{\text{peak}} = 5{,}787.04 \times 5 \approx \mathbf{28{,}935.19\text{ QPS}}$
    - **Business CRUD Writes**: Even if `1%` of `200M` businesses update hours or details daily ($2{,}000{,}000\text{ writes/day}$), average write throughput is $\frac{2{,}000{,}000}{86{,}400} \approx \mathbf{23.15\text{ writes/s}}$ (`~115 writes/s` peak) — orders of magnitude smaller than read traffic.
 2. **Storage Footprint: Why the `business` Table Shards While the Spatial Index Does Not**:
-   - **Business Details Table (`200,000,000` rows $\times \approx 1\text{ KB/row}$)**: $$200{,}000{,}000 \times 1{,}000\text{ B} = \mathbf{200\text{ GB}}$$ Including B-tree primary-key indexes and review/hour projections (`~300–400 GB`), this table is partitioned by `business_id` (or read-replicated) so detail lookups and merchant updates distribute evenly.
-   - **Geospatial Index Footprint (`200,000,000` POIs)**: Each index entry stores only `(geohash_6: 6 B, business_id: 8 B, lat/lon float32/64: 8–16 B)` $\approx \mathbf{24\text{ bytes/row}}$ raw: $$200{,}000{,}000 \times 24\text{ B} = \mathbf{4.80\text{ GB raw}}$$
-   - Even when materialized across **all three active Geohash precisions (`L = 4, 5, 6`)** inside a dedicated Tier 1 Valkey/Redis instance using packed 64-bit integer sets (`intset` / `listpack` at `~32 B` per entry including key and allocator headers, or `~24–36 GB` if stored as string `sds` sets), total memory is: $$200{,}000{,}000 \times 3 \times 32\text{ B} = \mathbf{19.20\text{ GB RAM}}$$
+   - **Business Details Table (`200,000,000` rows $\times \approx 1\text{ KB/row}$)**: $200{,}000{,}000 \times 1{,}000\text{ B} = \mathbf{200\text{ GB}}$ Including B-tree primary-key indexes and review/hour projections (`~300–400 GB`), this table is partitioned by `business_id` (or read-replicated) so detail lookups and merchant updates distribute evenly.
+   - **Geospatial Index Footprint (`200,000,000` POIs)**: Each index entry stores only `(geohash_6: 6 B, business_id: 8 B, lat/lon float32/64: 8–16 B)` $\approx \mathbf{24\text{ bytes/row}}$ raw: $200{,}000{,}000 \times 24\text{ B} = \mathbf{4.80\text{ GB raw}}$
+   - Even when materialized across **all three active Geohash precisions (`L = 4, 5, 6`)** inside a dedicated Tier 1 Valkey/Redis instance using packed 64-bit integer sets (`intset` / `listpack` at `~32 B` per entry including key and allocator headers, or `~24–36 GB` if stored as string `sds` sets), total memory is: $200{,}000{,}000 \times 3 \times 32\text{ B} = \mathbf{19.20\text{ GB RAM}}$
    - And an in-memory **Point Quadtree** storing packed C++/Rust structs `(business_id: 8 B, lat: 4 B float32, lon: 4 B float32)` in contiguous `100`-element leaf arrays consumes only **`~3.5–4.5 GB RAM`** (our TypeScript reference proof in [`examples/lib/proximity-models.ts`](../examples/lib/proximity-models.ts) uses V8 heap objects for readability)!
    - **Architectural Pivot**: Because `19.20 GB` fits inside a dedicated modern `64 GB` Tier 1 Valkey node with `> 3x` headroom (kept separate from the Tier 2 `business:{id}` detail cache cluster), **the geospatial index never needs to be sharded across machines**. We scale the `28,935 QPS` read workload purely via **stateless LBS instances / Valkey read replicas** across regions, avoiding cross-shard spatial scatter-gather entirely!
 
@@ -150,8 +150,8 @@ This query fails in production for **two independent reasons**:
    - Intersecting two massive 1D sets containing millions of global rows via `BitmapAnd` or linear filtering inside the first range predicate degrades to $O(N_{\text{strip}})$ disk/buffer-pool scans on every search.
 2. **Geometric Bug — Omitting Spherical $\cos(\phi)$ Shrinks East-West Search by `50%` at `60°N`**:
    - First, search radius $R$ is given in **meters**, whereas `latitude` and `longitude` are stored in **degrees**.
-   - One degree of **latitude** has a nearly constant arc length everywhere on Earth: $$\Delta \phi_{\text{deg}} = \frac{R_{\text{meters}}}{111{,}319.49\text{ m/deg}}$$
-   - However, meridians of **longitude** converge toward the poles! At latitude $\phi$, the radius of the parallel circle is $R_{\text{Earth}} \cdot \cos(\phi)$, so one degree of longitude measures $111{,}319.49 \times \cos(\phi)$ meters. To cover radius $R_{\text{meters}}$ East-West, the required longitude degree delta is: $$\Delta \lambda_{\text{deg}} = \frac{R_{\text{meters}}}{111{,}319.49 \times \cos(\phi)}$$
+   - One degree of **latitude** has a nearly constant arc length everywhere on Earth: $\Delta \phi_{\text{deg}} = \frac{R_{\text{meters}}}{111{,}319.49\text{ m/deg}}$
+   - However, meridians of **longitude** converge toward the poles! At latitude $\phi$, the radius of the parallel circle is $R_{\text{Earth}} \cdot \cos(\phi)$, so one degree of longitude measures $111{,}319.49 \times \cos(\phi)$ meters. To cover radius $R_{\text{meters}}$ East-West, the required longitude degree delta is: $\Delta \lambda_{\text{deg}} = \frac{R_{\text{meters}}}{111{,}319.49 \times \cos(\phi)}$
    - If a developer uses the same degree delta $\Delta \lambda_{\text{naive}} = \Delta \phi_{\text{deg}}$ for both latitude and longitude, at **Oslo or Helsinki ($\phi = 60^\circ\text{N}$, where $\cos(60^\circ) = 0.5$)**, one degree of longitude is only **`55.66 km`**. The naive query's East-West bounding box covers only **`2.5 km`** instead of **`5.0 km`** — **silently missing `50%` of the East-West search radius** (e.g., failing to return a restaurant `4.0 km` due East on a `5.0 km` search, as proven in Test 3 of [`examples/16-proximity-service.test.ts`](../examples/16-proximity-service.test.ts))!
 
 Below is the verified `boundingBoxDegreeDelta` proof from [`examples/lib/proximity-models.ts`](../examples/lib/proximity-models.ts):
@@ -185,7 +185,7 @@ Dividing the world into uniform fixed-degree rectangles (e.g., `1° × 1°` or `
 
 ### 3.3 Option 3: Geohash (Morton Z-Order Curve, Precision Mapping & 9-Cell Query)
 
-As detailed in [Module 09 §3.1](09-search-geospatial-and-specialized-components.md#31-geohash-mechanics-and-precision-scaling), **Geohash** recursively bisects longitude `$[-180^\circ, 180^\circ]$` (even bits) and latitude `$[-90^\circ, 90^\circ]$` (odd bits), encoding every 5 interleaved bits into a base-32 character (`0123456789bcdefghjkmnpqrstuvwxyz`). For a proximity service, Geohash provides a 1D string prefix whose length $L \in \{4, 5, 6\}$ maps directly to the user's requested search radius:
+As detailed in [Module 09 §3.1](09-search-geospatial-and-specialized-components.md#31-geohash-mechanics-and-precision-scaling), **Geohash** recursively bisects longitude $[-180^\circ, 180^\circ]$ (even bits) and latitude $[-90^\circ, 90^\circ]$ (odd bits), encoding every 5 interleaved bits into a base-32 character (`0123456789bcdefghjkmnpqrstuvwxyz`). For a proximity service, Geohash provides a 1D string prefix whose length $L \in \{4, 5, 6\}$ maps directly to the user's requested search radius:
 
 | Geohash Length ($L$) | Total Bits (`Lon / Lat`) | Equatorial Cell Dimensions (`Width × Height`) | Mapped User Search Radius ($R$) | Why This Precision Is Selected |
 | :-: | :-: | :-: | :-: | --- |
@@ -202,7 +202,7 @@ As detailed in [Module 09 §3.1](09-search-geospatial-and-specialized-components
 
 ### 3.4 Option 4: In-Memory Adaptive Point Quadtree (`leaf <= 100` POIs)
 
-Instead of dividing the globe into fixed-size rectangles at a single precision, a **Point Quadtree** starts with one root bounding box `$[-90^\circ, 90^\circ] \times [-180^\circ, 180^\circ]$` and recursively splits any leaf node into four children (`NW`, `NE`, `SW`, `SE`) whenever its business count exceeds $C_{\max} = 100$:
+Instead of dividing the globe into fixed-size rectangles at a single precision, a **Point Quadtree** starts with one root bounding box $[-90^\circ, 90^\circ] \times [-180^\circ, 180^\circ]$ and recursively splits any leaf node into four children (`NW`, `NE`, `SW`, `SE`) whenever its business count exceeds $C_{\max} = 100$:
 
 ```mermaid
 flowchart TD

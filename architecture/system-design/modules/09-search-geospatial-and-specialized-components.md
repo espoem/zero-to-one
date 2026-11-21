@@ -127,7 +127,7 @@ flowchart LR
     end
 ```
 
-1. **Exponential Time-Decay Weighting**: Raw all-time cumulative counts bury breaking news beneath years of evergreen searches. Aggregators assign each query $q$ an exponentially decayed score across discrete time buckets (e.g., hourly or daily): $$w_t(q) = \alpha \cdot c_t(q) + (1 - \alpha) \cdot w_{t-1}(q), \quad 0 < \alpha < 1$$ Setting $\alpha = 0.2$ gives a half-life of roughly $3.1$ periods, allowing sudden surges (e.g., a major product launch) to climb into Top-$K$ within hours while decaying gracefully once interest subsides.
+1. **Exponential Time-Decay Weighting**: Raw all-time cumulative counts bury breaking news beneath years of evergreen searches. Aggregators assign each query $q$ an exponentially decayed score across discrete time buckets (e.g., hourly or daily): $w_t(q) = \alpha \cdot c_t(q) + (1 - \alpha) \cdot w_{t-1}(q), \quad 0 < \alpha < 1$ Setting $\alpha = 0.2$ gives a half-life of roughly $3.1$ periods, allowing sudden surges (e.g., a major product launch) to climb into Top-$K$ within hours while decaying gracefully once interest subsides.
 2. **Atomic Snapshot Swap**: Snapshot workers compile the clean weighted dictionary into an immutable binary FST/Trie artifact in object storage (`S3`/`R2`). Serving workers download the new snapshot in the background, mmap or load it into an inactive memory region, and execute an **atomic pointer flip**, achieving zero-lock reads and instant rollback.
 
 ### 2.3 Client Debouncing, Edge Caching, Prefix-Frequency Sharding, and Safety
@@ -301,7 +301,7 @@ Instead, **bit-pack integer components strictly within 53 bits** (when scores an
 
 $$\text{compositeScore} = (\text{score} \ll B_{\text{ts}}) \mid (\text{MAX-TS} - \text{timestamp})$$
 
-For example, allocating **28 bits** to `score` (up to $2.68 \times 10^8$) and **25 bits** to inverted relative tournament seconds ($\text{MAX\_TS} - t_{\text{rel}}$, covering $3.35 \times 10^7$ seconds $\approx 388$ days at 1-second resolution) uses $28 + 25 = 53$ bits—guaranteeing **zero floating-point rounding loss**, exact deterministic tie-breaking by earlier timestamp, and instant recovery of the raw score via `compositeScore >> 25`. Because `ZINCRBY` would corrupt the packed timestamp bits, apply incremental deltas atomically via a Redis Lua script:
+For example, allocating **28 bits** to `score` (up to $2.68 \times 10^8$) and **25 bits** to inverted relative tournament seconds ($\text{MAX-TS} - t_{\text{rel}}$, covering $3.35 \times 10^7$ seconds $\approx 388$ days at 1-second resolution) uses $28 + 25 = 53$ bits—guaranteeing **zero floating-point rounding loss**, exact deterministic tie-breaking by earlier timestamp, and instant recovery of the raw score via `compositeScore >> 25`. Because `ZINCRBY` would corrupt the packed timestamp bits, apply incremental deltas atomically via a Redis Lua script:
 
 ```lua
 -- KEYS[1] = leaderboard zset key

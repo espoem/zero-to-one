@@ -39,8 +39,8 @@ Consider a `1,000,000,000`-user (`1B` user) email platform modeled on ByteByteGo
   - Because company-wide broadcasts, newsletters, and forwarded threads attach identical files across thousands of recipients, storing attachments in a **SHA-256 Content-Addressed Store (CAS)** with a conservative `2.5x` deduplication ratio slashes annual physical attachment storage from `1,460 PB/year` to **`584 PB/year`** (saving `876 PB/year` before replication or erasure coding).
 - **RFC 2045 MIME Base64 `4/3` (`+33.33%`) Wire-Size Overhead**:
   - Classic SMTP is a 7-bit ASCII text protocol. Binary attachments (PDFs, images, ZIPs) are encoded via **RFC 2045 Base64**, which maps every `3` raw binary bytes (`24 bits`) into `4` ASCII characters (`4 × 6 bits`), plus a 2-byte `\r\n` (`CRLF`) line break every `76` characters:
-  - $$B_{\text{base64}} = 4 \times \left\lceil \frac{B_{\text{raw}}}{3} \right\rceil$$
-  - Consequently, a **`25 MB` (`25,000,000 B`) SMTP MIME message size limit** can carry at most **$25\text{ MB} \times \frac{3}{4} = \mathbf{18.75\text{ MB}}$** (`18,750,000 B`) of raw binary attachment data! Crucially, edge SMTP/API servers **must decode Base64 back to raw binary** before writing to object storage — storing raw Base64 text in S3 would waste `33.3%` (`+487 PB/year`!) of planetary disk capacity.
+  - $B_{\text{base64}} = 4 \times \left\lceil \frac{B_{\text{raw}}}{3} \right\rceil$
+  - Consequently, a **`25 MB` (`25,000,000 B`) SMTP MIME message size limit** can carry at most $25\text{ MB} \times \frac{3}{4} = \mathbf{18.75\text{ MB}}$ (`18,750,000 B`) of raw binary attachment data! Crucially, edge SMTP/API servers **must decode Base64 back to raw binary** before writing to object storage — storing raw Base64 text in S3 would waste `33.3%` (`+487 PB/year`!) of planetary disk capacity.
 
 ### 1.3 Email Protocol Stack: SMTP, POP3, IMAP4rev2, and JMAP over HTTPS
 

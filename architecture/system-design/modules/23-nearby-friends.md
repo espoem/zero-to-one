@@ -47,11 +47,11 @@ We derive the exact throughput and resource bounds from ByteByteGo Chapter 17's 
    - Users using the Nearby Friends feature daily (`10%`): **`100,000,000` (`100M`) DAU**.
    - Concurrent online users at any moment (`10%` of feature DAU): **`10,000,000` (`10M`) concurrent active users**.
    - Location refresh interval: **`30 seconds`** (human walking speed is `~1.4 m/s`, moving only `~42 m` in 30 seconds).
-   - **Location Update Write QPS**: $$\text{Write QPS} = \frac{10{,}000{,}000\text{ active users}}{30\text{ s}} \approx \mathbf{333{,}333.33\text{ updates/s}} \quad (\approx 334{,}000\text{ QPS rounded})$$
+   - **Location Update Write QPS**: $\text{Write QPS} = \frac{10{,}000{,}000\text{ active users}}{30\text{ s}} \approx \mathbf{333{,}333.33\text{ updates/s}} \quad (\approx 334{,}000\text{ QPS rounded})$
 2. **Pub/Sub Fan-Out Push Throughput (`40x` Write Amplification)**:
    - Average friends per user: `400` friends (all enrolled in Nearby Friends).
    - Average friends online concurrently (`10%` of `400`): **`40` active online friends per user**.
-   - Every incoming location update must be delivered via Pub/Sub to the WebSocket gateways holding those `40` online friends (before the gateway filters by the `5-mile` distance threshold): $$\text{Pub/Sub Fan-Out Pushes/s} = 333{,}333.33 \times 40 \approx \mathbf{13{,}333{,}333.33\text{ pushes/s}} \quad (\approx 14{,}000{,}000\text{ pushes/s textbook anchor})$$
+   - Every incoming location update must be delivered via Pub/Sub to the WebSocket gateways holding those `40` online friends (before the gateway filters by the `5-mile` distance threshold): $\text{Pub/Sub Fan-Out Pushes/s} = 333{,}333.33 \times 40 \approx \mathbf{13{,}333{,}333.33\text{ pushes/s}} \quad (\approx 14{,}000{,}000\text{ pushes/s textbook anchor})$
 3. **Location Cache vs. Location History Storage Sizing**:
    - **Valkey Ephemeral Location Cache (`TTL = 600 s`)**: Stores `10,000,000` active users $\times \approx 100\text{ B/entry}$ (`loc:{user_id} -> {lat, lon, ts}` including key/allocator overhead) $= \mathbf{1.0\text{ GB}}$ of active RAM! Even if all `100M` feature DAU visited within a 10-minute window, `100M × 100 B = 10 GB` fits trivially in memory; we shard the Location Cache across **`10–16` Valkey nodes** purely to spread the `333,333` `SETEX` writes/sec (`~21k–33k writes/s/node`).
    - **Location History Database (Cassandra / ScyllaDB)**: $333{,}333.33\text{ writes/s} \times 86{,}400\text{ s/day} = \mathbf{28.80\text{ billion rows/day}}$. At `~36 bytes/row` (`user_id: 8 B, timestamp: 8 B, lat: 8 B, lon: 8 B, metadata: 4 B`), raw daily historical ingress is **`~1.04 TB/day`** (`~378 TB/year` before Zstd compression and Time-Window Compaction expiry).
@@ -205,12 +205,12 @@ When User A adds a new friend $F_{\text{new}}$ or unfriends/blocks $F_{\text{old
 A surface-level estimate sizes Redis Pub/Sub by memory alone and reaches a dangerously wrong conclusion:
 
 1. **Memory Sizing (`~200 GB` -> Only `2` Servers by RAM)**:
-   - Pre-allocating `100,000,000` channels (`1` per feature DAU, where an empty channel with no subscribers consumes `~0` bytes and an active channel entry with hash-table and subscriber linked-list pointers consumes `~20 B` base + `~100–500 B` per subscribed WebSocket server pointer across `400M` active friend edges) requires roughly: $$100{,}000{,}000\text{ channels} \times 20\text{ B} + 400{,}000{,}000\text{ subscriber pointers} \times 500\text{ B} \approx \mathbf{202\text{ GB RAM}}$$
+   - Pre-allocating `100,000,000` channels (`1` per feature DAU, where an empty channel with no subscribers consumes `~0` bytes and an active channel entry with hash-table and subscriber linked-list pointers consumes `~20 B` base + `~100–500 B` per subscribed WebSocket server pointer across `400M` active friend edges) requires roughly: $100{,}000{,}000\text{ channels} \times 20\text{ B} + 400{,}000{,}000\text{ subscriber pointers} \times 500\text{ B} \approx \mathbf{202\text{ GB RAM}}$
    - By memory alone, two `100 GB` (`r7g.4xlarge`) instances could hold every channel in the world!
 2. **CPU & Network Fan-Out Sizing (`13.33M–14M` Pushes/s -> `134–140` Servers by CPU)**:
-   - Every second, `333,333.33` location updates arrive, and each update fans out to `40` active friend subscribers: $$\text{Total Pushes/sec} = 333{,}333.33 \times 40 = \mathbf{13{,}333{,}333.33\text{ pushes/s}} \quad (\approx 14{,}000{,}000\text{ pushes/s with headroom})$$
+   - Every second, `333,333.33` location updates arrive, and each update fans out to `40` active friend subscribers: $\text{Total Pushes/sec} = 333{,}333.33 \times 40 = \mathbf{13{,}333{,}333.33\text{ pushes/s}} \quad (\approx 14{,}000{,}000\text{ pushes/s with headroom})$
    - A single-threaded Valkey/Redis Pub/Sub core (including socket write syscalls and serialization) saturates at roughly **`100,000` subscriber pushes/second** at safe p99 latency.
-   - Dividing total pushes by single-node push capacity yields: $$\text{Pub/Sub Nodes}_{\text{CPU}} = \left\lceil \frac{13{,}333{,}333.33}{100{,}000} \right\rceil = \mathbf{134\text{ nodes}} \quad (\mathbf{140\text{ nodes}}\text{ at } 14\text{M pushes/s})$$
+   - Dividing total pushes by single-node push capacity yields: $\text{Pub/Sub Nodes}_{\text{CPU}} = \left\lceil \frac{13{,}333{,}333.33}{100{,}000} \right\rceil = \mathbf{134\text{ nodes}} \quad (\mathbf{140\text{ nodes}}\text{ at } 14\text{M pushes/s})$
    - **Conclusion**: The Pub/Sub tier requires **`67x–70x` more servers for CPU/network fan-out (`134–140` nodes)** than for RAM (`2` nodes)!
 
 ### 4.2 The Legacy Redis Cluster `PUBLISH` Broadcast Trap vs. Sharded Pub/Sub (`SPUBLISH`)
@@ -219,7 +219,7 @@ A surface-level estimate sizes Redis Pub/Sub by memory alone and reaches a dange
 > **The Redis Cluster Legacy `PUBLISH` Meltdown ($O(N)$ Cluster-Bus Amplification).** If an engineer deploys a standard 140-node Redis Cluster and calls legacy `PUBLISH user_ch:42 payload`, Redis Cluster **broadcasts every single `PUBLISH` message over the internal cluster bus to all 140 nodes in the cluster**!
 >
 > - Why? In pre-7.0 Redis Cluster, global `PUBLISH`/`SUBSCRIBE` channels were not bound to hash slots, so clients could `SUBSCRIBE` on any node and the publisher had to flood all $N$ nodes.
-> - At $333{,}333.33\text{ publishes/s}$ across $N = 134\text{–}140$ nodes, the cluster bus transmits: $$333{,}333.33 \times 140 = \mathbf{46{,}666{,}666\text{ internal cluster-bus messages/sec}}$$
+> - At $333{,}333.33\text{ publishes/s}$ across $N = 134\text{–}140$ nodes, the cluster bus transmits: $333{,}333.33 \times 140 = \mathbf{46{,}666{,}666\text{ internal cluster-bus messages/sec}}$
 > - Every single node in the 140-node cluster is forced to process **`333,333` incoming cluster-bus messages/sec** before delivering a single message to a WebSocket subscriber — **pegging all 140 CPUs at 100% and collapsing the cluster immediately**!
 
 We eliminate this $O(N)$ broadcast trap using one of two architectures:

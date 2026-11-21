@@ -62,7 +62,7 @@ An operational quick-reference covering 2026 latency and availability constants,
 
 $$\text{QPS}_{\text{avg}} = \frac{\text{DAU} \times \text{Actions per user per day}}{86{,}400}, \qquad \text{QPS}_{\text{peak}} = \text{QPS}_{\text{avg}} \times M_{\text{diurnal}}$$
 
-- **Diurnal multiplier ($M\_{\text{diurnal}}$)**: Use `2×–3×` for global consumer products, `4×–6×` for single-timezone B2B apps, and `10×+` for flash sales, live sports, or breaking-news spikes.
+- **Diurnal multiplier** ($M_{\text{diurnal}}$): Use `2×–3×` for global consumer products, `4×–6×` for single-timezone B2B apps, and `10×+` for flash sales, live sports, or breaking-news spikes.
 - **Bandwidth**: $\text{Egress (bits/s)} = \text{QPS} \times \text{Payload bytes} \times 8$. Remember `1 MiB/s ≈ 8.4 Mbps` and `10k QPS × 10 KiB = 100 MiB/s ≈ 800 Mbps`.
 
 ### 5-Year Storage with Replication & Index Overhead
