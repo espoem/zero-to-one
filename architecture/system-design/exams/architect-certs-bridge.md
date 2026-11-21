@@ -3,7 +3,7 @@
 No single vendor-neutral certification tests general distributed system design, so vendor-specific IAM, CLI, and control-plane trivia stay in [`technologies/aws`](../../../technologies/aws/), [`technologies/gcp`](../../../technologies/gcp/), and [`technologies/azure`](../../../technologies/azure/). This bridge bank maps the architectural patterns, quantitative trade-offs, and failure modes taught across `architecture/system-design` directly onto Senior/Architect certification scenario domains (**AWS Solutions Architect – Professional `SAP-C02`**, **Google Cloud Professional Cloud Architect `PCA`**, **Microsoft Azure Solutions Architect Expert `AZ-305`**, and **CNCF / SRE Resilience**).
 
 - **Sequential Growth Plan**: Built sequentially alongside Wave A & Wave B topic completions (target: **60+ original scenario questions** plus a full timed certification bridge mock exam upon completion of the 28-topic expansion).
-- **Current Coverage**: **48 questions** (`Q-CERT-001`–`Q-CERT-048`) covering Topic 01 (`Scale From Zero to Millions` — Module 15), Topic 02 (`Distributed Key-Value Store` — Module 16), Topic 03 (`Google Maps` — Module 17), Topic 04 (`Distributed Message Queue` — Module 18), Topic 05 (`Hotel Reservation System` — Module 19), Topic 06 (`Distributed Email Service` — Module 20), Topic 07 (`Real-time Gaming Leaderboard` — Module 21), and Topic 08 (`Proximity Service` — Module 22).
+- **Current Coverage**: **54 questions** (`Q-CERT-001`–`Q-CERT-054`) covering Topic 01 (`Scale From Zero to Millions` — Module 15), Topic 02 (`Distributed Key-Value Store` — Module 16), Topic 03 (`Google Maps` — Module 17), Topic 04 (`Distributed Message Queue` — Module 18), Topic 05 (`Hotel Reservation System` — Module 19), Topic 06 (`Distributed Email Service` — Module 20), Topic 07 (`Real-time Gaming Leaderboard` — Module 21), Topic 08 (`Proximity Service` — Module 22), and Topic 09 (`Nearby Friends` — Module 23).
 
 ---
 
@@ -996,5 +996,128 @@ Select **two** genuine architectural improvements when modernizing a 2021 proxim
 - Why not C: Raw 6-decimal GPS coordinates drift every second (`±5–15 m` jitter), collapsing cache hit rates to `~0%`.
 - Why not D: Two 1D B-trees degrade to global band intersections, and omitting $\cos(\phi)$ shrinks East-West coverage at `60°N` by `50%`.
 - Ref: [modules/22-proximity-service.md](../modules/22-proximity-service.md#6-production-gotchas-sre-guardrails-and-2021-vs-2026-comparison), https://overturemaps.org/
+
+</details>
+
+---
+
+## Module 23: Nearby Friends, Stateful WebSocket Fan-Out & Sharded Pub/Sub (`Q-CERT-049`–`Q-CERT-054`)
+
+### Q-CERT-049 · AWS SAP-C02: Real-Time Nearby Friends with ALB/NLB Stateful WebSockets, ElastiCache for Valkey Sharded Pub/Sub & Amazon Keyspaces / Timestream · difficulty 3 · scenario
+
+A consumer mobile app on AWS (`10M` concurrent online users, `333,333` GPS updates/sec, `13.33M` friend fan-out pushes/sec) needs persistent bidirectional WebSocket gateways, an ephemeral presence cache that automatically expires inactive users after `10 minutes`, a sharded Pub/Sub bus without $O(N)$ cluster-bus broadcast collapse, and a managed wide-column store for `28.8B` daily location-history rows. Which AWS architecture should you select?
+
+- A) Place stateful WebSocket gateways on Amazon ECS/EKS behind an **AWS Network Load Balancer (NLB) / Application Load Balancer (ALB)** with graceful connection draining; use **Amazon ElastiCache for Valkey (Cluster Mode Enabled)** with **Sharded Pub/Sub (`SPUBLISH` / `SSUBSCRIBE`)** across `134–140` CPU-sized shards for per-user channels (`user_ch:{user_id}`) and a separate sharded ElastiCache for Valkey tier using `SETEX 600` (`10-min` TTL) for active location presence; and stream historical breadcrumbs asynchronously into **Amazon Keyspaces (for Apache Cassandra)** partitioned by `((user_id, day_bucket), recorded_at DESC)`.
+- B) Deploy a 140-node ElastiCache for Redis 6 cluster using legacy global `PUBLISH` and store `333,333` writes/sec in a single Amazon RDS for MySQL primary instance.
+- C) Use AWS Lambda behind Amazon API Gateway HTTP REST polling where every client polls DynamoDB `Scan` every 2 seconds.
+- D) Store active 10-minute user presence in Amazon S3 Glacier Deep Archive and route Pub/Sub messages via AWS CloudTrail.
+
+<details><summary>Answer</summary>
+
+**A.** NLB/ALB terminates and routes long-lived WebSocket connections to the stateful ECS/EKS gateway fleet. ElastiCache for Valkey in Cluster Mode with **Sharded Pub/Sub (`SPUBLISH` / `SSUBSCRIBE`)** routes each user's publish strictly to the shard owning `CRC16(user_id) % 16384`, avoiding the `46.7M` msg/s cluster-bus broadcast storm of legacy `PUBLISH`. A dedicated sharded ElastiCache Location Cache enforces `SETEX 600` (`10-min` TTL) and serves pipelined `MGET` snapshots on connection startup, while Amazon Keyspaces (managed Cassandra) absorbs `333,333` append-only writes/sec partitioned by `(user_id, day_bucket)`.
+
+- Why not B: Legacy `PUBLISH` broadcasts every message across all 140 cluster nodes (`46.7M` cluster-bus messages/sec), and a single RDS MySQL primary collapses under `333,333` random B-tree updates/sec.
+- Why not C: Polling + DynamoDB `Scan` over `10M` users at `5M` requests/sec costs orders of magnitude more than stateful WebSocket push and violates latency targets.
+- Why not D: S3 Glacier Deep Archive has a `12–48 hour` retrieval time, and CloudTrail is an AWS API audit log, not a real-time message bus.
+- Ref: [modules/23-nearby-friends.md](../modules/23-nearby-friends.md#2-high-level-architecture-stateful-websocket-gateways-ttl-location-cache-and-pubsub-bus), https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/WhatIs.html
+
+</details>
+
+### Q-CERT-050 · AWS SAP-C02: WebSocket Fleet Auto-Scaling, Graceful Connection Draining & Consistent-Hash Resubscription Containment · difficulty 3 · single
+
+Your WebSocket gateway fleet and standalone Pub/Sub ring run on AWS. During scale-in events and Pub/Sub ring expansions, users report sudden disconnects and `5-second` freezes caused by mass channel resubscriptions. Which operational architecture eliminates both problems?
+
+- A) Terminate WebSocket EC2/EKS instances immediately with `SIGKILL` when CPU drops below `30%`, and map Pub/Sub channels using `hash(channel) % N` during peak afternoon traffic.
+- B) Configure **ELB Target Group Deregistration Delay + Auto Scaling Lifecycle Hooks** so a draining WebSocket gateway stops accepting new connections and sheds existing sockets with `60–180 s` jittered close frames before termination; map Pub/Sub channels via a **Consistent Hash Ring (`150` virtual nodes)** stored in `etcd`/ZooKeeper so adding a node relocates only `~1/(N+1)` of channels; and schedule planned Pub/Sub ring resizing during the **03:00 AM diurnal traffic trough** with `20–30%` CPU headroom.
+- C) Disable load balancer health checks so dead WebSocket gateways stay registered forever, and never scale the Pub/Sub cluster.
+- D) Force every mobile client to reconnect and re-fetch its entire 400-friend social graph from the relational User DB every 5 seconds.
+
+<details><summary>Answer</summary>
+
+**B.** Marking a WebSocket gateway as `draining` via ELB Deregistration Delay and Auto Scaling Lifecycle Hooks prevents new connections from landing on the node while allowing active WebSockets to migrate gradually over a `60–180 s` jitter window. On the Pub/Sub tier, Consistent Hashing (`150` vnodes) limits channel movement to `~1/(N+1)` (`~0.7%` at `N=140`) instead of the `~99%` storm caused by `hash % N`, and running planned capacity expansions during the `03:00 AM` traffic trough minimizes active subscriber churn.
+
+- Why not A: Immediate `SIGKILL` drops `100,000` connections per gateway at once (triggering a reconnect stampede), and `hash % N` at peak traffic remaps `~99%` of active Pub/Sub channels.
+- Why not C: Leaving dead gateways in the target group blackholes user connections.
+- Why not D: Reconnecting every 5 seconds turns a `30-second` lightweight frame into a permanent `2,000,000 QPS` social-graph database outage.
+- Ref: [modules/23-nearby-friends.md](../modules/23-nearby-friends.md#4-scaling-the-pubsub-tier-cpu-bound-vs-memory-bound-sizing-consistent-hashing-and-the-redis-cluster-broadcast-trap), https://docs.aws.amazon.com/autoscaling/ec2/userguide/lifecycle-hooks.html
+
+</details>
+
+### Q-CERT-051 · GCP PCA: Global Ephemeral Location Sharing on GKE Stateful WebSockets, Memorystore for Valkey Cluster & Cloud Bigtable · difficulty 3 · scenario
+
+A social location-sharing platform on Google Cloud runs stateful WebSocket gateways on Google Kubernetes Engine (GKE), uses Google Cloud Memorystore for Valkey Cluster for `10-minute` TTL presence and Pub/Sub fan-out, and persists `333,333` GPS updates/sec (`28.8B` rows/day) in Cloud Bigtable. How should you configure the GKE ingress, Memorystore Pub/Sub commands, and Cloud Bigtable row key?
+
+- A) Expose GKE gateways via a Global External Application Load Balancer with backend service timeout extended for long-lived WebSockets (`3,600–86,400 s`); use **`SPUBLISH` / `SSUBSCRIBE`** on Memorystore for Valkey Cluster for hash-slot-isolated channel fan-out; and design the Cloud Bigtable row key as **`user_id#YYYYMMDD#reverse_timestamp`** (with garbage-collection TTL rules) so writes distribute evenly across all Bigtable tablets while newest coordinates sort first per user.
+- B) Start the Cloud Bigtable row key with the monotonically increasing current timestamp (`timestamp#user_id`) and use legacy `PUBLISH` across a 140-node Memorystore cluster.
+- C) Create `100,000,000` separate Google Cloud Pub/Sub topics (one durable topic per user) and store `333,333` writes/sec in a single Cloud SQL for PostgreSQL micro instance.
+- D) Use a 30-second HTTP load balancer timeout that forcefully resets all WebSocket connections every 30 seconds.
+
+<details><summary>Answer</summary>
+
+**A.** Extending the GKE BackendConfig timeout supports long-lived WebSocket sessions with graceful pod termination drains. Memorystore for Valkey Cluster `SPUBLISH`/`SSUBSCRIBE` keeps each user's channel traffic isolated to its owning shard (`O(1)` routing). In Cloud Bigtable, leading the row key with high-cardinality `user_id#YYYYMMDD` spreads `333,333` writes/sec uniformly across all cluster tablets, while `reverse_timestamp` (`Long.MAX_VALUE - ts`) orders each user's latest breadcrumbs first for fast tail reads.
+
+- Why not B: A monotonically increasing timestamp prefix (`timestamp#user_id`) funnels 100% of writes onto a single hot Bigtable tablet (hotspotting collapse), and legacy `PUBLISH` floods the Valkey cluster bus.
+- Why not C: Cloud Pub/Sub enforces a quota of `10,000` topics per project (cannot create `100M` per-user topics), and a single Cloud SQL instance cannot absorb `333,333` writes/sec.
+- Why not D: Resetting `10M` WebSockets every 30 seconds destroys battery life and triggers `333,333` full initialization handshakes (`MGET` + `400` `SSUBSCRIBE`s) per second!
+- Ref: [modules/23-nearby-friends.md](../modules/23-nearby-friends.md#2-high-level-architecture-stateful-websocket-gateways-ttl-location-cache-and-pubsub-bus), https://cloud.google.com/bigtable/docs/schema-design
+
+</details>
+
+### Q-CERT-052 · Azure AZ-305: Managed Real-Time Location Fan-Out with Azure Web PubSub, Azure Managed Redis & Cosmos DB · difficulty 2 · scenario
+
+A mobile engineering team on Azure wants to launch a Nearby Friends feature with managed WebSocket connection handling, 10-minute auto-expiring location presence, and a scalable location history database without hot partitions. Which Azure architecture should you recommend?
+
+- A) Terminate client WebSockets on **Azure Web PubSub** (or **AKS** with **Azure Managed Redis Sharded Pub/Sub**), store ephemeral active user coordinates in **Azure Managed Redis** with a `600-second` key TTL (`SETEX`), and persist historical breadcrumbs asynchronously in **Azure Cosmos DB for NoSQL** using a synthetic partition key `/user_day` (`"{user_id}#{YYYYMMDD}"`) and configured container `defaultTtl`.
+- B) Store ephemeral 10-minute presence in Azure Blob Storage Archive tier and partition Cosmos DB location history by `/feature_name` (a single constant string `"nearby_friends"` for all `28.8B` daily rows).
+- C) Create `100,000,000` separate Azure Service Bus Enterprise queues and poll them over HTTP/1.0 without keep-alive.
+- D) Use a single unsharded Azure SQL Database Basic tier (5 DTUs) for `333,333` location writes/sec.
+
+<details><summary>Answer</summary>
+
+**A.** Azure Web PubSub (paired with stateless compute handlers and Azure Managed Redis) offloads persistent WebSocket connection multiplexing and group fan-out, while Azure Managed Redis `SETEX 600` manages the 10-minute ephemeral location cache and initial `MGET` seeding. In Azure Cosmos DB, partitioning by `/user_day` (`"{user_id}#{YYYYMMDD}"`) distributes `333,333` writes/sec across thousands of physical partitions while keeping each logical partition well below Cosmos DB's `20 GB` per-partition storage limit.
+
+- Why not B: Archive Blob Storage cannot serve sub-millisecond cache lookups, and a constant partition key (`/feature_name = "nearby_friends"`) hits Cosmos DB's `10,000 RU/s` and `20 GB` single-partition ceiling immediately.
+- Why not C: Azure Service Bus caps queues per namespace (`10,000`) and is not designed for `100M` ephemeral per-user channels.
+- Why not D: A 5-DTU SQL database saturates at `< 100` writes/sec, orders of magnitude below `333,333` writes/sec.
+- Ref: [modules/23-nearby-friends.md](../modules/23-nearby-friends.md#2-high-level-architecture-stateful-websocket-gateways-ttl-location-cache-and-pubsub-bus), https://learn.microsoft.com/en-us/azure/azure-web-pubsub/overview
+
+</details>
+
+### Q-CERT-053 · CNCF / SRE: Pub/Sub Fan-Out CPU Saturation, Cluster-Bus Broadcast Meltdown & Trilateration Privacy Guardrails · difficulty 3 · single
+
+An SRE team investigating a Nearby Friends production incident observes three anomalies: (1) all 140 Valkey Pub/Sub nodes are at `99%` CPU with `46M` internal cluster-bus packets/sec even though external writes are normal (`333k/s`), (2) friends who drive outside the `5-mile` radius remain frozen at `4.9 miles` on users' maps for 10 minutes, and (3) a security researcher demonstrates pinpointing any user's home address to `1 meter` by sending 3 spoofed GPS coordinates in 5 seconds. Which remediation resolves all three findings?
+
+- A) Double the RAM on each Valkey node from `16 GB` to `32 GB`, increase the Location Cache TTL from `10 minutes` to `24 hours`, and return raw 8-decimal `(latitude, longitude)` coordinates to friends.
+- B) Migrate legacy `PUBLISH`/`SUBSCRIBE` calls to **Sharded Pub/Sub (`SPUBLISH` / `SSUBSCRIBE`)** and alert if `cluster_bus_pubsub_msgs > 1,000/s`; track `currentlyVisibleFriends` in each WebSocket gateway so crossing outside `8,046.72 m` (`5.2 mi` hysteresis exit) emits an explicit **`LEFT_RADIUS` unpin frame**; and quantize friend distances to **`0.5-mile` buckets (`<= 0.5 mi` floor)** with **planar Laplace noise** plus an **impossible-velocity (`> 300 m/s`) GPS teleport blocker**.
+- C) Replace WebSockets with a nightly batch email listing nearby friends from 24 hours ago.
+- D) Remove the `5-mile` Haversine check on the WebSocket gateway and stream all `400` friends' raw GPS coordinates to the client browser regardless of distance.
+
+<details><summary>Answer</summary>
+
+**B.** (1) The `46M` cluster-bus packets/sec and `99%` CPU across all 140 nodes are the classic signature of legacy `PUBLISH` broadcasting $333{,}333 \times 140$ messages/sec across the cluster bus; switching to `SPUBLISH`/`SSUBSCRIBE` drops cross-slot broadcast traffic to zero. (2) Tracking `currentlyVisibleFriends` per connected user allows the recipient gateway to emit an explicit `LEFT_RADIUS` removal frame when a visible friend exits the 5-mile boundary instead of leaving a stale pin until TTL expiry. (3) Quantizing distances into `0.5-mile` buckets (`<= 0.5 mi` floor) with planar Laplace noise and blocking `> 300 m/s` teleportation frames defeats 3-circle trilateration stalking.
+
+- Why not A: Adding RAM does nothing for CPU-bound cluster-bus broadcast saturation, extending TTL to 24h makes stale zombie pins 144x worse, and exposing raw 8-decimal coordinates gives stalkers exact GPS pins directly.
+- Why not C: A nightly batch email destroys the real-time product requirement.
+- Why not D: Streaming raw coordinates for all 400 friends globally leaks every distant friend's exact location and wastes client bandwidth.
+- Ref: [modules/23-nearby-friends.md](../modules/23-nearby-friends.md#6-production-gotchas-sre-guardrails-and-2021-vs-2026-comparison), https://valkey.io/commands/spublish/
+
+</details>
+
+### Q-CERT-054 · Multi-Cloud Architecture: 2021 vs. 2026 Ephemeral Location-Sharing Modernization · difficulty 2 · multi
+
+Select **two** genuine architectural improvements when modernizing a 2021 Nearby Friends platform (140 standalone Redis 6 nodes with an external ZooKeeper hash ring, fixed 30s TCP WebSocket polling even when stationary, 9-cell Geohash random discovery, and raw float distance outputs) to the 2026 production standard.
+
+- A) Adopting **Valkey 9 / Redis 7+ Native Sharded Pub/Sub (`SPUBLISH` / `SSUBSCRIBE`)** (or an **Elixir BEAM / NATS** actor mesh) and **HTTP/3 WebTransport (QUIC)** with **on-device IMU motion-gated GPS cadence** eliminates external ZooKeeper hash-ring maintenance, survives cellular-to-Wi-Fi handoffs with 0-RTT migration, and cuts stationary write QPS by `~60%`.
+- B) Switching random-discovery spatial channels to **Uber H3 hexagonal `gridDisk(1)` pools (`7` equidistant channels vs. `9` rectangular Geohash channels)**, enforcing **`0.5-mile` distance bucketing + planar Laplace geo-indistinguishability noise**, and tiering **ScyllaDB TWCS (`7-day` hot NVMe) into S3 Iceberg / GeoParquet** removes diagonal corner skew, blocks 3-circle trilateration stalking, and slashes long-term history storage costs.
+- C) Replacing `SPUBLISH` with legacy Redis Cluster `PUBLISH` reduces inter-node cluster-bus bandwidth by `100%` on a 140-node cluster.
+- D) Replacing the sharded Valkey TTL Location Cache (`SETEX 600`) with a single unindexed MySQL table scanned via `SELECT *` every second reduces tail latency.
+
+<details><summary>Answer</summary>
+
+**A, B.** Valkey 9 `SPUBLISH`/`SSUBSCRIBE` removes the need for custom ZooKeeper consistent-hash rings while keeping $O(1)$ slot routing, and HTTP/3 WebTransport + IMU motion gating prevents stationary phones from burning battery and server QPS. Simultaneously, Uber H3 hexagons cut neighbor channel subscriptions from `9` to `7` with uniform center-to-center distance, `0.5-mile` bucketing + Laplace noise stops trilateration attacks, and ScyllaDB TWCS $\to$ S3 GeoParquet/Iceberg optimizes multi-petabyte location-history retention.
+
+- Why not C: Legacy `PUBLISH` _creates_ $O(N)$ cluster-bus broadcast amplification (`46.7M` msgs/s across 140 nodes); `SPUBLISH` is what eliminates it.
+- Why not D: Scanning an unindexed relational table at `333,333` writes/sec and `10M` active users collapses immediately.
+- Ref: [modules/23-nearby-friends.md](../modules/23-nearby-friends.md#6-production-gotchas-sre-guardrails-and-2021-vs-2026-comparison), https://valkey.io/commands/spublish/, https://h3geo.org/
 
 </details>

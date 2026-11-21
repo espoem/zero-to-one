@@ -2,7 +2,7 @@
 
 This preparation bank tests Senior, Staff, and Principal distributed system design competency across the seven domains defined in [`exams/README.md`](README.md). Every question is original and grounded in primary engineering literature, official protocol RFCs, and production postmortems.
 
-- **Bank scope**: **110 questions** (`Q-SD-001`–`Q-SD-110`) covering quantitative capacity modeling, edge/API design, caching/partitioning, asynchrony/resilience, specialized indexing/financial correctness, SLO observability/DR, end-to-end canonical architectures, progressive scaling, distributed key-value stores, planetary-scale geospatial navigation, distributed message queue internals, high-contention hotel reservation and overbooking systems, planetary distributed email services, real-time gaming leaderboards, and proximity / location-based services.
+- **Bank scope**: **115 questions** (`Q-SD-001`–`Q-SD-115`) covering quantitative capacity modeling, edge/API design, caching/partitioning, asynchrony/resilience, specialized indexing/financial correctness, SLO observability/DR, end-to-end canonical architectures, progressive scaling, distributed key-value stores, planetary-scale geospatial navigation, distributed message queue internals, high-contention hotel reservation and overbooking systems, planetary distributed email services, real-time gaming leaderboards, proximity / location-based services, and real-time ephemeral location sharing (Nearby Friends).
 - **Difficulty calibration**: Level `1` tests foundational mechanics, Level `2` tests Senior-level trade-off reasoning, and Level `3` tests Staff/Principal failure modes, subtle race conditions, and quantitative traps.
 - **Timed practice**: Complete the [50-Question Written Architecture Drill](#timed-mock-exam-written-architecture-drill-50-questions--75-minutes) under a strict 75-minute timer, then run the [two 60-minute Staff/Principal design loops](#timed-mock-design-loops-2--60-minute-staffprincipal-simulations) against the explicit 0–4 grading rubrics.
 
@@ -2268,6 +2268,115 @@ Select **two** sound operational and privacy engineering practices for a global 
 - Why not C: Coupling `/livez` with a 15-second timeout to a 4-minute Quadtree build causes Kubernetes to kill and restart every LBS pod in an infinite `CrashLoopBackOff`.
 - Why not D: Retaining raw 6-decimal GPS search histories linked to `user_id` violates GDPR data-minimization and CCPA sensitive geolocation regulations.
 - Ref: [modules/22-proximity-service.md](../modules/22-proximity-service.md#5-end-to-end-request-lifecycle-multi-region-deployment-and-async-update--privacy-workflows), https://gdpr-info.eu/art-5-gdpr/, https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+
+</details>
+
+---
+
+### Q-SD-111 · Real-Time Ephemeral Location Sharing & High-Fanout Pub/Sub · difficulty 3 · scenario
+
+A social app has `1,000,000,000` (`1B`) registered users, of whom `10%` (`100M` DAU) use the Nearby Friends feature and `10%` of those (`10,000,000` concurrent users) are online at any moment, transmitting a GPS coordinate update every `30 seconds`. Each user has an average of `400` friends (`10%` online = `40` active online friend subscribers). Total Pub/Sub channel and subscriber-pointer state occupies `~200 GB` of RAM, and a single Valkey/Redis Pub/Sub server core sustains `100,000` subscriber pushes/second. Which capacity and bottleneck analysis is correct?
+
+- A) The Pub/Sub tier is memory-bound: `200 GB` of channel state requires `140` servers of `1.4 GB` RAM each, whereas CPU push load is negligible.
+- B) The Pub/Sub tier is **strictly CPU- and network-fan-out-bound**: ingress location updates average $10{,}000{,}000 / 30 \approx \mathbf{333{,}333.33\text{ writes/s}}$ (`~334k QPS`), which fan out across `40` online friends to generate $333{,}333.33 \times 40 \approx \mathbf{13{,}333{,}333.33\text{ pushes/s}}$ (`~14M pushes/s`). While `~200 GB` of channel state fits on just **`2` servers** (`100 GB` RAM each) by memory, sustaining `13.33M–14M` pushes/s at `100k pushes/s/node` requires **`134 to 140` Pub/Sub servers** by CPU (`67x–70x` higher than the memory bound).
+- C) Provisioning `2` servers with `100 GB` RAM each is sufficient because `333,333` writes/sec requires zero fan-out multiplication when friends are subscribed via Pub/Sub.
+- D) Ingress location writes are `100,000,000 / 30 = 3.33M writes/s` and fan out to `400` friends (`1.33B pushes/s`), requiring `13,333` Redis servers.
+
+<details><summary>Answer</summary>
+
+**B.** With $10{,}000{,}000$ concurrently active users transmitting every `30 seconds`, ingress write throughput is $10{,}000{,}000 / 30 \approx 333{,}333.33\text{ writes/s}$ (`~334k QPS`). Because each user has $400 \times 10\% = 40$ online friends subscribed to their channel (`user_ch:{user_id}`), the Pub/Sub tier must deliver $333{,}333.33 \times 40 \approx 13{,}333{,}333.33\text{ subscriber pushes/s}$ (`~14M pushes/s`). Although `~200 GB` of pre-allocated channel and subscriber-pointer state fits in memory on `2` servers (`100 GB` each), a single-threaded Valkey/Redis core saturates at `~100,000` pushes/sec, requiring $\lceil 13.33\text{M} / 100\text{k} \rceil = \mathbf{134\text{ to } 140\text{ servers}}$. Sizing by RAM alone underprovisions CPU by `~70x`.
+
+- Why not A: `200 GB` of RAM fits on 2 modern `100 GB` servers; the 134–140 server count comes entirely from dividing `13.33M–14M pushes/s` by `100k pushes/s/core`.
+- Why not C: Two servers would face `~6.67M pushes/s` per server (`67x` over single-core capacity) and collapse immediately.
+- Why not D: `100M` is daily active users (not concurrent online users, which is `10M`), and only online friends (`40`, not all `400`) have active WebSocket gateways subscribed.
+- Ref: [modules/23-nearby-friends.md](../modules/23-nearby-friends.md#1-requirements-moving-target-vs-static-proximity-and-high-fanout-capacity-math), https://valkey.io/topics/pubsub/
+
+</details>
+
+---
+
+### Q-SD-112 · Real-Time Ephemeral Location Sharing & High-Fanout Pub/Sub · difficulty 3 · single
+
+An engineering team provisions a 140-node Redis Cluster for Nearby Friends and uses standard legacy `PUBLISH user_ch:{user_id}` and `SUBSCRIBE` commands while routing shard scale-outs via `hash(channel) % N`. During load testing at `333,333` location writes/sec, all 140 nodes peg at `100%` CPU even before friends connect, and adding a 141st node drops `99%` of active subscriptions. What is the root cause and the production fix?
+
+- A) Legacy `PUBLISH` in Redis Cluster only routes to the hash-slot owner, whereas `SPUBLISH` broadcasts to all 140 nodes; switching to `hash % N` moves only `1/N` keys.
+- B) In legacy Redis Cluster (pre-7.0), standard `PUBLISH` broadcasts every published message across the internal cluster bus to **all $N = 140$ nodes** ($333{,}333 \times 140 \approx \mathbf{46.7\text{M}\text{ cluster-bus messages/sec}}$), saturating every node's CPU; production systems must use **Valkey / Redis 7.0+ Sharded Pub/Sub (`SPUBLISH` / `SSUBSCRIBE`)** (which scopes channel traffic strictly to the owning hash slot with `0` cross-slot broadcast) or **standalone Valkey shards coordinated via an `etcd`/ZooKeeper Consistent Hash Ring** (which moves only `~1/(N+1)` of channels on off-peak scale-out instead of `~99%` under `hash % N`).
+- C) Consistent hashing relocates `99.3%` of channels when adding 1 node to 140, whereas `hash(channel) % N` relocates only `0.71%` (`1/141`) of channels.
+- D) Legacy `PUBLISH` fails because Redis cannot hold more than 1,000 channels per node in RAM.
+
+<details><summary>Answer</summary>
+
+**B.** In pre-7.0 Redis Cluster, global `PUBLISH` is unsharded: every published message is duplicated over the internal cluster bus to all $N$ nodes in the cluster ($333{,}333.33 \times 140 \approx 46.67\text{M}\text{ inter-node messages/sec}$), forcing every node to deserialize `333,333` cluster-bus packets/sec. Switching to **Sharded Pub/Sub (`SPUBLISH` / `SSUBSCRIBE`)** binds `user_ch:{user_id}` to its `CRC16` hash slot so messages route only to the single owning shard (`0` cluster-bus broadcast), or alternatively running standalone shards behind an **`etcd` Consistent Hash Ring** (`150` vnodes) ensures both $O(1)$ direct routing and minimal resharding churn (`~1/(N+1)` channels moved during off-peak scaling vs. `~140/141 = 99.3%` under naive `hash % N`).
+
+- Why not A: It is the exact opposite: legacy `PUBLISH` broadcasts to all nodes, while `SPUBLISH` scopes delivery to the owning hash slot.
+- Why not C: Naive `hash % N` moves $\approx \frac{N}{N+1}$ (`> 94%–99%`) of keys when $N \to N+1$, whereas Consistent Hashing moves only $\approx \frac{1}{N+1}$ (`~0.71%` at $N=140$).
+- Why not D: Redis easily holds millions of lightweight channels in RAM; the collapse is CPU saturation from $O(N)$ cluster-bus broadcast amplification.
+- Ref: [modules/23-nearby-friends.md](../modules/23-nearby-friends.md#4-scaling-the-pubsub-tier-cpu-bound-vs-memory-bound-sizing-consistent-hashing-and-the-redis-cluster-broadcast-trap), https://valkey.io/commands/spublish/
+
+</details>
+
+---
+
+### Q-SD-113 · Real-Time Ephemeral Location Sharing & High-Fanout Pub/Sub · difficulty 3 · scenario
+
+Examine the storage and gateway distance-filtering design for Nearby Friends (`5-mile` / `8,046.72 m` threshold, `10-minute` inactivity timeout, `333,333` writes/sec). Which combination of state management and boundary handling is required?
+
+- A) Store current user locations in a sharded **Valkey Location Cache with `TTL = 600 s` (`SETEX loc:{user_id} 600 ...`)** so inactive users auto-evict after 10 minutes and new connections seed via pipelined `MGET`; persist historical breadcrumbs in **Apache Cassandra / ScyllaDB** partitioned by `((user_id, day_bucket), recorded_at DESC)`; and have each recipient **Stateful WebSocket Gateway** cache its locally connected users' coordinates in RAM (`wsLocalCoords`) and track `currentlyVisibleFriends` so it emits an explicit **`LEFT_RADIUS` removal event** whenever a visible friend moves outside `8,046.72 m`.
+- B) Store only in-memory coordinates without a Valkey Location Cache (so newly connected users see a blank map for up to 30 seconds), and silently drop updates when a friend's distance exceeds `5 miles` without notifying the client.
+- C) Write all `333,333` updates/sec into a single unsharded PostgreSQL B-tree table with `SELECT ... FOR UPDATE` and run a global `DELETE` cron job every second to purge inactive friends.
+- D) Have each recipient WebSocket gateway issue a remote `GET loc:{viewer_id}` call to the Valkey Location Cache on every incoming Pub/Sub message (`14,000,000` extra cache reads/sec) instead of caching connected viewer coordinates in gateway RAM.
+
+<details><summary>Answer</summary>
+
+**A.** The sharded Valkey Location Cache (`TTL = 600 s`, `~1 GB` active RAM across 10–16 shards) solves two problems at once: `SETEX 600` automatically expires silent users after 10 minutes with zero background cron jobs, and pipelined `MGET` allows a newly connecting WebSocket gateway to seed all `400` friends' current positions immediately. Simultaneously, Cassandra/ScyllaDB (`PRIMARY KEY ((user_id, day_bucket), recorded_at DESC)` with `TimeWindowCompactionStrategy`) absorbs `333,333` append-only LSM writes/sec (`28.8B` rows/day) without B-tree random I/O, while caching connected viewer coordinates in gateway RAM (`wsLocalCoords`) avoids `14M` remote cache reads/sec and tracking `currentlyVisibleFriends` ensures an explicit `LEFT_RADIUS` (unpin) event is sent when a friend crosses outside `5 miles`.
+
+- Why not B: Without the Valkey Location Cache, initial app launch cannot fetch current friend positions (`MGET`), and silently dropping `d > 5 mi` updates leaves a friend who drove away frozen at `4.9 miles` on the user's screen.
+- Why not C: A single relational B-tree primary cannot absorb `333,333` durable row updates/sec plus a per-second full-table `DELETE` scan.
+- Why not D: Making a remote Valkey `GET` on every incoming fan-out message adds `13.33M–14M` unnecessary network calls/sec for data the recipient WebSocket gateway already received directly from its own connected client.
+- Ref: [modules/23-nearby-friends.md](../modules/23-nearby-friends.md#2-high-level-architecture-stateful-websocket-gateways-ttl-location-cache-and-pubsub-bus), https://cassandra.apache.org/doc/latest/cassandra/managing/operating/compaction/twcs.html
+
+</details>
+
+---
+
+### Q-SD-114 · Real-Time Ephemeral Location Sharing & High-Fanout Pub/Sub · difficulty 2 · ordering
+
+Order the execution steps of (1) WebSocket client initialization and (2) a periodic 30-second location update in Nearby Friends.
+
+- A) Mobile client opens persistent WSS connection with initial `{lat, lon}` → WS Gateway fetches user's `400` `friend_ids` from User DB, writes `SETEX loc:{user} 600`, runs pipelined `MGET` on Valkey Location Cache, `SSUBSCRIBE`s to all `400` friend channels (including offline friends), filters active friends by Haversine $d \le 5\text{ miles}$, and returns quantized initial list → On every 30s GPS heartbeat, WS Gateway refreshes `SETEX 600`, asynchronously appends to Cassandra Location History, updates local RAM `wsLocalCoords`, and calls `SPUBLISH user_ch:{user}` → Subscribed friend WS Gateways compute Haversine against their local connected viewer's RAM coordinates and push `NEARBY_UPDATE` ($\le 5\text{ mi}$) or `LEFT_RADIUS` ($> 5\text{ mi}$ exit).
+- B) Mobile client calls `SPUBLISH` directly against 140 Redis nodes → User DB computes Haversine distance over all `1B` users → WS Gateway opens connection afterward → Cassandra expires keys after 600 seconds.
+- C) WS Gateway subscribes only to friends currently within `1 mile` (ignoring offline friends so friends who come online later are never seen) → skips Valkey Location Cache `MGET` → broadcasts raw coordinates to all `400` friends without distance filtering.
+- D) Mobile client polls Cassandra `location_history` every second via HTTP `GET` → WebSocket server runs synchronous 2PC across 140 Redis nodes on every heartbeat.
+
+<details><summary>Answer</summary>
+
+**A.** Upon WSS connection, the gateway authenticates the user, loads their `friend_ids` from the User DB, writes their initial `SETEX 600` entry and batch-fetches active friend locations via `MGET` from the Valkey Location Cache, subscribes (`SSUBSCRIBE`) to all `400` friend channels (so offline friends who come online later or distant friends who drive closer are immediately received), and sends the initial filtered/quantized nearby list. On each 30-second heartbeat, the gateway refreshes `SETEX 600`, enqueues the append to Cassandra Location History, updates local gateway RAM (`wsLocalCoords`), and calls `SPUBLISH user_ch:{user}`; recipient gateways evaluate Haversine distance in RAM against their local viewers and push either a quantized `NEARBY_UPDATE` or `LEFT_RADIUS`.
+
+- Why not B: Mobile clients never talk directly to internal Redis Pub/Sub shards, and the User DB does not run $1\text{B}$-user spatial scans.
+- Why not C: Failing to subscribe to offline or currently distant friends means the user never sees a friend who comes online 1 minute later or drives across the 5-mile border, and broadcasting raw coordinates to distant friends leaks location data.
+- Why not D: Polling Cassandra at `10M` users/sec defeats real-time push architecture, and 2PC is never used for ephemeral location heartbeats.
+- Ref: [modules/23-nearby-friends.md](../modules/23-nearby-friends.md#3-end-to-end-lifecycles-client-initialization-periodic-location-updates-and-friend-graph-mutations), https://valkey.io/topics/pubsub/
+
+</details>
+
+---
+
+### Q-SD-115 · Real-Time Ephemeral Location Sharing & High-Fanout Pub/Sub · difficulty 3 · multi
+
+Select **two** sound architectural designs for the **"Nearby Random Person"** discovery extension and **Anti-Stalking / Trilateration Privacy Defense**.
+
+- A) Implement "Nearby Random Person" by partitioning a pool of spatial Pub/Sub channels by **Geohash Precision 5** (`geohash_ch:{hash}` or **Uber H3 hexagons**), where each opted-in user publishes to their **1** current cell channel and subscribes to all **9 cells (`center + 8 neighbors`, or `7` H3 `gridDisk(1)` cells)** so strangers standing `30 meters` away across a cell boundary are never missed.
+- B) Defeat **3-Circle Trilateration stalking attacks** (where a malicious friend spoofs 3 GPS positions $P_1, P_2, P_3$ and intersects three exact distance circles to pinpoint a victim's house to within 1 meter) by quantizing reported distances into **`0.5-mile` buckets with a `<= 0.5 miles` minimum floor**, applying **planar Laplace geo-indistinguishability noise**, enforcing a `5.0 mi / 5.2 mi` boundary hysteresis deadband, and rejecting impossible-velocity (`> 300 m/s`) GPS teleportation frames.
+- C) In "Nearby Random Person" mode, subscribe each user only to their single center Geohash channel (`1` channel) because two users within 5 miles always share the exact same Geohash-5 string.
+- D) Return exact floating-point distances (`0.01 meter` resolution) while hiding raw `(latitude, longitude)`, because it is mathematically impossible to recover a 2D coordinate $(x, y)$ from distance-only measurements.
+
+<details><summary>Answer</summary>
+
+**A, B.** For random stranger discovery without a social graph, spatial Pub/Sub channels (`geohash_ch:{L5}`) allow each opt-in user to publish to 1 cell while subscribing to the 9-cell neighborhood (`center + 8 neighbors`, or `7` Uber H3 hexagons) to eliminate cell-border blindness before running an exact Haversine check in gateway memory. For privacy, returning exact float distances allows classic 3-circle trilateration ($(x - x_i)^2 + (y - y_i)^2 = r_i^2$ from 3 spoofed vantage points) to solve uniquely for a victim's exact coordinates; `0.5-mile` distance bucketing (`<= 0.5 mi` floor), planar Laplace geo-indistinguishability noise, boundary hysteresis, and velocity-spoof filtering neutralize the attack.
+
+- Why not C: As proven in Test 4 of `examples/17-nearby-friends.test.ts`, two users `31 meters` apart across a Geohash cell border have different Geohash strings and miss each other completely under single-cell subscription.
+- Why not D: Three distance radii from three known non-collinear points in 2D space uniquely determine the target point $(x, y)$ via circle-circle intersection (trilateration).
+- Ref: [modules/23-nearby-friends.md](../modules/23-nearby-friends.md#5-advanced-extensions-whale-friends-geohash-random-discovery-erlangbeam-alternatives-and-anti-stalking-privacy), https://dl.acm.org/doi/10.1145/2508859.2516735
 
 </details>
 

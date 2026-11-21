@@ -1,0 +1,163 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1320 760" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #0b1020; }
+      .panel { fill: #121a30; stroke: #2b3b66; stroke-width: 1.5; rx: 10; }
+      .box-blue { fill: #152546; stroke: #4c8bf5; stroke-width: 1.5; rx: 8; }
+      .box-green { fill: #122d26; stroke: #2ec486; stroke-width: 1.5; rx: 8; }
+      .box-amber { fill: #2f2513; stroke: #f5a623; stroke-width: 1.5; rx: 8; }
+      .box-purple { fill: #24193c; stroke: #a66bff; stroke-width: 1.5; rx: 8; }
+      .box-red { fill: #33161e; stroke: #f05454; stroke-width: 1.5; rx: 8; }
+      .title { font-family: 'Inter', -apple-system, sans-serif; font-size: 18px; font-weight: 700; fill: #f8fafc; }
+      .subtitle { font-family: 'Inter', -apple-system, sans-serif; font-size: 12px; fill: #94a3b8; }
+      .sec-hdr { font-family: 'Inter', -apple-system, sans-serif; font-size: 13px; font-weight: 700; fill: #e2e8f0; }
+      .lbl { font-family: 'Inter', -apple-system, sans-serif; font-size: 12px; font-weight: 600; fill: #f1f5f9; }
+      .txt { font-family: 'Inter', -apple-system, sans-serif; font-size: 11px; fill: #cbd5e1; }
+      .code { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10.5px; fill: #93c5fd; }
+      .code-green { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10.5px; fill: #6ee7b7; }
+      .code-amber { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10.5px; fill: #fcd34d; }
+      .code-red { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10.5px; fill: #fca5a5; }
+      .arrow { stroke: #60a5fa; stroke-width: 1.8; fill: none; marker-end: url(#arr-blue); }
+      .arrow-green { stroke: #34d399; stroke-width: 1.8; fill: none; marker-end: url(#arr-green); }
+      .arrow-amber { stroke: #fbbf24; stroke-width: 1.8; stroke-dasharray: 5,4; fill: none; marker-end: url(#arr-amber); }
+    </style>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#60a5fa"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#34d399"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#fbbf24"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1320" height="760"/>
+
+  <!-- Header -->
+  <text class="title" x="24" y="32">Nearby Friends — High-Fanout Real-Time Location Architecture (10M Concurrent · 333.3k Writes/s · 13.33M Pushes/s)</text>
+  <text class="subtitle" x="24" y="50">Stateful WebSocket Gateways · 10-Min TTL Valkey Location Cache · 134–140 CPU-Bound Sharded Pub/Sub Nodes · Cassandra History</text>
+
+  <!-- Section 1: Clients & L4/L7 Load Balancer -->
+  <rect class="panel" x="20" y="66" width="250" height="450"/>
+  <text class="sec-hdr" x="34" y="88">1. Mobile Clients &amp; Edge LB</text>
+
+  <rect class="box-blue" x="34" y="102" width="222" height="126"/>
+  <text class="lbl" x="44" y="122">Active Mobile User (Sender)</text>
+  <text class="txt" x="44" y="142">• 10M concurrent active users</text>
+  <text class="txt" x="44" y="158">• Sends GPS frame every 30 s</text>
+  <text class="code" x="44" y="176">~333,333.33 writes/s (~334k)</text>
+  <text class="code-green" x="44" y="194">WS: { lat, lon, ts }</text>
+  <text class="txt" x="44" y="212">• Receives nearby friends &lt;= 5 mi</text>
+
+  <rect class="box-purple" x="34" y="242" width="222" height="118"/>
+  <text class="lbl" x="44" y="262">L4/L7 Load Balancer</text>
+  <text class="txt" x="44" y="282">• Routes bidirectional stateful</text>
+  <text class="txt" x="44" y="298">  WebSocket connections</text>
+  <text class="txt" x="44" y="316">• Routes HTTP REST friend/auth</text>
+  <text class="txt" x="44" y="332">  calls to stateless API Fleet</text>
+  <text class="code-amber" x="44" y="348">• Graceful connection draining</text>
+
+  <rect class="box-green" x="34" y="374" width="222" height="126"/>
+  <text class="lbl" x="44" y="394">Online Friend Clients (40 avg)</text>
+  <text class="txt" x="44" y="414">• 400 avg friends x 10% online</text>
+  <text class="txt" x="44" y="430">  = 40 active subscribers/user</text>
+  <text class="code-green" x="44" y="448">Receive update ONLY if:</text>
+  <text class="txt" x="44" y="466">1. Haversine dist &lt;= 5 miles, OR</text>
+  <text class="txt" x="44" y="482">2. Friend just exited 5-mi radius</text>
+
+  <!-- Section 2: Stateful WebSocket Fleet & Stateless API -->
+  <rect class="panel" x="292" y="66" width="465" height="450"/>
+  <text class="sec-hdr" x="306" y="88">2. Stateful WebSocket Gateways &amp; Auxiliary REST Tier</text>
+
+  <rect class="box-blue" x="306" y="102" width="437" height="270"/>
+  <text class="lbl" x="318" y="122">Stateful WebSocket Server Fleet (Connection &amp; Distance Engine)</text>
+  <text class="code-green" x="318" y="142">A. On Client Connect (Initialization Handshake):</text>
+  <text class="txt" x="318" y="160">  1. Fetch user's 400 friend_ids from User Database / API</text>
+  <text class="txt" x="318" y="176">  2. Pipelined MGET friend locations from TTL Location Cache</text>
+  <text class="txt" x="318" y="192">  3. Filter Haversine &lt;= 5 miles (8,046.72 m) &amp; seed client map</text>
+  <text class="txt" x="318" y="208">  4. SSUBSCRIBE to all 400 friend channels on Pub/Sub Ring</text>
+  <text class="code" x="318" y="228">B. On 30s Periodic GPS Frame from Connected User:</text>
+  <text class="txt" x="318" y="246">  1. Async append (user_id, lat, lon, ts) to Cassandra History</text>
+  <text class="txt" x="318" y="262">  2. SETEX user_id 600 {lat, lon, ts} in Valkey Location Cache</text>
+  <text class="txt" x="318" y="278">  3. Update local WS in-memory coord map + SPUBLISH user_ch:{id}</text>
+  <text class="code-amber" x="318" y="298">C. On Receiving Friend Update from Subscribed Pub/Sub Channel:</text>
+  <text class="txt" x="318" y="316">  1. Compare friend (lat, lon) against local user's RAM coords</text>
+  <text class="txt" x="318" y="332">  2. Push quantized distance bucket if &lt;= 5 mi (or LEFT_RADIUS)</text>
+  <text class="txt" x="318" y="348">  3. Anti-stalking: 0.5-mi buckets block 3-circle trilateration!</text>
+
+  <rect class="box-amber" x="306" y="386" width="437" height="114"/>
+  <text class="lbl" x="318" y="406">Stateless REST API Servers + User / Friendship DB</text>
+  <text class="txt" x="318" y="426">• Handles auth, profile management, and add/remove friend mutations</text>
+  <text class="txt" x="318" y="444">• User DB sharded by user_id (caps whale accounts at 5,000 friends)</text>
+  <text class="code-amber" x="318" y="462">• On Add/Remove Friend callback: notifies owning WS server to</text>
+  <text class="code-amber" x="318" y="478">  dynamically SSUBSCRIBE or SUNSUBSCRIBE friend's channel</text>
+
+  <!-- Section 3: Pub/Sub Cluster, TTL Location Cache & Cassandra -->
+  <rect class="panel" x="778" y="66" width="522" height="450"/>
+  <text class="sec-hdr" x="792" y="88">3. Sharded Pub/Sub Ring, TTL Cache &amp; History Storage</text>
+
+  <rect class="box-green" x="792" y="102" width="494" height="148"/>
+  <text class="lbl" x="804" y="122">Valkey / Redis Sharded Pub/Sub Cluster (134–140 CPU-Bound Nodes)</text>
+  <text class="code-green" x="804" y="142">1 channel per user: "user_ch:{user_id}" (100M pre-allocated)</text>
+  <text class="txt" x="804" y="160">• Memory math: 100M channels + 400M subscriber ptrs = ~200 GB RAM</text>
+  <text class="txt" x="804" y="176">  (Fits on 2 x 100 GB servers by RAM, but CPU-bound by fan-out!)</text>
+  <text class="code-amber" x="804" y="194">• Fan-out CPU math: 333.3k writes/s x 40 online friends</text>
+  <text class="code-amber" x="804" y="210">  = 13.33M (~14M) pushes/s @ 100k pushes/s/node -&gt; 134–140 nodes!</text>
+  <text class="txt" x="804" y="228">• Routed via etcd/ZK Consistent Hash Ring or Valkey SPUBLISH</text>
+
+  <rect class="box-purple" x="792" y="262" width="494" height="114"/>
+  <text class="lbl" x="804" y="282">Ephemeral Location Cache (Sharded Valkey with 10-Min TTL)</text>
+  <text class="code" x="804" y="302">Key: "loc:{user_id}" -&gt; Value: { lat, lon, ts } (TTL = 600 s)</text>
+  <text class="txt" x="804" y="320">• 10M active users x ~100 B = ~1.0 GB total active working set</text>
+  <text class="txt" x="804" y="336">• Sharded across 10–16 nodes to absorb 333.3k SETEX writes/s</text>
+  <text class="txt" x="804" y="352">• Auto-evicts users offline &gt; 10 min with zero background cron</text>
+
+  <rect class="box-red" x="792" y="388" width="494" height="112"/>
+  <text class="lbl" x="804" y="408">Location History DB (Apache Cassandra / ScyllaDB LSM Cluster)</text>
+  <text class="code-red" x="804" y="428">PRIMARY KEY ((user_id, day_bucket), timestamp DESC)</text>
+  <text class="txt" x="804" y="446">• Absorbs 333.3k append-only LSM writes/s (~28.8B rows/day)</text>
+  <text class="txt" x="804" y="462">• Decoupled from real-time friend fan-out via async Kafka/workers</text>
+  <text class="txt" x="804" y="478">• Feeds ML trip analytics, fraud detection, and safety audits</text>
+
+  <!-- Arrows -->
+  <path class="arrow" d="M 256 165 L 306 165"/>
+  <path class="arrow-green" d="M 306 320 L 256 430"/>
+  <path class="arrow-green" d="M 743 175 L 792 175"/>
+  <path class="arrow" d="M 743 265 L 792 315"/>
+  <path class="arrow-amber" d="M 743 245 L 792 435"/>
+
+  <!-- Section 4: Bottom Deep Dive — Redis Cluster Trap, Resharding & Geohash Random Person -->
+  <rect class="panel" x="20" y="534" width="1280" height="208"/>
+  <text class="sec-hdr" x="34" y="556">4. Critical Staff Deep Dives: The Redis Cluster Broadcast Trap, Ring Resharding &amp; Geohash Random Discovery</text>
+
+  <rect class="box-red" x="34" y="570" width="405" height="156"/>
+  <text class="lbl" x="46" y="590">The Redis Cluster Legacy PUBLISH Broadcast Trap</text>
+  <text class="code-red" x="46" y="610">Legacy PUBLISH user_ch:42 (Pre-Redis 7.0 Cluster):</text>
+  <text class="txt" x="46" y="628">• Broadcasts every message across the internal cluster</text>
+  <text class="txt" x="46" y="644">  bus to ALL 140 nodes (333.3k x 140 = 46.7M msgs/s!)</text>
+  <text class="txt" x="46" y="660">• Every node burns 100% CPU parsing irrelevant publishes</text>
+  <text class="code-green" x="46" y="680">Fix A: Valkey / Redis 7.0+ Sharded Pub/Sub (SPUBLISH)</text>
+  <text class="txt" x="46" y="698">  Scopes channel strictly to its hash-slot owner (0 bus spam)</text>
+  <text class="code-amber" x="46" y="714">Fix B: Standalone shards + etcd Consistent Hash Ring</text>
+
+  <rect class="box-blue" x="455" y="570" width="410" height="156"/>
+  <text class="lbl" x="467" y="590">Pub/Sub Ring Resharding &amp; Resubscription Storms</text>
+  <text class="txt" x="467" y="610">• Stateful channels require WS servers to tear down old</text>
+  <text class="txt" x="467" y="626">  subscriptions and issue new SSUBSCRIBE commands on scale</text>
+  <text class="code-red" x="467" y="646">Naive hash(ch) % N: Moves ~99% of channels on +1 node!</text>
+  <text class="code-green" x="467" y="666">Consistent Hash Ring (150 vnodes) in etcd / ZooKeeper:</text>
+  <text class="txt" x="467" y="684">• Relocates only ~1/(N+1) (&lt; 1% at N=140) of channels</text>
+  <text class="txt" x="467" y="700">• Schedule planned resharding at 03:00 diurnal traffic</text>
+  <text class="txt" x="467" y="716">  trough + overprovision 20-30% CPU headroom</text>
+
+  <rect class="box-green" x="881" y="570" width="405" height="156"/>
+  <text class="lbl" x="893" y="590">"Nearby Random Person" &amp; Erlang/BEAM Alternative</text>
+  <text class="code-green" x="893" y="610">Random Discovery: Geohash Pub/Sub Pool (geohash_ch:{L5})</text>
+  <text class="txt" x="893" y="628">• Opt-in user publishes to their current Geohash-5 cell</text>
+  <text class="txt" x="893" y="644">• Subscribes to CENTER + 8 NEIGHBOR cells (9 channels)</text>
+  <text class="txt" x="893" y="660">  so strangers across a cell border are never missed!</text>
+  <text class="code-amber" x="893" y="680">Erlang / Elixir (BEAM / Phoenix PubSub) Alternative:</text>
+  <text class="txt" x="893" y="698">• Models each user as a ~300-word (~2.4 KB) BEAM actor; unifies</text>
+  <text class="txt" x="893" y="714">  WS connections and distributed pub/sub without Redis tier</text>
+</svg>

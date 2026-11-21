@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 620" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #0b1020; }
+      .panel { fill: #121a30; stroke: #2b3b66; stroke-width: 1.5; rx: 10; }
+      .col-2021 { fill: #2a1820; stroke: #e05263; stroke-width: 1.5; rx: 8; }
+      .col-2026 { fill: #102a24; stroke: #2ec486; stroke-width: 1.5; rx: 8; }
+      .dim-box { fill: #16223f; stroke: #4c8bf5; stroke-width: 1.5; rx: 6; }
+      .title { font-family: 'Inter', -apple-system, sans-serif; font-size: 18px; font-weight: 700; fill: #f8fafc; }
+      .subtitle { font-family: 'Inter', -apple-system, sans-serif; font-size: 12px; fill: #94a3b8; }
+      .hdr { font-family: 'Inter', -apple-system, sans-serif; font-size: 14px; font-weight: 700; fill: #f1f5f9; }
+      .dim-txt { font-family: 'Inter', -apple-system, sans-serif; font-size: 12px; font-weight: 700; fill: #93c5fd; }
+      .txt { font-family: 'Inter', -apple-system, sans-serif; font-size: 11px; fill: #e2e8f0; }
+      .code-old { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10.5px; fill: #fca5a5; }
+      .code-new { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10.5px; fill: #6ee7b7; }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1280" height="620"/>
+
+  <text class="title" x="24" y="32">Nearby Friends Evolution: 2021 Default vs. 2026 Modern Standard</text>
+  <text class="subtitle" x="24" y="50">From Legacy ZooKeeper-Ring Redis 6 Pub/Sub &amp; Exact Distance Leaks to Valkey 9 SPUBLISH, WebTransport &amp; Anti-Trilateration Privacy</text>
+
+  <!-- Column Headers -->
+  <rect class="dim-box" x="20" y="68" width="220" height="38"/>
+  <text class="hdr" x="34" y="92">Architectural Dimension</text>
+
+  <rect class="col-2021" x="252" y="68" width="490" height="38"/>
+  <text class="hdr" x="266" y="92">2021 Textbook Baseline (ByteByteGo Ch. 17)</text>
+
+  <rect class="col-2026" x="754" y="68" width="506" height="38"/>
+  <text class="hdr" x="768" y="92">2026 Production Standard (Cloud-Native &amp; Privacy-Safe)</text>
+
+  <!-- Row 1 -->
+  <rect class="dim-box" x="20" y="116" width="220" height="68"/>
+  <text class="dim-txt" x="32" y="146">1. Pub/Sub Routing &amp;</text>
+  <text class="txt" x="32" y="164">Cluster Coordination</text>
+
+  <rect class="col-2021" x="252" y="116" width="490" height="68"/>
+  <text class="code-old" x="264" y="138">140 Standalone Redis 6 nodes + external ZooKeeper hash ring</text>
+  <text class="txt" x="264" y="156">Required custom ZK ring client because Redis 6 Cluster PUBLISH</text>
+  <text class="txt" x="264" y="172">broadcast every message across the cluster bus to all N nodes</text>
+
+  <rect class="col-2026" x="754" y="116" width="506" height="68"/>
+  <text class="code-new" x="766" y="138">Valkey 9 / Redis 7+ Sharded Pub/Sub (SPUBLISH / SSUBSCRIBE)</text>
+  <text class="txt" x="766" y="156">Native hash-slot-scoped Pub/Sub with multi-threaded I/O eliminates</text>
+  <text class="txt" x="766" y="172">O(N) cluster-bus broadcast and external ZooKeeper ring management</text>
+
+  <!-- Row 2 -->
+  <rect class="dim-box" x="20" y="194" width="220" height="68"/>
+  <text class="dim-txt" x="32" y="224">2. Client Transport &amp;</text>
+  <text class="txt" x="32" y="242">Battery Adaptation</text>
+
+  <rect class="col-2021" x="252" y="194" width="490" height="68"/>
+  <text class="code-old" x="264" y="216">Fixed 30-second TCP WebSocket GPS polling loop</text>
+  <text class="txt" x="264" y="234">TCP head-of-line blocking on cellular handoffs; transmits every</text>
+  <text class="txt" x="264" y="250">30 seconds even when user phone lies stationary on a desk</text>
+
+  <rect class="col-2026" x="754" y="194" width="506" height="68"/>
+  <text class="code-new" x="766" y="216">HTTP/3 WebTransport (QUIC Datagrams) + Motion-Gated Cadence</text>
+  <text class="txt" x="766" y="234">0-RTT connection migration across Wi-Fi/5G; on-device IMU motion</text>
+  <text class="txt" x="766" y="250">co-processor suppresses GPS uploads when stationary (cuts QPS 60%)</text>
+
+  <!-- Row 3 -->
+  <rect class="dim-box" x="20" y="272" width="220" height="68"/>
+  <text class="dim-txt" x="32" y="302">3. Spatial Grid for</text>
+  <text class="txt" x="32" y="320">Random Discovery</text>
+
+  <rect class="col-2021" x="252" y="272" width="490" height="68"/>
+  <text class="code-old" x="264" y="294">Rectangular Geohash channel pool (9-cell subscription)</text>
+  <text class="txt" x="264" y="312">Diagonal corner neighbors sit sqrt(2) = 1.414x farther than edge</text>
+  <text class="txt" x="264" y="328">neighbors; severe latitude cell-width distortion toward poles</text>
+
+  <rect class="col-2026" x="754" y="272" width="506" height="68"/>
+  <text class="code-new" x="766" y="294">Uber H3 Hexagonal Channel Pool (1 + 6 gridDisk(1) = 7 cells)</text>
+  <text class="txt" x="766" y="312">Equidistant center-to-center distance across all 6 hex neighbors</text>
+  <text class="txt" x="766" y="328">with 22% fewer channel subscriptions per user (7 vs 9 channels)</text>
+
+  <!-- Row 4 -->
+  <rect class="dim-box" x="20" y="350" width="220" height="68"/>
+  <text class="dim-txt" x="32" y="380">4. Anti-Stalking &amp;</text>
+  <text class="txt" x="32" y="398">Trilateration Defense</text>
+
+  <rect class="col-2021" x="252" y="350" width="490" height="68"/>
+  <text class="code-old" x="264" y="372">Raw exact distance / coordinates returned to friend clients</text>
+  <text class="txt" x="264" y="390">Vulnerable to 3-point trilateration: an attacker spoofing 3 GPS</text>
+  <text class="txt" x="264" y="406">locations intersects 3 distance circles to pinpoint exact house</text>
+
+  <rect class="col-2026" x="754" y="350" width="506" height="68"/>
+  <text class="code-new" x="766" y="372">0.5-Mile Distance Bucketing + Planar Laplace Noise + Ghost Mode</text>
+  <text class="txt" x="766" y="390">Server quantizes distances (&gt;= 0.5 mi floor), adds differential</text>
+  <text class="txt" x="766" y="406">privacy geo-indistinguishability noise, and detects spoof velocity</text>
+
+  <!-- Row 5 -->
+  <rect class="dim-box" x="20" y="428" width="220" height="68"/>
+  <text class="dim-txt" x="32" y="458">5. Location History</text>
+  <text class="txt" x="32" y="476">Storage &amp; Tiering</text>
+
+  <rect class="col-2021" x="252" y="428" width="490" height="68"/>
+  <text class="code-old" x="264" y="450">Unbounded raw Cassandra tables on local NVMe disks</text>
+  <text class="txt" x="264" y="468">28.8B rows/day (~1 TB/day) accumulates multi-petabyte NVMe costs</text>
+  <text class="txt" x="264" y="484">and compaction overhead without automated cold-storage offload</text>
+
+  <rect class="col-2026" x="754" y="428" width="506" height="68"/>
+  <text class="code-new" x="766" y="450">ScyllaDB TWCS (7-Day Hot TTL) -&gt; Iceberg / GeoParquet on S3</text>
+  <text class="txt" x="766" y="468">Time-Window Compaction drops expired SSTables in O(1); long-term</text>
+  <text class="txt" x="766" y="484">ML trajectories compacted into Zstd GeoParquet with GDPR TTLs</text>
+
+  <!-- Row 6: Migration Callout -->
+  <rect class="panel" x="20" y="510" width="1240" height="92"/>
+  <text class="hdr" x="34" y="534">Key Architectural Takeaway: Why Nearby Friends Is CPU-Bound on Pub/Sub Fan-Out, Not Memory-Bound</text>
+  <text class="txt" x="34" y="556">• Memory for 100M channels and 400M subscriber pointers is only ~200 GB (2 servers), but 333.3k writes/s x 40 online friends = 13.33M (~14M) pushes/s.</text>
+  <text class="txt" x="34" y="574">• At ~100k pushes/s per core, fan-out requires 134–140 Pub/Sub nodes — and you MUST use Sharded Pub/Sub (SPUBLISH) or an etcd Consistent Hash Ring</text>
+  <text class="txt" x="34" y="590">  so legacy Redis Cluster PUBLISH does not broadcast 333.3k writes/s across all 140 nodes (46.7M cluster-bus messages/sec).</text>
+</svg>

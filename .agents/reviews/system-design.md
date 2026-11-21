@@ -175,3 +175,16 @@ Verdict: **approve** (after full remediation of all P0, P1, P2, and P3 findings 
   - [x] **P2** `assets/22-proximity-architecture.svg`: shortened the 9 lines inside Section 2 (`x=318`, width `437px`) so all text sits cleanly inside container boundaries with zero overflow.
   - [x] **P2** `modules/22-proximity-service.md`: clarified that the `~32 B/entry` (`19.20 GB`) Tier 1 Valkey estimate models packed 64-bit integer sets (`intset`/`listpack` on a dedicated Tier 1 cluster separate from the Tier 2 detail cache, vs `~24–36 GB` for `sds` sets), and noted that the `16 B/POI` (`~3.5–4.5 GB`) Point Quadtree footprint assumes packed C++/Rust structs compared to V8 heap objects in the TypeScript reference proof.
   - [x] **P3** `modules/22-proximity-service.md`, `examples/16-proximity-service.test.ts`, `exams/architect-certs-bridge.md`: fixed `Mandlebrot` -> `Mandelbrot` typo, unified Quadtree RAM range at `~3.5–4.5 GB`, aligned Test 4 title to `>95%` hit rate, and cleaned up `Why not B:` distractor label in `Q-CERT-045`.
+
+---
+
+## ByteByteGo & Primary-Source Expansion — Wave A Topic 09 (`17. Nearby Friends`, Module 23, 2026-11-21)
+
+- **Coordinator / Integrator / SVG & Proof Author**: Antigravity (`argon-builder`)
+- **Prose Draft**: `opencode` (`opencode-go/hy4-flash-free` from `/tmp --auto`, expanded from 378 to 532 lines by `argon-builder` with static-vs-moving comparison matrix, `333.3k -> 13.33M` fan-out & CPU-vs-RAM derivations, legacy Redis Cluster `PUBLISH` $O(N)$ broadcast trap vs Valkey `SPUBLISH` and `etcd` consistent-hash ring proofs, Cassandra `TWCS` DDL, 9-cell Geohash random discovery diagram, anti-trilateration distance bucketing, SRE guardrails, and verbatim TS code)
+- **Exam & Cert Bridge Questions Draft**: `claude` CLI (`haiku`, `--max-turns 1` from `/tmp`, integrated as `Q-SD-111`–`115` in `exams/interview.md` and `Q-CERT-049`–`054` in `exams/architect-certs-bridge.md`)
+- **Independent Cross-Family Challenger**: `opencode` (`opencode-go/muse-spark-1.3-contributor`, `muse` family — reported zero P0 and zero P1 issues)
+- **Challenger Findings Resolved**:
+  - [x] **P2** `modules/23-nearby-friends.md:345`: fixed `millones` typo to `millions`.
+  - [x] **P2** `modules/23-nearby-friends.md:72,390` & `assets/23-nearby-friends-architecture.svg:161`: updated Erlang/BEAM process initial footprint from `~300 bytes` to `~300 words (~2.4 KB on 64-bit)`.
+  - [x] **P2/P3** `examples/lib/nearby-friends-models.ts` & `modules/23-nearby-friends.md`: added `exitRadiusMeters` hysteresis deadband support to `NearbyFriendsPubSubRouter` (and synced the inline snippet verbatim), clarified `44.67M` (`134` nodes) vs `46.67M` (`140` nodes) cluster-bus broadcast figures in the Proof Map, and updated `CHEATSHEET.md` #54 denominator to `~1/(N+1)`.

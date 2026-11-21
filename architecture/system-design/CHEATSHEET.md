@@ -270,7 +270,7 @@ flowchart LR
 
 ---
 
-## 6. Top 51 Production Failure Modes & One-Line Fixes
+## 6. Top 55 Production Failure Modes & One-Line Fixes
 
 | # | Failure Mode | How It Breaks Production | One-Line Fix |
 | :-- | :-- | :-- | :-- |
@@ -325,3 +325,7 @@ flowchart LR
 | **49** | **Unfiltered 9-Cell Geohash Diagonal Corner Leak** | Returning all POIs from the 9-cell (`3×3`) Geohash neighborhood includes diagonal cell corners up to `~2 km` away on a `500 m` query. | Always run an exact Haversine great-circle post-filter ($d \le R$) in LBS memory before sorting and returning candidates. |
 | **50** | **Raw `(lat, lon)` Cache Keys (`~0%` Hit Ratio)** | Caching nearby results under 6-decimal `lat:lon` strings misses on every request due to `±5–15 m` mobile GPS jitter and pedestrian steps. | Use a Two-Tier Valkey Cache: quantized `geohash:{p}:{cell} -> business_id[]` (9-key pipeline) plus `business:{id} -> JSON details` (`MGET`). |
 | **51** | **Quadtree Cold-Start Liveness Crash-Loop & Sharded Geohash Hotspots** | Gating `/livez` on a `3-min` `200M`-POI Quadtree build causes infinite pod restarts, while sharding a `4.8 GB` geohash index by prefix melts the Manhattan shard. | Protect Quadtree boot with Kubernetes `startupProbe` + `/readyz` (`mmap` snapshots, shallow `/livez`) and replicate the compact `4.8 GB` spatial index instead of sharding it. |
+| **52** | **Legacy Redis Cluster `PUBLISH` $O(N)$ Broadcast Meltdown** | Calling global `PUBLISH` on a 140-node Redis Cluster broadcasts `333.3k` writes/s to all 140 nodes (`46.7M` cluster-bus msgs/s), pegging all CPUs at 100%. | Use Valkey / Redis 7.0+ Sharded Pub/Sub (`SPUBLISH` / `SSUBSCRIBE`) or standalone shards routed via an `etcd` Consistent Hash Ring. |
+| **53** | **Sizing High-Fanout Pub/Sub by RAM (`2` Nodes) Instead of CPU (`140` Nodes)** | Provisioning 2 servers because `200 GB` of channel state fits in RAM collapses under `333.3k × 40 = 13.33M` (`~14M`) subscriber pushes/sec. | Size Pub/Sub clusters by per-core subscriber push throughput (`~100,000 pushes/s/node` $\to$ `134–140` CPU-bound servers). |
+| **54** | **Frozen Zombie Friend Pins on Radius Exit & `hash % N` Resubscribe Storms** | Silently dropping updates when a friend crosses `> 5 miles` leaves their pin frozen at `4.9 mi`, while `hash % N` scaling remaps `~99%` of channels. | Track `currentlyVisibleFriends` to emit an explicit `LEFT_RADIUS` unpin frame, and use Consistent Hashing (`~1/(N+1)` moved) during 03:00 AM off-peak windows. |
+| **55** | **3-Circle Trilateration Exact-Distance Stalking** | Returning exact float distances lets a malicious friend spoof 3 GPS points and intersect 3 distance circles to pinpoint a user's exact home address. | Quantize friend distances into `0.5-mile` buckets (`<= 0.5 mi` floor), add planar Laplace geo-indistinguishability noise, and reject `> 300 m/s` GPS teleports. |
