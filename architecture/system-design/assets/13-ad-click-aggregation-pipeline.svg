@@ -1,0 +1,209 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 720" width="1180" height="720" role="img" aria-labelledby="title desc">
+  <title id="title">Ad Click Event Aggregation — End-to-End Kappa &amp; Reconciliation Architecture</title>
+  <desc id="desc">Comprehensive distributed stream aggregation architecture for 1B daily ad clicks showing Kafka ingestion, cold S3 Parquet archiving, Map-Aggregate-Reduce DAG with event-time watermarks and Top-N min-heaps, exactly-once Kafka sink, ClickHouse real-time OLAP, advertiser query APIs, end-of-day reconciliation, and isolated Kappa recalculation.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569"/>
+    </marker>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <marker id="arr-purple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect x="0" y="0" width="1180" height="720" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1180" height="58" rx="12" fill="#0f172a"/>
+  <rect x="0" y="42" width="1180" height="16" fill="#0f172a"/>
+  <text x="24" y="28" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="17" font-weight="700" fill="#f8fafc">Ad Click Event Aggregation — End-to-End Kappa &amp; Reconciliation Architecture</text>
+  <text x="24" y="47" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" fill="#94a3b8">1B Clicks/Day (11,574 Avg / 50k Peak QPS) · Map-Aggregate-Reduce DAG · Event-Time Watermarks · Kafka EOS &amp; ClickHouse OLAP</text>
+
+  <!-- ==================== TOP STAGE 1: INGESTION & RAW ARCHIVE ==================== -->
+  <rect x="20" y="74" width="245" height="340" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="34" y="98" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#1e3a8a">1. Ingestion &amp; Raw Storage</text>
+
+  <!-- Ad Click Ingress -->
+  <rect x="34" y="112" width="217" height="82" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1.2"/>
+  <text x="44" y="131" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e40af">Ad Click Ingress Stream</text>
+  <text x="44" y="148" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#334155">1B clicks/day · ~11.5k QPS</text>
+  <text x="44" y="164" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Peak 50k QPS · 0.1 KB/event</text>
+  <text x="44" y="180" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#64748b">302 Redirect / Mobile SDK beacon</text>
+
+  <!-- Kafka Raw Topic -->
+  <rect x="34" y="204" width="217" height="96" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="44" y="223" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e3a8a">Kafka Raw Topic (3-AZ)</text>
+  <text x="44" y="240" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#1e40af">partition: hash(click_id)</text>
+  <text x="44" y="256" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Uniform distribution (no hot keys)</text>
+  <text x="44" y="272" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">acks=all · 7-day log retention</text>
+  <text x="44" y="288" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#1e3a8a">100 GB/day ingress (3 TB/mo)</text>
+
+  <!-- Cold Archiver -->
+  <rect x="34" y="310" width="217" height="90" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1.2"/>
+  <text x="44" y="329" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e40af">Cold Archiver (S3 Parquet)</text>
+  <text x="44" y="346" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Streaming Iceberg / Parquet sink</text>
+  <text x="44" y="362" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Zstd columnar (~30 GB/day)</text>
+  <text x="44" y="378" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#64748b">Immutable source for nightly audit</text>
+  <text x="44" y="392" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#059669">5-year compliance &amp; recalculation</text>
+
+  <!-- Arrow Raw Ingress to Kafka -->
+  <line x1="142" y1="194" x2="142" y2="202" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+  <!-- Arrow Kafka to Cold Archiver -->
+  <line x1="142" y1="300" x2="142" y2="308" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+
+  <!-- ==================== TOP STAGE 2: MAP-AGGREGATE-REDUCE DAG ==================== -->
+  <rect x="285" y="74" width="375" height="340" rx="10" fill="#f0fdf4" stroke="#10b981" stroke-width="1.5"/>
+  <text x="300" y="98" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#065f46">2. Stream Processing DAG (Flink / Kappa)</text>
+
+  <!-- Map Stage -->
+  <rect x="300" y="112" width="345" height="66" rx="6" fill="#ffffff" stroke="#6ee7b7" stroke-width="1.2"/>
+  <text x="312" y="130" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#047857">Map Stage (Sanitize, Tag &amp; Salt)</text>
+  <text x="312" y="146" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Validates schema · Generates star-schema filter_id</text>
+  <text x="312" y="162" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#065f46">Key: ad_id (viral ads: ad_id + '_' + rand(K))</text>
+
+  <!-- Aggregate Stage -->
+  <rect x="300" y="188" width="345" height="114" rx="6" fill="#ffffff" stroke="#10b981" stroke-width="1.5"/>
+  <text x="312" y="206" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">Aggregate Stage (Tumbling 1m &amp; Local Heap)</text>
+  <text x="312" y="223" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Event-Time Watermarks: W(t) = max_seen_ts - 60s</text>
+  <text x="312" y="239" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Tumbling 1-minute in-memory counts per (ad_id, filter_id)</text>
+  <text x="312" y="255" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Local Top-N Min-Heap for sliding M-minute window</text>
+  <text x="312" y="271" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9" fill="#047857">RocksDB / ForSt Keyed State + Async S3 Checkpoint</text>
+  <text x="312" y="289" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#047857">Periodic snapshot aligned with Kafka consumer offset</text>
+
+  <!-- Reduce Stage -->
+  <rect x="300" y="312" width="345" height="88" rx="6" fill="#ffffff" stroke="#6ee7b7" stroke-width="1.2"/>
+  <text x="312" y="330" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#047857">Reduce Stage (Global Roll-Up &amp; Lateness)</text>
+  <text x="312" y="347" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Global-Local merger: sums salted partitions per ad_id</text>
+  <text x="312" y="363" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Global Top-N Heap: merges local heaps into final ranking</text>
+  <text x="312" y="380" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#b45309">allowedLateness(15m) -&gt; incremental UPSERT to sink</text>
+
+  <!-- Arrow Map to Aggregate -->
+  <line x1="472" y1="178" x2="472" y2="186" stroke="#059669" stroke-width="1.8" marker-end="url(#arr-green)"/>
+  <!-- Arrow Aggregate to Reduce -->
+  <line x1="472" y1="302" x2="472" y2="310" stroke="#059669" stroke-width="1.8" marker-end="url(#arr-green)"/>
+
+  <!-- ==================== TOP STAGE 3: SINK & OLAP DB ==================== -->
+  <rect x="680" y="74" width="235" height="340" rx="10" fill="#faf5ff" stroke="#a855f7" stroke-width="1.5"/>
+  <text x="694" y="98" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#581c87">3. Egress &amp; Real-Time OLAP</text>
+
+  <!-- Kafka Aggregated Topic -->
+  <rect x="694" y="112" width="207" height="114" rx="6" fill="#f3e8ff" stroke="#7c3aed" stroke-width="1.2"/>
+  <text x="704" y="131" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#5b21b6">Kafka Aggregated Topic</text>
+  <text x="704" y="148" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#4c1d95">Topic: ad_clicks_1m</text>
+  <text x="704" y="164" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#4c1d95">Topic: popular_ads_1m</text>
+  <text x="704" y="181" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Transactional Producer (EOS)</text>
+  <text x="704" y="197" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">2PC write coordination</text>
+  <text x="704" y="213" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#6d28d9">read_committed consumer isolation</text>
+
+  <!-- ClickHouse OLAP Sink -->
+  <rect x="694" y="238" width="207" height="162" rx="6" fill="#ffffff" stroke="#c084fc" stroke-width="1.5"/>
+  <text x="704" y="257" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#6b21a8">ClickHouse / Druid OLAP</text>
+  <text x="704" y="274" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9" fill="#581c87">ReplacingMergeTree(updated_at)</text>
+  <text x="704" y="291" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Idempotent UPSERT on dedupe key:</text>
+  <text x="704" y="307" font-family="ui-monospace, SFMono-Regular, monospace" font-size="8.5" fill="#475569">(campaign_id, ad_id, window_start)</text>
+  <text x="704" y="324" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Sub-50 ms analytical queries</text>
+  <text x="704" y="340" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Columnar vectorization (SIMD)</text>
+  <text x="704" y="356" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Powers real-time dashboard UI</text>
+  <text x="704" y="373" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#059669">Scales horizontally via ClickHouse Keeper</text>
+  <text x="704" y="388" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#64748b">Legacy alternative: Cassandra table</text>
+
+  <!-- Arrow Kafka Agg to ClickHouse -->
+  <line x1="797" y1="226" x2="797" y2="236" stroke="#7c3aed" stroke-width="1.8" marker-end="url(#arr-purple)"/>
+
+  <!-- ==================== TOP STAGE 4: QUERY & RECONCILIATION ==================== -->
+  <rect x="935" y="74" width="225" height="340" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="948" y="98" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#78350f">4. Query, Audit &amp; Recalc</text>
+
+  <!-- Query API -->
+  <rect x="948" y="112" width="199" height="106" rx="6" fill="#ffffff" stroke="#fcd34d" stroke-width="1.2"/>
+  <text x="958" y="130" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#92400e">Advertiser Query APIs</text>
+  <text x="958" y="147" font-family="ui-monospace, SFMono-Regular, monospace" font-size="8.5" fill="#78350f">GET /v1/ads/{id}/aggregated_count</text>
+  <text x="958" y="162" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#475569">Params: from, to, filter_id</text>
+  <text x="958" y="178" font-family="ui-monospace, SFMono-Regular, monospace" font-size="8.5" fill="#78350f">GET /v1/ads/popular_ads</text>
+  <text x="958" y="193" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#475569">Params: count (N), window (M)</text>
+  <text x="958" y="208" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#047857">P99 &lt; 80 ms via ClickHouse</text>
+
+  <!-- End-of-Day Reconciliation -->
+  <rect x="948" y="228" width="199" height="96" rx="6" fill="#ffffff" stroke="#fcd34d" stroke-width="1.2"/>
+  <text x="958" y="246" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#92400e">End-of-Day Reconciliation</text>
+  <text x="958" y="263" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#334155">Nightly Spark / Trino batch job</text>
+  <text x="958" y="278" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#334155">Scans immutable raw S3 Parquet</text>
+  <text x="958" y="293" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#475569">Diffs against ClickHouse agg table</text>
+  <text x="958" y="308" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#b45309">Emits exact financial invoices</text>
+
+  <!-- Isolated Recalculation -->
+  <rect x="948" y="334" width="199" height="68" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.2"/>
+  <text x="958" y="352" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#92400e">Isolated Recalculation</text>
+  <text x="958" y="368" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#334155">Spins dedicated Flink backfill job</text>
+  <text x="958" y="383" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#475569">Replays raw S3 topic · Zero live lag</text>
+
+  <!-- Connectors between Top Stages -->
+  <line x1="265" y1="230" x2="283" y2="230" stroke="#2563eb" stroke-width="2" marker-end="url(#arr-blue)"/>
+  <line x1="660" y1="230" x2="678" y2="230" stroke="#059669" stroke-width="2" marker-end="url(#arr-green)"/>
+  <line x1="915" y1="165" x2="946" y2="165" stroke="#7c3aed" stroke-width="2" marker-end="url(#arr-purple)"/>
+
+  <!-- ==================== BOTTOM DEEP-DIVE PANELS ==================== -->
+
+  <!-- PANEL A: HOT-KEY MITIGATION -->
+  <rect x="20" y="430" width="365" height="270" rx="10" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="34" y="454" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#5b21b6">A. Hotspot Defense: Global-Local Aggregation</text>
+
+  <rect x="34" y="468" width="337" height="126" rx="6" fill="#ffffff" stroke="#c4b5fd" stroke-width="1.2"/>
+  <text x="44" y="487" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#6d28d9">Two-Stage Salted Routing (Super Bowl Hot Ads)</text>
+  <text x="44" y="504" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Problem: Viral ad receives 100x traffic skew, overloading 1 worker.</text>
+  <text x="44" y="521" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Stage 1 (Local): Map node appends salt key = ad_id + '_' + rand(S).</text>
+  <text x="44" y="538" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">S independent Aggregate workers count partial clicks in parallel.</text>
+  <text x="44" y="555" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Stage 2 (Global): Strips salt &amp; merges S partial counts into ad_id.</text>
+  <text x="44" y="572" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#047857">Result: Even CPU load across all nodes; zero partition hot-spots.</text>
+
+  <rect x="34" y="602" width="337" height="86" rx="6" fill="#ffffff" stroke="#c4b5fd" stroke-width="1.2"/>
+  <text x="44" y="621" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#6d28d9">Split-Distinct Aggregation for Star Dimensions</text>
+  <text x="44" y="638" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Pre-aggregates by dimensions (country, IP range, user cohort).</text>
+  <text x="44" y="654" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">filter_id star schema avoids high-cardinality Cartesian explosion.</text>
+  <text x="44" y="671" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#065f46">ClickHouse LowCardinality columns optimize query performance.</text>
+
+  <!-- PANEL B: EVENT-TIME WATERMARKS & WINDOWS -->
+  <rect x="405" y="430" width="375" height="270" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5"/>
+  <text x="419" y="454" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#065f46">B. Event-Time Watermarks &amp; Window Semantics</text>
+
+  <rect x="419" y="468" width="347" height="110" rx="6" fill="#ffffff" stroke="#6ee7b7" stroke-width="1.2"/>
+  <text x="429" y="487" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#047857">Watermarks &amp; Out-of-Order Mobile Arrival</text>
+  <text x="429" y="504" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#065f46">Watermark: W(t) = max(event_time) - delta (e.g. 60s)</text>
+  <text x="429" y="521" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Emits window results when W(t) &gt;= window_end (e.g. 12:01:00).</text>
+  <text x="429" y="538" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">allowedLateness(15m): Re-emits updated sum via ClickHouse UPSERT.</text>
+  <text x="429" y="555" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#b45309">Late events &gt; 15m bypass Flink into Dead-Letter S3 Parquet.</text>
+
+  <rect x="419" y="586" width="347" height="102" rx="6" fill="#ffffff" stroke="#6ee7b7" stroke-width="1.2"/>
+  <text x="429" y="605" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#047857">Window Model: Tumbling 1m vs. Sliding M-min</text>
+  <text x="429" y="622" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Tumbling: Fixed non-overlapping 1m bins for raw aggregated_count.</text>
+  <text x="429" y="638" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Sliding: M-minute window sliding every 1m for popular_ads Top-N.</text>
+  <text x="429" y="654" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Local Top-N: Maintains Min-Heap of size N in state per worker.</text>
+  <text x="429" y="670" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#047857">Heap root stores min count; O(log N) insertion per new ad.</text>
+
+  <!-- PANEL C: EXACTLY-ONCE & FAULT TOLERANCE -->
+  <rect x="800" y="430" width="360" height="270" rx="10" fill="#fff7ed" stroke="#f97316" stroke-width="1.5"/>
+  <text x="814" y="454" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#9a3412">C. Fault Tolerance &amp; Exactly-Once Semantics</text>
+
+  <rect x="814" y="468" width="332" height="106" rx="6" fill="#ffffff" stroke="#fdba74" stroke-width="1.2"/>
+  <text x="824" y="487" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#c2410c">Chandy-Lamport Async Checkpointing</text>
+  <text x="824" y="504" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#334155">Stream barriers injected into Kafka partitions periodically.</text>
+  <text x="824" y="521" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#334155">Operators snapshot RocksDB state to S3 asynchronously.</text>
+  <text x="824" y="538" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#334155">Zero stop-the-world stalls during checkpoint upload.</text>
+  <text x="824" y="555" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#047857">Recovery: Rewind Kafka offset to last durable checkpoint.</text>
+
+  <rect x="814" y="582" width="332" height="106" rx="6" fill="#ffffff" stroke="#fdba74" stroke-width="1.2"/>
+  <text x="824" y="601" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#c2410c">End-to-End Exactly-Once Invoicing</text>
+  <text x="824" y="618" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#334155">Kafka Source + Flink + Kafka Sink: 2PC Transactional Commit.</text>
+  <text x="824" y="634" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#334155">ClickHouse Sink: Idempotent ReplacingMergeTree dedup.</text>
+  <text x="824" y="650" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#475569">Nightly Reconciliation audits raw S3 Parquet logs.</text>
+  <text x="824" y="667" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#047857">100% financial billing integrity guaranteed.</text>
+</svg>

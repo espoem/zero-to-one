@@ -1,0 +1,206 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 740" width="1200" height="740" role="img" aria-labelledby="title desc">
+  <title id="title">Dual-Plane Real-Time Chat Architecture</title>
+  <desc id="desc">Dual-plane stateless and stateful chat architecture showing ZooKeeper service discovery, stateful WebSocket chat servers, presence servers with 30s heartbeat and friend-pair pub/sub, 1-on-1 direct push, group chat sync queues, multi-device cur_max_message_id cursor sync, key-value store, and offline APNs and FCM push notifications.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569"/>
+    </marker>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+    </marker>
+    <marker id="arr-purple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect x="0" y="0" width="1200" height="740" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1200" height="58" rx="12" fill="#0f172a"/>
+  <rect x="0" y="42" width="1200" height="16" fill="#0f172a"/>
+  <text x="24" y="28" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#f8fafc">Dual-Plane Real-Time Chat Architecture (500M DAU · 100M Sockets · Sub-250ms Delivery)</text>
+  <text x="24" y="47" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#94a3b8">Stateless API &amp; ZooKeeper Discovery · Stateful WebSocket Gateways · 30s Heartbeat Presence · cur_max_message_id Multi-Device Sync</text>
+
+  <!-- COLUMN 1: CLIENTS & EDGE INGRESS -->
+  <rect x="20" y="72" width="250" height="566" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="34" y="94" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1e3a8a">1. Clients &amp; Edge Ingress</text>
+
+  <!-- Card 1.1: Mobile & Multi-Device Clients -->
+  <rect x="32" y="108" width="226" height="174" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="42" y="128" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1e40af">Multi-Device Clients</text>
+  <text x="42" y="146" font-family="ui-monospace, monospace" font-size="10.5" fill="#0284c7">Alice: Device 1 (Mobile WS)</text>
+  <text x="42" y="163" font-family="ui-monospace, monospace" font-size="10.5" fill="#0284c7">Alice: Device 2 (Laptop Sync)</text>
+  <text x="42" y="180" font-family="ui-monospace, monospace" font-size="10.5" fill="#047857">Bob: Mobile Client (Recipient)</text>
+  <text x="42" y="200" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• cur_max_message_id watermark</text>
+  <text x="42" y="216" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• 30s periodic heartbeat timer</text>
+  <text x="42" y="232" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• Binary Protobuf frame streams</text>
+  <text x="42" y="248" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#64748b">Local SQLite inbox cache</text>
+  <text x="42" y="264" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#64748b">Pairwise Double Ratchet E2EE</text>
+
+  <!-- Card 1.2: L4/L7 Load Balancers -->
+  <rect x="32" y="294" width="226" height="126" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="42" y="314" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1e40af">L4/L7 Ingress Edge</text>
+  <text x="42" y="332" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• Maglev / NLB L4 hashing</text>
+  <text x="42" y="348" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• TLS termination &amp; TCP proxy</text>
+  <text x="42" y="364" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• Routes HTTP to Stateless Tier</text>
+  <text x="42" y="380" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• Upgrades WSS to Gateways</text>
+  <text x="42" y="398" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#0284c7">Zero connection drop on drains</text>
+
+  <!-- Card 1.3: Service Discovery (ZooKeeper) -->
+  <rect x="32" y="432" width="226" height="192" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="42" y="452" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1e3a8a">ZooKeeper Service Discovery</text>
+  <text x="42" y="470" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#1e40af">Server Allocation Engine</text>
+  <text x="42" y="488" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• Ephemeral node liveness</text>
+  <text x="42" y="504" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• Capacity &amp; load monitoring</text>
+  <text x="42" y="520" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• Geo-nearest server pick</text>
+  <text x="42" y="538" font-family="ui-monospace, monospace" font-size="10" fill="#1e40af">best_node(geo_ip, load)</text>
+  <text x="42" y="556" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Returns wss://chat-gw42.net</text>
+  <text x="42" y="572" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Decouples client from backend</text>
+  <text x="42" y="592" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#1e40af">Eliminates single point of failure</text>
+
+
+  <!-- COLUMN 2: DUAL-PLANE CORE FLEET -->
+  <rect x="290" y="72" width="490" height="566" rx="10" fill="#f0fdf4" stroke="#10b981" stroke-width="1.5"/>
+  <text x="304" y="94" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#065f46">2. Dual-Plane Fleet: Stateless API &amp; Stateful Gateways</text>
+
+  <!-- Card 2.1: Stateless API Plane -->
+  <rect x="304" y="108" width="462" height="104" rx="6" fill="#ffffff" stroke="#a7f3d0" stroke-width="1"/>
+  <text x="316" y="128" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#065f46">Stateless API Tier (HTTP REST / gRPC)</text>
+  <text x="316" y="146" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• User authentication, sign-up, profile and relationship management</text>
+  <text x="316" y="162" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• Group chat creation, member roster updates (capped &lt;= 100 members)</text>
+  <text x="316" y="178" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• Key Distribution Service: X3DH bundles and MLS group credentials</text>
+  <text x="316" y="196" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="600" fill="#059669">Queries ZooKeeper discovery to return optimal Chat Gateway URL</text>
+
+  <!-- Card 2.2: Stateful Chat Gateways -->
+  <rect x="304" y="224" width="462" height="250" rx="6" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5"/>
+  <text x="316" y="244" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#065f46">Stateful WebSocket Chat Gateways (Persistent Connections)</text>
+
+  <!-- Gateway 1 Sub-box -->
+  <rect x="316" y="254" width="214" height="120" rx="6" fill="#ffffff" stroke="#6ee7b7" stroke-width="1"/>
+  <text x="326" y="272" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#047857">Chat Gateway 1 (Host A)</text>
+  <text x="326" y="290" font-family="ui-monospace, monospace" font-size="10" fill="#0284c7">Alice: Device 1 Connected</text>
+  <text x="326" y="306" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">• Assigns monotonic seq_id</text>
+  <text x="326" y="322" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">• Writes to KV History Store</text>
+  <text x="326" y="338" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">• Queries Redis for Bob host</text>
+  <text x="326" y="356" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#059669">Forwards via internal gRPC</text>
+
+  <!-- Gateway 2 Sub-box -->
+  <rect x="542" y="254" width="214" height="120" rx="6" fill="#ffffff" stroke="#6ee7b7" stroke-width="1"/>
+  <text x="552" y="272" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#047857">Chat Gateway 2 (Host B)</text>
+  <text x="552" y="290" font-family="ui-monospace, monospace" font-size="10" fill="#047857">Bob: Mobile WS Connected</text>
+  <text x="552" y="306" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">• Maintains active socket map</text>
+  <text x="552" y="322" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">• Direct push over open WSS</text>
+  <text x="552" y="338" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">• Awaits DELIVERED receipt</text>
+  <text x="552" y="356" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#059669">Pushes receipt back to Alice</text>
+
+  <!-- Gateway Capabilities footer -->
+  <rect x="316" y="384" width="440" height="80" rx="4" fill="#f0fdf4" stroke="#34d399" stroke-width="1"/>
+  <text x="326" y="402" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#065f46">Gateway Synchronization &amp; Fan-Out Engine</text>
+  <text x="326" y="418" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">• 1-on-1 Chat: Direct push across pinned sockets via internal gRPC</text>
+  <text x="326" y="434" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">• Group Chat (&lt;=100 users): Writes to per-recipient sync inboxes</text>
+  <text x="326" y="450" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#047857">• Session refresh: Extends Redis 90s gateway lease on each frame</text>
+
+  <!-- Card 2.3: Presence Servers -->
+  <rect x="304" y="486" width="462" height="138" rx="6" fill="#ffffff" stroke="#a7f3d0" stroke-width="1"/>
+  <text x="316" y="506" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#065f46">Online Presence Servers &amp; Pub/Sub Channels</text>
+  <text x="316" y="524" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• 30s heartbeat TTL: Client ping resets Redis key with 90s lease</text>
+  <text x="316" y="540" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• 3 missed pings mark user offline (damps cellular network flaps)</text>
+  <text x="316" y="556" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• Friend-pair Pub/Sub channels (A-B, A-C) for F &lt;= 500 friends</text>
+  <text x="316" y="574" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#065f46">On-demand pull: Viewport presence queries eliminate celebrity storms</text>
+  <text x="316" y="592" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="600" fill="#047857">Decoupled from Chat Gateways to protect messaging throughput</text>
+
+
+  <!-- COLUMN 3: STORAGE, SESSION REGISTRY & OFFLINE PUSH -->
+  <rect x="800" y="72" width="380" height="566" rx="10" fill="#fefce8" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="814" y="94" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#92400e">3. Storage, Session Registry &amp; Push</text>
+
+  <!-- Card 3.1: Session Registry -->
+  <rect x="814" y="108" width="352" height="96" rx="6" fill="#ffffff" stroke="#fde68a" stroke-width="1"/>
+  <text x="826" y="128" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#b45309">Session Registry (Redis Cluster)</text>
+  <text x="826" y="146" font-family="ui-monospace, monospace" font-size="10.5" fill="#b45309">HSET user_sessions:{uid} {dev_id} gw_id</text>
+  <text x="826" y="164" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• 90s sliding TTL refreshed by active gateway</text>
+  <text x="826" y="182" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#78350f">O(1) lookup to route inbound frames to target node</text>
+
+  <!-- Card 3.2: Chat History KV Store -->
+  <rect x="814" y="214" width="352" height="136" rx="6" fill="#ffffff" stroke="#fde68a" stroke-width="1"/>
+  <text x="826" y="234" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#b45309">Chat History KV Store (ScyllaDB / TiKV)</text>
+  <text x="826" y="252" font-family="ui-monospace, monospace" font-size="10" fill="#92400e">PRIMARY KEY ((channel_id, bucket), seq_id)</text>
+  <text x="826" y="270" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• 1-on-1 Chat: channel_id = min(u1, u2) || max(u1, u2)</text>
+  <text x="826" y="286" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• Group Chat: channel_id = group_id</text>
+  <text x="826" y="302" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• LSM append-only engine: high write throughput</text>
+  <text x="826" y="320" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#78350f">Permanent chat history with keyset range scans</text>
+
+  <!-- Card 3.3: Message Sync Inboxes -->
+  <rect x="814" y="360" width="352" height="126" rx="6" fill="#ffffff" stroke="#fde68a" stroke-width="1"/>
+  <text x="826" y="380" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#b45309">Message Sync Inboxes (Groups &lt;= 100)</text>
+  <text x="826" y="398" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• Per-recipient message sync queue per active user</text>
+  <text x="826" y="414" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• New message condition: recipient == me &amp;&amp; id &gt; cur_max</text>
+  <text x="826" y="430" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• Multi-device cursor sync: watermarks advance in lockstep</text>
+  <text x="826" y="448" font-family="ui-monospace, monospace" font-size="10" fill="#92400e">GET /messages?after_seq={cur_max}</text>
+  <text x="826" y="464" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#78350f">Replays missing frames upon device reconnection</text>
+
+  <!-- Card 3.4: Offline Push Pipeline -->
+  <rect x="814" y="496" width="352" height="128" rx="6" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="826" y="516" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#b45309">Offline Push Pipeline (APNs / FCM)</text>
+  <text x="826" y="534" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• Triggered when recipient has no active gateway in Redis</text>
+  <text x="826" y="550" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• Enqueues alert to Kafka topic: chat-offline-push</text>
+  <text x="826" y="566" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• Worker pool dispatches to Apple APNs &amp; Google FCM</text>
+  <text x="826" y="584" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#78350f">Silent push wakes client background thread to pull history</text>
+  <text x="826" y="600" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="600" fill="#b45309">Fails safely without dropping messages</text>
+
+
+  <!-- ARROWS & DATA FLOWS -->
+  <!-- 1. Client to L4 LB -->
+  <line x1="145" y1="282" x2="145" y2="292" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+
+  <!-- 2. Discovery Lookup: Client to ZooKeeper -->
+  <path d="M 70 282 Q 50 350 70 430" fill="none" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr-blue)"/>
+  <text x="16" y="370" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#1e40af">Lookup</text>
+
+  <!-- 3. ZooKeeper to Stateless API -->
+  <path d="M 258 480 Q 280 480 280 200 Q 280 160 302 160" fill="none" stroke="#059669" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr-green)"/>
+
+  <!-- 4. Client to Gateway 1 via LB -->
+  <path d="M 258 350 Q 285 350 314 310" fill="none" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+  <text x="266" y="325" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#1e40af">WSS</text>
+
+  <!-- 5. Gateway 1 to KV Store -->
+  <path d="M 530 310 Q 670 270 812 270" fill="none" stroke="#059669" stroke-width="1.8" marker-end="url(#arr-green)"/>
+  <text x="618" y="264" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#065f46">Persist ((chan, bucket), seq_id)</text>
+
+  <!-- 6. Gateway 1 to Session Registry -->
+  <path d="M 480 254 Q 520 160 812 160" fill="none" stroke="#d97706" stroke-width="1.6" marker-end="url(#arr-amber)"/>
+  <text x="630" y="152" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#b45309">Check Bob Session</text>
+
+  <!-- 7. Gateway 1 to Gateway 2 (Direct gRPC) -->
+  <line x1="530" y1="320" x2="540" y2="320" stroke="#059669" stroke-width="2" marker-end="url(#arr-green)"/>
+  <text x="508" y="335" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" font-weight="700" fill="#047857">gRPC</text>
+
+  <!-- 8. Gateway 1 to Presence -->
+  <line x1="423" y1="374" x2="423" y2="484" stroke="#059669" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arr-green)"/>
+  <text x="427" y="440" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#065f46">30s Heartbeat</text>
+
+  <!-- 9. Gateway 1 to Sync Inboxes (Group) -->
+  <path d="M 530 360 Q 670 410 812 410" fill="none" stroke="#2563eb" stroke-width="1.6" marker-end="url(#arr-blue)"/>
+  <text x="635" y="396" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#1e40af">Group Copy (N &lt;= 100)</text>
+
+  <!-- 10. Gateway 1 to Offline Push -->
+  <path d="M 480 374 Q 520 540 812 540" fill="none" stroke="#b45309" stroke-width="1.6" stroke-dasharray="4,3" marker-end="url(#arr-amber)"/>
+  <text x="610" y="532" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#b45309">Offline: Enqueue Push</text>
+
+
+  <!-- ARCHITECTURAL TAKEAWAY FOOTER -->
+  <rect x="20" y="650" width="1160" height="74" rx="8" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+  <text x="34" y="669" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#38bdf8">Key Architectural Principles &amp; Guarantees:</text>
+  <text x="34" y="686" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#cbd5e1">1. Stateless/Stateful Split: Stateless API isolates auth/discovery;</text>
+  <text x="34" y="700" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#cbd5e1">   stateful WebSocket Gateways hold active TCP connection state.</text>
+  <text x="440" y="686" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#cbd5e1">2. Hybrid Fan-Out: Direct push &amp; sync queues for groups &lt;= 100;</text>
+  <text x="440" y="700" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#cbd5e1">   large channels pull via cur_max_message_id cursors.</text>
+</svg>
