@@ -270,7 +270,7 @@ flowchart LR
 
 ---
 
-## 6. Top 27 Production Failure Modes & One-Line Fixes
+## 6. Top 31 Production Failure Modes & One-Line Fixes
 
 | # | Failure Mode | How It Breaks Production | One-Line Fix |
 | :-- | :-- | :-- | :-- |
@@ -301,3 +301,7 @@ flowchart LR
 | **25** | **Sloppy Quorum Silent Staleness** | Writes acknowledged on standby nodes bypass home replicas, so strict home reads miss recent writes until handoff drains. | Disable sloppy quorums when read-your-writes matters, or route through consensus leaders instead of AP rings. |
 | **26** | **LWW NTP Clock-Skew Silent Data Loss** | Wall-clock Last-Write-Wins silently drops a causally newer update whose writer node trails by milliseconds of NTP skew. | Use per-partition leader ordering, Hybrid Logical Clocks (HLC), Dotted Version Vectors (DVVs), or typed CRDTs. |
 | **27** | **Zombie Data Resurrection Past `gc_grace_seconds`** | A replica offline longer than `gc_grace_seconds` rejoins after tombstones were compacted away, restoring deleted rows. | Run anti-entropy repair strictly inside `gc_grace_seconds`, and decommission/re-bootstrap nodes offline longer. |
+| **28** | **Euclidean GPS Overpass Snap Jump** | Nearest-edge 2D GPS snap jumps an elevated highway driver onto a perpendicular underpass during urban-canyon multipath drift. | Use HMM Viterbi map matching with heading continuity, topological reachability, and z-level/bridge tags. |
+| **29** | **Static CH Stale Highway Closure** | Contraction Hierarchies shortcuts bake static weights offline and keep routing drivers into live closures until nightly rebuilds. | Switch live driving to Customizable Route Planning (CRP) with `< 1 s` cell-overlay metric customization. |
+| **30** | **Rerouting Herd Oscillation (Braess Effect)** | Pushing the identical fastest detour to 5,000 drivers floods a residential side street and oscillates cohorts back and forth. | Apply corridor saturation penalties, stochastic cohort splitting across alternates, and `>= 3–5 min` ETA hysteresis. |
+| **31** | **WebSocket Gateway Reconnect Storm** | Rolling gateway deploy drops 2M pinned sockets simultaneously, triggering a 1-second TLS handshake and session-store collapse. | Drain gateways over `60–120 s`, apply client full-jitter exponential backoff, and keep resumable tokens in shared Valkey. |

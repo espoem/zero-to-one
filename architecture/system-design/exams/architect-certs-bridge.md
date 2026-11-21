@@ -3,7 +3,7 @@
 No single vendor-neutral certification tests general distributed system design, so vendor-specific IAM, CLI, and control-plane trivia stay in [`technologies/aws`](../../../technologies/aws/), [`technologies/gcp`](../../../technologies/gcp/), and [`technologies/azure`](../../../technologies/azure/). This bridge bank maps the architectural patterns, quantitative trade-offs, and failure modes taught across `architecture/system-design` directly onto Senior/Architect certification scenario domains (**AWS Solutions Architect – Professional `SAP-C02`**, **Google Cloud Professional Cloud Architect `PCA`**, **Microsoft Azure Solutions Architect Expert `AZ-305`**, and **CNCF / SRE Resilience**).
 
 - **Sequential Growth Plan**: Built sequentially alongside Wave A & Wave B topic completions (target: **60+ original scenario questions** plus a full timed certification bridge mock exam upon completion of the 28-topic expansion).
-- **Current Coverage**: **12 questions** (`Q-CERT-001`–`Q-CERT-012`) covering Topic 01 (`Scale From Zero to Millions` — Module 15) and Topic 02 (`Distributed Key-Value Store` — Module 16).
+- **Current Coverage**: **18 questions** (`Q-CERT-001`–`Q-CERT-018`) covering Topic 01 (`Scale From Zero to Millions` — Module 15), Topic 02 (`Distributed Key-Value Store` — Module 16), and Topic 03 (`Google Maps` — Module 17).
 
 ---
 
@@ -250,5 +250,128 @@ Which **two** measurable architectural advantages motivate migrating a latency-s
 - Why not D: `io_uring` optimizes local Linux kernel I/O submission/completion and provides zero redundancy against host or AZ hardware failure.
 - Why not E: Raft/Paxos requires majority-quorum network round trips before acknowledging writes, so its write latency is higher than fire-and-forget `CL=ONE` local writes.
 - Ref: [modules/16-distributed-key-value-store.md](../modules/16-distributed-key-value-store.md#7-technology-comparison-then-vs-now-2021-vs-2026), https://docs.scylladb.com/
+
+</details>
+
+---
+
+## Module 17: Geospatial Mapping, Tile CDNs, Telemetry Streams & WebSockets (`Q-CERT-013`–`Q-CERT-018`)
+
+### Q-CERT-013 · AWS SAP-C02: Design for New Solutions (Immutable Vector Tiles & PMTiles on S3/CloudFront) · difficulty 2 · single
+
+Your platform serves immutable global vector tiles—either MVT files or a single Hilbert-indexed **PMTiles** archive—from a private Amazon S3 bucket behind Amazon CloudFront. Which design maximizes edge cache efficiency, enforces private bucket security, and avoids expensive CDN invalidation storms on map releases?
+
+- A) Keep the S3 bucket private with CloudFront **Origin Access Control (OAC)**, serve PMTiles through CloudFront forwarding HTTP `Range` requests to S3, and publish each map release under a new immutable versioned object key (e.g., `/releases/2026-11-20/planet.pmtiles`) with a long `Cache-Control: public, max-age=31536000, immutable`.
+- B) Render every map tile dynamically inside an AWS Lambda origin on each client request with a `60 s` TTL.
+- C) Make the S3 bucket publicly readable via `s3:GetObject` and point mobile clients directly at S3 to skip CloudFront.
+- D) Overwrite the same `/planet.pmtiles` key on every release and issue wildcard `/*` CloudFront invalidations.
+
+<details><summary>Answer</summary>
+
+**A.** Immutable versioned keys let CloudFront edges and client caches retain byte-range chunks for up to a year with zero invalidation cost, PMTiles `Range` requests fetch only the exact tile bytes required from one archive, and OAC restricts S3 access strictly to CloudFront.
+
+- Why not B: Per-request Lambda rendering wastes compute on identical static geometry and eliminates global edge caching.
+- Why not C: Exposing S3 publicly bypasses CDN edge caching, increases origin latency and egress bills, and violates least-privilege origin access.
+- Why not D: Overwriting a mutable key causes torn byte-range reads across mismatched archive headers and incurs billed CloudFront invalidations.
+- Ref: [modules/17-google-maps.md](../modules/17-google-maps.md#2-high-level-architecture-tile-serving-location-telemetry-and-navigation), https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-restricting-access-to-s3.html
+
+</details>
+
+### Q-CERT-014 · AWS SAP-C02: High-Throughput Telemetry Ingestion (Kinesis / MSK Partitioning) · difficulty 3 · scenario
+
+A navigation telemetry pipeline ingests `1,000,000` batched GPS requests per second. Downstream **HMM map matching** requires each user's GPS batches in strict chronological order, while **live traffic aggregation** requires speed probes grouped by road tile (`geohash_tile_id`). Which streaming partitioning topology satisfies both constraints without hot-shard throttling?
+
+- A) Partition the ingest stream by `hash(user_id)` so every user's trajectory arrives ordered on one shard (provisioning at least `1,000` Kinesis shards for `~1M` batched records/s—or `~1,160` shards for a `1.16M/s` peak—bounded by both `1,000 records/s` and `1 MB/s` per shard), then emit matched `(road_edge_id, speed)` probes into a second stream repartitioned by `geohash_tile_id` for windowed traffic aggregation.
+- B) Partition the ingest stream directly by `geohash_tile_id` so traffic aggregation runs in one stage without repartitioning.
+- C) Partition the ingest stream by a random UUID per request to maximize spread while relying on HMM consumers to reorder points globally.
+- D) Use a single Kinesis shard per continent to preserve global ordering with minimal shard overhead.
+
+<details><summary>Answer</summary>
+
+**A.** Partitioning Stage 1 by `user_id` spreads `1B` users uniformly across shards while preserving strict per-user ordering for HMM Viterbi decoding, and repartitioning matched speed probes by `geohash_tile_id` in Stage 2 isolates traffic aggregation without hot-spotting raw ingest. Sizing Kinesis shards directly from the `1,000 records/s` per-shard write limit requires at least `1,000` shards for `1M` batched records/s.
+
+- Why not B: Keying raw ingest by `geohash_tile_id` concentrates downtown rush-hour drivers onto a few hot shards and splits each moving driver's trajectory across different partitions as they cross tile boundaries, breaking HMM order.
+- Why not C: Random UUID keys scatter a single user's consecutive GPS batches across different shards, breaking stateful Viterbi sequence decoding.
+- Why not D: A single shard caps write throughput at `1,000 records/s` (`1 MB/s`), missing the `1M/s` target by `1,000×`.
+- Ref: [modules/17-google-maps.md](../modules/17-google-maps.md#13-back-of-the-envelope-capacity-sizing), https://docs.aws.amazon.com/streams/latest/dev/service-sizes-and-limits.html
+
+</details>
+
+### Q-CERT-015 · GCP PCA: Designing Scalable Edge & Streaming Architectures (Pub/Sub + Dataflow + Cloud CDN) · difficulty 2 · single
+
+You are architecting a Google Cloud navigation backend that computes live per-segment traffic speeds from batched mobile location traces while serving static global vector tiles at `< 50 ms` p95 latency. Which GCP service composition matches each access pattern?
+
+- A) Ingest batched GPS traces into **Cloud Pub/Sub**, compute windowed per-segment speed averages in **Cloud Dataflow** (Apache Beam) writing to a low-latency serving store, and serve immutable vector tiles from **Cloud Storage** behind **Cloud CDN**.
+- B) Invoke a synchronous Cloud Function per GPS sample to `UPDATE` a central Cloud SQL table, and query Cloud SQL directly for map tiles.
+- C) Run Dataflow streaming jobs to render PNG map tiles dynamically per HTTP client request with no object cache.
+- D) Publish map tile payloads to mobile clients through Pub/Sub push subscriptions instead of using Cloud CDN.
+
+<details><summary>Answer</summary>
+
+**A.** Pub/Sub decouples bursty mobile ingest, Dataflow provides event-time windowing and late-data handling for per-segment speed aggregation, and Cloud Storage fronted by Cloud CDN offloads `> 95%` of static tile reads to global edge PoPs.
+
+- Why not B: Synchronous per-point Cloud SQL writes collapse under million-QPS telemetry and cannot serve global tile traffic at `< 50 ms`.
+- Why not C: Dataflow is a stream/batch data processor, not a low-latency HTTP tile server, and re-rendering static tiles wastes massive compute.
+- Why not D: Pub/Sub is a messaging broker, not a static asset CDN; pushing map tiles wastes bandwidth and loses edge caching.
+- Ref: [modules/17-google-maps.md](../modules/17-google-maps.md#2-high-level-architecture-tile-serving-location-telemetry-and-navigation), https://beam.apache.org/documentation/programming-guide/#windowing
+
+</details>
+
+### Q-CERT-016 · Azure AZ-305: Design Infrastructure & Real-Time Messaging (WebSocket Scaling & Graceful Drain) · difficulty 3 · scenario
+
+Two million active navigators hold persistent WebSocket connections behind regional L7 gateways (such as Azure Application Gateway / Azure Web PubSub) to receive live traffic reroutes. During a regional deployment or failover, which design prevents reconnect storms while keeping live guidance uninterrupted?
+
+- A) Drain gateways gracefully over `60–120 s` (stop accepting new sockets and signal clients to migrate), implement client exponential backoff with **full jitter** (spreading `2M` reconnects to `~16.7k/s` over `120 s`), and store resumable navigation session tokens in a replicated external cache so reconnects resume without rebuilding routes from scratch.
+- B) Switch all `2M` clients to `1 Hz` HTTP short-polling so stateful WebSocket drops never occur.
+- C) Disable automatic reconnect so users manually reopen the navigation app after every gateway deploy.
+- D) Keep sticky gateway-local route state with zero graceful drain so failover finishes instantaneously without client reconnects.
+
+<details><summary>Answer</summary>
+
+**A.** Graceful draining plus client-side full jitter converts a `2M`-connection `1-second` TLS handshake storm into a bounded `~16.7k/s` stream over `120 s`, while externalized resumable session tokens keep reconnects stateless and cheap.
+
+- Why not B: `2M` clients short-polling every second generates a permanent `2M RPS` baseline load and destroys mobile battery life.
+- Why not C: Disabling automatic reconnect breaks live turn-by-turn rerouting during routine deployments and network handoffs.
+- Why not D: Terminating instances without drain still drops every pinned TCP/WebSocket connection immediately and loses all gateway-local state.
+- Ref: [modules/17-google-maps.md](../modules/17-google-maps.md#43-adaptive-eta-hierarchical-super-tile-indexing-and-websocket-push), https://learn.microsoft.com/en-us/azure/azure-web-pubsub/overview
+
+</details>
+
+### Q-CERT-017 · CNCF / SRE: Geospatial Observability & Rerouting Stability · difficulty 2 · single
+
+Which set of user-facing Service Level Indicators (SLIs) directly detects silent navigation degradation before customers abandon the app?
+
+- A) **Traffic-pipeline freshness lag** (age of live edge speeds), **ETA Mean Absolute Error (MAE)** against observed arrival times, and **CDN tile cache-hit / origin-offload ratio**, paired with explicit SLO error budgets.
+- B) Tile-server fleet CPU utilization exceeding `80%` and host memory utilization.
+- C) Raw count of HTTP `200 OK` responses returned by the routing API per minute.
+- D) Mean distance in kilometers of all requested routes.
+
+<details><summary>Answer</summary>
+
+**A.** Freshness lag catches stalled Kafka/HMM consumers before routing goes stale, ETA MAE catches GNN/traffic model drift against ground-truth arrivals, and CDN offload ratio catches cache-key bugs before origin storage melts down.
+
+- Why not B: Host CPU/RAM are cause-level signals—traffic feeds can be `15 minutes` stale while CPU sits quietly at `20%`.
+- Why not C: Returning `200 OK` with stale traffic speeds or mis-snapped routes hides severe functional degradation.
+- Why not D: Average trip distance reflects user travel behavior, not system reliability.
+- Ref: [modules/17-google-maps.md](../modules/17-google-maps.md#5-production-gotchas-and-failure-modes), https://sre.google/sre-book/service-level-objectives/
+
+</details>
+
+### Q-CERT-018 · Multi-Cloud Architecture: 2021 vs. 2026 Mapping Modernization · difficulty 2 · multi
+
+Which **two** concrete architectural improvements result from modernizing a 2021 navigation stack (pre-rendered raster PNG tiles, nightly static Contraction Hierarchies, independent per-segment ETA sums) to a 2026 stack (**MVT / PMTiles** vector tiles, **CRP** dynamic metric customization, and **GNN Supersegment** ETA)?
+
+- A) Vector tiles rendered on client GPUs let one tile set serve dynamic themes, smooth rotation, and high-DPI displays while packing into a single range-addressable **PMTiles** archive eliminates billions of tiny S3 objects.
+- B) **CRP** decouples one-time topology partitioning from `< 1 s` overlay metric customization, allowing live highway closures and probe speeds to reshape continental routes within seconds rather than waiting for hours-long CH rebuilds.
+- C) Vector tiles eliminate the need for a CDN because every mobile device downloads the entire zoom-21 planet locally on install.
+- D) GNN Supersegment models eliminate live GPS telemetry feeds because offline training predicts unexpected accidents without live probes.
+
+<details><summary>Answer</summary>
+
+**A, B.** MVT/PMTiles cut storage/object overhead dramatically while unlocking client-side styling, and CRP's fast metric customization lets live traffic incidents update routing overlays in seconds without re-contracting the entire road graph.
+
+- Why not C: Even compressed global vector archives are tens to hundreds of gigabytes—too large for mobile devices, so CDN edge caching remains essential.
+- Why not D: GNN ETA models fuse live HMM-matched GPS probes with historical patterns; offline weights alone cannot detect an unexpected crash that happened two minutes ago.
+- Ref: [modules/17-google-maps.md](../modules/17-google-maps.md#6-technology-comparison-then-vs-now-2021-vs-2026), https://github.com/protomaps/PMTiles
 
 </details>

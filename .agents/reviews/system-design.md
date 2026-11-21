@@ -79,3 +79,22 @@ Verdict: **approve** (after full remediation of all P0, P1, P2, and P3 findings 
   - [x] **P2** `modules/16-distributed-key-value-store.md`: replaced `->` inside Mermaid edge label with `:` (`"Neither dominates: CONCURRENT"`).
   - [x] **P2/P3** `assets/16-kv-store-architecture.svg` & `assets/16-kv-2021-vs-2026.svg`: folded Multi-Region/Global Tables explicitly into Row 1 of the comparison SVG, aligned vnodes label (`100-256 vnodes (16/Tablets)`) and Merkle bucket label (`Sync B51`) with Module 16.
   - [x] **P3** `examples/10-kv-store.test.ts`, `examples/lib/kv-store-models.ts`, `modules/16-distributed-key-value-store.md`: replaced redundant LWW assertion with deterministic equal-timestamp tie-break test, documented standby hint-queue separation comment, and qualified `> 200x` NIC headroom as cluster-aggregate.
+
+---
+
+## ByteByteGo & Primary-Source Expansion — Wave A Topic 03 (`18. Google Maps`, Module 17 + M15 Insight Merge, 2026-11-21)
+
+- **Coordinator / Integrator / SVG & Proof Author**: Antigravity (root)
+- **Prose Draft**: `opencode` (`opencode-go/hy4-flash-free` from `/tmp --auto`, refined and verified by root)
+- **Exam & Cert Bridge Questions Draft**: `claude` CLI (`haiku`, `--max-turns 1`)
+- **Independent Cross-Family Challenger**: `opencode` (`opencode-go/muse-spark-1.3-contributor`, `muse` family)
+- **Stray `main` Module 15 Draft Harvest**: Archived the earlier untracked `opencode-go/deepseek-v4.1-flash` draft from `main` out of the repo and merged its three unique Staff insights (RESP3 client-side invalidation tracking, Patroni-managed quorum failover, and dual-controller autoscaler conflict plus DNS negative caching) into `modules/15-scale-from-zero-to-millions.md`.
+- **Challenger Findings Resolved**:
+  - [x] **P1** `modules/17-google-maps.md` & `exams/interview.md` (`Q-SD-083`): corrected super-tile chain length and incident lookup bounds from "`~4–8` / `<= 15`" to the exact quadtree bound $z_{\text{base}} - z_{\text{enclosing}} + 1 \le z_{\text{base}} + 1$ (`6–9` typical metro, `<= 22` at zoom `21`).
+  - [x] **P1** `examples/lib/maps-models.ts`, `examples/11-maps-routing.test.ts`, `modules/17-google-maps.md`: implemented Stage 2 exact route-edge overlap filtering (`findImpactedUsers`) alongside Stage 1 coarse super-tile prefiltering (`findCandidateUsers`), and proved `driver-bay` matches while `driver-golden-gate` (shared root, disjoint edges) and `driver-nyc` (different root) are excluded.
+  - [x] **P2** `modules/17-google-maps.md`: synced inline `SuperTileRoutingIndex` code snippet verbatim with `examples/lib/maps-models.ts`.
+  - [x] **P2** `examples/lib/maps-models.ts`, `examples/11-maps-routing.test.ts`, `modules/17-google-maps.md`: labeled `snapGpsPoint` explicitly as a single-step emission + heading/continuity proxy while documenting full $O(T \cdot S^2)$ Viterbi decoding across $T$ fixes.
+  - [x] **P2** `.agents/OWNERSHIP.md`: registered newly introduced Module 17 concepts (Web Mercator tile pyramid, CRP/CH routing tiles, HMM map matching, GNN Supersegment ETA, hierarchical super-tile reroute index) plus Module 15/16 deltas.
+  - [x] **P2/P3** `assets/17-google-maps-architecture.svg`: fixed Box B complexity label from `O(1)` to `O(depth)` ancestor lookups + `6-9 metro / <= z_base+1 max`, and shortened zoom-strip bullets so all text sits comfortably inside box bounds.
+  - [x] **P3** `exams/architect-certs-bridge.md` (`Q-CERT-014`): aligned shard sizing with Module 17's `1.16M/s` peak (`~1,160` shards) and cited the `1 MB/s/shard` throughput limit alongside `1,000 rec/s/shard`.
+  - [x] **P3** `modules/17-google-maps.md` & `examples/lib/maps-models.ts`: fixed malformed `_*A* Speedup..._*` Proof Map markup and tightened `latLonToTile` zoom bound to `[0, 21]`.

@@ -2,7 +2,7 @@
 
 This preparation bank tests Senior, Staff, and Principal distributed system design competency across the seven domains defined in [`exams/README.md`](README.md). Every question is original and grounded in primary engineering literature, official protocol RFCs, and production postmortems.
 
-- **Bank scope**: **80 questions** (`Q-SD-001`–`Q-SD-080`) covering quantitative capacity modeling, edge/API design, caching/partitioning, asynchrony/resilience, specialized indexing/financial correctness, SLO observability/DR, end-to-end canonical architectures, progressive scaling, and distributed key-value store case studies.
+- **Bank scope**: **85 questions** (`Q-SD-001`–`Q-SD-085`) covering quantitative capacity modeling, edge/API design, caching/partitioning, asynchrony/resilience, specialized indexing/financial correctness, SLO observability/DR, end-to-end canonical architectures, progressive scaling, distributed key-value stores, and planetary-scale geospatial navigation.
 - **Difficulty calibration**: Level `1` tests foundational mechanics, Level `2` tests Senior-level trade-off reasoning, and Level `3` tests Staff/Principal failure modes, subtle race conditions, and quantitative traps.
 - **Timed practice**: Complete the [50-Question Written Architecture Drill](#timed-mock-exam-written-architecture-drill-50-questions--75-minutes) under a strict 75-minute timer, then run the [two 60-minute Staff/Principal design loops](#timed-mock-design-loops-2--60-minute-staffprincipal-simulations) against the explicit 0–4 grading rubrics.
 
@@ -1624,6 +1624,105 @@ Which **two** statements accurately explain why Amazon DynamoDB (Elhemali et al.
 - Why not D: DynamoDB maintains multi-AZ high availability (`99.99%`–`99.999%` SLAs) alongside leader election and fast failover.
 - Why not E: Cross-region Global Tables replicate asynchronously and use per-item LWW conflict resolution rather than global cross-region Paxos linearizability.
 - Ref: [modules/16-distributed-key-value-store.md](../modules/16-distributed-key-value-store.md#5-niche-and-principal-level-kv-architectures), https://www.usenix.org/conference/atc22/presentation/elhemali
+
+</details>
+
+### Q-SD-081 · Geospatial Mapping, Routing & Real-Time Navigation · difficulty 2 · single
+
+A Web Mercator tile pyramid spanning zoom levels `0` to `21` contains $4^z$ tiles at zoom $z$, so zoom `21` alone holds $4^{21} \approx 4.40 \times 10^{12}$ tiles (`~440 PB` raw at `100 KB` per PNG). Why does serving **Mapbox Vector Tiles (MVT)** with sparse deduplication of empty/uniform tiles (oceans, deserts) slash storage and CDN bandwidth by more than `90%` compared to raster PNGs?
+
+- A) CDNs refuse to cache PNG files above zoom level `15`, forcing vector tiles at high zoom.
+- B) MVT encodes quantized geometry and attributes as compact Protobuf streams rendered on client GPUs, while empty/uniform ocean and desert regions collapse onto shared void objects instead of storing 65,536-pixel bitmaps per theme and zoom.
+- C) MVT truncates the pyramid at zoom level `4`, removing `4^17` zoom tiers from the map.
+- D) MVT ships uncompressed `512 × 512` pixel bitmaps that compress slightly better than `256 × 256` PNGs.
+
+<details><summary>Answer</summary>
+
+**B.** Raster PNGs pay per-pixel storage across every tile and multiply storage across every visual style (day/night/high-DPI), whereas MVT ships compact quantized vector instructions rendered locally and sparse deduplication collapses ~70% ocean/empty tiles onto shared empty objects.
+
+- Why not A: CDNs cache any immutable static payload regardless of zoom level; the limitation is storage/egress economics, not HTTP/CDN protocol rules.
+- Why not C: Street-level navigation still requires high-zoom geometry; vector encoding and sparse storage avoid dropping detail.
+- Why not D: MVT is a vector geometry format, not a raster bitmap format.
+- Ref: [modules/17-google-maps.md](../modules/17-google-maps.md#12-web-mercator-projection-and-zoom-level-tile-pyramid-math), https://github.com/mapbox/vector-tile-spec
+
+</details>
+
+### Q-SD-082 · Geospatial Mapping, Routing & Real-Time Navigation · difficulty 3 · scenario
+
+A continental road graph contains `100M` vertices, and live traffic incidents update edge weights every `30 seconds`. Your routing fleet currently relies on static **Contraction Hierarchies (CH)** precomputed offline on free-flow speeds. Why is **Customizable Route Planning (CRP)** a superior fit for live driving navigation?
+
+- A) CH queries are fast enough that re-running full continental contraction every `30 seconds` fits easily inside a parallel batch job.
+- B) CRP separates one-time metric-independent multi-level graph partitioning from a fast metric-dependent customization phase that recomputes overlay weights bottom-up solely for cells containing changed edges (finishing in `< 1 s`), whereas CH bakes weights into contraction order and requires hours-long full rebuilds on metric changes.
+- C) Running unindexed bidirectional Dijkstra on `100M` vertices with zero preprocessing consistently answers continental queries in `< 5 ms`.
+- D) Precomputing an all-pairs matrix for the top `10,000` cities every `30 seconds` eliminates the need for graph routing.
+
+<details><summary>Answer</summary>
+
+**B.** CH shortcuts depend on the edge-weight metric used during offline contraction, so continuous 30-second traffic updates invalidate the hierarchy faster than it can rebuild. CRP decouples static topology partitioning from metric customization, refreshing affected cell overlays in under a second while retaining single-digit millisecond continental query latency.
+
+- Why not A: Full contraction of a 100M-vertex continental graph takes hours even when parallelized and cannot meet a 30-second live-traffic cadence.
+- Why not C: Unindexed Dijkstra expands millions of vertices on a continental road graph, taking hundreds of milliseconds to seconds and blowing interactive `p99 < 200 ms` budgets.
+- Why not D: Static city-pair matrices cannot route between arbitrary street addresses or adapt to street-level detours.
+- Ref: [modules/17-google-maps.md](../modules/17-google-maps.md#3-hierarchical-routing-tiles-contraction-hierarchies-and-crp), https://arxiv.org/abs/1504.05140
+
+</details>
+
+### Q-SD-083 · Geospatial Mapping, Routing & Real-Time Navigation · difficulty 3 · scenario
+
+Tracking `100M` active navigators by storing a flat list of `K` base routing tiles per route consumes $O(K)$ memory per user and forces costly per-incident scans. Adaptive ETA instead stores a **hierarchical super-tile chain** `[r_1, super(r_1), super(super(r_1)), ...]` up to the smallest common enclosing ancestor of origin and destination. Why does this design cut both memory footprint and incident-to-navigator lookup cost?
+
+- A) Each navigator stores at most $z_{\text{base}} + 1$ super-tile IDs (`6–9` for typical metro trips, `<= 22` even at zoom `21`) up to the shared enclosing root, and indexing active routes by their enclosing super-tile lets an incident on tile `r_k` walk up its ancestor pyramid (`<= z_base + 1` hash lookups) as a coarse prefilter before checking exact route-edge overlap and ETA.
+- B) Each level stores all `K` base tiles duplicated at every zoom resolution, trading extra memory for faster rendering.
+- C) The super-tile chain eliminates the inverted index so the server scans all `100M` active users linearly on every incident.
+- D) Storing full polyline geometry at every super-tile level compresses user memory below storing tile IDs.
+
+<details><summary>Answer</summary>
+
+**A.** Walking up parent quadtree tiles halves spatial span per level, capping per-navigator chain depth at $O(\log L)$ entries. Keying an inverted index by enclosing super-tile lets any incident tile locate candidate impacted navigators via a tiny upward ancestor walk rather than scanning every active session.
+
+- Why not B: Duplicating all `K` base tiles per level increases memory beyond $O(K)$ instead of reducing it to $O(\log L)$.
+- Why not C: Avoiding linear scans across `100M` active sessions is the exact reason the inverted super-tile index exists.
+- Why not D: Full geometry payloads consume orders of magnitude more RAM than compact integer tile IDs.
+- Ref: [modules/17-google-maps.md](../modules/17-google-maps.md#43-adaptive-eta-hierarchical-super-tile-indexing-and-websocket-push), https://developers.google.com/maps/documentation/routes
+
+</details>
+
+### Q-SD-084 · Geospatial Mapping, Routing & Real-Time Navigation · difficulty 2 · single
+
+In dense urban canyons and multi-level highway interchanges, raw smartphone GPS drifts by `5–20 m`, causing naive Euclidean nearest-road snapping to jump an elevated-highway driver onto a perpendicular surface street underneath. How does **Hidden Markov Model (HMM) map matching** eliminate this error?
+
+- A) HMM scores candidate road segments per GPS fix using Gaussian emission probability (distance/accuracy) and connects consecutive fixes via transition probabilities (comparing shortest road-network path distance against straight-line displacement plus heading continuity), using Viterbi decoding to pick the single most coherent road trajectory.
+- B) Adding extra artificial Gaussian noise to each GPS sample cancels out multipath reflections statistically.
+- C) Discarding the road graph and routing purely from compass headings avoids snapping errors altogether.
+- D) Increasing the Euclidean nearest-neighbor search radius from `20 m` to `500 m` guarantees the elevated highway is always chosen.
+
+<details><summary>Answer</summary>
+
+**A.** Naive Euclidean snapping evaluates one noisy point in isolation and ignores vertical separation and direction of travel. HMM Viterbi decoding evaluates an entire trajectory sequence in $O(T \cdot S^2)$ time, penalizing impossible topological jumps and heading discontinuities (`90°` overpass mismatch) so the matched path stays locked onto the true highway.
+
+- Why not B: Injecting random noise degrades accuracy further and never fixes systematic multipath bias or vertical interchange ambiguity.
+- Why not C: Compass headings alone cannot identify road segments, turn restrictions, or traffic speeds without matching onto the road graph.
+- Why not D: Widening a pure Euclidean search radius still selects the closest 2D segment—the perpendicular underpass remains closer than the drifted highway fix.
+- Ref: [modules/17-google-maps.md](../modules/17-google-maps.md#41-client-batching-and-hmm-map-matching), https://www.microsoft.com/en-us/research/publication/hidden-markov-map-matching-noise-sparseness/
+
+</details>
+
+### Q-SD-085 · Geospatial Mapping, Routing & Real-Time Navigation · difficulty 3 · multi
+
+Which **two** operational hazards arise when pushing real-time adaptive reroutes over WebSockets to millions of active navigators?
+
+- A) **Rerouting herd oscillation**: pushing the identical fastest detour from one traffic snapshot to `5,000` drivers simultaneously floods a low-capacity residential side street, collapsing its ETA and flipping cohorts back and forth unless damped with capacity penalties and stochastic cohort splitting.
+- B) **Stateful WebSocket reconnect storms**: a rolling gateway deployment that drops `2M` pinned sockets simultaneously triggers a synchronized TLS handshake and session-store spike unless gateways drain gracefully and clients reconnect with exponential backoff plus full jitter.
+- C) **Zero TLS handshake cost**: modern TLS 1.3 handshakes consume negligible CPU, so 2M simultaneous reconnects never stress gateways.
+- D) **Client GPU shader fill rate**: WebGL tile shading speed is the primary bottleneck limiting server-side WebSocket reroute fan-out.
+
+<details><summary>Answer</summary>
+
+**A, B.** Identical greedy reroutes create a Braess-style feedback oscillation on narrow detours (solved via saturation penalties, cohort splitting, and hysteresis), and dropping `2M` stateful WebSockets without graceful draining and full jitter concentrates `2M` TLS handshakes into `1 second` instead of `~16.7k/s` over `120 s`.
+
+- Why not C: Asymmetric key-exchange CPU across `2M` simultaneous TLS 1.3 handshakes easily saturates L7 gateways and triggers cascading timeouts.
+- Why not D: Client GPU rendering affects local frame rate, not server-side routing stability or gateway socket churn.
+- Ref: [modules/17-google-maps.md](../modules/17-google-maps.md#5-production-gotchas-and-failure-modes), https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/
 
 </details>
 

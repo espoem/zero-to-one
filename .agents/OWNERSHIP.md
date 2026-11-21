@@ -110,6 +110,9 @@ The `M` numbers refer to the proposed module lists in `research/*.md`. Authors u
 | Requirements → HLD → deep dives, estimation, LB/CDN/rate-limiter/queue as components, SLO math | `architecture/system-design` | everything |
 | LLM inference serving architecture (prefill vs decode, KV-cache VRAM math, PagedAttention, continuous batching, TTFT/ITL) | `architecture/system-design` (M02, M14) | cloud tracks (AI-200 / Bedrock / Vertex wiring only) |
 | Virtual Waiting Room admission control, Content-Defined Chunking (FastCDC/Rabin), double-entry payment reconciliation | `architecture/system-design` (M09, M10, M12, M14) | data-systems, distributed-systems |
+| Progressive 0→10M scaling blueprints, Gunther's USL capacity composition, cell-based architecture, shuffle sharding combinatorics, static stability composition | `architecture/system-design` (M15) | algorithms/dsa (Amdahl/Gustafson M14), cloud tracks |
+| Distributed KV store system-design composition (Dynamo/Cassandra/DynamoDB coordinator rings, sloppy quorum + hinted handoff composition, Merkle anti-entropy ops, Phi Accrual operational tuning) | `architecture/system-design` (M16) | data-systems (LSM/WAL/replication internals), distributed-systems (CAP/clocks/Paxos/Raft theory), algorithms/dsa (consistent hashing/Bloom math) |
+| Planetary mapping & navigation composition (Web Mercator tile pyramid sizing, MVT/PMTiles delivery, hierarchical routing tiles, CH vs CRP trade-offs, HMM map matching, GNN Supersegment ETA, super-tile adaptive rerouting) | `architecture/system-design` (M17) | algorithms/dsa (Dijkstra/A* proofs), networking (CDN/WebSockets) |
 
 ## Networking and security
 

@@ -1,0 +1,153 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 684" width="1200" height="684" role="img" aria-labelledby="title desc">
+  <title id="title">Mapping &amp; Navigation Stack Comparison: 2021 Default vs 2026 Modern Standard</title>
+  <desc id="desc">Side-by-side comparison of mapping and navigation infrastructure choices in 2021 versus 2026 across 7 architectural layers: map tiles, tile hosting, routing engines, ETA prediction, GPS map matching, push delivery, and map data/offline navigation.</desc>
+  <defs>
+    <linearGradient id="mapBg2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b1220"/>
+      <stop offset="100%" stop-color="#131c31"/>
+    </linearGradient>
+    <marker id="mapShift" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#34d399"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1200" height="684" rx="16" fill="url(#mapBg2)" stroke="#24344d" stroke-width="2"/>
+
+  <!-- Header -->
+  <text x="36" y="42" fill="#f8fafc" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="22" font-weight="700">Mapping &amp; Navigation Stack: 2021 Default vs. 2026 Standard</text>
+  <text x="36" y="65" fill="#94a3b8" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="12.5">From raster PNG tile farms and static road graphs to serverless PMTiles vector rendering, CRP live routing, and GNN Supersegment ETAs.</text>
+
+  <!-- Column Headers -->
+  <rect x="36" y="84" width="176" height="32" rx="6" fill="#1e293b" stroke="#475569"/>
+  <text x="124" y="105" text-anchor="middle" fill="#e2e8f0" font-family="ui-monospace, monospace" font-size="12" font-weight="700">LAYER</text>
+
+  <rect x="224" y="84" width="424" height="32" rx="6" fill="#3b2314" stroke="#f59e0b"/>
+  <text x="436" y="105" text-anchor="middle" fill="#fcd34d" font-family="ui-monospace, monospace" font-size="12" font-weight="700">THEN (c. 2021 DEFAULT)</text>
+
+  <rect x="692" y="84" width="472" height="32" rx="6" fill="#0f362c" stroke="#34d399"/>
+  <text x="928" y="105" text-anchor="middle" fill="#6ee7b7" font-family="ui-monospace, monospace" font-size="12" font-weight="700">NOW (2026 PRODUCTION STANDARD)</text>
+
+  <!-- Row 1: Map Rendering & Tiles -->
+  <g transform="translate(36, 128)">
+    <rect width="176" height="54" rx="6" fill="#17253f" stroke="#334155"/>
+    <text x="12" y="24" fill="#38bdf8" font-family="system-ui, sans-serif" font-size="11.5" font-weight="700">1. Map Rendering</text>
+    <text x="12" y="42" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="10">Client Tile Format</text>
+
+    <rect x="188" width="424" height="54" rx="6" fill="#1c1917" stroke="#78350f"/>
+    <text x="200" y="22" fill="#fde68a" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Pre-rendered 256x256 Raster PNG tiles per style</text>
+    <text x="200" y="40" fill="#a8a29e" font-family="system-ui, sans-serif" font-size="9.5">Heavy mobile egress; blurry zoom; dark mode doubles storage</text>
+
+    <line x1="618" y1="27" x2="648" y2="27" stroke="#34d399" stroke-width="2" marker-end="url(#mapShift)"/>
+
+    <rect x="656" width="472" height="54" rx="6" fill="#0d2621" stroke="#059669"/>
+    <text x="668" y="22" fill="#a7f3d0" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Protobuf Vector Tiles (MVT) + Client WebGL / WebGPU</text>
+    <text x="668" y="40" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="9.5">80-90% less bandwidth, 60fps smooth zoom, dynamic client themes</text>
+  </g>
+
+  <!-- Row 2: Tile Storage & Hosting -->
+  <g transform="translate(36, 192)">
+    <rect width="176" height="54" rx="6" fill="#17253f" stroke="#334155"/>
+    <text x="12" y="24" fill="#38bdf8" font-family="system-ui, sans-serif" font-size="11.5" font-weight="700">2. Tile Delivery</text>
+    <text x="12" y="42" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="10">Storage &amp; CDN</text>
+
+    <rect x="188" width="424" height="54" rx="6" fill="#1c1917" stroke="#78350f"/>
+    <text x="200" y="22" fill="#fde68a" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Dynamic PostGIS tile servers or billions of S3 objects</text>
+    <text x="200" y="40" fill="#a8a29e" font-family="system-ui, sans-serif" font-size="9.5">Expensive S3 PUT/LIST storms &amp; cache invalidation pain</text>
+
+    <line x1="618" y1="27" x2="648" y2="27" stroke="#34d399" stroke-width="2" marker-end="url(#mapShift)"/>
+
+    <rect x="656" width="472" height="54" rx="6" fill="#0d2621" stroke="#059669"/>
+    <text x="668" y="22" fill="#a7f3d0" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Protomaps PMTiles (Single Archive) + HTTP Range CDN</text>
+    <text x="668" y="40" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="9.5">Serverless Hilbert-indexed byte ranges on S3/R2, atomic releases</text>
+  </g>
+
+  <!-- Row 3: Shortest-Path Engine -->
+  <g transform="translate(36, 256)">
+    <rect width="176" height="54" rx="6" fill="#17253f" stroke="#334155"/>
+    <text x="12" y="24" fill="#38bdf8" font-family="system-ui, sans-serif" font-size="11.5" font-weight="700">3. Routing Engine</text>
+    <text x="12" y="42" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="10">Graph Search</text>
+
+    <rect x="188" width="424" height="54" rx="6" fill="#1c1917" stroke="#78350f"/>
+    <text x="200" y="22" fill="#fde68a" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Static Contraction Hierarchies (CH) / A* per region</text>
+    <text x="200" y="40" fill="#a8a29e" font-family="system-ui, sans-serif" font-size="9.5">Full graph rebuild takes hours; stale under live road closures</text>
+
+    <line x1="618" y1="27" x2="648" y2="27" stroke="#34d399" stroke-width="2" marker-end="url(#mapShift)"/>
+
+    <rect x="656" width="472" height="54" rx="6" fill="#0d2621" stroke="#059669"/>
+    <text x="668" y="22" fill="#a7f3d0" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Customizable Route Planning (CRP / MLD) + Routing Tiles</text>
+    <text x="668" y="40" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="9.5">&lt;1 s live metric customization across partitioned highway cells</text>
+  </g>
+
+  <!-- Row 4: ETA Prediction -->
+  <g transform="translate(36, 320)">
+    <rect width="176" height="54" rx="6" fill="#17253f" stroke="#334155"/>
+    <text x="12" y="24" fill="#38bdf8" font-family="system-ui, sans-serif" font-size="11.5" font-weight="700">4. ETA Prediction</text>
+    <text x="12" y="42" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="10">Travel-Time Model</text>
+
+    <rect x="188" width="424" height="54" rx="6" fill="#1c1917" stroke="#78350f"/>
+    <text x="200" y="22" fill="#fde68a" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Independent edge-speed summation + historical lookup</text>
+    <text x="200" y="40" fill="#a8a29e" font-family="system-ui, sans-serif" font-size="9.5">Misses turn penalties, signal spillover &amp; correlated jams</text>
+
+    <line x1="618" y1="27" x2="648" y2="27" stroke="#34d399" stroke-width="2" marker-end="url(#mapShift)"/>
+
+    <rect x="656" width="472" height="54" rx="6" fill="#0d2621" stroke="#059669"/>
+    <text x="668" y="22" fill="#a7f3d0" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Graph Neural Networks (GNN) over Supersegments</text>
+    <text x="668" y="40" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="9.5">Models spatial-temporal spillover; cuts ETA error by 20-50%</text>
+  </g>
+
+  <!-- Row 5: GPS Snapping & Telemetry -->
+  <g transform="translate(36, 384)">
+    <rect width="176" height="54" rx="6" fill="#17253f" stroke="#334155"/>
+    <text x="12" y="24" fill="#38bdf8" font-family="system-ui, sans-serif" font-size="11.5" font-weight="700">5. Map Matching</text>
+    <text x="12" y="42" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="10">GPS Snapping</text>
+
+    <rect x="188" width="424" height="54" rx="6" fill="#1c1917" stroke="#78350f"/>
+    <text x="200" y="22" fill="#fde68a" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Raw lat/lon nearest-edge snap or unbatched GPS pings</text>
+    <text x="200" y="40" fill="#a8a29e" font-family="system-ui, sans-serif" font-size="9.5">Jumps onto overpasses in urban canyons; drains phone battery</text>
+
+    <line x1="618" y1="27" x2="648" y2="27" stroke="#34d399" stroke-width="2" marker-end="url(#mapShift)"/>
+
+    <rect x="656" width="472" height="54" rx="6" fill="#0d2621" stroke="#059669"/>
+    <text x="668" y="22" fill="#a7f3d0" font-family="system-ui, sans-serif" font-size="11" font-weight="600">15s Batched Traces + HMM Viterbi + IMU / 3D Building Fusion</text>
+    <text x="668" y="40" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="9.5">Multipath reflection filtering + heading continuity keeps lane lock</text>
+  </g>
+
+  <!-- Row 6: Push & Adaptive Reroute -->
+  <g transform="translate(36, 448)">
+    <rect width="176" height="54" rx="6" fill="#17253f" stroke="#334155"/>
+    <text x="12" y="24" fill="#38bdf8" font-family="system-ui, sans-serif" font-size="11.5" font-weight="700">6. Live Rerouting</text>
+    <text x="12" y="42" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="10">Push &amp; Stability</text>
+
+    <rect x="188" width="424" height="54" rx="6" fill="#1c1917" stroke="#78350f"/>
+    <text x="200" y="22" fill="#fde68a" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Client HTTP polling every 60s + greedy fastest reroute</text>
+    <text x="200" y="40" fill="#a8a29e" font-family="system-ui, sans-serif" font-size="9.5">Wastes server CPU; causes herd oscillation onto side streets</text>
+
+    <line x1="618" y1="27" x2="648" y2="27" stroke="#34d399" stroke-width="2" marker-end="url(#mapShift)"/>
+
+    <rect x="656" width="472" height="54" rx="6" fill="#0d2621" stroke="#059669"/>
+    <text x="668" y="22" fill="#a7f3d0" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Super-Tile Index + WebSocket/HTTP3 Push + Anti-Herd Split</text>
+    <text x="668" y="40" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="9.5">O(log L) user index + capacity-aware stochastic reroute pacing</text>
+  </g>
+
+  <!-- Row 7: Map Data & Offline -->
+  <g transform="translate(36, 512)">
+    <rect width="176" height="54" rx="6" fill="#17253f" stroke="#334155"/>
+    <text x="12" y="24" fill="#38bdf8" font-family="system-ui, sans-serif" font-size="11.5" font-weight="700">7. Map Data/Edge</text>
+    <text x="12" y="42" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="10">Ecosystem &amp; Offline</text>
+
+    <rect x="188" width="424" height="54" rx="6" fill="#1c1917" stroke="#78350f"/>
+    <text x="200" y="22" fill="#fde68a" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Proprietary silos / manual OSM edits + coarse offline packs</text>
+    <text x="200" y="40" fill="#a8a29e" font-family="system-ui, sans-serif" font-size="9.5">Slow POI/road updates; offline routing breaks on multi-state trips</text>
+
+    <line x1="618" y1="27" x2="648" y2="27" stroke="#34d399" stroke-width="2" marker-end="url(#mapShift)"/>
+
+    <rect x="656" width="472" height="54" rx="6" fill="#0d2621" stroke="#059669"/>
+    <text x="668" y="22" fill="#a7f3d0" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Overture Maps (GERS IDs) + Vision Auto-Mapping + On-Device CH</text>
+    <text x="668" y="40" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="9.5">Open global road/POI releases + delta vector packs for offline nav</text>
+  </g>
+
+  <!-- Footer takeaway -->
+  <rect x="36" y="582" width="1128" height="72" rx="8" fill="#17233b" stroke="#38bdf8" stroke-width="1"/>
+  <text x="54" y="609" fill="#e2e8f0" font-family="system-ui, sans-serif" font-size="12"><tspan fill="#38bdf8" font-weight="700">2026 Navigation Rule of Thumb:</tspan> Push rendering to client GPUs via immutable vector tiles (MVT/PMTiles), batch GPS telemetry 15x on device,</text>
+  <text x="54" y="633" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="12">separate static graph partitioning from live CRP traffic updates, and guard reroute pushes against herd oscillation.</text>
+</svg>
