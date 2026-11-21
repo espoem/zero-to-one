@@ -2,7 +2,7 @@
 
 This preparation bank tests Senior, Staff, and Principal distributed system design competency across the seven domains defined in [`exams/README.md`](README.md). Every question is original and grounded in primary engineering literature, official protocol RFCs, and production postmortems.
 
-- **Bank scope**: **75 questions** (`Q-SD-001`–`Q-SD-075`) covering quantitative capacity modeling, edge/API design, caching/partitioning, asynchrony/resilience, specialized indexing/financial correctness, SLO observability/DR, end-to-end canonical architectures, and progressive scaling / blast-radius case studies.
+- **Bank scope**: **80 questions** (`Q-SD-001`–`Q-SD-080`) covering quantitative capacity modeling, edge/API design, caching/partitioning, asynchrony/resilience, specialized indexing/financial correctness, SLO observability/DR, end-to-end canonical architectures, progressive scaling, and distributed key-value store case studies.
 - **Difficulty calibration**: Level `1` tests foundational mechanics, Level `2` tests Senior-level trade-off reasoning, and Level `3` tests Staff/Principal failure modes, subtle race conditions, and quantitative traps.
 - **Timed practice**: Complete the [50-Question Written Architecture Drill](#timed-mock-exam-written-architecture-drill-50-questions--75-minutes) under a strict 75-minute timer, then run the [two 60-minute Staff/Principal design loops](#timed-mock-design-loops-2--60-minute-staffprincipal-simulations) against the explicit 0–4 grading rubrics.
 
@@ -1523,6 +1523,107 @@ A stateless API fleet scales strictly on average CPU utilization with a 15-secon
 - Why not C: Load balancers gate routing on configured readiness probes (`/readyz`), not arbitrary uptime thresholds.
 - Why not D: `stabilizationWindowSeconds: 0` is syntactically valid in Kubernetes HPA; it disables scale-down damping rather than blocking scheduling.
 - Ref: [modules/15-scale-from-zero-to-millions.md](../modules/15-scale-from-zero-to-millions.md#25-stage-9-telemetry-automation-and-autoscaling-stability), https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+
+</details>
+
+### Q-SD-076 · Distributed Key-Value Stores & Quorum Systems · difficulty 3 · scenario
+
+A key is replicated across three nodes with $N = 3$, $W = 2$, $R = 2$. A client writes `x = new`, but the write persists on only replica A before timing out on B and C, so the coordinator returns an error to the client. Which statement is correct?
+
+- A) Because $W + R = 4 > 3$, every read quorum contains the new value, so the system is linearizable regardless of failed writes.
+- B) Because the write returned an error to the client, the value is rolled back on replica A and no later read can observe it.
+- C) The failed write remains durable on replica A (phantom persistence); a later read quorum hitting `{A, B}` can observe `new`, while a subsequent read hitting `{B, C}` returns `old` unless synchronous read repair writes back `new` before returning—violating linearizability despite $W + R > N$.
+- D) Raising $W$ to $3$ restores linearizability because every write then targets all three replicas, eliminating partial-write phantoms.
+
+<details><summary>Answer</summary>
+
+**C.** Strict quorum overlap ($W + R > N$) guarantees intersecting the latest _acknowledged_ write quorum under sequential operations, not linearizability. Leaderless quorum writes do not roll back replicas that already persisted a failed write (`acks = 1 < W = 2`), and without synchronous write-back (read repair) before returning to callers, Reader 1 on `{A, B}` can observe `new` while a later Reader 2 on `{B, C}` observes `old`.
+
+- Why not A: Quorum overlap does not eliminate partially persisted failed writes or enforce a global real-time read order without synchronous read repair and consensus.
+- Why not B: Leaderless KV stores do not execute distributed rollback on timeout; replica A retains `new` until overwritten or reconciled.
+- Why not D: Even at $W = 3$, a write that persists on 1 or 2 nodes before failing still leaves durable partial state.
+- Ref: [modules/16-distributed-key-value-store.md](../modules/16-distributed-key-value-store.md#3-tunable-quorums-and-why-w--r--n-is-not-linearizability), https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf
+
+</details>
+
+### Q-SD-077 · Distributed Key-Value Stores & Quorum Systems · difficulty 3 · scenario
+
+A consistent-hash ring holds nodes `A` through `E`, with home preference list `{A, B, C}` for key `k`. During a network partition, `B` is down and the writer's coordinator cannot reach `A` or `C`, so it executes a **sloppy quorum** write ($W = 2$) acknowledged by standby nodes `{D, E}` carrying hint envelopes (`D → B`, `E → C`). Shortly afterward, `A` and `C` become reachable again (`B` remains down and hints have not yet drained from `{D, E}`), and another client executes a strict read ($R = 2$) against home replicas `{A, C}`. Why does that read miss the new write?
+
+- A) The client read a stale local HTTP cache; the database itself is strictly consistent.
+- B) Sloppy quorums never count stand-in nodes toward $W$, so the write must have reached `{A, C}` already.
+- C) The sloppy write set `{D, E}` is disjoint from the strict home read set `{A, C}`, breaking the $W + R > N$ intersection invariant until **hinted handoff** drains from `{D, E}` back to the recovered home replicas.
+- D) Lowering $R$ to `1` on `{A, C}` recovers the new value immediately because any single home node serves the latest write.
+
+<details><summary>Answer</summary>
+
+**C.** $W + R > N$ guarantees overlap only when both quorums draw from the same $N$-node home preference list. Sloppy quorums preserve write availability by accepting acknowledgements from non-home standby nodes `{D, E}`, creating zero overlap with `{A, C}` until hinted handoff replays the updates back to home nodes.
+
+- Why not A: Neither `A` nor `C` holds the new value yet; the staleness lives in the cluster replicas, not a client cache.
+- Why not B: Counting non-home standby nodes toward $W$ is the exact definition of a sloppy quorum.
+- Why not D: Reading fewer home nodes (`R = 1`) still consults only `{A, C}`, neither of which received the sloppy write.
+- Ref: [modules/16-distributed-key-value-store.md](../modules/16-distributed-key-value-store.md#43-temporary-failures-sloppy-quorums-and-hinted-handoff), https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf
+
+</details>
+
+### Q-SD-078 · Distributed Key-Value Stores & Quorum Systems · difficulty 2 · single
+
+Two replicas of a key carry vector clocks `D1 = [S1:2, S2:1]` and `D2 = [S1:1, S2:2]`. Contrast how a vector-clock KV store handles these versions versus a Last-Write-Wins (LWW) store experiencing `250 ms` of NTP clock skew.
+
+- A) `D1` causally descends from `D2` because `S1` is higher, so no conflict exists.
+- B) `D1` and `D2` are `CONCURRENT` siblings because neither vector dominates the other across every coordinator coordinate (`S1: 2 > 1` while `S2: 1 < 2`); a vector-clock store surfaces both siblings for reconciliation, whereas LWW compares wall-clock timestamps and silently drops a causally newer update when NTP skew orders its timestamp earlier.
+- C) `D1` and `D2` are causally equal because both counter sums equal `3`, so dropping either loses no history.
+- D) LWW consults the vector clock first and only breaks ties with NTP timestamps, preventing silent write loss.
+
+<details><summary>Answer</summary>
+
+**B.** Causal dominance requires every coordinate of one vector clock to be greater than or equal to the other's (with at least one strictly greater). Because `D1` leads on `S1` while `D2` leads on `S2`, the updates are concurrent siblings; LWW ignores causality and compares unsynchronized wall clocks, silently discarding writes whose host clock lags behind.
+
+- Why not A: Dominance fails on coordinate `S2` (`1 < 2`).
+- Why not C: Summing vector coordinates destroys per-node causal history; two incomparable branches can have identical sums.
+- Why not D: LWW systems (such as standard Cassandra cell timestamps) do not maintain vector clocks; wall-clock timestamps directly dictate which write survives.
+- Ref: [modules/16-distributed-key-value-store.md](../modules/16-distributed-key-value-store.md#41-vector-clocks-dotted-version-vectors-and-the-lww-clock-skew-trap), https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf
+
+</details>
+
+### Q-SD-079 · Distributed Key-Value Stores & Quorum Systems · difficulty 3 · scenario
+
+In an LSM-backed Cassandra cluster, a replica stays offline while key `k` is deleted (writing a tombstone to surviving replicas). The offline node remains down longer than `gc_grace_seconds` (`864,000 s` = 10 days) and rejoins the ring without being replaced or repaired first. Shortly afterward, deleted key `k` reappears for users (**zombie data resurrection**). What caused this?
+
+- A) Hinted handoff replayed an expired hint from the rejoining node, so clearing the hints directory prevents resurrection.
+- B) Compaction never removes tombstones, so resurrection can happen only when clients read at consistency level `ONE`.
+- C) Once `gc_grace_seconds` elapses, compaction on surviving replicas permanently purges the tombstone; when the long-offline node rejoins holding the old live cell, anti-entropy repair sees a live record with no competing tombstone and streams the deleted value back across the ring.
+- D) Reducing `gc_grace_seconds` to `3,600 s` accelerates tombstone propagation and eliminates resurrection.
+
+<details><summary>Answer</summary>
+
+**C.** Tombstones prevent deleted keys from reappearing only while they remain present across replicas. If compaction purges tombstones after `gc_grace_seconds` before an offline replica receives them, the rejoining replica's stale live record becomes the sole surviving version and gets copied back across the cluster during repair; operators must run repair strictly within `gc_grace_seconds` or decommission/re-bootstrap nodes offline longer than that window.
+
+- Why not A: Hints have short retention windows (typically hours) and target down nodes rather than replaying stale values from a rejoining node.
+- Why not B: Compaction explicitly purges expired tombstones past `gc_grace_seconds` to reclaim disk space, regardless of client read consistency level.
+- Why not D: Shortening `gc_grace_seconds` purges tombstones earlier, widening the resurrection hazard window.
+- Ref: [modules/16-distributed-key-value-store.md](../modules/16-distributed-key-value-store.md#6-production-gotchas-and-failure-modes), https://cassandra.apache.org/doc/latest/
+
+</details>
+
+### Q-SD-080 · Distributed Key-Value Stores & Quorum Systems · difficulty 2 · multi
+
+Which **two** statements accurately explain why Amazon DynamoDB (Elhemali et al., USENIX ATC 2022) replaced the leaderless vector-clock architecture of the 2007 Dynamo paper with per-partition Paxos leader election, stateless Request Routers, and Storage Nodes?
+
+- A) A per-partition Paxos leader provides a single serialization point per key range, enabling strongly consistent reads, conditional writes (`ConditionExpression`), and ACID transactions without pushing vector-clock sibling merges onto client applications.
+- B) Decoupling stateless Request Routers from Storage Nodes allows automated partition splitting, migration, and Global Admission Control behind the routing layer without exposing ring-rebalance conflicts to callers.
+- C) Paxos eliminates the need for data replication, allowing DynamoDB to keep only one copy per item and cut SSD costs by 3×.
+- D) DynamoDB dropped leaderless vector clocks because it abandoned multi-AZ fault tolerance and high availability.
+- E) Per-partition Paxos leaders automatically make cross-region Global Tables strictly linearizable with zero conflict resolution.
+
+<details><summary>Answer</summary>
+
+**A, B.** Per-partition Paxos groups serialize writes cleanly for conditional updates and strongly consistent reads while eliminating application-side sibling resolution, and stateless Request Routers insulate clients from dynamic partition splits and replica moves.
+
+- Why not C: Each DynamoDB partition still replicates across three storage nodes in distinct Availability Zones via Paxos.
+- Why not D: DynamoDB maintains multi-AZ high availability (`99.99%`–`99.999%` SLAs) alongside leader election and fast failover.
+- Why not E: Cross-region Global Tables replicate asynchronously and use per-item LWW conflict resolution rather than global cross-region Paxos linearizability.
+- Ref: [modules/16-distributed-key-value-store.md](../modules/16-distributed-key-value-store.md#5-niche-and-principal-level-kv-architectures), https://www.usenix.org/conference/atc22/presentation/elhemali
 
 </details>
 

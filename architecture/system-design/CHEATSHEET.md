@@ -270,7 +270,7 @@ flowchart LR
 
 ---
 
-## 6. Top 23 Production Failure Modes & One-Line Fixes
+## 6. Top 27 Production Failure Modes & One-Line Fixes
 
 | # | Failure Mode | How It Breaks Production | One-Line Fix |
 | :-- | :-- | :-- | :-- |
@@ -297,3 +297,7 @@ flowchart LR
 | **21** | **Sticky-Session AZ Evacuation Storm** | In-memory web-tier sessions drop `1/3` of logged-in users during a single-AZ failure or rolling deploy. | Externalize sessions to multi-AZ Valkey/Redis or short-lived signed tokens so the web tier is strictly stateless. |
 | **22** | **Async Replica Promotion Data Loss** | Promoting a lagging async replica after primary crash drops uncommitted/unreplicated WAL transactions and risks split-brain. | Fence the old primary (STONITH/lease), audit WAL LSN lag before promotion, or use semi-sync quorum for `RPO = 0`. |
 | **23** | **Autoscaler Cold-Start Thrashing** | Tight CPU thresholds without cooldown hysteresis launch redundant nodes during boot lag and terminate them on brief dips. | Account for in-flight booting pods, widen scale-in hysteresis, enforce cooldown windows, and scale on queue depth (KEDA). |
+| **24** | **Quorum $W + R > N$ Linearizability Illusion** | Failed partial writes (`acks < W`) leave durable phantom data on 1 replica; concurrent readers see `new` then `old`. | Run synchronous read repair before returning, or use per-partition Paxos/Raft consensus (DynamoDB/TiKV). |
+| **25** | **Sloppy Quorum Silent Staleness** | Writes acknowledged on standby nodes bypass home replicas, so strict home reads miss recent writes until handoff drains. | Disable sloppy quorums when read-your-writes matters, or route through consensus leaders instead of AP rings. |
+| **26** | **LWW NTP Clock-Skew Silent Data Loss** | Wall-clock Last-Write-Wins silently drops a causally newer update whose writer node trails by milliseconds of NTP skew. | Use per-partition leader ordering, Hybrid Logical Clocks (HLC), Dotted Version Vectors (DVVs), or typed CRDTs. |
+| **27** | **Zombie Data Resurrection Past `gc_grace_seconds`** | A replica offline longer than `gc_grace_seconds` rejoins after tombstones were compacted away, restoring deleted rows. | Run anti-entropy repair strictly inside `gc_grace_seconds`, and decommission/re-bootstrap nodes offline longer. |

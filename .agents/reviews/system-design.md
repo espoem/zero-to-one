@@ -63,3 +63,19 @@ Verdict: **approve** (after full remediation of all P0, P1, P2, and P3 findings 
   - [x] **P2** `assets/15-scale-evolution-blueprint.svg` & `assets/15-scaling-2021-vs-2026.svg`: shortened/wrapped overflowing bottom-strip and footer lines and tightened sub-label text widths to fit cleanly inside box bounds.
   - [x] **P2** `modules/15-scale-from-zero-to-millions.md`: deferred formal Amdahl/Gustafson derivation to `algorithms/dsa/modules/14-parallel-algorithms-concurrency-and-interview-execution.md` per `.agents/OWNERSHIP.md`, keeping Gunther's USL full.
   - [x] **P3** `modules/15-scale-from-zero-to-millions.md`, `exams/architect-certs-bridge.md`, `exams/interview.md`: fixed `oxfmt` escaped underscore inside KaTeX (`$N_{\max}$`), clarified `Q-CERT-001` worker-pool shuffle-sharding phrasing, and added exact section `#anchor` links to all 11 new question references.
+
+---
+
+## ByteByteGo & Primary-Source Expansion — Wave A Topic 02 (`06. Key-Value Store`, Module 16, 2026-11-21)
+
+- **Coordinator / Integrator / SVG & Proof Author**: Antigravity (root)
+- **Prose Draft**: `opencode` (`opencode-go/hy4-flash-free` from `/tmp --auto`, corrected by root for bandwidth math, non-English token `local写s`, `tombstables` typo, `examples/lib/kv-store-models.ts` snippet alignment, and added primary-literature matrix + SRE guardrail table)
+- **Exam & Cert Bridge Questions Draft**: `claude` CLI (`haiku`, `--max-turns 1`)
+- **Independent Cross-Family Challenger**: `opencode` (`opencode-go/muse-spark-1.3-contributor`, `muse` family)
+- **Challenger Findings Resolved**:
+  - [x] **P1 (rejected via primary-source check)** `exams/architect-certs-bridge.md` (`Q-CERT-010`): re-verified against Microsoft Learn Cosmos DB documentation — Session consistency reads from 1 replica while Strong/Bounded Staleness read from a 2-replica quorum (`2×` RU cost); preserved fact and documented the 1-replica vs 2-replica RU mechanism explicitly in Module 16 §3.
+  - [x] **P2** `exams/architect-certs-bridge.md` (`Q-CERT-008`, `Q-CERT-010`): updated `Q-CERT-008` anchor to `#51-amazon-dynamo-2007-vs-amazon-dynamodb-20222026` and added Cosmos DB Session consistency teaching paragraph to Module 16 §3 so `Q-CERT-010`'s anchor teaches the tested concept directly.
+  - [x] **P2** `exams/interview.md` (`Q-SD-077`): clarified partition recovery step (`A` and `C` recover while `B` remains down and hints `D -> B`, `E -> C` have not drained).
+  - [x] **P2** `modules/16-distributed-key-value-store.md`: replaced `->` inside Mermaid edge label with `:` (`"Neither dominates: CONCURRENT"`).
+  - [x] **P2/P3** `assets/16-kv-store-architecture.svg` & `assets/16-kv-2021-vs-2026.svg`: folded Multi-Region/Global Tables explicitly into Row 1 of the comparison SVG, aligned vnodes label (`100-256 vnodes (16/Tablets)`) and Merkle bucket label (`Sync B51`) with Module 16.
+  - [x] **P3** `examples/10-kv-store.test.ts`, `examples/lib/kv-store-models.ts`, `modules/16-distributed-key-value-store.md`: replaced redundant LWW assertion with deterministic equal-timestamp tie-break test, documented standby hint-queue separation comment, and qualified `> 200x` NIC headroom as cluster-aggregate.

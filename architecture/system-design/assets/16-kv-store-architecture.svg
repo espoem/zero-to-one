@@ -1,0 +1,241 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" width="1200" height="760" role="img" aria-labelledby="title desc">
+  <title id="title">Distributed Key-Value Store Architecture Blueprint (Dynamo / Cassandra)</title>
+  <desc id="desc">Architectural blueprint of a decentralized distributed key-value store showing a consistent hash ring with 3-AZ replication, quorum coordinator path, LSM storage write and read pipeline, sloppy quorum hinted handoff, and Merkle tree anti-entropy repair.</desc>
+  <defs>
+    <linearGradient id="kvBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b1220"/>
+      <stop offset="100%" stop-color="#111c33"/>
+    </linearGradient>
+    <marker id="kvCyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8"/>
+    </marker>
+    <marker id="kvGreen" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#34d399"/>
+    </marker>
+    <marker id="kvAmber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#fbbf24"/>
+    </marker>
+    <marker id="kvRose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#f87171"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1200" height="760" rx="16" fill="url(#kvBg)" stroke="#24344d" stroke-width="2"/>
+
+  <!-- Header -->
+  <text x="36" y="42" fill="#f8fafc" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="22" font-weight="700">Distributed Key-Value Store: Ring, Quorums, LSM Path &amp; Anti-Entropy</text>
+  <text x="36" y="65" fill="#94a3b8" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="12.5">Decentralized Dynamo/Cassandra topology (N = 3, W = 2, R = 2) with AZ-aware preference lists, hinted handoff, and Merkle tree sync.</text>
+
+  <!-- LEFT PANEL: Consistent Hash Ring & Coordinator -->
+  <g transform="translate(36, 86)">
+    <rect width="540" height="390" rx="12" fill="#132038" stroke="#38bdf8" stroke-width="1.5"/>
+    <rect width="540" height="30" rx="12" fill="#1b3054"/>
+    <text x="14" y="20" fill="#38bdf8" font-family="ui-monospace, monospace" font-size="12" font-weight="700">1. CONSISTENT HASH RING &amp; COORDINATOR QUORUM (N=3, W=2, R=2)</text>
+
+    <!-- Client + Coordinator -->
+    <rect x="18" y="46" width="112" height="44" rx="8" fill="#1e293b" stroke="#94a3b8"/>
+    <text x="74" y="65" text-anchor="middle" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="11" font-weight="700">Client</text>
+    <text x="74" y="80" text-anchor="middle" fill="#94a3b8" font-family="ui-monospace, monospace" font-size="9.5">put(k, v, ctx)</text>
+
+    <line x1="130" y1="68" x2="164" y2="68" stroke="#38bdf8" stroke-width="1.8" marker-end="url(#kvCyan)"/>
+
+    <rect x="168" y="46" width="170" height="44" rx="8" fill="#1e3a5f" stroke="#38bdf8" stroke-width="1.5"/>
+    <text x="253" y="65" text-anchor="middle" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="11" font-weight="700">Coordinator Node</text>
+    <text x="253" y="80" text-anchor="middle" fill="#bae6fd" font-family="ui-monospace, monospace" font-size="9.5">hash(k) -&gt; pref list</text>
+
+    <!-- Quorum Badge -->
+    <rect x="354" y="46" width="168" height="44" rx="8" fill="#143832" stroke="#34d399"/>
+    <text x="438" y="64" text-anchor="middle" fill="#6ee7b7" font-family="ui-monospace, monospace" font-size="10.5" font-weight="700">W + R &gt; N (2+2 &gt; 3)</text>
+    <text x="438" y="80" text-anchor="middle" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="9.5">Strict overlap != linearizable</text>
+
+    <!-- Ring circle -->
+    <circle cx="245" cy="236" r="102" fill="none" stroke="#475569" stroke-width="3" stroke-dasharray="6,4"/>
+    <text x="245" y="228" text-anchor="middle" fill="#e2e8f0" font-family="ui-monospace, monospace" font-size="11" font-weight="700">Hash Space</text>
+    <text x="245" y="244" text-anchor="middle" fill="#94a3b8" font-family="ui-monospace, monospace" font-size="10">0 .. 2^128 - 1</text>
+    <text x="245" y="260" text-anchor="middle" fill="#38bdf8" font-family="system-ui, sans-serif" font-size="9">100-256 vnodes (16/Tablets)</text>
+
+    <!-- Key marker -->
+    <circle cx="245" cy="134" r="7" fill="#fbbf24" stroke="#0b1220" stroke-width="2"/>
+    <text x="245" y="121" text-anchor="middle" fill="#fde68a" font-family="ui-monospace, monospace" font-size="10" font-weight="700">hash("user:42")</text>
+
+    <!-- Node A (AZ-1) -->
+    <circle cx="332" cy="182" r="20" fill="#14532d" stroke="#34d399" stroke-width="2"/>
+    <text x="332" y="180" text-anchor="middle" fill="#f8fafc" font-family="ui-monospace, monospace" font-size="10.5" font-weight="700">N1</text>
+    <text x="332" y="192" text-anchor="middle" fill="#86efac" font-family="system-ui, sans-serif" font-size="8.5">AZ-1</text>
+    <text x="394" y="178" fill="#6ee7b7" font-family="system-ui, sans-serif" font-size="10" font-weight="600">Replica 1 (ACK)</text>
+    <text x="394" y="192" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="9">Home preference #1</text>
+
+    <!-- Node B (AZ-2 - DOWN) -->
+    <circle cx="332" cy="290" r="20" fill="#45121d" stroke="#f87171" stroke-width="2" stroke-dasharray="4,2"/>
+    <text x="332" y="288" text-anchor="middle" fill="#fecaca" font-family="ui-monospace, monospace" font-size="10.5" font-weight="700">N2</text>
+    <text x="332" y="300" text-anchor="middle" fill="#fca5a5" font-family="system-ui, sans-serif" font-size="8.5">DOWN</text>
+    <text x="394" y="286" fill="#fca5a5" font-family="system-ui, sans-serif" font-size="10" font-weight="600">Replica 2 (Timeout)</text>
+    <text x="394" y="300" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="9">Skipped for sloppy write</text>
+
+    <!-- Node C (AZ-3) -->
+    <circle cx="245" cy="338" r="20" fill="#14532d" stroke="#34d399" stroke-width="2"/>
+    <text x="245" y="336" text-anchor="middle" fill="#f8fafc" font-family="ui-monospace, monospace" font-size="10.5" font-weight="700">N3</text>
+    <text x="245" y="348" text-anchor="middle" fill="#86efac" font-family="system-ui, sans-serif" font-size="8.5">AZ-3</text>
+
+    <!-- Node D (Standby Hint) -->
+    <circle cx="156" cy="288" r="20" fill="#422a08" stroke="#fbbf24" stroke-width="2"/>
+    <text x="156" y="286" text-anchor="middle" fill="#fef3c7" font-family="ui-monospace, monospace" font-size="10.5" font-weight="700">N4</text>
+    <text x="156" y="298" text-anchor="middle" fill="#fcd34d" font-family="system-ui, sans-serif" font-size="8.5">HINT</text>
+    <text x="22" y="284" fill="#fcd34d" font-family="system-ui, sans-serif" font-size="10" font-weight="600">Standby N4</text>
+    <text x="22" y="298" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="9">Stores hint for N2</text>
+
+    <!-- Node E (Idle) -->
+    <circle cx="156" cy="182" r="18" fill="#1e293b" stroke="#64748b" stroke-width="1.5"/>
+    <text x="156" y="186" text-anchor="middle" fill="#cbd5e1" font-family="ui-monospace, monospace" font-size="10">N5</text>
+
+    <!-- Hinted handoff arrow N4 -> N2 -->
+    <path d="M 177 294 Q 245 316, 308 294" fill="none" stroke="#fbbf24" stroke-width="1.6" stroke-dasharray="4,3" marker-end="url(#kvAmber)"/>
+    <text x="245" y="313" text-anchor="middle" fill="#fde68a" font-family="system-ui, sans-serif" font-size="9">Hinted Handoff on N2 recovery</text>
+
+    <!-- Footer note -->
+    <text x="18" y="376" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10">Preference list skips duplicate physical hosts/AZs so N=3 spans 3 fault domains.</text>
+  </g>
+
+  <!-- RIGHT TOP PANEL: LSM Write & Read Path inside One Node -->
+  <g transform="translate(596, 86)">
+    <rect width="568" height="236" rx="12" fill="#132038" stroke="#34d399" stroke-width="1.5"/>
+    <rect width="568" height="30" rx="12" fill="#143832"/>
+    <text x="14" y="20" fill="#34d399" font-family="ui-monospace, monospace" font-size="12" font-weight="700">2. PER-NODE STORAGE ENGINE PATH (LSM-TREE + BLOOM FILTERS)</text>
+
+    <!-- Write Path row -->
+    <text x="16" y="54" fill="#fbbf24" font-family="ui-monospace, monospace" font-size="10.5" font-weight="700">WRITE PATH (Sequential I/O, O(1) append):</text>
+    <rect x="16" y="64" width="114" height="44" rx="6" fill="#422006" stroke="#fbbf24"/>
+    <text x="73" y="83" text-anchor="middle" fill="#fef3c7" font-family="system-ui, sans-serif" font-size="10.5" font-weight="600">1. Commit Log</text>
+    <text x="73" y="98" text-anchor="middle" fill="#fde68a" font-family="system-ui, sans-serif" font-size="9">Append-only WAL</text>
+
+    <line x1="130" y1="86" x2="154" y2="86" stroke="#fbbf24" stroke-width="1.6" marker-end="url(#kvAmber)"/>
+
+    <rect x="158" y="64" width="114" height="44" rx="6" fill="#1e3a5f" stroke="#38bdf8"/>
+    <text x="215" y="83" text-anchor="middle" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="10.5" font-weight="600">2. Memtable</text>
+    <text x="215" y="98" text-anchor="middle" fill="#bae6fd" font-family="system-ui, sans-serif" font-size="9">Sorted RAM skip-list</text>
+
+    <line x1="272" y1="86" x2="296" y2="86" stroke="#38bdf8" stroke-width="1.6" marker-end="url(#kvCyan)"/>
+
+    <rect x="300" y="64" width="118" height="44" rx="6" fill="#14532d" stroke="#34d399"/>
+    <text x="359" y="83" text-anchor="middle" fill="#dcfce7" font-family="system-ui, sans-serif" font-size="10.5" font-weight="600">3. Flush SSTable</text>
+    <text x="359" y="98" text-anchor="middle" fill="#86efac" font-family="system-ui, sans-serif" font-size="9">Immutable sorted file</text>
+
+    <line x1="418" y1="86" x2="442" y2="86" stroke="#34d399" stroke-width="1.6" marker-end="url(#kvGreen)"/>
+
+    <rect x="446" y="64" width="106" height="44" rx="6" fill="#2e1d52" stroke="#a78bfa"/>
+    <text x="499" y="83" text-anchor="middle" fill="#f3e8ff" font-family="system-ui, sans-serif" font-size="10.5" font-weight="600">4. Compaction</text>
+    <text x="499" y="98" text-anchor="middle" fill="#c4b5fd" font-family="system-ui, sans-serif" font-size="9">Merge &amp; drop deletes</text>
+
+    <!-- Read Path row -->
+    <text x="16" y="136" fill="#38bdf8" font-family="ui-monospace, monospace" font-size="10.5" font-weight="700">READ PATH (Check fast tiers first, skip absent SSTables):</text>
+    <rect x="16" y="146" width="114" height="46" rx="6" fill="#1e3a5f" stroke="#38bdf8"/>
+    <text x="73" y="165" text-anchor="middle" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="10.5" font-weight="600">1. Memtable</text>
+    <text x="73" y="180" text-anchor="middle" fill="#bae6fd" font-family="system-ui, sans-serif" font-size="9">Hit? Return (&lt;1 ms)</text>
+
+    <line x1="130" y1="169" x2="154" y2="169" stroke="#38bdf8" stroke-width="1.6" marker-end="url(#kvCyan)"/>
+
+    <rect x="158" y="146" width="114" height="46" rx="6" fill="#1e293b" stroke="#94a3b8"/>
+    <text x="215" y="165" text-anchor="middle" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="10.5" font-weight="600">2. Block Cache</text>
+    <text x="215" y="180" text-anchor="middle" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="9">Hot SSTable blocks</text>
+
+    <line x1="272" y1="169" x2="296" y2="169" stroke="#38bdf8" stroke-width="1.6" marker-end="url(#kvCyan)"/>
+
+    <rect x="300" y="146" width="118" height="46" rx="6" fill="#3b0764" stroke="#c084fc"/>
+    <text x="359" y="165" text-anchor="middle" fill="#f3e8ff" font-family="system-ui, sans-serif" font-size="10.5" font-weight="600">3. Bloom Filter</text>
+    <text x="359" y="180" text-anchor="middle" fill="#d8b4fe" font-family="system-ui, sans-serif" font-size="9">~10 bits/key (1% FP)</text>
+
+    <line x1="418" y1="169" x2="442" y2="169" stroke="#34d399" stroke-width="1.6" marker-end="url(#kvGreen)"/>
+
+    <rect x="446" y="146" width="106" height="46" rx="6" fill="#14532d" stroke="#34d399"/>
+    <text x="499" y="165" text-anchor="middle" fill="#dcfce7" font-family="system-ui, sans-serif" font-size="10.5" font-weight="600">4. SSTable</text>
+    <text x="499" y="180" text-anchor="middle" fill="#86efac" font-family="system-ui, sans-serif" font-size="9">Sparse index seek</text>
+
+    <text x="16" y="218" fill="#fca5a5" font-family="ui-monospace, monospace" font-size="9.5">GOTCHA: Deletes write tombstones; purging before repair resurrects deleted keys.</text>
+  </g>
+
+  <!-- RIGHT BOTTOM PANEL: Merkle Tree Anti-Entropy -->
+  <g transform="translate(596, 338)">
+    <rect width="568" height="138" rx="12" fill="#132038" stroke="#a78bfa" stroke-width="1.5"/>
+    <rect width="568" height="28" rx="12" fill="#2e1d52"/>
+    <text x="14" y="19" fill="#c4b5fd" font-family="ui-monospace, monospace" font-size="11.5" font-weight="700">3. MERKLE TREE ANTI-ENTROPY (O(log B) SUBTREE DIFF)</text>
+
+    <!-- Mini Tree -->
+    <rect x="76" y="38" width="90" height="22" rx="4" fill="#45121d" stroke="#f87171"/>
+    <text x="121" y="53" text-anchor="middle" fill="#fecaca" font-family="ui-monospace, monospace" font-size="9.5">Root != Diff</text>
+
+    <line x1="100" y1="60" x2="64" y2="76" stroke="#34d399" stroke-width="1.4"/>
+    <line x1="142" y1="60" x2="178" y2="76" stroke="#f87171" stroke-width="1.4"/>
+
+    <rect x="24" y="76" width="80" height="20" rx="4" fill="#14532d" stroke="#34d399"/>
+    <text x="64" y="90" text-anchor="middle" fill="#dcfce7" font-family="ui-monospace, monospace" font-size="9">H(0..31) OK</text>
+
+    <rect x="138" y="76" width="80" height="20" rx="4" fill="#45121d" stroke="#f87171"/>
+    <text x="178" y="90" text-anchor="middle" fill="#fecaca" font-family="ui-monospace, monospace" font-size="9">H(32..63) !=</text>
+
+    <line x1="162" y1="96" x2="140" y2="108" stroke="#34d399" stroke-width="1.2"/>
+    <line x1="194" y1="96" x2="216" y2="108" stroke="#f87171" stroke-width="1.2"/>
+
+    <rect x="108" y="108" width="62" height="18" rx="4" fill="#14532d" stroke="#34d399"/>
+    <text x="139" y="121" text-anchor="middle" fill="#dcfce7" font-family="ui-monospace, monospace" font-size="8.5">Skip OK</text>
+
+    <rect x="184" y="108" width="66" height="18" rx="4" fill="#7f1d1d" stroke="#f87171"/>
+    <text x="217" y="121" text-anchor="middle" fill="#fecaca" font-family="ui-monospace, monospace" font-size="8.5">Sync B51</text>
+
+    <!-- Explanation right side -->
+    <text x="272" y="54" fill="#e2e8f0" font-family="system-ui, sans-serif" font-size="10.5" font-weight="600">Permanent-failure background repair:</text>
+    <text x="272" y="74" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10">• 1,024 keys in 64 buckets -&gt; 1 mutated key</text>
+    <text x="272" y="91" fill="#34d399" font-family="system-ui, sans-serif" font-size="10">• Exchanges ~13 hashes instead of full dataset</text>
+    <text x="272" y="110" fill="#fca5a5" font-family="system-ui, sans-serif" font-size="9.5">• Caveat: ring rebalancing shifts ranges,</text>
+    <text x="272" y="124" fill="#fca5a5" font-family="system-ui, sans-serif" font-size="9.5">  forcing Merkle tree rebuilds per token range</text>
+  </g>
+
+  <!-- BOTTOM STRIP: 4 Critical Mechanisms -->
+  <g transform="translate(36, 496)">
+    <rect width="1128" height="236" rx="12" fill="#101b2f" stroke="#2a3d5e" stroke-width="1.5"/>
+    <text x="18" y="28" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="14" font-weight="700">4. Conflict Resolution, Failure Detection &amp; Principal Trade-Offs</text>
+
+    <!-- Card 1: Vector Clocks vs DVVs -->
+    <rect x="18" y="44" width="262" height="174" rx="8" fill="#17253f" stroke="#38bdf8" stroke-width="1.2"/>
+    <text x="30" y="65" fill="#38bdf8" font-family="ui-monospace, monospace" font-size="11" font-weight="700">VECTOR CLOCKS &amp; DVVs</text>
+    <text x="30" y="86" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10">• Tracks causal history [node, ctr]</text>
+    <text x="30" y="104" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10">• Detects CONCURRENT siblings</text>
+    <text x="30" y="122" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10">• Client merges (e.g. cart union)</text>
+    <text x="30" y="142" fill="#fbbf24" font-family="system-ui, sans-serif" font-size="10">• Trap: Pruning oldest entries causes</text>
+    <text x="30" y="157" fill="#fbbf24" font-family="system-ui, sans-serif" font-size="10">  false siblings -&gt; use DVVs</text>
+    <text x="30" y="182" fill="#f87171" font-family="ui-monospace, monospace" font-size="9.5">LWW trap: NTP skew silently</text>
+    <text x="30" y="196" fill="#f87171" font-family="ui-monospace, monospace" font-size="9.5">drops causally newer writes!</text>
+
+    <!-- Card 2: Phi Accrual Gossip -->
+    <rect x="294" y="44" width="262" height="174" rx="8" fill="#17253f" stroke="#34d399" stroke-width="1.2"/>
+    <text x="306" y="65" fill="#34d399" font-family="ui-monospace, monospace" font-size="11" font-weight="700">GOSSIP + PHI ACCRUAL</text>
+    <text x="306" y="86" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10">• No central master monitor</text>
+    <text x="306" y="104" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10">• Continuous suspicion score:</text>
+    <text x="306" y="124" fill="#a7f3d0" font-family="ui-monospace, monospace" font-size="10">phi(t) = -log10(P_later(t))</text>
+    <text x="306" y="144" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10">• Adapts to live network jitter</text>
+    <text x="306" y="162" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10">• Cassandra default convict: phi=8</text>
+    <text x="306" y="188" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="9.5">Avoids binary timeout flapping</text>
+    <text x="306" y="202" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="9.5">during transient GC/NIC bursts.</text>
+
+    <!-- Card 3: W+R > N Trap -->
+    <rect x="570" y="44" width="262" height="174" rx="8" fill="#17253f" stroke="#f87171" stroke-width="1.2"/>
+    <text x="582" y="65" fill="#fca5a5" font-family="ui-monospace, monospace" font-size="11" font-weight="700">WHY W+R &gt; N != LINEARIZABLE</text>
+    <text x="582" y="86" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10">1. Failed write (acks=1 &lt; W=2)</text>
+    <text x="582" y="101" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="9.5">   still persists on 1 replica!</text>
+    <text x="582" y="121" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10">2. Reader A sees v2, Reader B sees</text>
+    <text x="582" y="136" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="9.5">   v1 without sync read-repair.</text>
+    <text x="582" y="156" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10">3. Sloppy quorum writes outside N.</text>
+    <text x="582" y="182" fill="#34d399" font-family="system-ui, sans-serif" font-size="9.5">Need linearizability? Use per-shard</text>
+    <text x="582" y="196" fill="#34d399" font-family="system-ui, sans-serif" font-size="9.5">Paxos/Raft leader (DynamoDB/TiKV).</text>
+
+    <!-- Card 4: Modern DynamoDB Shift -->
+    <rect x="846" y="44" width="264" height="174" rx="8" fill="#17253f" stroke="#a78bfa" stroke-width="1.2"/>
+    <text x="858" y="65" fill="#c4b5fd" font-family="ui-monospace, monospace" font-size="11" font-weight="700">DYNAMO (2007) -&gt; DYNAMODB</text>
+    <text x="858" y="86" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10">• Dropped leaderless vector clocks</text>
+    <text x="858" y="104" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10">• Per-partition Paxos leader elect</text>
+    <text x="858" y="122" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10">• Stateless Request Routers +</text>
+    <text x="858" y="137" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10">  Storage Nodes + Log Replicas</text>
+    <text x="858" y="157" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10">• Global Admission Control (GAC)</text>
+    <text x="858" y="182" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="9.5">Strong reads hit Paxos leader;</text>
+    <text x="858" y="196" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="9.5">zero client sibling merges.</text>
+  </g>
+</svg>
