@@ -270,7 +270,7 @@ flowchart LR
 
 ---
 
-## 6. Top 39 Production Failure Modes & One-Line Fixes
+## 6. Top 43 Production Failure Modes & One-Line Fixes
 
 | # | Failure Mode | How It Breaks Production | One-Line Fix |
 | :-- | :-- | :-- | :-- |
@@ -313,3 +313,7 @@ flowchart LR
 | **37** | **Unsorted Multi-Night Row Lock Deadlock (`40P01`)** | Concurrent transactions locking overlapping stay dates in different orders form a Coffman circular wait and abort with `SQLSTATE 40P01`. | Sort all multi-night `SELECT ... FOR UPDATE` and batch `UPDATE` queries by canonical `ORDER BY hotel_id ASC, room_type_id ASC, date ASC`. |
 | **38** | **Holding DB Row Locks Across Payment Gateway RPCs** | Calling Stripe/Adyen (`500–2,000 ms`) inside an open `FOR UPDATE` inventory transaction exhausts the DB connection pool at `< 50 RPS`. | Commit the local reservation hold (`PENDING_PAYMENT`) in `< 5 ms` and orchestrate payment asynchronously via a Temporal Saga with compensating release. |
 | **39** | **Rolling 730-Day CRON Horizon Starvation / Reset** | A stalled horizon cron breaks bookings 24 months ahead (`0 rows`), while a non-idempotent rerun (`DO UPDATE SET reserved = 0`) wipes sold rooms. | Seed rolling inventory horizons daily with `ON CONFLICT (hotel_id, room_type_id, date) DO NOTHING` and alert if `MAX(date) - TODAY < 720`. |
+| **40** | **Shared Outbound IP Pool Poisoning (Marketing vs 2FA)** | A promotional email blast hits `>= 0.3%` spam complaints and gets the shared outbound IP throttled by Gmail/Yahoo, blocking user 2FA login codes. | Isolate transactional 2FA and marketing mail onto separate dedicated IP pools/subdomains with an automated `< 0.3%` FBL complaint circuit breaker. |
+| **41** | **Undecoded Base64 Attachment Storage Bloat** | Persisting raw MIME Base64 text in S3 wastes `+33.3%` (`4/3` expansion) of petabyte storage and breaks hash deduplication across different line wraps. | Decode Base64 to canonical raw binary at the SMTP/API edge before computing `SHA-256` and writing to Content-Addressed Storage (CAS). |
+| **42** | **SPF 10-Lookup `permerror` & Unaligned DMARC Spoof** | Nested SaaS `include:` records exceed RFC 7208's 10-DNS-lookup cap (`permerror`), or passing SPF without DMARC `From:` alignment admits phishing spoofs. | Delegate subdomains per sender to keep SPF `<= 10` lookups, enforce DMARC `From:` alignment (`p=quarantine/reject`), and validate RFC 8617 ARC on forwards. |
+| **43** | **Unrouted Per-User Search Scatter-Gather Collapse** | Indexing emails by `email_id` without `_routing = user_id` fans every single-user search out across all `100+` Elasticsearch shards. | Set `_routing = user_id` on every index/query request so 1 user's mailbox lives on 1 shard, or embed a co-located per-user LSM inverted index. |

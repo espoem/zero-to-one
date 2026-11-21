@@ -3,7 +3,7 @@
 No single vendor-neutral certification tests general distributed system design, so vendor-specific IAM, CLI, and control-plane trivia stay in [`technologies/aws`](../../../technologies/aws/), [`technologies/gcp`](../../../technologies/gcp/), and [`technologies/azure`](../../../technologies/azure/). This bridge bank maps the architectural patterns, quantitative trade-offs, and failure modes taught across `architecture/system-design` directly onto Senior/Architect certification scenario domains (**AWS Solutions Architect – Professional `SAP-C02`**, **Google Cloud Professional Cloud Architect `PCA`**, **Microsoft Azure Solutions Architect Expert `AZ-305`**, and **CNCF / SRE Resilience**).
 
 - **Sequential Growth Plan**: Built sequentially alongside Wave A & Wave B topic completions (target: **60+ original scenario questions** plus a full timed certification bridge mock exam upon completion of the 28-topic expansion).
-- **Current Coverage**: **30 questions** (`Q-CERT-001`–`Q-CERT-030`) covering Topic 01 (`Scale From Zero to Millions` — Module 15), Topic 02 (`Distributed Key-Value Store` — Module 16), Topic 03 (`Google Maps` — Module 17), Topic 04 (`Distributed Message Queue` — Module 18), and Topic 05 (`Hotel Reservation System` — Module 19).
+- **Current Coverage**: **36 questions** (`Q-CERT-001`–`Q-CERT-036`) covering Topic 01 (`Scale From Zero to Millions` — Module 15), Topic 02 (`Distributed Key-Value Store` — Module 16), Topic 03 (`Google Maps` — Module 17), Topic 04 (`Distributed Message Queue` — Module 18), Topic 05 (`Hotel Reservation System` — Module 19), and Topic 06 (`Distributed Email Service` — Module 20).
 
 ---
 
@@ -627,5 +627,128 @@ Select **two** genuine architectural improvements achieved when modernizing a 20
 - Why not C: SQL `BETWEEN` is inclusive of both endpoints and locks the checkout day as an extra night, _reducing_ occupancy by blocking same-day check-ins.
 - Why not D: Client-side UI button disabling is trivially bypassed by network retries, multiple users, or non-browser clients and cannot prevent double-booking or overselling.
 - Ref: [modules/19-hotel-reservation-system.md](../modules/19-hotel-reservation-system.md#6-production-gotchas-sre-guardrails-and-2021-vs-2026-comparison), https://www.rfc-editor.org/rfc/rfc9562
+
+</details>
+
+---
+
+## Module 20: Distributed Email Service, Deliverability & Per-User Search (`Q-CERT-031`–`Q-CERT-036`)
+
+### Q-CERT-031 · AWS SAP-C02: Dedicated IP Pools, SES Deliverability & Content-Addressed S3 Attachments · difficulty 3 · scenario
+
+A SaaS platform on AWS dispatches both time-critical 2FA login codes and high-volume promotional newsletters through Amazon Simple Email Service (SES), while storing user email attachments in Amazon S3. Last week, a promotional campaign triggered a `0.45%` user spam complaint rate at Gmail and Yahoo, causing outbound 2FA codes to be throttled and routed to Spam, while S3 attachment costs spiked due to identical PDF brochures attached across millions of messages. Which AWS architecture resolves both failures?
+
+- A) Keep all traffic on a single shared SES IP pool, disable complaint feedback notifications, and store attachments inline as Base64 strings inside Amazon DynamoDB.
+- B) Isolate transactional 2FA mail and promotional mail onto separate Amazon SES Dedicated IP Pools (and distinct subdomains) with managed IP warm-up enabled; route SES bounce and complaint Feedback Loop (FBL) events via Amazon SNS to an automated circuit breaker that pauses the marketing pool before complaints reach the `0.3%` bulk-sender limit; and decode MIME Base64 attachments at the edge into an S3 Content-Addressed Store keyed by `SHA-256` digest with reference-counted lifecycle reclamation.
+- C) Provision 50 brand-new un-warmed dedicated IPs and blast 5 million promotional emails on Day 1 while storing duplicate raw Base64 files per recipient in S3 Standard.
+- D) Disable DKIM and DMARC so recipient MTAs cannot attribute spam complaints to the sender domain.
+
+<details><summary>Answer</summary>
+
+**B.** Separating transactional and marketing streams onto distinct SES Dedicated IP Pools and subdomains prevents a promotional complaint spike from poisoning 2FA IP reputation. Managed IP warm-up ramps new IP volume gradually over 2–6 weeks, SNS FBL notifications trip an automated circuit breaker before the `0.3%` (`0.003`) Gmail/Yahoo bulk-sender complaint ceiling is breached, and decoding Base64 attachments into a `SHA-256` content-addressed S3 bucket eliminates both the `33.3%` Base64 bloat and duplicate broadcast copies.
+
+- Why not A: A shared IP pool couples transactional and marketing reputation, and storing large Base64 blobs in DynamoDB violates the `400 KB` item limit while paying a `33.3%` encoding penalty.
+- Why not C: Blasting millions of messages through un-warmed IPs triggers immediate ISP throttling/blocking, and per-recipient Base64 copies waste petabytes of storage.
+- Why not D: Gmail and Yahoo mandate SPF, DKIM, and DMARC authentication for bulk senders; removing them causes immediate edge rejection (`550`).
+- Ref: [modules/20-distributed-email-service.md](../modules/20-distributed-email-service.md#4-email-deliverability-authentication-and-bulk-sender-guardrails), https://docs.aws.amazon.com/ses/latest/dg/dedicated-ip-management.html
+
+</details>
+
+### Q-CERT-032 · AWS SAP-C02: Multi-Tenant Per-User Email Search on Amazon OpenSearch · difficulty 3 · single
+
+A multi-tenant email service uses Amazon OpenSearch Service with `128` primary shards to index incoming emails and flag changes. Currently, every single-user mailbox search query fans out across all `128` shards, causing high `p99` latency and CPU saturation during peak hours. Which architectural change eliminates cluster-wide scatter-gather queries while keeping ingestion decoupled from the mail delivery path?
+
+- A) Stream mailbox mutation events through an Amazon MSK (Kafka) topic partitioned by `user_id` and index every document into OpenSearch with `_routing = user_id` (and query with `_routing = user_id`), ensuring each user's entire mailbox resides on a single shard.
+- B) Route documents randomly by `message_id` across all `128` shards and increase the OpenSearch HTTP client timeout to `60 seconds`.
+- C) Execute synchronous blocking OpenSearch index writes inside the SMTP `DATA` transaction before returning `250 OK` to the remote MTA, with no routing key.
+- D) Create a separate OpenSearch cluster for every individual user account (`1 billion` clusters).
+
+<details><summary>Answer</summary>
+
+**A.** Email search is strictly isolated to a single `user_id` and is write-heavy. Decoupling index mutations through Amazon MSK (keyed by `user_id` to preserve per-user causal order) keeps the mail delivery path fast, and setting `_routing = user_id` in OpenSearch hashes all documents for a user onto **1 shard** (`hash(user_id) % 128`), turning a 128-shard scatter-gather query into a single-shard read.
+
+- Why not B: Routing by `message_id` scatters one user's emails across every shard in the cluster, preserving the 128-shard fan-out bottleneck.
+- Why not C: Synchronous index writes on the SMTP hot path couple mail acceptance availability to search cluster health and still fail to solve the 128-shard query fan-out.
+- Why not D: Provisioning a dedicated cluster per user is impossible at millions or billions of users; logical shard routing (`_routing = user_id`) or a co-located per-user LSM index achieves isolation within shared infrastructure.
+- Ref: [modules/20-distributed-email-service.md](../modules/20-distributed-email-service.md#5-write-heavy-per-user-email-search-elasticsearch-vs-custom-lsm-indexes), https://docs.aws.amazon.com/opensearch-service/latest/developerguide/sizing-domains.html
+
+</details>
+
+### Q-CERT-033 · GCP PCA: Planetary Mailbox Storage on Cloud Bigtable / Spanner & Pub/Sub · difficulty 3 · scenario
+
+You are architecting a global consumer email platform on Google Cloud. Mailbox metadata (folders, read/unread state, labels, and RFC 5322 threading headers) must support high-throughput sequential writes partitioned by `user_id` with **CP strong consistency** so deleted or read emails never resurrect across devices, attachments (`1.46 EB/yr` raw) must be deduplicated, and ML phishing/BEC classification must not block edge SMTP acceptance. Which Google Cloud architecture best fits?
+
+- A) Store mailbox metadata in multi-region Cloud Spanner (or single-cluster-routed Cloud Bigtable with strong per-tablet consistency) keyed by `(user_id, email_id DESC)` with denormalized unread/label indexes; decode Base64 attachments at the edge into Cloud Storage keyed by `SHA-256` hash with reference counting; and stream accepted envelopes through Cloud Pub/Sub to asynchronous Vertex AI / Dataflow spam-classification and search-indexing workers.
+- B) Store each email as a separate POSIX file on a single Compute Engine Persistent Disk shared via NFS across regions.
+- C) Store `25 MB` Base64 attachments directly inside Cloud Pub/Sub attributes and rely on eventually consistent cross-region Bigtable multi-cluster routing without conflict resolution for read flags.
+- D) Use BigQuery as the primary OLTP mailbox database for per-message `is_read` flag toggles at `500,000 QPS`.
+
+<details><summary>Answer</summary>
+
+**A.** Keying Cloud Spanner (or single-routed Bigtable tablets) by `user_id` with descending `TimeUUID`/`UUIDv7` `email_id` clustering co-locates a user's entire mailbox for fast sequential newest-first scans while providing strong CP consistency across devices. Decoding Base64 attachments into Cloud Storage by `SHA-256` digest eliminates duplicate blobs, and Cloud Pub/Sub decouples edge SMTP acceptance from heavy ML phishing/BEC classification and search indexing.
+
+- Why not B: File-per-email on an NFS persistent disk suffers inode exhaustion, random 4 KB IOPS saturation, and single-point-of-failure storage bottlenecks.
+- Why not C: Cloud Pub/Sub has a `10 MB` message size limit (attachments belong in Cloud Storage, not message buses), and uncoordinated eventual consistency causes read/delete flag resurrection across devices.
+- Why not D: BigQuery is a columnar analytical data warehouse (`OLAP`), not a low-latency high-QPS row-mutation OLTP mailbox store.
+- Ref: [modules/20-distributed-email-service.md](../modules/20-distributed-email-service.md#3-mailbox-storage-engine-data-modeling-threading-and-attachment-deduplication), https://cloud.google.com/bigtable/docs/overview
+
+</details>
+
+### Q-CERT-034 · Azure AZ-305: Enterprise Email Pipeline with Azure Communication Services, Cosmos DB & AI Search · difficulty 2 · scenario
+
+An enterprise collaboration suite on Azure needs to store user mailbox metadata with per-user partition locality, strong consistency for read/unread and draft mutations, deduplicated binary attachment storage, and asynchronous full-text search indexing. Which Azure architecture should you select?
+
+- A) Partition Azure Cosmos DB by `user_id` using Strong or Bounded-Staleness consistency (with denormalized unread projections or composite indexes on `(folder_id, email_id DESC)`), store decoded binary attachments in Azure Blob Storage keyed by `SHA-256` content hash with reference counts, and stream Cosmos DB Change Feed events through Azure Event Hubs to index documents in Azure AI Search.
+- B) Partition Azure Cosmos DB by random `attachment_id` with Eventual consistency and store `20 MB` attachments inline inside the `2 MB`-capped Cosmos DB JSON item.
+- C) Store all mailbox metadata in unindexed Azure Queue Storage and rebuild the search index once a week via an Azure Automation script.
+- D) Use a single Azure Cache for Redis instance with no persistent backing store for 10-year enterprise email archival.
+
+<details><summary>Answer</summary>
+
+**A.** Partitioning Cosmos DB by `user_id` scopes every folder list, thread reconstruction, and flag toggle to a single logical partition (`100%` single-partition queries), while Strong / Bounded-Staleness consistency prevents multi-device read-state split-brain. Offloading decoded binary attachments to Azure Blob Storage by `SHA-256` hash avoids Cosmos DB's `2 MB` item limit and deduplicates shared files, and the Cosmos DB Change Feed -> Event Hubs pipeline keeps Azure AI Search updated within seconds asynchronously.
+
+- Why not B: Partitioning by `attachment_id` breaks per-user queries, Eventual consistency permits deleted/read flag regression, and `20 MB` attachments fail Cosmos DB's `2 MB` document size limit.
+- Why not C: Queue Storage is an ephemeral work queue (64 KB message cap), not an indexed mailbox store, and weekly search indexing violates real-time search SLAs.
+- Why not D: In-memory Redis cannot cost-effectively or durably store multi-petabyte 10-year compliance archives.
+- Ref: [modules/20-distributed-email-service.md](../modules/20-distributed-email-service.md#3-mailbox-storage-engine-data-modeling-threading-and-attachment-deduplication), https://learn.microsoft.com/en-us/azure/cosmos-db/partitioning-overview
+
+</details>
+
+### Q-CERT-035 · CNCF / SRE: SMTP Queue Depth, IP Reputation & DMARC/Complaint Guardrails · difficulty 3 · single
+
+An SRE on-call engineer observes that the Outbound SMTP Retry Queue depth is growing steadily, while outbound SMTP worker CPU sits at `25%`. Per-domain telemetry reveals that `92%` of queued messages target a single external ISP returning `421 4.7.0 Try again later (greylisted / rate-limited)`, while one marketing tenant's ISP Feedback Loop (FBL) complaint rate just hit `0.34%`. What is the correct automated and operational remediation?
+
+- A) Immediately scale the outbound SMTP worker fleet by `10x` so all queued messages retry against the external ISP simultaneously every second.
+- B) Trip the marketing IP pool / tenant circuit breaker immediately because its `0.34%` complaint rate breached the `0.30%` (`0.003`) bulk-sender threshold, isolate its messages from healthy senders, and keep the `421`-deferred messages in the hierarchical timing-wheel retry queue with **full-jitter exponential backoff** (`5m -> 15m -> 1h -> 4h` up to `72h`) rather than scaling workers into a retry storm against the rate-limiting ISP.
+- C) Delete all messages in the retry queue immediately without notifying senders so queue depth returns to zero.
+- D) Re-route the offending marketing campaign onto the transactional 2FA dedicated IP pool so it bypasses the marketing pool throttle.
+
+<details><summary>Answer</summary>
+
+**B.** As ByteByteGo Chapter 23 notes, a growing outbound retry queue has two distinct root causes: (1) insufficient worker capacity (high worker CPU across all domains), or (2) a remote recipient MTA returning `4xx` transient deferrals/throttling. Because worker CPU is `25%` and `92%` of deferrals come from one ISP's `421` rate limit triggered by a `0.34% >= 0.30%` spam-complaint spike, scaling workers would create a retry storm that gets the IPs permanently blocklisted! The correct action is to trip the FBL complaint circuit breaker on the offending marketing tenant/pool and drain the `421` backlog via jittered exponential backoff up to `72 hours`.
+
+- Why not A: Multiplying worker retries against a remote MTA returning `421 rate-limited` is a classic retry storm that converts a temporary deferral into a permanent IP blocklist (`550`).
+- Why not C: Silently dropping queued email violates the zero-data-loss contract; deferred mail must retry for up to `72 hours` and emit an explicit Non-Delivery Report (NDR bounce) if still undeliverable.
+- Why not D: Moving high-complaint marketing traffic onto the transactional 2FA IP pool poisons the transactional IPs and blocks user login/password-reset codes.
+- Ref: [modules/20-distributed-email-service.md](../modules/20-distributed-email-service.md#6-production-gotchas-sre-guardrails-and-2021-vs-2026-comparison), https://www.rfc-editor.org/rfc/rfc5321
+
+</details>
+
+### Q-CERT-036 · Multi-Cloud Architecture: 2021 vs. 2026 Email Platform Modernization · difficulty 2 · multi
+
+Select **two** genuine architectural improvements when modernizing a 2021 email platform (stateful IMAP4 connections, opportunistic `STARTTLS`, `DMARC p=none`, unrouted Elasticsearch, and per-recipient Base64 attachment files) to the 2026 standard.
+
+- A) Adopting **JMAP (RFC 8620 / 8621)** over stateless HTTP/2+ with `Email/changes` delta sync and **MTA-STS (RFC 8461)** eliminates sticky IMAP TCP connection bottlenecks and closes the active MITM downgrade vulnerability of opportunistic `STARTTLS`.
+- B) Enforcing strict **DMARC (`p=quarantine/reject`)** with **ARC (RFC 8617)** and **RFC 8058 One-Click `List-Unsubscribe-Post`** alongside **edge Base64 decoding into a SHA-256 Content-Addressed Store (CAS)** blocks domain spoofing, satisfies 2024–2026 bulk-sender rules (`< 0.3%` complaints), and cuts physical attachment storage by `50%+`.
+- C) Replacing `user_id` partitioning with random `email_id` partitioning in the metadata store and search index eliminates single-shard locality so every inbox view queries every node in the datacenter.
+- D) Storing raw MIME Base64 strings without decoding reduces object-storage capacity requirements by `33.3%`.
+
+<details><summary>Answer</summary>
+
+**A, B.** JMAP (RFC 8620/8621) brings stateless HTTP/2+ batched delta sync to web and mobile clients while MTA-STS (RFC 8461) prevents SMTP `STARTTLS` downgrade attacks. Simultaneously, strict DMARC + ARC + RFC 8058 one-click unsubscribe + `< 0.3%` FBL circuit breakers meet modern ISP deliverability mandates, and decoding Base64 into a SHA-256 Content-Addressed Store eliminates both the `+33.3%` Base64 wire tax and duplicate attachment storage.
+
+- Why not C: Random `email_id` partitioning destroys per-user data locality, forcing expensive cross-shard scatter-gather scans on every folder load and search query.
+- Why not D: Base64 _increases_ byte size by `33.33%` (`4` ASCII bytes per `3` binary bytes); decoding Base64 to raw binary is what saves storage.
+- Ref: [modules/20-distributed-email-service.md](../modules/20-distributed-email-service.md#6-production-gotchas-sre-guardrails-and-2021-vs-2026-comparison), https://www.rfc-editor.org/rfc/rfc8620, https://www.rfc-editor.org/rfc/rfc8461
 
 </details>

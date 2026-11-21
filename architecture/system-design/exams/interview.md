@@ -2,7 +2,7 @@
 
 This preparation bank tests Senior, Staff, and Principal distributed system design competency across the seven domains defined in [`exams/README.md`](README.md). Every question is original and grounded in primary engineering literature, official protocol RFCs, and production postmortems.
 
-- **Bank scope**: **95 questions** (`Q-SD-001`–`Q-SD-095`) covering quantitative capacity modeling, edge/API design, caching/partitioning, asynchrony/resilience, specialized indexing/financial correctness, SLO observability/DR, end-to-end canonical architectures, progressive scaling, distributed key-value stores, planetary-scale geospatial navigation, distributed message queue internals, and high-contention hotel reservation and overbooking systems.
+- **Bank scope**: **100 questions** (`Q-SD-001`–`Q-SD-100`) covering quantitative capacity modeling, edge/API design, caching/partitioning, asynchrony/resilience, specialized indexing/financial correctness, SLO observability/DR, end-to-end canonical architectures, progressive scaling, distributed key-value stores, planetary-scale geospatial navigation, distributed message queue internals, high-contention hotel reservation and overbooking systems, and planetary distributed email services.
 - **Difficulty calibration**: Level `1` tests foundational mechanics, Level `2` tests Senior-level trade-off reasoning, and Level `3` tests Staff/Principal failure modes, subtle race conditions, and quantitative traps.
 - **Timed practice**: Complete the [50-Question Written Architecture Drill](#timed-mock-exam-written-architecture-drill-50-questions--75-minutes) under a strict 75-minute timer, then run the [two 60-minute Staff/Principal design loops](#timed-mock-design-loops-2--60-minute-staffprincipal-simulations) against the explicit 0–4 grading rubrics.
 
@@ -1941,6 +1941,115 @@ Which **two** statements accurately justify co-locating the `reservation` and `r
 - Why not C: Without a client-supplied `reservation_id` and `UNIQUE` constraint, two network packets from a double-click look like two distinct bookings to the database and double-book the guest.
 - Why not D: Sharding by `reservation_id` scatters reservations randomly across shards while inventory queries filter by `hotel_id`, forcing cross-shard distributed transactions on every booking.
 - Ref: [modules/19-hotel-reservation-system.md](../modules/19-hotel-reservation-system.md#5-microservice-consistency-co-located-acid-boundary-vs-2pc-and-saga-workflows), https://pubsonline.informs.org/doi/10.1287/opre.37.2.183
+
+</details>
+
+---
+
+### Q-SD-096 · Distributed Email Systems, Deliverability & Mailbox Storage · difficulty 3 · scenario
+
+A planetary email provider serves `1,000,000,000` (`1B`) users. Each user sends `10` messages/day and receives `40` messages/day. Average message metadata plus body is `50 KB`, and `20%` of received messages carry an attachment averaging `500 KB`. Attachments are transmitted over SMTP using RFC 2045 Base64 transfer encoding under a strict `25 MB` encoded MIME message ceiling. Which quantitative analysis and storage architecture is correct?
+
+- A) The `25 MB` MIME ceiling permits `25 MB` of raw binary attachments, so persisting the Base64-encoded string directly in S3 adds zero storage overhead.
+- B) Outbound send volume averages `~115.7k` emails/sec (`10^10 / 86,400`), received metadata plus bodies generate `2 PB/day` (`730 PB/year`), and raw attachments generate `4 PB/day` (`1,460 PB/year`, or `2.19 EB/year` combined raw). Because Base64 maps `3` binary bytes into `4` ASCII characters (`+33.3%` wire expansion), a `25 MB` MIME ceiling holds at most `~18.75 MB` of raw binary, making edge Base64 decoding and SHA-256 Content-Addressed Storage (CAS) deduplication in S3/GCS mandatory.
+- C) Storage is dominated by `50 KB` text bodies (`1,460 PB/year`) rather than attachments (`365 PB/year`), so attachment deduplication is unnecessary.
+- D) Outbound send volume averages `1.16M` emails/sec because `10^9` users sending `10` emails/day equals `10^11` emails/day.
+
+<details><summary>Answer</summary>
+
+**B.** Outbound volume is $10^9 \times 10 / 86{,}400 \approx 115{,}740.74\text{ msg/s}$ (`~100k/s` mental anchor). Inbound volume is $4 \times 10^{10}\text{ msg/day}$: at `50 KB` metadata+body, that produces $2\text{ PB/day} = 730\text{ PB/year}$; with `20%` carrying `500 KB` attachments ($8 \times 10^9 \times 500\text{ KB}$), raw attachments produce $4\text{ PB/day} = 1{,}460\text{ PB/year}$. RFC 2045 Base64 expands `3` binary bytes into `4` ASCII bytes (`4/3` ratio), so a `25 MB` MIME limit carries at most $25 \times \frac{3}{4} = 18.75\text{ MB}$ of raw binary; decoding Base64 at the edge avoids wasting `33.3%` (`+487 PB/yr`) of storage, and keying S3 objects by `SHA-256` with reference counting deduplicates broadcasts and forwards across recipients.
+
+- Why not A: Base64 expands raw binary payloads by `+33.33%` (`4/3` ratio, plus `CRLF` line breaks every 76 chars), meaning `25%` of the encoded `25 MB` wire payload (`6.25 MB`) is encoding overhead; persisting raw Base64 text wastes `+33.3%` (`+487 PB/yr`) over raw binary storage and breaks cross-client hash deduplication.
+- Why not C: Attachments (`1,460 PB/yr` raw) are twice as large as metadata and bodies (`730 PB/yr`), making attachment CAS deduplication the single largest storage saver.
+- Why not D: $10^9 \times 10 = 10^{10}$ emails/day (`~115.7k/s`), not $10^{11}$ (`1.16M/s`).
+- Ref: [modules/20-distributed-email-service.md](../modules/20-distributed-email-service.md#1-requirements-protocol-evolution-and-planetary-storage-sizing), https://www.rfc-editor.org/rfc/rfc2045
+
+</details>
+
+---
+
+### Q-SD-097 · Distributed Email Systems, Deliverability & Mailbox Storage · difficulty 3 · scenario
+
+A mailbox storage engine uses a wide-column store (Cassandra / ScyllaDB / Bigtable) partitioned by `user_id` and clustered by `email_id` (`TimeUUID` / `UUIDv7` sorted `DESC`). To support the UI's "Filter by Unread" view inside a folder, a developer proposes `SELECT * FROM emails_by_folder WHERE user_id = ? AND folder_id = ? AND is_read = false ALLOW FILTERING` under eventual consistency (`AP`). Why does this fail at scale, and what is the production solution?
+
+- A) `ALLOW FILTERING` works in $O(1)$ time on non-clustering columns in Cassandra, so the only required change is switching `email_id` to random `UUIDv4`.
+- B) Filtering on a non-clustering boolean column (`is_read`) forces a full partition scan across every historical email in the user's folder; instead, denormalize into `read_emails` and `unread_emails` projection tables keyed by `((user_id, folder_id), email_id DESC)` (or maintain a co-located per-user LSM secondary index over a `label_bitmask`) and enforce **CP strong consistency** so read/delete mutations never resurrect or split-brain across a user's devices.
+- C) Partition the primary table by `email_id` instead of `user_id` so each message sits on its own node, and query unread messages via a global scatter-gather scan.
+- D) Use an eventually consistent AP ring with wall-clock Last-Write-Wins (LWW) and rebuild unread views once a day via a MapReduce batch job.
+
+<details><summary>Answer</summary>
+
+**B.** Wide-column stores only seek efficiently along the `(partition_key, clustering_key)` prefix. Because `is_read` is a mutable boolean attribute rather than the leading clustering column, `ALLOW FILTERING` scans all historical rows in the partition. Denormalizing into `read_emails` and `unread_emails` keyed by `((user_id, folder_id), email_id DESC)` (moving `email_id` between the two tables atomically when toggled) turns unread listing into a sequential clustering scan, and choosing **CP** consistency prevents deleted or read emails from reappearing as unread across phone and laptop sessions.
+
+- Why not A: `ALLOW FILTERING` performs a linear scan over the partition on disk, and random `UUIDv4` destroys chronological `DESC` sorting.
+- Why not C: Partitioning by `email_id` destroys per-user locality, turning every single inbox load into a cluster-wide scatter-gather query.
+- Why not D: An unread filter must reflect flag toggles within milliseconds across devices; daily batch rebuilds and AP LWW staleness break core mailbox UX.
+- Ref: [modules/20-distributed-email-service.md](../modules/20-distributed-email-service.md#3-mailbox-storage-engine-data-modeling-threading-and-attachment-deduplication), https://cassandra.apache.org/doc/latest/cassandra/developing/data-modeling/index.html
+
+</details>
+
+---
+
+### Q-SD-098 · Distributed Email Systems, Deliverability & Mailbox Storage · difficulty 3 · single
+
+An attacker sends a phishing message with the visible RFC 5322 header `From: "Bank Security" <security@bank.com>`, using an SMTP envelope sender `MAIL FROM:<bounces@evil-phish.org>` from an IP address that is legitimately authorized by `evil-phish.org`'s SPF record (`SPF pass`). Which statement accurately explains how DMARC (RFC 7489) and ARC (RFC 8617) handle this attack versus a legitimate mailing-list forward?
+
+- A) Because SPF passed for `evil-phish.org`, DMARC automatically accepts the message regardless of the visible `From:` domain.
+- B) DMARC enforces **Identifier Alignment** between the visible RFC 5322 `From:` domain (`bank.com`) and the authenticated SPF `MAIL FROM` domain (`evil-phish.org`) or DKIM `d=` domain; because `evil-phish.org` does not align with `bank.com` and the message lacks a valid `bank.com` DKIM signature, DMARC fails and rejects the spoofed email, whereas on a legitimate mailing-list forward where the list server's IP breaks SPF and a list footer breaks DKIM, a cryptographically verified **ARC (`RFC 8617`)** seal chain from a trusted forwarder preserves the original `i=1` pass verdict.
+- C) ARC replaces DMARC by automatically rewriting the visible `From:` header of every email to match the receiving server's hostname.
+- D) DMARC checks alignment solely against the SMTP `RCPT TO` recipient address and ignores `DKIM-Signature` headers completely.
+
+<details><summary>Answer</summary>
+
+**B.** Plain SPF (RFC 7208) only authenticates the invisible RFC 5321 envelope `MAIL FROM` domain, leaving the human-visible RFC 5322 `From:` header unprotected against spoofing. DMARC (RFC 7489) requires that the `From:` domain match (`strict` exact or `relaxed` organizational match) either a passing SPF domain or a passing DKIM `d=` domain. Because `evil-phish.org != bank.com`, DMARC rejects the phishing attempt. Conversely, when a legitimate email passes through a mailing list that alters the sending IP (breaking SPF) and appends a footer (breaking DKIM), **ARC (RFC 8617)** chains signed `ARC-Authentication-Results` and `ARC-Seal` headers (`i=1..N`) so the recipient MTA can verify that the message authenticated cleanly when it entered the forwarder.
+
+- Why not A: Passing SPF on an unaligned attacker domain (`evil-phish.org`) fails DMARC alignment against `From: security@bank.com`.
+- Why not C: ARC never rewrites `From:` into the receiver's hostname; it signs a cryptographic chain of custody across intermediaries.
+- Why not D: DMARC aligns the sender's `From:` domain against SPF (`MAIL FROM`) and DKIM (`d=`), never against `RCPT TO`.
+- Ref: [modules/20-distributed-email-service.md](../modules/20-distributed-email-service.md#4-email-deliverability-authentication-and-bulk-sender-guardrails), https://www.rfc-editor.org/rfc/rfc7489
+
+</details>
+
+---
+
+### Q-SD-099 · Distributed Email Systems, Deliverability & Mailbox Storage · difficulty 2 · ordering
+
+Order the execution steps of the outbound email sending pipeline from client submission (`POST /v1/messages`) through delivery or transient retry deferral.
+
+- A) L7 per-user rate limit → Web server RFC 5322/size validation & raw attachment extraction to S3 SHA-256 CAS → internal same-domain short-circuit evaluation (after running spam/virus scan) or enqueue to Outgoing Kafka Queue → Outgoing SMTP Worker signs DKIM, resolves DNS MX + MTA-STS policy, and transmits over TLS (or routes transient `4xx` deferrals to the jittered exponential-backoff Retry Queue) → persist copy in sender's `Sent` folder
+- B) Outgoing Kafka Queue → L7 per-user rate limit → transmit over unencrypted SMTP before DKIM signing → upload Base64 attachments to S3 → run spam scan after delivery
+- C) Persist copy in `Sent` folder → bypass spam scan on internal same-domain messages → Web server size check → L7 per-user rate limit → Outgoing Kafka Queue
+- D) L7 per-user rate limit → hold synchronous HTTP client request open for `72 hours` across all `4xx` remote MTA greylisting retries → validate message size after remote MTA accepts
+
+<details><summary>Answer</summary>
+
+**A.** The L7 load balancer first enforces per-user send rate limits to block compromised account floods. The web server validates header grammar and the `25 MB` MIME size ceiling, strips attachments into S3 Content-Addressed Storage (`SHA-256`), and routes invalid requests to the error queue. Valid messages run spam/virus checks (short-circuiting external DNS MX/SMTP relay if the recipient is on the same domain, while never bypassing anti-spam!) or enter the Outgoing Kafka Queue. Outgoing SMTP workers sign with DKIM, resolve DNS MX and MTA-STS policies, deliver over TLS (routing transient `4xx` deferrals to an exponential-backoff retry queue up to `72 hours`), and record the sent message in the `Sent` folder.
+
+- Why not B: Enqueuing and transmitting before rate limiting, validation, attachment extraction, DKIM signing, and spam scanning allows abusive or malformed payloads onto the wire.
+- Why not C: Skipping anti-spam checks on internal same-domain mail allows phished internal accounts to pivot laterally without inspection.
+- Why not D: Remote MTA `4xx` retries span hours (`5m..72h`) and must execute asynchronously via a durable retry queue rather than blocking an HTTP connection.
+- Ref: [modules/20-distributed-email-service.md](../modules/20-distributed-email-service.md#2-high-level-architecture-and-end-to-end-send-and-receive-pipelines), https://www.rfc-editor.org/rfc/rfc5321
+
+</details>
+
+---
+
+### Q-SD-100 · Distributed Email Systems, Deliverability & Mailbox Storage · difficulty 3 · multi
+
+Select **two** accurate architectural statements contrasting write-heavy per-user email search and modern client sync against global web search and legacy IMAP.
+
+- A) Email search is **write-heavy** and strictly isolated to a single `user_id` (every delivered email, read toggle, folder move, or deletion triggers an index write while users search infrequently), so an Elasticsearch cluster must set `_routing = user_id` to keep a user's documents on one shard — or be replaced at planetary scale by a co-located per-user **LSM-tree inverted index** (MemTable $\to$ immutable SSTables) that turns random index updates into sequential disk I/O without duplicating storage clusters.
+- B) **JMAP (RFC 8620 / RFC 8621)** replaces stateful folder-pinned IMAP4 TCP connections with stateless HTTP/2+ batched JSON method calls and `Email/changes` delta state tokens, cutting mobile battery drain and round-trip chattiness while scaling horizontally behind standard L7 load balancers.
+- C) Email search should omit `_routing = user_id` and scatter every user's emails evenly across all `100` Elasticsearch shards so that every single-user search query fans out to all `100` shards.
+- D) Web search is more write-heavy than email search because users run fewer search queries on Google than in their personal email inbox.
+
+<details><summary>Answer</summary>
+
+**A, B.** Because every mailbox mutation (`463k/s` inbound + flag/folder updates) triggers an index write while users search rarely, email search is write-heavy and strictly scoped to one `user_id`. Routing by `user_id` in Elasticsearch avoids cluster-wide scatter-gather queries, while a co-located per-user LSM index eliminates dual-cluster petabyte duplication and converts token updates into sequential SSTable flushes. On the client sync tier, JMAP (RFC 8620/8621) replaces stateful IMAP TCP sessions with stateless HTTP/2+ batched JSON requests and delta sync tokens.
+
+- Why not C: Scattering a single user's emails across all `100` shards forces a `100-shard` fan-out on every search query, multiplying tail latency and CPU overhead by `100x`.
+- Why not D: Web search is overwhelmingly read-heavy over a shared global corpus, whereas email search is write-heavy over isolated per-user partitions.
+- Ref: [modules/20-distributed-email-service.md](../modules/20-distributed-email-service.md#5-write-heavy-per-user-email-search-elasticsearch-vs-custom-lsm-indexes), https://www.rfc-editor.org/rfc/rfc8620
 
 </details>
 
