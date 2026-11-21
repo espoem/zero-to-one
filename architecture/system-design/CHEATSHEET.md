@@ -270,7 +270,7 @@ flowchart LR
 
 ---
 
-## 6. Top 55 Production Failure Modes & One-Line Fixes
+## 6. Top 59 Production Failure Modes & One-Line Fixes
 
 | # | Failure Mode | How It Breaks Production | One-Line Fix |
 | :-- | :-- | :-- | :-- |
@@ -329,3 +329,7 @@ flowchart LR
 | **53** | **Sizing High-Fanout Pub/Sub by RAM (`2` Nodes) Instead of CPU (`140` Nodes)** | Provisioning 2 servers because `200 GB` of channel state fits in RAM collapses under `333.3k × 40 = 13.33M` (`~14M`) subscriber pushes/sec. | Size Pub/Sub clusters by per-core subscriber push throughput (`~100,000 pushes/s/node` $\to$ `134–140` CPU-bound servers). |
 | **54** | **Frozen Zombie Friend Pins on Radius Exit & `hash % N` Resubscribe Storms** | Silently dropping updates when a friend crosses `> 5 miles` leaves their pin frozen at `4.9 mi`, while `hash % N` scaling remaps `~99%` of channels. | Track `currentlyVisibleFriends` to emit an explicit `LEFT_RADIUS` unpin frame, and use Consistent Hashing (`~1/(N+1)` moved) during 03:00 AM off-peak windows. |
 | **55** | **3-Circle Trilateration Exact-Distance Stalking** | Returning exact float distances lets a malicious friend spoof 3 GPS points and intersect 3 distance circles to pinpoint a user's exact home address. | Quantize friend distances into `0.5-mile` buckets (`<= 0.5 mi` floor), add planar Laplace geo-indistinguishability noise, and reject `> 300 m/s` GPS teleports. |
+| **56** | **IEEE-754 Float Monetary Balance Drift** | Representing money as `number` / `FLOAT` (`0.1 + 0.2 = 0.30000000000000004`) causes cumulative sub-cent rounding drift that breaks double-entry conservation ($\sum \Delta = 0$). | Transmit wire amounts as decimal strings (`"1.00"`), parse into exact `BigInt` minor units (`100n` cents), and enforce `(transaction_id, payload_hash)` idempotency. |
+| **57** | **TC/C Phase 1 Credit-First Unbacked Double-Spend** | Crediting receiver $C$ (`+$1`) during Phase 1 `Try` before sender $A$'s debit is committed lets $C$ withdraw unbacked phantom funds if Phase 1 aborts. | Always make TC/C Phase 1 `Try` **debit-first (`-$1` on sender $A$) and `NOP` on receiver $C$**, crediting $C$ only in Phase 2 `Confirm`. |
+| **58** | **TC/C Out-of-Order Cancel Without Tombstone (`Hanging Try`)** | Network-delayed `Try` arrives after `Cancel` already ran as a no-op, deducting `-$1` from sender $A$ forever with no subsequent `Cancel` to release it. | Persist an `out_of_order_flag = true` (`CANCEL_TOMBSTONE`) in the Phase Status Table on early `Cancel` so any late-arriving `Try` is rejected immediately. |
+| **59** | **Non-Deterministic Event-Sourcing State Machine & Pull-CQRS Polling** | Calling `Date.now()`, `Math.random()`, or external I/O inside event replay causes Raft followers to diverge, while client polling (`GET /balance`) floods read nodes. | Replicate only immutable validated **Events** via Raft (zero external I/O inside state transitions) and use **Push-Based Reverse Proxy CQRS** completion notifications. |

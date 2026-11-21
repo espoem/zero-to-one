@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 620" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #0b1020; }
+      .panel { fill: #121a30; stroke: #2b3b66; stroke-width: 1.5; rx: 10; }
+      .col-2021 { fill: #2a1820; stroke: #e05263; stroke-width: 1.5; rx: 8; }
+      .col-2026 { fill: #102a24; stroke: #2ec486; stroke-width: 1.5; rx: 8; }
+      .dim-box { fill: #16223f; stroke: #4c8bf5; stroke-width: 1.5; rx: 6; }
+      .title { font-family: 'Inter', -apple-system, sans-serif; font-size: 18px; font-weight: 700; fill: #f8fafc; }
+      .subtitle { font-family: 'Inter', -apple-system, sans-serif; font-size: 12px; fill: #94a3b8; }
+      .hdr { font-family: 'Inter', -apple-system, sans-serif; font-size: 14px; font-weight: 700; fill: #f1f5f9; }
+      .dim-txt { font-family: 'Inter', -apple-system, sans-serif; font-size: 12px; font-weight: 700; fill: #93c5fd; }
+      .txt { font-family: 'Inter', -apple-system, sans-serif; font-size: 11px; fill: #e2e8f0; }
+      .code-old { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10.5px; fill: #fca5a5; }
+      .code-new { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10.5px; fill: #6ee7b7; }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1280" height="620"/>
+
+  <text class="title" x="24" y="32">Digital Wallet &amp; Ledger Evolution: 2021 Default vs. 2026 Modern Standard</text>
+  <text class="subtitle" x="24" y="50">From Custom mmap/RocksDB/HDFS Event Pipes &amp; Hand-Rolled Phase Tables to TigerBeetle io_uring VSR, Temporal Sagas &amp; WORM Ledgers</text>
+
+  <!-- Column Headers -->
+  <rect class="dim-box" x="20" y="68" width="220" height="38"/>
+  <text class="hdr" x="34" y="92">Architectural Dimension</text>
+
+  <rect class="col-2021" x="252" y="68" width="490" height="38"/>
+  <text class="hdr" x="266" y="92">2021 Textbook Baseline (ByteByteGo Ch. 27)</text>
+
+  <rect class="col-2026" x="754" y="68" width="506" height="38"/>
+  <text class="hdr" x="768" y="92">2026 Production Standard (Purpose-Built Financial Engines)</text>
+
+  <!-- Row 1 -->
+  <rect class="dim-box" x="20" y="116" width="220" height="68"/>
+  <text class="dim-txt" x="32" y="146">1. Core Ledger Engine</text>
+  <text class="txt" x="32" y="164">&amp; Single-Node TPS</text>
+
+  <rect class="col-2021" x="252" y="116" width="490" height="68"/>
+  <text class="code-old" x="264" y="138">Custom Java/C++ mmap log + RocksDB LSM (~10,000 TPS/node)</text>
+  <text class="txt" x="264" y="156">Bespoke in-house Raft state machine + RocksDB wrapper requiring</text>
+  <text class="txt" x="264" y="172">200 partition groups to sustain 2,000,000 account-leg TPS</text>
+
+  <rect class="col-2026" x="754" y="116" width="506" height="68"/>
+  <text class="code-new" x="766" y="138">TigerBeetle (VSR + io_uring, 500k–1M+ TPS/node) or Spanner/CRDB</text>
+  <text class="txt" x="766" y="156">Fixed-size 128-byte Account/Transfer structs batched via io_uring</text>
+  <text class="txt" x="766" y="172">and Viewstamped Replication (or CockroachDB/Spanner Multi-Raft)</text>
+
+  <!-- Row 2 -->
+  <rect class="dim-box" x="20" y="194" width="220" height="68"/>
+  <text class="dim-txt" x="32" y="224">2. Two-Phase Pending</text>
+  <text class="txt" x="32" y="242">Holds (TC/C Primitives)</text>
+
+  <rect class="col-2021" x="252" y="194" width="490" height="68"/>
+  <text class="code-old" x="264" y="216">App-level TC/C Phase Status Tables &amp; custom out_of_order flags</text>
+  <text class="txt" x="264" y="234">Every microservice team hand-rolls Try/Confirm/Cancel SQL tables,</text>
+  <text class="txt" x="264" y="250">hanging-try sweepers, and out-of-order Cancel tombstone logic</text>
+
+  <rect class="col-2026" x="754" y="194" width="506" height="68"/>
+  <text class="code-new" x="766" y="216">Native Ledger Two-Phase Transfers (PENDING / POST / VOID) + Temporal</text>
+  <text class="txt" x="766" y="234">First-class `flags.pending` with engine-enforced timeout auto-expiry</text>
+  <text class="txt" x="766" y="250">(`debits_pending` vs `debits_posted`) orchestrated by Temporal Sagas</text>
+
+  <!-- Row 3 -->
+  <rect class="dim-box" x="20" y="272" width="220" height="68"/>
+  <text class="dim-txt" x="32" y="302">3. Snapshot &amp; Audit</text>
+  <text class="txt" x="32" y="320">Archive Storage</text>
+
+  <rect class="col-2021" x="252" y="272" width="490" height="68"/>
+  <text class="code-old" x="264" y="294">Self-managed Hadoop HDFS cluster for binary snapshots</text>
+  <text class="txt" x="264" y="312">High operational overhead of NameNodes/DataNodes; lacks native</text>
+  <text class="txt" x="264" y="328">hardware-enforced SEC 17a-4 WORM immutability attestation</text>
+
+  <rect class="col-2026" x="754" y="272" width="506" height="68"/>
+  <text class="code-new" x="766" y="294">Cloud Object Storage (S3 Object Lock WORM) + Merkle Hash Chain</text>
+  <text class="txt" x="766" y="312">Compliance-mode WORM snapshots + SHA-256 hash-chained event blocks</text>
+  <text class="txt" x="766" y="328">queried offline via Apache Iceberg / DuckDB for T+0 regulatory proofs</text>
+
+  <!-- Row 4 -->
+  <rect class="dim-box" x="20" y="350" width="220" height="68"/>
+  <text class="dim-txt" x="32" y="380">4. Correctness Proof</text>
+  <text class="txt" x="32" y="398">&amp; Fault Verification</text>
+
+  <rect class="col-2021" x="252" y="350" width="490" height="68"/>
+  <text class="code-old" x="264" y="372">Post-hoc event replay + staging integration tests</text>
+  <text class="txt" x="264" y="390">Replaying events proves deterministic code changes, but rare storage</text>
+  <text class="txt" x="264" y="406">corruption or split-brain bugs surface only during real outages</text>
+
+  <rect class="col-2026" x="754" y="350" width="506" height="68"/>
+  <text class="code-new" x="766" y="372">Deterministic Simulation Testing (DST / VOPR) + Storage Fault Tolerance</text>
+  <text class="txt" x="766" y="390">Simulated network partitions, clock jumps, and directed disk sector</text>
+  <text class="txt" x="766" y="406">misdirected reads/writes tested across billions of seeds before deploy</text>
+
+  <!-- Row 5 -->
+  <rect class="dim-box" x="20" y="428" width="220" height="68"/>
+  <text class="dim-txt" x="32" y="458">5. CQRS Read Path</text>
+  <text class="txt" x="32" y="476">&amp; Client Receipts</text>
+
+  <rect class="col-2021" x="252" y="428" width="490" height="68"/>
+  <text class="code-old" x="264" y="450">Custom Reverse Proxy + read state machine callback plumbing</text>
+  <text class="txt" x="264" y="468">Bespoke routing table mapping in-flight client sockets to partition</text>
+  <text class="txt" x="264" y="484">read projections to avoid client HTTP polling storms</text>
+
+  <rect class="col-2026" x="754" y="428" width="506" height="68"/>
+  <text class="code-new" x="766" y="450">LSN-Pinned Read-Your-Writes Gateways + Streaming Change Feeds</text>
+  <text class="txt" x="766" y="468">Synchronous commit returns the Raft log index (LSN token) directly</text>
+  <text class="txt" x="766" y="484">to the gateway while CDC change feeds update CQRS views in &lt; 10 ms</text>
+
+  <!-- Row 6: Migration Callout -->
+  <rect class="panel" x="20" y="510" width="1240" height="92"/>
+  <text class="hdr" x="34" y="534">Key Architectural Takeaway: Why Only the Immutable Event List Needs Consensus Replication</text>
+  <text class="txt" x="34" y="556">• Commands are non-deterministic external intents (may fail or depend on arrival order), whereas State (RocksDB) and Snapshots (S3/HDFS) are</text>
+  <text class="txt" x="34" y="574">  100% deterministic projections of the validated Event log. Replicating ONLY the immutable Event log via Raft (or VSR) guarantees RPO = 0,</text>
+  <text class="txt" x="34" y="590">  full historical point-in-time balance reconstruction, and zero-drift code-upgrade verification.</text>
+</svg>

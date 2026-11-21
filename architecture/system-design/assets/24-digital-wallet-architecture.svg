@@ -1,0 +1,163 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1320 760" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #0b1020; }
+      .panel { fill: #121a30; stroke: #2b3b66; stroke-width: 1.5; rx: 10; }
+      .box-blue { fill: #152546; stroke: #4c8bf5; stroke-width: 1.5; rx: 8; }
+      .box-green { fill: #122d26; stroke: #2ec486; stroke-width: 1.5; rx: 8; }
+      .box-amber { fill: #2f2513; stroke: #f5a623; stroke-width: 1.5; rx: 8; }
+      .box-purple { fill: #24193c; stroke: #a66bff; stroke-width: 1.5; rx: 8; }
+      .box-red { fill: #33161e; stroke: #f05454; stroke-width: 1.5; rx: 8; }
+      .title { font-family: 'Inter', -apple-system, sans-serif; font-size: 18px; font-weight: 700; fill: #f8fafc; }
+      .subtitle { font-family: 'Inter', -apple-system, sans-serif; font-size: 12px; fill: #94a3b8; }
+      .sec-hdr { font-family: 'Inter', -apple-system, sans-serif; font-size: 13px; font-weight: 700; fill: #e2e8f0; }
+      .lbl { font-family: 'Inter', -apple-system, sans-serif; font-size: 12px; font-weight: 600; fill: #f1f5f9; }
+      .txt { font-family: 'Inter', -apple-system, sans-serif; font-size: 11px; fill: #cbd5e1; }
+      .code { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10.5px; fill: #93c5fd; }
+      .code-green { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10.5px; fill: #6ee7b7; }
+      .code-amber { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10.5px; fill: #fcd34d; }
+      .code-red { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10.5px; fill: #fca5a5; }
+      .arrow { stroke: #60a5fa; stroke-width: 1.8; fill: none; marker-end: url(#arr-blue); }
+      .arrow-green { stroke: #34d399; stroke-width: 1.8; fill: none; marker-end: url(#arr-green); }
+      .arrow-amber { stroke: #fbbf24; stroke-width: 1.8; stroke-dasharray: 5,4; fill: none; marker-end: url(#arr-amber); }
+    </style>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#60a5fa"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#34d399"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#fbbf24"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1320" height="760"/>
+
+  <!-- Header -->
+  <text class="title" x="24" y="32">Digital Wallet — Multi-Raft Event-Sourced CQRS Architecture (1M Transfer TPS = 2M Leg TPS · 99.99% Availability)</text>
+  <text class="subtitle" x="24" y="50">Push-Based Reverse Proxy &amp; TC/C Saga Coordinator · Raft-Replicated mmap Event Logs · RocksDB LSM State · S3/HDFS Snapshots</text>
+
+  <!-- Section 1: Client & Push Reverse Proxy / Saga Coordinator -->
+  <rect class="panel" x="20" y="66" width="295" height="450"/>
+  <text class="sec-hdr" x="34" y="88">1. Client &amp; Push Reverse Proxy</text>
+
+  <rect class="box-blue" x="34" y="102" width="267" height="122"/>
+  <text class="lbl" x="44" y="122">Wallet Client (1,000,000 TPS)</text>
+  <text class="code" x="44" y="142">POST /v1/wallet/balance_transfer</text>
+  <text class="txt" x="44" y="160">• from_account: "A", to_account: "C"</text>
+  <text class="code-green" x="44" y="176">• amount: "1.00" (string -&gt; BigInt!)</text>
+  <text class="txt" x="44" y="192">• currency: "USD" (ISO-4217)</text>
+  <text class="code-amber" x="44" y="208">• transaction_id: UUIDv7 (idempotent)</text>
+
+  <rect class="box-purple" x="34" y="238" width="267" height="148"/>
+  <text class="lbl" x="44" y="258">Reverse Proxy &amp; TC/C Saga Coord</text>
+  <text class="txt" x="44" y="278">1. Persists tx in Phase Status Table</text>
+  <text class="txt" x="44" y="294">2. Dispatches Leg 1 Command (A -$1)</text>
+  <text class="txt" x="44" y="310">   to Partition 1 Raft Leader</text>
+  <text class="txt" x="44" y="326">3. Receives PUSH receipt from Read</text>
+  <text class="txt" x="44" y="342">   State Machine (0 client polling!)</text>
+  <text class="txt" x="44" y="358">4. Dispatches Leg 2 Command (C +$1)</text>
+  <text class="txt" x="44" y="374">   (or Cancel A +$1 if Leg 2 fails)</text>
+
+  <rect class="box-amber" x="34" y="400" width="267" height="100"/>
+  <text class="lbl" x="44" y="420">Phase Status Table (Co-Located)</text>
+  <text class="code-amber" x="44" y="438">{ tx_id, try_status, phase2,</text>
+  <text class="code-amber" x="44" y="454">  phase2_status, out_of_order }</text>
+  <text class="txt" x="44" y="472">• Recovers crashed coordinators</text>
+  <text class="txt" x="44" y="488">• Blocks late Try after Cancel!</text>
+
+  <!-- Section 2: Partition 1 Raft Group (Account A) -->
+  <rect class="panel" x="335" y="66" width="470" height="450"/>
+  <text class="sec-hdr" x="349" y="88">2. Partition 1: Deterministic Event-Sourced Raft Group (Account A)</text>
+
+  <rect class="box-blue" x="349" y="102" width="442" height="146"/>
+  <text class="lbl" x="361" y="122">Write Path: Command Queue -&gt; Deterministic State Machine</text>
+  <text class="code" x="361" y="142">1. Command FIFO Queue (local mmap append-only file)</text>
+  <text class="txt" x="361" y="160">   Commands are external intents; may fail validation (insufficient funds)</text>
+  <text class="code-green" x="361" y="178">2. Deterministic State Machine (Single-Thread Partition Core)</text>
+  <text class="txt" x="361" y="196">   • Zero external I/O, zero wall-clock calls, zero random numbers!</text>
+  <text class="txt" x="361" y="212">   • Reads balance[A] from local RocksDB LSM state cache</text>
+  <text class="txt" x="361" y="228">   • Validates balance[A] &gt;= $1.00 &amp; emits immutable Event: (A, -$1.00)</text>
+
+  <rect class="box-green" x="349" y="260" width="442" height="122"/>
+  <text class="lbl" x="361" y="280">Raft Consensus Replication (ONLY the Immutable Event List!)</text>
+  <text class="code-green" x="361" y="300">Leader Event Log (mmap) ===&gt; Follower 1 &amp; Follower 2 (Quorum 2/3)</text>
+  <text class="txt" x="361" y="318">• Why replicate ONLY Events? State &amp; Snapshots are deterministically</text>
+  <text class="txt" x="361" y="334">  derived from Events, while Commands are non-deterministic!</text>
+  <text class="txt" x="361" y="350">• Guarantees RPO = 0 durability &amp; identical event ordering across nodes</text>
+  <text class="txt" x="361" y="366">• Local RocksDB LSM applies committed Event to update balance[A]</text>
+
+  <rect class="box-purple" x="349" y="394" width="442" height="106"/>
+  <text class="lbl" x="361" y="414">CQRS Read-Only State Machine + S3/HDFS Binary Snapshots</text>
+  <text class="txt" x="361" y="434">• Subscribes to committed Event log &amp; builds historical query views</text>
+  <text class="code-amber" x="361" y="452">• PUSHES completion receipt directly back to Reverse Proxy!</text>
+  <text class="txt" x="361" y="470">• Periodic immutable Snapshots saved to S3 Object Lock / HDFS</text>
+  <text class="txt" x="361" y="486">  for fast recovery (Snapshot_t + tail events &gt; t) &amp; point-in-time audit</text>
+
+  <!-- Section 3: Partition 2 Raft Group (Account C) & Cluster Sizing -->
+  <rect class="panel" x="825" y="66" width="475" height="450"/>
+  <text class="sec-hdr" x="839" y="88">3. Partition 2 Raft Group (Account C) &amp; 1M TPS Cluster Sizing</text>
+
+  <rect class="box-green" x="839" y="102" width="447" height="156"/>
+  <text class="lbl" x="851" y="122">Partition 2: Event-Sourced Raft Group (Account C +$1.00)</text>
+  <text class="txt" x="851" y="142">• Receives Leg 2 Command (C +$1.00) after Partition 1 confirms A -$1.00</text>
+  <text class="txt" x="851" y="158">• Appends to mmap Command log -&gt; Deterministic State Machine validates</text>
+  <text class="code-green" x="851" y="176">• Replicates Event (C, +$1.00) across Partition 2 Raft Quorum (2/3)</text>
+  <text class="txt" x="851" y="194">• Applies Event to local RocksDB LSM state (balance[C] += $1.00)</text>
+  <text class="code-amber" x="851" y="212">• Read State Machine PUSHES Leg 2 completion to Reverse Proxy</text>
+  <text class="txt" x="851" y="230">• Reverse Proxy marks Phase Status COMPLETED &amp; returns 200 OK</text>
+
+  <rect class="box-amber" x="839" y="272" width="447" height="228"/>
+  <text class="lbl" x="851" y="292">Quantitative 1M Transfer TPS (= 2M Account-Leg TPS) Sizing</text>
+  <text class="txt" x="851" y="312">Every transfer mutates 2 accounts (Debit A + Credit C = 2M leg-TPS):</text>
+  <text class="code-red" x="851" y="332">•   100 leg-TPS/node (2PC over WAN)       -&gt; 20,000 DB nodes</text>
+  <text class="code-amber" x="851" y="350">• 1,000 leg-TPS/node (Cloud RDBMS B-Tree) -&gt;  2,000 DB nodes</text>
+  <text class="code-green" x="851" y="368">• 10,000 leg-TPS/node (mmap + RocksDB ES) -&gt;    200 Raft groups</text>
+  <text class="code" x="851" y="386">• 100,000 leg-TPS/node (TigerBeetle/io_uring) -&gt; 20 VSR groups</text>
+  <text class="lbl" x="851" y="412">Three Core Audit Questions Solved by Event Sourcing:</text>
+  <text class="txt" x="851" y="430">1. Balance at any time T? Replay immutable events up to seq(T).</text>
+  <text class="txt" x="851" y="446">2. Verify historical &amp; current correctness? Recalculate from genesis.</text>
+  <text class="txt" x="851" y="462">3. Prove new code version is bug-free? Run new state machine over</text>
+  <text class="txt" x="851" y="478">   historical event log and diff output state against production!</text>
+
+  <!-- Arrows -->
+  <path class="arrow" d="M 167 224 L 167 238"/>
+  <path class="arrow" d="M 301 290 L 349 175"/>
+  <path class="arrow-green" d="M 349 445 L 301 340"/>
+  <path class="arrow-amber" d="M 301 360 L 839 160"/>
+
+  <!-- Section 4: Bottom Deep Dive — 2PC vs TC/C vs Saga & Out-of-Order Defense -->
+  <rect class="panel" x="20" y="534" width="1280" height="208"/>
+  <text class="sec-hdr" x="34" y="556">4. Distributed Transaction Deep Dive: Why TC/C Deducts First, Out-of-Order Tombstones &amp; TC/C vs. Saga</text>
+
+  <rect class="box-red" x="34" y="570" width="405" height="156"/>
+  <text class="lbl" x="46" y="590">Why TC/C Phase 1 (Try) MUST Deduct (-$1) &amp; Never Credit (+$1)</text>
+  <text class="code-green" x="46" y="610">Choice 1 (VALID):   Try: A -$1, C NOP | Confirm: A NOP, C +$1</text>
+  <text class="code-red" x="46" y="628">Choice 2 (INVALID): Try: A NOP, C +$1 | Confirm: A -$1, C NOP</text>
+  <text class="code-red" x="46" y="646">Choice 3 (INVALID): Try: A -$1, C +$1 (requires 2PC atomicity!)</text>
+  <text class="txt" x="46" y="666">• In TC/C, Phase 1 commits a real local transaction before Phase 2.</text>
+  <text class="txt" x="46" y="682">• If Try credited C (+$1) before debiting A, user C could withdraw</text>
+  <text class="txt" x="46" y="698">  or spend the phantom $1 before Phase 2 discovers A has $0!</text>
+  <text class="txt" x="46" y="714">• Deducting A (-$1) in Try freezes funds safely until Confirm/Cancel.</text>
+
+  <rect class="box-blue" x="455" y="570" width="410" height="156"/>
+  <text class="lbl" x="467" y="590">TC/C Out-of-Order Execution (Cancel Before Delayed Try)</text>
+  <text class="txt" x="467" y="610">• Hazard: Coordinator sends Try(A -$1), times out on slow network,</text>
+  <text class="txt" x="467" y="626">  and sends Cancel(A +$1) which arrives at A's DB BEFORE Try!</text>
+  <text class="code-red" x="467" y="646">• Without defense: Cancel sees no Try (no-op), then delayed Try</text>
+  <text class="code-red" x="467" y="662">  arrives and deducts -$1 permanently ("Hanging Try" money loss!)</text>
+  <text class="code-green" x="467" y="682">• Fix: Cancel writes `out_of_order = true` tombstone in Phase Table;</text>
+  <text class="txt" x="467" y="700">  when the delayed Try packet arrives, it checks `out_of_order`</text>
+  <text class="txt" x="467" y="716">  first and aborts immediately without deducting funds!</text>
+
+  <rect class="box-green" x="881" y="570" width="405" height="156"/>
+  <text class="lbl" x="893" y="590">2PC vs. Try-Confirm/Cancel (TC/C) vs. Orchestrated Saga</text>
+  <text class="code-amber" x="893" y="610">2PC (XA): 1 distributed TX; holds row locks across RTTs; SPOF</text>
+  <text class="code-green" x="893" y="628">TC/C: 2 local TXs; Phase 1 Try runs in PARALLEL across shards</text>
+  <text class="txt" x="893" y="646">• Best when multi-leg latency budget is ultra-tight (&lt; 20 ms)</text>
+  <text class="code" x="893" y="666">Orchestrated Saga: Linear sequential local TXs (T1 -&gt; T2 -&gt; ...)</text>
+  <text class="txt" x="893" y="684">• On step k failure, executes compensating C_{k-1} ... C_1 backward</text>
+  <text class="txt" x="893" y="700">• Simpler business-logic state machine than parallel TC/C when</text>
+  <text class="txt" x="893" y="716">  only 2 shards are involved (e.g., Temporal workflow engine)</text>
+</svg>

@@ -2,8 +2,8 @@
 
 No single vendor-neutral certification tests general distributed system design, so vendor-specific IAM, CLI, and control-plane trivia stay in [`technologies/aws`](../../../technologies/aws/), [`technologies/gcp`](../../../technologies/gcp/), and [`technologies/azure`](../../../technologies/azure/). This bridge bank maps the architectural patterns, quantitative trade-offs, and failure modes taught across `architecture/system-design` directly onto Senior/Architect certification scenario domains (**AWS Solutions Architect – Professional `SAP-C02`**, **Google Cloud Professional Cloud Architect `PCA`**, **Microsoft Azure Solutions Architect Expert `AZ-305`**, and **CNCF / SRE Resilience**).
 
-- **Sequential Growth Plan**: Built sequentially alongside Wave A & Wave B topic completions (target: **60+ original scenario questions** plus a full timed certification bridge mock exam upon completion of the 28-topic expansion).
-- **Current Coverage**: **54 questions** (`Q-CERT-001`–`Q-CERT-054`) covering Topic 01 (`Scale From Zero to Millions` — Module 15), Topic 02 (`Distributed Key-Value Store` — Module 16), Topic 03 (`Google Maps` — Module 17), Topic 04 (`Distributed Message Queue` — Module 18), Topic 05 (`Hotel Reservation System` — Module 19), Topic 06 (`Distributed Email Service` — Module 20), Topic 07 (`Real-time Gaming Leaderboard` — Module 21), Topic 08 (`Proximity Service` — Module 22), and Topic 09 (`Nearby Friends` — Module 23).
+- **Sequential Growth Plan**: Built sequentially alongside Wave A & Wave B topic completions (target: **60+ original scenario questions** plus a full [60-Question Timed Certification Bridge Mock Exam](#timed-certification-bridge-mock-exam-60-questions--90-minutes)).
+- **Current Coverage**: **60 questions** (`Q-CERT-001`–`Q-CERT-060`) covering Topic 01 (`Scale From Zero to Millions` — Module 15), Topic 02 (`Distributed Key-Value Store` — Module 16), Topic 03 (`Google Maps` — Module 17), Topic 04 (`Distributed Message Queue` — Module 18), Topic 05 (`Hotel Reservation System` — Module 19), Topic 06 (`Distributed Email Service` — Module 20), Topic 07 (`Real-time Gaming Leaderboard` — Module 21), Topic 08 (`Proximity Service` — Module 22), Topic 09 (`Nearby Friends` — Module 23), and Topic 10 (`Digital Wallet` — Module 24).
 
 ---
 
@@ -1121,3 +1121,213 @@ Select **two** genuine architectural improvements when modernizing a 2021 Nearby
 - Ref: [modules/23-nearby-friends.md](../modules/23-nearby-friends.md#6-production-gotchas-sre-guardrails-and-2021-vs-2026-comparison), https://valkey.io/commands/spublish/, https://h3geo.org/
 
 </details>
+
+---
+
+## Module 24: Digital Wallet, Distributed Ledgers, Event Sourcing & Multi-Raft CQRS (`Q-CERT-055`–`Q-CERT-060`)
+
+### Q-CERT-055 · AWS SAP-C02: High-Throughput Digital Wallet with Temporal/Step Functions TC/C Saga, Sharded Ledgers & S3 Object Lock Snapshots · difficulty 3 · scenario
+
+A regulated fintech platform on AWS processes high-volume digital wallet transfers across sharded account ledgers. Each cross-shard transfer requires a durable **Try-Confirm/Cancel (TC/C)** workflow with a persistent **Phase Status Table** (including `out_of_order_flag` tombstones against delayed `Try` packets), and financial regulators require daily deterministic Event Sourcing snapshots and cold event segments to be retained immutably for **7 years** under strict WORM (Write-Once-Read-Many) compliance where even the AWS root account cannot delete them. Which AWS architecture satisfies these requirements?
+
+- A) Orchestrate cross-shard TC/C phases using **Temporal on Amazon EKS** (or **AWS Step Functions Standard Workflows**) backed by a durable **Amazon DynamoDB / Aurora PostgreSQL Phase Status Table** with conditional writes (`attribute_not_exists` / `out_of_order_flag` tombstone enforcement); shard the hot event-sourced wallet partitions across multi-AZ compute nodes with local NVMe + Raft replication; and archive periodic deterministic **Snapshots** and cold event logs to **Amazon S3 with S3 Object Lock in Compliance Mode (`7-year` retention)**.
+- B) Store TC/C phase state solely inside volatile AWS Lambda `/tmp` directories and archive ledger snapshots to a public S3 bucket with a `30-day` expiration lifecycle policy.
+- C) Use Amazon SQS Standard queues without deduplication IDs as the authoritative wallet balance table and disable S3 Versioning.
+- D) Run a single unsharded `db.t3.micro` RDS MySQL instance with IEEE-754 `FLOAT` columns for all wallet balances.
+
+<details><summary>Answer</summary>
+
+**A.** Temporal on EKS (or AWS Step Functions Standard Workflows) paired with a durable Phase Status Table in DynamoDB/Aurora enforces deterministic TC/C state transitions (`TRY_STARTED` $\to$ `CONFIRM_STARTED`/`CANCEL_STARTED`) and uses conditional writes to persist `out_of_order_flag = true` (`CANCEL_TOMBSTONE`) whenever a `Cancel` arrives before a delayed `Try`. Archiving daily deterministic Event Sourcing snapshots and cold event segments to **Amazon S3 with S3 Object Lock in Compliance Mode** guarantees 7-year SEC 17a-4 / FINRA WORM immutability where no user (including root) can overwrite or delete snapshots before retention expiry.
+
+- Why not B: Lambda `/tmp` storage is ephemeral and wiped on container recycle (losing all in-flight TC/C phase status), and a 30-day S3 delete lifecycle violates the 7-year regulatory retention mandate.
+- Why not C: SQS Standard queues allow at-least-once duplicate delivery and unordered messages, and S3 Object Lock requires S3 Versioning to be enabled.
+- Why not D: A single `db.t3.micro` instance saturates well below `1,000` TPS, and IEEE-754 `FLOAT` columns introduce cumulative sub-cent rounding drift.
+- Ref: [modules/24-digital-wallet.md](../modules/24-digital-wallet.md#2-distributed-transaction-evolution-sharded-redis-2pc-try-confirmcancel-tcc-and-saga), https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-lock.html
+
+</details>
+
+### Q-CERT-056 · AWS SAP-C02: Idempotent Financial API Ingestion, KMS Envelope Signing & Double-Entry Conservation Audits · difficulty 3 · single
+
+An AWS-hosted digital wallet API receives transfer requests from mobile clients over lossy cellular networks where retries after HTTP `504` timeouts are common. Security and audit teams require that (1) retried transfers never double-deduct funds, (2) tampering with a retry payload under the same `transaction_id` returns an explicit conflict error, (3) every archived event-log segment is cryptographically verifiable, and (4) double-entry conservation ($\sum \Delta = 0$) is continuously audited. Which design meets all four controls?
+
+- A) Require a client-generated **`transaction_id` (UUIDv7)** and exact **string `amount` (`"1.00"` $\to$ `BigInt` minor units)** at the API Gateway/ingress tier; enforce atomic deduplication against a `(transaction_id, payload_sha256)` table so identical retries return the cached receipt while mismatched payloads return **`409 Conflict` (`IDEMPOTENCY_PAYLOAD_MISMATCH`)**; sign immutable event-log batches and snapshots using **AWS KMS asymmetric keys (`kms:Sign`)**; and run continuous **Push-Based CQRS / EventBridge reconciliation checks** asserting $\sum \text{debits} + \sum \text{credits} = 0$.
+- B) Ignore `transaction_id` during ingestion and deduplicate transfers by matching `(from_account, to_account, amount)` within a 24-hour window using an eventual-consistency S3 Athena query once per week.
+- C) Accept JSON floating-point numbers (`amount: 1.00`), encrypt the HTTP response with base64 encoding, and rely on CloudWatch CPU utilization metrics to prove double-entry balance conservation.
+- D) Use a single Lambda function with `ReservedConcurrency = 1` as the sole idempotency mechanism across the entire wallet platform.
+
+<details><summary>Answer</summary>
+
+**A.** Keying idempotency on `(transaction_id, payload_sha256)` guarantees that network retries with the exact same transfer parameters return the original result without re-executing the debit, while any accidental or malicious reuse of `transaction_id` with a different recipient or amount is rejected immediately (`IDEMPOTENCY_PAYLOAD_MISMATCH`). Parsing string decimal amounts into `BigInt` minor units prevents IEEE-754 float drift, AWS KMS asymmetric signatures (`kms:Sign`) provide non-repudiable cryptographic integrity over event-log batches, and continuous $\sum \Delta = 0$ invariant checks detect any conservation anomaly in real time.
+
+- Why not B: Deduplicating by `(from_account, to_account, amount)` blocks a legitimate user from sending two separate `$10.00` transfers to the same friend on the same day, and weekly Athena scans let double-spends escape for 7 days.
+- Why not C: Base64 is an encoding, not cryptographic signing, JSON floats lose decimal precision, and CPU metrics tell you nothing about ledger conservation.
+- Why not D: `ReservedConcurrency = 1` throttles the entire platform to a few requests per second and still fails to stop a retry that arrives after the first invocation completes.
+- Ref: [modules/24-digital-wallet.md](../modules/24-digital-wallet.md#1-requirements-1m-transfer-tps-capacity-math-and-fixed-point-monetary-contracts), https://docs.aws.amazon.com/kms/latest/APIReference/API_Sign.html
+
+</details>
+
+### Q-CERT-057 · GCP PCA: Globally Consistent Digital Wallet on Cloud Spanner TrueTime Serializable Transactions & Pub/Sub CQRS · difficulty 3 · scenario
+
+A global payments institution on Google Cloud wants a managed multi-region digital wallet ledger that provides **external consistency (linearizable serializability)** across account transfers without building custom X/A 2PC coordinators, while streaming committed immutable ledger events to low-latency CQRS read models and BigQuery regulatory audit views without slowing down the transactional write path. Which Google Cloud architecture should you choose?
+
+- A) Store the authoritative double-entry wallet ledger (`accounts`, `ledger_events`, `idempotency_keys`) in **Google Cloud Spanner** using read-write transactions (which guarantee external consistency globally via **TrueTime** hardware atomic/GPS clocks and Paxos groups) with integer minor-unit `INT64` (`NUMERIC`) columns; stream committed ledger mutations out-of-band via **Cloud Spanner Change Streams** into **Cloud Pub/Sub / Dataflow** to update **Memorystore for Valkey** push-based CQRS projections and **BigQuery** conservation audit tables.
+- B) Store authoritative wallet balances in Google Cloud SQL with asynchronous cross-region read replicas and allow users to spend directly against stale replica balances.
+- C) Use Google Cloud Bigtable cross-row scans without transactions as the primary double-entry ledger for multi-account transfers.
+- D) Store wallet balances in Cloud Storage JSON files updated by preemptible Spot VMs without locking.
+
+<details><summary>Answer</summary>
+
+**A.** Google Cloud Spanner combines sharded **Paxos consensus groups** with **TrueTime** hardware clock uncertainty bounds (`[\text{earliest}, \text{latest}]`) to provide serializable, externally consistent transactions across splits and regions without application-managed 2PC locks blocking forever. Using **Cloud Spanner Change Streams** to publish committed ledger events to Cloud Pub/Sub / Dataflow cleanly separates the strongly consistent write path from asynchronous CQRS read projections (Memorystore/Bigtable) and real-time BigQuery $\sum \Delta = 0$ conservation audits.
+
+- Why not B: Asynchronous Cloud SQL read replicas lag behind the primary; allowing withdrawals against stale replica balances enables classic cross-region double-spending.
+- Why not C: Cloud Bigtable is atomic only at the single-row level and does not support multi-row ACID transactions across sender and receiver accounts.
+- Why not D: Concurrent unlocked writes to Cloud Storage JSON objects overwrite each other (`lost update` anomaly).
+- Ref: [modules/24-digital-wallet.md](../modules/24-digital-wallet.md#3-deterministic-event-sourcing-reproducibility-and-cqrs-architecture), https://cloud.google.com/spanner/docs/true-time-external-consistency
+
+</details>
+
+### Q-CERT-058 · Azure AZ-305: Tamper-Evident Wallet Ledger with Azure SQL Database Ledger, Durable Functions Saga & Cosmos DB CQRS Views · difficulty 2 · scenario
+
+A financial enterprise on Microsoft Azure needs a digital wallet architecture with three capabilities: (1) cryptographically tamper-evident ledger tables where database administrators cannot covertly alter historical transfer events without failing digest verification, (2) durable orchestration of cross-shard Try-Confirm/Cancel (`TC/C`) workflows, and (3) globally distributed, sub-10 ms CQRS balance read projections. Which Azure architecture should you recommend?
+
+- A) Use **Azure SQL Database Ledger** (append-only ledger tables for immutable transfer events and updatable ledger tables for account balances, generating SHA-256 Merkle/block digests stored in **Azure Confidential Ledger** or WORM Blob Storage); coordinate cross-shard TC/C phases with **Azure Durable Functions** (or **Temporal on AKS**) persisting the Phase Status Table; and project committed events via Change Data Capture / Event Hubs into **Azure Cosmos DB** CQRS read views.
+- B) Store wallet balances in unencrypted CSV files on an Azure Files SMB share where every developer has full write access, and skip digest generation.
+- C) Use Azure Queue Storage as the primary database and rely on Azure Monitor activity logs as the sole proof that SQL rows were never modified by a DBA.
+- D) Store all state exclusively in a non-persistent Azure Cache for Redis Basic tier with no database backing.
+
+<details><summary>Answer</summary>
+
+**A.** **Azure SQL Database Ledger** automatically computes cryptographic SHA-256 block digests over transaction history and anchors them in trusted immutable storage (such as Azure Confidential Ledger or immutable Azure Blob Storage), enabling external auditors to verify mathematically that no historical event or balance row was tampered with—even by a privileged DBA. **Azure Durable Functions** (or Temporal on AKS) provides durable checkpointing for TC/C workflows, while streaming committed events to **Azure Cosmos DB** powers low-latency CQRS read models.
+
+- Why not B: Mutable CSV files on a shared SMB mount provide neither ACID concurrency control nor tamper evidence.
+- Why not C: Privileged administrators with direct SQL access can modify standard tables without triggering Azure Monitor control-plane logs.
+- Why not D: An unpersisted cache loses 100% of user funds on node reboot.
+- Ref: [modules/24-digital-wallet.md](../modules/24-digital-wallet.md#3-deterministic-event-sourcing-reproducibility-and-cqrs-architecture), https://learn.microsoft.com/en-us/azure/azure-sql/database/ledger-overview
+
+</details>
+
+### Q-CERT-059 · CNCF / SRE: Raft Quorum Loss, TC/C Hanging-Try Tombstone Reconciliation & Zero-Drift Conservation SLIs · difficulty 3 · single
+
+During a multi-AZ network degradation on a sharded Multi-Raft Event-Sourced Digital Wallet cluster, SRE telemetry fires two alerts: (1) a 5-node Raft group for Shard 7 loses 3 nodes in an isolated zone, and (2) across healthy shards, `hanging_try_hold_age_p99` spikes above `30 seconds` because delayed `Try` packets are arriving _after_ the TC/C coordinator timed out and issued `Cancel`. How must the system behave on Shard 7, and how must the TC/C state machine resolve the delayed `Try` race while protecting double-entry conservation?
+
+- A) Force the 2 surviving nodes on Shard 7 to accept split-brain writes without a Raft quorum (`2/5`), and delete the TC/C Phase Status Table whenever a `Try` takes longer than 1 second.
+- B) On Shard 7, **fail closed on writes** because a 5-node Raft group requires a majority quorum of $\lfloor 5/2 \rfloor + 1 = 3$ nodes (`RPO = 0` linearizability over availability during majority loss); for the TC/C race, require `Cancel` on an unseen `transaction_id` to persist an **`out_of_order_flag = true` (`CANCEL_TOMBSTONE`)** in the Phase Status Table so any late-arriving `Try` packet is deterministically rejected rather than deducting `-$1.00` into a permanent **Hanging Try**; and enforce a continuous **`ledger_conservation_drift_cents == 0`** SLI ($\sum \text{balances} + \sum \text{reserved-holds} = \text{InitialSupply}$).
+- C) Have the TC/C coordinator switch in-flight Phase 2 `Confirm` transactions to `Cancel` whenever a network timeout occurs, even if the receiver shard already applied the `Confirm` credit.
+- D) Allow each Raft follower on healthy shards to call `Date.now()` and external HTTP fraud APIs directly inside its deterministic event-replay loop.
+
+<details><summary>Answer</summary>
+
+**B.** In a 5-node Raft consensus group, a minority partition of 2 nodes (`2/5 < 3`) **must halt writes** (`fail closed`); allowing a minority partition to commit financial debits creates split-brain double-spending when the 3-node majority returns. For the TC/C network race (`Cancel` arriving at a shard before a delayed `Try`), persisting `out_of_order_flag = true` (`CANCEL_TOMBSTONE`) in the Phase Status Table ensures that when the delayed `Try` finally arrives, the shard sees the tombstone and rejects the `Try` immediately—preventing a permanent **Hanging Try** fund lock while keeping `ledger_conservation_drift_cents == 0`.
+
+- Why not A: Accepting writes on 2 of 5 Raft nodes violates quorum intersection and causes catastrophic split-brain balance divergence.
+- Why not C: Switching from Phase 2 `Confirm` to `Cancel` after Phase 1 succeeded can both credit the receiver and refund the sender (`+$1.00` created out of thin air); Phase 2 `Confirm` must be retried idempotently until completion.
+- Why not D: Calling `Date.now()` or external HTTP APIs inside the state machine violates deterministic Event Sourcing and causes follower RocksDB state to diverge from the leader.
+- Ref: [modules/24-digital-wallet.md](../modules/24-digital-wallet.md#6-production-gotchas-sre-guardrails-and-2021-vs-2026-comparison), https://raft.github.io/raft.pdf
+
+</details>
+
+### Q-CERT-060 · Multi-Cloud Architecture: 2021 vs. 2026 Digital Wallet & Financial Ledger Modernization · difficulty 2 · multi
+
+Select **two** genuine architectural advances when modernizing a 2021 distributed digital wallet (sharded MySQL/PostgreSQL B-trees at `~1,000` TPS/node, blocking X/A 2PC or naive TC/C without out-of-order tombstones, pull-based CQRS client polling, and nightly T+1 batch CSV reconciliation) to a 2026 production architecture.
+
+- A) Adopting **Multi-Raft Deterministic Event Sourcing** with local **`mmap` append-only event logs + embedded RocksDB LSM state** (`10,000+` TPS/node) or purpose-built **`io_uring` VSR double-entry engines (TigerBeetle, `100,000+` TPS/node)** cuts the required cluster footprint for `1,000,000` transfer TPS (`2,000,000` leg-ops/sec) from `2,000` RDBMS nodes down to **`200` nodes** (or **`20` nodes**).
+- B) Replacing blocking X/A 2PC and pull-based CQRS polling with **Temporal / durable Phase Status Table TC/C orchestration (enforcing `out_of_order_flag` tombstones and debit-first/`NOP` Phase 1 invariants)** plus **Push-Based Reverse Proxy CQRS** and **continuous per-event $\sum \Delta = 0$ conservation assertions** eliminates Hanging-Try fund locks, removes $O(N)$ client polling storms, and catches ledger drift in milliseconds instead of T+1 overnight batch jobs.
+- C) Replacing `BigInt` minor-unit strings (`"1.00"`) with IEEE-754 32-bit `float` numbers in 2026 eliminates rounding drift and doubles memory precision.
+- D) Replicating unvalidated external Commands, derived RocksDB State, and S3 Snapshots all simultaneously through the Raft consensus log reduces network bandwidth by `75%`.
+
+<details><summary>Answer</summary>
+
+**A, B.** Moving from remote network B-tree updates (`~1,000` leg-TPS/node $\to$ `2,000` nodes) to local `mmap` sequential event logs + RocksDB LSM state (`~10,000` leg-TPS/node $\to$ `200` nodes) or TigerBeetle `io_uring` VSR (`~100,000` leg-TPS/node $\to$ `20` nodes) transforms cluster economics by `10x–100x`. Pairing deterministic Raft event replication with durable TC/C Phase Status Tables (`out_of_order_flag` tombstones), Push-Based Reverse Proxy CQRS, and continuous zero-drift ($\sum \Delta = 0$) auditing eliminates Hanging Tries, client polling amplification, and T+1 reconciliation blind spots.
+
+- Why not C: IEEE-754 floats introduce binary-to-decimal rounding drift (`0.1 + 0.2 !== 0.3`) and are strictly forbidden for monetary quantities.
+- Why not D: Only the immutable **Event list** should be replicated over Raft; replicating derived State and Snapshots over Raft multiplies consensus network traffic by 3–4x for zero correctness gain, and replicating unvalidated Commands breaks determinism.
+- Ref: [modules/24-digital-wallet.md](../modules/24-digital-wallet.md#6-production-gotchas-sre-guardrails-and-2021-vs-2026-comparison), https://tigerbeetle.com/blog/2023-07-06-a-friendly-abstraction-over-iouring-and-kqueue/
+
+</details>
+
+---
+
+## Timed Certification Bridge Mock Exam (60 Questions · 90 Minutes)
+
+Simulate cross-cloud Solutions Architect and Staff SRE certification conditions (**AWS SAP-C02**, **Google Cloud PCA**, **Microsoft Azure AZ-305**, and **CNCF / SRE Resilience**) using all 60 scenario questions in this bank.
+
+- **Time limit**: **90 minutes** (90 seconds per question). Do not open `<details>` answer blocks until you finish all 60 items.
+- **Scoring & Calibration**: Score 1 point per exact question match (partial credit is not awarded on `multi` questions).
+  - **Associate / Senior Architect readiness**: $\ge 45 / 60$ ($75\%$)
+  - **Professional Architect (`SAP-C02` / `PCA` / `AZ-305`) readiness**: $\ge 50 / 60$ ($83.3\%$)
+  - **Principal Multi-Cloud & Staff SRE readiness**: $\ge 55 / 60$ ($91.7\%$)
+
+### Domain Allocation (60 Questions)
+
+| Certification & Architecture Domain | Weight | Mock Question Count | Selected Bank IDs |
+| --- | :-: | :-: | --- |
+| AWS Solutions Architect – Professional (`SAP-C02`) | 33.3% | 20 | `Q-CERT-001`, `Q-CERT-002`, `Q-CERT-007`, `Q-CERT-008`, `Q-CERT-013`, `Q-CERT-014`, `Q-CERT-019`, `Q-CERT-020`, `Q-CERT-025`, `Q-CERT-026`, `Q-CERT-031`, `Q-CERT-032`, `Q-CERT-037`, `Q-CERT-038`, `Q-CERT-043`, `Q-CERT-044`, `Q-CERT-049`, `Q-CERT-050`, `Q-CERT-055`, `Q-CERT-056` |
+| Google Cloud Professional Cloud Architect (`PCA`) | 16.7% | 10 | `Q-CERT-003`, `Q-CERT-009`, `Q-CERT-015`, `Q-CERT-021`, `Q-CERT-027`, `Q-CERT-033`, `Q-CERT-039`, `Q-CERT-045`, `Q-CERT-051`, `Q-CERT-057` |
+| Microsoft Azure Solutions Architect Expert (`AZ-305`) | 16.7% | 10 | `Q-CERT-004`, `Q-CERT-010`, `Q-CERT-016`, `Q-CERT-022`, `Q-CERT-028`, `Q-CERT-034`, `Q-CERT-040`, `Q-CERT-046`, `Q-CERT-052`, `Q-CERT-058` |
+| CNCF / SRE Production Resilience & Observability | 16.7% | 10 | `Q-CERT-005`, `Q-CERT-011`, `Q-CERT-017`, `Q-CERT-023`, `Q-CERT-029`, `Q-CERT-035`, `Q-CERT-041`, `Q-CERT-047`, `Q-CERT-053`, `Q-CERT-059` |
+| Multi-Cloud 2021 vs. 2026 Architecture Modernization | 16.7% | 10 | `Q-CERT-006`, `Q-CERT-012`, `Q-CERT-018`, `Q-CERT-024`, `Q-CERT-030`, `Q-CERT-036`, `Q-CERT-042`, `Q-CERT-048`, `Q-CERT-054`, `Q-CERT-060` |
+
+### Scoring Key (60 Items)
+
+| Mock # | Bank ID | Certification & Architecture Domain | Type | Difficulty | Answer |
+| :-: | --- | --- | --- | :-: | :-: |
+| 1 | `Q-CERT-001` | AWS SAP-C02: Design Solutions for Organizational Complexity | `scenario` | 3 | **B** |
+| 2 | `Q-CERT-002` | AWS SAP-C02: Continuous Improvement for Existing Solutions | `single` | 2 | **B** |
+| 3 | `Q-CERT-003` | GCP PCA: Designing and Planning a Cloud Solution Architecture | `scenario` | 3 | **A** |
+| 4 | `Q-CERT-004` | Azure AZ-305: Design Business Continuity Solutions | `single` | 2 | **B** |
+| 5 | `Q-CERT-005` | CNCF / SRE: Static Stability & Queue-Driven Autoscaling | `scenario` | 3 | **A** |
+| 6 | `Q-CERT-006` | Multi-Cloud Architecture: 2021 vs. 2026 Infrastructure Modernization | `multi` | 2 | **A, B** |
+| 7 | `Q-CERT-007` | AWS SAP-C02: Design for New Solutions (DynamoDB Partitioning & Global Tables) | `scenario` | 3 | **B** |
+| 8 | `Q-CERT-008` | AWS SAP-C02: Reliability & Strongly Consistent Reads (DynamoDB) | `single` | 2 | **B** |
+| 9 | `Q-CERT-009` | GCP PCA: Designing Data Storage (Cloud Bigtable Row-Key Hotspotting) | `scenario` | 3 | **B** |
+| 10 | `Q-CERT-010` | Azure AZ-305: Design Data Storage Solutions (Cosmos DB Consistency Levels) | `scenario` | 3 | **B** |
+| 11 | `Q-CERT-011` | CNCF / SRE: Distributed State & Failure Detection | `single` | 2 | **A** |
+| 12 | `Q-CERT-012` | Multi-Cloud Architecture: 2021 vs. 2026 KV Store Modernization | `multi` | 2 | **A, B** |
+| 13 | `Q-CERT-013` | AWS SAP-C02: Design for New Solutions (Immutable Vector Tiles & PMTiles on S3/CloudFront) | `single` | 2 | **A** |
+| 14 | `Q-CERT-014` | AWS SAP-C02: High-Throughput Telemetry Ingestion (Kinesis / MSK Partitioning) | `scenario` | 3 | **A** |
+| 15 | `Q-CERT-015` | GCP PCA: Designing Scalable Edge & Streaming Architectures (Pub/Sub + Dataflow + Cloud CDN) | `single` | 2 | **A** |
+| 16 | `Q-CERT-016` | Azure AZ-305: Design Infrastructure & Real-Time Messaging (WebSocket Scaling & Graceful Drain) | `scenario` | 3 | **A** |
+| 17 | `Q-CERT-017` | CNCF / SRE: Geospatial Observability & Rerouting Stability | `single` | 2 | **A** |
+| 18 | `Q-CERT-018` | Multi-Cloud Architecture: 2021 vs. 2026 Mapping Modernization | `multi` | 2 | **A, B** |
+| 19 | `Q-CERT-019` | AWS SAP-C02: Amazon MSK, Kinesis & SQS Selection | `scenario` | 3 | **C** |
+| 20 | `Q-CERT-020` | AWS SAP-C02: Zero-Copy, TLS & Broker I/O Sizing | `single` | 3 | **C** |
+| 21 | `Q-CERT-021` | GCP PCA: Cloud Pub/Sub & Managed Kafka Architecture | `scenario` | 2 | **B** |
+| 22 | `Q-CERT-022` | Azure AZ-305: Azure Event Hubs vs. Service Bus | `scenario` | 2 | **B** |
+| 23 | `Q-CERT-023` | CNCF / SRE: Message Queue Observability & Rebalance Stability | `single` | 3 | **B** |
+| 24 | `Q-CERT-024` | Multi-Cloud Architecture: 2021 vs. 2026 Messaging Modernization | `multi` | 2 | **A, B** |
+| 25 | `Q-CERT-025` | AWS SAP-C02: High-Concurrency Reservation & CDC Caching Architecture | `scenario` | 3 | **B** |
+| 26 | `Q-CERT-026` | AWS SAP-C02: Idempotency, Deadlock Prevention & Overbooking Guards | `single` | 3 | **A** |
+| 27 | `Q-CERT-027` | GCP PCA: Global Hospitality Inventory on Cloud Spanner vs. Cloud SQL | `scenario` | 3 | **B** |
+| 28 | `Q-CERT-028` | Azure AZ-305: Multi-Shard Reservation Data & Durable Workflows | `scenario` | 2 | **A** |
+| 29 | `Q-CERT-029` | CNCF / SRE: Reservation Funnel SLIs, Horizon Guardrails & CDC Lag | `single` | 3 | **B** |
+| 30 | `Q-CERT-030` | Multi-Cloud Architecture: 2021 vs. 2026 Reservation Platform Modernization | `multi` | 2 | **A, B** |
+| 31 | `Q-CERT-031` | AWS SAP-C02: Dedicated IP Pools, SES Deliverability & Content-Addressed S3 Attachments | `scenario` | 3 | **B** |
+| 32 | `Q-CERT-032` | AWS SAP-C02: Multi-Tenant Per-User Email Search on Amazon OpenSearch | `single` | 3 | **A** |
+| 33 | `Q-CERT-033` | GCP PCA: Planetary Mailbox Storage on Cloud Bigtable / Spanner & Pub/Sub | `scenario` | 3 | **A** |
+| 34 | `Q-CERT-034` | Azure AZ-305: Enterprise Email Pipeline with Azure Communication Services, Cosmos DB & AI Search | `scenario` | 2 | **A** |
+| 35 | `Q-CERT-035` | CNCF / SRE: SMTP Queue Depth, IP Reputation & DMARC/Complaint Guardrails | `single` | 3 | **B** |
+| 36 | `Q-CERT-036` | Multi-Cloud Architecture: 2021 vs. 2026 Email Platform Modernization | `multi` | 2 | **A, B** |
+| 37 | `Q-CERT-037` | AWS SAP-C02: Serverless Gaming Leaderboard with ElastiCache for Valkey & Write-Sharded DynamoDB | `scenario` | 3 | **A** |
+| 38 | `Q-CERT-038` | AWS SAP-C02: Valkey Memory Sizing, Copy-on-Write Headroom & Sharded Rank Queries | `single` | 3 | **B** |
+| 39 | `Q-CERT-039` | GCP PCA: Global Tournament Leaderboard on Memorystore for Valkey, Cloud Run & Cloud SQL/Spanner | `scenario` | 3 | **A** |
+| 40 | `Q-CERT-040` | Azure AZ-305: Real-Time Gaming Backend with Azure Managed Redis & Cosmos DB | `scenario` | 2 | **A** |
+| 41 | `Q-CERT-041` | CNCF / SRE: Leaderboard Memory Fragmentation, Async UNLINK Rollover & Anti-Cheat Guardrails | `single` | 3 | **A** |
+| 42 | `Q-CERT-042` | Multi-Cloud Architecture: 2021 vs. 2026 Leaderboard Modernization | `multi` | 2 | **A, B** |
+| 43 | `Q-CERT-043` | AWS SAP-C02: Global Proximity Service with Aurora PostgreSQL PostGIS, ElastiCache for Valkey & Route 53 Latency Routing | `scenario` | 3 | **B** |
+| 44 | `Q-CERT-044` | AWS SAP-C02: Hybrid Lexical, Geospatial & Vector POI Discovery with Amazon OpenSearch Service & DynamoDB | `single` | 3 | **B** |
+| 45 | `Q-CERT-045` | GCP PCA: Multi-Region Location-Based Service on Cloud Run, Memorystore for Valkey & Cloud SQL / Spanner S2 Indexing | `scenario` | 3 | **A** |
+| 46 | `Q-CERT-046` | Azure AZ-305: Proximity Search with Azure Managed Redis Geospatial, Cosmos DB GeoJSON Spatial Indexing & Traffic Manager | `scenario` | 2 | **A** |
+| 47 | `Q-CERT-047` | CNCF / SRE: Quadtree Cold-Start Readiness Gating, Geohash Cache-Hit SLIs & GDPR Ephemeral Location Guardrails | `single` | 3 | **A** |
+| 48 | `Q-CERT-048` | Multi-Cloud Architecture: 2021 vs. 2026 Proximity Service Modernization | `multi` | 2 | **A, B** |
+| 49 | `Q-CERT-049` | AWS SAP-C02: Real-Time Nearby Friends with ALB/NLB Stateful WebSockets, ElastiCache for Valkey Sharded Pub/Sub & Amazon Keyspaces / Timestream | `scenario` | 3 | **A** |
+| 50 | `Q-CERT-050` | AWS SAP-C02: WebSocket Fleet Auto-Scaling, Graceful Connection Draining & Consistent-Hash Resubscription Containment | `single` | 3 | **B** |
+| 51 | `Q-CERT-051` | GCP PCA: Global Ephemeral Location Sharing on GKE Stateful WebSockets, Memorystore for Valkey Cluster & Cloud Bigtable | `scenario` | 3 | **A** |
+| 52 | `Q-CERT-052` | Azure AZ-305: Managed Real-Time Location Fan-Out with Azure Web PubSub, Azure Managed Redis & Cosmos DB | `scenario` | 2 | **A** |
+| 53 | `Q-CERT-053` | CNCF / SRE: Pub/Sub Fan-Out CPU Saturation, Cluster-Bus Broadcast Meltdown & Trilateration Privacy Guardrails | `single` | 3 | **B** |
+| 54 | `Q-CERT-054` | Multi-Cloud Architecture: 2021 vs. 2026 Ephemeral Location-Sharing Modernization | `multi` | 2 | **A, B** |
+| 55 | `Q-CERT-055` | AWS SAP-C02: High-Throughput Digital Wallet with Temporal/Step Functions TC/C Saga, Sharded Ledgers & S3 Object Lock Snapshots | `scenario` | 3 | **A** |
+| 56 | `Q-CERT-056` | AWS SAP-C02: Idempotent Financial API Ingestion, KMS Envelope Signing & Double-Entry Conservation Audits | `single` | 3 | **A** |
+| 57 | `Q-CERT-057` | GCP PCA: Globally Consistent Digital Wallet on Cloud Spanner TrueTime Serializable Transactions & Pub/Sub CQRS | `scenario` | 3 | **A** |
+| 58 | `Q-CERT-058` | Azure AZ-305: Tamper-Evident Wallet Ledger with Azure SQL Database Ledger, Durable Functions Saga & Cosmos DB CQRS Views | `scenario` | 2 | **A** |
+| 59 | `Q-CERT-059` | CNCF / SRE: Raft Quorum Loss, TC/C Hanging-Try Tombstone Reconciliation & Zero-Drift Conservation SLIs | `single` | 3 | **B** |
+| 60 | `Q-CERT-060` | Multi-Cloud Architecture: 2021 vs. 2026 Digital Wallet & Financial Ledger Modernization | `multi` | 2 | **A, B** |

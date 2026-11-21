@@ -2,7 +2,7 @@
 
 This preparation bank tests Senior, Staff, and Principal distributed system design competency across the seven domains defined in [`exams/README.md`](README.md). Every question is original and grounded in primary engineering literature, official protocol RFCs, and production postmortems.
 
-- **Bank scope**: **115 questions** (`Q-SD-001`–`Q-SD-115`) covering quantitative capacity modeling, edge/API design, caching/partitioning, asynchrony/resilience, specialized indexing/financial correctness, SLO observability/DR, end-to-end canonical architectures, progressive scaling, distributed key-value stores, planetary-scale geospatial navigation, distributed message queue internals, high-contention hotel reservation and overbooking systems, planetary distributed email services, real-time gaming leaderboards, proximity / location-based services, and real-time ephemeral location sharing (Nearby Friends).
+- **Bank scope**: **120 questions** (`Q-SD-001`–`Q-SD-120`) covering quantitative capacity modeling, edge/API design, caching/partitioning, asynchrony/resilience, specialized indexing/financial correctness, SLO observability/DR, end-to-end canonical architectures, progressive scaling, distributed key-value stores, planetary-scale geospatial navigation, distributed message queue internals, high-contention hotel reservation and overbooking systems, planetary distributed email services, real-time gaming leaderboards, proximity / location-based services, real-time ephemeral location sharing (Nearby Friends), and high-throughput digital wallets, distributed ledgers, event sourcing, and Multi-Raft CQRS.
 - **Difficulty calibration**: Level `1` tests foundational mechanics, Level `2` tests Senior-level trade-off reasoning, and Level `3` tests Staff/Principal failure modes, subtle race conditions, and quantitative traps.
 - **Timed practice**: Complete the [50-Question Written Architecture Drill](#timed-mock-exam-written-architecture-drill-50-questions--75-minutes) under a strict 75-minute timer, then run the [two 60-minute Staff/Principal design loops](#timed-mock-design-loops-2--60-minute-staffprincipal-simulations) against the explicit 0–4 grading rubrics.
 
@@ -2377,6 +2377,115 @@ Select **two** sound architectural designs for the **"Nearby Random Person"** di
 - Why not C: As proven in Test 4 of `examples/17-nearby-friends.test.ts`, two users `31 meters` apart across a Geohash cell border have different Geohash strings and miss each other completely under single-cell subscription.
 - Why not D: Three distance radii from three known non-collinear points in 2D space uniquely determine the target point $(x, y)$ via circle-circle intersection (trilateration).
 - Ref: [modules/23-nearby-friends.md](../modules/23-nearby-friends.md#5-advanced-extensions-whale-friends-geohash-random-discovery-erlangbeam-alternatives-and-anti-stalking-privacy), https://dl.acm.org/doi/10.1145/2508859.2516735
+
+</details>
+
+---
+
+### Q-SD-116 · Digital Wallets, Distributed Ledgers, Event Sourcing & Raft CQRS · difficulty 3 · scenario
+
+A global digital wallet platform must sustain `1,000,000` balance transfers per second (`1M transfer TPS`). Each transfer atomically debits one account and credits another (`2,000,000` account-leg operations/sec). The architecture team compares a traditional cloud RDBMS (`1,000` leg-TPS/node) against a deterministic local `mmap` event-log + RocksDB LSM event-sourced engine (`10,000` leg-TPS/node) and a TigerBeetle `io_uring` VSR engine (`100,000` leg-TPS/node). Which statement accurately reflects both the required cluster node counts and the mandatory API monetary wire contract?
+
+- A) The cloud RDBMS requires `2,000` nodes and the `mmap` + RocksDB engine requires `200` nodes, while JSON wire requests transmit monetary `amount` as an IEEE-754 floating-point number (`1.00`) cast to `float64` at the edge gateway.
+- B) Since each transfer is `2` account-leg operations (`2,000,000` leg-ops/sec), the cloud RDBMS at `1,000` leg-TPS/node requires **`2,000` nodes**, the `mmap` + RocksDB event-sourced engine at `10,000` leg-TPS/node requires **`200` nodes**, and the TigerBeetle `io_uring` engine at `100,000` leg-TPS/node requires **`20` nodes**; simultaneously, wire protocols must transmit `amount` as an **exact decimal string (`"1.00"`) parsed into `BigInt` minor units (`100n` cents)** alongside a **`transaction_id` (UUIDv7) idempotency key**.
+- C) A `1,000,000` transfer TPS workload requires only `1,000` RDBMS nodes because a transfer between two shards is only a single row write, and `float64` balances can be rounded to 2 decimals at display time without ledger drift.
+- D) At `10,000` leg-TPS/node, the event-sourced engine requires `20,000` nodes, and `transaction_id` idempotency keys are optional because TCP guarantees exactly-once application delivery.
+
+<details><summary>Answer</summary>
+
+**B.** Every peer-to-peer wallet transfer executes **two** independent account-leg mutations (one debit on Account $A$'s shard and one credit on Account $C$'s shard), producing $2 \times 1{,}000{,}000 = 2{,}000{,}000\text{ leg-ops/sec}$. Dividing `2,000,000` leg-ops/sec by per-node capacity yields `20,000` nodes at `100` TPS/node, **`2,000` nodes** at `1,000` TPS/node (cloud RDBMS), **`200` nodes** at `10,000` TPS/node (`mmap` + RocksDB event sourcing), and **`20` nodes** at `100,000` TPS/node (TigerBeetle `io_uring`). On the wire, IEEE-754 binary floating-point cannot represent base-10 fractions like `0.1` or `0.2` exactly (`0.1 + 0.2 = 0.30000000000000004`), so APIs must serialize `amount` as a string (`"1.00"`), parse it into exact `BigInt` minor units (`100n` cents), and enforce a `transaction_id` idempotency key.
+
+- Why not A: Using IEEE-754 `float64` for money causes cumulative sub-cent rounding drift across millions of transfers, violating double-entry conservation ($\sum \Delta = 0$).
+- Why not C: A transfer between two accounts requires 2 account-leg operations (`2M` leg-ops/sec), and rounding floats only at display time still corrupts the stored ledger state.
+- Why not D: `2,000,000 / 10,000 = 200` nodes (not `20,000`), and TCP retries or client timeouts after an HTTP `504` will double-deduct funds without an application-level `transaction_id` idempotency key.
+- Ref: [modules/24-digital-wallet.md](../modules/24-digital-wallet.md#1-requirements-1m-transfer-tps-capacity-math-and-fixed-point-monetary-contracts), https://en.wikipedia.org/wiki/IEEE_754
+
+</details>
+
+---
+
+### Q-SD-117 · Digital Wallets, Distributed Ledgers, Event Sourcing & Raft CQRS · difficulty 3 · single
+
+In a distributed **Try-Confirm/Cancel (TC/C)** wallet transfer moving `$1.00` from sender Account $A$ (on Shard 1) to receiver Account $C$ (on Shard 2), why must Phase 1 (`Try`) debit `-$1.00` from $A$ and execute a **`NOP` (no balance credit)** on $C$, and how must Shard 1 handle a network race where a `Cancel` packet arrives _before_ a delayed `Try` packet?
+
+- A) Phase 1 `Try` should credit `+$1.00` to $C$ immediately while leaving $A$ unchanged until Phase 2 `Confirm`, so the receiver sees their money faster.
+- B) Phase 1 `Try` must debit `-$1.00` (or freeze `$1.00`) on sender $A$ and perform **`NOP` on receiver $C$** because crediting $C$ during Phase 1 before $A$'s debit is committed would allow $C$ to withdraw or spend unbacked phantom funds during the in-flight window; furthermore, the coordinator must persist phase progress in a transactional **Phase Status Table**, and if `Cancel` arrives at a shard before a delayed `Try`, the shard must record an **`out_of_order_flag = true` (`CANCEL_TOMBSTONE`)** so the late-arriving `Try` is rejected instead of locking $A$'s `$1.00` permanently (**Hanging Try**).
+- C) Phase 1 `Try` keeps state purely in the stateless wallet service's RAM without a Phase Status Table, and out-of-order `Cancel` messages can be silently ignored because `Try` and `Cancel` are naturally commutative.
+- D) TC/C holds database-level X/A two-phase row locks (`SELECT ... FOR UPDATE`) across Shard 1 and Shard 2 for the entire multi-second payment duration.
+
+<details><summary>Answer</summary>
+
+**B.** In TC/C, Phase 1 (`Try`) must never increase spendable money in the system: deducting `-$1.00` from $A$ and performing `NOP` on $C$ ensures total spendable funds temporarily decrease by `$1.00` (held in reservation) until Phase 2 `Confirm` credits `+$1.00` to $C$ (or Phase 2 `Cancel` refunds `+$1.00` to $A$). If `Try` credited `+$1.00` to $C$ first and $A$'s debit failed, $C$ could immediately spend the `$1.00` before `Cancel` ran, violating double-entry conservation. Additionally, if a slow `Try` packet is delayed in the network and arrives _after_ the coordinator has already timed out and sent `Cancel`, executing `Cancel` as a no-op without recording an **`out_of_order_flag = true` tombstone** in the Phase Status Table allows the late `Try` to deduct `-$1.00` from $A$ forever with no subsequent `Cancel` to release it (a **Hanging Try**).
+
+- Why not A: Crediting receiver $C$ in Phase 1 before sender $A$'s funds are secured creates an unbacked double-spend window if $C$ transfers the money out before Phase 1 completes.
+- Why not C: If the coordinator crashes between Phase 1 and Phase 2 without a persistent Phase Status Table, restarted nodes cannot know whether to issue `Confirm` or `Cancel`; and `Try` after `Cancel` does not commute without a persistent tombstone.
+- Why not D: Holding low-level DB locks across shards is X/A 2PC; TC/C commits local Phase 1 transactions immediately and uses application-level compensating transactions (`Cancel`) in Phase 2.
+- Ref: [modules/24-digital-wallet.md](../modules/24-digital-wallet.md#2-distributed-transaction-evolution-sharded-redis-2pc-try-confirmcancel-tcc-and-saga), https://microservices.io/patterns/data/saga.html
+
+</details>
+
+---
+
+### Q-SD-118 · Digital Wallets, Distributed Ledgers, Event Sourcing & Raft CQRS · difficulty 3 · scenario
+
+An engineering team designs a high-frequency deterministic Event-Sourced wallet partition that must guarantee reproducibility across audit replays, survive node crashes with zero data loss (`RPO = 0`), and scale single-node throughput from `1,000` TPS to `10,000+` TPS. The design uses four conceptual terms (**Command**, **Event**, **State**, **Snapshot**). Which replication boundary and local storage optimization are mathematically sound?
+
+- A) Replicate Commands, Events, RocksDB State, and Snapshots all simultaneously through the Raft consensus group so every follower receives 4 copies of every mutation.
+- B) Replicate **only the immutable Event list** across the Raft consensus group: **Commands** are non-deterministic external intents (FIFO queued, not Raft-replicated because validation before the state machine may involve external I/O, timestamps, or random numbers), whereas **State** (materialized in a local **RocksDB LSM-tree** with `fsync` off on derived state because the Raft event log is authoritative) and **Snapshots** (periodically written to **HDFS / S3 Object Lock**) are 100% deterministically regenerated from the Raft-committed Event log stored in local **`mmap` append-only files**.
+- C) Replicate only the unvalidated **Command FIFO queue** via Raft and have each follower node independently call external FX and fraud-scoring REST APIs during state-machine execution.
+- D) Store both the Event log and the State balance map over a remote network JDBC connection in a single unindexed heap table without `mmap` or RocksDB.
+
+<details><summary>Answer</summary>
+
+**B.** In deterministic Event Sourcing, a **Command** is an unvalidated external request (`Transfer $1 from A to C`), whereas an **Event** is a validated, immutable historical fact (`Transferred $1 from A to C at seq=42`). If the state machine is strictly deterministic (zero external I/O, zero wall-clock `Date.now()`, zero `Math.random()` inside the transition function), replaying the exact same ordered **Event list** always produces the exact same **State** and **Snapshots**. Therefore, **only the Event list requires Raft consensus replication** (`> 50%` quorum): replicating State or Snapshots over Raft wastes consensus bandwidth on derived data, while replicating Commands fails whenever non-deterministic validation diverges across nodes. Locally, appending Events to **`mmap` page-cache files**, keeping derived balance **State in an embedded RocksDB LSM-tree**, and offloading periodic **Snapshots + historical cold Events to HDFS/S3** lifts single-group capacity to `10,000+` leg-TPS.
+
+- Why not A: Replicating derived RocksDB State and Snapshots through Raft multiplies network consensus traffic without adding safety, since both are deterministically derived from Events.
+- Why not C: Calling external FX or fraud APIs inside each replica's state machine makes state transitions non-deterministic; replicas receiving slightly different network responses or timeouts will diverge permanently (split-brain ledger drift).
+- Why not D: Remote network JDBC round-trips and B-tree random disk I/O cap single-node throughput around `~1,000` TPS, requiring `2,000` nodes instead of `200` for `1M` transfer TPS.
+- Ref: [modules/24-digital-wallet.md](../modules/24-digital-wallet.md#3-deterministic-event-sourcing-reproducibility-and-cqrs-architecture), https://raft.github.io/raft.pdf
+
+</details>
+
+---
+
+### Q-SD-119 · Digital Wallets, Distributed Ledgers, Event Sourcing & Raft CQRS · difficulty 2 · ordering
+
+Order the end-to-end execution steps of a distributed TC/C wallet transfer (`$1.00` from Account $A$ on Shard 1 to Account $C$ on Shard 2) across a **Multi-Raft Event-Sourced & Push-Based Reverse Proxy CQRS** architecture.
+
+- A) Client sends `POST /v1/wallet/balance_transfer` (`transaction_id`, `amount: "1.00"`) to Reverse Proxy / TC/C Coordinator → Coordinator parses `"1.00"` into `100n` cents, persists `TRY_STARTED` in the Phase Status Table, and issues Phase 1 `Try` (`Debit -$1.00` Command to Shard 1's Raft leader, `NOP` on Shard 2) → Shard 1 Raft leader validates $A \ge \$1.00$, replicates the immutable `TryDebitEvent` across a quorum (`>= 2/3`) of Shard 1's Raft `mmap` event logs, applies it to the local RocksDB state machine, and the **Read-Only CQRS State Machine pushes** Phase 1 completion back to the Reverse Proxy → Coordinator records `CONFIRM_STARTED` and issues Phase 2 `Confirm` (`NOP` on Shard 1, `Credit +$1.00` Command to Shard 2's Raft leader) → Shard 2 Raft leader replicates `ConfirmCreditEvent` to quorum, updates RocksDB State (`C += $1.00`), and pushes Phase 2 completion to the Reverse Proxy → Coordinator marks `CONFIRMED` and returns `200 OK` to the client.
+- B) Client writes directly to Shard 2's RocksDB file → Shard 2 credits `+$1.00` to $C$ without Raft replication → Client polls Shard 1 every 10 ms to ask if $A$ has `$1.00` → Coordinator writes to the Phase Status Table after returning `200 OK`.
+- C) Reverse Proxy executes Phase 2 `Confirm` (`+$1.00` to $C$) first → then runs Phase 1 `Try` (`-$1.00` from $A$) → then replicates unvalidated Commands to S3 Glacier.
+- D) Read-Only CQRS State Machine mutates Account $A$'s balance directly without consulting the Raft leader → Raft followers vote after the client disconnects.
+
+<details><summary>Answer</summary>
+
+**A.** The Reverse Proxy / TC/C Coordinator first validates the fixed-point string amount (`"1.00"` $\to$ `100n` cents), persists the transaction state (`TRY_STARTED`) in the Phase Status Table, and dispatches Phase 1 `Try` (`-$1.00` to Shard 1's Raft leader, `NOP` on Shard 2). Shard 1's state machine validates $A$'s balance, commits the immutable `TryDebitEvent` to a Raft quorum (`mmap` logs), updates local RocksDB State, and pushes the completion notification via the Read-Only CQRS projection back to the Reverse Proxy (eliminating client polling). Once Phase 1 is recorded, the Coordinator advances the Phase Status Table to `CONFIRM_STARTED` and dispatches Phase 2 `Confirm` (`+$1.00` to Shard 2's Raft leader), which replicates `ConfirmCreditEvent` via Raft, updates Shard 2's RocksDB State, and pushes completion back to the Reverse Proxy to finalize `CONFIRMED`.
+
+- Why not B: Clients never bypass the Raft leader to mutate local RocksDB files directly, and crediting $C$ before validating $A$ violates conservation.
+- Why not C: Running Phase 2 `Confirm` before Phase 1 `Try` credits the receiver before checking if the sender even has funds.
+- Why not D: Read-Only CQRS state machines never mutate authoritative ledger state directly; all writes must pass through the shard's Raft leader and achieve quorum commit first.
+- Ref: [modules/24-digital-wallet.md](../modules/24-digital-wallet.md#5-multi-raft-sharded-event-sourcing-push-based-reverse-proxy-cqrs-and-end-to-end-lifecycle), https://raft.github.io/raft.pdf
+
+</details>
+
+---
+
+### Q-SD-120 · Digital Wallets, Distributed Ledgers, Event Sourcing & Raft CQRS · difficulty 3 · multi
+
+Select **two** accurate architectural comparisons between **Pull-Based vs. Push-Based CQRS** and **TC/C vs. Linear Saga** in a distributed digital wallet.
+
+- A) In naive **Pull-Based CQRS**, external clients or the TC/C coordinator must repeatedly poll the read-only state machine (`GET /balance` or status) to discover when an asynchronous Command has been validated, Raft-replicated, and applied—creating an $O(N)$ polling storm and artificial tail-latency jitter; upgrading to **Push-Based Reverse Proxy CQRS** has the read-only state machine push completion events directly back to the reverse proxy over an internal stream the sub-millisecond the Raft event applies.
+- B) **Try-Confirm/Cancel (TC/C)** executes Phase 1 (`Try`) across all participating account shards **in parallel** and Phase 2 (`Confirm`/`Cancel`) in parallel (completing in `2` parallel network rounds), whereas a **Linear Saga** executes steps sequentially one after another ($S_1 \to S_2 \to \dots \to S_n$) and rolls back sequentially in reverse ($C_{n-1} \to \dots \to C_1$), making TC/C preferable for latency-sensitive 2-leg wallet transfers and Saga preferable for multi-service workflows with many external steps.
+- C) Push-Based CQRS eliminates the need for Raft consensus replication because the stateless reverse proxy stores the only copy of account balances in RAM.
+- D) In TC/C, if a `Confirm` request times out during Phase 2, the coordinator should immediately switch to `Cancel` and refund sender $A$ without checking whether receiver $C$ already committed the `Confirm` credit.
+
+<details><summary>Answer</summary>
+
+**A, B.** Because Event Sourcing processes Commands asynchronously through a FIFO queue and Raft replication log, a client sending a Command does not get an immediate synchronous DB return value. Pull-based CQRS forces the caller to poll the read projection repeatedly, whereas **Push-Based Reverse Proxy CQRS** streams the applied-event notification directly from the read-only state machine back to the reverse proxy waiting on the client/coordinator request. Furthermore, **TC/C** runs Phase 1 `Try` across shards in parallel (`1` parallel round) followed by Phase 2 `Confirm`/`Cancel` in parallel (`1` parallel round), whereas a **Linear Saga** chains steps serially and compensates backward step-by-step.
+
+- Why not C: The reverse proxy is stateless routing/coordination infrastructure; Raft consensus across the `mmap` event logs remains mandatory for `RPO = 0` ledger durability.
+- Why not D: Once TC/C enters Phase 2 `Confirm` (after all Phase 1 `Try` steps succeeded), it **must never switch to `Cancel` on a Phase 2 timeout**: `Confirm` must be retried idempotently until it succeeds (or resolved via dead-letter/manual reconciliation), because switching to `Cancel` after Shard 2 already applied `Confirm` would both credit $C$ and refund $A$, creating money out of thin air!
+- Ref: [modules/24-digital-wallet.md](../modules/24-digital-wallet.md#5-multi-raft-sharded-event-sourcing-push-based-reverse-proxy-cqrs-and-end-to-end-lifecycle), https://microservices.io/patterns/data/saga.html
 
 </details>
 
