@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 560" width="1160" height="560" role="img" aria-labelledby="title desc">
+  <title id="title">Hardware Constants: Dean 2012 vs 2021 vs 2026</title>
+  <desc id="desc">Comparison table of latency and bandwidth constants across three eras: storage, network card, object storage, accelerator memory, cross-AZ transfer price, DRAM and cross-ocean latency.</desc>
+  <rect x="0" y="0" width="1160" height="560" rx="12" fill="#f8fafc" stroke="#cbd5e1"/>
+  <rect x="0" y="0" width="1160" height="56" rx="12" fill="#0f172a"/>
+  <rect x="0" y="40" width="1160" height="16" fill="#0f172a"/>
+  <text x="24" y="27" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#f8fafc">Hardware Constants Revisited: Jeff Dean 2012 vs 2021 vs 2026</text>
+  <text x="24" y="46" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#94a3b8">Bandwidth grew 10-100x, latency barely moved, and the bill moved from compute to bytes crossing a boundary</text>
+  <rect x="20" y="70" width="212" height="32" rx="6" fill="#e2e8f0"/>
+  <text x="32" y="91" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#1e293b">Constant</text>
+  <rect x="250" y="70" width="252" height="32" rx="6" fill="#fef3c7"/>
+  <text x="262" y="91" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#92400e">Dean 2012</text>
+  <rect x="520" y="70" width="252" height="32" rx="6" fill="#fee2e2"/>
+  <text x="532" y="91" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#991b1b">2021</text>
+  <rect x="790" y="70" width="350" height="32" rx="6" fill="#dcfce7"/>
+  <text x="802" y="91" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#166534">2026</text>
+  <rect x="20" y="112" width="212" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="32" y="134" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#0f172a">Storage random read</text>
+  <rect x="250" y="112" width="252" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="262" y="134" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" fill="#78350f">4 KB SATA SSD: 150 µs</text>
+  <rect x="520" y="112" width="252" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="532" y="134" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" fill="#7f1d1d">~80 µs Gen3/Gen4 NVMe</text>
+  <rect x="790" y="112" width="350" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="802" y="134" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" fill="#14532d">15–50 µs Gen5 NVMe, ~14 GB/s seq</text>
+  <rect x="20" y="152" width="212" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="32" y="174" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#0f172a">NIC / link speed</text>
+  <rect x="250" y="152" width="252" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="262" y="174" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" fill="#78350f">1 Gbps (1 KB in 10 µs)</text>
+  <rect x="520" y="152" width="252" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="532" y="174" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" fill="#7f1d1d">10/25 Gbps common, 100G in fabric</text>
+  <rect x="790" y="152" width="350" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="802" y="174" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" fill="#14532d">100G / 400G NIC, 12.5–50 GB/s</text>
+  <rect x="20" y="192" width="212" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="32" y="214" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#0f172a">Cold or bulk read</text>
+  <rect x="250" y="192" width="252" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="262" y="214" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" fill="#78350f">HDD seek 10 ms</text>
+  <rect x="520" y="192" width="252" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="532" y="214" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" fill="#7f1d1d">S3 Standard: tens of ms first byte</text>
+  <rect x="790" y="192" width="350" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="802" y="214" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" fill="#14532d">S3 Express One Zone: single-digit ms</text>
+  <rect x="20" y="232" width="212" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="32" y="254" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#0f172a">Main memory</text>
+  <rect x="250" y="232" width="252" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="262" y="254" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" fill="#78350f">~100 ns DDR3</text>
+  <rect x="520" y="232" width="252" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="532" y="254" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" fill="#7f1d1d">~100 ns DDR4</text>
+  <rect x="790" y="232" width="350" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="802" y="254" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" fill="#14532d">~100 ns DDR5; latency flat</text>
+  <rect x="20" y="272" width="212" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="32" y="294" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#0f172a">Accelerator memory</text>
+  <rect x="250" y="272" width="252" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="262" y="294" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" fill="#78350f">CPU only, no HBM</text>
+  <rect x="520" y="272" width="252" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="532" y="294" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" fill="#7f1d1d">A100 80 GB HBM2e, ~2 TB/s</text>
+  <rect x="790" y="272" width="350" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="802" y="294" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" fill="#14532d">H100 3.35 TB/s; B200 ~8 TB/s HBM3e</text>
+  <rect x="20" y="312" width="212" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="32" y="334" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#0f172a">KV cache residence</text>
+  <rect x="250" y="312" width="252" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="262" y="334" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" fill="#78350f">n/a</text>
+  <rect x="520" y="312" width="252" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="532" y="334" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" fill="#7f1d1d">n/a</text>
+  <rect x="790" y="312" width="350" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="802" y="334" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" fill="#14532d">GPU HBM, spills to CPU/NVMe tiers</text>
+  <rect x="20" y="352" width="212" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="32" y="374" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#0f172a">Cross-AZ transfer</text>
+  <rect x="250" y="352" width="252" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="262" y="374" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" fill="#78350f">Treated as free</text>
+  <rect x="520" y="352" width="252" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="532" y="374" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" fill="#7f1d1d">$0.01/GB each way</text>
+  <rect x="790" y="352" width="350" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="802" y="374" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" fill="#14532d">Still $0.01/GB each way = $0.02/GB</text>
+  <rect x="20" y="392" width="212" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="32" y="414" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#0f172a">Datacenter round trip</text>
+  <rect x="250" y="392" width="252" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="262" y="414" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" fill="#78350f">500 µs</text>
+  <rect x="520" y="392" width="252" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="532" y="414" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" fill="#7f1d1d">~500 µs</text>
+  <rect x="790" y="392" width="350" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="802" y="414" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" fill="#14532d">~250 µs intra-AZ, tuned fabric</text>
+  <rect x="20" y="432" width="212" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="32" y="454" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#0f172a">Cross-ocean round trip</text>
+  <rect x="250" y="432" width="252" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="262" y="454" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" fill="#78350f">150 ms (CA-NL-CA)</text>
+  <rect x="520" y="432" width="252" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="532" y="454" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" fill="#7f1d1d">150 ms</text>
+  <rect x="790" y="432" width="350" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="802" y="454" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" fill="#14532d">150 ms (speed of light)</text>
+  <rect x="20" y="476" width="1120" height="40" rx="8" fill="#0f172a"/>
+  <text x="36" y="501" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12.5" font-weight="600" fill="#f8fafc">Rule: re-derive bandwidth and price every few years; keep latency floors and the 150 ms ocean crossing as constants.</text>
+  <text x="24" y="548" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10.5" fill="#64748b">Sources: Dean (c.2009–2012 talk slides), vendor datasheets (NVIDIA, AWS pricing and S3 Express docs); figures rounded.</text>
+</svg>

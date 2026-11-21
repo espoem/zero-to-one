@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 590" width="1160" height="590" role="img" aria-labelledby="title desc">
+  <title id="title">Latency and Scale Ladder</title>
+  <desc id="desc">Logarithmic latency ladder from 0.5 ns L1 cache to 500 ms LLM time to first token, plus a powers-of-two table and an availability nines table.</desc>
+  <rect x="0" y="0" width="1160" height="590" rx="12" fill="#f8fafc" stroke="#cbd5e1"/>
+  <rect x="0" y="0" width="1160" height="56" rx="12" fill="#0f172a"/>
+  <rect x="0" y="40" width="1160" height="16" fill="#0f172a"/>
+  <text x="24" y="27" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#f8fafc">Latency and Scale Ladder: Nine Orders of Magnitude on One Axis</text>
+  <text x="24" y="46" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#94a3b8">Log10 time axis (2026 constants), powers of two vs decimal drift, and downtime per year for each availability tier</text>
+  <rect x="20" y="70" width="770" height="500" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="36" y="94" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="13" font-weight="700" fill="#0f172a">Latency ladder (log scale, seconds)</text>
+  <line x1="245.8" y1="104" x2="245.8" y2="474" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="287.4" y1="104" x2="287.4" y2="474" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="328.9" y1="104" x2="328.9" y2="474" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="370.5" y1="104" x2="370.5" y2="474" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="412.1" y1="104" x2="412.1" y2="474" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="453.7" y1="104" x2="453.7" y2="474" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="495.3" y1="104" x2="495.3" y2="474" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="536.8" y1="104" x2="536.8" y2="474" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="578.4" y1="104" x2="578.4" y2="474" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="620.0" y1="104" x2="620.0" y2="474" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="36" y="134" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" font-weight="600" fill="#0f172a">L1 cache reference</text>
+  <line x1="225" y1="130" x2="233.3" y2="130" stroke="#16a34a" stroke-opacity="0.35" stroke-width="3"/>
+  <circle cx="233.3" cy="130" r="7" fill="#16a34a"/>
+  <text x="636" y="134" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#16a34a">0.5 ns</text>
+  <text x="36" y="180" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" font-weight="600" fill="#0f172a">L2 cache reference</text>
+  <line x1="225" y1="176" x2="280.9" y2="176" stroke="#16a34a" stroke-opacity="0.35" stroke-width="3"/>
+  <circle cx="280.9" cy="176" r="7" fill="#16a34a"/>
+  <text x="636" y="180" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#16a34a">7 ns</text>
+  <text x="36" y="226" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" font-weight="600" fill="#0f172a">DRAM (DDR5) reference</text>
+  <line x1="225" y1="222" x2="328.9" y2="222" stroke="#0d9488" stroke-opacity="0.35" stroke-width="3"/>
+  <circle cx="328.9" cy="222" r="7" fill="#0d9488"/>
+  <text x="636" y="226" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#0d9488">100 ns</text>
+  <text x="36" y="272" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" font-weight="600" fill="#0f172a">Gen5 NVMe 4 KB read</text>
+  <line x1="225" y1="268" x2="419.4" y2="268" stroke="#2563eb" stroke-opacity="0.35" stroke-width="3"/>
+  <rect x="419.4" y="261" width="21.8" height="14" rx="4" fill="#2563eb"/>
+  <text x="636" y="272" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#2563eb">15–50 µs</text>
+  <text x="36" y="318" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" font-weight="600" fill="#0f172a">Intra-AZ round trip</text>
+  <line x1="225" y1="314" x2="470.2" y2="314" stroke="#2563eb" stroke-opacity="0.35" stroke-width="3"/>
+  <circle cx="470.2" cy="314" r="7" fill="#2563eb"/>
+  <text x="636" y="318" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#2563eb">250 µs</text>
+  <text x="36" y="364" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" font-weight="600" fill="#0f172a">HDD seek (2012 era)</text>
+  <line x1="225" y1="360" x2="536.8" y2="360" stroke="#d97706" stroke-opacity="0.35" stroke-width="3"/>
+  <circle cx="536.8" cy="360" r="7" fill="#d97706"/>
+  <text x="636" y="364" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#d97706">10 ms</text>
+  <text x="36" y="410" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" font-weight="600" fill="#0f172a">Cross-ocean round trip</text>
+  <line x1="225" y1="406" x2="585.7" y2="406" stroke="#dc2626" stroke-opacity="0.35" stroke-width="3"/>
+  <circle cx="585.7" cy="406" r="7" fill="#dc2626"/>
+  <text x="636" y="410" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#dc2626">150 ms</text>
+  <text x="36" y="456" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" font-weight="600" fill="#0f172a">LLM time to first token</text>
+  <line x1="225" y1="452" x2="590.9" y2="452" stroke="#7c3aed" stroke-opacity="0.35" stroke-width="3"/>
+  <rect x="590.9" y="445" width="16.6" height="14" rx="4" fill="#7c3aed"/>
+  <text x="636" y="456" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#7c3aed">200–500 ms</text>
+  <line x1="225" y1="486" x2="620" y2="486" stroke="#475569" stroke-width="1.5"/>
+  <line x1="245.8" y1="486" x2="245.8" y2="492" stroke="#475569" stroke-width="1.5"/>
+  <text x="245.8" y="506" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11" font-weight="600" text-anchor="middle" fill="#334155">1 ns</text>
+  <line x1="370.5" y1="486" x2="370.5" y2="492" stroke="#475569" stroke-width="1.5"/>
+  <text x="370.5" y="506" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11" font-weight="600" text-anchor="middle" fill="#334155">1 µs</text>
+  <line x1="495.3" y1="486" x2="495.3" y2="492" stroke="#475569" stroke-width="1.5"/>
+  <text x="495.3" y="506" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11" font-weight="600" text-anchor="middle" fill="#334155">1 ms</text>
+  <line x1="620.0" y1="486" x2="620.0" y2="492" stroke="#475569" stroke-width="1.5"/>
+  <text x="620.0" y="506" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11" font-weight="600" text-anchor="middle" fill="#334155">1 s</text>
+  <text x="36" y="530" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10.5" fill="#475569">Each gridline is 10x. Local Gen5 NVMe (15–50 us) vs cloud EBS (~0.3–1 ms); L1 0.5–4 ns; LLM prefill TTFT 200–800 ms.</text>
+  <rect x="806" y="70" width="334" height="262" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="820" y="94" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="13" font-weight="700" fill="#0f172a">Powers of two vs decimal</text>
+  <rect x="816" y="104" width="314" height="22" rx="4" fill="#e2e8f0"/>
+  <text x="822" y="119" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10.5" font-weight="700" fill="#1e293b">Power</text>
+  <text x="886" y="119" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10.5" font-weight="700" fill="#1e293b">Binary unit</text>
+  <text x="996" y="119" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10.5" font-weight="700" fill="#1e293b">SI approx</text>
+  <text x="1072" y="119" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10.5" font-weight="700" fill="#1e293b">Drift</text>
+  <text x="822" y="146" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#0f172a">2^10</text>
+  <text x="886" y="146" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#334155">1 KiB</text>
+  <text x="996" y="146" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#334155">10^3</text>
+  <text x="1072" y="146" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#b45309">+2.4%</text>
+  <line x1="816" y1="157" x2="1130" y2="157" stroke="#f1f5f9"/>
+  <text x="822" y="180" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#0f172a">2^20</text>
+  <text x="886" y="180" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#334155">1 MiB</text>
+  <text x="996" y="180" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#334155">10^6</text>
+  <text x="1072" y="180" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#b45309">+4.9%</text>
+  <line x1="816" y1="191" x2="1130" y2="191" stroke="#f1f5f9"/>
+  <text x="822" y="214" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#0f172a">2^30</text>
+  <text x="886" y="214" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#334155">1 GiB</text>
+  <text x="996" y="214" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#334155">10^9</text>
+  <text x="1072" y="214" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#b45309">+7.4%</text>
+  <line x1="816" y1="225" x2="1130" y2="225" stroke="#f1f5f9"/>
+  <text x="822" y="248" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#0f172a">2^40</text>
+  <text x="886" y="248" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#334155">1 TiB</text>
+  <text x="996" y="248" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#334155">10^12</text>
+  <text x="1072" y="248" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#b45309">+10.0%</text>
+  <line x1="816" y1="259" x2="1130" y2="259" stroke="#f1f5f9"/>
+  <text x="822" y="282" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#0f172a">2^50</text>
+  <text x="886" y="282" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#334155">1 PiB</text>
+  <text x="996" y="282" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#334155">10^15</text>
+  <text x="1072" y="282" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#b45309">+12.6%</text>
+  <line x1="816" y1="293" x2="1130" y2="293" stroke="#f1f5f9"/>
+  <text x="820" y="320" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10.5" fill="#475569">Bits vs bytes: a 100 Gbps NIC moves 12.5 GB/s.</text>
+  <rect x="806" y="344" width="334" height="226" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="820" y="368" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="13" font-weight="700" fill="#0f172a">Availability nines: downtime per year</text>
+  <rect x="816" y="378" width="314" height="22" rx="4" fill="#e2e8f0"/>
+  <text x="822" y="393" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10.5" font-weight="700" fill="#1e293b">SLO</text>
+  <text x="916" y="393" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10.5" font-weight="700" fill="#1e293b">Downtime / year</text>
+  <text x="1046" y="393" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10.5" font-weight="700" fill="#1e293b">Per 30 days</text>
+  <text x="822" y="420" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#0f172a">99%</text>
+  <text x="916" y="420" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#334155">3.65 days</text>
+  <text x="1046" y="420" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#334155">7.2 h</text>
+  <line x1="816" y1="430" x2="1130" y2="430" stroke="#f1f5f9"/>
+  <text x="822" y="448" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#0f172a">99.9%</text>
+  <text x="916" y="448" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#334155">8.76 hours</text>
+  <text x="1046" y="448" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#334155">43.2 min</text>
+  <line x1="816" y1="458" x2="1130" y2="458" stroke="#f1f5f9"/>
+  <text x="822" y="476" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#0f172a">99.99%</text>
+  <text x="916" y="476" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#334155">52.6 min</text>
+  <text x="1046" y="476" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#334155">4.32 min</text>
+  <line x1="816" y1="486" x2="1130" y2="486" stroke="#f1f5f9"/>
+  <text x="822" y="504" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#0f172a">99.999%</text>
+  <text x="916" y="504" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#334155">5.26 min</text>
+  <text x="1046" y="504" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#334155">25.9 s</text>
+  <line x1="816" y1="514" x2="1130" y2="514" stroke="#f1f5f9"/>
+  <text x="822" y="532" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#0f172a">99.9999%</text>
+  <text x="916" y="532" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#334155">31.6 s</text>
+  <text x="1046" y="532" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#334155">2.59 s</text>
+  <line x1="816" y1="542" x2="1130" y2="542" stroke="#f1f5f9"/>
+  <text x="820" y="560" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10.5" fill="#475569">1 day = 86,400 s; 1 year = 31,536,000 s.</text>
+</svg>

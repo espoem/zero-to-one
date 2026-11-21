@@ -156,3 +156,47 @@ test("Negative test (Little's Law): 10x DB latency jump at constant QPS overflow
     '10x latency jump multiplies L 10x and overflows the 50-connection pool',
   );
 });
+
+test('ByteByteGo Chapter 2 Twitter worked estimate verifies QPS, media storage, and schema math', () => {
+  const mau = 300_000_000;
+  const dauFraction = 0.5;
+  const dau = mau * dauFraction; // 150M DAU
+  const tweetsPerUserPerDay = 2;
+  const dailyTweets = dau * tweetsPerUserPerDay; // 300M tweets/day
+
+  const exactAvgWriteQps = dailyTweets / 86_400; // 3472.22...
+  assert.ok(exactAvgWriteQps > 3_472 && exactAvgWriteQps < 3_473);
+  // ByteByteGo rounds to ~3500 QPS
+  const bbgRoundedAvgQps = 3_500;
+  const peakMultiplier = 2;
+  const peakWriteQps = bbgRoundedAvgQps * peakMultiplier; // 7,000 QPS
+  assert.equal(peakWriteQps, 7_000);
+
+  // Media storage: 10% of tweets have media, 1 MB per media
+  const mediaFraction = 0.1;
+  const avgMediaSizeBytes = 1_000_000; // 1 MB (decimal)
+  const dailyMediaTweets = dailyTweets * mediaFraction; // 30M
+  const dailyMediaStorageBytes = dailyMediaTweets * avgMediaSizeBytes; // 30 TB/day
+  assert.equal(dailyMediaStorageBytes, 30 * 10 ** 12);
+
+  // 5-year media storage (1,825 days)
+  const retentionYears = 5;
+  const days = retentionYears * 365; // 1825 days
+  const fiveYearMediaStorageBytes = dailyMediaStorageBytes * days; // 54.75 PB
+  assert.equal(fiveYearMediaStorageBytes, 54.75 * 10 ** 15);
+  // ByteByteGo rounds to ~55 PB
+  assert.equal(Math.round(fiveYearMediaStorageBytes / 10 ** 15), 55);
+
+  // Schema typo check: 64 bits = 8 bytes vs 64 bytes typo
+  const tweetIdBits = 64;
+  const tweetIdCorrectBytes = tweetIdBits / 8; // 8 bytes (BIGINT / int64)
+  const tweetIdTypoBytes = 64; // Ch.2 typo writes 64 bytes
+  assert.equal(tweetIdCorrectBytes, 8);
+  assert.equal(tweetIdTypoBytes / tweetIdCorrectBytes, 8); // 8x inflation error
+
+  // 5-year cumulative tweets = 547.5 billion tweets
+  const totalTweets5Years = dailyTweets * days;
+  const wastedBytesRaw = totalTweets5Years * (tweetIdTypoBytes - tweetIdCorrectBytes);
+  // 30.66 TB wasted in the primary key column alone
+  assert.equal(wastedBytesRaw, 30.66 * 10 ** 12);
+});
