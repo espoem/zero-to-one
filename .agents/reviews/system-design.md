@@ -115,3 +115,18 @@ Verdict: **approve** (after full remediation of all P0, P1, P2, and P3 findings 
   - [x] **P2** `examples/lib/message-queue-models.ts` & `examples/12-message-queue.test.ts`: replaced unbounded `log.find()` with a bounded `O(1)` 5-sequence `Map` matching KIP-98 `max.in.flight.requests.per.connection <= 5`, and tested both in-window dedupe and evicted-sequence rejection.
   - [x] **P2** `examples/lib/message-queue-models.ts`, `examples/12-message-queue.test.ts`, `modules/18-distributed-message-queue.md`: added exact `delay = 16` revolution-boundary test to `HierarchicalTimingWheel`, removed unused `nowTick` getter (`slop-guard`), synced inline `readByOffset` snippet verbatim with source, and qualified KIP-405 (`2020`, EA in `3.6`) and KIP-932 (`EA/Preview` in `4.x`).
   - [x] **P3** `exams/interview.md` & `exams/architect-certs-bridge.md`: updated header scope counts to `90` (`Q-SD-001`–`Q-SD-090`) and `24` (`Q-CERT-001`–`Q-CERT-024`).
+
+---
+
+## ByteByteGo & Primary-Source Expansion — Wave A Topic 05 (`22. Hotel Reservation System`, Module 19, 2026-11-21)
+
+- **Coordinator / Integrator / SVG & Proof Author**: Antigravity (`argon-builder`)
+- **Prose Draft**: `opencode` (`opencode-go/hy4-flash-free` from `/tmp --auto`, expanded from 289 to 532 lines by `argon-builder` with full SQL DDL, half-open `[checkIn, checkOut)` vs `BETWEEN` table, SRE guardrails, and verbatim TS proofs)
+- **Exam & Cert Bridge Questions Draft**: `claude` CLI (`haiku`, `--max-turns 1`, corrected `Q-SD-094` ordering options and `Q-SD-095` / `Q-CERT-030` multi-answer formatting)
+- **Independent Cross-Family Challenger**: `opencode` (`opencode-go/muse-spark-1.3-contributor`, `muse` family)
+- **Challenger Findings Resolved**:
+  - [x] **P1** `assets/19-hotel-architecture.svg`: shortened Section 4 `BUG`/`FIX` SQL callout headers and Section 2 `Reservation & Inventory Svc` title so all text sits comfortably inside box boundaries with zero overflow.
+  - [x] **P1** `examples/lib/hotel-models.ts`, `examples/13-hotel-reservation.test.ts`, `modules/19-hotel-reservation-system.md`: upgraded `canonicalReservationHash` to a true 64-char SHA-256 hex digest (`node:crypto` `createHash('sha256')`), added `PENDING_PAYMENT` status and `confirmPayment()` to model the full `PENDING_PAYMENT -> CONFIRMED / CANCELLED` Temporal Saga lifecycle, and synced the inline `reserve()` snippet verbatim.
+  - [x] **P1/P2** `examples/lib/hotel-models.ts`, `examples/13-hotel-reservation.test.ts`, `modules/19-hotel-reservation-system.md`, `exams/interview.md` (`Q-SD-092`): upgraded `simulateConcurrentLockOrder` to a step-by-step multi-row lock acquisition and circular-wait detector with non-empty input validation (`RangeError`), sorted `reserve()` by full composite key `hotel_id:room_type_id:date`, tested both 2-night and 3-night partial-overlap deadlocks, and scoped the deadlock-elimination guarantee to uniform `(hotel_id, room_type_id, date)` row-lock granularity.
+  - [x] **P1** `exams/architect-certs-bridge.md` (`Q-CERT-025`): aligned the `30,000 QPS` / `300,000 QPS` OTA scenario stem with `~5,000,000` properties (`1,000x` a 5,000-hotel chain).
+  - [x] **P2** `modules/19-hotel-reservation-system.md`, `GLOSSARY.md`, `exams/interview.md` (`Q-SD-095`), `exams/architect-certs-bridge.md`, `assets/19-hotel-architecture.svg`: attributed the overbooking vs. walk-penalty critical fractile to Beckmann (1958) / Rothstein (1971) alongside Littlewood (1972) and Belobaba's $EMSR_b$ (1989), unified walk-penalty range at `$350–$600`, derived the `~7.3B–73B` OTA row band (`5M properties × 2–20 room types × 730d`), and normalized overbooking cap expressions to integer `(total_inventory * 110) / 100`.

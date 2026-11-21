@@ -2,7 +2,7 @@
 
 This preparation bank tests Senior, Staff, and Principal distributed system design competency across the seven domains defined in [`exams/README.md`](README.md). Every question is original and grounded in primary engineering literature, official protocol RFCs, and production postmortems.
 
-- **Bank scope**: **90 questions** (`Q-SD-001`–`Q-SD-090`) covering quantitative capacity modeling, edge/API design, caching/partitioning, asynchrony/resilience, specialized indexing/financial correctness, SLO observability/DR, end-to-end canonical architectures, progressive scaling, distributed key-value stores, planetary-scale geospatial navigation, and distributed message queue internals.
+- **Bank scope**: **95 questions** (`Q-SD-001`–`Q-SD-095`) covering quantitative capacity modeling, edge/API design, caching/partitioning, asynchrony/resilience, specialized indexing/financial correctness, SLO observability/DR, end-to-end canonical architectures, progressive scaling, distributed key-value stores, planetary-scale geospatial navigation, distributed message queue internals, and high-contention hotel reservation and overbooking systems.
 - **Difficulty calibration**: Level `1` tests foundational mechanics, Level `2` tests Senior-level trade-off reasoning, and Level `3` tests Staff/Principal failure modes, subtle race conditions, and quantitative traps.
 - **Timed practice**: Complete the [50-Question Written Architecture Drill](#timed-mock-exam-written-architecture-drill-50-questions--75-minutes) under a strict 75-minute timer, then run the [two 60-minute Staff/Principal design loops](#timed-mock-design-loops-2--60-minute-staffprincipal-simulations) against the explicit 0–4 grading rubrics.
 
@@ -1832,6 +1832,115 @@ Select **two** genuine architectural benefits of KRaft (Apache Kafka 4.0+), KIP-
 - Why not C: Share Groups intentionally trade strict per-partition ordering for point-to-point competing-worker parallelism with per-record acknowledgement, breaking the `consumers <= partitions` ceiling.
 - Why not D: KRaft replicates cluster metadata only (`@metadata`); user topic partitions still replicate via leader-follower ISR protocols.
 - Ref: [modules/18-distributed-message-queue.md](../modules/18-distributed-message-queue.md#4-consumer-pull-protocol-rebalancing-evolution-coordination-and-advanced-broker-features), https://cwiki.apache.org/confluence/display/KAFKA/KIP-500%3A+Replace+ZooKeeper+with+a+Self-Managed+Metadata+Quorum
+
+</details>
+
+---
+
+### Q-SD-091 · High-Contention Booking, Overbooking & Reservation Systems · difficulty 3 · scenario
+
+A hotel booking service decrements nightly inventory with `UPDATE room_type_inventory SET total_reserved = total_reserved + 1 WHERE hotel_id = ? AND room_type_id = ? AND date BETWEEN ? AND ?`, passing the check-in date (`2026-12-01`) and check-out date (`2026-12-04`) as the bounds. The room type has `total_inventory = 20`, and the hotel permits `10%` controlled overbooking. This 3-night stay modifies `4` inventory rows and causes the checkout date (`2026-12-04`) to report sold out for incoming guests. Which remediation is correct?
+
+- A) Keep `BETWEEN`, subtract one day from the checkout date only in the front-end UI calendar, and ignore `rows_affected` because the overbooking check already prevents overselling.
+- B) Replace `BETWEEN` with the half-open interval predicate `date >= checkIn AND date < checkOut` (`[checkIn, checkOut)`), enforce the per-night overbooking floor cap `total_reserved + roomCount <= (total_inventory * 110) / 100` in the same atomic statement, and assert `rows_affected == num_nights` before committing (rolling back otherwise).
+- C) Use `date > checkIn AND date <= checkOut` (`(checkIn, checkOut]`), which excludes the check-in night and includes the checkout night.
+- D) Keep `BETWEEN` and lower the cap to `total_reserved + roomCount <= total_inventory`, removing the `10%` overbooking allowance so `rows_affected` checks become unnecessary.
+
+<details><summary>Answer</summary>
+
+**B.** SQL `BETWEEN` is inclusive of both endpoints, so passing `[2026-12-01, 2026-12-04]` reserves the checkout morning (`2026-12-04`) as a fourth night even though the guest vacates by 11:00 AM, blocking incoming guests and slashing occupancy. Using the half-open interval `date >= checkIn AND date < checkOut` updates only the `3` actual sleep nights (`Dec 1, 2, 3`), enforces `FLOOR(20 * 1.10) = 22` max reserved rooms per night via exact integer math, and verifies `rows_affected == 3` so partial or unseeded date ranges roll back atomically.
+
+- Why not A: Relying on front-end date manipulation leaves the backend API contract broken for mobile/OTA callers, and ignoring `rows_affected` allows partial-stay updates when a future date row is missing or full.
+- Why not C: Excluding `checkIn` and including `checkOut` shifts the off-by-one bug to the arrival night, failing to reserve the first night the guest sleeps at the hotel.
+- Why not D: Keeping `BETWEEN` still locks the checkout date erroneously, and removing the `10%` overbooking allowance violates the business requirement without fixing the date-range bug.
+- Ref: [modules/19-hotel-reservation-system.md](../modules/19-hotel-reservation-system.md#23-the-off-by-one-checkout-bug-between-vs-half-open-checkin-checkout-and-controlled-overbooking), https://www.postgresql.org/docs/current/functions-comparison.html
+
+</details>
+
+---
+
+### Q-SD-092 · High-Contention Booking, Overbooking & Reservation Systems · difficulty 3 · single
+
+Two concurrent transactions modify overlapping multi-night stays on the same hotel room type using pessimistic locking (`SELECT ... FOR UPDATE`). Transaction T1 locks `2026-12-01` and then requests `2026-12-02`, while Transaction T2 locks `2026-12-02` first and then requests `2026-12-01`. Which statement accurately explains the resulting failure and the trade-offs among the three database concurrency defenses?
+
+- A) The deadlock occurs because `FOR UPDATE` acquires table-level locks; replacing it with `FOR SHARE` eliminates the cycle while preventing double-booking.
+- B) Acquiring row locks in opposite date orders creates a Coffman circular wait (`SQLSTATE 40P01`); when all writers acquire pre-populated row-level locks at the same `(hotel_id, room_type_id, date)` granularity, enforcing canonical `ORDER BY hotel_id ASC, room_type_id ASC, date ASC` eliminates row-lock circular-wait deadlocks across multi-night stays, whereas Optimistic Concurrency Control (`version` CAS) avoids lock waits at low contention (`3 TPS`) at the cost of retry rollbacks on hot convention nights, and a database `CHECK` constraint provides the storage-level safety backstop.
+- C) The deadlock happens only when the external Payment Service is called inside the transaction; moving the payment call outside fixes deadlocks without sorting dates.
+- D) Switching transaction isolation to `READ UNCOMMITTED` prevents readers from blocking writers and eliminates write-write deadlocks on `room_type_inventory`.
+
+<details><summary>Answer</summary>
+
+**B.** By Coffman's theorem, deadlocks require a circular wait in the lock acquisition graph. When transactions lock pre-populated rows at uniform `(hotel_id, room_type_id, date)` primary-key granularity, sorting all multi-night queries and updates by `ORDER BY hotel_id ASC, room_type_id ASC, date ASC` forces every transaction to acquire row locks in a single topological order (a DAG), preventing row-lock circular wait. OCC (`version` CAS) works well at normal `3 TPS` chain loads without holding locks, but suffers retry amplification under flash-sale contention, while `CHECK (total_reserved <= (total_inventory * 110) / 100)` guarantees the invariant at the storage boundary.
+
+- Why not A: `SELECT ... FOR UPDATE` on a primary key range takes row-level locks, not a table lock, and `FOR SHARE` allows concurrent shared reads that still deadlock or fail when upgraded to exclusive `UPDATE` locks.
+- Why not C: While external payment RPCs must never run inside a lock-holding DB transaction, two 2-millisecond local transactions locking `(Dec 1, Dec 2)` vs `(Dec 2, Dec 1)` still deadlock without canonical date ordering.
+- Why not D: `READ UNCOMMITTED` (treated as `READ COMMITTED` in PostgreSQL) does not remove exclusive row locks required by concurrent `UPDATE` statements and introduces dirty-read anomalies on other engines.
+- Ref: [modules/19-hotel-reservation-system.md](../modules/19-hotel-reservation-system.md#3-concurrency-control-idempotency-locking-ordered-dates-and-database-constraints), https://www.postgresql.org/docs/current/explicit-locking.html#LOCKING-DEADLOCKS
+
+</details>
+
+---
+
+### Q-SD-093 · High-Contention Booking, Overbooking & Reservation Systems · difficulty 3 · scenario
+
+A hospitality platform scales from a `3 TPS` hotel chain to a `30,000 QPS` OTA by partitioning its relational database across `16` shards by `hotel_id` (`1,875 QPS/shard`) and streaming committed `room_type_inventory` changes via Debezium CDC into a Valkey/Redis inventory cache. During a burst, CDC lags by `150 ms`, and the cache shows `1` room available even though the shard database just reached its `110%` overbooking cap. Why does this CDC lag never cause an oversell?
+
+- A) Debezium coordinates a synchronous Two-Phase Commit (2PC) between the PostgreSQL WAL and Valkey, blocking the database commit until the cache updates.
+- B) The Valkey cache serves only the read-heavy browsing and funnel-preview tiers (`99%` of traffic), whereas `POST /v1/reservations` always validates and increments `total_reserved` directly inside the authoritative `hotel_id` relational database shard, which rejects the stale booking attempt with a `409 Sold Out` conflict.
+- C) Setting a `1-second` TTL on all Valkey inventory keys guarantees the cache and database never diverge for more than one request.
+- D) The API gateway automatically routes stale cache hits to a secondary unsharded NoSQL database that absorbs overflow bookings.
+
+<details><summary>Answer</summary>
+
+**B.** In this architecture, the Valkey CDC cache is an advisory read shield that offloads the `100:1` browse-to-book funnel, while the relational database shard remains the sole transactional authority for writes. When a user clicks "Book" based on a 150 ms-stale cache read, the database transaction checks `total_reserved + k <= (total_inventory * 110) / 100`, sees the cap is full, rolls back, and prompts the UI to refresh — trading a rare checkout rejection for massive read scalability with zero risk of overselling.
+
+- Why not A: Debezium tails the database WAL/binlog asynchronously after transactions commit; coupling cache updates via synchronous 2PC would add cross-network latency and availability coupling to every database write.
+- Why not C: A 1-second TTL destroys cache hit ratio across 73M rows and still cannot prevent two concurrent users from reading the same cached count within that 1-second window.
+- Why not D: Writing overflow bookings to a separate NoSQL store bypasses the authoritative inventory counter and directly causes unmanaged overselling.
+- Ref: [modules/19-hotel-reservation-system.md](../modules/19-hotel-reservation-system.md#4-ota-scale-out-sharding-by-hotel_id-and-cdc-driven-inventory-caching), https://debezium.io/documentation/reference/stable/
+
+</details>
+
+---
+
+### Q-SD-094 · High-Contention Booking, Overbooking & Reservation Systems · difficulty 2 · ordering
+
+Order the execution steps of an idempotent hotel reservation using a co-located Reservation+Inventory relational shard and an external Payment Service orchestrated via a Temporal Saga.
+
+- A) Call external Payment Service with `reservation_id` → client generates `reservation_id` on checkout load → commit local ACID `PENDING_PAYMENT` inventory hold → mark reservation `CONFIRMED`
+- B) Client generates `reservation_id` on checkout form load → execute single-shard local ACID transaction inserting `reservation` (`PENDING_PAYMENT` + `payload_hash`) and incrementing `room_type_inventory` over `[checkIn, checkOut)` → invoke external Payment Service idempotently with `reservation_id` after releasing DB row locks → transition reservation to `CONFIRMED` on capture (or run idempotent compensating transaction releasing `total_reserved` on definitive decline)
+- C) Execute local ACID transaction incrementing `room_type_inventory` → hold `SELECT ... FOR UPDATE` row locks open while calling external Payment Service → generate `reservation_id` after payment succeeds → commit transaction
+- D) Client generates `reservation_id` → mark reservation `CONFIRMED` immediately in Valkey cache → run nightly batch cron to charge payment card and decrement relational inventory
+
+<details><summary>Answer</summary>
+
+**B.** The checkout form first issues a stable client `reservation_id` (UUIDv7) so retries share one key. Next, a fast (`< 5 ms`) single-shard local ACID transaction atomically claims the `reservation_id` (verifying `payload_hash`) and increments `total_reserved` across `[checkIn, checkOut)` in state `PENDING_PAYMENT`, releasing database locks immediately. The Temporal saga then calls the Payment Service idempotently using `reservation_id`, and finally either transitions the booking to `CONFIRMED` or executes an idempotent compensating transaction that decrements `total_reserved` and sets `status = 'CANCELLED'` if payment is definitively declined.
+
+- Why not A: Charging the customer before claiming inventory risks capturing money for a sold-out room, and calling the payment gateway before generating `reservation_id` leaves the charge without an idempotency key.
+- Why not C: Holding database `FOR UPDATE` row locks across a `500–2,000 ms` external PSP network call exhausts the database connection pool and stalls all concurrent bookings for that hotel.
+- Why not D: Confirming bookings in cache and deferring inventory/payment validation to a nightly batch job allows massive concurrent overselling and unpaid stays.
+- Ref: [modules/19-hotel-reservation-system.md](../modules/19-hotel-reservation-system.md#5-microservice-consistency-co-located-acid-boundary-vs-2pc-and-saga-workflows), https://docs.temporal.io/
+
+</details>
+
+---
+
+### Q-SD-095 · High-Contention Booking, Overbooking & Reservation Systems · difficulty 3 · multi
+
+Which **two** statements accurately justify co-locating the `reservation` and `room_type_inventory` tables inside the same `hotel_id`-sharded relational database boundary and setting dynamic overbooking and fare-protection limits via Beckmann/Rothstein newsvendor overbooking, Littlewood's Rule, and Belobaba's $EMSR_b$?
+
+- A) Co-locating `reservation` and `room_type_inventory` under the Reservation Service on the same `hotel_id` shard allows inserting the booking record and incrementing all `[checkIn, checkOut)` night rows in a single local ACID transaction (`< 5 ms`), avoiding fragile cross-service 2PC between separate Reservation and Inventory databases.
+- B) Under Beckmann/Rothstein newsvendor overbooking optimization and Littlewood/$EMSR_b$ yield management, the optimal overbooking pad $B^*$ and nested rate protection limits balance expected marginal room revenue $R \cdot P(\text{no-shows} \ge b)$ against the expected walk-guest penalty $C_{\text{walk}} \cdot P(\text{no-shows} < b)$ (relocation hotel, transport, voucher, and brand churn), rather than applying a blind static ratio to non-refundable event nights.
+- C) Co-locating the tables eliminates the need for `reservation_id` idempotency keys because a single relational database automatically detects duplicate user mouse clicks without a unique key.
+- D) Sharding by `reservation_id` instead of `hotel_id` guarantees that all nights of a hotel's `room_type_inventory` reside on one shard with zero cross-shard queries.
+
+<details><summary>Answer</summary>
+
+**A, B.** Drawing the service boundary around the transactional invariant (`reservation` + `room_type_inventory` co-located per `hotel_id` shard) keeps every booking to a single-shard local ACID commit without distributed 2PC, and Beckmann/Rothstein overbooking with Littlewood/$EMSR_b$ yield management calibrates per-date overbooking pads and fare-class protection limits by weighing marginal revenue against the `$350–$600` walk-guest penalty $C_{\text{walk}}$.
+
+- Why not C: Without a client-supplied `reservation_id` and `UNIQUE` constraint, two network packets from a double-click look like two distinct bookings to the database and double-book the guest.
+- Why not D: Sharding by `reservation_id` scatters reservations randomly across shards while inventory queries filter by `hotel_id`, forcing cross-shard distributed transactions on every booking.
+- Ref: [modules/19-hotel-reservation-system.md](../modules/19-hotel-reservation-system.md#5-microservice-consistency-co-located-acid-boundary-vs-2pc-and-saga-workflows), https://pubsonline.informs.org/doi/10.1287/opre.37.2.183
 
 </details>
 

@@ -1,0 +1,181 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 690" width="1160" height="690" role="img" aria-labelledby="title desc">
+  <title id="title">Hotel Reservation System — End-to-End Architecture &amp; Concurrency Engine</title>
+  <desc id="desc">Architecture of a high-concurrency hotel reservation system showing the 100:10:1 booking funnel, CDN and API gateways, Hotel/Rate/Reservation/Payment microservices, hotel_id-sharded relational database with room_type_inventory half-open [checkIn, checkOut) intervals and 10% overbooking cap, Debezium CDC into Valkey/Redis inventory cache, and Temporal payment saga.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569"/>
+    </marker>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect x="0" y="0" width="1160" height="690" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1160" height="58" rx="12" fill="#0f172a"/>
+  <rect x="0" y="42" width="1160" height="16" fill="#0f172a"/>
+  <text x="24" y="28" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#f8fafc">Hotel Reservation System — End-to-End Architecture (5,000 Hotels · 1M Rooms · OTA 30k QPS)</text>
+  <text x="24" y="47" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#94a3b8">100:10:1 Funnel · Co-Located Reservation+Inventory ACID Shards · Half-Open [checkIn, checkOut) · 10% Overbooking · Debezium CDC Cache</text>
+
+  <!-- COLUMN 1: CLIENTS, CDN & GATEWAYS -->
+  <rect x="20" y="76" width="245" height="315" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="34" y="100" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1e3a8a">1. Funnel &amp; Edge Gateways</text>
+
+  <rect x="34" y="114" width="217" height="82" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="44" y="133" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#1e40af">Guests (Web / Mobile App)</text>
+  <text x="44" y="150" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10.5" fill="#334155">300 QPS view -&gt; 30 QPS checkout</text>
+  <text x="44" y="166" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10.5" fill="#059669">-&gt; 3 TPS booking (OTA: 1,000x)</text>
+  <text x="44" y="182" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#64748b">CDN caches static hotel images/JSON</text>
+
+  <rect x="34" y="208" width="217" height="84" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="44" y="227" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#1e40af">Public API Gateway (L7)</text>
+  <text x="44" y="244" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Auth, TLS 1.3, GCRA Rate Limit</text>
+  <text x="44" y="260" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#1e3a8a">Requires reservationID (UUIDv7)</text>
+  <text x="44" y="276" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Deduplicates double-click retries</text>
+
+  <rect x="34" y="304" width="217" height="72" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="44" y="323" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#1e3a8a">Internal Admin / VPN Gateway</text>
+  <text x="44" y="340" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Hotel Management Service (Ops)</text>
+  <text x="44" y="357" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Room blocks, refunds, rate overrides</text>
+
+  <!-- COLUMN 2: STATELESS MICROSERVICES & SAGA -->
+  <rect x="292" y="76" width="465" height="315" rx="10" fill="#f0fdf4" stroke="#10b981" stroke-width="1.5"/>
+  <text x="308" y="100" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#065f46">2. Domain Services (gRPC Mesh &amp; Co-Located ACID Boundary)</text>
+
+  <!-- Hotel & Rate Services (Read-Heavy) -->
+  <rect x="308" y="114" width="210" height="118" rx="8" fill="#ffffff" stroke="#6ee7b7" stroke-width="1.5"/>
+  <rect x="308" y="114" width="210" height="25" rx="8" fill="#d1fae5"/>
+  <rect x="308" y="129" width="210" height="10" fill="#d1fae5"/>
+  <text x="318" y="131" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">Hotel &amp; Dynamic Rate Svcs</text>
+  <text x="318" y="153" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#334155">GET /v1/hotels/{id}/rooms</text>
+  <text x="318" y="170" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Static hotel metadata at CDN</text>
+  <text x="318" y="187" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Dynamic daily rates (EMSR-b)</text>
+  <text x="318" y="204" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#047857">Reads Valkey CDC cache</text>
+  <text x="318" y="220" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#64748b">Absorbs 99% browse (300 QPS)</text>
+
+  <!-- Reservation + Inventory Service (Authoritative Write Path) -->
+  <rect x="532" y="114" width="210" height="175" rx="8" fill="#ffffff" stroke="#059669" stroke-width="2"/>
+  <rect x="532" y="114" width="210" height="25" rx="8" fill="#059669"/>
+  <rect x="532" y="129" width="210" height="10" fill="#059669"/>
+  <text x="542" y="131" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#ffffff">Reservation &amp; Inventory Svc</text>
+  <text x="542" y="153" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" font-weight="700" fill="#065f46">POST /v1/reservations</text>
+  <text x="542" y="171" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Pragmatic Modular Boundary:</text>
+  <text x="542" y="187" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Owns BOTH reservation &amp; inventory</text>
+  <text x="542" y="203" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">tables in same hotel_id DB shard!</text>
+  <text x="542" y="221" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#047857">ORDER BY date ASC (no deadlock)</text>
+  <text x="542" y="237" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#047857">date &gt;= start AND date &lt; end</text>
+  <text x="542" y="253" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#047857">reserved + k &lt;= (inv * 110) / 100</text>
+  <text x="542" y="274" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#065f46">1-Shard Local ACID Tx (No 2PC)</text>
+
+  <!-- Payment Saga Box -->
+  <rect x="308" y="244" width="210" height="132" rx="8" fill="#ffffff" stroke="#10b981" stroke-width="1.5"/>
+  <text x="318" y="264" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">Payment Svc &amp; Temporal Saga</text>
+  <text x="318" y="282" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">1. Hold nights (PENDING_PAYMENT)</text>
+  <text x="318" y="298" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">2. Capture PSP w/ idempotency key</text>
+  <text x="318" y="314" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">3. Confirm or compensate (-rooms)</text>
+  <text x="318" y="332" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Never holds DB row lock during</text>
+  <text x="318" y="348" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">external Stripe/Adyen network call</text>
+  <text x="318" y="366" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#047857">Double-entry ledger (Module 10)</text>
+
+  <!-- Overbooking Economics Callout -->
+  <rect x="532" y="301" width="210" height="75" rx="6" fill="#ecfdf5" stroke="#34d399" stroke-width="1"/>
+  <text x="542" y="319" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#065f46">Overbooking Math (EMSR-b)</text>
+  <text x="542" y="336" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">10% cap offsets ~8-12% cancels</text>
+  <text x="542" y="352" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Balances marginal room revenue vs.</text>
+  <text x="542" y="367" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#92400e">walk-guest penalty ($350-$600)</text>
+
+  <!-- COLUMN 3: SHARDED ACID DB & VALKEY CDC CACHE -->
+  <rect x="784" y="76" width="356" height="315" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="798" y="100" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#92400e">3. Storage Shards &amp; Async CDC Cache</text>
+
+  <!-- Valkey / Redis Cache -->
+  <rect x="798" y="114" width="328" height="106" rx="6" fill="#ffffff" stroke="#fcd34d" stroke-width="1.5"/>
+  <text x="808" y="133" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#b45309">Valkey / Redis Inventory Cache (In-Memory)</text>
+  <text x="808" y="151" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#334155">key: inv:{hotel_id}:{room_type_id}:{date}</text>
+  <text x="808" y="167" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#334155">val: available_rooms (TTL expires past date)</text>
+  <text x="808" y="184" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Fed asynchronously via Debezium WAL/binlog CDC</text>
+  <text x="808" y="202" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#059669">Stale cache is safe: DB is final booking gate!</text>
+
+  <!-- Sharded ACID Relational DB -->
+  <rect x="798" y="232" width="328" height="145" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="808" y="251" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#92400e">ACID Relational DB (Sharded by hotel_id)</text>
+  <text x="808" y="269" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#334155">hash(hotel_id) % 16 -&gt; 1,875 QPS/shard @ 30k</text>
+  <text x="808" y="286" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">73M rows: 5,000 hotels * 20 types * 730 days</text>
+  <text x="808" y="303" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">PK: (hotel_id, room_type_id, date) + version</text>
+  <text x="808" y="320" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">UNIQUE(reservation_id) + CHECK(&lt;= (inv*110)/100)</text>
+  <text x="808" y="337" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Daily rolling CRON extends 2-year horizon</text>
+  <text x="808" y="357" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#b45309">Multi-AZ Sync Standby + Read Replicas</text>
+
+  <!-- Arrows across top columns -->
+  <line x1="265" y1="165" x2="306" y2="165" stroke="#2563eb" stroke-width="2" marker-end="url(#arr-blue)"/>
+  <line x1="265" y1="245" x2="530" y2="210" stroke="#059669" stroke-width="2" marker-end="url(#arr-green)"/>
+  <line x1="518" y1="165" x2="796" y2="165" stroke="#d97706" stroke-width="1.8" stroke-dasharray="4,3" marker-end="url(#arr-amber)"/>
+  <line x1="742" y1="255" x2="796" y2="285" stroke="#059669" stroke-width="2.2" marker-end="url(#arr-green)"/>
+  <line x1="962" y1="232" x2="962" y2="222" stroke="#d97706" stroke-width="2" marker-end="url(#arr-amber)"/>
+
+  <!-- BOTTOM LEFT: HALF-OPEN INTERVALS VS OFF-BY-ONE BUG -->
+  <rect x="20" y="410" width="555" height="260" rx="10" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="34" y="434" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#5b21b6">4. Date-Range Semantics: Half-Open [checkIn, checkOut) vs. BETWEEN Bug</text>
+
+  <!-- Buggy BETWEEN Box -->
+  <rect x="34" y="448" width="527" height="96" rx="6" fill="#fff1f2" stroke="#f43f5e" stroke-width="1.2"/>
+  <text x="46" y="468" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#be123c">BUG (ByteByteGo SQL): date BETWEEN '2026-06-01' AND '2026-06-03'</text>
+  <text x="46" y="486" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">SQL BETWEEN is inclusive -&gt; locks June 01, 02, AND checkout day June 03!</text>
+  <rect x="46" y="498" width="155" height="32" rx="4" fill="#fecdd3" stroke="#e11d48"/>
+  <text x="58" y="518" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" font-weight="700" fill="#881337">2026-06-01 (Night 1)</text>
+  <rect x="210" y="498" width="155" height="32" rx="4" fill="#fecdd3" stroke="#e11d48"/>
+  <text x="222" y="518" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" font-weight="700" fill="#881337">2026-06-02 (Night 2)</text>
+  <rect x="374" y="498" width="175" height="32" rx="4" fill="#e11d48"/>
+  <text x="384" y="518" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" font-weight="700" fill="#ffffff">2026-06-03 (BUG: Locked!)</text>
+
+  <!-- Correct Half-Open Box -->
+  <rect x="34" y="556" width="527" height="98" rx="6" fill="#ffffff" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="46" y="576" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">FIX ([checkIn, checkOut)): date &gt;= '2026-06-01' AND date &lt; '2026-06-03'</text>
+  <text x="46" y="594" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Reserves only the 2 sleep nights; June 03 is free for next guest check-in!</text>
+  <rect x="46" y="608" width="155" height="32" rx="4" fill="#dcfce7" stroke="#10b981"/>
+  <text x="56" y="628" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" font-weight="700" fill="#065f46">2026-06-01 (Reserved)</text>
+  <rect x="210" y="608" width="155" height="32" rx="4" fill="#dcfce7" stroke="#10b981"/>
+  <text x="220" y="628" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" font-weight="700" fill="#065f46">2026-06-02 (Reserved)</text>
+  <rect x="374" y="608" width="175" height="32" rx="4" fill="#eff6ff" stroke="#3b82f6" stroke-dasharray="4,2"/>
+  <text x="382" y="628" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" font-weight="700" fill="#1e40af">2026-06-03 (Next Guest In)</text>
+
+  <!-- BOTTOM RIGHT: FOUR-LAYER DOUBLE-BOOKING & DEADLOCK DEFENSE -->
+  <rect x="595" y="410" width="545" height="260" rx="10" fill="#fff1f2" stroke="#e11d48" stroke-width="1.5"/>
+  <text x="610" y="434" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#9f1239">5. Double-Booking &amp; Multi-Night Concurrency Defenses</text>
+
+  <rect x="610" y="448" width="250" height="98" rx="6" fill="#ffffff" stroke="#fda4af" stroke-width="1.2"/>
+  <text x="620" y="468" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#be123c">A. Idempotency &amp; Payload Hash</text>
+  <text x="620" y="486" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#334155">UNIQUE (reservation_id)</text>
+  <text x="620" y="502" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">Issued when checkout form loads</text>
+  <text x="620" y="518" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">Same SHA-256 -&gt; idempotent 200 OK</text>
+  <text x="620" y="534" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#dc2626">Mutated dates/rooms -&gt; 409 Conflict</text>
+
+  <rect x="875" y="448" width="250" height="98" rx="6" fill="#ffffff" stroke="#fda4af" stroke-width="1.2"/>
+  <text x="885" y="468" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#be123c">B. Deterministic Lock Ordering</text>
+  <text x="885" y="486" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#334155">FOR UPDATE ORDER BY date ASC</text>
+  <text x="885" y="502" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">Eliminates Coffman circular wait</text>
+  <text x="885" y="518" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">on row locks across stay dates</text>
+  <text x="885" y="534" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#059669">Prevents SQLSTATE 40P01 cycles</text>
+
+  <rect x="610" y="556" width="250" height="98" rx="6" fill="#ffffff" stroke="#fda4af" stroke-width="1.2"/>
+  <text x="620" y="576" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#be123c">C. OCC (version CAS) vs. Pessimistic</text>
+  <text x="620" y="594" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#334155">WHERE version = :expected_v</text>
+  <text x="620" y="610" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">Fast &amp; lock-free at normal 3 TPS</text>
+  <text x="620" y="626" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">Hot convention hotels switch to</text>
+  <text x="620" y="642" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#9f1239">atomic update / sorted FOR UPDATE</text>
+
+  <rect x="875" y="556" width="250" height="98" rx="6" fill="#ffffff" stroke="#fda4af" stroke-width="1.2"/>
+  <text x="885" y="576" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#be123c">D. Storage CHECK &amp; Row Count</text>
+  <text x="885" y="594" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#334155">CHECK (reserved &lt;= (inv*110)/100)</text>
+  <text x="885" y="610" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">Assert rows_affected == num_nights</text>
+  <text x="885" y="626" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">Rolls back entire stay if any single</text>
+  <text x="885" y="642" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#059669">night exceeds 110% capacity cap</text>
+</svg>

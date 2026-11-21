@@ -3,7 +3,7 @@
 No single vendor-neutral certification tests general distributed system design, so vendor-specific IAM, CLI, and control-plane trivia stay in [`technologies/aws`](../../../technologies/aws/), [`technologies/gcp`](../../../technologies/gcp/), and [`technologies/azure`](../../../technologies/azure/). This bridge bank maps the architectural patterns, quantitative trade-offs, and failure modes taught across `architecture/system-design` directly onto Senior/Architect certification scenario domains (**AWS Solutions Architect – Professional `SAP-C02`**, **Google Cloud Professional Cloud Architect `PCA`**, **Microsoft Azure Solutions Architect Expert `AZ-305`**, and **CNCF / SRE Resilience**).
 
 - **Sequential Growth Plan**: Built sequentially alongside Wave A & Wave B topic completions (target: **60+ original scenario questions** plus a full timed certification bridge mock exam upon completion of the 28-topic expansion).
-- **Current Coverage**: **24 questions** (`Q-CERT-001`–`Q-CERT-024`) covering Topic 01 (`Scale From Zero to Millions` — Module 15), Topic 02 (`Distributed Key-Value Store` — Module 16), Topic 03 (`Google Maps` — Module 17), and Topic 04 (`Distributed Message Queue` — Module 18).
+- **Current Coverage**: **30 questions** (`Q-CERT-001`–`Q-CERT-030`) covering Topic 01 (`Scale From Zero to Millions` — Module 15), Topic 02 (`Distributed Key-Value Store` — Module 16), Topic 03 (`Google Maps` — Module 17), Topic 04 (`Distributed Message Queue` — Module 18), and Topic 05 (`Hotel Reservation System` — Module 19).
 
 ---
 
@@ -504,5 +504,128 @@ Which **two** concrete architectural improvements result from modernizing a 2021
 - Why not C: Partition ordering is governed by the append-only partition log and single-owner assignment; eager rebalancing does not strengthen ordering, it merely halts the entire consumer group during transitions.
 - Why not D: KIP-405 offloads closed immutable segments to object storage; active open segments still rely on broker ISR replication (`RF=3`, `min.insync.replicas=2`) for write durability.
 - Ref: [modules/18-distributed-message-queue.md](../modules/18-distributed-message-queue.md#6-technology-comparison-then-vs-now-2021-vs-2026), https://cwiki.apache.org/confluence/display/KAFKA/KIP-848%3A+The+Next+Generation+of+the+Consumer+Rebalance+Protocol
+
+</details>
+
+---
+
+## Module 19: Hotel Reservation System, Overbooking & OTA Scale-Out (`Q-CERT-025`–`Q-CERT-030`)
+
+### Q-CERT-025 · AWS SAP-C02: High-Concurrency Reservation & CDC Caching Architecture · difficulty 3 · scenario
+
+An Online Travel Agency (OTA) on AWS handles `30,000 QPS` of availability and checkout traffic (`300,000 QPS` browsing, `1,000x` a single 5,000-hotel chain) across `~5,000,000` properties. Each booking spans multiple consecutive nights and must enforce `total_reserved + roomCount <= (total_inventory * 110) / 100` atomically without overselling, keep the read cache fresh without application dual-write races, and charge an external payment gateway without exhausting database connections. Which AWS architecture satisfies these requirements?
+
+- A) Store room-night items in Amazon DynamoDB and execute a `TransactWriteItems` call that synchronously invokes the external payment gateway inside the transaction lock before committing.
+- B) Partition Amazon Aurora PostgreSQL clusters across shards by `hotel_id` (co-locating `reservation` and `room_type_inventory`), stream committed WAL changes via Debezium / AWS DMS into Amazon ElastiCache for Valkey for the read tier, and orchestrate external payment capture via an AWS Step Functions / Temporal Saga after the `< 5 ms` local database hold commits.
+- C) Use a single unsharded Aurora PostgreSQL writer with read replicas, invalidate ElastiCache every `15 minutes` via an EventBridge cron job, and capture the credit card charge before checking room inventory.
+- D) Use eventually consistent DynamoDB counters with no per-night capacity condition and run an AWS Glue nightly job to refund overbooked guests.
+
+<details><summary>Answer</summary>
+
+**B.** Sharding Aurora PostgreSQL by `hotel_id` keeps every multi-night booking for a property inside a single-shard local ACID transaction (`30,000 / 16 = 1,875 QPS/shard`), WAL-based CDC updates ElastiCache for Valkey asynchronously in commit order without dual-write drift, and running payment capture in a Step Functions / Temporal Saga after committing the `PENDING_PAYMENT` hold ensures zero database row locks are held across external PSP network calls.
+
+- Why not A: Invoking an external payment gateway inside an open database transaction stretches lock duration from milliseconds to seconds, throttling concurrent bookings on the same hotel.
+- Why not C: A single writer saturates under global OTA write bursts, 15-minute cron cache invalidation serves heavily stale availability, and charging cards before reserving inventory creates paid orders with no rooms.
+- Why not D: Allowing unconstrained writes and refunding guests hours later in a nightly batch violates the strict overbooking cap and causes severe customer and walk-penalty losses.
+- Ref: [modules/19-hotel-reservation-system.md](../modules/19-hotel-reservation-system.md#4-ota-scale-out-sharding-by-hotel_id-and-cdc-driven-inventory-caching), https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/CHAP_AuroraOverview.html
+
+</details>
+
+### Q-CERT-026 · AWS SAP-C02: Idempotency, Deadlock Prevention & Overbooking Guards · difficulty 3 · single
+
+A reservation microservice running on AWS Lambda behind API Gateway processes `POST /v1/reservations` against an Aurora PostgreSQL shard. Both mobile clients and API Gateway retries can deliver duplicate requests, and concurrent buyers frequently book overlapping date ranges. Which database contract eliminates duplicate bookings, parameter tampering, multi-night deadlocks, and checkout-day off-by-one errors?
+
+- A) Enforce `UNIQUE (reservation_id)` with SHA-256 `payload_hash` comparison on conflict (`409` on mismatch), lock/update nights in canonical `ORDER BY hotel_id ASC, room_type_id ASC, date ASC` over the half-open interval `date >= checkIn AND date < checkOut`, assert `rows_affected == num_nights`, and enforce `CHECK (total_reserved <= (total_inventory * 110) / 100)`.
+- B) Generate a fresh `UUIDv4` inside the Lambda handler on every invocation, lock rows using `ORDER BY date DESC`, and rely on application-side floating-point math (`1.1 * total_inventory`) without database constraints.
+- C) Query inventory using `WHERE date BETWEEN checkIn AND checkOut`, ignore payload changes when `reservation_id` matches, and set `CHECK (total_reserved <= total_inventory)`.
+- D) Deduplicate requests using a 1-second ElastiCache TTL lock only and allow PostgreSQL to lock multi-night rows in arbitrary heap-scan order.
+
+<details><summary>Answer</summary>
+
+**A.** A client-supplied `reservation_id` (`UNIQUE` PK) paired with `payload_hash` verification guarantees idempotent retries while rejecting mutated parameters (`409 Conflict`). Half-open `[checkIn, checkOut)` intervals leave the checkout morning free for the next guest, canonical ascending date order prevents Coffman circular-wait deadlocks (`SQLSTATE 40P01`), and the integer `CHECK` constraint enforces the `10%` overbooking cap at the storage boundary.
+
+- Why not B: Generating a new UUID inside the retry handler defeats idempotency (every retry creates a new booking), and floating-point multiplication without a database `CHECK` constraint risks boundary rounding bugs.
+- Why not C: Inclusive `BETWEEN` reserves the checkout night (stealing up to `33%` of capacity), ignoring payload drift silently replays stale confirmations for altered dates, and dropping the `110%` factor breaks the controlled overbooking policy.
+- Why not D: Ephemeral cache locks expire before slow mobile retries arrive, and arbitrary heap-scan lock ordering causes `SQLSTATE 40P01` deadlocks under concurrent overlapping stays.
+- Ref: [modules/19-hotel-reservation-system.md](../modules/19-hotel-reservation-system.md#3-concurrency-control-idempotency-locking-ordered-dates-and-database-constraints), https://www.postgresql.org/docs/current/ddl-constraints.html
+
+</details>
+
+### Q-CERT-027 · GCP PCA: Global Hospitality Inventory on Cloud Spanner vs. Cloud SQL · difficulty 3 · scenario
+
+A hospitality company currently operates a regional hotel chain (`5,000` hotels, `73M` inventory rows over a 2-year horizon, `~3 TPS` bookings) on Google Cloud and plans to expand into a multi-region global OTA (`30,000 QPS`) requiring strong external consistency across continents without manual shard management. Which architectural evolution aligns with Google Cloud best practices?
+
+- A) Deploy a 50-node multi-region Cloud Spanner instance for the `3 TPS` regional chain today, and replicate data directly from Spanner into Memorystore using Cloud DNS.
+- B) Run Cloud SQL for PostgreSQL (with HA synchronous standby and Memorystore for Valkey/Redis) for the `3 TPS` regional chain (`~9–12 GB` working set fits entirely in RAM), and migrate at global OTA scale to Cloud Spanner using `INTERLEAVE IN PARENT Hotels ON DELETE CASCADE` by `hotel_id` with Spanner Change Streams feeding regional Memorystore caches.
+- C) Use Cloud Bigtable as the transactional system of record for multi-night hotel bookings because Bigtable supports multi-row SQL `CHECK` constraints across dates.
+- D) Keep a single single-zone Cloud SQL instance for the global `30,000 QPS` OTA and perform application-side dual writes to Memorystore.
+
+<details><summary>Answer</summary>
+
+**B.** For a `3 TPS` / `73M-row` (`~9–12 GB`) chain, Cloud SQL for PostgreSQL holds the entire working set in buffer-pool RAM at minimal operational cost. When scaling to a global multi-region OTA (`30,000 QPS`), Cloud Spanner provides TrueTime external consistency and automatic sharding; interleaving `RoomTypeInventory` and `Reservations` under `Hotels` by `hotel_id` physically co-locates all nights for a hotel inside the same Spanner split, while Spanner Change Streams replace Debezium to keep regional Memorystore caches warm.
+
+- Why not A: Provisioning multi-region Cloud Spanner for a `3 TPS` regional workload wastes budget on unused distributed consensus capacity, and Cloud DNS does not replicate database changes to Memorystore.
+- Why not C: Cloud Bigtable provides single-row atomicity only and lacks multi-row ACID transactions or relational `CHECK` constraints across multi-night date ranges.
+- Why not D: A single-zone Cloud SQL instance lacks high availability, cannot absorb `30,000 QPS` globally without sharding/read offloading, and dual writes corrupt cache consistency.
+- Ref: [modules/19-hotel-reservation-system.md](../modules/19-hotel-reservation-system.md#4-ota-scale-out-sharding-by-hotel_id-and-cdc-driven-inventory-caching), https://cloud.google.com/spanner/docs/schema-and-data-model#creating-interleaved-tables
+
+</details>
+
+### Q-CERT-028 · Azure AZ-305: Multi-Shard Reservation Data & Durable Workflows · difficulty 2 · scenario
+
+An enterprise hospitality platform on Azure needs to scale its relational reservation and room-type inventory tables horizontally across `16` shards while preserving single-node ACID semantics per hotel, caching availability in memory, and coordinating external payment capture with automatic compensating rollback on decline. Which Azure architecture should you recommend?
+
+- A) Distribute `room_type_inventory` and `reservation` across `hotel_id` shards using Azure Cosmos DB for PostgreSQL (Citus) or `hotel_id`-sharded Azure Database for PostgreSQL – Flexible Server, stream WAL changes into Azure Managed Redis, and orchestrate the payment and compensating inventory release via Azure Durable Functions (or Temporal on AKS).
+- B) Store `reservation` and `room_type_inventory` in two separate Azure SQL databases and coordinate every booking plus the external Stripe HTTP webhook inside a single blocking MSDTC Two-Phase Commit (2PC) transaction.
+- C) Use Azure Blob Storage CSV files updated by an hourly Azure Data Factory pipeline as the primary inventory database.
+- D) Use Azure Cache for Redis with volatile LRU eviction as the sole primary database without relational persistence.
+
+<details><summary>Answer</summary>
+
+**A.** Co-locating `reservation` and `room_type_inventory` by the `hotel_id` distribution column in Cosmos DB for PostgreSQL (Citus) or sharded Flexible Server executes every multi-night stay as a fast single-shard ACID transaction. WAL CDC keeps Azure Managed Redis synchronized for the read funnel, and Durable Functions / Temporal orchestrates the asynchronous payment saga with durable state and idempotent compensating releases.
+
+- Why not B: Splitting closely coupled tables across separate databases and wrapping external third-party payment calls in blocking 2PC creates a coordinator SPOF and exhausts database connection pools.
+- Why not C: Hourly batch CSV pipelines cannot enforce real-time ACID booking constraints or prevent concurrent double-bookings.
+- Why not D: Volatile LRU caches evict keys under memory pressure and lack relational multi-night ACID transaction guarantees.
+- Ref: [modules/19-hotel-reservation-system.md](../modules/19-hotel-reservation-system.md#5-microservice-consistency-co-located-acid-boundary-vs-2pc-and-saga-workflows), https://learn.microsoft.com/en-us/azure/cosmos-db/postgresql/introduction
+
+</details>
+
+### Q-CERT-029 · CNCF / SRE: Reservation Funnel SLIs, Horizon Guardrails & CDC Lag · difficulty 3 · single
+
+An SRE team is defining production alerting and SLIs for a `hotel_id`-sharded reservation system backed by a 730-day rolling CRON inventory horizon and a Debezium-to-Valkey CDC cache. Which SLI and guardrail combination directly detects silent correctness and availability failures before revenue is lost?
+
+- A) Page only when average Valkey CPU exceeds `85%` or total daily bookings drop to zero across the entire fleet.
+- B) Page immediately if `OversellInvariantBreachCount` (`total_reserved > (total_inventory * 110) / 100`) exceeds `0`; alert when rolling horizon coverage (`MAX(date) - CURRENT_DATE`) falls below `720 days`; track Debezium CDC replication lag (`p99 < 100 ms`, page `> 2 s`) alongside the stale-cache checkout `409` rejection rate; and monitor multi-night `SQLSTATE 40P01` deadlock rate and payment saga compensation backlog.
+- C) Alert whenever any single user receives an HTTP `409 Conflict` on checkout, and automatically disable the `chk_overbooking_cap` database constraint when `409` responses occur.
+- D) Monitor only the mean HTTP response time across `GET /v1/hotels` and `POST /v1/reservations` combined.
+
+<details><summary>Answer</summary>
+
+**B.** Each metric guards a specific failure mode of the reservation architecture: `OversellInvariantBreachCount > 0` catches storage invariant violations immediately; `MAX(date) - CURRENT_DATE < 720` detects a broken horizon-seeding CRON job 10 days before 2-year-ahead bookings hit `0 rows matched`; CDC lag plus stale-cache `409` rate measures read-to-write cache divergence; `40P01` deadlock rate catches unsorted multi-night queries; and saga compensation backlog detects stuck payment rollbacks.
+
+- Why not A: Waiting for fleet-wide bookings to hit zero misses single-shard deadlocks, horizon starvation on 24-month bookings, and silent overbooking breaches.
+- Why not C: Occasional `409 Sold Out` conflicts are expected when concurrent users race for the last room, and disabling `chk_overbooking_cap` destroys the primary safeguard against overselling.
+- Why not D: Combining read-heavy `GET` (99% of traffic) and write `POST` (1% of traffic) into a single mean latency hides `POST` tail spikes, deadlocks, and inventory invariant breaches.
+- Ref: [modules/19-hotel-reservation-system.md](../modules/19-hotel-reservation-system.md#6-production-gotchas-sre-guardrails-and-2021-vs-2026-comparison), https://sre.google/workbook/alerting-on-slos/
+
+</details>
+
+### Q-CERT-030 · Multi-Cloud Architecture: 2021 vs. 2026 Reservation Platform Modernization · difficulty 2 · multi
+
+Select **two** genuine architectural improvements achieved when modernizing a 2021 hotel reservation stack (inclusive `BETWEEN` SQL queries, application dual-write cache invalidation, random `UUIDv4` keys, and blocking 2PC across split Reservation/Inventory/Payment databases) to the 2026 standard.
+
+- A) Replacing application dual-write cache updates with log-based Debezium WAL/binlog CDC into Valkey ensures cache updates follow exact database commit order without dual-write race conditions, while the relational database remains the final authority on `POST /v1/reservations`.
+- B) Co-locating `reservation` and `room_type_inventory` on `hotel_id`-sharded SQL using half-open `[checkIn, checkOut)` intervals and UUIDv7 idempotency keys executes multi-night holds in `< 5 ms` local ACID transactions while Temporal durable sagas coordinate external payments without holding DB row locks.
+- C) Switching from `date >= checkIn AND date < checkOut` back to `date BETWEEN checkIn AND checkOut` increases occupancy by reserving the checkout morning for every guest.
+- D) Replacing relational `CHECK` constraints with unvalidated client-side JavaScript button disabling removes all server-side concurrency overhead.
+
+<details><summary>Answer</summary>
+
+**A, B.** Log-based Debezium CDC eliminates dual-write cache drift while keeping the database authoritative for writes, and co-locating `reservation` + `room_type_inventory` by `hotel_id` with half-open `[checkIn, checkOut)` intervals, time-ordered UUIDv7 keys, and Temporal payment sagas delivers sub-5 ms local ACID holds without blocking database connections on external PSP calls.
+
+- Why not C: SQL `BETWEEN` is inclusive of both endpoints and locks the checkout day as an extra night, _reducing_ occupancy by blocking same-day check-ins.
+- Why not D: Client-side UI button disabling is trivially bypassed by network retries, multiple users, or non-browser clients and cannot prevent double-booking or overselling.
+- Ref: [modules/19-hotel-reservation-system.md](../modules/19-hotel-reservation-system.md#6-production-gotchas-sre-guardrails-and-2021-vs-2026-comparison), https://www.rfc-editor.org/rfc/rfc9562
 
 </details>

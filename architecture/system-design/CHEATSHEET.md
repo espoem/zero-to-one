@@ -270,7 +270,7 @@ flowchart LR
 
 ---
 
-## 6. Top 31 Production Failure Modes & One-Line Fixes
+## 6. Top 39 Production Failure Modes & One-Line Fixes
 
 | # | Failure Mode | How It Breaks Production | One-Line Fix |
 | :-- | :-- | :-- | :-- |
@@ -309,3 +309,7 @@ flowchart LR
 | **33** | **Cross-AZ Broker Replication & Fetch Egress Shock** | Multi-AZ `RF=3` replication (`2×` ingest) plus `2/3` cross-AZ consumer fetches generate `$34k–$104k/mo` cloud transfer fees at `1 GB/s`. | Enable end-to-end `zstd` compression, KIP-392 rack-aware follower fetching, and KIP-405 tiered storage or diskless S3 brokers. |
 | **34** | **User-Space TLS Breaking Zero-Copy `sendfile()`** | Enabling JVM/user-space TLS forces broker bytes out of kernel page cache into heap buffers for encryption, spiking CPU and GC pauses. | Size broker CPU for TLS encryption overhead, offload TLS or use `kTLS` / C++ thread-per-core brokers, and isolate cold-consumer catch-up. |
 | **35** | **Partition-Count Increase Breaking Key Ordering** | Expanding a topic from `N` to `N+k` partitions changes `hash(key) % N`, routing new events for an active key ahead of unconsumed backlog. | Pre-size partitions for peak parallelism upfront, or migrate consumers via a new topic with coordinated cutover. |
+| **36** | **SQL `BETWEEN` Checkout-Night Off-By-One Bug** | `date BETWEEN checkIn AND checkOut` is inclusive, reserving the checkout morning and blocking same-day guest turnarounds (`-33%` occupancy). | Always query and update hotel stays as half-open intervals `[checkIn, checkOut)` (`date >= checkIn AND date < checkOut`) and assert `rows_affected == num_nights`. |
+| **37** | **Unsorted Multi-Night Row Lock Deadlock (`40P01`)** | Concurrent transactions locking overlapping stay dates in different orders form a Coffman circular wait and abort with `SQLSTATE 40P01`. | Sort all multi-night `SELECT ... FOR UPDATE` and batch `UPDATE` queries by canonical `ORDER BY hotel_id ASC, room_type_id ASC, date ASC`. |
+| **38** | **Holding DB Row Locks Across Payment Gateway RPCs** | Calling Stripe/Adyen (`500–2,000 ms`) inside an open `FOR UPDATE` inventory transaction exhausts the DB connection pool at `< 50 RPS`. | Commit the local reservation hold (`PENDING_PAYMENT`) in `< 5 ms` and orchestrate payment asynchronously via a Temporal Saga with compensating release. |
+| **39** | **Rolling 730-Day CRON Horizon Starvation / Reset** | A stalled horizon cron breaks bookings 24 months ahead (`0 rows`), while a non-idempotent rerun (`DO UPDATE SET reserved = 0`) wipes sold rooms. | Seed rolling inventory horizons daily with `ON CONFLICT (hotel_id, room_type_id, date) DO NOTHING` and alert if `MAX(date) - TODAY < 720`. |
