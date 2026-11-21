@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 620" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #0b1020; }
+      .panel { fill: #121a30; stroke: #2b3b66; stroke-width: 1.5; rx: 10; }
+      .col-2021 { fill: #2a1820; stroke: #e05263; stroke-width: 1.5; rx: 8; }
+      .col-2026 { fill: #102a24; stroke: #2ec486; stroke-width: 1.5; rx: 8; }
+      .dim-box { fill: #16223f; stroke: #4c8bf5; stroke-width: 1.5; rx: 6; }
+      .title { font-family: 'Inter', -apple-system, sans-serif; font-size: 18px; font-weight: 700; fill: #f8fafc; }
+      .subtitle { font-family: 'Inter', -apple-system, sans-serif; font-size: 12px; fill: #94a3b8; }
+      .hdr { font-family: 'Inter', -apple-system, sans-serif; font-size: 14px; font-weight: 700; fill: #f1f5f9; }
+      .dim-txt { font-family: 'Inter', -apple-system, sans-serif; font-size: 12px; font-weight: 700; fill: #93c5fd; }
+      .txt { font-family: 'Inter', -apple-system, sans-serif; font-size: 11px; fill: #e2e8f0; }
+      .code-old { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10.5px; fill: #fca5a5; }
+      .code-new { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10.5px; fill: #6ee7b7; }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1280" height="620"/>
+
+  <text class="title" x="24" y="32">Proximity Service Evolution: 2021 Default vs. 2026 Modern Standard</text>
+  <text class="subtitle" x="24" y="50">From Manual SQL Geohash Likes &amp; Cold-Booting Quadtrees to PostGIS 3.5+ GiST, Valkey GEOSEARCH, Hybrid Vector Search &amp; Overture GERS</text>
+
+  <!-- Column Headers -->
+  <rect class="dim-box" x="20" y="68" width="220" height="38"/>
+  <text class="hdr" x="34" y="92">Architectural Dimension</text>
+
+  <rect class="col-2021" x="252" y="68" width="490" height="38"/>
+  <text class="hdr" x="266" y="92">2021 Textbook Baseline (ByteByteGo Ch. 16)</text>
+
+  <rect class="col-2026" x="754" y="68" width="506" height="38"/>
+  <text class="hdr" x="768" y="92">2026 Production Standard (Cloud-Native Spatial &amp; AI)</text>
+
+  <!-- Row 1 -->
+  <rect class="dim-box" x="20" y="116" width="220" height="68"/>
+  <text class="dim-txt" x="32" y="146">1. Primary Spatial Index</text>
+  <text class="txt" x="32" y="164">&amp; Storage Engine</text>
+
+  <rect class="col-2021" x="252" y="116" width="490" height="68"/>
+  <text class="code-old" x="264" y="138">Hand-rolled MySQL geohash VARCHAR table or custom C++ Quadtree</text>
+  <text class="txt" x="264" y="156">Manual 9-prefix SQL IN (...) queries or multi-minute cold-start</text>
+  <text class="txt" x="264" y="172">in-memory quadtree rebuilds on every LBS server restart</text>
+
+  <rect class="col-2026" x="754" y="116" width="506" height="68"/>
+  <text class="code-new" x="766" y="138">PostGIS 3.5+ GiST / SP-GiST R-Tree + Valkey 9 GEOSEARCH</text>
+  <text class="txt" x="766" y="156">Native ST_DWithin(geom::geography, pt, r) &amp; 52-bit ZSET GEOSEARCH</text>
+  <text class="txt" x="766" y="172">with S2/H3 integer indexing and mmap'd immutable Quadtree snapshots</text>
+
+  <!-- Row 2 -->
+  <rect class="dim-box" x="20" y="194" width="220" height="68"/>
+  <text class="dim-txt" x="32" y="224">2. Query Paradigm</text>
+  <text class="txt" x="32" y="242">(Geo-Only vs. Hybrid)</text>
+
+  <rect class="col-2021" x="252" y="194" width="490" height="68"/>
+  <text class="code-old" x="264" y="216">Pure coordinate radius filter (lat, lon, radius) + distance sort</text>
+  <text class="txt" x="264" y="234">Separate text search and geo search paths; no semantic ranking</text>
+  <text class="txt" x="264" y="250">or real-time open-hours / road-travel-time filtering</text>
+
+  <rect class="col-2026" x="754" y="194" width="506" height="68"/>
+  <text class="code-new" x="766" y="216">Hybrid Geo + Lexical BM25 + Dense Vector Search (ES / OpenSearch)</text>
+  <text class="txt" x="766" y="234">Single-pass BKD-tree geo bounding + HNSW semantic query ("quiet</text>
+  <text class="txt" x="766" y="250">patio coffee") + CRP road-network travel-time isochrone ranking</text>
+
+  <!-- Row 3 -->
+  <rect class="dim-box" x="20" y="272" width="220" height="68"/>
+  <text class="dim-txt" x="32" y="302">3. Index Update Cadence</text>
+  <text class="txt" x="32" y="320">&amp; Freshness</text>
+
+  <rect class="col-2021" x="252" y="272" width="490" height="68"/>
+  <text class="code-old" x="264" y="294">Nightly batch cron rebuild (24-hour staleness window)</text>
+  <text class="txt" x="264" y="312">New businesses, emergency closures, or updated hours wait until</text>
+  <text class="txt" x="264" y="328">midnight nightly job to repopulate Redis and rebuild Quadtrees</text>
+
+  <rect class="col-2026" x="754" y="272" width="506" height="68"/>
+  <text class="code-new" x="766" y="294">Debezium WAL CDC (&lt; 5 s) + Hot-Override Delta Overlay</text>
+  <text class="txt" x="766" y="312">Committed DB edits stream via CDC to invalidate affected geohash</text>
+  <text class="txt" x="766" y="328">cells in seconds; quadtree nodes merge a tiny live delta map</text>
+
+  <!-- Row 4 -->
+  <rect class="dim-box" x="20" y="350" width="220" height="68"/>
+  <text class="dim-txt" x="32" y="380">4. POI Base Dataset</text>
+  <text class="txt" x="32" y="398">&amp; Entity Resolution</text>
+
+  <rect class="col-2021" x="252" y="350" width="490" height="68"/>
+  <text class="code-old" x="264" y="372">Proprietary siloed POI crawls + raw OpenStreetMap fragments</text>
+  <text class="txt" x="264" y="390">Inconsistent place IDs across providers; heavy duplicate POI</text>
+  <text class="txt" x="264" y="406">deduplication burden for every startup building location search</text>
+
+  <rect class="col-2026" x="754" y="350" width="506" height="68"/>
+  <text class="code-new" x="766" y="372">Overture Maps Foundation Places + GERS (Global Entity Reference)</text>
+  <text class="txt" x="766" y="390">Standardized 60M+ open GeoParquet POIs with stable GERS IDs</text>
+  <text class="txt" x="766" y="406">queried via DuckDB Spatial / Apache Sedona + merchant overrides</text>
+
+  <!-- Row 5 -->
+  <rect class="dim-box" x="20" y="428" width="220" height="68"/>
+  <text class="dim-txt" x="32" y="458">5. Location Privacy</text>
+  <text class="txt" x="32" y="476">(GDPR / CCPA / OS)</text>
+
+  <rect class="col-2021" x="252" y="428" width="490" height="68"/>
+  <text class="code-old" x="264" y="450">Fine-grained lat/lon often logged in access logs &amp; analytics</text>
+  <text class="txt" x="264" y="468">Risk of reconstructing user home/work trajectories from saved</text>
+  <text class="txt" x="264" y="484">6-decimal search query URLs in server access logs</text>
+
+  <rect class="col-2026" x="754" y="428" width="506" height="68"/>
+  <text class="code-new" x="766" y="450">Zero-Persistence Ephemeral Coords + Coarse Geohash-5 Analytics</text>
+  <text class="txt" x="766" y="468">Coordinates stripped at L7 log edge; analytics snap to L=4/5 cells</text>
+  <text class="txt" x="766" y="484">with k-anonymity (&gt;= 50 users); native iOS/Android coarse-loc mode</text>
+
+  <!-- Row 6: Migration Callout -->
+  <rect class="panel" x="20" y="510" width="1240" height="92"/>
+  <text class="hdr" x="34" y="534">Key Architectural Takeaway: Why Two-Tier Geohash Caching Beats Raw Coordinate Keys</text>
+  <text class="txt" x="34" y="556">• Never cache proximity results under raw `lat:lon` floating-point strings: 5–15 m GPS drift guarantees a ~0% cache hit ratio.</text>
+  <text class="txt" x="34" y="574">• Instead, snap queries to Geohash precision 4–6 (`geohash:{p}:{cell} -&gt; business_id[]`), fetch the 9 neighbor cells in 1 Valkey pipeline,</text>
+  <text class="txt" x="34" y="590">  hydrate `business:{id}` details via MGET, and execute exact Haversine post-filtering (`d &lt;= R`) in stateless LBS memory.</text>
+</svg>

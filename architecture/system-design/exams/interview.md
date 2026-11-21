@@ -2,7 +2,7 @@
 
 This preparation bank tests Senior, Staff, and Principal distributed system design competency across the seven domains defined in [`exams/README.md`](README.md). Every question is original and grounded in primary engineering literature, official protocol RFCs, and production postmortems.
 
-- **Bank scope**: **105 questions** (`Q-SD-001`–`Q-SD-105`) covering quantitative capacity modeling, edge/API design, caching/partitioning, asynchrony/resilience, specialized indexing/financial correctness, SLO observability/DR, end-to-end canonical architectures, progressive scaling, distributed key-value stores, planetary-scale geospatial navigation, distributed message queue internals, high-contention hotel reservation and overbooking systems, planetary distributed email services, and real-time gaming leaderboards.
+- **Bank scope**: **110 questions** (`Q-SD-001`–`Q-SD-110`) covering quantitative capacity modeling, edge/API design, caching/partitioning, asynchrony/resilience, specialized indexing/financial correctness, SLO observability/DR, end-to-end canonical architectures, progressive scaling, distributed key-value stores, planetary-scale geospatial navigation, distributed message queue internals, high-contention hotel reservation and overbooking systems, planetary distributed email services, real-time gaming leaderboards, and proximity / location-based services.
 - **Difficulty calibration**: Level `1` tests foundational mechanics, Level `2` tests Senior-level trade-off reasoning, and Level `3` tests Staff/Principal failure modes, subtle race conditions, and quantitative traps.
 - **Timed practice**: Complete the [50-Question Written Architecture Drill](#timed-mock-exam-written-architecture-drill-50-questions--75-minutes) under a strict 75-minute timer, then run the [two 60-minute Staff/Principal design loops](#timed-mock-design-loops-2--60-minute-staffprincipal-simulations) against the explicit 0–4 grading rubrics.
 
@@ -2159,6 +2159,115 @@ Select **two** sound operational designs for a NoSQL leaderboard backup index (D
 - Why not B: DynamoDB On-Demand billing scales table-wide capacity across many partitions, but a single hot partition key (`"leaderboard#2026-11"`) is still bounded by the physical per-partition limit of `1,000 WCU/s`.
 - Why not D: Substituting `Date.now()` during disaster recovery overwrites the historical match achievement times and scrambles every tie-break order; replay must use the immutable `match_ts_ms` recorded in `match_results`.
 - Ref: [modules/21-realtime-gaming-leaderboard.md](../modules/21-realtime-gaming-leaderboard.md#5-season-rollover-disaster-recovery-and-serverless-vs-self-managed-topologies), https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-partition-key-sharding.html
+
+</details>
+
+---
+
+### Q-SD-106 · Proximity Search, Geospatial Indexing & Location-Based Services · difficulty 3 · scenario
+
+A proximity discovery service serves `100,000,000` (`100M`) daily active users who issue an average of `5` nearby searches per day (`5x` diurnal dining/commute peak) against a catalog of `200,000,000` (`200M`) business listings (`~1 KB` average row size). A developer proposes running `SELECT business_id, latitude, longitude FROM business WHERE (latitude BETWEEN :lat - :d AND :lat + :d) AND (longitude BETWEEN :lon - :d AND :lon + :d)` with $\Delta = R / 111{,}320$ over two B-tree indexes on `latitude` and `longitude`. Which quantitative sizing and technical critique is correct?
+
+- A) Average search load is `~5,787 QPS` (`28,935 QPS` peak), the `business` table is `~200 GB`, and two 1D B-tree indexes execute the 2D bounding-box query in $O(\log N)$ time with 100% geometric accuracy at all latitudes.
+- B) Average search load is `~5,787.04 QPS` (`~5,000 QPS` rounded; `~28,935 QPS` at `5x` peak), the `business` table is `~200 GB`, and the raw Geohash index (`24 B/row`) is only `~4.8 GB` (`~19.2 GB` across precisions `4..6` in Valkey RAM, fitting on a single replicated node without sharding). The naive SQL query fails both **algorithmically** (intersecting two 1D B-tree range scans scans massive global latitude/longitude bands in $O(N_{\text{strip}})$) and **geometrically** (reusing $\Delta \phi = R / 111{,}320$ for longitude omits spherical $\cos(\phi)$ convergence, shrinking East-West search coverage at `60°N` Oslo/Helsinki by `50%`).
+- C) The `5x` peak multiplier applies only to merchant CRUD writes, so search read QPS never exceeds `5,787 QPS`, and the `4.8 GB` Geohash index must be sharded across `64` machines.
+- D) At `60°N` latitude, $\cos(60^\circ) = 2.0$, so omitting $\cos(\phi)$ makes the East-West bounding box twice as wide as requested.
+
+<details><summary>Answer</summary>
+
+**B.** At $100\text{M} \times 5 = 500\text{M}$ searches/day, average search throughput is $500{,}000{,}000 / 86{,}400 \approx 5{,}787.04\text{ QPS}$ (`~28,935.19 QPS` at `5x` peak). While the `200M`-row `business` metadata table occupies `~200 GB`, a narrow Geohash index (`24 B/row`) is only `4.80 GB` raw (`~19.20 GB` across precisions `L=4, 5, 6` in Valkey RAM), so it fits entirely in memory on a single Valkey/replica node without sharding. The naive SQL query has two independent bugs: (1) two 1D B-tree range scans return huge global latitude and longitude strips whose intersection touches millions of rows, and (2) while $1^\circ$ of latitude is $\approx 111.32\text{ km}$ everywhere, $1^\circ$ of longitude shrinks by $\cos(\phi)$ ($111.32\text{ km} \times \cos(\phi)$). At Oslo (`60°N`), $\cos(60^\circ) = 0.5$, so omitting $\cos(\phi)$ cuts East-West search coverage in half (`2.5 km` instead of `5.0 km`).
+
+- Why not A: Two 1D B-trees cannot prune a 2D bounding box without scanning global horizontal/vertical strips, and using constant degree deltas breaks at non-equatorial latitudes.
+- Why not C: The `5x` diurnal peak applies to user search reads (`28,935 QPS`), and a `4.8 GB` raw / `19.2 GB` in-memory index fits on one machine without sharding.
+- Why not D: $\cos(60^\circ) = 0.5$, so one degree of longitude at `60°N` is `55.66 km` (half the equatorial width), causing the naive degree delta $\Delta \phi$ to cover only `50%` of the required East-West distance.
+- Ref: [modules/22-proximity-service.md](../modules/22-proximity-service.md#1-requirements-read-heavy-workload-economics-and-geospatial-storage-sizing), https://postgis.net/documentation/
+
+</details>
+
+---
+
+### Q-SD-107 · Proximity Search, Geospatial Indexing & Location-Based Services · difficulty 3 · single
+
+Compare Geohash (`L = 4..6`), an in-memory adaptive Point Quadtree (`leaf <= 100`), Google S2, and Uber H3 for indexing `200,000,000` Points of Interest. Which technical assessment is accurate?
+
+- A) A single Geohash prefix query (`WHERE geohash LIKE '9q8yyk%'`) guarantees 100% recall without querying neighbors and requires no Haversine post-filter because Geohash cells are circular.
+- B) Geohash requires querying **9 cells (`center + 8 neighbors`)** to avoid cell-edge blindness, **exact Haversine post-filtering** (`d <= R`) to prune diagonal $3 \times 3$ cell corners extending beyond radius $R$, and **precision step-down (`L -> L - 1`)** in sparse rural zones; whereas an in-memory **Point Quadtree** adapts leaf depth to urban density (`~3.5–4.5 GB` RAM) and supports native branch-and-bound $k$-Nearest-Neighbor ($k$-NN) search at the operational cost of a `2–4 minute` $O(N \log N)$ startup build requiring Kubernetes `/readyz` gating.
+- C) An in-memory Point Quadtree has $O(1)$ zero-time cold boot for `200M` nodes and never requires locking or Copy-on-Write pointer swaps during concurrent writes.
+- D) Square Geohash cells have equidistant center-to-center distance to all 8 neighbors, whereas Uber H3 hexagons suffer a $\sqrt{2}$ diagonal distance distortion across their 6 neighbors.
+
+<details><summary>Answer</summary>
+
+**B.** Because Geohash uses rectangular Z-order subdivisions, two points `15 meters` apart across a cell border can share zero prefix characters (requiring a 9-cell `center + 8 neighbors` lookup), the $3 \times 3$ rectangular grid's diagonal corners extend well outside the inscribed search circle $R$ (requiring an exact Haversine `d <= R` post-filter), and sparse rural areas require stepping down precision `L -> L - 1`. Conversely, a Point Quadtree splits quadrants recursively until leaves hold $\le 100$ POIs (`~3.5–4.5 GB` RAM for `200M` POIs) and supports exact branch-and-bound $k$-NN traversal, but takes `2–4 minutes` ($O(N \log N)$) to construct on startup — requiring `/readyz` readiness gating or `mmap` snapshot loading.
+
+- Why not A: Single-cell prefix queries miss businesses right across cell borders, and rectangular cells include corner false positives beyond radius $R$.
+- Why not C: Building a `200M`-point tree takes minutes of CPU time (`O(N log N)`), and in-place structural splits under high read concurrency require locks unless isolated via Copy-on-Write root swaps.
+- Why not D: It is the exact opposite: square grids have 4 edge neighbors at distance $d$ and 4 diagonal corner neighbors at $\sqrt{2}d$, whereas Uber H3 hexagons have all 6 neighbors at an identical center-to-center distance $d$.
+- Ref: [modules/22-proximity-service.md](../modules/22-proximity-service.md#3-spatial-indexing-deep-dive-naive-2d-sql-even-grid-geohash-quadtree-and-google-s2--uber-h3), https://s2geometry.io/, https://h3geo.org/
+
+</details>
+
+---
+
+### Q-SD-108 · Proximity Search, Geospatial Indexing & Location-Based Services · difficulty 3 · scenario
+
+An engineer caches nearby search responses in Valkey under `nearby:{latitude}:{longitude}:{radius}` using the client's 6-decimal GPS coordinates and shards the `4.8 GB` `geospatial_index` table across `32` database shards by the first two characters of `geohash`. In production, the Valkey cache hit ratio is below `1%`, and the shard holding Manhattan/Tokyo saturates at `100%` CPU while `25` ocean/rural shards sit idle. How should you redesign caching and storage partitioning?
+
+- A) Round `latitude` and `longitude` to 7 decimal places (`~1.1 cm` precision) and add more shards to the `geospatial_index` table by hashing `geohash_6`.
+- B) Replace raw coordinate cache keys with a **Two-Tier Valkey Cache** — **Tier 1 (`geohash:{p}:{cell} -> business_id[]`)** queried via a 9-key pipeline and **Tier 2 (`business:{business_id} -> JSON payload`)** hydrated via `MGET` — so `±5–15 m` mobile GPS jitter snaps to the same shared cell keys (`> 95%` hit rate); keep the compact `geospatial_index` (`4.8 GB` raw / `19.2 GB` in Valkey) **unsharded on regional read replicas**, and shard only the `200 GB` `business` table by `business_id`.
+- C) Disable caching completely and run `SELECT * FROM business` across all `32` shards on every search request.
+- D) Store the full `1 KB` JSON payload of every business duplicated inside all 9 neighboring Geohash keys at precisions 4, 5, and 6 (`27x` storage amplification) and shard the `business` table by `city_name`.
+
+<details><summary>Answer</summary>
+
+**B.** Civilian mobile GPS fixes drift by `±5–15 meters` even when a user stands still, changing the 5th and 6th decimal places of `(latitude, longitude)` on every query and collapsing raw coordinate cache hit rates to `~0%`. Quantizing Tier 1 cache keys by Geohash cell (`geohash:{p}:{cell} -> business_id[]`) maps all users within a `1.22 km × 0.61 km` (`L=6`) block to the exact same cache key, while Tier 2 (`business:{id} -> details`) stores each business payload once without duplication across precisions. On the storage tier, `geospatial_index` (`4.8 GB` raw) fits easily in memory on every regional read replica (avoiding geographic hot-shard skew and 9-cell cross-shard scatter-gather), whereas the `200 GB` `business` table shards uniformly by `business_id`.
+
+- Why not A: 7 decimal places (`1.1 cm`) makes GPS jitter misses even worse, and sharding `geospatial_index` by `geohash_6` forces every 9-cell query to scatter-gather across 9 different database shards.
+- Why not C: Removing caching exposes the relational database to `28,935 QPS` of spatial queries, causing immediate database collapse.
+- Why not D: Duplicating full business JSON across precisions and neighbor cells wastes hundreds of gigabytes of RAM and complicates merchant update invalidation, while sharding `business` by `city_name` recreates metropolitan hot-shard skew.
+- Ref: [modules/22-proximity-service.md](../modules/22-proximity-service.md#4-data-schema-sharding-vs-read-replicas-and-two-tier-geohash-caching), https://valkey.io/commands/mget/
+
+</details>
+
+---
+
+### Q-SD-109 · Proximity Search, Geospatial Indexing & Location-Based Services · difficulty 2 · ordering
+
+Order the execution steps of a `GET /v1/search/nearby?latitude=37.776720&longitude=-122.416730&radius=500` request in the Location-Based Service (LBS).
+
+- A) GeoDNS & L7 LB route request to regional stateless LBS worker (scrubbing raw GPS from access logs) → LBS maps `500m` radius to Geohash precision `L = 6` and computes `center + 8 neighbor` geohashes (`9` cells) → LBS executes pipelined `MGET` / `SMEMBERS` on Tier 1 Geohash Valkey Cache for the 9 cells (stepping down to `L = 5` if sparse) → LBS batch-hydrates `business:{id}` details from Tier 2 Business Info Valkey Cache (subtracting `override:closed_businesses`), filters candidates by exact Haversine distance $d \le 500\text{ m}$, sorts ascending by distance, and returns ranked JSON.
+- B) LBS queries Tier 2 Business Info Cache for all `200,000,000` businesses → computes Haversine distance on `200M` rows → computes Geohash precision `L = 6` → routes to L7 LB.
+- C) GeoDNS routes request to Primary Business DB → Primary DB runs an unindexed full table scan → LBS caches the response under raw `37.776720:-122.416730` → returns unsorted results without Haversine filtering.
+- D) LBS maps `500m` radius to Geohash precision `L = 6` → queries only the single center Geohash cell (`1` cell, skipping the 8 neighbors) → skips Haversine corner filtering → returns raw `business_id` integers without hydrating business details.
+
+<details><summary>Answer</summary>
+
+**A.** The request first routes via GeoDNS/L7 LB to a stateless regional LBS worker (which strips raw coordinates from persistent logs). Next, the LBS worker maps `500 m` to Geohash precision `L = 6` and computes the 9-cell neighborhood (`center + 8 neighbors`). It fetches candidate `business_id` lists from Tier 1 Geohash Valkey in a single pipeline (falling back to `L = 5` in sparse rural cells), batch-hydrates the candidate details from Tier 2 Business Info Valkey (`MGET business:{id}`, checking the urgent closure override set and falling back to a regional DB read replica only on cache miss), applies the exact Haversine post-filter ($d \le 500\text{ m}$) to prune diagonal cell corners, and sorts by distance ascending.
+
+- Why not B: Fetching `200M` businesses on every request is an $O(N)$ full-catalog scan that defeats spatial indexing.
+- Why not C: Routing `28.9k QPS` of reads to the Primary DB, caching by raw coordinates (`~0%` hit rate), and skipping Haversine filtering violates every core architectural invariant.
+- Why not D: Querying only `1` cell misses businesses across cell boundaries, skipping Haversine leaks diagonal cell corners up to `~2 km` away, and clients need hydrated business details.
+- Ref: [modules/22-proximity-service.md](../modules/22-proximity-service.md#5-end-to-end-request-lifecycle-multi-region-deployment-and-async-update--privacy-workflows), https://valkey.io/commands/mget/
+
+</details>
+
+---
+
+### Q-SD-110 · Proximity Search, Geospatial Indexing & Location-Based Services · difficulty 3 · multi
+
+Select **two** sound operational and privacy engineering practices for a global Proximity Service.
+
+- A) Comply with **GDPR Article 5 and CCPA Precise Geolocation** mandates by keeping user search coordinates strictly ephemeral in volatile request memory (scrubbing raw `latitude`/`longitude` from HTTP access logs and user profile tables) and truncating demand-analytics telemetry to coarse Geohash precision `4` or `5` with a $k$-anonymity threshold (`>= 50` queries/cell).
+- B) Protect an in-memory Point Quadtree LBS fleet against `2–4 minute` $O(N \log N)$ cold-start outages by gating Kubernetes **`startupProbe` and `readinessProbe` (`/readyz`)** on full tree construction (or `mmap` snapshot load), keeping `/livez` shallow, enforcing a rolling `PodDisruptionBudget`, and merging intra-day closures via a **Hot-Override Delta Overlay** + Copy-on-Write atomic pointer swap.
+- C) Gate Kubernetes `livenessProbe` (`/livez`) on the `4-minute` Quadtree construction with `initialDelaySeconds: 5` and `failureThreshold: 3` so Kubernetes restarts any pod that takes longer than 15 seconds to build the tree.
+- D) Persist every user's 6-decimal search coordinates alongside their `user_id` and `ip_address` in an unencrypted S3 access-log bucket indefinitely.
+
+<details><summary>Answer</summary>
+
+**A, B.** Scrubbing raw coordinates at the L7 edge and snapping analytics to $k$-anonymous Geohash-4/5 cells prevents reconstructing individual user trajectories under GDPR Article 5 and CCPA/CPRA. For in-memory Quadtree deployments, separating `startupProbe`/`readinessProbe` (`/readyz` passes only once the `200M`-POI tree root pointer is ready) from a shallow `/livez` probe prevents traffic from hitting uninitialized pods while avoiding kubelet restart loops, and the Hot-Override Delta Overlay delivers sub-second emergency closure visibility between Copy-on-Write tree rebuilds.
+
+- Why not C: Coupling `/livez` with a 15-second timeout to a 4-minute Quadtree build causes Kubernetes to kill and restart every LBS pod in an infinite `CrashLoopBackOff`.
+- Why not D: Retaining raw 6-decimal GPS search histories linked to `user_id` violates GDPR data-minimization and CCPA sensitive geolocation regulations.
+- Ref: [modules/22-proximity-service.md](../modules/22-proximity-service.md#5-end-to-end-request-lifecycle-multi-region-deployment-and-async-update--privacy-workflows), https://gdpr-info.eu/art-5-gdpr/, https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
 
 </details>
 

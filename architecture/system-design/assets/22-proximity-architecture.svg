@@ -1,0 +1,162 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1320 760" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #0b1020; }
+      .panel { fill: #121a30; stroke: #2b3b66; stroke-width: 1.5; rx: 10; }
+      .box-blue { fill: #152546; stroke: #4c8bf5; stroke-width: 1.5; rx: 8; }
+      .box-green { fill: #122d26; stroke: #2ec486; stroke-width: 1.5; rx: 8; }
+      .box-amber { fill: #2f2513; stroke: #f5a623; stroke-width: 1.5; rx: 8; }
+      .box-purple { fill: #24193c; stroke: #a66bff; stroke-width: 1.5; rx: 8; }
+      .box-red { fill: #33161e; stroke: #f05454; stroke-width: 1.5; rx: 8; }
+      .title { font-family: 'Inter', -apple-system, sans-serif; font-size: 18px; font-weight: 700; fill: #f8fafc; }
+      .subtitle { font-family: 'Inter', -apple-system, sans-serif; font-size: 12px; fill: #94a3b8; }
+      .sec-hdr { font-family: 'Inter', -apple-system, sans-serif; font-size: 13px; font-weight: 700; fill: #e2e8f0; }
+      .lbl { font-family: 'Inter', -apple-system, sans-serif; font-size: 12px; font-weight: 600; fill: #f1f5f9; }
+      .txt { font-family: 'Inter', -apple-system, sans-serif; font-size: 11px; fill: #cbd5e1; }
+      .code { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10.5px; fill: #93c5fd; }
+      .code-green { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10.5px; fill: #6ee7b7; }
+      .code-amber { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10.5px; fill: #fcd34d; }
+      .code-red { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10.5px; fill: #fca5a5; }
+      .arrow { stroke: #60a5fa; stroke-width: 1.8; fill: none; marker-end: url(#arr-blue); }
+      .arrow-green { stroke: #34d399; stroke-width: 1.8; fill: none; marker-end: url(#arr-green); }
+      .arrow-amber { stroke: #fbbf24; stroke-width: 1.8; stroke-dasharray: 5,4; fill: none; marker-end: url(#arr-amber); }
+    </style>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#60a5fa"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#34d399"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#fbbf24"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1320" height="760"/>
+
+  <!-- Header -->
+  <text class="title" x="24" y="32">Proximity Service — End-to-End Architecture (100M DAU · 200M POIs · ~5,787 Avg / ~28.9k Peak QPS)</text>
+  <text class="subtitle" x="24" y="50">Read-Heavy Stateless LBS · 9-Cell Geohash / Adaptive Quadtree · Two-Tier Valkey Cache · Multi-Region Replicas</text>
+
+  <!-- Section 1: Client & L7 Routing -->
+  <rect class="panel" x="20" y="66" width="250" height="450"/>
+  <text class="sec-hdr" x="34" y="88">1. Client &amp; L7 Routing</text>
+
+  <rect class="box-blue" x="34" y="102" width="222" height="105"/>
+  <text class="lbl" x="44" y="122">Mobile / Web Search Clients</text>
+  <text class="code" x="44" y="142">GET /v1/search/nearby</text>
+  <text class="txt" x="44" y="160">?lat=37.7767&amp;lon=-122.4167</text>
+  <text class="txt" x="44" y="176">&amp;radius=500 (500M searches/day)</text>
+  <text class="code-green" x="44" y="194">GET /v1/businesses/{id}</text>
+
+  <rect class="box-amber" x="34" y="225" width="222" height="95"/>
+  <text class="lbl" x="44" y="245">Business Owner Portal</text>
+  <text class="code-amber" x="44" y="265">POST / PUT / DELETE</text>
+  <text class="code-amber" x="44" y="281">/v1/businesses/{id}</text>
+  <text class="txt" x="44" y="299">Low write rate (~100 QPS)</text>
+  <text class="txt" x="44" y="313">Daily / CDC index refresh</text>
+
+  <rect class="box-purple" x="34" y="338" width="222" height="162"/>
+  <text class="lbl" x="44" y="358">GeoDNS + L7 Load Balancer</text>
+  <text class="txt" x="44" y="378">• Routes /v1/search/nearby to</text>
+  <text class="txt" x="44" y="394">  nearest regional LBS cluster</text>
+  <text class="txt" x="44" y="412">• Routes /v1/businesses writes</text>
+  <text class="txt" x="44" y="428">  to Business Service primary</text>
+  <text class="code-green" x="44" y="450">GDPR / CCPA Ephemeral Guard:</text>
+  <text class="txt" x="44" y="466">Never logs raw user GPS to</text>
+  <text class="txt" x="44" y="482">persistent profile storage!</text>
+
+  <!-- Section 2: Stateless LBS & Business Service -->
+  <rect class="panel" x="292" y="66" width="465" height="450"/>
+  <text class="sec-hdr" x="306" y="88">2. Stateless LBS Read Path vs. Business CRUD Service</text>
+
+  <rect class="box-blue" x="306" y="102" width="437" height="252"/>
+  <text class="lbl" x="318" y="122">Location-Based Service (LBS) — Stateless Read-Only Fleet</text>
+  <text class="txt" x="318" y="142">Step 1: Map radius -&gt; Geohash length (500m-&gt;L6, 2km-&gt;L5, 20km-&gt;L4)</text>
+  <text class="txt" x="318" y="160">Step 2: Compute center + 8 neighbor cells (3x3 = 9 geohash cells)</text>
+  <text class="code" x="318" y="178">cells = [center, N, NE, E, SE, S, SW, W, NW] // fixes edge split</text>
+  <text class="txt" x="318" y="196">Step 3: Parallel pipeline fetch business_ids from Geohash Cache</text>
+  <text class="txt" x="318" y="214">  (Sparse rural fallback: if &lt; K candidates at L, step to L - 1)</text>
+  <text class="txt" x="318" y="232">Step 4: Batch MGET business details from Business Info Cache</text>
+  <text class="code-green" x="318" y="250">Step 5: Exact Haversine post-filter (d &lt;= R) + sort distance ASC</text>
+  <text class="txt" x="318" y="268">  Prunes 3x3 diagonal cell corners outside R (up to sqrt(2)*box)</text>
+  <text class="code-amber" x="318" y="290">Alt Engine: In-Memory Adaptive Point Quadtree (leaf &lt;= 100 POIs)</text>
+  <text class="txt" x="318" y="308">  ~3.5-4.5 GB RAM; O(N log N) boot (2-4 min) gated by K8s /readyz;</text>
+  <text class="txt" x="318" y="324">  supports native branch-and-bound k-Nearest-Neighbor (kNN) search</text>
+
+  <rect class="box-amber" x="306" y="370" width="437" height="130"/>
+  <text class="lbl" x="318" y="390">Business Service — CRUD &amp; Async Index Updater</text>
+  <text class="txt" x="318" y="410">• Serves GET /v1/businesses/{id} via Business Info Valkey Cache</text>
+  <text class="txt" x="318" y="428">• Writes owner create/edit/delete to Business DB (sharded by id)</text>
+  <text class="txt" x="318" y="446">• Publishes CDC / nightly batch job to refresh Geohash cells and</text>
+  <text class="txt" x="318" y="464">  build immutable Copy-on-Write Quadtree snapshots in Object Store</text>
+  <text class="code-green" x="318" y="484">• Urgent closures push to Hot-Override Delta Set in &lt; 1 second</text>
+
+  <!-- Section 3: Two-Tier Valkey Cache & Storage Tier -->
+  <rect class="panel" x="778" y="66" width="522" height="450"/>
+  <text class="sec-hdr" x="792" y="88">3. Two-Tier Valkey Cache &amp; Storage Scaling (200M POIs)</text>
+
+  <rect class="box-green" x="792" y="102" width="494" height="122"/>
+  <text class="lbl" x="804" y="122">Tier 1: Geohash ID List Cache (Valkey Cluster / Replicas)</text>
+  <text class="code-green" x="804" y="142">Key: "geohash:{p}:{hash}" -&gt; Value: [biz_343, biz_347, biz_112]</text>
+  <text class="txt" x="804" y="160">• Why NOT key by raw (lat, lon)? ±10m GPS drift causes ~0% hit ratio!</text>
+  <text class="txt" x="804" y="176">• 200M POIs x 3 precisions (L=4,5,6) x ~32 B = ~19.2 GB total RAM</text>
+  <text class="txt" x="804" y="192">• Fits completely in one Valkey node's memory; replicated across AZs/regions</text>
+  <text class="txt" x="804" y="208">  to scale 28.9k peak QPS without cross-shard spatial scatter-gather</text>
+
+  <rect class="box-purple" x="792" y="238" width="494" height="114"/>
+  <text class="lbl" x="804" y="258">Tier 2: Business Info Cache (Valkey Sharded by business_id)</text>
+  <text class="code" x="804" y="278">Key: "business:{business_id}" -&gt; Value: { name, lat, lon, hours, rating }</text>
+  <text class="txt" x="804" y="296">• Hydrated via single pipelined MGET for the candidate IDs in 9 cells</text>
+  <text class="txt" x="804" y="312">• Absorbs &gt; 98% of detail reads; TTL 24h + explicit CDC invalidation</text>
+  <text class="txt" x="804" y="328">• ~200 GB raw POI corpus (~40 GB hot 20% working set in Valkey RAM)</text>
+
+  <rect class="box-red" x="792" y="366" width="494" height="134"/>
+  <text class="lbl" x="804" y="386">Durable Relational / PostGIS Storage Tier</text>
+  <text class="code-amber" x="804" y="406">1. Business Table (~200 GB): Sharded by business_id + Read Replicas</text>
+  <text class="txt" x="804" y="424">   Uniform hash distribution; zero hot-key skew across business shards</text>
+  <text class="code-green" x="804" y="444">2. Geospatial Index Table (~4.8 GB raw / PostGIS GiST geometry)</text>
+  <text class="txt" x="804" y="462">   Fits on a single primary + regional read replicas (NO sharding needed!)</text>
+  <text class="txt" x="804" y="480">   PostGIS 3.5+: CREATE INDEX ON business USING GIST (geom) + ST_DWithin</text>
+
+  <!-- Arrows -->
+  <path class="arrow" d="M 256 155 L 306 155"/>
+  <path class="arrow-amber" d="M 256 272 L 306 410"/>
+  <path class="arrow-green" d="M 743 185 L 792 165"/>
+  <path class="arrow" d="M 743 245 L 792 285"/>
+  <path class="arrow-amber" d="M 743 435 L 792 435"/>
+
+  <!-- Section 4: Bottom Deep Dive — Spatial Indexing Math & 5-Way Comparison -->
+  <rect class="panel" x="20" y="534" width="1280" height="208"/>
+  <text class="sec-hdr" x="34" y="556">4. Spatial Math Correctness: Why Naive 2D SQL Fails &amp; 5-Way Index Trade-Offs</text>
+
+  <rect class="box-red" x="34" y="570" width="405" height="156"/>
+  <text class="lbl" x="46" y="590">Two Bugs in Naive SQL Bounding Boxes</text>
+  <text class="code-red" x="46" y="610">WHERE lat BETWEEN :lat - r AND :lat + r</text>
+  <text class="code-red" x="46" y="626">  AND lon BETWEEN :lon - r AND :lon + r</text>
+  <text class="txt" x="46" y="646">1. 1D B-Tree Intersection Collapse: Two 1D B-trees</text>
+  <text class="txt" x="46" y="662">   scan huge global lat/lon strips and intersect O(N) rows.</text>
+  <text class="txt" x="46" y="680">2. Spherical Cosine Bug: 1 deg lon = 111.32 km * cos(lat).</text>
+  <text class="code-amber" x="46" y="698">   At Oslo (60 deg N), cos(60) = 0.5 -&gt; 50% E-W miss!</text>
+  <text class="code-green" x="46" y="714">   Fix: dLon = R / (111320 * cos(lat)) + 2D spatial index</text>
+
+  <rect class="box-blue" x="455" y="570" width="410" height="156"/>
+  <text class="lbl" x="467" y="590">Geohash (Morton Z-Curve) vs. Adaptive Quadtree</text>
+  <text class="code" x="467" y="610">Geohash: 5 bits/char interleaved (even=lon, odd=lat)</text>
+  <text class="txt" x="467" y="628">• L=4 (39x19km), L=5 (4.9x4.9km), L=6 (1.2kmx610m)</text>
+  <text class="txt" x="467" y="644">• Pros: O(1) string prefix, trivial in Valkey/SQL, easy updates</text>
+  <text class="txt" x="467" y="660">• Cons: Fixed grid density; requires 9-cell query + Haversine</text>
+  <text class="code-green" x="467" y="680">Quadtree: Splits NW/NE/SW/SE until leaf &lt;= 100 POIs</text>
+  <text class="txt" x="467" y="698">• Pros: Adapts to Manhattan vs Sahara; native kNN query</text>
+  <text class="txt" x="467" y="714">• Cons: In-memory pointers; 2-4 min boot build; CoW updates</text>
+
+  <rect class="box-green" x="881" y="570" width="405" height="156"/>
+  <text class="lbl" x="893" y="590">Google S2 (Hilbert) vs. Uber H3 vs. PostGIS GiST</text>
+  <text class="code-green" x="893" y="610">Google S2: 6 cube faces + Hilbert curve (uint64 CellId)</text>
+  <text class="txt" x="893" y="628">• Superior spatial locality; RegionCoverer variable-level</text>
+  <text class="txt" x="893" y="644">  cell coverings for arbitrary polygon geofences</text>
+  <text class="code-amber" x="893" y="664">Uber H3: Icosahedron hexagons (6 equidistant neighbors)</text>
+  <text class="txt" x="893" y="682">• Eliminates square sqrt(2) corner bias for surge/rings</text>
+  <text class="code" x="893" y="700">PostGIS GiST / Valkey GEOSEARCH: Modern turnkey default</text>
+  <text class="txt" x="893" y="716">• R-tree / 52-bit geohash ZSET with built-in radius pruning</text>
+</svg>

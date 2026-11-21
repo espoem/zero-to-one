@@ -270,7 +270,7 @@ flowchart LR
 
 ---
 
-## 6. Top 47 Production Failure Modes & One-Line Fixes
+## 6. Top 51 Production Failure Modes & One-Line Fixes
 
 | # | Failure Mode | How It Breaks Production | One-Line Fix |
 | :-- | :-- | :-- | :-- |
@@ -321,3 +321,7 @@ flowchart LR
 | **45** | **Valkey `fork()` CoW OOM from `26 B` Undersizing** | Sizing a `25M`-member ZSET at `26 B/member` (`650 MB`) ignores `~128 B` 64-bit skiplist+dict overhead (`3.20 GB`) and OOM-kills during `fork()` RDB snapshots. | Size 64-bit ZSETs at `~128 B/member` and provision `2×` physical RAM (`~6.40 GB` for `25M` members) for Copy-on-Write snapshot page duplication. |
 | **46** | **`> 53-Bit` Float Tie-Break Rounding & Raw `ZINCRBY` Corruption** | Packing `> 53` bits into an IEEE-754 double rounds off low timestamp bits, and calling raw `ZINCRBY` adds points into the low timestamp bits. | Pack a 53-bit integer composite (`21-bit` score $\cdot 2^{32} + (2^{32}-1-\Delta t_{\text{ms}}) \le 2^{53}-1$) and mutate it exclusively via an atomic Valkey Lua script. |
 | **47** | **Score-Range Ghost Duplicates & `INFO keyspace` / `ZREVRANK` Sum Bugs** | Partial cross-shard score move leaves a user in 2 range shards; reading `INFO keyspace` returns `1` key instead of member count, and summing `ZREVRANK` across hash shards yields nonsense. | Execute idempotent `ZREM` + `ZADD` range migrations (`ghost_duplicates == 0`), use `ZCARD` on upper range shards, and use `ZSCORE` + parallel `ZCOUNT` on hash shards. |
+| **48** | **Naive SQL Longitude Degree Bug (`50%` Miss at `60°N`)** | `lon BETWEEN :lon - R/111320 AND :lon + R/111320` ignores meridian convergence ($\cos\phi$), cutting East-West coverage in half at Oslo (`60°N`). | Scale longitude degree deltas by $\Delta\lambda = R / (111{,}320 \times \cos\phi)$ and use a 2D spatial index (`Geohash`, `Quadtree`, `S2/H3`, `PostGIS GiST`). |
+| **49** | **Unfiltered 9-Cell Geohash Diagonal Corner Leak** | Returning all POIs from the 9-cell (`3×3`) Geohash neighborhood includes diagonal cell corners up to `~2 km` away on a `500 m` query. | Always run an exact Haversine great-circle post-filter ($d \le R$) in LBS memory before sorting and returning candidates. |
+| **50** | **Raw `(lat, lon)` Cache Keys (`~0%` Hit Ratio)** | Caching nearby results under 6-decimal `lat:lon` strings misses on every request due to `±5–15 m` mobile GPS jitter and pedestrian steps. | Use a Two-Tier Valkey Cache: quantized `geohash:{p}:{cell} -> business_id[]` (9-key pipeline) plus `business:{id} -> JSON details` (`MGET`). |
+| **51** | **Quadtree Cold-Start Liveness Crash-Loop & Sharded Geohash Hotspots** | Gating `/livez` on a `3-min` `200M`-POI Quadtree build causes infinite pod restarts, while sharding a `4.8 GB` geohash index by prefix melts the Manhattan shard. | Protect Quadtree boot with Kubernetes `startupProbe` + `/readyz` (`mmap` snapshots, shallow `/livez`) and replicate the compact `4.8 GB` spatial index instead of sharding it. |

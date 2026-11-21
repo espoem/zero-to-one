@@ -3,7 +3,7 @@
 No single vendor-neutral certification tests general distributed system design, so vendor-specific IAM, CLI, and control-plane trivia stay in [`technologies/aws`](../../../technologies/aws/), [`technologies/gcp`](../../../technologies/gcp/), and [`technologies/azure`](../../../technologies/azure/). This bridge bank maps the architectural patterns, quantitative trade-offs, and failure modes taught across `architecture/system-design` directly onto Senior/Architect certification scenario domains (**AWS Solutions Architect – Professional `SAP-C02`**, **Google Cloud Professional Cloud Architect `PCA`**, **Microsoft Azure Solutions Architect Expert `AZ-305`**, and **CNCF / SRE Resilience**).
 
 - **Sequential Growth Plan**: Built sequentially alongside Wave A & Wave B topic completions (target: **60+ original scenario questions** plus a full timed certification bridge mock exam upon completion of the 28-topic expansion).
-- **Current Coverage**: **42 questions** (`Q-CERT-001`–`Q-CERT-042`) covering Topic 01 (`Scale From Zero to Millions` — Module 15), Topic 02 (`Distributed Key-Value Store` — Module 16), Topic 03 (`Google Maps` — Module 17), Topic 04 (`Distributed Message Queue` — Module 18), Topic 05 (`Hotel Reservation System` — Module 19), Topic 06 (`Distributed Email Service` — Module 20), and Topic 07 (`Real-time Gaming Leaderboard` — Module 21).
+- **Current Coverage**: **48 questions** (`Q-CERT-001`–`Q-CERT-048`) covering Topic 01 (`Scale From Zero to Millions` — Module 15), Topic 02 (`Distributed Key-Value Store` — Module 16), Topic 03 (`Google Maps` — Module 17), Topic 04 (`Distributed Message Queue` — Module 18), Topic 05 (`Hotel Reservation System` — Module 19), Topic 06 (`Distributed Email Service` — Module 20), Topic 07 (`Real-time Gaming Leaderboard` — Module 21), and Topic 08 (`Proximity Service` — Module 22).
 
 ---
 
@@ -873,5 +873,128 @@ Select **two** genuine architectural advancements when modernizing a 2021 gaming
 - Why not C: Allowing unauthenticated clients to submit scores trivially enables Man-in-the-Middle (MITM) leaderboard forgery.
 - Why not D: Valkey ZSET scores are 64-bit IEEE-754 binary64 doubles (with a 53-bit significand), not 128-bit floats.
 - Ref: [modules/21-realtime-gaming-leaderboard.md](../modules/21-realtime-gaming-leaderboard.md#6-production-gotchas-sre-guardrails-and-2021-vs-2026-comparison), https://valkey.io/commands/eval/
+
+</details>
+
+---
+
+## Module 22: Proximity Service, Spatial Indexing & Multi-Region Location Discovery (`Q-CERT-043`–`Q-CERT-048`)
+
+### Q-CERT-043 · AWS SAP-C02: Global Proximity Service with Aurora PostgreSQL PostGIS, ElastiCache for Valkey & Route 53 Latency Routing · difficulty 3 · scenario
+
+A global restaurant discovery platform (`100M` DAU, `28,935 QPS` peak nearby searches, `200M` businesses) must serve nearby queries in `< 50 ms` (`p99`) across North America, Europe, and Asia-Pacific while merchant CRUD updates (`~115 QPS` peak) originate in a primary region and propagate globally within seconds. Which AWS architecture satisfies these requirements?
+
+- A) Deploy a single-region Amazon Aurora PostgreSQL cluster in `us-east-1` with two B-tree indexes on `latitude` and `longitude`, and cache responses in Amazon CloudFront keyed on the full query string `?lat=37.776720&lon=-122.416730`.
+- B) Deploy **Amazon Route 53 Latency-Based Routing** with health checks across three regions (`us-east-1`, `eu-central-1`, `ap-northeast-1`), each running a stateless **Location-Based Service (LBS)** fleet backed by regional **Amazon ElastiCache for Valkey** clusters (Two-Tier `geohash:{p}:{cell} -> business_id[]` + `business:{id} -> details` cache) and **Amazon Aurora PostgreSQL Global Database** secondary read clusters with **PostGIS `GiST`** spatial indexes (`ST_DWithin` on `geography(Point, 4326)`), while routing merchant CRUD writes to the primary Aurora region and streaming WAL updates via CDC.
+- C) Use Amazon DynamoDB with a partition key of `geohash_2` (2-character geohash prefix) and no caching tier so all `28,935 QPS` hit DynamoDB directly.
+- D) Use Aurora MySQL cross-region replicas and rely on PostGIS `ST_DWithin` inside MySQL without caching.
+
+<details><summary>Answer</summary>
+
+**B.** Route 53 Latency-Based Routing directs users to the lowest-latency healthy AWS region, where the stateless LBS tier queries the regional Two-Tier ElastiCache for Valkey cluster (`9` pipelined `geohash:{p}:{cell}` lookups + `MGET business:{id}` hydration + exact Haversine post-filter) with zero cross-region WAN hops. Aurora PostgreSQL Global Database replicates storage changes to secondary regions in `< 1 second` and provides native PostGIS `GiST` R-tree (`ST_DWithin`) fallback on cache misses, while CDC updates regional Valkey caches and the urgent closure override set within seconds.
+
+- Why not A: Single-region `us-east-1` adds `150–250 ms` WAN RTT for Europe/Asia users, 1D B-trees fail on 2D spatial bounding boxes, and CloudFront caching on 6-decimal GPS coordinates yields `~0%` hit ratio due to `±10 m` GPS drift.
+- Why not C: Partitioning DynamoDB by a 2-character geohash funnels dense metro traffic (Manhattan, Tokyo) onto single hot partitions (`1,000 WCU / 3,000 RCU` per-partition ceiling).
+- Why not D: PostGIS is a PostgreSQL extension (not available on Aurora MySQL), and hitting the relational database directly at `28,935 QPS` without a two-tier cache saturates database CPU.
+- Ref: [modules/22-proximity-service.md](../modules/22-proximity-service.md#5-end-to-end-request-lifecycle-multi-region-deployment-and-async-update--privacy-workflows), https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-global-database.html
+
+</details>
+
+### Q-CERT-044 · AWS SAP-C02: Hybrid Lexical, Geospatial & Vector POI Discovery with Amazon OpenSearch Service & DynamoDB · difficulty 3 · single
+
+A travel discovery platform stores authoritative merchant listings in Amazon DynamoDB (partitioned by `business_id`) and wants to support natural-language proximity queries such as _"quiet dog-friendly patio coffee within 1.5 km"_ combining a strict geospatial radius filter, BM25 keyword boost, and dense vector embedding similarity in `< 80 ms`. Which architecture should you select?
+
+- A) Execute a full DynamoDB `Scan` with a `FilterExpression` on `latitude` and `longitude`, then compute cosine vector similarity and Haversine distance inside an AWS Lambda function over all `200M` items.
+- B) Enable **Amazon DynamoDB Streams** (with zero-ETL or Lambda enrichment generating embeddings via Amazon Bedrock) to index listings into **Amazon OpenSearch Service** using a compound document schema with a **`geo_point`** field (BKD-tree spatial index for `geo_distance` filtering), **`text`** fields (BM25 lexical search), and a **`knn_vector`** field (HNSW semantic similarity), keeping DynamoDB as the authoritative system of record for `business_id` CRUD.
+- C) Create two DynamoDB Global Secondary Indexes — one with partition key `latitude` and one with partition key `longitude` — and intersect them in memory.
+- D) Store all `200M` embeddings and coordinates in a single S3 CSV file and query it synchronously with Amazon Athena on every mobile user search.
+
+<details><summary>Answer</summary>
+
+**B.** DynamoDB partitioned by `business_id` provides uniform write scaling and point-lookup durability, while DynamoDB Streams feeds Amazon OpenSearch Service asynchronously. OpenSearch natively combines a BKD-tree **`geo_distance`** filter on `geo_point` (pruning candidates to the `1.5 km` circle), BM25 keyword scoring, and HNSW **`knn_vector`** semantic retrieval in a single hybrid query execution plan.
+
+- Why not A: A DynamoDB `Scan` over `200M` rows consumes the entire table's RCU budget on a single request and takes minutes rather than `< 80 ms`.
+- Why not C: Exact float `latitude` / `longitude` GSI partition keys cannot execute 2D spatial range queries or vector similarity.
+- Why not D: Amazon Athena is an interactive analytical query engine with multi-second cold scan latency, not a `< 80 ms` `28,935 QPS` operational search engine.
+- Ref: [modules/22-proximity-service.md](../modules/22-proximity-service.md#6-production-gotchas-sre-guardrails-and-2021-vs-2026-comparison), https://docs.opensearch.org/latest/field-types/supported-field-types/geo-point/
+
+</details>
+
+### Q-CERT-045 · GCP PCA: Multi-Region Location-Based Service on Cloud Run, Memorystore for Valkey & Cloud SQL / Spanner S2 Indexing · difficulty 3 · scenario
+
+A hospitality and delivery platform on Google Cloud needs to index `200M` global Points of Interest and evaluate both circular radius queries (`500 m` to `20 km`) and irregular polygon delivery-zone geofences at `28,935 QPS` peak across three continents, with strong multi-region transactional consistency for merchant status changes. Which GCP architecture fits best?
+
+- A) Deploy stateless LBS containers on multi-region **Cloud Run** behind a Global External Application Load Balancer; store authoritative business records and **64-bit Google S2 `S2CellId` (`INT64`)** spatial index rows in multi-region **Cloud Spanner** (using `S2RegionCoverer` min/max level `INT64` range scans for arbitrary delivery polygons); and front regional reads with **Google Cloud Memorystore for Valkey** caching `geohash/s2cell -> business_id[]` lists and `business:{id}` details.
+- B) Store `200M` businesses in a single-region Cloud SQL for MySQL instance without read replicas or Memorystore and query `WHERE lat BETWEEN :lat - :r AND :lat + :r` across continents.
+- C) Use BigQuery `ST_DWithin` directly from the mobile app for all `28,935 QPS` of user queries.
+- D) Store each business as an individual object in a regional Cloud Storage bucket and list bucket prefixes on every radius search.
+
+<details><summary>Answer</summary>
+
+**A.** Cloud Spanner's multi-region TrueTime synchronous replication provides external consistency for merchant writes while indexing 64-bit **`S2CellId` (`INT64`)** values along a continuous Hilbert space-filling curve. `S2RegionCoverer` decomposes any circular radius or irregular delivery polygon into a small set (`8–32`) of contiguous `INT64` ranges, and regional **Memorystore for Valkey** instances alongside **Cloud Run** serve hot spatial cell lists and business payloads in `< 20 ms` locally.
+
+- Why not B: A single-region Cloud SQL instance adds cross-continental RTT, lacks multi-region strong consistency, and collapses under `28,935 QPS` of unindexed 1D `BETWEEN` scans.
+- Why not C: BigQuery is an OLAP data warehouse designed for analytical batch/BI queries, not `28,935 QPS` of `< 50 ms` user-facing OLTP traffic.
+- Why not D: Object storage `LIST` operations have high latency (`50–200 ms`) and rate limits, and cannot perform 2D spherical radius or polygon filtering.
+- Ref: [modules/22-proximity-service.md](../modules/22-proximity-service.md#3-spatial-indexing-deep-dive-naive-2d-sql-even-grid-geohash-quadtree-and-google-s2--uber-h3), https://cloud.google.com/spanner/docs, https://s2geometry.io/
+
+</details>
+
+### Q-CERT-046 · Azure AZ-305: Proximity Search with Azure Managed Redis Geospatial, Cosmos DB GeoJSON Spatial Indexing & Traffic Manager · difficulty 2 · scenario
+
+An enterprise retail locator on Azure serves global mobile users across East US, West Europe, and Japan East. Store locations are stored as RFC 7946 GeoJSON `Point` documents (`{"type": "Point", "coordinates": [lon, lat]}`). Which Azure architecture delivers lowest-latency regional routing, sub-20 ms hot proximity lookups, and indexed spatial database fallback without full container scans?
+
+- A) Route clients via **Azure Traffic Manager (Performance routing)** to regional **Azure Kubernetes Service (AKS) / Container Apps** LBS instances; front hot spatial queries with **Azure Managed Redis** (`GEOSEARCH` / Two-Tier Geohash cache); and persist store records in **Azure Cosmos DB for NoSQL** partitioned by `/business_id` with a **Spatial Index (`"type": "Point"`)** enabled in the indexing policy for `ST_DISTANCE` / `ST_WITHIN` queries.
+- B) Use Azure Traffic Manager in Priority (active-passive) mode routing 100% of global users to East US, disable Cosmos DB spatial indexing, and cache responses by 6-decimal `lat:lon` keys.
+- C) Store GeoJSON points in Azure Blob Storage archive tier and rehydrate blobs on every nearby search.
+- D) Partition Azure Cosmos DB by `/country_code` (so 150M US businesses land in a single `"US"` logical partition) and query without Redis caching.
+
+<details><summary>Answer</summary>
+
+**A.** Azure Traffic Manager Performance routing steers clients to the closest regional LBS deployment, where Azure Managed Redis serves cached 9-cell Geohash / `GEOSEARCH` lookups in sub-millisecond time. On the durable storage tier, Azure Cosmos DB natively indexes GeoJSON `Point`, `Polygon`, and `MultiPolygon` geometries when a spatial path (`"path": "/location/?"`) is configured in the indexing policy, enabling indexed `ST_DISTANCE` and `ST_WITHIN` evaluation while partitioning `/business_id` avoids hot logical partitions.
+
+- Why not B: Priority routing forces European and Asian users across trans-oceanic links to East US, disabling spatial indexing forces full scans, and raw coordinate cache keys yield `~0%` cache hits.
+- Why not C: Archive Blob Storage requires hours to rehydrate offline blobs.
+- Why not D: Cosmos DB enforces a hard `20 GB` storage limit and `10,000 RU/s` throughput ceiling per logical partition key value; putting 150M US businesses under `/country_code = "US"` overflows the logical partition immediately.
+- Ref: [modules/22-proximity-service.md](../modules/22-proximity-service.md#5-end-to-end-request-lifecycle-multi-region-deployment-and-async-update--privacy-workflows), https://learn.microsoft.com/en-us/azure/cosmos-db/nosql/query/geospatial-index
+
+</details>
+
+### Q-CERT-047 · CNCF / SRE: Quadtree Cold-Start Readiness Gating, Geohash Cache-Hit SLIs & GDPR Ephemeral Location Guardrails · difficulty 3 · single
+
+An LBS engineering team deploys an in-memory Point Quadtree (`200M` POIs, `~3.8 GB` RAM, `3-minute` startup build time) on Kubernetes. During a rolling deployment, pods enter an endless `CrashLoopBackOff`, `5xx` errors spike to `40%`, and a security audit discovers raw user 6-decimal `(latitude, longitude)` coordinates inside Envoy L7 access logs and Prometheus metric labels. Which set of SRE fixes resolves all three failures?
+
+- A) Configure a Kubernetes **`startupProbe`** (`failureThreshold: 36, periodSeconds: 10` = `360 s` budget) and **`readinessProbe` (`/readyz`)** that pass only after the Quadtree root pointer is initialized (or `mmap` a pre-built snapshot from object storage), while keeping **`livenessProbe` (`/livez`)** process-local and enforcing a **`PodDisruptionBudget` (`maxUnavailable: 10%`)**; strip `latitude`/`longitude` from Envoy access logs and Prometheus labels (tracking SLIs by bounded `precision_level` enum only); and snap demand analytics to $k$-anonymous Geohash-4/5 cells.
+- B) Gate `livenessProbe` (`/livez`) on Quadtree build completion with a `10-second` timeout, set `maxUnavailable: 100%` so all pods restart simultaneously, and attach `user_lat_lon` as a Prometheus label on every HTTP request counter.
+- C) Delete all health probes (`startupProbe`, `readinessProbe`, `livenessProbe`) so Kubernetes routes live search traffic to pods while the Quadtree is still empty (`0` nodes loaded), and retain raw GPS access logs for 365 days.
+- D) Move the `3.8 GB` Quadtree build into every individual HTTP request handler so each search request rebuilds a fresh `200M`-node Quadtree from PostgreSQL in `3 minutes`.
+
+<details><summary>Answer</summary>
+
+**A.** Pods were crash-looping because `livenessProbe` failed before the `3-minute` Quadtree build completed, causing the kubelet to `SIGKILL` pods mid-build while unready pods received traffic. Separating `startupProbe` (protecting the `3-minute` cold-boot window) and `readinessProbe` (`/readyz` gated on atomic Quadtree pointer readiness + `PodDisruptionBudget` `maxUnavailable: 10%`) from a shallow `/livez` probe eliminates deployment errors. Simultaneously, removing raw coordinates from Envoy access logs and Prometheus labels prevents both GDPR/CCPA geolocation leaks and Prometheus TSDB label-cardinality OOM crashes.
+
+- Why not B: Gating `/livez` with a 10s timeout on a 180s build guarantees a permanent `CrashLoopBackOff`, `maxUnavailable: 100%` causes a total fleet outage, and putting `user_lat_lon` in a Prometheus label explodes TSDB series cardinality into millions of series.
+- Why not C: Routing traffic to pods before the Quadtree finishes loading returns empty/broken search results, and 365-day raw GPS logs violate GDPR Article 5 data minimization.
+- Why not D: An $O(N \log N)$ `3-minute` build is an amortization step executed at startup / snapshot load so queries run in `< 5 ms`; rebuilding per request is impossible at `28,935 QPS`.
+- Ref: [modules/22-proximity-service.md](../modules/22-proximity-service.md#6-production-gotchas-sre-guardrails-and-2021-vs-2026-comparison), https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+
+</details>
+
+### Q-CERT-048 · Multi-Cloud Architecture: 2021 vs. 2026 Proximity Service Modernization · difficulty 2 · multi
+
+Select **two** genuine architectural improvements when modernizing a 2021 proximity service (nightly batch cron updates, cold-booting custom Quadtrees, pure straight-line coordinate filtering, and raw GPS access logging) to the 2026 production standard.
+
+- A) Replacing the 24-hour nightly batch cron with **Debezium WAL Change Data Capture (`< 5 s` cache update)** plus a **`< 1 s` globally replicated Hot-Override Closure Overlay** and **`mmap`'d immutable Quadtree / S2 / H3 snapshots** eliminates day-long stale venue data and multi-minute cold-boot rebuilds.
+- B) Upgrading pure coordinate radius lookups to **Hybrid Geo + Lexical BM25 + Dense Vector Search** (OpenSearch / Elasticsearch BKD-tree + HNSW) seeded with standardized **Overture Maps Foundation `Places` (GERS IDs)** and enforcing **zero-persistence ephemeral search coordinates + $k$-anonymous Geohash-4/5 analytics** delivers semantic local discovery and GDPR/CCPA privacy compliance.
+- C) Switching Tier 1 Valkey cache keys from quantized Geohash cells (`geohash:6:9q8yyk`) back to raw 6-decimal `(latitude, longitude)` strings increases the cache hit ratio from `98%` to `100%`.
+- D) Replacing 2D spatial indexes with two separate 1D B-tree indexes (`latitude`, `longitude`) and omitting $\cos(\phi)$ from longitude degree calculations improves East-West recall at `60°N` (Oslo) to `100%`.
+
+<details><summary>Answer</summary>
+
+**A, B.** Modern 2026 proximity platforms stream committed DB edits via Debezium CDC (`< 5 s` propagation) paired with a `< 1 s` Hot-Override Closure Overlay for emergency shutdowns and `mmap`'d spatial snapshots for instant pod startup. On the discovery and compliance tiers, they combine BKD-tree geospatial filtering with BM25 lexical and HNSW vector search over Overture Maps GERS entities while scrubbing raw GPS coordinates at the L7 edge for GDPR/CCPA compliance.
+
+- Why not C: Raw 6-decimal GPS coordinates drift every second (`±5–15 m` jitter), collapsing cache hit rates to `~0%`.
+- Why not D: Two 1D B-trees degrade to global band intersections, and omitting $\cos(\phi)$ shrinks East-West coverage at `60°N` by `50%`.
+- Ref: [modules/22-proximity-service.md](../modules/22-proximity-service.md#6-production-gotchas-sre-guardrails-and-2021-vs-2026-comparison), https://overturemaps.org/
 
 </details>

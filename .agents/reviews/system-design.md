@@ -162,3 +162,16 @@ Verdict: **approve** (after full remediation of all P0, P1, P2, and P3 findings 
   - [x] **P1** `modules/21-realtime-gaming-leaderboard.md`: explicitly noted the reverse-lexicographical tie-break adjustment (`otherId > userId`) on equal-millisecond composite scores alongside the `ZCOUNT(shard_i, (s, +inf))` hash-shard global rank formula, matching `HashShardedLeaderboard.getGlobalRank`.
   - [x] **P1** `modules/21-realtime-gaming-leaderboard.md`: added an explicit bit-budget delta callout contrasting Module 21's `21-bit score + 32-bit milliseconds` (`2^32` divisor, 1 ms resolution over `~49.71 days`) against Module 09 §5.1's `28-bit score + 25-bit seconds` (`2^25` divisor, 1 s resolution over `~1.06 years`).
   - [x] **P2** `modules/21-realtime-gaming-leaderboard.md` & `examples/lib/leaderboard-models.ts`: qualified Score-Range Top-$K$ zero scatter-gather with early-season spillover when the top bracket holds $< K$ players (matching `RangeShardedLeaderboard.getTopK`), and unexported internal helper interfaces in `leaderboard-models.ts` per `slop-guard`.
+
+---
+
+## ByteByteGo & Primary-Source Expansion — Wave A Topic 08 (`16. Proximity Service`, Module 22, 2026-11-21)
+
+- **Coordinator / Integrator / SVG & Proof Author**: Antigravity (`argon-builder`)
+- **Prose Draft**: `opencode` (`opencode-go/hy4-flash-free` from `/tmp --auto`, expanded from 317 to 549 lines by `argon-builder` with 1D B-tree band-intersection + spherical $\cos(\phi)$ bounding-box proofs, 5-option / 6-engine spatial index matrix, compound `geospatial_index` + PostGIS 3.5+ `GiST` DDL, Two-Tier Geohash Cache math, GDPR/CCPA $k$-anonymous privacy architecture, SRE guardrails, and verbatim TS code)
+- **Exam & Cert Bridge Questions Draft**: `claude` CLI (`haiku`, `--max-turns 1`, integrated as `Q-SD-106`–`110` in `exams/interview.md` and `Q-CERT-043`–`048` in `exams/architect-certs-bridge.md`)
+- **Independent Cross-Family Challenger**: `opencode` (`opencode-go/muse-spark-1.3-contributor`, `muse` family — reported zero P0 and zero P1 issues)
+- **Challenger Findings Resolved**:
+  - [x] **P2** `assets/22-proximity-architecture.svg`: shortened the 9 lines inside Section 2 (`x=318`, width `437px`) so all text sits cleanly inside container boundaries with zero overflow.
+  - [x] **P2** `modules/22-proximity-service.md`: clarified that the `~32 B/entry` (`19.20 GB`) Tier 1 Valkey estimate models packed 64-bit integer sets (`intset`/`listpack` on a dedicated Tier 1 cluster separate from the Tier 2 detail cache, vs `~24–36 GB` for `sds` sets), and noted that the `16 B/POI` (`~3.5–4.5 GB`) Point Quadtree footprint assumes packed C++/Rust structs compared to V8 heap objects in the TypeScript reference proof.
+  - [x] **P3** `modules/22-proximity-service.md`, `examples/16-proximity-service.test.ts`, `exams/architect-certs-bridge.md`: fixed `Mandlebrot` -> `Mandelbrot` typo, unified Quadtree RAM range at `~3.5–4.5 GB`, aligned Test 4 title to `>95%` hit rate, and cleaned up `Why not B:` distractor label in `Q-CERT-045`.
