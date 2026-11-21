@@ -129,7 +129,7 @@
 
   <!-- Flow Arrow: Stage 1 Front Queues -> Stage 2 Back Queue Router -->
   <path d="M 276 332 C 298 332, 298 141, 320 141" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#arr-blue)"/>
-  <text x="280" y="240" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#1d4ed8" transform="rotate(-90 280 240)">Route hash(host)</text>
+  <text x="280" y="248" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#1d4ed8" transform="rotate(-90 280 248)">Route hash(host)</text>
 
   <!-- Flow Arrow: Stage 2 Min-Heap -> Stage 3 Worker Threads -->
   <path d="M 718 332 C 738 332, 738 141, 762 141" fill="none" stroke="#d97706" stroke-width="2" marker-end="url(#arr-amber)"/>
@@ -139,7 +139,7 @@
 
   <!-- STAGE 5: URL EXTRACTION & SEEN STORE (Left Bottom) -->
   <rect x="20" y="408" width="414" height="220" rx="10" fill="#f5f3ff" stroke="#8b5cf6" stroke-width="1.5"/>
-  <text x="34" y="432" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#5b21b6">5. Link Extraction, Trap Defense &amp; URL Seen Store</text>
+  <text x="34" y="428" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#5b21b6">5. Link Extraction &amp; URL Seen Store</text>
 
   <!-- Box 5a: URL Extractor & Trap Guard -->
   <rect x="34" y="444" width="186" height="172" rx="6" fill="#ffffff" stroke="#ddd6fe" stroke-width="1.2"/>
@@ -204,20 +204,22 @@
   <text x="942" y="581" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">2. LLM Pre-Training (FineWeb)</text>
 
   <!-- Connecting Arrows in Bottom Row -->
-  <!-- Downloader to Parser: vertical drop -->
-  <path d="M 955 380 C 955 410, 565 395, 565 442" fill="none" stroke="#db2777" stroke-width="2" marker-end="url(#arr-pink)"/>
-  <text x="730" y="402" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#db2777">Stream HTML payload</text>
+  <!-- Downloader to Parser: corridor routing -->
+  <path d="M 955 380 L 955 400 L 455 400 L 455 480 L 462 480" fill="none" stroke="#db2777" stroke-width="2" marker-end="url(#arr-pink)"/>
+  <rect x="680" y="391" width="125" height="18" rx="4" fill="#ffffff" stroke="#fbcfe8" stroke-width="1"/>
+  <text x="742" y="404" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#db2777">Stream HTML payload</text>
 
-  <!-- Parser to URL Extractor (leftwards) -->
-  <line x1="462" y1="530" x2="222" y2="530" stroke="#7c3aed" stroke-width="2" marker-end="url(#arr-purple)"/>
-  <text x="270" y="522" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#7c3aed">Outbound Links</text>
+  <!-- Parser to URL Extractor (under Card 5b) -->
+  <path d="M 462 570 L 440 570 L 440 624 L 200 624 L 200 618" fill="none" stroke="#7c3aed" stroke-width="2" marker-end="url(#arr-purple)"/>
+  <rect x="275" y="615" width="90" height="18" rx="4" fill="#ffffff" stroke="#ddd6fe" stroke-width="1"/>
+  <text x="320" y="628" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#7c3aed">Outbound Links</text>
 
   <!-- Parser to SimHash -->
   <line x1="668" y1="530" x2="678" y2="530" stroke="#db2777" stroke-width="2" marker-end="url(#arr-pink)"/>
 
   <!-- SimHash to Content Storage -->
   <line x1="920" y1="530" x2="930" y2="530" stroke="#059669" stroke-width="2" marker-end="url(#arr-green)"/>
-  <text x="918" y="522" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" font-weight="700" fill="#059669">Unique</text>
+  <text x="926" y="522" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" font-weight="700" fill="#059669">Unique</text>
 
   <!-- URL Extractor to URL Seen -->
   <line x1="220" y1="490" x2="230" y2="490" stroke="#7c3aed" stroke-width="1.8" marker-end="url(#arr-purple)"/>

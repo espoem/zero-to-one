@@ -57,7 +57,7 @@
   <rect x="30" y="308" width="210" height="100" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
   <text x="40" y="326" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#1e3a8a">Checkout Request Payload</text>
   <text x="40" y="342" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#1e40af">checkout_id: "chk_0194fa82"</text>
-  <text x="40" y="356" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#1e40af">amount: "1999" (minor units; parse BigInt)</text>
+  <text x="40" y="356" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#1e40af">amount: "1999" (minor units, BigInt)</text>
   <text x="40" y="370" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#1e40af">currency: "USD" (ISO-4217)</text>
   <text x="40" y="384" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">buyer_info + payment_token</text>
   <text x="40" y="398" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Submitted to Payment Service API</text>

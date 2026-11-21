@@ -69,7 +69,7 @@
 
   <!-- Section 2: Partition 1 Raft Group (Account A) -->
   <rect class="panel" x="335" y="66" width="470" height="450"/>
-  <text class="sec-hdr" x="349" y="88">2. Partition 1: Deterministic Event-Sourced Raft Group (Account A)</text>
+  <text class="sec-hdr" x="349" y="88">2. Partition 1: Event-Sourced Raft Group (Account A)</text>
 
   <rect class="box-blue" x="349" y="102" width="442" height="146"/>
   <text class="lbl" x="361" y="122">Write Path: Command Queue -&gt; Deterministic State Machine</text>
@@ -125,14 +125,14 @@
   <path class="arrow" d="M 167 224 L 167 238"/>
   <path class="arrow" d="M 301 290 L 349 175"/>
   <path class="arrow-green" d="M 349 445 L 301 340"/>
-  <path class="arrow-amber" d="M 301 360 L 839 160"/>
+  <path class="arrow-amber" d="M 301 360 L 325 360 L 325 525 L 815 525 L 815 160 L 839 160"/>
 
   <!-- Section 4: Bottom Deep Dive — 2PC vs TC/C vs Saga & Out-of-Order Defense -->
   <rect class="panel" x="20" y="534" width="1280" height="208"/>
   <text class="sec-hdr" x="34" y="556">4. Distributed Transaction Deep Dive: Why TC/C Deducts First, Out-of-Order Tombstones &amp; TC/C vs. Saga</text>
 
   <rect class="box-red" x="34" y="570" width="405" height="156"/>
-  <text class="lbl" x="46" y="590">Why TC/C Phase 1 (Try) MUST Deduct (-$1) &amp; Never Credit (+$1)</text>
+  <text class="lbl" x="46" y="590">Why TC/C Try MUST Deduct (-$1) &amp; Never Credit (+$1)</text>
   <text class="code-green" x="46" y="610">Choice 1 (VALID):   Try: A -$1, C NOP | Confirm: A NOP, C +$1</text>
   <text class="code-red" x="46" y="628">Choice 2 (INVALID): Try: A NOP, C +$1 | Confirm: A -$1, C NOP</text>
   <text class="code-red" x="46" y="646">Choice 3 (INVALID): Try: A -$1, C +$1 (requires 2PC atomicity!)</text>
@@ -147,7 +147,7 @@
   <text class="txt" x="467" y="626">  and sends Cancel(A +$1) which arrives at A's DB BEFORE Try!</text>
   <text class="code-red" x="467" y="646">• Without defense: Cancel sees no Try (no-op), then delayed Try</text>
   <text class="code-red" x="467" y="662">  arrives and deducts -$1 permanently ("Hanging Try" money loss!)</text>
-  <text class="code-green" x="467" y="682">• Fix: Cancel writes `out_of_order = true` tombstone in Phase Table;</text>
+  <text class="code-green" x="467" y="682">• Fix: Cancel writes `out_of_order = true` tombstone;</text>
   <text class="txt" x="467" y="700">  when the delayed Try packet arrives, it checks `out_of_order`</text>
   <text class="txt" x="467" y="716">  first and aborts immediately without deducting funds!</text>
 
@@ -156,7 +156,7 @@
   <text class="code-amber" x="893" y="610">2PC (XA): 1 distributed TX; holds row locks across RTTs; SPOF</text>
   <text class="code-green" x="893" y="628">TC/C: 2 local TXs; Phase 1 Try runs in PARALLEL across shards</text>
   <text class="txt" x="893" y="646">• Best when multi-leg latency budget is ultra-tight (&lt; 20 ms)</text>
-  <text class="code" x="893" y="666">Orchestrated Saga: Linear sequential local TXs (T1 -&gt; T2 -&gt; ...)</text>
+  <text class="code" x="893" y="666">Orchestrated Saga: Sequential local TXs (T1 -&gt; T2 -&gt; ...)</text>
   <text class="txt" x="893" y="684">• On step k failure, executes compensating C_{k-1} ... C_1 backward</text>
   <text class="txt" x="893" y="700">• Simpler business-logic state machine than parallel TC/C when</text>
   <text class="txt" x="893" y="716">  only 2 shards are involved (e.g., Temporal workflow engine)</text>

@@ -160,40 +160,47 @@
   <!-- 1. Client to L4 LB -->
   <line x1="145" y1="282" x2="145" y2="292" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
 
-  <!-- 2. Discovery Lookup: Client to ZooKeeper -->
-  <path d="M 70 282 Q 50 350 70 430" fill="none" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr-blue)"/>
-  <text x="16" y="370" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#1e40af">Lookup</text>
+  <!-- 2. Discovery Lookup: Client to ZooKeeper (gutter corridor routing) -->
+  <path d="M 70 282 L 22 282 L 22 432 L 70 432" fill="none" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr-blue)"/>
+  <rect x="5" y="348" width="34" height="16" rx="3" fill="#ffffff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="22" y="360" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" font-weight="700" fill="#1e40af">Lookup</text>
 
   <!-- 3. ZooKeeper to Stateless API -->
-  <path d="M 258 480 Q 280 480 280 200 Q 280 160 302 160" fill="none" stroke="#059669" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr-green)"/>
+  <path d="M 258 480 L 274 480 L 274 160 L 302 160" fill="none" stroke="#059669" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr-green)"/>
 
   <!-- 4. Client to Gateway 1 via LB -->
-  <path d="M 258 350 Q 285 350 314 310" fill="none" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
-  <text x="266" y="325" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#1e40af">WSS</text>
+  <path d="M 258 350 L 286 350 L 314 310" fill="none" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+  <rect x="278" y="322" width="28" height="15" rx="3" fill="#ffffff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="292" y="333" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" font-weight="700" fill="#1e40af">WSS</text>
 
   <!-- 5. Gateway 1 to KV Store -->
-  <path d="M 530 310 Q 670 270 812 270" fill="none" stroke="#059669" stroke-width="1.8" marker-end="url(#arr-green)"/>
-  <text x="618" y="264" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#065f46">Persist ((chan, bucket), seq_id)</text>
+  <path d="M 530 350 L 536 350 L 536 371 L 788 371 L 788 270 L 814 270" fill="none" stroke="#059669" stroke-width="1.8" marker-end="url(#arr-green)"/>
+  <rect x="548" y="363" width="118" height="15" rx="3" fill="#ffffff" stroke="#6ee7b7" stroke-width="1"/>
+  <text x="607" y="374" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8" font-weight="700" fill="#047857">Persist (chan, bucket, seq)</text>
 
   <!-- 6. Gateway 1 to Session Registry -->
-  <path d="M 480 254 Q 520 160 812 160" fill="none" stroke="#d97706" stroke-width="1.6" marker-end="url(#arr-amber)"/>
-  <text x="630" y="152" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#b45309">Check Bob Session</text>
+  <path d="M 316 270 L 300 270 L 300 218 L 792 218 L 792 150 L 814 150" fill="none" stroke="#d97706" stroke-width="1.6" marker-end="url(#arr-amber)"/>
+  <rect x="500" y="210" width="115" height="16" rx="4" fill="#ffffff" stroke="#fde68a" stroke-width="1"/>
+  <text x="557" y="222" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#b45309">Check Bob Session</text>
 
   <!-- 7. Gateway 1 to Gateway 2 (Direct gRPC) -->
   <line x1="530" y1="320" x2="540" y2="320" stroke="#059669" stroke-width="2" marker-end="url(#arr-green)"/>
   <text x="508" y="335" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" font-weight="700" fill="#047857">gRPC</text>
 
   <!-- 8. Gateway 1 to Presence -->
-  <line x1="423" y1="374" x2="423" y2="484" stroke="#059669" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arr-green)"/>
-  <text x="427" y="440" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#065f46">30s Heartbeat</text>
+  <path d="M 530 360 L 735 360 L 735 484" fill="none" stroke="#059669" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arr-green)"/>
+  <rect x="702" y="422" width="66" height="15" rx="3" fill="#ffffff" stroke="#a7f3d0" stroke-width="1"/>
+  <text x="735" y="433" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8" font-weight="700" fill="#065f46">30s Heartbeat</text>
 
   <!-- 9. Gateway 1 to Sync Inboxes (Group) -->
-  <path d="M 530 360 Q 670 410 812 410" fill="none" stroke="#2563eb" stroke-width="1.6" marker-end="url(#arr-blue)"/>
-  <text x="635" y="396" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#1e40af">Group Copy (N &lt;= 100)</text>
+  <path d="M 530 364 L 536 364 L 536 380 L 792 380 L 792 410 L 814 410" fill="none" stroke="#2563eb" stroke-width="1.6" marker-end="url(#arr-blue)"/>
+  <rect x="670" y="372" width="94" height="15" rx="3" fill="#ffffff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="717" y="383" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8" font-weight="700" fill="#1d4ed8">Group Copy (N &lt;= 100)</text>
 
   <!-- 10. Gateway 1 to Offline Push -->
-  <path d="M 480 374 Q 520 540 812 540" fill="none" stroke="#b45309" stroke-width="1.6" stroke-dasharray="4,3" marker-end="url(#arr-amber)"/>
-  <text x="610" y="532" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#b45309">Offline: Enqueue Push</text>
+  <path d="M 530 368 L 536 368 L 536 388 L 795 388 L 795 540 L 814 540" fill="none" stroke="#b45309" stroke-width="1.6" stroke-dasharray="4,3" marker-end="url(#arr-amber)"/>
+  <rect x="765" y="525" width="60" height="15" rx="3" fill="#ffffff" stroke="#fde68a" stroke-width="1"/>
+  <text x="795" y="536" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8" font-weight="700" fill="#b45309">Offline: Push</text>
 
 
   <!-- ARCHITECTURAL TAKEAWAY FOOTER -->

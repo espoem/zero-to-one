@@ -163,7 +163,7 @@
   <text x="44" y="521" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Stage 1 (Local): Map node appends salt key = ad_id + '_' + rand(S).</text>
   <text x="44" y="538" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">S independent Aggregate workers count partial clicks in parallel.</text>
   <text x="44" y="555" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Stage 2 (Global): Strips salt &amp; merges S partial counts into ad_id.</text>
-  <text x="44" y="572" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#047857">Result: Even CPU load across all nodes; zero partition hot-spots.</text>
+  <text x="44" y="572" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#047857">Result: Even CPU load across nodes; zero partition hotspots.</text>
 
   <rect x="34" y="602" width="337" height="86" rx="6" fill="#ffffff" stroke="#c4b5fd" stroke-width="1.2"/>
   <text x="44" y="621" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#6d28d9">Split-Distinct Aggregation for Star Dimensions</text>

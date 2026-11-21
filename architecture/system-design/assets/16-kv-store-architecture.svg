@@ -90,7 +90,7 @@
 
     <!-- Hinted handoff arrow N4 -> N2 -->
     <path d="M 177 294 Q 245 316, 308 294" fill="none" stroke="#fbbf24" stroke-width="1.6" stroke-dasharray="4,3" marker-end="url(#kvAmber)"/>
-    <text x="245" y="313" text-anchor="middle" fill="#fde68a" font-family="system-ui, sans-serif" font-size="9">Hinted Handoff on N2 recovery</text>
+    <text x="245" y="282" text-anchor="middle" fill="#fde68a" font-family="system-ui, sans-serif" font-size="9">Hinted Handoff on N2 recovery</text>
 
     <!-- Footer note -->
     <text x="18" y="376" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10">Preference list skips duplicate physical hosts/AZs so N=3 spans 3 fault domains.</text>

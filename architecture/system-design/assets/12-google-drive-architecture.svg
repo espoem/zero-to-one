@@ -31,7 +31,7 @@
 
   <!-- COLUMN 1: CLIENT SYNC ENGINE -->
   <rect x="20" y="74" width="250" height="646" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
-  <text x="34" y="98" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1e3a8a">1. Client Sync Engine (Desktop / Mobile)</text>
+  <text x="34" y="98" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#1e3a8a">1. Client Sync Engine</text>
 
   <!-- Card 1.1: Local Watcher & State DB -->
   <rect x="34" y="110" width="222" height="116" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1"/>
@@ -139,7 +139,7 @@
 
   <!-- SECTION 3: DATA PLANE -->
   <rect x="286" y="398" width="894" height="322" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5"/>
-  <text x="300" y="422" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#92400e">3. Data Plane (Content-Addressed Block Servers &amp; S3 Storage)</text>
+  <text x="300" y="422" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#92400e">3. Data Plane (Content-Addressed Block Storage &amp; S3)</text>
 
   <!-- Sub-box 3.1: Block Servers & Delta Sync -->
   <rect x="300" y="434" width="276" height="272" rx="8" fill="#ffffff" stroke="#fcd34d" stroke-width="1.2"/>
@@ -209,16 +209,16 @@
   <path d="M 270 160 L 298 160" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#arr-blue)"/>
   <!-- Client to Block Servers: Missing chunk uploads -->
   <path d="M 270 480 L 298 480" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#arr-blue)"/>
-  <!-- Block Servers to S3 Hot Tier -->
-  <path d="M 576 490 L 888 490" fill="none" stroke="#d97706" stroke-width="1.8" stroke-dasharray="5,3" marker-end="url(#arr-amber)"/>
+  <!-- Block Servers to S3 Hot Tier (routes cleanly via bottom gutter below Callback Pipeline) -->
+  <path d="M 576 680 H 583 V 712 H 883 V 680 H 888" fill="none" stroke="#d97706" stroke-width="1.8" stroke-dasharray="5,3" marker-end="url(#arr-amber)"/>
   <!-- S3 to API Servers: S3 Event Callback (pending -> uploaded) -->
   <path d="M 730 434 L 730 398 L 440 398 L 440 372" fill="none" stroke="#059669" stroke-width="2" marker-end="url(#arr-green)"/>
   <!-- API Servers to Metadata DB -->
   <path d="M 576 210 L 588 210" fill="none" stroke="#059669" stroke-width="1.8" marker-end="url(#arr-green)"/>
   <!-- Metadata DB to Notification Fleet -->
   <path d="M 876 210 L 888 210" fill="none" stroke="#059669" stroke-width="1.8" marker-end="url(#arr-green)"/>
-  <!-- Notification Fleet back to Client: Long Poll wake-up -->
-  <path d="M 890 140 Q 580 60 272 130" fill="none" stroke="#d97706" stroke-width="1.8" stroke-dasharray="4,3" marker-end="url(#arr-amber)"/>
+  <!-- Notification Fleet back to Client: Long Poll wake-up (routes cleanly via top gutter above Control Plane) -->
+  <path d="M 890 140 H 883 V 66 H 278 V 130 H 272" fill="none" stroke="#d97706" stroke-width="1.8" stroke-dasharray="4,3" marker-end="url(#arr-amber)"/>
   <!-- API Servers CAS Conflict to Conflict Resolver -->
   <path d="M 300 280 Q 280 340 258 376" fill="none" stroke="#dc2626" stroke-width="1.8" stroke-dasharray="4,3" marker-end="url(#arr-rose)"/>
 </svg>

@@ -95,12 +95,12 @@
     <text x="118" y="53" text-anchor="middle" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="10">Stateless Pool</text>
     <rect x="170" y="38" width="82" height="22" rx="4" fill="#4c1d95" stroke="#c4b5fd"/>
     <text x="211" y="53" text-anchor="middle" fill="#f3e8ff" font-family="system-ui, sans-serif" font-size="10">Valkey/Redis</text>
-    <rect x="76" y="64" width="176" height="18" rx="4" fill="#1e293b" stroke="#64748b"/>
-    <text x="164" y="77" text-anchor="middle" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="9.5">External Session Store + Cache-Aside + Leases</text>
+    <rect x="14" y="64" width="238" height="18" rx="4" fill="#1e293b" stroke="#64748b"/>
+    <text x="133" y="77" text-anchor="middle" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="9">External Session Store + Cache-Aside + Leases</text>
     <text x="14" y="100" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="11">• Zero sticky sessions → safe autoscale</text>
     <text x="14" y="118" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="11">• CDN + Origin Shield absorbs static egress</text>
     <text x="14" y="136" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="11">• Single-flight / TTL jitter stops stampedes</text>
-    <text x="14" y="156" fill="#f87171" font-family="ui-monospace, monospace" font-size="10.5">Hazard: Stale-write race &amp; Set-Cookie leak</text>
+    <text x="14" y="156" fill="#f87171" font-family="ui-monospace, monospace" font-size="9.5">Hazard: Stale-write race &amp; Set-Cookie leak</text>
   </g>
 
   <!-- Arrow 5->6 -->
@@ -158,7 +158,7 @@
     <!-- Cell C (Poisoned) -->
     <rect x="192" y="136" width="218" height="40" rx="6" fill="#3f1520" stroke="#f87171"/>
     <text x="204" y="153" fill="#fca5a5" font-family="ui-monospace, monospace" font-size="11" font-weight="700">CELL C (Poison Tenant Isolated)</text>
-    <text x="204" y="168" fill="#fecaca" font-family="system-ui, sans-serif" font-size="10">Fault contained — Cells A &amp; B stay 100% green</text>
+    <text x="204" y="168" fill="#fecaca" font-family="system-ui, sans-serif" font-size="9.5">Fault isolated — Cells A &amp; B stay green</text>
 
     <!-- Shuffle Sharding Box -->
     <rect x="426" y="44" width="238" height="132" rx="8" fill="#1e1b3a" stroke="#a78bfa" stroke-width="1.5"/>
@@ -191,7 +191,7 @@
 
     <!-- Linear ideal line -->
     <line x1="48" y1="196" x2="210" y2="56" stroke="#475569" stroke-width="1.5" stroke-dasharray="5,5"/>
-    <text x="165" y="64" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="10">Ideal Linear (α=0, β=0)</text>
+    <text x="214" y="52" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="10">Ideal Linear (α=0, β=0)</text>
 
     <!-- Amdahl curve (beta=0, alpha=0.05) -->
     <path d="M 48 196 Q 150 112, 396 92" fill="none" stroke="#34d399" stroke-width="2.2"/>
@@ -201,7 +201,7 @@
     <path d="M 48 196 Q 130 105, 198 118 T 396 172" fill="none" stroke="#f87171" stroke-width="2.8"/>
     <circle cx="192" cy="116" r="4.5" fill="#fbbf24" stroke="#0b1220" stroke-width="1.5"/>
     <line x1="192" y1="120" x2="192" y2="196" stroke="#fbbf24" stroke-width="1.2" stroke-dasharray="3,3"/>
-    <text x="192" y="106" text-anchor="middle" fill="#fbbf24" font-family="ui-monospace, monospace" font-size="10" font-weight="700">N_max = √((1-α)/β)</text>
+    <text x="196" y="98" fill="#fbbf24" font-family="ui-monospace, monospace" font-size="9.5" font-weight="700">N_max = √((1-α)/β)</text>
     <text x="316" y="148" text-anchor="middle" fill="#fca5a5" font-family="system-ui, sans-serif" font-size="10" font-weight="600">Retrograde Zone</text>
     <text x="316" y="162" text-anchor="middle" fill="#fca5a5" font-family="system-ui, sans-serif" font-size="9.5">(More nodes = LESS RPS)</text>
 

@@ -88,7 +88,7 @@
 
   <!-- Return Path Loopback Arrow -->
   <path d="M 1017 230 L 1017 252 L 136 252 L 136 232" fill="none" stroke="#059669" stroke-width="1.6" stroke-dasharray="5,3" marker-end="url(#arr-green)"/>
-  <text x="576" y="248" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#047857">Fast Response to Client (&lt;100 ms p99 SLA · Server Processing &lt;10 ms · HTTP 200 JSON)</text>
+  <text x="150" y="248" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#047857">Fast Response to Client (&lt;100 ms p99 SLA · Server Processing &lt;10 ms · HTTP 200)</text>
 
   <!-- ========================================== -->
   <!-- SECTION 2: OFFLINE & NEARLINE PIPELINE (BOTTOM) -->
@@ -147,7 +147,7 @@
 
   <!-- Upward Arrow: Snapshot Push to Trie Cache Fleet -->
   <path d="M 982 388 L 982 312 L 702 312 L 702 232" fill="none" stroke="#059669" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arr-green)"/>
-  <text x="842" y="306" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#047857">Blue-Green Atomic Pointer Swap (Zero-Downtime Memory Reload)</text>
+  <text x="846" y="304" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#047857">Blue-Green Atomic Pointer Swap (Zero Downtime)</text>
 
   <!-- ========================================== -->
   <!-- BOTTOM THREE SUMMARY SPECIFICATION CARDS -->

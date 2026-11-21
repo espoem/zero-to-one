@@ -67,7 +67,7 @@
 
   <!-- Card 1.5: Unix Inode vs Object Separation -->
   <rect x="32" y="554" width="210" height="152" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
-  <text x="42" y="573" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#1e3a8a">POSIX Inode vs. Object Separation</text>
+  <text x="42" y="573" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#1e3a8a">POSIX Inode vs. Object Separation</text>
   <text x="42" y="591" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="600" fill="#1e40af">POSIX Filesystem Limits:</text>
   <text x="42" y="606" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">• Inode table exhaustion on billions</text>
   <text x="42" y="620" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">• Directory lock contention on paths</text>
@@ -194,7 +194,7 @@
   <path d="M 242 245 L 260 245 L 260 150 L 282 150" fill="none" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#arr-purple)"/>
 
   <!-- 4. API Service to Data Routing Service -->
-  <path d="M 242 275 L 260 275 L 260 250 L 684 250" fill="none" stroke="#059669" stroke-width="1.5" marker-end="url(#arr-green)"/>
+  <path d="M 242 275 L 265 275 L 265 212 L 670 212 L 670 250 L 684 250" fill="none" stroke="#059669" stroke-width="1.5" marker-end="url(#arr-green)"/>
 
   <!-- 5. Placement Service to Data Routing -->
   <line x1="907" y1="206" x2="907" y2="216" stroke="#059669" stroke-width="1.5" marker-end="url(#arr-green)"/>

@@ -130,7 +130,7 @@
   <text x="526" y="355" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" font-weight="600" fill="#c2410c">Flushes immutable 2-hour blocks to warm storage</text>
 
   <!-- Downsample Arrow 1 -->
-  <text x="645" y="373" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#b45309">▼ Compactor 6x Downsample (sum/count/min/max) ▼</text>
+  <text x="670" y="373" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" font-weight="700" text-anchor="middle" fill="#b45309">▼ Compactor 6x Downsample (sum/count/min/max) ▼</text>
 
   <!-- Warm Tier -->
   <rect x="518" y="379" width="304" height="64" rx="4" fill="#fffbeb" stroke="#fde68a" stroke-width="1"/>
@@ -140,7 +140,7 @@
   <text x="526" y="435" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" font-weight="600" fill="#92400e">Index caches partitioned by time &amp; tenant</text>
 
   <!-- Downsample Arrow 2 -->
-  <text x="640" y="452" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#b45309">▼ Compactor 60x Downsample ▼</text>
+  <text x="670" y="452" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" text-anchor="middle" fill="#b45309">▼ Compactor 60x Downsample ▼</text>
 
   <!-- Cold Tier -->
   <rect x="518" y="458" width="304" height="66" rx="4" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
@@ -223,6 +223,6 @@
   <text x="760" y="644" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#cbd5e1">• Single click jumps from p99 latency spike to exact distributed trace</text>
   <text x="760" y="658" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#94a3b8">Zero cardinality explosion: user_id stays in traces, not metric labels</text>
 
-  <!-- Query Service connection to Bottom Panel -->
-  <line x1="997" y1="228" x2="997" y2="560" stroke="#a855f7" stroke-width="1.8" stroke-dasharray="4,4" marker-end="url(#arr-purple)"/>
+  <!-- Query Service connection to Bottom Panel (routes around AlertManager & Channels via right corridor) -->
+  <path d="M 997 228 L 997 233 L 1145 233 L 1145 548 L 997 548 L 997 560" fill="none" stroke="#a855f7" stroke-width="1.8" stroke-dasharray="4,4" marker-end="url(#arr-purple)"/>
 </svg>
