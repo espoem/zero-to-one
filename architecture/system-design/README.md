@@ -42,33 +42,33 @@ Every chapter from Alex Xu & Sahn Lam's _System Design Interview_ Vol. 1 & 2 (pl
 | # | Source Chapter | Target Module / Section | Wave | Status |
 | :-: | --- | --- | :-: | :-: |
 | 01 | Scale From Zero to Millions | [Module 15](modules/15-scale-from-zero-to-millions.md) (`15-scale-evolution-blueprint.svg`, `15-scaling-2021-vs-2026.svg`, `examples/09`) | A | ✅ Complete |
-| 02 | Back-of-the-Envelope Estimation | [Module 02](modules/02-back-of-the-envelope-estimation.md) | B | 🟡 Core complete · Wave B SVG/2021-vs-2026 queued |
-| 03 | System Design Framework | [Module 01](modules/01-framing-requirements-and-delivery.md) | B | 🟡 Core complete · Wave B SVG/2021-vs-2026 queued |
-| 04 | Rate Limiter | [Module 08](modules/08-rate-limiting-load-shedding-and-resilience.md), [Module 14](modules/14-canonical-designs-transactional-and-staff.md) | B | 🟡 Core complete · Wave B SVG/primary refs queued |
-| 05 | Consistent Hashing | [Module 06](modules/06-scaling-reads-writes-and-partitioning.md) | B | 🟡 Core complete · Wave B SVG/primary refs queued |
+| 02 | Back-of-the-Envelope Estimation | [Module 02](modules/02-back-of-the-envelope-estimation.md) (`02-latency-and-scale-ladder.svg`, `02-hardware-2021-vs-2026.svg`, `examples/01`) | B | ✅ Complete |
+| 03 | System Design Framework | [Module 01](modules/01-framing-requirements-and-delivery.md) (`01-framework-4step-flow.svg`, `01-interviews-2021-vs-2026.svg`) | B | ✅ Complete |
+| 04 | Rate Limiter | [Module 08](modules/08-rate-limiting-load-shedding-and-resilience.md) (`08-rate-limiter-algorithms.svg`, `08-resilience-2021-vs-2026.svg`, `examples/02`), [Module 14](modules/14-canonical-designs-transactional-and-staff.md) | B | ✅ Complete |
+| 05 | Consistent Hashing | [Module 06](modules/06-scaling-reads-writes-and-partitioning.md) (`06-consistent-hashing-ring.svg`, `06-partitioning-2021-vs-2026.svg`, `examples/03`) | B | ✅ Complete |
 | 06 | Key-Value Store (Dynamo) | [Module 16](modules/16-distributed-key-value-store.md) (`16-kv-store-architecture.svg`, `16-kv-2021-vs-2026.svg`, `examples/10`) | A | ✅ Complete |
-| 07 | Unique-ID Generator | [Module 04](modules/04-api-design-data-modeling-and-id-generation.md) | B | 🟡 Core complete · Wave B SVG/primary refs queued |
-| 08 | URL Shortener | [Module 12 §1](modules/12-canonical-designs-read-heavy-and-content.md#1-url-shortener-bitly) | B | 🟡 Core complete · Wave B SVG/2021-vs-2026 queued |
-| 09 | Web Crawler | [Module 12 §5](modules/12-canonical-designs-read-heavy-and-content.md#5-web-crawler) | B | 🟡 Core complete · Wave B SVG/primary refs queued |
-| 10 | Notification System | [Module 13 §2](modules/13-canonical-designs-realtime-geo-and-streams.md#2-multi-channel-notification-system) | B | 🟡 Core complete · Wave B SVG/2021-vs-2026 queued |
-| 11 | News Feed System | [Module 12 §2](modules/12-canonical-designs-read-heavy-and-content.md#2-news-feed-and-instagram) | B | 🟡 Core complete · Wave B SVG/2021-vs-2026 queued |
-| 12 | Chat System | [Module 13 §1](modules/13-canonical-designs-realtime-geo-and-streams.md#1-real-time-messaging-chat--whatsapp) | B | 🟡 Core complete · Wave B SVG/primary refs queued |
-| 13 | Search Autocomplete | [Module 12 §6](modules/12-canonical-designs-read-heavy-and-content.md#6-search-autocomplete--typeahead) | B | 🟡 Core complete · Wave B SVG/primary refs queued |
-| 14 | YouTube | [Module 12 §3](modules/12-canonical-designs-read-heavy-and-content.md#3-youtube--netflix-video-streaming) | B | 🟡 Core complete · Wave B SVG/primary refs queued |
-| 15 | Google Drive | [Module 12 §4](modules/12-canonical-designs-read-heavy-and-content.md#4-dropbox--google-drive-file-sync) | B | 🟡 Core complete · Wave B SVG/2021-vs-2026 queued |
+| 07 | Unique-ID Generator | [Module 04](modules/04-api-design-data-modeling-and-id-generation.md) (`04-snowflake-vs-uuidv7-layout.svg`, `04-id-gen-2021-vs-2026.svg`, `examples/04`) | B | ✅ Complete |
+| 08 | URL Shortener | [Module 12 §1](modules/12-canonical-designs-read-heavy-and-content.md#1-url-shortener-bitly) (`12-url-shortener-architecture.svg`, `12-url-shortener-2021-vs-2026.svg`) | B | ✅ Complete |
+| 09 | Web Crawler | [Module 12 §5](modules/12-canonical-designs-read-heavy-and-content.md#5-web-crawler) (`12-web-crawler-frontier.svg`, `12-web-crawler-2021-vs-2026.svg`) | B | ✅ Complete |
+| 10 | Notification System | [Module 13 §2](modules/13-canonical-designs-realtime-geo-and-streams.md#2-multi-channel-notification-system) (`13-notification-architecture.svg`, `13-notification-2021-vs-2026.svg`) | B | ✅ Complete |
+| 11 | News Feed System | [Module 12 §2](modules/12-canonical-designs-read-heavy-and-content.md#2-news-feed-and-instagram) (`12-news-feed-architecture.svg`, `12-news-feed-2021-vs-2026.svg`) | B | ✅ Complete |
+| 12 | Chat System | [Module 13 §1](modules/13-canonical-designs-realtime-geo-and-streams.md#1-real-time-messaging-chat--whatsapp) (`13-chat-architecture.svg`, `13-chat-2021-vs-2026.svg`) | B | ✅ Complete |
+| 13 | Search Autocomplete | [Module 12 §6](modules/12-canonical-designs-read-heavy-and-content.md#6-search-autocomplete--typeahead) (`12-autocomplete-trie-architecture.svg`, `12-autocomplete-2021-vs-2026.svg`) | B | ✅ Complete |
+| 14 | YouTube | [Module 12 §3](modules/12-canonical-designs-read-heavy-and-content.md#3-youtube--netflix-video-streaming) (`12-youtube-transcoding-dag.svg`, `12-youtube-2021-vs-2026.svg`) | B | ✅ Complete |
+| 15 | Google Drive | [Module 12 §4](modules/12-canonical-designs-read-heavy-and-content.md#4-dropbox--google-drive-file-sync) (`12-google-drive-architecture.svg`, `12-google-drive-2021-vs-2026.svg`) | B | ✅ Complete |
 | 16 | Proximity Service | [Module 22](modules/22-proximity-service.md) (`22-proximity-architecture.svg`, `22-proximity-2021-vs-2026.svg`, `examples/16`) | A | ✅ Complete |
 | 17 | Nearby Friends | [Module 23](modules/23-nearby-friends.md) (`23-nearby-friends-architecture.svg`, `23-nearby-friends-2021-vs-2026.svg`, `examples/17`) | A | ✅ Complete |
 | 18 | Google Maps | [Module 17](modules/17-google-maps.md) (`17-google-maps-architecture.svg`, `17-maps-2021-vs-2026.svg`, `examples/11`) | A | ✅ Complete |
 | 19 | Distributed Message Queue | [Module 18](modules/18-distributed-message-queue.md) (`18-message-queue-architecture.svg`, `18-mq-2021-vs-2026.svg`, `examples/12`) | A | ✅ Complete |
-| 20 | Metrics Monitoring & Alerting | [Module 13 §5](modules/13-canonical-designs-realtime-geo-and-streams.md#5-metrics-monitoring-platform), [Module 11](modules/11-reliability-slos-observability-and-dr.md) | B | 🟡 Core complete · Wave B SVG/2021-vs-2026 queued |
-| 21 | Ad Click Event Aggregation | [Module 13 §4](modules/13-canonical-designs-realtime-geo-and-streams.md#4-ad-click-aggregator--real-time-top-k) | B | 🟡 Core complete · Wave B SVG/2021-vs-2026 queued |
+| 20 | Metrics Monitoring & Alerting | [Module 11](modules/11-reliability-slos-observability-and-dr.md) (`11-metrics-monitoring-architecture.svg`, `11-observability-2021-vs-2026.svg`, `examples/07`), [Module 13 §5](modules/13-canonical-designs-realtime-geo-and-streams.md#5-metrics-monitoring-platform) | B | ✅ Complete |
+| 21 | Ad Click Event Aggregation | [Module 13 §4](modules/13-canonical-designs-realtime-geo-and-streams.md#4-ad-click-aggregator--real-time-top-k) (`13-ad-click-aggregation-pipeline.svg`, `13-ad-click-2021-vs-2026.svg`) | B | ✅ Complete |
 | 22 | Hotel Reservation System | [Module 19](modules/19-hotel-reservation-system.md) (`19-hotel-architecture.svg`, `19-hotel-2021-vs-2026.svg`, `examples/13`) | A | ✅ Complete |
 | 23 | Distributed Email Service | [Module 20](modules/20-distributed-email-service.md) (`20-email-architecture.svg`, `20-email-2021-vs-2026.svg`, `examples/14`) | A | ✅ Complete |
-| 24 | S3-Like Object Storage | [Module 14 §5](modules/14-canonical-designs-transactional-and-staff.md#5-core-infrastructure-rate-limiter-as-a-service--s3-like-object-storage) | B | 🟡 Core complete · Wave B SVG/2021-vs-2026 queued |
+| 24 | S3-Like Object Storage | [Module 14 §5](modules/14-canonical-designs-transactional-and-staff.md#5-core-infrastructure-rate-limiter-as-a-service--s3-like-object-storage) (`14-s3-object-storage-architecture.svg`, `14-s3-2021-vs-2026.svg`) | B | ✅ Complete |
 | 25 | Real-Time Gaming Leaderboard | [Module 21](modules/21-realtime-gaming-leaderboard.md) (`21-leaderboard-architecture.svg`, `21-leaderboard-2021-vs-2026.svg`, `examples/15`) | A | ✅ Complete |
-| 26 | Payment System | [Module 14 §2](modules/14-canonical-designs-transactional-and-staff.md#2-payment-system--digital-wallet) | B | 🟡 Core complete · Wave B SVG/2021-vs-2026 queued |
+| 26 | Payment System | [Module 14 §2](modules/14-canonical-designs-transactional-and-staff.md#2-payment-system--digital-wallet) (`14-payment-system-architecture.svg`, `14-payment-2021-vs-2026.svg`) | B | ✅ Complete |
 | 27 | Digital Wallet | [Module 24](modules/24-digital-wallet.md) (`24-digital-wallet-architecture.svg`, `24-digital-wallet-2021-vs-2026.svg`, `examples/18`) | A | ✅ Complete |
-| 28 | Stock Exchange | [Module 14 §3](modules/14-canonical-designs-transactional-and-staff.md#3-ultra-low-latency-stock-exchange-matching-engine) | B | 🟡 Core complete · Wave B SVG/2021-vs-2026 queued |
+| 28 | Stock Exchange | [Module 14 §3](modules/14-canonical-designs-transactional-and-staff.md#3-ultra-low-latency-stock-exchange-matching-engine) (`14-stock-exchange-architecture.svg`, `14-stock-exchange-2021-vs-2026.svg`) | B | ✅ Complete |
 
 ---
 
