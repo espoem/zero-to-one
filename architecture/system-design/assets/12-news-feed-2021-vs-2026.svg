@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 670" width="1160" height="670" role="img" aria-labelledby="title desc">
+  <title id="title">News Feed System Architecture Evolution: 2021 vs 2026</title>
+  <desc id="desc">Six-layer comparison of news feed system architectures between 2021 legacy defaults and 2026 modern cloud-native standards, covering fan-out topologies, ML two-tower ranking, tiered feed storage, TAO social graph caching, sharded CRDT counters, and real-time Trust and Safety pipelines.</desc>
+
+  <!-- Background -->
+  <rect x="0" y="0" width="1160" height="670" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1160" height="56" rx="12" fill="#0f172a"/>
+  <rect x="0" y="40" width="1160" height="16" fill="#0f172a"/>
+  <text x="24" y="27" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#f8fafc">News Feed Architecture Evolution: 2021 Default vs. 2026 Modern Standard</text>
+  <text x="24" y="46" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#94a3b8">Eliminating Celebrity Fan-Out Meltdowns, Monolithic DRAM Costs, and Chronological Spam with ML Heavy-Ranking</text>
+
+  <!-- Column Headers -->
+  <rect x="20" y="70" width="210" height="32" rx="6" fill="#e2e8f0"/>
+  <text x="34" y="91" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1e293b">Architectural Layer</text>
+
+  <rect x="242" y="70" width="440" height="32" rx="6" fill="#fee2e2" stroke="#fca5a5" stroke-width="1"/>
+  <text x="256" y="91" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#991b1b">2021 Legacy Default (Pain Points)</text>
+
+  <rect x="694" y="70" width="446" height="32" rx="6" fill="#dcfce7" stroke="#86efac" stroke-width="1"/>
+  <text x="708" y="91" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#166534">2026 Modern Standard (Primary Shifts)</text>
+
+  <!-- Row 1: Timeline Fan-Out -->
+  <rect x="20" y="112" width="210" height="82" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="32" y="138" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">1. Timeline Fan-Out</text>
+  <text x="32" y="156" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Push vs. Hybrid Model</text>
+  <text x="32" y="174" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#2563eb">LPUSH vs. Heap Merge</text>
+
+  <rect x="242" y="112" width="440" height="82" rx="6" fill="#fff5f5" stroke="#fecaca"/>
+  <text x="254" y="135" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Static Fan-Out-on-Write (Redis LISTs / LPUSH)</text>
+  <text x="254" y="154" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Celebrity posts trigger 20M writes, saturating queues and workers</text>
+  <text x="254" y="172" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Cold/inactive users consume 90% of DRAM with unread timelines</text>
+
+  <rect x="694" y="112" width="446" height="82" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
+  <text x="706" y="135" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">Dynamic Hybrid Fan-Out with Hysteresis &amp; Cold Pruning</text>
+  <text x="706" y="154" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Push for &lt; 10k friends; pull-merge for celebrities on read path</text>
+  <text x="706" y="172" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Inactive users (&gt; 30d) skipped; saves 90% RAM with lazy login backfill</text>
+
+  <!-- Row 2: Feed Ordering & Ranking -->
+  <rect x="20" y="204" width="210" height="82" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="32" y="230" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">2. Feed Ordering &amp; ML</text>
+  <text x="32" y="248" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Candidate Generation &amp; Rank</text>
+  <text x="32" y="266" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#2563eb">Two-Tower + DLRM</text>
+
+  <rect x="242" y="204" width="440" height="82" rx="6" fill="#fff5f5" stroke="#fecaca"/>
+  <text x="254" y="227" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Pure Reverse-Chronological SQL / Redis Sort</text>
+  <text x="254" y="246" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Zero relevance scoring; feeds overwhelmed by high-frequency spam</text>
+  <text x="254" y="264" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Engagement collapses as network size grows past 500 connections</text>
+
+  <rect x="694" y="204" width="446" height="82" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
+  <text x="706" y="227" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">Two-Stage ML Ranking: Two-Tower Retrieval + Heavy Ranker</text>
+  <text x="706" y="246" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Fast vector ANN candidate pool (~500 items) in &lt; 5 ms</text>
+  <text x="706" y="264" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Meta DLRM / X Heavy Ranker transformer re-ranks with diversity penalty</text>
+
+  <!-- Row 3: Timeline Storage Tiering -->
+  <rect x="20" y="296" width="210" height="82" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="32" y="322" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">3. Timeline Storage Tiering</text>
+  <text x="32" y="340" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">RAM Footprint &amp; Eviction</text>
+  <text x="32" y="358" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#2563eb">Valkey + RocksDB NVMe</text>
+
+  <rect x="242" y="296" width="440" height="82" rx="6" fill="#fff5f5" stroke="#fecaca"/>
+  <text x="254" y="319" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Monolithic In-Memory Redis Cluster (Pure DRAM)</text>
+  <text x="254" y="338" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Exorbitant memory costs ($100k+/mo for 500M DAU timeline rings)</text>
+  <text x="254" y="356" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Sudden OOM evictions randomly drop follower posts from cache</text>
+
+  <rect x="694" y="296" width="446" height="82" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
+  <text x="706" y="319" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">Tiered Storage: Valkey / Microsoft Garnet + NVMe RocksDB</text>
+  <text x="706" y="338" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Hot head (top 200 posts) in DRAM; tail paged to ultra-fast NVMe</text>
+  <text x="706" y="356" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Reduces DRAM footprint by 75% while maintaining sub-10ms p99 reads</text>
+
+  <!-- Row 4: Social Graph Access -->
+  <rect x="20" y="388" width="210" height="82" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="32" y="414" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">4. Social Graph Access</text>
+  <text x="32" y="432" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Relationships &amp; Traversal</text>
+  <text x="32" y="450" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#2563eb">Facebook TAO (ATC'13)</text>
+
+  <rect x="242" y="388" width="440" height="82" rx="6" fill="#fff5f5" stroke="#fecaca"/>
+  <text x="254" y="411" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Relational SQL Joins or Standalone Graph DB</text>
+  <text x="254" y="430" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Multi-table SQL joins time out on 5,000 friends during fanout</text>
+  <text x="254" y="448" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Uncoordinated lookaside caches cause stale friendship reads</text>
+
+  <rect x="694" y="388" width="446" height="82" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
+  <text x="706" y="411" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">Facebook TAO Read-Through Caching Architecture</text>
+  <text x="706" y="430" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Objects &amp; Associations API; leader/follower multi-tier cache</text>
+  <text x="706" y="448" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Master-write invalidation leases guarantee sub-ms graph traversals</text>
+
+  <!-- Row 5: Engagement Counters -->
+  <rect x="20" y="480" width="210" height="82" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="32" y="506" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">5. Engagement Counters</text>
+  <text x="32" y="524" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Likes, Views &amp; Replies</text>
+  <text x="32" y="542" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#2563eb">64-Way Shards &amp; CRDT</text>
+
+  <rect x="242" y="480" width="440" height="82" rx="6" fill="#fff5f5" stroke="#fecaca"/>
+  <text x="254" y="503" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Direct DB UPDATEs + Redis INCR Stampedes</text>
+  <text x="254" y="522" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Single-row database locks lock up when viral posts receive 50k likes/s</text>
+  <text x="254" y="540" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Synchronous cache invalidations trigger thundering-herd stampedes</text>
+
+  <rect x="694" y="480" width="446" height="82" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
+  <text x="706" y="503" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">Batched Write-Behind &amp; Sharded CRDT PN-Counters</text>
+  <text x="706" y="522" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">64-way hash partitioned counter rings absorb 100k+ updates/s</text>
+  <text x="706" y="540" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Multi-region PN-Counter CRDT merges concurrently without locks</text>
+
+  <!-- Row 6: Trust & Safety Pipeline -->
+  <rect x="20" y="572" width="210" height="82" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="32" y="598" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">6. Trust &amp; Safety Pipeline</text>
+  <text x="32" y="616" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Policy &amp; Integrity Shield</text>
+  <text x="32" y="634" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#2563eb">Embedding Guard + Mute</text>
+
+  <rect x="242" y="572" width="440" height="82" rx="6" fill="#fff5f5" stroke="#fecaca"/>
+  <text x="254" y="595" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Asynchronous Post-Publish Batch Scanning</text>
+  <text x="254" y="614" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Policy violations and deleted posts linger in friends' cached feeds</text>
+  <text x="254" y="632" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Manual takedown leaves ghost posts and broken media in active feeds</text>
+
+  <rect x="694" y="572" width="446" height="82" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
+  <text x="706" y="595" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">Real-Time Trust &amp; Safety / Policy Filtering Pipeline</text>
+  <text x="706" y="614" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">In-line embedding moderation blocks abuse before fanout queue</text>
+  <text x="706" y="632" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Read-time tombstone and blocklist filters purge deleted items instantly</text>
+</svg>

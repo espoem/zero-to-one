@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 620" width="1180" height="620" role="img" aria-labelledby="title desc">
+  <title id="title">Video Streaming Architecture Evolution: 2021 Default vs. 2026 Modern Standard</title>
+  <desc id="desc">Six-layer architectural comparison of video streaming platforms between 2021 legacy defaults and 2026 modern production standards: hardware VCUs vs software CPU, per-title convex-hull VMAF vs static ladders, unified CMAF vs dual HLS/DASH storage, JIT transcoding vs eager full pre-encode, ISP-embedded caching vs generic cloud CDN egress, and hardware-backed DRM with C2PA provenance.</desc>
+
+  <!-- Background -->
+  <rect x="0" y="0" width="1180" height="620" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1180" height="56" rx="12" fill="#0f172a"/>
+  <rect x="0" y="40" width="1180" height="16" fill="#0f172a"/>
+  <text x="24" y="27" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#f8fafc">Video Streaming Platform Evolution: 2021 Default vs. 2026 Modern Standard</text>
+  <text x="24" y="46" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#94a3b8">Argos VCUs · Per-Title Convex-Hull VMAF · Unified CMAF · JIT Transcoding · ISP Caches · C2PA Provenance</text>
+
+  <!-- Column Headers -->
+  <rect x="20" y="70" width="220" height="32" rx="6" fill="#e2e8f0"/>
+  <text x="32" y="91" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1e293b">Architectural Dimension</text>
+
+  <rect x="252" y="70" width="448" height="32" rx="6" fill="#fee2e2" stroke="#fca5a5" stroke-width="1"/>
+  <text x="264" y="91" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#991b1b">2021 Legacy Default (Pain Points)</text>
+
+  <rect x="712" y="70" width="448" height="32" rx="6" fill="#dcfce7" stroke="#86efac" stroke-width="1"/>
+  <text x="724" y="91" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#166534">2026 Modern Standard (Primary Shifts)</text>
+
+  <!-- Row 1: Video Encoders & Hardware -->
+  <rect x="20" y="110" width="220" height="66" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="32" y="136" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">1. Video Encoders &amp; Silicon</text>
+  <text x="32" y="154" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Compute &amp; Codec Efficiency</text>
+
+  <rect x="252" y="110" width="448" height="66" rx="6" fill="#fff5f5" stroke="#fecaca"/>
+  <text x="264" y="133" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Software CPU Encoding (x264 / libvpx) on H.264 / VP9</text>
+  <text x="264" y="151" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">Massive server fleets; high thermal power; 1x-3x real-time delay;</text>
+  <text x="264" y="167" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#7f1d1d">H.264 requires 40-50% higher bitrate than modern codecs.</text>
+
+  <rect x="712" y="110" width="448" height="66" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
+  <text x="724" y="133" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">Google Argos VCU / NVIDIA NVENC ASICs + AV1</text>
+  <text x="724" y="151" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Dedicated hardware VCUs yield 20x-33x compute density gain;</text>
+  <text x="724" y="167" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#047857">AV1 cuts 30-40% bitrate vs VP9 at identical visual quality.</text>
+
+  <!-- Row 2: Bitrate Ladder & Quality -->
+  <rect x="20" y="184" width="220" height="66" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="32" y="210" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">2. Bitrate Ladder Optimization</text>
+  <text x="32" y="228" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Quality-Bitrate Tradeoff</text>
+
+  <rect x="252" y="184" width="448" height="66" rx="6" fill="#fff5f5" stroke="#fecaca"/>
+  <text x="264" y="207" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Static Bitrate Ladders (Fixed Profiles)</text>
+  <text x="264" y="225" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">Hardcoded 1080p @ 4.5 Mbps and 720p @ 2.5 Mbps for all content;</text>
+  <text x="264" y="241" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#7f1d1d">Wastes bits on simple talk shows; starves fast-moving sports.</text>
+
+  <rect x="712" y="184" width="448" height="66" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
+  <text x="724" y="207" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">Per-Title &amp; Per-Shot Convex-Hull VMAF Optimization</text>
+  <text x="724" y="225" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Dynamically solves convex hull of resolution vs bitrate curves;</text>
+  <text x="724" y="241" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#047857">Guarantees VMAF &gt;= 93 while slashing average bitrate by 20-30%.</text>
+
+  <!-- Row 3: Packaging & Protocols -->
+  <rect x="20" y="258" width="220" height="66" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="32" y="284" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">3. Packaging &amp; Streaming</text>
+  <text x="32" y="302" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Container &amp; Latency</text>
+
+  <rect x="252" y="258" width="448" height="66" rx="6" fill="#fff5f5" stroke="#fecaca"/>
+  <text x="264" y="281" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Siloed Packaging: HLS (.ts) &amp; MPEG-DASH (.m4s)</text>
+  <text x="264" y="299" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">Double storage cost; fragmented CDN edge cache hit ratios;</text>
+  <text x="264" y="315" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#7f1d1d">6-10s segment lengths incur 15-30s glass-to-glass latency.</text>
+
+  <rect x="712" y="258" width="448" height="66" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
+  <text x="724" y="281" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">Unified CMAF (fMP4) with LL-HLS &amp; LL-DASH</text>
+  <text x="724" y="299" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Single set of .m4s media chunks indexed by .m3u8 and .mpd;</text>
+  <text x="724" y="315" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#047857">Chunked transfer encoding reduces live latency to &lt; 2 seconds.</text>
+
+  <!-- Row 4: Transcoding Pipeline Lifecycle -->
+  <rect x="20" y="332" width="220" height="66" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="32" y="358" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">4. Transcoding Lifecycle</text>
+  <text x="32" y="376" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Ingest Compute Economics</text>
+
+  <rect x="252" y="332" width="448" height="66" rx="6" fill="#fff5f5" stroke="#fecaca"/>
+  <text x="264" y="355" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Eager Full Upfront Transcoding of All Tiers</text>
+  <text x="264" y="373" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">Transcodes 10+ renditions upon upload for every raw file;</text>
+  <text x="264" y="389" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#7f1d1d">Wastes 90% of encode compute on videos with &lt; 10 lifetime views.</text>
+
+  <rect x="712" y="332" width="448" height="66" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
+  <text x="724" y="355" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">Two-Tier Just-in-Time (JIT) Transcoding</text>
+  <text x="724" y="373" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Instant fast 720p/360p preview encode on ingestion;</text>
+  <text x="724" y="389" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#047857">High-cost 4K and AV1 ladders transcode JIT as traffic ramps up.</text>
+
+  <!-- Row 5: CDN & Bandwidth Economics -->
+  <rect x="20" y="406" width="220" height="66" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="32" y="432" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">5. CDN &amp; Bandwidth Cost</text>
+  <text x="32" y="450" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Egress &amp; Peering Transit</text>
+
+  <rect x="252" y="406" width="448" height="66" rx="6" fill="#fff5f5" stroke="#fecaca"/>
+  <text x="264" y="429" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Generic Public Cloud CDN (Standard Transit Pricing)</text>
+  <text x="264" y="447" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">CloudFront transit ($0.02/GB on 7.5 PB/day = $150k/day);</text>
+  <text x="264" y="463" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#7f1d1d">Unsustainable WAN transit costs at multi-million DAU scale.</text>
+
+  <rect x="712" y="406" width="448" height="66" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
+  <text x="724" y="429" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">ISP-Embedded Appliances (Google Global Cache / OCA)</text>
+  <text x="724" y="447" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Edge appliances deployed inside eyeball ISPs at $0 transit fee;</text>
+  <text x="724" y="463" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#047857">&gt; 95% prime-time hit rate via overnight predictive pre-warming.</text>
+
+  <!-- Row 6: DRM, Content Security & Provenance -->
+  <rect x="20" y="480" width="220" height="66" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="32" y="506" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">6. Security &amp; Provenance</text>
+  <text x="32" y="524" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">DRM &amp; Content Authenticity</text>
+
+  <rect x="252" y="480" width="448" height="66" rx="6" fill="#fff5f5" stroke="#fecaca"/>
+  <text x="264" y="503" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Software DRM (Widevine L3) &amp; AES-128 Clearkey</text>
+  <text x="264" y="521" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">Decryption in host RAM vulnerable to OS scrapers &amp; screen capture;</text>
+  <text x="264" y="537" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#7f1d1d">Zero cryptographic verification of media provenance or origins.</text>
+
+  <rect x="712" y="480" width="448" height="66" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
+  <text x="724" y="503" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">Hardware DRM (Widevine L1 / FairPlay) &amp; C2PA Trust</text>
+  <text x="724" y="521" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Decrypted solely in hardware TEE / protected display pipeline;</text>
+  <text x="724" y="537" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#047857">C2PA manifests verify genuine camera capture vs generative AI.</text>
+
+  <!-- Bottom Migration Callout Strip -->
+  <rect x="20" y="560" width="1140" height="44" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.2"/>
+  <text x="34" y="587" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#92400e">Architectural Shift: Unify chunk pools with CMAF, tier transcode compute via JIT, and deploy ISP caches to turn $150k/day bills into near-$0 peering.</text>
+</svg>

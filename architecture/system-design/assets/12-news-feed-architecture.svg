@@ -1,0 +1,255 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 760" width="1160" height="760" role="img" aria-labelledby="title desc">
+  <title id="title">News Feed System — Hybrid Fan-Out Architecture &amp; 5-Layer Cache Hierarchy</title>
+  <desc id="desc">Comprehensive architecture of a high-throughput news feed system showing feed publishing, graph lookup, privacy cache filter, Kafka fan-out workers, bounded news feed cache, celebrity fan-out-on-read heap merge, and the ByteByteGo 5-layer cache topology.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569"/>
+    </marker>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <marker id="arr-purple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7e22ce"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect x="0" y="0" width="1160" height="760" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1160" height="58" rx="12" fill="#0f172a"/>
+  <rect x="0" y="42" width="1160" height="16" fill="#0f172a"/>
+  <text x="24" y="28" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#f8fafc">News Feed System — Hybrid Fan-Out Architecture &amp; 5-Layer Cache Hierarchy</text>
+  <text x="24" y="47" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#94a3b8">Post Publishing · Graph DB &amp; Privacy Filter · Kafka Fan-Out Pipeline · Bounded Cache · Celebrity Heap Merge · 5-Layer Cache Topology</text>
+
+  <!-- SECTION 1: TOP 4 PANELS (Y=72 to Y=386) -->
+
+  <!-- PANEL 1: CLIENTS & INGESTION -->
+  <rect x="20" y="72" width="220" height="316" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="34" y="96" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1e3a8a">1. Ingestion &amp; API Edge</text>
+
+  <rect x="32" y="108" width="196" height="72" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="42" y="126" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#1e40af">Clients (Web &amp; Mobile)</text>
+  <text x="42" y="143" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#334155">POST /v1/me/feed (Publish)</text>
+  <text x="42" y="159" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#334155">GET  /v1/me/feed (Read)</text>
+  <text x="42" y="173" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#64748b">Direct presigned S3 media PUT</text>
+
+  <rect x="32" y="190" width="196" height="88" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="42" y="208" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#1e40af">API Gateway &amp; Auth</text>
+  <text x="42" y="225" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Auth Token verification</text>
+  <text x="42" y="241" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Token-bucket rate limiter</text>
+  <text x="42" y="257" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Spam &amp; abuse IP shield</text>
+  <text x="42" y="271" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#64748b">Routes to Post / Feed Svc</text>
+
+  <rect x="32" y="288" width="196" height="88" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="42" y="306" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e3a8a">Inactive Account Optimizer</text>
+  <text x="42" y="323" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#1e40af">Inactive &gt; 30d? Skip push</text>
+  <text x="42" y="339" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Cuts 90% timeline RAM</text>
+  <text x="42" y="355" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Eliminates cold user writes</text>
+  <text x="42" y="369" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#047857">Lazy backfill on next login</text>
+
+  <!-- PANEL 2: POST SERVICE & PIPELINE -->
+  <rect x="254" y="72" width="285" height="316" rx="10" fill="#f0fdf4" stroke="#10b981" stroke-width="1.5"/>
+  <text x="268" y="96" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#065f46">2. Post Service &amp; Filter Pipeline</text>
+
+  <rect x="266" y="108" width="261" height="76" rx="6" fill="#ffffff" stroke="#86efac" stroke-width="1"/>
+  <text x="276" y="126" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#047857">Post Service (Write Path)</text>
+  <text x="276" y="143" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#334155">Snowflake ID: 64-bit monotonic</text>
+  <text x="276" y="159" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Stores post in Sharded DB &amp; L2</text>
+  <text x="276" y="173" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#64748b">Outbox emits PostCreated event</text>
+
+  <rect x="266" y="192" width="261" height="86" rx="6" fill="#ffffff" stroke="#86efac" stroke-width="1"/>
+  <text x="276" y="210" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#047857">Step 1: Fetch Friend IDs</text>
+  <text x="276" y="227" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Query Graph DB / TAO L3 cache</text>
+  <text x="276" y="243" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Cap: 5,000 friends per user</text>
+  <text x="276" y="259" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#047857">Follower count check:</text>
+  <text x="276" y="272" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#b91c1c">&gt;= 10k: Flag as Celebrity (skip push)</text>
+
+  <rect x="266" y="286" width="261" height="90" rx="6" fill="#dcfce7" stroke="#059669" stroke-width="1"/>
+  <text x="276" y="304" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#065f46">Step 2: Filter Friends in Cache</text>
+  <text x="276" y="321" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Excludes muted &amp; blocked friends</text>
+  <text x="276" y="337" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Checks custom privacy circles</text>
+  <text x="276" y="353" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#047857">Author &gt;= 10k? Push to Celeb Cache</text>
+  <text x="276" y="368" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#15803d">Author &lt; 10k? Forward to Kafka</text>
+
+  <!-- PANEL 3: KAFKA & FAN-OUT WORKERS -->
+  <rect x="553" y="72" width="285" height="316" rx="10" fill="#faf5ff" stroke="#a855f7" stroke-width="1.5"/>
+  <text x="567" y="96" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#581c87">3. Kafka &amp; Fan-Out Workers</text>
+
+  <rect x="565" y="108" width="261" height="76" rx="6" fill="#ffffff" stroke="#d8b4fe" stroke-width="1"/>
+  <text x="575" y="126" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#6b21a8">Step 3: Publish to Event Queue</text>
+  <text x="575" y="143" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#334155">Topic: feed-fanout-events</text>
+  <text x="575" y="159" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Key = author_id (strict ordering)</text>
+  <text x="575" y="173" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#64748b">Buffers peaks; decouples write path</text>
+
+  <rect x="565" y="192" width="261" height="86" rx="6" fill="#ffffff" stroke="#d8b4fe" stroke-width="1"/>
+  <text x="575" y="210" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#6b21a8">Step 4: Fan-Out Workers Pool</text>
+  <text x="575" y="227" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Parallel worker pool consumes batches</text>
+  <text x="575" y="243" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Skips friends inactive &gt; 30 days</text>
+  <text x="575" y="259" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Builds lightweight &lt;post_id, user_id&gt;</text>
+  <text x="575" y="272" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#64748b">Saves memory (no full post objects)</text>
+
+  <rect x="565" y="286" width="261" height="90" rx="6" fill="#f3e8ff" stroke="#7e22ce" stroke-width="1"/>
+  <text x="575" y="304" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#581c87">Step 5: Store in Feed Cache (L1)</text>
+  <text x="575" y="321" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#1e293b">ZADD feed:{friend_id} ts post_id</text>
+  <text x="575" y="337" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#1e293b">ZREMRANGEBYRANK feed 0 -501</text>
+  <text x="575" y="353" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#047857">Bounded ring: caps top 500 posts</text>
+  <text x="575" y="368" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Memory: 24B raw, ~12 KB/user</text>
+
+  <!-- PANEL 4: FEED RETRIEVAL & READ PATH -->
+  <rect x="852" y="72" width="288" height="316" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="866" y="96" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#78350f">4. Feed Retrieval (Read Path)</text>
+
+  <rect x="864" y="108" width="264" height="76" rx="6" fill="#ffffff" stroke="#fcd34d" stroke-width="1"/>
+  <text x="874" y="126" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#92400e">Feed Aggregator Service</text>
+  <text x="874" y="143" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#334155">GET /v1/me/feed?cursor=ts_id</text>
+  <text x="874" y="159" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Fetches reader pre-materialized ZSET</text>
+  <text x="874" y="173" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#64748b">Queries followed celebrities (L3)</text>
+
+  <rect x="864" y="192" width="264" height="86" rx="6" fill="#ffffff" stroke="#fcd34d" stroke-width="1"/>
+  <text x="874" y="210" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#92400e">Celebrity Fan-Out-on-Read Merge</text>
+  <text x="874" y="227" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Pull posts from followed celebs</text>
+  <text x="874" y="243" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">K-Way heap merge by timestamp</text>
+  <text x="874" y="259" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#b91c1c">Applies read-time block &amp; tombstones</text>
+  <text x="874" y="272" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#64748b">Keyset cursor: O(log N + K)</text>
+
+  <rect x="864" y="286" width="264" height="90" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+  <text x="874" y="304" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#78350f">5-Layer Hydration Pipeline</text>
+  <text x="874" y="321" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Post text &amp; media from Content L2</text>
+  <text x="874" y="337" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">User liked/saved from Action L4</text>
+  <text x="874" y="353" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Like/share counts from Counter L5</text>
+  <text x="874" y="368" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#047857">p99 read latency &lt; 15 ms</text>
+
+  <!-- CONNECTING ARROWS TOP -->
+  <line x1="228" y1="140" x2="264" y2="140" stroke="#2563eb" stroke-width="1.6" marker-end="url(#arr-blue)"/>
+  <line x1="400" y1="184" x2="400" y2="190" stroke="#059669" stroke-width="1.6" marker-end="url(#arr-green)"/>
+  <line x1="400" y1="278" x2="400" y2="284" stroke="#059669" stroke-width="1.6" marker-end="url(#arr-green)"/>
+  <line x1="527" y1="330" x2="563" y2="146" stroke="#7e22ce" stroke-width="1.6" marker-end="url(#arr-purple)"/>
+  <line x1="695" y1="184" x2="695" y2="190" stroke="#7e22ce" stroke-width="1.6" marker-end="url(#arr-purple)"/>
+  <line x1="695" y1="278" x2="695" y2="284" stroke="#7e22ce" stroke-width="1.6" marker-end="url(#arr-purple)"/>
+  <line x1="228" y1="160" x2="862" y2="146" stroke="#d97706" stroke-width="1.4" stroke-dasharray="4,3" marker-end="url(#arr-amber)"/>
+
+  <!-- SECTION 2: 5-LAYER CACHE ARCHITECTURE (Y=404 to Y=742) -->
+  <rect x="20" y="404" width="1120" height="340" rx="10" fill="#ffffff" stroke="#64748b" stroke-width="1.5"/>
+
+  <!-- Sub-header inside Cache container -->
+  <rect x="20" y="404" width="1120" height="30" rx="10" fill="#0f172a"/>
+  <rect x="20" y="420" width="1120" height="14" fill="#0f172a"/>
+  <text x="36" y="424" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#f8fafc">ByteByteGo 5-Layer Cache Architecture — Sub-10ms Timeline Delivery &amp; Component Isolation</text>
+
+  <!-- LAYER 1: NEWS FEED CACHE -->
+  <rect x="34" y="446" width="210" height="284" rx="8" fill="#f8fafc" stroke="#3b82f6" stroke-width="1.5"/>
+  <rect x="34" y="446" width="210" height="36" rx="8" fill="#dbeafe"/>
+  <rect x="34" y="470" width="210" height="12" fill="#dbeafe"/>
+  <text x="46" y="464" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#1e3a8a">Layer 1: News Feed Cache</text>
+  <text x="46" y="477" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#2563eb">Ordered Timeline Rings</text>
+
+  <text x="46" y="500" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f172a">Data Type: Redis ZSET</text>
+  <text x="46" y="516" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#1e40af">Key: feed:{user_id}</text>
+  <text x="46" y="532" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Value: &lt;post_id, user_id&gt;</text>
+  <text x="46" y="548" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Score: 64-bit epoch ts</text>
+  <text x="46" y="566" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f172a">Capacity &amp; Retention:</text>
+  <text x="46" y="582" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Bounded: top 500 IDs</text>
+  <text x="46" y="598" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">48B w/ overhead = ~24 KB/user</text>
+  <text x="46" y="614" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#047857">10M DAU: ~240 GB RAM</text>
+  <text x="46" y="630" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#047857">500M DAU: ~12 TB RAM</text>
+  <text x="46" y="648" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f172a">Eviction &amp; Trimming:</text>
+  <text x="46" y="664" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9" fill="#1e40af">ZREMRANGEBYRANK 0 -501</text>
+  <text x="46" y="680" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Cold users skip RAM writes</text>
+  <text x="46" y="696" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Sharded by user_id</text>
+  <text x="46" y="714" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#2563eb">Sub-2ms range retrieval</text>
+
+  <!-- LAYER 2: CONTENT CACHE -->
+  <rect x="254" y="446" width="210" height="284" rx="8" fill="#f8fafc" stroke="#10b981" stroke-width="1.5"/>
+  <rect x="254" y="446" width="210" height="36" rx="8" fill="#d1fae5"/>
+  <rect x="254" y="470" width="210" height="12" fill="#d1fae5"/>
+  <text x="266" y="464" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#065f46">Layer 2: Content Cache</text>
+  <text x="266" y="477" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#047857">Post Details &amp; Hot Cache</text>
+
+  <text x="266" y="500" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f172a">Data Type: KV / String</text>
+  <text x="266" y="516" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#047857">Key: post:{post_id}</text>
+  <text x="266" y="532" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Value: JSON/Protobuf payload</text>
+  <text x="266" y="548" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Author, text, media CDN URLs</text>
+  <text x="266" y="566" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f172a">Tiered Storage Hierarchy:</text>
+  <text x="266" y="582" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#047857">Hot L1: Top 20% in DRAM</text>
+  <text x="266" y="598" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Warm L2: NVMe RocksDB</text>
+  <text x="266" y="614" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Immutable post content</text>
+  <text x="266" y="630" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Zero mutable counters</text>
+  <text x="266" y="648" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f172a">Stampede Protection:</text>
+  <text x="266" y="664" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Single-flight request coalescing</text>
+  <text x="266" y="680" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Probabilistic early refresh</text>
+  <text x="266" y="696" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Sharded by post_id</text>
+  <text x="266" y="714" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#047857">Zero celebrity hot spots</text>
+
+  <!-- LAYER 3: SOCIAL GRAPH CACHE -->
+  <rect x="474" y="446" width="210" height="284" rx="8" fill="#f8fafc" stroke="#a855f7" stroke-width="1.5"/>
+  <rect x="474" y="446" width="210" height="36" rx="8" fill="#ede9fe"/>
+  <rect x="474" y="470" width="210" height="12" fill="#ede9fe"/>
+  <text x="486" y="464" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#581c87">Layer 3: Social Graph</text>
+  <text x="486" y="477" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#7e22ce">TAO Objects &amp; Associations</text>
+
+  <text x="486" y="500" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f172a">Model: Nodes &amp; Edges</text>
+  <text x="486" y="516" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#7e22ce">Key: assoc:{user_id}:{type}</text>
+  <text x="486" y="532" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Edges: friend_of, follows</text>
+  <text x="486" y="548" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Nodes: User info, flags</text>
+  <text x="486" y="566" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f172a">Graph Query Optimization:</text>
+  <text x="486" y="582" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Cap: 5,000 friends/user</text>
+  <text x="486" y="598" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#7e22ce">Celebrity flag is_celebrity</text>
+  <text x="486" y="614" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Mute &amp; blocklist bitsets</text>
+  <text x="486" y="630" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Two-tier TAO cache</text>
+  <text x="486" y="648" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f172a">Cache Consistency:</text>
+  <text x="486" y="664" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Master-write leases (NSDI'13)</text>
+  <text x="486" y="680" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Follower invalidation push</text>
+  <text x="486" y="696" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Read-your-writes local lease</text>
+  <text x="486" y="714" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#7e22ce">Sub-1ms graph traversal</text>
+
+  <!-- LAYER 4: ACTION CACHE -->
+  <rect x="694" y="446" width="210" height="284" rx="8" fill="#f8fafc" stroke="#f59e0b" stroke-width="1.5"/>
+  <rect x="694" y="446" width="210" height="36" rx="8" fill="#fef3c7"/>
+  <rect x="694" y="470" width="210" height="12" fill="#fef3c7"/>
+  <text x="706" y="464" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#78350f">Layer 4: Action Cache</text>
+  <text x="706" y="477" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#b45309">User Interaction State</text>
+
+  <text x="706" y="500" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f172a">Data Type: Hash / Bitmap</text>
+  <text x="706" y="516" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#b45309">Key: act:{user_id}:{post_id}</text>
+  <text x="706" y="532" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Fields: liked, saved, hidden</text>
+  <text x="706" y="548" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Reported, muted_post</text>
+  <text x="706" y="566" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f172a">Personalized UI Hydration:</text>
+  <text x="706" y="582" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Powers "heart icon active"</text>
+  <text x="706" y="598" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Powers "bookmark saved"</text>
+  <text x="706" y="614" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Immediate read-your-write</text>
+  <text x="706" y="630" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Fast O(1) attribute check</text>
+  <text x="706" y="648" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f172a">Persistence Engine:</text>
+  <text x="706" y="664" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Asynchronous write-behind</text>
+  <text x="706" y="680" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Batched Kafka event sink</text>
+  <text x="706" y="696" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Idempotent toggle ops</text>
+  <text x="706" y="714" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#b45309">Zero read lock contention</text>
+
+  <!-- LAYER 5: COUNTER CACHE -->
+  <rect x="914" y="446" width="210" height="284" rx="8" fill="#f8fafc" stroke="#f43f5e" stroke-width="1.5"/>
+  <rect x="914" y="446" width="210" height="36" rx="8" fill="#ffe4e6"/>
+  <rect x="914" y="470" width="210" height="12" fill="#ffe4e6"/>
+  <text x="926" y="464" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#881337">Layer 5: Counter Cache</text>
+  <text x="926" y="477" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#e11d48">Sharded Aggregates &amp; CRDT</text>
+
+  <text x="926" y="500" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f172a">Data Type: Sharded Atomic</text>
+  <text x="926" y="516" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#be123c">Key: cnt:{post_id}:{shard}</text>
+  <text x="926" y="532" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Metrics: likes, shares, replies</text>
+  <text x="926" y="548" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">64 slots per hot post</text>
+  <text x="926" y="566" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f172a">Stampede Mitigation:</text>
+  <text x="926" y="582" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Absorbs 100k+ likes/sec</text>
+  <text x="926" y="598" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Zero single-key lock waits</text>
+  <text x="926" y="614" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#be123c">PN-Counter CRDT merge</text>
+  <text x="926" y="630" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Summed lazily on read</text>
+  <text x="926" y="648" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f172a">Persistence Engine:</text>
+  <text x="926" y="664" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Write-behind periodic flush</text>
+  <text x="926" y="680" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Dirty bit set in memory</text>
+  <text x="926" y="696" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Async DB updates (1-5s)</text>
+  <text x="926" y="714" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#be123c">Eventual consistency</text>
+</svg>
