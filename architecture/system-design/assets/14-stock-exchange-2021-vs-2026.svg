@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 590" width="1160" height="590" role="img" aria-labelledby="title desc">
+  <title id="title">Stock Exchange Architecture Evolution: 2021 vs 2026</title>
+  <desc id="desc">Six-dimension comparison of electronic stock exchange architecture between 2021 legacy defaults and 2026 modern standards, covering ASCII FIX vs Binary SBE over kernel-bypass DPDK, JVM GC stalls vs zero-allocation Rust and C++23, Kafka vs FPGA pre-trade risk and single-writer sequencer, bare-metal only vs cloud-exchange hybrid topologies, basic UDP vs IEEE 1588 PTP nanosecond multicast fairness, and pure CLOB vs hybrid CLOB and AMM liquidity.</desc>
+
+  <!-- Background -->
+  <rect x="0" y="0" width="1160" height="590" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1160" height="56" rx="12" fill="#0f172a"/>
+  <rect x="0" y="40" width="1160" height="16" fill="#0f172a"/>
+  <text x="24" y="27" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#f8fafc">Stock Exchange Stack Evolution: 2021 Default vs. 2026 Modern Standard</text>
+  <text x="24" y="46" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#94a3b8">Eliminating ASCII String Parsing, GC Stalls, Kernel Context Switches, and Nanosecond Latency Arbitrage</text>
+
+  <!-- Column Headers -->
+  <rect x="20" y="70" width="210" height="32" rx="6" fill="#e2e8f0"/>
+  <text x="34" y="91" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1e293b">Architectural Dimension</text>
+
+  <rect x="242" y="70" width="440" height="32" rx="6" fill="#fee2e2" stroke="#fca5a5" stroke-width="1"/>
+  <text x="256" y="91" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#991b1b">2021 Legacy Default (Pain Points)</text>
+
+  <rect x="694" y="70" width="446" height="32" rx="6" fill="#dcfce7" stroke="#86efac" stroke-width="1"/>
+  <text x="708" y="91" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#166534">2026 Modern Standard (Primary Shifts)</text>
+
+  <!-- Row 1: Wire Protocol & Networking -->
+  <rect x="20" y="112" width="210" height="64" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="32" y="136" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">1. Wire Protocol &amp; NIC</text>
+  <text x="32" y="154" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Ingress &amp; Deserialization</text>
+
+  <rect x="242" y="112" width="440" height="64" rx="6" fill="#fff5f5" stroke="#fecaca"/>
+  <text x="254" y="134" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">ASCII FIX 4.2 over Kernel TCP Stack</text>
+  <text x="254" y="152" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">SOH delimiter parsing, heap string allocs, Linux sk_buff copies</text>
+  <text x="254" y="166" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#64748b">OS context switches add 15-30 μs ingress jitter per message</text>
+
+  <rect x="694" y="112" width="446" height="64" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
+  <text x="706" y="134" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">Binary SBE / ITCH-OUCH over DPDK &amp; RDMA</text>
+  <text x="706" y="152" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Fixed-offset little-endian binary structs; zero heap allocations</text>
+  <text x="706" y="166" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#059669">Solarflare Onload / DPDK bypass delivers wire-to-ring in &lt; 2 μs</text>
+
+  <!-- Row 2: Runtime & Memory Management -->
+  <rect x="20" y="184" width="210" height="64" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="32" y="208" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">2. Runtime &amp; Memory</text>
+  <text x="32" y="226" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">GC &amp; Execution Determinism</text>
+
+  <rect x="242" y="184" width="440" height="64" rx="6" fill="#fff5f5" stroke="#fecaca"/>
+  <text x="254" y="206" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">JVM GC Pause Stalls &amp; Heap Fragmentation</text>
+  <text x="254" y="224" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">G1/CMS stop-the-world pauses (10-100 ms) violate latency SLAs</text>
+  <text x="254" y="238" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#64748b">Thread context switching and cache line bouncing degrade p99</text>
+
+  <rect x="694" y="184" width="446" height="64" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
+  <text x="706" y="206" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">Rust / C++23 / Aeron Zero-Alloc Determinism</text>
+  <text x="706" y="224" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Pre-allocated flat memory pools; isolcpus CPU pinning per symbol</text>
+  <text x="706" y="238" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#059669">Deterministic state machine delivers tick-to-trade &lt; 5 μs p99.99</text>
+
+  <!-- Row 3: Pre-Trade Risk & Sequencing -->
+  <rect x="20" y="256" width="210" height="64" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="32" y="280" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">3. Risk &amp; Sequencing</text>
+  <text x="32" y="298" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Ordering &amp; Gatekeeping</text>
+
+  <rect x="242" y="256" width="440" height="64" rx="6" fill="#fff5f5" stroke="#fecaca"/>
+  <text x="254" y="278" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Kafka Sequencer with Disk fsync &amp; DB RPC</text>
+  <text x="254" y="296" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">External network hops for risk checks; millisecond queue latency</text>
+  <text x="254" y="310" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#64748b">Partition rebalances cause burst stalls; non-deterministic replay</text>
+
+  <rect x="694" y="256" width="446" height="64" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
+  <text x="706" y="278" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">FPGA Pre-Trade Risk &amp; /dev/shm Single Writer</text>
+  <text x="706" y="296" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Bump-in-wire FPGA risk checks in sub-microsecond hardware gates</text>
+  <text x="706" y="310" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#059669">Lock-free single-writer sequencer stamps seq_num in RAM mmap bus</text>
+
+  <!-- Row 4: Deployment & Infrastructure -->
+  <rect x="20" y="328" width="210" height="64" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="32" y="352" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">4. Infrastructure &amp; Cloud</text>
+  <text x="32" y="370" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Topology &amp; Colocation</text>
+
+  <rect x="242" y="328" width="440" height="64" rx="6" fill="#fff5f5" stroke="#fecaca"/>
+  <text x="254" y="350" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Rigid On-Premises Bare-Metal Monolith</text>
+  <text x="254" y="368" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Single datacenter bare-metal server; fragile manual failover</text>
+  <text x="254" y="382" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#64748b">Extremely costly private cage leases; slow DR datacenter syncing</text>
+
+  <rect x="694" y="328" width="446" height="64" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
+  <text x="706" y="350" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">Cloud-Exchange Hybrid: AWS Outposts &amp; Local Zones</text>
+  <text x="706" y="368" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">NASDAQ on AWS Outposts in Carteret; CME migration to GCP</text>
+  <text x="706" y="382" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#059669">Microsecond matching edge paired with cloud-native data lakehouse</text>
+
+  <!-- Row 5: Market Data & Network Fairness -->
+  <rect x="20" y="400" width="210" height="64" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="32" y="424" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">5. Market Data &amp; Fairness</text>
+  <text x="32" y="442" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Distribution &amp; Timestamps</text>
+
+  <rect x="242" y="400" width="440" height="64" rx="6" fill="#fff5f5" stroke="#fecaca"/>
+  <text x="254" y="422" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Basic UDP Multicast &amp; Asymmetric Fiber Latency</text>
+  <text x="254" y="440" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Physical distance in cage created unfair speed-of-light advantages</text>
+  <text x="254" y="454" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#64748b">Software NTP clock skew (1-10 ms) corrupted regulatory audit logs</text>
+
+  <rect x="694" y="400" width="446" height="64" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
+  <text x="706" y="422" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">IEEE 1588 PTP &amp; Cable-Length Equalization</text>
+  <text x="706" y="440" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Nanosecond-accurate hardware PTP timestamps for MiFID II / CAT</text>
+  <text x="706" y="454" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#059669">Equalized fiber spools ensure zero physical advantage for colo cages</text>
+
+  <!-- Row 6: Market Structure & Liquidity -->
+  <rect x="20" y="472" width="210" height="64" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="32" y="496" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">6. Market Structure</text>
+  <text x="32" y="514" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Liquidity &amp; Order Matching</text>
+
+  <rect x="242" y="472" width="440" height="64" rx="6" fill="#fff5f5" stroke="#fecaca"/>
+  <text x="254" y="494" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Pure Centralized Limit Order Book (CLOB)</text>
+  <text x="254" y="512" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Fragile market maker quotes vanish during severe market volatility</text>
+  <text x="254" y="526" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#64748b">High bid-ask spreads for illiquid long-tail asset classes</text>
+
+  <rect x="694" y="472" width="446" height="64" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
+  <text x="706" y="494" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">Hybrid CLOB + Automated Market Maker (AMM)</text>
+  <text x="706" y="512" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Constant-product x*y=k pools combined with continuous limit books</text>
+  <text x="706" y="526" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#059669">Guaranteed continuous liquidity floor; MEV-resistant batch auctions</text>
+
+  <!-- Bottom Strip -->
+  <rect x="20" y="546" width="1120" height="34" rx="6" fill="#0f172a"/>
+  <text x="34" y="568" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#38bdf8">Key Synthesis:</text>
+  <text x="124" y="568" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#f8fafc">2026 exchanges eliminate the operating system from the critical path (kernel-bypass, isolcpus, FPGA) while merging high-throughput CLOB matching with automated liquidity.</text>
+</svg>

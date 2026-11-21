@@ -1,0 +1,232 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 780" width="1200" height="780" role="img" aria-labelledby="title desc">
+  <title id="title">Payment System — End-to-End Pay-In, Settlement &amp; Pay-Out Architecture</title>
+  <desc id="desc">Comprehensive architecture of an enterprise payment platform showing PCI-DSS tokenized checkout, ACID dual-table state machine, idempotent execution with retry queue and DLQ, multi-PSP routing, async webhooks, multi-receiver event bus, double-entry ledger, settlement reconciliation, and payout rails.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569"/>
+    </marker>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+    </marker>
+    <marker id="arr-purple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed"/>
+    </marker>
+    <marker id="arr-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+    </marker>
+    <marker id="arr-cyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0284c7"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect x="0" y="0" width="1200" height="780" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1200" height="58" rx="12" fill="#0f172a"/>
+  <rect x="0" y="42" width="1200" height="16" fill="#0f172a"/>
+  <text x="24" y="28" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#f8fafc">Payment System — End-to-End Pay-In, Settlement &amp; Pay-Out Architecture</text>
+  <text x="24" y="47" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#94a3b8">PCI-DSS v4.0 Scope Reduction · Dual-Table ACID State Machine · Idempotency Nonce &amp; DLQ · Double-Entry Ledger · 3-Tier Reconciliation · Pay-Out Rails</text>
+
+  <!-- ==================== TIER 1: PAY-IN ORCHESTRATION ==================== -->
+
+  <!-- Column 1: Checkout & PCI-DSS Isolation -->
+  <rect x="20" y="74" width="230" height="346" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="32" y="96" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1e3a8a">1. Checkout &amp; PCI Isolation</text>
+
+  <rect x="30" y="108" width="210" height="88" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="40" y="126" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#1e40af">Client App / Web Browser</text>
+  <text x="40" y="142" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#334155">POST /v1/payments (initiate)</text>
+  <text x="40" y="157" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Card input inside iframe / elements</text>
+  <text x="40" y="172" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#059669">SAQ-A scope: PAN never touches app</text>
+  <text x="40" y="186" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#64748b">Passkeys / Biometric Apple/Google Pay</text>
+
+  <rect x="30" y="204" width="210" height="96" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="40" y="222" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#1e40af">Hosted Tokenization (HPP)</text>
+  <text x="40" y="238" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Direct HTTPS post to PSP iframe</text>
+  <text x="40" y="253" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#1e40af">payment_token = tok_psp_9981</text>
+  <text x="40" y="268" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">3DS2 frictionless card authentication</text>
+  <text x="40" y="283" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#64748b">Zero raw credit card storage on origin</text>
+
+  <rect x="30" y="308" width="210" height="100" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="40" y="326" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#1e3a8a">Checkout Request Payload</text>
+  <text x="40" y="342" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#1e40af">checkout_id: "chk_0194fa82"</text>
+  <text x="40" y="356" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#1e40af">amount: "1999" (minor units; parse BigInt)</text>
+  <text x="40" y="370" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#1e40af">currency: "USD" (ISO-4217)</text>
+  <text x="40" y="384" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">buyer_info + payment_token</text>
+  <text x="40" y="398" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Submitted to Payment Service API</text>
+
+  <!-- Arrow Col 1 -> Col 2 -->
+  <line x1="250" y1="247" x2="268" y2="247" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+
+  <!-- Column 2: Payment Service & Dual-Table ACID State Machine -->
+  <rect x="270" y="74" width="275" height="346" rx="10" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+  <text x="282" y="96" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#0f172a">2. Payment Service (ACID Core)</text>
+
+  <rect x="280" y="108" width="255" height="74" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="290" y="126" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#0f172a">API Gateway &amp; AML Risk Check</text>
+  <text x="290" y="142" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Rate limiter + token bucket per buyer</text>
+  <text x="290" y="157" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">AML sanctions screening &amp; fraud model</text>
+  <text x="290" y="172" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#059669">Risk score passes -> proceed to order split</text>
+
+  <rect x="280" y="190" width="255" height="136" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1"/>
+  <text x="290" y="208" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#0f172a">Dual-Table ACID State Machine</text>
+  <text x="290" y="224" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#0f172a">TABLE payment_events (checkout level)</text>
+  <text x="290" y="238" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9" fill="#475569">  checkout_id PK | is_payment_done (bool)</text>
+  <text x="290" y="254" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#0f172a">TABLE payment_orders (order lines)</text>
+  <text x="290" y="268" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9" fill="#475569">  payment_order_id PK | checkout_id FK</text>
+  <text x="290" y="282" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9" fill="#475569">  status: NOT_STARTED-&gt;EXEC-&gt;SUCCESS/FAIL</text>
+  <text x="290" y="296" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9" fill="#475569">  ledger_updated: bool | wallet_updated: bool</text>
+  <text x="290" y="312" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#059669">Strict read-from-primary PG or Raft SQL</text>
+
+  <rect x="280" y="334" width="255" height="74" rx="6" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="290" y="352" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#334155">Order Decomposition &amp; Dispatch</text>
+  <text x="290" y="368" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Splits cart into per-seller payment orders</text>
+  <text x="290" y="383" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Attaches payment_order_id UUIDv7 nonce</text>
+  <text x="290" y="398" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#2563eb">Synchronous call to Payment Executor</text>
+
+  <!-- Arrow Col 2 -> Col 3 -->
+  <line x1="545" y1="247" x2="563" y2="247" stroke="#475569" stroke-width="1.8" marker-end="url(#arr)"/>
+
+  <!-- Column 3: Payment Executor & Resilience Engine -->
+  <rect x="565" y="74" width="275" height="346" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="577" y="96" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#92400e">3. Payment Executor &amp; Queue</text>
+
+  <rect x="575" y="108" width="255" height="84" rx="6" fill="#ffffff" stroke="#fde68a" stroke-width="1"/>
+  <text x="585" y="126" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#b45309">Idempotency &amp; Deduplication</text>
+  <text x="585" y="142" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Ingress PK (merchant_id, idempotency_key)</text>
+  <text x="585" y="157" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">PSP nonce: payment_order_id + req hash</text>
+  <text x="585" y="172" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#059669">Duplicate inserts return cached status</text>
+  <text x="585" y="186" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#92400e">Zero duplicate charges on client retries</text>
+
+  <rect x="575" y="200" width="255" height="114" rx="6" fill="#ffffff" stroke="#fde68a" stroke-width="1"/>
+  <text x="585" y="218" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#b45309">Retry Queue &amp; Backoff Strategy</text>
+  <text x="585" y="234" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Transient network error -&gt; Enqueue retry</text>
+  <text x="585" y="249" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#b45309">t_retry = min(t_max, t_base * 2^attempt)</text>
+  <text x="585" y="264" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Full jitter prevents thundering herd on PSP</text>
+  <text x="585" y="279" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#b91c1c">Dead-Letter Queue (DLQ) after 5 attempts</text>
+  <text x="585" y="294" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">DLQ triggers on-call pager &amp; manual audit</text>
+  <text x="585" y="307" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#64748b">PSP Retry-After header respected</text>
+
+  <rect x="575" y="322" width="255" height="86" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1"/>
+  <text x="585" y="340" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#92400e">PSP Dispatch Orchestrator</text>
+  <text x="585" y="356" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Wraps request with psp_idempotency_key</text>
+  <text x="585" y="371" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Enforces strict 8000ms socket timeout</text>
+  <text x="585" y="386" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#b91c1c">Timeout -&gt; PENDING_UNKNOWN (no fallback!)</text>
+  <text x="585" y="400" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#059669">Transitions status to EXECUTING</text>
+
+  <!-- Arrow Col 3 -> Col 4 -->
+  <line x1="840" y1="247" x2="858" y2="247" stroke="#d97706" stroke-width="1.8" marker-end="url(#arr-amber)"/>
+
+  <!-- Column 4: External PSP & Card Schemes -->
+  <rect x="860" y="74" width="320" height="346" rx="10" fill="#fdf2f8" stroke="#ec4899" stroke-width="1.5"/>
+  <text x="872" y="96" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#831843">4. External PSPs &amp; Card Schemes</text>
+
+  <rect x="870" y="108" width="300" height="80" rx="6" fill="#ffffff" stroke="#fbcfe8" stroke-width="1"/>
+  <text x="880" y="126" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#9d174d">Smart Multi-PSP Routing</text>
+  <text x="880" y="142" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Primary: Stripe · Secondary: Adyen / Checkout</text>
+  <text x="880" y="157" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Circuit breaker opens on PSP 5xx surge</text>
+  <text x="880" y="172" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#b91c1c">New checkouts diverted; in-flight locked</text>
+  <text x="880" y="184" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#64748b">Route by currency, fee tier &amp; uptime score</text>
+
+  <rect x="870" y="196" width="300" height="80" rx="6" fill="#ffffff" stroke="#fbcfe8" stroke-width="1"/>
+  <text x="880" y="214" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#9d174d">Card Schemes &amp; Issuing Banks</text>
+  <text x="880" y="230" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Visa / Mastercard / Amex clearing rails</text>
+  <text x="880" y="245" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">3DS2 challenge flow / step-up auth</text>
+  <text x="880" y="260" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#d97706">Risk-hold delay: payment pending review</text>
+  <text x="880" y="272" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#64748b">Funds reserved on buyer card credit line</text>
+
+  <rect x="870" y="284" width="300" height="124" rx="6" fill="#fdf4ff" stroke="#f472b6" stroke-width="1"/>
+  <text x="880" y="302" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#831843">Webhook Ingestion &amp; Polling Fallback</text>
+  <text x="880" y="318" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">PSP pushes async signed webhook on capture</text>
+  <text x="880" y="333" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#701a75">HMAC-SHA256 signature verification</text>
+  <text x="880" y="348" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Polling cron sweeps stale PENDING_UNKNOWN</text>
+  <text x="880" y="363" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9" fill="#334155">GET /v1/charges/{psp_charge_id}</text>
+  <text x="880" y="378" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#059669">Resolves 3DS completion and risk releases</text>
+  <text x="880" y="393" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#1e40af">Transitions status to SUCCESS or FAILED</text>
+
+  <!-- ==================== TIER 2: MULTI-RECEIVER EVENT BUS ==================== -->
+
+  <!-- Feed from Payment Svc / Webhook into Bus -->
+  <path d="M 407 420 L 407 436" fill="none" stroke="#64748b" stroke-width="1.8" marker-end="url(#arr)"/>
+  <path d="M 1020 420 L 1020 436" fill="none" stroke="#ec4899" stroke-width="1.8" marker-end="url(#arr-rose)"/>
+
+  <rect x="20" y="438" width="1160" height="46" rx="8" fill="#ede9fe" stroke="#8b5cf6" stroke-width="1.5"/>
+  <text x="34" y="458" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#4c1d95">5. Multi-Receiver Event Bus (Kafka: payment.completed-events)</text>
+  <text x="34" y="474" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#5b21b6">CDC Outbox publish · Idempotent fan-out to 5a (Ledger/Wallet), 6 (Reconciliation), 7 (Pay-Out)</text>
+
+  <!-- Arrows Bus -> Downstream Services -->
+  <line x1="200" y1="484" x2="200" y2="502" stroke="#7c3aed" stroke-width="1.8" marker-end="url(#arr-purple)"/>
+  <line x1="585" y1="484" x2="585" y2="502" stroke="#7c3aed" stroke-width="1.8" marker-end="url(#arr-purple)"/>
+  <line x1="985" y1="484" x2="985" y2="502" stroke="#7c3aed" stroke-width="1.8" marker-end="url(#arr-purple)"/>
+
+  <!-- ==================== TIER 3: ACCOUNTING, RECONCILIATION & PAY-OUT ==================== -->
+
+  <!-- Box 5: Double-Entry Ledger & Merchant Wallet -->
+  <rect x="20" y="504" width="365" height="258" rx="10" fill="#f0fdf4" stroke="#10b981" stroke-width="1.5"/>
+  <text x="32" y="526" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#065f46">5a. Double-Entry Ledger &amp; Wallet</text>
+
+  <rect x="30" y="538" width="345" height="114" rx="6" fill="#ffffff" stroke="#a7f3d0" stroke-width="1"/>
+  <text x="40" y="556" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#047857">Double-Entry Ledger (Zero-Sum Invariant)</text>
+  <text x="40" y="572" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Immutable append-only journal postings</text>
+  <text x="40" y="587" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#065f46">sum(Debits) == sum(Credits) == 0</text>
+  <text x="40" y="602" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Amounts in integer minor units (no float!)</text>
+  <text x="40" y="617" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Debit buyer_wallet | Credit merchant_payable</text>
+  <text x="40" y="632" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Credit platform_fee_shard_N (anti hot-lock)</text>
+  <text x="40" y="646" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#059669">Sets ledger_updated = true on order</text>
+
+  <rect x="30" y="660" width="345" height="92" rx="6" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1"/>
+  <text x="40" y="678" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#047857">Merchant Wallet &amp; Order Notification</text>
+  <text x="40" y="694" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Increments merchant available balance</text>
+  <text x="40" y="709" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#065f46">Sets wallet_updated = true on order</text>
+  <text x="40" y="724" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Emits order fulfillment event to warehouse</text>
+  <text x="40" y="738" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#2563eb">See Module 24 for Wallet Raft &amp; CQRS internals</text>
+
+  <!-- Box 6: Settlement Reconciliation Engine -->
+  <rect x="400" y="504" width="375" height="258" rx="10" fill="#f0f9ff" stroke="#0284c7" stroke-width="1.5"/>
+  <text x="412" y="526" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#075985">6. Settlement &amp; 3-Tier Reconciliation</text>
+
+  <rect x="410" y="538" width="355" height="66" rx="6" fill="#ffffff" stroke="#bae6fd" stroke-width="1"/>
+  <text x="420" y="556" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#0284c7">Nightly PSP Settlement Ingestion</text>
+  <text x="420" y="572" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">T+1 clearing batch file (CSV / camt.053 / BAI2)</text>
+  <text x="420" y="587" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Ingested via secure SFTP / Object Store lakehouse</text>
+  <text x="420" y="599" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#64748b">Contains net settlement, interchange fees &amp; refunds</text>
+
+  <rect x="410" y="612" width="355" height="140" rx="6" fill="#e0f2fe" stroke="#38bdf8" stroke-width="1"/>
+  <text x="420" y="630" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#0369a1">3-Tier Reconciliation Mismatch Taxonomy</text>
+  <text x="420" y="646" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#047857">Tier 1: Exact Match (Automated)</text>
+  <text x="420" y="660" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Matches psp_tx_id + amount + currency -&gt; mark SETTLED</text>
+  <text x="420" y="676" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#b45309">Tier 2: Classifiable Mismatch (Auto-Adjusted)</text>
+  <text x="420" y="690" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Known variance (interchange delta, FX spread, fee tiers)</text>
+  <text x="420" y="704" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">System generates compensating journal entry automatically</text>
+  <text x="420" y="720" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#b91c1c">Tier 3: Unclassifiable Discrepancy (Human Triage)</text>
+  <text x="420" y="734" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#b91c1c">Missing internal txn or chargeback dispute -&gt; Finance Ops</text>
+  <text x="420" y="747" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#475569">DLQ queue &amp; workflow audit dashboard with rollback audit</text>
+
+  <!-- Box 7: Pay-Out Flow & Global Rails -->
+  <rect x="790" y="504" width="390" height="258" rx="10" fill="#fefce8" stroke="#ca8a04" stroke-width="1.5"/>
+  <text x="802" y="526" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#713f12">7. Pay-Out Flow (Disbursements)</text>
+
+  <rect x="800" y="538" width="370" height="96" rx="6" fill="#ffffff" stroke="#fef08a" stroke-width="1"/>
+  <text x="810" y="556" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#a16207">Pay-Out Orchestrator &amp; Compliance</text>
+  <text x="810" y="572" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Monthly / weekly merchant balance sweep</text>
+  <text x="810" y="587" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Debit merchant_payable | Credit cash_in_transit</text>
+  <text x="810" y="602" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Tax withholding (1099-K / W-8BEN compliance)</text>
+  <text x="810" y="617" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#a16207">AP platform integration: Tipalti / Stripe Connect</text>
+  <text x="810" y="629" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#64748b">OFAC and sanctions verification on pay-out account</text>
+
+  <rect x="800" y="642" width="370" height="110" rx="6" fill="#fef9c3" stroke="#facc15" stroke-width="1"/>
+  <text x="810" y="660" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#854d0e">Multi-Rail Global Banking Execution</text>
+  <text x="810" y="676" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">North America: ACH (T+2) / FedNow &amp; RTP (Instant)</text>
+  <text x="810" y="691" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Europe: SEPA Credit (T+1) / SEPA Instant (&lt; 10s)</text>
+  <text x="810" y="706" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Latin America: Pix (Brazil 24/7 instant settlement)</text>
+  <text x="810" y="721" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Asia-Pacific: UPI (India) / Fast (Singapore)</text>
+  <text x="810" y="736" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#059669">Batch ISO 20022 XML (pain.001) / Direct API clearing</text>
+  <text x="810" y="748" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#64748b">Bank confirmation triggers final debit: cash_in_transit -&gt; bank</text>
+</svg>
