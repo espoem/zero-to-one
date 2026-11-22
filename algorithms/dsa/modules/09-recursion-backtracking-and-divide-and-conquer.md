@@ -54,6 +54,10 @@ Instead of passing sets or 2D boards through recursion, bitwise integers track o
 - `diag2`: Bit $(r + c)$ is set for minor diagonals.
 - Available slots at row $r$: $$\text{available} = \sim(\text{cols} \ | \ \text{diag1} \ | \ \text{diag2}) \ \& \ ((1 \ll N) - 1)$$ This eliminates all inner validation loops, running at near-C speeds.
 
+![Animated backtracking decision tree with Choose-Explore-Prune-Unchoose cycle and N-Queens O(1) bitmask pruning](../assets/09-backtracking-and-nqueens-bitmask-animated.svg)
+
+_Universal backtracking state-space traversal (`Choose -> Explore -> Prune -> Unchoose`) paired with 4-Queens $O(1)$ bitwise register pruning (`cols \| diag1 \| diag2`) eliminating invalid columns and diagonals at row $r = 2$ without scanning the board._
+
 ---
 
 ## 3. Divide-and-Conquer: Karatsuba Integer Multiplication
@@ -101,6 +105,10 @@ flowchart LR
 
 - Brute Force: $O(2^n) = O(2^{40}) \approx 1,099,511,627,776$ operations (Time Limit Exceeded).
 - Meet-in-the-Middle: $O(2^{n/2} \cdot n) = O(2^{20} \cdot 40) \approx 1,048,576 \times 40 \approx 4.2 \times 10^7$ operations (Runs in **< 50 milliseconds**).
+
+![Animated Karatsuba 3-multiplication divide-and-conquer and Meet-in-the-Middle 2^(n/2) split and join](../assets/09-karatsuba-and-meet-in-the-middle-animated.svg)
+
+_Left: Karatsuba reduces four half-size multiplications to three (`z2`, `z0`, `z1`) for $\Theta(n^{\log_2 3}) \approx \Theta(n^{1.585})$ multiplication. Right: Meet-in-the-Middle partitions $2^n$ subsets into two $2^{n/2}$ halves and joins them via binary search or two-pointers in $O(2^{n/2} \cdot n)$ time._
 
 ---
 

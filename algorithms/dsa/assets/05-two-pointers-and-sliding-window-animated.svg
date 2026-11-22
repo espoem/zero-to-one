@@ -1,0 +1,445 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" width="1200" height="760" role="img" aria-labelledby="title desc">
+  <title id="title">Two Pointers and Sliding Window: Search-Space Elimination and Monotonicity</title>
+  <desc id="desc">Animated step-by-step visualization of opposite-direction two pointers eliminating pairs on a sorted array to find target 18 in O(n) time, paired with a sliding window expanding R and shrinking L monotonically to maintain sum at most 10.</desc>
+  <defs>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arrow-violet" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed"/>
+    </marker>
+    <marker id="arrow-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <marker id="arrow-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+    </marker>
+    <style>
+      .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+      /* 5-step 10s cycle for Two Pointers:
+         S1 (0-20%): L=0(2), R=5(28) sum=30 gt 18 -> R--
+         S2 (20-40%): L=0(2), R=4(19) sum=21 gt 18 -> R--
+         S3 (40-60%): L=0(2), R=3(15) sum=17 lt 18 -> L++
+         S4 (60-80%): L=1(7), R=3(15) sum=22 gt 18 -> R--
+         S5 (80-100%): L=1(7), R=2(11) sum=18 == 18 -> FOUND
+      */
+      @keyframes tp-left {
+        0%, 56% { transform: translateX(0px); }
+        60%, 100% { transform: translateX(82px); }
+      }
+      @keyframes tp-right {
+        0%, 16% { transform: translateX(0px); }
+        20%, 36% { transform: translateX(-82px); }
+        40%, 76% { transform: translateX(-164px); }
+        80%, 100% { transform: translateX(-246px); }
+      }
+      @keyframes tp-elim-5 {
+        0%, 18% { opacity: 0.12; }
+        20%, 100% { opacity: 0.9; }
+      }
+      @keyframes tp-elim-4 {
+        0%, 38% { opacity: 0.12; }
+        40%, 100% { opacity: 0.9; }
+      }
+      @keyframes tp-elim-0 {
+        0%, 58% { opacity: 0.12; }
+        60%, 100% { opacity: 0.9; }
+      }
+      @keyframes tp-elim-3 {
+        0%, 78% { opacity: 0.12; }
+        80%, 100% { opacity: 0.9; }
+      }
+      @keyframes tp-found-glow {
+        0%, 78% { opacity: 0; }
+        80%, 98% { opacity: 1; }
+        100% { opacity: 0; }
+      }
+      @keyframes tp-s1 { 0%, 18% { opacity: 1; } 20%, 100% { opacity: 0; } }
+      @keyframes tp-s2 { 0%, 18% { opacity: 0; } 20%, 38% { opacity: 1; } 40%, 100% { opacity: 0; } }
+      @keyframes tp-s3 { 0%, 38% { opacity: 0; } 40%, 58% { opacity: 1; } 60%, 100% { opacity: 0; } }
+      @keyframes tp-s4 { 0%, 58% { opacity: 0; } 60%, 78% { opacity: 1; } 80%, 100% { opacity: 0; } }
+      @keyframes tp-s5 { 0%, 78% { opacity: 0; } 80%, 100% { opacity: 1; } }
+
+      /* 6-step 12s cycle for Sliding Window A = [4, 2, 5, 3, 6, 1], max sum lte 10:
+         W1 (0-16%): [0,1) [4] sum=4 lte 10 VALID (best=1)
+         W2 (16-33%): [0,2) [4,2] sum=6 lte 10 VALID (best=2)
+         W3 (33-50%): [0,3) [4,2,5] sum=11 gt 10 INVALID -> shrink L
+         W4 (50-66%): [1,3) [2,5] sum=7 lte 10 VALID
+         W5 (66-83%): [1,4) [2,5,3] sum=10 lte 10 VALID (best=3)
+         W6 (83-100%): [3,6) [3,6,1] sum=10 lte 10 VALID (best=3)
+      */
+      @keyframes sw-box {
+        0%, 14% { transform: translateX(0px); width: 74px; stroke: #059669; fill: #ecfdf5; }
+        16%, 30% { transform: translateX(0px); width: 156px; stroke: #059669; fill: #ecfdf5; }
+        33%, 47% { transform: translateX(0px); width: 238px; stroke: #e11d48; fill: #fff1f2; }
+        50%, 63% { transform: translateX(82px); width: 156px; stroke: #059669; fill: #ecfdf5; }
+        66%, 80% { transform: translateX(82px); width: 238px; stroke: #2563eb; fill: #eff6ff; }
+        83%, 100% { transform: translateX(246px); width: 238px; stroke: #059669; fill: #ecfdf5; }
+      }
+      @keyframes sw-l-ptr {
+        0%, 47% { transform: translateX(0px); }
+        50%, 80% { transform: translateX(82px); }
+        83%, 100% { transform: translateX(246px); }
+      }
+      @keyframes sw-r-ptr {
+        0%, 14% { transform: translateX(0px); }
+        16%, 30% { transform: translateX(82px); }
+        33%, 63% { transform: translateX(164px); }
+        66%, 80% { transform: translateX(246px); }
+        83%, 100% { transform: translateX(410px); }
+      }
+      @keyframes sw-bar {
+        0%, 14% { width: 88px; fill: #059669; }
+        16%, 30% { width: 132px; fill: #059669; }
+        33%, 47% { width: 242px; fill: #e11d48; }
+        50%, 63% { width: 154px; fill: #059669; }
+        66%, 80% { width: 220px; fill: #2563eb; }
+        83%, 100% { width: 220px; fill: #059669; }
+      }
+      @keyframes sw-s1 { 0%, 14% { opacity: 1; } 16%, 100% { opacity: 0; } }
+      @keyframes sw-s2 { 0%, 14% { opacity: 0; } 16%, 30% { opacity: 1; } 33%, 100% { opacity: 0; } }
+      @keyframes sw-s3 { 0%, 30% { opacity: 0; } 33%, 47% { opacity: 1; } 50%, 100% { opacity: 0; } }
+      @keyframes sw-s4 { 0%, 47% { opacity: 0; } 50%, 63% { opacity: 1; } 66%, 100% { opacity: 0; } }
+      @keyframes sw-s5 { 0%, 63% { opacity: 0; } 66%, 80% { opacity: 1; } 83%, 100% { opacity: 0; } }
+      @keyframes sw-s6 { 0%, 80% { opacity: 0; } 83%, 100% { opacity: 1; } }
+
+      .anim-tp-l { animation: tp-left 10s ease-in-out infinite; }
+      .anim-tp-r { animation: tp-right 10s ease-in-out infinite; }
+      .anim-elim-5 { animation: tp-elim-5 10s linear infinite; }
+      .anim-elim-4 { animation: tp-elim-4 10s linear infinite; }
+      .anim-elim-0 { animation: tp-elim-0 10s linear infinite; }
+      .anim-elim-3 { animation: tp-elim-3 10s linear infinite; }
+      .anim-tp-found { animation: tp-found-glow 10s linear infinite; }
+      .tp-st-1 { animation: tp-s1 10s linear infinite; }
+      .tp-st-2 { animation: tp-s2 10s linear infinite; }
+      .tp-st-3 { animation: tp-s3 10s linear infinite; }
+      .tp-st-4 { animation: tp-s4 10s linear infinite; }
+      .tp-st-5 { animation: tp-s5 10s linear infinite; }
+
+      .anim-sw-box { animation: sw-box 12s ease-in-out infinite; }
+      .anim-sw-l { animation: sw-l-ptr 12s ease-in-out infinite; }
+      .anim-sw-r { animation: sw-r-ptr 12s ease-in-out infinite; }
+      .anim-sw-bar { animation: sw-bar 12s ease-in-out infinite; }
+      .sw-st-1 { animation: sw-s1 12s linear infinite; }
+      .sw-st-2 { animation: sw-s2 12s linear infinite; }
+      .sw-st-3 { animation: sw-s3 12s linear infinite; }
+      .sw-st-4 { animation: sw-s4 12s linear infinite; }
+      .sw-st-5 { animation: sw-s5 12s linear infinite; }
+      .sw-st-6 { animation: sw-s6 12s linear infinite; }
+
+      @media (prefers-reduced-motion: reduce) {
+        .anim-tp-l, .anim-tp-r, .anim-elim-5, .anim-elim-4, .anim-elim-0, .anim-elim-3,
+        .anim-tp-found, .tp-st-1, .tp-st-2, .tp-st-3, .tp-st-4, .tp-st-5,
+        .anim-sw-box, .anim-sw-l, .anim-sw-r, .anim-sw-bar,
+        .sw-st-1, .sw-st-2, .sw-st-3, .sw-st-4, .sw-st-5, .sw-st-6 {
+          animation: none !important;
+        }
+        .anim-tp-l { transform: translateX(82px); }
+        .anim-tp-r { transform: translateX(-246px); }
+        .anim-elim-5, .anim-elim-4, .anim-elim-0, .anim-elim-3 { opacity: 0.9; }
+        .anim-tp-found { opacity: 1; }
+        .tp-st-1, .tp-st-2, .tp-st-3, .tp-st-4 { opacity: 0; }
+        .tp-st-5 { opacity: 1; }
+        .anim-sw-box { transform: translateX(82px); width: 238px; stroke: #2563eb; fill: #eff6ff; }
+        .anim-sw-l { transform: translateX(82px); }
+        .anim-sw-r { transform: translateX(246px); }
+        .anim-sw-bar { width: 220px; fill: #2563eb; }
+        .sw-st-1, .sw-st-2, .sw-st-3, .sw-st-4, .sw-st-6 { opacity: 0; }
+        .sw-st-5 { opacity: 1; }
+      }
+    </style>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1200" height="760" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1200" height="60" rx="12" fill="#0f172a"/>
+  <rect x="0" y="44" width="1200" height="16" fill="#0f172a"/>
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Two Pointers &amp; Sliding Window: Search-Space Elimination &amp; Monotonicity</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">Opposite-Direction O(n) Pair Elimination (Two Sum II) vs Monotonic [L, R) Window Contraction</text>
+
+  <!-- LEFT PANEL: Opposite-Direction Two Pointers -->
+  <rect x="24" y="76" width="564" height="574" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+  <rect x="24" y="76" width="564" height="36" rx="10" fill="#f1f5f9"/>
+  <rect x="24" y="102" width="564" height="10" fill="#f1f5f9"/>
+  <text x="40" y="99" class="sans" font-size="13" font-weight="700" fill="#0f172a">1. Opposite-Direction Pointers (Target = 18)</text>
+  <text x="572" y="99" class="mono" font-size="11" fill="#2563eb" text-anchor="end">O(n) time · O(1) space</text>
+
+  <!-- Sorted array label -->
+  <text x="44" y="136" class="sans" font-size="11.5" font-weight="600" fill="#475569">Sorted Array A (6 elements):</text>
+  <rect x="462" y="120" width="110" height="22" rx="4" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="517" y="135" class="mono" font-size="11" font-weight="700" fill="#1d4ed8" text-anchor="middle">target = 18</text>
+
+  <!-- Found emerald highlight under idx 1 & 2 -->
+  <rect x="132" y="156" width="160" height="68" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="2.5" class="anim-tp-found"/>
+
+  <!-- Array Cells: x = 56, 138, 220, 302, 384, 466 (step 82, width 74) -->
+  <g transform="translate(56, 162)">
+    <!-- Cell 0: 2 -->
+    <rect x="0" y="0" width="74" height="56" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+    <text x="37" y="34" class="mono" font-size="18" font-weight="700" fill="#0f172a" text-anchor="middle">2</text>
+    <text x="37" y="72" class="mono" font-size="10.5" fill="#64748b" text-anchor="middle">i = 0</text>
+    <g class="anim-elim-0">
+      <rect x="0" y="0" width="74" height="56" rx="6" fill="#fff1f2" stroke="#e11d48" stroke-width="1.5"/>
+      <text x="37" y="34" class="mono" font-size="18" font-weight="700" fill="#be123c" text-anchor="middle">2</text>
+      <line x1="12" y1="46" x2="62" y2="10" stroke="#e11d48" stroke-width="2"/>
+    </g>
+
+    <!-- Cell 1: 7 -->
+    <rect x="82" y="0" width="74" height="56" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+    <text x="119" y="34" class="mono" font-size="18" font-weight="700" fill="#0f172a" text-anchor="middle">7</text>
+    <text x="119" y="72" class="mono" font-size="10.5" fill="#64748b" text-anchor="middle">i = 1</text>
+
+    <!-- Cell 2: 11 -->
+    <rect x="164" y="0" width="74" height="56" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+    <text x="201" y="34" class="mono" font-size="18" font-weight="700" fill="#0f172a" text-anchor="middle">11</text>
+    <text x="201" y="72" class="mono" font-size="10.5" fill="#64748b" text-anchor="middle">i = 2</text>
+
+    <!-- Cell 3: 15 -->
+    <rect x="246" y="0" width="74" height="56" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+    <text x="283" y="34" class="mono" font-size="18" font-weight="700" fill="#0f172a" text-anchor="middle">15</text>
+    <text x="283" y="72" class="mono" font-size="10.5" fill="#64748b" text-anchor="middle">i = 3</text>
+    <g class="anim-elim-3">
+      <rect x="246" y="0" width="74" height="56" rx="6" fill="#fff1f2" stroke="#e11d48" stroke-width="1.5"/>
+      <text x="283" y="34" class="mono" font-size="18" font-weight="700" fill="#be123c" text-anchor="middle">15</text>
+      <line x1="258" y1="46" x2="308" y2="10" stroke="#e11d48" stroke-width="2"/>
+    </g>
+
+    <!-- Cell 4: 19 -->
+    <rect x="328" y="0" width="74" height="56" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+    <text x="365" y="34" class="mono" font-size="18" font-weight="700" fill="#0f172a" text-anchor="middle">19</text>
+    <text x="365" y="72" class="mono" font-size="10.5" fill="#64748b" text-anchor="middle">i = 4</text>
+    <g class="anim-elim-4">
+      <rect x="328" y="0" width="74" height="56" rx="6" fill="#fff1f2" stroke="#e11d48" stroke-width="1.5"/>
+      <text x="365" y="34" class="mono" font-size="18" font-weight="700" fill="#be123c" text-anchor="middle">19</text>
+      <line x1="340" y1="46" x2="390" y2="10" stroke="#e11d48" stroke-width="2"/>
+    </g>
+
+    <!-- Cell 5: 28 -->
+    <rect x="410" y="0" width="74" height="56" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+    <text x="447" y="34" class="mono" font-size="18" font-weight="700" fill="#0f172a" text-anchor="middle">28</text>
+    <text x="447" y="72" class="mono" font-size="10.5" fill="#64748b" text-anchor="middle">i = 5</text>
+    <g class="anim-elim-5">
+      <rect x="410" y="0" width="74" height="56" rx="6" fill="#fff1f2" stroke="#e11d48" stroke-width="1.5"/>
+      <text x="447" y="34" class="mono" font-size="18" font-weight="700" fill="#be123c" text-anchor="middle">28</text>
+      <line x1="422" y1="46" x2="472" y2="10" stroke="#e11d48" stroke-width="2"/>
+    </g>
+
+    <!-- Animated Left Pointer -->
+    <g class="anim-tp-l">
+      <rect x="13" y="84" width="48" height="24" rx="5" fill="#2563eb"/>
+      <text x="37" y="100" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">left</text>
+      <line x1="37" y1="84" x2="37" y2="62" stroke="#2563eb" stroke-width="2.5" marker-end="url(#arrow-blue)"/>
+    </g>
+
+    <!-- Animated Right Pointer -->
+    <g class="anim-tp-r">
+      <rect x="421" y="84" width="52" height="24" rx="5" fill="#7c3aed"/>
+      <text x="447" y="100" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">right</text>
+      <line x1="447" y1="84" x2="447" y2="62" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#arrow-violet)"/>
+    </g>
+  </g>
+
+  <!-- Live Comparison Trace Box -->
+  <rect x="44" y="290" width="524" height="72" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="60" y="312" class="sans" font-size="11" font-weight="700" fill="#475569">STEP TRACE &amp; INVARIANT DECISION:</text>
+
+  <g class="tp-st-1">
+    <rect x="456" y="300" width="96" height="22" rx="4" fill="#fff1f2" stroke="#fda4af"/>
+    <text x="504" y="315" class="mono" font-size="11" font-weight="700" fill="#be123c" text-anchor="middle">sum &gt; 18</text>
+    <text x="60" y="340" class="mono" font-size="13" font-weight="700" fill="#0f172a">Step 1: A[0] + A[5] = 2 + 28 = 30 &gt; 18</text>
+    <text x="60" y="355" class="sans" font-size="11" fill="#be123c">All pairs (k, 5) with k &gt;= 0 exceed 18 -> eliminate 28 (right--)</text>
+  </g>
+  <g class="tp-st-2">
+    <rect x="456" y="300" width="96" height="22" rx="4" fill="#fff1f2" stroke="#fda4af"/>
+    <text x="504" y="315" class="mono" font-size="11" font-weight="700" fill="#be123c" text-anchor="middle">sum &gt; 18</text>
+    <text x="60" y="340" class="mono" font-size="13" font-weight="700" fill="#0f172a">Step 2: A[0] + A[4] = 2 + 19 = 21 &gt; 18</text>
+    <text x="60" y="355" class="sans" font-size="11" fill="#be123c">All pairs (k, 4) with k &gt;= 0 exceed 18 -> eliminate 19 (right--)</text>
+  </g>
+  <g class="tp-st-3">
+    <rect x="456" y="300" width="96" height="22" rx="4" fill="#fffbeb" stroke="#fcd34d"/>
+    <text x="504" y="315" class="mono" font-size="11" font-weight="700" fill="#b45309" text-anchor="middle">sum &lt; 18</text>
+    <text x="60" y="340" class="mono" font-size="13" font-weight="700" fill="#0f172a">Step 3: A[0] + A[3] = 2 + 15 = 17 &lt; 18</text>
+    <text x="60" y="355" class="sans" font-size="11" fill="#b45309">All pairs (0, k) with k &lt;= 3 are under 18 -> eliminate 2 (left++)</text>
+  </g>
+  <g class="tp-st-4">
+    <rect x="456" y="300" width="96" height="22" rx="4" fill="#fff1f2" stroke="#fda4af"/>
+    <text x="504" y="315" class="mono" font-size="11" font-weight="700" fill="#be123c" text-anchor="middle">sum &gt; 18</text>
+    <text x="60" y="340" class="mono" font-size="13" font-weight="700" fill="#0f172a">Step 4: A[1] + A[3] = 7 + 15 = 22 &gt; 18</text>
+    <text x="60" y="355" class="sans" font-size="11" fill="#be123c">All pairs (k, 3) with k &gt;= 1 exceed 18 -> eliminate 15 (right--)</text>
+  </g>
+  <g class="tp-st-5">
+    <rect x="456" y="300" width="96" height="22" rx="4" fill="#ecfdf5" stroke="#6ee7b7"/>
+    <text x="504" y="315" class="mono" font-size="11" font-weight="700" fill="#047857" text-anchor="middle">FOUND!</text>
+    <text x="60" y="340" class="mono" font-size="13" font-weight="700" fill="#047857">Step 5: A[1] + A[2] = 7 + 11 = 18 == target</text>
+    <text x="60" y="355" class="sans" font-size="11" fill="#059669">Converged in 5 steps (at most n - 1 steps total) with O(1) space</text>
+  </g>
+
+  <!-- Elimination Proof Card: 2D Pair Matrix intuition -->
+  <rect x="44" y="378" width="524" height="252" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="60" y="400" class="sans" font-size="12" font-weight="700" fill="#0f172a">Why O(n) Holds: Geometric Row/Column Elimination</text>
+  <text x="60" y="418" class="sans" font-size="11" fill="#475569">Each comparison discards an entire row or column of the n x n pair space in O(1):</text>
+
+  <!-- 5-row summary table inside card -->
+  <g transform="translate(60, 434)">
+    <rect x="0" y="0" width="492" height="28" rx="4" fill="#eff6ff"/>
+    <text x="12" y="18" class="mono" font-size="11" font-weight="700" fill="#1e40af">Condition</text>
+    <text x="200" y="18" class="mono" font-size="11" font-weight="700" fill="#1e40af">Eliminated Candidates</text>
+    <text x="415" y="18" class="mono" font-size="11" font-weight="700" fill="#1e40af">Action</text>
+
+    <rect x="0" y="34" width="492" height="44" rx="4" fill="#ffffff" stroke="#e2e8f0"/>
+    <text x="12" y="54" class="mono" font-size="11" font-weight="700" fill="#be123c">A[L] + A[R] &gt; T</text>
+    <text x="200" y="52" class="sans" font-size="10.5" fill="#334155">All k &gt;= L: A[k] + A[R] &gt; T</text>
+    <text x="200" y="68" class="sans" font-size="10" fill="#64748b">(sortedness forces column R invalid)</text>
+    <text x="415" y="60" class="mono" font-size="12" font-weight="700" fill="#7c3aed">right--</text>
+
+    <rect x="0" y="84" width="492" height="44" rx="4" fill="#ffffff" stroke="#e2e8f0"/>
+    <text x="12" y="104" class="mono" font-size="11" font-weight="700" fill="#b45309">A[L] + A[R] &lt; T</text>
+    <text x="200" y="102" class="sans" font-size="10.5" fill="#334155">All k &lt;= R: A[L] + A[k] &lt; T</text>
+    <text x="200" y="118" class="sans" font-size="10" fill="#64748b">(sortedness forces row L invalid)</text>
+    <text x="415" y="110" class="mono" font-size="12" font-weight="700" fill="#2563eb">left++</text>
+
+    <rect x="0" y="134" width="492" height="44" rx="4" fill="#ecfdf5" stroke="#86efac"/>
+    <text x="12" y="154" class="mono" font-size="11" font-weight="700" fill="#047857">A[L] + A[R] == T</text>
+    <text x="200" y="152" class="sans" font-size="10.5" fill="#065f46">Exact pair (left, right) found</text>
+    <text x="200" y="168" class="sans" font-size="10" fill="#059669">Distance (R - L) drops by 1 per step</text>
+    <text x="415" y="160" class="mono" font-size="12" font-weight="700" fill="#047857">return</text>
+  </g>
+
+  <!-- RIGHT PANEL: Sliding Window [L, R) -->
+  <rect x="612" y="76" width="564" height="574" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+  <rect x="612" y="76" width="564" height="36" rx="10" fill="#f1f5f9"/>
+  <rect x="612" y="102" width="564" height="10" fill="#f1f5f9"/>
+  <text x="628" y="99" class="sans" font-size="13" font-weight="700" fill="#0f172a">2. Sliding Window: Longest Subarray (sum &lt;= 10)</text>
+  <text x="1160" y="99" class="mono" font-size="11" fill="#059669" text-anchor="end">Monotonic [L, R)</text>
+
+  <text x="632" y="136" class="sans" font-size="11.5" font-weight="600" fill="#475569">Non-negative Array A (monotonic sum):</text>
+  <rect x="1032" y="120" width="128" height="22" rx="4" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <text x="1096" y="135" class="mono" font-size="11" font-weight="700" fill="#047857" text-anchor="middle">limit = 10</text>
+
+  <!-- Animated window highlight box around cells -->
+  <g transform="translate(644, 154)">
+    <rect x="0" y="0" width="74" height="72" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="2.5" class="anim-sw-box"/>
+  </g>
+
+  <!-- Array Cells: [4, 2, 5, 3, 6, 1] -->
+  <g transform="translate(644, 162)">
+    <rect x="0" y="0" width="74" height="56" rx="6" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+    <text x="37" y="34" class="mono" font-size="18" font-weight="700" fill="#0f172a" text-anchor="middle">4</text>
+    <text x="37" y="74" class="mono" font-size="10.5" fill="#64748b" text-anchor="middle">0</text>
+
+    <rect x="82" y="0" width="74" height="56" rx="6" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+    <text x="119" y="34" class="mono" font-size="18" font-weight="700" fill="#0f172a" text-anchor="middle">2</text>
+    <text x="119" y="74" class="mono" font-size="10.5" fill="#64748b" text-anchor="middle">1</text>
+
+    <rect x="164" y="0" width="74" height="56" rx="6" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+    <text x="201" y="34" class="mono" font-size="18" font-weight="700" fill="#0f172a" text-anchor="middle">5</text>
+    <text x="201" y="74" class="mono" font-size="10.5" fill="#64748b" text-anchor="middle">2</text>
+
+    <rect x="246" y="0" width="74" height="56" rx="6" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+    <text x="283" y="34" class="mono" font-size="18" font-weight="700" fill="#0f172a" text-anchor="middle">3</text>
+    <text x="283" y="74" class="mono" font-size="10.5" fill="#64748b" text-anchor="middle">3</text>
+
+    <rect x="328" y="0" width="74" height="56" rx="6" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+    <text x="365" y="34" class="mono" font-size="18" font-weight="700" fill="#0f172a" text-anchor="middle">6</text>
+    <text x="365" y="74" class="mono" font-size="10.5" fill="#64748b" text-anchor="middle">4</text>
+
+    <rect x="410" y="0" width="74" height="56" rx="6" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+    <text x="447" y="34" class="mono" font-size="18" font-weight="700" fill="#0f172a" text-anchor="middle">1</text>
+    <text x="447" y="74" class="mono" font-size="10.5" fill="#64748b" text-anchor="middle">5</text>
+
+    <!-- L pointer -->
+    <g class="anim-sw-l">
+      <rect x="20" y="86" width="34" height="22" rx="4" fill="#d97706"/>
+      <text x="37" y="101" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">L</text>
+      <line x1="37" y1="86" x2="37" y2="62" stroke="#d97706" stroke-width="2"/>
+    </g>
+
+    <!-- R pointer -->
+    <g class="anim-sw-r">
+      <rect x="20" y="-32" width="34" height="22" rx="4" fill="#2563eb"/>
+      <text x="37" y="-17" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">R</text>
+      <line x1="37" y1="-10" x2="37" y2="2" stroke="#2563eb" stroke-width="2"/>
+    </g>
+  </g>
+
+  <!-- Window Sum Gauge -->
+  <rect x="632" y="286" width="524" height="62" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="648" y="306" class="sans" font-size="11" font-weight="700" fill="#475569">WINDOW SUM GAUGE (0..12):</text>
+  <rect x="648" y="318" width="264" height="16" rx="4" fill="#e2e8f0"/>
+  <rect x="648" y="318" width="88" height="16" rx="4" fill="#059669" class="anim-sw-bar"/>
+  <!-- Threshold tick at 10/12 * 264 = 220px -> 648 + 220 = 868 -->
+  <line x1="868" y1="312" x2="868" y2="340" stroke="#0f172a" stroke-width="2" stroke-dasharray="3 2"/>
+  <text x="868" y="308" class="mono" font-size="10" font-weight="700" fill="#0f172a" text-anchor="middle">10</text>
+
+  <g class="sw-st-1">
+    <text x="932" y="328" class="mono" font-size="12" font-weight="700" fill="#047857">sum=4  [0..0] len=1</text>
+    <text x="932" y="342" class="sans" font-size="10.5" fill="#059669">Expand R (valid, best=1)</text>
+  </g>
+  <g class="sw-st-2">
+    <text x="932" y="328" class="mono" font-size="12" font-weight="700" fill="#047857">sum=6  [0..1] len=2</text>
+    <text x="932" y="342" class="sans" font-size="10.5" fill="#059669">Expand R (valid, best=2)</text>
+  </g>
+  <g class="sw-st-3">
+    <text x="932" y="328" class="mono" font-size="12" font-weight="700" fill="#be123c">sum=11 [0..2] &gt; 10!</text>
+    <text x="932" y="342" class="sans" font-size="10.5" fill="#be123c">INVALID -&gt; Shrink L++</text>
+  </g>
+  <g class="sw-st-4">
+    <text x="932" y="328" class="mono" font-size="12" font-weight="700" fill="#047857">sum=7  [1..2] len=2</text>
+    <text x="932" y="342" class="sans" font-size="10.5" fill="#059669">Restored valid (&lt;= 10)</text>
+  </g>
+  <g class="sw-st-5">
+    <text x="932" y="328" class="mono" font-size="12" font-weight="700" fill="#1d4ed8">sum=10 [1..3] len=3</text>
+    <text x="932" y="342" class="sans" font-size="10.5" fill="#1d4ed8">Valid! New best = 3</text>
+  </g>
+  <g class="sw-st-6">
+    <text x="932" y="328" class="mono" font-size="12" font-weight="700" fill="#047857">sum=10 [3..5] len=3</text>
+    <text x="932" y="342" class="sans" font-size="10.5" fill="#059669">Shrank past 6, best = 3</text>
+  </g>
+
+  <!-- Monotone Movement Loop + Negative Numbers Trap -->
+  <rect x="632" y="362" width="524" height="130" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="648" y="384" class="sans" font-size="12" font-weight="700" fill="#0f172a">3-Step Monotonic Loop (Total moves of L + R &lt;= 2n):</text>
+  <rect x="648" y="396" width="154" height="44" rx="6" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="725" y="414" class="sans" font-size="11" font-weight="700" fill="#1d4ed8" text-anchor="middle">1. Expand Right</text>
+  <text x="725" y="430" class="mono" font-size="10" fill="#1e40af" text-anchor="middle">sum += A[R++]</text>
+
+  <line x1="802" y1="418" x2="824" y2="418" stroke="#64748b" stroke-width="2" marker-end="url(#arrow-blue)"/>
+
+  <rect x="828" y="396" width="156" height="44" rx="6" fill="#fffbeb" stroke="#fcd34d"/>
+  <text x="906" y="414" class="sans" font-size="11" font-weight="700" fill="#b45309" text-anchor="middle">2. While Invalid</text>
+  <text x="906" y="430" class="mono" font-size="10" fill="#92400e" text-anchor="middle">sum -= A[L++]</text>
+
+  <line x1="984" y1="418" x2="1006" y2="418" stroke="#64748b" stroke-width="2" marker-end="url(#arrow-emerald)"/>
+
+  <rect x="1010" y="396" width="130" height="44" rx="6" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <text x="1075" y="414" class="sans" font-size="11" font-weight="700" fill="#047857" text-anchor="middle">3. Update Best</text>
+  <text x="1075" y="430" class="mono" font-size="10" fill="#065f46" text-anchor="middle">max(ans, R-L)</text>
+
+  <text x="648" y="472" class="sans" font-size="10.5" fill="#475569">Neither L nor R ever moves backward: each element enters once and exits at most once.</text>
+
+  <!-- Caution Box: Negative Numbers Trap -->
+  <rect x="632" y="506" width="524" height="124" rx="8" fill="#fff1f2" stroke="#fda4af" stroke-width="1.5"/>
+  <rect x="648" y="520" width="198" height="22" rx="4" fill="#e11d48"/>
+  <text x="747" y="535" class="sans" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">CAUTION: NEGATIVE TRAP</text>
+  <text x="648" y="562" class="sans" font-size="11.5" font-weight="600" fill="#9f1239">Sliding Window FAILS when negative numbers exist!</text>
+  <text x="648" y="582" class="sans" font-size="10.5" fill="#881337">Adding A[R] &lt; 0 can decrease sum; removing A[L] &lt; 0 can increase sum.</text>
+  <text x="648" y="600" class="sans" font-size="10.5" fill="#881337">Monotonicity breaks -&gt; shrinking L might miss valid subarrays ahead.</text>
+  <text x="648" y="618" class="mono" font-size="10.5" font-weight="700" fill="#be123c">Fix for &quot;Subarray Sum = K&quot; with negatives: Prefix Sum + Hash Map</text>
+
+  <!-- Bottom Legend / Summary Bar -->
+  <rect x="24" y="666" width="1152" height="74" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="44" y="692" class="sans" font-size="12" font-weight="700" fill="#0f172a">Pattern Selection Key:</text>
+  <rect x="200" y="678" width="14" height="14" rx="3" fill="#2563eb"/>
+  <text x="220" y="690" class="sans" font-size="11" fill="#334155">Left / Expand pointer (monotone forward)</text>
+  <rect x="490" y="678" width="14" height="14" rx="3" fill="#7c3aed"/>
+  <text x="510" y="690" class="sans" font-size="11" fill="#334155">Right converging pointer (sorted domain)</text>
+  <rect x="786" y="678" width="14" height="14" rx="3" fill="#e11d48"/>
+  <text x="806" y="690" class="sans" font-size="11" fill="#334155">Eliminated pair / Violated window</text>
+  <rect x="1026" y="678" width="14" height="14" rx="3" fill="#059669"/>
+  <text x="1046" y="690" class="sans" font-size="11" fill="#334155">Valid / Target hit</text>
+  <text x="44" y="722" class="sans" font-size="11" fill="#64748b">Invariant guarantee: Opposite-direction eliminates O(n) candidates per step; Sliding Window bounds L and R to &lt;= 2n increments total.</text>
+</svg>

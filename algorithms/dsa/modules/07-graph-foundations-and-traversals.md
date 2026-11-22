@@ -83,6 +83,10 @@ To detect cycles in directed graphs without recursion:
 
 **Theorem**: A directed graph $G$ contains a cycle if and only if DFS encounters a **Back Edge** pointing to an active **Gray** vertex.
 
+![Animated trace of 3-color directed DFS cycle detection and undirected Bipartite 2-coloring](../assets/07-dfs-3color-and-bipartite-animated.svg)
+
+_Animation: Directed DFS tracks White/Gray/Black states so a back edge to an active Gray ancestor proves a cycle while cross edges to Black nodes are safe, and undirected 2-coloring detects non-bipartiteness the moment an odd-cycle edge connects same-color endpoints._
+
 ---
 
 ## 4. Topological Sorting: Kahn's Algorithm vs DFS Post-Order Reversal
@@ -116,6 +120,10 @@ flowchart LR
 
 Run DFS. When a vertex finishes (all children explored), append it to a list. Reverse the list at the end. (If a back edge is encountered, reject: not a DAG).
 
+![Animated comparison of Kahn's in-degree queue and DFS post-order reversal topological sorting](../assets/07-topological-sort-kahn-and-dfs-animated.svg)
+
+_Animation: Kahn's algorithm pops zero-in-degree vertices `[A, B, C, D]` while decrementing neighbor dependencies, whereas DFS records finish order `[D, B, C, A]` and reverses it into `[A, C, B, D]`._
+
 ---
 
 ## 5. Strongly Connected Components: Tarjan's Algorithm
@@ -147,6 +155,10 @@ Tarjan's algorithm finds all SCCs in a single DFS pass using two integers per no
   - Else if $v$ is currently on the stack: `low[u] = Math.min(low[u], discovery[v])`.
 - **Root of SCC Invariant**: If `low[u] === discovery[u]`, node $u$ is the root of an SCC! Pop all nodes from the stack down to $u$; they form a complete, isolated SCC. **Complexity**: $\Theta(V + E)$ time and $\Theta(V)$ auxiliary space.
 
+![Animated step-by-step trace of Tarjan's single-pass Strongly Connected Components algorithm](../assets/07-tarjan-scc-animated.svg)
+
+_Animation: Tarjan's algorithm propagates `low[u]` along tree edges and on-stack back edges, ignores off-stack cross-component nodes, and pops complete SCCs `{D, E}` and `{A, B, C}` whenever `low[u] === discovery[u]`._
+
 ---
 
 ## 6. 0-1 Breadth-First Search (Dijkstra Optimization)
@@ -161,6 +173,10 @@ flowchart LR
 ```
 
 Because 0-weight edges do not advance the current path cost, pushing them to the front preserves the monotonic distance invariant of the queue without sorting.
+
+![Animated visualization of Multi-Source BFS frontier rings and 0-1 BFS Deque routing](../assets/07-bfs-and-01-bfs-deque-animated.svg)
+
+_Animation: Multi-source BFS expands lockstep level wavefronts from all `t = 0` sources in a single $O(V + E)$ pass, while 0-1 BFS preserves a two-distance deque invariant (`{d, d + 1}`) by calling `pushFront` for weight-0 edges and `pushBack` for weight-1 edges._
 
 ---
 

@@ -263,6 +263,10 @@ flowchart LR
 
 Store with each element the minimum of everything beneath it (`mins[i] = min(data[0..i])`). _Invariant:_ `mins.length === data.length` and `mins.at(-1)` is the minimum of the live stack. `push` appends `min(x, mins.at(-1))`, `pop` removes from both arrays. Space doubles; the alternative of pushing to the `mins` stack only when a new minimum (or an equal one) appears saves space but breaks with duplicates if equal values are not pushed. The property test replays random push/pop sequences against `Math.min` of the live contents after every step, including duplicates.
 
+![Circular Ring Buffer Deque, Two-Stack FIFO Queue, and O(1) Min-Stack](../assets/02-ring-buffer-and-two-stack-queue-animated.svg)
+
+_Animated comparison of power-of-two circular ring-buffer wrap-around `(head + i) & (cap - 1)`, CLRS 10.1-6 two-stack FIFO reversal (`inbox` → `outbox` with $\Phi = |\text{inbox}|$), and duplicate-safe synchronized `Min-Stack` invariants._
+
 ---
 
 ## 9. Linked-List Algorithms with Proofs
@@ -281,6 +285,10 @@ REVERSE(head)
 
 _Invariant:_ at the top of the iteration that processes the $j$-th node (0-based), `prev` is the head of the already reversed list $v_{j-1} \to \cdots \to v_0 \to \text{NIL}$ and `curr` is the untouched suffix $v_j \to \cdots$. Initially $j = 0$ and `prev` is NIL. Each iteration moves one node; on exit `curr` is NIL, so the reversed prefix is the whole list. The test checks this invariant structurally at **every** iteration for lists up to 60 nodes.
 
+![Circular Sentinel Doubly Linked List Splice & In-Place 3-Pointer Reversal](../assets/02-linked-list-reversal-and-sentinel-animated.svg)
+
+_Animated circular sentinel `insertBefore(P, 'X')` splice without null checks alongside step-by-step 3-pointer (`prev`, `curr`, `next`) singly linked-list reversal preserving the reversed-prefix invariant._
+
 ### 9.2 Floyd's cycle detection: why it works and what it finds
 
 Model the list as a "rho": a tail of $\mu$ nodes followed by a cycle of $\lambda$ nodes. After $k$ steps the tortoise is at path position $k$ and the hare at $2k$.
@@ -294,6 +302,10 @@ _Proof._ A meeting requires both pointers in the cycle, so $k \ge \mu$ for the t
 The test builds all rho shapes with $0 \le \mu \le 25$ and $1 \le \lambda \le 25$, asserts the exact meeting step formula above, and asserts phase 2 returns exactly $\mu$ and $\lambda$. Negative tests: acyclic lists never meet, and returning the _meeting node_ as the "cycle start" is wrong (for $\mu = 3, \lambda = 5$ the meeting node is not the entry).
 
 Cost: $O(\mu + \lambda)$ time and $O(1)$ space, versus $O(\mu + \lambda)$ space for the hash-set visited approach. Mutating the list (marking nodes) is **not** a safe substitute when other readers share the structure.
+
+![Floyd's Tortoise and Hare Cycle Detection: Phase 1 Meeting & Phase 2 Entry Proof](../assets/02-floyd-tortoise-hare-animated.svg)
+
+_Animated $\rho$-graph trace ($\mu = 3, \lambda = 5$) proving Phase 1 collision at $k = 5$ on node 5 (distinct from entry node 3) and Phase 2 lock-step convergence onto cycle entry 3 in $\mu = 3$ steps._
 
 ---
 
@@ -331,6 +343,10 @@ NEXT-COMBINATION(x)
 The tests check, for every $1 \le k \le n \le 12$, that the generator returns exactly $\binom{n}{k}$ masks, each with popcount $k$, strictly increasing.
 
 **JavaScript-specific failure modes** (all asserted): `1 << 32 === 1` because shift counts are taken modulo 32; `1 << 31` is $-2^{31}$; `2 ** 32 | 0 === 0`; `Math.clz32` operates on the uint32 view (`Math.clz32(-1) === 0`). For 64-bit masks use `BigInt` with `BigInt.asUintN(64, x)`, accepting that BigInt operations are not unit cost.
+
+![Bit Manipulation: Kernighan Clear, Two's Complement Isolate, SWAR Popcount & Gosper's Hack](../assets/02-bitwise-kernighan-swar-gosper-animated.svg)
+
+_Animated bit-level mechanics for Kernighan's `x & (x - 1)` lowest-bit clearing, two's complement `x & -x` bit isolation, 32-bit SWAR branchless popcount reduction, and Gosper's Hack `NEXT-COMBINATION(x)` mask enumeration._
 
 ```mermaid
 flowchart LR

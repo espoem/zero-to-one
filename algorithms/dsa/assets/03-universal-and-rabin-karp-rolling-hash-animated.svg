@@ -1,0 +1,168 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="1200" height="800" role="img" aria-labelledby="title desc">
+  <title id="title">Carter-Wegman Universal Hashing &amp; Rabin-Karp O(1) Rolling Hash (M_31)</title>
+  <desc id="desc">Animated explanation of Carter-Wegman universal hash family defense against Hash Flooding DoS using randomized (a, b) parameters, paired with Rabin-Karp O(1) sliding-window polynomial hash update modulo Mersenne prime M_31 = 2^31 - 1.</desc>
+  <style>
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    @keyframes slideWin {
+      0%, 35% { transform: translateX(0px); }
+      55%, 90% { transform: translateX(74px); }
+      100% { transform: translateX(0px); }
+    }
+    @keyframes outFade {
+      0%, 35% { opacity: 1; }
+      55%, 90% { opacity: 0.86; }
+      100% { opacity: 1; }
+    }
+    @keyframes inGlow {
+      0%, 35% { opacity: 0.86; }
+      55%, 90% { opacity: 1; }
+      100% { opacity: 0.86; }
+    }
+    @keyframes flowLine {
+      0% { stroke-dashoffset: 24; }
+      100% { stroke-dashoffset: 0; }
+    }
+
+    .win-box { animation: slideWin 8s ease-in-out infinite; }
+    .char-out { animation: outFade 8s ease-in-out infinite; }
+    .char-in { animation: inGlow 8s ease-in-out infinite; }
+    .flow-edge { stroke-dasharray: 6 4; animation: flowLine 2s linear infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+      .win-box { transform: none !important; }
+      .char-out, .char-in { opacity: 1 !important; }
+    }
+  </style>
+
+  <defs>
+    <marker id="arr-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1200" height="800" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1200" height="64" rx="12" fill="#0f172a"/>
+  <rect x="0" y="48" width="1200" height="16" fill="#0f172a"/>
+  <text x="24" y="28" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Universal Hashing (DoS Defense) &amp; Rabin-Karp O(1) Rolling Hash</text>
+  <text x="24" y="49" class="sans" font-size="12" fill="#94a3b8">Randomized Carter-Wegman family Pr[h(x)=h(y)] ≤ 1/m · Polynomial sliding window with division-free M_31 = 2^31 - 1 reduction</text>
+
+  <!-- ==================== TOP: CARTER-WEGMAN UNIVERSAL HASHING ==================== -->
+  <rect x="20" y="80" width="1160" height="310" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="20" y="80" width="1160" height="36" rx="10" fill="#f5f3ff"/>
+  <rect x="20" y="106" width="1160" height="10" fill="#f5f3ff"/>
+  <text x="36" y="103" class="sans" font-size="13" font-weight="700" fill="#5b21b6">1. Carter-Wegman Universal Hash Family vs Hash-Flooding DoS</text>
+  <text x="1164" y="103" class="mono" font-size="11" font-weight="700" fill="#7c3aed" text-anchor="end">Pr_{h ∈ H}[h(x) = h(y)] ≤ 1/m</text>
+
+  <!-- Left: Fixed Hash Vulnerability -->
+  <rect x="36" y="132" width="420" height="240" rx="8" fill="#fff1f2" stroke="#fda4af"/>
+  <text x="52" y="156" class="sans" font-size="12" font-weight="700" fill="#9f1239">Attack: Fixed Deterministic Hash h(k)</text>
+  <text x="52" y="176" class="sans" font-size="10.5" fill="#475569">Adversary crafts n keys with h(k_1) = h(k_2) = … = h(k_n)</text>
+
+  <rect x="52" y="192" width="120" height="28" rx="4" fill="#ffe4e6" stroke="#e11d48"/><text x="112" y="210" class="mono" font-size="10" fill="#9f1239" text-anchor="middle">k_1, k_2, … k_n</text>
+  <path d="M 172 206 L 236 206" stroke="#e11d48" stroke-width="2" class="flow-edge" marker-end="url(#arr-rose)"/>
+  <rect x="242" y="188" width="196" height="44" rx="5" fill="#e11d48"/>
+  <text x="340" y="207" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">All collide in T[2]!</text>
+  <text x="340" y="223" class="mono" font-size="10" fill="#ffe4e6" text-anchor="middle">100% CPU · O(n^2) insert</text>
+
+  <text x="52" y="260" class="sans" font-size="10.5" fill="#881337">• Single HTTP request body with 50k colliding JSON keys</text>
+  <text x="52" y="278" class="sans" font-size="10.5" fill="#881337">  stalls server thread for seconds (Hash Flooding DoS).</text>
+  <text x="52" y="304" class="mono" font-size="10" font-weight="700" fill="#be123c">Any single fixed hash function has an adversarial</text>
+  <text x="52" y="322" class="mono" font-size="10" font-weight="700" fill="#be123c">collision set by the Pigeonhole Principle.</text>
+
+  <!-- Right: Randomized Universal Family -->
+  <rect x="476" y="132" width="688" height="240" rx="8" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <text x="492" y="156" class="sans" font-size="12" font-weight="700" fill="#065f46">Defense: Randomize Hash at Startup from Family H</text>
+
+  <rect x="492" y="172" width="224" height="92" rx="6" fill="#ffffff" stroke="#059669"/>
+  <text x="604" y="194" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Startup Random Seed</text>
+  <text x="604" y="216" class="mono" font-size="10.5" fill="#1e3a8a" text-anchor="middle">a ← Uniform{1 .. p-1}</text>
+  <text x="604" y="236" class="mono" font-size="10.5" fill="#1e3a8a" text-anchor="middle">b ← Uniform{0 .. p-1}</text>
+  <text x="604" y="254" class="mono" font-size="10" fill="#64748b" text-anchor="middle">(prime p &gt; |U|)</text>
+
+  <path d="M 718 218 L 764 218" stroke="#059669" stroke-width="2.2" class="flow-edge" marker-end="url(#arr-emerald)"/>
+
+  <rect x="768" y="172" width="380" height="92" rx="6" fill="#0f172a"/>
+  <text x="958" y="196" class="mono" font-size="11" font-weight="700" fill="#34d399" text-anchor="middle">Carter-Wegman Construction</text>
+  <text x="958" y="224" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">h_{a,b}(k) = ((a · k + b) mod p) mod m</text>
+  <text x="958" y="248" class="mono" font-size="10" fill="#94a3b8" text-anchor="middle">Expected chain length ≤ 1 + n/m = O(1) ∀ inputs!</text>
+
+  <rect x="492" y="278" width="656" height="84" rx="6" fill="#ffffff" stroke="#a7f3d0"/>
+  <text x="506" y="298" class="sans" font-size="10.5" font-weight="700" fill="#065f46">Production Web Standard: SipHash-1-3 / SipHash-2-4 (128-bit secret key per process)</text>
+  <text x="506" y="316" class="sans" font-size="10" fill="#334155">Used by Rust HashMap, Python 3.4+, Ruby, and V8 hash tables so attackers cannot predict bucket collisions across restarts.</text>
+  <text x="506" y="335" class="mono" font-size="10" fill="#047857">Note: ECMA-262 Map/Set also enforce SameValueZero (NaN === NaN, +0 === -0)</text>
+  <text x="506" y="351" class="mono" font-size="10" fill="#047857">and preserve a deterministic insertion-order array.</text>
+
+  <!-- ==================== BOTTOM: RABIN-KARP ROLLING HASH ==================== -->
+  <rect x="20" y="406" width="1160" height="374" rx="10" fill="#ffffff" stroke="#bfdbfe" stroke-width="1.5"/>
+  <rect x="20" y="406" width="1160" height="36" rx="10" fill="#eff6ff"/>
+  <rect x="20" y="432" width="1160" height="10" fill="#eff6ff"/>
+  <text x="36" y="429" class="sans" font-size="13" font-weight="700" fill="#1e3a8a">2. Rabin-Karp O(1) Sliding-Window Polynomial Hash (mod M_31)</text>
+  <text x="1164" y="429" class="mono" font-size="11" font-weight="700" fill="#2563eb" text-anchor="end">H(S[0..m-1]) = (∑ S[i]·B^(m-1-i)) mod M</text>
+
+  <!-- Character Tape S = [a, b, c, d, e, f] at x=60, stride=74 -->
+  <text x="60" y="472" class="sans" font-size="11" font-weight="700" fill="#0f172a">String S (window m = 3 slides from [0..2] to [1..3]):</text>
+
+  <rect x="60" y="486" width="66" height="46" rx="6" fill="#fff1f2" stroke="#e11d48" class="char-out"/>
+  <text x="93" y="514" class="mono" font-size="16" font-weight="700" fill="#9f1239" text-anchor="middle">a</text>
+  <text x="93" y="548" class="mono" font-size="10" font-weight="700" fill="#e11d48" text-anchor="middle">c_out</text>
+
+  <rect x="134" y="486" width="66" height="46" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="167" y="514" class="mono" font-size="16" font-weight="700" fill="#1e3a8a" text-anchor="middle">b</text>
+  <text x="167" y="548" class="mono" font-size="10" fill="#475569" text-anchor="middle">S[1]</text>
+
+  <rect x="208" y="486" width="66" height="46" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="241" y="514" class="mono" font-size="16" font-weight="700" fill="#1e3a8a" text-anchor="middle">c</text>
+  <text x="241" y="548" class="mono" font-size="10" fill="#475569" text-anchor="middle">S[2]</text>
+
+  <rect x="282" y="486" width="66" height="46" rx="6" fill="#d1fae5" stroke="#059669" class="char-in"/>
+  <text x="315" y="514" class="mono" font-size="16" font-weight="700" fill="#065f46" text-anchor="middle">d</text>
+  <text x="315" y="548" class="mono" font-size="10" font-weight="700" fill="#059669" text-anchor="middle">c_in</text>
+
+  <rect x="356" y="486" width="66" height="46" rx="6" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="389" y="514" class="mono" font-size="16" fill="#64748b" text-anchor="middle">e</text>
+
+  <rect x="430" y="486" width="66" height="46" rx="6" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="463" y="514" class="mono" font-size="16" fill="#64748b" text-anchor="middle">f</text>
+
+  <!-- Animated sliding bracket -->
+  <rect x="55" y="481" width="224" height="56" rx="8" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-dasharray="6 3" class="win-box"/>
+
+  <!-- 3-step O(1) Rolling Pipeline Cards -->
+  <rect x="36" y="568" width="350" height="84" rx="8" fill="#fff1f2" stroke="#fda4af"/>
+  <text x="50" y="590" class="mono" font-size="11" font-weight="700" fill="#9f1239">Step A: Drop Outgoing Term</text>
+  <text x="50" y="612" class="mono" font-size="11" fill="#881337">H_1 = (H_old - c_out · B^(m-1)) mod M</text>
+  <text x="50" y="634" class="mono" font-size="10" fill="#64748b">Removes a·B^2; leaves (b·B + c). (+M if &lt; 0)</text>
+
+  <path d="M 388 610 L 414 610" stroke="#2563eb" stroke-width="2" class="flow-edge" marker-end="url(#arr-blue)"/>
+
+  <rect x="418" y="568" width="320" height="84" rx="8" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="432" y="590" class="mono" font-size="11" font-weight="700" fill="#1e3a8a">Step B: Shift Base (* B)</text>
+  <text x="432" y="612" class="mono" font-size="11" fill="#1e3a8a">H_2 = (H_1 · B) mod M</text>
+  <text x="432" y="634" class="mono" font-size="10" fill="#64748b">Promotes powers: b·B^2 + c·B</text>
+
+  <path d="M 740 610 L 766 610" stroke="#059669" stroke-width="2" class="flow-edge" marker-end="url(#arr-emerald)"/>
+
+  <rect x="770" y="568" width="394" height="84" rx="8" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <text x="784" y="590" class="mono" font-size="11" font-weight="700" fill="#065f46">Step C: Add Incoming c_in</text>
+  <text x="784" y="612" class="mono" font-size="11" fill="#064e3b">H_new = (H_2 + c_in) mod M</text>
+  <text x="784" y="634" class="mono" font-size="10" fill="#047857">Exact match: (b·B^2 + c·B + d) mod M</text>
+
+  <!-- Fast Mersenne M_31 Reduction Box -->
+  <rect x="36" y="666" width="1128" height="98" rx="8" fill="#0f172a"/>
+  <text x="52" y="690" class="sans" font-size="12" font-weight="700" fill="#38bdf8">Why Mersenne Prime M_31 = 2^31 - 1 (2,147,483,647) Eliminates Integer Division</text>
+  <text x="52" y="714" class="mono" font-size="11" fill="#e2e8f0">Since 2^31 ≡ 1 (mod 2^31 - 1), any 62-bit product X = hi·2^31 + lo reduces as:  X ≡ (X &gt;&gt; 31) + (X &amp; M_31)  (subtract M_31 once if ≥ M_31).</text>
+  <text x="52" y="736" class="mono" font-size="10.5" fill="#34d399">Complexity: O(n + m) expected search time (verify exact characters on hash match to guard against Las Vegas false positives; double-hash for ~10^-18 collision).</text>
+  <text x="52" y="754" class="mono" font-size="10" fill="#fbbf24">JS Note: Multiplying 31-bit values can reach 2^62 &gt; 2^53; use BigInt or split-32-bit multiplication for exact M_31 arithmetic.</text>
+</svg>

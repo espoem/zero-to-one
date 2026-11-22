@@ -57,13 +57,23 @@ flowchart LR
 | **Hoare** | Two pointers moving inward from both ends. | Yields balanced partitions on identical keys. | Minimal swaps; standard in libc |
 | **3-Way (Dijkstra DNF)** | Three pointers: `lt`, `i`, `gt`. Partitions into `< pivot`, `== pivot`, `> pivot`. | **Runs in $O(n)$ linear time** when array has few unique keys! | Optimal for high-duplicate datasets |
 
+On all-equal keys, Lomuto produces maximally unbalanced $(n - 1, 0)$ or $(0, n - 1)$ splits whether the guard is $\le p$ or $< p$, triggering $T(n) = T(n - 1) + \Theta(n) = \Theta(n^2)$ and performing redundant self-swaps on left-side elements. Hoare swaps only true inversions ($A[i] \ge p$ with $A[j] \le p$) and meets at $n/2$ on equal keys, requiring recursion on $[lo \dots j]$ and $[j + 1 \dots hi]$ without excluding index $j$.
+
+![Lomuto versus Hoare Quicksort partitioning animated comparison](../assets/04-a-quicksort-lomuto-vs-hoare-animated.svg)
+
+_Animated Lomuto single-scan partitioning (physical element swap, final pivot placement, and $O(n^2)$ duplicate-key hazard) contrasted with Hoare two-ended inward partitioning (~$3\times$ fewer swaps and balanced $O(n \log n)$ splits on equal keys)._
+
 ### Introsort (Introspective Sort)
 
-Standard in modern C++ `std::sort`:
+Standard in modern C++ `std::sort` (complemented by Dijkstra's 3-way Dutch National Flag partition when duplicate keys dominate):
 
-1. Begins with Quicksort (median-of-3 pivot).
-2. Monitors recursion depth: if depth exceeds $2 \lfloor \log_2 n \rfloor$, it switches to **Heapsort**, guaranteeing $O(n \log n)$ worst-case time.
-3. For small partitions ($n \le 16$), it switches to **Insertion Sort** to maximize CPU cache locality.
+1. Begins with Quicksort (median-of-3 pivot); when 3-way partitioning is used, swapping $A[i] > p$ with $A[gt]$ decrements `gt` without advancing `i` because the swapped-in element is unseen, leaving the `== pivot` band permanently out of recursion and achieving the $O(n H)$ entropy-optimal bound.
+2. Monitors recursion depth: if depth exceeds $2 \lfloor \log_2 n \rfloor$, it switches to **Heapsort**, guaranteeing $O(n \log n)$ worst-case time even on adversarial median-of-3 killer inputs.
+3. For small partitions ($n \le 16$), it switches to **Insertion Sort** to maximize L1 CPU cache locality.
+
+![Dijkstra 3-Way Dutch National Flag partitioning and Introsort hybrid guardrail animated diagram](../assets/04-b-quicksort-3way-dnf-and-introsort-animated.svg)
+
+_Animated Dijkstra 3-Way Dutch National Flag partitioning (`lt`, `i`, `gt` splitting into `< pivot`, `== pivot` skipped from recursion, and `> pivot`) paired with Introsort's hybrid branches to Insertion Sort ($n \le 16$) and Heapsort ($2\lfloor\log_2 n\rfloor$ depth limit)._
 
 ---
 
@@ -85,6 +95,10 @@ flowchart TD
 1. **`minrun` Selection**: Chosen in range $[32, 64]$ such that $n / \text{minrun}$ is close to a power of 2, ensuring perfectly balanced merges.
 2. **Stack Collapse Invariants**: Maintains a stack of pending runs $(A, B, C)$ where $|A| > |B| + |C|$ and $|B| > |C|$. If either invariant is violated, adjacent runs are merged.
 3. **Galloping Mode**: During merge of runs $A$ and $B$, if one run wins 7 consecutive times, TimSort switches from linear scan to exponential (galloping) binary search, copying entire chunks in $O(\log k)$ time.
+
+![TimSort Hybrid Pipeline (Natural Runs, Stack Invariants, Galloping) & Counting Sort](../assets/04-timsort-and-counting-sort-animated.svg)
+
+_Animated pipeline of TimSort (natural run detection, `minrun` extension, Fibonacci run-stack collapse, and Galloping Mode) paired with Counting Sort's $O(n + k)$ prefix-sum reverse-scan stable placement._
 
 ---
 
@@ -153,6 +167,10 @@ function binarySearchFirstTrue(
 ### "Binary Search on Answer"
 
 Whenever a problem asks to minimize a maximum or maximize a minimum (e.g., _Capacity to Ship Packages Within D Days_, _Koko Eating Bananas_, _Split Array Largest Sum_), if $P(x)$ ("Is it possible with capacity $x$?") is monotonic ($P(x) \implies P(x+1)$), the problem reduces to Binary Search over the answer range $[1, \text{max-possible}]$.
+
+![Quickselect Expected O(n), BFPRT Median-of-Medians & Monotone Binary Search](../assets/04-quickselect-and-bfprt-animated.svg)
+
+_Animated comparison of Hoare Quickselect single-branch discard, BFPRT Median-of-Medians 5-element column proof ($30\%/70\%$ worst-case linear split vs groups-of-3 failure), and `binarySearchFirstTrue` over a monotone predicate domain._
 
 ---
 

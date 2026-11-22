@@ -70,6 +70,10 @@ Given items with weights $w[i]$ and values $v[i]$, maximize total value in capac
   ```
   Iterating forward allows newly updated states at $w$ to be reused at $w + w[i]$, supporting unbounded repetition.
 
+![Animated 1D Knapsack array sweep comparing reverse 0/1 loop against forward Unbounded loop](../assets/10-knapsack-01-vs-unbounded-animated.svg)
+
+_Side-by-side 1D DP sweep for item `(w=2, v=5)` and capacity `W=6`: sweeping right-to-left (`w = W..w[i]`) preserves previous-row state `DP[i-1]` for 0/1 Knapsack, while sweeping left-to-right (`w = w[i]..W`) reads newly updated `DP[i]` states to chain multiple copies in Unbounded Knapsack._
+
 ---
 
 ## 3. Longest Increasing Subsequence: $O(n^2)$ to $O(n \log n)$ via Patience Sorting
@@ -92,6 +96,10 @@ Aldous and Diaconis proved that LIS corresponds to the game of **Patience Sortin
    - If not found (all elements in `tails` are $< x$), append $x$: `tails.push(x)`.
 4. The final length of `tails` is the exact length of the LIS! $$\text{Time Complexity} = O(n \log n), \quad \text{Space Complexity} = O(n)$$
 
+![Animated Patience Sorting trace for LIS showing tails piles and binary search replacement vs append](../assets/10-lis-patience-sorting-animated.svg)
+
+_Patience Sorting on `[2, 5, 3, 7, 101, 18]`: `tails[]` remains strictly increasing so binary search locates the leftmost pile top $\ge x$ in $O(\log n)$, replacing `5 -> 3` and `101 -> 18` while yielding final LIS length `4`._
+
 ---
 
 ## 4. String Dynamic Programming: LCS & Levenshtein Edit Distance
@@ -103,6 +111,10 @@ For strings $S_1$ and $S_2$ of lengths $m$ and $n$: $$DP[i][j] = \begin{cases} D
 ### Levenshtein Edit Distance
 
 Minimum operations (insert, delete, replace) to transform $S_1$ into $S_2$: $$DP[i][j] = \begin{cases} DP[i-1][j-1] & \text{if } S_1[i-1] == S_2[j-1] \\ 1 + \min\left( \begin{array}{l} DP[i-1][j] \text{ (Delete)}, \\ DP[i][j-1] \text{ (Insert)}, \\ DP[i-1][j-1] \text{ (Replace)} \end{array} \right) & \text{if } S_1[i-1] \neq S_2[j-1] \end{cases}$$
+
+![Animated 2D DP grids for Longest Common Subsequence and Levenshtein Edit Distance with optimal traceback paths](../assets/10-lcs-and-edit-distance-animated.svg)
+
+_Row-by-row 2D tabulation and optimal traceback for LCS (`"ACDB"` vs `"ABCD"`, diagonal `+1` match yielding `"ACD"` of length `3`) and Levenshtein Edit Distance (`"HORSE"` to `"ROS"`, combining delete, insert, and replace transitions for minimum cost `3`)._
 
 ---
 
@@ -125,6 +137,10 @@ flowchart LR
 ### Recurrence
 
 $$DP(\text{mask}, u) = \min_{v \notin \text{mask}} \left( D[u][v] + DP(\text{mask} \ | \ (1 \ll v), \ v) \right)$$ For $n = 20$: $n! \approx 2.4 \times 10^{18}$ (impossible), while $n^2 2^n \approx 400 \times 10^6$ operations (solvable in ~1 second).
+
+![Animated Interval DP diagonal length expansion and Held-Karp Bitmask TSP subset transitions](../assets/10-interval-dp-and-held-karp-tsp-animated.svg)
+
+_Left: Interval DP fills upper-triangular subproblem diagonals in increasing length order `len = 2..n` across split points $k$ in $O(n^3)$ time. Right: Held-Karp Bitmask DP advances over subset masks `mask \| (1 << v)` to solve TSP in $O(n^2 2^n)$ time._
 
 ---
 

@@ -129,6 +129,10 @@ For recurrences of the form: $$T(n) = a T\left(\frac{n}{b}\right) + f(n), \quad 
 
 When subproblems have unequal divisions (e.g., $T(n) = T(n/3) + T(2n/3) + \Theta(n)$), the Master Theorem does not apply. The **Akra-Bazzi method** solves general recurrences: $$T(x) = \sum_{i=1}^k a_i T(b_i x) + g(x)$$ Find the unique real value $p$ such that $\sum_{i=1}^k a_i b_i^p = 1$. Then: $$T(x) = \Theta\left(x^p \left(1 + \int_1^x \frac{g(u)}{u^{p+1}} \, du\right)\right)$$ For $T(n) = T(n/3) + T(2n/3) + n$: $(1/3)^p + (2/3)^p = 1 \implies p = 1$. Evaluating the integral yields $T(n) = \Theta(n \log n)$.
 
+![Master Theorem Cases and Akra-Bazzi Unequal-Split Recursion Trees](../assets/01-master-theorem-akra-bazzi-animated.svg)
+
+_Animated recursion trees comparing Master Theorem Case 1 (leaf-heavy $\Theta(n^{\log_b a})$), Case 2 (balanced level costs $\Theta(n^{\log_b a}\log^{k+1} n)$), Case 3 (root-heavy $\Theta(f(n))$ with regularity), and Akra-Bazzi unequal-depth splits._
+
 ---
 
 ## 4. Amortized Analysis: Aggregate, Accounting, and Potential Methods
@@ -226,6 +230,10 @@ function lowerBound(A: number[], x: number): number {
    - If `A[mid] >= x`: Since $A$ is sorted, $A[k] \ge A[mid] \ge x$ for all $k \ge mid$. Setting `right = mid` preserves $A[j] \ge x$ for all $j \ge right$.
 3. **Termination**: The loop terminates when `left >= right`. Because `right - left` strictly decreases on every iteration, `left === right`. By the invariant, all elements strictly before `left` are $< x$, and all elements starting at `left` are $\ge x$. Thus, `left` is the exact first index where $A[\text{left}] \ge x$, proving algorithmic correctness.
 
+![Binary Search Loop Invariant: Half-Open Interval Lower Bound Proof](../assets/01-binary-search-invariant-animated.svg)
+
+_Animated step-by-step contraction of `[left, right)` in `lowerBound(A, 12)`, showing overflow-safe midpoint calculation and invariant maintenance across $\forall i < \text{left}: A[i] < x$ and $\forall j \ge \text{right}: A[j] \ge x$._
+
 ---
 
 ## 6. Why the Master Theorem Is True: A Proof Sketch
@@ -297,6 +305,10 @@ Add `decrement` and the bound collapses. Start at $0111\ldots1$ ($k$ ones). `inc
 
 The dynamic array has the identical trap. If it **halves capacity as soon as $S \le C/2$** and doubles at $S = C$, a workload that alternates `pop`, `push` around the boundary copies about $C/2$ elements every operation. Shrinking only at $S \le C/4$ leaves $\Omega(C/4)$ cheap operations between any two resizes, restoring $O(1)$ amortized cost. The tests build both policies and count element copies: the naive policy performs more than $500$ copies per operation at $C = 2048$; the quarter policy performs zero extra copies on the same adversary and at most $3n$ copies on every random push/pop sequence tested.
 
+![Amortized Analysis: Dynamic Array Potential & Binary Counter Bit-Flips](../assets/01-amortized-dynamic-array-counter-animated.svg)
+
+_Animated potential-method traces showing dynamic array doubling ($\Phi = 2S - C$), $C/4$ shrink vs $C/2$ thrashing, and binary counter bit-flips ($\Phi = \mathrm{popcount}$, Legendre identity $2n - \mathrm{popcount}(n)$, and why adding `decrement` breaks amortization)._
+
 ### 8.3 Production failure modes of amortized structures
 
 - **Latency SLOs are about the worst call, not the mean.** A doubling vector inside a request path produces periodic $O(n)$ stalls. Pre-size (`new Array(n)`), or use a structure with worst-case bounds (a deque of fixed-size chunks) when the p99 matters. Amortized $O(1)$ says nothing about tail latency.
@@ -329,6 +341,10 @@ INSERTION-SORT(A, n)
 The TypeScript version in `examples/01b-recurrences-and-amortization.test.ts` runs the invariant as an assertion _inside_ every outer iteration (prefix sorted, and prefix is a multiset-equal permutation of the original prefix). That turns a paper proof into a regression test: change one comparison from `>` to `>=` and stability, not correctness, changes; delete the shift and the assertion fires on the first out-of-order input.
 
 Comparison counts are exact, which makes them testable without timing: the best case (already sorted) performs $n - 1$ comparisons, the worst case (strictly decreasing) performs $\sum_{i=2}^{n}(i - 1) = n(n-1)/2$. The suite asserts both for $n \in \{2, 5, 17, 64\}$.
+
+![Insertion Sort CLRS Loop Invariant: Sorted Prefix, Key Extraction, and Rightward Shift](../assets/01-insertion-sort-invariant-animated.svg)
+
+_Animated trace of CLRS 1-indexed `INSERTION-SORT(A, n)` at $i = 5$ (`key = 1`), preserving the outer sorted-prefix invariant $A[1 : i-1]$ and inner shift invariant $A[j+2 : i] > \text{key}$._
 
 ### Where Word-RAM assumptions fail in JavaScript
 

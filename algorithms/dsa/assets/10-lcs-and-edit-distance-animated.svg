@@ -1,0 +1,204 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 660" width="1160" height="660" role="img" aria-labelledby="title desc">
+  <title id="title">String Dynamic Programming: LCS &amp; Levenshtein Edit Distance Tables with Traceback</title>
+  <desc id="desc">Left panel animates row-by-row 2D DP table filling for Longest Common Subsequence (S1=ACDB, S2=ABCD) highlighting diagonal +1 match vs max(up, left) mismatch and optimal traceback yielding ACD of length 3. Right panel animates Levenshtein Edit Distance (S1=HORSE to S2=ROS) with match, insert, delete, and replace costs and traceback yielding distance 3.</desc>
+  <style><![CDATA[
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    /* 10s row-fill + traceback cycle */
+    @keyframes r1 { 0%, 19% { opacity: 0.86; } 20%, 100% { opacity: 1; } }
+    @keyframes r2 { 0%, 35% { opacity: 0.86; } 36%, 100% { opacity: 1; } }
+    @keyframes r3 { 0%, 51% { opacity: 0.86; } 52%, 100% { opacity: 1; } }
+    @keyframes r4 { 0%, 67% { opacity: 0.86; } 68%, 100% { opacity: 1; } }
+    @keyframes trace { 0%, 74% { opacity: 0; } 78%, 100% { opacity: 1; } }
+
+    .row1 { animation: r1 10s infinite; }
+    .row2 { animation: r2 10s infinite; }
+    .row3 { animation: r3 10s infinite; }
+    .row4 { animation: r4 10s infinite; }
+    .tb   { animation: trace 10s infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .row1, .row2, .row3, .row4, .tb {
+        animation: none !important;
+        opacity: 1 !important;
+      }
+    }
+  ]]></style>
+
+  <!-- Canvas & Header -->
+  <rect x="0" y="0" width="1160" height="660" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1160" height="60" rx="12" fill="#0f172a"/>
+  <rect x="0" y="44" width="1160" height="16" fill="#0f172a"/>
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">String Dynamic Programming: 2D LCS &amp; Levenshtein Edit Distance with Traceback</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">Row-by-row 2D grid evaluation combining diagonal matches and orthogonal transitions, followed by optimal path traceback</text>
+
+  <!-- LEFT PANEL: LCS (S1="ACDB", S2="ABCD") -->
+  <rect x="20" y="76" width="548" height="494" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="38" y="100" class="sans" font-size="14" font-weight="700" fill="#0f172a">1. Longest Common Subsequence: S1 = "ACDB", S2 = "ABCD"</text>
+  <rect x="38" y="112" width="512" height="40" rx="6" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <text x="50" y="129" class="mono" font-size="11" font-weight="700" fill="#065f46">Match (S1[i-1] == S2[j-1]): DP[i][j] = DP[i-1][j-1] + 1  (diagonal)</text>
+  <text x="50" y="145" class="mono" font-size="11" fill="#334155">Mismatch:                    DP[i][j] = max(DP[i-1][j], DP[i][j-1])</text>
+
+  <!-- LCS 5x5 Grid at x=120, y=195 (cell 62x46) -->
+  <text x="151" y="185" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#64748b">""</text>
+  <text x="213" y="185" class="mono" font-size="13" font-weight="700" text-anchor="middle" fill="#0f172a">A</text>
+  <text x="275" y="185" class="mono" font-size="13" font-weight="700" text-anchor="middle" fill="#0f172a">B</text>
+  <text x="337" y="185" class="mono" font-size="13" font-weight="700" text-anchor="middle" fill="#0f172a">C</text>
+  <text x="399" y="185" class="mono" font-size="13" font-weight="700" text-anchor="middle" fill="#0f172a">D</text>
+
+  <text x="102" y="223" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#64748b">""</text>
+  <text x="102" y="269" class="mono" font-size="13" font-weight="700" text-anchor="middle" fill="#0f172a">A</text>
+  <text x="102" y="315" class="mono" font-size="13" font-weight="700" text-anchor="middle" fill="#0f172a">C</text>
+  <text x="102" y="361" class="mono" font-size="13" font-weight="700" text-anchor="middle" fill="#0f172a">D</text>
+  <text x="102" y="407" class="mono" font-size="13" font-weight="700" text-anchor="middle" fill="#0f172a">B</text>
+
+  <!-- Row 0 (base) -->
+  <rect x="120" y="195" width="62" height="46" fill="#f1f5f9" stroke="#cbd5e1"/><text x="151" y="223" class="mono" font-size="13" text-anchor="middle" fill="#64748b">0</text>
+  <rect x="182" y="195" width="62" height="46" fill="#f1f5f9" stroke="#cbd5e1"/><text x="213" y="223" class="mono" font-size="13" text-anchor="middle" fill="#64748b">0</text>
+  <rect x="244" y="195" width="62" height="46" fill="#f1f5f9" stroke="#cbd5e1"/><text x="275" y="223" class="mono" font-size="13" text-anchor="middle" fill="#64748b">0</text>
+  <rect x="306" y="195" width="62" height="46" fill="#f1f5f9" stroke="#cbd5e1"/><text x="337" y="223" class="mono" font-size="13" text-anchor="middle" fill="#64748b">0</text>
+  <rect x="368" y="195" width="62" height="46" fill="#f1f5f9" stroke="#cbd5e1"/><text x="399" y="223" class="mono" font-size="13" text-anchor="middle" fill="#64748b">0</text>
+
+  <!-- Row 1 (A): [0, 1*, 1, 1, 1] -->
+  <g class="row1">
+    <rect x="120" y="241" width="62" height="46" fill="#f1f5f9" stroke="#cbd5e1"/><text x="151" y="269" class="mono" font-size="13" text-anchor="middle" fill="#64748b">0</text>
+    <rect x="182" y="241" width="62" height="46" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="213" y="269" class="mono" font-size="14" font-weight="700" text-anchor="middle" fill="#065f46">1 (+1)</text>
+    <rect x="244" y="241" width="62" height="46" fill="#ffffff" stroke="#cbd5e1"/><text x="275" y="269" class="mono" font-size="13" text-anchor="middle" fill="#0f172a">1</text>
+    <rect x="306" y="241" width="62" height="46" fill="#ffffff" stroke="#cbd5e1"/><text x="337" y="269" class="mono" font-size="13" text-anchor="middle" fill="#0f172a">1</text>
+    <rect x="368" y="241" width="62" height="46" fill="#ffffff" stroke="#cbd5e1"/><text x="399" y="269" class="mono" font-size="13" text-anchor="middle" fill="#0f172a">1</text>
+  </g>
+
+  <!-- Row 2 (C): [0, 1, 1, 2*, 2] -->
+  <g class="row2">
+    <rect x="120" y="287" width="62" height="46" fill="#f1f5f9" stroke="#cbd5e1"/><text x="151" y="315" class="mono" font-size="13" text-anchor="middle" fill="#64748b">0</text>
+    <rect x="182" y="287" width="62" height="46" fill="#ffffff" stroke="#cbd5e1"/><text x="213" y="315" class="mono" font-size="13" text-anchor="middle" fill="#0f172a">1</text>
+    <rect x="244" y="287" width="62" height="46" fill="#ffffff" stroke="#cbd5e1"/><text x="275" y="315" class="mono" font-size="13" text-anchor="middle" fill="#0f172a">1</text>
+    <rect x="306" y="287" width="62" height="46" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="337" y="315" class="mono" font-size="14" font-weight="700" text-anchor="middle" fill="#065f46">2 (+1)</text>
+    <rect x="368" y="287" width="62" height="46" fill="#ffffff" stroke="#cbd5e1"/><text x="399" y="315" class="mono" font-size="13" text-anchor="middle" fill="#0f172a">2</text>
+  </g>
+
+  <!-- Row 3 (D): [0, 1, 1, 2, 3*] -->
+  <g class="row3">
+    <rect x="120" y="333" width="62" height="46" fill="#f1f5f9" stroke="#cbd5e1"/><text x="151" y="361" class="mono" font-size="13" text-anchor="middle" fill="#64748b">0</text>
+    <rect x="182" y="333" width="62" height="46" fill="#ffffff" stroke="#cbd5e1"/><text x="213" y="361" class="mono" font-size="13" text-anchor="middle" fill="#0f172a">1</text>
+    <rect x="244" y="333" width="62" height="46" fill="#ffffff" stroke="#cbd5e1"/><text x="275" y="361" class="mono" font-size="13" text-anchor="middle" fill="#0f172a">1</text>
+    <rect x="306" y="333" width="62" height="46" fill="#ffffff" stroke="#cbd5e1"/><text x="337" y="361" class="mono" font-size="13" text-anchor="middle" fill="#0f172a">2</text>
+    <rect x="368" y="333" width="62" height="46" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="399" y="361" class="mono" font-size="14" font-weight="700" text-anchor="middle" fill="#065f46">3 (+1)</text>
+  </g>
+
+  <!-- Row 4 (B): [0, 1, 2, 2, 3] -->
+  <g class="row4">
+    <rect x="120" y="379" width="62" height="46" fill="#f1f5f9" stroke="#cbd5e1"/><text x="151" y="407" class="mono" font-size="13" text-anchor="middle" fill="#64748b">0</text>
+    <rect x="182" y="379" width="62" height="46" fill="#ffffff" stroke="#cbd5e1"/><text x="213" y="407" class="mono" font-size="13" text-anchor="middle" fill="#0f172a">1</text>
+    <rect x="244" y="379" width="62" height="46" fill="#eff6ff" stroke="#93c5fd"/><text x="275" y="407" class="mono" font-size="13" text-anchor="middle" fill="#1e3a8a">2</text>
+    <rect x="306" y="379" width="62" height="46" fill="#ffffff" stroke="#cbd5e1"/><text x="337" y="407" class="mono" font-size="13" text-anchor="middle" fill="#0f172a">2</text>
+    <rect x="368" y="379" width="62" height="46" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/><text x="399" y="407" class="mono" font-size="15" font-weight="700" text-anchor="middle" fill="#065f46">3</text>
+  </g>
+
+  <!-- Traceback Overlay Path (LCS) -->
+  <g class="tb">
+    <path d="M 399 402 L 399 356 L 337 310 L 275 264 L 213 264 L 151 218" fill="none" stroke="#059669" stroke-width="3" stroke-dasharray="5 3"/>
+    <circle cx="213" cy="264" r="5" fill="#059669"/>
+    <circle cx="337" cy="310" r="5" fill="#059669"/>
+    <circle cx="399" cy="356" r="5" fill="#059669"/>
+  </g>
+
+  <rect x="38" y="446" width="512" height="106" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="52" y="468" class="sans" font-size="12" font-weight="700" fill="#065f46">LCS Traceback Result: "ACD" (Length = 3)</text>
+  <text x="52" y="489" class="sans" font-size="11" fill="#334155">• Start at bottom-right DP[4][4]=3. Move up/left when mismatched;</text>
+  <text x="52" y="508" class="sans" font-size="11" fill="#334155">• Move diagonally (↖) and record character on every match (D, C, A).</text>
+  <text x="52" y="529" class="mono" font-size="11" font-weight="700" fill="#1e3a8a">Space optimization: 2 rolling rows -&gt; O(min(m, n)) space (length only).</text>
+
+  <!-- RIGHT PANEL: Edit Distance (S1="HORSE", S2="ROS") -->
+  <rect x="592" y="76" width="548" height="494" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="610" y="100" class="sans" font-size="14" font-weight="700" fill="#0f172a">2. Levenshtein Edit Distance: S1 = "HORSE" -&gt; S2 = "ROS"</text>
+  <rect x="610" y="112" width="512" height="40" rx="6" fill="#f5f3ff" stroke="#c4b5fd"/>
+  <text x="622" y="129" class="mono" font-size="11" font-weight="700" fill="#5b21b6">Match: DP[i-1][j-1] (+0)  |  Mismatch: 1 + min(Del ↑, Ins ←, Rep ↖)</text>
+  <text x="622" y="145" class="mono" font-size="11" fill="#334155">Operations: Replace(H-&gt;R), Delete(R), Delete(E) =&gt; Minimum Cost = 3</text>
+
+  <!-- Edit Distance 6x4 Grid at x=700, y=188 (cell 66x40) -->
+  <text x="733" y="180" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#64748b">""</text>
+  <text x="799" y="180" class="mono" font-size="13" font-weight="700" text-anchor="middle" fill="#0f172a">R</text>
+  <text x="865" y="180" class="mono" font-size="13" font-weight="700" text-anchor="middle" fill="#0f172a">O</text>
+  <text x="931" y="180" class="mono" font-size="13" font-weight="700" text-anchor="middle" fill="#0f172a">S</text>
+
+  <text x="682" y="213" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#64748b">""</text>
+  <text x="682" y="253" class="mono" font-size="13" font-weight="700" text-anchor="middle" fill="#0f172a">H</text>
+  <text x="682" y="293" class="mono" font-size="13" font-weight="700" text-anchor="middle" fill="#0f172a">O</text>
+  <text x="682" y="333" class="mono" font-size="13" font-weight="700" text-anchor="middle" fill="#0f172a">R</text>
+  <text x="682" y="373" class="mono" font-size="13" font-weight="700" text-anchor="middle" fill="#0f172a">S</text>
+  <text x="682" y="413" class="mono" font-size="13" font-weight="700" text-anchor="middle" fill="#0f172a">E</text>
+
+  <!-- Row 0 -->
+  <rect x="700" y="188" width="66" height="40" fill="#f1f5f9" stroke="#cbd5e1"/><text x="733" y="213" class="mono" font-size="13" text-anchor="middle" fill="#64748b">0</text>
+  <rect x="766" y="188" width="66" height="40" fill="#f1f5f9" stroke="#cbd5e1"/><text x="799" y="213" class="mono" font-size="13" text-anchor="middle" fill="#64748b">1</text>
+  <rect x="832" y="188" width="66" height="40" fill="#f1f5f9" stroke="#cbd5e1"/><text x="865" y="213" class="mono" font-size="13" text-anchor="middle" fill="#64748b">2</text>
+  <rect x="898" y="188" width="66" height="40" fill="#f1f5f9" stroke="#cbd5e1"/><text x="931" y="213" class="mono" font-size="13" text-anchor="middle" fill="#64748b">3</text>
+
+  <!-- Row 1 (H): [1, 1(rep), 2, 3] -->
+  <g class="row1">
+    <rect x="700" y="228" width="66" height="40" fill="#f1f5f9" stroke="#cbd5e1"/><text x="733" y="253" class="mono" font-size="13" text-anchor="middle" fill="#64748b">1</text>
+    <rect x="766" y="228" width="66" height="40" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2"/><text x="799" y="253" class="mono" font-size="13" font-weight="700" text-anchor="middle" fill="#5b21b6">1 (rep)</text>
+    <rect x="832" y="228" width="66" height="40" fill="#ffffff" stroke="#cbd5e1"/><text x="865" y="253" class="mono" font-size="13" text-anchor="middle" fill="#0f172a">2</text>
+    <rect x="898" y="228" width="66" height="40" fill="#ffffff" stroke="#cbd5e1"/><text x="931" y="253" class="mono" font-size="13" text-anchor="middle" fill="#0f172a">3</text>
+  </g>
+
+  <!-- Row 2 (O): [2, 2, 1(match), 2] -->
+  <g class="row2">
+    <rect x="700" y="268" width="66" height="40" fill="#f1f5f9" stroke="#cbd5e1"/><text x="733" y="293" class="mono" font-size="13" text-anchor="middle" fill="#64748b">2</text>
+    <rect x="766" y="268" width="66" height="40" fill="#ffffff" stroke="#cbd5e1"/><text x="799" y="293" class="mono" font-size="13" text-anchor="middle" fill="#0f172a">2</text>
+    <rect x="832" y="268" width="66" height="40" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="865" y="293" class="mono" font-size="13" font-weight="700" text-anchor="middle" fill="#065f46">1 (==)</text>
+    <rect x="898" y="268" width="66" height="40" fill="#ffffff" stroke="#cbd5e1"/><text x="931" y="293" class="mono" font-size="13" text-anchor="middle" fill="#0f172a">2</text>
+  </g>
+
+  <!-- Row 3 (R): [3, 2, 2(del), 2] -->
+  <g class="row3">
+    <rect x="700" y="308" width="66" height="40" fill="#f1f5f9" stroke="#cbd5e1"/><text x="733" y="333" class="mono" font-size="13" text-anchor="middle" fill="#64748b">3</text>
+    <rect x="766" y="308" width="66" height="40" fill="#ffffff" stroke="#cbd5e1"/><text x="799" y="333" class="mono" font-size="13" text-anchor="middle" fill="#0f172a">2</text>
+    <rect x="832" y="308" width="66" height="40" fill="#fff1f2" stroke="#e11d48" stroke-width="2"/><text x="865" y="333" class="mono" font-size="13" font-weight="700" text-anchor="middle" fill="#9f1239">2 (del)</text>
+    <rect x="898" y="308" width="66" height="40" fill="#ffffff" stroke="#cbd5e1"/><text x="931" y="333" class="mono" font-size="13" text-anchor="middle" fill="#0f172a">2</text>
+  </g>
+
+  <!-- Row 4 & 5 (S, E): [4,3,3,2(match)] and [5,4,4,3(del)] -->
+  <g class="row4">
+    <rect x="700" y="348" width="66" height="40" fill="#f1f5f9" stroke="#cbd5e1"/><text x="733" y="373" class="mono" font-size="13" text-anchor="middle" fill="#64748b">4</text>
+    <rect x="766" y="348" width="66" height="40" fill="#ffffff" stroke="#cbd5e1"/><text x="799" y="373" class="mono" font-size="13" text-anchor="middle" fill="#0f172a">3</text>
+    <rect x="832" y="348" width="66" height="40" fill="#ffffff" stroke="#cbd5e1"/><text x="865" y="373" class="mono" font-size="13" text-anchor="middle" fill="#0f172a">3</text>
+    <rect x="898" y="348" width="66" height="40" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="931" y="373" class="mono" font-size="13" font-weight="700" text-anchor="middle" fill="#065f46">2 (==)</text>
+
+    <rect x="700" y="388" width="66" height="40" fill="#f1f5f9" stroke="#cbd5e1"/><text x="733" y="413" class="mono" font-size="13" text-anchor="middle" fill="#64748b">5</text>
+    <rect x="766" y="388" width="66" height="40" fill="#ffffff" stroke="#cbd5e1"/><text x="799" y="413" class="mono" font-size="13" text-anchor="middle" fill="#0f172a">4</text>
+    <rect x="832" y="388" width="66" height="40" fill="#ffffff" stroke="#cbd5e1"/><text x="865" y="413" class="mono" font-size="13" text-anchor="middle" fill="#0f172a">4</text>
+    <rect x="898" y="388" width="66" height="40" fill="#fff1f2" stroke="#e11d48" stroke-width="2.5"/><text x="931" y="413" class="mono" font-size="14" font-weight="700" text-anchor="middle" fill="#9f1239">3 (del)</text>
+  </g>
+
+  <!-- Legend Box next to Edit Distance Grid -->
+  <rect x="980" y="188" width="142" height="240" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="992" y="210" class="sans" font-size="11.5" font-weight="700" fill="#0f172a">Cell Transitions</text>
+  <text x="992" y="236" class="mono" font-size="11" font-weight="700" fill="#065f46">↖ Match (+0)</text>
+  <text x="992" y="264" class="mono" font-size="11" font-weight="700" fill="#5b21b6">↖ Replace (+1)</text>
+  <text x="992" y="292" class="mono" font-size="11" font-weight="700" fill="#9f1239">↑ Delete (+1)</text>
+  <text x="992" y="320" class="mono" font-size="11" font-weight="700" fill="#92400e">← Insert (+1)</text>
+  <rect x="992" y="344" width="118" height="70" rx="6" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <text x="1002" y="364" class="mono" font-size="11" font-weight="700" fill="#065f46">HORSE -&gt; RORSE</text>
+  <text x="1002" y="382" class="mono" font-size="11" font-weight="700" fill="#065f46">RORSE -&gt; ROSE</text>
+  <text x="1002" y="400" class="mono" font-size="11" font-weight="700" fill="#065f46">ROSE  -&gt; ROS</text>
+
+  <!-- Traceback Overlay Path (Edit Distance) -->
+  <g class="tb">
+    <path d="M 931 408 L 931 368 L 865 328 L 865 288 L 799 248 L 733 208" fill="none" stroke="#7c3aed" stroke-width="3" stroke-dasharray="5 3"/>
+  </g>
+
+  <rect x="610" y="446" width="512" height="106" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="624" y="468" class="sans" font-size="12" font-weight="700" fill="#5b21b6">Edit Distance Traceback: Cost = 3 Operations</text>
+  <text x="624" y="489" class="sans" font-size="11" fill="#334155">• Base cases: DP[i][0] = i (delete all i chars), DP[0][j] = j (insert all j chars).</text>
+  <text x="624" y="508" class="sans" font-size="11" fill="#334155">• Every step in traceback maps directly to one concrete string edit.</text>
+  <text x="624" y="529" class="mono" font-size="11" font-weight="700" fill="#0f172a">Both grids: Time O(m·n)  |  Full traceback Space O(m·n)</text>
+
+  <!-- Footer -->
+  <rect x="20" y="584" width="1120" height="58" rx="10" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="38" y="608" class="sans" font-size="11.5" font-weight="700" fill="#0f172a">Topological Order:</text>
+  <text x="172" y="608" class="sans" font-size="11.5" fill="#334155">Because cell (i, j) depends only on (i-1, j-1), (i-1, j), and (i, j-1), filling row-by-row guarantees dependencies are ready.</text>
+  <text x="38" y="627" class="sans" font-size="11" fill="#475569">Note: Rolling 1D compression lowers space to O(min(m, n)) by caching top-left diagonal in a temp variable.</text>
+</svg>

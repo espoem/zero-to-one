@@ -1,0 +1,151 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 640" width="1160" height="640" role="img" aria-labelledby="title desc">
+  <title id="title">Longest Increasing Subsequence: O(n log n) Patience Sorting</title>
+  <desc id="desc">Step-by-step animation of O(n log n) Patience Sorting on input [2, 5, 3, 7, 101, 18] showing strictly increasing tails[] piles, binary search locating the leftmost pile top &gt;= x, replacing pile tops (5-&gt;3 and 101-&gt;18) versus appending new piles, and final LIS length 4.</desc>
+  <style><![CDATA[
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    /* 12s 6-step animation */
+    @keyframes p1 { 0%, 16% { opacity: 1; } 17%, 100% { opacity: 0; } }
+    @keyframes p2 { 0%, 16% { opacity: 0; } 17%, 33% { opacity: 1; } 34%, 100% { opacity: 0; } }
+    @keyframes p3 { 0%, 33% { opacity: 0; } 34%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+    @keyframes p4 { 0%, 49% { opacity: 0; } 50%, 66% { opacity: 1; } 67%, 100% { opacity: 0; } }
+    @keyframes p5 { 0%, 66% { opacity: 0; } 67%, 83% { opacity: 1; } 84%, 100% { opacity: 0; } }
+    @keyframes p6 { 0%, 83% { opacity: 0; } 84%, 100% { opacity: 1; } }
+
+    @keyframes showFrom2 { 0%, 16% { opacity: 0; } 17%, 100% { opacity: 1; } }
+    @keyframes showFrom3 { 0%, 33% { opacity: 0; } 34%, 100% { opacity: 1; } }
+    @keyframes showFrom4 { 0%, 49% { opacity: 0; } 50%, 100% { opacity: 1; } }
+    @keyframes showFrom5 { 0%, 66% { opacity: 0; } 67%, 100% { opacity: 1; } }
+    @keyframes showFrom6 { 0%, 83% { opacity: 0; } 84%, 100% { opacity: 1; } }
+
+    .p1 { animation: p1 12s infinite; }
+    .p2 { animation: p2 12s infinite; }
+    .p3 { animation: p3 12s infinite; }
+    .p4 { animation: p4 12s infinite; }
+    .p5 { animation: p5 12s infinite; }
+    .p6 { animation: p6 12s infinite; }
+
+    .s2 { animation: showFrom2 12s infinite; }
+    .s3 { animation: showFrom3 12s infinite; }
+    .s4 { animation: showFrom4 12s infinite; }
+    .s5 { animation: showFrom5 12s infinite; }
+    .s6 { animation: showFrom6 12s infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .p1, .p2, .p3, .p4, .p5 { animation: none !important; opacity: 0 !important; }
+      .p6, .s2, .s3, .s4, .s5, .s6 { animation: none !important; opacity: 1 !important; }
+    }
+  ]]></style>
+
+  <!-- Canvas & Header -->
+  <rect x="0" y="0" width="1160" height="640" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1160" height="60" rx="12" fill="#0f172a"/>
+  <rect x="0" y="44" width="1160" height="16" fill="#0f172a"/>
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Longest Increasing Subsequence (LIS): O(n log n) Patience Sorting</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">Invariant: tails[] stays strictly sorted; binary search locates leftmost pile top &gt;= x to replace or append</text>
+
+  <!-- Input Stream Bar -->
+  <rect x="20" y="74" width="1120" height="66" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="38" y="112" class="sans" font-size="13" font-weight="700" fill="#0f172a">Input A[0..5]:</text>
+
+  <rect x="150" y="88" width="66" height="38" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="183" y="112" class="mono" font-size="15" font-weight="700" text-anchor="middle" fill="#065f46">2</text>
+  <rect x="230" y="88" width="66" height="38" rx="6" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/><text x="263" y="112" class="mono" font-size="15" font-weight="700" text-anchor="middle" fill="#1e3a8a">5</text>
+  <rect x="310" y="88" width="66" height="38" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="2"/><text x="343" y="112" class="mono" font-size="15" font-weight="700" text-anchor="middle" fill="#92400e">3</text>
+  <rect x="390" y="88" width="66" height="38" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="423" y="112" class="mono" font-size="15" font-weight="700" text-anchor="middle" fill="#065f46">7</text>
+  <rect x="470" y="88" width="66" height="38" rx="6" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/><text x="503" y="112" class="mono" font-size="15" font-weight="700" text-anchor="middle" fill="#1e3a8a">101</text>
+  <rect x="550" y="88" width="66" height="38" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="2"/><text x="583" y="112" class="mono" font-size="15" font-weight="700" text-anchor="middle" fill="#92400e">18</text>
+
+  <!-- Active Step Callout Pill on Right of Input Bar -->
+  <g class="p1"><rect x="646" y="88" width="474" height="38" rx="6" fill="#eff6ff" stroke="#2563eb"/><text x="883" y="112" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#1e3a8a">x = 2: tails empty -&gt; APPEND Pile 0 [2]</text></g>
+  <g class="p2"><rect x="646" y="88" width="474" height="38" rx="6" fill="#eff6ff" stroke="#2563eb"/><text x="883" y="112" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#1e3a8a">x = 5: 5 &gt; 2 -&gt; APPEND Pile 1 [2, 5]</text></g>
+  <g class="p3"><rect x="646" y="88" width="474" height="38" rx="6" fill="#fffbeb" stroke="#d97706"/><text x="883" y="112" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#92400e">x = 3: Binary Search &gt;= 3 -&gt; REPLACE Pile 1 (5-&gt;3)</text></g>
+  <g class="p4"><rect x="646" y="88" width="474" height="38" rx="6" fill="#eff6ff" stroke="#2563eb"/><text x="883" y="112" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#1e3a8a">x = 7: 7 &gt; 3 -&gt; APPEND Pile 2 [2, 3, 7]</text></g>
+  <g class="p5"><rect x="646" y="88" width="474" height="38" rx="6" fill="#eff6ff" stroke="#2563eb"/><text x="883" y="112" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#1e3a8a">x = 101: 101 &gt; 7 -&gt; APPEND Pile 3 [2, 3, 7, 101]</text></g>
+  <g class="p6"><rect x="646" y="88" width="474" height="38" rx="6" fill="#ecfdf5" stroke="#059669"/><text x="883" y="112" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#065f46">x = 18: Binary Search &gt;= 18 -&gt; REPLACE Pile 3 (101-&gt;18)</text></g>
+
+  <!-- LEFT PANEL: Patience Sorting Card Piles + tails[] -->
+  <rect x="20" y="156" width="690" height="394" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="38" y="182" class="sans" font-size="14" font-weight="700" fill="#0f172a">Patience Piles &amp; Strictly Increasing tails[] Array</text>
+
+  <!-- Pile 0 -->
+  <rect x="52" y="206" width="136" height="218" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-dasharray="4 3"/>
+  <text x="120" y="226" class="sans" font-size="11.5" font-weight="700" text-anchor="middle" fill="#475569">Pile 0 (len 1)</text>
+  <rect x="74" y="246" width="92" height="54" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+  <text x="120" y="279" class="mono" font-size="20" font-weight="700" text-anchor="middle" fill="#065f46">2</text>
+
+  <!-- Pile 1 -->
+  <rect x="214" y="206" width="136" height="218" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-dasharray="4 3" class="s2"/>
+  <text x="282" y="226" class="sans s2" font-size="11.5" font-weight="700" text-anchor="middle" fill="#475569">Pile 1 (len 2)</text>
+  <g class="s2">
+    <rect x="236" y="246" width="92" height="54" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+    <text x="282" y="279" class="mono" font-size="20" font-weight="700" text-anchor="middle" fill="#64748b">5</text>
+  </g>
+  <g class="s3">
+    <line x1="252" y1="273" x2="312" y2="273" stroke="#e11d48" stroke-width="2.5"/>
+    <rect x="236" y="314" width="92" height="54" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+    <text x="282" y="347" class="mono" font-size="20" font-weight="700" text-anchor="middle" fill="#065f46">3</text>
+    <text x="282" y="394" class="sans" font-size="10.5" font-weight="700" text-anchor="middle" fill="#92400e">replaced 5 -&gt; 3</text>
+  </g>
+
+  <!-- Pile 2 -->
+  <rect x="376" y="206" width="136" height="218" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-dasharray="4 3" class="s4"/>
+  <text x="444" y="226" class="sans s4" font-size="11.5" font-weight="700" text-anchor="middle" fill="#475569">Pile 2 (len 3)</text>
+  <g class="s4">
+    <rect x="398" y="246" width="92" height="54" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+    <text x="444" y="279" class="mono" font-size="20" font-weight="700" text-anchor="middle" fill="#065f46">7</text>
+  </g>
+
+  <!-- Pile 3 -->
+  <rect x="538" y="206" width="136" height="218" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-dasharray="4 3" class="s5"/>
+  <text x="606" y="226" class="sans s5" font-size="11.5" font-weight="700" text-anchor="middle" fill="#475569">Pile 3 (len 4)</text>
+  <g class="s5">
+    <rect x="560" y="246" width="92" height="54" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+    <text x="606" y="279" class="mono" font-size="20" font-weight="700" text-anchor="middle" fill="#64748b">101</text>
+  </g>
+  <g class="s6">
+    <line x1="576" y1="273" x2="636" y2="273" stroke="#e11d48" stroke-width="2.5"/>
+    <rect x="560" y="314" width="92" height="54" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+    <text x="606" y="347" class="mono" font-size="20" font-weight="700" text-anchor="middle" fill="#065f46">18</text>
+    <text x="606" y="394" class="sans" font-size="10.5" font-weight="700" text-anchor="middle" fill="#92400e">replaced 101 -&gt; 18</text>
+  </g>
+
+  <!-- tails[] Bar -->
+  <rect x="38" y="440" width="654" height="92" rx="8" fill="#f5f3ff" stroke="#c4b5fd"/>
+  <text x="54" y="464" class="sans" font-size="12.5" font-weight="700" fill="#5b21b6">Current tails[] (Smallest Ending Element of Each Subsequence Length):</text>
+  <g class="p1"><text x="54" y="492" class="mono" font-size="15" font-weight="700" fill="#0f172a">tails = [ 2 ]   -&gt;   LIS length = 1</text></g>
+  <g class="p2"><text x="54" y="492" class="mono" font-size="15" font-weight="700" fill="#0f172a">tails = [ 2, 5 ]   -&gt;   LIS length = 2</text></g>
+  <g class="p3"><text x="54" y="492" class="mono" font-size="15" font-weight="700" fill="#92400e">tails = [ 2, 3 ]   (smaller tail 3 eases future extension!)</text></g>
+  <g class="p4"><text x="54" y="492" class="mono" font-size="15" font-weight="700" fill="#0f172a">tails = [ 2, 3, 7 ]   -&gt;   LIS length = 3</text></g>
+  <g class="p5"><text x="54" y="492" class="mono" font-size="15" font-weight="700" fill="#0f172a">tails = [ 2, 3, 7, 101 ]   -&gt;   LIS length = 4</text></g>
+  <g class="p6"><text x="54" y="492" class="mono" font-size="15" font-weight="700" fill="#065f46">tails = [ 2, 3, 7, 18 ]   -&gt;   Final LIS length = 4</text></g>
+  <text x="54" y="518" class="sans" font-size="11" fill="#475569">Because tails[0] &lt; tails[1] &lt; ... &lt; tails[k-1] always holds, lower_bound binary search runs in O(log n).</text>
+
+  <!-- RIGHT PANEL: Step Log & Reconstruction Note -->
+  <rect x="728" y="156" width="412" height="394" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="746" y="182" class="sans" font-size="14" font-weight="700" fill="#0f172a">Binary Search Trace &amp; Reconstruction</text>
+
+  <rect x="746" y="198" width="376" height="34" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="758" y="219" class="mono" font-size="11" fill="#0f172a">1. x=2   : append          -&gt; [2]</text>
+  <rect x="746" y="238" width="376" height="34" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="758" y="259" class="mono" font-size="11" fill="#0f172a">2. x=5   : 5 &gt; 2, append   -&gt; [2, 5]</text>
+  <rect x="746" y="278" width="376" height="34" rx="6" fill="#fffbeb" stroke="#fcd34d"/>
+  <text x="758" y="299" class="mono" font-size="11" font-weight="700" fill="#92400e">3. x=3   : idx=1 (5&gt;=3)    -&gt; [2, 3]</text>
+  <rect x="746" y="318" width="376" height="34" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="758" y="339" class="mono" font-size="11" fill="#0f172a">4. x=7   : 7 &gt; 3, append   -&gt; [2, 3, 7]</text>
+  <rect x="746" y="358" width="376" height="34" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="758" y="379" class="mono" font-size="11" fill="#0f172a">5. x=101 : 101 &gt; 7, append -&gt; [2, 3, 7, 101]</text>
+  <rect x="746" y="398" width="376" height="34" rx="6" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <text x="758" y="419" class="mono" font-size="11" font-weight="700" fill="#065f46">6. x=18  : idx=3 (101&gt;=18) -&gt; [2, 3, 7, 18]</text>
+
+  <rect x="746" y="446" width="376" height="86" rx="8" fill="#fff1f2" stroke="#fda4af"/>
+  <text x="758" y="468" class="sans" font-size="12" font-weight="700" fill="#9f1239">Warning: tails[] Is NOT Always a Valid LIS!</text>
+  <text x="758" y="488" class="sans" font-size="11" fill="#334155">If x=4 came after 7, tails=[2,3,4] has length 3, even</text>
+  <text x="758" y="505" class="sans" font-size="11" fill="#334155">though 4 appeared after 7. Track predecessor pointers</text>
+  <text x="758" y="522" class="sans" font-size="11" fill="#334155">to reconstruct the actual subsequence elements.</text>
+
+  <!-- Footer -->
+  <rect x="20" y="564" width="1120" height="58" rx="10" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="38" y="588" class="mono" font-size="11.5" font-weight="700" fill="#0f172a">Time: O(n log n)  |  Space: O(n)   (vs Naive 1D DP: O(n^2) time)</text>
+  <text x="38" y="608" class="sans" font-size="11" fill="#475569">Variant: For Longest Non-Decreasing Subsequence (&lt;=), binary search for first element strictly &gt; x (upper_bound) instead of &gt;= x.</text>
+</svg>

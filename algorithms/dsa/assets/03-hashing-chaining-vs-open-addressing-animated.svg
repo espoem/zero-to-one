@@ -1,0 +1,225 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 820" width="1200" height="820" role="img" aria-labelledby="title desc">
+  <title id="title">Hash Table Collision Resolution: Separate Chaining vs Open Addressing Probing</title>
+  <desc id="desc">Animated 4-panel comparison of Separate Chaining, Linear Probing showing primary clustering and tombstone markers, Quadratic Probing showing secondary clustering, and Double Hashing achieving O(m^2) distinct probe sequences.</desc>
+  <style>
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    @keyframes probeFlow {
+      0% { stroke-dashoffset: 24; }
+      100% { stroke-dashoffset: 0; }
+    }
+    @keyframes hop1 { 0%, 30% { opacity: 1; } 35%, 95% { opacity: 0.86; } 100% { opacity: 1; } }
+    @keyframes hop2 { 0%, 30% { opacity: 0.86; } 35%, 65% { opacity: 1; } 70%, 100% { opacity: 0.86; } }
+    @keyframes hop3 { 0%, 65% { opacity: 0.86; } 70%, 95% { opacity: 1; } 100% { opacity: 0.86; } }
+
+    .probe-arc { stroke-dasharray: 6 4; animation: probeFlow 2s linear infinite; }
+    .p-hop1 { animation: hop1 7.5s ease-in-out infinite; }
+    .p-hop2 { animation: hop2 7.5s ease-in-out infinite; }
+    .p-hop3 { animation: hop3 7.5s ease-in-out infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+      .p-hop1, .p-hop2, .p-hop3 { opacity: 1 !important; }
+    }
+  </style>
+
+  <defs>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+    </marker>
+    <marker id="arr-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1200" height="820" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1200" height="64" rx="12" fill="#0f172a"/>
+  <rect x="0" y="48" width="1200" height="16" fill="#0f172a"/>
+  <text x="24" y="28" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Collision Resolution: Separate Chaining vs Open Addressing (m = 7)</text>
+  <text x="24" y="49" class="sans" font-size="12" fill="#94a3b8">Comparing pointer chains against Linear Probing, Quadratic Probing, and Double Hashing when inserting colliding key k_new (h'(k_new) = 2)</text>
+
+  <!-- ==================== PANEL 1: SEPARATE CHAINING ==================== -->
+  <rect x="20" y="80" width="570" height="350" rx="10" fill="#ffffff" stroke="#bfdbfe" stroke-width="1.5"/>
+  <rect x="20" y="80" width="570" height="36" rx="10" fill="#eff6ff"/>
+  <rect x="20" y="106" width="570" height="10" fill="#eff6ff"/>
+  <text x="36" y="103" class="sans" font-size="13" font-weight="700" fill="#1e3a8a">1. Separate Chaining (α = n / m can exceed 1.0)</text>
+  <rect x="454" y="87" width="122" height="22" rx="11" fill="#2563eb"/>
+  <text x="515" y="102" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">Θ(1 + α) avg</text>
+
+  <!-- Bucket array T[0..6] vertically on left -->
+  <text x="56" y="138" class="mono" font-size="10.5" font-weight="700" fill="#475569">T[j]</text>
+  <rect x="44" y="146" width="54" height="28" rx="4" fill="#f1f5f9" stroke="#cbd5e1"/><text x="71" y="164" class="mono" font-size="11" fill="#64748b" text-anchor="middle">0: •</text>
+  <rect x="44" y="178" width="54" height="28" rx="4" fill="#dbeafe" stroke="#2563eb"/><text x="71" y="196" class="mono" font-size="11" font-weight="700" fill="#1e3a8a" text-anchor="middle">1: →</text>
+  <rect x="44" y="210" width="54" height="28" rx="4" fill="#2563eb"/><text x="71" y="228" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">2: →</text>
+  <rect x="44" y="242" width="54" height="28" rx="4" fill="#f1f5f9" stroke="#cbd5e1"/><text x="71" y="260" class="mono" font-size="11" fill="#64748b" text-anchor="middle">3: •</text>
+  <rect x="44" y="274" width="54" height="28" rx="4" fill="#dbeafe" stroke="#2563eb"/><text x="71" y="292" class="mono" font-size="11" font-weight="700" fill="#1e3a8a" text-anchor="middle">4: →</text>
+  <rect x="44" y="306" width="54" height="28" rx="4" fill="#f1f5f9" stroke="#cbd5e1"/><text x="71" y="324" class="mono" font-size="11" fill="#64748b" text-anchor="middle">5: •</text>
+  <rect x="44" y="338" width="54" height="28" rx="4" fill="#f1f5f9" stroke="#cbd5e1"/><text x="71" y="356" class="mono" font-size="11" fill="#64748b" text-anchor="middle">6: •</text>
+
+  <!-- Chains -->
+  <line x1="98" y1="192" x2="132" y2="192" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+  <rect x="136" y="178" width="82" height="28" rx="5" fill="#eff6ff" stroke="#2563eb"/><text x="177" y="196" class="mono" font-size="10.5" fill="#1e3a8a" text-anchor="middle">alice</text>
+
+  <line x1="98" y1="224" x2="132" y2="224" stroke="#2563eb" stroke-width="2" class="probe-arc" marker-end="url(#arr-blue)"/>
+  <g class="p-hop1">
+    <rect x="136" y="210" width="82" height="28" rx="5" fill="#eff6ff" stroke="#2563eb"/><text x="177" y="228" class="mono" font-size="10.5" fill="#1e3a8a" text-anchor="middle">bob</text>
+  </g>
+  <line x1="218" y1="224" x2="250" y2="224" stroke="#2563eb" stroke-width="2" class="probe-arc" marker-end="url(#arr-blue)"/>
+  <g class="p-hop2">
+    <rect x="254" y="210" width="82" height="28" rx="5" fill="#eff6ff" stroke="#2563eb"/><text x="295" y="228" class="mono" font-size="10.5" fill="#1e3a8a" text-anchor="middle">david</text>
+  </g>
+  <line x1="336" y1="224" x2="368" y2="224" stroke="#059669" stroke-width="2" class="probe-arc" marker-end="url(#arr-emerald)"/>
+  <g class="p-hop3">
+    <rect x="372" y="210" width="96" height="28" rx="5" fill="#059669"/><text x="420" y="228" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">k_new ★</text>
+  </g>
+
+  <line x1="98" y1="288" x2="132" y2="288" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+  <rect x="136" y="274" width="82" height="28" rx="5" fill="#eff6ff" stroke="#2563eb"/><text x="177" y="292" class="mono" font-size="10.5" fill="#1e3a8a" text-anchor="middle">charlie</text>
+
+  <rect x="136" y="320" width="438" height="94" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="150" y="340" class="sans" font-size="11" font-weight="700" fill="#0f172a">Mechanics &amp; Production Mitigation</text>
+  <text x="150" y="358" class="sans" font-size="10" fill="#334155">• Unsuccessful lookup: Θ(1 + α) · Successful: Θ(1 + α/2) under SUHA.</text>
+  <text x="150" y="376" class="sans" font-size="10" fill="#334155">• Worst-case chain O(n): Java HashMap treeifies chains &gt; 8 into Red-Black</text>
+  <text x="150" y="392" class="sans" font-size="10" fill="#334155">  trees (O(log n)). Pointer-chasing hurts cache locality vs open addressing.</text>
+
+  <!-- ==================== PANEL 2: LINEAR PROBING ==================== -->
+  <rect x="610" y="80" width="570" height="350" rx="10" fill="#ffffff" stroke="#fda4af" stroke-width="1.5"/>
+  <rect x="610" y="80" width="570" height="36" rx="10" fill="#fff1f2"/>
+  <rect x="610" y="106" width="570" height="10" fill="#fff1f2"/>
+  <text x="626" y="103" class="sans" font-size="13" font-weight="700" fill="#9f1239">2. Linear Probing: h(k, i) = (h'(k) + i) mod m</text>
+  <rect x="1028" y="87" width="138" height="22" rx="11" fill="#e11d48"/>
+  <text x="1097" y="102" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">Primary Clustering</text>
+
+  <!-- Horizontal array T[0..6]: x starts 634, width=68, gap=6 -> stride=74 -->
+  <text x="668" y="152" class="mono" font-size="10" fill="#64748b" text-anchor="middle">T[0]</text>
+  <rect x="634" y="160" width="68" height="44" rx="5" fill="#f1f5f9" stroke="#cbd5e1"/><text x="668" y="186" class="mono" font-size="10" fill="#94a3b8" text-anchor="middle">empty</text>
+
+  <text x="742" y="152" class="mono" font-size="10" fill="#64748b" text-anchor="middle">T[1]</text>
+  <rect x="708" y="160" width="68" height="44" rx="5" fill="#eff6ff" stroke="#2563eb"/><text x="742" y="186" class="mono" font-size="11" font-weight="700" fill="#1e3a8a" text-anchor="middle">alice</text>
+
+  <text x="816" y="152" class="mono" font-size="10" font-weight="700" fill="#e11d48" text-anchor="middle">T[2] h'</text>
+  <rect x="782" y="160" width="68" height="44" rx="5" fill="#fee2e2" stroke="#e11d48" class="p-hop1"/><text x="816" y="186" class="mono" font-size="11" font-weight="700" fill="#9f1239" text-anchor="middle">bob</text>
+
+  <text x="890" y="152" class="mono" font-size="10" fill="#64748b" text-anchor="middle">T[3]</text>
+  <rect x="856" y="160" width="68" height="44" rx="5" fill="#fef3c7" stroke="#d97706" class="p-hop2"/><text x="890" y="186" class="mono" font-size="10" font-weight="700" fill="#92400e" text-anchor="middle">TOMB</text>
+
+  <text x="964" y="152" class="mono" font-size="10" fill="#64748b" text-anchor="middle">T[4]</text>
+  <rect x="930" y="160" width="68" height="44" rx="5" fill="#fee2e2" stroke="#e11d48" class="p-hop2"/><text x="964" y="186" class="mono" font-size="11" font-weight="700" fill="#9f1239" text-anchor="middle">david</text>
+
+  <text x="1038" y="152" class="mono" font-size="10" font-weight="700" fill="#059669" text-anchor="middle">T[5] ★</text>
+  <rect x="1004" y="160" width="68" height="44" rx="5" fill="#059669" class="p-hop3"/><text x="1038" y="186" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">k_new</text>
+
+  <text x="1112" y="152" class="mono" font-size="10" fill="#64748b" text-anchor="middle">T[6]</text>
+  <rect x="1078" y="160" width="68" height="44" rx="5" fill="#f1f5f9" stroke="#cbd5e1"/><text x="1112" y="186" class="mono" font-size="10" fill="#94a3b8" text-anchor="middle">empty</text>
+
+  <!-- Step-by-step +1 arcs -->
+  <path d="M 816 206 Q 853 230 890 206" fill="none" stroke="#e11d48" stroke-width="2" class="probe-arc" marker-end="url(#arr-rose)"/>
+  <path d="M 890 206 Q 927 230 964 206" fill="none" stroke="#e11d48" stroke-width="2" class="probe-arc" marker-end="url(#arr-rose)"/>
+  <path d="M 964 206 Q 1001 230 1038 206" fill="none" stroke="#059669" stroke-width="2" class="probe-arc" marker-end="url(#arr-emerald)"/>
+  <text x="927" y="236" class="mono" font-size="10" font-weight="700" fill="#be123c" text-anchor="middle">Probe +1, +1, +1 extends contiguous cluster [1..5]!</text>
+
+  <rect x="634" y="254" width="522" height="160" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="648" y="276" class="sans" font-size="11" font-weight="700" fill="#0f172a">Cache-Line Hero, Cluster &amp; Tombstone Trap</text>
+  <text x="648" y="296" class="sans" font-size="10" fill="#065f46">• Pro: Sequential slots fit in a single 64-byte L1 cache line.</text>
+  <text x="648" y="314" class="sans" font-size="10" fill="#9f1239">• Con (Primary Clustering): Occupied run of length L absorbs new hits</text>
+  <text x="648" y="330" class="sans" font-size="10" fill="#9f1239">  with probability proportional to L+1, growing super-linearly as α → 1.</text>
+  <text x="648" y="352" class="mono" font-size="10" font-weight="700" fill="#92400e">• Deletion MUST write TOMBSTONE (not null): search skips TOMB;</text>
+  <text x="648" y="370" class="mono" font-size="10" fill="#92400e">  clearing to null would falsely break lookup for david @ T[4]!</text>
+  <text x="648" y="394" class="mono" font-size="10" fill="#475569">Insert reuses TOMBSTONE slots; rehash compacts tombstones away.</text>
+
+  <!-- ==================== PANEL 3: QUADRATIC PROBING ==================== -->
+  <rect x="20" y="446" width="570" height="354" rx="10" fill="#ffffff" stroke="#fde68a" stroke-width="1.5"/>
+  <rect x="20" y="446" width="570" height="36" rx="10" fill="#fffbeb"/>
+  <rect x="20" y="472" width="570" height="10" fill="#fffbeb"/>
+  <text x="36" y="469" class="sans" font-size="13" font-weight="700" fill="#92400e">3. Quadratic Probing: h(k, i) = (h'(k) + i^2) mod 7</text>
+  <rect x="442" y="453" width="134" height="22" rx="11" fill="#d97706"/>
+  <text x="509" y="468" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">Secondary Clustering</text>
+
+  <!-- T[0..6] at x=44, stride=74 -->
+  <text x="78" y="514" class="mono" font-size="10" fill="#64748b" text-anchor="middle">T[0]</text>
+  <rect x="44" y="522" width="68" height="44" rx="5" fill="#f1f5f9" stroke="#cbd5e1"/><text x="78" y="548" class="mono" font-size="10" fill="#94a3b8" text-anchor="middle">empty</text>
+
+  <text x="152" y="514" class="mono" font-size="10" fill="#64748b" text-anchor="middle">T[1]</text>
+  <rect x="118" y="522" width="68" height="44" rx="5" fill="#eff6ff" stroke="#2563eb"/><text x="152" y="548" class="mono" font-size="11" font-weight="700" fill="#1e3a8a" text-anchor="middle">alice</text>
+
+  <text x="226" y="514" class="mono" font-size="10" font-weight="700" fill="#d97706" text-anchor="middle">T[2] i=0</text>
+  <rect x="192" y="522" width="68" height="44" rx="5" fill="#fef3c7" stroke="#d97706" class="p-hop1"/><text x="226" y="548" class="mono" font-size="11" font-weight="700" fill="#92400e" text-anchor="middle">bob</text>
+
+  <text x="300" y="514" class="mono" font-size="10" font-weight="700" fill="#d97706" text-anchor="middle">T[3] i=1</text>
+  <rect x="266" y="522" width="68" height="44" rx="5" fill="#fef3c7" stroke="#d97706" class="p-hop2"/><text x="300" y="548" class="mono" font-size="11" font-weight="700" fill="#92400e" text-anchor="middle">david</text>
+
+  <text x="374" y="514" class="mono" font-size="10" fill="#64748b" text-anchor="middle">T[4]</text>
+  <rect x="340" y="522" width="68" height="44" rx="5" fill="#eff6ff" stroke="#2563eb"/><text x="374" y="548" class="mono" font-size="11" font-weight="700" fill="#1e3a8a" text-anchor="middle">eve</text>
+
+  <text x="448" y="514" class="mono" font-size="10" fill="#64748b" text-anchor="middle">T[5]</text>
+  <rect x="414" y="522" width="68" height="44" rx="5" fill="#f1f5f9" stroke="#cbd5e1"/><text x="448" y="548" class="mono" font-size="10" fill="#94a3b8" text-anchor="middle">empty</text>
+
+  <text x="522" y="514" class="mono" font-size="10" font-weight="700" fill="#059669" text-anchor="middle">T[6] i=2★</text>
+  <rect x="488" y="522" width="68" height="44" rx="5" fill="#059669" class="p-hop3"/><text x="522" y="548" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">k_new</text>
+
+  <!-- Jumps: 2 -> 3 (+1), 3 -> 6 (+3 from T[3], i.e. +4 from T[2]) -->
+  <path d="M 226 568 Q 263 590 300 568" fill="none" stroke="#d97706" stroke-width="2" class="probe-arc" marker-end="url(#arr-amber)"/>
+  <path d="M 300 568 Q 411 612 522 568" fill="none" stroke="#059669" stroke-width="2" class="probe-arc" marker-end="url(#arr-emerald)"/>
+  <text x="374" y="606" class="mono" font-size="10" font-weight="700" fill="#92400e" text-anchor="middle">Probe offsets from h'=2: +0 (T[2]), +1 (T[3]), +4 (T[6]), +9≡2…</text>
+
+  <rect x="44" y="622" width="522" height="160" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="58" y="644" class="sans" font-size="11" font-weight="700" fill="#0f172a">Secondary Clustering &amp; Coverage Constraint</text>
+  <text x="58" y="664" class="sans" font-size="10" fill="#334155">• Avoids contiguous primary clusters by stepping quadratically (+1, +4, +9).</text>
+  <text x="58" y="682" class="sans" font-size="10" fill="#92400e">• Secondary Clustering: any keys with identical h'(k1) = h'(k2) trace the</text>
+  <text x="58" y="698" class="sans" font-size="10" fill="#92400e">  EXACT same probe sequence (m linear chains instead of m^2).</text>
+  <text x="58" y="720" class="mono" font-size="10" font-weight="700" fill="#1e3a8a">• Prime m + α &lt; 0.5 guarantees first ⌊m/2⌋ probes are distinct.</text>
+  <text x="58" y="738" class="mono" font-size="10" fill="#475569">• Power-of-2 tables use triangular numbers: i(i+1)/2 mod 2^k visits all slots.</text>
+
+  <!-- ==================== PANEL 4: DOUBLE HASHING ==================== -->
+  <rect x="610" y="446" width="570" height="354" rx="10" fill="#ffffff" stroke="#a7f3d0" stroke-width="1.5"/>
+  <rect x="610" y="446" width="570" height="36" rx="10" fill="#ecfdf5"/>
+  <rect x="610" y="472" width="570" height="10" fill="#ecfdf5"/>
+  <text x="626" y="469" class="sans" font-size="13" font-weight="700" fill="#065f46">4. Double Hashing: h(k, i) = (h_1(k) + i · h_2(k)) mod 7</text>
+  <rect x="1034" y="453" width="132" height="22" rx="11" fill="#059669"/>
+  <text x="1100" y="468" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">Θ(m^2) Sequences</text>
+
+  <!-- T[0..6] at x=634, stride=74 -->
+  <text x="668" y="514" class="mono" font-size="10" fill="#64748b" text-anchor="middle">T[0]</text>
+  <rect x="634" y="522" width="68" height="44" rx="5" fill="#fef3c7" stroke="#d97706" class="p-hop2"/><text x="668" y="548" class="mono" font-size="11" font-weight="700" fill="#92400e" text-anchor="middle">eve</text>
+
+  <text x="742" y="514" class="mono" font-size="10" fill="#64748b" text-anchor="middle">T[1]</text>
+  <rect x="708" y="522" width="68" height="44" rx="5" fill="#eff6ff" stroke="#2563eb"/><text x="742" y="548" class="mono" font-size="11" font-weight="700" fill="#1e3a8a" text-anchor="middle">alice</text>
+
+  <text x="816" y="514" class="mono" font-size="10" font-weight="700" fill="#e11d48" text-anchor="middle">T[2] i=0</text>
+  <rect x="782" y="522" width="68" height="44" rx="5" fill="#fee2e2" stroke="#e11d48" class="p-hop1"/><text x="816" y="548" class="mono" font-size="11" font-weight="700" fill="#9f1239" text-anchor="middle">bob</text>
+
+  <text x="890" y="514" class="mono" font-size="10" fill="#64748b" text-anchor="middle">T[3]</text>
+  <rect x="856" y="522" width="68" height="44" rx="5" fill="#f1f5f9" stroke="#cbd5e1"/><text x="890" y="548" class="mono" font-size="10" fill="#94a3b8" text-anchor="middle">empty</text>
+
+  <text x="964" y="514" class="mono" font-size="10" fill="#64748b" text-anchor="middle">T[4]</text>
+  <rect x="930" y="522" width="68" height="44" rx="5" fill="#eff6ff" stroke="#2563eb"/><text x="964" y="548" class="mono" font-size="11" font-weight="700" fill="#1e3a8a" text-anchor="middle">david</text>
+
+  <text x="1038" y="514" class="mono" font-size="10" font-weight="700" fill="#059669" text-anchor="middle">T[5] i=2★</text>
+  <rect x="1004" y="522" width="68" height="44" rx="5" fill="#059669" class="p-hop3"/><text x="1038" y="548" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">k_new</text>
+
+  <text x="1112" y="514" class="mono" font-size="10" fill="#64748b" text-anchor="middle">T[6]</text>
+  <rect x="1078" y="522" width="68" height="44" rx="5" fill="#f1f5f9" stroke="#cbd5e1"/><text x="1112" y="548" class="mono" font-size="10" fill="#94a3b8" text-anchor="middle">empty</text>
+
+  <!-- Step size h2(k_new) = 5: 2 -> (2+5)%7 = 0 -> (0+5)%7 = 5 -->
+  <path d="M 816 568 Q 742 602 668 568" fill="none" stroke="#d97706" stroke-width="2" class="probe-arc" marker-end="url(#arr-amber)"/>
+  <path d="M 668 568 Q 853 622 1038 568" fill="none" stroke="#059669" stroke-width="2" class="probe-arc" marker-end="url(#arr-emerald)"/>
+  <text x="895" y="610" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">h_1(k)=2, h_2(k)=5 ⇒ T[2] → T[0] → T[5] (step +5 mod 7)</text>
+
+  <rect x="634" y="622" width="522" height="160" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="648" y="644" class="sans" font-size="11" font-weight="700" fill="#0f172a">Why gcd(h_2(k), m) = 1 Is Mandatory</text>
+  <text x="648" y="664" class="sans" font-size="10" fill="#334155">• Step size depends on key k, separating probe paths even when h_1 collides.</text>
+  <text x="648" y="682" class="mono" font-size="10" font-weight="700" fill="#065f46">• Prime m: choose h_2(k) = 1 + (k mod (m - 1)) ∈ [1, m - 1] (coprime!).</text>
+  <text x="648" y="700" class="mono" font-size="10" fill="#1e3a8a">• Power-of-2 m: choose h_2(k) always ODD (e.g., 2k + 1) ⇒ gcd(h_2, 2^r) = 1.</text>
+  <text x="648" y="722" class="sans" font-size="10" fill="#475569">• Eliminates both primary and secondary clustering, closely matching</text>
+  <text x="648" y="738" class="sans" font-size="10" fill="#475569">  uniform hashing: expected probes ≈ 1/(1 - α) unsuccessful, ln(1/(1-α))/α hit.</text>
+</svg>

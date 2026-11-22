@@ -1,0 +1,233 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 650" width="1160" height="650" role="img" aria-labelledby="title desc">
+  <title id="title">Bellman-Ford Relaxation Waves &amp; Floyd-Warshall k-Pivot Matrix</title>
+  <desc id="desc">Left panel animates Bellman-Ford executing |V|-1 relaxation passes over all edges followed by a V-th pass that detects a negative-weight cycle. Right panel animates Floyd-Warshall pivoting on intermediate vertex k from 0 to 2 to update all-pairs shortest path matrix D[i][j] = min(D[i][j], D[i][k] + D[k][j]).</desc>
+  <style><![CDATA[
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    /* 10s 4-step loop */
+    @keyframes bfS1 { 0%, 24% { opacity: 1; } 25%, 100% { opacity: 0; } }
+    @keyframes bfS2 { 0%, 24% { opacity: 0; } 25%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+    @keyframes bfS3 { 0%, 49% { opacity: 0; } 50%, 74% { opacity: 1; } 75%, 100% { opacity: 0; } }
+    @keyframes bfS4 { 0%, 74% { opacity: 0; } 75%, 100% { opacity: 1; } }
+
+    @keyframes negCycleFlash {
+      0%, 73% { stroke: #d97706; stroke-width: 2.5; }
+      75%, 100% { stroke: #e11d48; stroke-width: 4; }
+    }
+
+    @keyframes fwK0 { 0%, 32% { opacity: 1; } 33%, 100% { opacity: 0; } }
+    @keyframes fwK1 { 0%, 32% { opacity: 0; } 33%, 65% { opacity: 1; } 66%, 100% { opacity: 0; } }
+    @keyframes fwK2 { 0%, 65% { opacity: 0; } 66%, 100% { opacity: 1; } }
+
+    .bf1 { animation: bfS1 10s infinite; }
+    .bf2 { animation: bfS2 10s infinite; }
+    .bf3 { animation: bfS3 10s infinite; }
+    .bf4 { animation: bfS4 10s infinite; }
+    .cyc-edge { animation: negCycleFlash 10s infinite; }
+
+    .fw0 { animation: fwK0 10s infinite; }
+    .fw1 { animation: fwK1 10s infinite; }
+    .fw2 { animation: fwK2 10s infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .bf1, .bf2, .bf3, .fw0, .fw1 {
+        animation: none !important;
+        opacity: 0 !important;
+      }
+      .bf4, .fw2 {
+        animation: none !important;
+        opacity: 1 !important;
+      }
+      .cyc-edge {
+        animation: none !important;
+        stroke: #e11d48 !important;
+        stroke-width: 3.5 !important;
+      }
+    }
+  ]]></style>
+
+  <defs>
+    <marker id="bf-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569"/>
+    </marker>
+    <marker id="bf-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+    </marker>
+    <marker id="fw-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas & Header -->
+  <rect x="0" y="0" width="1160" height="650" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1160" height="60" rx="12" fill="#0f172a"/>
+  <rect x="0" y="44" width="1160" height="16" fill="#0f172a"/>
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Bellman-Ford (|V|-1 Waves + Negative-Cycle Check) &amp; Floyd-Warshall (k-Pivot DP)</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">Negative weights solved in O(V·E) single-source via edge passes and Theta(V^3) all-pairs via intermediate pivot k</text>
+
+  <!-- LEFT PANEL: Bellman-Ford -->
+  <rect x="20" y="76" width="548" height="476" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="38" y="100" class="sans" font-size="14" font-weight="700" fill="#0f172a">1. Bellman-Ford: |V| - 1 Waves &amp; V-th Pass</text>
+  <text x="38" y="118" class="sans" font-size="11.5" fill="#475569">|V| = 4 vertices -&gt; 3 relaxation passes, then 1 extra pass (Pass 4) to flag cycles</text>
+
+  <!-- Graph for Bellman-Ford: S -> A -> B -> C -> A (cycle weight = -2 + 3 - 3 = -2) -->
+  <line x1="126" y1="220" x2="210" y2="220" stroke="#2563eb" stroke-width="2.5" marker-end="url(#bf-arr)"/>
+  <rect x="155" y="195" width="26" height="18" rx="4" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="168" y="208" class="mono" font-size="11" font-weight="700" text-anchor="middle" fill="#1e3a8a">+4</text>
+
+  <line x1="258" y1="205" x2="365" y2="165" class="cyc-edge" marker-end="url(#bf-rose)"/>
+  <rect x="298" y="160" width="28" height="18" rx="4" fill="#fffbeb" stroke="#fcd34d"/>
+  <text x="312" y="173" class="mono" font-size="11" font-weight="700" text-anchor="middle" fill="#92400e">-2</text>
+
+  <line x1="395" y1="184" x2="395" y2="262" class="cyc-edge" marker-end="url(#bf-rose)"/>
+  <rect x="406" y="214" width="28" height="18" rx="4" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="420" y="227" class="mono" font-size="11" font-weight="700" text-anchor="middle" fill="#1e3a8a">+3</text>
+
+  <line x1="370" y1="278" x2="258" y2="236" class="cyc-edge" marker-end="url(#bf-rose)"/>
+  <rect x="298" y="264" width="28" height="18" rx="4" fill="#fff1f2" stroke="#fda4af"/>
+  <text x="312" y="277" class="mono" font-size="11" font-weight="700" text-anchor="middle" fill="#9f1239">-3</text>
+
+  <!-- Nodes S, A, B, C -->
+  <circle cx="96" cy="220" r="22" fill="#ecfdf5" stroke="#059669" stroke-width="2.2"/>
+  <text x="96" y="225" class="sans" font-size="14" font-weight="700" text-anchor="middle" fill="#065f46">S</text>
+
+  <circle cx="236" cy="220" r="22" fill="#eff6ff" stroke="#2563eb" stroke-width="2.2"/>
+  <text x="236" y="225" class="sans" font-size="14" font-weight="700" text-anchor="middle" fill="#1e3a8a">A</text>
+
+  <circle cx="395" cy="156" r="22" fill="#eff6ff" stroke="#2563eb" stroke-width="2.2"/>
+  <text x="395" y="161" class="sans" font-size="14" font-weight="700" text-anchor="middle" fill="#1e3a8a">B</text>
+
+  <circle cx="395" cy="288" r="22" fill="#eff6ff" stroke="#2563eb" stroke-width="2.2"/>
+  <text x="395" y="293" class="sans" font-size="14" font-weight="700" text-anchor="middle" fill="#1e3a8a">C</text>
+
+  <!-- Cycle sum pill -->
+  <rect x="446" y="206" width="104" height="36" rx="6" fill="#fff1f2" stroke="#fda4af"/>
+  <text x="498" y="221" class="sans" font-size="10.5" font-weight="700" text-anchor="middle" fill="#9f1239">Cycle A-&gt;B-&gt;C-&gt;A</text>
+  <text x="498" y="235" class="mono" font-size="10.5" font-weight="700" text-anchor="middle" fill="#e11d48">sum = -2 &lt; 0</text>
+
+  <!-- Bellman-Ford Pass-by-Pass State Rows -->
+  <text x="38" y="338" class="sans" font-size="12" font-weight="700" fill="#0f172a">Distance Vector dist[S, A, B, C] Across Relaxation Passes:</text>
+
+  <rect x="38" y="350" width="512" height="36" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="52" y="372" class="mono" font-size="11.5" font-weight="700" fill="#1e3a8a">Pass 1 (|V|-1):  S=0,  A=4,  B=2,  C=5</text>
+  <rect x="446" y="357" width="92" height="22" rx="5" fill="#eff6ff" stroke="#93c5fd" class="bf1"/>
+  <text x="492" y="372" class="sans bf1" font-size="10.5" font-weight="700" text-anchor="middle" fill="#1e3a8a">ACTIVE PASS</text>
+
+  <rect x="38" y="392" width="512" height="36" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="52" y="414" class="mono" font-size="11.5" font-weight="700" fill="#1e3a8a">Pass 2 (|V|-1):  S=0,  A=2,  B=0,  C=3</text>
+  <rect x="446" y="399" width="92" height="22" rx="5" fill="#eff6ff" stroke="#93c5fd" class="bf2"/>
+  <text x="492" y="414" class="sans bf2" font-size="10.5" font-weight="700" text-anchor="middle" fill="#1e3a8a">ACTIVE PASS</text>
+
+  <rect x="38" y="434" width="512" height="36" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="52" y="456" class="mono" font-size="11.5" font-weight="700" fill="#1e3a8a">Pass 3 (|V|-1):  S=0,  A=0,  B=-2, C=1</text>
+  <rect x="446" y="441" width="92" height="22" rx="5" fill="#fffbeb" stroke="#fcd34d" class="bf3"/>
+  <text x="492" y="456" class="sans bf3" font-size="10.5" font-weight="700" text-anchor="middle" fill="#92400e">LAST |V|-1</text>
+
+  <rect x="38" y="476" width="512" height="58" rx="8" fill="#fff1f2" stroke="#e11d48" stroke-width="1.5"/>
+  <text x="52" y="497" class="mono" font-size="11.5" font-weight="700" fill="#9f1239">Pass 4 (V-th Pass): C-&gt;A relaxes A: 1 + (-3) = -2 &lt; 0 !</text>
+  <text x="52" y="518" class="sans" font-size="11.5" font-weight="700" fill="#e11d48">NEGATIVE-WEIGHT CYCLE DETECTED! Shortest paths undefined (-Infinity)</text>
+
+  <!-- RIGHT PANEL: Floyd-Warshall -->
+  <rect x="592" y="76" width="548" height="476" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="610" y="100" class="sans" font-size="14" font-weight="700" fill="#0f172a">2. Floyd-Warshall: All-Pairs Pivot Matrix D^(k)[i][j]</text>
+  <rect x="610" y="112" width="512" height="28" rx="6" fill="#f5f3ff" stroke="#c4b5fd"/>
+  <text x="624" y="130" class="mono" font-size="11.5" font-weight="700" fill="#5b21b6">D[i][j] = min(D[i][j], D[i][k] + D[k][j])  [k is outermost loop!]</text>
+
+  <!-- Pivot Diagram i -> k -> j -->
+  <circle cx="660" cy="186" r="18" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="660" y="191" class="mono" font-size="13" font-weight="700" text-anchor="middle" fill="#1e3a8a">i</text>
+  <circle cx="866" cy="166" r="20" fill="#fffbeb" stroke="#d97706" stroke-width="2.5"/>
+  <text x="866" y="171" class="mono" font-size="13" font-weight="700" text-anchor="middle" fill="#92400e">k</text>
+  <circle cx="1072" cy="186" r="18" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="1072" y="191" class="mono" font-size="13" font-weight="700" text-anchor="middle" fill="#1e3a8a">j</text>
+
+  <line x1="679" y1="184" x2="842" y2="168" stroke="#7c3aed" stroke-width="2" marker-end="url(#fw-arr)"/>
+  <text x="760" y="166" class="mono" font-size="10.5" font-weight="700" text-anchor="middle" fill="#5b21b6">D[i][k]</text>
+  <line x1="888" y1="168" x2="1050" y2="184" stroke="#7c3aed" stroke-width="2" marker-end="url(#fw-arr)"/>
+  <text x="970" y="166" class="mono" font-size="10.5" font-weight="700" text-anchor="middle" fill="#5b21b6">D[k][j]</text>
+  <line x1="680" y1="196" x2="1050" y2="196" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3" marker-end="url(#bf-arr)"/>
+  <text x="866" y="212" class="mono" font-size="10.5" text-anchor="middle" fill="#64748b">direct D[i][j]</text>
+
+  <!-- 3x3 Animated Matrix State (k=0 -> k=1 -> k=2) -->
+  <!-- Column Headers -->
+  <text x="742" y="254" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#475569">0</text>
+  <text x="822" y="254" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#475569">1</text>
+  <text x="902" y="254" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#475569">2</text>
+  <text x="684" y="286" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#475569">0</text>
+  <text x="684" y="330" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#475569">1</text>
+  <text x="684" y="374" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#475569">2</text>
+
+  <!-- Phase k=0 -->
+  <g class="fw0">
+    <rect x="960" y="256" width="160" height="30" rx="6" fill="#fffbeb" stroke="#fcd34d"/>
+    <text x="1040" y="275" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#92400e">Pivot k = 0</text>
+    <text x="960" y="308" class="sans" font-size="11" fill="#334155">Check D[i][0] + D[0][j]:</text>
+    <text x="960" y="328" class="mono" font-size="11" fill="#065f46">D[2][1] = min(inf, 4+3) = 7</text>
+
+    <rect x="706" y="264" width="72" height="36" rx="4" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/><text x="742" y="287" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#92400e">0</text>
+    <rect x="786" y="264" width="72" height="36" rx="4" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/><text x="822" y="287" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#92400e">3</text>
+    <rect x="866" y="264" width="72" height="36" rx="4" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/><text x="902" y="287" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#92400e">10</text>
+
+    <rect x="706" y="308" width="72" height="36" rx="4" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/><text x="742" y="331" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#92400e">inf</text>
+    <rect x="786" y="308" width="72" height="36" rx="4" fill="#f8fafc" stroke="#cbd5e1"/><text x="822" y="331" class="mono" font-size="12" text-anchor="middle" fill="#0f172a">0</text>
+    <rect x="866" y="308" width="72" height="36" rx="4" fill="#f8fafc" stroke="#cbd5e1"/><text x="902" y="331" class="mono" font-size="12" text-anchor="middle" fill="#0f172a">2</text>
+
+    <rect x="706" y="352" width="72" height="36" rx="4" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/><text x="742" y="375" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#92400e">4</text>
+    <rect x="786" y="352" width="72" height="36" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="822" y="375" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#065f46">7 (new)</text>
+    <rect x="866" y="352" width="72" height="36" rx="4" fill="#f8fafc" stroke="#cbd5e1"/><text x="902" y="375" class="mono" font-size="12" text-anchor="middle" fill="#0f172a">0</text>
+  </g>
+
+  <!-- Phase k=1 -->
+  <g class="fw1">
+    <rect x="960" y="256" width="160" height="30" rx="6" fill="#fffbeb" stroke="#fcd34d"/>
+    <text x="1040" y="275" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#92400e">Pivot k = 1</text>
+    <text x="960" y="308" class="sans" font-size="11" fill="#334155">Check D[i][1] + D[1][j]:</text>
+    <text x="960" y="328" class="mono" font-size="11" fill="#065f46">D[0][2] = min(10, 3+2) = 5</text>
+
+    <rect x="706" y="264" width="72" height="36" rx="4" fill="#f8fafc" stroke="#cbd5e1"/><text x="742" y="287" class="mono" font-size="12" text-anchor="middle" fill="#0f172a">0</text>
+    <rect x="786" y="264" width="72" height="36" rx="4" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/><text x="822" y="287" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#92400e">3</text>
+    <rect x="866" y="264" width="72" height="36" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="902" y="287" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#065f46">5 (new)</text>
+
+    <rect x="706" y="308" width="72" height="36" rx="4" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/><text x="742" y="331" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#92400e">inf</text>
+    <rect x="786" y="308" width="72" height="36" rx="4" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/><text x="822" y="331" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#92400e">0</text>
+    <rect x="866" y="308" width="72" height="36" rx="4" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/><text x="902" y="331" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#92400e">2</text>
+
+    <rect x="706" y="352" width="72" height="36" rx="4" fill="#f8fafc" stroke="#cbd5e1"/><text x="742" y="375" class="mono" font-size="12" text-anchor="middle" fill="#0f172a">4</text>
+    <rect x="786" y="352" width="72" height="36" rx="4" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/><text x="822" y="375" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#92400e">7</text>
+    <rect x="866" y="352" width="72" height="36" rx="4" fill="#f8fafc" stroke="#cbd5e1"/><text x="902" y="375" class="mono" font-size="12" text-anchor="middle" fill="#0f172a">0</text>
+  </g>
+
+  <!-- Phase k=2 -->
+  <g class="fw2">
+    <rect x="960" y="256" width="160" height="30" rx="6" fill="#ecfdf5" stroke="#6ee7b7"/>
+    <text x="1040" y="275" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#065f46">Pivot k = 2 (Final)</text>
+    <text x="960" y="308" class="sans" font-size="11" fill="#334155">Check D[i][2] + D[2][j]:</text>
+    <text x="960" y="328" class="mono" font-size="11" fill="#065f46">D[1][0] = min(inf, 2+4) = 6</text>
+
+    <rect x="706" y="264" width="72" height="36" rx="4" fill="#f8fafc" stroke="#cbd5e1"/><text x="742" y="287" class="mono" font-size="12" text-anchor="middle" fill="#0f172a">0</text>
+    <rect x="786" y="264" width="72" height="36" rx="4" fill="#f8fafc" stroke="#cbd5e1"/><text x="822" y="287" class="mono" font-size="12" text-anchor="middle" fill="#0f172a">3</text>
+    <rect x="866" y="264" width="72" height="36" rx="4" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/><text x="902" y="287" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#92400e">5</text>
+
+    <rect x="706" y="308" width="72" height="36" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="742" y="331" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#065f46">6 (new)</text>
+    <rect x="786" y="308" width="72" height="36" rx="4" fill="#f8fafc" stroke="#cbd5e1"/><text x="822" y="331" class="mono" font-size="12" text-anchor="middle" fill="#0f172a">0</text>
+    <rect x="866" y="308" width="72" height="36" rx="4" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/><text x="902" y="331" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#92400e">2</text>
+
+    <rect x="706" y="352" width="72" height="36" rx="4" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/><text x="742" y="375" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#92400e">4</text>
+    <rect x="786" y="352" width="72" height="36" rx="4" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/><text x="822" y="375" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#92400e">7</text>
+    <rect x="866" y="352" width="72" height="36" rx="4" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/><text x="902" y="375" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#92400e">0</text>
+  </g>
+
+  <!-- Floyd-Warshall Invariant Box -->
+  <rect x="610" y="410" width="512" height="124" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="624" y="432" class="sans" font-size="12" font-weight="700" fill="#0f172a">Why the k-Loop Must Be Outermost &amp; Diagonal Negative Check</text>
+  <text x="624" y="454" class="sans" font-size="11" fill="#334155">1. D^(k)[i][j] requires all D^(k-1) paths using intermediates {0..k-1} to be finalized first.</text>
+  <text x="624" y="474" class="sans" font-size="11" fill="#334155">2. Placing k inside computes paths through k using unfinalized intermediate subpaths.</text>
+  <text x="624" y="494" class="sans" font-size="11" fill="#9f1239">3. Negative cycle detection in Floyd-Warshall: check if any D[i][i] &lt; 0 after completion.</text>
+  <text x="624" y="514" class="mono" font-size="11" font-weight="700" fill="#5b21b6">Time: Theta(V^3) · In-place Space: Theta(V^2)</text>
+
+  <!-- Footer -->
+  <rect x="20" y="566" width="1120" height="64" rx="10" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="38" y="592" class="sans" font-size="12" font-weight="700" fill="#0f172a">Algorithm Selection Summary:</text>
+  <text x="38" y="614" class="sans" font-size="11.5" fill="#334155">Bellman-Ford: O(V·E) time, O(V) space (single-source + negative cycle detection). Floyd-Warshall: Theta(V^3) time, Theta(V^2) space (dense all-pairs).</text>
+</svg>

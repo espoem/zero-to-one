@@ -1,0 +1,271 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" width="1200" height="700" role="img" aria-labelledby="title desc">
+  <title id="title">O(1) LRU and LFU Cache Eviction Topologies</title>
+  <desc id="desc">Dual-panel animated diagram comparing O(1) LRU and LFU cache mechanics from Module 13: Left panel shows HashMap + Doubly Linked List promoting accessed node B to Head and evicting Tail node A on put(D); Right panel shows LFU keyMap + freqMap doubly linked frequency buckets + minFreq pointer promotion from freq=1 to freq=2 and O(1) tail eviction of freqMap[minFreq].</desc>
+  <defs>
+    <style>
+      .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+      /* LRU Animations */
+      .lru-node-b { animation: lru-b-promo 12s ease-in-out infinite; }
+      .lru-node-a { animation: lru-a-evict 12s ease-in-out infinite; }
+      .lru-node-d { animation: lru-d-ins 12s ease-in-out infinite; }
+      .lru-promo-arc { animation: lru-arc 12s linear infinite; stroke-dasharray: 5 4; }
+
+      /* LFU Animations */
+      .lfu-node-k2 { animation: lfu-k2-move 12s ease-in-out infinite; }
+      .lfu-minfreq { animation: lfu-mf-move 12s ease-in-out infinite; }
+      .lfu-evict-k1 { animation: lfu-k1-evict 12s ease-in-out infinite; }
+      .lfu-promo-arc { animation: lfu-arc 12s linear infinite; stroke-dasharray: 5 4; }
+
+      /* LRU DLL nodes at y=280: Head(56), slot0(158), slot1(256), slot2(354), Tail(458) */
+      @keyframes lru-b-promo {
+        0%, 15%   { transform: translate(256px, 280px); }   /* B starts at slot1 */
+        30%, 58%  { transform: translate(158px, 280px); }   /* get(B) -> promoted to Head (slot0) */
+        72%, 100% { transform: translate(256px, 280px); }   /* D takes slot0, B shifts to slot1 */
+      }
+
+      @keyframes lru-a-evict {
+        0%, 58%   { opacity: 1; transform: translate(354px, 280px); } /* A at Tail */
+        72%, 95%  { opacity: 0.86; transform: translate(354px, 344px); } /* evicted on put(D)! */
+        100%      { opacity: 1; transform: translate(354px, 280px); }
+      }
+
+      @keyframes lru-d-ins {
+        0%, 60%   { opacity: 0; transform: translate(158px, 210px); }
+        72%, 96%  { opacity: 1; transform: translate(158px, 280px); }
+        100%      { opacity: 0; transform: translate(158px, 210px); }
+      }
+
+      @keyframes lru-arc {
+        0%, 15%   { opacity: 0.86; stroke-dashoffset: 0; }
+        22%, 52%  { opacity: 1; stroke-dashoffset: -36; }
+        60%, 100% { opacity: 0.86; }
+      }
+
+      /* LFU Animations: freq=1 row at y=250, freq=2 row at y=336 */
+      @keyframes lfu-k2-move {
+        0%, 20%   { transform: translate(780px, 250px); }   /* k2 in freqMap[1] */
+        35%, 100% { transform: translate(780px, 336px); }   /* promoted to freqMap[2] head */
+      }
+
+      @keyframes lfu-mf-move {
+        0%, 24%   { transform: translateY(250px); }   /* minFreq = 1 */
+        38%, 68%  { transform: translateY(336px); }   /* freq[1] empty -> minFreq = 2 */
+        78%, 100% { transform: translateY(250px); }   /* put(k4) -> minFreq = 1 */
+      }
+
+      @keyframes lfu-k1-evict {
+        0%, 65%   { opacity: 1; transform: translate(980px, 336px); } /* tail of freqMap[2] */
+        78%, 95%  { opacity: 0.86; transform: translate(980px, 408px); } /* evicted! */
+        100%      { opacity: 1; transform: translate(980px, 336px); }
+      }
+
+      @keyframes lfu-arc {
+        0%, 18%   { opacity: 0.86; stroke-dashoffset: 0; }
+        25%, 58%  { opacity: 1; stroke-dashoffset: -36; }
+        66%, 100% { opacity: 0.86; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        * { animation: none !important; transition: none !important; }
+        .lru-node-b { transform: translate(256px, 280px); }
+        .lru-node-a { opacity: 1 !important; transform: translate(354px, 280px); }
+        .lru-node-d { opacity: 0 !important; }
+        .lru-promo-arc, .lfu-promo-arc { opacity: 1 !important; }
+        .lfu-node-k2 { transform: translate(780px, 250px); }
+        .lfu-minfreq { transform: translateY(250px); }
+        .lfu-evict-k1 { opacity: 1 !important; transform: translate(980px, 336px); }
+      }
+    </style>
+
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+    </marker>
+    <marker id="arr-violet" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1200" height="700" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1200" height="62" rx="12" fill="#0f172a"/>
+  <rect x="0" y="46" width="1200" height="16" fill="#0f172a"/>
+  <text x="24" y="29" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Cache Eviction Topologies · O(1) LRU vs O(1) LFU</text>
+  <text x="24" y="49" class="sans" font-size="12" fill="#94a3b8">Left: HashMap + Doubly Linked List promote-to-head and tail eviction; Right: keyMap + freqMap buckets + minFreq pointer</text>
+
+  <!-- ==================== LEFT PANEL: O(1) LRU ==================== -->
+  <rect x="24" y="78" width="564" height="598" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+  <rect x="24" y="78" width="564" height="36" rx="10" fill="#eff6ff"/>
+  <rect x="24" y="104" width="564" height="10" fill="#eff6ff"/>
+  <text x="40" y="101" class="sans" font-size="13" font-weight="700" fill="#1e3a8a">1. O(1) LRU Cache (cap = 3)</text>
+  <text x="572" y="101" class="mono" font-size="11" font-weight="700" fill="#2563eb" text-anchor="end">get/put = O(1)</text>
+
+  <!-- HashMap Box -->
+  <g transform="translate(46, 130)">
+    <rect x="0" y="0" width="520" height="74" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="14" y="22" class="sans" font-size="11.5" font-weight="700" fill="#0f172a">HashMap: key -&gt; DLL Node* (O(1) random access)</text>
+    <rect x="14" y="34" width="110" height="28" rx="5" fill="#eff6ff" stroke="#3b82f6"/>
+    <text x="69" y="52" class="mono" font-size="11" font-weight="700" fill="#1e3a8a" text-anchor="middle">"C" -&gt; &amp;NodeC</text>
+    <rect x="138" y="34" width="110" height="28" rx="5" fill="#ecfdf5" stroke="#059669"/>
+    <text x="193" y="52" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">"B" -&gt; &amp;NodeB</text>
+    <rect x="262" y="34" width="110" height="28" rx="5" fill="#fff1f2" stroke="#e11d48"/>
+    <text x="317" y="52" class="mono" font-size="11" font-weight="700" fill="#be123c" text-anchor="middle">"A" -&gt; &amp;NodeA</text>
+    <rect x="386" y="34" width="120" height="28" rx="5" fill="#f5f3ff" stroke="#7c3aed" stroke-dasharray="4 3"/>
+    <text x="446" y="52" class="mono" font-size="11" font-weight="700" fill="#6d28d9" text-anchor="middle">"D" -&gt; &amp;NodeD</text>
+  </g>
+
+  <!-- Doubly Linked List Backbone -->
+  <text x="46" y="236" class="sans" font-size="12" font-weight="700" fill="#0f172a">Doubly Linked List (Head = Most Recent &lt;-&gt; Tail = Least Recent)</text>
+  <line x1="126" y1="302" x2="466" y2="302" stroke="#94a3b8" stroke-width="2.5"/>
+
+  <!-- Head Sentinel -->
+  <g transform="translate(46, 280)">
+    <rect width="84" height="44" rx="6" fill="#0f172a"/>
+    <text x="42" y="20" class="mono" font-size="11.5" font-weight="700" fill="#f8fafc" text-anchor="middle">HEAD</text>
+    <text x="42" y="35" class="sans" font-size="10" fill="#94a3b8" text-anchor="middle">MRU end</text>
+  </g>
+  <!-- Tail Sentinel -->
+  <g transform="translate(468, 280)">
+    <rect width="84" height="44" rx="6" fill="#0f172a"/>
+    <text x="42" y="20" class="mono" font-size="11.5" font-weight="700" fill="#f8fafc" text-anchor="middle">TAIL</text>
+    <text x="42" y="35" class="sans" font-size="10" fill="#94a3b8" text-anchor="middle">LRU evict</text>
+  </g>
+
+  <!-- Node C (starts slot0, stays inside list) -->
+  <g transform="translate(158, 280)">
+    <rect width="82" height="44" rx="7" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.8"/>
+    <text x="41" y="20" class="mono" font-size="13" font-weight="700" fill="#1e3a8a" text-anchor="middle">C</text>
+    <text x="41" y="36" class="mono" font-size="10" fill="#64748b" text-anchor="middle">prev/next</text>
+  </g>
+
+  <!-- Animated Node B (promoted to Head on get(B)) -->
+  <g class="lru-node-b">
+    <rect width="82" height="44" rx="7" fill="#ecfdf5" stroke="#059669" stroke-width="2.2"/>
+    <text x="41" y="20" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">B (hit)</text>
+    <text x="41" y="36" class="mono" font-size="10" fill="#059669" text-anchor="middle">promote</text>
+  </g>
+
+  <!-- Animated Node A (evicted on put(D)) -->
+  <g class="lru-node-a">
+    <rect width="82" height="44" rx="7" fill="#fff1f2" stroke="#e11d48" stroke-width="2"/>
+    <text x="41" y="20" class="mono" font-size="13" font-weight="700" fill="#be123c" text-anchor="middle">A</text>
+    <text x="41" y="36" class="mono" font-size="10" fill="#e11d48" text-anchor="middle">LRU tail</text>
+  </g>
+
+  <!-- Animated Node D (inserted at Head on put(D)) -->
+  <g class="lru-node-d">
+    <rect width="82" height="44" rx="7" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2.2"/>
+    <text x="41" y="20" class="mono" font-size="13" font-weight="700" fill="#6d28d9" text-anchor="middle">D (new)</text>
+    <text x="41" y="36" class="mono" font-size="10" fill="#7c3aed" text-anchor="middle">at Head</text>
+  </g>
+
+  <!-- Promote-to-Head Curved Arc -->
+  <path class="lru-promo-arc" d="M 297 278 C 297 240, 199 240, 199 278" fill="none" stroke="#059669" stroke-width="2.2" marker-end="url(#arr-emerald)"/>
+  <text x="248" y="246" class="mono" font-size="10.5" font-weight="700" fill="#059669" text-anchor="middle">unlink &amp; attach after HEAD</text>
+
+  <!-- LRU Operation Sequence Box -->
+  <g transform="translate(46, 404)">
+    <rect x="0" y="0" width="520" height="248" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="16" y="26" class="sans" font-size="12.5" font-weight="700" fill="#0f172a">O(1) Pointer Mechanics</text>
+
+    <rect x="16" y="42" width="488" height="58" rx="6" fill="#ecfdf5" stroke="#6ee7b7"/>
+    <text x="28" y="62" class="mono" font-size="11.5" font-weight="700" fill="#065f46">1. get("B"): map.get("B") -&gt; NodeB in O(1)</text>
+    <text x="28" y="84" class="sans" font-size="11" fill="#334155">Rewire 4 pointers: unlink(B), insertAfter(HEAD, B) -&gt; [B, C, A].</text>
+
+    <rect x="16" y="112" width="488" height="68" rx="6" fill="#fff1f2" stroke="#fda4af"/>
+    <text x="28" y="132" class="mono" font-size="11.5" font-weight="700" fill="#9f1239">2. put("D"): capacity full (size == 3)</text>
+    <text x="28" y="152" class="sans" font-size="11" fill="#334155">Evict TAIL.prev (NodeA) + map.delete("A"), insert NodeD at HEAD.</text>
+    <text x="28" y="170" class="mono" font-size="10.5" font-weight="700" fill="#6d28d9">Result list: HEAD &lt;-&gt; D &lt;-&gt; B &lt;-&gt; C &lt;-&gt; TAIL</text>
+
+    <text x="16" y="206" class="sans" font-size="11" fill="#475569">Sentinel HEAD &amp; TAIL eliminate null-pointer edge branches.</text>
+    <text x="16" y="226" class="mono" font-size="11" font-weight="700" fill="#1e3a8a">Hazard: scan pollution (1-hit burst evicts hot working set).</text>
+  </g>
+
+  <!-- ==================== RIGHT PANEL: O(1) LFU ==================== -->
+  <rect x="612" y="78" width="564" height="598" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+  <rect x="612" y="78" width="564" height="36" rx="10" fill="#fffbeb"/>
+  <rect x="612" y="104" width="564" height="10" fill="#fffbeb"/>
+  <text x="628" y="101" class="sans" font-size="13" font-weight="700" fill="#92400e">2. O(1) LFU Cache (cap = 3)</text>
+  <text x="1160" y="101" class="mono" font-size="11" font-weight="700" fill="#d97706" text-anchor="end">keyMap + freqMap + minFreq</text>
+
+  <!-- keyMap Box -->
+  <g transform="translate(634, 130)">
+    <rect x="0" y="0" width="520" height="74" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="14" y="22" class="sans" font-size="11.5" font-weight="700" fill="#0f172a">keyMap: key -&gt; Node(key, val, freq)</text>
+    <rect x="14" y="34" width="156" height="28" rx="5" fill="#fffbeb" stroke="#d97706"/>
+    <text x="92" y="52" class="mono" font-size="11" font-weight="700" fill="#92400e" text-anchor="middle">k2 -&gt; Node(f=1-&gt;2)</text>
+    <rect x="182" y="34" width="156" height="28" rx="5" fill="#eff6ff" stroke="#3b82f6"/>
+    <text x="260" y="52" class="mono" font-size="11" font-weight="700" fill="#1e3a8a" text-anchor="middle">k3 -&gt; Node(f=2)</text>
+    <rect x="350" y="34" width="156" height="28" rx="5" fill="#fff1f2" stroke="#e11d48"/>
+    <text x="428" y="52" class="mono" font-size="11" font-weight="700" fill="#be123c" text-anchor="middle">k1 -&gt; Node(f=2)</text>
+  </g>
+
+  <!-- freqMap Buckets -->
+  <text x="634" y="232" class="sans" font-size="12" font-weight="700" fill="#0f172a">freqMap: frequency -&gt; Doubly Linked List (ties broken by LRU)</text>
+
+  <!-- Bucket freq = 1 row at y=250 -->
+  <rect x="756" y="244" width="398" height="56" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="720" y="276" class="mono" font-size="12" font-weight="700" fill="#92400e">f = 1</text>
+
+  <!-- Bucket freq = 2 row at y=336 -->
+  <rect x="756" y="330" width="398" height="56" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="720" y="362" class="mono" font-size="12" font-weight="700" fill="#1e3a8a">f = 2</text>
+
+  <!-- Animated minFreq Pointer Badge (moves from f=1 to f=2 and back) -->
+  <g transform="translate(622, 0)">
+    <g class="lfu-minfreq">
+      <rect x="0" y="6" width="70" height="32" rx="6" fill="#d97706"/>
+      <text x="35" y="26" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">minFreq</text>
+      <line x1="70" y1="22" x2="92" y2="22" stroke="#d97706" stroke-width="2.2" marker-end="url(#arr-amber)"/>
+    </g>
+  </g>
+
+  <!-- Static k3 in freqMap[2] -->
+  <g transform="translate(880, 336)">
+    <rect width="84" height="44" rx="7" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.8"/>
+    <text x="42" y="20" class="mono" font-size="12.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">k3</text>
+    <text x="42" y="36" class="mono" font-size="10" fill="#2563eb" text-anchor="middle">freq = 2</text>
+  </g>
+
+  <!-- Animated k2 (promotes from freqMap[1] to freqMap[2]) -->
+  <g class="lfu-node-k2">
+    <rect width="84" height="44" rx="7" fill="#ecfdf5" stroke="#059669" stroke-width="2.2"/>
+    <text x="42" y="20" class="mono" font-size="12.5" font-weight="700" fill="#065f46" text-anchor="middle">k2 (hit)</text>
+    <text x="42" y="36" class="mono" font-size="10" fill="#059669" text-anchor="middle">f++ -&gt; 2</text>
+  </g>
+
+  <!-- Animated k1 (tail of freqMap[2], evicted on put(k4)) -->
+  <g class="lfu-evict-k1">
+    <rect width="84" height="44" rx="7" fill="#fff1f2" stroke="#e11d48" stroke-width="2"/>
+    <text x="42" y="20" class="mono" font-size="12.5" font-weight="700" fill="#be123c" text-anchor="middle">k1 (tail)</text>
+    <text x="42" y="36" class="mono" font-size="10" fill="#e11d48" text-anchor="middle">evict O(1)</text>
+  </g>
+
+  <!-- Promotion arrow from f=1 to f=2 -->
+  <path class="lfu-promo-arc" d="M 870 272 C 920 272, 920 328, 868 348" fill="none" stroke="#059669" stroke-width="2.2" marker-end="url(#arr-emerald)"/>
+
+  <!-- LFU Operation Sequence Box -->
+  <g transform="translate(634, 424)">
+    <rect x="0" y="0" width="520" height="228" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="16" y="26" class="sans" font-size="12.5" font-weight="700" fill="#0f172a">O(1) Frequency Promotion &amp; minFreq Invariant</text>
+
+    <rect x="16" y="42" width="488" height="72" rx="6" fill="#ecfdf5" stroke="#6ee7b7"/>
+    <text x="28" y="62" class="mono" font-size="11.5" font-weight="700" fill="#065f46">1. get(k2): remove k2 from freqMap[1]</text>
+    <text x="28" y="82" class="sans" font-size="11" fill="#334155">freqMap[1] is now empty &amp;&amp; 1 == minFreq =&gt; minFreq = 2!</text>
+    <text x="28" y="101" class="mono" font-size="10.5" fill="#059669">k2.freq++ (2) -&gt; insert k2 at head of freqMap[2].</text>
+
+    <rect x="16" y="126" width="488" height="84" rx="6" fill="#fffbeb" stroke="#fcd34d"/>
+    <text x="28" y="146" class="mono" font-size="11.5" font-weight="700" fill="#92400e">2. put(k4): capacity full -&gt; evict freqMap[minFreq].tail</text>
+    <text x="28" y="166" class="sans" font-size="11" fill="#334155">Evicts k1 (least recent inside lowest-frequency bucket f=2).</text>
+    <text x="28" y="186" class="mono" font-size="10.5" font-weight="700" fill="#6d28d9">Insert k4 into freqMap[1]; reset minFreq = 1 in O(1)!</text>
+  </g>
+</svg>

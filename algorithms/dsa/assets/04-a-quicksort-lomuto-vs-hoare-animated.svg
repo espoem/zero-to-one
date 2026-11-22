@@ -1,0 +1,284 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 540" width="1080" height="540" role="img" aria-labelledby="title desc">
+  <title id="title">Quicksort Partitioning: Lomuto vs Hoare</title>
+  <desc id="desc">Animated comparison of Lomuto single-scan partitioning with physical element and pivot swaps versus Hoare two-ended inward convergence swapping only true inversions.</desc>
+  <style>
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    /* ===== LOMUTO (10s cycle) on [3, 2, 8, 5, 1, 4(p)], stride=72px ===== */
+    @keyframes lomutoJ {
+      0%, 8%   { transform: translateX(0px); }     /* idx 0: 3 */
+      12%, 18% { transform: translateX(0px); }     /* idx 0 */
+      22%, 28% { transform: translateX(72px); }    /* idx 1: 2 */
+      32%, 38% { transform: translateX(144px); }   /* idx 2: 8 */
+      42%, 48% { transform: translateX(216px); }   /* idx 3: 5 */
+      52%, 68% { transform: translateX(288px); }   /* idx 4: 1 -> swap(8,1) */
+      72%, 92% { transform: translateX(360px); }   /* idx 5: 4 -> swap(5,4) */
+      96%, 100%{ transform: translateX(0px); }
+    }
+    @keyframes lomutoI {
+      0%, 8%   { transform: translateX(0px); }     /* i = -1 */
+      12%, 18% { transform: translateX(72px); }    /* i = 0 */
+      22%, 48% { transform: translateX(144px); }   /* i = 1 */
+      52%, 92% { transform: translateX(216px); }   /* i = 2 */
+      96%, 100%{ transform: translateX(0px); }
+    }
+    /* Element 8: idx 2 -> idx 4 (+144px) during 52%..64% */
+    @keyframes lomutoSwap8 {
+      0%, 52%  { transform: translate(0px, 0px); }
+      58%      { transform: translate(72px, 16px); }
+      64%, 92% { transform: translate(144px, 0px); }
+      96%, 100%{ transform: translate(0px, 0px); }
+    }
+    /* Element 1: idx 4 -> idx 2 (-144px) during 52%..64% */
+    @keyframes lomutoSwap1 {
+      0%, 52%  { transform: translate(0px, 0px); }
+      58%      { transform: translate(-72px, -16px); }
+      64%, 92% { transform: translate(-144px, 0px); }
+      96%, 100%{ transform: translate(0px, 0px); }
+    }
+    /* Element 5: idx 3 -> idx 5 (+144px) during 72%..84% */
+    @keyframes lomutoSwap5 {
+      0%, 72%  { transform: translate(0px, 0px); }
+      78%      { transform: translate(72px, 16px); }
+      84%, 92% { transform: translate(144px, 0px); }
+      96%, 100%{ transform: translate(0px, 0px); }
+    }
+    /* Pivot 4: idx 5 -> idx 3 (-144px) during 72%..84% */
+    @keyframes lomutoSwapP {
+      0%, 72%  { transform: translate(0px, 0px); }
+      78%      { transform: translate(-72px, -16px); }
+      84%, 92% { transform: translate(-144px, 0px); }
+      96%, 100%{ transform: translate(0px, 0px); }
+    }
+
+    /* ===== HOARE (10s cycle) on [3, 5, 8, 2, 1, 6], p=4, stride=72px ===== */
+    @keyframes hoareI {
+      0%, 8%   { transform: translateX(0px); }     /* idx 0: 3 */
+      14%, 44% { transform: translateX(72px); }    /* idx 1: 5 ≥ 4 */
+      48%, 74% { transform: translateX(144px); }   /* idx 2: 8 ≥ 4 */
+      78%, 92% { transform: translateX(216px); }   /* idx 3: crossed i ≥ j */
+      96%, 100%{ transform: translateX(0px); }
+    }
+    @keyframes hoareJ {
+      0%, 8%   { transform: translateX(0px); }     /* idx 5: 6 */
+      14%, 44% { transform: translateX(-72px); }   /* idx 4: 1 ≤ 4 */
+      48%, 74% { transform: translateX(-144px); }  /* idx 3: 2 ≤ 4 */
+      78%, 92% { transform: translateX(-216px); }  /* idx 2: crossed j = 2 */
+      96%, 100%{ transform: translateX(0px); }
+    }
+    /* Pair 1: 5 (idx 1 -> idx 4, +216px) and 1 (idx 4 -> idx 1, -216px) */
+    @keyframes hoareSwap5 {
+      0%, 26%  { transform: translate(0px, 0px); }
+      33%      { transform: translate(108px, 16px); }
+      40%, 92% { transform: translate(216px, 0px); }
+      96%, 100%{ transform: translate(0px, 0px); }
+    }
+    @keyframes hoareSwap1 {
+      0%, 26%  { transform: translate(0px, 0px); }
+      33%      { transform: translate(-108px, -16px); }
+      40%, 92% { transform: translate(-216px, 0px); }
+      96%, 100%{ transform: translate(0px, 0px); }
+    }
+    /* Pair 2: 8 (idx 2 -> idx 3, +72px) and 2 (idx 3 -> idx 2, -72px) */
+    @keyframes hoareSwap8 {
+      0%, 56%  { transform: translate(0px, 0px); }
+      63%      { transform: translate(36px, 14px); }
+      70%, 92% { transform: translate(72px, 0px); }
+      96%, 100%{ transform: translate(0px, 0px); }
+    }
+    @keyframes hoareSwap2 {
+      0%, 56%  { transform: translate(0px, 0px); }
+      63%      { transform: translate(-36px, -14px); }
+      70%, 92% { transform: translate(-72px, 0px); }
+      96%, 100%{ transform: translate(0px, 0px); }
+    }
+    @keyframes splitReveal {
+      0%, 74%  { opacity: 0.35; }
+      78%, 92% { opacity: 1; }
+      96%, 100%{ opacity: 0.35; }
+    }
+
+    .lom-j { animation: lomutoJ 10s ease-in-out infinite; }
+    .lom-i { animation: lomutoI 10s ease-in-out infinite; }
+    .lom-8 { animation: lomutoSwap8 10s ease-in-out infinite; }
+    .lom-1 { animation: lomutoSwap1 10s ease-in-out infinite; }
+    .lom-5 { animation: lomutoSwap5 10s ease-in-out infinite; }
+    .lom-p { animation: lomutoSwapP 10s ease-in-out infinite; }
+
+    .hoare-i { animation: hoareI 10s ease-in-out infinite; }
+    .hoare-j { animation: hoareJ 10s ease-in-out infinite; }
+    .hoare-5 { animation: hoareSwap5 10s ease-in-out infinite; }
+    .hoare-1 { animation: hoareSwap1 10s ease-in-out infinite; }
+    .hoare-8 { animation: hoareSwap8 10s ease-in-out infinite; }
+    .hoare-2 { animation: hoareSwap2 10s ease-in-out infinite; }
+    .hoare-split { animation: splitReveal 10s ease-in-out infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+      .lom-j, .lom-i, .lom-8, .lom-1, .lom-5, .lom-p,
+      .hoare-i, .hoare-j, .hoare-5, .hoare-1, .hoare-8, .hoare-2 {
+        transform: none !important;
+      }
+      .hoare-split { opacity: 1 !important; }
+    }
+  </style>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1080" height="540" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1080" height="58" rx="12" fill="#0f172a"/>
+  <rect x="0" y="42" width="1080" height="16" fill="#0f172a"/>
+  <text x="24" y="26" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Quicksort Partitioning: Lomuto vs Hoare</text>
+  <text x="24" y="45" class="sans" font-size="12" fill="#94a3b8">Animated pointer trajectories, physical element swaps, and duplicate-key split behavior</text>
+
+  <!-- ==================== TOP PANEL: LOMUTO ==================== -->
+  <rect x="20" y="70" width="1040" height="220" rx="10" fill="#ffffff" stroke="#fda4af" stroke-width="1.5"/>
+  <rect x="20" y="70" width="1040" height="34" rx="10" fill="#fff1f2"/>
+  <rect x="20" y="94" width="1040" height="10" fill="#fff1f2"/>
+  <text x="36" y="92" class="sans" font-size="13" font-weight="700" fill="#9f1239">1. Lomuto Partition (Single Scan j, Pivot = A[hi] = 4)</text>
+
+  <rect x="752" y="76" width="114" height="22" rx="11" fill="#e11d48"/>
+  <text x="809" y="91" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">~3× Swaps</text>
+  <rect x="874" y="76" width="170" height="22" rx="11" fill="#9f1239"/>
+  <text x="959" y="91" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">Dup Keys: O(n²)</text>
+
+  <!-- Slot guide boxes at x=104, stride=72, w=60, h=46 -->
+  <rect x="104" y="152" width="60" height="46" rx="6" fill="#f8fafc" stroke="#e2e8f0" stroke-dasharray="3 3"/>
+  <rect x="176" y="152" width="60" height="46" rx="6" fill="#f8fafc" stroke="#e2e8f0" stroke-dasharray="3 3"/>
+  <rect x="248" y="152" width="60" height="46" rx="6" fill="#f8fafc" stroke="#e2e8f0" stroke-dasharray="3 3"/>
+  <rect x="320" y="152" width="60" height="46" rx="6" fill="#f8fafc" stroke="#e2e8f0" stroke-dasharray="3 3"/>
+  <rect x="392" y="152" width="60" height="46" rx="6" fill="#f8fafc" stroke="#e2e8f0" stroke-dasharray="3 3"/>
+  <rect x="464" y="152" width="60" height="46" rx="6" fill="#f8fafc" stroke="#e2e8f0" stroke-dasharray="3 3"/>
+
+  <!-- Animated scan j pointer above -->
+  <g class="lom-j">
+    <rect x="108" y="120" width="52" height="22" rx="4" fill="#e11d48"/>
+    <text x="134" y="135" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">scan j</text>
+  </g>
+
+  <!-- Animated elements [3, 2, 8, 5, 1, 4(p)] -->
+  <g>
+    <rect x="104" y="152" width="60" height="46" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="134" y="180" class="mono" font-size="15" font-weight="700" fill="#1e3a8a" text-anchor="middle">3</text>
+  </g>
+  <g>
+    <rect x="176" y="152" width="60" height="46" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="206" y="180" class="mono" font-size="15" font-weight="700" fill="#1e3a8a" text-anchor="middle">2</text>
+  </g>
+  <g class="lom-8">
+    <rect x="248" y="152" width="60" height="46" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="278" y="180" class="mono" font-size="15" font-weight="700" fill="#92400e" text-anchor="middle">8</text>
+  </g>
+  <g class="lom-5">
+    <rect x="320" y="152" width="60" height="46" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="350" y="180" class="mono" font-size="15" font-weight="700" fill="#92400e" text-anchor="middle">5</text>
+  </g>
+  <g class="lom-1">
+    <rect x="392" y="152" width="60" height="46" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="422" y="180" class="mono" font-size="15" font-weight="700" fill="#1e3a8a" text-anchor="middle">1</text>
+  </g>
+  <g class="lom-p">
+    <rect x="464" y="152" width="60" height="46" rx="6" fill="#e11d48" stroke="#9f1239" stroke-width="1.5"/>
+    <text x="494" y="180" class="mono" font-size="14" font-weight="700" fill="#ffffff" text-anchor="middle">4 (p)</text>
+  </g>
+
+  <!-- Animated boundary i pointer below (starts at i = -1 -> x=32) -->
+  <g class="lom-i">
+    <rect x="36" y="208" width="52" height="22" rx="4" fill="#2563eb"/>
+    <text x="62" y="223" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">bndry i</text>
+  </g>
+
+  <!-- Region legend strip -->
+  <rect x="104" y="244" width="196" height="26" rx="5" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="202" y="261" class="mono" font-size="11" font-weight="700" fill="#1e3a8a" text-anchor="middle">[lo..i]: &lt; p (3, 2, 1)</text>
+  <rect x="312" y="244" width="212" height="26" rx="5" fill="#fffbeb" stroke="#fcd34d"/>
+  <text x="418" y="261" class="mono" font-size="11" font-weight="700" fill="#92400e" text-anchor="middle">[i+1..j-1]: ≥ p (8, 5)</text>
+
+  <!-- Right summary card -->
+  <rect x="556" y="118" width="484" height="154" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="574" y="142" class="sans" font-size="12.5" font-weight="700" fill="#9f1239">Mechanics &amp; Duplicate Hazard</text>
+  <text x="574" y="166" class="mono" font-size="11.5" fill="#1e3a8a">If A[j] &lt; p: i++; swap(A[i], A[j])</text>
+  <text x="574" y="188" class="mono" font-size="11.5" fill="#334155">Swaps here: 4 (2 self-swaps + (8,1) + (5,4))</text>
+  <text x="574" y="214" class="mono" font-size="11.5" font-weight="700" fill="#be123c">All-equal [7,7,7,7,7,7]: split (n-1, 0)</text>
+  <text x="574" y="236" class="mono" font-size="11.5" fill="#9f1239">Recurrence: T(n) = T(n-1) + Θ(n) = Θ(n²)</text>
+  <text x="574" y="258" class="sans" font-size="11" fill="#475569">Result: [3, 2, 1, 4(p), 8, 5]</text>
+
+  <!-- ==================== BOTTOM PANEL: HOARE ==================== -->
+  <rect x="20" y="306" width="1040" height="220" rx="10" fill="#ffffff" stroke="#bfdbfe" stroke-width="1.5"/>
+  <rect x="20" y="306" width="1040" height="34" rx="10" fill="#eff6ff"/>
+  <rect x="20" y="330" width="1040" height="10" fill="#eff6ff"/>
+  <text x="36" y="328" class="sans" font-size="13" font-weight="700" fill="#1e3a8a">2. Hoare Two-Ended Partition (Inward i →, ← j, Pivot = 4)</text>
+
+  <rect x="702" y="312" width="150" height="22" rx="11" fill="#2563eb"/>
+  <text x="777" y="327" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">~3× Fewer Swaps</text>
+  <rect x="860" y="312" width="184" height="22" rx="11" fill="#059669"/>
+  <text x="952" y="327" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">Dup Keys: O(n log n)</text>
+
+  <!-- Slot guide boxes at x=104, stride=72 -->
+  <rect x="104" y="388" width="60" height="46" rx="6" fill="#f8fafc" stroke="#e2e8f0" stroke-dasharray="3 3"/>
+  <rect x="176" y="388" width="60" height="46" rx="6" fill="#f8fafc" stroke="#e2e8f0" stroke-dasharray="3 3"/>
+  <rect x="248" y="388" width="60" height="46" rx="6" fill="#f8fafc" stroke="#e2e8f0" stroke-dasharray="3 3"/>
+  <rect x="320" y="388" width="60" height="46" rx="6" fill="#f8fafc" stroke="#e2e8f0" stroke-dasharray="3 3"/>
+  <rect x="392" y="388" width="60" height="46" rx="6" fill="#f8fafc" stroke="#e2e8f0" stroke-dasharray="3 3"/>
+  <rect x="464" y="388" width="60" height="46" rx="6" fill="#f8fafc" stroke="#e2e8f0" stroke-dasharray="3 3"/>
+
+  <!-- Split divider between idx 2 and idx 3 -->
+  <line x1="314" y1="378" x2="314" y2="444" stroke="#059669" stroke-width="2.5" stroke-dasharray="4 3" class="hoare-split"/>
+
+  <!-- Inward pointers i -> and <- j above -->
+  <g class="hoare-i">
+    <rect x="110" y="356" width="48" height="22" rx="4" fill="#2563eb"/>
+    <text x="134" y="371" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">i →</text>
+  </g>
+  <g class="hoare-j">
+    <rect x="470" y="356" width="48" height="22" rx="4" fill="#d97706"/>
+    <text x="494" y="371" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">← j</text>
+  </g>
+
+  <!-- Animated elements [3, 5, 8, 2, 1, 6] -->
+  <g>
+    <rect x="104" y="388" width="60" height="46" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="134" y="416" class="mono" font-size="15" font-weight="700" fill="#1e3a8a" text-anchor="middle">3</text>
+  </g>
+  <g class="hoare-5">
+    <rect x="176" y="388" width="60" height="46" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="206" y="416" class="mono" font-size="15" font-weight="700" fill="#92400e" text-anchor="middle">5</text>
+  </g>
+  <g class="hoare-8">
+    <rect x="248" y="388" width="60" height="46" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="278" y="416" class="mono" font-size="15" font-weight="700" fill="#92400e" text-anchor="middle">8</text>
+  </g>
+  <g class="hoare-2">
+    <rect x="320" y="388" width="60" height="46" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="350" y="416" class="mono" font-size="15" font-weight="700" fill="#1e3a8a" text-anchor="middle">2</text>
+  </g>
+  <g class="hoare-1">
+    <rect x="392" y="388" width="60" height="46" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="422" y="416" class="mono" font-size="15" font-weight="700" fill="#1e3a8a" text-anchor="middle">1</text>
+  </g>
+  <g>
+    <rect x="464" y="388" width="60" height="46" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="494" y="416" class="mono" font-size="15" font-weight="700" fill="#92400e" text-anchor="middle">6</text>
+  </g>
+
+  <!-- Region legend strip -->
+  <rect x="104" y="478" width="204" height="26" rx="5" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="206" y="495" class="mono" font-size="11" font-weight="700" fill="#1e3a8a" text-anchor="middle">[lo..j]: ≤ p (3, 1, 2)</text>
+  <rect x="320" y="478" width="204" height="26" rx="5" fill="#fffbeb" stroke="#fcd34d"/>
+  <text x="422" y="495" class="mono" font-size="11" font-weight="700" fill="#92400e" text-anchor="middle">[j+1..hi]: ≥ p (8, 5, 6)</text>
+
+  <!-- Step badge below array -->
+  <rect x="104" y="446" width="420" height="24" rx="5" fill="#ecfdf5" stroke="#a7f3d0"/>
+  <text x="314" y="462" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">Swaps: (5, 1) then (8, 2) · j=2 &lt; i=3 → return j</text>
+
+  <!-- Right summary card -->
+  <rect x="556" y="354" width="484" height="154" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="574" y="378" class="sans" font-size="12.5" font-weight="700" fill="#1e3a8a">Why Hoare Wins in libc</text>
+  <text x="574" y="402" class="mono" font-size="11.5" fill="#1e3a8a">Swap only inversions: A[i] ≥ p and A[j] ≤ p</text>
+  <text x="574" y="424" class="mono" font-size="11.5" fill="#334155">Swaps here: 2 (vs 4 in Lomuto; 0 wasted)</text>
+  <text x="574" y="450" class="mono" font-size="11.5" font-weight="700" fill="#065f46">All-equal [7,7,7,7,7,7]: meet at n/2 → O(n log n)</text>
+  <text x="574" y="472" class="mono" font-size="11.5" fill="#9f1239">Recurse [lo..j] &amp; [j+1..hi] (never skip j)</text>
+  <text x="574" y="494" class="sans" font-size="11" fill="#475569">Result: [3, 1, 2 | 8, 5, 6]</text>
+</svg>

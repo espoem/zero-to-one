@@ -98,6 +98,10 @@ export function maxNonOverlappingIntervals(intervals: Interval[]): Interval[] {
 }
 ```
 
+![Animated Activity Selection timeline and Exchange Argument swapping o_1 with g_1](../assets/11-greedy-exchange-activity-selection-animated.svg)
+
+_Sorting intervals by earliest finish time $f_i$ advances `lastEnd` across `[1,3]`, `[4,7]`, and `[8,11]` while skipping conflicts; the bottom panel animates replacing an optimal choice $o_1$ with greedy $g_1$ in $O' = (O \setminus \{o_1\}) \cup \{g_1\}$ without losing feasibility or count._
+
 ---
 
 ## 4. Classic Greedy Archetype II: Huffman Coding
@@ -129,6 +133,10 @@ flowchart TD
 1. **Lowest Frequencies at Maximum Depth**: Let $x$ and $y$ be the two characters with the lowest frequencies in alphabet $C$. There exists an optimal prefix code for $C$ in which the codewords for $x$ and $y$ have the same length and differ only in the final bit (they are sibling leaves at maximum depth).
 2. **Substructure Reduction**: Replacing $x$ and $y$ with a single composite character $z$ with frequency $f(z) = f(x) + f(y)$ reduces the alphabet size from $n$ to $n - 1$. An optimal code for alphabet $C' = (C \setminus \{x, y\}) \cup \{z\}$ translates directly into an optimal code for $C$ with total bit cost: $$B(T) = B(T') + f(x) + f(y)$$
 3. By induction on $n$, the greedy tree construction is strictly optimal.
+
+![Animated Huffman coding min-heap merges and 0/1 prefix-free binary tree](../assets/11-huffman-coding-tree-animated.svg)
+
+_Huffman construction on `{D:5, C:9, B:12, A:45}`: the min-heap repeatedly extracts the two lowest-frequency trees, merges them into `f1 + f2`, and labels edges `0`/`1` to produce prefix-free codewords (`A=1`, `B=00`, `D=010`, `C=011`) totaling 111 bits._
 
 ---
 
@@ -189,6 +197,10 @@ Greedy algorithms fail whenever a locally optimal choice locks the system out of
   - **Greedy approach**: Pick largest coin $\le 6$: picks `4`. Remaining target `2`. Next picks `1`, then `1`. Total = 3 coins (`4 + 1 + 1`).
   - **Optimal approach**: Pick two `3` coins: `3 + 3 = 6`. Total = 2 coins!
   - **Verdict**: Greedy fails. Must use Dynamic Programming: $DP[x] = 1 + \min_{c \in \text{coins}} DP[x - c]$.
+
+![Animated overview of Jump Game horizon tracking, Gas Station deficit reset, Matroid axioms, and Coin Change greedy counterexample](../assets/11-jump-game-gas-station-matroid-animated.svg)
+
+_Jump Game tracks `maxReach` in $O(1)$ space, Gas Station resets `start = i + 1` whenever `tank < 0`, Matroid axioms formalize when greedy is guaranteed optimal via Rado-Edmonds, and Coin Change (`[4, 3, 1]`, target `6`) illustrates a non-matroid failure where greedy uses 3 coins instead of DP's optimal 2._
 
 ---
 

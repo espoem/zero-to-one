@@ -1,0 +1,316 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="1200" height="800" role="img" aria-labelledby="title desc">
+  <title id="title">Binary Heap O(n) buildHeap, Two-Heaps Streaming Median, and Indexed Priority Queue</title>
+  <desc id="desc">Animated diagram showing bottom-up O(n) buildHeap sifting down from floor(n/2)-1 across synchronized tree and 0-based flat array, Two-Heaps streaming median balancing maxHeap and minHeap in O(log n), and Indexed Priority Queue decreaseKey using inv[] lookup.</desc>
+  <defs>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arrow-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <marker id="arrow-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+    </marker>
+    <style>
+      .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+      /* buildHeap 4-step 10s */
+      @keyframes bh1 { 0%, 23% { opacity: 1; } 25%, 100% { opacity: 0; } }
+      @keyframes bh2 { 0%, 23% { opacity: 0; } 25%, 48% { opacity: 1; } 50%, 100% { opacity: 0; } }
+      @keyframes bh3 { 0%, 48% { opacity: 0; } 50%, 73% { opacity: 1; } 75%, 100% { opacity: 0; } }
+      @keyframes bh4 { 0%, 73% { opacity: 0; } 75%, 100% { opacity: 1; } }
+
+      /* Two Heaps 3-step 9s */
+      @keyframes th1 { 0%, 31% { opacity: 1; } 33.3%, 100% { opacity: 0; } }
+      @keyframes th2 { 0%, 31% { opacity: 0; } 33.3%, 64% { opacity: 1; } 66.6%, 100% { opacity: 0; } }
+      @keyframes th3 { 0%, 64% { opacity: 0; } 66.6%, 100% { opacity: 1; } }
+
+      /* Indexed PQ 2-step 8s */
+      @keyframes pq1 { 0%, 48% { opacity: 1; } 50%, 100% { opacity: 0; } }
+      @keyframes pq2 { 0%, 48% { opacity: 0; } 50%, 100% { opacity: 1; } }
+
+      .bh-1 { animation: bh1 10s linear infinite; }
+      .bh-2 { animation: bh2 10s linear infinite; }
+      .bh-3 { animation: bh3 10s linear infinite; }
+      .bh-4 { animation: bh4 10s linear infinite; }
+      .th-1 { animation: th1 9s linear infinite; }
+      .th-2 { animation: th2 9s linear infinite; }
+      .th-3 { animation: th3 9s linear infinite; }
+      .pq-1 { animation: pq1 8s linear infinite; }
+      .pq-2 { animation: pq2 8s linear infinite; }
+
+      @media (prefers-reduced-motion: reduce) {
+        .bh-1, .bh-2, .bh-3, .bh-4, .th-1, .th-2, .th-3, .pq-1, .pq-2 {
+          animation: none !important;
+        }
+        .bh-1, .bh-2, .bh-3 { opacity: 0; }
+        .bh-4 { opacity: 1; }
+        .th-1, .th-2 { opacity: 0; }
+        .th-3 { opacity: 1; }
+        .pq-1 { opacity: 0; }
+        .pq-2 { opacity: 1; }
+      }
+    </style>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1200" height="800" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1200" height="60" rx="12" fill="#0f172a"/>
+  <rect x="0" y="44" width="1200" height="16" fill="#0f172a"/>
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Binary Heap O(n) buildHeap, Two-Heaps Median &amp; Indexed Priority Queue</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">Bottom-Up siftDown from floor(n/2)-1, Dual-Heap Streaming Median O(1) Read, and O(1) Inverse Slot Mapping inv[]</text>
+
+  <!-- TOP-LEFT PANEL: Bottom-Up Min-Heap buildHeap -->
+  <rect x="24" y="74" width="564" height="408" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+  <rect x="24" y="74" width="564" height="34" rx="10" fill="#f1f5f9"/>
+  <rect x="24" y="98" width="564" height="10" fill="#f1f5f9"/>
+  <text x="40" y="96" class="sans" font-size="13" font-weight="700" fill="#0f172a">1. Bottom-Up buildHeap (Min-Heap, O(n) Proof)</text>
+  <text x="572" y="96" class="mono" font-size="11" fill="#059669" text-anchor="end">start i = floor(7/2)-1 = 2</text>
+
+  <!-- Tree Edges (centered at x=220) -->
+  <g stroke="#94a3b8" stroke-width="2">
+    <line x1="220" y1="142" x2="132" y2="198"/><line x1="220" y1="142" x2="308" y2="198"/>
+    <line x1="132" y1="198" x2="88" y2="254"/><line x1="132" y1="198" x2="176" y2="254"/>
+    <line x1="308" y1="198" x2="264" y2="254"/><line x1="308" y1="198" x2="352" y2="254"/>
+  </g>
+
+  <!-- Step 1: Unordered [9, 5, 8, 2, 7, 3, 4], siftDown(2) swaps 8 & 3 -->
+  <g class="bh-1">
+    <path d="M 294 214 L 274 238" stroke="#d97706" stroke-width="3" marker-end="url(#arrow-amber)"/>
+    <g class="mono" font-size="13" font-weight="700" text-anchor="middle">
+      <circle cx="220" cy="142" r="18" fill="#f8fafc" stroke="#64748b"/><text x="220" y="147" fill="#0f172a">9</text>
+      <circle cx="132" cy="198" r="18" fill="#f8fafc" stroke="#64748b"/><text x="132" y="203" fill="#0f172a">5</text>
+      <circle cx="308" cy="198" r="18" fill="#fffbeb" stroke="#d97706" stroke-width="2.5"/><text x="308" y="203" fill="#b45309">8</text>
+      <circle cx="88" cy="254" r="18" fill="#f8fafc" stroke="#64748b"/><text x="88" y="259" fill="#0f172a">2</text>
+      <circle cx="176" cy="254" r="18" fill="#f8fafc" stroke="#64748b"/><text x="176" y="259" fill="#0f172a">7</text>
+      <circle cx="264" cy="254" r="18" fill="#eff6ff" stroke="#2563eb" stroke-width="2.5"/><text x="264" y="259" fill="#1d4ed8">3</text>
+      <circle cx="352" cy="254" r="18" fill="#f8fafc" stroke="#64748b"/><text x="352" y="259" fill="#0f172a">4</text>
+    </g>
+    <text x="44" y="310" class="mono" font-size="11.5" font-weight="700" fill="#b45309">Step 1: siftDown(i=2): 8 &gt; min(3,4) -&gt; swap(2, 5)</text>
+    <!-- Flat Array -->
+    <g transform="translate(44, 326)" class="mono" font-size="13" font-weight="700" text-anchor="middle">
+      <rect x="0" y="0" width="48" height="36" rx="4" fill="#f8fafc" stroke="#94a3b8"/><text x="24" y="23">9</text>
+      <rect x="54" y="0" width="48" height="36" rx="4" fill="#f8fafc" stroke="#94a3b8"/><text x="78" y="23">5</text>
+      <rect x="108" y="0" width="48" height="36" rx="4" fill="#fffbeb" stroke="#d97706" stroke-width="2"/><text x="132" y="23" fill="#b45309">8</text>
+      <rect x="162" y="0" width="48" height="36" rx="4" fill="#f8fafc" stroke="#94a3b8"/><text x="186" y="23">2</text>
+      <rect x="216" y="0" width="48" height="36" rx="4" fill="#f8fafc" stroke="#94a3b8"/><text x="240" y="23">7</text>
+      <rect x="270" y="0" width="48" height="36" rx="4" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/><text x="294" y="23" fill="#1d4ed8">3</text>
+      <rect x="324" y="0" width="48" height="36" rx="4" fill="#f8fafc" stroke="#94a3b8"/><text x="348" y="23">4</text>
+    </g>
+  </g>
+
+  <!-- Step 2: [9, 5, 3, 2, 7, 8, 4], siftDown(1) swaps 5 & 2 -->
+  <g class="bh-2">
+    <path d="M 118 214 L 98 238" stroke="#d97706" stroke-width="3" marker-end="url(#arrow-amber)"/>
+    <g class="mono" font-size="13" font-weight="700" text-anchor="middle">
+      <circle cx="220" cy="142" r="18" fill="#f8fafc" stroke="#64748b"/><text x="220" y="147" fill="#0f172a">9</text>
+      <circle cx="132" cy="198" r="18" fill="#fffbeb" stroke="#d97706" stroke-width="2.5"/><text x="132" y="203" fill="#b45309">5</text>
+      <circle cx="308" cy="198" r="18" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="308" y="203" fill="#047857">3</text>
+      <circle cx="88" cy="254" r="18" fill="#eff6ff" stroke="#2563eb" stroke-width="2.5"/><text x="88" y="259" fill="#1d4ed8">2</text>
+      <circle cx="176" cy="254" r="18" fill="#f8fafc" stroke="#64748b"/><text x="176" y="259" fill="#0f172a">7</text>
+      <circle cx="264" cy="254" r="18" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="264" y="259" fill="#047857">8</text>
+      <circle cx="352" cy="254" r="18" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="352" y="259" fill="#047857">4</text>
+    </g>
+    <text x="44" y="310" class="mono" font-size="11.5" font-weight="700" fill="#b45309">Step 2: siftDown(i=1): 5 &gt; min(2,7) -&gt; swap(1, 3)</text>
+    <g transform="translate(44, 326)" class="mono" font-size="13" font-weight="700" text-anchor="middle">
+      <rect x="0" y="0" width="48" height="36" rx="4" fill="#f8fafc" stroke="#94a3b8"/><text x="24" y="23">9</text>
+      <rect x="54" y="0" width="48" height="36" rx="4" fill="#fffbeb" stroke="#d97706" stroke-width="2"/><text x="78" y="23" fill="#b45309">5</text>
+      <rect x="108" y="0" width="48" height="36" rx="4" fill="#ecfdf5" stroke="#059669"/><text x="132" y="23" fill="#047857">3</text>
+      <rect x="162" y="0" width="48" height="36" rx="4" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/><text x="186" y="23" fill="#1d4ed8">2</text>
+      <rect x="216" y="0" width="48" height="36" rx="4" fill="#f8fafc" stroke="#94a3b8"/><text x="240" y="23">7</text>
+      <rect x="270" y="0" width="48" height="36" rx="4" fill="#ecfdf5" stroke="#059669"/><text x="294" y="23" fill="#047857">8</text>
+      <rect x="324" y="0" width="48" height="36" rx="4" fill="#ecfdf5" stroke="#059669"/><text x="348" y="23" fill="#047857">4</text>
+    </g>
+  </g>
+
+  <!-- Step 3: [9, 2, 3, 5, 7, 8, 4], siftDown(0) swaps 9 -> 2 -> 5 -->
+  <g class="bh-3">
+    <path d="M 200 156 L 150 186" stroke="#d97706" stroke-width="3" marker-end="url(#arrow-amber)"/>
+    <path d="M 118 214 L 98 238" stroke="#d97706" stroke-width="3" marker-end="url(#arrow-amber)"/>
+    <g class="mono" font-size="13" font-weight="700" text-anchor="middle">
+      <circle cx="220" cy="142" r="18" fill="#fffbeb" stroke="#d97706" stroke-width="2.5"/><text x="220" y="147" fill="#b45309">9</text>
+      <circle cx="132" cy="198" r="18" fill="#eff6ff" stroke="#2563eb" stroke-width="2.5"/><text x="132" y="203" fill="#1d4ed8">2</text>
+      <circle cx="308" cy="198" r="18" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="308" y="203" fill="#047857">3</text>
+      <circle cx="88" cy="254" r="18" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/><text x="88" y="259" fill="#1d4ed8">5</text>
+      <circle cx="176" cy="254" r="18" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="176" y="259" fill="#047857">7</text>
+      <circle cx="264" cy="254" r="18" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="264" y="259" fill="#047857">8</text>
+      <circle cx="352" cy="254" r="18" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="352" y="259" fill="#047857">4</text>
+    </g>
+    <text x="44" y="310" class="mono" font-size="11.5" font-weight="700" fill="#b45309">Step 3: siftDown(i=0): 9 sifts 0 -&gt; 1 -&gt; 3 (2 swaps)</text>
+    <g transform="translate(44, 326)" class="mono" font-size="13" font-weight="700" text-anchor="middle">
+      <rect x="0" y="0" width="48" height="36" rx="4" fill="#fffbeb" stroke="#d97706" stroke-width="2"/><text x="24" y="23" fill="#b45309">9</text>
+      <rect x="54" y="0" width="48" height="36" rx="4" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/><text x="78" y="23" fill="#1d4ed8">2</text>
+      <rect x="108" y="0" width="48" height="36" rx="4" fill="#ecfdf5" stroke="#059669"/><text x="132" y="23" fill="#047857">3</text>
+      <rect x="162" y="0" width="48" height="36" rx="4" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/><text x="186" y="23" fill="#1d4ed8">5</text>
+      <rect x="216" y="0" width="48" height="36" rx="4" fill="#ecfdf5" stroke="#059669"/><text x="240" y="23" fill="#047857">7</text>
+      <rect x="270" y="0" width="48" height="36" rx="4" fill="#ecfdf5" stroke="#059669"/><text x="294" y="23" fill="#047857">8</text>
+      <rect x="324" y="0" width="48" height="36" rx="4" fill="#ecfdf5" stroke="#059669"/><text x="348" y="23" fill="#047857">4</text>
+    </g>
+  </g>
+
+  <!-- Step 4: Valid Min-Heap [2, 5, 3, 9, 7, 8, 4] -->
+  <g class="bh-4">
+    <g class="mono" font-size="13" font-weight="700" text-anchor="middle">
+      <circle cx="220" cy="142" r="18" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/><text x="220" y="147" fill="#047857">2</text>
+      <circle cx="132" cy="198" r="18" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="132" y="203" fill="#047857">5</text>
+      <circle cx="308" cy="198" r="18" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="308" y="203" fill="#047857">3</text>
+      <circle cx="88" cy="254" r="18" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="88" y="259" fill="#047857">9</text>
+      <circle cx="176" cy="254" r="18" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="176" y="259" fill="#047857">7</text>
+      <circle cx="264" cy="254" r="18" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="264" y="259" fill="#047857">8</text>
+      <circle cx="352" cy="254" r="18" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="352" y="259" fill="#047857">4</text>
+    </g>
+    <text x="44" y="310" class="mono" font-size="11.5" font-weight="700" fill="#047857">Valid Min-Heap! Parent &lt;= Children everywhere.</text>
+    <g transform="translate(44, 326)" class="mono" font-size="13" font-weight="700" text-anchor="middle">
+      <rect x="0" y="0" width="48" height="36" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="24" y="23" fill="#047857">2</text>
+      <rect x="54" y="0" width="48" height="36" rx="4" fill="#ecfdf5" stroke="#059669"/><text x="78" y="23" fill="#047857">5</text>
+      <rect x="108" y="0" width="48" height="36" rx="4" fill="#ecfdf5" stroke="#059669"/><text x="132" y="23" fill="#047857">3</text>
+      <rect x="162" y="0" width="48" height="36" rx="4" fill="#ecfdf5" stroke="#059669"/><text x="186" y="23" fill="#047857">9</text>
+      <rect x="216" y="0" width="48" height="36" rx="4" fill="#ecfdf5" stroke="#059669"/><text x="240" y="23" fill="#047857">7</text>
+      <rect x="270" y="0" width="48" height="36" rx="4" fill="#ecfdf5" stroke="#059669"/><text x="294" y="23" fill="#047857">8</text>
+      <rect x="324" y="0" width="48" height="36" rx="4" fill="#ecfdf5" stroke="#059669"/><text x="348" y="23" fill="#047857">4</text>
+    </g>
+  </g>
+
+  <!-- Flat Array Indices + Formulas -->
+  <g transform="translate(44, 378)" class="mono" font-size="10" fill="#64748b" text-anchor="middle">
+    <text x="24" y="0">[0]</text><text x="78" y="0">[1]</text><text x="132" y="0">[2]</text><text x="186" y="0">[3]</text><text x="240" y="0">[4]</text><text x="294" y="0">[5]</text><text x="348" y="0">[6]</text>
+  </g>
+  <rect x="44" y="394" width="524" height="72" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="60" y="416" class="mono" font-size="11" font-weight="700" fill="#0f172a">parent(i)=floor((i-1)/2)  left(i)=2i+1  right(i)=2i+2</text>
+  <text x="60" y="438" class="sans" font-size="11" fill="#334155">n/2 leaves sift 0 levels; total work = n * sum(h / 2^h) = O(2n) = O(n).</text>
+  <text x="60" y="456" class="sans" font-size="10.5" fill="#64748b">Contrast: n repeated push() calls sift up from leaves -&gt; O(n log n).</text>
+
+  <!-- Inset: geometric series box -->
+  <rect x="394" y="122" width="174" height="162" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="408" y="144" class="sans" font-size="11" font-weight="700" fill="#0f172a">Work by Height h:</text>
+  <text x="408" y="168" class="mono" font-size="10.5" fill="#64748b">h=0 (leaves): 0 ops</text>
+  <text x="408" y="190" class="mono" font-size="10.5" fill="#1d4ed8">h=1: n/4 * 1 ops</text>
+  <text x="408" y="212" class="mono" font-size="10.5" fill="#1d4ed8">h=2: n/8 * 2 ops</text>
+  <text x="408" y="234" class="mono" font-size="10.5" fill="#047857">sum h/2^h = 2</text>
+  <text x="408" y="264" class="mono" font-size="11.5" font-weight="700" fill="#047857">Total = O(n)</text>
+
+  <!-- TOP-RIGHT PANEL: Two-Heaps Streaming Median -->
+  <rect x="612" y="74" width="564" height="408" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+  <rect x="612" y="74" width="564" height="34" rx="10" fill="#f1f5f9"/>
+  <rect x="612" y="98" width="564" height="10" fill="#f1f5f9"/>
+  <text x="628" y="96" class="sans" font-size="13" font-weight="700" fill="#0f172a">2. Two-Heaps Streaming Median (O(1) Read, O(log n) Push)</text>
+
+  <!-- Left Bucket (MaxHeap lower half) & Right Bucket (MinHeap upper half) -->
+  <rect x="636" y="126" width="228" height="186" rx="8" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="750" y="148" class="sans" font-size="12" font-weight="700" fill="#1e40af" text-anchor="middle">Max-Heap (Lower Half)</text>
+  <text x="750" y="164" class="mono" font-size="10.5" fill="#1d4ed8" text-anchor="middle">root = max of small half</text>
+
+  <rect x="924" y="126" width="228" height="186" rx="8" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <text x="1038" y="148" class="sans" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">Min-Heap (Upper Half)</text>
+  <text x="1038" y="164" class="mono" font-size="10.5" fill="#047857" text-anchor="middle">root = min of large half</text>
+
+  <text x="894" y="218" class="mono" font-size="16" font-weight="700" fill="#0f172a" text-anchor="middle">&lt;=</text>
+
+  <g class="th-1">
+    <rect x="692" y="182" width="116" height="40" rx="6" fill="#2563eb"/><text x="750" y="207" class="mono" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">peek: 5</text>
+    <text x="750" y="250" class="mono" font-size="12" fill="#1e40af" text-anchor="middle">[ 5, 2 ]</text>
+    <rect x="980" y="182" width="116" height="40" rx="6" fill="#059669"/><text x="1038" y="207" class="mono" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">peek: 8</text>
+    <text x="1038" y="250" class="mono" font-size="12" fill="#065f46" text-anchor="middle">[ 8 ]</text>
+    <rect x="636" y="328" width="516" height="72" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="652" y="352" class="mono" font-size="12.5" font-weight="700" fill="#1d4ed8">Stream [5, 2, 8]: sizeMax(2) = sizeMin(1) + 1</text>
+    <text x="652" y="378" class="mono" font-size="13" font-weight="700" fill="#047857">Median = maxHeap.peek() = 5  (O(1) read)</text>
+  </g>
+  <g class="th-2">
+    <rect x="692" y="182" width="116" height="40" rx="6" fill="#d97706"/><text x="750" y="207" class="mono" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">peek: 10!</text>
+    <text x="750" y="250" class="mono" font-size="12" fill="#b45309" text-anchor="middle">[ 10, 5, 2 ] (sz 3!)</text>
+    <path d="M 812 202 L 972 202" stroke="#d97706" stroke-width="2.5" stroke-dasharray="4 3" marker-end="url(#arrow-amber)"/>
+    <rect x="980" y="182" width="116" height="40" rx="6" fill="#059669"/><text x="1038" y="207" class="mono" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">peek: 8</text>
+    <text x="1038" y="250" class="mono" font-size="12" fill="#065f46" text-anchor="middle">[ 8 ] (sz 1)</text>
+    <rect x="636" y="328" width="516" height="72" rx="8" fill="#fffbeb" stroke="#fcd34d"/>
+    <text x="652" y="352" class="mono" font-size="12.5" font-weight="700" fill="#b45309">Push 10 -&gt; Max-Heap! Order &amp; size violated (10 &gt; 8, diff=2)</text>
+    <text x="652" y="378" class="mono" font-size="12" font-weight="700" fill="#b45309">Rebalance: minHeap.push(maxHeap.pop()) -&gt; moves 10</text>
+  </g>
+  <g class="th-3">
+    <rect x="692" y="182" width="116" height="40" rx="6" fill="#2563eb"/><text x="750" y="207" class="mono" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">peek: 5</text>
+    <text x="750" y="250" class="mono" font-size="12" fill="#1e40af" text-anchor="middle">[ 5, 2 ] (sz 2)</text>
+    <rect x="980" y="182" width="116" height="40" rx="6" fill="#059669"/><text x="1038" y="207" class="mono" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">peek: 8</text>
+    <text x="1038" y="250" class="mono" font-size="12" fill="#065f46" text-anchor="middle">[ 8, 10 ] (sz 2)</text>
+    <rect x="636" y="328" width="516" height="72" rx="8" fill="#ecfdf5" stroke="#86efac"/>
+    <text x="652" y="352" class="mono" font-size="12.5" font-weight="700" fill="#047857">Balanced! maxHeap.peek() &lt;= minHeap.peek() (5 &lt;= 8)</text>
+    <text x="652" y="378" class="mono" font-size="13" font-weight="700" fill="#047857">Median = (5 + 8) / 2 = 6.5  (equal sizes)</text>
+  </g>
+
+  <rect x="636" y="414" width="516" height="52" rx="6" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="652" y="436" class="mono" font-size="11" fill="#334155">Invariants: 1) maxHeap.peek() &lt;= minHeap.peek()</text>
+  <text x="652" y="454" class="mono" font-size="11" fill="#334155">            2) size(maxHeap) == size(minHeap) or size(minHeap) + 1</text>
+
+  <!-- BOTTOM PANEL: Indexed Priority Queue (keys[], heap[], inv[]) -->
+  <rect x="24" y="498" width="1152" height="278" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+  <rect x="24" y="498" width="1152" height="34" rx="10" fill="#f1f5f9"/>
+  <rect x="24" y="522" width="1152" height="10" fill="#f1f5f9"/>
+  <text x="40" y="520" class="sans" font-size="13" font-weight="700" fill="#0f172a">3. Indexed Priority Queue: O(1) Key Lookup via inv[] for O(log n) decreaseKey(id, newPriority)</text>
+  <text x="1160" y="520" class="mono" font-size="11" fill="#7c3aed" text-anchor="end">Essential for Dijkstra / Prim</text>
+
+  <!-- Labels for the 3 synchronized arrays -->
+  <text x="56" y="582" class="mono" font-size="12" font-weight="700" fill="#475569">id / slot:</text>
+  <text x="56" y="622" class="mono" font-size="12" font-weight="700" fill="#1d4ed8">keys[id]:</text>
+  <text x="56" y="668" class="mono" font-size="12" font-weight="700" fill="#047857">heap[slot]:</text>
+  <text x="56" y="714" class="mono" font-size="12" font-weight="700" fill="#6d28d9">inv[id]:</text>
+
+  <!-- Column headers 0..3 -->
+  <g transform="translate(170, 560)" class="mono" font-size="11.5" font-weight="700" fill="#64748b" text-anchor="middle">
+    <text x="42" y="22">0</text><text x="142" y="22">1</text><text x="242" y="22">2</text><text x="342" y="22">3</text>
+  </g>
+
+  <!-- State 1: Before decreaseKey(id=3, 9 -> 1) -->
+  <g class="pq-1" transform="translate(170, 594)">
+    <!-- keys = [2, 5, 4, 9] -->
+    <rect x="0" y="0" width="84" height="36" rx="5" fill="#eff6ff" stroke="#93c5fd"/><text x="42" y="23" class="mono" font-size="14" font-weight="700" fill="#1d4ed8" text-anchor="middle">2</text>
+    <rect x="100" y="0" width="84" height="36" rx="5" fill="#eff6ff" stroke="#93c5fd"/><text x="142" y="23" class="mono" font-size="14" font-weight="700" fill="#1d4ed8" text-anchor="middle">5</text>
+    <rect x="200" y="0" width="84" height="36" rx="5" fill="#eff6ff" stroke="#93c5fd"/><text x="242" y="23" class="mono" font-size="14" font-weight="700" fill="#1d4ed8" text-anchor="middle">4</text>
+    <rect x="300" y="0" width="84" height="36" rx="5" fill="#fff1f2" stroke="#e11d48" stroke-width="2.5"/><text x="342" y="23" class="mono" font-size="14" font-weight="700" fill="#be123c" text-anchor="middle">9 -&gt; 1</text>
+
+    <!-- heap = [id 0, id 1, id 2, id 3] -->
+    <rect x="0" y="46" width="84" height="36" rx="5" fill="#ecfdf5" stroke="#6ee7b7"/><text x="42" y="69" class="mono" font-size="13" font-weight="700" fill="#047857" text-anchor="middle">id=0</text>
+    <rect x="100" y="46" width="84" height="36" rx="5" fill="#ecfdf5" stroke="#6ee7b7"/><text x="142" y="69" class="mono" font-size="13" font-weight="700" fill="#047857" text-anchor="middle">id=1</text>
+    <rect x="200" y="46" width="84" height="36" rx="5" fill="#ecfdf5" stroke="#6ee7b7"/><text x="242" y="69" class="mono" font-size="13" font-weight="700" fill="#047857" text-anchor="middle">id=2</text>
+    <rect x="300" y="46" width="84" height="36" rx="5" fill="#fffbeb" stroke="#d97706" stroke-width="2"/><text x="342" y="69" class="mono" font-size="13" font-weight="700" fill="#b45309" text-anchor="middle">id=3</text>
+
+    <!-- inv = [0, 1, 2, 3] -->
+    <rect x="0" y="92" width="84" height="36" rx="5" fill="#f5f3ff" stroke="#c4b5fd"/><text x="42" y="115" class="mono" font-size="13" font-weight="700" fill="#6d28d9" text-anchor="middle">slot 0</text>
+    <rect x="100" y="92" width="84" height="36" rx="5" fill="#f5f3ff" stroke="#c4b5fd"/><text x="142" y="115" class="mono" font-size="13" font-weight="700" fill="#6d28d9" text-anchor="middle">slot 1</text>
+    <rect x="200" y="92" width="84" height="36" rx="5" fill="#f5f3ff" stroke="#c4b5fd"/><text x="242" y="115" class="mono" font-size="13" font-weight="700" fill="#6d28d9" text-anchor="middle">slot 2</text>
+    <rect x="300" y="92" width="84" height="36" rx="5" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2.5"/><text x="342" y="115" class="mono" font-size="13" font-weight="700" fill="#5b21b6" text-anchor="middle">slot 3</text>
+
+    <rect x="424" y="0" width="540" height="128" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="444" y="30" class="mono" font-size="13" font-weight="700" fill="#b45309">Op: decreaseKey(id = 3, newKey = 1)</text>
+    <text x="444" y="58" class="sans" font-size="11.5" fill="#334155">1. Standard heap needs O(n) linear scan to find id=3.</text>
+    <text x="444" y="82" class="sans" font-size="11.5" fill="#5b21b6" font-weight="600">2. Indexed PQ reads inv[3] = slot 3 in O(1) time!</text>
+    <text x="444" y="106" class="sans" font-size="11.5" fill="#334155">3. Update keys[3] = 1, then siftUp(slot 3) swapping heap[] &amp; inv[].</text>
+  </g>
+
+  <!-- State 2: After siftUp(3) -> slot 3 -> slot 1 -> slot 0 -->
+  <g class="pq-2" transform="translate(170, 594)">
+    <!-- keys = [2, 5, 4, 1] -->
+    <rect x="0" y="0" width="84" height="36" rx="5" fill="#eff6ff" stroke="#93c5fd"/><text x="42" y="23" class="mono" font-size="14" font-weight="700" fill="#1d4ed8" text-anchor="middle">2</text>
+    <rect x="100" y="0" width="84" height="36" rx="5" fill="#eff6ff" stroke="#93c5fd"/><text x="142" y="23" class="mono" font-size="14" font-weight="700" fill="#1d4ed8" text-anchor="middle">5</text>
+    <rect x="200" y="0" width="84" height="36" rx="5" fill="#eff6ff" stroke="#93c5fd"/><text x="242" y="23" class="mono" font-size="14" font-weight="700" fill="#1d4ed8" text-anchor="middle">4</text>
+    <rect x="300" y="0" width="84" height="36" rx="5" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/><text x="342" y="23" class="mono" font-size="14" font-weight="700" fill="#047857" text-anchor="middle">1</text>
+
+    <!-- heap = [id 3, id 0, id 2, id 1] -->
+    <rect x="0" y="46" width="84" height="36" rx="5" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/><text x="42" y="69" class="mono" font-size="13" font-weight="700" fill="#047857" text-anchor="middle">id=3</text>
+    <rect x="100" y="46" width="84" height="36" rx="5" fill="#ecfdf5" stroke="#6ee7b7"/><text x="142" y="69" class="mono" font-size="13" font-weight="700" fill="#047857" text-anchor="middle">id=0</text>
+    <rect x="200" y="46" width="84" height="36" rx="5" fill="#ecfdf5" stroke="#6ee7b7"/><text x="242" y="69" class="mono" font-size="13" font-weight="700" fill="#047857" text-anchor="middle">id=2</text>
+    <rect x="300" y="46" width="84" height="36" rx="5" fill="#ecfdf5" stroke="#6ee7b7"/><text x="342" y="69" class="mono" font-size="13" font-weight="700" fill="#047857" text-anchor="middle">id=1</text>
+
+    <!-- inv = [1, 3, 2, 0] -->
+    <rect x="0" y="92" width="84" height="36" rx="5" fill="#f5f3ff" stroke="#c4b5fd"/><text x="42" y="115" class="mono" font-size="13" font-weight="700" fill="#6d28d9" text-anchor="middle">slot 1</text>
+    <rect x="100" y="92" width="84" height="36" rx="5" fill="#f5f3ff" stroke="#c4b5fd"/><text x="142" y="115" class="mono" font-size="13" font-weight="700" fill="#6d28d9" text-anchor="middle">slot 3</text>
+    <rect x="200" y="92" width="84" height="36" rx="5" fill="#f5f3ff" stroke="#c4b5fd"/><text x="242" y="115" class="mono" font-size="13" font-weight="700" fill="#6d28d9" text-anchor="middle">slot 2</text>
+    <rect x="300" y="92" width="84" height="36" rx="5" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/><text x="342" y="115" class="mono" font-size="13" font-weight="700" fill="#047857" text-anchor="middle">slot 0</text>
+
+    <rect x="424" y="0" width="540" height="128" rx="8" fill="#ecfdf5" stroke="#86efac"/>
+    <text x="444" y="30" class="mono" font-size="13" font-weight="700" fill="#047857">After siftUp: id=3 promoted to heap[0] (key = 1)!</text>
+    <text x="444" y="58" class="mono" font-size="11.5" fill="#065f46">Bijection Invariant: heap[inv[id]] === id  and  inv[heap[slot]] === slot</text>
+    <text x="444" y="82" class="sans" font-size="11.5" fill="#047857">Swap(a, b) updates both heap[] and inv[] in O(1) per heap level.</text>
+    <text x="444" y="106" class="sans" font-size="11.5" fill="#065f46">Total decreaseKey cost: strictly O(log n) without duplicate heap entries.</text>
+  </g>
+</svg>

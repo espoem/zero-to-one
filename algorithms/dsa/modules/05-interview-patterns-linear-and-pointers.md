@@ -62,6 +62,10 @@ flowchart TD
 > [!CAUTION]
 > **When Sliding Window Fails** The Sliding Window pattern **strictly requires monotonicity**: expanding the window ($R++$) must monotonically increase the sum/property, and shrinking the window ($L++$) must monotonically decrease it. If an array contains **negative numbers**, adding an element might decrease the sum, and removing an element might increase it! For "Subarray Sum Equals K" with negative numbers, **Sliding Window fails completely**. You must use **Prefix Sums + Hash Map**.
 
+![Animated walkthrough of Opposite-Direction Two Pointers and Monotonic Sliding Window](../assets/05-two-pointers-and-sliding-window-animated.svg)
+
+_Animation: Opposite-direction pointers eliminate an entire row or column per comparison in $O(n)$ on sorted `[2, 7, 11, 15, 19, 28]`, while the `[L, R)` sliding window expands `R` and shrinks `L` monotonically to keep `sum <= 10`._
+
 ---
 
 ## 3. Prefix Sums & Difference Arrays
@@ -76,6 +80,10 @@ flowchart TD
 Given an array $A$, its difference array is $D[i] = A[i] - A[i-1]$ (with $D[0] = A[0]$).
 
 - Adding value $v$ to all elements in range $[L, R]$: $$D[L] \mathrel{+}= v$$ $$D[R + 1] \mathrel{-}= v \quad (\text{if } R + 1 < n)$$ Applying $k$ range updates takes $O(k)$ time. Computing the prefix sum of $D$ reconstructs the final modified array in a single $O(n)$ pass, reducing an $O(n \times k)$ brute force to $O(n + k)$.
+
+![Animated walkthrough of 2D Prefix Sum inclusion-exclusion and Difference Array range updates](../assets/05-prefix-sum-and-difference-array-animated.svg)
+
+_Animation: 2D prefix sums answer arbitrary rectangle sums in four $O(1)$ inclusion-exclusion lookups, while difference arrays record `D[L] += v` and `D[R + 1] -= v` in $O(1)$ per interval before reconstructing `A` in one $O(n)$ sweep._
 
 ---
 
@@ -104,6 +112,10 @@ Although an individual insertion may trigger a loop popping multiple elements, *
 1. **Next Greater Element**: Maintain monotonic decreasing stack; when $A[i] > \text{stack.top}$, $A[i]$ is the next greater element for `stack.pop()`.
 2. **Largest Rectangle in Histogram**: Compute left and right bounding indices where bars are strictly shorter in $O(n)$ time.
 3. **Sliding Window Maximum (Monotonic Deque)**: Store indices in a deque whose values are monotonically decreasing. The front of the deque is always the maximum element in the current window of size $k$.
+
+![Animated trace of Monotonic Decreasing Stack and Sliding Window Maximum Deque](../assets/05-monotonic-stack-and-deque-animated.svg)
+
+_Animation: A monotonic decreasing stack pops smaller tops to resolve Next Greater Elements in amortized $O(n)$, while an index-backed monotonic deque expires out-of-window fronts (`<= i - k`) and evicts dominated back indices to report each window maximum in $O(1)$._
 
 ---
 
@@ -147,6 +159,10 @@ function cyclicSort(nums: number[]): void {
 ```
 
 **Complexity**: Each swap places at least one element into its final permanent position. The `while` loop executes at most $2n$ steps, achieving $O(n)$ time in $O(1)$ auxiliary space.
+
+![Animated trace of Kadane's algorithm extend-vs-reset recurrence and Cyclic Sort home-index swaps](../assets/05-kadane-and-cyclic-sort-animated.svg)
+
+_Animation: Kadane's recurrence `currentSum = max(nums[i], currentSum + nums[i])` discards negative prefixes on reset while tracking `maxSum`, and Cyclic Sort locks each `[1..n]` value into `correctIdx = nums[i] - 1` in at most $2n$ loop steps._
 
 ---
 

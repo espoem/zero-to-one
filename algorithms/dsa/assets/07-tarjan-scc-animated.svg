@@ -1,0 +1,296 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" width="1200" height="760" role="img" aria-labelledby="title desc">
+  <title id="title">Tarjan's Single-Pass Strongly Connected Components (SCC) Algorithm</title>
+  <desc id="desc">Animated step-by-step trace of Tarjan's SCC algorithm computing discovery[u] and low[u] on graph A-&gt;B-&gt;C-&gt;A, C-&gt;D, D-&gt;E-&gt;D, updating low via on-stack back edges, ignoring cross-component edges to off-stack nodes, and popping complete SCCs whenever low[u] == discovery[u].</desc>
+  <defs>
+    <marker id="arrow-slate" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b"/>
+    </marker>
+    <marker id="arrow-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+    </marker>
+    <marker id="arrow-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+    </marker>
+    <style>
+      .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+      /* 6-step 12s cycle */
+      @keyframes scc1 { 0%, 15% { opacity: 1; } 16.6%, 100% { opacity: 0; } }
+      @keyframes scc2 { 0%, 15% { opacity: 0; } 16.6%, 32% { opacity: 1; } 33.3%, 100% { opacity: 0; } }
+      @keyframes scc3 { 0%, 32% { opacity: 0; } 33.3%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+      @keyframes scc4 { 0%, 49% { opacity: 0; } 50%, 65% { opacity: 1; } 66.6%, 100% { opacity: 0; } }
+      @keyframes scc5 { 0%, 65% { opacity: 0; } 66.6%, 82% { opacity: 1; } 83.3%, 100% { opacity: 0; } }
+      @keyframes scc6 { 0%, 82% { opacity: 0; } 83.3%, 100% { opacity: 1; } }
+
+      .tj-1 { animation: scc1 12s linear infinite; }
+      .tj-2 { animation: scc2 12s linear infinite; }
+      .tj-3 { animation: scc3 12s linear infinite; }
+      .tj-4 { animation: scc4 12s linear infinite; }
+      .tj-5 { animation: scc5 12s linear infinite; }
+      .tj-6 { animation: scc6 12s linear infinite; }
+
+      @media (prefers-reduced-motion: reduce) {
+        .tj-1, .tj-2, .tj-3, .tj-4, .tj-5, .tj-6 { animation: none !important; }
+        .tj-1, .tj-2, .tj-3, .tj-4, .tj-5 { opacity: 0; }
+        .tj-6 { opacity: 1; }
+      }
+    </style>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1200" height="760" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1200" height="60" rx="12" fill="#0f172a"/>
+  <rect x="0" y="44" width="1200" height="16" fill="#0f172a"/>
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Tarjan&apos;s Strongly Connected Components (Single-Pass DFS)</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">discovery[u], low[u], On-Stack Back-Edge Updates, and Root Extraction (low[u] === discovery[u]) in Theta(V + E)</text>
+
+  <!-- LEFT PANEL: Directed Graph & Live (disc, low) -->
+  <rect x="24" y="76" width="716" height="574" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+  <rect x="24" y="76" width="716" height="36" rx="10" fill="#f1f5f9"/>
+  <rect x="24" y="102" width="716" height="10" fill="#f1f5f9"/>
+  <text x="40" y="99" class="sans" font-size="13" font-weight="700" fill="#0f172a">1. Graph Traversal &amp; Live (discovery[u], low[u]) Propagation</text>
+  <text x="724" y="99" class="mono" font-size="11" fill="#7c3aed" text-anchor="end">Single DFS pass · Theta(V + E)</text>
+
+  <!-- Node coordinates:
+       A(120, 220), B(260, 154), C(260, 296), D(460, 220), E(610, 220)
+  -->
+  <!-- SCC backdrop regions (subtle) -->
+  <rect x="64" y="118" width="262" height="236" rx="14" fill="#f8fafc" stroke="#e2e8f0" stroke-dasharray="5 4"/>
+  <text x="80" y="138" class="mono" font-size="10.5" fill="#64748b">SCC 1 region</text>
+  <rect x="408" y="144" width="268" height="166" rx="14" fill="#f8fafc" stroke="#e2e8f0" stroke-dasharray="5 4"/>
+  <text x="424" y="164" class="mono" font-size="10.5" fill="#64748b">SCC 2 region</text>
+
+  <!-- Base Edges -->
+  <g stroke="#94a3b8" stroke-width="2.5" fill="none">
+    <!-- A -> B -->
+    <line x1="142" y1="208" x2="234" y2="165" marker-end="url(#arrow-slate)"/>
+    <!-- B -> C -->
+    <line x1="260" y1="180" x2="260" y2="268" marker-end="url(#arrow-slate)"/>
+    <!-- C -> A (back edge) -->
+    <line x1="238" y1="284" x2="144" y2="234" marker-end="url(#arrow-slate)"/>
+    <!-- C -> D (cross-component edge) -->
+    <line x1="284" y1="286" x2="434" y2="230" marker-end="url(#arrow-slate)"/>
+    <!-- D -> E -->
+    <path d="M 484 208 Q 535 178 586 208" marker-end="url(#arrow-slate)"/>
+    <!-- E -> D (back edge) -->
+    <path d="M 586 232 Q 535 262 484 232" marker-end="url(#arrow-slate)"/>
+  </g>
+  <text x="348" y="280" class="mono" font-size="10" fill="#64748b" text-anchor="middle">cross-SCC</text>
+
+  <!-- Step 1: DFS descends A(1,1) -> B(2,2) -> C(3,3) -->
+  <g class="tj-1">
+    <g class="mono" font-size="14" font-weight="700" text-anchor="middle">
+      <circle cx="120" cy="220" r="24" fill="#eff6ff" stroke="#2563eb" stroke-width="2.5"/><text x="120" y="225" fill="#1d4ed8">A</text>
+      <circle cx="260" cy="154" r="24" fill="#eff6ff" stroke="#2563eb" stroke-width="2.5"/><text x="260" y="159" fill="#1d4ed8">B</text>
+      <circle cx="260" cy="296" r="24" fill="#eff6ff" stroke="#2563eb" stroke-width="2.5"/><text x="260" y="301" fill="#1d4ed8">C</text>
+      <circle cx="460" cy="220" r="24" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/><text x="460" y="225" fill="#475569">D</text>
+      <circle cx="610" cy="220" r="24" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/><text x="610" y="225" fill="#475569">E</text>
+    </g>
+    <g class="mono" font-size="10.5" font-weight="700" text-anchor="middle">
+      <rect x="78" y="250" width="84" height="20" rx="4" fill="#dbeafe"/><text x="120" y="264" fill="#1d4ed8">d=1, low=1</text>
+      <rect x="272" y="122" width="84" height="20" rx="4" fill="#dbeafe"/><text x="314" y="136" fill="#1d4ed8">d=2, low=2</text>
+      <rect x="218" y="326" width="84" height="20" rx="4" fill="#dbeafe"/><text x="260" y="340" fill="#1d4ed8">d=3, low=3</text>
+    </g>
+    <rect x="44" y="384" width="676" height="92" rx="8" fill="#eff6ff" stroke="#93c5fd"/>
+    <text x="60" y="408" class="mono" font-size="12.5" font-weight="700" fill="#1d4ed8">Step 1: DFS enters A(1,1) -&gt; B(2,2) -&gt; C(3,3)</text>
+    <text x="60" y="432" class="sans" font-size="11.5" fill="#1e3a8a">Each node initializes low[u] = discovery[u] and pushes onto the Tarjan stack.</text>
+    <text x="60" y="454" class="sans" font-size="11" fill="#1d4ed8">From C, explore outgoing edge C -&gt; D first (before back-edge C -&gt; A).</text>
+  </g>
+
+  <!-- Step 2: C -> D(4,4) -> E(5,5) -->
+  <g class="tj-2">
+    <g class="mono" font-size="14" font-weight="700" text-anchor="middle">
+      <circle cx="120" cy="220" r="24" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/><text x="120" y="225" fill="#1d4ed8">A</text>
+      <circle cx="260" cy="154" r="24" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/><text x="260" y="159" fill="#1d4ed8">B</text>
+      <circle cx="260" cy="296" r="24" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/><text x="260" y="301" fill="#1d4ed8">C</text>
+      <circle cx="460" cy="220" r="24" fill="#fffbeb" stroke="#d97706" stroke-width="2.5"/><text x="460" y="225" fill="#b45309">D</text>
+      <circle cx="610" cy="220" r="24" fill="#fffbeb" stroke="#d97706" stroke-width="2.5"/><text x="610" y="225" fill="#b45309">E</text>
+    </g>
+    <g class="mono" font-size="10.5" font-weight="700" text-anchor="middle">
+      <rect x="78" y="250" width="84" height="20" rx="4" fill="#dbeafe"/><text x="120" y="264" fill="#1d4ed8">d=1, low=1</text>
+      <rect x="272" y="122" width="84" height="20" rx="4" fill="#dbeafe"/><text x="314" y="136" fill="#1d4ed8">d=2, low=2</text>
+      <rect x="218" y="326" width="84" height="20" rx="4" fill="#dbeafe"/><text x="260" y="340" fill="#1d4ed8">d=3, low=3</text>
+      <rect x="418" y="250" width="84" height="20" rx="4" fill="#fef3c7"/><text x="460" y="264" fill="#b45309">d=4, low=4</text>
+      <rect x="568" y="250" width="84" height="20" rx="4" fill="#fef3c7"/><text x="610" y="264" fill="#b45309">d=5, low=5</text>
+    </g>
+    <rect x="44" y="384" width="676" height="92" rx="8" fill="#fffbeb" stroke="#fcd34d"/>
+    <text x="60" y="408" class="mono" font-size="12.5" font-weight="700" fill="#b45309">Step 2: Traverse C -&gt; D(4,4) -&gt; E(5,5). Stack: [A, B, C, D, E]</text>
+    <text x="60" y="432" class="sans" font-size="11.5" fill="#78350f">At E, examine edge E -&gt; D. Notice D is currently ON THE STACK!</text>
+    <text x="60" y="454" class="mono" font-size="11" fill="#b45309">Update low[E] = min(low[E], disc[D]) = min(5, 4) = 4!</text>
+  </g>
+
+  <!-- Step 3: E->D back edge drops low[E]=4, backtracks to D -> low[D]==disc[D]==4 -> POP SCC {D, E}! -->
+  <g class="tj-3">
+    <path d="M 586 232 Q 535 262 484 232" stroke="#059669" stroke-width="3.5" fill="none" marker-end="url(#arrow-slate)"/>
+    <g class="mono" font-size="14" font-weight="700" text-anchor="middle">
+      <circle cx="120" cy="220" r="24" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/><text x="120" y="225" fill="#1d4ed8">A</text>
+      <circle cx="260" cy="154" r="24" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/><text x="260" y="159" fill="#1d4ed8">B</text>
+      <circle cx="260" cy="296" r="24" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/><text x="260" y="301" fill="#1d4ed8">C</text>
+      <circle cx="460" cy="220" r="24" fill="#ecfdf5" stroke="#059669" stroke-width="3"/><text x="460" y="225" fill="#047857">D</text>
+      <circle cx="610" cy="220" r="24" fill="#ecfdf5" stroke="#059669" stroke-width="3"/><text x="610" y="225" fill="#047857">E</text>
+    </g>
+    <g class="mono" font-size="10.5" font-weight="700" text-anchor="middle">
+      <rect x="78" y="250" width="84" height="20" rx="4" fill="#dbeafe"/><text x="120" y="264" fill="#1d4ed8">d=1, low=1</text>
+      <rect x="272" y="122" width="84" height="20" rx="4" fill="#dbeafe"/><text x="314" y="136" fill="#1d4ed8">d=2, low=2</text>
+      <rect x="218" y="326" width="84" height="20" rx="4" fill="#dbeafe"/><text x="260" y="340" fill="#1d4ed8">d=3, low=3</text>
+      <rect x="418" y="250" width="84" height="20" rx="4" fill="#d1fae5"/><text x="460" y="264" fill="#047857">d=4, low=4</text>
+      <rect x="568" y="250" width="84" height="20" rx="4" fill="#d1fae5"/><text x="610" y="264" fill="#047857">d=5, low=4</text>
+    </g>
+    <rect x="44" y="384" width="676" height="92" rx="8" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.5"/>
+    <text x="60" y="408" class="mono" font-size="12.5" font-weight="700" fill="#047857">Step 3: At D: low[D] == disc[D] == 4 -&gt; ROOT! Pop SCC {E, D}</text>
+    <text x="60" y="432" class="sans" font-size="11.5" fill="#065f46">Popping down to D removes E and D from stack &amp; marks D and E off-stack.</text>
+    <text x="60" y="454" class="sans" font-size="11" fill="#047857">Backtrack to C: why doesn&apos;t C set low[C] = min(3, low[D])? Because D is OFF stack? Wait: D was tree child!</text>
+  </g>
+
+  <!-- Step 4: Back at C: tree edge C->D had low[D]=4 >= 3 so low[C] stays 3; then C->A back-edge sets low[C]=1! -->
+  <g class="tj-4">
+    <line x1="238" y1="284" x2="144" y2="234" stroke="#e11d48" stroke-width="3.5" marker-end="url(#arrow-rose)"/>
+    <g class="mono" font-size="14" font-weight="700" text-anchor="middle">
+      <circle cx="120" cy="220" r="24" fill="#fff1f2" stroke="#e11d48" stroke-width="2.5"/><text x="120" y="225" fill="#be123c">A</text>
+      <circle cx="260" cy="154" r="24" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/><text x="260" y="159" fill="#1d4ed8">B</text>
+      <circle cx="260" cy="296" r="24" fill="#fff1f2" stroke="#e11d48" stroke-width="2.5"/><text x="260" y="301" fill="#be123c">C</text>
+      <circle cx="460" cy="220" r="24" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="460" y="225" fill="#047857">D</text>
+      <circle cx="610" cy="220" r="24" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="610" y="225" fill="#047857">E</text>
+    </g>
+    <g class="mono" font-size="10.5" font-weight="700" text-anchor="middle">
+      <rect x="78" y="250" width="84" height="20" rx="4" fill="#dbeafe"/><text x="120" y="264" fill="#1d4ed8">d=1, low=1</text>
+      <rect x="272" y="122" width="84" height="20" rx="4" fill="#dbeafe"/><text x="314" y="136" fill="#1d4ed8">d=2, low=2</text>
+      <rect x="218" y="326" width="84" height="20" rx="4" fill="#ffe4e6"/><text x="260" y="340" fill="#be123c">d=3, low=1</text>
+      <rect x="418" y="250" width="84" height="20" rx="4" fill="#d1fae5"/><text x="460" y="264" fill="#047857">SCC #1</text>
+      <rect x="568" y="250" width="84" height="20" rx="4" fill="#d1fae5"/><text x="610" y="264" fill="#047857">SCC #1</text>
+    </g>
+    <rect x="44" y="384" width="676" height="92" rx="8" fill="#fff1f2" stroke="#fda4af"/>
+    <text x="60" y="408" class="mono" font-size="12.5" font-weight="700" fill="#be123c">Step 4: C inspects back-edge C -&gt; A (A is ON stack!)</text>
+    <text x="60" y="432" class="mono" font-size="11.5" fill="#9f1239">low[C] = min(3, disc[A]=1) = 1!  (Also min(3, low[D]=4) kept 3.)</text>
+    <text x="60" y="454" class="sans" font-size="11" fill="#be123c">Since low[C]=1 != disc[C]=3, C is NOT an SCC root -&gt; stays on stack!</text>
+  </g>
+
+  <!-- Step 5: Backtrack C -> B -> A, propagating low=1 upward -->
+  <g class="tj-5">
+    <g class="mono" font-size="14" font-weight="700" text-anchor="middle">
+      <circle cx="120" cy="220" r="24" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2.5"/><text x="120" y="225" fill="#5b21b6">A</text>
+      <circle cx="260" cy="154" r="24" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2.5"/><text x="260" y="159" fill="#5b21b6">B</text>
+      <circle cx="260" cy="296" r="24" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2.5"/><text x="260" y="301" fill="#5b21b6">C</text>
+      <circle cx="460" cy="220" r="24" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="460" y="225" fill="#047857">D</text>
+      <circle cx="610" cy="220" r="24" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="610" y="225" fill="#047857">E</text>
+    </g>
+    <g class="mono" font-size="10.5" font-weight="700" text-anchor="middle">
+      <rect x="78" y="250" width="84" height="20" rx="4" fill="#ede9fe"/><text x="120" y="264" fill="#5b21b6">d=1, low=1</text>
+      <rect x="272" y="122" width="84" height="20" rx="4" fill="#ede9fe"/><text x="314" y="136" fill="#5b21b6">d=2, low=1</text>
+      <rect x="218" y="326" width="84" height="20" rx="4" fill="#ede9fe"/><text x="260" y="340" fill="#5b21b6">d=3, low=1</text>
+      <rect x="418" y="250" width="84" height="20" rx="4" fill="#d1fae5"/><text x="460" y="264" fill="#047857">SCC #1</text>
+      <rect x="568" y="250" width="84" height="20" rx="4" fill="#d1fae5"/><text x="610" y="264" fill="#047857">SCC #1</text>
+    </g>
+    <rect x="44" y="384" width="676" height="92" rx="8" fill="#f5f3ff" stroke="#c4b5fd"/>
+    <text x="60" y="408" class="mono" font-size="12.5" font-weight="700" fill="#5b21b6">Step 5: Backtrack to B: low[B] = min(2, low[C]=1) = 1</text>
+    <text x="60" y="432" class="sans" font-size="11.5" fill="#4c1d95">low[B]=1 != disc[B]=2, so B stays on stack too. Unwind to A.</text>
+    <text x="60" y="454" class="mono" font-size="11" fill="#6d28d9">At A: low[A] = min(1, low[B]=1) = 1 === disc[A] -&gt; ROOT OF SCC #2!</text>
+  </g>
+
+  <!-- Step 6: Pop C, B, A -> 2 complete SCCs! -->
+  <g class="tj-6">
+    <g class="mono" font-size="14" font-weight="700" text-anchor="middle">
+      <circle cx="120" cy="220" r="24" fill="#7c3aed" stroke="#5b21b6" stroke-width="3"/><text x="120" y="225" fill="#ffffff">A</text>
+      <circle cx="260" cy="154" r="24" fill="#7c3aed" stroke="#5b21b6" stroke-width="3"/><text x="260" y="159" fill="#ffffff">B</text>
+      <circle cx="260" cy="296" r="24" fill="#7c3aed" stroke="#5b21b6" stroke-width="3"/><text x="260" y="301" fill="#ffffff">C</text>
+      <circle cx="460" cy="220" r="24" fill="#059669" stroke="#047857" stroke-width="3"/><text x="460" y="225" fill="#ffffff">D</text>
+      <circle cx="610" cy="220" r="24" fill="#059669" stroke="#047857" stroke-width="3"/><text x="610" y="225" fill="#ffffff">E</text>
+    </g>
+    <g class="mono" font-size="10.5" font-weight="700" text-anchor="middle">
+      <rect x="78" y="250" width="84" height="20" rx="4" fill="#ede9fe"/><text x="120" y="264" fill="#5b21b6">SCC #2</text>
+      <rect x="272" y="122" width="84" height="20" rx="4" fill="#ede9fe"/><text x="314" y="136" fill="#5b21b6">SCC #2</text>
+      <rect x="218" y="326" width="84" height="20" rx="4" fill="#ede9fe"/><text x="260" y="340" fill="#5b21b6">SCC #2</text>
+      <rect x="418" y="250" width="84" height="20" rx="4" fill="#d1fae5"/><text x="460" y="264" fill="#047857">SCC #1</text>
+      <rect x="568" y="250" width="84" height="20" rx="4" fill="#d1fae5"/><text x="610" y="264" fill="#047857">SCC #1</text>
+    </g>
+    <rect x="44" y="384" width="676" height="92" rx="8" fill="#ecfdf5" stroke="#86efac"/>
+    <text x="60" y="408" class="mono" font-size="12.5" font-weight="700" fill="#047857">Step 6: Pop C, B, A -&gt; SCC #2 = {A, B, C}! All SCCs Found!</text>
+    <text x="60" y="432" class="sans" font-size="11.5" fill="#065f46">Bonus: Tarjan outputs SCCs in REVERSE topological order of the condensation DAG!</text>
+    <text x="60" y="454" class="mono" font-size="11" fill="#047857">Condensation DAG: SCC{A,B,C} -&gt; SCC{D,E}</text>
+  </g>
+
+  <!-- Tarjan Rules Reference Box -->
+  <rect x="44" y="492" width="676" height="138" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="60" y="516" class="sans" font-size="12" font-weight="700" fill="#0f172a">The 3 Core Rules of Tarjan&apos;s Algorithm:</text>
+  <text x="60" y="540" class="mono" font-size="11" fill="#1d4ed8">1. Tree edge (v unvisited): dfs(v); low[u] = Math.min(low[u], low[v]);</text>
+  <text x="60" y="564" class="mono" font-size="11" font-weight="700" fill="#be123c">2. Back edge (v on stack):  low[u] = Math.min(low[u], discovery[v]);</text>
+  <text x="60" y="588" class="mono" font-size="11" fill="#64748b">3. Cross edge (v OFF stack): IGNORE! (v belongs to an already-popped SCC)</text>
+  <text x="60" y="612" class="mono" font-size="11" font-weight="700" fill="#047857">4. Root condition: if (low[u] === discovery[u]) pop stack down to u -&gt; 1 SCC!</text>
+
+  <!-- RIGHT PANEL: Live Tarjan Stack & SCC Output Tray -->
+  <rect x="760" y="76" width="416" height="574" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+  <rect x="760" y="76" width="416" height="36" rx="10" fill="#f1f5f9"/>
+  <rect x="760" y="102" width="416" height="10" fill="#f1f5f9"/>
+  <text x="776" y="99" class="sans" font-size="13" font-weight="700" fill="#0f172a">2. Tarjan Stack &amp; Popped SCCs</text>
+
+  <text x="968" y="138" class="sans" font-size="11.5" font-weight="700" fill="#475569" text-anchor="middle">Active Candidate Stack (onStack[u] = true)</text>
+  <path d="M 888 156 L 888 424 L 1048 424 L 1048 156" fill="none" stroke="#475569" stroke-width="2.5"/>
+
+  <!-- Stack frames per step -->
+  <g class="tj-1 mono" transform="translate(904, 0)" font-size="13" font-weight="700" text-anchor="middle">
+    <rect x="0" y="370" width="128" height="42" rx="5" fill="#eff6ff" stroke="#2563eb"/><text x="64" y="396" fill="#1d4ed8">A (1, 1)</text>
+    <rect x="0" y="320" width="128" height="42" rx="5" fill="#eff6ff" stroke="#2563eb"/><text x="64" y="346" fill="#1d4ed8">B (2, 2)</text>
+    <rect x="0" y="270" width="128" height="42" rx="5" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/><text x="64" y="296" fill="#1d4ed8">C (3, 3)</text>
+    <rect x="-120" y="454" width="368" height="170" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="-104" y="482" class="sans" font-size="12" font-weight="700" fill="#0f172a" text-anchor="start">Discovered SCCs:</text>
+    <text x="-104" y="516" class="mono" font-size="12" fill="#64748b" text-anchor="start">(none popped yet)</text>
+  </g>
+  <g class="tj-2 mono" transform="translate(904, 0)" font-size="13" font-weight="700" text-anchor="middle">
+    <rect x="0" y="370" width="128" height="42" rx="5" fill="#eff6ff" stroke="#2563eb"/><text x="64" y="396" fill="#1d4ed8">A (1, 1)</text>
+    <rect x="0" y="320" width="128" height="42" rx="5" fill="#eff6ff" stroke="#2563eb"/><text x="64" y="346" fill="#1d4ed8">B (2, 2)</text>
+    <rect x="0" y="270" width="128" height="42" rx="5" fill="#eff6ff" stroke="#2563eb"/><text x="64" y="296" fill="#1d4ed8">C (3, 3)</text>
+    <rect x="0" y="220" width="128" height="42" rx="5" fill="#fffbeb" stroke="#d97706" stroke-width="2"/><text x="64" y="246" fill="#b45309">D (4, 4)</text>
+    <rect x="0" y="170" width="128" height="42" rx="5" fill="#fffbeb" stroke="#d97706" stroke-width="2"/><text x="64" y="196" fill="#b45309">E (5, 4)</text>
+    <rect x="-120" y="454" width="368" height="170" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="-104" y="482" class="sans" font-size="12" font-weight="700" fill="#0f172a" text-anchor="start">Discovered SCCs:</text>
+    <text x="-104" y="516" class="mono" font-size="12" fill="#64748b" text-anchor="start">E -&gt; D lowers low[E] = 4</text>
+  </g>
+  <g class="tj-3 mono" transform="translate(904, 0)" font-size="13" font-weight="700" text-anchor="middle">
+    <rect x="0" y="370" width="128" height="42" rx="5" fill="#eff6ff" stroke="#2563eb"/><text x="64" y="396" fill="#1d4ed8">A (1, 1)</text>
+    <rect x="0" y="320" width="128" height="42" rx="5" fill="#eff6ff" stroke="#2563eb"/><text x="64" y="346" fill="#1d4ed8">B (2, 2)</text>
+    <rect x="0" y="270" width="128" height="42" rx="5" fill="#eff6ff" stroke="#2563eb"/><text x="64" y="296" fill="#1d4ed8">C (3, 3)</text>
+    <rect x="0" y="220" width="128" height="42" rx="5" fill="#ecfdf5" stroke="#059669" stroke-dasharray="4 3"/><text x="64" y="246" fill="#047857">pop D, E!</text>
+    <rect x="-120" y="454" width="368" height="170" rx="8" fill="#ecfdf5" stroke="#86efac"/>
+    <text x="-104" y="482" class="sans" font-size="12" font-weight="700" fill="#047857" text-anchor="start">Discovered SCCs:</text>
+    <rect x="-104" y="500" width="336" height="40" rx="6" fill="#059669"/><text x="64" y="525" class="mono" font-size="14" font-weight="700" fill="#ffffff" text-anchor="middle">SCC #1: { D, E }</text>
+  </g>
+  <g class="tj-4 mono" transform="translate(904, 0)" font-size="13" font-weight="700" text-anchor="middle">
+    <rect x="0" y="370" width="128" height="42" rx="5" fill="#eff6ff" stroke="#2563eb"/><text x="64" y="396" fill="#1d4ed8">A (1, 1)</text>
+    <rect x="0" y="320" width="128" height="42" rx="5" fill="#eff6ff" stroke="#2563eb"/><text x="64" y="346" fill="#1d4ed8">B (2, 2)</text>
+    <rect x="0" y="270" width="128" height="42" rx="5" fill="#fff1f2" stroke="#e11d48" stroke-width="2"/><text x="64" y="296" fill="#be123c">C (3, 1)</text>
+    <rect x="-120" y="454" width="368" height="170" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="-104" y="482" class="sans" font-size="12" font-weight="700" fill="#0f172a" text-anchor="start">Discovered SCCs:</text>
+    <rect x="-104" y="500" width="336" height="40" rx="6" fill="#059669"/><text x="64" y="525" class="mono" font-size="14" font-weight="700" fill="#ffffff" text-anchor="middle">SCC #1: { D, E }</text>
+  </g>
+  <g class="tj-5 mono" transform="translate(904, 0)" font-size="13" font-weight="700" text-anchor="middle">
+    <rect x="0" y="370" width="128" height="42" rx="5" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2"/><text x="64" y="396" fill="#5b21b6">A (1, 1)</text>
+    <rect x="0" y="320" width="128" height="42" rx="5" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2"/><text x="64" y="346" fill="#5b21b6">B (2, 1)</text>
+    <rect x="0" y="270" width="128" height="42" rx="5" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2"/><text x="64" y="296" fill="#5b21b6">C (3, 1)</text>
+    <rect x="-120" y="454" width="368" height="170" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="-104" y="482" class="sans" font-size="12" font-weight="700" fill="#0f172a" text-anchor="start">Discovered SCCs:</text>
+    <rect x="-104" y="500" width="336" height="40" rx="6" fill="#059669"/><text x="64" y="525" class="mono" font-size="14" font-weight="700" fill="#ffffff" text-anchor="middle">SCC #1: { D, E }</text>
+  </g>
+  <g class="tj-6 mono" transform="translate(904, 0)" font-size="13" font-weight="700" text-anchor="middle">
+    <rect x="0" y="370" width="128" height="42" rx="5" fill="#f5f3ff" stroke="#7c3aed" stroke-dasharray="4 3"/><text x="64" y="396" fill="#5b21b6">pop C, B, A!</text>
+    <rect x="-120" y="454" width="368" height="170" rx="8" fill="#ecfdf5" stroke="#86efac"/>
+    <text x="-104" y="482" class="sans" font-size="12" font-weight="700" fill="#047857" text-anchor="start">Discovered SCCs (2 total):</text>
+    <rect x="-104" y="500" width="336" height="40" rx="6" fill="#059669"/><text x="64" y="525" class="mono" font-size="14" font-weight="700" fill="#ffffff" text-anchor="middle">SCC #1: { D, E }</text>
+    <rect x="-104" y="552" width="336" height="40" rx="6" fill="#7c3aed"/><text x="64" y="577" class="mono" font-size="14" font-weight="700" fill="#ffffff" text-anchor="middle">SCC #2: { A, B, C }</text>
+  </g>
+
+  <!-- Bottom Legend -->
+  <rect x="24" y="666" width="1152" height="74" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="44" y="692" class="sans" font-size="12" font-weight="700" fill="#0f172a">Tarjan Invariants:</text>
+  <rect x="184" y="678" width="14" height="14" rx="3" fill="#2563eb"/>
+  <text x="204" y="690" class="sans" font-size="11" fill="#334155">Active on stack</text>
+  <rect x="330" y="678" width="14" height="14" rx="3" fill="#e11d48"/>
+  <text x="350" y="690" class="sans" font-size="11" fill="#334155">On-stack back-edge min(low[u], disc[v])</text>
+  <rect x="614" y="678" width="14" height="14" rx="3" fill="#059669"/>
+  <text x="634" y="690" class="sans" font-size="11" fill="#334155">Popped SCC #1 {D,E}</text>
+  <rect x="786" y="678" width="14" height="14" rx="3" fill="#7c3aed"/>
+  <text x="806" y="690" class="sans" font-size="11" fill="#334155">Popped SCC #2 {A,B,C}</text>
+  <text x="44" y="722" class="sans" font-size="11" fill="#64748b">Critical bug guard: NEVER update low[u] from a cross-edge to an off-stack node v (<tspan class="mono">if (onStack[v])</tspan>), or disconnected SCCs collapse into one!</text>
+</svg>

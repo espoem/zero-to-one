@@ -1,0 +1,198 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" width="1200" height="720" role="img" aria-labelledby="title desc">
+  <title id="title">Network Flow: Edmonds-Karp BFS Residual Augmentation and Dinic's Blocking Flow</title>
+  <desc id="desc">Dual-panel animated diagram matching Module 13: Left panel shows Edmonds-Karp BFS shortest augmenting paths (s-&gt;u-&gt;t pushing 4, s-&gt;v-&gt;t pushing 5, s-&gt;u-&gt;v-&gt;t pushing 5) with reverse residual edges reaching Max-Flow = Min-Cut = 14; Right panel shows Dinic's BFS Layered Level Graph L0..L3 pruning same-level edges and pushing multi-path DFS blocking flow.</desc>
+  <defs>
+    <style>
+      .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+      .ek-p1  { animation: ek1 12s linear infinite; stroke-dasharray: 7 4; }
+      .ek-p2  { animation: ek2 12s linear infinite; stroke-dasharray: 7 4; }
+      .ek-p3  { animation: ek3 12s linear infinite; stroke-dasharray: 7 4; }
+      .ek-rev { animation: ekrev 12s linear infinite; stroke-dasharray: 4 3; }
+
+      .din-bfs { animation: dbfs 12s linear infinite; }
+      .din-dfs { animation: ddfs 12s linear infinite; stroke-dasharray: 7 4; }
+
+      @keyframes ek1 { 0%, 30% { opacity: 1; stroke-dashoffset: -40; } 36%, 100% { opacity: 0.86; } }
+      @keyframes ek2 { 0%, 30% { opacity: 0.86; } 36%, 64% { opacity: 1; stroke-dashoffset: -40; } 70%, 100% { opacity: 0.86; } }
+      @keyframes ek3 { 0%, 64% { opacity: 0.86; } 70%, 100% { opacity: 1; stroke-dashoffset: -40; } }
+      @keyframes ekrev { 0%, 24% { opacity: 0.86; } 32%, 100% { opacity: 0.95; stroke-dashoffset: 32; } }
+
+      @keyframes dbfs { 0%, 38% { opacity: 1; } 44%, 100% { opacity: 0.86; } }
+      @keyframes ddfs { 0%, 38% { opacity: 0.86; } 44%, 100% { opacity: 1; stroke-dashoffset: -48; } }
+
+      @media (prefers-reduced-motion: reduce) {
+        * { animation: none !important; transition: none !important; }
+        .ek-p1, .ek-p2, .ek-p3, .ek-rev, .din-bfs, .din-dfs { opacity: 1 !important; }
+      }
+    </style>
+
+    <marker id="arr-slate" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569"/>
+    </marker>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+    </marker>
+    <marker id="arr-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1200" height="720" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1200" height="62" rx="12" fill="#0f172a"/>
+  <rect x="0" y="46" width="1200" height="16" fill="#0f172a"/>
+  <text x="24" y="29" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Network Flow · Edmonds-Karp BFS vs Dinic's Blocking Flow</text>
+  <text x="24" y="49" class="sans" font-size="12" fill="#94a3b8">Capacity constraint 0 &lt;= f(u,v) &lt;= c(u,v), flow conservation, residual reverse edges, and Max-Flow Min-Cut duality</text>
+
+  <!-- ==================== LEFT PANEL: EDMONDS-KARP ==================== -->
+  <rect x="24" y="78" width="564" height="618" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+  <rect x="24" y="78" width="564" height="36" rx="10" fill="#eff6ff"/>
+  <rect x="24" y="104" width="564" height="10" fill="#eff6ff"/>
+  <text x="40" y="101" class="sans" font-size="13" font-weight="700" fill="#1e3a8a">1. Edmonds-Karp: Shortest Augmenting Path (BFS)</text>
+  <text x="572" y="101" class="mono" font-size="11" font-weight="700" fill="#2563eb" text-anchor="end">O(V * E^2)</text>
+
+  <!-- Network Edges (s:(100,275), u:(295,170), v:(295,380), t:(495,275)) -->
+  <!-- Base graph lines -->
+  <line x1="124" y1="262" x2="270" y2="184" stroke="#cbd5e1" stroke-width="3"/>
+  <line x1="124" y1="288" x2="270" y2="366" stroke="#cbd5e1" stroke-width="3"/>
+  <line x1="295" y1="196" x2="295" y2="352" stroke="#cbd5e1" stroke-width="3"/>
+  <line x1="320" y1="184" x2="470" y2="262" stroke="#cbd5e1" stroke-width="3"/>
+  <line x1="320" y1="366" x2="470" y2="288" stroke="#cbd5e1" stroke-width="3"/>
+
+  <!-- Animated Augmenting Path 1: s -> u -> t (flow 4) -->
+  <path class="ek-p1" d="M 124 262 L 270 184" fill="none" stroke="#2563eb" stroke-width="3.5" marker-end="url(#arr-blue)"/>
+  <path class="ek-p1" d="M 320 184 L 470 262" fill="none" stroke="#2563eb" stroke-width="3.5" marker-end="url(#arr-blue)"/>
+
+  <!-- Animated Augmenting Path 2: s -> v -> t (flow 5) -->
+  <path class="ek-p2" d="M 124 288 L 270 366" fill="none" stroke="#059669" stroke-width="3.5" marker-end="url(#arr-emerald)"/>
+  <path class="ek-p2" d="M 320 366 L 470 288" fill="none" stroke="#059669" stroke-width="3.5" marker-end="url(#arr-emerald)"/>
+
+  <!-- Animated Augmenting Path 3: s -> u -> v -> t (flow 5) -->
+  <path class="ek-p3" d="M 124 262 L 270 184" fill="none" stroke="#d97706" stroke-width="3.5" marker-end="url(#arr-amber)"/>
+  <path class="ek-p3" d="M 295 196 L 295 352" fill="none" stroke="#d97706" stroke-width="3.5" marker-end="url(#arr-amber)"/>
+  <path class="ek-p3" d="M 320 366 L 470 288" fill="none" stroke="#d97706" stroke-width="3.5" marker-end="url(#arr-amber)"/>
+
+  <!-- Reverse Residual Edges (dashed rose) -->
+  <path class="ek-rev" d="M 276 164 C 210 135, 130 180, 108 248" fill="none" stroke="#e11d48" stroke-width="1.8" marker-end="url(#arr-rose)"/>
+  <rect x="128" y="138" width="96" height="20" rx="4" fill="#fff1f2" stroke="#fda4af"/>
+  <text x="176" y="152" class="mono" font-size="10" font-weight="700" fill="#be123c" text-anchor="middle">res u-&gt;s (9)</text>
+
+  <path class="ek-rev" d="M 480 250 C 455 182, 380 140, 320 158" fill="none" stroke="#e11d48" stroke-width="1.8" marker-end="url(#arr-rose)"/>
+  <rect x="376" y="138" width="96" height="20" rx="4" fill="#fff1f2" stroke="#fda4af"/>
+  <text x="424" y="152" class="mono" font-size="10" font-weight="700" fill="#be123c" text-anchor="middle">res t-&gt;u (4)</text>
+
+  <!-- Min-Cut dashed line across ({s, u, v} | {t}) -->
+  <line x1="422" y1="176" x2="422" y2="376" stroke="#7c3aed" stroke-width="2" stroke-dasharray="6 4"/>
+  <rect x="366" y="380" width="112" height="20" rx="4" fill="#f5f3ff" stroke="#c4b5fd"/>
+  <text x="422" y="394" class="mono" font-size="10" font-weight="700" fill="#6d28d9" text-anchor="middle">Min-Cut = 14</text>
+
+  <!-- Edge Flow/Capacity Pills (f / c) -->
+  <rect x="160" y="200" width="54" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="187" y="215" class="mono" font-size="11" font-weight="700" fill="#0f172a" text-anchor="middle">9 / 10</text>
+
+  <rect x="160" y="324" width="54" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="187" y="339" class="mono" font-size="11" font-weight="700" fill="#0f172a" text-anchor="middle">5 / 5</text>
+
+  <rect x="266" y="262" width="58" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="295" y="277" class="mono" font-size="11" font-weight="700" fill="#0f172a" text-anchor="middle">5 / 15</text>
+
+  <rect x="380" y="200" width="54" height="22" rx="4" fill="#ecfdf5" stroke="#059669"/>
+  <text x="407" y="215" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">4 / 4</text>
+
+  <rect x="376" y="324" width="62" height="22" rx="4" fill="#ecfdf5" stroke="#059669"/>
+  <text x="407" y="339" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">10 / 10</text>
+
+  <!-- Nodes s, u, v, t -->
+  <g transform="translate(100, 275)"><circle r="24" fill="#eff6ff" stroke="#2563eb" stroke-width="2.4"/><text y="5" class="mono" font-size="14" font-weight="700" fill="#1e3a8a" text-anchor="middle">s</text></g>
+  <g transform="translate(295, 170)"><circle r="22" fill="#ffffff" stroke="#334155" stroke-width="2"/><text y="5" class="mono" font-size="14" font-weight="700" fill="#0f172a" text-anchor="middle">u</text></g>
+  <g transform="translate(295, 380)"><circle r="22" fill="#ffffff" stroke="#334155" stroke-width="2"/><text y="5" class="mono" font-size="14" font-weight="700" fill="#0f172a" text-anchor="middle">v</text></g>
+  <g transform="translate(495, 275)"><circle r="24" fill="#ecfdf5" stroke="#059669" stroke-width="2.4"/><text y="5" class="mono" font-size="14" font-weight="700" fill="#065f46" text-anchor="middle">t</text></g>
+
+  <!-- Edmonds-Karp Trace Card -->
+  <g transform="translate(42, 424)">
+    <rect x="0" y="0" width="528" height="252" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="16" y="26" class="sans" font-size="12.5" font-weight="700" fill="#0f172a">BFS Augmenting Trace (Shortest Edge-Count Paths)</text>
+    <text x="16" y="52" class="mono" font-size="11.5" font-weight="700" fill="#2563eb">Path 1 (2 hops): s -&gt; u -&gt; t   bottleneck = min(10, 4) = 4</text>
+    <text x="16" y="76" class="mono" font-size="11.5" font-weight="700" fill="#059669">Path 2 (2 hops): s -&gt; v -&gt; t   bottleneck = min(5, 10) = 5</text>
+    <text x="16" y="100" class="mono" font-size="11.5" font-weight="700" fill="#b45309">Path 3 (3 hops): s -&gt; u -&gt; v -&gt; t  push min(6, 15, 5) = 5</text>
+    <line x1="16" y1="118" x2="512" y2="118" stroke="#e2e8f0"/>
+    <text x="16" y="142" class="sans" font-size="11.5" fill="#334155">Reverse residual edges c_f(v, u) = f(u, v) allow future paths</text>
+    <text x="16" y="162" class="sans" font-size="11.5" fill="#334155">to cancel sub-optimal flow without ever restarting.</text>
+    <rect x="16" y="180" width="496" height="54" rx="6" fill="#ecfdf5" stroke="#6ee7b7"/>
+    <text x="264" y="203" class="mono" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">Max Flow |f*| = 4 + 5 + 5 = 14 == Min-Cut({s,u,v}, {t})</text>
+    <text x="264" y="223" class="sans" font-size="10.5" fill="#059669" text-anchor="middle">Shortest-path length strictly non-decreasing -&gt; &lt;= O(VE) augmentations.</text>
+  </g>
+
+  <!-- ==================== RIGHT PANEL: DINIC'S ALGORITHM ==================== -->
+  <rect x="612" y="78" width="564" height="618" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+  <rect x="612" y="78" width="564" height="36" rx="10" fill="#ecfdf5"/>
+  <rect x="612" y="104" width="564" height="10" fill="#ecfdf5"/>
+  <text x="628" y="101" class="sans" font-size="13" font-weight="700" fill="#065f46">2. Dinic's Algorithm: Layered Level Graph + Blocking Flow</text>
+  <text x="1160" y="101" class="mono" font-size="11" font-weight="700" fill="#059669" text-anchor="end">O(V^2 E) / O(E sqrt(V))</text>
+
+  <!-- Level Columns L0..L3 -->
+  <g class="din-bfs">
+    <rect x="640" y="132" width="74" height="262" rx="6" fill="#eff6ff" fill-opacity="0.55" stroke="#93c5fd" stroke-dasharray="4 3"/>
+    <text x="677" y="150" class="mono" font-size="11" font-weight="700" fill="#1e3a8a" text-anchor="middle">L0 (d=0)</text>
+
+    <rect x="774" y="132" width="74" height="262" rx="6" fill="#f5f3ff" fill-opacity="0.55" stroke="#c4b5fd" stroke-dasharray="4 3"/>
+    <text x="811" y="150" class="mono" font-size="11" font-weight="700" fill="#6d28d9" text-anchor="middle">L1 (d=1)</text>
+
+    <rect x="910" y="132" width="74" height="262" rx="6" fill="#fffbeb" fill-opacity="0.55" stroke="#fcd34d" stroke-dasharray="4 3"/>
+    <text x="947" y="150" class="mono" font-size="11" font-weight="700" fill="#92400e" text-anchor="middle">L2 (d=2)</text>
+
+    <rect x="1046" y="132" width="74" height="262" rx="6" fill="#ecfdf5" fill-opacity="0.55" stroke="#6ee7b7" stroke-dasharray="4 3"/>
+    <text x="1083" y="150" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">L3 (d=3)</text>
+  </g>
+
+  <!-- Pruned same-level edge u -> v -->
+  <line x1="811" y1="222" x2="811" y2="308" stroke="#fda4af" stroke-width="2" stroke-dasharray="4 4"/>
+  <rect x="762" y="254" width="98" height="20" rx="4" fill="#fff1f2" stroke="#fda4af"/>
+  <text x="811" y="268" class="mono" font-size="10" font-weight="700" fill="#be123c" text-anchor="middle">pruned (same lvl)</text>
+
+  <!-- Level Graph Forward Edges (L0->L1->L2->L3) -->
+  <path class="din-dfs" d="M 698 256 L 788 206" fill="none" stroke="#059669" stroke-width="3" marker-end="url(#arr-emerald)"/>
+  <path class="din-dfs" d="M 698 280 L 788 330" fill="none" stroke="#059669" stroke-width="3" marker-end="url(#arr-emerald)"/>
+  <path class="din-dfs" d="M 834 198 L 922 198" fill="none" stroke="#059669" stroke-width="3" marker-end="url(#arr-emerald)"/>
+  <path class="din-dfs" d="M 832 210 L 926 322" fill="none" stroke="#2563eb" stroke-width="2.6" marker-end="url(#arr-blue)"/>
+  <path class="din-dfs" d="M 834 338 L 922 338" fill="none" stroke="#059669" stroke-width="3" marker-end="url(#arr-emerald)"/>
+  <path class="din-dfs" d="M 970 206 L 1060 256" fill="none" stroke="#059669" stroke-width="3" marker-end="url(#arr-emerald)"/>
+  <path class="din-dfs" d="M 970 330 L 1060 280" fill="none" stroke="#059669" stroke-width="3" marker-end="url(#arr-emerald)"/>
+
+  <!-- Dinic Nodes -->
+  <g transform="translate(677, 268)"><circle r="22" fill="#eff6ff" stroke="#2563eb" stroke-width="2.2"/><text y="5" class="mono" font-size="13" font-weight="700" fill="#1e3a8a" text-anchor="middle">s</text></g>
+  <g transform="translate(811, 198)"><circle r="20" fill="#ffffff" stroke="#7c3aed" stroke-width="2"/><text y="5" class="mono" font-size="13" font-weight="700" fill="#6d28d9" text-anchor="middle">u</text></g>
+  <g transform="translate(811, 338)"><circle r="20" fill="#ffffff" stroke="#7c3aed" stroke-width="2"/><text y="5" class="mono" font-size="13" font-weight="700" fill="#6d28d9" text-anchor="middle">v</text></g>
+  <g transform="translate(947, 198)"><circle r="20" fill="#ffffff" stroke="#d97706" stroke-width="2"/><text y="5" class="mono" font-size="13" font-weight="700" fill="#92400e" text-anchor="middle">w</text></g>
+  <g transform="translate(947, 338)"><circle r="20" fill="#ffffff" stroke="#d97706" stroke-width="2"/><text y="5" class="mono" font-size="13" font-weight="700" fill="#92400e" text-anchor="middle">x</text></g>
+  <g transform="translate(1083, 268)"><circle r="22" fill="#ecfdf5" stroke="#059669" stroke-width="2.2"/><text y="5" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">t</text></g>
+
+  <!-- Dinic Phase Details Card -->
+  <g transform="translate(630, 424)">
+    <rect x="0" y="0" width="528" height="252" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="16" y="26" class="sans" font-size="12.5" font-weight="700" fill="#0f172a">Two-Phase Blocking Flow Mechanics</text>
+
+    <rect x="16" y="42" width="496" height="68" rx="6" fill="#eff6ff" stroke="#93c5fd"/>
+    <text x="28" y="62" class="sans" font-size="11.5" font-weight="700" fill="#1e3a8a">Phase 1 — BFS Level Graph Construction</text>
+    <text x="28" y="82" class="sans" font-size="11" fill="#334155">Retain ONLY forward edges where level[y] == level[x] + 1 and c_f &gt; 0.</text>
+    <text x="28" y="99" class="mono" font-size="10.5" fill="#2563eb">Guarantees a DAG of shortest paths; stops when t is unreachable.</text>
+
+    <rect x="16" y="122" width="496" height="72" rx="6" fill="#ecfdf5" stroke="#6ee7b7"/>
+    <text x="28" y="142" class="sans" font-size="11.5" font-weight="700" fill="#065f46">Phase 2 — Multi-Path DFS Blocking Flow + Current-Arc Pointer</text>
+    <text x="28" y="162" class="sans" font-size="11" fill="#334155">Single DFS saturates multiple paths in one phase (ptr[u] skips dead ends).</text>
+    <text x="28" y="180" class="mono" font-size="10.5" fill="#059669">Distance d(s, t) strictly increases each phase =&gt; &lt;= V phases!</text>
+
+    <text x="16" y="220" class="mono" font-size="11" font-weight="700" fill="#6d28d9">Complexity: O(V^2 E) general; O(E * sqrt(V)) on unit-capacity / bipartite!</text>
+    <text x="16" y="238" class="sans" font-size="10.5" fill="#64748b">Orders of magnitude faster than Edmonds-Karp on dense &amp; matching graphs.</text>
+  </g>
+</svg>

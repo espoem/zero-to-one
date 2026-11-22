@@ -1,0 +1,198 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 660" width="1160" height="660" role="img" aria-labelledby="title desc">
+  <title id="title">Kruskal MST, Disjoint-Set Union Path Compression, and Prim's Cut Expansion</title>
+  <desc id="desc">Animated comparison of Kruskal's sorted-edge MST construction using Disjoint-Set Union with Union by Rank and Path Compression flattening tree 4-&gt;3-&gt;2-&gt;1 directly to root 1, alongside Prim's Priority-Queue vertex cut expansion over (S, V \ S).</desc>
+  <style><![CDATA[
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    /* 10s 4-step animation */
+    @keyframes kStep1 { 0%, 24% { opacity: 1; } 25%, 100% { opacity: 0; } }
+    @keyframes kStep2 { 0%, 24% { opacity: 0; } 25%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+    @keyframes kStep3 { 0%, 49% { opacity: 0; } 50%, 74% { opacity: 1; } 75%, 100% { opacity: 0; } }
+    @keyframes kStep4 { 0%, 74% { opacity: 0; } 75%, 100% { opacity: 1; } }
+
+    @keyframes dsuBefore { 0%, 48% { opacity: 1; } 52%, 100% { opacity: 0; } }
+    @keyframes dsuAfter  { 0%, 48% { opacity: 0; } 52%, 100% { opacity: 1; } }
+
+    .ks1 { animation: kStep1 10s infinite; }
+    .ks2 { animation: kStep2 10s infinite; }
+    .ks3 { animation: kStep3 10s infinite; }
+    .ks4 { animation: kStep4 10s infinite; }
+    .dsu-b { animation: dsuBefore 8s infinite; }
+    .dsu-a { animation: dsuAfter  8s infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ks1, .ks2, .ks3, .dsu-b {
+        animation: none !important;
+        opacity: 0 !important;
+      }
+      .ks4, .dsu-a {
+        animation: none !important;
+        opacity: 1 !important;
+      }
+    }
+  ]]></style>
+
+  <!-- Canvas & Header -->
+  <rect x="0" y="0" width="1160" height="660" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1160" height="60" rx="12" fill="#0f172a"/>
+  <rect x="0" y="44" width="1160" height="16" fill="#0f172a"/>
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Minimum Spanning Trees: Kruskal + DSU (Path Compression) vs Prim's Cut Expansion</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">Cut Property: the lightest edge crossing (S, V \ S) belongs to an MST; DSU runs in O(alpha(n)) amortized time</text>
+
+  <!-- LEFT TOP: Kruskal Sorted Edges + Cycle Rejection -->
+  <rect x="20" y="76" width="548" height="286" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="38" y="100" class="sans" font-size="14" font-weight="700" fill="#0f172a">1. Kruskal's Algorithm (Sorted Edge Greedy + DSU)</text>
+
+  <!-- Sorted Edge List -->
+  <rect x="38" y="114" width="230" height="226" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="52" y="136" class="sans" font-size="11.5" font-weight="700" fill="#475569">Edges Sorted by Weight O(E log E)</text>
+
+  <rect x="50" y="148" width="206" height="32" rx="6" fill="#ecfdf5" stroke="#059669"/>
+  <text x="62" y="168" class="mono" font-size="11.5" font-weight="700" fill="#065f46">(A-B, w=1) -&gt; UNION</text>
+
+  <rect x="50" y="188" width="206" height="32" rx="6" fill="#ecfdf5" stroke="#059669"/>
+  <text x="62" y="208" class="mono" font-size="11.5" font-weight="700" fill="#065f46">(B-C, w=2) -&gt; UNION</text>
+
+  <rect x="50" y="228" width="206" height="32" rx="6" fill="#fff1f2" stroke="#e11d48"/>
+  <text x="62" y="248" class="mono" font-size="11.5" font-weight="700" fill="#9f1239">(A-C, w=3) -&gt; CYCLE SKIP</text>
+
+  <rect x="50" y="268" width="206" height="32" rx="6" fill="#ecfdf5" stroke="#059669"/>
+  <text x="62" y="288" class="mono" font-size="11.5" font-weight="700" fill="#065f46">(C-D, w=4) -&gt; UNION</text>
+
+  <rect x="50" y="308" width="206" height="24" rx="5" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="62" y="324" class="mono" font-size="10.5" fill="#64748b">(B-D, w=5) -&gt; 3 edges done</text>
+
+  <!-- Kruskal Graph Canvas -->
+  <g transform="translate(285, 114)">
+    <rect x="0" y="0" width="266" height="226" rx="8" fill="#ffffff" stroke="#e2e8f0"/>
+    <!-- Edges -->
+    <line x1="60" y1="60" x2="205" y2="60" stroke="#059669" stroke-width="3.5"/>
+    <text x="132" y="49" class="mono" font-size="11" font-weight="700" text-anchor="middle" fill="#065f46">1</text>
+
+    <line x1="205" y1="60" x2="132" y2="145" stroke="#059669" stroke-width="3.5"/>
+    <text x="182" y="110" class="mono" font-size="11" font-weight="700" text-anchor="middle" fill="#065f46">2</text>
+
+    <line x1="60" y1="60" x2="132" y2="145" stroke="#e11d48" stroke-width="2.5" stroke-dasharray="5 4"/>
+    <text x="82" y="110" class="mono" font-size="11" font-weight="700" text-anchor="middle" fill="#9f1239">3 (X)</text>
+
+    <line x1="132" y1="145" x2="220" y2="190" stroke="#059669" stroke-width="3.5"/>
+    <text x="170" y="182" class="mono" font-size="11" font-weight="700" text-anchor="middle" fill="#065f46">4</text>
+
+    <line x1="205" y1="60" x2="220" y2="190" stroke="#cbd5e1" stroke-width="1.8" stroke-dasharray="4 4"/>
+    <text x="225" y="128" class="mono" font-size="11" text-anchor="middle" fill="#94a3b8">5</text>
+
+    <!-- Nodes -->
+    <circle cx="60" cy="60" r="18" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="60" y="65" class="sans" font-size="13" font-weight="700" text-anchor="middle" fill="#065f46">A</text>
+    <circle cx="205" cy="60" r="18" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="205" y="65" class="sans" font-size="13" font-weight="700" text-anchor="middle" fill="#065f46">B</text>
+    <circle cx="132" cy="145" r="18" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="132" y="150" class="sans" font-size="13" font-weight="700" text-anchor="middle" fill="#065f46">C</text>
+    <circle cx="220" cy="190" r="18" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="220" y="195" class="sans" font-size="13" font-weight="700" text-anchor="middle" fill="#065f46">D</text>
+
+    <!-- Step Overlay Pill -->
+    <g class="ks1"><rect x="10" y="192" width="145" height="24" rx="5" fill="#eff6ff" stroke="#93c5fd"/><text x="82" y="208" class="mono" font-size="10.5" font-weight="700" text-anchor="middle" fill="#1e3a8a">Add (A-B): MST=1</text></g>
+    <g class="ks2"><rect x="10" y="192" width="145" height="24" rx="5" fill="#eff6ff" stroke="#93c5fd"/><text x="82" y="208" class="mono" font-size="10.5" font-weight="700" text-anchor="middle" fill="#1e3a8a">Add (B-C): MST=3</text></g>
+    <g class="ks3"><rect x="10" y="192" width="165" height="24" rx="5" fill="#fff1f2" stroke="#fda4af"/><text x="92" y="208" class="mono" font-size="10.5" font-weight="700" text-anchor="middle" fill="#9f1239">find(A)==find(C) SKIP</text></g>
+    <g class="ks4"><rect x="10" y="192" width="145" height="24" rx="5" fill="#ecfdf5" stroke="#6ee7b7"/><text x="82" y="208" class="mono" font-size="10.5" font-weight="700" text-anchor="middle" fill="#065f46">MST Complete = 7</text></g>
+  </g>
+
+  <!-- LEFT BOTTOM: DSU Path Compression & Union by Rank -->
+  <rect x="20" y="376" width="548" height="194" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="38" y="400" class="sans" font-size="14" font-weight="700" fill="#0f172a">2. DSU: Union by Rank + Path Compression (find(4))</text>
+
+  <!-- Before state: 4 -> 3 -> 2 -> 1 (Root) -->
+  <g class="dsu-b">
+    <rect x="38" y="414" width="246" height="24" rx="5" fill="#fffbeb" stroke="#fcd34d"/>
+    <text x="161" y="430" class="mono" font-size="11" font-weight="700" text-anchor="middle" fill="#92400e">BEFORE: 4 -&gt; 3 -&gt; 2 -&gt; 1 (Root)</text>
+
+    <circle cx="70" cy="480" r="17" fill="#fffbeb" stroke="#d97706" stroke-width="2"/><text x="70" y="485" class="mono" font-size="13" font-weight="700" text-anchor="middle" fill="#92400e">1</text>
+    <line x1="125" y1="480" x2="90" y2="480" stroke="#d97706" stroke-width="2"/>
+    <circle cx="144" cy="480" r="17" fill="#f8fafc" stroke="#64748b" stroke-width="1.8"/><text x="144" y="485" class="mono" font-size="13" font-weight="700" text-anchor="middle" fill="#0f172a">2</text>
+    <line x1="199" y1="480" x2="164" y2="480" stroke="#d97706" stroke-width="2"/>
+    <circle cx="218" cy="480" r="17" fill="#f8fafc" stroke="#64748b" stroke-width="1.8"/><text x="218" y="485" class="mono" font-size="13" font-weight="700" text-anchor="middle" fill="#0f172a">3</text>
+    <line x1="273" y1="480" x2="238" y2="480" stroke="#d97706" stroke-width="2"/>
+    <circle cx="292" cy="480" r="17" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/><text x="292" y="485" class="mono" font-size="13" font-weight="700" text-anchor="middle" fill="#1e3a8a">4</text>
+  </g>
+
+  <!-- After state: Flattened 4->1, 3->1, 2->1 -->
+  <g class="dsu-a">
+    <rect x="38" y="414" width="308" height="24" rx="5" fill="#ecfdf5" stroke="#6ee7b7"/>
+    <text x="192" y="430" class="mono" font-size="11" font-weight="700" text-anchor="middle" fill="#065f46">AFTER find(4): 4-&gt;1, 3-&gt;1, 2-&gt;1 (Flattened)</text>
+
+    <circle cx="190" cy="462" r="17" fill="#ecfdf5" stroke="#059669" stroke-width="2.2"/><text x="190" y="467" class="mono" font-size="13" font-weight="700" text-anchor="middle" fill="#065f46">1</text>
+    <line x1="100" y1="504" x2="174" y2="474" stroke="#059669" stroke-width="2"/>
+    <line x1="190" y1="500" x2="190" y2="481" stroke="#059669" stroke-width="2"/>
+    <line x1="280" y1="504" x2="206" y2="474" stroke="#059669" stroke-width="2"/>
+    <circle cx="94" cy="518" r="16" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/><text x="94" y="523" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#065f46">2</text>
+    <circle cx="190" cy="518" r="16" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/><text x="190" y="523" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#065f46">3</text>
+    <circle cx="286" cy="518" r="16" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/><text x="286" y="523" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#065f46">4</text>
+  </g>
+
+  <!-- Right sub-box of DSU: Union by Rank & Inverse Ackermann -->
+  <rect x="360" y="414" width="190" height="140" rx="8" fill="#f5f3ff" stroke="#c4b5fd"/>
+  <text x="372" y="436" class="sans" font-size="11.5" font-weight="700" fill="#5b21b6">Union by Rank + Tarjan</text>
+  <text x="372" y="458" class="sans" font-size="10.5" fill="#334155">Attach smaller-rank root</text>
+  <text x="372" y="474" class="sans" font-size="10.5" fill="#334155">under larger-rank root.</text>
+  <text x="372" y="498" class="mono" font-size="11" font-weight="700" fill="#5b21b6">O(m · alpha(n))</text>
+  <text x="372" y="518" class="sans" font-size="10.5" fill="#475569">alpha(n) &lt;= 4 for n &lt; 10^80</text>
+  <text x="372" y="536" class="sans" font-size="10.5" font-weight="700" fill="#065f46">Amortized O(1) per op!</text>
+
+  <!-- RIGHT PANEL: Prim's Algorithm Cut Expansion -->
+  <rect x="592" y="76" width="548" height="494" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="610" y="100" class="sans" font-size="14" font-weight="700" fill="#0f172a">3. Prim's Algorithm: Priority-Queue Cut Expansion (S, V \ S)</text>
+  <text x="610" y="118" class="sans" font-size="11.5" fill="#475569">Grows one connected tree from root A by extracting the lightest crossing edge</text>
+
+  <!-- Cut Visual -->
+  <rect x="610" y="132" width="512" height="236" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <!-- S Region -->
+  <rect x="624" y="146" width="234" height="208" rx="10" fill="#ecfdf5" stroke="#059669" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text x="638" y="168" class="sans" font-size="12" font-weight="700" fill="#065f46">Visited Set S (Tree)</text>
+  <!-- V \ S Region -->
+  <rect x="876" y="146" width="232" height="208" rx="10" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+  <text x="890" y="168" class="sans" font-size="12" font-weight="700" fill="#1e3a8a">Unvisited V \ S</text>
+
+  <!-- Crossing edges -->
+  <line x1="700" y1="220" x2="790" y2="220" stroke="#059669" stroke-width="3.5"/>
+  <text x="745" y="210" class="mono" font-size="11" font-weight="700" text-anchor="middle" fill="#065f46">1</text>
+
+  <line x1="790" y1="220" x2="940" y2="220" stroke="#d97706" stroke-width="3.5"/>
+  <rect x="850" y="202" width="32" height="20" rx="4" fill="#fffbeb" stroke="#d97706"/>
+  <text x="866" y="216" class="mono" font-size="11" font-weight="700" text-anchor="middle" fill="#92400e">2*</text>
+
+  <line x1="700" y1="220" x2="940" y2="220" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4 4"/>
+  <line x1="940" y1="220" x2="1030" y2="290" stroke="#64748b" stroke-width="2"/>
+  <text x="995" y="246" class="mono" font-size="11" font-weight="700" fill="#475569">4</text>
+  <line x1="790" y1="220" x2="1030" y2="290" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 4"/>
+  <text x="910" y="282" class="mono" font-size="11" fill="#64748b">5</text>
+
+  <circle cx="690" cy="220" r="20" fill="#ecfdf5" stroke="#059669" stroke-width="2.2"/><text x="690" y="225" class="sans" font-size="14" font-weight="700" text-anchor="middle" fill="#065f46">A</text>
+  <circle cx="795" cy="220" r="20" fill="#ecfdf5" stroke="#059669" stroke-width="2.2"/><text x="795" y="225" class="sans" font-size="14" font-weight="700" text-anchor="middle" fill="#065f46">B</text>
+  <circle cx="940" cy="220" r="20" fill="#ffffff" stroke="#2563eb" stroke-width="2.2"/><text x="940" y="225" class="sans" font-size="14" font-weight="700" text-anchor="middle" fill="#1e3a8a">C</text>
+  <circle cx="1035" cy="290" r="20" fill="#ffffff" stroke="#2563eb" stroke-width="2.2"/><text x="1035" y="295" class="sans" font-size="14" font-weight="700" text-anchor="middle" fill="#1e3a8a">D</text>
+
+  <rect x="638" y="304" width="204" height="36" rx="6" fill="#ffffff" stroke="#6ee7b7"/>
+  <text x="740" y="326" class="mono" font-size="11" font-weight="700" text-anchor="middle" fill="#065f46">Light Edge = min cut weight</text>
+
+  <!-- Prim PQ Steps -->
+  <text x="610" y="394" class="sans" font-size="12.5" font-weight="700" fill="#0f172a">Priority Queue Cut Expansion Trace (Start = A):</text>
+  <rect x="610" y="406" width="512" height="34" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="624" y="427" class="mono" font-size="11.5" fill="#0f172a">1. S={A}       PQ=[(1, A-B), (3, A-C)]          -&gt; pop (1, A-B)</text>
+
+  <rect x="610" y="446" width="512" height="34" rx="6" fill="#fffbeb" stroke="#fcd34d"/>
+  <text x="624" y="467" class="mono" font-size="11.5" font-weight="700" fill="#92400e">2. S={A,B}     PQ=[(2, B-C), (3, A-C), (5, B-D)] -&gt; pop (2, B-C)</text>
+
+  <rect x="610" y="486" width="512" height="34" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="624" y="507" class="mono" font-size="11.5" fill="#0f172a">3. S={A,B,C}   PQ=[(4, C-D), (5, B-D)]          -&gt; pop (4, C-D)</text>
+
+  <rect x="610" y="526" width="512" height="32" rx="6" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <text x="624" y="546" class="mono" font-size="11.5" font-weight="700" fill="#065f46">4. S={A,B,C,D} MST finalized (Total Weight = 7)</text>
+
+  <!-- Footer -->
+  <rect x="20" y="584" width="1120" height="58" rx="10" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="38" y="608" class="sans" font-size="11.5" font-weight="700" fill="#0f172a">Kruskal vs Prim:</text>
+  <text x="150" y="608" class="sans" font-size="11.5" fill="#334155">Kruskal sorts all E edges globally in O(E log E) = O(E log V) with DSU (great for sparse graphs / edge lists).</text>
+  <text x="38" y="628" class="sans" font-size="11.5" fill="#334155">Prim grows a single cut locally in O((V + E) log V) with a binary heap (or O(V^2) on dense adjacency matrices without a heap).</text>
+</svg>

@@ -24,6 +24,10 @@ flowchart TD
     HeapEmpty -->|"Yes"| Done["All shortest paths finalized"]
 ```
 
+![Animated trace of Dijkstra's algorithm showing min-heap extraction, edge relaxation, stale entry skipping, and the settled shortest-path tree](../assets/08-dijkstra-minheap-relaxation-animated.svg)
+
+_Step-by-step Dijkstra execution: popping `(1, C)` relaxes `C -> B` from `4` to `3`, leaving `(4, B)` as a stale duplicate in the min-heap that is discarded in $O(1)$ when popped; the bottom-right panel summarizes the $A^{\ast}$ heuristic extension $f(n) = g(n) + h(n)$._
+
 ### Why Negative Edge Weights Break Dijkstra
 
 Dijkstra relies on a **Greedy Monotonicity Invariant**: once a vertex $u$ is popped from the min-heap, its shortest path distance $\text{dist}[u]$ is permanently finalized and will never be improved. If an edge has a negative weight ($w(x, y) < 0$), a path traversing through $x$ and $y$ later could reduce $\text{dist}[u]$ after $u$ was already finalized, violating the greedy choice property and producing incorrect distances.
@@ -68,6 +72,10 @@ flowchart LR
 ### Dynamic Programming Recurrence
 
 Let $D^{(k)}[i][j]$ be the shortest path from $i$ to $j$ using only intermediate vertices from the subset $\{0, 1, \dots, k\}$: $$D^{(k)}[i][j] = \min\left( D^{(k-1)}[i][j], \ D^{(k-1)}[i][k] + D^{(k-1)}[k][j] \right)$$
+
+![Animated Bellman-Ford relaxation waves with V-th pass negative-cycle flag and Floyd-Warshall k-pivot matrix](../assets/08-bellman-ford-and-floyd-warshall-animated.svg)
+
+_Left: Bellman-Ford completes $\|V\| - 1$ relaxation passes and detects a negative-weight cycle on the $V$-th pass when `C -> A` still improves `dist[A]`. Right: Floyd-Warshall advances intermediate pivot $k$ as the outermost loop to update $D[i][j] = \min(D[i][j], D[i][k] + D[k][j])$._
 
 ---
 
@@ -128,6 +136,10 @@ flowchart TD
      return this.parent[x]!;
    }
    ```
+
+![Animated Kruskal MST, Disjoint-Set Union path compression, and Prim priority-queue cut expansion](../assets/08-kruskal-prim-mst-and-dsu-animated.svg)
+
+_Kruskal adds sorted edges while skipping cycles via DSU (whose `find(4)` path compression flattens `4 -> 3 -> 2 -> 1` directly to root `1` under Union by Rank), paired with Prim's priority-queue expansion across the cut `(S, V \ S)`._
 
 ### The Inverse Ackermann Bound: $O(\alpha(n))$
 

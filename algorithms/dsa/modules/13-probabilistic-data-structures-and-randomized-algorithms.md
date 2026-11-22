@@ -91,6 +91,10 @@ If an event has probability $2^{-k}$, we expect to observe it once every $2^k$ t
 
 - With $m = 1024$ registers ($1 \text{ KB}$ of memory), HLL achieves standard error $\approx 1.04 / \sqrt{1024} = 3.25\%$ across billions of items!
 
+![Bloom Filter, Count-Min Sketch, and HyperLogLog](../assets/13-bloom-cms-hyperloglog-animated.svg)
+
+_Three-panel probabilistic streaming summary: Bloom Filter $k$-bit probes and collision false-positive overlap (left), Count-Min Sketch $d \times w$ increments with $\min()$ collision rejection (center), and HyperLogLog $\rho$ leading-zero register maximization and harmonic mean estimation (right)._
+
 ---
 
 ## 4. Cache Eviction Topologies: $O(1)$ LRU and LFU Caches
@@ -124,6 +128,10 @@ Maintains items ordered by access frequency; ties broken by LRU.
   - If `freqMap[f]` becomes empty and $f == \text{minFreq}$, increment `minFreq = f + 1`.
   - Increment $N.\text{freq}++$ and insert $N$ into `freqMap[f + 1]`.
 - **$O(1)$ Eviction**: Evict the tail node of `freqMap[minFreq]`.
+
+![O(1) LRU and LFU Cache Topologies](../assets/13-lru-and-lfu-o1-caches-animated.svg)
+
+_Animated $O(1)$ cache eviction structures: HashMap + Doubly Linked List promoting accessed nodes to `HEAD` and evicting `TAIL` in LRU (left), versus `keyMap` + `freqMap` buckets + `minFreq` pointer promotion and bucket-tail eviction in LFU (right)._
 
 ---
 
@@ -180,6 +188,10 @@ Choose $k$ items uniformly at random from a data stream of unknown, massive leng
 
 - **Proof of Uniformity**: At step $N$, the probability that item $i$ is in the reservoir is exactly $k / N$.
 
+![Consistent Hashing, Jump Hash, and Reservoir Sampling](../assets/13-consistent-hashing-jump-reservoir-animated.svg)
+
+_Randomized partitioning and stream sampling mechanics: Karger virtual-node ring relocating only $K/N$ keys on node join (left), stateless Jump Consistent Hash leaping buckets in $O(\ln k)$ time (center), and Algorithm R reservoir replacement preserving uniform $k/N$ inclusion probability (right)._
+
 ### Skip Lists
 
 A **Skip List** (Pugh, 1990) is a probabilistic alternative to balanced trees (AVL/Red-Black).
@@ -188,6 +200,10 @@ A **Skip List** (Pugh, 1990) is a probabilistic alternative to balanced trees (A
 - Level 0 contains all elements.
 - Each element is promoted to level $i + 1$ with probability $p = 1/2$.
 - Search, insertion, and deletion run in $O(\log n)$ expected time without complex tree rotations!
+
+![Skip List Multi-Level Search](../assets/13-skip-list-multilevel-search-animated.svg)
+
+_Animated Skip List express-lane search for key `42` descending across levels `L3 -> L2 -> L1 -> L0` in $O(\log n)$ expected hops under $p = 1/2$ probabilistic tower promotion._
 
 ---
 
@@ -214,6 +230,10 @@ The maximum amount of flow passing from source $s$ to sink $t$ equals the minimu
 | **Ford-Fulkerson** | Arbitrary augmenting paths via DFS | $O(E \cdot \|f^*\|)$ (can be exponential) |
 | **Edmonds-Karp** | Shortest augmenting paths via BFS | $O(V E^2)$ |
 | **Dinic's Algorithm** | Layered network BFS + Blocking flow DFS | $O(V^2 E)$ (and $O(E \sqrt{V})$ on unit networks) |
+
+![Edmonds-Karp and Dinic Network Flow](../assets/13-edmonds-karp-and-dinic-flow-animated.svg)
+
+_Residual network flow comparison: Edmonds-Karp BFS shortest augmenting paths with reverse residual cancellation reaching Max-Flow = Min-Cut = `14` (left), versus Dinic's BFS layered level graph and multi-path DFS blocking flow phase (right)._
 
 ---
 

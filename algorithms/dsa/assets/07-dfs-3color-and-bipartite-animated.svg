@@ -1,0 +1,227 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" width="1200" height="760" role="img" aria-labelledby="title desc">
+  <title id="title">Iterative DFS 3-Color Cycle Detection and Bipartite 2-Coloring Conflict</title>
+  <desc id="desc">Animated step-by-step visualization of 3-color DFS (White, Gray, Black) detecting a directed cycle when a back edge hits an active Gray ancestor on the stack, paired with undirected bipartite 2-coloring flagging an odd-cycle same-color conflict.</desc>
+  <defs>
+    <marker id="arrow-slate" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b"/>
+    </marker>
+    <marker id="arrow-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+    </marker>
+    <style>
+      .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+      /* 4-step 10s cycle */
+      @keyframes d1 { 0%, 23% { opacity: 1; } 25%, 100% { opacity: 0; } }
+      @keyframes d2 { 0%, 23% { opacity: 0; } 25%, 48% { opacity: 1; } 50%, 100% { opacity: 0; } }
+      @keyframes d3 { 0%, 48% { opacity: 0; } 50%, 73% { opacity: 1; } 75%, 100% { opacity: 0; } }
+      @keyframes d4 { 0%, 73% { opacity: 0; } 75%, 100% { opacity: 1; } }
+
+      .dfs-1 { animation: d1 10s linear infinite; }
+      .dfs-2 { animation: d2 10s linear infinite; }
+      .dfs-3 { animation: d3 10s linear infinite; }
+      .dfs-4 { animation: d4 10s linear infinite; }
+
+      @media (prefers-reduced-motion: reduce) {
+        .dfs-1, .dfs-2, .dfs-3, .dfs-4 { animation: none !important; }
+        .dfs-1, .dfs-2, .dfs-3 { opacity: 0; }
+        .dfs-4 { opacity: 1; }
+      }
+    </style>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1200" height="760" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1200" height="60" rx="12" fill="#0f172a"/>
+  <rect x="0" y="44" width="1200" height="16" fill="#0f172a"/>
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">DFS 3-Color Cycle Detection &amp; Bipartite 2-Coloring</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">White (0) / Gray (1) / Black (2) Back-Edge Theorem vs Undirected Odd-Cycle Conflict Detection</text>
+
+  <!-- LEFT PANEL: Directed DFS 3-Color Cycle Detection -->
+  <rect x="24" y="76" width="564" height="574" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+  <rect x="24" y="76" width="564" height="36" rx="10" fill="#f1f5f9"/>
+  <rect x="24" y="102" width="564" height="10" fill="#f1f5f9"/>
+  <text x="40" y="99" class="sans" font-size="13" font-weight="700" fill="#0f172a">1. Directed DFS 3-Color Cycle Detection</text>
+  <text x="572" y="99" class="mono" font-size="11" fill="#be123c" text-anchor="end">Back Edge -&gt; Gray = Cycle</text>
+
+  <!-- Directed Graph: A(120,220), E(120,330), B(260,180), C(410,180), D(335,295) -->
+  <!-- Edges: A->E, A->B, B->C, C->D, D->B (Back Edge), C->E (Cross Edge) -->
+  <g stroke="#94a3b8" stroke-width="2" fill="none">
+    <line x1="120" y1="244" x2="120" y2="306" marker-end="url(#arrow-slate)"/>
+    <line x1="142" y1="212" x2="236" y2="186" marker-end="url(#arrow-slate)"/>
+    <line x1="284" y1="180" x2="386" y2="180" marker-end="url(#arrow-slate)"/>
+    <line x1="398" y1="200" x2="350" y2="274" marker-end="url(#arrow-slate)"/>
+    <line x1="322" y1="274" x2="272" y2="202" marker-end="url(#arrow-slate)"/>
+    <path d="M 392 194 Q 260 274 144 324" stroke-dasharray="4 3" marker-end="url(#arrow-slate)"/>
+  </g>
+  <text x="246" y="274" class="mono" font-size="10" fill="#64748b">cross edge (safe)</text>
+
+  <!-- Step 1: A=Gray, E=Gray->Black (finished) -->
+  <g class="dfs-1">
+    <g class="mono" font-size="14" font-weight="700" text-anchor="middle">
+      <circle cx="120" cy="220" r="22" fill="#fef3c7" stroke="#d97706" stroke-width="3"/><text x="120" y="225" fill="#92400e">A</text>
+      <circle cx="120" cy="330" r="22" fill="#1e293b" stroke="#0f172a" stroke-width="2"/><text x="120" y="335" fill="#f8fafc">E</text>
+      <circle cx="260" cy="180" r="22" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/><text x="260" y="185" fill="#475569">B</text>
+      <circle cx="410" cy="180" r="22" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/><text x="410" y="185" fill="#475569">C</text>
+      <circle cx="335" cy="295" r="22" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/><text x="335" y="300" fill="#475569">D</text>
+    </g>
+    <rect x="44" y="384" width="524" height="90" rx="8" fill="#fffbeb" stroke="#fcd34d"/>
+    <text x="60" y="408" class="mono" font-size="12.5" font-weight="700" fill="#b45309">Step 1: Enter A (Gray), finish E (Black). Stack: [ A ]</text>
+    <text x="60" y="432" class="sans" font-size="11.5" fill="#78350f">E has no outgoing edges, so E turns BLACK (completely processed).</text>
+    <text x="60" y="454" class="sans" font-size="11" fill="#92400e">Future edges hitting BLACK E are Cross Edges (no cycle).</text>
+  </g>
+
+  <!-- Step 2: A->B->C (A,B,C Gray); C checks Cross Edge C->E (Black, safe) -->
+  <g class="dfs-2">
+    <g class="mono" font-size="14" font-weight="700" text-anchor="middle">
+      <circle cx="120" cy="220" r="22" fill="#fef3c7" stroke="#d97706" stroke-width="3"/><text x="120" y="225" fill="#92400e">A</text>
+      <circle cx="120" cy="330" r="22" fill="#1e293b" stroke="#0f172a" stroke-width="2"/><text x="120" y="335" fill="#f8fafc">E</text>
+      <circle cx="260" cy="180" r="22" fill="#fef3c7" stroke="#d97706" stroke-width="3"/><text x="260" y="185" fill="#92400e">B</text>
+      <circle cx="410" cy="180" r="22" fill="#fef3c7" stroke="#d97706" stroke-width="3"/><text x="410" y="185" fill="#92400e">C</text>
+      <circle cx="335" cy="295" r="22" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/><text x="335" y="300" fill="#475569">D</text>
+    </g>
+    <rect x="44" y="384" width="524" height="90" rx="8" fill="#eff6ff" stroke="#93c5fd"/>
+    <text x="60" y="408" class="mono" font-size="12.5" font-weight="700" fill="#1d4ed8">Step 2: Traverse A -&gt; B -&gt; C (all Gray). Stack: [ A, B, C ]</text>
+    <text x="60" y="432" class="sans" font-size="11.5" fill="#1e3a8a">Edge C -&gt; E lands on BLACK vertex E -&gt; Cross Edge (NOT a cycle!).</text>
+    <text x="60" y="454" class="sans" font-size="11" fill="#1d4ed8">Next, explore White neighbor D from C.</text>
+  </g>
+
+  <!-- Step 3: C->D (A,B,C,D all Gray) -->
+  <g class="dfs-3">
+    <g class="mono" font-size="14" font-weight="700" text-anchor="middle">
+      <circle cx="120" cy="220" r="22" fill="#fef3c7" stroke="#d97706" stroke-width="3"/><text x="120" y="225" fill="#92400e">A</text>
+      <circle cx="120" cy="330" r="22" fill="#1e293b" stroke="#0f172a" stroke-width="2"/><text x="120" y="335" fill="#f8fafc">E</text>
+      <circle cx="260" cy="180" r="22" fill="#fef3c7" stroke="#d97706" stroke-width="3"/><text x="260" y="185" fill="#92400e">B</text>
+      <circle cx="410" cy="180" r="22" fill="#fef3c7" stroke="#d97706" stroke-width="3"/><text x="410" y="185" fill="#92400e">C</text>
+      <circle cx="335" cy="295" r="22" fill="#fef3c7" stroke="#d97706" stroke-width="3"/><text x="335" y="300" fill="#92400e">D</text>
+    </g>
+    <rect x="44" y="384" width="524" height="90" rx="8" fill="#fffbeb" stroke="#fcd34d"/>
+    <text x="60" y="408" class="mono" font-size="12.5" font-weight="700" fill="#b45309">Step 3: Enter D (Gray). Active Stack: [ A, B, C, D ]</text>
+    <text x="60" y="432" class="sans" font-size="11.5" fill="#78350f">Now inspect outgoing edge D -&gt; B...</text>
+    <text x="60" y="454" class="mono" font-size="11" fill="#b45309">color[B] === GRAY (active ancestor on stack!)</text>
+  </g>
+
+  <!-- Step 4: D->B hits GRAY B -> BACK EDGE / CYCLE! -->
+  <g class="dfs-4">
+    <line x1="322" y1="274" x2="272" y2="202" stroke="#e11d48" stroke-width="4" marker-end="url(#arrow-rose)"/>
+    <g class="mono" font-size="14" font-weight="700" text-anchor="middle">
+      <circle cx="120" cy="220" r="22" fill="#fef3c7" stroke="#d97706" stroke-width="2"/><text x="120" y="225" fill="#92400e">A</text>
+      <circle cx="120" cy="330" r="22" fill="#1e293b" stroke="#0f172a" stroke-width="2"/><text x="120" y="335" fill="#f8fafc">E</text>
+      <circle cx="260" cy="180" r="22" fill="#fff1f2" stroke="#e11d48" stroke-width="3.5"/><text x="260" y="185" fill="#be123c">B</text>
+      <circle cx="410" cy="180" r="22" fill="#fef3c7" stroke="#d97706" stroke-width="2"/><text x="410" y="185" fill="#92400e">C</text>
+      <circle cx="335" cy="295" r="22" fill="#fff1f2" stroke="#e11d48" stroke-width="3.5"/><text x="335" y="300" fill="#be123c">D</text>
+    </g>
+    <rect x="200" y="220" width="90" height="22" rx="4" fill="#e11d48"/>
+    <text x="245" y="235" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">BACK EDGE</text>
+
+    <rect x="44" y="384" width="524" height="90" rx="8" fill="#fff1f2" stroke="#fda4af" stroke-width="1.5"/>
+    <text x="60" y="408" class="mono" font-size="12.5" font-weight="700" fill="#be123c">Step 4: D -&gt; B hits GRAY ancestor -&gt; CYCLE (B-&gt;C-&gt;D-&gt;B)!</text>
+    <text x="60" y="432" class="sans" font-size="11.5" fill="#9f1239">Theorem: A directed graph has a cycle iff DFS finds a Back Edge to Gray.</text>
+    <text x="60" y="454" class="sans" font-size="11" fill="#be123c">Iterative DFS uses explicit stack with (node, state=ENTER/EXIT) frames.</text>
+  </g>
+
+  <!-- Edge Classification Reference Card -->
+  <rect x="44" y="490" width="524" height="140" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="60" y="514" class="sans" font-size="12" font-weight="700" fill="#0f172a">4 DFS Edge Types (on Directed Edge u -&gt; v):</text>
+  <text x="60" y="538" class="mono" font-size="11" fill="#047857">1. Tree Edge    (v is WHITE): discovers new branch in DFS forest.</text>
+  <text x="60" y="560" class="mono" font-size="11" font-weight="700" fill="#be123c">2. Back Edge    (v is GRAY) : points to active ancestor -&gt; CYCLE!</text>
+  <text x="60" y="582" class="mono" font-size="11" fill="#1d4ed8">3. Forward Edge (v is BLACK, disc[u] &lt; disc[v]): shortcut to descendant.</text>
+  <text x="60" y="604" class="mono" font-size="11" fill="#475569">4. Cross Edge   (v is BLACK, disc[u] &gt; disc[v]): links finished branch.</text>
+
+  <!-- RIGHT PANEL: Bipartite 2-Coloring & Odd-Cycle Conflict -->
+  <rect x="612" y="76" width="564" height="574" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+  <rect x="612" y="76" width="564" height="36" rx="10" fill="#f1f5f9"/>
+  <rect x="612" y="102" width="564" height="10" fill="#f1f5f9"/>
+  <text x="628" y="99" class="sans" font-size="13" font-weight="700" fill="#0f172a">2. Bipartite 2-Coloring &amp; Odd-Cycle Conflict</text>
+  <text x="1160" y="99" class="mono" font-size="11" fill="#059669" text-anchor="end">Bipartite iff No Odd Cycle</text>
+
+  <text x="632" y="136" class="sans" font-size="11.5" font-weight="600" fill="#475569">Undirected Graph: alternate Blue (U) &lt;-&gt; Emerald (V) across every edge:</text>
+
+  <!-- Undirected Graph: 0(760,180), 1(980,180), 2(980,295), 3(760,295), plus diagonal edge (0,2) -->
+  <g stroke="#94a3b8" stroke-width="2.5">
+    <line x1="760" y1="180" x2="980" y2="180"/>
+    <line x1="980" y1="180" x2="980" y2="295"/>
+    <line x1="980" y1="295" x2="760" y2="295"/>
+  </g>
+
+  <g class="dfs-1">
+    <g class="mono" font-size="14" font-weight="700" text-anchor="middle">
+      <circle cx="760" cy="180" r="22" fill="#2563eb" stroke="#1d4ed8" stroke-width="2"/><text x="760" y="185" fill="#ffffff">0</text>
+      <circle cx="980" cy="180" r="22" fill="#059669" stroke="#047857" stroke-width="2"/><text x="980" y="185" fill="#ffffff">1</text>
+      <circle cx="980" cy="295" r="22" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/><text x="980" y="300" fill="#475569">2</text>
+      <circle cx="760" cy="295" r="22" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/><text x="760" y="300" fill="#475569">3</text>
+    </g>
+    <rect x="632" y="384" width="524" height="90" rx="8" fill="#eff6ff" stroke="#93c5fd"/>
+    <text x="648" y="408" class="mono" font-size="12.5" font-weight="700" fill="#1d4ed8">Step 1: Color 0 = Blue (set U), neighbor 1 = Emerald (set V)</text>
+    <text x="648" y="432" class="sans" font-size="11.5" fill="#1e3a8a">Every edge u -- v requires color[v] = 1 - color[u].</text>
+    <text x="648" y="454" class="sans" font-size="11" fill="#1d4ed8">No conflicts yet on path 0 -- 1.</text>
+  </g>
+
+  <g class="dfs-2">
+    <g class="mono" font-size="14" font-weight="700" text-anchor="middle">
+      <circle cx="760" cy="180" r="22" fill="#2563eb" stroke="#1d4ed8" stroke-width="2"/><text x="760" y="185" fill="#ffffff">0</text>
+      <circle cx="980" cy="180" r="22" fill="#059669" stroke="#047857" stroke-width="2"/><text x="980" y="185" fill="#ffffff">1</text>
+      <circle cx="980" cy="295" r="22" fill="#2563eb" stroke="#1d4ed8" stroke-width="2"/><text x="980" y="300" fill="#ffffff">2</text>
+      <circle cx="760" cy="295" r="22" fill="#059669" stroke="#047857" stroke-width="2"/><text x="760" y="300" fill="#ffffff">3</text>
+    </g>
+    <rect x="632" y="384" width="524" height="90" rx="8" fill="#ecfdf5" stroke="#86efac"/>
+    <text x="648" y="408" class="mono" font-size="12.5" font-weight="700" fill="#047857">Step 2: 2 = Blue, 3 = Emerald -&gt; Valid Bipartite Graph!</text>
+    <text x="648" y="432" class="sans" font-size="11.5" fill="#065f46">Partition U = {0, 2}, V = {1, 3}. All edges cross between U and V.</text>
+    <text x="648" y="454" class="sans" font-size="11" fill="#047857">Even if we close 3 -- 0 (length 4 cycle), colors still alternate!</text>
+  </g>
+
+  <g class="dfs-3">
+    <line x1="776" y1="196" x2="964" y2="279" stroke="#d97706" stroke-width="3" stroke-dasharray="5 3"/>
+    <g class="mono" font-size="14" font-weight="700" text-anchor="middle">
+      <circle cx="760" cy="180" r="22" fill="#2563eb" stroke="#1d4ed8" stroke-width="2"/><text x="760" y="185" fill="#ffffff">0</text>
+      <circle cx="980" cy="180" r="22" fill="#059669" stroke="#047857" stroke-width="2"/><text x="980" y="185" fill="#ffffff">1</text>
+      <circle cx="980" cy="295" r="22" fill="#2563eb" stroke="#1d4ed8" stroke-width="2"/><text x="980" y="300" fill="#ffffff">2</text>
+      <circle cx="760" cy="295" r="22" fill="#059669" stroke="#047857" stroke-width="2"/><text x="760" y="300" fill="#ffffff">3</text>
+    </g>
+    <rect x="632" y="384" width="524" height="90" rx="8" fill="#fffbeb" stroke="#fcd34d"/>
+    <text x="648" y="408" class="mono" font-size="12.5" font-weight="700" fill="#b45309">Step 3: Test adding diagonal chord 0 -- 2 (creates 3-cycle)...</text>
+    <text x="648" y="432" class="sans" font-size="11.5" fill="#78350f">Walk 0(Blue) -&gt; 1(Emerald) -&gt; 2(Blue) -&gt; 0(Blue!).</text>
+    <text x="648" y="454" class="sans" font-size="11" fill="#b45309">Odd length (3) forces an odd number of color flips!</text>
+  </g>
+
+  <g class="dfs-4">
+    <line x1="776" y1="196" x2="964" y2="279" stroke="#e11d48" stroke-width="4"/>
+    <g class="mono" font-size="14" font-weight="700" text-anchor="middle">
+      <circle cx="760" cy="180" r="24" fill="#2563eb" stroke="#e11d48" stroke-width="3.5"/><text x="760" y="185" fill="#ffffff">0</text>
+      <circle cx="980" cy="180" r="22" fill="#059669" stroke="#047857" stroke-width="2"/><text x="980" y="185" fill="#ffffff">1</text>
+      <circle cx="980" cy="295" r="24" fill="#2563eb" stroke="#e11d48" stroke-width="3.5"/><text x="980" y="300" fill="#ffffff">2</text>
+      <circle cx="760" cy="295" r="22" fill="#059669" stroke="#047857" stroke-width="2"/><text x="760" y="300" fill="#ffffff">3</text>
+    </g>
+    <rect x="816" y="224" width="124" height="24" rx="4" fill="#e11d48"/>
+    <text x="878" y="240" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">COLOR CONFLICT!</text>
+
+    <rect x="632" y="384" width="524" height="90" rx="8" fill="#fff1f2" stroke="#fda4af" stroke-width="1.5"/>
+    <text x="648" y="408" class="mono" font-size="12.5" font-weight="700" fill="#be123c">Step 4: color[0] === color[2] (Blue == Blue) -&gt; NOT BIPARTITE!</text>
+    <text x="648" y="432" class="sans" font-size="11.5" fill="#9f1239">Edge (0, 2) closes odd cycle 0-1-2-0 (length 3). Cannot 2-color!</text>
+    <text x="648" y="454" class="sans" font-size="11" fill="#be123c">Both BFS and DFS detect bipartite conflicts in O(V + E) time.</text>
+  </g>
+
+  <!-- Bipartite Invariant Card -->
+  <rect x="632" y="490" width="524" height="140" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="648" y="514" class="sans" font-size="12" font-weight="700" fill="#0f172a">Bipartite Equivalence &amp; Stack-Safety Notes:</text>
+  <text x="648" y="538" class="sans" font-size="11" fill="#334155">1. Run 2-coloring across EVERY unvisited component (disconnected graphs).</text>
+  <text x="648" y="560" class="sans" font-size="11" fill="#334155">2. Even cycles (length 2k) flip colors an even number of times -&gt; valid.</text>
+  <text x="648" y="582" class="sans" font-size="11" fill="#334155">3. Odd cycles (length 2k+1) always collide -&gt; return false immediately.</text>
+  <text x="648" y="604" class="sans" font-size="11" fill="#64748b">4. Iterative BFS/DFS avoids V8 ~10k call-stack overflow on deep paths.</text>
+
+  <!-- Bottom Legend -->
+  <rect x="24" y="666" width="1152" height="74" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="44" y="692" class="sans" font-size="12" font-weight="700" fill="#0f172a">Color Key:</text>
+  <rect x="134" y="678" width="14" height="14" rx="3" fill="#ffffff" stroke="#94a3b8"/>
+  <text x="154" y="690" class="sans" font-size="11" fill="#334155">White (0): unvisited</text>
+  <rect x="300" y="678" width="14" height="14" rx="3" fill="#fef3c7" stroke="#d97706"/>
+  <text x="320" y="690" class="sans" font-size="11" fill="#334155">Gray (1): active on DFS stack</text>
+  <rect x="520" y="678" width="14" height="14" rx="3" fill="#1e293b"/>
+  <text x="540" y="690" class="sans" font-size="11" fill="#334155">Black (2): finished subtree</text>
+  <rect x="720" y="678" width="14" height="14" rx="3" fill="#e11d48"/>
+  <text x="740" y="690" class="sans" font-size="11" fill="#334155">Back Edge (directed cycle) / Same-Color Edge (odd cycle)</text>
+  <text x="44" y="722" class="sans" font-size="11" fill="#64748b">Crucial distinction: in an undirected graph any edge to a visited non-parent is a cycle; in a directed graph only an edge to a GRAY ancestor is a cycle.</text>
+</svg>

@@ -100,6 +100,10 @@ Standard in Linux kernel `rbtree`, C++ `std::map`, and Java `TreeMap`:
 - **Height Theorem**: A red-black tree with $n$ internal nodes has height: $$h \le 2 \log_2(n + 1)$$
 - **Trade-off**: Slightly taller than AVL trees, but insertions/deletions require at most **2 rotations** for insertion and **3 rotations** for deletion, making it superior for write-heavy workloads.
 
+![Animated visualization of Morris O(1)-space threading, AVL LR double rotation, and Red-Black insertion fixup](../assets/06-morris-avl-red-black-rotations-animated.svg)
+
+_Animation: Morris traversal threads `pred.right = cur` and clears it on return in $O(1)$ space, AVL LR double rotation straightens then lifts the middle node to restore balance factors in $\{-1, 0, +1\}$, and Red-Black insertion fixup chooses recoloring (Red uncle) or rotation (Black uncle) to preserve black-height._
+
 ---
 
 ## 3. Binary Heaps & Priority Queues
@@ -137,6 +141,10 @@ Instead of calling `push` $n$ times ($O(n \log n)$), `buildHeap` runs `siftDown`
 - At height $h$, there are at most $\lceil n / 2^{h+1} \rceil$ nodes.
 - A node at height $h$ can sift down at most $h$ levels. Total cost: $$\sum_{h=0}^{\lfloor \log_2 n \rfloor} \left\lceil \frac{n}{2^{h+1}} \right\rceil O(h) = O\left( n \sum_{h=0}^{\infty} \frac{h}{2^h} \right)$$ Using the geometric series $\sum_{h=0}^\infty \frac{h}{2^h} = 2$: $$\text{Total Cost} = O(2n) = O(n) \quad \text{strictly linear time!}$$
 
+![Animated walkthrough of O(n) bottom-up buildHeap, Two-Heaps Streaming Median, and Indexed Priority Queue](../assets/06-binary-heap-buildheap-two-heaps-animated.svg)
+
+_Animation: Bottom-up `buildHeap` sifts down from `floor(n/2) - 1` across tree and flat array in $O(n)$, Two-Heaps keeps `maxHeap.peek() <= minHeap.peek()` for $O(1)$ median reads, and an Indexed PQ uses `inv[id]` to locate and `siftUp` priority changes in $O(\log n)$._
+
 ---
 
 ## 4. Range Query Data Structures: Fenwick vs Segment Trees
@@ -162,6 +170,10 @@ flowchart TD
 - **Prefix Sum**: $i \leftarrow i - \text{lowbit}(i)$ (takes $O(\log n)$).
 - Memory: Exactly $n$ words ($O(n)$ space, zero pointer overhead).
 
+![Animated Fenwick Tree lowbit coverage map, upward point updates, and downward prefix sums](../assets/06-fenwick-bit-lowbit-animated.svg)
+
+_Animation: Each slot `T[i]` aggregates `[i - lowbit(i) + 1, i]`, so `add(3, +5)` climbs `3 -> 4 -> 8` via `i += i & -i` and `prefixSum(7)` sums disjoint intervals `7 -> 6 -> 4 -> 0` via `i -= i & -i`._
+
 ### Segment Tree
 
 - A full binary tree where each node represents an interval $[L, R]$.
@@ -183,6 +195,10 @@ flowchart TD
     CA -->|'r'| CAR["'car' (Word End)"]
     CAR -->|'t'| CART["'cart' (Word End)"]
 ```
+
+![Animated trace of Segment Tree lazy pushDown and Trie shared-prefix traversal](../assets/06-segment-tree-lazy-and-trie-animated.svg)
+
+_Animation: Segment Tree range updates park deferred `lazy` tags on fully covered intervals and execute `pushDown` only on partial-overlap queries, while a Trie walks shared character edges `'c' -> 'a' -> 'r' -> 't'` in $O(L)$ time independent of dictionary size._
 
 ---
 

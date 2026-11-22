@@ -75,6 +75,10 @@ During matching, if mismatch occurs after matching $j$ characters, the text poin
 - Since $j$ cannot decrement more times than it increments and $j \ge 0$, the total number of decrements is bounded by $n$.
 - Total time is strictly $O(n + m)$ with $O(m)$ auxiliary space.
 
+![KMP Failure Table and Zero-Backtrack Scan](../assets/12-kmp-failure-table-animated.svg)
+
+_Animated trace of KMP scanning $T = \text{"ABABCABABD"}$ with pattern $P = \text{"ABABD"}$: text pointer $i$ never backtracks while mismatches retreat pattern pointer $j = \pi[j - 1]$ using the precomputed LPS table._
+
 ---
 
 ## 3. The Z-Algorithm
@@ -102,6 +106,10 @@ The algorithm maintains a **$Z$-box** $[L, R]$, which is the interval with maxim
 
 Both $L$ and $R$ move strictly to the right, guaranteeing $O(N)$ running time.
 
+![Z-Algorithm Active Z-Box Window](../assets/12-z-algorithm-zbox-animated.svg)
+
+_Animated Z-Algorithm on $S = P + \text{\textdollar} + T = \text{"ABA\$ABABABA"}$: tracks the active $[L, R]$ Z-box, copies mirrored $Z[i - L]$ values in $O(1)$ when bounded by $R$, extends beyond $R$ on potential suffixes, and flags exact occurrences where $Z[i] = |P|$._
+
 ---
 
 ## 4. Multi-Pattern Matching: The Aho-Corasick Automaton
@@ -127,6 +135,10 @@ flowchart TD
    - For child $v$ of node $u$ with character $c$: traverse $\text{fail}(u)$ until a node with transition $c$ is found; that target is $\text{fail}(v)$.
 3. Construct **dictionary links** pointing directly to the nearest ancestor node representing a complete dictionary word.
 4. Stream text characters one-by-one through the state machine. Every character processes in amortized $O(1)$ time!
+
+![Aho-Corasick Multi-Pattern Automaton](../assets/12-aho-corasick-automaton-animated.svg)
+
+_Animated Aho-Corasick automaton for $\{"he", "she", "his", "hers"\}$ scanning $T = \text{"ushers"}$ in a single $O(n + z)$ pass using solid trie goto edges, dashed BFS failure fallback links, and dictionary output links firing simultaneous hits._
 
 ---
 
@@ -180,6 +192,10 @@ To eliminate the distinction between odd-length (`"aba"`) and even-length (`"abb
 ### Complexity Analysis
 
 The inner `while` loop only increments characters that extend beyond the current right boundary $R$. Whenever a character is successfully matched, $R$ increases by at least 1. Since $R \le 2n + 2$, the total number of character comparisons is at most $2n + 2 = O(n)$.
+
+![Suffix Array Kasai LCP and Manacher Palindrome Mirror](../assets/12-suffix-array-kasai-manacher-animated.svg)
+
+_Side-by-side linear string indexing animations: Suffix Array $SA = [6, 5, 3, 1, 0, 4, 2]$ on $\text{"banana\$"}$ with Kasai's $O(n)$ LCP decrement $h = \max(0, h - 1)$ (left), paired with Manacher's `#`-padded palindrome mirror $[C, R]$ expanding radius $P[i]$ (right)._
 
 ---
 

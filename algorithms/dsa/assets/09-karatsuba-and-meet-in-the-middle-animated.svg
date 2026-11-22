@@ -1,0 +1,139 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 650" width="1160" height="650" role="img" aria-labelledby="title desc">
+  <title id="title">Karatsuba Multiplication (3 Mults) &amp; Meet-in-the-Middle (2^(n/2) Split)</title>
+  <desc id="desc">Left panel animates Karatsuba divide-and-conquer integer multiplication reducing 4 recursive multiplications to 3 (z2, z0, z1) for Theta(n^1.585) complexity. Right panel animates Meet-in-the-Middle splitting an n=40 subset problem into two 2^20 halves joined by binary search or two pointers.</desc>
+  <style><![CDATA[
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    /* 9s 3-phase animation */
+    @keyframes kPhase1 { 0%, 32% { opacity: 1; } 33%, 100% { opacity: 0.86; } }
+    @keyframes kPhase2 { 0%, 32% { opacity: 0.86; } 33%, 65% { opacity: 1; } 66%, 100% { opacity: 0.86; } }
+    @keyframes kPhase3 { 0%, 65% { opacity: 0.86; } 66%, 100% { opacity: 1; } }
+
+    @keyframes pulseBorder {
+      0%, 100% { stroke-width: 1.5; }
+      50% { stroke-width: 3; }
+    }
+
+    .kp1 { animation: kPhase1 9s infinite; }
+    .kp2 { animation: kPhase2 9s infinite; }
+    .kp3 { animation: kPhase3 9s infinite; }
+    .match-box { animation: pulseBorder 3s infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .kp1, .kp2, .kp3 {
+        animation: none !important;
+        opacity: 1 !important;
+      }
+      .match-box {
+        animation: none !important;
+        stroke-width: 2 !important;
+      }
+    }
+  ]]></style>
+
+  <!-- Canvas & Header -->
+  <rect x="0" y="0" width="1160" height="650" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1160" height="60" rx="12" fill="#0f172a"/>
+  <rect x="0" y="44" width="1160" height="16" fill="#0f172a"/>
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Divide-and-Conquer: Karatsuba (3 Mults) &amp; Meet-in-the-Middle (2^(n/2))</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">Algebraic subproblem reduction from Theta(n^2) to Theta(n^1.585) and exponential split from 2^40 to 2^20</text>
+
+  <!-- LEFT PANEL: Karatsuba -->
+  <rect x="20" y="76" width="548" height="478" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="38" y="100" class="sans" font-size="14" font-weight="700" fill="#0f172a">1. Karatsuba Integer Multiplication (1234 * 5678)</text>
+
+  <!-- Split Box -->
+  <g class="kp1">
+    <rect x="38" y="114" width="512" height="72" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="52" y="136" class="sans" font-size="12" font-weight="700" fill="#1e3a8a">Step 1: Split into Half-Length Digits (n = 4, n/2 = 2)</text>
+    <text x="52" y="158" class="mono" font-size="11.5" fill="#0f172a">x = x1*10^2 + x0  -&gt;  x1 = 12, x0 = 34</text>
+    <text x="52" y="176" class="mono" font-size="11.5" fill="#0f172a">y = y1*10^2 + y0  -&gt;  y1 = 56, y0 = 78</text>
+  </g>
+
+  <!-- Naive vs Karatsuba 3 Mults -->
+  <g class="kp2">
+    <rect x="38" y="200" width="512" height="176" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+    <text x="52" y="222" class="sans" font-size="12" font-weight="700" fill="#92400e">Step 2: 3 Recursive Multiplications (Replacing Naive 4)</text>
+
+    <rect x="52" y="234" width="232" height="46" rx="6" fill="#ffffff" stroke="#6ee7b7" stroke-width="1.5"/>
+    <text x="64" y="253" class="mono" font-size="11.5" font-weight="700" fill="#065f46">z2 = x1 * y1</text>
+    <text x="64" y="271" class="mono" font-size="11" fill="#334155">12 * 56 = 672</text>
+
+    <rect x="304" y="234" width="232" height="46" rx="6" fill="#ffffff" stroke="#6ee7b7" stroke-width="1.5"/>
+    <text x="316" y="253" class="mono" font-size="11.5" font-weight="700" fill="#065f46">z0 = x0 * y0</text>
+    <text x="316" y="271" class="mono" font-size="11" fill="#334155">34 * 78 = 2652</text>
+
+    <rect x="52" y="290" width="484" height="50" rx="6" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+    <text x="64" y="310" class="mono" font-size="11.5" font-weight="700" fill="#5b21b6">z1 = (x1 + x0) * (y1 + y0) - z2 - z0   [Gauss trick!]</text>
+    <text x="64" y="329" class="mono" font-size="11" fill="#334155">46 * 134 - 672 - 2652 = 6164 - 3324 = 2840 (= x1*y0 + x0*y1)</text>
+
+    <text x="52" y="364" class="sans" font-size="11" font-weight="700" fill="#9f1239">Eliminated 4th multiplication: x1*y0 + x0*y1 recovered using only additions/subtractions!</text>
+  </g>
+
+  <!-- Recombine & Master Theorem -->
+  <g class="kp3">
+    <rect x="38" y="390" width="512" height="74" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+    <text x="52" y="412" class="sans" font-size="12" font-weight="700" fill="#065f46">Step 3: Recombine with Base Shifts (O(n) work)</text>
+    <text x="52" y="432" class="mono" font-size="11.5" fill="#0f172a">Product = z2 * 10^4 + z1 * 10^2 + z0</text>
+    <text x="52" y="452" class="mono" font-size="11.5" font-weight="700" fill="#065f46">        = 6,720,000 + 284,000 + 2,652 = 7,006,652</text>
+  </g>
+
+  <rect x="38" y="476" width="512" height="64" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="52" y="497" class="mono" font-size="11.5" font-weight="700" fill="#0f172a">T(n) = 3 T(n/2) + O(n)  =&gt;  Theta(n^(log2 3)) ~ Theta(n^1.585)</text>
+  <text x="52" y="518" class="sans" font-size="11" fill="#475569">At 1,024 bits: ~56,000 ops (Karatsuba) vs ~1,048,000 ops (Schoolbook O(n^2)) = 18x faster.</text>
+
+  <!-- RIGHT PANEL: Meet-in-the-Middle -->
+  <rect x="592" y="76" width="548" height="478" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="610" y="100" class="sans" font-size="14" font-weight="700" fill="#0f172a">2. Meet-in-the-Middle: Taming 2^n Explosion (n = 40, target = 25)</text>
+
+  <!-- Brute force vs MitM Speedup Banner -->
+  <rect x="610" y="114" width="248" height="58" rx="8" fill="#fff1f2" stroke="#fda4af"/>
+  <text x="624" y="135" class="sans" font-size="11.5" font-weight="700" fill="#9f1239">Brute Force: O(2^40)</text>
+  <text x="624" y="156" class="mono" font-size="11" fill="#e11d48">~1.1 x 10^12 ops (TLE!)</text>
+
+  <rect x="874" y="114" width="248" height="58" rx="8" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <text x="888" y="135" class="sans" font-size="11.5" font-weight="700" fill="#065f46">MitM: O(2^20 · n)</text>
+  <text x="888" y="156" class="mono" font-size="11" fill="#059669">~4.2 x 10^7 ops (&lt; 50 ms)</text>
+
+  <!-- Split into Left & Right Halves -->
+  <g class="kp1">
+    <rect x="610" y="186" width="512" height="44" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="624" y="212" class="mono" font-size="11.5" font-weight="700" fill="#0f172a">Input Array A[0..n-1]  -&gt;  Split at n/2  -&gt;  Left[0..n/2-1] | Right[n/2..n-1]</text>
+  </g>
+
+  <g class="kp2">
+    <rect x="610" y="244" width="248" height="128" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+    <text x="624" y="266" class="sans" font-size="12" font-weight="700" fill="#1e3a8a">Left Half Sums (2^(n/2))</text>
+    <text x="624" y="286" class="mono" font-size="11" fill="#334155">Subsets L: [0, 3, 7, 14, 19]</text>
+    <rect x="624" y="302" width="220" height="30" rx="5" fill="#ffffff" stroke="#2563eb"/>
+    <text x="734" y="321" class="mono" font-size="11.5" font-weight="700" text-anchor="middle" fill="#1e3a8a">Pick s = 14 -&gt; need 25-14 = 11</text>
+    <text x="624" y="356" class="sans" font-size="10.5" fill="#475569">Cost: O(2^(n/2)) subset generation</text>
+
+    <rect x="874" y="244" width="248" height="128" rx="8" fill="#f5f3ff" stroke="#c4b5fd" stroke-width="1.5"/>
+    <text x="888" y="266" class="sans" font-size="12" font-weight="700" fill="#5b21b6">Right Half Sorted (2^(n/2))</text>
+    <text x="888" y="286" class="mono" font-size="11" fill="#334155">Sorted R: [2, 5, 9, 11, 18]</text>
+    <rect x="888" y="302" width="220" height="30" rx="5" fill="#ffffff" stroke="#7c3aed"/>
+    <text x="998" y="321" class="mono" font-size="11.5" font-weight="700" text-anchor="middle" fill="#5b21b6">Binary Search(R, 11) -&gt; idx 3!</text>
+    <text x="888" y="356" class="sans" font-size="10.5" fill="#475569">Sort cost: O(2^(n/2) · n)</text>
+  </g>
+
+  <!-- Join / Two-Pointer Stage -->
+  <g class="kp3">
+    <rect x="610" y="388" width="512" height="92" rx="8" fill="#ecfdf5" stroke="#059669" class="match-box"/>
+    <text x="624" y="410" class="sans" font-size="12.5" font-weight="700" fill="#065f46">Step 3: Join via Binary Search or Two-Pointers</text>
+    <text x="624" y="432" class="mono" font-size="11.5" fill="#0f172a">Match found: s_left (14) + s_right (11) == target (25)</text>
+    <text x="624" y="454" class="sans" font-size="11" fill="#334155">Alternative: Sort both L and R, run two-pointers from L[0] and R[end] in linear O(2^(n/2)) pass.</text>
+    <text x="624" y="472" class="sans" font-size="11" fill="#065f46">Same principle solves 4-Sum: split 4 elements into (a+b) + (c+d) -&gt; O(n^2) instead of O(n^4).</text>
+  </g>
+
+  <rect x="610" y="492" width="512" height="48" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="624" y="513" class="mono" font-size="11.5" font-weight="700" fill="#5b21b6">Total Time: O(2^(n/2) · n)  |  Auxiliary Space: O(2^(n/2))</text>
+  <text x="624" y="531" class="sans" font-size="10.5" fill="#475569">Memory-for-time trade-off: stores 1M sums (~8 MB) instead of spending 10^12 CPU steps.</text>
+
+  <!-- Footer -->
+  <rect x="20" y="570" width="1120" height="62" rx="10" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="38" y="595" class="sans" font-size="11.5" font-weight="700" fill="#0f172a">Divide-and-Conquer vs DP:</text>
+  <text x="215" y="595" class="sans" font-size="11.5" fill="#334155">Divide-and-Conquer decomposes into independent, non-overlapping subproblems (Karatsuba, Merge Sort, Closest Pair).</text>
+  <text x="38" y="616" class="sans" font-size="11.5" fill="#334155">Meet-in-the-Middle halves exponential exponent n -&gt; n/2 whenever solutions combine additively across an independent cut.</text>
+</svg>

@@ -1,0 +1,127 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 660" width="1160" height="660" role="img" aria-labelledby="title desc">
+  <title id="title">Jump Game Horizon, Gas Station Circuit, Matroid Axioms &amp; Coin Change Counterexample</title>
+  <desc id="desc">Four-quadrant visual guide. Top-left animates Jump Game tracking maxReach on [2, 3, 1, 1, 4]. Top-right animates Gas Station circular net-tank deficit reset on [-2, -2, -2, +3, +3] picking start=3. Bottom-left shows the 3 Matroid axioms and Rado-Edmonds optimality theorem. Bottom-right contrasts Greedy failing on coins=[4, 3, 1], target=6 (3 coins: 4+1+1) against DP optimal (2 coins: 3+3).</desc>
+  <style><![CDATA[
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    /* 8s 2-phase horizon & deficit reset */
+    @keyframes jg1 { 0%, 48% { opacity: 1; } 50%, 100% { opacity: 0; } }
+    @keyframes jg2 { 0%, 48% { opacity: 0; } 50%, 100% { opacity: 1; } }
+
+    .jg1 { animation: jg1 8s infinite; }
+    .jg2 { animation: jg2 8s infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .jg1 { animation: none !important; opacity: 0 !important; }
+      .jg2 { animation: none !important; opacity: 1 !important; }
+    }
+  ]]></style>
+
+  <!-- Canvas & Header -->
+  <rect x="0" y="0" width="1160" height="660" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1160" height="60" rx="12" fill="#0f172a"/>
+  <rect x="0" y="44" width="1160" height="16" fill="#0f172a"/>
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Greedy Horizons (Jump Game &amp; Gas Station), Matroids &amp; Counterexample</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">Boundary tracking in O(n)/O(1), Rado-Edmonds Matroid sufficiency, and non-canonical Coin Change greedy failure</text>
+
+  <!-- TOP-LEFT: Jump Game maxReach -->
+  <rect x="20" y="76" width="548" height="236" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="38" y="100" class="sans" font-size="14" font-weight="700" fill="#0f172a">1. Jump Game: Farthest Reachable Horizon (maxReach)</text>
+  <text x="38" y="118" class="mono" font-size="11" fill="#475569">nums = [2, 3, 1, 1, 4]  |  Trap guard: if (i &gt; maxReach) return false</text>
+
+  <!-- Array cells i=0..4 (x=54 + i*92, w=76) -->
+  <rect x="54" y="138" width="76" height="44" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/><text x="92" y="165" class="mono" font-size="15" font-weight="700" text-anchor="middle" fill="#1e3a8a">2</text><text x="92" y="196" class="mono" font-size="10.5" text-anchor="middle" fill="#64748b">i=0</text>
+  <rect x="146" y="138" width="76" height="44" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="184" y="165" class="mono" font-size="15" font-weight="700" text-anchor="middle" fill="#065f46">3</text><text x="184" y="196" class="mono" font-size="10.5" text-anchor="middle" fill="#64748b">i=1</text>
+  <rect x="238" y="138" width="76" height="44" rx="6" fill="#f8fafc" stroke="#cbd5e1"/><text x="276" y="165" class="mono" font-size="15" font-weight="700" text-anchor="middle" fill="#0f172a">1</text><text x="276" y="196" class="mono" font-size="10.5" text-anchor="middle" fill="#64748b">i=2</text>
+  <rect x="330" y="138" width="76" height="44" rx="6" fill="#f8fafc" stroke="#cbd5e1"/><text x="368" y="165" class="mono" font-size="15" font-weight="700" text-anchor="middle" fill="#0f172a">1</text><text x="368" y="196" class="mono" font-size="10.5" text-anchor="middle" fill="#64748b">i=3</text>
+  <rect x="422" y="138" width="76" height="44" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="460" y="165" class="mono" font-size="15" font-weight="700" text-anchor="middle" fill="#065f46">4</text><text x="460" y="196" class="mono" font-size="10.5" text-anchor="middle" fill="#64748b">i=4 (goal)</text>
+
+  <!-- Animated Horizon Bar -->
+  <g class="jg1">
+    <rect x="54" y="210" width="260" height="22" rx="5" fill="#2563eb"/>
+    <text x="184" y="225" class="mono" font-size="11" font-weight="700" text-anchor="middle" fill="#ffffff">i=0: maxReach = max(0, 0+2) = 2</text>
+  </g>
+  <g class="jg2">
+    <rect x="54" y="210" width="444" height="22" rx="5" fill="#059669"/>
+    <text x="276" y="225" class="mono" font-size="11" font-weight="700" text-anchor="middle" fill="#ffffff">i=1: maxReach = max(2, 1+3) = 4 &gt;= n-1 (REACHED!)</text>
+  </g>
+
+  <rect x="38" y="246" width="512" height="52" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="52" y="267" class="mono" font-size="11" font-weight="700" fill="#1e3a8a">maxReach = Math.max(maxReach, i + nums[i])</text>
+  <text x="52" y="286" class="sans" font-size="11" fill="#475569">No BFS/DP needed: only the continuous reachable prefix [0..maxReach] matters.</text>
+
+  <!-- TOP-RIGHT: Gas Station Circuit -->
+  <rect x="592" y="76" width="548" height="236" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="610" y="100" class="sans" font-size="14" font-weight="700" fill="#0f172a">2. Gas Station Circuit: Net-Tank Reset on Deficit</text>
+  <text x="610" y="118" class="mono" font-size="11" fill="#475569">net[i] = gas[i] - cost[i] = [-2, -2, -2, +3, +3]  (total sum = 0 &gt;= 0)</text>
+
+  <!-- 5 Stations -->
+  <rect x="612" y="136" width="94" height="54" rx="6" fill="#fff1f2" stroke="#e11d48"/><text x="659" y="156" class="mono" font-size="11" font-weight="700" text-anchor="middle" fill="#9f1239">i=0 (-2)</text><text x="659" y="176" class="mono" font-size="10.5" text-anchor="middle" fill="#e11d48">tank=-2 &lt; 0</text>
+  <rect x="716" y="136" width="94" height="54" rx="6" fill="#fff1f2" stroke="#e11d48"/><text x="763" y="156" class="mono" font-size="11" font-weight="700" text-anchor="middle" fill="#9f1239">i=1 (-2)</text><text x="763" y="176" class="mono" font-size="10.5" text-anchor="middle" fill="#e11d48">tank=-2 &lt; 0</text>
+  <rect x="820" y="136" width="94" height="54" rx="6" fill="#fff1f2" stroke="#e11d48"/><text x="867" y="156" class="mono" font-size="11" font-weight="700" text-anchor="middle" fill="#9f1239">i=2 (-2)</text><text x="867" y="176" class="mono" font-size="10.5" text-anchor="middle" fill="#e11d48">tank=-2 &lt; 0</text>
+  <rect x="924" y="136" width="94" height="54" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="971" y="156" class="mono" font-size="11" font-weight="700" text-anchor="middle" fill="#065f46">i=3 (+3)*</text><text x="971" y="176" class="mono" font-size="10.5" text-anchor="middle" fill="#059669">tank=+3</text>
+  <rect x="1028" y="136" width="94" height="54" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="1075" y="156" class="mono" font-size="11" font-weight="700" text-anchor="middle" fill="#065f46">i=4 (+3)</text><text x="1075" y="176" class="mono" font-size="10.5" text-anchor="middle" fill="#059669">tank=+6</text>
+
+  <g class="jg1">
+    <rect x="612" y="204" width="510" height="28" rx="6" fill="#fff1f2" stroke="#fda4af"/>
+    <text x="867" y="222" class="mono" font-size="11" font-weight="700" text-anchor="middle" fill="#9f1239">Deficit at i=0..2: prefix [start..i] runs dry -&gt; reset start=i+1, tank=0</text>
+  </g>
+  <g class="jg2">
+    <rect x="612" y="204" width="510" height="28" rx="6" fill="#ecfdf5" stroke="#6ee7b7"/>
+    <text x="867" y="222" class="mono" font-size="11" font-weight="700" text-anchor="middle" fill="#065f46">Valid Start = 3! Surplus +6 covers [-2, -2, -2] deficit around circle</text>
+  </g>
+
+  <rect x="610" y="246" width="512" height="52" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="624" y="267" class="sans" font-size="11" font-weight="700" fill="#0f172a">Invariant: If total_gas &gt;= total_cost, station after global min curve succeeds.</text>
+  <text x="624" y="286" class="sans" font-size="11" fill="#475569">If total_gas &lt; total_cost, any circuit is impossible -&gt; return -1.</text>
+
+  <!-- BOTTOM-LEFT: Matroids & Rado-Edmonds Theorem -->
+  <rect x="20" y="328" width="548" height="248" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="38" y="352" class="sans" font-size="14" font-weight="700" fill="#0f172a">3. Matroid Theory (S, I): When Greedy Provably Works</text>
+
+  <rect x="38" y="366" width="512" height="38" rx="6" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="52" y="389" class="sans" font-size="11.5" font-weight="700" fill="#1e3a8a">1. Non-empty: Empty set belongs to independent family I (null in I)</text>
+
+  <rect x="38" y="412" width="512" height="38" rx="6" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="52" y="435" class="sans" font-size="11.5" font-weight="700" fill="#1e3a8a">2. Hereditary: If B in I and A is a subset of B, then A in I</text>
+
+  <rect x="38" y="458" width="512" height="44" rx="6" fill="#f5f3ff" stroke="#c4b5fd"/>
+  <text x="52" y="478" class="sans" font-size="11.5" font-weight="700" fill="#5b21b6">3. Exchange Property: If A, B in I and |A| &lt; |B|,</text>
+  <text x="52" y="494" class="mono" font-size="11" fill="#5b21b6">   there exists x in B \ A such that A U {x} in I</text>
+
+  <rect x="38" y="512" width="512" height="50" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="52" y="532" class="sans" font-size="11.5" font-weight="700" fill="#065f46">Rado-Edmonds Theorem: Greedy is strictly optimal for ANY weights!</text>
+  <text x="52" y="550" class="sans" font-size="11" fill="#334155">Example: Graphic Matroid (acyclic edge forests) -&gt; Kruskal's MST is optimal.</text>
+
+  <!-- BOTTOM-RIGHT: Coin Change Counterexample -->
+  <rect x="592" y="328" width="548" height="248" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="610" y="352" class="sans" font-size="14" font-weight="700" fill="#0f172a">4. Counterexample: Non-Canonical Coin Change (Where Greedy Fails)</text>
+  <text x="610" y="370" class="mono" font-size="11.5" font-weight="700" fill="#475569">coins = [4, 3, 1]   |   Target = 6   (Non-Matroid Constraint!)</text>
+
+  <!-- Greedy Failure Column -->
+  <rect x="610" y="384" width="246" height="126" rx="8" fill="#fff1f2" stroke="#e11d48" stroke-width="1.5"/>
+  <text x="626" y="406" class="sans" font-size="12" font-weight="700" fill="#9f1239">Greedy Choice (Fails!)</text>
+  <circle cx="654" cy="444" r="20" fill="#e11d48"/><text x="654" y="449" class="mono" font-size="14" font-weight="700" text-anchor="middle" fill="#ffffff">4</text>
+  <circle cx="710" cy="444" r="16" fill="#fb7185"/><text x="710" y="449" class="mono" font-size="13" font-weight="700" text-anchor="middle" fill="#ffffff">1</text>
+  <circle cx="758" cy="444" r="16" fill="#fb7185"/><text x="758" y="449" class="mono" font-size="13" font-weight="700" text-anchor="middle" fill="#ffffff">1</text>
+  <text x="626" y="486" class="mono" font-size="11.5" font-weight="700" fill="#9f1239">4 + 1 + 1 = 3 coins (Suboptimal)</text>
+  <text x="626" y="502" class="sans" font-size="10.5" fill="#9f1239">Largest coin 4 traps remainder 2.</text>
+
+  <!-- DP Optimal Column -->
+  <rect x="876" y="384" width="246" height="126" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="892" y="406" class="sans" font-size="12" font-weight="700" fill="#065f46">DP Optimal (Wins!)</text>
+  <circle cx="932" cy="444" r="20" fill="#059669"/><text x="932" y="449" class="mono" font-size="14" font-weight="700" text-anchor="middle" fill="#ffffff">3</text>
+  <circle cx="992" cy="444" r="20" fill="#059669"/><text x="992" y="449" class="mono" font-size="14" font-weight="700" text-anchor="middle" fill="#ffffff">3</text>
+  <text x="892" y="486" class="mono" font-size="11.5" font-weight="700" fill="#065f46">3 + 3 = 2 coins (Optimal!)</text>
+  <text x="892" y="502" class="sans" font-size="10.5" fill="#065f46">Requires DP[x] = 1 + min DP[x-c].</text>
+
+  <rect x="610" y="520" width="512" height="42" rx="6" fill="#fffbeb" stroke="#fcd34d"/>
+  <text x="624" y="545" class="sans" font-size="11" font-weight="700" fill="#92400e">Lesson: US coins [25, 10, 5, 1] are canonical; arbitrary coin sets break greedy.</text>
+
+  <!-- Footer -->
+  <rect x="20" y="590" width="1120" height="54" rx="10" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="38" y="613" class="sans" font-size="11.5" font-weight="700" fill="#0f172a">Greedy Decision Rule:</text>
+  <text x="180" y="613" class="sans" font-size="11.5" fill="#334155">Use Greedy only after proving Exchange Argument or Matroid structure; if a local choice can trap global state, switch to DP.</text>
+  <text x="38" y="632" class="sans" font-size="11" fill="#475569">Jump Game &amp; Gas Station: O(n) time, O(1) space. Fractional Knapsack is greedy (v/w); 0/1 Knapsack requires DP.</text>
+</svg>

@@ -1,0 +1,378 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" width="1200" height="760" role="img" aria-labelledby="title desc">
+  <title id="title">Prefix Sum Inclusion-Exclusion and Difference Array Range Updates</title>
+  <desc id="desc">Animated visualization of O(1) 2D prefix sum rectangle queries via inclusion-exclusion over matrix P, alongside O(1) difference array range updates D[L]+=v and D[R+1]-=v reconstructed in a single O(n) prefix sweep.</desc>
+  <defs>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arrow-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <marker id="arrow-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+    </marker>
+    <style>
+      .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+      /* 2D Prefix Sum 5-step 10s cycle:
+         P1 (0-20%): + P[r2+1][c2+1] (0..2, 0..2) = 25
+         P2 (20-40%): - P[r1][c2+1] (row 0, 0..2) = -4
+         P3 (40-60%): - P[r2+1][c1] (0..2, col 0) = -6
+         P4 (60-80%): + P[r1][c1] (0,0) = +1 (double subtracted!)
+         P5 (80-100%): Exact query sum (1..2, 1..2) = 16
+      */
+      @keyframes ps-total { 0%, 18% { opacity: 0.86; } 20%, 100% { opacity: 0.12; } }
+      @keyframes ps-top { 0%, 18% { opacity: 0; } 20%, 38% { opacity: 0.86; } 40%, 100% { opacity: 0.86; } }
+      @keyframes ps-left { 0%, 38% { opacity: 0; } 40%, 58% { opacity: 0.86; } 60%, 100% { opacity: 0.86; } }
+      @keyframes ps-corner { 0%, 58% { opacity: 0; } 60%, 78% { opacity: 0.75; } 80%, 100% { opacity: 0.86; } }
+      @keyframes ps-target { 0%, 78% { opacity: 0.86; } 80%, 100% { opacity: 0.85; } }
+      @keyframes ps-s1 { 0%, 18% { opacity: 1; } 20%, 100% { opacity: 0; } }
+      @keyframes ps-s2 { 0%, 18% { opacity: 0; } 20%, 38% { opacity: 1; } 40%, 100% { opacity: 0; } }
+      @keyframes ps-s3 { 0%, 38% { opacity: 0; } 40%, 58% { opacity: 1; } 60%, 100% { opacity: 0; } }
+      @keyframes ps-s4 { 0%, 58% { opacity: 0; } 60%, 78% { opacity: 1; } 80%, 100% { opacity: 0; } }
+      @keyframes ps-s5 { 0%, 78% { opacity: 0; } 80%, 100% { opacity: 1; } }
+
+      /* Difference Array 5-step 10s cycle:
+         D1 (0-20%): Initial D=[0,0,0,0,0,0]
+         D2 (20-40%): Update 1 add([1,3], +5): D[1]+=5, D[4]-=5
+         D3 (40-60%): Update 2 add([2,4], +3): D[2]+=3, D[5]-=3
+         D4 (60-80%): Sweep arrow moving across D[0..5]
+         D5 (80-100%): Final A = [0, 5, 8, 8, 3, 0] bars revealed
+      */
+      @keyframes da-s1 { 0%, 18% { opacity: 1; } 20%, 100% { opacity: 0; } }
+      @keyframes da-s2 { 0%, 18% { opacity: 0; } 20%, 38% { opacity: 1; } 40%, 100% { opacity: 0; } }
+      @keyframes da-s3 { 0%, 38% { opacity: 0; } 40%, 58% { opacity: 1; } 60%, 100% { opacity: 0; } }
+      @keyframes da-s4 { 0%, 58% { opacity: 0; } 60%, 78% { opacity: 1; } 80%, 100% { opacity: 0; } }
+      @keyframes da-s5 { 0%, 78% { opacity: 0; } 80%, 100% { opacity: 1; } }
+      @keyframes da-sweep {
+        0%, 58% { opacity: 0; transform: translateX(0px); }
+        60% { opacity: 1; transform: translateX(0px); }
+        78% { opacity: 1; transform: translateX(400px); }
+        80%, 100% { opacity: 0; transform: translateX(400px); }
+      }
+      @keyframes da-bars {
+        0%, 58% { opacity: 0.86; }
+        60%, 78% { opacity: 0.86; }
+        80%, 100% { opacity: 1; }
+      }
+
+      .anim-ps-total { animation: ps-total 10s linear infinite; }
+      .anim-ps-top { animation: ps-top 10s linear infinite; }
+      .anim-ps-left { animation: ps-left 10s linear infinite; }
+      .anim-ps-corner { animation: ps-corner 10s linear infinite; }
+      .anim-ps-target { animation: ps-target 10s linear infinite; }
+      .ps-1 { animation: ps-s1 10s linear infinite; }
+      .ps-2 { animation: ps-s2 10s linear infinite; }
+      .ps-3 { animation: ps-s3 10s linear infinite; }
+      .ps-4 { animation: ps-s4 10s linear infinite; }
+      .ps-5 { animation: ps-s5 10s linear infinite; }
+
+      .da-1 { animation: da-s1 10s linear infinite; }
+      .da-2 { animation: da-s2 10s linear infinite; }
+      .da-3 { animation: da-s3 10s linear infinite; }
+      .da-4 { animation: da-s4 10s linear infinite; }
+      .da-5 { animation: da-s5 10s linear infinite; }
+      .anim-da-sweep { animation: da-sweep 10s ease-in-out infinite; }
+      .anim-da-bars { animation: da-bars 10s linear infinite; }
+
+      @media (prefers-reduced-motion: reduce) {
+        .anim-ps-total, .anim-ps-top, .anim-ps-left, .anim-ps-corner, .anim-ps-target,
+        .ps-1, .ps-2, .ps-3, .ps-4, .ps-5,
+        .da-1, .da-2, .da-3, .da-4, .da-5, .anim-da-sweep, .anim-da-bars {
+          animation: none !important;
+        }
+        .anim-ps-total { opacity: 0.86; }
+        .anim-ps-top, .anim-ps-left { opacity: 0.86; }
+        .anim-ps-corner { opacity: 0.86; }
+        .anim-ps-target { opacity: 0.85; }
+        .ps-1, .ps-2, .ps-3, .ps-4 { opacity: 0; }
+        .ps-5 { opacity: 1; }
+        .da-1, .da-2, .da-4, .da-5 { opacity: 0; }
+        .da-3 { opacity: 1; }
+        .anim-da-sweep { opacity: 0; }
+        .anim-da-bars { opacity: 1; }
+      }
+    </style>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1200" height="760" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1200" height="60" rx="12" fill="#0f172a"/>
+  <rect x="0" y="44" width="1200" height="16" fill="#0f172a"/>
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Prefix Sums &amp; Difference Arrays: O(1) Queries &amp; O(1) Range Additions</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">2D Inclusion-Exclusion Rectangle Query P[r2+1][c2+1] - P[r1][c2+1] - P[r2+1][c1] + P[r1][c1] vs D[L]+=v, D[R+1]-=v</text>
+
+  <!-- LEFT PANEL: 2D Prefix Sum -->
+  <rect x="24" y="76" width="564" height="574" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+  <rect x="24" y="76" width="564" height="36" rx="10" fill="#f1f5f9"/>
+  <rect x="24" y="102" width="564" height="10" fill="#f1f5f9"/>
+  <text x="40" y="99" class="sans" font-size="13" font-weight="700" fill="#0f172a">1. 2D Prefix Sum: Query (1,1) to (2,2)</text>
+  <text x="572" y="99" class="mono" font-size="11" fill="#2563eb" text-anchor="end">O(1) per query</text>
+
+  <!-- Matrix M (4x4, cell size 54x48) at x=96, y=148 -->
+  <text x="44" y="136" class="sans" font-size="11.5" font-weight="600" fill="#475569">Matrix M[r][c] (target rectangle (1,1)..(2,2) = 5+2+3+6 = 16):</text>
+
+  <!-- Column headers -->
+  <g transform="translate(96, 152)">
+    <text x="27" y="-6" class="mono" font-size="11" fill="#64748b" text-anchor="middle">c=0</text>
+    <text x="81" y="-6" class="mono" font-size="11" fill="#64748b" text-anchor="middle">c=1</text>
+    <text x="135" y="-6" class="mono" font-size="11" fill="#64748b" text-anchor="middle">c=2</text>
+    <text x="189" y="-6" class="mono" font-size="11" fill="#64748b" text-anchor="middle">c=3</text>
+
+    <text x="-14" y="28" class="mono" font-size="11" fill="#64748b" text-anchor="end">r=0</text>
+    <text x="-14" y="76" class="mono" font-size="11" fill="#64748b" text-anchor="end">r=1</text>
+    <text x="-14" y="124" class="mono" font-size="11" fill="#64748b" text-anchor="end">r=2</text>
+    <text x="-14" y="172" class="mono" font-size="11" fill="#64748b" text-anchor="end">r=3</text>
+
+    <!-- Animated Inclusion-Exclusion Rectangles -->
+    <!-- +P[3][3]: cols 0..2 (w=162), rows 0..2 (h=144) -->
+    <rect x="0" y="0" width="162" height="144" fill="#2563eb" class="anim-ps-total"/>
+    <!-- -P[1][3]: cols 0..2 (w=162), row 0 (h=48) -->
+    <rect x="0" y="0" width="162" height="48" fill="#e11d48" class="anim-ps-top"/>
+    <!-- -P[3][1]: col 0 (w=54), rows 0..2 (h=144) -->
+    <rect x="0" y="0" width="54" height="144" fill="#d97706" class="anim-ps-left"/>
+    <!-- +P[1][1]: (0,0) (w=54, h=48) -->
+    <rect x="0" y="0" width="54" height="48" fill="#059669" class="anim-ps-corner"/>
+    <!-- Target (1..2, 1..2) -->
+    <rect x="54" y="48" width="108" height="96" fill="#10b981" stroke="#047857" stroke-width="3" class="anim-ps-target"/>
+
+    <!-- Grid lines & values: [1,2,1,3], [4,5,2,1], [1,3,6,2], [2,1,4,2] -->
+    <g stroke="#cbd5e1" stroke-width="1" fill="none">
+      <rect x="0" y="0" width="216" height="192"/>
+      <line x1="54" y1="0" x2="54" y2="192"/><line x1="108" y1="0" x2="108" y2="192"/><line x1="162" y1="0" x2="162" y2="192"/>
+      <line x1="0" y1="48" x2="216" y2="48"/><line x1="0" y1="96" x2="216" y2="96"/><line x1="0" y1="144" x2="216" y2="144"/>
+    </g>
+    <!-- Numbers -->
+    <g class="mono" font-size="16" font-weight="700" fill="#0f172a" text-anchor="middle">
+      <text x="27" y="30">1</text><text x="81" y="30">2</text><text x="135" y="30">1</text><text x="189" y="30">3</text>
+      <text x="27" y="78">4</text><text x="81" y="78">5</text><text x="135" y="78">2</text><text x="189" y="78">1</text>
+      <text x="27" y="126">1</text><text x="81" y="126">3</text><text x="135" y="126">6</text><text x="189" y="126">2</text>
+      <text x="27" y="174">2</text><text x="81" y="174">1</text><text x="135" y="174">4</text><text x="189" y="174">2</text>
+    </g>
+  </g>
+
+  <!-- Right side of Left Panel: Prefix P values callout -->
+  <rect x="338" y="152" width="230" height="192" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="352" y="174" class="sans" font-size="11.5" font-weight="700" fill="#0f172a">Precomputed P Table Terms:</text>
+  <rect x="352" y="186" width="202" height="30" rx="5" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="362" y="206" class="mono" font-size="12" font-weight="700" fill="#1d4ed8">+ P[3][3] = 25</text>
+  <rect x="352" y="222" width="202" height="30" rx="5" fill="#fff1f2" stroke="#fda4af"/>
+  <text x="362" y="242" class="mono" font-size="12" font-weight="700" fill="#be123c">- P[1][3] = -4</text>
+  <rect x="352" y="258" width="202" height="30" rx="5" fill="#fffbeb" stroke="#fcd34d"/>
+  <text x="362" y="278" class="mono" font-size="12" font-weight="700" fill="#b45309">- P[3][1] = -6</text>
+  <rect x="352" y="294" width="202" height="30" rx="5" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <text x="362" y="314" class="mono" font-size="12" font-weight="700" fill="#047857">+ P[1][1] = +1</text>
+
+  <!-- Animated Step Narration Box for 2D Prefix -->
+  <rect x="44" y="364" width="524" height="90" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="60" y="386" class="sans" font-size="11" font-weight="700" fill="#475569">INCLUSION-EXCLUSION TRACE:</text>
+  <g class="ps-1">
+    <text x="60" y="414" class="mono" font-size="14" font-weight="700" fill="#1d4ed8">Step 1: Take full top-left P[3][3] = 25</text>
+    <text x="60" y="436" class="sans" font-size="11.5" fill="#334155">Covers (0,0)..(2,2), which includes unwanted row 0 and column 0.</text>
+  </g>
+  <g class="ps-2">
+    <text x="60" y="414" class="mono" font-size="14" font-weight="700" fill="#be123c">Step 2: Subtract top strip P[1][3] = 4  (25 - 4 = 21)</text>
+    <text x="60" y="436" class="sans" font-size="11.5" fill="#334155">Removes row 0 (1 + 2 + 1). Note cell (0,0) has been subtracted once.</text>
+  </g>
+  <g class="ps-3">
+    <text x="60" y="414" class="mono" font-size="14" font-weight="700" fill="#b45309">Step 3: Subtract left strip P[3][1] = 6  (21 - 6 = 15)</text>
+    <text x="60" y="436" class="sans" font-size="11.5" fill="#334155">Removes col 0 (1 + 4 + 1). Cell (0,0) was subtracted TWICE!</text>
+  </g>
+  <g class="ps-4">
+    <text x="60" y="414" class="mono" font-size="14" font-weight="700" fill="#047857">Step 4: Add back overlap P[1][1] = 1  (15 + 1 = 16)</text>
+    <text x="60" y="436" class="sans" font-size="11.5" fill="#334155">Restores the double-subtracted top-left corner M[0][0] = 1.</text>
+  </g>
+  <g class="ps-5">
+    <text x="60" y="414" class="mono" font-size="14" font-weight="700" fill="#047857">Result: 25 - 4 - 6 + 1 = 16  (exact match: 5+2+3+6)</text>
+    <text x="60" y="436" class="sans" font-size="11.5" fill="#059669">4 array lookups regardless of matrix size -&gt; strictly O(1) query!</text>
+  </g>
+
+  <!-- 1D Prefix Sum formula card -->
+  <rect x="44" y="470" width="524" height="160" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="60" y="494" class="sans" font-size="12" font-weight="700" fill="#0f172a">1D Prefix Sum (Zero-Indexed P[n+1] with P[0] = 0)</text>
+  <rect x="60" y="508" width="492" height="36" rx="6" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="306" y="531" class="mono" font-size="13" font-weight="700" fill="#1e40af" text-anchor="middle">Sum(A[L..R]) = P[R + 1] - P[L]</text>
+  <text x="60" y="566" class="sans" font-size="11" fill="#334155">Build: P[i+1] = P[i] + A[i] in O(n) space and O(n) preprocessing.</text>
+  <text x="60" y="586" class="sans" font-size="11" fill="#334155">Edge case: P[0] = 0 avoids boundary branches when L = 0.</text>
+  <text x="60" y="606" class="sans" font-size="11" fill="#7c3aed" font-weight="600">With Hash Map { 0: 1 }: counts Subarray Sum == K even with negatives!</text>
+
+  <!-- RIGHT PANEL: Difference Array -->
+  <rect x="612" y="76" width="564" height="574" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+  <rect x="612" y="76" width="564" height="36" rx="10" fill="#f1f5f9"/>
+  <rect x="612" y="102" width="564" height="10" fill="#f1f5f9"/>
+  <text x="628" y="99" class="sans" font-size="13" font-weight="700" fill="#0f172a">2. Difference Array: D[L] += v, D[R+1] -= v</text>
+  <text x="1160" y="99" class="mono" font-size="11" fill="#7c3aed" text-anchor="end">O(1) update · O(n) sweep</text>
+
+  <text x="632" y="136" class="sans" font-size="11.5" font-weight="600" fill="#475569">Difference Array D[0..5] (stores delta A[i] - A[i-1]):</text>
+
+  <!-- D array boxes (6 cells, x=646, step=82, width=74) -->
+  <g transform="translate(646, 152)">
+    <!-- Index labels -->
+    <text x="37" y="74" class="mono" font-size="10.5" fill="#64748b" text-anchor="middle">D[0]</text>
+    <text x="119" y="74" class="mono" font-size="10.5" fill="#64748b" text-anchor="middle">D[1]</text>
+    <text x="201" y="74" class="mono" font-size="10.5" fill="#64748b" text-anchor="middle">D[2]</text>
+    <text x="283" y="74" class="mono" font-size="10.5" fill="#64748b" text-anchor="middle">D[3]</text>
+    <text x="365" y="74" class="mono" font-size="10.5" fill="#64748b" text-anchor="middle">D[4]</text>
+    <text x="447" y="74" class="mono" font-size="10.5" fill="#64748b" text-anchor="middle">D[5]</text>
+
+    <!-- State 1: All zeros -->
+    <g class="da-1">
+      <rect x="0" y="0" width="74" height="54" rx="6" fill="#f8fafc" stroke="#94a3b8"/>
+      <rect x="82" y="0" width="74" height="54" rx="6" fill="#f8fafc" stroke="#94a3b8"/>
+      <rect x="164" y="0" width="74" height="54" rx="6" fill="#f8fafc" stroke="#94a3b8"/>
+      <rect x="246" y="0" width="74" height="54" rx="6" fill="#f8fafc" stroke="#94a3b8"/>
+      <rect x="328" y="0" width="74" height="54" rx="6" fill="#f8fafc" stroke="#94a3b8"/>
+      <rect x="410" y="0" width="74" height="54" rx="6" fill="#f8fafc" stroke="#94a3b8"/>
+      <g class="mono" font-size="17" font-weight="700" fill="#64748b" text-anchor="middle">
+        <text x="37" y="33">0</text><text x="119" y="33">0</text><text x="201" y="33">0</text>
+        <text x="283" y="33">0</text><text x="365" y="33">0</text><text x="447" y="33">0</text>
+      </g>
+    </g>
+
+    <!-- State 2: add([1,3], +5) -> D[1]=+5, D[4]=-5 -->
+    <g class="da-2">
+      <rect x="0" y="0" width="74" height="54" rx="6" fill="#f8fafc" stroke="#94a3b8"/>
+      <rect x="82" y="0" width="74" height="54" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+      <rect x="164" y="0" width="74" height="54" rx="6" fill="#f8fafc" stroke="#94a3b8"/>
+      <rect x="246" y="0" width="74" height="54" rx="6" fill="#f8fafc" stroke="#94a3b8"/>
+      <rect x="328" y="0" width="74" height="54" rx="6" fill="#fff1f2" stroke="#e11d48" stroke-width="2.5"/>
+      <rect x="410" y="0" width="74" height="54" rx="6" fill="#f8fafc" stroke="#94a3b8"/>
+      <text x="37" y="33" class="mono" font-size="17" font-weight="700" fill="#64748b" text-anchor="middle">0</text>
+      <text x="119" y="33" class="mono" font-size="17" font-weight="700" fill="#047857" text-anchor="middle">+5</text>
+      <text x="201" y="33" class="mono" font-size="17" font-weight="700" fill="#64748b" text-anchor="middle">0</text>
+      <text x="283" y="33" class="mono" font-size="17" font-weight="700" fill="#64748b" text-anchor="middle">0</text>
+      <text x="365" y="33" class="mono" font-size="17" font-weight="700" fill="#be123c" text-anchor="middle">-5</text>
+      <text x="447" y="33" class="mono" font-size="17" font-weight="700" fill="#64748b" text-anchor="middle">0</text>
+    </g>
+
+    <!-- State 3, 4, 5: add([2,4], +3) -> D = [0, +5, +3, 0, -5, -3] -->
+    <g class="da-3">
+      <rect x="0" y="0" width="74" height="54" rx="6" fill="#f8fafc" stroke="#94a3b8"/>
+      <rect x="82" y="0" width="74" height="54" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+      <rect x="164" y="0" width="74" height="54" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+      <rect x="246" y="0" width="74" height="54" rx="6" fill="#f8fafc" stroke="#94a3b8"/>
+      <rect x="328" y="0" width="74" height="54" rx="6" fill="#fff1f2" stroke="#e11d48" stroke-width="2"/>
+      <rect x="410" y="0" width="74" height="54" rx="6" fill="#fff1f2" stroke="#e11d48" stroke-width="2.5"/>
+      <text x="37" y="33" class="mono" font-size="17" font-weight="700" fill="#64748b" text-anchor="middle">0</text>
+      <text x="119" y="33" class="mono" font-size="17" font-weight="700" fill="#047857" text-anchor="middle">+5</text>
+      <text x="201" y="33" class="mono" font-size="17" font-weight="700" fill="#047857" text-anchor="middle">+3</text>
+      <text x="283" y="33" class="mono" font-size="17" font-weight="700" fill="#64748b" text-anchor="middle">0</text>
+      <text x="365" y="33" class="mono" font-size="17" font-weight="700" fill="#be123c" text-anchor="middle">-5</text>
+      <text x="447" y="33" class="mono" font-size="17" font-weight="700" fill="#be123c" text-anchor="middle">-3</text>
+    </g>
+    <g class="da-4">
+      <rect x="0" y="0" width="74" height="54" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+      <rect x="82" y="0" width="74" height="54" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+      <rect x="164" y="0" width="74" height="54" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+      <rect x="246" y="0" width="74" height="54" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+      <rect x="328" y="0" width="74" height="54" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+      <rect x="410" y="0" width="74" height="54" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+      <text x="37" y="33" class="mono" font-size="17" font-weight="700" fill="#1e40af" text-anchor="middle">0</text>
+      <text x="119" y="33" class="mono" font-size="17" font-weight="700" fill="#1e40af" text-anchor="middle">+5</text>
+      <text x="201" y="33" class="mono" font-size="17" font-weight="700" fill="#1e40af" text-anchor="middle">+3</text>
+      <text x="283" y="33" class="mono" font-size="17" font-weight="700" fill="#1e40af" text-anchor="middle">0</text>
+      <text x="365" y="33" class="mono" font-size="17" font-weight="700" fill="#1e40af" text-anchor="middle">-5</text>
+      <text x="447" y="33" class="mono" font-size="17" font-weight="700" fill="#1e40af" text-anchor="middle">-3</text>
+    </g>
+    <g class="da-5">
+      <rect x="0" y="0" width="74" height="54" rx="6" fill="#f8fafc" stroke="#94a3b8"/>
+      <rect x="82" y="0" width="74" height="54" rx="6" fill="#ecfdf5" stroke="#059669"/>
+      <rect x="164" y="0" width="74" height="54" rx="6" fill="#ecfdf5" stroke="#059669"/>
+      <rect x="246" y="0" width="74" height="54" rx="6" fill="#f8fafc" stroke="#94a3b8"/>
+      <rect x="328" y="0" width="74" height="54" rx="6" fill="#fff1f2" stroke="#e11d48"/>
+      <rect x="410" y="0" width="74" height="54" rx="6" fill="#fff1f2" stroke="#e11d48"/>
+      <text x="37" y="33" class="mono" font-size="17" font-weight="700" fill="#64748b" text-anchor="middle">0</text>
+      <text x="119" y="33" class="mono" font-size="17" font-weight="700" fill="#047857" text-anchor="middle">+5</text>
+      <text x="201" y="33" class="mono" font-size="17" font-weight="700" fill="#047857" text-anchor="middle">+3</text>
+      <text x="283" y="33" class="mono" font-size="17" font-weight="700" fill="#64748b" text-anchor="middle">0</text>
+      <text x="365" y="33" class="mono" font-size="17" font-weight="700" fill="#be123c" text-anchor="middle">-5</text>
+      <text x="447" y="33" class="mono" font-size="17" font-weight="700" fill="#be123c" text-anchor="middle">-3</text>
+    </g>
+
+    <!-- Animated Prefix Sweep Pointer -->
+    <g class="anim-da-sweep">
+      <rect x="4" y="84" width="66" height="22" rx="4" fill="#2563eb"/>
+      <text x="37" y="99" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">sweep</text>
+      <line x1="37" y1="84" x2="37" y2="60" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow-blue)"/>
+    </g>
+  </g>
+
+  <!-- Narration Box -->
+  <rect x="632" y="272" width="524" height="74" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="648" y="294" class="sans" font-size="11" font-weight="700" fill="#475569">RANGE UPDATE &amp; SWEEP LOG:</text>
+  <g class="da-1">
+    <text x="648" y="318" class="mono" font-size="13.5" font-weight="700" fill="#0f172a">Init: A = [0, 0, 0, 0, 0, 0], D = [0, 0, 0, 0, 0, 0]</text>
+    <text x="648" y="336" class="sans" font-size="11" fill="#475569">Ready to apply k arbitrary interval updates in O(1) each.</text>
+  </g>
+  <g class="da-2">
+    <text x="648" y="318" class="mono" font-size="13.5" font-weight="700" fill="#047857">Op 1: add([1..3], +5) -&gt; D[1] += 5, D[4] -= 5</text>
+    <text x="648" y="336" class="sans" font-size="11" fill="#334155">Only 2 boundary indices modified! Cancels +5 past index 3.</text>
+  </g>
+  <g class="da-3">
+    <text x="648" y="318" class="mono" font-size="13.5" font-weight="700" fill="#047857">Op 2: add([2..4], +3) -&gt; D[2] += 3, D[5] -= 3</text>
+    <text x="648" y="336" class="sans" font-size="11" fill="#334155">Overlapping interval [2..4] recorded in O(1) without touching index 3.</text>
+  </g>
+  <g class="da-4">
+    <text x="648" y="318" class="mono" font-size="13.5" font-weight="700" fill="#1d4ed8">Sweep: running += D[i]; A[i] = running</text>
+    <text x="648" y="336" class="sans" font-size="11" fill="#1e40af">Single O(n) prefix pass accumulates overlapping deltas cleanly.</text>
+  </g>
+  <g class="da-5">
+    <text x="648" y="318" class="mono" font-size="13.5" font-weight="700" fill="#7c3aed">Reconstructed A = [0, 5, 8, 8, 3, 0]</text>
+    <text x="648" y="336" class="sans" font-size="11" fill="#6d28d9">k updates + 1 sweep = O(n + k) vs naive O(n x k) brute force.</text>
+  </g>
+
+  <!-- Reconstructed Array Bar Chart -->
+  <rect x="632" y="362" width="524" height="268" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="648" y="386" class="sans" font-size="12" font-weight="700" fill="#0f172a">Reconstructed Array A[i] = PrefixSum(D[0..i])</text>
+
+  <g transform="translate(646, 408)" class="anim-da-bars">
+    <!-- Baseline y=156 -->
+    <line x1="0" y1="156" x2="484" y2="156" stroke="#94a3b8" stroke-width="1.5"/>
+
+    <!-- Bars for [0, 5, 8, 8, 3, 0], scale 1 unit = 16px -->
+    <!-- A[0] = 0 -->
+    <rect x="12" y="152" width="50" height="4" rx="2" fill="#cbd5e1"/>
+    <text x="37" y="144" class="mono" font-size="13" font-weight="700" fill="#64748b" text-anchor="middle">0</text>
+    <text x="37" y="176" class="mono" font-size="11" fill="#475569" text-anchor="middle">A[0]</text>
+
+    <!-- A[1] = 5 (80px) -->
+    <rect x="94" y="76" width="50" height="80" rx="4" fill="#3b82f6"/>
+    <text x="119" y="68" class="mono" font-size="13" font-weight="700" fill="#1d4ed8" text-anchor="middle">5</text>
+    <text x="119" y="176" class="mono" font-size="11" fill="#475569" text-anchor="middle">A[1]</text>
+
+    <!-- A[2] = 8 (128px) -->
+    <rect x="176" y="28" width="50" height="128" rx="4" fill="#7c3aed"/>
+    <text x="201" y="20" class="mono" font-size="13" font-weight="700" fill="#6d28d9" text-anchor="middle">8</text>
+    <text x="201" y="176" class="mono" font-size="11" fill="#475569" text-anchor="middle">A[2]</text>
+
+    <!-- A[3] = 8 (128px) -->
+    <rect x="258" y="28" width="50" height="128" rx="4" fill="#7c3aed"/>
+    <text x="283" y="20" class="mono" font-size="13" font-weight="700" fill="#6d28d9" text-anchor="middle">8</text>
+    <text x="283" y="176" class="mono" font-size="11" fill="#475569" text-anchor="middle">A[3]</text>
+
+    <!-- A[4] = 3 (48px) -->
+    <rect x="340" y="108" width="50" height="48" rx="4" fill="#10b981"/>
+    <text x="365" y="100" class="mono" font-size="13" font-weight="700" fill="#047857" text-anchor="middle">3</text>
+    <text x="365" y="176" class="mono" font-size="11" fill="#475569" text-anchor="middle">A[4]</text>
+
+    <!-- A[5] = 0 -->
+    <rect x="422" y="152" width="50" height="4" rx="2" fill="#cbd5e1"/>
+    <text x="447" y="144" class="mono" font-size="13" font-weight="700" fill="#64748b" text-anchor="middle">0</text>
+    <text x="447" y="176" class="mono" font-size="11" fill="#475569" text-anchor="middle">A[5]</text>
+
+    <!-- Interval bracket labels -->
+    <text x="242" y="204" class="mono" font-size="10.5" fill="#475569" text-anchor="middle">[1..3] (+5) + [2..4] (+3) =&gt; overlap [2..3] = +8</text>
+  </g>
+
+  <!-- Bottom Legend / Complexity Strip -->
+  <rect x="24" y="666" width="1152" height="74" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="44" y="692" class="sans" font-size="12" font-weight="700" fill="#0f172a">Duality Summary:</text>
+  <rect x="180" y="678" width="14" height="14" rx="3" fill="#2563eb"/>
+  <text x="200" y="690" class="sans" font-size="11" fill="#334155">Prefix Sum (integral): O(n) build, O(1) range query (static array)</text>
+  <rect x="596" y="678" width="14" height="14" rx="3" fill="#7c3aed"/>
+  <text x="616" y="690" class="sans" font-size="11" fill="#334155">Difference Array (derivative): O(1) range update, O(n) offline sweep</text>
+  <text x="44" y="722" class="sans" font-size="11" fill="#64748b">Boundary guard: in Difference Array, always guard `if (R + 1 &lt; n) D[R + 1] -= v` (or allocate size n + 1). Interleaved updates + queries require a Fenwick/Segment tree.</text>
+</svg>

@@ -44,6 +44,10 @@ flowchart LR
 - **Naive Parallel Merge Sort** (Parallel recursive calls, sequential merge): $$T_\infty(n) = T_\infty(n/2) + O(n) = O(n)$$ Parallelism is only $\frac{O(n \log n)}{O(n)} = O(\log n)$ (poor scalability).
 - **Fully Parallel Merge Sort** (Parallel recursive calls + $O(\log^2 n)$ parallel merge via binary search partition): $$T_\infty(n) = T_\infty(n/2) + O(\log^2 n) = O(\log^3 n)$$ Work remains $T_1(n) = O(n \log n)$. Parallelism increases to: $$\frac{T_1}{T_\infty} = \frac{O(n \log n)}{O(\log^3 n)} = O\left(\frac{n}{\log^2 n}\right) \quad (\text{Massive scaling on } p \text{ cores!})$$
 
+![Work-Span DAG, Brent's Theorem, and Parallel Merge Sort](../assets/14-work-span-parallel-mergesort-animated.svg)
+
+_Animated Work-Span DAG ($T_1$, $T\_\infty$, and Brent's greedy scheduler bound) paired with Fully Parallel Merge Sort using binary-search pivot partitioning to merge sorted halves concurrently across cores in $O(\log^3 n)$ span._
+
 ---
 
 ## 2. Concurrency Primitives and Lock-Free Data Structures
@@ -118,6 +122,10 @@ The **ABA Problem** occurs when a thread reads value $A$ at memory address $M$, 
 - **Remediation**:
   1. **Tagged / Versioned Pointers**: Pair every pointer with an incrementing 64-bit sequence counter: `(pointer, version)`. A double-width CAS (e.g. `CMPXCHG16B` on x86-64) updates both simultaneously.
   2. **Hazard Pointers**: Threads register active pointers in thread-local storage, preventing memory deallocation while read operations are ongoing.
+
+![Lock-Free Treiber Stack CAS, ABA Race, and Tagged Pointer Defense](../assets/14-cas-aba-treiber-stack-animated.svg)
+
+_Three-panel lock-free concurrency trace: Treiber Stack hardware CAS spin loop (left), the ABA corruption race between Thread 1 and Thread 2 (center), and double-width Tagged Version Pointers `(ptr, tag + 1)` via `CMPXCHG16B` rejecting stale versions (right)._
 
 ---
 

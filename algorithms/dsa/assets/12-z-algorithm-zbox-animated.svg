@@ -1,0 +1,287 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" width="1200" height="700" role="img" aria-labelledby="title desc">
+  <title id="title">Z-Algorithm: Concatenation P + $ + T and [L, R] Z-Box Window Mechanics</title>
+  <desc id="desc">Animated diagram of the Z-algorithm on S = ABA$ABABABA showing the active [L, R] Z-box window, O(1) mirror copying when Z[k] &lt; R - i + 1, extension beyond R when Z[k] &gt;= R - i + 1, and exact pattern occurrences where Z[i] == |P|.</desc>
+  <defs>
+    <style>
+      .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+      .zbox-win { animation: zbox-move 12s ease-in-out infinite; }
+      .z-ptr-i { animation: z-i-move 12s ease-in-out infinite; }
+      .z-ptr-k { animation: z-k-move 12s ease-in-out infinite; }
+      .mirror-arc { animation: z-mirror 12s linear infinite; stroke-dasharray: 6 4; }
+      .extend-arrow { animation: z-ext 12s linear infinite; stroke-dasharray: 5 4; }
+
+      .card-c1 { animation: z-c1 12s linear infinite; }
+      .card-c2a { animation: z-c2a 12s linear infinite; }
+      .card-c2b { animation: z-c2b 12s linear infinite; }
+      .card-match { animation: z-cmatch 12s linear infinite; }
+
+      /* Stride = 88px. Base cell 0 is at x=0 inside grid (128, 228). */
+      /* [L,R] box: [4,6] = x:352, w:252; [6,8] = x:528, w:252; [8,10] = x:704, w:252 */
+      @keyframes zbox-move {
+        0%, 44%   { transform: translateX(352px); }   /* [4, 6] */
+        52%, 74%  { transform: translateX(528px); }   /* [6, 8] */
+        82%, 100% { transform: translateX(704px); }   /* [8, 10] */
+      }
+
+      @keyframes z-i-move {
+        0%, 20%   { transform: translateX(352px); }   /* i = 4 (i > R) */
+        26%, 44%  { transform: translateX(440px); }   /* i = 5 (copy Z[1]) */
+        52%, 74%  { transform: translateX(528px); }   /* i = 6 (extend past R) */
+        82%, 100% { transform: translateX(704px); }   /* i = 8 (match at T[4]) */
+      }
+
+      @keyframes z-k-move {
+        0%, 20%   { opacity: 0.86; transform: translateX(0px); }
+        26%, 44%  { opacity: 1; transform: translateX(88px); }    /* k = 1 */
+        52%, 74%  { opacity: 1; transform: translateX(176px); }   /* k = 2 */
+        82%, 100% { opacity: 0.86; transform: translateX(176px); }
+      }
+
+      @keyframes z-mirror {
+        0%, 22%   { opacity: 0; stroke-dashoffset: 0; }
+        28%, 68%  { opacity: 1; stroke-dashoffset: -36; }
+        76%, 100% { opacity: 0; }
+      }
+
+      @keyframes z-ext {
+        0%, 48%   { opacity: 0; stroke-dashoffset: 0; }
+        54%, 74%  { opacity: 1; stroke-dashoffset: -30; }
+        80%, 100% { opacity: 0; }
+      }
+
+      @keyframes z-c1 { 0%, 22% { opacity: 1; stroke: #2563eb; stroke-width: 2; } 26%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } }
+      @keyframes z-c2a { 0%, 22% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } 26%, 46% { opacity: 1; stroke: #7c3aed; stroke-width: 2; } 52%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } }
+      @keyframes z-c2b { 0%, 46% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } 52%, 76% { opacity: 1; stroke: #d97706; stroke-width: 2; } 82%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } }
+      @keyframes z-cmatch { 0%, 76% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } 82%, 100% { opacity: 1; stroke: #059669; stroke-width: 2; } }
+
+      @media (prefers-reduced-motion: reduce) {
+        * { animation: none !important; transition: none !important; }
+        .zbox-win { transform: translateX(352px); }
+        .z-ptr-i { transform: translateX(440px); }
+        .z-ptr-k { opacity: 1 !important; transform: translateX(88px); }
+        .mirror-arc, .extend-arrow { opacity: 1 !important; }
+        .card-c1, .card-c2a, .card-c2b, .card-match { opacity: 1 !important; }
+      }
+    </style>
+
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-violet" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1200" height="700" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1200" height="62" rx="12" fill="#0f172a"/>
+  <rect x="0" y="46" width="1200" height="16" fill="#0f172a"/>
+  <text x="24" y="29" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Z-Algorithm · Concatenation S = P + "$" + T &amp; Active [L, R] Z-Box</text>
+  <text x="24" y="49" class="sans" font-size="12" fill="#94a3b8">Z[i] = LCP(S, S[i..]); mirror k = i - L avoids redundant comparisons inside [L, R] and pushes R monotonically in O(|S|)</text>
+
+  <!-- Top Formula & Segment Legend -->
+  <rect x="24" y="78" width="1152" height="58" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+  <rect x="42" y="92" width="16" height="16" rx="3" fill="#eff6ff" stroke="#3b82f6"/>
+  <text x="66" y="105" class="sans" font-size="12" font-weight="700" fill="#1e3a8a">Pattern P = "ABA" (|P| = 3)</text>
+
+  <rect x="250" y="92" width="16" height="16" rx="3" fill="#fffbeb" stroke="#d97706"/>
+  <text x="274" y="105" class="sans" font-size="12" font-weight="700" fill="#92400e">Sentinel "$"</text>
+
+  <rect x="382" y="92" width="16" height="16" rx="3" fill="#f1f5f9" stroke="#64748b"/>
+  <text x="406" y="105" class="sans" font-size="12" font-weight="700" fill="#334155">Text T = "ABABABA"</text>
+
+  <rect x="572" y="92" width="16" height="16" rx="3" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="596" y="105" class="sans" font-size="12" font-weight="700" fill="#065f46">Match (Z[i] == |P| -&gt; index i - |P| - 1)</text>
+
+  <text x="1156" y="106" class="mono" font-size="11.5" font-weight="700" fill="#7c3aed" text-anchor="end">Invariant: S[L..R] == S[0..R-L]</text>
+  <text x="42" y="125" class="mono" font-size="10.5" fill="#64748b">Hits in T: index 4-3-1 = 0 ("ABA"), index 6-3-1 = 2 ("ABA"), index 8-3-1 = 4 ("ABA")</text>
+
+  <!-- Main Z-Array Visualization Panel -->
+  <rect x="24" y="150" width="1152" height="320" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+
+  <!-- Row Labels -->
+  <text x="42" y="218" class="mono" font-size="12" font-weight="700" fill="#64748b">idx</text>
+  <text x="42" y="256" class="mono" font-size="12.5" font-weight="700" fill="#0f172a">S[idx]</text>
+  <text x="42" y="314" class="mono" font-size="12.5" font-weight="700" fill="#059669">Z[idx]</text>
+
+  <!-- Grid Origin: (128, 228), stride = 88px -->
+  <g transform="translate(128, 228)">
+    <!-- Animated Z-box [L, R] Window Frame (width = 252 covers 3 cells) -->
+    <g class="zbox-win">
+      <rect x="-6" y="-26" width="264" height="122" rx="10" fill="#eff6ff" fill-opacity="0.38" stroke="#2563eb" stroke-width="2.2" stroke-dasharray="7 4"/>
+      <rect x="52" y="-38" width="148" height="22" rx="4" fill="#2563eb"/>
+      <text x="126" y="-23" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">Active Z-box [L, R]</text>
+    </g>
+
+    <!-- Animated Pointers k and i -->
+    <g class="z-ptr-k" transform="translate(0, -68)">
+      <rect x="4" y="0" width="68" height="22" rx="4" fill="#7c3aed"/>
+      <text x="38" y="15" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">k = i-L</text>
+      <line x1="38" y1="22" x2="38" y2="38" stroke="#7c3aed" stroke-width="2" marker-end="url(#arr-violet)"/>
+    </g>
+
+    <g class="z-ptr-i" transform="translate(0, 114)">
+      <line x1="38" y1="0" x2="38" y2="-16" stroke="#2563eb" stroke-width="2" marker-end="url(#arr-blue)"/>
+      <rect x="8" y="0" width="60" height="24" rx="5" fill="#2563eb"/>
+      <text x="38" y="16" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">ptr i</text>
+    </g>
+
+    <!-- Mirror copy arc from k to i -->
+    <path class="mirror-arc" d="M 126 106 C 126 156, 478 156, 478 106" fill="none" stroke="#7c3aed" stroke-width="2.2" marker-end="url(#arr-violet)"/>
+    <g class="mirror-arc">
+      <rect x="214" y="138" width="176" height="22" rx="4" fill="#f5f3ff" stroke="#7c3aed"/>
+      <text x="302" y="153" class="mono" font-size="10.5" font-weight="700" fill="#6d28d9" text-anchor="middle">Copy Z[i] = Z[k] in O(1)</text>
+    </g>
+
+    <!-- Extend past R arrow -->
+    <path class="extend-arrow" d="M 604 106 C 604 156, 742 156, 742 106" fill="none" stroke="#d97706" stroke-width="2.2" marker-end="url(#arr-amber)"/>
+    <g class="extend-arrow">
+      <rect x="610" y="138" width="136" height="22" rx="4" fill="#fffbeb" stroke="#d97706"/>
+      <text x="678" y="153" class="mono" font-size="10.5" font-weight="700" fill="#b45309" text-anchor="middle">Extend R -&gt; 8</text>
+    </g>
+
+    <!-- 11 Cells of S = "ABA$ABABABA" -->
+    <!-- 0: A -->
+    <g transform="translate(0, 0)">
+      <text x="38" y="-10" class="mono" font-size="11" fill="#64748b" text-anchor="middle">0</text>
+      <rect x="0" y="0" width="76" height="44" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="38" y="28" class="mono" font-size="17" font-weight="700" fill="#1e3a8a" text-anchor="middle">A</text>
+      <rect x="0" y="56" width="76" height="36" rx="6" fill="#f1f5f9" stroke="#cbd5e1"/>
+      <text x="38" y="79" class="mono" font-size="15" font-weight="700" fill="#64748b" text-anchor="middle">-</text>
+    </g>
+    <!-- 1: B -->
+    <g transform="translate(88, 0)">
+      <text x="38" y="-10" class="mono" font-size="11" fill="#64748b" text-anchor="middle">1</text>
+      <rect x="0" y="0" width="76" height="44" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="38" y="28" class="mono" font-size="17" font-weight="700" fill="#1e3a8a" text-anchor="middle">B</text>
+      <rect x="0" y="56" width="76" height="36" rx="6" fill="#f5f3ff" stroke="#c4b5fd"/>
+      <text x="38" y="79" class="mono" font-size="15" font-weight="700" fill="#6d28d9" text-anchor="middle">0</text>
+    </g>
+    <!-- 2: A -->
+    <g transform="translate(176, 0)">
+      <text x="38" y="-10" class="mono" font-size="11" fill="#64748b" text-anchor="middle">2</text>
+      <rect x="0" y="0" width="76" height="44" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="38" y="28" class="mono" font-size="17" font-weight="700" fill="#1e3a8a" text-anchor="middle">A</text>
+      <rect x="0" y="56" width="76" height="36" rx="6" fill="#f5f3ff" stroke="#c4b5fd"/>
+      <text x="38" y="79" class="mono" font-size="15" font-weight="700" fill="#6d28d9" text-anchor="middle">1</text>
+    </g>
+    <!-- 3: $ -->
+    <g transform="translate(264, 0)">
+      <text x="38" y="-10" class="mono" font-size="11" fill="#64748b" text-anchor="middle">3</text>
+      <rect x="0" y="0" width="76" height="44" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="1.6"/>
+      <text x="38" y="28" class="mono" font-size="17" font-weight="700" fill="#b45309" text-anchor="middle">$</text>
+      <rect x="0" y="56" width="76" height="36" rx="6" fill="#f1f5f9" stroke="#cbd5e1"/>
+      <text x="38" y="79" class="mono" font-size="15" font-weight="700" fill="#64748b" text-anchor="middle">0</text>
+    </g>
+    <!-- 4: A (Match 0) -->
+    <g transform="translate(352, 0)">
+      <text x="38" y="-10" class="mono" font-size="11" fill="#64748b" text-anchor="middle">4</text>
+      <rect x="0" y="0" width="76" height="44" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+      <text x="38" y="28" class="mono" font-size="17" font-weight="700" fill="#0f172a" text-anchor="middle">A</text>
+      <rect x="0" y="56" width="76" height="36" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+      <text x="38" y="79" class="mono" font-size="15" font-weight="700" fill="#065f46" text-anchor="middle">3</text>
+    </g>
+    <!-- 5: B -->
+    <g transform="translate(440, 0)">
+      <text x="38" y="-10" class="mono" font-size="11" fill="#64748b" text-anchor="middle">5</text>
+      <rect x="0" y="0" width="76" height="44" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+      <text x="38" y="28" class="mono" font-size="17" font-weight="700" fill="#0f172a" text-anchor="middle">B</text>
+      <rect x="0" y="56" width="76" height="36" rx="6" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+      <text x="38" y="79" class="mono" font-size="15" font-weight="700" fill="#6d28d9" text-anchor="middle">0</text>
+    </g>
+    <!-- 6: A (Match 2) -->
+    <g transform="translate(528, 0)">
+      <text x="38" y="-10" class="mono" font-size="11" fill="#64748b" text-anchor="middle">6</text>
+      <rect x="0" y="0" width="76" height="44" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+      <text x="38" y="28" class="mono" font-size="17" font-weight="700" fill="#0f172a" text-anchor="middle">A</text>
+      <rect x="0" y="56" width="76" height="36" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+      <text x="38" y="79" class="mono" font-size="15" font-weight="700" fill="#065f46" text-anchor="middle">3</text>
+    </g>
+    <!-- 7: B -->
+    <g transform="translate(616, 0)">
+      <text x="38" y="-10" class="mono" font-size="11" fill="#64748b" text-anchor="middle">7</text>
+      <rect x="0" y="0" width="76" height="44" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+      <text x="38" y="28" class="mono" font-size="17" font-weight="700" fill="#0f172a" text-anchor="middle">B</text>
+      <rect x="0" y="56" width="76" height="36" rx="6" fill="#f1f5f9" stroke="#cbd5e1"/>
+      <text x="38" y="79" class="mono" font-size="15" font-weight="700" fill="#475569" text-anchor="middle">0</text>
+    </g>
+    <!-- 8: A (Match 4) -->
+    <g transform="translate(704, 0)">
+      <text x="38" y="-10" class="mono" font-size="11" fill="#64748b" text-anchor="middle">8</text>
+      <rect x="0" y="0" width="76" height="44" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+      <text x="38" y="28" class="mono" font-size="17" font-weight="700" fill="#0f172a" text-anchor="middle">A</text>
+      <rect x="0" y="56" width="76" height="36" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+      <text x="38" y="79" class="mono" font-size="15" font-weight="700" fill="#065f46" text-anchor="middle">3</text>
+    </g>
+    <!-- 9: B -->
+    <g transform="translate(792, 0)">
+      <text x="38" y="-10" class="mono" font-size="11" fill="#64748b" text-anchor="middle">9</text>
+      <rect x="0" y="0" width="76" height="44" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+      <text x="38" y="28" class="mono" font-size="17" font-weight="700" fill="#0f172a" text-anchor="middle">B</text>
+      <rect x="0" y="56" width="76" height="36" rx="6" fill="#f1f5f9" stroke="#cbd5e1"/>
+      <text x="38" y="79" class="mono" font-size="15" font-weight="700" fill="#475569" text-anchor="middle">0</text>
+    </g>
+    <!-- 10: A -->
+    <g transform="translate(880, 0)">
+      <text x="38" y="-10" class="mono" font-size="11" fill="#64748b" text-anchor="middle">10</text>
+      <rect x="0" y="0" width="76" height="44" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+      <text x="38" y="28" class="mono" font-size="17" font-weight="700" fill="#0f172a" text-anchor="middle">A</text>
+      <rect x="0" y="56" width="76" height="36" rx="6" fill="#f1f5f9" stroke="#cbd5e1"/>
+      <text x="38" y="79" class="mono" font-size="15" font-weight="700" fill="#475569" text-anchor="middle">1</text>
+    </g>
+  </g>
+
+  <!-- Four Decision Cards (Bottom) -->
+  <g transform="translate(24, 488)">
+    <rect class="card-c1" x="0" y="0" width="276" height="186" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+    <rect x="14" y="14" width="72" height="22" rx="4" fill="#2563eb"/>
+    <text x="50" y="29" class="sans" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">Case 1</text>
+    <text x="96" y="29" class="mono" font-size="12" font-weight="700" fill="#1e3a8a">i &gt; R (Outside Box)</text>
+    <text x="14" y="58" class="sans" font-size="11.5" fill="#334155">At i = 4, R = 2 so i &gt; R.</text>
+    <text x="14" y="78" class="sans" font-size="11.5" fill="#334155">Compare S[0..] vs S[4..] directly:</text>
+    <text x="14" y="100" class="mono" font-size="11" fill="#065f46">S[4..6]="ABA" == S[0..2]</text>
+    <text x="14" y="122" class="mono" font-size="11" fill="#1e3a8a">Z[4] = 3 == |P| (Match!)</text>
+    <rect x="14" y="138" width="248" height="34" rx="5" fill="#eff6ff" stroke="#93c5fd"/>
+    <text x="138" y="159" class="mono" font-size="11" font-weight="700" fill="#1d4ed8" text-anchor="middle">Update [L, R] = [4, 6]</text>
+
+    <rect class="card-c2a" x="292" y="0" width="276" height="186" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+    <rect x="306" y="14" width="72" height="22" rx="4" fill="#7c3aed"/>
+    <text x="342" y="29" class="sans" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">Case 2a</text>
+    <text x="388" y="29" class="mono" font-size="11.5" font-weight="700" fill="#6d28d9">Z[k] &lt; R - i + 1</text>
+    <text x="306" y="58" class="sans" font-size="11.5" fill="#334155">At i = 5 inside [4, 6]:</text>
+    <text x="306" y="78" class="mono" font-size="11" fill="#334155">k = i - L = 5 - 4 = 1</text>
+    <text x="306" y="100" class="mono" font-size="11" fill="#6d28d9">Z[1] = 0 &lt; (6 - 5 + 1 = 2)</text>
+    <text x="306" y="122" class="sans" font-size="11.5" fill="#334155">Strictly bounded by R; 0 checks!</text>
+    <rect x="306" y="138" width="248" height="34" rx="5" fill="#f5f3ff" stroke="#c4b5fd"/>
+    <text x="430" y="159" class="mono" font-size="11" font-weight="700" fill="#6d28d9" text-anchor="middle">Z[5] = Z[1] = 0 in O(1)</text>
+
+    <rect class="card-c2b" x="584" y="0" width="276" height="186" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+    <rect x="598" y="14" width="72" height="22" rx="4" fill="#d97706"/>
+    <text x="634" y="29" class="sans" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">Case 2b</text>
+    <text x="680" y="29" class="mono" font-size="11.5" font-weight="700" fill="#b45309">Z[k] &gt;= R - i + 1</text>
+    <text x="598" y="58" class="sans" font-size="11.5" fill="#334155">At i = 6 inside [4, 6]:</text>
+    <text x="598" y="78" class="mono" font-size="11" fill="#334155">k = 6 - 4 = 2; Z[2] = 1 &gt;= 1</text>
+    <text x="598" y="100" class="sans" font-size="11.5" fill="#334155">Start comparing past R + 1 = 7:</text>
+    <text x="598" y="122" class="mono" font-size="11" fill="#065f46">S[7..8]="BA" == S[1..2]</text>
+    <rect x="598" y="138" width="248" height="34" rx="5" fill="#fffbeb" stroke="#fcd34d"/>
+    <text x="722" y="159" class="mono" font-size="11" font-weight="700" fill="#b45309" text-anchor="middle">Z[6] = 3; [L, R] = [6, 8]</text>
+
+    <rect class="card-match" x="876" y="0" width="276" height="186" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+    <rect x="890" y="14" width="72" height="22" rx="4" fill="#059669"/>
+    <text x="926" y="29" class="sans" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">Linearity</text>
+    <text x="972" y="29" class="sans" font-size="12" font-weight="700" fill="#065f46">Amortized O(N)</text>
+    <text x="890" y="58" class="sans" font-size="11.5" fill="#334155">Every successful char check</text>
+    <text x="890" y="78" class="sans" font-size="11.5" fill="#334155">advances right bound R by +1.</text>
+    <text x="890" y="100" class="mono" font-size="11" fill="#334155">R &lt;= N, mismatches &lt;= N</text>
+    <text x="890" y="122" class="sans" font-size="11.5" fill="#065f46">Total comparisons &lt;= 2N.</text>
+    <rect x="890" y="138" width="248" height="34" rx="5" fill="#ecfdf5" stroke="#6ee7b7"/>
+    <text x="1014" y="159" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">Report i where Z[i] == |P|</text>
+  </g>
+</svg>

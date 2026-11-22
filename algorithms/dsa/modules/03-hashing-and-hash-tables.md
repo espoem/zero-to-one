@@ -91,6 +91,10 @@ All key-value pairs are stored directly in the table array itself ($m \ge n \imp
 - The step size depends on a second hash function $h_2(k)$ (which must be relatively prime to $m$, guaranteed if $m$ is prime and $1 \le h_2(k) < m$).
 - Produces $\Theta(m^2)$ distinct probe sequences, closely approximating ideal uniform hashing.
 
+![Hash Table Collision Resolution: Separate Chaining vs Open Addressing Probing](../assets/03-hashing-chaining-vs-open-addressing-animated.svg)
+
+_Animated lookup and insertion paths contrasting Separate Chaining ($\Theta(1 + \alpha)$) against Open Addressing probes: Linear Probing (primary clustering and tombstone necessity), Quadratic Probing (secondary clustering), and Double Hashing ($\Theta(m^2)$ distinct probe sequences)._
+
 #### D. Robin Hood Hashing
 
 Robin Hood hashing is an open addressing variant that minimizes the variance of probe sequence lengths:
@@ -98,6 +102,10 @@ Robin Hood hashing is an open addressing variant that minimizes the variance of 
 - Each slot stores its **Distance to Initial Bucket (DIB)**: $\text{DIB} = (\text{curr-slot} - h(k) + m) \pmod m$.
 - During insertion, if the incoming element has a larger DIB than the element currently occupying the slot ($\text{DIB}_{\text{new}} > \text{DIB}_{\text{existing}}$), the incoming element **steals the slot** ("robs the rich to give to the poor"), and the displaced element continues probing.
 - **Result**: Guarantees very low maximum probe lengths, making search failures exit early as soon as $\text{DIB}_{\text{probe}} < \text{DIB}_{\text{slot}}$.
+
+![Robin Hood Hashing: Distance-to-Initial-Bucket (DIB) Swap & Early-Exit Lookup](../assets/03-robin-hood-hashing-animated.svg)
+
+Animated Robin Hood hashing trace showing $\text{DIB}$ calculation, stealing slot 4 from a lower-$\text{DIB}$ occupant during insertion, and early-exit termination of an unsuccessful search once $\text{DIB}_{\text{probe}} > \text{DIB}_{\text{slot}}$.
 
 ---
 
@@ -152,6 +160,10 @@ flowchart LR
 ### The $O(1)$ Rolling Update Formula
 
 When sliding a window of length $k$ from $S[i \dots i+k-1]$ to $S[i+1 \dots i+k]$: $$H_{\text{new}} = \left( \left( H_{\text{old}} - S[i] \cdot B^{k-1} \right) \cdot B + S[i+k] \right) \pmod M$$ By precomputing $B^{k-1} \pmod M$, rolling the hash window takes $O(1)$ arithmetic operations, enabling average-case $O(n + m)$ substring search.
+
+![Carter-Wegman Universal Hashing & Rabin-Karp O(1) Rolling Hash (M_31)](../assets/03-universal-and-rabin-karp-rolling-hash-animated.svg)
+
+Animated overview of Carter-Wegman universal hashing against Hash-Flooding DoS paired with Rabin-Karp's $O(1)$ sliding-window update and division-free Mersenne prime $M_{31} = 2^{31} - 1$ reduction.
 
 ---
 

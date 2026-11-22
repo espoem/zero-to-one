@@ -1,0 +1,165 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 650" width="1160" height="650" role="img" aria-labelledby="title desc">
+  <title id="title">Activity Selection &amp; The Exchange Argument Proof</title>
+  <desc id="desc">Top-left animates Activity Selection sorted by finish time f_i, advancing scanline lastEnd from 3 to 7 to 11 while selecting [1,3], [4,7], and [8,11] and rejecting overlapping intervals. Bottom-left animates the Exchange Argument swapping o_1=[2,5] with greedy g_1=[1,3] in O' = (O \ {o_1}) U {g_1} because f(g_1) &lt;= f(o_1) &lt;= s(o_2). Right panel summarizes the 4-step proof schema and why start-time or duration sorting fails.</desc>
+  <style><![CDATA[
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    /* 9s 3-step animation */
+    @keyframes tStep1 { 0%, 32% { opacity: 1; } 33%, 100% { opacity: 0; } }
+    @keyframes tStep2 { 0%, 32% { opacity: 0; } 33%, 65% { opacity: 1; } 66%, 100% { opacity: 0; } }
+    @keyframes tStep3 { 0%, 65% { opacity: 0; } 66%, 100% { opacity: 1; } }
+
+    @keyframes scanMove {
+      0%, 32%   { transform: translateX(0px); }
+      33%, 65%  { transform: translateX(180px); }
+      66%, 100% { transform: translateX(360px); }
+    }
+
+    @keyframes exchBefore { 0%, 48% { opacity: 1; } 52%, 100% { opacity: 0.86; } }
+    @keyframes exchAfter  { 0%, 48% { opacity: 0.86; } 52%, 100% { opacity: 1; } }
+
+    .ts1 { animation: tStep1 9s infinite; }
+    .ts2 { animation: tStep2 9s infinite; }
+    .ts3 { animation: tStep3 9s infinite; }
+    .scanline { animation: scanMove 9s infinite; }
+    .ex-b { animation: exchBefore 8s infinite; }
+    .ex-a { animation: exchAfter  8s infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ts1, .ts2 { animation: none !important; opacity: 0 !important; }
+      .ts3, .ex-a { animation: none !important; opacity: 1 !important; }
+      .ex-b { animation: none !important; opacity: 0.86 !important; }
+      .scanline { animation: none !important; transform: translateX(360px) !important; }
+    }
+  ]]></style>
+
+  <!-- Canvas & Header -->
+  <rect x="0" y="0" width="1160" height="650" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1160" height="60" rx="12" fill="#0f172a"/>
+  <rect x="0" y="44" width="1160" height="16" fill="#0f172a"/>
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Activity Selection (Interval Scheduling) &amp; The Exchange Argument Proof</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">Sort ascending by finish time f_i; swap o_1 with g_1 since f(g_1) &lt;= f(o_1) &lt;= s(o_2) leaves O' feasible and optimal</text>
+
+  <!-- TOP-LEFT PANEL: Activity Selection Timeline -->
+  <rect x="20" y="76" width="670" height="290" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="38" y="100" class="sans" font-size="14" font-weight="700" fill="#0f172a">1. Greedy Timeline: Intervals Sorted by Finish Time f_i</text>
+
+  <!-- Step Status Pill -->
+  <g class="ts1"><rect x="408" y="84" width="264" height="24" rx="5" fill="#ecfdf5" stroke="#6ee7b7"/><text x="540" y="100" class="mono" font-size="11" font-weight="700" text-anchor="middle" fill="#065f46">Pick g1=[1,3], lastEnd=3 (skip x1,x2)</text></g>
+  <g class="ts2"><rect x="408" y="84" width="264" height="24" rx="5" fill="#ecfdf5" stroke="#6ee7b7"/><text x="540" y="100" class="mono" font-size="11" font-weight="700" text-anchor="middle" fill="#065f46">Pick g2=[4,7] (4&gt;=3), lastEnd=7</text></g>
+  <g class="ts3"><rect x="408" y="84" width="264" height="24" rx="5" fill="#ecfdf5" stroke="#6ee7b7"/><text x="540" y="100" class="mono" font-size="11" font-weight="700" text-anchor="middle" fill="#065f46">Pick g3=[8,11] (8&gt;=7) -&gt; |G| = 3</text></g>
+
+  <!-- Time Axis 0..12 at x=90..630 (45px per unit) -->
+  <line x1="90" y1="336" x2="640" y2="336" stroke="#64748b" stroke-width="1.5"/>
+  <text x="90" y="352" class="mono" font-size="10.5" text-anchor="middle" fill="#475569">0</text>
+  <text x="225" y="352" class="mono" font-size="10.5" text-anchor="middle" fill="#475569">3</text>
+  <text x="270" y="352" class="mono" font-size="10.5" text-anchor="middle" fill="#475569">4</text>
+  <text x="405" y="352" class="mono" font-size="10.5" text-anchor="middle" fill="#475569">7</text>
+  <text x="450" y="352" class="mono" font-size="10.5" text-anchor="middle" fill="#475569">8</text>
+  <text x="585" y="352" class="mono" font-size="10.5" text-anchor="middle" fill="#475569">11</text>
+
+  <!-- Animated lastEnd vertical scanline starting at t=3 (x=225) -> t=7 (x=405) -> t=11 (x=585) -->
+  <g class="scanline">
+    <line x1="225" y1="120" x2="225" y2="336" stroke="#2563eb" stroke-width="2" stroke-dasharray="5 3"/>
+    <rect x="193" y="114" width="64" height="18" rx="4" fill="#2563eb"/>
+    <text x="225" y="127" class="mono" font-size="10" font-weight="700" text-anchor="middle" fill="#ffffff">lastEnd</text>
+  </g>
+
+  <!-- Interval Bars (x = 90 + t*45) -->
+  <!-- g1: [1,3] -> x=135, w=90 -->
+  <rect x="135" y="138" width="90" height="26" rx="5" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="180" y="155" class="mono" font-size="11" font-weight="700" text-anchor="middle" fill="#065f46">g1 [1, 3]</text>
+  <text x="645" y="155" class="sans" font-size="10.5" font-weight="700" text-anchor="end" fill="#065f46">PICK</text>
+
+  <!-- x1: [0,4] -> x=90, w=180 -->
+  <rect x="90" y="170" width="180" height="26" rx="5" fill="#fff1f2" stroke="#fda4af" stroke-dasharray="4 3"/>
+  <text x="180" y="187" class="mono" font-size="11" text-anchor="middle" fill="#9f1239">x1 [0, 4] (s=0 &lt; 3)</text>
+  <text x="645" y="187" class="sans" font-size="10.5" font-weight="700" text-anchor="end" fill="#e11d48">SKIP</text>
+
+  <!-- x2: [2,6] -> x=180, w=180 -->
+  <rect x="180" y="202" width="180" height="26" rx="5" fill="#fff1f2" stroke="#fda4af" stroke-dasharray="4 3"/>
+  <text x="270" y="219" class="mono" font-size="11" text-anchor="middle" fill="#9f1239">x2 [2, 6] (s=2 &lt; 3)</text>
+  <text x="645" y="219" class="sans" font-size="10.5" font-weight="700" text-anchor="end" fill="#e11d48">SKIP</text>
+
+  <!-- g2: [4,7] -> x=270, w=135 -->
+  <rect x="270" y="234" width="135" height="26" rx="5" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="337" y="251" class="mono" font-size="11" font-weight="700" text-anchor="middle" fill="#065f46">g2 [4, 7]</text>
+  <text x="645" y="251" class="sans" font-size="10.5" font-weight="700" text-anchor="end" fill="#065f46">PICK</text>
+
+  <!-- x3: [5,9] -> x=315, w=180 -->
+  <rect x="315" y="266" width="180" height="26" rx="5" fill="#fff1f2" stroke="#fda4af" stroke-dasharray="4 3"/>
+  <text x="405" y="283" class="mono" font-size="11" text-anchor="middle" fill="#9f1239">x3 [5, 9] (s=5 &lt; 7)</text>
+  <text x="645" y="283" class="sans" font-size="10.5" font-weight="700" text-anchor="end" fill="#e11d48">SKIP</text>
+
+  <!-- g3: [8,11] -> x=450, w=135 -->
+  <rect x="450" y="298" width="135" height="26" rx="5" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="517" y="315" class="mono" font-size="11" font-weight="700" text-anchor="middle" fill="#065f46">g3 [8, 11]</text>
+  <text x="645" y="315" class="sans" font-size="10.5" font-weight="700" text-anchor="end" fill="#065f46">PICK</text>
+
+  <!-- BOTTOM-LEFT PANEL: Exchange Argument Swap Animation -->
+  <rect x="20" y="380" width="670" height="190" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="38" y="404" class="sans" font-size="14" font-weight="700" fill="#0f172a">2. Exchange Argument: Swapping o_1 with g_1 Preserves Optimality</text>
+
+  <!-- Row O (Hypothetical Optimal) -->
+  <text x="38" y="442" class="mono" font-size="12" font-weight="700" fill="#475569">Optimal O:</text>
+  <g class="ex-b">
+    <rect x="135" y="424" width="145" height="28" rx="6" fill="#fff1f2" stroke="#e11d48" stroke-width="1.8"/>
+    <text x="207" y="442" class="mono" font-size="11" font-weight="700" text-anchor="middle" fill="#9f1239">o1 [2, 5] (swap out)</text>
+  </g>
+  <rect x="315" y="424" width="110" height="28" rx="6" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="370" y="442" class="mono" font-size="11" font-weight="700" text-anchor="middle" fill="#1e3a8a">o2 [6, 8]</text>
+  <rect x="455" y="424" width="125" height="28" rx="6" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="517" y="442" class="mono" font-size="11" font-weight="700" text-anchor="middle" fill="#1e3a8a">o3 [9, 11]</text>
+
+  <!-- Row O' (Exchanged) -->
+  <text x="38" y="492" class="mono" font-size="12" font-weight="700" fill="#065f46">Swapped O':</text>
+  <g class="ex-a">
+    <rect x="120" y="474" width="105" height="28" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="172" y="492" class="mono" font-size="11" font-weight="700" text-anchor="middle" fill="#065f46">g1 [1, 3]</text>
+    <text x="272" y="492" class="mono" font-size="10.5" font-weight="700" text-anchor="middle" fill="#059669">+gap!</text>
+  </g>
+  <rect x="315" y="474" width="110" height="28" rx="6" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="370" y="492" class="mono" font-size="11" font-weight="700" text-anchor="middle" fill="#1e3a8a">o2 [6, 8]</text>
+  <rect x="455" y="474" width="125" height="28" rx="6" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="517" y="492" class="mono" font-size="11" font-weight="700" text-anchor="middle" fill="#1e3a8a">o3 [9, 11]</text>
+
+  <rect x="38" y="514" width="634" height="42" rx="6" fill="#f5f3ff" stroke="#c4b5fd"/>
+  <text x="52" y="532" class="mono" font-size="11.5" font-weight="700" fill="#5b21b6">Because f(g1)=3 &lt;= f(o1)=5 &lt;= s(o2)=6, g1 cannot overlap o2!</text>
+  <text x="52" y="548" class="sans" font-size="11" fill="#334155">O' = (O \ {o1}) U {g1} stays valid with |O'| = |O| = 3. Repeat inductively until O becomes G.</text>
+
+  <!-- RIGHT PANEL: 4-Step Proof Schema & Counterexamples -->
+  <rect x="708" y="76" width="432" height="494" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="726" y="100" class="sans" font-size="14" font-weight="700" fill="#0f172a">3. The 4-Step Exchange Schema</text>
+
+  <rect x="726" y="116" width="396" height="58" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="740" y="137" class="sans" font-size="12" font-weight="700" fill="#1e3a8a">Step 1: Define Greedy G &amp; Optimal O</text>
+  <text x="740" y="158" class="sans" font-size="11" fill="#334155">Sort both sequences G={g1..gk} and O={o1..om} by finish time.</text>
+
+  <rect x="726" y="184" width="396" height="58" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="740" y="205" class="sans" font-size="12" font-weight="700" fill="#1e3a8a">Step 2: Locate First Discrepancy i</text>
+  <text x="740" y="226" class="sans" font-size="11" fill="#334155">Smallest index i where g_i != o_i (all j &lt; i match identically).</text>
+
+  <rect x="726" y="252" width="396" height="58" rx="8" fill="#f5f3ff" stroke="#c4b5fd"/>
+  <text x="740" y="273" class="sans" font-size="12" font-weight="700" fill="#5b21b6">Step 3: Construct Exchange O'</text>
+  <text x="740" y="294" class="mono" font-size="11" fill="#334155">O' = (O \ {o_i}) U {g_i}</text>
+
+  <rect x="726" y="320" width="396" height="68" rx="8" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <text x="740" y="341" class="sans" font-size="12" font-weight="700" fill="#065f46">Step 4: Prove Feasibility &amp; Dominance</text>
+  <text x="740" y="361" class="sans" font-size="11" fill="#334155">f(g_i) &lt;= f(o_i) guarantees no new conflicts and |O'| = |O|.</text>
+  <text x="740" y="378" class="sans" font-size="11" fill="#065f46">By induction over differences, |G| = |O| -&gt; Greedy is optimal.</text>
+
+  <!-- Why Other Heuristics Fail -->
+  <rect x="726" y="402" width="396" height="150" rx="8" fill="#fff1f2" stroke="#fda4af"/>
+  <text x="740" y="424" class="sans" font-size="12.5" font-weight="700" fill="#9f1239">Why Alternative Greedy Sorts Fail:</text>
+  <text x="740" y="446" class="sans" font-size="11" font-weight="700" fill="#334155">1. Earliest Start Time (s_i):</text>
+  <text x="740" y="463" class="sans" font-size="11" fill="#475569">   A long interval [0, 100] blocks [1,2], [3,4], [5,6] (1 vs 3).</text>
+  <text x="740" y="486" class="sans" font-size="11" font-weight="700" fill="#334155">2. Shortest Duration (f_i - s_i):</text>
+  <text x="740" y="503" class="sans" font-size="11" fill="#475569">   Short [4, 6] overlapping [1, 5] &amp; [5, 9] yields 1 instead of 2.</text>
+  <text x="740" y="532" class="sans" font-size="11" font-weight="700" fill="#065f46">Only earliest finish f_i maximizes remaining horizon!</text>
+
+  <!-- Footer -->
+  <rect x="20" y="582" width="1120" height="54" rx="10" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="38" y="605" class="mono" font-size="11.5" font-weight="700" fill="#0f172a">Time: O(n log n) for sort + O(n) single scan  |  Space: O(1) auxiliary (in-place) or O(n) output</text>
+  <text x="38" y="624" class="sans" font-size="11" fill="#475569">Exact match condition: sorted[i].start &gt;= lastEnd (non-overlapping endpoints).</text>
+</svg>

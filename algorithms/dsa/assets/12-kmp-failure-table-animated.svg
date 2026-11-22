@@ -1,0 +1,378 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" width="1200" height="700" role="img" aria-labelledby="title desc">
+  <title id="title">Knuth-Morris-Pratt (KMP) Algorithm: LPS Failure Table and Monotonic Text Scan</title>
+  <desc id="desc">Animated step-by-step diagram of the KMP string matching algorithm showing precomputed pi (LPS) table for pattern ABABD, text pointer i advancing monotonically without backtracking through text ABABCABABD, mismatch at i=4 triggering j = pi[3] = 2 pattern shift, and final match at index 5.</desc>
+  <defs>
+    <style>
+      .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+      .pattern-group { animation: kmp-slide 12s ease-in-out infinite; }
+      .ptr-i { animation: kmp-ptr-i 12s ease-in-out infinite; }
+      .ptr-j { animation: kmp-ptr-j 12s ease-in-out infinite; }
+
+      .hi-match-1 { animation: kmp-m1 12s linear infinite; }
+      .hi-mismatch { animation: kmp-mis 12s linear infinite; }
+      .hi-jump-arc { animation: kmp-arc 12s linear infinite; stroke-dasharray: 6 4; }
+      .hi-lps-cell { animation: kmp-lps-hi 12s linear infinite; }
+      .hi-match-2 { animation: kmp-m2 12s linear infinite; }
+
+      .st-1 { animation: step-1 12s linear infinite; }
+      .st-2 { animation: step-2 12s linear infinite; }
+      .st-3 { animation: step-3 12s linear infinite; }
+      .st-4 { animation: step-4 12s linear infinite; }
+      .st-5 { animation: step-5 12s linear infinite; }
+
+      /* Slide pattern P across T cells (cell step = 76px) */
+      @keyframes kmp-slide {
+        0%, 38%   { transform: translateX(0px); }     /* P aligned at T[0..4] */
+        46%, 64%  { transform: translateX(152px); }   /* j=pi[3]=2 -> shift +2 cells */
+        72%, 78%  { transform: translateX(304px); }   /* j=0 mismatch -> shift to T[4] */
+        84%, 100% { transform: translateX(380px); }   /* aligned at T[5..9], full match */
+      }
+
+      /* Text pointer i never moves backward! */
+      @keyframes kmp-ptr-i {
+        0%, 16%   { transform: translateX(228px); }   /* i = 3 */
+        22%, 76%  { transform: translateX(304px); }   /* i = 4 (pinned during all j fallbacks!) */
+        84%, 100% { transform: translateX(684px); }   /* i = 9 (match end) */
+      }
+
+      /* Pattern pointer j (relative to pattern group) */
+      @keyframes kmp-ptr-j {
+        0%, 16%   { transform: translateX(228px); }   /* j = 3 */
+        22%, 38%  { transform: translateX(304px); }   /* j = 4 (mismatch 'D' vs 'C') */
+        46%, 64%  { transform: translateX(152px); }   /* j = pi[3] = 2 */
+        72%, 78%  { transform: translateX(0px); }     /* j = 0 */
+        84%, 100% { transform: translateX(304px); }   /* j = 4 (match!) */
+      }
+
+      @keyframes kmp-m1 {
+        0%, 38% { opacity: 1; }
+        42%, 100% { opacity: 0.86; }
+      }
+      @keyframes kmp-mis {
+        0%, 18% { opacity: 0; }
+        22%, 40% { opacity: 1; }
+        46%, 100% { opacity: 0; }
+      }
+      @keyframes kmp-arc {
+        0%, 36% { opacity: 0; stroke-dashoffset: 0; }
+        42%, 64% { opacity: 1; stroke-dashoffset: -40; }
+        70%, 100% { opacity: 0; }
+      }
+      @keyframes kmp-lps-hi {
+        0%, 36% { opacity: 0.86; }
+        42%, 64% { opacity: 1; }
+        70%, 100% { opacity: 0.86; }
+      }
+      @keyframes kmp-m2 {
+        0%, 82% { opacity: 0; }
+        86%, 100% { opacity: 1; }
+      }
+
+      @keyframes step-1 { 0%, 18% { opacity: 1; stroke: #2563eb; stroke-width: 2; } 22%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } }
+      @keyframes step-2 { 0%, 18% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } 22%, 38% { opacity: 1; stroke: #e11d48; stroke-width: 2; } 44%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } }
+      @keyframes step-3 { 0%, 38% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } 44%, 64% { opacity: 1; stroke: #d97706; stroke-width: 2; } 70%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } }
+      @keyframes step-4 { 0%, 64% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } 70%, 79% { opacity: 1; stroke: #7c3aed; stroke-width: 2; } 84%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } }
+      @keyframes step-5 { 0%, 79% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } 84%, 100% { opacity: 1; stroke: #059669; stroke-width: 2; } }
+
+      @media (prefers-reduced-motion: reduce) {
+        * { animation: none !important; transition: none !important; }
+        .pattern-group { transform: translateX(0px); }
+        .ptr-i { transform: translateX(304px); }
+        .ptr-j { transform: translateX(304px); }
+        .hi-match-1, .hi-mismatch, .hi-jump-arc, .hi-lps-cell { opacity: 1 !important; }
+        .hi-match-2 { opacity: 0 !important; }
+        .st-1, .st-2, .st-3, .st-4, .st-5 { opacity: 1 !important; }
+      }
+    </style>
+
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+    </marker>
+    <marker id="arr-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+    </marker>
+    <marker id="arr-violet" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1200" height="700" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1200" height="62" rx="12" fill="#0f172a"/>
+  <rect x="0" y="46" width="1200" height="16" fill="#0f172a"/>
+  <text x="24" y="29" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Knuth-Morris-Pratt (KMP) · LPS / &#960; Failure Table &amp; Zero-Backtrack Scan</text>
+  <text x="24" y="49" class="sans" font-size="12" fill="#94a3b8">Text pointer i advances monotonically in O(n); mismatch at j retreats pattern pointer via j = &#960;[j - 1] in O(m) space</text>
+
+  <!-- Top Left Card: Precomputed LPS / pi Table -->
+  <rect x="24" y="78" width="564" height="176" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <rect x="24" y="78" width="564" height="32" rx="10" fill="#f1f5f9"/>
+  <rect x="24" y="102" width="564" height="8" fill="#f1f5f9"/>
+  <text x="40" y="99" class="sans" font-size="12.5" font-weight="700" fill="#0f172a">1. Precomputed &#960; (LPS) Array on Pattern P = "ABABD" (m = 5)</text>
+  <text x="572" y="99" class="mono" font-size="11" fill="#64748b" text-anchor="end">O(m) preprocessing</text>
+
+  <!-- LPS Table Grid -->
+  <g transform="translate(46, 124)">
+    <text x="0" y="18" class="mono" font-size="11" font-weight="700" fill="#64748b">idx</text>
+    <text x="0" y="46" class="mono" font-size="11" font-weight="700" fill="#0f172a">P[k]</text>
+    <text x="0" y="76" class="mono" font-size="11" font-weight="700" fill="#7c3aed">&#960;[k]</text>
+
+    <!-- Cols k = 0..4 -->
+    <g transform="translate(54, 0)">
+      <text x="32" y="18" class="mono" font-size="11" fill="#64748b" text-anchor="middle">0</text>
+      <rect x="4" y="26" width="56" height="28" rx="5" fill="#eff6ff" stroke="#93c5fd"/>
+      <text x="32" y="45" class="mono" font-size="14" font-weight="700" fill="#1e3a8a" text-anchor="middle">A</text>
+      <rect x="4" y="58" width="56" height="28" rx="5" fill="#f5f3ff" stroke="#c4b5fd"/>
+      <text x="32" y="77" class="mono" font-size="14" font-weight="700" fill="#6d28d9" text-anchor="middle">0</text>
+    </g>
+    <g transform="translate(120, 0)">
+      <text x="32" y="18" class="mono" font-size="11" fill="#64748b" text-anchor="middle">1</text>
+      <rect x="4" y="26" width="56" height="28" rx="5" fill="#eff6ff" stroke="#93c5fd"/>
+      <text x="32" y="45" class="mono" font-size="14" font-weight="700" fill="#1e3a8a" text-anchor="middle">B</text>
+      <rect x="4" y="58" width="56" height="28" rx="5" fill="#f5f3ff" stroke="#c4b5fd"/>
+      <text x="32" y="77" class="mono" font-size="14" font-weight="700" fill="#6d28d9" text-anchor="middle">0</text>
+    </g>
+    <g transform="translate(186, 0)">
+      <text x="32" y="18" class="mono" font-size="11" fill="#64748b" text-anchor="middle">2</text>
+      <rect x="4" y="26" width="56" height="28" rx="5" fill="#eff6ff" stroke="#93c5fd"/>
+      <text x="32" y="45" class="mono" font-size="14" font-weight="700" fill="#1e3a8a" text-anchor="middle">A</text>
+      <rect x="4" y="58" width="56" height="28" rx="5" fill="#f5f3ff" stroke="#c4b5fd"/>
+      <text x="32" y="77" class="mono" font-size="14" font-weight="700" fill="#6d28d9" text-anchor="middle">1</text>
+    </g>
+    <g transform="translate(252, 0)">
+      <text x="32" y="18" class="mono" font-size="11" fill="#64748b" text-anchor="middle">3</text>
+      <rect x="4" y="26" width="56" height="28" rx="5" fill="#ecfdf5" stroke="#059669" stroke-width="1.6"/>
+      <text x="32" y="45" class="mono" font-size="14" font-weight="700" fill="#065f46" text-anchor="middle">B</text>
+      <rect class="hi-lps-cell" x="4" y="58" width="56" height="28" rx="5" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+      <text x="32" y="77" class="mono" font-size="14" font-weight="700" fill="#b45309" text-anchor="middle">2</text>
+    </g>
+    <g transform="translate(318, 0)">
+      <text x="32" y="18" class="mono" font-size="11" fill="#64748b" text-anchor="middle">4</text>
+      <rect x="4" y="26" width="56" height="28" rx="5" fill="#fff1f2" stroke="#fda4af"/>
+      <text x="32" y="45" class="mono" font-size="14" font-weight="700" fill="#9f1239" text-anchor="middle">D</text>
+      <rect x="4" y="58" width="56" height="28" rx="5" fill="#f5f3ff" stroke="#c4b5fd"/>
+      <text x="32" y="77" class="mono" font-size="14" font-weight="700" fill="#6d28d9" text-anchor="middle">0</text>
+    </g>
+
+    <!-- Prefix == Suffix Bracket Explanation -->
+    <rect x="394" y="20" width="132" height="72" rx="6" fill="#fffbeb" stroke="#fcd34d"/>
+    <text x="460" y="39" class="sans" font-size="11" font-weight="700" fill="#92400e" text-anchor="middle">&#960;[3] = 2</text>
+    <text x="460" y="57" class="mono" font-size="10.5" fill="#78350f" text-anchor="middle">prefix "AB" ==</text>
+    <text x="460" y="73" class="mono" font-size="10.5" fill="#78350f" text-anchor="middle">suffix "AB"</text>
+  </g>
+  <text x="46" y="238" class="mono" font-size="11" fill="#475569">&#960;[i] = max { k : 0 &lt;= k &lt; i  and  P[0..k-1] = P[i-k+1..i] }</text>
+
+  <!-- Top Right Card: Amortized Complexity Proof -->
+  <rect x="612" y="78" width="564" height="176" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <rect x="612" y="78" width="564" height="32" rx="10" fill="#f1f5f9"/>
+  <rect x="612" y="102" width="564" height="8" fill="#f1f5f9"/>
+  <text x="628" y="99" class="sans" font-size="12.5" font-weight="700" fill="#0f172a">2. Amortized O(n + m) Potential Proof</text>
+  <text x="1160" y="99" class="mono" font-size="11" fill="#059669" font-weight="700" text-anchor="end">Strict Linear Bound</text>
+
+  <g transform="translate(628, 124)">
+    <rect x="0" y="0" width="256" height="54" rx="6" fill="#eff6ff" stroke="#93c5fd"/>
+    <text x="12" y="20" class="sans" font-size="11.5" font-weight="700" fill="#1e3a8a">Monotonic Text Index i</text>
+    <text x="12" y="38" class="sans" font-size="11" fill="#334155">i increments &lt;= n times; NEVER decrements.</text>
+
+    <rect x="272" y="0" width="260" height="54" rx="6" fill="#ecfdf5" stroke="#6ee7b7"/>
+    <text x="284" y="20" class="sans" font-size="11.5" font-weight="700" fill="#065f46">Bounded Fallback on j</text>
+    <text x="284" y="38" class="sans" font-size="11" fill="#334155">j increments &lt;= n times; j &gt;= 0 bounds &#960; jumps.</text>
+
+    <rect x="0" y="66" width="532" height="46" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="14" y="86" class="mono" font-size="11.5" font-weight="700" fill="#0f172a">if (T[i] === P[j]) { i++; j++; }  else if (j !== 0) { j = lps[j - 1]; }</text>
+    <text x="14" y="103" class="sans" font-size="10.5" fill="#64748b">Potential &#934; = j: every failure transition strictly decreases &#934; by at least 1, so total work &lt;= 2n.</text>
+  </g>
+
+  <!-- Main Animation Stage: Text T & Sliding Pattern P -->
+  <rect x="24" y="270" width="1152" height="296" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <rect x="24" y="270" width="1152" height="32" rx="10" fill="#f1f5f9"/>
+  <rect x="24" y="294" width="1152" height="8" fill="#f1f5f9"/>
+  <text x="40" y="291" class="sans" font-size="12.5" font-weight="700" fill="#0f172a">3. Live Alignment Trace: Text T = "ABABCABABD" (n = 10) vs Pattern P = "ABABD" (m = 5)</text>
+  <text x="1160" y="291" class="mono" font-size="11" fill="#2563eb" font-weight="700" text-anchor="end">Match reported at T[5..9]</text>
+
+  <!-- Origin of cell grid: x=210 (cell width=64, gap=12 -> stride=76) -->
+  <!-- Row labels -->
+  <text x="46" y="384" class="sans" font-size="13" font-weight="700" fill="#0f172a">Text T[0..9]</text>
+  <text x="46" y="401" class="mono" font-size="10.5" fill="#64748b">(fixed array)</text>
+
+  <text x="46" y="476" class="sans" font-size="13" font-weight="700" fill="#1e3a8a">Pattern P[0..4]</text>
+  <text x="46" y="493" class="mono" font-size="10.5" fill="#2563eb">(slides forward)</text>
+
+  <!-- Animated Pointer i above Text T -->
+  <g transform="translate(210, 314)">
+    <g class="ptr-i">
+      <rect x="4" y="0" width="56" height="24" rx="5" fill="#2563eb"/>
+      <text x="32" y="16" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">ptr i</text>
+      <line x1="32" y1="24" x2="32" y2="38" stroke="#2563eb" stroke-width="2" marker-end="url(#arr-blue)"/>
+    </g>
+  </g>
+
+  <!-- Fixed Text T cells (stride = 76px, starting x = 210) -->
+  <g transform="translate(210, 356)">
+    <!-- 0: A -->
+    <g transform="translate(0, 0)">
+      <rect x="0" y="0" width="64" height="46" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+      <rect class="hi-match-1" x="0" y="0" width="64" height="46" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+      <text x="32" y="29" class="mono" font-size="18" font-weight="700" fill="#0f172a" text-anchor="middle">A</text>
+      <text x="32" y="-4" class="mono" font-size="10" fill="#64748b" text-anchor="middle">0</text>
+    </g>
+    <!-- 1: B -->
+    <g transform="translate(76, 0)">
+      <rect x="0" y="0" width="64" height="46" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+      <rect class="hi-match-1" x="0" y="0" width="64" height="46" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+      <text x="32" y="29" class="mono" font-size="18" font-weight="700" fill="#0f172a" text-anchor="middle">B</text>
+      <text x="32" y="-4" class="mono" font-size="10" fill="#64748b" text-anchor="middle">1</text>
+    </g>
+    <!-- 2: A -->
+    <g transform="translate(152, 0)">
+      <rect x="0" y="0" width="64" height="46" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+      <rect class="hi-match-1" x="0" y="0" width="64" height="46" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+      <text x="32" y="29" class="mono" font-size="18" font-weight="700" fill="#0f172a" text-anchor="middle">A</text>
+      <text x="32" y="-4" class="mono" font-size="10" fill="#64748b" text-anchor="middle">2</text>
+    </g>
+    <!-- 3: B -->
+    <g transform="translate(228, 0)">
+      <rect x="0" y="0" width="64" height="46" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+      <rect class="hi-match-1" x="0" y="0" width="64" height="46" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+      <text x="32" y="29" class="mono" font-size="18" font-weight="700" fill="#0f172a" text-anchor="middle">B</text>
+      <text x="32" y="-4" class="mono" font-size="10" fill="#64748b" text-anchor="middle">3</text>
+    </g>
+    <!-- 4: C -->
+    <g transform="translate(304, 0)">
+      <rect x="0" y="0" width="64" height="46" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+      <rect class="hi-mismatch" x="0" y="0" width="64" height="46" rx="6" fill="#fff1f2" stroke="#e11d48" stroke-width="2.2"/>
+      <text x="32" y="29" class="mono" font-size="18" font-weight="700" fill="#0f172a" text-anchor="middle">C</text>
+      <text x="32" y="-4" class="mono" font-size="10" fill="#64748b" text-anchor="middle">4</text>
+    </g>
+    <!-- 5: A -->
+    <g transform="translate(380, 0)">
+      <rect x="0" y="0" width="64" height="46" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+      <rect class="hi-match-2" x="0" y="0" width="64" height="46" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+      <text x="32" y="29" class="mono" font-size="18" font-weight="700" fill="#0f172a" text-anchor="middle">A</text>
+      <text x="32" y="-4" class="mono" font-size="10" fill="#64748b" text-anchor="middle">5</text>
+    </g>
+    <!-- 6: B -->
+    <g transform="translate(456, 0)">
+      <rect x="0" y="0" width="64" height="46" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+      <rect class="hi-match-2" x="0" y="0" width="64" height="46" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+      <text x="32" y="29" class="mono" font-size="18" font-weight="700" fill="#0f172a" text-anchor="middle">B</text>
+      <text x="32" y="-4" class="mono" font-size="10" fill="#64748b" text-anchor="middle">6</text>
+    </g>
+    <!-- 7: A -->
+    <g transform="translate(532, 0)">
+      <rect x="0" y="0" width="64" height="46" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+      <rect class="hi-match-2" x="0" y="0" width="64" height="46" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+      <text x="32" y="29" class="mono" font-size="18" font-weight="700" fill="#0f172a" text-anchor="middle">A</text>
+      <text x="32" y="-4" class="mono" font-size="10" fill="#64748b" text-anchor="middle">7</text>
+    </g>
+    <!-- 8: B -->
+    <g transform="translate(608, 0)">
+      <rect x="0" y="0" width="64" height="46" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+      <rect class="hi-match-2" x="0" y="0" width="64" height="46" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+      <text x="32" y="29" class="mono" font-size="18" font-weight="700" fill="#0f172a" text-anchor="middle">B</text>
+      <text x="32" y="-4" class="mono" font-size="10" fill="#64748b" text-anchor="middle">8</text>
+    </g>
+    <!-- 9: D -->
+    <g transform="translate(684, 0)">
+      <rect x="0" y="0" width="64" height="46" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+      <rect class="hi-match-2" x="0" y="0" width="64" height="46" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+      <text x="32" y="29" class="mono" font-size="18" font-weight="700" fill="#0f172a" text-anchor="middle">D</text>
+      <text x="32" y="-4" class="mono" font-size="10" fill="#64748b" text-anchor="middle">9</text>
+    </g>
+  </g>
+
+  <!-- Sliding Pattern P Group -->
+  <g transform="translate(210, 444)">
+    <g class="pattern-group">
+      <!-- 0: A -->
+      <g transform="translate(0, 0)">
+        <rect x="0" y="0" width="64" height="46" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.6"/>
+        <text x="32" y="29" class="mono" font-size="18" font-weight="700" fill="#1e3a8a" text-anchor="middle">A</text>
+        <text x="32" y="61" class="mono" font-size="10" fill="#64748b" text-anchor="middle">j=0</text>
+      </g>
+      <!-- 1: B -->
+      <g transform="translate(76, 0)">
+        <rect x="0" y="0" width="64" height="46" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.6"/>
+        <text x="32" y="29" class="mono" font-size="18" font-weight="700" fill="#1e3a8a" text-anchor="middle">B</text>
+        <text x="32" y="61" class="mono" font-size="10" fill="#64748b" text-anchor="middle">j=1</text>
+      </g>
+      <!-- 2: A -->
+      <g transform="translate(152, 0)">
+        <rect x="0" y="0" width="64" height="46" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.6"/>
+        <text x="32" y="29" class="mono" font-size="18" font-weight="700" fill="#1e3a8a" text-anchor="middle">A</text>
+        <text x="32" y="61" class="mono" font-size="10" fill="#64748b" text-anchor="middle">j=2</text>
+      </g>
+      <!-- 3: B -->
+      <g transform="translate(228, 0)">
+        <rect x="0" y="0" width="64" height="46" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.6"/>
+        <text x="32" y="29" class="mono" font-size="18" font-weight="700" fill="#1e3a8a" text-anchor="middle">B</text>
+        <text x="32" y="61" class="mono" font-size="10" fill="#64748b" text-anchor="middle">j=3</text>
+      </g>
+      <!-- 4: D -->
+      <g transform="translate(304, 0)">
+        <rect x="0" y="0" width="64" height="46" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.6"/>
+        <rect class="hi-mismatch" x="0" y="0" width="64" height="46" rx="6" fill="#fff1f2" stroke="#e11d48" stroke-width="2.2"/>
+        <text x="32" y="29" class="mono" font-size="18" font-weight="700" fill="#1e3a8a" text-anchor="middle">D</text>
+        <text x="32" y="61" class="mono" font-size="10" fill="#64748b" text-anchor="middle">j=4</text>
+      </g>
+
+      <!-- Failure link arc inside pattern: j=4 falls back to j = pi[3] = 2 -->
+      <path class="hi-jump-arc" d="M 336 -4 C 336 -28, 184 -28, 184 -4" fill="none" stroke="#d97706" stroke-width="2.4" marker-end="url(#arr-amber)"/>
+      <g class="hi-jump-arc">
+        <rect x="208" y="-32" width="106" height="20" rx="4" fill="#fffbeb" stroke="#d97706"/>
+        <text x="261" y="-18" class="mono" font-size="10.5" font-weight="700" fill="#b45309" text-anchor="middle">j = &#960;[3] = 2</text>
+      </g>
+
+      <!-- Animated Pointer j below Pattern P -->
+      <g class="ptr-j" transform="translate(0, 72)">
+        <line x1="32" y1="-2" x2="32" y2="-16" stroke="#d97706" stroke-width="2" marker-end="url(#arr-amber)"/>
+        <rect x="4" y="0" width="56" height="24" rx="5" fill="#d97706"/>
+        <text x="32" y="16" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">ptr j</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- Step Legend Bar (Bottom) -->
+  <g transform="translate(24, 582)">
+    <rect class="st-1" x="0" y="0" width="218" height="92" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+    <circle cx="22" cy="22" r="10" fill="#2563eb"/>
+    <text x="22" y="26" class="sans" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">1</text>
+    <text x="38" y="26" class="sans" font-size="12" font-weight="700" fill="#1e3a8a">Prefix Match</text>
+    <text x="14" y="48" class="mono" font-size="10.5" fill="#334155">T[0..3] == P[0..3] ("ABAB")</text>
+    <text x="14" y="66" class="sans" font-size="10.5" fill="#64748b">i and j advance together to 4.</text>
+
+    <rect class="st-2" x="234" y="0" width="218" height="92" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+    <circle cx="256" cy="22" r="10" fill="#e11d48"/>
+    <text x="256" y="26" class="sans" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">2</text>
+    <text x="272" y="26" class="sans" font-size="12" font-weight="700" fill="#9f1239">Mismatch at i=4, j=4</text>
+    <text x="248" y="48" class="mono" font-size="10.5" fill="#334155">T[4]='C' != P[4]='D'</text>
+    <text x="248" y="66" class="sans" font-size="10.5" fill="#64748b">i stays pinned; never backtracks!</text>
+
+    <rect class="st-3" x="468" y="0" width="218" height="92" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+    <circle cx="490" cy="22" r="10" fill="#d97706"/>
+    <text x="490" y="26" class="sans" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">3</text>
+    <text x="506" y="26" class="sans" font-size="12" font-weight="700" fill="#b45309">LPS Fallback Jump</text>
+    <text x="482" y="48" class="mono" font-size="10.5" fill="#334155">j = &#960;[3] = 2 (skip 2 chars)</text>
+    <text x="482" y="66" class="sans" font-size="10.5" fill="#64748b">Reuses matched suffix "AB".</text>
+
+    <rect class="st-4" x="702" y="0" width="218" height="92" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+    <circle cx="724" cy="22" r="10" fill="#7c3aed"/>
+    <text x="724" y="26" class="sans" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">4</text>
+    <text x="740" y="26" class="sans" font-size="12" font-weight="700" fill="#6d28d9">Cascade to j=0</text>
+    <text x="716" y="48" class="mono" font-size="10.5" fill="#334155">T[4]='C' != P[2]='A' -> j=0</text>
+    <text x="716" y="66" class="sans" font-size="10.5" fill="#64748b">T[4]='C' != P[0]='A' -> i=5.</text>
+
+    <rect class="st-5" x="936" y="0" width="216" height="92" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+    <circle cx="958" cy="22" r="10" fill="#059669"/>
+    <text x="958" y="26" class="sans" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">5</text>
+    <text x="974" y="26" class="sans" font-size="12" font-weight="700" fill="#065f46">Full Match Found</text>
+    <text x="950" y="48" class="mono" font-size="10.5" fill="#334155">T[5..9] == P[0..4] ("ABABD")</text>
+    <text x="950" y="66" class="sans" font-size="10.5" fill="#64748b">Match at i - m = 5 in O(n+m).</text>
+  </g>
+</svg>

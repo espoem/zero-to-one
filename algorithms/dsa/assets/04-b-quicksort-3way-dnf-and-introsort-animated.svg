@@ -1,0 +1,252 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 540" width="1080" height="540" role="img" aria-labelledby="title desc">
+  <title id="title">Dijkstra 3-Way DNF Partition and Introsort Guardrail</title>
+  <desc id="desc">Animated Dijkstra 3-Way Dutch National Flag partitioning with moving lt, i, and gt pointers on [4, 2, 7, 4, 1, 4, 8] paired with Introsort branching to Insertion Sort and Heapsort.</desc>
+  <style>
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    /* ===== 3-WAY DNF (12s cycle) on [4, 2, 7, 4, 1, 4, 8], p=4, stride=70px ===== */
+    @keyframes dnfI {
+      0%, 8%   { transform: translateX(0px); }     /* i = 0 */
+      10%, 16% { transform: translateX(70px); }    /* i = 1 */
+      18%, 60% { transform: translateX(140px); }   /* i = 2 (stays at 2 on >p swaps!) */
+      63%, 68% { transform: translateX(210px); }   /* i = 3 */
+      70%, 75% { transform: translateX(280px); }   /* i = 4 */
+      78%, 92% { transform: translateX(350px); }   /* i = 5 (> gt, done) */
+      96%, 100%{ transform: translateX(0px); }
+    }
+    @keyframes dnfLt {
+      0%, 16%  { transform: translateX(0px); }     /* lt = 0 */
+      18%, 75% { transform: translateX(70px); }    /* lt = 1 */
+      78%, 92% { transform: translateX(140px); }   /* lt = 2 */
+      96%, 100%{ transform: translateX(0px); }
+    }
+    @keyframes dnfGt {
+      0%, 30%  { transform: translateX(0px); }     /* gt = 6 */
+      32%, 46% { transform: translateX(-70px); }   /* gt = 5 */
+      48%, 92% { transform: translateX(-140px); }  /* gt = 4 */
+      96%, 100%{ transform: translateX(0px); }
+    }
+
+    /* e0 = 4 (idx 0 -> idx 1 at 18..28%, idx 1 -> idx 4 at 78..88%) */
+    @keyframes dnfE0 {
+      0%, 18%  { transform: translate(0px, 0px); }
+      23%      { transform: translate(35px, 14px); }
+      28%, 78% { transform: translate(70px, 0px); }
+      83%      { transform: translate(175px, 16px); }
+      88%, 92% { transform: translate(280px, 0px); }
+      96%, 100%{ transform: translate(0px, 0px); }
+    }
+    /* e1 = 2 (idx 1 -> idx 0 at 18..28%) */
+    @keyframes dnfE1 {
+      0%, 18%  { transform: translate(0px, 0px); }
+      23%      { transform: translate(-35px, -14px); }
+      28%, 92% { transform: translate(-70px, 0px); }
+      96%, 100%{ transform: translate(0px, 0px); }
+    }
+    /* e2 = 7 (idx 2 -> idx 6 at 32..42%) */
+    @keyframes dnfE2 {
+      0%, 32%  { transform: translate(0px, 0px); }
+      37%      { transform: translate(140px, 16px); }
+      42%, 92% { transform: translate(280px, 0px); }
+      96%, 100%{ transform: translate(0px, 0px); }
+    }
+    /* e6 = 8 (idx 6 -> idx 2 at 32..42%, idx 2 -> idx 5 at 48..58%) */
+    @keyframes dnfE6 {
+      0%, 32%  { transform: translate(0px, 0px); }
+      37%      { transform: translate(-140px, -16px); }
+      42%, 48% { transform: translate(-280px, 0px); }
+      53%      { transform: translate(-175px, -16px); }
+      58%, 92% { transform: translate(-70px, 0px); }
+      96%, 100%{ transform: translate(0px, 0px); }
+    }
+    /* e5 = 4 (idx 5 -> idx 2 at 48..58%) */
+    @keyframes dnfE5 {
+      0%, 48%  { transform: translate(0px, 0px); }
+      53%      { transform: translate(-105px, 14px); }
+      58%, 92% { transform: translate(-210px, 0px); }
+      96%, 100%{ transform: translate(0px, 0px); }
+    }
+    /* e4 = 1 (idx 4 -> idx 1 at 78..88%) */
+    @keyframes dnfE4 {
+      0%, 78%  { transform: translate(0px, 0px); }
+      83%      { transform: translate(-105px, -16px); }
+      88%, 92% { transform: translate(-210px, 0px); }
+      96%, 100%{ transform: translate(0px, 0px); }
+    }
+
+    /* ===== INTROSORT FLOW ===== */
+    @keyframes flowDash {
+      0% { stroke-dashoffset: 24; }
+      100% { stroke-dashoffset: 0; }
+    }
+    @keyframes guardPulse {
+      0%, 100% { opacity: 0.9; }
+      50% { opacity: 1; }
+    }
+
+    .dnf-i { animation: dnfI 12s ease-in-out infinite; }
+    .dnf-lt { animation: dnfLt 12s ease-in-out infinite; }
+    .dnf-gt { animation: dnfGt 12s ease-in-out infinite; }
+    .dnf-e0 { animation: dnfE0 12s ease-in-out infinite; }
+    .dnf-e1 { animation: dnfE1 12s ease-in-out infinite; }
+    .dnf-e2 { animation: dnfE2 12s ease-in-out infinite; }
+    .dnf-e4 { animation: dnfE4 12s ease-in-out infinite; }
+    .dnf-e5 { animation: dnfE5 12s ease-in-out infinite; }
+    .dnf-e6 { animation: dnfE6 12s ease-in-out infinite; }
+    .flow-edge { stroke-dasharray: 6 4; animation: flowDash 1.8s linear infinite; }
+    .guard-card { animation: guardPulse 4s ease-in-out infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+      .dnf-i, .dnf-lt, .dnf-gt,
+      .dnf-e0, .dnf-e1, .dnf-e2, .dnf-e4, .dnf-e5, .dnf-e6 {
+        transform: none !important;
+      }
+      .guard-card { opacity: 1 !important; }
+    }
+  </style>
+
+  <defs>
+    <marker id="arr-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <marker id="arr-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1080" height="540" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1080" height="58" rx="12" fill="#0f172a"/>
+  <rect x="0" y="42" width="1080" height="16" fill="#0f172a"/>
+  <text x="24" y="26" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Dijkstra 3-Way DNF Partition &amp; Introsort Guardrail</text>
+  <text x="24" y="45" class="sans" font-size="12" fill="#94a3b8">Live (lt, i, gt) duplicate-key partitioning and C++ std::sort depth-limited fallback</text>
+
+  <!-- ==================== TOP PANEL: 3-WAY DNF ==================== -->
+  <rect x="20" y="70" width="1040" height="224" rx="10" fill="#ffffff" stroke="#a7f3d0" stroke-width="1.5"/>
+  <rect x="20" y="70" width="1040" height="34" rx="10" fill="#ecfdf5"/>
+  <rect x="20" y="94" width="1040" height="10" fill="#ecfdf5"/>
+  <text x="36" y="92" class="sans" font-size="13" font-weight="700" fill="#065f46">1. Dijkstra 3-Way Dutch National Flag (lt, i, gt · Pivot = 4)</text>
+
+  <rect x="868" y="76" width="176" height="22" rx="11" fill="#059669"/>
+  <text x="956" y="91" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">O(n) Few-Unique Keys</text>
+
+  <!-- 7 slot guides: x=38, stride=70, w=58, h=46 -->
+  <rect x="38" y="152" width="58" height="46" rx="6" fill="#f8fafc" stroke="#e2e8f0" stroke-dasharray="3 3"/>
+  <rect x="108" y="152" width="58" height="46" rx="6" fill="#f8fafc" stroke="#e2e8f0" stroke-dasharray="3 3"/>
+  <rect x="178" y="152" width="58" height="46" rx="6" fill="#f8fafc" stroke="#e2e8f0" stroke-dasharray="3 3"/>
+  <rect x="248" y="152" width="58" height="46" rx="6" fill="#f8fafc" stroke="#e2e8f0" stroke-dasharray="3 3"/>
+  <rect x="318" y="152" width="58" height="46" rx="6" fill="#f8fafc" stroke="#e2e8f0" stroke-dasharray="3 3"/>
+  <rect x="388" y="152" width="58" height="46" rx="6" fill="#f8fafc" stroke="#e2e8f0" stroke-dasharray="3 3"/>
+  <rect x="458" y="152" width="58" height="46" rx="6" fill="#f8fafc" stroke="#e2e8f0" stroke-dasharray="3 3"/>
+
+  <!-- Scan pointer i above -->
+  <g class="dnf-i">
+    <rect x="47" y="120" width="40" height="22" rx="4" fill="#059669"/>
+    <text x="67" y="135" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">i</text>
+  </g>
+
+  <!-- Animated elements [4, 2, 7, 4, 1, 4, 8] -->
+  <g class="dnf-e0">
+    <rect x="38" y="152" width="58" height="46" rx="6" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/>
+    <text x="67" y="180" class="mono" font-size="15" font-weight="700" fill="#065f46" text-anchor="middle">4</text>
+  </g>
+  <g class="dnf-e1">
+    <rect x="108" y="152" width="58" height="46" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="137" y="180" class="mono" font-size="15" font-weight="700" fill="#1e3a8a" text-anchor="middle">2</text>
+  </g>
+  <g class="dnf-e2">
+    <rect x="178" y="152" width="58" height="46" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="207" y="180" class="mono" font-size="15" font-weight="700" fill="#92400e" text-anchor="middle">7</text>
+  </g>
+  <g>
+    <rect x="248" y="152" width="58" height="46" rx="6" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/>
+    <text x="277" y="180" class="mono" font-size="15" font-weight="700" fill="#065f46" text-anchor="middle">4</text>
+  </g>
+  <g class="dnf-e4">
+    <rect x="318" y="152" width="58" height="46" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="347" y="180" class="mono" font-size="15" font-weight="700" fill="#1e3a8a" text-anchor="middle">1</text>
+  </g>
+  <g class="dnf-e5">
+    <rect x="388" y="152" width="58" height="46" rx="6" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/>
+    <text x="417" y="180" class="mono" font-size="15" font-weight="700" fill="#065f46" text-anchor="middle">4</text>
+  </g>
+  <g class="dnf-e6">
+    <rect x="458" y="152" width="58" height="46" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="487" y="180" class="mono" font-size="15" font-weight="700" fill="#92400e" text-anchor="middle">8</text>
+  </g>
+
+  <!-- Pointers lt and gt below -->
+  <g class="dnf-lt">
+    <rect x="47" y="208" width="40" height="22" rx="4" fill="#2563eb"/>
+    <text x="67" y="223" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">lt</text>
+  </g>
+  <g class="dnf-gt">
+    <rect x="467" y="208" width="40" height="22" rx="4" fill="#d97706"/>
+    <text x="487" y="223" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">gt</text>
+  </g>
+
+  <!-- Final invariant bands below -->
+  <rect x="38" y="246" width="128" height="32" rx="5" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="102" y="266" class="mono" font-size="11" font-weight="700" fill="#1e3a8a" text-anchor="middle">&lt; p: [2, 1]</text>
+
+  <rect x="178" y="246" width="198" height="32" rx="5" fill="#059669"/>
+  <text x="277" y="266" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">== p: [4, 4, 4] (skip!)</text>
+
+  <rect x="388" y="246" width="128" height="32" rx="5" fill="#fef3c7" stroke="#d97706"/>
+  <text x="452" y="266" class="mono" font-size="11" font-weight="700" fill="#92400e" text-anchor="middle">&gt; p: [8, 7]</text>
+
+  <!-- Transition rules card -->
+  <rect x="546" y="118" width="494" height="160" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="564" y="142" class="sans" font-size="12.5" font-weight="700" fill="#065f46">Three-Pointer Invariant Transitions</text>
+  <text x="564" y="168" class="mono" font-size="11.5" font-weight="700" fill="#1e3a8a">A[i] &lt; p : swap(lt, i); lt++; i++</text>
+  <text x="564" y="192" class="mono" font-size="11.5" font-weight="700" fill="#065f46">A[i] == p: i++  (absorbs into == p)</text>
+  <text x="564" y="216" class="mono" font-size="11.5" font-weight="700" fill="#92400e">A[i] &gt; p : swap(i, gt); gt--  (keep i!)</text>
+  <line x1="564" y1="232" x2="1022" y2="232" stroke="#e2e8f0"/>
+  <text x="564" y="256" class="sans" font-size="11.5" fill="#334155">Recurse only on [lo..lt-1] and [gt+1..hi]; == p stays settled.</text>
+
+  <!-- ==================== BOTTOM PANEL: INTROSORT ==================== -->
+  <rect x="20" y="310" width="1040" height="216" rx="10" fill="#ffffff" stroke="#ddd6fe" stroke-width="1.5"/>
+  <rect x="20" y="310" width="1040" height="34" rx="10" fill="#f5f3ff"/>
+  <rect x="20" y="334" width="1040" height="10" fill="#f5f3ff"/>
+  <text x="36" y="332" class="sans" font-size="13" font-weight="700" fill="#5b21b6">2. Introsort Hybrid Guardrail (C++ std::sort)</text>
+
+  <rect x="860" y="316" width="184" height="22" rx="11" fill="#7c3aed"/>
+  <text x="952" y="331" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">Worst Case O(n log n)</text>
+
+  <!-- Start node -->
+  <rect x="40" y="388" width="250" height="90" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="165" y="414" class="sans" font-size="13" font-weight="700" fill="#1e3a8a" text-anchor="middle">Quicksort (median-of-3)</text>
+  <text x="165" y="438" class="mono" font-size="11.5" font-weight="700" fill="#2563eb" text-anchor="middle">depth = 2 · ⌊log₂ n⌋</text>
+  <text x="165" y="460" class="sans" font-size="11" fill="#475569" text-anchor="middle">Fast in-place average path</text>
+
+  <!-- Branch badges and clear non-crossing arrows -->
+  <rect x="318" y="366" width="90" height="24" rx="4" fill="#ecfdf5" stroke="#a7f3d0"/>
+  <text x="363" y="382" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">n ≤ 16</text>
+  <path d="M 290 412 L 434 398" fill="none" stroke="#059669" stroke-width="2" class="flow-edge" marker-end="url(#arr-emerald)"/>
+
+  <rect x="308" y="482" width="110" height="24" rx="4" fill="#fff1f2" stroke="#fda4af"/>
+  <text x="363" y="498" class="mono" font-size="11" font-weight="700" fill="#9f1239" text-anchor="middle">depth == 0</text>
+  <path d="M 290 454 L 434 468" fill="none" stroke="#e11d48" stroke-width="2" class="flow-edge" marker-end="url(#arr-rose)"/>
+
+  <!-- Insertion Sort node -->
+  <rect x="440" y="362" width="268" height="68" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="574" y="388" class="sans" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">Insertion Sort</text>
+  <text x="574" y="410" class="mono" font-size="11.5" fill="#047857" text-anchor="middle">L1 cache-line optimal</text>
+
+  <!-- Heapsort Fallback node -->
+  <rect x="440" y="442" width="268" height="68" rx="8" fill="#fff1f2" stroke="#e11d48" stroke-width="1.5" class="guard-card"/>
+  <text x="574" y="468" class="sans" font-size="13" font-weight="700" fill="#9f1239" text-anchor="middle">Heapsort Fallback</text>
+  <text x="574" y="490" class="mono" font-size="11.5" fill="#be123c" text-anchor="middle">Caps worst case O(n log n)</text>
+
+  <!-- Right guarantees card -->
+  <rect x="732" y="362" width="308" height="148" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="750" y="386" class="sans" font-size="12.5" font-weight="700" fill="#0f172a">Production Guarantees</text>
+  <text x="750" y="412" class="sans" font-size="11.5" fill="#334155">• Typical arrays stay in fast Quicksort</text>
+  <text x="750" y="436" class="sans" font-size="11.5" fill="#334155">• Killer inputs trigger Heapsort at 0</text>
+  <text x="750" y="460" class="sans" font-size="11.5" fill="#334155">• Tiny slices finish in Insertion Sort</text>
+  <text x="750" y="486" class="mono" font-size="11" font-weight="700" fill="#5b21b6">Unstable (use TimSort for stability)</text>
+</svg>

@@ -1,0 +1,232 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" width="1200" height="720" role="img" aria-labelledby="title desc">
+  <title id="title">Work-Span Model, Brent's Theorem, and Parallel Merge Sort Binary-Search Split</title>
+  <desc id="desc">Dual-panel animated diagram matching Module 14: Left panel shows a computation DAG with Work T_1 = 10 tasks and critical path Span T_inf = 4 levels alongside Brent's greedy scheduler bound T_p &lt;= (T_1 - T_inf)/p + T_inf; Right panel shows Fully Parallel Merge Sort splitting sorted halves A = [2, 5, 8, 12] and B = [1, 4, 9, 14] via binary search on pivot 5 and merging sub-arrays concurrently across Core 0 and Core 1 in O(log^3 n) span.</desc>
+  <defs>
+    <style>
+      .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+      .crit-edge  { animation: crit-flow 10s linear infinite; stroke-dasharray: 6 4; }
+      .brent-bar  { animation: bar-sweep 10s ease-in-out infinite; transform-box: fill-box; transform-origin: left center; }
+      .bsearch-ar { animation: bs-flow 10s linear infinite; stroke-dasharray: 5 4; }
+      .core-spawn { animation: core-go 10s linear infinite; stroke-dasharray: 5 4; }
+
+      @keyframes crit-flow { 0%, 100% { stroke-dashoffset: -40; } }
+      @keyframes bar-sweep {
+        0%, 15%   { transform: scaleX(0.28); }
+        45%, 85%  { transform: scaleX(1); }
+        95%, 100% { transform: scaleX(0.28); }
+      }
+      @keyframes bs-flow { 0%, 20% { opacity: 0.86; } 28%, 100% { opacity: 1; stroke-dashoffset: -36; } }
+      @keyframes core-go { 0%, 45% { opacity: 0.86; } 55%, 100% { opacity: 1; stroke-dashoffset: -36; } }
+
+      @media (prefers-reduced-motion: reduce) {
+        * { animation: none !important; transition: none !important; }
+        .brent-bar { transform: scaleX(1); }
+        .bsearch-ar, .core-spawn { opacity: 1 !important; }
+      }
+    </style>
+
+    <marker id="arr-slate" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8"/>
+    </marker>
+    <marker id="arr-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+    </marker>
+    <marker id="arr-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1200" height="720" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1200" height="62" rx="12" fill="#0f172a"/>
+  <rect x="0" y="46" width="1200" height="16" fill="#0f172a"/>
+  <text x="24" y="29" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Work-Span Parallelism, Brent's Theorem &amp; Parallel Merge Sort</text>
+  <text x="24" y="49" class="sans" font-size="12" fill="#94a3b8">Quantifying multicore scalability via Work T_1, critical-path Span T_&#8734;, and binary-search merge partitioning</text>
+
+  <!-- ==================== LEFT PANEL: WORK-SPAN DAG & BRENT ==================== -->
+  <rect x="24" y="78" width="564" height="618" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+  <rect x="24" y="78" width="564" height="36" rx="10" fill="#eff6ff"/>
+  <rect x="24" y="104" width="564" height="10" fill="#eff6ff"/>
+  <text x="40" y="101" class="sans" font-size="13" font-weight="700" fill="#1e3a8a">1. Computation DAG: Work (T_1) vs Span (T_&#8734;)</text>
+  <text x="572" y="101" class="mono" font-size="11" font-weight="700" fill="#e11d48" text-anchor="end">P = T_1 / T_&#8734; = 2.5</text>
+
+  <!-- DAG Levels -->
+  <!-- Level labels on left -->
+  <g class="mono" font-size="10.5" font-weight="700" fill="#64748b">
+    <text x="44" y="156">step 1</text>
+    <text x="44" y="218">step 2</text>
+    <text x="44" y="280">step 3</text>
+    <text x="44" y="342">step 4</text>
+  </g>
+
+  <!-- Non-critical DAG edges -->
+  <line x1="256" y1="168" x2="310" y2="200" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arr-slate)"/>
+  <line x1="256" y1="168" x2="410" y2="200" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arr-slate)"/>
+  <line x1="322" y1="230" x2="322" y2="260" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arr-slate)"/>
+  <line x1="422" y1="230" x2="422" y2="260" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arr-slate)"/>
+  <line x1="422" y1="230" x2="495" y2="260" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arr-slate)"/>
+  <line x1="322" y1="292" x2="345" y2="322" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arr-slate)"/>
+  <line x1="422" y1="292" x2="375" y2="322" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arr-slate)"/>
+
+  <!-- Critical Path Edges (Rose Animated) -->
+  <path class="crit-edge" d="M 224 168 L 172 200" fill="none" stroke="#e11d48" stroke-width="2.8" marker-end="url(#arr-rose)"/>
+  <path class="crit-edge" d="M 160 232 L 160 260" fill="none" stroke="#e11d48" stroke-width="2.8" marker-end="url(#arr-rose)"/>
+  <path class="crit-edge" d="M 176 292 L 222 322" fill="none" stroke="#e11d48" stroke-width="2.8" marker-end="url(#arr-rose)"/>
+
+  <!-- DAG Nodes (10 total tasks = T_1) -->
+  <!-- Step 1 -->
+  <circle cx="240" cy="152" r="18" fill="#fff1f2" stroke="#e11d48" stroke-width="2.2"/>
+  <text x="240" y="157" class="mono" font-size="11.5" font-weight="700" fill="#9f1239" text-anchor="middle">v0</text>
+  <!-- Step 2 -->
+  <circle cx="160" cy="214" r="18" fill="#fff1f2" stroke="#e11d48" stroke-width="2.2"/>
+  <text x="160" y="219" class="mono" font-size="11.5" font-weight="700" fill="#9f1239" text-anchor="middle">v1</text>
+  <circle cx="322" cy="214" r="18" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.8"/>
+  <text x="322" y="219" class="mono" font-size="11.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">v2</text>
+  <circle cx="422" cy="214" r="18" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.8"/>
+  <text x="422" y="219" class="mono" font-size="11.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">v3</text>
+  <!-- Step 3 -->
+  <circle cx="160" cy="276" r="18" fill="#fff1f2" stroke="#e11d48" stroke-width="2.2"/>
+  <text x="160" y="281" class="mono" font-size="11.5" font-weight="700" fill="#9f1239" text-anchor="middle">v4</text>
+  <circle cx="322" cy="276" r="18" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.8"/>
+  <text x="322" y="281" class="mono" font-size="11.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">v5</text>
+  <circle cx="422" cy="276" r="18" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.8"/>
+  <text x="422" y="281" class="mono" font-size="11.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">v6</text>
+  <circle cx="504" cy="276" r="18" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.8"/>
+  <text x="504" y="281" class="mono" font-size="11.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">v7</text>
+  <!-- Step 4 -->
+  <circle cx="240" cy="338" r="18" fill="#fff1f2" stroke="#e11d48" stroke-width="2.2"/>
+  <text x="240" y="343" class="mono" font-size="11.5" font-weight="700" fill="#9f1239" text-anchor="middle">v8</text>
+  <circle cx="360" cy="338" r="18" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.8"/>
+  <text x="360" y="343" class="mono" font-size="11.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">v9</text>
+
+  <!-- Critical path legend pill -->
+  <rect x="44" y="232" width="90" height="36" rx="5" fill="#fff1f2" stroke="#fda4af"/>
+  <text x="89" y="248" class="mono" font-size="10" font-weight="700" fill="#be123c" text-anchor="middle">Critical Path</text>
+  <text x="89" y="262" class="mono" font-size="10" font-weight="700" fill="#be123c" text-anchor="middle">T_&#8734; = 4</text>
+
+  <!-- Brent's Theorem Core Timeline Bars -->
+  <g transform="translate(42, 378)">
+    <rect x="0" y="0" width="528" height="148" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="16" y="24" class="sans" font-size="12" font-weight="700" fill="#0f172a">Greedy Scheduler Execution vs Core Count p</text>
+
+    <text x="104" y="54" class="mono" font-size="11" fill="#334155" text-anchor="end">p = 1 core :</text>
+    <rect x="116" y="39" width="380" height="20" rx="4" fill="#e2e8f0"/>
+    <rect class="brent-bar" x="116" y="39" width="380" height="20" rx="4" fill="#64748b"/>
+    <text x="306" y="53" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">T_1 = 10 steps</text>
+
+    <text x="104" y="88" class="mono" font-size="11" fill="#1e3a8a" text-anchor="end">p = 2 cores:</text>
+    <rect x="116" y="73" width="210" height="20" rx="4" fill="#dbeafe"/>
+    <rect class="brent-bar" x="116" y="73" width="210" height="20" rx="4" fill="#2563eb"/>
+    <text x="221" y="87" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">T_2 = 5 (&lt;= 10/2 + 4)</text>
+
+    <text x="104" y="122" class="mono" font-size="11" fill="#065f46" text-anchor="end">p = 4 cores:</text>
+    <rect x="116" y="107" width="152" height="20" rx="4" fill="#d1fae5"/>
+    <rect class="brent-bar" x="116" y="107" width="152" height="20" rx="4" fill="#059669"/>
+    <text x="192" y="121" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">T_4 = 4 = T_&#8734;</text>
+    <text x="278" y="121" class="sans" font-size="10.5" font-weight="700" fill="#be123c">Span-bound floor!</text>
+  </g>
+
+  <!-- Laws Summary -->
+  <g transform="translate(42, 540)">
+    <rect x="0" y="0" width="528" height="136" rx="8" fill="#eff6ff" stroke="#93c5fd"/>
+    <text x="16" y="24" class="sans" font-size="12" font-weight="700" fill="#1e3a8a">Fundamental Laws &amp; Brent's Theorem</text>
+    <text x="16" y="48" class="mono" font-size="11" fill="#334155">&#8226; Work Law: T_p &gt;= T_1 / p     &#8226; Span Law: T_p &gt;= T_&#8734;</text>
+    <text x="16" y="72" class="mono" font-size="11" font-weight="700" fill="#1d4ed8">&#8226; Brent's Bound: T_p &lt;= (T_1 - T_&#8734;) / p + T_&#8734;</text>
+    <text x="16" y="96" class="sans" font-size="11" fill="#334155">Near-linear speedup (T_p ≈ T_1 / p) holds whenever p &lt;&lt; T_1 / T_&#8734;.</text>
+    <text x="16" y="118" class="sans" font-size="11" fill="#64748b">Once p exceeds parallelism P, extra cores sit idle on T_&#8734;.</text>
+  </g>
+
+  <!-- ==================== RIGHT PANEL: PARALLEL MERGE SORT ==================== -->
+  <rect x="612" y="78" width="564" height="618" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+  <rect x="612" y="78" width="564" height="36" rx="10" fill="#ecfdf5"/>
+  <rect x="612" y="104" width="564" height="10" fill="#ecfdf5"/>
+  <text x="628" y="101" class="sans" font-size="13" font-weight="700" fill="#065f46">2. Fully Parallel Merge Sort (Binary-Search Split)</text>
+  <text x="1160" y="101" class="mono" font-size="11" font-weight="700" fill="#059669" text-anchor="end">T_&#8734; = O(log^3 n)</text>
+
+  <!-- Two Sorted Halves A and B -->
+  <g transform="translate(640, 134)">
+    <text x="0" y="14" class="sans" font-size="11.5" font-weight="700" fill="#1e3a8a">Sorted Half A[0..3]</text>
+    <g transform="translate(0, 24)">
+      <rect x="0" width="54" height="38" rx="5" fill="#eff6ff" stroke="#3b82f6"/><text x="27" y="24" class="mono" font-size="14" font-weight="700" fill="#1e3a8a" text-anchor="middle">2</text>
+      <rect x="60" width="54" height="38" rx="5" fill="#fef3c7" stroke="#d97706" stroke-width="2.2"/><text x="87" y="24" class="mono" font-size="14" font-weight="700" fill="#92400e" text-anchor="middle">5</text>
+      <text x="87" y="52" class="mono" font-size="10" font-weight="700" fill="#b45309" text-anchor="middle">pivot mid</text>
+      <rect x="120" width="54" height="38" rx="5" fill="#eff6ff" stroke="#3b82f6"/><text x="147" y="24" class="mono" font-size="14" font-weight="700" fill="#1e3a8a" text-anchor="middle">8</text>
+      <rect x="180" width="54" height="38" rx="5" fill="#eff6ff" stroke="#3b82f6"/><text x="207" y="24" class="mono" font-size="14" font-weight="700" fill="#1e3a8a" text-anchor="middle">12</text>
+    </g>
+
+    <text x="274" y="14" class="sans" font-size="11.5" font-weight="700" fill="#6d28d9">Sorted Half B[0..3]</text>
+    <g transform="translate(274, 24)">
+      <rect x="0" width="54" height="38" rx="5" fill="#f5f3ff" stroke="#7c3aed"/><text x="27" y="24" class="mono" font-size="14" font-weight="700" fill="#6d28d9" text-anchor="middle">1</text>
+      <rect x="60" width="54" height="38" rx="5" fill="#f5f3ff" stroke="#7c3aed"/><text x="87" y="24" class="mono" font-size="14" font-weight="700" fill="#6d28d9" text-anchor="middle">4</text>
+      <!-- Binary search split bar between 4 and 9 -->
+      <line x1="117" y1="-4" x2="117" y2="50" stroke="#d97706" stroke-width="2.5" stroke-dasharray="4 3"/>
+      <text x="117" y="62" class="mono" font-size="10" font-weight="700" fill="#b45309" text-anchor="middle">pos=2</text>
+      <rect x="120" width="54" height="38" rx="5" fill="#f5f3ff" stroke="#7c3aed"/><text x="147" y="24" class="mono" font-size="14" font-weight="700" fill="#6d28d9" text-anchor="middle">9</text>
+      <rect x="180" width="54" height="38" rx="5" fill="#f5f3ff" stroke="#7c3aed"/><text x="207" y="24" class="mono" font-size="14" font-weight="700" fill="#6d28d9" text-anchor="middle">14</text>
+    </g>
+
+    <!-- Binary Search Arrow from A[1]=5 to B split pos=2 -->
+    <path class="bsearch-ar" d="M 87 24 C 160 -16, 320 -16, 386 16" fill="none" stroke="#d97706" stroke-width="2" marker-end="url(#arr-amber)"/>
+  </g>
+
+  <!-- Concurrent Sub-Merge Spawn Arrows -->
+  <path class="core-spawn" d="M 740 226 L 740 278" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arr-blue)"/>
+  <path class="core-spawn" d="M 1030 226 L 1030 278" fill="none" stroke="#059669" stroke-width="2.2" marker-end="url(#arr-emerald)"/>
+
+  <!-- Core 0 & Core 1 Parallel Boxes -->
+  <g transform="translate(636, 284)">
+    <rect x="0" y="0" width="244" height="96" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.8"/>
+    <rect x="12" y="10" width="66" height="20" rx="4" fill="#2563eb"/>
+    <text x="45" y="24" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">Core 0</text>
+    <text x="88" y="24" class="sans" font-size="11.5" font-weight="700" fill="#1e3a8a">Left Sub-Merge</text>
+    <text x="12" y="48" class="mono" font-size="11" fill="#334155">merge([2], [1, 4])</text>
+    <text x="12" y="72" class="mono" font-size="12" font-weight="700" fill="#1d4ed8">=&gt; [1, 2, 4]  (+5)</text>
+
+    <rect x="268" y="0" width="244" height="96" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+    <rect x="280" y="10" width="66" height="20" rx="4" fill="#059669"/>
+    <text x="313" y="24" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">Core 1</text>
+    <text x="356" y="24" class="sans" font-size="11.5" font-weight="700" fill="#065f46">Right Sub-Merge</text>
+    <text x="280" y="48" class="mono" font-size="11" fill="#334155">merge([8, 12], [9, 14])</text>
+    <text x="280" y="72" class="mono" font-size="12" font-weight="700" fill="#065f46">=&gt; [8, 9, 12, 14]</text>
+  </g>
+
+  <!-- Merged Output Row -->
+  <g transform="translate(650, 404)">
+    <text x="242" y="14" class="sans" font-size="11.5" font-weight="700" fill="#0f172a" text-anchor="middle">Merged Output Array (Zero Sequential Bottleneck)</text>
+    <g transform="translate(12, 24)">
+      <rect x="0" width="54" height="36" rx="5" fill="#eff6ff" stroke="#3b82f6"/><text x="27" y="23" class="mono" font-size="13" font-weight="700" fill="#1e3a8a" text-anchor="middle">1</text>
+      <rect x="58" width="54" height="36" rx="5" fill="#eff6ff" stroke="#3b82f6"/><text x="85" y="23" class="mono" font-size="13" font-weight="700" fill="#1e3a8a" text-anchor="middle">2</text>
+      <rect x="116" width="54" height="36" rx="5" fill="#eff6ff" stroke="#3b82f6"/><text x="143" y="23" class="mono" font-size="13" font-weight="700" fill="#1e3a8a" text-anchor="middle">4</text>
+      <rect x="174" width="54" height="36" rx="5" fill="#fef3c7" stroke="#d97706" stroke-width="2"/><text x="201" y="23" class="mono" font-size="13" font-weight="700" fill="#92400e" text-anchor="middle">5</text>
+      <rect x="232" width="54" height="36" rx="5" fill="#ecfdf5" stroke="#059669"/><text x="259" y="23" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">8</text>
+      <rect x="290" width="54" height="36" rx="5" fill="#ecfdf5" stroke="#059669"/><text x="317" y="23" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">9</text>
+      <rect x="348" width="54" height="36" rx="5" fill="#ecfdf5" stroke="#059669"/><text x="375" y="23" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">12</text>
+      <rect x="406" width="54" height="36" rx="5" fill="#ecfdf5" stroke="#059669"/><text x="433" y="23" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">14</text>
+    </g>
+  </g>
+
+  <!-- Naive vs Fully Parallel Comparison Card -->
+  <g transform="translate(632, 488)">
+    <rect x="0" y="0" width="524" height="188" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="16" y="26" class="sans" font-size="12.5" font-weight="700" fill="#0f172a">Why Parallel Merge Matters (Span Collapse)</text>
+
+    <rect x="16" y="40" width="492" height="58" rx="6" fill="#fff1f2" stroke="#fda4af"/>
+    <text x="28" y="60" class="mono" font-size="11" font-weight="700" fill="#9f1239">Naive Parallel Merge Sort (sequential merge):</text>
+    <text x="28" y="80" class="mono" font-size="11" fill="#be123c">T_&#8734;(n) = T_&#8734;(n/2) + O(n) = O(n)  =&gt;  P = O(log n)!</text>
+
+    <rect x="16" y="108" width="492" height="66" rx="6" fill="#ecfdf5" stroke="#6ee7b7"/>
+    <text x="28" y="128" class="mono" font-size="11" font-weight="700" fill="#065f46">Fully Parallel Merge Sort (binary-search split):</text>
+    <text x="28" y="147" class="mono" font-size="11" fill="#065f46">T_&#8734;(n) = T_&#8734;(n/2) + O(log^2 n) = O(log^3 n)</text>
+    <text x="28" y="165" class="mono" font-size="11" font-weight="700" fill="#059669">Parallelism P = T_1 / T_&#8734; = O(n / log^2 n) cores!</text>
+  </g>
+</svg>
