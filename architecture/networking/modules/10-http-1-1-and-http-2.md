@@ -256,6 +256,10 @@ graph LR
 2. **Dynamic Table (Sliding-Window FIFO Cache)**: As new headers are exchanged (e.g., `authorization: Bearer xyz`), they are added to an in-memory dynamic table shared across the connection. Subsequent requests reference that header by integer index, shrinking 1,000-byte authorization headers into a single 2-byte integer.
 3. **Static Canonical Huffman Coding**: Strings that are not indexed are encoded using a precomputed, static Huffman code tree based on global character frequencies across the web, reducing text size by approximately 30%.
 
+![HTTP/2 HPACK Header Compression Static Table, Dynamic Ring Table, and Huffman Animation](../assets/10-hpack-header-compression-animated.svg)
+
+_Step-by-step mechanics:_ (1) Common fields hit the 61-entry immutable Static Table (e.g., `:method: GET` → index `2` → `0x82`, `1` byte). (2) Novel literals such as `authorization: Bearer ...` use Static Canonical Huffman encoding (immune to CRIME adaptive compression leaks) and insert at Dynamic Table head index `62`. (3) Subsequent requests reference index `62` (`0xBE`) in `1` byte while older tail entries evict FIFO when exceeding `SETTINGS_HEADER_TABLE_SIZE`.
+
 ---
 
 ## 7. The Rapid Reset Attack (CVE-2023-44487)

@@ -152,6 +152,10 @@ TOTP generates an 8-character or 6-character numerical code based on a shared se
 2. Compute the HMAC-SHA1 (or HMAC-SHA256) of counter $T$: $$\text{Digest} = \text{HMAC-SHA1}(K, T)$$
 3. **Dynamic Truncation**: Extract a 4-byte integer from the digest based on the low 4 bits of the final byte, and take modulo $10^6$: $$\text{Code} = \text{Truncate}(\text{Digest}) \pmod{10^6}$$
 
+![TOTP RFC 6238 Generation Animation: 30s Time Step, HMAC-SHA1, Dynamic Truncation, and Modulo Reduction](../assets/09-totp-rfc6238-animated.svg)
+
+_Step-by-step mechanics:_ (1) Current Unix time is floored into 30-second steps $T = \lfloor \text{now}/30 \rfloor$ and hashed via $\text{HMAC-SHA1}(K, T)$ into a 20-byte digest. (2) Dynamic truncation uses the low nibble of byte 19 as an offset, masks the 31-bit MSB (`0x7fffffff`), and reduces modulo $10^6$ to emit a 6-digit OTP checked across $T \pm 1$ with single-use replay tracking.
+
 ### MFA Fatigue & Push Notification Spamming
 
 In Push-based MFA (e.g. Duo, Okta Verify), an attacker who steals a user's password scripts a bot to trigger hundreds of push notification login requests to the victim's smartphone at 3:00 AM (MFA Fatigue / MFA Spamming). Overwhelmed or confused, the user taps "Approve" to silence their phone, granting the attacker entry.

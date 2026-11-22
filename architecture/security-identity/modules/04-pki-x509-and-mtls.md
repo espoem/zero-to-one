@@ -92,6 +92,10 @@ If a private key is compromised or a certificate is mis-issued, the CA must revo
 4. **CRLite & Centralized Revocation Sets**:
    - Modern browsers (Firefox, Chrome) push compressed, probabilistic data structures (cascading Bloom filters) of all known revoked certificates directly to the browser client during daily updates, enabling instantaneous, privacy-preserving, $O(1)$ offline revocation checks.
 
+![X.509 Certification Path Validation and CRLite Cascading Bloom Filter Lookup Animation](../assets/04-x509-path-validation-and-crlite-animated.svg)
+
+_Step-by-step mechanics:_ (1) The client verifies signatures, temporal bounds (`notBefore` to `notAfter`), `BasicConstraints` (`cA` and `pathLenConstraint`), and `SAN`/`EKU` claims up the chain from Leaf to Intermediate CA to the local OS Trust Anchor. (2) CRLite checks `(IssuerSPKIHash, SerialNumber)` locally against a compact cascading Bloom filter ($B_0 \to B_1 \to \dots \to B_k$) in $O(1)$ time with zero CA privacy leaks or OCSP soft-fail bypasses.
+
 ### Certificate Transparency (CT, RFC 6962 / RFC 9162)
 
 To prevent rogue or coerced CAs from issuing fraudulent certificates secretly, all public CAs must submit newly issued certificates to public, append-only, cryptographically auditable **Certificate Transparency (CT) Logs** backed by Merkle trees. CAs return a **Signed Certificate Timestamp (SCT)** embedded into the certificate. Modern browsers immediately reject public HTTPS certificates that lack valid SCTs.

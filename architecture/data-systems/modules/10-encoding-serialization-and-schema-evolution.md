@@ -85,6 +85,10 @@ $$\text{ZigZag}(n) = (n \ll 1) \oplus (n \gg 63)$$
 
 A negative number with small absolute magnitude (e.g. `-1`) becomes a small unsigned integer (`1`), encoding in a single varint byte.
 
+![Binary Wire Encoding: ZigZag Interleaving and LEB128 7-Bit Varint Packing](../assets/10-varint-leb128-and-zigzag-animated.svg)
+
+_Step-by-step mechanics:_ (1) ZigZag maps signed integers to unsigned integers (`0->0, -1->1, 1->2, -2->3`) via $(n \ll 1) \oplus (n \gg 63)$, eliminating 10-byte two's-complement negative varints. (2) Unsigned integers (such as `300` from `+150`) are split into 7-bit groups ordered least-significant chunk first (LEB128). (3) Each intermediate byte sets `MSB = 1` (`0xAC`), while the final byte sets `MSB = 0` (`0x02`) as a self-delimiting terminator. (4) The receiver reassembles `(44 | (2 << 7)) = 300` and applies `UnZigZag` to recover `+150` in 2 wire bytes instead of 8.
+
 ---
 
 ## 3. Schema Evolution Rules: Backward, Forward, and Full Compatibility

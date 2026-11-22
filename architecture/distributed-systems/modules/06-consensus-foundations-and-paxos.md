@@ -175,6 +175,10 @@ Every proposal in ZAB carries a 64-bit integer `zxid`:
 3. **Causal Consistency**: If message $a$ causes message $b$, $a$ will be proposed before $b$.
 4. **FIFO Client Order**: All requests from a single client FIFO queue are executed in the exact order submitted.
 
+![Paxos, Multi-Paxos, Flexible Quorums, EPaxos, and ZAB Animation](../assets/06-paxos-multipaxos-epaxos-zab-animated.svg)
+
+_Step-by-step mechanics:_ (1) Single-Decree Paxos runs `Prepare/Promise` (Phase 1) and `Accept/Accepted` (Phase 2), while Multi-Paxos amortizes Phase 1 across a stable leader's term to achieve 1-RTT writes. (2) Flexible Paxos requires only $Q_1 + Q_2 > N$ so rare elections can use a large $Q_1$ while steady-state writes use a small $Q_2$. (3) Leaderless EPaxos commits non-conflicting commands in 1 RTT over a dependency DAG, while ZAB orders primary broadcasts using 64-bit `(epoch, counter)` `zxid` identifiers.
+
 ---
 
 ## Interview Drill

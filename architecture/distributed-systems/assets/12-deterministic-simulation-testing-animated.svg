@@ -1,0 +1,162 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 620" width="1120" height="620" role="img" aria-labelledby="title desc">
+  <title id="title">Deterministic Simulation Testing (DST) Event Loop and Invariant Audit</title>
+  <desc id="desc">Animated Deterministic Simulation Testing architecture modeled on FoundationDB and TigerBeetle VOPR. Left panel shows a single-threaded event loop driven by a seeded PRNG (seed 0x4a9b21f, xoshiro128**) controlling Virtual Clock, Virtual Network, and Virtual Disk instead of real OS threads or sockets. Right panel shows fault injection across simulated nodes N1, N2, N3 (asymmetric partitions, packet drops, clock jumps, and torn disk writes) followed by continuous post-step invariant checks (Election Safety, Linearizability, Log Matching) that catch a violation at step 4,921 with byte-for-byte replayability.</desc>
+
+  <style>
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    @keyframes ph1 { 0%, 4% { opacity: 0.86; } 10%, 96% { opacity: 1; } 100% { opacity: 0.86; } }
+    @keyframes ph2 { 0%, 24% { opacity: 0.86; } 30%, 96% { opacity: 1; } 100% { opacity: 0.86; } }
+    @keyframes ph3 { 0%, 49% { opacity: 0.86; } 55%, 96% { opacity: 1; } 100% { opacity: 0.86; } }
+    @keyframes ph4 { 0%, 74% { opacity: 0.86; } 80%, 96% { opacity: 1; } 100% { opacity: 0.86; } }
+
+    @keyframes pkt-tick {
+      0%, 10%  { transform: translateX(0px); opacity: 1; }
+      45%      { transform: translateX(130px); opacity: 1; }
+      55%, 100%{ transform: translateX(130px); opacity: 0.86; }
+    }
+
+    @keyframes s1 { 0%, 24% { opacity: 1; stroke: #2563eb; stroke-width: 2.2; } 25%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } }
+    @keyframes s2 { 0%, 24% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } 25%, 49% { opacity: 1; stroke: #d97706; stroke-width: 2.2; } 50%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } }
+    @keyframes s3 { 0%, 49% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } 50%, 74% { opacity: 1; stroke: #059669; stroke-width: 2.2; } 75%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } }
+    @keyframes s4 { 0%, 74% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } 75%, 100% { opacity: 1; stroke: #e11d48; stroke-width: 2.2; } }
+
+    .p1 { animation: ph1 16s ease-in-out infinite; }
+    .p2 { animation: ph2 16s ease-in-out infinite; }
+    .p3 { animation: ph3 16s ease-in-out infinite; }
+    .p4 { animation: ph4 16s ease-in-out infinite; }
+    .tk { animation: pkt-tick 16s ease-in-out infinite; }
+    .st1 { animation: s1 16s linear infinite; }
+    .st2 { animation: s2 16s linear infinite; }
+    .st3 { animation: s3 16s linear infinite; }
+    .st4 { animation: s4 16s linear infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .p1, .p2, .p3, .p4, .tk, .st1, .st2, .st3, .st4 { animation: none !important; opacity: 1 !important; }
+      .tk { transform: translateX(0px) !important; }
+    }
+  </style>
+
+  <defs>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+    </marker>
+    <marker id="arr-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1120" height="620" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1120" height="62" rx="12" fill="#0f172a"/>
+  <rect x="0" y="46" width="1120" height="16" fill="#0f172a"/>
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Deterministic Simulation Testing (DST) &amp; Invariant Audit Loop</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">Seeded PRNG Event Loop (FoundationDB / TigerBeetle VOPR) · Virtual Clock/Net/Disk · Byte-for-Byte Bug Replay</text>
+
+  <!-- LEFT PANEL: DETERMINISTIC HARNESS -->
+  <rect x="24" y="76" width="494" height="464" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="42" y="102" class="sans" font-size="14" font-weight="700" fill="#0f172a">1. Seeded Single-Threaded Simulation Engine</text>
+  <text x="42" y="120" class="mono" font-size="10.5" fill="#475569">Zero real OS threads, zero sleep(), zero real sockets</text>
+
+  <g class="p1">
+    <rect x="46" y="138" width="204" height="64" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2"/>
+    <text x="148" y="160" class="mono" font-size="11.5" font-weight="700" fill="#5b21b6" text-anchor="middle">PRNG (xoshiro128**)</text>
+    <text x="148" y="180" class="mono" font-size="11" font-weight="700" fill="#4c1d95" text-anchor="middle">seed = 0x4a9b21f</text>
+
+    <line x1="250" y1="170" x2="280" y2="170" stroke="#2563eb" stroke-width="2" marker-end="url(#arr-blue)"/>
+
+    <rect x="284" y="138" width="214" height="64" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+    <text x="391" y="160" class="sans" font-size="12" font-weight="700" fill="#1e3a8a" text-anchor="middle">Single-Thread Event Loop</text>
+    <text x="391" y="180" class="mono" font-size="10" fill="#1e40af" text-anchor="middle">Min-Heap Priority Queue (t)</text>
+  </g>
+
+  <!-- Three Virtual I/O Interfaces -->
+  <rect x="46" y="228" width="142" height="82" rx="8" fill="#f8fafc" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="117" y="250" class="mono" font-size="11" font-weight="700" fill="#1e3a8a" text-anchor="middle">Virtual Clock</text>
+  <text x="117" y="268" class="sans" font-size="10" fill="#334155" text-anchor="middle">Instant warp:</text>
+  <text x="117" y="284" class="mono" font-size="10" fill="#475569" text-anchor="middle">days in 2 seconds</text>
+  <text x="117" y="298" class="mono" font-size="10" fill="#e11d48" text-anchor="middle">+ skew / jumps</text>
+
+  <rect x="200" y="228" width="142" height="82" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <text x="271" y="250" class="mono" font-size="11" font-weight="700" fill="#92400e" text-anchor="middle">Virtual Network</text>
+  <text x="271" y="268" class="sans" font-size="10" fill="#334155" text-anchor="middle">Packet drops,</text>
+  <text x="271" y="284" class="sans" font-size="10" fill="#334155" text-anchor="middle">dupes, reorders,</text>
+  <text x="271" y="298" class="mono" font-size="10" fill="#b45309" text-anchor="middle">asym partitions</text>
+
+  <rect x="354" y="228" width="144" height="82" rx="8" fill="#fff1f2" stroke="#e11d48" stroke-width="1.5"/>
+  <text x="426" y="250" class="mono" font-size="11" font-weight="700" fill="#9f1239" text-anchor="middle">Virtual Disk</text>
+  <text x="426" y="268" class="sans" font-size="10" fill="#334155" text-anchor="middle">I/O latency,</text>
+  <text x="426" y="284" class="sans" font-size="10" fill="#334155" text-anchor="middle">torn writes,</text>
+  <text x="426" y="298" class="mono" font-size="10" fill="#be123c" text-anchor="middle">bit rot / fsync</text>
+
+  <!-- Simulated Real Nodes -->
+  <rect x="46" y="334" width="452" height="84" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+  <text x="272" y="356" class="sans" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">Real Production State Machine Code (N1, N2, N3)</text>
+  <rect x="74" y="370" width="116" height="32" rx="5" fill="#ffffff" stroke="#059669"/>
+  <text x="132" y="390" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Node 1 (Raft)</text>
+  <rect x="214" y="370" width="116" height="32" rx="5" fill="#ffffff" stroke="#059669"/>
+  <text x="272" y="390" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Node 2 (Raft)</text>
+  <rect x="354" y="370" width="116" height="32" rx="5" fill="#ffffff" stroke="#059669"/>
+  <text x="412" y="390" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Node 3 (Raft)</text>
+
+  <!-- Virtual time progress bar -->
+  <rect x="46" y="436" width="452" height="86" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="62" y="458" class="mono" font-size="10.5" font-weight="700" fill="#0f172a">Virtual Tick Stepper:</text>
+  <rect x="62" y="470" width="420" height="16" rx="8" fill="#e2e8f0"/>
+  <rect x="62" y="470" width="280" height="16" rx="8" fill="#2563eb" class="tk"/>
+  <text x="62" y="506" class="sans" font-size="10" fill="#475569">Same seed = identical event order, delays, crashes, and memory state.</text>
+
+  <!-- RIGHT PANEL: FAULT INJECTION & INVARIANT AUDIT -->
+  <rect x="534" y="76" width="562" height="464" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="552" y="102" class="sans" font-size="14" font-weight="700" fill="#0f172a">2. Adversarial Fault Injection &amp; Continuous Invariant Audit</text>
+  <text x="552" y="120" class="mono" font-size="10.5" fill="#475569">Asserts global safety invariants after EVERY single discrete event</text>
+
+  <g class="p2">
+    <rect x="552" y="138" width="524" height="114" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="1.6"/>
+    <text x="568" y="160" class="mono" font-size="11" font-weight="700" fill="#92400e">Injected Faults During Election &amp; Replication (Steps 1..4,920):</text>
+    <text x="568" y="182" class="mono" font-size="10.5" fill="#334155">· t=120ms: Asymmetric Partition (N1 → N2 drops, N2 → N1 OK)</text>
+    <text x="568" y="200" class="mono" font-size="10.5" fill="#334155">· t=410ms: Clock Jump (+800ms on N3) + Process Pause (SIGSTOP)</text>
+    <text x="568" y="218" class="mono" font-size="10.5" fill="#334155">· t=950ms: Crash N1 mid-fsync → Restart with torn WAL block</text>
+    <text x="568" y="238" class="sans" font-size="10" font-weight="700" fill="#b45309">Millions of combinatorial interleavings tested in seconds.</text>
+  </g>
+
+  <g class="p3">
+    <rect x="552" y="266" width="524" height="122" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.6"/>
+    <text x="568" y="288" class="mono" font-size="11" font-weight="700" fill="#065f46">Post-Event Global Invariant Checker (Alpern-Schneider Safety):</text>
+    <text x="568" y="310" class="mono" font-size="10.5" fill="#047857">✓ Election Safety:     count(leaders in term t) ≤ 1</text>
+    <text x="568" y="330" class="mono" font-size="10.5" fill="#047857">✓ Log Matching:        same (idx, term) ⇒ identical prefix</text>
+    <text x="568" y="350" class="mono" font-size="10.5" fill="#047857">✓ Linearizability:     WGL / Porcupine validates history H</text>
+    <text x="568" y="372" class="sans" font-size="10" fill="#065f46">Also complements Jepsen (black-box) and TLA+/TLC (exhaustive model check).</text>
+  </g>
+
+  <g class="p4">
+    <rect x="552" y="402" width="524" height="122" rx="8" fill="#fff1f2" stroke="#e11d48" stroke-width="1.8"/>
+    <text x="568" y="426" class="mono" font-size="11.5" font-weight="700" fill="#9f1239">✕ VIOLATION CAUGHT AT STEP 4,921!</text>
+    <text x="568" y="448" class="mono" font-size="10.5" fill="#334155">Counterexample: N1 lost votedFor after un-fsynced reboot (split vote)</text>
+    <rect x="568" y="462" width="492" height="46" rx="6" fill="#0f172a"/>
+    <text x="582" y="482" class="mono" font-size="10.5" font-weight="700" fill="#34d399">$ dst-runner --seed 0x4a9b21f --break-step 4921</text>
+    <text x="582" y="499" class="sans" font-size="10" fill="#cbd5e1">Reproduces the exact race condition 100% deterministically in a debugger.</text>
+  </g>
+
+  <!-- FOOTER STEP BAR -->
+  <rect x="24" y="554" width="256" height="48" rx="8" fill="#eff6ff" class="st1"/>
+  <text x="38" y="574" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a">1. Seeded PRNG Init</text>
+  <text x="38" y="591" class="sans" font-size="10" fill="#334155">0x4a9b21f drives single event loop</text>
+
+  <rect x="296" y="554" width="256" height="48" rx="8" fill="#fffbeb" class="st2"/>
+  <text x="310" y="574" class="mono" font-size="10.5" font-weight="700" fill="#92400e">2. Virtual Fault Injection</text>
+  <text x="310" y="591" class="sans" font-size="10" fill="#334155">Drops, asym splits, clock jumps, fsync</text>
+
+  <rect x="568" y="554" width="256" height="48" rx="8" fill="#ecfdf5" class="st3"/>
+  <text x="582" y="574" class="mono" font-size="10.5" font-weight="700" fill="#065f46">3. Step-by-Step Audit</text>
+  <text x="582" y="591" class="sans" font-size="10" fill="#334155">Safety invariants checked on every tick</text>
+
+  <rect x="840" y="554" width="256" height="48" rx="8" fill="#fff1f2" class="st4"/>
+  <text x="854" y="574" class="mono" font-size="10.5" font-weight="700" fill="#9f1239">4. Deterministic Replay</text>
+  <text x="854" y="591" class="sans" font-size="10" fill="#334155">Step 4,921 bug replayed via seed</text>
+</svg>

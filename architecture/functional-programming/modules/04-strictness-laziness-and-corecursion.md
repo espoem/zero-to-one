@@ -377,6 +377,10 @@ def scanRight[B](z: => B)(f: (A, => B) => B): LazyList[B] =
 
 Notice the `lazy val p1 = p0` inside `scanRight`: without it, accessing both `p0._1` and `p0._2` in a non-strict `foldRight` would re-evaluate `p0` twice per element, turning $O(n)$ into $O(2^n)$ exponential blowup!
 
+![Corecursive unfold Pull Stream and Pure LCG Rejection Sampling Animation](../assets/04-05-unfold-fusion-and-pure-lcg-animated.svg)
+
+_Step-by-step mechanics:_ (1) `unfold` acts as a demand-driven anamorphism whose `Cons` tail thunk computes only when downstream `mapViaUnfold`/`takeViaUnfold` pulls the next element, fusing stages in $O(1)$ intermediate space. (2) Paired with pure `RNG` state transitions $S \to (A, S)$ ([Module 05](05-purely-functional-state-and-combinators.md)), rejection sampling discards the incomplete modulo bucket to yield uniform random streams.
+
 ---
 
 ## 6. Stream Fusion vs Per-Element Thunk Overhead

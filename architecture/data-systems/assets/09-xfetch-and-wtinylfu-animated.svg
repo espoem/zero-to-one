@@ -1,0 +1,234 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" width="1200" height="720" role="img" aria-labelledby="title desc">
+  <title id="title">Caching Algorithms: XFetch Probabilistic Early Refresh and W-TinyLFU Eviction</title>
+  <desc id="desc">Animated two-panel diagram showing: (1) XFetch probabilistic early refresh curve where Delta minus beta times delta times ln(rand()) exceeding TTL triggers one worker to asynchronously recompute a hot key before TTL expiration, preventing cache stampedes without mutex locks; and (2) Window TinyLFU (W-TinyLFU) routing newly arrived keys through a 1% Window LRU into a 4-bit Count-Min Sketch frequency duel against the Main Cache Probation victim before admitting to Protected Segmented LRU.</desc>
+
+  <defs>
+    <style>
+      .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+      /* 12s cycle */
+      @keyframes xf-cursor {
+        0%, 10%   { transform: translateX(0px); }
+        35%, 52%  { transform: translateX(220px); }
+        68%, 92%  { transform: translateX(356px); }
+        100%      { transform: translateX(0px); }
+      }
+      @keyframes xf-trigger {
+        0%, 60% { opacity: 0.86; transform: translateY(6px); }
+        70%, 96% { opacity: 1; transform: translateY(0px); }
+        100% { opacity: 0.86; }
+      }
+      @keyframes cms-duel {
+        0%, 34% { opacity: 0.86; }
+        44%, 96% { opacity: 1; }
+        100% { opacity: 0.86; }
+      }
+      @keyframes slru-admit {
+        0%, 68% { opacity: 0.86; transform: translateX(-8px); }
+        78%, 100% { opacity: 1; transform: translateX(0px); }
+      }
+
+      @keyframes st-1 { 0%, 24% { opacity: 1; stroke: #2563eb; stroke-width: 2.5; } 25%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; } }
+      @keyframes st-2 { 0%, 24% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; } 25%, 49% { opacity: 1; stroke: #d97706; stroke-width: 2.5; } 50%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; } }
+      @keyframes st-3 { 0%, 49% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; } 50%, 74% { opacity: 1; stroke: #7c3aed; stroke-width: 2.5; } 75%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; } }
+      @keyframes st-4 { 0%, 74% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; } 75%, 100% { opacity: 1; stroke: #059669; stroke-width: 2.5; } }
+
+      .xfc { animation: xf-cursor 12s ease-in-out infinite; }
+      .xftr { animation: xf-trigger 12s ease-out infinite; }
+      .cmsd { animation: cms-duel 12s ease-out infinite; }
+      .slad { animation: slru-admit 12s ease-out infinite; }
+
+      .s1 { animation: st-1 12s linear infinite; }
+      .s2 { animation: st-2 12s linear infinite; }
+      .s3 { animation: st-3 12s linear infinite; }
+      .s4 { animation: st-4 12s linear infinite; }
+
+      @media (prefers-reduced-motion: reduce) {
+        .xfc, .xftr, .cmsd, .slad, .s1, .s2, .s3, .s4 {
+          animation: none !important;
+        }
+        .xfc { transform: translateX(356px) !important; }
+        .xftr, .cmsd, .slad, .s1, .s2, .s3, .s4 {
+          opacity: 1 !important;
+          transform: none !important;
+        }
+      }
+    </style>
+
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-violet" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed"/>
+    </marker>
+    <marker id="arr-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1200" height="720" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1200" height="62" rx="12" fill="#0f172a"/>
+  <rect x="0" y="46" width="1200" height="16" fill="#0f172a"/>
+  <text x="24" y="28" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Caching Algorithms: XFetch Early Refresh &amp; W-TinyLFU Eviction</text>
+  <text x="24" y="48" class="sans" font-size="12" fill="#94a3b8">Eliminating thundering-herd cache stampedes probabilistically alongside scan-proof Count-Min Sketch admission</text>
+
+  <!-- LEFT PANEL: XFETCH PROBABILISTIC EARLY REFRESH -->
+  <rect x="24" y="78" width="564" height="458" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="24" y="78" width="564" height="34" rx="10" fill="#f1f5f9"/>
+  <rect x="24" y="102" width="564" height="10" fill="#f1f5f9"/>
+  <text x="40" y="100" class="sans" font-size="12.5" font-weight="700" fill="#0f172a">1. XFetch Probabilistic Early Refresh (Stampede Guard)</text>
+  <text x="572" y="100" class="mono" font-size="10.5" fill="#64748b" text-anchor="end">Zero distributed locks</text>
+
+  <!-- Formula Banner -->
+  <rect x="42" y="126" width="528" height="46" rx="7" fill="#eff6ff" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="306" y="147" class="mono" font-size="12" font-weight="700" fill="#1e3a8a" text-anchor="middle">Recompute if:  Δ - β · δ · ln(rand()) &gt; TTL</text>
+  <text x="306" y="164" class="sans" font-size="10" fill="#334155" text-anchor="middle">Δ = time until expiry · δ = recompute cost · β = 1.0 · ln(rand()) &lt; 0</text>
+
+  <!-- Probability Curve Graph -->
+  <line x1="78" y1="352" x2="546" y2="352" stroke="#64748b" stroke-width="1.6"/>
+  <line x1="78" y1="352" x2="78" y2="196" stroke="#64748b" stroke-width="1.6"/>
+  <text x="54" y="274" class="mono" font-size="10" fill="#475569" transform="rotate(-90 54 274)" text-anchor="middle">P(Recompute)</text>
+  <text x="312" y="374" class="mono" font-size="10" fill="#475569" text-anchor="middle">Time → Approaching Hard TTL Expiry</text>
+
+  <!-- Hard TTL Expiry Wall -->
+  <line x1="510" y1="196" x2="510" y2="352" stroke="#e11d48" stroke-width="2" stroke-dasharray="5 4"/>
+  <text x="510" y="190" class="mono" font-size="10" font-weight="700" fill="#e11d48" text-anchor="middle">TTL = 0 (Hard Expiry)</text>
+
+  <!-- Exponential XFetch Curve -->
+  <path d="M 82 349 Q 310 347 386 318 T 496 206" fill="none" stroke="#d97706" stroke-width="2.8"/>
+
+  <!-- Annotations along curve -->
+  <circle cx="140" cy="348" r="4.5" fill="#2563eb"/>
+  <text x="140" y="336" class="mono" font-size="10" fill="#1e40af" text-anchor="middle">P ≈ 0.001%</text>
+
+  <circle cx="356" cy="328" r="4.5" fill="#d97706"/>
+  <text x="348" y="314" class="mono" font-size="10" font-weight="700" fill="#92400e" text-anchor="middle">1s left: 15%</text>
+
+  <circle cx="476" cy="226" r="5.5" fill="#059669"/>
+  <text x="418" y="220" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">100ms: 85% ✓</text>
+
+  <!-- Animated Time Marker -->
+  <g class="xfc">
+    <line x1="120" y1="202" x2="120" y2="352" stroke="#0f172a" stroke-width="2"/>
+    <circle cx="120" cy="202" r="5" fill="#0f172a"/>
+  </g>
+
+  <!-- Trigger Result Card -->
+  <g class="xftr">
+    <rect x="42" y="394" width="528" height="124" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.6"/>
+    <text x="58" y="416" class="sans" font-size="12" font-weight="700" fill="#065f46">Preemptive Refresh Wins BEFORE Hard Expiry!</text>
+    <text x="58" y="438" class="mono" font-size="10.5" fill="#334155">1) Worker #412 rolls rand() → triggers async recompute at t = -100 ms</text>
+    <text x="58" y="458" class="mono" font-size="10.5" fill="#334155">2) All other 9,999 readers still receive valid cached value (HIT!)</text>
+    <text x="58" y="478" class="mono" font-size="10.5" font-weight="700" fill="#059669">3) Fresh TTL installed before t = 0 → ZERO DB stampede!</text>
+    <text x="58" y="502" class="sans" font-size="10" fill="#047857">Self-adapts to slow DB queries: larger δ widens the early-refresh window.</text>
+  </g>
+
+  <!-- RIGHT PANEL: W-TINYLFU EVICTION -->
+  <rect x="604" y="78" width="572" height="458" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="604" y="78" width="572" height="34" rx="10" fill="#f1f5f9"/>
+  <rect x="604" y="102" width="572" height="10" fill="#f1f5f9"/>
+  <text x="620" y="100" class="sans" font-size="12.5" font-weight="700" fill="#0f172a">2. Window TinyLFU (W-TinyLFU Admission &amp; SLRU)</text>
+  <text x="1160" y="100" class="mono" font-size="10.5" fill="#64748b" text-anchor="end">Caffeine · Ristretto</text>
+
+  <!-- Incoming Key -> Window LRU (1%) -->
+  <rect x="622" y="126" width="190" height="104" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="717" y="147" class="sans" font-size="11.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">1. Window LRU (1%)</text>
+  <text x="717" y="165" class="sans" font-size="10" fill="#475569" text-anchor="middle">Captures bursty new keys</text>
+  <rect x="636" y="176" width="76" height="24" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="674" y="192" class="mono" font-size="10" font-weight="700" fill="#1e3a8a" text-anchor="middle">K_new</text>
+  <rect x="722" y="176" width="76" height="24" rx="4" fill="#fef3c7" stroke="#d97706"/>
+  <text x="760" y="192" class="mono" font-size="10" font-weight="700" fill="#92400e" text-anchor="middle">K_cand</text>
+  <text x="717" y="218" class="mono" font-size="10" fill="#1d4ed8" text-anchor="middle">Evicts K_cand to filter →</text>
+
+  <!-- Count-Min Sketch Duel -->
+  <g class="cmsd">
+    <line x1="812" y1="178" x2="854" y2="178" stroke="#7c3aed" stroke-width="2" marker-end="url(#arr-violet)"/>
+    <rect x="860" y="126" width="298" height="156" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.6"/>
+    <text x="1009" y="147" class="sans" font-size="11.5" font-weight="700" fill="#5b21b6" text-anchor="middle">2. 4-Bit Count-Min Sketch Duel</text>
+    <text x="1009" y="164" class="sans" font-size="10" fill="#6d28d9" text-anchor="middle">4 hash rows · min() estimate · periodic halving</text>
+
+    <!-- Sketch mini grid -->
+    <rect x="876" y="174" width="126" height="44" rx="4" fill="#ffffff" stroke="#c4b5fd"/>
+    <text x="939" y="192" class="mono" font-size="10" fill="#334155" text-anchor="middle">h1..h4(K_cand)</text>
+    <text x="939" y="209" class="mono" font-size="10.5" font-weight="700" fill="#059669" text-anchor="middle">est_freq = 14</text>
+
+    <rect x="1016" y="174" width="126" height="44" rx="4" fill="#ffffff" stroke="#c4b5fd"/>
+    <text x="1079" y="192" class="mono" font-size="10" fill="#334155" text-anchor="middle">h1..h4(K_vic)</text>
+    <text x="1079" y="209" class="mono" font-size="10.5" font-weight="700" fill="#e11d48" text-anchor="middle">est_freq = 3</text>
+
+    <rect x="876" y="228" width="266" height="42" rx="5" fill="#d1fae5" stroke="#059669" stroke-width="1.3"/>
+    <text x="1009" y="246" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">14 &gt; 3 → ADMIT K_cand! (Evict K_vic)</text>
+    <text x="1009" y="261" class="sans" font-size="10" fill="#047857" text-anchor="middle">One-hit scans (freq=1) are dropped at gate!</text>
+  </g>
+
+  <!-- Main Cache Segmented LRU (99%) -->
+  <g class="slad">
+    <line x1="1009" y1="282" x2="1009" y2="314" stroke="#059669" stroke-width="2" marker-end="url(#arr-emerald)"/>
+
+    <rect x="622" y="320" width="536" height="198" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.6"/>
+    <text x="638" y="343" class="sans" font-size="12" font-weight="700" fill="#065f46">3. Main Cache (99%): Segmented LRU (Probation + Protected)</text>
+
+    <!-- Probation (20% of Main) -->
+    <rect x="638" y="356" width="236" height="92" rx="7" fill="#fffbeb" stroke="#d97706" stroke-width="1.4"/>
+    <text x="756" y="376" class="sans" font-size="11" font-weight="700" fill="#92400e" text-anchor="middle">Probation Segment (20%)</text>
+    <rect x="652" y="388" width="96" height="26" rx="4" fill="#d1fae5" stroke="#059669"/>
+    <text x="700" y="405" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">K_cand ✓</text>
+    <rect x="760" y="388" width="98" height="26" rx="4" fill="#ffe4e6" stroke="#e11d48" stroke-dasharray="3 2"/>
+    <text x="809" y="405" class="mono" font-size="10" fill="#9f1239" text-anchor="middle">K_vic ✕</text>
+    <text x="756" y="434" class="sans" font-size="10" fill="#78350f" text-anchor="middle">2nd hit promotes to Protected →</text>
+
+    <line x1="874" y1="402" x2="900" y2="402" stroke="#059669" stroke-width="2" marker-end="url(#arr-emerald)"/>
+
+    <!-- Protected (80% of Main) -->
+    <rect x="906" y="356" width="236" height="92" rx="7" fill="#ffffff" stroke="#059669" stroke-width="1.5"/>
+    <text x="1024" y="376" class="sans" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">Protected Segment (80%)</text>
+    <rect x="922" y="388" width="96" height="26" rx="4" fill="#ecfdf5" stroke="#10b981"/>
+    <text x="970" y="405" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">hot:top10</text>
+    <rect x="1028" y="388" width="98" height="26" rx="4" fill="#ecfdf5" stroke="#10b981"/>
+    <text x="1077" y="405" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">cfg:flags</text>
+    <text x="1024" y="434" class="sans" font-size="10" fill="#047857" text-anchor="middle">Hot working set shielded from bursts</text>
+
+    <text x="638" y="476" class="sans" font-size="10.5" fill="#334155">Periodic halving (`count &gt;&gt;= 1` on W resets) decays historic ghost frequency so</text>
+    <text x="638" y="494" class="sans" font-size="10.5" fill="#334155">yesterday's viral keys cannot monopolize the cache over today's hot traffic.</text>
+  </g>
+
+  <!-- BOTTOM 4 STEP CARDS -->
+  <rect x="24" y="552" width="276" height="144" rx="8" fill="#eff6ff" class="s1"/>
+  <rect x="38" y="566" width="56" height="22" rx="4" fill="#2563eb"/>
+  <text x="66" y="581" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">Step 1</text>
+  <text x="104" y="581" class="sans" font-size="12" font-weight="700" fill="#1e3a8a">Far TTL &amp; Window</text>
+  <text x="38" y="608" class="sans" font-size="10.5" fill="#334155">XFetch stays dormant far from</text>
+  <text x="38" y="624" class="sans" font-size="10.5" fill="#334155">expiry; W-TinyLFU stages bursts</text>
+  <text x="38" y="640" class="sans" font-size="10.5" fill="#334155">in its tiny 1% Window LRU.</text>
+
+  <rect x="316" y="552" width="276" height="144" rx="8" fill="#fffbeb" class="s2"/>
+  <rect x="330" y="566" width="56" height="22" rx="4" fill="#d97706"/>
+  <text x="358" y="581" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">Step 2</text>
+  <text x="396" y="581" class="sans" font-size="12" font-weight="700" fill="#92400e">Decay &amp; Sketch</text>
+  <text x="330" y="608" class="sans" font-size="10.5" fill="#334155">As Δ → 0, XFetch probability</text>
+  <text x="330" y="624" class="sans" font-size="10.5" fill="#334155">rises exponentially; 4-bit CMS</text>
+  <text x="330" y="640" class="sans" font-size="10.5" fill="#334155">compares candidate vs victim.</text>
+
+  <rect x="608" y="552" width="276" height="144" rx="8" fill="#f5f3ff" class="s3"/>
+  <rect x="622" y="566" width="56" height="22" rx="4" fill="#7c3aed"/>
+  <text x="650" y="581" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">Step 3</text>
+  <text x="688" y="581" class="sans" font-size="12" font-weight="700" fill="#5b21b6">Duel &amp; Recompute</text>
+  <text x="622" y="608" class="sans" font-size="10.5" fill="#334155">One reader triggers background</text>
+  <text x="622" y="624" class="sans" font-size="10.5" fill="#334155">refresh; higher-frequency key</text>
+  <text x="622" y="640" class="sans" font-size="10.5" fill="#334155">defeats main cache victim.</text>
+
+  <rect x="900" y="552" width="276" height="144" rx="8" fill="#ecfdf5" class="s4"/>
+  <rect x="914" y="566" width="56" height="22" rx="4" fill="#059669"/>
+  <text x="942" y="581" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">Step 4</text>
+  <text x="980" y="581" class="sans" font-size="12" font-weight="700" fill="#065f46">Stampede-Free Hit</text>
+  <text x="914" y="608" class="sans" font-size="10.5" fill="#334155">Fresh value lands before TTL=0</text>
+  <text x="914" y="624" class="sans" font-size="10.5" fill="#334155">while SLRU + CMS aging keep</text>
+  <text x="914" y="640" class="sans" font-size="10.5" fill="#334155">hit ratios near optimal.</text>
+</svg>

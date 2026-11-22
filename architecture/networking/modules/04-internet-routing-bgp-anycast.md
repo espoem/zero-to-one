@@ -210,6 +210,10 @@ BGP border routers receive validated ROA tables from local RPKI validators via t
 2. **Invalid**: A ROA covers the prefix, but either the originating ASN does not match, or the advertised prefix is more specific than the permitted `maxLength`. **Modern production networks (Cloudflare, Telia, AT&T) discard Invalid routes immediately.**
 3. **NotFound (Unknown)**: No ROA exists covering the prefix. The route is accepted under standard BGP rules.
 
+![BGP-4 Best-Path Decision Waterfall and RPKI Route Origin Validation Animation](../assets/04-bgp-bestpath-and-rpki-rov-animated.svg)
+
+_Step-by-step mechanics:_ (1) Border routers validate incoming BGP `UPDATE`s via RTR (RFC 8210) against cryptographically signed ROAs, dropping `Invalid` sub-prefix hijacks (such as `/24` from an unauthorized ASN exceeding `maxLength /22`) before RIB installation. (2) Surviving `Valid` and `NotFound` candidates enter the RFC 4271 Best-Path waterfall (`LOCAL_PREF` → `AS_PATH` length → `Origin` → `MED` → `eBGP/iBGP` → `IGP metric` → `Router ID`), allowing economic peering policy (`LOCAL_PREF=200`) to outrank shorter transit paths.
+
 ---
 
 ## 6. Anycast Routing Architecture & TCP Dynamics

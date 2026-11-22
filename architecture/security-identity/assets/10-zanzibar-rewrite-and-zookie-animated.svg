@@ -1,0 +1,138 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 600" width="1120" height="600" role="img" aria-labelledby="title desc">
+  <title id="title">Google Zanzibar ReBAC Userset Rewrite Graph &amp; Zookie Monotonic Snapshot Consistency</title>
+  <desc id="desc">Animated Google Zanzibar authorization model from Module 10: left panel traces a Check(document:spec_2026#viewer@user:alice) query traversing Tuple-to-Userset parent inheritance and Computed Userset rewrites (owner to editor to viewer) to return PERMIT; right panel demonstrates the distributed New-Enemy race condition and how Zookie consistency tokens enforce t_snapshot &gt;= t_zookie so stale replicas stall instead of returning stale allow decisions.</desc>
+
+  <style>
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    /* 12s cycle:
+       0-25%:   Step 1 — Traverse document:spec#viewer -> parent folder:phoenix#viewer
+       25-50%:  Step 2 — Computed userset editor -> group:backend#member -> user:alice -> PERMIT
+       50-75%:  Step 3 — New-Enemy setup: W1 revokes Bob (Zookie t1), W2 adds secret (passes Zookie t1)
+       75-100%: Step 4 — Lagged replica (t0 lt t1) stalls until catchup -> DENY (New-Enemy prevented!)
+    */
+    @keyframes trav-1 { 0%, 24% { stroke: #2563eb; stroke-width: 2.4; } 25%, 100% { stroke: #cbd5e1; stroke-width: 1.4; } }
+    @keyframes trav-2 { 0%, 24% { stroke: #cbd5e1; stroke-width: 1.4; } 25%, 49% { stroke: #059669; stroke-width: 2.4; } 50%, 100% { stroke: #cbd5e1; stroke-width: 1.4; } }
+    @keyframes zook-1 { 0%, 49% { opacity: 0.65; } 50%, 74% { opacity: 1; stroke: #7c3aed; stroke-width: 2.2; } 75%, 100% { opacity: 0.72; } }
+    @keyframes zook-2 { 0%, 74% { opacity: 0.65; } 75%, 100% { opacity: 1; stroke: #e11d48; stroke-width: 2.2; } }
+    @keyframes dash-flow { to { stroke-dashoffset: -24; } }
+    @keyframes graph-dot {
+      0%   { transform: translate(0px, 0px); opacity: 1; }
+      22%  { transform: translate(0px, -110px); opacity: 1; }
+      46%  { transform: translate(0px, -220px); opacity: 1; }
+      50%, 100% { transform: translate(0px, -220px); opacity: 0; }
+    }
+
+    .tr1  { animation: trav-1 12s linear infinite; }
+    .tr2  { animation: trav-2 12s linear infinite; }
+    .zk1  { animation: zook-1 12s linear infinite; }
+    .zk2  { animation: zook-2 12s linear infinite; }
+    .dash { stroke-dasharray: 6 6; animation: dash-flow 1.2s linear infinite; }
+    .gdot { animation: graph-dot 12s ease-in-out infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .tr1, .tr2, .zk1, .zk2, .dash, .gdot { animation: none !important; }
+      .tr1, .tr2, .zk1, .zk2 { opacity: 1 !important; }
+      .gdot { opacity: 0 !important; }
+    }
+  </style>
+
+  <defs>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1120" height="600" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1120" height="62" rx="12" fill="#0f172a"/>
+  <rect x="0" y="46" width="1120" height="16" fill="#0f172a"/>
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Google Zanzibar ReBAC — Userset Rewrite Graph &amp; Zookie Tokens</text>
+  <text x="24" y="48" class="sans" font-size="12" fill="#94a3b8">Module 10 · Tuple &lt;object&gt;#&lt;relation&gt;@&lt;user&gt; · Computed &amp; Tuple-to-Userset Rewrites · Preventing the New-Enemy Problem</text>
+
+  <!-- LEFT PANEL: USERSET REWRITE GRAPH -->
+  <rect x="24" y="78" width="526" height="448" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="42" y="104" class="sans" font-size="14" font-weight="700" fill="#0f172a">1. Userset Rewrite Graph Traversal</text>
+
+  <!-- Rewrite Rules Box -->
+  <rect x="42" y="116" width="490" height="58" rx="7" fill="#f5f3ff" stroke="#c4b5fd"/>
+  <text x="56" y="135" class="mono" font-size="10.5" font-weight="700" fill="#5b21b6">Computed: viewer = self ∪ editor ∪ owner</text>
+  <text x="56" y="155" class="mono" font-size="10.5" font-weight="700" fill="#4c1d95">Tuple-to-Userset: document#viewer ⊇ parent-&gt;viewer</text>
+
+  <!-- Node 3 (Top): user:alice -->
+  <rect x="112" y="190" width="350" height="56" rx="8" fill="#ecfdf5" class="tr2"/>
+  <text x="287" y="213" class="mono" font-size="11.5" font-weight="700" fill="#065f46" text-anchor="middle">user:alice</text>
+  <text x="287" y="233" class="mono" font-size="10" fill="#047857" text-anchor="middle">group:backend_team#member@user:alice  ✓ PERMIT</text>
+
+  <line x1="287" y1="296" x2="287" y2="250" stroke="#059669" stroke-width="2" class="dash" marker-end="url(#arr-green)"/>
+  <text x="300" y="278" class="mono" font-size="10" font-weight="700" fill="#047857">member of</text>
+
+  <!-- Node 2 (Middle): folder:project_phoenix + group -->
+  <rect x="72" y="300" width="430" height="68" rx="8" fill="#eff6ff" class="tr1"/>
+  <text x="287" y="322" class="mono" font-size="11" font-weight="700" fill="#1e3a8a" text-anchor="middle">folder:project_phoenix  (Computed: editor ⊆ viewer)</text>
+  <text x="287" y="341" class="mono" font-size="10" fill="#1e40af" text-anchor="middle">folder:project_phoenix#editor@group:backend_team#member</text>
+  <text x="287" y="357" class="sans" font-size="10" fill="#2563eb" text-anchor="middle">Computed rewrite expands viewer → checks editor → expands group</text>
+
+  <line x1="287" y1="418" x2="287" y2="372" stroke="#2563eb" stroke-width="2" class="dash" marker-end="url(#arr-blue)"/>
+  <text x="300" y="400" class="mono" font-size="10" font-weight="700" fill="#1e40af">Tuple-to-Userset: parent</text>
+
+  <!-- Node 1 (Bottom): document:spec_2026 -->
+  <rect x="72" y="422" width="430" height="66" rx="8" fill="#fffbeb" class="tr1"/>
+  <text x="287" y="443" class="mono" font-size="11" font-weight="700" fill="#92400e" text-anchor="middle">Query: Check(document:spec_2026#viewer@user:alice)</text>
+  <text x="287" y="462" class="mono" font-size="10" fill="#78350f" text-anchor="middle">Tuple: document:spec_2026#parent@folder:project_phoenix</text>
+  <text x="287" y="478" class="sans" font-size="10" fill="#b45309" text-anchor="middle">No direct tuple → follows parent relation upward</text>
+
+  <!-- Animated traversal dot -->
+  <circle cx="96" cy="454" r="8" fill="#2563eb" stroke="#ffffff" stroke-width="2" class="gdot"/>
+
+  <!-- RIGHT PANEL: NEW-ENEMY PROBLEM & ZOOKIE -->
+  <rect x="570" y="78" width="526" height="448" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="588" y="104" class="sans" font-size="14" font-weight="700" fill="#0f172a">2. Zookie Consistency Tokens vs New-Enemy Race</text>
+
+  <!-- New-Enemy Problem -->
+  <rect x="588" y="116" width="490" height="92" rx="7" fill="#fff1f2" stroke="#fda4af"/>
+  <text x="602" y="136" class="sans" font-size="11.5" font-weight="700" fill="#9f1239">The Distributed New-Enemy Race (Without Zookies):</text>
+  <text x="602" y="156" class="mono" font-size="10" fill="#881337">1. W_1: Alice revokes Bob from doc ACL at timestamp t_1.</text>
+  <text x="602" y="174" class="mono" font-size="10" fill="#881337">2. W_2: Alice writes sensitive secret to doc at t_2 &gt; t_1.</text>
+  <text x="602" y="192" class="sans" font-size="10" fill="#9f1239">3. Lagged replica (at t_0 &lt; t_1) serves W_2 data + stale ACL → Bob reads secret!</text>
+
+  <!-- Step 3: Zookie Issuance -->
+  <rect x="588" y="220" width="490" height="106" rx="8" fill="#f5f3ff" class="zk1"/>
+  <rect x="602" y="232" width="66" height="22" rx="4" fill="#7c3aed"/>
+  <text x="635" y="247" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">STEP 3</text>
+  <text x="680" y="247" class="sans" font-size="12" font-weight="700" fill="#5b21b6">Zookie Captures ACL Commit LSN (t_1)</text>
+  <text x="602" y="272" class="mono" font-size="10" fill="#4c1d95">Write(revoke Bob) → returns Zookie(t_zookie = t_1)</text>
+  <text x="602" y="290" class="mono" font-size="10" fill="#4c1d95">Doc Store persists Zookie(t_1) alongside W_2 secret update.</text>
+  <text x="602" y="309" class="sans" font-size="10" fill="#5b21b6">Every future read passes Zookie(t_1) to Zanzibar Check API.</text>
+
+  <!-- Step 4: Monotonic Snapshot Gate -->
+  <rect x="588" y="338" width="490" height="172" rx="8" fill="#ecfdf5" class="zk2"/>
+  <rect x="602" y="352" width="66" height="22" rx="4" fill="#059669"/>
+  <text x="635" y="367" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">STEP 4</text>
+  <text x="680" y="367" class="sans" font-size="12" font-weight="700" fill="#065f46">Replica Snapshot Gate: t_snapshot ≥ t_zookie</text>
+
+  <rect x="602" y="384" width="222" height="58" rx="6" fill="#fffbeb" stroke="#d97706"/>
+  <text x="713" y="404" class="mono" font-size="10" font-weight="700" fill="#92400e" text-anchor="middle">Replica at t_0 &lt; t_1</text>
+  <text x="713" y="422" class="sans" font-size="10" fill="#78350f" text-anchor="middle">STALLS read until Spanner/LSN</text>
+  <text x="713" y="435" class="sans" font-size="10" fill="#78350f" text-anchor="middle">replicates W_1 (≥ t_1)</text>
+
+  <line x1="828" y1="413" x2="858" y2="413" stroke="#059669" stroke-width="2" marker-end="url(#arr-green)"/>
+
+  <rect x="864" y="384" width="200" height="58" rx="6" fill="#e11d48"/>
+  <text x="964" y="405" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">t_snapshot ≥ t_1</text>
+  <text x="964" y="424" class="mono" font-size="11" font-weight="700" fill="#ffe4e6" text-anchor="middle">Check(Bob) → DENY</text>
+
+  <rect x="602" y="454" width="462" height="42" rx="6" fill="#ffffff" stroke="#059669"/>
+  <text x="833" y="473" class="sans" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Causal ordering guaranteed without expensive global serializable locks!</text>
+  <text x="833" y="488" class="mono" font-size="10" fill="#047857" text-anchor="middle">Unrelated reads use slightly stale snapshots at high throughput.</text>
+
+  <!-- Footer -->
+  <rect x="24" y="540" width="1072" height="44" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="42" y="567" class="sans" font-size="11.5" font-weight="600" fill="#1e3a8a">Takeaway: Zanzibar resolves nested ReBAC permissions via userset rewrites and eliminates stale-ACL races with monotonic Zookie tokens.</text>
+</svg>

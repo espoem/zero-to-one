@@ -315,6 +315,10 @@ Under wait-two-min the input $(0,1,1)$ is **bivalent** (both 0 and 1 are reachab
 
 Chandra and Toueg showed that $\Diamond S$ (eventually every crashed process is permanently suspected by all, and eventually some correct process is never suspected) suffices for consensus when a majority is correct, and Chandra, Hadzilacos and Toueg (1996) proved $\Diamond W$ (equivalent to $\Diamond S$) is the _weakest_ detector that does. Raft's randomized election timeout is a practical $\Omega$ (eventual leader) detector. Failure detector engineering is Module 02.
 
+![FloodSet and Ben-Or Consensus Animation: Synchronous f+1 Rounds vs. Asynchronous Randomized Coin Flips](../assets/01-floodset-and-benor-consensus-animated.svg)
+
+_Step-by-step mechanics:_ (1) In synchronous FloodSet ($f=2$), partial crashes in rounds $1$ and $2$ leave survivors split (`p2` knows `{0,1}`, `p3` knows `{1}`), so only the crash-free round $f+1=3$ guarantees agreement on $\min(W)=0$. (2) In asynchronous Ben-Or ($n=5 > 2f$), split Phase R reports yield $\bot$, triggering local coin flips until Phase R reaches a strict majority and Phase P sees $\ge f+1$ matching proposals to decide with probability $1$.
+
 ### 9.1 Synchronous crash consensus needs $f+1$ rounds
 
 In a synchronous system with crash faults, flooding solves consensus, and no algorithm can do it in fewer than $f+1$ rounds (Fischer-Lynch 1982 prove the bound for Byzantine faults, Dolev-Strong 1983 treat authenticated agreement, and Aguilera-Toueg 1999 give a short bivalency argument for the crash case).

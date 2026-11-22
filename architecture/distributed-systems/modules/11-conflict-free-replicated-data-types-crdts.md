@@ -154,6 +154,10 @@ When elements are deleted in CRDT sets or sequences, they cannot be deleted from
 - **The Tombstone Bloat Problem**: In long-lived documents, deleted text leaves thousands of tombstone records in memory, consuming megabytes of RAM.
 - **Causal Stability Solution**: A tombstone $(e, \text{tag})$ can be permanently expunged from memory if and only if **all active replicas in the cluster have acknowledged observing the delete operation**. This is determined using vector clocks: once a delete's version vector is causally dominated by all nodes, the tombstone is safely purged.
 
+![CRDTs Animation: G-Counter/PN-Counter Max Join, OR-Set Add-Wins, Sequence CRDTs, and Tombstone GC](../assets/11-crdts-counters-orset-sequence-animated.svg)
+
+_Step-by-step mechanics:_ (1) G-Counters and PN-Counters merge state via commutative, associative, idempotent element-wise $\max$ over per-replica slots. (2) Add-Wins OR-Sets tag every insert with a unique UUID so deleting observed `uuid_1` leaves a concurrent `uuid_2` insert intact. (3) Sequence CRDTs (RGA, Yjs, Fugue) use immutable position identifiers to prevent concurrent interleaving, while causal-stability GC purges tombstones once every active replica's version vector dominates the delete.
+
 ---
 
 ## 6. The Local-First Software Movement

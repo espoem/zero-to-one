@@ -183,6 +183,10 @@ When Datalog programs include negation ($\text{not } P(X)$), monotonicity is bro
 - **Stratification:** The rule dependency graph (with directed edges $P \to Q$, and negative edges for $\text{not } Q$) must contain **no negative cycles**.
 - The rules are partitioned into strata $S_0, S_1, \dots, S_m$ where any negated predicate in stratum $S_i$ is fully computed and finalized in a strictly lower stratum $S_j$ ($j < i$). Each stratum is evaluated to its unique least fixed point sequentially, preserving declarative determinism.
 
+![BCNF Lossless Decomposition and Semi-Naive Datalog Fixed-Point Evaluation](../assets/01-bcnf-and-seminaive-datalog-animated.svg)
+
+_Step-by-step mechanics:_ (1) Detect a non-superkey functional dependency $X \to Y$ (`Instructor -> Course`) and seed $\Delta R^{(0)}$ from base EDB edges. (2) Decompose $R$ into $R_1, R_2$ and evaluate $\Delta R^{(1)} = \Delta R^{(0)} \bowtie \text{Edge} \setminus R^{(0)}$ without re-deriving known tuples. (3) Verify lossless join ($A(R_1) \cap A(R_2) \to A(R_1)$) while advancing $\Delta R^{(2)}$. (4) Reach BCNF compliance and Least Fixed Point $T_P^\infty(\emptyset)$ when $\Delta R^{(3)} = \emptyset$.
+
 ---
 
 ## 3. Data Model Paradigms: Relational, Document, Graph, and Columnar

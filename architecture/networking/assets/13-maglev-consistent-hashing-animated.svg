@@ -1,0 +1,193 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 620" width="1120" height="620" role="img" aria-labelledby="title desc">
+  <title id="title">Google Maglev Consistent Hashing Permutation and Lookup Table Animation</title>
+  <desc id="desc">Step-by-step animated diagram of Google Maglev Consistent Hashing (ACM EuroSys 2016) with prime table size M = 7 (65,537 in production) and three backends B0, B1, B2. Left panel computes offset_i = h1(B_i) mod M and skip_i = (h2(B_i) mod (M-1)) + 1 to generate each backend's deterministic permutation sequence. Right panel shows round-robin turns filling empty slots in the 7-slot lookup ring ([B1, B2, B1, B0, B0, B2, B0]), O(1) stateless 5-tuple lookup across L4 load balancers, and minimal flow disruption when backend B1 fails (4 of 5 surviving slots stay unchanged).</desc>
+
+  <style>
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    /* 14s cycle:
+       0-25%: Step 1 — Generate offset and skip permutations per backend
+       25-55%: Step 2 — Round-robin turns populate all M=7 lookup slots
+       55-75%: Step 3 — O(1) 5-tuple lookup across stateless Maglev nodes
+       75-100%: Step 4 — Remove B1 -> minimal disruption (surviving flows pinned!)
+    */
+    @keyframes mag-s1 {
+      0%, 24%  { stroke: #2563eb; stroke-width: 2.5; opacity: 1; }
+      25%, 100%{ stroke: #cbd5e1; stroke-width: 1; opacity: 0.6; }
+    }
+    @keyframes mag-s2 {
+      0%, 24%  { stroke: #cbd5e1; stroke-width: 1; opacity: 0.6; }
+      25%, 54% { stroke: #7c3aed; stroke-width: 2.5; opacity: 1; }
+      55%, 100%{ stroke: #cbd5e1; stroke-width: 1; opacity: 0.6; }
+    }
+    @keyframes mag-s3 {
+      0%, 54%  { stroke: #cbd5e1; stroke-width: 1; opacity: 0.6; }
+      55%, 74% { stroke: #059669; stroke-width: 2.5; opacity: 1; }
+      75%, 100%{ stroke: #cbd5e1; stroke-width: 1; opacity: 0.6; }
+    }
+    @keyframes mag-s4 {
+      0%, 74%  { stroke: #cbd5e1; stroke-width: 1; opacity: 0.6; }
+      75%, 100%{ stroke: #e11d48; stroke-width: 2.5; opacity: 1; }
+    }
+    @keyframes b1-fail {
+      0%, 72%  { opacity: 1; }
+      78%, 96% { opacity: 0.86; }
+      100%     { opacity: 1; }
+    }
+    @keyframes new-tbl {
+      0%, 74%  { opacity: 0.86; }
+      80%, 96% { opacity: 1; }
+      100%     { opacity: 0.86; }
+    }
+
+    .ms1 { animation: mag-s1 14s linear infinite; }
+    .ms2 { animation: mag-s2 14s linear infinite; }
+    .ms3 { animation: mag-s3 14s linear infinite; }
+    .ms4 { animation: mag-s4 14s linear infinite; }
+    .b1f { animation: b1-fail 14s linear infinite; }
+    .ntb { animation: new-tbl 14s linear infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ms1, .ms2, .ms3, .ms4, .b1f, .ntb { animation: none !important; }
+      .ms1, .ms2, .ms3, .ms4, .b1f, .ntb { opacity: 1 !important; }
+    }
+  </style>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1120" height="620" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1120" height="60" rx="12" fill="#0f172a"/>
+  <rect x="0" y="44" width="1120" height="16" fill="#0f172a"/>
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Module 13 — Google Maglev Consistent Hashing (ACM EuroSys 2016)</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">Deterministic (offset, skip) Permutation · Round-Robin M-Slot Ring Population · O(1) Stateless L4 Lookup &amp; Minimal Disruption</text>
+
+  <!-- LEFT PANEL: PERMUTATION GENERATOR -->
+  <rect x="24" y="74" width="490" height="296" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="42" y="98" class="sans" font-size="14" font-weight="700" fill="#0f172a">1. Permutation Table Generation (Prime M = 7; Prod M = 65,537)</text>
+  <text x="42" y="116" class="mono" font-size="10" fill="#5b21b6">perm[i][j] = (offset_i + j × skip_i) mod M  |  skip ∈ [1, M − 1]</text>
+
+  <!-- Backend B0 -->
+  <rect x="42" y="130" width="454" height="58" rx="7" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="56" y="150" class="mono" font-size="11" font-weight="700" fill="#1e3a8a">Backend B0: offset=3, skip=4</text>
+  <text x="56" y="172" class="mono" font-size="10.5" fill="#1e40af">perm[0] = [ 3,  0,  4,  1,  5,  2,  6 ]</text>
+
+  <!-- Backend B1 -->
+  <g class="b1f">
+    <rect x="42" y="198" width="454" height="58" rx="7" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+    <text x="56" y="218" class="mono" font-size="11" font-weight="700" fill="#92400e">Backend B1: offset=0, skip=2  (Fails in Step 4)</text>
+    <text x="56" y="240" class="mono" font-size="10.5" fill="#b45309">perm[1] = [ 0,  2,  4,  6,  1,  3,  5 ]</text>
+  </g>
+
+  <!-- Backend B2 -->
+  <rect x="42" y="266" width="454" height="58" rx="7" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="56" y="286" class="mono" font-size="11" font-weight="700" fill="#065f46">Backend B2: offset=5, skip=3</text>
+  <text x="56" y="308" class="mono" font-size="10.5" fill="#047857">perm[2] = [ 5,  1,  4,  0,  3,  6,  2 ]</text>
+
+  <text x="42" y="352" class="sans" font-size="10.5" fill="#475569">Prime M and 1 ≤ skip &lt; M guarantees each perm visits all M slots once.</text>
+
+  <!-- RIGHT PANEL: ROUND-ROBIN POPULATION & FAILOVER -->
+  <rect x="530" y="74" width="566" height="296" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="548" y="98" class="sans" font-size="14" font-weight="700" fill="#0f172a">2. Round-Robin Fill &amp; Minimal Disruption on B1 Removal</text>
+  <text x="548" y="116" class="mono" font-size="10" fill="#475569">Each backend claims its next empty slot in perm[i]; skips occupied slots.</text>
+
+  <!-- Lookup Table Before Failure (All 3 backends) -->
+  <text x="548" y="140" class="mono" font-size="10.5" font-weight="700" fill="#0f172a">Healthy Table (B0, B1, B2):</text>
+  <!-- 7 slots: 0..6 -->
+  <rect x="548" y="148" width="70" height="48" rx="5" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <text x="583" y="166" class="mono" font-size="10" fill="#78350f" text-anchor="middle">Slot 0</text>
+  <text x="583" y="184" class="mono" font-size="12" font-weight="700" fill="#92400e" text-anchor="middle">B1</text>
+
+  <rect x="624" y="148" width="70" height="48" rx="5" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="659" y="166" class="mono" font-size="10" fill="#047857" text-anchor="middle">Slot 1</text>
+  <text x="659" y="184" class="mono" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">B2</text>
+
+  <rect x="700" y="148" width="70" height="48" rx="5" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <text x="735" y="166" class="mono" font-size="10" fill="#78350f" text-anchor="middle">Slot 2</text>
+  <text x="735" y="184" class="mono" font-size="12" font-weight="700" fill="#92400e" text-anchor="middle">B1</text>
+
+  <rect x="776" y="148" width="70" height="48" rx="5" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="811" y="166" class="mono" font-size="10" fill="#1e40af" text-anchor="middle">Slot 3</text>
+  <text x="811" y="184" class="mono" font-size="12" font-weight="700" fill="#1e3a8a" text-anchor="middle">B0</text>
+
+  <rect x="852" y="148" width="70" height="48" rx="5" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="887" y="166" class="mono" font-size="10" fill="#1e40af" text-anchor="middle">Slot 4</text>
+  <text x="887" y="184" class="mono" font-size="12" font-weight="700" fill="#1e3a8a" text-anchor="middle">B0</text>
+
+  <rect x="928" y="148" width="70" height="48" rx="5" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="963" y="166" class="mono" font-size="10" fill="#047857" text-anchor="middle">Slot 5</text>
+  <text x="963" y="184" class="mono" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">B2</text>
+
+  <rect x="1004" y="148" width="70" height="48" rx="5" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="1039" y="166" class="mono" font-size="10" fill="#1e40af" text-anchor="middle">Slot 6</text>
+  <text x="1039" y="184" class="mono" font-size="12" font-weight="700" fill="#1e3a8a" text-anchor="middle">B0</text>
+
+  <!-- After B1 Failure -->
+  <g class="ntb">
+    <text x="548" y="224" class="mono" font-size="10.5" font-weight="700" fill="#9f1239">After B1 Removed (Recomputed with B0, B2):</text>
+    <rect x="548" y="232" width="70" height="48" rx="5" fill="#fff1f2" stroke="#e11d48" stroke-width="1.5"/>
+    <text x="583" y="250" class="mono" font-size="10" fill="#9f1239" text-anchor="middle">was B1</text>
+    <text x="583" y="268" class="mono" font-size="12" font-weight="700" fill="#1e3a8a" text-anchor="middle">B0</text>
+
+    <rect x="624" y="232" width="70" height="48" rx="5" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+    <text x="659" y="250" class="mono" font-size="10" fill="#047857" text-anchor="middle">KEPT</text>
+    <text x="659" y="268" class="mono" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">B2</text>
+
+    <rect x="700" y="232" width="70" height="48" rx="5" fill="#fff1f2" stroke="#e11d48" stroke-width="1.5"/>
+    <text x="735" y="250" class="mono" font-size="10" fill="#9f1239" text-anchor="middle">was B1</text>
+    <text x="735" y="268" class="mono" font-size="12" font-weight="700" fill="#1e3a8a" text-anchor="middle">B0</text>
+
+    <rect x="776" y="232" width="70" height="48" rx="5" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="811" y="250" class="mono" font-size="10" fill="#1e40af" text-anchor="middle">KEPT</text>
+    <text x="811" y="268" class="mono" font-size="12" font-weight="700" fill="#1e3a8a" text-anchor="middle">B0</text>
+
+    <rect x="852" y="232" width="70" height="48" rx="5" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="887" y="250" class="mono" font-size="10" fill="#1e40af" text-anchor="middle">KEPT</text>
+    <text x="887" y="268" class="mono" font-size="12" font-weight="700" fill="#1e3a8a" text-anchor="middle">B0</text>
+
+    <rect x="928" y="232" width="70" height="48" rx="5" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+    <text x="963" y="250" class="mono" font-size="10" fill="#047857" text-anchor="middle">KEPT</text>
+    <text x="963" y="268" class="mono" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">B2</text>
+
+    <rect x="1004" y="232" width="70" height="48" rx="5" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+    <text x="1039" y="250" class="mono" font-size="10" fill="#92400e" text-anchor="middle">rebal</text>
+    <text x="1039" y="268" class="mono" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">B2</text>
+  </g>
+
+  <rect x="548" y="294" width="526" height="60" rx="7" fill="#f5f3ff" stroke="#c4b5fd"/>
+  <text x="562" y="314" class="mono" font-size="10.5" font-weight="700" fill="#5b21b6">O(1) Packet Lookup: backend = table[ hash(5-tuple) mod M ]</text>
+  <text x="562" y="334" class="sans" font-size="10.5" fill="#4c1d95">All independent Maglev L4 balancers compute the identical table with zero shared state.</text>
+
+  <!-- BOTTOM 4-STEP TRACE -->
+  <rect x="24" y="384" width="1072" height="164" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="42" y="408" class="sans" font-size="14" font-weight="700" fill="#0f172a">3. Step-by-Step Execution &amp; Consistency Invariants (14s Loop)</text>
+
+  <rect x="42" y="422" width="250" height="108" rx="8" fill="#eff6ff" class="ms1"/>
+  <text x="54" y="444" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a">1. Compute Permutations</text>
+  <text x="54" y="464" class="sans" font-size="10" fill="#1e40af">Each backend hashes to an</text>
+  <text x="54" y="480" class="sans" font-size="10" fill="#1e40af">(offset, skip) pair producing</text>
+  <text x="54" y="496" class="sans" font-size="10" fill="#1e40af">a full cycle of 0..M−1.</text>
+
+  <rect x="304" y="422" width="250" height="108" rx="8" fill="#f5f3ff" class="ms2"/>
+  <text x="316" y="444" class="mono" font-size="10.5" font-weight="700" fill="#5b21b6">2. Round-Robin Fill</text>
+  <text x="316" y="464" class="sans" font-size="10" fill="#4c1d95">R1: B0-&gt;3, B1-&gt;0, B2-&gt;5.</text>
+  <text x="316" y="480" class="sans" font-size="10" fill="#4c1d95">R2: B0 skips 0 -&gt; 4; B1-&gt;2;</text>
+  <text x="316" y="496" class="sans" font-size="10" fill="#4c1d95">B2-&gt;1. R3: B0 claims 6.</text>
+
+  <rect x="566" y="422" width="250" height="108" rx="8" fill="#ecfdf5" class="ms3"/>
+  <text x="578" y="444" class="mono" font-size="10.5" font-weight="700" fill="#065f46">3. O(1) L4 Dispatch</text>
+  <text x="578" y="464" class="sans" font-size="10" fill="#047857">Array index lookup takes</text>
+  <text x="578" y="480" class="sans" font-size="10" fill="#047857">one array read (~ns); ideal</text>
+  <text x="578" y="496" class="sans" font-size="10" fill="#047857">for DSR &amp; ECMP frontends.</text>
+
+  <rect x="828" y="422" width="250" height="108" rx="8" fill="#fff1f2" class="ms4"/>
+  <text x="840" y="444" class="mono" font-size="10.5" font-weight="700" fill="#9f1239">4. Minimal Disruption</text>
+  <text x="840" y="464" class="sans" font-size="10" fill="#be123c">When B1 dies, 4/5 surviving</text>
+  <text x="840" y="480" class="sans" font-size="10" fill="#be123c">slots stay pinned; B0 &amp; B2</text>
+  <text x="840" y="496" class="sans" font-size="10" fill="#be123c">stay balanced (4 vs 3 slots).</text>
+
+  <!-- FOOTER -->
+  <rect x="24" y="562" width="1072" height="44" rx="8" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="42" y="589" class="sans" font-size="11.5" font-weight="600" fill="#1e3a8a">Takeaway: Maglev replaces per-flow conntrack memory with an O(1) lookup table that stays balanced and minimally disruptive under backend churn.</text>
+</svg>

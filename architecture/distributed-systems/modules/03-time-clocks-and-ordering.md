@@ -139,6 +139,10 @@ flowchart LR
 
 By enforcing that transactions **wait out the clock uncertainty ($\approx 2\epsilon$)** before publishing their commit timestamp, Spanner guarantees that physical causality mirrors logical causality globally.
 
+![Logical Clocks (Lamport, Vector, HLC) and Spanner TrueTime Commit-Wait Animation](../assets/03-logical-clocks-and-truetime-animated.svg)
+
+_Step-by-step mechanics:_ (1) Lamport scalar clocks preserve $a \to b \implies L(a) < L(b)$ but cannot distinguish causal pairs from concurrent events ($a \parallel c$). (2) Vector clocks capture exact causality and concurrency in $O(N)$ state, whereas Hybrid Logical Clocks `(l, c)` bound drift to $|l - pt| \le \epsilon$ in $O(1)$ space. (3) Spanner TrueTime picks commit timestamp $s_1 = \text{TT.now().latest}$ and executes Commit-Wait until $\text{TT.now().earliest} > s_1$, guaranteeing $s_2 > s_1$ for any subsequent transaction $T_2$.
+
 ---
 
 ## 6. Distributed Leases, GC Pauses, and Fencing Tokens

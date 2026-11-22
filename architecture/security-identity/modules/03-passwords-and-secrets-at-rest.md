@@ -145,6 +145,10 @@ sequenceDiagram
     App-->>User: Rejection: "Password found in 241,892 breaches!"
 ```
 
+![Argon2id Hybrid Memory-Hard Hashing and HIBP k-Anonymity Prefix Query Animation](../assets/03-argon2id-and-kanonymity-animated.svg)
+
+_Step-by-step mechanics:_ (1) Argon2id fills its $19\text{ MiB}$ memory matrix using data-independent `Argon2i` addressing first to prevent cache-timing leaks, then switches to data-dependent `Argon2d` jumps to defeat GPU/ASIC cracking alongside a 16-byte CSPRNG salt and HSM pepper. (2) Before persisting, the app hashes candidate passwords locally with SHA-1 and sends only the 5-hex prefix (`8382E`) to the HIBP range API, scanning returned suffixes in memory without leaking the password.
+
 ---
 
 ## 5. Enterprise Secrets Management Architecture

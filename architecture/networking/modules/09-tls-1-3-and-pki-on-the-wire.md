@@ -252,6 +252,10 @@ Because the post-quantum `ClientHello` exceeds the standard 1,500-byte Ethernet 
 3. Upon receiving the split segment, these buggy middleboxes fail to reassemble the TCP stream, drop the second segment, or return a TCP RST, causing the post-quantum connection to hang and time out.
 4. Major browser engines (Chrome, Firefox, Safari) deployed fallback algorithms during the initial rollout of RFC 10024, retrying connections with classical X25519 if the hybrid handshake failed.
 
+![TLS 1.3 1-RTT Handshake, HKDF Key Schedule, and X25519MLKEM768 Hybrid Animation](../assets/09-tls13-handshake-hkdf-pq-hybrid-animated.svg)
+
+_Step-by-step mechanics:_ (1) The client transmits `ClientHello` carrying a `1,216 B` `X25519MLKEM768` hybrid `key_share` (`32 B` ECDHE + `1,184 B` ML-KEM-768, spanning two TCP segments past the `1,500 B` MTU). (2) The server replies with `ServerHello` and immediately AEAD-encrypts `{EncryptedExtensions, Certificate, CertificateVerify, Finished}` under the Handshake Secret. (3) The 3-stage HKDF schedule mixes `Early Secret` → `Handshake Secret` (`X25519_SS \|\| MLKEM768_SS`) → `Master Secret` to unlock 1-RTT bidirectional application traffic.
+
 ---
 
 ## 7. Decrypting Network Captures: `SSLKEYLOGFILE`

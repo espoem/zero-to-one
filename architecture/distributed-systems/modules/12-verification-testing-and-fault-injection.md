@@ -51,6 +51,10 @@ flowchart TD
    - _Log Matching_: Replicas do not hold contradictory entries.
 4. **Byte-for-Byte Replayability**: If an invariant is violated at step $4,921$, the test runner prints the initial random seed (e.g. `seed: 0x4a9b21f`). Re-running the simulation with that exact seed reproduces the bug **identically down to the exact CPU instruction**, allowing developers to step through with a debugger!
 
+![Deterministic Simulation Testing (DST) Event Loop and Invariant Audit Animation](../assets/12-deterministic-simulation-testing-animated.svg)
+
+_Step-by-step mechanics:_ (1) A seeded PRNG (`0x4a9b21f`) drives a single-threaded priority-queue event loop controlling Virtual Clock, Virtual Network, and Virtual Disk. (2) The simulator injects asymmetric partitions, clock jumps, and torn disk writes across real state-machine code while evaluating Election Safety, Log Matching, and Linearizability after every single step. (3) Any invariant violation (e.g. at step `4,921`) replays identically from the printed seed in a debugger.
+
 ---
 
 ## 3. Jepsen: Black-Box Verification and Fault Injection

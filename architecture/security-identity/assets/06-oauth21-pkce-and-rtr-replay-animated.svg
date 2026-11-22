@@ -1,0 +1,172 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 600" width="1120" height="600" role="img" aria-labelledby="title desc">
+  <title id="title">OAuth 2.1 Mandatory PKCE S256 Binding &amp; Refresh Token Rotation Reuse Detection</title>
+  <desc id="desc">Animated step-by-step OAuth 2.1 security flow: left panel illustrates PKCE S256 cryptographic binding from CSPRNG code_verifier to SHA-256 code_challenge on /authorize and verification on /token blocking stolen authorization codes; right panel illustrates Refresh Token Rotation (RTR) where legitimate rotation marks RT_1 used and issues RT_2, while attacker replay of RT_1 triggers automated reuse detection and revokes the entire token family.</desc>
+
+  <style>
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    /* 12s cycle:
+       0-25%:   Step 1 — Client generates code_verifier -> S256 code_challenge -> /authorize
+       25-50%:  Step 2 — /token verifies SHA-256(code_verifier) == code_challenge -> AT_1 + RT_1
+       50-75%:  Step 3 — Legitimate RTR rotates RT_1 -> RT_2 (RT_1 marked USED)
+       75-100%: Step 4 — Attacker replays RT_1 -> Reuse Detection revokes ENTIRE family!
+    */
+    @keyframes pkce-pkt {
+      0%, 4%   { transform: translateY(0px); opacity: 0; }
+      10%, 22% { transform: translateY(0px); opacity: 1; }
+      28%, 45% { transform: translateY(152px); opacity: 1; }
+      50%, 100% { transform: translateY(152px); opacity: 0; }
+    }
+    @keyframes rtr-good {
+      0%, 49%  { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; }
+      52%, 74% { opacity: 1; stroke: #059669; stroke-width: 2.2; }
+      75%, 100% { opacity: 0.6; stroke: #e11d48; stroke-width: 1.4; }
+    }
+    @keyframes rtr-alarm {
+      0%, 74%  { opacity: 0.86; stroke: #fda4af; stroke-width: 1.2; }
+      78%, 98% { opacity: 1; stroke: #e11d48; stroke-width: 2.5; }
+      100%     { opacity: 0.86; stroke: #fda4af; stroke-width: 1.2; }
+    }
+    @keyframes panel-l {
+      0%, 49% { stroke: #2563eb; stroke-width: 2.2; }
+      50%, 100% { stroke: #cbd5e1; stroke-width: 1.4; }
+    }
+    @keyframes panel-r {
+      0%, 49% { stroke: #cbd5e1; stroke-width: 1.4; }
+      50%, 100% { stroke: #e11d48; stroke-width: 2.2; }
+    }
+    @keyframes dash-move {
+      to { stroke-dashoffset: -24; }
+    }
+
+    .pl      { animation: panel-l 12s linear infinite; }
+    .pr      { animation: panel-r 12s linear infinite; }
+    .pkt     { animation: pkce-pkt 12s ease-in-out infinite; }
+    .rt-ok   { animation: rtr-good 12s linear infinite; }
+    .rt-kill { animation: rtr-alarm 12s linear infinite; }
+    .dash    { stroke-dasharray: 6 6; animation: dash-move 1.2s linear infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .pl, .pr, .pkt, .rt-ok, .rt-kill, .dash {
+        animation: none !important;
+      }
+      .pl, .pr { stroke: #cbd5e1 !important; stroke-width: 1.5 !important; }
+      .pkt { opacity: 0 !important; }
+      .rt-ok, .rt-kill { opacity: 1 !important; }
+    }
+  </style>
+
+  <defs>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <marker id="arr-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1120" height="600" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1120" height="62" rx="12" fill="#0f172a"/>
+  <rect x="0" y="46" width="1120" height="16" fill="#0f172a"/>
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">OAuth 2.1 — Mandatory PKCE (S256) &amp; Refresh Token Rotation (RTR)</text>
+  <text x="24" y="48" class="sans" font-size="12" fill="#94a3b8">Module 06 · RFC 7636 code_verifier → SHA-256 → code_challenge Binding · RFC 9700 Replay Detection &amp; Family Revocation</text>
+
+  <!-- LEFT PANEL: PKCE S256 -->
+  <rect x="24" y="78" width="526" height="448" rx="10" fill="#ffffff" class="pl"/>
+  <text x="42" y="104" class="sans" font-size="14" font-weight="700" fill="#0f172a">1. Mandatory PKCE Binding (RFC 7636 · S256 Only)</text>
+
+  <!-- Secret verifier box -->
+  <rect x="42" y="120" width="490" height="68" rx="7" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="56" y="140" class="sans" font-size="11.5" font-weight="700" fill="#5b21b6">Client Memory (Secret kept local until /token):</text>
+  <text x="56" y="159" class="mono" font-size="10.5" font-weight="700" fill="#4c1d95">code_verifier = CSPRNG(43..128 unreserved chars)</text>
+  <text x="56" y="177" class="mono" font-size="10.5" fill="#6d28d9">code_challenge = Base64URL( SHA-256(code_verifier) )</text>
+
+  <!-- Step 1: /authorize -->
+  <rect x="42" y="202" width="222" height="86" rx="7" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="54" y="222" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a">GET /authorize</text>
+  <text x="54" y="240" class="mono" font-size="10" fill="#1e40af">code_challenge=xyz</text>
+  <text x="54" y="256" class="mono" font-size="10" fill="#1e40af">method=S256 (no plain)</text>
+  <text x="54" y="274" class="sans" font-size="10" fill="#2563eb">Exact redirect_uri match</text>
+
+  <line x1="268" y1="245" x2="306" y2="245" stroke="#2563eb" stroke-width="2" class="dash" marker-end="url(#arr-blue)"/>
+
+  <rect x="312" y="202" width="220" height="86" rx="7" fill="#ecfdf5" stroke="#059669"/>
+  <text x="324" y="222" class="sans" font-size="11" font-weight="700" fill="#065f46">Authorization Server</text>
+  <text x="324" y="240" class="mono" font-size="10" fill="#047857">Stores (code, challenge)</text>
+  <text x="324" y="256" class="mono" font-size="10" fill="#047857">302 ?code=AUTH_CODE</text>
+  <text x="324" y="274" class="mono" font-size="10" fill="#065f46">&amp;iss=https://as.com</text>
+
+  <!-- Animated packet marker -->
+  <g class="pkt">
+    <circle cx="287" cy="245" r="9" fill="#2563eb" stroke="#ffffff" stroke-width="2"/>
+    <text x="287" y="249" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">C</text>
+  </g>
+
+  <!-- Attacker intercept warning -->
+  <rect x="42" y="302" width="490" height="44" rx="6" fill="#fff1f2" stroke="#fda4af"/>
+  <text x="56" y="321" class="sans" font-size="10.5" font-weight="700" fill="#9f1239">If Attacker steals AUTH_CODE via OS URI handler:</text>
+  <text x="56" y="337" class="mono" font-size="10" fill="#881337">Attacker lacks code_verifier → cannot invert SHA-256 → /token REJECTS!</text>
+
+  <!-- Step 2: /token exchange -->
+  <rect x="42" y="358" width="490" height="152" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="56" y="379" class="mono" font-size="11" font-weight="700" fill="#0f172a">POST /token (Legitimate Client redeems AUTH_CODE)</text>
+  <text x="56" y="399" class="mono" font-size="10" fill="#334155">Payload: grant_type=authorization_code &amp; code=AUTH_CODE &amp; code_verifier</text>
+  <rect x="56" y="410" width="462" height="44" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="287" y="429" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">AS Verify: Base64URL(SHA-256(code_verifier)) == stored code_challenge</text>
+  <text x="287" y="446" class="sans" font-size="10" fill="#047857" text-anchor="middle">Matches! Single-use AUTH_CODE burned immediately</text>
+  <rect x="56" y="464" width="462" height="34" rx="5" fill="#059669"/>
+  <text x="287" y="485" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">200 OK → Issues Access Token AT_1 + Refresh Token RT_1 (Family Root)</text>
+
+  <!-- RIGHT PANEL: REFRESH TOKEN ROTATION & FAMILY REVOCATION -->
+  <rect x="570" y="78" width="526" height="448" rx="10" fill="#ffffff" class="pr"/>
+  <text x="588" y="104" class="sans" font-size="14" font-weight="700" fill="#0f172a">2. Refresh Token Rotation (RTR) &amp; Replay Revocation</text>
+
+  <!-- Token Family Tree -->
+  <rect x="588" y="120" width="490" height="106" rx="8" fill="#f5f3ff" stroke="#c4b5fd"/>
+  <text x="602" y="140" class="sans" font-size="11.5" font-weight="700" fill="#5b21b6">AS Token Family Lineage (family_id = fam_94a):</text>
+
+  <rect x="614" y="156" width="116" height="52" rx="6" fill="#fff1f2" stroke="#e11d48" stroke-width="1.5"/>
+  <text x="672" y="177" class="mono" font-size="11" font-weight="700" fill="#9f1239" text-anchor="middle">RT_1</text>
+  <text x="672" y="196" class="mono" font-size="10" font-weight="700" fill="#e11d48" text-anchor="middle">STATUS: USED</text>
+
+  <line x1="734" y1="182" x2="778" y2="182" stroke="#059669" stroke-width="2" marker-end="url(#arr-green)"/>
+
+  <rect x="784" y="156" width="126" height="52" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="847" y="177" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">RT_2 + AT_2</text>
+  <text x="847" y="196" class="mono" font-size="10" font-weight="700" fill="#047857" text-anchor="middle">ACTIVE → REVOKED</text>
+
+  <rect x="926" y="156" width="138" height="52" rx="6" fill="#ffffff" stroke="#7c3aed" stroke-dasharray="4 3"/>
+  <text x="995" y="177" class="mono" font-size="10" font-weight="700" fill="#5b21b6" text-anchor="middle">Kill Switch</text>
+  <text x="995" y="195" class="sans" font-size="10" fill="#4c1d95" text-anchor="middle">Revokes whole fam_94a</text>
+
+  <!-- Step 3: Normal Rotation -->
+  <rect x="588" y="240" width="490" height="84" rx="7" fill="#ecfdf5" class="rt-ok"/>
+  <rect x="602" y="252" width="76" height="22" rx="4" fill="#059669"/>
+  <text x="640" y="267" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">STEP 3</text>
+  <text x="690" y="267" class="sans" font-size="12" font-weight="700" fill="#065f46">Legitimate Client rotates RT_1</text>
+  <text x="602" y="290" class="mono" font-size="10" fill="#334155">POST /token (refresh_token=RT_1) → RT_1 marked USED</text>
+  <text x="602" y="309" class="mono" font-size="10" fill="#047857">AS issues new pair: AT_2 + RT_2 (single-use refresh tokens)</text>
+
+  <!-- Step 4: Attacker Replay & Family Revocation -->
+  <rect x="588" y="338" width="490" height="172" rx="8" fill="#fff1f2" class="rt-kill"/>
+  <rect x="602" y="352" width="76" height="22" rx="4" fill="#e11d48"/>
+  <text x="640" y="367" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">STEP 4</text>
+  <text x="690" y="367" class="sans" font-size="12" font-weight="700" fill="#9f1239">Attacker replays stolen RT_1 → Reuse Detected!</text>
+  <text x="602" y="392" class="mono" font-size="10.5" fill="#881337">Attacker sends: POST /token (refresh_token=RT_1)</text>
+  <text x="602" y="412" class="sans" font-size="10.5" font-weight="700" fill="#9f1239">AS sees RT_1.status == USED → Theft proven!</text>
+  <rect x="602" y="426" width="462" height="40" rx="6" fill="#e11d48"/>
+  <text x="833" y="445" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">REVOKE ENTIRE FAMILY (RT_1, RT_2, AT_2 invalidated)</text>
+  <text x="833" y="460" class="mono" font-size="10" fill="#ffe4e6" text-anchor="middle">Response: 400 Bad Request {"error": "invalid_grant"}</text>
+  <text x="602" y="492" class="sans" font-size="10" fill="#881337">Both attacker &amp; client lose refresh session; user must re-authenticate safely.</text>
+
+  <!-- Footer -->
+  <rect x="24" y="540" width="1072" height="44" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="42" y="567" class="sans" font-size="11.5" font-weight="600" fill="#1e3a8a">Takeaway: OAuth 2.1 enforces S256 PKCE + exact redirect_uri matching on code issuance and RTR family revocation (or DPoP/mTLS) on refresh.</text>
+</svg>

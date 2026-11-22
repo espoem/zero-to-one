@@ -1,0 +1,157 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 640" width="1120" height="640" role="img" aria-labelledby="title desc">
+  <title id="title">Catamorphisms (foldRight vs foldLeft), Deforestation Fusion &amp; Okasaki Banker's Queue</title>
+  <desc id="desc">Animated Module 02 functional programming concepts: Top-left compares non-tail-recursive foldRight stack frames against O(1)-stack tail-recursive foldLeft; Top-right contrasts 3n-allocation eager intermediate lists against single-pass deforestation fusion; Bottom panel animates Okasaki's persistent Banker's Queue maintaining |f| &gt;= |r| via memoised LazyList incremental rotation shared across branching snapshots.</desc>
+
+  <style>
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    /* 12s cycle:
+       0-25%:   Step 1 — foldRight stack vs foldLeft O(1) loop
+       25-50%:  Step 2 — Deforestation eliminates 3n intermediate lists
+       50-75%:  Step 3 — Banker's Queue |r| > |f| triggers lazy balance()
+       75-100%: Step 4 — Memoised thunk shared across persistent forks q1, q2
+    */
+    @keyframes hl1 { 0%, 24% { stroke: #2563eb; stroke-width: 2.5; opacity: 1; } 25%, 100% { stroke: #cbd5e1; stroke-width: 1.4; opacity: 0.72; } }
+    @keyframes hl2 { 0%, 24% { stroke: #cbd5e1; stroke-width: 1.4; opacity: 0.72; } 25%, 49% { stroke: #7c3aed; stroke-width: 2.5; opacity: 1; } 50%, 100% { stroke: #cbd5e1; stroke-width: 1.4; opacity: 0.72; } }
+    @keyframes hl3 { 0%, 49% { stroke: #cbd5e1; stroke-width: 1.4; opacity: 0.72; } 50%, 100% { stroke: #059669; stroke-width: 2.5; opacity: 1; } }
+
+    @keyframes dash { to { stroke-dashoffset: -24; } }
+    @keyframes elem-pull {
+      0%, 24% { transform: translateX(0px); opacity: 0; }
+      30%     { transform: translateX(0px); opacity: 1; }
+      46%     { transform: translateX(220px); opacity: 1; }
+      52%, 100% { transform: translateX(220px); opacity: 0; }
+    }
+    @keyframes thunk-eval {
+      0%, 50%  { fill: #fffbeb; stroke: #d97706; }
+      72%, 96% { fill: #ecfdf5; stroke: #059669; }
+      100%     { fill: #fffbeb; stroke: #d97706; }
+    }
+
+    .b1 { animation: hl1 12s linear infinite; }
+    .b2 { animation: hl2 12s linear infinite; }
+    .b3 { animation: hl3 12s linear infinite; }
+    .flow { stroke-dasharray: 6 6; animation: dash 1.2s linear infinite; }
+    .epkt { animation: elem-pull 12s ease-in-out infinite; }
+    .thnk { animation: thunk-eval 12s linear infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .b1, .b2, .b3, .flow, .epkt, .thnk { animation: none !important; }
+      .b1, .b2, .b3 { opacity: 1 !important; stroke-width: 1.8 !important; }
+      .epkt { opacity: 0 !important; }
+    }
+  </style>
+
+  <defs>
+    <marker id="arr-violet" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1120" height="640" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1120" height="62" rx="12" fill="#0f172a"/>
+  <rect x="0" y="46" width="1120" height="16" fill="#0f172a"/>
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Catamorphisms, Deforestation Fusion &amp; Okasaki's Banker's Queue</text>
+  <text x="24" y="48" class="sans" font-size="12" fill="#94a3b8">Module 02 · foldRight vs O(1)-Stack foldLeft · Eliminating 3n Intermediate Lists · Persistent Lazy Queue (|f| ≥ |r|)</text>
+
+  <!-- TOP-LEFT PANEL: CATAMORPHISMS -->
+  <rect x="24" y="78" width="526" height="248" rx="10" fill="#ffffff" class="b1"/>
+  <rect x="38" y="90" width="60" height="22" rx="5" fill="#2563eb"/>
+  <text x="68" y="105" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">STEP 1</text>
+  <text x="110" y="106" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">Catamorphisms: foldRight vs foldLeft</text>
+
+  <rect x="38" y="122" width="498" height="90" rx="7" fill="#fff1f2" stroke="#fda4af"/>
+  <text x="52" y="142" class="mono" font-size="10.5" font-weight="700" fill="#9f1239">foldRight(List(1,2,3), z)(f) = f(1, f(2, f(3, z)))</text>
+  <text x="52" y="162" class="sans" font-size="10.5" fill="#881337">• Not in tail position: f runs AFTER recursive call returns.</text>
+  <text x="52" y="180" class="sans" font-size="10.5" fill="#881337">• Pushes O(n) stack frames → StackOverflowError at n ≈ 20,000.</text>
+  <text x="52" y="198" class="mono" font-size="10" font-weight="700" fill="#be123c">Safe Fix: foldLeft(reverse(as), z)((b, a) =&gt; f(a, b))</text>
+
+  <rect x="38" y="222" width="498" height="90" rx="7" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <text x="52" y="242" class="mono" font-size="10.5" font-weight="700" fill="#065f46">foldLeft(List(1,2,3), z)(f) = f(f(f(z, 1), 2), 3)</text>
+  <text x="52" y="262" class="sans" font-size="10.5" fill="#047857">• Accumulates BEFORE descending → strict tail position.</text>
+  <text x="52" y="280" class="sans" font-size="10.5" fill="#047857">• Compiles to while-loop: handles 10⁷ elements in O(1) stack.</text>
+  <text x="52" y="298" class="mono" font-size="10" fill="#065f46">Replaces Cons(h,t)→f and Nil→z algebraically.</text>
+
+  <!-- TOP-RIGHT PANEL: DEFORESTATION FUSION -->
+  <rect x="570" y="78" width="526" height="248" rx="10" fill="#ffffff" class="b2"/>
+  <rect x="584" y="90" width="60" height="22" rx="5" fill="#7c3aed"/>
+  <text x="614" y="105" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">STEP 2</text>
+  <text x="656" y="106" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">Deforestation: Eliminating Intermediate Lists</text>
+
+  <!-- Eager 3n allocations -->
+  <rect x="584" y="122" width="498" height="86" rx="7" fill="#fff1f2" stroke="#fda4af"/>
+  <text x="598" y="141" class="sans" font-size="11" font-weight="700" fill="#9f1239">Eager List Pipeline (3n heap Cons allocations + GC churn):</text>
+  <rect x="598" y="152" width="128" height="26" rx="4" fill="#ffe4e6" stroke="#e11d48"/>
+  <text x="662" y="169" class="mono" font-size="10" font-weight="700" fill="#9f1239" text-anchor="middle">xs.map(_ + 1)</text>
+  <line x1="730" y1="165" x2="758" y2="165" stroke="#e11d48" stroke-width="1.6"/>
+  <rect x="762" y="152" width="136" height="26" rx="4" fill="#ffe4e6" stroke="#e11d48"/>
+  <text x="830" y="169" class="mono" font-size="10" font-weight="700" fill="#9f1239" text-anchor="middle">.filter(_ % 2 == 0)</text>
+  <line x1="902" y1="165" x2="930" y2="165" stroke="#e11d48" stroke-width="1.6"/>
+  <rect x="934" y="152" width="134" height="26" rx="4" fill="#ffe4e6" stroke="#e11d48"/>
+  <text x="1001" y="169" class="mono" font-size="10" font-weight="700" fill="#9f1239" text-anchor="middle">.map(_.toString)</text>
+  <text x="598" y="197" class="mono" font-size="10" fill="#881337">3 full spine traversals · L1/L2 pointer-chasing cache misses</text>
+
+  <!-- Fused pipeline -->
+  <rect x="584" y="218" width="498" height="94" rx="7" fill="#f5f3ff" stroke="#c4b5fd"/>
+  <text x="598" y="238" class="sans" font-size="11" font-weight="700" fill="#5b21b6">Fused / Deforested Pipeline (foldr/build or Lazy Pull):</text>
+  <rect x="598" y="250" width="320" height="32" rx="5" fill="#ffffff" stroke="#7c3aed" stroke-width="1.6"/>
+  <text x="758" y="270" class="mono" font-size="10.5" font-weight="700" fill="#5b21b6" text-anchor="middle">x ↦ (x+1) ↦ even? ↦ toString (1 pass!)</text>
+  <circle cx="614" cy="266" r="6" fill="#7c3aed" class="epkt"/>
+  <text x="934" y="270" class="mono" font-size="10.5" font-weight="700" fill="#059669">0 intermediate lists</text>
+  <text x="598" y="300" class="mono" font-size="10" fill="#4c1d95">Law: foldr f z (build g) ≡ g f z · Fuses map/filter in O(1) extra heap</text>
+
+  <!-- BOTTOM PANEL: OKASAKI BANKER'S QUEUE -->
+  <rect x="24" y="342" width="1072" height="228" rx="10" fill="#ffffff" class="b3"/>
+  <rect x="38" y="356" width="60" height="22" rx="5" fill="#059669"/>
+  <text x="68" y="371" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">STEP 3-4</text>
+  <text x="110" y="372" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">Okasaki Persistent Banker's Queue — Invariant |f| ≥ |r| &amp; Memoised Lazy Rotation</text>
+
+  <!-- Strict Queue Trap vs Banker's Queue -->
+  <rect x="38" y="390" width="330" height="162" rx="8" fill="#fff1f2" stroke="#fda4af"/>
+  <text x="52" y="411" class="sans" font-size="11.5" font-weight="700" fill="#9f1239">Why Strict Two-List Queue Fails:</text>
+  <text x="52" y="432" class="mono" font-size="10" fill="#881337">q0 = (front=[1], rear=[n..2])</text>
+  <text x="52" y="452" class="mono" font-size="10" fill="#881337">val q1 = dequeue(q0) // O(n) rev</text>
+  <text x="52" y="470" class="mono" font-size="10" fill="#881337">val q2 = dequeue(q0) // O(n) AGAIN!</text>
+  <text x="52" y="492" class="sans" font-size="10" fill="#9f1239">Persistent branching replays O(n)</text>
+  <text x="52" y="508" class="sans" font-size="10" fill="#9f1239">reversal m times → Θ(m·n) collapse!</text>
+  <text x="52" y="534" class="mono" font-size="10" font-weight="700" fill="#be123c">Fix: Memoised LazyList + |f| ≥ |r|</text>
+
+  <!-- Banker's Queue State + Incremental Balance -->
+  <rect x="386" y="390" width="420" height="162" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="400" y="411" class="mono" font-size="11" font-weight="700" fill="#0f172a">balance(fl, f, rl, r): when rl &gt; fl</text>
+
+  <rect x="400" y="424" width="184" height="50" rx="6" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="492" y="444" class="mono" font-size="10" font-weight="700" fill="#1e3a8a" text-anchor="middle">front (LazyList, len=2)</text>
+  <text x="492" y="462" class="mono" font-size="10" fill="#1e40af" text-anchor="middle">[1, 2] :: &lt;thunk&gt;</text>
+
+  <rect x="602" y="424" width="188" height="50" rx="6" fill="#fffbeb" stroke="#d97706"/>
+  <text x="696" y="444" class="mono" font-size="10" font-weight="700" fill="#92400e" text-anchor="middle">rear (List, len=3 &gt; 2)</text>
+  <text x="696" y="462" class="mono" font-size="10" fill="#78350f" text-anchor="middle">[5, 4, 3] → rotated</text>
+
+  <line x1="596" y1="478" x2="596" y2="496" stroke="#059669" stroke-width="2" class="flow" marker-end="url(#arr-green)"/>
+
+  <rect x="400" y="500" width="390" height="40" rx="6" class="thnk" stroke-width="1.6"/>
+  <text x="595" y="518" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">front' = f.appendLazy(LazyList.fromReversed(r))</text>
+  <text x="595" y="533" class="sans" font-size="10" fill="#047857" text-anchor="middle">Suspends reversal in memoised thunk (fl'=5, rl'=0)</text>
+
+  <!-- Shared Persistent Branches -->
+  <rect x="824" y="390" width="258" height="162" rx="8" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <text x="838" y="411" class="sans" font-size="11.5" font-weight="700" fill="#065f46">Persistent Branch Sharing</text>
+  <rect x="842" y="424" width="222" height="34" rx="5" fill="#ffffff" stroke="#059669"/>
+  <text x="953" y="445" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">q1 = q0.dequeue (evaluates once)</text>
+  <rect x="842" y="468" width="222" height="34" rx="5" fill="#ffffff" stroke="#059669"/>
+  <text x="953" y="489" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">q2 = q0.dequeue (reads cache!)</text>
+  <text x="838" y="524" class="sans" font-size="10" fill="#047857">Memoised lazy val shares reversal</text>
+  <text x="838" y="540" class="mono" font-size="10" font-weight="700" fill="#065f46">O(1) amortised across all forks!</text>
+
+  <!-- Footer -->
+  <rect x="24" y="582" width="1072" height="44" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="42" y="609" class="sans" font-size="11.5" font-weight="600" fill="#1e3a8a">Takeaway: Use foldLeft/reverse for O(1) stack, fusion to eliminate temporary spines, and memoised lazy thunks for persistent O(1) queues.</text>
+</svg>

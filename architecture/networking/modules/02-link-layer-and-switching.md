@@ -236,6 +236,10 @@ Many misconfigured corporate firewalls and cloud security groups blanket-block a
   1. **MSS Clamping**: Routers and firewalls at tunnel boundaries inspect passing TCP SYN packets and rewrite the MSS option to a safe maximum (e.g., `iptables -t mangle -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu`).
   2. **PLPMTUD (RFC 8899)**: Packetization Layer Path MTU Discovery, where the transport layer (TCP or QUIC) probes path MTU dynamically by transmitting isolated oversized segments without relying on ICMP feedback.
 
+![Layer 2 Transparent Bridge CAM Learning and Path MTU Discovery Animation](../assets/02-l2-learning-bridge-and-pmtud-animated.svg)
+
+_Step-by-step mechanics:_ (1) A transparent switch passively learns source MAC `00:00:0A` on Port 1 into its CAM table and floods unknown destination `00:00:0B` to Ports 2 and 3. (2) When Host B replies, the switch learns `00:00:0B` on Port 2 and forwards unicast frames exclusively out Port 1 without flooding Port 3. (3) At Layer 3, a 1,500-byte `DF=1` packet hits a 1,420-byte tunnel MTU, triggering `ICMP Type 3 Code 4` (`Frag Needed, MTU=1420`). (4) The sender clamps TCP MSS from `1,460` to `1,380` bytes so the 1,420-byte segment clears the bottleneck cleanly.
+
 ---
 
 ## 7. Then vs. Now: Link-Layer Evolution

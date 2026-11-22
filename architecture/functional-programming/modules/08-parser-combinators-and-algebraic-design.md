@@ -375,6 +375,10 @@ Yet packrat memoisation interacts subtly with monadic `flatMap`:
 1. **Closure Identity Loss:** In `p.flatMap(f)`, the parser returned by `f(a)` is allocated dynamically per parse of `a`. Two invocations at different branches produce fresh closure instances with distinct object identities, preventing a naive `(parserRef, offset)` memo table from hitting the cache unless the memo key includes the parameterised `a` value itself (which can be huge or unhashable).
 2. **Memory Footprint:** Retaining full memo tables across a $100\text{ MB}$ JSON stream consumes $O(n \cdot |G|)$ heap space (often $10\times\text{–}50\times$ the input size). Consequently, high-throughput streaming parsers (Haskell `attoparsec`, Scala `cats-parse`, Rust `nom`) deliberately eschew global packrat tables in favour of **committed-by-default $O(1)$-space backtracking** paired with chunked resumable continuation frames (`Partial(k: Chunk => Result)`), allowing already-committed input prefixes to be garbage-collected immediately.
 
+![Parser Combinators Animation: Committed vs attempt Backtracking and Packrat Memoisation Table](../assets/08-parser-combinators-attempt-packrat-animated.svg)
+
+_Step-by-step mechanics:_ (1) Consuming $\ge 1$ character flips `isCommitted = true` so `or` aborts immediately with exact error location, whereas `attempt(p)` resets `isCommitted = false` to allow fallback to `p2`. (2) When nested `attempt` rules risk $O(2^n)$ re-parsing, a sparse Packrat table caches `(parserId, offset) -> Result[A]` for $O(n)$ total time at the cost of $O(n \cdot |G|)$ heap.
+
 ---
 
 ## 7. Failure Modes and Negative Examples

@@ -137,6 +137,10 @@ flowchart LR
 2. **The Longest-Chain Rule**: Replicas treat the valid chain with the highest cumulative Proof-of-Work as the ground truth. Transient forks caused by network propagation delays resolve naturally as miners converge on the longest branch.
 3. **Probabilistic Finality**: Unlike PBFT (which provides instant deterministic finality once $2f + 1$ commits are collected), Nakamoto consensus provides **probabilistic finality**: as subsequent blocks are appended, the probability $P$ of an attacker re-writing history decays exponentially: $$P \approx \sum_{k=0}^\infty \frac{\lambda^k e^{-\lambda}}{k!} \left( \frac{q}{p} \right)^{\max(z - k, 0)}$$ Waiting 6 block confirmations makes the probability of reversal practically zero.
 
+![PBFT (3f+1) and Nakamoto Proof-of-Work Consensus Animation](../assets/13-pbft-and-nakamoto-consensus-animated.svg)
+
+_Step-by-step mechanics:_ (1) In permissioned PBFT ($N = 3f+1 = 4$), Primary `P` broadcasts `Pre-Prepare(v, seq, digest)`, replicas exchange all-to-all `Prepare` messages ($2f$ quorum) and `Commit` messages ($2f+1$ quorum), and the client accepts after $f+1$ matching replies. (2) In permissionless Nakamoto consensus, thermodynamic Proof-of-Work ties voting weight to computation (`1 CPU cycle = 1 vote`) to defeat Sybil attacks, resolving transient forks via the heaviest cumulative PoW chain.
+
 ---
 
 ## 6. SUNDR and Fork Consistency

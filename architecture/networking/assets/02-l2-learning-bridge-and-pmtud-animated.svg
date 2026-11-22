@@ -1,0 +1,308 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 620" width="1120" height="620" role="img" aria-labelledby="title desc">
+  <title id="title">Layer 2 Transparent Bridge CAM Learning and Path MTU Discovery (PMTUD)</title>
+  <desc id="desc">Step-by-step animation of two foundational link-layer and path-MTU algorithms. Top panel shows an Ethernet switch learning Source MAC 00:00:0A on Port 1 into its CAM table, flooding an unknown destination 00:00:0B out Ports 2 and 3, then learning 00:00:0B on Port 2 and forwarding the reply unicast exclusively to Port 1. Bottom panel shows Path MTU Discovery where a 1500B packet with DF=1 exceeds a 1420B tunnel MTU, triggers ICMP Type 3 Code 4 Fragmentation Needed, and clamps TCP MSS from 1460B to 1380B.</desc>
+
+  <style>
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    /* 16s loop:
+       0-25%  (0-4s):   Step 1 — Host A to Switch (learn 0A->P1), Flood to B and C
+       25-50% (4-8s):   Step 2 — Host B -> Switch (learn 0B->P2), Unicast to A (P1 only)
+       50-75% (8-12s):  Step 3 — PMTUD: 1500B DF=1 dropped at 1420B link -> ICMP Type 3 Code 4
+       75-100%(12-16s): Step 4 — Client caches PMTU=1420, clamps MSS=1380 -> 1420B passes
+    */
+
+    @keyframes f1-in {
+      0%, 2%   { transform: translate(0px, 0px); opacity: 0; }
+      5%       { transform: translate(0px, 0px); opacity: 1; }
+      11%      { transform: translate(205px, 0px); opacity: 1; }
+      13%, 100%{ transform: translate(205px, 0px); opacity: 0; }
+    }
+    @keyframes f1-flood-b {
+      0%, 11%  { transform: translate(0px, 0px); opacity: 0; }
+      13%      { transform: translate(0px, 0px); opacity: 1; }
+      21%      { transform: translate(200px, -28px); opacity: 1; }
+      23%, 100%{ transform: translate(200px, -28px); opacity: 0; }
+    }
+    @keyframes f1-flood-c {
+      0%, 11%  { transform: translate(0px, 0px); opacity: 0; }
+      13%      { transform: translate(0px, 0px); opacity: 1; }
+      21%      { transform: translate(200px, 34px); opacity: 1; }
+      23%, 100%{ transform: translate(200px, 34px); opacity: 0; }
+    }
+    @keyframes f2-in {
+      0%, 26%  { transform: translate(0px, 0px); opacity: 0; }
+      28%      { transform: translate(0px, 0px); opacity: 1; }
+      35%      { transform: translate(-200px, 28px); opacity: 1; }
+      37%, 100%{ transform: translate(-200px, 28px); opacity: 0; }
+    }
+    @keyframes f2-uni-a {
+      0%, 35%  { transform: translate(0px, 0px); opacity: 0; }
+      37%      { transform: translate(0px, 0px); opacity: 1; }
+      45%      { transform: translate(-205px, 0px); opacity: 1; }
+      48%, 100%{ transform: translate(-205px, 0px); opacity: 0; }
+    }
+
+    @keyframes cam-row-1 {
+      0%, 9%   { opacity: 0.12; }
+      11%, 96% { opacity: 1; }
+      100%     { opacity: 0.12; }
+    }
+    @keyframes cam-row-2 {
+      0%, 33%  { opacity: 0.12; }
+      35%, 96% { opacity: 1; }
+      100%     { opacity: 0.12; }
+    }
+
+    @keyframes pkt-1500 {
+      0%, 50%  { transform: translateX(0px); opacity: 0; }
+      52%      { transform: translateX(0px); opacity: 1; }
+      60%      { transform: translateX(130px); opacity: 1; }
+      62%, 100%{ transform: translateX(130px); opacity: 0; }
+    }
+    @keyframes icmp-back {
+      0%, 60%  { transform: translateX(0px); opacity: 0; }
+      62%      { transform: translateX(0px); opacity: 1; }
+      72%      { transform: translateX(-130px); opacity: 1; }
+      74%, 100%{ transform: translateX(-130px); opacity: 0; }
+    }
+    @keyframes pkt-1420 {
+      0%, 76%  { transform: translateX(0px); opacity: 0; }
+      78%      { transform: translateX(0px); opacity: 1; }
+      94%      { transform: translateX(360px); opacity: 1; }
+      98%, 100%{ transform: translateX(360px); opacity: 0; }
+    }
+
+    @keyframes hl-1 {
+      0%, 24%   { opacity: 1; stroke: #d97706; stroke-width: 2; }
+      25%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; }
+    }
+    @keyframes hl-2 {
+      0%, 24%   { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; }
+      25%, 49%  { opacity: 1; stroke: #059669; stroke-width: 2; }
+      50%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; }
+    }
+    @keyframes hl-3 {
+      0%, 49%   { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; }
+      50%, 74%  { opacity: 1; stroke: #e11d48; stroke-width: 2; }
+      75%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; }
+    }
+    @keyframes hl-4 {
+      0%, 74%   { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; }
+      75%, 100% { opacity: 1; stroke: #059669; stroke-width: 2; }
+    }
+
+    .f1-in     { animation: f1-in 16s ease-in-out infinite; }
+    .f1-fb     { animation: f1-flood-b 16s ease-in-out infinite; }
+    .f1-fc     { animation: f1-flood-c 16s ease-in-out infinite; }
+    .f2-in     { animation: f2-in 16s ease-in-out infinite; }
+    .f2-ua     { animation: f2-uni-a 16s ease-in-out infinite; }
+    .cam1      { animation: cam-row-1 16s linear infinite; }
+    .cam2      { animation: cam-row-2 16s linear infinite; }
+    .p1500     { animation: pkt-1500 16s ease-in-out infinite; }
+    .icmp      { animation: icmp-back 16s ease-in-out infinite; }
+    .p1420     { animation: pkt-1420 16s ease-in-out infinite; }
+    .s1        { animation: hl-1 16s linear infinite; }
+    .s2        { animation: hl-2 16s linear infinite; }
+    .s3        { animation: hl-3 16s linear infinite; }
+    .s4        { animation: hl-4 16s linear infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .f1-in, .f1-fb, .f1-fc, .f2-in, .f2-ua, .cam1, .cam2, .p1500, .icmp, .p1420, .s1, .s2, .s3, .s4 {
+        animation: none !important;
+      }
+      .cam1, .cam2, .s1, .s2, .s3, .s4 { opacity: 1 !important; }
+      .f1-in, .f1-fb, .f1-fc, .f2-in, .f2-ua, .p1500, .icmp, .p1420 { opacity: 0 !important; }
+    }
+  </style>
+
+  <defs>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <marker id="arr-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1120" height="620" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1120" height="60" rx="12" fill="#0f172a"/>
+  <rect x="0" y="44" width="1120" height="16" fill="#0f172a"/>
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Module 02 — L2 Transparent Bridge CAM Learning &amp; Path MTU Discovery</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">Algorithm 1: IEEE 802.3 Source-MAC CAM Learning &amp; Unknown Flooding · Algorithm 2: RFC 1191/8201 PMTUD &amp; MSS Clamping</text>
+
+  <!-- TOP PANEL: L2 SWITCH CAM TABLE -->
+  <rect x="24" y="74" width="1072" height="240" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="42" y="98" class="sans" font-size="14" font-weight="700" fill="#0f172a">1. Layer 2 Switch Transparent Bridging &amp; CAM Table (300s Aging)</text>
+
+  <!-- Host A -->
+  <rect x="48" y="156" width="160" height="66" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="128" y="180" class="sans" font-size="12.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">Host A (Port 1)</text>
+  <text x="128" y="200" class="mono" font-size="10.5" fill="#1e40af" text-anchor="middle">MAC: 00:00:0A</text>
+  <text x="128" y="214" class="mono" font-size="10" fill="#475569" text-anchor="middle">VLAN 1 Access</text>
+
+  <!-- Link Port 1 -->
+  <line x1="208" y1="189" x2="368" y2="189" stroke="#64748b" stroke-width="2.5"/>
+  <rect x="266" y="176" width="44" height="18" rx="4" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="288" y="189" class="mono" font-size="10" font-weight="700" fill="#334155" text-anchor="middle">P1</text>
+
+  <!-- L2 Switch & Live CAM Table -->
+  <rect x="368" y="114" width="336" height="180" rx="10" fill="#f8fafc" stroke="#334155" stroke-width="2"/>
+  <rect x="368" y="114" width="336" height="30" rx="10" fill="#1e293b"/>
+  <rect x="368" y="132" width="336" height="12" fill="#1e293b"/>
+  <text x="536" y="134" class="sans" font-size="12" font-weight="700" fill="#f8fafc" text-anchor="middle">L2 Switch Hardware CAM Table</text>
+
+  <!-- CAM Table Columns -->
+  <rect x="382" y="152" width="308" height="22" rx="4" fill="#e2e8f0"/>
+  <text x="442" y="167" class="mono" font-size="10" font-weight="700" fill="#334155" text-anchor="middle">MAC Address</text>
+  <text x="546" y="167" class="mono" font-size="10" font-weight="700" fill="#334155" text-anchor="middle">Port</text>
+  <text x="632" y="167" class="mono" font-size="10" font-weight="700" fill="#334155" text-anchor="middle">VLAN / Age</text>
+
+  <!-- CAM Row 1 -->
+  <g class="cam1">
+    <rect x="382" y="178" width="308" height="28" rx="5" fill="#ecfdf5" stroke="#059669" stroke-width="1.2"/>
+    <text x="442" y="196" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">00:00:0A</text>
+    <text x="546" y="196" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Port 1</text>
+    <text x="632" y="196" class="mono" font-size="10" fill="#047857" text-anchor="middle">V1 · 300s</text>
+  </g>
+
+  <!-- CAM Row 2 -->
+  <g class="cam2">
+    <rect x="382" y="210" width="308" height="28" rx="5" fill="#ecfdf5" stroke="#059669" stroke-width="1.2"/>
+    <text x="442" y="228" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">00:00:0B</text>
+    <text x="546" y="228" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Port 2</text>
+    <text x="632" y="228" class="mono" font-size="10" fill="#047857" text-anchor="middle">V1 · 300s</text>
+  </g>
+
+  <!-- CAM Decision Note -->
+  <rect x="382" y="246" width="308" height="38" rx="6" fill="#fffbeb" stroke="#fcd34d"/>
+  <text x="536" y="262" class="mono" font-size="10" font-weight="700" fill="#92400e" text-anchor="middle">1. Learn Src MAC on Ingress Port</text>
+  <text x="536" y="276" class="mono" font-size="10" fill="#92400e" text-anchor="middle">2. Miss -&gt; Flood | Hit -&gt; Egress Port Only</text>
+
+  <!-- Links Port 2 and Port 3 -->
+  <line x1="704" y1="166" x2="880" y2="146" stroke="#64748b" stroke-width="2.5"/>
+  <rect x="768" y="146" width="44" height="18" rx="4" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="790" y="159" class="mono" font-size="10" font-weight="700" fill="#334155" text-anchor="middle">P2</text>
+
+  <line x1="704" y1="218" x2="880" y2="250" stroke="#64748b" stroke-width="2.5"/>
+  <rect x="768" y="224" width="44" height="18" rx="4" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="790" y="237" class="mono" font-size="10" font-weight="700" fill="#334155" text-anchor="middle">P3</text>
+
+  <!-- Host B -->
+  <rect x="880" y="114" width="190" height="64" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="975" y="138" class="sans" font-size="12.5" font-weight="700" fill="#065f46" text-anchor="middle">Host B (Port 2)</text>
+  <text x="975" y="156" class="mono" font-size="10.5" fill="#047857" text-anchor="middle">MAC: 00:00:0B</text>
+  <text x="975" y="170" class="mono" font-size="10" fill="#475569" text-anchor="middle">Replies to 00:00:0A</text>
+
+  <!-- Host C -->
+  <rect x="880" y="220" width="190" height="64" rx="8" fill="#fff1f2" stroke="#e11d48" stroke-width="1.5"/>
+  <text x="975" y="244" class="sans" font-size="12.5" font-weight="700" fill="#9f1239" text-anchor="middle">Host C (Port 3)</text>
+  <text x="975" y="262" class="mono" font-size="10.5" fill="#be123c" text-anchor="middle">MAC: 00:00:0C</text>
+  <text x="975" y="276" class="mono" font-size="10" fill="#9f123c" text-anchor="middle">Drops flood; spared Step 2</text>
+
+  <!-- Animated L2 Frames -->
+  <g class="f1-in">
+    <rect x="190" y="142" width="124" height="26" rx="5" fill="#d97706" stroke="#ffffff" stroke-width="1.5"/>
+    <text x="252" y="159" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">Src:0A Dst:0B</text>
+  </g>
+  <g class="f1-fb">
+    <rect x="690" y="152" width="110" height="24" rx="5" fill="#d97706" stroke="#ffffff" stroke-width="1.5"/>
+    <text x="745" y="168" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">FLOOD -&gt; P2</text>
+  </g>
+  <g class="f1-fc">
+    <rect x="690" y="204" width="110" height="24" rx="5" fill="#e11d48" stroke="#ffffff" stroke-width="1.5"/>
+    <text x="745" y="220" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">FLOOD -&gt; P3</text>
+  </g>
+  <g class="f2-in">
+    <rect x="815" y="128" width="124" height="26" rx="5" fill="#059669" stroke="#ffffff" stroke-width="1.5"/>
+    <text x="877" y="145" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">Src:0B Dst:0A</text>
+  </g>
+  <g class="f2-ua">
+    <rect x="355" y="142" width="128" height="26" rx="5" fill="#059669" stroke="#ffffff" stroke-width="1.5"/>
+    <text x="419" y="159" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">UNICAST -&gt; P1</text>
+  </g>
+
+  <!-- BOTTOM LEFT: PMTUD & MSS CLAMPING -->
+  <rect x="24" y="328" width="664" height="222" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="42" y="352" class="sans" font-size="14" font-weight="700" fill="#0f172a">2. Path MTU Discovery (PMTUD) &amp; TCP MSS Clamping</text>
+
+  <!-- Client Box -->
+  <rect x="42" y="376" width="136" height="92" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="110" y="398" class="sans" font-size="12" font-weight="700" fill="#1e3a8a" text-anchor="middle">Client Host</text>
+  <text x="110" y="416" class="mono" font-size="10" fill="#1e40af" text-anchor="middle">Link MTU: 1500B</text>
+  <text x="110" y="432" class="mono" font-size="10" fill="#1e40af" text-anchor="middle">Init MSS: 1460B</text>
+  <text x="110" y="452" class="mono" font-size="10" font-weight="700" fill="#059669" text-anchor="middle">Clamp MSS -&gt; 1380B</text>
+
+  <!-- Tunnel Router Box -->
+  <rect x="316" y="376" width="166" height="92" rx="8" fill="#fff1f2" stroke="#e11d48" stroke-width="1.5"/>
+  <text x="399" y="398" class="sans" font-size="12" font-weight="700" fill="#9f1239" text-anchor="middle">VPN / Tunnel Router</text>
+  <text x="399" y="416" class="mono" font-size="10" fill="#be123c" text-anchor="middle">Tunnel Overhead: 80B</text>
+  <text x="399" y="432" class="mono" font-size="10" font-weight="700" fill="#9f1239" text-anchor="middle">Egress MTU: 1420B</text>
+  <text x="399" y="452" class="mono" font-size="10" fill="#9f123c" text-anchor="middle">DF=1 -&gt; Drop + ICMP 3/4</text>
+
+  <!-- Server Box -->
+  <rect x="542" y="376" width="128" height="92" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="606" y="398" class="sans" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">Origin Server</text>
+  <text x="606" y="416" class="mono" font-size="10" fill="#047857" text-anchor="middle">Link MTU: 1500B</text>
+  <text x="606" y="434" class="mono" font-size="10" fill="#047857" text-anchor="middle">Receives 1420B</text>
+  <text x="606" y="452" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">No Black Hole</text>
+
+  <!-- PMTUD Links -->
+  <line x1="178" y1="398" x2="314" y2="398" stroke="#64748b" stroke-width="2" marker-end="url(#arr-rose)"/>
+  <line x1="314" y1="428" x2="180" y2="428" stroke="#e11d48" stroke-width="1.8" stroke-dasharray="4 3" marker-end="url(#arr-rose)"/>
+  <line x1="178" y1="458" x2="314" y2="458" stroke="#059669" stroke-width="2" marker-end="url(#arr-green)"/>
+  <line x1="482" y1="458" x2="540" y2="458" stroke="#059669" stroke-width="2" marker-end="url(#arr-green)"/>
+
+  <!-- Animated PMTUD Packets -->
+  <g class="p1500">
+    <rect x="180" y="382" width="102" height="22" rx="4" fill="#e11d48"/>
+    <text x="231" y="397" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">1500B (DF=1)</text>
+  </g>
+  <g class="icmp">
+    <rect x="190" y="414" width="128" height="22" rx="4" fill="#9f1239"/>
+    <text x="254" y="429" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">ICMP 3/4: MTU 1420</text>
+  </g>
+  <g class="p1420">
+    <rect x="180" y="446" width="114" height="22" rx="4" fill="#059669"/>
+    <text x="237" y="461" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">1420B (MSS 1380)</text>
+  </g>
+
+  <!-- PMTUD Formula & Black Hole Note -->
+  <rect x="42" y="482" width="628" height="54" rx="7" fill="#f5f3ff" stroke="#c4b5fd"/>
+  <text x="56" y="502" class="mono" font-size="10.5" font-weight="700" fill="#5b21b6">MSS = PMTU − (IP 20B + TCP 20B) = 1420 − 40 = 1380 bytes</text>
+  <text x="56" y="522" class="sans" font-size="10.5" fill="#4c1d95">If firewalls drop ICMP 3/4 (Black Hole): enable router SYN MSS Clamping or PLPMTUD (RFC 8899).</text>
+
+  <!-- BOTTOM RIGHT: 4-STEP TRACE -->
+  <rect x="704" y="328" width="392" height="222" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="722" y="352" class="sans" font-size="14" font-weight="700" fill="#0f172a">4-Step Execution Trace (16s Loop)</text>
+
+  <rect x="722" y="366" width="356" height="40" rx="6" fill="#fffbeb" class="s1"/>
+  <text x="734" y="383" class="mono" font-size="10" font-weight="700" fill="#92400e">1. Learn 0A-&gt;P1; Miss 0B -&gt; Flood P2, P3</text>
+  <text x="734" y="398" class="sans" font-size="10" fill="#78350f">Host C discards frame (destination MAC mismatch).</text>
+
+  <rect x="722" y="412" width="356" height="40" rx="6" fill="#ecfdf5" class="s2"/>
+  <text x="734" y="429" class="mono" font-size="10" font-weight="700" fill="#065f46">2. Learn 0B-&gt;P2; Hit 0A -&gt; Unicast P1</text>
+  <text x="734" y="444" class="sans" font-size="10" fill="#047857">Switch filters Port 3; zero unnecessary flooding.</text>
+
+  <rect x="722" y="458" width="356" height="40" rx="6" fill="#fff1f2" class="s3"/>
+  <text x="734" y="475" class="mono" font-size="10" font-weight="700" fill="#9f1239">3. 1500B DF=1 &gt; 1420B -&gt; Drop + ICMP 3/4</text>
+  <text x="734" y="490" class="sans" font-size="10" fill="#be123c">Tunnel router cannot fragment; advertises MTU=1420.</text>
+
+  <rect x="722" y="504" width="356" height="40" rx="6" fill="#ecfdf5" class="s4"/>
+  <text x="734" y="521" class="mono" font-size="10" font-weight="700" fill="#065f46">4. Client clamps MSS=1380 -&gt; 1420B OK</text>
+  <text x="734" y="536" class="sans" font-size="10" fill="#047857">Retransmitted segment clears tunnel to server.</text>
+
+  <!-- FOOTER -->
+  <rect x="24" y="562" width="1072" height="42" rx="8" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="42" y="588" class="sans" font-size="11.5" font-weight="600" fill="#1e3a8a">Takeaway: Switches learn Source MACs passively to eliminate flooding, while PMTUD + MSS Clamping prevents silent L3 tunnel black holes.</text>
+</svg>

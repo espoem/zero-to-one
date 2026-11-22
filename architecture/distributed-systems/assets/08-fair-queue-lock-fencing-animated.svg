@@ -1,0 +1,178 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 620" width="1120" height="620" role="img" aria-labelledby="title desc">
+  <title id="title">Fair Ephemeral Sequential Lock Queue and Monotonic Fencing Tokens</title>
+  <desc id="desc">Animated distributed locking and safety enforcement. Left panel shows a ZooKeeper/etcd fair ephemeral sequential lock queue (/locks/lock-001, lock-002, lock-003): each waiter watches only its immediate predecessor, preventing thundering herd wakeups when lock-001 releases and waking only lock-002 in O(1). Right panel animates Kleppmann's fencing token defense against Stop-The-World GC pauses: Client 1 acquires Token=33 and pauses for 15s; TTL expires and Client 2 acquires Token=34 and writes to Shared Storage (highestTokenSeen=34); when Client 1 wakes up and attempts Write(data, token=33), Storage rejects 33 &lt; 34 with 409 Conflict.</desc>
+
+  <style>
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    @keyframes ph1 { 0%, 4% { opacity: 0.86; } 10%, 96% { opacity: 1; } 100% { opacity: 0.86; } }
+    @keyframes ph2 { 0%, 24% { opacity: 0.86; } 30%, 96% { opacity: 1; } 100% { opacity: 0.86; } }
+    @keyframes ph3 { 0%, 49% { opacity: 0.86; } 55%, 96% { opacity: 1; } 100% { opacity: 0.86; } }
+    @keyframes ph4 { 0%, 74% { opacity: 0.86; } 80%, 96% { opacity: 1; } 100% { opacity: 0.86; } }
+
+    @keyframes lock1-fade { 0%, 46% { opacity: 1; } 54%, 96% { opacity: 0.86; } 100% { opacity: 1; } }
+
+    @keyframes s1 { 0%, 24% { opacity: 1; stroke: #2563eb; stroke-width: 2.2; } 25%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } }
+    @keyframes s2 { 0%, 24% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } 25%, 49% { opacity: 1; stroke: #d97706; stroke-width: 2.2; } 50%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } }
+    @keyframes s3 { 0%, 49% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } 50%, 74% { opacity: 1; stroke: #059669; stroke-width: 2.2; } 75%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } }
+    @keyframes s4 { 0%, 74% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } 75%, 100% { opacity: 1; stroke: #e11d48; stroke-width: 2.2; } }
+
+    .p1 { animation: ph1 16s ease-in-out infinite; }
+    .p2 { animation: ph2 16s ease-in-out infinite; }
+    .p3 { animation: ph3 16s ease-in-out infinite; }
+    .p4 { animation: ph4 16s ease-in-out infinite; }
+    .l1 { animation: lock1-fade 16s ease-in-out infinite; }
+    .st1 { animation: s1 16s linear infinite; }
+    .st2 { animation: s2 16s linear infinite; }
+    .st3 { animation: s3 16s linear infinite; }
+    .st4 { animation: s4 16s linear infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .p1, .p2, .p3, .p4, .l1, .st1, .st2, .st3, .st4 { animation: none !important; opacity: 1 !important; }
+    }
+  </style>
+
+  <defs>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <marker id="arr-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1120" height="620" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1120" height="62" rx="12" fill="#0f172a"/>
+  <rect x="0" y="46" width="1120" height="16" fill="#0f172a"/>
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Fair Ephemeral Lock Queue &amp; Storage-Enforced Fencing Tokens</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">Predecessor-Only Watch (Zero Thundering Herd) · Monotonic Fencing Tokens Defeating GC Pauses &amp; Redlock Flaws</text>
+
+  <!-- LEFT PANEL: FAIR LOCK QUEUE -->
+  <rect x="24" y="76" width="490" height="464" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="42" y="102" class="sans" font-size="14" font-weight="700" fill="#0f172a">1. Fair Ephemeral Sequential Queue (O(1) Wakeups)</text>
+  <text x="42" y="120" class="mono" font-size="10.5" fill="#475569">ZooKeeper (ZAB) / etcd Leases: Watch ONLY predecessor (no broadcast)</text>
+
+  <g class="l1">
+    <rect x="46" y="140" width="446" height="72" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+    <text x="64" y="164" class="mono" font-size="12" font-weight="700" fill="#1e3a8a">/locks/lock-000001  [Active Holder]</text>
+    <text x="64" y="184" class="sans" font-size="10.5" fill="#1e40af">Lowest sequence # holds the lock; auto-deleted if session crashes.</text>
+    <text x="64" y="200" class="mono" font-size="10" fill="#d97706">On release/expire → notifies ONLY lock-000002</text>
+  </g>
+
+  <line x1="269" y1="212" x2="269" y2="244" stroke="#059669" stroke-width="2.5" marker-end="url(#arr-emerald)"/>
+  <text x="282" y="233" class="mono" font-size="10" font-weight="700" fill="#065f46">1-to-1 Watch Fires (O(1))</text>
+
+  <g class="p3">
+    <rect x="46" y="246" width="446" height="72" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="64" y="270" class="mono" font-size="12" font-weight="700" fill="#065f46">/locks/lock-000002  [Watches ONLY lock-000001]</text>
+    <text x="64" y="290" class="sans" font-size="10.5" fill="#047857">Wakes up immediately when lock-001 disappears; acquires lock next.</text>
+    <text x="64" y="306" class="mono" font-size="10" fill="#065f46">FIFO Fairness guaranteed (no starvation)</text>
+  </g>
+
+  <line x1="269" y1="318" x2="269" y2="350" stroke="#64748b" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#arr-blue)"/>
+  <text x="282" y="339" class="mono" font-size="10" fill="#475569">Quiet (No spurious wakeups!)</text>
+
+  <rect x="46" y="352" width="446" height="72" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="64" y="376" class="mono" font-size="12" font-weight="700" fill="#334155">/locks/lock-000003  [Watches ONLY lock-000002]</text>
+  <text x="64" y="396" class="sans" font-size="10.5" fill="#475569">Sleeps undisturbed until lock-002 releases, eliminating thundering herds</text>
+  <text x="64" y="412" class="sans" font-size="10.5" fill="#475569">even when 10,000+ clients contend for the same resource.</text>
+
+  <rect x="46" y="442" width="446" height="80" rx="8" fill="#f5f3ff" stroke="#c4b5fd"/>
+  <text x="62" y="464" class="sans" font-size="11.5" font-weight="700" fill="#5b21b6">Why Consensus-Backed Coordination?</text>
+  <text x="62" y="484" class="sans" font-size="10.5" fill="#4c1d95">· etcd (Raft mod_revision) &amp; ZooKeeper (ZAB zxid) issue strict monotonic tokens.</text>
+  <text x="62" y="502" class="sans" font-size="10.5" fill="#4c1d95">· Redlock lacks consensus &amp; monotonic fencing → unsafe for correctness.</text>
+
+  <!-- RIGHT PANEL: FENCING TOKENS & GC PAUSE -->
+  <rect x="530" y="76" width="566" height="464" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="548" y="102" class="sans" font-size="14" font-weight="700" fill="#0f172a">2. Monotonic Fencing Tokens Defeat Stop-The-World GC Pauses</text>
+  <text x="548" y="120" class="mono" font-size="10.5" fill="#475569">Storage checks: accept iff token &gt;= store.highestTokenSeen</text>
+
+  <!-- Column headers -->
+  <rect x="550" y="136" width="110" height="30" rx="6" fill="#fff1f2" stroke="#e11d48"/>
+  <text x="605" y="155" class="mono" font-size="10.5" font-weight="700" fill="#9f1239" text-anchor="middle">Client 1 (GC)</text>
+
+  <rect x="692" y="136" width="118" height="30" rx="6" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="751" y="155" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">Lock (etcd/ZK)</text>
+
+  <rect x="842" y="136" width="106" height="30" rx="6" fill="#ecfdf5" stroke="#059669"/>
+  <text x="895" y="155" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Client 2</text>
+
+  <rect x="976" y="136" width="104" height="30" rx="6" fill="#f5f3ff" stroke="#7c3aed"/>
+  <text x="1028" y="155" class="mono" font-size="10.5" font-weight="700" fill="#5b21b6" text-anchor="middle">Storage DB</text>
+
+  <!-- Vertical Lifelines -->
+  <line x1="605" y1="166" x2="605" y2="516" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="751" y1="166" x2="751" y2="516" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="895" y1="166" x2="895" y2="516" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="1028" y1="166" x2="1028" y2="516" stroke="#cbd5e1" stroke-width="2"/>
+
+  <!-- Step 1: C1 gets Token 33 -->
+  <g class="p1">
+    <line x1="605" y1="194" x2="749" y2="194" stroke="#2563eb" stroke-width="2" marker-end="url(#arr-blue)"/>
+    <text x="678" y="187" class="mono" font-size="10" font-weight="700" fill="#1e3a8a" text-anchor="middle">Acquire (TTL=10s)</text>
+    <line x1="751" y1="218" x2="607" y2="218" stroke="#2563eb" stroke-width="2" marker-end="url(#arr-blue)"/>
+    <text x="678" y="212" class="mono" font-size="10" font-weight="700" fill="#1e3a8a" text-anchor="middle">Granted: token=33</text>
+  </g>
+
+  <!-- Step 2: C1 15s GC Pause, Lease Expires -->
+  <g class="p2">
+    <rect x="546" y="232" width="118" height="156" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+    <text x="605" y="294" class="mono" font-size="10" font-weight="700" fill="#92400e" text-anchor="middle">15s GC PAUSE</text>
+    <text x="605" y="312" class="sans" font-size="10" fill="#b45309" text-anchor="middle">(VM frozen; thinks</text>
+    <text x="605" y="326" class="sans" font-size="10" fill="#b45309" text-anchor="middle">lease still valid!)</text>
+
+    <rect x="692" y="248" width="118" height="24" rx="4" fill="#fff1f2" stroke="#e11d48"/>
+    <text x="751" y="264" class="mono" font-size="10" font-weight="700" fill="#9f1239" text-anchor="middle">TTL 10s Expired</text>
+  </g>
+
+  <!-- Step 3: C2 gets Token 34 and writes -->
+  <g class="p3">
+    <line x1="895" y1="292" x2="753" y2="292" stroke="#059669" stroke-width="2" marker-end="url(#arr-emerald)"/>
+    <text x="824" y="285" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">Acquire Lock</text>
+    <line x1="751" y1="316" x2="893" y2="316" stroke="#059669" stroke-width="2" marker-end="url(#arr-emerald)"/>
+    <text x="824" y="310" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">Granted: token=34</text>
+
+    <line x1="895" y1="348" x2="1026" y2="348" stroke="#059669" stroke-width="2.2" marker-end="url(#arr-emerald)"/>
+    <text x="960" y="341" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">Write(t=34)</text>
+
+    <rect x="964" y="360" width="122" height="36" rx="5" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+    <text x="1025" y="375" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">highestToken = 34</text>
+    <text x="1025" y="390" class="mono" font-size="10" font-weight="700" fill="#047857" text-anchor="middle">200 OK (Committed)</text>
+  </g>
+
+  <!-- Step 4: C1 wakes up and gets rejected -->
+  <g class="p4">
+    <line x1="605" y1="432" x2="1026" y2="432" stroke="#e11d48" stroke-width="2.4" marker-end="url(#arr-rose)"/>
+    <rect x="730" y="410" width="178" height="20" rx="4" fill="#fff1f2" stroke="#e11d48"/>
+    <text x="819" y="424" class="mono" font-size="10" font-weight="700" fill="#9f1239" text-anchor="middle">Stale Write(data, token=33)</text>
+
+    <rect x="944" y="444" width="142" height="44" rx="6" fill="#e11d48"/>
+    <text x="1015" y="463" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">33 &lt; 34: REJECTED!</text>
+    <text x="1015" y="479" class="mono" font-size="10" fill="#ffe4e6" text-anchor="middle">409 Conflict (Safe)</text>
+  </g>
+
+  <text x="548" y="528" class="sans" font-size="10.5" font-weight="600" fill="#334155">Safety lives at the storage boundary, not inside client-side lease timers.</text>
+
+  <!-- FOOTER STEP BAR -->
+  <rect x="24" y="554" width="256" height="48" rx="8" fill="#eff6ff" class="st1"/>
+  <text x="38" y="574" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a">1. Client 1 Acquires Token 33</text>
+  <text x="38" y="591" class="sans" font-size="10" fill="#334155">Consensus lock issues monotonic ID</text>
+
+  <rect x="296" y="554" width="256" height="48" rx="8" fill="#fffbeb" class="st2"/>
+  <text x="310" y="574" class="mono" font-size="10.5" font-weight="700" fill="#92400e">2. GC Pause &amp; Lease Expiry</text>
+  <text x="310" y="591" class="sans" font-size="10" fill="#334155">15s pause outlives 10s lease TTL</text>
+
+  <rect x="568" y="554" width="256" height="48" rx="8" fill="#ecfdf5" class="st3"/>
+  <text x="582" y="574" class="mono" font-size="10.5" font-weight="700" fill="#065f46">3. Queue Wakeup &amp; Token 34</text>
+  <text x="582" y="591" class="sans" font-size="10" fill="#334155">lock-002 wakes O(1); writes token 34</text>
+
+  <rect x="840" y="554" width="256" height="48" rx="8" fill="#fff1f2" class="st4"/>
+  <text x="854" y="574" class="mono" font-size="10.5" font-weight="700" fill="#9f1239">4. Stale Token 33 Rejected</text>
+  <text x="854" y="591" class="sans" font-size="10" fill="#334155">Storage enforces 33 &lt; 34 → 409</text>
+</svg>

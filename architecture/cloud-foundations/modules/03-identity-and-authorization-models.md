@@ -31,6 +31,10 @@ flowchart TD
 2. **Explicit Deny is an Absorbing Element**: If any policy statement matching the request contains `Effect: Deny` and satisfying all conditions, the evaluation immediately halts and returns an absolute Deny, regardless of how many `Allow` statements exist elsewhere.
 3. **Identity vs. Resource Policy Union**: When a principal in Account A accesses a resource in Account A, either an identity-based policy or a resource-based policy can grant access. When accessing a resource across accounts (Account A principal accessing Account B resource), **both** Account A (identity policy) and Account B (resource policy or assumed role) must explicitly grant permission.
 
+![Cloud IAM Deterministic Policy Evaluation Pipeline Animation: Explicit Deny Short-Circuit, Explicit Allow, and Implicit Deny](../assets/03-iam-policy-evaluation-animated.svg)
+
+_Step-by-step mechanics:_ (1) Every request tuple enters in a fail-closed default-deny state and evaluates all applicable policies (SCPs, permission boundaries, identity, and resource policies). (2) Any matching `Effect: Deny` acts as an absorbing short-circuit (`DENIED_EXPLICIT`), whereas `ALLOWED` requires an explicit `Allow` (both accounts for cross-account calls) and omission falls through to `DENIED_DEFAULT`.
+
 ## 3. Workload Identity Federation: Eliminating Static Keys
 
 Historically, software running outside a cloud provider (such as GitLab CI/CD runners or Kubernetes pods) authenticated to cloud APIs by embedding long-lived, static access keys (`AKIA...` and secret keys). Static credentials represent the leading vector for cloud security breaches: they are routinely leaked in Git commits, copied across test environments, and rarely rotated.

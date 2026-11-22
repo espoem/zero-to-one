@@ -88,6 +88,10 @@ Leaderless engines maintain replica consistency through two background mechanism
 1. **Read Repair**: When a client issues a quorum read ($R = 3$) and observes that Node 1 and Node 2 return version 5 while Node 3 returns stale version 4, the client (or coordinator) serves version 5 to the application and asynchronously sends an update to Node 3 to write version 5.
 2. **Sloppy Quorums and Hinted Handoff**: If a network partition isolates several primary replica nodes, the system accepts writes by storing temporary "hints" on reachable non-designated neighbor nodes. Once the network partition heals, the neighbor forwards the hinted writes back to the primary replicas.
 
+![Dynamo Leaderless Replication: Sloppy Quorum, Read Repair, and Merkle Tree Anti-Entropy](../assets/07-sloppy-quorum-read-repair-merkle-animated.svg)
+
+_Step-by-step mechanics:_ (1) Under a partition isolating home replica `Node 3`, a sloppy quorum write stores a temporary hint on reachable neighbor `Node 4` so client writes remain available. (2) When the network link heals, `Node 4` replays the hinted `v5` payload back to `Node 3`. (3) During a quorum read ($R = 3$), the coordinator returns the freshest version (`v5`) and issues an asynchronous Read Repair update to reconcile stale `Node 3` (`v4`). (4) Background Merkle Tree anti-entropy compares hashes top-down, pruning matching subtrees and synchronizing only divergent key ranges.
+
 ---
 
 ## 3. Replication Lag Anomalies

@@ -1,0 +1,169 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 620" width="1120" height="620" role="img" aria-labelledby="title desc">
+  <title id="title">CRDTs: G-Counter / PN-Counter, OR-Set, Sequence CRDTs, and Tombstone GC</title>
+  <desc id="desc">Animated Strong Eventual Consistency via Join-Semilattice CRDTs. Top-left shows G-Counter element-wise max merge ([3,1,0] join [1,4,2] = [3,4,2], sum 9) and PN-Counter (P - N). Bottom-left shows Add-Wins OR-Set: Node 1 adds (apple, uuid_1), Node 2 deletes uuid_1 into Tombstones while Node 3 concurrently adds (apple, uuid_2), so merged state retains (apple, uuid_2). Right panel shows Sequence CRDT (RGA/Fugue) concurrent character insertion ('O' at 0.35 and 'R' at 0.42 between 'C' at 0.2 and 'A' at 0.5) and Causal Stability Tombstone Garbage Collection once all active replicas' vector clocks dominate the delete.</desc>
+
+  <style>
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    @keyframes ph1 { 0%, 4% { opacity: 0.86; } 10%, 96% { opacity: 1; } 100% { opacity: 0.86; } }
+    @keyframes ph2 { 0%, 24% { opacity: 0.86; } 30%, 96% { opacity: 1; } 100% { opacity: 0.86; } }
+    @keyframes ph3 { 0%, 49% { opacity: 0.86; } 55%, 96% { opacity: 1; } 100% { opacity: 0.86; } }
+    @keyframes ph4 { 0%, 74% { opacity: 0.86; } 80%, 96% { opacity: 1; } 100% { opacity: 0.86; } }
+
+    @keyframes s1 { 0%, 24% { opacity: 1; stroke: #2563eb; stroke-width: 2.2; } 25%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } }
+    @keyframes s2 { 0%, 24% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } 25%, 49% { opacity: 1; stroke: #059669; stroke-width: 2.2; } 50%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } }
+    @keyframes s3 { 0%, 49% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } 50%, 74% { opacity: 1; stroke: #7c3aed; stroke-width: 2.2; } 75%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } }
+    @keyframes s4 { 0%, 74% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } 75%, 100% { opacity: 1; stroke: #d97706; stroke-width: 2.2; } }
+
+    .p1 { animation: ph1 16s ease-in-out infinite; }
+    .p2 { animation: ph2 16s ease-in-out infinite; }
+    .p3 { animation: ph3 16s ease-in-out infinite; }
+    .p4 { animation: ph4 16s ease-in-out infinite; }
+    .st1 { animation: s1 16s linear infinite; }
+    .st2 { animation: s2 16s linear infinite; }
+    .st3 { animation: s3 16s linear infinite; }
+    .st4 { animation: s4 16s linear infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .p1, .p2, .p3, .p4, .st1, .st2, .st3, .st4 { animation: none !important; opacity: 1 !important; }
+    }
+  </style>
+
+  <defs>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1120" height="620" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1120" height="62" rx="12" fill="#0f172a"/>
+  <rect x="0" y="46" width="1120" height="16" fill="#0f172a"/>
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Conflict-Free Replicated Data Types (CRDTs) &amp; Convergence</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">Join-Semilattice (Commutative · Associative · Idempotent) · G/PN-Counter · Add-Wins OR-Set · Sequence CRDT · Causal-Stability GC</text>
+
+  <!-- TOP-LEFT: G-COUNTER & PN-COUNTER -->
+  <rect x="24" y="76" width="526" height="206" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="42" y="100" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">1. G-Counter &amp; PN-Counter (Element-Wise max Join ⊔)</text>
+
+  <g class="p1">
+    <rect x="42" y="116" width="196" height="58" rx="6" fill="#eff6ff" stroke="#2563eb"/>
+    <text x="140" y="137" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">Replica A: V_A = [3, 1, 0]</text>
+    <text x="140" y="156" class="mono" font-size="10" fill="#1e40af" text-anchor="middle">sum = 4</text>
+
+    <rect x="42" y="184" width="196" height="58" rx="6" fill="#eff6ff" stroke="#2563eb"/>
+    <text x="140" y="205" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">Replica B: V_B = [1, 4, 2]</text>
+    <text x="140" y="224" class="mono" font-size="10" fill="#1e40af" text-anchor="middle">sum = 7</text>
+
+    <line x1="238" y1="145" x2="278" y2="174" stroke="#2563eb" stroke-width="2" marker-end="url(#arr-blue)"/>
+    <line x1="238" y1="213" x2="278" y2="184" stroke="#2563eb" stroke-width="2" marker-end="url(#arr-blue)"/>
+
+    <rect x="282" y="130" width="250" height="98" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+    <text x="407" y="154" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">V_A ⊔ V_B = [max(3,1), max(1,4), max(0,2)]</text>
+    <text x="407" y="178" class="mono" font-size="12.5" font-weight="700" fill="#047857" text-anchor="middle">= [3, 4, 2]  (value = 9)</text>
+    <text x="407" y="202" class="mono" font-size="10" fill="#065f46" text-anchor="middle">PN-Counter: value = P.val() − N.val()</text>
+    <text x="407" y="218" class="sans" font-size="10" fill="#047857" text-anchor="middle">Idempotent: merge(x, x) = x</text>
+  </g>
+  <text x="42" y="266" class="sans" font-size="10" fill="#475569">Replicas converge regardless of message reordering, duplication, or batching.</text>
+
+  <!-- BOTTOM-LEFT: OR-SET -->
+  <rect x="24" y="296" width="526" height="244" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="42" y="320" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">2. OR-Set: Observed-Remove (Add-Wins Unique-Tag Merge)</text>
+
+  <g class="p2">
+    <rect x="42" y="336" width="234" height="58" rx="6" fill="#eff6ff" stroke="#2563eb"/>
+    <text x="54" y="356" class="mono" font-size="10" font-weight="700" fill="#1e3a8a">Node 1 adds 'apple'</text>
+    <text x="54" y="376" class="mono" font-size="10" fill="#334155">Add: (apple, uuid_1)</text>
+
+    <rect x="42" y="404" width="234" height="62" rx="6" fill="#fff1f2" stroke="#e11d48"/>
+    <text x="54" y="424" class="mono" font-size="10" font-weight="700" fill="#9f1239">Node 2 deletes observed tag</text>
+    <text x="54" y="442" class="mono" font-size="10" fill="#be123c">Tombstone += { uuid_1 }</text>
+    <text x="54" y="458" class="sans" font-size="10" fill="#9f1239">(Does NOT know about uuid_2!)</text>
+
+    <rect x="296" y="336" width="236" height="58" rx="6" fill="#ecfdf5" stroke="#059669"/>
+    <text x="308" y="356" class="mono" font-size="10" font-weight="700" fill="#065f46">Node 3 concurrently adds</text>
+    <text x="308" y="376" class="mono" font-size="10" fill="#047857">Add: (apple, uuid_2)</text>
+
+    <rect x="296" y="404" width="236" height="62" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="308" y="424" class="mono" font-size="10.5" font-weight="700" fill="#065f46">Merged OR-Set State:</text>
+    <text x="308" y="442" class="mono" font-size="10" fill="#047857">Active = { (apple, uuid_2) }</text>
+    <text x="308" y="458" class="mono" font-size="10" font-weight="700" fill="#065f46">✓ 'apple' IS PRESENT (Add-Wins)</text>
+  </g>
+  <text x="42" y="498" class="sans" font-size="10.5" fill="#475569">Deleting removes ONLY tags observed locally at delete time; concurrent adds</text>
+  <text x="42" y="514" class="sans" font-size="10.5" fill="#475569">generate fresh UUID tags that survive merge cleanly.</text>
+
+  <!-- RIGHT PANEL: SEQUENCE CRDTs & TOMBSTONE GC -->
+  <rect x="566" y="76" width="530" height="464" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="584" y="102" class="sans" font-size="14" font-weight="700" fill="#0f172a">3. Sequence CRDTs (RGA / Fugue) &amp; Tombstone GC</text>
+  <text x="584" y="120" class="mono" font-size="10.5" fill="#475569">Immutable Position IDs prevent index shifting &amp; interleaving</text>
+
+  <!-- Sequence CRDT box -->
+  <g class="p3">
+    <rect x="584" y="136" width="494" height="196" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+    <text x="600" y="158" class="mono" font-size="11" font-weight="700" fill="#5b21b6">Concurrent Text Edits Between 'C' (0.2) and 'A' (0.5):</text>
+
+    <!-- Initial nodes -->
+    <rect x="602" y="176" width="76" height="48" rx="6" fill="#ffffff" stroke="#7c3aed" stroke-width="1.5"/>
+    <text x="640" y="198" class="mono" font-size="14" font-weight="700" fill="#0f172a" text-anchor="middle">'C'</text>
+    <text x="640" y="214" class="mono" font-size="10" fill="#5b21b6" text-anchor="middle">id: 0.2</text>
+
+    <rect x="698" y="176" width="76" height="48" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+    <text x="736" y="198" class="mono" font-size="14" font-weight="700" fill="#1e3a8a" text-anchor="middle">'O'</text>
+    <text x="736" y="214" class="mono" font-size="10" fill="#1e40af" text-anchor="middle">id: 0.35 (N1)</text>
+
+    <rect x="794" y="176" width="76" height="48" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="832" y="198" class="mono" font-size="14" font-weight="700" fill="#065f46" text-anchor="middle">'R'</text>
+    <text x="832" y="214" class="mono" font-size="10" fill="#047857" text-anchor="middle">id: 0.42 (N2)</text>
+
+    <rect x="890" y="176" width="76" height="48" rx="6" fill="#ffffff" stroke="#7c3aed" stroke-width="1.5"/>
+    <text x="928" y="198" class="mono" font-size="14" font-weight="700" fill="#0f172a" text-anchor="middle">'A'</text>
+    <text x="928" y="214" class="mono" font-size="10" fill="#5b21b6" text-anchor="middle">id: 0.5</text>
+
+    <rect x="986" y="176" width="76" height="48" rx="6" fill="#ffffff" stroke="#7c3aed" stroke-width="1.5"/>
+    <text x="1024" y="198" class="mono" font-size="14" font-weight="700" fill="#0f172a" text-anchor="middle">'T'</text>
+    <text x="1024" y="214" class="mono" font-size="10" fill="#5b21b6" text-anchor="middle">id: 0.8</text>
+
+    <text x="600" y="252" class="mono" font-size="10.5" font-weight="700" fill="#4c1d95">Converged String: "C O R A T" (Identical across all peers)</text>
+    <text x="600" y="274" class="sans" font-size="10.5" fill="#334155">· RGA links each character to its left predecessor (clientID tie-breaker).</text>
+    <text x="600" y="294" class="sans" font-size="10.5" fill="#334155">· Automerge Fugue uses maximal tree ordering to prevent</text>
+    <text x="600" y="310" class="sans" font-size="10.5" fill="#334155">  interleaving/flickering when two users type paragraphs concurrently.</text>
+  </g>
+
+  <!-- Tombstone GC box -->
+  <g class="p4">
+    <rect x="584" y="346" width="494" height="178" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+    <text x="600" y="370" class="sans" font-size="12.5" font-weight="700" fill="#92400e">4. Causal Stability &amp; Tombstone Garbage Collection</text>
+
+    <text x="600" y="394" class="sans" font-size="10.5" fill="#334155">Why tombstones exist: deleting immediately lets a delayed insert/add</text>
+    <text x="600" y="410" class="sans" font-size="10.5" fill="#334155">resurrect deleted data (Zombie Anomaly).</text>
+
+    <rect x="600" y="424" width="462" height="54" rx="6" fill="#ffffff" stroke="#d97706"/>
+    <text x="614" y="444" class="mono" font-size="10.5" font-weight="700" fill="#065f46">Safe Purge Rule: ∀ active replica r, V_r ≥ V(delete_op)</text>
+    <text x="614" y="462" class="sans" font-size="10" fill="#334155">Once every peer acknowledges observing the delete (Causal Stability),</text>
+    <text x="614" y="474" class="sans" font-size="10" fill="#334155">the tombstone record is permanently expunged from RAM.</text>
+
+    <text x="600" y="504" class="mono" font-size="10" font-weight="700" fill="#92400e">Local-First Stack: SQLite/IndexedDB (0ms) + CRDT sync (Automerge / Yjs)</text>
+  </g>
+
+  <!-- FOOTER STEP BAR -->
+  <rect x="24" y="554" width="256" height="48" rx="8" fill="#eff6ff" class="st1"/>
+  <text x="38" y="574" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a">1. G/PN-Counter Max Join</text>
+  <text x="38" y="591" class="sans" font-size="10" fill="#334155">Element-wise max converges in O(N)</text>
+
+  <rect x="296" y="554" width="256" height="48" rx="8" fill="#ecfdf5" class="st2"/>
+  <text x="310" y="574" class="mono" font-size="10.5" font-weight="700" fill="#065f46">2. OR-Set Add-Wins</text>
+  <text x="310" y="591" class="sans" font-size="10" fill="#334155">Unobserved uuid_2 survives delete</text>
+
+  <rect x="568" y="554" width="256" height="48" rx="8" fill="#f5f3ff" class="st3"/>
+  <text x="582" y="574" class="mono" font-size="10.5" font-weight="700" fill="#5b21b6">3. Sequence CRDT (Fugue)</text>
+  <text x="582" y="591" class="sans" font-size="10" fill="#334155">Causal IDs stop concurrent interleaving</text>
+
+  <rect x="840" y="554" width="256" height="48" rx="8" fill="#fffbeb" class="st4"/>
+  <text x="854" y="574" class="mono" font-size="10.5" font-weight="700" fill="#92400e">4. Causal-Stability GC</text>
+  <text x="854" y="591" class="sans" font-size="10" fill="#334155">Purge tombstones once all peers ack</text>
+</svg>

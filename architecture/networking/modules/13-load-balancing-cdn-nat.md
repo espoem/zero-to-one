@@ -92,6 +92,10 @@ graph TD
 3. **Table Population**: Backends take turns filling empty slots in the master table according to their permutation preference.
 4. **Minimal Disruption**: When a backend server is removed, only its specific slots are reassigned; all other backend mappings remain completely untouched. When an incoming packet arrives, hashing its 5-tuple points to the exact same backend across all independent Maglev load balancers without shared memory state!
 
+![Google Maglev Consistent Hashing Permutation and Lookup Table Animation](../assets/13-maglev-consistent-hashing-animated.svg)
+
+_Step-by-step mechanics:_ (1) Each backend $B_i$ hashes to `(offset_i, skip_i)` modulo prime $M$ (`7` here; `65,537` in production) to form a full-period permutation sequence. (2) Backends take round-robin turns claiming their next empty slot in the $M$-slot lookup ring (`[B1, B2, B1, B0, B0, B2, B0]`). (3) Stateless L4 balancers route packets in $O(1)$ via `table[hash(5-tuple) % M]`; when `B1` fails, surviving slot assignments stay mostly pinned while load rebalances evenly across `B0` and `B2`.
+
 ---
 
 ## 4. Layer 7 Reverse Proxying & Client IP Preservation

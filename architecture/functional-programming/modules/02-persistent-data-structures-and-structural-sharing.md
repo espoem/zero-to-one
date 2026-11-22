@@ -374,6 +374,10 @@ There are two algebraic escapes from intermediate-list allocation loss:
 - **Foldr/Build (Short-Cut) Deforestation** (Gill, Launchbury, Peyton Jones, 1993): By expressing list producers via `build` and consumers via `foldr` and applying the rewrite rule $\text{foldr}\, f\, z\, (\text{build}\, g) \equiv g\, f\, z$ (whose correctness is guaranteed by Wadler's free theorem!), GHC fuses chained list combinators at compile time.
 - **Pull-Based Lazy Evaluation and Stream Fusion**: Switching from eager `List` to non-strict `LazyList` ([Module 04](04-strictness-laziness-and-corecursion.md)) or chunked pull streams ([Module 12](12-effects-io-trampolining-st-and-streaming.md)) interleaves `map`, `filter`, and `map` element-by-element so no intermediate collection ever exists in memory.
 
+![Catamorphisms foldRight vs foldLeft, Deforestation Fusion, and Okasaki Banker's Queue Animation](../assets/02-catamorphism-fusion-bankers-queue-animated.svg)
+
+_Step-by-step mechanics:_ (1) `foldLeft` accumulates in strict tail position for $O(1)$ stack space while naive `foldRight` pushes $O(n)$ frames. (2) Deforestation fuses `map`/`filter`/`map` into a single pass without allocating $3n$ intermediate `Cons` spines. (3) Okasaki's Banker's Queue preserves $|f| \ge |r|$ via a memoised `LazyList` thunk so branching persistent forks evaluate each rotation step at most once.
+
 ---
 
 ## Interview Drill

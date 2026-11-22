@@ -1,0 +1,164 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 600" width="1120" height="600" role="img" aria-labelledby="title desc">
+  <title id="title">X.509 Certificate Chain Path Validation &amp; CRLite Cascading Bloom Filter Lookup</title>
+  <desc id="desc">Animated RFC 5280 X.509 certificate path validation from Leaf server certificate through Intermediate CA to local OS Trust Anchor Root CA, verifying cryptographic signatures, notBefore/notAfter temporal validity, BasicConstraints cA and pathLen, and SAN/EKU matching, paired with O(1) privacy-preserving CRLite cascading Bloom filter revocation lookup.</desc>
+
+  <style>
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    /* 12s cycle:
+       0-25%:   Step 1 — Leaf Cert check (SAN, EKU, cA:FALSE, notBefore/notAfter)
+       25-50%:  Step 2 — Intermediate CA check (sig by Root, cA:TRUE, pathLen:0)
+       50-75%:  Step 3 — Trust Anchor Root CA verification (OS Trust Store)
+       75-100%: Step 4 — CRLite Cascading Bloom Filter O(1) offline revocation check
+    */
+    @keyframes c-leaf {
+      0%, 24% { stroke: #2563eb; stroke-width: 2.5; opacity: 1; }
+      25%, 100% { stroke: #cbd5e1; stroke-width: 1.4; opacity: 0.72; }
+    }
+    @keyframes c-inter {
+      0%, 24% { stroke: #cbd5e1; stroke-width: 1.4; opacity: 0.72; }
+      25%, 49% { stroke: #7c3aed; stroke-width: 2.5; opacity: 1; }
+      50%, 100% { stroke: #cbd5e1; stroke-width: 1.4; opacity: 0.72; }
+    }
+    @keyframes c-root {
+      0%, 49% { stroke: #cbd5e1; stroke-width: 1.4; opacity: 0.72; }
+      50%, 74% { stroke: #059669; stroke-width: 2.5; opacity: 1; }
+      75%, 100% { stroke: #cbd5e1; stroke-width: 1.4; opacity: 0.72; }
+    }
+    @keyframes c-crl {
+      0%, 74% { stroke: #cbd5e1; stroke-width: 1.4; opacity: 0.72; }
+      75%, 100% { stroke: #059669; stroke-width: 2.5; opacity: 1; }
+    }
+    @keyframes flow-up {
+      to { stroke-dashoffset: -24; }
+    }
+    @keyframes crl-probe {
+      0%, 74% { transform: translateY(0px); opacity: 0; }
+      78%     { transform: translateY(0px); opacity: 1; }
+      88%     { transform: translateY(72px); opacity: 1; }
+      98%     { transform: translateY(144px); opacity: 1; }
+      100%    { transform: translateY(144px); opacity: 0; }
+    }
+
+    .leaf-card  { animation: c-leaf 12s linear infinite; }
+    .inter-card { animation: c-inter 12s linear infinite; }
+    .root-card  { animation: c-root 12s linear infinite; }
+    .crl-panel  { animation: c-crl 12s linear infinite; }
+    .dash       { stroke-dasharray: 6 6; animation: flow-up 1.2s linear infinite; }
+    .probe      { animation: crl-probe 12s ease-in-out infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .leaf-card, .inter-card, .root-card, .crl-panel, .dash, .probe {
+        animation: none !important;
+      }
+      .leaf-card, .inter-card, .root-card, .crl-panel { opacity: 1 !important; stroke-width: 1.8 !important; }
+      .probe { opacity: 0 !important; }
+    }
+  </style>
+
+  <defs>
+    <marker id="arr-up" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1120" height="600" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1120" height="62" rx="12" fill="#0f172a"/>
+  <rect x="0" y="46" width="1120" height="16" fill="#0f172a"/>
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">X.509 Certification Path Validation (RFC 5280) &amp; CRLite Revocation</text>
+  <text x="24" y="48" class="sans" font-size="12" fill="#94a3b8">Module 04 · Chain Verification (Leaf → Intermediate → Trust Anchor) + O(1) Offline Cascading Bloom Filter Lookup</text>
+
+  <!-- LEFT PANEL: X.509 PATH VALIDATION -->
+  <rect x="24" y="78" width="546" height="448" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="42" y="104" class="sans" font-size="14" font-weight="700" fill="#0f172a">1. RFC 5280 Path Validation (Chain of Trust)</text>
+
+  <!-- Trust Anchor Root CA (Top) -->
+  <rect x="44" y="122" width="506" height="94" rx="8" fill="#ecfdf5" class="root-card"/>
+  <rect x="58" y="134" width="110" height="22" rx="4" fill="#059669"/>
+  <text x="113" y="149" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">TRUST ANCHOR</text>
+  <text x="180" y="149" class="sans" font-size="12.5" font-weight="700" fill="#065f46">Root CA (Pre-installed OS / Browser Trust Store)</text>
+  <text x="58" y="174" class="mono" font-size="10.5" fill="#047857">Self-signed (Issuer == Subject) · BasicConstraints: cA:TRUE</text>
+  <text x="58" y="194" class="sans" font-size="10" fill="#065f46">✓ Chain terminates in trusted Root Public Key · Verified notBefore ≤ t ≤ notAfter</text>
+
+  <!-- Arrow Intermediate -> Root -->
+  <line x1="297" y1="246" x2="297" y2="220" stroke="#475569" stroke-width="2" class="dash" marker-end="url(#arr-up)"/>
+  <text x="309" y="237" class="mono" font-size="10" fill="#475569">Verify sig with Root PubKey</text>
+
+  <!-- Intermediate CA (Middle) -->
+  <rect x="44" y="250" width="506" height="104" rx="8" fill="#f5f3ff" class="inter-card"/>
+  <rect x="58" y="262" width="110" height="22" rx="4" fill="#7c3aed"/>
+  <text x="113" y="277" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">INTERMEDIATE</text>
+  <text x="180" y="277" class="sans" font-size="12.5" font-weight="700" fill="#5b21b6">Intermediate CA Certificate</text>
+  <text x="58" y="302" class="mono" font-size="10.5" fill="#4c1d95">BasicConstraints: cA:TRUE, pathLenConstraint: 0</text>
+  <text x="58" y="320" class="mono" font-size="10" fill="#5b21b6">NameConstraints: .example.com · Temporal: valid</text>
+  <text x="58" y="338" class="sans" font-size="10" fill="#4c1d95">✓ pathLen:0 permits Leaf issuance only (rejects sub-CAs beneath)</text>
+
+  <!-- Arrow Leaf -> Intermediate -->
+  <line x1="297" y1="384" x2="297" y2="358" stroke="#475569" stroke-width="2" class="dash" marker-end="url(#arr-up)"/>
+  <text x="309" y="375" class="mono" font-size="10" fill="#475569">Verify sig with Intermediate PubKey</text>
+
+  <!-- Leaf Server Cert (Bottom) -->
+  <rect x="44" y="388" width="506" height="122" rx="8" fill="#eff6ff" class="leaf-card"/>
+  <rect x="58" y="400" width="110" height="22" rx="4" fill="#2563eb"/>
+  <text x="113" y="415" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">LEAF CERT</text>
+  <text x="180" y="415" class="sans" font-size="12.5" font-weight="700" fill="#1e3a8a">Server / Leaf Certificate (api.example.com)</text>
+  <text x="58" y="440" class="mono" font-size="10.5" fill="#1e40af">BasicConstraints: cA:FALSE · EKU: id-kp-serverAuth</text>
+  <text x="58" y="458" class="mono" font-size="10.5" fill="#1e40af">SAN: dNSName: api.example.com (matches TLS SNI)</text>
+  <text x="58" y="476" class="mono" font-size="10" fill="#1e3a8a">CT Log SCTs ≥ 2 embedded · KeyUsage: digitalSignature</text>
+  <text x="58" y="494" class="sans" font-size="10" fill="#1e40af">✓ Wildcard *.example.com matches 1 label only (not a.b.example.com)</text>
+
+  <!-- RIGHT PANEL: CRLITE CASCADING BLOOM FILTER -->
+  <rect x="590" y="78" width="506" height="448" rx="10" fill="#ffffff" class="crl-panel"/>
+  <text x="608" y="104" class="sans" font-size="14" font-weight="700" fill="#0f172a">2. CRLite Revocation Lookup (O(1) Local Filter)</text>
+
+  <!-- Legacy vs CRLite comparison -->
+  <rect x="608" y="118" width="470" height="66" rx="7" fill="#fff1f2" stroke="#fda4af"/>
+  <text x="620" y="137" class="sans" font-size="11" font-weight="700" fill="#9f1239">Why CRL / Online OCSP Fail:</text>
+  <text x="620" y="155" class="sans" font-size="10" fill="#881337">• CRL: 10s of MB downloads · OCSP: leaks browsing history to CA + soft-fail bypass.</text>
+  <text x="620" y="171" class="sans" font-size="10" fill="#881337">• CRLite: Browser syncs compressed cascading Bloom filters daily (~few MB).</text>
+
+  <!-- Cascading Bloom Filter Pipeline -->
+  <rect x="608" y="196" width="470" height="254" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="622" y="218" class="mono" font-size="11" font-weight="700" fill="#0f172a">Query: (IssuerSPKIHash, SerialNumber) → Cascade</text>
+
+  <!-- Animated probe indicator -->
+  <g class="probe">
+    <circle cx="634" cy="252" r="9" fill="#059669" stroke="#ffffff" stroke-width="2"/>
+    <text x="634" y="256" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">?</text>
+  </g>
+
+  <!-- Layer 0 -->
+  <rect x="654" y="232" width="406" height="48" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="668" y="252" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a">Filter B_0 (Revoked Set)</text>
+  <text x="668" y="269" class="sans" font-size="10" fill="#1e40af">Miss → definitely NOT REVOKED (stop) · Hit → check B_1</text>
+
+  <line x1="857" y1="282" x2="857" y2="300" stroke="#059669" stroke-width="1.8" marker-end="url(#arr-green)"/>
+
+  <!-- Layer 1 -->
+  <rect x="654" y="304" width="406" height="48" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <text x="668" y="324" class="mono" font-size="10.5" font-weight="700" fill="#92400e">Filter B_1 (Valid False-Positives of B_0)</text>
+  <text x="668" y="341" class="sans" font-size="10" fill="#78350f">Miss → REVOKED · Hit → false positive exception, check B_2</text>
+
+  <line x1="857" y1="354" x2="857" y2="372" stroke="#059669" stroke-width="1.8" marker-end="url(#arr-green)"/>
+
+  <!-- Layer 2..k -->
+  <rect x="654" y="376" width="406" height="58" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="668" y="396" class="mono" font-size="10.5" font-weight="700" fill="#065f46">Filters B_2 … B_k (Zero False Positives)</text>
+  <text x="668" y="414" class="sans" font-size="10" fill="#047857">Exact parity (even/odd exit layer) determines status with 0% FP error</text>
+  <text x="668" y="427" class="mono" font-size="10" fill="#065f46">Result: O(1) offline lookup · Zero CA calls · Hard-fail safe</text>
+
+  <!-- Result badge -->
+  <rect x="608" y="462" width="470" height="48" rx="7" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <text x="843" y="491" class="sans" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">TLS Handshake Accepted: Path Valid + SCT Present + CRLite Unrevoked</text>
+
+  <!-- Footer -->
+  <rect x="24" y="540" width="1072" height="44" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="42" y="567" class="sans" font-size="11.5" font-weight="600" fill="#1e3a8a">Takeaway: Every certificate check enforces signatures, time bounds, BasicConstraints, SAN/EKU, CT SCTs, and local CRLite/OCSP stapling.</text>
+</svg>

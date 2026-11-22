@@ -153,6 +153,10 @@ flowchart TD
     end
 ```
 
+![Chain Replication (CRAQ), ABD Register, and SMR ReadIndex / Lease Animation](../assets/05-chain-craq-abd-readindex-animated.svg)
+
+_Step-by-step mechanics:_ (1) In Chain Replication and CRAQ, writes propagate from Head through Middle (`DIRTY`) to Tail (`CLEAN`), while `DIRTY` reads check Tail's committed version and `CLEAN` reads scale across all replicas. (2) In leaderless quorums ($R+W>N$), the ABD protocol repairs partial writes by writing the max observed `(v, val)` back to a write quorum $W$ before returning. (3) In leader SMR, `ReadIndex` verifies leadership via a heartbeat quorum before reading RAM at `applied >= readIndex`, whereas `Lease Reads` trade clock-drift sensitivity for 0-RTT reads.
+
 ---
 
 ## Interview Drill

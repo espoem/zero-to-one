@@ -310,6 +310,10 @@ sequenceDiagram
 5. **First-to-Establish Wins**: Whichever TCP connection completes the 3-way handshake first (`SYN-ACK` received) is selected for the application stream. The slower, in-flight connection attempt is immediately aborted (`RST` or `FIN`).
 6. **State Caching**: The client temporarily caches the winning address family (for approximately 10 minutes) to avoid repeated delay on subsequent connections.
 
+![Longest Prefix Match Patricia Trie, ECMP Flow Pinning, and Happy Eyeballs v2 Animation](../assets/03-lpm-patricia-ecmp-happy-eyeballs-animated.svg)
+
+_Step-by-step mechanics:_ (1) A Binary Patricia Trie walks destination IP `10.20.30.45` bit-by-bit in $O(W)$ time, updating the deepest matched prefix from `/0` through `/8` and `/16` to `/24` (`GW-D`). (2) ECMP hashes the 5-tuple (or IPv6 Flow Label) modulo $N$ paths so all segments of a TCP flow stay pinned to the same egress interface without reordering. (3) Happy Eyeballs v2 (RFC 8305) queries `AAAA` and `A` concurrently, sends an IPv6 `SYN`, waits at most `250 ms` before launching a parallel IPv4 `SYN`, and adopts the first `SYN-ACK` to complete.
+
 ---
 
 ## 9. Then vs. Now: Internet Protocol Evolution

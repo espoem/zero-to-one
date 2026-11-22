@@ -171,6 +171,10 @@ If a leader is partitioned from the majority, it might not receive followers' me
 
 - **Solution**: The leader periodically checks if it received positive acknowledgments from a majority within an election timeout window. If it has not, it **voluntarily steps down to Follower**, preventing stale reads.
 
+![Raft Election, Figure 8 Commit Rule, and Pre-Vote / Check-Quorum Animation](../assets/07-raft-election-figure8-prevote-animated.svg)
+
+_Step-by-step mechanics:_ (1) `RequestVote` enforces log completeness and requires durable `fsync` of `currentTerm`, `votedFor`, and `log[]` before replying. (2) In Figure 8, committing an earlier-term entry merely by majority count allows a future leader `S5` (with a Term 3 entry) to overwrite it; only committing a current-term entry (Term 4) indirectly commits prior entries via Log Matching. (3) `Pre-Vote` prevents partitioned followers from inflating cluster terms, while `Check-Quorum` forces isolated leaders to step down.
+
 ---
 
 ## Interview Drill

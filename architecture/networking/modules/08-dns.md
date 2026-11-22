@@ -128,6 +128,10 @@ Offset 0x0C: [ 0x07 ] "example" [ 0x03 ] "com" [ 0x00 ]
 Offset 0x30: [ 0x03 ] "api" [ 0xC0 ] [ 0x0C ]  <-- Points to "example.com" at offset 12!
 ```
 
+![DNS Iterative Resolution Walk and 0xC000 Pointer Compression Animation](../assets/08-dns-iterative-walk-and-compression-animated.svg)
+
+_Step-by-step mechanics:_ (1) On cache miss, the Recursive Resolver (`1.1.1.1`) walks Root (`.`) → `.com` TLD → `example.com` Authoritative NS using returned `NS` + Glue records and caches `203.0.113.10` for `TTL=300s`. (2) On the wire (RFC 1035 §4.1.4), any label length byte starting with bits `11` (`0xC0`) encodes a 14-bit byte offset pointer (`0xC010` → offset `0x10`) to reuse previously serialized domain suffixes inside compact UDP datagrams.
+
 ---
 
 ## 4. EDNS(0): Extension Mechanisms for DNS (RFC 6891)

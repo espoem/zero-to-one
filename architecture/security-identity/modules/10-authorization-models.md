@@ -82,6 +82,10 @@ In a globally distributed authorization system, database replication introduces 
 - When any client attempts to read the document, the evaluation engine enforces an ordering constraint: **the authorization check must be evaluated against a replica snapshot whose commit timestamp is strictly greater than or equal to the Zookie timestamp ($t\_{\text{snapshot}} \ge t\_{\text{zookie}}$)**.
 - If the local replica is behind, it must stall and wait for replication to catch up before evaluating permissions, making the New-Enemy Problem mathematically impossible.
 
+![Google Zanzibar ReBAC Userset Rewrite Graph Traversal and Zookie Monotonic Snapshot Token Animation](../assets/10-zanzibar-rewrite-and-zookie-animated.svg)
+
+_Step-by-step mechanics:_ (1) Check traversal follows `document#parent` tuple-to-userset edges and computed rewrites (`viewer = self ∪ editor ∪ owner`) up through nested groups to prove `PERMIT`. (2) To block the New-Enemy race, `W_1` returns a `Zookie(t_1)` attached to `W_2`, forcing any lagged replica ($t_0 < t_1$) to stall until replication catches up before returning `DENY`.
+
 ---
 
 ## 3. OpenFGA: Open-Source Fine-Grained Authorization

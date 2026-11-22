@@ -125,6 +125,10 @@ Under Lehman-Yao semantics:
 - If a concurrent reader traverses a node before the parent link is established, it compares its search key against the node's high key. If the search key exceeds the high key, the reader simply navigates across the horizontal right-sibling pointer to find the key in the new sibling.
 - **Result**: Readers execute with zero read-locks or minimal optimistic page latches, never stalling behind long parent node splits.
 
+![Slotted Page Indirection and Lehman-Yao B-Link Concurrent Split](../assets/02-a-slotted-page-and-blink-split-animated.svg)
+
+_Step-by-step mechanics:_ On an in-page tuple relocation, only the slot offset updates while external `ctid` pointers remain stable; during a Lehman-Yao B-Link split, a reader arriving via a stale parent compares `k=18` against `High Key = 12` on Node A and hops lock-freely across `right_link` to sibling Node B.
+
 ---
 
 ## 3. Append-Only Storage Engines: Log-Structured Merge-Trees (LSM)
@@ -191,6 +195,10 @@ graph TD
   - A point lookup queries at most one SSTable per level.
   - _Trade-off_: Excellent read latency and minimal space amplification ($\sim 10\%$ overhead); higher write amplification factor.
 
+![LSM-Tree Write Path and Compaction Strategies](../assets/02-b-lsm-write-path-and-compaction-animated.svg)
+
+_Step-by-step mechanics:_ Incoming mutations append sequentially to the on-disk WAL and insert into the in-memory SkipList Memtable before freezing into an Immutable Memtable and flushing as an L0 SSTable; background Leveled Compaction (LCS) merges overlapping L0 runs into disjoint L1 files for low space amplification (`~1.1×`), whereas Size-Tiered Compaction (STCS) merges equal-size SSTables for lower write amplification (`4–10`).
+
 ---
 
 ## 4. The Fundamental Amplification Trilemma (RUM Conjecture)
@@ -249,6 +257,10 @@ Because adjacent values in a single column belong to the identical domain, they 
 2. **Dictionary Encoding**: Replaces variable-length strings with compact 1-byte or 2-byte integer IDs, storing a small per-block dictionary.
 3. **Bit-Packing and Frame of Reference (FoR)**: Stores integer offsets relative to a minimum baseline value rather than full 64-bit integers.
 4. **Vectorized SIMD Processing**: Modern CPUs evaluate vectorized predicates (e.g. `age > 30`) using AVX-512 vector instructions over contiguous column arrays, processing 16 integer records per single CPU clock cycle.
+
+![Columnar Compression Pipeline with Dictionary and Run-Length Encoding](../assets/02-c-columnar-rle-dict-compression-animated.svg)
+
+_Step-by-step mechanics:_ Contiguous `"Country"` strings are mapped via a per-block dictionary to compact 1-byte integer codes, collapsed into `(code, count)` RLE pairs across sorted runs, and scanned directly with zero-decode AVX-512 SIMD predicates.
 
 ---
 

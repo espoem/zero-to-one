@@ -197,6 +197,10 @@ In OCC (Kung & Robinson, 1981), transactions execute without acquiring locks:
 2. **Validation Phase**: At commit time, the engine checks whether the transaction's read set overlaps with the write set of any concurrent transaction that committed during its execution.
 3. **Write Phase**: If validation passes, changes are written to the database; if validation fails, the transaction aborts and retries. (Adopted in Turso/SQLite `BEGIN CONCURRENT` and Redis `WATCH/MULTI/EXEC`).
 
+![Concurrency Control: Strict 2PL, MVCC Snapshots, SSI, and OCC](../assets/05-s2pl-mvcc-ssi-occ-isolation-animated.svg)
+
+_Step-by-step mechanics:_ (1) Strict 2PL holds exclusive locks until commit and resolves $T_1 \to T_2 \to T_1$ Wait-For Graph cycles by aborting the youngest transaction. (2) MVCC evaluates `t_xmin` and `t_xmax` along tuple version chains against the reader's active-transaction snapshot with zero read locks. (3) Serializable Snapshot Isolation (SSI) tracks consecutive $rw$-antidependency edges ($T_1 \xrightarrow{rw} T_2 \xrightarrow{rw} T_3$) and aborts before write-skew cycles commit. (4) Optimistic Concurrency Control buffers writes locally during Read, verifies disjoint ReadSet/WriteSet intersection at Validate, and flushes atomically in Write.
+
 ---
 
 ## 5. Then vs Now: Concurrency Control Evolution

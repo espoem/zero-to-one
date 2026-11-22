@@ -145,6 +145,10 @@ sequenceDiagram
 3. If an invalid, already-used refresh token is ever submitted, the Authorization Server recognizes that a token theft has occurred (either the legitimate client or the attacker is attempting to reuse an invalidated credential).
 4. **Automated Family Revocation**: The AS **immediately revokes the entire token family**, invalidating all outstanding access and refresh tokens across all sessions, terminating the attacker's access and forcing the legitimate user to re-authenticate.
 
+![OAuth 2.1 Mandatory PKCE S256 Binding and Refresh Token Rotation Reuse Detection Animation](../assets/06-oauth21-pkce-and-rtr-replay-animated.svg)
+
+_Step-by-step mechanics:_ (1) The client binds a CSPRNG `code_verifier` to its `S256` `code_challenge` on `/authorize` and proves possession on `/token`, blocking stolen authorization codes. (2) Each refresh rotates `RT_1` to `RT_2` and marks `RT_1` used; if an attacker replays `RT_1`, automated reuse detection immediately revokes the entire token family.
+
 ---
 
 ## 6. The RFC 9700 Attacker Model & Advanced Defenses

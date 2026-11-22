@@ -195,6 +195,10 @@ graph TD
 - Threads $T_2, T_3, T_4$ arriving milliseconds later queue as followers.
 - The leader thread issues a single batched `write()` and a single `fsync()` covering the log records of all queued transactions, and subsequently wakes up all follower threads. This transforms thousands of random sync stalls into high-throughput pipelined sequential writes.
 
+![ARIES 3-Pass Crash Recovery, Fuzzy Checkpoints, and Group Commit](../assets/06-aries-recovery-and-group-commit-animated.svg)
+
+_Step-by-step mechanics:_ (1) The Analysis pass scans forward from the latest checkpoint to reconstruct the active Transaction Table (identifying loser transactions) and Dirty Page Table (determining $\min(\text{rec-lsn})$). (2) The Redo pass repeats history forward from $\min(\text{rec-lsn})$, replaying logged mutations whenever $\text{page-lsn} < \text{record-lsn}$. (3) The Undo pass walks loser `prev_lsn` chains backward and writes Compensation Log Records (CLRs) with `undo_next_lsn` so nested crashes never re-undo work. (4) Fuzzy checkpoints pace dirty page writes continuously while Group Commit batches concurrent transaction commits behind a single `fsync()`.
+
 ### Torn Page Protection
 
 Operating systems and storage hardware write data in physical sectors (typically 512 bytes or 4KB). A database page is typically 8KB or 16KB.

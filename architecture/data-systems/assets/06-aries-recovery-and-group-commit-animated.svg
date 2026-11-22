@@ -1,0 +1,257 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 740" width="1200" height="740" role="img" aria-labelledby="title desc">
+  <title id="title">ARIES 3-Pass Crash Recovery, Fuzzy Checkpoints, and Group Commit</title>
+  <desc id="desc">Animated technical diagram of ARIES crash recovery showing: (1) Three recovery passes over the WAL stream — Analysis pass rebuilding Transaction Table and Dirty Page Table (DPT) to find min(rec_lsn), Redo pass repeating history forward from min(rec_lsn) using page_lsn idempotency, and Undo pass scanning backward via prev_lsn to roll back loser transactions while writing Compensation Log Records (CLRs) that are never undone; (2) Fuzzy Checkpointing pacing dirty page flushes without pausing queries; and (3) Group Commit batching multiple transaction fsync calls into one barrier.</desc>
+
+  <defs>
+    <style>
+      .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+      /* 12s cycle */
+      @keyframes pass-analysis {
+        0%, 22% { opacity: 1; transform: translateX(0px); }
+        28%, 100% { opacity: 0.86; transform: translateX(0px); }
+      }
+      @keyframes pass-redo {
+        0%, 24% { opacity: 0.86; }
+        32%, 52% { opacity: 1; }
+        58%, 100% { opacity: 0.86; }
+      }
+      @keyframes pass-undo {
+        0%, 50% { opacity: 0.86; }
+        58%, 85% { opacity: 1; }
+        92%, 100% { opacity: 0.6; }
+      }
+      @keyframes clr-appear {
+        0%, 56% { opacity: 0.86; transform: translateY(6px); }
+        64%, 100% { opacity: 1; transform: translateY(0px); }
+      }
+      @keyframes group-batch {
+        0%, 68% { opacity: 0.86; }
+        78%, 100% { opacity: 1; }
+      }
+      @keyframes sweep-aries {
+        0%    { transform: translateX(0px); }
+        25%   { transform: translateX(620px); }
+        50%   { transform: translateX(620px); }
+        75%   { transform: translateX(310px); }
+        100%  { transform: translateX(0px); }
+      }
+
+      @keyframes st-1 { 0%, 24% { opacity: 1; stroke: #2563eb; stroke-width: 2.5; } 25%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; } }
+      @keyframes st-2 { 0%, 24% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; } 25%, 49% { opacity: 1; stroke: #d97706; stroke-width: 2.5; } 50%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; } }
+      @keyframes st-3 { 0%, 49% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; } 50%, 74% { opacity: 1; stroke: #e11d48; stroke-width: 2.5; } 75%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; } }
+      @keyframes st-4 { 0%, 74% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; } 75%, 100% { opacity: 1; stroke: #059669; stroke-width: 2.5; } }
+
+      .pa { animation: pass-analysis 12s linear infinite; }
+      .pr { animation: pass-redo 12s linear infinite; }
+      .pu { animation: pass-undo 12s linear infinite; }
+      .clr { animation: clr-appear 12s ease-out infinite; }
+      .grp { animation: group-batch 12s ease-out infinite; }
+      .swp { animation: sweep-aries 12s ease-in-out infinite; }
+
+      .s1 { animation: st-1 12s linear infinite; }
+      .s2 { animation: st-2 12s linear infinite; }
+      .s3 { animation: st-3 12s linear infinite; }
+      .s4 { animation: st-4 12s linear infinite; }
+
+      @media (prefers-reduced-motion: reduce) {
+        .pa, .pr, .pu, .clr, .grp, .swp, .s1, .s2, .s3, .s4 {
+          animation: none !important;
+        }
+        .pa, .pr, .pu, .clr, .grp, .s1, .s2, .s3, .s4 {
+          opacity: 1 !important;
+          transform: none !important;
+        }
+        .swp { transform: translateX(310px) !important; }
+      }
+    </style>
+
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+    </marker>
+    <marker id="arr-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+    </marker>
+    <marker id="arr-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1200" height="740" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1200" height="62" rx="12" fill="#0f172a"/>
+  <rect x="0" y="46" width="1200" height="16" fill="#0f172a"/>
+  <text x="24" y="28" class="sans" font-size="18" font-weight="700" fill="#f8fafc">ARIES 3-Pass Crash Recovery, Fuzzy Checkpointing &amp; Group Commit</text>
+  <text x="24" y="48" class="sans" font-size="12" fill="#94a3b8">Steal/No-Force durability: Analysis (DPT + AttTable) → Redo ("Repeating History") → Undo (backward prev_lsn + CLRs)</text>
+
+  <!-- TOP PANEL: ARIES 3 PASSES & WAL TIMELINE -->
+  <rect x="24" y="78" width="1152" height="292" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="24" y="78" width="1152" height="32" rx="10" fill="#f1f5f9"/>
+  <rect x="24" y="100" width="1152" height="10" fill="#f1f5f9"/>
+  <text x="40" y="99" class="sans" font-size="12.5" font-weight="700" fill="#0f172a">1. WAL Stream &amp; ARIES Three-Pass Recovery (Analysis → Redo → Undo)</text>
+  <text x="1160" y="99" class="mono" font-size="10.5" fill="#64748b" text-anchor="end">CLRs are NEVER undone</text>
+
+  <!-- WAL Records Strip -->
+  <rect x="40" y="126" width="112" height="46" rx="5" fill="#eff6ff" stroke="#2563eb" stroke-width="1.3"/>
+  <text x="96" y="144" class="mono" font-size="10" font-weight="700" fill="#1e3a8a" text-anchor="middle">LSN 10</text>
+  <text x="96" y="160" class="mono" font-size="10" fill="#334155" text-anchor="middle">CKPT_BEGIN</text>
+
+  <rect x="164" y="126" width="132" height="46" rx="5" fill="#ecfdf5" stroke="#059669" stroke-width="1.3"/>
+  <text x="230" y="144" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">LSN 20 (T1)</text>
+  <text x="230" y="160" class="mono" font-size="10" fill="#334155" text-anchor="middle">UPD P1 (prev:0)</text>
+
+  <rect x="308" y="126" width="132" height="46" rx="5" fill="#fff1f2" stroke="#e11d48" stroke-width="1.4"/>
+  <text x="374" y="144" class="mono" font-size="10" font-weight="700" fill="#9f1239" text-anchor="middle">LSN 30 (T2)</text>
+  <text x="374" y="160" class="mono" font-size="10" fill="#334155" text-anchor="middle">UPD P2 (prev:0)</text>
+
+  <rect x="452" y="126" width="118" height="46" rx="5" fill="#ecfdf5" stroke="#059669" stroke-width="1.3"/>
+  <text x="511" y="144" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">LSN 40 (T1)</text>
+  <text x="511" y="160" class="mono" font-size="10" font-weight="700" fill="#059669" text-anchor="middle">COMMIT ✓</text>
+
+  <rect x="582" y="126" width="146" height="46" rx="5" fill="#fff1f2" stroke="#e11d48" stroke-width="1.4"/>
+  <text x="655" y="144" class="mono" font-size="10" font-weight="700" fill="#9f1239" text-anchor="middle">LSN 50 (T2)</text>
+  <text x="655" y="160" class="mono" font-size="10" fill="#334155" text-anchor="middle">UPD P3 (prev:30)</text>
+
+  <!-- CRASH Marker -->
+  <rect x="740" y="122" width="70" height="54" rx="6" fill="#0f172a"/>
+  <text x="775" y="146" class="mono" font-size="10.5" font-weight="700" fill="#fb7185" text-anchor="middle">CRASH!</text>
+  <text x="775" y="162" class="mono" font-size="10" fill="#94a3b8" text-anchor="middle">power loss</text>
+
+  <!-- Written CLRs during Undo -->
+  <g class="clr">
+    <rect x="822" y="126" width="160" height="46" rx="5" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+    <text x="902" y="144" class="mono" font-size="10" font-weight="700" fill="#5b21b6" text-anchor="middle">LSN 60: CLR(50)</text>
+    <text x="902" y="160" class="mono" font-size="10" fill="#6d28d9" text-anchor="middle">undo_next: 30</text>
+
+    <rect x="994" y="126" width="164" height="46" rx="5" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+    <text x="1076" y="144" class="mono" font-size="10" font-weight="700" fill="#5b21b6" text-anchor="middle">LSN 70: CLR(30)</text>
+    <text x="1076" y="160" class="mono" font-size="10" fill="#6d28d9" text-anchor="middle">undo_next: 0 (Done)</text>
+  </g>
+
+  <!-- Animated Scanner Head along WAL -->
+  <g class="swp">
+    <polygon points="96,176 89,188 103,188" fill="#2563eb"/>
+  </g>
+
+  <!-- Pass 1, Pass 2, Pass 3 Detail Cards inside Top Panel -->
+  <rect x="40" y="198" width="356" height="156" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.4" class="pa"/>
+  <text x="54" y="218" class="sans" font-size="11.5" font-weight="700" fill="#1e3a8a">Pass 1: Analysis (Forward 10 → 50)</text>
+  <text x="54" y="238" class="mono" font-size="10" font-weight="700" fill="#0f172a">AttTable (Transaction Table):</text>
+  <text x="54" y="255" class="mono" font-size="10" fill="#059669">  T1: Committed (Winner)</text>
+  <text x="54" y="272" class="mono" font-size="10" font-weight="700" fill="#e11d48">  T2: Active (Loser, lastLSN=50)</text>
+  <text x="54" y="294" class="mono" font-size="10" font-weight="700" fill="#0f172a">DPT (Dirty Page Table):</text>
+  <text x="54" y="311" class="mono" font-size="10" fill="#334155">  P1:20, P2:30, P3:50</text>
+  <text x="54" y="334" class="mono" font-size="10.5" font-weight="700" fill="#1d4ed8">min(rec_lsn) = 20 (Redo start)</text>
+
+  <rect x="412" y="198" width="356" height="156" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="1.4" class="pr"/>
+  <text x="426" y="218" class="sans" font-size="11.5" font-weight="700" fill="#92400e">Pass 2: Redo — "Repeating History" (20 → 50)</text>
+  <text x="426" y="240" class="sans" font-size="10.5" fill="#334155">Replays ALL actions (winners AND losers) from</text>
+  <text x="426" y="256" class="sans" font-size="10.5" fill="#334155">min(rec_lsn)=20 to restore exact crash state.</text>
+  <rect x="426" y="270" width="328" height="44" rx="5" fill="#ffffff" stroke="#fcd34d"/>
+  <text x="438" y="288" class="mono" font-size="10" font-weight="700" fill="#059669">if (page_lsn ≥ rec.lsn) skip;  (idempotent)</text>
+  <text x="438" y="304" class="mono" font-size="10" fill="#b45309">else apply(rec); page_lsn = rec.lsn;</text>
+  <text x="426" y="336" class="sans" font-size="10" fill="#78350f">Protects against torn pages via FPI / doublewrite.</text>
+
+  <rect x="784" y="198" width="374" height="156" rx="8" fill="#fff1f2" stroke="#e11d48" stroke-width="1.4" class="pu"/>
+  <text x="798" y="218" class="sans" font-size="11.5" font-weight="700" fill="#9f1239">Pass 3: Undo (Backward 50 → 30 via prev_lsn)</text>
+  <text x="798" y="240" class="sans" font-size="10.5" fill="#334155">Follows prev_lsn chain of Loser T2 backward:</text>
+  <text x="798" y="260" class="mono" font-size="10" font-weight="700" fill="#9f1239">1) Undo LSN 50 → write LSN 60 CLR(undo_next=30)</text>
+  <text x="798" y="278" class="mono" font-size="10" font-weight="700" fill="#9f1239">2) Undo LSN 30 → write LSN 70 CLR(undo_next=0)</text>
+  <rect x="798" y="294" width="346" height="44" rx="5" fill="#f5f3ff" stroke="#7c3aed"/>
+  <text x="810" y="313" class="sans" font-size="10.5" font-weight="700" fill="#5b21b6">Crash-During-Recovery Safety:</text>
+  <text x="810" y="329" class="sans" font-size="10" fill="#6d28d9">CLRs are never undone; restart skips via undo_next.</text>
+
+  <!-- BOTTOM-LEFT: FUZZY CHECKPOINT -->
+  <rect x="24" y="386" width="564" height="184" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="24" y="386" width="564" height="32" rx="10" fill="#f1f5f9"/>
+  <rect x="24" y="408" width="564" height="10" fill="#f1f5f9"/>
+  <text x="40" y="407" class="sans" font-size="12.5" font-weight="700" fill="#0f172a">2. Fuzzy Checkpointing (Zero Query Pause)</text>
+  <text x="572" y="407" class="mono" font-size="10.5" fill="#64748b" text-anchor="end">checkpointer pacing</text>
+
+  <rect x="40" y="434" width="118" height="58" rx="6" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="99" y="458" class="mono" font-size="10" font-weight="700" fill="#1e3a8a" text-anchor="middle">CKPT_START</text>
+  <text x="99" y="476" class="sans" font-size="10" fill="#475569" text-anchor="middle">Snapshot DPT</text>
+
+  <line x1="158" y1="463" x2="180" y2="463" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+
+  <rect x="186" y="434" width="218" height="58" rx="6" fill="#ecfdf5" stroke="#059669"/>
+  <text x="295" y="456" class="sans" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Incremental Dirty Page Flush</text>
+  <text x="295" y="474" class="sans" font-size="10" fill="#047857" text-anchor="middle">Active OLTP queries run unpaused!</text>
+
+  <line x1="404" y1="463" x2="426" y2="463" stroke="#059669" stroke-width="1.8" marker-end="url(#arr-emerald)"/>
+
+  <rect x="432" y="434" width="138" height="58" rx="6" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="501" y="458" class="mono" font-size="10" font-weight="700" fill="#1e3a8a" text-anchor="middle">CKPT_END</text>
+  <text x="501" y="476" class="sans" font-size="10" fill="#475569" text-anchor="middle">Advance WAL tail</text>
+
+  <text x="40" y="518" class="sans" font-size="10.5" fill="#334155">Avoids 30s+ I/O cliffs of sharp checkpoints by spreading dirty page writes across</text>
+  <text x="40" y="536" class="mono" font-size="10" fill="#1e40af">checkpoint_completion_target while bounding WAL replay length.</text>
+
+  <!-- BOTTOM-RIGHT: GROUP COMMIT -->
+  <rect x="608" y="386" width="568" height="184" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="608" y="386" width="568" height="32" rx="10" fill="#f1f5f9"/>
+  <rect x="608" y="408" width="568" height="10" fill="#f1f5f9"/>
+  <text x="624" y="407" class="sans" font-size="12.5" font-weight="700" fill="#0f172a">3. Group Commit Pipeline (Amortizing fsync() Stalls)</text>
+  <text x="1160" y="407" class="mono" font-size="10.5" fill="#64748b" text-anchor="end">N commits → 1 fsync</text>
+
+  <rect x="626" y="432" width="110" height="24" rx="4" fill="#eff6ff" stroke="#3b82f6"/>
+  <text x="681" y="448" class="mono" font-size="10" font-weight="700" fill="#1e3a8a" text-anchor="middle">T1 (Leader)</text>
+  <rect x="626" y="460" width="110" height="24" rx="4" fill="#f8fafc" stroke="#94a3b8"/>
+  <text x="681" y="476" class="mono" font-size="10" fill="#334155" text-anchor="middle">T2 (Follower)</text>
+  <rect x="626" y="488" width="110" height="24" rx="4" fill="#f8fafc" stroke="#94a3b8"/>
+  <text x="681" y="504" class="mono" font-size="10" fill="#334155" text-anchor="middle">T3, T4 (Wait)</text>
+
+  <g class="grp">
+    <line x1="736" y1="472" x2="776" y2="472" stroke="#d97706" stroke-width="2" marker-end="url(#arr-amber)"/>
+    <rect x="782" y="436" width="174" height="72" rx="7" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+    <text x="869" y="458" class="sans" font-size="11" font-weight="700" fill="#92400e" text-anchor="middle">Batched WAL Write</text>
+    <text x="869" y="476" class="mono" font-size="10" fill="#78350f" text-anchor="middle">LSN 100..104</text>
+    <text x="869" y="494" class="mono" font-size="10" font-weight="700" fill="#b45309" text-anchor="middle">1 × fsync() barrier</text>
+
+    <line x1="956" y1="472" x2="994" y2="472" stroke="#059669" stroke-width="2" marker-end="url(#arr-emerald)"/>
+    <rect x="1000" y="436" width="158" height="72" rx="7" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+    <text x="1079" y="458" class="sans" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">Wake All Threads</text>
+    <text x="1079" y="476" class="mono" font-size="10" font-weight="700" fill="#059669" text-anchor="middle">T1..T4 COMMIT OK</text>
+    <text x="1079" y="494" class="sans" font-size="10" fill="#047857" text-anchor="middle">500× fewer disk stalls</text>
+  </g>
+  <text x="626" y="542" class="sans" font-size="10.5" fill="#475569">Leader writes &amp; flushes queued follower log buffers in one sequential disk sync.</text>
+
+  <!-- BOTTOM 4 STEP CARDS -->
+  <rect x="24" y="586" width="276" height="130" rx="8" fill="#eff6ff" class="s1"/>
+  <rect x="38" y="598" width="56" height="22" rx="4" fill="#2563eb"/>
+  <text x="66" y="613" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">Step 1</text>
+  <text x="104" y="613" class="sans" font-size="12" font-weight="700" fill="#1e3a8a">Analysis Pass</text>
+  <text x="38" y="638" class="sans" font-size="10.5" fill="#334155">Scans forward from checkpoint;</text>
+  <text x="38" y="654" class="sans" font-size="10.5" fill="#334155">rebuilds AttTable (T2 loser) and</text>
+  <text x="38" y="670" class="sans" font-size="10.5" fill="#334155">DPT to find min(rec_lsn) = 20.</text>
+
+  <rect x="316" y="586" width="276" height="130" rx="8" fill="#fffbeb" class="s2"/>
+  <rect x="330" y="598" width="56" height="22" rx="4" fill="#d97706"/>
+  <text x="358" y="613" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">Step 2</text>
+  <text x="396" y="613" class="sans" font-size="12" font-weight="700" fill="#92400e">Redo History</text>
+  <text x="330" y="638" class="sans" font-size="10.5" fill="#334155">Replays all logged updates forward</text>
+  <text x="330" y="654" class="sans" font-size="10.5" fill="#334155">when page_lsn &lt; rec.lsn, restoring</text>
+  <text x="330" y="670" class="sans" font-size="10.5" fill="#334155">exact pre-crash physical state.</text>
+
+  <rect x="608" y="586" width="276" height="130" rx="8" fill="#fff1f2" class="s3"/>
+  <rect x="622" y="598" width="56" height="22" rx="4" fill="#e11d48"/>
+  <text x="650" y="613" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">Step 3</text>
+  <text x="688" y="613" class="sans" font-size="12" font-weight="700" fill="#9f1239">Undo &amp; CLRs</text>
+  <text x="622" y="638" class="sans" font-size="10.5" fill="#334155">Walks T2 prev_lsn backward and</text>
+  <text x="622" y="654" class="sans" font-size="10.5" fill="#334155">emits CLRs with undo_next_lsn so</text>
+  <text x="622" y="670" class="sans" font-size="10.5" fill="#334155">nested crashes never re-undo.</text>
+
+  <rect x="900" y="586" width="276" height="130" rx="8" fill="#ecfdf5" class="s4"/>
+  <rect x="914" y="598" width="56" height="22" rx="4" fill="#059669"/>
+  <text x="942" y="613" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">Step 4</text>
+  <text x="980" y="613" class="sans" font-size="12" font-weight="700" fill="#065f46">Fuzzy + Group Sync</text>
+  <text x="914" y="638" class="sans" font-size="10.5" fill="#334155">Background checkpointer bounds</text>
+  <text x="914" y="654" class="sans" font-size="10.5" fill="#334155">recovery time while Group Commit</text>
+  <text x="914" y="670" class="sans" font-size="10.5" fill="#334155">batches concurrent fsync barriers.</text>
+</svg>

@@ -112,6 +112,10 @@ graph TD
 - **2Q (Two Queue)**: Divides memory into two distinct queues: an $A1_{\text{in}}$ FIFO queue for newly loaded pages, and an $Am$ LRU queue for recurrent pages. When a page is first read, it enters $A1_{\text{in}}$. Only if it is referenced _again_ while in the queue is it promoted to the main LRU queue $Am$. Single-pass sequential scans sweep through $A1_{\text{in}}$ without evicting hot pages in $Am$.
 - **LIRS (Low Inter-Reference Recency Set)**: Categorizes pages based on their _inter-reference distance_ (the time elapsed between two consecutive references). Pages with low inter-reference distance are classified as High Priority (LIR) and protected from eviction, while single-pass pages remain Low Priority (HIR) and are rapidly discarded.
 
+![Buffer Pool Replacement Policies: CLOCK, 2Q, and LIRS](../assets/04-clock-2q-lirs-buffer-replacement-animated.svg)
+
+_Step-by-step mechanics:_ (1) The CLOCK hand sweeps frames in a ring, clearing `usage_bit` from `1` to `0` on a first pass without global LRU mutexes. (2) Frames reaching `usage_bit = 0` with `pin_count = 0` are evicted, while 2Q routes one-hit sequential scan pages through $A1_{\text{in}}$ and ghost queue $A1_{\text{out}}$. (3) Re-referenced pages in $A1_{\text{out}}$ promote to $Am$, and LIRS promotes HIR pages whose inter-reference recency beats the coldest LIR resident. (4) Hot index and catalog pages remain pinned in RAM despite concurrent full-table scans.
+
 ---
 
 ## 4. The `mmap` Anti-Pattern for Database Engines

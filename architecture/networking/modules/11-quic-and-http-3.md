@@ -188,6 +188,10 @@ HTTP/2's header compression algorithm (HPACK) maintained a strictly synchronized
   - Dynamic table updates are transmitted over a dedicated, independent unidirectional **QPACK Encoder Stream**.
   - Senders can choose whether to reference the dynamic table or emit literal headers to trade compression ratio for zero stream dependencies.
 
+![HTTP/3 QPACK Unordered Stream Compression over QUIC Animation](../assets/11-qpack-unordered-quic-animated.svg)
+
+_Step-by-step mechanics:_ (1) Dynamic table insertions travel out-of-band on the unidirectional QPACK Encoder Stream (`Insert Count` = 1). (2) Request Stream 4 carries `Required Insert Count (RIC) = 1` and waits cleanly if its packet or table dependency is delayed, while Request Stream 8 uses the 99-entry Static Table (`RIC = 0`) and delivers immediately with zero Head-of-Line blocking. (3) Once the Decoder applies the Encoder Stream insert, it emits a `Section Ack` on the QPACK Decoder Stream, unblocking Stream 4 and advancing `Known Received Count`.
+
 ---
 
 ## 7. Protocol Discovery: Alt-Svc vs. DNS HTTPS (RFC 9460)

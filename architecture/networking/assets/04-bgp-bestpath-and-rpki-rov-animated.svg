@@ -1,0 +1,196 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 640" width="1120" height="640" role="img" aria-labelledby="title desc">
+  <title id="title">BGP-4 Best-Path Decision Waterfall and RPKI Route Origin Validation</title>
+  <desc id="desc">Animated diagram of RPKI Route Origin Validation (RFC 6811) and the BGP-4 Best-Path Selection Waterfall (RFC 4271). Left panel validates incoming BGP UPDATE announcements against a signed ROA (198.51.100.0/22, AS 64500, maxLength /22): matching announcements are Valid, forged sub-prefix 198.51.100.0/24 from AS 64555 is marked Invalid and dropped at the border, and uncovered prefixes are NotFound. Right panel steps through the 7-stage BGP Best-Path waterfall: LOCAL_PREF, AS_PATH Length, Origin Code, MED, eBGP vs iBGP, IGP Metric to NEXT_HOP, and Router ID.</desc>
+
+  <style>
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    /* 14s cycle:
+       0-25%: RPKI Invalid hijack dropped at border; Valid accepted
+       25-50%: Waterfall Step 1 (LOCAL_PREF): Peering LP=200 beats Transit LP=100 despite longer AS_PATH
+       50-75%: Waterfall Steps 2-6 tie-breakers evaluated down funnel
+       75-100%: Step 7 Router ID final tie-break -> Best Path installed in FIB
+    */
+
+    @keyframes rov-invalid {
+      0%, 4%   { opacity: 0.86; }
+      8%, 26%  { opacity: 1; stroke: #e11d48; stroke-width: 2.5; }
+      30%, 100%{ opacity: 0.86; stroke: #fda4af; stroke-width: 1.2; }
+    }
+    @keyframes rov-valid {
+      0%, 8%   { opacity: 0.86; }
+      14%, 96% { opacity: 1; stroke: #059669; stroke-width: 2; }
+      100%     { opacity: 0.86; }
+    }
+    @keyframes wf-cursor {
+      0%, 24%  { transform: translateY(0px); opacity: 0; }
+      28%, 46% { transform: translateY(0px); opacity: 1; }
+      52%      { transform: translateY(50px); opacity: 1; }
+      58%      { transform: translateY(100px); opacity: 1; }
+      64%      { transform: translateY(150px); opacity: 1; }
+      70%      { transform: translateY(200px); opacity: 1; }
+      76%      { transform: translateY(250px); opacity: 1; }
+      82%, 96% { transform: translateY(300px); opacity: 1; }
+      100%     { transform: translateY(0px); opacity: 0; }
+    }
+    @keyframes fib-win {
+      0%, 80%  { opacity: 0.86; }
+      85%, 97% { opacity: 1; }
+      100%     { opacity: 0.86; }
+    }
+
+    .inv { animation: rov-invalid 14s linear infinite; }
+    .val { animation: rov-valid 14s linear infinite; }
+    .wfc { animation: wf-cursor 14s ease-in-out infinite; }
+    .fib { animation: fib-win 14s linear infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .inv, .val, .wfc, .fib { animation: none !important; }
+      .inv, .val, .fib { opacity: 1 !important; }
+      .wfc { transform: translateY(0px) !important; opacity: 1 !important; }
+    }
+  </style>
+
+  <defs>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <marker id="arr-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1120" height="640" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1120" height="60" rx="12" fill="#0f172a"/>
+  <rect x="0" y="44" width="1120" height="16" fill="#0f172a"/>
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Module 04 — RPKI Route Origin Validation &amp; BGP-4 Best-Path Waterfall</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">Cryptographic ROA Filtering (RFC 6811 / RTR RFC 8210) Before Deterministic RFC 4271 Path Selection</text>
+
+  <!-- LEFT PANEL: RPKI ROV -->
+  <rect x="24" y="74" width="490" height="494" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="42" y="98" class="sans" font-size="14" font-weight="700" fill="#0f172a">1. RPKI Route Origin Validation (Border Gate)</text>
+
+  <!-- ROA Trust Chain -->
+  <rect x="42" y="114" width="454" height="84" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="56" y="135" class="sans" font-size="12" font-weight="700" fill="#5b21b6">Signed ROA (RIR Root -&gt; Validator -&gt; RTR RFC 8210)</text>
+  <text x="56" y="156" class="mono" font-size="10.5" fill="#4c1d95">Prefix: 198.51.100.0/22   maxLength: /22</text>
+  <text x="56" y="174" class="mono" font-size="10.5" font-weight="700" fill="#5b21b6">Authorized Origin ASN: AS 64500</text>
+  <text x="56" y="190" class="sans" font-size="10" fill="#6d28d9">Pushed as Validated ROA Payload (VRP) table to border BGP router.</text>
+
+  <line x1="269" y1="198" x2="269" y2="224" stroke="#7c3aed" stroke-width="2" marker-end="url(#arr-blue)"/>
+
+  <!-- ROV Evaluator Header -->
+  <rect x="42" y="226" width="454" height="32" rx="6" fill="#0f172a"/>
+  <text x="269" y="246" class="sans" font-size="12" font-weight="700" fill="#f8fafc" text-anchor="middle">Border Router ROV Check on Incoming BGP UPDATEs</text>
+
+  <!-- Case 1: Valid -->
+  <rect x="42" y="270" width="454" height="86" rx="8" fill="#ecfdf5" class="val"/>
+  <rect x="56" y="282" width="90" height="22" rx="4" fill="#059669"/>
+  <text x="101" y="297" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">VALID</text>
+  <text x="158" y="297" class="mono" font-size="11" font-weight="700" fill="#065f46">198.51.100.0/22 · Origin AS 64500</text>
+  <text x="56" y="322" class="mono" font-size="10" fill="#047857">ASN matches ROA &amp;&amp; len (/22) &lt;= maxLength (/22)</text>
+  <text x="56" y="340" class="sans" font-size="10.5" font-weight="600" fill="#065f46">Action: Accept &amp; forward to BGP Best-Path waterfall -&gt;</text>
+
+  <!-- Case 2: Invalid -->
+  <rect x="42" y="368" width="454" height="94" rx="8" fill="#fff1f2" class="inv"/>
+  <rect x="56" y="380" width="90" height="22" rx="4" fill="#e11d48"/>
+  <text x="101" y="395" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">INVALID</text>
+  <text x="158" y="395" class="mono" font-size="11" font-weight="700" fill="#9f1239">198.51.100.0/24 · Origin AS 64555</text>
+  <text x="56" y="420" class="mono" font-size="10" fill="#be123c">Sub-prefix hijack! AS 64555 != AS 64500 &amp;&amp; /24 &gt; /22</text>
+  <text x="56" y="438" class="sans" font-size="10.5" font-weight="700" fill="#9f1239">Action: DROP AT BORDER (never enters RIB / defeats LPM hijack)</text>
+  <text x="56" y="453" class="mono" font-size="10" fill="#be123c">Prevents /24 from overriding legitimate /22 via LPM.</text>
+
+  <!-- Case 3: NotFound -->
+  <rect x="42" y="474" width="454" height="78" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="1.2"/>
+  <rect x="56" y="486" width="90" height="22" rx="4" fill="#d97706"/>
+  <text x="101" y="501" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">NOT FOUND</text>
+  <text x="158" y="501" class="mono" font-size="11" font-weight="700" fill="#92400e">203.0.113.0/24 · Origin AS 64501</text>
+  <text x="56" y="524" class="mono" font-size="10" fill="#78350f">No covering ROA exists in VRP database</text>
+  <text x="56" y="540" class="sans" font-size="10.5" fill="#92400e">Action: Accept with standard priority (incremental adoption).</text>
+
+  <!-- RIGHT PANEL: BGP BEST-PATH WATERFALL -->
+  <rect x="530" y="74" width="566" height="494" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="548" y="98" class="sans" font-size="14" font-weight="700" fill="#0f172a">2. BGP-4 Best-Path Decision Waterfall (RFC 4271)</text>
+  <text x="548" y="114" class="sans" font-size="10.5" fill="#475569">Evaluated top-to-bottom on VALID / NOT_FOUND candidates for same prefix:</text>
+
+  <!-- Animated Highlight Frame moving down 7 steps -->
+  <g class="wfc">
+    <rect x="544" y="124" width="538" height="44" rx="7" fill="none" stroke="#2563eb" stroke-width="3"/>
+  </g>
+
+  <!-- Step 1: LOCAL_PREF -->
+  <rect x="548" y="128" width="530" height="36" rx="6" fill="#eff6ff" stroke="#93c5fd"/>
+  <rect x="556" y="135" width="24" height="22" rx="4" fill="#2563eb"/>
+  <text x="568" y="150" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">1</text>
+  <text x="590" y="150" class="mono" font-size="11" font-weight="700" fill="#1e3a8a">LOCAL_PREF (Highest)</text>
+  <text x="764" y="150" class="sans" font-size="10.5" fill="#1e40af">AS-wide outbound policy (Peering 200 &gt; Transit 100)</text>
+
+  <!-- Step 2: AS_PATH -->
+  <rect x="548" y="178" width="530" height="36" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <rect x="556" y="185" width="24" height="22" rx="4" fill="#334155"/>
+  <text x="568" y="200" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">2</text>
+  <text x="590" y="200" class="mono" font-size="11" font-weight="700" fill="#0f172a">AS_PATH Length (Shortest)</text>
+  <text x="774" y="200" class="sans" font-size="10.5" fill="#475569">Fewer AS hops; prepending steers inbound away</text>
+
+  <!-- Step 3: Origin -->
+  <rect x="548" y="228" width="530" height="36" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <rect x="556" y="235" width="24" height="22" rx="4" fill="#334155"/>
+  <text x="568" y="250" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">3</text>
+  <text x="590" y="250" class="mono" font-size="11" font-weight="700" fill="#0f172a">Origin Code (Lowest)</text>
+  <text x="774" y="250" class="mono" font-size="10.5" fill="#475569">IGP (0) &lt; EGP (1) &lt; Incomplete (?)</text>
+
+  <!-- Step 4: MED -->
+  <rect x="548" y="278" width="530" height="36" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <rect x="556" y="285" width="24" height="22" rx="4" fill="#334155"/>
+  <text x="568" y="300" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">4</text>
+  <text x="590" y="300" class="mono" font-size="11" font-weight="700" fill="#0f172a">MED (Lowest)</text>
+  <text x="774" y="300" class="sans" font-size="10.5" fill="#475569">Multi-Exit Discriminator (same neighbor AS only)</text>
+
+  <!-- Step 5: eBGP vs iBGP -->
+  <rect x="548" y="328" width="530" height="36" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <rect x="556" y="335" width="24" height="22" rx="4" fill="#334155"/>
+  <text x="568" y="350" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">5</text>
+  <text x="590" y="350" class="mono" font-size="11" font-weight="700" fill="#0f172a">eBGP over iBGP</text>
+  <text x="774" y="350" class="sans" font-size="10.5" fill="#475569">Prefer direct external peer over internal relay</text>
+
+  <!-- Step 6: IGP Metric -->
+  <rect x="548" y="378" width="530" height="36" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <rect x="556" y="385" width="24" height="22" rx="4" fill="#334155"/>
+  <text x="568" y="400" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">6</text>
+  <text x="590" y="400" class="mono" font-size="11" font-weight="700" fill="#0f172a">IGP Metric (Lowest)</text>
+  <text x="774" y="400" class="sans" font-size="10.5" fill="#475569">Hot-potato routing: closest NEXT_HOP exit</text>
+
+  <!-- Step 7: Router ID -->
+  <rect x="548" y="428" width="530" height="36" rx="6" fill="#f5f3ff" stroke="#c4b5fd"/>
+  <rect x="556" y="435" width="24" height="22" rx="4" fill="#7c3aed"/>
+  <text x="568" y="450" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">7</text>
+  <text x="590" y="450" class="mono" font-size="11" font-weight="700" fill="#5b21b6">Router ID (Lowest)</text>
+  <text x="774" y="450" class="sans" font-size="10.5" fill="#4c1d95">Final deterministic 32-bit tie-breaker</text>
+
+  <!-- Down Connectors -->
+  <line x1="568" y1="164" x2="568" y2="178" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="568" y1="214" x2="568" y2="228" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="568" y1="264" x2="568" y2="278" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="568" y1="314" x2="568" y2="328" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="568" y1="364" x2="568" y2="378" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="568" y1="414" x2="568" y2="428" stroke="#94a3b8" stroke-width="1.5"/>
+
+  <!-- Best Path Result -->
+  <g class="fib">
+    <rect x="548" y="478" width="530" height="74" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="564" y="500" class="sans" font-size="12.5" font-weight="700" fill="#065f46">Selected Best Path Installed in RIB &amp; Forwarding Table (FIB)</text>
+    <text x="564" y="520" class="mono" font-size="10" fill="#047857">Example: Peering (LP=200, AS_PATH=3) beats Transit (LP=100, AS_PATH=2)</text>
+    <text x="564" y="538" class="sans" font-size="10" fill="#065f46">Weight &amp; Locally Originated precede Step 1; own-ASN loop check drops loops first.</text>
+  </g>
+
+  <!-- FOOTER -->
+  <rect x="24" y="582" width="1072" height="44" rx="8" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="42" y="609" class="sans" font-size="11.5" font-weight="600" fill="#1e3a8a">Takeaway: RPKI ROV drops forged sub-prefixes before Best-Path evaluation, where LOCAL_PREF enforces economic policy ahead of AS_PATH distance.</text>
+</svg>

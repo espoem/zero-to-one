@@ -241,6 +241,10 @@ flowchart TD
 4. The Plaintext DEK is immediately purged from RAM.
 5. The Encrypted DEK is stored alongside the ciphertext. To decrypt later, the application sends only the Encrypted DEK to the KMS for unwrapping.
 
+![Cryptographic Primitives Animation: Length-Extension vs HMAC, timingSafeEqual, AES-GCM GHASH, X25519/Ed25519, and HKDF](../assets/02-hmac-aead-hkdf-constant-time-animated.svg)
+
+_Step-by-step mechanics:_ (1) Nested HMAC hides internal Merkle-Damgård state while `timingSafeEqual` scans all bytes via bitwise XOR without early exit. (2) AES-GCM binds ciphertext and associated data via $\text{GF}(2^{128})$ GHASH, whereas nonce reuse leaks the keystream and authentication key $H$. (3) X25519 establishes a shared secret and Ed25519 avoids ECDSA nonce leaks before HKDF Extract-then-Expand derives domain-separated keys.
+
 ---
 
 ## 8. Then vs Now: Evolution of Cryptographic Engineering

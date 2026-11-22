@@ -292,6 +292,10 @@ Content-Type: application/json
 
 At Layer 3/4, volumetric denial-of-service floods (such as UDP reflection and SYN floods) saturate kernel memory before socket processing can occur. Advanced architectures deploy **eBPF with XDP (eXpress Data Path)** directly at the network interface card (NIC) driver level. By executing packet inspection in the device driver ring buffer, malicious traffic is discarded via `XDP_DROP` in sub-microsecond time, processing over 20 million packets per second per CPU core without allocating Linux kernel `sk_buff` data structures.
 
+![TCP AIMD, CUBIC, BBR State Machine, and FQ-CoDel / tc-tbf Animation](../assets/07-tcp-congestion-aimd-cubic-bbr-fqcodel-animated.svg)
+
+_Step-by-step mechanics:_ (1) Classical AIMD doubles `cwnd` in Slow Start, climbs `+1 MSS/RTT` in Congestion Avoidance, and cuts by `0.5×` on 3 duplicate ACKs (or resets to `1 MSS` on RTO). (2) CUBIC (RFC 9438) tracks elapsed time $t$ with a concave stability plateau before $t=K$ and convex probing after $t=K$. (3) BBR cycles through `STARTUP` (`2.89×`), `DRAIN`, steady `PROBE_BW` pacing at `BtlBw`, and periodic `PROBE_RTT` (`cwnd=4`) to sample `RTprop`. (4) FQ-CoDel isolates sparse flows and drops bulk packets exceeding `5 ms` sojourn time while `tc-tbf` shapes egress bursts.
+
 > [!WARNING]
 > **Production Pitfall: Carrier-Grade NAT (CGNAT) Rate-Limiting Collisions** Implementing rate limiting purely based on client source IP (`req.ip`) in internet-facing APIs frequently causes mass outages for legitimate mobile and broadband users. Under Carrier-Grade NAT (CGNAT / RFC 6598 `100.64.0.0/10`), thousands of independent mobile cellular subscribers share a single public IPv4 egress IP address. Rate-limiting by raw IP causes one abusive scraper on a cellular network to exhaust the shared token pool, resulting in widespread HTTP 429 errors for all innocent users on that mobile carrier. Robust rate limiters key on cryptographically authenticated tokens (e.g., API keys, OAuth client IDs, or session cookies) rather than transient Layer 3 IP addresses.
 

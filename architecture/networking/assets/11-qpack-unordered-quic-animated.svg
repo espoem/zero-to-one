@@ -1,0 +1,182 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 620" width="1120" height="620" role="img" aria-labelledby="title desc">
+  <title id="title">HTTP/3 QPACK Unordered Stream Compression over QUIC</title>
+  <desc id="desc">Animated step-by-step diagram of HTTP/3 QPACK header compression (RFC 9204) preventing Head-of-Line blocking across parallel QUIC streams. Shows three unidirectional control streams plus two bidirectional request streams: the QPACK Encoder Stream sends an Insert instruction updating the Dynamic Table (Insert Count = 1); Request Stream 4 experiences UDP packet loss and waits safely because its header block carries Required Insert Count (RIC) = 1; Request Stream 8 uses the 99-entry Static Table (RIC = 0) and is delivered immediately with zero blocking; finally, once the Encoder Stream arrives, the Decoder updates its table and sends a Section Acknowledgment on the QPACK Decoder Stream, unblocking Stream 4 and advancing Known Received Count.</desc>
+
+  <style>
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    /* 16s loop:
+       0-25%: Encoder Stream sends Insert (Idx 0 = "x-token: abc", IC=1)
+       25-50%: Request Stream 4 (RIC=1) packet DROPPED/delayed; Request Stream 8 (RIC=0 Static) passes IMMEDIATELY!
+       50-75%: Encoder Stream arrives at Decoder -> Dynamic Table IC=1 -> Stream 4 unblocked
+       75-100%: Decoder Stream sends Section Ack (Stream 4) -> Encoder advances Known Received Count
+    */
+    @keyframes q-enc {
+      0%, 4%   { transform: translateX(0px); opacity: 0; }
+      8%       { transform: translateX(0px); opacity: 1; }
+      50%      { transform: translateX(460px); opacity: 1; }
+      55%, 100%{ transform: translateX(460px); opacity: 0; }
+    }
+    @keyframes q-s8 {
+      0%, 24%  { transform: translateX(0px); opacity: 0; }
+      28%      { transform: translateX(0px); opacity: 1; }
+      46%      { transform: translateX(460px); opacity: 1; }
+      50%, 100%{ transform: translateX(460px); opacity: 0; }
+    }
+    @keyframes q-s4-wait {
+      0%, 26%  { opacity: 0.86; }
+      30%, 60% { opacity: 1; }
+      68%, 100%{ opacity: 0.86; }
+    }
+    @keyframes q-dec-ack {
+      0%, 68%  { transform: translateX(0px); opacity: 0; }
+      72%      { transform: translateX(0px); opacity: 1; }
+      92%      { transform: translateX(-460px); opacity: 1; }
+      96%, 100%{ transform: translateX(-460px); opacity: 0; }
+    }
+    @keyframes dec-tbl {
+      0%, 48%  { opacity: 0.86; }
+      54%, 96% { opacity: 1; }
+      100%     { opacity: 0.86; }
+    }
+
+    .qenc   { animation: q-enc 16s ease-in-out infinite; }
+    .qs8    { animation: q-s8 16s ease-in-out infinite; }
+    .qs4w   { animation: q-s4-wait 16s linear infinite; }
+    .qdec   { animation: q-dec-ack 16s ease-in-out infinite; }
+    .dtbl   { animation: dec-tbl 16s linear infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .qenc, .qs8, .qs4w, .qdec, .dtbl { animation: none !important; }
+      .qenc, .qs8, .qdec { opacity: 0 !important; }
+      .qs4w, .dtbl { opacity: 1 !important; }
+    }
+  </style>
+
+  <defs>
+    <marker id="arr-violet" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+    </marker>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1120" height="620" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1120" height="60" rx="12" fill="#0f172a"/>
+  <rect x="0" y="44" width="1120" height="16" fill="#0f172a"/>
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Module 11 — HTTP/3 QPACK Non-Blocking Compression over QUIC (RFC 9204)</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">99-Entry Static Table · Unidirectional Encoder/Decoder Streams · Required Insert Count (RIC) &amp; Section Ack Eliminate HOL Blocking</text>
+
+  <!-- LEFT: QPACK ENCODER -->
+  <rect x="24" y="76" width="268" height="360" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="24" y="76" width="268" height="34" rx="10" fill="#1e293b"/>
+  <rect x="24" y="96" width="268" height="14" fill="#1e293b"/>
+  <text x="158" y="98" class="sans" font-size="13" font-weight="700" fill="#f8fafc" text-anchor="middle">HTTP/3 QPACK Encoder</text>
+
+  <rect x="40" y="124" width="236" height="64" rx="7" fill="#f5f3ff" stroke="#7c3aed"/>
+  <text x="158" y="144" class="mono" font-size="10.5" font-weight="700" fill="#5b21b6" text-anchor="middle">Encoder Dynamic Table</text>
+  <text x="158" y="162" class="mono" font-size="10" fill="#4c1d95" text-anchor="middle">Idx 0: x-token: abc</text>
+  <text x="158" y="178" class="mono" font-size="10" font-weight="700" fill="#6d28d9" text-anchor="middle">Insert Count = 1</text>
+
+  <rect x="40" y="200" width="236" height="66" rx="7" fill="#ecfdf5" stroke="#059669"/>
+  <text x="158" y="220" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Static Table (99 Entries)</text>
+  <text x="158" y="238" class="mono" font-size="10" fill="#047857" text-anchor="middle">Idx 17: :method: GET</text>
+  <text x="158" y="254" class="mono" font-size="10" fill="#047857" text-anchor="middle">Requires RIC = 0 (Zero wait!)</text>
+
+  <rect x="40" y="278" width="236" height="72" rx="7" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="158" y="298" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">Known Received Count</text>
+  <text x="158" y="316" class="mono" font-size="10" fill="#1e40af" text-anchor="middle">Before Ack: 0 (Unacked entry)</text>
+  <text x="158" y="334" class="mono" font-size="10" font-weight="700" fill="#059669" text-anchor="middle">After Section Ack: 1 (Safe)</text>
+
+  <rect x="40" y="362" width="236" height="58" rx="7" fill="#fffbeb" stroke="#fcd34d"/>
+  <text x="158" y="382" class="sans" font-size="10.5" font-weight="700" fill="#92400e" text-anchor="middle">Stream Independence Choice</text>
+  <text x="158" y="400" class="sans" font-size="10" fill="#78350f" text-anchor="middle">Wait-sensitive streams use RIC=0</text>
+  <text x="158" y="413" class="sans" font-size="10" fill="#78350f" text-anchor="middle">to avoid blocking on Encoder Stream.</text>
+
+  <!-- CENTER: 4 PARALLEL QUIC STREAMS -->
+  <rect x="308" y="76" width="504" height="360" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="326" y="98" class="sans" font-size="14" font-weight="700" fill="#0f172a">Parallel QUIC Streams (Independent Delivery over UDP)</text>
+
+  <!-- Stream 1: QPACK Encoder Uni Stream -->
+  <text x="326" y="128" class="mono" font-size="10.5" font-weight="700" fill="#5b21b6">Unidirectional QPACK Encoder Stream (Type 0x02)</text>
+  <line x1="326" y1="146" x2="790" y2="146" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#arr-violet)"/>
+  <g class="qenc">
+    <rect x="326" y="133" width="166" height="24" rx="5" fill="#7c3aed"/>
+    <text x="409" y="149" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">INSERT Idx 0: x-token</text>
+  </g>
+
+  <!-- Stream 2: Request Stream 4 (RIC=1, Packet Loss / Wait) -->
+  <text x="326" y="196" class="mono" font-size="10.5" font-weight="700" fill="#92400e">QUIC Bidir Stream 4 (Header Block: RIC = 1, Ref Idx 0)</text>
+  <line x1="326" y1="214" x2="790" y2="214" stroke="#f59e0b" stroke-width="2.5" stroke-dasharray="6 4" marker-end="url(#arr-amber)"/>
+  <g class="qs4w">
+    <rect x="520" y="200" width="246" height="26" rx="5" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+    <text x="643" y="217" class="mono" font-size="10" font-weight="700" fill="#92400e" text-anchor="middle">Stream 4 waits ONLY until IC ≥ 1</text>
+  </g>
+
+  <!-- Stream 3: Request Stream 8 (RIC=0, Non-Blocking!) -->
+  <text x="326" y="268" class="mono" font-size="10.5" font-weight="700" fill="#065f46">QUIC Bidir Stream 8 (Static Table Idx 17, RIC = 0)</text>
+  <line x1="326" y1="286" x2="790" y2="286" stroke="#059669" stroke-width="2.5" marker-end="url(#arr-green)"/>
+  <g class="qs8">
+    <rect x="326" y="273" width="178" height="24" rx="5" fill="#059669"/>
+    <text x="415" y="289" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">GET /app (RIC=0: PASS!)</text>
+  </g>
+  <text x="326" y="314" class="sans" font-size="10" font-weight="700" fill="#047857">Zero Head-of-Line Blocking: Stream 8 delivers instantly even while Stream 4 waits!</text>
+
+  <!-- Stream 4: QPACK Decoder Uni Stream -->
+  <text x="326" y="358" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a">Unidirectional QPACK Decoder Stream (Type 0x03)</text>
+  <line x1="792" y1="376" x2="328" y2="376" stroke="#2563eb" stroke-width="2.5" marker-end="url(#arr-blue)"/>
+  <g class="qdec">
+    <rect x="616" y="363" width="176" height="24" rx="5" fill="#2563eb"/>
+    <text x="704" y="379" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">Section Ack (Stream 4)</text>
+  </g>
+  <text x="326" y="408" class="sans" font-size="10" fill="#1e40af">Section Acknowledgment &amp; Insert Count Increment sync decoder state back to encoder.</text>
+
+  <!-- RIGHT: QPACK DECODER -->
+  <rect x="828" y="76" width="268" height="360" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="828" y="76" width="268" height="34" rx="10" fill="#1e293b"/>
+  <rect x="828" y="96" width="268" height="14" fill="#1e293b"/>
+  <text x="962" y="98" class="sans" font-size="13" font-weight="700" fill="#f8fafc" text-anchor="middle">HTTP/3 QPACK Decoder</text>
+
+  <g class="dtbl">
+    <rect x="844" y="124" width="236" height="72" rx="7" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+    <text x="962" y="144" class="mono" font-size="10.5" font-weight="700" fill="#5b21b6" text-anchor="middle">Decoder Dynamic Table</text>
+    <text x="962" y="162" class="mono" font-size="10" fill="#4c1d95" text-anchor="middle">Idx 0: x-token: abc (Synced)</text>
+    <text x="962" y="180" class="mono" font-size="10" font-weight="700" fill="#059669" text-anchor="middle">Insert Count = 1 -&gt; Unblocks S4!</text>
+  </g>
+
+  <rect x="844" y="210" width="236" height="66" rx="7" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="962" y="232" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Stream 8 App Delivery</text>
+  <text x="962" y="250" class="sans" font-size="10" fill="#047857" text-anchor="middle">RIC = 0 &lt;= IC -&gt; Immediate!</text>
+  <text x="962" y="264" class="mono" font-size="10" fill="#065f46" text-anchor="middle">Never waits on Stream 4</text>
+
+  <rect x="844" y="288" width="236" height="66" rx="7" fill="#fffbeb" stroke="#d97706"/>
+  <text x="962" y="310" class="mono" font-size="10.5" font-weight="700" fill="#92400e" text-anchor="middle">Stream 4 Blocked Queue</text>
+  <text x="962" y="328" class="mono" font-size="10" fill="#78350f" text-anchor="middle">Wait condition: RIC (1) &gt; IC (0)</text>
+  <text x="962" y="344" class="mono" font-size="10" font-weight="700" fill="#059669" text-anchor="middle">Resumes when IC reaches 1</text>
+
+  <rect x="844" y="366" width="236" height="54" rx="7" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="962" y="386" class="mono" font-size="10" font-weight="700" fill="#1e3a8a" text-anchor="middle">Emit Section Ack -&gt;</text>
+  <text x="962" y="404" class="sans" font-size="10" fill="#1e40af" text-anchor="middle">Permits safe table eviction</text>
+
+  <!-- BOTTOM MECHANICS STRIP -->
+  <rect x="24" y="450" width="1072" height="98" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="42" y="474" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">Why HPACK Fails on QUIC vs. How QPACK Solves Inter-Stream Blocking</text>
+  <text x="42" y="496" class="sans" font-size="11" fill="#334155">• HPACK (HTTP/2) updates its dynamic table inline on the single TCP byte stream; dropping Stream 1 freezes Stream 5.</text>
+  <text x="42" y="516" class="sans" font-size="11" fill="#334155">• QPACK (HTTP/3) isolates dynamic updates on a unidirectional Encoder Stream and tags header blocks with Required Insert Count (RIC).</text>
+  <text x="42" y="536" class="sans" font-size="11" fill="#065f46">• Streams using Static Table / literals (RIC = 0) decode immediately out of order; Decoder Stream Section Acks confirm safe table references.</text>
+
+  <!-- FOOTER -->
+  <rect x="24" y="562" width="1072" height="44" rx="8" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <text x="42" y="589" class="sans" font-size="11.5" font-weight="600" fill="#065f46">Takeaway: QPACK preserves high header compression over unordered UDP/QUIC streams without re-introducing transport Head-of-Line blocking.</text>
+</svg>

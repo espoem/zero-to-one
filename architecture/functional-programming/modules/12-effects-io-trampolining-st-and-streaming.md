@@ -299,6 +299,10 @@ def quicksort(xs: List[Int]): List[Int] =
     )
 ```
 
+![TailRec Heap-Reified Trampoline and Rank-2 ST Scoped Quicksort Animation](../assets/12-trampoline-tailrec-and-starray-quicksort-animated.svg)
+
+_Step-by-step mechanics:_ (1) `TailRec` moves control flow to heap nodes (`Return`, `Suspend`, `FlatMap`) and rotates left-nested `FlatMap(FlatMap(y, g), f)` rightwards inside a single `@tailrec` loop for $O(1)$ stack space. (2) `ST.runST` uses rank-2 quantification $\forall A.\,(\forall S.\,\text{ST}[S, A]) \to A$ so `STArray` executes in-place Quicksort safely while any attempt to leak `STRef`/`STArray` fails at compile time.
+
 ---
 
 ## 5. Stream Processing and Incremental I/O (`Process`)

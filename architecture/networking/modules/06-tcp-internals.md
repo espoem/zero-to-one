@@ -321,6 +321,10 @@ The standard 3-way handshake introduces a 1-RTT latency tax before application d
 2. In subsequent connections, the client includes the TFO Cookie AND encrypted application payload (e.g., HTTP GET) **directly inside the initial SYN packet**.
 3. The server validates the cookie and passes the payload data to the application layer immediately, responding with `SYN-ACK` + data, achieving **0-RTT data transfer**.
 
+![TCP Sliding Window, RACK-TLP Loss Detection, Nagle Deadlock, and SYN Cookie Animation](../assets/06-tcp-sliding-window-rack-nagle-syncookie-animated.svg)
+
+_Step-by-step mechanics:_ (1) The scaled sliding window tracks `SND.UNA`, `SND.NXT`, and `RCV.WND << WScale` while PAWS drops wrapped segments with stale `TSval`. (2) RACK-TLP (RFC 8985) detects packet loss by transmit timestamps (`P2.xmit + RTT/4 < P3.xmit`) and fires Tail Loss Probes after `2×RTT` without needing 3 duplicate ACKs. (3) Two small writes collide with Delayed ACKs to stall for `40 ms` unless `TCP_NODELAY` disables Nagle buffering. (4) Under SYN floods, SYN Cookies encode `HMAC(4-tuple, t, secret) + MSS` in the 32-bit `ISN` with zero SYN-queue state.
+
 ---
 
 ## 10. Then vs. Now: TCP Architecture Evolution

@@ -1,0 +1,336 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" width="1200" height="760" role="img" aria-labelledby="title desc">
+  <title id="title">Indexing Theory and Vector Search: Skip Scan, BM25, R-Tree/BKD, IVF vs HNSW, and Product Quantization</title>
+  <desc id="desc">Animated five-panel technical diagram covering Composite B-Tree Skip Scan across low-cardinality prefixes, Okapi BM25 term-frequency saturation curve, R-Tree Minimum Bounding Rectangles versus BKD-Tree partitions, IVF Voronoi nprobe cell scanning versus HNSW multi-layer greedy hop routing, and Product Quantization (PQ/SQ8) subspace codebooks with Asymmetric Distance Computation.</desc>
+
+  <defs>
+    <style>
+      .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+      /* 12s cycle */
+      @keyframes skip-jump {
+        0%, 10% { transform: translateX(0px); }
+        25%, 45% { transform: translateX(104px); }
+        60%, 85% { transform: translateX(208px); }
+        95%, 100% { transform: translateX(0px); }
+      }
+      @keyframes bm25-dot {
+        0% { transform: translate(0px, 0px); }
+        30% { transform: translate(65px, -46px); }
+        65% { transform: translate(150px, -66px); }
+        90%, 100% { transform: translate(220px, -72px); }
+      }
+      @keyframes hnsw-pulse {
+        0%, 18% { transform: translate(0px, 0px); opacity: 1; }
+        32%, 45% { transform: translate(102px, 0px); opacity: 1; }
+        56%, 68% { transform: translate(102px, 54px); opacity: 1; }
+        78%, 86% { transform: translate(186px, 54px); opacity: 1; }
+        94%, 100% { transform: translate(186px, 108px); opacity: 1; }
+      }
+      @keyframes pq-adc {
+        0%, 62% { opacity: 0.86; }
+        72%, 100% { opacity: 1; }
+      }
+      @keyframes ivf-probe {
+        0%, 22% { fill: #dbeafe; stroke: #2563eb; }
+        32%, 75% { fill: #d1fae5; stroke: #059669; }
+        85%, 100% { fill: #dbeafe; stroke: #2563eb; }
+      }
+
+      @keyframes st-1 { 0%, 24% { opacity: 1; stroke: #2563eb; stroke-width: 2.5; } 25%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; } }
+      @keyframes st-2 { 0%, 24% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; } 25%, 49% { opacity: 1; stroke: #d97706; stroke-width: 2.5; } 50%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; } }
+      @keyframes st-3 { 0%, 49% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; } 50%, 74% { opacity: 1; stroke: #7c3aed; stroke-width: 2.5; } 75%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; } }
+      @keyframes st-4 { 0%, 74% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; } 75%, 100% { opacity: 1; stroke: #059669; stroke-width: 2.5; } }
+
+      .skp { animation: skip-jump 12s ease-in-out infinite; }
+      .bmdot { animation: bm25-dot 12s ease-out infinite; }
+      .hpulse { animation: hnsw-pulse 12s ease-in-out infinite; }
+      .pqbox { animation: pq-adc 12s ease-out infinite; }
+      .ivfp { animation: ivf-probe 12s ease-in-out infinite; }
+
+      .s1 { animation: st-1 12s linear infinite; }
+      .s2 { animation: st-2 12s linear infinite; }
+      .s3 { animation: st-3 12s linear infinite; }
+      .s4 { animation: st-4 12s linear infinite; }
+
+      @media (prefers-reduced-motion: reduce) {
+        .skp, .bmdot, .hpulse, .pqbox, .ivfp, .s1, .s2, .s3, .s4 {
+          animation: none !important;
+        }
+        .skp { transform: translateX(104px) !important; }
+        .bmdot { transform: translate(150px, -66px) !important; }
+        .hpulse { transform: translate(186px, 108px) !important; opacity: 1 !important; }
+        .pqbox, .s1, .s2, .s3, .s4 { opacity: 1 !important; }
+      }
+    </style>
+
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-violet" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed"/>
+    </marker>
+    <marker id="arr-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1200" height="760" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1200" height="62" rx="12" fill="#0f172a"/>
+  <rect x="0" y="46" width="1200" height="16" fill="#0f172a"/>
+  <text x="24" y="28" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Indexing Theory &amp; Vector Search: Skip Scan, BM25, R-Tree/BKD, IVF/HNSW &amp; PQ</text>
+  <text x="24" y="48" class="sans" font-size="12" fill="#94a3b8">From 1D composite prefix skipping and lexical term saturation to spatial bounding trees and quantized ANN graphs</text>
+
+  <!-- CARD 1 (TOP-LEFT): COMPOSITE B-TREE SKIP SCAN -->
+  <rect x="24" y="78" width="372" height="242" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="24" y="78" width="372" height="32" rx="10" fill="#f1f5f9"/>
+  <rect x="24" y="100" width="372" height="10" fill="#f1f5f9"/>
+  <text x="38" y="99" class="sans" font-size="12" font-weight="700" fill="#0f172a">1. Composite B-Tree Skip Scan</text>
+
+  <text x="38" y="128" class="mono" font-size="10" fill="#334155">idx(tenant_id, created_at)</text>
+  <text x="38" y="144" class="mono" font-size="10" font-weight="700" fill="#2563eb">WHERE created_at = '10-02'</text>
+
+  <!-- 3 Tenant Subtrees -->
+  <rect x="38" y="158" width="96" height="114" rx="6" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.2"/>
+  <text x="86" y="176" class="mono" font-size="10" font-weight="700" fill="#1e3a8a" text-anchor="middle">tenant=1</text>
+  <text x="86" y="198" class="mono" font-size="10" fill="#64748b" text-anchor="middle">10-01</text>
+  <rect x="48" y="206" width="76" height="22" rx="4" fill="#d1fae5" stroke="#059669"/>
+  <text x="86" y="221" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">10-02 ✓</text>
+  <text x="86" y="246" class="mono" font-size="10" fill="#64748b" text-anchor="middle">10-03..99</text>
+
+  <rect x="142" y="158" width="96" height="114" rx="6" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.2"/>
+  <text x="190" y="176" class="mono" font-size="10" font-weight="700" fill="#1e3a8a" text-anchor="middle">tenant=2</text>
+  <text x="190" y="198" class="mono" font-size="10" fill="#64748b" text-anchor="middle">10-01</text>
+  <rect x="152" y="206" width="76" height="22" rx="4" fill="#d1fae5" stroke="#059669"/>
+  <text x="190" y="221" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">10-02 ✓</text>
+  <text x="190" y="246" class="mono" font-size="10" fill="#64748b" text-anchor="middle">10-03..99</text>
+
+  <rect x="246" y="158" width="96" height="114" rx="6" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.2"/>
+  <text x="294" y="176" class="mono" font-size="10" font-weight="700" fill="#1e3a8a" text-anchor="middle">tenant=3</text>
+  <text x="294" y="198" class="mono" font-size="10" fill="#64748b" text-anchor="middle">10-01</text>
+  <rect x="256" y="206" width="76" height="22" rx="4" fill="#d1fae5" stroke="#059669"/>
+  <text x="294" y="221" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">10-02 ✓</text>
+  <text x="294" y="246" class="mono" font-size="10" fill="#64748b" text-anchor="middle">10-03..99</text>
+
+  <!-- Animated Cursor Jumping Prefixes -->
+  <g class="skp">
+    <rect x="44" y="203" width="84" height="28" rx="5" fill="none" stroke="#2563eb" stroke-width="2.5"/>
+    <path d="M 86 276 L 86 286 L 146 286" fill="none" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+  </g>
+  <text x="38" y="304" class="sans" font-size="10" fill="#475569">Skips prefix partitions via distinct A seeks.</text>
+
+  <!-- CARD 2 (TOP-CENTER): OKAPI BM25 SATURATION -->
+  <rect x="412" y="78" width="376" height="242" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="412" y="78" width="376" height="32" rx="10" fill="#f1f5f9"/>
+  <rect x="412" y="100" width="376" height="10" fill="#f1f5f9"/>
+  <text x="426" y="99" class="sans" font-size="12" font-weight="700" fill="#0f172a">2. Okapi BM25 Term Saturation</text>
+
+  <text x="426" y="128" class="mono" font-size="10" fill="#92400e">TF·(k1+1) / (TF + k1·(1-b+b·|D|/avgdl))</text>
+
+  <!-- Axes -->
+  <line x1="454" y1="264" x2="758" y2="264" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="454" y1="264" x2="454" y2="146" stroke="#64748b" stroke-width="1.5"/>
+  <text x="606" y="282" class="mono" font-size="10" fill="#475569" text-anchor="middle">Term Frequency f(q, D)</text>
+  <text x="436" y="205" class="mono" font-size="10" fill="#475569" transform="rotate(-90 436 205)" text-anchor="middle">Score</text>
+
+  <!-- Saturation Ceiling k1+1 = 2.2 -->
+  <line x1="454" y1="162" x2="754" y2="162" stroke="#059669" stroke-width="1.4" stroke-dasharray="5 4"/>
+  <text x="752" y="156" class="mono" font-size="10" font-weight="700" fill="#059669" text-anchor="end">Asymptote k1+1 = 2.2</text>
+
+  <!-- Linear TF (unbounded) -->
+  <path d="M 454 264 L 610 148" fill="none" stroke="#cbd5e1" stroke-width="1.6" stroke-dasharray="4 3"/>
+  <text x="580" y="154" class="sans" font-size="10" fill="#94a3b8">Raw TF</text>
+
+  <!-- BM25 Saturation Curve -->
+  <path d="M 454 264 Q 496 196 560 180 T 744 168" fill="none" stroke="#d97706" stroke-width="2.6"/>
+  <circle cx="454" cy="264" r="6" fill="#d97706" stroke="#ffffff" stroke-width="1.5" class="bmdot"/>
+
+  <text x="426" y="304" class="sans" font-size="10" fill="#475569">k1=1.2 saturates spam; b=0.75 normalizes |D|.</text>
+
+  <!-- CARD 3 (TOP-RIGHT): R-TREE MBR VS BKD-TREE -->
+  <rect x="804" y="78" width="372" height="242" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="804" y="78" width="372" height="32" rx="10" fill="#f1f5f9"/>
+  <rect x="804" y="100" width="372" height="10" fill="#f1f5f9"/>
+  <text x="818" y="99" class="sans" font-size="12" font-weight="700" fill="#0f172a">3. Spatial: R-Tree MBR vs BKD-Tree</text>
+
+  <!-- R-Tree Left Box -->
+  <rect x="818" y="124" width="166" height="156" rx="6" fill="#fff1f2" stroke="#fda4af"/>
+  <text x="901" y="140" class="sans" font-size="10.5" font-weight="700" fill="#9f1239" text-anchor="middle">R-Tree (Overlapping MBR)</text>
+  <rect x="832" y="152" width="90" height="74" rx="4" fill="#ffe4e6" fill-opacity="0.65" stroke="#e11d48" stroke-width="1.5"/>
+  <text x="840" y="166" class="mono" font-size="10" font-weight="700" fill="#9f1239">MBR1</text>
+  <rect x="880" y="182" width="90" height="74" rx="4" fill="#dbeafe" fill-opacity="0.65" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="944" y="248" class="mono" font-size="10" font-weight="700" fill="#1e3a8a">MBR2</text>
+  <circle cx="854" cy="184" r="3.5" fill="#0f172a"/>
+  <circle cx="904" cy="204" r="3.5" fill="#0f172a"/>
+  <circle cx="944" cy="212" r="3.5" fill="#0f172a"/>
+  <text x="901" y="272" class="sans" font-size="10" fill="#9f1239" text-anchor="middle">Overlap forces multi-branch scan</text>
+
+  <!-- BKD-Tree Right Box -->
+  <rect x="996" y="124" width="166" height="156" rx="6" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <text x="1079" y="140" class="sans" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">BKD-Tree (Disjoint Splits)</text>
+  <rect x="1010" y="152" width="138" height="104" rx="4" fill="#ffffff" stroke="#059669" stroke-width="1.5"/>
+  <line x1="1079" y1="152" x2="1079" y2="256" stroke="#059669" stroke-width="1.8"/>
+  <line x1="1010" y1="202" x2="1079" y2="202" stroke="#7c3aed" stroke-width="1.6"/>
+  <line x1="1079" y1="186" x2="1148" y2="186" stroke="#7c3aed" stroke-width="1.6"/>
+  <circle cx="1040" cy="176" r="3.5" fill="#0f172a"/>
+  <circle cx="1048" cy="228" r="3.5" fill="#0f172a"/>
+  <circle cx="1114" cy="168" r="3.5" fill="#0f172a"/>
+  <circle cx="1118" cy="224" r="3.5" fill="#0f172a"/>
+  <text x="1079" y="272" class="sans" font-size="10" fill="#065f46" text-anchor="middle">Alternating X/Y cuts (Lucene)</text>
+
+  <text x="818" y="304" class="sans" font-size="10" fill="#475569">BKD-Trees keep low RAM &amp; zero overlap.</text>
+
+  <!-- CARD 4 (BOTTOM-LEFT): IVF VORONOI NPROBE VS HNSW MULTI-LAYER -->
+  <rect x="24" y="336" width="616" height="272" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="24" y="336" width="616" height="32" rx="10" fill="#f1f5f9"/>
+  <rect x="24" y="358" width="616" height="10" fill="#f1f5f9"/>
+  <text x="40" y="357" class="sans" font-size="12.5" font-weight="700" fill="#0f172a">4. ANN Search: IVF Voronoi (nprobe) vs HNSW Multi-Layer Graph</text>
+  <text x="624" y="357" class="mono" font-size="10.5" fill="#64748b" text-anchor="end">Curse of dim d ∈ [384..1536]</text>
+
+  <!-- IVF Subpanel -->
+  <rect x="40" y="380" width="244" height="212" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="162" y="399" class="sans" font-size="11.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">IVF (k-means Voronoi · nprobe=2)</text>
+
+  <!-- Voronoi Cells -->
+  <polygon points="56,412 160,412 142,492 56,502" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.3"/>
+  <polygon points="160,412 268,412 268,486 142,492" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5" class="ivfp"/>
+  <polygon points="56,502 142,492 162,566 56,566" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.3"/>
+  <polygon points="142,492 268,486 268,566 162,566" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5" class="ivfp"/>
+
+  <!-- Centroids & Query -->
+  <circle cx="102" cy="452" r="4" fill="#64748b"/>
+  <circle cx="206" cy="448" r="5" fill="#2563eb"/>
+  <text x="216" y="452" class="mono" font-size="10" font-weight="700" fill="#1e3a8a">C2</text>
+  <circle cx="106" cy="532" r="4" fill="#64748b"/>
+  <circle cx="212" cy="526" r="5" fill="#2563eb"/>
+  <text x="222" y="530" class="mono" font-size="10" font-weight="700" fill="#1e3a8a">C4</text>
+
+  <!-- Query q on boundary -->
+  <circle cx="192" cy="489" r="6" fill="#e11d48" stroke="#ffffff" stroke-width="1.5"/>
+  <text x="172" y="483" class="mono" font-size="10" font-weight="700" fill="#e11d48">q</text>
+  <text x="162" y="584" class="sans" font-size="10" fill="#475569" text-anchor="middle">Scans inverted lists of C2 &amp; C4 only.</text>
+
+  <!-- HNSW Subpanel -->
+  <rect x="298" y="380" width="326" height="212" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.3"/>
+  <text x="461" y="399" class="sans" font-size="11.5" font-weight="700" fill="#5b21b6" text-anchor="middle">HNSW Skip Graph (Greedy Hop + ef_search)</text>
+
+  <!-- Layer 2 -->
+  <text x="312" y="427" class="mono" font-size="10" font-weight="700" fill="#6d28d9">L2</text>
+  <line x1="340" y1="423" x2="606" y2="423" stroke="#ddd6fe" stroke-width="1"/>
+  <circle cx="364" cy="423" r="9" fill="#ffffff" stroke="#7c3aed" stroke-width="1.6"/>
+  <text x="364" y="427" class="mono" font-size="10" fill="#5b21b6" text-anchor="middle">12</text>
+  <line x1="373" y1="423" x2="457" y2="423" stroke="#7c3aed" stroke-width="1.8"/>
+  <circle cx="466" cy="423" r="9" fill="#ffffff" stroke="#7c3aed" stroke-width="1.6"/>
+  <text x="466" y="427" class="mono" font-size="10" fill="#5b21b6" text-anchor="middle">62</text>
+
+  <!-- Layer 1 -->
+  <text x="312" y="481" class="mono" font-size="10" font-weight="700" fill="#6d28d9">L1</text>
+  <line x1="340" y1="477" x2="606" y2="477" stroke="#ddd6fe" stroke-width="1"/>
+  <circle cx="364" cy="477" r="9" fill="#ffffff" stroke="#7c3aed" stroke-width="1.6"/>
+  <text x="364" y="481" class="mono" font-size="10" fill="#5b21b6" text-anchor="middle">12</text>
+  <line x1="373" y1="477" x2="457" y2="477" stroke="#94a3b8" stroke-width="1.4"/>
+  <circle cx="466" cy="477" r="9" fill="#ffffff" stroke="#7c3aed" stroke-width="1.6"/>
+  <text x="466" y="481" class="mono" font-size="10" fill="#5b21b6" text-anchor="middle">62</text>
+  <line x1="475" y1="477" x2="541" y2="477" stroke="#7c3aed" stroke-width="1.8"/>
+  <circle cx="550" cy="477" r="9" fill="#ffffff" stroke="#7c3aed" stroke-width="1.6"/>
+  <text x="550" y="481" class="mono" font-size="10" fill="#5b21b6" text-anchor="middle">84</text>
+  <line x1="466" y1="432" x2="466" y2="468" stroke="#7c3aed" stroke-dasharray="3 3" stroke-width="1.5"/>
+
+  <!-- Layer 0 -->
+  <text x="312" y="535" class="mono" font-size="10" font-weight="700" fill="#065f46">L0</text>
+  <line x1="340" y1="531" x2="606" y2="531" stroke="#cbd5e1" stroke-width="1"/>
+  <circle cx="364" cy="531" r="8" fill="#ffffff" stroke="#64748b" stroke-width="1.4"/>
+  <circle cx="415" cy="531" r="8" fill="#ffffff" stroke="#64748b" stroke-width="1.4"/>
+  <circle cx="466" cy="531" r="8" fill="#ffffff" stroke="#64748b" stroke-width="1.4"/>
+  <circle cx="512" cy="531" r="8" fill="#ffffff" stroke="#64748b" stroke-width="1.4"/>
+  <circle cx="550" cy="531" r="10" fill="#d1fae5" stroke="#059669" stroke-width="2"/>
+  <text x="550" y="535" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">84</text>
+  <line x1="372" y1="531" x2="407" y2="531" stroke="#64748b" stroke-width="1.3"/>
+  <line x1="423" y1="531" x2="458" y2="531" stroke="#64748b" stroke-width="1.3"/>
+  <line x1="474" y1="531" x2="504" y2="531" stroke="#64748b" stroke-width="1.3"/>
+  <line x1="520" y1="531" x2="540" y2="531" stroke="#059669" stroke-width="1.8"/>
+  <line x1="550" y1="486" x2="550" y2="521" stroke="#059669" stroke-dasharray="3 3" stroke-width="1.6"/>
+
+  <!-- Animated Search Token -->
+  <circle cx="364" cy="423" r="6" fill="#e11d48" stroke="#ffffff" stroke-width="1.5" class="hpulse"/>
+  <text x="461" y="584" class="sans" font-size="10" fill="#475569" text-anchor="middle">P(l) ∝ e^(-l/m_L); top-K queued at L0.</text>
+
+  <!-- CARD 5 (BOTTOM-RIGHT): PRODUCT QUANTIZATION (PQ / SQ8) -->
+  <rect x="656" y="336" width="520" height="272" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="656" y="336" width="520" height="32" rx="10" fill="#f1f5f9"/>
+  <rect x="656" y="358" width="520" height="10" fill="#f1f5f9"/>
+  <text x="672" y="357" class="sans" font-size="12.5" font-weight="700" fill="#0f172a">5. Vector Compression: PQ Subspaces &amp; SQ8</text>
+  <text x="1160" y="357" class="mono" font-size="10.5" fill="#64748b" text-anchor="end">16×–32× RAM reduction</text>
+
+  <!-- Full float32 vector -->
+  <text x="674" y="392" class="sans" font-size="11" font-weight="700" fill="#334155">Original Vector x ∈ ℝ^1536 (1536 × 4 B = 6,144 B):</text>
+  <rect x="674" y="400" width="118" height="30" rx="4" fill="#eff6ff" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="733" y="419" class="mono" font-size="10" font-weight="700" fill="#1e3a8a" text-anchor="middle">Subvec x1</text>
+  <rect x="798" y="400" width="118" height="30" rx="4" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.2"/>
+  <text x="857" y="419" class="mono" font-size="10" font-weight="700" fill="#5b21b6" text-anchor="middle">Subvec x2</text>
+  <rect x="922" y="400" width="118" height="30" rx="4" fill="#fffbeb" stroke="#d97706" stroke-width="1.2"/>
+  <text x="981" y="419" class="mono" font-size="10" font-weight="700" fill="#92400e" text-anchor="middle">Subvec x3</text>
+  <rect x="1046" y="400" width="114" height="30" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="1.2"/>
+  <text x="1103" y="419" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">Subvec x4</text>
+
+  <!-- Quantized Centroid IDs -->
+  <g class="pqbox">
+    <line x1="733" y1="430" x2="733" y2="454" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+    <line x1="857" y1="430" x2="857" y2="454" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#arr-violet)"/>
+    <line x1="981" y1="430" x2="981" y2="454" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+    <line x1="1103" y1="430" x2="1103" y2="454" stroke="#059669" stroke-width="1.5" marker-end="url(#arr-emerald)"/>
+
+    <rect x="674" y="460" width="486" height="58" rx="7" fill="#f8fafc" stroke="#059669" stroke-width="1.5"/>
+    <text x="688" y="479" class="sans" font-size="11" font-weight="700" fill="#065f46">PQ Codebook Quantization (8-bit Centroid IDs per Subspace):</text>
+    <rect x="688" y="488" width="90" height="22" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="733" y="503" class="mono" font-size="10" font-weight="700" fill="#1e3a8a" text-anchor="middle">c_12 (1B)</text>
+    <rect x="812" y="488" width="90" height="22" rx="4" fill="#ede9fe" stroke="#7c3aed"/>
+    <text x="857" y="503" class="mono" font-size="10" font-weight="700" fill="#5b21b6" text-anchor="middle">c_04 (1B)</text>
+    <rect x="936" y="488" width="90" height="22" rx="4" fill="#fef3c7" stroke="#d97706"/>
+    <text x="981" y="503" class="mono" font-size="10" font-weight="700" fill="#92400e" text-anchor="middle">c_89 (1B)</text>
+    <rect x="1058" y="488" width="90" height="22" rx="4" fill="#d1fae5" stroke="#059669"/>
+    <text x="1103" y="503" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">c_31 (1B)</text>
+
+    <!-- ADC & SQ8 note -->
+    <rect x="674" y="530" width="486" height="62" rx="7" fill="#ecfdf5" stroke="#10b981" stroke-width="1.2"/>
+    <text x="688" y="550" class="mono" font-size="10.5" font-weight="700" fill="#065f46">ADC: dist(q, x) ≈ Σ LUT_j[c_j]  (O(m) table lookups!)</text>
+    <text x="688" y="568" class="sans" font-size="10" fill="#334155">SQ8 maps fp32 → int8 [-128..127] (4× smaller); PQ hits 16×–32×.</text>
+    <text x="688" y="584" class="sans" font-size="10" fill="#047857">BBQ (1-bit + asymmetric 4-bit query) uses hardware POPCNT(XOR).</text>
+  </g>
+
+  <!-- BOTTOM 4 STEP CARDS -->
+  <rect x="24" y="622" width="276" height="118" rx="8" fill="#eff6ff" class="s1"/>
+  <rect x="38" y="634" width="56" height="20" rx="4" fill="#2563eb"/>
+  <text x="66" y="648" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">Step 1</text>
+  <text x="104" y="648" class="sans" font-size="12" font-weight="700" fill="#1e3a8a">Skip Scan</text>
+  <text x="38" y="672" class="sans" font-size="10.5" fill="#334155">Jumps across distinct leading</text>
+  <text x="38" y="688" class="sans" font-size="10.5" fill="#334155">prefixes to probe trailing column.</text>
+  <text x="38" y="710" class="mono" font-size="10" fill="#1d4ed8">Rescues idx(A,B) for B queries.</text>
+
+  <rect x="316" y="622" width="276" height="118" rx="8" fill="#fffbeb" class="s2"/>
+  <rect x="330" y="634" width="56" height="20" rx="4" fill="#d97706"/>
+  <text x="358" y="648" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">Step 2</text>
+  <text x="396" y="648" class="sans" font-size="12" font-weight="700" fill="#92400e">BM25 &amp; Spatial</text>
+  <text x="330" y="672" class="sans" font-size="10.5" fill="#334155">BM25 caps term repetition via k1;</text>
+  <text x="330" y="688" class="sans" font-size="10.5" fill="#334155">BKD avoids R-Tree MBR overlap.</text>
+  <text x="330" y="710" class="mono" font-size="10" fill="#b45309">Exact lexical &amp; 2D range scans.</text>
+
+  <rect x="608" y="622" width="276" height="118" rx="8" fill="#f5f3ff" class="s3"/>
+  <rect x="622" y="634" width="56" height="20" rx="4" fill="#7c3aed"/>
+  <text x="650" y="648" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">Step 3</text>
+  <text x="688" y="648" class="sans" font-size="12" font-weight="700" fill="#5b21b6">IVF vs HNSW</text>
+  <text x="622" y="672" class="sans" font-size="10.5" fill="#334155">IVF probes nprobe Voronoi cells;</text>
+  <text x="622" y="688" class="sans" font-size="10.5" fill="#334155">HNSW routes down sparse layers.</text>
+  <text x="622" y="710" class="mono" font-size="10" fill="#6d28d9">Tune nprobe / ef_search recall.</text>
+
+  <rect x="900" y="622" width="276" height="118" rx="8" fill="#ecfdf5" class="s4"/>
+  <rect x="914" y="634" width="56" height="20" rx="4" fill="#059669"/>
+  <text x="942" y="648" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">Step 4</text>
+  <text x="980" y="648" class="sans" font-size="12" font-weight="700" fill="#065f46">PQ / SQ8 RAM Fit</text>
+  <text x="914" y="672" class="sans" font-size="10.5" fill="#334155">Subspace codebooks + ADC LUTs</text>
+  <text x="914" y="688" class="sans" font-size="10.5" fill="#334155">shrink 6.1 GB/1M vectors into RAM.</text>
+  <text x="914" y="710" class="mono" font-size="10" fill="#059669">RRF fuses BM25 + HNSW ranks.</text>
+</svg>

@@ -193,6 +193,10 @@ graph TD
   3. A **Count-Min Sketch** probabilistic data structure that estimates access frequency in a compact 4-bit footprint with logarithmic time decay to eliminate historic bias.
 - **Admission Invariant**: When an item is evicted from the admission window, it competes with the eviction candidate of the main cache. If its estimated frequency exceeds that of the main cache victim, it is admitted; otherwise, it is immediately discarded.
 
+![Caching Algorithms: XFetch Probabilistic Early Refresh and W-TinyLFU Eviction](../assets/09-xfetch-and-wtinylfu-animated.svg)
+
+_Step-by-step mechanics:_ (1) Far from expiration, XFetch rarely recomputes and W-TinyLFU absorbs new bursts inside its 1% Window LRU. (2) As remaining time $\Delta \to 0$, XFetch's recompute probability rises exponentially while a 4-bit Count-Min Sketch prepares frequency estimates. (3) One reader wins the probabilistic roll to refresh the key in $\delta$ time while Window evictions duel Main Cache Probation victims by estimated frequency. (4) The fresh value lands before hard TTL expiration with zero stampede locks, and W-TinyLFU protects hot working sets via Segmented LRU plus periodic counter halving.
+
 ---
 
 ## 6. Then vs Now: Caching Architecture Evolution

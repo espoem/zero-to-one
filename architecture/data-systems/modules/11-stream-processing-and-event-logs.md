@@ -208,6 +208,10 @@ graph TD
     end
 ```
 
+![Event Logs and Stream Processing: Log Compaction and Event-Time Watermarks](../assets/11-log-compaction-and-watermarks-animated.svg)
+
+_Step-by-step mechanics:_ (1) An append-only partition accumulates multiple updates per key alongside out-of-order event timestamps. (2) Background log compaction retains only the latest offset per key (`K3: D`, `K2: E`) and prunes `null`-payload tombstones after `delete.retention.ms` to enable fast state recovery. (3) As $\text{Watermark}(12:05)$ sweeps across the stream, the processor closes and emits tumbling window $[12:00, 12:05)$ deterministically on event time. (4) Late-arriving events with timestamps behind the watermark (such as `12:03`) are dropped, routed to a side output, or emitted as window upserts.
+
 ---
 
 ## 6. Then vs Now: Stream Processing Evolution

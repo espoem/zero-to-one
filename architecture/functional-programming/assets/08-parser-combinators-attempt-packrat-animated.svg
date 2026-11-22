@@ -1,0 +1,132 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 600" width="1120" height="600" role="img" aria-labelledby="title desc">
+  <title id="title">Parser Combinators: Committed vs attempt Backtracking &amp; Packrat Memoisation</title>
+  <desc id="desc">Animated Module 08 parser combinator mechanics: left panel contrasts committed-by-default PEG branching (consuming at least 1 character flips isCommitted to true so or aborts immediately with exact Location error) against attempt(p) resetting isCommitted to false to enable backtracking to p2; right panel shows Packrat parsing memoising (parserId, offset) to Result[A] in a sparse table to eliminate O(2^n) exponential re-parsing.</desc>
+
+  <style>
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    /* 12s cycle:
+       0-25%:   Step 1 — Input "abraX" matches 4 chars of "abracadabra" -> Failure(i=4, isCommitted=true) -> abort!
+       25-50%:  Step 2 — Wrap in attempt(...) -> resets isCommitted=false -> backtracks to p2 "abra" -> Success!
+       50-75%:  Step 3 — Exponential O(2^n) re-parse problem on nested attempt(expr)
+       75-100%: Step 4 — Packrat table (parserId, offset) -> Result[A] hits cache in O(1) -> O(n) total!
+    */
+    @keyframes st-1 { 0%, 24% { stroke: #e11d48; stroke-width: 2.5; opacity: 1; } 25%, 100% { stroke: #cbd5e1; stroke-width: 1.4; opacity: 0.72; } }
+    @keyframes st-2 { 0%, 24% { stroke: #cbd5e1; stroke-width: 1.4; opacity: 0.72; } 25%, 49% { stroke: #059669; stroke-width: 2.5; opacity: 1; } 50%, 100% { stroke: #cbd5e1; stroke-width: 1.4; opacity: 0.72; } }
+    @keyframes st-3 { 0%, 49% { stroke: #cbd5e1; stroke-width: 1.4; opacity: 0.72; } 50%, 74% { stroke: #d97706; stroke-width: 2.5; opacity: 1; } 75%, 100% { stroke: #cbd5e1; stroke-width: 1.4; opacity: 0.72; } }
+    @keyframes st-4 { 0%, 74% { stroke: #cbd5e1; stroke-width: 1.4; opacity: 0.72; } 75%, 100% { stroke: #2563eb; stroke-width: 2.5; opacity: 1; } }
+
+    @keyframes dash { to { stroke-dashoffset: -24; } }
+    @keyframes memo-hit {
+      0%, 74% { fill: #f8fafc; stroke: #cbd5e1; }
+      78%, 98% { fill: #ecfdf5; stroke: #059669; stroke-width: 2; }
+      100% { fill: #f8fafc; stroke: #cbd5e1; }
+    }
+
+    .b1 { animation: st-1 12s linear infinite; }
+    .b2 { animation: st-2 12s linear infinite; }
+    .b3 { animation: st-3 12s linear infinite; }
+    .b4 { animation: st-4 12s linear infinite; }
+    .flow { stroke-dasharray: 6 6; animation: dash 1.2s linear infinite; }
+    .mhit { animation: memo-hit 12s linear infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .b1, .b2, .b3, .b4, .flow, .mhit { animation: none !important; }
+      .b1, .b2, .b3, .b4 { opacity: 1 !important; stroke-width: 1.8 !important; }
+    }
+  </style>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1120" height="600" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1120" height="62" rx="12" fill="#0f172a"/>
+  <rect x="0" y="46" width="1120" height="16" fill="#0f172a"/>
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Parser Combinators — Committed vs attempt &amp; Packrat Memoisation</text>
+  <text x="24" y="48" class="sans" font-size="12" fill="#94a3b8">Module 08 · Parser[A] = Location ⇒ Result[A] · PEG Default Commit vs attempt(p) Backtracking · (rule, offset) Memo Table</text>
+
+  <!-- LEFT PANEL: COMMITTED VS ATTEMPT -->
+  <rect x="24" y="78" width="526" height="448" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="42" y="104" class="sans" font-size="14" font-weight="700" fill="#0f172a">1. Committed Branches vs attempt(p) Backtracking</text>
+
+  <!-- Input Tape -->
+  <rect x="42" y="118" width="490" height="48" rx="7" fill="#f5f3ff" stroke="#c4b5fd"/>
+  <text x="56" y="138" class="mono" font-size="11" font-weight="700" fill="#5b21b6">Input @ offset 0:  "a b r a X"</text>
+  <text x="56" y="155" class="mono" font-size="10" fill="#4c1d95">Parser: string("abracadabra") or string("abra")</text>
+
+  <!-- Case A: Committed Failure (No attempt) -->
+  <rect x="42" y="178" width="490" height="148" rx="8" fill="#fff1f2" class="b1"/>
+  <rect x="56" y="190" width="76" height="22" rx="4" fill="#e11d48"/>
+  <text x="94" y="205" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">STEP 1</text>
+  <text x="144" y="205" class="sans" font-size="12" font-weight="700" fill="#9f1239">Without attempt: Partial Match Commits!</text>
+  <text x="56" y="229" class="mono" font-size="10.5" fill="#881337">1. p1 matches "abra" (4 chars) → mismatch at i = 4 ('X' != 'c')</text>
+  <text x="56" y="248" class="mono" font-size="10.5" font-weight="700" fill="#be123c">2. i != 0 flips isCommitted = true!</text>
+  <text x="56" y="267" class="mono" font-size="10.5" fill="#881337">3. p1 or p2 sees Failure(_, isCommitted=true) → ABORTS!</text>
+  <rect x="56" y="280" width="462" height="32" rx="5" fill="#ffe4e6"/>
+  <text x="287" y="300" class="sans" font-size="10.5" font-weight="700" fill="#9f1239" text-anchor="middle">p2 ("abra") is NEVER tried · Preserves deep JSON syntax errors cleanly</text>
+
+  <!-- Case B: With attempt(p1) -->
+  <rect x="42" y="338" width="490" height="172" rx="8" fill="#ecfdf5" class="b2"/>
+  <rect x="56" y="350" width="76" height="22" rx="4" fill="#059669"/>
+  <text x="94" y="365" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">STEP 2</text>
+  <text x="144" y="365" class="sans" font-size="12" font-weight="700" fill="#065f46">With attempt(p1): Reset Commit &amp; Recover</text>
+  <text x="56" y="390" class="mono" font-size="10.5" fill="#047857">1. attempt(string("abracadabra")).uncommit:</text>
+  <text x="56" y="409" class="mono" font-size="10.5" font-weight="700" fill="#065f46">   Failure(err, true) ──▶ Failure(err, isCommitted = false)</text>
+  <text x="56" y="428" class="mono" font-size="10.5" fill="#047857">2. or inspects Failure(_, false) → rewinds to offset 0</text>
+  <text x="56" y="447" class="mono" font-size="10.5" font-weight="700" fill="#065f46">3. Runs p2 = string("abra") → Success("abra", consumed=4)</text>
+  <rect x="56" y="464" width="462" height="32" rx="5" fill="#d1fae5"/>
+  <text x="287" y="484" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">Tip: Left-factoring ("abra" ** opt("cadabra")) runs in 1 pass!</text>
+
+  <!-- RIGHT PANEL: PACKRAT MEMOISATION -->
+  <rect x="570" y="78" width="526" height="448" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="588" y="104" class="sans" font-size="14" font-weight="700" fill="#0f172a">2. Packrat (rule, offset) Memoisation Table</text>
+
+  <!-- Exponential Blowup Problem -->
+  <rect x="588" y="118" width="490" height="108" rx="8" fill="#fffbeb" class="b3"/>
+  <rect x="602" y="130" width="76" height="22" rx="4" fill="#d97706"/>
+  <text x="640" y="145" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">STEP 3</text>
+  <text x="690" y="145" class="sans" font-size="12" font-weight="700" fill="#92400e">Nested attempt(...) Causes O(2ⁿ) Blowup</text>
+  <text x="602" y="169" class="mono" font-size="10" fill="#78350f">expr = attempt(expr ** "+") or attempt(expr ** "-")</text>
+  <text x="602" y="188" class="sans" font-size="10" fill="#78350f">Without memoisation, backtracking re-parses sub-expr at the exact</text>
+  <text x="602" y="205" class="sans" font-size="10" fill="#92400e">same offset exponentially on nested trees like ((((a))))!</text>
+
+  <!-- Packrat Memo Table -->
+  <rect x="588" y="238" width="490" height="272" rx="8" fill="#eff6ff" class="b4"/>
+  <rect x="602" y="250" width="76" height="22" rx="4" fill="#2563eb"/>
+  <text x="640" y="265" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">STEP 4</text>
+  <text x="690" y="265" class="sans" font-size="12" font-weight="700" fill="#1e3a8a">Packrat Cache: (parserId, offset) → Result[A]</text>
+
+  <!-- Table header -->
+  <rect x="602" y="282" width="462" height="28" rx="4" fill="#1e3a8a"/>
+  <text x="664" y="300" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">Key: (rule, pos)</text>
+  <text x="820" y="300" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">Cached Result</text>
+  <text x="990" y="300" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">Lookup</text>
+
+  <!-- Row 1 -->
+  <rect x="602" y="314" width="462" height="30" rx="4" class="mhit"/>
+  <text x="664" y="333" class="mono" font-size="10" font-weight="700" fill="#0f172a" text-anchor="middle">(expr, offset=4)</text>
+  <text x="820" y="333" class="mono" font-size="10" fill="#065f46" text-anchor="middle">Success(AST, len=11)</text>
+  <text x="990" y="333" class="mono" font-size="10" font-weight="700" fill="#059669" text-anchor="middle">CACHE HIT O(1)</text>
+
+  <!-- Row 2 -->
+  <rect x="602" y="348" width="462" height="30" rx="4" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="664" y="367" class="mono" font-size="10" font-weight="700" fill="#0f172a" text-anchor="middle">(term, offset=4)</text>
+  <text x="820" y="367" class="mono" font-size="10" fill="#1e40af" text-anchor="middle">Success(Num(42), len=2)</text>
+  <text x="990" y="367" class="mono" font-size="10" fill="#475569" text-anchor="middle">MEMOISED</text>
+
+  <!-- Row 3 -->
+  <rect x="602" y="382" width="462" height="30" rx="4" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="664" y="401" class="mono" font-size="10" font-weight="700" fill="#0f172a" text-anchor="middle">(jObj, offset=15)</text>
+  <text x="820" y="401" class="mono" font-size="10" fill="#9f1239" text-anchor="middle">Failure("Expected :", true)</text>
+  <text x="990" y="401" class="mono" font-size="10" fill="#475569" text-anchor="middle">MEMOISED</text>
+
+  <rect x="602" y="422" width="462" height="74" rx="6" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="616" y="442" class="sans" font-size="10.5" font-weight="700" fill="#1e3a8a">Production Trade-off (Packrat vs Streaming):</text>
+  <text x="616" y="460" class="sans" font-size="10" fill="#1e40af">• Packrat guarantees O(n) worst-case time, but uses O(n · |G|) RAM</text>
+  <text x="616" y="476" class="sans" font-size="10" fill="#1e40af">  and loses closure identity across dynamic flatMap(f) combinators.</text>
+
+  <!-- Footer -->
+  <rect x="24" y="540" width="1072" height="44" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="42" y="567" class="sans" font-size="11.5" font-weight="600" fill="#1e3a8a">Takeaway: Committed-by-default or + bounded attempt yields O(1)-space streaming &amp; sharp errors; Packrat adds O(n) memoisation when needed.</text>
+</svg>

@@ -217,6 +217,10 @@ def countWords(s: String): Int =
     case WC.Part(l, w, r) => unstub(l) + w + unstub(r)
 ```
 
+![Balanced Parallel foldMapV and WC Word-Count Monoid Reduction Animation](../assets/09-parallel-monoid-foldmapv-animated.svg)
+
+_Step-by-step mechanics:_ (1) `foldMapV` splits the input recursively at midpoints into a balanced binary tree of depth $O(\log n)$ instead of a sequential $O(n)$ `foldLeft` chain. (2) Each worker reduces its slice to `WC.Stub` or `WC.Part(lStub, words, rStub)`, and associative `combine` merges straddling fragments (`"do" + "lor"`) as `+1` boundary word.
+
 ---
 
 ## 5. `Foldable[F[_]]` and Monoid Homomorphisms

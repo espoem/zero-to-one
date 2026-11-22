@@ -262,6 +262,10 @@ If we build `val evenGen = intTree(0, 42).map(_ * 2)`, every single node in the 
 
 When a failure occurs at the root, the minimiser performs a **greedy depth-first descent**: it tests the children stream from left to right; as soon as a child `c` falsifies the property, it commits to `c` and descends into `c.children()`, terminating when no child falsifies the property. That node is a **1-minimal** local optimum under the shrink relation.
 
+![Integrated Rose-Tree Shrinking Animation: Invariant-Preserving Search to 1-Minimal Counterexample](../assets/07-rose-tree-shrinking-animated.svg)
+
+_Step-by-step mechanics:_ (1) Because `Tree[A]` is a `Monad`, mapping `_ * 2` over `intTree(0, 42)` ensures every candidate in the lazy shrink tree stays even. (2) Starting from failing root `84`, the shrinker scans each level's children stream (`0` passes, `44` fails → commit; `0` passes, `22` fails → commit; `0, 12, 18` pass) until it reaches the 1-minimal witness `22`.
+
 ---
 
 ## 4. Algebraic Law Taxonomy and Model-Based Testing

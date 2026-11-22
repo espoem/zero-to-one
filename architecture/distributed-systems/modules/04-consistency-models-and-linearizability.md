@@ -135,6 +135,10 @@ flowchart TD
 
 Herlihy and Wing proved that linearizability is **composible** ($P$-compositionality): $$\text{History } H \text{ is linearizable} \iff \forall \text{ key } k, \ H|_k \text{ is linearizable}$$ A multi-key key-value store history can be verified by checking each key independently in parallel! Tools like **Porcupine** (Go) leverage $P$-compositionality to verify millions of operations in seconds.
 
+![Wing-Gong-Lowe (WGL) Linearizability Verification Animation: Interval Search and Backtracking](../assets/04-wgl-linearizability-check-animated.svg)
+
+_Step-by-step mechanics:_ (1) WGL considers unlinearized operations whose invocation precedes the earliest pending response. (2) Trying `op1: W(x,1)` first fails when `op2: R(x)->0` sees `x=1`, triggering backtracking to the root state. (3) Exploring the alternate branch yields a valid sequential witness `op2 -> op3 -> op1 -> op4` with memoized state keys and $P$-compositionality across keys.
+
 ---
 
 ## Interview Drill

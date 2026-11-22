@@ -234,6 +234,10 @@ Uncompressed high-dimensional vectors require massive memory: $1,000,000$ OpenAI
 - **Product Quantization (PQ)**: Decomposes a $d$-dimensional vector into $m$ orthogonal sub-vectors, runs $k$-means on each sub-space, and represents each sub-vector as an 8-bit centroid ID. Reduces memory footprint by $16\times$ to $32\times$ and accelerates distance calculations via precomputed lookup tables (Asymmetric Distance Computation - ADC).
 - **Binary & Better Binary Quantization (1-bit / BBQ)**: Classic 1-bit binary quantization maps each dimension to a single bit ($0$ or $1$) by sign, computing Hamming distances via hardware `POPCNT` over `XOR` operations; Lucene/Elasticsearch's Better Binary Quantization (BBQ, RaBitQ-style; see [`technologies/elasticsearch` M09](../../../technologies/elasticsearch/modules/09-vector-and-hybrid-search.md)) augments 1-bit database vectors with per-vector corrective norm/projection factors and asymmetric 4-bit query quantization to retain high recall.
 
+![Indexing Theory and Vector Search: Skip Scan, BM25, R-Tree/BKD, IVF vs HNSW, and Product Quantization](../assets/03-bm25-rtree-ivf-hnsw-pq-animated.svg)
+
+_Step-by-step mechanics:_ (1) Composite B-Tree Skip Scan jumps across distinct leading prefixes (`tenant_id`) to probe a trailing filter (`created_at`). (2) Okapi BM25 saturates repeated term frequencies asymptotically toward $k_1 + 1$ while BKD-Trees replace overlapping R-Tree MBRs with disjoint alternating cuts. (3) IVF probes the `nprobe` closest Voronoi centroids whereas HNSW routes greedily down sparse highway layers to a Layer-0 `ef_search` queue. (4) Product Quantization splits high-dimensional vectors into $m$ subspace centroid IDs for fast Asymmetric Distance Computation (ADC) alongside SQ8 4x compression.
+
 ---
 
 ## 5. Then vs Now: Evolution of Query Retrieval

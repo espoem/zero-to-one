@@ -107,6 +107,10 @@ def nonNegativeLessThan(n: Int)(rng: RNG): (Int, RNG) =
   else nonNegativeLessThan(n)(rng2)
 ```
 
+![Corecursive unfold Pull Stream and Pure LCG Rejection Sampling Animation](../assets/04-05-unfold-fusion-and-pure-lcg-animated.svg)
+
+_Step-by-step mechanics:_ (1) Each LCG invocation threads an immutable 48-bit seed through $(a X_n + c) \bmod 2^{48}$ and extracts the upper 32 bits as `(n, nextRNG)` with exact referential transparency. (2) Rejection sampling checks `i + (n - 1) - mod >= 0` to drop values in the incomplete top remainder bucket $r$, while `unfold` ([Module 04](04-strictness-laziness-and-corecursion.md)) lazily pulls infinite sequences from any pure transition step.
+
 ---
 
 ## 3. State Action Combinators: `unit`, `map`, `map2`, `flatMap`, `sequence`

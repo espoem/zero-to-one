@@ -206,6 +206,10 @@ sequenceDiagram
 2. **Indirect Probe (Ping-Req)**: If $B$ fails to reply within timeout, $A$ selects $k$ random peers ($C, D$) and sends `PING-REQ(B)`. The peers probe $B$ on $A$'s behalf. This prevents false alarms caused by localized network edge degradation between $A$ and $B$.
 3. **Suspicion Mechanism**: If indirect probes fail, $B$ is not immediately declared dead. It is marked as **SUSPECT** and gossiped to the cluster. If $B$ is alive, it has a timeout period to broadcast an `ALIVE` refutation before being declared **DEAD**.
 
+![Jitter Backoff, Phi-Accrual Detector, and SWIM Gossip Animation](../assets/02-jitter-phi-accrual-swim-animated.svg)
+
+_Step-by-step mechanics:_ (1) Full and Decorrelated Jitter spread retries across time to prevent synchronized retry storms, while a $10\%$ retry budget caps multi-hop amplification at $(1+b)^L$. (2) The $\Phi$-Accrual detector maps heartbeat silence $\Delta t$ to a continuous suspicion scale $\Phi = -\log_{10}(P_{\text{later}})$ crossing warn ($\Phi=3$) and suspect ($\Phi=8$). (3) When direct `PING` drops on a degraded edge, SWIM issues $k$ indirect `PING-REQ(B)` probes in $O(1)$ load per period and lets live targets refute `SUSPECT(i)` with `ALIVE(i+1)`.
+
 ---
 
 ## 7. At-Most-Once Execution as an Invariant

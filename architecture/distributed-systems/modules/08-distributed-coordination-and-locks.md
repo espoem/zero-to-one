@@ -143,6 +143,10 @@ flowchart LR
     end
 ```
 
+![Fair Ephemeral Lock Queue and Monotonic Fencing Tokens Animation](../assets/08-fair-queue-lock-fencing-animated.svg)
+
+_Step-by-step mechanics:_ (1) In a ZooKeeper/etcd fair lock queue, each waiter creates an ephemeral sequential node and watches only its immediate predecessor, eliminating thundering herds with $O(1)$ wakeups. (2) When Client 1 acquires `token=33` and enters a 15-second GC pause past the 10-second lease TTL, Client 2 acquires `token=34` and advances storage `highestTokenSeen = 34`. (3) When Client 1 resumes and submits a stale write with `token=33`, the storage layer rejects `33 < 34` with `409 Conflict`.
+
 ---
 
 ## 6. Distributed Barriers and Service Discovery

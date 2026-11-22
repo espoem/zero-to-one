@@ -1,0 +1,214 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 640" width="1120" height="640" role="img" aria-labelledby="title desc">
+  <title id="title">Cryptographic Primitives: HMAC vs Length Extension, Constant-Time XOR, AES-GCM GHASH, X25519/Ed25519, and HKDF</title>
+  <desc id="desc">Step-by-step animated overview of Module 02 cryptographic primitives: Merkle-Damgard length-extension vulnerability versus RFC 2104 nested HMAC, constant-time XOR comparison via timingSafeEqual, AES-GCM GHASH authentication and nonce-reuse key-recovery catastrophe, X25519 key exchange and Ed25519 deterministic signatures, and RFC 5869 HKDF Extract-then-Expand.</desc>
+
+  <style>
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    /* 12s cycle across 4 quadrants:
+       0-25%:   Step 1 — Length-extension trap vs HMAC + timingSafeEqual
+       25-50%:  Step 2 — AES-GCM GHASH + Nonce-reuse catastrophe
+       50-75%:  Step 3 — X25519 ECDH + Ed25519 deterministic nonce
+       75-100%: Step 4 — HKDF Extract-then-Expand
+    */
+    @keyframes q1-hl {
+      0%, 24%   { stroke: #2563eb; stroke-width: 2.5; opacity: 1; }
+      25%, 100% { stroke: #cbd5e1; stroke-width: 1.4; opacity: 0.72; }
+    }
+    @keyframes q2-hl {
+      0%, 24%   { stroke: #cbd5e1; stroke-width: 1.4; opacity: 0.72; }
+      25%, 49%  { stroke: #e11d48; stroke-width: 2.5; opacity: 1; }
+      50%, 100% { stroke: #cbd5e1; stroke-width: 1.4; opacity: 0.72; }
+    }
+    @keyframes q3-hl {
+      0%, 49%   { stroke: #cbd5e1; stroke-width: 1.4; opacity: 0.72; }
+      50%, 74%  { stroke: #059669; stroke-width: 2.5; opacity: 1; }
+      75%, 100% { stroke: #cbd5e1; stroke-width: 1.4; opacity: 0.72; }
+    }
+    @keyframes q4-hl {
+      0%, 74%   { stroke: #cbd5e1; stroke-width: 1.4; opacity: 0.72; }
+      75%, 100% { stroke: #7c3aed; stroke-width: 2.5; opacity: 1; }
+    }
+
+    @keyframes flow-dash {
+      to { stroke-dashoffset: -28; }
+    }
+    @keyframes trap-pulse {
+      0%, 22% { opacity: 1; }
+      28%, 48% { opacity: 1; transform: scale(1.03); }
+      55%, 100% { opacity: 0.85; transform: scale(1); }
+    }
+    @keyframes xor-sweep {
+      0%   { transform: translateX(0px); opacity: 0.86; }
+      18%  { transform: translateX(126px); opacity: 1; }
+      25%, 100% { transform: translateX(126px); opacity: 0.86; }
+    }
+
+    .q1-box { animation: q1-hl 12s linear infinite; }
+    .q2-box { animation: q2-hl 12s linear infinite; }
+    .q3-box { animation: q3-hl 12s linear infinite; }
+    .q4-box { animation: q4-hl 12s linear infinite; }
+    .flow   { stroke-dasharray: 7 7; animation: flow-dash 1.2s linear infinite; }
+    .warn   { transform-box: fill-box; transform-origin: center; animation: trap-pulse 12s ease-in-out infinite; }
+    .sweep  { animation: xor-sweep 12s linear infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .q1-box, .q2-box, .q3-box, .q4-box, .flow, .warn, .sweep {
+        animation: none !important;
+      }
+      .q1-box, .q2-box, .q3-box, .q4-box { opacity: 1 !important; stroke-width: 1.8 !important; }
+      .warn, .sweep { opacity: 1 !important; transform: none !important; }
+    }
+  </style>
+
+  <defs>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <marker id="arr-violet" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1120" height="640" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1120" height="62" rx="12" fill="#0f172a"/>
+  <rect x="0" y="46" width="1120" height="16" fill="#0f172a"/>
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Cryptographic Primitives — Hashing, Constant-Time, AEAD, Curve25519 &amp; HKDF</text>
+  <text x="24" y="48" class="sans" font-size="12" fill="#94a3b8">Module 02 Mechanics · Length-Extension vs HMAC · timingSafeEqual · AES-GCM Nonce Reuse · X25519/Ed25519 · RFC 5869 HKDF</text>
+
+  <!-- QUADRANT 1 (Top-Left): Length Extension vs HMAC + Constant-Time -->
+  <rect x="24" y="78" width="528" height="258" rx="10" fill="#ffffff" class="q1-box"/>
+  <rect x="38" y="90" width="58" height="22" rx="5" fill="#2563eb"/>
+  <text x="67" y="105" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">STEP 1</text>
+  <text x="108" y="106" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">Length Extension Trap vs HMAC &amp; Constant-Time XOR</text>
+
+  <!-- Naive H(K || M) trap -->
+  <rect x="38" y="122" width="500" height="58" rx="7" fill="#fff1f2" stroke="#fda4af"/>
+  <text x="50" y="140" class="sans" font-size="11" font-weight="700" fill="#9f1239">TRAP — Naive MAC H(K || M) exposes Merkle-Damgård state h_k:</text>
+  <rect x="50" y="148" width="128" height="22" rx="4" fill="#ffe4e6" stroke="#e11d48"/>
+  <text x="114" y="163" class="mono" font-size="10" font-weight="700" fill="#9f1239" text-anchor="middle">h_k = H(K || M)</text>
+  <line x1="182" y1="159" x2="218" y2="159" stroke="#e11d48" stroke-width="1.8" class="flow" marker-end="url(#arr-rose)"/>
+  <rect x="224" y="148" width="144" height="22" rx="4" fill="#ffe4e6" stroke="#e11d48"/>
+  <text x="296" y="163" class="mono" font-size="10" font-weight="700" fill="#9f1239" text-anchor="middle">f(h_k, pad || m_new)</text>
+  <line x1="372" y1="159" x2="404" y2="159" stroke="#e11d48" stroke-width="1.8" class="flow" marker-end="url(#arr-rose)"/>
+  <rect x="410" y="148" width="116" height="22" rx="4" fill="#e11d48"/>
+  <text x="468" y="163" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">FORGED MAC!</text>
+
+  <!-- HMAC Nested Double Hash -->
+  <rect x="38" y="188" width="500" height="62" rx="7" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <text x="50" y="206" class="sans" font-size="11" font-weight="700" fill="#065f46">SOLUTION — RFC 2104 Nested HMAC hides internal state:</text>
+  <text x="50" y="224" class="mono" font-size="10.5" font-weight="700" fill="#047857">HMAC(K, M) = H( (K ⊕ opad) || H( (K ⊕ ipad) || M ) )</text>
+  <text x="50" y="241" class="sans" font-size="10" fill="#065f46">ipad = 0x36, opad = 0x5c · Outer hash digests inner digest (SHA-3/BLAKE3 also immune).</text>
+
+  <!-- Constant-Time XOR timingSafeEqual -->
+  <rect x="38" y="258" width="500" height="66" rx="7" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="50" y="276" class="sans" font-size="11" font-weight="700" fill="#1e3a8a">Constant-Time Verify — crypto.timingSafeEqual(a, b):</text>
+  <text x="50" y="294" class="mono" font-size="10.5" fill="#1e40af">diff |= a[i] ^ b[i]  (scans ALL bytes; zero early-exit leak)</text>
+  <rect x="50" y="302" width="150" height="14" rx="3" fill="#dbeafe" stroke="#60a5fa"/>
+  <rect x="52" y="304" width="20" height="10" rx="2" fill="#2563eb" class="sweep"/>
+  <text x="214" y="313" class="mono" font-size="10" fill="#1e3a8a">O(N) uniform latency defeats timing oracle</text>
+
+  <!-- QUADRANT 2 (Top-Right): AES-GCM GHASH & Nonce-Reuse Catastrophe -->
+  <rect x="568" y="78" width="528" height="258" rx="10" fill="#ffffff" class="q2-box"/>
+  <rect x="582" y="90" width="58" height="22" rx="5" fill="#e11d48"/>
+  <text x="611" y="105" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">STEP 2</text>
+  <text x="652" y="106" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">AES-GCM AEAD &amp; Nonce-Reuse Catastrophe</text>
+
+  <!-- Normal AEAD flow -->
+  <rect x="582" y="122" width="500" height="80" rx="7" fill="#f5f3ff" stroke="#c4b5fd"/>
+  <text x="594" y="140" class="sans" font-size="11" font-weight="700" fill="#5b21b6">AEAD Construction (Inputs: K, Nonce N, Plaintext P, Auth Data AD):</text>
+  <rect x="594" y="149" width="214" height="42" rx="5" fill="#ffffff" stroke="#8b5cf6"/>
+  <text x="701" y="166" class="mono" font-size="10" font-weight="700" fill="#5b21b6" text-anchor="middle">CTR: C_i = P_i ⊕ AES_K(N || i)</text>
+  <text x="701" y="182" class="sans" font-size="10" fill="#4c1d95" text-anchor="middle">Confidentiality (Stream Keystream)</text>
+
+  <line x1="812" y1="170" x2="844" y2="170" stroke="#7c3aed" stroke-width="1.8" class="flow" marker-end="url(#arr-violet)"/>
+
+  <rect x="850" y="149" width="220" height="42" rx="5" fill="#ffffff" stroke="#8b5cf6"/>
+  <text x="960" y="166" class="mono" font-size="10" font-weight="700" fill="#5b21b6" text-anchor="middle">T = GHASH_H(C, AD) ⊕ Mask</text>
+  <text x="960" y="182" class="sans" font-size="10" fill="#4c1d95" text-anchor="middle">GF(2^128) Tag, H = AES_K(0^128)</text>
+
+  <!-- Nonce Reuse Catastrophe -->
+  <rect x="582" y="210" width="500" height="114" rx="7" fill="#fff1f2" stroke="#e11d48" stroke-width="1.4" class="warn"/>
+  <text x="594" y="229" class="sans" font-size="11.5" font-weight="700" fill="#9f1239">CATASTROPHE — Reusing Nonce N under same Key K:</text>
+  <text x="594" y="248" class="mono" font-size="10.5" fill="#881337">1. Confidentiality lost: C_1 ⊕ C_2 = P_1 ⊕ P_2 (keystream cancels)</text>
+  <text x="594" y="266" class="mono" font-size="10.5" fill="#881337">2. Auth Key H leaked: T_1 ⊕ T_2 = GHASH_H(C_1,AD_1) ⊕ GHASH_H(C_2,AD_2)</text>
+  <text x="594" y="284" class="sans" font-size="10.5" fill="#9f1239">Factoring polynomial in GF(2^128) yields H → attacker forges ANY tag!</text>
+  <rect x="594" y="294" width="476" height="22" rx="4" fill="#ffe4e6"/>
+  <text x="832" y="309" class="mono" font-size="10" font-weight="700" fill="#9f1239" text-anchor="middle">96-bit Random Nonce Limit: ~2^32 msgs · Fix: 64-bit Counter or AES-GCM-SIV</text>
+
+  <!-- QUADRANT 3 (Bottom-Left): X25519 & Ed25519 -->
+  <rect x="24" y="352" width="528" height="218" rx="10" fill="#ffffff" class="q3-box"/>
+  <rect x="38" y="364" width="58" height="22" rx="5" fill="#059669"/>
+  <text x="67" y="379" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">STEP 3</text>
+  <text x="108" y="380" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">Asymmetric Curve25519: X25519 &amp; Ed25519</text>
+
+  <!-- X25519 ECDH -->
+  <rect x="38" y="396" width="500" height="84" rx="7" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <text x="50" y="414" class="sans" font-size="11" font-weight="700" fill="#065f46">X25519 Diffie-Hellman (RFC 7748) — Shared Secret over Untrusted Wire:</text>
+  <rect x="50" y="424" width="136" height="44" rx="5" fill="#ffffff" stroke="#059669"/>
+  <text x="118" y="442" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">Alice: A = a · G</text>
+  <text x="118" y="458" class="mono" font-size="10" fill="#047857" text-anchor="middle">S = a · B = ab·G</text>
+
+  <line x1="190" y1="438" x2="352" y2="438" stroke="#059669" stroke-width="1.8" class="flow" marker-end="url(#arr-green)"/>
+  <line x1="352" y1="454" x2="190" y2="454" stroke="#059669" stroke-width="1.8" class="flow" marker-end="url(#arr-green)"/>
+  <text x="271" y="433" class="mono" font-size="10" font-weight="700" fill="#047857" text-anchor="middle">public A →</text>
+  <text x="271" y="468" class="mono" font-size="10" font-weight="700" fill="#047857" text-anchor="middle">← public B</text>
+
+  <rect x="358" y="424" width="166" height="44" rx="5" fill="#ffffff" stroke="#059669"/>
+  <text x="441" y="442" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">Bob: B = b · G</text>
+  <text x="441" y="458" class="mono" font-size="10" fill="#047857" text-anchor="middle">S = b · A = ab·G</text>
+
+  <!-- Ed25519 -->
+  <rect x="38" y="488" width="500" height="70" rx="7" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="50" y="507" class="sans" font-size="11" font-weight="700" fill="#1e3a8a">Ed25519 Signatures (RFC 8032) — Deterministic Nonce Defeats Key Extraction:</text>
+  <text x="50" y="526" class="mono" font-size="10.5" fill="#1e40af">r = H(k || M) · 32B Public Key, 64B Signature · Constant-time execution</text>
+  <text x="50" y="544" class="sans" font-size="10" fill="#1e3a8a">Eliminates ECDSA's fatal random-nonce bias/reuse leak (PlayStation 3 flaw).</text>
+
+  <!-- QUADRANT 4 (Bottom-Right): HKDF Extract-then-Expand -->
+  <rect x="568" y="352" width="528" height="218" rx="10" fill="#ffffff" class="q4-box"/>
+  <rect x="582" y="364" width="58" height="22" rx="5" fill="#7c3aed"/>
+  <text x="611" y="379" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">STEP 4</text>
+  <text x="652" y="380" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">HKDF Extract-then-Expand (RFC 5869)</text>
+
+  <!-- Stage boxes -->
+  <rect x="582" y="400" width="114" height="76" rx="7" fill="#fffbeb" stroke="#d97706"/>
+  <text x="639" y="420" class="mono" font-size="10.5" font-weight="700" fill="#92400e" text-anchor="middle">IKM + Salt</text>
+  <text x="639" y="438" class="sans" font-size="10" fill="#78350f" text-anchor="middle">Non-uniform</text>
+  <text x="639" y="452" class="sans" font-size="10" fill="#78350f" text-anchor="middle">DH Secret S</text>
+  <text x="639" y="466" class="mono" font-size="10" fill="#b45309" text-anchor="middle">(Raw Entropy)</text>
+
+  <line x1="700" y1="438" x2="730" y2="438" stroke="#7c3aed" stroke-width="2" class="flow" marker-end="url(#arr-violet)"/>
+
+  <rect x="736" y="400" width="144" height="76" rx="7" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="808" y="419" class="sans" font-size="11" font-weight="700" fill="#5b21b6" text-anchor="middle">1. HKDF-Extract</text>
+  <text x="808" y="437" class="mono" font-size="10" fill="#4c1d95" text-anchor="middle">HMAC(Salt, IKM)</text>
+  <rect x="752" y="446" width="112" height="22" rx="4" fill="#7c3aed"/>
+  <text x="808" y="461" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">Uniform PRK</text>
+
+  <line x1="884" y1="438" x2="914" y2="438" stroke="#7c3aed" stroke-width="2" class="flow" marker-end="url(#arr-violet)"/>
+
+  <rect x="920" y="400" width="162" height="76" rx="7" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="1001" y="419" class="sans" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">2. HKDF-Expand</text>
+  <text x="1001" y="437" class="mono" font-size="10" fill="#047857" text-anchor="middle">Info = "app-v1-enc"</text>
+  <rect x="934" y="446" width="134" height="22" rx="4" fill="#059669"/>
+  <text x="1001" y="461" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">OKM (Enc &amp; MAC Keys)</text>
+
+  <rect x="582" y="488" width="500" height="70" rx="7" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="594" y="507" class="sans" font-size="11" font-weight="700" fill="#0f172a">Domain Separation &amp; Envelope Encryption:</text>
+  <text x="594" y="526" class="mono" font-size="10" fill="#334155">Different Info labels derive independent keys from 1 PRK cleanly.</text>
+  <text x="594" y="544" class="sans" font-size="10" fill="#475569">KMS wraps ephemeral DEK with master KEK; plaintext DEK purged from RAM.</text>
+
+  <!-- Footer -->
+  <rect x="24" y="582" width="1072" height="44" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="42" y="609" class="sans" font-size="11.5" font-weight="600" fill="#1e3a8a">Takeaway: Never roll raw primitives — pair HMAC/timingSafeEqual, unique-nonce AEAD, Curve25519, and HKDF domain separation.</text>
+</svg>

@@ -160,6 +160,10 @@ sequenceDiagram
 - **Choreography**: Services publish events (e.g. `PaymentProcessed`) and listen to peer events. Simple for small workflows, but hard to trace, test, and debug as service count grows.
 - **Orchestration**: A centralized **Saga Orchestrator** (e.g. Temporal, AWS Step Functions) explicitly coordinates steps, state transitions, timeouts, and compensatory rollbacks. Highly recommended for enterprise workflows.
 
+![Atomic Commit Protocols: 2PC, 3PC, Percolator, Spanner, and Sagas Animation](../assets/09-2pc-3pc-percolator-spanner-saga-animated.svg)
+
+_Step-by-step mechanics:_ (1) Classic 2PC blocks lock-holding participants if the coordinator crashes after `VOTE_COMMIT`, while 3PC's `PRE_COMMIT` splits into conflicting `ABORT`/`COMMIT` decisions under network partitions. (2) Percolator eliminates the single coordinator using primary/secondary lock pointers with TSO roll-forward/roll-back, and Spanner runs 2PC between fault-tolerant Paxos group leaders. (3) Long-running microservice Sagas execute local transactions $T_1 \to T_2 \to T_3$ and trigger idempotent compensating transactions $C_2 \to C_1$ on failure.
+
 ---
 
 ## 6. The Dual-Write Problem and the Transactional Outbox
