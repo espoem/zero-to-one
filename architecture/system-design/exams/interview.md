@@ -2,7 +2,7 @@
 
 This preparation bank tests Senior, Staff, and Principal distributed system design competency across the seven domains defined in [`exams/README.md`](README.md). Every question is original and grounded in primary engineering literature, official protocol RFCs, and production postmortems.
 
-- **Bank scope**: **120 questions** (`Q-SD-001`–`Q-SD-120`) covering quantitative capacity modeling, edge/API design, caching/partitioning, asynchrony/resilience, specialized indexing/financial correctness, SLO observability/DR, end-to-end canonical architectures, progressive scaling, distributed key-value stores, planetary-scale geospatial navigation, distributed message queue internals, high-contention hotel reservation and overbooking systems, planetary distributed email services, real-time gaming leaderboards, proximity / location-based services, real-time ephemeral location sharing (Nearby Friends), and high-throughput digital wallets, distributed ledgers, event sourcing, and Multi-Raft CQRS.
+- **Bank scope**: **132 questions** (`Q-SD-001`–`Q-SD-132`) covering quantitative capacity modeling, edge/API design, caching/partitioning, asynchrony/resilience, specialized indexing/financial correctness, SLO observability/DR, end-to-end canonical architectures, progressive scaling, distributed key-value stores, planetary-scale geospatial navigation, distributed message queue internals, high-contention hotel reservation and overbooking systems, planetary distributed email services, real-time gaming leaderboards, proximity / location-based services, real-time ephemeral location sharing (Nearby Friends), and high-throughput digital wallets, distributed ledgers, event sourcing, and Multi-Raft CQRS, reliable AI application & agent systems (Validator Sandwich, guarded semantic caching, calibrated HITL routing, bounded agents), secure-by-design system architecture (DDD domain primitives, identity taxonomy, 7-layer API defense, fail-closed CI/CD gates), and proxy/SPOF/API-lifecycle/CAP-PACELC composition.
 - **Difficulty calibration**: Level `1` tests foundational mechanics, Level `2` tests Senior-level trade-off reasoning, and Level `3` tests Staff/Principal failure modes, subtle race conditions, and quantitative traps.
 - **Timed practice**: Complete the [50-Question Written Architecture Drill](#timed-mock-exam-written-architecture-drill-50-questions--75-minutes) under a strict 75-minute timer, then run the [two 60-minute Staff/Principal design loops](#timed-mock-design-loops-2--60-minute-staffprincipal-simulations) against the explicit 0–4 grading rubrics.
 
@@ -2489,6 +2489,252 @@ Select **two** accurate architectural comparisons between **Pull-Based vs. Push-
 
 </details>
 
+---
+
+## Domain 9: Reliable AI Systems, Secure-by-Design Architecture & Edge/API Deltas (`Q-SD-121`–`Q-SD-132`)
+
+### Q-SD-121 · Reliable AI Systems: Validator Sandwich & Leaky Egress · difficulty 2 · scenario
+
+A team adds a Redis response cache in front of its claims-decision LLM endpoint to cut spend. The fresh-inference path runs through a Bottom Bun validator that checks the schema, the refund ceiling against `orderTotalCents`, and grounded citations. The cache-hit path runs `JSON.parse(redisVal)` and returns the object straight to the caller. A week later a cached entry written under an older prompt version has `refundAmountCents` stored as a string, and the downstream ledger consumer throws on every hit of that entry. What is the correct architectural fix?
+
+- A) Increase the cache TTL so that stale entries expire less often, which reduces how often old-schema entries reach consumers.
+- B) Route every egress path (fresh generation, repair retries, cache hits, and degraded fallbacks) through the same Bottom Bun validator, tag fallbacks with `degraded: true`, and treat cache reads as untrusted input that must be validated.
+- C) Keep the cache but skip validation on hits, because each entry was validated once when it was written and the Redis store is trusted infrastructure.
+- D) Move the schema check into `response_format: json_schema` with `strict: true`, so that stored payloads no longer need validation because constrained decoding guarantees their shape.
+
+<details><summary>Answer</summary>
+
+**B.** The Leaky Sandwich is a bypass defect: the cache-hit branch consumes an artifact produced under an older prompt or schema version, so the Bottom Bun must run on every egress path. The module's rule is that no path (fresh generation, retry repair, cache hit, or degraded fallback) may skip the Bottom Bun, and fallbacks are stamped `degraded: true` so observability never mistakes them for healthy model output. Versioned cache keys plus read-time validation close both the stale-schema route and the poisoning route.
+
+- Why not A: A longer TTL keeps incompatible entries alive for longer and does nothing about the missing validation on the read path.
+- Why not C: A write-time check does not cover entries written by an older validator, a bad deploy, or a poisoned writer, so the read path must validate again.
+- Why not D: Constrained decoding applies only to live generation; it does not rewrite values already stored in Redis, and it cannot enforce the cross-field refund ceiling against `orderTotalCents`.
+- Ref: [modules/25-reliable-ai-systems.md](../modules/25-reliable-ai-systems.md#23-bottom-bun-mandatory-output-guardrails-on-every-egress-path), https://platform.openai.com/docs/guides/structured-outputs
+
+</details>
+
+### Q-SD-122 · Reliable AI Systems: Guarded Semantic Caching · difficulty 3 · single
+
+Your semantic cache accepts any entry with `cosine >= 0.92` on query embeddings. A post-incident review finds three false hits: `"cancel my subscription"` returned the cancellation answer for `"do not cancel my subscription"`; `"refund order 1042"` returned order 1043's status; and a query from Tenant B returned an answer that was seeded by an injected instruction in Tenant A's traffic. Which redesign is correct?
+
+- A) Switch to a larger embedding model, which captures negation so that cosine similarity separates opposite intents and distinct order IDs.
+- B) Accept a cached entry only when tenant, prompt version, model, and schema provenance match exactly, when extracted slots (negation polarity, numeric IDs, dates, units, currencies) match, when the entry is not poisoned, and when the cached value passes the Bottom Bun on read; similarity is a necessary filter only.
+- C) Partition the cache by tenant ID alone; once tenants are isolated, the `0.92` cosine threshold is sufficient to handle negations and order IDs.
+- D) Keep one global cache but add a 60-second TTL, so that any poisoned or mismatched entry expires before it can be reused at scale.
+
+<details><summary>Answer</summary>
+
+**B.** Dense embeddings measure topical proximity, not logical or transactional equivalence, so opposite intents and entity swaps routinely score in the `0.94–0.99` band. The module's fix is a conjunctive accept predicate: similarity is necessary, but tenant partitioning, provenance equality, slot equivalence, poison exclusion, and read-path Bottom Bun validation must all hold before a hit is served.
+
+- Why not A: Any dense encoder measures topical closeness, so a larger model still scores opposite intents and swapped IDs as near neighbours; the failure is in the acceptance rule, not the encoder.
+- Why not C: Tenant partitioning fixes cross-tenant poisoning only; negation and order-ID false hits occur within one tenant, and the threshold alone cannot separate them.
+- Why not D: A short TTL shrinks the window of exposure but still serves wrong answers during that window, and it does not check slots, provenance, or the read-path validator.
+- Ref: [modules/25-reliable-ai-systems.md](../modules/25-reliable-ai-systems.md#42-exact-caching-provider-prefix-caching-and-the-semantic-cache-false-hit--poisoning-trap), https://genai.owasp.org/llm-top-10/
+
+</details>
+
+### Q-SD-123 · Reliable AI Systems: Calibrated HITL Routing · difficulty 3 · ordering
+
+Your team is replacing a gate on the model's self-reported JSON `"confidence"` field with a calibrated HITL pipeline. The steps are below. Select the order in which they must happen for a production rollout.
+
+1. Measure ECE and Brier score on a labelled held-out validation set for the uncalibrated signal.
+2. Fit temperature scaling or isotonic regression on that held-out set and confirm the calibration error improves.
+3. Derive routing thresholds from the cost matrix (expected error cost versus human review cost) and enable the four-way router.
+4. Write every human override into the golden eval set and monitor override rate and PSI drift.
+
+- A) 1, then 2, then 3, then 4.
+- B) 3, then 1, then 2, then 4.
+- C) 1, then 3, then 4, then 2.
+- D) 4, then 3, then 2, then 1.
+
+<details><summary>Answer</summary>
+
+**A.** The module requires calibration to be measured on a held-out labelled set before any uncertainty score gates a production action. Calibration then fits the scores, the cost-matrix rule consumes the calibrated probability through `p_err = 1 - p_hat`, and only then does the router go live; override write-back and drift monitoring run on live traffic against that baseline.
+
+- Why not B: Thresholds derived before calibration are applied to uncalibrated scores, so the cost rule has no valid calibrated input.
+- Why not C: Routing live before calibration makes production actions depend on a score whose calibration is unknown, which is the verbalized-confidence failure the module describes.
+- Why not D: Override write-back and drift monitoring need a live router and a calibrated baseline to compare against, so they cannot come first.
+- Ref: [modules/25-reliable-ai-systems.md](../modules/25-reliable-ai-systems.md#33-cost-matrix-uncertainty-routing-and-capacity-bounded-hitl-architecture), https://arxiv.org/abs/1706.04599
+
+</details>
+
+### Q-SD-124 · Reliable AI Systems: Atomic Limits & Bounded Agents · difficulty 3 · multi
+
+A tenant on a `100 RPM` plan sends `100` requests of `100,000` tokens each within one minute. Separately, an agent loops on a search tool with near-identical arguments for 40 steps. Every provider call and tool call returns HTTP `200 OK`. Select **two** controls that together close both failures.
+
+- A) Keep the circuit breaker as the primary control, because it opens whenever a downstream call fails and a 40-step loop is a downstream problem.
+- B) Evaluate `requests + 1 <= maxRPM`, `tokens + estTokens <= maxTPM`, and `spendUsd + estUsd <= maxTenantUsd` in one atomic Redis or Valkey Lua script keyed by the authenticated `tenantId`, and fail closed when the limiter is unreachable.
+- C) Add a system prompt instruction that the agent must stop after five tool calls and must not repeat identical arguments, because the model is instructed to respect the bound.
+- D) Enforce hard per-run ceilings for steps, tool calls, tokens, USD spend, and wall-clock time in the orchestrator loop, plus a canonical `(toolName, sortedArgs)` hash that halts repeated identical calls.
+
+<details><summary>Answer</summary>
+
+**B, D.** The RPM-only check admits all `100` requests even though they consume `10M` input tokens, so the atomic three-dimension script (RPM, TPM, and tenant USD) is the admission control. The agent failure produces no error signal, so the breaker never trips; deterministic per-run ceilings and a cycle hash halt the loop in code, which is the module's OWASP `LLM10` control.
+
+- Why not A: A circuit breaker opens only on failures; every call in the loop returns `200 OK`, so it stays closed while spend keeps growing.
+- Why not C: Prompt text is not an enforcement boundary; the module's rule is that the model proposes and deterministic code disposes, so the bound must live in the orchestrator.
+- Ref: [modules/25-reliable-ai-systems.md](../modules/25-reliable-ai-systems.md#41-atomic-dual-dimension-rate-limiting-rpm--tpm--usd-and-priority-queues), [modules/25-reliable-ai-systems.md](../modules/25-reliable-ai-systems.md#44-bounded-agent-loops-tool-boundary-authorization-and-owasp-llm-top-102025-mapping), https://genai.owasp.org/llm-top-10/
+
+</details>
+
+### Q-SD-125 · Reliable AI Systems: Multi-Provider Resilience · difficulty 3 · scenario
+
+Your primary frontier-model provider starts holding connections for `28 s` before it returns an answer, and a fraction of calls come back as malformed or refusal responses. Other providers return `429` quota errors during a regional brownout. Your breaker counts only thrown exceptions with `failureThreshold = 3`, and each stateless pod trips independently. The fleet either hammers the recovering provider with synchronized retries or jumps straight to a static "unavailable" stub. Which design best fits the module's guidance?
+
+- A) Keep exception-only counting, raise `failureThreshold` to `50` so that random blips never trip the breaker, and send all traffic to one static fallback message while the breaker is open.
+- B) Count HTTP `5xx`, `429` quota exhaustion, calls slower than `timeoutMs`, and elevated malformed or refusal rates as failures over a sliding window; cap HALF_OPEN to one or two jittered probes; and walk an ordered degradation ladder in which every rung is stamped `degraded: true`.
+- C) Retry every failed call three times with a fixed one-second delay and no timeout, so that a hung provider eventually answers and no breaker is needed.
+- D) Fail over immediately to a second provider on any `504` or timeout, generating a fresh `Idempotency-Key` for each attempt, so that checkout availability stays high.
+
+<details><summary>Answer</summary>
+
+**B.** The module's outcome-aware breaker counts slow calls and quality failures, not only thrown exceptions; it bounds HALF_OPEN probing with jitter so replicas do not stampede a recovering provider; and it degrades through explicit tiers (pinned primary, cross-region or cross-provider equivalent, cheaper mid-tier, validated cached prior, typed safe fallback) so that every fallback is visible as `degraded: true`.
+
+- Why not A: Exception-only counting cannot see a 28-second hang or malformed-output spikes, and raising the threshold only delays detection while a static stub discards availability that the ladder could keep.
+- Why not C: Fixed retries without timeouts add load to a degraded provider and never trip any breaker; the module lists unjittered retries with no slow-call timeout as the 2021 baseline it replaces.
+- Why not D: A fresh idempotency key per attempt defeats deduplication, so a request that already succeeded on the first provider can be billed again on the second; the module's job identity is derived from a stable idempotency key.
+- Ref: [modules/25-reliable-ai-systems.md](../modules/25-reliable-ai-systems.md#43-multi-provider-bulkhead-circuit-breakers-and-degradation-ladders), https://genai.owasp.org/llm-top-10/
+
+</details>
+
+### Q-SD-126 · Reliable AI Systems: OpenTelemetry GenAI & Silent Drift · difficulty 3 · scenario
+
+A support-triage pipeline's dashboards are green: HTTP success is `99.9%`, p99 latency is inside budget, and no alert has fired. Over three weeks the share of `AUTO_APPROVE` decisions rose while the human override rate doubled. The service config points at a floating model alias, and the team's first instinct is to log full prompts into the general trace backend. Which change best detects the likely cause, a silently served model change, without leaking customer PII?
+
+- A) Set `OTEL_INSTRUMENTATION_GENAI_CAPTURE_CONTENT=SPAN_ONLY` on every service, so that prompt text is always available in the trace backend for drift analysis.
+- B) Keep content capture at `NO_CONTENT`, compare `gen_ai.request.model` with `gen_ai.response.model` on every span to catch an upgraded snapshot, and alert on PSI drift of output labels together with the override rate.
+- C) Add retry-with-backoff around every provider call, so that transient provider-side changes are absorbed before they reach the classifier.
+- D) Alert only when `gen_ai.response.finish_reasons` equals `stop`, because a successful stop means the model produced a complete answer.
+
+<details><summary>Answer</summary>
+
+**B.** The module treats silent degradation as invisible to HTTP status codes and requires the `gen_ai.request.model` versus `gen_ai.response.model` comparison to detect a served snapshot that differs from the requested alias. Pairing that with PSI on output labels and the override rate catches behavioural drift, and keeping content capture at `NO_CONTENT` keeps raw prompts out of the shared trace backend.
+
+- Why not A: `SPAN_ONLY` writes prompt content into the trace backend that the module says must never receive raw prompts or PII by default, so the fix creates the leak it is meant to detect.
+- Why not C: Retries hide a changed model behind a successful response, so the drift becomes harder to see rather than easier.
+- Why not D: `stop` only says the generation terminated normally; it says nothing about which snapshot served the request or whether the label distribution moved.
+- Ref: [modules/25-reliable-ai-systems.md](../modules/25-reliable-ai-systems.md#31-opentelemetry-genai-semantic-conventions-and-privacy-safe-telemetry), https://opentelemetry.io/docs/specs/semconv/gen-ai/
+
+</details>
+
+### Q-SD-127 · Secure-by-Design: Domain Primitives & BOLA Prevention · difficulty 3 · scenario
+
+A microservice exposes `GET /v1/accounts/{id}` and `PATCH /v1/accounts/{id}`. A pen test shows that tenant `t_acme01` can read tenant `t_globex`'s account by guessing identifiers. The team patches the controller with `if (req.user.tenantId !== account.tenantId)` and returns `403` on mismatch. Which architecture removes the defect structurally, and what should a cross-tenant lookup return?
+
+- A) Keep the controller check and copy it into the GraphQL resolver and the Kafka consumer, so that every entry point repeats the comparison.
+- B) Bind the resource identifier to the authenticated principal's tenant inside a `TenantScopedResourceId` domain primitive so that the storage key is `tenantId:resourceId`, back it with PostgreSQL row-level security, and return a uniform `404` for rows that belong to another tenant.
+- C) Return `403` for cross-tenant lookups, because telling the client that the resource exists but is forbidden is more informative for legitimate integrators than a `404`.
+- D) Switch to UUIDv4 identifiers, which are unguessable, so enumeration of another tenant's accounts becomes infeasible and no tenant binding is needed.
+
+<details><summary>Answer</summary>
+
+**B.** The module moves the tenant invariant out of the controller and into the value type: a `TenantScopedResourceId` can only be constructed from the principal's tenant, so the other tenant's row is never fetched into application memory. Returning the same `404` as for a missing row removes the existence oracle; the RLS policy in the module's database tier is the independent backstop if application code is bypassed.
+
+- Why not A: Repeating the check per entry point is the failure mode the module names; any new route or consumer that forgets the `if` reopens BOLA.
+- Why not C: `403` for an existing foreign identifier and `404` for a missing one lets an attacker enumerate competitor accounts; the module requires the uniform response.
+- Why not D: Unguessable identifiers reduce enumeration but are not authorization; a leaked identifier or an unscoped query still returns another tenant's row.
+- Ref: [modules/26-secure-by-design-architecture.md](../modules/26-secure-by-design-architecture.md#23-verified-tenantdomainguard-implementation-and-existence-oracle-defense), https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/
+
+</details>
+
+### Q-SD-128 · Secure-by-Design: Identity Taxonomy & Token Custody · difficulty 2 · single
+
+A design review states: "We use OAuth 2.0 for authentication, JWTs for authorization, and SSO is our auth protocol, so the SPA keeps its access and refresh tokens in `localStorage`." Which correction matches the 2026 reference design?
+
+- A) OAuth 2.0 is the correct login protocol, and a signed JWT proves authorization because its claims state the user's role.
+- B) Authentication answers "who is the caller" (for example an OIDC ID Token), OAuth 2.1 delegates API access with mandatory PKCE, SSO is a federation topology rather than a wire protocol, and browser clients should keep tokens server-side behind a BFF with `HttpOnly` cookies and refresh token rotation.
+- C) SSO is a cipher suite selected at the identity provider, and `localStorage` is acceptable when the origin enforces a strict Content-Security-Policy.
+- D) JWTs are encrypted by default, so storing them in `localStorage` is safe because scripts cannot read the claims.
+
+<details><summary>Answer</summary>
+
+**B.** The module separates six concepts that design reviews routinely merge: authentication (identity proof), authorization (permission on a resource), SSO (a federation topology built on OIDC or SAML), token format and transport, delegated OAuth 2.1 access, and federated identity assertions. Its 2026 recommendation for browsers is the BFF pattern, which the module rates highest for XSS token-theft resistance because the browser never holds access or refresh tokens.
+
+- Why not A: OAuth access tokens authorize API access and are not a login proof; the module names OAuth-as-authentication as the classic pseudo-authentication flaw.
+- Why not C: SSO is an architectural topology, not a cipher; `localStorage` is readable by any script on the origin, which the module rates as zero token-theft resistance, and a CSP does not change that.
+- Why not D: Standard JWS tokens are Base64URL-encoded cleartext signed for integrity, so any script on the origin can read them; the module says never to put secrets or PII in claims.
+- Ref: [modules/26-secure-by-design-architecture.md](../modules/26-secure-by-design-architecture.md#31-untangling-six-perpetually-confused-concepts), https://www.rfc-editor.org/rfc/rfc9700
+
+</details>
+
+### Q-SD-129 · Secure-by-Design: 7-Layer API Defense Composition · difficulty 3 · multi
+
+A gateway team reviews its public API and internal query layer. Select **two** statements that describe configurations the pipeline must reject or sanitize.
+
+- A) `Access-Control-Allow-Origin: *` combined with `Access-Control-Allow-Credentials: true` must be rejected at boot time, because the combination lets any malicious site read authenticated responses.
+- B) Limiting requests by client IP alone is sufficient, because one IP address maps to one user and carrier-grade NAT is rare in practice.
+- C) Recursively strip or reject keys that start with `$`, contain `.`, or equal `__proto__` from request-derived query objects before MongoDB query construction, so operator injection such as `$ne` or `$where` never reaches the driver.
+- D) RFC 9457 Problem Details responses may include stack traces and ORM error text in development builds, because the detail helps incident response.
+
+<details><summary>Answer</summary>
+
+**A, C.** The module's fail-closed pipeline validates the CORS policy at construction time, and its `SanitizedQueryFilter` primitive rejects operator keys before any NoSQL query is built. Both are boot-time or construction-time rules rather than runtime hopes.
+
+- Why not B: IP-only limiting is the CGNAT failure: it throttles an entire carrier's customers and can be spoofed through untrusted forwarding headers.
+- Why not D: Problem Details must carry an opaque `trace_id` and must never expose stack traces, SQL table names, ORM errors, or internal hostnames, so detail goes to the trace system rather than the response.
+- Ref: [modules/26-secure-by-design-architecture.md](../modules/26-secure-by-design-architecture.md#42-verified-fail-closed-pipeline-startup-and-policy-algebra), https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS
+
+</details>
+
+### Q-SD-130 · Secure-by-Design: Redaction & Fail-Closed Release Gates · difficulty 3 · scenario
+
+Your CI security job queries a vulnerability database that rate-limits requests. The job exits non-zero, and the pipeline sets `allow_failure: true` on it, so an unscanned container image reached production. Separately, a staging incident log shows a payment card number inside an exception message, because a developer logged the request body by hand. Which combined policy is correct?
+
+- A) Keep `allow_failure` on scanner jobs to protect developer velocity, and add a dashboard that alerts on scanner errors after each release.
+- B) Treat a scanner error, timeout, or skipped status as a blocking condition in production, block any detected secret everywhere with no waiver, and place a mandatory redaction scrubber inside the logging framework so that it runs on every call before serialization, including Luhn-valid card numbers found in free text.
+- C) Replace the scanner gate with a manual security review on each release, and rely on developers to avoid logging request bodies.
+- D) Block builds only on CVSS 7.0 or higher, so that teams are not interrupted by unreachable library alerts, and add redaction calls at each log statement.
+
+<details><summary>Answer</summary>
+
+**B.** The module's fail-closed rule is that a scanner crash or skip blocks production (`SCANNER_ERROR`), detected secrets block everywhere and are never waivable, and unsigned or unverified artifacts never reach admission. Redaction belongs in the framework, not in call sites, so a hand-written log line cannot bypass it.
+
+- Why not A: A post-release dashboard cannot stop an unscanned image from being admitted; the module requires the gate to be enforced at promotion, not observed after it.
+- Why not C: Manual review and developer discipline are the failure modes the module names: discipline fails on the first urgent debugging patch, and controls that exist only in documentation decay.
+- Why not D: CVSS-only blocking buries teams in unreachable alerts until the gate is disabled, and per-call-site redaction fails the same way as developer discipline.
+- Ref: [modules/26-secure-by-design-architecture.md](../modules/26-secure-by-design-architecture.md#54-fail-closed-cicd-security-gates-and-progressive-environment-strictness), [modules/26-secure-by-design-architecture.md](../modules/26-secure-by-design-architecture.md#53-framework-level-structured-audit-logging-and-automated-piisecret-masking), https://slsa.dev/spec/v1.0/
+
+</details>
+
+### Q-SD-131 · Edge & Load Balancing: CGNAT Affinity & LB SPOF Removal · difficulty 3 · scenario
+
+A ride-hailing API runs four L7 backends behind an NGINX tier that uses `ip_hash` for session affinity. A mobile carrier places about `5,000` subscribers behind one CGNAT public IPv4 address (RFC 6598 shared space internally), and the rate limiter is also keyed on client IP. Backend 2 runs at `90%` CPU while the others sit near `20%`. The team's first proposal is to add two more backends to the same `ip_hash` pool. The LB tier itself is a single host. Which remediation stack is correct?
+
+- A) Add two more backends behind the same `ip_hash` pool, which spreads the carrier's subscribers across more nodes.
+- B) Externalize session state to Redis so that any backend serves any request; where affinity is still needed, hash a stable identity (session, tenant, or API key) with consistent hashing and bounded-load caps; key rate limits on identity; and run the LB tier as N+1 active-active nodes behind anycast or ECMP, with external health probes on the data path.
+- C) Replace the single load balancer with a VRRP pair, which removes the single point of failure and therefore also removes the hot-spot on backend 2.
+- D) Use the leftmost `X-Forwarded-For` entry as the client IP for both hashing and rate limits, since it identifies the subscriber behind the carrier's NAT.
+
+<details><summary>Answer</summary>
+
+**B.** The module's diagnosis is that `ip_hash` assumes one IP is one user, which fails behind CGNAT, and that modulo hashing remaps most clients when the pool size changes. The fix works on two levels: remove the need for affinity by externalizing state, and where affinity remains, hash a stable identity with consistent hashing and bounded loads. The LB tier is removed as a single point of failure by N+1 active-active nodes with anycast or ECMP and health checks that test the forwarding path, not only the host.
+
+- Why not A: `ip_hash` keys on one address that represents thousands of users, so more backends do not split the carrier's crowd, and modulo remapping moves most clients on every pool change.
+- Why not C: A VRRP pair protects against a host failure but still pins all carrier users to one backend, so the hot-spot remains; it fixes availability, not affinity.
+- Why not D: Entries left of your own edge are client-controlled, so the leftmost value is spoofable and defeats both hashing and rate limiting.
+- Ref: [modules/03-networking-edge-and-cdn-composition.md](../modules/03-networking-edge-and-cdn-composition.md#24-forward-vs-reverse-proxy-taxonomy-and-eliminating-load-balancer-spofs), https://www.rfc-editor.org/rfc/rfc6598
+
+</details>
+
+### Q-SD-132 · Data Modeling & API Design: CAP/PACELC Selection & HTTP Method Semantics · difficulty 3 · multi
+
+A design review contains four claims. Select **two** statements that are correct.
+
+- A) A replicated store that halts writes on the minority side during a partition is a "CA distributed system", because it stays consistent and available within the majority.
+- B) "NoSQL drops the C in ACID", so document-oriented databases cannot offer multi-record transactions that preserve application invariants.
+- C) RFC 5789 defines `PATCH` as neither safe nor idempotent by specification; deterministic JSON Merge Patch assignments (RFC 7396) are idempotent, whereas JSON Patch `add` and `remove` operations (RFC 6902) and relative counter increments are not, so base-dependent patches should be guarded with `If-Match`.
+- D) Under the GraphQL-over-HTTP specification, a successful execution that yields data returns `200 OK` with `application/graphql-response+json`, and a query that fails validation returns a `4xx` such as `422` rather than a `200` with an errors envelope.
+
+<details><summary>Answer</summary>
+
+**C, D.** RFC 5789 §2 explicitly makes `PATCH` neither safe nor idempotent, and the module's refinement is that payload semantics decide retry safety: set-style merge patches are idempotent, while array edits and relative increments are not, so a strong `ETag` with `If-Match` guards base-dependent changes. The modern GraphQL-over-HTTP spec separates successful execution (`200`) from pre-execution failures (`4xx`) so that HTTP-layer alerting sees them.
+
+- Why not A: Once replicated across machines, any system that halts on partition is CP, not CA; the label is a category error, because a partition cannot be opted out of across more than one machine.
+- Why not B: CAP's `C` means single-copy linearizability while ACID's `C` means invariant preservation; document stores such as MongoDB (multi-document transactions on replica sets since 4.0) and DynamoDB (`TransactWriteItems`) support ACID transactions while remaining CP under partition.
+- Ref: [modules/04-api-design-data-modeling-and-id-generation.md](../modules/04-api-design-data-modeling-and-id-generation.md#43-cap--pacelc-workload-selection-delta-and-common-database-misconceptions), https://www.rfc-editor.org/rfc/rfc5789
+- Ref: [modules/04-api-design-data-modeling-and-id-generation.md](../modules/04-api-design-data-modeling-and-id-generation.md#35-api-design-methodology-protocol-spec-nuances-and-full-lifecycle), https://graphql.github.io/graphql-over-http/
+
+</details>
 ---
 
 ## Timed Mock Exam: Written Architecture Drill (50 Questions · 75 Minutes)

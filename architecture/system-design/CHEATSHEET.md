@@ -270,7 +270,7 @@ flowchart LR
 
 ---
 
-## 6. Top 59 Production Failure Modes & One-Line Fixes
+## 6. Top 67 Production Failure Modes & One-Line Fixes
 
 | # | Failure Mode | How It Breaks Production | One-Line Fix |
 | :-- | :-- | :-- | :-- |
@@ -333,3 +333,42 @@ flowchart LR
 | **57** | **TC/C Phase 1 Credit-First Unbacked Double-Spend** | Crediting receiver $C$ (`+$1`) during Phase 1 `Try` before sender $A$'s debit is committed lets $C$ withdraw unbacked phantom funds if Phase 1 aborts. | Always make TC/C Phase 1 `Try` **debit-first (`-$1` on sender $A$) and `NOP` on receiver $C$**, crediting $C$ only in Phase 2 `Confirm`. |
 | **58** | **TC/C Out-of-Order Cancel Without Tombstone (`Hanging Try`)** | Network-delayed `Try` arrives after `Cancel` already ran as a no-op, deducting `-$1` from sender $A$ forever with no subsequent `Cancel` to release it. | Persist an `out_of_order_flag = true` (`CANCEL_TOMBSTONE`) in the Phase Status Table on early `Cancel` so any late-arriving `Try` is rejected immediately. |
 | **59** | **Non-Deterministic Event-Sourcing State Machine & Pull-CQRS Polling** | Calling `Date.now()`, `Math.random()`, or external I/O inside event replay causes Raft followers to diverge, while client polling (`GET /balance`) floods read nodes. | Replicate only immutable validated **Events** via Raft (zero external I/O inside state transitions) and use **Push-Based Reverse Proxy CQRS** completion notifications. |
+| **60** | **Naive Cosine-Only Semantic LLM Cache False Hit / Cross-Tenant Poisoning** | Cosine `>= 0.92` matches negated or entity-swapped queries (`cancel` vs. `do not cancel` at cos `≈0.96`; `order 1042` vs. `1043` at cos `≈0.98`), and unpartitioned entries let Tenant B's poisoned answer serve Tenant A. | Accept only a conjunctive predicate: similarity AND equal slots (negation, IDs, units, dates) AND equal `tenantId` AND equal prompt, model, and schema provenance AND not poisoned AND Bottom-Bun validation on read. |
+| **61** | **Uncalibrated Verbalized LLM Confidence Silent Failure** | A self-reported `"confidence": 0.95` appears on about 90% of requests while accuracy is only 60%, so auto-execute thresholds approve wrong outputs behind HTTP `200 OK`. | Measure ECE and Brier score on a labelled held-out set, fit temperature scaling or isotonic regression, and gate on calibrated signals (logprobs plus a cross-family verifier), never on verbalized confidence alone. |
+| **62** | **Unbounded Autonomous Agent Tool Loop & Token-Cost Blowup** | Each step re-bills the growing context: with `L0 = 2,000` and `ΔL = 1,500` tokens per step, `S = 20` steps consume `325,000` input tokens (over `160x` the first prompt), and a retry loop turns a `$0.02` request into a `$5,000/day` spike while the circuit breaker stays closed. | Enforce hard ceilings on steps, tool calls, tokens, USD cost, and wall-clock time, plus a SHA-256 cycle guard over tool name and canonically sorted arguments, and terminate fail-closed when any ceiling is reached. |
+| **63** | **Regex-Only Input Guardrail & Prompt-Injection Bypass** | A blocklist for `ignore previous instructions` misses Base64 or ROT13 encodings, translation, homoglyphs, split tokens, and indirect injection inside retrieved RAG chunks or HTML emails. | Keep the regex only as a `$0` pre-filter, add instruction-versus-data delimiter isolation (`<untrusted_user_data>`), screen retrieved chunks, and treat model output as untrusted so tool authorization stays in deterministic code. |
+| **64** | **Scattered Controller Auth Checks Causing BOLA / IDOR Leaks** | A new REST handler, GraphQL resolver, or queue consumer omits the `if (tenant !== owner)` check, so any authenticated user reads or mutates another tenant's record by requesting `acct_000002`. | Bind every lookup to the principal's tenant in a composite key (`TenantScopedResourceId`), back it with PostgreSQL RLS, and return a uniform `404` for foreign and nonexistent IDs to avoid an existence oracle. |
+| **65** | **CORS Wildcard (`*`) Workaround with Credentials & Refresh Token in `localStorage`** | Browsers refuse `Access-Control-Allow-Origin: *` with credentials, so teams reflect the request `Origin` (or allow `null`) alongside `Allow-Credentials: true`, letting any hostile site read authenticated responses; a refresh token in `localStorage` turns any XSS into persistent account takeover. | Use an exact-match origin allowlist with `Vary: Origin`, validated at boot and rejecting `null`, and move refresh tokens into a BFF session with `HttpOnly` cookies. |
+| **66** | **Unredacted Exception / Audit Logging Leaking Bearer Tokens & PII** | Error handlers and audit logs serialize `req.headers` or raw error strings, writing `Authorization: Bearer` values, `eyJ...` JWTs, and Luhn-valid card numbers into shared log search and third-party SaaS tools. | Install a mandatory redacting logger in the framework that masks normalized sensitive keys (`Authorization`, `Cookie`, `password`) and scrubs free-text patterns, and ship audit records to an append-only WORM sink. |
+| **67** | **IP Hash Load Balancing Behind Corporate / Carrier-Grade NAT (CGNAT)** | `hash(client_ip) % N` pins thousands of subscribers sharing one public IPv4 to a single backend (RFC 6598 shared space `100.64.0.0/10` internally), so that backend runs hot, and modulo hashing remaps nearly every client when the pool resizes. | Externalize session state so any backend serves any request; where affinity is still needed, hash a stable identity key (session, user, tenant, or API key) with consistent hashing and bounded load. |
+
+---
+
+## 7. Reliable AI & Secure-by-Design Quick-Reference Matrix
+
+### Validator Sandwich & Gated AI Guardrails
+
+| Layer | Placement | Concrete Control | On Violation |
+| :-- | :-- | :-- | :-- |
+| **Top Bun (input)** | Before any limiter debit or paid call | Principal from session only, `maxInputTokens` cap, PII redaction, regex pre-filter, delimiter isolation | Typed `400` / `422` rejection at `$0` spend |
+| **Atomic Gate** | Redis / Valkey Lua script | `RPM + TPM + USD` debited in one script keyed by `tenantId` | Fail closed when the limiter is unreachable |
+| **Guarded Cache** | Before inference | Conjunctive predicate: similarity, slots, tenant, provenance, not poisoned | Miss, never a guessed hit |
+| **Meat (LLM)** | Constrained decoding | CFG / FSM schema, check `finish_reason` before parsing, at most 1–2 repair retries | Fail closed on `refusal` or `length` |
+| **Bottom Bun (output)** | Every egress path, including cache hits and fallbacks | Strict keys, numeric bounds, cross-field invariants, citation grounding, egress leakage filter | Fail-closed escalation or safe default |
+| **Calibrated Router** | After validation | ECE-calibrated score mapped to cost-matrix bands: `AUTO_APPROVE`, `ESCALATE_MODEL`, `HITL_QUEUE`, `FAIL_CLOSED` | Queue overflow fails closed |
+| **Bounded Agent** | Tool boundary | Five ceilings, SHA-256 cycle guard, tool allowlist derived from the principal | Terminate; `UNAUTHORIZED_TOOL_CALL` |
+
+### AuthN vs. AuthZ vs. SSO & 7-Layer API Defense Placement
+
+| Concept or Layer | Question Answered / Placement | Concrete Control | Failure If Misplaced |
+| :-- | :-- | :-- | :-- |
+| **AuthN** | "Who are you?" at the IdP or mTLS boundary | Verify credential proof (OIDC ID Token, SVID, passkey) | Treating an OAuth access token as proof of login |
+| **AuthZ** | "What may you do on this object?" inside the owning service | RBAC, ABAC, or ReBAC with explicit `forbid` overriding `permit`, default deny | Gateway-only checks leave BOLA open |
+| **SSO** | Session federation topology, not a wire protocol | One IdP login across relying parties, built on OIDC or SAML 2.0 | Calling SSO an authentication mechanism |
+| **L1 Rate Limiting** | Edge `503` shed and gateway `429` + `Retry-After` | Key on `sub`, `tenant_id`, or API key, never on IP alone | IP keys throttle an entire carrier NAT |
+| **L2 CORS** | API gateway or BFF | Exact origin allowlist, `Vary: Origin`, boot-time validation | Reflected origin with credentials |
+| **L3 Injection Elimination** | Service boundary and data access layer | `SanitizedQueryFilter`, parameterized SQL, reject `$`-prefixed keys | NoSQL operator injection via `$ne` |
+| **L4 Cloud WAF** | Edge POP before origin | `413` body caps, `400` malformed-URL rejection, virtual patches | WAF used as the primary fix |
+| **L5 Zero-Trust East-West** | Service mesh and message broker | SPIFFE mTLS SVIDs, publisher-signed event envelopes | Flat VPC trust lets one SSRF pivot inward |
+| **L6 CSRF** | BFF, for cookie-authenticated unsafe methods | `SameSite`, Fetch Metadata, constant-time synchronizer token | Applied to Bearer M2M endpoints, breaking clients |
+| **L7 XSS** | Frontend and response headers | Nonce-based CSP, Trusted Types, `HttpOnly` cookies | `unsafe-inline` CSP bypassed via gadgets |

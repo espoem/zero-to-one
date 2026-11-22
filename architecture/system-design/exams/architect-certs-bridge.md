@@ -3,7 +3,7 @@
 No single vendor-neutral certification tests general distributed system design, so vendor-specific IAM, CLI, and control-plane trivia stay in [`technologies/aws`](../../../technologies/aws/), [`technologies/gcp`](../../../technologies/gcp/), and [`technologies/azure`](../../../technologies/azure/). This bridge bank maps the architectural patterns, quantitative trade-offs, and failure modes taught across `architecture/system-design` directly onto Senior/Architect certification scenario domains (**AWS Solutions Architect – Professional `SAP-C02`**, **Google Cloud Professional Cloud Architect `PCA`**, **Microsoft Azure Solutions Architect Expert `AZ-305`**, and **CNCF / SRE Resilience**).
 
 - **Sequential Growth Plan**: Built sequentially alongside Wave A & Wave B topic completions (target: **60+ original scenario questions** plus a full [60-Question Timed Certification Bridge Mock Exam](#timed-certification-bridge-mock-exam-60-questions--90-minutes)).
-- **Current Coverage**: **60 questions** (`Q-CERT-001`–`Q-CERT-060`) covering Topic 01 (`Scale From Zero to Millions` — Module 15), Topic 02 (`Distributed Key-Value Store` — Module 16), Topic 03 (`Google Maps` — Module 17), Topic 04 (`Distributed Message Queue` — Module 18), Topic 05 (`Hotel Reservation System` — Module 19), Topic 06 (`Distributed Email Service` — Module 20), Topic 07 (`Real-time Gaming Leaderboard` — Module 21), Topic 08 (`Proximity Service` — Module 22), Topic 09 (`Nearby Friends` — Module 23), and Topic 10 (`Digital Wallet` — Module 24).
+- **Current Coverage**: **70 questions** (`Q-CERT-001`–`Q-CERT-070`) covering Topic 01 (`Scale From Zero to Millions` — Module 15), Topic 02 (`Distributed Key-Value Store` — Module 16), Topic 03 (`Google Maps` — Module 17), Topic 04 (`Distributed Message Queue` — Module 18), Topic 05 (`Hotel Reservation System` — Module 19), Topic 06 (`Distributed Email Service` — Module 20), Topic 07 (`Real-time Gaming Leaderboard` — Module 21), Topic 08 (`Proximity Service` — Module 22), Topic 09 (`Nearby Friends` — Module 23), Topic 10 (`Digital Wallet` — Module 24), Topic 11 (`Reliable AI Systems` — Module 25), and Topic 12 (`Secure-by-Design Architecture & API Security Composition` — Module 26).
 
 ---
 
@@ -1245,6 +1245,211 @@ Select **two** genuine architectural advances when modernizing a 2021 distribute
 
 </details>
 
+---
+
+## Module 25: Reliable AI Systems, Guardrails, Calibration & Bounded Agents (`Q-CERT-061`–`Q-CERT-065`)
+
+### Q-CERT-061 · AWS SAP-C02: Reliable AI Gateway Quotas, Queues & Regional Fallback · difficulty 3 · scenario
+
+A SaaS company exposes an LLM summarisation API through Amazon API Gateway. Tenants have monthly token and USD budgets, bursts are common, interactive requests must not wait behind batch jobs, and a regional model outage must not become a full outage. Which design best meets these requirements?
+
+- A) Attach an API Gateway usage plan with a monthly request quota per API key, and rely on the model provider's per-model token quota to enforce each tenant's USD budget.
+- B) Enforce per-tenant token and USD quotas with an atomic Valkey Lua script keyed by tenant, route interactive and batch traffic into separate SQS queues with dead-letter queues and explicit deadlines, put Bedrock Guardrails on input and output, and fall back to a second-region model tier whose responses are stamped `degraded: true`.
+- C) Cache completions in DynamoDB keyed by the raw prompt body, and send every cache miss to a single Region's model endpoint, so that the cache is the only control on spend.
+- D) Use an Application Load Balancer health check to switch Regions when the model is slow, since the model call is stateless and retries are therefore safe.
+
+<details><summary>Answer</summary>
+
+**B.** Token and USD budgets need an atomic admission check keyed by the authenticated tenant, because request counts do not track cost. Separate queues keep interactive latency independent of batch load, dead-letter queues and deadlines stop expired work from consuming inference cost, and a stamped degraded tier keeps regional failover visible to observability. Bedrock Guardrails provide the managed input and output screening the module's Top Bun and Bottom Bun require.
+
+- Why not A: Usage plans meter requests, not tokens or dollars, so a `100,000`-token call consumes the same quota as a `200`-token call; the module's RPM-only failure.
+- Why not C: A cache keyed on the raw prompt body ignores tenant and provenance, which is the cross-tenant poisoning path, and caching alone cannot cap spend.
+- Why not D: Retrying a paid, non-idempotent model call without an idempotency key can double-bill, and an ALB health check cannot see per-tenant token budgets.
+- Ref: [modules/25-reliable-ai-systems.md](../modules/25-reliable-ai-systems.md#41-atomic-dual-dimension-rate-limiting-rpm--tpm--usd-and-priority-queues), https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails.html
+
+</details>
+
+### Q-CERT-062 · GCP PCA: Controlled Generation, Model Armor & Human Review Queues · difficulty 3 · scenario
+
+A healthcare triage assistant on Vertex AI must screen prompts for injection and sensitive data, return only schema-conformant output, produce traces that show model and token usage without storing patient text, and send low-confidence cases to a human review service on Cloud Run. Which architecture best satisfies these constraints?
+
+- A) Screen prompts and responses with Model Armor, constrain output with a Vertex AI response schema, emit OpenTelemetry GenAI spans to Cloud Trace with content capture disabled, and route low-confidence decisions to a bounded review queue on Cloud Run with explicit depth limits and load shedding.
+- B) Log full prompts to Cloud Logging for auditability, set temperature to `0` so that answers are reproducible, and scale the Cloud Run review service to unlimited instances to absorb peaks.
+- C) Place the model endpoint behind Cloud Armor and trust the JSON it returns, because Cloud Armor enforces the response schema at the edge.
+- D) Put the assistant behind Identity-Aware Proxy and treat the user's identity as sufficient to bound token spend and content risk.
+
+<details><summary>Answer</summary>
+
+**A.** Input screening, schema-constrained decoding, content-free telemetry, and a bounded review queue correspond to the module's Top Bun, constrained output, privacy-safe OpenTelemetry GenAI tracing, and capacity-bounded HITL routing. Each control covers a different failure, and none depends on the model behaving well.
+
+- Why not B: Full prompt logging leaks patient text into a general log store (`LLM02`), temperature `0` does not guarantee determinism in production, and unlimited instances remove the capacity bound that the review queue depends on.
+- Why not C: Cloud Armor filters network-level abuse and does not validate a model's output schema; the module says constrained decoding guarantees syntax only for completed, non-refusal generations, so output still needs the Bottom Bun.
+- Why not D: Identity says who the caller is but does not enforce token budgets or screen content, which the module assigns to atomic counters and guardrails.
+- Ref: [modules/25-reliable-ai-systems.md](../modules/25-reliable-ai-systems.md#22-the-meat-constrained-structured-outputs-cfg--fsm-vs-naive-post-hoc-parsing), https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/control-generated-output
+
+</details>
+
+### Q-CERT-063 · Azure AZ-305 / AI-200: APIM Token Limits, Content Safety & Tenant-Isolated Caching · difficulty 2 · scenario
+
+An enterprise platform exposes Azure OpenAI deployments through Azure API Management to several business units, each billed separately. The architects want per-unit token fairness, content screening on prompts and completions, and a semantic cache that saves money without letting one unit read another's answers. Which design is correct?
+
+- A) Apply the APIM generative-AI token-limit policy per subscription on prompt and completion tokens, partition the semantic cache by tenant and provenance inside the cache key with read-time validation, and screen prompts and completions with Azure AI Content Safety.
+- B) Use one shared semantic cache for every business unit to maximise hit rate, and rely on an APIM per-IP rate limit for fairness between units.
+- C) Rely on the Azure OpenAI deployment quota alone, because a deployment-level tokens-per-minute limit already bounds every business unit.
+- D) Run Content Safety only on model output, because prompts arrive from Entra ID-authenticated callers and are therefore trusted.
+
+<details><summary>Answer</summary>
+
+**A.** Per-subscription token policies provide the tenant-level fairness that deployment quotas cannot, tenant and provenance partitioning in the cache key blocks cross-unit poisoning and answer leakage, and input screening runs before inference because injection arrives through authenticated callers and retrieved documents, not only through anonymous ones.
+
+- Why not B: A cache shared across business units is the cross-tenant poisoning trap, and per-IP limits fail behind corporate NAT where many users share one address.
+- Why not C: A deployment quota is shared by every business unit, so one heavy unit can exhaust it for the others; it gives no per-unit fairness or USD view.
+- Why not D: Authenticated callers can still inject instructions, and retrieved documents can carry injection too (`LLM01`), so the module screens input at the Top Bun.
+- Ref: [modules/25-reliable-ai-systems.md](../modules/25-reliable-ai-systems.md#42-exact-caching-provider-prefix-caching-and-the-semantic-cache-false-hit--poisoning-trap), https://learn.microsoft.com/en-us/azure/api-management/llm-token-limit-policy
+
+</details>
+
+### Q-CERT-064 · CNCF / SRE: Calibration Drift Alerts & Bounded Agent Kill Switches · difficulty 3 · single
+
+Over two weeks, the calibration error of a claims classifier rises from `0.03` to `0.11` after a silent provider snapshot change. At the same time, an agent workflow has begun burning budget through repeated tool calls, and every call returns `200 OK`. The on-call SRE needs the earliest reliable signal and a response that does not depend on the agent behaving. Which combination is correct?
+
+- A) Page only on HTTP `5xx` and p99 latency, and add a prompt instruction telling the agent to stop when it is unsure.
+- B) Compute ECE and Brier score on a labelled rolling sample per snapshot, alert on ECE and PSI thresholds, and implement the kill switch as deterministic per-run ceilings for steps, tool calls, and USD spend enforced by the orchestrator, with OpenTelemetry `gen_ai` token spans for cost attribution.
+- C) Replace the classifier's verbalized confidence with the self-reported JSON field, so that the dashboard shows calibration without needing a labelled sample.
+- D) Raise the agent's maximum tokens so that long runs finish, which reduces retries and therefore the cost per successful answer.
+
+<details><summary>Answer</summary>
+
+**B.** Calibration drift is only visible against labelled ground truth, measured with ECE and Brier score and tracked with PSI over inputs and outputs. Agent runaway produces no failure signal, so the only reliable stop is a deterministic ceiling in the orchestrator, with spans that attribute token and cost usage to each run.
+
+- Why not A: `5xx` and latency stay green during calibration drift and during an agent loop that returns `200 OK`, and a prompt instruction is not an enforced boundary.
+- Why not C: Verbalized confidence is the weakest uncertainty signal and is systematically overconfident, so a rising self-reported score says nothing reliable about calibration.
+- Why not D: Larger token budgets increase cost per run, and the module's per-run ceilings exist to bound that cost rather than enlarge it.
+- Ref: [modules/25-reliable-ai-systems.md](../modules/25-reliable-ai-systems.md#32-why-verbalized-llm-confidence-fails-calibration-ece-brier-score-and-drift), [modules/25-reliable-ai-systems.md](../modules/25-reliable-ai-systems.md#44-bounded-agent-loops-tool-boundary-authorization-and-owasp-llm-top-102025-mapping), https://arxiv.org/abs/1706.04599
+
+</details>
+
+### Q-CERT-065 · Multi-Cloud Architecture: 2021–2023 vs. 2026 Reliable AI Modernization · difficulty 2 · multi
+
+Select **two** modernization moves that take a 2021–2023 LLM prototype toward the 2026 reliable AI standard.
+
+- A) Replace a prompt that says "return valid JSON only", followed by regex stripping, with grammar-constrained decoding, a `finish_reason` check, and a mandatory deterministic output validator.
+- B) Replace the model's self-reported `"confidence": 0.95` gate with calibrated logprob and verifier signals, scored with ECE and Brier score, behind cost-matrix HITL routing.
+- C) Pin a floating model alias so that provider upgrades arrive automatically, and the team never has to schedule a model migration.
+- D) Use `temperature = 0` as the determinism guarantee and skip the offline golden-eval gate when a provider bumps a snapshot.
+
+<details><summary>Answer</summary>
+
+**A, B.** Both moves replace a prompt-only assumption with an enforced mechanism: constrained decoding and a deterministic validator replace regex repair, and calibrated uncertainty with cost-matrix routing replaces an uncalibrated self-report. The module's 2026 column names exactly these controls.
+
+- Why not C: Floating aliases let provider weight changes alter outputs without a code commit; the 2026 standard pins dated snapshots and gates every bump behind an offline eval.
+- Why not D: `temperature = 0` does not guarantee identical outputs on modern GPU inference stacks, and the golden-eval gate is the release control for exactly that drift.
+- Ref: [modules/25-reliable-ai-systems.md](../modules/25-reliable-ai-systems.md#53-technology-comparison-then-vs-now-20212023-vs-2026), https://platform.openai.com/docs/guides/structured-outputs
+
+</details>
+
+---
+
+## Module 26: Secure-by-Design Architecture, Zero Trust & 7-Layer API Defense (`Q-CERT-066`–`Q-CERT-070`)
+
+### Q-CERT-066 · AWS SAP-C02: Multi-Tenant B2B Edge, Envelope Encryption & Private Partner Access · difficulty 3 · scenario
+
+A multi-tenant B2B platform on AWS serves partner integrations that run from partner data centres. Tenant data is regulated, and the security team wants per-tenant revocation of data access, database access without long-lived passwords, and no flat network trust between partners and internal services. Which architecture is correct?
+
+- A) Put AWS WAF on CloudFront with managed and rate-based rules, encrypt tenant data with KMS envelope encryption using per-tenant data keys, use RDS IAM database authentication with short-lived tokens together with PostgreSQL row-level security, and expose the service to partners through AWS PrivateLink rather than a flat site-to-site VPN into the VPC.
+- B) Route partners through a site-to-site VPN into one flat VPC, rely on security groups for tenant isolation, and store a long-lived database password in an environment variable.
+- C) Use CloudFront with a custom certificate and an origin allowlist, and leave database access open to all application subnets, since the subnets are private.
+- D) Run AWS WAF in count mode only, to avoid disrupting partners, and use one shared KMS key for all tenants for simplicity.
+
+<details><summary>Answer</summary>
+
+**A.** Each element answers a distinct failure: WAF with rate rules filters the edge, envelope encryption with per-tenant data keys makes tenant revocation a key operation, IAM-issued short-lived database credentials remove static passwords, row-level security backs up the application's tenant filter, and PrivateLink exposes one service endpoint rather than a whole network.
+
+- Why not B: A flat VPN trusts whole partner networks, so one compromised partner or SSRF path can reach internal admin endpoints; the module's zero-trust placement requires per-service access instead.
+- Why not C: Private subnets do not stop lateral movement, and open database access from every application subnet means any compromised service can read every tenant's rows.
+- Why not D: Count mode logs matches without blocking them, and one shared key prevents revoking a single tenant's data access without re-encrypting everything.
+- Ref: [modules/26-secure-by-design-architecture.md](../modules/26-secure-by-design-architecture.md#41-end-to-end-7-layer-placement-matrix), https://docs.aws.amazon.com/waf/latest/developerguide/what-is-aws-waf.html
+
+</details>
+
+### Q-CERT-067 · GCP PCA: Zero Trust Access, Service Perimeters & Customer-Managed Keys · difficulty 3 · scenario
+
+A regulated analytics company runs an internal admin application, a BigQuery warehouse holding personal data, and a public API. Contractors must reach the admin tool from unmanaged laptops, and the security team requires that data cannot be exfiltrated to projects outside the organisation. Which design is correct?
+
+- A) Put the admin application behind Identity-Aware Proxy with per-user IAM bindings, place Cloud Armor in front of the public API, create a VPC Service Controls perimeter around the warehouse and storage services, and use customer-managed encryption keys from Cloud KMS.
+- B) Keep a site-to-site VPN and trust anything inside the corporate network, and enable customer-managed keys only for backups.
+- C) Allow every authenticated user through IAP to the warehouse project's default service account, which holds the Owner role, for simplicity.
+- D) Rely on VPC Service Controls alone for access, because the perimeter authenticates users and makes IAP redundant.
+
+<details><summary>Answer</summary>
+
+**A.** Identity-Aware Proxy makes each request depend on a verified user identity, with context-aware access adding device posture, rather than on network location; Cloud Armor filters the public edge; VPC Service Controls limits data movement across a service perimeter; and customer-managed keys let the company control key lifecycle. The design layers identity, edge, perimeter, and key control because each addresses a different breach path.
+
+- Why not B: Network-location trust is the flat-perimeter failure; the module moves trust to per-service identity, and CMEK on backups alone leaves the live data path unprotected.
+- Why not C: A broadly privileged default service account defeats least privilege, so any compromised user path inherits warehouse-wide access.
+- Why not D: VPC Service Controls restricts where data can be moved and accessed from; it does not authenticate users, so identity-aware access is still required.
+- Ref: [modules/26-secure-by-design-architecture.md](../modules/26-secure-by-design-architecture.md#41-end-to-end-7-layer-placement-matrix), https://cloud.google.com/iap/docs/concepts-overview
+
+</details>
+
+### Q-CERT-068 · Azure AZ-305: Entra ID OIDC, Front Door WAF & Private Secrets · difficulty 2 · scenario
+
+A single-page application uses a backend-for-frontend (BFF) hosted in Azure. Users sign in with Entra ID, the application needs database and secret access without storing credentials in code, and the database must not be reachable from the internet. Which design is correct?
+
+- A) Sign users in with Entra ID using the OIDC authorization code flow with PKCE on the confidential BFF, place Azure Front Door with WAF in front, read secrets from Key Vault through a managed identity, and reach Key Vault and the database through Private Endpoints.
+- B) Store the Entra access token in browser `localStorage` so the SPA can call APIs directly, and keep a client secret in application settings.
+- C) Embed an API key in the SPA bundle and restrict access with an Application Gateway IP allowlist.
+- D) Expose the database on a public endpoint restricted by firewall IP rules, and keep Key Vault secret names in the source repository.
+
+<details><summary>Answer</summary>
+
+**A.** The BFF keeps tokens server-side behind `HttpOnly` cookies, Front Door with WAF filters the edge, managed identities remove static credentials, and Private Endpoints remove the database and vault from the public network. This is the module's 2026 browser standard expressed in Azure services.
+
+- Why not B: `localStorage` is the anti-pattern the module rates as zero token-theft resistance, and a client secret in configuration is a static credential.
+- Why not C: Any key embedded in a public bundle is public, and IP allowlists fail behind NAT and for mobile users.
+- Why not D: A public database endpoint with IP rules leaves the data tier reachable from the internet, and firewall rules are weaker than private connectivity; secret names are not secrets, but the endpoint exposure is the defect.
+- Ref: [modules/26-secure-by-design-architecture.md](../modules/26-secure-by-design-architecture.md#32-stateful-redis-sessions-vs-stateless-jwt--bff--refresh-token-rotation-rtr), https://learn.microsoft.com/en-us/entra/identity-platform/v2-protocols-oidc
+
+</details>
+
+### Q-CERT-069 · CNCF / SRE: SPIFFE Workload Identity, Signed Admission & Fail-Closed Policy · difficulty 3 · scenario
+
+A Kubernetes platform must authenticate every service-to-service call, admit only signed and provenance-verified images, and never let an outage of its policy decision service open the cluster. Which design is correct?
+
+- A) Issue SPIFFE identities through SPIRE with automatic rotation and enforce mTLS on all service calls; an admission controller verifies Sigstore Cosign signatures and SLSA Level 3 provenance before admitting an image; and the policy engine denies requests when its decision service times out.
+- B) Issue one long-lived certificate per namespace baked into the images, verify signatures only in CI, and let the policy engine default to allow when it is unreachable to protect availability.
+- C) Enforce mTLS on synchronous calls only, leave Kafka topics open to any producer in the VPC, and sign images with a shared key stored in a repository variable.
+- D) Replace SPIFFE with per-pod IP allowlists, and run admission checks in warning mode so that deployments are never blocked.
+
+<details><summary>Answer</summary>
+
+**A.** Short-rotated workload identities limit the impact of a leaked credential, admission gates enforce provenance at the point where an image becomes runnable, and a deny-on-timeout policy keeps an outage of the decision path from becoming an open cluster. These are the module's east-west, supply-chain, and fail-closed controls applied to Kubernetes.
+
+- Why not B: Long-lived shared certificates and fail-open policy are the named failure modes, and CI-only verification does not cover what the cluster actually admits.
+- Why not C: Unsigned asynchronous events let a compromised producer forge domain events, and a shared signing key in a repository variable is itself a secret exposure.
+- Why not D: Pod IP addresses change and are not identities, and admission in warning mode logs violations without stopping them.
+- Ref: [modules/26-secure-by-design-architecture.md](../modules/26-secure-by-design-architecture.md#54-fail-closed-cicd-security-gates-and-progressive-environment-strictness), https://slsa.dev/spec/v1.0/
+
+</details>
+
+### Q-CERT-070 · Multi-Cloud Architecture: 2021 vs. 2026 Secure-by-Design & API Defense Modernization · difficulty 2 · multi
+
+Select **two** modernization moves that take a 2021 perimeter-and-damage-control design toward the 2026 Secure-by-Design and API defense standard.
+
+- A) Move browser token custody from `localStorage` to a BFF that holds tokens server-side behind `HttpOnly` cookies with refresh token rotation, and use DPoP or mTLS-bound tokens for native clients.
+- B) Move authorization out of scattered controller `if` checks and into domain primitives backed by PostgreSQL row-level security, with default-deny policies in which `forbid` overrides `permit`.
+- C) Keep SSO as the authentication mechanism and drop MFA, because the identity provider already enforces sign-in policy for every application.
+- D) Replace the WAF and per-client rate limits with a regex blocklist inside application code, so that every service carries the same control.
+
+<details><summary>Answer</summary>
+
+**A, B.** Both moves replace a fragile per-application pattern with an enforced boundary: the BFF removes token exposure from the browser, and domain primitives with row-level security make tenant and resource checks structural rather than repeated.
+
+- Why not C: SSO is a federation topology and does not replace the phishing-resistant authentication (passkeys or MFA) that the module requires; dropping MFA reverts the design.
+- Why not D: Regex blocklists are bypassable through encoding, translation, and split-token payloads, and the module places the WAF and rate limits at the edge as separate layers, so replacing them removes defenses rather than consolidating them.
+- Ref: [modules/26-secure-by-design-architecture.md](../modules/26-secure-by-design-architecture.md#63-technology-comparison-then-vs-now-2021-vs-2026), https://www.rfc-editor.org/rfc/rfc9700
+
+</details>
 ---
 
 ## Timed Certification Bridge Mock Exam (60 Questions · 90 Minutes)
