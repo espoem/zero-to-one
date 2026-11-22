@@ -1,0 +1,175 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1320 760" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #0b1020; }
+      .panel { fill: #121a30; stroke: #2b3b66; stroke-width: 1.5; rx: 10; }
+      .box-blue { fill: #152546; stroke: #4c8bf5; stroke-width: 1.5; rx: 8; }
+      .box-green { fill: #122d26; stroke: #2ec486; stroke-width: 1.5; rx: 8; }
+      .box-amber { fill: #2f2513; stroke: #f5a623; stroke-width: 1.5; rx: 8; }
+      .box-purple { fill: #24193c; stroke: #a66bff; stroke-width: 1.5; rx: 8; }
+      .box-red { fill: #33161e; stroke: #f05454; stroke-width: 1.5; rx: 8; }
+      .title { font-family: 'Inter', -apple-system, sans-serif; font-size: 18px; font-weight: 700; fill: #f8fafc; }
+      .subtitle { font-family: 'Inter', -apple-system, sans-serif; font-size: 12px; fill: #94a3b8; }
+      .sec-hdr { font-family: 'Inter', -apple-system, sans-serif; font-size: 13px; font-weight: 700; fill: #e2e8f0; }
+      .lbl { font-family: 'Inter', -apple-system, sans-serif; font-size: 12px; font-weight: 600; fill: #f1f5f9; }
+      .txt { font-family: 'Inter', -apple-system, sans-serif; font-size: 11px; fill: #cbd5e1; }
+      .code { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10.5px; fill: #93c5fd; }
+      .code-green { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10.5px; fill: #6ee7b7; }
+      .code-amber { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10.5px; fill: #fcd34d; }
+      .code-red { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10.5px; fill: #fca5a5; }
+      .arrow { stroke: #60a5fa; stroke-width: 1.8; fill: none; marker-end: url(#arr-blue); }
+      .arrow-green { stroke: #34d399; stroke-width: 1.8; fill: none; marker-end: url(#arr-green); }
+      .arrow-amber { stroke: #fbbf24; stroke-width: 1.8; stroke-dasharray: 5,4; fill: none; marker-end: url(#arr-amber); }
+    </style>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#60a5fa"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#34d399"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#fbbf24"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1320" height="760"/>
+
+  <!-- Header -->
+  <text class="title" x="24" y="32">Reliable AI Application &amp; Agent Architecture — Validator Sandwich, Gated Pipeline &amp; Calibrated HITL Routing</text>
+  <text class="subtitle" x="24" y="50">Deterministic Edge Guardrails · Atomic RPM/TPM/USD Admission · Tenant/Slot-Guarded Semantic Cache · Multi-Provider Breakers · OTel GenAI Spans</text>
+
+  <!-- Section 1: Ingress, Top Bun & Admission Gates -->
+  <rect class="panel" x="20" y="66" width="305" height="450"/>
+  <text class="sec-hdr" x="34" y="88">1. Auth, Top Bun &amp; Cheap Gates</text>
+
+  <rect class="box-blue" x="34" y="102" width="277" height="104"/>
+  <text class="lbl" x="44" y="122">L0: Authenticated Ingress</text>
+  <text class="code" x="44" y="140">principal = verifySession(hdrs)</text>
+  <text class="txt" x="44" y="158">• Binds tenantId &amp; allowedTools</text>
+  <text class="txt" x="44" y="174">  from session (never payload!)</text>
+  <text class="code-amber" x="44" y="192">• Adds idempotencyKey + deadline</text>
+
+  <rect class="box-amber" x="34" y="220" width="277" height="130"/>
+  <text class="lbl" x="44" y="240">L1 Top Bun: Input Guardrails</text>
+  <text class="txt" x="44" y="258">• Shape &amp; input token cap check</text>
+  <text class="txt" x="44" y="274">• Redacts SSN, PAN, email pre-LLM</text>
+  <text class="txt" x="44" y="290">• Injection &amp; delimiter screen</text>
+  <text class="code-amber" x="44" y="308">&lt;untrusted_user_data&gt;...&lt;/...&gt;</text>
+  <text class="txt" x="44" y="326">• Rejects bad input at $0 spend</text>
+  <text class="txt" x="44" y="342">  before paid inference APIs</text>
+
+  <rect class="box-purple" x="34" y="364" width="277" height="136"/>
+  <text class="lbl" x="44" y="384">L2: Dual Limiter &amp; Cache Gate</text>
+  <text class="code" x="44" y="402">Redis Lua: RPM + TPM + USD cap</text>
+  <text class="txt" x="44" y="420">• Fail-closed on Redis outage</text>
+  <text class="code-green" x="44" y="438">Exact SHA-256 + Semantic ANN</text>
+  <text class="txt" x="44" y="456">• Scoped by tenant/model/prompt</text>
+  <text class="txt" x="44" y="472">• Negation &amp; entity slot match</text>
+  <text class="code-amber" x="44" y="488">• Cache hits enter Bottom Bun!</text>
+
+  <!-- Section 2: Gated Orchestration & Sandwich Core -->
+  <rect class="panel" x="345" y="66" width="460" height="450"/>
+  <text class="sec-hdr" x="359" y="88">2. Gated Orchestration, Bounded Agent &amp; Bottom Bun</text>
+
+  <rect class="box-blue" x="359" y="102" width="432" height="114"/>
+  <text class="lbl" x="371" y="122">L3: Priority Queue &amp; Multi-Provider Breakers</text>
+  <text class="txt" x="371" y="140">• Bounded priority queue + deadline shedding (429)</text>
+  <text class="code" x="371" y="158">Ladder: Frontier -&gt; Mid-Tier -&gt; Safe Fallback</text>
+  <text class="txt" x="371" y="176">• Outcome-aware: tracks 5xx, 429 &amp; slow timeouts</text>
+  <text class="txt" x="371" y="192">• Bounded HALF_OPEN probes prevent stampedes</text>
+  <text class="code-amber" x="371" y="208">• Non-primary outputs tagged degraded = true</text>
+
+  <rect class="box-green" x="359" y="230" width="432" height="134"/>
+  <text class="lbl" x="371" y="250">L4 Meat: Constrained Decoding &amp; Bounded Agent</text>
+  <text class="code-green" x="371" y="268">json_schema CFG/FSM token masking (strict: true)</text>
+  <text class="txt" x="371" y="286">• Check finish_reason FIRST (refusal / length)</text>
+  <text class="txt" x="371" y="302">• Bounded retry-with-feedback (maxRetries &lt;= 2)</text>
+  <text class="code" x="371" y="320">Caps: S_max | K_max | T_max | C_max | cycle SHA256</text>
+  <text class="txt" x="371" y="338">• Tool AuthZ: verify principal.allowedTools (LLM06)</text>
+  <text class="txt" x="371" y="354">• Prefix caching cuts static system-prompt prefill</text>
+
+  <rect class="box-red" x="359" y="378" width="432" height="122"/>
+  <text class="lbl" x="371" y="398">L5 Bottom Bun: Output Guardrails (EVERY Egress!)</text>
+  <text class="code-red" x="371" y="416">No model output, cache hit, or fallback bypasses this</text>
+  <text class="txt" x="371" y="434">• Strict schema, additionalProperties: false, bounds</text>
+  <text class="txt" x="371" y="450">• Domain invariants (e.g., refund &lt;= orderTotal)</text>
+  <text class="txt" x="371" y="466">• Grounding: every citationId in retrieved context</text>
+  <text class="code-amber" x="371" y="484">• PII &amp; secret-leak filter -&gt; fail-closed on error</text>
+
+  <!-- Section 3: Calibrated HITL & Observability -->
+  <rect class="panel" x="825" y="66" width="475" height="450"/>
+  <text class="sec-hdr" x="839" y="88">3. Calibrated HITL Routing &amp; OTel GenAI Observability</text>
+
+  <rect class="box-purple" x="839" y="102" width="447" height="196"/>
+  <text class="lbl" x="851" y="122">L6: Calibrated Confidence &amp; Uncertainty Router</text>
+  <text class="txt" x="851" y="140">Logprobs + independent verifier (NOT raw verbalized JSON)</text>
+  <text class="code-green" x="851" y="160">1. AUTO_APPROVE   : p_cal&gt;=0.85 &amp; p_err*C_err&lt;C_rev</text>
+  <text class="code" x="851" y="178">2. ESCALATE_MODEL : 0.68&lt;=p_cal&lt;0.85 (stronger LLM)</text>
+  <text class="code-amber" x="851" y="196">3. HITL_QUEUE     : 0.45&lt;=p_cal&lt;0.68 OR irreversible</text>
+  <text class="code-red" x="851" y="214">4. FAIL_CLOSED    : p_cal&lt;0.45 OR HITL queue full</text>
+  <text class="txt" x="851" y="236">• HITL UI shows input, citations &amp; proposed diff</text>
+  <text class="txt" x="851" y="252">• Enforces reviewer capacity (sheds on overflow)</text>
+  <text class="txt" x="851" y="268">• Overrides write back to golden eval &amp; drift alerts</text>
+  <text class="code-amber" x="851" y="286">• Tracks ECE, Brier, false auto-accept &amp; overrides</text>
+
+  <rect class="box-amber" x="839" y="312" width="447" height="188"/>
+  <text class="lbl" x="851" y="332">L7: OpenTelemetry GenAI Telemetry &amp; Eval Gate</text>
+  <text class="code-amber" x="851" y="350">Spans: invoke_agent -&gt; chat -&gt; execute_tool</text>
+  <text class="code" x="851" y="368">Attrs: gen_ai.provider.name, gen_ai.request.model,</text>
+  <text class="code" x="851" y="384">  gen_ai.usage.input_tokens, output_tokens,</text>
+  <text class="code" x="851" y="400">  gen_ai.response.finish_reasons, cost, TTFT/TPOT</text>
+  <text class="txt" x="851" y="420">• Privacy: GENAI_CAPTURE_CONTENT=NO_CONTENT default</text>
+  <text class="txt" x="851" y="436">• Drift: PSI on embeddings &amp; labels (&gt;0.25 act)</text>
+  <text class="txt" x="851" y="452">• CI Eval: pinned snapshots + tolerance bands</text>
+  <text class="code-green" x="851" y="470">• Only AUTO_APPROVE outputs populate cache</text>
+  <text class="txt" x="851" y="486">• Splits fresh, cache-hit &amp; degraded fallback metrics</text>
+
+  <!-- Clean non-crossing arrows -->
+  <path class="arrow" d="M 172 206 L 172 220"/>
+  <path class="arrow" d="M 172 350 L 172 364"/>
+  <!-- Cache miss from L2 to L3 -->
+  <path class="arrow" d="M 311 412 L 335 412 L 335 158 L 359 158"/>
+  <!-- Cache hit straight into Bottom Bun L5 -->
+  <path class="arrow-amber" d="M 311 478 L 359 478"/>
+  <!-- L3 -> L4 -> L5 -->
+  <path class="arrow" d="M 575 216 L 575 230"/>
+  <path class="arrow" d="M 575 364 L 575 378"/>
+  <!-- L5 Bottom Bun -> L6 HITL Router -->
+  <path class="arrow-green" d="M 791 440 L 815 440 L 815 200 L 839 200"/>
+  <!-- L6 -> L7 Telemetry -->
+  <path class="arrow" d="M 1062 298 L 1062 312"/>
+
+  <!-- Section 4: Bottom Deep Dive -->
+  <rect class="panel" x="20" y="534" width="1280" height="208"/>
+  <text class="sec-hdr" x="34" y="556">4. Critical Reliability &amp; Security Invariants: Semantic Cache Guard, Constrained Decoding Limits &amp; OWASP LLM 2025</text>
+
+  <rect class="box-red" x="34" y="570" width="405" height="156"/>
+  <text class="lbl" x="46" y="590">Semantic Cache False-Hit &amp; Poisoning Trap</text>
+  <text class="code-red" x="46" y="610">Naive: sim("cancel","don't cancel")=0.96 -&gt; HIT!</text>
+  <text class="code-red" x="46" y="628">Naive: sim("ord 1042","ord 1043")=0.98 -&gt; WRONG!</text>
+  <text class="code-green" x="46" y="648">Guarded Conjunctive Accept Predicate:</text>
+  <text class="code" x="46" y="666">sim(q, c) &gt;= tau AND slots(q) == slots(c)</text>
+  <text class="code" x="46" y="682">AND tenant_eq AND prompt_ver_eq AND model_eq</text>
+  <text class="txt" x="46" y="700">• Slots check negation, numbers, IDs &amp; units</text>
+  <text class="txt" x="46" y="716">• Read guard + bulk revocation stop poisoning</text>
+
+  <rect class="box-blue" x="455" y="570" width="410" height="156"/>
+  <text class="lbl" x="467" y="590">Constrained Decoding Boundary &amp; Calibration</text>
+  <text class="code" x="467" y="610">JSON Schema -&gt; CFG -&gt; FSM mask (-inf logit)</text>
+  <text class="txt" x="467" y="628">• Guarantees JSON SYNTAX only, never semantics</text>
+  <text class="code-amber" x="467" y="646">• Bounds, citations &amp; refusals need Bottom Bun</text>
+  <text class="txt" x="467" y="666">• temp=0 varies (FP/MoE batching non-determinism)</text>
+  <text class="txt" x="467" y="682">• Verbalized JSON confidence is overconfident</text>
+  <text class="code-green" x="467" y="700">• Derive gates from cost matrix + ECE / Brier</text>
+  <text class="txt" x="467" y="716">• Check finish_reason before JSON.parse always</text>
+
+  <rect class="box-green" x="881" y="570" width="405" height="156"/>
+  <text class="lbl" x="893" y="590">Bounded Agent Ceilings &amp; OWASP LLM 2025</text>
+  <text class="code-green" x="893" y="610">Run Caps: S_max, K_max, T_max, C_max, W_max</text>
+  <text class="txt" x="893" y="628">• Breakers miss 200 OK loops; hard caps halt</text>
+  <text class="txt" x="893" y="644">  them alongside recursive SHA-256 cycle hash</text>
+  <text class="code" x="893" y="664">LLM01 Inj | LLM02 PII | LLM04 Cache Poison</text>
+  <text class="code" x="893" y="680">LLM06 Agency | LLM08 Vector | LLM10 Spend</text>
+  <text class="txt" x="893" y="700">• Model proposes; tool boundary disposes via</text>
+  <text class="txt" x="893" y="716">  principal scopes and human diff approval</text>
+</svg>

@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 620" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #0b1020; }
+      .panel { fill: #121a30; stroke: #2b3b66; stroke-width: 1.5; rx: 10; }
+      .col-2021 { fill: #2a1820; stroke: #e05263; stroke-width: 1.5; rx: 8; }
+      .col-2026 { fill: #102a24; stroke: #2ec486; stroke-width: 1.5; rx: 8; }
+      .dim-box { fill: #16223f; stroke: #4c8bf5; stroke-width: 1.5; rx: 6; }
+      .title { font-family: 'Inter', -apple-system, sans-serif; font-size: 18px; font-weight: 700; fill: #f8fafc; }
+      .subtitle { font-family: 'Inter', -apple-system, sans-serif; font-size: 12px; fill: #94a3b8; }
+      .hdr { font-family: 'Inter', -apple-system, sans-serif; font-size: 14px; font-weight: 700; fill: #f1f5f9; }
+      .dim-txt { font-family: 'Inter', -apple-system, sans-serif; font-size: 12px; font-weight: 700; fill: #93c5fd; }
+      .txt { font-family: 'Inter', -apple-system, sans-serif; font-size: 11px; fill: #e2e8f0; }
+      .code-old { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10.5px; fill: #fca5a5; }
+      .code-new { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10.5px; fill: #6ee7b7; }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1280" height="620"/>
+
+  <text class="title" x="24" y="32">Reliable AI Application Architecture: 2021–2023 Prototype Baseline vs. 2026 Production Standard</text>
+  <text class="subtitle" x="24" y="50">From Prompt-Only Wrappers &amp; Blind HTTP 200 Trust to CFG Constrained Decoding, Guarded Semantic Caches, Bounded Agents &amp; OTel GenAI</text>
+
+  <!-- Column Headers -->
+  <rect class="dim-box" x="20" y="68" width="220" height="38"/>
+  <text class="hdr" x="34" y="92">Architectural Dimension</text>
+
+  <rect class="col-2021" x="252" y="68" width="490" height="38"/>
+  <text class="hdr" x="266" y="92">2021–2023 Prototype / Early Wrapper Era</text>
+
+  <rect class="col-2026" x="754" y="68" width="506" height="38"/>
+  <text class="hdr" x="768" y="92">2026 Production Reliable AI Standard</text>
+
+  <!-- Row 1 -->
+  <rect class="dim-box" x="20" y="116" width="220" height="68"/>
+  <text class="dim-txt" x="32" y="146">1. Output Reliability</text>
+  <text class="txt" x="32" y="164">&amp; Contract Parsing</text>
+
+  <rect class="col-2021" x="252" y="116" width="490" height="68"/>
+  <text class="code-old" x="264" y="138">"Please return valid JSON only" + regex / try-catch JSON.parse</text>
+  <text class="txt" x="264" y="156">Prose wrappers, hallucinated fields, and markdown fences break</text>
+  <text class="txt" x="264" y="172">downstream consumers; silent coercion masks missing fields</text>
+
+  <rect class="col-2026" x="754" y="116" width="506" height="68"/>
+  <text class="code-new" x="766" y="138">CFG/FSM Constrained Decoding + Mandatory Validator Sandwich</text>
+  <text class="txt" x="766" y="156">XGrammar/llguidance masking + finish_reason check + bounded</text>
+  <text class="txt" x="766" y="172">retry + Bottom Bun for numeric bounds, invariants &amp; citations</text>
+
+  <!-- Row 2 -->
+  <rect class="dim-box" x="20" y="194" width="220" height="68"/>
+  <text class="dim-txt" x="32" y="224">2. Caching &amp; Spend</text>
+  <text class="txt" x="32" y="242">Admission Control</text>
+
+  <rect class="col-2021" x="252" y="194" width="490" height="68"/>
+  <text class="code-old" x="264" y="216">RPM-only limiters + raw body hash or unguarded cosine &gt;= 0.92</text>
+  <text class="txt" x="264" y="234">Huge prompts bypass RPM caps; body-only keys leak across tenants;</text>
+  <text class="txt" x="264" y="250">naive cosine merges "cancel" &amp; "do not cancel" into false hits</text>
+
+  <rect class="col-2026" x="754" y="194" width="506" height="68"/>
+  <text class="code-new" x="766" y="216">Atomic RPM+TPM+USD Limiters + Prefix &amp; Slot-Guarded Cache</text>
+  <text class="txt" x="766" y="234">Fail-closed Lua quotas + provider prefix caching + conjunctive</text>
+  <text class="txt" x="766" y="250">semantic cache (tenant, provenance, slots &amp; read guardrail)</text>
+
+  <!-- Row 3 -->
+  <rect class="dim-box" x="20" y="272" width="220" height="68"/>
+  <text class="dim-txt" x="32" y="302">3. Uncertainty &amp;</text>
+  <text class="txt" x="32" y="320">HITL Escalation</text>
+
+  <rect class="col-2021" x="252" y="272" width="490" height="68"/>
+  <text class="code-old" x="264" y="294">Blind HTTP 200 trust or verbalized JSON {"confidence": 0.95}</text>
+  <text class="txt" x="264" y="312">Silent drift drops accuracy from 95% to 71% over months while</text>
+  <text class="txt" x="264" y="328">uncalibrated self-reported scores stay overconfident near 0.95</text>
+
+  <rect class="col-2026" x="754" y="272" width="506" height="68"/>
+  <text class="code-new" x="766" y="294">Calibrated Logprob/Verifier Routing + Cost-Matrix HITL Queues</text>
+  <text class="txt" x="766" y="312">Temperature-scaled uncertainty + ECE drives 4-way routing with</text>
+  <text class="txt" x="766" y="328">capacity-bounded HITL diff UI &amp; golden eval write-back loop</text>
+
+  <!-- Row 4 -->
+  <rect class="dim-box" x="20" y="350" width="220" height="68"/>
+  <text class="dim-txt" x="32" y="380">4. Resilience &amp; Agent</text>
+  <text class="txt" x="32" y="398">Execution Bounds</text>
+
+  <rect class="col-2021" x="252" y="350" width="490" height="68"/>
+  <text class="code-old" x="264" y="372">Single-provider SDK calls, unbounded ReAct loops, prompt AuthZ</text>
+  <text class="txt" x="264" y="390">Retry storms &amp; infinite tool loops burn $5k/day; indirect prompt</text>
+  <text class="txt" x="264" y="406">injection tricks agents into executing privileged write tools</text>
+
+  <rect class="col-2026" x="754" y="350" width="506" height="68"/>
+  <text class="code-new" x="766" y="372">Multi-Provider Breakers + Bounded Loops + Tool-Boundary AuthZ</text>
+  <text class="txt" x="766" y="390">Outcome-aware breakers + fallback ladder + S_max/T_max/C_max</text>
+  <text class="txt" x="766" y="406">ceilings + recursive cycle hash + principal tool AuthZ (LLM06)</text>
+
+  <!-- Row 5 -->
+  <rect class="dim-box" x="20" y="428" width="220" height="68"/>
+  <text class="dim-txt" x="32" y="458">5. Observability &amp;</text>
+  <text class="txt" x="32" y="476">Release Governance</text>
+
+  <rect class="col-2021" x="252" y="428" width="490" height="68"/>
+  <text class="code-old" x="264" y="450">Ad-hoc console.log(prompt) + moving model aliases (no CI evals)</text>
+  <text class="txt" x="264" y="468">Logs leak raw customer PII; moving model aliases silently shift</text>
+  <text class="txt" x="264" y="484">behavior overnight with zero trace lineage or regression gate</text>
+
+  <rect class="col-2026" x="754" y="428" width="506" height="68"/>
+  <text class="code-new" x="766" y="450">OTel GenAI SemConv Spans (NO_CONTENT) + Pinned Eval CI Gates</text>
+  <text class="txt" x="766" y="468">Structured gen_ai.* traces + TTFT/TPOT + PSI drift monitors +</text>
+  <text class="txt" x="766" y="484">pinned model snapshots gated by statistical tolerance bands</text>
+
+  <!-- Row 6: Architectural Takeaway -->
+  <rect class="panel" x="20" y="510" width="1240" height="92"/>
+  <text class="hdr" x="34" y="534">Key Architectural Takeaway: Reliability Is an Architectural Envelope, Never a Prompt Property</text>
+  <text class="txt" x="34" y="556">• An LLM is a non-deterministic sampler (even at temperature=0 due to FP non-associativity and MoE batching). Determinism must be reintroduced</text>
+  <text class="txt" x="34" y="574">  at every boundary: authenticated principals at ingress, cheap spend gates before inference, hard loop/USD ceilings inside agents, and a mandatory</text>
+  <text class="txt" x="34" y="590">  Bottom Bun output validator on EVERY egress path (fresh model outputs, cache reads, and typed degraded fallbacks).</text>
+</svg>
