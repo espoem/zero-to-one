@@ -98,6 +98,30 @@ for (const root of roots) {
     const text = (await readFile(file, 'utf8'))
       .replace(/^([ \t]*)(`{3,}|~{3,})[^\n]*\n[\s\S]*?^\1\2[ \t]*$/gm, blank)
       .replace(/(`+)(?!`)[\s\S]*?[^`]\1(?!`)/g, blank);
+    for (const m of text.matchAll(/!\[([^\n]*)\]\(([^()\s]+)\)/g)) {
+      const alt = m[1];
+      let depth = 0;
+      let badAlt = false;
+      for (let i = 0; i < alt.length; i++) {
+        if (alt[i] === '\\' && i + 1 < alt.length) {
+          i++;
+          continue;
+        }
+        if (alt[i] === '[') depth++;
+        else if (alt[i] === ']') {
+          depth--;
+          if (depth < 0) badAlt = true;
+        }
+      }
+      if (depth !== 0) badAlt = true;
+      if (badAlt) {
+        broken++;
+        const line = text.slice(0, m.index).split('\n').length;
+        console.log(
+          `BROKEN ${relative(cwd, file)}:${line} -> ${m[2]} (unbalanced bracket in image alt text)`,
+        );
+      }
+    }
     for (const m of text.matchAll(/\]\(([^()\s]+(?:\([^()\s]*\))?[^()\s]*)(?:\s+"[^"]*")?\)/g)) {
       const target = m[1];
       if (/^[a-z][a-z0-9+.-]*:/i.test(target) || target.startsWith('//')) continue;
