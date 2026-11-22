@@ -289,6 +289,10 @@ flowchart TD
 
 ## 6. Formal Algorithm: Horizontal Pod Autoscaler Reconcile Loop
 
+![Kubernetes HPA Reconcile Loop and Kube-Scheduler Pipeline Animation](../assets/05-06-hpa-and-scheduler-pipeline-animated.svg)
+
+_Step-by-step mechanics (M05 band):_ (1) Compute `ratio = metric / target`; skip scaling if inside the $\pm 10\%$ tolerance band `[0.90, 1.10]`. (2) Calculate `desiredReplicas = ceil(cur * ratio)` clamped to `[minReplicas, maxReplicas]`. (3) Buffer scale-down recommendations over `stabilizationWindowSeconds` (`300s`), applying `max(window)` to prevent replica flapping during transient metric dips.
+
 ```text
 Algorithm: ReconcileHPA
 Input: HPAAutoscaler H, MetricsClient M, ScaleClient S

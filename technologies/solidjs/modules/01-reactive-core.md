@@ -169,6 +169,10 @@ Hence no run observes a mix of old and new inputs. (Async holds extend this: a n
 
 **Complexity.** For a write burst affecting the reachable set $R$, marking is $O(|R| + |E_R|)$, recomputation is $O(\sum_{v \in R'} \text{cost}(f_v))$ where $R' \subseteq R$ are the nodes whose inputs actually changed (CHECK nodes whose dependencies were equal are skipped), and heap operations are $O(1)$ each plus an $O(H)$ bucket scan, $H$ the maximum height.
 
+![SolidJS and alien-signals Push-Pull Glitch-Free Reactive Propagation](../assets/01-push-pull-reactive-propagation-animated.svg)
+
+_Animated step-by-step trace of SolidJS / `alien-signals` push-pull propagation over a diamond DAG: the push phase recursively marks `CLEAN -> DIRTY/CHECK`, and `runHeap` pulls height-indexed buckets in ascending order (`h=1` before `h=2`) so `summary` evaluates once with zero glitches._
+
 ## 3. Signals
 
 ```ts

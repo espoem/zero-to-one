@@ -82,6 +82,10 @@ The old generation is collected by **Mark-Compact**: mark all reachable objects,
 
 Concurrent marking needs the **tri-colour invariant** (Dijkstra et al., 1978): objects are white (not yet seen), grey (seen, fields not yet scanned) or black (seen and scanned). The collector maintains that **no black object points to a white object**; whenever JavaScript writes a pointer into an already-black object while marking is running, the **marking write barrier** greys the target. Without that barrier, the mutator could hide a live object from a concurrent marker and the sweeper would free it.
 
+![V8 Generational GC: Semi-Space Scavenger and Orinoco Tri-Color Mark-Compact](../assets/10-v8-scavenger-and-orinoco-gc-animated.svg)
+
+_Animated step-by-step trace of V8's young-generation Cheney semi-space Scavenger (forwarding pointers, remembered-set write barrier, and promotion to old space) alongside Orinoco's concurrent Dijkstra tri-color marking, write-barrier greying, sweeping, and parallel compaction._
+
 ### 2.3 What GC pauses mean for a server
 
 Every pause stops the event loop. Scavenges are frequent and short; mark-compact pauses are rarer and longer, and they grow with the amount of **live** data and with fragmentation. A process with a 3 GB heap of live cache data pays for that cache in every full collection. Two operational consequences:

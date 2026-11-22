@@ -1,0 +1,175 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 540" width="1080" height="540" role="img" aria-labelledby="title desc">
+  <title id="title">Redis Span-Augmented ZSkiplist ZREVRANK Traversal</title>
+  <desc id="desc">Animated trace of ZREVRANK(40, m4) across a 6-node span-augmented zskiplist accumulating edge spans rank = 0 + 3 + 1 = 4 to compute ZREVRANK = 6 - 4 = 2 in O(log N) expected time.</desc>
+  <defs>
+    <marker id="arr-slate" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b"/>
+    </marker>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+    </marker>
+    <marker id="arr-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <style><![CDATA[
+      .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+      @keyframes ph1 { 0%, 23% { opacity: 1; } 25%, 100% { opacity: 0; } }
+      @keyframes ph2 { 0%, 23% { opacity: 0; } 25%, 48% { opacity: 1; } 50%, 100% { opacity: 0; } }
+      @keyframes ph3 { 0%, 48% { opacity: 0; } 50%, 73% { opacity: 1; } 75%, 100% { opacity: 0; } }
+      @keyframes ph4 { 0%, 73% { opacity: 0; } 75%, 100% { opacity: 1; } }
+
+      @keyframes hop1 { 0%, 23% { opacity: 0.88; } 25%, 100% { opacity: 1; } }
+      @keyframes hop2 { 0%, 48% { opacity: 0.88; } 50%, 100% { opacity: 1; } }
+      @keyframes hop3 { 0%, 73% { opacity: 0.88; } 75%, 100% { opacity: 1; } }
+
+      .p1 { animation: ph1 12s linear infinite; }
+      .p2 { animation: ph2 12s linear infinite; }
+      .p3 { animation: ph3 12s linear infinite; }
+      .p4 { animation: ph4 12s linear infinite; }
+      .s-hop1 { animation: hop1 12s linear infinite; }
+      .s-hop2 { animation: hop2 12s linear infinite; }
+      .s-hop3 { animation: hop3 12s linear infinite; }
+
+      @media (prefers-reduced-motion: reduce) {
+        .p1, .p2, .p3, .p4, .s-hop1, .s-hop2, .s-hop3 {
+          animation: none !important;
+        }
+        .p1, .p2, .p3 { opacity: 0; }
+        .p4, .s-hop1, .s-hop2, .s-hop3 { opacity: 1; }
+      }
+    ]]></style>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1080" height="540" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1080" height="58" rx="12" fill="#0f172a"/>
+  <rect x="0" y="42" width="1080" height="16" fill="#0f172a"/>
+  <text x="28" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Redis Span-Augmented zskiplist: O(log N) ZREVRANK</text>
+  <text x="28" y="47" class="sans" font-size="12" fill="#94a3b8">ZREVRANK(40, "m4") · length = 6 · Forward Edge Spans Sum to Rank Without Scanning Level 0</text>
+
+  <!-- Skiplist Topology Frame -->
+  <rect x="32" y="74" width="1016" height="270" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+
+  <!-- Level labels -->
+  <text x="52" y="152" class="mono" font-size="12" font-weight="700" fill="#64748b" text-anchor="middle">L2</text>
+  <text x="52" y="226" class="mono" font-size="12" font-weight="700" fill="#64748b" text-anchor="middle">L1</text>
+  <text x="52" y="298" class="mono" font-size="12" font-weight="700" fill="#64748b" text-anchor="middle">L0</text>
+
+  <!-- 7 Columns (width 76, gap 72, stride 148, starting x=76) -->
+  <!-- HDR -->
+  <rect x="76" y="122" width="76" height="196" rx="7" fill="#e2e8f0" stroke="#64748b" stroke-width="1.5"/>
+  <text x="114" y="302" class="mono" font-size="13" font-weight="700" fill="#1e293b" text-anchor="middle">HDR</text>
+  <text x="114" y="334" class="mono" font-size="11" fill="#64748b" text-anchor="middle">head</text>
+
+  <!-- 10:m1 (L0) -->
+  <rect x="224" y="274" width="76" height="44" rx="7" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="262" y="301" class="mono" font-size="13" font-weight="700" fill="#0f172a" text-anchor="middle">10:m1</text>
+  <text x="262" y="334" class="mono" font-size="11" fill="#64748b" text-anchor="middle">idx 0</text>
+
+  <!-- 20:m2 (L0..L1) -->
+  <rect x="372" y="200" width="76" height="118" rx="7" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="410" y="301" class="mono" font-size="13" font-weight="700" fill="#0f172a" text-anchor="middle">20:m2</text>
+  <text x="410" y="334" class="mono" font-size="11" fill="#64748b" text-anchor="middle">idx 1</text>
+
+  <!-- 30:m3 (L0..L2) -->
+  <rect x="520" y="122" width="76" height="196" rx="7" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="558" y="301" class="mono" font-size="13" font-weight="700" fill="#1d4ed8" text-anchor="middle">30:m3</text>
+  <text x="558" y="334" class="mono" font-size="11" font-weight="700" fill="#2563eb" text-anchor="middle">idx 2</text>
+
+  <!-- 40:m4 (L0..L1) TARGET -->
+  <rect x="668" y="200" width="76" height="118" rx="7" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+  <text x="706" y="301" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">40:m4</text>
+  <text x="706" y="334" class="mono" font-size="11" font-weight="700" fill="#059669" text-anchor="middle">idx 3</text>
+
+  <!-- 50:m5 (L0) -->
+  <rect x="816" y="274" width="76" height="44" rx="7" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="854" y="301" class="mono" font-size="13" font-weight="700" fill="#0f172a" text-anchor="middle">50:m5</text>
+  <text x="854" y="334" class="mono" font-size="11" fill="#64748b" text-anchor="middle">idx 4</text>
+
+  <!-- 60:m6 (L0..L2) -->
+  <rect x="964" y="122" width="76" height="196" rx="7" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="1002" y="301" class="mono" font-size="13" font-weight="700" fill="#0f172a" text-anchor="middle">60:m6</text>
+  <text x="1002" y="334" class="mono" font-size="11" fill="#64748b" text-anchor="middle">idx 5</text>
+
+  <!-- L0 arrows (72px gaps) -->
+  <line x1="152" y1="296" x2="220" y2="296" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr-slate)"/>
+  <line x1="300" y1="296" x2="368" y2="296" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr-slate)"/>
+  <line x1="448" y1="296" x2="516" y2="296" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr-slate)"/>
+  <line x1="596" y1="296" x2="664" y2="296" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr-slate)"/>
+  <line x1="744" y1="296" x2="812" y2="296" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr-slate)"/>
+  <line x1="892" y1="296" x2="960" y2="296" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr-slate)"/>
+
+  <!-- L1 static links -->
+  <line x1="152" y1="222" x2="368" y2="222" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr-slate)"/>
+  <text x="260" y="210" class="mono" font-size="11" fill="#64748b" text-anchor="middle">span=2</text>
+  <line x1="448" y1="222" x2="516" y2="222" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr-slate)"/>
+  <line x1="744" y1="222" x2="960" y2="222" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr-slate)"/>
+  <text x="852" y="210" class="mono" font-size="11" fill="#64748b" text-anchor="middle">span=2</text>
+
+  <!-- L2 overshoot link m3 -> m6 -->
+  <line x1="596" y1="148" x2="960" y2="148" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arr-slate)"/>
+  <text x="780" y="136" class="mono" font-size="11" fill="#64748b" text-anchor="middle">span=3 (60 &gt; 40)</text>
+
+  <!-- Hop 1: L2 HDR -> m3 (span=+3) -->
+  <g class="s-hop1">
+    <line x1="152" y1="148" x2="514" y2="148" stroke="#2563eb" stroke-width="3" marker-end="url(#arr-blue)"/>
+    <rect x="302" y="114" width="68" height="22" rx="5" fill="#2563eb"/>
+    <text x="336" y="129" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">span=+3</text>
+  </g>
+
+  <!-- Hop 2: Drop L2 -> L1 at m3, then L1 m3 -> m4 (span=+1 cleanly centered in 72px gap 596..668) -->
+  <g class="s-hop2">
+    <line x1="558" y1="158" x2="558" y2="212" stroke="#d97706" stroke-width="2.5" marker-end="url(#arr-amber)"/>
+    <line x1="596" y1="222" x2="662" y2="222" stroke="#059669" stroke-width="3" marker-end="url(#arr-emerald)"/>
+    <rect x="601" y="188" width="62" height="22" rx="5" fill="#059669"/>
+    <text x="632" y="203" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">span=+1</text>
+  </g>
+
+  <!-- Rank Accumulator Banner -->
+  <g class="s-hop3">
+    <rect x="32" y="356" width="1016" height="36" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+    <text x="540" y="379" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">rank = 0 -&gt; 3 -&gt; 4   |   ZRANK = 4 - 1 = 3   |   ZREVRANK = 6 - 4 = 2  (O(log N))</text>
+  </g>
+
+  <!-- Step Trace Box -->
+  <rect x="32" y="404" width="1016" height="64" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+  <g class="p1">
+    <rect x="48" y="424" width="118" height="24" rx="5" fill="#eff6ff" stroke="#93c5fd"/>
+    <text x="107" y="440" class="mono" font-size="11.5" font-weight="700" fill="#1d4ed8" text-anchor="middle">Step 1: Init</text>
+    <text x="184" y="441" class="sans" font-size="13" fill="#0f172a">Resolve score(m4) = 40 via dict in O(1); start at HDR level 2 with rank = 0.</text>
+  </g>
+  <g class="p2">
+    <rect x="48" y="424" width="118" height="24" rx="5" fill="#eff6ff" stroke="#2563eb"/>
+    <text x="107" y="440" class="mono" font-size="11.5" font-weight="700" fill="#1d4ed8" text-anchor="middle">Step 2: L2 Hop</text>
+    <text x="184" y="441" class="sans" font-size="13" fill="#0f172a">Follow L2 HDR -&gt; m3 (30 &lt;= 40): add span (+3), rank = 3. Next m6 (60 &gt; 40) drops to L1.</text>
+  </g>
+  <g class="p3">
+    <rect x="48" y="424" width="118" height="24" rx="5" fill="#ecfdf5" stroke="#6ee7b7"/>
+    <text x="107" y="440" class="mono" font-size="11.5" font-weight="700" fill="#065f46" text-anchor="middle">Step 3: L1 Hit</text>
+    <text x="184" y="441" class="sans" font-size="13" fill="#0f172a">Follow L1 m3 -&gt; m4 (40 == target): add span (+1), rank = 4 without touching m1 or m2.</text>
+  </g>
+  <g class="p4">
+    <rect x="48" y="424" width="118" height="24" rx="5" fill="#ecfdf5" stroke="#059669"/>
+    <text x="107" y="440" class="mono" font-size="11.5" font-weight="700" fill="#065f46" text-anchor="middle">Step 4: Rank</text>
+    <text x="184" y="441" class="sans" font-size="13" fill="#0f172a">Compute ZRANK = 4 - 1 = 3 and ZREVRANK = length(6) - rank(4) = 2 in O(log N).</text>
+  </g>
+
+  <!-- Footer Legend -->
+  <rect x="32" y="480" width="1016" height="44" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+  <rect x="48" y="495" width="14" height="14" rx="3" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="70" y="506" class="sans" font-size="12" fill="#334155">L2 Hop (+3)</text>
+  <rect x="172" y="495" width="14" height="14" rx="3" fill="#fffbeb" stroke="#d97706"/>
+  <text x="194" y="506" class="sans" font-size="12" fill="#334155">Level Drop (60 &gt; 40)</text>
+  <rect x="346" y="495" width="14" height="14" rx="3" fill="#ecfdf5" stroke="#059669"/>
+  <text x="368" y="506" class="sans" font-size="12" fill="#334155">L1 Hit (+1) &amp; Target</text>
+  <rect x="518" y="495" width="14" height="14" rx="3" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="540" y="506" class="sans" font-size="12" fill="#334155">Unvisited Link</text>
+  <text x="1032" y="506" class="mono" font-size="12" font-weight="700" fill="#0f172a" text-anchor="end">Redis 8.x · p = 1/4 · max 32 levels</text>
+</svg>

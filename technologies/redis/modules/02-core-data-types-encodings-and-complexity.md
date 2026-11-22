@@ -157,6 +157,10 @@ The general hash table (`dict`) uses chaining with power-of-two table sizes and 
 
 `SCAN`'s cursor design is driven by exactly this resizing; see [module 03](03-keys-expiry-eviction-and-memory.md#5-scan-vs-keys-and-the-reverse-binary-cursor).
 
+![Redis Dict Incremental Rehashing](../assets/02-a-dict-incremental-rehashing-animated.svg)
+
+_Animated trace of Redis `dict` incremental rehashing stepping `rehashidx` across consecutive commands to drain `ht[0]` into a pre-allocated 2x `ht[1]`, routing reads to both tables, writes solely to `ht[1]`, and pausing during `fork()` for Copy-on-Write safety._
+
 ### 3.5 Sorted sets: skiplist + dict, and spans
 
 A large zset uses two structures that share the member strings:
@@ -181,6 +185,10 @@ SKIPLIST-RANK(zsl, score, member):
 **Insert maintains the span invariant**: for each level $i$ with predecessor $u_i$ and the new node at position $r_0+1$, the new node's span is $\text{span}(u_i) - (r_0 - r_i)$ and $u_i$'s becomes $r_0 - r_i + 1$; levels above the new node's height just increment their span. The example [`src/zset.ts`](../examples/ts/src/zset.ts) implements exactly this. The property test runs random add/remove sequences against a sorted-array model and checks rank, by-rank, range, reverse range and score ranges, plus a structural invariant check of every span. A second test inserts 100 000 members and measures that ranking the last one takes a few dozen forward hops, not 100 000.
 
 Expected search cost is $\frac{1}{p}\log_{1/p} N$, about 33 comparisons for $N = 10^5$ and $p = 1/4$. The choice of $p = 1/4$ over $1/2$ trades slightly longer searches for fewer pointers per node (1.33 levels on average instead of 2).
+
+![Redis Span-Augmented ZSkiplist ZREVRANK Traversal](../assets/02-b-span-augmented-zskiplist-animated.svg)
+
+_Animated trace of `ZREVRANK` on a span-augmented `zskiplist` summing forward edge spans along the search path to resolve rank in $O(\log N)$ expected time without scanning level 0._
 
 #### Formal definition and invariants
 

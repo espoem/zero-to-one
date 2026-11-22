@@ -279,6 +279,10 @@ The **WAND (Weak AND)** algorithm (Broder et al., 2003) and its modern Lucene im
 
 Skipping is incompatible with an exact hit count. Since Elasticsearch 7.0 the default is `track_total_hits: 10000`: the response reports `"total": {"value": 10000, "relation": "gte"}` once the count passes 10,000, and Lucene is free to skip. Set `track_total_hits: true` for an exact count (slower on large result sets) or `false` when you need no count.
 
+![Lucene FST Term Dictionary and Block-Max WAND Pruning](../assets/01-12-block-max-wand-and-fst-animated.svg)
+
+_Animated step-by-step trace of Lucene's off-heap FST (`.tip` to `.tim`) term dictionary lookup paired with Block-Max WAND pruning 128-doc PFOR postings blocks via `advance(target)` when their impact upper bound cannot beat the Top-K min-heap threshold $\theta$._
+
 ### Then vs now: hit counts and scoring
 
 | Concern | Then | Now | Why it changed |

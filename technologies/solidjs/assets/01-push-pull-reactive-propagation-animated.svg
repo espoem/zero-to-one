@@ -1,0 +1,231 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" width="1200" height="720" role="img" aria-labelledby="title desc">
+  <title id="title">SolidJS and alien-signals: Push-Pull Glitch-Free Reactive Propagation</title>
+  <desc id="desc">Animated step-by-step trace of SolidJS push-pull reactive propagation across a diamond DAG: the push phase recursively marks nodes CLEAN to DIRTY or CHECK, and the pull phase processes height-indexed buckets in ascending order (h=1 before h=2) so diamond sinks evaluate once with zero glitches.</desc>
+  <defs>
+    <marker id="arr-slate" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+    </marker>
+    <marker id="arr-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <style><![CDATA[
+      .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+      /* 12s 4-phase cycle:
+         P1 (0-24%): Write count=2 -> Push marks double/isEven DIRTY (h=1) & summary CHECK (h=2)
+         P2 (25-49%): Pull Bucket h=1 -> double=4 (CLEAN), isEven=true (CLEAN), promote summary->DIRTY
+         P3 (50-74%): Pull Bucket h=2 -> summary reads (4, true) -> "4 (true)" (CLEAN) - ZERO GLITCH!
+         P4 (75-100%): settle() + clock++ + EFFECT_RENDER / EFFECT_USER runs once
+      */
+      @keyframes ph1 { 0%, 23% { opacity: 1; } 25%, 100% { opacity: 0; } }
+      @keyframes ph2 { 0%, 23% { opacity: 0; } 25%, 48% { opacity: 1; } 50%, 100% { opacity: 0; } }
+      @keyframes ph3 { 0%, 48% { opacity: 0; } 50%, 73% { opacity: 1; } 75%, 100% { opacity: 0; } }
+      @keyframes ph4 { 0%, 73% { opacity: 0; } 75%, 100% { opacity: 1; } }
+
+      @keyframes node-h1-state {
+        0%, 23%   { fill: #fff1f2; stroke: #e11d48; stroke-width: 2.5; } /* DIRTY */
+        25%, 100% { fill: #ecfdf5; stroke: #059669; stroke-width: 2; }   /* CLEAN */
+      }
+      @keyframes node-sum-state {
+        0%, 23%   { fill: #fffbeb; stroke: #d97706; stroke-width: 2.5; } /* CHECK */
+        25%, 48%  { fill: #fff1f2; stroke: #e11d48; stroke-width: 2.5; } /* DIRTY */
+        50%, 100% { fill: #ecfdf5; stroke: #059669; stroke-width: 2.5; } /* CLEAN */
+      }
+      @keyframes node-fx-state {
+        0%, 73%   { fill: #f8fafc; stroke: #94a3b8; stroke-width: 1.5; }
+        75%, 100% { fill: #eff6ff; stroke: #2563eb; stroke-width: 2.5; }
+      }
+      @keyframes heap-ptr {
+        0%, 23%   { transform: translateY(0px); }
+        25%, 48%  { transform: translateY(0px); }
+        50%, 73%  { transform: translateY(74px); }
+        75%, 100% { transform: translateY(148px); }
+      }
+
+      .p-1 { animation: ph1 12s linear infinite; }
+      .p-2 { animation: ph2 12s linear infinite; }
+      .p-3 { animation: ph3 12s linear infinite; }
+      .p-4 { animation: ph4 12s linear infinite; }
+      .h1-box  { animation: node-h1-state 12s linear infinite; }
+      .sum-box { animation: node-sum-state 12s linear infinite; }
+      .fx-box  { animation: node-fx-state 12s linear infinite; }
+      .heap-cur { animation: heap-ptr 12s ease-in-out infinite; }
+
+      @media (prefers-reduced-motion: reduce) {
+        .p-1, .p-2, .p-3, .p-4, .h1-box, .sum-box, .fx-box, .heap-cur { animation: none !important; }
+        .p-1, .p-2, .p-3 { opacity: 0; }
+        .p-4 { opacity: 1; }
+        .h1-box, .sum-box { fill: #ecfdf5; stroke: #059669; stroke-width: 2.5; }
+        .fx-box { fill: #eff6ff; stroke: #2563eb; stroke-width: 2.5; }
+        .heap-cur { transform: translateY(148px); }
+      }
+    ]]></style>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1200" height="720" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1200" height="62" rx="12" fill="#0f172a"/>
+  <rect x="0" y="46" width="1200" height="16" fill="#0f172a"/>
+  <text x="24" y="28" class="sans" font-size="18" font-weight="700" fill="#f8fafc">SolidJS / alien-signals: Push-Pull Glitch-Free Reactive Propagation</text>
+  <text x="24" y="49" class="sans" font-size="12" fill="#94a3b8">Three-Colour Marking (CLEAN -&gt; DIRTY / CHECK) + Height-Bucket Pull Heap (h = 1 Before h = 2) Guarantees Single-Pass Consistency</text>
+
+  <!-- LEFT PANEL: Diamond DAG -->
+  <rect x="24" y="78" width="564" height="552" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+  <rect x="24" y="78" width="564" height="36" rx="10" fill="#f1f5f9"/>
+  <rect x="24" y="104" width="564" height="10" fill="#f1f5f9"/>
+  <text x="40" y="101" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">1. Diamond Reactive DAG (Height-Ordered)</text>
+  <text x="572" y="101" class="mono" font-size="11" fill="#2563eb" text-anchor="end">setCount(2)</text>
+
+  <!-- Height 0: Signal count -->
+  <rect x="196" y="132" width="220" height="58" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="306" y="153" class="mono" font-size="12.5" font-weight="700" fill="#1d4ed8" text-anchor="middle">Signal: count()  [h = 0]</text>
+  <text x="306" y="174" class="mono" font-size="11.5" fill="#1e3a8a" text-anchor="middle">1 -&gt; staged _pendingValue = 2</text>
+
+  <!-- Edges h=0 -> h=1 -->
+  <path d="M 254 190 L 164 242" fill="none" stroke="#475569" stroke-width="2" marker-end="url(#arr-slate)"/>
+  <path d="M 358 190 L 448 242" fill="none" stroke="#475569" stroke-width="2" marker-end="url(#arr-slate)"/>
+
+  <!-- Height 1 Left: Memo double -->
+  <rect x="48" y="248" width="232" height="66" rx="8" class="h1-box"/>
+  <text x="164" y="270" class="mono" font-size="12" font-weight="700" fill="#0f172a" text-anchor="middle">double = count() * 2  [h=1]</text>
+  <text x="164" y="292" class="mono p-1" font-size="11.5" fill="#be123c" text-anchor="middle">2 (DIRTY - queued h=1)</text>
+  <text x="164" y="292" class="mono p-2" font-size="11.5" font-weight="700" fill="#065f46" text-anchor="middle">recomputed: 4 (CLEAN)</text>
+  <text x="164" y="292" class="mono p-3" font-size="11.5" font-weight="700" fill="#065f46" text-anchor="middle">value = 4 (CLEAN)</text>
+  <text x="164" y="292" class="mono p-4" font-size="11.5" font-weight="700" fill="#065f46" text-anchor="middle">value = 4 (CLEAN)</text>
+
+  <!-- Height 1 Right: Memo isEven -->
+  <rect x="332" y="248" width="232" height="66" rx="8" class="h1-box"/>
+  <text x="448" y="270" class="mono" font-size="12" font-weight="700" fill="#0f172a" text-anchor="middle">isEven = count()%2==0 [h=1]</text>
+  <text x="448" y="292" class="mono p-1" font-size="11.5" fill="#be123c" text-anchor="middle">false (DIRTY - queued h=1)</text>
+  <text x="448" y="292" class="mono p-2" font-size="11.5" font-weight="700" fill="#065f46" text-anchor="middle">recomputed: true (CLEAN)</text>
+  <text x="448" y="292" class="mono p-3" font-size="11.5" font-weight="700" fill="#065f46" text-anchor="middle">value = true (CLEAN)</text>
+  <text x="448" y="292" class="mono p-4" font-size="11.5" font-weight="700" fill="#065f46" text-anchor="middle">value = true (CLEAN)</text>
+
+  <!-- Edges h=1 -> h=2 -->
+  <path d="M 164 314 L 254 366" fill="none" stroke="#475569" stroke-width="2" marker-end="url(#arr-slate)"/>
+  <path d="M 448 314 L 358 366" fill="none" stroke="#475569" stroke-width="2" marker-end="url(#arr-slate)"/>
+
+  <!-- Height 2: Diamond Sink Memo summary -->
+  <rect x="136" y="372" width="340" height="68" rx="8" class="sum-box"/>
+  <text x="306" y="394" class="mono" font-size="12" font-weight="700" fill="#0f172a" text-anchor="middle">summary = `${double()} (${isEven()})` [h=2]</text>
+  <text x="306" y="416" class="mono p-1" font-size="11" fill="#92400e" text-anchor="middle">State: CHECK (waits for h=1!)</text>
+  <text x="306" y="416" class="mono p-2" font-size="11" font-weight="700" fill="#be123c" text-anchor="middle">Promoted to DIRTY (h=2 queued)</text>
+  <text x="306" y="416" class="mono p-3" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">Evaluates ONCE: "4 (true)" (CLEAN)</text>
+  <text x="306" y="416" class="mono p-4" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">Settled: "4 (true)" (0 glitches)</text>
+
+  <!-- Edge h=2 -> Effect -->
+  <line x1="306" y1="440" x2="306" y2="476" stroke="#475569" stroke-width="2" marker-end="url(#arr-slate)"/>
+
+  <!-- Height 3: Effect -->
+  <rect x="148" y="482" width="316" height="54" rx="8" class="fx-box"/>
+  <text x="306" y="503" class="mono" font-size="12" font-weight="700" fill="#0f172a" text-anchor="middle">createEffect -&gt; render(summary())</text>
+  <text x="306" y="522" class="mono" font-size="11" fill="#475569" text-anchor="middle">Apply half runs in Step 5/6 AFTER heap drains</text>
+
+  <!-- Glitch-Free Contrast Note -->
+  <rect x="44" y="550" width="524" height="64" rx="8" fill="#fff1f2" stroke="#fda4af"/>
+  <text x="58" y="571" class="sans" font-size="11.5" font-weight="700" fill="#be123c">Why Naive Push Fails (The Diamond Glitch):</text>
+  <text x="58" y="590" class="sans" font-size="11" fill="#881337">Without height ordering, updating double fires summary while isEven is still false,</text>
+  <text x="58" y="606" class="mono" font-size="10" fill="#9f1239">emitting a torn "4 (false)" before recomputing a second time to "4 (true)".</text>
+
+  <!-- RIGHT PANEL: Height-Indexed Bucket Heap & GlobalQueue.flush() -->
+  <rect x="612" y="78" width="564" height="552" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+  <rect x="612" y="78" width="564" height="36" rx="10" fill="#f1f5f9"/>
+  <rect x="612" y="104" width="564" height="10" fill="#f1f5f9"/>
+  <text x="628" y="101" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">2. Height-Bucket Heap &amp; GlobalQueue.flush()</text>
+  <text x="1160" y="101" class="mono" font-size="11" fill="#7c3aed" text-anchor="end">O(1) insert · O(H) scan</text>
+
+  <!-- Heap Buckets -->
+  <text x="632" y="138" class="sans" font-size="11.5" font-weight="700" fill="#475569">Dirty Heap (_heap: Circular Doubly-Linked List Buckets by Height):</text>
+  <g transform="translate(632, 152)">
+    <!-- Bucket h=1 -->
+    <rect x="0" y="0" width="524" height="62" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+    <rect x="12" y="14" width="76" height="34" rx="5" fill="#e2e8f0"/>
+    <text x="50" y="36" class="mono" font-size="12" font-weight="700" fill="#0f172a" text-anchor="middle">h = 1</text>
+    <rect x="104" y="14" width="190" height="34" rx="5" fill="#ffffff" stroke="#94a3b8"/>
+    <text x="199" y="35" class="mono" font-size="11.5" font-weight="700" fill="#0f172a" text-anchor="middle">double (DIRTY -&gt; CLEAN)</text>
+    <rect x="308" y="14" width="196" height="34" rx="5" fill="#ffffff" stroke="#94a3b8"/>
+    <text x="406" y="35" class="mono" font-size="11.5" font-weight="700" fill="#0f172a" text-anchor="middle">isEven (DIRTY -&gt; CLEAN)</text>
+
+    <!-- Bucket h=2 -->
+    <rect x="0" y="74" width="524" height="62" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+    <rect x="12" y="88" width="76" height="34" rx="5" fill="#e2e8f0"/>
+    <text x="50" y="110" class="mono" font-size="12" font-weight="700" fill="#0f172a" text-anchor="middle">h = 2</text>
+    <rect x="104" y="88" width="400" height="34" rx="5" fill="#ffffff" stroke="#94a3b8"/>
+    <text x="304" y="109" class="mono" font-size="11.5" font-weight="700" fill="#0f172a" text-anchor="middle">summary (CHECK -&gt; DIRTY -&gt; CLEAN, 1 eval)</text>
+
+    <!-- Effect Queue -->
+    <rect x="0" y="148" width="524" height="62" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+    <rect x="12" y="162" width="76" height="34" rx="5" fill="#dbeafe"/>
+    <text x="50" y="184" class="mono" font-size="11" font-weight="700" fill="#1d4ed8" text-anchor="middle">EFFECTS</text>
+    <rect x="104" y="162" width="400" height="34" rx="5" fill="#eff6ff" stroke="#93c5fd"/>
+    <text x="304" y="183" class="mono" font-size="11.5" font-weight="700" fill="#1e40af" text-anchor="middle">settle() -&gt; clock++ -&gt; EFFECT_RENDER / EFFECT_USER</text>
+
+    <!-- Animated active bucket outline -->
+    <g class="heap-cur">
+      <rect x="-2" y="-2" width="528" height="66" rx="9" fill="none" stroke="#2563eb" stroke-width="2.5"/>
+    </g>
+  </g>
+
+  <!-- Step Trace Box -->
+  <rect x="632" y="384" width="524" height="230" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="646" y="406" class="sans" font-size="11" font-weight="700" fill="#475569">PUSH-PULL EXECUTION TRACE (rc.19 / alien-signals):</text>
+
+  <g class="p-1">
+    <rect x="1032" y="392" width="110" height="22" rx="4" fill="#fff1f2" stroke="#fda4af"/>
+    <text x="1087" y="407" class="mono" font-size="10.5" font-weight="700" fill="#be123c" text-anchor="middle">Phase 1: PUSH</text>
+    <text x="646" y="436" class="mono" font-size="13" font-weight="700" fill="#0f172a">markNode() Recursive Push (Zero Computation)</text>
+    <text x="646" y="460" class="sans" font-size="11.5" fill="#334155">1. setCount(2) stages _pendingValue = 2 and calls markNode.</text>
+    <text x="646" y="482" class="sans" font-size="11.5" fill="#be123c">2. Direct subs (double, isEven) become DIRTY and enter bucket h=1.</text>
+    <text x="646" y="504" class="sans" font-size="11.5" fill="#b45309">3. Indirect sub (summary) becomes CHECK (maybe stale) at bucket h=2.</text>
+    <text x="646" y="528" class="mono" font-size="11" fill="#475569">Cost: O(|V_reach| + |E_reach|); stops if already >= strength.</text>
+    <text x="646" y="558" class="sans" font-size="11" fill="#64748b">Notice: if reads happen untracked mid-tick, updateIfNecessary() pulls lazily.</text>
+  </g>
+  <g class="p-2">
+    <rect x="1032" y="392" width="110" height="22" rx="4" fill="#ecfdf5" stroke="#6ee7b7"/>
+    <text x="1087" y="407" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Phase 2: h = 1</text>
+    <text x="646" y="436" class="mono" font-size="13" font-weight="700" fill="#0f172a">runHeap() Pops Bucket h = 1 Before h = 2</text>
+    <text x="646" y="460" class="sans" font-size="11.5" fill="#334155">1. Pop double: computes 2 * 2 = 4 (changed!). Marks summary DIRTY.</text>
+    <text x="646" y="482" class="sans" font-size="11.5" fill="#334155">2. Pop isEven: computes 2 % 2 == 0 -&gt; true (changed!). Both CLEAN.</text>
+    <text x="646" y="504" class="sans" font-size="11.5" fill="#047857">3. Both double and isEven are CLEAN before bucket h = 2 starts.</text>
+    <text x="646" y="528" class="mono" font-size="11" fill="#059669">Invariant: all buckets &lt; h are empty when bucket h is scanned.</text>
+    <text x="646" y="558" class="sans" font-size="11" fill="#64748b">If neither changed, summary stays CHECK and skips recompute completely!</text>
+  </g>
+  <g class="p-3">
+    <rect x="1032" y="392" width="110" height="22" rx="4" fill="#ecfdf5" stroke="#059669"/>
+    <text x="1087" y="407" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Phase 3: h = 2</text>
+    <text x="646" y="436" class="mono" font-size="13" font-weight="700" fill="#0f172a">Pull Diamond Sink Once With Fresh Inputs</text>
+    <text x="646" y="460" class="sans" font-size="11.5" fill="#334155">1. runHeap pops summary from bucket h=2 (now marked DIRTY).</text>
+    <text x="646" y="482" class="sans" font-size="11.5" fill="#047857">2. Reads double()=4 and isEven()=true — both from new epoch!</text>
+    <text x="646" y="504" class="sans" font-size="11.5" fill="#047857">3. Reuses Link nodes via _depGen stamp (zero edge allocations).</text>
+    <text x="646" y="528" class="mono" font-size="11" fill="#059669">Dynamic deps: adjustHeight raises h(v) = h(u)+1 if a new edge climbs.</text>
+    <text x="646" y="558" class="sans" font-size="11" fill="#64748b">Result: summary computed exactly once -> "4 (true)".</text>
+  </g>
+  <g class="p-4">
+    <rect x="1032" y="392" width="110" height="22" rx="4" fill="#eff6ff" stroke="#93c5fd"/>
+    <text x="1087" y="407" class="mono" font-size="10.5" font-weight="700" fill="#1d4ed8" text-anchor="middle">Phase 4: APPLY</text>
+    <text x="646" y="436" class="mono" font-size="13" font-weight="700" fill="#0f172a">settle() -&gt; clock++ -&gt; Run Effects Once</text>
+    <text x="646" y="460" class="sans" font-size="11.5" fill="#334155">1. sweepDormant() unlinks unowned, unobserved memos before next run.</text>
+    <text x="646" y="482" class="sans" font-size="11.5" fill="#1d4ed8">2. settle() commits staged values; clock++ advances epoch.</text>
+    <text x="646" y="504" class="sans" font-size="11.5" fill="#1d4ed8">3. EFFECT_RENDER &amp; EFFECT_USER observe consistent "4 (true)".</text>
+    <text x="646" y="528" class="mono" font-size="11" fill="#7c3aed">Dev guard throws "Potential Infinite Loop" past ~100,000 continuations.</text>
+    <text x="646" y="558" class="sans" font-size="11" fill="#64748b">Glitch-free guarantee holds across arbitrarily deep reactive DAGs.</text>
+  </g>
+
+  <!-- Footer Legend -->
+  <rect x="24" y="646" width="1152" height="54" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+  <rect x="40" y="661" width="14" height="14" rx="3" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="60" y="672" class="sans" font-size="11.5" fill="#334155">Signal / Effect</text>
+  <rect x="172" y="661" width="14" height="14" rx="3" fill="#fff1f2" stroke="#e11d48"/>
+  <text x="192" y="672" class="sans" font-size="11.5" fill="#334155">DIRTY (Direct Dep Changed)</text>
+  <rect x="378" y="661" width="14" height="14" rx="3" fill="#fffbeb" stroke="#d97706"/>
+  <text x="398" y="672" class="sans" font-size="11.5" fill="#334155">CHECK (Upstream Maybe Changed)</text>
+  <rect x="614" y="661" width="14" height="14" rx="3" fill="#ecfdf5" stroke="#059669"/>
+  <text x="634" y="672" class="sans" font-size="11.5" fill="#334155">CLEAN (Up to Date)</text>
+  <text x="1160" y="672" class="mono" font-size="11" font-weight="700" fill="#0f172a" text-anchor="end">SolidJS 2.0 / alien-signals</text>
+</svg>

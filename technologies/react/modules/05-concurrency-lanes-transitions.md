@@ -80,6 +80,10 @@ The two outcomes that make React "concurrent":
 - **Resume.** If nothing more urgent arrived, the next slice continues from the saved `workInProgress` pointer.
 - **Restart.** If a higher-priority update arrived, `getNextLanes` returns different lanes, React handles the urgent work first (from the _current_ tree), and later **restarts** the transition from scratch, because its partial WIP tree was computed against a state that is no longer current. The interrupted work is simply discarded — possible only because render is pure (Module 01 §5).
 
+![React 31-Bit Lanes Priority Scheduler](../assets/05-lanes-bitmask-scheduler-animated.svg)
+
+_Animated trace of the 31-bit Lanes priority scheduler isolating `SyncLane` via `lanes & -lanes` to preempt a 5 ms concurrent `TransitionLane` slice, commit the urgent update, and resume the transition against the newly committed tree._
+
 ---
 
 ## 2. The scheduler

@@ -484,6 +484,10 @@ spec:
 
 Rekor transparency logging relies on RFC 6962 Merkle tree proofs. The algorithm below presents the formal verification of an inclusion proof in CLRS pseudocode.
 
+![GitLab CI Algorithms Animation: Greedy LPT Test Bin-Packing, Merkle Inclusion Proof, and Critical Path DP](../assets/05-06-09-lpt-merkle-critical-path-animated.svg)
+
+_Step-by-step mechanics (M06 panel):_ (1) Starting at target leaf `L2*` (`leaf_index = 2`), combine with sibling `L3` using RFC 6962 interior domain separation byte `0x01 || L2* || L3` to derive `H23`. (2) Climb one level (`node_index = 1`, odd) and hash `0x01 || H01 || H23` to verify the computed root matches the Signed Tree Head (`STH`) in $O(\log N)$ hashes.
+
 ```text
 MERKLE-INCLUSION-VERIFY(leaf_hash, leaf_index, tree_size, audit_path, root_hash)
 1   hash ← leaf_hash

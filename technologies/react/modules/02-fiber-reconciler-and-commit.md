@@ -273,6 +273,10 @@ The `Placement`/`PlacementDEV` split is observable: under Strict Mode a newly **
 
 **Complexity.** One pass over each list plus a hash map: $O(m + n)$ time and $O(m)$ extra space.
 
+![React Fiber Two-Pass Keyed Reconciliation](../assets/02-fiber-keyed-reconciliation-animated.svg)
+
+_Animated trace of `reconcileChildrenArray` transforming old keyed fibers into the new child order using Pass 1 common-prefix reuse, Pass 2 `existingChildren` map lookup, and the greedy `lastPlacedIndex` move heuristic._
+
 **Optimality — it is not optimal.** The set of children left in place is a _greedy_ increasing subsequence, not the _longest_ one. The minimum number of moves is $|C| - \text{LIS}(C)$ where $C$ is the sequence of old indices of the common keys in new order. The greedy choice is optimal for appends, removals and moving an item _later_, but moving the **last** item to the **front** makes `lastPlacedIndex` jump to the end immediately, so every other item "moves":
 
 | Change                      | React's DOM placements                 | Minimum |

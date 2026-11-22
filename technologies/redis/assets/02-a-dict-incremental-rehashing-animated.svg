@@ -1,0 +1,209 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 540" width="1080" height="540" role="img" aria-labelledby="title desc">
+  <title id="title">Redis Dict Incremental Rehashing</title>
+  <desc id="desc">Animated trace of Redis dict incremental rehashing migrating buckets from ht[0] (size 4) to a full 8-slot ht[1] array as rehashidx advances 0 to 1 to 2 across commands, with dual-table reads, ht[1]-only inserts, and fork() Copy-on-Write pause guard.</desc>
+  <defs>
+    <marker id="arr-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <style><![CDATA[
+      .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+      @keyframes ph1 { 0%, 23% { opacity: 1; } 25%, 100% { opacity: 0; } }
+      @keyframes ph2 { 0%, 23% { opacity: 0; } 25%, 48% { opacity: 1; } 50%, 100% { opacity: 0; } }
+      @keyframes ph3 { 0%, 48% { opacity: 0; } 50%, 73% { opacity: 1; } 75%, 100% { opacity: 0; } }
+      @keyframes ph4 { 0%, 73% { opacity: 0; } 75%, 100% { opacity: 1; } }
+
+      @keyframes ridx-step {
+        0%, 23%   { transform: translateY(0px); }
+        25%, 48%  { transform: translateY(68px); }
+        50%, 100% { transform: translateY(136px); }
+      }
+      @keyframes mig0 { 0%, 23% { opacity: 0; } 25%, 100% { opacity: 1; } }
+      @keyframes mig1 { 0%, 48% { opacity: 0; } 50%, 100% { opacity: 1; } }
+      @keyframes mig2 { 0%, 73% { opacity: 0; } 75%, 100% { opacity: 1; } }
+      @keyframes cow-hi { 0%, 73% { opacity: 0.9; } 75%, 100% { opacity: 1; } }
+
+      .p1 { animation: ph1 12s linear infinite; }
+      .p2 { animation: ph2 12s linear infinite; }
+      .p3 { animation: ph3 12s linear infinite; }
+      .p4 { animation: ph4 12s linear infinite; }
+      .ridx-ptr { animation: ridx-step 12s ease-in-out infinite; }
+      .m0 { animation: mig0 12s linear infinite; }
+      .m1 { animation: mig1 12s linear infinite; }
+      .m2 { animation: mig2 12s linear infinite; }
+      .cow-box { animation: cow-hi 12s linear infinite; }
+
+      @media (prefers-reduced-motion: reduce) {
+        .p1, .p2, .p3, .p4, .ridx-ptr, .m0, .m1, .m2, .cow-box {
+          animation: none !important;
+        }
+        .p1, .p2, .p3 { opacity: 0; }
+        .p4, .m0, .m1, .m2, .cow-box { opacity: 1; }
+        .ridx-ptr { transform: translateY(136px); }
+      }
+    ]]></style>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1080" height="540" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1080" height="58" rx="12" fill="#0f172a"/>
+  <rect x="0" y="42" width="1080" height="16" fill="#0f172a"/>
+  <text x="28" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Redis Dict: Incremental Bucket-by-Bucket Rehashing</text>
+  <text x="28" y="47" class="sans" font-size="12" fill="#94a3b8">Amortized ht[0] (size 4) -&gt; ht[1] (size 8) Migration via rehashidx (Zero O(N) Event-Loop Stalls)</text>
+
+  <!-- Left: ht[0] -->
+  <text x="156" y="88" class="mono" font-size="13" font-weight="700" fill="#0f172a" text-anchor="middle">ht[0] (size = 4, &amp; 3)</text>
+  <g transform="translate(44, 102)">
+    <rect x="0" y="0" width="224" height="56" rx="7" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="16" y="33" class="mono" font-size="13" font-weight="700" fill="#1e40af">[0]: k4 -&gt; k8</text>
+    <g class="m0">
+      <rect x="0" y="0" width="224" height="56" rx="7" fill="#f1f5f9" stroke="#cbd5e1" stroke-dasharray="5 3"/>
+      <text x="112" y="33" class="mono" font-size="12.5" fill="#64748b" text-anchor="middle">[0]: NULL (moved)</text>
+    </g>
+
+    <rect x="0" y="68" width="224" height="56" rx="7" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="16" y="101" class="mono" font-size="13" font-weight="700" fill="#1e40af">[1]: k1 -&gt; k5</text>
+    <g class="m1">
+      <rect x="0" y="68" width="224" height="56" rx="7" fill="#f1f5f9" stroke="#cbd5e1" stroke-dasharray="5 3"/>
+      <text x="112" y="101" class="mono" font-size="12.5" fill="#64748b" text-anchor="middle">[1]: NULL (moved)</text>
+    </g>
+
+    <rect x="0" y="136" width="224" height="56" rx="7" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="16" y="169" class="mono" font-size="13" font-weight="700" fill="#1e40af">[2]: k2 -&gt; k6</text>
+    <g class="m2">
+      <rect x="0" y="136" width="224" height="56" rx="7" fill="#f1f5f9" stroke="#cbd5e1" stroke-dasharray="5 3"/>
+      <text x="112" y="169" class="mono" font-size="12.5" fill="#64748b" text-anchor="middle">[2]: NULL (moved)</text>
+    </g>
+
+    <rect x="0" y="204" width="224" height="56" rx="7" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="16" y="237" class="mono" font-size="13" font-weight="700" fill="#1e40af">[3]: k3 -&gt; k7</text>
+
+    <!-- rehashidx pointer -->
+    <g class="ridx-ptr">
+      <rect x="-5" y="-4" width="234" height="64" rx="9" fill="none" stroke="#d97706" stroke-width="2.5"/>
+      <rect x="238" y="15" width="96" height="26" rx="5" fill="#d97706"/>
+      <text x="286" y="32" class="mono" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle">rehashidx</text>
+    </g>
+  </g>
+
+  <!-- Center Migration Bridge -->
+  <line x1="386" y1="230" x2="452" y2="230" stroke="#059669" stroke-width="2.5" marker-end="url(#arr-emerald)"/>
+  <text x="419" y="216" class="mono" font-size="11.5" font-weight="700" fill="#065f46" text-anchor="middle">hash &amp; 7</text>
+
+  <!-- Right: Full 8-slot ht[1] -->
+  <text x="606" y="88" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">ht[1] (size = 8, 2x array)</text>
+  <g transform="translate(466, 102)">
+    <!-- All 8 slots drawn cleanly from start -->
+    <rect x="0" y="0" width="280" height="28" rx="5" fill="#ffffff" stroke="#cbd5e1" opacity="0.92"/>
+    <text x="14" y="19" class="mono" font-size="12" fill="#94a3b8">[0]: empty</text>
+    <g class="m0">
+      <rect x="0" y="0" width="280" height="28" rx="5" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+      <text x="14" y="19" class="mono" font-size="12" font-weight="700" fill="#065f46">[0]: k8  (from ht[0][0])</text>
+    </g>
+
+    <rect x="0" y="34" width="280" height="28" rx="5" fill="#ffffff" stroke="#cbd5e1" opacity="0.92"/>
+    <text x="14" y="53" class="mono" font-size="12" fill="#94a3b8">[1]: empty</text>
+    <g class="m1">
+      <rect x="0" y="34" width="280" height="28" rx="5" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+      <text x="14" y="53" class="mono" font-size="12" font-weight="700" fill="#065f46">[1]: k1  (from ht[0][1])</text>
+    </g>
+
+    <rect x="0" y="68" width="280" height="28" rx="5" fill="#ffffff" stroke="#cbd5e1" opacity="0.92"/>
+    <text x="14" y="87" class="mono" font-size="12" fill="#94a3b8">[2]: empty</text>
+    <g class="m2">
+      <rect x="0" y="68" width="280" height="28" rx="5" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+      <text x="14" y="87" class="mono" font-size="12" font-weight="700" fill="#065f46">[2]: k2  (from ht[0][2])</text>
+    </g>
+
+    <rect x="0" y="102" width="280" height="28" rx="5" fill="#ffffff" stroke="#cbd5e1" opacity="0.92"/>
+    <text x="14" y="121" class="mono" font-size="12" fill="#94a3b8">[3]: empty</text>
+
+    <rect x="0" y="136" width="280" height="28" rx="5" fill="#ffffff" stroke="#cbd5e1" opacity="0.92"/>
+    <text x="14" y="155" class="mono" font-size="12" fill="#94a3b8">[4]: empty</text>
+    <g class="m0">
+      <rect x="0" y="136" width="280" height="28" rx="5" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+      <text x="14" y="155" class="mono" font-size="12" font-weight="700" fill="#065f46">[4]: k4  (from ht[0][0])</text>
+    </g>
+
+    <rect x="0" y="170" width="280" height="28" rx="5" fill="#ffffff" stroke="#cbd5e1" opacity="0.92"/>
+    <text x="14" y="189" class="mono" font-size="12" fill="#94a3b8">[5]: empty</text>
+    <g class="m1">
+      <rect x="0" y="170" width="280" height="28" rx="5" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+      <text x="14" y="189" class="mono" font-size="12" font-weight="700" fill="#065f46">[5]: k5  (from ht[0][1])</text>
+    </g>
+
+    <rect x="0" y="204" width="280" height="28" rx="5" fill="#ffffff" stroke="#cbd5e1" opacity="0.92"/>
+    <text x="14" y="223" class="mono" font-size="12" fill="#94a3b8">[6]: empty</text>
+    <g class="m2">
+      <rect x="0" y="204" width="280" height="28" rx="5" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+      <text x="14" y="223" class="mono" font-size="12" font-weight="700" fill="#065f46">[6]: k6  (from ht[0][2])</text>
+    </g>
+
+    <rect x="0" y="238" width="280" height="28" rx="5" fill="#ffffff" stroke="#cbd5e1" opacity="0.92"/>
+    <text x="14" y="257" class="mono" font-size="12" fill="#94a3b8">[7]: empty</text>
+    <g class="m1">
+      <rect x="0" y="238" width="280" height="28" rx="5" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+      <text x="14" y="257" class="mono" font-size="12" font-weight="700" fill="#1d4ed8">[7]: k9  (new SET -&gt; ht[1])</text>
+    </g>
+  </g>
+
+  <!-- Far Right: Rehash Invariants -->
+  <rect x="772" y="102" width="276" height="78" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="788" y="126" class="sans" font-size="12.5" font-weight="700" fill="#0f172a">Dual-Table Reads (GET)</text>
+  <text x="788" y="148" class="sans" font-size="12" fill="#334155">Probe ht[0] first; if missing and</text>
+  <text x="788" y="166" class="mono" font-size="11.5" fill="#2563eb">rehashidx != -1, probe ht[1].</text>
+
+  <rect x="772" y="192" width="276" height="78" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="788" y="216" class="sans" font-size="12.5" font-weight="700" fill="#0f172a">ht[1]-Only Inserts (SET)</text>
+  <text x="788" y="238" class="sans" font-size="12" fill="#334155">New keys insert solely into ht[1]</text>
+  <text x="788" y="256" class="mono" font-size="11.5" fill="#059669">so ht[0].used strictly shrinks.</text>
+
+  <g class="cow-box">
+    <rect x="772" y="282" width="276" height="86" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+    <text x="788" y="306" class="sans" font-size="12.5" font-weight="700" fill="#92400e">fork() CoW Pause Guard</text>
+    <text x="788" y="328" class="sans" font-size="12" fill="#78350f">Pause resize during BGSAVE/AOF</text>
+    <text x="788" y="348" class="mono" font-size="11.5" fill="#b45309">child (until load factor &gt;= 5).</text>
+  </g>
+
+  <!-- Bottom Trace Box -->
+  <rect x="32" y="384" width="1016" height="82" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+  <g class="p1">
+    <rect x="48" y="400" width="142" height="24" rx="5" fill="#eff6ff" stroke="#93c5fd"/>
+    <text x="119" y="416" class="mono" font-size="11.5" font-weight="700" fill="#1d4ed8" text-anchor="middle">Step 1: ridx = 0</text>
+    <text x="206" y="417" class="mono" font-size="13.5" font-weight="700" fill="#0f172a">Allocate 2x ht[1] (8 slots); set rehashidx = 0</text>
+    <text x="48" y="448" class="sans" font-size="12.5" fill="#334155">Both tables reside in RAM briefly; next GET/SET calls _dictRehashStep() on bucket 0.</text>
+  </g>
+  <g class="p2">
+    <rect x="48" y="400" width="142" height="24" rx="5" fill="#ecfdf5" stroke="#6ee7b7"/>
+    <text x="119" y="416" class="mono" font-size="11.5" font-weight="700" fill="#065f46" text-anchor="middle">Step 2: ridx = 1</text>
+    <text x="206" y="417" class="mono" font-size="13.5" font-weight="700" fill="#0f172a">GET k4 -&gt; migrates bucket 0 (k8 -&gt; [0], k4 -&gt; [4])</text>
+    <text x="48" y="448" class="sans" font-size="12.5" fill="#334155">ht[0][0] drains to NULL; rehashidx increments 0 -&gt; 1 in O(1) amortized time.</text>
+  </g>
+  <g class="p3">
+    <rect x="48" y="400" width="142" height="24" rx="5" fill="#ecfdf5" stroke="#6ee7b7"/>
+    <text x="119" y="416" class="mono" font-size="11.5" font-weight="700" fill="#065f46" text-anchor="middle">Step 3: ridx = 2</text>
+    <text x="206" y="417" class="mono" font-size="13.5" font-weight="700" fill="#0f172a">SET k9 -&gt; migrates bucket 1; writes k9 to ht[1][7]</text>
+    <text x="48" y="448" class="sans" font-size="12.5" fill="#334155">New keys never enter ht[0] during rehash; serverCron also steps 1 ms when idle.</text>
+  </g>
+  <g class="p4">
+    <rect x="48" y="400" width="142" height="24" rx="5" fill="#fffbeb" stroke="#fcd34d"/>
+    <text x="119" y="416" class="mono" font-size="11.5" font-weight="700" fill="#92400e" text-anchor="middle">Step 4: CoW Guard</text>
+    <text x="206" y="417" class="mono" font-size="13.5" font-weight="700" fill="#0f172a">Bucket 2 migrates; fork() pauses resize to save CoW RAM</text>
+    <text x="48" y="448" class="sans" font-size="12.5" fill="#334155">Once ht[0].used reaches 0, Redis swaps ht[0] &lt;- ht[1] and sets rehashidx = -1.</text>
+  </g>
+
+  <!-- Footer Legend -->
+  <rect x="32" y="480" width="1016" height="44" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+  <rect x="48" y="495" width="14" height="14" rx="3" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="70" y="506" class="sans" font-size="12" fill="#334155">ht[0] / New Insert</text>
+  <rect x="206" y="495" width="14" height="14" rx="3" fill="#ecfdf5" stroke="#059669"/>
+  <text x="228" y="506" class="sans" font-size="12" fill="#334155">ht[1] Migrated</text>
+  <rect x="342" y="495" width="14" height="14" rx="3" fill="#fffbeb" stroke="#d97706"/>
+  <text x="364" y="506" class="sans" font-size="12" fill="#334155">rehashidx / CoW Guard</text>
+  <rect x="530" y="495" width="14" height="14" rx="3" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="552" y="506" class="sans" font-size="12" fill="#334155">Drained / Empty Slot</text>
+  <text x="1032" y="506" class="mono" font-size="12" font-weight="700" fill="#0f172a" text-anchor="end">Redis 8.x · dict.c</text>
+</svg>

@@ -265,6 +265,10 @@ Below are the formal algorithms executing load-balanced test partitioning and st
 
 ### 6.1 Greedy LPT (Longest Processing Time) Test Partitioning Engine
 
+![GitLab CI Algorithms Animation: Greedy LPT Test Bin-Packing, Merkle Inclusion Proof, and Critical Path DP](../assets/05-06-09-lpt-merkle-critical-path-animated.svg)
+
+_Step-by-step mechanics (M05 panel):_ (1) Sort historical test durations descending (`40s, 30s, 25s, 15s, 10s`). (2) Repeatedly extract the least-loaded runner from the min-heap and assign the next longest suite, yielding a balanced `65s` vs `55s` schedule within Graham's $\frac{4}{3} - \frac{1}{3N}$ approximation bound.
+
 ```text
 GREEDY-TEST-PARTITIONING(TestFilesWithDurations, NodeCount)
 1   // TestFilesWithDurations is a list of tuples: (filename, duration_ms)

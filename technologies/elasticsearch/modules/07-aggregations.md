@@ -222,6 +222,10 @@ The alternative **HDR histogram** (`"hdr": { "number_of_significant_value_digits
 | latency SLO with a fixed relative error | HDR |
 | percentiles that must be re-aggregated later | store `histogram`/`exponential_histogram` fields, aggregate those |
 
+![Elasticsearch T-Digest Tail Compression, RRF Hybrid Fusion, and Murmur3 Routing](../assets/07-09-10-tdigest-rrf-murmur3-animated.svg)
+
+_Animated visualization of T-Digest extreme-tail centroid compression ($q \to 0, 1$), paired with Reciprocal Rank Fusion (Module 09) and Lucene `Murmur3_x86_32` shard routing (Module 10)._
+
 ---
 
 ## 5. `composite`: Exhaustive, Paginated Buckets

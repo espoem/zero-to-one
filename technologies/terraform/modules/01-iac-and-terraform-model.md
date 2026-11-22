@@ -166,6 +166,10 @@ flowchart LR
 
 The following algorithm formally specifies the transitive reduction process executed by Terraform Core prior to initiating a graph walk.
 
+![Terraform 2-Phase Transitive Reduction and Parallel DAG Walk Animation](../assets/01-dag-transitive-reduction-animated.svg)
+
+_Step-by-step mechanics:_ (1) Phase 1 computes transitive closure and longest path distances (`Dist[A][C] = 2` via `B`). (2) Phase 2 prunes redundant edge `(A, C)` because an alternative path of length $\ge 2$ exists through `B`, lowering `in-degree(C)` from `2` to `1`. (3) Phase 3 runs Kahn's in-degree frontier across `-parallelism` workers so `B` and `D` execute concurrently before unlocking `C`.
+
 ```text
 ALGORITHM: TRANSITIVE-REDUCTION(V, E)
 INPUT: A Directed Acyclic Graph G = (V, E) where V is the set of graph vertices and E is the set of directed dependency edges.

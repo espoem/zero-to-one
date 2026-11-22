@@ -319,6 +319,10 @@ Modern hardware workloads (AI/ML GPUs, FPGAs, DPUs, network acceleration devices
 
 ## 8. Formal Algorithm: Scheduling Framework Filter, Score, and Bind
 
+![Kubernetes HPA Reconcile Loop and Kube-Scheduler Pipeline Animation](../assets/05-06-hpa-and-scheduler-pipeline-animated.svg)
+
+_Step-by-step mechanics (M06 band):_ (1) Run `Filter` plugins in parallel to eliminate nodes failing CPU, taint, or topology rules; if `feasible == 0`, invoke `PostFilter` preemption to evict minimal lower-priority victims while respecting `PodDisruptionBudget` limits. (2) Run weighted `Score` plugins and pick `ArgMax`, atomically commit capacity in `Reserve`, and execute `Permit -> PreBind -> Bind -> PostBind` asynchronously.
+
 ```text
 Algorithm: SchedulingFrameworkRun
 Input: Pod P, ListOfNodes AllNodes, PluginRegistry Plugins

@@ -298,6 +298,10 @@ This dampening ensures score decay between adjacent ranks is smooth and bounded:
 
 A document ranked first by one retriever ($1/61 \approx 0.01639$) cannot outscore a document ranked second by both ($1/62 + 1/62 \approx 0.03226$). RRF guarantees consensus across retrievers over isolated rank spikes. Tests: the exact score $1/61 + 1/62$ for a document ranked first and second; that scaling one retriever's raw scores changes nothing; that documents beyond `rank_window_size` contribute nothing; and symmetry in the order of retrievers (property).
 
+![Elasticsearch T-Digest Tail Compression, RRF Hybrid Fusion, and Murmur3 Routing](../assets/07-09-10-tdigest-rrf-murmur3-animated.svg)
+
+_Animated visualization of Reciprocal Rank Fusion $1 / (k + \mathrm{rank})$ combining BM25 and kNN lists by rank consensus, alongside T-Digest tail compression (Module 07) and Murmur3 shard routing (Module 10)._
+
 ### 6.2 Linear combination
 
 `linear` normalises each child's scores and computes a weighted sum:

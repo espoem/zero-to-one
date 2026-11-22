@@ -404,6 +404,10 @@ gitlab-ci-local --list
 
 The algorithm below computes the critical path of a CI/CD Directed Acyclic Graph using topological sorting, and evaluates the minimal execution set for monorepo change sets in CLRS pseudocode.
 
+![GitLab CI Algorithms Animation: Greedy LPT Test Bin-Packing, Merkle Inclusion Proof, and Critical Path DP](../assets/05-06-09-lpt-merkle-critical-path-animated.svg)
+
+_Step-by-step mechanics (M09 panel):_ (1) Seed Kahn's topological queue with `in_degree == 0` sources (`lint`, `e2e`). (2) Propagate longest `earliest_finish[v]` across `needs:` edges in $O(|V| + |E|)$ time, identifying bottleneck path `e2e (12m) -> signoff (2m)` with critical duration `T_crit = 14m` while `deploy` carries `4m` of slack.
+
 ```text
 COMPUTE-CRITICAL-PATH(V, E, duration_map)
 1   // Input: Vertices V (jobs), Directed Edges E (needs dependencies), duration_map t: V -> R+

@@ -93,6 +93,10 @@ flowchart TD
 | **Hash Join** | Equality operator (`=`) | $O(N + M)$ | $O(\text{Inner Relation Size})$ | Spills to multi-batch disk temp files if exceeds `work_mem` |
 | **Merge Join** | Equality operator; pre-sorted inputs | $O(N \log N + M \log M)$ (or $O(N+M)$ if pre-indexed) | $O(1)$ streaming | Spills sort runs to disk if sorting required |
 
+![PostgreSQL Physical Joins, BRIN Block-Range Pruning, and PG 18 B-Tree Skip Scan](../assets/03-06-joins-brin-skip-scan-animated.svg)
+
+_Animated comparison of PostgreSQL's Nested Loop Join, Grace Hash Join with `work_mem` multi-batch disk spill, and Sort-Merge Join, paired with BRIN block-range pruning and PostgreSQL 18 B-Tree Skip Scan (Module 06)._
+
 ---
 
 ## 4. `LATERAL` Joins & Correlated Subqueries

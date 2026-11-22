@@ -1,0 +1,247 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 740" width="1200" height="740" role="img" aria-labelledby="title desc">
+  <title id="title">Lucene Retrieval: FST Term Dictionary and Block-Max WAND Pruning</title>
+  <desc id="desc">Animated step-by-step visualization of Lucene off-heap Finite State Transducer term dictionary lookup (.tip to .tim block) paired with Block-Max WAND over 128-doc PFOR postings blocks skipping non-competitive blocks whose max upper bound cannot beat the Top-K min-heap threshold theta.</desc>
+  <defs>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <marker id="arr-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+    </marker>
+    <marker id="arr-slate" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569"/>
+    </marker>
+    <style><![CDATA[
+      .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+      /* 12s 4-phase loop */
+      @keyframes ph1 { 0%, 23% { opacity: 1; } 25%, 100% { opacity: 0; } }
+      @keyframes ph2 { 0%, 23% { opacity: 0; } 25%, 48% { opacity: 1; } 50%, 100% { opacity: 0; } }
+      @keyframes ph3 { 0%, 48% { opacity: 0; } 50%, 73% { opacity: 1; } 75%, 100% { opacity: 0; } }
+      @keyframes ph4 { 0%, 73% { opacity: 0; } 75%, 100% { opacity: 1; } }
+
+      @keyframes blk-cursor {
+        0%, 23%   { transform: translateX(0px); }
+        25%, 48%  { transform: translateX(0px); }
+        50%, 73%  { transform: translateX(182px); }
+        75%, 100% { transform: translateX(364px); }
+      }
+      @keyframes b0-skip { 0%, 23% { opacity: 0.86; } 25%, 100% { opacity: 1; } }
+      @keyframes b1-hit  { 0%, 48% { opacity: 0.86; } 50%, 100% { opacity: 1; } }
+      @keyframes b2-skip { 0%, 73% { opacity: 0.86; } 75%, 100% { opacity: 1; } }
+
+      .p-1 { animation: ph1 12s linear infinite; }
+      .p-2 { animation: ph2 12s linear infinite; }
+      .p-3 { animation: ph3 12s linear infinite; }
+      .p-4 { animation: ph4 12s linear infinite; }
+
+      .bmw-cur { animation: blk-cursor 12s ease-in-out infinite; }
+      .b0-ov   { animation: b0-skip 12s linear infinite; }
+      .b1-ov   { animation: b1-hit 12s linear infinite; }
+      .b2-ov   { animation: b2-skip 12s linear infinite; }
+
+      @media (prefers-reduced-motion: reduce) {
+        .p-1, .p-2, .p-3, .p-4, .bmw-cur, .b0-ov, .b1-ov, .b2-ov { animation: none !important; }
+        .p-1, .p-2, .p-3 { opacity: 0; }
+        .p-4 { opacity: 1; }
+        .bmw-cur { transform: translateX(364px); }
+        .b0-ov, .b1-ov, .b2-ov { opacity: 1; }
+      }
+    ]]></style>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1200" height="740" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1200" height="62" rx="12" fill="#0f172a"/>
+  <rect x="0" y="46" width="1200" height="16" fill="#0f172a"/>
+  <text x="24" y="28" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Lucene Retrieval: FST Term Dictionary &amp; Block-Max WAND Pruning</text>
+  <text x="24" y="49" class="sans" font-size="12" fill="#94a3b8">O(|t|) Off-Heap FST (.tip -&gt; .tim Block) + 128-Doc PFOR Impact Upper-Bound Skipping (advance(target))</text>
+
+  <!-- TOP PANEL: FST Prefix Term Dictionary (.tip -> .tim) -->
+  <rect x="24" y="78" width="1152" height="218" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+  <rect x="24" y="78" width="1152" height="34" rx="10" fill="#f1f5f9"/>
+  <rect x="24" y="102" width="1152" height="10" fill="#f1f5f9"/>
+  <text x="40" y="100" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">1. Off-Heap FST Term Index (.tip) -&gt; Sorted Block Tree (.tim) Lookup</text>
+  <text x="1160" y="100" class="mono" font-size="11" fill="#2563eb" text-anchor="end">MMapDirectory · O(|t|) bytes</text>
+
+  <!-- FST States -->
+  <circle cx="80" cy="186" r="22" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="80" y="190" class="mono" font-size="12" font-weight="700" fill="#1d4ed8" text-anchor="middle">q0</text>
+
+  <line x1="102" y1="186" x2="188" y2="186" stroke="#2563eb" stroke-width="2.5" marker-end="url(#arr-blue)"/>
+  <text x="145" y="176" class="mono" font-size="11" font-weight="700" fill="#1d4ed8" text-anchor="middle">'e' / +40</text>
+
+  <circle cx="212" cy="186" r="22" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="212" y="190" class="mono" font-size="12" font-weight="700" fill="#1d4ed8" text-anchor="middle">q1</text>
+
+  <!-- Branch top: "en" -> engine -->
+  <path d="M 232 176 L 326 150" fill="none" stroke="#059669" stroke-width="2.5" marker-end="url(#arr-emerald)"/>
+  <text x="275" y="148" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">'n' / +120</text>
+  <circle cx="350" cy="146" r="20" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="350" y="150" class="mono" font-size="11.5" font-weight="700" fill="#065f46" text-anchor="middle">q2</text>
+
+  <!-- Branch bottom: "es" -> esql -->
+  <path d="M 232 196 L 326 226" fill="none" stroke="#94a3b8" stroke-width="2" marker-end="url(#arr-slate)"/>
+  <text x="275" y="228" class="mono" font-size="11" fill="#64748b" text-anchor="middle">'s' / +480</text>
+  <circle cx="350" cy="230" r="20" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="350" y="234" class="mono" font-size="11.5" fill="#475569" text-anchor="middle">q3</text>
+
+  <!-- Output sum to .tim Block -->
+  <line x1="370" y1="146" x2="462" y2="146" stroke="#059669" stroke-width="2.5" marker-end="url(#arr-emerald)"/>
+  <rect x="470" y="124" width="330" height="86" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="486" y="145" class="mono" font-size="11.5" font-weight="700" fill="#065f46">.tim Leaf Block @ offset 40 + 120 = 160</text>
+  <text x="486" y="166" class="mono" font-size="11" fill="#047857">25-48 shared-prefix terms (UTF-8 sorted):</text>
+  <text x="486" y="185" class="mono" font-size="11" font-weight="700" fill="#0f172a">enc.. | end.. | [engine -&gt; .doc@8192] | env..</text>
+  <text x="486" y="201" class="mono" font-size="10" fill="#059669">Single block scan (&lt;=48 terms), zero JVM heap!</text>
+
+  <!-- Postings Metadata Box -->
+  <line x1="800" y1="167" x2="842" y2="167" stroke="#2563eb" stroke-width="2.5" marker-end="url(#arr-blue)"/>
+  <rect x="850" y="124" width="308" height="148" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="866" y="146" class="sans" font-size="12" font-weight="700" fill="#0f172a">Skip Data &amp; Impacts (.doc / .pay)</text>
+  <text x="866" y="168" class="mono" font-size="11" fill="#334155">128-doc PFOR delta-packed blocks</text>
+  <text x="866" y="188" class="mono" font-size="11" fill="#334155">Per block stores: (max_tf, min_norm)</text>
+  <text x="866" y="208" class="mono" font-size="11" font-weight="700" fill="#1d4ed8">U_block(t) = upper bound BM25 score</text>
+  <text x="866" y="228" class="sans" font-size="11" fill="#475569">Skip levels: L0=128, L1=1024, L2=8192</text>
+  <text x="866" y="248" class="mono" font-size="10.5" fill="#059669">Enables advance(target) O(log_128 |P|)</text>
+
+  <text x="40" y="276" class="sans" font-size="11" fill="#475569">Leading wildcards (*foo) cannot walk prefix arcs and degrade to scanning every term in the field.</text>
+
+  <!-- BOTTOM PANEL: Block-Max WAND -->
+  <rect x="24" y="312" width="1152" height="360" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+  <rect x="24" y="312" width="1152" height="34" rx="10" fill="#f1f5f9"/>
+  <rect x="24" y="336" width="1152" height="10" fill="#f1f5f9"/>
+  <text x="40" y="334" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">2. Block-Max WAND (BMW): Skipping 128-Doc PFOR Blocks Against Top-K Heap Threshold theta</text>
+  <text x="1160" y="334" class="mono" font-size="11" fill="#e11d48" text-anchor="end">track_total_hits: 10000</text>
+
+  <!-- 3 Postings Blocks Columns -->
+  <g transform="translate(44, 366)">
+    <!-- Term Row Labels -->
+    <text x="0" y="36" class="mono" font-size="12" font-weight="700" fill="#1d4ed8">P("search")</text>
+    <text x="0" y="102" class="mono" font-size="12" font-weight="700" fill="#7c3aed">P("engine")</text>
+    <text x="0" y="160" class="mono" font-size="11.5" font-weight="700" fill="#0f172a">Sum U_blk</text>
+
+    <!-- Block 0: [0..127] -->
+    <g transform="translate(116, 0)">
+      <rect x="0" y="0" width="166" height="52" rx="6" fill="#eff6ff" stroke="#93c5fd"/>
+      <text x="83" y="20" class="mono" font-size="11" font-weight="700" fill="#1e40af" text-anchor="middle">Block 0 [0..127]</text>
+      <text x="83" y="39" class="mono" font-size="11" fill="#1d4ed8" text-anchor="middle">U_blk = 1.10</text>
+
+      <rect x="0" y="66" width="166" height="52" rx="6" fill="#f5f3ff" stroke="#c4b5fd"/>
+      <text x="83" y="86" class="mono" font-size="11" font-weight="700" fill="#5b21b6" text-anchor="middle">Block 0 [0..127]</text>
+      <text x="83" y="105" class="mono" font-size="11" fill="#6d28d9" text-anchor="middle">U_blk = 0.95</text>
+
+      <rect x="0" y="132" width="166" height="36" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+      <text x="83" y="155" class="mono" font-size="11.5" font-weight="700" fill="#334155" text-anchor="middle">2.05 &lt; theta (2.40)</text>
+
+      <g class="b0-ov">
+        <rect x="0" y="176" width="166" height="28" rx="5" fill="#fff1f2" stroke="#e11d48"/>
+        <text x="83" y="194" class="mono" font-size="11" font-weight="700" fill="#be123c" text-anchor="middle">SKIP! advance(128)</text>
+      </g>
+    </g>
+
+    <!-- Block 1: [128..255] -->
+    <g transform="translate(298, 0)">
+      <rect x="0" y="0" width="166" height="52" rx="6" fill="#eff6ff" stroke="#93c5fd"/>
+      <text x="83" y="20" class="mono" font-size="11" font-weight="700" fill="#1e40af" text-anchor="middle">Block 1 [128..255]</text>
+      <text x="83" y="39" class="mono" font-size="11" fill="#1d4ed8" text-anchor="middle">U_blk = 1.85</text>
+
+      <rect x="0" y="66" width="166" height="52" rx="6" fill="#f5f3ff" stroke="#c4b5fd"/>
+      <text x="83" y="86" class="mono" font-size="11" font-weight="700" fill="#5b21b6" text-anchor="middle">Block 1 [128..255]</text>
+      <text x="83" y="105" class="mono" font-size="11" fill="#6d28d9" text-anchor="middle">U_blk = 2.65</text>
+
+      <rect x="0" y="132" width="166" height="36" rx="6" fill="#ecfdf5" stroke="#059669"/>
+      <text x="83" y="155" class="mono" font-size="11.5" font-weight="700" fill="#065f46" text-anchor="middle">4.50 &gt;= theta (2.40)</text>
+
+      <g class="b1-ov">
+        <rect x="0" y="176" width="166" height="28" rx="5" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+        <text x="83" y="194" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">DECODE d=142 (3.80)</text>
+      </g>
+    </g>
+
+    <!-- Block 2: [256..383] -->
+    <g transform="translate(480, 0)">
+      <rect x="0" y="0" width="166" height="52" rx="6" fill="#eff6ff" stroke="#93c5fd"/>
+      <text x="83" y="20" class="mono" font-size="11" font-weight="700" fill="#1e40af" text-anchor="middle">Block 2 [256..383]</text>
+      <text x="83" y="39" class="mono" font-size="11" fill="#1d4ed8" text-anchor="middle">U_blk = 1.20</text>
+
+      <rect x="0" y="66" width="166" height="52" rx="6" fill="#f5f3ff" stroke="#c4b5fd"/>
+      <text x="83" y="86" class="mono" font-size="11" font-weight="700" fill="#5b21b6" text-anchor="middle">Block 2 [256..383]</text>
+      <text x="83" y="105" class="mono" font-size="11" fill="#6d28d9" text-anchor="middle">U_blk = 1.40</text>
+
+      <rect x="0" y="132" width="166" height="36" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+      <text x="83" y="155" class="mono" font-size="11.5" font-weight="700" fill="#334155" text-anchor="middle">2.60 &lt; new theta 2.90</text>
+
+      <g class="b2-ov">
+        <rect x="0" y="176" width="166" height="28" rx="5" fill="#fff1f2" stroke="#e11d48"/>
+        <text x="83" y="194" class="mono" font-size="11" font-weight="700" fill="#be123c" text-anchor="middle">PRUNED! advance(384)</text>
+      </g>
+    </g>
+
+    <!-- Animated Block Cursor -->
+    <g class="bmw-cur">
+      <rect x="112" y="-5" width="174" height="214" rx="8" fill="none" stroke="#2563eb" stroke-width="2.5"/>
+    </g>
+  </g>
+
+  <!-- Right Side: Top-K Min-Heap + BMW Step Trace -->
+  <rect x="716" y="362" width="440" height="294" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="732" y="384" class="sans" font-size="12" font-weight="700" fill="#0f172a">Top-K Min-Heap (k = 3) &amp; Threshold theta</text>
+
+  <!-- Dynamic Heap Pills -->
+  <g class="p-1">
+    <rect x="732" y="396" width="408" height="44" rx="6" fill="#fffbeb" stroke="#d97706"/>
+    <text x="936" y="423" class="mono" font-size="12" font-weight="700" fill="#92400e" text-anchor="middle">Heap: [2.40, 2.90, 3.45]  -&gt;  theta = 2.40</text>
+    <text x="732" y="470" class="mono" font-size="13" font-weight="700" fill="#0f172a">Step 1: Align Term Iterators (d_1 &lt;= d_2)</text>
+    <text x="732" y="494" class="sans" font-size="11.5" fill="#334155">Lucene reads block impacts from .pay / skip data without</text>
+    <text x="732" y="514" class="sans" font-size="11.5" fill="#334155">decompressing the 128-doc PFOR integers inside Block 0.</text>
+    <text x="732" y="544" class="mono" font-size="11" fill="#2563eb">Candidate docs in Block 0 can score at most 1.10 + 0.95.</text>
+    <text x="732" y="576" class="sans" font-size="11" fill="#64748b">Requires track_total_hits &lt; N; exact count disables skip.</text>
+  </g>
+  <g class="p-2">
+    <rect x="732" y="396" width="408" height="44" rx="6" fill="#fff1f2" stroke="#e11d48"/>
+    <text x="936" y="423" class="mono" font-size="12" font-weight="700" fill="#be123c" text-anchor="middle">Heap: [2.40, 2.90, 3.45]  -&gt;  2.05 &lt; 2.40 (SKIP)</text>
+    <text x="732" y="470" class="mono" font-size="13" font-weight="700" fill="#0f172a">Step 2: Block 0 Pruned via advance(128)</text>
+    <text x="732" y="494" class="sans" font-size="11.5" fill="#334155">U_search(1.10) + U_engine(0.95) = 2.05 &lt; theta (2.40).</text>
+    <text x="732" y="514" class="sans" font-size="11.5" fill="#be123c">Zero doc IDs decoded, zero BM25 float math evaluated!</text>
+    <text x="732" y="544" class="mono" font-size="11" fill="#e11d48">Iterators jump directly over Block 0 to docID &gt;= 128.</text>
+    <text x="732" y="576" class="sans" font-size="11" fill="#64748b">Classic WAND checks global term max; BMW checks per-128-doc block.</text>
+  </g>
+  <g class="p-3">
+    <rect x="732" y="396" width="408" height="44" rx="6" fill="#ecfdf5" stroke="#059669"/>
+    <text x="936" y="423" class="mono" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">Heap Updated: [2.90, 3.45, 3.80]  -&gt;  theta = 2.90</text>
+    <text x="732" y="470" class="mono" font-size="13" font-weight="700" fill="#0f172a">Step 3: Block 1 Exceeds theta -&gt; Score Pivot d=142</text>
+    <text x="732" y="494" class="sans" font-size="11.5" fill="#334155">4.50 &gt;= 2.40! Pivot d_p = 142 aligned; Block 1 PFOR decoded.</text>
+    <text x="732" y="514" class="sans" font-size="11.5" fill="#047857">Exact BM25(d=142) = 3.80 &gt; 2.40 -&gt; replaces 2.40 in heap!</text>
+    <text x="732" y="544" class="mono" font-size="11" fill="#059669">Threshold theta rises monotonically: 2.40 -&gt; 2.90.</text>
+    <text x="732" y="576" class="sans" font-size="11" fill="#64748b">Notice the higher theta climbs, the more future blocks get pruned.</text>
+  </g>
+  <g class="p-4">
+    <rect x="732" y="396" width="408" height="44" rx="6" fill="#fff1f2" stroke="#e11d48"/>
+    <text x="936" y="423" class="mono" font-size="12" font-weight="700" fill="#be123c" text-anchor="middle">Heap Final: [2.90, 3.45, 3.80]  -&gt;  2.60 &lt; 2.90 (SKIP)</text>
+    <text x="732" y="470" class="mono" font-size="13" font-weight="700" fill="#0f172a">Step 4: Block 2 Pruned by Raised Threshold 2.90</text>
+    <text x="732" y="494" class="sans" font-size="11.5" fill="#334155">Block 2 sum = 1.20 + 1.40 = 2.60 &lt; new theta (2.90).</text>
+    <text x="732" y="514" class="sans" font-size="11.5" fill="#be123c">Entire Block 2 skipped! Top-K ranking remains 100% exact.</text>
+    <text x="732" y="544" class="mono" font-size="11" fill="#2563eb">Default track_total_hits: 10000 enables BMW in ES 7.0+.</text>
+    <text x="732" y="576" class="sans" font-size="11" fill="#64748b">Set track_total_hits: true only when exact hit counts are required.</text>
+  </g>
+
+  <text x="44" y="652" class="mono" font-size="11" fill="#475569">Conjunctions (AND / bool.filter) lead with the rarest term (lowest docFreq) and advance(target) common terms over blocks.</text>
+
+  <!-- Footer Legend -->
+  <rect x="24" y="684" width="1152" height="44" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+  <rect x="40" y="698" width="14" height="14" rx="3" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="60" y="709" class="sans" font-size="11.5" fill="#334155">FST / Term 1 Block</text>
+  <rect x="194" y="698" width="14" height="14" rx="3" fill="#f5f3ff" stroke="#7c3aed"/>
+  <text x="214" y="709" class="sans" font-size="11.5" fill="#334155">Term 2 Block</text>
+  <rect x="324" y="698" width="14" height="14" rx="3" fill="#ecfdf5" stroke="#059669"/>
+  <text x="344" y="709" class="sans" font-size="11.5" fill="#334155">Decoded &amp; Scored</text>
+  <rect x="478" y="698" width="14" height="14" rx="3" fill="#fff1f2" stroke="#e11d48"/>
+  <text x="498" y="709" class="sans" font-size="11.5" fill="#334155">Block Skipped (Sum U_blk &lt; theta)</text>
+  <text x="1160" y="709" class="mono" font-size="11" font-weight="700" fill="#0f172a" text-anchor="end">Lucene 10 / Elasticsearch 9</text>
+</svg>

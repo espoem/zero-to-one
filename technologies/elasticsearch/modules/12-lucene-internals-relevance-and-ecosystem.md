@@ -78,6 +78,10 @@ Per block, Lucene also stores **skip data** and **impacts**: the maximum term fr
 
 A conjunction (`AND`, `bool.filter`, phrase pre-check) is driven by the **least costly** iterator: Lucene asks each clause for its cost (approximately its doc frequency), leads with the rarest, and calls `advance(target)` on the others, which skips whole blocks. The test `a rare term AND a common term costs ~ rare x log(common)` intersects a 3-doc list with a 100,000-doc list in fewer than 200 comparisons, against more than 50,000 for a naive merge; the property test shows both produce the same result. This is why putting a selective filter next to an expensive clause makes the whole query fast regardless of clause order in the JSON.
 
+![Lucene FST Term Dictionary and Block-Max WAND Pruning](../assets/01-12-block-max-wand-and-fst-animated.svg)
+
+_Animated trace of `.tip`/`.tim` off-heap FST prefix lookup and Block-Max WAND skipping 128-doc PFOR postings blocks via `advance(target)` using per-block `(max_tf, min_norm)` impact upper bounds._
+
 ### 1.3 Doc values encodings
 
 | Doc-values type | Used by | Encoding |

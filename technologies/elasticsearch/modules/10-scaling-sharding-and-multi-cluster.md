@@ -38,6 +38,10 @@ The algorithm processes 4-byte (two-`char`) blocks with seed 0:
 
 This byte-level encoding explains why an external hashing utility feeding UTF-8 bytes produces completely different hash outputs and misplaces documents.
 
+![Elasticsearch T-Digest Tail Compression, RRF Hybrid Fusion, and Murmur3 Routing](../assets/07-09-10-tdigest-rrf-murmur3-animated.svg)
+
+_Animated trace of Lucene's `Murmur3_x86_32` UTF-16LE byte serialization, block mixing, `fmix32` avalanche, and Elasticsearch 9+ `floorMod(h, P)` shard routing, alongside T-Digest (Module 07) and RRF (Module 09)._
+
 ### 1.1 Then vs now: modulo routing vs routing shards
 
 In Elasticsearch 7.x and 8.x, Elasticsearch routed documents using intermediate routing shards: $\mathrm{shard}(r) = \lfloor \mathrm{floorMod}(h(r), R) / (R/P) \rfloor$ where $R$ was `index.number_of_routing_shards` (defaulting to the largest power-of-two multiple of $P$ not exceeding 1024). This ensured that doubling $P$ kept documents on child shards $2i$ or $2i+1$, but strictly capped the maximum split target at $R$.

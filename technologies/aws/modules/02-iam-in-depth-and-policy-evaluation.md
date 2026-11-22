@@ -55,6 +55,10 @@ flowchart TD
 
 The AWS policy evaluation engine executes a strict sequence of mathematical evaluations:
 
+![AWS IAM Multi-Layer Deterministic Policy Evaluation Waterfall Animation](../assets/02-aws-iam-multilayer-evaluation-animated.svg)
+
+_Step-by-step mechanics:_ (1) Sweep all six policy layers simultaneously for any matching `Effect: "Deny"` (immediate unoverridable `Explicit Deny`). (2) Validate Organizations SCP/RCP guardrails and Resource-based Policy rules (either/or for same-account except KMS key policies; mandatory two-sided `Allow` for cross-account). (3) Intersect `Boundary ∩ Session ∩ Identity` policies to produce `Explicit Allow` or fall through to `Implicit Deny`.
+
 ### Step 1: Explicit Deny Evaluation
 
 The engine parses all policies applicable to the request (SCPs, RCPs, Identity policies, Resource policies, Boundaries, Session policies). If **ANY** statement in any policy contains an `Effect: "Deny"` matching the requested action, target resource, and context conditions, evaluation immediately terminates with `Access Denied`. Explicit Deny is non-negotiable and overrides all Allows.

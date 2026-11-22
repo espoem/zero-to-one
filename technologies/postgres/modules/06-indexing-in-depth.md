@@ -110,6 +110,10 @@ CREATE INDEX idx_audit_brin ON server_audit_logs USING brin (event_timestamp);
 
 On a 100GB table, a B-tree index might occupy 25GB; a BRIN index occupies approximately **15MB**, fitting entirely in CPU L3 cache.
 
+![PostgreSQL Physical Joins, BRIN Block-Range Pruning, and PG 18 B-Tree Skip Scan](../assets/03-06-joins-brin-skip-scan-animated.svg)
+
+_Animated visualization of BRIN 128-page min/max block-range pruning and PostgreSQL 18 B-Tree Skip Scan prefix hops, paired with PostgreSQL's physical join algorithms (Module 03)._
+
 ---
 
 ## 5. Strategic Index Features: Partial, Expression & Covering (`INCLUDE`)

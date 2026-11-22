@@ -48,6 +48,10 @@ VISIBLE-RANGE(scrollTop, viewport, h, n, k)
 
 Invariant: every row intersecting `[scrollTop, scrollTop + viewport)` lies in the range, and the range has $O(\text{viewport}/h + 2k)$ rows regardless of $n$. Tests: the worked example (10,000 rows → 26 rendered), a fast-check property for coverage and bounds, and a rendered windowed list mounting 12 of 10,000 rows. Libraries (TanStack Virtual, react-window) add variable heights, measurement and scroll anchoring. CSS `content-visibility: auto` is a cheaper alternative when DOM size, not React work, is the problem.
 
+![List Virtualisation: VISIBLE-RANGE Overscan Window and Fixed DOM Node Pool](../assets/12-list-virtualisation-viewport-animated.svg)
+
+_Animated trace of `VISIBLE-RANGE` advancing `startIndex` and `endIndex` across a 10,000-row virtual spacer container while recycling a constant pool of 10 mounted DOM nodes via `translateY(startIndex * h)`._
+
 6. **Split code by route and by heavy widget** with `lazy` + Suspense (§3).
 7. **Move work to the server**: RSC for heavy rendering/markdown/data shaping; zero client JS for non-interactive parts (Module 07).
 8. **Fix effect cascades** (`set-state-in-effect` lint; Module 04 §7).
