@@ -1,0 +1,169 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 600" width="1120" height="600" role="img" aria-labelledby="title desc">
+  <title id="title">Reliable AI Safeguards: CFG Token Masking, Calibrated HITL Routing, and SHA-256 Agent Cycle Guard</title>
+  <desc id="desc">Animated safeguards for production AI systems: Panel 1 shows Context-Free Grammar (CFG/FSM) token-logit masking setting invalid tokens to minus infinity before softmax paired with mandatory Bottom-Bun semantic invariant validation (refundAmountCents less than or equal to orderTotalCents and grounded citations); Panel 2 shows rejecting uncalibrated verbalized JSON confidence (ECE=0.35) in favor of temperature-scaled logprobs plus verifier agreement routed through a 4-way cost-matrix HITL pipeline (AUTO_APPROVE, ESCALATE_MODEL, HITL_QUEUE, FAIL_CLOSED); Panel 3 shows bounded agent ceilings (S_max, K_max, T_max, C_max, W_max) and SHA-256 canonical (toolName, sortedArgs) cycle detection halting repeated loops.</desc>
+
+  <style>
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    /* 12s cycle:
+       0-33%  (0-4s):  Panel 1 — CFG/FSM -inf logit mask + Bottom Bun domain check
+       33-66% (4-8s):  Panel 2 — Temperature scaling ECE below 0.05 and 4-way Cost-Matrix HITL
+       66-100%(8-12s): Panel 3 — SHA-256 canonical agent tool-call cycle guard
+    */
+
+    @keyframes p1-hl { 0%, 32% { stroke: #2563eb; stroke-width: 2.2; } 34%, 100% { stroke: #cbd5e1; stroke-width: 1.5; } }
+    @keyframes p2-hl { 0%, 32% { stroke: #cbd5e1; stroke-width: 1.5; } 34%, 65% { stroke: #d97706; stroke-width: 2.2; } 67%, 100% { stroke: #cbd5e1; stroke-width: 1.5; } }
+    @keyframes p3-hl { 0%, 65% { stroke: #cbd5e1; stroke-width: 1.5; } 67%, 100% { stroke: #e11d48; stroke-width: 2.2; } }
+
+    @keyframes mask-fade {
+      0%, 10%  { opacity: 1; }
+      18%, 32% { opacity: 0.86; }
+      38%, 100%{ opacity: 0.86; }
+    }
+
+    @keyframes hitl-focus {
+      0%, 34%  { opacity: 0.86; }
+      42%, 65% { opacity: 1; }
+      70%, 100%{ opacity: 0.65; }
+    }
+
+    @keyframes cyc-halt {
+      0%, 66%  { opacity: 0.86; }
+      74%, 98% { opacity: 1; }
+      100%     { opacity: 0.86; }
+    }
+
+    .p1 { animation: p1-hl 12s linear infinite; }
+    .p2 { animation: p2-hl 12s linear infinite; }
+    .p3 { animation: p3-hl 12s linear infinite; }
+    .m-fade { animation: mask-fade 12s ease-in-out infinite; }
+    .h-foc  { animation: hitl-focus 12s ease-in-out infinite; }
+    .c-halt { animation: cyc-halt 12s ease-in-out infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .p1, .p2, .p3, .m-fade, .h-foc, .c-halt { animation: none !important; }
+      .m-fade { opacity: 0.86 !important; }
+      .h-foc, .c-halt { opacity: 1 !important; }
+    }
+  </style>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1120" height="600" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1120" height="60" rx="12" fill="#0f172a"/>
+  <rect x="0" y="44" width="1120" height="16" fill="#0f172a"/>
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Reliable AI Safeguards: CFG Masking, Calibrated HITL &amp; Cycle Guard</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">M25 §2.2, §3.2–3.3 &amp; §4.4 · −∞ Token-Logit Mask + Bottom Bun · Temperature-Scaled ECE/Brier Cost Matrix · SHA-256 Agent Cycle Guard</text>
+
+  <!-- PANEL 1 (LEFT): CFG/FSM TOKEN-LOGIT MASKING + BOTTOM BUN -->
+  <rect x="24" y="76" width="344" height="448" rx="10" fill="#ffffff" class="p1"/>
+  <text x="40" y="102" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">1. CFG/FSM Logit Mask + Bottom Bun</text>
+
+  <rect x="40" y="116" width="312" height="180" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="54" y="136" class="mono" font-size="10" font-weight="700" fill="#1e3a8a">Decode Step t: Next-Token Logits</text>
+
+  <!-- Token rows -->
+  <rect x="54" y="148" width="284" height="28" rx="5" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="66" y="166" class="mono" font-size="10" font-weight="700" fill="#065f46">"{"       logit: +4.2 → p = 0.89 (VALID)</text>
+
+  <g class="m-fade">
+    <rect x="54" y="182" width="284" height="28" rx="5" fill="#fff1f2" stroke="#e11d48"/>
+    <text x="66" y="200" class="mono" font-size="10" font-weight="700" fill="#9f1239">"Sure"    logit: +3.9 → MASKED (−∞)</text>
+
+    <rect x="54" y="216" width="284" height="28" rx="5" fill="#fff1f2" stroke="#e11d48"/>
+    <text x="66" y="234" class="mono" font-size="10" font-weight="700" fill="#9f1239">"&lt;script&gt;"logit: +1.8 → MASKED (−∞)</text>
+  </g>
+
+  <rect x="54" y="252" width="284" height="32" rx="5" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="66" y="272" class="mono" font-size="10" fill="#1e3a8a">XGrammar / llguidance FSM trie bitmask</text>
+
+  <!-- Guarantee boundary + Bottom Bun -->
+  <rect x="40" y="308" width="312" height="72" rx="7" fill="#fffbeb" stroke="#d97706"/>
+  <text x="54" y="328" class="sans" font-size="11" font-weight="700" fill="#92400e">CFG Boundary (Syntax Only!)</text>
+  <text x="54" y="346" class="mono" font-size="10" fill="#334155">Check finish_reason ≠ "length" / "refusal"</text>
+  <text x="54" y="364" class="mono" font-size="10" fill="#b45309">CFG allows {"refundCents": 999999}!</text>
+
+  <rect x="40" y="390" width="312" height="118" rx="7" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="54" y="410" class="sans" font-size="11.5" font-weight="700" fill="#065f46">Mandatory Bottom-Bun Validator</text>
+  <text x="54" y="430" class="mono" font-size="10" fill="#334155">1. Strict key closure (additionalProps: false)</text>
+  <text x="54" y="447" class="mono" font-size="10" fill="#334155">2. refundCents &lt;= orderTotalCents</text>
+  <text x="54" y="464" class="mono" font-size="10" fill="#334155">3. citations ⊆ input.sourceContextIds</text>
+  <text x="54" y="481" class="mono" font-size="10" fill="#047857">4. Zero PII / secret leaks (LLM05/LLM07)</text>
+  <text x="54" y="498" class="sans" font-size="10" font-weight="700" fill="#065f46">Applied on fresh, cache-hit, AND fallback!</text>
+
+  <!-- PANEL 2 (CENTER): CALIBRATED UNCERTAINTY & COST-MATRIX HITL -->
+  <rect x="384" y="76" width="352" height="448" rx="10" fill="#ffffff" class="p2"/>
+  <text x="400" y="102" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">2. Calibrated ECE/Brier &amp; HITL Routing</text>
+
+  <!-- Uncalibrated vs Calibrated -->
+  <rect x="400" y="116" width="320" height="72" rx="7" fill="#fff1f2" stroke="#e11d48"/>
+  <text x="414" y="136" class="sans" font-size="11" font-weight="700" fill="#9f1239">Trap: Verbalized JSON "confidence": 0.95</text>
+  <text x="414" y="154" class="mono" font-size="10" fill="#334155">Empirical accuracy = 60% → ECE = 0.35!</text>
+  <text x="414" y="172" class="sans" font-size="10" fill="#be123c">Silent auto-approve failures while 200 OK.</text>
+
+  <rect x="400" y="196" width="320" height="84" rx="7" fill="#f5f3ff" stroke="#7c3aed"/>
+  <text x="414" y="216" class="sans" font-size="11" font-weight="700" fill="#5b21b6">Temperature-Scaled Blended Score</text>
+  <text x="414" y="234" class="mono" font-size="10" fill="#334155">raw = 0.4·logprobs + 0.6·verifier</text>
+  <text x="414" y="251" class="mono" font-size="10" fill="#5b21b6">p̂ = σ(logit(raw) / T) → ECE &lt; 0.05</text>
+  <text x="414" y="268" class="mono" font-size="10" fill="#4c1d95">Brier = (1/n)Σ(p_i − y_i)² · PSI drift &lt; 0.10</text>
+
+  <!-- 4-Way Cost-Matrix Routing -->
+  <g class="h-foc">
+    <rect x="400" y="292" width="320" height="46" rx="6" fill="#ecfdf5" stroke="#059669"/>
+    <text x="414" y="311" class="mono" font-size="10" font-weight="700" fill="#065f46">1. AUTO_APPROVE (p̂ ≥ τ_auto)</text>
+    <text x="414" y="328" class="mono" font-size="10" fill="#047857">p_err · C_err &lt; C_review &amp; reversible</text>
+
+    <rect x="400" y="346" width="320" height="46" rx="6" fill="#eff6ff" stroke="#2563eb"/>
+    <text x="414" y="365" class="mono" font-size="10" font-weight="700" fill="#1e3a8a">2. ESCALATE_MODEL (τ_esc ≤ p̂ &lt; τ_auto)</text>
+    <text x="414" y="382" class="mono" font-size="10" fill="#1e40af">$0.05 verifier call saves $2.50+ human review</text>
+
+    <rect x="400" y="400" width="320" height="54" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="1.8"/>
+    <text x="414" y="419" class="mono" font-size="10" font-weight="700" fill="#92400e">3. HITL_QUEUE (impactUsd × uncertainty)</text>
+    <text x="414" y="435" class="mono" font-size="10" fill="#b45309">Bounded maxHitlQueueDepth + diff UI;</text>
+    <text x="414" y="447" class="mono" font-size="10" fill="#78350f">overrides write back to golden eval set!</text>
+
+    <rect x="400" y="462" width="320" height="46" rx="6" fill="#fff1f2" stroke="#e11d48"/>
+    <text x="414" y="481" class="mono" font-size="10" font-weight="700" fill="#9f1239">4. FAIL_CLOSED (p̂ &lt; τ_hitl / overflow)</text>
+    <text x="414" y="498" class="mono" font-size="10" fill="#be123c">Typed safe fallback; zero unverified writes</text>
+  </g>
+
+  <!-- PANEL 3 (RIGHT): SHA-256 CANONICAL AGENT CYCLE DETECTOR -->
+  <rect x="752" y="76" width="344" height="448" rx="10" fill="#ffffff" class="p3"/>
+  <text x="768" y="102" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">3. Bounded Agent &amp; SHA-256 Cycle Guard</text>
+
+  <!-- 5 Hard Ceilings -->
+  <rect x="768" y="116" width="312" height="86" rx="7" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="782" y="135" class="sans" font-size="11" font-weight="700" fill="#0f172a">Hard Per-Run Ceilings (OWASP LLM10)</text>
+  <text x="782" y="154" class="mono" font-size="10" fill="#334155">steps ≤ S_max · toolCalls ≤ K_max</text>
+  <text x="782" y="171" class="mono" font-size="10" fill="#334155">Σtokens ≤ T_max · ΣUSD ≤ C_max · W_max</text>
+  <text x="782" y="189" class="sans" font-size="10" font-weight="700" fill="#5b21b6">+ Principal-scoped tool AuthZ (LLM06)</text>
+
+  <!-- Call 1 -->
+  <rect x="768" y="214" width="312" height="72" rx="7" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="782" y="233" class="mono" font-size="10" font-weight="700" fill="#1e3a8a">Step 1: search({ b: 2, a: 1 })</text>
+  <text x="782" y="251" class="mono" font-size="10" fill="#334155">canonicalSort → search({"a":1,"b":2})</text>
+  <text x="782" y="269" class="mono" font-size="10" font-weight="700" fill="#1e40af">SHA-256: 0x8a3f... · count = 1 (OK)</text>
+
+  <!-- Call 2 (permuted keys, same hash!) -->
+  <rect x="768" y="298" width="312" height="72" rx="7" fill="#fffbeb" stroke="#d97706"/>
+  <text x="782" y="317" class="mono" font-size="10" font-weight="700" fill="#92400e">Step 2: search({ a: 1, b: 2 }) [200 OK!]</text>
+  <text x="782" y="335" class="mono" font-size="10" fill="#334155">canonicalSort → search({"a":1,"b":2})</text>
+  <text x="782" y="353" class="mono" font-size="10" font-weight="700" fill="#b45309">SHA-256: 0x8a3f... · count = 2 (&gt; R_rep)</text>
+
+  <!-- Halt Box -->
+  <g class="c-halt">
+    <rect x="768" y="382" width="312" height="126" rx="8" fill="#fff1f2" stroke="#e11d48" stroke-width="2"/>
+    <text x="924" y="406" class="mono" font-size="11.5" font-weight="700" fill="#9f1239" text-anchor="middle">CYCLE_DETECTED → HALT RUN</text>
+    <text x="782" y="428" class="sans" font-size="10" fill="#334155">HTTP circuit breakers never trip on agents</text>
+    <text x="782" y="444" class="sans" font-size="10" fill="#334155">looping 200 OK calls ($2,100+/day blast)!</text>
+    <text x="782" y="466" class="mono" font-size="10" font-weight="700" fill="#be123c">Recursive key sort defeats nested-key</text>
+    <text x="782" y="482" class="mono" font-size="10" font-weight="700" fill="#be123c">reordering; caps quadratic token growth.</text>
+    <text x="782" y="498" class="mono" font-size="10" fill="#9f1239">Emits OTel gen_ai.* span (NO_CONTENT)</text>
+  </g>
+
+  <!-- FOOTER -->
+  <rect x="24" y="542" width="1072" height="44" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="42" y="568" class="sans" font-size="11.5" font-weight="600" fill="#1e3a8a">Takeaway: CFG guarantees syntax only—pair it with Bottom-Bun domain invariants, temperature-scaled HITL routing, and SHA-256 cycle guards.</text>
+</svg>

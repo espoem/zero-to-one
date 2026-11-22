@@ -166,6 +166,10 @@ on_admit(candidate):
         promote survivors to protected, evict LRU of protected
 ```
 
+![W-TinyLFU and XFetch Animation: Count-Min Sketch Scan Filtering and Probabilistic Early Refresh Curve](../assets/05-wtinylfu-and-xfetch-animated.svg)
+
+_Step-by-step mechanics:_ (1) W-TinyLFU routes arrivals through a 1% Window LRU and compares evicted candidates against Main SLRU victims using a 4-bit Count-Min Sketch with periodic halving, rejecting one-hit ETL scan keys (`f = 1`) at the door while admitting genuine hot keys (`f = 42`). (2) To prevent thundering-herd cache stampedes at hard TTL expiration (see [§3.1](#31-cache-stampede--thundering-herd)), XFetch evaluates `now - delta * beta * ln(rand()) >= expiry` so one reader probabilistically refreshes before `T_exp` while all concurrent readers continue hitting the warm cache.
+
 ### 2.4 Policy Selection in Practice
 
 | Policy | Scans | Shifting popularity | Metadata cost | Production verdict |

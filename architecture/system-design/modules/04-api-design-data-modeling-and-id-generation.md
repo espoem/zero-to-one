@@ -122,6 +122,10 @@ LIMIT 20;
 
 **Implementation notes:** keep sort order, predicate direction, and index definition consistent; reject malformed or cross-endpoint cursors; include cursor versioning if sort fields may evolve; and encode direction/boundary explicitly for bidirectional pagination.
 
+![Keyset Pagination and Monotonic ID Animation: Offset Scan Drift vs Keyset Seek and Snowflake / UUIDv7 Layouts](../assets/04-keyset-pagination-snowflake-uuidv7-animated.svg)
+
+_Step-by-step mechanics:_ (1) `OFFSET 1000000` walks and discards a million rows and shifts page boundaries on concurrent inserts, silently duplicating `R20` on page 2. (2) Keyset pagination `WHERE (created_at, id) < ($ts, $id)` performs an $O(\log N)$ B-tree seek anchored to an immutable tie-broken boundary. (3) Pairing keyset cursors with time-ordered 64-bit Snowflake or 128-bit UUIDv7 keys whose per-millisecond sequence increments monotonically keeps B-tree inserts appended cleanly to the rightmost leaf page (see [§5](#5-distributed-id-generation-deep-dive)).
+
 ### 2.3 Cursor Design, Filtering, and Snapshot Consistency
 
 Cursor correctness depends on the full ordering contract, not just the presence of a cursor token. Any filter or sort field that affects result order must be reflected in the cursor boundary or in a stable snapshot definition. When clients paginate filtered results (for example `status=active`), the cursor must represent position within that filtered, ordered set; changing filters invalidates the cursor. For strict "as-of" export consistency, paginate over a transaction snapshot, change-data-capture stream, or materialized export window rather than assuming a mutable live table can provide repeatable global views.

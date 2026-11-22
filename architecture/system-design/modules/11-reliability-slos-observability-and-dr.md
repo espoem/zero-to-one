@@ -164,6 +164,10 @@ flowchart TD
     Gate -->|"True at r = 1x (3d/6h) only"| Ticket["Create Engineering Ticket (Slow Budget Drift)"]
 ```
 
+![Multi-Window Multi-Burn-Rate SLO Alerting and Gorilla TSDB Compression Animation](../assets/11-burn-rate-and-gorilla-tsdb-animated.svg)
+
+_Step-by-step mechanics:_ (1) Requiring both $w_l$ and $w_s = w_l / 12$ to meet burn rate $r$ (`14.4×` over `1h/5m` or `6×` over `6h/30m`) suppresses transient 1-minute glitches while detecting total outages in `~52 s` and auto-resetting within `5 min` of recovery. (2) Inside the metrics TSDB (see [§4.3](#43-high-throughput-buffering-and-gorilla-tsdb-compression-mechanics)), Gorilla double-delta timestamp encoding emits a single `'0'` bit whenever $D = 0$ (`> 96%` of regular scrapes) and pairs with Float64 XOR bit-window compression to shrink 16-byte `(int64, float64)` tuples to `1.37 bytes` (`11.7×`).
+
 ### 2.3 Executable Verification Logic (`07-slo-burn-rates-and-health.test.ts`)
 
 The companion verification suite in `../examples/07-slo-burn-rates-and-health.test.ts` proves these invariants deterministically. The core evaluation logic follows this invariant:

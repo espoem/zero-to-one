@@ -243,6 +243,10 @@ flowchart TD
 | **Uber H3** | Icosahedron tiled with **hexagons** (`res 0..15`) | Fixed per resolution (hierarchical aperture-7) | **$O(1)$** `uint64` cell compute | Good (`polygonToCells` hexagonal tiling) | **Equidistant ring queries (`gridDisk`)**, heatmaps, and travel-time smoothing (zero $\sqrt{2}$ corner bias) |
 | **PostGIS 3.5+ `GiST` / Valkey `GEOSEARCH`** | Disk-paged **R-Tree** MBRs (`GiST`) / **52-bit Geohash ZSET** | R-Tree adapts page bounding boxes; ZSET uses 52-bit geohash | **$O(\log N)$** dynamic in-place B-tree/R-tree update | PostGIS supports full OGC `ST_Within` / `ST_DWithin` | **Turnkey 2026 default** for `< 50M` POIs without maintaining custom tree builders |
 
+![Spatial Indexing Animation: Geohash Z-Order 9-Cell Filter, Adaptive Quadtree k-NN Pruning, Google S2 Hilbert, and Uber H3](../assets/22-geohash-quadtree-s2-h3-animated.svg)
+
+_Step-by-step mechanics:_ (1) **Geohash** interleaves even longitude and odd latitude bits into Morton Z-order `base32` prefixes, querying `9` neighbor cells to catch boundary splits and applying exact Haversine filtering (`d <= R`) to reject `2.05 km` corner false positives. (2) **Adaptive Point Quadtree (`leaf <= 100`)** deepens to depth `14` in cities while staying shallow in deserts, pruning branch-and-bound $k$-NN quadrants whenever `minDist(bounds) > d_kth`. (3) **Google S2** maps 6 cube faces onto a continuous 64-bit Hilbert curve for polygon covering, while **Uber H3** tiles hexagons (`gridDisk(1)` = `7` cells) with uniform neighbor distance and zero $\sqrt{2}$ diagonal skew.
+
 Below is the verified `GeohashProximityIndex.searchNearby` implementation from [`examples/lib/proximity-models.ts`](../examples/lib/proximity-models.ts), combining 9-cell neighbor expansion, sparse-area precision step-down (`p -> p - 1`), and exact Haversine post-filtering:
 
 ```typescript

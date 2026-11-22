@@ -1,0 +1,200 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 580" width="1120" height="580" role="img" aria-labelledby="title desc">
+  <title id="title">Keyset Pagination Seek vs Offset Drift and Snowflake / UUIDv7 Monotonic Increment</title>
+  <desc id="desc">Animated step-by-step comparison of Offset Pagination scanning O(offset) rows and duplicating row R20 after a concurrent insert versus Keyset Cursor Pagination seeking directly in O(log N) via composite (created_at, id), paired with 64-bit Snowflake and 128-bit RFC 9562 UUIDv7 monotonic bit layouts appending to the rightmost B-tree leaf.</desc>
+
+  <style>
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    /* 12s cycle:
+       0-45%:  Step 1 — Offset scan sweeps + concurrent INSERT shifts R20 -> DUPLICATE R20
+       50-95%: Step 2 — Keyset seek jumps directly past cursor + Snowflake/UUIDv7 seq increments 0->1->2
+    */
+    @keyframes scan-bar {
+      0%, 6% { transform: translateX(0px); opacity: 0.9; }
+      32%, 44% { transform: translateX(260px); opacity: 0.9; }
+      48%, 100% { transform: translateX(0px); opacity: 0.86; }
+    }
+    @keyframes shift-rows {
+      0%, 16% { transform: translateX(0px); }
+      24%, 46% { transform: translateX(52px); }
+      52%, 100% { transform: translateX(0px); }
+    }
+    @keyframes dup-alert {
+      0%, 22% { opacity: 0; }
+      26%, 46% { opacity: 1; }
+      52%, 100% { opacity: 0; }
+    }
+    @keyframes keyset-seek {
+      0%, 48% { opacity: 0.86; }
+      54%, 94% { opacity: 1; }
+      100% { opacity: 0.86; }
+    }
+    @keyframes seq-tick-0 {
+      0%, 30% { opacity: 1; }
+      34%, 96% { opacity: 0.86; }
+      100% { opacity: 1; }
+    }
+    @keyframes seq-tick-1 {
+      0%, 30% { opacity: 0.86; }
+      34%, 62% { opacity: 1; }
+      66%, 100% { opacity: 0.86; }
+    }
+    @keyframes seq-tick-2 {
+      0%, 62% { opacity: 0.86; }
+      66%, 96% { opacity: 1; }
+      100% { opacity: 0.86; }
+    }
+
+    .scan { animation: scan-bar 12s ease-in-out infinite; }
+    .shifted { animation: shift-rows 12s ease-in-out infinite; }
+    .dup-badge { animation: dup-alert 12s ease-in-out infinite; }
+    .k-seek { animation: keyset-seek 12s ease-in-out infinite; }
+    .sq0 { animation: seq-tick-0 12s linear infinite; }
+    .sq1 { animation: seq-tick-1 12s linear infinite; }
+    .sq2 { animation: seq-tick-2 12s linear infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .scan, .shifted, .dup-badge, .k-seek, .sq0, .sq1, .sq2 {
+        animation: none !important;
+      }
+      .scan { transform: translateX(220px) !important; opacity: 0.7 !important; }
+      .shifted { transform: translateX(52px) !important; }
+      .dup-badge, .k-seek, .sq0, .sq1, .sq2 { opacity: 1 !important; }
+    }
+  </style>
+
+  <defs>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <marker id="arr-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1120" height="580" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1120" height="60" rx="12" fill="#0f172a"/>
+  <rect x="0" y="44" width="1120" height="16" fill="#0f172a"/>
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Keyset Pagination Seek vs. Offset Drift &amp; Monotonic ID Bit Layouts</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">Eliminate O(offset) scans &amp; duplicate rows with (created_at, id) cursors backed by time-ordered Snowflake / UUIDv7 keys</text>
+
+  <!-- LEFT PANEL: OFFSET DRIFT VS KEYSET SEEK -->
+  <rect x="24" y="76" width="524" height="426" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="42" y="102" class="sans" font-size="14" font-weight="700" fill="#0f172a">1. Offset Scan Drift vs. Keyset Index Seek</text>
+
+  <!-- Top sub-card: Offset Pagination -->
+  <rect x="42" y="116" width="488" height="186" rx="8" fill="#fff1f2" stroke="#fda4af" stroke-width="1.5"/>
+  <text x="56" y="138" class="mono" font-size="11.5" font-weight="700" fill="#9f1239">OFFSET 1000000 LIMIT 20 — O(offset) scan + write drift</text>
+
+  <!-- Scan bar -->
+  <rect x="56" y="150" width="280" height="22" rx="4" fill="#ffe4e6" stroke="#fb7185"/>
+  <text x="196" y="165" class="mono" font-size="10" fill="#9f1239" text-anchor="middle">Discards 1,000,000 rows before page...</text>
+  <rect x="56" y="150" width="24" height="22" rx="4" fill="#e11d48" class="scan"/>
+
+  <!-- Row stream shifting on INSERT -->
+  <text x="56" y="194" class="sans" font-size="10.5" font-weight="600" fill="#334155">Concurrent INSERT at top shifts page 2 window:</text>
+  <rect x="56" y="204" width="46" height="34" rx="4" fill="#e11d48"/>
+  <text x="79" y="225" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">NEW</text>
+
+  <g class="shifted">
+    <rect x="56" y="204" width="48" height="34" rx="4" fill="#ffffff" stroke="#94a3b8"/>
+    <text x="80" y="225" class="mono" font-size="10" fill="#334155" text-anchor="middle">R18</text>
+    <rect x="108" y="204" width="48" height="34" rx="4" fill="#ffffff" stroke="#94a3b8"/>
+    <text x="132" y="225" class="mono" font-size="10" fill="#334155" text-anchor="middle">R19</text>
+    <rect x="160" y="204" width="48" height="34" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+    <text x="184" y="225" class="mono" font-size="10" font-weight="700" fill="#92400e" text-anchor="middle">R20</text>
+    <rect x="212" y="204" width="48" height="34" rx="4" fill="#ffffff" stroke="#94a3b8"/>
+    <text x="236" y="225" class="mono" font-size="10" fill="#334155" text-anchor="middle">R21</text>
+    <rect x="264" y="204" width="48" height="34" rx="4" fill="#ffffff" stroke="#94a3b8"/>
+    <text x="288" y="225" class="mono" font-size="10" fill="#334155" text-anchor="middle">R22</text>
+  </g>
+
+  <!-- Fixed Offset 20 boundary box -->
+  <rect x="210" y="200" width="160" height="42" rx="5" fill="none" stroke="#e11d48" stroke-width="2" stroke-dasharray="4 3"/>
+  <text x="290" y="256" class="mono" font-size="10" font-weight="700" fill="#9f1239" text-anchor="middle">OFFSET 20 window</text>
+
+  <!-- Duplicate Badge -->
+  <g class="dup-badge">
+    <rect x="382" y="204" width="136" height="34" rx="6" fill="#e11d48"/>
+    <text x="450" y="225" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">DUP R20 SEEN!</text>
+  </g>
+  <text x="56" y="286" class="sans" font-size="10.5" fill="#9f1239">Client saw R20 on Page 1; shift puts R20 at index 20 on Page 2.</text>
+
+  <!-- Bottom sub-card: Keyset Cursor Seek -->
+  <rect x="42" y="314" width="488" height="172" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="56" y="336" class="mono" font-size="11.5" font-weight="700" fill="#065f46">WHERE (created_at, id) &lt; ($ts, $id) LIMIT 20 — O(log N)</text>
+
+  <g class="k-seek">
+    <rect x="56" y="352" width="110" height="34" rx="5" fill="#d1fae5" stroke="#059669"/>
+    <text x="111" y="373" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">B-Tree Seek</text>
+    <line x1="166" y1="369" x2="216" y2="369" stroke="#059669" stroke-width="2.2" marker-end="url(#arr-green)"/>
+
+    <rect x="224" y="352" width="60" height="34" rx="4" fill="#ffffff" stroke="#059669" stroke-width="2"/>
+    <text x="254" y="373" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">R21</text>
+    <rect x="290" y="352" width="60" height="34" rx="4" fill="#ffffff" stroke="#059669" stroke-width="2"/>
+    <text x="320" y="373" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">R22</text>
+    <rect x="356" y="352" width="60" height="34" rx="4" fill="#ffffff" stroke="#059669" stroke-width="2"/>
+    <text x="386" y="373" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">R23</text>
+    <rect x="424" y="352" width="92" height="34" rx="6" fill="#059669"/>
+    <text x="470" y="373" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">EXACT NEXT</text>
+  </g>
+
+  <text x="56" y="416" class="sans" font-size="11" fill="#065f46">• Cursor anchors to immutable key boundary (opaque base64 token).</text>
+  <text x="56" y="436" class="sans" font-size="11" fill="#065f46">• Unique tie-breaker `id` resolves equal `created_at` timestamps.</text>
+  <text x="56" y="456" class="sans" font-size="11" fill="#065f46">• Constant latency even at row 50,000,000 via aligned index.</text>
+
+  <!-- RIGHT PANEL: SNOWFLAKE & UUIDv7 MONOTONIC LAYOUT -->
+  <rect x="572" y="76" width="524" height="426" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="590" y="102" class="sans" font-size="14" font-weight="700" fill="#0f172a">2. 64-bit Snowflake &amp; 128-bit UUIDv7 Monotonic Layout</text>
+  <text x="590" y="120" class="sans" font-size="11" fill="#475569">Time-prefix + monotonic sequence appends strictly right in B-Trees</text>
+
+  <!-- 64-bit Snowflake Bit Bar -->
+  <text x="592" y="146" class="sans" font-size="12" font-weight="700" fill="#0f172a">Twitter Snowflake (64 bits · 4,096 IDs/ms/worker)</text>
+  <rect x="592" y="156" width="22" height="36" rx="4" fill="#e2e8f0" stroke="#94a3b8"/>
+  <text x="603" y="178" class="mono" font-size="10" font-weight="700" fill="#334155" text-anchor="middle">0</text>
+  <rect x="616" y="156" width="234" height="36" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="733" y="178" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">41b ms_ts (~69.7 yrs)</text>
+  <rect x="852" y="156" width="94" height="36" rx="4" fill="#dcfce7" stroke="#059669"/>
+  <text x="899" y="178" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">10b DC+Wkr</text>
+  <rect x="948" y="156" width="128" height="36" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="1.8"/>
+  <text x="1012" y="178" class="mono" font-size="10.5" font-weight="700" fill="#92400e" text-anchor="middle">12b seq++</text>
+
+  <!-- 128-bit UUIDv7 Bit Bar -->
+  <text x="592" y="220" class="sans" font-size="12" font-weight="700" fill="#0f172a">RFC 9562 UUIDv7 (128 bits · PostgreSQL 18 native)</text>
+  <rect x="592" y="230" width="180" height="36" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="682" y="252" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">48b unix_ts_ms</text>
+  <rect x="774" y="230" width="36" height="36" rx="4" fill="#e2e8f0" stroke="#94a3b8"/>
+  <text x="792" y="252" class="mono" font-size="10" font-weight="700" fill="#334155" text-anchor="middle">v7</text>
+  <rect x="812" y="230" width="98" height="36" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="1.8"/>
+  <text x="861" y="252" class="mono" font-size="10" font-weight="700" fill="#92400e" text-anchor="middle">12b rand_a++</text>
+  <rect x="912" y="230" width="24" height="36" rx="4" fill="#e2e8f0" stroke="#94a3b8"/>
+  <text x="924" y="252" class="mono" font-size="10" font-weight="700" fill="#334155" text-anchor="middle">10</text>
+  <rect x="938" y="230" width="138" height="36" rx="4" fill="#f5f3ff" stroke="#7c3aed"/>
+  <text x="1007" y="252" class="mono" font-size="10" font-weight="700" fill="#5b21b6" text-anchor="middle">62b rand_b</text>
+
+  <!-- Animated Monotonic Sequence Counter within Same Millisecond -->
+  <text x="592" y="294" class="sans" font-size="12" font-weight="700" fill="#0f172a">Same-Millisecond Monotonic Sequence Progression</text>
+
+  <rect x="592" y="304" width="484" height="30" rx="5" fill="#fffbeb" stroke="#d97706" class="sq0"/>
+  <text x="606" y="324" class="mono" font-size="10.5" font-weight="700" fill="#92400e">t = 1732271000 ms · seq = 0x000 → leaf[N] slot 1</text>
+
+  <rect x="592" y="340" width="484" height="30" rx="5" fill="#fffbeb" stroke="#d97706" class="sq1"/>
+  <text x="606" y="360" class="mono" font-size="10.5" font-weight="700" fill="#92400e">t = 1732271000 ms · seq = 0x001 → leaf[N] slot 2</text>
+
+  <rect x="592" y="376" width="484" height="30" rx="5" fill="#ecfdf5" stroke="#059669" class="sq2"/>
+  <text x="606" y="396" class="mono" font-size="10.5" font-weight="700" fill="#065f46">t = 1732271000 ms · seq = 0x002 → leaf[N] slot 3 (rightmost!)</text>
+
+  <!-- B-Tree Right-Edge Locality vs UUIDv4 Split -->
+  <rect x="592" y="418" width="484" height="68" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="606" y="439" class="sans" font-size="11" font-weight="700" fill="#059669">✓ Rightmost B-Tree Append: ~100% fillfactor, hot edge in RAM</text>
+  <text x="606" y="457" class="sans" font-size="11" font-weight="700" fill="#e11d48">✗ UUIDv4 Random: scattered leaf splits, WAL bloat, buffer-pool thrash</text>
+  <text x="606" y="475" class="sans" font-size="10.5" fill="#475569">NTP clock-rollback guard: spin-wait &lt;= 5 ms or refuse/logical borrow.</text>
+
+  <!-- FOOTER -->
+  <rect x="24" y="516" width="1072" height="46" rx="8" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1"/>
+  <text x="42" y="544" class="sans" font-size="11.5" font-weight="600" fill="#065f46">Takeaway: Combine Keyset Cursor (created_at, id) with Snowflake or UUIDv7 keys for O(log N) stable reads and sequential B-Tree writes.</text>
+</svg>

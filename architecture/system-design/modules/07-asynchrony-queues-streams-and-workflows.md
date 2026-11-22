@@ -157,6 +157,10 @@ The hybrid must handle three hard cases:
 
 The result is a system where the long tail of normal users gets $O(1)$ reads, and the tiny celebrity population is handled by a read path that is more expensive but bounded and cacheable.
 
+![Hybrid Celebrity Fan-Out Animation: Push-on-Write Threshold Gate and Read-Time k-Way Min-Heap Merge](../assets/07-hybrid-celebrity-fanout-kway-merge-animated.svg)
+
+_Step-by-step mechanics:_ (1) On publish, accounts below the hysteresis threshold (`< 10,000` followers) fan out via `ZADD` pushes into every follower's Redis timeline for $O(1)$ reads, whereas celebrities (`>= 10,000` followers) write once to their own author timeline. (2) On feed read, the timeline service fetches the follower's pushed timeline plus $k$ followed celebrity timelines and performs an $O(N \log k)$ priority-heap merge with `post_id` deduplication.
+
 ```mermaid
 flowchart TD
     Post["Author Publishes Post"] --> Count{"Follower count"}

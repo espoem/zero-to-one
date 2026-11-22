@@ -261,6 +261,10 @@ ALGORITHM UPDATE_HEAVY_HITTER(sketch C[d][w], minHeap H, map pos, key x):
     H.push((minEst, x))
 ```
 
+![Typeahead Trie Top-K, Count-Min Sketch Heavy Hitters, and FastCDC Chunking Animation](../assets/09-topk-trie-cms-fastcdc-animated.svg)
+
+_Step-by-step mechanics:_ (1) Pre-computing Top-K lists at every Prefix Trie node reduces `"sys"` autocomplete lookup from subtree traversal to $O(P)$ `< 1 ms` RAM access (see [§2.1](#21-prefix-trie-with-pre-computed-top-k-per-node)). (2) Streaming events update a 54 KB Count-Min Sketch ($w = 2719, d = 5$) and promote items whose $\min_i C[i][h_i(x)]$ beats the bounded Min-Heap root. (3) FastCDC rolling hashes `(hash & MASK) == 0` isolate a 1-byte offset-0 insertion to the first chunk alone while trailing chunks resynchronize identically for content-addressed deduplication (see [§6.2](#62-content-defined-chunking-cdc-for-sync-and-deduplication)).
+
 ### 4.2 Lambda vs. Kappa Architecture and Watermark Reconciliation
 
 | Dimension | Lambda Architecture | Kappa Architecture |

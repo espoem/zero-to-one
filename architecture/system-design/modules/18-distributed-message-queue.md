@@ -307,6 +307,10 @@ flowchart TD
     RP -->|"5. Pull & process"| C["Consumer Group"]
 ```
 
+![Hierarchical Timing Wheels Animation: Multi-Tier Tick Advancement, Bucket Cascade, and O(1) Expiry Firing](../assets/18-hierarchical-timing-wheels-animated.svg)
+
+_Step-by-step mechanics:_ (1) A delayed record (`delay = 65 ticks`) is first appended to the durable replicated `__delay_log` topic for crash recovery and inserted into **Level-1** slot `⌊65 / 16⌋ = 4` in $O(1)$. (2) As the **Level-0** seconds pointer steps `1 s/tick` through its 16-slot ring, immediate timers fire in $O(1)$ without heap rebalancing. (3) Upon completing full revolutions up to tick `64`, Level-1 slot `4` cascades its bucket down into Level-0 slot `65 mod 16 = 1`. (4) At exact tick `65`, the Level-0 pointer fires the due message into the target ready partition for consumer pull.
+
 ---
 
 ## 5. Production Gotchas, Failure Modes, and SRE Guardrails

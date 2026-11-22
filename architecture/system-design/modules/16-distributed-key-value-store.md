@@ -207,6 +207,10 @@ flowchart TD
 
 **Production Merkle tree caveat:** Because each Merkle tree hashes a specific key-range boundary, adding or removing nodes on a consistent-hash ring shifts token ownership and invalidates cached Merkle trees across affected ranges, forcing expensive full-range disk scans (`nodetool repair`) to rebuild trees.
 
+![Dotted Version Vectors, Sloppy Quorum Hinted Handoff, and Merkle Tree Anti-Entropy Animation](../assets/16-dvv-merkle-sloppy-quorum-animated.svg)
+
+_Step-by-step mechanics:_ (1) **Dotted Version Vectors (DVV)** separate each write's unique `(node, counter)` dot from its compact causal context, detecting concurrent siblings (`D3` vs. `D4` → `300 Multiple Choices`) without false conflicts or LWW clock-skew data loss. (2) **Sloppy Quorum & Hinted Handoff** route writes around an unreachable home node (`N2`) to standby `N4` wrapped in a `Hint{target: N2}` envelope and stream hints back once gossip detects `N2` healthy. (3) **Merkle Tree Anti-Entropy** skips matching left/middle subtrees and descends only divergent hash paths in $O(k \log B)$ comparisons (`13` nodes for `1` mutated bucket out of `64`).
+
 Below are the exact `compareVectorClocks` and `diffMerkleTrees` primitives verified in [`examples/lib/kv-store-models.ts`](../examples/lib/kv-store-models.ts):
 
 ```typescript

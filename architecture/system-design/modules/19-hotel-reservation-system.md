@@ -342,6 +342,10 @@ sequenceDiagram
     DB-->>U2: "9. 409 Sold Out (Zero Oversell)"
 ```
 
+![Hotel Inventory Animation: Half-Open Intervals, Littlewood/EMSR_b Overbooking, and Canonical ASC Lock Ordering](../assets/19-overbooking-emsrb-canonical-locks-animated.svg)
+
+_Step-by-step mechanics:_ (1) **Half-open `[checkIn, checkOut)`** (`date >= $1 AND date < $2`) locks only sleep nights (`June 01, 02`), leaving `June 03` free for the next incoming guest instead of losing `33%` occupancy to `BETWEEN`. (2) **Littlewood / `EMSR_b` Overbooking** enforces the exact integer floor cap `((total_inventory * 110) / 100)` (`110` OK, `111 → 409`) while nesting fare protection levels `y_k`. (3) **Canonical Lock Ordering** (`ORDER BY hotel_id, room_type_id, date ASC`) forces all concurrent writers into identical monotonic acquisition order, eliminating Coffman circular-wait `SQLSTATE 40P01` deadlocks.
+
 ---
 
 ## 4. OTA Scale-Out: Sharding by `hotel_id` and CDC-Driven Inventory Caching

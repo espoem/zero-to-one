@@ -230,6 +230,10 @@ When replies arrive out of order (e.g., `m3` arrives before `m2`, or `m2` was de
 2. Link consecutive pairs in `References[i] -> References[i + 1]` and link `In-Reply-To -> Message-Id`, running a **cycle check** before every link so malformed or adversarial headers (`A -> B -> A`) can never create an infinite loop.
 3. Group all connected components under a deterministic root `thread_id` so the UI renders the full conversation tree cleanly even across missing intermediate replies.
 
+![JWZ Email Threading Algorithm Animation: Placeholder Container Synthesis, Cycle Guard, and Root Promotion](../assets/20-jwz-email-threading-animated.svg)
+
+_Step-by-step mechanics:_ (1) Reply `<m3>` arrives out of order before its ancestors, referencing `[<m1>, <m2>]`. (2) JWZ synthesizes placeholder containers `[?] <m1>` and `[?] <m2>` (`isPlaceholder = true`) in `id_table` and wires `References` links. (3) A forged cyclic header (`<m3> → <m1>`) is rejected by the DFS cycle guard while late-arriving `<m1>` hydrates its placeholder in place. (4) Empty placeholders with `0` or `1` child are pruned/spliced while `[?] <m2>` stays as a structural bridge for sibling replies `<m3>` and `<m4>` under root `thread_id = <m1>`.
+
 ### 3.4 Content-Addressed Attachment Deduplication (`SHA-256` CAS + Reference Counting)
 
 At `1,460 PB/year` of raw attachments, storing separate physical S3 blobs for every recipient of a `10 MB` corporate all-hands deck sent to `50,000` employees wastes `500 GB` on a single broadcast. Instead, the attachment service computes `sha256 = SHA256(decoded_raw_bytes)` at upload/ingest time and stores the blob under `s3://mail-attachments/cas/{sha256}` alongside a transactional **`ref_count`**:

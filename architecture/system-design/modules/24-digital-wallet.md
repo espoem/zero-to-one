@@ -110,6 +110,10 @@ What if the Wallet Service coordinator crashes after Phase 1 (`Try: A -$1`) comm
    - If `Cancel` simply sees "no `Try` record exists, do nothing and exit", and 100 ms later the delayed `Try(A -$1)` packet arrives and executes, Account $A$ is debited `-$1` **after `Cancel` already finished** — permanently locking/losing User $A$'s `$1` (**Hanging Try**)!
    - **Mandatory Fix (`out_of_order_flag` Tombstone / `OUT_OF_ORDER_CANCEL_TOMBSTONE`)**: When `Cancel` arrives at Shard $A$ and sees that `Try` has not executed yet (`try_status == NOT_SENT`), it writes a persistent tombstone row with **`out_of_order_flag = TRUE`** (`second_phase = 'CANCEL'`). When the delayed `Try` packet finally arrives, it checks `out_of_order_flag` first, sees `TRUE`, and **aborts immediately with `OUT_OF_ORDER_CANCEL_TOMBSTONE` without deducting funds**!
 
+![TC/C Debit-First Phase 1 and Out-of-Order Hanging-Try Tombstone Animation](../assets/24-tcc-debit-first-and-hanging-try-animated.svg)
+
+_Step-by-step mechanics:_ (1) In normal **debit-first TC/C**, Phase 1 (`Try`) deducts `-$1` from Account $A$ and runs `NOP` on $C$ in `< 2 ms` local transactions (holding zero cross-shard locks and preventing phantom double-spends on $C$), followed by `Confirm` (`C +$1`) or `Cancel` (`A +$1`). (2) Under network reordering, `Try(tx_9)` stalls while the coordinator times out and dispatches `Cancel(tx_9)`. (3) `Cancel` arrives first at Shard $A$, detects `try_status == NOT_SENT`, and writes a durable `out_of_order_flag = TRUE` tombstone into the co-located `phase_status` table. (4) When the delayed **Hanging Try** arrives, it reads `out_of_order_flag == TRUE` and aborts cleanly with `OUT_OF_ORDER_CANCEL_TOMBSTONE`.
+
 Below is the verified `TccTransferCoordinator.tryPhase` and `cancelPhase` implementation from [`examples/lib/wallet-models.ts`](../examples/lib/wallet-models.ts):
 
 ```typescript

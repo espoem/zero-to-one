@@ -126,6 +126,10 @@ Algorithm choice is a composition decision coupled to workload heterogeneity, he
 > [!NOTE]
 > Least Request in Envoy is closely related to P2C in practice (choice-of-two/choice-of-N behavior with active request weighting), while plain least-connections policies in distributed fleets remain vulnerable to stale-view herd effects unless carefully damped.
 
+![P2C and Maglev Load Balancing Animation: Random Two-Choice Queue Sampling and L4 Lookup Table Stability](../assets/03-p2c-and-maglev-lb-animated.svg)
+
+_Step-by-step mechanics:_ (1) At L7, Power of Two Random Choices (P2C) probes two random backends per request and routes to the smaller queue depth, collapsing max queue length from $O(\log n / \log \log n)$ to $O(\log \log n)$ without global coordination. (2) At L4, Maglev builds a deterministic permutation lookup table shared across ECMP load balancers; when a backend drains, only its slots reassign while active flows on healthy backends remain pinned with zero connection resets.
+
 ### 2.4 Forward vs. Reverse Proxy Taxonomy and Eliminating Load Balancer SPOFs
 
 The word "proxy" names two opposite trust relationships. A **forward proxy** acts for the client: the client is configured (explicitly, through PAC/WPAD, or transparently by network interception) to send outbound traffic through it, and origin servers see the proxy instead of the client. A **reverse proxy** acts for the server: clients believe they are talking to the origin, and the proxy hides, protects, and distributes traffic across the real backends. Load balancers, API gateways, WAFs, and CDNs are all reverse proxies with different policy sets. Wire-level mechanics (`X-Forwarded-For`, the RFC 7239 `Forwarded` header, and HAProxy's PROXY protocol for L4 client-IP preservation) are owned by [Networking Module 13](../../networking/modules/13-load-balancing-cdn-nat.md#4-layer-7-reverse-proxying--client-ip-preservation).

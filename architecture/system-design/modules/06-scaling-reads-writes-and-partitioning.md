@@ -164,6 +164,10 @@ A ring with one position per node has a serious flaw: node positions are random,
 
 The fix is **virtual nodes (vnodes)**: each physical node is represented by many points on the ring (commonly 100–200 per node, or more), each derived from a distinct hash of the node identifier. With $N \cdot V$ points, the arcs become fine-grained and the load distribution tightens: the relative standard deviation of the load per node falls roughly with $\frac{1}{\sqrt{V}}$, so 100–200 vnodes per node collapses skew to a few percent. Vnodes also enable **weighted heterogeneous nodes**: give a larger machine more vnodes, and it automatically owns a proportionally larger share of the keyspace.
 
+![Consistent Hashing with Virtual Nodes Animation: Clockwise Lookup and 1/(N+1) Node-Addition Remapping](../assets/06-consistent-hashing-vnodes-animated.svg)
+
+_Step-by-step mechanics:_ (1) Keys hash onto the `[0, 2^32 - 1]` ring and walk clockwise to the first vnode (`N1#k`, `N2#k`, `N3#k`). (2) When node `N4` joins with its own vnodes, only keys falling in the counter-clockwise predecessor arcs (`~1/(N+1) = 9.1%` at `N = 10`) remap to `N4`, avoiding the `N/(N+1) = 90.9%` remapping storm and cold-cache database collapse of naive `hash(key) % N`.
+
 | Configuration | Keys moved on node add | Load skew | Heterogeneous weights |
 | --- | --- | --- | --- |
 | `hash(key) % N` | About $\frac{N}{N+1}$ | Low for fixed $N$ | Awkward |

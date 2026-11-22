@@ -391,6 +391,10 @@ $$\text{Cycle Guard}: \quad \text{count}\big(\text{SHA256}(\text{toolName} \para
 | **`LLM09`** | **Misinformation** | Mandatory retrieved-context citation grounding checks, calibrated logprob + independent verifier routing, HITL escalation |
 | **`LLM10`** | **Unbounded Consumption** | Atomic Redis Lua `RPM + TPM + USD` fail-closed limiters, input token caps, hard agent loop ceilings ($S_{\max}, K_{\max}, C_{\max}, W_{\max}$), cycle hash detection |
 
+![Reliable AI Safeguards Animation: CFG Token-Logit Masking, Calibrated Cost-Matrix HITL, and SHA-256 Agent Cycle Guard](../assets/25-cfg-decoding-hitl-cycle-guard-animated.svg)
+
+_Step-by-step mechanics:_ (1) **CFG/FSM Constrained Decoding** masks grammatically invalid vocabulary logits (`"Sure"`, `<script>`) to $-\infty$ at each decode step, while the mandatory **Bottom-Bun** validator enforces `finish_reason`, numeric bounds (`refundCents <= orderTotalCents`), and grounded citations. (2) **Calibrated HITL Routing** rejects overconfident verbalized JSON scores (`ECE = 0.35`) in favor of temperature-scaled `logprobs + verifier` probabilities ($\text{ECE} < 0.05$) routed across `AUTO_APPROVE`, `ESCALATE_MODEL`, `HITL_QUEUE`, and `FAIL_CLOSED`. (3) **Bounded Agent Cycle Guard** enforces `(S_max, K_max, T_max, C_max, W_max)` and computes canonical `SHA-256(toolName, sortedArgs)` hashes to halt `200 OK` infinite loops immediately (`CYCLE_DETECTED`).
+
 ```mermaid
 sequenceDiagram
   autonumber

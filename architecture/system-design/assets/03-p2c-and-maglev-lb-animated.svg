@@ -1,0 +1,272 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 580" width="1120" height="580" role="img" aria-labelledby="title desc">
+  <title id="title">Power of Two Random Choices (P2C) and L4 Maglev Consistent Hashing</title>
+  <desc id="desc">Animated step-by-step diagram comparing L7 Power of Two Random Choices (P2C) sampling two random backends and routing to the lower queue depth to bound max load to O(log log n) with zero global coordination, alongside L4 Maglev deterministic permutation lookup tables minimizing flow remapping when a backend drains.</desc>
+
+  <style>
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    /* 12s cycle:
+       0-45%:  P2C Sample 1 (B1 q=9 vs B2 q=2 -> pick B2) + Maglev Steady State (Flow F1 -> Slot 2 -> B3)
+       50-95%: P2C Sample 2 (B3 q=7 vs B4 q=1 -> pick B4) + Maglev B2 Drain (Slot 2 stays B3; only B2 slots remap)
+    */
+    @keyframes p2c-s1 {
+      0%, 44% { opacity: 1; }
+      48%, 94% { opacity: 0.12; }
+      98%, 100% { opacity: 1; }
+    }
+    @keyframes p2c-s2 {
+      0%, 44% { opacity: 0.12; }
+      48%, 94% { opacity: 1; }
+      98%, 100% { opacity: 0.12; }
+    }
+    @keyframes pkt-to-b2 {
+      0%, 10% { transform: translate(0px, 0px); opacity: 0; }
+      15% { transform: translate(0px, 0px); opacity: 1; }
+      35% { transform: translate(236px, -24px); opacity: 1; }
+      42%, 100% { transform: translate(236px, -24px); opacity: 0; }
+    }
+    @keyframes pkt-to-b4 {
+      0%, 54% { transform: translate(0px, 0px); opacity: 0; }
+      58% { transform: translate(0px, 0px); opacity: 1; }
+      78% { transform: translate(236px, 118px); opacity: 1; }
+      86%, 100% { transform: translate(236px, 118px); opacity: 0; }
+    }
+    @keyframes b2-drain {
+      0%, 46% { opacity: 1; }
+      52%, 94% { opacity: 0.86; }
+      100% { opacity: 1; }
+    }
+    @keyframes maglev-remap {
+      0%, 46% { opacity: 0; }
+      52%, 94% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    @keyframes maglev-steady {
+      0%, 46% { opacity: 1; }
+      52%, 94% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+    @keyframes flow-pulse {
+      0%, 100% { stroke-dashoffset: 0; }
+      50% { stroke-dashoffset: -24; }
+    }
+
+    .s1-only { animation: p2c-s1 12s ease-in-out infinite; }
+    .s2-only { animation: p2c-s2 12s ease-in-out infinite; }
+    .pkt1 { animation: pkt-to-b2 12s ease-in-out infinite; }
+    .pkt2 { animation: pkt-to-b4 12s ease-in-out infinite; }
+    .b2-cell { animation: b2-drain 12s ease-in-out infinite; }
+    .m-remap { animation: maglev-remap 12s ease-in-out infinite; }
+    .m-steady { animation: maglev-steady 12s ease-in-out infinite; }
+    .dash-flow { stroke-dasharray: 6 6; animation: flow-pulse 2s linear infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .s1-only, .s2-only, .pkt1, .pkt2, .b2-cell, .m-remap, .m-steady, .dash-flow {
+        animation: none !important;
+      }
+      .s1-only { opacity: 1 !important; }
+      .s2-only { opacity: 0.86 !important; }
+      .pkt1 { opacity: 1 !important; transform: translate(118px, -12px) !important; }
+      .pkt2 { opacity: 0 !important; }
+      .b2-cell { opacity: 0.86 !important; }
+      .m-remap { opacity: 1 !important; }
+      .m-steady { opacity: 0 !important; }
+    }
+  </style>
+
+  <defs>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1120" height="580" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1120" height="60" rx="12" fill="#0f172a"/>
+  <rect x="0" y="44" width="1120" height="16" fill="#0f172a"/>
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Load Balancing: Power of Two Random Choices (P2C) &amp; L4 Maglev</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">P2C cuts max queue from O(log n / log log n) to O(log log n) locally · Maglev preserves active flows across pool shifts</text>
+
+  <!-- LEFT PANEL: P2C -->
+  <rect x="24" y="76" width="524" height="426" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="42" y="102" class="sans" font-size="14" font-weight="700" fill="#0f172a">1. L7 Power of Two Random Choices (P2C)</text>
+  <text x="42" y="120" class="sans" font-size="11" fill="#475569">Sample 2 random backends; route to lower queue depth (zero global lock)</text>
+
+  <!-- L7 Envoy Proxy Box -->
+  <rect x="44" y="218" width="136" height="84" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="112" y="246" class="sans" font-size="12.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">L7 Proxy</text>
+  <text x="112" y="264" class="mono" font-size="10.5" fill="#1e40af" text-anchor="middle">pick 2 random</text>
+  <text x="112" y="282" class="mono" font-size="10.5" font-weight="700" fill="#2563eb" text-anchor="middle">min(q_a, q_b)</text>
+
+  <!-- Backend 1 (q=9) -->
+  <rect x="330" y="142" width="194" height="58" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="346" y="165" class="sans" font-size="12" font-weight="700" fill="#0f172a">Backend B1</text>
+  <text x="346" y="185" class="mono" font-size="10.5" fill="#e11d48">queue = 9 (busy)</text>
+  <rect x="466" y="156" width="44" height="28" rx="5" fill="#fff1f2" stroke="#fda4af"/>
+  <text x="488" y="174" class="mono" font-size="11" font-weight="700" fill="#9f1239" text-anchor="middle">q=9</text>
+
+  <!-- Backend 2 (q=2) -->
+  <rect x="330" y="212" width="194" height="58" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="346" y="235" class="sans" font-size="12" font-weight="700" fill="#065f46">Backend B2</text>
+  <text x="346" y="255" class="mono" font-size="10.5" fill="#047857">queue = 2 (picked!)</text>
+  <rect x="466" y="226" width="44" height="28" rx="5" fill="#059669"/>
+  <text x="488" y="244" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">q=2</text>
+
+  <!-- Backend 3 (q=7) -->
+  <rect x="330" y="282" width="194" height="58" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="346" y="305" class="sans" font-size="12" font-weight="700" fill="#0f172a">Backend B3</text>
+  <text x="346" y="325" class="mono" font-size="10.5" fill="#d97706">queue = 7 (busy)</text>
+  <rect x="466" y="296" width="44" height="28" rx="5" fill="#fffbeb" stroke="#fcd34d"/>
+  <text x="488" y="314" class="mono" font-size="11" font-weight="700" fill="#92400e" text-anchor="middle">q=7</text>
+
+  <!-- Backend 4 (q=1) -->
+  <rect x="330" y="352" width="194" height="58" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="346" y="375" class="sans" font-size="12" font-weight="700" fill="#065f46">Backend B4</text>
+  <text x="346" y="395" class="mono" font-size="10.5" fill="#047857">queue = 1 (picked!)</text>
+  <rect x="466" y="366" width="44" height="28" rx="5" fill="#059669"/>
+  <text x="488" y="384" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">q=1</text>
+
+  <!-- Sample 1 Lines (B1 vs B2) -->
+  <g class="s1-only">
+    <line x1="180" y1="244" x2="324" y2="171" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#arr-amber)"/>
+    <line x1="180" y1="260" x2="324" y2="241" stroke="#059669" stroke-width="2.5" marker-end="url(#arr-green)"/>
+    <rect x="192" y="150" width="116" height="36" rx="6" fill="#fffbeb" stroke="#d97706"/>
+    <text x="250" y="166" class="mono" font-size="10" font-weight="700" fill="#92400e" text-anchor="middle">Sample {B1, B2}</text>
+    <text x="250" y="180" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">2 &lt; 9 → B2</text>
+  </g>
+
+  <!-- Sample 2 Lines (B3 vs B4) -->
+  <g class="s2-only">
+    <line x1="180" y1="266" x2="324" y2="311" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#arr-amber)"/>
+    <line x1="180" y1="280" x2="324" y2="381" stroke="#059669" stroke-width="2.5" marker-end="url(#arr-green)"/>
+    <rect x="192" y="340" width="116" height="36" rx="6" fill="#ecfdf5" stroke="#059669"/>
+    <text x="250" y="356" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">Sample {B3, B4}</text>
+    <text x="250" y="370" class="mono" font-size="10" font-weight="700" fill="#047857" text-anchor="middle">1 &lt; 7 → B4</text>
+  </g>
+
+  <!-- Moving Request Tokens -->
+  <g class="pkt1">
+    <circle cx="184" cy="260" r="10" fill="#059669" stroke="#ffffff" stroke-width="2"/>
+    <text x="184" y="264" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">R1</text>
+  </g>
+  <g class="pkt2">
+    <circle cx="184" cy="276" r="10" fill="#2563eb" stroke="#ffffff" stroke-width="2"/>
+    <text x="184" y="280" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">R2</text>
+  </g>
+
+  <!-- P2C Formula Callout -->
+  <rect x="44" y="424" width="480" height="62" rx="8" fill="#f5f3ff" stroke="#c4b5fd" stroke-width="1.2"/>
+  <text x="58" y="446" class="mono" font-size="10.5" font-weight="700" fill="#5b21b6">Mitzenmacher Bound: O(log n / log log n) → O(log log n)</text>
+  <text x="58" y="464" class="sans" font-size="11" fill="#334155">Avoids stale Least-Connections herd spikes across uncoordinated LBs.</text>
+  <text x="58" y="479" class="sans" font-size="10.5" fill="#4c1d95">Pair with EWMA latency + outlier ejection for heterogeneous work.</text>
+
+  <!-- RIGHT PANEL: MAGLEV L4 -->
+  <rect x="572" y="76" width="524" height="426" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="590" y="102" class="sans" font-size="14" font-weight="700" fill="#0f172a">2. L4 Maglev Deterministic Lookup Table</text>
+  <text x="590" y="120" class="sans" font-size="11" fill="#475569">Identical ECMP tables per LB · Minimal disruption when B2 drains</text>
+
+  <!-- Incoming 5-tuple box -->
+  <rect x="592" y="142" width="166" height="72" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="675" y="164" class="sans" font-size="11.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">Flow 5-Tuple F1</text>
+  <text x="675" y="182" class="mono" font-size="10" fill="#1e40af" text-anchor="middle">h(src,dst,port) mod 7</text>
+  <text x="675" y="200" class="mono" font-size="11" font-weight="700" fill="#2563eb" text-anchor="middle">= Slot [2]</text>
+
+  <!-- Arrow F1 -> Slot 2 -->
+  <line x1="758" y1="178" x2="808" y2="232" stroke="#2563eb" stroke-width="2.2" class="dash-flow" marker-end="url(#arr-blue)"/>
+
+  <!-- Maglev Lookup Table (M=7 slots) -->
+  <text x="836" y="150" class="mono" font-size="11" font-weight="700" fill="#334155">Maglev Table (M = 7 prime slots)</text>
+
+  <!-- Slots 0..6 -->
+  <g transform="translate(808, 162)">
+    <!-- Slot 0 -->
+    <rect x="0" y="0" width="38" height="46" rx="5" fill="#eff6ff" stroke="#93c5fd"/>
+    <text x="19" y="16" class="mono" font-size="10" fill="#64748b" text-anchor="middle">[0]</text>
+    <text x="19" y="34" class="mono" font-size="11" font-weight="700" fill="#1e3a8a" text-anchor="middle">B1</text>
+
+    <!-- Slot 1 (B2 -> B1 on drain) -->
+    <g class="m-steady">
+      <rect x="42" y="0" width="38" height="46" rx="5" fill="#fffbeb" stroke="#fcd34d"/>
+      <text x="61" y="16" class="mono" font-size="10" fill="#64748b" text-anchor="middle">[1]</text>
+      <text x="61" y="34" class="mono" font-size="11" font-weight="700" fill="#92400e" text-anchor="middle">B2</text>
+    </g>
+    <g class="m-remap">
+      <rect x="42" y="0" width="38" height="46" rx="5" fill="#fff1f2" stroke="#e11d48" stroke-width="1.8"/>
+      <text x="61" y="16" class="mono" font-size="10" fill="#9f1239" text-anchor="middle">[1]</text>
+      <text x="61" y="34" class="mono" font-size="11" font-weight="700" fill="#e11d48" text-anchor="middle">B1*</text>
+    </g>
+
+    <!-- Slot 2 (Pinned B3 for F1!) -->
+    <rect x="84" y="0" width="38" height="46" rx="5" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+    <text x="103" y="16" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">[2]</text>
+    <text x="103" y="34" class="mono" font-size="11" font-weight="700" fill="#059669" text-anchor="middle">B3</text>
+
+    <!-- Slot 3 -->
+    <rect x="126" y="0" width="38" height="46" rx="5" fill="#eff6ff" stroke="#93c5fd"/>
+    <text x="145" y="16" class="mono" font-size="10" fill="#64748b" text-anchor="middle">[3]</text>
+    <text x="145" y="34" class="mono" font-size="11" font-weight="700" fill="#1e3a8a" text-anchor="middle">B1</text>
+
+    <!-- Slot 4 (B2 -> B3 on drain) -->
+    <g class="m-steady">
+      <rect x="168" y="0" width="38" height="46" rx="5" fill="#fffbeb" stroke="#fcd34d"/>
+      <text x="187" y="16" class="mono" font-size="10" fill="#64748b" text-anchor="middle">[4]</text>
+      <text x="187" y="34" class="mono" font-size="11" font-weight="700" fill="#92400e" text-anchor="middle">B2</text>
+    </g>
+    <g class="m-remap">
+      <rect x="168" y="0" width="38" height="46" rx="5" fill="#fff1f2" stroke="#e11d48" stroke-width="1.8"/>
+      <text x="187" y="16" class="mono" font-size="10" fill="#9f1239" text-anchor="middle">[4]</text>
+      <text x="187" y="34" class="mono" font-size="11" font-weight="700" fill="#e11d48" text-anchor="middle">B3*</text>
+    </g>
+
+    <!-- Slot 5 -->
+    <rect x="210" y="0" width="38" height="46" rx="5" fill="#ecfdf5" stroke="#6ee7b7"/>
+    <text x="229" y="16" class="mono" font-size="10" fill="#64748b" text-anchor="middle">[5]</text>
+    <text x="229" y="34" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">B3</text>
+
+    <!-- Slot 6 -->
+    <rect x="252" y="0" width="38" height="46" rx="5" fill="#eff6ff" stroke="#93c5fd"/>
+    <text x="271" y="16" class="mono" font-size="10" fill="#64748b" text-anchor="middle">[6]</text>
+    <text x="271" y="34" class="mono" font-size="11" font-weight="700" fill="#1e3a8a" text-anchor="middle">B1</text>
+  </g>
+
+  <!-- Backend Pool Status Boxes -->
+  <rect x="602" y="294" width="136" height="58" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="670" y="318" class="sans" font-size="12" font-weight="700" fill="#1e3a8a" text-anchor="middle">Pool B1 (UP)</text>
+  <text x="670" y="338" class="mono" font-size="10" fill="#1e40af" text-anchor="middle">3→4 slots</text>
+
+  <g class="b2-cell">
+    <rect x="766" y="294" width="136" height="58" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+    <text x="834" y="318" class="sans" font-size="12" font-weight="700" fill="#92400e" text-anchor="middle">Pool B2 (DRAIN)</text>
+    <text x="834" y="338" class="mono" font-size="10" fill="#b45309" text-anchor="middle">2→0 slots</text>
+  </g>
+
+  <rect x="930" y="294" width="144" height="58" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="1002" y="318" class="sans" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">Pool B3 (UP)</text>
+  <text x="1002" y="338" class="mono" font-size="10" fill="#047857" text-anchor="middle">F1 pinned · DSR</text>
+
+  <!-- Arrow Slot [2] -> B3 -->
+  <path d="M 911 208 C 911 256, 1002 248, 1002 288" fill="none" stroke="#059669" stroke-width="2.5" marker-end="url(#arr-green)"/>
+  <rect x="860" y="248" width="166" height="22" rx="4" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <text x="943" y="263" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">F1→B3 unchanged (0 resets)</text>
+
+  <!-- Maglev vs Modulo Comparison Box -->
+  <rect x="592" y="368" width="484" height="118" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="608" y="390" class="sans" font-size="12" font-weight="700" fill="#0f172a">Why ECMP + Maglev Beats Naive `hash(flow) % N`</text>
+  <text x="608" y="412" class="mono" font-size="10.5" fill="#e11d48">• Modulo (% N): N=3→2 remaps ~67% of all TCP connections (RST storm)</text>
+  <text x="608" y="432" class="mono" font-size="10.5" fill="#059669">• Maglev: Only B2 slots [1],[4] reassign; B1 &amp; B3 flows stay pinned</text>
+  <text x="608" y="452" class="sans" font-size="10.5" fill="#334155">• Zero shared state: independent L4 LBs compute identical lookup tables.</text>
+  <text x="608" y="470" class="sans" font-size="10.5" fill="#334155">• Pairs with DSR (Direct Server Return) to bypass LB on response egress.</text>
+
+  <!-- FOOTER -->
+  <rect x="24" y="516" width="1072" height="46" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="42" y="544" class="sans" font-size="11.5" font-weight="600" fill="#1e3a8a">Takeaway: Stack L4 Maglev (stable flow pinning across ECMP fleets) in front of L7 P2C (queue-aware tail-latency balancing).</text>
+</svg>

@@ -1,0 +1,189 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 580" width="1120" height="580" role="img" aria-labelledby="title desc">
+  <title id="title">Consistent Hashing Ring with Virtual Nodes and Node-Addition Remapping</title>
+  <desc id="desc">Animated Consistent Hashing Ring with virtual nodes (vnodes) illustrating clockwise key lookup and adding node N4, which remaps only keys in the predecessor arcs (~1/(N+1) = 9.1% at N=10) compared to naive hash(key) % N which causes a 90.9% remapping storm and cold-cache database collapse.</desc>
+
+  <style>
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    /* 12s cycle:
+       0-42%:  Phase 1 — Clockwise lookup of key k1 -> N3#0, key k2 -> N2#0
+       46-94%: Phase 2 — Node N4 joins with vnodes; only k2 in predecessor arc remaps to N4#0; k1 stays on N3#0
+    */
+    @keyframes cw-sweep {
+      0%, 6% { transform: rotate(0deg); opacity: 0.9; }
+      32%, 44% { transform: rotate(30deg); opacity: 1; }
+      48%, 100% { transform: rotate(0deg); opacity: 0.86; }
+    }
+    @keyframes n4-join {
+      0%, 44% { opacity: 0.12; transform: scale(0.8); }
+      52%, 94% { opacity: 1; transform: scale(1); }
+      100% { opacity: 0.12; transform: scale(0.8); }
+    }
+    @keyframes phase1-badge {
+      0%, 44% { opacity: 1; }
+      48%, 94% { opacity: 0.86; }
+      100% { opacity: 1; }
+    }
+    @keyframes phase2-badge {
+      0%, 44% { opacity: 0.86; }
+      48%, 94% { opacity: 1; }
+      100% { opacity: 0.86; }
+    }
+    @keyframes mod-storm {
+      0%, 44% { width: 40px; }
+      54%, 94% { width: 400px; }
+      100% { width: 40px; }
+    }
+    @keyframes ring-calm {
+      0%, 44% { width: 12px; }
+      54%, 94% { width: 40px; }
+      100% { width: 12px; }
+    }
+
+    .cw-rot { transform-origin: 286px 282px; animation: cw-sweep 12s ease-in-out infinite; }
+    .n4-node { transform-box: fill-box; transform-origin: center; animation: n4-join 12s ease-in-out infinite; }
+    .p1-box { animation: phase1-badge 12s ease-in-out infinite; }
+    .p2-box { animation: phase2-badge 12s ease-in-out infinite; }
+    .bar-mod { animation: mod-storm 12s ease-in-out infinite; }
+    .bar-ring { animation: ring-calm 12s ease-in-out infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .cw-rot, .n4-node, .p1-box, .p2-box, .bar-mod, .bar-ring {
+        animation: none !important;
+      }
+      .cw-rot { transform: rotate(15deg) !important; opacity: 1 !important; }
+      .n4-node { opacity: 1 !important; transform: scale(1) !important; }
+      .p1-box, .p2-box { opacity: 1 !important; }
+      .bar-mod { width: 400px !important; }
+      .bar-ring { width: 40px !important; }
+    }
+  </style>
+
+  <defs>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+    </marker>
+    <marker id="arr-violet" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1120" height="580" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1120" height="60" rx="12" fill="#0f172a"/>
+  <rect x="0" y="44" width="1120" height="16" fill="#0f172a"/>
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Consistent Hashing Ring with Virtual Nodes (Vnodes)</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">Clockwise lookup + 100–200 vnodes/node collapse load skew (∝ 1/√V) and limit node-addition moves to ~1/(N+1)</text>
+
+  <!-- LEFT PANEL: RING WITH VNODES -->
+  <rect x="24" y="76" width="530" height="426" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="42" y="102" class="sans" font-size="14" font-weight="700" fill="#0f172a">1. Ring Space [0 .. 2³² − 1] &amp; Clockwise Vnode Lookup</text>
+  <text x="42" y="120" class="sans" font-size="11" fill="#475569">Adding N4 only steals keys in the shaded counter-clockwise arcs</text>
+
+  <!-- Base Ring Circle -->
+  <circle cx="286" cy="282" r="126" fill="none" stroke="#cbd5e1" stroke-width="8"/>
+
+  <!-- Highlighted Remap Arc for N4#0 (0 deg to 24 deg) -->
+  <g class="n4-node">
+    <path d="M 286 156 A 126 126 0 0 1 337 167" fill="none" stroke="#f59e0b" stroke-width="12" stroke-linecap="round"/>
+    <path d="M 286 408 A 126 126 0 0 1 235 397" fill="none" stroke="#f59e0b" stroke-width="12" stroke-linecap="round"/>
+  </g>
+
+  <!-- Clockwise sweep pointer from key k1 (60 deg) toward N3#0 (90 deg) -->
+  <g class="cw-rot">
+    <line x1="286" y1="282" x2="395" y2="219" stroke="#7c3aed" stroke-width="2" stroke-dasharray="4 3"/>
+    <circle cx="395" cy="219" r="7" fill="#7c3aed" stroke="#ffffff" stroke-width="2"/>
+  </g>
+
+  <!-- Key k1 marker (60 deg) -->
+  <rect x="398" y="196" width="84" height="24" rx="5" fill="#f5f3ff" stroke="#7c3aed"/>
+  <text x="440" y="212" class="mono" font-size="10" font-weight="700" fill="#5b21b6" text-anchor="middle">key k1 → N3</text>
+
+  <!-- Key k2 marker (12 deg -> inside N4 steal arc!) -->
+  <circle cx="312" cy="159" r="6" fill="#e11d48" stroke="#ffffff" stroke-width="1.5"/>
+  <rect x="298" y="126" width="114" height="22" rx="5" fill="#fffbeb" stroke="#d97706"/>
+  <text x="355" y="141" class="mono" font-size="10" font-weight="700" fill="#92400e" text-anchor="middle">k2: N2 → N4#0</text>
+
+  <!-- Vnode Markers around Ring (cx=286, cy=282, r=126) -->
+  <!-- 0 deg: N1#0 -->
+  <circle cx="286" cy="156" r="11" fill="#2563eb" stroke="#ffffff" stroke-width="2"/>
+  <text x="260" y="146" class="mono" font-size="10" font-weight="700" fill="#1e3a8a" text-anchor="end">N1#0</text>
+  <!-- 48 deg: N2#0 -->
+  <circle cx="380" cy="198" r="11" fill="#059669" stroke="#ffffff" stroke-width="2"/>
+  <text x="412" y="188" class="mono" font-size="10" font-weight="700" fill="#065f46">N2#0</text>
+  <!-- 90 deg: N3#0 -->
+  <circle cx="412" cy="282" r="11" fill="#7c3aed" stroke="#ffffff" stroke-width="2"/>
+  <text x="430" y="286" class="mono" font-size="10" font-weight="700" fill="#5b21b6">N3#0</text>
+  <!-- 135 deg: N1#1 -->
+  <circle cx="375" cy="371" r="11" fill="#2563eb" stroke="#ffffff" stroke-width="2"/>
+  <text x="394" y="380" class="mono" font-size="10" font-weight="700" fill="#1e3a8a">N1#1</text>
+  <!-- 180 deg: N2#1 -->
+  <circle cx="286" cy="408" r="11" fill="#059669" stroke="#ffffff" stroke-width="2"/>
+  <text x="306" y="424" class="mono" font-size="10" font-weight="700" fill="#065f46">N2#1</text>
+  <!-- 225 deg: N3#1 -->
+  <circle cx="197" cy="371" r="11" fill="#7c3aed" stroke="#ffffff" stroke-width="2"/>
+  <text x="150" y="384" class="mono" font-size="10" font-weight="700" fill="#5b21b6">N3#1</text>
+  <!-- 270 deg: N1#2 -->
+  <circle cx="160" cy="282" r="11" fill="#2563eb" stroke="#ffffff" stroke-width="2"/>
+  <text x="114" y="286" class="mono" font-size="10" font-weight="700" fill="#1e3a8a">N1#2</text>
+  <!-- 315 deg: N2#2 -->
+  <circle cx="197" cy="193" r="11" fill="#059669" stroke="#ffffff" stroke-width="2"/>
+  <text x="148" y="188" class="mono" font-size="10" font-weight="700" fill="#065f46">N2#2</text>
+
+  <!-- New Node N4 Vnodes (24 deg & 204 deg) -->
+  <g class="n4-node">
+    <circle cx="337" cy="167" r="12" fill="#d97706" stroke="#ffffff" stroke-width="2.5"/>
+    <text x="337" y="171" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">N4</text>
+    <circle cx="235" cy="397" r="12" fill="#d97706" stroke="#ffffff" stroke-width="2.5"/>
+    <text x="235" y="401" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">N4</text>
+  </g>
+
+  <!-- Ring Center Label -->
+  <text x="286" y="274" class="sans" font-size="12" font-weight="700" fill="#0f172a" text-anchor="middle">Clockwise</text>
+  <text x="286" y="292" class="mono" font-size="11" fill="#475569" text-anchor="middle">Search →</text>
+  <text x="286" y="310" class="mono" font-size="10" fill="#d97706" text-anchor="middle">+N4 joins</text>
+
+  <!-- Ring Legend -->
+  <rect x="42" y="438" width="494" height="48" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <circle cx="62" cy="462" r="6" fill="#2563eb"/>
+  <text x="74" y="466" class="mono" font-size="10.5" fill="#1e3a8a">N1 vnodes</text>
+  <circle cx="164" cy="462" r="6" fill="#059669"/>
+  <text x="176" y="466" class="mono" font-size="10.5" fill="#065f46">N2 vnodes</text>
+  <circle cx="266" cy="462" r="6" fill="#7c3aed"/>
+  <text x="278" y="466" class="mono" font-size="10.5" fill="#5b21b6">N3 vnodes</text>
+  <circle cx="368" cy="462" r="6" fill="#d97706"/>
+  <text x="380" y="466" class="mono" font-size="10.5" font-weight="700" fill="#92400e">N4 (newly added)</text>
+
+  <!-- RIGHT PANEL: REMAPPING COMPARISON -->
+  <rect x="574" y="76" width="522" height="426" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="592" y="102" class="sans" font-size="14" font-weight="700" fill="#0f172a">2. Scaling N = 10 → 11 Shards (1,000,000 Keys)</text>
+  <text x="592" y="120" class="sans" font-size="11" fill="#475569">80% warm cache: impact on database read surge during scale-out</text>
+
+  <!-- Naive Modulo Card -->
+  <rect x="592" y="138" width="486" height="148" rx="8" fill="#fff1f2" stroke="#fda4af" stroke-width="1.5"/>
+  <text x="608" y="162" class="mono" font-size="12" font-weight="700" fill="#9f1239">Naive: hash(key) % N  →  Moves N / (N + 1) = 90.9%</text>
+  <rect x="608" y="176" width="440" height="28" rx="5" fill="#ffe4e6" stroke="#fb7185"/>
+  <rect x="608" y="176" width="400" height="28" rx="5" fill="#e11d48" class="bar-mod"/>
+  <text x="620" y="195" class="mono" font-size="10.5" font-weight="700" fill="#ffffff">~909,000 keys invalidated!</text>
+  <text x="608" y="228" class="sans" font-size="11" fill="#9f1239">• 80% warm cache → ~727,000 immediate DB cache-miss reads!</text>
+  <text x="608" y="248" class="sans" font-size="11" fill="#9f1239">• Causes "cold-cache DB collapse" during every autoscaling event.</text>
+  <text x="608" y="268" class="sans" font-size="10.5" fill="#be123c">• Nearly entire dataset copies across network at once.</text>
+
+  <!-- Consistent Ring + Vnodes Card -->
+  <rect x="592" y="302" width="486" height="184" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="608" y="326" class="mono" font-size="12" font-weight="700" fill="#065f46">Consistent Ring + Vnodes  →  Moves 1 / (N + 1) = 9.1%</text>
+  <rect x="608" y="340" width="440" height="28" rx="5" fill="#d1fae5" stroke="#34d399"/>
+  <rect x="608" y="340" width="40" height="28" rx="5" fill="#059669" class="bar-ring"/>
+  <text x="660" y="359" class="mono" font-size="10.5" font-weight="700" fill="#065f46">~91,000 keys moved (10× smaller)</text>
+  <text x="608" y="392" class="sans" font-size="11" fill="#065f46">• Only ~73,000 cache misses; 90.9% of warm cache remains intact.</text>
+  <text x="608" y="412" class="sans" font-size="11" fill="#065f46">• V = 100–200 vnodes/node shrinks per-shard load skew by 1/√V.</text>
+  <text x="608" y="432" class="sans" font-size="11" fill="#065f46">• Heterogeneous weights: assign 2× vnodes to 2× larger machines.</text>
+  <text x="608" y="452" class="sans" font-size="10.5" fill="#047857">• Hot-key caveat: pair with L1 micro-cache or key salting if 1 key dominates.</text>
+
+  <!-- FOOTER -->
+  <rect x="24" y="516" width="1072" height="46" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="42" y="544" class="sans" font-size="11.5" font-weight="600" fill="#1e3a8a">Takeaway: Consistent hashing with 100–200 vnodes bounds resharding to K/(N+1) keys and keeps shard distribution balanced.</text>
+</svg>

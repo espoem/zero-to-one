@@ -1,0 +1,224 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 600" width="1120" height="600" role="img" aria-labelledby="title desc">
+  <title id="title">LMAX Disruptor Price-Time Order Book and PagedAttention KV-Cache Continuous Batching</title>
+  <desc id="desc">Animated step-by-step visualization of two Staff/Principal core engines from Module 14: Left panel shows the lock-free, core-pinned LMAX Disruptor ring buffer with cache-line-padded sequence cursors feeding a deterministic Price-Time Priority (FIFO) L3 order book matching an incoming BUY 60 order at $100.05 in O(1) head access (~3 microseconds); Right panel shows vLLM PagedAttention non-contiguous KV-cache block tables shrinking HBM waste below 4% paired with iteration-level Continuous Batching eliminating straggler idle slots.</desc>
+
+  <style>
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    /* 12s cycle */
+    @keyframes seq-advance {
+      0%, 20% { transform: translateX(0px); }
+      45%, 85% { transform: translateX(48px); }
+      100% { transform: translateX(0px); }
+    }
+    @keyframes order-fill {
+      0%, 20% { opacity: 1; }
+      35%, 85% { opacity: 0.86; }
+      95%, 100% { opacity: 1; }
+    }
+    @keyframes fill-badge {
+      0%, 28% { opacity: 0; }
+      36%, 88% { opacity: 1; }
+      95%, 100% { opacity: 0; }
+    }
+    @keyframes iter-req1 {
+      0%, 42% { opacity: 1; }
+      48%, 92% { opacity: 0.86; }
+      98%, 100% { opacity: 1; }
+    }
+    @keyframes iter-req3 {
+      0%, 45% { opacity: 0.12; }
+      52%, 94% { opacity: 1; }
+      98%, 100% { opacity: 0.12; }
+    }
+
+    .seq-cur { animation: seq-advance 12s ease-in-out infinite; }
+    .ord-hit { animation: order-fill 12s ease-in-out infinite; }
+    .fill-pop { animation: fill-badge 12s ease-in-out infinite; }
+    .r1-slot { animation: iter-req1 12s ease-in-out infinite; }
+    .r3-slot { animation: iter-req3 12s ease-in-out infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .seq-cur, .ord-hit, .fill-pop, .r1-slot, .r3-slot {
+        animation: none !important;
+      }
+      .seq-cur { transform: translateX(48px) !important; }
+      .ord-hit { opacity: 0.86 !important; }
+      .fill-pop, .r1-slot, .r3-slot { opacity: 1 !important; }
+    }
+  </style>
+
+  <defs>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <marker id="arr-violet" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1120" height="600" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1120" height="60" rx="12" fill="#0f172a"/>
+  <rect x="0" y="44" width="1120" height="16" fill="#0f172a"/>
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">LMAX Disruptor Order Book Matching &amp; LLM PagedAttention</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">Lock-free core-pinned L3 matching (~3 μs, zero-GC) · Non-contiguous KV block tables (&lt;4% waste) + continuous batching</text>
+
+  <!-- LEFT PANEL: LMAX DISRUPTOR + ORDER BOOK -->
+  <rect x="24" y="76" width="524" height="446" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="42" y="102" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">1. LMAX Disruptor Ring + Price-Time FIFO L3 Book</text>
+  <text x="42" y="120" class="sans" font-size="11" fill="#475569">Single-writer sequenced stream · alignas(64) padded cursors · 0 mutexes</text>
+
+  <!-- Ring Buffer Slots (seq 40..45) -->
+  <text x="42" y="144" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a">Pre-Allocated Ring Buffer (SBE fixed 64B slots):</text>
+  <g transform="translate(42, 154)">
+    <rect x="0" y="0" width="44" height="36" rx="4" fill="#f1f5f9" stroke="#cbd5e1"/>
+    <text x="22" y="22" class="mono" font-size="10" fill="#64748b" text-anchor="middle">#40</text>
+    <rect x="48" y="0" width="44" height="36" rx="4" fill="#f1f5f9" stroke="#cbd5e1"/>
+    <text x="70" y="22" class="mono" font-size="10" fill="#64748b" text-anchor="middle">#41</text>
+    <rect x="96" y="0" width="44" height="36" rx="4" fill="#eff6ff" stroke="#2563eb" stroke-width="1.8"/>
+    <text x="118" y="22" class="mono" font-size="10" font-weight="700" fill="#1e3a8a" text-anchor="middle">#42</text>
+    <rect x="144" y="0" width="44" height="36" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+    <text x="166" y="22" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">#43</text>
+    <rect x="192" y="0" width="44" height="36" rx="4" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="214" y="22" class="mono" font-size="10" fill="#94a3b8" text-anchor="middle">#44</text>
+    <rect x="240" y="0" width="44" height="36" rx="4" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="262" y="22" class="mono" font-size="10" fill="#94a3b8" text-anchor="middle">#45</text>
+
+    <!-- Moving consumer cursor -->
+    <g class="seq-cur">
+      <polygon points="118,40 112,50 124,50" fill="#2563eb"/>
+      <rect x="86" y="52" width="64" height="18" rx="3" fill="#2563eb"/>
+      <text x="118" y="64" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">cursor</text>
+    </g>
+  </g>
+
+  <rect x="342" y="152" width="188" height="44" rx="6" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="436" y="170" class="mono" font-size="10" font-weight="700" fill="#1e3a8a" text-anchor="middle">Cmd #42: BUY 60</text>
+  <text x="436" y="186" class="mono" font-size="10" fill="#1e40af" text-anchor="middle">@ $100.05 (Limit)</text>
+
+  <!-- L3 Order Book FIFO Doubly-Linked Lists -->
+  <rect x="42" y="236" width="488" height="196" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="58" y="258" class="sans" font-size="12" font-weight="700" fill="#0f172a">L3 Price-Time Priority Order Book (L3 CPU Cache Resident)</text>
+
+  <!-- Ask Level $100.05 -->
+  <rect x="58" y="270" width="112" height="44" rx="5" fill="#fff1f2" stroke="#e11d48"/>
+  <text x="114" y="289" class="mono" font-size="10.5" font-weight="700" fill="#9f1239" text-anchor="middle">ASK $100.05</text>
+  <text x="114" y="305" class="mono" font-size="10" fill="#be123c" text-anchor="middle">Head FIFO list</text>
+
+  <line x1="170" y1="292" x2="196" y2="292" stroke="#e11d48" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+
+  <g class="ord-hit">
+    <rect x="202" y="270" width="114" height="44" rx="5" fill="#ffffff" stroke="#e11d48" stroke-width="2"/>
+    <text x="259" y="289" class="mono" font-size="10" font-weight="700" fill="#9f1239" text-anchor="middle">O1: qty=50</text>
+    <text x="259" y="305" class="mono" font-size="10" fill="#64748b" text-anchor="middle">t=09:30:00.1 (1st)</text>
+  </g>
+  <line x1="316" y1="292" x2="342" y2="292" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+
+  <rect x="348" y="270" width="166" height="44" rx="5" fill="#ffffff" stroke="#94a3b8"/>
+  <text x="431" y="289" class="mono" font-size="10" font-weight="700" fill="#334155" text-anchor="middle">O2: qty=30 → 20</text>
+  <text x="431" y="305" class="mono" font-size="10" fill="#64748b" text-anchor="middle">t=09:30:00.4 (2nd)</text>
+
+  <!-- Bid Level $100.02 -->
+  <rect x="58" y="328" width="112" height="40" rx="5" fill="#ecfdf5" stroke="#059669"/>
+  <text x="114" y="352" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">BID $100.02</text>
+  <rect x="202" y="328" width="160" height="40" rx="5" fill="#ffffff" stroke="#6ee7b7"/>
+  <text x="282" y="352" class="mono" font-size="10" fill="#065f46" text-anchor="middle">O3: qty=100 (resting)</text>
+
+  <!-- Execution Report Pop -->
+  <g class="fill-pop">
+    <rect x="58" y="382" width="456" height="38" rx="6" fill="#059669"/>
+    <text x="286" y="405" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">ExecutionReport (seq=42): Fill 50@O1 + 10@O2 in ~3 μs (O2 rem=20)</text>
+  </g>
+
+  <text x="42" y="458" class="sans" font-size="10.5" fill="#334155">• Pure state machine S_{n+1} = f(S_n, Cmd_n): standby replays identical seq_num.</text>
+  <text x="42" y="478" class="sans" font-size="10.5" fill="#334155">• Flat pre-allocated OrderSlot pool (64B) eliminates GC pauses &amp; heap churn.</text>
+  <text x="42" y="498" class="sans" font-size="10.5" fill="#065f46">• Hash map order_id → slot_ptr gives O(1) CancelOrder removal.</text>
+
+  <!-- RIGHT PANEL: PAGEDATTENTION + CONTINUOUS BATCHING -->
+  <rect x="572" y="76" width="524" height="446" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="590" y="102" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">2. PagedAttention KV-Cache &amp; Continuous Batching</text>
+  <text x="590" y="120" class="sans" font-size="11" fill="#475569">OS virtual paging cuts HBM KV waste from 60–80% to &lt; 4% (2–4× batch)</text>
+
+  <!-- Block Table Mapping -->
+  <text x="590" y="144" class="mono" font-size="10.5" font-weight="700" fill="#5b21b6">Logical KV Blocks (16 tok/blk) → Non-Contiguous GPU HBM:</text>
+
+  <!-- Seq A Logical -->
+  <rect x="590" y="156" width="144" height="62" rx="6" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="662" y="176" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">Seq A Block Table</text>
+  <text x="662" y="194" class="mono" font-size="10" fill="#1e40af" text-anchor="middle">L0 → Phys #5</text>
+  <text x="662" y="210" class="mono" font-size="10" fill="#1e40af" text-anchor="middle">L1 → Phys #1</text>
+
+  <!-- Seq B Logical -->
+  <rect x="590" y="226" width="144" height="62" rx="6" fill="#f5f3ff" stroke="#7c3aed"/>
+  <text x="662" y="246" class="mono" font-size="10.5" font-weight="700" fill="#5b21b6" text-anchor="middle">Seq B Block Table</text>
+  <text x="662" y="264" class="mono" font-size="10" fill="#4c1d95" text-anchor="middle">L0 → Phys #2</text>
+  <text x="662" y="280" class="mono" font-size="10" fill="#4c1d95" text-anchor="middle">L1 → Phys #4 (CoW)</text>
+
+  <!-- Arrows -->
+  <line x1="734" y1="187" x2="778" y2="187" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+  <line x1="734" y1="257" x2="778" y2="257" stroke="#7c3aed" stroke-width="1.8" marker-end="url(#arr-violet)"/>
+
+  <!-- Physical GPU HBM Blocks Grid -->
+  <rect x="784" y="156" width="294" height="132" rx="8" fill="#f8fafc" stroke="#334155" stroke-width="1.5"/>
+  <text x="931" y="176" class="mono" font-size="10.5" font-weight="700" fill="#0f172a" text-anchor="middle">Physical GPU HBM (500 GB Free)</text>
+
+  <rect x="798" y="188" width="82" height="36" rx="4" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="839" y="210" class="mono" font-size="10" fill="#64748b" text-anchor="middle">#0 Free</text>
+
+  <rect x="890" y="188" width="82" height="36" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="931" y="210" class="mono" font-size="10" font-weight="700" fill="#1e3a8a" text-anchor="middle">#1 A.L1</text>
+
+  <rect x="982" y="188" width="82" height="36" rx="4" fill="#ede9fe" stroke="#7c3aed"/>
+  <text x="1023" y="210" class="mono" font-size="10" font-weight="700" fill="#5b21b6" text-anchor="middle">#2 B.L0</text>
+
+  <rect x="798" y="236" width="82" height="36" rx="4" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="839" y="258" class="mono" font-size="10" fill="#64748b" text-anchor="middle">#3 Free</text>
+
+  <rect x="890" y="236" width="82" height="36" rx="4" fill="#ede9fe" stroke="#7c3aed"/>
+  <text x="931" y="258" class="mono" font-size="10" font-weight="700" fill="#5b21b6" text-anchor="middle">#4 B.L1</text>
+
+  <rect x="982" y="236" width="82" height="36" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="1023" y="258" class="mono" font-size="10" font-weight="700" fill="#1e3a8a" text-anchor="middle">#5 A.L0</text>
+
+  <!-- Continuous Iteration-Level Batching -->
+  <rect x="590" y="302" width="488" height="148" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="606" y="324" class="sans" font-size="12" font-weight="700" fill="#065f46">Continuous Iteration-Level Batching (~30 ms/token step)</text>
+
+  <!-- Header Iterations -->
+  <text x="688" y="346" class="mono" font-size="10" fill="#475569" text-anchor="middle">Iter 1</text>
+  <text x="778" y="346" class="mono" font-size="10" fill="#475569" text-anchor="middle">Iter 2</text>
+  <text x="868" y="346" class="mono" font-size="10" fill="#475569" text-anchor="middle">Iter 3</text>
+  <text x="958" y="346" class="mono" font-size="10" fill="#475569" text-anchor="middle">Iter 4</text>
+
+  <!-- Slot 1: Req 1 exits at Iter 2, Req 3 slots straight in at Iter 3! -->
+  <text x="606" y="372" class="mono" font-size="10" font-weight="700" fill="#334155">Slot 1:</text>
+  <g class="r1-slot">
+    <rect x="652" y="354" width="166" height="26" rx="4" fill="#2563eb"/>
+    <text x="735" y="371" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">Req 1 (EOS → free KV)</text>
+  </g>
+  <g class="r3-slot">
+    <rect x="826" y="354" width="176" height="26" rx="4" fill="#059669"/>
+    <text x="914" y="371" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">Req 3 enters immediately!</text>
+  </g>
+
+  <!-- Slot 2: Long Req 2 runs continuously -->
+  <text x="606" y="408" class="mono" font-size="10" font-weight="700" fill="#334155">Slot 2:</text>
+  <rect x="652" y="390" width="350" height="26" rx="4" fill="#7c3aed"/>
+  <text x="827" y="407" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">Req 2 (long decode — zero idle padding for Slot 1)</text>
+
+  <text x="606" y="438" class="sans" font-size="10.5" fill="#065f46">3–5× higher GPU throughput vs. static batching; disaggregate Prefill→Decode via RDMA.</text>
+
+  <text x="590" y="474" class="sans" font-size="10.5" fill="#334155">• Radix Prefix Caching shares read-only system-prompt KV blocks via CoW.</text>
+  <text x="590" y="494" class="sans" font-size="10.5" fill="#334155">• Client disconnect propagates cancellation on the next 30 ms decode step.</text>
+
+  <!-- FOOTER -->
+  <rect x="24" y="538" width="1072" height="46" rx="8" fill="#f5f3ff" stroke="#c4b5fd" stroke-width="1"/>
+  <text x="42" y="566" class="sans" font-size="11.5" font-weight="600" fill="#5b21b6">Takeaway: Mechanical sympathy (LMAX pre-allocated ring + cache locality) and virtual memory paging (PagedAttention) eliminate hardware stalls.</text>
+</svg>

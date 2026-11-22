@@ -231,6 +231,10 @@ sequenceDiagram
     CLI-->>GW: "7. ACK + updated heading"
 ```
 
+![Google Maps Core Algorithms Animation: 4^z Tile Pyramid, CH vs. CRP, HMM Viterbi, and Super-Tile Rerouting](../assets/17-maps-tiles-ch-crp-viterbi-animated.svg)
+
+_Step-by-step mechanics:_ (1) **Web Mercator `4^z` Pyramid** subdivides EPSG:3857 tiles from `z=0` (`1` tile) to `z=21` (`4.40 × 10¹²` tiles), cutting storage `> 90%` with MVT/PMTiles and sparse deduplication. (2) **CRP vs. CH** keeps graph partitioning metric-independent so live traffic only refreshes affected cell overlays in `< 1 s` rather than invalidating global CH shortcuts for hours. (3) **HMM Viterbi Map Matching** (`O(T · S²)`) combines Gaussian emission distance with heading continuity to keep `I-80 E` vehicles from snapping onto perpendicular surface streets. (4) **Super-Tile Inverted Indexing** walks at most `z_base + 1 <= 22` ancestor tiles to prefilter impacted navigators before pushing WebSocket reroutes.
+
 Below are the verified `latLonToTile`, `SuperTileRoutingIndex`, and `snapGpsPoint` primitives implemented in [`examples/lib/maps-models.ts`](../examples/lib/maps-models.ts):
 
 ```typescript

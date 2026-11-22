@@ -407,6 +407,10 @@ Production location-sharing platforms close the trilateration attack with four l
 3. **Boundary Hysteresis Deadband (`5.0 mi` Enter vs. `5.2 mi` Exit)**: To prevent a friend walking along the 5-mile circumference from flickering on and off the map every 30 seconds (and leaking the exact boundary crossing point), require `d <= 5.0 miles` to enter the nearby list and `d > 5.2 miles` to trigger `LEFT_RADIUS`.
 4. **Impossible-Velocity Spoof Detection & Pairwise Rate Limiting**: Reject client GPS updates whose implied speed $\Delta d / \Delta t$ exceeds physical flight speed (`> 300 m/s`), closing the rapid 3-point GPS teleportation attack used by trilateration scripts.
 
+![Anti-Stalking Privacy Defense Animation: Thwarting 3-Circle Trilateration with 0.5-Mile Bucketing, Laplace Noise, and Hysteresis](../assets/23-anti-trilateration-laplace-noise-animated.svg)
+
+_Step-by-step mechanics:_ (1) Raw meter distances from three spoofed locations (`P1, P2, P3`) intersect at a victim's exact 1-meter home coordinates. (2) Coarse `0.5-mile` distance bucketing (`<= 0.5 mi` floor) thickens the three circles into wide annuli whose overlap spans multiple square kilometers. (3) **Planar Laplace** ($\epsilon$-differential privacy) polar jitter `(r, θ)` perturbs coordinates before distance evaluation. (4) A `5.0 / 5.2-mile` **hysteresis deadband** stops boundary flicker leaks while rejecting impossible `v > 300 m/s` GPS teleports.
+
 ---
 
 ## 6. Production Gotchas, SRE Guardrails, and 2021 vs. 2026 Comparison

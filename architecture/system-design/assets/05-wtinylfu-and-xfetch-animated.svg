@@ -1,0 +1,178 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 580" width="1120" height="580" role="img" aria-labelledby="title desc">
+  <title id="title">W-TinyLFU Cache Admission Filter and XFetch Probabilistic Early Refresh</title>
+  <desc id="desc">Animated step-by-step visualization of W-TinyLFU combining a 1% Window LRU, a Count-Min Sketch 4-bit frequency admission filter with periodic halving, and a Segmented LRU (Probation plus Protected) to block one-hit scan pollution, paired with the XFetch probabilistic early refresh curve preventing thundering-herd cache stampedes before TTL expiration.</desc>
+
+  <style>
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    /* 12s cycle:
+       0-45%:  Scan key (freq=1) loses to Main SLRU victim (freq=18) -> REJECTED + XFetch cursor moves toward expiry
+       50-95%: Hot key (freq=42) beats victim (freq=18) -> ADMITTED + XFetch triggers 1 single early refresh at t=54.2s
+    */
+    @keyframes scan-reject {
+      0%, 44% { opacity: 1; }
+      48%, 94% { opacity: 0.86; }
+      98%, 100% { opacity: 1; }
+    }
+    @keyframes hot-admit {
+      0%, 44% { opacity: 0.86; }
+      48%, 94% { opacity: 1; }
+      98%, 100% { opacity: 0.86; }
+    }
+    @keyframes xfetch-cursor {
+      0%, 8% { transform: translateX(0px); }
+      48% { transform: translateX(218px); }
+      72%, 94% { transform: translateX(262px); }
+      100% { transform: translateX(0px); }
+    }
+    @keyframes xfetch-fire {
+      0%, 46% { opacity: 0; }
+      52%, 92% { opacity: 1; }
+      98%, 100% { opacity: 0; }
+    }
+
+    .scan-box { animation: scan-reject 12s ease-in-out infinite; }
+    .hot-box { animation: hot-admit 12s ease-in-out infinite; }
+    .xf-cur { animation: xfetch-cursor 12s ease-in-out infinite; }
+    .xf-pop { animation: xfetch-fire 12s ease-in-out infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .scan-box, .hot-box, .xf-cur, .xf-pop {
+        animation: none !important;
+      }
+      .scan-box, .hot-box, .xf-pop { opacity: 1 !important; }
+      .xf-cur { transform: translateX(220px) !important; }
+    }
+  </style>
+
+  <defs>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <marker id="arr-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1120" height="580" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1120" height="60" rx="12" fill="#0f172a"/>
+  <rect x="0" y="44" width="1120" height="16" fill="#0f172a"/>
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">W-TinyLFU Scan-Resistant Eviction &amp; XFetch Early Refresh</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">Window LRU + Count-Min Sketch Admission Filter + Segmented LRU · XFetch eliminates synchronized TTL stampedes</text>
+
+  <!-- LEFT PANEL: W-TINYLFU -->
+  <rect x="24" y="76" width="538" height="426" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="42" y="102" class="sans" font-size="14" font-weight="700" fill="#0f172a">1. W-TinyLFU Admission Filter + Segmented LRU</text>
+  <text x="42" y="120" class="sans" font-size="11" fill="#475569">8–12 bits metadata/entry · Halving reset ages out "stale ghosts"</text>
+
+  <!-- Window LRU (1%) -->
+  <rect x="42" y="138" width="144" height="100" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="114" y="160" class="sans" font-size="12" font-weight="700" fill="#1e3a8a" text-anchor="middle">Window LRU (1%)</text>
+  <text x="114" y="178" class="sans" font-size="10" fill="#1e40af" text-anchor="middle">Absorbs new arrivals</text>
+  <rect x="54" y="190" width="120" height="36" rx="5" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="114" y="212" class="mono" font-size="10" font-weight="700" fill="#1e3a8a" text-anchor="middle">evicted candidate</text>
+
+  <line x1="186" y1="188" x2="216" y2="188" stroke="#2563eb" stroke-width="2" marker-end="url(#arr-blue)"/>
+
+  <!-- Count-Min Sketch Duel -->
+  <rect x="222" y="138" width="160" height="100" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.8"/>
+  <text x="302" y="160" class="sans" font-size="12" font-weight="700" fill="#5b21b6" text-anchor="middle">Count-Min Sketch</text>
+  <text x="302" y="177" class="mono" font-size="10" fill="#4c1d95" text-anchor="middle">4-bit counters (halve)</text>
+  <rect x="234" y="188" width="136" height="38" rx="5" fill="#ffffff" stroke="#c4b5fd"/>
+  <text x="302" y="205" class="mono" font-size="10" font-weight="700" fill="#5b21b6" text-anchor="middle">f(cand) &gt; f(victim)?</text>
+  <text x="302" y="220" class="mono" font-size="10" fill="#4c1d95" text-anchor="middle">victim f = 18</text>
+
+  <line x1="382" y1="188" x2="412" y2="188" stroke="#059669" stroke-width="2" marker-end="url(#arr-green)"/>
+
+  <!-- Main SLRU (99%) -->
+  <rect x="418" y="138" width="126" height="100" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="481" y="158" class="sans" font-size="11.5" font-weight="700" fill="#065f46" text-anchor="middle">Main SLRU (99%)</text>
+  <rect x="428" y="168" width="106" height="28" rx="4" fill="#d1fae5" stroke="#34d399"/>
+  <text x="481" y="186" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">Protected (80%)</text>
+  <rect x="428" y="202" width="106" height="28" rx="4" fill="#ffffff" stroke="#6ee7b7"/>
+  <text x="481" y="220" class="mono" font-size="10" font-weight="700" fill="#047857" text-anchor="middle">Probation (20%)</text>
+
+  <!-- Animated Decision Case 1: Scan Rejection -->
+  <g class="scan-box">
+    <rect x="42" y="256" width="502" height="100" rx="8" fill="#fff1f2" stroke="#e11d48" stroke-width="2"/>
+    <rect x="56" y="268" width="112" height="22" rx="4" fill="#e11d48"/>
+    <text x="112" y="283" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">CASE A: SCAN</text>
+    <text x="180" y="283" class="sans" font-size="12" font-weight="700" fill="#9f1239">One-Hit ETL Scan Key Rejected at the Door</text>
+    <text x="56" y="308" class="mono" font-size="10.5" fill="#334155">f(scan_key) = 1  &lt;=  f(SLRU victim) = 18  →  DROP candidate</text>
+    <text x="56" y="330" class="sans" font-size="10.5" fill="#9f1239">Hot Protected set stays 100% intact; zero cache pollution.</text>
+    <text x="56" y="346" class="sans" font-size="10" fill="#be123c">Contrast: Pure LRU evicts entire hot set during 1M-key scan.</text>
+  </g>
+
+  <!-- Animated Decision Case 2: Rising Hot Key Admission -->
+  <g class="hot-box">
+    <rect x="42" y="370" width="502" height="114" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <rect x="56" y="382" width="112" height="22" rx="4" fill="#059669"/>
+    <text x="112" y="397" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">CASE B: HOT KEY</text>
+    <text x="180" y="397" class="sans" font-size="12" font-weight="700" fill="#065f46">Trending Key Admitted &amp; Promoted</text>
+    <text x="56" y="422" class="mono" font-size="10.5" fill="#334155">f(hot_key) = 42  &gt;  f(SLRU victim) = 18  →  ADMIT to Probation</text>
+    <text x="56" y="442" class="sans" font-size="10.5" fill="#047857">On next hit, promoted to Protected LRU segment.</text>
+    <text x="56" y="462" class="sans" font-size="10.5" fill="#065f46">Periodic counter halving ensures stale ghosts lose over time.</text>
+  </g>
+
+  <!-- RIGHT PANEL: XFETCH STAMPEDE MITIGATION -->
+  <rect x="582" y="76" width="514" height="426" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="600" y="102" class="sans" font-size="14" font-weight="700" fill="#0f172a">2. XFetch Probabilistic Early Expiration</text>
+  <text x="600" y="120" class="sans" font-size="11" fill="#475569">Vattani et al. (2015): Refresh before TTL cliff with zero locks</text>
+
+  <!-- Formula Card -->
+  <rect x="600" y="134" width="478" height="62" rx="8" fill="#f5f3ff" stroke="#c4b5fd"/>
+  <text x="614" y="156" class="mono" font-size="11.5" font-weight="700" fill="#5b21b6">if now - delta * beta * ln(rand()) &gt;= expiry:</text>
+  <text x="614" y="176" class="mono" font-size="10.5" fill="#334155">P(refresh at t) = exp(-(T_exp - t) / (delta * beta))</text>
+
+  <!-- Plot Area (x=646..1046, y=220..370) -->
+  <rect x="600" y="208" width="478" height="202" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <!-- Grid & Axes -->
+  <line x1="650" y1="364" x2="1046" y2="364" stroke="#334155" stroke-width="1.8"/>
+  <line x1="650" y1="226" x2="650" y2="364" stroke="#334155" stroke-width="1.8"/>
+  <text x="640" y="232" class="mono" font-size="10" fill="#475569" text-anchor="end">1.0</text>
+  <text x="640" y="300" class="mono" font-size="10" fill="#475569" text-anchor="end">0.5</text>
+  <text x="640" y="366" class="mono" font-size="10" fill="#475569" text-anchor="end">0.0</text>
+  <text x="616" y="298" class="mono" font-size="10" fill="#475569" transform="rotate(-90 616 298)" text-anchor="middle">P(refresh)</text>
+
+  <!-- Hard TTL Cliff line at x=986 -->
+  <line x1="986" y1="226" x2="986" y2="364" stroke="#e11d48" stroke-width="2" stroke-dasharray="5 3"/>
+  <text x="986" y="382" class="mono" font-size="10" font-weight="700" fill="#e11d48" text-anchor="middle">T_exp = 60s</text>
+  <text x="660" y="382" class="mono" font-size="10" fill="#475569">40s</text>
+  <text x="820" y="382" class="mono" font-size="10" fill="#475569">50s</text>
+
+  <!-- Exponential XFetch Curve -->
+  <path d="M 650 362 Q 820 358, 900 326 T 986 230" fill="none" stroke="#2563eb" stroke-width="3"/>
+  <text x="824" y="314" class="mono" font-size="10" font-weight="700" fill="#1e40af">exp(-(T_exp - t) / δβ)</text>
+
+  <!-- Animated Time Cursor -->
+  <g class="xf-cur">
+    <line x1="680" y1="226" x2="680" y2="364" stroke="#059669" stroke-width="2"/>
+    <circle cx="680" cy="356" r="6" fill="#059669" stroke="#ffffff" stroke-width="1.5"/>
+    <rect x="652" y="216" width="56" height="18" rx="4" fill="#059669"/>
+    <text x="680" y="229" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">now t</text>
+  </g>
+
+  <!-- Trigger Pop Badge -->
+  <g class="xf-pop">
+    <rect x="768" y="232" width="194" height="44" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+    <text x="865" y="250" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">t=54.2s: Reader 1 refreshes!</text>
+    <text x="865" y="266" class="sans" font-size="10" fill="#047857" text-anchor="middle">1 DB call · 9,999 readers hit warm cache</text>
+  </g>
+
+  <!-- Comparison Summary Box -->
+  <rect x="600" y="422" width="478" height="62" rx="8" fill="#fffbeb" stroke="#fcd34d"/>
+  <text x="614" y="442" class="sans" font-size="11" font-weight="700" fill="#92400e">No Herd at T_exp = 60s:</text>
+  <text x="614" y="458" class="sans" font-size="10.5" fill="#78350f">• Hard TTL: 10,000 misses collide at 60.0s → DB collapse.</text>
+  <text x="614" y="474" class="sans" font-size="10.5" fill="#065f46">• XFetch + Single-Flight: 1 early DB refresh resets expiry cleanly.</text>
+
+  <!-- FOOTER -->
+  <rect x="24" y="516" width="1072" height="46" rx="8" fill="#f5f3ff" stroke="#c4b5fd" stroke-width="1"/>
+  <text x="42" y="544" class="sans" font-size="11.5" font-weight="600" fill="#5b21b6">Takeaway: W-TinyLFU protects cache hit rates from scan pollution, while XFetch prevents TTL-cliff thundering herds without locks.</text>
+</svg>

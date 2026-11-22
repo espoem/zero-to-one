@@ -274,6 +274,10 @@ flowchart TD
     H2 --> H3["3. Return 1 + sum(c_i across all S shards)"]
 ```
 
+![53-Bit IEEE-754 Composite Score Tie-Break, Valkey zskiplist span Traversal, and DDSketch Merge Animation](../assets/21-53bit-tiebreak-and-ddsketch-animated.svg)
+
+_Step-by-step mechanics:_ (1) **53-Bit IEEE-754 Packing** stores `score × 2³² + (2³² − 1 − Δt_ms)` inside `21 + 32 = 53` lossless integer bits (`≤ 2⁵³ − 1`), letting Alice (`10,000 ms`) beat Bob (`10,005 ms`) with zero ULP rounding. (2) **Valkey `zskiplist` `ZREVRANK`** descends skip-list levels summing forward `span` weights (`4 + 2 = 6` → Rank `#7`) in $O(\log N)$ pointer hops. (3) **DDSketch Merging** combines per-shard logarithmic relative-error bucket histograms in $O(1)$ space to emit `"Top 5% Tier"` percentiles for sharded/DynamoDB long-tail players.
+
 ---
 
 ## 5. Season Rollover, Disaster Recovery, and Serverless vs. Self-Managed Topologies
