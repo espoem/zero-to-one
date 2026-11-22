@@ -178,6 +178,47 @@ Versioning strategy should preserve client compatibility while enabling safe evo
 
 **Practical rule:** combine additive evolution for most changes with explicit major-version boundaries for breaking semantic changes. Deprecation windows, telemetry on version usage, contract tests, and migration guides are as important as the transport mechanism. For gRPC/Protobuf specifically, reserve removed field numbers/names where appropriate and never repurpose them with incompatible types or meanings.
 
+### 3.5 API Design Methodology, Protocol Spec Nuances, and Full Lifecycle
+
+Protocol choice is only half of API engineering; how a team designs, verifies, and retires contracts determines whether clients break silently in production.
+
+#### Design Approaches and the Four API Pillars
+
+Three complementary methodologies govern how an API contract comes into existence:
+
+- **Top-down (workflow-first):** start from user journeys, SLAs, and access patterns (the standard approach in greenfield design and interviews), derive endpoints and payloads, and design backing storage to match.
+- **Bottom-up (domain/schema-first):** derive API resources from existing domain entities or database schemas. Useful when modernizing legacy systems, but risky if internal table structures leak into public wire formats and lock the schema in place.
+- **Contract-first (spec-driven):** author and review the formal machine-readable contract (OpenAPI 3.1, Protobuf `.proto`, or GraphQL SDL) _before_ writing handler code. Frontend, backend, mock servers, and CI backward-compatibility checks all execute in parallel against the single contract artifact.
+
+Every production contract balances **four API pillars**: **Consistency** (uniform naming, pagination, RFC 9457 Problem Details error envelopes, and versioning rules across endpoints), **Simplicity** (minimal surface area, clear resource ownership, and safe defaults), **Security** (TLS 1.3, OIDC/OAuth 2.0/mTLS authentication, resource-level authorization, strict schema validation, and identity-keyed rate limits — see [Module 26](26-secure-by-design-architecture.md)), and **Performance** (bounded payloads, keyset pagination, conditional caching via `ETag`/`If-None-Match`, compression, and explicit latency budgets).
+
+#### The 5-Stage API Lifecycle
+
+| Stage | Core activities | Operational gate |
+| --- | --- | --- |
+| 1. Design | Select paradigm, author contract (OpenAPI/Protobuf/SDL), review against the four pillars | Approved schema and error/idempotency contract before implementation |
+| 2. Development & Contract Testing | Generate types/validators, run consumer-driven contract tests and breaking-change linters in CI | Zero unintentional breaking diffs; deterministic negative tests pass |
+| 3. Deployment & Telemetry Monitoring | Progressive rollout (canary/blue-green), per-endpoint and per-client latency/error SLOs, field and version usage metrics | Healthy error budget and live consumer attribution |
+| 4. Maintenance | Additive evolution, security patches, dependency updates, and schema hygiene without breaking active clients | Backward-compatibility checks stay green across supported versions |
+| 5. Deprecation & Retirement | Advertise end-of-life using `Deprecation` (RFC 9745) and `Sunset` (RFC 8594) HTTP headers plus `Link: <migration-url>; rel="sunset"`, notify active consumers, and retire with `410 Gone` (RFC 9110) | Usage telemetry confirms active traffic has drained below policy threshold before shutdown (never rely on calendar dates alone or return an ambiguous `404`) |
+
+#### Protocol and Specification Precision Corrections
+
+Introductory material frequently repeats three shortcuts that diverge from the governing specifications and cause real integration bugs:
+
+- **GraphQL HTTP status codes:** legacy GraphQL servers return `200 OK` for every request and wrap even malformed queries inside a JSON `errors` envelope, blinding HTTP-layer dashboards and CDN/gateway alerting. Under the modern GraphQL-over-HTTP specification (`application/graphql-response+json`), `200 OK` is used when execution produces `data`, whereas pre-execution failures return standard `4xx` status codes (`400 Bad Request` for unparseable JSON or GraphQL syntax, `422 Unprocessable Content` for failed validation or variable coercion, `405 Method Not Allowed` for mutations over `GET`, and `415 Unsupported Media Type` for invalid content types). Authorization decisions still belong in schema/resolver execution rather than HTTP URL matching.
+- **HTTP method safety and idempotence (RFC 9110 §9.2 and RFC 5789):** safety means the method does not alter server state; idempotence means repeating the identical request leaves server state equivalent to a single execution (even if response codes differ, such as `DELETE` returning `204` then `404`/`410`). Critically, **RFC 5789 §2 defines `PATCH` as neither safe nor idempotent**. A `PATCH` is _conditionally_ idempotent depending on the patch document: deterministic field assignment via RFC 7396 JSON Merge Patch (for example `{"status": "shipped"}`) is idempotent, whereas RFC 6902 JSON Patch array `add`/`remove` operations or relative counter increments are not. Clients sending base-dependent patches should guard them with `If-Match` and a strong `ETag` (RFC 5789 §2.2), and servers must apply the entire patch atomically or reject it (`409`, `412`, or `422`).
+
+| HTTP Method | Safe (RFC 9110) | Idempotent (RFC 9110 / RFC 5789) | Practical retry rule |
+| --- | --- | --- | --- |
+| `GET` / `HEAD` | Yes | Yes | Safe to retry automatically with backoff and jitter |
+| `PUT` | No | Yes | Full resource replacement; safe to retry if concurrent writes are guarded with `If-Match` |
+| `DELETE` | No | Yes | Safe to retry; repeating leaves the resource deleted |
+| `POST` | No | No | Never auto-retry without an `Idempotency-Key` (see §3.1) |
+| `PATCH` | No | No by spec (conditionally idempotent by payload) | Safe to retry only for deterministic set semantics or with `If-Match` / `Idempotency-Key` |
+
+- **AMQP exchanges vs. partitioned commit logs (async API boundary):** when an API hands work off asynchronously, broker semantics differ sharply by architecture. AMQP brokers (such as RabbitMQ) decouple producers from queues via **exchanges**: **Direct** exchanges route 1:1 by exact routing key, **Fanout** exchanges broadcast 1:N to every bound queue, and **Topic** exchanges match wildcard routing patterns (such as `orders.*.eu`), with per-message acknowledgments and destructive reads once consumed. Partitioned append-only commit logs (such as Kafka) instead retain immutable offset-addressed streams for replayable multi-consumer fan-out. For full queue, stream, and delivery-semantics composition, see [Module 07](07-asynchrony-queues-streams-and-workflows.md) and [Module 18](18-distributed-message-queue.md).
+
 ---
 
 ## 4. Access-Pattern-Driven Storage Selection Decision Matrix
@@ -210,6 +251,24 @@ Storage selection should start from read/write patterns, consistency needs, quer
 | Event log + projections | Append-only log/queue + read models | Eventual consistency across projections | Replayable events, schema evolution, consumer dedupe |
 
 **Selection heuristics:** start from the write path and correctness boundary, then add specialized read stores for latency and query flexibility. Every added store increases failure modes, backup/recovery scope, and consistency surfaces.
+
+### 4.3 CAP / PACELC Workload Selection Delta and Common Database Misconceptions
+
+Formal Gilbert-Lynch (2002) CAP proofs and Daniel Abadi's (2012) PACELC theorem belong to [Distributed Systems Module 01](../../distributed-systems/modules/01-system-models-and-impossibility.md#5-cap-theorem-formal-gilbert-lynch-statement-and-pacelc); Dynamo-style rings, tunable quorums, and why $W + R > N$ does not yield linearizability are developed in [Module 16](16-distributed-key-value-store.md). At the system-design layer, CAP governs only the rare instant of a network partition, whereas **PACELC** ("if **P**artition, trade **A**vailability vs. **C**onsistency; **E**lse, trade **L**atency vs. **C**onsistency") governs every normal request: replicated stores that sacrifice consistency under a partition almost always sacrifice it during normal operation too, avoiding cross-AZ or cross-region coordination latency.
+
+#### System-Design Workload-to-CAP/PACELC Selection Matrix
+
+| Workload class | Target PACELC profile | Representative stores | System-design operational rule |
+| --- | --- | --- | --- |
+| Financial ledgers, balance debits, inventory/seat reservation (`stock >= 0`), distributed locks and leader election | `PC/EC` | Spanner, CockroachDB, etcd, ZooKeeper, synchronous-commit PostgreSQL | Reject or stall the minority side during partitions to protect invariants; pair with idempotency keys, fencing tokens, and explicit business compensation for externalized effects |
+| Social feeds, like/view counters, product catalog caches, shopping carts, CDN edges, analytics ingestion | `PA/EL` | Cassandra, Dynamo-style KV stores, Riak, CDN edge caches | Serve low-latency local reads on the happy path; surface staleness bounds explicitly, prefer CRDTs or additive counters over read-modify-write, and reconcile strongly at checkout |
+| Mixed multi-region workloads (user profiles + auth revocation, global e-commerce) | Tunable per operation (`PC/EC` and `PA/EL`) | Amazon DynamoDB (`ConsistentRead` / `TransactWriteItems` in-Region vs. eventual Global Tables), Azure Cosmos DB (5 consistency levels), Cassandra (`LOCAL_QUORUM` vs. Paxos LWT) | Partition consistency choices by _operation and invariant_ rather than stamping one label on the whole system: use strongly consistent paths for writes and token revocation, and eventually consistent reads where bounded lag is safe |
+
+#### Debunking Three Classic Database Misconceptions
+
+1. **"CA distributed systems":** a category error. You cannot opt out of partition tolerance (`P`) across more than one machine because network partitions, switch failures, and asymmetric packet loss are unavoidable physical realities (Brewer, 2012). A single-node store (such as standalone PostgreSQL) has no inter-node network partition domain, so it lies outside CAP's scope rather than forming a "CA distributed system". Once replicated across machines, any system that halts on partition is `CP`, not `CA` (Abadi, 2012).
+2. **"NoSQL drops the C in ACID":** this conflates two distinct definitions of _consistency_. CAP's `C` means **single-copy linearizability** (every read observes the most recent committed write in real-time order), whereas ACID's `C` means **application-level invariant preservation** (constraints, foreign keys, non-negative balances). Modern non-relational databases routinely support multi-record ACID transactions: MongoDB supports multi-document ACID transactions on replica sets (since 4.0) and sharded clusters (since 4.2) with `readConcern: snapshot` and `writeConcern: majority`; Amazon DynamoDB provides `TransactWriteItems` and `TransactGetItems` (up to 100 items within a single Region); FoundationDB executes ACID transactions across all operations; and Google Spanner delivers externally consistent distributed transactions. None of these refute CAP — they are `CP` engines that pay availability or commit-wait latency during partitions.
+3. **Outdated "master-slave" replication wording:** deprecated across upstream documentation and technically muddy because it blurs a statically designated writable **primary** with a consensus-elected **leader**. Use **leader-follower** for consensus and replication protocols (_Designing Data-Intensive Applications_, 2e) and **primary-replica** or **primary-standby** for relational and in-memory engines (PostgreSQL primary/standby, Redis `REPLICAOF` since Redis 5, MySQL 8.0.23+ `CHANGE REPLICATION SOURCE TO` and `SHOW REPLICAS`).
 
 ---
 
@@ -501,4 +560,11 @@ A common composition is a relational database (PostgreSQL/MySQL) as the checkout
 <details><summary>Model Answer</summary>
 
 Recommend additive-only evolution as the default (new optional fields/endpoints, backward-compatible behavior) with a clear compatibility policy and contract tests, because it minimizes client breakage and operational overhead. Use explicit major versions (often URI-based for visibility and routing) only for truly breaking semantic changes, with telemetry-driven deprecation windows. Header/content-negotiation versioning can work but is less visible and easier to misconfigure in caches, gateways, and observability tooling. Whichever mechanisms are used, the key is a consistent, documented policy (including Protobuf/JSON evolution rules where applicable), not mixing ad hoc approaches per team or endpoint.
+</details>
+
+**Q9.** A colleague argues that "PostgreSQL is CA, NoSQL drops the C in ACID, and HTTP `PATCH` is always safe to auto-retry like `PUT`." Identify all three errors and state the accurate specification or architectural rule for each.
+
+<details><summary>Model Answer</summary>
+
+First, "CA distributed system" is a category error: a single-node PostgreSQL instance has no inter-node network partition domain and sits outside CAP's scope, while any replicated cluster faces unavoidable network partitions and must choose between CP and AP during a partition (and latency vs. consistency during normal operation under PACELC). Second, "NoSQL drops the C in ACID" conflates CAP linearizability with ACID invariant consistency; modern non-relational stores including MongoDB (4.0+ replica sets, 4.2+ sharded), DynamoDB (`TransactWriteItems`), FoundationDB, and Spanner support multi-record ACID transactions while remaining CP under partitions. Third, RFC 5789 defines `PATCH` as neither safe nor idempotent: deterministic JSON Merge Patch (RFC 7396) updates can be idempotent, whereas JSON Patch array `add` operations or relative counter increments are not, so retries must be guarded with `If-Match` plus a strong `ETag` or an `Idempotency-Key`.
 </details>

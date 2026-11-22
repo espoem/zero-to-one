@@ -126,6 +126,50 @@ Algorithm choice is a composition decision coupled to workload heterogeneity, he
 > [!NOTE]
 > Least Request in Envoy is closely related to P2C in practice (choice-of-two/choice-of-N behavior with active request weighting), while plain least-connections policies in distributed fleets remain vulnerable to stale-view herd effects unless carefully damped.
 
+### 2.4 Forward vs. Reverse Proxy Taxonomy and Eliminating Load Balancer SPOFs
+
+The word "proxy" names two opposite trust relationships. A **forward proxy** acts for the client: the client is configured (explicitly, through PAC/WPAD, or transparently by network interception) to send outbound traffic through it, and origin servers see the proxy instead of the client. A **reverse proxy** acts for the server: clients believe they are talking to the origin, and the proxy hides, protects, and distributes traffic across the real backends. Load balancers, API gateways, WAFs, and CDNs are all reverse proxies with different policy sets. Wire-level mechanics (`X-Forwarded-For`, the RFC 7239 `Forwarded` header, and HAProxy's PROXY protocol for L4 client-IP preservation) are owned by [Networking Module 13](../../networking/modules/13-load-balancing-cdn-nat.md#4-layer-7-reverse-proxying--client-ip-preservation).
+
+| Dimension | Forward proxy | Reverse proxy |
+| --- | --- | --- |
+| Acts on behalf of | Clients (egress) | Servers (ingress) |
+| Who configures it | Client device, enterprise network, or ISP | Service operator |
+| Hides | Client identity and IP from origins | Origin topology, backend IPs, and server software from clients |
+| Typical functions | Egress allow-listing and DLP, corporate caching, content filtering, audit logging, geo-unblocking, scraping fleets | TLS termination/offload, compression, L7 load balancing, WAF and bot rules, response caching (a CDN is a geo-distributed reverse proxy), rate limiting, request routing |
+| Can terminate the server's TLS certificate | Only by MITM with an enterprise-installed root CA (TLS inspection) | Yes, it holds the origin's certificate and private key |
+| Example products | Squid, Zscaler/secure web gateways, browser-configured HTTP `CONNECT` proxies | NGINX, Envoy, HAProxy, AWS ALB, Cloudflare, Fastly |
+
+Forward proxies are often graded by how much they reveal. This is an informal industry classification, not a standard, and is defined by the headers the proxy adds:
+
+- **Transparent proxy:** forwards the client's real IP (for example in `X-Forwarded-For`) and announces itself (for example with `Via`). Used for corporate caching and filtering, where anonymity is not the goal. "Transparent" also means "intercepting without client configuration", so clarify which meaning is in play.
+- **Anonymous proxy:** announces itself as a proxy but withholds the client IP.
+- **Distorting proxy:** announces itself and injects a false client IP.
+- **High-anonymity (elite) proxy:** neither reveals the client IP nor identifies itself as a proxy; origins see what looks like an ordinary client.
+
+**Design consequence:** client-IP headers are only as trustworthy as the hops that wrote them. Trust `X-Forwarded-For` entries only from proxies you operate (a configured trusted-hop count), never the left-most value, because every entry left of your own edge is client-controlled.
+
+#### IP Hash behind NAT and CGNAT: Why It Hot-Spots
+
+IP-hash affinity (`hash(client_ip) % N`, NGINX `ip_hash`) assumes one IP ≈ one user. That assumption fails wherever many users share one public address: corporate egress NAT, university networks, mobile carriers, and carrier-grade NAT (CGNAT, using the RFC 6598 shared address space `100.64.0.0/10` internally). A single CGNAT public IPv4 can front thousands of subscribers, so IP hashing pins all of them to one backend: that backend runs hot while the rest idle, and when it dies the whole population loses its sessions at once. Modulo hashing also remaps nearly every client when `N` changes. RFC 6598 itself lists geolocation and per-address limits among the things CGN breaks; the same failure hits IP-keyed rate limiting, which then throttles an entire carrier's customers. In the other direction, IPv6 privacy addresses and mobile handovers change a single user's IP mid-session, breaking affinity.
+
+Fix it at two levels:
+
+1. **Remove the need for affinity.** Externalize session state (Redis/Valkey, a database, or signed stateless tokens) so any backend can serve any request; see [Module 15 §2.3](15-scale-from-zero-to-millions.md#23-stage-45-caching-cdn-edge-offload-and-stateless-web-tier).
+2. **When affinity is still useful** (cache locality, long-lived streams), hash a stable identity key (session cookie, user ID, tenant ID, API key) with consistent hashing (ring with virtual nodes, Maglev, or rendezvous hashing) so membership changes move only about `1/N` of keys, and add bounded-load caps so one heavy key cannot overload its owner (see §2.1). Rate limits key on identity, not IP (cross-link [Module 08](08-rate-limiting-load-shedding-and-resilience.md)).
+
+#### Load Balancer SPOF Mitigation Stack
+
+A single load balancer in front of a redundant fleet just moves the single point of failure. Production designs remove it in layers, each covering a different failure:
+
+| Layer | Mechanism | Failure covered | Residual risk |
+| --- | --- | --- | --- |
+| Redundant LB pair | **Active-passive:** two nodes share a virtual IP via VRRP (RFC 9568, VRRPv3; Keepalived), and the standby claims the VIP within seconds of missed advertisements. **Active-active:** several LB nodes announce the same VIP over BGP, and upstream routers spread flows with ECMP | Single LB host or NIC failure | Split brain if VRRP advertisements are lost but both nodes are alive; ECMP rehashing moves flows when a member leaves, unless backends use consistent hashing (Maglev) |
+| Health checks on the LB tier itself | External probes and BGP route withdrawal or VRRP priority drop when the LB's own data path fails, not only when the host is down | "Gray" LB failures: process alive, forwarding broken | Probes from one vantage point disagree with real users |
+| Self-healing replacement | Autoscaling groups or managed LBs (AWS ALB/NLB, GCP LB) replace failed nodes and scale capacity automatically; config is versioned and rolled out progressively | Capacity loss and node exhaustion | A bad config pushed everywhere at once takes out every replica, so stage rollouts by cell or zone |
+| Multi-zone / multi-region entry | LB nodes in every availability zone; anycast or DNS failover between regions | Zone or region outage | DNS failover is bounded by effective TTLs, not published ones (see [§1.1](#11-ttl-trade-offs-fast-failover-vs-resolver-load-and-isp-clamping)), so anycast is the faster primitive |
+
+**Composition rule:** treat the LB tier as a fleet, not an appliance: N+1 (or N+2) capacity per zone, health-checked from outside, replaced automatically, and fronted by anycast or a VIP so that no single box, zone, or DNS answer is load-bearing. The LB's dependencies (certificate store, config/control plane, service discovery) need the same treatment, and the data plane should keep forwarding on its last known good configuration when the control plane is unavailable (static stability).
+
 ---
 
 ## 3. TLS Termination and Upstream Connection Pooling
@@ -440,4 +484,11 @@ Pricing and reservation logic are domain concerns that require strong correctnes
 <details><summary>Model Answer</summary>
 
 Prefer SSE if updates are predominantly unidirectional, because it fits cursor-based event streams, HTTP tooling, and `Last-Event-ID` resume semantics with lower protocol complexity than bidirectional WebSockets. Use L7 proxies/gateways that support long-lived streams, buffering control, and graceful drain; budget connection memory explicitly (roughly 20–50 GB per million connections for connection/runtime overhead plus application state) and shard connections by tenant/region. Add heartbeats below intermediary idle timeouts, store replayable event IDs for a bounded window, and require clients to reconnect with exponential backoff and full jitter. During deploys, drain nodes gradually and enforce admission/rate limits on reconnect endpoints to prevent thundering-herd collapse.
+</details>
+
+**Q9.** Your web tier sits behind a single NGINX instance using `ip_hash` for session stickiness. After a mobile-carrier marketing campaign, one backend is pinned at 100% CPU while the others idle, and last month an NGINX host reboot caused a full outage. Diagnose both problems and propose the target architecture.
+
+<details><summary>Model Answer</summary>
+
+The hot spot is IP-hash affinity colliding with carrier-grade NAT: the carrier puts thousands of subscribers behind a few public IPv4 addresses (RFC 6598 shared space internally), so `hash(client_ip)` maps all of them to one backend. Corporate NAT does the same on a smaller scale, and modulo hashing remaps almost every client whenever the pool size changes. Fix it by externalizing session state (Redis/Valkey or signed tokens) so backends are stateless and can use P2C or least-request balancing. Where affinity still helps, hash a stable identity key (session cookie, user ID) with consistent hashing and bounded load. The outage happened because the single NGINX host was a SPOF. Replace it with a redundant LB tier: an active-passive VRRP pair or active-active BGP/ECMP nodes in every zone, external health checks that withdraw a sick node's route, automated replacement, staged config rollouts, and anycast or DNS failover between regions. Because resolvers clamp TTLs, DNS failover is a slow last resort, not the primary recovery mechanism.
 </details>
