@@ -1,0 +1,168 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1320 760" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #0b1020; }
+      .panel { fill: #121a30; stroke: #2b3b66; stroke-width: 1.5; rx: 10; }
+      .box-blue { fill: #152546; stroke: #4c8bf5; stroke-width: 1.5; rx: 8; }
+      .box-green { fill: #122d26; stroke: #2ec486; stroke-width: 1.5; rx: 8; }
+      .box-amber { fill: #2f2513; stroke: #f5a623; stroke-width: 1.5; rx: 8; }
+      .box-purple { fill: #24193c; stroke: #a66bff; stroke-width: 1.5; rx: 8; }
+      .box-red { fill: #33161e; stroke: #f05454; stroke-width: 1.5; rx: 8; }
+      .title { font-family: 'Inter', -apple-system, sans-serif; font-size: 18px; font-weight: 700; fill: #f8fafc; }
+      .subtitle { font-family: 'Inter', -apple-system, sans-serif; font-size: 12px; fill: #94a3b8; }
+      .sec-hdr { font-family: 'Inter', -apple-system, sans-serif; font-size: 13px; font-weight: 700; fill: #e2e8f0; }
+      .lbl { font-family: 'Inter', -apple-system, sans-serif; font-size: 12px; font-weight: 600; fill: #f1f5f9; }
+      .txt { font-family: 'Inter', -apple-system, sans-serif; font-size: 11px; fill: #cbd5e1; }
+      .code { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10.5px; fill: #93c5fd; }
+      .code-green { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10.5px; fill: #6ee7b7; }
+      .code-amber { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10.5px; fill: #fcd34d; }
+      .code-red { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10.5px; fill: #fca5a5; }
+      .arrow { stroke: #60a5fa; stroke-width: 1.8; fill: none; marker-end: url(#arr-blue); }
+      .arrow-green { stroke: #34d399; stroke-width: 1.8; fill: none; marker-end: url(#arr-green); }
+      .arrow-amber { stroke: #fbbf24; stroke-width: 1.8; stroke-dasharray: 5,4; fill: none; marker-end: url(#arr-amber); }
+    </style>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#60a5fa"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#34d399"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#fbbf24"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1320" height="760"/>
+
+  <!-- Header -->
+  <text class="title" x="24" y="32">Secure-by-Design Architecture — Edge-to-Data 7-Layer Defense, Identity &amp; DDD Domain Invariants</text>
+  <text class="subtitle" x="24" y="50">Trust Boundaries · AuthN/AuthZ Separation (BFF + OIDC + Cedar/Zanzibar) · SPIFFE/SPIRE mTLS · Tenant Domain Primitives · CI/CD Gates</text>
+
+  <!-- Section 1: Edge & API Gateway (North-South) -->
+  <rect class="panel" x="20" y="66" width="295" height="450"/>
+  <text class="sec-hdr" x="34" y="88">1. Edge &amp; API Gateway (North-South)</text>
+
+  <rect class="box-blue" x="34" y="102" width="267" height="118"/>
+  <text class="lbl" x="44" y="122">L7 Edge: Global Cap &amp; Cloud WAF</text>
+  <text class="code" x="44" y="141">TLS 1.3 + HSTS (fail closed)</text>
+  <text class="txt" x="44" y="159">• L1a: Global DDoS shed (503)</text>
+  <text class="txt" x="44" y="175">• L4: WAF rules &amp; body size cap</text>
+  <text class="txt" x="44" y="191">• Blocks traversal &amp; bad methods</text>
+  <text class="code-amber" x="44" y="208">Untrusted internet -&gt; DMZ seam</text>
+
+  <rect class="box-purple" x="34" y="236" width="267" height="148"/>
+  <text class="lbl" x="44" y="256">API Gateway &amp; BFF AuthN Seam</text>
+  <text class="txt" x="44" y="275">• L2: Exact CORS origin allowlist</text>
+  <text class="code-red" x="44" y="291">  No reflected Origin; Vary: Origin</text>
+  <text class="txt" x="44" y="308">• L1b: Identity &amp; tenant quotas</text>
+  <text class="code" x="44" y="324">  429 + Retry-After (not IP-only)</text>
+  <text class="txt" x="44" y="341">• BFF runs OAuth 2.1 PKCE + OIDC</text>
+  <text class="code-green" x="44" y="357">  HttpOnly/Secure/SameSite + RTR</text>
+  <text class="txt" x="44" y="373">  No refresh tokens in localStorage</text>
+
+  <rect class="box-amber" x="34" y="400" width="267" height="100"/>
+  <text class="lbl" x="44" y="420">Browser Defense (CSRF &amp; XSS)</text>
+  <text class="txt" x="44" y="439">• L6: Synchronizer token +</text>
+  <text class="code-amber" x="44" y="455">  SameSite + Sec-Fetch-Site check</text>
+  <text class="txt" x="44" y="472">• L7: Strict CSP nonce +</text>
+  <text class="code-green" x="44" y="488">  Trusted Types + HTML encoding</text>
+
+  <!-- Section 2: Service Mesh, AuthZ & DDD Domain Boundary -->
+  <rect class="panel" x="335" y="66" width="470" height="450"/>
+  <text class="sec-hdr" x="349" y="88">2. Service Mesh, AuthZ &amp; DDD Domain Boundary</text>
+
+  <rect class="box-green" x="349" y="102" width="442" height="118"/>
+  <text class="lbl" x="361" y="122">L5: Zero-Trust East-West (SPIFFE/SPIRE + Signed Events)</text>
+  <text class="code-green" x="361" y="141">spiffe://prod.example.com/ns/payments/sa/checkout</text>
+  <text class="txt" x="361" y="159">• Auto-rotated mTLS SVIDs; private RFC 1918 IP is untrusted</text>
+  <text class="txt" x="361" y="175">• Async streams: publisher signs envelope (Ed25519/ECDSA);</text>
+  <text class="txt" x="361" y="191">  consumers verify signature before mutating domain state</text>
+  <text class="code" x="361" y="208">Replaces flat VPNs with per-workload crypto identity</text>
+
+  <rect class="box-blue" x="349" y="236" width="442" height="126"/>
+  <text class="lbl" x="361" y="256">Resource-Level Authorization Composition (Default-Deny)</text>
+  <text class="code" x="361" y="275">PolicyEngine: explicit FORBID overrides PERMIT; default DENY</text>
+  <text class="txt" x="361" y="293">• Composes RBAC + ABAC (tenant, MFA age) + ACL + ReBAC</text>
+  <text class="txt" x="361" y="309">• Enforced at owning service/schema — never only gateway</text>
+  <text class="code-amber" x="361" y="326">• Never cache AuthZ at CDN/edge; bind revocation TTLs</text>
+  <text class="txt" x="361" y="343">• Coarse scopes at gateway; object checks inside domain</text>
+
+  <rect class="box-purple" x="349" y="378" width="442" height="122"/>
+  <text class="lbl" x="361" y="398">DDD Domain Primitives &amp; Invariants (TenantDomainGuard)</text>
+  <text class="code-green" x="361" y="417">TenantScopedResourceId · BoundedMoneyAmount · VerifiedEmail</text>
+  <text class="txt" x="361" y="435">• Tenant ID bound from verified principal into storage key</text>
+  <text class="txt" x="361" y="451">• Eliminates BOLA/IDOR, bad amounts &amp; mass assignment</text>
+  <text class="txt" x="361" y="467">• Legal FSM: PENDING -&gt; ACTIVE &lt;-&gt; FROZEN, -&gt; CLOSED</text>
+  <text class="code-amber" x="361" y="484">Invalid states cannot be built or reach persistence</text>
+
+  <!-- Section 3: Data Tier, Org Crypto & Structured Audit -->
+  <rect class="panel" x="825" y="66" width="475" height="450"/>
+  <text class="sec-hdr" x="839" y="88">3. Data Tier, Org Crypto &amp; Structured Audit</text>
+
+  <rect class="box-green" x="839" y="102" width="447" height="132"/>
+  <text class="lbl" x="851" y="122">Layer 3: Data-Tier Isolation &amp; Injection Elimination</text>
+  <text class="code-green" x="851" y="141">Parameterized SQL + SanitizedQueryFilter (no $ne / $where)</text>
+  <text class="txt" x="851" y="159">• PostgreSQL Row-Level Security (RLS) keyed on app.tenant_id</text>
+  <text class="txt" x="851" y="175">• Least-privilege roles: SELECT vs write; zero DDL in apps</text>
+  <text class="txt" x="851" y="191">• Mandatory TLS (sslmode=verify-full); no plaintext fallback</text>
+  <text class="code" x="851" y="208">• Dynamic Vault/KMS creds + bounded connection pools</text>
+
+  <rect class="box-amber" x="839" y="250" width="447" height="124"/>
+  <text class="lbl" x="851" y="270">Org Crypto Policy &amp; Compliance-by-Architecture</text>
+  <text class="code-amber" x="851" y="289">AES-256-GCM (unique nonce) · Argon2id · KMS DEK rotation</text>
+  <text class="txt" x="851" y="307">• Delivered via one internal crypto SDK (no ad-hoc repos)</text>
+  <text class="txt" x="851" y="323">• Regional residency cells + minimization + purpose checks</text>
+  <text class="txt" x="851" y="339">• GDPR erasure in WORM backups via crypto-shredding</text>
+  <text class="code-green" x="851" y="356">• Hybrid PQC (X25519MLKEM768) for long-lived confidentiality</text>
+
+  <rect class="box-blue" x="839" y="390" width="447" height="110"/>
+  <text class="lbl" x="851" y="410">Framework-Level Redacting Audit Logger (WORM Sink)</text>
+  <text class="code" x="851" y="429">FieldRedactingAuditLogger -&gt; recursive key + regex masking</text>
+  <text class="txt" x="851" y="447">• Strips Auth, X-Api-Key, password, SSN, JWT, Luhn PAN</text>
+  <text class="txt" x="851" y="463">• Enforced in dev, staging &amp; prod before JSON serialization</text>
+  <text class="code-amber" x="851" y="480">• Tamper-evident hash-chained audit for GDPR/HIPAA/PCI</text>
+
+  <!-- Clean Gutter Arrows (never crossing boxes) -->
+  <path class="arrow" d="M 167 220 L 167 236"/>
+  <path class="arrow" d="M 167 384 L 167 400"/>
+  <path class="arrow-green" d="M 301 310 L 325 310 L 325 160 L 349 160"/>
+  <path class="arrow" d="M 570 220 L 570 236"/>
+  <path class="arrow" d="M 570 362 L 570 378"/>
+  <path class="arrow-green" d="M 791 440 L 815 440 L 815 168 L 839 168"/>
+  <path class="arrow-amber" d="M 1062 234 L 1062 250"/>
+  <path class="arrow" d="M 1062 374 L 1062 390"/>
+
+  <!-- Section 4: Bottom Deep Dive -->
+  <rect class="panel" x="20" y="534" width="1280" height="208"/>
+  <text class="sec-hdr" x="34" y="556">4. Shift-Left Governance: Pre-Code Threat Modeling, Fail-Closed CI/CD Gates &amp; Identity Taxonomy</text>
+
+  <rect class="box-red" x="34" y="570" width="405" height="156"/>
+  <text class="lbl" x="46" y="590">Shift-Left Economics &amp; Pre-Code STRIDE</text>
+  <text class="code-red" x="46" y="610">Cost: 1x HLD -&gt; 10x Dev -&gt; 100x Prod -&gt; 1000x Breach</text>
+  <text class="txt" x="46" y="629">• Embed Shostack's 4 questions into HLD/ADRs pre-code</text>
+  <text class="txt" x="46" y="645">• Map trust boundaries (DMZ, mesh, DB) &amp; run STRIDE</text>
+  <text class="txt" x="46" y="661">• Record explicit mitigate/transfer/accept/eliminate</text>
+  <text class="code-amber" x="46" y="679">• Verify OWASP Top 10:2025 (A03, A10) &amp; ASVS 5.0</text>
+  <text class="txt" x="46" y="697">• Operability: secure monolith beats unguarded mesh</text>
+  <text class="txt" x="46" y="713">  a team cannot patch, rotate certs on, or observe</text>
+
+  <rect class="box-blue" x="455" y="570" width="410" height="156"/>
+  <text class="lbl" x="467" y="590">Fail-Closed CI/CD Gates (CiSecurityGateEvaluator)</text>
+  <text class="code" x="467" y="610">dev (fast) -&gt; staging (SLSA L2) -&gt; prod (SLSA L3)</text>
+  <text class="txt" x="467" y="629">• Secret scans (full history + push block): unwaivable</text>
+  <text class="txt" x="467" y="645">• SAST + SCA triaged by CVSS v4 + KEV + EPSS + SSVC</text>
+  <text class="txt" x="467" y="661">• Lockfile check + signed CycloneDX SBOM + SLSA L3</text>
+  <text class="txt" x="467" y="677">• IaC policy-as-code &amp; prod config assertions</text>
+  <text class="code-red" x="467" y="695">• Fail-closed: secrets all envs; all scanners stg/prod</text>
+  <text class="txt" x="467" y="713">• Time-bounded waivers for non-KEV CVEs only</text>
+
+  <rect class="box-green" x="881" y="570" width="405" height="156"/>
+  <text class="lbl" x="893" y="590">Untangling AuthN, AuthZ, SSO &amp; Token Formats</text>
+  <text class="code-green" x="893" y="610">AuthN ("Who?") != AuthZ ("What?") != SSO (UX pattern)</text>
+  <text class="txt" x="893" y="629">• OAuth 2.1 = delegated AuthZ (token != identity)</text>
+  <text class="txt" x="893" y="645">• OIDC = federated ID Token | SAML 2.0 = XML SSO</text>
+  <text class="txt" x="893" y="661">• JWT/PASETO = signed (not encrypted!); Bearer = wire</text>
+  <text class="code-amber" x="893" y="679">• Opaque Redis session vs JWT + BFF + RTR / DPoP</text>
+  <text class="txt" x="893" y="697">• Basic &amp; RFC 7616 SHA-256 Digest unfit for web APIs</text>
+  <text class="txt" x="893" y="713">• API keys lack expiry/claims; hash at rest + rotate</text>
+</svg>

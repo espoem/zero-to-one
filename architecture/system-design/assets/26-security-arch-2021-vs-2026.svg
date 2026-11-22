@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 620" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #0b1020; }
+      .panel { fill: #121a30; stroke: #2b3b66; stroke-width: 1.5; rx: 10; }
+      .col-2021 { fill: #2a1820; stroke: #e05263; stroke-width: 1.5; rx: 8; }
+      .col-2026 { fill: #102a24; stroke: #2ec486; stroke-width: 1.5; rx: 8; }
+      .dim-box { fill: #16223f; stroke: #4c8bf5; stroke-width: 1.5; rx: 6; }
+      .title { font-family: 'Inter', -apple-system, sans-serif; font-size: 18px; font-weight: 700; fill: #f8fafc; }
+      .subtitle { font-family: 'Inter', -apple-system, sans-serif; font-size: 12px; fill: #94a3b8; }
+      .hdr { font-family: 'Inter', -apple-system, sans-serif; font-size: 14px; font-weight: 700; fill: #f1f5f9; }
+      .dim-txt { font-family: 'Inter', -apple-system, sans-serif; font-size: 12px; font-weight: 700; fill: #93c5fd; }
+      .txt { font-family: 'Inter', -apple-system, sans-serif; font-size: 11px; fill: #e2e8f0; }
+      .code-old { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10.5px; fill: #fca5a5; }
+      .code-new { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10.5px; fill: #6ee7b7; }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1280" height="620"/>
+
+  <text class="title" x="24" y="32">Secure-by-Design Architecture Evolution: 2021 Default vs. 2026 Modern Standard</text>
+  <text class="subtitle" x="24" y="50">From Perimeter Firewalls, localStorage JWTs &amp; Post-Build Pen-Tests to BFF + OAuth 2.1, SPIFFE mTLS, Domain Primitives &amp; SLSA L3 Gates</text>
+
+  <!-- Column Headers -->
+  <rect class="dim-box" x="20" y="68" width="220" height="38"/>
+  <text class="hdr" x="34" y="92">Architectural Dimension</text>
+
+  <rect class="col-2021" x="252" y="68" width="490" height="38"/>
+  <text class="hdr" x="266" y="92">2021 Perimeter &amp; Damage-Control Default</text>
+
+  <rect class="col-2026" x="754" y="68" width="506" height="38"/>
+  <text class="hdr" x="768" y="92">2026 Secure-by-Design Standard</text>
+
+  <!-- Row 1 -->
+  <rect class="dim-box" x="20" y="116" width="220" height="68"/>
+  <text class="dim-txt" x="32" y="146">1. Browser Auth &amp;</text>
+  <text class="txt" x="32" y="164">Token Custody</text>
+
+  <rect class="col-2021" x="252" y="116" width="490" height="68"/>
+  <text class="code-old" x="264" y="138">SPA localStorage JWTs + Implicit flow + static API keys</text>
+  <text class="txt" x="264" y="156">Any XSS exfiltrates bearer &amp; refresh tokens; stateless JWTs cannot</text>
+  <text class="txt" x="264" y="172">be revoked cleanly on compromise or privilege downgrade</text>
+
+  <rect class="col-2026" x="754" y="116" width="506" height="68"/>
+  <text class="code-new" x="766" y="138">BFF + OAuth 2.1 PKCE + HttpOnly/SameSite Cookies + RTR / DPoP</text>
+  <text class="txt" x="766" y="156">Tokens stay server-side in BFF or sender-constrained via DPoP;</text>
+  <text class="txt" x="766" y="172">Fetch Metadata (Sec-Fetch-Site) + CSP nonces + Passkeys (WebAuthn)</text>
+
+  <!-- Row 2 -->
+  <rect class="dim-box" x="20" y="194" width="220" height="68"/>
+  <text class="dim-txt" x="32" y="224">2. East-West Service</text>
+  <text class="txt" x="32" y="242">&amp; Event Trust</text>
+
+  <rect class="col-2021" x="252" y="194" width="490" height="68"/>
+  <text class="code-old" x="264" y="216">Flat VPC / perimeter VPN + shared static service secrets</text>
+  <text class="txt" x="264" y="234">One SSRF or compromised pod pivots freely across internal subnets</text>
+  <text class="txt" x="264" y="250">and publishes forged events onto unauthenticated internal queues</text>
+
+  <rect class="col-2026" x="754" y="194" width="506" height="68"/>
+  <text class="code-new" x="766" y="216">SPIFFE/SPIRE mTLS SVIDs + Cryptographically Signed Async Events</text>
+  <text class="txt" x="766" y="234">Short-lived auto-rotated workload certs enforce zero-trust L7 calls;</text>
+  <text class="txt" x="766" y="250">consumers verify publisher signatures before processing broker events</text>
+
+  <!-- Row 3 -->
+  <rect class="dim-box" x="20" y="272" width="220" height="68"/>
+  <text class="dim-txt" x="32" y="302">3. Authorization &amp;</text>
+  <text class="txt" x="32" y="320">Multi-Tenancy</text>
+
+  <rect class="col-2021" x="252" y="272" width="490" height="68"/>
+  <text class="code-old" x="264" y="294">Scattered controller if-checks + coarse RBAC + ORM mass binding</text>
+  <text class="txt" x="264" y="312">One missing WHERE tenant_id = ? creates BOLA/IDOR data leaks;</text>
+  <text class="txt" x="264" y="328">controller DTO binding leaks privileged columns (BOPLA)</text>
+
+  <rect class="col-2026" x="754" y="272" width="506" height="68"/>
+  <text class="code-new" x="766" y="294">DDD Domain Primitives + Cedar/Zanzibar ReBAC + PostgreSQL RLS</text>
+  <text class="txt" x="766" y="312">TenantScopedResourceId &amp; allowlist DTOs block BOLA at compile/type</text>
+  <text class="txt" x="766" y="328">boundary; default-deny forbid-overrides-permit + DB RLS backstop</text>
+
+  <!-- Row 4 -->
+  <rect class="dim-box" x="20" y="350" width="220" height="68"/>
+  <text class="dim-txt" x="32" y="380">4. Org Cryptography</text>
+  <text class="txt" x="32" y="398">&amp; Data Privacy</text>
+
+  <rect class="col-2021" x="252" y="350" width="490" height="68"/>
+  <text class="code-old" x="264" y="372">Ad-hoc AES-CBC, bcrypt (72-byte trap), RSA-2048 &amp; manual deletion</text>
+  <text class="txt" x="264" y="390">Each repo picks ciphers independently; CBC padding oracles &amp; GCM</text>
+  <text class="txt" x="264" y="406">nonce reuse slip in; immutable backups break GDPR erasure SLAs</text>
+
+  <rect class="col-2026" x="754" y="350" width="506" height="68"/>
+  <text class="code-new" x="766" y="372">Central Crypto SDK (AES-256-GCM/SIV, Argon2id) + PQC + Crypto-Shred</text>
+  <text class="txt" x="766" y="390">KMS envelope encryption + DEK rotation; hybrid X25519MLKEM768;</text>
+  <text class="txt" x="766" y="406">regional residency cells + per-subject key destruction for erasure</text>
+
+  <!-- Row 5 -->
+  <rect class="dim-box" x="20" y="428" width="220" height="68"/>
+  <text class="dim-txt" x="32" y="458">5. CI/CD Gates &amp;</text>
+  <text class="txt" x="32" y="476">Supply Chain Triage</text>
+
+  <rect class="col-2021" x="252" y="428" width="490" height="68"/>
+  <text class="code-old" x="264" y="450">Annual manual pen-tests + CVSS-only alerts + advisory scans</text>
+  <text class="txt" x="264" y="468">Leaked secrets reach main; scanner crashes fail open as "green";</text>
+  <text class="txt" x="264" y="484">teams drown in unexploitable CVSS 7+ alerts while missing KEVs</text>
+
+  <rect class="col-2026" x="754" y="428" width="506" height="68"/>
+  <text class="code-new" x="766" y="450">Fail-Closed CI Gates + SLSA L3 + Signed SBOM + KEV/EPSS/SSVC</text>
+  <text class="txt" x="766" y="468">Push protection + SAST + IaC policy + Sigstore provenance block</text>
+  <text class="txt" x="766" y="484">prod fail-closed; OWASP Top 10:2025 (A03, A10) &amp; ASVS 5.0 mapped</text>
+
+  <!-- Row 6: Key Architectural Takeaway -->
+  <rect class="panel" x="20" y="510" width="1240" height="92"/>
+  <text class="hdr" x="34" y="534">Key Architectural Takeaway: Make Insecure States Unrepresentable Instead of Relying on After-the-Fact Audits</text>
+  <text class="txt" x="34" y="556">• Security debt compounds 10x per lifecycle stage: fixing a broken trust boundary during HLD costs an hour of design, whereas patching a</text>
+  <text class="txt" x="34" y="574">  BOLA leak or nonce-reuse defect in production costs incident response, data migrations, and regulatory fines. Compose defenses across</text>
+  <text class="txt" x="34" y="590">  edge, gateway, domain primitives, database RLS, framework masking, and fail-closed CI gates so no single developer mistake breaks the system.</text>
+</svg>
