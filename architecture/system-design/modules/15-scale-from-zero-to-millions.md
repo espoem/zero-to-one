@@ -45,6 +45,12 @@ Notice that quadrupling the fleet from 14 to 64 nodes cuts total throughput in h
 
 ### 1.3 Scale-Up vs. Scale-Out Economics on 2026 Hardware
 
+**Vertical Scaling (Scale-Up)** increases the capacity of a single host by adding CPU cores, DRAM, or faster NVMe storage, preserving shared-memory simplicity with zero cross-node coherency overhead ($\beta = 0$) until hardware ceilings or single-host fault domains bind. **Horizontal Scaling (Scale-Out)** expands capacity by adding independent nodes or shards behind load balancers or consistent-hash routers, removing single-machine ceilings and enabling multi-AZ fault tolerance at the cost of network hops and potential coordination overhead ($\beta \ge 0$).
+
+![Vertical Scaling (Scale-Up) vs. Horizontal Scaling (Scale-Out) Comparison](../assets/15-11-vertical-vs-horizontal-scaling.svg)
+
+_Step-by-step schematic:_ (1) **Vertical Scale-Up** upgrades a single server vertically (more cores, RAM, NVMe bandwidth) with local in-memory calls and $\beta = 0$ coherency tax, hitting physical hardware limits and a single-node SPOF. (2) **Horizontal Scale-Out** distributes requests across a pool of independent nodes behind a load balancer or router, achieving fault isolation and high aggregate throughput while requiring statelessness or sharding to keep $\beta \to 0$.
+
 Textbook scaling diagrams written in the 2010s assumed single servers topped out at 8–16 cores, 64 GB RAM, and spinning disks (`~200 IOPS`), forcing teams into premature sharding at low traffic. In 2026, a single flagship dual-socket server delivers **192 cores**, **1–2 TB DRAM**, and **NVMe Gen5 SSDs** pushing `10–14 GB/s` sequential throughput and millions of random IOPS with sub-millisecond local latency and zero network serialization.
 
 > [!TIP]
@@ -75,17 +81,41 @@ Every stage below resolves one concrete bottleneck from Alex Xu's _System Design
 
 ### 2.1 Stage 0–1: Single Server to Web / Database Tier Separation
 
-At **Stage 0**, DNS resolves `api.example.com` to one host running the reverse proxy, application runtime, database, and background cron tasks. Both web clients (HTML/JS/CSS) and mobile clients (HTTP/JSON or Protobuf) hit the same socket. This architecture is intentionally minimal: zero network hops between app and DB, trivial local transactions, and zero distributed state.
+#### Stage 0: Single Server Setup (Single-Server Architecture)
 
-At **Stage 1**, growth exposes resource contention: application garbage collection and request bursts evict PostgreSQL's OS page cache, while random HTTP asset reads compete with synchronous database `fsync` WAL commits for disk IOPS. Moving the database onto a dedicated private-subnet host lets each tier scale CPU, RAM, and NVMe independently.
+A **Single Server Setup (Single-Server Architecture)** collocates the reverse proxy, application runtime, database, and background scheduled jobs on one physical or virtual host reached through a single DNS `A` record. At **Stage 0**, DNS resolves `api.example.com` to that host's IP address, and both web clients (HTML/JS/CSS) and mobile clients (HTTP/JSON or Protobuf) hit the same socket. This architecture is intentionally minimal: zero network hops between app and DB, trivial local transactions, and zero distributed state, at the cost of a total single point of failure (SPOF).
+
+![Single Server Setup: DNS A-Record Resolution to Co-Located Web, App, and Database Host](../assets/15-01-single-server-setup.svg)
+
+_Step-by-step request flow:_ (1) Web and mobile clients query DNS for `api.example.com` and receive the single host's IPv4/IPv6 `A`/`AAAA` record. (2) Clients send HTTPS requests directly to that host's reverse proxy and application runtime. (3) The application queries the co-located database over localhost or a Unix domain socket with zero network serialization overhead.
+
+#### Stage 1: Database Tier Separation (Web/Data Tier Separation)
+
+**Database Tier Separation (Web/Data Tier Separation)** splits the application runtime and the persistent database onto separate hosts over a private network so compute and storage scale independently. At **Stage 1**, growth exposes resource contention on a single box: application garbage collection and request bursts evict PostgreSQL's OS page cache, while random HTTP asset reads compete with synchronous database `fsync` WAL commits for disk IOPS. Moving the database onto a dedicated private-subnet host lets each tier scale CPU, RAM, and NVMe independently.
+
+![Database Tier Separation: Independent Web/App and Database Tiers with SQL vs. NoSQL Boundary](../assets/15-02-database-tier-separation.svg)
+
+_Step-by-step request flow:_ (1) Clients resolve DNS and reach the dedicated Web/App tier on public-facing subnets. (2) The application tier opens pooled connections over an internal private subnet to the isolated Database tier. (3) Compute and memory upgrades scale the Web tier without disturbing database buffer pools, while storage and IOPS scale the Data tier independently.
 
 **SQL vs. NoSQL boundary at Stage 1.** Select relational storage (PostgreSQL 18.6) by default whenever the domain requires ACID transactions, foreign-key integrity, secondary indexes, or ad-hoc joins. Introduce NoSQL (key-value, document, wide-column, or graph stores) only when measured access patterns prove one of four constraints: ultra-low sub-millisecond key-value latency at extreme scale, genuinely schemaless/polymorphic payloads where relational normalization degrades queries, pure append-heavy wide-column telemetry exceeding single-primary write IOPS, or multi-region active-active writes with tunable quorum consistency (see [Data Systems](../../data-systems/README.md) and [Module 04](04-api-design-data-modeling-and-id-generation.md)).
 
 ### 2.2 Stage 2–3: Load Balancers and Database Read Replication
 
-At **Stage 2**, cloning the application tier behind a **Load Balancer** removes the web-tier single point of failure and enables rolling deployments. Clients connect to the load balancer's public virtual IP (VIP); the balancer forwards traffic over private RFC 1918 subnets using **Power of Two Random Choices (P2C)** or **Least Connections** rather than blind Round Robin (which overloads slow instances). Use **L4** balancers (NLB, eBPF/Cilium Maglev) for maximum packet throughput and TCP/UDP protocol agnosticism, and **L7** balancers (Envoy, ALB, Gateway API) for TLS 1.3 termination, HTTP/2–3 multiplexing, path/header routing, and gRPC request-level balancing (see [Networking](../../networking/README.md) and [Module 03](03-networking-edge-and-cdn-composition.md)). Always deploy load balancers in redundant pairs across Availability Zones so the balancer never becomes the new SPOF.
+#### Stage 2: Load Balancer (L4 / L7)
 
-At **Stage 3**, read traffic (`10:1` to `100:1` read-to-write ratio) saturates the database long before writes do. **Primary–Replica replication** routes all `INSERT`/`UPDATE`/`DELETE` mutations to the Primary, which streams its Write-Ahead Log (WAL) to $R$ Read Replicas serving `SELECT` traffic:
+A **Load Balancer (L4 / L7)** is a reverse-proxy ingress component that distributes incoming client connections or application requests across a pool of backend servers based on active health checks and routing policies. At **Stage 2**, cloning the application tier behind a Load Balancer removes the web-tier single point of failure and enables zero-downtime rolling deployments. Clients connect to the load balancer's public virtual IP (VIP); the balancer forwards traffic over private RFC 1918 subnets using **Power of Two Random Choices (P2C)** or **Least Connections** rather than blind Round Robin (which overloads slow instances). Use **L4** balancers (NLB, eBPF/Cilium Maglev) for maximum packet throughput and TCP/UDP protocol agnosticism, and **L7** balancers (Envoy, ALB, Gateway API) for TLS 1.3 termination, HTTP/2–3 multiplexing, path/header routing, and gRPC request-level balancing (see [Networking](../../networking/README.md) and [Module 03](03-networking-edge-and-cdn-composition.md)). Always deploy load balancers in redundant pairs across Availability Zones so the balancer never becomes the new SPOF.
+
+![L4 and L7 Load Balancer Request Routing and Failover Topology](../assets/15-03-load-balancer.svg)
+
+_Step-by-step request flow:_ (1) Clients resolve the service domain to the load balancer's public Virtual IP (VIP) backed by an active-active multi-AZ pair. (2) The L4/L7 balancer terminates TLS 1.3, strips unhealthy nodes failing health probes, and picks a healthy web server via P2C or Least Connections. (3) If Web Server 1 fails or enters drain during deploy, traffic seamlessly shifts to surviving instances without dropping client connectivity.
+
+#### Stage 3: Database Replication (Primary–Replica / Leader–Follower) & Failover
+
+**Database Replication (Primary–Replica / Leader–Follower)** is a database topology in which a single writable Primary processes all mutations and streams Write-Ahead Log (WAL) changes to one or more read-only Replicas that absorb `SELECT` workloads and serve as failover candidates. At **Stage 3**, read traffic (`10:1` to `100:1` read-to-write ratio) saturates the database long before writes do, so separating writes (Primary) from reads ($R$ Replicas) multiplies read capacity linearly:
+
+![Primary–Replica Database Replication, WAL Streaming, and Failover Topology](../assets/15-04-database-replication.svg)
+
+_Step-by-step replication and failover flow:_ (1) The web tier sends all `INSERT`/`UPDATE`/`DELETE` mutations exclusively to the **Primary**, which commits them to its local Write-Ahead Log (WAL). (2) The Primary streams WAL records asynchronously or semi-synchronously to **Read Replicas** over private networking. (3) The web tier fans read-only `SELECT` queries out across the replicas, while a quorum monitor fences the old Primary before promoting the most current Replica if the Primary crashes.
 
 - **Asynchronous replication** acknowledges commits as soon as the Primary flushes local WAL (`~1 ms` write latency), but replicas lag by `5–500 ms` (or seconds during heavy batch writes).
 - **Semi-synchronous / quorum replication** waits for at least one standby in another AZ to durably flush the WAL before acknowledging the client (`RPO = 0` for single-AZ loss at the cost of `+1–2 ms` cross-AZ RTT).
@@ -137,10 +167,29 @@ sequenceDiagram
 
 At **Stage 4**, two distinct caching layers absorb `80%–98%` of read load and egress bandwidth:
 
-1. **CDN Edge + Origin Shield**: Offloads static media (images, JS/CSS bundles, video segments) and cacheable public API responses to globally distributed edge PoPs. An **Origin Shield** (a designated regional mid-tier cache) collapses simultaneous cache misses across 200+ edge PoPs into a single origin request. Never allow `Set-Cookie` or unsegmented authenticated pages to be cached publicly (`Cache-Control: private, no-store`), or the CDN will leak User A's response to User B (see [Module 03](03-networking-edge-and-cdn-composition.md)).
-2. **In-Memory Data Cache (Valkey 9.2.0 / Redis 8.10.3)**: Absorbs hot database reads in `< 1 ms` using **cache-aside** paired with **single-flight request coalescing**, **TTL jitter** (preventing synchronized expiry storms), **W-TinyLFU** or LFU eviction, and **Memcache Leases** to close the cache-aside stale-write race (see [Module 05](05-caching-strategies-and-invalidation.md) and [Redis](../../../technologies/redis/README.md)). Never treat the cache as a single point of failure: deploy across multiple AZs and cap warm-up queries when a node restarts.
+#### Stage 4a: Cache (Caching Tier)
 
-At **Stage 5**, the application tier becomes **strictly stateless**. Storing user sessions in local web-server RAM forces sticky load-balancer affinity; losing a single AZ immediately logs out `1/3` of active users and triggers a re-authentication thundering herd against the database and identity provider. Externalizing session state into a multi-AZ Valkey/Redis cluster (keyed by opaque high-entropy session ID with sliding TTL) enables instant revocation and makes every web node interchangeable during autoscaling and rolling deploys. Alternatively, short-lived asymmetric **signed JWTs** (`EdDSA`/`ES256`, 5–15 min TTL) eliminate session-store lookups on read paths at the cost of delayed revocation unless paired with a compact revocation list or short refresh-token rotation.
+A **Cache (Caching Tier)** is a high-speed, typically in-memory data store (such as Valkey 9.2.0 or Redis 8.10.3) positioned in front of persistent storage to serve hot reads in `< 1 ms` and absorb repeated database queries. Under **cache-aside**, the application queries the cache first, returns immediately on a hit, and on a miss fetches from the database, populates the cache with a bounded TTL, and returns the payload. Pairing cache-aside with **single-flight request coalescing**, **TTL jitter** (preventing synchronized expiry storms), **W-TinyLFU** or LFU eviction, and **Memcache Leases** closes the cache-aside stale-write race (see [Module 05](05-caching-strategies-and-invalidation.md) and [Redis](../../../technologies/redis/README.md)). Never treat the cache as a single point of failure: deploy across multiple AZs and cap warm-up queries when a node restarts.
+
+![In-Memory Caching Tier: Cache-Aside Hit/Miss Path and Stampede Protection](../assets/15-05-cache-tier.svg)
+
+_Step-by-step cache flow:_ (1) A read request arrives at the stateless web server, which checks the in-memory Valkey/Redis cache first. (2) On a **Cache Hit**, the value returns in `< 1 ms` without touching PostgreSQL. (3) On a **Cache Miss**, `singleflight` coalesces concurrent callers into one database read, writes the result into cache with jittered TTL (and lease verification), and returns the payload.
+
+#### Stage 4b: Content Delivery Network (CDN) & Edge Offload
+
+A **Content Delivery Network (CDN)** is a globally distributed network of edge Points of Presence (PoPs) that caches static assets (images, JS/CSS bundles, video segments) and cacheable public API responses close to end users, cutting network round-trip latency and offloading origin egress bandwidth. An **Origin Shield** (a designated regional mid-tier cache) collapses simultaneous cache misses across 200+ edge PoPs into a single origin request. Never allow `Set-Cookie` or unsegmented authenticated pages to be cached publicly (`Cache-Control: private, no-store`), or the CDN will leak User A's response to User B (see [Module 03](03-networking-edge-and-cdn-composition.md)).
+
+![CDN Edge Offload and Origin Shield Request Flow](../assets/15-06-cdn-and-edge-topology.svg)
+
+_Step-by-step edge flow:_ (1) A user requests `image.png` or a cacheable asset and is routed to the nearest edge PoP via Anycast/GeoDNS. (2) On an **Edge Hit**, the PoP serves the asset immediately in single-digit milliseconds. (3) On an **Edge Miss**, the PoP queries the **Origin Shield** (coalescing misses across PoPs), which fetches from origin storage once on a shield miss and caches the response using `Cache-Control` TTL headers.
+
+#### Stage 5: Stateful vs. Stateless Architecture
+
+In a **Stateful Architecture**, application servers store client session data (authentication state, shopping carts, pagination cursors) in local process memory, forcing the load balancer to route every request from a given user to the exact same host via sticky cookies; losing one server or AZ drops those active sessions and blocks clean autoscaling. In a **Stateless Architecture**, web servers store zero durable session state locally, externalizing sessions into a shared multi-AZ Valkey/Redis cluster (keyed by opaque high-entropy session ID with sliding TTL) or short-lived asymmetric **signed JWTs** (`EdDSA`/`ES256`, 5–15 min TTL). Any web node can serve any request, enabling seamless horizontal autoscaling, rolling deployments, and single-AZ failure survivability without triggering a re-authentication thundering herd.
+
+![Stateful Sticky-Session Architecture vs. Stateless Shared-Session Web Tier](../assets/15-07-stateful-vs-stateless.svg)
+
+_Step-by-step comparison:_ (1) In the **Stateful** path (top), LB cookie affinity pins User A to Server 1; when Server 1 or its AZ fails, User A's local session is destroyed and triggers re-login storms. (2) In the **Stateless** path (bottom), the LB routes requests across any healthy pod via P2C, while every pod reads and writes shared session state in a multi-AZ Valkey/Redis cluster (or verifies signed JWTs locally).
 
 ```mermaid
 flowchart LR
@@ -157,13 +206,27 @@ flowchart LR
 
 ### 2.4 Stage 6–8: Multi-Region Topologies, Message Queues, and Database Sharding
 
-At **Stage 6**, serving global users under `< 100 ms` RTT and surviving regional outages requires **Multi-Data-Center / Multi-Region** deployment. **GeoDNS** resolves hostnames to the nearest healthy region based on the client's recursive resolver IP, whereas **Anycast** advertises one VIP globally over BGP so edge routers steer packets to the closest PoP instantaneously. Speed-of-light physics fixes trans-oceanic round trips (`us-east-1` ↔ `eu-west-1` is `~75–90 ms`, `us-west-2` ↔ `ap-northeast-1` is `~110–130 ms`), making synchronous global consensus commits prohibitively slow for general web writes. Production systems therefore choose between:
+#### Stage 6: Data Center / Multi-Data-Center (GeoDNS & Anycast)
+
+A **Data Center / Multi-Data-Center (GeoDNS)** topology deploys full application, cache, and database stacks across geographically separated regions so users connect to the nearest healthy data center while surviving complete regional outages. At **Stage 6**, **GeoDNS** resolves hostnames to the closest healthy regional IP based on the client's recursive resolver location, whereas **BGP Anycast** advertises a single global VIP from all edge PoPs so internet routers steer packets to the topologically nearest PoP instantaneously. Speed-of-light physics fixes trans-oceanic round trips (`us-east-1` ↔ `eu-west-1` is `~75–90 ms`, `us-west-2` ↔ `ap-northeast-1` is `~110–130 ms`), making synchronous global consensus commits prohibitively slow for general web writes. Production systems therefore choose between:
 
 - **Active-Passive DR** (one primary write region, warm standby region with async replication, `RPO > 0` seconds, `RTO` minutes).
 - **Geo-Partitioned Active-Active (Home-Region Sharding)** (EU users write exclusively to `eu-central-1`, US users write exclusively to `us-east-1` — combining low local latency with GDPR data residency and zero cross-region write conflicts).
 - **True Multi-Leader Active-Active** (only where domain semantics tolerate CRDTs, LWW, or commutative counters).
 
-At **Stage 7**, **Message Queues and Partitioned Logs** (Kafka in KRaft mode, SQS, NATS JetStream) decouple slow or bursty side effects (image transcoding, email dispatch, search indexing, webhook delivery) from the synchronous HTTP critical path. Producers write business state plus an outbox row inside one atomic database transaction; a relay publishes to the queue asynchronously, and consumers enforce **idempotency keys** to handle at-least-once redelivery cleanly while routing repeatedly failing poison messages to a **Dead-Letter Queue (DLQ)** (see [Module 07](07-asynchrony-queues-streams-and-workflows.md)).
+![Multi-Data-Center GeoDNS and Anycast Global Traffic Routing](../assets/15-08-multi-datacenter-geodns.svg)
+
+_Step-by-step global routing flow:_ (1) US and EU clients resolve `api.example.com` through GeoDNS (or connect to a shared Anycast VIP), receiving the nearest healthy regional endpoint. (2) Each regional data center serves local reads and writes with `< 30 ms` regional RTT while replicating asynchronous state or home-partitioned deltas across WAN links. (3) Health monitors evacuate traffic away from an impaired region to surviving regions (with Anycast avoiding sticky ISP DNS TTL caches).
+
+#### Stage 7: Message Queue
+
+A **Message Queue** is an asynchronous, durable communication buffer (such as Apache Kafka in KRaft mode, Amazon SQS, or NATS JetStream) that decouples request producers from background consumers so slow, bursty, or failure-prone work executes off the critical HTTP path. At **Stage 7**, producers commit business state alongside an outbox record inside one local ACID database transaction; a relay publishes messages into the queue asynchronously, smoothing burst spikes with bounded backpressure. Consumers pull messages at their own pace, enforce **idempotency keys** to survive at-least-once redelivery, and quarantine repeatedly failing poison-pill payloads into a **Dead-Letter Queue (DLQ)** (see [Module 07](07-asynchrony-queues-streams-and-workflows.md)).
+
+![Asynchronous Message Queue: Producer, Durable Broker, Idempotent Workers, and DLQ](../assets/15-09-message-queue.svg)
+
+_Step-by-step queueing flow:_ (1) The API producer writes business state plus an outbox record and immediately returns `202 Accepted` without waiting for slow downstream work. (2) The durable broker buffers burst traffic in ordered partitions or queues. (3) Scaled worker pools pull jobs, execute idempotent handlers (transcoding, webhooks, email), and route unprocessable poison messages after max retries to the DLQ.
+
+#### Stage 8: Horizontal Database Sharding & Fenced Failover
 
 At **Stage 8**, when vertical scale-up, read replicas, caching, and async buffering still leave the single primary saturated on write IOPS or storage capacity (`> 5–10 TB` hot relational data or `> 30k–50k` sustained write TPS), horizontally **shard** the database across $S$ independent primary clusters. Every shard runs the identical schema on a disjoint key range:
 
@@ -187,7 +250,11 @@ flowchart TD
 
 ### 2.5 Stage 9: Telemetry, Automation, and Autoscaling Stability
 
-At 10M+ DAU, manual operations collapse. Instrument every tier with **OpenTelemetry** traces, structured logs, and Prometheus 3.16.0 native histograms, paging strictly on **multi-window multi-burn-rate SLO alerts** rather than raw CPU spikes (see [Module 11](11-reliability-slos-observability-and-dr.md)).
+**Logging, Metrics, and Automation (Observability & Automation)** combine centralized structured logs, quantitative time-series metrics, distributed traces, and automated CI/CD, health-probe, and autoscaling control loops so large-scale fleets remain diagnosable and self-healing without manual intervention. At 10M+ DAU, manual operations collapse. Instrument every tier with **OpenTelemetry** traces, structured logs (redacting secrets/PII), and Prometheus 3.16.0 native histograms, paging strictly on **multi-window multi-burn-rate SLO alerts** rather than raw CPU spikes (see [Module 11](11-reliability-slos-observability-and-dr.md)), while automating builds, canary rollouts, and capacity scaling.
+
+![Observability and Automation Loop: Structured Logs, Metrics, Traces, SLO Burn Alerts, and Stabilized Autoscaling](../assets/15-10-logging-metrics-automation.svg)
+
+_Step-by-step control loop:_ (1) Services emit OpenTelemetry traces, bounded-cardinality Prometheus histograms, and structured JSON logs into centralized collection pipelines. (2) Multi-window SLO burn-rate evaluators distinguish brief spikes from real error-budget exhaustion. (3) Automated CI/CD pipelines deploy canaries gated by shallow `/livez` and `/readyz` probes, while HPA/KEDA autoscalers adjust replica counts with cooldown hysteresis.
 
 **Preventing deep health-check cascades and autoscaler thrashing.** Two operational misconfigurations cause more Stage 9 outages than traffic itself:
 
@@ -272,6 +339,10 @@ $$\binom{N}{k} = \frac{N!}{k!\,(N - k)!}$$
 | `32` | `4` | `8` | `12.50%` | `35,960` | **`0.0028%`** (`1/35,960`) | **`4,495×`** |
 
 At $N = 8, k = 2$, even if a poison tenant crashes both of its workers (25% of physical fleet), **96.43% of other tenants retain at least one completely healthy worker** and continue serving transparently via retry! Below is the exact deterministic Fisher–Yates SHA-256 allocator verified in [`examples/lib/scaling-models.ts`](../examples/lib/scaling-models.ts):
+
+![Universal Scalability Law (USL) Retrograde Scaling and Shuffle Sharding Combinatorics Animation](../assets/15-12-usl-and-shuffle-sharding-animated.svg)
+
+_Step-by-step mechanics (M15 §1.2 & §3.2):_ (1) Under Gunther's USL with $\alpha = 0.05$ and $\beta = 0.005$, throughput grows sub-linearly from $N=1$ to $N=8$ (`4.91×`) before reaching its analytical peak at $N_{\max} = \sqrt{(1-\alpha)/\beta} \approx 13.78$ (`5.47×`). (2) Scaling further to $N = 64$ triggers quadratic coherency crosstalk ($\beta N(N-1) = 20.16$), collapsing capacity by `-52%` (`2.63×`) unless state is partitioned into shared-nothing cells ($\beta \to 0$). (3) Shuffle Sharding with $N=8, k=2$ creates $\binom{8}{2} = 28$ virtual shards so a poison-pill tenant crashing `{W1, W5}` impacts only `1/28 = 3.57%` of tenants instead of `25.00%` (`7.0×` blast-radius reduction).
 
 ```typescript
 import { createHash } from 'node:crypto';

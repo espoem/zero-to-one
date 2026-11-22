@@ -1,0 +1,220 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 580" width="1120" height="580" role="img" aria-labelledby="title desc">
+  <title id="title">Universal Scalability Law (USL) and Shuffle Sharding Combinatorics</title>
+  <desc id="desc">Animated step-by-step visualization of Gunther's Universal Scalability Law C(N) = N / (1 + alpha*(N-1) + beta*N*(N-1)) with alpha=0.05 and beta=0.005 peaking at N_max=13.78 (5.47x) before collapsing to 2.63x at N=64, paired with Shuffle Sharding C(8,2)=28 virtual shards reducing a toxic tenant's blast radius from 25.00% to 3.57% (1/28).</desc>
+
+  <style>
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    /* 12s cycle:
+       0-25%  (0-3s): Step 1 — Sub-linear growth N=1..8
+       25-50% (3-6s): Step 2 — Peak N_max=13.78 -> C(14)=5.47x
+       50-75% (6-9s): Step 3 — Retrograde collapse at N=32..64 (C(64)=2.63x, -52%)
+       75-100%(9-12s):Step 4 — Shuffle Sharding C(8,2)=28 isolates toxic {W1,W5} to 3.57%
+    */
+
+    @keyframes usl-probe {
+      0%, 6%   { transform: translate(0px, 0px); }
+      18%, 24% { transform: translate(86px, -110px); }
+      32%, 49% { transform: translate(128px, -126px); }
+      58%, 64% { transform: translate(236px, -92px); }
+      70%, 96% { transform: translate(396px, -46px); }
+      100%     { transform: translate(0px, 0px); }
+    }
+
+    @keyframes peak-ring {
+      0%, 24%  { opacity: 0.86; transform: scale(0.9); }
+      30%, 49% { opacity: 1; transform: scale(1.12); }
+      52%, 100%{ opacity: 0.86; transform: scale(1); }
+    }
+
+    @keyframes collapse-badge {
+      0%, 50%  { opacity: 0.86; }
+      56%, 74% { opacity: 1; }
+      78%, 100%{ opacity: 0.86; }
+    }
+
+    @keyframes toxic-hit {
+      0%, 72%  { opacity: 0.86; }
+      78%, 96% { opacity: 1; }
+      100%     { opacity: 0.86; }
+    }
+
+    @keyframes s1-hl { 0%, 24% { stroke: #2563eb; stroke-width: 2.2; opacity: 1; } 25%, 100% { stroke: #cbd5e1; stroke-width: 1; opacity: 0.86; } }
+    @keyframes s2-hl { 0%, 24% { stroke: #cbd5e1; stroke-width: 1; opacity: 0.86; } 25%, 49% { stroke: #059669; stroke-width: 2.2; opacity: 1; } 50%, 100% { stroke: #cbd5e1; stroke-width: 1; opacity: 0.86; } }
+    @keyframes s3-hl { 0%, 49% { stroke: #cbd5e1; stroke-width: 1; opacity: 0.86; } 50%, 74% { stroke: #e11d48; stroke-width: 2.2; opacity: 1; } 75%, 100% { stroke: #cbd5e1; stroke-width: 1; opacity: 0.86; } }
+    @keyframes s4-hl { 0%, 74% { stroke: #cbd5e1; stroke-width: 1; opacity: 0.86; } 75%, 100% { stroke: #7c3aed; stroke-width: 2.2; opacity: 1; } }
+
+    .probe { animation: usl-probe 12s ease-in-out infinite; }
+    .pk-ring { transform-box: fill-box; transform-origin: center; animation: peak-ring 12s ease-in-out infinite; }
+    .col-badge { animation: collapse-badge 12s ease-in-out infinite; }
+    .tox-hit { animation: toxic-hit 12s ease-in-out infinite; }
+    .s1 { animation: s1-hl 12s linear infinite; }
+    .s2 { animation: s2-hl 12s linear infinite; }
+    .s3 { animation: s3-hl 12s linear infinite; }
+    .s4 { animation: s4-hl 12s linear infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .probe, .pk-ring, .col-badge, .tox-hit, .s1, .s2, .s3, .s4 { animation: none !important; }
+      .probe { transform: translate(128px, -126px) !important; }
+      .pk-ring, .col-badge, .tox-hit, .s1, .s2, .s3, .s4 { opacity: 1 !important; transform: none !important; }
+    }
+  </style>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1120" height="580" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1120" height="60" rx="12" fill="#0f172a"/>
+  <rect x="0" y="44" width="1120" height="16" fill="#0f172a"/>
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Universal Scalability Law (USL) &amp; Shuffle Sharding Combinatorics</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">M15 §1.2 &amp; §3.2 · USL C(N) = N / (1 + α(N−1) + βN(N−1)) · Peak N_max = √((1−α)/β) · Shuffle Sharding C(8, 2) = 28 Virtual Shards</text>
+
+  <!-- LEFT PANEL: GUNTHER'S USL CURVE -->
+  <rect x="24" y="76" width="526" height="432" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="42" y="102" class="sans" font-size="14" font-weight="700" fill="#0f172a">1. Gunther's USL Retrograde Scaling (α = 0.05, β = 0.005)</text>
+
+  <!-- Chart Grid & Axes (origin N=1 at x=92, y=282; peak N=14 at x=220, y=156; N=64 at x=488, y=236) -->
+  <rect x="88" y="118" width="434" height="202" rx="6" fill="#f8fafc" stroke="#e2e8f0"/>
+  <!-- Horizontal gridlines -->
+  <line x1="88" y1="282" x2="504" y2="282" stroke="#334155" stroke-width="1.5"/>
+  <line x1="88" y1="230" x2="504" y2="230" stroke="#e2e8f0" stroke-dasharray="4 3"/>
+  <line x1="88" y1="178" x2="504" y2="178" stroke="#e2e8f0" stroke-dasharray="4 3"/>
+  <line x1="88" y1="126" x2="504" y2="126" stroke="#e2e8f0" stroke-dasharray="4 3"/>
+  <!-- Vertical axis -->
+  <line x1="88" y1="122" x2="88" y2="286" stroke="#334155" stroke-width="1.5"/>
+
+  <!-- Y labels -->
+  <text x="80" y="286" class="mono" font-size="10" fill="#475569" text-anchor="end">0×</text>
+  <text x="80" y="234" class="mono" font-size="10" fill="#475569" text-anchor="end">2.5×</text>
+  <text x="80" y="182" class="mono" font-size="10" fill="#475569" text-anchor="end">5.0×</text>
+  <text x="80" y="130" class="mono" font-size="10" fill="#475569" text-anchor="end">6.5×</text>
+
+  <!-- X labels -->
+  <text x="98"  y="302" class="mono" font-size="10" fill="#475569" text-anchor="middle">N=1</text>
+  <text x="132" y="302" class="mono" font-size="10" fill="#475569" text-anchor="middle">4</text>
+  <text x="178" y="302" class="mono" font-size="10" fill="#475569" text-anchor="middle">8</text>
+  <text x="220" y="302" class="mono" font-size="10" font-weight="700" fill="#059669" text-anchor="middle">14</text>
+  <text x="328" y="302" class="mono" font-size="10" fill="#475569" text-anchor="middle">32</text>
+  <text x="488" y="302" class="mono" font-size="10" font-weight="700" fill="#e11d48" text-anchor="middle">64</text>
+
+  <!-- Linear Ideal Cell-Based (beta=0, alpha=0) dashed line -->
+  <line x1="92" y1="262" x2="188" y2="124" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="195" y="136" class="mono" font-size="10" fill="#64748b">Ideal Linear (β = 0)</text>
+
+  <!-- Amdahl ceiling (beta=0, alpha=0.05) subtle reference -->
+  <path d="M 92,262 Q 210,160 500,136" fill="none" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="3 3"/>
+  <text x="396" y="132" class="mono" font-size="10" fill="#2563eb">Amdahl (β=0): 1/α</text>
+
+  <!-- USL Curve: (1,1.00)->(92,262), (4,3.31)->(132,213), (8,4.91)->(178,172), (14,5.47)->(220,156), (32,4.26)->(328,190), (64,2.63)->(488,236) -->
+  <path d="M 92,262 C 122,226 154,182 178,172 C 198,162 210,156 220,156 C 260,156 296,178 328,190 C 390,214 440,226 488,236" fill="none" stroke="#0f172a" stroke-width="2.8"/>
+
+  <!-- Peak Marker at N=14 -->
+  <line x1="220" y1="156" x2="220" y2="282" stroke="#059669" stroke-width="1.2" stroke-dasharray="3 3"/>
+  <g class="pk-ring">
+    <circle cx="220" cy="156" r="10" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <rect x="234" y="142" width="128" height="22" rx="4" fill="#ecfdf5" stroke="#059669"/>
+    <text x="298" y="157" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">N_max=13.78 (5.47×)</text>
+  </g>
+
+  <!-- Collapse Marker at N=64 -->
+  <g class="col-badge">
+    <circle cx="488" cy="236" r="6" fill="#e11d48"/>
+    <rect x="336" y="244" width="170" height="30" rx="5" fill="#fff1f2" stroke="#e11d48"/>
+    <text x="421" y="257" class="mono" font-size="10" font-weight="700" fill="#9f1239" text-anchor="middle">N=64: 2.63× (−52% vs peak)</text>
+    <text x="421" y="269" class="mono" font-size="10" fill="#be123c" text-anchor="middle">βN(N−1) = 20.16 crosstalk</text>
+  </g>
+
+  <!-- Animated Probe Dot -->
+  <g class="probe">
+    <circle cx="92" cy="282" r="7" fill="#2563eb" stroke="#ffffff" stroke-width="2"/>
+  </g>
+
+  <!-- USL Formula Box -->
+  <rect x="42" y="330" width="490" height="64" rx="8" fill="#f5f3ff" stroke="#c4b5fd"/>
+  <text x="56" y="350" class="mono" font-size="11" font-weight="700" fill="#5b21b6">C(N) = N / [1 + α(N − 1) + βN(N − 1)]</text>
+  <text x="56" y="368" class="mono" font-size="10.5" fill="#334155">N_max = √((1 − α) / β) = √(0.95 / 0.005) ≈ 13.78 nodes</text>
+  <text x="56" y="384" class="sans" font-size="10.5" fill="#4c1d95">Fix: Partition into shared-nothing cells so β → 0 (linear growth).</text>
+
+  <!-- USL Step Cards (1..3) -->
+  <rect x="42" y="404" width="490" height="28" rx="5" fill="#eff6ff" class="s1"/>
+  <text x="54" y="422" class="mono" font-size="10" fill="#1e3a8a">1. N=1→8: Contention α(N−1) slows gain (1.00× → 4.91×)</text>
+
+  <rect x="42" y="436" width="490" height="28" rx="5" fill="#ecfdf5" class="s2"/>
+  <text x="54" y="454" class="mono" font-size="10" fill="#065f46">2. N=14: Analytical peak C(14) = 5.47× (dC/dN = 0)</text>
+
+  <rect x="42" y="468" width="490" height="28" rx="5" fill="#fff1f2" class="s3"/>
+  <text x="54" y="486" class="mono" font-size="10" fill="#9f1239">3. N=64: Quad crosstalk β=20.16 cuts throughput −52% at 4.6× cost</text>
+
+  <!-- RIGHT PANEL: SHUFFLE SHARDING C(8,2)=28 -->
+  <rect x="570" y="76" width="526" height="432" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="588" y="102" class="sans" font-size="14" font-weight="700" fill="#0f172a">2. Shuffle Sharding Combinatorics: C(8, 2) = 28 Virtual Shards</text>
+
+  <!-- Physical Worker Pool W0..W7 -->
+  <rect x="588" y="116" width="490" height="84" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="602" y="135" class="sans" font-size="11.5" font-weight="700" fill="#334155">Physical Worker Pool (N = 8 workers, k = 2 workers per tenant)</text>
+
+  <!-- 8 Worker Pills -->
+  <rect x="602" y="148" width="52" height="38" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="628" y="171" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">W0</text>
+
+  <rect x="660" y="148" width="52" height="38" rx="6" fill="#fff1f2" stroke="#e11d48" stroke-width="2"/>
+  <text x="686" y="166" class="mono" font-size="11" font-weight="700" fill="#9f1239" text-anchor="middle">W1</text>
+  <text x="686" y="180" class="mono" font-size="10" font-weight="700" fill="#e11d48" text-anchor="middle">CRASH</text>
+
+  <rect x="718" y="148" width="52" height="38" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="744" y="171" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">W2</text>
+
+  <rect x="776" y="148" width="52" height="38" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="802" y="171" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">W3</text>
+
+  <rect x="834" y="148" width="52" height="38" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="860" y="171" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">W4</text>
+
+  <rect x="892" y="148" width="52" height="38" rx="6" fill="#fff1f2" stroke="#e11d48" stroke-width="2"/>
+  <text x="918" y="166" class="mono" font-size="11" font-weight="700" fill="#9f1239" text-anchor="middle">W5</text>
+  <text x="918" y="180" class="mono" font-size="10" font-weight="700" fill="#e11d48" text-anchor="middle">CRASH</text>
+
+  <rect x="950" y="148" width="52" height="38" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="976" y="171" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">W6</text>
+
+  <rect x="1008" y="148" width="52" height="38" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="1034" y="171" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">W7</text>
+
+  <!-- Toxic Tenant Alert -->
+  <g class="tox-hit">
+    <rect x="588" y="210" width="490" height="44" rx="7" fill="#fff1f2" stroke="#e11d48" stroke-width="1.5"/>
+    <text x="602" y="229" class="sans" font-size="11.5" font-weight="700" fill="#9f1239">Poison-Pill Tenant A (SHA-256 Fisher-Yates → {W1, W5})</text>
+    <text x="602" y="245" class="mono" font-size="10" fill="#be123c">Both assigned workers W1 and W5 crash (25% of fleet lost).</text>
+  </g>
+
+  <!-- Fixed Disjoint vs Shuffle Comparison -->
+  <rect x="588" y="264" width="238" height="106" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="1.2"/>
+  <text x="602" y="284" class="sans" font-size="11.5" font-weight="700" fill="#92400e">Fixed 4 Disjoint Pairs (N/k)</text>
+  <text x="602" y="303" class="mono" font-size="10" fill="#334155">Pairs: {0,1} {2,3} {4,5} {6,7}</text>
+  <text x="602" y="321" class="mono" font-size="10" fill="#9f1239">Tenant B in same pair:</text>
+  <text x="602" y="337" class="mono" font-size="10" font-weight="700" fill="#e11d48">100% outage for 25% of fleet</text>
+  <text x="602" y="357" class="mono" font-size="10.5" font-weight="700" fill="#92400e">Blast Radius: 1/4 = 25.00%</text>
+
+  <rect x="840" y="264" width="238" height="106" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="854" y="284" class="sans" font-size="11.5" font-weight="700" fill="#065f46">Shuffle Sharding C(8,2) = 28</text>
+  <text x="854" y="303" class="mono" font-size="10" fill="#334155">Tenant C {W2, W5}: W2 OK!</text>
+  <text x="854" y="321" class="mono" font-size="10" fill="#334155">Tenant D {W0, W3}: Both OK!</text>
+  <text x="854" y="337" class="mono" font-size="10" font-weight="700" fill="#047857">96.43% keep ≥1 healthy worker</text>
+  <text x="854" y="357" class="mono" font-size="10.5" font-weight="700" fill="#065f46">Blast Radius: 1/28 = 3.57%</text>
+
+  <!-- Combinatorics Table Box -->
+  <rect x="588" y="380" width="490" height="78" rx="8" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="602" y="399" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a">Combinatorial Blast-Radius Scaling: C(N, k) = N! / (k! (N − k)!)</text>
+  <text x="602" y="418" class="mono" font-size="10" fill="#334155">N=8,  k=2 →   28 shards · 3.57% overlap   (7.0× better than 4 fixed)</text>
+  <text x="602" y="434" class="mono" font-size="10" fill="#334155">N=16, k=2 →  120 shards · 0.83% overlap  (15.0× better than 8 fixed)</text>
+  <text x="602" y="450" class="mono" font-size="10" fill="#334155">N=32, k=4 → 35,960 shards · 0.0028%      (4,495× better!)</text>
+
+  <!-- Step 4 Card -->
+  <rect x="588" y="468" width="490" height="28" rx="5" fill="#f5f3ff" class="s4"/>
+  <text x="600" y="486" class="mono" font-size="10" fill="#5b21b6">4. Zero extra servers: C(8,2)=28 cuts blast radius 7× via retry</text>
+
+  <!-- FOOTER -->
+  <rect x="24" y="520" width="1072" height="44" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="42" y="546" class="sans" font-size="11.5" font-weight="600" fill="#1e3a8a">Takeaway: Attack β → 0 via cell isolation to avoid USL retrograde collapse past N_max, and use Shuffle Sharding to shrink tenant blast radius combinatorially.</text>
+</svg>

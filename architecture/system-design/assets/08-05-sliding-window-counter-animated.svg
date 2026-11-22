@@ -1,0 +1,144 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 560" width="1120" height="560" role="img" aria-labelledby="title desc">
+  <title id="title">Sliding Window Counter — O(1) Weighted Overlap Approximation</title>
+  <desc id="desc">Animated Sliding Window Counter with limit L equals 10 requests per 60-second window, c_prev equals 10 in Window 0 and c_cur equals 0 in Window 1. Demonstrates the weighted formula c_hat equals c_prev times (1 - e/W) plus c_cur at e equals 0.1s (99.8 percent overlap, c_hat equals 9.98, rejecting the 2x boundary burst with 429) and at e equals 30s (50 percent overlap, c_hat equals 5.0, admitting with 200 OK) using O(1) memory.</desc>
+
+  <style>
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    /* 12s cycle:
+       0-45%:  Phase A — e = 0.1s (t=60.1s): 99.8% overlap -> c_hat = 9.98 -> 429!
+       50-95%: Phase B — e = 30.0s (t=90.0s): 50% overlap -> c_hat = 5.0 -> 200 OK!
+    */
+
+    @keyframes swc-slide {
+      0%, 40% { transform: translateX(1px); }
+      55%, 95% { transform: translateX(240px); }
+      100% { transform: translateX(1px); }
+    }
+
+    @keyframes phase-a-hl {
+      0%, 46% { opacity: 1; stroke: #e11d48; stroke-width: 2.5; }
+      52%, 96% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; }
+      100% { opacity: 1; stroke: #e11d48; stroke-width: 2.5; }
+    }
+
+    @keyframes phase-b-hl {
+      0%, 46% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; }
+      52%, 96% { opacity: 1; stroke: #059669; stroke-width: 2.5; }
+      100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; }
+    }
+
+    @keyframes label-a {
+      0%, 46% { opacity: 1; }
+      50%, 96% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+
+    @keyframes label-b {
+      0%, 46% { opacity: 0; }
+      50%, 96% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    .swc-win { animation: swc-slide 12s ease-in-out infinite; }
+    .pa { animation: phase-a-hl 12s linear infinite; }
+    .pb { animation: phase-b-hl 12s linear infinite; }
+    .la { animation: label-a 12s linear infinite; }
+    .lb { animation: label-b 12s linear infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .swc-win, .pa, .pb, .la, .lb {
+        animation: none !important;
+      }
+      .swc-win { transform: translateX(120px) !important; }
+      .pa, .pb { opacity: 1 !important; }
+      .la { opacity: 1 !important; }
+      .lb { opacity: 0 !important; }
+    }
+  </style>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1120" height="560" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1120" height="60" rx="12" fill="#0f172a"/>
+  <rect x="0" y="44" width="1120" height="16" fill="#0f172a"/>
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Sliding Window Counter — O(1) Weighted Overlap Approximation</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">Parameters: Limit L = 10 req / W = 60s · c_prev = 10 (Window 0), c_cur = 0 (Window 1) · Defeats 2× Boundary Burst in O(1) Memory</text>
+
+  <!-- TOP PANEL: OVERLAP TIMELINE -->
+  <rect x="24" y="76" width="1072" height="214" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="42" y="102" class="sans" font-size="14" font-weight="700" fill="#0f172a">Weighted Window Overlap Across Boundary (Scale: 8px = 1s)</text>
+
+  <!-- Window 0 [0s, 60s) -> x=80..560 -->
+  <rect x="80" y="124" width="480" height="122" rx="6" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+  <text x="96" y="144" class="sans" font-size="12.5" font-weight="700" fill="#1e3a8a">Window 0: [0s, 60s)</text>
+  <text x="460" y="144" class="mono" font-size="12" font-weight="700" fill="#1d4ed8">c_prev = 10</text>
+  <!-- 10 representative bars in W0 -->
+  <rect x="110" y="182" width="18" height="48" rx="3" fill="#3b82f6" fill-opacity="0.45"/>
+  <rect x="150" y="182" width="18" height="48" rx="3" fill="#3b82f6" fill-opacity="0.45"/>
+  <rect x="190" y="182" width="18" height="48" rx="3" fill="#3b82f6" fill-opacity="0.45"/>
+  <rect x="230" y="182" width="18" height="48" rx="3" fill="#3b82f6" fill-opacity="0.45"/>
+  <rect x="270" y="182" width="18" height="48" rx="3" fill="#3b82f6" fill-opacity="0.45"/>
+  <rect x="310" y="182" width="18" height="48" rx="3" fill="#3b82f6" fill-opacity="0.45"/>
+  <rect x="350" y="182" width="18" height="48" rx="3" fill="#3b82f6" fill-opacity="0.45"/>
+  <rect x="390" y="182" width="18" height="48" rx="3" fill="#3b82f6" fill-opacity="0.45"/>
+  <rect x="430" y="182" width="18" height="48" rx="3" fill="#3b82f6" fill-opacity="0.45"/>
+  <rect x="470" y="182" width="18" height="48" rx="3" fill="#3b82f6" fill-opacity="0.45"/>
+
+  <!-- Window 1 [60s, 120s) -> x=560..1040 -->
+  <rect x="560" y="124" width="480" height="122" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="576" y="144" class="sans" font-size="12.5" font-weight="700" fill="#334155">Window 1: [60s, 120s)</text>
+  <text x="952" y="144" class="mono" font-size="12" font-weight="700" fill="#475569">c_cur = 0</text>
+  <text x="800" y="206" class="sans" font-size="11.5" fill="#64748b" text-anchor="middle">Current window elapsed time = e</text>
+
+  <!-- Boundary Line at x=560 -->
+  <line x1="560" y1="116" x2="560" y2="256" stroke="#d97706" stroke-width="2" stroke-dasharray="5 3"/>
+  <text x="560" y="272" class="mono" font-size="10.5" font-weight="700" fill="#b45309" text-anchor="middle">t = 60s Boundary</text>
+  <text x="80" y="272" class="mono" font-size="10.5" fill="#64748b" text-anchor="middle">0s</text>
+  <text x="320" y="272" class="mono" font-size="10.5" fill="#64748b" text-anchor="middle">30s</text>
+  <text x="800" y="272" class="mono" font-size="10.5" fill="#64748b" text-anchor="middle">90s</text>
+  <text x="1040" y="272" class="mono" font-size="10.5" fill="#64748b" text-anchor="middle">120s</text>
+
+  <!-- Sliding Window Overlay (width 480px = W) -->
+  <g class="swc-win">
+    <rect x="80" y="118" width="480" height="134" rx="8" fill="#7c3aed" fill-opacity="0.14" stroke="#7c3aed" stroke-width="2.5"/>
+    <rect x="200" y="152" width="240" height="24" rx="5" fill="#7c3aed"/>
+    <text x="320" y="168" class="mono la" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">e = 0.1s · 99.8% Overlap</text>
+    <text x="320" y="168" class="mono lb" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">e = 30s · 50.0% Overlap</text>
+  </g>
+
+  <!-- BOTTOM LEFT: FORMULA & O(1) STATE -->
+  <rect x="24" y="304" width="526" height="176" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="42" y="330" class="sans" font-size="14" font-weight="700" fill="#0f172a">Weighted Estimation Formula &amp; O(1) Footprint</text>
+
+  <rect x="42" y="344" width="490" height="48" rx="7" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="287" y="373" class="mono" font-size="14" font-weight="700" fill="#5b21b6" text-anchor="middle">ĉ = c_prev × (1 − e / W) + c_cur</text>
+
+  <text x="42" y="416" class="mono" font-size="11" fill="#334155">State/key: { currentWindowId, c_cur, c_prev } (24 bytes)</text>
+  <text x="42" y="438" class="sans" font-size="11" fill="#475569">Admit iff ĉ + 1 ≤ L (else reject 429; no timestamp list!).</text>
+  <text x="42" y="460" class="sans" font-size="11" font-weight="600" fill="#5b21b6">Error bounded by c_prev · min(e/W, 1 − e/W) · O(1) time</text>
+
+  <!-- BOTTOM RIGHT: PHASE A vs PHASE B -->
+  <rect x="570" y="304" width="526" height="176" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="588" y="330" class="sans" font-size="14" font-weight="700" fill="#0f172a">Boundary Evaluation Phases (L = 10, W = 60s)</text>
+
+  <!-- Phase A Card -->
+  <rect x="588" y="342" width="490" height="60" rx="7" fill="#fff1f2" class="pa"/>
+  <text x="602" y="362" class="sans" font-size="12" font-weight="700" fill="#9f1239">Phase A · t = 60.1s (e = 0.1s, overlap = 99.8%)</text>
+  <text x="602" y="382" class="mono" font-size="11" fill="#334155">ĉ = 10 × 0.998 + 0 = 9.98  →  9.98 + 1 &gt; 10</text>
+  <rect x="966" y="356" width="98" height="30" rx="5" fill="#e11d48"/>
+  <text x="1015" y="375" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">429 BLOCK</text>
+
+  <!-- Phase B Card -->
+  <rect x="588" y="410" width="490" height="60" rx="7" fill="#ecfdf5" class="pb"/>
+  <text x="602" y="430" class="sans" font-size="12" font-weight="700" fill="#065f46">Phase B · t = 90.0s (e = 30.0s, overlap = 50.0%)</text>
+  <text x="602" y="450" class="mono" font-size="11" fill="#334155">ĉ = 10 × 0.50 + 0 = 5.0  (&lt; 10; 5.0 + 1 ≤ 10)</text>
+  <rect x="966" y="424" width="98" height="30" rx="5" fill="#059669"/>
+  <text x="1015" y="443" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">200 OK</text>
+
+  <!-- FOOTER -->
+  <rect x="24" y="494" width="1072" height="46" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="42" y="522" class="sans" font-size="11.5" font-weight="600" fill="#1e3a8a">Takeaway: Cloudflare's Sliding Window Counter blocks the 2× boundary burst (9.98 + 1 &gt; 10) while keeping per-key memory strictly O(1).</text>
+</svg>

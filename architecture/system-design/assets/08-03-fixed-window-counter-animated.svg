@@ -1,0 +1,173 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 560" width="1120" height="560" role="img" aria-labelledby="title desc">
+  <title id="title">Fixed Window Counter and the 2x Boundary Burst Flaw</title>
+  <desc id="desc">Animated demonstration of the Fixed Window Counter rate limiter with limit L equals 5 requests per 60-second window. Shows Window 0 remaining idle until t equals 59.9s when 5 requests are admitted, the counter resetting to 0 at the 60.0s boundary, and Window 1 admitting 5 more requests at t equals 60.1s, resulting in 10 requests (2x L) slamming the backend inside 200 milliseconds.</desc>
+
+  <style>
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    /* 12s cycle:
+       0-25%  (0-3s): Step 1 — Window 0 idle [0s, 59s]
+       25-50% (3-6s): Step 2 — t=59.9s 5 requests hit W0 (count 0->5, 200 OK)
+       50-75% (6-9s): Step 3 — t=60.0s boundary resets counter to 0
+       75-100%(9-12s):Step 4 — t=60.1s 5 requests hit W1 -> 10 reqs (2xL) in 200ms!
+    */
+
+    @keyframes batch-w0 {
+      0%, 24% { opacity: 0.12; transform: scaleY(0.2); }
+      32%, 100% { opacity: 1; transform: scaleY(1); }
+    }
+    @keyframes reset-flash {
+      0%, 49% { opacity: 0.86; }
+      54%, 72% { opacity: 1; }
+      76%, 100% { opacity: 0.65; }
+    }
+    @keyframes batch-w1 {
+      0%, 74% { opacity: 0.12; transform: scaleY(0.2); }
+      82%, 100% { opacity: 1; transform: scaleY(1); }
+    }
+    @keyframes danger-call {
+      0%, 76% { opacity: 0.86; }
+      84%, 98% { opacity: 1; }
+      100% { opacity: 0.86; }
+    }
+
+    @keyframes step-1 {
+      0%, 24% { opacity: 1; stroke: #2563eb; stroke-width: 2.5; }
+      25%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; }
+    }
+    @keyframes step-2 {
+      0%, 24% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; }
+      25%, 49% { opacity: 1; stroke: #059669; stroke-width: 2.5; }
+      50%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; }
+    }
+    @keyframes step-3 {
+      0%, 49% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; }
+      50%, 74% { opacity: 1; stroke: #d97706; stroke-width: 2.5; }
+      75%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; }
+    }
+    @keyframes step-4 {
+      0%, 74% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; }
+      75%, 100% { opacity: 1; stroke: #e11d48; stroke-width: 2.5; }
+    }
+
+    .bw0 { transform-box: fill-box; transform-origin: bottom; animation: batch-w0 12s ease-out infinite; }
+    .rst { animation: reset-flash 12s linear infinite; }
+    .bw1 { transform-box: fill-box; transform-origin: bottom; animation: batch-w1 12s ease-out infinite; }
+    .dng { animation: danger-call 12s ease-in-out infinite; }
+    .s1  { animation: step-1 12s linear infinite; }
+    .s2  { animation: step-2 12s linear infinite; }
+    .s3  { animation: step-3 12s linear infinite; }
+    .s4  { animation: step-4 12s linear infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .bw0, .rst, .bw1, .dng, .s1, .s2, .s3, .s4 {
+        animation: none !important;
+      }
+      .bw0, .rst, .bw1, .dng, .s1, .s2, .s3, .s4 {
+        opacity: 1 !important;
+        transform: none !important;
+      }
+    }
+  </style>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1120" height="560" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1120" height="60" rx="12" fill="#0f172a"/>
+  <rect x="0" y="44" width="1120" height="16" fill="#0f172a"/>
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Fixed Window Counter — The 2× Boundary Burst Flaw</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">Parameters: Limit L = 5 req / 60s · windowId = floor(t / 60s) · 10 Requests (2×L) Admitted Inside 200 ms Across Boundary</text>
+
+  <!-- TOP PANEL: WINDOW 0 & WINDOW 1 TIMELINE -->
+  <rect x="24" y="76" width="1072" height="248" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Window 0 Box -->
+  <rect x="44" y="92" width="474" height="156" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="60" y="114" class="sans" font-size="13" font-weight="700" fill="#1e3a8a">Window 0: [0s, 60s)</text>
+  <text x="380" y="114" class="mono" font-size="11" font-weight="700" fill="#059669">count: 0 → 5 / 5</text>
+  <text x="60" y="180" class="sans" font-size="11" fill="#64748b">Idle period (0s .. 59.8s) · 0 requests</text>
+
+  <!-- 5 Request Bars at t=59.9s (right edge of Window 0) -->
+  <g class="bw0">
+    <rect x="424" y="140" width="13" height="82" rx="3" fill="#059669"/>
+    <rect x="441" y="140" width="13" height="82" rx="3" fill="#059669"/>
+    <rect x="458" y="140" width="13" height="82" rx="3" fill="#059669"/>
+    <rect x="475" y="140" width="13" height="82" rx="3" fill="#059669"/>
+    <rect x="492" y="140" width="13" height="82" rx="3" fill="#059669"/>
+  </g>
+  <text x="502" y="238" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="end">t = 59.9s (5× 200 OK)</text>
+
+  <!-- Hard Boundary Line at t = 60.0s -->
+  <g class="rst">
+    <line x1="560" y1="86" x2="560" y2="256" stroke="#d97706" stroke-width="2.5" stroke-dasharray="6 4"/>
+    <rect x="506" y="124" width="108" height="32" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+    <text x="560" y="144" class="mono" font-size="10.5" font-weight="700" fill="#92400e" text-anchor="middle">RESET → 0</text>
+    <text x="560" y="268" class="mono" font-size="10.5" font-weight="700" fill="#b45309" text-anchor="middle">t = 60.0s</text>
+  </g>
+
+  <!-- Window 1 Box -->
+  <rect x="602" y="92" width="474" height="156" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="618" y="114" class="sans" font-size="13" font-weight="700" fill="#1e3a8a">Window 1: [60s, 120s)</text>
+  <text x="938" y="114" class="mono" font-size="11" font-weight="700" fill="#059669">count: 0 → 5 / 5</text>
+  <text x="830" y="180" class="sans" font-size="11" fill="#64748b">Idle remainder (60.2s .. 120s)</text>
+
+  <!-- 5 Request Bars at t=60.1s (left edge of Window 1) -->
+  <g class="bw1">
+    <rect x="616" y="140" width="13" height="82" rx="3" fill="#e11d48"/>
+    <rect x="633" y="140" width="13" height="82" rx="3" fill="#e11d48"/>
+    <rect x="650" y="140" width="13" height="82" rx="3" fill="#e11d48"/>
+    <rect x="667" y="140" width="13" height="82" rx="3" fill="#e11d48"/>
+    <rect x="684" y="140" width="13" height="82" rx="3" fill="#e11d48"/>
+  </g>
+  <text x="616" y="238" class="mono" font-size="10.5" font-weight="700" fill="#9f1239" text-anchor="start">t = 60.1s (5× 200 OK)</text>
+
+  <!-- 2x Burst Warning Callout -->
+  <g class="dng">
+    <path d="M 424 252 L 424 274 L 697 274 L 697 252" fill="none" stroke="#e11d48" stroke-width="2"/>
+    <rect x="360" y="274" width="400" height="38" rx="7" fill="#fff1f2" stroke="#e11d48" stroke-width="2"/>
+    <text x="560" y="298" class="sans" font-size="12" font-weight="700" fill="#9f1239" text-anchor="middle">⚠ 10 REQUESTS (2×L) SLAM BACKEND INSIDE 200 ms!</text>
+  </g>
+
+  <!-- BOTTOM 4 STEP CARDS -->
+  <rect x="24" y="338" width="256" height="142" rx="8" fill="#eff6ff" class="s1"/>
+  <rect x="38" y="352" width="58" height="22" rx="4" fill="#2563eb"/>
+  <text x="67" y="367" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">Step 1</text>
+  <text x="106" y="367" class="sans" font-size="12.5" font-weight="700" fill="#1e3a8a">Window 0 Idle</text>
+  <text x="38" y="394" class="mono" font-size="10.5" fill="#334155">t ∈ [0s, 59.8s]</text>
+  <text x="38" y="414" class="mono" font-size="10.5" fill="#334155">windowId = 0</text>
+  <text x="38" y="434" class="mono" font-size="10.5" fill="#1e40af">counter[0] = 0 / 5</text>
+  <text x="38" y="458" class="sans" font-size="10.5" fill="#475569">Full quota untouched.</text>
+
+  <rect x="296" y="338" width="256" height="142" rx="8" fill="#ecfdf5" class="s2"/>
+  <rect x="310" y="352" width="58" height="22" rx="4" fill="#059669"/>
+  <text x="339" y="367" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">Step 2</text>
+  <text x="378" y="367" class="sans" font-size="12.5" font-weight="700" fill="#065f46">5 Reqs at 59.9s</text>
+  <text x="310" y="394" class="mono" font-size="10.5" fill="#334155">t = 59.9s (windowId=0)</text>
+  <text x="310" y="414" class="mono" font-size="10.5" fill="#334155">counter[0]: 0 → 5</text>
+  <text x="310" y="434" class="mono" font-size="10.5" font-weight="700" fill="#059669">All 5 → 200 OK</text>
+  <text x="310" y="458" class="sans" font-size="10.5" fill="#047857">Quota exhausted for W0.</text>
+
+  <rect x="568" y="338" width="256" height="142" rx="8" fill="#fffbeb" class="s3"/>
+  <rect x="582" y="352" width="58" height="22" rx="4" fill="#d97706"/>
+  <text x="611" y="367" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">Step 3</text>
+  <text x="650" y="367" class="sans" font-size="12.5" font-weight="700" fill="#92400e">Boundary Reset</text>
+  <text x="582" y="394" class="mono" font-size="10.5" fill="#334155">t = 60.0s crossed</text>
+  <text x="582" y="414" class="mono" font-size="10.5" fill="#334155">windowId: 0 → 1</text>
+  <text x="582" y="434" class="mono" font-size="10.5" font-weight="700" fill="#b45309">counter[1] = 0 / 5</text>
+  <text x="582" y="458" class="sans" font-size="10.5" fill="#78350f">Previous window forgotten.</text>
+
+  <rect x="840" y="338" width="256" height="142" rx="8" fill="#fff1f2" class="s4"/>
+  <rect x="854" y="352" width="58" height="22" rx="4" fill="#e11d48"/>
+  <text x="883" y="367" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">Step 4</text>
+  <text x="922" y="367" class="sans" font-size="12.5" font-weight="700" fill="#9f1239">5 Reqs at 60.1s</text>
+  <text x="854" y="394" class="mono" font-size="10.5" fill="#334155">t = 60.1s (windowId=1)</text>
+  <text x="854" y="414" class="mono" font-size="10.5" fill="#334155">counter[1]: 0 → 5</text>
+  <text x="854" y="434" class="mono" font-size="10.5" font-weight="700" fill="#e11d48">All 5 → 200 OK (2×L!)</text>
+  <text x="854" y="458" class="sans" font-size="10.5" fill="#be123c">10 hits in 200 ms span!</text>
+
+  <!-- FOOTER -->
+  <rect x="24" y="494" width="1072" height="46" rx="8" fill="#fff1f2" stroke="#fda4af" stroke-width="1"/>
+  <text x="42" y="522" class="sans" font-size="11.5" font-weight="600" fill="#9f1239">Defect Warning: Fixed Window never rejects bursts straddling window boundaries; use Sliding Window Counter, Log, or GCRA to protect downstreams.</text>
+</svg>

@@ -1,0 +1,196 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 540" width="1120" height="540" role="img" aria-labelledby="title desc">
+  <title id="title">Stage 1: Web and Database Tier Separation</title>
+  <desc id="desc">Animated schematic illustrating Stage 1 separation of the application runtime onto a dedicated web host and the database onto an isolated data tier with SQL Primary for ACID transactions and joins versus a NoSQL branch for key-value, wide-column, or high-write workloads.</desc>
+  <defs>
+    <style>
+      .flow-blue { stroke-dasharray: 8 6; animation: dash-flow 1.4s linear infinite; }
+      .flow-green { stroke-dasharray: 8 6; animation: dash-rev 1.4s linear infinite; }
+      .flow-amber { stroke-dasharray: 7 5; animation: dash-flow 1.6s linear infinite; }
+      .pulse-badge { animation: badge-pulse 2.4s ease-in-out infinite; }
+      @keyframes dash-flow { to { stroke-dashoffset: -28; } }
+      @keyframes dash-rev { to { stroke-dashoffset: 28; } }
+      @keyframes badge-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.72; } }
+      @media (prefers-reduced-motion: reduce) {
+        * { animation: none !important; transition: none !important; }
+        .smil-packet { display: none !important; }
+      }
+    </style>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <marker id="arr-violet" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1120" height="540" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1120" height="62" rx="12" fill="#0f172a"/>
+  <rect x="0" y="46" width="1120" height="16" fill="#0f172a"/>
+  <text x="24" y="29" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#f8fafc">Stage 1 · Web &amp; Database Tier Separation (100–10k DAU, 10–100 QPS)</text>
+  <text x="24" y="49" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#94a3b8">Decouple application CPU/GC spikes from database page cache and WAL fsync IOPS; choose SQL by default vs. NoSQL for specialized workloads</text>
+
+  <!-- CLIENTS + DNS -->
+  <g transform="translate(24, 96)">
+    <rect x="0" y="0" width="184" height="148" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+    <text x="16" y="26" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1e3a8a">Web &amp; Mobile</text>
+    <text x="16" y="48" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#334155">• Browser (HTML/JS)</text>
+    <text x="16" y="68" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#334155">• iOS / Android (JSON)</text>
+    <rect x="16" y="88" width="152" height="42" rx="6" fill="#ffffff" stroke="#93c5fd"/>
+    <text x="92" y="106" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" font-weight="700" fill="#1d4ed8">api.example.com</text>
+    <text x="92" y="122" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#64748b">HTTPS / TLS 1.3</text>
+  </g>
+
+  <g transform="translate(24, 276)">
+    <rect x="0" y="0" width="184" height="128" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+    <text x="16" y="26" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#92400e">DNS Resolver</text>
+    <rect x="16" y="42" width="152" height="44" rx="6" fill="#ffffff" stroke="#fcd34d"/>
+    <text x="92" y="60" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" fill="#78350f">A record -&gt; Web IP</text>
+    <text x="92" y="77" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" font-weight="700" fill="#b45309">203.0.113.20</text>
+    <text x="16" y="108" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#78350f">DB stays private (no IP)</text>
+  </g>
+
+  <!-- Step 1 DNS vertical lookup -->
+  <line x1="116" y1="244" x2="116" y2="272" stroke="#d97706" stroke-width="1.8" stroke-dasharray="4 3" marker-end="url(#arr-amber)"/>
+  <g class="pulse-badge" transform="translate(150, 260)">
+    <circle cx="0" cy="0" r="11" fill="#d97706"/>
+    <text x="0" y="4" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#ffffff">1</text>
+  </g>
+
+  <!-- WEB TIER -->
+  <g transform="translate(262, 114)">
+    <rect x="0" y="0" width="236" height="288" rx="12" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+    <rect x="0" y="0" width="236" height="34" rx="12" fill="#1d4ed8"/>
+    <rect x="0" y="20" width="236" height="14" fill="#1d4ed8"/>
+    <text x="118" y="22" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#ffffff">Dedicated Web Tier</text>
+
+    <rect x="16" y="48" width="204" height="72" rx="8" fill="#ffffff" stroke="#93c5fd"/>
+    <text x="28" y="70" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1e3a8a">Reverse Proxy + App</text>
+    <text x="28" y="88" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• TLS 1.3 &amp; API validation</text>
+    <text x="28" y="106" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• CPU-optimized scale-up</text>
+
+    <rect x="16" y="134" width="204" height="72" rx="8" fill="#ffffff" stroke="#93c5fd"/>
+    <text x="28" y="156" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1e3a8a">Connection Pooler</text>
+    <text x="28" y="174" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" fill="#2563eb">PgBouncer / Driver Pool</text>
+    <text x="28" y="192" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• Bounds max DB backends</text>
+
+    <rect x="16" y="220" width="204" height="52" rx="6" fill="#dbeafe" stroke="#60a5fa"/>
+    <text x="118" y="242" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e40af">Independent Scaling</text>
+    <text x="118" y="259" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#1e3a8a">vCPU bursts never starve DB RAM</text>
+  </g>
+
+  <!-- Step 2: Client <-> Web Tier -->
+  <path d="M 208 158 L 258 158" fill="none" stroke="#2563eb" stroke-width="2.2" class="flow-blue" marker-end="url(#arr-blue)"/>
+  <path d="M 258 182 L 208 182" fill="none" stroke="#059669" stroke-width="2" class="flow-green" marker-end="url(#arr-green)"/>
+  <circle class="smil-packet" r="4.5" fill="#2563eb" opacity="0">
+    <animateMotion dur="1.8s" repeatCount="indefinite" path="M 208 158 L 258 158"/>
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="1.8s" repeatCount="indefinite"/>
+  </circle>
+  <circle class="smil-packet" r="4.5" fill="#059669" opacity="0">
+    <animateMotion dur="1.8s" begin="0.9s" repeatCount="indefinite" path="M 258 182 L 208 182"/>
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="1.8s" begin="0.9s" repeatCount="indefinite"/>
+  </circle>
+  <g class="pulse-badge" transform="translate(233, 134)">
+    <circle cx="0" cy="0" r="11" fill="#2563eb"/>
+    <text x="0" y="4" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#ffffff">2</text>
+  </g>
+
+  <!-- PRIVATE DATA TIER CONTAINER -->
+  <g transform="translate(574, 84)">
+    <rect x="0" y="0" width="522" height="348" rx="12" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <rect x="14" y="-11" width="256" height="22" rx="11" fill="#0f172a"/>
+    <text x="142" y="4" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" font-weight="700" fill="#f8fafc">Private Subnet (10.0.2.0/24 · mTLS)</text>
+
+    <!-- SQL Primary Branch -->
+    <rect x="18" y="24" width="486" height="146" rx="10" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <rect x="34" y="38" width="114" height="22" rx="6" fill="#059669"/>
+    <text x="91" y="53" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#ffffff">DEFAULT CHOICE</text>
+    <text x="160" y="54" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13.5" font-weight="700" fill="#065f46">Relational SQL Primary (PostgreSQL 18.6)</text>
+
+    <rect x="34" y="70" width="220" height="84" rx="6" fill="#ffffff" stroke="#6ee7b7"/>
+    <text x="46" y="90" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#065f46">Use SQL When You Need:</text>
+    <text x="46" y="109" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• ACID transactions &amp; locks</text>
+    <text x="46" y="126" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• Foreign keys &amp; multi-table JOINs</text>
+    <text x="46" y="143" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• Secondary indexes &amp; ad-hoc SQL</text>
+
+    <rect x="268" y="70" width="220" height="84" rx="6" fill="#ffffff" stroke="#6ee7b7"/>
+    <text x="280" y="90" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#065f46">2026 Hardware Envelope:</text>
+    <text x="280" y="109" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#047857">192 vCPU · 1–2 TB DRAM</text>
+    <text x="280" y="126" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#047857">NVMe Gen5 (10–14 GB/s)</text>
+    <text x="280" y="143" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• Dedicated OS page cache + WAL</text>
+
+    <!-- NoSQL Branch -->
+    <rect x="18" y="186" width="486" height="144" rx="10" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.8"/>
+    <rect x="34" y="200" width="128" height="22" rx="6" fill="#7c3aed"/>
+    <text x="98" y="215" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#ffffff">SPECIALIZED BRANCH</text>
+    <text x="174" y="216" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13.5" font-weight="700" fill="#4c1d95">NoSQL Store (KV / Document / Wide-Column)</text>
+
+    <rect x="34" y="232" width="220" height="82" rx="6" fill="#ffffff" stroke="#c4b5fd"/>
+    <text x="46" y="252" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#4c1d95">Introduce Only For:</text>
+    <text x="46" y="271" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• Sub-ms pure KV lookups</text>
+    <text x="46" y="288" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• Append-heavy wide-column logs</text>
+    <text x="46" y="305" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• Polymorphic / schemaless blobs</text>
+
+    <rect x="268" y="232" width="220" height="82" rx="6" fill="#ffffff" stroke="#c4b5fd"/>
+    <text x="280" y="252" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#4c1d95">Examples &amp; Trade-Offs:</text>
+    <text x="280" y="271" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#6d28d9">DynamoDB / ScyllaDB / Valkey</text>
+    <text x="280" y="288" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• Sacrifices cross-item JOINs</text>
+    <text x="280" y="305" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• Access-pattern rigid schemas</text>
+  </g>
+
+  <!-- Step 3: Web Tier <-> SQL Primary -->
+  <path d="M 498 166 L 590 166" fill="none" stroke="#2563eb" stroke-width="2.2" class="flow-blue" marker-end="url(#arr-blue)"/>
+  <path d="M 590 192 L 498 192" fill="none" stroke="#059669" stroke-width="2.2" class="flow-green" marker-end="url(#arr-green)"/>
+  <circle class="smil-packet" r="5" fill="#2563eb" opacity="0">
+    <animateMotion dur="1.8s" repeatCount="indefinite" path="M 498 166 L 590 166"/>
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="1.8s" repeatCount="indefinite"/>
+  </circle>
+  <circle class="smil-packet" r="5" fill="#059669" opacity="0">
+    <animateMotion dur="1.8s" begin="0.9s" repeatCount="indefinite" path="M 590 192 L 498 192"/>
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="1.8s" begin="0.9s" repeatCount="indefinite"/>
+  </circle>
+
+  <g class="pulse-badge" transform="translate(542, 140)">
+    <circle cx="0" cy="0" r="11" fill="#059669"/>
+    <text x="0" y="4" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#ffffff">3</text>
+  </g>
+  <text x="544" y="212" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="700" fill="#065f46">SQL / ACID</text>
+
+  <!-- Step 4: Web Tier <-> NoSQL Branch -->
+  <path d="M 498 320 L 590 320" fill="none" stroke="#7c3aed" stroke-width="2" class="flow-amber" marker-end="url(#arr-violet)"/>
+  <path d="M 590 344 L 498 344" fill="none" stroke="#d97706" stroke-width="2" class="flow-green" marker-end="url(#arr-amber)"/>
+  <circle class="smil-packet" r="4.5" fill="#7c3aed" opacity="0">
+    <animateMotion dur="2.1s" repeatCount="indefinite" path="M 498 320 L 590 320"/>
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="2.1s" repeatCount="indefinite"/>
+  </circle>
+  <circle class="smil-packet" r="4.5" fill="#d97706" opacity="0">
+    <animateMotion dur="2.1s" begin="1.05s" repeatCount="indefinite" path="M 590 344 L 498 344"/>
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="2.1s" begin="1.05s" repeatCount="indefinite"/>
+  </circle>
+
+  <g class="pulse-badge" transform="translate(542, 294)">
+    <circle cx="0" cy="0" r="11" fill="#7c3aed"/>
+    <text x="0" y="4" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#ffffff">4</text>
+  </g>
+  <text x="544" y="364" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="700" fill="#5b21b6">KV / Append</text>
+
+  <!-- Footer -->
+  <rect x="24" y="454" width="1072" height="66" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <circle cx="46" cy="476" r="5" fill="#2563eb"/>
+  <text x="58" y="480" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" fill="#334155">1–2. Client Request via DNS</text>
+  <circle cx="242" cy="476" r="5" fill="#059669"/>
+  <text x="254" y="480" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" fill="#334155">3. SQL Bidirectional Queries</text>
+  <circle cx="452" cy="476" r="5" fill="#7c3aed"/>
+  <text x="464" y="480" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" fill="#334155">4. Specialized NoSQL Path</text>
+  <circle cx="654" cy="476" r="5" fill="#e11d48"/>
+  <text x="666" y="480" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" fill="#9f1239">New Risks: Network Partition &amp; Connection-Pool Exhaustion</text>
+  <text x="42" y="504" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" fill="#0f172a"><tspan font-weight="700">Engineering Takeaway:</tspan> Each tier now scales CPU, RAM, and NVMe IOPS independently. A 2026 NVMe Gen5 SQL primary handles 20k–50k mixed QPS before sharding is justified.</text>
+</svg>

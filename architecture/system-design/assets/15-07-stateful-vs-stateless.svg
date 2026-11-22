@@ -1,0 +1,196 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 580" width="1120" height="580" role="img" aria-labelledby="title desc">
+  <title id="title">Stage 5: Stateful Sticky-Session Web Tier vs. Stateless Web Tier</title>
+  <desc id="desc">Side-by-side comparison showing why a stateful web tier with sticky sessions loses User B's session and blocks autoscaling when Server 2 fails, whereas a stateless web tier storing sessions in a shared multi-AZ Valkey cluster lets any server serve any user with seamless failover and horizontal scaling.</desc>
+  <defs>
+    <style>
+      .flow-blue { stroke-dasharray: 8 6; animation: dash-flow 1.4s linear infinite; }
+      .flow-green { stroke-dasharray: 8 6; animation: dash-flow 1.4s linear infinite; }
+      .warn-pulse { animation: warn-blink 2s ease-in-out infinite; }
+      @keyframes dash-flow { to { stroke-dashoffset: -28; } }
+      @keyframes warn-blink { 0%, 100% { stroke-opacity: 1; } 50% { stroke-opacity: 0.86; } }
+      @media (prefers-reduced-motion: reduce) {
+        * { animation: none !important; transition: none !important; }
+        .smil-packet { display: none !important; }
+      }
+    </style>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <marker id="arr-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+    </marker>
+    <marker id="arr-violet" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1120" height="580" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1120" height="62" rx="12" fill="#0f172a"/>
+  <rect x="0" y="46" width="1120" height="16" fill="#0f172a"/>
+  <text x="24" y="29" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#f8fafc">Stage 5 · Stateful Sticky Sessions vs. Stateless Web Tier (3M–5M DAU)</text>
+  <text x="24" y="49" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" fill="#94a3b8">Externalizing session state to a shared Multi-AZ Valkey/NoSQL store makes every web instance interchangeable across AZ failures and autoscaling</text>
+
+  <!-- ==================== LEFT PANEL: STATEFUL ==================== -->
+  <g transform="translate(24, 82)">
+    <rect x="0" y="0" width="522" height="404" rx="12" fill="#fff1f2" stroke="#e11d48" stroke-width="1.8"/>
+    <rect x="0" y="0" width="522" height="36" rx="12" fill="#be123c"/>
+    <rect x="0" y="22" width="522" height="14" fill="#be123c"/>
+    <text x="18" y="24" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13.5" font-weight="700" fill="#ffffff">ANTI-PATTERN · Stateful Web Tier (Sticky Sessions)</text>
+
+    <!-- Users A, B, C -->
+    <rect x="18" y="56" width="106" height="64" rx="8" fill="#ffffff" stroke="#93c5fd" stroke-width="1.5"/>
+    <text x="71" y="82" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1e3a8a">User A</text>
+    <text x="71" y="102" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#2563eb">sid=A -&gt; S1</text>
+
+    <rect x="18" y="144" width="106" height="64" rx="8" fill="#ffffff" stroke="#e11d48" stroke-width="1.8"/>
+    <text x="71" y="170" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#9f1239">User B</text>
+    <text x="71" y="190" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#be123c">sid=B -&gt; S2</text>
+
+    <rect x="18" y="232" width="106" height="64" rx="8" fill="#ffffff" stroke="#93c5fd" stroke-width="1.5"/>
+    <text x="71" y="258" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1e3a8a">User C</text>
+    <text x="71" y="278" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#2563eb">sid=C -&gt; S3</text>
+
+    <!-- Sticky LB -->
+    <rect x="166" y="80" width="104" height="192" rx="8" fill="#ffffff" stroke="#64748b" stroke-width="1.5"/>
+    <text x="218" y="114" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">Sticky LB</text>
+    <text x="218" y="136" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Cookie / IP</text>
+    <text x="218" y="152" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Affinity</text>
+    <rect x="176" y="172" width="84" height="44" rx="6" fill="#fef2f2" stroke="#fda4af"/>
+    <text x="218" y="191" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#9f1239">Pinned!</text>
+    <text x="218" y="206" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#be123c">Cannot reroute</text>
+
+    <!-- Servers 1, 2 (Failed), 3 -->
+    <rect x="316" y="52" width="188" height="72" rx="8" fill="#ffffff" stroke="#059669" stroke-width="1.5"/>
+    <text x="330" y="74" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#065f46">Web Server 1 (AZ-1)</text>
+    <text x="330" y="94" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#334155">Local RAM: { sess_A }</text>
+    <text x="330" y="112" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#059669">Only S1 knows User A</text>
+
+    <rect x="316" y="140" width="188" height="76" rx="8" fill="#ffe4e6" stroke="#e11d48" stroke-width="2" class="warn-pulse"/>
+    <text x="330" y="162" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#9f1239">Web Server 2 (CRASHED)</text>
+    <text x="330" y="182" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#be123c">Local RAM: { sess_B } LOST!</text>
+    <text x="330" y="200" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#9f1239">401 Forced Re-Login</text>
+
+    <rect x="316" y="232" width="188" height="72" rx="8" fill="#ffffff" stroke="#059669" stroke-width="1.5"/>
+    <text x="330" y="254" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#065f46">Web Server 3 (AZ-3)</text>
+    <text x="330" y="274" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#334155">Local RAM: { sess_C }</text>
+    <text x="330" y="292" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#059669">Only S3 knows User C</text>
+
+    <!-- Arrows -->
+    <line x1="124" y1="88" x2="162" y2="112" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+    <line x1="124" y1="176" x2="162" y2="176" stroke="#e11d48" stroke-width="2" marker-end="url(#arr-red)"/>
+    <line x1="124" y1="264" x2="162" y2="240" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+
+    <line x1="270" y1="112" x2="312" y2="88" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+    <line x1="270" y1="176" x2="312" y2="176" stroke="#e11d48" stroke-width="2" stroke-dasharray="4 3"/>
+    <line x1="270" y1="240" x2="312" y2="264" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+
+    <!-- Red X over failed Server 2 path -->
+    <g transform="translate(292, 176)">
+      <circle cx="0" cy="0" r="10" fill="#e11d48"/>
+      <path d="M -4 -4 L 4 4 M 4 -4 L -4 4" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+    </g>
+
+    <circle class="smil-packet" r="4" fill="#e11d48" opacity="0">
+      <animateMotion dur="1.4s" repeatCount="indefinite" path="M 124 176 L 166 176 L 284 176"/>
+      <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="1.4s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- Left Failure Box -->
+    <rect x="18" y="322" width="486" height="66" rx="8" fill="#ffffff" stroke="#fda4af"/>
+    <text x="32" y="344" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#9f1239">Why Sticky Sessions Fail at Scale:</text>
+    <text x="32" y="362" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• Single AZ loss logs out 33% of users -&gt; IdP login thundering herd</text>
+    <text x="32" y="378" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• Blocks scale-in &amp; rolling deploys until pinned sessions drain</text>
+  </g>
+
+  <!-- ==================== RIGHT PANEL: STATELESS ==================== -->
+  <g transform="translate(574, 82)">
+    <rect x="0" y="0" width="522" height="404" rx="12" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+    <rect x="0" y="0" width="522" height="36" rx="12" fill="#047857"/>
+    <rect x="0" y="22" width="522" height="14" fill="#047857"/>
+    <text x="18" y="24" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13.5" font-weight="700" fill="#ffffff">MODERN STANDARD · Stateless Web Tier + Shared Store</text>
+
+    <!-- Users A, B, C -->
+    <rect x="18" y="56" width="96" height="64" rx="8" fill="#ffffff" stroke="#34d399" stroke-width="1.5"/>
+    <text x="66" y="82" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#065f46">User A</text>
+    <text x="66" y="102" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#059669">Any node OK</text>
+
+    <rect x="18" y="144" width="96" height="64" rx="8" fill="#ffffff" stroke="#059669" stroke-width="1.8"/>
+    <text x="66" y="170" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#065f46">User B</text>
+    <text x="66" y="190" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#059669">Seamless</text>
+
+    <rect x="18" y="232" width="96" height="64" rx="8" fill="#ffffff" stroke="#34d399" stroke-width="1.5"/>
+    <text x="66" y="258" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#065f46">User C</text>
+    <text x="66" y="278" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#059669">Any node OK</text>
+
+    <!-- Stateless LB -->
+    <rect x="148" y="80" width="94" height="192" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="195" y="122" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1e3a8a">P2C LB</text>
+    <text x="195" y="144" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#2563eb">Zero Cookie</text>
+    <text x="195" y="160" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#2563eb">Affinity</text>
+    <rect x="156" y="178" width="78" height="44" rx="6" fill="#ecfdf5" stroke="#6ee7b7"/>
+    <text x="195" y="197" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#065f46">Auto-Route</text>
+    <text x="195" y="212" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#047857">To any healthy</text>
+
+    <!-- Stateless Web Servers -->
+    <rect x="276" y="54" width="112" height="66" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="332" y="80" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#1e3a8a">Web 1</text>
+    <text x="332" y="99" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Stateless</text>
+
+    <rect x="276" y="142" width="112" height="66" rx="8" fill="#fff1f2" stroke="#e11d48" stroke-width="1.5" stroke-dasharray="4 3"/>
+    <text x="332" y="168" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#9f1239">Web 2 (Down)</text>
+    <text x="332" y="187" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#be123c">Zero data lost</text>
+
+    <rect x="276" y="230" width="112" height="66" rx="8" fill="#ffffff" stroke="#059669" stroke-width="1.8"/>
+    <text x="332" y="256" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#065f46">Web 3..N</text>
+    <text x="332" y="275" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#059669">Serves User B!</text>
+
+    <!-- Shared Session Store -->
+    <rect x="414" y="62" width="94" height="228" rx="10" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2"/>
+    <text x="461" y="94" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#4c1d95">Shared</text>
+    <text x="461" y="110" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#4c1d95">Session</text>
+    <text x="461" y="126" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#4c1d95">Store</text>
+    <text x="461" y="148" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#6d28d9">Valkey / NoSQL</text>
+    <rect x="422" y="164" width="78" height="26" rx="4" fill="#ffffff" stroke="#c4b5fd"/>
+    <text x="461" y="181" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#4c1d95">sess_A</text>
+    <rect x="422" y="196" width="78" height="26" rx="4" fill="#ffffff" stroke="#c4b5fd"/>
+    <text x="461" y="213" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#4c1d95">sess_B</text>
+    <rect x="422" y="228" width="78" height="26" rx="4" fill="#ffffff" stroke="#c4b5fd"/>
+    <text x="461" y="245" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#4c1d95">sess_C</text>
+    <text x="461" y="275" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#5b21b6">Multi-AZ</text>
+
+    <!-- Arrows -->
+    <path d="M 114 88 L 144 112" fill="none" stroke="#059669" stroke-width="1.8" marker-end="url(#arr-green)"/>
+    <path d="M 114 176 L 144 176" fill="none" stroke="#059669" stroke-width="2" class="flow-green" marker-end="url(#arr-green)"/>
+    <path d="M 114 264 L 144 240" fill="none" stroke="#059669" stroke-width="1.8" marker-end="url(#arr-green)"/>
+
+    <path d="M 242 112 L 272 88" fill="none" stroke="#059669" stroke-width="1.8" class="flow-green" marker-end="url(#arr-green)"/>
+    <!-- User B seamlessly routed to Web 3 when Web 2 is down -->
+    <path d="M 242 184 L 272 248" fill="none" stroke="#059669" stroke-width="2.2" class="flow-green" marker-end="url(#arr-green)"/>
+    <path d="M 242 248 L 272 264" fill="none" stroke="#059669" stroke-width="1.8" class="flow-green" marker-end="url(#arr-green)"/>
+
+    <path d="M 388 88 L 410 110" fill="none" stroke="#7c3aed" stroke-width="1.8" marker-end="url(#arr-violet)"/>
+    <path d="M 388 264 L 410 212" fill="none" stroke="#7c3aed" stroke-width="2" marker-end="url(#arr-violet)"/>
+
+    <circle class="smil-packet" r="4.5" fill="#059669" opacity="0">
+      <animateMotion dur="2.1s" repeatCount="indefinite" path="M 114 176 L 195 176 L 332 264 L 461 212"/>
+      <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="2.1s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- Right Benefits Box -->
+    <rect x="18" y="322" width="486" height="66" rx="8" fill="#ffffff" stroke="#6ee7b7"/>
+    <text x="32" y="344" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#065f46">Stateless Guarantees:</text>
+    <text x="32" y="362" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• 100% session survival across AZ loss &amp; instant revocation</text>
+    <text x="32" y="378" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• Unlocks elastic HPA autoscaling &amp; signed EdDSA JWT option</text>
+  </g>
+
+  <!-- Footer -->
+  <rect x="24" y="502" width="1072" height="58" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="42" y="526" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#0f172a"><tspan font-weight="700">Takeaway:</tspan> Never pin user sessions to web-node RAM; deploy the Shared Session Store in Multi-AZ mode (or use short-lived asymmetric JWTs) so it never becomes a SPOF.</text>
+  <text x="42" y="546" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#475569">Note: Ensure sticky-cookie rules on legacy load balancers are disabled during migration, otherwise traffic remains pinned to draining pods.</text>
+</svg>

@@ -1,0 +1,204 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 550" width="1120" height="550" role="img" aria-labelledby="title desc">
+  <title id="title">Stage 2: Load Balancer and Horizontal Web Pool</title>
+  <desc id="desc">Animated schematic showing clients resolving api.example.com to a Public VIP Load Balancer performing L4/L7 TLS termination and routing traffic via P2C or Least-Connections over a private RFC 1918 subnet to Web Server 1 and Web Server 2 while detecting Web Server 3 as degraded and dynamically rerouting packets away from it.</desc>
+  <defs>
+    <style>
+      .flow-blue { stroke-dasharray: 8 6; animation: dash-flow 1.4s linear infinite; }
+      .flow-green { stroke-dasharray: 8 6; animation: dash-flow 1.4s linear infinite; }
+      .flow-reroute { stroke-dasharray: 6 5; animation: dash-flow 1.1s linear infinite; }
+      .pulse-badge { animation: badge-pulse 2.2s ease-in-out infinite; }
+      .warn-pulse { animation: warn-blink 2s ease-in-out infinite; }
+      @keyframes dash-flow { to { stroke-dashoffset: -28; } }
+      @keyframes badge-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.72; } }
+      @keyframes warn-blink { 0%, 100% { stroke-opacity: 1; } 50% { stroke-opacity: 0.86; } }
+      @media (prefers-reduced-motion: reduce) {
+        * { animation: none !important; transition: none !important; }
+        .smil-packet { display: none !important; }
+      }
+    </style>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <marker id="arr-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+    </marker>
+    <marker id="arr-violet" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1120" height="550" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1120" height="62" rx="12" fill="#0f172a"/>
+  <rect x="0" y="46" width="1120" height="16" fill="#0f172a"/>
+  <text x="24" y="29" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#f8fafc">Stage 2 · Load Balancer &amp; Horizontal Web Pool (10k–100k DAU, 100–1,000 QPS)</text>
+  <text x="24" y="49" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#94a3b8">Clients hit a Public VIP Load Balancer (L4/L7) that terminates TLS and routes via P2C / Least-Conn across healthy RFC 1918 web servers</text>
+
+  <!-- CLIENTS + DNS -->
+  <g transform="translate(24, 96)">
+    <rect x="0" y="0" width="176" height="156" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+    <text x="16" y="26" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1e3a8a">Global Clients</text>
+    <text x="16" y="48" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#334155">• Web Browsers</text>
+    <text x="16" y="68" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#334155">• Mobile Apps</text>
+    <rect x="14" y="88" width="148" height="48" rx="6" fill="#ffffff" stroke="#93c5fd"/>
+    <text x="88" y="108" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" font-weight="700" fill="#1d4ed8">api.example.com</text>
+    <text x="88" y="125" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#64748b">Only talks to Public VIP</text>
+  </g>
+
+  <g transform="translate(24, 286)">
+    <rect x="0" y="0" width="176" height="126" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+    <text x="16" y="26" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#92400e">DNS A Record</text>
+    <rect x="14" y="42" width="148" height="42" rx="6" fill="#ffffff" stroke="#fcd34d"/>
+    <text x="88" y="60" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" fill="#78350f">LB Public VIP:</text>
+    <text x="88" y="76" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="700" fill="#b45309">203.0.113.50</text>
+    <text x="16" y="108" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#78350f">Web IPs stay unreachable</text>
+  </g>
+
+  <line x1="112" y1="252" x2="112" y2="282" stroke="#d97706" stroke-width="1.8" stroke-dasharray="4 3" marker-end="url(#arr-blue)"/>
+  <g class="pulse-badge" transform="translate(144, 268)">
+    <circle cx="0" cy="0" r="11" fill="#d97706"/>
+    <text x="0" y="4" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#ffffff">1</text>
+  </g>
+
+  <!-- LOAD BALANCER -->
+  <g transform="translate(256, 102)">
+    <rect x="0" y="0" width="234" height="310" rx="12" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+    <rect x="0" y="0" width="234" height="34" rx="12" fill="#1e40af"/>
+    <rect x="0" y="20" width="234" height="14" fill="#1e40af"/>
+    <text x="117" y="22" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#ffffff">Public VIP Load Balancer</text>
+
+    <rect x="16" y="48" width="202" height="58" rx="6" fill="#ffffff" stroke="#93c5fd"/>
+    <text x="28" y="68" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#1e3a8a">L4 / L7 Edge Termination</text>
+    <text x="28" y="85" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#2563eb">Maglev eBPF + Envoy ALB</text>
+    <text x="28" y="99" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">TLS 1.3 · HTTP/2 &amp; HTTP/3</text>
+
+    <rect x="16" y="118" width="202" height="62" rx="6" fill="#ffffff" stroke="#93c5fd"/>
+    <text x="28" y="138" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#1e3a8a">Routing Policy</text>
+    <text x="28" y="155" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#059669">P2C / Least-Connections</text>
+    <text x="28" y="170" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Avoids slow-node overload</text>
+
+    <rect x="16" y="192" width="202" height="54" rx="6" fill="#ecfdf5" stroke="#6ee7b7"/>
+    <text x="28" y="212" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">Active Health Checks</text>
+    <text x="28" y="229" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#047857">GET /readyz (5s · shallow)</text>
+
+    <rect x="16" y="256" width="202" height="40" rx="6" fill="#dbeafe" stroke="#60a5fa"/>
+    <text x="117" y="274" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#1e40af">HA Pair Across 2+ AZs</text>
+    <text x="117" y="289" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#1e3a8a">Active/Active VIP prevents LB SPOF</text>
+  </g>
+
+  <!-- Step 2: Client -> LB -->
+  <path d="M 200 174 L 252 174" fill="none" stroke="#2563eb" stroke-width="2.4" class="flow-blue" marker-end="url(#arr-blue)"/>
+  <circle class="smil-packet" r="5" fill="#2563eb" opacity="0">
+    <animateMotion dur="1.6s" repeatCount="indefinite" path="M 200 174 L 252 174"/>
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="1.6s" repeatCount="indefinite"/>
+  </circle>
+  <g class="pulse-badge" transform="translate(226, 150)">
+    <circle cx="0" cy="0" r="11" fill="#2563eb"/>
+    <text x="0" y="4" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#ffffff">2</text>
+  </g>
+
+  <!-- PRIVATE SUBNET CONTAINER -->
+  <g transform="translate(566, 84)">
+    <rect x="0" y="0" width="530" height="354" rx="12" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <rect x="16" y="-11" width="268" height="22" rx="11" fill="#0f172a"/>
+    <text x="150" y="4" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" font-weight="700" fill="#f8fafc">Private RFC 1918 Subnet (10.0.1.0/24)</text>
+
+    <!-- Web Server 1 -->
+    <rect x="24" y="24" width="250" height="90" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+    <text x="38" y="46" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#065f46">Web Server 1</text>
+    <rect x="178" y="30" width="84" height="20" rx="10" fill="#059669"/>
+    <text x="220" y="44" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="700" fill="#ffffff">HEALTHY</text>
+    <text x="38" y="66" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" fill="#047857">10.0.1.11:8080 · 12 active</text>
+    <text x="38" y="84" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Serving traffic (P2C pick)</text>
+    <text x="38" y="101" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#065f46">p99 = 14 ms · 0 errors</text>
+
+    <!-- Web Server 2 -->
+    <rect x="24" y="132" width="250" height="90" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+    <text x="38" y="154" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#065f46">Web Server 2</text>
+    <rect x="178" y="138" width="84" height="20" rx="10" fill="#059669"/>
+    <text x="220" y="152" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="700" fill="#ffffff">HEALTHY</text>
+    <text x="38" y="174" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" fill="#047857">10.0.1.12:8080 · 11 active</text>
+    <text x="38" y="192" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Absorbing rerouted load</text>
+    <text x="38" y="209" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#065f46">p99 = 15 ms · 0 errors</text>
+
+    <!-- Web Server 3 Degraded -->
+    <rect x="24" y="240" width="250" height="96" rx="8" fill="#fff1f2" stroke="#e11d48" stroke-width="2" class="warn-pulse"/>
+    <text x="38" y="262" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#9f1239">Web Server 3</text>
+    <rect x="170" y="246" width="92" height="20" rx="10" fill="#e11d48"/>
+    <text x="216" y="260" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="700" fill="#ffffff">DEGRADED</text>
+    <text x="38" y="282" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" fill="#be123c">10.0.1.13:8080 · 503 / Hang</text>
+    <text x="38" y="300" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#9f1239">Ejected by outlier detection</text>
+    <text x="38" y="318" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#be123c">Traffic rerouted to Nodes 1 &amp; 2</text>
+
+    <!-- Shared DB Tier -->
+    <rect x="334" y="94" width="176" height="168" rx="10" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.8"/>
+    <text x="422" y="122" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#4c1d95">Database Tier</text>
+    <text x="422" y="142" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" fill="#6d28d9">10.0.2.10:5432</text>
+    <rect x="350" y="158" width="144" height="86" rx="6" fill="#ffffff" stroke="#c4b5fd"/>
+    <text x="422" y="178" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#4c1d95">PostgreSQL Primary</text>
+    <text x="422" y="198" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Served by healthy</text>
+    <text x="422" y="214" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">web instances</text>
+    <text x="422" y="232" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#6d28d9">Private mTLS only</text>
+
+    <!-- Web 1 & Web 2 to DB -->
+    <path d="M 274 69 L 330 144" fill="none" stroke="#7c3aed" stroke-width="1.8" class="flow-green" marker-end="url(#arr-violet)"/>
+    <path d="M 274 177 L 330 177" fill="none" stroke="#7c3aed" stroke-width="1.8" class="flow-green" marker-end="url(#arr-violet)"/>
+    <circle class="smil-packet" r="4" fill="#7c3aed" opacity="0">
+      <animateMotion dur="1.8s" repeatCount="indefinite" path="M 274 69 L 330 144"/>
+      <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="1.8s" repeatCount="indefinite"/>
+    </circle>
+    <circle class="smil-packet" r="4" fill="#7c3aed" opacity="0">
+      <animateMotion dur="1.8s" begin="0.9s" repeatCount="indefinite" path="M 274 177 L 330 177"/>
+      <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="1.8s" begin="0.9s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <!-- Step 3: LB -> Healthy Web 1 & 2, and Blocked/Rerouted away from Web 3 -->
+  <path d="M 490 198 C 528 198, 540 153, 586 153" fill="none" stroke="#059669" stroke-width="2.4" class="flow-green" marker-end="url(#arr-green)"/>
+  <path d="M 490 250 L 586 258" fill="none" stroke="#059669" stroke-width="2.4" class="flow-green" marker-end="url(#arr-green)"/>
+  <circle class="smil-packet" r="5" fill="#059669" opacity="0">
+    <animateMotion dur="1.7s" repeatCount="indefinite" path="M 490 198 C 528 198, 540 153, 586 153"/>
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="1.7s" repeatCount="indefinite"/>
+  </circle>
+  <circle class="smil-packet" r="5" fill="#059669" opacity="0">
+    <animateMotion dur="1.7s" begin="0.6s" repeatCount="indefinite" path="M 490 250 L 586 258"/>
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="1.7s" begin="0.6s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Blocked path to Web 3 + Reroute arc -->
+  <path d="M 490 318 C 520 318, 535 370, 584 370" fill="none" stroke="#e11d48" stroke-width="1.8" stroke-dasharray="4 4"/>
+  <!-- Red X on failed path -->
+  <g transform="translate(534, 344)">
+    <circle cx="0" cy="0" r="10" fill="#e11d48"/>
+    <path d="M -4 -4 L 4 4 M 4 -4 L -4 4" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+  </g>
+  <!-- Reroute path curving up to Web 2 -->
+  <path d="M 500 326 C 516 294, 544 272, 586 272" fill="none" stroke="#d97706" stroke-width="2" class="flow-reroute" marker-end="url(#arr-green)"/>
+  <circle class="smil-packet" r="4.5" fill="#d97706" opacity="0">
+    <animateMotion dur="1.5s" repeatCount="indefinite" path="M 500 326 C 516 294, 544 272, 586 272"/>
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+
+  <g class="pulse-badge" transform="translate(528, 134)">
+    <circle cx="0" cy="0" r="11" fill="#059669"/>
+    <text x="0" y="4" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#ffffff">3</text>
+  </g>
+  <text x="528" y="388" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#9f1239">Rerouted</text>
+
+  <!-- Footer -->
+  <rect x="24" y="458" width="1072" height="72" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <circle cx="46" cy="482" r="5" fill="#2563eb"/>
+  <text x="58" y="486" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" fill="#334155">1–2. Client -&gt; Public VIP</text>
+  <circle cx="212" cy="482" r="5" fill="#059669"/>
+  <text x="224" y="486" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" fill="#334155">3. P2C / Least-Conn to Healthy Pool</text>
+  <circle cx="446" cy="482" r="5" fill="#e11d48"/>
+  <text x="458" y="486" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" fill="#9f1239">Degraded Node Ejected &amp; Rerouted</text>
+  <circle cx="688" cy="482" r="5" fill="#d97706"/>
+  <text x="700" y="486" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" fill="#92400e">Reroute Recovery</text>
+  <text x="42" y="512" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" fill="#0f172a"><tspan font-weight="700">Engineering Takeaway:</tspan> Removes web-tier SPOF and enables zero-downtime rolling deploys. Always deploy redundant LBs across AZs and avoid deep DB checks inside /readyz.</text>
+</svg>

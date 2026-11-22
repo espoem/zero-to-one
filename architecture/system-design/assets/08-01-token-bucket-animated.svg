@@ -1,0 +1,228 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 560" width="1120" height="560" role="img" aria-labelledby="title desc">
+  <title id="title">Token Bucket Algorithm Step-by-Step Animated Mechanics</title>
+  <desc id="desc">Animated Token Bucket rate limiter with capacity B equals 4 tokens and refill rate R equals 1 token per second. Demonstrates a burst of 4 admitted requests at t equals 0s, rejection of a 5th request at t equals 0.2s with 429, lazy refill of 1 token at t equals 1.0s, and subsequent 200 OK admission while maintaining O(1) memory and invariant admitted(s) &lt;= B + R*s.</desc>
+
+  <style>
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    /* 12s cycle:
+       0-25%  (0-3s): Step 1 — t=0.0s burst of 4 consumes all 4 tokens -> 4x 200 OK
+       25-50% (3-6s): Step 2 — t=0.2s 5th arrives, tokens=0.2 below 1 -> 429
+       50-75% (6-9s): Step 3 — t=1.0s refill droplet adds +1 token -> tokens=1.0
+       75-100%(9-12s):Step 4 — t=1.0s next request consumes token -> 200 OK
+    */
+
+    @keyframes tok-4 {
+      0%, 5% { opacity: 1; transform: scale(1); }
+      9%, 96% { opacity: 0.12; transform: scale(0.86); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    @keyframes tok-3 {
+      0%, 10% { opacity: 1; transform: scale(1); }
+      14%, 96% { opacity: 0.12; transform: scale(0.86); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    @keyframes tok-2 {
+      0%, 15% { opacity: 1; transform: scale(1); }
+      19%, 96% { opacity: 0.12; transform: scale(0.86); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    @keyframes tok-1 {
+      0%, 20% { opacity: 1; transform: scale(1); }
+      24%, 58% { opacity: 0.12; transform: scale(0.86); }
+      63%, 78% { opacity: 1; transform: scale(1); }
+      84%, 96% { opacity: 0.12; transform: scale(0.86); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes bucket-warn {
+      0%, 23%  { stroke: #334155; fill: #f1f5f9; }
+      26%, 49% { stroke: #e11d48; fill: #fff1f2; }
+      52%, 74% { stroke: #2563eb; fill: #eff6ff; }
+      77%, 100%{ stroke: #334155; fill: #f1f5f9; }
+    }
+
+    @keyframes drop-fall {
+      0%, 48% { transform: translateY(0px); opacity: 0; }
+      52% { transform: translateY(0px); opacity: 1; }
+      62% { transform: translateY(181px); opacity: 1; }
+      65%, 100% { transform: translateY(181px); opacity: 0; }
+    }
+
+    @keyframes step-hl-1 {
+      0%, 24% { opacity: 1; stroke: #059669; stroke-width: 2.5; }
+      25%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; }
+    }
+    @keyframes step-hl-2 {
+      0%, 24% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; }
+      25%, 49% { opacity: 1; stroke: #e11d48; stroke-width: 2.5; }
+      50%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; }
+    }
+    @keyframes step-hl-3 {
+      0%, 49% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; }
+      50%, 74% { opacity: 1; stroke: #2563eb; stroke-width: 2.5; }
+      75%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; }
+    }
+    @keyframes step-hl-4 {
+      0%, 74% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; }
+      75%, 100% { opacity: 1; stroke: #059669; stroke-width: 2.5; }
+    }
+
+    @keyframes deny-badge {
+      0%, 24% { opacity: 0; }
+      28%, 48% { opacity: 1; }
+      52%, 100% { opacity: 0; }
+    }
+
+    .t4 { transform-box: fill-box; transform-origin: center; animation: tok-4 12s ease-in-out infinite; }
+    .t3 { transform-box: fill-box; transform-origin: center; animation: tok-3 12s ease-in-out infinite; }
+    .t2 { transform-box: fill-box; transform-origin: center; animation: tok-2 12s ease-in-out infinite; }
+    .t1 { transform-box: fill-box; transform-origin: center; animation: tok-1 12s ease-in-out infinite; }
+    .bucket-box { animation: bucket-warn 12s linear infinite; }
+    .drop { animation: drop-fall 12s ease-in-out infinite; }
+    .deny-pop { animation: deny-badge 12s ease-in-out infinite; }
+    .s1 { animation: step-hl-1 12s linear infinite; }
+    .s2 { animation: step-hl-2 12s linear infinite; }
+    .s3 { animation: step-hl-3 12s linear infinite; }
+    .s4 { animation: step-hl-4 12s linear infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .t1, .t2, .t3, .t4, .bucket-box, .drop, .deny-pop, .s1, .s2, .s3, .s4 {
+        animation: none !important;
+      }
+      .t1, .t2, .t3, .t4 { opacity: 1 !important; transform: none !important; }
+      .bucket-box { stroke: #334155 !important; fill: #f1f5f9 !important; }
+      .drop { opacity: 0 !important; }
+      .deny-pop, .s1, .s2, .s3, .s4 { opacity: 1 !important; }
+    }
+  </style>
+
+  <defs>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1120" height="560" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1120" height="60" rx="12" fill="#0f172a"/>
+  <rect x="0" y="44" width="1120" height="16" fill="#0f172a"/>
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Token Bucket Algorithm — Step-by-Step Mechanics</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">Parameters: Capacity B = 4 tokens · Refill Rate R = 1 token/s · O(1) State · Invariant: admitted(s) ≤ B + R·s</text>
+
+  <!-- LEFT PANEL: BUCKET & REFILL DROPPER -->
+  <rect x="24" y="76" width="448" height="404" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="42" y="102" class="sans" font-size="14" font-weight="700" fill="#0f172a">Bucket State (B = 4, R = 1 token/s)</text>
+
+  <!-- Refill Dropper Box -->
+  <rect x="114" y="114" width="268" height="46" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="248" y="134" class="sans" font-size="12" font-weight="700" fill="#1e3a8a" text-anchor="middle">Lazy Refill Dropper (+1 token / s)</text>
+  <text x="248" y="150" class="mono" font-size="10" fill="#1e40af" text-anchor="middle">tokens = min(B, tokens + Δt · R)</text>
+  <line x1="248" y1="160" x2="248" y2="188" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#arr-blue)"/>
+
+  <!-- Animated Refill Token Droplet -->
+  <g class="drop">
+    <circle cx="248" cy="176" r="14" fill="#2563eb" stroke="#ffffff" stroke-width="2"/>
+    <text x="248" y="180" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">+T</text>
+  </g>
+
+  <!-- Bucket Container -->
+  <rect class="bucket-box" x="148" y="196" width="200" height="190" rx="10" fill="#f1f5f9" stroke="#334155" stroke-width="2.5"/>
+  <text x="248" y="216" class="mono" font-size="10.5" font-weight="700" fill="#475569" text-anchor="middle">CAPACITY B = 4</text>
+
+  <!-- 4 Token Slots inside bucket -->
+  <rect x="166" y="226" width="164" height="34" rx="6" fill="#e2e8f0" stroke="#cbd5e1"/>
+  <g class="t4">
+    <circle cx="200" cy="243" r="12" fill="#2563eb"/>
+    <text x="200" y="247" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">T4</text>
+    <text x="270" y="247" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">Token 4</text>
+  </g>
+
+  <rect x="166" y="264" width="164" height="34" rx="6" fill="#e2e8f0" stroke="#cbd5e1"/>
+  <g class="t3">
+    <circle cx="200" cy="281" r="12" fill="#2563eb"/>
+    <text x="200" y="285" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">T3</text>
+    <text x="270" y="285" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">Token 3</text>
+  </g>
+
+  <rect x="166" y="302" width="164" height="34" rx="6" fill="#e2e8f0" stroke="#cbd5e1"/>
+  <g class="t2">
+    <circle cx="200" cy="319" r="12" fill="#2563eb"/>
+    <text x="200" y="323" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">T2</text>
+    <text x="270" y="323" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">Token 2</text>
+  </g>
+
+  <rect x="166" y="340" width="164" height="34" rx="6" fill="#e2e8f0" stroke="#cbd5e1"/>
+  <g class="t1">
+    <circle cx="200" cy="357" r="12" fill="#059669"/>
+    <text x="200" y="361" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">T1</text>
+    <text x="270" y="361" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Token 1</text>
+  </g>
+
+  <!-- 429 Empty Alert Badge -->
+  <g class="deny-pop">
+    <rect x="358" y="274" width="102" height="50" rx="6" fill="#fff1f2" stroke="#e11d48" stroke-width="1.5"/>
+    <text x="409" y="295" class="mono" font-size="10.5" font-weight="700" fill="#9f1239" text-anchor="middle">tokens &lt; 1</text>
+    <text x="409" y="313" class="mono" font-size="10" font-weight="700" fill="#e11d48" text-anchor="middle">429 REJECT</text>
+  </g>
+
+  <!-- State & Invariant Summary Box -->
+  <rect x="42" y="398" width="412" height="68" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.2"/>
+  <text x="56" y="420" class="mono" font-size="11" font-weight="700" fill="#5b21b6">Invariant: admitted(s) ≤ B + R·s  (4 + 1·s)</text>
+  <text x="56" y="438" class="mono" font-size="10.5" fill="#334155">State: { tokens: float64, lastRefillMs: int64 }</text>
+  <text x="56" y="454" class="sans" font-size="10.5" fill="#4c1d95">O(1) space &amp; time · Zero background refill timers</text>
+
+  <!-- RIGHT PANEL: STEP-BY-STEP TIMELINE -->
+  <rect x="492" y="76" width="604" height="404" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="512" y="102" class="sans" font-size="14" font-weight="700" fill="#0f172a">Animated Execution Timeline (12s Loop)</text>
+
+  <!-- Step 1 -->
+  <rect x="512" y="118" width="564" height="78" rx="8" fill="#ecfdf5" class="s1"/>
+  <rect x="524" y="130" width="68" height="24" rx="5" fill="#059669"/>
+  <text x="558" y="146" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">t = 0.0s</text>
+  <text x="604" y="146" class="sans" font-size="13" font-weight="700" fill="#065f46">1. Burst of 4 requests arrives</text>
+  <text x="524" y="170" class="mono" font-size="11" fill="#334155">tokens: 4 → 3 → 2 → 1 → 0  (consumes 1 token each)</text>
+  <text x="524" y="186" class="sans" font-size="10.5" fill="#047857">Burst tolerance B = 4 absorbs sudden traffic spike cleanly.</text>
+  <rect x="960" y="132" width="102" height="28" rx="6" fill="#059669"/>
+  <text x="1011" y="150" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">4× 200 OK</text>
+
+  <!-- Step 2 -->
+  <rect x="512" y="206" width="564" height="78" rx="8" fill="#fff1f2" class="s2"/>
+  <rect x="524" y="218" width="68" height="24" rx="5" fill="#e11d48"/>
+  <text x="558" y="234" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">t = 0.2s</text>
+  <text x="604" y="234" class="sans" font-size="13" font-weight="700" fill="#9f1239">2. 5th request arrives (bucket depleted)</text>
+  <text x="524" y="258" class="mono" font-size="11" fill="#334155">refill = 0.2s × 1/s = 0.2 tokens  (&lt; 1 required)</text>
+  <text x="524" y="274" class="mono" font-size="10.5" fill="#be123c">retryAfter = (1 - 0.2) / 1 = 0.8s (800 ms)</text>
+  <rect x="960" y="220" width="102" height="28" rx="6" fill="#e11d48"/>
+  <text x="1011" y="238" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">429 SHED</text>
+
+  <!-- Step 3 -->
+  <rect x="512" y="294" width="564" height="78" rx="8" fill="#eff6ff" class="s3"/>
+  <rect x="524" y="306" width="68" height="24" rx="5" fill="#2563eb"/>
+  <text x="558" y="322" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">t = 1.0s</text>
+  <text x="604" y="322" class="sans" font-size="13" font-weight="700" fill="#1e3a8a">3. Lazy Refill computes elapsed tokens</text>
+  <text x="524" y="346" class="mono" font-size="11" fill="#334155">Δt = 0.8s since last check: 0.2 + 0.8 × 1 = 1.0 token</text>
+  <text x="524" y="362" class="sans" font-size="10.5" fill="#1e40af">Bucket reaches 1.0 token on demand without timer threads.</text>
+  <rect x="960" y="308" width="102" height="28" rx="6" fill="#2563eb"/>
+  <text x="1011" y="326" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">+1 TOKEN</text>
+
+  <!-- Step 4 -->
+  <rect x="512" y="382" width="564" height="78" rx="8" fill="#ecfdf5" class="s4"/>
+  <rect x="524" y="394" width="68" height="24" rx="5" fill="#059669"/>
+  <text x="558" y="410" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">t = 1.0s</text>
+  <text x="604" y="410" class="sans" font-size="13" font-weight="700" fill="#065f46">4. Next request admitted using refilled token</text>
+  <text x="524" y="434" class="mono" font-size="11" fill="#334155">tokens: 1.0 → 0.0  ·  RateLimit-Remaining: 0</text>
+  <text x="524" y="450" class="sans" font-size="10.5" fill="#047857">Steady-state throughput converges strictly to R = 1 req/s.</text>
+  <rect x="960" y="396" width="102" height="28" rx="6" fill="#059669"/>
+  <text x="1011" y="414" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">200 OK</text>
+
+  <!-- FOOTER -->
+  <rect x="24" y="494" width="1072" height="46" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="42" y="522" class="sans" font-size="11.5" font-weight="600" fill="#1e3a8a">Takeaway: Token Bucket permits controlled bursts up to capacity B = 4 while capping long-run admission rate to R = 1/s in O(1) memory.</text>
+</svg>

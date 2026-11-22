@@ -219,6 +219,47 @@ export class TokenBucketLimiter implements RateLimiter {
   }
 }
 
+export class LeakyBucketLimiter implements RateLimiter {
+  private readonly capacity: number;
+  private readonly leakRatePerSec: number;
+  private readonly clock: Clock;
+  private readonly buckets = new Map<string, { water: number; lastLeakMs: number }>();
+
+  constructor(capacity: number, leakRatePerSec: number, clock: Clock) {
+    if (capacity <= 0 || leakRatePerSec <= 0) {
+      throw new RangeError('capacity and leakRatePerSec must be positive');
+    }
+    this.capacity = capacity;
+    this.leakRatePerSec = leakRatePerSec;
+    this.clock = clock;
+  }
+
+  allow(key: string): RateLimitDecision {
+    const now = this.clock.now();
+    const existing = this.buckets.get(key) ?? { water: 0, lastLeakMs: now };
+    const elapsedSec = Math.max(0, now - existing.lastLeakMs) / 1000;
+    const water = Math.max(0, existing.water - elapsedSec * this.leakRatePerSec);
+
+    if (water + 1 <= this.capacity) {
+      const nextWater = water + 1;
+      this.buckets.set(key, { water: nextWater, lastLeakMs: now });
+      return {
+        allowed: true,
+        remaining: Math.floor(this.capacity - nextWater),
+        retryAfterMs: 0,
+      };
+    }
+
+    this.buckets.set(key, { water, lastLeakMs: now });
+    const retryAfterMs = Math.ceil(((water + 1 - this.capacity) / this.leakRatePerSec) * 1000);
+    return {
+      allowed: false,
+      remaining: Math.floor(this.capacity - water),
+      retryAfterMs,
+    };
+  }
+}
+
 export class FixedWindowLimiter implements RateLimiter {
   private readonly limit: number;
   private readonly windowMs: number;
@@ -251,6 +292,59 @@ export class FixedWindowLimiter implements RateLimiter {
       allowed: false,
       remaining: 0,
       retryAfterMs: Math.max(0, nextWindowStart - now),
+    };
+  }
+}
+
+export class SlidingWindowLogLimiter implements RateLimiter {
+  private readonly limit: number;
+  private readonly windowMs: number;
+  private readonly clock: Clock;
+  private readonly logs = new Map<string, number[]>();
+
+  constructor(limit: number, windowMs: number, clock: Clock) {
+    if (limit <= 0 || windowMs <= 0) {
+      throw new RangeError('limit and windowMs must be positive');
+    }
+    this.limit = limit;
+    this.windowMs = windowMs;
+    this.clock = clock;
+  }
+
+  allow(key: string): RateLimitDecision {
+    const now = this.clock.now();
+    const cutoff = now - this.windowMs;
+    const log = this.logs.get(key) ?? [];
+
+    let evictCount = 0;
+    while (evictCount < log.length) {
+      const ts = log[evictCount];
+      if (ts === undefined || ts > cutoff) {
+        break;
+      }
+      evictCount += 1;
+    }
+    if (evictCount > 0) {
+      log.splice(0, evictCount);
+    }
+
+    if (log.length < this.limit) {
+      log.push(now);
+      this.logs.set(key, log);
+      return {
+        allowed: true,
+        remaining: this.limit - log.length,
+        retryAfterMs: 0,
+      };
+    }
+
+    this.logs.set(key, log);
+    const oldest = log[0] ?? now;
+    const retryAfterMs = Math.max(1, oldest + this.windowMs - now);
+    return {
+      allowed: false,
+      remaining: 0,
+      retryAfterMs,
     };
   }
 }

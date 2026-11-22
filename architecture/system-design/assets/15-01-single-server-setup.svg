@@ -1,0 +1,181 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 520" width="1120" height="520" role="img" aria-labelledby="title desc">
+  <title id="title">Stage 0: Single-Server Setup</title>
+  <desc id="desc">Animated schematic showing Stage 0 single-server architecture where browser and mobile clients resolve api.example.com via DNS to 203.0.113.10 and send HTTPS requests to a single host running the reverse proxy, application runtime, local database, and local cache on shared CPU, RAM, and NVMe IOPS.</desc>
+  <defs>
+    <style>
+      .flow-blue { stroke-dasharray: 8 6; animation: dash-flow 1.4s linear infinite; }
+      .flow-green { stroke-dasharray: 8 6; animation: dash-rev 1.4s linear infinite; }
+      .pulse-badge { animation: badge-pulse 2.4s ease-in-out infinite; }
+      @keyframes dash-flow { to { stroke-dashoffset: -28; } }
+      @keyframes dash-rev { to { stroke-dashoffset: 28; } }
+      @keyframes badge-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.72; } }
+      @media (prefers-reduced-motion: reduce) {
+        * { animation: none !important; transition: none !important; }
+        .smil-packet { display: none !important; }
+      }
+    </style>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <marker id="arr-violet" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed"/>
+    </marker>
+    <marker id="arr-slate" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1120" height="520" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1120" height="62" rx="12" fill="#0f172a"/>
+  <rect x="0" y="46" width="1120" height="16" fill="#0f172a"/>
+  <text x="24" y="29" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#f8fafc">Stage 0 · Single-Server Setup (1–100 DAU, &lt; 5 QPS)</text>
+  <text x="24" y="49" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#94a3b8">One DNS A record points all web and mobile traffic to a single host running Reverse Proxy, App, Local DB, and Cache</text>
+
+  <!-- CLIENTS -->
+  <g transform="translate(26, 94)">
+    <rect x="0" y="0" width="210" height="132" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+    <text x="16" y="25" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1e3a8a">Web Browser Client</text>
+    <rect x="16" y="38" width="178" height="32" rx="6" fill="#ffffff" stroke="#93c5fd"/>
+    <text x="105" y="58" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="600" fill="#1d4ed8">https://api.example.com</text>
+    <text x="16" y="92" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#334155">• Requests HTML / JS / CSS</text>
+    <text x="16" y="111" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#334155">• TLS 1.3 over TCP/QUIC</text>
+  </g>
+
+  <g transform="translate(26, 254)">
+    <rect x="0" y="0" width="210" height="132" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+    <text x="16" y="25" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1e3a8a">Mobile App Client</text>
+    <rect x="16" y="38" width="178" height="32" rx="6" fill="#ffffff" stroke="#93c5fd"/>
+    <text x="105" y="58" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="600" fill="#1d4ed8">api.example.com/v1</text>
+    <text x="16" y="92" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#334155">• HTTP/JSON or Protobuf</text>
+    <text x="16" y="111" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#334155">• Hits identical host socket</text>
+  </g>
+
+  <!-- DNS RESOLVER -->
+  <g transform="translate(292, 198)">
+    <rect x="0" y="0" width="194" height="148" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+    <text x="16" y="26" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#92400e">DNS Resolver</text>
+    <rect x="16" y="40" width="162" height="54" rx="6" fill="#ffffff" stroke="#fcd34d"/>
+    <text x="97" y="60" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" fill="#78350f">A api.example.com</text>
+    <text x="97" y="80" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="700" fill="#b45309">-&gt; 203.0.113.10</text>
+    <text x="16" y="114" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#78350f">• Cached at ISP (TTL 300s)</text>
+    <text x="16" y="132" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#78350f">• Single static public IP</text>
+  </g>
+
+  <!-- Step 1: DNS Lookup -->
+  <path id="p-dns-1" d="M 236 176 L 292 232" fill="none" stroke="#d97706" stroke-width="2" class="flow-blue" marker-end="url(#arr-slate)"/>
+  <path id="p-dns-2" d="M 236 320 L 292 288" fill="none" stroke="#d97706" stroke-width="2" class="flow-blue" marker-end="url(#arr-slate)"/>
+  <circle class="smil-packet" r="4.5" fill="#d97706" opacity="0">
+    <animateMotion dur="2.2s" repeatCount="indefinite" path="M 236 176 L 292 232"/>
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="2.2s" repeatCount="indefinite"/>
+  </circle>
+  <circle class="smil-packet" r="4.5" fill="#d97706" opacity="0">
+    <animateMotion dur="2.2s" begin="1.1s" repeatCount="indefinite" path="M 292 232 L 236 176"/>
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="2.2s" begin="1.1s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Step 1 Badge -->
+  <g class="pulse-badge" transform="translate(262, 174)">
+    <circle cx="0" cy="0" r="12" fill="#d97706"/>
+    <text x="0" y="4" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#ffffff">1</text>
+  </g>
+  <text x="280" y="178" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#92400e">DNS Lookup</text>
+
+  <!-- SINGLE HOST CONTAINER -->
+  <g transform="translate(556, 86)">
+    <rect x="0" y="0" width="538" height="332" rx="12" fill="#ffffff" stroke="#0f172a" stroke-width="2"/>
+    <rect x="0" y="0" width="538" height="34" rx="12" fill="#1e293b"/>
+    <rect x="0" y="20" width="538" height="14" fill="#1e293b"/>
+    <text x="16" y="22" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#f8fafc">Single Host (203.0.113.10 · Shared Kernel, RAM &amp; Disk)</text>
+    <rect x="424" y="6" width="102" height="22" rx="11" fill="#e11d48"/>
+    <text x="475" y="21" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#ffffff">TOTAL SPOF</text>
+
+    <!-- Reverse Proxy -->
+    <rect x="18" y="52" width="222" height="96" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+    <text x="32" y="74" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#1e3a8a">Reverse Proxy</text>
+    <text x="32" y="92" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" fill="#2563eb">Nginx / Caddy (:443)</text>
+    <text x="32" y="112" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• TLS 1.3 termination</text>
+    <text x="32" y="130" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• Static file serving</text>
+
+    <!-- App Runtime -->
+    <rect x="298" y="52" width="222" height="96" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+    <text x="312" y="74" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#065f46">App Runtime</text>
+    <text x="312" y="92" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" fill="#059669">Node / Go / Python (:8080)</text>
+    <text x="312" y="112" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• Request handlers &amp; auth</text>
+    <text x="312" y="130" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• In-proc cron &amp; GC bursts</text>
+
+    <!-- Local DB -->
+    <rect x="18" y="178" width="244" height="96" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+    <text x="32" y="200" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#4c1d95">Local Database</text>
+    <text x="32" y="218" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" fill="#6d28d9">PostgreSQL / SQLite (localhost)</text>
+    <text x="32" y="238" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• Zero-hop Unix socket IPC</text>
+    <text x="32" y="256" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• WAL fsync on local disk</text>
+
+    <!-- Local Cache -->
+    <rect x="284" y="178" width="236" height="96" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+    <text x="298" y="200" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#92400e">Local Cache &amp; Sessions</text>
+    <text x="298" y="218" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" fill="#b45309">In-RAM LRU / Local Valkey</text>
+    <text x="298" y="238" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• Sub-0.1ms memory reads</text>
+    <text x="298" y="256" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• Competes with DB page cache</text>
+
+    <!-- Internal arrows inside host -->
+    <line x1="240" y1="100" x2="294" y2="100" stroke="#2563eb" stroke-width="2" marker-end="url(#arr-blue)"/>
+    <path d="M 409 148 L 409 162 L 140 162 L 140 174" fill="none" stroke="#7c3aed" stroke-width="2" marker-end="url(#arr-violet)"/>
+    <line x1="409" y1="148" x2="409" y2="174" stroke="#d97706" stroke-width="1.8" marker-end="url(#arr-slate)"/>
+
+    <!-- Contention Warning Bar -->
+    <rect x="18" y="288" width="502" height="32" rx="6" fill="#fff1f2" stroke="#fda4af" stroke-width="1.2"/>
+    <text x="269" y="308" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#9f1239">Contention: App GC evicts DB page cache · Static I/O blocks WAL fsync · Zero HA</text>
+  </g>
+
+  <!-- Step 2: HTTPS Request from Clients to Host -->
+  <path id="req-top" d="M 236 116 C 360 92, 450 104, 570 138" fill="none" stroke="#2563eb" stroke-width="2.2" class="flow-blue" marker-end="url(#arr-blue)"/>
+  <path id="req-bot" d="M 236 356 C 390 388, 490 340, 570 198" fill="none" stroke="#2563eb" stroke-width="2.2" class="flow-blue" marker-end="url(#arr-blue)"/>
+
+  <circle class="smil-packet" r="5" fill="#2563eb" opacity="0">
+    <animateMotion dur="2.4s" repeatCount="indefinite" path="M 236 116 C 360 92, 450 104, 570 138"/>
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="2.4s" repeatCount="indefinite"/>
+  </circle>
+  <circle class="smil-packet" r="5" fill="#2563eb" opacity="0">
+    <animateMotion dur="2.4s" begin="0.8s" repeatCount="indefinite" path="M 236 356 C 390 388, 490 340, 570 198"/>
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="2.4s" begin="0.8s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Step 2 Badge -->
+  <g class="pulse-badge" transform="translate(388, 92)">
+    <circle cx="0" cy="0" r="12" fill="#2563eb"/>
+    <text x="0" y="4" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#ffffff">2</text>
+  </g>
+  <text x="406" y="96" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e40af">HTTP/TLS Request</text>
+
+  <!-- Step 3: HTML / JSON Response -->
+  <path id="resp-path" d="M 570 162 C 450 162, 350 150, 238 140" fill="none" stroke="#059669" stroke-width="2" class="flow-green" marker-end="url(#arr-green)"/>
+  <circle class="smil-packet" r="5" fill="#059669" opacity="0">
+    <animateMotion dur="2.4s" begin="1.2s" repeatCount="indefinite" path="M 570 162 C 450 162, 350 150, 238 140"/>
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="2.4s" begin="1.2s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Step 3 Badge -->
+  <g class="pulse-badge" transform="translate(388, 178)">
+    <circle cx="0" cy="0" r="12" fill="#059669"/>
+    <text x="0" y="4" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#ffffff">3</text>
+  </g>
+  <text x="406" y="182" text-anchor="start" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">HTML / JSON Response</text>
+
+  <!-- Footer Legend / Takeaway -->
+  <rect x="26" y="438" width="1068" height="62" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <circle cx="48" cy="460" r="5" fill="#d97706"/>
+  <text x="60" y="464" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" fill="#334155">1. DNS A Record</text>
+  <circle cx="176" cy="460" r="5" fill="#2563eb"/>
+  <text x="188" y="464" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" fill="#334155">2. HTTPS Request</text>
+  <circle cx="316" cy="460" r="5" fill="#059669"/>
+  <text x="328" y="464" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" fill="#334155">3. HTML / JSON Return</text>
+  <circle cx="486" cy="460" r="5" fill="#e11d48"/>
+  <text x="498" y="464" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" fill="#9f1239">Failure Mode: Total SPOF &amp; Disk Exhaustion</text>
+  <text x="44" y="486" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" fill="#0f172a"><tspan font-weight="700">Engineering Takeaway:</tspan> Optimal for MVPs and internal tools — zero network hops (&lt;0.1 ms local IPC) and trivial ACID transactions, until CPU/RAM/IOPS contention forces tier split.</text>
+</svg>

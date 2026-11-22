@@ -1,0 +1,186 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 560" width="1120" height="560" role="img" aria-labelledby="title desc">
+  <title id="title">GCRA (Generic Cell Rate Algorithm) — Single-TAT Cursor Animation</title>
+  <desc id="desc">Animated Generic Cell Rate Algorithm with burst B equals 4, emission interval T equals 1s, and delay variation tolerance tau equals 3s. Shows the single Theoretical Arrival Time (TAT) cursor and allow_at threshold along a timeline: a burst of 4 at t equals 0s advances TAT to 4s (allow_at equals 1s) with 200 OK; a 5th arrival at t equals 0.4s lands left of allow_at and receives 429 with Retry-After equals 0.6s; once time passes allow_at at t equals 1.2s, the next request admits and advances TAT to 5s in O(1) single-timestamp state with zero timers.</desc>
+
+  <style>
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    /* 12s cycle:
+       0-25%  (0-3s): Step 1 — t=0s burst 1..4 advances TAT 0s->4s, allow_at=-3s->1s (4x 200 OK)
+       25-50% (3-6s): Step 2 — t=0.4s 5th req below allow_at (1.0s) -> 429 Retry-After=0.6s
+       50-75% (6-9s): Step 3 — Clock passes allow_at=1.0s
+       75-100%(9-12s):Step 4 — t=1.2s >= 1.0s -> 200 OK, TAT advances 4s->5s, allow_at->2s
+    */
+
+    @keyframes tat-span-move {
+      0%, 74% { transform: translateX(0px); }
+      82%, 96%{ transform: translateX(160px); }
+      100%    { transform: translateX(0px); }
+    }
+
+    @keyframes clock-now {
+      0%, 22% { transform: translateX(0px); }
+      28%, 50%{ transform: translateX(64px); }
+      56%, 72%{ transform: translateX(160px); }
+      78%, 98%{ transform: translateX(192px); }
+      100%    { transform: translateX(0px); }
+    }
+
+    @keyframes req5-pop {
+      0%, 24% { opacity: 0.86; }
+      28%, 68%{ opacity: 1; }
+      74%, 100%{ opacity: 0.86; }
+    }
+
+    @keyframes req6-pop {
+      0%, 74% { opacity: 0.86; }
+      78%, 98%{ opacity: 1; }
+      100%    { opacity: 0.86; }
+    }
+
+    @keyframes s1-hl {
+      0%, 24% { opacity: 1; stroke: #059669; stroke-width: 2; }
+      25%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; }
+    }
+    @keyframes s2-hl {
+      0%, 24% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; }
+      25%, 49% { opacity: 1; stroke: #e11d48; stroke-width: 2; }
+      50%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; }
+    }
+    @keyframes s3-hl {
+      0%, 49% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; }
+      50%, 74% { opacity: 1; stroke: #d97706; stroke-width: 2; }
+      75%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; }
+    }
+    @keyframes s4-hl {
+      0%, 74% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; }
+      75%, 100% { opacity: 1; stroke: #059669; stroke-width: 2; }
+    }
+
+    .tat-span { animation: tat-span-move 12s ease-in-out infinite; }
+    .clk-now  { animation: clock-now 12s ease-in-out infinite; }
+    .r5       { animation: req5-pop 12s linear infinite; }
+    .r6       { animation: req6-pop 12s linear infinite; }
+    .g1 { animation: s1-hl 12s linear infinite; }
+    .g2 { animation: s2-hl 12s linear infinite; }
+    .g3 { animation: s3-hl 12s linear infinite; }
+    .g4 { animation: s4-hl 12s linear infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .tat-span, .clk-now, .r5, .r6, .g1, .g2, .g3, .g4 {
+        animation: none !important;
+      }
+      .tat-span { transform: translateX(0px) !important; }
+      .clk-now  { transform: translateX(64px) !important; }
+      .r5, .r6, .g1, .g2, .g3, .g4 { opacity: 1 !important; }
+    }
+  </style>
+
+  <defs>
+    <clipPath id="axis-clip">
+      <rect x="44" y="106" width="1032" height="178" rx="6"/>
+    </clipPath>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1120" height="560" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1120" height="60" rx="12" fill="#0f172a"/>
+  <rect x="0" y="44" width="1120" height="16" fill="#0f172a"/>
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">GCRA (Generic Cell Rate Algorithm) — Single-TAT Cursor</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">Parameters: Burst B = 4, Emission T = 1s, Tolerance τ = (B − 1)T = 3s · O(1) Single-Timestamp State, Zero Timers</text>
+
+  <!-- TOP PANEL: TIMELINE WITH TAT & ALLOW_AT -->
+  <rect x="24" y="76" width="1072" height="226" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="42" y="100" class="sans" font-size="14" font-weight="700" fill="#0f172a">Theoretical Arrival Time (TAT) &amp; allow_at = TAT − τ Threshold (Scale: 160px = 1s)</text>
+
+  <!-- Clipped Sliding Tolerance Band [allow_at, TAT] -->
+  <g clip-path="url(#axis-clip)">
+    <!-- Base reference band for [allow_at=1s, TAT=4s] -> x=240..720 -->
+    <g class="tat-span">
+      <rect x="240" y="112" width="480" height="114" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2" stroke-dasharray="6 3"/>
+      <text x="480" y="129" class="mono" font-size="11" font-weight="700" fill="#5b21b6" text-anchor="middle">Tolerance Span τ = 3s ([allow_at, TAT])</text>
+
+      <!-- allow_at left boundary line -->
+      <line x1="240" y1="112" x2="240" y2="254" stroke="#d97706" stroke-width="2.5"/>
+      <rect x="184" y="137" width="112" height="20" rx="4" fill="#fffbeb" stroke="#d97706"/>
+      <text x="240" y="151" class="mono" font-size="10" font-weight="700" fill="#92400e" text-anchor="middle">allow_at = TAT−τ</text>
+
+      <!-- TAT right boundary line -->
+      <line x1="720" y1="112" x2="720" y2="254" stroke="#7c3aed" stroke-width="2.5"/>
+      <rect x="684" y="137" width="72" height="20" rx="4" fill="#7c3aed"/>
+      <text x="720" y="151" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">TAT</text>
+    </g>
+  </g>
+
+  <!-- Axis (t=0s at x=80 .. t=6s at x=1040, 160px/s) -->
+  <line x1="60" y1="226" x2="1060" y2="226" stroke="#334155" stroke-width="2"/>
+  <text x="80" y="246" class="mono" font-size="10.5" fill="#334155" text-anchor="middle">0.0s</text>
+  <text x="240" y="246" class="mono" font-size="10.5" fill="#334155" text-anchor="middle">1.0s</text>
+  <text x="400" y="246" class="mono" font-size="10.5" fill="#334155" text-anchor="middle">2.0s</text>
+  <text x="560" y="246" class="mono" font-size="10.5" fill="#334155" text-anchor="middle">3.0s</text>
+  <text x="720" y="246" class="mono" font-size="10.5" fill="#334155" text-anchor="middle">4.0s</text>
+  <text x="880" y="246" class="mono" font-size="10.5" fill="#334155" text-anchor="middle">5.0s</text>
+  <text x="1040" y="246" class="mono" font-size="10.5" fill="#334155" text-anchor="middle">6.0s</text>
+
+  <!-- Burst 1..4 markers at t=0.0s -->
+  <circle cx="80" cy="226" r="10" fill="#059669" stroke="#ffffff" stroke-width="2"/>
+  <text x="80" y="210" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">4× Burst (0s)</text>
+
+  <!-- Req 5 rejected at t=0.4s (x=144) -->
+  <g class="r5">
+    <circle cx="144" cy="226" r="10" fill="#e11d48" stroke="#ffffff" stroke-width="2"/>
+    <text x="158" y="199" class="mono" font-size="10" font-weight="700" fill="#9f1239" text-anchor="middle">0.4s → 429</text>
+    <rect x="88" y="256" width="124" height="22" rx="4" fill="#fff1f2" stroke="#e11d48"/>
+    <text x="150" y="271" class="mono" font-size="10" font-weight="700" fill="#9f1239" text-anchor="middle">Retry-After: 0.6s</text>
+  </g>
+
+  <!-- Req 6 admitted at t=1.2s (x=272) -->
+  <g class="r6">
+    <circle cx="272" cy="226" r="10" fill="#059669" stroke="#ffffff" stroke-width="2"/>
+    <text x="298" y="206" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">1.2s → 200 OK</text>
+    <rect x="234" y="256" width="132" height="22" rx="4" fill="#ecfdf5" stroke="#059669"/>
+    <text x="300" y="271" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">TAT: 4.0s → 5.0s</text>
+  </g>
+
+  <!-- Moving Clock Now Pointer -->
+  <g class="clk-now">
+    <polygon points="80,187 74,180 86,180" fill="#2563eb"/>
+    <rect x="56" y="162" width="48" height="18" rx="4" fill="#2563eb"/>
+    <text x="80" y="175" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">now t</text>
+  </g>
+
+  <!-- BOTTOM LEFT: ALGORITHM & EQUIVALENCE -->
+  <rect x="24" y="316" width="526" height="164" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="42" y="340" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">GCRA Rule &amp; Exact Token-Bucket Equivalence</text>
+
+  <rect x="42" y="352" width="490" height="74" rx="7" fill="#f5f3ff" stroke="#c4b5fd"/>
+  <text x="54" y="372" class="mono" font-size="10.5" font-weight="700" fill="#5b21b6">allow_at = TAT - τ     (τ = (B - 1) · T = 3s)</text>
+  <text x="54" y="392" class="mono" font-size="10.5" fill="#9f1239">if t &lt; allow_at → 429, Retry-After = allow_at - t</text>
+  <text x="54" y="412" class="mono" font-size="10.5" fill="#065f46">else → 200 OK, TAT = max(t, TAT) + T</text>
+
+  <rect x="42" y="434" width="490" height="34" rx="6" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="54" y="455" class="sans" font-size="10.5" font-weight="600" fill="#1e3a8a">State: 1 single 64-bit integer (TAT) = 8 bytes/key · Zero timers</text>
+
+  <!-- BOTTOM RIGHT: 4-STEP TRACE -->
+  <rect x="570" y="316" width="526" height="164" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="588" y="340" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">Step-by-Step TAT State Transitions</text>
+
+  <rect x="588" y="350" width="490" height="27" rx="5" fill="#ecfdf5" class="g1"/>
+  <text x="600" y="368" class="mono" font-size="10.5" fill="#065f46">1. t=0.0s: 4 burst reqs → TAT: 0s→4s, allow_at=1s (200 OK)</text>
+
+  <rect x="588" y="382" width="490" height="27" rx="5" fill="#fff1f2" class="g2"/>
+  <text x="600" y="400" class="mono" font-size="10.5" fill="#9f1239">2. t=0.4s: 0.4s &lt; 1.0s → 429 (Retry-After = 1.0 − 0.4 = 0.6s)</text>
+
+  <rect x="588" y="414" width="490" height="27" rx="5" fill="#fffbeb" class="g3"/>
+  <text x="600" y="432" class="mono" font-size="10.5" fill="#92400e">3. t=1.0s: Clock crosses allow_at = TAT − τ threshold</text>
+
+  <rect x="588" y="446" width="490" height="27" rx="5" fill="#ecfdf5" class="g4"/>
+  <text x="600" y="464" class="mono" font-size="10.5" fill="#065f46">4. t=1.2s: 1.2s ≥ 1.0s → TAT: 4s→5s, allow_at=2s (200 OK)</text>
+
+  <!-- FOOTER -->
+  <rect x="24" y="494" width="1072" height="46" rx="8" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1"/>
+  <text x="42" y="522" class="sans" font-size="11.5" font-weight="600" fill="#065f46">Takeaway: GCRA (redis-cell / Envoy) matches Token Bucket semantics with a single atomic timestamp (8 bytes/key) and zero timer drift.</text>
+</svg>

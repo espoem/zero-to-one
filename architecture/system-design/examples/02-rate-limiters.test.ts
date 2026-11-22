@@ -5,8 +5,10 @@ import {
   FakeClock,
   FixedWindowLimiter,
   GcraLimiter,
+  LeakyBucketLimiter,
   RoundRobinClusterLimiter,
   SlidingWindowCounterLimiter,
+  SlidingWindowLogLimiter,
   TokenBucketLimiter,
 } from './lib/system-design-models.ts';
 
@@ -138,5 +140,177 @@ test('Property test (fast-check): GCRA never admits > burst + floor(rate * elaps
       },
     ),
     { seed: 20261120, numRuns: 200 },
+  );
+});
+
+test('LeakyBucketLimiter caps burst at capacity, drains at leakRatePerSec, and returns exact retryAfterMs', () => {
+  const clock = new FakeClock(1_000);
+  const limiter = new LeakyBucketLimiter(4, 2, clock); // cap=4, leaks 2 req/sec (1 every 500ms)
+
+  // Initial burst fills capacity 0 -> 4
+  for (let i = 0; i < 4; i += 1) {
+    const res = limiter.allow('tenant-a');
+    assert.equal(res.allowed, true);
+    assert.equal(res.remaining, 3 - i);
+    assert.equal(res.retryAfterMs, 0);
+  }
+
+  // 5th immediate request overflows capacity
+  const overflow = limiter.allow('tenant-a');
+  assert.equal(overflow.allowed, false);
+  assert.equal(overflow.remaining, 0);
+  assert.equal(overflow.retryAfterMs, 500);
+
+  // Partial drain after 250ms: water = 4 - 0.25*2 = 3.5 -> still rejects with 250ms remaining
+  clock.advance(250);
+  const partial = limiter.allow('tenant-a');
+  assert.equal(partial.allowed, false);
+  assert.equal(partial.remaining, 0);
+  assert.equal(partial.retryAfterMs, 250);
+
+  // Remaining 250ms drains water to 3.0 -> exactly 1 slot recovers
+  clock.advance(250);
+  const recovered = limiter.allow('tenant-a');
+  assert.equal(recovered.allowed, true);
+  assert.equal(recovered.remaining, 0);
+  assert.equal(recovered.retryAfterMs, 0);
+
+  // Immediately full again
+  const refilledOverflow = limiter.allow('tenant-a');
+  assert.equal(refilledOverflow.allowed, false);
+  assert.equal(refilledOverflow.retryAfterMs, 500);
+
+  // Long idle period clamps water at 0 (never negative) and allows full capacity again
+  clock.advance(10_000);
+  let admittedAfterIdle = 0;
+  for (let i = 0; i < 5; i += 1) {
+    if (limiter.allow('tenant-a').allowed) admittedAfterIdle += 1;
+  }
+  assert.equal(admittedAfterIdle, 4);
+
+  // Negative constructor validation
+  assert.throws(() => new LeakyBucketLimiter(0, 2, clock), RangeError);
+  assert.throws(() => new LeakyBucketLimiter(4, 0, clock), RangeError);
+});
+
+test('SlidingWindowLogLimiter rejects 2x boundary burst and evicts expired timestamps cleanly', () => {
+  const limit = 10;
+  const windowMs = 60_000;
+  const clock = new FakeClock(59_999);
+  const limiter = new SlidingWindowLogLimiter(limit, windowMs, clock);
+
+  // 10 requests at t = 59,999ms are admitted
+  for (let i = 0; i < limit; i += 1) {
+    const res = limiter.allow('client');
+    assert.equal(res.allowed, true);
+    assert.equal(res.remaining, limit - 1 - i);
+    assert.equal(res.retryAfterMs, 0);
+  }
+
+  // Advance across fixed boundary to t = 60,001ms -> all 10 rejected with exact retryAfterMs
+  clock.set(60_001);
+  for (let i = 0; i < limit; i += 1) {
+    const denied = limiter.allow('client');
+    assert.equal(denied.allowed, false);
+    assert.equal(denied.remaining, 0);
+    assert.equal(denied.retryAfterMs, 59_998);
+  }
+
+  // Just before expiration at t = 119,998ms (cutoff = 59,998ms): timestamps at 59,999ms still active
+  clock.set(119_998);
+  const stillBlocked = limiter.allow('client');
+  assert.equal(stillBlocked.allowed, false);
+  assert.equal(stillBlocked.retryAfterMs, 1);
+
+  // At t = 120,000ms (cutoff = 60,000ms): all 59,999ms timestamps are evicted cleanly
+  clock.set(120_000);
+  for (let i = 0; i < limit; i += 1) {
+    const fresh = limiter.allow('client');
+    assert.equal(fresh.allowed, true);
+    assert.equal(fresh.remaining, limit - 1 - i);
+  }
+  assert.equal(limiter.allow('client').allowed, false);
+
+  // Negative constructor validation
+  assert.throws(() => new SlidingWindowLogLimiter(0, windowMs, clock), RangeError);
+  assert.throws(() => new SlidingWindowLogLimiter(limit, 0, clock), RangeError);
+});
+
+test('Property test (fast-check): LeakyBucketLimiter bounds admissions and recovers after retryAfterMs', () => {
+  fc.assert(
+    fc.property(
+      fc.integer({ min: 1, max: 20 }), // capacity
+      fc.integer({ min: 1, max: 20 }), // leakRatePerSec
+      fc.array(fc.integer({ min: 0, max: 1_500 }), { minLength: 1, maxLength: 80 }),
+      (capacity, leakRatePerSec, deltas) => {
+        const clock = new FakeClock(0);
+        const limiter = new LeakyBucketLimiter(capacity, leakRatePerSec, clock);
+        const acceptedTimestamps: number[] = [];
+
+        for (const delta of deltas) {
+          clock.advance(delta);
+          const now = clock.now();
+          const res = limiter.allow('k');
+          if (res.allowed) {
+            acceptedTimestamps.push(now);
+            assert.equal(res.retryAfterMs, 0);
+          } else {
+            assert.ok(res.retryAfterMs >= 1);
+          }
+        }
+
+        // Over any interval [t_i, t_j], admitted requests <= capacity + floor(elapsedSec * leakRatePerSec)
+        for (let i = 0; i < acceptedTimestamps.length; i += 1) {
+          const start = acceptedTimestamps[i] ?? 0;
+          for (let j = i; j < acceptedTimestamps.length; j += 1) {
+            const end = acceptedTimestamps[j] ?? 0;
+            const elapsedSec = (end - start) / 1000;
+            const countInWindow = j - i + 1;
+            const maxAllowed = Math.floor(capacity + elapsedSec * leakRatePerSec + 1e-9);
+            assert.ok(
+              countInWindow <= maxAllowed,
+              `Admitted ${countInWindow} > ${maxAllowed} in elapsed=${end - start}ms`,
+            );
+          }
+        }
+      },
+    ),
+    { seed: 20261121, numRuns: 200 },
+  );
+});
+
+test('Property test (fast-check): SlidingWindowLogLimiter satisfies exact sliding-window invariant', () => {
+  fc.assert(
+    fc.property(
+      fc.integer({ min: 1, max: 20 }), // limit
+      fc.integer({ min: 50, max: 5_000 }), // windowMs
+      fc.array(fc.integer({ min: 0, max: 1_200 }), { minLength: 1, maxLength: 80 }),
+      (limit, windowMs, deltas) => {
+        const clock = new FakeClock(0);
+        const limiter = new SlidingWindowLogLimiter(limit, windowMs, clock);
+        const accepted: number[] = [];
+
+        for (const delta of deltas) {
+          clock.advance(delta);
+          const now = clock.now();
+          const cutoff = now - windowMs;
+          const active = accepted.filter((ts) => ts > cutoff);
+          const decision = limiter.allow('k');
+
+          if (active.length < limit) {
+            assert.equal(decision.allowed, true);
+            assert.equal(decision.remaining, limit - (active.length + 1));
+            assert.equal(decision.retryAfterMs, 0);
+            accepted.push(now);
+          } else {
+            assert.equal(decision.allowed, false);
+            assert.equal(decision.remaining, 0);
+            const oldestActive = active[0] ?? now;
+            assert.equal(decision.retryAfterMs, Math.max(1, oldestActive + windowMs - now));
+          }
+        }
+      },
+    ),
+    { seed: 20261122, numRuns: 200 },
   );
 });

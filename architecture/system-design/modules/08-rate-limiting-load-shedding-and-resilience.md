@@ -80,6 +80,10 @@ While `Retry-After` is standardized in RFC 9110 Section 10.2.3, the IETF HTTPAPI
 
 In ByteByteGo (System Design Interview Vol. 1, Chapter 4), Alex Xu evaluates three architectural locations where rate-limiting logic can reside: client-side, server-side in-application middleware, and an API Gateway / reverse proxy tier. The choice of placement dictates trust boundaries, compute efficiency, and failure containment across distributed microservices.
 
+![Rate Limiter Architectural Placement: Client Tier, API Gateway with Distributed Cache, and Application Tier](../assets/08-00-rate-limiter-architecture.svg)
+
+_Step-by-step placement flow:_ (1) **Client Tier (Untrusted)** runs voluntary SDK pacing that attackers bypass directly. (2) **API Gateway / Edge Tier** terminates TLS, runs centralized rate-limit checks against shared Valkey/Redis state, and rejects excess traffic early with `429` + `Retry-After`. (3) **Application Tier** receives only admitted requests and enforces fine-grained concurrency bulkheads before hitting databases.
+
 ```mermaid
 flowchart TD
     subgraph ClientTier["1. Client Tier (Untrusted)"]
@@ -131,21 +135,33 @@ The algorithms below are implemented and proven in `../examples/02-rate-limiters
 
 A token bucket has capacity $B$ and refills at rate $R$. State per key is a real-valued token count and a last-refill timestamp. On arrival, elapsed time is multiplied by $R$ and added to the token count, capped at $B$; if at least one token is present, one token is consumed and the request is admitted, otherwise it is rejected with a `retryAfter` equal to the time needed to grow one token.
 
-The invariant is: over any interval of length $s$, the number of admissions is at most $B + R s$. The bucket can discharge its full capacity $B$ instantly (a controlled burst), and thereafter admits at exactly rate $R$. This is the right model for a client that may burst but must settle to a steady rate. The `TokenBucketLimiter` in the example uses `capacity` and `refillRatePerSec`, starts full, and computes `retryAfterMs` from the missing token fraction.
+![Token Bucket Algorithm Animation: Periodic Refill, Burst Consumption, and 429 Rejection](../assets/08-01-token-bucket-animated.svg)
+
+_Step-by-step mechanics:_ (1) Tokens refill continuously at rate $R$ up to bucket ceiling $B$. (2) An arriving request consumes `1` token and passes immediately (permitting bursts up to $B$). (3) When the bucket hits `0` tokens, subsequent arrivals are rejected with `429` and `Retry-After` until the next token accrues.
+
+The invariant is: over any interval of length $s$, the number of admissions is at most $B + R s$. The bucket can discharge its full capacity $B$ instantly (a controlled burst), and thereafter admits at exactly rate $R$. This is the right model for a client that may burst but must settle to a steady rate. The `TokenBucketLimiter` in `../examples/02-rate-limiters.test.ts` uses `capacity` and `refillRatePerSec`, starts full, and computes `retryAfterMs` from the missing token fraction.
 
 ### 2.2 Leaky Bucket
 
-A leaky bucket is the dual shape: requests enter a queue of capacity $B$, and the queue drains at a strict constant rate $R$. A request is admitted only if the queue has room; once admitted, it leaves the bucket at rate $R$ regardless of arrival pattern. The output is therefore perfectly smoothed — no burst ever exceeds $B$, and the outflow never exceeds $R$ — at the cost of delaying requests that arrive faster than $R$.
+A leaky bucket (or leaking bucket) is the dual shape: requests enter a bounded FIFO queue of capacity $B$, and the queue drains at a strict constant rate $R$. A request is admitted only if the queue has room; once admitted, it leaves the bucket at rate $R$ regardless of arrival pattern. The output is therefore perfectly smoothed — no burst ever exceeds $B$, and the outflow never exceeds $R$ — at the cost of delaying requests that arrive faster than $R$.
 
-Where a token bucket allows a burst of $B$ and then rate $R$, a leaky bucket never lets the outflow exceed $R$. Use a token bucket when a controlled burst is acceptable (a user refreshing a page); use a leaky bucket when the downstream requires a strictly constant offered load (a third-party API that throttles on instantaneous rate).
+![Leaky Bucket Algorithm Animation: Burst Ingress Buffering, Overflow Drop, and Constant Outflow Drain](../assets/08-02-leaky-bucket-animated.svg)
+
+_Step-by-step mechanics:_ (1) Bursty incoming requests enter the bounded FIFO queue of capacity $B$. (2) Any arrival finding the queue full overflows and is immediately rejected with `429`. (3) Admitted requests leak out of the bucket bottom at a strictly uniform rate $R$.
+
+Where a token bucket allows a burst of $B$ and then rate $R$, a leaky bucket never lets the outflow exceed $R$. Use a token bucket when a controlled burst is acceptable (a user refreshing a page); use a leaky bucket when the downstream requires a strictly constant offered load (a third-party API that throttles on instantaneous rate). The `LeakyBucketLimiter` in `../examples/02-rate-limiters.test.ts` models this lazily without background timers by draining the water/queue level proportionally to elapsed clock ticks (`elapsed * drainRatePerMs`), admitting while `level + 1 <= capacity`, and returning `retryAfterMs` for the drain time needed to free one slot.
 
 ### 2.3 Fixed Window Counter and the 2× Boundary Burst Flaw
 
 The fixed window counter is the simplest limiter: divide time into windows of length $W$, keep a counter per key per window, admit while `count < L`, and reset the counter when the window identifier changes. It is also the most dangerous.
 
+![Fixed Window Counter Animation: Discrete Interval Reset and 2x Boundary Burst Flaw](../assets/08-03-fixed-window-counter-animated.svg)
+
+_Step-by-step mechanics:_ (1) Window 0 (`0–60 s`) counts arrivals up to $L$ and resets sharply to `0` at the `60 s` boundary. (2) A burst of $L$ requests at `59.9 s` fills Window 0, and a second burst of $L$ requests at `60.1 s` fills Window 1. (3) The backend receives $2L$ requests inside `200 ms` while both fixed windows report full compliance.
+
 **Negative case.** Let the limit be $L$ per $60\text{ s}$ window. Send $L$ requests at $t = 59.9\text{ s}$ and another $L$ requests at $t = 60.1\text{ s}$. The first batch lands in window $[0, 60)$ and is fully admitted; the second batch lands in window $[60, 120)$ and is also fully admitted. The backend receives $2L$ requests inside $200\text{ ms}$ — double the configured rate — while the limiter reports full compliance in both windows. In general, for any $\varepsilon > 0$, $L$ requests at $W - \varepsilon$ and $L$ requests at $W + \varepsilon$ produce $2L$ admissions in $2\varepsilon$, so the effective instantaneous rate is unbounded as $\varepsilon \to 0$.
 
-The example proves this exactly: at `t = 59,999 ms` the fixed window admits 10 requests; at `t = 60,001 ms` it admits 10 more; the total is 20 within 2 ms, while the sliding-window counter and GCRA reject the second batch. The fixed window is acceptable only when the window boundary burst cannot hurt the downstream, or when it is wrapped in a second layer of defense.
+The example proves this exactly: at `t = 59,999 ms` the fixed window admits 10 requests; at `t = 60,001 ms` it admits 10 more; the total is 20 within 2 ms, while the sliding-window log, sliding-window counter, and GCRA reject the second batch. The fixed window is acceptable only when the window boundary burst cannot hurt the downstream, or when it is wrapped in a second layer of defense.
 
 ```mermaid
 flowchart LR
@@ -163,7 +179,11 @@ flowchart LR
 
 The exact fix is to store the timestamp of every admitted request for a key and, on each arrival, evict timestamps older than $W$ and count the remainder. If the count is below $L$, admit and append the new timestamp. This is exact: it counts precisely the requests in $[t - W, t]$, so it cannot admit a boundary burst.
 
-The cost is memory and time. The state is $O(L)$ per key — for a limit of 1,000 requests per minute and 1,000,000 active keys, the limiter holds up to one billion timestamps — and each decision is $O(L)$ without a careful data structure. Sliding window logs are right for low-limit, high-value keys (login attempts, password resets, payment initiation) where exactness matters and the key population is small.
+![Sliding Window Log Animation: Timestamp Pruning, Active Rolling Window Count, and Exact Rejection](../assets/08-04-sliding-window-log-animated.svg)
+
+_Step-by-step mechanics:_ (1) Each arrival slides the `[now - W, now]` window forward and prunes expired timestamps older than `now - W`. (2) Remaining timestamps in the sorted log are counted (`ZCARD`). (3) If count `< L`, the new timestamp is appended and admitted; otherwise the arrival is rejected with `retryAfterMs` equal to the oldest surviving timestamp's remaining lifetime.
+
+The cost is memory and time. The state is $O(L)$ per key — for a limit of 1,000 requests per minute and 1,000,000 active keys, the limiter holds up to one billion timestamps — and each decision is $O(L)$ without a careful data structure. Sliding window logs are right for low-limit, high-value keys (login attempts, password resets, payment initiation) where exactness matters and the key population is small. The `SlidingWindowLogLimiter` in `../examples/02-rate-limiters.test.ts` proves both exact pruning across arbitrary arrival traces and strict rejection of the $2\times$ boundary burst at `t = 60,001 ms`.
 
 ### 2.5 Sliding Window Counter
 
@@ -172,6 +192,10 @@ The sliding window counter keeps only two integers per key: the count in the cur
 $$
 \hat{c} = c_{prev} \cdot \left(1 - \frac{e}{W}\right) + c_{cur}
 $$
+
+![Sliding Window Counter Animation: Weighted Previous-Window Overlap and O(1) Rolling Estimation](../assets/08-05-sliding-window-counter-animated.svg)
+
+_Step-by-step mechanics:_ (1) Only two integer counters (`prevCount` and `curCount`) are stored per key in $O(1)$ space. (2) At elapsed offset $e$ inside the current window, the sliding overlap fraction `(1 - e/W)` weights `prevCount` and sums it with `curCount`. (3) If the weighted estimate plus `1` exceeds $L$, the arrival is rejected without maintaining per-request logs.
 
 The previous window's count is weighted by the fraction of it that still overlaps the sliding window. This is an approximation: it assumes the previous window's requests were uniformly distributed, so it can over- or under-count near the boundary, but it uses $O(1)$ memory per key and $O(1)$ time per decision. In the example, the limiter rejects the 2× boundary burst that defeats the fixed window, because the weighted previous count keeps the estimate at the limit. The error is bounded by the previous window's count times the smaller of the two weights, so it never exceeds $c_{prev}$; for a well-provisioned limit this is far more accurate than a fixed window and far cheaper than a log.
 
@@ -183,6 +207,10 @@ On arrival at time $t$:
 
 1. If $t < \text{TAT} - \tau$, reject the request; it would arrive before the bucket has drained enough.
 2. Otherwise set $\text{TAT} = \max(t, \text{TAT}) + T$ and admit.
+
+![GCRA Virtual Scheduling Animation: Single TAT Timestamp, Delay Tolerance Tau, and O(1) Admission Check](../assets/08-06-gcra-animated.svg)
+
+_Step-by-step mechanics:_ (1) Each key stores only one scalar `TAT` timestamp (`8` bytes). (2) On arrival at time $t$, the limiter checks whether $t \ge \text{TAT} - \tau$ (within burst tolerance). (3) Admitted requests advance `TAT = max(t, TAT) + T`, while early arrivals ($t < \text{TAT} - \tau$) fail with exact `Retry-After = (TAT - tau) - t`.
 
 The invariant is exact: at most $B$ requests can be admitted in an instantaneous burst, and thereafter one request per $T$. Because the state is one number, memory is $O(1)$ per key; because time is derived from the arrival timestamp, there are no refill threads, no timer wheels, and no clock-skew drift between a background refill and the request path. The example implements GCRA with integer `BigInt` arithmetic scaled by the limit, so repeated decisions do not accumulate floating-point error, and the property test asserts that no interval ever admits more than `burst + floor(limit * elapsed / period)`.
 
@@ -519,6 +547,10 @@ $$
 
 When downstream queues fill, $\text{RTT}_{\text{measured}}$ increases, driving $\text{gradient} < 1.0$. This pulls the inflight limit down multiplicatively. When latency recovers, the additive margin allows concurrency to probe upward linearly. This classic Additive Increase, Multiplicative Decrease (AIMD) dynamic protects downstream databases without requiring manual tuning during incidents.
 
+![Adaptive Throttling, Gradient2, Hedging, and LIFO Animation: Overload Defense Mechanics](../assets/08-07-adaptive-throttling-hedging-lifo-animated.svg)
+
+_Step-by-step mechanics:_ (1) Google SRE client-side adaptive throttling computes $P_{\text{drop}} = \max(0, (\text{requests} - K \cdot \text{accepts}) / (\text{requests} + 1))$ locally to shed doomed traffic before it hits the network. (2) Netflix Gradient2 scales inflight concurrency multiplicatively via $\text{RTT}_{\min}/\text{RTT}_{\text{measured}}$ and probes linearly via `+ margin`. (3) A `p95` hedged request races replica B after delay $D$ and cancels straggler A (`<= 5%` extra load). (4) Under sustained overload with client deadlines, LIFO pops fresh arrivals to preserve goodput while FIFO wastes CPU on already-expired requests.
+
 ### 4.6 Worked Tail-Latency Example
 
 The fan-out formula is easiest to internalize with a table. Let each dependency be slow with probability $p$ and let the caller wait for all $n$ dependencies:
@@ -635,8 +667,10 @@ Between 2021 and 2026, distributed systems experienced a profound shift from bes
 
 | Module Claim | Executable Proof in `examples/` |
 | --- | --- |
-| Token bucket burst capacity and steady refill; `retryAfter` timing | `../examples/02-rate-limiters.test.ts` |
-| Negative test: fixed window admits 2× at the boundary while sliding counter and GCRA reject | `../examples/02-rate-limiters.test.ts` |
+| Token bucket (`TokenBucketLimiter`) burst capacity and steady refill; `retryAfter` timing | `../examples/02-rate-limiters.test.ts` |
+| Leaky bucket (`LeakyBucketLimiter`) bounded FIFO capacity, constant drain rate, and overflow rejection | `../examples/02-rate-limiters.test.ts` |
+| Sliding window log (`SlidingWindowLogLimiter`) exact timestamp pruning and 2× boundary-burst immunity | `../examples/02-rate-limiters.test.ts` |
+| Negative test: fixed window admits 2× at the boundary while sliding log, sliding counter, and GCRA reject | `../examples/02-rate-limiters.test.ts` |
 | Negative test: $N$ per-node limiters behind round-robin allow $N\times$ the limit | `../examples/02-rate-limiters.test.ts` |
 | Property test: GCRA never admits more than `burst + floor(rate * elapsed)` over arbitrary arrivals | `../examples/02-rate-limiters.test.ts` |
 | M/M/1 and M/M/c latency knee, Little's Law, FIFO versus LIFO goodput under overload | `../examples/05-queueing-and-tail-latency.test.ts` |

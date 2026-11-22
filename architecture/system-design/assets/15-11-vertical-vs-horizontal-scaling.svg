@@ -1,0 +1,156 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 580" width="1120" height="580" role="img" aria-labelledby="title desc">
+  <title id="title">Vertical Scale-Up vs. Horizontal Scale-Out and Gunther's Universal Scalability Law</title>
+  <desc id="desc">Two-panel comparison contrasting vertical scaling (upgrading a single host from 4 vCPU / 16 GB to 64+ vCPU / 512 GB until hitting hardware ceilings and SPOF) against horizontal scaling (Load Balancer fanning requests across elastic Node 1..N pool), including Gunther's Universal Scalability Law curve showing linear growth before contention alpha and coherency beta cause retrograde scaling.</desc>
+  <defs>
+    <style>
+      .flow-blue { stroke-dasharray: 8 6; animation: dash-flow 1.4s linear infinite; }
+      .flow-green { stroke-dasharray: 8 6; animation: dash-flow 1.4s linear infinite; }
+      .pulse-node { animation: node-pulse 2.4s ease-in-out infinite; }
+      @keyframes dash-flow { to { stroke-dashoffset: -28; } }
+      @keyframes node-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.65; } }
+      @media (prefers-reduced-motion: reduce) {
+        * { animation: none !important; transition: none !important; }
+        .smil-packet { display: none !important; }
+      }
+    </style>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1120" height="580" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1120" height="62" rx="12" fill="#0f172a"/>
+  <rect x="0" y="46" width="1120" height="16" fill="#0f172a"/>
+  <text x="24" y="29" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#f8fafc">Vertical Scale-Up vs. Horizontal Scale-Out &amp; Gunther's USL</text>
+  <text x="24" y="49" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#94a3b8">Exhaust vertical hardware first for zero network tax; scale horizontally only with partitioned state to avoid quadratic USL coherency collapse</text>
+
+  <!-- ==================== LEFT PANEL: VERTICAL SCALING ==================== -->
+  <g transform="translate(24, 82)">
+    <rect x="0" y="0" width="522" height="404" rx="12" fill="#eff6ff" stroke="#2563eb" stroke-width="1.8"/>
+    <rect x="0" y="0" width="522" height="36" rx="12" fill="#1e40af"/>
+    <rect x="0" y="22" width="522" height="14" fill="#1e40af"/>
+    <text x="18" y="24" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13.5" font-weight="700" fill="#ffffff">VERTICAL SCALING (Scale-Up · Bigger Box)</text>
+
+    <!-- Small Server -->
+    <rect x="24" y="96" width="150" height="114" rx="10" fill="#ffffff" stroke="#3b82f6" stroke-width="1.5"/>
+    <text x="99" y="122" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1e3a8a">Initial Host</text>
+    <text x="99" y="146" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="700" fill="#2563eb">4 vCPU</text>
+    <text x="99" y="164" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="700" fill="#2563eb">16 GB RAM</text>
+    <text x="99" y="188" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#64748b">~1k mixed QPS</text>
+
+    <!-- Upgrade arrow -->
+    <path d="M 178 153 L 238 153" fill="none" stroke="#d97706" stroke-width="2.4" class="flow-blue" marker-end="url(#arr-amber)"/>
+    <circle class="smil-packet" r="4.5" fill="#d97706" opacity="0">
+      <animateMotion dur="1.4s" repeatCount="indefinite" path="M 178 153 L 238 153"/>
+      <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="1.4s" repeatCount="indefinite"/>
+    </circle>
+    <text x="208" y="140" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#b45309">Upgrade</text>
+
+    <!-- Large Server -->
+    <rect x="242" y="54" width="256" height="186" rx="10" fill="#ffffff" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="370" y="80" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1e3a8a">Flagship Single Host</text>
+    <text x="370" y="104" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="700" fill="#1d4ed8">64–192 vCPU · 512 GB–2 TB</text>
+    <text x="370" y="124" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" fill="#059669">NVMe Gen5 (10–14 GB/s)</text>
+    <rect x="260" y="138" width="220" height="44" rx="6" fill="#ecfdf5" stroke="#6ee7b7"/>
+    <text x="370" y="157" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#065f46">Zero Network Hops &amp; Local ACID</text>
+    <text x="370" y="173" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#047857">20k–50k SQL QPS without sharding</text>
+
+    <!-- Hard Ceiling Bar -->
+    <rect x="260" y="192" width="220" height="36" rx="6" fill="#fff1f2" stroke="#e11d48" stroke-width="1.5"/>
+    <text x="370" y="214" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#9f1239">HARD HARDWARE CEILING &amp; SPOF</text>
+
+    <!-- Trade-offs Box -->
+    <rect x="24" y="256" width="474" height="132" rx="8" fill="#ffffff" stroke="#93c5fd"/>
+    <text x="38" y="278" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#1e3a8a">Vertical Scaling Mechanics &amp; Limits:</text>
+    <text x="38" y="299" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#065f46">✓ Simplest ops: no distributed consensus, no cross-node β crosstalk</text>
+    <text x="38" y="318" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#065f46">✓ Linear cost-effectiveness up to modern 2026 socket limits</text>
+    <text x="38" y="338" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#9f1239">✗ Physical socket ceiling + super-linear price jumps at extreme tiers</text>
+    <text x="38" y="357" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#9f1239">✗ Single Point of Failure (SPOF): no cross-AZ redundancy alone</text>
+    <text x="38" y="376" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#9f1239">✗ Reboot / instance resize often requires maintenance window</text>
+  </g>
+
+  <!-- ==================== RIGHT PANEL: HORIZONTAL SCALING + USL ==================== -->
+  <g transform="translate(574, 82)">
+    <rect x="0" y="0" width="522" height="404" rx="12" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+    <rect x="0" y="0" width="522" height="36" rx="12" fill="#047857"/>
+    <rect x="0" y="22" width="522" height="14" fill="#047857"/>
+    <text x="18" y="24" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13.5" font-weight="700" fill="#ffffff">HORIZONTAL SCALING (Scale-Out · Elastic Pool)</text>
+
+    <!-- LB -->
+    <rect x="18" y="96" width="96" height="92" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.6"/>
+    <text x="66" y="130" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1e3a8a">Load</text>
+    <text x="66" y="146" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1e3a8a">Balancer</text>
+    <text x="66" y="168" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#2563eb">P2C Fanout</text>
+
+    <!-- Nodes 1..N -->
+    <rect x="166" y="50" width="144" height="40" rx="6" fill="#ffffff" stroke="#059669" stroke-width="1.5"/>
+    <text x="238" y="74" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">Node 1 (AZ-1)</text>
+
+    <rect x="166" y="100" width="144" height="40" rx="6" fill="#ffffff" stroke="#059669" stroke-width="1.5"/>
+    <text x="238" y="124" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">Node 2 (AZ-2)</text>
+
+    <rect x="166" y="150" width="144" height="40" rx="6" fill="#ffffff" stroke="#059669" stroke-width="1.5"/>
+    <text x="238" y="174" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">Node 3 (AZ-3)</text>
+
+    <rect x="166" y="200" width="144" height="40" rx="6" fill="#d1fae5" stroke="#059669" stroke-width="1.5" stroke-dasharray="5 3" class="pulse-node"/>
+    <text x="238" y="224" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#047857">+ Node N (Auto-Scaled)</text>
+
+    <!-- Fanout arrows -->
+    <path d="M 114 122 L 162 70" fill="none" stroke="#059669" stroke-width="1.8" class="flow-green" marker-end="url(#arr-green)"/>
+    <path d="M 114 136 L 162 120" fill="none" stroke="#059669" stroke-width="1.8" class="flow-green" marker-end="url(#arr-green)"/>
+    <path d="M 114 150 L 162 170" fill="none" stroke="#059669" stroke-width="1.8" class="flow-green" marker-end="url(#arr-green)"/>
+    <path d="M 114 166 L 162 220" fill="none" stroke="#059669" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#arr-green)"/>
+    <circle class="smil-packet" r="4" fill="#059669" opacity="0">
+      <animateMotion dur="1.3s" repeatCount="indefinite" path="M 114 122 L 162 70"/>
+      <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="1.3s" repeatCount="indefinite"/>
+    </circle>
+    <circle class="smil-packet" r="4" fill="#059669" opacity="0">
+      <animateMotion dur="1.3s" begin="0.45s" repeatCount="indefinite" path="M 114 136 L 162 120"/>
+      <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="1.3s" begin="0.45s" repeatCount="indefinite"/>
+    </circle>
+    <circle class="smil-packet" r="4" fill="#059669" opacity="0">
+      <animateMotion dur="1.3s" begin="0.9s" repeatCount="indefinite" path="M 114 150 L 162 170"/>
+      <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="1.3s" begin="0.9s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- USL Mini Plot -->
+    <rect x="328" y="50" width="176" height="190" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+    <text x="416" y="70" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#0f172a">Gunther's USL Curve</text>
+    <!-- Axes -->
+    <line x1="350" y1="204" x2="488" y2="204" stroke="#64748b" stroke-width="1.2"/>
+    <line x1="350" y1="204" x2="350" y2="88" stroke="#64748b" stroke-width="1.2"/>
+    <!-- Ideal linear (beta=0, alpha=0) -->
+    <line x1="350" y1="204" x2="476" y2="94" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4 3"/>
+    <text x="466" y="92" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#64748b">Linear</text>
+    <!-- USL retrograde curve peaking around x=415, y=126 then dropping -->
+    <path d="M 350 204 Q 388 122 414 124 T 484 176" fill="none" stroke="#e11d48" stroke-width="2.2"/>
+    <circle cx="414" cy="124" r="3.5" fill="#d97706"/>
+    <text x="414" y="114" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#b45309">Peak Nmax</text>
+    <text x="466" y="164" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#be123c">Retrograde</text>
+    <text x="419" y="220" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#475569">Nodes (N)</text>
+    <text x="416" y="233" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#059669">Cells keep β -&gt; 0</text>
+
+    <!-- USL Formula & Explanation Box -->
+    <rect x="18" y="256" width="486" height="132" rx="8" fill="#ffffff" stroke="#6ee7b7"/>
+    <text x="32" y="278" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#065f46">Universal Scalability Law &amp; Shared-Nothing Cells:</text>
+    <text x="32" y="299" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" font-weight="700" fill="#1e40af">C(N) = N / (1 + α(N - 1) + β·N(N - 1))</text>
+    <text x="32" y="320" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• α (contention): serialized locks, pools, single DB writer</text>
+    <text x="32" y="339" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#9f1239">• β (coherency): O(N²) crosstalk / cache invalidation collapses</text>
+    <text x="32" y="355" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#9f1239">  throughput past Nmax = √((1 - α) / β)</text>
+    <text x="32" y="375" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#065f46">✓ Fix: Stateless nodes + shared-nothing cells drive β -&gt; 0</text>
+  </g>
+
+  <!-- Footer -->
+  <rect x="24" y="502" width="1072" height="58" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="42" y="526" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#0f172a"><tspan font-weight="700">Takeaway:</tspan> Scale-up avoids network hops until hardware or HA limits hit; scale-out requires keeping β ≈ 0 via stateless compute and cell/shard isolation.</text>
+  <text x="42" y="546" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#475569">Worked proof (α = 0.05, β = 0.005): cluster peaks at N ≈ 14 nodes (5.47×) and collapses to 2.63× at 64 nodes if coherency is unpartitioned.</text>
+</svg>

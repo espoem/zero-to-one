@@ -176,9 +176,9 @@ $$B_{\text{kv-token}} = 2 \times L \times n_{\text{kv-heads}} \times d_{\text{he
 | Algorithm | State per Key | Burst Handling | Boundary Accuracy | Distributed Redis Suitability |
 | :-- | :-- | :-- | :-- | :-- |
 | **Token Bucket** | `2 fields` (`tokens`, `last_refill_ts`) | Allows burst up to capacity $b$ | Exact continuous refill | High (atomic Lua `EVALSHA`) |
-| **Leaky Bucket (Queue)** | Bounded FIFO queue + drain rate | Smooths bursts into fixed egress rate | Exact egress pacing | Poor for edge API reject; better for traffic shaping |
+| **Leaky Bucket (Leaking Bucket)** | `2 fields` (`water_level`, `last_drain_ts`) or FIFO queue | Smooths bursts into constant egress rate $r$ | Exact egress pacing | Poor for edge API reject; better for traffic shaping |
 | **Fixed Window Counter** | `1 integer` counter per window bucket | **Flaw:** allows `2×` burst across boundary | Low at window edges | High (`INCR` + `EXPIRE`), use only when `2×` spike is safe |
-| **Sliding Window Log** | Sorted set of all request timestamps | Exact rolling window | Exact | Poor memory (`O(R)` timestamps per key) |
+| **Sliding Window Log** | Sorted set of $O(L)$ timestamps | Exact rolling window | Exact | High memory ($O(L)$ per key); best for low-limit high-value keys |
 | **Sliding Window Counter** | `2 integers` (prev + curr window counts) | Smooth approximation | High (assumes uniform prev rate) | High (`O(1)` memory, fast Redis) |
 | **GCRA (Virtual Scheduling)** | `1 timestamp` (`TAT` = theoretical arrival time) | Exact burst tolerance $\tau$ + emission interval $T$ | Exact continuous | **Optimal:** `1` key value in Redis via atomic Lua |
 
@@ -217,6 +217,15 @@ $$B_{\text{kv-token}} = 2 \times L \times n_{\text{kv-heads}} \times d_{\text{he
 | **UUIDv7** (RFC 9562) | `128-bit` (`48b ts + 74b rand`) | **Yes** (monotonic ms prefix preserves B-tree locality) | Zero worker registration; sub-ms monotonic counter optional | Default modern primary key for distributed SQL/APIs |
 | **ULID** | `128-bit` (Base32 `26 chars`) | **Yes** (lexicographically sortable string) | Zero worker registration | Human-readable URLs/logs needing lexicographic sort |
 | **Snowflake ID** | `64-bit` (`1b sign + 41b ts + 10b node + 12b seq`) | **Yes** (fits `BIGINT`, compact indexes) | Requires unique worker IDs + **breaks on NTP clock rollback** | Ultra-high-throughput feeds/messages where `64-bit` index size matters |
+
+### Vertical vs. Horizontal Scaling (Scale-Up vs. Scale-Out)
+
+| Dimension | Vertical Scaling (Scale-Up) | Horizontal Scaling (Scale-Out) | Cell-Based Scale-Out |
+| :-- | :-- | :-- | :-- |
+| **Mechanism** | Upgrade CPU, RAM, or NVMe on 1 host (up to 192 cores, 1–2 TB DRAM in 2026) | Add stateless web pods, read replicas, or sharded DB nodes behind LB/router | Stamp out complete, isolated vertical stacks (`Cells`) behind a thin router |
+| **Coherency Tax ($\beta$)** | $\beta = 0$ (local shared memory, zero network crosstalk) | $\beta > 0$ if nodes gossip or share locks; retrograde past $N_{\max} = \sqrt{(1-\alpha)/\beta}$ | $\beta = 0$ across cells (linear capacity growth) |
+| **Blast Radius & HA** | Single point of failure (SPOF) unless paired with standby failover | Multi-AZ HA for stateless tiers; DB shards isolate key ranges | Hard ceiling of $1/C$ tenants per cell; shuffle sharding lowers overlap further |
+| **When to Choose** | Default first step up to `~20k–50k` PostgreSQL QPS before adding distributed complexity | Stateless web tiers, read scaling (replicas), and single-primary write saturation (`> 50k` TPS) | Multi-tenant platforms at `10M+` DAU requiring deterministic fault containment |
 
 ---
 

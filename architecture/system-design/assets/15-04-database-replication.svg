@@ -1,0 +1,202 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 580" width="1120" height="580" role="img" aria-labelledby="title desc">
+  <title id="title">Stage 3: Database Primary-Replica Replication and Safe Failover</title>
+  <desc id="desc">Animated schematic showing Stage 3 database read scaling with writes routed to PostgreSQL Primary, continuous WAL streaming to Read Replica 1 and Read Replica 2, LSN watermark verification using pg_current_wal_lsn for read-your-writes consistency, and fenced quorum failover promotion.</desc>
+  <defs>
+    <style>
+      .flow-write { stroke-dasharray: 8 6; animation: dash-flow 1.3s linear infinite; }
+      .flow-wal { stroke-dasharray: 6 5; animation: dash-flow 1.1s linear infinite; }
+      .flow-read { stroke-dasharray: 8 6; animation: dash-flow 1.5s linear infinite; }
+      .pulse-badge { animation: badge-pulse 2.2s ease-in-out infinite; }
+      @keyframes dash-flow { to { stroke-dashoffset: -28; } }
+      @keyframes badge-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.72; } }
+      @media (prefers-reduced-motion: reduce) {
+        * { animation: none !important; transition: none !important; }
+        .smil-packet { display: none !important; }
+      }
+    </style>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-violet" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <marker id="arr-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1120" height="580" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1120" height="62" rx="12" fill="#0f172a"/>
+  <rect x="0" y="46" width="1120" height="16" fill="#0f172a"/>
+  <text x="24" y="29" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#f8fafc">Stage 3 · Database Replication, LSN Pinning &amp; Fenced Failover (100k–1M DAU)</text>
+  <text x="24" y="49" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#94a3b8">Scale 10:1–100:1 read workloads via WAL streaming to Read Replicas while preventing stale reads and split-brain promotion</text>
+
+  <!-- LEFT: LB + WEB POOL / READ ROUTER -->
+  <g transform="translate(24, 96)">
+    <rect x="0" y="0" width="230" height="106" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+    <text x="16" y="26" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1e3a8a">Load Balancer (L4/L7)</text>
+    <text x="16" y="48" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#334155">• Clients -&gt; Public VIP</text>
+    <text x="16" y="68" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#334155">• 10:1 to 100:1 Read:Write</text>
+    <text x="16" y="88" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#1d4ed8">PATCH /profile · GET /feed</text>
+  </g>
+
+  <g transform="translate(24, 238)">
+    <rect x="0" y="0" width="230" height="224" rx="10" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+    <rect x="0" y="0" width="230" height="32" rx="10" fill="#1d4ed8"/>
+    <rect x="0" y="18" width="230" height="14" fill="#1d4ed8"/>
+    <text x="115" y="21" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#ffffff">Web Pool &amp; Read Router</text>
+
+    <rect x="14" y="46" width="202" height="72" rx="6" fill="#f5f3ff" stroke="#c4b5fd"/>
+    <text x="24" y="66" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#4c1d95">Write Path (INSERT/UPDATE)</text>
+    <text x="24" y="84" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Captures commit watermark:</text>
+    <text x="24" y="102" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="700" fill="#6d28d9">min_lsn = 0/1A2B3C8</text>
+
+    <rect x="14" y="130" width="202" height="78" rx="6" fill="#ecfdf5" stroke="#6ee7b7"/>
+    <text x="24" y="150" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">Read Path (LSN Check)</text>
+    <text x="24" y="168" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Route to replica only if:</text>
+    <text x="24" y="185" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#047857">replay_lsn &gt;= min_lsn</text>
+    <text x="24" y="200" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#9f1239">Else fallback -&gt; Primary</text>
+  </g>
+
+  <line x1="139" y1="202" x2="139" y2="234" stroke="#2563eb" stroke-width="2" marker-end="url(#arr-blue)"/>
+
+  <!-- CENTER: PRIMARY DB -->
+  <g transform="translate(362, 92)">
+    <rect x="0" y="0" width="376" height="148" rx="10" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2"/>
+    <rect x="0" y="0" width="376" height="32" rx="10" fill="#6d28d9"/>
+    <rect x="0" y="18" width="376" height="14" fill="#6d28d9"/>
+    <text x="16" y="21" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#ffffff">PostgreSQL Primary (Read / Write)</text>
+    <rect x="294" y="6" width="70" height="20" rx="10" fill="#ede9fe"/>
+    <text x="329" y="20" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="700" fill="#4c1d95">EPOCH E</text>
+
+    <text x="16" y="54" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#334155">• Accepts all INSERT / UPDATE / DELETE mutations</text>
+    <text x="16" y="74" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" font-weight="700" fill="#5b21b6">pg_current_wal_lsn() = 0/1A2B3C8</text>
+    <text x="16" y="96" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• Async WAL (~1 ms commit) vs Semi-Sync (RPO=0)</text>
+    <rect x="16" y="108" width="344" height="28" rx="6" fill="#ffffff" stroke="#c4b5fd"/>
+    <text x="188" y="126" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#4c1d95">Also serves LSN-pinned fallback reads when lag &gt; 20 ms</text>
+  </g>
+
+  <!-- READ REPLICA 1 (CAUGHT UP) -->
+  <g transform="translate(324, 306)">
+    <rect x="0" y="0" width="212" height="156" rx="10" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+    <text x="14" y="24" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#065f46">Read Replica 1 (RO)</text>
+    <rect x="14" y="34" width="184" height="22" rx="6" fill="#059669"/>
+    <text x="106" y="49" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="700" fill="#ffffff">LSN 0/1A2B3C8 (Caught Up)</text>
+    <text x="14" y="76" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• Semi-sync standby (AZ-2)</text>
+    <text x="14" y="95" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• WAL replay &gt;= min_lsn</text>
+    <rect x="14" y="110" width="184" height="32" rx="6" fill="#ffffff" stroke="#6ee7b7"/>
+    <text x="106" y="130" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#047857">SELECT Served Fresh</text>
+  </g>
+
+  <!-- READ REPLICA 2 (LAGGING) -->
+  <g transform="translate(556, 306)">
+    <rect x="0" y="0" width="212" height="156" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="1.8"/>
+    <text x="14" y="24" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#92400e">Read Replica 2 (RO)</text>
+    <rect x="14" y="34" width="184" height="22" rx="6" fill="#d97706"/>
+    <text x="106" y="49" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="700" fill="#ffffff">LSN 0/1A2B3C0 (-120 ms)</text>
+    <text x="14" y="76" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• Async replica (AZ-3)</text>
+    <text x="14" y="95" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#92400e">• Behind min_lsn watermark</text>
+    <rect x="14" y="110" width="184" height="32" rx="6" fill="#fff1f2" stroke="#fda4af"/>
+    <text x="106" y="130" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#9f1239">Skip -&gt; Fallback Primary</text>
+  </g>
+
+  <!-- Animated Step 1: Writes -> Primary -->
+  <path d="M 254 294 C 304 294, 304 150, 358 150" fill="none" stroke="#7c3aed" stroke-width="2.4" class="flow-write" marker-end="url(#arr-violet)"/>
+  <circle class="smil-packet" r="5" fill="#7c3aed" opacity="0">
+    <animateMotion dur="1.7s" repeatCount="indefinite" path="M 254 294 C 304 294, 304 150, 358 150"/>
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="1.7s" repeatCount="indefinite"/>
+  </circle>
+  <g class="pulse-badge" transform="translate(290, 174)">
+    <circle cx="0" cy="0" r="11" fill="#7c3aed"/>
+    <text x="0" y="4" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#ffffff">1</text>
+  </g>
+  <text x="292" y="156" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#5b21b6">Writes</text>
+
+  <!-- Animated Step 2: WAL Stream Primary -> Replicas -->
+  <path d="M 476 240 L 430 302" fill="none" stroke="#d97706" stroke-width="2.2" class="flow-wal" marker-end="url(#arr-amber)"/>
+  <path d="M 616 240 L 662 302" fill="none" stroke="#d97706" stroke-width="2.2" class="flow-wal" marker-end="url(#arr-amber)"/>
+  <circle class="smil-packet" r="4.5" fill="#d97706" opacity="0">
+    <animateMotion dur="1.4s" repeatCount="indefinite" path="M 476 240 L 430 302"/>
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="1.4s" repeatCount="indefinite"/>
+  </circle>
+  <circle class="smil-packet" r="4.5" fill="#d97706" opacity="0">
+    <animateMotion dur="2.2s" begin="0.4s" repeatCount="indefinite" path="M 616 240 L 662 302"/>
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="2.2s" begin="0.4s" repeatCount="indefinite"/>
+  </circle>
+  <g class="pulse-badge" transform="translate(546, 268)">
+    <circle cx="0" cy="0" r="11" fill="#d97706"/>
+    <text x="0" y="4" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#ffffff">2</text>
+  </g>
+  <text x="546" y="290" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#b45309">WAL Stream</text>
+
+  <!-- Animated Step 3: Reads -> Replica 1 + LSN Fallback -->
+  <path d="M 254 390 L 320 390" fill="none" stroke="#059669" stroke-width="2.4" class="flow-read" marker-end="url(#arr-green)"/>
+  <circle class="smil-packet" r="5" fill="#059669" opacity="0">
+    <animateMotion dur="1.5s" repeatCount="indefinite" path="M 254 390 L 320 390"/>
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+  <g class="pulse-badge" transform="translate(287, 368)">
+    <circle cx="0" cy="0" r="11" fill="#059669"/>
+    <text x="0" y="4" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#ffffff">3</text>
+  </g>
+  <text x="287" y="410" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#065f46">SELECT</text>
+
+  <!-- Fallback arrow from Web Router to Primary -->
+  <path d="M 254 336 C 324 336, 326 202, 358 202" fill="none" stroke="#2563eb" stroke-width="1.6" stroke-dasharray="4 4" marker-end="url(#arr-blue)"/>
+  <text x="314" y="248" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#1d4ed8">LSN Fallback</text>
+
+  <!-- RIGHT: FAILOVER & SPLIT-BRAIN GUARD -->
+  <g transform="translate(794, 92)">
+    <rect x="0" y="0" width="302" height="370" rx="12" fill="#fff1f2" stroke="#e11d48" stroke-width="1.8"/>
+    <rect x="0" y="0" width="302" height="34" rx="12" fill="#be123c"/>
+    <rect x="0" y="20" width="302" height="14" fill="#be123c"/>
+    <text x="151" y="22" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#ffffff">Failover &amp; Split-Brain Guard</text>
+
+    <rect x="16" y="48" width="270" height="58" rx="6" fill="#ffffff" stroke="#fda4af"/>
+    <text x="28" y="68" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#9f1239">1. Fence Old Primary (Mandatory)</text>
+    <text x="28" y="86" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Revoke lease / STONITH / drop VIP</text>
+    <text x="28" y="99" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#be123c">Prevents two writable primaries</text>
+
+    <rect x="16" y="118" width="270" height="58" rx="6" fill="#ffffff" stroke="#fda4af"/>
+    <text x="28" y="138" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#9f1239">2. Quorum &amp; Highest-LSN Pick</text>
+    <text x="28" y="156" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Patroni / Raft majority quorum selects</text>
+    <text x="28" y="169" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Replica 1 (0/1A2B3C8) over lagging R2</text>
+
+    <rect x="16" y="188" width="270" height="58" rx="6" fill="#ffffff" stroke="#fda4af"/>
+    <text x="28" y="208" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#9f1239">3. Promote Standby (Epoch E+1)</text>
+    <text x="28" y="226" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Monotonic fencing token rejects any</text>
+    <text x="28" y="239" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">late writes from partitioned old leader</text>
+
+    <rect x="16" y="258" width="270" height="96" rx="6" fill="#fef2f2" stroke="#f43f5e"/>
+    <text x="28" y="278" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#9f1239">Async vs. Semi-Sync RPO</text>
+    <text x="28" y="297" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">• Async: ~1 ms write, RPO &gt; 0 on crash</text>
+    <text x="28" y="314" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">• Semi-sync: +1–2 ms AZ RTT, RPO = 0</text>
+    <text x="28" y="331" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">• Always drain stale proxy pools</text>
+    <text x="28" y="346" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#be123c">  before opening writes on Replica 1</text>
+  </g>
+
+  <!-- Promotion link from Replica 1 to Failover panel -->
+  <path d="M 738 154 L 790 154" fill="none" stroke="#e11d48" stroke-width="1.8" stroke-dasharray="4 3" marker-end="url(#arr-red)"/>
+  <text x="764" y="144" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#be123c">Fence</text>
+
+  <!-- Footer -->
+  <rect x="24" y="486" width="1072" height="72" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <circle cx="46" cy="510" r="5" fill="#7c3aed"/>
+  <text x="58" y="514" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" fill="#334155">1. Mutations -&gt; Primary</text>
+  <circle cx="212" cy="510" r="5" fill="#d97706"/>
+  <text x="224" y="514" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" fill="#334155">2. WAL Replication Stream</text>
+  <circle cx="406" cy="510" r="5" fill="#059669"/>
+  <text x="418" y="514" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" fill="#334155">3. LSN-Pinned Reads</text>
+  <circle cx="576" cy="510" r="5" fill="#e11d48"/>
+  <text x="588" y="514" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" fill="#9f1239">Failure Mode: Stale Reads &amp; Split-Brain</text>
+  <text x="42" y="540" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" fill="#0f172a"><tspan font-weight="700">Engineering Takeaway:</tspan> Replicas scale read-heavy workloads 10×–100×. Guard read-your-writes with LSN watermarks and fence the old primary before promoting any standby.</text>
+</svg>

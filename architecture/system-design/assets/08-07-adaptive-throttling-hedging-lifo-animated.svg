@@ -1,0 +1,164 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 600" width="1120" height="600" role="img" aria-labelledby="title desc">
+  <title id="title">Adaptive Throttling, Netflix Gradient2, Hedged Requests, and LIFO Goodput</title>
+  <desc id="desc">Animated four-quadrant summary of overload defense algorithms: Google SRE client-side adaptive throttling (P_drop with K=2), Netflix Gradient2 RTT-ratio AIMD concurrency control, p95 hedged backup request racing replica B and canceling straggler A, and LIFO vs FIFO queue goodput preservation under sustained overload with client deadlines.</desc>
+
+  <style>
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    /* 12s cycle across all 4 quadrants */
+    @keyframes pdrop-bar {
+      0%, 20% { width: 10px; fill: #059669; }
+      45%, 75% { width: 140px; fill: #e11d48; }
+      92%, 100% { width: 10px; fill: #059669; }
+    }
+    @keyframes aimd-limit {
+      0%, 20% { width: 220px; fill: #059669; }
+      45%, 65% { width: 70px; fill: #d97706; }
+      90%, 100% { width: 180px; fill: #2563eb; }
+    }
+    @keyframes hedge-b {
+      0%, 28% { transform: translateX(0px); opacity: 0; }
+      34% { transform: translateX(0px); opacity: 1; }
+      58% { transform: translateX(230px); opacity: 1; }
+      66%, 100% { transform: translateX(230px); opacity: 0; }
+    }
+    @keyframes hedge-win {
+      0%, 54% { opacity: 0; }
+      58%, 92% { opacity: 1; }
+      98%, 100% { opacity: 0; }
+    }
+    @keyframes lifo-pop {
+      0%, 15% { transform: translateX(0px); opacity: 1; }
+      45%, 80% { transform: translateX(64px); opacity: 1; }
+      95%, 100% { transform: translateX(0px); opacity: 1; }
+    }
+
+    .pdrop { animation: pdrop-bar 12s ease-in-out infinite; }
+    .aimd { animation: aimd-limit 12s ease-in-out infinite; }
+    .hb { animation: hedge-b 12s ease-in-out infinite; }
+    .hwin { animation: hedge-win 12s ease-in-out infinite; }
+    .lpop { animation: lifo-pop 12s ease-in-out infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .pdrop, .aimd, .hb, .hwin, .lpop {
+        animation: none !important;
+      }
+      .pdrop { width: 140px !important; fill: #e11d48 !important; }
+      .aimd { width: 90px !important; fill: #d97706 !important; }
+      .hb { opacity: 1 !important; transform: translateX(130px) !important; }
+      .hwin { opacity: 1 !important; }
+      .lpop { transform: translateX(48px) !important; }
+    }
+  </style>
+
+  <defs>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <marker id="arr-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1120" height="600" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1120" height="60" rx="12" fill="#0f172a"/>
+  <rect x="0" y="44" width="1120" height="16" fill="#0f172a"/>
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Overload Defense: Adaptive Throttling, Gradient2, Hedging &amp; LIFO</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">Local client shedding (K=2), RTT-ratio AIMD concurrency limits, p95 request hedging, and LIFO deadline goodput preservation</text>
+
+  <!-- QUADRANT 1 (TOP-LEFT): GOOGLE SRE ADAPTIVE THROTTLING -->
+  <rect x="24" y="76" width="524" height="214" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="42" y="100" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">1. Google SRE Client-Side Adaptive Throttling</text>
+  <rect x="42" y="112" width="488" height="44" rx="6" fill="#f5f3ff" stroke="#c4b5fd"/>
+  <text x="54" y="132" class="mono" font-size="11" font-weight="700" fill="#5b21b6">P_drop = max(0, (requests − K · accepts) / (requests + 1))</text>
+  <text x="54" y="148" class="mono" font-size="10" fill="#4c1d95">Standard K = 2: allows 100% traffic while backend accepts ≥ 50%</text>
+
+  <text x="42" y="178" class="mono" font-size="10.5" fill="#334155">When accepts drop to 30% (100 reqs, 30 accepts) → P_drop = 0.40:</text>
+  <rect x="42" y="190" width="350" height="24" rx="5" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <rect x="42" y="190" width="140" height="24" rx="5" class="pdrop"/>
+  <text x="404" y="206" class="mono" font-size="10.5" font-weight="700" fill="#9f1239">Local Drop 40%</text>
+
+  <text x="42" y="242" class="sans" font-size="11" fill="#334155">• Drops excess calls locally before TCP/TLS/JSON parsing wastes backend CPU.</text>
+  <text x="42" y="262" class="sans" font-size="11" fill="#059669">• Prevents client retries from locking the fleet in a metastable collapse.</text>
+
+  <!-- QUADRANT 2 (TOP-RIGHT): NETFLIX GRADIENT2 -->
+  <rect x="572" y="76" width="524" height="214" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="590" y="100" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">2. Netflix Gradient2 Dynamic Concurrency (AIMD)</text>
+  <rect x="590" y="112" width="488" height="44" rx="6" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="602" y="132" class="mono" font-size="11" font-weight="700" fill="#1e3a8a">gradient = RTT_min / RTT_measured  (10ms / 40ms = 0.25)</text>
+  <text x="602" y="148" class="mono" font-size="10" fill="#1e40af">limit_{t+1} = limit_t · gradient + margin  (AIMD)</text>
+
+  <text x="590" y="178" class="mono" font-size="10.5" fill="#334155">Inflight Concurrency Cap L (Little's Law L = λ·W):</text>
+  <rect x="590" y="190" width="320" height="24" rx="5" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <rect x="590" y="190" width="90" height="24" rx="5" class="aimd"/>
+  <text x="924" y="206" class="mono" font-size="10.5" font-weight="700" fill="#92400e">100 → 27 → +margin</text>
+
+  <text x="590" y="242" class="sans" font-size="11" fill="#334155">• Multiplicative shrink when queue RTT spikes above baseline RTT_min.</text>
+  <text x="590" y="262" class="sans" font-size="11" fill="#059669">• Linear additive margin probes capacity back up once RTT recovers.</text>
+
+  <!-- QUADRANT 3 (BOTTOM-LEFT): P95 HEDGED REQUESTS -->
+  <rect x="24" y="306" width="524" height="214" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="42" y="330" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">3. p95 Hedged Request Race (Fan-Out Tail Cut)</text>
+  <text x="42" y="348" class="sans" font-size="11" fill="#475569">P(slow) = 1 − (1 − p)ⁿ = 63.4% at n=100, p=0.01 · Hedge adds ≤ 5% load</text>
+
+  <rect x="42" y="366" width="96" height="96" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="90" y="418" class="sans" font-size="12" font-weight="700" fill="#1e3a8a" text-anchor="middle">Client</text>
+
+  <!-- Backend A (stalled) -->
+  <rect x="394" y="364" width="136" height="40" rx="6" fill="#fff1f2" stroke="#e11d48"/>
+  <text x="462" y="388" class="mono" font-size="10.5" font-weight="700" fill="#9f1239" text-anchor="middle">Replica A (slow!)</text>
+  <line x1="138" y1="384" x2="388" y2="384" stroke="#e11d48" stroke-width="1.8" stroke-dasharray="4 3" marker-end="url(#arr-red)"/>
+  <text x="262" y="376" class="mono" font-size="10" fill="#9f1239" text-anchor="middle">1. Primary (&gt; p95 delay D) → Cancel</text>
+
+  <!-- Backend B (fast hedge) -->
+  <rect x="394" y="422" width="136" height="40" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="462" y="446" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Replica B (fast!)</text>
+  <line x1="138" y1="442" x2="388" y2="442" stroke="#059669" stroke-width="2.2" marker-end="url(#arr-green)"/>
+  <g class="hb">
+    <circle cx="148" cy="442" r="7" fill="#059669" stroke="#ffffff" stroke-width="1.5"/>
+  </g>
+  <g class="hwin">
+    <rect x="190" y="454" width="164" height="20" rx="4" fill="#059669"/>
+    <text x="272" y="468" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">2. Hedge wins → 200 OK</text>
+  </g>
+  <text x="42" y="502" class="sans" font-size="10.5" fill="#475569">Must be idempotent and suppressed when downstream is already overloaded.</text>
+
+  <!-- QUADRANT 4 (BOTTOM-RIGHT): LIFO VS FIFO UNDER OVERLOAD -->
+  <rect x="572" y="306" width="524" height="214" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="590" y="330" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">4. LIFO vs. FIFO Goodput Under Overload (Deadline T_to)</text>
+
+  <!-- FIFO Row -->
+  <text x="590" y="362" class="mono" font-size="11" font-weight="700" fill="#9f1239">FIFO (head = oldest):</text>
+  <rect x="590" y="372" width="64" height="32" rx="4" fill="#ffe4e6" stroke="#e11d48"/>
+  <text x="622" y="392" class="mono" font-size="10" fill="#9f1239" text-anchor="middle">expired</text>
+  <rect x="660" y="372" width="64" height="32" rx="4" fill="#ffe4e6" stroke="#e11d48"/>
+  <text x="692" y="392" class="mono" font-size="10" fill="#9f1239" text-anchor="middle">expired</text>
+  <rect x="730" y="372" width="64" height="32" rx="4" fill="#fef3c7" stroke="#d97706"/>
+  <text x="762" y="392" class="mono" font-size="10" fill="#92400e" text-anchor="middle">fresh</text>
+  <text x="808" y="392" class="mono" font-size="10.5" font-weight="700" fill="#e11d48">→ 0% Goodput (wasted CPU)</text>
+
+  <!-- LIFO Row -->
+  <text x="590" y="432" class="mono" font-size="11" font-weight="700" fill="#065f46">LIFO (head = newest):</text>
+  <rect x="590" y="442" width="64" height="32" rx="4" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="622" y="462" class="mono" font-size="10" fill="#64748b" text-anchor="middle">shed</text>
+  <rect x="660" y="442" width="64" height="32" rx="4" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="692" y="462" class="mono" font-size="10" fill="#64748b" text-anchor="middle">shed</text>
+  <g class="lpop">
+    <rect x="730" y="442" width="70" height="32" rx="4" fill="#059669"/>
+    <text x="765" y="462" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">NEWEST ✓</text>
+  </g>
+  <text x="876" y="462" class="mono" font-size="10.5" font-weight="700" fill="#059669">High Goodput!</text>
+
+  <text x="590" y="502" class="sans" font-size="10.5" fill="#475569">CoDel &amp; adaptive queues pop fresh work and fail fast on expired items.</text>
+
+  <!-- FOOTER -->
+  <rect x="24" y="536" width="1072" height="46" rx="8" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1"/>
+  <text x="42" y="564" class="sans" font-size="11.5" font-weight="600" fill="#065f46">Takeaway: Combine client P_drop, Gradient2 AIMD caps, p95 hedging (when healthy), and LIFO/CoDel queues to survive overload.</text>
+</svg>

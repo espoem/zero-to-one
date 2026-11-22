@@ -1,0 +1,182 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 580" width="1120" height="580" role="img" aria-labelledby="title desc">
+  <title id="title">Stage 6: Multi-Data-Center GeoDNS and Anycast Failover Topology</title>
+  <desc id="desc">Animated schematic of Stage 6 multi-region architecture with global clients routed via GeoDNS and Anycast VIP (80% US-East, 20% EU-West) to two full regional stacks (Load Balancer, Stateless Web Pool, Local Cache, and Regional DB with async cross-region replication) plus an animated failover path diverting traffic when US-East is degraded.</desc>
+  <defs>
+    <style>
+      .flow-blue { stroke-dasharray: 8 6; animation: dash-flow 1.4s linear infinite; }
+      .flow-green { stroke-dasharray: 8 6; animation: dash-flow 1.4s linear infinite; }
+      .flow-amber { stroke-dasharray: 6 5; animation: dash-flow 1.7s linear infinite; }
+      .flow-failover { stroke-dasharray: 7 5; animation: dash-flow 1.1s linear infinite; }
+      .pulse-badge { animation: badge-pulse 2.2s ease-in-out infinite; }
+      @keyframes dash-flow { to { stroke-dashoffset: -28; } }
+      @keyframes badge-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.72; } }
+      @media (prefers-reduced-motion: reduce) {
+        * { animation: none !important; transition: none !important; }
+        .smil-packet { display: none !important; }
+      }
+    </style>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+    </marker>
+    <marker id="arr-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1120" height="580" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1120" height="62" rx="12" fill="#0f172a"/>
+  <rect x="0" y="46" width="1120" height="16" fill="#0f172a"/>
+  <text x="24" y="29" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#f8fafc">Stage 6 · Multi-Data-Center Topology, GeoDNS &amp; Anycast Failover (5M–8M DAU)</text>
+  <text x="24" y="49" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#94a3b8">Geo-steer users to the nearest healthy region (&lt;100 ms RTT) while Anycast VIPs bypass sticky ISP recursive DNS TTL clamping during failover</text>
+
+  <!-- LEFT: GLOBAL CLIENTS + GEODNS / ANYCAST -->
+  <g transform="translate(24, 94)">
+    <rect x="0" y="0" width="188" height="148" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+    <text x="94" y="26" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1e3a8a">Global Users</text>
+    <rect x="14" y="42" width="160" height="40" rx="6" fill="#ffffff" stroke="#93c5fd"/>
+    <text x="94" y="59" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e40af">Americas (80%)</text>
+    <text x="94" y="74" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Nearest: US-East</text>
+    <rect x="14" y="92" width="160" height="40" rx="6" fill="#ffffff" stroke="#93c5fd"/>
+    <text x="94" y="109" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">Europe (20%)</text>
+    <text x="94" y="124" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Nearest: EU-West</text>
+  </g>
+
+  <g transform="translate(24, 278)">
+    <rect x="0" y="0" width="188" height="178" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="1.8"/>
+    <text x="94" y="26" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#92400e">GeoDNS + Anycast VIP</text>
+    <rect x="14" y="40" width="160" height="58" rx="6" fill="#ffffff" stroke="#fcd34d"/>
+    <text x="94" y="58" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="700" fill="#b45309">US-East: 80% -&gt; 0%</text>
+    <text x="94" y="74" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="700" fill="#059669">EU-West: 20% -&gt; 100%</text>
+    <text x="94" y="90" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">(on regional failover)</text>
+    <text x="14" y="120" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#78350f">• Anycast BGP steers</text>
+    <text x="14" y="135" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#78350f">  immediately (no DNS lag)</text>
+    <text x="14" y="154" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#9f1239">• ISP DNS ignores low TTL</text>
+  </g>
+
+  <line x1="118" y1="242" x2="118" y2="274" stroke="#d97706" stroke-width="2" marker-end="url(#arr-amber)"/>
+
+  <!-- ==================== REGION 1: US-EAST ==================== -->
+  <g transform="translate(298, 86)">
+    <rect x="0" y="0" width="798" height="162" rx="12" fill="#eff6ff" stroke="#2563eb" stroke-width="1.8"/>
+    <rect x="14" y="12" width="234" height="24" rx="12" fill="#1d4ed8"/>
+    <text x="131" y="28" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#ffffff">US-EAST DC (80% Normal Load)</text>
+    <rect x="646" y="12" width="138" height="24" rx="12" fill="#fff1f2" stroke="#e11d48"/>
+    <text x="715" y="28" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#be123c">IMPACTED -&gt; SHIFT</text>
+
+    <!-- LB -->
+    <rect x="18" y="52" width="128" height="90" rx="8" fill="#ffffff" stroke="#93c5fd"/>
+    <text x="82" y="78" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1e3a8a">US L4/L7 LB</text>
+    <text x="82" y="98" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#2563eb">198.51.100.10</text>
+    <text x="82" y="118" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Multi-AZ VIP</text>
+
+    <!-- Web Pool -->
+    <rect x="186" y="52" width="166" height="90" rx="8" fill="#ffffff" stroke="#93c5fd"/>
+    <text x="269" y="78" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1e3a8a">Stateless Web Pool</text>
+    <text x="269" y="98" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Auto-scaled containers</text>
+    <text x="269" y="118" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Home-region local reads</text>
+
+    <!-- Local Cache -->
+    <rect x="392" y="52" width="162" height="90" rx="8" fill="#fffbeb" stroke="#fcd34d"/>
+    <text x="473" y="78" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#92400e">US Valkey Cache</text>
+    <text x="473" y="98" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#78350f">Local hot working set</text>
+    <text x="473" y="118" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#b45309">Shadow-warmed to EU</text>
+
+    <!-- Regional DB -->
+    <rect x="594" y="52" width="186" height="90" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+    <text x="687" y="78" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#4c1d95">US-East Primary DB</text>
+    <text x="687" y="98" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Local ACID commits</text>
+    <text x="687" y="118" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#6d28d9">pg_current_wal_lsn</text>
+
+    <line x1="146" y1="97" x2="182" y2="97" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+    <line x1="352" y1="97" x2="388" y2="97" stroke="#d97706" stroke-width="1.8" marker-end="url(#arr-amber)"/>
+    <line x1="554" y1="97" x2="590" y2="97" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+  </g>
+
+  <!-- ==================== REGION 2: EU-WEST ==================== -->
+  <g transform="translate(298, 304)">
+    <rect x="0" y="0" width="798" height="162" rx="12" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <rect x="14" y="12" width="290" height="24" rx="12" fill="#059669"/>
+    <text x="159" y="28" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#ffffff">EU-WEST DC (20% Normal / 100% Failover)</text>
+
+    <!-- LB -->
+    <rect x="18" y="52" width="128" height="90" rx="8" fill="#ffffff" stroke="#6ee7b7"/>
+    <text x="82" y="78" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#065f46">EU L4/L7 LB</text>
+    <text x="82" y="98" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#059669">203.0.113.20</text>
+    <text x="82" y="118" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Static-stable headroom</text>
+
+    <!-- Web Pool -->
+    <rect x="186" y="52" width="166" height="90" rx="8" fill="#ffffff" stroke="#6ee7b7"/>
+    <text x="269" y="78" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#065f46">Stateless Web Pool</text>
+    <text x="269" y="98" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Handles EU + shifted US</text>
+    <text x="269" y="118" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">GDPR data residency</text>
+
+    <!-- Local Cache -->
+    <rect x="392" y="52" width="162" height="90" rx="8" fill="#fffbeb" stroke="#fcd34d"/>
+    <text x="473" y="78" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#92400e">EU Valkey Cache</text>
+    <text x="473" y="98" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#78350f">Pre-warmed hot keys</text>
+    <text x="473" y="118" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#b45309">Singleflight protected</text>
+
+    <!-- Regional DB -->
+    <rect x="594" y="52" width="186" height="90" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+    <text x="687" y="78" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#4c1d95">EU-West DB Replica</text>
+    <text x="687" y="98" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Or EU Home-Region Shard</text>
+    <text x="687" y="118" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#6d28d9">Promoted on US loss</text>
+
+    <line x1="146" y1="97" x2="182" y2="97" stroke="#059669" stroke-width="1.8" marker-end="url(#arr-green)"/>
+    <line x1="352" y1="97" x2="388" y2="97" stroke="#d97706" stroke-width="1.8" marker-end="url(#arr-amber)"/>
+    <line x1="554" y1="97" x2="590" y2="97" stroke="#059669" stroke-width="1.8" marker-end="url(#arr-green)"/>
+  </g>
+
+  <!-- Cross-Region Async Replication -->
+  <path d="M 985 228 L 985 352" fill="none" stroke="#d97706" stroke-width="2.4" class="flow-amber" marker-end="url(#arr-amber)"/>
+  <circle class="smil-packet" r="4.5" fill="#d97706" opacity="0">
+    <animateMotion dur="2.0s" repeatCount="indefinite" path="M 985 228 L 985 352"/>
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="2.0s" repeatCount="indefinite"/>
+  </circle>
+  <rect x="854" y="264" width="252" height="26" rx="6" fill="#fffbeb" stroke="#f59e0b"/>
+  <text x="980" y="281" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#92400e">Async Cross-Region Replication (~80ms RTT)</text>
+
+  <!-- Routing Paths from GeoDNS/Anycast to DCs -->
+  <!-- Normal 80% to US-East -->
+  <path d="M 212 318 C 254 272, 254 184, 312 184" fill="none" stroke="#2563eb" stroke-width="2.2" class="flow-blue" marker-end="url(#arr-blue)"/>
+  <text x="256" y="168" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#1d4ed8">80% US</text>
+
+  <!-- Normal 20% + Failover 100% to EU-West -->
+  <path d="M 212 388 L 312 388" fill="none" stroke="#059669" stroke-width="2.4" class="flow-green" marker-end="url(#arr-green)"/>
+  <circle class="smil-packet" r="5" fill="#059669" opacity="0">
+    <animateMotion dur="1.5s" repeatCount="indefinite" path="M 212 388 L 312 388"/>
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+  <text x="260" y="376" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#065f46">20% EU</text>
+
+  <!-- Animated Failover Shift Arrow -->
+  <path d="M 254 224 C 242 292, 248 344, 312 362" fill="none" stroke="#e11d48" stroke-width="2.2" class="flow-failover" marker-end="url(#arr-red)"/>
+  <circle class="smil-packet" r="5" fill="#e11d48" opacity="0">
+    <animateMotion dur="1.6s" repeatCount="indefinite" path="M 254 224 C 242 292, 248 344, 312 362"/>
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="1.6s" repeatCount="indefinite"/>
+  </circle>
+  <g class="pulse-badge" transform="translate(248, 286)">
+    <circle cx="0" cy="0" r="11" fill="#e11d48"/>
+    <text x="0" y="4" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#ffffff">!</text>
+  </g>
+  <text x="248" y="316" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#be123c">Failover Shift</text>
+
+  <!-- Footer -->
+  <rect x="24" y="486" width="1072" height="74" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <circle cx="46" cy="510" r="5" fill="#2563eb"/>
+  <text x="58" y="514" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" fill="#334155">Normal Geo-Routing (80% US / 20% EU)</text>
+  <circle cx="316" cy="510" r="5" fill="#d97706"/>
+  <text x="328" y="514" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" fill="#92400e">Async Replication (Speed-of-Light ~80 ms)</text>
+  <circle cx="628" cy="510" r="5" fill="#e11d48"/>
+  <text x="640" y="514" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" fill="#9f1239">Anycast Failover Diversion</text>
+  <text x="42" y="542" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#0f172a"><tspan font-weight="700">Takeaway:</tspan> Avoid global synchronous multi-leader writes. Use Geo-Partitioned Home-Region Sharding or Active-Passive DR, and shadow-warm failover caches before shifting traffic.</text>
+</svg>
