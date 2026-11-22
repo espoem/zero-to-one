@@ -17,6 +17,10 @@ graph TD
     Used --> Actual["6. Actual Value<br/>Hardware device pixel snapping (sub-pixel rounding)"]
 ```
 
+![CSS Formal Cascade Sort and 6-Stage Value Processing Pipeline Animation](../assets/03-04-cascade-and-value-pipeline-animated.svg)
+
+_Step-by-step mechanics:_ Once Cascade Sort selects a single Cascaded declaration, the engine fills missing values via inheritance or initial defaults (Specified), resolves font-relative units like `rem` into pixels (Computed), resolves layout-dependent percentages like `width: 50%` after box sizing (Used), and snaps sub-pixel floats to hardware pixels (Actual).
+
 ### 1. Declared Value
 
 The raw property value specified in any matching stylesheet rule, inline `style` attribute, or user-agent style sheet (e.g. `color: red;`, `width: 50%`). An element may have zero, one, or dozens of declared values for a single property.

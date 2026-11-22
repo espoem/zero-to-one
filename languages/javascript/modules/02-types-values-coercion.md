@@ -339,6 +339,10 @@ new Set([0, -0]).size; // 1   (SameValueZero)
 Object.is(0, -0); // false (SameValue)
 ```
 
+![ECMAScript Equality Algorithms Animated Comparison](../assets/02-ecmascript-equality-algorithms-animated.svg)
+
+_Step-by-step mechanics:_ `IsLooselyEqual` (`==`) coerces operands recursively (producing `[] == ![]` as `true` while `null == 0` is `false`), `IsStrictlyEqual` (`===`) rejects mismatched types and `NaN`, `SameValue` (`Object.is`) equates `NaN` while separating `+0` and `-0`, and `SameValueZero` equates both `NaN` and `±0` for `Map`, `Set`, and `.includes()`.
+
 ### 7.1 IsLooselyEqual (§7.2.13)
 
 The full algorithm, in order:

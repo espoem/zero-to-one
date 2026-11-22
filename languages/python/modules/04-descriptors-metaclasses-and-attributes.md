@@ -117,6 +117,10 @@ flowchart TD
 
 In the diamond above, if class $C$ declares `(A, B)` while class $D$ declares `(B, A)`, attempting to create `class E(C, D)` produces an irreconcilable ordering contradiction ($A < B$ in $C$, but $B < A$ in $D$). Python refuses to guess and raises `TypeError`.
 
+![Python C3 Linearization MRO Step-by-Step Merge Animation](../assets/04-c3-linearization-mro-animated.svg)
+
+_Step-by-step mechanics:_ `merge(L(B), L(C), [B, C])` scans list heads left-to-right and pops the first candidate absent from every other list's tail (`B`, then `A`), rejects `O` in Step 3 because `O` sits in the tail of `[C, O]`, pops `C`, and finishes with `O` to lock `D.__mro__` as `[D, B, A, C, O]`.
+
 ### 2.2 Cooperative Multiple Inheritance with `super()`
 
 In Python, `super()` does **not** simply call the immediate parent class! `super(CurrentClass, self)` returns a proxy object that delegates method calls to the **next class in the instance's MRO chain** (`type(self).__mro__`).

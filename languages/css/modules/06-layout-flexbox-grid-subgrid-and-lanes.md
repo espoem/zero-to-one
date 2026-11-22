@@ -90,6 +90,10 @@ When items do not explicitly declare `grid-column` or `grid-row` coordinates, th
 }
 ```
 
+![Flexbox Free-Space Distribution and CSS Grid Dense Auto-Placement Animation](../assets/06-flexbox-and-grid-dense-placement-animated.svg)
+
+_Step-by-step mechanics:_ Flexbox allocates positive free space proportionally by `flex-grow` and subtracts overflow by `flex-shrink * flex-basis` (requiring `min-width: 0` to override `min-content` clamping), while `grid-auto-flow: dense` resets the placement cursor to `(r1, c1)` so later small items backfill earlier gaps.
+
 ---
 
 ## 3. Subgrid: Nested Two-Dimensional Alignment

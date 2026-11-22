@@ -258,6 +258,10 @@ flowchart TD
   end
 ```
 
+![HTML Event Loop and Rendering Processing Model Animation](../assets/06-html-event-loop-model-animated.svg)
+
+_Step-by-step mechanics:_ Each iteration runs one runnable macrotask, immediately drains the entire FIFO microtask queue (including chained Promise reactions enqueued mid-drain) in `PERFORM-MICROTASK-CHECKPOINT`, and—when an in-parallel vsync rendering opportunity arrives—executes `requestAnimationFrame` callbacks followed by Style, Layout, Paint, and GPU Composite before picking the next task.
+
 ### Ordering consequences you can predict
 
 ```js

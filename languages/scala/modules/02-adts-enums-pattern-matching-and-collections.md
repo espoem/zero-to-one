@@ -244,6 +244,10 @@ Prior to Scala 2.13, `immutable.HashMap` used a standard **Hash Array Mapped Tri
 - Every internal `BitmapIndexedMapNode` maintains **two 32-bit bitmaps**: `dataMap` (for inline key-value pairs stored directly at the front of the `content: Array[Any]`) and `nodeMap` (for child sub-nodes stored in reverse order at the back of `content`).
 - By packing inline entries contiguously without allocating `HashMap1` leaf wrappers, CHAMP cuts heap footprint dramatically, keeps sequential iteration cache-friendly (scanning contiguous array slices), and eliminates canonical-shape ambiguities so structural equality (`map1 == map2`) can short-circuit in $O(1)$ when sub-tree references are identical!
 
+![Scala CHAMP Trie Dual-Bitmap Lookup and Path-Copying Animation](../assets/02-champ-trie-lookup-update-animated.svg)
+
+_Step-by-step mechanics:_ Each 5-bit slice of the 32-bit hash indexes dual `dataMap` and `nodeMap` bitmaps using hardware `popcount` (`Integer.bitCount`) into a single flat `content: Array[Any]`, while immutable updates path-copy only nodes along the modified root-to-leaf path and share untouched sibling subtrees.
+
 ### `View` Fusion, `Factory` / `BuildFrom`, and `LazyList.unfold`
 
 As discussed in [FP Module 02](../../../architecture/functional-programming/modules/02-persistent-data-structures-and-structural-sharing.md), chaining `xs.map(f).filter(p).map(g)` on a strict `List` or `Vector` allocates up to $3n$ intermediate elements across three passes. Calling `.view` produces a `scala.collection.View[A]`—a lightweight non-memoized iterator pipeline that fuses `map`, `filter`, and `take` into a single traversal realized only at the terminal `.to(Vector)` (powered by Scala 2.13/3's `scala.collection.Factory[-Elem, +To]`, which cleanly replaced Scala 2.12's complex `CanBuildFrom` machinery):

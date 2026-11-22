@@ -18,6 +18,10 @@ graph TD
     Step6 --> Step7["7. Order of Appearance<br/>(Later declaration in stylesheet wins)"]
 ```
 
+![CSS Formal Cascade Sort and 6-Stage Value Processing Pipeline Animation](../assets/03-04-cascade-and-value-pipeline-animated.svg)
+
+_Step-by-step mechanics:_ Competing declarations are sorted deterministically by Origin & `!important`, Context, Inline Style, `@layer` precedence (where higher layers and unlayered styles beat higher specificity), Specificity `(A, B, C)`, `@scope` proximity, and Source Order, feeding a single winning declaration into the 6-stage Value Processing Pipeline.
+
 ### 1. Origin and Importance
 
 The origin determines where the rule came from, and importance determines whether it carries the `!important` annotation. Normal and important declarations have **inverted** hierarchies:

@@ -104,6 +104,10 @@ To reclaim cyclic garbage, CPython runs a cyclic garbage collector (`gc` module)
 4. Any object whose `gc_refs > 0` is reachable from an external root: the collector marks it and all objects reachable from it as **live**.
 5. The remaining objects whose `gc_refs == 0` are confirmed garbage and deallocated.
 
+![CPython Generational Cyclic GC Trial-Deletion Animation](../assets/08-cpython-tricolor-cyclic-gc-animated.svg)
+
+_Step-by-step mechanics:_ For containers in a generation, CPython copies `ob_refcnt` to `gc_refs`, trial-decrements internal container edges, rescues any component reachable from a node with `gc_refs > 0` (promoting survivors to Gen 1), and calls `tp_clear()` to break and free isolated `gc_refs == 0` reference cycles.
+
 ### 4.2 Generational Garbage Collection
 
 CPython organizes trackable objects into three generations based on the weak generational hypothesis ("most objects die young"):

@@ -1,0 +1,221 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 620" width="1160" height="620" role="img" aria-labelledby="title desc">
+  <title id="title">Python C3 Linearization (MRO) Step-by-Step Merge Algorithm</title>
+  <desc id="desc">Animated step-by-step trace of Python's C3 Linearization merge([L(B), L(C), [B, C]]) for diamond hierarchy D(B, C) where B inherits from A(O) and C inherits from O. Demonstrates scanning heads, popping valid good heads B and A, rejecting head O because O appears in the tail of L(C)=[C, O], popping C, and finally popping O to produce MRO [D, B, A, C, O].</desc>
+
+  <style>
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    /* 12s 4-step merge animation:
+       Step 1 (0-25%) : Scan B -> not in any tail -> POP B -> MRO [D, B]
+       Step 2 (25-50%): Scan A -> not in any tail -> POP A -> MRO [D, B, A]
+       Step 3 (50-75%): Scan O -> FOUND in tail([C, O]) -> REJECT O! Advance to C -> POP C -> MRO [D, B, A, C]
+       Step 4 (75-100%): Scan O -> not in any tail -> POP O -> Final MRO [D, B, A, C, O]
+    */
+    @keyframes step1-hl {
+      0%, 24% { stroke: #059669; stroke-width: 2.5; opacity: 1; }
+      25%, 100% { stroke: #cbd5e1; stroke-width: 1.2; opacity: 0.86; }
+    }
+    @keyframes step2-hl {
+      0%, 24% { stroke: #cbd5e1; stroke-width: 1.2; opacity: 0.86; }
+      25%, 49% { stroke: #059669; stroke-width: 2.5; opacity: 1; }
+      50%, 100% { stroke: #cbd5e1; stroke-width: 1.2; opacity: 0.86; }
+    }
+    @keyframes step3-hl {
+      0%, 49% { stroke: #cbd5e1; stroke-width: 1.2; opacity: 0.86; }
+      50%, 74% { stroke: #e11d48; stroke-width: 2.5; opacity: 1; }
+      75%, 100% { stroke: #cbd5e1; stroke-width: 1.2; opacity: 0.86; }
+    }
+    @keyframes step4-hl {
+      0%, 74% { stroke: #cbd5e1; stroke-width: 1.2; opacity: 0.86; }
+      75%, 100% { stroke: #2563eb; stroke-width: 2.5; opacity: 1; }
+    }
+
+    @keyframes mro-b {
+      0%, 4% { opacity: 0.86; transform: scale(0.9); }
+      10%, 96% { opacity: 1; transform: scale(1); }
+      100% { opacity: 0.86; transform: scale(0.9); }
+    }
+    @keyframes mro-a {
+      0%, 28% { opacity: 0.86; transform: scale(0.9); }
+      34%, 96% { opacity: 1; transform: scale(1); }
+      100% { opacity: 0.86; transform: scale(0.9); }
+    }
+    @keyframes mro-c {
+      0%, 58% { opacity: 0.86; transform: scale(0.9); }
+      64%, 96% { opacity: 1; transform: scale(1); }
+      100% { opacity: 0.86; transform: scale(0.9); }
+    }
+    @keyframes mro-o {
+      0%, 78% { opacity: 0.86; transform: scale(0.9); }
+      84%, 96% { opacity: 1; transform: scale(1); }
+      100% { opacity: 0.86; transform: scale(0.9); }
+    }
+
+    @keyframes reject-flash {
+      0%, 49% { opacity: 0; }
+      52%, 62% { opacity: 1; }
+      66%, 100% { opacity: 0; }
+    }
+
+    .s1 { animation: step1-hl 12s linear infinite; }
+    .s2 { animation: step2-hl 12s linear infinite; }
+    .s3 { animation: step3-hl 12s linear infinite; }
+    .s4 { animation: step4-hl 12s linear infinite; }
+
+    .mb { transform-box: fill-box; transform-origin: center; animation: mro-b 12s ease-in-out infinite; }
+    .ma { transform-box: fill-box; transform-origin: center; animation: mro-a 12s ease-in-out infinite; }
+    .mc { transform-box: fill-box; transform-origin: center; animation: mro-c 12s ease-in-out infinite; }
+    .mo { transform-box: fill-box; transform-origin: center; animation: mro-o 12s ease-in-out infinite; }
+    .rej { animation: reject-flash 12s ease-in-out infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .s1, .s2, .s3, .s4, .mb, .ma, .mc, .mo, .rej { animation: none !important; }
+      .s1, .s2, .s3, .s4 { opacity: 1 !important; stroke-width: 1.5 !important; }
+      .mb, .ma, .mc, .mo { opacity: 1 !important; transform: none !important; }
+      .rej { opacity: 1 !important; }
+    }
+  </style>
+
+  <defs>
+    <marker id="arr-slate" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1160" height="620" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1160" height="60" rx="12" fill="#0f172a"/>
+  <rect x="0" y="44" width="1160" height="16" fill="#0f172a"/>
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Python C3 Linearization (MRO) — Step-by-Step Merge</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">L(D) = [D] + merge(L(B), L(C), [B, C]) · Preserves Local Precedence Order &amp; Monotonicity</text>
+
+  <!-- LEFT PANEL: CLASS GRAPH & INVARIANTS -->
+  <rect x="24" y="76" width="352" height="464" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="42" y="102" class="sans" font-size="14" font-weight="700" fill="#0f172a">Inheritance Graph: class D(B, C)</text>
+
+  <!-- DAG Diagram -->
+  <rect x="148" y="120" width="104" height="34" rx="7" fill="#f1f5f9" stroke="#475569" stroke-width="1.4"/>
+  <text x="200" y="141" class="mono" font-size="12" font-weight="700" fill="#0f172a" text-anchor="middle">O (object)</text>
+
+  <rect x="58" y="182" width="84" height="32" rx="7" fill="#eff6ff" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="100" y="202" class="mono" font-size="12" font-weight="700" fill="#1e3a8a" text-anchor="middle">A(O)</text>
+
+  <rect x="256" y="182" width="84" height="32" rx="7" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.4"/>
+  <text x="298" y="202" class="mono" font-size="12" font-weight="700" fill="#5b21b6" text-anchor="middle">C(O)</text>
+
+  <rect x="58" y="242" width="84" height="32" rx="7" fill="#eff6ff" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="100" y="262" class="mono" font-size="12" font-weight="700" fill="#1e3a8a" text-anchor="middle">B(A)</text>
+
+  <rect x="148" y="302" width="104" height="36" rx="7" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+  <text x="200" y="324" class="mono" font-size="12.5" font-weight="700" fill="#065f46" text-anchor="middle">D(B, C)</text>
+
+  <!-- DAG Edges (child -> parent) -->
+  <line x1="100" y1="182" x2="174" y2="154" stroke="#475569" stroke-width="1.4" marker-end="url(#arr-slate)"/>
+  <line x1="298" y1="182" x2="226" y2="154" stroke="#475569" stroke-width="1.4" marker-end="url(#arr-slate)"/>
+  <line x1="100" y1="242" x2="100" y2="216" stroke="#475569" stroke-width="1.4" marker-end="url(#arr-slate)"/>
+  <line x1="176" y1="302" x2="112" y2="274" stroke="#475569" stroke-width="1.4" marker-end="url(#arr-slate)"/>
+  <line x1="224" y1="302" x2="288" y2="216" stroke="#475569" stroke-width="1.4" marker-end="url(#arr-slate)"/>
+
+  <!-- Precomputed Linearizations -->
+  <rect x="42" y="354" width="316" height="84" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="56" y="375" class="sans" font-size="11.5" font-weight="700" fill="#0f172a">Inputs to merge(L(B), L(C), [B, C])</text>
+  <text x="56" y="395" class="mono" font-size="11" fill="#1e3a8a">L(B)   = [B, A, O]</text>
+  <text x="56" y="412" class="mono" font-size="11" fill="#5b21b6">L(C)   = [C, O]</text>
+  <text x="56" y="429" class="mono" font-size="11" fill="#065f46">Bases  = [B, C]</text>
+
+  <!-- Rejection Rule & TypeError -->
+  <rect x="42" y="448" width="316" height="78" rx="8" fill="#fff1f2" stroke="#fda4af"/>
+  <text x="56" y="468" class="sans" font-size="11.5" font-weight="700" fill="#9f1239">Good-Head Rule &amp; Consistency Error</text>
+  <text x="56" y="486" class="sans" font-size="10.5" fill="#334155">Head H is valid iff H ∉ tail(any list).</text>
+  <text x="56" y="502" class="sans" font-size="10.5" fill="#334155">If ALL heads appear in some tail, Python</text>
+  <text x="56" y="517" class="mono" font-size="10.5" fill="#be123c">raises TypeError (inconsistent MRO).</text>
+
+  <!-- RIGHT PANEL: 4-STEP MERGE TRACE & GROWING OUTPUT MRO -->
+  <rect x="396" y="76" width="740" height="464" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="416" y="102" class="sans" font-size="14" font-weight="700" fill="#0f172a">C3 Merge Execution Trace (Head vs Tail Scanning)</text>
+
+  <!-- Step 1 -->
+  <rect x="416" y="118" width="700" height="74" rx="8" fill="#ecfdf5" class="s1"/>
+  <rect x="428" y="128" width="66" height="22" rx="5" fill="#059669"/>
+  <text x="461" y="143" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">Step 1</text>
+  <text x="506" y="143" class="sans" font-size="12.5" font-weight="700" fill="#065f46">Check head of L(B): B</text>
+  <text x="428" y="165" class="mono" font-size="11" fill="#334155">Lists: [B | A, O],  [C | O],  [B | C]   →   B ∉ tails {A,O}, {O}, {C}</text>
+  <text x="428" y="182" class="sans" font-size="10.5" fill="#047857">Good head! Pop B from L(B) and [B, C]; append B to MRO.</text>
+  <rect x="974" y="130" width="128" height="26" rx="5" fill="#059669"/>
+  <text x="1038" y="147" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">POP B → OK</text>
+
+  <!-- Step 2 -->
+  <rect x="416" y="200" width="700" height="74" rx="8" fill="#ecfdf5" class="s2"/>
+  <rect x="428" y="210" width="66" height="22" rx="5" fill="#059669"/>
+  <text x="461" y="225" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">Step 2</text>
+  <text x="506" y="225" class="sans" font-size="12.5" font-weight="700" fill="#065f46">Check head of L(B): A</text>
+  <text x="428" y="247" class="mono" font-size="11" fill="#334155">Lists: [A | O],     [C | O],  [C | ∅]   →   A ∉ tails {O}, {O}, {}</text>
+  <text x="428" y="264" class="sans" font-size="10.5" fill="#047857">Good head! Pop A from L(B); append A to MRO.</text>
+  <rect x="974" y="212" width="128" height="26" rx="5" fill="#059669"/>
+  <text x="1038" y="229" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">POP A → OK</text>
+
+  <!-- Step 3 (Rejection + Advance) -->
+  <rect x="416" y="282" width="700" height="90" rx="8" fill="#fff1f2" class="s3"/>
+  <rect x="428" y="292" width="66" height="22" rx="5" fill="#e11d48"/>
+  <text x="461" y="307" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">Step 3</text>
+  <text x="506" y="307" class="sans" font-size="12.5" font-weight="700" fill="#9f1239">Reject head O (in tail of L(C)), then accept C!</text>
+  <text x="428" y="329" class="mono" font-size="11" fill="#9f1239">1) Lists: [O | ∅],  [C | O],  [C | ∅]   →   O ∈ tail([C, O]) → REJECT O!</text>
+  <text x="428" y="347" class="mono" font-size="11" fill="#065f46">2) Advance to L(C) head C: C ∉ tails {}, {O}, {} → POP C from L(C) &amp; [C]!</text>
+  <text x="428" y="363" class="sans" font-size="10" fill="#be123c">Guarantees subclass C always runs before shared base class O (monotonicity).</text>
+  <g class="rej">
+    <rect x="974" y="294" width="128" height="26" rx="5" fill="#e11d48"/>
+    <text x="1038" y="311" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">REJECT O → C</text>
+  </g>
+
+  <!-- Step 4 -->
+  <rect x="416" y="380" width="700" height="72" rx="8" fill="#eff6ff" class="s4"/>
+  <rect x="428" y="390" width="66" height="22" rx="5" fill="#2563eb"/>
+  <text x="461" y="405" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">Step 4</text>
+  <text x="506" y="405" class="sans" font-size="12.5" font-weight="700" fill="#1e3a8a">Check remaining head: O</text>
+  <text x="428" y="427" class="mono" font-size="11" fill="#334155">Lists: [O | ∅],     [O | ∅],  []        →   O ∉ tails {}, {} → POP O</text>
+  <text x="428" y="443" class="sans" font-size="10.5" fill="#1e40af">All input lists empty; merge terminates cleanly.</text>
+  <rect x="974" y="392" width="128" height="26" rx="5" fill="#2563eb"/>
+  <text x="1038" y="409" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">POP O → DONE</text>
+
+  <!-- Growing Output MRO Bar -->
+  <rect x="416" y="464" width="700" height="62" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.4"/>
+  <text x="432" y="484" class="sans" font-size="11.5" font-weight="700" fill="#5b21b6">Resulting D.__mro__ (Cooperative super() Traversal Order):</text>
+
+  <rect x="432" y="492" width="82" height="26" rx="5" fill="#059669"/>
+  <text x="473" y="509" class="mono" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle">1. D</text>
+  <line x1="516" y1="505" x2="534" y2="505" stroke="#059669" stroke-width="1.6" marker-end="url(#arr-green)"/>
+
+  <g class="mb">
+    <rect x="538" y="492" width="82" height="26" rx="5" fill="#2563eb"/>
+    <text x="579" y="509" class="mono" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle">2. B</text>
+  </g>
+  <line x1="622" y1="505" x2="640" y2="505" stroke="#059669" stroke-width="1.6" marker-end="url(#arr-green)"/>
+
+  <g class="ma">
+    <rect x="644" y="492" width="82" height="26" rx="5" fill="#2563eb"/>
+    <text x="685" y="509" class="mono" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle">3. A</text>
+  </g>
+  <line x1="728" y1="505" x2="746" y2="505" stroke="#059669" stroke-width="1.6" marker-end="url(#arr-green)"/>
+
+  <g class="mc">
+    <rect x="750" y="492" width="82" height="26" rx="5" fill="#7c3aed"/>
+    <text x="791" y="509" class="mono" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle">4. C</text>
+  </g>
+  <line x1="834" y1="505" x2="852" y2="505" stroke="#059669" stroke-width="1.6" marker-end="url(#arr-green)"/>
+
+  <g class="mo">
+    <rect x="856" y="492" width="82" height="26" rx="5" fill="#475569"/>
+    <text x="897" y="509" class="mono" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle">5. O</text>
+  </g>
+  <text x="954" y="509" class="mono" font-size="10.5" fill="#5b21b6">super() in A → C!</text>
+
+  <!-- FOOTER -->
+  <rect x="24" y="556" width="1112" height="46" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="42" y="584" class="sans" font-size="11.5" font-weight="600" fill="#1e3a8a">Takeaway: C3 rejects any head present in another list's tail, ensuring O appears after both A and C; super() advances dynamically along this MRO.</text>
+</svg>
