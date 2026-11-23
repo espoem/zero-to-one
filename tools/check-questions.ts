@@ -74,6 +74,8 @@ export function auditQuestionBanks(globPattern = '**/exams/*.md'): {
 
     // Split bank into question sections
     const sections = bankPart.split(/\n(?=###+ Q-)/);
+    const trackKey = file.split('/').slice(0, 2).join('/');
+    const lastNumByPrefix = new Map<string, number>();
 
     for (let sIdx = 1; sIdx < sections.length; sIdx++) {
       totalQuestions++;
@@ -98,18 +100,33 @@ export function auditQuestionBanks(globPattern = '**/exams/*.md'): {
 
       const [, prefix, numStr, , , qType] = match;
       const qId = `Q-${prefix}-${numStr}`;
+      const num = parseInt(numStr, 10);
+      const scopedId = `${trackKey}:${qId}`;
 
-      // Duplicate check
-      if (seenIds.has(qId)) {
+      // Reading-order check (strictly increasing within each file and prefix)
+      const prevNum = lastNumByPrefix.get(prefix);
+      if (prevNum !== undefined && num <= prevNum) {
+        issues.push({
+          file,
+          line: 1,
+          id: qId,
+          type: 'out-of-order',
+          message: `Question ID '${qId}' (${num}) is not strictly increasing after ${prevNum} in reading order`,
+        });
+      }
+      lastNumByPrefix.set(prefix, num);
+
+      // Duplicate check (scoped per track so separate tracks can each hold interview.md)
+      if (seenIds.has(scopedId)) {
         issues.push({
           file,
           line: 1,
           id: qId,
           type: 'duplicate-id',
-          message: `Duplicate question ID '${qId}' also present in '${seenIds.get(qId)}'`,
+          message: `Duplicate question ID '${qId}' also present in '${seenIds.get(scopedId)}'`,
         });
       } else {
-        seenIds.set(qId, file);
+        seenIds.set(scopedId, file);
       }
 
       prefixCounts[prefix] = (prefixCounts[prefix] || 0) + 1;

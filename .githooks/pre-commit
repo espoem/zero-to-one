@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+staged="$(git diff --cached --name-only --diff-filter=ACMR)"
+[ -z "$staged" ] && exit 0
+
+if printf '%s\n' "$staged" | grep -q '^\.scratch/'; then
+	echo "pre-commit: .scratch/ files must not be committed." >&2
+	exit 1
+fi
+
+md_files=()
+exam_changed=0
+svg_files=()
+while IFS= read -r f; do
+	[ -z "$f" ] && continue
+	case "$f" in
+		*.svg) svg_files+=("$f") ;;
+		*/exams/*.md)
+			md_files+=("$f")
+			exam_changed=1
+			;;
+		*.md) md_files+=("$f") ;;
+	esac
+done <<< "$staged"
+
+if [ "${#svg_files[@]}" -gt 0 ]; then
+	node tools/svg-check/check.mjs "${svg_files[@]}"
+fi
+
+if [ "$exam_changed" -eq 1 ]; then
+	bun tools/check-questions.ts
+fi
+
+if [ "${#md_files[@]}" -gt 0 ]; then
+	node tools/katex-check/check.mjs "${md_files[@]}"
+	node tools/table-check/check.mjs "${md_files[@]}"
+	node tools/mermaid-check/check.mjs "${md_files[@]}"
+fi
