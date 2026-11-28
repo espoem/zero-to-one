@@ -278,4 +278,34 @@ $$\text{If Partition }(P) \implies \text{Choose } [A \text{ vs } C] \quad \mathb
           - Strict ACID serializability                   - Dictionary / RLE compression
           - Examples: PostgreSQL, Spanner                 - Examples: Snowflake, ClickHouse, DuckDB
 ```
+
+---
+
+## 13. Database Concepts Master Quick Map
+
+| Concept | Core Mechanics & Rules | Reference |
+| :--- | :--- | :--- |
+| **Primary / Foreign Key** | **PK**: minimal non-null unique row identifier (`NOT NULL + UNIQUE`, entity integrity). **FK**: column(s) referencing a parent PK/unique key (`RESTRICT`, `CASCADE`, `SET NULL`, referential integrity). | [M01](modules/01-data-models-and-query-languages.md#1-formal-foundations-relational-algebra-and-relational-calculus) |
+| **Normalization (1NF–BCNF)** | **1NF** atomic scalars; **2NF** no partial key deps; **3NF** no transitive non-key deps; **BCNF** every non-trivial FD $X \to Y$ has superkey $X$. Denormalize selectively when join cost exceeds write amplification. | [M01](modules/01-data-models-and-query-languages.md#functional-dependencies-and-normal-forms-1nf-through-bcnf) |
+| **Join Algorithms** | **Nested Loop**: $O(\lvert R \rvert \cdot \lvert S \rvert)$ naive, $O(\lvert R \rvert \cdot \log \lvert S \rvert)$ indexed (best for small outer + selective index). **Hash Join**: $O(\lvert R \rvert + \lvert S \rvert)$ build/probe on unsorted equi-joins (Grace spill to disk). **Sort-Merge**: $O(\lvert R \rvert \log \lvert R \rvert + \lvert S \rvert \log \lvert S \rvert)$ or $O(\lvert R \rvert + \lvert S \rvert)$ pre-sorted via B+Tree; preserves sort order. | [M01](modules/01-data-models-and-query-languages.md#3-data-model-paradigms-relational-document-graph-and-columnar) |
+| **B+Tree / LSM Indexes** | **B+Tree**: balanced $O(\log_B N)$ in-place pages, lowest read amp, point + range queries. **LSM-Tree**: append-only MemTable + SSTables + compaction, lowest write amp, requires Bloom filters and compaction headroom. | [M02](modules/02-storage-engines-b-trees-and-lsm.md), [M03](modules/03-indexing-theory-and-vector-search.md) |
+| **Transactions & ACID** | **A**tomicity (all-or-nothing UNDO), **C**onsistency (app + schema invariants), **I**solation (serializable or bounded concurrency), **D**urability (WAL `fsync` before commit ack). | [M05](modules/05-transactions-acid-and-isolation-levels.md#1-formal-acid-deconstruction) |
+| **Isolation Levels** | Read Uncommitted (forbids $G0$) $\to$ Read Committed (forbids $A1$) $\to$ Repeatable Read / SI (forbids $P4, A2, G\text{-read}$, allows $G\text{-skew}$) $\to$ Serializable / SSI (forbids $G\text{-skew}, A3$). | [M05](modules/05-transactions-acid-and-isolation-levels.md#3-the-isolation-level-spectrum-ansi-versus-reality) |
+| **MVCC** | Readers never block writers; tuple versions carry `xmin`/`xmax`; snapshot visibility filters committed versions $< T_{\text{snapshot}}$; first-committer-wins catches concurrent same-row writes. | [M05](modules/05-transactions-acid-and-isolation-levels.md#2-multi-version-concurrency-control-mvcc-and-snapshot-isolation) |
+| **Deadlocks** | **Coffman conditions**: Mutual Exclusion, Hold-and-Wait, No Preemption, Circular Wait. **Wait-For Graph**: edges $T_i \to T_j$ (`T_i` waits on `T_j`); deadlock $\iff$ cycle (abort victim, PG `40P01`). **Wait-Die** (non-preemptive: older waits, younger dies) vs **Wound-Wait** (preemptive: older wounds younger, younger waits). **Canonical lock ordering**: acquire locks in deterministic sorted key order to eliminate circular wait. | [M05](modules/05-transactions-acid-and-isolation-levels.md#1-two-phase-locking-2pl-and-deadlock-management), [Proof](examples/13-caching-and-deadlocks.test.ts) |
+| **Replication** | **Single-Leader** (read scaling; async lag breaks Read-Your-Writes / Monotonic Reads), **Multi-Leader** (multi-region writes; conflict resolution), **Leaderless** ($W + R > N$ quorums + Read Repair). | [M07](modules/07-replication-mechanics-and-consensus.md) |
+| **Sharding** | **Range** (fast range scans, monotonic hot-spot risk) vs **Hash / Consistent Hashing** (uniform spread, $\frac{1}{N+1}$ migration with vnodes); local vs global secondary indexes. | [M08](modules/08-partitioning-sharding-and-routing.md) |
+| **CAP / PACELC** | On Partition ($P$): choose **A vs C**; Else ($E$): choose **L vs C** (Spanner `PC/EC` vs Cassandra/Dynamo `PA/EL`). | [M12](modules/12-architectural-decision-matrix-and-polyglot-persistence.md#4-theoretical-boundaries-the-cap-and-pacelc-theorems), [DistSys M01](../distributed-systems/modules/01-system-models-and-impossibility.md#5-cap-theorem-formal-gilbert-lynch-statement-and-pacelc) |
+| **Caching** | Cache-Aside, Read/Write-Through, Write-Behind, Write-Around, Refresh-Ahead; Single-Flight + XFetch stampede defense; CDC WAL invalidation; W-TinyLFU eviction. | [M09](modules/09-caching-theory-and-consistency.md), [Proof](examples/13-caching-and-deadlocks.test.ts) |
+
+### SQL vs NoSQL Decision Matrix
+
+| Dimension | Relational (SQL) | Document Store | Key-Value / Cache | Wide-Column | Graph Store | Columnar OLAP |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Data Model** | Normalized tables, strict schema | Self-contained JSON/BSON aggregates | Opaque values by primary key | Sparse row key + column families | Vertices, typed edges, properties | Column vectors, compressed blocks |
+| **Joins & ACID** | Rich joins, full multi-row ACID | Single-document ACID; weak cross-doc joins | Atomic single-key ops; no joins | Partition-local writes; no joins | Index-free adjacency traversals | Batch/append-only; analytical joins |
+| **Scaling Profile** | Vertical primary + read replicas (or NewSQL) | Hash/range sharding by shard key | Horizontal slots / consistent hash ring | Masterless consistent-hash ring | Vertical or partitioned subgraphs | MPP distributed scan across shards |
+| **PACELC Bias** | `PC/EC` (or single-node ACID) | Configurable (`PC/EC` majority default) | `PA/EL` (async replicas) | `PA/EL` (tunable $W+R>N$) | `PC/EC` | `PC/EC` (or object-storage decoupled) |
+| **Canonical Fit** | Ledgers, orders, complex relational invariants | Catalogs, user profiles, evolving schemas | Sessions, rate limits, hot read cache | High-write telemetry, time-series logs | Fraud rings, social/knowledge graphs | BI dashboards, petabyte aggregations |
+| **Examples** | PostgreSQL, MySQL, Spanner | MongoDB, DynamoDB (doc), Couchbase | Redis, Valkey, Memcached | Cassandra, ScyllaDB, Bigtable | Neo4j, Amazon Neptune | ClickHouse, DuckDB, Snowflake |
 $$

@@ -72,6 +72,25 @@ Policies: `allkeys-lru`, `volatile-lru`, `allkeys-lfu`, `volatile-lfu` (4.0+), `
 
 `mem_fragmentation_ratio` = RSS / `used_memory`: above 1.5 sustained is fragmentation, below 1 is swapping. Tools: `MEMORY USAGE key [SAMPLES n]`, `MEMORY STATS`, `MEMORY DOCTOR`, `redis-cli --bigkeys`, `--memkeys`, `--hotkeys` (LFU policy required).
 
+## Redis + Caching Handbook ([04](modules/04-caching-patterns.md))
+
+| Pattern ([theory](../../architecture/data-systems/modules/09-caching-theory-and-consistency.md#1-caching-topologies-and-access-patterns)) | Read / Write Mechanics in Redis | Primary Trade-Off |
+| --- | --- | --- |
+| **Cache-aside** | Read: `GET k` → miss → load SoT → `SET k v EX ttl`; Write: commit SoT, then `DEL k` / `UNLINK k` | Resilient; 1 of 6 dual-write schedules can re-install stale data (bounded by TTL) |
+| **Read-through / Write-through** | Proxy/library loads on miss (`Read-Through`) or writes SoT + `SET k v EX ttl` (`Write-Through`) | Simpler app callers; adds DB latency to writes and caches cold writes |
+| **Write-behind** | `SET k v` + `XADD` stream; background consumer flushes SoT asynchronously | Coalesces bursts; crash before flush loses acked writes |
+| **Write-around** | Write SoT directly, bypass cache (`no-write-allocate`); populate only on read miss (`DEL k` if stale copy may exist) | Prevents cold-write cache pollution; first read after write always misses |
+| **Refresh-ahead** | Return warm entry; refresh asynchronously before expiry via XFetch or soft-TTL | Smooths hot-key p99; wasted refreshes if key goes cold |
+| **Event invalidation (CDC)** | Debezium tails DB WAL → key-partitioned Kafka → worker runs `DEL`/`UNLINK` (or versioned `SET ... IFDEQ`) | Survives app crashes; async lag requires idempotency and per-key order |
+
+- **Eviction policies for caches**: use `allkeys-lru` (recency), `allkeys-lfu` (Zipfian hot sets; tune `lfu-log-factor` / `lfu-decay-time`), or `allkeys-lrm` (8.6+, Least Recently Modified). Never use `noeviction` on a cache (`-OOM` turns into 100% SoT misses if errors fail open), and never share an instance between cache and durable state.
+- **Stampede, coalescing & lock recipes**:
+  - **Single-flight (in-process)**: keep an `inflight` `Map<key, Promise>` so $N$ concurrent misses share 1 load; delete in `finally` so errors propagate without poisoning callers.
+  - **Cross-process mutex**: acquire with `SET lock:k <token> NX PX <lock_ms>`; release only if owner via `DELEX lock:k IFEQ <token>` (Redis 8.4+; Valkey 9.0+ `DELIFEQ lock:k <token>`; older Redis Lua compare-and-delete); bound waiter retries so a dead holder falls back to loading.
+  - **XFetch early refresh**: store `{v, delta, expiry}` envelope (or pipeline `GET` + `PTTL`); recompute when `now - delta * beta * ln(rand()) >= expiry`.
+  - **TTL jitter & negative caching**: always set TTL with ±10% jitter (`ttl * (1 + 0.1 * (2 * rand() - 1))`) or `MSETEX` (8.4+) to prevent Cache Avalanches; cache definitive absence briefly (`SET k "NULL" EX 30`) or check `BF.EXISTS` to stop cache penetration.
+- **Memory & ops guardrails**: cap `maxmemory` at 60–80% of RAM (headroom for `fork()` COW and buffers); enable `lazyfree-lazy-eviction yes` and `lazyfree-lazy-expire yes`; prefer `UNLINK` over `DEL` for big keys; bound key cardinality and value size; set tight client timeouts + a fail-open circuit breaker; monitor `keyspace_hits`/`keyspace_misses`, `evicted_keys`, `expired_keys`, and `mem_fragmentation_ratio`.
+
 ## Protocol and client limits ([01](modules/01-model-architecture-and-protocol.md#43-limits-that-protect-the-server))
 
 | Setting | Default |

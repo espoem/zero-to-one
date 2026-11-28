@@ -18,6 +18,7 @@ Caching is the most common reason teams adopt Redis, and the most common source 
 | Read-through | A library or proxy does the cache-aside read for you | — |
 | Write-through | `GET k` | Write SoT and `SET k v EX ttl` in the same code path |
 | Write-behind (write-back) | `GET k` | `SET k v`, append to a stream (`XADD`), a worker writes the SoT later ([module 06](06-messaging-pubsub-streams-and-queues.md#2-streams)) |
+| [Write-around](../../../architecture/data-systems/modules/09-caching-theory-and-consistency.md#4-write-around-no-write-allocate) (no-write-allocate) | Same as cache-aside read (cache populated only on miss) | Write SoT directly and bypass cache; `DEL k` only if a stale cached entry may already exist |
 | Refresh-ahead | `GET k`, and if the remaining TTL is short or XFetch fires, recompute in the background | — |
 
 Redis-specific helpers:

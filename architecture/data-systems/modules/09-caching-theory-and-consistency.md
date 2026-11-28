@@ -43,6 +43,16 @@ graph TD
 - _Advantage_: Massive write throughput; absorbs write bursts.
 - _Fatal Hazard_: If the cache node crashes or loses power before background writes flush to disk, uncommitted user mutations are **permanently lost**.
 
+### 4. Write-Around (No-Write-Allocate)
+
+- **Mechanics**: Writes go directly to the persistent backing store and **bypass the cache entirely** (no-write-allocate). The cache is populated only on a subsequent read miss (paired with Cache-Aside or Read-Through). If an updated key already exists in the cache, the write path must delete (`DEL`) the stale entry rather than writing the new value.
+- **Trade-off**: Prevents **cache pollution** when write-heavy workloads produce data that is rarely re-read (audit logs, bulk ingestion, archival payloads), preserving RAM for hot read working sets. The cost is a **guaranteed read miss** on the first read after a write, increasing tail latency for write-then-read-immediately flows.
+
+### 5. Refresh-Ahead (Proactive Background Refresh)
+
+- **Mechanics**: When a read hits a warm key whose remaining TTL falls below a refresh threshold (or satisfies a probabilistic early-expiration test such as XFetch), the cache returns the current value immediately and asynchronously refreshes the key from the database before expiration.
+- **Trade-off**: Eliminates cache-miss latency spikes on predictable hot keys at the expense of wasted background refreshes if access traffic drops before expiry.
+
 ---
 
 ## 2. Effective Latency Mathematics and Cache Hit Ratios
@@ -107,6 +117,14 @@ sequenceDiagram
    - If the cache deletion fails, the key will eventually expire via TTL or be corrected by an automated Change Data Capture (CDC) invalidator.
 3. **Change Data Capture (CDC) for Guaranteed Invalidation**: Enterprise architectures deploy Debezium to tail the database Write-Ahead Log and publish invalidation messages to a Kafka topic. A dedicated cache invalidation service consumes from the topic and deletes keys in Redis, guaranteeing eventual invalidation even if application servers crash.
 
+### Event-Driven Invalidation (CDC WAL Tailing)
+
+Rather than issuing dual writes or best-effort `DEL` calls from application handlers, production pipelines decouple invalidation via **Change Data Capture (CDC)**:
+
+1. **WAL Tailing**: A CDC connector (e.g. Debezium) tails the database's sequential Write-Ahead Log (or binlog) and emits committed row mutations to a partitioned event log (e.g. Kafka, partitioned by primary key) or an outbox table.
+2. **Idempotent Consumption**: A dedicated invalidation consumer deletes (`DEL`/`UNLINK`) or version-updates the matching cache keys. Because WAL records persist across application crashes, invalidations are never dropped mid-request.
+3. **Ordering, Lag, and Race Hazards**: CDC introduces asynchronous **replication and consumer lag**, creating a bounded staleness window immediately after commit before the invalidation lands. At-least-once broker delivery requires **idempotent consumers** and **strict per-key partition ordering** so a delayed older event cannot overwrite or delete a newer state; schema changes or poison messages must be dead-lettered so they do not stall lag across unrelated keys.
+
 ---
 
 ## 4. Cache Stampede (Thundering Herd) and the XFetch Algorithm
@@ -128,8 +146,10 @@ sequenceDiagram
 
 ### Stampede Mitigation Strategies
 
-1. **Mutex Locking (Single-Flight)**: When a cache miss occurs, the worker acquires a short-lived distributed mutex (e.g. via `SET NX`). The single lock winner executes the database query and repopulates the cache; all other threads sleep briefly and retry against the newly populated cache.
-2. **Probabilistic Early Expiration: The XFetch Algorithm**:
+1. **Mutex Locking (Distributed Lock)**: When a cache miss occurs, the worker acquires a short-lived distributed mutex (e.g. via `SET NX PX` with a unique owner token). The single lock winner executes the database query and repopulates the cache; all other threads wait briefly with jittered backoff and retry against the newly populated cache.
+2. **Request Coalescing (Single-Flight)**: Deduplicates concurrent identical in-flight misses within a process (`inflight: Map<Key, Promise<Value>>`, as in Go `singleflight`). The first miss issues the database query while $N - 1$ concurrent callers await the same promise ($N$ concurrent misses $\to 1$ database load). Single-flight requires zero lock TTLs per process, though across $P$ independent application replicas up to $P$ database loads can still occur unless combined with distributed locking or XFetch. Always evict the key from the `inflight` map in `finally` so transient loader errors propagate cleanly without poisoning subsequent callers, and distinguish definitive "not found" results from transient errors.
+3. **Explicit TTL Expiry and Jitter**: Every cache entry needs a Time-To-Live (`TTL`) as the hard upper bound on staleness when invalidations are delayed or lost. Assigning identical fixed TTLs during bulk warm-ups causes a synchronized **Cache Avalanche** when thousands of keys expire in the same second; adding random **TTL Jitter** ($\text{TTL} = \text{base} + \text{rand}(0, \text{jitter})$) spreads expirations smoothly over time. Note that TTL expiry alone does not stop a **Cache Breakdown** on a single hot key—pair TTLs with Request Coalescing or XFetch.
+4. **Probabilistic Early Expiration: The XFetch Algorithm**:
    - Formulated by Vattani, Chierichetti, and Lowenstein in 2015 (_"Optimal Probabilistic Cache Stampede Prevention"_, VLDB).
    - Rather than waiting for a key to strictly expire at time $T$, workers evaluating read operations perform a probabilistic check to determine if they should **asynchronously recompute the value before it expires**.
 
@@ -196,6 +216,24 @@ graph TD
 ![Caching Algorithms: XFetch Probabilistic Early Refresh and W-TinyLFU Eviction](../assets/09-xfetch-and-wtinylfu-animated.svg)
 
 _Step-by-step mechanics:_ (1) Far from expiration, XFetch rarely recomputes and W-TinyLFU absorbs new bursts inside its 1% Window LRU. (2) As remaining time $\Delta \to 0$, XFetch's recompute probability rises exponentially while a 4-bit Count-Min Sketch prepares frequency estimates. (3) One reader wins the probabilistic roll to refresh the key in $\delta$ time while Window evictions duel Main Cache Probation victims by estimated frequency. (4) The fresh value lands before hard TTL expiration with zero stampede locks, and W-TinyLFU protects hot working sets via Segmented LRU plus periodic counter halving.
+
+### 4. Unified 11-Strategy Caching Summary
+
+| Strategy | Category | Mechanism | Primary Benefit | Core Trade-Off / Failure Mode |
+| :-- | :-- | :-- | :-- | :-- |
+| **Cache-Aside** | Read / Write Topology | App checks cache; on miss loads DB and writes cache; writes DB then `DEL`s cache | Resilient to cache failure; caches only requested keys | Cold-start miss penalty; dual-write race window |
+| **Read-Through** | Read Topology | Cache provider/proxy transparently loads from DB on miss | Simplifies app code; centralizes loading logic | Requires cache plugin/adapter; cold-start latency |
+| **Refresh-Ahead** | Proactive Read | Background refresh triggered before TTL expiry on warm reads | Eliminates miss latency spikes on predictable hot keys | Wastes DB/cache work if access traffic stops |
+| **Write-Through** | Write Topology | App writes cache; cache synchronously updates DB before ack | Strong cache-DB alignment; read-after-write consistency | Adds DB latency to every write; pollutes cache on cold writes |
+| **Write-Behind** | Write Topology | Cache acks write immediately; flushes batched dirty writes async | Absorbs heavy write bursts; coalesces hot-key updates | Data loss window on cache crash before DB flush |
+| **Write-Around** | Write Topology | Writes go directly to DB, bypassing cache (no-write-allocate) | Prevents cache pollution from rarely re-read writes | First read after write always misses; must `DEL` stale copies |
+| **LRU** | Eviction Policy | Evicts entry with oldest last-access timestamp ($O(1)$ list + map) | Simple, captures temporal recency well | Vulnerable to sequential scan pollution |
+| **LFU** | Eviction Policy | Evicts entry with lowest access frequency count | Retains skewed Zipfian hot working sets | Historic frequency bias keeps formerly hot items too long |
+| **TTL Expiry** | Expiration Control | Assigns bounded lifetime (`base + jitter`) per cached entry | Hard upper bound on staleness; heals missed invalidations | Fixed identical TTLs cause Cache Avalanches without jitter |
+| **Event Invalidation** | Consistency Sync | CDC tails DB WAL/binlog to Kafka; consumer evicts/updates keys | Decouples app writes from cache; survives app crashes | Async lag opens brief stale window; needs key order + idempotency |
+| **Request Coalescing** | Stampede Defense | Single-flight `inflight` map collapses $N$ concurrent misses to $1$ load | Stops intra-process thundering herds without lock TTLs | Scoped per process unless paired with `SET NX` or XFetch |
+
+**Executable Proofs:** [`examples/09-cache-xfetch.test.ts`](../examples/09-cache-xfetch.test.ts) and [`examples/13-caching-and-deadlocks.test.ts`](../examples/13-caching-and-deadlocks.test.ts).
 
 ---
 
