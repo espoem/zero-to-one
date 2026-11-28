@@ -3,99 +3,99 @@
   <desc id="desc">Six-dimension architectural comparison of cloud file sync systems contrasting 2021 legacy defaults with 2026 modern production standards across chunking, transport, storage durability, deduplication security, conflict semantics, and client filesystem engines.</desc>
 
   <!-- Background -->
-  <rect x="0" y="0" width="1160" height="590" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1160" height="590" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1160" height="56" rx="12" fill="#0f172a"/>
-  <rect x="0" y="40" width="1160" height="16" fill="#0f172a"/>
-  <text x="24" y="27" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#f8fafc">Google Drive Evolution: 2021 Baseline vs. 2026 Modern Standard</text>
-  <text x="24" y="46" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#94a3b8">FastCDC · HTTP/3 Streams · Magic Pocket · Envelope KMS · Virtual FS</text>
+  <line x1="24" y1="58" x2="1136" y2="58" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="27" font-family="Georgia, 'Times New Roman', serif" font-size="18" font-weight="700" fill="#1c1917">Google Drive Evolution: 2021 Baseline vs. 2026 Modern Standard</text>
+  <text x="24" y="46" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#57534e">FastCDC · HTTP/3 Streams · Magic Pocket · Envelope KMS · Virtual FS</text>
 
   <!-- Column Headers -->
-  <rect x="20" y="70" width="210" height="32" rx="6" fill="#e2e8f0"/>
-  <text x="34" y="91" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1e293b">Architectural Dimension</text>
+  <rect x="20" y="70" width="210" height="32" rx="6" fill="#e7e2d8"/>
+  <text x="34" y="91" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1c1917">Architectural Dimension</text>
 
-  <rect x="242" y="70" width="440" height="32" rx="6" fill="#fee2e2" stroke="#fca5a5" stroke-width="1"/>
+  <rect x="242" y="70" width="440" height="32" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1"/>
   <text x="256" y="91" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#991b1b">2021 Baseline / ByteByteGo Ch. 15 (Legacy)</text>
 
   <rect x="694" y="70" width="446" height="32" rx="6" fill="#dcfce7" stroke="#86efac" stroke-width="1"/>
   <text x="708" y="91" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#166534">2026 Modern Production Standard (Cloud-Native)</text>
 
   <!-- Row 1: Chunking -->
-  <rect x="20" y="112" width="210" height="62" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="32" y="138" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">1. Chunking Strategy</text>
-  <text x="32" y="156" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Boundary Determination</text>
+  <rect x="20" y="112" width="210" height="62" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="32" y="138" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1c1917">1. Chunking Strategy</text>
+  <text x="32" y="156" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#57534e">Boundary Determination</text>
 
   <rect x="242" y="112" width="440" height="62" rx="6" fill="#fff5f5" stroke="#fecaca"/>
   <text x="254" y="136" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Fixed-Size 4 MB Block Slicing</text>
-  <text x="254" y="155" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">1-byte shift at offset 0 alters all subsequent chunk hashes</text>
+  <text x="254" y="155" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">1-byte shift at offset 0 alters all subsequent chunk hashes</text>
 
   <rect x="694" y="112" width="446" height="62" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
   <text x="706" y="136" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">Content-Defined Chunking (FastCDC / Gear Hash)</text>
-  <text x="706" y="155" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Rolling gear hash cuts at content markers; shifts isolate to 1 chunk</text>
+  <text x="706" y="155" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Rolling gear hash cuts at content markers; shifts isolate to 1 chunk</text>
 
   <!-- Row 2: Transport -->
-  <rect x="20" y="182" width="210" height="62" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="32" y="208" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">2. Notification &amp; Transport</text>
-  <text x="32" y="226" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Client Push Channel</text>
+  <rect x="20" y="182" width="210" height="62" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="32" y="208" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1c1917">2. Notification &amp; Transport</text>
+  <text x="32" y="226" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#57534e">Client Push Channel</text>
 
   <rect x="242" y="182" width="440" height="62" rx="6" fill="#fff5f5" stroke="#fecaca"/>
   <text x="254" y="206" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">HTTP/1.1 Long Polling &amp; Stateful Sockets</text>
-  <text x="254" y="225" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">High connection churn; 3-5s notification lag; TLS handshake overhead</text>
+  <text x="254" y="225" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">High connection churn; 3-5s notification lag; TLS handshake overhead</text>
 
   <rect x="694" y="182" width="446" height="62" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
   <text x="706" y="206" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">HTTP/3 Multiplexing &amp; gRPC Bidirectional Streams</text>
-  <text x="706" y="225" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">QUIC 0-RTT reconnects; multiplexed streams; sub-second peer wakeups</text>
+  <text x="706" y="225" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">QUIC 0-RTT reconnects; multiplexed streams; sub-second peer wakeups</text>
 
   <!-- Row 3: Storage -->
-  <rect x="20" y="252" width="210" height="62" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="32" y="278" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">3. Storage Infrastructure</text>
-  <text x="32" y="296" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Metadata &amp; Blob Durability</text>
+  <rect x="20" y="252" width="210" height="62" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="32" y="278" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1c1917">3. Storage Infrastructure</text>
+  <text x="32" y="296" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#57534e">Metadata &amp; Blob Durability</text>
 
   <rect x="242" y="252" width="440" height="62" rx="6" fill="#fff5f5" stroke="#fecaca"/>
   <text x="254" y="276" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Centralized SQL &amp; Standard S3 Triple Replication</text>
-  <text x="254" y="295" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">Monolithic SQL bottlenecks; 3x storage tax on raw block blobs</text>
+  <text x="254" y="295" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Monolithic SQL bottlenecks; 3x storage tax on raw block blobs</text>
 
   <rect x="694" y="252" width="446" height="62" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
   <text x="706" y="276" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">S3 Express One Zone &amp; Magic Pocket Erasure Coding</text>
-  <text x="706" y="295" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Single-digit ms latency; Reed-Solomon 8+4 saves 50% physical disks</text>
+  <text x="706" y="295" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Single-digit ms latency; Reed-Solomon 8+4 saves 50% physical disks</text>
 
   <!-- Row 4: Dedup Security -->
-  <rect x="20" y="322" width="210" height="62" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="32" y="348" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">4. Deduplication &amp; Privacy</text>
-  <text x="32" y="366" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Cross-Tenant Security</text>
+  <rect x="20" y="322" width="210" height="62" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="32" y="348" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1c1917">4. Deduplication &amp; Privacy</text>
+  <text x="32" y="366" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#57534e">Cross-Tenant Security</text>
 
   <rect x="242" y="322" width="440" height="62" rx="6" fill="#fff5f5" stroke="#fecaca"/>
   <text x="254" y="346" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Naive Global Cross-User Deduplication</text>
-  <text x="254" y="365" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">Vulnerable to Harnik et al. side-channel confirmation-of-file attack</text>
+  <text x="254" y="365" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Vulnerable to Harnik et al. side-channel confirmation-of-file attack</text>
 
   <rect x="694" y="322" width="446" height="62" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
   <text x="706" y="346" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">Per-Tenant Envelope KMS Encryption</text>
-  <text x="706" y="365" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Unique per-user/org DEK eliminates cross-tenant hash oracle probes</text>
+  <text x="706" y="365" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Unique per-user/org DEK eliminates cross-tenant hash oracle probes</text>
 
   <!-- Row 5: Conflict -->
-  <rect x="20" y="392" width="210" height="62" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="32" y="418" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">5. Conflict &amp; Semantics</text>
-  <text x="32" y="436" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Concurrent Edit Handling</text>
+  <rect x="20" y="392" width="210" height="62" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="32" y="418" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1c1917">5. Conflict &amp; Semantics</text>
+  <text x="32" y="436" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#57534e">Concurrent Edit Handling</text>
 
   <rect x="242" y="392" width="440" height="62" rx="6" fill="#fff5f5" stroke="#fecaca"/>
   <text x="254" y="416" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Binary Overwrite Conflicts (Conflicted Copy)</text>
-  <text x="254" y="435" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">First-Write-Wins CAS; secondary edits diverge into orphan copies</text>
+  <text x="254" y="435" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">First-Write-Wins CAS; secondary edits diverge into orphan copies</text>
 
   <rect x="694" y="392" width="446" height="62" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
   <text x="706" y="416" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">CRDT / OT Real-Time Document Synchronization</text>
-  <text x="706" y="435" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Character-level convergence (Loro/Yjs); smart binary conflict copy</text>
+  <text x="706" y="435" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Character-level convergence (Loro/Yjs); smart binary conflict copy</text>
 
   <!-- Row 6: Client Storage -->
-  <rect x="20" y="462" width="210" height="62" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="32" y="488" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">6. Client Storage Engine</text>
-  <text x="32" y="506" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Filesystem Hydration</text>
+  <rect x="20" y="462" width="210" height="62" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="32" y="488" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1c1917">6. Client Storage Engine</text>
+  <text x="32" y="506" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#57534e">Filesystem Hydration</text>
 
   <rect x="242" y="462" width="440" height="62" rx="6" fill="#fff5f5" stroke="#fecaca"/>
   <text x="254" y="486" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Full Local Sync &amp; Eager Inode Allocation</text>
-  <text x="254" y="505" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">Syncs entire folders eagerly; exhausts user SSD on multi-TB drives</text>
+  <text x="254" y="505" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Syncs entire folders eagerly; exhausts user SSD on multi-TB drives</text>
 
   <rect x="694" y="462" width="446" height="62" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
   <text x="706" y="486" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">OS-Native Virtual Filesystem (FileProvider / CloudFilter)</text>
-  <text x="706" y="505" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Zero-byte metadata stubs; on-demand hydration &amp; transparent eviction</text>
+  <text x="706" y="505" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Zero-byte metadata stubs; on-demand hydration &amp; transparent eviction</text>
 </svg>

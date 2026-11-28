@@ -3,13 +3,13 @@
   <desc id="desc">Animated visualization of Multi-Source BFS expanding simultaneously from two t=0 sources across a 5x4 grid in lockstep distance rings, paired with 0-1 BFS using a deque to push weight-0 edges to the front and weight-1 edges to the back in O(V+E) time.</desc>
   <defs>
     <marker id="arrow-slate" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#57534e"/>
     </marker>
     <marker id="arrow-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <style>
       .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
@@ -35,22 +35,22 @@
   </defs>
 
   <!-- Canvas -->
-  <rect x="0" y="0" width="1200" height="760" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1200" height="760" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1200" height="60" rx="12" fill="#0f172a"/>
-  <rect x="0" y="44" width="1200" height="16" fill="#0f172a"/>
-  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Multi-Source BFS &amp; 0-1 BFS (Double-Ended Queue)</text>
-  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">Lockstep Level-by-Level Frontier Expansion vs O(V+E) Shortest Path with Weights in {0, 1}</text>
+  <line x1="24" y1="62" x2="1176" y2="62" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#1c1917" font-family="Georgia, 'Times New Roman', serif">Multi-Source BFS &amp; 0-1 BFS (Double-Ended Queue)</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">Lockstep Level-by-Level Frontier Expansion vs O(V+E) Shortest Path with Weights in {0, 1}</text>
 
   <!-- LEFT PANEL: Multi-Source BFS -->
-  <rect x="24" y="76" width="564" height="574" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
-  <rect x="24" y="76" width="564" height="36" rx="10" fill="#f1f5f9"/>
-  <rect x="24" y="102" width="564" height="10" fill="#f1f5f9"/>
-  <text x="40" y="99" class="sans" font-size="13" font-weight="700" fill="#0f172a">1. Multi-Source BFS (Proximity Grid, Sources at t=0)</text>
-  <text x="572" y="99" class="mono" font-size="11" fill="#2563eb" text-anchor="end">Single O(V + E) pass</text>
+  <rect x="24" y="76" width="564" height="574" rx="10" fill="#ffffff" stroke="#d6d0c4"/>
+  <rect x="24" y="76" width="564" height="36" rx="10" fill="#f5f1e8"/>
+  <rect x="24" y="102" width="564" height="10" fill="#f5f1e8"/>
+  <text x="40" y="99" class="sans" font-size="13" font-weight="700" fill="#1c1917">1. Multi-Source BFS (Proximity Grid, Sources at t=0)</text>
+  <text x="572" y="99" class="mono" font-size="11" fill="#0f766e" text-anchor="end">Single O(V + E) pass</text>
 
-  <text x="44" y="136" class="sans" font-size="11.5" font-weight="600" fill="#475569">Sources S1(0,0) and S2(3,4) enter FIFO Queue simultaneously:</text>
+  <text x="44" y="136" class="sans" font-size="11.5" font-weight="600" fill="#44403c">Sources S1(0,0) and S2(3,4) enter FIFO Queue simultaneously:</text>
 
   <!-- 5x4 Grid (5 cols x 4 rows, cell 86x58, origin x=90, y=156) -->
   <!-- Distances from {(0,0), (3,4)}:
@@ -61,7 +61,7 @@
   -->
   <g transform="translate(90, 154)" class="mono" font-size="14" font-weight="700" text-anchor="middle">
     <!-- Base blank grid -->
-    <g fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5">
+    <g fill="#faf8f5" stroke="#d6d0c4" stroke-width="1.5">
       <rect x="0" y="0" width="84" height="56" rx="6"/><rect x="88" y="0" width="84" height="56" rx="6"/><rect x="176" y="0" width="84" height="56" rx="6"/><rect x="264" y="0" width="84" height="56" rx="6"/><rect x="352" y="0" width="84" height="56" rx="6"/>
       <rect x="0" y="60" width="84" height="56" rx="6"/><rect x="88" y="60" width="84" height="56" rx="6"/><rect x="176" y="60" width="84" height="56" rx="6"/><rect x="264" y="60" width="84" height="56" rx="6"/><rect x="352" y="60" width="84" height="56" rx="6"/>
       <rect x="0" y="120" width="84" height="56" rx="6"/><rect x="88" y="120" width="84" height="56" rx="6"/><rect x="176" y="120" width="84" height="56" rx="6"/><rect x="264" y="120" width="84" height="56" rx="6"/><rect x="352" y="120" width="84" height="56" rx="6"/>
@@ -70,181 +70,181 @@
 
     <!-- t=0 ring (S1=(0,0), S2=(3,4)) always visible once active -->
     <g>
-      <rect x="0" y="0" width="84" height="56" rx="6" fill="#059669" stroke="#047857" stroke-width="2"/><text x="42" y="33" fill="#ffffff">S1 (0)</text>
-      <rect x="352" y="180" width="84" height="56" rx="6" fill="#059669" stroke="#047857" stroke-width="2"/><text x="394" y="213" fill="#ffffff">S2 (0)</text>
+      <rect x="0" y="0" width="84" height="56" rx="6" fill="#0f766e" stroke="#065f46" stroke-width="2"/><text x="42" y="33" fill="#ffffff">S1 (0)</text>
+      <rect x="352" y="180" width="84" height="56" rx="6" fill="#0f766e" stroke="#065f46" stroke-width="2"/><text x="394" y="213" fill="#ffffff">S2 (0)</text>
     </g>
 
     <!-- t=1 ring: (0,1), (1,0), (2,4), (3,3) -->
     <g class="bfs-2">
-      <rect x="88" y="0" width="84" height="56" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/><text x="130" y="33" fill="#1d4ed8">1</text>
-      <rect x="0" y="60" width="84" height="56" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/><text x="42" y="93" fill="#1d4ed8">1</text>
-      <rect x="352" y="120" width="84" height="56" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/><text x="394" y="153" fill="#1d4ed8">1</text>
-      <rect x="264" y="180" width="84" height="56" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/><text x="306" y="213" fill="#1d4ed8">1</text>
+      <rect x="88" y="0" width="84" height="56" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/><text x="130" y="33" fill="#065f46">1</text>
+      <rect x="0" y="60" width="84" height="56" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/><text x="42" y="93" fill="#065f46">1</text>
+      <rect x="352" y="120" width="84" height="56" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/><text x="394" y="153" fill="#065f46">1</text>
+      <rect x="264" y="180" width="84" height="56" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/><text x="306" y="213" fill="#065f46">1</text>
     </g>
 
     <!-- t=2 ring: (0,2), (1,1), (2,0), (1,4), (2,3), (3,2) + keep t=1 -->
     <g class="bfs-3">
-      <rect x="88" y="0" width="84" height="56" rx="6" fill="#eff6ff" stroke="#93c5fd"/><text x="130" y="33" fill="#1d4ed8">1</text>
-      <rect x="0" y="60" width="84" height="56" rx="6" fill="#eff6ff" stroke="#93c5fd"/><text x="42" y="93" fill="#1d4ed8">1</text>
-      <rect x="352" y="120" width="84" height="56" rx="6" fill="#eff6ff" stroke="#93c5fd"/><text x="394" y="153" fill="#1d4ed8">1</text>
-      <rect x="264" y="180" width="84" height="56" rx="6" fill="#eff6ff" stroke="#93c5fd"/><text x="306" y="213" fill="#1d4ed8">1</text>
+      <rect x="88" y="0" width="84" height="56" rx="6" fill="#f0fdf9" stroke="#99f6e4"/><text x="130" y="33" fill="#065f46">1</text>
+      <rect x="0" y="60" width="84" height="56" rx="6" fill="#f0fdf9" stroke="#99f6e4"/><text x="42" y="93" fill="#065f46">1</text>
+      <rect x="352" y="120" width="84" height="56" rx="6" fill="#f0fdf9" stroke="#99f6e4"/><text x="394" y="153" fill="#065f46">1</text>
+      <rect x="264" y="180" width="84" height="56" rx="6" fill="#f0fdf9" stroke="#99f6e4"/><text x="306" y="213" fill="#065f46">1</text>
 
-      <rect x="176" y="0" width="84" height="56" rx="6" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/><text x="218" y="33" fill="#6d28d9">2</text>
-      <rect x="88" y="60" width="84" height="56" rx="6" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/><text x="130" y="93" fill="#6d28d9">2</text>
-      <rect x="0" y="120" width="84" height="56" rx="6" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/><text x="42" y="153" fill="#6d28d9">2</text>
-      <rect x="352" y="60" width="84" height="56" rx="6" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/><text x="394" y="93" fill="#6d28d9">2</text>
-      <rect x="264" y="120" width="84" height="56" rx="6" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/><text x="306" y="153" fill="#6d28d9">2</text>
-      <rect x="176" y="180" width="84" height="56" rx="6" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/><text x="218" y="213" fill="#6d28d9">2</text>
+      <rect x="176" y="0" width="84" height="56" rx="6" fill="#f5f1e8" stroke="#0f766e" stroke-width="2"/><text x="218" y="33" fill="#065f46">2</text>
+      <rect x="88" y="60" width="84" height="56" rx="6" fill="#f5f1e8" stroke="#0f766e" stroke-width="2"/><text x="130" y="93" fill="#065f46">2</text>
+      <rect x="0" y="120" width="84" height="56" rx="6" fill="#f5f1e8" stroke="#0f766e" stroke-width="2"/><text x="42" y="153" fill="#065f46">2</text>
+      <rect x="352" y="60" width="84" height="56" rx="6" fill="#f5f1e8" stroke="#0f766e" stroke-width="2"/><text x="394" y="93" fill="#065f46">2</text>
+      <rect x="264" y="120" width="84" height="56" rx="6" fill="#f5f1e8" stroke="#0f766e" stroke-width="2"/><text x="306" y="153" fill="#065f46">2</text>
+      <rect x="176" y="180" width="84" height="56" rx="6" fill="#f5f1e8" stroke="#0f766e" stroke-width="2"/><text x="218" y="213" fill="#065f46">2</text>
     </g>
 
     <!-- t=3 ring: remaining 8 cells -->
     <g class="bfs-4">
-      <rect x="88" y="0" width="84" height="56" rx="6" fill="#eff6ff" stroke="#93c5fd"/><text x="130" y="33" fill="#1d4ed8">1</text>
-      <rect x="0" y="60" width="84" height="56" rx="6" fill="#eff6ff" stroke="#93c5fd"/><text x="42" y="93" fill="#1d4ed8">1</text>
-      <rect x="352" y="120" width="84" height="56" rx="6" fill="#eff6ff" stroke="#93c5fd"/><text x="394" y="153" fill="#1d4ed8">1</text>
-      <rect x="264" y="180" width="84" height="56" rx="6" fill="#eff6ff" stroke="#93c5fd"/><text x="306" y="213" fill="#1d4ed8">1</text>
-      <rect x="176" y="0" width="84" height="56" rx="6" fill="#f5f3ff" stroke="#c4b5fd"/><text x="218" y="33" fill="#6d28d9">2</text>
-      <rect x="88" y="60" width="84" height="56" rx="6" fill="#f5f3ff" stroke="#c4b5fd"/><text x="130" y="93" fill="#6d28d9">2</text>
-      <rect x="0" y="120" width="84" height="56" rx="6" fill="#f5f3ff" stroke="#c4b5fd"/><text x="42" y="153" fill="#6d28d9">2</text>
-      <rect x="352" y="60" width="84" height="56" rx="6" fill="#f5f3ff" stroke="#c4b5fd"/><text x="394" y="93" fill="#6d28d9">2</text>
-      <rect x="264" y="120" width="84" height="56" rx="6" fill="#f5f3ff" stroke="#c4b5fd"/><text x="306" y="153" fill="#6d28d9">2</text>
-      <rect x="176" y="180" width="84" height="56" rx="6" fill="#f5f3ff" stroke="#c4b5fd"/><text x="218" y="213" fill="#6d28d9">2</text>
+      <rect x="88" y="0" width="84" height="56" rx="6" fill="#f0fdf9" stroke="#99f6e4"/><text x="130" y="33" fill="#065f46">1</text>
+      <rect x="0" y="60" width="84" height="56" rx="6" fill="#f0fdf9" stroke="#99f6e4"/><text x="42" y="93" fill="#065f46">1</text>
+      <rect x="352" y="120" width="84" height="56" rx="6" fill="#f0fdf9" stroke="#99f6e4"/><text x="394" y="153" fill="#065f46">1</text>
+      <rect x="264" y="180" width="84" height="56" rx="6" fill="#f0fdf9" stroke="#99f6e4"/><text x="306" y="213" fill="#065f46">1</text>
+      <rect x="176" y="0" width="84" height="56" rx="6" fill="#f5f1e8" stroke="#d6d0c4"/><text x="218" y="33" fill="#065f46">2</text>
+      <rect x="88" y="60" width="84" height="56" rx="6" fill="#f5f1e8" stroke="#d6d0c4"/><text x="130" y="93" fill="#065f46">2</text>
+      <rect x="0" y="120" width="84" height="56" rx="6" fill="#f5f1e8" stroke="#d6d0c4"/><text x="42" y="153" fill="#065f46">2</text>
+      <rect x="352" y="60" width="84" height="56" rx="6" fill="#f5f1e8" stroke="#d6d0c4"/><text x="394" y="93" fill="#065f46">2</text>
+      <rect x="264" y="120" width="84" height="56" rx="6" fill="#f5f1e8" stroke="#d6d0c4"/><text x="306" y="153" fill="#065f46">2</text>
+      <rect x="176" y="180" width="84" height="56" rx="6" fill="#f5f1e8" stroke="#d6d0c4"/><text x="218" y="213" fill="#065f46">2</text>
 
-      <rect x="264" y="0" width="84" height="56" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="2"/><text x="306" y="33" fill="#b45309">3</text>
-      <rect x="352" y="0" width="84" height="56" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="2"/><text x="394" y="33" fill="#b45309">3</text>
-      <rect x="176" y="60" width="84" height="56" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="2"/><text x="218" y="93" fill="#b45309">3</text>
-      <rect x="264" y="60" width="84" height="56" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="2"/><text x="306" y="93" fill="#b45309">3</text>
-      <rect x="88" y="120" width="84" height="56" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="2"/><text x="130" y="153" fill="#b45309">3</text>
-      <rect x="176" y="120" width="84" height="56" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="2"/><text x="218" y="153" fill="#b45309">3</text>
-      <rect x="0" y="180" width="84" height="56" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="2"/><text x="42" y="213" fill="#b45309">3</text>
-      <rect x="88" y="180" width="84" height="56" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="2"/><text x="130" y="213" fill="#b45309">3</text>
+      <rect x="264" y="0" width="84" height="56" rx="6" fill="#fffbeb" stroke="#b45309" stroke-width="2"/><text x="306" y="33" fill="#b45309">3</text>
+      <rect x="352" y="0" width="84" height="56" rx="6" fill="#fffbeb" stroke="#b45309" stroke-width="2"/><text x="394" y="33" fill="#b45309">3</text>
+      <rect x="176" y="60" width="84" height="56" rx="6" fill="#fffbeb" stroke="#b45309" stroke-width="2"/><text x="218" y="93" fill="#b45309">3</text>
+      <rect x="264" y="60" width="84" height="56" rx="6" fill="#fffbeb" stroke="#b45309" stroke-width="2"/><text x="306" y="93" fill="#b45309">3</text>
+      <rect x="88" y="120" width="84" height="56" rx="6" fill="#fffbeb" stroke="#b45309" stroke-width="2"/><text x="130" y="153" fill="#b45309">3</text>
+      <rect x="176" y="120" width="84" height="56" rx="6" fill="#fffbeb" stroke="#b45309" stroke-width="2"/><text x="218" y="153" fill="#b45309">3</text>
+      <rect x="0" y="180" width="84" height="56" rx="6" fill="#fffbeb" stroke="#b45309" stroke-width="2"/><text x="42" y="213" fill="#b45309">3</text>
+      <rect x="88" y="180" width="84" height="56" rx="6" fill="#fffbeb" stroke="#b45309" stroke-width="2"/><text x="130" y="213" fill="#b45309">3</text>
     </g>
   </g>
 
   <!-- FIFO Queue Trace Box -->
-  <rect x="44" y="416" width="524" height="214" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
-  <text x="60" y="440" class="sans" font-size="11.5" font-weight="700" fill="#0f172a">FIFO QUEUE &amp; LEVEL WAVEFRONT TRACE:</text>
+  <rect x="44" y="416" width="524" height="214" rx="8" fill="#faf8f5" stroke="#d6d0c4"/>
+  <text x="60" y="440" class="sans" font-size="11.5" font-weight="700" fill="#1c1917">FIFO QUEUE &amp; LEVEL WAVEFRONT TRACE:</text>
 
   <g class="bfs-1">
-    <text x="60" y="472" class="mono" font-size="13" font-weight="700" fill="#047857">t = 0: Seed Queue = [ S1(0,0), S2(3,4) ]</text>
-    <text x="60" y="498" class="sans" font-size="11.5" fill="#334155">Both sources start at distance 0 simultaneously. Avoids running S separate</text>
-    <text x="60" y="518" class="sans" font-size="11.5" fill="#334155">BFS traversals (O(S*(V+E)) -&gt; O(V+E)).</text>
+    <text x="60" y="472" class="mono" font-size="13" font-weight="700" fill="#065f46">t = 0: Seed Queue = [ S1(0,0), S2(3,4) ]</text>
+    <text x="60" y="498" class="sans" font-size="11.5" fill="#44403c">Both sources start at distance 0 simultaneously. Avoids running S separate</text>
+    <text x="60" y="518" class="sans" font-size="11.5" fill="#44403c">BFS traversals (O(S*(V+E)) -&gt; O(V+E)).</text>
   </g>
   <g class="bfs-2">
-    <text x="60" y="472" class="mono" font-size="13" font-weight="700" fill="#1d4ed8">t = 1: Pop S1 &amp; S2 -&gt; Enqueue 4 neighbors at d = 1</text>
-    <text x="60" y="498" class="sans" font-size="11.5" fill="#334155">Queue = [ (0,1):1, (1,0):1, (2,4):1, (3,3):1 ]</text>
-    <text x="60" y="518" class="sans" font-size="11.5" fill="#1d4ed8">Every cell is marked visited AT ENQUEUE TIME (never twice!).</text>
+    <text x="60" y="472" class="mono" font-size="13" font-weight="700" fill="#065f46">t = 1: Pop S1 &amp; S2 -&gt; Enqueue 4 neighbors at d = 1</text>
+    <text x="60" y="498" class="sans" font-size="11.5" fill="#44403c">Queue = [ (0,1):1, (1,0):1, (2,4):1, (3,3):1 ]</text>
+    <text x="60" y="518" class="sans" font-size="11.5" fill="#065f46">Every cell is marked visited AT ENQUEUE TIME (never twice!).</text>
   </g>
   <g class="bfs-3">
-    <text x="60" y="472" class="mono" font-size="13" font-weight="700" fill="#6d28d9">t = 2: Expand d = 1 ring -&gt; Enqueue 6 cells at d = 2</text>
-    <text x="60" y="498" class="sans" font-size="11.5" fill="#334155">Wavefronts from S1 and S2 advance in lockstep toward the middle.</text>
-    <text x="60" y="518" class="sans" font-size="11.5" fill="#6d28d9">Queue maintains strict non-decreasing distance order.</text>
+    <text x="60" y="472" class="mono" font-size="13" font-weight="700" fill="#065f46">t = 2: Expand d = 1 ring -&gt; Enqueue 6 cells at d = 2</text>
+    <text x="60" y="498" class="sans" font-size="11.5" fill="#44403c">Wavefronts from S1 and S2 advance in lockstep toward the middle.</text>
+    <text x="60" y="518" class="sans" font-size="11.5" fill="#065f46">Queue maintains strict non-decreasing distance order.</text>
   </g>
   <g class="bfs-4">
     <text x="60" y="472" class="mono" font-size="13" font-weight="700" fill="#b45309">t = 3: Wavefronts collide! Remaining 8 cells receive d = 3</text>
     <text x="60" y="498" class="sans" font-size="11.5" fill="#065f46">First source to reach each cell guarantees shortest unweighted distance.</text>
-    <text x="60" y="518" class="sans" font-size="11.5" fill="#047857">All 20 cells resolved in a single O(V + E) pass!</text>
+    <text x="60" y="518" class="sans" font-size="11.5" fill="#065f46">All 20 cells resolved in a single O(V + E) pass!</text>
   </g>
 
-  <rect x="60" y="544" width="492" height="68" rx="6" fill="#eff6ff" stroke="#bfdbfe"/>
-  <text x="76" y="568" class="sans" font-size="11" font-weight="700" fill="#1e40af">BFS Invariant:</text>
-  <text x="76" y="588" class="sans" font-size="11" fill="#1e3a8a">The FIFO queue holds at most two consecutive distance levels: d and d+1.</text>
-  <text x="76" y="604" class="sans" font-size="10.5" fill="#1d4ed8">For weighted {0, 1} edges, standard FIFO breaks -&gt; upgrade to 0-1 BFS Deque!</text>
+  <rect x="60" y="544" width="492" height="68" rx="6" fill="#f0fdf9" stroke="#bfdbfe"/>
+  <text x="76" y="568" class="sans" font-size="11" font-weight="700" fill="#065f46">BFS Invariant:</text>
+  <text x="76" y="588" class="sans" font-size="11" fill="#065f46">The FIFO queue holds at most two consecutive distance levels: d and d+1.</text>
+  <text x="76" y="604" class="sans" font-size="10.5" fill="#065f46">For weighted {0, 1} edges, standard FIFO breaks -&gt; upgrade to 0-1 BFS Deque!</text>
 
   <!-- RIGHT PANEL: 0-1 BFS with Deque -->
-  <rect x="612" y="76" width="564" height="574" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
-  <rect x="612" y="76" width="564" height="36" rx="10" fill="#f1f5f9"/>
-  <rect x="612" y="102" width="564" height="10" fill="#f1f5f9"/>
-  <text x="628" y="99" class="sans" font-size="13" font-weight="700" fill="#0f172a">2. 0-1 BFS (Deque: pushFront w=0, pushBack w=1)</text>
-  <text x="1160" y="99" class="mono" font-size="11" fill="#059669" text-anchor="end">O(V + E) vs Dijkstra O(E log V)</text>
+  <rect x="612" y="76" width="564" height="574" rx="10" fill="#ffffff" stroke="#d6d0c4"/>
+  <rect x="612" y="76" width="564" height="36" rx="10" fill="#f5f1e8"/>
+  <rect x="612" y="102" width="564" height="10" fill="#f5f1e8"/>
+  <text x="628" y="99" class="sans" font-size="13" font-weight="700" fill="#1c1917">2. 0-1 BFS (Deque: pushFront w=0, pushBack w=1)</text>
+  <text x="1160" y="99" class="mono" font-size="11" fill="#0f766e" text-anchor="end">O(V + E) vs Dijkstra O(E log V)</text>
 
   <!-- Graph Topology: S(680,220), A(840,160), B(840,284), C(1020,160), D(1020,284) -->
   <g stroke-width="2.5" fill="none">
     <!-- w=0 edges (emerald) -->
-    <line x1="704" y1="210" x2="816" y2="168" stroke="#059669" marker-end="url(#arrow-emerald)"/>
-    <line x1="864" y1="160" x2="996" y2="160" stroke="#059669" marker-end="url(#arrow-emerald)"/>
-    <line x1="864" y1="284" x2="996" y2="284" stroke="#059669" marker-end="url(#arrow-emerald)"/>
+    <line x1="704" y1="210" x2="816" y2="168" stroke="#0f766e" marker-end="url(#arrow-emerald)"/>
+    <line x1="864" y1="160" x2="996" y2="160" stroke="#0f766e" marker-end="url(#arrow-emerald)"/>
+    <line x1="864" y1="284" x2="996" y2="284" stroke="#0f766e" marker-end="url(#arrow-emerald)"/>
     <!-- w=1 edges (blue) -->
-    <line x1="704" y1="230" x2="816" y2="274" stroke="#2563eb" marker-end="url(#arrow-blue)"/>
-    <line x1="858" y1="176" x2="1002" y2="268" stroke="#2563eb" marker-end="url(#arrow-blue)"/>
+    <line x1="704" y1="230" x2="816" y2="274" stroke="#0f766e" marker-end="url(#arrow-blue)"/>
+    <line x1="858" y1="176" x2="1002" y2="268" stroke="#0f766e" marker-end="url(#arrow-blue)"/>
   </g>
   <!-- Edge Weight Pills -->
   <g class="mono" font-size="11" font-weight="700" text-anchor="middle">
-    <rect x="742" y="166" width="32" height="20" rx="4" fill="#ecfdf5" stroke="#6ee7b7"/><text x="758" y="180" fill="#047857">w=0</text>
-    <rect x="914" y="138" width="32" height="20" rx="4" fill="#ecfdf5" stroke="#6ee7b7"/><text x="930" y="152" fill="#047857">w=0</text>
-    <rect x="914" y="294" width="32" height="20" rx="4" fill="#ecfdf5" stroke="#6ee7b7"/><text x="930" y="308" fill="#047857">w=0</text>
-    <rect x="742" y="256" width="32" height="20" rx="4" fill="#eff6ff" stroke="#93c5fd"/><text x="758" y="270" fill="#1d4ed8">w=1</text>
-    <rect x="932" y="212" width="32" height="20" rx="4" fill="#eff6ff" stroke="#93c5fd"/><text x="948" y="226" fill="#1d4ed8">w=1</text>
+    <rect x="742" y="166" width="32" height="20" rx="4" fill="#f0fdf9" stroke="#99f6e4"/><text x="758" y="180" fill="#065f46">w=0</text>
+    <rect x="914" y="138" width="32" height="20" rx="4" fill="#f0fdf9" stroke="#99f6e4"/><text x="930" y="152" fill="#065f46">w=0</text>
+    <rect x="914" y="294" width="32" height="20" rx="4" fill="#f0fdf9" stroke="#99f6e4"/><text x="930" y="308" fill="#065f46">w=0</text>
+    <rect x="742" y="256" width="32" height="20" rx="4" fill="#f0fdf9" stroke="#99f6e4"/><text x="758" y="270" fill="#065f46">w=1</text>
+    <rect x="932" y="212" width="32" height="20" rx="4" fill="#f0fdf9" stroke="#99f6e4"/><text x="948" y="226" fill="#065f46">w=1</text>
   </g>
 
   <!-- Base Nodes -->
   <g class="mono" font-size="14" font-weight="700" text-anchor="middle">
-    <circle cx="680" cy="220" r="22" fill="#059669" stroke="#047857" stroke-width="2"/><text x="680" y="225" fill="#ffffff">S:0</text>
-    <circle cx="840" cy="160" r="22" fill="#f8fafc" stroke="#475569" stroke-width="2"/><text x="840" y="165" fill="#0f172a">A</text>
-    <circle cx="840" cy="284" r="22" fill="#f8fafc" stroke="#475569" stroke-width="2"/><text x="840" y="289" fill="#0f172a">B</text>
-    <circle cx="1020" cy="160" r="22" fill="#f8fafc" stroke="#475569" stroke-width="2"/><text x="1020" y="165" fill="#0f172a">C</text>
-    <circle cx="1020" cy="284" r="22" fill="#f8fafc" stroke="#475569" stroke-width="2"/><text x="1020" y="289" fill="#0f172a">D</text>
+    <circle cx="680" cy="220" r="22" fill="#0f766e" stroke="#065f46" stroke-width="2"/><text x="680" y="225" fill="#ffffff">S:0</text>
+    <circle cx="840" cy="160" r="22" fill="#faf8f5" stroke="#44403c" stroke-width="2"/><text x="840" y="165" fill="#1c1917">A</text>
+    <circle cx="840" cy="284" r="22" fill="#faf8f5" stroke="#44403c" stroke-width="2"/><text x="840" y="289" fill="#1c1917">B</text>
+    <circle cx="1020" cy="160" r="22" fill="#faf8f5" stroke="#44403c" stroke-width="2"/><text x="1020" y="165" fill="#1c1917">C</text>
+    <circle cx="1020" cy="284" r="22" fill="#faf8f5" stroke="#44403c" stroke-width="2"/><text x="1020" y="289" fill="#1c1917">D</text>
   </g>
 
   <!-- Deque Visualization Box -->
-  <rect x="632" y="346" width="524" height="170" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
-  <text x="648" y="370" class="sans" font-size="11.5" font-weight="700" fill="#0f172a">DEQUE STATE (Monotonic Order Preserved Without Heap!):</text>
-  <line x1="652" y1="394" x2="1136" y2="394" stroke="#94a3b8" stroke-width="2"/>
-  <line x1="652" y1="454" x2="1136" y2="454" stroke="#94a3b8" stroke-width="2"/>
-  <text x="652" y="388" class="mono" font-size="10" font-weight="700" fill="#059669">&lt;- pushFront (w = 0)</text>
-  <text x="1136" y="388" class="mono" font-size="10" font-weight="700" fill="#2563eb" text-anchor="end">pushBack (w = 1) -&gt;</text>
+  <rect x="632" y="346" width="524" height="170" rx="8" fill="#faf8f5" stroke="#d6d0c4"/>
+  <text x="648" y="370" class="sans" font-size="11.5" font-weight="700" fill="#1c1917">DEQUE STATE (Monotonic Order Preserved Without Heap!):</text>
+  <line x1="652" y1="394" x2="1136" y2="394" stroke="#d6d0c4" stroke-width="2"/>
+  <line x1="652" y1="454" x2="1136" y2="454" stroke="#d6d0c4" stroke-width="2"/>
+  <text x="652" y="388" class="mono" font-size="10" font-weight="700" fill="#0f766e">&lt;- pushFront (w = 0)</text>
+  <text x="1136" y="388" class="mono" font-size="10" font-weight="700" fill="#0f766e" text-anchor="end">pushBack (w = 1) -&gt;</text>
 
   <g class="bfs-1">
-    <rect x="664" y="402" width="104" height="44" rx="6" fill="#059669"/><text x="716" y="429" class="mono" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">S (d=0)</text>
-    <text x="648" y="484" class="mono" font-size="12" font-weight="700" fill="#0f172a">Step 1: Init deque = [ S:0 ], dist[S] = 0</text>
-    <text x="648" y="504" class="sans" font-size="11" fill="#475569">Pop S from front and relax outgoing edges (S,A) w=0 and (S,B) w=1.</text>
+    <rect x="664" y="402" width="104" height="44" rx="6" fill="#0f766e"/><text x="716" y="429" class="mono" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">S (d=0)</text>
+    <text x="648" y="484" class="mono" font-size="12" font-weight="700" fill="#1c1917">Step 1: Init deque = [ S:0 ], dist[S] = 0</text>
+    <text x="648" y="504" class="sans" font-size="11" fill="#44403c">Pop S from front and relax outgoing edges (S,A) w=0 and (S,B) w=1.</text>
   </g>
   <g class="bfs-2">
-    <circle cx="840" cy="160" r="22" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/><text x="840" y="165" class="mono" font-size="13" font-weight="700" fill="#047857" text-anchor="middle">A:0</text>
-    <circle cx="840" cy="284" r="22" fill="#eff6ff" stroke="#2563eb" stroke-width="2.5"/><text x="840" y="289" class="mono" font-size="13" font-weight="700" fill="#1d4ed8" text-anchor="middle">B:1</text>
-    <rect x="664" y="402" width="110" height="44" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="719" y="429" class="mono" font-size="13" font-weight="700" fill="#047857" text-anchor="middle">A (d=0)</text>
-    <rect x="788" y="402" width="110" height="44" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/><text x="843" y="429" class="mono" font-size="13" font-weight="700" fill="#1d4ed8" text-anchor="middle">B (d=1)</text>
-    <text x="648" y="484" class="mono" font-size="12" font-weight="700" fill="#047857">Step 2: (S,A) w=0 -&gt; pushFront(A:0) | (S,B) w=1 -&gt; pushBack(B:1)</text>
-    <text x="648" y="504" class="sans" font-size="11" fill="#334155">A stays ahead of B because d(A)=0 &lt; d(B)=1!</text>
+    <circle cx="840" cy="160" r="22" fill="#f0fdf9" stroke="#0f766e" stroke-width="2.5"/><text x="840" y="165" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">A:0</text>
+    <circle cx="840" cy="284" r="22" fill="#f0fdf9" stroke="#0f766e" stroke-width="2.5"/><text x="840" y="289" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">B:1</text>
+    <rect x="664" y="402" width="110" height="44" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/><text x="719" y="429" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">A (d=0)</text>
+    <rect x="788" y="402" width="110" height="44" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/><text x="843" y="429" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">B (d=1)</text>
+    <text x="648" y="484" class="mono" font-size="12" font-weight="700" fill="#065f46">Step 2: (S,A) w=0 -&gt; pushFront(A:0) | (S,B) w=1 -&gt; pushBack(B:1)</text>
+    <text x="648" y="504" class="sans" font-size="11" fill="#44403c">A stays ahead of B because d(A)=0 &lt; d(B)=1!</text>
   </g>
   <g class="bfs-3">
-    <circle cx="840" cy="160" r="22" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="840" y="165" class="mono" font-size="13" font-weight="700" fill="#047857" text-anchor="middle">A:0</text>
-    <circle cx="1020" cy="160" r="22" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/><text x="1020" y="165" class="mono" font-size="13" font-weight="700" fill="#047857" text-anchor="middle">C:0</text>
-    <circle cx="840" cy="284" r="22" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/><text x="840" y="289" class="mono" font-size="13" font-weight="700" fill="#1d4ed8" text-anchor="middle">B:1</text>
-    <circle cx="1020" cy="284" r="22" fill="#eff6ff" stroke="#2563eb" stroke-width="2.5"/><text x="1020" y="289" class="mono" font-size="13" font-weight="700" fill="#1d4ed8" text-anchor="middle">D:1</text>
-    <rect x="664" y="402" width="110" height="44" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="719" y="429" class="mono" font-size="13" font-weight="700" fill="#047857" text-anchor="middle">C (d=0)</text>
-    <rect x="788" y="402" width="110" height="44" rx="6" fill="#eff6ff" stroke="#2563eb"/><text x="843" y="429" class="mono" font-size="13" font-weight="700" fill="#1d4ed8" text-anchor="middle">B (d=1)</text>
-    <rect x="912" y="402" width="110" height="44" rx="6" fill="#eff6ff" stroke="#2563eb"/><text x="967" y="429" class="mono" font-size="13" font-weight="700" fill="#1d4ed8" text-anchor="middle">D (d=1)</text>
-    <text x="648" y="484" class="mono" font-size="12" font-weight="700" fill="#1d4ed8">Step 3: Pop A:0 -&gt; pushFront(C:0), pushBack(D:1)</text>
-    <text x="648" y="504" class="sans" font-size="11" fill="#334155">Deque remains sorted [0, 1, 1]: C:0 will be popped before B:1 and D:1!</text>
+    <circle cx="840" cy="160" r="22" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/><text x="840" y="165" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">A:0</text>
+    <circle cx="1020" cy="160" r="22" fill="#f0fdf9" stroke="#0f766e" stroke-width="2.5"/><text x="1020" y="165" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">C:0</text>
+    <circle cx="840" cy="284" r="22" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/><text x="840" y="289" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">B:1</text>
+    <circle cx="1020" cy="284" r="22" fill="#f0fdf9" stroke="#0f766e" stroke-width="2.5"/><text x="1020" y="289" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">D:1</text>
+    <rect x="664" y="402" width="110" height="44" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/><text x="719" y="429" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">C (d=0)</text>
+    <rect x="788" y="402" width="110" height="44" rx="6" fill="#f0fdf9" stroke="#0f766e"/><text x="843" y="429" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">B (d=1)</text>
+    <rect x="912" y="402" width="110" height="44" rx="6" fill="#f0fdf9" stroke="#0f766e"/><text x="967" y="429" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">D (d=1)</text>
+    <text x="648" y="484" class="mono" font-size="12" font-weight="700" fill="#065f46">Step 3: Pop A:0 -&gt; pushFront(C:0), pushBack(D:1)</text>
+    <text x="648" y="504" class="sans" font-size="11" fill="#44403c">Deque remains sorted [0, 1, 1]: C:0 will be popped before B:1 and D:1!</text>
   </g>
   <g class="bfs-4">
-    <circle cx="840" cy="160" r="22" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="840" y="165" class="mono" font-size="13" font-weight="700" fill="#047857" text-anchor="middle">A:0</text>
-    <circle cx="1020" cy="160" r="22" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="1020" y="165" class="mono" font-size="13" font-weight="700" fill="#047857" text-anchor="middle">C:0</text>
-    <circle cx="840" cy="284" r="22" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/><text x="840" y="289" class="mono" font-size="13" font-weight="700" fill="#1d4ed8" text-anchor="middle">B:1</text>
-    <circle cx="1020" cy="284" r="22" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/><text x="1020" y="289" class="mono" font-size="13" font-weight="700" fill="#1d4ed8" text-anchor="middle">D:1</text>
-    <rect x="664" y="402" width="446" height="44" rx="6" fill="#ecfdf5" stroke="#6ee7b7"/><text x="887" y="429" class="mono" font-size="13" font-weight="700" fill="#047857" text-anchor="middle">DONE: dist = { S:0, A:0, C:0, B:1, D:1 }</text>
-    <text x="648" y="484" class="mono" font-size="12" font-weight="700" fill="#047857">Step 4: All shortest {0, 1} paths settled in O(V + E)!</text>
+    <circle cx="840" cy="160" r="22" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/><text x="840" y="165" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">A:0</text>
+    <circle cx="1020" cy="160" r="22" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/><text x="1020" y="165" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">C:0</text>
+    <circle cx="840" cy="284" r="22" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/><text x="840" y="289" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">B:1</text>
+    <circle cx="1020" cy="284" r="22" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/><text x="1020" y="289" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">D:1</text>
+    <rect x="664" y="402" width="446" height="44" rx="6" fill="#f0fdf9" stroke="#99f6e4"/><text x="887" y="429" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">DONE: dist = { S:0, A:0, C:0, B:1, D:1 }</text>
+    <text x="648" y="484" class="mono" font-size="12" font-weight="700" fill="#065f46">Step 4: All shortest {0, 1} paths settled in O(V + E)!</text>
     <text x="648" y="504" class="sans" font-size="11" fill="#065f46">Relax only when dist[u] + w &lt; dist[v] (no visited[] freeze on w=1 first).</text>
   </g>
 
   <!-- Two-distance invariant callout -->
-  <rect x="632" y="532" width="524" height="98" rx="8" fill="#f5f3ff" stroke="#c4b5fd"/>
-  <text x="648" y="556" class="sans" font-size="12" font-weight="700" fill="#5b21b6">Why 0-1 BFS Beats Dijkstra Without a Binary Heap</text>
-  <text x="648" y="578" class="sans" font-size="11" fill="#4c1d95">At any instant, the deque contains nodes at only TWO distances: d and d+1.</text>
-  <text x="648" y="598" class="sans" font-size="11" fill="#4c1d95">Weight-0 pushes to front (d + 0 = d); weight-1 pushes to back (d + 1).</text>
-  <text x="648" y="618" class="mono" font-size="11" font-weight="700" fill="#6d28d9">O(1) deque ops -&gt; drops O((V+E) log V) down to strictly O(V+E)!</text>
+  <rect x="632" y="532" width="524" height="98" rx="8" fill="#f5f1e8" stroke="#d6d0c4"/>
+  <text x="648" y="556" class="sans" font-size="12" font-weight="700" fill="#065f46">Why 0-1 BFS Beats Dijkstra Without a Binary Heap</text>
+  <text x="648" y="578" class="sans" font-size="11" fill="#065f46">At any instant, the deque contains nodes at only TWO distances: d and d+1.</text>
+  <text x="648" y="598" class="sans" font-size="11" fill="#065f46">Weight-0 pushes to front (d + 0 = d); weight-1 pushes to back (d + 1).</text>
+  <text x="648" y="618" class="mono" font-size="11" font-weight="700" fill="#065f46">O(1) deque ops -&gt; drops O((V+E) log V) down to strictly O(V+E)!</text>
 
   <!-- Bottom Legend -->
-  <rect x="24" y="666" width="1152" height="74" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="44" y="692" class="sans" font-size="12" font-weight="700" fill="#0f172a">BFS Family Invariants:</text>
-  <rect x="204" y="678" width="14" height="14" rx="3" fill="#059669"/>
-  <text x="224" y="690" class="sans" font-size="11" fill="#334155">Source (d=0) / w=0 pushFront</text>
-  <rect x="444" y="678" width="14" height="14" rx="3" fill="#2563eb"/>
-  <text x="464" y="690" class="sans" font-size="11" fill="#334155">d=1 wave / w=1 pushBack</text>
-  <rect x="656" y="678" width="14" height="14" rx="3" fill="#7c3aed"/>
-  <text x="676" y="690" class="sans" font-size="11" fill="#334155">d=2 wave</text>
-  <rect x="772" y="678" width="14" height="14" rx="3" fill="#d97706"/>
-  <text x="792" y="690" class="sans" font-size="11" fill="#334155">d=3 collision wave</text>
-  <text x="44" y="722" class="sans" font-size="11" fill="#64748b">Gotcha in 0-1 BFS: check `if (dist[u] + w &lt; dist[v])` before pushing, and skip stale entries (`if (d &gt; dist[u]) continue`) because a node can be pushed at d+1 then relaxed to d via a 0-edge.</text>
+  <rect x="24" y="666" width="1152" height="74" rx="8" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="44" y="692" class="sans" font-size="12" font-weight="700" fill="#1c1917">BFS Family Invariants:</text>
+  <rect x="204" y="678" width="14" height="14" rx="3" fill="#0f766e"/>
+  <text x="224" y="690" class="sans" font-size="11" fill="#44403c">Source (d=0) / w=0 pushFront</text>
+  <rect x="444" y="678" width="14" height="14" rx="3" fill="#0f766e"/>
+  <text x="464" y="690" class="sans" font-size="11" fill="#44403c">d=1 wave / w=1 pushBack</text>
+  <rect x="656" y="678" width="14" height="14" rx="3" fill="#0f766e"/>
+  <text x="676" y="690" class="sans" font-size="11" fill="#44403c">d=2 wave</text>
+  <rect x="772" y="678" width="14" height="14" rx="3" fill="#b45309"/>
+  <text x="792" y="690" class="sans" font-size="11" fill="#44403c">d=3 collision wave</text>
+  <text x="44" y="722" class="sans" font-size="11" fill="#57534e">Gotcha in 0-1 BFS: check `if (dist[u] + w &lt; dist[v])` before pushing, and skip stale entries (`if (d &gt; dist[u]) continue`) because a node can be pushed at d+1 then relaxed to d via a 0-edge.</text>
 </svg>

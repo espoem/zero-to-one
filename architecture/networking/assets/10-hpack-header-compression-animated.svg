@@ -13,22 +13,22 @@
        80-100%(9.6-12s): FIFO eviction of oldest tail slot when > 4096B
     */
     @keyframes hpack-s1 {
-      0%, 24%  { opacity: 1; stroke: #059669; stroke-width: 2.5; }
-      25%, 100%{ opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; }
+      0%, 24%  { opacity: 1; stroke: #0f766e; stroke-width: 2.5; }
+      25%, 100%{ opacity: 0.86; stroke: #d6d0c4; stroke-width: 1; }
     }
     @keyframes hpack-s2 {
-      0%, 24%  { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; }
-      25%, 54% { opacity: 1; stroke: #7c3aed; stroke-width: 2.5; }
-      55%, 100%{ opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; }
+      0%, 24%  { opacity: 0.86; stroke: #d6d0c4; stroke-width: 1; }
+      25%, 54% { opacity: 1; stroke: #0f766e; stroke-width: 2.5; }
+      55%, 100%{ opacity: 0.86; stroke: #d6d0c4; stroke-width: 1; }
     }
     @keyframes hpack-s3 {
-      0%, 54%  { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; }
-      55%, 79% { opacity: 1; stroke: #2563eb; stroke-width: 2.5; }
-      80%, 100%{ opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; }
+      0%, 54%  { opacity: 0.86; stroke: #d6d0c4; stroke-width: 1; }
+      55%, 79% { opacity: 1; stroke: #0f766e; stroke-width: 2.5; }
+      80%, 100%{ opacity: 0.86; stroke: #d6d0c4; stroke-width: 1; }
     }
     @keyframes hpack-s4 {
-      0%, 79%  { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; }
-      80%, 100%{ opacity: 1; stroke: #d97706; stroke-width: 2.5; }
+      0%, 79%  { opacity: 0.86; stroke: #d6d0c4; stroke-width: 1; }
+      80%, 100%{ opacity: 1; stroke: #b45309; stroke-width: 2.5; }
     }
     @keyframes dyn-insert {
       0%, 28%  { opacity: 0.86; }
@@ -56,127 +56,127 @@
 
   <defs>
     <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-violet" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
   </defs>
 
   <!-- Canvas -->
-  <rect x="0" y="0" width="1120" height="600" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1120" height="600" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1120" height="60" rx="12" fill="#0f172a"/>
-  <rect x="0" y="44" width="1120" height="16" fill="#0f172a"/>
-  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Module 10 — HTTP/2 HPACK Header Compression (RFC 7541)</text>
-  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">Static Table (1–61) · Dynamic FIFO Ring Table (62+) · Static Canonical Huffman (CRIME-Safe, 85–90% Overhead Reduction)</text>
+  <line x1="24" y1="62" x2="1096" y2="62" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#1c1917" font-family="Georgia, 'Times New Roman', serif">Module 10 — HTTP/2 HPACK Header Compression (RFC 7541)</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">Static Table (1–61) · Dynamic FIFO Ring Table (62+) · Static Canonical Huffman (CRIME-Safe, 85–90% Overhead Reduction)</text>
 
   <!-- LEFT PANEL: STATIC TABLE & HUFFMAN -->
-  <rect x="24" y="74" width="336" height="454" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <text x="42" y="98" class="sans" font-size="14" font-weight="700" fill="#0f172a">1. Static Table (61 Immutable)</text>
+  <rect x="24" y="74" width="336" height="454" rx="10" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <text x="42" y="98" class="sans" font-size="14" font-weight="700" fill="#1c1917">1. Static Table (61 Immutable)</text>
 
-  <rect x="42" y="114" width="300" height="148" rx="7" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <rect x="42" y="114" width="300" height="148" rx="7" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
   <text x="56" y="134" class="mono" font-size="10.5" font-weight="700" fill="#065f46">Idx | Name         | Value</text>
-  <line x1="54" y1="142" x2="328" y2="142" stroke="#6ee7b7"/>
-  <text x="56" y="160" class="mono" font-size="10.5" font-weight="700" fill="#059669">  2 | :method      | GET    -&gt; 0x82</text>
-  <text x="56" y="180" class="mono" font-size="10.5" fill="#047857">  3 | :method      | POST   -&gt; 0x83</text>
-  <text x="56" y="200" class="mono" font-size="10.5" fill="#047857">  7 | :scheme      | https  -&gt; 0x87</text>
-  <text x="56" y="220" class="mono" font-size="10.5" fill="#047857">  8 | :status      | 200    -&gt; 0x88</text>
-  <text x="56" y="240" class="mono" font-size="10.5" fill="#047857"> 61 | www-auth     | (empty)</text>
+  <line x1="54" y1="142" x2="328" y2="142" stroke="#99f6e4"/>
+  <text x="56" y="160" class="mono" font-size="10.5" font-weight="700" fill="#0f766e">  2 | :method      | GET    -&gt; 0x82</text>
+  <text x="56" y="180" class="mono" font-size="10.5" fill="#065f46">  3 | :method      | POST   -&gt; 0x83</text>
+  <text x="56" y="200" class="mono" font-size="10.5" fill="#065f46">  7 | :scheme      | https  -&gt; 0x87</text>
+  <text x="56" y="220" class="mono" font-size="10.5" fill="#065f46">  8 | :status      | 200    -&gt; 0x88</text>
+  <text x="56" y="240" class="mono" font-size="10.5" fill="#065f46"> 61 | www-auth     | (empty)</text>
 
-  <text x="42" y="290" class="sans" font-size="14" font-weight="700" fill="#0f172a">2. Static Huffman Tree (CRIME-Safe)</text>
-  <rect x="42" y="304" width="300" height="206" rx="7" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
-  <text x="56" y="326" class="sans" font-size="11" font-weight="700" fill="#5b21b6">Unindexed Literal String:</text>
-  <text x="56" y="346" class="mono" font-size="10" fill="#334155">"Bearer eyJhbGci..." (64 bytes)</text>
-  <line x1="192" y1="354" x2="192" y2="378" stroke="#7c3aed" stroke-width="2" marker-end="url(#arr-violet)"/>
-  <rect x="56" y="382" width="272" height="54" rx="5" fill="#ffffff" stroke="#c4b5fd"/>
-  <text x="192" y="402" class="mono" font-size="10.5" font-weight="700" fill="#5b21b6" text-anchor="middle">Huffman bitstring (H=1): ~44 bytes</text>
-  <text x="192" y="420" class="sans" font-size="10" fill="#4c1d95" text-anchor="middle">~30% smaller via fixed web-freq codes</text>
+  <text x="42" y="290" class="sans" font-size="14" font-weight="700" fill="#1c1917">2. Static Huffman Tree (CRIME-Safe)</text>
+  <rect x="42" y="304" width="300" height="206" rx="7" fill="#f5f1e8" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="56" y="326" class="sans" font-size="11" font-weight="700" fill="#065f46">Unindexed Literal String:</text>
+  <text x="56" y="346" class="mono" font-size="10" fill="#44403c">"Bearer eyJhbGci..." (64 bytes)</text>
+  <line x1="192" y1="354" x2="192" y2="378" stroke="#0f766e" stroke-width="2" marker-end="url(#arr-violet)"/>
+  <rect x="56" y="382" width="272" height="54" rx="5" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="192" y="402" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Huffman bitstring (H=1): ~44 bytes</text>
+  <text x="192" y="420" class="sans" font-size="10" fill="#065f46" text-anchor="middle">~30% smaller via fixed web-freq codes</text>
 
-  <text x="56" y="458" class="sans" font-size="10.5" font-weight="700" fill="#5b21b6">Why Zero CRIME Leak?</text>
-  <text x="56" y="476" class="sans" font-size="10" fill="#4c1d95">No LZ77 back-references across cookies</text>
-  <text x="56" y="492" class="sans" font-size="10" fill="#4c1d95">&amp; query params; Huffman tree is static.</text>
+  <text x="56" y="458" class="sans" font-size="10.5" font-weight="700" fill="#065f46">Why Zero CRIME Leak?</text>
+  <text x="56" y="476" class="sans" font-size="10" fill="#065f46">No LZ77 back-references across cookies</text>
+  <text x="56" y="492" class="sans" font-size="10" fill="#065f46">&amp; query params; Huffman tree is static.</text>
 
   <!-- CENTER PANEL: DYNAMIC FIFO RING TABLE -->
-  <rect x="376" y="74" width="348" height="454" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <text x="394" y="98" class="sans" font-size="14" font-weight="700" fill="#0f172a">3. Dynamic Ring Table (Idx 62+)</text>
-  <text x="394" y="114" class="mono" font-size="10" fill="#475569">Max Budget: SETTINGS_HEADER_TABLE_SIZE (4096B)</text>
+  <rect x="376" y="74" width="348" height="454" rx="10" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <text x="394" y="98" class="sans" font-size="14" font-weight="700" fill="#1c1917">3. Dynamic Ring Table (Idx 62+)</text>
+  <text x="394" y="114" class="mono" font-size="10" fill="#44403c">Max Budget: SETTINGS_HEADER_TABLE_SIZE (4096B)</text>
 
   <!-- Ring Slots -->
-  <rect x="394" y="128" width="312" height="24" rx="4" fill="#e2e8f0"/>
-  <text x="434" y="144" class="mono" font-size="10" font-weight="700" fill="#334155" text-anchor="middle">Index</text>
-  <text x="556" y="144" class="mono" font-size="10" font-weight="700" fill="#334155" text-anchor="middle">Entry (Name + Value)</text>
-  <text x="676" y="144" class="mono" font-size="10" font-weight="700" fill="#334155" text-anchor="middle">Size</text>
+  <rect x="394" y="128" width="312" height="24" rx="4" fill="#e7e2d8"/>
+  <text x="434" y="144" class="mono" font-size="10" font-weight="700" fill="#44403c" text-anchor="middle">Index</text>
+  <text x="556" y="144" class="mono" font-size="10" font-weight="700" fill="#44403c" text-anchor="middle">Entry (Name + Value)</text>
+  <text x="676" y="144" class="mono" font-size="10" font-weight="700" fill="#44403c" text-anchor="middle">Size</text>
 
   <!-- Newly inserted Head Slot Idx 62 -->
   <g class="dins">
-    <rect x="394" y="160" width="312" height="44" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
-    <text x="434" y="186" class="mono" font-size="11" font-weight="700" fill="#1e3a8a" text-anchor="middle">62</text>
-    <text x="556" y="179" class="mono" font-size="10" font-weight="700" fill="#1e3a8a" text-anchor="middle">authorization: Bearer ...</text>
-    <text x="556" y="195" class="mono" font-size="10" fill="#2563eb" text-anchor="middle">HEAD (Inserted -&gt; Req 2 = 0xBE)</text>
-    <text x="676" y="186" class="mono" font-size="10" font-weight="700" fill="#1e3a8a" text-anchor="middle">109B</text>
+    <rect x="394" y="160" width="312" height="44" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
+    <text x="434" y="186" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">62</text>
+    <text x="556" y="179" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">authorization: Bearer ...</text>
+    <text x="556" y="195" class="mono" font-size="10" fill="#0f766e" text-anchor="middle">HEAD (Inserted -&gt; Req 2 = 0xBE)</text>
+    <text x="676" y="186" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">109B</text>
   </g>
 
-  <rect x="394" y="212" width="312" height="40" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
-  <text x="434" y="236" class="mono" font-size="11" font-weight="700" fill="#334155" text-anchor="middle">63</text>
-  <text x="556" y="236" class="mono" font-size="10" fill="#334155" text-anchor="middle">user-agent: Mozilla/5.0 ...</text>
-  <text x="676" y="236" class="mono" font-size="10" fill="#475569" text-anchor="middle">96B</text>
+  <rect x="394" y="212" width="312" height="40" rx="6" fill="#faf8f5" stroke="#d6d0c4"/>
+  <text x="434" y="236" class="mono" font-size="11" font-weight="700" fill="#44403c" text-anchor="middle">63</text>
+  <text x="556" y="236" class="mono" font-size="10" fill="#44403c" text-anchor="middle">user-agent: Mozilla/5.0 ...</text>
+  <text x="676" y="236" class="mono" font-size="10" fill="#44403c" text-anchor="middle">96B</text>
 
-  <rect x="394" y="260" width="312" height="40" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
-  <text x="434" y="284" class="mono" font-size="11" font-weight="700" fill="#334155" text-anchor="middle">64</text>
-  <text x="556" y="284" class="mono" font-size="10" fill="#334155" text-anchor="middle">accept-encoding: br, gzip</text>
-  <text x="676" y="284" class="mono" font-size="10" fill="#475569" text-anchor="middle">55B</text>
+  <rect x="394" y="260" width="312" height="40" rx="6" fill="#faf8f5" stroke="#d6d0c4"/>
+  <text x="434" y="284" class="mono" font-size="11" font-weight="700" fill="#44403c" text-anchor="middle">64</text>
+  <text x="556" y="284" class="mono" font-size="10" fill="#44403c" text-anchor="middle">accept-encoding: br, gzip</text>
+  <text x="676" y="284" class="mono" font-size="10" fill="#44403c" text-anchor="middle">55B</text>
 
   <!-- Tail Eviction Slot -->
   <g class="devict">
-    <rect x="394" y="308" width="312" height="44" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="1.5" stroke-dasharray="4 3"/>
+    <rect x="394" y="308" width="312" height="44" rx="6" fill="#fffbeb" stroke="#b45309" stroke-width="1.5" stroke-dasharray="4 3"/>
     <text x="434" y="334" class="mono" font-size="11" font-weight="700" fill="#92400e" text-anchor="middle">65</text>
     <text x="556" y="327" class="mono" font-size="10" fill="#92400e" text-anchor="middle">x-trace-id: 9f8a21... (OLDEST)</text>
     <text x="556" y="343" class="mono" font-size="10" font-weight="700" fill="#b45309" text-anchor="middle">TAIL -&gt; Evicted FIFO when full</text>
     <text x="676" y="334" class="mono" font-size="10" fill="#92400e" text-anchor="middle">82B</text>
   </g>
 
-  <rect x="394" y="366" width="312" height="144" rx="7" fill="#fff1f2" stroke="#fda4af"/>
-  <text x="408" y="388" class="mono" font-size="10.5" font-weight="700" fill="#9f1239">RFC 7541 Entry Overhead = +32B</text>
-  <text x="408" y="408" class="mono" font-size="10" fill="#be123c">entry_size = len(name) + len(val) + 32</text>
-  <text x="408" y="430" class="sans" font-size="10" fill="#9f1239">New entries prepend at Index 62, shifting</text>
-  <text x="408" y="446" class="sans" font-size="10" fill="#9f1239">existing entries +1; oldest entries evict</text>
-  <text x="408" y="462" class="sans" font-size="10" fill="#9f1239">from tail before insertion.</text>
-  <text x="408" y="490" class="mono" font-size="10" font-weight="700" fill="#9f1239">Requires strict TCP in-order delivery!</text>
+  <rect x="394" y="366" width="312" height="144" rx="7" fill="#fef2f2" stroke="#fda4af"/>
+  <text x="408" y="388" class="mono" font-size="10.5" font-weight="700" fill="#991b1b">RFC 7541 Entry Overhead = +32B</text>
+  <text x="408" y="408" class="mono" font-size="10" fill="#991b1b">entry_size = len(name) + len(val) + 32</text>
+  <text x="408" y="430" class="sans" font-size="10" fill="#991b1b">New entries prepend at Index 62, shifting</text>
+  <text x="408" y="446" class="sans" font-size="10" fill="#991b1b">existing entries +1; oldest entries evict</text>
+  <text x="408" y="462" class="sans" font-size="10" fill="#991b1b">from tail before insertion.</text>
+  <text x="408" y="490" class="mono" font-size="10" font-weight="700" fill="#991b1b">Requires strict TCP in-order delivery!</text>
 
   <!-- RIGHT PANEL: 4-STEP TRACE -->
-  <rect x="740" y="74" width="356" height="454" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <text x="758" y="98" class="sans" font-size="14" font-weight="700" fill="#0f172a">4. Wire Encoding Trace (12s Loop)</text>
+  <rect x="740" y="74" width="356" height="454" rx="10" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <text x="758" y="98" class="sans" font-size="14" font-weight="700" fill="#1c1917">4. Wire Encoding Trace (12s Loop)</text>
 
-  <rect x="758" y="116" width="320" height="90" rx="8" fill="#ecfdf5" class="hs1"/>
+  <rect x="758" y="116" width="320" height="90" rx="8" fill="#f0fdf9" class="hs1"/>
   <text x="772" y="138" class="mono" font-size="11" font-weight="700" fill="#065f46">Step 1: Static Index Hit</text>
-  <text x="772" y="158" class="mono" font-size="10" fill="#047857">:method: GET -&gt; Index 2</text>
-  <text x="772" y="176" class="mono" font-size="10" font-weight="700" fill="#059669">Wire: [0x82] (1 byte vs 12 bytes)</text>
+  <text x="772" y="158" class="mono" font-size="10" fill="#065f46">:method: GET -&gt; Index 2</text>
+  <text x="772" y="176" class="mono" font-size="10" font-weight="700" fill="#0f766e">Wire: [0x82] (1 byte vs 12 bytes)</text>
   <text x="772" y="194" class="sans" font-size="10" fill="#065f46">Prefix bit 1xxxxxxx = Indexed Field.</text>
 
-  <rect x="758" y="216" width="320" height="94" rx="8" fill="#f5f3ff" class="hs2"/>
-  <text x="772" y="238" class="mono" font-size="11" font-weight="700" fill="#5b21b6">Step 2: Literal + Huffman + Insert</text>
-  <text x="772" y="258" class="mono" font-size="10" fill="#4c1d95">authorization: Bearer ...</text>
-  <text x="772" y="276" class="mono" font-size="10" font-weight="700" fill="#6d28d9">Wire: 0x40 + Huffman (~44B vs 78B)</text>
-  <text x="772" y="294" class="sans" font-size="10" fill="#5b21b6">Inserts at Dynamic Index 62 (01xxxxxx).</text>
+  <rect x="758" y="216" width="320" height="94" rx="8" fill="#f5f1e8" class="hs2"/>
+  <text x="772" y="238" class="mono" font-size="11" font-weight="700" fill="#065f46">Step 2: Literal + Huffman + Insert</text>
+  <text x="772" y="258" class="mono" font-size="10" fill="#065f46">authorization: Bearer ...</text>
+  <text x="772" y="276" class="mono" font-size="10" font-weight="700" fill="#065f46">Wire: 0x40 + Huffman (~44B vs 78B)</text>
+  <text x="772" y="294" class="sans" font-size="10" fill="#065f46">Inserts at Dynamic Index 62 (01xxxxxx).</text>
 
-  <rect x="758" y="320" width="320" height="90" rx="8" fill="#eff6ff" class="hs3"/>
-  <text x="772" y="342" class="mono" font-size="11" font-weight="700" fill="#1e3a8a">Step 3: Req 2 Dynamic Table Hit</text>
-  <text x="772" y="362" class="mono" font-size="10" fill="#1e40af">Repeats authorization: Bearer ...</text>
-  <text x="772" y="380" class="mono" font-size="10" font-weight="700" fill="#2563eb">Wire: [0xBE] (1 byte = 0x80 | 62!)</text>
-  <text x="772" y="398" class="sans" font-size="10" fill="#1e3a8a">98% header compression on repeat RPCs.</text>
+  <rect x="758" y="320" width="320" height="90" rx="8" fill="#f0fdf9" class="hs3"/>
+  <text x="772" y="342" class="mono" font-size="11" font-weight="700" fill="#065f46">Step 3: Req 2 Dynamic Table Hit</text>
+  <text x="772" y="362" class="mono" font-size="10" fill="#065f46">Repeats authorization: Bearer ...</text>
+  <text x="772" y="380" class="mono" font-size="10" font-weight="700" fill="#0f766e">Wire: [0xBE] (1 byte = 0x80 | 62!)</text>
+  <text x="772" y="398" class="sans" font-size="10" fill="#065f46">98% header compression on repeat RPCs.</text>
 
   <rect x="758" y="420" width="320" height="90" rx="8" fill="#fffbeb" class="hs4"/>
   <text x="772" y="442" class="mono" font-size="11" font-weight="700" fill="#92400e">Step 4: FIFO Ring Eviction</text>
-  <text x="772" y="462" class="mono" font-size="10" fill="#78350f">If total + new &gt; 4096B:</text>
+  <text x="772" y="462" class="mono" font-size="10" fill="#92400e">If total + new &gt; 4096B:</text>
   <text x="772" y="480" class="mono" font-size="10" font-weight="700" fill="#b45309">Evict tail (Idx 65) before push</text>
   <text x="772" y="498" class="sans" font-size="10" fill="#92400e">Prevents unbounded memory DoS.</text>
 
   <!-- FOOTER -->
-  <rect x="24" y="542" width="1072" height="44" rx="8" fill="#eff6ff" stroke="#93c5fd"/>
-  <text x="42" y="569" class="sans" font-size="11.5" font-weight="600" fill="#1e3a8a">Takeaway: HPACK shrinks HTTP/2 headers by 85–90% safely via Static/Dynamic tables and Canonical Huffman, assuming TCP's ordered byte stream.</text>
+  <rect x="24" y="542" width="1072" height="44" rx="8" fill="#f0fdf9" stroke="#99f6e4"/>
+  <text x="42" y="569" class="sans" font-size="11.5" font-weight="600" fill="#065f46">Takeaway: HPACK shrinks HTTP/2 headers by 85–90% safely via Static/Dynamic tables and Canonical Huffman, assuming TCP's ordered byte stream.</text>
 </svg>

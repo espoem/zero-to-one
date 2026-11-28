@@ -3,10 +3,10 @@
   <desc id="desc">Animated step-by-step visualization of list virtualisation showing scrollTop advancing across 10,000 logical rows, computing startIndex and endIndex with overscan k=2, translating the mounted window inside a full-height spacer container, and recycling a fixed pool of 10 DOM nodes.</desc>
   <defs>
     <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <style><![CDATA[
       .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
@@ -54,213 +54,213 @@
   </defs>
 
   <!-- Canvas -->
-  <rect x="0" y="0" width="1200" height="700" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1200" height="700" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1200" height="62" rx="12" fill="#0f172a"/>
-  <rect x="0" y="46" width="1200" height="16" fill="#0f172a"/>
-  <text x="24" y="28" class="sans" font-size="18" font-weight="700" fill="#f8fafc">List Virtualisation: VISIBLE-RANGE &amp; Fixed DOM Node Pool Recycling</text>
-  <text x="24" y="49" class="sans" font-size="12" fill="#94a3b8">Constant O(viewport / h + 2k) Mounted DOM Nodes Over n = 10,000 Rows via Spacer Height &amp; translateY(startIndex * h)</text>
+  <line x1="24" y1="64" x2="1176" y2="64" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="28" class="sans" font-size="18" font-weight="700" fill="#1c1917" font-family="Georgia, 'Times New Roman', serif">List Virtualisation: VISIBLE-RANGE &amp; Fixed DOM Node Pool Recycling</text>
+  <text x="24" y="49" class="sans" font-size="12" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">Constant O(viewport / h + 2k) Mounted DOM Nodes Over n = 10,000 Rows via Spacer Height &amp; translateY(startIndex * h)</text>
 
   <!-- LEFT PANEL: Logical Spacer Track (n = 10,000 rows) -->
-  <rect x="24" y="78" width="520" height="534" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
-  <rect x="24" y="78" width="520" height="36" rx="10" fill="#f1f5f9"/>
-  <rect x="24" y="104" width="520" height="10" fill="#f1f5f9"/>
-  <text x="40" y="101" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">1. Logical Spacer Track (n = 10,000, h = 40px)</text>
-  <text x="528" y="101" class="mono" font-size="11" fill="#2563eb" text-anchor="end">height = 400,000px</text>
+  <rect x="24" y="78" width="520" height="534" rx="10" fill="#ffffff" stroke="#d6d0c4"/>
+  <rect x="24" y="78" width="520" height="36" rx="10" fill="#f5f1e8"/>
+  <rect x="24" y="104" width="520" height="10" fill="#f5f1e8"/>
+  <text x="40" y="101" class="sans" font-size="13.5" font-weight="700" fill="#1c1917">1. Logical Spacer Track (n = 10,000, h = 40px)</text>
+  <text x="528" y="101" class="mono" font-size="11" fill="#0f766e" text-anchor="end">height = 400,000px</text>
 
   <!-- Track background -->
-  <rect x="44" y="128" width="440" height="464" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
-  <text x="60" y="150" class="mono" font-size="11" fill="#64748b">Unmounted virtual rows above / below window (0 DOM nodes)</text>
+  <rect x="44" y="128" width="440" height="464" rx="8" fill="#faf8f5" stroke="#d6d0c4"/>
+  <text x="60" y="150" class="mono" font-size="11" fill="#57534e">Unmounted virtual rows above / below window (0 DOM nodes)</text>
 
   <!-- Logical row strips -->
   <g transform="translate(60, 166)">
-    <rect x="0" y="0" width="386" height="24" rx="4" fill="#f1f5f9" stroke="#e2e8f0"/>
-    <text x="12" y="16" class="mono" font-size="10.5" fill="#64748b">Rows 0..2   (y = 0..119px)</text>
+    <rect x="0" y="0" width="386" height="24" rx="4" fill="#f5f1e8" stroke="#e7e2d8"/>
+    <text x="12" y="16" class="mono" font-size="10.5" fill="#57534e">Rows 0..2   (y = 0..119px)</text>
 
-    <rect x="0" y="28" width="386" height="24" rx="4" fill="#f1f5f9" stroke="#e2e8f0"/>
-    <text x="12" y="44" class="mono" font-size="10.5" fill="#64748b">Rows 3..4   (y = 120..199px)</text>
+    <rect x="0" y="28" width="386" height="24" rx="4" fill="#f5f1e8" stroke="#e7e2d8"/>
+    <text x="12" y="44" class="mono" font-size="10.5" fill="#57534e">Rows 3..4   (y = 120..199px)</text>
 
-    <rect x="0" y="56" width="386" height="24" rx="4" fill="#f1f5f9" stroke="#e2e8f0"/>
-    <text x="12" y="72" class="mono" font-size="10.5" fill="#64748b">Rows 5..9   (y = 200..399px)</text>
+    <rect x="0" y="56" width="386" height="24" rx="4" fill="#f5f1e8" stroke="#e7e2d8"/>
+    <text x="12" y="72" class="mono" font-size="10.5" fill="#57534e">Rows 5..9   (y = 200..399px)</text>
 
-    <rect x="0" y="84" width="386" height="24" rx="4" fill="#f1f5f9" stroke="#e2e8f0"/>
-    <text x="12" y="100" class="mono" font-size="10.5" fill="#64748b">Rows 10..11 (y = 400..479px)</text>
+    <rect x="0" y="84" width="386" height="24" rx="4" fill="#f5f1e8" stroke="#e7e2d8"/>
+    <text x="12" y="100" class="mono" font-size="10.5" fill="#57534e">Rows 10..11 (y = 400..479px)</text>
 
-    <rect x="0" y="112" width="386" height="24" rx="4" fill="#f1f5f9" stroke="#e2e8f0"/>
-    <text x="12" y="128" class="mono" font-size="10.5" fill="#64748b">Rows 12..17 (y = 480..719px)</text>
+    <rect x="0" y="112" width="386" height="24" rx="4" fill="#f5f1e8" stroke="#e7e2d8"/>
+    <text x="12" y="128" class="mono" font-size="10.5" fill="#57534e">Rows 12..17 (y = 480..719px)</text>
 
-    <rect x="0" y="140" width="386" height="24" rx="4" fill="#f1f5f9" stroke="#e2e8f0"/>
-    <text x="12" y="156" class="mono" font-size="10.5" fill="#64748b">Rows 18..19 (y = 720..799px)</text>
+    <rect x="0" y="140" width="386" height="24" rx="4" fill="#f5f1e8" stroke="#e7e2d8"/>
+    <text x="12" y="156" class="mono" font-size="10.5" fill="#57534e">Rows 18..19 (y = 720..799px)</text>
 
-    <rect x="0" y="168" width="386" height="24" rx="4" fill="#f1f5f9" stroke="#e2e8f0"/>
-    <text x="12" y="184" class="mono" font-size="10.5" fill="#64748b">Rows 20..25 (y = 800..1,039px)</text>
+    <rect x="0" y="168" width="386" height="24" rx="4" fill="#f5f1e8" stroke="#e7e2d8"/>
+    <text x="12" y="184" class="mono" font-size="10.5" fill="#57534e">Rows 20..25 (y = 800..1,039px)</text>
 
-    <rect x="0" y="196" width="386" height="24" rx="4" fill="#f1f5f9" stroke="#e2e8f0"/>
-    <text x="12" y="212" class="mono" font-size="10.5" fill="#64748b">Rows 26..27 (y = 1,040..1,119px)</text>
+    <rect x="0" y="196" width="386" height="24" rx="4" fill="#f5f1e8" stroke="#e7e2d8"/>
+    <text x="12" y="212" class="mono" font-size="10.5" fill="#57534e">Rows 26..27 (y = 1,040..1,119px)</text>
 
-    <rect x="0" y="224" width="386" height="24" rx="4" fill="#f1f5f9" stroke="#e2e8f0"/>
-    <text x="12" y="240" class="mono" font-size="10.5" fill="#64748b">Rows 28..9,999 (398,880px spacer gap)</text>
+    <rect x="0" y="224" width="386" height="24" rx="4" fill="#f5f1e8" stroke="#e7e2d8"/>
+    <text x="12" y="240" class="mono" font-size="10.5" fill="#57534e">Rows 28..9,999 (398,880px spacer gap)</text>
 
     <!-- Animated Sliding Window Overlay (Overscan + Viewport) -->
     <g class="vp-box">
       <!-- Top overscan k=2 -->
-      <rect x="-4" y="-2" width="394" height="28" rx="5" fill="#fffbeb" fill-opacity="0.88" stroke="#d97706" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <rect x="-4" y="-2" width="394" height="28" rx="5" fill="#fffbeb" fill-opacity="0.88" stroke="#b45309" stroke-width="1.5" stroke-dasharray="4 3"/>
       <text x="380" y="16" class="mono" font-size="10" font-weight="700" fill="#b45309" text-anchor="end">Overscan top (k=2)</text>
 
       <!-- Visible viewport -->
-      <rect x="-4" y="28" width="394" height="58" rx="6" fill="#ecfdf5" fill-opacity="0.88" stroke="#059669" stroke-width="2.5"/>
+      <rect x="-4" y="28" width="394" height="58" rx="6" fill="#f0fdf9" fill-opacity="0.88" stroke="#0f766e" stroke-width="2.5"/>
       <text x="12" y="52" class="sans" font-size="12" font-weight="700" fill="#065f46">VISIBLE VIEWPORT (240px = 6 rows)</text>
-      <text x="12" y="72" class="mono" font-size="10.5" fill="#047857">[first, last) = [floor(scrollTop/40), ceil((scrollTop+240)/40))</text>
+      <text x="12" y="72" class="mono" font-size="10.5" fill="#065f46">[first, last) = [floor(scrollTop/40), ceil((scrollTop+240)/40))</text>
 
       <!-- Bottom overscan k=2 -->
-      <rect x="-4" y="88" width="394" height="28" rx="5" fill="#fffbeb" fill-opacity="0.88" stroke="#d97706" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <rect x="-4" y="88" width="394" height="28" rx="5" fill="#fffbeb" fill-opacity="0.88" stroke="#b45309" stroke-width="1.5" stroke-dasharray="4 3"/>
       <text x="380" y="106" class="mono" font-size="10" font-weight="700" fill="#b45309" text-anchor="end">Overscan bottom (k=2)</text>
     </g>
   </g>
 
   <!-- Scrollbar Track -->
-  <rect x="498" y="128" width="22" height="464" rx="11" fill="#e2e8f0" stroke="#cbd5e1"/>
+  <rect x="498" y="128" width="22" height="464" rx="11" fill="#e7e2d8" stroke="#d6d0c4"/>
   <g class="sb-thumb">
-    <rect x="501" y="134" width="16" height="96" rx="8" fill="#2563eb"/>
+    <rect x="501" y="134" width="16" height="96" rx="8" fill="#0f766e"/>
   </g>
 
   <!-- RIGHT PANEL: Recycled DOM Node Pool + Live VISIBLE-RANGE Math -->
-  <rect x="564" y="78" width="612" height="534" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
-  <rect x="564" y="78" width="612" height="36" rx="10" fill="#f1f5f9"/>
-  <rect x="564" y="104" width="612" height="10" fill="#f1f5f9"/>
-  <text x="580" y="101" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">2. Fixed DOM Node Pool (Max 10 Mounted Nodes)</text>
-  <text x="1160" y="101" class="mono" font-size="11" fill="#059669" text-anchor="end">transform: translateY(start * h)</text>
+  <rect x="564" y="78" width="612" height="534" rx="10" fill="#ffffff" stroke="#d6d0c4"/>
+  <rect x="564" y="78" width="612" height="36" rx="10" fill="#f5f1e8"/>
+  <rect x="564" y="104" width="612" height="10" fill="#f5f1e8"/>
+  <text x="580" y="101" class="sans" font-size="13.5" font-weight="700" fill="#1c1917">2. Fixed DOM Node Pool (Max 10 Mounted Nodes)</text>
+  <text x="1160" y="101" class="mono" font-size="11" fill="#0f766e" text-anchor="end">transform: translateY(start * h)</text>
 
   <!-- DOM Pool Container -->
-  <rect x="584" y="128" width="572" height="320" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
-  <text x="600" y="150" class="sans" font-size="11.5" font-weight="700" fill="#475569">Mounted DOM Elements (&lt;div style="transform: translateY(...)"&gt;):</text>
+  <rect x="584" y="128" width="572" height="320" rx="8" fill="#faf8f5" stroke="#d6d0c4"/>
+  <text x="600" y="150" class="sans" font-size="11.5" font-weight="700" fill="#44403c">Mounted DOM Elements (&lt;div style="transform: translateY(...)"&gt;):</text>
 
   <!-- Phase 1 DOM Pool (start=0, end=8) -->
   <g class="s-1" transform="translate(600, 166)">
-    <rect x="0" y="0" width="260" height="44" rx="6" fill="#ecfdf5" stroke="#059669"/>
+    <rect x="0" y="0" width="260" height="44" rx="6" fill="#f0fdf9" stroke="#0f766e"/>
     <text x="12" y="20" class="mono" font-size="11.5" font-weight="700" fill="#065f46">DOM[0] -&gt; Row 0</text>
-    <text x="12" y="36" class="mono" font-size="10" fill="#047857">y = 0px (visible)</text>
+    <text x="12" y="36" class="mono" font-size="10" fill="#065f46">y = 0px (visible)</text>
 
-    <rect x="280" y="0" width="260" height="44" rx="6" fill="#ecfdf5" stroke="#059669"/>
+    <rect x="280" y="0" width="260" height="44" rx="6" fill="#f0fdf9" stroke="#0f766e"/>
     <text x="292" y="20" class="mono" font-size="11.5" font-weight="700" fill="#065f46">DOM[1..5] -&gt; Rows 1..5</text>
-    <text x="292" y="36" class="mono" font-size="10" fill="#047857">y = 40..200px (visible)</text>
+    <text x="292" y="36" class="mono" font-size="10" fill="#065f46">y = 40..200px (visible)</text>
 
-    <rect x="0" y="56" width="260" height="44" rx="6" fill="#fffbeb" stroke="#d97706"/>
+    <rect x="0" y="56" width="260" height="44" rx="6" fill="#fffbeb" stroke="#b45309"/>
     <text x="12" y="76" class="mono" font-size="11.5" font-weight="700" fill="#92400e">DOM[6] -&gt; Row 6</text>
     <text x="12" y="92" class="mono" font-size="10" fill="#b45309">y = 240px (overscan +1)</text>
 
-    <rect x="280" y="56" width="260" height="44" rx="6" fill="#fffbeb" stroke="#d97706"/>
+    <rect x="280" y="56" width="260" height="44" rx="6" fill="#fffbeb" stroke="#b45309"/>
     <text x="292" y="76" class="mono" font-size="11.5" font-weight="700" fill="#92400e">DOM[7] -&gt; Row 7</text>
     <text x="292" y="92" class="mono" font-size="10" fill="#b45309">y = 280px (overscan +2)</text>
 
-    <rect x="0" y="112" width="540" height="44" rx="6" fill="#f1f5f9" stroke="#cbd5e1" stroke-dasharray="4 3"/>
-    <text x="270" y="138" class="mono" font-size="11" fill="#64748b" text-anchor="middle">DOM[8..9] unused at top edge (clamped by max(0, first - k)) · 9,992 rows unmounted</text>
+    <rect x="0" y="112" width="540" height="44" rx="6" fill="#f5f1e8" stroke="#d6d0c4" stroke-dasharray="4 3"/>
+    <text x="270" y="138" class="mono" font-size="11" fill="#57534e" text-anchor="middle">DOM[8..9] unused at top edge (clamped by max(0, first - k)) · 9,992 rows unmounted</text>
 
-    <rect x="0" y="172" width="540" height="90" rx="6" fill="#eff6ff" stroke="#93c5fd"/>
-    <text x="14" y="196" class="mono" font-size="12" font-weight="700" fill="#1d4ed8">scrollTop = 0px -&gt; VISIBLE-RANGE(0, 240, 40, 10000, 2)</text>
-    <text x="14" y="218" class="mono" font-size="11.5" fill="#1e3a8a">first = floor(0 / 40) = 0  |  last = ceil(240 / 40) = 6</text>
-    <text x="14" y="240" class="mono" font-size="11.5" fill="#059669">start = max(0, 0-2) = 0    |  end = min(10000, 6+2) = 8  (8 nodes)</text>
+    <rect x="0" y="172" width="540" height="90" rx="6" fill="#f0fdf9" stroke="#99f6e4"/>
+    <text x="14" y="196" class="mono" font-size="12" font-weight="700" fill="#065f46">scrollTop = 0px -&gt; VISIBLE-RANGE(0, 240, 40, 10000, 2)</text>
+    <text x="14" y="218" class="mono" font-size="11.5" fill="#065f46">first = floor(0 / 40) = 0  |  last = ceil(240 / 40) = 6</text>
+    <text x="14" y="240" class="mono" font-size="11.5" fill="#0f766e">start = max(0, 0-2) = 0    |  end = min(10000, 6+2) = 8  (8 nodes)</text>
   </g>
 
   <!-- Phase 2 DOM Pool (start=3, end=13) -->
   <g class="s-2" transform="translate(600, 166)">
-    <rect x="0" y="0" width="260" height="44" rx="6" fill="#fffbeb" stroke="#d97706"/>
+    <rect x="0" y="0" width="260" height="44" rx="6" fill="#fffbeb" stroke="#b45309"/>
     <text x="12" y="20" class="mono" font-size="11.5" font-weight="700" fill="#92400e">DOM[0..1] -&gt; Rows 3..4</text>
     <text x="12" y="36" class="mono" font-size="10" fill="#b45309">y = 120..160px (top overscan)</text>
 
-    <rect x="280" y="0" width="260" height="44" rx="6" fill="#ecfdf5" stroke="#059669"/>
+    <rect x="280" y="0" width="260" height="44" rx="6" fill="#f0fdf9" stroke="#0f766e"/>
     <text x="292" y="20" class="mono" font-size="11.5" font-weight="700" fill="#065f46">DOM[2..7] -&gt; Rows 5..10</text>
-    <text x="292" y="36" class="mono" font-size="10" fill="#047857">y = 200..400px (visible)</text>
+    <text x="292" y="36" class="mono" font-size="10" fill="#065f46">y = 200..400px (visible)</text>
 
-    <rect x="0" y="56" width="260" height="44" rx="6" fill="#fffbeb" stroke="#d97706"/>
+    <rect x="0" y="56" width="260" height="44" rx="6" fill="#fffbeb" stroke="#b45309"/>
     <text x="12" y="76" class="mono" font-size="11.5" font-weight="700" fill="#92400e">DOM[8] -&gt; Row 11</text>
     <text x="12" y="92" class="mono" font-size="10" fill="#b45309">y = 440px (bottom overscan)</text>
 
-    <rect x="280" y="56" width="260" height="44" rx="6" fill="#fffbeb" stroke="#d97706"/>
+    <rect x="280" y="56" width="260" height="44" rx="6" fill="#fffbeb" stroke="#b45309"/>
     <text x="292" y="76" class="mono" font-size="11.5" font-weight="700" fill="#92400e">DOM[9] -&gt; Row 12</text>
     <text x="292" y="92" class="mono" font-size="10" fill="#b45309">y = 480px (bottom overscan)</text>
 
-    <rect x="0" y="112" width="540" height="44" rx="6" fill="#f5f3ff" stroke="#c4b5fd"/>
-    <text x="270" y="138" class="mono" font-size="11" font-weight="700" fill="#5b21b6" text-anchor="middle">Wrapper translateY(3 * 40px = 120px) · Rows 0..2 unmounted!</text>
+    <rect x="0" y="112" width="540" height="44" rx="6" fill="#f5f1e8" stroke="#d6d0c4"/>
+    <text x="270" y="138" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">Wrapper translateY(3 * 40px = 120px) · Rows 0..2 unmounted!</text>
 
-    <rect x="0" y="172" width="540" height="90" rx="6" fill="#eff6ff" stroke="#93c5fd"/>
-    <text x="14" y="196" class="mono" font-size="12" font-weight="700" fill="#1d4ed8">scrollTop = 200px -&gt; VISIBLE-RANGE(200, 240, 40, 10000, 2)</text>
-    <text x="14" y="218" class="mono" font-size="11.5" fill="#1e3a8a">first = floor(200 / 40) = 5  |  last = ceil(440 / 40) = 11</text>
-    <text x="14" y="240" class="mono" font-size="11.5" fill="#059669">start = 5 - 2 = 3            |  end = 11 + 2 = 13  (10 nodes)</text>
+    <rect x="0" y="172" width="540" height="90" rx="6" fill="#f0fdf9" stroke="#99f6e4"/>
+    <text x="14" y="196" class="mono" font-size="12" font-weight="700" fill="#065f46">scrollTop = 200px -&gt; VISIBLE-RANGE(200, 240, 40, 10000, 2)</text>
+    <text x="14" y="218" class="mono" font-size="11.5" fill="#065f46">first = floor(200 / 40) = 5  |  last = ceil(440 / 40) = 11</text>
+    <text x="14" y="240" class="mono" font-size="11.5" fill="#0f766e">start = 5 - 2 = 3            |  end = 11 + 2 = 13  (10 nodes)</text>
   </g>
 
   <!-- Phase 3 DOM Pool (start=10, end=20) -->
   <g class="s-3" transform="translate(600, 166)">
-    <rect x="0" y="0" width="260" height="44" rx="6" fill="#fffbeb" stroke="#d97706"/>
+    <rect x="0" y="0" width="260" height="44" rx="6" fill="#fffbeb" stroke="#b45309"/>
     <text x="12" y="20" class="mono" font-size="11.5" font-weight="700" fill="#92400e">DOM[0..1] -&gt; Rows 10..11</text>
     <text x="12" y="36" class="mono" font-size="10" fill="#b45309">y = 400..440px (top overscan)</text>
 
-    <rect x="280" y="0" width="260" height="44" rx="6" fill="#ecfdf5" stroke="#059669"/>
+    <rect x="280" y="0" width="260" height="44" rx="6" fill="#f0fdf9" stroke="#0f766e"/>
     <text x="292" y="20" class="mono" font-size="11.5" font-weight="700" fill="#065f46">DOM[2..7] -&gt; Rows 12..17</text>
-    <text x="292" y="36" class="mono" font-size="10" fill="#047857">y = 480..680px (visible)</text>
+    <text x="292" y="36" class="mono" font-size="10" fill="#065f46">y = 480..680px (visible)</text>
 
-    <rect x="0" y="56" width="260" height="44" rx="6" fill="#fffbeb" stroke="#d97706"/>
+    <rect x="0" y="56" width="260" height="44" rx="6" fill="#fffbeb" stroke="#b45309"/>
     <text x="12" y="76" class="mono" font-size="11.5" font-weight="700" fill="#92400e">DOM[8] -&gt; Row 18</text>
     <text x="12" y="92" class="mono" font-size="10" fill="#b45309">y = 720px (bottom overscan)</text>
 
-    <rect x="280" y="56" width="260" height="44" rx="6" fill="#fffbeb" stroke="#d97706"/>
+    <rect x="280" y="56" width="260" height="44" rx="6" fill="#fffbeb" stroke="#b45309"/>
     <text x="292" y="76" class="mono" font-size="11.5" font-weight="700" fill="#92400e">DOM[9] -&gt; Row 19</text>
     <text x="292" y="92" class="mono" font-size="10" fill="#b45309">y = 760px (bottom overscan)</text>
 
-    <rect x="0" y="112" width="540" height="44" rx="6" fill="#f5f3ff" stroke="#c4b5fd"/>
-    <text x="270" y="138" class="mono" font-size="11" font-weight="700" fill="#5b21b6" text-anchor="middle">Same 10 DOM nodes recycled! Wrapper translateY(10 * 40px = 400px)</text>
+    <rect x="0" y="112" width="540" height="44" rx="6" fill="#f5f1e8" stroke="#d6d0c4"/>
+    <text x="270" y="138" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">Same 10 DOM nodes recycled! Wrapper translateY(10 * 40px = 400px)</text>
 
-    <rect x="0" y="172" width="540" height="90" rx="6" fill="#eff6ff" stroke="#93c5fd"/>
-    <text x="14" y="196" class="mono" font-size="12" font-weight="700" fill="#1d4ed8">scrollTop = 480px -&gt; VISIBLE-RANGE(480, 240, 40, 10000, 2)</text>
-    <text x="14" y="218" class="mono" font-size="11.5" fill="#1e3a8a">first = floor(480 / 40) = 12 |  last = ceil(720 / 40) = 18</text>
-    <text x="14" y="240" class="mono" font-size="11.5" fill="#059669">start = 12 - 2 = 10          |  end = 18 + 2 = 20  (10 nodes)</text>
+    <rect x="0" y="172" width="540" height="90" rx="6" fill="#f0fdf9" stroke="#99f6e4"/>
+    <text x="14" y="196" class="mono" font-size="12" font-weight="700" fill="#065f46">scrollTop = 480px -&gt; VISIBLE-RANGE(480, 240, 40, 10000, 2)</text>
+    <text x="14" y="218" class="mono" font-size="11.5" fill="#065f46">first = floor(480 / 40) = 12 |  last = ceil(720 / 40) = 18</text>
+    <text x="14" y="240" class="mono" font-size="11.5" fill="#0f766e">start = 12 - 2 = 10          |  end = 18 + 2 = 20  (10 nodes)</text>
   </g>
 
   <!-- Phase 4 DOM Pool (start=18, end=28) -->
   <g class="s-4" transform="translate(600, 166)">
-    <rect x="0" y="0" width="260" height="44" rx="6" fill="#fffbeb" stroke="#d97706"/>
+    <rect x="0" y="0" width="260" height="44" rx="6" fill="#fffbeb" stroke="#b45309"/>
     <text x="12" y="20" class="mono" font-size="11.5" font-weight="700" fill="#92400e">DOM[0..1] -&gt; Rows 18..19</text>
     <text x="12" y="36" class="mono" font-size="10" fill="#b45309">y = 720..760px (top overscan)</text>
 
-    <rect x="280" y="0" width="260" height="44" rx="6" fill="#ecfdf5" stroke="#059669"/>
+    <rect x="280" y="0" width="260" height="44" rx="6" fill="#f0fdf9" stroke="#0f766e"/>
     <text x="292" y="20" class="mono" font-size="11.5" font-weight="700" fill="#065f46">DOM[2..7] -&gt; Rows 20..25</text>
-    <text x="292" y="36" class="mono" font-size="10" fill="#047857">y = 800..1,000px (visible)</text>
+    <text x="292" y="36" class="mono" font-size="10" fill="#065f46">y = 800..1,000px (visible)</text>
 
-    <rect x="0" y="56" width="260" height="44" rx="6" fill="#fffbeb" stroke="#d97706"/>
+    <rect x="0" y="56" width="260" height="44" rx="6" fill="#fffbeb" stroke="#b45309"/>
     <text x="12" y="76" class="mono" font-size="11.5" font-weight="700" fill="#92400e">DOM[8] -&gt; Row 26</text>
     <text x="12" y="92" class="mono" font-size="10" fill="#b45309">y = 1,040px (bottom overscan)</text>
 
-    <rect x="280" y="56" width="260" height="44" rx="6" fill="#fffbeb" stroke="#d97706"/>
+    <rect x="280" y="56" width="260" height="44" rx="6" fill="#fffbeb" stroke="#b45309"/>
     <text x="292" y="76" class="mono" font-size="11.5" font-weight="700" fill="#92400e">DOM[9] -&gt; Row 27</text>
     <text x="292" y="92" class="mono" font-size="10" fill="#b45309">y = 1,080px (bottom overscan)</text>
 
-    <rect x="0" y="112" width="540" height="44" rx="6" fill="#f5f3ff" stroke="#c4b5fd"/>
-    <text x="270" y="138" class="mono" font-size="11" font-weight="700" fill="#5b21b6" text-anchor="middle">Wrapper translateY(18 * 40px = 720px) · Still only 10 DOM nodes!</text>
+    <rect x="0" y="112" width="540" height="44" rx="6" fill="#f5f1e8" stroke="#d6d0c4"/>
+    <text x="270" y="138" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">Wrapper translateY(18 * 40px = 720px) · Still only 10 DOM nodes!</text>
 
-    <rect x="0" y="172" width="540" height="90" rx="6" fill="#eff6ff" stroke="#93c5fd"/>
-    <text x="14" y="196" class="mono" font-size="12" font-weight="700" fill="#1d4ed8">scrollTop = 800px -&gt; VISIBLE-RANGE(800, 240, 40, 10000, 2)</text>
-    <text x="14" y="218" class="mono" font-size="11.5" fill="#1e3a8a">first = floor(800 / 40) = 20 |  last = ceil(1040 / 40) = 26</text>
-    <text x="14" y="240" class="mono" font-size="11.5" fill="#059669">start = 20 - 2 = 18          |  end = 26 + 2 = 28  (10 nodes)</text>
+    <rect x="0" y="172" width="540" height="90" rx="6" fill="#f0fdf9" stroke="#99f6e4"/>
+    <text x="14" y="196" class="mono" font-size="12" font-weight="700" fill="#065f46">scrollTop = 800px -&gt; VISIBLE-RANGE(800, 240, 40, 10000, 2)</text>
+    <text x="14" y="218" class="mono" font-size="11.5" fill="#065f46">first = floor(800 / 40) = 20 |  last = ceil(1040 / 40) = 26</text>
+    <text x="14" y="240" class="mono" font-size="11.5" fill="#0f766e">start = 20 - 2 = 18          |  end = 26 + 2 = 28  (10 nodes)</text>
   </g>
 
   <!-- Invariant & Complexity Callout -->
-  <rect x="584" y="464" width="572" height="128" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
-  <text x="600" y="488" class="sans" font-size="12" font-weight="700" fill="#0f172a">Algorithm Invariants &amp; Production Notes:</text>
-  <text x="600" y="510" class="sans" font-size="11.5" fill="#334155">1. Coverage: every row intersecting [scrollTop, scrollTop + viewport) is inside [start, end).</text>
-  <text x="600" y="532" class="sans" font-size="11.5" fill="#334155">2. Constant Footprint: O(viewport / h + 2k) DOM nodes regardless of n (10 vs 10,000,000).</text>
-  <text x="600" y="554" class="sans" font-size="11.5" fill="#334155">3. Overscan k=2 prevents blank white flashes during fast wheel/touch momentum scrolling.</text>
-  <text x="600" y="576" class="sans" font-size="11" fill="#059669">4. Spacer div preserves scrollbar proportions; <tspan class="mono" font-size="10">content-visibility: auto</tspan> helps static lists.</text>
+  <rect x="584" y="464" width="572" height="128" rx="8" fill="#faf8f5" stroke="#d6d0c4"/>
+  <text x="600" y="488" class="sans" font-size="12" font-weight="700" fill="#1c1917">Algorithm Invariants &amp; Production Notes:</text>
+  <text x="600" y="510" class="sans" font-size="11.5" fill="#44403c">1. Coverage: every row intersecting [scrollTop, scrollTop + viewport) is inside [start, end).</text>
+  <text x="600" y="532" class="sans" font-size="11.5" fill="#44403c">2. Constant Footprint: O(viewport / h + 2k) DOM nodes regardless of n (10 vs 10,000,000).</text>
+  <text x="600" y="554" class="sans" font-size="11.5" fill="#44403c">3. Overscan k=2 prevents blank white flashes during fast wheel/touch momentum scrolling.</text>
+  <text x="600" y="576" class="sans" font-size="11" fill="#0f766e">4. Spacer div preserves scrollbar proportions; <tspan class="mono" font-size="10">content-visibility: auto</tspan> helps static lists.</text>
 
   <!-- Footer Legend -->
-  <rect x="24" y="628" width="1152" height="52" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
-  <rect x="40" y="644" width="14" height="14" rx="3" fill="#ecfdf5" stroke="#059669"/>
-  <text x="60" y="655" class="sans" font-size="11.5" fill="#334155">Visible Viewport Rows</text>
-  <rect x="206" y="644" width="14" height="14" rx="3" fill="#fffbeb" stroke="#d97706"/>
-  <text x="226" y="655" class="sans" font-size="11.5" fill="#334155">Overscan Buffer (k = 2)</text>
-  <rect x="386" y="644" width="14" height="14" rx="3" fill="#f5f3ff" stroke="#7c3aed"/>
-  <text x="406" y="655" class="sans" font-size="11.5" fill="#334155">GPU translateY(start * h)</text>
-  <rect x="576" y="644" width="14" height="14" rx="3" fill="#f1f5f9" stroke="#94a3b8"/>
-  <text x="596" y="655" class="sans" font-size="11.5" fill="#334155">Unmounted Spacer Gap</text>
-  <text x="1160" y="655" class="mono" font-size="11" font-weight="700" fill="#0f172a" text-anchor="end">O(viewport/h + 2k) DOM Nodes</text>
+  <rect x="24" y="628" width="1152" height="52" rx="8" fill="#ffffff" stroke="#d6d0c4"/>
+  <rect x="40" y="644" width="14" height="14" rx="3" fill="#f0fdf9" stroke="#0f766e"/>
+  <text x="60" y="655" class="sans" font-size="11.5" fill="#44403c">Visible Viewport Rows</text>
+  <rect x="206" y="644" width="14" height="14" rx="3" fill="#fffbeb" stroke="#b45309"/>
+  <text x="226" y="655" class="sans" font-size="11.5" fill="#44403c">Overscan Buffer (k = 2)</text>
+  <rect x="386" y="644" width="14" height="14" rx="3" fill="#f5f1e8" stroke="#0f766e"/>
+  <text x="406" y="655" class="sans" font-size="11.5" fill="#44403c">GPU translateY(start * h)</text>
+  <rect x="576" y="644" width="14" height="14" rx="3" fill="#f5f1e8" stroke="#d6d0c4"/>
+  <text x="596" y="655" class="sans" font-size="11.5" fill="#44403c">Unmounted Spacer Gap</text>
+  <text x="1160" y="655" class="mono" font-size="11" font-weight="700" fill="#1c1917" text-anchor="end">O(viewport/h + 2k) DOM Nodes</text>
 </svg>

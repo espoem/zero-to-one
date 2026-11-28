@@ -4,201 +4,201 @@
 
   <defs>
     <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#44403c"/>
     </marker>
     <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#dc2626"/>
     </marker>
     <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
   </defs>
 
   <!-- Background -->
-  <rect x="0" y="0" width="1180" height="840" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1180" height="840" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1180" height="58" rx="12" fill="#0f172a"/>
-  <rect x="0" y="42" width="1180" height="16" fill="#0f172a"/>
-  <text x="24" y="28" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#f8fafc">Rate Limiting Algorithms: Mechanics, Edge Cases &amp; Mathematical Invariants</text>
-  <text x="24" y="47" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#94a3b8">Token Bucket · Leaky Bucket · Fixed Window Counter &amp; 2× Boundary Flaw · Sliding Window Log · Sliding Window Counter · GCRA (TAT)</text>
+  <line x1="24" y1="60" x2="1156" y2="60" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="28" font-family="Georgia, 'Times New Roman', serif" font-size="18" font-weight="700" fill="#1c1917">Rate Limiting Algorithms: Mechanics, Edge Cases &amp; Mathematical Invariants</text>
+  <text x="24" y="47" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#57534e">Token Bucket · Leaky Bucket · Fixed Window Counter &amp; 2× Boundary Flaw · Sliding Window Log · Sliding Window Counter · GCRA (TAT)</text>
 
   <!-- ==================== ROW 1 ==================== -->
 
   <!-- CARD 1: TOKEN BUCKET -->
-  <rect x="20" y="74" width="560" height="236" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
-  <text x="34" y="98" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1e3a8a">1. Token Bucket (Capacity B, Refill Rate R)</text>
+  <rect x="20" y="74" width="560" height="236" rx="10" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="34" y="98" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#065f46">1. Token Bucket (Capacity B, Refill Rate R)</text>
 
   <!-- Diagram Box -->
-  <rect x="34" y="110" width="130" height="84" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1"/>
-  <text x="44" y="128" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e40af">Token Generator</text>
-  <text x="44" y="145" font-family="ui-monospace, monospace" font-size="10" fill="#0284c7">+R tokens / sec</text>
-  <text x="44" y="162" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#64748b">Lazy refill on arrival:</text>
-  <text x="44" y="176" font-family="ui-monospace, monospace" font-size="9" fill="#334155">Δt · R, capped at B</text>
+  <rect x="34" y="110" width="130" height="84" rx="6" fill="#ffffff" stroke="#99f6e4" stroke-width="1"/>
+  <text x="44" y="128" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">Token Generator</text>
+  <text x="44" y="145" font-family="ui-monospace, monospace" font-size="10" fill="#0f766e">+R tokens / sec</text>
+  <text x="44" y="162" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#57534e">Lazy refill on arrival:</text>
+  <text x="44" y="176" font-family="ui-monospace, monospace" font-size="9" fill="#44403c">Δt · R, capped at B</text>
 
-  <line x1="164" y1="152" x2="198" y2="152" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+  <line x1="164" y1="152" x2="198" y2="152" stroke="#0f766e" stroke-width="1.5" marker-end="url(#arr-blue)"/>
 
   <!-- Bucket Box -->
-  <rect x="202" y="110" width="140" height="84" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
-  <text x="212" y="128" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e3a8a">Bucket (Max Cap B)</text>
-  <circle cx="230" cy="150" r="10" fill="#3b82f6"/>
+  <rect x="202" y="110" width="140" height="84" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="212" y="128" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">Bucket (Max Cap B)</text>
+  <circle cx="230" cy="150" r="10" fill="#0f766e"/>
   <text x="230" y="154" font-family="ui-monospace, monospace" font-size="9" font-weight="700" fill="#ffffff" text-anchor="middle">T</text>
-  <circle cx="256" cy="150" r="10" fill="#3b82f6"/>
+  <circle cx="256" cy="150" r="10" fill="#0f766e"/>
   <text x="256" y="154" font-family="ui-monospace, monospace" font-size="9" font-weight="700" fill="#ffffff" text-anchor="middle">T</text>
-  <circle cx="282" cy="150" r="10" fill="#93c5fd"/>
-  <text x="282" y="154" font-family="ui-monospace, monospace" font-size="9" font-weight="700" fill="#1e3a8a" text-anchor="middle">T</text>
-  <text x="212" y="178" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#1e40af">Allows instantaneous burst</text>
+  <circle cx="282" cy="150" r="10" fill="#99f6e4"/>
+  <text x="282" y="154" font-family="ui-monospace, monospace" font-size="9" font-weight="700" fill="#065f46" text-anchor="middle">T</text>
+  <text x="212" y="178" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#065f46">Allows instantaneous burst</text>
 
-  <line x1="342" y1="152" x2="376" y2="152" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+  <line x1="342" y1="152" x2="376" y2="152" stroke="#0f766e" stroke-width="1.5" marker-end="url(#arr-blue)"/>
 
   <!-- Admission Decision Box -->
-  <rect x="380" y="110" width="186" height="84" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1"/>
-  <text x="390" y="128" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e40af">Arrival Evaluation</text>
+  <rect x="380" y="110" width="186" height="84" rx="6" fill="#ffffff" stroke="#99f6e4" stroke-width="1"/>
+  <text x="390" y="128" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">Arrival Evaluation</text>
   <text x="390" y="146" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#166534">tokens ≥ 1: ADMIT (tokens -= 1)</text>
   <text x="390" y="162" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#991b1b">tokens &lt; 1: REJECT (429)</text>
-  <text x="390" y="178" font-family="ui-monospace, monospace" font-size="9" fill="#64748b">retryAfter = (1 - tokens)/R</text>
+  <text x="390" y="178" font-family="ui-monospace, monospace" font-size="9" fill="#57534e">retryAfter = (1 - tokens)/R</text>
 
   <!-- Contract Box -->
-  <rect x="34" y="202" width="532" height="96" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
-  <text x="44" y="220" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#0f172a">Mathematical Invariant &amp; Footprint:</text>
-  <text x="44" y="238" font-family="ui-monospace, monospace" font-size="9.5" fill="#1e40af">Admissions over interval s ≤ B + R·s · Instantaneous burst capped at B</text>
-  <text x="44" y="256" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">State per key: { tokens: float64, last_refill_ms: int64 } (16 bytes) · O(1) time &amp; space</text>
-  <text x="44" y="274" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Standard: AWS API Gateway, Envoy Token Bucket, Stripe Request Rate Limiter</text>
-  <text x="44" y="289" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#059669">Tolerates client traffic bursts while bounding long-term average rate to R.</text>
+  <rect x="34" y="202" width="532" height="96" rx="6" fill="#ffffff" stroke="#d6d0c4" stroke-width="1"/>
+  <text x="44" y="220" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#1c1917">Mathematical Invariant &amp; Footprint:</text>
+  <text x="44" y="238" font-family="ui-monospace, monospace" font-size="9.5" fill="#065f46">Admissions over interval s ≤ B + R·s · Instantaneous burst capped at B</text>
+  <text x="44" y="256" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">State per key: { tokens: float64, last_refill_ms: int64 } (16 bytes) · O(1) time &amp; space</text>
+  <text x="44" y="274" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">Standard: AWS API Gateway, Envoy Token Bucket, Stripe Request Rate Limiter</text>
+  <text x="44" y="289" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#0f766e">Tolerates client traffic bursts while bounding long-term average rate to R.</text>
 
 
   <!-- CARD 2: LEAKY BUCKET -->
-  <rect x="600" y="74" width="560" height="236" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
-  <text x="614" y="98" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1e3a8a">2. Leaky Bucket (FIFO Queue, Strict Outflow Rate R)</text>
+  <rect x="600" y="74" width="560" height="236" rx="10" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="614" y="98" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#065f46">2. Leaky Bucket (FIFO Queue, Strict Outflow Rate R)</text>
 
   <!-- Diagram Box -->
-  <rect x="614" y="110" width="130" height="84" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1"/>
-  <text x="624" y="128" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e40af">Bursty Arrivals</text>
-  <text x="624" y="145" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Inflow: variable rate</text>
-  <text x="624" y="162" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#64748b">Enqueues if queue &lt; B</text>
+  <rect x="614" y="110" width="130" height="84" rx="6" fill="#ffffff" stroke="#99f6e4" stroke-width="1"/>
+  <text x="624" y="128" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">Bursty Arrivals</text>
+  <text x="624" y="145" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">Inflow: variable rate</text>
+  <text x="624" y="162" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#57534e">Enqueues if queue &lt; B</text>
   <text x="624" y="176" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#991b1b">Drops if queue is full</text>
 
-  <line x1="744" y1="152" x2="778" y2="152" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+  <line x1="744" y1="152" x2="778" y2="152" stroke="#0f766e" stroke-width="1.5" marker-end="url(#arr-blue)"/>
 
   <!-- FIFO Queue Box -->
-  <rect x="782" y="110" width="150" height="84" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
-  <text x="792" y="128" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e3a8a">FIFO Buffer (Cap B)</text>
-  <rect x="794" y="138" width="24" height="24" rx="3" fill="#ffffff" stroke="#3b82f6"/>
-  <text x="806" y="154" font-family="ui-monospace, monospace" font-size="9" fill="#1e3a8a" text-anchor="middle">q1</text>
-  <rect x="822" y="138" width="24" height="24" rx="3" fill="#ffffff" stroke="#3b82f6"/>
-  <text x="834" y="154" font-family="ui-monospace, monospace" font-size="9" fill="#1e3a8a" text-anchor="middle">q2</text>
-  <rect x="850" y="138" width="24" height="24" rx="3" fill="#ffffff" stroke="#3b82f6"/>
-  <text x="862" y="154" font-family="ui-monospace, monospace" font-size="9" fill="#1e3a8a" text-anchor="middle">q3</text>
-  <text x="792" y="178" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#1e40af">Buffers arrival spikes</text>
+  <rect x="782" y="110" width="150" height="84" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="792" y="128" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">FIFO Buffer (Cap B)</text>
+  <rect x="794" y="138" width="24" height="24" rx="3" fill="#ffffff" stroke="#0f766e"/>
+  <text x="806" y="154" font-family="ui-monospace, monospace" font-size="9" fill="#065f46" text-anchor="middle">q1</text>
+  <rect x="822" y="138" width="24" height="24" rx="3" fill="#ffffff" stroke="#0f766e"/>
+  <text x="834" y="154" font-family="ui-monospace, monospace" font-size="9" fill="#065f46" text-anchor="middle">q2</text>
+  <rect x="850" y="138" width="24" height="24" rx="3" fill="#ffffff" stroke="#0f766e"/>
+  <text x="862" y="154" font-family="ui-monospace, monospace" font-size="9" fill="#065f46" text-anchor="middle">q3</text>
+  <text x="792" y="178" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#065f46">Buffers arrival spikes</text>
 
-  <line x1="932" y1="152" x2="966" y2="152" stroke="#059669" stroke-width="1.5" marker-end="url(#arr-green)"/>
+  <line x1="932" y1="152" x2="966" y2="152" stroke="#0f766e" stroke-width="1.5" marker-end="url(#arr-green)"/>
 
   <!-- Smooth Outflow Box -->
-  <rect x="970" y="110" width="176" height="84" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1"/>
+  <rect x="970" y="110" width="176" height="84" rx="6" fill="#ffffff" stroke="#99f6e4" stroke-width="1"/>
   <text x="980" y="128" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">Strict Constant Outflow</text>
-  <text x="980" y="146" font-family="ui-monospace, monospace" font-size="9.5" fill="#059669">rate = R requests / s</text>
-  <text x="980" y="162" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Zero bursts transmitted</text>
-  <text x="980" y="178" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#64748b">Adds queueing delay to reqs</text>
+  <text x="980" y="146" font-family="ui-monospace, monospace" font-size="9.5" fill="#0f766e">rate = R requests / s</text>
+  <text x="980" y="162" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">Zero bursts transmitted</text>
+  <text x="980" y="178" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#57534e">Adds queueing delay to reqs</text>
 
   <!-- Contract Box -->
-  <rect x="614" y="202" width="532" height="96" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
-  <text x="624" y="220" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#0f172a">Mathematical Invariant &amp; Footprint:</text>
-  <text x="624" y="238" font-family="ui-monospace, monospace" font-size="9.5" fill="#1e40af">Outflow rate strictly ≤ R · Queue delay for arrival i = (queue_depth_i) / R</text>
-  <text x="624" y="256" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">State per key: { water_level: int, last_leak_ms: int64 } or FIFO queue · O(1) / O(B)</text>
-  <text x="624" y="274" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Standard: uber-go/ratelimit, network egress traffic shaping (policing vs shaping)</text>
-  <text x="624" y="289" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#d97706">Critical downside: Recent requests delayed behind stale queue backlog.</text>
+  <rect x="614" y="202" width="532" height="96" rx="6" fill="#ffffff" stroke="#d6d0c4" stroke-width="1"/>
+  <text x="624" y="220" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#1c1917">Mathematical Invariant &amp; Footprint:</text>
+  <text x="624" y="238" font-family="ui-monospace, monospace" font-size="9.5" fill="#065f46">Outflow rate strictly ≤ R · Queue delay for arrival i = (queue_depth_i) / R</text>
+  <text x="624" y="256" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">State per key: { water_level: int, last_leak_ms: int64 } or FIFO queue · O(1) / O(B)</text>
+  <text x="624" y="274" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">Standard: uber-go/ratelimit, network egress traffic shaping (policing vs shaping)</text>
+  <text x="624" y="289" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#b45309">Critical downside: Recent requests delayed behind stale queue backlog.</text>
 
 
   <!-- ==================== ROW 2 ==================== -->
 
   <!-- CARD 3: FIXED WINDOW COUNTER & 2X BURST FLAW -->
-  <rect x="20" y="322" width="560" height="236" rx="10" fill="#fff1f2" stroke="#f43f5e" stroke-width="1.5"/>
-  <text x="34" y="340" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#9f1239">3. Fixed Window Counter &amp; 2× Boundary Burst Flaw</text>
+  <rect x="20" y="322" width="560" height="236" rx="10" fill="#fef2f2" stroke="#f43f5e" stroke-width="1.5"/>
+  <text x="34" y="340" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#991b1b">3. Fixed Window Counter &amp; 2× Boundary Burst Flaw</text>
 
   <!-- Window Timeline Visual -->
-  <rect x="34" y="358" width="250" height="74" rx="6" fill="#ffffff" stroke="#fca5a5" stroke-width="1"/>
-  <text x="44" y="376" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#9f1239">Window 0 [00:00, 01:00) · Limit L=100</text>
-  <text x="44" y="394" font-family="ui-monospace, monospace" font-size="9.5" fill="#475569">t = 00:59.9s: 100 requests arrive</text>
-  <rect x="44" y="402" width="180" height="18" rx="3" fill="#fee2e2"/>
+  <rect x="34" y="358" width="250" height="74" rx="6" fill="#ffffff" stroke="#dc2626" stroke-width="1"/>
+  <text x="44" y="376" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#991b1b">Window 0 [00:00, 01:00) · Limit L=100</text>
+  <text x="44" y="394" font-family="ui-monospace, monospace" font-size="9.5" fill="#44403c">t = 00:59.9s: 100 requests arrive</text>
+  <rect x="44" y="402" width="180" height="18" rx="3" fill="#fef2f2"/>
   <text x="134" y="415" font-family="ui-monospace, monospace" font-size="9" font-weight="700" fill="#991b1b" text-anchor="middle">100 Admitted (Count = 100)</text>
 
   <!-- Boundary line -->
-  <line x1="290" y1="358" x2="290" y2="432" stroke="#e11d48" stroke-width="2" stroke-dasharray="4,3"/>
-  <text x="290" y="352" font-family="ui-monospace, monospace" font-size="8.5" fill="#e11d48" text-anchor="middle">Reset @ 01:00</text>
+  <line x1="290" y1="358" x2="290" y2="432" stroke="#dc2626" stroke-width="2" stroke-dasharray="4,3"/>
+  <text x="290" y="352" font-family="ui-monospace, monospace" font-size="8.5" fill="#dc2626" text-anchor="middle">Reset @ 01:00</text>
 
-  <rect x="296" y="358" width="270" height="74" rx="6" fill="#ffffff" stroke="#fca5a5" stroke-width="1"/>
-  <text x="306" y="376" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#9f1239">Window 1 [01:00, 02:00) · Counter resets!</text>
-  <text x="306" y="394" font-family="ui-monospace, monospace" font-size="9.5" fill="#475569">t = 01:00.1s: 100 requests arrive</text>
-  <rect x="306" y="402" width="180" height="18" rx="3" fill="#fee2e2"/>
+  <rect x="296" y="358" width="270" height="74" rx="6" fill="#ffffff" stroke="#dc2626" stroke-width="1"/>
+  <text x="306" y="376" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#991b1b">Window 1 [01:00, 02:00) · Counter resets!</text>
+  <text x="306" y="394" font-family="ui-monospace, monospace" font-size="9.5" fill="#44403c">t = 01:00.1s: 100 requests arrive</text>
+  <rect x="306" y="402" width="180" height="18" rx="3" fill="#fef2f2"/>
   <text x="396" y="415" font-family="ui-monospace, monospace" font-size="9" font-weight="700" fill="#991b1b" text-anchor="middle">100 Admitted (Count = 100)</text>
 
   <!-- Flaw Callout Strip -->
-  <rect x="34" y="438" width="532" height="34" rx="5" fill="#fee2e2" stroke="#e11d48" stroke-width="1"/>
+  <rect x="34" y="438" width="532" height="34" rx="5" fill="#fef2f2" stroke="#dc2626" stroke-width="1"/>
   <text x="44" y="454" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#991b1b">BOUNDARY FLAW: 200 requests admitted inside Δt = 200 ms (2× limit!)</text>
   <text x="44" y="466" font-family="ui-monospace, monospace" font-size="9" fill="#7f1d1d">For any ε &gt; 0, L reqs @ (W-ε) and L reqs @ (W+ε) yields 2L admissions in 2ε.</text>
 
   <!-- Contract Box -->
-  <rect x="34" y="478" width="532" height="68" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
-  <text x="44" y="496" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f172a">Mathematical Invariant &amp; Footprint:</text>
+  <rect x="34" y="478" width="532" height="68" rx="6" fill="#ffffff" stroke="#d6d0c4" stroke-width="1"/>
+  <text x="44" y="496" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#1c1917">Mathematical Invariant &amp; Footprint:</text>
   <text x="44" y="512" font-family="ui-monospace, monospace" font-size="9" fill="#991b1b">Invariant holds ONLY per discrete calendar window, NOT across sliding windows!</text>
-  <text x="44" y="527" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#475569">State: { window_id: int64, counter: int } (12 bytes) · Memory: O(1) · Time: O(1)</text>
-  <text x="44" y="540" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#64748b">Danger: Never use as sole protection for downstream capacity bounds.</text>
+  <text x="44" y="527" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#44403c">State: { window_id: int64, counter: int } (12 bytes) · Memory: O(1) · Time: O(1)</text>
+  <text x="44" y="540" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#57534e">Danger: Never use as sole protection for downstream capacity bounds.</text>
 
 
   <!-- CARD 4: SLIDING WINDOW LOG -->
-  <rect x="600" y="322" width="560" height="236" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
-  <text x="614" y="346" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1e3a8a">4. Sliding Window Log (Exact Rolling Window [t - W, t])</text>
+  <rect x="600" y="322" width="560" height="236" rx="10" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="614" y="346" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#065f46">4. Sliding Window Log (Exact Rolling Window [t - W, t])</text>
 
   <!-- Diagram Box -->
-  <rect x="614" y="358" width="532" height="74" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1"/>
-  <text x="624" y="376" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e40af">Exact Timestamp Log in Redis Sorted Set (ZSET)</text>
+  <rect x="614" y="358" width="532" height="74" rx="6" fill="#ffffff" stroke="#99f6e4" stroke-width="1"/>
+  <text x="624" y="376" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">Exact Timestamp Log in Redis Sorted Set (ZSET)</text>
   <!-- Timeline representation -->
-  <line x1="630" y1="400" x2="1130" y2="400" stroke="#94a3b8" stroke-width="1.5"/>
-  <rect x="630" y="392" width="130" height="16" rx="3" fill="#f1f5f9"/>
-  <text x="695" y="404" font-family="ui-monospace, monospace" font-size="8.5" fill="#94a3b8" text-anchor="middle">Evicted (&lt; now - W)</text>
-  <line x1="770" y1="388" x2="770" y2="412" stroke="#2563eb" stroke-width="2"/>
-  <text x="770" y="422" font-family="ui-monospace, monospace" font-size="8" fill="#2563eb" text-anchor="middle">now - W</text>
+  <line x1="630" y1="400" x2="1130" y2="400" stroke="#d6d0c4" stroke-width="1.5"/>
+  <rect x="630" y="392" width="130" height="16" rx="3" fill="#f5f1e8"/>
+  <text x="695" y="404" font-family="ui-monospace, monospace" font-size="8.5" fill="#57534e" text-anchor="middle">Evicted (&lt; now - W)</text>
+  <line x1="770" y1="388" x2="770" y2="412" stroke="#0f766e" stroke-width="2"/>
+  <text x="770" y="422" font-family="ui-monospace, monospace" font-size="8" fill="#0f766e" text-anchor="middle">now - W</text>
   <!-- Active dots -->
-  <circle cx="830" cy="400" r="5" fill="#2563eb"/>
-  <circle cx="890" cy="400" r="5" fill="#2563eb"/>
-  <circle cx="980" cy="400" r="5" fill="#2563eb"/>
-  <circle cx="1060" cy="400" r="5" fill="#2563eb"/>
-  <circle cx="1120" cy="400" r="6" fill="#059669"/>
-  <line x1="1120" y1="388" x2="1120" y2="412" stroke="#059669" stroke-width="2"/>
-  <text x="1120" y="422" font-family="ui-monospace, monospace" font-size="8" fill="#059669" text-anchor="middle">now (t)</text>
+  <circle cx="830" cy="400" r="5" fill="#0f766e"/>
+  <circle cx="890" cy="400" r="5" fill="#0f766e"/>
+  <circle cx="980" cy="400" r="5" fill="#0f766e"/>
+  <circle cx="1060" cy="400" r="5" fill="#0f766e"/>
+  <circle cx="1120" cy="400" r="6" fill="#0f766e"/>
+  <line x1="1120" y1="388" x2="1120" y2="412" stroke="#0f766e" stroke-width="2"/>
+  <text x="1120" y="422" font-family="ui-monospace, monospace" font-size="8" fill="#0f766e" text-anchor="middle">now (t)</text>
 
   <!-- Redis ZSET Commands Box -->
-  <rect x="614" y="438" width="532" height="34" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
-  <text x="624" y="454" font-family="ui-monospace, monospace" font-size="9" fill="#1e3a8a">1. ZREMRANGEBYSCORE key -inf (now - W)  -- Evict expired</text>
-  <text x="624" y="466" font-family="ui-monospace, monospace" font-size="9" fill="#1e3a8a">2. ZCARD key  -- Count; if &lt; L then ZADD key now now &amp; admit</text>
+  <rect x="614" y="438" width="532" height="34" rx="5" fill="#f0fdf9" stroke="#0f766e" stroke-width="1"/>
+  <text x="624" y="454" font-family="ui-monospace, monospace" font-size="9" fill="#065f46">1. ZREMRANGEBYSCORE key -inf (now - W)  -- Evict expired</text>
+  <text x="624" y="466" font-family="ui-monospace, monospace" font-size="9" fill="#065f46">2. ZCARD key  -- Count; if &lt; L then ZADD key now now &amp; admit</text>
 
   <!-- Contract Box -->
-  <rect x="614" y="478" width="532" height="68" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
-  <text x="624" y="496" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f172a">Mathematical Invariant &amp; Footprint:</text>
-  <text x="624" y="512" font-family="ui-monospace, monospace" font-size="9" fill="#1e40af">Admissions in [t - W, t] strictly ≤ L · Absolutely zero boundary burst flaw</text>
-  <text x="624" y="527" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#334155">Memory: O(L) per key (1M keys @ 1k limit = ~8 GB RAM) · Time: O(log L + M)</text>
-  <text x="624" y="540" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#059669">Best for: High-value, low-limit auth routes (brute-force defense, login, payments).</text>
+  <rect x="614" y="478" width="532" height="68" rx="6" fill="#ffffff" stroke="#d6d0c4" stroke-width="1"/>
+  <text x="624" y="496" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#1c1917">Mathematical Invariant &amp; Footprint:</text>
+  <text x="624" y="512" font-family="ui-monospace, monospace" font-size="9" fill="#065f46">Admissions in [t - W, t] strictly ≤ L · Absolutely zero boundary burst flaw</text>
+  <text x="624" y="527" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#44403c">Memory: O(L) per key (1M keys @ 1k limit = ~8 GB RAM) · Time: O(log L + M)</text>
+  <text x="624" y="540" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#0f766e">Best for: High-value, low-limit auth routes (brute-force defense, login, payments).</text>
 
 
   <!-- ==================== ROW 3 ==================== -->
 
   <!-- CARD 5: SLIDING WINDOW COUNTER -->
-  <rect x="20" y="570" width="560" height="252" rx="10" fill="#f0fdf4" stroke="#10b981" stroke-width="1.5"/>
+  <rect x="20" y="570" width="560" height="252" rx="10" fill="#f0fdf4" stroke="#0f766e" stroke-width="1.5"/>
   <text x="34" y="594" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#065f46">5. Sliding Window Counter (Cloudflare O(1) Approximation)</text>
 
   <!-- Visual Timeline -->
-  <rect x="34" y="606" width="250" height="70" rx="6" fill="#ffffff" stroke="#a7f3d0" stroke-width="1"/>
+  <rect x="34" y="606" width="250" height="70" rx="6" fill="#ffffff" stroke="#f0fdf9" stroke-width="1"/>
   <text x="44" y="624" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">Previous Window (c_prev = 80)</text>
-  <text x="44" y="642" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Overlap weight: (1 - e / W)</text>
-  <text x="44" y="660" font-family="ui-monospace, monospace" font-size="9.5" fill="#047857">Weight = 1 - 0.70 = 30%</text>
+  <text x="44" y="642" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">Overlap weight: (1 - e / W)</text>
+  <text x="44" y="660" font-family="ui-monospace, monospace" font-size="9.5" fill="#065f46">Weight = 1 - 0.70 = 30%</text>
 
-  <rect x="296" y="606" width="270" height="70" rx="6" fill="#ffffff" stroke="#6ee7b7" stroke-width="1"/>
+  <rect x="296" y="606" width="270" height="70" rx="6" fill="#ffffff" stroke="#99f6e4" stroke-width="1"/>
   <text x="306" y="624" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">Current Window (c_cur = 40)</text>
-  <text x="306" y="642" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Elapsed in current window: e = 42s (70%)</text>
-  <text x="306" y="660" font-family="ui-monospace, monospace" font-size="9.5" fill="#047857">Current count weight: 100%</text>
+  <text x="306" y="642" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">Elapsed in current window: e = 42s (70%)</text>
+  <text x="306" y="660" font-family="ui-monospace, monospace" font-size="9.5" fill="#065f46">Current count weight: 100%</text>
 
   <!-- Formula Strip -->
   <rect x="34" y="682" width="532" height="42" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
@@ -206,34 +206,34 @@
   <text x="44" y="714" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#166534">Example: ĉ = 80 · (0.30) + 40 = 24 + 40 = 64 reqs (rejects 2× boundary bursts!)</text>
 
   <!-- Contract Box -->
-  <rect x="34" y="730" width="532" height="80" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
-  <text x="44" y="748" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f172a">Mathematical Invariant &amp; Footprint:</text>
+  <rect x="34" y="730" width="532" height="80" rx="6" fill="#ffffff" stroke="#d6d0c4" stroke-width="1"/>
+  <text x="44" y="748" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#1c1917">Mathematical Invariant &amp; Footprint:</text>
   <text x="44" y="764" font-family="ui-monospace, monospace" font-size="9" fill="#065f46">Error bounded by c_prev · min(e/W, 1 - e/W) · Assumes uniform prior distribution</text>
-  <text x="44" y="779" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#334155">State per key: { c_prev: int, c_cur: int, window_start: int64 } (16 bytes) · O(1) space &amp; time</text>
-  <text x="44" y="794" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#059669">Industry Standard: Cloudflare edge rate limiter, GitHub API sliding counter.</text>
+  <text x="44" y="779" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#44403c">State per key: { c_prev: int, c_cur: int, window_start: int64 } (16 bytes) · O(1) space &amp; time</text>
+  <text x="44" y="794" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#0f766e">Industry Standard: Cloudflare edge rate limiter, GitHub API sliding counter.</text>
 
 
   <!-- CARD 6: GCRA (GENERIC CELL RATE ALGORITHM) -->
-  <rect x="600" y="570" width="560" height="252" rx="10" fill="#f0fdf4" stroke="#10b981" stroke-width="1.5"/>
+  <rect x="600" y="570" width="560" height="252" rx="10" fill="#f0fdf4" stroke="#0f766e" stroke-width="1.5"/>
   <text x="614" y="594" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#065f46">6. GCRA (Theoretical Arrival Time — Single-Timestamp Leaky Bucket)</text>
 
   <!-- Timeline Diagram -->
-  <rect x="614" y="606" width="532" height="70" rx="6" fill="#ffffff" stroke="#6ee7b7" stroke-width="1"/>
+  <rect x="614" y="606" width="532" height="70" rx="6" fill="#ffffff" stroke="#99f6e4" stroke-width="1"/>
   <text x="624" y="622" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#065f46">Parameters: Emission T = 1/R · Burst Tolerance τ = (B - 1)·T</text>
   <!-- Timeline bar -->
-  <line x1="624" y1="648" x2="1134" y2="648" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="624" y1="648" x2="1134" y2="648" stroke="#d6d0c4" stroke-width="1.5"/>
   <!-- Threshold TAT - tau -->
-  <line x1="720" y1="638" x2="720" y2="658" stroke="#e11d48" stroke-width="2"/>
-  <text x="720" y="668" font-family="ui-monospace, monospace" font-size="8" fill="#e11d48" text-anchor="middle">TAT - τ (Allow limit)</text>
+  <line x1="720" y1="638" x2="720" y2="658" stroke="#dc2626" stroke-width="2"/>
+  <text x="720" y="668" font-family="ui-monospace, monospace" font-size="8" fill="#dc2626" text-anchor="middle">TAT - τ (Allow limit)</text>
   <!-- Arrival t -->
-  <circle cx="830" cy="648" r="5" fill="#059669"/>
-  <text x="830" y="638" font-family="ui-monospace, monospace" font-size="8" fill="#059669" text-anchor="middle">Arrival t</text>
+  <circle cx="830" cy="648" r="5" fill="#0f766e"/>
+  <text x="830" y="638" font-family="ui-monospace, monospace" font-size="8" fill="#0f766e" text-anchor="middle">Arrival t</text>
   <!-- Current TAT -->
-  <line x1="990" y1="638" x2="990" y2="658" stroke="#2563eb" stroke-width="2"/>
-  <text x="990" y="668" font-family="ui-monospace, monospace" font-size="8" fill="#2563eb" text-anchor="middle">Current TAT</text>
+  <line x1="990" y1="638" x2="990" y2="658" stroke="#0f766e" stroke-width="2"/>
+  <text x="990" y="668" font-family="ui-monospace, monospace" font-size="8" fill="#0f766e" text-anchor="middle">Current TAT</text>
   <!-- Next TAT -->
-  <line x1="1080" y1="638" x2="1080" y2="658" stroke="#059669" stroke-width="2" stroke-dasharray="3,2"/>
-  <text x="1080" y="632" font-family="ui-monospace, monospace" font-size="8" fill="#059669" text-anchor="middle">New TAT = max(t, TAT) + T</text>
+  <line x1="1080" y1="638" x2="1080" y2="658" stroke="#0f766e" stroke-width="2" stroke-dasharray="3,2"/>
+  <text x="1080" y="632" font-family="ui-monospace, monospace" font-size="8" fill="#0f766e" text-anchor="middle">New TAT = max(t, TAT) + T</text>
 
   <!-- Logic Rule Strip -->
   <rect x="614" y="682" width="532" height="42" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
@@ -241,9 +241,9 @@
   <text x="624" y="714" font-family="ui-monospace, monospace" font-size="9" fill="#065f46">else: ADMIT and update TAT = max(t, TAT) + T  -- One atomic Redis SET!</text>
 
   <!-- Contract Box -->
-  <rect x="614" y="730" width="532" height="80" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
-  <text x="624" y="748" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f172a">Mathematical Invariant &amp; Footprint:</text>
+  <rect x="614" y="730" width="532" height="80" rx="6" fill="#ffffff" stroke="#d6d0c4" stroke-width="1"/>
+  <text x="624" y="748" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#1c1917">Mathematical Invariant &amp; Footprint:</text>
   <text x="624" y="764" font-family="ui-monospace, monospace" font-size="9" fill="#065f46">Exact Token Bucket semantics with ZERO background timers and ZERO race conditions!</text>
-  <text x="624" y="779" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#334155">State per key: Exactly 1 timestamp (int64 TAT = 8 bytes) · Memory: O(1) · Time: O(1)</text>
-  <text x="624" y="794" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#059669">Origin: ATM Forum TM 4.0 / UNI 3.1 · Modern standard: Brandur Leach / redis-cell / Valkey</text>
+  <text x="624" y="779" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#44403c">State per key: Exactly 1 timestamp (int64 TAT = 8 bytes) · Memory: O(1) · Time: O(1)</text>
+  <text x="624" y="794" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#0f766e">Origin: ATM Forum TM 4.0 / UNI 3.1 · Modern standard: Brandur Leach / redis-cell / Valkey</text>
 </svg>

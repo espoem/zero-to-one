@@ -35,10 +35,10 @@
       100%     { opacity: 0.86; }
     }
 
-    @keyframes s1 { 0%, 24% { opacity: 1; stroke: #2563eb; stroke-width: 2.2; } 25%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } }
-    @keyframes s2 { 0%, 24% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } 25%, 49% { opacity: 1; stroke: #e11d48; stroke-width: 2.2; } 50%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } }
-    @keyframes s3 { 0%, 49% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } 50%, 74% { opacity: 1; stroke: #d97706; stroke-width: 2.2; } 75%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } }
-    @keyframes s4 { 0%, 74% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } 75%, 100% { opacity: 1; stroke: #059669; stroke-width: 2.2; } }
+    @keyframes s1 { 0%, 24% { opacity: 1; stroke: #0f766e; stroke-width: 2.2; } 25%, 100% { opacity: 0.86; stroke: #d6d0c4; stroke-width: 1; } }
+    @keyframes s2 { 0%, 24% { opacity: 0.86; stroke: #d6d0c4; stroke-width: 1; } 25%, 49% { opacity: 1; stroke: #dc2626; stroke-width: 2.2; } 50%, 100% { opacity: 0.86; stroke: #d6d0c4; stroke-width: 1; } }
+    @keyframes s3 { 0%, 49% { opacity: 0.86; stroke: #d6d0c4; stroke-width: 1; } 50%, 74% { opacity: 1; stroke: #b45309; stroke-width: 2.2; } 75%, 100% { opacity: 0.86; stroke: #d6d0c4; stroke-width: 1; } }
+    @keyframes s4 { 0%, 74% { opacity: 0.86; stroke: #d6d0c4; stroke-width: 1; } 75%, 100% { opacity: 1; stroke: #0f766e; stroke-width: 2.2; } }
 
     .scan  { animation: scan-move 16s ease-in-out infinite; }
     .f-pop { animation: fail-pop 16s ease-in-out infinite; }
@@ -58,137 +58,137 @@
 
   <defs>
     <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#dc2626"/>
     </marker>
     <marker id="arr-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
   </defs>
 
-  <rect x="0" y="0" width="1120" height="620" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1120" height="620" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1120" height="62" rx="12" fill="#0f172a"/>
-  <rect x="0" y="46" width="1120" height="16" fill="#0f172a"/>
-  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Wing-Gong-Lowe (WGL) Linearizability Verification</text>
-  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">Checking Concurrent [inv(op), res(op)] Intervals via Branch-and-Bound Search, Memoization &amp; P-Compositionality</text>
+  <line x1="24" y1="64" x2="1096" y2="64" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#1c1917" font-family="Georgia, 'Times New Roman', serif">Wing-Gong-Lowe (WGL) Linearizability Verification</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">Checking Concurrent [inv(op), res(op)] Intervals via Branch-and-Bound Search, Memoization &amp; P-Compositionality</text>
 
   <!-- TOP PANEL: OPERATION INTERVALS -->
-  <rect x="24" y="76" width="1072" height="196" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <text x="42" y="100" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">Recorded Concurrent History H (Initial Register x = 0 · Scale: 80px = 1 tick)</text>
+  <rect x="24" y="76" width="1072" height="196" rx="10" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <text x="42" y="100" class="sans" font-size="13.5" font-weight="700" fill="#1c1917">Recorded Concurrent History H (Initial Register x = 0 · Scale: 80px = 1 tick)</text>
 
   <!-- Time Axis (t=0 at x=180 .. t=10 at x=980) -->
-  <line x1="180" y1="242" x2="1040" y2="242" stroke="#334155" stroke-width="1.5"/>
-  <text x="180" y="258" class="mono" font-size="10" fill="#475569" text-anchor="middle">t=0</text>
-  <text x="260" y="258" class="mono" font-size="10" fill="#475569" text-anchor="middle">1</text>
-  <text x="340" y="258" class="mono" font-size="10" fill="#475569" text-anchor="middle">2</text>
-  <text x="420" y="258" class="mono" font-size="10" fill="#475569" text-anchor="middle">3</text>
-  <text x="500" y="258" class="mono" font-size="10" fill="#475569" text-anchor="middle">4</text>
-  <text x="580" y="258" class="mono" font-size="10" fill="#475569" text-anchor="middle">5</text>
-  <text x="660" y="258" class="mono" font-size="10" fill="#475569" text-anchor="middle">6</text>
-  <text x="740" y="258" class="mono" font-size="10" fill="#475569" text-anchor="middle">7</text>
-  <text x="820" y="258" class="mono" font-size="10" fill="#475569" text-anchor="middle">8</text>
-  <text x="900" y="258" class="mono" font-size="10" fill="#475569" text-anchor="middle">9</text>
-  <text x="980" y="258" class="mono" font-size="10" fill="#475569" text-anchor="middle">10</text>
+  <line x1="180" y1="242" x2="1040" y2="242" stroke="#44403c" stroke-width="1.5"/>
+  <text x="180" y="258" class="mono" font-size="10" fill="#44403c" text-anchor="middle">t=0</text>
+  <text x="260" y="258" class="mono" font-size="10" fill="#44403c" text-anchor="middle">1</text>
+  <text x="340" y="258" class="mono" font-size="10" fill="#44403c" text-anchor="middle">2</text>
+  <text x="420" y="258" class="mono" font-size="10" fill="#44403c" text-anchor="middle">3</text>
+  <text x="500" y="258" class="mono" font-size="10" fill="#44403c" text-anchor="middle">4</text>
+  <text x="580" y="258" class="mono" font-size="10" fill="#44403c" text-anchor="middle">5</text>
+  <text x="660" y="258" class="mono" font-size="10" fill="#44403c" text-anchor="middle">6</text>
+  <text x="740" y="258" class="mono" font-size="10" fill="#44403c" text-anchor="middle">7</text>
+  <text x="820" y="258" class="mono" font-size="10" fill="#44403c" text-anchor="middle">8</text>
+  <text x="900" y="258" class="mono" font-size="10" fill="#44403c" text-anchor="middle">9</text>
+  <text x="980" y="258" class="mono" font-size="10" fill="#44403c" text-anchor="middle">10</text>
 
   <!-- Vertical Scan Cursor -->
   <g class="scan">
-    <line x1="280" y1="114" x2="280" y2="242" stroke="#7c3aed" stroke-width="2" stroke-dasharray="4 3"/>
-    <rect x="242" y="108" width="76" height="18" rx="4" fill="#7c3aed"/>
+    <line x1="280" y1="114" x2="280" y2="242" stroke="#0f766e" stroke-width="2" stroke-dasharray="4 3"/>
+    <rect x="242" y="108" width="76" height="18" rx="4" fill="#0f766e"/>
     <text x="280" y="121" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">WGL Cursor</text>
   </g>
 
   <!-- op1: W(x, 1) [1, 5] -> x=260..580 -->
-  <text x="42" y="142" class="mono" font-size="11" font-weight="700" fill="#1e3a8a">op1: W(x,1)</text>
-  <rect x="260" y="126" width="320" height="22" rx="5" fill="#eff6ff" stroke="#2563eb" stroke-width="1.8"/>
-  <text x="420" y="141" class="mono" font-size="10" font-weight="700" fill="#1e3a8a" text-anchor="middle">[inv=1, res=5] → OK</text>
-  <circle cx="536" cy="137" r="5" fill="#2563eb"/>
+  <text x="42" y="142" class="mono" font-size="11" font-weight="700" fill="#065f46">op1: W(x,1)</text>
+  <rect x="260" y="126" width="320" height="22" rx="5" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.8"/>
+  <text x="420" y="141" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">[inv=1, res=5] → OK</text>
+  <circle cx="536" cy="137" r="5" fill="#0f766e"/>
 
   <!-- op2: R(x) -> 0 [2, 6] -> x=340..660 -->
   <text x="42" y="170" class="mono" font-size="11" font-weight="700" fill="#92400e">op2: R(x)→0</text>
-  <rect x="340" y="154" width="320" height="22" rx="5" fill="#fffbeb" stroke="#d97706" stroke-width="1.8"/>
+  <rect x="340" y="154" width="320" height="22" rx="5" fill="#fffbeb" stroke="#b45309" stroke-width="1.8"/>
   <text x="500" y="169" class="mono" font-size="10" font-weight="700" fill="#92400e" text-anchor="middle">[inv=2, res=6] → 0</text>
-  <circle cx="364" cy="165" r="5" fill="#d97706"/>
+  <circle cx="364" cy="165" r="5" fill="#b45309"/>
 
   <!-- op3: W(x, 2) [4, 8] -> x=500..820 -->
-  <text x="42" y="198" class="mono" font-size="11" font-weight="700" fill="#5b21b6">op3: W(x,2)</text>
-  <rect x="500" y="182" width="320" height="22" rx="5" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.8"/>
-  <text x="660" y="197" class="mono" font-size="10" font-weight="700" fill="#5b21b6" text-anchor="middle">[inv=4, res=8] → OK</text>
-  <circle cx="524" cy="193" r="5" fill="#7c3aed"/>
+  <text x="42" y="198" class="mono" font-size="11" font-weight="700" fill="#065f46">op3: W(x,2)</text>
+  <rect x="500" y="182" width="320" height="22" rx="5" fill="#f5f1e8" stroke="#0f766e" stroke-width="1.8"/>
+  <text x="660" y="197" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">[inv=4, res=8] → OK</text>
+  <circle cx="524" cy="193" r="5" fill="#0f766e"/>
 
   <!-- op4: R(x) -> 1 [7, 10] -> x=740..980 -->
   <text x="42" y="226" class="mono" font-size="11" font-weight="700" fill="#065f46">op4: R(x)→1</text>
-  <rect x="740" y="210" width="240" height="22" rx="5" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+  <rect x="740" y="210" width="240" height="22" rx="5" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.8"/>
   <text x="860" y="225" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">[inv=7, res=10] → 1</text>
-  <circle cx="880" cy="221" r="5" fill="#059669"/>
+  <circle cx="880" cy="221" r="5" fill="#0f766e"/>
 
   <!-- BOTTOM-LEFT: WGL SEARCH TREE -->
-  <rect x="24" y="286" width="600" height="254" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <text x="42" y="310" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">WGL Branch-and-Bound Search (inv ≤ min_pending_res)</text>
+  <rect x="24" y="286" width="600" height="254" rx="10" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <text x="42" y="310" class="sans" font-size="13.5" font-weight="700" fill="#1c1917">WGL Branch-and-Bound Search (inv ≤ min_pending_res)</text>
 
   <!-- Root -->
-  <rect x="210" y="324" width="228" height="34" rx="6" fill="#f8fafc" stroke="#334155" stroke-width="1.5"/>
-  <text x="324" y="345" class="mono" font-size="10.5" font-weight="700" fill="#0f172a" text-anchor="middle">State x = 0 · rem = {1,2,3,4}</text>
+  <rect x="210" y="324" width="228" height="34" rx="6" fill="#faf8f5" stroke="#44403c" stroke-width="1.5"/>
+  <text x="324" y="345" class="mono" font-size="10.5" font-weight="700" fill="#1c1917" text-anchor="middle">State x = 0 · rem = {1,2,3,4}</text>
 
   <!-- Failed Left Branch -->
-  <line x1="256" y1="358" x2="156" y2="394" stroke="#e11d48" stroke-width="2" marker-end="url(#arr-rose)"/>
+  <line x1="256" y1="358" x2="156" y2="394" stroke="#dc2626" stroke-width="2" marker-end="url(#arr-rose)"/>
   <g class="f-pop">
-    <rect x="44" y="396" width="218" height="44" rx="6" fill="#fff1f2" stroke="#e11d48" stroke-width="1.5"/>
-    <text x="153" y="414" class="mono" font-size="10" font-weight="700" fill="#9f1239" text-anchor="middle">Try op1: W(x,1) ⇒ x = 1</text>
-    <text x="153" y="430" class="mono" font-size="10" fill="#be123c" text-anchor="middle">Next op2 R(x)→0 FAILS (1≠0)!</text>
+    <rect x="44" y="396" width="218" height="44" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+    <text x="153" y="414" class="mono" font-size="10" font-weight="700" fill="#991b1b" text-anchor="middle">Try op1: W(x,1) ⇒ x = 1</text>
+    <text x="153" y="430" class="mono" font-size="10" fill="#991b1b" text-anchor="middle">Next op2 R(x)→0 FAILS (1≠0)!</text>
 
-    <rect x="64" y="454" width="178" height="32" rx="6" fill="#e11d48"/>
+    <rect x="64" y="454" width="178" height="32" rx="6" fill="#dc2626"/>
     <text x="153" y="474" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">✕ BACKTRACK to Root</text>
   </g>
 
   <!-- Valid Right Branch -->
-  <line x1="392" y1="358" x2="460" y2="394" stroke="#059669" stroke-width="2" marker-end="url(#arr-emerald)"/>
+  <line x1="392" y1="358" x2="460" y2="394" stroke="#0f766e" stroke-width="2" marker-end="url(#arr-emerald)"/>
   <g class="o-pop">
-    <rect x="314" y="396" width="292" height="58" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+    <rect x="314" y="396" width="292" height="58" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
     <text x="460" y="414" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">Try op2: R(x)→0 (Valid: x=0)</text>
-    <text x="460" y="430" class="mono" font-size="10" fill="#047857" text-anchor="middle">→ op3: W(x,2) → op1: W(x,1)</text>
-    <text x="460" y="446" class="mono" font-size="10" fill="#047857" text-anchor="middle">→ op4: R(x)→1 (Valid: x=1)</text>
+    <text x="460" y="430" class="mono" font-size="10" fill="#065f46" text-anchor="middle">→ op3: W(x,2) → op1: W(x,1)</text>
+    <text x="460" y="446" class="mono" font-size="10" fill="#065f46" text-anchor="middle">→ op4: R(x)→1 (Valid: x=1)</text>
 
-    <rect x="342" y="468" width="236" height="32" rx="6" fill="#059669"/>
+    <rect x="342" y="468" width="236" height="32" rx="6" fill="#0f766e"/>
     <text x="460" y="488" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">✓ LINEARIZABLE (rem = ∅)</text>
   </g>
 
-  <text x="42" y="524" class="mono" font-size="10" fill="#5b21b6">Memoization cache key: (bitset(linearized_ops), model_state) prunes duplicate paths.</text>
+  <text x="42" y="524" class="mono" font-size="10" fill="#065f46">Memoization cache key: (bitset(linearized_ops), model_state) prunes duplicate paths.</text>
 
   <!-- BOTTOM-RIGHT: SEQUENTIAL ORDER & P-COMPOSITIONALITY -->
-  <rect x="640" y="286" width="456" height="254" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <text x="658" y="310" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">Valid Linearization &amp; P-Compositionality</text>
+  <rect x="640" y="286" width="456" height="254" rx="10" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <text x="658" y="310" class="sans" font-size="13.5" font-weight="700" fill="#1c1917">Valid Linearization &amp; P-Compositionality</text>
 
   <g class="sq-pop">
-    <rect x="658" y="328" width="420" height="72" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+    <rect x="658" y="328" width="420" height="72" rx="8" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
     <text x="674" y="350" class="mono" font-size="11" font-weight="700" fill="#065f46">Sequential Witness S:</text>
-    <text x="674" y="370" class="mono" font-size="11" fill="#0f172a">op2(R→0) → op3(W=2) → op1(W=1) → op4(R→1)</text>
-    <text x="674" y="388" class="sans" font-size="10" fill="#047857">Real-time precedence preserved: res(op1)=5 &lt; inv(op4)=7</text>
+    <text x="674" y="370" class="mono" font-size="11" fill="#1c1917">op2(R→0) → op3(W=2) → op1(W=1) → op4(R→1)</text>
+    <text x="674" y="388" class="sans" font-size="10" fill="#065f46">Real-time precedence preserved: res(op1)=5 &lt; inv(op4)=7</text>
   </g>
 
-  <rect x="658" y="416" width="420" height="106" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.2"/>
-  <text x="674" y="438" class="sans" font-size="12" font-weight="700" fill="#5b21b6">Porcupine Optimization (P-Compositionality):</text>
-  <text x="674" y="460" class="mono" font-size="10.5" fill="#334155">History H is linearizable ⇔ ∀ key k, H|_k is linearizable</text>
-  <text x="674" y="482" class="sans" font-size="10.5" fill="#4c1d95">Verifying single-key traces in parallel avoids NP-complete</text>
-  <text x="674" y="500" class="sans" font-size="10.5" fill="#4c1d95">multi-object state explosion (Jepsen / Knossos / Porcupine).</text>
+  <rect x="658" y="416" width="420" height="106" rx="8" fill="#f5f1e8" stroke="#0f766e" stroke-width="1.2"/>
+  <text x="674" y="438" class="sans" font-size="12" font-weight="700" fill="#065f46">Porcupine Optimization (P-Compositionality):</text>
+  <text x="674" y="460" class="mono" font-size="10.5" fill="#44403c">History H is linearizable ⇔ ∀ key k, H|_k is linearizable</text>
+  <text x="674" y="482" class="sans" font-size="10.5" fill="#065f46">Verifying single-key traces in parallel avoids NP-complete</text>
+  <text x="674" y="500" class="sans" font-size="10.5" fill="#065f46">multi-object state explosion (Jepsen / Knossos / Porcupine).</text>
 
   <!-- FOOTER STEP BAR -->
-  <rect x="24" y="554" width="256" height="48" rx="8" fill="#eff6ff" class="st1"/>
-  <text x="38" y="574" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a">1. Candidate Selection</text>
-  <text x="38" y="591" class="sans" font-size="10" fill="#334155">Consider ops with inv ≤ min(res)</text>
+  <rect x="24" y="554" width="256" height="48" rx="8" fill="#f0fdf9" class="st1"/>
+  <text x="38" y="574" class="mono" font-size="10.5" font-weight="700" fill="#065f46">1. Candidate Selection</text>
+  <text x="38" y="591" class="sans" font-size="10" fill="#44403c">Consider ops with inv ≤ min(res)</text>
 
-  <rect x="296" y="554" width="256" height="48" rx="8" fill="#fff1f2" class="st2"/>
-  <text x="310" y="574" class="mono" font-size="10.5" font-weight="700" fill="#9f1239">2. Conflict &amp; Backtrack</text>
-  <text x="310" y="591" class="sans" font-size="10" fill="#334155">op1 then op2 fails (x=1 ≠ 0); unwind</text>
+  <rect x="296" y="554" width="256" height="48" rx="8" fill="#fef2f2" class="st2"/>
+  <text x="310" y="574" class="mono" font-size="10.5" font-weight="700" fill="#991b1b">2. Conflict &amp; Backtrack</text>
+  <text x="310" y="591" class="sans" font-size="10" fill="#44403c">op1 then op2 fails (x=1 ≠ 0); unwind</text>
 
   <rect x="568" y="554" width="256" height="48" rx="8" fill="#fffbeb" class="st3"/>
   <text x="582" y="574" class="mono" font-size="10.5" font-weight="700" fill="#92400e">3. Alternate Branch</text>
-  <text x="582" y="591" class="sans" font-size="10" fill="#334155">op2(0) → op3(2) → op1(1) → op4(1)</text>
+  <text x="582" y="591" class="sans" font-size="10" fill="#44403c">op2(0) → op3(2) → op1(1) → op4(1)</text>
 
-  <rect x="840" y="554" width="256" height="48" rx="8" fill="#ecfdf5" class="st4"/>
+  <rect x="840" y="554" width="256" height="48" rx="8" fill="#f0fdf9" class="st4"/>
   <text x="854" y="574" class="mono" font-size="10.5" font-weight="700" fill="#065f46">4. Witness &amp; Memoize</text>
-  <text x="854" y="591" class="sans" font-size="10" fill="#334155">History proven linearizable per key</text>
+  <text x="854" y="591" class="sans" font-size="10" fill="#44403c">History proven linearizable per key</text>
 </svg>

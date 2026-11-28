@@ -80,192 +80,192 @@
     </style>
 
     <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#b45309"/>
     </marker>
     <marker id="arr-violet" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
   </defs>
 
   <!-- Canvas -->
-  <rect x="0" y="0" width="1200" height="700" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1200" height="700" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1200" height="62" rx="12" fill="#0f172a"/>
-  <rect x="0" y="46" width="1200" height="16" fill="#0f172a"/>
-  <text x="24" y="29" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Cache Eviction Topologies · O(1) LRU vs O(1) LFU</text>
-  <text x="24" y="49" class="sans" font-size="12" fill="#94a3b8">Left: HashMap + Doubly Linked List promote-to-head and tail eviction; Right: keyMap + freqMap buckets + minFreq pointer</text>
+  <line x1="24" y1="64" x2="1176" y2="64" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="29" class="sans" font-size="18" font-weight="700" fill="#1c1917" font-family="Georgia, 'Times New Roman', serif">Cache Eviction Topologies · O(1) LRU vs O(1) LFU</text>
+  <text x="24" y="49" class="sans" font-size="12" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">Left: HashMap + Doubly Linked List promote-to-head and tail eviction; Right: keyMap + freqMap buckets + minFreq pointer</text>
 
   <!-- ==================== LEFT PANEL: O(1) LRU ==================== -->
-  <rect x="24" y="78" width="564" height="598" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
-  <rect x="24" y="78" width="564" height="36" rx="10" fill="#eff6ff"/>
-  <rect x="24" y="104" width="564" height="10" fill="#eff6ff"/>
-  <text x="40" y="101" class="sans" font-size="13" font-weight="700" fill="#1e3a8a">1. O(1) LRU Cache (cap = 3)</text>
-  <text x="572" y="101" class="mono" font-size="11" font-weight="700" fill="#2563eb" text-anchor="end">get/put = O(1)</text>
+  <rect x="24" y="78" width="564" height="598" rx="10" fill="#ffffff" stroke="#d6d0c4"/>
+  <rect x="24" y="78" width="564" height="36" rx="10" fill="#f0fdf9"/>
+  <rect x="24" y="104" width="564" height="10" fill="#f0fdf9"/>
+  <text x="40" y="101" class="sans" font-size="13" font-weight="700" fill="#065f46">1. O(1) LRU Cache (cap = 3)</text>
+  <text x="572" y="101" class="mono" font-size="11" font-weight="700" fill="#0f766e" text-anchor="end">get/put = O(1)</text>
 
   <!-- HashMap Box -->
   <g transform="translate(46, 130)">
-    <rect x="0" y="0" width="520" height="74" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
-    <text x="14" y="22" class="sans" font-size="11.5" font-weight="700" fill="#0f172a">HashMap: key -&gt; DLL Node* (O(1) random access)</text>
-    <rect x="14" y="34" width="110" height="28" rx="5" fill="#eff6ff" stroke="#3b82f6"/>
-    <text x="69" y="52" class="mono" font-size="11" font-weight="700" fill="#1e3a8a" text-anchor="middle">"C" -&gt; &amp;NodeC</text>
-    <rect x="138" y="34" width="110" height="28" rx="5" fill="#ecfdf5" stroke="#059669"/>
+    <rect x="0" y="0" width="520" height="74" rx="8" fill="#faf8f5" stroke="#d6d0c4"/>
+    <text x="14" y="22" class="sans" font-size="11.5" font-weight="700" fill="#1c1917">HashMap: key -&gt; DLL Node* (O(1) random access)</text>
+    <rect x="14" y="34" width="110" height="28" rx="5" fill="#f0fdf9" stroke="#0f766e"/>
+    <text x="69" y="52" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">"C" -&gt; &amp;NodeC</text>
+    <rect x="138" y="34" width="110" height="28" rx="5" fill="#f0fdf9" stroke="#0f766e"/>
     <text x="193" y="52" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">"B" -&gt; &amp;NodeB</text>
-    <rect x="262" y="34" width="110" height="28" rx="5" fill="#fff1f2" stroke="#e11d48"/>
-    <text x="317" y="52" class="mono" font-size="11" font-weight="700" fill="#be123c" text-anchor="middle">"A" -&gt; &amp;NodeA</text>
-    <rect x="386" y="34" width="120" height="28" rx="5" fill="#f5f3ff" stroke="#7c3aed" stroke-dasharray="4 3"/>
-    <text x="446" y="52" class="mono" font-size="11" font-weight="700" fill="#6d28d9" text-anchor="middle">"D" -&gt; &amp;NodeD</text>
+    <rect x="262" y="34" width="110" height="28" rx="5" fill="#fef2f2" stroke="#dc2626"/>
+    <text x="317" y="52" class="mono" font-size="11" font-weight="700" fill="#991b1b" text-anchor="middle">"A" -&gt; &amp;NodeA</text>
+    <rect x="386" y="34" width="120" height="28" rx="5" fill="#f5f1e8" stroke="#0f766e" stroke-dasharray="4 3"/>
+    <text x="446" y="52" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">"D" -&gt; &amp;NodeD</text>
   </g>
 
   <!-- Doubly Linked List Backbone -->
-  <text x="46" y="236" class="sans" font-size="12" font-weight="700" fill="#0f172a">Doubly Linked List (Head = Most Recent &lt;-&gt; Tail = Least Recent)</text>
-  <line x1="126" y1="302" x2="466" y2="302" stroke="#94a3b8" stroke-width="2.5"/>
+  <text x="46" y="236" class="sans" font-size="12" font-weight="700" fill="#1c1917">Doubly Linked List (Head = Most Recent &lt;-&gt; Tail = Least Recent)</text>
+  <line x1="126" y1="302" x2="466" y2="302" stroke="#d6d0c4" stroke-width="2.5"/>
 
   <!-- Head Sentinel -->
   <g transform="translate(46, 280)">
-    <rect width="84" height="44" rx="6" fill="#0f172a"/>
-    <text x="42" y="20" class="mono" font-size="11.5" font-weight="700" fill="#f8fafc" text-anchor="middle">HEAD</text>
-    <text x="42" y="35" class="sans" font-size="10" fill="#94a3b8" text-anchor="middle">MRU end</text>
+    <rect width="84" height="44" rx="6" fill="#1c1917"/>
+    <text x="42" y="20" class="mono" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle">HEAD</text>
+    <text x="42" y="35" class="sans" font-size="10" fill="#57534e" text-anchor="middle">MRU end</text>
   </g>
   <!-- Tail Sentinel -->
   <g transform="translate(468, 280)">
-    <rect width="84" height="44" rx="6" fill="#0f172a"/>
-    <text x="42" y="20" class="mono" font-size="11.5" font-weight="700" fill="#f8fafc" text-anchor="middle">TAIL</text>
-    <text x="42" y="35" class="sans" font-size="10" fill="#94a3b8" text-anchor="middle">LRU evict</text>
+    <rect width="84" height="44" rx="6" fill="#1c1917"/>
+    <text x="42" y="20" class="mono" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle">TAIL</text>
+    <text x="42" y="35" class="sans" font-size="10" fill="#57534e" text-anchor="middle">LRU evict</text>
   </g>
 
   <!-- Node C (starts slot0, stays inside list) -->
   <g transform="translate(158, 280)">
-    <rect width="82" height="44" rx="7" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.8"/>
-    <text x="41" y="20" class="mono" font-size="13" font-weight="700" fill="#1e3a8a" text-anchor="middle">C</text>
-    <text x="41" y="36" class="mono" font-size="10" fill="#64748b" text-anchor="middle">prev/next</text>
+    <rect width="82" height="44" rx="7" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.8"/>
+    <text x="41" y="20" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">C</text>
+    <text x="41" y="36" class="mono" font-size="10" fill="#57534e" text-anchor="middle">prev/next</text>
   </g>
 
   <!-- Animated Node B (promoted to Head on get(B)) -->
   <g class="lru-node-b">
-    <rect width="82" height="44" rx="7" fill="#ecfdf5" stroke="#059669" stroke-width="2.2"/>
+    <rect width="82" height="44" rx="7" fill="#f0fdf9" stroke="#0f766e" stroke-width="2.2"/>
     <text x="41" y="20" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">B (hit)</text>
-    <text x="41" y="36" class="mono" font-size="10" fill="#059669" text-anchor="middle">promote</text>
+    <text x="41" y="36" class="mono" font-size="10" fill="#0f766e" text-anchor="middle">promote</text>
   </g>
 
   <!-- Animated Node A (evicted on put(D)) -->
   <g class="lru-node-a">
-    <rect width="82" height="44" rx="7" fill="#fff1f2" stroke="#e11d48" stroke-width="2"/>
-    <text x="41" y="20" class="mono" font-size="13" font-weight="700" fill="#be123c" text-anchor="middle">A</text>
-    <text x="41" y="36" class="mono" font-size="10" fill="#e11d48" text-anchor="middle">LRU tail</text>
+    <rect width="82" height="44" rx="7" fill="#fef2f2" stroke="#dc2626" stroke-width="2"/>
+    <text x="41" y="20" class="mono" font-size="13" font-weight="700" fill="#991b1b" text-anchor="middle">A</text>
+    <text x="41" y="36" class="mono" font-size="10" fill="#dc2626" text-anchor="middle">LRU tail</text>
   </g>
 
   <!-- Animated Node D (inserted at Head on put(D)) -->
   <g class="lru-node-d">
-    <rect width="82" height="44" rx="7" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2.2"/>
-    <text x="41" y="20" class="mono" font-size="13" font-weight="700" fill="#6d28d9" text-anchor="middle">D (new)</text>
-    <text x="41" y="36" class="mono" font-size="10" fill="#7c3aed" text-anchor="middle">at Head</text>
+    <rect width="82" height="44" rx="7" fill="#f5f1e8" stroke="#0f766e" stroke-width="2.2"/>
+    <text x="41" y="20" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">D (new)</text>
+    <text x="41" y="36" class="mono" font-size="10" fill="#0f766e" text-anchor="middle">at Head</text>
   </g>
 
   <!-- Promote-to-Head Curved Arc -->
-  <path class="lru-promo-arc" d="M 297 278 C 297 240, 199 240, 199 278" fill="none" stroke="#059669" stroke-width="2.2" marker-end="url(#arr-emerald)"/>
-  <text x="248" y="246" class="mono" font-size="10.5" font-weight="700" fill="#059669" text-anchor="middle">unlink &amp; attach after HEAD</text>
+  <path class="lru-promo-arc" d="M 297 278 C 297 240, 199 240, 199 278" fill="none" stroke="#0f766e" stroke-width="2.2" marker-end="url(#arr-emerald)"/>
+  <text x="248" y="246" class="mono" font-size="10.5" font-weight="700" fill="#0f766e" text-anchor="middle">unlink &amp; attach after HEAD</text>
 
   <!-- LRU Operation Sequence Box -->
   <g transform="translate(46, 404)">
-    <rect x="0" y="0" width="520" height="248" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
-    <text x="16" y="26" class="sans" font-size="12.5" font-weight="700" fill="#0f172a">O(1) Pointer Mechanics</text>
+    <rect x="0" y="0" width="520" height="248" rx="8" fill="#faf8f5" stroke="#d6d0c4"/>
+    <text x="16" y="26" class="sans" font-size="12.5" font-weight="700" fill="#1c1917">O(1) Pointer Mechanics</text>
 
-    <rect x="16" y="42" width="488" height="58" rx="6" fill="#ecfdf5" stroke="#6ee7b7"/>
+    <rect x="16" y="42" width="488" height="58" rx="6" fill="#f0fdf9" stroke="#99f6e4"/>
     <text x="28" y="62" class="mono" font-size="11.5" font-weight="700" fill="#065f46">1. get("B"): map.get("B") -&gt; NodeB in O(1)</text>
-    <text x="28" y="84" class="sans" font-size="11" fill="#334155">Rewire 4 pointers: unlink(B), insertAfter(HEAD, B) -&gt; [B, C, A].</text>
+    <text x="28" y="84" class="sans" font-size="11" fill="#44403c">Rewire 4 pointers: unlink(B), insertAfter(HEAD, B) -&gt; [B, C, A].</text>
 
-    <rect x="16" y="112" width="488" height="68" rx="6" fill="#fff1f2" stroke="#fda4af"/>
-    <text x="28" y="132" class="mono" font-size="11.5" font-weight="700" fill="#9f1239">2. put("D"): capacity full (size == 3)</text>
-    <text x="28" y="152" class="sans" font-size="11" fill="#334155">Evict TAIL.prev (NodeA) + map.delete("A"), insert NodeD at HEAD.</text>
-    <text x="28" y="170" class="mono" font-size="10.5" font-weight="700" fill="#6d28d9">Result list: HEAD &lt;-&gt; D &lt;-&gt; B &lt;-&gt; C &lt;-&gt; TAIL</text>
+    <rect x="16" y="112" width="488" height="68" rx="6" fill="#fef2f2" stroke="#fda4af"/>
+    <text x="28" y="132" class="mono" font-size="11.5" font-weight="700" fill="#991b1b">2. put("D"): capacity full (size == 3)</text>
+    <text x="28" y="152" class="sans" font-size="11" fill="#44403c">Evict TAIL.prev (NodeA) + map.delete("A"), insert NodeD at HEAD.</text>
+    <text x="28" y="170" class="mono" font-size="10.5" font-weight="700" fill="#065f46">Result list: HEAD &lt;-&gt; D &lt;-&gt; B &lt;-&gt; C &lt;-&gt; TAIL</text>
 
-    <text x="16" y="206" class="sans" font-size="11" fill="#475569">Sentinel HEAD &amp; TAIL eliminate null-pointer edge branches.</text>
-    <text x="16" y="226" class="mono" font-size="11" font-weight="700" fill="#1e3a8a">Hazard: scan pollution (1-hit burst evicts hot working set).</text>
+    <text x="16" y="206" class="sans" font-size="11" fill="#44403c">Sentinel HEAD &amp; TAIL eliminate null-pointer edge branches.</text>
+    <text x="16" y="226" class="mono" font-size="11" font-weight="700" fill="#065f46">Hazard: scan pollution (1-hit burst evicts hot working set).</text>
   </g>
 
   <!-- ==================== RIGHT PANEL: O(1) LFU ==================== -->
-  <rect x="612" y="78" width="564" height="598" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+  <rect x="612" y="78" width="564" height="598" rx="10" fill="#ffffff" stroke="#d6d0c4"/>
   <rect x="612" y="78" width="564" height="36" rx="10" fill="#fffbeb"/>
   <rect x="612" y="104" width="564" height="10" fill="#fffbeb"/>
   <text x="628" y="101" class="sans" font-size="13" font-weight="700" fill="#92400e">2. O(1) LFU Cache (cap = 3)</text>
-  <text x="1160" y="101" class="mono" font-size="11" font-weight="700" fill="#d97706" text-anchor="end">keyMap + freqMap + minFreq</text>
+  <text x="1160" y="101" class="mono" font-size="11" font-weight="700" fill="#b45309" text-anchor="end">keyMap + freqMap + minFreq</text>
 
   <!-- keyMap Box -->
   <g transform="translate(634, 130)">
-    <rect x="0" y="0" width="520" height="74" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
-    <text x="14" y="22" class="sans" font-size="11.5" font-weight="700" fill="#0f172a">keyMap: key -&gt; Node(key, val, freq)</text>
-    <rect x="14" y="34" width="156" height="28" rx="5" fill="#fffbeb" stroke="#d97706"/>
+    <rect x="0" y="0" width="520" height="74" rx="8" fill="#faf8f5" stroke="#d6d0c4"/>
+    <text x="14" y="22" class="sans" font-size="11.5" font-weight="700" fill="#1c1917">keyMap: key -&gt; Node(key, val, freq)</text>
+    <rect x="14" y="34" width="156" height="28" rx="5" fill="#fffbeb" stroke="#b45309"/>
     <text x="92" y="52" class="mono" font-size="11" font-weight="700" fill="#92400e" text-anchor="middle">k2 -&gt; Node(f=1-&gt;2)</text>
-    <rect x="182" y="34" width="156" height="28" rx="5" fill="#eff6ff" stroke="#3b82f6"/>
-    <text x="260" y="52" class="mono" font-size="11" font-weight="700" fill="#1e3a8a" text-anchor="middle">k3 -&gt; Node(f=2)</text>
-    <rect x="350" y="34" width="156" height="28" rx="5" fill="#fff1f2" stroke="#e11d48"/>
-    <text x="428" y="52" class="mono" font-size="11" font-weight="700" fill="#be123c" text-anchor="middle">k1 -&gt; Node(f=2)</text>
+    <rect x="182" y="34" width="156" height="28" rx="5" fill="#f0fdf9" stroke="#0f766e"/>
+    <text x="260" y="52" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">k3 -&gt; Node(f=2)</text>
+    <rect x="350" y="34" width="156" height="28" rx="5" fill="#fef2f2" stroke="#dc2626"/>
+    <text x="428" y="52" class="mono" font-size="11" font-weight="700" fill="#991b1b" text-anchor="middle">k1 -&gt; Node(f=2)</text>
   </g>
 
   <!-- freqMap Buckets -->
-  <text x="634" y="232" class="sans" font-size="12" font-weight="700" fill="#0f172a">freqMap: frequency -&gt; Doubly Linked List (ties broken by LRU)</text>
+  <text x="634" y="232" class="sans" font-size="12" font-weight="700" fill="#1c1917">freqMap: frequency -&gt; Doubly Linked List (ties broken by LRU)</text>
 
   <!-- Bucket freq = 1 row at y=250 -->
-  <rect x="756" y="244" width="398" height="56" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <rect x="756" y="244" width="398" height="56" rx="8" fill="#faf8f5" stroke="#d6d0c4"/>
   <text x="720" y="276" class="mono" font-size="12" font-weight="700" fill="#92400e">f = 1</text>
 
   <!-- Bucket freq = 2 row at y=336 -->
-  <rect x="756" y="330" width="398" height="56" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
-  <text x="720" y="362" class="mono" font-size="12" font-weight="700" fill="#1e3a8a">f = 2</text>
+  <rect x="756" y="330" width="398" height="56" rx="8" fill="#faf8f5" stroke="#d6d0c4"/>
+  <text x="720" y="362" class="mono" font-size="12" font-weight="700" fill="#065f46">f = 2</text>
 
   <!-- Animated minFreq Pointer Badge (moves from f=1 to f=2 and back) -->
   <g transform="translate(622, 0)">
     <g class="lfu-minfreq">
-      <rect x="0" y="6" width="70" height="32" rx="6" fill="#d97706"/>
+      <rect x="0" y="6" width="70" height="32" rx="6" fill="#b45309"/>
       <text x="35" y="26" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">minFreq</text>
-      <line x1="70" y1="22" x2="92" y2="22" stroke="#d97706" stroke-width="2.2" marker-end="url(#arr-amber)"/>
+      <line x1="70" y1="22" x2="92" y2="22" stroke="#b45309" stroke-width="2.2" marker-end="url(#arr-amber)"/>
     </g>
   </g>
 
   <!-- Static k3 in freqMap[2] -->
   <g transform="translate(880, 336)">
-    <rect width="84" height="44" rx="7" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.8"/>
-    <text x="42" y="20" class="mono" font-size="12.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">k3</text>
-    <text x="42" y="36" class="mono" font-size="10" fill="#2563eb" text-anchor="middle">freq = 2</text>
+    <rect width="84" height="44" rx="7" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.8"/>
+    <text x="42" y="20" class="mono" font-size="12.5" font-weight="700" fill="#065f46" text-anchor="middle">k3</text>
+    <text x="42" y="36" class="mono" font-size="10" fill="#0f766e" text-anchor="middle">freq = 2</text>
   </g>
 
   <!-- Animated k2 (promotes from freqMap[1] to freqMap[2]) -->
   <g class="lfu-node-k2">
-    <rect width="84" height="44" rx="7" fill="#ecfdf5" stroke="#059669" stroke-width="2.2"/>
+    <rect width="84" height="44" rx="7" fill="#f0fdf9" stroke="#0f766e" stroke-width="2.2"/>
     <text x="42" y="20" class="mono" font-size="12.5" font-weight="700" fill="#065f46" text-anchor="middle">k2 (hit)</text>
-    <text x="42" y="36" class="mono" font-size="10" fill="#059669" text-anchor="middle">f++ -&gt; 2</text>
+    <text x="42" y="36" class="mono" font-size="10" fill="#0f766e" text-anchor="middle">f++ -&gt; 2</text>
   </g>
 
   <!-- Animated k1 (tail of freqMap[2], evicted on put(k4)) -->
   <g class="lfu-evict-k1">
-    <rect width="84" height="44" rx="7" fill="#fff1f2" stroke="#e11d48" stroke-width="2"/>
-    <text x="42" y="20" class="mono" font-size="12.5" font-weight="700" fill="#be123c" text-anchor="middle">k1 (tail)</text>
-    <text x="42" y="36" class="mono" font-size="10" fill="#e11d48" text-anchor="middle">evict O(1)</text>
+    <rect width="84" height="44" rx="7" fill="#fef2f2" stroke="#dc2626" stroke-width="2"/>
+    <text x="42" y="20" class="mono" font-size="12.5" font-weight="700" fill="#991b1b" text-anchor="middle">k1 (tail)</text>
+    <text x="42" y="36" class="mono" font-size="10" fill="#dc2626" text-anchor="middle">evict O(1)</text>
   </g>
 
   <!-- Promotion arrow from f=1 to f=2 -->
-  <path class="lfu-promo-arc" d="M 870 272 C 920 272, 920 328, 868 348" fill="none" stroke="#059669" stroke-width="2.2" marker-end="url(#arr-emerald)"/>
+  <path class="lfu-promo-arc" d="M 870 272 C 920 272, 920 328, 868 348" fill="none" stroke="#0f766e" stroke-width="2.2" marker-end="url(#arr-emerald)"/>
 
   <!-- LFU Operation Sequence Box -->
   <g transform="translate(634, 424)">
-    <rect x="0" y="0" width="520" height="228" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
-    <text x="16" y="26" class="sans" font-size="12.5" font-weight="700" fill="#0f172a">O(1) Frequency Promotion &amp; minFreq Invariant</text>
+    <rect x="0" y="0" width="520" height="228" rx="8" fill="#faf8f5" stroke="#d6d0c4"/>
+    <text x="16" y="26" class="sans" font-size="12.5" font-weight="700" fill="#1c1917">O(1) Frequency Promotion &amp; minFreq Invariant</text>
 
-    <rect x="16" y="42" width="488" height="72" rx="6" fill="#ecfdf5" stroke="#6ee7b7"/>
+    <rect x="16" y="42" width="488" height="72" rx="6" fill="#f0fdf9" stroke="#99f6e4"/>
     <text x="28" y="62" class="mono" font-size="11.5" font-weight="700" fill="#065f46">1. get(k2): remove k2 from freqMap[1]</text>
-    <text x="28" y="82" class="sans" font-size="11" fill="#334155">freqMap[1] is now empty &amp;&amp; 1 == minFreq =&gt; minFreq = 2!</text>
-    <text x="28" y="101" class="mono" font-size="10.5" fill="#059669">k2.freq++ (2) -&gt; insert k2 at head of freqMap[2].</text>
+    <text x="28" y="82" class="sans" font-size="11" fill="#44403c">freqMap[1] is now empty &amp;&amp; 1 == minFreq =&gt; minFreq = 2!</text>
+    <text x="28" y="101" class="mono" font-size="10.5" fill="#0f766e">k2.freq++ (2) -&gt; insert k2 at head of freqMap[2].</text>
 
-    <rect x="16" y="126" width="488" height="84" rx="6" fill="#fffbeb" stroke="#fcd34d"/>
+    <rect x="16" y="126" width="488" height="84" rx="6" fill="#fffbeb" stroke="#fde68a"/>
     <text x="28" y="146" class="mono" font-size="11.5" font-weight="700" fill="#92400e">2. put(k4): capacity full -&gt; evict freqMap[minFreq].tail</text>
-    <text x="28" y="166" class="sans" font-size="11" fill="#334155">Evicts k1 (least recent inside lowest-frequency bucket f=2).</text>
-    <text x="28" y="186" class="mono" font-size="10.5" font-weight="700" fill="#6d28d9">Insert k4 into freqMap[1]; reset minFreq = 1 in O(1)!</text>
+    <text x="28" y="166" class="sans" font-size="11" fill="#44403c">Evicts k1 (least recent inside lowest-frequency bucket f=2).</text>
+    <text x="28" y="186" class="mono" font-size="10.5" font-weight="700" fill="#065f46">Insert k4 into freqMap[1]; reset minFreq = 1 in O(1)!</text>
   </g>
 </svg>

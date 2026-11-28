@@ -39,10 +39,10 @@
       100%      { opacity: 0.86; }
     }
 
-    @keyframes s1-hl { 0%, 24% { stroke: #7c3aed; stroke-width: 2.2; opacity: 1; } 25%, 100% { stroke: #cbd5e1; stroke-width: 1; opacity: 0.86; } }
-    @keyframes s2-hl { 0%, 24% { stroke: #cbd5e1; stroke-width: 1; opacity: 0.86; } 25%, 49% { stroke: #2563eb; stroke-width: 2.2; opacity: 1; } 50%, 100% { stroke: #cbd5e1; stroke-width: 1; opacity: 0.86; } }
-    @keyframes s3-hl { 0%, 49% { stroke: #cbd5e1; stroke-width: 1; opacity: 0.86; } 50%, 74% { stroke: #d97706; stroke-width: 2.2; opacity: 1; } 75%, 100% { stroke: #cbd5e1; stroke-width: 1; opacity: 0.86; } }
-    @keyframes s4-hl { 0%, 74% { stroke: #cbd5e1; stroke-width: 1; opacity: 0.86; } 75%, 100% { stroke: #059669; stroke-width: 2.2; opacity: 1; } }
+    @keyframes s1-hl { 0%, 24% { stroke: #0f766e; stroke-width: 2.2; opacity: 1; } 25%, 100% { stroke: #d6d0c4; stroke-width: 1; opacity: 0.86; } }
+    @keyframes s2-hl { 0%, 24% { stroke: #d6d0c4; stroke-width: 1; opacity: 0.86; } 25%, 49% { stroke: #0f766e; stroke-width: 2.2; opacity: 1; } 50%, 100% { stroke: #d6d0c4; stroke-width: 1; opacity: 0.86; } }
+    @keyframes s3-hl { 0%, 49% { stroke: #d6d0c4; stroke-width: 1; opacity: 0.86; } 50%, 74% { stroke: #b45309; stroke-width: 2.2; opacity: 1; } 75%, 100% { stroke: #d6d0c4; stroke-width: 1; opacity: 0.86; } }
+    @keyframes s4-hl { 0%, 74% { stroke: #d6d0c4; stroke-width: 1; opacity: 0.86; } 75%, 100% { stroke: #0f766e; stroke-width: 2.2; opacity: 1; } }
 
     .needle-l0 { transform-origin: 170px 236px; animation: l0-spin 12s ease-in-out infinite; }
     .needle-l1 { transform-origin: 390px 236px; animation: l1-tick 12s ease-in-out infinite; }
@@ -64,52 +64,52 @@
 
   <defs>
     <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#b45309"/>
     </marker>
     <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-violet" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
   </defs>
 
   <!-- Canvas -->
-  <rect x="0" y="0" width="1120" height="580" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1120" height="580" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1120" height="60" rx="12" fill="#0f172a"/>
-  <rect x="0" y="44" width="1120" height="16" fill="#0f172a"/>
-  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Hierarchical Timing Wheels (Varghese &amp; Lauck, SOSP 1987)</text>
-  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">M18 §4.6 · O(1) Modulo Insertion &amp; Expiry · Level-0 (1s/tick) ← Level-1 (16s/slot) ← Level-2 (256s/slot) · Durable __delay_log</text>
+  <line x1="24" y1="62" x2="1096" y2="62" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#1c1917" font-family="Georgia, 'Times New Roman', serif">Hierarchical Timing Wheels (Varghese &amp; Lauck, SOSP 1987)</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">M18 §4.6 · O(1) Modulo Insertion &amp; Expiry · Level-0 (1s/tick) ← Level-1 (16s/slot) ← Level-2 (256s/slot) · Durable __delay_log</text>
 
   <!-- LEFT PANEL: 3-TIER TIMING WHEELS -->
-  <rect x="24" y="76" width="664" height="432" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <text x="42" y="102" class="sans" font-size="14" font-weight="700" fill="#0f172a">Three-Tier Wheel Cascade (16 Slots/Wheel, Delay = 65 Ticks)</text>
+  <rect x="24" y="76" width="664" height="432" rx="10" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <text x="42" y="102" class="sans" font-size="14" font-weight="700" fill="#1c1917">Three-Tier Wheel Cascade (16 Slots/Wheel, Delay = 65 Ticks)</text>
 
   <!-- Wheel L0 (Seconds: center 170, 236) -->
-  <circle cx="170" cy="236" r="90" fill="#eff6ff" stroke="#2563eb" stroke-width="2.5"/>
-  <circle cx="170" cy="236" r="56" fill="#ffffff" stroke="#93c5fd" stroke-width="1.5"/>
+  <circle cx="170" cy="236" r="90" fill="#f0fdf9" stroke="#0f766e" stroke-width="2.5"/>
+  <circle cx="170" cy="236" r="56" fill="#ffffff" stroke="#99f6e4" stroke-width="1.5"/>
   <!-- Highlight Slot 1 (top-right ~22.5 deg) -->
-  <circle cx="200" cy="166" r="13" fill="#059669" stroke="#ffffff" stroke-width="2"/>
+  <circle cx="200" cy="166" r="13" fill="#0f766e" stroke="#ffffff" stroke-width="2"/>
   <text x="200" y="170" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">s1</text>
-  <text x="170" y="158" class="mono" font-size="10" fill="#1e40af" text-anchor="middle">s0</text>
-  <text x="244" y="240" class="mono" font-size="10" fill="#1e40af" text-anchor="middle">s4</text>
-  <text x="170" y="318" class="mono" font-size="10" fill="#1e40af" text-anchor="middle">s8</text>
-  <text x="96"  y="240" class="mono" font-size="10" fill="#1e40af" text-anchor="middle">s12</text>
-  <text x="170" y="232" class="sans" font-size="11.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">Level-0 (Sec)</text>
-  <text x="170" y="248" class="mono" font-size="10" fill="#2563eb" text-anchor="middle">stride = 1 s</text>
+  <text x="170" y="158" class="mono" font-size="10" fill="#065f46" text-anchor="middle">s0</text>
+  <text x="244" y="240" class="mono" font-size="10" fill="#065f46" text-anchor="middle">s4</text>
+  <text x="170" y="318" class="mono" font-size="10" fill="#065f46" text-anchor="middle">s8</text>
+  <text x="96"  y="240" class="mono" font-size="10" fill="#065f46" text-anchor="middle">s12</text>
+  <text x="170" y="232" class="sans" font-size="11.5" font-weight="700" fill="#065f46" text-anchor="middle">Level-0 (Sec)</text>
+  <text x="170" y="248" class="mono" font-size="10" fill="#0f766e" text-anchor="middle">stride = 1 s</text>
   <!-- Rotating L0 needle -->
   <g class="needle-l0">
-    <line x1="170" y1="236" x2="170" y2="156" stroke="#2563eb" stroke-width="3" stroke-linecap="round"/>
-    <circle cx="170" cy="236" r="6" fill="#0f172a"/>
+    <line x1="170" y1="236" x2="170" y2="156" stroke="#0f766e" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="170" cy="236" r="6" fill="#1c1917"/>
   </g>
 
   <!-- Wheel L1 (Minutes: center 390, 236) -->
-  <circle cx="390" cy="236" r="84" fill="#fffbeb" stroke="#d97706" stroke-width="2.5"/>
-  <circle cx="390" cy="236" r="50" fill="#ffffff" stroke="#fcd34d" stroke-width="1.5"/>
+  <circle cx="390" cy="236" r="84" fill="#fffbeb" stroke="#b45309" stroke-width="2.5"/>
+  <circle cx="390" cy="236" r="50" fill="#ffffff" stroke="#fde68a" stroke-width="1.5"/>
   <!-- Highlight Slot 4 (right ~90 deg) -->
-  <circle cx="458" cy="236" r="14" fill="#d97706" stroke="#ffffff" stroke-width="2"/>
+  <circle cx="458" cy="236" r="14" fill="#b45309" stroke="#ffffff" stroke-width="2"/>
   <text x="458" y="240" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">m4</text>
   <text x="390" y="164" class="mono" font-size="10" fill="#92400e" text-anchor="middle">m0</text>
   <text x="390" y="312" class="mono" font-size="10" fill="#92400e" text-anchor="middle">m8</text>
@@ -117,81 +117,81 @@
   <text x="390" y="248" class="mono" font-size="10" fill="#b45309" text-anchor="middle">stride = 16 s</text>
   <!-- Rotating L1 needle -->
   <g class="needle-l1">
-    <line x1="390" y1="236" x2="390" y2="162" stroke="#d97706" stroke-width="3" stroke-linecap="round"/>
-    <circle cx="390" cy="236" r="6" fill="#0f172a"/>
+    <line x1="390" y1="236" x2="390" y2="162" stroke="#b45309" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="390" cy="236" r="6" fill="#1c1917"/>
   </g>
 
   <!-- Wheel L2 (Hours: center 592, 236) -->
-  <circle cx="592" cy="236" r="72" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2"/>
-  <circle cx="592" cy="236" r="42" fill="#ffffff" stroke="#c4b5fd" stroke-width="1.5"/>
-  <text x="592" y="232" class="sans" font-size="11" font-weight="700" fill="#5b21b6" text-anchor="middle">Level-2 (Hr)</text>
-  <text x="592" y="248" class="mono" font-size="10" fill="#7c3aed" text-anchor="middle">stride = 256 s</text>
-  <line x1="592" y1="236" x2="592" y2="174" stroke="#7c3aed" stroke-width="2.5" stroke-linecap="round"/>
-  <circle cx="592" cy="236" r="5" fill="#0f172a"/>
+  <circle cx="592" cy="236" r="72" fill="#f5f1e8" stroke="#0f766e" stroke-width="2"/>
+  <circle cx="592" cy="236" r="42" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <text x="592" y="232" class="sans" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">Level-2 (Hr)</text>
+  <text x="592" y="248" class="mono" font-size="10" fill="#0f766e" text-anchor="middle">stride = 256 s</text>
+  <line x1="592" y1="236" x2="592" y2="174" stroke="#0f766e" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="592" cy="236" r="5" fill="#1c1917"/>
 
   <!-- Cascade Arrows (L2 -> L1 -> L0) -->
-  <line x1="518" y1="236" x2="478" y2="236" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#arr-violet)"/>
-  <path d="M 306,236 L 266,236" fill="none" stroke="#d97706" stroke-width="2" marker-end="url(#arr-amber)"/>
+  <line x1="518" y1="236" x2="478" y2="236" stroke="#0f766e" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#arr-violet)"/>
+  <path d="M 306,236 L 266,236" fill="none" stroke="#b45309" stroke-width="2" marker-end="url(#arr-amber)"/>
   <text x="286" y="226" class="mono" font-size="10" font-weight="700" fill="#92400e" text-anchor="middle">Cascade</text>
 
   <!-- Animated Cascading Timer Packet -->
   <g class="casc-msg">
-    <rect x="422" y="206" width="62" height="22" rx="4" fill="#d97706" stroke="#ffffff" stroke-width="1.5"/>
+    <rect x="422" y="206" width="62" height="22" rx="4" fill="#b45309" stroke="#ffffff" stroke-width="1.5"/>
     <text x="453" y="221" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">tick=65</text>
   </g>
 
   <!-- Durable Delay Log & Ready Partition Boxes at bottom of left panel -->
-  <rect x="42" y="356" width="290" height="68" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
-  <text x="56" y="376" class="sans" font-size="11.5" font-weight="700" fill="#5b21b6">Durable Delay Topic (__delay_log)</text>
-  <text x="56" y="394" class="mono" font-size="10" fill="#334155">1. Persist (msg, expireAt=now+65s)</text>
-  <text x="56" y="410" class="sans" font-size="10" fill="#4c1d95">Rebuilds volatile wheels on broker crash.</text>
+  <rect x="42" y="356" width="290" height="68" rx="8" fill="#f5f1e8" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="56" y="376" class="sans" font-size="11.5" font-weight="700" fill="#065f46">Durable Delay Topic (__delay_log)</text>
+  <text x="56" y="394" class="mono" font-size="10" fill="#44403c">1. Persist (msg, expireAt=now+65s)</text>
+  <text x="56" y="410" class="sans" font-size="10" fill="#065f46">Rebuilds volatile wheels on broker crash.</text>
 
-  <line x1="332" y1="390" x2="368" y2="390" stroke="#059669" stroke-width="2" marker-end="url(#arr-green)"/>
+  <line x1="332" y1="390" x2="368" y2="390" stroke="#0f766e" stroke-width="2" marker-end="url(#arr-green)"/>
 
   <g class="rdy-box">
-    <rect x="374" y="356" width="296" height="68" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <rect x="374" y="356" width="296" height="68" rx="8" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
     <text x="388" y="376" class="sans" font-size="11.5" font-weight="700" fill="#065f46">Target Ready Partition (Fired!)</text>
-    <text x="388" y="394" class="mono" font-size="10" fill="#047857">Tick 65 reached: order_expire → Ready</text>
+    <text x="388" y="394" class="mono" font-size="10" fill="#065f46">Tick 65 reached: order_expire → Ready</text>
     <text x="388" y="410" class="sans" font-size="10" fill="#065f46">Consumers pull normally from ready topic.</text>
   </g>
 
-  <rect x="42" y="438" width="628" height="54" rx="7" fill="#f8fafc" stroke="#cbd5e1"/>
-  <text x="56" y="458" class="mono" font-size="10.5" font-weight="700" fill="#0f172a">Slot Math for delay = 65 ticks (W = 16):</text>
-  <text x="56" y="477" class="mono" font-size="10" fill="#334155">L1 bucket = ⌊65 / 16⌋ = slot 4  (inserted in O(1))   →   L0 remainder = 65 mod 16 = slot 1</text>
+  <rect x="42" y="438" width="628" height="54" rx="7" fill="#faf8f5" stroke="#d6d0c4"/>
+  <text x="56" y="458" class="mono" font-size="10.5" font-weight="700" fill="#1c1917">Slot Math for delay = 65 ticks (W = 16):</text>
+  <text x="56" y="477" class="mono" font-size="10" fill="#44403c">L1 bucket = ⌊65 / 16⌋ = slot 4  (inserted in O(1))   →   L0 remainder = 65 mod 16 = slot 1</text>
 
   <!-- RIGHT PANEL: 4-STEP TIMELINE -->
-  <rect x="706" y="76" width="390" height="432" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <text x="724" y="102" class="sans" font-size="14" font-weight="700" fill="#0f172a">Execution Timeline (12s Loop)</text>
+  <rect x="706" y="76" width="390" height="432" rx="10" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <text x="724" y="102" class="sans" font-size="14" font-weight="700" fill="#1c1917">Execution Timeline (12s Loop)</text>
 
   <!-- Step 1 -->
-  <rect x="724" y="118" width="354" height="84" rx="8" fill="#f5f3ff" class="s1"/>
-  <text x="738" y="139" class="sans" font-size="12" font-weight="700" fill="#5b21b6">1. Durable Append &amp; O(1) Schedule</text>
-  <text x="738" y="159" class="mono" font-size="10" fill="#334155">Persist to __delay_log, compute</text>
-  <text x="738" y="175" class="mono" font-size="10" fill="#334155">bucket = ⌊65 / 16⌋ = L1[4] in O(1).</text>
-  <text x="738" y="191" class="sans" font-size="10" fill="#6d28d9">Zero O(log M) priority-heap rebalancing.</text>
+  <rect x="724" y="118" width="354" height="84" rx="8" fill="#f5f1e8" class="s1"/>
+  <text x="738" y="139" class="sans" font-size="12" font-weight="700" fill="#065f46">1. Durable Append &amp; O(1) Schedule</text>
+  <text x="738" y="159" class="mono" font-size="10" fill="#44403c">Persist to __delay_log, compute</text>
+  <text x="738" y="175" class="mono" font-size="10" fill="#44403c">bucket = ⌊65 / 16⌋ = L1[4] in O(1).</text>
+  <text x="738" y="191" class="sans" font-size="10" fill="#065f46">Zero O(log M) priority-heap rebalancing.</text>
 
   <!-- Step 2 -->
-  <rect x="724" y="212" width="354" height="84" rx="8" fill="#eff6ff" class="s2"/>
-  <text x="738" y="233" class="sans" font-size="12" font-weight="700" fill="#1e3a8a">2. Fine Wheel Pointer Advances</text>
-  <text x="738" y="253" class="mono" font-size="10" fill="#334155">L0 pointer steps 1 tick/sec across</text>
-  <text x="738" y="269" class="mono" font-size="10" fill="#334155">slots 0..15, firing immediate timers.</text>
-  <text x="738" y="285" class="sans" font-size="10" fill="#1d4ed8">Coarse slots remain untouched until due.</text>
+  <rect x="724" y="212" width="354" height="84" rx="8" fill="#f0fdf9" class="s2"/>
+  <text x="738" y="233" class="sans" font-size="12" font-weight="700" fill="#065f46">2. Fine Wheel Pointer Advances</text>
+  <text x="738" y="253" class="mono" font-size="10" fill="#44403c">L0 pointer steps 1 tick/sec across</text>
+  <text x="738" y="269" class="mono" font-size="10" fill="#44403c">slots 0..15, firing immediate timers.</text>
+  <text x="738" y="285" class="sans" font-size="10" fill="#065f46">Coarse slots remain untouched until due.</text>
 
   <!-- Step 3 -->
   <rect x="724" y="306" width="354" height="84" rx="8" fill="#fffbeb" class="s3"/>
   <text x="738" y="327" class="sans" font-size="12" font-weight="700" fill="#92400e">3. Revolution Boundary Cascade</text>
-  <text x="738" y="347" class="mono" font-size="10" fill="#334155">After 4 L0 turns (t=64s), L1[4] bucket</text>
-  <text x="738" y="363" class="mono" font-size="10" fill="#334155">cascades down into L0[65 mod 16 = 1].</text>
+  <text x="738" y="347" class="mono" font-size="10" fill="#44403c">After 4 L0 turns (t=64s), L1[4] bucket</text>
+  <text x="738" y="363" class="mono" font-size="10" fill="#44403c">cascades down into L0[65 mod 16 = 1].</text>
   <text x="738" y="379" class="sans" font-size="10" fill="#b45309">O(1) amortized work per timer re-insert.</text>
 
   <!-- Step 4 -->
-  <rect x="724" y="400" width="354" height="84" rx="8" fill="#ecfdf5" class="s4"/>
+  <rect x="724" y="400" width="354" height="84" rx="8" fill="#f0fdf9" class="s4"/>
   <text x="738" y="421" class="sans" font-size="12" font-weight="700" fill="#065f46">4. Exact Tick-65 Expiry Firing</text>
-  <text x="738" y="441" class="mono" font-size="10" fill="#334155">L0 pointer reaches L0[1] at tick 65,</text>
-  <text x="738" y="457" class="mono" font-size="10" fill="#334155">promotes msg to Target Ready Partition.</text>
-  <text x="738" y="473" class="sans" font-size="10" fill="#047857">Scales cleanly to millions of active timers.</text>
+  <text x="738" y="441" class="mono" font-size="10" fill="#44403c">L0 pointer reaches L0[1] at tick 65,</text>
+  <text x="738" y="457" class="mono" font-size="10" fill="#44403c">promotes msg to Target Ready Partition.</text>
+  <text x="738" y="473" class="sans" font-size="10" fill="#065f46">Scales cleanly to millions of active timers.</text>
 
   <!-- FOOTER -->
-  <rect x="24" y="520" width="1072" height="44" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
-  <text x="42" y="546" class="sans" font-size="11.5" font-weight="600" fill="#1e3a8a">Takeaway: Hierarchical Timing Wheels schedule millions of delayed messages in O(1) time without DB polling or O(log M) heap lock contention.</text>
+  <rect x="24" y="520" width="1072" height="44" rx="8" fill="#f0fdf9" stroke="#99f6e4" stroke-width="1"/>
+  <text x="42" y="546" class="sans" font-size="11.5" font-weight="600" fill="#065f46">Takeaway: Hierarchical Timing Wheels schedule millions of delayed messages in O(1) time without DB polling or O(log M) heap lock contention.</text>
 </svg>

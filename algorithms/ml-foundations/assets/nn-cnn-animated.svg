@@ -1,93 +1,82 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 440" width="960" height="440" role="img" aria-labelledby="title desc">
   <title id="title">2D Convolutional Neural Network (CNN) Cross-Correlation and Receptive Field</title>
-  <desc id="desc">Animated 2D convolution showing a 3x3 kernel window sliding over a 5x5 input grid to compute a 3x3 output feature map, plus multi-layer receptive field growth.</desc>
-  <style>
-    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-    @keyframes slide-win {
-      0%, 20%   { transform: translate(0px, 0px); }
-      25%, 45%  { transform: translate(84px, 0px); }
-      50%, 70%  { transform: translate(0px, 84px); }
-      75%, 95%  { transform: translate(84px, 84px); }
-      100%      { transform: translate(0px, 0px); }
-    }
-    @keyframes slide-out {
-      0%, 20%   { transform: translate(0px, 0px); }
-      25%, 45%  { transform: translate(48px, 0px); }
-      50%, 70%  { transform: translate(0px, 48px); }
-      75%, 95%  { transform: translate(48px, 48px); }
-      100%      { transform: translate(0px, 0px); }
-    }
-    .win-in  { animation: slide-win 8s ease-in-out infinite; }
-    .win-out { animation: slide-out 8s ease-in-out infinite; }
-    @media (prefers-reduced-motion: reduce) {
-      .win-in, .win-out { animation: none !important; }
-    }
-  </style>
+  <desc id="desc">Static Editorial Paper diagram of 2D cross-correlation showing a 3x3 shared kernel sliding over a 5x5 input feature map to produce a 3x3 output feature map, paired with receptive field growth recurrence.</desc>
   <defs>
-    <marker id="arr-indigo" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#4f46e5"/>
+    <marker id="ed-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M1,2 L9,5 L1,8" fill="none" stroke="#1c1917" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="ed-arr-teal" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M1,2 L9,5 L1,8" fill="none" stroke="#0f766e" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
     </marker>
   </defs>
+  <style>
+    .ed-serif { font-family: Georgia, "Times New Roman", serif; }
+    .ed-sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .ed-mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  </style>
 
-  <rect x="0" y="0" width="960" height="440" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
-  <rect x="0" y="0" width="960" height="56" rx="12" fill="#0f172a"/>
-  <rect x="0" y="40" width="960" height="16" fill="#0f172a"/>
-  <text x="24" y="26" class="sans" font-size="17" font-weight="700" fill="#f8fafc">CNN: 2D Cross-Correlation, Stride, Dilation &amp; Receptive Field</text>
-  <text x="24" y="45" class="mono" font-size="12" fill="#94a3b8">(I * K)(i,j) = sum_{m,n} I(i + md, j + nd) K(m,n) + b   |   r_l = r_{l-1} + (k_l - 1) j_{l-1}</text>
+  <rect x="0" y="0" width="960" height="440" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
+  <text x="32" y="32" class="ed-mono" font-size="10.5" fill="#78716c" letter-spacing="1.4">CNN ARCHITECTURE · (I ⋆ K)(i,j) = sum_{m,n} I(i+md, j+nd) K(m,n) + b   |   r_l = r_{l-1} + (k_l - 1) j_{l-1}</text>
+  <text x="32" y="56" class="ed-serif" font-size="19" font-weight="700" fill="#1c1917">CNN: Translation-Equivariant Kernels &amp; Receptive Field Growth</text>
+  <line x1="32" y1="68" x2="928" y2="68" stroke="#1c1917" stroke-width="1.2"/>
 
-  <!-- Input 5x5 grid -->
-  <rect x="40" y="84" width="248" height="296" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <text x="164" y="108" class="sans" font-size="13" font-weight="700" fill="#0f172a" text-anchor="middle">Input Feature Map I (5 x 5)</text>
-  <g transform="translate(59, 124)" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1">
+  <!-- Input 5x5 -->
+  <rect x="32" y="88" width="248" height="292" rx="3" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="156" y="112" class="ed-sans" font-size="12.5" font-weight="700" fill="#1c1917" text-anchor="middle">Input Feature Map I (5 × 5)</text>
+  <g transform="translate(51, 128)" fill="#f5f1e8" stroke="#a8a29e" stroke-width="1">
     <rect x="0" y="0" width="42" height="42"/><rect x="42" y="0" width="42" height="42"/><rect x="84" y="0" width="42" height="42"/><rect x="126" y="0" width="42" height="42"/><rect x="168" y="0" width="42" height="42"/>
     <rect x="0" y="42" width="42" height="42"/><rect x="42" y="42" width="42" height="42"/><rect x="84" y="42" width="42" height="42"/><rect x="126" y="42" width="42" height="42"/><rect x="168" y="42" width="42" height="42"/>
     <rect x="0" y="84" width="42" height="42"/><rect x="42" y="84" width="42" height="42"/><rect x="84" y="84" width="42" height="42"/><rect x="126" y="84" width="42" height="42"/><rect x="168" y="84" width="42" height="42"/>
     <rect x="0" y="126" width="42" height="42"/><rect x="42" y="126" width="42" height="42"/><rect x="84" y="126" width="42" height="42"/><rect x="126" y="126" width="42" height="42"/><rect x="168" y="126" width="42" height="42"/>
     <rect x="0" y="168" width="42" height="42"/><rect x="42" y="168" width="42" height="42"/><rect x="84" y="168" width="42" height="42"/><rect x="126" y="168" width="42" height="42"/><rect x="168" y="168" width="42" height="42"/>
-    <rect x="0" y="0" width="126" height="126" fill="#3b82f6" fill-opacity="0.22" stroke="#2563eb" stroke-width="2.5" class="win-in"/>
+    <rect x="0" y="0" width="126" height="126" fill="#0f766e" fill-opacity="0.14" stroke="#0f766e" stroke-width="2"/>
   </g>
-  <text x="164" y="360" class="mono" font-size="11" fill="#475569" text-anchor="middle">p=0, s=1, d=1, k=3 -&gt; H_out = 3</text>
+  <text x="156" y="360" class="ed-mono" font-size="10.5" fill="#57534e" text-anchor="middle">p=0, s=1, d=1, k=3 → H_out = 3</text>
 
-  <!-- Kernel 3x3 -->
-  <rect x="330" y="114" width="170" height="206" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <text x="415" y="138" class="sans" font-size="13" font-weight="700" fill="#0f172a" text-anchor="middle">Shared Kernel K (3x3)</text>
-  <g transform="translate(352, 154)">
-    <rect x="0" y="0" width="42" height="42" fill="#ede9fe" stroke="#7c3aed"/><text x="21" y="25" class="mono" font-size="11" fill="#4c1d95" text-anchor="middle">w00</text>
-    <rect x="42" y="0" width="42" height="42" fill="#ede9fe" stroke="#7c3aed"/><text x="63" y="25" class="mono" font-size="11" fill="#4c1d95" text-anchor="middle">w01</text>
-    <rect x="84" y="0" width="42" height="42" fill="#ede9fe" stroke="#7c3aed"/><text x="105" y="25" class="mono" font-size="11" fill="#4c1d95" text-anchor="middle">w02</text>
-    <rect x="0" y="42" width="42" height="42" fill="#ede9fe" stroke="#7c3aed"/><text x="21" y="67" class="mono" font-size="11" fill="#4c1d95" text-anchor="middle">w10</text>
-    <rect x="42" y="42" width="42" height="42" fill="#ede9fe" stroke="#7c3aed"/><text x="63" y="67" class="mono" font-size="11" fill="#4c1d95" text-anchor="middle">w11</text>
-    <rect x="84" y="42" width="42" height="42" fill="#ede9fe" stroke="#7c3aed"/><text x="105" y="67" class="mono" font-size="11" fill="#4c1d95" text-anchor="middle">w12</text>
-    <rect x="0" y="84" width="42" height="42" fill="#ede9fe" stroke="#7c3aed"/><text x="21" y="109" class="mono" font-size="11" fill="#4c1d95" text-anchor="middle">w20</text>
-    <rect x="42" y="84" width="42" height="42" fill="#ede9fe" stroke="#7c3aed"/><text x="63" y="109" class="mono" font-size="11" fill="#4c1d95" text-anchor="middle">w21</text>
-    <rect x="84" y="84" width="42" height="42" fill="#ede9fe" stroke="#7c3aed"/><text x="105" y="109" class="mono" font-size="11" fill="#4c1d95" text-anchor="middle">w22</text>
+  <line x1="280" y1="226" x2="314" y2="226" stroke="#1c1917" stroke-width="1.3" marker-end="url(#ed-arr)"/>
+  <text x="297" y="218" class="ed-mono" font-size="9.5" fill="#78716c" text-anchor="middle">⋆ K</text>
+
+  <!-- Shared 3x3 Kernel -->
+  <rect x="318" y="114" width="174" height="214" rx="3" fill="#ffffff" stroke="#b45309" stroke-width="1.2"/>
+  <text x="405" y="138" class="ed-sans" font-size="12.5" font-weight="700" fill="#92400e" text-anchor="middle">Shared Kernel K (3 × 3)</text>
+  <g transform="translate(342, 154)">
+    <rect x="0" y="0" width="42" height="42" fill="#fffbeb" stroke="#b45309"/><text x="21" y="25" class="ed-mono" font-size="11" fill="#92400e" text-anchor="middle">w00</text>
+    <rect x="42" y="0" width="42" height="42" fill="#fffbeb" stroke="#b45309"/><text x="63" y="25" class="ed-mono" font-size="11" fill="#92400e" text-anchor="middle">w01</text>
+    <rect x="84" y="0" width="42" height="42" fill="#fffbeb" stroke="#b45309"/><text x="105" y="25" class="ed-mono" font-size="11" fill="#92400e" text-anchor="middle">w02</text>
+    <rect x="0" y="42" width="42" height="42" fill="#fffbeb" stroke="#b45309"/><text x="21" y="67" class="ed-mono" font-size="11" fill="#92400e" text-anchor="middle">w10</text>
+    <rect x="42" y="42" width="42" height="42" fill="#fffbeb" stroke="#b45309"/><text x="63" y="67" class="ed-mono" font-size="11" fill="#92400e" text-anchor="middle">w11</text>
+    <rect x="84" y="42" width="42" height="42" fill="#fffbeb" stroke="#b45309"/><text x="105" y="67" class="ed-mono" font-size="11" fill="#92400e" text-anchor="middle">w12</text>
+    <rect x="0" y="84" width="42" height="42" fill="#fffbeb" stroke="#b45309"/><text x="21" y="109" class="ed-mono" font-size="11" fill="#92400e" text-anchor="middle">w20</text>
+    <rect x="42" y="84" width="42" height="42" fill="#fffbeb" stroke="#b45309"/><text x="63" y="109" class="ed-mono" font-size="11" fill="#92400e" text-anchor="middle">w21</text>
+    <rect x="84" y="84" width="42" height="42" fill="#fffbeb" stroke="#b45309"/><text x="105" y="109" class="ed-mono" font-size="11" fill="#92400e" text-anchor="middle">w22</text>
   </g>
-  <text x="415" y="304" class="sans" font-size="11" fill="#6d28d9" text-anchor="middle">Translation Equivariance</text>
+  <text x="405" y="308" class="ed-sans" font-size="11" fill="#92400e" text-anchor="middle">Translation Equivariance</text>
 
-  <line x1="292" y1="220" x2="326" y2="220" stroke="#4f46e5" stroke-width="2.2" marker-end="url(#arr-indigo)"/>
-  <line x1="504" y1="220" x2="540" y2="220" stroke="#4f46e5" stroke-width="2.2" marker-end="url(#arr-indigo)"/>
+  <line x1="492" y1="226" x2="532" y2="226" stroke="#0f766e" stroke-width="1.3" marker-end="url(#ed-arr-teal)"/>
+  <text x="512" y="218" class="ed-mono" font-size="9.5" fill="#0f766e" text-anchor="middle">dot</text>
 
-  <!-- Output 3x3 -->
-  <rect x="546" y="84" width="374" height="296" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <text x="733" y="108" class="sans" font-size="13" font-weight="700" fill="#0f172a" text-anchor="middle">Output Map &amp; Receptive Field Growth</text>
-  <g transform="translate(570, 126)" fill="#ecfdf5" stroke="#10b981" stroke-width="1">
+  <!-- Output 3x3 + Recurrence -->
+  <rect x="536" y="88" width="392" height="292" rx="3" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="732" y="112" class="ed-sans" font-size="12.5" font-weight="700" fill="#1c1917" text-anchor="middle">Output Map Y (3 × 3) &amp; Receptive Field Growth</text>
+  <g transform="translate(556, 132)" fill="#f0fdf9" stroke="#0f766e" stroke-width="1">
     <rect x="0" y="0" width="48" height="48"/><rect x="48" y="0" width="48" height="48"/><rect x="96" y="0" width="48" height="48"/>
     <rect x="0" y="48" width="48" height="48"/><rect x="48" y="48" width="48" height="48"/><rect x="96" y="48" width="48" height="48"/>
     <rect x="0" y="96" width="48" height="48"/><rect x="48" y="96" width="48" height="48"/><rect x="96" y="96" width="48" height="48"/>
-    <rect x="0" y="0" width="48" height="48" fill="#10b981" fill-opacity="0.35" stroke="#059669" stroke-width="2.5" class="win-out"/>
+    <rect x="0" y="0" width="48" height="48" fill="#0f766e" fill-opacity="0.28" stroke="#0f766e" stroke-width="2"/>
   </g>
 
-  <!-- Receptive field ladder -->
-  <rect x="734" y="126" width="168" height="190" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
-  <text x="818" y="148" class="sans" font-size="12" font-weight="700" fill="#0f172a" text-anchor="middle">RF Recurrence</text>
-  <text x="746" y="174" class="mono" font-size="11" fill="#334155">L0: r0 = 1, j0 = 1</text>
-  <text x="746" y="198" class="mono" font-size="11" fill="#2563eb">L1 (3x3, s=1): r=3</text>
-  <text x="746" y="222" class="mono" font-size="11" fill="#7c3aed">L2 (3x3, s=1): r=5</text>
-  <text x="746" y="246" class="mono" font-size="11" fill="#059669">If L1 s=2: j1=2</text>
-  <text x="746" y="268" class="mono" font-size="11" fill="#059669">L2 (3x3, s=1): r=7</text>
-  <text x="746" y="298" class="sans" font-size="10" fill="#64748b">1x1 conv mixes channels</text>
+  <rect x="720" y="132" width="192" height="190" rx="3" fill="#faf8f5" stroke="#d6d0c4"/>
+  <text x="816" y="154" class="ed-sans" font-size="12" font-weight="700" fill="#1c1917" text-anchor="middle">RF Recurrence</text>
+  <line x1="734" y1="162" x2="898" y2="162" stroke="#d6d0c4"/>
+  <text x="734" y="182" class="ed-mono" font-size="10.5" fill="#44403c">L0: r0 = 1, j0 = 1</text>
+  <text x="734" y="204" class="ed-mono" font-size="10.5" fill="#0f766e">L1 (3×3, s=1): r=3</text>
+  <text x="734" y="226" class="ed-mono" font-size="10.5" fill="#0f766e">L2 (3×3, s=1): r=5</text>
+  <text x="734" y="248" class="ed-mono" font-size="10.5" fill="#b45309">If L1 s=2: j1 = 2</text>
+  <text x="734" y="270" class="ed-mono" font-size="10.5" fill="#b45309">L2 (3×3, s=1): r=7</text>
+  <text x="734" y="302" class="ed-sans" font-size="10.5" fill="#57534e">1×1 conv mixes channels</text>
 
-  <text x="733" y="360" class="mono" font-size="11" fill="#475569" text-anchor="middle">2x (3x3) = 18 weights vs 1x (5x5) = 25 weights</text>
-  <text x="480" y="416" class="sans" font-size="12" fill="#475569" text-anchor="middle">Parameter sharing across spatial offsets reduces O(H^2 W^2) dense layers to O(C_in C_out k^2 H_out W_out) MACs</text>
+  <text x="732" y="360" class="ed-mono" font-size="10.5" fill="#57534e" text-anchor="middle">2 × (3×3) = 18 weights vs 1 × (5×5) = 25 weights</text>
+
+  <line x1="32" y1="396" x2="928" y2="396" stroke="#e7e2d8"/>
+  <text x="32" y="418" class="ed-sans" font-size="11.5" fill="#57534e">Spatial weight sharing lowers O(H² W²) dense connectivity to O(C_in · C_out · k² · H_out · W_out) multiply-adds.</text>
 </svg>

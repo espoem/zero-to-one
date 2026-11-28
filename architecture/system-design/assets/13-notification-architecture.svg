@@ -3,142 +3,142 @@
   <desc id="desc">Comprehensive multi-channel notification architecture showing trigger services, stateless gateway with AppKey auth and template compilation, user/device lookup, channel-isolated priority queues, deduplicated workers with exponential backoff, third-party delivery providers, and delivery tracking funnel.</desc>
   <defs>
     <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#44403c"/>
     </marker>
     <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-purple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M 0 1 L 10 5 L 0 9 z" fill="#7e22ce"/>
     </marker>
     <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#b45309"/>
     </marker>
     <marker id="arr-teal" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0d9488"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
   </defs>
 
   <!-- Background -->
-  <rect x="0" y="0" width="1180" height="760" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1180" height="760" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1180" height="58" rx="12" fill="#0f172a"/>
-  <rect x="0" y="42" width="1180" height="16" fill="#0f172a"/>
-  <text x="24" y="28" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#f8fafc">Multi-Channel Notification System — End-to-End Fan-Out Architecture</text>
-  <text x="24" y="47" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#94a3b8">Stateless Ingestion Gateway · Channel-Isolated Priority Queues · Deduplication &amp; Rate Limits · 3P Delivery · Tracking Funnel</text>
+  <line x1="24" y1="60" x2="1156" y2="60" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="28" font-family="Georgia, 'Times New Roman', serif" font-size="18" font-weight="700" fill="#1c1917">Multi-Channel Notification System — End-to-End Fan-Out Architecture</text>
+  <text x="24" y="47" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#57534e">Stateless Ingestion Gateway · Channel-Isolated Priority Queues · Deduplication &amp; Rate Limits · 3P Delivery · Tracking Funnel</text>
 
   <!-- SECTION 1: TOP 4 PANELS (Y=72 to Y=400) -->
 
   <!-- PANEL 1: TRIGGER SERVICES -->
-  <rect x="20" y="72" width="210" height="328" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
-  <text x="34" y="96" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1e3a8a">1. Trigger Services</text>
+  <rect x="20" y="72" width="210" height="328" rx="10" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="34" y="96" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#065f46">1. Trigger Services</text>
 
-  <rect x="32" y="108" width="186" height="76" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1"/>
-  <text x="42" y="126" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#1e40af">Core Microservices</text>
-  <text x="42" y="143" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Auth &amp; 2FA (P0 OTP passcodes)</text>
-  <text x="42" y="159" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Billing &amp; Payments (P1 invoices)</text>
-  <text x="42" y="173" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#64748b">REST/gRPC with notification_id</text>
+  <rect x="32" y="108" width="186" height="76" rx="6" fill="#ffffff" stroke="#99f6e4" stroke-width="1"/>
+  <text x="42" y="126" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#065f46">Core Microservices</text>
+  <text x="42" y="143" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Auth &amp; 2FA (P0 OTP passcodes)</text>
+  <text x="42" y="159" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Billing &amp; Payments (P1 invoices)</text>
+  <text x="42" y="173" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#57534e">REST/gRPC with notification_id</text>
 
-  <rect x="32" y="192" width="186" height="76" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1"/>
-  <text x="42" y="210" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#1e40af">Campaign Services</text>
-  <text x="42" y="227" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">CRM promotional blasts (P2)</text>
-  <text x="42" y="243" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">User re-engagement digests</text>
-  <text x="42" y="257" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#64748b">Throttled bulk generation</text>
+  <rect x="32" y="192" width="186" height="76" rx="6" fill="#ffffff" stroke="#99f6e4" stroke-width="1"/>
+  <text x="42" y="210" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#065f46">Campaign Services</text>
+  <text x="42" y="227" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">CRM promotional blasts (P2)</text>
+  <text x="42" y="243" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">User re-engagement digests</text>
+  <text x="42" y="257" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#57534e">Throttled bulk generation</text>
 
-  <rect x="32" y="276" width="186" height="112" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
-  <text x="42" y="294" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#1e3a8a">Schedulers &amp; Batches</text>
-  <text x="42" y="311" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#1e40af">Scheduled delayed reminders</text>
-  <text x="42" y="327" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">DND deferred queue release</text>
-  <text x="42" y="343" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Morning digest batch dispatch</text>
-  <text x="42" y="359" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#047857">Sliding window rate shapers</text>
-  <text x="42" y="373" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Absorbs thundering herd spikes</text>
+  <rect x="32" y="276" width="186" height="112" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="1"/>
+  <text x="42" y="294" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#065f46">Schedulers &amp; Batches</text>
+  <text x="42" y="311" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#065f46">Scheduled delayed reminders</text>
+  <text x="42" y="327" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">DND deferred queue release</text>
+  <text x="42" y="343" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Morning digest batch dispatch</text>
+  <text x="42" y="359" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#065f46">Sliding window rate shapers</text>
+  <text x="42" y="373" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">Absorbs thundering herd spikes</text>
 
   <!-- PANEL 2: NOTIFICATION GATEWAY -->
-  <rect x="244" y="72" width="275" height="328" rx="10" fill="#f0fdf4" stroke="#10b981" stroke-width="1.5"/>
+  <rect x="244" y="72" width="275" height="328" rx="10" fill="#f0fdf4" stroke="#0f766e" stroke-width="1.5"/>
   <text x="258" y="96" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#065f46">2. Stateless Notification Gateway</text>
 
   <rect x="256" y="108" width="251" height="74" rx="6" fill="#ffffff" stroke="#86efac" stroke-width="1"/>
-  <text x="266" y="126" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#047857">AppKey &amp; AppSecret Security</text>
-  <text x="266" y="143" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">HMAC SHA-256 API token auth</text>
-  <text x="266" y="159" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Tenant validation &amp; IP allowlist</text>
-  <text x="266" y="173" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#64748b">Input schema checks (email, E.164)</text>
+  <text x="266" y="126" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#065f46">AppKey &amp; AppSecret Security</text>
+  <text x="266" y="143" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">HMAC SHA-256 API token auth</text>
+  <text x="266" y="159" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Tenant validation &amp; IP allowlist</text>
+  <text x="266" y="173" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#57534e">Input schema checks (email, E.164)</text>
 
   <rect x="256" y="190" width="251" height="84" rx="6" fill="#ffffff" stroke="#86efac" stroke-width="1"/>
-  <text x="266" y="208" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#047857">Template Engine &amp; Localization</text>
-  <text x="266" y="225" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Immutable (template_id, version)</text>
-  <text x="266" y="241" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">JSON Schema parameter enforcement</text>
-  <text x="266" y="257" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#047857">Local worker-side i18n compilation</text>
-  <text x="266" y="269" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#64748b">Prevents in-flight schema mutations</text>
+  <text x="266" y="208" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#065f46">Template Engine &amp; Localization</text>
+  <text x="266" y="225" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Immutable (template_id, version)</text>
+  <text x="266" y="241" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">JSON Schema parameter enforcement</text>
+  <text x="266" y="257" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#065f46">Local worker-side i18n compilation</text>
+  <text x="266" y="269" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#57534e">Prevents in-flight schema mutations</text>
 
-  <rect x="256" y="282" width="251" height="106" rx="6" fill="#dcfce7" stroke="#059669" stroke-width="1"/>
+  <rect x="256" y="282" width="251" height="106" rx="6" fill="#dcfce7" stroke="#0f766e" stroke-width="1"/>
   <text x="266" y="300" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#065f46">Contact &amp; Opt-Out Lookup</text>
-  <text x="266" y="317" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#047857">Valkey Cache L1 (sub-ms query)</text>
-  <text x="266" y="333" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">User DB: email, phone, locale</text>
-  <text x="266" y="349" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Device DB: APNs/FCM tokens, OS</text>
+  <text x="266" y="317" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#065f46">Valkey Cache L1 (sub-ms query)</text>
+  <text x="266" y="333" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">User DB: email, phone, locale</text>
+  <text x="266" y="349" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Device DB: APNs/FCM tokens, OS</text>
   <text x="266" y="365" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#b91c1c">Quiet-hours (DND) IANA timezone gate</text>
-  <text x="266" y="379" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Granular channel opt-in/opt-out</text>
+  <text x="266" y="379" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">Granular channel opt-in/opt-out</text>
 
   <!-- PANEL 3: QUEUES & WORKERS -->
   <rect x="533" y="72" width="300" height="328" rx="10" fill="#faf5ff" stroke="#a855f7" stroke-width="1.5"/>
   <text x="547" y="96" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#581c87">3. Channel Queues &amp; Workers</text>
 
-  <rect x="545" y="108" width="276" height="106" rx="6" fill="#ffffff" stroke="#d8b4fe" stroke-width="1"/>
+  <rect x="545" y="108" width="276" height="106" rx="6" fill="#ffffff" stroke="#d6d0c4" stroke-width="1"/>
   <text x="555" y="126" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#6b21a8">Priority-Lane Message Queues</text>
   <text x="555" y="143" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#b91c1c">P0 (OTP/Fraud): Dedicated high-QPS</text>
-  <text x="555" y="159" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">P1 (Transactional): Orders &amp; alerts</text>
-  <text x="555" y="175" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">P2 (Marketing): Token-bucket bulk</text>
-  <text x="555" y="191" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Channel queues: APNs, FCM, SMS,</text>
-  <text x="555" y="205" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Email, Web Push (zero HoL blocking)</text>
+  <text x="555" y="159" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">P1 (Transactional): Orders &amp; alerts</text>
+  <text x="555" y="175" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">P2 (Marketing): Token-bucket bulk</text>
+  <text x="555" y="191" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">Channel queues: APNs, FCM, SMS,</text>
+  <text x="555" y="205" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">Email, Web Push (zero HoL blocking)</text>
 
-  <rect x="545" y="222" width="276" height="166" rx="6" fill="#f3e8ff" stroke="#7e22ce" stroke-width="1"/>
+  <rect x="545" y="222" width="276" height="166" rx="6" fill="#f5f1e8" stroke="#7e22ce" stroke-width="1"/>
   <text x="555" y="240" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#581c87">Notification Worker Fleet</text>
-  <text x="555" y="257" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#1e293b">event_id dedupe: SETNX in Valkey</text>
-  <text x="555" y="273" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Frequency-cap: Sliding token bucket</text>
-  <text x="555" y="289" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Notification Log DB persistence (WAL)</text>
-  <text x="555" y="305" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Statuses: PENDING, SENT, FAILED, DLQ</text>
-  <text x="555" y="321" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#d97706">Retry Queue: Exponential backoff + jitter</text>
-  <text x="555" y="337" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#059669">Immediate failover on provider 5xx/429</text>
+  <text x="555" y="257" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#1c1917">event_id dedupe: SETNX in Valkey</text>
+  <text x="555" y="273" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Frequency-cap: Sliding token bucket</text>
+  <text x="555" y="289" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Notification Log DB persistence (WAL)</text>
+  <text x="555" y="305" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">Statuses: PENDING, SENT, FAILED, DLQ</text>
+  <text x="555" y="321" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#b45309">Retry Queue: Exponential backoff + jitter</text>
+  <text x="555" y="337" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#0f766e">Immediate failover on provider 5xx/429</text>
   <text x="555" y="353" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#b91c1c">Dead-Letter Queue (DLQ) for poisoned msgs</text>
-  <text x="555" y="369" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#64748b">Autoscaling worker pods per channel load</text>
+  <text x="555" y="369" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#57534e">Autoscaling worker pods per channel load</text>
 
   <!-- PANEL 4: 3P PROVIDERS -->
-  <rect x="847" y="72" width="313" height="328" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5"/>
-  <text x="861" y="96" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#78350f">4. 3P Delivery Providers</text>
+  <rect x="847" y="72" width="313" height="328" rx="10" fill="#fffbeb" stroke="#b45309" stroke-width="1.5"/>
+  <text x="861" y="96" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#92400e">4. 3P Delivery Providers</text>
 
-  <rect x="859" y="108" width="289" height="66" rx="6" fill="#ffffff" stroke="#fcd34d" stroke-width="1"/>
+  <rect x="859" y="108" width="289" height="66" rx="6" fill="#ffffff" stroke="#fde68a" stroke-width="1"/>
   <text x="869" y="126" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#92400e">Apple APNs &amp; Google FCM</text>
-  <text x="869" y="143" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Apple APNs: HTTP/2 JWT token auth</text>
-  <text x="869" y="159" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Google FCM: HTTP v1 OAuth2 API</text>
-  <text x="869" y="171" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#64748b">Live Activities &amp; silent data payloads</text>
+  <text x="869" y="143" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Apple APNs: HTTP/2 JWT token auth</text>
+  <text x="869" y="159" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Google FCM: HTTP v1 OAuth2 API</text>
+  <text x="869" y="171" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#57534e">Live Activities &amp; silent data payloads</text>
 
-  <rect x="859" y="180" width="289" height="66" rx="6" fill="#ffffff" stroke="#fcd34d" stroke-width="1"/>
+  <rect x="859" y="180" width="289" height="66" rx="6" fill="#ffffff" stroke="#fde68a" stroke-width="1"/>
   <text x="869" y="198" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#92400e">SMS Telephony Aggregators</text>
-  <text x="869" y="215" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Twilio primary SMS gateway</text>
-  <text x="869" y="231" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Sinch / Infobip secondary failover</text>
+  <text x="869" y="215" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Twilio primary SMS gateway</text>
+  <text x="869" y="231" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Sinch / Infobip secondary failover</text>
   <text x="869" y="243" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#b91c1c">Circuit breaker trips on 5xx / timeout</text>
 
-  <rect x="859" y="252" width="289" height="66" rx="6" fill="#ffffff" stroke="#fcd34d" stroke-width="1"/>
+  <rect x="859" y="252" width="289" height="66" rx="6" fill="#ffffff" stroke="#fde68a" stroke-width="1"/>
   <text x="869" y="270" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#92400e">Email ESP Gateways</text>
-  <text x="869" y="287" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Amazon SES high-throughput outbound</text>
-  <text x="869" y="303" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">SendGrid secondary failover route</text>
-  <text x="869" y="315" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#059669">DKIM, SPF, DMARC domain alignment</text>
+  <text x="869" y="287" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Amazon SES high-throughput outbound</text>
+  <text x="869" y="303" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">SendGrid secondary failover route</text>
+  <text x="869" y="315" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#0f766e">DKIM, SPF, DMARC domain alignment</text>
 
-  <rect x="859" y="324" width="289" height="64" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
-  <text x="869" y="342" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#78350f">Web Push (RFC 8030 / RFC 8292)</text>
-  <text x="869" y="359" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">VAPID keypair authorization</text>
-  <text x="869" y="375" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">PushSubscription endpoints (Chrome/FF/Safari)</text>
+  <rect x="859" y="324" width="289" height="64" rx="6" fill="#fffbeb" stroke="#b45309" stroke-width="1"/>
+  <text x="869" y="342" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#92400e">Web Push (RFC 8030 / RFC 8292)</text>
+  <text x="869" y="359" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">VAPID keypair authorization</text>
+  <text x="869" y="375" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">PushSubscription endpoints (Chrome/FF/Safari)</text>
 
   <!-- CONNECTING ARROWS TOP -->
-  <line x1="230" y1="146" x2="254" y2="146" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
-  <line x1="230" y1="230" x2="254" y2="230" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
-  <line x1="230" y1="330" x2="254" y2="330" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+  <line x1="230" y1="146" x2="254" y2="146" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+  <line x1="230" y1="230" x2="254" y2="230" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+  <line x1="230" y1="330" x2="254" y2="330" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-blue)"/>
 
-  <line x1="519" y1="160" x2="543" y2="160" stroke="#059669" stroke-width="1.8" marker-end="url(#arr-green)"/>
-  <line x1="519" y1="330" x2="543" y2="300" stroke="#059669" stroke-width="1.8" marker-end="url(#arr-green)"/>
+  <line x1="519" y1="160" x2="543" y2="160" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-green)"/>
+  <line x1="519" y1="330" x2="543" y2="300" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-green)"/>
 
   <line x1="821" y1="260" x2="857" y2="140" stroke="#7e22ce" stroke-width="1.6" marker-end="url(#arr-purple)"/>
   <line x1="821" y1="280" x2="857" y2="212" stroke="#7e22ce" stroke-width="1.6" marker-end="url(#arr-purple)"/>
@@ -146,81 +146,81 @@
   <line x1="821" y1="320" x2="857" y2="356" stroke="#7e22ce" stroke-width="1.6" marker-end="url(#arr-purple)"/>
 
   <!-- SECTION 2: RELIABILITY, STATE PERSISTENCE & TRACKING FUNNEL (Y=414 to Y=744) -->
-  <rect x="20" y="414" width="1140" height="330" rx="10" fill="#ffffff" stroke="#64748b" stroke-width="1.5"/>
+  <rect x="20" y="414" width="1140" height="330" rx="10" fill="#ffffff" stroke="#57534e" stroke-width="1.5"/>
 
   <!-- Sub-header inside container -->
-  <rect x="20" y="414" width="1140" height="30" rx="10" fill="#0f172a"/>
-  <rect x="20" y="430" width="1140" height="14" fill="#0f172a"/>
-  <text x="36" y="434" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#f8fafc">Data Persistence &amp; Schemas · Idempotency Window · Retry Backoff · Event Tracking Funnel &amp; Token Hygiene</text>
+  <rect x="20" y="414" width="1140" height="30" rx="10" fill="#1c1917"/>
+  <rect x="20" y="430" width="1140" height="14" fill="#1c1917"/>
+  <text x="36" y="434" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#ffffff">Data Persistence &amp; Schemas · Idempotency Window · Retry Backoff · Event Tracking Funnel &amp; Token Hygiene</text>
 
   <!-- SUB-PANEL 1: DATA PERSISTENCE & RESILIENCE (LEFT) -->
-  <rect x="34" y="454" width="536" height="278" rx="8" fill="#f8fafc" stroke="#6366f1" stroke-width="1.5"/>
+  <rect x="34" y="454" width="536" height="278" rx="8" fill="#faf8f5" stroke="#0f766e" stroke-width="1.5"/>
   <text x="46" y="474" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#312e81">Storage Schema, Deduplication &amp; Resilience State Machine</text>
 
   <rect x="46" y="486" width="512" height="78" rx="6" fill="#ffffff" stroke="#c7d2fe" stroke-width="1"/>
-  <text x="56" y="504" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#3730a3">Relational Database Schemas (User, Device, Settings, Log)</text>
-  <text x="56" y="521" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9" fill="#1e293b">users: { user_id (PK), email, phone_number, timezone, locale }</text>
-  <text x="56" y="535" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9" fill="#1e293b">device_tokens: { token (PK), user_id (FK), os, is_active }</text>
-  <text x="56" y="549" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9" fill="#1e293b">notification_settings: { user_id, channel, opt_in, quiet_dnd }</text>
-  <text x="56" y="561" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9" fill="#1e293b">notification_log: { event_id (PK), status, channel, sent_at }</text>
+  <text x="56" y="504" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">Relational Database Schemas (User, Device, Settings, Log)</text>
+  <text x="56" y="521" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9" fill="#1c1917">users: { user_id (PK), email, phone_number, timezone, locale }</text>
+  <text x="56" y="535" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9" fill="#1c1917">device_tokens: { token (PK), user_id (FK), os, is_active }</text>
+  <text x="56" y="549" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9" fill="#1c1917">notification_settings: { user_id, channel, opt_in, quiet_dnd }</text>
+  <text x="56" y="561" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9" fill="#1c1917">notification_log: { event_id (PK), status, channel, sent_at }</text>
 
   <rect x="46" y="570" width="512" height="74" rx="6" fill="#ffffff" stroke="#c7d2fe" stroke-width="1"/>
-  <text x="56" y="588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#3730a3">Atomic Idempotency Window (Valkey / Redis SETNX)</text>
-  <text x="56" y="605" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#059669">SET notif:dedupe:{event_id} 1 NX EX 86400</text>
-  <text x="56" y="621" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Returns OK: Lock acquired -&gt; Forward to provider dispatch worker</text>
+  <text x="56" y="588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">Atomic Idempotency Window (Valkey / Redis SETNX)</text>
+  <text x="56" y="605" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#0f766e">SET notif:dedupe:{event_id} 1 NX EX 86400</text>
+  <text x="56" y="621" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">Returns OK: Lock acquired -&gt; Forward to provider dispatch worker</text>
   <text x="56" y="635" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#b91c1c">Returns NIL: Duplicate seen -&gt; Drop event &amp; log dedup_hit</text>
 
-  <rect x="46" y="650" width="512" height="72" rx="6" fill="#eef2ff" stroke="#818cf8" stroke-width="1"/>
+  <rect x="46" y="650" width="512" height="72" rx="6" fill="#f5f1e8" stroke="#818cf8" stroke-width="1"/>
   <text x="56" y="668" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#312e81">Exponential Backoff &amp; Error Classification</text>
-  <text x="56" y="685" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Transient (429, 500, 503): Exponential backoff + full jitter</text>
+  <text x="56" y="685" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">Transient (429, 500, 503): Exponential backoff + full jitter</text>
   <text x="56" y="700" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#b91c1c">Permanent (400, 404/410): NO retry -&gt; Dead-Letter Queue (DLQ)</text>
-  <text x="56" y="714" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#d97706">Circuit Breaker: 50% errors in 10s -&gt; Failover to backup vendor</text>
+  <text x="56" y="714" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#b45309">Circuit Breaker: 50% errors in 10s -&gt; Failover to backup vendor</text>
 
   <!-- SUB-PANEL 2: EVENT TRACKING FUNNEL & HYGIENE (RIGHT) -->
-  <rect x="586" y="454" width="560" height="278" rx="8" fill="#f0fdf4" stroke="#0d9488" stroke-width="1.5"/>
+  <rect x="586" y="454" width="560" height="278" rx="8" fill="#f0fdf4" stroke="#0f766e" stroke-width="1.5"/>
   <text x="598" y="474" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#115e59">Event Tracking Lifecycle Funnel &amp; Token Hygiene Loop</text>
 
   <!-- Funnel Visual Steps -->
   <rect x="598" y="486" width="98" height="50" rx="5" fill="#ffffff" stroke="#5eead4" stroke-width="1"/>
   <text x="618" y="504" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#0f766e">Pending</text>
-  <text x="604" y="522" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#475569">Enqueued in Kafka</text>
+  <text x="604" y="522" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#44403c">Enqueued in Kafka</text>
 
-  <line x1="697" y1="511" x2="706" y2="511" stroke="#0d9488" stroke-width="1.5" marker-end="url(#arr-teal)"/>
+  <line x1="697" y1="511" x2="706" y2="511" stroke="#0f766e" stroke-width="1.5" marker-end="url(#arr-teal)"/>
 
   <rect x="708" y="486" width="98" height="50" rx="5" fill="#ffffff" stroke="#5eead4" stroke-width="1"/>
   <text x="736" y="504" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#0f766e">Sent</text>
-  <text x="714" y="522" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#475569">200 OK from 3P</text>
+  <text x="714" y="522" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#44403c">200 OK from 3P</text>
 
-  <line x1="807" y1="511" x2="816" y2="511" stroke="#0d9488" stroke-width="1.5" marker-end="url(#arr-teal)"/>
+  <line x1="807" y1="511" x2="816" y2="511" stroke="#0f766e" stroke-width="1.5" marker-end="url(#arr-teal)"/>
 
   <rect x="818" y="486" width="98" height="50" rx="5" fill="#ffffff" stroke="#5eead4" stroke-width="1"/>
   <text x="836" y="504" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#0f766e">Delivered</text>
-  <text x="822" y="522" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#475569">Handset receipt</text>
+  <text x="822" y="522" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#44403c">Handset receipt</text>
 
-  <line x1="917" y1="511" x2="926" y2="511" stroke="#0d9488" stroke-width="1.5" marker-end="url(#arr-teal)"/>
+  <line x1="917" y1="511" x2="926" y2="511" stroke="#0f766e" stroke-width="1.5" marker-end="url(#arr-teal)"/>
 
   <rect x="928" y="486" width="98" height="50" rx="5" fill="#ffffff" stroke="#5eead4" stroke-width="1"/>
   <text x="952" y="504" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#0f766e">Opened</text>
-  <text x="934" y="522" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#475569">1x1 GIF / App open</text>
+  <text x="934" y="522" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#44403c">1x1 GIF / App open</text>
 
-  <line x1="1027" y1="511" x2="1036" y2="511" stroke="#0d9488" stroke-width="1.5" marker-end="url(#arr-teal)"/>
+  <line x1="1027" y1="511" x2="1036" y2="511" stroke="#0f766e" stroke-width="1.5" marker-end="url(#arr-teal)"/>
 
-  <rect x="1038" y="486" width="98" height="50" rx="5" fill="#d1fae5" stroke="#10b981" stroke-width="1"/>
+  <rect x="1038" y="486" width="98" height="50" rx="5" fill="#f0fdf9" stroke="#0f766e" stroke-width="1"/>
   <text x="1062" y="504" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#065f46">Clicked</text>
-  <text x="1044" y="522" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#047857">Redirect wrapper</text>
+  <text x="1044" y="522" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#065f46">Redirect wrapper</text>
 
   <!-- Feedback Loop & Hygiene -->
   <rect x="598" y="546" width="538" height="88" rx="6" fill="#ffffff" stroke="#99f6e4" stroke-width="1"/>
   <text x="608" y="564" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#0f766e">Automated Device Token Hygiene Feedback Loop</text>
   <text x="608" y="581" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#b91c1c">APNs 410 Unregistered / FCM invalid registration token</text>
-  <text x="608" y="597" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Webhook emits InvalidTokenEvent to Kafka hygiene topic</text>
+  <text x="608" y="597" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">Webhook emits InvalidTokenEvent to Kafka hygiene topic</text>
   <text x="608" y="613" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#0f766e">Hygiene Worker executes: UPDATE device_tokens SET is_active=false</text>
-  <text x="608" y="627" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#047857">Prunes dead tokens; cuts egress bills &amp; prevents APNs throttling</text>
+  <text x="608" y="627" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#065f46">Prunes dead tokens; cuts egress bills &amp; prevents APNs throttling</text>
 
   <!-- Real-Time Analytics -->
-  <rect x="598" y="642" width="538" height="80" rx="6" fill="#ccfbf1" stroke="#14b8a6" stroke-width="1"/>
+  <rect x="598" y="642" width="538" height="80" rx="6" fill="#f0fdf9" stroke="#14b8a6" stroke-width="1"/>
   <text x="608" y="660" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#115e59">Analytics Stream &amp; Engagement Telemetry Pipeline</text>
-  <text x="608" y="677" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">All funnel webhook events stream to Kafka tracking topic</text>
-  <text x="608" y="693" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">ClickHouse ingestion: delivery rate, CTR, bounce rate, SLA</text>
+  <text x="608" y="677" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">All funnel webhook events stream to Kafka tracking topic</text>
+  <text x="608" y="693" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">ClickHouse ingestion: delivery rate, CTR, bounce rate, SLA</text>
   <text x="608" y="707" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#0f766e">Alert engine triggers automatic vendor failover in &lt; 60s</text>
 </svg>

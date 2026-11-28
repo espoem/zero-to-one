@@ -20,12 +20,12 @@
       .man-exp   { animation: m-exp 12s linear infinite; stroke-dasharray: 4 3; }
 
       @keyframes k-r1 {
-        0%, 42%   { opacity: 1; stroke: #2563eb; stroke-width: 2; }
-        48%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; }
+        0%, 42%   { opacity: 1; stroke: #0f766e; stroke-width: 2; }
+        48%, 100% { opacity: 0.86; stroke: #d6d0c4; stroke-width: 1; }
       }
       @keyframes k-r2 {
-        0%, 42%   { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; }
-        48%, 100% { opacity: 1; stroke: #059669; stroke-width: 2; }
+        0%, 42%   { opacity: 0.86; stroke: #d6d0c4; stroke-width: 1; }
+        48%, 100% { opacity: 1; stroke: #0f766e; stroke-width: 2; }
       }
       @keyframes k-jmp {
         0%, 35%   { opacity: 0.86; stroke-dashoffset: 0; }
@@ -33,8 +33,8 @@
         92%, 100% { opacity: 0.86; }
       }
       @keyframes k-h {
-        0%, 42%   { fill: #eff6ff; stroke: #2563eb; }
-        48%, 100% { fill: #ecfdf5; stroke: #059669; }
+        0%, 42%   { fill: #f0fdf9; stroke: #0f766e; }
+        48%, 100% { fill: #f0fdf9; stroke: #0f766e; }
       }
 
       /* Manacher cell stride = 34px inside translate(640, 210) */
@@ -69,210 +69,210 @@
     </style>
 
     <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#b45309"/>
     </marker>
     <marker id="arr-violet" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
   </defs>
 
   <!-- Canvas -->
-  <rect x="0" y="0" width="1200" height="720" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1200" height="720" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1200" height="62" rx="12" fill="#0f172a"/>
-  <rect x="0" y="46" width="1200" height="16" fill="#0f172a"/>
-  <text x="24" y="29" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Suffix Array + Kasai's O(n) LCP &amp; Manacher's Linear Palindromes</text>
-  <text x="24" y="49" class="sans" font-size="12" fill="#94a3b8">Left: Kasai's h = max(0, h - 1) text-order sweep avoids quadratic re-checks; Right: Manacher's #-padding and [C, R] mirror symmetry</text>
+  <line x1="24" y1="64" x2="1176" y2="64" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="29" class="sans" font-size="18" font-weight="700" fill="#1c1917" font-family="Georgia, 'Times New Roman', serif">Suffix Array + Kasai's O(n) LCP &amp; Manacher's Linear Palindromes</text>
+  <text x="24" y="49" class="sans" font-size="12" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">Left: Kasai's h = max(0, h - 1) text-order sweep avoids quadratic re-checks; Right: Manacher's #-padding and [C, R] mirror symmetry</text>
 
   <!-- LEFT PANEL: Suffix Array + Kasai -->
-  <rect x="24" y="78" width="564" height="618" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
-  <rect x="24" y="78" width="564" height="34" rx="10" fill="#f1f5f9"/>
-  <rect x="24" y="104" width="564" height="8" fill="#f1f5f9"/>
-  <text x="40" y="100" class="sans" font-size="12.5" font-weight="700" fill="#0f172a">1. Suffix Array &amp; Kasai's LCP on S = "banana$"</text>
-  <text x="572" y="100" class="mono" font-size="11" fill="#7c3aed" font-weight="700" text-anchor="end">SA=[6,5,3,1,0,4,2]</text>
+  <rect x="24" y="78" width="564" height="618" rx="10" fill="#ffffff" stroke="#d6d0c4"/>
+  <rect x="24" y="78" width="564" height="34" rx="10" fill="#f5f1e8"/>
+  <rect x="24" y="104" width="564" height="8" fill="#f5f1e8"/>
+  <text x="40" y="100" class="sans" font-size="12.5" font-weight="700" fill="#1c1917">1. Suffix Array &amp; Kasai's LCP on S = "banana$"</text>
+  <text x="572" y="100" class="mono" font-size="11" fill="#0f766e" font-weight="700" text-anchor="end">SA=[6,5,3,1,0,4,2]</text>
 
   <!-- Table Header -->
   <g transform="translate(40, 126)">
-    <rect x="0" y="0" width="440" height="28" rx="4" fill="#f8fafc" stroke="#e2e8f0"/>
-    <text x="26" y="18" class="mono" font-size="11" font-weight="700" fill="#475569" text-anchor="middle">rank</text>
-    <text x="84" y="18" class="mono" font-size="11" font-weight="700" fill="#475569" text-anchor="middle">SA[r]</text>
-    <text x="142" y="18" class="mono" font-size="11" font-weight="700" fill="#475569">Suffix S[SA[r]..]</text>
-    <text x="394" y="18" class="mono" font-size="11" font-weight="700" fill="#7c3aed" text-anchor="middle">LCP[r-1]</text>
+    <rect x="0" y="0" width="440" height="28" rx="4" fill="#faf8f5" stroke="#e7e2d8"/>
+    <text x="26" y="18" class="mono" font-size="11" font-weight="700" fill="#44403c" text-anchor="middle">rank</text>
+    <text x="84" y="18" class="mono" font-size="11" font-weight="700" fill="#44403c" text-anchor="middle">SA[r]</text>
+    <text x="142" y="18" class="mono" font-size="11" font-weight="700" fill="#44403c">Suffix S[SA[r]..]</text>
+    <text x="394" y="18" class="mono" font-size="11" font-weight="700" fill="#0f766e" text-anchor="middle">LCP[r-1]</text>
 
     <!-- Rows r = 0..6 (height 42, stride 46) -->
     <g transform="translate(0, 34)">
-      <rect x="0" y="0" width="440" height="40" rx="6" fill="#ffffff" stroke="#e2e8f0"/>
-      <text x="26" y="25" class="mono" font-size="12" fill="#64748b" text-anchor="middle">0</text>
-      <text x="84" y="25" class="mono" font-size="12" font-weight="700" fill="#0f172a" text-anchor="middle">6</text>
-      <text x="142" y="25" class="mono" font-size="13" fill="#334155">$</text>
-      <text x="394" y="25" class="mono" font-size="12" fill="#94a3b8" text-anchor="middle">-</text>
+      <rect x="0" y="0" width="440" height="40" rx="6" fill="#ffffff" stroke="#e7e2d8"/>
+      <text x="26" y="25" class="mono" font-size="12" fill="#57534e" text-anchor="middle">0</text>
+      <text x="84" y="25" class="mono" font-size="12" font-weight="700" fill="#1c1917" text-anchor="middle">6</text>
+      <text x="142" y="25" class="mono" font-size="13" fill="#44403c">$</text>
+      <text x="394" y="25" class="mono" font-size="12" fill="#57534e" text-anchor="middle">-</text>
     </g>
 
     <g transform="translate(0, 80)">
-      <rect x="0" y="0" width="440" height="40" rx="6" fill="#ffffff" stroke="#e2e8f0"/>
-      <text x="26" y="25" class="mono" font-size="12" fill="#64748b" text-anchor="middle">1</text>
-      <text x="84" y="25" class="mono" font-size="12" font-weight="700" fill="#0f172a" text-anchor="middle">5</text>
-      <text x="142" y="25" class="mono" font-size="13" fill="#334155">a$</text>
-      <text x="394" y="25" class="mono" font-size="12" font-weight="700" fill="#64748b" text-anchor="middle">0</text>
+      <rect x="0" y="0" width="440" height="40" rx="6" fill="#ffffff" stroke="#e7e2d8"/>
+      <text x="26" y="25" class="mono" font-size="12" fill="#57534e" text-anchor="middle">1</text>
+      <text x="84" y="25" class="mono" font-size="12" font-weight="700" fill="#1c1917" text-anchor="middle">5</text>
+      <text x="142" y="25" class="mono" font-size="13" fill="#44403c">a$</text>
+      <text x="394" y="25" class="mono" font-size="12" font-weight="700" fill="#57534e" text-anchor="middle">0</text>
     </g>
 
     <g transform="translate(0, 126)">
-      <rect x="0" y="0" width="440" height="40" rx="6" fill="#eff6ff" stroke="#93c5fd"/>
-      <text x="26" y="25" class="mono" font-size="12" fill="#1e3a8a" text-anchor="middle">2</text>
-      <text x="84" y="25" class="mono" font-size="12" font-weight="700" fill="#1e3a8a" text-anchor="middle">3</text>
-      <text x="142" y="25" class="mono" font-size="13" fill="#1e3a8a"><tspan font-weight="700" fill="#2563eb">a</tspan>na$</text>
-      <text x="394" y="25" class="mono" font-size="12" font-weight="700" fill="#7c3aed" text-anchor="middle">1</text>
+      <rect x="0" y="0" width="440" height="40" rx="6" fill="#f0fdf9" stroke="#99f6e4"/>
+      <text x="26" y="25" class="mono" font-size="12" fill="#065f46" text-anchor="middle">2</text>
+      <text x="84" y="25" class="mono" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">3</text>
+      <text x="142" y="25" class="mono" font-size="13" fill="#065f46"><tspan font-weight="700" fill="#0f766e">a</tspan>na$</text>
+      <text x="394" y="25" class="mono" font-size="12" font-weight="700" fill="#0f766e" text-anchor="middle">1</text>
     </g>
 
     <!-- r=3: SA[3]=1 (i=1: "anana$") -->
     <g transform="translate(0, 172)">
-      <rect class="kasai-row1" x="0" y="0" width="440" height="40" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
-      <text x="26" y="25" class="mono" font-size="12" fill="#1e3a8a" text-anchor="middle">3</text>
-      <text x="84" y="25" class="mono" font-size="12" font-weight="700" fill="#1e3a8a" text-anchor="middle">1</text>
-      <text x="142" y="25" class="mono" font-size="13" fill="#0f172a"><tspan font-weight="700" fill="#2563eb">ana</tspan>na$</text>
-      <rect x="366" y="7" width="56" height="26" rx="4" fill="#dbeafe"/>
-      <text x="394" y="25" class="mono" font-size="12" font-weight="700" fill="#1d4ed8" text-anchor="middle">3</text>
+      <rect class="kasai-row1" x="0" y="0" width="440" height="40" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
+      <text x="26" y="25" class="mono" font-size="12" fill="#065f46" text-anchor="middle">3</text>
+      <text x="84" y="25" class="mono" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">1</text>
+      <text x="142" y="25" class="mono" font-size="13" fill="#1c1917"><tspan font-weight="700" fill="#0f766e">ana</tspan>na$</text>
+      <rect x="366" y="7" width="56" height="26" rx="4" fill="#f0fdf9"/>
+      <text x="394" y="25" class="mono" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">3</text>
     </g>
 
     <g transform="translate(0, 218)">
-      <rect x="0" y="0" width="440" height="40" rx="6" fill="#ffffff" stroke="#e2e8f0"/>
-      <text x="26" y="25" class="mono" font-size="12" fill="#64748b" text-anchor="middle">4</text>
-      <text x="84" y="25" class="mono" font-size="12" font-weight="700" fill="#0f172a" text-anchor="middle">0</text>
-      <text x="142" y="25" class="mono" font-size="13" fill="#334155">banana$</text>
-      <text x="394" y="25" class="mono" font-size="12" font-weight="700" fill="#64748b" text-anchor="middle">0</text>
+      <rect x="0" y="0" width="440" height="40" rx="6" fill="#ffffff" stroke="#e7e2d8"/>
+      <text x="26" y="25" class="mono" font-size="12" fill="#57534e" text-anchor="middle">4</text>
+      <text x="84" y="25" class="mono" font-size="12" font-weight="700" fill="#1c1917" text-anchor="middle">0</text>
+      <text x="142" y="25" class="mono" font-size="13" fill="#44403c">banana$</text>
+      <text x="394" y="25" class="mono" font-size="12" font-weight="700" fill="#57534e" text-anchor="middle">0</text>
     </g>
 
     <g transform="translate(0, 264)">
-      <rect x="0" y="0" width="440" height="40" rx="6" fill="#ecfdf5" stroke="#6ee7b7"/>
+      <rect x="0" y="0" width="440" height="40" rx="6" fill="#f0fdf9" stroke="#99f6e4"/>
       <text x="26" y="25" class="mono" font-size="12" fill="#065f46" text-anchor="middle">5</text>
       <text x="84" y="25" class="mono" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">4</text>
-      <text x="142" y="25" class="mono" font-size="13" fill="#065f46"><tspan font-weight="700" fill="#059669">na</tspan>$</text>
-      <text x="394" y="25" class="mono" font-size="12" font-weight="700" fill="#64748b" text-anchor="middle">0</text>
+      <text x="142" y="25" class="mono" font-size="13" fill="#065f46"><tspan font-weight="700" fill="#0f766e">na</tspan>$</text>
+      <text x="394" y="25" class="mono" font-size="12" font-weight="700" fill="#57534e" text-anchor="middle">0</text>
     </g>
 
     <!-- r=6: SA[6]=2 (i=2: "nana$") -->
     <g transform="translate(0, 310)">
-      <rect class="kasai-row2" x="0" y="0" width="440" height="40" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+      <rect class="kasai-row2" x="0" y="0" width="440" height="40" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
       <text x="26" y="25" class="mono" font-size="12" fill="#065f46" text-anchor="middle">6</text>
       <text x="84" y="25" class="mono" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">2</text>
-      <text x="142" y="25" class="mono" font-size="13" fill="#0f172a"><tspan font-weight="700" fill="#059669">na</tspan>na$</text>
-      <rect x="366" y="7" width="56" height="26" rx="4" fill="#d1fae5"/>
+      <text x="142" y="25" class="mono" font-size="13" fill="#1c1917"><tspan font-weight="700" fill="#0f766e">na</tspan>na$</text>
+      <rect x="366" y="7" width="56" height="26" rx="4" fill="#f0fdf9"/>
       <text x="394" y="25" class="mono" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">2</text>
     </g>
 
     <!-- Kasai Jump Arrow from i=1 (r=3) to i=2 (r=6) -->
-    <path class="kasai-jump" d="M 444 192 C 510 192, 510 330, 444 330" fill="none" stroke="#d97706" stroke-width="2.4" marker-end="url(#arr-amber)"/>
-    <rect x="448" y="242" width="84" height="36" rx="5" fill="#fffbeb" stroke="#d97706"/>
+    <path class="kasai-jump" d="M 444 192 C 510 192, 510 330, 444 330" fill="none" stroke="#b45309" stroke-width="2.4" marker-end="url(#arr-amber)"/>
+    <rect x="448" y="242" width="84" height="36" rx="5" fill="#fffbeb" stroke="#b45309"/>
     <text x="490" y="257" class="mono" font-size="10" font-weight="700" fill="#b45309" text-anchor="middle">i: 1 -&gt; 2</text>
     <text x="490" y="271" class="mono" font-size="10" font-weight="700" fill="#b45309" text-anchor="middle">h: 3 -&gt; 2</text>
   </g>
 
   <!-- Kasai Invariant Box -->
   <g transform="translate(40, 492)">
-    <rect class="kasai-h-val" x="0" y="0" width="532" height="186" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
-    <text x="16" y="26" class="sans" font-size="12.5" font-weight="700" fill="#0f172a">Kasai's Text-Order Invariant: h = max(0, h - 1)</text>
-    <text x="16" y="50" class="mono" font-size="11.5" fill="#1e3a8a">Step i=1 ("anana$"): lcp("ana$", "anana$") = 3  =&gt;  h = 3</text>
+    <rect class="kasai-h-val" x="0" y="0" width="532" height="186" rx="8" fill="#faf8f5" stroke="#d6d0c4"/>
+    <text x="16" y="26" class="sans" font-size="12.5" font-weight="700" fill="#1c1917">Kasai's Text-Order Invariant: h = max(0, h - 1)</text>
+    <text x="16" y="50" class="mono" font-size="11.5" fill="#065f46">Step i=1 ("anana$"): lcp("ana$", "anana$") = 3  =&gt;  h = 3</text>
     <text x="16" y="74" class="mono" font-size="11.5" fill="#065f46">Step i=2 ("nana$"):  strip 'a' =&gt; "na$" &amp; "na" already match!</text>
     <text x="16" y="98" class="mono" font-size="11.5" font-weight="700" fill="#b45309">Start h = max(0, 3 - 1) = 2 (0 wasted re-comparisons)</text>
-    <line x1="16" y1="114" x2="516" y2="114" stroke="#e2e8f0"/>
-    <text x="16" y="136" class="sans" font-size="11.5" fill="#334155">1. Process suffixes in text order i = 0 .. n-1 (via rank[i]).</text>
-    <text x="16" y="156" class="sans" font-size="11.5" fill="#334155">2. h decrements at most n times; h &lt;= n =&gt; increments &lt;= 2n.</text>
-    <text x="16" y="176" class="mono" font-size="11" font-weight="700" fill="#059669">Result: LCP = [0, 1, 3, 0, 0, 2] built in strictly O(n) time.</text>
+    <line x1="16" y1="114" x2="516" y2="114" stroke="#e7e2d8"/>
+    <text x="16" y="136" class="sans" font-size="11.5" fill="#44403c">1. Process suffixes in text order i = 0 .. n-1 (via rank[i]).</text>
+    <text x="16" y="156" class="sans" font-size="11.5" fill="#44403c">2. h decrements at most n times; h &lt;= n =&gt; increments &lt;= 2n.</text>
+    <text x="16" y="176" class="mono" font-size="11" font-weight="700" fill="#0f766e">Result: LCP = [0, 1, 3, 0, 0, 2] built in strictly O(n) time.</text>
   </g>
 
   <!-- RIGHT PANEL: Manacher's Algorithm -->
-  <rect x="612" y="78" width="564" height="618" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
-  <rect x="612" y="78" width="564" height="34" rx="10" fill="#f1f5f9"/>
-  <rect x="612" y="104" width="564" height="8" fill="#f1f5f9"/>
-  <text x="628" y="100" class="sans" font-size="12.5" font-weight="700" fill="#0f172a">2. Manacher's Algorithm: #-Padded Mirror [C, R]</text>
-  <text x="1160" y="100" class="mono" font-size="11" fill="#2563eb" font-weight="700" text-anchor="end">"cbababd" -&gt; "#c#b#a#b#a#b#d#"</text>
+  <rect x="612" y="78" width="564" height="618" rx="10" fill="#ffffff" stroke="#d6d0c4"/>
+  <rect x="612" y="78" width="564" height="34" rx="10" fill="#f5f1e8"/>
+  <rect x="612" y="104" width="564" height="8" fill="#f5f1e8"/>
+  <text x="628" y="100" class="sans" font-size="12.5" font-weight="700" fill="#1c1917">2. Manacher's Algorithm: #-Padded Mirror [C, R]</text>
+  <text x="1160" y="100" class="mono" font-size="11" fill="#0f766e" font-weight="700" text-anchor="end">"cbababd" -&gt; "#c#b#a#b#a#b#d#"</text>
 
   <!-- Manacher 15-cell array at (639, 210), stride=34px -->
   <g transform="translate(639, 210)">
     <!-- Window 1: [C=5, R=8] ("#b#a#b#", indices 2..8, x=68..306) -->
     <g class="man-win-1">
-      <rect x="66" y="-24" width="240" height="106" rx="8" fill="#eff6ff" fill-opacity="0.45" stroke="#2563eb" stroke-width="1.8" stroke-dasharray="5 3"/>
-      <text x="186" y="-30" class="mono" font-size="10.5" font-weight="700" fill="#2563eb" text-anchor="middle">Prev [C=5, R=8]</text>
+      <rect x="66" y="-24" width="240" height="106" rx="8" fill="#f0fdf9" fill-opacity="0.45" stroke="#0f766e" stroke-width="1.8" stroke-dasharray="5 3"/>
+      <text x="186" y="-30" class="mono" font-size="10.5" font-weight="700" fill="#0f766e" text-anchor="middle">Prev [C=5, R=8]</text>
     </g>
 
     <!-- Window 2: [C=7, R=12] ("#b#a#b#a#b#", indices 2..12, x=68..442) -->
     <g class="man-win-2">
-      <rect x="66" y="-24" width="376" height="106" rx="8" fill="#ecfdf5" fill-opacity="0.4" stroke="#059669" stroke-width="2.2" stroke-dasharray="6 3"/>
-      <text x="254" y="-30" class="mono" font-size="10.5" font-weight="700" fill="#059669" text-anchor="middle">Expanded [C=7, R=12] (P[7] = 5)</text>
+      <rect x="66" y="-24" width="376" height="106" rx="8" fill="#f0fdf9" fill-opacity="0.4" stroke="#0f766e" stroke-width="2.2" stroke-dasharray="6 3"/>
+      <text x="254" y="-30" class="mono" font-size="10.5" font-weight="700" fill="#0f766e" text-anchor="middle">Expanded [C=7, R=12] (P[7] = 5)</text>
     </g>
 
     <!-- Pointers: mirror i' and active i -->
     <g transform="translate(0, -68)">
       <g class="man-ptr-m">
-        <rect x="-15" y="0" width="64" height="20" rx="4" fill="#7c3aed"/>
+        <rect x="-15" y="0" width="64" height="20" rx="4" fill="#0f766e"/>
         <text x="17" y="14" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">i' = 2C-i</text>
-        <line x1="17" y1="20" x2="17" y2="44" stroke="#7c3aed" stroke-width="1.8" marker-end="url(#arr-violet)"/>
+        <line x1="17" y1="20" x2="17" y2="44" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-violet)"/>
       </g>
     </g>
 
     <g transform="translate(0, 96)">
       <g class="man-ptr-i">
-        <line x1="17" y1="0" x2="17" y2="-16" stroke="#2563eb" stroke-width="2" marker-end="url(#arr-blue)"/>
-        <rect x="-6" y="0" width="46" height="22" rx="4" fill="#2563eb"/>
+        <line x1="17" y1="0" x2="17" y2="-16" stroke="#0f766e" stroke-width="2" marker-end="url(#arr-blue)"/>
+        <rect x="-6" y="0" width="46" height="22" rx="4" fill="#0f766e"/>
         <text x="17" y="15" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">ptr i</text>
       </g>
     </g>
 
     <!-- Expansion arrow past R=8 to R=12 -->
-    <path class="man-exp" d="M 289 88 C 330 132, 390 132, 425 88" fill="none" stroke="#059669" stroke-width="2.2" marker-end="url(#arr-emerald)"/>
+    <path class="man-exp" d="M 289 88 C 330 132, 390 132, 425 88" fill="none" stroke="#0f766e" stroke-width="2.2" marker-end="url(#arr-emerald)"/>
     <g class="man-exp">
-      <rect x="294" y="120" width="128" height="20" rx="4" fill="#ecfdf5" stroke="#059669"/>
+      <rect x="294" y="120" width="128" height="20" rx="4" fill="#f0fdf9" stroke="#0f766e"/>
       <text x="358" y="134" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">Expand past R=8 -&gt; 12</text>
     </g>
 
     <!-- Row labels left -->
-    <text x="-4" y="24" class="mono" font-size="10.5" font-weight="700" fill="#0f172a" text-anchor="end">S</text>
-    <text x="-4" y="60" class="mono" font-size="10.5" font-weight="700" fill="#7c3aed" text-anchor="end">P</text>
+    <text x="-4" y="24" class="mono" font-size="10.5" font-weight="700" fill="#1c1917" text-anchor="end">S</text>
+    <text x="-4" y="60" class="mono" font-size="10.5" font-weight="700" fill="#0f766e" text-anchor="end">P</text>
 
     <!-- 15 Cells (width=30, stride=34) -->
     <!-- 0:#, 1:c, 2:#, 3:b, 4:#, 5:a, 6:#, 7:b, 8:#, 9:a, 10:#, 11:b, 12:#, 13:d, 14:# -->
     <!-- P:   0,   1,   0,   1,   0,   3,   0,   5,   0,   3,    0,   1,    0,   1,    0 -->
-    <g transform="translate(0,0)"><text x="15" y="-6" class="mono" font-size="10" fill="#64748b" text-anchor="middle">0</text><rect width="30" height="34" rx="4" fill="#f1f5f9" stroke="#cbd5e1"/><text x="15" y="22" class="mono" font-size="13" fill="#64748b" text-anchor="middle">#</text><rect y="40" width="30" height="28" rx="4" fill="#f8fafc" stroke="#cbd5e1"/><text x="15" y="58" class="mono" font-size="12" fill="#475569" text-anchor="middle">0</text></g>
-    <g transform="translate(34,0)"><text x="15" y="-6" class="mono" font-size="10" fill="#64748b" text-anchor="middle">1</text><rect width="30" height="34" rx="4" fill="#ffffff" stroke="#94a3b8"/><text x="15" y="22" class="mono" font-size="13" font-weight="700" fill="#0f172a" text-anchor="middle">c</text><rect y="40" width="30" height="28" rx="4" fill="#f8fafc" stroke="#cbd5e1"/><text x="15" y="58" class="mono" font-size="12" fill="#475569" text-anchor="middle">1</text></g>
-    <g transform="translate(68,0)"><text x="15" y="-6" class="mono" font-size="10" fill="#64748b" text-anchor="middle">2</text><rect width="30" height="34" rx="4" fill="#f1f5f9" stroke="#cbd5e1"/><text x="15" y="22" class="mono" font-size="13" fill="#64748b" text-anchor="middle">#</text><rect y="40" width="30" height="28" rx="4" fill="#f8fafc" stroke="#cbd5e1"/><text x="15" y="58" class="mono" font-size="12" fill="#475569" text-anchor="middle">0</text></g>
-    <g transform="translate(102,0)"><text x="15" y="-6" class="mono" font-size="10" fill="#64748b" text-anchor="middle">3</text><rect width="30" height="34" rx="4" fill="#ffffff" stroke="#94a3b8"/><text x="15" y="22" class="mono" font-size="13" font-weight="700" fill="#0f172a" text-anchor="middle">b</text><rect y="40" width="30" height="28" rx="4" fill="#f5f3ff" stroke="#c4b5fd"/><text x="15" y="58" class="mono" font-size="12" font-weight="700" fill="#6d28d9" text-anchor="middle">1</text></g>
-    <g transform="translate(136,0)"><text x="15" y="-6" class="mono" font-size="10" fill="#64748b" text-anchor="middle">4</text><rect width="30" height="34" rx="4" fill="#f1f5f9" stroke="#cbd5e1"/><text x="15" y="22" class="mono" font-size="13" fill="#64748b" text-anchor="middle">#</text><rect y="40" width="30" height="28" rx="4" fill="#f8fafc" stroke="#cbd5e1"/><text x="15" y="58" class="mono" font-size="12" fill="#475569" text-anchor="middle">0</text></g>
-    <g transform="translate(170,0)"><text x="15" y="-6" class="mono" font-size="10" fill="#64748b" text-anchor="middle">5</text><rect width="30" height="34" rx="4" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/><text x="15" y="22" class="mono" font-size="13" font-weight="700" fill="#1e3a8a" text-anchor="middle">a</text><rect y="40" width="30" height="28" rx="4" fill="#f5f3ff" stroke="#7c3aed"/><text x="15" y="58" class="mono" font-size="12" font-weight="700" fill="#6d28d9" text-anchor="middle">3</text></g>
-    <g transform="translate(204,0)"><text x="15" y="-6" class="mono" font-size="10" fill="#64748b" text-anchor="middle">6</text><rect width="30" height="34" rx="4" fill="#f1f5f9" stroke="#cbd5e1"/><text x="15" y="22" class="mono" font-size="13" fill="#64748b" text-anchor="middle">#</text><rect y="40" width="30" height="28" rx="4" fill="#f8fafc" stroke="#cbd5e1"/><text x="15" y="58" class="mono" font-size="12" fill="#475569" text-anchor="middle">0</text></g>
-    <g transform="translate(238,0)"><text x="15" y="-6" class="mono" font-size="10" fill="#059669" font-weight="700" text-anchor="middle">7</text><rect width="30" height="34" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="15" y="22" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">b</text><rect y="40" width="30" height="28" rx="4" fill="#d1fae5" stroke="#059669"/><text x="15" y="58" class="mono" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">5</text></g>
-    <g transform="translate(272,0)"><text x="15" y="-6" class="mono" font-size="10" fill="#64748b" text-anchor="middle">8</text><rect width="30" height="34" rx="4" fill="#f1f5f9" stroke="#cbd5e1"/><text x="15" y="22" class="mono" font-size="13" fill="#64748b" text-anchor="middle">#</text><rect y="40" width="30" height="28" rx="4" fill="#f8fafc" stroke="#cbd5e1"/><text x="15" y="58" class="mono" font-size="12" fill="#475569" text-anchor="middle">0</text></g>
-    <g transform="translate(306,0)"><text x="15" y="-6" class="mono" font-size="10" fill="#2563eb" font-weight="700" text-anchor="middle">9</text><rect width="30" height="34" rx="4" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/><text x="15" y="22" class="mono" font-size="13" font-weight="700" fill="#1e3a8a" text-anchor="middle">a</text><rect y="40" width="30" height="28" rx="4" fill="#f5f3ff" stroke="#7c3aed"/><text x="15" y="58" class="mono" font-size="12" font-weight="700" fill="#6d28d9" text-anchor="middle">3</text></g>
-    <g transform="translate(340,0)"><text x="15" y="-6" class="mono" font-size="10" fill="#64748b" text-anchor="middle">10</text><rect width="30" height="34" rx="4" fill="#f1f5f9" stroke="#cbd5e1"/><text x="15" y="22" class="mono" font-size="13" fill="#64748b" text-anchor="middle">#</text><rect y="40" width="30" height="28" rx="4" fill="#f8fafc" stroke="#cbd5e1"/><text x="15" y="58" class="mono" font-size="12" fill="#475569" text-anchor="middle">0</text></g>
-    <g transform="translate(374,0)"><text x="15" y="-6" class="mono" font-size="10" fill="#64748b" text-anchor="middle">11</text><rect width="30" height="34" rx="4" fill="#ffffff" stroke="#94a3b8"/><text x="15" y="22" class="mono" font-size="13" font-weight="700" fill="#0f172a" text-anchor="middle">b</text><rect y="40" width="30" height="28" rx="4" fill="#f8fafc" stroke="#cbd5e1"/><text x="15" y="58" class="mono" font-size="12" fill="#475569" text-anchor="middle">1</text></g>
-    <g transform="translate(408,0)"><text x="15" y="-6" class="mono" font-size="10" fill="#64748b" text-anchor="middle">12</text><rect width="30" height="34" rx="4" fill="#f1f5f9" stroke="#cbd5e1"/><text x="15" y="22" class="mono" font-size="13" fill="#64748b" text-anchor="middle">#</text><rect y="40" width="30" height="28" rx="4" fill="#f8fafc" stroke="#cbd5e1"/><text x="15" y="58" class="mono" font-size="12" fill="#475569" text-anchor="middle">0</text></g>
-    <g transform="translate(442,0)"><text x="15" y="-6" class="mono" font-size="10" fill="#64748b" text-anchor="middle">13</text><rect width="30" height="34" rx="4" fill="#ffffff" stroke="#94a3b8"/><text x="15" y="22" class="mono" font-size="13" font-weight="700" fill="#0f172a" text-anchor="middle">d</text><rect y="40" width="30" height="28" rx="4" fill="#f8fafc" stroke="#cbd5e1"/><text x="15" y="58" class="mono" font-size="12" fill="#475569" text-anchor="middle">1</text></g>
-    <g transform="translate(476,0)"><text x="15" y="-6" class="mono" font-size="10" fill="#64748b" text-anchor="middle">14</text><rect width="30" height="34" rx="4" fill="#f1f5f9" stroke="#cbd5e1"/><text x="15" y="22" class="mono" font-size="13" fill="#64748b" text-anchor="middle">#</text><rect y="40" width="30" height="28" rx="4" fill="#f8fafc" stroke="#cbd5e1"/><text x="15" y="58" class="mono" font-size="12" fill="#475569" text-anchor="middle">0</text></g>
+    <g transform="translate(0,0)"><text x="15" y="-6" class="mono" font-size="10" fill="#57534e" text-anchor="middle">0</text><rect width="30" height="34" rx="4" fill="#f5f1e8" stroke="#d6d0c4"/><text x="15" y="22" class="mono" font-size="13" fill="#57534e" text-anchor="middle">#</text><rect y="40" width="30" height="28" rx="4" fill="#faf8f5" stroke="#d6d0c4"/><text x="15" y="58" class="mono" font-size="12" fill="#44403c" text-anchor="middle">0</text></g>
+    <g transform="translate(34,0)"><text x="15" y="-6" class="mono" font-size="10" fill="#57534e" text-anchor="middle">1</text><rect width="30" height="34" rx="4" fill="#ffffff" stroke="#d6d0c4"/><text x="15" y="22" class="mono" font-size="13" font-weight="700" fill="#1c1917" text-anchor="middle">c</text><rect y="40" width="30" height="28" rx="4" fill="#faf8f5" stroke="#d6d0c4"/><text x="15" y="58" class="mono" font-size="12" fill="#44403c" text-anchor="middle">1</text></g>
+    <g transform="translate(68,0)"><text x="15" y="-6" class="mono" font-size="10" fill="#57534e" text-anchor="middle">2</text><rect width="30" height="34" rx="4" fill="#f5f1e8" stroke="#d6d0c4"/><text x="15" y="22" class="mono" font-size="13" fill="#57534e" text-anchor="middle">#</text><rect y="40" width="30" height="28" rx="4" fill="#faf8f5" stroke="#d6d0c4"/><text x="15" y="58" class="mono" font-size="12" fill="#44403c" text-anchor="middle">0</text></g>
+    <g transform="translate(102,0)"><text x="15" y="-6" class="mono" font-size="10" fill="#57534e" text-anchor="middle">3</text><rect width="30" height="34" rx="4" fill="#ffffff" stroke="#d6d0c4"/><text x="15" y="22" class="mono" font-size="13" font-weight="700" fill="#1c1917" text-anchor="middle">b</text><rect y="40" width="30" height="28" rx="4" fill="#f5f1e8" stroke="#d6d0c4"/><text x="15" y="58" class="mono" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">1</text></g>
+    <g transform="translate(136,0)"><text x="15" y="-6" class="mono" font-size="10" fill="#57534e" text-anchor="middle">4</text><rect width="30" height="34" rx="4" fill="#f5f1e8" stroke="#d6d0c4"/><text x="15" y="22" class="mono" font-size="13" fill="#57534e" text-anchor="middle">#</text><rect y="40" width="30" height="28" rx="4" fill="#faf8f5" stroke="#d6d0c4"/><text x="15" y="58" class="mono" font-size="12" fill="#44403c" text-anchor="middle">0</text></g>
+    <g transform="translate(170,0)"><text x="15" y="-6" class="mono" font-size="10" fill="#57534e" text-anchor="middle">5</text><rect width="30" height="34" rx="4" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/><text x="15" y="22" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">a</text><rect y="40" width="30" height="28" rx="4" fill="#f5f1e8" stroke="#0f766e"/><text x="15" y="58" class="mono" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">3</text></g>
+    <g transform="translate(204,0)"><text x="15" y="-6" class="mono" font-size="10" fill="#57534e" text-anchor="middle">6</text><rect width="30" height="34" rx="4" fill="#f5f1e8" stroke="#d6d0c4"/><text x="15" y="22" class="mono" font-size="13" fill="#57534e" text-anchor="middle">#</text><rect y="40" width="30" height="28" rx="4" fill="#faf8f5" stroke="#d6d0c4"/><text x="15" y="58" class="mono" font-size="12" fill="#44403c" text-anchor="middle">0</text></g>
+    <g transform="translate(238,0)"><text x="15" y="-6" class="mono" font-size="10" fill="#0f766e" font-weight="700" text-anchor="middle">7</text><rect width="30" height="34" rx="4" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/><text x="15" y="22" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">b</text><rect y="40" width="30" height="28" rx="4" fill="#f0fdf9" stroke="#0f766e"/><text x="15" y="58" class="mono" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">5</text></g>
+    <g transform="translate(272,0)"><text x="15" y="-6" class="mono" font-size="10" fill="#57534e" text-anchor="middle">8</text><rect width="30" height="34" rx="4" fill="#f5f1e8" stroke="#d6d0c4"/><text x="15" y="22" class="mono" font-size="13" fill="#57534e" text-anchor="middle">#</text><rect y="40" width="30" height="28" rx="4" fill="#faf8f5" stroke="#d6d0c4"/><text x="15" y="58" class="mono" font-size="12" fill="#44403c" text-anchor="middle">0</text></g>
+    <g transform="translate(306,0)"><text x="15" y="-6" class="mono" font-size="10" fill="#0f766e" font-weight="700" text-anchor="middle">9</text><rect width="30" height="34" rx="4" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/><text x="15" y="22" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">a</text><rect y="40" width="30" height="28" rx="4" fill="#f5f1e8" stroke="#0f766e"/><text x="15" y="58" class="mono" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">3</text></g>
+    <g transform="translate(340,0)"><text x="15" y="-6" class="mono" font-size="10" fill="#57534e" text-anchor="middle">10</text><rect width="30" height="34" rx="4" fill="#f5f1e8" stroke="#d6d0c4"/><text x="15" y="22" class="mono" font-size="13" fill="#57534e" text-anchor="middle">#</text><rect y="40" width="30" height="28" rx="4" fill="#faf8f5" stroke="#d6d0c4"/><text x="15" y="58" class="mono" font-size="12" fill="#44403c" text-anchor="middle">0</text></g>
+    <g transform="translate(374,0)"><text x="15" y="-6" class="mono" font-size="10" fill="#57534e" text-anchor="middle">11</text><rect width="30" height="34" rx="4" fill="#ffffff" stroke="#d6d0c4"/><text x="15" y="22" class="mono" font-size="13" font-weight="700" fill="#1c1917" text-anchor="middle">b</text><rect y="40" width="30" height="28" rx="4" fill="#faf8f5" stroke="#d6d0c4"/><text x="15" y="58" class="mono" font-size="12" fill="#44403c" text-anchor="middle">1</text></g>
+    <g transform="translate(408,0)"><text x="15" y="-6" class="mono" font-size="10" fill="#57534e" text-anchor="middle">12</text><rect width="30" height="34" rx="4" fill="#f5f1e8" stroke="#d6d0c4"/><text x="15" y="22" class="mono" font-size="13" fill="#57534e" text-anchor="middle">#</text><rect y="40" width="30" height="28" rx="4" fill="#faf8f5" stroke="#d6d0c4"/><text x="15" y="58" class="mono" font-size="12" fill="#44403c" text-anchor="middle">0</text></g>
+    <g transform="translate(442,0)"><text x="15" y="-6" class="mono" font-size="10" fill="#57534e" text-anchor="middle">13</text><rect width="30" height="34" rx="4" fill="#ffffff" stroke="#d6d0c4"/><text x="15" y="22" class="mono" font-size="13" font-weight="700" fill="#1c1917" text-anchor="middle">d</text><rect y="40" width="30" height="28" rx="4" fill="#faf8f5" stroke="#d6d0c4"/><text x="15" y="58" class="mono" font-size="12" fill="#44403c" text-anchor="middle">1</text></g>
+    <g transform="translate(476,0)"><text x="15" y="-6" class="mono" font-size="10" fill="#57534e" text-anchor="middle">14</text><rect width="30" height="34" rx="4" fill="#f5f1e8" stroke="#d6d0c4"/><text x="15" y="22" class="mono" font-size="13" fill="#57534e" text-anchor="middle">#</text><rect y="40" width="30" height="28" rx="4" fill="#faf8f5" stroke="#d6d0c4"/><text x="15" y="58" class="mono" font-size="12" fill="#44403c" text-anchor="middle">0</text></g>
   </g>
 
   <!-- Manacher Algorithm Steps -->
   <g transform="translate(628, 370)">
-    <rect x="0" y="0" width="532" height="86" rx="8" fill="#eff6ff" stroke="#93c5fd"/>
-    <text x="14" y="22" class="sans" font-size="12" font-weight="700" fill="#1e3a8a">Unified Odd &amp; Even Palindrome Trick</text>
-    <text x="14" y="43" class="mono" font-size="11" fill="#334155">"aba"  -&gt; "^#a#b#a#$"   (center on char 'b', P[i] = 3)</text>
-    <text x="14" y="63" class="mono" font-size="11" fill="#334155">"abba" -&gt; "^#a#b#b#a#$" (center on '#', P[i] = 4 = exact length!)</text>
+    <rect x="0" y="0" width="532" height="86" rx="8" fill="#f0fdf9" stroke="#99f6e4"/>
+    <text x="14" y="22" class="sans" font-size="12" font-weight="700" fill="#065f46">Unified Odd &amp; Even Palindrome Trick</text>
+    <text x="14" y="43" class="mono" font-size="11" fill="#44403c">"aba"  -&gt; "^#a#b#a#$"   (center on char 'b', P[i] = 3)</text>
+    <text x="14" y="63" class="mono" font-size="11" fill="#44403c">"abba" -&gt; "^#a#b#b#a#$" (center on '#', P[i] = 4 = exact length!)</text>
 
-    <rect x="0" y="100" width="532" height="100" rx="8" fill="#f5f3ff" stroke="#c4b5fd"/>
-    <text x="14" y="122" class="sans" font-size="12" font-weight="700" fill="#6d28d9">Mirror Initialization &amp; Boundary Expansion</text>
-    <text x="14" y="144" class="mono" font-size="11" fill="#334155">If i &lt; R: P[i] = min(R - i, P[2*C - i])</text>
-    <text x="14" y="164" class="mono" font-size="11" fill="#334155">Expand: while (S[i - 1 - P[i]] == S[i + 1 + P[i]]) P[i]++</text>
+    <rect x="0" y="100" width="532" height="100" rx="8" fill="#f5f1e8" stroke="#d6d0c4"/>
+    <text x="14" y="122" class="sans" font-size="12" font-weight="700" fill="#065f46">Mirror Initialization &amp; Boundary Expansion</text>
+    <text x="14" y="144" class="mono" font-size="11" fill="#44403c">If i &lt; R: P[i] = min(R - i, P[2*C - i])</text>
+    <text x="14" y="164" class="mono" font-size="11" fill="#44403c">Expand: while (S[i - 1 - P[i]] == S[i + 1 + P[i]]) P[i]++</text>
     <text x="14" y="184" class="mono" font-size="11" font-weight="700" fill="#065f46">If i + P[i] &gt; R: C = i; R = i + P[i]  (R advances =&gt; O(n))</text>
 
-    <rect x="0" y="214" width="532" height="94" rx="8" fill="#ecfdf5" stroke="#6ee7b7"/>
+    <rect x="0" y="214" width="532" height="94" rx="8" fill="#f0fdf9" stroke="#99f6e4"/>
     <text x="14" y="236" class="sans" font-size="12" font-weight="700" fill="#065f46">Trace Snapshot on #c#b#a#b#a#b#d#</text>
-    <text x="14" y="258" class="mono" font-size="11" fill="#334155">1. At i=7 ('b'), C=5, R=8: mirror i'=3 (P[3]=1); expands R-&gt;12!</text>
-    <text x="14" y="278" class="mono" font-size="11" fill="#334155">2. At i=9 ('a'), C=7, R=12: mirror i'=5 (P[5]=3), R-i=3 =&gt; P[9]=3.</text>
+    <text x="14" y="258" class="mono" font-size="11" fill="#44403c">1. At i=7 ('b'), C=5, R=8: mirror i'=3 (P[3]=1); expands R-&gt;12!</text>
+    <text x="14" y="278" class="mono" font-size="11" fill="#44403c">2. At i=9 ('a'), C=7, R=12: mirror i'=5 (P[5]=3), R-i=3 =&gt; P[9]=3.</text>
     <text x="14" y="298" class="sans" font-size="10.5" fill="#065f46">Max radius P[7] = 5 =&gt; longest palindrome "babab" in O(n) time.</text>
   </g>
 </svg>

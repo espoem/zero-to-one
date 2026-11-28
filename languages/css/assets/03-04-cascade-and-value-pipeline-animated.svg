@@ -13,22 +13,22 @@
        70-100%: Used Value (% -> layout px) -> Actual Value (DPR pixel snap)
     */
     @keyframes c-hl {
-      0%, 24% { stroke: #2563eb; stroke-width: 2.5; opacity: 1; }
-      25%, 100% { stroke: #93c5fd; stroke-width: 1.2; opacity: 0.7; }
+      0%, 24% { stroke: #0f766e; stroke-width: 2.5; opacity: 1; }
+      25%, 100% { stroke: #99f6e4; stroke-width: 1.2; opacity: 0.7; }
     }
     @keyframes s1-hl {
-      0%, 24% { opacity: 0.6; stroke: #cbd5e1; stroke-width: 1.2; }
-      25%, 44% { opacity: 1; stroke: #059669; stroke-width: 2.5; }
-      45%, 100% { opacity: 0.6; stroke: #cbd5e1; stroke-width: 1.2; }
+      0%, 24% { opacity: 0.6; stroke: #d6d0c4; stroke-width: 1.2; }
+      25%, 44% { opacity: 1; stroke: #0f766e; stroke-width: 2.5; }
+      45%, 100% { opacity: 0.6; stroke: #d6d0c4; stroke-width: 1.2; }
     }
     @keyframes s2-hl {
-      0%, 44% { opacity: 0.6; stroke: #cbd5e1; stroke-width: 1.2; }
-      45%, 69% { opacity: 1; stroke: #7c3aed; stroke-width: 2.5; }
-      70%, 100% { opacity: 0.6; stroke: #cbd5e1; stroke-width: 1.2; }
+      0%, 44% { opacity: 0.6; stroke: #d6d0c4; stroke-width: 1.2; }
+      45%, 69% { opacity: 1; stroke: #0f766e; stroke-width: 2.5; }
+      70%, 100% { opacity: 0.6; stroke: #d6d0c4; stroke-width: 1.2; }
     }
     @keyframes s3-hl {
-      0%, 69% { opacity: 0.6; stroke: #cbd5e1; stroke-width: 1.2; }
-      70%, 100% { opacity: 1; stroke: #d97706; stroke-width: 2.5; }
+      0%, 69% { opacity: 0.6; stroke: #d6d0c4; stroke-width: 1.2; }
+      70%, 100% { opacity: 1; stroke: #b45309; stroke-width: 2.5; }
     }
 
     @keyframes loser-dim {
@@ -59,136 +59,136 @@
 
   <defs>
     <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-slate" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#57534e"/>
     </marker>
   </defs>
 
   <!-- Canvas -->
-  <rect x="0" y="0" width="1160" height="630" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1160" height="630" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1160" height="60" rx="12" fill="#0f172a"/>
-  <rect x="0" y="44" width="1160" height="16" fill="#0f172a"/>
-  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">CSS Cascade Sort &amp; 6-Stage Value Processing Pipeline</text>
-  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">Cascading &amp; Inheritance Level 5 · Winning declaration from Cascade Sort enters Declared → Cascaded → Specified → Computed → Used → Actual</text>
+  <line x1="24" y1="62" x2="1136" y2="62" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#1c1917" font-family="Georgia, 'Times New Roman', serif">CSS Cascade Sort &amp; 6-Stage Value Processing Pipeline</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">Cascading &amp; Inheritance Level 5 · Winning declaration from Cascade Sort enters Declared → Cascaded → Specified → Computed → Used → Actual</text>
 
   <!-- LEFT PANEL: FORMAL CASCADE SORT -->
-  <rect x="24" y="76" width="516" height="474" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <text x="42" y="102" class="sans" font-size="14" font-weight="700" fill="#0f172a">Part A — Formal Cascade Sort (Halts on First Tie-Breaker)</text>
+  <rect x="24" y="76" width="516" height="474" rx="10" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <text x="42" y="102" class="sans" font-size="14" font-weight="700" fill="#1c1917">Part A — Formal Cascade Sort (Halts on First Tie-Breaker)</text>
 
   <!-- Competing Declarations -->
   <g class="loser">
-    <rect x="42" y="116" width="480" height="42" rx="6" fill="#fff1f2" stroke="#fda4af"/>
-    <text x="54" y="134" class="mono" font-size="10.5" font-weight="700" fill="#9f1239">@layer components { #card .title { width: 80%; } }</text>
-    <text x="54" y="149" class="sans" font-size="10" fill="#be123c">Specificity (1,1,0) — LOSES at Step 4 (@layer components &lt; utilities)</text>
+    <rect x="42" y="116" width="480" height="42" rx="6" fill="#fef2f2" stroke="#fda4af"/>
+    <text x="54" y="134" class="mono" font-size="10.5" font-weight="700" fill="#991b1b">@layer components { #card .title { width: 80%; } }</text>
+    <text x="54" y="149" class="sans" font-size="10" fill="#991b1b">Specificity (1,1,0) — LOSES at Step 4 (@layer components &lt; utilities)</text>
   </g>
 
-  <rect x="42" y="164" width="480" height="42" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <rect x="42" y="164" width="480" height="42" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
   <text x="54" y="182" class="mono" font-size="10.5" font-weight="700" fill="#065f46">@layer utilities  { .w-half { width: 50%; font-size: 1.5rem; } }</text>
-  <text x="54" y="197" class="sans" font-size="10" fill="#047857">Specificity (0,1,0) — WINS at Step 4 (higher layer beats #card!)</text>
+  <text x="54" y="197" class="sans" font-size="10" fill="#065f46">Specificity (0,1,0) — WINS at Step 4 (higher layer beats #card!)</text>
 
   <!-- Cascade Funnel Steps -->
-  <rect x="42" y="218" width="480" height="270" rx="8" fill="#eff6ff" class="cfun"/>
-  <text x="56" y="238" class="sans" font-size="12" font-weight="700" fill="#1e3a8a">7-Step Precedence Hierarchy (Highest Priority First)</text>
+  <rect x="42" y="218" width="480" height="270" rx="8" fill="#f0fdf9" class="cfun"/>
+  <text x="56" y="238" class="sans" font-size="12" font-weight="700" fill="#065f46">7-Step Precedence Hierarchy (Highest Priority First)</text>
 
-  <rect x="56" y="248" width="452" height="30" rx="5" fill="#ffffff" stroke="#93c5fd"/>
-  <text x="68" y="267" class="sans" font-size="11" font-weight="700" fill="#1e3a8a">1. Origin &amp; !important</text>
-  <text x="218" y="267" class="mono" font-size="10" fill="#334155">UA &lt; User &lt; Author &lt; Author! &lt; User! &lt; UA!</text>
+  <rect x="56" y="248" width="452" height="30" rx="5" fill="#ffffff" stroke="#99f6e4"/>
+  <text x="68" y="267" class="sans" font-size="11" font-weight="700" fill="#065f46">1. Origin &amp; !important</text>
+  <text x="218" y="267" class="mono" font-size="10" fill="#44403c">UA &lt; User &lt; Author &lt; Author! &lt; User! &lt; UA!</text>
 
-  <rect x="56" y="284" width="452" height="30" rx="5" fill="#ffffff" stroke="#93c5fd"/>
-  <text x="68" y="303" class="sans" font-size="11" font-weight="700" fill="#1e3a8a">2–3. Context &amp; Inline</text>
-  <text x="218" y="303" class="mono" font-size="10" fill="#334155">Shadow DOM encapsulation; style="..." attr</text>
+  <rect x="56" y="284" width="452" height="30" rx="5" fill="#ffffff" stroke="#99f6e4"/>
+  <text x="68" y="303" class="sans" font-size="11" font-weight="700" fill="#065f46">2–3. Context &amp; Inline</text>
+  <text x="218" y="303" class="mono" font-size="10" fill="#44403c">Shadow DOM encapsulation; style="..." attr</text>
 
-  <rect x="56" y="320" width="452" height="34" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
-  <text x="68" y="341" class="sans" font-size="11" font-weight="700" fill="#1e3a8a">4. @layer Order</text>
-  <text x="218" y="341" class="mono" font-size="10" font-weight="700" fill="#1e40af">reset &lt; base &lt; comp &lt; util &lt; unlayered</text>
+  <rect x="56" y="320" width="452" height="34" rx="5" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.4"/>
+  <text x="68" y="341" class="sans" font-size="11" font-weight="700" fill="#065f46">4. @layer Order</text>
+  <text x="218" y="341" class="mono" font-size="10" font-weight="700" fill="#065f46">reset &lt; base &lt; comp &lt; util &lt; unlayered</text>
 
-  <rect x="56" y="360" width="452" height="30" rx="5" fill="#ffffff" stroke="#93c5fd"/>
-  <text x="68" y="379" class="sans" font-size="11" font-weight="700" fill="#1e3a8a">5. Specificity (A, B, C)</text>
-  <text x="218" y="379" class="mono" font-size="10" fill="#334155">(#id, .class/:pseudo/[attr], type) in layer</text>
+  <rect x="56" y="360" width="452" height="30" rx="5" fill="#ffffff" stroke="#99f6e4"/>
+  <text x="68" y="379" class="sans" font-size="11" font-weight="700" fill="#065f46">5. Specificity (A, B, C)</text>
+  <text x="218" y="379" class="mono" font-size="10" fill="#44403c">(#id, .class/:pseudo/[attr], type) in layer</text>
 
-  <rect x="56" y="396" width="452" height="30" rx="5" fill="#ffffff" stroke="#93c5fd"/>
-  <text x="68" y="415" class="sans" font-size="11" font-weight="700" fill="#1e3a8a">6. @scope Proximity</text>
-  <text x="218" y="415" class="mono" font-size="10" fill="#334155">Fewer DOM hops from scoping root wins</text>
+  <rect x="56" y="396" width="452" height="30" rx="5" fill="#ffffff" stroke="#99f6e4"/>
+  <text x="68" y="415" class="sans" font-size="11" font-weight="700" fill="#065f46">6. @scope Proximity</text>
+  <text x="218" y="415" class="mono" font-size="10" fill="#44403c">Fewer DOM hops from scoping root wins</text>
 
-  <rect x="56" y="432" width="452" height="30" rx="5" fill="#ffffff" stroke="#93c5fd"/>
-  <text x="68" y="451" class="sans" font-size="11" font-weight="700" fill="#1e3a8a">7. Source Order</text>
-  <text x="218" y="451" class="mono" font-size="10" fill="#334155">Later declaration in stylesheet wins</text>
+  <rect x="56" y="432" width="452" height="30" rx="5" fill="#ffffff" stroke="#99f6e4"/>
+  <text x="68" y="451" class="sans" font-size="11" font-weight="700" fill="#065f46">7. Source Order</text>
+  <text x="218" y="451" class="mono" font-size="10" fill="#44403c">Later declaration in stylesheet wins</text>
 
-  <text x="56" y="479" class="sans" font-size="10" font-weight="700" fill="#9f1239">Note: !important inverts both Origin order AND @layer order (reset! beats util!).</text>
+  <text x="56" y="479" class="sans" font-size="10" font-weight="700" fill="#991b1b">Note: !important inverts both Origin order AND @layer order (reset! beats util!).</text>
 
   <!-- Winning Bridge -->
   <g class="bridge">
-    <rect x="130" y="498" width="380" height="38" rx="7" fill="#059669"/>
+    <rect x="130" y="498" width="380" height="38" rx="7" fill="#0f766e"/>
     <text x="320" y="521" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">Winner → Cascaded: width: 50%; font-size: 1.5rem</text>
   </g>
-  <line x1="518" y1="517" x2="564" y2="218" stroke="#059669" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#arr-green)"/>
+  <line x1="518" y1="517" x2="564" y2="218" stroke="#0f766e" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#arr-green)"/>
 
   <!-- RIGHT PANEL: 6-STAGE VALUE PROCESSING PIPELINE -->
-  <rect x="568" y="76" width="568" height="474" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <text x="588" y="102" class="sans" font-size="14" font-weight="700" fill="#0f172a">Part B — 6-Stage Value Processing Pipeline</text>
+  <rect x="568" y="76" width="568" height="474" rx="10" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <text x="588" y="102" class="sans" font-size="14" font-weight="700" fill="#1c1917">Part B — 6-Stage Value Processing Pipeline</text>
 
   <!-- Stage 1: Declared -->
-  <rect x="588" y="116" width="528" height="56" rx="7" fill="#f8fafc" class="vp1"/>
-  <rect x="600" y="126" width="96" height="22" rx="4" fill="#475569"/>
+  <rect x="588" y="116" width="528" height="56" rx="7" fill="#faf8f5" class="vp1"/>
+  <rect x="600" y="126" width="96" height="22" rx="4" fill="#44403c"/>
   <text x="648" y="141" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">1. Declared</text>
-  <text x="708" y="141" class="sans" font-size="12" font-weight="700" fill="#0f172a">All Matching Author / UA Declarations</text>
-  <text x="600" y="162" class="mono" font-size="10.5" fill="#475569">Raw parsed tokens: [80%, 50%] · [1.5rem, 16px]</text>
+  <text x="708" y="141" class="sans" font-size="12" font-weight="700" fill="#1c1917">All Matching Author / UA Declarations</text>
+  <text x="600" y="162" class="mono" font-size="10.5" fill="#44403c">Raw parsed tokens: [80%, 50%] · [1.5rem, 16px]</text>
 
-  <line x1="852" y1="172" x2="852" y2="184" stroke="#64748b" stroke-width="1.4" marker-end="url(#arr-slate)"/>
+  <line x1="852" y1="172" x2="852" y2="184" stroke="#57534e" stroke-width="1.4" marker-end="url(#arr-slate)"/>
 
   <!-- Stage 2: Cascaded -->
-  <rect x="588" y="186" width="528" height="56" rx="7" fill="#ecfdf5" class="vp1"/>
-  <rect x="600" y="196" width="96" height="22" rx="4" fill="#059669"/>
+  <rect x="588" y="186" width="528" height="56" rx="7" fill="#f0fdf9" class="vp1"/>
+  <rect x="600" y="196" width="96" height="22" rx="4" fill="#0f766e"/>
   <text x="648" y="211" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">2. Cascaded</text>
   <text x="708" y="211" class="sans" font-size="12" font-weight="700" fill="#065f46">Single Winner Selected by Cascade Sort</text>
-  <text x="600" y="232" class="mono" font-size="10.5" fill="#047857">width: 50%  ·  font-size: 1.5rem  (or empty if unmatched)</text>
+  <text x="600" y="232" class="mono" font-size="10.5" fill="#065f46">width: 50%  ·  font-size: 1.5rem  (or empty if unmatched)</text>
 
-  <line x1="852" y1="242" x2="852" y2="254" stroke="#64748b" stroke-width="1.4" marker-end="url(#arr-slate)"/>
+  <line x1="852" y1="242" x2="852" y2="254" stroke="#57534e" stroke-width="1.4" marker-end="url(#arr-slate)"/>
 
   <!-- Stage 3: Specified -->
-  <rect x="588" y="256" width="528" height="56" rx="7" fill="#ecfdf5" class="vp1"/>
-  <rect x="600" y="266" width="96" height="22" rx="4" fill="#059669"/>
+  <rect x="588" y="256" width="528" height="56" rx="7" fill="#f0fdf9" class="vp1"/>
+  <rect x="600" y="266" width="96" height="22" rx="4" fill="#0f766e"/>
   <text x="648" y="281" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">3. Specified</text>
   <text x="708" y="281" class="sans" font-size="12" font-weight="700" fill="#065f46">Fallback via Inheritance or Initial Value</text>
-  <text x="600" y="302" class="mono" font-size="10.5" fill="#334155">Cascaded ?? (inherits ? parentComputed : initialValue)</text>
+  <text x="600" y="302" class="mono" font-size="10.5" fill="#44403c">Cascaded ?? (inherits ? parentComputed : initialValue)</text>
 
-  <line x1="852" y1="312" x2="852" y2="324" stroke="#64748b" stroke-width="1.4" marker-end="url(#arr-slate)"/>
+  <line x1="852" y1="312" x2="852" y2="324" stroke="#57534e" stroke-width="1.4" marker-end="url(#arr-slate)"/>
 
   <!-- Stage 4: Computed -->
-  <rect x="588" y="326" width="528" height="66" rx="7" fill="#f5f3ff" class="vp2"/>
-  <rect x="600" y="336" width="96" height="22" rx="4" fill="#7c3aed"/>
+  <rect x="588" y="326" width="528" height="66" rx="7" fill="#f5f1e8" class="vp2"/>
+  <rect x="600" y="336" width="96" height="22" rx="4" fill="#0f766e"/>
   <text x="648" y="351" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">4. Computed</text>
-  <text x="708" y="351" class="sans" font-size="12" font-weight="700" fill="#5b21b6">Pre-Layout Resolution (Style Phase)</text>
-  <text x="600" y="372" class="mono" font-size="10.5" fill="#5b21b6">font-size: 1.5rem → 24px (inherited by children)</text>
-  <text x="600" y="386" class="mono" font-size="10" fill="#6d28d9">width: 50% stays 50% (needs parent box size!)</text>
+  <text x="708" y="351" class="sans" font-size="12" font-weight="700" fill="#065f46">Pre-Layout Resolution (Style Phase)</text>
+  <text x="600" y="372" class="mono" font-size="10.5" fill="#065f46">font-size: 1.5rem → 24px (inherited by children)</text>
+  <text x="600" y="386" class="mono" font-size="10" fill="#065f46">width: 50% stays 50% (needs parent box size!)</text>
 
-  <line x1="852" y1="392" x2="852" y2="404" stroke="#64748b" stroke-width="1.4" marker-end="url(#arr-slate)"/>
+  <line x1="852" y1="392" x2="852" y2="404" stroke="#57534e" stroke-width="1.4" marker-end="url(#arr-slate)"/>
 
   <!-- Stage 5: Used -->
   <rect x="588" y="406" width="528" height="66" rx="7" fill="#fffbeb" class="vp3"/>
-  <rect x="600" y="416" width="96" height="22" rx="4" fill="#d97706"/>
+  <rect x="600" y="416" width="96" height="22" rx="4" fill="#b45309"/>
   <text x="648" y="431" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">5. Used</text>
   <text x="708" y="431" class="sans" font-size="12" font-weight="700" fill="#92400e">Post-Layout Geometry Resolution</text>
   <text x="600" y="452" class="mono" font-size="10.5" fill="#92400e">width: 50% of 800.8px parent → 400.4px · auto margins solved</text>
   <text x="600" y="466" class="sans" font-size="10" font-weight="700" fill="#b45309">CSSOM getComputedStyle() returns Computed (font-size) OR Used (width)!</text>
 
-  <line x1="852" y1="472" x2="852" y2="484" stroke="#64748b" stroke-width="1.4" marker-end="url(#arr-slate)"/>
+  <line x1="852" y1="472" x2="852" y2="484" stroke="#57534e" stroke-width="1.4" marker-end="url(#arr-slate)"/>
 
   <!-- Stage 6: Actual -->
-  <rect x="588" y="486" width="528" height="52" rx="7" fill="#eff6ff" class="vp3"/>
-  <rect x="600" y="496" width="96" height="22" rx="4" fill="#2563eb"/>
+  <rect x="588" y="486" width="528" height="52" rx="7" fill="#f0fdf9" class="vp3"/>
+  <rect x="600" y="496" width="96" height="22" rx="4" fill="#0f766e"/>
   <text x="648" y="511" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">6. Actual</text>
-  <text x="708" y="511" class="sans" font-size="12" font-weight="700" fill="#1e3a8a">Hardware Device Pixel Snapping</text>
-  <text x="600" y="531" class="mono" font-size="10.5" fill="#1e40af">width: 400.4px → snapped to 400px (1× DPR) for rasterization</text>
+  <text x="708" y="511" class="sans" font-size="12" font-weight="700" fill="#065f46">Hardware Device Pixel Snapping</text>
+  <text x="600" y="531" class="mono" font-size="10.5" fill="#065f46">width: 400.4px → snapped to 400px (1× DPR) for rasterization</text>
 
   <!-- FOOTER -->
-  <rect x="24" y="566" width="1112" height="46" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
-  <text x="42" y="594" class="sans" font-size="11.5" font-weight="600" fill="#1e3a8a">Takeaway: @layer decides precedence before specificity; Computed values inherit (rem→px), while Used values resolve layout-dependent percentages.</text>
+  <rect x="24" y="566" width="1112" height="46" rx="8" fill="#f0fdf9" stroke="#99f6e4" stroke-width="1"/>
+  <text x="42" y="594" class="sans" font-size="11.5" font-weight="600" fill="#065f46">Takeaway: @layer decides precedence before specificity; Computed values inherit (rem→px), while Used values resolve layout-dependent percentages.</text>
 </svg>

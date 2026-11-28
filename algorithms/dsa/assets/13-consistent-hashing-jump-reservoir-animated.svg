@@ -32,9 +32,9 @@
         94%, 100% { transform: translate(0px, 0px); opacity: 0.86; }
       }
       @keyframes res-s1 {
-        0%, 44%   { fill: #eff6ff; stroke: #3b82f6; }
-        50%, 88%  { fill: #ecfdf5; stroke: #059669; stroke-width: 2.2; }
-        96%, 100% { fill: #eff6ff; stroke: #3b82f6; }
+        0%, 44%   { fill: #f0fdf9; stroke: #0f766e; }
+        50%, 88%  { fill: #f0fdf9; stroke: #0f766e; stroke-width: 2.2; }
+        96%, 100% { fill: #f0fdf9; stroke: #0f766e; }
       }
 
       @media (prefers-reduced-motion: reduce) {
@@ -46,222 +46,222 @@
     </style>
 
     <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#b45309"/>
     </marker>
     <marker id="arr-violet" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
   </defs>
 
   <!-- Canvas -->
-  <rect x="0" y="0" width="1200" height="720" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1200" height="720" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1200" height="62" rx="12" fill="#0f172a"/>
-  <rect x="0" y="46" width="1200" height="16" fill="#0f172a"/>
-  <text x="24" y="29" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Consistent Hashing, Jump Hash &amp; Reservoir Sampling</text>
-  <text x="24" y="49" class="sans" font-size="12" fill="#94a3b8">Minimal 1/N key relocation on Karger virtual-node rings, O(ln k) stateless Jump Hash, and uniform k/N Algorithm R stream sampling</text>
+  <line x1="24" y1="64" x2="1176" y2="64" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="29" class="sans" font-size="18" font-weight="700" fill="#1c1917" font-family="Georgia, 'Times New Roman', serif">Consistent Hashing, Jump Hash &amp; Reservoir Sampling</text>
+  <text x="24" y="49" class="sans" font-size="12" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">Minimal 1/N key relocation on Karger virtual-node rings, O(ln k) stateless Jump Hash, and uniform k/N Algorithm R stream sampling</text>
 
   <!-- ==================== PANEL 1: KARGER RING + VNODES ==================== -->
   <g transform="translate(24, 78)">
-    <rect x="0" y="0" width="372" height="618" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
-    <rect x="0" y="0" width="372" height="36" rx="10" fill="#eff6ff"/>
-    <rect x="0" y="26" width="372" height="10" fill="#eff6ff"/>
-    <text x="16" y="23" class="sans" font-size="13" font-weight="700" fill="#1e3a8a">1. Karger Ring + Virtual Nodes</text>
-    <text x="356" y="23" class="mono" font-size="10.5" font-weight="700" fill="#2563eb" text-anchor="end">[0, 2^32 - 1]</text>
+    <rect x="0" y="0" width="372" height="618" rx="10" fill="#ffffff" stroke="#d6d0c4"/>
+    <rect x="0" y="0" width="372" height="36" rx="10" fill="#f0fdf9"/>
+    <rect x="0" y="26" width="372" height="10" fill="#f0fdf9"/>
+    <text x="16" y="23" class="sans" font-size="13" font-weight="700" fill="#065f46">1. Karger Ring + Virtual Nodes</text>
+    <text x="356" y="23" class="mono" font-size="10.5" font-weight="700" fill="#0f766e" text-anchor="end">[0, 2^32 - 1]</text>
 
     <!-- Ring center (186, 210), r = 104 -->
-    <circle cx="186" cy="210" r="104" fill="#f8fafc" stroke="#94a3b8" stroke-width="3" stroke-dasharray="6 4"/>
-    <text x="186" y="88" class="mono" font-size="10" font-weight="700" fill="#475569" text-anchor="middle">Token 0 / 2^32-1</text>
+    <circle cx="186" cy="210" r="104" fill="#faf8f5" stroke="#d6d0c4" stroke-width="3" stroke-dasharray="6 4"/>
+    <text x="186" y="88" class="mono" font-size="10" font-weight="700" fill="#44403c" text-anchor="middle">Token 0 / 2^32-1</text>
 
     <!-- Anticlockwise migrated arc when N3#0 joins at ~105 deg (right-bottom) -->
     <!-- From 30 deg (276, 158) to 105 deg (286, 237): keys in this arc move to N3! -->
-    <path class="ring-arc" d="M 276 158 A 104 104 0 0 1 286 237" fill="none" stroke="#d97706" stroke-width="6"/>
+    <path class="ring-arc" d="M 276 158 A 104 104 0 0 1 286 237" fill="none" stroke="#b45309" stroke-width="6"/>
 
     <!-- Center invariant box -->
-    <rect x="122" y="182" width="128" height="56" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-    <text x="186" y="202" class="sans" font-size="10.5" font-weight="700" fill="#0f172a" text-anchor="middle">Clockwise Lookup</text>
-    <text x="186" y="218" class="mono" font-size="10" fill="#d97706" font-weight="700" text-anchor="middle">Only ~K/N keys</text>
-    <text x="186" y="232" class="sans" font-size="10" fill="#64748b" text-anchor="middle">move when N3 joins</text>
+    <rect x="122" y="182" width="128" height="56" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+    <text x="186" y="202" class="sans" font-size="10.5" font-weight="700" fill="#1c1917" text-anchor="middle">Clockwise Lookup</text>
+    <text x="186" y="218" class="mono" font-size="10" fill="#b45309" font-weight="700" text-anchor="middle">Only ~K/N keys</text>
+    <text x="186" y="232" class="sans" font-size="10" fill="#57534e" text-anchor="middle">move when N3 joins</text>
 
     <!-- Virtual Nodes on Ring -->
     <!-- N1#0 at 30 deg (238, 120) -> dx=104*sin(30)=52, dy=-104*cos(30)=-90 -> (238, 120) -->
-    <circle cx="238" cy="120" r="14" fill="#2563eb" stroke="#1d4ed8" stroke-width="2"/>
+    <circle cx="238" cy="120" r="14" fill="#0f766e" stroke="#065f46" stroke-width="2"/>
     <text x="238" y="124" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">N1#0</text>
 
     <!-- N2#0 at 150 deg (238, 300) -->
-    <circle cx="238" cy="300" r="14" fill="#059669" stroke="#047857" stroke-width="2"/>
+    <circle cx="238" cy="300" r="14" fill="#0f766e" stroke="#065f46" stroke-width="2"/>
     <text x="238" y="304" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">N2#0</text>
 
     <!-- N1#1 at 220 deg (119, 290) -->
-    <circle cx="119" cy="290" r="14" fill="#2563eb" stroke="#1d4ed8" stroke-width="2"/>
+    <circle cx="119" cy="290" r="14" fill="#0f766e" stroke="#065f46" stroke-width="2"/>
     <text x="119" y="294" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">N1#1</text>
 
     <!-- N2#1 at 315 deg (112, 136) -->
-    <circle cx="112" cy="136" r="14" fill="#059669" stroke="#047857" stroke-width="2"/>
+    <circle cx="112" cy="136" r="14" fill="#0f766e" stroke="#065f46" stroke-width="2"/>
     <text x="112" y="140" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">N2#1</text>
 
     <!-- Joining Node N3#0 at 105 deg (286, 237) -->
     <g class="ring-n3">
-      <circle cx="286" cy="237" r="15" fill="#d97706" stroke="#b45309" stroke-width="2.2"/>
+      <circle cx="286" cy="237" r="15" fill="#b45309" stroke="#b45309" stroke-width="2.2"/>
       <text x="286" y="241" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">N3#0</text>
       <text x="310" y="241" class="sans" font-size="10.5" font-weight="700" fill="#b45309">+Join</text>
     </g>
 
     <!-- Keys on ring -->
     <!-- kB at 75 deg (286, 183) - inside migrated arc! -->
-    <circle cx="286" cy="183" r="6" fill="#e11d48" stroke="#ffffff" stroke-width="1.5"/>
-    <text x="300" y="186" class="mono" font-size="10" font-weight="700" fill="#be123c">kB (moves!)</text>
+    <circle cx="286" cy="183" r="6" fill="#dc2626" stroke="#ffffff" stroke-width="1.5"/>
+    <text x="300" y="186" class="mono" font-size="10" font-weight="700" fill="#991b1b">kB (moves!)</text>
 
     <!-- kA at 190 deg (168, 312) - untouched -->
-    <circle cx="168" cy="312" r="6" fill="#64748b" stroke="#ffffff" stroke-width="1.5"/>
-    <text x="168" y="330" class="mono" font-size="10" fill="#475569" text-anchor="middle">kA (stays N1)</text>
+    <circle cx="168" cy="312" r="6" fill="#57534e" stroke="#ffffff" stroke-width="1.5"/>
+    <text x="168" y="330" class="mono" font-size="10" fill="#44403c" text-anchor="middle">kA (stays N1)</text>
 
     <!-- kC at 265 deg (82, 219) - untouched -->
-    <circle cx="82" cy="219" r="6" fill="#64748b" stroke="#ffffff" stroke-width="1.5"/>
-    <text x="42" y="222" class="mono" font-size="10" fill="#475569">kC</text>
+    <circle cx="82" cy="219" r="6" fill="#57534e" stroke="#ffffff" stroke-width="1.5"/>
+    <text x="42" y="222" class="mono" font-size="10" fill="#44403c">kC</text>
 
     <!-- Bottom explanation -->
     <g transform="translate(16, 360)">
-      <rect x="0" y="0" width="340" height="240" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
-      <text x="14" y="24" class="sans" font-size="12" font-weight="700" fill="#0f172a">Virtual Nodes &amp; Relocation Math</text>
-      <text x="14" y="48" class="mono" font-size="11" fill="#be123c">Naive hash(k) % N: ~100% keys move!</text>
+      <rect x="0" y="0" width="340" height="240" rx="8" fill="#faf8f5" stroke="#d6d0c4"/>
+      <text x="14" y="24" class="sans" font-size="12" font-weight="700" fill="#1c1917">Virtual Nodes &amp; Relocation Math</text>
+      <text x="14" y="48" class="mono" font-size="11" fill="#991b1b">Naive hash(k) % N: ~100% keys move!</text>
       <text x="14" y="70" class="mono" font-size="11" fill="#065f46">Karger Ring: only K / N keys move.</text>
-      <line x1="14" y1="86" x2="326" y2="86" stroke="#e2e8f0"/>
-      <text x="14" y="108" class="sans" font-size="11" fill="#334155">1. Each physical server owns V = 100..250</text>
-      <text x="14" y="126" class="sans" font-size="11" fill="#334155">   virtual tokens spread around the ring.</text>
-      <text x="14" y="148" class="sans" font-size="11" fill="#334155">2. Adding N3 steals an equal slice from</text>
-      <text x="14" y="166" class="sans" font-size="11" fill="#334155">   every existing node (smooth load balance).</text>
-      <rect x="14" y="184" width="312" height="40" rx="6" fill="#eff6ff" stroke="#93c5fd"/>
-      <text x="170" y="209" class="mono" font-size="11" font-weight="700" fill="#1e3a8a" text-anchor="middle">Lookup: O(log(N*V)) binary search</text>
+      <line x1="14" y1="86" x2="326" y2="86" stroke="#e7e2d8"/>
+      <text x="14" y="108" class="sans" font-size="11" fill="#44403c">1. Each physical server owns V = 100..250</text>
+      <text x="14" y="126" class="sans" font-size="11" fill="#44403c">   virtual tokens spread around the ring.</text>
+      <text x="14" y="148" class="sans" font-size="11" fill="#44403c">2. Adding N3 steals an equal slice from</text>
+      <text x="14" y="166" class="sans" font-size="11" fill="#44403c">   every existing node (smooth load balance).</text>
+      <rect x="14" y="184" width="312" height="40" rx="6" fill="#f0fdf9" stroke="#99f6e4"/>
+      <text x="170" y="209" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">Lookup: O(log(N*V)) binary search</text>
     </g>
   </g>
 
   <!-- ==================== PANEL 2: JUMP CONSISTENT HASH ==================== -->
   <g transform="translate(414, 78)">
-    <rect x="0" y="0" width="372" height="618" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
-    <rect x="0" y="0" width="372" height="36" rx="10" fill="#f5f3ff"/>
-    <rect x="0" y="26" width="372" height="10" fill="#f5f3ff"/>
-    <text x="16" y="23" class="sans" font-size="13" font-weight="700" fill="#6d28d9">2. Jump Consistent Hash</text>
-    <text x="356" y="23" class="mono" font-size="10.5" font-weight="700" fill="#7c3aed" text-anchor="end">O(ln k) time, O(1) space</text>
+    <rect x="0" y="0" width="372" height="618" rx="10" fill="#ffffff" stroke="#d6d0c4"/>
+    <rect x="0" y="0" width="372" height="36" rx="10" fill="#f5f1e8"/>
+    <rect x="0" y="26" width="372" height="10" fill="#f5f1e8"/>
+    <text x="16" y="23" class="sans" font-size="13" font-weight="700" fill="#065f46">2. Jump Consistent Hash</text>
+    <text x="356" y="23" class="mono" font-size="10.5" font-weight="700" fill="#0f766e" text-anchor="end">O(ln k) time, O(1) space</text>
 
-    <text x="16" y="62" class="sans" font-size="11.5" font-weight="700" fill="#334155">Stateless Bucket Jumps (numBuckets = 6)</text>
+    <text x="16" y="62" class="sans" font-size="11.5" font-weight="700" fill="#44403c">Stateless Bucket Jumps (numBuckets = 6)</text>
 
     <!-- Jump Arcs above bucket row -->
-    <path class="jump-arc1" d="M 42 152 C 70 100, 126 100, 154 152" fill="none" stroke="#7c3aed" stroke-width="2" marker-end="url(#arr-violet)"/>
-    <text x="98" y="108" class="mono" font-size="10" font-weight="700" fill="#6d28d9" text-anchor="middle">j = 2</text>
+    <path class="jump-arc1" d="M 42 152 C 70 100, 126 100, 154 152" fill="none" stroke="#0f766e" stroke-width="2" marker-end="url(#arr-violet)"/>
+    <text x="98" y="108" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">j = 2</text>
 
-    <path class="jump-arc2" d="M 154 152 C 198 88, 278 88, 322 152" fill="none" stroke="#059669" stroke-width="2" marker-end="url(#arr-emerald)"/>
+    <path class="jump-arc2" d="M 154 152 C 198 88, 278 88, 322 152" fill="none" stroke="#0f766e" stroke-width="2" marker-end="url(#arr-emerald)"/>
     <text x="238" y="96" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">j = 5 (stop: next j &gt;= 6)</text>
 
     <!-- 6 Buckets at (18, 154), width=48, stride=56 -->
     <g transform="translate(18, 154)">
-      <g transform="translate(0,0)"><rect width="48" height="48" rx="6" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.6"/><text x="24" y="29" class="mono" font-size="15" font-weight="700" fill="#6d28d9" text-anchor="middle">0</text></g>
-      <g transform="translate(56,0)"><rect width="48" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1"/><text x="24" y="29" class="mono" font-size="15" fill="#94a3b8" text-anchor="middle">1</text></g>
-      <g transform="translate(112,0)"><rect width="48" height="48" rx="6" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.6"/><text x="24" y="29" class="mono" font-size="15" font-weight="700" fill="#6d28d9" text-anchor="middle">2</text></g>
-      <g transform="translate(168,0)"><rect width="48" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1"/><text x="24" y="29" class="mono" font-size="15" fill="#94a3b8" text-anchor="middle">3</text></g>
-      <g transform="translate(224,0)"><rect width="48" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1"/><text x="24" y="29" class="mono" font-size="15" fill="#94a3b8" text-anchor="middle">4</text></g>
-      <g transform="translate(280,0)"><rect width="48" height="48" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="24" y="29" class="mono" font-size="15" font-weight="700" fill="#065f46" text-anchor="middle">5</text></g>
+      <g transform="translate(0,0)"><rect width="48" height="48" rx="6" fill="#f5f1e8" stroke="#0f766e" stroke-width="1.6"/><text x="24" y="29" class="mono" font-size="15" font-weight="700" fill="#065f46" text-anchor="middle">0</text></g>
+      <g transform="translate(56,0)"><rect width="48" height="48" rx="6" fill="#faf8f5" stroke="#d6d0c4"/><text x="24" y="29" class="mono" font-size="15" fill="#57534e" text-anchor="middle">1</text></g>
+      <g transform="translate(112,0)"><rect width="48" height="48" rx="6" fill="#f5f1e8" stroke="#0f766e" stroke-width="1.6"/><text x="24" y="29" class="mono" font-size="15" font-weight="700" fill="#065f46" text-anchor="middle">2</text></g>
+      <g transform="translate(168,0)"><rect width="48" height="48" rx="6" fill="#faf8f5" stroke="#d6d0c4"/><text x="24" y="29" class="mono" font-size="15" fill="#57534e" text-anchor="middle">3</text></g>
+      <g transform="translate(224,0)"><rect width="48" height="48" rx="6" fill="#faf8f5" stroke="#d6d0c4"/><text x="24" y="29" class="mono" font-size="15" fill="#57534e" text-anchor="middle">4</text></g>
+      <g transform="translate(280,0)"><rect width="48" height="48" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/><text x="24" y="29" class="mono" font-size="15" font-weight="700" fill="#065f46" text-anchor="middle">5</text></g>
 
       <!-- Animated b pointer below buckets -->
       <g class="jump-ptr" transform="translate(0, 56)">
-        <polygon points="24,0 18,10 30,10" fill="#7c3aed"/>
-        <rect x="2" y="12" width="44" height="22" rx="4" fill="#7c3aed"/>
+        <polygon points="24,0 18,10 30,10" fill="#0f766e"/>
+        <rect x="2" y="12" width="44" height="22" rx="4" fill="#0f766e"/>
         <text x="24" y="27" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">b</text>
       </g>
     </g>
 
     <!-- Code & Mathematical Intuition -->
     <g transform="translate(16, 268)">
-      <rect x="0" y="0" width="340" height="148" rx="8" fill="#0f172a"/>
-      <text x="14" y="24" class="mono" font-size="10.5" fill="#94a3b8">// Lamping &amp; Veach (Google, 2014)</text>
-      <text x="14" y="46" class="mono" font-size="11" fill="#e2e8f0">let b = -1n, j = 0n;</text>
-      <text x="14" y="66" class="mono" font-size="11" fill="#e2e8f0">while (j &lt; BigInt(numBuckets)) {</text>
-      <text x="14" y="86" class="mono" font-size="11" fill="#fcd34d">  b = j;</text>
-      <text x="14" y="106" class="mono" font-size="10.5" fill="#93c5fd">  key = (key * 2862933555777941757n + 1n)...</text>
-      <text x="14" y="126" class="mono" font-size="10.5" fill="#6ee7b7">  j = ((b+1n) &lt;&lt; 31n) / ((key &gt;&gt; 33n) + 1n);</text>
-      <text x="14" y="142" class="mono" font-size="11" fill="#e2e8f0">}</text>
+      <rect x="0" y="0" width="340" height="148" rx="8" fill="#1c1917"/>
+      <text x="14" y="24" class="mono" font-size="10.5" fill="#57534e">// Lamping &amp; Veach (Google, 2014)</text>
+      <text x="14" y="46" class="mono" font-size="11" fill="#ffffff">let b = -1n, j = 0n;</text>
+      <text x="14" y="66" class="mono" font-size="11" fill="#ffffff">while (j &lt; BigInt(numBuckets)) {</text>
+      <text x="14" y="86" class="mono" font-size="11" fill="#fde68a">  b = j;</text>
+      <text x="14" y="106" class="mono" font-size="10.5" fill="#99f6e4">  key = (key * 2862933555777941757n + 1n)...</text>
+      <text x="14" y="126" class="mono" font-size="10.5" fill="#99f6e4">  j = ((b+1n) &lt;&lt; 31n) / ((key &gt;&gt; 33n) + 1n);</text>
+      <text x="14" y="142" class="mono" font-size="11" fill="#ffffff">}</text>
     </g>
 
     <g transform="translate(16, 430)">
-      <rect x="0" y="0" width="340" height="170" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
-      <text x="14" y="24" class="sans" font-size="12" font-weight="700" fill="#0f172a">Why It Jumps in O(ln k)</text>
-      <text x="14" y="48" class="sans" font-size="11" fill="#334155">Key jumps from bucket b to j &gt; b with</text>
-      <text x="14" y="66" class="mono" font-size="11" fill="#6d28d9">P(jump past j) = (b + 1) / (j + 1)</text>
-      <text x="14" y="88" class="sans" font-size="11" fill="#334155">Expected jumps = H_k = O(ln k) (~7 for k=1k).</text>
-      <line x1="14" y1="104" x2="326" y2="104" stroke="#e2e8f0"/>
+      <rect x="0" y="0" width="340" height="170" rx="8" fill="#faf8f5" stroke="#d6d0c4"/>
+      <text x="14" y="24" class="sans" font-size="12" font-weight="700" fill="#1c1917">Why It Jumps in O(ln k)</text>
+      <text x="14" y="48" class="sans" font-size="11" fill="#44403c">Key jumps from bucket b to j &gt; b with</text>
+      <text x="14" y="66" class="mono" font-size="11" fill="#065f46">P(jump past j) = (b + 1) / (j + 1)</text>
+      <text x="14" y="88" class="sans" font-size="11" fill="#44403c">Expected jumps = H_k = O(ln k) (~7 for k=1k).</text>
+      <line x1="14" y1="104" x2="326" y2="104" stroke="#e7e2d8"/>
       <text x="14" y="126" class="sans" font-size="11" font-weight="700" fill="#065f46">Pros: 0 bytes RAM, exact uniform 1/k balance.</text>
-      <text x="14" y="148" class="sans" font-size="11" font-weight="700" fill="#be123c">Limitation: sequential bucket IDs 0..k-1 only.</text>
+      <text x="14" y="148" class="sans" font-size="11" font-weight="700" fill="#991b1b">Limitation: sequential bucket IDs 0..k-1 only.</text>
     </g>
   </g>
 
   <!-- ==================== PANEL 3: RESERVOIR SAMPLING ==================== -->
   <g transform="translate(804, 78)">
-    <rect x="0" y="0" width="372" height="618" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
-    <rect x="0" y="0" width="372" height="36" rx="10" fill="#ecfdf5"/>
-    <rect x="0" y="26" width="372" height="10" fill="#ecfdf5"/>
+    <rect x="0" y="0" width="372" height="618" rx="10" fill="#ffffff" stroke="#d6d0c4"/>
+    <rect x="0" y="0" width="372" height="36" rx="10" fill="#f0fdf9"/>
+    <rect x="0" y="26" width="372" height="10" fill="#f0fdf9"/>
     <text x="16" y="23" class="sans" font-size="13" font-weight="700" fill="#065f46">3. Reservoir Sampling (Algorithm R)</text>
-    <text x="356" y="23" class="mono" font-size="10.5" font-weight="700" fill="#059669" text-anchor="end">k = 3, unknown N</text>
+    <text x="356" y="23" class="mono" font-size="10.5" font-weight="700" fill="#0f766e" text-anchor="end">k = 3, unknown N</text>
 
     <!-- Stream Row -->
-    <text x="16" y="62" class="sans" font-size="11.5" font-weight="700" fill="#334155">Unbounded Stream (s_0 .. s_i ..)</text>
+    <text x="16" y="62" class="sans" font-size="11.5" font-weight="700" fill="#44403c">Unbounded Stream (s_0 .. s_i ..)</text>
     <g transform="translate(16, 76)">
-      <rect x="0" width="46" height="40" rx="5" fill="#f1f5f9" stroke="#cbd5e1"/><text x="23" y="25" class="mono" font-size="12" fill="#64748b" text-anchor="middle">s_0</text>
-      <rect x="54" width="46" height="40" rx="5" fill="#f1f5f9" stroke="#cbd5e1"/><text x="77" y="25" class="mono" font-size="12" fill="#64748b" text-anchor="middle">s_1</text>
-      <rect x="108" width="46" height="40" rx="5" fill="#f1f5f9" stroke="#cbd5e1"/><text x="131" y="25" class="mono" font-size="12" fill="#64748b" text-anchor="middle">s_2</text>
-      <rect x="162" width="46" height="40" rx="5" fill="#f1f5f9" stroke="#cbd5e1"/><text x="185" y="25" class="mono" font-size="12" fill="#64748b" text-anchor="middle">s_3</text>
-      <rect x="216" width="46" height="40" rx="5" fill="#f1f5f9" stroke="#cbd5e1"/><text x="239" y="25" class="mono" font-size="12" fill="#64748b" text-anchor="middle">s_4</text>
-      <rect x="270" width="60" height="40" rx="5" fill="#fffbeb" stroke="#d97706" stroke-dasharray="4 3"/>
+      <rect x="0" width="46" height="40" rx="5" fill="#f5f1e8" stroke="#d6d0c4"/><text x="23" y="25" class="mono" font-size="12" fill="#57534e" text-anchor="middle">s_0</text>
+      <rect x="54" width="46" height="40" rx="5" fill="#f5f1e8" stroke="#d6d0c4"/><text x="77" y="25" class="mono" font-size="12" fill="#57534e" text-anchor="middle">s_1</text>
+      <rect x="108" width="46" height="40" rx="5" fill="#f5f1e8" stroke="#d6d0c4"/><text x="131" y="25" class="mono" font-size="12" fill="#57534e" text-anchor="middle">s_2</text>
+      <rect x="162" width="46" height="40" rx="5" fill="#f5f1e8" stroke="#d6d0c4"/><text x="185" y="25" class="mono" font-size="12" fill="#57534e" text-anchor="middle">s_3</text>
+      <rect x="216" width="46" height="40" rx="5" fill="#f5f1e8" stroke="#d6d0c4"/><text x="239" y="25" class="mono" font-size="12" fill="#57534e" text-anchor="middle">s_4</text>
+      <rect x="270" width="60" height="40" rx="5" fill="#fffbeb" stroke="#b45309" stroke-dasharray="4 3"/>
       <text x="300" y="25" class="mono" font-size="11" fill="#b45309" text-anchor="middle">slot 5</text>
 
       <!-- Animated s_5 token moving into R[1] -->
       <g class="res-s5" transform="translate(270, 0)">
-        <rect x="0" width="60" height="40" rx="6" fill="#059669" stroke="#047857" stroke-width="2"/>
+        <rect x="0" width="60" height="40" rx="6" fill="#0f766e" stroke="#065f46" stroke-width="2"/>
         <text x="30" y="25" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">s_5</text>
       </g>
     </g>
 
     <!-- Reservoir R[0..2] at y=198 -->
-    <text x="16" y="152" class="sans" font-size="11.5" font-weight="700" fill="#0f172a">Reservoir Buffer R[0..2]</text>
-    <text x="16" y="170" class="mono" font-size="10.5" fill="#059669">At i=5: draw r = randInt(0, 5) -&gt; r = 1 &lt; k(3)</text>
+    <text x="16" y="152" class="sans" font-size="11.5" font-weight="700" fill="#1c1917">Reservoir Buffer R[0..2]</text>
+    <text x="16" y="170" class="mono" font-size="10.5" fill="#0f766e">At i=5: draw r = randInt(0, 5) -&gt; r = 1 &lt; k(3)</text>
 
     <g transform="translate(56, 184)">
-      <rect x="0" width="76" height="46" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.6"/>
-      <text x="38" y="28" class="mono" font-size="13" font-weight="700" fill="#1e3a8a" text-anchor="middle">s_0</text>
-      <text x="38" y="60" class="mono" font-size="10" fill="#64748b" text-anchor="middle">R[0]</text>
+      <rect x="0" width="76" height="46" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.6"/>
+      <text x="38" y="28" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">s_0</text>
+      <text x="38" y="60" class="mono" font-size="10" fill="#57534e" text-anchor="middle">R[0]</text>
 
-      <rect class="res-slot1" x="92" width="76" height="46" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.6"/>
-      <text x="130" y="28" class="mono" font-size="13" font-weight="700" fill="#1e3a8a" text-anchor="middle">s_1 -&gt; s_5</text>
-      <text x="130" y="60" class="mono" font-size="10" font-weight="700" fill="#059669" text-anchor="middle">R[1] replaced</text>
+      <rect class="res-slot1" x="92" width="76" height="46" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.6"/>
+      <text x="130" y="28" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">s_1 -&gt; s_5</text>
+      <text x="130" y="60" class="mono" font-size="10" font-weight="700" fill="#0f766e" text-anchor="middle">R[1] replaced</text>
 
-      <rect x="184" width="76" height="46" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.6"/>
-      <text x="222" y="28" class="mono" font-size="13" font-weight="700" fill="#1e3a8a" text-anchor="middle">s_2</text>
-      <text x="222" y="60" class="mono" font-size="10" fill="#64748b" text-anchor="middle">R[2]</text>
+      <rect x="184" width="76" height="46" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.6"/>
+      <text x="222" y="28" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">s_2</text>
+      <text x="222" y="60" class="mono" font-size="10" fill="#57534e" text-anchor="middle">R[2]</text>
     </g>
 
     <!-- Algorithm & Induction Proof -->
     <g transform="translate(16, 268)">
-      <rect x="0" y="0" width="340" height="122" rx="8" fill="#ecfdf5" stroke="#6ee7b7"/>
+      <rect x="0" y="0" width="340" height="122" rx="8" fill="#f0fdf9" stroke="#99f6e4"/>
       <text x="14" y="24" class="sans" font-size="12" font-weight="700" fill="#065f46">Algorithm R (1-Pass, O(k) Memory)</text>
-      <text x="14" y="48" class="mono" font-size="11" fill="#334155">1. Fill R[0..k-1] with first k items.</text>
-      <text x="14" y="68" class="mono" font-size="11" fill="#334155">2. For i = k .. N-1:</text>
+      <text x="14" y="48" class="mono" font-size="11" fill="#44403c">1. Fill R[0..k-1] with first k items.</text>
+      <text x="14" y="68" class="mono" font-size="11" fill="#44403c">2. For i = k .. N-1:</text>
       <text x="14" y="88" class="mono" font-size="11" fill="#065f46">     r = randomInt(0, i)</text>
       <text x="14" y="108" class="mono" font-size="11" font-weight="700" fill="#065f46">     if (r &lt; k) R[r] = s_i</text>
     </g>
 
     <g transform="translate(16, 406)">
-      <rect x="0" y="0" width="340" height="194" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
-      <text x="14" y="24" class="sans" font-size="12" font-weight="700" fill="#0f172a">Inductive Proof of Uniformity (k / N)</text>
-      <text x="14" y="50" class="sans" font-size="11" fill="#334155">N-th item s_{N-1} enters with P = k / N.</text>
-      <text x="14" y="74" class="sans" font-size="11" fill="#334155">Any prior item kept if not overwritten:</text>
-      <rect x="14" y="88" width="312" height="54" rx="6" fill="#ffffff" stroke="#c4b5fd"/>
-      <text x="170" y="110" class="mono" font-size="11" font-weight="700" fill="#6d28d9" text-anchor="middle">P(kept) = 1 - (k/N)*(1/k) = (N-1)/N</text>
-      <text x="170" y="130" class="mono" font-size="11" font-weight="700" fill="#059669" text-anchor="middle">(k/(N-1)) * ((N-1)/N) = k / N !</text>
-      <text x="14" y="166" class="sans" font-size="11" fill="#475569">Every stream element has exact k/N inclusion</text>
-      <text x="14" y="183" class="sans" font-size="11" fill="#475569">probability without knowing stream length N.</text>
+      <rect x="0" y="0" width="340" height="194" rx="8" fill="#faf8f5" stroke="#d6d0c4"/>
+      <text x="14" y="24" class="sans" font-size="12" font-weight="700" fill="#1c1917">Inductive Proof of Uniformity (k / N)</text>
+      <text x="14" y="50" class="sans" font-size="11" fill="#44403c">N-th item s_{N-1} enters with P = k / N.</text>
+      <text x="14" y="74" class="sans" font-size="11" fill="#44403c">Any prior item kept if not overwritten:</text>
+      <rect x="14" y="88" width="312" height="54" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+      <text x="170" y="110" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">P(kept) = 1 - (k/N)*(1/k) = (N-1)/N</text>
+      <text x="170" y="130" class="mono" font-size="11" font-weight="700" fill="#0f766e" text-anchor="middle">(k/(N-1)) * ((N-1)/N) = k / N !</text>
+      <text x="14" y="166" class="sans" font-size="11" fill="#44403c">Every stream element has exact k/N inclusion</text>
+      <text x="14" y="183" class="sans" font-size="11" fill="#44403c">probability without knowing stream length N.</text>
     </g>
   </g>
 </svg>

@@ -1,63 +1,63 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 574" width="1160" height="574" role="img" aria-labelledby="title desc">
   <title id="title">Unique-ID generation evolution: 2021 vs 2026</title>
   <desc id="desc">Six-row comparison of unique ID generation between 2021 defaults and 2026 standards: ticket servers and UUIDv4 versus RFC 9562 UUIDv7, PostgreSQL 18 uuidv7, leased Snowflake workers with clock guards, and hybrid logical clock IDs.</desc>
-  <rect x="0" y="0" width="1160" height="574" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
-  <rect x="0" y="0" width="1160" height="56" rx="12" fill="#0f172a"/>
-  <rect x="0" y="40" width="1160" height="16" fill="#0f172a"/>
-  <text x="24" y="27" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#f8fafc">Unique-ID Generation: 2021 Default vs. 2026 Modern Standard</text>
-  <text x="24" y="46" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#94a3b8">From coordinated counters and random UUIDs to time-ordered, standardised, native IDs</text>
-  <rect x="20" y="70" width="210" height="32" rx="6" fill="#e2e8f0" stroke="#e2e8f0"/>
-  <text x="34" y="91" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#0f172a">Concern</text>
-  <rect x="242" y="70" width="440" height="32" rx="6" fill="#fee2e2" stroke="#fecaca"/>
+  <rect x="0" y="0" width="1160" height="574" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
+  <line x1="24" y1="58" x2="1136" y2="58" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="27" font-family="Georgia, 'Times New Roman', serif" font-size="18" font-weight="700" fill="#1c1917">Unique-ID Generation: 2021 Default vs. 2026 Modern Standard</text>
+  <text x="24" y="46" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#57534e">From coordinated counters and random UUIDs to time-ordered, standardised, native IDs</text>
+  <rect x="20" y="70" width="210" height="32" rx="6" fill="#e7e2d8" stroke="#e7e2d8"/>
+  <text x="34" y="91" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#1c1917">Concern</text>
+  <rect x="242" y="70" width="440" height="32" rx="6" fill="#fef2f2" stroke="#fecaca"/>
   <text x="254" y="91" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#991b1b">2021 default (legacy)</text>
   <rect x="694" y="70" width="446" height="32" rx="6" fill="#dcfce7" stroke="#bbf7d0"/>
   <text x="706" y="91" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#166534">2026 standard (modern)</text>
-  <rect x="20" y="112" width="210" height="62" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="32" y="146" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#0f172a">1. Allocation strategy</text>
+  <rect x="20" y="112" width="210" height="62" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="32" y="146" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#1c1917">1. Allocation strategy</text>
   <rect x="242" y="112" width="440" height="62" rx="6" fill="#fff5f5" stroke="#fecaca"/>
   <text x="254" y="136" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Multi-master auto_increment +k; Flickr ticket servers</text>
-  <text x="254" y="156" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10.5" fill="#475569">Odd/even step breaks when adding nodes; ticket DB is a SPOF</text>
+  <text x="254" y="156" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10.5" fill="#44403c">Odd/even step breaks when adding nodes; ticket DB is a SPOF</text>
   <rect x="694" y="112" width="446" height="62" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
   <text x="706" y="136" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" font-weight="700" fill="#166534">Coordination-free generation: UUIDv7 or Snowflake</text>
-  <text x="706" y="156" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10.5" fill="#334155">No per-ID network hop; no central writer to fail</text>
-  <rect x="20" y="182" width="210" height="62" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="32" y="216" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#0f172a">2. B-tree key choice</text>
+  <text x="706" y="156" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10.5" fill="#44403c">No per-ID network hop; no central writer to fail</text>
+  <rect x="20" y="182" width="210" height="62" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="32" y="216" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#1c1917">2. B-tree key choice</text>
   <rect x="242" y="182" width="440" height="62" rx="6" fill="#fff5f5" stroke="#fecaca"/>
   <text x="254" y="206" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">UUIDv4 random 128-bit primary keys</text>
-  <text x="254" y="226" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10.5" fill="#475569">Random leaf inserts: page splits and buffer-pool churn</text>
+  <text x="254" y="226" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10.5" fill="#44403c">Random leaf inserts: page splits and buffer-pool churn</text>
   <rect x="694" y="182" width="446" height="62" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
   <text x="706" y="206" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" font-weight="700" fill="#166534">RFC 9562 UUIDv7 (May 2024): 48-bit ms prefix</text>
-  <text x="706" y="226" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10.5" fill="#334155">Right-edge appends; locality close to a bigserial</text>
-  <rect x="20" y="252" width="210" height="62" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="32" y="286" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#0f172a">3. Database support</text>
+  <text x="706" y="226" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10.5" fill="#44403c">Right-edge appends; locality close to a bigserial</text>
+  <rect x="20" y="252" width="210" height="62" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="32" y="286" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#1c1917">3. Database support</text>
   <rect x="242" y="252" width="440" height="62" rx="6" fill="#fff5f5" stroke="#fecaca"/>
   <text x="254" y="276" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">gen_random_uuid() or app-side libraries only</text>
-  <text x="254" y="296" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10.5" fill="#475569">Hand-rolled v7 or Snowflake ports in each service</text>
+  <text x="254" y="296" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10.5" fill="#44403c">Hand-rolled v7 or Snowflake ports in each service</text>
   <rect x="694" y="252" width="446" height="62" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
   <text x="706" y="276" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" font-weight="700" fill="#166534">PostgreSQL 18 native uuidv7() (Sep 2025)</text>
-  <text x="706" y="296" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10.5" fill="#334155">Built-in generator plus uuid_extract_timestamp()</text>
-  <rect x="20" y="322" width="210" height="62" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="32" y="356" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#0f172a">4. Clock safety</text>
+  <text x="706" y="296" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10.5" fill="#44403c">Built-in generator plus uuid_extract_timestamp()</text>
+  <rect x="20" y="322" width="210" height="62" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="32" y="356" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#1c1917">4. Clock safety</text>
   <rect x="242" y="322" width="440" height="62" rx="6" fill="#fff5f5" stroke="#fecaca"/>
   <text x="254" y="346" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Trust NTP; step-back silently duplicates IDs</text>
-  <text x="254" y="366" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10.5" fill="#475569">No last_timestamp check; leap second can repeat a ms</text>
+  <text x="254" y="366" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10.5" fill="#44403c">No last_timestamp check; leap second can repeat a ms</text>
   <rect x="694" y="322" width="446" height="62" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
   <text x="706" y="346" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" font-weight="700" fill="#166534">NTP leap-smear + monotonic guards in generator</text>
-  <text x="706" y="366" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10.5" fill="#334155">Wait if drift &lt;= 5 ms, refuse if larger, CLOCK_MONOTONIC anchor</text>
-  <rect x="20" y="392" width="210" height="62" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="32" y="426" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#0f172a">5. Worker identity</text>
+  <text x="706" y="366" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10.5" fill="#44403c">Wait if drift &lt;= 5 ms, refuse if larger, CLOCK_MONOTONIC anchor</text>
+  <rect x="20" y="392" width="210" height="62" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="32" y="426" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#1c1917">5. Worker identity</text>
   <rect x="242" y="392" width="440" height="62" rx="6" fill="#fff5f5" stroke="#fecaca"/>
   <text x="254" y="416" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Hand-edited datacenter/worker IDs in config files</text>
-  <text x="254" y="436" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10.5" fill="#475569">Copy-pasted config means two workers share one ID</text>
+  <text x="254" y="436" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10.5" fill="#44403c">Copy-pasted config means two workers share one ID</text>
   <rect x="694" y="392" width="446" height="62" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
   <text x="706" y="416" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" font-weight="700" fill="#166534">Leased worker IDs; Sonyflake 16-bit machine ID</text>
-  <text x="706" y="436" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10.5" fill="#334155">Lease expiry prevents reuse after crash or restart</text>
-  <rect x="20" y="462" width="210" height="62" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="32" y="496" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#0f172a">6. Causal ordering</text>
+  <text x="706" y="436" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10.5" fill="#44403c">Lease expiry prevents reuse after crash or restart</text>
+  <rect x="20" y="462" width="210" height="62" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="32" y="496" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#1c1917">6. Causal ordering</text>
   <rect x="242" y="462" width="440" height="62" rx="6" fill="#fff5f5" stroke="#fecaca"/>
   <text x="254" y="486" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Wall-clock ms only; skew reorders events</text>
-  <text x="254" y="506" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10.5" fill="#475569">Cross-node skew breaks happened-before order</text>
+  <text x="254" y="506" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10.5" fill="#44403c">Cross-node skew breaks happened-before order</text>
   <rect x="694" y="462" width="446" height="62" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
   <text x="706" y="486" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" font-weight="700" fill="#166534">HLC IDs: physical time + logical counter</text>
-  <text x="706" y="506" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10.5" fill="#334155">Causality kept without TrueTime hardware</text>
+  <text x="706" y="506" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10.5" fill="#44403c">Causality kept without TrueTime hardware</text>
 </svg>

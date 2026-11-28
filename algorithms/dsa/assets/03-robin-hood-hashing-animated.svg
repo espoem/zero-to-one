@@ -8,15 +8,11 @@
     @keyframes ph1 { 0%, 30% { opacity: 1; } 34%, 96% { opacity: 0.86; } 100% { opacity: 1; } }
     @keyframes ph2 { 0%, 30% { opacity: 0.86; } 34%, 64% { opacity: 1; } 68%, 100% { opacity: 0.86; } }
     @keyframes ph3 { 0%, 64% { opacity: 0.86; } 68%, 96% { opacity: 1; } 100% { opacity: 0.86; } }
-    @keyframes swapArc {
-      0% { stroke-dashoffset: 24; }
-      100% { stroke-dashoffset: 0; }
-    }
 
     .rh-1 { animation: ph1 10.5s ease-in-out infinite; }
     .rh-2 { animation: ph2 10.5s ease-in-out infinite; }
     .rh-3 { animation: ph3 10.5s ease-in-out infinite; }
-    .swap-flow { stroke-dasharray: 6 4; animation: swapArc 1.8s linear infinite; }
+    .swap-flow { stroke-dasharray: 6 4;  }
 
     @media (prefers-reduced-motion: reduce) {
       * { animation: none !important; transition: none !important; }
@@ -26,139 +22,139 @@
 
   <defs>
     <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#b45309"/>
     </marker>
     <marker id="arr-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#dc2626"/>
     </marker>
   </defs>
 
   <!-- Canvas -->
-  <rect x="0" y="0" width="1200" height="760" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1200" height="760" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1200" height="64" rx="12" fill="#0f172a"/>
-  <rect x="0" y="48" width="1200" height="16" fill="#0f172a"/>
-  <text x="24" y="28" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Robin Hood Hashing: DIB Variance Equalization &amp; Early-Exit Lookup</text>
-  <text x="24" y="49" class="sans" font-size="12" fill="#94a3b8">DIB = (curr_slot - h(k) + m) mod m · "Steal from the rich (small DIB), give to the poor (large DIB)"</text>
-  <rect x="942" y="16" width="234" height="32" rx="16" fill="#1e293b" stroke="#334155"/>
-  <text x="1059" y="36" class="mono" font-size="11" font-weight="700" fill="#fbbf24" text-anchor="middle">Insert K_new (h=2) · m = 8</text>
+  <line x1="24" y1="66" x2="1176" y2="66" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="28" class="sans" font-size="18" font-weight="700" fill="#1c1917" font-family="Georgia, 'Times New Roman', serif">Robin Hood Hashing: DIB Variance Equalization &amp; Early-Exit Lookup</text>
+  <text x="24" y="49" class="sans" font-size="12" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">DIB = (curr_slot - h(k) + m) mod m · "Steal from the rich (small DIB), give to the poor (large DIB)"</text>
+  <rect x="942" y="16" width="234" height="32" rx="16" fill="#1c1917" stroke="#44403c"/>
+  <text x="1059" y="36" class="mono" font-size="11" font-weight="700" fill="#fde68a" text-anchor="middle">Insert K_new (h=2) · m = 8</text>
 
   <!-- ==================== TOP: INSERTION & RICH-TO-POOR SWAP ==================== -->
-  <rect x="20" y="80" width="1160" height="396" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <rect x="20" y="80" width="1160" height="36" rx="10" fill="#eff6ff"/>
-  <rect x="20" y="106" width="1160" height="10" fill="#eff6ff"/>
-  <text x="36" y="103" class="sans" font-size="13" font-weight="700" fill="#1e3a8a">1. Insertion Trace: K_new (home h = 2) Probes &amp; Steals Slot 4 from K_c</text>
-  <text x="1164" y="103" class="mono" font-size="11" font-weight="700" fill="#2563eb" text-anchor="end">Swap iff DIB_probe &gt; DIB_slot</text>
+  <rect x="20" y="80" width="1160" height="396" rx="10" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <rect x="20" y="80" width="1160" height="36" rx="10" fill="#f0fdf9"/>
+  <rect x="20" y="106" width="1160" height="10" fill="#f0fdf9"/>
+  <text x="36" y="103" class="sans" font-size="13" font-weight="700" fill="#065f46">1. Insertion Trace: K_new (home h = 2) Probes &amp; Steals Slot 4 from K_c</text>
+  <text x="1164" y="103" class="mono" font-size="11" font-weight="700" fill="#0f766e" text-anchor="end">Swap iff DIB_probe &gt; DIB_slot</text>
 
   <!-- Step 1: Probe slots 2 and 3 (DIB_probe <= DIB_slot) -->
   <g class="rh-1">
-    <rect x="36" y="128" width="1128" height="96" rx="8" fill="#f8fafc" stroke="#93c5fd" stroke-width="1.5"/>
-    <rect x="48" y="138" width="144" height="22" rx="4" fill="#2563eb"/>
+    <rect x="36" y="128" width="1128" height="96" rx="8" fill="#faf8f5" stroke="#99f6e4" stroke-width="1.5"/>
+    <rect x="48" y="138" width="144" height="22" rx="4" fill="#0f766e"/>
     <text x="120" y="153" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">Step 1: Probe 2, 3</text>
-    <text x="204" y="153" class="mono" font-size="10.5" fill="#1e3a8a">At T[2]: DIB_new=0 ≤ 0 (K_a) → advance.  At T[3]: DIB_new=1 ≤ 2 (K_b) → advance.</text>
+    <text x="204" y="153" class="mono" font-size="10.5" fill="#065f46">At T[2]: DIB_new=0 ≤ 0 (K_a) → advance.  At T[3]: DIB_new=1 ≤ 2 (K_b) → advance.</text>
 
     <!-- Slots 0..7: x starts 48, w=126, gap=10 -> stride=136 -->
-    <rect x="48" y="170" width="126" height="44" rx="5" fill="#f1f5f9" stroke="#cbd5e1"/><text x="111" y="196" class="mono" font-size="10.5" fill="#94a3b8" text-anchor="middle">[0] empty</text>
-    <rect x="184" y="170" width="126" height="44" rx="5" fill="#eff6ff" stroke="#2563eb"/><text x="247" y="189" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">[1] K_0 (h=1)</text><text x="247" y="206" class="mono" font-size="10" fill="#2563eb" text-anchor="middle">DIB = 0</text>
-    <rect x="320" y="170" width="126" height="44" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/><text x="383" y="189" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">[2] K_a (h=2)</text><text x="383" y="206" class="mono" font-size="10" fill="#1e3a8a" text-anchor="middle">DIB = 0 (≥0)</text>
-    <rect x="456" y="170" width="126" height="44" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/><text x="519" y="189" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">[3] K_b (h=1)</text><text x="519" y="206" class="mono" font-size="10" font-weight="700" fill="#059669" text-anchor="middle">DIB = 2 (&gt;1)</text>
-    <rect x="592" y="170" width="126" height="44" rx="5" fill="#ecfdf5" stroke="#059669"/><text x="655" y="189" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">[4] K_c (h=4)</text><text x="655" y="206" class="mono" font-size="10" fill="#059669" text-anchor="middle">DIB = 0 (rich!)</text>
-    <rect x="728" y="170" width="126" height="44" rx="5" fill="#f1f5f9" stroke="#cbd5e1"/><text x="791" y="196" class="mono" font-size="10.5" fill="#94a3b8" text-anchor="middle">[5] empty</text>
-    <rect x="864" y="170" width="126" height="44" rx="5" fill="#f1f5f9" stroke="#cbd5e1"/><text x="927" y="196" class="mono" font-size="10.5" fill="#94a3b8" text-anchor="middle">[6] empty</text>
-    <rect x="1000" y="170" width="126" height="44" rx="5" fill="#eff6ff" stroke="#2563eb"/><text x="1063" y="189" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">[7] K_d (h=7)</text><text x="1063" y="206" class="mono" font-size="10" fill="#2563eb" text-anchor="middle">DIB = 0</text>
+    <rect x="48" y="170" width="126" height="44" rx="5" fill="#f5f1e8" stroke="#d6d0c4"/><text x="111" y="196" class="mono" font-size="10.5" fill="#57534e" text-anchor="middle">[0] empty</text>
+    <rect x="184" y="170" width="126" height="44" rx="5" fill="#f0fdf9" stroke="#0f766e"/><text x="247" y="189" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">[1] K_0 (h=1)</text><text x="247" y="206" class="mono" font-size="10" fill="#0f766e" text-anchor="middle">DIB = 0</text>
+    <rect x="320" y="170" width="126" height="44" rx="5" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/><text x="383" y="189" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">[2] K_a (h=2)</text><text x="383" y="206" class="mono" font-size="10" fill="#065f46" text-anchor="middle">DIB = 0 (≥0)</text>
+    <rect x="456" y="170" width="126" height="44" rx="5" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/><text x="519" y="189" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">[3] K_b (h=1)</text><text x="519" y="206" class="mono" font-size="10" font-weight="700" fill="#0f766e" text-anchor="middle">DIB = 2 (&gt;1)</text>
+    <rect x="592" y="170" width="126" height="44" rx="5" fill="#f0fdf9" stroke="#0f766e"/><text x="655" y="189" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">[4] K_c (h=4)</text><text x="655" y="206" class="mono" font-size="10" fill="#0f766e" text-anchor="middle">DIB = 0 (rich!)</text>
+    <rect x="728" y="170" width="126" height="44" rx="5" fill="#f5f1e8" stroke="#d6d0c4"/><text x="791" y="196" class="mono" font-size="10.5" fill="#57534e" text-anchor="middle">[5] empty</text>
+    <rect x="864" y="170" width="126" height="44" rx="5" fill="#f5f1e8" stroke="#d6d0c4"/><text x="927" y="196" class="mono" font-size="10.5" fill="#57534e" text-anchor="middle">[6] empty</text>
+    <rect x="1000" y="170" width="126" height="44" rx="5" fill="#f0fdf9" stroke="#0f766e"/><text x="1063" y="189" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">[7] K_d (h=7)</text><text x="1063" y="206" class="mono" font-size="10" fill="#0f766e" text-anchor="middle">DIB = 0</text>
   </g>
 
   <!-- Step 2: Compare at slot 4 -> SWAP! -->
   <g class="rh-2">
-    <rect x="36" y="236" width="1128" height="106" rx="8" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5"/>
-    <rect x="48" y="246" width="144" height="22" rx="4" fill="#d97706"/>
+    <rect x="36" y="236" width="1128" height="106" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="1.5"/>
+    <rect x="48" y="246" width="144" height="22" rx="4" fill="#b45309"/>
     <text x="120" y="261" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">Step 2: STEAL [4]</text>
     <text x="204" y="261" class="mono" font-size="10.5" font-weight="700" fill="#92400e">At T[4]: DIB_new = 2 &gt; DIB_slot = 0 (K_c) ⇒ SWAP! K_new claims [4]; displaced K_c probes [5].</text>
 
-    <rect x="48" y="278" width="126" height="44" rx="5" fill="#f1f5f9" stroke="#cbd5e1"/><text x="111" y="304" class="mono" font-size="10.5" fill="#94a3b8" text-anchor="middle">[0] empty</text>
-    <rect x="184" y="278" width="126" height="44" rx="5" fill="#eff6ff" stroke="#cbd5e1"/><text x="247" y="297" class="mono" font-size="10.5" fill="#475569" text-anchor="middle">[1] K_0</text><text x="247" y="314" class="mono" font-size="10" fill="#64748b" text-anchor="middle">DIB = 0</text>
-    <rect x="320" y="278" width="126" height="44" rx="5" fill="#eff6ff" stroke="#cbd5e1"/><text x="383" y="297" class="mono" font-size="10.5" fill="#475569" text-anchor="middle">[2] K_a</text><text x="383" y="314" class="mono" font-size="10" fill="#64748b" text-anchor="middle">DIB = 0</text>
-    <rect x="456" y="278" width="126" height="44" rx="5" fill="#eff6ff" stroke="#cbd5e1"/><text x="519" y="297" class="mono" font-size="10.5" fill="#475569" text-anchor="middle">[3] K_b</text><text x="519" y="314" class="mono" font-size="10" fill="#64748b" text-anchor="middle">DIB = 2</text>
+    <rect x="48" y="278" width="126" height="44" rx="5" fill="#f5f1e8" stroke="#d6d0c4"/><text x="111" y="304" class="mono" font-size="10.5" fill="#57534e" text-anchor="middle">[0] empty</text>
+    <rect x="184" y="278" width="126" height="44" rx="5" fill="#f0fdf9" stroke="#d6d0c4"/><text x="247" y="297" class="mono" font-size="10.5" fill="#44403c" text-anchor="middle">[1] K_0</text><text x="247" y="314" class="mono" font-size="10" fill="#57534e" text-anchor="middle">DIB = 0</text>
+    <rect x="320" y="278" width="126" height="44" rx="5" fill="#f0fdf9" stroke="#d6d0c4"/><text x="383" y="297" class="mono" font-size="10.5" fill="#44403c" text-anchor="middle">[2] K_a</text><text x="383" y="314" class="mono" font-size="10" fill="#57534e" text-anchor="middle">DIB = 0</text>
+    <rect x="456" y="278" width="126" height="44" rx="5" fill="#f0fdf9" stroke="#d6d0c4"/><text x="519" y="297" class="mono" font-size="10.5" fill="#44403c" text-anchor="middle">[3] K_b</text><text x="519" y="314" class="mono" font-size="10" fill="#57534e" text-anchor="middle">DIB = 2</text>
 
-    <rect x="592" y="278" width="126" height="44" rx="5" fill="#d97706" stroke="#b45309" stroke-width="2"/><text x="655" y="297" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">[4] K_new (h=2)</text><text x="655" y="314" class="mono" font-size="10" font-weight="700" fill="#fef3c7" text-anchor="middle">DIB = 2 (won!)</text>
-    <rect x="728" y="278" width="126" height="44" rx="5" fill="#fef3c7" stroke="#d97706" stroke-dasharray="4 3"/><text x="791" y="297" class="mono" font-size="10.5" font-weight="700" fill="#92400e" text-anchor="middle">K_c displaced</text><text x="791" y="314" class="mono" font-size="10" fill="#b45309" text-anchor="middle">probes [5]…</text>
+    <rect x="592" y="278" width="126" height="44" rx="5" fill="#b45309" stroke="#b45309" stroke-width="2"/><text x="655" y="297" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">[4] K_new (h=2)</text><text x="655" y="314" class="mono" font-size="10" font-weight="700" fill="#fffbeb" text-anchor="middle">DIB = 2 (won!)</text>
+    <rect x="728" y="278" width="126" height="44" rx="5" fill="#fffbeb" stroke="#b45309" stroke-dasharray="4 3"/><text x="791" y="297" class="mono" font-size="10.5" font-weight="700" fill="#92400e" text-anchor="middle">K_c displaced</text><text x="791" y="314" class="mono" font-size="10" fill="#b45309" text-anchor="middle">probes [5]…</text>
 
-    <path d="M 655 324 Q 723 346 791 324" fill="none" stroke="#d97706" stroke-width="2" class="swap-flow" marker-end="url(#arr-amber)"/>
+    <path d="M 655 324 Q 723 346 791 324" fill="none" stroke="#b45309" stroke-width="2" class="swap-flow" marker-end="url(#arr-amber)"/>
 
-    <rect x="864" y="278" width="126" height="44" rx="5" fill="#f1f5f9" stroke="#cbd5e1"/><text x="927" y="304" class="mono" font-size="10.5" fill="#94a3b8" text-anchor="middle">[6] empty</text>
-    <rect x="1000" y="278" width="126" height="44" rx="5" fill="#eff6ff" stroke="#cbd5e1"/><text x="1063" y="297" class="mono" font-size="10.5" fill="#475569" text-anchor="middle">[7] K_d</text><text x="1063" y="314" class="mono" font-size="10" fill="#64748b" text-anchor="middle">DIB = 0</text>
+    <rect x="864" y="278" width="126" height="44" rx="5" fill="#f5f1e8" stroke="#d6d0c4"/><text x="927" y="304" class="mono" font-size="10.5" fill="#57534e" text-anchor="middle">[6] empty</text>
+    <rect x="1000" y="278" width="126" height="44" rx="5" fill="#f0fdf9" stroke="#d6d0c4"/><text x="1063" y="297" class="mono" font-size="10.5" fill="#44403c" text-anchor="middle">[7] K_d</text><text x="1063" y="314" class="mono" font-size="10" fill="#57534e" text-anchor="middle">DIB = 0</text>
   </g>
 
   <!-- Step 3: Settled Equalized Table -->
   <g class="rh-3">
-    <rect x="36" y="354" width="1128" height="106" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
-    <rect x="48" y="364" width="144" height="22" rx="4" fill="#059669"/>
+    <rect x="36" y="354" width="1128" height="106" rx="8" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
+    <rect x="48" y="364" width="144" height="22" rx="4" fill="#0f766e"/>
     <text x="120" y="379" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">Step 3: Equalized</text>
     <text x="204" y="379" class="mono" font-size="10.5" font-weight="700" fill="#065f46">K_c lands in [5] with DIB = 1. Max DIB across entire cluster is now 2 (not 3)!</text>
 
-    <rect x="48" y="396" width="126" height="44" rx="5" fill="#f1f5f9" stroke="#cbd5e1"/><text x="111" y="422" class="mono" font-size="10.5" fill="#94a3b8" text-anchor="middle">[0] empty</text>
-    <rect x="184" y="396" width="126" height="44" rx="5" fill="#eff6ff" stroke="#cbd5e1"/><text x="247" y="415" class="mono" font-size="10.5" fill="#475569" text-anchor="middle">[1] K_0</text><text x="247" y="432" class="mono" font-size="10" fill="#64748b" text-anchor="middle">DIB = 0</text>
-    <rect x="320" y="396" width="126" height="44" rx="5" fill="#eff6ff" stroke="#cbd5e1"/><text x="383" y="415" class="mono" font-size="10.5" fill="#475569" text-anchor="middle">[2] K_a</text><text x="383" y="432" class="mono" font-size="10" fill="#64748b" text-anchor="middle">DIB = 0</text>
-    <rect x="456" y="396" width="126" height="44" rx="5" fill="#eff6ff" stroke="#cbd5e1"/><text x="519" y="415" class="mono" font-size="10.5" fill="#475569" text-anchor="middle">[3] K_b</text><text x="519" y="432" class="mono" font-size="10" fill="#64748b" text-anchor="middle">DIB = 2</text>
-    <rect x="592" y="396" width="126" height="44" rx="5" fill="#059669"/><text x="655" y="415" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">[4] K_new</text><text x="655" y="432" class="mono" font-size="10" fill="#d1fae5" text-anchor="middle">DIB = 2</text>
-    <rect x="728" y="396" width="126" height="44" rx="5" fill="#059669"/><text x="791" y="415" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">[5] K_c</text><text x="791" y="432" class="mono" font-size="10" fill="#d1fae5" text-anchor="middle">DIB = 1</text>
-    <rect x="864" y="396" width="126" height="44" rx="5" fill="#f1f5f9" stroke="#cbd5e1"/><text x="927" y="422" class="mono" font-size="10.5" fill="#94a3b8" text-anchor="middle">[6] empty</text>
-    <rect x="1000" y="396" width="126" height="44" rx="5" fill="#eff6ff" stroke="#cbd5e1"/><text x="1063" y="415" class="mono" font-size="10.5" fill="#475569" text-anchor="middle">[7] K_d</text><text x="1063" y="432" class="mono" font-size="10" fill="#64748b" text-anchor="middle">DIB = 0</text>
+    <rect x="48" y="396" width="126" height="44" rx="5" fill="#f5f1e8" stroke="#d6d0c4"/><text x="111" y="422" class="mono" font-size="10.5" fill="#57534e" text-anchor="middle">[0] empty</text>
+    <rect x="184" y="396" width="126" height="44" rx="5" fill="#f0fdf9" stroke="#d6d0c4"/><text x="247" y="415" class="mono" font-size="10.5" fill="#44403c" text-anchor="middle">[1] K_0</text><text x="247" y="432" class="mono" font-size="10" fill="#57534e" text-anchor="middle">DIB = 0</text>
+    <rect x="320" y="396" width="126" height="44" rx="5" fill="#f0fdf9" stroke="#d6d0c4"/><text x="383" y="415" class="mono" font-size="10.5" fill="#44403c" text-anchor="middle">[2] K_a</text><text x="383" y="432" class="mono" font-size="10" fill="#57534e" text-anchor="middle">DIB = 0</text>
+    <rect x="456" y="396" width="126" height="44" rx="5" fill="#f0fdf9" stroke="#d6d0c4"/><text x="519" y="415" class="mono" font-size="10.5" fill="#44403c" text-anchor="middle">[3] K_b</text><text x="519" y="432" class="mono" font-size="10" fill="#57534e" text-anchor="middle">DIB = 2</text>
+    <rect x="592" y="396" width="126" height="44" rx="5" fill="#0f766e"/><text x="655" y="415" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">[4] K_new</text><text x="655" y="432" class="mono" font-size="10" fill="#f0fdf9" text-anchor="middle">DIB = 2</text>
+    <rect x="728" y="396" width="126" height="44" rx="5" fill="#0f766e"/><text x="791" y="415" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">[5] K_c</text><text x="791" y="432" class="mono" font-size="10" fill="#f0fdf9" text-anchor="middle">DIB = 1</text>
+    <rect x="864" y="396" width="126" height="44" rx="5" fill="#f5f1e8" stroke="#d6d0c4"/><text x="927" y="422" class="mono" font-size="10.5" fill="#57534e" text-anchor="middle">[6] empty</text>
+    <rect x="1000" y="396" width="126" height="44" rx="5" fill="#f0fdf9" stroke="#d6d0c4"/><text x="1063" y="415" class="mono" font-size="10.5" fill="#44403c" text-anchor="middle">[7] K_d</text><text x="1063" y="432" class="mono" font-size="10" fill="#57534e" text-anchor="middle">DIB = 0</text>
   </g>
 
   <!-- ==================== BOTTOM: EARLY-EXIT UNSUCCESSFUL LOOKUP ==================== -->
   <rect x="20" y="492" width="1160" height="248" rx="10" fill="#ffffff" stroke="#fda4af" stroke-width="1.5"/>
-  <rect x="20" y="492" width="1160" height="36" rx="10" fill="#fff1f2"/>
-  <rect x="20" y="518" width="1160" height="10" fill="#fff1f2"/>
-  <text x="36" y="515" class="sans" font-size="13" font-weight="700" fill="#9f1239">2. Early-Exit Unsuccessful Search: lookup(Q) where h(Q) = 2 (Q is absent)</text>
-  <text x="1164" y="515" class="mono" font-size="11" font-weight="700" fill="#e11d48" text-anchor="end">Halt when DIB_probe &gt; DIB_slot!</text>
+  <rect x="20" y="492" width="1160" height="36" rx="10" fill="#fef2f2"/>
+  <rect x="20" y="518" width="1160" height="10" fill="#fef2f2"/>
+  <text x="36" y="515" class="sans" font-size="13" font-weight="700" fill="#991b1b">2. Early-Exit Unsuccessful Search: lookup(Q) where h(Q) = 2 (Q is absent)</text>
+  <text x="1164" y="515" class="mono" font-size="11" font-weight="700" fill="#dc2626" text-anchor="end">Halt when DIB_probe &gt; DIB_slot!</text>
 
   <!-- Probe steps -->
-  <rect x="48" y="544" width="184" height="72" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
-  <text x="140" y="564" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">Probe [2] (DIB_q = 0)</text>
-  <text x="140" y="584" class="mono" font-size="10" fill="#475569" text-anchor="middle">slot DIB = 0 ≥ 0</text>
-  <text x="140" y="602" class="mono" font-size="10" fill="#2563eb" text-anchor="middle">continue →</text>
+  <rect x="48" y="544" width="184" height="72" rx="6" fill="#faf8f5" stroke="#d6d0c4"/>
+  <text x="140" y="564" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Probe [2] (DIB_q = 0)</text>
+  <text x="140" y="584" class="mono" font-size="10" fill="#44403c" text-anchor="middle">slot DIB = 0 ≥ 0</text>
+  <text x="140" y="602" class="mono" font-size="10" fill="#0f766e" text-anchor="middle">continue →</text>
 
-  <line x1="232" y1="580" x2="262" y2="580" stroke="#e11d48" stroke-width="1.8" class="swap-flow" marker-end="url(#arr-rose)"/>
+  <line x1="232" y1="580" x2="262" y2="580" stroke="#dc2626" stroke-width="1.8" class="swap-flow" marker-end="url(#arr-rose)"/>
 
-  <rect x="266" y="544" width="184" height="72" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
-  <text x="358" y="564" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">Probe [3] (DIB_q = 1)</text>
-  <text x="358" y="584" class="mono" font-size="10" fill="#475569" text-anchor="middle">slot DIB = 2 ≥ 1</text>
-  <text x="358" y="602" class="mono" font-size="10" fill="#2563eb" text-anchor="middle">continue →</text>
+  <rect x="266" y="544" width="184" height="72" rx="6" fill="#faf8f5" stroke="#d6d0c4"/>
+  <text x="358" y="564" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Probe [3] (DIB_q = 1)</text>
+  <text x="358" y="584" class="mono" font-size="10" fill="#44403c" text-anchor="middle">slot DIB = 2 ≥ 1</text>
+  <text x="358" y="602" class="mono" font-size="10" fill="#0f766e" text-anchor="middle">continue →</text>
 
-  <line x1="450" y1="580" x2="480" y2="580" stroke="#e11d48" stroke-width="1.8" class="swap-flow" marker-end="url(#arr-rose)"/>
+  <line x1="450" y1="580" x2="480" y2="580" stroke="#dc2626" stroke-width="1.8" class="swap-flow" marker-end="url(#arr-rose)"/>
 
-  <rect x="484" y="544" width="184" height="72" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
-  <text x="576" y="564" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">Probe [4] (DIB_q = 2)</text>
-  <text x="576" y="584" class="mono" font-size="10" fill="#475569" text-anchor="middle">slot DIB = 2 ≥ 2</text>
-  <text x="576" y="602" class="mono" font-size="10" fill="#2563eb" text-anchor="middle">continue →</text>
+  <rect x="484" y="544" width="184" height="72" rx="6" fill="#faf8f5" stroke="#d6d0c4"/>
+  <text x="576" y="564" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Probe [4] (DIB_q = 2)</text>
+  <text x="576" y="584" class="mono" font-size="10" fill="#44403c" text-anchor="middle">slot DIB = 2 ≥ 2</text>
+  <text x="576" y="602" class="mono" font-size="10" fill="#0f766e" text-anchor="middle">continue →</text>
 
-  <line x1="668" y1="580" x2="698" y2="580" stroke="#e11d48" stroke-width="2" class="swap-flow" marker-end="url(#arr-rose)"/>
+  <line x1="668" y1="580" x2="698" y2="580" stroke="#dc2626" stroke-width="2" class="swap-flow" marker-end="url(#arr-rose)"/>
 
-  <rect x="702" y="544" width="212" height="72" rx="6" fill="#fee2e2" stroke="#e11d48" stroke-width="2"/>
-  <text x="808" y="564" class="mono" font-size="10.5" font-weight="700" fill="#9f1239" text-anchor="middle">Probe [5] (DIB_q = 3)</text>
-  <text x="808" y="584" class="mono" font-size="10.5" font-weight="700" fill="#be123c" text-anchor="middle">slot DIB = 1 &lt; 3 !</text>
-  <text x="808" y="604" class="mono" font-size="10.5" font-weight="700" fill="#9f1239" text-anchor="middle">STOP: NOT FOUND ★</text>
+  <rect x="702" y="544" width="212" height="72" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="2"/>
+  <text x="808" y="564" class="mono" font-size="10.5" font-weight="700" fill="#991b1b" text-anchor="middle">Probe [5] (DIB_q = 3)</text>
+  <text x="808" y="584" class="mono" font-size="10.5" font-weight="700" fill="#991b1b" text-anchor="middle">slot DIB = 1 &lt; 3 !</text>
+  <text x="808" y="604" class="mono" font-size="10.5" font-weight="700" fill="#991b1b" text-anchor="middle">STOP: NOT FOUND ★</text>
 
   <!-- Explanation Box on Right -->
-  <rect x="932" y="544" width="232" height="176" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
-  <text x="946" y="566" class="sans" font-size="11" font-weight="700" fill="#0f172a">Why Early Exit Is Sound</text>
-  <text x="946" y="586" class="sans" font-size="10" fill="#334155">If Q existed in the table, its</text>
-  <text x="946" y="602" class="sans" font-size="10" fill="#334155">DIB at slot 5 would be 3 &gt; 1,</text>
-  <text x="946" y="618" class="sans" font-size="10" fill="#334155">so Q would have stolen slot 5</text>
-  <text x="946" y="634" class="sans" font-size="10" fill="#334155">from K_c during insertion!</text>
-  <text x="946" y="660" class="mono" font-size="10" font-weight="700" fill="#059669">Expected max probe: O(log log n)</text>
-  <text x="946" y="678" class="mono" font-size="10" fill="#475569">Variance minimized across all keys.</text>
-  <text x="946" y="698" class="mono" font-size="10" fill="#64748b">Used in Rust HashMap (SwissTable/RH).</text>
+  <rect x="932" y="544" width="232" height="176" rx="8" fill="#faf8f5" stroke="#d6d0c4"/>
+  <text x="946" y="566" class="sans" font-size="11" font-weight="700" fill="#1c1917">Why Early Exit Is Sound</text>
+  <text x="946" y="586" class="sans" font-size="10" fill="#44403c">If Q existed in the table, its</text>
+  <text x="946" y="602" class="sans" font-size="10" fill="#44403c">DIB at slot 5 would be 3 &gt; 1,</text>
+  <text x="946" y="618" class="sans" font-size="10" fill="#44403c">so Q would have stolen slot 5</text>
+  <text x="946" y="634" class="sans" font-size="10" fill="#44403c">from K_c during insertion!</text>
+  <text x="946" y="660" class="mono" font-size="10" font-weight="700" fill="#0f766e">Expected max probe: O(log log n)</text>
+  <text x="946" y="678" class="mono" font-size="10" fill="#44403c">Variance minimized across all keys.</text>
+  <text x="946" y="698" class="mono" font-size="10" fill="#57534e">Used in Rust HashMap (SwissTable/RH).</text>
 
   <!-- Bottom Invariant Note -->
-  <rect x="48" y="632" width="866" height="88" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
-  <text x="64" y="654" class="sans" font-size="11" font-weight="700" fill="#0f172a">Bonus: Backward-Shift Deletion (Zero Tombstones!)</text>
-  <text x="64" y="674" class="sans" font-size="10.5" fill="#334155">Instead of leaving TOMBSTONE markers, Robin Hood deletion shifts subsequent elements with DIB &gt; 0 one slot left</text>
-  <text x="64" y="692" class="sans" font-size="10.5" fill="#334155">(decrementing their DIB by 1) until an empty slot or DIB == 0 slot is reached — keeping lookup latency crisp at α = 0.9.</text>
-  <text x="64" y="710" class="mono" font-size="10" fill="#1e3a8a">Formula reminder: DIB = (curr_slot - h(k) + m) mod m · Sorted by home bucket h(k) along each cluster.</text>
+  <rect x="48" y="632" width="866" height="88" rx="8" fill="#faf8f5" stroke="#d6d0c4"/>
+  <text x="64" y="654" class="sans" font-size="11" font-weight="700" fill="#1c1917">Bonus: Backward-Shift Deletion (Zero Tombstones!)</text>
+  <text x="64" y="674" class="sans" font-size="10.5" fill="#44403c">Instead of leaving TOMBSTONE markers, Robin Hood deletion shifts subsequent elements with DIB &gt; 0 one slot left</text>
+  <text x="64" y="692" class="sans" font-size="10.5" fill="#44403c">(decrementing their DIB by 1) until an empty slot or DIB == 0 slot is reached — keeping lookup latency crisp at α = 0.9.</text>
+  <text x="64" y="710" class="mono" font-size="10" fill="#065f46">Formula reminder: DIB = (curr_slot - h(k) + m) mod m · Sorted by home bucket h(k) along each cluster.</text>
 </svg>

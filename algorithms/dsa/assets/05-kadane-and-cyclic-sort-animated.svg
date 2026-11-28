@@ -3,10 +3,10 @@
   <desc id="desc">Animated visualization of Kadane's algorithm evaluating currentSum = max(nums[i], currentSum + nums[i]) to find maximum subarray sum 6 on [-2, 1, -3, 4, -1, 2, 1, -5], paired with Cyclic Sort placing integers [1..n] into correctIdx = nums[i] - 1 in O(n) time and O(1) space.</desc>
   <defs>
     <marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arrow-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#b45309"/>
     </marker>
     <style>
       .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
@@ -88,282 +88,282 @@
   </defs>
 
   <!-- Canvas -->
-  <rect x="0" y="0" width="1200" height="760" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1200" height="760" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1200" height="60" rx="12" fill="#0f172a"/>
-  <rect x="0" y="44" width="1200" height="16" fill="#0f172a"/>
-  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Kadane&apos;s Algorithm &amp; Cyclic Sort: Linear DP Reset vs In-Place Permutation</text>
-  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">Local Extend-vs-Reset Subarray Recurrence max(nums[i], currentSum + nums[i]) &amp; O(n) Home-Index Swapping</text>
+  <line x1="24" y1="62" x2="1176" y2="62" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#1c1917" font-family="Georgia, 'Times New Roman', serif">Kadane&apos;s Algorithm &amp; Cyclic Sort: Linear DP Reset vs In-Place Permutation</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">Local Extend-vs-Reset Subarray Recurrence max(nums[i], currentSum + nums[i]) &amp; O(n) Home-Index Swapping</text>
 
   <!-- LEFT PANEL: Kadane's Algorithm -->
-  <rect x="24" y="76" width="564" height="574" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
-  <rect x="24" y="76" width="564" height="36" rx="10" fill="#f1f5f9"/>
-  <rect x="24" y="102" width="564" height="10" fill="#f1f5f9"/>
-  <text x="40" y="99" class="sans" font-size="13" font-weight="700" fill="#0f172a">1. Kadane&apos;s Algorithm: Maximum Subarray Sum</text>
-  <text x="572" y="99" class="mono" font-size="11" fill="#059669" text-anchor="end">O(n) time · O(1) space</text>
+  <rect x="24" y="76" width="564" height="574" rx="10" fill="#ffffff" stroke="#d6d0c4"/>
+  <rect x="24" y="76" width="564" height="36" rx="10" fill="#f5f1e8"/>
+  <rect x="24" y="102" width="564" height="10" fill="#f5f1e8"/>
+  <text x="40" y="99" class="sans" font-size="13" font-weight="700" fill="#1c1917">1. Kadane&apos;s Algorithm: Maximum Subarray Sum</text>
+  <text x="572" y="99" class="mono" font-size="11" fill="#0f766e" text-anchor="end">O(n) time · O(1) space</text>
 
-  <text x="44" y="136" class="sans" font-size="11.5" font-weight="600" fill="#475569">nums = [ -2, 1, -3, 4, -1, 2, 1, -5 ] (optimal subarray [4, -1, 2, 1] = 6):</text>
+  <text x="44" y="136" class="sans" font-size="11.5" font-weight="600" fill="#44403c">nums = [ -2, 1, -3, 4, -1, 2, 1, -5 ] (optimal subarray [4, -1, 2, 1] = 6):</text>
 
   <!-- Bar chart + array cells (8 cells, step 62, w=54, x=56) -->
   <g transform="translate(56, 154)">
     <!-- Optimal subarray backdrop [3..6] -->
-    <rect x="182" y="-4" width="248" height="146" rx="8" fill="#ecfdf5" stroke="#86efac" stroke-dasharray="4 3"/>
-    <text x="306" y="136" class="mono" font-size="10" font-weight="700" fill="#047857" text-anchor="middle">optimal window sum = 6</text>
+    <rect x="182" y="-4" width="248" height="146" rx="8" fill="#f0fdf9" stroke="#86efac" stroke-dasharray="4 3"/>
+    <text x="306" y="136" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">optimal window sum = 6</text>
 
     <!-- Zero baseline y = 76 -->
-    <line x1="0" y1="76" x2="490" y2="76" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="0" y1="76" x2="490" y2="76" stroke="#d6d0c4" stroke-width="1.5"/>
 
     <!-- Animated active cell cursor -->
     <g class="anim-kad-ptr">
-      <rect x="-2" y="-2" width="58" height="126" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="2.5"/>
+      <rect x="-2" y="-2" width="58" height="126" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2.5"/>
     </g>
 
     <!-- Bars (1 unit = 11px): -2(22), +1(11), -3(33), +4(44), -1(11), +2(22), +1(11), -5(55) -->
     <!-- i=0: -2 -->
     <rect x="8" y="76" width="38" height="22" rx="3" fill="#fda4af"/>
-    <text x="27" y="114" class="mono" font-size="12" font-weight="700" fill="#be123c" text-anchor="middle">-2</text>
+    <text x="27" y="114" class="mono" font-size="12" font-weight="700" fill="#991b1b" text-anchor="middle">-2</text>
     <!-- i=1: +1 -->
-    <rect x="70" y="65" width="38" height="11" rx="3" fill="#93c5fd"/>
-    <text x="89" y="58" class="mono" font-size="12" font-weight="700" fill="#1d4ed8" text-anchor="middle">+1</text>
+    <rect x="70" y="65" width="38" height="11" rx="3" fill="#99f6e4"/>
+    <text x="89" y="58" class="mono" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">+1</text>
     <!-- i=2: -3 -->
     <rect x="132" y="76" width="38" height="33" rx="3" fill="#fda4af"/>
-    <text x="151" y="122" class="mono" font-size="12" font-weight="700" fill="#be123c" text-anchor="middle">-3</text>
+    <text x="151" y="122" class="mono" font-size="12" font-weight="700" fill="#991b1b" text-anchor="middle">-3</text>
     <!-- i=3: +4 -->
-    <rect x="194" y="32" width="38" height="44" rx="3" fill="#10b981"/>
-    <text x="213" y="25" class="mono" font-size="12" font-weight="700" fill="#047857" text-anchor="middle">+4</text>
+    <rect x="194" y="32" width="38" height="44" rx="3" fill="#0f766e"/>
+    <text x="213" y="25" class="mono" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">+4</text>
     <!-- i=4: -1 -->
-    <rect x="256" y="76" width="38" height="11" rx="3" fill="#fcd34d"/>
+    <rect x="256" y="76" width="38" height="11" rx="3" fill="#fde68a"/>
     <text x="275" y="102" class="mono" font-size="12" font-weight="700" fill="#b45309" text-anchor="middle">-1</text>
     <!-- i=5: +2 -->
-    <rect x="318" y="54" width="38" height="22" rx="3" fill="#10b981"/>
-    <text x="337" y="47" class="mono" font-size="12" font-weight="700" fill="#047857" text-anchor="middle">+2</text>
+    <rect x="318" y="54" width="38" height="22" rx="3" fill="#0f766e"/>
+    <text x="337" y="47" class="mono" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">+2</text>
     <!-- i=6: +1 -->
-    <rect x="380" y="65" width="38" height="11" rx="3" fill="#10b981"/>
-    <text x="399" y="58" class="mono" font-size="12" font-weight="700" fill="#047857" text-anchor="middle">+1</text>
+    <rect x="380" y="65" width="38" height="11" rx="3" fill="#0f766e"/>
+    <text x="399" y="58" class="mono" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">+1</text>
     <!-- i=7: -5 -->
     <rect x="442" y="76" width="38" height="55" rx="3" fill="#fda4af"/>
-    <text x="461" y="144" class="mono" font-size="12" font-weight="700" fill="#be123c" text-anchor="middle">-5</text>
+    <text x="461" y="144" class="mono" font-size="12" font-weight="700" fill="#991b1b" text-anchor="middle">-5</text>
   </g>
 
   <!-- Recurrence & Decision Trace Card -->
-  <rect x="44" y="318" width="524" height="164" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
-  <text x="60" y="340" class="sans" font-size="11.5" font-weight="700" fill="#0f172a">RECURRENCE: currentSum = max(nums[i], currentSum + nums[i])</text>
+  <rect x="44" y="318" width="524" height="164" rx="8" fill="#faf8f5" stroke="#d6d0c4"/>
+  <text x="60" y="340" class="sans" font-size="11.5" font-weight="700" fill="#1c1917">RECURRENCE: currentSum = max(nums[i], currentSum + nums[i])</text>
 
   <g class="kd-0">
-    <rect x="60" y="354" width="120" height="26" rx="4" fill="#eff6ff" stroke="#93c5fd"/>
-    <text x="120" y="371" class="mono" font-size="11.5" font-weight="700" fill="#1d4ed8" text-anchor="middle">INIT i = 0</text>
-    <text x="60" y="406" class="mono" font-size="13.5" font-weight="700" fill="#0f172a">currentSum = -2   |   maxSum = -2</text>
-    <text x="60" y="432" class="sans" font-size="11.5" fill="#475569">Start with single-element subarray [-2] (handles all-negative inputs).</text>
+    <rect x="60" y="354" width="120" height="26" rx="4" fill="#f0fdf9" stroke="#99f6e4"/>
+    <text x="120" y="371" class="mono" font-size="11.5" font-weight="700" fill="#065f46" text-anchor="middle">INIT i = 0</text>
+    <text x="60" y="406" class="mono" font-size="13.5" font-weight="700" fill="#1c1917">currentSum = -2   |   maxSum = -2</text>
+    <text x="60" y="432" class="sans" font-size="11.5" fill="#44403c">Start with single-element subarray [-2] (handles all-negative inputs).</text>
   </g>
   <g class="kd-1">
-    <rect x="60" y="354" width="144" height="26" rx="4" fill="#fffbeb" stroke="#fcd34d"/>
+    <rect x="60" y="354" width="144" height="26" rx="4" fill="#fffbeb" stroke="#fde68a"/>
     <text x="132" y="371" class="mono" font-size="11.5" font-weight="700" fill="#b45309" text-anchor="middle">RESET at i = 1</text>
-    <text x="60" y="406" class="mono" font-size="13" font-weight="700" fill="#0f172a">max(1, -2 + 1) = 1   -&gt;   maxSum = 1</text>
+    <text x="60" y="406" class="mono" font-size="13" font-weight="700" fill="#1c1917">max(1, -2 + 1) = 1   -&gt;   maxSum = 1</text>
     <text x="60" y="432" class="sans" font-size="11.5" fill="#b45309">Negative prefix (-2) hurts! Discard prefix and start fresh at 1.</text>
   </g>
   <g class="kd-2">
-    <rect x="60" y="354" width="144" height="26" rx="4" fill="#eff6ff" stroke="#93c5fd"/>
-    <text x="132" y="371" class="mono" font-size="11.5" font-weight="700" fill="#1d4ed8" text-anchor="middle">EXTEND at i = 2</text>
-    <text x="60" y="406" class="mono" font-size="13" font-weight="700" fill="#0f172a">max(-3, 1 + -3) = -2   -&gt;   maxSum = 1</text>
-    <text x="60" y="432" class="sans" font-size="11.5" fill="#475569">Extending beats starting at -3, but currentSum is now negative (-2).</text>
+    <rect x="60" y="354" width="144" height="26" rx="4" fill="#f0fdf9" stroke="#99f6e4"/>
+    <text x="132" y="371" class="mono" font-size="11.5" font-weight="700" fill="#065f46" text-anchor="middle">EXTEND at i = 2</text>
+    <text x="60" y="406" class="mono" font-size="13" font-weight="700" fill="#1c1917">max(-3, 1 + -3) = -2   -&gt;   maxSum = 1</text>
+    <text x="60" y="432" class="sans" font-size="11.5" fill="#44403c">Extending beats starting at -3, but currentSum is now negative (-2).</text>
   </g>
   <g class="kd-3">
-    <rect x="60" y="354" width="144" height="26" rx="4" fill="#fffbeb" stroke="#fcd34d"/>
+    <rect x="60" y="354" width="144" height="26" rx="4" fill="#fffbeb" stroke="#fde68a"/>
     <text x="132" y="371" class="mono" font-size="11.5" font-weight="700" fill="#b45309" text-anchor="middle">RESET at i = 3</text>
-    <text x="60" y="406" class="mono" font-size="13" font-weight="700" fill="#047857">max(4, -2 + 4) = 4   -&gt;   maxSum = 4</text>
+    <text x="60" y="406" class="mono" font-size="13" font-weight="700" fill="#065f46">max(4, -2 + 4) = 4   -&gt;   maxSum = 4</text>
     <text x="60" y="432" class="sans" font-size="11.5" fill="#b45309">Discard negative prefix (-2); start new optimal subarray at index 3 (4).</text>
   </g>
   <g class="kd-4">
-    <rect x="60" y="354" width="144" height="26" rx="4" fill="#eff6ff" stroke="#93c5fd"/>
-    <text x="132" y="371" class="mono" font-size="11.5" font-weight="700" fill="#1d4ed8" text-anchor="middle">EXTEND at i = 4</text>
-    <text x="60" y="406" class="mono" font-size="13" font-weight="700" fill="#0f172a">max(-1, 4 + -1) = 3   -&gt;   maxSum = 4</text>
-    <text x="60" y="432" class="sans" font-size="11.5" fill="#1d4ed8">Running sum +3 remains positive, so keeping prefix [4, -1] helps future items!</text>
+    <rect x="60" y="354" width="144" height="26" rx="4" fill="#f0fdf9" stroke="#99f6e4"/>
+    <text x="132" y="371" class="mono" font-size="11.5" font-weight="700" fill="#065f46" text-anchor="middle">EXTEND at i = 4</text>
+    <text x="60" y="406" class="mono" font-size="13" font-weight="700" fill="#1c1917">max(-1, 4 + -1) = 3   -&gt;   maxSum = 4</text>
+    <text x="60" y="432" class="sans" font-size="11.5" fill="#065f46">Running sum +3 remains positive, so keeping prefix [4, -1] helps future items!</text>
   </g>
   <g class="kd-5">
-    <rect x="60" y="354" width="144" height="26" rx="4" fill="#eff6ff" stroke="#93c5fd"/>
-    <text x="132" y="371" class="mono" font-size="11.5" font-weight="700" fill="#1d4ed8" text-anchor="middle">EXTEND at i = 5</text>
-    <text x="60" y="406" class="mono" font-size="13" font-weight="700" fill="#047857">max(2, 3 + 2) = 5   -&gt;   maxSum = 5</text>
-    <text x="60" y="432" class="sans" font-size="11.5" fill="#047857">Prefix [4, -1] boosted 2 up to 5. New maxSum = 5!</text>
+    <rect x="60" y="354" width="144" height="26" rx="4" fill="#f0fdf9" stroke="#99f6e4"/>
+    <text x="132" y="371" class="mono" font-size="11.5" font-weight="700" fill="#065f46" text-anchor="middle">EXTEND at i = 5</text>
+    <text x="60" y="406" class="mono" font-size="13" font-weight="700" fill="#065f46">max(2, 3 + 2) = 5   -&gt;   maxSum = 5</text>
+    <text x="60" y="432" class="sans" font-size="11.5" fill="#065f46">Prefix [4, -1] boosted 2 up to 5. New maxSum = 5!</text>
   </g>
   <g class="kd-6">
-    <rect x="60" y="354" width="156" height="26" rx="4" fill="#ecfdf5" stroke="#6ee7b7"/>
-    <text x="138" y="371" class="mono" font-size="11.5" font-weight="700" fill="#047857" text-anchor="middle">PEAK at i = 6</text>
-    <text x="60" y="406" class="mono" font-size="13" font-weight="700" fill="#047857">max(1, 5 + 1) = 6   -&gt;   maxSum = 6</text>
-    <text x="60" y="432" class="sans" font-size="11.5" fill="#047857">Optimal subarray [4, -1, 2, 1] reaches global maximum 6.</text>
+    <rect x="60" y="354" width="156" height="26" rx="4" fill="#f0fdf9" stroke="#99f6e4"/>
+    <text x="138" y="371" class="mono" font-size="11.5" font-weight="700" fill="#065f46" text-anchor="middle">PEAK at i = 6</text>
+    <text x="60" y="406" class="mono" font-size="13" font-weight="700" fill="#065f46">max(1, 5 + 1) = 6   -&gt;   maxSum = 6</text>
+    <text x="60" y="432" class="sans" font-size="11.5" fill="#065f46">Optimal subarray [4, -1, 2, 1] reaches global maximum 6.</text>
   </g>
   <g class="kd-7">
-    <rect x="60" y="354" width="144" height="26" rx="4" fill="#eff6ff" stroke="#93c5fd"/>
-    <text x="132" y="371" class="mono" font-size="11.5" font-weight="700" fill="#1d4ed8" text-anchor="middle">EXTEND at i = 7</text>
-    <text x="60" y="406" class="mono" font-size="13" font-weight="700" fill="#0f172a">max(-5, 6 + -5) = 1   -&gt;   maxSum = 6</text>
-    <text x="60" y="432" class="sans" font-size="11.5" fill="#475569">currentSum drops to 1, while maxSum preserves best seen (6).</text>
+    <rect x="60" y="354" width="144" height="26" rx="4" fill="#f0fdf9" stroke="#99f6e4"/>
+    <text x="132" y="371" class="mono" font-size="11.5" font-weight="700" fill="#065f46" text-anchor="middle">EXTEND at i = 7</text>
+    <text x="60" y="406" class="mono" font-size="13" font-weight="700" fill="#1c1917">max(-5, 6 + -5) = 1   -&gt;   maxSum = 6</text>
+    <text x="60" y="432" class="sans" font-size="11.5" fill="#44403c">currentSum drops to 1, while maxSum preserves best seen (6).</text>
   </g>
 
-  <text x="60" y="464" class="sans" font-size="11" fill="#64748b">Invariant: currentSum = max sum of any subarray ending strictly at index i.</text>
+  <text x="60" y="464" class="sans" font-size="11" fill="#57534e">Invariant: currentSum = max sum of any subarray ending strictly at index i.</text>
 
   <!-- Kadane insight box -->
-  <rect x="44" y="498" width="524" height="132" rx="8" fill="#eff6ff" stroke="#bfdbfe"/>
-  <text x="60" y="522" class="sans" font-size="12" font-weight="700" fill="#1e40af">Why Kadane Works Where Sliding Window Fails</text>
-  <text x="60" y="544" class="sans" font-size="11" fill="#1e3a8a">Sliding Window requires non-negative elements. Kadane handles arbitrary</text>
-  <text x="60" y="562" class="sans" font-size="11" fill="#1e3a8a">negatives because it only needs to track ONE bit of history:</text>
-  <text x="60" y="584" class="mono" font-size="11.5" font-weight="700" fill="#1d4ed8">currentSum &lt; 0  =&gt;  prefix is strictly harmful -&gt; reset to nums[i]</text>
-  <text x="60" y="608" class="sans" font-size="11" fill="#1e3a8a">Initialize both currentSum = nums[0] and maxSum = nums[0] (never 0!).</text>
+  <rect x="44" y="498" width="524" height="132" rx="8" fill="#f0fdf9" stroke="#bfdbfe"/>
+  <text x="60" y="522" class="sans" font-size="12" font-weight="700" fill="#065f46">Why Kadane Works Where Sliding Window Fails</text>
+  <text x="60" y="544" class="sans" font-size="11" fill="#065f46">Sliding Window requires non-negative elements. Kadane handles arbitrary</text>
+  <text x="60" y="562" class="sans" font-size="11" fill="#065f46">negatives because it only needs to track ONE bit of history:</text>
+  <text x="60" y="584" class="mono" font-size="11.5" font-weight="700" fill="#065f46">currentSum &lt; 0  =&gt;  prefix is strictly harmful -&gt; reset to nums[i]</text>
+  <text x="60" y="608" class="sans" font-size="11" fill="#065f46">Initialize both currentSum = nums[0] and maxSum = nums[0] (never 0!).</text>
 
   <!-- RIGHT PANEL: Cyclic Sort -->
-  <rect x="612" y="76" width="564" height="574" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
-  <rect x="612" y="76" width="564" height="36" rx="10" fill="#f1f5f9"/>
-  <rect x="612" y="102" width="564" height="10" fill="#f1f5f9"/>
-  <text x="628" y="99" class="sans" font-size="13" font-weight="700" fill="#0f172a">2. Cyclic Sort: In-Place [1..n] Permutation</text>
-  <text x="1160" y="99" class="mono" font-size="11" fill="#7c3aed" text-anchor="end">O(n) swaps · O(1) space</text>
+  <rect x="612" y="76" width="564" height="574" rx="10" fill="#ffffff" stroke="#d6d0c4"/>
+  <rect x="612" y="76" width="564" height="36" rx="10" fill="#f5f1e8"/>
+  <rect x="612" y="102" width="564" height="10" fill="#f5f1e8"/>
+  <text x="628" y="99" class="sans" font-size="13" font-weight="700" fill="#1c1917">2. Cyclic Sort: In-Place [1..n] Permutation</text>
+  <text x="1160" y="99" class="mono" font-size="11" fill="#0f766e" text-anchor="end">O(n) swaps · O(1) space</text>
 
-  <text x="632" y="136" class="sans" font-size="11.5" font-weight="600" fill="#475569">Home mapping: correctIdx = nums[i] - 1  (target: [ 1, 2, 3, 4, 5 ]):</text>
+  <text x="632" y="136" class="sans" font-size="11.5" font-weight="600" fill="#44403c">Home mapping: correctIdx = nums[i] - 1  (target: [ 1, 2, 3, 4, 5 ]):</text>
 
   <!-- Cyclic Sort Array Visualization (5 cells, x=664, step=96, w=78) -->
   <g transform="translate(664, 180)">
     <!-- Target index headers -->
-    <text x="39" y="88" class="mono" font-size="11" fill="#64748b" text-anchor="middle">idx 0 (1)</text>
-    <text x="135" y="88" class="mono" font-size="11" fill="#64748b" text-anchor="middle">idx 1 (2)</text>
-    <text x="231" y="88" class="mono" font-size="11" fill="#64748b" text-anchor="middle">idx 2 (3)</text>
-    <text x="327" y="88" class="mono" font-size="11" fill="#64748b" text-anchor="middle">idx 3 (4)</text>
-    <text x="423" y="88" class="mono" font-size="11" fill="#64748b" text-anchor="middle">idx 4 (5)</text>
+    <text x="39" y="88" class="mono" font-size="11" fill="#57534e" text-anchor="middle">idx 0 (1)</text>
+    <text x="135" y="88" class="mono" font-size="11" fill="#57534e" text-anchor="middle">idx 1 (2)</text>
+    <text x="231" y="88" class="mono" font-size="11" fill="#57534e" text-anchor="middle">idx 2 (3)</text>
+    <text x="327" y="88" class="mono" font-size="11" fill="#57534e" text-anchor="middle">idx 3 (4)</text>
+    <text x="423" y="88" class="mono" font-size="11" fill="#57534e" text-anchor="middle">idx 4 (5)</text>
 
     <!-- Step 0: [3, 5, 2, 1, 4], swap(0, 2) -->
     <g class="cs-0">
-      <path d="M 39 -2 Q 135 -44 231 -2" fill="none" stroke="#d97706" stroke-width="2.5" marker-end="url(#arrow-amber)"/>
+      <path d="M 39 -2 Q 135 -44 231 -2" fill="none" stroke="#b45309" stroke-width="2.5" marker-end="url(#arrow-amber)"/>
       <text x="135" y="-30" class="mono" font-size="11" font-weight="700" fill="#b45309" text-anchor="middle">swap(0, 2)</text>
-      <rect x="0" y="4" width="78" height="60" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="2.5"/>
-      <rect x="96" y="4" width="78" height="60" rx="6" fill="#f8fafc" stroke="#94a3b8"/>
-      <rect x="192" y="4" width="78" height="60" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="2.5"/>
-      <rect x="288" y="4" width="78" height="60" rx="6" fill="#f8fafc" stroke="#94a3b8"/>
-      <rect x="384" y="4" width="78" height="60" rx="6" fill="#f8fafc" stroke="#94a3b8"/>
+      <rect x="0" y="4" width="78" height="60" rx="6" fill="#fffbeb" stroke="#b45309" stroke-width="2.5"/>
+      <rect x="96" y="4" width="78" height="60" rx="6" fill="#faf8f5" stroke="#d6d0c4"/>
+      <rect x="192" y="4" width="78" height="60" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2.5"/>
+      <rect x="288" y="4" width="78" height="60" rx="6" fill="#faf8f5" stroke="#d6d0c4"/>
+      <rect x="384" y="4" width="78" height="60" rx="6" fill="#faf8f5" stroke="#d6d0c4"/>
       <g class="mono" font-size="20" font-weight="700" text-anchor="middle">
-        <text x="39" y="42" fill="#b45309">3</text><text x="135" y="42" fill="#0f172a">5</text><text x="231" y="42" fill="#1d4ed8">2</text><text x="327" y="42" fill="#0f172a">1</text><text x="423" y="42" fill="#0f172a">4</text>
+        <text x="39" y="42" fill="#b45309">3</text><text x="135" y="42" fill="#1c1917">5</text><text x="231" y="42" fill="#065f46">2</text><text x="327" y="42" fill="#1c1917">1</text><text x="423" y="42" fill="#1c1917">4</text>
       </g>
-      <rect x="20" y="102" width="38" height="22" rx="4" fill="#2563eb"/><text x="39" y="117" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">i=0</text>
+      <rect x="20" y="102" width="38" height="22" rx="4" fill="#0f766e"/><text x="39" y="117" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">i=0</text>
     </g>
 
     <!-- Step 1: [2, 5, 3, 1, 4], swap(0, 1) (3 settled at 2!) -->
     <g class="cs-1">
-      <path d="M 39 -2 Q 87 -36 135 -2" fill="none" stroke="#d97706" stroke-width="2.5" marker-end="url(#arrow-amber)"/>
+      <path d="M 39 -2 Q 87 -36 135 -2" fill="none" stroke="#b45309" stroke-width="2.5" marker-end="url(#arrow-amber)"/>
       <text x="87" y="-26" class="mono" font-size="11" font-weight="700" fill="#b45309" text-anchor="middle">swap(0, 1)</text>
-      <rect x="0" y="4" width="78" height="60" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="2.5"/>
-      <rect x="96" y="4" width="78" height="60" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="2.5"/>
-      <rect x="192" y="4" width="78" height="60" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
-      <rect x="288" y="4" width="78" height="60" rx="6" fill="#f8fafc" stroke="#94a3b8"/>
-      <rect x="384" y="4" width="78" height="60" rx="6" fill="#f8fafc" stroke="#94a3b8"/>
+      <rect x="0" y="4" width="78" height="60" rx="6" fill="#fffbeb" stroke="#b45309" stroke-width="2.5"/>
+      <rect x="96" y="4" width="78" height="60" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2.5"/>
+      <rect x="192" y="4" width="78" height="60" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
+      <rect x="288" y="4" width="78" height="60" rx="6" fill="#faf8f5" stroke="#d6d0c4"/>
+      <rect x="384" y="4" width="78" height="60" rx="6" fill="#faf8f5" stroke="#d6d0c4"/>
       <g class="mono" font-size="20" font-weight="700" text-anchor="middle">
-        <text x="39" y="42" fill="#b45309">2</text><text x="135" y="42" fill="#1d4ed8">5</text><text x="231" y="42" fill="#047857">3</text><text x="327" y="42" fill="#0f172a">1</text><text x="423" y="42" fill="#0f172a">4</text>
+        <text x="39" y="42" fill="#b45309">2</text><text x="135" y="42" fill="#065f46">5</text><text x="231" y="42" fill="#065f46">3</text><text x="327" y="42" fill="#1c1917">1</text><text x="423" y="42" fill="#1c1917">4</text>
       </g>
-      <rect x="20" y="102" width="38" height="22" rx="4" fill="#2563eb"/><text x="39" y="117" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">i=0</text>
+      <rect x="20" y="102" width="38" height="22" rx="4" fill="#0f766e"/><text x="39" y="117" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">i=0</text>
     </g>
 
     <!-- Step 2: [5, 2, 3, 1, 4], swap(0, 4) (2, 3 settled!) -->
     <g class="cs-2">
-      <path d="M 39 -2 Q 231 -50 423 -2" fill="none" stroke="#d97706" stroke-width="2.5" marker-end="url(#arrow-amber)"/>
+      <path d="M 39 -2 Q 231 -50 423 -2" fill="none" stroke="#b45309" stroke-width="2.5" marker-end="url(#arrow-amber)"/>
       <text x="231" y="-34" class="mono" font-size="11" font-weight="700" fill="#b45309" text-anchor="middle">swap(0, 4)</text>
-      <rect x="0" y="4" width="78" height="60" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="2.5"/>
-      <rect x="96" y="4" width="78" height="60" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
-      <rect x="192" y="4" width="78" height="60" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
-      <rect x="288" y="4" width="78" height="60" rx="6" fill="#f8fafc" stroke="#94a3b8"/>
-      <rect x="384" y="4" width="78" height="60" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="2.5"/>
+      <rect x="0" y="4" width="78" height="60" rx="6" fill="#fffbeb" stroke="#b45309" stroke-width="2.5"/>
+      <rect x="96" y="4" width="78" height="60" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
+      <rect x="192" y="4" width="78" height="60" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
+      <rect x="288" y="4" width="78" height="60" rx="6" fill="#faf8f5" stroke="#d6d0c4"/>
+      <rect x="384" y="4" width="78" height="60" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2.5"/>
       <g class="mono" font-size="20" font-weight="700" text-anchor="middle">
-        <text x="39" y="42" fill="#b45309">5</text><text x="135" y="42" fill="#047857">2</text><text x="231" y="42" fill="#047857">3</text><text x="327" y="42" fill="#0f172a">1</text><text x="423" y="42" fill="#1d4ed8">4</text>
+        <text x="39" y="42" fill="#b45309">5</text><text x="135" y="42" fill="#065f46">2</text><text x="231" y="42" fill="#065f46">3</text><text x="327" y="42" fill="#1c1917">1</text><text x="423" y="42" fill="#065f46">4</text>
       </g>
-      <rect x="20" y="102" width="38" height="22" rx="4" fill="#2563eb"/><text x="39" y="117" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">i=0</text>
+      <rect x="20" y="102" width="38" height="22" rx="4" fill="#0f766e"/><text x="39" y="117" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">i=0</text>
     </g>
 
     <!-- Step 3: [4, 2, 3, 1, 5], swap(0, 3) (2, 3, 5 settled!) -->
     <g class="cs-3">
-      <path d="M 39 -2 Q 183 -46 327 -2" fill="none" stroke="#d97706" stroke-width="2.5" marker-end="url(#arrow-amber)"/>
+      <path d="M 39 -2 Q 183 -46 327 -2" fill="none" stroke="#b45309" stroke-width="2.5" marker-end="url(#arrow-amber)"/>
       <text x="183" y="-32" class="mono" font-size="11" font-weight="700" fill="#b45309" text-anchor="middle">swap(0, 3)</text>
-      <rect x="0" y="4" width="78" height="60" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="2.5"/>
-      <rect x="96" y="4" width="78" height="60" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
-      <rect x="192" y="4" width="78" height="60" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
-      <rect x="288" y="4" width="78" height="60" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="2.5"/>
-      <rect x="384" y="4" width="78" height="60" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+      <rect x="0" y="4" width="78" height="60" rx="6" fill="#fffbeb" stroke="#b45309" stroke-width="2.5"/>
+      <rect x="96" y="4" width="78" height="60" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
+      <rect x="192" y="4" width="78" height="60" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
+      <rect x="288" y="4" width="78" height="60" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2.5"/>
+      <rect x="384" y="4" width="78" height="60" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
       <g class="mono" font-size="20" font-weight="700" text-anchor="middle">
-        <text x="39" y="42" fill="#b45309">4</text><text x="135" y="42" fill="#047857">2</text><text x="231" y="42" fill="#047857">3</text><text x="327" y="42" fill="#1d4ed8">1</text><text x="423" y="42" fill="#047857">5</text>
+        <text x="39" y="42" fill="#b45309">4</text><text x="135" y="42" fill="#065f46">2</text><text x="231" y="42" fill="#065f46">3</text><text x="327" y="42" fill="#065f46">1</text><text x="423" y="42" fill="#065f46">5</text>
       </g>
-      <rect x="20" y="102" width="38" height="22" rx="4" fill="#2563eb"/><text x="39" y="117" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">i=0</text>
+      <rect x="20" y="102" width="38" height="22" rx="4" fill="#0f766e"/><text x="39" y="117" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">i=0</text>
     </g>
 
     <!-- Step 4: [1, 2, 3, 4, 5], i=0 matches -> i++ -->
     <g class="cs-4">
-      <rect x="0" y="4" width="78" height="60" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
-      <rect x="96" y="4" width="78" height="60" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
-      <rect x="192" y="4" width="78" height="60" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
-      <rect x="288" y="4" width="78" height="60" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
-      <rect x="384" y="4" width="78" height="60" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
-      <g class="mono" font-size="20" font-weight="700" fill="#047857" text-anchor="middle">
+      <rect x="0" y="4" width="78" height="60" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
+      <rect x="96" y="4" width="78" height="60" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
+      <rect x="192" y="4" width="78" height="60" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
+      <rect x="288" y="4" width="78" height="60" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
+      <rect x="384" y="4" width="78" height="60" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
+      <g class="mono" font-size="20" font-weight="700" fill="#065f46" text-anchor="middle">
         <text x="39" y="42">1</text><text x="135" y="42">2</text><text x="231" y="42">3</text><text x="327" y="42">4</text><text x="423" y="42">5</text>
       </g>
-      <rect x="20" y="102" width="38" height="22" rx="4" fill="#059669"/><text x="39" y="117" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">i++</text>
+      <rect x="20" y="102" width="38" height="22" rx="4" fill="#0f766e"/><text x="39" y="117" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">i++</text>
     </g>
 
     <!-- Step 5: Sorted! i=4 finishes -->
     <g class="cs-5">
-      <rect x="0" y="4" width="78" height="60" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
-      <rect x="96" y="4" width="78" height="60" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
-      <rect x="192" y="4" width="78" height="60" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
-      <rect x="288" y="4" width="78" height="60" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
-      <rect x="384" y="4" width="78" height="60" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
-      <g class="mono" font-size="20" font-weight="700" fill="#047857" text-anchor="middle">
+      <rect x="0" y="4" width="78" height="60" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2.5"/>
+      <rect x="96" y="4" width="78" height="60" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2.5"/>
+      <rect x="192" y="4" width="78" height="60" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2.5"/>
+      <rect x="288" y="4" width="78" height="60" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2.5"/>
+      <rect x="384" y="4" width="78" height="60" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2.5"/>
+      <g class="mono" font-size="20" font-weight="700" fill="#065f46" text-anchor="middle">
         <text x="39" y="42">1</text><text x="135" y="42">2</text><text x="231" y="42">3</text><text x="327" y="42">4</text><text x="423" y="42">5</text>
       </g>
-      <rect x="398" y="102" width="50" height="22" rx="4" fill="#059669"/><text x="423" y="117" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">DONE</text>
+      <rect x="398" y="102" width="50" height="22" rx="4" fill="#0f766e"/><text x="423" y="117" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">DONE</text>
     </g>
   </g>
 
   <!-- Step Log Box for Cyclic Sort -->
-  <rect x="632" y="330" width="524" height="152" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
-  <text x="648" y="352" class="sans" font-size="11.5" font-weight="700" fill="#0f172a">SWAP &amp; ADVANCE TRACE (while (i &lt; n)):</text>
+  <rect x="632" y="330" width="524" height="152" rx="8" fill="#faf8f5" stroke="#d6d0c4"/>
+  <text x="648" y="352" class="sans" font-size="11.5" font-weight="700" fill="#1c1917">SWAP &amp; ADVANCE TRACE (while (i &lt; n)):</text>
 
   <g class="cs-0">
     <text x="648" y="382" class="mono" font-size="13" font-weight="700" fill="#b45309">i=0: nums[0]=3 -&gt; correctIdx=2. Swap (0, 2)</text>
-    <text x="648" y="406" class="sans" font-size="11.5" fill="#334155">Places 3 permanently at index 2. Do NOT increment i yet!</text>
-    <text x="648" y="438" class="mono" font-size="12" fill="#64748b">Swaps: 1   |   i advances: 0</text>
+    <text x="648" y="406" class="sans" font-size="11.5" fill="#44403c">Places 3 permanently at index 2. Do NOT increment i yet!</text>
+    <text x="648" y="438" class="mono" font-size="12" fill="#57534e">Swaps: 1   |   i advances: 0</text>
   </g>
   <g class="cs-1">
     <text x="648" y="382" class="mono" font-size="13" font-weight="700" fill="#b45309">i=0: nums[0]=2 -&gt; correctIdx=1. Swap (0, 1)</text>
-    <text x="648" y="406" class="sans" font-size="11.5" fill="#334155">Places 2 permanently at index 1. 3 is already locked at index 2.</text>
-    <text x="648" y="438" class="mono" font-size="12" fill="#64748b">Swaps: 2   |   i advances: 0</text>
+    <text x="648" y="406" class="sans" font-size="11.5" fill="#44403c">Places 2 permanently at index 1. 3 is already locked at index 2.</text>
+    <text x="648" y="438" class="mono" font-size="12" fill="#57534e">Swaps: 2   |   i advances: 0</text>
   </g>
   <g class="cs-2">
     <text x="648" y="382" class="mono" font-size="13" font-weight="700" fill="#b45309">i=0: nums[0]=5 -&gt; correctIdx=4. Swap (0, 4)</text>
-    <text x="648" y="406" class="sans" font-size="11.5" fill="#334155">Places 5 permanently at index 4. Three elements now settled!</text>
-    <text x="648" y="438" class="mono" font-size="12" fill="#64748b">Swaps: 3   |   i advances: 0</text>
+    <text x="648" y="406" class="sans" font-size="11.5" fill="#44403c">Places 5 permanently at index 4. Three elements now settled!</text>
+    <text x="648" y="438" class="mono" font-size="12" fill="#57534e">Swaps: 3   |   i advances: 0</text>
   </g>
   <g class="cs-3">
     <text x="648" y="382" class="mono" font-size="13" font-weight="700" fill="#b45309">i=0: nums[0]=4 -&gt; correctIdx=3. Swap (0, 3)</text>
-    <text x="648" y="406" class="sans" font-size="11.5" fill="#334155">Places 4 at index 3 and brings 1 into index 0 simultaneously!</text>
-    <text x="648" y="438" class="mono" font-size="12" fill="#64748b">Swaps: 4   |   i advances: 0</text>
+    <text x="648" y="406" class="sans" font-size="11.5" fill="#44403c">Places 4 at index 3 and brings 1 into index 0 simultaneously!</text>
+    <text x="648" y="438" class="mono" font-size="12" fill="#57534e">Swaps: 4   |   i advances: 0</text>
   </g>
   <g class="cs-4">
-    <text x="648" y="382" class="mono" font-size="13" font-weight="700" fill="#047857">i=0: nums[0]=1 === nums[0] -&gt; i++</text>
-    <text x="648" y="406" class="sans" font-size="11.5" fill="#047857">Element is in its home slot (or duplicate at home slot) -&gt; advance i.</text>
-    <text x="648" y="438" class="mono" font-size="12" fill="#047857">Swaps: 4   |   i advances: 1</text>
+    <text x="648" y="382" class="mono" font-size="13" font-weight="700" fill="#065f46">i=0: nums[0]=1 === nums[0] -&gt; i++</text>
+    <text x="648" y="406" class="sans" font-size="11.5" fill="#065f46">Element is in its home slot (or duplicate at home slot) -&gt; advance i.</text>
+    <text x="648" y="438" class="mono" font-size="12" fill="#065f46">Swaps: 4   |   i advances: 1</text>
   </g>
   <g class="cs-5">
-    <text x="648" y="382" class="mono" font-size="13" font-weight="700" fill="#047857">i=1..4: all nums[i] === i + 1 -&gt; sorted in O(n)!</text>
-    <text x="648" y="406" class="sans" font-size="11.5" fill="#047857">Total iterations = 4 swaps + 5 advances = 9 &lt;= 2n (at most n-1 swaps).</text>
-    <text x="648" y="438" class="mono" font-size="12" font-weight="700" fill="#047857">Swaps: 4 (&lt;= n-1)   |   i advances: 5 (= n)</text>
+    <text x="648" y="382" class="mono" font-size="13" font-weight="700" fill="#065f46">i=1..4: all nums[i] === i + 1 -&gt; sorted in O(n)!</text>
+    <text x="648" y="406" class="sans" font-size="11.5" fill="#065f46">Total iterations = 4 swaps + 5 advances = 9 &lt;= 2n (at most n-1 swaps).</text>
+    <text x="648" y="438" class="mono" font-size="12" font-weight="700" fill="#065f46">Swaps: 4 (&lt;= n-1)   |   i advances: 5 (= n)</text>
   </g>
 
-  <rect x="632" y="498" width="524" height="132" rx="8" fill="#f5f3ff" stroke="#c4b5fd"/>
-  <text x="648" y="522" class="sans" font-size="12" font-weight="700" fill="#5b21b6">O(n) Complexity &amp; Duplicate Guard</text>
-  <text x="648" y="544" class="sans" font-size="11" fill="#4c1d95">Why no infinite loop? Each swap locks at least 1 element at its final index.</text>
-  <text x="648" y="564" class="mono" font-size="11" font-weight="700" fill="#6d28d9">if (nums[i] &gt; 0 &amp;&amp; nums[i] &lt;= n &amp;&amp; nums[i] !== nums[correctIdx])</text>
-  <text x="648" y="586" class="sans" font-size="11" fill="#4c1d95">Checking `nums[i] !== nums[correctIdx]` prevents infinite self-swaps on</text>
-  <text x="648" y="604" class="sans" font-size="11" fill="#4c1d95">duplicates and naturally reveals missing/duplicate numbers in O(1) space!</text>
+  <rect x="632" y="498" width="524" height="132" rx="8" fill="#f5f1e8" stroke="#d6d0c4"/>
+  <text x="648" y="522" class="sans" font-size="12" font-weight="700" fill="#065f46">O(n) Complexity &amp; Duplicate Guard</text>
+  <text x="648" y="544" class="sans" font-size="11" fill="#065f46">Why no infinite loop? Each swap locks at least 1 element at its final index.</text>
+  <text x="648" y="564" class="mono" font-size="11" font-weight="700" fill="#065f46">if (nums[i] &gt; 0 &amp;&amp; nums[i] &lt;= n &amp;&amp; nums[i] !== nums[correctIdx])</text>
+  <text x="648" y="586" class="sans" font-size="11" fill="#065f46">Checking `nums[i] !== nums[correctIdx]` prevents infinite self-swaps on</text>
+  <text x="648" y="604" class="sans" font-size="11" fill="#065f46">duplicates and naturally reveals missing/duplicate numbers in O(1) space!</text>
 
   <!-- Bottom Legend -->
-  <rect x="24" y="666" width="1152" height="74" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="44" y="692" class="sans" font-size="12" font-weight="700" fill="#0f172a">Invariants &amp; Guarantees:</text>
-  <rect x="210" y="678" width="14" height="14" rx="3" fill="#2563eb"/>
-  <text x="230" y="690" class="sans" font-size="11" fill="#334155">Extend prefix / target slot</text>
-  <rect x="420" y="678" width="14" height="14" rx="3" fill="#d97706"/>
-  <text x="440" y="690" class="sans" font-size="11" fill="#334155">Reset subarray / active swap</text>
-  <rect x="660" y="678" width="14" height="14" rx="3" fill="#059669"/>
-  <text x="680" y="690" class="sans" font-size="11" fill="#334155">Optimal subarray / settled home slot</text>
-  <text x="44" y="722" class="sans" font-size="11" fill="#64748b">Both algorithms run in strictly O(n) time and O(1) auxiliary space without allocating DP tables or sorting in O(n log n).</text>
+  <rect x="24" y="666" width="1152" height="74" rx="8" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="44" y="692" class="sans" font-size="12" font-weight="700" fill="#1c1917">Invariants &amp; Guarantees:</text>
+  <rect x="210" y="678" width="14" height="14" rx="3" fill="#0f766e"/>
+  <text x="230" y="690" class="sans" font-size="11" fill="#44403c">Extend prefix / target slot</text>
+  <rect x="420" y="678" width="14" height="14" rx="3" fill="#b45309"/>
+  <text x="440" y="690" class="sans" font-size="11" fill="#44403c">Reset subarray / active swap</text>
+  <rect x="660" y="678" width="14" height="14" rx="3" fill="#0f766e"/>
+  <text x="680" y="690" class="sans" font-size="11" fill="#44403c">Optimal subarray / settled home slot</text>
+  <text x="44" y="722" class="sans" font-size="11" fill="#57534e">Both algorithms run in strictly O(n) time and O(1) auxiliary space without allocating DP tables or sorting in O(n log n).</text>
 </svg>

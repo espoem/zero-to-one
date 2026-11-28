@@ -1,146 +1,126 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 620" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 580" width="1120" height="580" role="img" aria-labelledby="title desc">
+  <title id="title">8-Layer AI Security Stack and Governance Frameworks (2026)</title>
+  <desc id="desc">Static Editorial Paper architecture of the 8-layer AI Security Stack: Red Teaming, Guardrails and Least-Privilege Permissions, Direct and Indirect Prompt Injection Isolation, Static Model Scanning, Secrets and CycloneDX 1.7 ML-BOM, Policy and Tenant Access, OTel GenAI Monitoring, and OWASP/NIST/MITRE ATLAS frameworks.</desc>
   <defs>
-    <style>
-      .bg { fill: #0b1020; }
-      .panel { fill: #121a30; stroke: #2b3b66; stroke-width: 1.5; rx: 10; }
-      .box-blue { fill: #152546; stroke: #4c8bf5; stroke-width: 1.6; rx: 8; }
-      .box-green { fill: #122d26; stroke: #2ec486; stroke-width: 1.6; rx: 8; }
-      .box-amber { fill: #2f2513; stroke: #f5a623; stroke-width: 1.6; rx: 8; }
-      .box-purple { fill: #24193c; stroke: #a66bff; stroke-width: 1.6; rx: 8; }
-      .box-red { fill: #33161e; stroke: #f05454; stroke-width: 1.6; rx: 8; }
-      .title { font-family: 'Inter', -apple-system, sans-serif; font-size: 18px; font-weight: 700; fill: #f8fafc; }
-      .subtitle { font-family: 'Inter', -apple-system, sans-serif; font-size: 12px; fill: #94a3b8; }
-      .sec-hdr { font-family: 'Inter', -apple-system, sans-serif; font-size: 13px; font-weight: 700; fill: #e2e8f0; }
-      .lbl { font-family: 'Inter', -apple-system, sans-serif; font-size: 12px; font-weight: 700; fill: #f1f5f9; }
-      .txt { font-family: 'Inter', -apple-system, sans-serif; font-size: 10.5px; fill: #cbd5e1; }
-      .code { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10px; fill: #93c5fd; }
-      .code-green { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10px; fill: #6ee7b7; }
-      .code-amber { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10px; fill: #fcd34d; }
-      .code-red { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10px; fill: #fca5a5; }
-      .flow { stroke: #60a5fa; stroke-width: 1.9; fill: none; marker-end: url(#arr-blue); }
-      .flow-red { stroke: #f05454; stroke-width: 2; stroke-dasharray: 7 4; fill: none; marker-end: url(#arr-red); animation: pulseFlow 1.7s linear infinite; }
-      .flow-green { stroke: #34d399; stroke-width: 1.9; fill: none; marker-end: url(#arr-green); }
-      @keyframes pulseFlow {
-        to { stroke-dashoffset: -22; }
-      }
-      @keyframes beacon {
-        0%, 100% { opacity: 0.45; }
-        50% { opacity: 1; }
-      }
-      .alert-dot { animation: beacon 1.5s ease-in-out infinite; }
-    </style>
-    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 8 5 L 0 9 z" fill="#60a5fa"/>
+    <marker id="ed-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M1,2 L9,5 L1,8" fill="none" stroke="#1c1917" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
     </marker>
-    <marker id="arr-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 8 5 L 0 9 z" fill="#f05454"/>
+    <marker id="ed-arr-teal" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M1,2 L9,5 L1,8" fill="none" stroke="#0f766e" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
     </marker>
-    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 8 5 L 0 9 z" fill="#34d399"/>
+    <marker id="ed-arr-danger" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M1,2 L9,5 L1,8" fill="none" stroke="#dc2626" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
     </marker>
   </defs>
+  <style>
+    .ed-serif { font-family: Georgia, "Times New Roman", serif; }
+    .ed-sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .ed-mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  </style>
 
-  <rect class="bg" x="0" y="0" width="1280" height="620"/>
+  <rect x="0" y="0" width="1120" height="580" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
+  <text x="32" y="34" class="ed-mono" font-size="10.5" fill="#78716c" letter-spacing="1.4">AI SECURITY STACK (2026) · OWASP LLM/AGENTIC · NIST AI RMF + 600-1 · MITRE ATLAS v2026.11</text>
+  <text x="32" y="58" class="ed-serif" font-size="19.5" font-weight="700" fill="#1c1917">8-Layer Defense-in-Depth Across Prompt, Supply Chain &amp; Telemetry Boundaries</text>
+  <line x1="32" y1="72" x2="1088" y2="72" stroke="#1c1917" stroke-width="1.2"/>
 
-  <text class="title" x="24" y="34">8-Layer AI Security Stack — Runtime Defense, Model Supply Chain &amp; Governance Frameworks (2026)</text>
-  <text class="subtitle" x="24" y="54">Defense-in-Depth across OWASP LLM Top 10:2025/2026, OWASP Agentic Top 10 2026, NIST AI RMF 1.0 + AI 600-1 &amp; MITRE ATLAS v2026.11</text>
+  <!-- Column 1: Runtime & Adversarial Defense -->
+  <text x="32" y="96" class="ed-mono" font-size="10.5" font-weight="700" fill="#dc2626" letter-spacing="0.8">RUNTIME &amp; ADVERSARIAL DEFENSE (L1–L3)</text>
+  <line x1="32" y1="103" x2="364" y2="103" stroke="#d6d0c4"/>
 
-  <!-- Column 1: Proactive Red Teaming & Runtime Ingress/Egress -->
-  <rect class="panel" x="20" y="74" width="405" height="390"/>
-  <text class="sec-hdr" x="34" y="96">RUNTIME &amp; ADVERSARIAL DEFENSE (Layers 1–3)</text>
-  <circle class="alert-dot" cx="395" cy="91" r="5" fill="#f05454"/>
+  <rect x="32" y="114" width="332" height="96" rx="3" fill="#fef2f2" stroke="#dc2626" stroke-width="1.1"/>
+  <text x="46" y="134" class="ed-sans" font-size="12" font-weight="700" fill="#991b1b">L1 · Continuous Red Teaming</text>
+  <text x="46" y="152" class="ed-sans" font-size="11" fill="#44403c">• Probe RAG, PDFs, tool JSON &amp; memory</text>
+  <text x="46" y="169" class="ed-sans" font-size="11" fill="#44403c">• Scope via MITRE ATLAS + ASI01–10</text>
+  <text x="46" y="189" class="ed-mono" font-size="10" fill="#991b1b">Assert on tool traces (not surface prose)</text>
 
-  <rect class="box-red" x="34" y="110" width="377" height="102"/>
-  <text class="lbl" x="46" y="130">L1. Continuous Red Teaming</text>
-  <text class="txt" x="46" y="148">• Scope attacks by MITRE ATLAS + OWASP ASI01–10</text>
-  <text class="txt" x="46" y="166">• Probe indirect injection via RAG docs, tool JSON &amp; memory</text>
-  <text class="code-red" x="46" y="186">Assert on tool-action traces (not surface prose alone)</text>
+  <rect x="32" y="222" width="332" height="98" rx="3" fill="#fffbeb" stroke="#b45309" stroke-width="1.1"/>
+  <text x="46" y="242" class="ed-sans" font-size="12" font-weight="700" fill="#92400e">L3 · Injection Isolation &amp; Screening</text>
+  <text x="46" y="260" class="ed-mono" font-size="10" fill="#1c1917">&lt;untrusted_context&gt;...&lt;/untrusted_context&gt;</text>
+  <text x="46" y="278" class="ed-sans" font-size="11" fill="#44403c">• NFKC + strip Unicode Tags (U+E0000–7F)</text>
+  <text x="46" y="296" class="ed-sans" font-size="11" fill="#44403c">• Classifier + deterministic rules (AML.T0051)</text>
 
-  <rect class="box-amber" x="34" y="226" width="377" height="106"/>
-  <text class="lbl" x="46" y="246">L3. Direct &amp; Indirect Injection Detection</text>
-  <text class="code-amber" x="46" y="266">&lt;untrusted_data&gt;...&lt;/untrusted_data&gt; boundary isolation</text>
-  <text class="txt" x="46" y="284">• Strip zero-width Unicode + screen retrieved RAG chunks</text>
-  <text class="txt" x="46" y="302">• Defends AML.T0051.001 &amp; ASI06 Context Poisoning</text>
+  <rect x="32" y="332" width="332" height="98" rx="3" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.1"/>
+  <text x="46" y="352" class="ed-sans" font-size="12" font-weight="700" fill="#0f766e">L2 · Guardrails + Least Privilege</text>
+  <text x="46" y="370" class="ed-sans" font-size="11" fill="#44403c">• Validator Sandwich on every egress path</text>
+  <text x="46" y="388" class="ed-mono" font-size="10" fill="#0f766e">Host allowedTools + URL domain allowlist</text>
+  <text x="46" y="406" class="ed-sans" font-size="11" fill="#44403c">• HITL interrupt() gates (LLM03/ASI02)</text>
 
-  <rect class="box-green" x="34" y="346" width="377" height="104"/>
-  <text class="lbl" x="46" y="366">L2. Guardrails + Least-Privilege Permissions</text>
-  <text class="txt" x="46" y="384">• Validator Sandwich (Top &amp; Bottom Bun on ALL egress)</text>
-  <text class="code-green" x="46" y="404">Enforce allowedTools + HITL interrupt() in host code</text>
-  <text class="txt" x="46" y="422">• Mitigates LLM05/LLM06 &amp; ASI02 Tool Misuse</text>
+  <!-- Connectors Col 1 -> Col 2 -->
+  <line x1="364" y1="162" x2="390" y2="162" stroke="#dc2626" stroke-width="1.2" marker-end="url(#ed-arr-danger)"/>
+  <line x1="364" y1="271" x2="390" y2="271" stroke="#1c1917" stroke-width="1.2" marker-end="url(#ed-arr)"/>
+  <line x1="364" y1="381" x2="390" y2="381" stroke="#0f766e" stroke-width="1.2" marker-end="url(#ed-arr-teal)"/>
 
   <!-- Column 2: Supply Chain, Secrets & Access -->
-  <rect class="panel" x="442" y="74" width="405" height="390"/>
-  <text class="sec-hdr" x="456" y="96">SUPPLY CHAIN &amp; ACCESS BOUNDARIES (Layers 4–6)</text>
+  <text x="394" y="96" class="ed-mono" font-size="10.5" font-weight="700" fill="#0f766e" letter-spacing="0.8">SUPPLY CHAIN &amp; ACCESS CONTROL (L4–L6)</text>
+  <line x1="394" y1="103" x2="726" y2="103" stroke="#d6d0c4"/>
 
-  <rect class="box-purple" x="456" y="110" width="377" height="114"/>
-  <text class="lbl" x="468" y="130">L4. Model Scanning &amp; Safe Serialization</text>
-  <text class="code-red" x="468" y="150">Pickle VM: GLOBAL / STACK_GLOBAL + REDUCE → RCE</text>
-  <text class="code-green" x="468" y="170">Prefer safetensors (pure tensors) + weights_only=True</text>
-  <text class="txt" x="468" y="188">• ModelScan 0.8.8 static byte scan (never unpickles)</text>
-  <text class="txt" x="468" y="206">• Guards GGUF templates &amp; hub namespace rug-pulls</text>
+  <rect x="394" y="114" width="332" height="104" rx="3" fill="#ffffff" stroke="#1c1917" stroke-width="1"/>
+  <text x="408" y="134" class="ed-sans" font-size="12" font-weight="700" fill="#1c1917">L4 · Model Scanning &amp; Serialization</text>
+  <text x="408" y="152" class="ed-mono" font-size="10" fill="#dc2626">Pickle VM GLOBAL/REDUCE → RCE vector</text>
+  <text x="408" y="170" class="ed-mono" font-size="10" fill="#0f766e">Use safetensors + weights_only=True</text>
+  <text x="408" y="188" class="ed-sans" font-size="11" fill="#44403c">• ModelScan 0.8.8 opcode scan (exit 1 fail)</text>
+  <text x="408" y="205" class="ed-sans" font-size="11" fill="#44403c">• Audit GGUF Jinja &amp; hub rug-pulls</text>
 
-  <rect class="box-blue" x="456" y="238" width="377" height="102"/>
-  <text class="lbl" x="468" y="258">L5. Secrets Hygiene + CycloneDX 1.7 ML-BOM</text>
-  <text class="txt" x="468" y="276">• Pre-egress PII/API-key redaction; zero keys in prompts</text>
-  <text class="code" x="468" y="296">CycloneDX 1.7 (ECMA-424): modelCard + data lineage</text>
-  <text class="txt" x="468" y="314">• Signed artifact digests + dataset provenance (AML.M0023)</text>
+  <rect x="394" y="228" width="332" height="98" rx="3" fill="#ffffff" stroke="#1c1917" stroke-width="1"/>
+  <text x="408" y="248" class="ed-sans" font-size="12" font-weight="700" fill="#1c1917">L5 · Secrets Hygiene &amp; CycloneDX 1.7</text>
+  <text x="408" y="266" class="ed-sans" font-size="11" fill="#44403c">• Pre-egress PII/token scrub; zero secrets</text>
+  <text x="408" y="284" class="ed-mono" font-size="10" fill="#0f766e">modelCard + data[type="dataset"]</text>
+  <text x="408" y="302" class="ed-sans" font-size="11" fill="#44403c">• technicalLimitations + CVE/ML-BOM lineage</text>
 
-  <rect class="box-amber" x="456" y="354" width="377" height="96"/>
-  <text class="lbl" x="468" y="374">L6. Policy + Tenant Access Control</text>
-  <text class="txt" x="468" y="392">• Session-derived principal &amp; tenantId (never body JSON)</text>
-  <text class="code-amber" x="468" y="410">Pre-filter vector ACLs + OPA/Cedar tool policies</text>
-  <text class="txt" x="468" y="428">• Prevents cross-tenant RAG &amp; semantic cache leaks</text>
+  <rect x="394" y="336" width="332" height="94" rx="3" fill="#fffbeb" stroke="#b45309" stroke-width="1"/>
+  <text x="408" y="356" class="ed-sans" font-size="12" font-weight="700" fill="#92400e">L6 · Policy &amp; Tenant Isolation</text>
+  <text x="408" y="374" class="ed-sans" font-size="11" fill="#44403c">• Bind tenantId strictly from session JWT</text>
+  <text x="408" y="392" class="ed-mono" font-size="10" fill="#b45309">Pre-filter HNSW ACLs + Cedar/OPA policy</text>
+  <text x="408" y="410" class="ed-sans" font-size="11" fill="#44403c">• Stop semantic cache tenant bleed</text>
 
-  <!-- Column 3: Monitoring & Telemetry -->
-  <rect class="panel" x="864" y="74" width="396" height="390"/>
-  <text class="sec-hdr" x="878" y="96">DETECTION &amp; RESPONSIBLE AI (Layer 7+)</text>
-  <circle class="alert-dot" cx="1232" cy="91" r="5" fill="#34d399"/>
+  <!-- Connectors Col 2 -> Col 3 -->
+  <line x1="726" y1="166" x2="752" y2="166" stroke="#1c1917" stroke-width="1.2" marker-end="url(#ed-arr)"/>
+  <line x1="726" y1="383" x2="752" y2="383" stroke="#0f766e" stroke-width="1.2" marker-end="url(#ed-arr-teal)"/>
 
-  <rect class="box-blue" x="878" y="110" width="368" height="174"/>
-  <text class="lbl" x="890" y="130">L7. OTel GenAI Monitoring &amp; Anomaly Alerts</text>
-  <text class="code" x="890" y="150">invoke_agent → chat → execute_tool / retrieval</text>
-  <text class="txt" x="890" y="170">• Default OTEL_INSTRUMENTATION_GENAI_CAPTURE_CONTENT</text>
-  <text class="code-amber" x="890" y="188">  = NO_CONTENT (encrypted gen_ai.*_ref on opt-in)</text>
-  <text class="txt" x="890" y="208">• Alert on guardrail hit spikes, tool scope drift,</text>
-  <text class="txt" x="890" y="224">  token cost harvesting (AML.T0034), and model ID drift</text>
-  <text class="code-green" x="890" y="246">• Maps directly to MITRE ATLAS AML.M0024 telemetry</text>
+  <!-- Column 3: Monitoring & Responsible AI -->
+  <text x="756" y="96" class="ed-mono" font-size="10.5" font-weight="700" fill="#1c1917" letter-spacing="0.8">MONITORING &amp; RESPONSIBLE AI (L7+)</text>
+  <line x1="756" y1="103" x2="1088" y2="103" stroke="#d6d0c4"/>
 
-  <rect class="box-green" x="878" y="298" width="368" height="152"/>
-  <text class="lbl" x="890" y="318">Responsible AI &amp; Fairness Governance</text>
-  <text class="txt" x="890" y="338">• Demographic Parity / Equalized Odds / Calibration parity</text>
-  <text class="txt" x="890" y="356">• Data ethics: consent, copyright, opt-out &amp; PII minimization</text>
-  <text class="txt" x="890" y="374">• Disclose AI decision paths + human appeal mechanisms</text>
-  <text class="code-green" x="890" y="396">• Cross-slice error monitoring across protected cohorts</text>
-  <text class="txt" x="890" y="416">• Immutable audit trails for regulated decisions</text>
+  <rect x="756" y="114" width="332" height="164" rx="3" fill="#ffffff" stroke="#0f766e" stroke-width="1.1"/>
+  <text x="770" y="134" class="ed-sans" font-size="12" font-weight="700" fill="#0f766e">L7 · OTel GenAI Anomaly Telemetry</text>
+  <text x="770" y="153" class="ed-mono" font-size="10" fill="#1c1917">invoke_agent → chat → execute_tool</text>
+  <text x="770" y="172" class="ed-mono" font-size="9.2" fill="#44403c">OTEL_INSTRUMENTATION_GENAI_CAPTURE_</text>
+  <text x="770" y="187" class="ed-mono" font-size="9.5" fill="#b45309">MESSAGE_CONTENT = NO_CONTENT (default)</text>
+  <text x="770" y="207" class="ed-sans" font-size="11" fill="#44403c">• Alert on guardrail spikes, scope drift,</text>
+  <text x="770" y="224" class="ed-sans" font-size="11" fill="#44403c">  cost harvesting (AML.T0034), model swap</text>
+  <text x="770" y="244" class="ed-mono" font-size="10" fill="#0f766e">MITRE ATLAS AML.M0024 monitoring</text>
 
-  <!-- Bottom Governance Anchor: Layer 8 -->
-  <rect class="panel" x="20" y="482" width="1240" height="118"/>
-  <text class="sec-hdr" x="34" y="504">L8. GOVERNANCE, THREAT TAXONOMIES &amp; COMPLIANCE FRAMEWORKS</text>
+  <rect x="756" y="290" width="332" height="140" rx="3" fill="#faf8f5" stroke="#d6d0c4"/>
+  <text x="770" y="310" class="ed-sans" font-size="12" font-weight="700" fill="#1c1917">Responsible AI &amp; Fairness Metrics</text>
+  <text x="770" y="330" class="ed-sans" font-size="11" fill="#44403c">• Demographic Parity / Equalized Odds /</text>
+  <text x="770" y="346" class="ed-sans" font-size="11" fill="#44403c">  Calibration (KMR impossibility trade-off)</text>
+  <text x="770" y="366" class="ed-sans" font-size="11" fill="#44403c">• Consent, copyright, PII minimization</text>
+  <text x="770" y="385" class="ed-sans" font-size="11" fill="#44403c">• AI disclosure &amp; human appeal workflow</text>
+  <text x="770" y="405" class="ed-mono" font-size="10" fill="#0f766e">Per-cohort error audits + immutable logs</text>
 
-  <rect class="box-red" x="34" y="518" width="290" height="68"/>
-  <text class="lbl" x="46" y="538">OWASP LLM Top 10 (2025 / 2026)</text>
-  <text class="txt" x="46" y="556">LLM01 Injection … LLM10 Unbounded</text>
-  <text class="code-amber" x="46" y="573">2026: +LLM08 Hidden Context Exposure</text>
+  <!-- Bottom L8 Governance Rule Strip -->
+  <line x1="32" y1="452" x2="1088" y2="452" stroke="#1c1917" stroke-width="1.2"/>
+  <text x="32" y="472" class="ed-mono" font-size="10.5" font-weight="700" fill="#1c1917" letter-spacing="0.8">L8 · SECURITY FRAMEWORKS &amp; TAXONOMIES</text>
 
-  <rect class="box-amber" x="342" y="518" width="290" height="68"/>
-  <text class="lbl" x="354" y="538">OWASP Agentic Top 10 (2026)</text>
-  <text class="txt" x="354" y="556">ASI01 Goal Hijack · ASI02 Tool Misuse</text>
-  <text class="code-amber" x="354" y="573">ASI06 Poisoning · ASI10 Rogue Agents</text>
+  <g transform="translate(32, 484)">
+    <rect x="0" y="0" width="254" height="68" rx="3" fill="#ffffff" stroke="#d6d0c4"/>
+    <text x="12" y="20" class="ed-sans" font-size="11.5" font-weight="700" fill="#991b1b">OWASP LLM Top 10 (2025/2026)</text>
+    <text x="12" y="38" class="ed-mono" font-size="9.5" fill="#44403c">LLM01–07 + 2026 LLM08 Hidden Context</text>
+    <text x="12" y="54" class="ed-mono" font-size="9.5" fill="#78716c">LLM09 Vector · LLM10 Output Handling</text>
 
-  <rect class="box-blue" x="650" y="518" width="290" height="68"/>
-  <text class="lbl" x="662" y="538">NIST AI RMF 1.0 + AI 600-1</text>
-  <text class="txt" x="662" y="556">GOVERN · MAP · MEASURE · MANAGE</text>
-  <text class="code" x="662" y="573">7 Trust Characteristics + 12 GenAI Risks</text>
+    <rect x="267" y="0" width="254" height="68" rx="3" fill="#ffffff" stroke="#d6d0c4"/>
+    <text x="279" y="20" class="ed-sans" font-size="11.5" font-weight="700" fill="#92400e">OWASP Agentic Top 10 (2026)</text>
+    <text x="279" y="38" class="ed-mono" font-size="9.5" fill="#44403c">ASI01 Goal Hijack · ASI02 Tool Misuse</text>
+    <text x="279" y="54" class="ed-mono" font-size="9.5" fill="#78716c">ASI06 Context Poison · ASI10 Rogue Agents</text>
 
-  <rect class="box-purple" x="958" y="518" width="286" height="68"/>
-  <text class="lbl" x="970" y="538">MITRE ATLAS v2026.11</text>
-  <text class="txt" x="970" y="556">16 Tactics · 137 Techs · 44 Mitigations</text>
-  <text class="code" x="970" y="573">AML.T0051.001 · T0110 · M0028/M0029</text>
+    <rect x="534" y="0" width="254" height="68" rx="3" fill="#ffffff" stroke="#d6d0c4"/>
+    <text x="546" y="20" class="ed-sans" font-size="11.5" font-weight="700" fill="#0f766e">NIST AI RMF 1.0 + AI 600-1</text>
+    <text x="546" y="38" class="ed-mono" font-size="9.5" fill="#44403c">GOVERN · MAP · MEASURE · MANAGE</text>
+    <text x="546" y="54" class="ed-mono" font-size="9.5" fill="#78716c">7 Trust Traits · 12 GenAI Risk Cats</text>
 
-  <!-- Connecting flows -->
-  <path class="flow-red" d="M 411 161 L 454 161"/>
-  <path class="flow" d="M 411 279 L 454 279"/>
-  <path class="flow-green" d="M 411 398 L 454 398"/>
-  <path class="flow" d="M 833 167 L 876 167"/>
-  <path class="flow-green" d="M 833 398 L 876 398"/>
+    <rect x="801" y="0" width="255" height="68" rx="3" fill="#ffffff" stroke="#d6d0c4"/>
+    <text x="813" y="20" class="ed-sans" font-size="11.5" font-weight="700" fill="#1c1917">MITRE ATLAS v2026.11</text>
+    <text x="813" y="38" class="ed-mono" font-size="9.5" fill="#44403c">16 Tactics · 137 Techs · 44 Mitigations</text>
+    <text x="813" y="54" class="ed-mono" font-size="9.5" fill="#78716c">AML.T0051 · T0110 · M0028/M0029</text>
+  </g>
 </svg>

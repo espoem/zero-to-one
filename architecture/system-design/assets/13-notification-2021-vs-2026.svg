@@ -3,117 +3,117 @@
   <desc id="desc">Six-layer comparison of notification system architectures between 2021 legacy defaults and 2026 modern standards, covering priority queue isolation, outbox deduplication, template versioning, multi-vendor failover, granular quiet-hours compliance, and ML send-time fatigue caps.</desc>
 
   <!-- Background -->
-  <rect x="0" y="0" width="1160" height="670" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1160" height="670" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1160" height="56" rx="12" fill="#0f172a"/>
-  <rect x="0" y="40" width="1160" height="16" fill="#0f172a"/>
-  <text x="24" y="27" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#f8fafc">Notification System Architecture Evolution: 2021 Default vs. 2026 Modern Standard</text>
-  <text x="24" y="46" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#94a3b8">Priority Queue Isolation · Outbox &amp; Valkey Idempotency · Multi-Vendor Failover · Granular DND · ML Fatigue Caps · RFC 8030 VAPID</text>
+  <line x1="24" y1="58" x2="1136" y2="58" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="27" font-family="Georgia, 'Times New Roman', serif" font-size="18" font-weight="700" fill="#1c1917">Notification System Architecture Evolution: 2021 Default vs. 2026 Modern Standard</text>
+  <text x="24" y="46" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#57534e">Priority Queue Isolation · Outbox &amp; Valkey Idempotency · Multi-Vendor Failover · Granular DND · ML Fatigue Caps · RFC 8030 VAPID</text>
 
   <!-- Column Headers -->
-  <rect x="20" y="70" width="210" height="32" rx="6" fill="#e2e8f0"/>
-  <text x="34" y="91" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1e293b">Architectural Dimension</text>
+  <rect x="20" y="70" width="210" height="32" rx="6" fill="#e7e2d8"/>
+  <text x="34" y="91" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1c1917">Architectural Dimension</text>
 
-  <rect x="242" y="70" width="440" height="32" rx="6" fill="#fee2e2" stroke="#fca5a5" stroke-width="1"/>
+  <rect x="242" y="70" width="440" height="32" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1"/>
   <text x="256" y="91" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#991b1b">2021 Legacy Default (Pain Points)</text>
 
   <rect x="694" y="70" width="446" height="32" rx="6" fill="#dcfce7" stroke="#86efac" stroke-width="1"/>
   <text x="708" y="91" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#166534">2026 Modern Standard (Primary Shifts)</text>
 
   <!-- Row 1: Queueing & Priority Isolation -->
-  <rect x="20" y="112" width="210" height="82" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="32" y="138" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">1. Queueing &amp; Priority</text>
-  <text x="32" y="156" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Channel &amp; Priority Lanes</text>
-  <text x="32" y="174" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#2563eb">P0 OTP vs P2 Marketing</text>
+  <rect x="20" y="112" width="210" height="82" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="32" y="138" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1c1917">1. Queueing &amp; Priority</text>
+  <text x="32" y="156" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#57534e">Channel &amp; Priority Lanes</text>
+  <text x="32" y="174" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#0f766e">P0 OTP vs P2 Marketing</text>
 
   <rect x="242" y="112" width="440" height="82" rx="6" fill="#fff5f5" stroke="#fecaca"/>
   <text x="254" y="135" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Shared FIFO Message Queue (RabbitMQ / SQS)</text>
-  <text x="254" y="154" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Marketing blasts head-of-line block OTP/2FA login passcodes</text>
-  <text x="254" y="172" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Shared worker pool starves; OTP delivery p99 exceeds 60s</text>
+  <text x="254" y="154" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Marketing blasts head-of-line block OTP/2FA login passcodes</text>
+  <text x="254" y="172" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Shared worker pool starves; OTP delivery p99 exceeds 60s</text>
 
   <rect x="694" y="112" width="446" height="82" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
   <text x="706" y="135" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">Priority-Lane Kafka Topics with Dedicated Worker Fleets</text>
-  <text x="706" y="154" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">P0 OTP/fraud queue (p99 &lt; 1s); P1 transactional (p95 &lt; 10s)</text>
-  <text x="706" y="172" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">P2 marketing bulk token-bucket shaped; zero HoL blocking</text>
+  <text x="706" y="154" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">P0 OTP/fraud queue (p99 &lt; 1s); P1 transactional (p95 &lt; 10s)</text>
+  <text x="706" y="172" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">P2 marketing bulk token-bucket shaped; zero HoL blocking</text>
 
   <!-- Row 2: Dedupe & Idempotency -->
-  <rect x="20" y="204" width="210" height="82" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="32" y="230" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">2. Dedupe &amp; Idempotency</text>
-  <text x="32" y="248" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Delivery Guarantees</text>
-  <text x="32" y="266" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#2563eb">Outbox &amp; SETNX Window</text>
+  <rect x="20" y="204" width="210" height="82" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="32" y="230" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1c1917">2. Dedupe &amp; Idempotency</text>
+  <text x="32" y="248" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#57534e">Delivery Guarantees</text>
+  <text x="32" y="266" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#0f766e">Outbox &amp; SETNX Window</text>
 
   <rect x="242" y="204" width="440" height="82" rx="6" fill="#fff5f5" stroke="#fecaca"/>
   <text x="254" y="227" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Naive In-Memory or Unindexed DB event_id Checks</text>
-  <text x="254" y="246" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Network timeouts cause blind retries &amp; duplicate SMS alerts</text>
-  <text x="254" y="264" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Spam complaints surge and company vendor costs double</text>
+  <text x="254" y="246" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Network timeouts cause blind retries &amp; duplicate SMS alerts</text>
+  <text x="254" y="264" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Spam complaints surge and company vendor costs double</text>
 
   <rect x="694" y="204" width="446" height="82" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
   <text x="706" y="227" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">Transactional Outbox + Valkey Atomic SETNX Window</text>
-  <text x="706" y="246" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">86,400s Redis/Valkey dedupe key + DB unique constraint</text>
-  <text x="706" y="264" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Guaranteed exactly-once user alert semantics at scale</text>
+  <text x="706" y="246" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">86,400s Redis/Valkey dedupe key + DB unique constraint</text>
+  <text x="706" y="264" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Guaranteed exactly-once user alert semantics at scale</text>
 
   <!-- Row 3: Template Management -->
-  <rect x="20" y="296" width="210" height="82" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="32" y="322" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">3. Template Management</text>
-  <text x="32" y="340" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Schema &amp; Compilation</text>
-  <text x="32" y="358" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#2563eb">Immutable vs In-Place</text>
+  <rect x="20" y="296" width="210" height="82" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="32" y="322" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1c1917">3. Template Management</text>
+  <text x="32" y="340" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#57534e">Schema &amp; Compilation</text>
+  <text x="32" y="358" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#0f766e">Immutable vs In-Place</text>
 
   <rect x="242" y="296" width="440" height="82" rx="6" fill="#fff5f5" stroke="#fecaca"/>
   <text x="254" y="319" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Static Strings &amp; Mutable In-Place DB Templates</text>
-  <text x="254" y="338" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">In-place template edits break in-flight queue payloads</text>
-  <text x="254" y="356" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Monolithic server rendering creates CPU bottleneck on blasts</text>
+  <text x="254" y="338" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">In-place template edits break in-flight queue payloads</text>
+  <text x="254" y="356" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Monolithic server rendering creates CPU bottleneck on blasts</text>
 
   <rect x="694" y="296" width="446" height="82" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
   <text x="706" y="319" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">Versioned Immutable Templates (template_id, version)</text>
-  <text x="706" y="338" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">JSON Schema / Zod validation at ingestion gateway</text>
-  <text x="706" y="356" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Worker-side localized i18n compilation &amp; Live Activities</text>
+  <text x="706" y="338" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">JSON Schema / Zod validation at ingestion gateway</text>
+  <text x="706" y="356" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Worker-side localized i18n compilation &amp; Live Activities</text>
 
   <!-- Row 4: Provider Resilience -->
-  <rect x="20" y="388" width="210" height="82" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="32" y="414" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">4. Provider Resilience</text>
-  <text x="32" y="432" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Failover &amp; Adapters</text>
-  <text x="32" y="450" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#2563eb">Multi-Vendor Circuits</text>
+  <rect x="20" y="388" width="210" height="82" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="32" y="414" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1c1917">4. Provider Resilience</text>
+  <text x="32" y="432" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#57534e">Failover &amp; Adapters</text>
+  <text x="32" y="450" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#0f766e">Multi-Vendor Circuits</text>
 
   <rect x="242" y="388" width="440" height="82" rx="6" fill="#fff5f5" stroke="#fecaca"/>
   <text x="254" y="411" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Single-Vendor Lock-In (Twilio / SendGrid / APNs Binary)</text>
-  <text x="254" y="430" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Vendor outages or rate limits halt all company dispatch</text>
-  <text x="254" y="448" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Worker threads hang on 30s synchronous HTTP timeouts</text>
+  <text x="254" y="430" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Vendor outages or rate limits halt all company dispatch</text>
+  <text x="254" y="448" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Worker threads hang on 30s synchronous HTTP timeouts</text>
 
   <rect x="694" y="388" width="446" height="82" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
   <text x="706" y="411" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">Multi-Vendor Routing with Dynamic Circuit Breakers</text>
-  <text x="706" y="430" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">APNs HTTP/2 JWT auth; FCM HTTP v1 OAuth2; Twilio/Sinch</text>
-  <text x="706" y="448" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Automatic circuit breaker switches vendor in &lt; 5 seconds</text>
+  <text x="706" y="430" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">APNs HTTP/2 JWT auth; FCM HTTP v1 OAuth2; Twilio/Sinch</text>
+  <text x="706" y="448" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Automatic circuit breaker switches vendor in &lt; 5 seconds</text>
 
   <!-- Row 5: Preferences & Privacy -->
-  <rect x="20" y="480" width="210" height="82" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="32" y="506" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">5. Preferences &amp; Privacy</text>
-  <text x="32" y="524" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Quiet Hours &amp; Opt-Out</text>
-  <text x="32" y="542" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#2563eb">Timezones &amp; Compliance</text>
+  <rect x="20" y="480" width="210" height="82" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="32" y="506" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1c1917">5. Preferences &amp; Privacy</text>
+  <text x="32" y="524" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#57534e">Quiet Hours &amp; Opt-Out</text>
+  <text x="32" y="542" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#0f766e">Timezones &amp; Compliance</text>
 
   <rect x="242" y="480" width="440" height="82" rx="6" fill="#fff5f5" stroke="#fecaca"/>
   <text x="254" y="503" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Coarse Global Boolean opt_out Flag in User Profile</text>
-  <text x="254" y="522" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Ignores user timezones; middle-of-the-night SMS alerts</text>
-  <text x="254" y="540" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Violates GDPR, CCPA, and CAN-SPAM statutory requirements</text>
+  <text x="254" y="522" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Ignores user timezones; middle-of-the-night SMS alerts</text>
+  <text x="254" y="540" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Violates GDPR, CCPA, and CAN-SPAM statutory requirements</text>
 
   <rect x="694" y="480" width="446" height="82" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
   <text x="706" y="503" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">Granular Matrix + IANA Timezone DND Quiet-Hours Engine</text>
-  <text x="706" y="522" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Per-channel opt-in/opt-out; DND deferred queues with jitter</text>
-  <text x="706" y="540" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Full compliance; RFC 8030 Web Push VAPID cryptographic auth</text>
+  <text x="706" y="522" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Per-channel opt-in/opt-out; DND deferred queues with jitter</text>
+  <text x="706" y="540" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Full compliance; RFC 8030 Web Push VAPID cryptographic auth</text>
 
   <!-- Row 6: Fatigue & Send-Time -->
-  <rect x="20" y="572" width="210" height="82" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="32" y="598" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">6. Fatigue &amp; Send-Time</text>
-  <text x="32" y="616" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">ML &amp; Traffic Shaping</text>
-  <text x="32" y="634" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#2563eb">Cron Blasts vs STO</text>
+  <rect x="20" y="572" width="210" height="82" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="32" y="598" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1c1917">6. Fatigue &amp; Send-Time</text>
+  <text x="32" y="616" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#57534e">ML &amp; Traffic Shaping</text>
+  <text x="32" y="634" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#0f766e">Cron Blasts vs STO</text>
 
   <rect x="242" y="572" width="440" height="82" rx="6" fill="#fff5f5" stroke="#fecaca"/>
   <text x="254" y="595" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Manual Scheduled Cron Blasts (Thundering Herds)</text>
-  <text x="254" y="614" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Marketing blasts crush internal DB and 3P rate quotas</text>
-  <text x="254" y="632" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Notification fatigue triggers app uninstalls and mutes</text>
+  <text x="254" y="614" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Marketing blasts crush internal DB and 3P rate quotas</text>
+  <text x="254" y="632" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Notification fatigue triggers app uninstalls and mutes</text>
 
   <rect x="694" y="572" width="446" height="82" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
   <text x="706" y="595" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">ML Send-Time Optimization (STO) &amp; Valkey Fatigue Caps</text>
-  <text x="706" y="614" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Predicts individual open propensity windows per user</text>
-  <text x="706" y="632" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Sliding-window token bucket caps marketing to &lt;= 3/day</text>
+  <text x="706" y="614" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Predicts individual open propensity windows per user</text>
+  <text x="706" y="632" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Sliding-window token bucket caps marketing to &lt;= 3/day</text>
 </svg>

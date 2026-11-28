@@ -3,196 +3,196 @@
   <desc id="desc">Architecture of a high-throughput distributed message queue showing smart batching producers, 3-AZ ISR broker replication, KRaft Raft metadata quorum, segmented commit log with sparse offset index and sendfile zero-copy I/O, pull consumer groups, KIP-932 share groups, and hierarchical timing wheels.</desc>
   <defs>
     <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#44403c"/>
     </marker>
     <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#b45309"/>
     </marker>
   </defs>
 
   <!-- Background -->
-  <rect x="0" y="0" width="1160" height="680" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1160" height="680" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1160" height="58" rx="12" fill="#0f172a"/>
-  <rect x="0" y="42" width="1160" height="16" fill="#0f172a"/>
-  <text x="24" y="28" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#f8fafc">Distributed Message Queue — End-to-End Architecture (1M msg/s, RF=3, 14-Day Retention)</text>
-  <text x="24" y="47" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#94a3b8">Smart Batching Producers · 3-AZ ISR + KIP-101 Epochs · Segmented Log + sendfile() Zero-Copy · KRaft Quorum &amp; KIP-848/932 Consumers</text>
+  <line x1="24" y1="60" x2="1136" y2="60" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="28" font-family="Georgia, 'Times New Roman', serif" font-size="18" font-weight="700" fill="#1c1917">Distributed Message Queue — End-to-End Architecture (1M msg/s, RF=3, 14-Day Retention)</text>
+  <text x="24" y="47" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#57534e">Smart Batching Producers · 3-AZ ISR + KIP-101 Epochs · Segmented Log + sendfile() Zero-Copy · KRaft Quorum &amp; KIP-848/932 Consumers</text>
 
   <!-- COLUMN 1: PRODUCERS -->
-  <rect x="20" y="76" width="235" height="310" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
-  <text x="34" y="100" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1e3a8a">1. Smart Producers (No Proxy)</text>
+  <rect x="20" y="76" width="235" height="310" rx="10" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="34" y="100" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#065f46">1. Smart Producers (No Proxy)</text>
 
-  <rect x="34" y="114" width="207" height="72" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1"/>
-  <text x="44" y="133" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#1e40af">Partitioner + Metadata Cache</text>
-  <text x="44" y="150" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10.5" fill="#334155">hash(key) % N  (ordered)</text>
-  <text x="44" y="166" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">Sticky partitioner if key=null</text>
-  <text x="44" y="180" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#64748b">Direct TCP to Partition Leader</text>
+  <rect x="34" y="114" width="207" height="72" rx="6" fill="#ffffff" stroke="#99f6e4" stroke-width="1"/>
+  <text x="44" y="133" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#065f46">Partitioner + Metadata Cache</text>
+  <text x="44" y="150" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10.5" fill="#44403c">hash(key) % N  (ordered)</text>
+  <text x="44" y="166" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Sticky partitioner if key=null</text>
+  <text x="44" y="180" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#57534e">Direct TCP to Partition Leader</text>
 
-  <rect x="34" y="198" width="207" height="80" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1"/>
-  <text x="44" y="217" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#1e40af">RecordBatch Accumulator</text>
-  <text x="44" y="234" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10.5" fill="#334155">batch.size + linger.ms</text>
-  <text x="44" y="250" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">End-to-end zstd/lz4 (3x cut)</text>
-  <text x="44" y="266" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#64748b">Amortizes RTT &amp; CRC32C check</text>
+  <rect x="34" y="198" width="207" height="80" rx="6" fill="#ffffff" stroke="#99f6e4" stroke-width="1"/>
+  <text x="44" y="217" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#065f46">RecordBatch Accumulator</text>
+  <text x="44" y="234" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10.5" fill="#44403c">batch.size + linger.ms</text>
+  <text x="44" y="250" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">End-to-end zstd/lz4 (3x cut)</text>
+  <text x="44" y="266" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#57534e">Amortizes RTT &amp; CRC32C check</text>
 
-  <rect x="34" y="290" width="207" height="82" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
-  <text x="44" y="309" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#1e3a8a">KIP-98 Idempotence &amp; Tx</text>
-  <text x="44" y="326" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10.5" fill="#1e40af">PID + Epoch + Seq (per part)</text>
-  <text x="44" y="343" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">O(1) broker retry dedupe</text>
-  <text x="44" y="359" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Fences stale zombie epochs</text>
+  <rect x="34" y="290" width="207" height="82" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="1"/>
+  <text x="44" y="309" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#065f46">KIP-98 Idempotence &amp; Tx</text>
+  <text x="44" y="326" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10.5" fill="#065f46">PID + Epoch + Seq (per part)</text>
+  <text x="44" y="343" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">O(1) broker retry dedupe</text>
+  <text x="44" y="359" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Fences stale zombie epochs</text>
 
   <!-- COLUMN 2 TOP: 3-AZ BROKER CLUSTER & ISR -->
-  <rect x="285" y="76" width="525" height="310" rx="10" fill="#f0fdf4" stroke="#10b981" stroke-width="1.5"/>
+  <rect x="285" y="76" width="525" height="310" rx="10" fill="#f0fdf4" stroke="#0f766e" stroke-width="1.5"/>
   <text x="300" y="100" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#065f46">2. Partition Brokers (3 AZs · RF=3 · ISR Replication)</text>
 
   <!-- AZ-1 Leader -->
-  <rect x="300" y="114" width="160" height="170" rx="8" fill="#ffffff" stroke="#059669" stroke-width="2"/>
-  <rect x="300" y="114" width="160" height="26" rx="8" fill="#059669"/>
-  <rect x="300" y="130" width="160" height="10" fill="#059669"/>
+  <rect x="300" y="114" width="160" height="170" rx="8" fill="#ffffff" stroke="#0f766e" stroke-width="2"/>
+  <rect x="300" y="114" width="160" height="26" rx="8" fill="#0f766e"/>
+  <rect x="300" y="130" width="160" height="10" fill="#0f766e"/>
   <text x="312" y="132" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#ffffff">AZ-1 · Broker 1 (Leader)</text>
   <text x="310" y="156" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10.5" font-weight="700" fill="#065f46">Partition 0 · Epoch 1</text>
-  <text x="310" y="174" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10.5" fill="#334155">LEO = 44  HWM = 42</text>
-  <text x="310" y="192" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">ISR = {B1, B2, B3}</text>
-  <text x="310" y="210" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Appends batch to WAL</text>
-  <text x="310" y="226" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Checks min.isr &gt;= 2</text>
-  <text x="310" y="242" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Advances HWM on ACK</text>
-  <text x="310" y="262" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#047857">acks=all durable commit</text>
+  <text x="310" y="174" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10.5" fill="#44403c">LEO = 44  HWM = 42</text>
+  <text x="310" y="192" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">ISR = {B1, B2, B3}</text>
+  <text x="310" y="210" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Appends batch to WAL</text>
+  <text x="310" y="226" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Checks min.isr &gt;= 2</text>
+  <text x="310" y="242" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Advances HWM on ACK</text>
+  <text x="310" y="262" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#065f46">acks=all durable commit</text>
 
   <!-- AZ-2 Follower -->
-  <rect x="478" y="114" width="150" height="170" rx="8" fill="#ffffff" stroke="#6ee7b7" stroke-width="1.5"/>
-  <rect x="478" y="114" width="150" height="26" rx="8" fill="#d1fae5"/>
-  <rect x="478" y="130" width="150" height="10" fill="#d1fae5"/>
+  <rect x="478" y="114" width="150" height="170" rx="8" fill="#ffffff" stroke="#99f6e4" stroke-width="1.5"/>
+  <rect x="478" y="114" width="150" height="26" rx="8" fill="#f0fdf9"/>
+  <rect x="478" y="130" width="150" height="10" fill="#f0fdf9"/>
   <text x="488" y="132" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">AZ-2 · Broker 2 (ISR)</text>
-  <text x="488" y="156" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10.5" fill="#334155">Follower P0 · Ep 1</text>
-  <text x="488" y="174" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10.5" fill="#334155">LEO = 42  HWM = 42</text>
-  <text x="488" y="194" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Pulls batches from B1</text>
-  <text x="488" y="210" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">KIP-101 epoch sync</text>
-  <text x="488" y="226" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">prevents HWM split</text>
-  <text x="488" y="250" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0369a1">KIP-392: Serves AZ-2</text>
-  <text x="488" y="264" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0369a1">local consumers ($0)</text>
+  <text x="488" y="156" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10.5" fill="#44403c">Follower P0 · Ep 1</text>
+  <text x="488" y="174" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10.5" fill="#44403c">LEO = 42  HWM = 42</text>
+  <text x="488" y="194" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Pulls batches from B1</text>
+  <text x="488" y="210" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">KIP-101 epoch sync</text>
+  <text x="488" y="226" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">prevents HWM split</text>
+  <text x="488" y="250" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#065f46">KIP-392: Serves AZ-2</text>
+  <text x="488" y="264" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#065f46">local consumers ($0)</text>
 
   <!-- AZ-3 Follower -->
-  <rect x="644" y="114" width="150" height="170" rx="8" fill="#ffffff" stroke="#6ee7b7" stroke-width="1.5"/>
-  <rect x="644" y="114" width="150" height="26" rx="8" fill="#d1fae5"/>
-  <rect x="644" y="130" width="150" height="10" fill="#d1fae5"/>
+  <rect x="644" y="114" width="150" height="170" rx="8" fill="#ffffff" stroke="#99f6e4" stroke-width="1.5"/>
+  <rect x="644" y="114" width="150" height="26" rx="8" fill="#f0fdf9"/>
+  <rect x="644" y="130" width="150" height="10" fill="#f0fdf9"/>
   <text x="654" y="132" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">AZ-3 · Broker 3 (ISR)</text>
-  <text x="654" y="156" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10.5" fill="#334155">Follower P0 · Ep 1</text>
-  <text x="654" y="174" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10.5" fill="#334155">LEO = 42  HWM = 42</text>
-  <text x="654" y="194" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Evicted from ISR if</text>
-  <text x="654" y="210" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">&gt; replica.lag.time.max.ms</text>
-  <text x="654" y="226" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">(replaced msg count)</text>
-  <text x="654" y="250" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0369a1">KIP-392: Serves AZ-3</text>
-  <text x="654" y="264" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0369a1">local consumers ($0)</text>
+  <text x="654" y="156" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10.5" fill="#44403c">Follower P0 · Ep 1</text>
+  <text x="654" y="174" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10.5" fill="#44403c">LEO = 42  HWM = 42</text>
+  <text x="654" y="194" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Evicted from ISR if</text>
+  <text x="654" y="210" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">&gt; replica.lag.time.max.ms</text>
+  <text x="654" y="226" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">(replaced msg count)</text>
+  <text x="654" y="250" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#065f46">KIP-392: Serves AZ-3</text>
+  <text x="654" y="264" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#065f46">local consumers ($0)</text>
 
   <!-- Replication arrows inside cluster -->
-  <line x1="460" y1="168" x2="476" y2="168" stroke="#059669" stroke-width="1.8" marker-end="url(#arr-green)"/>
-  <path d="M 460 184 L 469 184 L 469 293 L 636 293 L 636 184 L 642 184" fill="none" stroke="#059669" stroke-width="1.4" stroke-dasharray="4,3" marker-end="url(#arr-green)"/>
+  <line x1="460" y1="168" x2="476" y2="168" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-green)"/>
+  <path d="M 460 184 L 469 184 L 469 293 L 636 293 L 636 184 L 642 184" fill="none" stroke="#0f766e" stroke-width="1.4" stroke-dasharray="4,3" marker-end="url(#arr-green)"/>
 
   <!-- Cloud Economics Callout Strip inside Broker Box -->
-  <rect x="300" y="302" width="494" height="70" rx="6" fill="#ecfdf5" stroke="#34d399" stroke-width="1"/>
+  <rect x="300" y="302" width="494" height="70" rx="6" fill="#f0fdf9" stroke="#99f6e4" stroke-width="1"/>
   <text x="312" y="321" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">Cloud Economics (1M msg/s · 1 KB · RF=3 · 14 Days)</text>
-  <text x="312" y="339" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Storage: 86.4 TB/d -&gt; 3.63 PB RF=3 (1.21 PB @ 3x zstd); KIP-405 S3.</text>
+  <text x="312" y="339" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Storage: 86.4 TB/d -&gt; 3.63 PB RF=3 (1.21 PB @ 3x zstd); KIP-405 S3.</text>
   <text x="312" y="357" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#92400e">Cross-AZ: $103.7k/mo raw ($34.6k/mo zstd) -&gt; diskless S3 brokers.</text>
 
   <!-- COLUMN 3: COORDINATION & CONSUMERS -->
-  <rect x="838" y="76" width="302" height="310" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5"/>
+  <rect x="838" y="76" width="302" height="310" rx="10" fill="#fffbeb" stroke="#b45309" stroke-width="1.5"/>
   <text x="852" y="100" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#92400e">3. Coordination &amp; Consumers</text>
 
   <!-- KRaft -->
-  <rect x="852" y="114" width="274" height="76" rx="6" fill="#ffffff" stroke="#fcd34d" stroke-width="1.2"/>
+  <rect x="852" y="114" width="274" height="76" rx="6" fill="#ffffff" stroke="#fde68a" stroke-width="1.2"/>
   <text x="862" y="133" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#b45309">KRaft Metadata Quorum (Kafka 4.0+)</text>
-  <text x="862" y="150" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">3-5 Raft Controllers (@metadata log)</text>
-  <text x="862" y="166" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">ZooKeeper removed · &lt; 1 s leader failover</text>
-  <text x="862" y="180" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#64748b">Group Coordinator runs KIP-848 rebalance</text>
+  <text x="862" y="150" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">3-5 Raft Controllers (@metadata log)</text>
+  <text x="862" y="166" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">ZooKeeper removed · &lt; 1 s leader failover</text>
+  <text x="862" y="180" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#57534e">Group Coordinator runs KIP-848 rebalance</text>
 
   <!-- Pull Consumer Groups -->
-  <rect x="852" y="200" width="274" height="84" rx="6" fill="#ffffff" stroke="#fcd34d" stroke-width="1.2"/>
+  <rect x="852" y="200" width="274" height="84" rx="6" fill="#ffffff" stroke="#fde68a" stroke-width="1.2"/>
   <text x="862" y="219" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#b45309">Consumer Groups (Pub-Sub Pull)</text>
-  <text x="862" y="236" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Pull + long poll (consumer controls rate)</text>
-  <text x="862" y="252" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">1 partition -&gt; 1 consumer per group</text>
-  <text x="862" y="268" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Offsets stored in __consumer_offsets</text>
+  <text x="862" y="236" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Pull + long poll (consumer controls rate)</text>
+  <text x="862" y="252" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">1 partition -&gt; 1 consumer per group</text>
+  <text x="862" y="268" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Offsets stored in __consumer_offsets</text>
 
   <!-- KIP-932 Share Groups -->
-  <rect x="852" y="294" width="274" height="78" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.2"/>
+  <rect x="852" y="294" width="274" height="78" rx="6" fill="#fffbeb" stroke="#b45309" stroke-width="1.2"/>
   <text x="862" y="313" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#92400e">KIP-932 Share Groups (Queues on Logs)</text>
-  <text x="862" y="330" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Multiple workers share 1 partition</text>
-  <text x="862" y="346" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Per-record ACK/REJECT &amp; retry lock</text>
-  <text x="862" y="362" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Removes partition-count scaling ceiling</text>
+  <text x="862" y="330" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Multiple workers share 1 partition</text>
+  <text x="862" y="346" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Per-record ACK/REJECT &amp; retry lock</text>
+  <text x="862" y="362" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Removes partition-count scaling ceiling</text>
 
   <!-- Main horizontal data arrows -->
-  <line x1="255" y1="210" x2="298" y2="210" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arr-blue)"/>
-  <text x="259" y="198" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#1d4ed8">Produce</text>
+  <line x1="255" y1="210" x2="298" y2="210" stroke="#0f766e" stroke-width="2.2" marker-end="url(#arr-blue)"/>
+  <text x="259" y="198" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#065f46">Produce</text>
 
-  <line x1="810" y1="238" x2="850" y2="238" stroke="#d97706" stroke-width="2.2" marker-end="url(#arr-amber)"/>
+  <line x1="810" y1="238" x2="850" y2="238" stroke="#b45309" stroke-width="2.2" marker-end="url(#arr-amber)"/>
   <text x="814" y="226" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#b45309">Fetch</text>
 
   <!-- BOTTOM LEFT: ON-DISK SEGMENTED LOG + ZERO-COPY -->
-  <rect x="20" y="406" width="710" height="254" rx="10" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
-  <text x="34" y="430" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#5b21b6">4. On-Disk Segmented Commit Log, Sparse Index &amp; Linux Zero-Copy I/O</text>
+  <rect x="20" y="406" width="710" height="254" rx="10" fill="#f5f1e8" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="34" y="430" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#065f46">4. On-Disk Segmented Commit Log, Sparse Index &amp; Linux Zero-Copy I/O</text>
 
   <!-- Segment 0 (Closed / Tiered) -->
-  <rect x="34" y="446" width="168" height="106" rx="6" fill="#ede9fe" stroke="#8b5cf6" stroke-width="1.2"/>
-  <text x="44" y="465" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10.5" font-weight="700" fill="#4c1d95">Seg 0 (Closed · R/O)</text>
-  <text x="44" y="483" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#334155">0000000000.log</text>
-  <text x="44" y="499" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#334155">0000000000.index</text>
-  <text x="44" y="515" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#334155">0000000000.timeindex</text>
-  <text x="44" y="537" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#6d28d9">O(1) unlink / S3 tiering</text>
+  <rect x="34" y="446" width="168" height="106" rx="6" fill="#f5f1e8" stroke="#8b5cf6" stroke-width="1.2"/>
+  <text x="44" y="465" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10.5" font-weight="700" fill="#065f46">Seg 0 (Closed · R/O)</text>
+  <text x="44" y="483" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#44403c">0000000000.log</text>
+  <text x="44" y="499" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#44403c">0000000000.index</text>
+  <text x="44" y="515" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#44403c">0000000000.timeindex</text>
+  <text x="44" y="537" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#065f46">O(1) unlink / S3 tiering</text>
 
   <!-- Segment 1 (Active) -->
-  <rect x="218" y="446" width="196" height="106" rx="6" fill="#ffffff" stroke="#7c3aed" stroke-width="2"/>
-  <text x="228" y="465" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10.5" font-weight="700" fill="#5b21b6">Seg 1 (Active · Append)</text>
-  <text x="228" y="483" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#334155">0000000042.log  (seq I/O)</text>
-  <text x="228" y="499" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Sparse .index every 4 KB</text>
-  <text x="228" y="515" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Binary search + short scan</text>
-  <text x="228" y="537" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#059669">No random B-tree updates</text>
+  <rect x="218" y="446" width="196" height="106" rx="6" fill="#ffffff" stroke="#0f766e" stroke-width="2"/>
+  <text x="228" y="465" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10.5" font-weight="700" fill="#065f46">Seg 1 (Active · Append)</text>
+  <text x="228" y="483" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#44403c">0000000042.log  (seq I/O)</text>
+  <text x="228" y="499" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Sparse .index every 4 KB</text>
+  <text x="228" y="515" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Binary search + short scan</text>
+  <text x="228" y="537" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f766e">No random B-tree updates</text>
 
   <!-- Zero-copy sendfile pipeline -->
-  <rect x="434" y="446" width="282" height="106" rx="6" fill="#ffffff" stroke="#6366f1" stroke-width="1.5"/>
-  <text x="444" y="465" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#3730a3">Zero-Copy sendfile() + Page Cache</text>
-  <text x="444" y="484" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Disk -&gt; Kernel Page Cache -&gt; NIC DMA</text>
-  <text x="444" y="501" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#059669">4-&gt;2 copies · 4-&gt;2 context switches</text>
-  <text x="444" y="518" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Bypasses JVM heap &amp; user space</text>
+  <rect x="434" y="446" width="282" height="106" rx="6" fill="#ffffff" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="444" y="465" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#065f46">Zero-Copy sendfile() + Page Cache</text>
+  <text x="444" y="484" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Disk -&gt; Kernel Page Cache -&gt; NIC DMA</text>
+  <text x="444" y="501" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#0f766e">4-&gt;2 copies · 4-&gt;2 context switches</text>
+  <text x="444" y="518" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Bypasses JVM heap &amp; user space</text>
   <text x="444" y="537" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#dc2626">Gotcha: user-space TLS disables sendfile</text>
 
-  <line x1="202" y1="498" x2="216" y2="498" stroke="#7c3aed" stroke-width="1.6" marker-end="url(#arr)"/>
-  <line x1="414" y1="498" x2="432" y2="498" stroke="#7c3aed" stroke-width="1.6" marker-end="url(#arr)"/>
+  <line x1="202" y1="498" x2="216" y2="498" stroke="#0f766e" stroke-width="1.6" marker-end="url(#arr)"/>
+  <line x1="414" y1="498" x2="432" y2="498" stroke="#0f766e" stroke-width="1.6" marker-end="url(#arr)"/>
 
   <!-- Binary RecordBatch Strip -->
-  <rect x="34" y="566" width="682" height="80" rx="6" fill="#ffffff" stroke="#c4b5fd" stroke-width="1.2"/>
-  <text x="44" y="585" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#4c1d95">Immutable RecordBatch Wire / Disk Layout (Shared by Producer, Broker, Consumer — Zero Re-Serialization)</text>
-  <rect x="44" y="595" width="96" height="36" rx="4" fill="#ede9fe" stroke="#8b5cf6"/>
-  <text x="52" y="617" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#4c1d95">baseOffset</text>
-  <rect x="146" y="595" width="92" height="36" rx="4" fill="#ede9fe" stroke="#8b5cf6"/>
-  <text x="152" y="617" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#4c1d95">leaderEpoch</text>
-  <rect x="244" y="595" width="76" height="36" rx="4" fill="#dbeafe" stroke="#3b82f6"/>
-  <text x="255" y="617" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#1e3a8a">CRC32C</text>
-  <rect x="326" y="595" width="124" height="36" rx="4" fill="#dcfce7" stroke="#10b981"/>
+  <rect x="34" y="566" width="682" height="80" rx="6" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.2"/>
+  <text x="44" y="585" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">Immutable RecordBatch Wire / Disk Layout (Shared by Producer, Broker, Consumer — Zero Re-Serialization)</text>
+  <rect x="44" y="595" width="96" height="36" rx="4" fill="#f5f1e8" stroke="#8b5cf6"/>
+  <text x="52" y="617" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#065f46">baseOffset</text>
+  <rect x="146" y="595" width="92" height="36" rx="4" fill="#f5f1e8" stroke="#8b5cf6"/>
+  <text x="152" y="617" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#065f46">leaderEpoch</text>
+  <rect x="244" y="595" width="76" height="36" rx="4" fill="#f0fdf9" stroke="#0f766e"/>
+  <text x="255" y="617" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#065f46">CRC32C</text>
+  <rect x="326" y="595" width="124" height="36" rx="4" fill="#dcfce7" stroke="#0f766e"/>
   <text x="334" y="617" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#065f46">PID+Epoch+Seq</text>
-  <rect x="456" y="595" width="90" height="36" rx="4" fill="#fef3c7" stroke="#f59e0b"/>
+  <rect x="456" y="595" width="90" height="36" rx="4" fill="#fffbeb" stroke="#b45309"/>
   <text x="466" y="617" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#92400e">codec+tx</text>
-  <rect x="552" y="595" width="154" height="36" rx="4" fill="#f1f5f9" stroke="#64748b"/>
-  <text x="564" y="617" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#0f172a">compressed records[]</text>
+  <rect x="552" y="595" width="154" height="36" rx="4" fill="#f5f1e8" stroke="#57534e"/>
+  <text x="564" y="617" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#1c1917">compressed records[]</text>
 
   <!-- BOTTOM RIGHT: ADVANCED FEATURES (FILTERING + TIMING WHEEL) -->
-  <rect x="750" y="406" width="390" height="254" rx="10" fill="#fff1f2" stroke="#e11d48" stroke-width="1.5"/>
-  <text x="764" y="430" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#9f1239">5. Advanced Broker Primitives</text>
+  <rect x="750" y="406" width="390" height="254" rx="10" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="764" y="430" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#991b1b">5. Advanced Broker Primitives</text>
 
   <rect x="764" y="446" width="362" height="90" rx="6" fill="#ffffff" stroke="#fda4af" stroke-width="1.2"/>
-  <text x="774" y="465" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#be123c">Broker-Side Tag / Header Filtering</text>
-  <text x="774" y="483" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Avoids topic explosion &amp; wasted consumer egress</text>
-  <text x="774" y="499" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">Stage 1: Broker matches 64-bit tag hash in index</text>
-  <text x="774" y="516" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">Stage 2: Consumer verifies exact tag string</text>
+  <text x="774" y="465" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Broker-Side Tag / Header Filtering</text>
+  <text x="774" y="483" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Avoids topic explosion &amp; wasted consumer egress</text>
+  <text x="774" y="499" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Stage 1: Broker matches 64-bit tag hash in index</text>
+  <text x="774" y="516" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Stage 2: Consumer verifies exact tag string</text>
 
   <rect x="764" y="548" width="362" height="98" rx="6" fill="#ffffff" stroke="#fda4af" stroke-width="1.2"/>
-  <text x="774" y="567" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#be123c">Delayed Delivery · Hierarchical Timing Wheel</text>
-  <text x="774" y="585" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Varghese &amp; Lauck (SOSP 1987): O(1) insert/expire</text>
-  <text x="774" y="601" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">Coarse wheel (min/hr) cascades into fine wheel (s)</text>
-  <text x="774" y="617" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">Backed by durable delay topics for crash recovery</text>
-  <text x="774" y="634" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#9f1239">Moves due messages into target topic on tick</text>
+  <text x="774" y="567" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Delayed Delivery · Hierarchical Timing Wheel</text>
+  <text x="774" y="585" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Varghese &amp; Lauck (SOSP 1987): O(1) insert/expire</text>
+  <text x="774" y="601" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Coarse wheel (min/hr) cascades into fine wheel (s)</text>
+  <text x="774" y="617" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Backed by durable delay topics for crash recovery</text>
+  <text x="774" y="634" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#991b1b">Moves due messages into target topic on tick</text>
 </svg>

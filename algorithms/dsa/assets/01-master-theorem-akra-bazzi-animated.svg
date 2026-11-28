@@ -30,23 +30,13 @@
       50%, 90% { transform: scaleX(1); opacity: 1; }
       100% { transform: scaleX(0.92); opacity: 0.9; }
     }
-    @keyframes dashFlow {
-      0% { stroke-dashoffset: 24; }
-      100% { stroke-dashoffset: 0; }
-    }
-    @keyframes pulseWinner {
-      0%, 65% { opacity: 0.75; }
-      75%, 95% { opacity: 1; }
-      100% { opacity: 0.85; }
-    }
 
     .lvl0 { animation: sweepL0 8s ease-in-out infinite; }
     .lvl1 { animation: sweepL1 8s ease-in-out infinite; }
     .lvl2 { animation: sweepL2 8s ease-in-out infinite; }
     .leaves { transform-box: fill-box; transform-origin: center; animation: sweepLeaves 8s ease-in-out infinite; }
     .bar-anim { transform-box: fill-box; transform-origin: left center; animation: barGrow 8s ease-in-out infinite; }
-    .flow-edge { stroke-dasharray: 6 4; animation: dashFlow 2.4s linear infinite; }
-    .winner-pill { animation: pulseWinner 8s ease-in-out infinite; }
+    .flow-edge { stroke-dasharray: 6 4;  }
 
     @media (prefers-reduced-motion: reduce) {
       * { animation: none !important; transition: none !important; }
@@ -56,277 +46,277 @@
 
   <defs>
     <marker id="arr-slate" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#57534e"/>
     </marker>
     <marker id="arr-violet" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
   </defs>
 
   <!-- Canvas -->
-  <rect x="0" y="0" width="1200" height="820" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1200" height="820" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1200" height="64" rx="12" fill="#0f172a"/>
-  <rect x="0" y="48" width="1200" height="16" fill="#0f172a"/>
-  <text x="24" y="28" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Solving Recurrences: Master Theorem (3 Cases) &amp; Akra-Bazzi Method</text>
-  <text x="24" y="49" class="sans" font-size="12" fill="#94a3b8">Comparing non-recursive work f(n) against watershed n^(log_b a) across recursion-tree levels j = 0 .. log_b(n) - 1</text>
-  <rect x="976" y="16" width="200" height="32" rx="16" fill="#1e293b" stroke="#334155"/>
-  <text x="1076" y="36" class="mono" font-size="11" font-weight="700" fill="#38bdf8" text-anchor="middle">T(n) = a·T(n/b) + f(n)</text>
+  <line x1="24" y1="66" x2="1176" y2="66" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="28" class="sans" font-size="18" font-weight="700" fill="#1c1917" font-family="Georgia, 'Times New Roman', serif">Solving Recurrences: Master Theorem (3 Cases) &amp; Akra-Bazzi Method</text>
+  <text x="24" y="49" class="sans" font-size="12" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">Comparing non-recursive work f(n) against watershed n^(log_b a) across recursion-tree levels j = 0 .. log_b(n) - 1</text>
+  <rect x="976" y="16" width="200" height="32" rx="16" fill="#1c1917" stroke="#44403c"/>
+  <text x="1076" y="36" class="mono" font-size="11" font-weight="700" fill="#99f6e4" text-anchor="middle">T(n) = a·T(n/b) + f(n)</text>
 
   <!-- ==================== PANEL 1: CASE 1 (LEAF-HEAVY) ==================== -->
-  <rect x="20" y="80" width="570" height="348" rx="10" fill="#ffffff" stroke="#a7f3d0" stroke-width="1.5"/>
-  <rect x="20" y="80" width="570" height="36" rx="10" fill="#ecfdf5"/>
-  <rect x="20" y="106" width="570" height="10" fill="#ecfdf5"/>
+  <rect x="20" y="80" width="570" height="348" rx="10" fill="#ffffff" stroke="#f0fdf9" stroke-width="1.5"/>
+  <rect x="20" y="80" width="570" height="36" rx="10" fill="#f0fdf9"/>
+  <rect x="20" y="106" width="570" height="10" fill="#f0fdf9"/>
   <text x="36" y="103" class="sans" font-size="13" font-weight="700" fill="#065f46">1. Case 1 — Leaf-Heavy (Karatsuba: T(n) = 3T(n/2) + n)</text>
-  <rect x="472" y="87" width="104" height="22" rx="11" fill="#059669"/>
+  <rect x="472" y="87" width="104" height="22" rx="11" fill="#0f766e"/>
   <text x="524" y="102" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">LEAVES WIN</text>
 
   <!-- Tree Diagram Left -->
   <g class="lvl0">
-    <rect x="135" y="130" width="84" height="28" rx="6" fill="#ecfdf5" stroke="#059669"/>
+    <rect x="135" y="130" width="84" height="28" rx="6" fill="#f0fdf9" stroke="#0f766e"/>
     <text x="177" y="148" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">j=0: n</text>
   </g>
-  <line x1="158" y1="158" x2="88" y2="184" stroke="#64748b" stroke-width="1.4" class="flow-edge"/>
-  <line x1="177" y1="158" x2="177" y2="184" stroke="#64748b" stroke-width="1.4" class="flow-edge"/>
-  <line x1="196" y1="158" x2="266" y2="184" stroke="#64748b" stroke-width="1.4" class="flow-edge"/>
+  <line x1="158" y1="158" x2="88" y2="184" stroke="#57534e" stroke-width="1.4" class="flow-edge"/>
+  <line x1="177" y1="158" x2="177" y2="184" stroke="#57534e" stroke-width="1.4" class="flow-edge"/>
+  <line x1="196" y1="158" x2="266" y2="184" stroke="#57534e" stroke-width="1.4" class="flow-edge"/>
 
   <g class="lvl1">
-    <rect x="52" y="186" width="72" height="26" rx="5" fill="#d1fae5" stroke="#059669"/>
+    <rect x="52" y="186" width="72" height="26" rx="5" fill="#f0fdf9" stroke="#0f766e"/>
     <text x="88" y="203" class="mono" font-size="10.5" fill="#065f46" text-anchor="middle">n/2</text>
-    <rect x="141" y="186" width="72" height="26" rx="5" fill="#d1fae5" stroke="#059669"/>
+    <rect x="141" y="186" width="72" height="26" rx="5" fill="#f0fdf9" stroke="#0f766e"/>
     <text x="177" y="203" class="mono" font-size="10.5" fill="#065f46" text-anchor="middle">n/2</text>
-    <rect x="230" y="186" width="72" height="26" rx="5" fill="#d1fae5" stroke="#059669"/>
+    <rect x="230" y="186" width="72" height="26" rx="5" fill="#f0fdf9" stroke="#0f766e"/>
     <text x="266" y="203" class="mono" font-size="10.5" fill="#065f46" text-anchor="middle">n/2</text>
   </g>
-  <line x1="72" y1="212" x2="50" y2="236" stroke="#94a3b8" stroke-width="1.2"/>
-  <line x1="88" y1="212" x2="88" y2="236" stroke="#94a3b8" stroke-width="1.2"/>
-  <line x1="104" y1="212" x2="124" y2="236" stroke="#94a3b8" stroke-width="1.2"/>
-  <line x1="165" y1="212" x2="155" y2="236" stroke="#94a3b8" stroke-width="1.2"/>
-  <line x1="189" y1="212" x2="199" y2="236" stroke="#94a3b8" stroke-width="1.2"/>
-  <line x1="250" y1="212" x2="232" y2="236" stroke="#94a3b8" stroke-width="1.2"/>
-  <line x1="266" y1="212" x2="266" y2="236" stroke="#94a3b8" stroke-width="1.2"/>
-  <line x1="282" y1="212" x2="300" y2="236" stroke="#94a3b8" stroke-width="1.2"/>
+  <line x1="72" y1="212" x2="50" y2="236" stroke="#d6d0c4" stroke-width="1.2"/>
+  <line x1="88" y1="212" x2="88" y2="236" stroke="#d6d0c4" stroke-width="1.2"/>
+  <line x1="104" y1="212" x2="124" y2="236" stroke="#d6d0c4" stroke-width="1.2"/>
+  <line x1="165" y1="212" x2="155" y2="236" stroke="#d6d0c4" stroke-width="1.2"/>
+  <line x1="189" y1="212" x2="199" y2="236" stroke="#d6d0c4" stroke-width="1.2"/>
+  <line x1="250" y1="212" x2="232" y2="236" stroke="#d6d0c4" stroke-width="1.2"/>
+  <line x1="266" y1="212" x2="266" y2="236" stroke="#d6d0c4" stroke-width="1.2"/>
+  <line x1="282" y1="212" x2="300" y2="236" stroke="#d6d0c4" stroke-width="1.2"/>
 
   <g class="lvl2">
-    <rect x="34" y="238" width="286" height="24" rx="5" fill="#a7f3d0" stroke="#059669"/>
-    <text x="177" y="254" class="mono" font-size="10" font-weight="700" fill="#064e3b" text-anchor="middle">j=2: 9 nodes × (n/4) = 2.25n</text>
+    <rect x="34" y="238" width="286" height="24" rx="5" fill="#f0fdf9" stroke="#0f766e"/>
+    <text x="177" y="254" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">j=2: 9 nodes × (n/4) = 2.25n</text>
   </g>
-  <text x="177" y="278" class="mono" font-size="11" fill="#64748b" text-anchor="middle">⋮  (geometric growth ratio 3/2 = 2^0.585)</text>
+  <text x="177" y="278" class="mono" font-size="11" fill="#57534e" text-anchor="middle">⋮  (geometric growth ratio 3/2 = 2^0.585)</text>
 
   <g class="leaves">
-    <rect x="34" y="288" width="286" height="32" rx="6" fill="#059669"/>
+    <rect x="34" y="288" width="286" height="32" rx="6" fill="#0f766e"/>
     <text x="177" y="308" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">Leaves: 3^(log_2 n) = n^(log_2 3) ≈ n^1.585</text>
   </g>
 
   <!-- Work per level bars Right -->
-  <text x="344" y="138" class="sans" font-size="11" font-weight="700" fill="#0f172a">Work per Level (grows ↓)</text>
-  <text x="344" y="162" class="mono" font-size="10" fill="#475569">j=0:</text>
-  <rect x="380" y="151" width="52" height="14" rx="3" fill="#6ee7b7" class="bar-anim"/>
+  <text x="344" y="138" class="sans" font-size="11" font-weight="700" fill="#1c1917">Work per Level (grows ↓)</text>
+  <text x="344" y="162" class="mono" font-size="10" fill="#44403c">j=0:</text>
+  <rect x="380" y="151" width="52" height="14" rx="3" fill="#99f6e4" class="bar-anim"/>
   <text x="440" y="162" class="mono" font-size="10" fill="#065f46">1.00 n</text>
 
-  <text x="344" y="190" class="mono" font-size="10" fill="#475569">j=1:</text>
-  <rect x="380" y="179" width="78" height="14" rx="3" fill="#34d399" class="bar-anim"/>
+  <text x="344" y="190" class="mono" font-size="10" fill="#44403c">j=1:</text>
+  <rect x="380" y="179" width="78" height="14" rx="3" fill="#99f6e4" class="bar-anim"/>
   <text x="466" y="190" class="mono" font-size="10" fill="#065f46">1.50 n</text>
 
-  <text x="344" y="218" class="mono" font-size="10" fill="#475569">j=2:</text>
-  <rect x="380" y="207" width="117" height="14" rx="3" fill="#10b981" class="bar-anim"/>
+  <text x="344" y="218" class="mono" font-size="10" fill="#44403c">j=2:</text>
+  <rect x="380" y="207" width="117" height="14" rx="3" fill="#0f766e" class="bar-anim"/>
   <text x="505" y="218" class="mono" font-size="10" fill="#065f46">2.25 n</text>
 
-  <text x="344" y="246" class="mono" font-size="10" fill="#475569">Leaf:</text>
-  <rect x="380" y="235" width="186" height="16" rx="3" fill="#059669" class="bar-anim"/>
+  <text x="344" y="246" class="mono" font-size="10" fill="#44403c">Leaf:</text>
+  <rect x="380" y="235" width="186" height="16" rx="3" fill="#0f766e" class="bar-anim"/>
   <text x="473" y="247" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">Θ(n^1.585)</text>
 
   <!-- Proof Box -->
-  <rect x="34" y="332" width="542" height="82" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <rect x="34" y="332" width="542" height="82" rx="6" fill="#faf8f5" stroke="#d6d0c4"/>
   <text x="46" y="352" class="mono" font-size="10.5" font-weight="700" fill="#065f46">Condition: f(n) = O(n^(log_b a - ε))  for constant ε &gt; 0</text>
-  <text x="46" y="370" class="sans" font-size="10.5" fill="#334155">Level cost a^j·f(n/b^j) grows geometrically with ratio b^ε; series is dominated by last term.</text>
-  <rect x="46" y="382" width="518" height="24" rx="4" fill="#d1fae5" class="winner-pill"/>
-  <text x="305" y="398" class="mono" font-size="11" font-weight="700" fill="#064e3b" text-anchor="middle">Result: T(n) = Θ(n^(log_b a))  [Karatsuba: Θ(n^1.585)]</text>
+  <text x="46" y="370" class="sans" font-size="10.5" fill="#44403c">Level cost a^j·f(n/b^j) grows geometrically with ratio b^ε; series is dominated by last term.</text>
+  <rect x="46" y="382" width="518" height="24" rx="4" fill="#f0fdf9" class="winner-pill"/>
+  <text x="305" y="398" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">Result: T(n) = Θ(n^(log_b a))  [Karatsuba: Θ(n^1.585)]</text>
 
   <!-- ==================== PANEL 2: CASE 2 (BALANCED LEVELS) ==================== -->
   <rect x="610" y="80" width="570" height="348" rx="10" fill="#ffffff" stroke="#bfdbfe" stroke-width="1.5"/>
-  <rect x="610" y="80" width="570" height="36" rx="10" fill="#eff6ff"/>
-  <rect x="610" y="106" width="570" height="10" fill="#eff6ff"/>
-  <text x="626" y="103" class="sans" font-size="13" font-weight="700" fill="#1e3a8a">2. Case 2 — Balanced Levels (Merge Sort: T(n) = 2T(n/2) + n)</text>
-  <rect x="1062" y="87" width="104" height="22" rx="11" fill="#2563eb"/>
+  <rect x="610" y="80" width="570" height="36" rx="10" fill="#f0fdf9"/>
+  <rect x="610" y="106" width="570" height="10" fill="#f0fdf9"/>
+  <text x="626" y="103" class="sans" font-size="13" font-weight="700" fill="#065f46">2. Case 2 — Balanced Levels (Merge Sort: T(n) = 2T(n/2) + n)</text>
+  <rect x="1062" y="87" width="104" height="22" rx="11" fill="#0f766e"/>
   <text x="1114" y="102" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">ALL LEVELS TIE</text>
 
   <!-- Tree Diagram -->
   <g class="lvl0">
-    <rect x="725" y="130" width="84" height="28" rx="6" fill="#eff6ff" stroke="#2563eb"/>
-    <text x="767" y="148" class="mono" font-size="11" font-weight="700" fill="#1e3a8a" text-anchor="middle">j=0: n</text>
+    <rect x="725" y="130" width="84" height="28" rx="6" fill="#f0fdf9" stroke="#0f766e"/>
+    <text x="767" y="148" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">j=0: n</text>
   </g>
-  <line x1="747" y1="158" x2="700" y2="184" stroke="#64748b" stroke-width="1.4" class="flow-edge"/>
-  <line x1="787" y1="158" x2="834" y2="184" stroke="#64748b" stroke-width="1.4" class="flow-edge"/>
+  <line x1="747" y1="158" x2="700" y2="184" stroke="#57534e" stroke-width="1.4" class="flow-edge"/>
+  <line x1="787" y1="158" x2="834" y2="184" stroke="#57534e" stroke-width="1.4" class="flow-edge"/>
 
   <g class="lvl1">
-    <rect x="656" y="186" width="88" height="26" rx="5" fill="#dbeafe" stroke="#2563eb"/>
-    <text x="700" y="203" class="mono" font-size="10.5" fill="#1e3a8a" text-anchor="middle">n/2</text>
-    <rect x="790" y="186" width="88" height="26" rx="5" fill="#dbeafe" stroke="#2563eb"/>
-    <text x="834" y="203" class="mono" font-size="10.5" fill="#1e3a8a" text-anchor="middle">n/2</text>
+    <rect x="656" y="186" width="88" height="26" rx="5" fill="#f0fdf9" stroke="#0f766e"/>
+    <text x="700" y="203" class="mono" font-size="10.5" fill="#065f46" text-anchor="middle">n/2</text>
+    <rect x="790" y="186" width="88" height="26" rx="5" fill="#f0fdf9" stroke="#0f766e"/>
+    <text x="834" y="203" class="mono" font-size="10.5" fill="#065f46" text-anchor="middle">n/2</text>
   </g>
-  <line x1="680" y1="212" x2="658" y2="236" stroke="#94a3b8" stroke-width="1.2"/>
-  <line x1="720" y1="212" x2="742" y2="236" stroke="#94a3b8" stroke-width="1.2"/>
-  <line x1="814" y1="212" x2="792" y2="236" stroke="#94a3b8" stroke-width="1.2"/>
-  <line x1="854" y1="212" x2="876" y2="236" stroke="#94a3b8" stroke-width="1.2"/>
+  <line x1="680" y1="212" x2="658" y2="236" stroke="#d6d0c4" stroke-width="1.2"/>
+  <line x1="720" y1="212" x2="742" y2="236" stroke="#d6d0c4" stroke-width="1.2"/>
+  <line x1="814" y1="212" x2="792" y2="236" stroke="#d6d0c4" stroke-width="1.2"/>
+  <line x1="854" y1="212" x2="876" y2="236" stroke="#d6d0c4" stroke-width="1.2"/>
 
   <g class="lvl2">
-    <rect x="624" y="238" width="286" height="24" rx="5" fill="#bfdbfe" stroke="#2563eb"/>
-    <text x="767" y="254" class="mono" font-size="10" font-weight="700" fill="#1e3a8a" text-anchor="middle">j=2: 4 nodes × (n/4) = 1.00n</text>
+    <rect x="624" y="238" width="286" height="24" rx="5" fill="#bfdbfe" stroke="#0f766e"/>
+    <text x="767" y="254" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">j=2: 4 nodes × (n/4) = 1.00n</text>
   </g>
-  <text x="767" y="278" class="mono" font-size="11" fill="#64748b" text-anchor="middle">⋮  (log_2 n levels, each costs Θ(n))</text>
+  <text x="767" y="278" class="mono" font-size="11" fill="#57534e" text-anchor="middle">⋮  (log_2 n levels, each costs Θ(n))</text>
 
   <g class="leaves">
-    <rect x="624" y="288" width="286" height="32" rx="6" fill="#2563eb"/>
+    <rect x="624" y="288" width="286" height="32" rx="6" fill="#0f766e"/>
     <text x="767" y="308" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">Leaves: 2^(log_2 n) = n · Θ(1) = Θ(n)</text>
   </g>
 
   <!-- Equal bars -->
-  <text x="934" y="138" class="sans" font-size="11" font-weight="700" fill="#0f172a">Work per Level (equal =)</text>
-  <text x="934" y="162" class="mono" font-size="10" fill="#475569">j=0:</text>
-  <rect x="970" y="151" width="130" height="14" rx="3" fill="#3b82f6" class="bar-anim"/>
-  <text x="1108" y="162" class="mono" font-size="10" fill="#1e3a8a">1.00 n</text>
+  <text x="934" y="138" class="sans" font-size="11" font-weight="700" fill="#1c1917">Work per Level (equal =)</text>
+  <text x="934" y="162" class="mono" font-size="10" fill="#44403c">j=0:</text>
+  <rect x="970" y="151" width="130" height="14" rx="3" fill="#0f766e" class="bar-anim"/>
+  <text x="1108" y="162" class="mono" font-size="10" fill="#065f46">1.00 n</text>
 
-  <text x="934" y="190" class="mono" font-size="10" fill="#475569">j=1:</text>
-  <rect x="970" y="179" width="130" height="14" rx="3" fill="#3b82f6" class="bar-anim"/>
-  <text x="1108" y="190" class="mono" font-size="10" fill="#1e3a8a">1.00 n</text>
+  <text x="934" y="190" class="mono" font-size="10" fill="#44403c">j=1:</text>
+  <rect x="970" y="179" width="130" height="14" rx="3" fill="#0f766e" class="bar-anim"/>
+  <text x="1108" y="190" class="mono" font-size="10" fill="#065f46">1.00 n</text>
 
-  <text x="934" y="218" class="mono" font-size="10" fill="#475569">j=2:</text>
-  <rect x="970" y="207" width="130" height="14" rx="3" fill="#3b82f6" class="bar-anim"/>
-  <text x="1108" y="218" class="mono" font-size="10" fill="#1e3a8a">1.00 n</text>
+  <text x="934" y="218" class="mono" font-size="10" fill="#44403c">j=2:</text>
+  <rect x="970" y="207" width="130" height="14" rx="3" fill="#0f766e" class="bar-anim"/>
+  <text x="1108" y="218" class="mono" font-size="10" fill="#065f46">1.00 n</text>
 
-  <text x="934" y="246" class="mono" font-size="10" fill="#475569">Sum:</text>
-  <rect x="970" y="235" width="186" height="16" rx="3" fill="#1d4ed8" class="bar-anim"/>
+  <text x="934" y="246" class="mono" font-size="10" fill="#44403c">Sum:</text>
+  <rect x="970" y="235" width="186" height="16" rx="3" fill="#065f46" class="bar-anim"/>
   <text x="1063" y="247" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">log_2(n) × n</text>
 
-  <rect x="624" y="332" width="542" height="82" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
-  <text x="636" y="352" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a">Condition: f(n) = Θ(n^(log_b a) · log^k n)  for k ≥ 0 (CLRS 4e)</text>
-  <text x="636" y="370" class="sans" font-size="10.5" fill="#334155">Each of the log_b(n) levels contributes equally. Note: k &lt; 0 (e.g. n / log n) is a gap case.</text>
-  <rect x="636" y="382" width="518" height="24" rx="4" fill="#dbeafe" class="winner-pill"/>
-  <text x="895" y="398" class="mono" font-size="11" font-weight="700" fill="#1e3a8a" text-anchor="middle">Result: T(n) = Θ(n^(log_b a) · log^(k+1) n)  [k=0 ⇒ Θ(n log n)]</text>
+  <rect x="624" y="332" width="542" height="82" rx="6" fill="#faf8f5" stroke="#d6d0c4"/>
+  <text x="636" y="352" class="mono" font-size="10.5" font-weight="700" fill="#065f46">Condition: f(n) = Θ(n^(log_b a) · log^k n)  for k ≥ 0 (CLRS 4e)</text>
+  <text x="636" y="370" class="sans" font-size="10.5" fill="#44403c">Each of the log_b(n) levels contributes equally. Note: k &lt; 0 (e.g. n / log n) is a gap case.</text>
+  <rect x="636" y="382" width="518" height="24" rx="4" fill="#f0fdf9" class="winner-pill"/>
+  <text x="895" y="398" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">Result: T(n) = Θ(n^(log_b a) · log^(k+1) n)  [k=0 ⇒ Θ(n log n)]</text>
 
   <!-- ==================== PANEL 3: CASE 3 (ROOT-HEAVY) ==================== -->
   <rect x="20" y="446" width="570" height="354" rx="10" fill="#ffffff" stroke="#fde68a" stroke-width="1.5"/>
   <rect x="20" y="446" width="570" height="36" rx="10" fill="#fffbeb"/>
   <rect x="20" y="472" width="570" height="10" fill="#fffbeb"/>
   <text x="36" y="469" class="sans" font-size="13" font-weight="700" fill="#92400e">3. Case 3 — Root-Heavy (T(n) = 2T(n/4) + n^2, Regularity)</text>
-  <rect x="472" y="453" width="104" height="22" rx="11" fill="#d97706"/>
+  <rect x="472" y="453" width="104" height="22" rx="11" fill="#b45309"/>
   <text x="524" y="468" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">ROOT WINS</text>
 
   <g class="lvl0">
-    <rect x="108" y="496" width="138" height="30" rx="6" fill="#d97706"/>
+    <rect x="108" y="496" width="138" height="30" rx="6" fill="#b45309"/>
     <text x="177" y="515" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">j=0: n^2 (Root)</text>
   </g>
-  <line x1="145" y1="526" x2="112" y2="552" stroke="#64748b" stroke-width="1.4" class="flow-edge"/>
-  <line x1="209" y1="526" x2="242" y2="552" stroke="#64748b" stroke-width="1.4" class="flow-edge"/>
+  <line x1="145" y1="526" x2="112" y2="552" stroke="#57534e" stroke-width="1.4" class="flow-edge"/>
+  <line x1="209" y1="526" x2="242" y2="552" stroke="#57534e" stroke-width="1.4" class="flow-edge"/>
 
   <g class="lvl1">
-    <rect x="64" y="554" width="96" height="26" rx="5" fill="#fef3c7" stroke="#d97706"/>
+    <rect x="64" y="554" width="96" height="26" rx="5" fill="#fffbeb" stroke="#b45309"/>
     <text x="112" y="571" class="mono" font-size="10" fill="#92400e" text-anchor="middle">(n/4)^2</text>
-    <rect x="194" y="554" width="96" height="26" rx="5" fill="#fef3c7" stroke="#d97706"/>
+    <rect x="194" y="554" width="96" height="26" rx="5" fill="#fffbeb" stroke="#b45309"/>
     <text x="242" y="571" class="mono" font-size="10" fill="#92400e" text-anchor="middle">(n/4)^2</text>
   </g>
-  <line x1="92" y1="580" x2="72" y2="604" stroke="#94a3b8" stroke-width="1.2"/>
-  <line x1="132" y1="580" x2="152" y2="604" stroke="#94a3b8" stroke-width="1.2"/>
-  <line x1="222" y1="580" x2="202" y2="604" stroke="#94a3b8" stroke-width="1.2"/>
-  <line x1="262" y1="580" x2="282" y2="604" stroke="#94a3b8" stroke-width="1.2"/>
+  <line x1="92" y1="580" x2="72" y2="604" stroke="#d6d0c4" stroke-width="1.2"/>
+  <line x1="132" y1="580" x2="152" y2="604" stroke="#d6d0c4" stroke-width="1.2"/>
+  <line x1="222" y1="580" x2="202" y2="604" stroke="#d6d0c4" stroke-width="1.2"/>
+  <line x1="262" y1="580" x2="282" y2="604" stroke="#d6d0c4" stroke-width="1.2"/>
 
   <g class="lvl2">
-    <rect x="34" y="606" width="286" height="24" rx="5" fill="#fffbeb" stroke="#f59e0b"/>
+    <rect x="34" y="606" width="286" height="24" rx="5" fill="#fffbeb" stroke="#b45309"/>
     <text x="177" y="622" class="mono" font-size="10" fill="#92400e" text-anchor="middle">j=2: 4 nodes × (n/16)^2 = n^2 / 64</text>
   </g>
-  <text x="177" y="646" class="mono" font-size="11" fill="#64748b" text-anchor="middle">⋮  (geometric decay ratio c = 1/8 &lt; 1)</text>
+  <text x="177" y="646" class="mono" font-size="11" fill="#57534e" text-anchor="middle">⋮  (geometric decay ratio c = 1/8 &lt; 1)</text>
 
   <g class="leaves">
-    <rect x="34" y="656" width="286" height="28" rx="6" fill="#fef3c7" stroke="#d97706"/>
+    <rect x="34" y="656" width="286" height="28" rx="6" fill="#fffbeb" stroke="#b45309"/>
     <text x="177" y="674" class="mono" font-size="10.5" fill="#92400e" text-anchor="middle">Leaves: n^(log_4 2) = √n ≪ n^2</text>
   </g>
 
   <!-- Decaying bars -->
-  <text x="344" y="504" class="sans" font-size="11" font-weight="700" fill="#0f172a">Work per Level (shrinks ↓)</text>
-  <text x="344" y="528" class="mono" font-size="10" fill="#475569">j=0:</text>
-  <rect x="380" y="517" width="180" height="15" rx="3" fill="#d97706" class="bar-anim"/>
+  <text x="344" y="504" class="sans" font-size="11" font-weight="700" fill="#1c1917">Work per Level (shrinks ↓)</text>
+  <text x="344" y="528" class="mono" font-size="10" fill="#44403c">j=0:</text>
+  <rect x="380" y="517" width="180" height="15" rx="3" fill="#b45309" class="bar-anim"/>
   <text x="470" y="529" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">1.000 n^2</text>
 
-  <text x="344" y="556" class="mono" font-size="10" fill="#475569">j=1:</text>
-  <rect x="380" y="545" width="32" height="14" rx="3" fill="#f59e0b" class="bar-anim"/>
+  <text x="344" y="556" class="mono" font-size="10" fill="#44403c">j=1:</text>
+  <rect x="380" y="545" width="32" height="14" rx="3" fill="#b45309" class="bar-anim"/>
   <text x="420" y="556" class="mono" font-size="10" fill="#92400e">0.125 n^2</text>
 
-  <text x="344" y="584" class="mono" font-size="10" fill="#475569">j=2:</text>
-  <rect x="380" y="573" width="10" height="14" rx="3" fill="#fbbf24" class="bar-anim"/>
+  <text x="344" y="584" class="mono" font-size="10" fill="#44403c">j=2:</text>
+  <rect x="380" y="573" width="10" height="14" rx="3" fill="#b45309" class="bar-anim"/>
   <text x="398" y="584" class="mono" font-size="10" fill="#92400e">0.016 n^2</text>
 
   <text x="344" y="616" class="mono" font-size="10" fill="#92400e">Sum ≤ n^2 / (1 - 1/8) = 8/7 n^2</text>
 
-  <rect x="34" y="698" width="542" height="88" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <rect x="34" y="698" width="542" height="88" rx="6" fill="#faf8f5" stroke="#d6d0c4"/>
   <text x="46" y="718" class="mono" font-size="10.5" font-weight="700" fill="#92400e">Condition: f(n) = Ω(n^(log_b a + ε))  AND  a·f(n/b) ≤ c·f(n), c &lt; 1</text>
-  <text x="46" y="736" class="sans" font-size="10.5" fill="#334155">Regularity rules out oscillating f(n) = n^(1+ε)(2 + sin n) that break geometric decay.</text>
-  <rect x="46" y="750" width="518" height="24" rx="4" fill="#fef3c7" class="winner-pill"/>
+  <text x="46" y="736" class="sans" font-size="10.5" fill="#44403c">Regularity rules out oscillating f(n) = n^(1+ε)(2 + sin n) that break geometric decay.</text>
+  <rect x="46" y="750" width="518" height="24" rx="4" fill="#fffbeb" class="winner-pill"/>
   <text x="305" y="766" class="mono" font-size="11" font-weight="700" fill="#92400e" text-anchor="middle">Result: T(n) = Θ(f(n))  [Above: Θ(n^2)]</text>
 
   <!-- ==================== PANEL 4: AKRA-BAZZI UNEQUAL SPLITS ==================== -->
   <rect x="610" y="446" width="570" height="354" rx="10" fill="#ffffff" stroke="#ddd6fe" stroke-width="1.5"/>
-  <rect x="610" y="446" width="570" height="36" rx="10" fill="#f5f3ff"/>
-  <rect x="610" y="472" width="570" height="10" fill="#f5f3ff"/>
-  <text x="626" y="469" class="sans" font-size="13" font-weight="700" fill="#5b21b6">4. Akra-Bazzi Unequal Splits: T(n) = T(n/3) + T(2n/3) + n</text>
-  <rect x="1044" y="453" width="122" height="22" rx="11" fill="#7c3aed"/>
+  <rect x="610" y="446" width="570" height="36" rx="10" fill="#f5f1e8"/>
+  <rect x="610" y="472" width="570" height="10" fill="#f5f1e8"/>
+  <text x="626" y="469" class="sans" font-size="13" font-weight="700" fill="#065f46">4. Akra-Bazzi Unequal Splits: T(n) = T(n/3) + T(2n/3) + n</text>
+  <rect x="1044" y="453" width="122" height="22" rx="11" fill="#0f766e"/>
   <text x="1105" y="468" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">UNEQUAL DEPTHS</text>
 
   <!-- Asymmetric Recursion Tree -->
   <g class="lvl0">
-    <rect x="748" y="496" width="90" height="28" rx="6" fill="#7c3aed"/>
+    <rect x="748" y="496" width="90" height="28" rx="6" fill="#0f766e"/>
     <text x="793" y="514" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">n</text>
   </g>
   <!-- Unequal branches -->
-  <line x1="772" y1="524" x2="690" y2="554" stroke="#7c3aed" stroke-width="1.8" class="flow-edge" marker-end="url(#arr-violet)"/>
-  <line x1="814" y1="524" x2="900" y2="554" stroke="#7c3aed" stroke-width="1.8" class="flow-edge" marker-end="url(#arr-violet)"/>
-  <text x="716" y="538" class="mono" font-size="10" fill="#6d28d9">×1/3</text>
-  <text x="866" y="538" class="mono" font-size="10" fill="#6d28d9">×2/3</text>
+  <line x1="772" y1="524" x2="690" y2="554" stroke="#0f766e" stroke-width="1.8" class="flow-edge" marker-end="url(#arr-violet)"/>
+  <line x1="814" y1="524" x2="900" y2="554" stroke="#0f766e" stroke-width="1.8" class="flow-edge" marker-end="url(#arr-violet)"/>
+  <text x="716" y="538" class="mono" font-size="10" fill="#065f46">×1/3</text>
+  <text x="866" y="538" class="mono" font-size="10" fill="#065f46">×2/3</text>
 
   <g class="lvl1">
-    <rect x="650" y="556" width="76" height="26" rx="5" fill="#ede9fe" stroke="#7c3aed"/>
-    <text x="688" y="573" class="mono" font-size="10.5" fill="#5b21b6" text-anchor="middle">n/3</text>
-    <rect x="858" y="556" width="84" height="26" rx="5" fill="#ede9fe" stroke="#7c3aed"/>
-    <text x="900" y="573" class="mono" font-size="10.5" fill="#5b21b6" text-anchor="middle">2n/3</text>
+    <rect x="650" y="556" width="76" height="26" rx="5" fill="#f5f1e8" stroke="#0f766e"/>
+    <text x="688" y="573" class="mono" font-size="10.5" fill="#065f46" text-anchor="middle">n/3</text>
+    <rect x="858" y="556" width="84" height="26" rx="5" fill="#f5f1e8" stroke="#0f766e"/>
+    <text x="900" y="573" class="mono" font-size="10.5" fill="#065f46" text-anchor="middle">2n/3</text>
   </g>
 
   <!-- Sub-branches showing shorter left spine vs deeper right spine -->
-  <line x1="674" y1="582" x2="650" y2="608" stroke="#94a3b8" stroke-width="1.3"/>
-  <line x1="702" y1="582" x2="726" y2="608" stroke="#94a3b8" stroke-width="1.3"/>
-  <rect x="626" y="610" width="48" height="22" rx="4" fill="#f5f3ff" stroke="#a78bfa"/>
-  <text x="650" y="625" class="mono" font-size="10" fill="#5b21b6" text-anchor="middle">n/9</text>
-  <rect x="702" y="610" width="52" height="22" rx="4" fill="#f5f3ff" stroke="#a78bfa"/>
-  <text x="728" y="625" class="mono" font-size="10" fill="#5b21b6" text-anchor="middle">2n/9</text>
-  <text x="650" y="652" class="mono" font-size="10" fill="#64748b" text-anchor="middle">depth: log_3 n</text>
+  <line x1="674" y1="582" x2="650" y2="608" stroke="#d6d0c4" stroke-width="1.3"/>
+  <line x1="702" y1="582" x2="726" y2="608" stroke="#d6d0c4" stroke-width="1.3"/>
+  <rect x="626" y="610" width="48" height="22" rx="4" fill="#f5f1e8" stroke="#a78bfa"/>
+  <text x="650" y="625" class="mono" font-size="10" fill="#065f46" text-anchor="middle">n/9</text>
+  <rect x="702" y="610" width="52" height="22" rx="4" fill="#f5f1e8" stroke="#a78bfa"/>
+  <text x="728" y="625" class="mono" font-size="10" fill="#065f46" text-anchor="middle">2n/9</text>
+  <text x="650" y="652" class="mono" font-size="10" fill="#57534e" text-anchor="middle">depth: log_3 n</text>
 
-  <line x1="882" y1="582" x2="856" y2="608" stroke="#94a3b8" stroke-width="1.3"/>
-  <line x1="918" y1="582" x2="948" y2="608" stroke="#94a3b8" stroke-width="1.3"/>
-  <rect x="830" y="610" width="52" height="22" rx="4" fill="#f5f3ff" stroke="#a78bfa"/>
-  <text x="856" y="625" class="mono" font-size="10" fill="#5b21b6" text-anchor="middle">2n/9</text>
-  <rect x="920" y="610" width="56" height="22" rx="4" fill="#ede9fe" stroke="#7c3aed"/>
-  <text x="948" y="625" class="mono" font-size="10" font-weight="700" fill="#5b21b6" text-anchor="middle">4n/9</text>
-  <line x1="948" y1="632" x2="966" y2="656" stroke="#7c3aed" stroke-width="1.3" stroke-dasharray="3 2"/>
-  <rect x="932" y="658" width="68" height="22" rx="4" fill="#7c3aed"/>
+  <line x1="882" y1="582" x2="856" y2="608" stroke="#d6d0c4" stroke-width="1.3"/>
+  <line x1="918" y1="582" x2="948" y2="608" stroke="#d6d0c4" stroke-width="1.3"/>
+  <rect x="830" y="610" width="52" height="22" rx="4" fill="#f5f1e8" stroke="#a78bfa"/>
+  <text x="856" y="625" class="mono" font-size="10" fill="#065f46" text-anchor="middle">2n/9</text>
+  <rect x="920" y="610" width="56" height="22" rx="4" fill="#f5f1e8" stroke="#0f766e"/>
+  <text x="948" y="625" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">4n/9</text>
+  <line x1="948" y1="632" x2="966" y2="656" stroke="#0f766e" stroke-width="1.3" stroke-dasharray="3 2"/>
+  <rect x="932" y="658" width="68" height="22" rx="4" fill="#0f766e"/>
   <text x="966" y="673" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">8n/27…</text>
-  <text x="852" y="673" class="mono" font-size="10" fill="#6d28d9" text-anchor="middle">depth: log_(3/2) n</text>
+  <text x="852" y="673" class="mono" font-size="10" fill="#065f46" text-anchor="middle">depth: log_(3/2) n</text>
 
   <!-- Akra-Bazzi Equation Card -->
-  <rect x="1008" y="496" width="158" height="186" rx="6" fill="#f5f3ff" stroke="#c4b5fd"/>
-  <text x="1087" y="516" class="sans" font-size="11" font-weight="700" fill="#5b21b6" text-anchor="middle">Solve Critical p</text>
-  <text x="1087" y="538" class="mono" font-size="10.5" fill="#4c1d95" text-anchor="middle">Σ a_i · b_i^p = 1</text>
+  <rect x="1008" y="496" width="158" height="186" rx="6" fill="#f5f1e8" stroke="#d6d0c4"/>
+  <text x="1087" y="516" class="sans" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">Solve Critical p</text>
+  <text x="1087" y="538" class="mono" font-size="10.5" fill="#065f46" text-anchor="middle">Σ a_i · b_i^p = 1</text>
   <line x1="1020" y1="548" x2="1154" y2="548" stroke="#ddd6fe"/>
-  <text x="1087" y="568" class="mono" font-size="10" fill="#5b21b6" text-anchor="middle">(1/3)^p + (2/3)^p = 1</text>
-  <text x="1087" y="588" class="mono" font-size="12" font-weight="700" fill="#7c3aed" text-anchor="middle">⇒ p = 1</text>
+  <text x="1087" y="568" class="mono" font-size="10" fill="#065f46" text-anchor="middle">(1/3)^p + (2/3)^p = 1</text>
+  <text x="1087" y="588" class="mono" font-size="12" font-weight="700" fill="#0f766e" text-anchor="middle">⇒ p = 1</text>
   <line x1="1020" y1="600" x2="1154" y2="600" stroke="#ddd6fe"/>
-  <text x="1087" y="618" class="sans" font-size="10" font-weight="700" fill="#5b21b6" text-anchor="middle">Full Levels ≤ log_3 n</text>
-  <text x="1087" y="636" class="mono" font-size="10" fill="#475569" text-anchor="middle">n/3 + 2n/3 = n</text>
-  <text x="1087" y="654" class="mono" font-size="10" fill="#475569" text-anchor="middle">1/9 + 4/9 + 4/9 = n</text>
-  <text x="1087" y="672" class="mono" font-size="10" fill="#6d28d9" text-anchor="middle">T(n) = Θ(n log n)</text>
+  <text x="1087" y="618" class="sans" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">Full Levels ≤ log_3 n</text>
+  <text x="1087" y="636" class="mono" font-size="10" fill="#44403c" text-anchor="middle">n/3 + 2n/3 = n</text>
+  <text x="1087" y="654" class="mono" font-size="10" fill="#44403c" text-anchor="middle">1/9 + 4/9 + 4/9 = n</text>
+  <text x="1087" y="672" class="mono" font-size="10" fill="#065f46" text-anchor="middle">T(n) = Θ(n log n)</text>
 
-  <rect x="624" y="698" width="542" height="88" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
-  <text x="636" y="718" class="mono" font-size="10.5" font-weight="700" fill="#5b21b6">Formula: T(x) = Θ( x^p · (1 + ∫_1^x g(u) / u^(p+1) du) )</text>
-  <text x="636" y="736" class="sans" font-size="10.5" fill="#334155">For T(n/2)+T(n/4)+n: (1/2)^p + (1/4)^p = 1 gives p ≈ 0.694 &lt; 1 ⇒ root dominates: T(n) = Θ(n).</text>
-  <rect x="636" y="750" width="518" height="24" rx="4" fill="#ede9fe" class="winner-pill"/>
-  <text x="895" y="766" class="mono" font-size="11" font-weight="700" fill="#5b21b6" text-anchor="middle">Handles arbitrary unequal subproblems where Master Theorem fails</text>
+  <rect x="624" y="698" width="542" height="88" rx="6" fill="#faf8f5" stroke="#d6d0c4"/>
+  <text x="636" y="718" class="mono" font-size="10.5" font-weight="700" fill="#065f46">Formula: T(x) = Θ( x^p · (1 + ∫_1^x g(u) / u^(p+1) du) )</text>
+  <text x="636" y="736" class="sans" font-size="10.5" fill="#44403c">For T(n/2)+T(n/4)+n: (1/2)^p + (1/4)^p = 1 gives p ≈ 0.694 &lt; 1 ⇒ root dominates: T(n) = Θ(n).</text>
+  <rect x="636" y="750" width="518" height="24" rx="4" fill="#f5f1e8" class="winner-pill"/>
+  <text x="895" y="766" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">Handles arbitrary unequal subproblems where Master Theorem fails</text>
 </svg>

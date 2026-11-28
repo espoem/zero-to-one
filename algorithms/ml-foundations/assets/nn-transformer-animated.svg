@@ -1,95 +1,100 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 440" width="960" height="440" role="img" aria-labelledby="title desc">
-  <title id="title">Transformer Multi-Head Attention with RoPE</title>
-  <desc id="desc">Animated Transformer block showing token embeddings split into Q, K, V projections, Rotary Position Embedding (RoPE) rotation on Q and K, scaled dot-product softmax(QK^T/sqrt(d_k))V, multi-head concatenation, residual connections, and FFN.</desc>
-  <style>
-    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-    @keyframes flow-x {
-      0%   { transform: translateX(0px); opacity: 0; }
-      10%  { opacity: 1; }
-      90%  { transform: translateX(760px); opacity: 1; }
-      100% { transform: translateX(760px); opacity: 0; }
-    }
-    @keyframes attn-beat {
-      0%, 100% { stroke-width: 2; }
-      50%      { stroke-width: 3.5; }
-    }
-    .tok { animation: flow-x 6s ease-in-out infinite; }
-    .attn-box { animation: attn-beat 3s ease-in-out infinite; }
-    @media (prefers-reduced-motion: reduce) {
-      .tok, .attn-box { animation: none !important; }
-      .tok { opacity: 1; transform: translateX(380px); }
-    }
-  </style>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 430" width="100%" role="img" aria-label="Transformer Block: RoPE, Multi-Head Attention, and Residual FFN">
   <defs>
-    <marker id="arr-slate" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#334155"/>
+    <marker id="arr-ink" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#1c1917"/>
+    </marker>
+    <marker id="arr-teal" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#0f766e"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#b45309"/>
     </marker>
   </defs>
+  <style>
+    .tr-s1 { animation: tr-st1 8s infinite; }
+    .tr-s2 { animation: tr-st2 8s infinite; }
+    .tr-s3 { animation: tr-st3 8s infinite; }
+    .tr-s4 { animation: tr-st4 8s infinite; }
+    @keyframes tr-st1 { 0%, 25%, 100% { stroke-width: 1.3; } 3%, 22% { stroke: #0f766e; stroke-width: 2.6; } }
+    @keyframes tr-st2 { 0%, 25%, 50%, 100% { stroke-width: 1.6; } 28%, 47% { stroke: #0f766e; stroke-width: 2.8; } }
+    @keyframes tr-st3 { 0%, 50%, 75%, 100% { stroke-width: 1.6; } 53%, 72% { stroke: #b45309; stroke-width: 2.8; } }
+    @keyframes tr-st4 { 0%, 75%, 100% { stroke-width: 1.4; } 78%, 97% { stroke: #0f766e; stroke-width: 2.6; } }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+  </style>
 
-  <rect x="0" y="0" width="960" height="440" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
-  <rect x="0" y="0" width="960" height="56" rx="12" fill="#0f172a"/>
-  <rect x="0" y="40" width="960" height="16" fill="#0f172a"/>
-  <text x="24" y="26" class="sans" font-size="17" font-weight="700" fill="#f8fafc">Transformer Block: RoPE + Multi-Head Attention + Residual FFN</text>
-  <text x="24" y="45" class="mono" font-size="12" fill="#94a3b8">Attn(Q,K,V) = softmax(Q K^T / sqrt(d_k)) V   |   &lt;q_m, k_n&gt; = &lt;W_q x_m, R_{n-m} W_k x_n&gt;</text>
+  <rect width="920" height="430" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
+  <text x="28" y="34" font-family="Georgia, 'Times New Roman', serif" font-size="19" font-weight="700" fill="#1c1917">Transformer Block: RoPE + Multi-Head Attention + Residual FFN</text>
+  <text x="28" y="54" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11.5" fill="#57534e">Attn(Q,K,V) = softmax(Q K^T / sqrt(d_k)) V   |   &lt;q_m, k_n&gt; = &lt;W_q x_m, R_{n-m} W_k x_n&gt;</text>
+  <line x1="28" y1="66" x2="892" y2="66" stroke="#1c1917" stroke-width="1.2"/>
 
-  <!-- Residual bypass -->
-  <path d="M 95 230 L 95 92 L 642 92 L 642 212" fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arr-slate)"/>
-  <text x="368" y="84" class="sans" font-size="11" font-weight="700" fill="#475569" text-anchor="middle">Pre-Norm Residual Stream (x + MHA(RMSNorm(x)))</text>
+  <!-- Pre-Norm Residual Stream -->
+  <path d="M 102 232 L 102 96 L 644 96 L 644 212" fill="none" stroke="#b45309" stroke-width="1.8" stroke-dasharray="5 3" marker-end="url(#arr-amber)"/>
+  <rect x="224" y="83" width="320" height="24" rx="4" fill="#fffbeb" stroke="#fde68a" stroke-width="1"/>
+  <text x="384" y="99" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11" font-weight="700" fill="#b45309">Pre-Norm Residual Stream (x + Sublayer(Norm(x)))</text>
 
-  <!-- Input X -->
-  <rect x="34" y="190" width="82" height="80" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
-  <text x="75" y="226" class="mono" font-size="13" font-weight="700" fill="#1e3a8a" text-anchor="middle">X</text>
-  <text x="75" y="246" class="mono" font-size="10" fill="#1d4ed8" text-anchor="middle">[B, n, d]</text>
+  <!-- Input Tensor -->
+  <rect x="28" y="192" width="90" height="80" rx="4" fill="#ffffff" stroke="#1c1917" stroke-width="1.4"/>
+  <text x="73" y="226" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="15" font-weight="700" fill="#1c1917">X</text>
+  <text x="73" y="246" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" fill="#57534e">[B, n, d]</text>
 
-  <!-- Q, K, V projections -->
-  <line x1="116" y1="210" x2="176" y2="146" stroke="#334155" stroke-width="1.8" marker-end="url(#arr-slate)"/>
-  <line x1="116" y1="230" x2="176" y2="230" stroke="#334155" stroke-width="1.8" marker-end="url(#arr-slate)"/>
-  <line x1="116" y1="250" x2="176" y2="314" stroke="#334155" stroke-width="1.8" marker-end="url(#arr-slate)"/>
+  <!-- Split to Q, K, V -->
+  <line x1="118" y1="232" x2="148" y2="232" stroke="#44403c" stroke-width="1.6"/>
+  <path d="M 148 156 L 148 308" fill="none" stroke="#44403c" stroke-width="1.5"/>
+  <line x1="148" y1="156" x2="176" y2="156" stroke="#44403c" stroke-width="1.5" marker-end="url(#arr-ink)"/>
+  <line x1="148" y1="232" x2="176" y2="232" stroke="#44403c" stroke-width="1.5" marker-end="url(#arr-ink)"/>
+  <line x1="148" y1="308" x2="176" y2="308" stroke="#44403c" stroke-width="1.5" marker-end="url(#arr-ink)"/>
 
-  <rect x="180" y="122" width="118" height="48" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.8"/>
-  <text x="239" y="143" class="mono" font-size="12" font-weight="700" fill="#4c1d95" text-anchor="middle">Q = X W_Q</text>
-  <text x="239" y="160" class="mono" font-size="10" fill="#6d28d9" text-anchor="middle">+ RoPE(m)</text>
+  <!-- Q, K, V Boxes -->
+  <rect class="tr-s1" x="182" y="128" width="128" height="56" rx="4" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.3"/>
+  <text x="246" y="152" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12.5" font-weight="700" fill="#0f766e">Q = X W_Q</text>
+  <text x="246" y="170" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#065f46">+ RoPE(m)</text>
 
-  <rect x="180" y="206" width="118" height="48" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.8"/>
-  <text x="239" y="227" class="mono" font-size="12" font-weight="700" fill="#4c1d95" text-anchor="middle">K = X W_K</text>
-  <text x="239" y="244" class="mono" font-size="10" fill="#6d28d9" text-anchor="middle">+ RoPE(n)</text>
+  <rect class="tr-s1" x="182" y="204" width="128" height="56" rx="4" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.3"/>
+  <text x="246" y="228" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12.5" font-weight="700" fill="#0f766e">K = X W_K</text>
+  <text x="246" y="246" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#065f46">+ RoPE(n)</text>
 
-  <rect x="180" y="290" width="118" height="48" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.8"/>
-  <text x="239" y="311" class="mono" font-size="12" font-weight="700" fill="#92400e" text-anchor="middle">V = X W_V</text>
-  <text x="239" y="328" class="mono" font-size="10" fill="#b45309" text-anchor="middle">(no RoPE)</text>
+  <rect class="tr-s1" x="182" y="280" width="128" height="56" rx="4" fill="#f5f1e8" stroke="#d6d0c4" stroke-width="1.3"/>
+  <text x="246" y="304" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12.5" font-weight="700" fill="#1c1917">V = X W_V</text>
+  <text x="246" y="322" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#57534e">(no RoPE)</text>
 
-  <!-- Scaled Dot Product Attention -->
-  <line x1="298" y1="146" x2="354" y2="198" stroke="#334155" stroke-width="1.8" marker-end="url(#arr-slate)"/>
-  <line x1="298" y1="230" x2="354" y2="230" stroke="#334155" stroke-width="1.8" marker-end="url(#arr-slate)"/>
-  <line x1="298" y1="314" x2="354" y2="262" stroke="#334155" stroke-width="1.8" marker-end="url(#arr-slate)"/>
+  <!-- Inputs into Attention box -->
+  <path d="M 310 156 L 354 196" fill="none" stroke="#0f766e" stroke-width="1.6" marker-end="url(#arr-teal)"/>
+  <line x1="310" y1="232" x2="354" y2="232" stroke="#0f766e" stroke-width="1.6" marker-end="url(#arr-teal)"/>
+  <path d="M 310 308 L 354 268" fill="none" stroke="#44403c" stroke-width="1.6" marker-end="url(#arr-ink)"/>
 
-  <rect x="358" y="152" width="190" height="156" rx="10" fill="#ecfdf5" stroke="#059669" class="attn-box"/>
-  <text x="453" y="182" class="sans" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">Scaled Dot-Product</text>
-  <text x="453" y="206" class="mono" font-size="11" fill="#047857" text-anchor="middle">S = Q K^T / sqrt(d_k)</text>
-  <text x="453" y="228" class="mono" font-size="11" fill="#047857" text-anchor="middle">+ Causal Mask (-inf)</text>
-  <text x="453" y="250" class="mono" font-size="11" fill="#047857" text-anchor="middle">P = softmax(S)</text>
-  <text x="453" y="274" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">head_i = P V</text>
-  <text x="453" y="296" class="sans" font-size="10" fill="#065f46" text-anchor="middle">O(n^2 d) per layer</text>
+  <!-- Attention Box -->
+  <rect class="tr-s2" x="360" y="148" width="194" height="168" rx="6" fill="#ffffff" stroke="#0f766e" stroke-width="1.6"/>
+  <rect x="360" y="148" width="194" height="30" rx="6" fill="#0f766e"/>
+  <rect x="360" y="170" width="194" height="8" fill="#0f766e"/>
+  <text x="457" y="168" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#ffffff">Scaled Dot-Product</text>
 
-  <!-- Concat + W_O + Add -->
-  <line x1="548" y1="230" x2="618" y2="230" stroke="#334155" stroke-width="2" marker-end="url(#arr-slate)"/>
-  <circle cx="642" cy="230" r="18" fill="#ffffff" stroke="#334155" stroke-width="2"/>
-  <text x="642" y="235" class="mono" font-size="14" font-weight="700" fill="#0f172a" text-anchor="middle">+</text>
-  <text x="583" y="218" class="mono" font-size="10" fill="#334155" text-anchor="middle">W^O</text>
+  <text x="457" y="200" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11.5" fill="#1c1917">S = Q K^T / sqrt(d_k)</text>
+  <text x="457" y="222" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="600" fill="#b45309">+ Causal Mask (-inf)</text>
+  <text x="457" y="244" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11.5" fill="#0f766e">P = softmax(S)</text>
+  <text x="457" y="266" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11.5" fill="#1c1917">head_i = P V</text>
+  <line x1="376" y1="280" x2="538" y2="280" stroke="#e7e2d8" stroke-width="1"/>
+  <text x="457" y="300" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" fill="#57534e">O(n^2 d) per layer</text>
 
-  <!-- FFN + Output -->
-  <line x1="660" y1="230" x2="704" y2="230" stroke="#334155" stroke-width="2" marker-end="url(#arr-slate)"/>
-  <rect x="708" y="176" width="132" height="108" rx="10" fill="#fff1f2" stroke="#e11d48" stroke-width="2"/>
-  <text x="774" y="208" class="sans" font-size="12" font-weight="700" fill="#9f1239" text-anchor="middle">SwiGLU / FFN</text>
-  <text x="774" y="232" class="mono" font-size="10" fill="#be123c" text-anchor="middle">RMSNorm + MLP</text>
-  <text x="774" y="254" class="mono" font-size="10" fill="#be123c" text-anchor="middle">+ Residual</text>
+  <!-- Projection W^O -> Residual sum -->
+  <line x1="554" y1="232" x2="622" y2="232" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-teal)"/>
+  <text x="588" y="222" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="700" fill="#0f766e">W^O</text>
 
-  <line x1="840" y1="230" x2="884" y2="230" stroke="#334155" stroke-width="2" marker-end="url(#arr-slate)"/>
-  <text x="908" y="234" class="mono" font-size="13" font-weight="700" fill="#0f172a" text-anchor="middle">Y</text>
+  <circle class="tr-s3" cx="644" cy="232" r="14" fill="#ffffff" stroke="#b45309" stroke-width="1.6"/>
+  <text x="644" y="237" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="16" font-weight="700" fill="#b45309">+</text>
 
-  <!-- Token progress bar -->
-  <line x1="80" y1="385" x2="880" y2="385" stroke="#cbd5e1" stroke-width="3"/>
-  <circle cx="80" cy="385" r="7" fill="#2563eb" class="tok"/>
-  <text x="480" y="414" class="sans" font-size="11" fill="#475569" text-anchor="middle">Self-attention computes all-pairs interactions in O(1) sequential depth; decode caches K, V to drop per-step attention from O(n^2) to O(n)</text>
+  <!-- SwiGLU / FFN -->
+  <line x1="658" y1="232" x2="700" y2="232" stroke="#1c1917" stroke-width="1.8" marker-end="url(#arr-ink)"/>
+  <rect class="tr-s4" x="706" y="176" width="134" height="112" rx="6" fill="#f5f1e8" stroke="#1c1917" stroke-width="1.4"/>
+  <text x="773" y="208" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="13" font-weight="700" fill="#1c1917">SwiGLU / FFN</text>
+  <text x="773" y="230" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" fill="#44403c">RMSNorm + MLP</text>
+  <line x1="722" y1="246" x2="824" y2="246" stroke="#d6d0c4" stroke-width="1"/>
+  <text x="773" y="268" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" fill="#b45309">+ Residual Add</text>
+
+  <!-- Output Y -->
+  <line x1="840" y1="232" x2="868" y2="232" stroke="#0f766e" stroke-width="2" marker-end="url(#arr-teal)"/>
+  <text x="880" y="237" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="15" font-weight="700" fill="#0f766e">Y</text>
+
+  <!-- Footer -->
+  <rect x="28" y="392" width="864" height="26" rx="4" fill="#f5f1e8" stroke="#e7e2d8" stroke-width="1"/>
+  <text x="460" y="409" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" fill="#44403c">Every token interacts with all prior tokens at O(1) path length; KV caching reduces incremental decode from O(n^2) to O(n)</text>
 </svg>

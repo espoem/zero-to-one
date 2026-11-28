@@ -3,99 +3,99 @@
   <desc id="desc">Six-dimension comparison of web crawler architectures between 2021 legacy defaults and 2026 modern production standards, covering static vs two-wave SPA rendering, exact hash vs SimHash LSH dedup, informal vs RFC 9309 robots.txt, HTTP/1.1 vs HTTP/2-3 multiplexing, unconditional vs conditional recrawling, and search-only vs ISO 28500 WARC LLM pipelines.</desc>
 
   <!-- Background -->
-  <rect x="0" y="0" width="1160" height="590" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1160" height="590" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1160" height="56" rx="12" fill="#0f172a"/>
-  <rect x="0" y="40" width="1160" height="16" fill="#0f172a"/>
-  <text x="24" y="27" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#f8fafc">Web Crawler Architecture Evolution: 2021 Default vs. 2026 Modern Standard</text>
-  <text x="24" y="46" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#94a3b8">From Static Single-Pass HTML Scrapers to Two-Wave SPA Crawlers, RFC 9309 AI Governance, and ISO 28500 LLM Pipelines</text>
+  <line x1="24" y1="58" x2="1136" y2="58" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="27" font-family="Georgia, 'Times New Roman', serif" font-size="18" font-weight="700" fill="#1c1917">Web Crawler Architecture Evolution: 2021 Default vs. 2026 Modern Standard</text>
+  <text x="24" y="46" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#57534e">From Static Single-Pass HTML Scrapers to Two-Wave SPA Crawlers, RFC 9309 AI Governance, and ISO 28500 LLM Pipelines</text>
 
   <!-- Column Headers -->
-  <rect x="20" y="70" width="210" height="32" rx="6" fill="#e2e8f0"/>
-  <text x="34" y="91" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1e293b">Architectural Dimension</text>
+  <rect x="20" y="70" width="210" height="32" rx="6" fill="#e7e2d8"/>
+  <text x="34" y="91" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1c1917">Architectural Dimension</text>
 
-  <rect x="242" y="70" width="440" height="32" rx="6" fill="#fee2e2" stroke="#fca5a5" stroke-width="1"/>
+  <rect x="242" y="70" width="440" height="32" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1"/>
   <text x="256" y="91" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#991b1b">2021 Legacy Default (Pain Points)</text>
 
   <rect x="694" y="70" width="446" height="32" rx="6" fill="#dcfce7" stroke="#86efac" stroke-width="1"/>
   <text x="708" y="91" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#166534">2026 Modern Standard (Primary Shifts)</text>
 
   <!-- Row 1: Content & Rendering -->
-  <rect x="20" y="112" width="210" height="62" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="32" y="138" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">1. Content &amp; Rendering</text>
-  <text x="32" y="156" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Page Extraction Pipeline</text>
+  <rect x="20" y="112" width="210" height="62" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="32" y="138" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1c1917">1. Content &amp; Rendering</text>
+  <text x="32" y="156" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#57534e">Page Extraction Pipeline</text>
 
   <rect x="242" y="112" width="440" height="62" rx="6" fill="#fff5f5" stroke="#fecaca"/>
   <text x="254" y="136" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Static HTML-Only Regex / DOM Scrapers</text>
-  <text x="254" y="155" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">Cheerio/raw regex; completely blind to JS client-side SPAs</text>
+  <text x="254" y="155" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Cheerio/raw regex; completely blind to JS client-side SPAs</text>
 
   <rect x="694" y="112" width="446" height="62" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
   <text x="706" y="136" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">Two-Wave Crawling (HTTP Fast-Path + SPA Queue)</text>
-  <text x="706" y="155" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Fast stream HTML for SSR (90%) + headless Chromium for SPAs</text>
+  <text x="706" y="155" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Fast stream HTML for SSR (90%) + headless Chromium for SPAs</text>
 
   <!-- Row 2: Duplicate Detection -->
-  <rect x="20" y="182" width="210" height="62" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="32" y="208" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">2. Duplicate Detection</text>
-  <text x="32" y="226" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Document Fingerprinting</text>
+  <rect x="20" y="182" width="210" height="62" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="32" y="208" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1c1917">2. Duplicate Detection</text>
+  <text x="32" y="226" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#57534e">Document Fingerprinting</text>
 
   <rect x="242" y="182" width="440" height="62" rx="6" fill="#fff5f5" stroke="#fecaca"/>
   <text x="254" y="206" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Exact MD5 / SHA-256 Cryptographic Hashes</text>
-  <text x="254" y="225" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">Fails on dynamic ads/timestamps; stores 30%+ duplicate mirrors</text>
+  <text x="254" y="225" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Fails on dynamic ads/timestamps; stores 30%+ duplicate mirrors</text>
 
   <rect x="694" y="182" width="446" height="62" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
   <text x="706" y="206" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">64-Bit SimHash &amp; MinHash LSH (Hamming &lt;= 3)</text>
-  <text x="706" y="225" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Shingle fingerprints; 4x16-bit pigeonhole index matches in O(1)</text>
+  <text x="706" y="225" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Shingle fingerprints; 4x16-bit pigeonhole index matches in O(1)</text>
 
   <!-- Row 3: Politeness & Policy -->
-  <rect x="20" y="252" width="210" height="62" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="32" y="278" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">3. Politeness &amp; Policy</text>
-  <text x="32" y="296" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Robots &amp; AI Exclusions</text>
+  <rect x="20" y="252" width="210" height="62" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="32" y="278" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1c1917">3. Politeness &amp; Policy</text>
+  <text x="32" y="296" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#57534e">Robots &amp; AI Exclusions</text>
 
   <rect x="242" y="252" width="440" height="62" rx="6" fill="#fff5f5" stroke="#fecaca"/>
   <text x="254" y="276" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Informal Ad-Hoc robots.txt Handlers</text>
-  <text x="254" y="295" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">Ambiguous wildcards; ignores 5xx backoff; IP bans from servers</text>
+  <text x="254" y="295" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Ambiguous wildcards; ignores 5xx backoff; IP bans from servers</text>
 
   <rect x="694" y="252" width="446" height="62" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
   <text x="706" y="276" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">RFC 9309 Standard + AI Opt-Outs &amp; Trap Defense</text>
-  <text x="706" y="295" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Strict 24h TTL; honors GPTBot/CCBot; detects recursive tarpits</text>
+  <text x="706" y="295" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Strict 24h TTL; honors GPTBot/CCBot; detects recursive tarpits</text>
 
   <!-- Row 4: Transport & Protocol -->
-  <rect x="20" y="322" width="210" height="62" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="32" y="348" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">4. Transport &amp; Protocol</text>
-  <text x="32" y="366" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Network Concurrency</text>
+  <rect x="20" y="322" width="210" height="62" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="32" y="348" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1c1917">4. Transport &amp; Protocol</text>
+  <text x="32" y="366" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#57534e">Network Concurrency</text>
 
   <rect x="242" y="322" width="440" height="62" rx="6" fill="#fff5f5" stroke="#fecaca"/>
   <text x="254" y="346" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Single-Tier HTTP/1.1 per Host</text>
-  <text x="254" y="365" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">Head-of-line blocking; synchronous TCP slow-start overhead</text>
+  <text x="254" y="365" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Head-of-line blocking; synchronous TCP slow-start overhead</text>
 
   <rect x="694" y="322" width="446" height="62" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
   <text x="706" y="346" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">Multiplexed HTTP/2 &amp; HTTP/3 (QUIC 0-RTT)</text>
-  <text x="706" y="365" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Stream multiplexing; async epoll/tokio loop; pooled connections</text>
+  <text x="706" y="365" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Stream multiplexing; async epoll/tokio loop; pooled connections</text>
 
   <!-- Row 5: Recrawl Scheduling -->
-  <rect x="20" y="392" width="210" height="62" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="32" y="418" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">5. Recrawl Scheduling</text>
-  <text x="32" y="436" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Freshness vs. Overhead</text>
+  <rect x="20" y="392" width="210" height="62" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="32" y="418" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1c1917">5. Recrawl Scheduling</text>
+  <text x="32" y="436" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#57534e">Freshness vs. Overhead</text>
 
   <rect x="242" y="392" width="440" height="62" rx="6" fill="#fff5f5" stroke="#fecaca"/>
   <text x="254" y="416" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Unconditional Periodic Full Re-Fetches</text>
-  <text x="254" y="435" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">Fixed intervals; re-downloads unchanged HTML; 70%+ bandwidth waste</text>
+  <text x="254" y="435" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Fixed intervals; re-downloads unchanged HTML; 70%+ bandwidth waste</text>
 
   <rect x="694" y="392" width="446" height="62" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
   <text x="706" y="416" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">Adaptive Conditional GET (ETag / If-Modified)</text>
-  <text x="706" y="435" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Poisson change rates; 304 Not Modified skips transfer body</text>
+  <text x="706" y="435" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Poisson change rates; 304 Not Modified skips transfer body</text>
 
   <!-- Row 6: Storage & Downstream -->
-  <rect x="20" y="462" width="210" height="62" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="32" y="488" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">6. Storage &amp; Output</text>
-  <text x="32" y="506" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Archive &amp; Ingestion Target</text>
+  <rect x="20" y="462" width="210" height="62" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="32" y="488" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1c1917">6. Storage &amp; Output</text>
+  <text x="32" y="506" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#57534e">Archive &amp; Ingestion Target</text>
 
   <rect x="242" y="462" width="440" height="62" rx="6" fill="#fff5f5" stroke="#fecaca"/>
   <text x="254" y="486" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Search-Only Index &amp; Proprietary Tarballs</text>
-  <text x="254" y="505" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">Local SAN/NAS files; tightly coupled only to search text index</text>
+  <text x="254" y="505" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Local SAN/NAS files; tightly coupled only to search text index</text>
 
   <rect x="694" y="462" width="446" height="62" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
   <text x="706" y="486" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">ISO 28500 WARC on S3 + LLM Pre-Training Pipelines</text>
-  <text x="706" y="505" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Common Crawl format; high-throughput FineWeb/MinHash extraction</text>
+  <text x="706" y="505" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Common Crawl format; high-throughput FineWeb/MinHash extraction</text>
 </svg>

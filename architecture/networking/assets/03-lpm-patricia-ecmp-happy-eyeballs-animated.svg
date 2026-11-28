@@ -79,169 +79,169 @@
 
   <defs>
     <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#b45309"/>
     </marker>
   </defs>
 
   <!-- Canvas -->
-  <rect x="0" y="0" width="1120" height="640" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1120" height="640" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1120" height="60" rx="12" fill="#0f172a"/>
-  <rect x="0" y="44" width="1120" height="16" fill="#0f172a"/>
-  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Module 03 — LPM Patricia Trie, ECMP Flow Pinning &amp; Happy Eyeballs v2</text>
-  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">O(W) Longest Prefix Match · 5-Tuple / Flow Label Multipath Pinning · RFC 8305 250ms Dual-Stack Connection Race</text>
+  <line x1="24" y1="62" x2="1096" y2="62" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#1c1917" font-family="Georgia, 'Times New Roman', serif">Module 03 — LPM Patricia Trie, ECMP Flow Pinning &amp; Happy Eyeballs v2</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">O(W) Longest Prefix Match · 5-Tuple / Flow Label Multipath Pinning · RFC 8305 250ms Dual-Stack Connection Race</text>
 
   <!-- TOP LEFT: LPM BINARY PATRICIA TRIE -->
-  <rect x="24" y="74" width="526" height="278" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <text x="42" y="98" class="sans" font-size="14" font-weight="700" fill="#0f172a">1. Binary Patricia Trie LPM (Dst: 10.20.30.45)</text>
-  <text x="42" y="114" class="mono" font-size="10" fill="#475569">Bits: 00001010.00010100.00011110.00101101 · Complexity O(W)</text>
+  <rect x="24" y="74" width="526" height="278" rx="10" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <text x="42" y="98" class="sans" font-size="14" font-weight="700" fill="#1c1917">1. Binary Patricia Trie LPM (Dst: 10.20.30.45)</text>
+  <text x="42" y="114" class="mono" font-size="10" fill="#44403c">Bits: 00001010.00010100.00011110.00101101 · Complexity O(W)</text>
 
   <!-- Trie Nodes -->
-  <rect x="64" y="128" width="236" height="34" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
-  <text x="182" y="149" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">0.0.0.0/0 -&gt; GW-A (best)</text>
+  <rect x="64" y="128" width="236" height="34" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="182" y="149" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">0.0.0.0/0 -&gt; GW-A (best)</text>
 
-  <line x1="182" y1="162" x2="182" y2="188" stroke="#2563eb" stroke-width="2" marker-end="url(#arr-blue)"/>
-  <text x="260" y="180" class="mono" font-size="10" fill="#475569">bits 0..7 = 10</text>
+  <line x1="182" y1="162" x2="182" y2="188" stroke="#0f766e" stroke-width="2" marker-end="url(#arr-blue)"/>
+  <text x="260" y="180" class="mono" font-size="10" fill="#44403c">bits 0..7 = 10</text>
 
-  <rect x="64" y="188" width="236" height="34" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
-  <text x="182" y="209" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">10.0.0.0/8 -&gt; GW-B (best)</text>
+  <rect x="64" y="188" width="236" height="34" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="182" y="209" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">10.0.0.0/8 -&gt; GW-B (best)</text>
 
-  <line x1="182" y1="222" x2="182" y2="248" stroke="#2563eb" stroke-width="2" marker-end="url(#arr-blue)"/>
-  <text x="260" y="240" class="mono" font-size="10" fill="#475569">bits 8..15 = 20</text>
+  <line x1="182" y1="222" x2="182" y2="248" stroke="#0f766e" stroke-width="2" marker-end="url(#arr-blue)"/>
+  <text x="260" y="240" class="mono" font-size="10" fill="#44403c">bits 8..15 = 20</text>
 
-  <rect x="64" y="248" width="236" height="34" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
-  <text x="182" y="269" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">10.20.0.0/16 -&gt; GW-C (best)</text>
+  <rect x="64" y="248" width="236" height="34" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="182" y="269" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">10.20.0.0/16 -&gt; GW-C (best)</text>
 
-  <line x1="182" y1="282" x2="182" y2="308" stroke="#059669" stroke-width="2.5" marker-end="url(#arr-green)"/>
+  <line x1="182" y1="282" x2="182" y2="308" stroke="#0f766e" stroke-width="2.5" marker-end="url(#arr-green)"/>
   <text x="260" y="300" class="mono" font-size="10" font-weight="700" fill="#065f46">bits 16..23 = 30</text>
 
-  <rect x="52" y="308" width="260" height="34" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <rect x="52" y="308" width="260" height="34" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
   <text x="182" y="329" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">10.20.30.0/24 -&gt; GW-D (WIN)</text>
 
   <!-- Right side branch showing non-matching leaf + animated walker -->
-  <rect x="350" y="188" width="182" height="58" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
-  <text x="441" y="208" class="mono" font-size="10" font-weight="700" fill="#334155" text-anchor="middle">Sibling: 10.99.0.0/16</text>
-  <text x="441" y="226" class="sans" font-size="10" fill="#64748b" text-anchor="middle">Pruned at bit 8 (mismatch)</text>
+  <rect x="350" y="188" width="182" height="58" rx="6" fill="#faf8f5" stroke="#d6d0c4"/>
+  <text x="441" y="208" class="mono" font-size="10" font-weight="700" fill="#44403c" text-anchor="middle">Sibling: 10.99.0.0/16</text>
+  <text x="441" y="226" class="sans" font-size="10" fill="#57534e" text-anchor="middle">Pruned at bit 8 (mismatch)</text>
 
-  <rect x="350" y="264" width="182" height="78" rx="6" fill="#f5f3ff" stroke="#c4b5fd"/>
-  <text x="441" y="284" class="mono" font-size="10" font-weight="700" fill="#5b21b6" text-anchor="middle">LPM Invariant</text>
-  <text x="441" y="302" class="sans" font-size="10" fill="#4c1d95" text-anchor="middle">Always keep deepest</text>
-  <text x="441" y="317" class="sans" font-size="10" fill="#4c1d95" text-anchor="middle">matched node before</text>
-  <text x="441" y="332" class="sans" font-size="10" fill="#4c1d95" text-anchor="middle">null child termination.</text>
+  <rect x="350" y="264" width="182" height="78" rx="6" fill="#f5f1e8" stroke="#d6d0c4"/>
+  <text x="441" y="284" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">LPM Invariant</text>
+  <text x="441" y="302" class="sans" font-size="10" fill="#065f46" text-anchor="middle">Always keep deepest</text>
+  <text x="441" y="317" class="sans" font-size="10" fill="#065f46" text-anchor="middle">matched node before</text>
+  <text x="441" y="332" class="sans" font-size="10" fill="#065f46" text-anchor="middle">null child termination.</text>
 
   <g class="lpm-dot">
-    <circle cx="52" cy="145" r="9" fill="#d97706" stroke="#ffffff" stroke-width="2"/>
+    <circle cx="52" cy="145" r="9" fill="#b45309" stroke="#ffffff" stroke-width="2"/>
     <text x="52" y="148.5" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">IP</text>
   </g>
 
   <!-- TOP RIGHT: ECMP 5-TUPLE HASHING -->
-  <rect x="570" y="74" width="526" height="278" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <text x="588" y="98" class="sans" font-size="14" font-weight="700" fill="#0f172a">2. ECMP 5-Tuple Hash Flow Pinning</text>
-  <text x="588" y="114" class="mono" font-size="10" fill="#475569">hash(SrcIP, DstIP, Proto, Sport, Dport) mod N  [or IPv6 FlowLabel]</text>
+  <rect x="570" y="74" width="526" height="278" rx="10" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <text x="588" y="98" class="sans" font-size="14" font-weight="700" fill="#1c1917">2. ECMP 5-Tuple Hash Flow Pinning</text>
+  <text x="588" y="114" class="mono" font-size="10" fill="#44403c">hash(SrcIP, DstIP, Proto, Sport, Dport) mod N  [or IPv6 FlowLabel]</text>
 
   <!-- Flows In -->
-  <rect x="588" y="136" width="150" height="58" rx="7" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
-  <text x="663" y="156" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">Flow A (TCP :54210)</text>
-  <text x="663" y="172" class="mono" font-size="10" fill="#1e40af" text-anchor="middle">h(5-tuple) % 2 = 0</text>
-  <text x="663" y="186" class="sans" font-size="10" fill="#059669" text-anchor="middle">All pkts pinned -&gt; eth0</text>
+  <rect x="588" y="136" width="150" height="58" rx="7" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="663" y="156" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Flow A (TCP :54210)</text>
+  <text x="663" y="172" class="mono" font-size="10" fill="#065f46" text-anchor="middle">h(5-tuple) % 2 = 0</text>
+  <text x="663" y="186" class="sans" font-size="10" fill="#0f766e" text-anchor="middle">All pkts pinned -&gt; eth0</text>
 
-  <rect x="588" y="208" width="150" height="58" rx="7" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <rect x="588" y="208" width="150" height="58" rx="7" fill="#fffbeb" stroke="#b45309" stroke-width="1.5"/>
   <text x="663" y="228" class="mono" font-size="10.5" font-weight="700" fill="#92400e" text-anchor="middle">Flow B (TCP :54211)</text>
   <text x="663" y="244" class="mono" font-size="10" fill="#b45309" text-anchor="middle">h(5-tuple) % 2 = 1</text>
   <text x="663" y="258" class="sans" font-size="10" fill="#b45309" text-anchor="middle">All pkts pinned -&gt; eth1</text>
 
   <!-- Hash Router Box -->
-  <rect x="768" y="152" width="124" height="98" rx="8" fill="#0f172a"/>
-  <text x="830" y="180" class="sans" font-size="11.5" font-weight="700" fill="#f8fafc" text-anchor="middle">ECMP Hasher</text>
-  <text x="830" y="200" class="mono" font-size="10" fill="#94a3b8" text-anchor="middle">weight 1 : weight 1</text>
-  <text x="830" y="218" class="mono" font-size="10" fill="#6ee7b7" text-anchor="middle">Zero Reordering</text>
-  <text x="830" y="234" class="mono" font-size="10" fill="#cbd5e1" text-anchor="middle">No false 3x DupACK</text>
+  <rect x="768" y="152" width="124" height="98" rx="8" fill="#1c1917"/>
+  <text x="830" y="180" class="sans" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle">ECMP Hasher</text>
+  <text x="830" y="200" class="mono" font-size="10" fill="#57534e" text-anchor="middle">weight 1 : weight 1</text>
+  <text x="830" y="218" class="mono" font-size="10" fill="#99f6e4" text-anchor="middle">Zero Reordering</text>
+  <text x="830" y="234" class="mono" font-size="10" fill="#57534e" text-anchor="middle">No false 3x DupACK</text>
 
   <!-- Egress Gateways -->
-  <rect x="926" y="136" width="152" height="56" rx="7" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <rect x="926" y="136" width="152" height="56" rx="7" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
   <text x="1002" y="158" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">eth0 -&gt; 192.168.1.1</text>
-  <text x="1002" y="176" class="sans" font-size="10" fill="#047857" text-anchor="middle">Carries Flow A in-order</text>
+  <text x="1002" y="176" class="sans" font-size="10" fill="#065f46" text-anchor="middle">Carries Flow A in-order</text>
 
-  <rect x="926" y="210" width="152" height="56" rx="7" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <rect x="926" y="210" width="152" height="56" rx="7" fill="#fffbeb" stroke="#b45309" stroke-width="1.5"/>
   <text x="1002" y="232" class="mono" font-size="10.5" font-weight="700" fill="#92400e" text-anchor="middle">eth1 -&gt; 10.0.0.1</text>
-  <text x="1002" y="250" class="sans" font-size="10" fill="#78350f" text-anchor="middle">Carries Flow B in-order</text>
+  <text x="1002" y="250" class="sans" font-size="10" fill="#92400e" text-anchor="middle">Carries Flow B in-order</text>
 
-  <line x1="738" y1="165" x2="766" y2="184" stroke="#2563eb" stroke-width="2" marker-end="url(#arr-blue)"/>
-  <line x1="738" y1="237" x2="766" y2="218" stroke="#d97706" stroke-width="2" marker-end="url(#arr-amber)"/>
-  <line x1="892" y1="184" x2="924" y2="164" stroke="#059669" stroke-width="2" marker-end="url(#arr-green)"/>
-  <line x1="892" y1="218" x2="924" y2="238" stroke="#d97706" stroke-width="2" marker-end="url(#arr-amber)"/>
+  <line x1="738" y1="165" x2="766" y2="184" stroke="#0f766e" stroke-width="2" marker-end="url(#arr-blue)"/>
+  <line x1="738" y1="237" x2="766" y2="218" stroke="#b45309" stroke-width="2" marker-end="url(#arr-amber)"/>
+  <line x1="892" y1="184" x2="924" y2="164" stroke="#0f766e" stroke-width="2" marker-end="url(#arr-green)"/>
+  <line x1="892" y1="218" x2="924" y2="238" stroke="#b45309" stroke-width="2" marker-end="url(#arr-amber)"/>
 
   <!-- Animated ECMP packets -->
   <g class="ea">
-    <circle cx="710" cy="186" r="8" fill="#2563eb" stroke="#ffffff" stroke-width="1.5"/>
+    <circle cx="710" cy="186" r="8" fill="#0f766e" stroke="#ffffff" stroke-width="1.5"/>
   </g>
   <g class="eb">
-    <circle cx="710" cy="212" r="8" fill="#d97706" stroke="#ffffff" stroke-width="1.5"/>
+    <circle cx="710" cy="212" r="8" fill="#b45309" stroke="#ffffff" stroke-width="1.5"/>
   </g>
 
-  <rect x="588" y="282" width="490" height="56" rx="7" fill="#f5f3ff" stroke="#c4b5fd"/>
-  <text x="602" y="302" class="sans" font-size="10.5" font-weight="700" fill="#5b21b6">Why Per-Flow Pinning Over Per-Packet Round-Robin?</text>
-  <text x="602" y="322" class="sans" font-size="10" fill="#4c1d95">Per-packet spraying reorders segments across paths, causing false 3-dupACK cwnd cuts.</text>
+  <rect x="588" y="282" width="490" height="56" rx="7" fill="#f5f1e8" stroke="#d6d0c4"/>
+  <text x="602" y="302" class="sans" font-size="10.5" font-weight="700" fill="#065f46">Why Per-Flow Pinning Over Per-Packet Round-Robin?</text>
+  <text x="602" y="322" class="sans" font-size="10" fill="#065f46">Per-packet spraying reorders segments across paths, causing false 3-dupACK cwnd cuts.</text>
 
   <!-- BOTTOM: HAPPY EYEBALLS V2 (RFC 8305) -->
-  <rect x="24" y="366" width="1072" height="206" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <text x="42" y="390" class="sans" font-size="14" font-weight="700" fill="#0f172a">3. Happy Eyeballs v2 (RFC 8305) — Dual-Stack Interleaved 250ms Connection Race</text>
+  <rect x="24" y="366" width="1072" height="206" rx="10" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <text x="42" y="390" class="sans" font-size="14" font-weight="700" fill="#1c1917">3. Happy Eyeballs v2 (RFC 8305) — Dual-Stack Interleaved 250ms Connection Race</text>
 
   <!-- DNS Concurrent Query Box -->
-  <rect x="42" y="408" width="224" height="146" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
-  <text x="154" y="430" class="sans" font-size="12" font-weight="700" fill="#1e3a8a" text-anchor="middle">1. Parallel DNS + Interleave</text>
-  <text x="56" y="452" class="mono" font-size="10" fill="#1e40af">Query AAAA + A concurrently</text>
-  <text x="56" y="472" class="mono" font-size="10" font-weight="700" fill="#5b21b6">Sorted List:</text>
-  <text x="56" y="490" class="mono" font-size="10" fill="#334155">[0] 2001:db8::1 (IPv6 #1)</text>
+  <rect x="42" y="408" width="224" height="146" rx="8" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="154" y="430" class="sans" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">1. Parallel DNS + Interleave</text>
+  <text x="56" y="452" class="mono" font-size="10" fill="#065f46">Query AAAA + A concurrently</text>
+  <text x="56" y="472" class="mono" font-size="10" font-weight="700" fill="#065f46">Sorted List:</text>
+  <text x="56" y="490" class="mono" font-size="10" fill="#44403c">[0] 2001:db8::1 (IPv6 #1)</text>
   <text x="56" y="506" class="mono" font-size="10" fill="#065f46">[1] 198.51.100.1 (IPv4 #1)</text>
-  <text x="56" y="522" class="mono" font-size="10" fill="#334155">[2] 2001:db8::2 (IPv6 #2)</text>
-  <text x="56" y="542" class="sans" font-size="10" fill="#475569">IPv6 leads; families alternate.</text>
+  <text x="56" y="522" class="mono" font-size="10" fill="#44403c">[2] 2001:db8::2 (IPv6 #2)</text>
+  <text x="56" y="542" class="sans" font-size="10" fill="#44403c">IPv6 leads; families alternate.</text>
 
   <!-- Race Lanes -->
-  <rect x="286" y="408" width="560" height="146" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <rect x="286" y="408" width="560" height="146" rx="8" fill="#faf8f5" stroke="#d6d0c4"/>
 
   <!-- IPv6 Lane -->
-  <text x="304" y="434" class="mono" font-size="10.5" font-weight="700" fill="#9f1239">t = 0ms: TCP SYN -&gt; IPv6 #1 (Broken / Black-Holed Path)</text>
-  <line x1="304" y1="448" x2="824" y2="448" stroke="#fca5a5" stroke-width="3"/>
+  <text x="304" y="434" class="mono" font-size="10.5" font-weight="700" fill="#991b1b">t = 0ms: TCP SYN -&gt; IPv6 #1 (Broken / Black-Holed Path)</text>
+  <line x1="304" y1="448" x2="824" y2="448" stroke="#dc2626" stroke-width="3"/>
   <g class="v6syn">
-    <rect x="304" y="436" width="96" height="22" rx="4" fill="#e11d48"/>
+    <rect x="304" y="436" width="96" height="22" rx="4" fill="#dc2626"/>
     <text x="352" y="451" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">SYN (IPv6)</text>
   </g>
 
   <!-- 250ms Attempt Timer -->
   <text x="304" y="478" class="mono" font-size="10" font-weight="700" fill="#92400e">Connection Attempt Delay Timer (250 ms):</text>
-  <rect x="554" y="466" width="200" height="16" rx="4" fill="#fef3c7" stroke="#d97706"/>
-  <rect x="554" y="466" width="200" height="16" rx="4" fill="#d97706" class="tbar"/>
+  <rect x="554" y="466" width="200" height="16" rx="4" fill="#fffbeb" stroke="#b45309"/>
+  <rect x="554" y="466" width="200" height="16" rx="4" fill="#b45309" class="tbar"/>
   <text x="764" y="478" class="mono" font-size="10" font-weight="700" fill="#92400e">250 ms!</text>
 
   <!-- IPv4 Lane -->
   <text x="304" y="508" class="mono" font-size="10.5" font-weight="700" fill="#065f46">t = 250ms: Timer expires -&gt; Concurrent TCP SYN -&gt; IPv4 #1</text>
-  <line x1="304" y1="524" x2="824" y2="524" stroke="#6ee7b7" stroke-width="3"/>
+  <line x1="304" y1="524" x2="824" y2="524" stroke="#99f6e4" stroke-width="3"/>
   <g class="v4race">
-    <rect x="304" y="512" width="128" height="22" rx="4" fill="#059669"/>
+    <rect x="304" y="512" width="128" height="22" rx="4" fill="#0f766e"/>
     <text x="368" y="527" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">SYN / SYN-ACK (v4)</text>
   </g>
-  <text x="304" y="546" class="sans" font-size="10" fill="#047857">Both attempts run concurrently; first SYN-ACK wins, loser gets RST/FIN.</text>
+  <text x="304" y="546" class="sans" font-size="10" fill="#065f46">Both attempts run concurrently; first SYN-ACK wins, loser gets RST/FIN.</text>
 
   <!-- Winner Box -->
   <g class="hewin">
-    <rect x="864" y="408" width="214" height="146" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <rect x="864" y="408" width="214" height="146" rx="8" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
     <text x="971" y="434" class="sans" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">First-to-Connect Wins</text>
-    <rect x="886" y="446" width="170" height="26" rx="5" fill="#059669"/>
+    <rect x="886" y="446" width="170" height="26" rx="5" fill="#0f766e"/>
     <text x="971" y="463" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">IPv4 ESTABLISHED</text>
-    <text x="971" y="492" class="mono" font-size="10" fill="#9f1239" text-anchor="middle">Abort IPv6 (RST)</text>
-    <text x="971" y="514" class="sans" font-size="10" fill="#047857" text-anchor="middle">Cache winning family ~10m</text>
+    <text x="971" y="492" class="mono" font-size="10" fill="#991b1b" text-anchor="middle">Abort IPv6 (RST)</text>
+    <text x="971" y="514" class="sans" font-size="10" fill="#065f46" text-anchor="middle">Cache winning family ~10m</text>
     <text x="971" y="534" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">250ms max stall (vs 30s)</text>
   </g>
 
   <!-- FOOTER -->
-  <rect x="24" y="584" width="1072" height="42" rx="8" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <rect x="24" y="584" width="1072" height="42" rx="8" fill="#f0fdf9" stroke="#99f6e4"/>
   <text x="42" y="610" class="sans" font-size="11.5" font-weight="600" fill="#065f46">Takeaway: Radix tries bound LPM lookup to O(W), ECMP hashing preserves TCP packet order, and Happy Eyeballs v2 caps dual-stack failover at 250 ms.</text>
 </svg>

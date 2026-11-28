@@ -13,32 +13,32 @@
        75-100%: Step 4 — updated(k, v') path-copies SubNode_A' and Root' while sharing SubNode_B and inline pairs
     */
     @keyframes st1 {
-      0%, 24% { stroke: #2563eb; stroke-width: 2.5; opacity: 1; }
-      25%, 100% { stroke: #cbd5e1; stroke-width: 1.2; opacity: 0.86; }
+      0%, 24% { stroke: #0f766e; stroke-width: 2.5; opacity: 1; }
+      25%, 100% { stroke: #d6d0c4; stroke-width: 1.2; opacity: 0.86; }
     }
     @keyframes st2 {
-      0%, 24% { stroke: #cbd5e1; stroke-width: 1.2; opacity: 0.86; }
-      25%, 49% { stroke: #7c3aed; stroke-width: 2.5; opacity: 1; }
-      50%, 100% { stroke: #cbd5e1; stroke-width: 1.2; opacity: 0.86; }
+      0%, 24% { stroke: #d6d0c4; stroke-width: 1.2; opacity: 0.86; }
+      25%, 49% { stroke: #0f766e; stroke-width: 2.5; opacity: 1; }
+      50%, 100% { stroke: #d6d0c4; stroke-width: 1.2; opacity: 0.86; }
     }
     @keyframes st3 {
-      0%, 49% { stroke: #cbd5e1; stroke-width: 1.2; opacity: 0.86; }
-      50%, 74% { stroke: #d97706; stroke-width: 2.5; opacity: 1; }
-      75%, 100% { stroke: #cbd5e1; stroke-width: 1.2; opacity: 0.86; }
+      0%, 49% { stroke: #d6d0c4; stroke-width: 1.2; opacity: 0.86; }
+      50%, 74% { stroke: #b45309; stroke-width: 2.5; opacity: 1; }
+      75%, 100% { stroke: #d6d0c4; stroke-width: 1.2; opacity: 0.86; }
     }
     @keyframes st4 {
-      0%, 74% { stroke: #cbd5e1; stroke-width: 1.2; opacity: 0.86; }
-      75%, 100% { stroke: #059669; stroke-width: 2.5; opacity: 1; }
+      0%, 74% { stroke: #d6d0c4; stroke-width: 1.2; opacity: 0.86; }
+      75%, 100% { stroke: #0f766e; stroke-width: 2.5; opacity: 1; }
     }
 
     @keyframes chunk0-hl {
-      0%, 24% { stroke: #2563eb; stroke-width: 2.5; }
-      25%, 100% { stroke: #93c5fd; stroke-width: 1.2; }
+      0%, 24% { stroke: #0f766e; stroke-width: 2.5; }
+      25%, 100% { stroke: #99f6e4; stroke-width: 1.2; }
     }
     @keyframes chunk1-hl {
-      0%, 49% { stroke: #c4b5fd; stroke-width: 1.2; }
-      50%, 74% { stroke: #d97706; stroke-width: 2.5; }
-      75%, 100% { stroke: #c4b5fd; stroke-width: 1.2; }
+      0%, 49% { stroke: #d6d0c4; stroke-width: 1.2; }
+      50%, 74% { stroke: #b45309; stroke-width: 2.5; }
+      75%, 100% { stroke: #d6d0c4; stroke-width: 1.2; }
     }
     @keyframes path-copy-show {
       0%, 72% { opacity: 0.86; transform: translateY(4px); }
@@ -63,150 +63,150 @@
 
   <defs>
     <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-slate" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#57534e"/>
     </marker>
   </defs>
 
   <!-- Canvas -->
-  <rect x="0" y="0" width="1160" height="630" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1160" height="630" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1160" height="60" rx="12" fill="#0f172a"/>
-  <rect x="0" y="44" width="1160" height="16" fill="#0f172a"/>
-  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Scala CHAMP Trie — Dual-Bitmap Lookup &amp; Structural Sharing</text>
-  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">Immutable HashMap / HashSet · 5-bit hash chunks (max 7 hops, eO(1)) · popcount compact indexing · Zero HashMap1 leaf wrappers</text>
+  <line x1="24" y1="62" x2="1136" y2="62" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#1c1917" font-family="Georgia, 'Times New Roman', serif">Scala CHAMP Trie — Dual-Bitmap Lookup &amp; Structural Sharing</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">Immutable HashMap / HashSet · 5-bit hash chunks (max 7 hops, eO(1)) · popcount compact indexing · Zero HashMap1 leaf wrappers</text>
 
   <!-- TOP STRIP: 32-BIT HASH SLICING -->
-  <rect x="24" y="76" width="1112" height="82" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <text x="42" y="100" class="sans" font-size="13" font-weight="700" fill="#0f172a">32-Bit Key Hash Slicing: h = improve(key.hashCode) → 5-bit chunks (0..31)</text>
-  <text x="740" y="100" class="mono" font-size="11" fill="#475569">Max depth = ⌈32 / 5⌉ = 7 hops</text>
+  <rect x="24" y="76" width="1112" height="82" rx="10" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <text x="42" y="100" class="sans" font-size="13" font-weight="700" fill="#1c1917">32-Bit Key Hash Slicing: h = improve(key.hashCode) → 5-bit chunks (0..31)</text>
+  <text x="740" y="100" class="mono" font-size="11" fill="#44403c">Max depth = ⌈32 / 5⌉ = 7 hops</text>
 
-  <rect x="42" y="112" width="190" height="34" rx="6" fill="#eff6ff" class="c0"/>
-  <text x="137" y="133" class="mono" font-size="11" font-weight="700" fill="#1e3a8a" text-anchor="middle">L0 [4:0] = 01011 (11)</text>
+  <rect x="42" y="112" width="190" height="34" rx="6" fill="#f0fdf9" class="c0"/>
+  <text x="137" y="133" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">L0 [4:0] = 01011 (11)</text>
 
-  <rect x="242" y="112" width="190" height="34" rx="6" fill="#f5f3ff" class="c1"/>
-  <text x="337" y="133" class="mono" font-size="11" font-weight="700" fill="#5b21b6" text-anchor="middle">L1 [9:5] = 00101 (5)</text>
+  <rect x="242" y="112" width="190" height="34" rx="6" fill="#f5f1e8" class="c1"/>
+  <text x="337" y="133" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">L1 [9:5] = 00101 (5)</text>
 
-  <rect x="442" y="112" width="170" height="34" rx="6" fill="#f1f5f9" stroke="#cbd5e1"/>
-  <text x="527" y="133" class="mono" font-size="11" fill="#64748b" text-anchor="middle">L2 [14:10] = 10010</text>
+  <rect x="442" y="112" width="170" height="34" rx="6" fill="#f5f1e8" stroke="#d6d0c4"/>
+  <text x="527" y="133" class="mono" font-size="11" fill="#57534e" text-anchor="middle">L2 [14:10] = 10010</text>
 
-  <rect x="622" y="112" width="170" height="34" rx="6" fill="#f1f5f9" stroke="#cbd5e1"/>
-  <text x="707" y="133" class="mono" font-size="11" fill="#64748b" text-anchor="middle">L3..L5 [29:15] ...</text>
+  <rect x="622" y="112" width="170" height="34" rx="6" fill="#f5f1e8" stroke="#d6d0c4"/>
+  <text x="707" y="133" class="mono" font-size="11" fill="#57534e" text-anchor="middle">L3..L5 [29:15] ...</text>
 
-  <rect x="802" y="112" width="140" height="34" rx="6" fill="#f1f5f9" stroke="#cbd5e1"/>
-  <text x="872" y="133" class="mono" font-size="11" fill="#64748b" text-anchor="middle">L6 [31:30] (2b)</text>
+  <rect x="802" y="112" width="140" height="34" rx="6" fill="#f5f1e8" stroke="#d6d0c4"/>
+  <text x="872" y="133" class="mono" font-size="11" fill="#57534e" text-anchor="middle">L6 [31:30] (2b)</text>
 
-  <rect x="954" y="112" width="164" height="34" rx="6" fill="#fffbeb" stroke="#f59e0b"/>
+  <rect x="954" y="112" width="164" height="34" rx="6" fill="#fffbeb" stroke="#b45309"/>
   <text x="1036" y="133" class="mono" font-size="10.5" font-weight="700" fill="#92400e" text-anchor="middle">mask = (h &gt;&gt;&gt; shift) &amp; 31</text>
 
   <!-- LEFT/CENTER PANEL: MEMORY LAYOUT & PATH-COPYING -->
-  <rect x="24" y="172" width="612" height="378" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <text x="42" y="198" class="sans" font-size="14" font-weight="700" fill="#0f172a">BitmapIndexedMapNode Memory Layout &amp; Path-Copying</text>
+  <rect x="24" y="172" width="612" height="378" rx="10" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <text x="42" y="198" class="sans" font-size="14" font-weight="700" fill="#1c1917">BitmapIndexedMapNode Memory Layout &amp; Path-Copying</text>
 
   <!-- Root Node -->
-  <rect x="42" y="214" width="388" height="122" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.6"/>
-  <text x="56" y="234" class="mono" font-size="12" font-weight="700" fill="#1e3a8a">Root Node (shift = 0)</text>
-  <text x="234" y="234" class="mono" font-size="10.5" fill="#1e40af">bit(11) = 1 &lt;&lt; 11</text>
+  <rect x="42" y="214" width="388" height="122" rx="8" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.6"/>
+  <text x="56" y="234" class="mono" font-size="12" font-weight="700" fill="#065f46">Root Node (shift = 0)</text>
+  <text x="234" y="234" class="mono" font-size="10.5" fill="#065f46">bit(11) = 1 &lt;&lt; 11</text>
 
   <!-- Dual Bitmaps -->
-  <rect x="56" y="244" width="176" height="28" rx="5" fill="#fffbeb" stroke="#d97706"/>
+  <rect x="56" y="244" width="176" height="28" rx="5" fill="#fffbeb" stroke="#b45309"/>
   <text x="144" y="262" class="mono" font-size="10.5" font-weight="700" fill="#92400e" text-anchor="middle">dataMap: bits {2, 7}</text>
 
-  <rect x="240" y="244" width="176" height="28" rx="5" fill="#dbeafe" stroke="#2563eb"/>
-  <text x="328" y="262" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">nodeMap: bits {11, 24}</text>
+  <rect x="240" y="244" width="176" height="28" rx="5" fill="#f0fdf9" stroke="#0f766e"/>
+  <text x="328" y="262" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">nodeMap: bits {11, 24}</text>
 
   <!-- Flat content: Array[Any] -->
-  <text x="56" y="288" class="mono" font-size="10" font-weight="700" fill="#334155">content: Array[Any]  (inline forward → | ← sub-nodes reverse)</text>
-  <rect x="56" y="294" width="68" height="30" rx="4" fill="#fef3c7" stroke="#d97706"/>
+  <text x="56" y="288" class="mono" font-size="10" font-weight="700" fill="#44403c">content: Array[Any]  (inline forward → | ← sub-nodes reverse)</text>
+  <rect x="56" y="294" width="68" height="30" rx="4" fill="#fffbeb" stroke="#b45309"/>
   <text x="90" y="313" class="mono" font-size="10" fill="#92400e" text-anchor="middle">(k1, v1)</text>
-  <rect x="128" y="294" width="68" height="30" rx="4" fill="#fef3c7" stroke="#d97706"/>
+  <rect x="128" y="294" width="68" height="30" rx="4" fill="#fffbeb" stroke="#b45309"/>
   <text x="162" y="313" class="mono" font-size="10" fill="#92400e" text-anchor="middle">(k2, v2)</text>
-  <rect x="200" y="294" width="46" height="30" rx="4" fill="#f1f5f9" stroke="#cbd5e1"/>
-  <text x="223" y="313" class="mono" font-size="10" fill="#64748b" text-anchor="middle">...</text>
-  <rect x="250" y="294" width="80" height="30" rx="4" fill="#dbeafe" stroke="#2563eb"/>
-  <text x="290" y="313" class="mono" font-size="10" font-weight="700" fill="#1e3a8a" text-anchor="middle">SubNode_B</text>
-  <rect x="334" y="294" width="82" height="30" rx="4" fill="#2563eb"/>
+  <rect x="200" y="294" width="46" height="30" rx="4" fill="#f5f1e8" stroke="#d6d0c4"/>
+  <text x="223" y="313" class="mono" font-size="10" fill="#57534e" text-anchor="middle">...</text>
+  <rect x="250" y="294" width="80" height="30" rx="4" fill="#f0fdf9" stroke="#0f766e"/>
+  <text x="290" y="313" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">SubNode_B</text>
+  <rect x="334" y="294" width="82" height="30" rx="4" fill="#0f766e"/>
   <text x="375" y="313" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">SubNode_A</text>
 
   <!-- Child SubNode_A & Untouched SubNode_B -->
-  <line x1="290" y1="324" x2="140" y2="392" stroke="#64748b" stroke-width="1.4" marker-end="url(#arr-slate)"/>
-  <line x1="375" y1="324" x2="345" y2="392" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+  <line x1="290" y1="324" x2="140" y2="392" stroke="#57534e" stroke-width="1.4" marker-end="url(#arr-slate)"/>
+  <line x1="375" y1="324" x2="345" y2="392" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-blue)"/>
 
-  <rect x="42" y="396" width="186" height="92" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2"/>
-  <text x="135" y="418" class="mono" font-size="11.5" font-weight="700" fill="#334155" text-anchor="middle">SubNode_B (bit 24)</text>
-  <text x="135" y="438" class="sans" font-size="10.5" fill="#475569" text-anchor="middle">Untouched sibling subtree</text>
-  <rect x="56" y="450" width="158" height="24" rx="4" fill="#ecfdf5" stroke="#059669"/>
+  <rect x="42" y="396" width="186" height="92" rx="8" fill="#faf8f5" stroke="#d6d0c4" stroke-width="1.2"/>
+  <text x="135" y="418" class="mono" font-size="11.5" font-weight="700" fill="#44403c" text-anchor="middle">SubNode_B (bit 24)</text>
+  <text x="135" y="438" class="sans" font-size="10.5" fill="#44403c" text-anchor="middle">Untouched sibling subtree</text>
+  <rect x="56" y="450" width="158" height="24" rx="4" fill="#f0fdf9" stroke="#0f766e"/>
   <text x="135" y="466" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">SHARED (O(1) ref reuse)</text>
 
-  <rect x="242" y="396" width="188" height="92" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="1.6"/>
+  <rect x="242" y="396" width="188" height="92" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="1.6"/>
   <text x="336" y="418" class="mono" font-size="11.5" font-weight="700" fill="#92400e" text-anchor="middle">SubNode_A (shift = 5)</text>
   <text x="336" y="436" class="mono" font-size="10" fill="#b45309" text-anchor="middle">dataMap bit 5 = 1 (HIT!)</text>
-  <rect x="256" y="446" width="160" height="30" rx="5" fill="#ffffff" stroke="#d97706"/>
+  <rect x="256" y="446" width="160" height="30" rx="5" fill="#ffffff" stroke="#b45309"/>
   <text x="336" y="465" class="mono" font-size="10.5" font-weight="700" fill="#92400e" text-anchor="middle">inline: (k_target, v_old)</text>
 
   <!-- Path-Copied New Version (Root' and SubNode_A') -->
   <g class="pcopy">
-    <rect x="448" y="214" width="172" height="122" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+    <rect x="448" y="214" width="172" height="122" rx="8" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.8"/>
     <text x="534" y="236" class="mono" font-size="11.5" font-weight="700" fill="#065f46" text-anchor="middle">Root' (New Copy)</text>
-    <text x="534" y="256" class="sans" font-size="10.5" fill="#047857" text-anchor="middle">Reuses (k1,v1), (k2,v2)</text>
-    <text x="534" y="274" class="sans" font-size="10.5" fill="#047857" text-anchor="middle">&amp; SubNode_B pointer</text>
-    <rect x="462" y="290" width="144" height="32" rx="5" fill="#059669"/>
+    <text x="534" y="256" class="sans" font-size="10.5" fill="#065f46" text-anchor="middle">Reuses (k1,v1), (k2,v2)</text>
+    <text x="534" y="274" class="sans" font-size="10.5" fill="#065f46" text-anchor="middle">&amp; SubNode_B pointer</text>
+    <rect x="462" y="290" width="144" height="32" rx="5" fill="#0f766e"/>
     <text x="534" y="310" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">points → SubNode_A'</text>
 
-    <line x1="534" y1="336" x2="534" y2="392" stroke="#059669" stroke-width="1.8" marker-end="url(#arr-green)"/>
+    <line x1="534" y1="336" x2="534" y2="392" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-green)"/>
 
-    <rect x="448" y="396" width="172" height="92" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+    <rect x="448" y="396" width="172" height="92" rx="8" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.8"/>
     <text x="534" y="418" class="mono" font-size="11.5" font-weight="700" fill="#065f46" text-anchor="middle">SubNode_A' (Copy)</text>
-    <text x="534" y="438" class="sans" font-size="10" fill="#047857" text-anchor="middle">≤ 32 slots copied</text>
-    <rect x="460" y="446" width="148" height="30" rx="5" fill="#059669"/>
+    <text x="534" y="438" class="sans" font-size="10" fill="#065f46" text-anchor="middle">≤ 32 slots copied</text>
+    <rect x="460" y="446" width="148" height="30" rx="5" fill="#0f766e"/>
     <text x="534" y="465" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">(k_target, v_new)</text>
   </g>
 
-  <text x="42" y="524" class="sans" font-size="11" fill="#334155">Canonical node layout makes structural equality (m1 == m2) short-circuit in O(1) on identical refs.</text>
+  <text x="42" y="524" class="sans" font-size="11" fill="#44403c">Canonical node layout makes structural equality (m1 == m2) short-circuit in O(1) on identical refs.</text>
 
   <!-- RIGHT PANEL: 4-STEP ANIMATED ALGORITHM -->
-  <rect x="654" y="172" width="482" height="378" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <text x="674" y="198" class="sans" font-size="14" font-weight="700" fill="#0f172a">Lookup &amp; Update Steps (12s Loop)</text>
+  <rect x="654" y="172" width="482" height="378" rx="10" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <text x="674" y="198" class="sans" font-size="14" font-weight="700" fill="#1c1917">Lookup &amp; Update Steps (12s Loop)</text>
 
   <!-- Step 1 -->
-  <rect x="674" y="212" width="442" height="72" rx="8" fill="#eff6ff" class="s1"/>
-  <rect x="686" y="222" width="64" height="22" rx="5" fill="#2563eb"/>
+  <rect x="674" y="212" width="442" height="72" rx="8" fill="#f0fdf9" class="s1"/>
+  <rect x="686" y="222" width="64" height="22" rx="5" fill="#0f766e"/>
   <text x="718" y="237" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">Step 1</text>
-  <text x="762" y="237" class="sans" font-size="12.5" font-weight="700" fill="#1e3a8a">Test 5-Bit Mask Against Dual Bitmaps</text>
-  <text x="686" y="259" class="mono" font-size="10.5" fill="#334155">bit = 1 &lt;&lt; (h &amp; 31) = 1 &lt;&lt; 11</text>
-  <text x="686" y="275" class="mono" font-size="10.5" fill="#1e40af">(dataMap &amp; bit) == 0;  (nodeMap &amp; bit) != 0 → descend</text>
+  <text x="762" y="237" class="sans" font-size="12.5" font-weight="700" fill="#065f46">Test 5-Bit Mask Against Dual Bitmaps</text>
+  <text x="686" y="259" class="mono" font-size="10.5" fill="#44403c">bit = 1 &lt;&lt; (h &amp; 31) = 1 &lt;&lt; 11</text>
+  <text x="686" y="275" class="mono" font-size="10.5" fill="#065f46">(dataMap &amp; bit) == 0;  (nodeMap &amp; bit) != 0 → descend</text>
 
   <!-- Step 2 -->
-  <rect x="674" y="294" width="442" height="76" rx="8" fill="#f5f3ff" class="s2"/>
-  <rect x="686" y="304" width="64" height="22" rx="5" fill="#7c3aed"/>
+  <rect x="674" y="294" width="442" height="76" rx="8" fill="#f5f1e8" class="s2"/>
+  <rect x="686" y="304" width="64" height="22" rx="5" fill="#0f766e"/>
   <text x="718" y="319" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">Step 2</text>
-  <text x="762" y="319" class="sans" font-size="12.5" font-weight="700" fill="#5b21b6">Compact Index via Hardware popcount</text>
-  <text x="686" y="341" class="mono" font-size="10.5" fill="#334155">pos = Integer.bitCount(nodeMap &amp; (bit - 1))</text>
-  <text x="686" y="357" class="mono" font-size="10.5" fill="#6d28d9">child = content(content.length - 1 - pos) → SubNode_A</text>
+  <text x="762" y="319" class="sans" font-size="12.5" font-weight="700" fill="#065f46">Compact Index via Hardware popcount</text>
+  <text x="686" y="341" class="mono" font-size="10.5" fill="#44403c">pos = Integer.bitCount(nodeMap &amp; (bit - 1))</text>
+  <text x="686" y="357" class="mono" font-size="10.5" fill="#065f46">child = content(content.length - 1 - pos) → SubNode_A</text>
 
   <!-- Step 3 -->
   <rect x="674" y="380" width="442" height="76" rx="8" fill="#fffbeb" class="s3"/>
-  <rect x="686" y="390" width="64" height="22" rx="5" fill="#d97706"/>
+  <rect x="686" y="390" width="64" height="22" rx="5" fill="#b45309"/>
   <text x="718" y="405" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">Step 3</text>
   <text x="762" y="405" class="sans" font-size="12.5" font-weight="700" fill="#92400e">Inline Data Hit at Level 1 (shift = 5)</text>
-  <text x="686" y="427" class="mono" font-size="10.5" fill="#334155">bit = 1 &lt;&lt; ((h &gt;&gt;&gt; 5) &amp; 31) = 1 &lt;&lt; 5</text>
+  <text x="686" y="427" class="mono" font-size="10.5" fill="#44403c">bit = 1 &lt;&lt; ((h &gt;&gt;&gt; 5) &amp; 31) = 1 &lt;&lt; 5</text>
   <text x="686" y="443" class="mono" font-size="10.5" fill="#b45309">idx = 2 * bitCount(dataMap &amp; (bit - 1)) → (k, v_old)</text>
 
   <!-- Step 4 -->
-  <rect x="674" y="466" width="442" height="72" rx="8" fill="#ecfdf5" class="s4"/>
-  <rect x="686" y="476" width="64" height="22" rx="5" fill="#059669"/>
+  <rect x="674" y="466" width="442" height="72" rx="8" fill="#f0fdf9" class="s4"/>
+  <rect x="686" y="476" width="64" height="22" rx="5" fill="#0f766e"/>
   <text x="718" y="491" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">Step 4</text>
   <text x="762" y="491" class="sans" font-size="12.5" font-weight="700" fill="#065f46">Path-Copying Immutable Update</text>
-  <text x="686" y="513" class="mono" font-size="10.5" fill="#334155">Copy only path nodes (SubNode_A' → Root')</text>
-  <text x="686" y="529" class="sans" font-size="10.5" fill="#047857">Shares all other branches; ~2–3× faster iteration vs HAMT.</text>
+  <text x="686" y="513" class="mono" font-size="10.5" fill="#44403c">Copy only path nodes (SubNode_A' → Root')</text>
+  <text x="686" y="529" class="sans" font-size="10.5" fill="#065f46">Shares all other branches; ~2–3× faster iteration vs HAMT.</text>
 
   <!-- FOOTER -->
-  <rect x="24" y="566" width="1112" height="46" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
-  <text x="42" y="594" class="sans" font-size="11.5" font-weight="600" fill="#1e3a8a">Takeaway: CHAMP packs inline entries forward and sub-nodes backward via popcount on dual 32-bit bitmaps, giving cache-friendly iteration and eO(1) updates.</text>
+  <rect x="24" y="566" width="1112" height="46" rx="8" fill="#f0fdf9" stroke="#99f6e4" stroke-width="1"/>
+  <text x="42" y="594" class="sans" font-size="11.5" font-weight="600" fill="#065f46">Takeaway: CHAMP packs inline entries forward and sub-nodes backward via popcount on dual 32-bit bitmaps, giving cache-friendly iteration and eO(1) updates.</text>
 </svg>

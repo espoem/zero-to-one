@@ -31,10 +31,10 @@
         82%, 100% { opacity: 1; transform: translateX(0px); }
       }
 
-      @keyframes st-1 { 0%, 24% { opacity: 1; stroke: #2563eb; stroke-width: 2.5; } 25%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; } }
-      @keyframes st-2 { 0%, 24% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; } 25%, 49% { opacity: 1; stroke: #059669; stroke-width: 2.5; } 50%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; } }
-      @keyframes st-3 { 0%, 49% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; } 50%, 74% { opacity: 1; stroke: #d97706; stroke-width: 2.5; } 75%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; } }
-      @keyframes st-4 { 0%, 74% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; } 75%, 100% { opacity: 1; stroke: #e11d48; stroke-width: 2.5; } }
+      @keyframes st-1 { 0%, 24% { opacity: 1; stroke: #0f766e; stroke-width: 2.5; } 25%, 100% { opacity: 0.86; stroke: #d6d0c4; stroke-width: 1.2; } }
+      @keyframes st-2 { 0%, 24% { opacity: 0.86; stroke: #d6d0c4; stroke-width: 1.2; } 25%, 49% { opacity: 1; stroke: #0f766e; stroke-width: 2.5; } 50%, 100% { opacity: 0.86; stroke: #d6d0c4; stroke-width: 1.2; } }
+      @keyframes st-3 { 0%, 49% { opacity: 0.86; stroke: #d6d0c4; stroke-width: 1.2; } 50%, 74% { opacity: 1; stroke: #b45309; stroke-width: 2.5; } 75%, 100% { opacity: 0.86; stroke: #d6d0c4; stroke-width: 1.2; } }
+      @keyframes st-4 { 0%, 74% { opacity: 0.86; stroke: #d6d0c4; stroke-width: 1.2; } 75%, 100% { opacity: 1; stroke: #dc2626; stroke-width: 2.5; } }
 
       .dsup { animation: drop-superseded 12s linear infinite; }
       .clog { animation: show-clean-log 12s ease-out infinite; }
@@ -61,159 +61,159 @@
     </style>
 
     <marker id="arr-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#b45309"/>
     </marker>
     <marker id="arr-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#dc2626"/>
     </marker>
   </defs>
 
   <!-- Canvas -->
-  <rect x="0" y="0" width="1200" height="720" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1200" height="720" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1200" height="62" rx="12" fill="#0f172a"/>
-  <rect x="0" y="46" width="1200" height="16" fill="#0f172a"/>
-  <text x="24" y="28" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Event Logs &amp; Stream Processing: Log Compaction &amp; Event-Time Watermarks</text>
-  <text x="24" y="48" class="sans" font-size="12" fill="#94a3b8">Stream-Table Duality compaction (retaining latest key offsets + pruning tombstones) and watermark-triggered tumbling windows</text>
+  <line x1="24" y1="64" x2="1176" y2="64" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="28" class="sans" font-size="18" font-weight="700" fill="#1c1917" font-family="Georgia, 'Times New Roman', serif">Event Logs &amp; Stream Processing: Log Compaction &amp; Event-Time Watermarks</text>
+  <text x="24" y="48" class="sans" font-size="12" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">Stream-Table Duality compaction (retaining latest key offsets + pruning tombstones) and watermark-triggered tumbling windows</text>
 
   <!-- TOP PANEL: LOG COMPACTION -->
-  <rect x="24" y="78" width="1152" height="222" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <rect x="24" y="78" width="1152" height="32" rx="10" fill="#f1f5f9"/>
-  <rect x="24" y="100" width="1152" height="10" fill="#f1f5f9"/>
-  <text x="40" y="99" class="sans" font-size="12.5" font-weight="700" fill="#0f172a">1. Append-Only Log Compaction (Retain Latest Offset per Key &amp; Prune Tombstones)</text>
-  <text x="1160" y="99" class="mono" font-size="10.5" fill="#64748b" text-anchor="end">Stream ↔ Table state recovery</text>
+  <rect x="24" y="78" width="1152" height="222" rx="10" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <rect x="24" y="78" width="1152" height="32" rx="10" fill="#f5f1e8"/>
+  <rect x="24" y="100" width="1152" height="10" fill="#f5f1e8"/>
+  <text x="40" y="99" class="sans" font-size="12.5" font-weight="700" fill="#1c1917">1. Append-Only Log Compaction (Retain Latest Offset per Key &amp; Prune Tombstones)</text>
+  <text x="1160" y="99" class="mono" font-size="10.5" fill="#57534e" text-anchor="end">Stream ↔ Table state recovery</text>
 
   <!-- Dirty Log Offsets 0..5 -->
-  <text x="40" y="130" class="sans" font-size="11" font-weight="700" fill="#334155">Dirty Log Segment (offsets 0..5):</text>
+  <text x="40" y="130" class="sans" font-size="11" font-weight="700" fill="#44403c">Dirty Log Segment (offsets 0..5):</text>
 
-  <rect x="40" y="138" width="168" height="48" rx="6" fill="#f1f5f9" stroke="#94a3b8" class="dsup"/>
-  <text x="124" y="157" class="mono" font-size="10.5" font-weight="700" fill="#64748b" text-anchor="middle">off=0 | K1: A</text>
-  <text x="124" y="175" class="sans" font-size="10" fill="#94a3b8" text-anchor="middle">Superseded by off=2</text>
+  <rect x="40" y="138" width="168" height="48" rx="6" fill="#f5f1e8" stroke="#d6d0c4" class="dsup"/>
+  <text x="124" y="157" class="mono" font-size="10.5" font-weight="700" fill="#57534e" text-anchor="middle">off=0 | K1: A</text>
+  <text x="124" y="175" class="sans" font-size="10" fill="#57534e" text-anchor="middle">Superseded by off=2</text>
 
-  <rect x="220" y="138" width="168" height="48" rx="6" fill="#f1f5f9" stroke="#94a3b8" class="dsup"/>
-  <text x="304" y="157" class="mono" font-size="10.5" font-weight="700" fill="#64748b" text-anchor="middle">off=1 | K2: B</text>
-  <text x="304" y="175" class="sans" font-size="10" fill="#94a3b8" text-anchor="middle">Superseded by off=4</text>
+  <rect x="220" y="138" width="168" height="48" rx="6" fill="#f5f1e8" stroke="#d6d0c4" class="dsup"/>
+  <text x="304" y="157" class="mono" font-size="10.5" font-weight="700" fill="#57534e" text-anchor="middle">off=1 | K2: B</text>
+  <text x="304" y="175" class="sans" font-size="10" fill="#57534e" text-anchor="middle">Superseded by off=4</text>
 
-  <rect x="400" y="138" width="168" height="48" rx="6" fill="#f1f5f9" stroke="#94a3b8" class="dsup"/>
-  <text x="484" y="157" class="mono" font-size="10.5" font-weight="700" fill="#64748b" text-anchor="middle">off=2 | K1: C</text>
-  <text x="484" y="175" class="sans" font-size="10" fill="#94a3b8" text-anchor="middle">Superseded by off=5</text>
+  <rect x="400" y="138" width="168" height="48" rx="6" fill="#f5f1e8" stroke="#d6d0c4" class="dsup"/>
+  <text x="484" y="157" class="mono" font-size="10.5" font-weight="700" fill="#57534e" text-anchor="middle">off=2 | K1: C</text>
+  <text x="484" y="175" class="sans" font-size="10" fill="#57534e" text-anchor="middle">Superseded by off=5</text>
 
-  <rect x="580" y="138" width="168" height="48" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.6"/>
+  <rect x="580" y="138" width="168" height="48" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.6"/>
   <text x="664" y="157" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">off=3 | K3: D</text>
-  <text x="664" y="175" class="sans" font-size="10" font-weight="700" fill="#059669" text-anchor="middle">Latest for K3 ✓</text>
+  <text x="664" y="175" class="sans" font-size="10" font-weight="700" fill="#0f766e" text-anchor="middle">Latest for K3 ✓</text>
 
-  <rect x="760" y="138" width="168" height="48" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.6"/>
+  <rect x="760" y="138" width="168" height="48" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.6"/>
   <text x="844" y="157" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">off=4 | K2: E</text>
-  <text x="844" y="175" class="sans" font-size="10" font-weight="700" fill="#059669" text-anchor="middle">Latest for K2 ✓</text>
+  <text x="844" y="175" class="sans" font-size="10" font-weight="700" fill="#0f766e" text-anchor="middle">Latest for K2 ✓</text>
 
-  <rect x="940" y="138" width="218" height="48" rx="6" fill="#fff1f2" stroke="#e11d48" stroke-width="1.5" class="dsup"/>
-  <text x="1049" y="157" class="mono" font-size="10.5" font-weight="700" fill="#9f1239" text-anchor="middle">off=5 | K1: null (TOMBSTONE)</text>
-  <text x="1049" y="175" class="sans" font-size="10" fill="#e11d48" text-anchor="middle">Retained for grace period → pruned</text>
+  <rect x="940" y="138" width="218" height="48" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5" class="dsup"/>
+  <text x="1049" y="157" class="mono" font-size="10.5" font-weight="700" fill="#991b1b" text-anchor="middle">off=5 | K1: null (TOMBSTONE)</text>
+  <text x="1049" y="175" class="sans" font-size="10" fill="#dc2626" text-anchor="middle">Retained for grace period → pruned</text>
 
   <!-- Clean Compacted Log -->
   <g class="clog">
-    <line x1="664" y1="186" x2="664" y2="218" stroke="#059669" stroke-width="1.8" marker-end="url(#arr-emerald)"/>
-    <line x1="844" y1="186" x2="844" y2="218" stroke="#059669" stroke-width="1.8" marker-end="url(#arr-emerald)"/>
+    <line x1="664" y1="186" x2="664" y2="218" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-emerald)"/>
+    <line x1="844" y1="186" x2="844" y2="218" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-emerald)"/>
 
-    <rect x="40" y="224" width="1118" height="62" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.6"/>
+    <rect x="40" y="224" width="1118" height="62" rx="8" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.6"/>
     <text x="58" y="250" class="sans" font-size="12" font-weight="700" fill="#065f46">Clean Compacted Segment (Background Cleaner Output):</text>
-    <rect x="424" y="234" width="166" height="40" rx="5" fill="#ffffff" stroke="#059669" stroke-width="1.4"/>
+    <rect x="424" y="234" width="166" height="40" rx="5" fill="#ffffff" stroke="#0f766e" stroke-width="1.4"/>
     <text x="507" y="259" class="mono" font-size="11.5" font-weight="700" fill="#065f46" text-anchor="middle">off=3 | K3: D</text>
-    <rect x="606" y="234" width="166" height="40" rx="5" fill="#ffffff" stroke="#059669" stroke-width="1.4"/>
+    <rect x="606" y="234" width="166" height="40" rx="5" fill="#ffffff" stroke="#0f766e" stroke-width="1.4"/>
     <text x="689" y="259" class="mono" font-size="11.5" font-weight="700" fill="#065f46" text-anchor="middle">off=4 | K2: E</text>
-    <text x="794" y="252" class="sans" font-size="10.5" fill="#047857">Preserves original offsets; K1 deleted after delete.retention.ms.</text>
-    <text x="794" y="269" class="sans" font-size="10" fill="#334155">Restores downstream state tables in minutes without replaying full history.</text>
+    <text x="794" y="252" class="sans" font-size="10.5" fill="#065f46">Preserves original offsets; K1 deleted after delete.retention.ms.</text>
+    <text x="794" y="269" class="sans" font-size="10" fill="#44403c">Restores downstream state tables in minutes without replaying full history.</text>
   </g>
 
   <!-- BOTTOM PANEL: EVENT-TIME WATERMARKS & TUMBLING WINDOWS -->
-  <rect x="24" y="316" width="1152" height="222" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <rect x="24" y="316" width="1152" height="32" rx="10" fill="#f1f5f9"/>
-  <rect x="24" y="338" width="1152" height="10" fill="#f1f5f9"/>
-  <text x="40" y="337" class="sans" font-size="12.5" font-weight="700" fill="#0f172a">2. Event-Time Watermark &amp; Closed Tumbling Window [12:00, 12:05)</text>
-  <text x="1160" y="337" class="mono" font-size="10.5" fill="#64748b" text-anchor="end">Watermark(T): no more events &lt; T</text>
+  <rect x="24" y="316" width="1152" height="222" rx="10" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <rect x="24" y="316" width="1152" height="32" rx="10" fill="#f5f1e8"/>
+  <rect x="24" y="338" width="1152" height="10" fill="#f5f1e8"/>
+  <text x="40" y="337" class="sans" font-size="12.5" font-weight="700" fill="#1c1917">2. Event-Time Watermark &amp; Closed Tumbling Window [12:00, 12:05)</text>
+  <text x="1160" y="337" class="mono" font-size="10.5" fill="#57534e" text-anchor="end">Watermark(T): no more events &lt; T</text>
 
   <!-- Stream Axis -->
-  <line x1="44" y1="408" x2="770" y2="408" stroke="#64748b" stroke-width="2" marker-end="url(#arr-amber)"/>
-  <text x="44" y="370" class="sans" font-size="11" font-weight="700" fill="#334155">Incoming Partition Stream (Out-of-Order Event Timestamps):</text>
+  <line x1="44" y1="408" x2="770" y2="408" stroke="#57534e" stroke-width="2" marker-end="url(#arr-amber)"/>
+  <text x="44" y="370" class="sans" font-size="11" font-weight="700" fill="#44403c">Incoming Partition Stream (Out-of-Order Event Timestamps):</text>
 
   <!-- Events along stream -->
-  <rect x="52" y="384" width="104" height="44" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.4"/>
-  <text x="104" y="403" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">E1 (12:01)</text>
-  <text x="104" y="419" class="sans" font-size="10" fill="#1d4ed8" text-anchor="middle">in window</text>
+  <rect x="52" y="384" width="104" height="44" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.4"/>
+  <text x="104" y="403" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">E1 (12:01)</text>
+  <text x="104" y="419" class="sans" font-size="10" fill="#065f46" text-anchor="middle">in window</text>
 
-  <rect x="172" y="384" width="104" height="44" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.4"/>
-  <text x="224" y="403" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">E2 (12:04)</text>
-  <text x="224" y="419" class="sans" font-size="10" fill="#1d4ed8" text-anchor="middle">in window</text>
+  <rect x="172" y="384" width="104" height="44" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.4"/>
+  <text x="224" y="403" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">E2 (12:04)</text>
+  <text x="224" y="419" class="sans" font-size="10" fill="#065f46" text-anchor="middle">in window</text>
 
-  <rect x="292" y="384" width="104" height="44" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.4"/>
-  <text x="344" y="403" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">E3 (12:02)</text>
-  <text x="344" y="419" class="sans" font-size="10" fill="#1d4ed8" text-anchor="middle">out-of-order OK</text>
+  <rect x="292" y="384" width="104" height="44" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.4"/>
+  <text x="344" y="403" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">E3 (12:02)</text>
+  <text x="344" y="419" class="sans" font-size="10" fill="#065f46" text-anchor="middle">out-of-order OK</text>
 
-  <rect x="476" y="384" width="104" height="44" rx="6" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.4"/>
-  <text x="528" y="403" class="mono" font-size="10.5" font-weight="700" fill="#5b21b6" text-anchor="middle">E5 (12:06)</text>
-  <text x="528" y="419" class="sans" font-size="10" fill="#6d28d9" text-anchor="middle">next window</text>
+  <rect x="476" y="384" width="104" height="44" rx="6" fill="#f5f1e8" stroke="#0f766e" stroke-width="1.4"/>
+  <text x="528" y="403" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">E5 (12:06)</text>
+  <text x="528" y="419" class="sans" font-size="10" fill="#065f46" text-anchor="middle">next window</text>
 
-  <rect x="614" y="384" width="120" height="44" rx="6" fill="#fff1f2" stroke="#e11d48" stroke-width="1.6"/>
-  <text x="674" y="403" class="mono" font-size="10.5" font-weight="700" fill="#9f1239" text-anchor="middle">E4 (12:03) LATE!</text>
-  <text x="674" y="419" class="sans" font-size="10" fill="#e11d48" text-anchor="middle">arrives after WM</text>
+  <rect x="614" y="384" width="120" height="44" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="674" y="403" class="mono" font-size="10.5" font-weight="700" fill="#991b1b" text-anchor="middle">E4 (12:03) LATE!</text>
+  <text x="674" y="419" class="sans" font-size="10" fill="#dc2626" text-anchor="middle">arrives after WM</text>
 
   <!-- Sweeping Watermark Barrier -->
   <g class="wmsw">
-    <line x1="120" y1="364" x2="120" y2="454" stroke="#d97706" stroke-width="3" stroke-dasharray="5 3"/>
-    <rect x="44" y="446" width="152" height="24" rx="5" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+    <line x1="120" y1="364" x2="120" y2="454" stroke="#b45309" stroke-width="3" stroke-dasharray="5 3"/>
+    <rect x="44" y="446" width="152" height="24" rx="5" fill="#fffbeb" stroke="#b45309" stroke-width="1.5"/>
     <text x="120" y="462" class="mono" font-size="10" font-weight="700" fill="#92400e" text-anchor="middle">WM(T = 12:05)</text>
   </g>
 
   <!-- Window Emission + Late Data Handling on Right -->
   <g class="wemit">
-    <rect x="786" y="366" width="372" height="72" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.6"/>
+    <rect x="786" y="366" width="372" height="72" rx="8" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.6"/>
     <text x="802" y="388" class="sans" font-size="11.5" font-weight="700" fill="#065f46">Window [12:00, 12:05) Fires on WM(12:05) ✓</text>
-    <text x="802" y="408" class="mono" font-size="10.5" fill="#047857">Aggregates {E1(12:01), E3(12:02), E2(12:04)} → count=3</text>
-    <text x="802" y="426" class="sans" font-size="10" fill="#334155">Emits closed tumbling result deterministically by event time.</text>
+    <text x="802" y="408" class="mono" font-size="10.5" fill="#065f46">Aggregates {E1(12:01), E3(12:02), E2(12:04)} → count=3</text>
+    <text x="802" y="426" class="sans" font-size="10" fill="#44403c">Emits closed tumbling result deterministically by event time.</text>
   </g>
 
   <g class="lrt">
-    <path d="M 674 428 L 674 484 L 780 484" fill="none" stroke="#e11d48" stroke-width="2" marker-end="url(#arr-rose)"/>
-    <rect x="786" y="452" width="372" height="72" rx="8" fill="#fff1f2" stroke="#e11d48" stroke-width="1.5"/>
-    <text x="802" y="474" class="sans" font-size="11.5" font-weight="700" fill="#9f1239">Late Event E4 (12:03 &lt; WM 12:05) Policy:</text>
-    <text x="802" y="494" class="mono" font-size="10" fill="#334155">1. Drop   2. Side Output / DLQ   3. Retraction / Upsert</text>
-    <text x="802" y="512" class="sans" font-size="10" fill="#881337">Allowed lateness keeps window state bounded (prevents OOM).</text>
+    <path d="M 674 428 L 674 484 L 780 484" fill="none" stroke="#dc2626" stroke-width="2" marker-end="url(#arr-rose)"/>
+    <rect x="786" y="452" width="372" height="72" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+    <text x="802" y="474" class="sans" font-size="11.5" font-weight="700" fill="#991b1b">Late Event E4 (12:03 &lt; WM 12:05) Policy:</text>
+    <text x="802" y="494" class="mono" font-size="10" fill="#44403c">1. Drop   2. Side Output / DLQ   3. Retraction / Upsert</text>
+    <text x="802" y="512" class="sans" font-size="10" fill="#7f1d1d">Allowed lateness keeps window state bounded (prevents OOM).</text>
   </g>
 
   <!-- BOTTOM 4 STEP CARDS -->
-  <rect x="24" y="554" width="276" height="142" rx="8" fill="#eff6ff" class="s1"/>
-  <rect x="38" y="568" width="56" height="22" rx="4" fill="#2563eb"/>
+  <rect x="24" y="554" width="276" height="142" rx="8" fill="#f0fdf9" class="s1"/>
+  <rect x="38" y="568" width="56" height="22" rx="4" fill="#0f766e"/>
   <text x="66" y="583" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">Step 1</text>
-  <text x="104" y="583" class="sans" font-size="12" font-weight="700" fill="#1e3a8a">Dirty Log &amp; Ingress</text>
-  <text x="38" y="610" class="sans" font-size="10.5" fill="#334155">Append-only topic accumulates</text>
-  <text x="38" y="626" class="sans" font-size="10.5" fill="#334155">multiple updates for K1, K2 and</text>
-  <text x="38" y="642" class="sans" font-size="10.5" fill="#334155">out-of-order events E1, E2, E3.</text>
+  <text x="104" y="583" class="sans" font-size="12" font-weight="700" fill="#065f46">Dirty Log &amp; Ingress</text>
+  <text x="38" y="610" class="sans" font-size="10.5" fill="#44403c">Append-only topic accumulates</text>
+  <text x="38" y="626" class="sans" font-size="10.5" fill="#44403c">multiple updates for K1, K2 and</text>
+  <text x="38" y="642" class="sans" font-size="10.5" fill="#44403c">out-of-order events E1, E2, E3.</text>
 
-  <rect x="316" y="554" width="276" height="142" rx="8" fill="#ecfdf5" class="s2"/>
-  <rect x="330" y="568" width="56" height="22" rx="4" fill="#059669"/>
+  <rect x="316" y="554" width="276" height="142" rx="8" fill="#f0fdf9" class="s2"/>
+  <rect x="330" y="568" width="56" height="22" rx="4" fill="#0f766e"/>
   <text x="358" y="583" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">Step 2</text>
   <text x="396" y="583" class="sans" font-size="12" font-weight="700" fill="#065f46">Log Compaction</text>
-  <text x="330" y="610" class="sans" font-size="10.5" fill="#334155">Cleaner discards superseded offsets</text>
-  <text x="330" y="626" class="sans" font-size="10.5" fill="#334155">0, 1, 2 and prunes K1 tombstone</text>
-  <text x="330" y="642" class="sans" font-size="10.5" fill="#334155">after retention, leaving [K3:D, K2:E].</text>
+  <text x="330" y="610" class="sans" font-size="10.5" fill="#44403c">Cleaner discards superseded offsets</text>
+  <text x="330" y="626" class="sans" font-size="10.5" fill="#44403c">0, 1, 2 and prunes K1 tombstone</text>
+  <text x="330" y="642" class="sans" font-size="10.5" fill="#44403c">after retention, leaving [K3:D, K2:E].</text>
 
   <rect x="608" y="554" width="276" height="142" rx="8" fill="#fffbeb" class="s3"/>
-  <rect x="622" y="568" width="56" height="22" rx="4" fill="#d97706"/>
+  <rect x="622" y="568" width="56" height="22" rx="4" fill="#b45309"/>
   <text x="650" y="583" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">Step 3</text>
   <text x="688" y="583" class="sans" font-size="12" font-weight="700" fill="#92400e">Watermark Fires</text>
-  <text x="622" y="610" class="sans" font-size="10.5" fill="#334155">Watermark(12:05) crosses stream</text>
-  <text x="622" y="626" class="sans" font-size="10.5" fill="#334155">and triggers emission of closed</text>
-  <text x="622" y="642" class="sans" font-size="10.5" fill="#334155">tumbling window [12:00, 12:05).</text>
+  <text x="622" y="610" class="sans" font-size="10.5" fill="#44403c">Watermark(12:05) crosses stream</text>
+  <text x="622" y="626" class="sans" font-size="10.5" fill="#44403c">and triggers emission of closed</text>
+  <text x="622" y="642" class="sans" font-size="10.5" fill="#44403c">tumbling window [12:00, 12:05).</text>
 
-  <rect x="900" y="554" width="276" height="142" rx="8" fill="#fff1f2" class="s4"/>
-  <rect x="914" y="568" width="56" height="22" rx="4" fill="#e11d48"/>
+  <rect x="900" y="554" width="276" height="142" rx="8" fill="#fef2f2" class="s4"/>
+  <rect x="914" y="568" width="56" height="22" rx="4" fill="#dc2626"/>
   <text x="942" y="583" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">Step 4</text>
-  <text x="980" y="583" class="sans" font-size="12" font-weight="700" fill="#9f1239">Late Data Route</text>
-  <text x="914" y="610" class="sans" font-size="10.5" fill="#334155">Late E4 (12:03) arriving behind</text>
-  <text x="914" y="626" class="sans" font-size="10.5" fill="#334155">WM(12:05) goes to Side Output or</text>
-  <text x="914" y="642" class="sans" font-size="10.5" fill="#334155">emits an updated window upsert.</text>
+  <text x="980" y="583" class="sans" font-size="12" font-weight="700" fill="#991b1b">Late Data Route</text>
+  <text x="914" y="610" class="sans" font-size="10.5" fill="#44403c">Late E4 (12:03) arriving behind</text>
+  <text x="914" y="626" class="sans" font-size="10.5" fill="#44403c">WM(12:05) goes to Side Output or</text>
+  <text x="914" y="642" class="sans" font-size="10.5" fill="#44403c">emits an updated window upsert.</text>
 </svg>

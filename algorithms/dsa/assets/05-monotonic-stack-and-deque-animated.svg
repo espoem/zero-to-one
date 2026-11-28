@@ -3,10 +3,10 @@
   <desc id="desc">Animated step-by-step trace of a monotonic decreasing stack solving Next Greater Element in amortized O(n) time, paired with a monotonic deque maintaining Sliding Window Maximum (k=3) by storing indices, expiring out-of-window front indices, and popping dominated back elements.</desc>
   <defs>
     <marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arrow-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#dc2626"/>
     </marker>
     <style>
       .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
@@ -90,235 +90,235 @@
   </defs>
 
   <!-- Canvas -->
-  <rect x="0" y="0" width="1200" height="760" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1200" height="760" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1200" height="60" rx="12" fill="#0f172a"/>
-  <rect x="0" y="44" width="1200" height="16" fill="#0f172a"/>
-  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Monotonic Stack &amp; Monotonic Deque: Amortized O(n) Order Maintenance</text>
-  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">Decreasing Stack for Next Greater Element (1 push + at most 1 pop per item) vs Index-Backed Deque for Window Max</text>
+  <line x1="24" y1="62" x2="1176" y2="62" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#1c1917" font-family="Georgia, 'Times New Roman', serif">Monotonic Stack &amp; Monotonic Deque: Amortized O(n) Order Maintenance</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">Decreasing Stack for Next Greater Element (1 push + at most 1 pop per item) vs Index-Backed Deque for Window Max</text>
 
   <!-- LEFT PANEL: Monotonic Decreasing Stack -->
-  <rect x="24" y="76" width="564" height="574" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
-  <rect x="24" y="76" width="564" height="36" rx="10" fill="#f1f5f9"/>
-  <rect x="24" y="102" width="564" height="10" fill="#f1f5f9"/>
-  <text x="40" y="99" class="sans" font-size="13" font-weight="700" fill="#0f172a">1. Monotonic Decreasing Stack (Next Greater Element)</text>
-  <text x="572" y="99" class="mono" font-size="11" fill="#2563eb" text-anchor="end">Amortized O(n)</text>
+  <rect x="24" y="76" width="564" height="574" rx="10" fill="#ffffff" stroke="#d6d0c4"/>
+  <rect x="24" y="76" width="564" height="36" rx="10" fill="#f5f1e8"/>
+  <rect x="24" y="102" width="564" height="10" fill="#f5f1e8"/>
+  <text x="40" y="99" class="sans" font-size="13" font-weight="700" fill="#1c1917">1. Monotonic Decreasing Stack (Next Greater Element)</text>
+  <text x="572" y="99" class="mono" font-size="11" fill="#0f766e" text-anchor="end">Amortized O(n)</text>
 
-  <text x="44" y="136" class="sans" font-size="11.5" font-weight="600" fill="#475569">Input A = [ 2, 5, 3, 7, 4, 8 ] (pop smaller stack tops when A[i] arrives):</text>
+  <text x="44" y="136" class="sans" font-size="11.5" font-weight="600" fill="#44403c">Input A = [ 2, 5, 3, 7, 4, 8 ] (pop smaller stack tops when A[i] arrives):</text>
 
   <!-- Input Array Row: x=56, step=80, w=72 -->
   <g transform="translate(56, 152)">
     <g class="anim-ms-ptr">
-      <rect x="0" y="-4" width="72" height="58" rx="7" fill="#eff6ff" stroke="#2563eb" stroke-width="2.5"/>
+      <rect x="0" y="-4" width="72" height="58" rx="7" fill="#f0fdf9" stroke="#0f766e" stroke-width="2.5"/>
     </g>
-    <rect x="0" y="0" width="72" height="50" rx="6" fill="none" stroke="#94a3b8"/><text x="36" y="31" class="mono" font-size="17" font-weight="700" fill="#0f172a" text-anchor="middle">2</text><text x="36" y="66" class="mono" font-size="10" fill="#64748b" text-anchor="middle">i=0</text>
-    <rect x="80" y="0" width="72" height="50" rx="6" fill="none" stroke="#94a3b8"/><text x="116" y="31" class="mono" font-size="17" font-weight="700" fill="#0f172a" text-anchor="middle">5</text><text x="116" y="66" class="mono" font-size="10" fill="#64748b" text-anchor="middle">i=1</text>
-    <rect x="160" y="0" width="72" height="50" rx="6" fill="none" stroke="#94a3b8"/><text x="196" y="31" class="mono" font-size="17" font-weight="700" fill="#0f172a" text-anchor="middle">3</text><text x="196" y="66" class="mono" font-size="10" fill="#64748b" text-anchor="middle">i=2</text>
-    <rect x="240" y="0" width="72" height="50" rx="6" fill="none" stroke="#94a3b8"/><text x="276" y="31" class="mono" font-size="17" font-weight="700" fill="#0f172a" text-anchor="middle">7</text><text x="276" y="66" class="mono" font-size="10" fill="#64748b" text-anchor="middle">i=3</text>
-    <rect x="320" y="0" width="72" height="50" rx="6" fill="none" stroke="#94a3b8"/><text x="356" y="31" class="mono" font-size="17" font-weight="700" fill="#0f172a" text-anchor="middle">4</text><text x="356" y="66" class="mono" font-size="10" fill="#64748b" text-anchor="middle">i=4</text>
-    <rect x="400" y="0" width="72" height="50" rx="6" fill="none" stroke="#94a3b8"/><text x="436" y="31" class="mono" font-size="17" font-weight="700" fill="#0f172a" text-anchor="middle">8</text><text x="436" y="66" class="mono" font-size="10" fill="#64748b" text-anchor="middle">i=5</text>
+    <rect x="0" y="0" width="72" height="50" rx="6" fill="none" stroke="#d6d0c4"/><text x="36" y="31" class="mono" font-size="17" font-weight="700" fill="#1c1917" text-anchor="middle">2</text><text x="36" y="66" class="mono" font-size="10" fill="#57534e" text-anchor="middle">i=0</text>
+    <rect x="80" y="0" width="72" height="50" rx="6" fill="none" stroke="#d6d0c4"/><text x="116" y="31" class="mono" font-size="17" font-weight="700" fill="#1c1917" text-anchor="middle">5</text><text x="116" y="66" class="mono" font-size="10" fill="#57534e" text-anchor="middle">i=1</text>
+    <rect x="160" y="0" width="72" height="50" rx="6" fill="none" stroke="#d6d0c4"/><text x="196" y="31" class="mono" font-size="17" font-weight="700" fill="#1c1917" text-anchor="middle">3</text><text x="196" y="66" class="mono" font-size="10" fill="#57534e" text-anchor="middle">i=2</text>
+    <rect x="240" y="0" width="72" height="50" rx="6" fill="none" stroke="#d6d0c4"/><text x="276" y="31" class="mono" font-size="17" font-weight="700" fill="#1c1917" text-anchor="middle">7</text><text x="276" y="66" class="mono" font-size="10" fill="#57534e" text-anchor="middle">i=3</text>
+    <rect x="320" y="0" width="72" height="50" rx="6" fill="none" stroke="#d6d0c4"/><text x="356" y="31" class="mono" font-size="17" font-weight="700" fill="#1c1917" text-anchor="middle">4</text><text x="356" y="66" class="mono" font-size="10" fill="#57534e" text-anchor="middle">i=4</text>
+    <rect x="400" y="0" width="72" height="50" rx="6" fill="none" stroke="#d6d0c4"/><text x="436" y="31" class="mono" font-size="17" font-weight="700" fill="#1c1917" text-anchor="middle">8</text><text x="436" y="66" class="mono" font-size="10" fill="#57534e" text-anchor="middle">i=5</text>
   </g>
 
   <!-- Stack Container (left) & NGE Output Array (right) -->
-  <rect x="56" y="242" width="180" height="250" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
-  <text x="146" y="264" class="sans" font-size="11.5" font-weight="700" fill="#0f172a" text-anchor="middle">Stack (Bottom -&gt; Top)</text>
-  <path d="M 86 280 L 86 468 L 206 468 L 206 280" fill="none" stroke="#475569" stroke-width="2.5"/>
+  <rect x="56" y="242" width="180" height="250" rx="8" fill="#faf8f5" stroke="#d6d0c4"/>
+  <text x="146" y="264" class="sans" font-size="11.5" font-weight="700" fill="#1c1917" text-anchor="middle">Stack (Bottom -&gt; Top)</text>
+  <path d="M 86 280 L 86 468 L 206 468 L 206 280" fill="none" stroke="#44403c" stroke-width="2.5"/>
 
-  <rect x="256" y="242" width="308" height="250" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
-  <text x="272" y="264" class="sans" font-size="11.5" font-weight="700" fill="#0f172a">Operation &amp; NGE[] Output State:</text>
+  <rect x="256" y="242" width="308" height="250" rx="8" fill="#faf8f5" stroke="#d6d0c4"/>
+  <text x="272" y="264" class="sans" font-size="11.5" font-weight="700" fill="#1c1917">Operation &amp; NGE[] Output State:</text>
 
   <!-- Step 1 -->
   <g class="ms-s1">
-    <rect x="98" y="418" width="96" height="40" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
-    <text x="146" y="443" class="mono" font-size="15" font-weight="700" fill="#1d4ed8" text-anchor="middle">2 (i=0)</text>
-    <text x="272" y="294" class="mono" font-size="12.5" font-weight="700" fill="#1d4ed8">i=0 (val 2): stack empty -&gt; push</text>
-    <text x="272" y="320" class="sans" font-size="11" fill="#334155">Stack: [ 2 ] (monotonically decreasing)</text>
-    <text x="272" y="356" class="mono" font-size="12" fill="#475569">NGE = [ _, _, _, _, _, _ ]</text>
-    <rect x="272" y="382" width="276" height="44" rx="6" fill="#eff6ff" stroke="#bfdbfe"/>
-    <text x="284" y="408" class="mono" font-size="11.5" fill="#1e40af">Pushes: 1   |   Pops: 0</text>
+    <rect x="98" y="418" width="96" height="40" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
+    <text x="146" y="443" class="mono" font-size="15" font-weight="700" fill="#065f46" text-anchor="middle">2 (i=0)</text>
+    <text x="272" y="294" class="mono" font-size="12.5" font-weight="700" fill="#065f46">i=0 (val 2): stack empty -&gt; push</text>
+    <text x="272" y="320" class="sans" font-size="11" fill="#44403c">Stack: [ 2 ] (monotonically decreasing)</text>
+    <text x="272" y="356" class="mono" font-size="12" fill="#44403c">NGE = [ _, _, _, _, _, _ ]</text>
+    <rect x="272" y="382" width="276" height="44" rx="6" fill="#f0fdf9" stroke="#bfdbfe"/>
+    <text x="284" y="408" class="mono" font-size="11.5" fill="#065f46">Pushes: 1   |   Pops: 0</text>
   </g>
   <!-- Step 2 -->
   <g class="ms-s2">
-    <rect x="98" y="418" width="96" height="40" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
-    <text x="146" y="443" class="mono" font-size="15" font-weight="700" fill="#1d4ed8" text-anchor="middle">5 (i=1)</text>
-    <rect x="98" y="352" width="96" height="36" rx="6" fill="#fff1f2" stroke="#e11d48" stroke-dasharray="4 3"/>
-    <text x="146" y="375" class="mono" font-size="12" font-weight="700" fill="#be123c" text-anchor="middle">pop 2!</text>
-    <text x="272" y="294" class="mono" font-size="12.5" font-weight="700" fill="#be123c">i=1 (val 5): 5 &gt; 2 -&gt; POP 2!</text>
-    <text x="272" y="320" class="sans" font-size="11" fill="#047857" font-weight="600">Record NGE[0] = 5, then push 5</text>
-    <text x="272" y="356" class="mono" font-size="12" font-weight="700" fill="#0f172a">NGE = [ 5, _, _, _, _, _ ]</text>
-    <rect x="272" y="382" width="276" height="44" rx="6" fill="#eff6ff" stroke="#bfdbfe"/>
-    <text x="284" y="408" class="mono" font-size="11.5" fill="#1e40af">Pushes: 2   |   Pops: 1</text>
+    <rect x="98" y="418" width="96" height="40" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
+    <text x="146" y="443" class="mono" font-size="15" font-weight="700" fill="#065f46" text-anchor="middle">5 (i=1)</text>
+    <rect x="98" y="352" width="96" height="36" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-dasharray="4 3"/>
+    <text x="146" y="375" class="mono" font-size="12" font-weight="700" fill="#991b1b" text-anchor="middle">pop 2!</text>
+    <text x="272" y="294" class="mono" font-size="12.5" font-weight="700" fill="#991b1b">i=1 (val 5): 5 &gt; 2 -&gt; POP 2!</text>
+    <text x="272" y="320" class="sans" font-size="11" fill="#065f46" font-weight="600">Record NGE[0] = 5, then push 5</text>
+    <text x="272" y="356" class="mono" font-size="12" font-weight="700" fill="#1c1917">NGE = [ 5, _, _, _, _, _ ]</text>
+    <rect x="272" y="382" width="276" height="44" rx="6" fill="#f0fdf9" stroke="#bfdbfe"/>
+    <text x="284" y="408" class="mono" font-size="11.5" fill="#065f46">Pushes: 2   |   Pops: 1</text>
   </g>
   <!-- Step 3 -->
   <g class="ms-s3">
-    <rect x="98" y="418" width="96" height="40" rx="6" fill="#f8fafc" stroke="#64748b"/>
-    <text x="146" y="443" class="mono" font-size="15" font-weight="700" fill="#0f172a" text-anchor="middle">5 (i=1)</text>
-    <rect x="98" y="370" width="96" height="40" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
-    <text x="146" y="395" class="mono" font-size="15" font-weight="700" fill="#1d4ed8" text-anchor="middle">3 (i=2)</text>
-    <text x="272" y="294" class="mono" font-size="12.5" font-weight="700" fill="#1d4ed8">i=2 (val 3): 3 &lt; 5 -&gt; push 3</text>
-    <text x="272" y="320" class="sans" font-size="11" fill="#334155">Decreasing order [5, 3] preserved</text>
-    <text x="272" y="356" class="mono" font-size="12" font-weight="700" fill="#0f172a">NGE = [ 5, _, _, _, _, _ ]</text>
-    <rect x="272" y="382" width="276" height="44" rx="6" fill="#eff6ff" stroke="#bfdbfe"/>
-    <text x="284" y="408" class="mono" font-size="11.5" fill="#1e40af">Pushes: 3   |   Pops: 1</text>
+    <rect x="98" y="418" width="96" height="40" rx="6" fill="#faf8f5" stroke="#57534e"/>
+    <text x="146" y="443" class="mono" font-size="15" font-weight="700" fill="#1c1917" text-anchor="middle">5 (i=1)</text>
+    <rect x="98" y="370" width="96" height="40" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
+    <text x="146" y="395" class="mono" font-size="15" font-weight="700" fill="#065f46" text-anchor="middle">3 (i=2)</text>
+    <text x="272" y="294" class="mono" font-size="12.5" font-weight="700" fill="#065f46">i=2 (val 3): 3 &lt; 5 -&gt; push 3</text>
+    <text x="272" y="320" class="sans" font-size="11" fill="#44403c">Decreasing order [5, 3] preserved</text>
+    <text x="272" y="356" class="mono" font-size="12" font-weight="700" fill="#1c1917">NGE = [ 5, _, _, _, _, _ ]</text>
+    <rect x="272" y="382" width="276" height="44" rx="6" fill="#f0fdf9" stroke="#bfdbfe"/>
+    <text x="284" y="408" class="mono" font-size="11.5" fill="#065f46">Pushes: 3   |   Pops: 1</text>
   </g>
   <!-- Step 4 -->
   <g class="ms-s4">
-    <rect x="98" y="418" width="96" height="40" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
-    <text x="146" y="443" class="mono" font-size="15" font-weight="700" fill="#1d4ed8" text-anchor="middle">7 (i=3)</text>
-    <rect x="98" y="352" width="96" height="36" rx="6" fill="#fff1f2" stroke="#e11d48" stroke-dasharray="4 3"/>
-    <text x="146" y="375" class="mono" font-size="12" font-weight="700" fill="#be123c" text-anchor="middle">pop 3, 5</text>
-    <text x="272" y="294" class="mono" font-size="12.5" font-weight="700" fill="#be123c">i=3 (val 7): 7 &gt; 3 &amp; 7 &gt; 5 -&gt; POP BOTH!</text>
-    <text x="272" y="320" class="sans" font-size="11" fill="#047857" font-weight="600">NGE[2] = 7, NGE[1] = 7; push 7</text>
-    <text x="272" y="356" class="mono" font-size="12" font-weight="700" fill="#0f172a">NGE = [ 5, 7, 7, _, _, _ ]</text>
-    <rect x="272" y="382" width="276" height="44" rx="6" fill="#eff6ff" stroke="#bfdbfe"/>
-    <text x="284" y="408" class="mono" font-size="11.5" fill="#1e40af">Pushes: 4   |   Pops: 3</text>
+    <rect x="98" y="418" width="96" height="40" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
+    <text x="146" y="443" class="mono" font-size="15" font-weight="700" fill="#065f46" text-anchor="middle">7 (i=3)</text>
+    <rect x="98" y="352" width="96" height="36" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-dasharray="4 3"/>
+    <text x="146" y="375" class="mono" font-size="12" font-weight="700" fill="#991b1b" text-anchor="middle">pop 3, 5</text>
+    <text x="272" y="294" class="mono" font-size="12.5" font-weight="700" fill="#991b1b">i=3 (val 7): 7 &gt; 3 &amp; 7 &gt; 5 -&gt; POP BOTH!</text>
+    <text x="272" y="320" class="sans" font-size="11" fill="#065f46" font-weight="600">NGE[2] = 7, NGE[1] = 7; push 7</text>
+    <text x="272" y="356" class="mono" font-size="12" font-weight="700" fill="#1c1917">NGE = [ 5, 7, 7, _, _, _ ]</text>
+    <rect x="272" y="382" width="276" height="44" rx="6" fill="#f0fdf9" stroke="#bfdbfe"/>
+    <text x="284" y="408" class="mono" font-size="11.5" fill="#065f46">Pushes: 4   |   Pops: 3</text>
   </g>
   <!-- Step 5 -->
   <g class="ms-s5">
-    <rect x="98" y="418" width="96" height="40" rx="6" fill="#f8fafc" stroke="#64748b"/>
-    <text x="146" y="443" class="mono" font-size="15" font-weight="700" fill="#0f172a" text-anchor="middle">7 (i=3)</text>
-    <rect x="98" y="370" width="96" height="40" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
-    <text x="146" y="395" class="mono" font-size="15" font-weight="700" fill="#1d4ed8" text-anchor="middle">4 (i=4)</text>
-    <text x="272" y="294" class="mono" font-size="12.5" font-weight="700" fill="#1d4ed8">i=4 (val 4): 4 &lt; 7 -&gt; push 4</text>
-    <text x="272" y="320" class="sans" font-size="11" fill="#334155">Decreasing order [7, 4] preserved</text>
-    <text x="272" y="356" class="mono" font-size="12" font-weight="700" fill="#0f172a">NGE = [ 5, 7, 7, _, _, _ ]</text>
-    <rect x="272" y="382" width="276" height="44" rx="6" fill="#eff6ff" stroke="#bfdbfe"/>
-    <text x="284" y="408" class="mono" font-size="11.5" fill="#1e40af">Pushes: 5   |   Pops: 3</text>
+    <rect x="98" y="418" width="96" height="40" rx="6" fill="#faf8f5" stroke="#57534e"/>
+    <text x="146" y="443" class="mono" font-size="15" font-weight="700" fill="#1c1917" text-anchor="middle">7 (i=3)</text>
+    <rect x="98" y="370" width="96" height="40" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
+    <text x="146" y="395" class="mono" font-size="15" font-weight="700" fill="#065f46" text-anchor="middle">4 (i=4)</text>
+    <text x="272" y="294" class="mono" font-size="12.5" font-weight="700" fill="#065f46">i=4 (val 4): 4 &lt; 7 -&gt; push 4</text>
+    <text x="272" y="320" class="sans" font-size="11" fill="#44403c">Decreasing order [7, 4] preserved</text>
+    <text x="272" y="356" class="mono" font-size="12" font-weight="700" fill="#1c1917">NGE = [ 5, 7, 7, _, _, _ ]</text>
+    <rect x="272" y="382" width="276" height="44" rx="6" fill="#f0fdf9" stroke="#bfdbfe"/>
+    <text x="284" y="408" class="mono" font-size="11.5" fill="#065f46">Pushes: 5   |   Pops: 3</text>
   </g>
   <!-- Step 6 -->
   <g class="ms-s6">
-    <rect x="98" y="418" width="96" height="40" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
-    <text x="146" y="443" class="mono" font-size="15" font-weight="700" fill="#047857" text-anchor="middle">8 (i=5)</text>
-    <rect x="98" y="352" width="96" height="36" rx="6" fill="#fff1f2" stroke="#e11d48" stroke-dasharray="4 3"/>
-    <text x="146" y="375" class="mono" font-size="12" font-weight="700" fill="#be123c" text-anchor="middle">pop 4, 7</text>
-    <text x="272" y="294" class="mono" font-size="12.5" font-weight="700" fill="#be123c">i=5 (val 8): 8 &gt; 4 &amp; 8 &gt; 7 -&gt; POP BOTH!</text>
-    <text x="272" y="320" class="sans" font-size="11" fill="#047857" font-weight="600">NGE[4] = 8, NGE[3] = 8; remaining [8] -&gt; -1</text>
-    <text x="272" y="356" class="mono" font-size="12" font-weight="700" fill="#047857">NGE = [ 5, 7, 7, 8, 8, -1 ]</text>
-    <rect x="272" y="382" width="276" height="44" rx="6" fill="#ecfdf5" stroke="#6ee7b7"/>
-    <text x="284" y="408" class="mono" font-size="11.5" font-weight="700" fill="#047857">Total Pushes: 6  |  Total Pops: 5 &lt;= n</text>
+    <rect x="98" y="418" width="96" height="40" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
+    <text x="146" y="443" class="mono" font-size="15" font-weight="700" fill="#065f46" text-anchor="middle">8 (i=5)</text>
+    <rect x="98" y="352" width="96" height="36" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-dasharray="4 3"/>
+    <text x="146" y="375" class="mono" font-size="12" font-weight="700" fill="#991b1b" text-anchor="middle">pop 4, 7</text>
+    <text x="272" y="294" class="mono" font-size="12.5" font-weight="700" fill="#991b1b">i=5 (val 8): 8 &gt; 4 &amp; 8 &gt; 7 -&gt; POP BOTH!</text>
+    <text x="272" y="320" class="sans" font-size="11" fill="#065f46" font-weight="600">NGE[4] = 8, NGE[3] = 8; remaining [8] -&gt; -1</text>
+    <text x="272" y="356" class="mono" font-size="12" font-weight="700" fill="#065f46">NGE = [ 5, 7, 7, 8, 8, -1 ]</text>
+    <rect x="272" y="382" width="276" height="44" rx="6" fill="#f0fdf9" stroke="#99f6e4"/>
+    <text x="284" y="408" class="mono" font-size="11.5" font-weight="700" fill="#065f46">Total Pushes: 6  |  Total Pops: 5 &lt;= n</text>
   </g>
 
-  <text x="272" y="454" class="sans" font-size="10.5" fill="#475569">Also computes Largest Rectangle in Histogram</text>
-  <text x="272" y="470" class="sans" font-size="10.5" fill="#475569">via left/right strictly-shorter boundaries.</text>
+  <text x="272" y="454" class="sans" font-size="10.5" fill="#44403c">Also computes Largest Rectangle in Histogram</text>
+  <text x="272" y="470" class="sans" font-size="10.5" fill="#44403c">via left/right strictly-shorter boundaries.</text>
 
   <!-- Proof Box -->
-  <rect x="56" y="510" width="508" height="120" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
-  <text x="72" y="534" class="sans" font-size="12" font-weight="700" fill="#0f172a">Amortized O(n) Proof (Aggregate Method)</text>
-  <text x="72" y="556" class="sans" font-size="11" fill="#334155">Even though an inner while-loop can pop k elements in a single step:</text>
-  <text x="72" y="576" class="mono" font-size="11" font-weight="700" fill="#1d4ed8">1. Each index is pushed onto the stack AT MOST ONCE (n total pushes).</text>
-  <text x="72" y="596" class="mono" font-size="11" font-weight="700" fill="#be123c">2. Once popped, an index never re-enters (at most n total pops).</text>
-  <text x="72" y="616" class="sans" font-size="11" fill="#047857" font-weight="600">Total stack ops &lt;= 2n =&gt; strictly Theta(n) worst-case time!</text>
+  <rect x="56" y="510" width="508" height="120" rx="8" fill="#faf8f5" stroke="#e7e2d8"/>
+  <text x="72" y="534" class="sans" font-size="12" font-weight="700" fill="#1c1917">Amortized O(n) Proof (Aggregate Method)</text>
+  <text x="72" y="556" class="sans" font-size="11" fill="#44403c">Even though an inner while-loop can pop k elements in a single step:</text>
+  <text x="72" y="576" class="mono" font-size="11" font-weight="700" fill="#065f46">1. Each index is pushed onto the stack AT MOST ONCE (n total pushes).</text>
+  <text x="72" y="596" class="mono" font-size="11" font-weight="700" fill="#991b1b">2. Once popped, an index never re-enters (at most n total pops).</text>
+  <text x="72" y="616" class="sans" font-size="11" fill="#065f46" font-weight="600">Total stack ops &lt;= 2n =&gt; strictly Theta(n) worst-case time!</text>
 
   <!-- RIGHT PANEL: Monotonic Deque (Sliding Window Max) -->
-  <rect x="612" y="76" width="564" height="574" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
-  <rect x="612" y="76" width="564" height="36" rx="10" fill="#f1f5f9"/>
-  <rect x="612" y="102" width="564" height="10" fill="#f1f5f9"/>
-  <text x="628" y="99" class="sans" font-size="13" font-weight="700" fill="#0f172a">2. Monotonic Deque (Sliding Window Max, k = 3)</text>
-  <text x="1160" y="99" class="mono" font-size="11" fill="#7c3aed" text-anchor="end">Stores INDICES</text>
+  <rect x="612" y="76" width="564" height="574" rx="10" fill="#ffffff" stroke="#d6d0c4"/>
+  <rect x="612" y="76" width="564" height="36" rx="10" fill="#f5f1e8"/>
+  <rect x="612" y="102" width="564" height="10" fill="#f5f1e8"/>
+  <text x="628" y="99" class="sans" font-size="13" font-weight="700" fill="#1c1917">2. Monotonic Deque (Sliding Window Max, k = 3)</text>
+  <text x="1160" y="99" class="mono" font-size="11" fill="#0f766e" text-anchor="end">Stores INDICES</text>
 
-  <text x="632" y="136" class="sans" font-size="11.5" font-weight="600" fill="#475569">Input A = [ 1, 3, -1, -3, 5, 3 ] (window size k = 3):</text>
+  <text x="632" y="136" class="sans" font-size="11.5" font-weight="600" fill="#44403c">Input A = [ 1, 3, -1, -3, 5, 3 ] (window size k = 3):</text>
 
   <!-- Array + Animated k=3 Window Box -->
   <g transform="translate(644, 152)">
-    <rect x="0" y="-6" width="72" height="62" rx="7" fill="#eff6ff" stroke="#2563eb" stroke-width="2.5" class="anim-dq-win"/>
-    <rect x="0" y="0" width="72" height="50" rx="6" fill="none" stroke="#94a3b8"/><text x="36" y="31" class="mono" font-size="17" font-weight="700" fill="#0f172a" text-anchor="middle">1</text><text x="36" y="70" class="mono" font-size="10" fill="#64748b" text-anchor="middle">0</text>
-    <rect x="80" y="0" width="72" height="50" rx="6" fill="none" stroke="#94a3b8"/><text x="116" y="31" class="mono" font-size="17" font-weight="700" fill="#0f172a" text-anchor="middle">3</text><text x="116" y="70" class="mono" font-size="10" fill="#64748b" text-anchor="middle">1</text>
-    <rect x="160" y="0" width="72" height="50" rx="6" fill="none" stroke="#94a3b8"/><text x="196" y="31" class="mono" font-size="17" font-weight="700" fill="#0f172a" text-anchor="middle">-1</text><text x="196" y="70" class="mono" font-size="10" fill="#64748b" text-anchor="middle">2</text>
-    <rect x="240" y="0" width="72" height="50" rx="6" fill="none" stroke="#94a3b8"/><text x="276" y="31" class="mono" font-size="17" font-weight="700" fill="#0f172a" text-anchor="middle">-3</text><text x="276" y="70" class="mono" font-size="10" fill="#64748b" text-anchor="middle">3</text>
-    <rect x="320" y="0" width="72" height="50" rx="6" fill="none" stroke="#94a3b8"/><text x="356" y="31" class="mono" font-size="17" font-weight="700" fill="#0f172a" text-anchor="middle">5</text><text x="356" y="70" class="mono" font-size="10" fill="#64748b" text-anchor="middle">4</text>
-    <rect x="400" y="0" width="72" height="50" rx="6" fill="none" stroke="#94a3b8"/><text x="436" y="31" class="mono" font-size="17" font-weight="700" fill="#0f172a" text-anchor="middle">3</text><text x="436" y="70" class="mono" font-size="10" fill="#64748b" text-anchor="middle">5</text>
+    <rect x="0" y="-6" width="72" height="62" rx="7" fill="#f0fdf9" stroke="#0f766e" stroke-width="2.5" class="anim-dq-win"/>
+    <rect x="0" y="0" width="72" height="50" rx="6" fill="none" stroke="#d6d0c4"/><text x="36" y="31" class="mono" font-size="17" font-weight="700" fill="#1c1917" text-anchor="middle">1</text><text x="36" y="70" class="mono" font-size="10" fill="#57534e" text-anchor="middle">0</text>
+    <rect x="80" y="0" width="72" height="50" rx="6" fill="none" stroke="#d6d0c4"/><text x="116" y="31" class="mono" font-size="17" font-weight="700" fill="#1c1917" text-anchor="middle">3</text><text x="116" y="70" class="mono" font-size="10" fill="#57534e" text-anchor="middle">1</text>
+    <rect x="160" y="0" width="72" height="50" rx="6" fill="none" stroke="#d6d0c4"/><text x="196" y="31" class="mono" font-size="17" font-weight="700" fill="#1c1917" text-anchor="middle">-1</text><text x="196" y="70" class="mono" font-size="10" fill="#57534e" text-anchor="middle">2</text>
+    <rect x="240" y="0" width="72" height="50" rx="6" fill="none" stroke="#d6d0c4"/><text x="276" y="31" class="mono" font-size="17" font-weight="700" fill="#1c1917" text-anchor="middle">-3</text><text x="276" y="70" class="mono" font-size="10" fill="#57534e" text-anchor="middle">3</text>
+    <rect x="320" y="0" width="72" height="50" rx="6" fill="none" stroke="#d6d0c4"/><text x="356" y="31" class="mono" font-size="17" font-weight="700" fill="#1c1917" text-anchor="middle">5</text><text x="356" y="70" class="mono" font-size="10" fill="#57534e" text-anchor="middle">4</text>
+    <rect x="400" y="0" width="72" height="50" rx="6" fill="none" stroke="#d6d0c4"/><text x="436" y="31" class="mono" font-size="17" font-weight="700" fill="#1c1917" text-anchor="middle">3</text><text x="436" y="70" class="mono" font-size="10" fill="#57534e" text-anchor="middle">5</text>
   </g>
 
   <!-- Double-Ended Queue Visualization Box -->
-  <rect x="632" y="242" width="524" height="250" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
-  <text x="648" y="264" class="sans" font-size="11.5" font-weight="700" fill="#0f172a">Deque State (FRONT = Window Max  |  BACK = Newest Candidates):</text>
-  <line x1="652" y1="286" x2="1136" y2="286" stroke="#94a3b8" stroke-width="2"/>
-  <line x1="652" y1="364" x2="1136" y2="364" stroke="#94a3b8" stroke-width="2"/>
-  <text x="652" y="280" class="mono" font-size="10" font-weight="700" fill="#059669">FRONT (expire if &lt;= i - k)</text>
-  <text x="1136" y="280" class="mono" font-size="10" font-weight="700" fill="#d97706" text-anchor="end">BACK (pop if A[back] &lt;= A[i])</text>
+  <rect x="632" y="242" width="524" height="250" rx="8" fill="#faf8f5" stroke="#d6d0c4"/>
+  <text x="648" y="264" class="sans" font-size="11.5" font-weight="700" fill="#1c1917">Deque State (FRONT = Window Max  |  BACK = Newest Candidates):</text>
+  <line x1="652" y1="286" x2="1136" y2="286" stroke="#d6d0c4" stroke-width="2"/>
+  <line x1="652" y1="364" x2="1136" y2="364" stroke="#d6d0c4" stroke-width="2"/>
+  <text x="652" y="280" class="mono" font-size="10" font-weight="700" fill="#0f766e">FRONT (expire if &lt;= i - k)</text>
+  <text x="1136" y="280" class="mono" font-size="10" font-weight="700" fill="#b45309" text-anchor="end">BACK (pop if A[back] &lt;= A[i])</text>
 
   <!-- Deque Steps 1..6 -->
   <g class="dq-s1">
-    <rect x="670" y="298" width="110" height="54" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
-    <text x="725" y="322" class="mono" font-size="14" font-weight="700" fill="#047857" text-anchor="middle">idx 0 : 1</text>
-    <text x="725" y="340" class="mono" font-size="10" fill="#059669" text-anchor="middle">front</text>
-    <text x="648" y="394" class="mono" font-size="12.5" font-weight="700" fill="#1d4ed8">i=0 (val 1): pushBack(0) -&gt; warm-up (&lt; k)</text>
-    <text x="648" y="420" class="mono" font-size="12" fill="#475569">Outputs = [ ]</text>
+    <rect x="670" y="298" width="110" height="54" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
+    <text x="725" y="322" class="mono" font-size="14" font-weight="700" fill="#065f46" text-anchor="middle">idx 0 : 1</text>
+    <text x="725" y="340" class="mono" font-size="10" fill="#0f766e" text-anchor="middle">front</text>
+    <text x="648" y="394" class="mono" font-size="12.5" font-weight="700" fill="#065f46">i=0 (val 1): pushBack(0) -&gt; warm-up (&lt; k)</text>
+    <text x="648" y="420" class="mono" font-size="12" fill="#44403c">Outputs = [ ]</text>
   </g>
   <g class="dq-s2">
-    <rect x="670" y="298" width="110" height="54" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
-    <text x="725" y="322" class="mono" font-size="14" font-weight="700" fill="#047857" text-anchor="middle">idx 1 : 3</text>
-    <text x="725" y="340" class="mono" font-size="10" fill="#059669" text-anchor="middle">front</text>
-    <rect x="998" y="298" width="120" height="54" rx="6" fill="#fffbeb" stroke="#d97706" stroke-dasharray="4 3"/>
+    <rect x="670" y="298" width="110" height="54" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
+    <text x="725" y="322" class="mono" font-size="14" font-weight="700" fill="#065f46" text-anchor="middle">idx 1 : 3</text>
+    <text x="725" y="340" class="mono" font-size="10" fill="#0f766e" text-anchor="middle">front</text>
+    <rect x="998" y="298" width="120" height="54" rx="6" fill="#fffbeb" stroke="#b45309" stroke-dasharray="4 3"/>
     <text x="1058" y="329" class="mono" font-size="11.5" font-weight="700" fill="#b45309" text-anchor="middle">popBack(0:1)</text>
     <text x="648" y="394" class="mono" font-size="12.5" font-weight="700" fill="#b45309">i=1 (val 3): 3 &gt;= 1 -&gt; popBack(0), pushBack(1)</text>
-    <text x="648" y="420" class="mono" font-size="12" fill="#475569">Outputs = [ ]  (index 0 can never be max again)</text>
+    <text x="648" y="420" class="mono" font-size="12" fill="#44403c">Outputs = [ ]  (index 0 can never be max again)</text>
   </g>
   <g class="dq-s3">
-    <rect x="670" y="298" width="110" height="54" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
-    <text x="725" y="322" class="mono" font-size="14" font-weight="700" fill="#047857" text-anchor="middle">idx 1 : 3</text>
-    <text x="725" y="340" class="mono" font-size="10" fill="#059669" text-anchor="middle">MAX = 3</text>
-    <rect x="794" y="298" width="110" height="54" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
-    <text x="849" y="322" class="mono" font-size="14" font-weight="700" fill="#1d4ed8" text-anchor="middle">idx 2 : -1</text>
-    <text x="849" y="340" class="mono" font-size="10" fill="#1e40af" text-anchor="middle">backup</text>
-    <text x="648" y="394" class="mono" font-size="12.5" font-weight="700" fill="#047857">i=2 (val -1): -1 &lt; 3 -&gt; pushBack(2). Window full!</text>
-    <text x="648" y="420" class="mono" font-size="12" font-weight="700" fill="#047857">Outputs = [ 3 ]</text>
+    <rect x="670" y="298" width="110" height="54" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
+    <text x="725" y="322" class="mono" font-size="14" font-weight="700" fill="#065f46" text-anchor="middle">idx 1 : 3</text>
+    <text x="725" y="340" class="mono" font-size="10" fill="#0f766e" text-anchor="middle">MAX = 3</text>
+    <rect x="794" y="298" width="110" height="54" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
+    <text x="849" y="322" class="mono" font-size="14" font-weight="700" fill="#065f46" text-anchor="middle">idx 2 : -1</text>
+    <text x="849" y="340" class="mono" font-size="10" fill="#065f46" text-anchor="middle">backup</text>
+    <text x="648" y="394" class="mono" font-size="12.5" font-weight="700" fill="#065f46">i=2 (val -1): -1 &lt; 3 -&gt; pushBack(2). Window full!</text>
+    <text x="648" y="420" class="mono" font-size="12" font-weight="700" fill="#065f46">Outputs = [ 3 ]</text>
   </g>
   <g class="dq-s4">
-    <rect x="670" y="298" width="110" height="54" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
-    <text x="725" y="322" class="mono" font-size="14" font-weight="700" fill="#047857" text-anchor="middle">idx 1 : 3</text>
-    <text x="725" y="340" class="mono" font-size="10" fill="#059669" text-anchor="middle">MAX = 3</text>
-    <rect x="794" y="298" width="110" height="54" rx="6" fill="#eff6ff" stroke="#2563eb"/>
-    <text x="849" y="322" class="mono" font-size="14" font-weight="700" fill="#1d4ed8" text-anchor="middle">idx 2 : -1</text>
-    <rect x="918" y="298" width="110" height="54" rx="6" fill="#eff6ff" stroke="#2563eb"/>
-    <text x="973" y="322" class="mono" font-size="14" font-weight="700" fill="#1d4ed8" text-anchor="middle">idx 3 : -3</text>
-    <text x="648" y="394" class="mono" font-size="12.5" font-weight="700" fill="#047857">i=3 (val -3): front idx 1 &gt; 3 - 3 = 0 (still in window)</text>
-    <text x="648" y="420" class="mono" font-size="12" font-weight="700" fill="#047857">Outputs = [ 3, 3 ]</text>
+    <rect x="670" y="298" width="110" height="54" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
+    <text x="725" y="322" class="mono" font-size="14" font-weight="700" fill="#065f46" text-anchor="middle">idx 1 : 3</text>
+    <text x="725" y="340" class="mono" font-size="10" fill="#0f766e" text-anchor="middle">MAX = 3</text>
+    <rect x="794" y="298" width="110" height="54" rx="6" fill="#f0fdf9" stroke="#0f766e"/>
+    <text x="849" y="322" class="mono" font-size="14" font-weight="700" fill="#065f46" text-anchor="middle">idx 2 : -1</text>
+    <rect x="918" y="298" width="110" height="54" rx="6" fill="#f0fdf9" stroke="#0f766e"/>
+    <text x="973" y="322" class="mono" font-size="14" font-weight="700" fill="#065f46" text-anchor="middle">idx 3 : -3</text>
+    <text x="648" y="394" class="mono" font-size="12.5" font-weight="700" fill="#065f46">i=3 (val -3): front idx 1 &gt; 3 - 3 = 0 (still in window)</text>
+    <text x="648" y="420" class="mono" font-size="12" font-weight="700" fill="#065f46">Outputs = [ 3, 3 ]</text>
   </g>
   <g class="dq-s5">
-    <rect x="652" y="298" width="112" height="54" rx="6" fill="#fff1f2" stroke="#e11d48" stroke-dasharray="4 3"/>
-    <text x="708" y="321" class="mono" font-size="11.5" font-weight="700" fill="#be123c" text-anchor="middle">popFront(1)</text>
-    <text x="708" y="339" class="mono" font-size="10" fill="#be123c" text-anchor="middle">1 &lt;= 4-3</text>
-    <rect x="784" y="298" width="110" height="54" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
-    <text x="839" y="322" class="mono" font-size="14" font-weight="700" fill="#047857" text-anchor="middle">idx 4 : 5</text>
-    <text x="839" y="340" class="mono" font-size="10" fill="#059669" text-anchor="middle">MAX = 5</text>
-    <rect x="954" y="298" width="166" height="54" rx="6" fill="#fffbeb" stroke="#d97706" stroke-dasharray="4 3"/>
+    <rect x="652" y="298" width="112" height="54" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-dasharray="4 3"/>
+    <text x="708" y="321" class="mono" font-size="11.5" font-weight="700" fill="#991b1b" text-anchor="middle">popFront(1)</text>
+    <text x="708" y="339" class="mono" font-size="10" fill="#991b1b" text-anchor="middle">1 &lt;= 4-3</text>
+    <rect x="784" y="298" width="110" height="54" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2.5"/>
+    <text x="839" y="322" class="mono" font-size="14" font-weight="700" fill="#065f46" text-anchor="middle">idx 4 : 5</text>
+    <text x="839" y="340" class="mono" font-size="10" fill="#0f766e" text-anchor="middle">MAX = 5</text>
+    <rect x="954" y="298" width="166" height="54" rx="6" fill="#fffbeb" stroke="#b45309" stroke-dasharray="4 3"/>
     <text x="1037" y="329" class="mono" font-size="11.5" font-weight="700" fill="#b45309" text-anchor="middle">popBack(3:-3, 2:-1)</text>
-    <text x="648" y="394" class="mono" font-size="12" font-weight="700" fill="#be123c">i=4 (val 5): EXPIRE front 1, POP back 3 &amp; 2, push 4!</text>
-    <text x="648" y="420" class="mono" font-size="12" font-weight="700" fill="#047857">Outputs = [ 3, 3, 5 ]</text>
+    <text x="648" y="394" class="mono" font-size="12" font-weight="700" fill="#991b1b">i=4 (val 5): EXPIRE front 1, POP back 3 &amp; 2, push 4!</text>
+    <text x="648" y="420" class="mono" font-size="12" font-weight="700" fill="#065f46">Outputs = [ 3, 3, 5 ]</text>
   </g>
   <g class="dq-s6">
-    <rect x="670" y="298" width="110" height="54" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
-    <text x="725" y="322" class="mono" font-size="14" font-weight="700" fill="#047857" text-anchor="middle">idx 4 : 5</text>
-    <text x="725" y="340" class="mono" font-size="10" fill="#059669" text-anchor="middle">MAX = 5</text>
-    <rect x="794" y="298" width="110" height="54" rx="6" fill="#eff6ff" stroke="#2563eb"/>
-    <text x="849" y="322" class="mono" font-size="14" font-weight="700" fill="#1d4ed8" text-anchor="middle">idx 5 : 3</text>
-    <text x="648" y="394" class="mono" font-size="12.5" font-weight="700" fill="#047857">i=5 (val 3): 3 &lt; 5 -&gt; pushBack(5). Front still 4!</text>
-    <text x="648" y="420" class="mono" font-size="12" font-weight="700" fill="#047857">Outputs = [ 3, 3, 5, 5 ]  (O(n) total)</text>
+    <rect x="670" y="298" width="110" height="54" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2.5"/>
+    <text x="725" y="322" class="mono" font-size="14" font-weight="700" fill="#065f46" text-anchor="middle">idx 4 : 5</text>
+    <text x="725" y="340" class="mono" font-size="10" fill="#0f766e" text-anchor="middle">MAX = 5</text>
+    <rect x="794" y="298" width="110" height="54" rx="6" fill="#f0fdf9" stroke="#0f766e"/>
+    <text x="849" y="322" class="mono" font-size="14" font-weight="700" fill="#065f46" text-anchor="middle">idx 5 : 3</text>
+    <text x="648" y="394" class="mono" font-size="12.5" font-weight="700" fill="#065f46">i=5 (val 3): 3 &lt; 5 -&gt; pushBack(5). Front still 4!</text>
+    <text x="648" y="420" class="mono" font-size="12" font-weight="700" fill="#065f46">Outputs = [ 3, 3, 5, 5 ]  (O(n) total)</text>
   </g>
 
-  <text x="648" y="456" class="sans" font-size="11" fill="#475569">Rule 1 (Front Expiration): if (deque.front &lt;= i - k) deque.popFront();</text>
-  <text x="648" y="474" class="sans" font-size="11" fill="#475569">Rule 2 (Monotonic Back): while (A[deque.back] &lt;= A[i]) deque.popBack();</text>
+  <text x="648" y="456" class="sans" font-size="11" fill="#44403c">Rule 1 (Front Expiration): if (deque.front &lt;= i - k) deque.popFront();</text>
+  <text x="648" y="474" class="sans" font-size="11" fill="#44403c">Rule 2 (Monotonic Back): while (A[deque.back] &lt;= A[i]) deque.popBack();</text>
 
   <!-- Why Store Indices Box -->
-  <rect x="632" y="510" width="524" height="120" rx="8" fill="#f5f3ff" stroke="#c4b5fd"/>
-  <text x="648" y="534" class="sans" font-size="12" font-weight="700" fill="#5b21b6">Why the Deque Stores Indices (Not Values)</text>
-  <text x="648" y="556" class="sans" font-size="11" fill="#4c1d95">1. O(1) Value Lookup: A[idx] retrieves the value for monotonic back comparisons.</text>
-  <text x="648" y="576" class="sans" font-size="11" fill="#4c1d95">2. O(1) Expiration Check: idx &lt;= i - k detects when the front exits the window.</text>
-  <text x="648" y="596" class="sans" font-size="11" fill="#4c1d95">3. Duplicate Safety: values alone cannot distinguish two equal elements at</text>
-  <text x="648" y="614" class="sans" font-size="11" fill="#4c1d95">   different positions inside vs outside [i - k + 1, i].</text>
+  <rect x="632" y="510" width="524" height="120" rx="8" fill="#f5f1e8" stroke="#d6d0c4"/>
+  <text x="648" y="534" class="sans" font-size="12" font-weight="700" fill="#065f46">Why the Deque Stores Indices (Not Values)</text>
+  <text x="648" y="556" class="sans" font-size="11" fill="#065f46">1. O(1) Value Lookup: A[idx] retrieves the value for monotonic back comparisons.</text>
+  <text x="648" y="576" class="sans" font-size="11" fill="#065f46">2. O(1) Expiration Check: idx &lt;= i - k detects when the front exits the window.</text>
+  <text x="648" y="596" class="sans" font-size="11" fill="#065f46">3. Duplicate Safety: values alone cannot distinguish two equal elements at</text>
+  <text x="648" y="614" class="sans" font-size="11" fill="#065f46">   different positions inside vs outside [i - k + 1, i].</text>
 
   <!-- Bottom Legend -->
-  <rect x="24" y="666" width="1152" height="74" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="44" y="692" class="sans" font-size="12" font-weight="700" fill="#0f172a">Operation Semantics:</text>
-  <rect x="200" y="678" width="14" height="14" rx="3" fill="#2563eb"/>
-  <text x="220" y="690" class="sans" font-size="11" fill="#334155">Active push / candidate</text>
-  <rect x="380" y="678" width="14" height="14" rx="3" fill="#e11d48"/>
-  <text x="400" y="690" class="sans" font-size="11" fill="#334155">Popped (resolved NGE) or expired front</text>
-  <rect x="644" y="678" width="14" height="14" rx="3" fill="#d97706"/>
-  <text x="664" y="690" class="sans" font-size="11" fill="#334155">Dominated back element evicted</text>
-  <rect x="880" y="678" width="14" height="14" rx="3" fill="#059669"/>
-  <text x="900" y="690" class="sans" font-size="11" fill="#334155">Window maximum (deque front)</text>
-  <text x="44" y="722" class="sans" font-size="11" fill="#64748b">Both structures achieve strictly O(n) time and O(n) (or O(k) for deque) space because every element enters and exits at most once.</text>
+  <rect x="24" y="666" width="1152" height="74" rx="8" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="44" y="692" class="sans" font-size="12" font-weight="700" fill="#1c1917">Operation Semantics:</text>
+  <rect x="200" y="678" width="14" height="14" rx="3" fill="#0f766e"/>
+  <text x="220" y="690" class="sans" font-size="11" fill="#44403c">Active push / candidate</text>
+  <rect x="380" y="678" width="14" height="14" rx="3" fill="#dc2626"/>
+  <text x="400" y="690" class="sans" font-size="11" fill="#44403c">Popped (resolved NGE) or expired front</text>
+  <rect x="644" y="678" width="14" height="14" rx="3" fill="#b45309"/>
+  <text x="664" y="690" class="sans" font-size="11" fill="#44403c">Dominated back element evicted</text>
+  <rect x="880" y="678" width="14" height="14" rx="3" fill="#0f766e"/>
+  <text x="900" y="690" class="sans" font-size="11" fill="#44403c">Window maximum (deque front)</text>
+  <text x="44" y="722" class="sans" font-size="11" fill="#57534e">Both structures achieve strictly O(n) time and O(n) (or O(k) for deque) space because every element enters and exits at most once.</text>
 </svg>

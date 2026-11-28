@@ -22,29 +22,29 @@
     }
 
     @keyframes stg-filter {
-      0%, 28%  { stroke: #cbd5e1; stroke-width: 1.5; }
-      31%, 45% { stroke: #2563eb; stroke-width: 2.8; }
-      47%, 100%{ stroke: #cbd5e1; stroke-width: 1.5; }
+      0%, 28%  { stroke: #d6d0c4; stroke-width: 1.5; }
+      31%, 45% { stroke: #0f766e; stroke-width: 2.8; }
+      47%, 100%{ stroke: #d6d0c4; stroke-width: 1.5; }
     }
     @keyframes stg-post {
-      0%, 44%  { stroke: #cbd5e1; stroke-width: 1.5; }
-      47%, 59% { stroke: #d97706; stroke-width: 2.8; }
-      61%, 100%{ stroke: #cbd5e1; stroke-width: 1.5; }
+      0%, 44%  { stroke: #d6d0c4; stroke-width: 1.5; }
+      47%, 59% { stroke: #b45309; stroke-width: 2.8; }
+      61%, 100%{ stroke: #d6d0c4; stroke-width: 1.5; }
     }
     @keyframes stg-score {
-      0%, 58%  { stroke: #cbd5e1; stroke-width: 1.5; }
-      61%, 73% { stroke: #7c3aed; stroke-width: 2.8; }
-      75%, 100%{ stroke: #cbd5e1; stroke-width: 1.5; }
+      0%, 58%  { stroke: #d6d0c4; stroke-width: 1.5; }
+      61%, 73% { stroke: #0f766e; stroke-width: 2.8; }
+      75%, 100%{ stroke: #d6d0c4; stroke-width: 1.5; }
     }
     @keyframes stg-reserve {
-      0%, 72%  { stroke: #cbd5e1; stroke-width: 1.5; }
-      75%, 86% { stroke: #059669; stroke-width: 2.8; }
-      88%, 100%{ stroke: #cbd5e1; stroke-width: 1.5; }
+      0%, 72%  { stroke: #d6d0c4; stroke-width: 1.5; }
+      75%, 86% { stroke: #0f766e; stroke-width: 2.8; }
+      88%, 100%{ stroke: #d6d0c4; stroke-width: 1.5; }
     }
     @keyframes stg-bind {
-      0%, 85%  { stroke: #cbd5e1; stroke-width: 1.5; }
-      88%, 99% { stroke: #059669; stroke-width: 2.8; }
-      100%     { stroke: #cbd5e1; stroke-width: 1.5; }
+      0%, 85%  { stroke: #d6d0c4; stroke-width: 1.5; }
+      88%, 99% { stroke: #0f766e; stroke-width: 2.8; }
+      100%     { stroke: #d6d0c4; stroke-width: 1.5; }
     }
 
     @keyframes pod-runner {
@@ -71,165 +71,165 @@
       }
       .scan-win { transform: translateX(180px) !important; opacity: 1 !important; }
       .pod-tok  { transform: translateX(440px) !important; opacity: 1 !important; }
-      .sf1 { stroke: #2563eb !important; stroke-width: 2 !important; }
-      .sf2 { stroke: #d97706 !important; stroke-width: 2 !important; }
-      .sf3 { stroke: #7c3aed !important; stroke-width: 2 !important; }
-      .sf4, .sf5 { stroke: #059669 !important; stroke-width: 2 !important; }
+      .sf1 { stroke: #0f766e !important; stroke-width: 2 !important; }
+      .sf2 { stroke: #b45309 !important; stroke-width: 2 !important; }
+      .sf3 { stroke: #0f766e !important; stroke-width: 2 !important; }
+      .sf4, .sf5 { stroke: #0f766e !important; stroke-width: 2 !important; }
     }
   </style>
 
   <defs>
     <marker id="arr-slate" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#44403c"/>
     </marker>
     <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#b45309"/>
     </marker>
     <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
   </defs>
 
   <!-- Canvas -->
-  <rect x="0" y="0" width="1160" height="680" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1160" height="680" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1160" height="60" rx="12" fill="#0f172a"/>
-  <rect x="0" y="44" width="1160" height="16" fill="#0f172a"/>
-  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Kubernetes HPA Reconcile Loop &amp; Kube-Scheduler Framework</text>
-  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">M05: desiredReplicas = ⌈cur × metric / target⌉ + Stabilization Window · M06: Filter → PostFilter → Score → Reserve → Bind</text>
+  <line x1="24" y1="62" x2="1136" y2="62" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#1c1917" font-family="Georgia, 'Times New Roman', serif">Kubernetes HPA Reconcile Loop &amp; Kube-Scheduler Framework</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">M05: desiredReplicas = ⌈cur × metric / target⌉ + Stabilization Window · M06: Filter → PostFilter → Score → Reserve → Bind</text>
 
   <!-- TOP BAND: M05 HPA RECONCILER -->
-  <rect x="24" y="76" width="1112" height="274" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <rect x="40" y="90" width="44" height="22" rx="5" fill="#2563eb"/>
+  <rect x="24" y="76" width="1112" height="274" rx="10" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <rect x="40" y="90" width="44" height="22" rx="5" fill="#0f766e"/>
   <text x="62" y="105" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">M05</text>
-  <text x="94" y="106" class="sans" font-size="14" font-weight="700" fill="#0f172a">Horizontal Pod Autoscaler Reconcile Loop &amp; Stabilization Clamp</text>
+  <text x="94" y="106" class="sans" font-size="14" font-weight="700" fill="#1c1917">Horizontal Pod Autoscaler Reconcile Loop &amp; Stabilization Clamp</text>
 
   <!-- Left Sub-card: Formula & Tolerance -->
-  <rect x="40" y="124" width="460" height="210" rx="8" fill="#eff6ff" stroke="#bfdbfe"/>
-  <text x="56" y="146" class="sans" font-size="12.5" font-weight="700" fill="#1e3a8a">1. Tolerance Band &amp; Ratio Formula</text>
-  <rect x="56" y="158" width="428" height="32" rx="6" fill="#ffffff" stroke="#93c5fd"/>
-  <text x="270" y="178" class="mono" font-size="11.5" font-weight="700" fill="#1e40af" text-anchor="middle">desired = ⌈ cur × (metric / target) ⌉</text>
+  <rect x="40" y="124" width="460" height="210" rx="8" fill="#f0fdf9" stroke="#bfdbfe"/>
+  <text x="56" y="146" class="sans" font-size="12.5" font-weight="700" fill="#065f46">1. Tolerance Band &amp; Ratio Formula</text>
+  <rect x="56" y="158" width="428" height="32" rx="6" fill="#ffffff" stroke="#99f6e4"/>
+  <text x="270" y="178" class="mono" font-size="11.5" font-weight="700" fill="#065f46" text-anchor="middle">desired = ⌈ cur × (metric / target) ⌉</text>
 
-  <text x="56" y="210" class="mono" font-size="10.5" fill="#334155">Scale-Up Event: cur = 4, metric = 90%, target = 50%</text>
+  <text x="56" y="210" class="mono" font-size="10.5" fill="#44403c">Scale-Up Event: cur = 4, metric = 90%, target = 50%</text>
   <text x="56" y="229" class="mono" font-size="10.5" fill="#065f46">ratio = 1.80 (|1.80 − 1.0| &gt; 0.10 tolerance) → ⌈4×1.8⌉ = 8</text>
-  <text x="56" y="254" class="mono" font-size="10.5" fill="#334155">Transient Dip (t=60s): cur = 8, metric = 30%, target = 50%</text>
+  <text x="56" y="254" class="mono" font-size="10.5" fill="#44403c">Transient Dip (t=60s): cur = 8, metric = 30%, target = 50%</text>
   <text x="56" y="273" class="mono" font-size="10.5" fill="#92400e">rawDesired = ⌈8 × 0.60⌉ = 5 → buffered in scale-down history</text>
 
-  <rect x="56" y="288" width="428" height="32" rx="6" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <rect x="56" y="288" width="428" height="32" rx="6" fill="#f0fdf9" stroke="#99f6e4"/>
   <text x="270" y="308" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Bounds Invariant: minReplicas (2) ≤ R ≤ maxReplicas (10)</text>
 
   <!-- Right Sub-card: Stabilization Window Chart -->
-  <rect x="516" y="124" width="604" height="210" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
-  <text x="534" y="146" class="sans" font-size="12.5" font-weight="700" fill="#0f172a">2. Anti-Flapping Clamp (stabilizationWindowSeconds = 300s)</text>
+  <rect x="516" y="124" width="604" height="210" rx="8" fill="#faf8f5" stroke="#d6d0c4"/>
+  <text x="534" y="146" class="sans" font-size="12.5" font-weight="700" fill="#1c1917">2. Anti-Flapping Clamp (stabilizationWindowSeconds = 300s)</text>
 
   <!-- Sliding 300s Window Highlight -->
   <g class="scan-win">
-    <rect x="560" y="160" width="230" height="122" rx="4" fill="#fffbeb" fill-opacity="0.85" stroke="#d97706" stroke-width="1.5" stroke-dasharray="4 3"/>
+    <rect x="560" y="160" width="230" height="122" rx="4" fill="#fffbeb" fill-opacity="0.85" stroke="#b45309" stroke-width="1.5" stroke-dasharray="4 3"/>
     <text x="675" y="176" class="mono" font-size="10" font-weight="700" fill="#92400e" text-anchor="middle">300s Window: max = 8</text>
   </g>
 
   <!-- Chart Axes -->
-  <line x1="560" y1="282" x2="1096" y2="282" stroke="#475569" stroke-width="1.5"/>
-  <line x1="560" y1="162" x2="560" y2="282" stroke="#475569" stroke-width="1.5"/>
-  <text x="546" y="182" class="mono" font-size="10" fill="#475569" text-anchor="end">8</text>
-  <text x="546" y="232" class="mono" font-size="10" fill="#475569" text-anchor="end">5</text>
-  <text x="546" y="276" class="mono" font-size="10" fill="#475569" text-anchor="end">4</text>
+  <line x1="560" y1="282" x2="1096" y2="282" stroke="#44403c" stroke-width="1.5"/>
+  <line x1="560" y1="162" x2="560" y2="282" stroke="#44403c" stroke-width="1.5"/>
+  <text x="546" y="182" class="mono" font-size="10" fill="#44403c" text-anchor="end">8</text>
+  <text x="546" y="232" class="mono" font-size="10" fill="#44403c" text-anchor="end">5</text>
+  <text x="546" y="276" class="mono" font-size="10" fill="#44403c" text-anchor="end">4</text>
 
   <!-- Time ticks -->
-  <text x="566" y="297" class="mono" font-size="10" fill="#475569">0s</text>
-  <text x="670" y="297" class="mono" font-size="10" fill="#475569">60s</text>
-  <text x="780" y="297" class="mono" font-size="10" fill="#475569">150s</text>
+  <text x="566" y="297" class="mono" font-size="10" fill="#44403c">0s</text>
+  <text x="670" y="297" class="mono" font-size="10" fill="#44403c">60s</text>
+  <text x="780" y="297" class="mono" font-size="10" fill="#44403c">150s</text>
   <text x="955" y="297" class="mono" font-size="10" fill="#92400e" font-weight="700">300s</text>
-  <text x="1062" y="297" class="mono" font-size="10" fill="#475569">360s</text>
+  <text x="1062" y="297" class="mono" font-size="10" fill="#44403c">360s</text>
 
   <!-- Raw Desired Polyline (dashed rose) -->
-  <polyline points="560,264 590,180 675,180 675,228 785,228 785,196 845,196 845,228 1086,228" fill="none" stroke="#e11d48" stroke-width="2" stroke-dasharray="5 4"/>
+  <polyline points="560,264 590,180 675,180 675,228 785,228 785,196 845,196 845,228 1086,228" fill="none" stroke="#dc2626" stroke-width="2" stroke-dasharray="5 4"/>
 
   <!-- Stabilized Applied Replicas Polyline (solid emerald) -->
-  <polyline points="560,264 590,180 968,180 968,228 1086,228" fill="none" stroke="#059669" stroke-width="3"/>
+  <polyline points="560,264 590,180 968,180 968,228 1086,228" fill="none" stroke="#0f766e" stroke-width="3"/>
 
   <!-- Legend pills inside chart -->
-  <line x1="534" y1="316" x2="558" y2="316" stroke="#e11d48" stroke-width="2" stroke-dasharray="5 4"/>
-  <text x="564" y="320" class="mono" font-size="10" fill="#9f1239">Raw desiredReplicas</text>
-  <line x1="708" y1="316" x2="732" y2="316" stroke="#059669" stroke-width="3"/>
+  <line x1="534" y1="316" x2="558" y2="316" stroke="#dc2626" stroke-width="2" stroke-dasharray="5 4"/>
+  <text x="564" y="320" class="mono" font-size="10" fill="#991b1b">Raw desiredReplicas</text>
+  <line x1="708" y1="316" x2="732" y2="316" stroke="#0f766e" stroke-width="3"/>
   <text x="738" y="320" class="mono" font-size="10" fill="#065f46">Applied Replicas (max in 300s window)</text>
 
   <!-- BOTTOM BAND: M06 KUBE-SCHEDULER PIPELINE -->
-  <rect x="24" y="366" width="1112" height="290" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <rect x="40" y="380" width="44" height="22" rx="5" fill="#7c3aed"/>
+  <rect x="24" y="366" width="1112" height="290" rx="10" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <rect x="40" y="380" width="44" height="22" rx="5" fill="#0f766e"/>
   <text x="62" y="395" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">M06</text>
-  <text x="94" y="396" class="sans" font-size="14" font-weight="700" fill="#0f172a">Kube-Scheduler Framework Pipeline (Scheduling Cycle + Async Binding Cycle)</text>
+  <text x="94" y="396" class="sans" font-size="14" font-weight="700" fill="#1c1917">Kube-Scheduler Framework Pipeline (Scheduling Cycle + Async Binding Cycle)</text>
 
   <!-- Animated Pod Token gliding across stages -->
   <g class="pod-tok">
-    <rect x="96" y="408" width="80" height="20" rx="10" fill="#2563eb"/>
+    <rect x="96" y="408" width="80" height="20" rx="10" fill="#0f766e"/>
     <text x="136" y="422" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">Pod P (4CPU)</text>
   </g>
 
   <!-- Pipeline Arrows -->
-  <line x1="232" y1="498" x2="256" y2="498" stroke="#d97706" stroke-width="1.8" stroke-dasharray="4 3" marker-end="url(#arr-amber)"/>
-  <line x1="452" y1="498" x2="476" y2="498" stroke="#d97706" stroke-width="1.8" stroke-dasharray="4 3" marker-end="url(#arr-amber)"/>
+  <line x1="232" y1="498" x2="256" y2="498" stroke="#b45309" stroke-width="1.8" stroke-dasharray="4 3" marker-end="url(#arr-amber)"/>
+  <line x1="452" y1="498" x2="476" y2="498" stroke="#b45309" stroke-width="1.8" stroke-dasharray="4 3" marker-end="url(#arr-amber)"/>
   <!-- Direct normal path Filter -> Score -->
-  <path d="M 232 454 Q 356 426 476 454" fill="none" stroke="#475569" stroke-width="2" marker-end="url(#arr-slate)"/>
-  <rect x="304" y="428" width="104" height="16" rx="4" fill="#eff6ff" stroke="#bfdbfe"/>
-  <text x="356" y="439" class="mono" font-size="10" font-weight="700" fill="#1e40af" text-anchor="middle">feasible &gt; 0</text>
+  <path d="M 232 454 Q 356 426 476 454" fill="none" stroke="#44403c" stroke-width="2" marker-end="url(#arr-slate)"/>
+  <rect x="304" y="428" width="104" height="16" rx="4" fill="#f0fdf9" stroke="#bfdbfe"/>
+  <text x="356" y="439" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">feasible &gt; 0</text>
 
-  <line x1="672" y1="498" x2="696" y2="498" stroke="#475569" stroke-width="2" marker-end="url(#arr-slate)"/>
-  <line x1="892" y1="498" x2="916" y2="498" stroke="#059669" stroke-width="2" marker-end="url(#arr-green)"/>
+  <line x1="672" y1="498" x2="696" y2="498" stroke="#44403c" stroke-width="2" marker-end="url(#arr-slate)"/>
+  <line x1="892" y1="498" x2="916" y2="498" stroke="#0f766e" stroke-width="2" marker-end="url(#arr-green)"/>
 
   <!-- Stage 1: Filter -->
-  <rect x="40" y="434" width="192" height="150" rx="8" fill="#eff6ff" class="sf1"/>
-  <text x="136" y="456" class="sans" font-size="13" font-weight="700" fill="#1e3a8a" text-anchor="middle">1. Filter (Parallel)</text>
+  <rect x="40" y="434" width="192" height="150" rx="8" fill="#f0fdf9" class="sf1"/>
+  <text x="136" y="456" class="sans" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">1. Filter (Parallel)</text>
   <line x1="54" y1="464" x2="218" y2="464" stroke="#bfdbfe"/>
   <text x="54" y="484" class="mono" font-size="10" fill="#065f46" font-weight="700">Node A: CPU+Taint → PASS</text>
-  <text x="54" y="504" class="mono" font-size="10" fill="#be123c">Node B: Low CPU   → FAIL</text>
-  <text x="54" y="524" class="mono" font-size="10" fill="#be123c">Node C: NoSchedule→ FAIL</text>
+  <text x="54" y="504" class="mono" font-size="10" fill="#991b1b">Node B: Low CPU   → FAIL</text>
+  <text x="54" y="524" class="mono" font-size="10" fill="#991b1b">Node C: NoSchedule→ FAIL</text>
   <text x="54" y="544" class="mono" font-size="10" fill="#065f46" font-weight="700">Node D: CPU+Taint → PASS</text>
-  <text x="136" y="572" class="sans" font-size="10" fill="#1e40af" text-anchor="middle">100% Filter plugins must pass</text>
+  <text x="136" y="572" class="sans" font-size="10" fill="#065f46" text-anchor="middle">100% Filter plugins must pass</text>
 
   <!-- Stage 2: PostFilter (Preemption) -->
   <rect x="260" y="454" width="192" height="130" rx="8" fill="#fffbeb" class="sf2"/>
   <text x="356" y="476" class="sans" font-size="12.5" font-weight="700" fill="#92400e" text-anchor="middle">2. PostFilter (if ∅)</text>
   <line x1="274" y1="484" x2="438" y2="484" stroke="#fde68a"/>
-  <text x="274" y="504" class="mono" font-size="10" fill="#78350f">• Preemption candidate scan</text>
-  <text x="274" y="522" class="mono" font-size="10" fill="#78350f">• Minimize victim count</text>
-  <text x="274" y="540" class="mono" font-size="10" fill="#78350f">• Respect PDB minAvailable</text>
-  <text x="274" y="558" class="mono" font-size="10" fill="#be123c">• Stamp deletionTimestamp</text>
+  <text x="274" y="504" class="mono" font-size="10" fill="#92400e">• Preemption candidate scan</text>
+  <text x="274" y="522" class="mono" font-size="10" fill="#92400e">• Minimize victim count</text>
+  <text x="274" y="540" class="mono" font-size="10" fill="#92400e">• Respect PDB minAvailable</text>
+  <text x="274" y="558" class="mono" font-size="10" fill="#991b1b">• Stamp deletionTimestamp</text>
   <text x="356" y="575" class="sans" font-size="10" fill="#92400e" text-anchor="middle">Runs only when feasible = ∅</text>
 
   <!-- Stage 3: Score -->
-  <rect x="480" y="434" width="192" height="150" rx="8" fill="#f5f3ff" class="sf3"/>
-  <text x="576" y="456" class="sans" font-size="13" font-weight="700" fill="#4c1d95" text-anchor="middle">3. Score (Weighted)</text>
+  <rect x="480" y="434" width="192" height="150" rx="8" fill="#f5f1e8" class="sf3"/>
+  <text x="576" y="456" class="sans" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">3. Score (Weighted)</text>
   <line x1="494" y1="464" x2="658" y2="464" stroke="#ddd6fe"/>
-  <text x="494" y="484" class="mono" font-size="10" fill="#334155">Σ score(P,n) × weight:</text>
-  <rect x="494" y="494" width="164" height="24" rx="4" fill="#ecfdf5" stroke="#059669"/>
+  <text x="494" y="484" class="mono" font-size="10" fill="#44403c">Σ score(P,n) × weight:</text>
+  <rect x="494" y="494" width="164" height="24" rx="4" fill="#f0fdf9" stroke="#0f766e"/>
   <text x="576" y="510" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Node A: 84 pts ★</text>
-  <text x="494" y="538" class="mono" font-size="10" fill="#475569">Node D: 61 pts</text>
-  <text x="576" y="572" class="sans" font-size="10" fill="#5b21b6" text-anchor="middle">ArgMax + random tie-break</text>
+  <text x="494" y="538" class="mono" font-size="10" fill="#44403c">Node D: 61 pts</text>
+  <text x="576" y="572" class="sans" font-size="10" fill="#065f46" text-anchor="middle">ArgMax + random tie-break</text>
 
   <!-- Stage 4: Reserve -->
-  <rect x="700" y="434" width="192" height="150" rx="8" fill="#ecfdf5" class="sf4"/>
+  <rect x="700" y="434" width="192" height="150" rx="8" fill="#f0fdf9" class="sf4"/>
   <text x="796" y="456" class="sans" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">4. Reserve (Atomic)</text>
-  <line x1="714" y1="464" x2="878" y2="464" stroke="#a7f3d0"/>
-  <text x="714" y="486" class="mono" font-size="10" fill="#334155">In-memory cache update:</text>
+  <line x1="714" y1="464" x2="878" y2="464" stroke="#f0fdf9"/>
+  <text x="714" y="486" class="mono" font-size="10" fill="#44403c">In-memory cache update:</text>
   <text x="714" y="506" class="mono" font-size="10" font-weight="700" fill="#065f46">NodeA.free -= 4 CPU</text>
-  <text x="714" y="528" class="mono" font-size="10" fill="#334155">Serialized before next</text>
-  <text x="714" y="544" class="mono" font-size="10" fill="#334155">ScheduleOne() cycle</text>
-  <text x="796" y="572" class="sans" font-size="10" fill="#047857" text-anchor="middle">Roll back via Unreserve on err</text>
+  <text x="714" y="528" class="mono" font-size="10" fill="#44403c">Serialized before next</text>
+  <text x="714" y="544" class="mono" font-size="10" fill="#44403c">ScheduleOne() cycle</text>
+  <text x="796" y="572" class="sans" font-size="10" fill="#065f46" text-anchor="middle">Roll back via Unreserve on err</text>
 
   <!-- Stage 5: Bind -->
-  <rect x="920" y="434" width="192" height="150" rx="8" fill="#ecfdf5" class="sf5"/>
+  <rect x="920" y="434" width="192" height="150" rx="8" fill="#f0fdf9" class="sf5"/>
   <text x="1016" y="456" class="sans" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">5. Bind (Async Go)</text>
-  <line x1="934" y1="464" x2="1098" y2="464" stroke="#a7f3d0"/>
-  <text x="934" y="486" class="mono" font-size="10" fill="#334155">1. Permit (wait/approve)</text>
-  <text x="934" y="506" class="mono" font-size="10" fill="#334155">2. PreBind (attach PV)</text>
+  <line x1="934" y1="464" x2="1098" y2="464" stroke="#f0fdf9"/>
+  <text x="934" y="486" class="mono" font-size="10" fill="#44403c">1. Permit (wait/approve)</text>
+  <text x="934" y="506" class="mono" font-size="10" fill="#44403c">2. PreBind (attach PV)</text>
   <text x="934" y="526" class="mono" font-size="10" font-weight="700" fill="#065f46">3. CreateBinding(P→A)</text>
-  <text x="934" y="546" class="mono" font-size="10" fill="#334155">4. PostBind (commit)</text>
-  <text x="1016" y="572" class="sans" font-size="10" fill="#047857" text-anchor="middle">Runs off critical serial path</text>
+  <text x="934" y="546" class="mono" font-size="10" fill="#44403c">4. PostBind (commit)</text>
+  <text x="1016" y="572" class="sans" font-size="10" fill="#065f46" text-anchor="middle">Runs off critical serial path</text>
 
   <!-- Bottom Invariant Bar -->
-  <rect x="40" y="598" width="1072" height="42" rx="7" fill="#f1f5f9" stroke="#cbd5e1"/>
-  <text x="576" y="616" class="mono" font-size="10.5" font-weight="700" fill="#0f172a" text-anchor="middle">Invariant 1: Filter→Score→Reserve serialized per Pod · Invariant 2: Bind executes asynchronously</text>
-  <text x="576" y="632" class="sans" font-size="10" fill="#475569" text-anchor="middle">Scale-up reacts immediately; scale-down waits for stabilizationWindowSeconds (300s) · Preemption evicts only if no node passes Filter</text>
+  <rect x="40" y="598" width="1072" height="42" rx="7" fill="#f5f1e8" stroke="#d6d0c4"/>
+  <text x="576" y="616" class="mono" font-size="10.5" font-weight="700" fill="#1c1917" text-anchor="middle">Invariant 1: Filter→Score→Reserve serialized per Pod · Invariant 2: Bind executes asynchronously</text>
+  <text x="576" y="632" class="sans" font-size="10" fill="#44403c" text-anchor="middle">Scale-up reacts immediately; scale-down waits for stabilizationWindowSeconds (300s) · Preemption evicts only if no node passes Filter</text>
 </svg>

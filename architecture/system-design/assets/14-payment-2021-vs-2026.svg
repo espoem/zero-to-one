@@ -3,104 +3,104 @@
   <desc id="desc">Six-dimension comparison matrix of payment system architectures contrasting 2021 legacy defaults with 2026 cloud-native standards across routing, orchestration, reconciliation, PCI compliance, ledger consistency, and payout rails.</desc>
 
   <!-- Background -->
-  <rect x="0" y="0" width="1160" height="590" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1160" height="590" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1160" height="56" rx="12" fill="#0f172a"/>
-  <rect x="0" y="40" width="1160" height="16" fill="#0f172a"/>
-  <text x="24" y="27" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#f8fafc">Payment System Evolution: 2021 Default vs. 2026 Modern Standard</text>
-  <text x="24" y="46" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#94a3b8">Transitioning from Single-PSP Monoliths, HTTP Chains &amp; Batch CSVs to Multi-PSP Resilience, Outbox Workflows &amp; Real-Time Rails</text>
+  <line x1="24" y1="58" x2="1136" y2="58" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="27" font-family="Georgia, 'Times New Roman', serif" font-size="18" font-weight="700" fill="#1c1917">Payment System Evolution: 2021 Default vs. 2026 Modern Standard</text>
+  <text x="24" y="46" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#57534e">Transitioning from Single-PSP Monoliths, HTTP Chains &amp; Batch CSVs to Multi-PSP Resilience, Outbox Workflows &amp; Real-Time Rails</text>
 
   <!-- Column Headers -->
-  <rect x="20" y="70" width="210" height="32" rx="6" fill="#e2e8f0"/>
-  <text x="34" y="91" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1e293b">Architectural Dimension</text>
+  <rect x="20" y="70" width="210" height="32" rx="6" fill="#e7e2d8"/>
+  <text x="34" y="91" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1c1917">Architectural Dimension</text>
 
-  <rect x="242" y="70" width="440" height="32" rx="6" fill="#fee2e2" stroke="#fca5a5" stroke-width="1"/>
+  <rect x="242" y="70" width="440" height="32" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1"/>
   <text x="256" y="91" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#991b1b">2021 Legacy Default (Pain Points)</text>
 
   <rect x="694" y="70" width="446" height="32" rx="6" fill="#dcfce7" stroke="#86efac" stroke-width="1"/>
   <text x="708" y="91" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#166534">2026 Modern Standard (Primary Shifts)</text>
 
   <!-- Row 1: PSP Integration -->
-  <rect x="20" y="112" width="210" height="64" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="32" y="138" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">1. PSP Integration</text>
-  <text x="32" y="156" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Routing &amp; Vendor Risk</text>
+  <rect x="20" y="112" width="210" height="64" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="32" y="138" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1c1917">1. PSP Integration</text>
+  <text x="32" y="156" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#57534e">Routing &amp; Vendor Risk</text>
 
   <rect x="242" y="112" width="440" height="64" rx="6" fill="#fff5f5" stroke="#fecaca"/>
   <text x="254" y="136" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Single-PSP Hardcoding &amp; Vendor Lock-In</text>
-  <text x="254" y="155" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">Single PSP outage halts checkout; zero fallback or dynamic routing</text>
+  <text x="254" y="155" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Single PSP outage halts checkout; zero fallback or dynamic routing</text>
 
   <rect x="694" y="112" width="446" height="64" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
   <text x="706" y="136" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">Multi-PSP Smart Routing &amp; Circuit Breakers</text>
-  <text x="706" y="155" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Adaptive routing (Stripe/Adyen); circuit breakers isolate 5xx errors</text>
+  <text x="706" y="155" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Adaptive routing (Stripe/Adyen); circuit breakers isolate 5xx errors</text>
 
   <!-- Row 2: Orchestration & Workflows -->
-  <rect x="20" y="184" width="210" height="64" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="32" y="210" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">2. Orchestration</text>
-  <text x="32" y="228" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Service Workflows</text>
+  <rect x="20" y="184" width="210" height="64" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="32" y="210" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1c1917">2. Orchestration</text>
+  <text x="32" y="228" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#57534e">Service Workflows</text>
 
   <rect x="242" y="184" width="440" height="64" rx="6" fill="#fff5f5" stroke="#fecaca"/>
   <text x="254" y="208" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Synchronous HTTP Call Chains</text>
-  <text x="254" y="227" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">Point-to-point HTTP; timeouts cause double charges or lost state</text>
+  <text x="254" y="227" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Point-to-point HTTP; timeouts cause double charges or lost state</text>
 
   <rect x="694" y="184" width="446" height="64" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
   <text x="706" y="208" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">Transactional Outbox &amp; Temporal Sagas</text>
-  <text x="706" y="227" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">CDC Outbox decouples ledger/wallet; durable saga state machines</text>
+  <text x="706" y="227" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">CDC Outbox decouples ledger/wallet; durable saga state machines</text>
 
   <!-- Row 3: Reconciliation -->
-  <rect x="20" y="256" width="210" height="64" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="32" y="282" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">3. Reconciliation</text>
-  <text x="32" y="300" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Settlement Ingestion</text>
+  <rect x="20" y="256" width="210" height="64" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="32" y="282" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1c1917">3. Reconciliation</text>
+  <text x="32" y="300" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#57534e">Settlement Ingestion</text>
 
   <rect x="242" y="256" width="440" height="64" rx="6" fill="#fff5f5" stroke="#fecaca"/>
   <text x="254" y="280" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Nightly-Only Batch Settlement CSVs</text>
-  <text x="254" y="299" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">T+1 SFTP batch processing; manual spreadsheet dispute audits</text>
+  <text x="254" y="299" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">T+1 SFTP batch processing; manual spreadsheet dispute audits</text>
 
   <rect x="694" y="256" width="446" height="64" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
   <text x="706" y="280" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">Continuous Streaming &amp; 3-Tier Triage</text>
-  <text x="706" y="299" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Near-real-time streaming clearing; auto-adjusting journal entries</text>
+  <text x="706" y="299" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Near-real-time streaming clearing; auto-adjusting journal entries</text>
 
   <!-- Row 4: PCI & Auth -->
-  <rect x="20" y="328" width="210" height="64" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="32" y="354" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">4. Compliance &amp; Auth</text>
-  <text x="32" y="372" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">PCI Scope &amp; 3DS</text>
+  <rect x="20" y="328" width="210" height="64" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="32" y="354" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1c1917">4. Compliance &amp; Auth</text>
+  <text x="32" y="372" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#57534e">PCI Scope &amp; 3DS</text>
 
   <rect x="242" y="328" width="440" height="64" rx="6" fill="#fff5f5" stroke="#fecaca"/>
   <text x="254" y="352" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Raw-Card SAQ-D Burden &amp; 3DS1 Redirects</text>
-  <text x="254" y="371" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">Heavy audit scope; browser redirect drops conversion; SMS OTP fraud</text>
+  <text x="254" y="371" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Heavy audit scope; browser redirect drops conversion; SMS OTP fraud</text>
 
   <rect x="694" y="328" width="446" height="64" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
   <text x="706" y="352" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">PCI-DSS v4.0 Network Tokens &amp; Passkeys</text>
-  <text x="706" y="371" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">SAQ-A hosted tokens, biometric Passkeys, and 3DS2 frictionless auth</text>
+  <text x="706" y="371" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">SAQ-A hosted tokens, biometric Passkeys, and 3DS2 frictionless auth</text>
 
   <!-- Row 5: Ledger & Data Model -->
-  <rect x="20" y="400" width="210" height="64" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="32" y="426" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">5. Accounting Model</text>
-  <text x="32" y="444" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Data Types &amp; Ledger</text>
+  <rect x="20" y="400" width="210" height="64" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="32" y="426" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1c1917">5. Accounting Model</text>
+  <text x="32" y="444" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#57534e">Data Types &amp; Ledger</text>
 
   <rect x="242" y="400" width="440" height="64" rx="6" fill="#fff5f5" stroke="#fecaca"/>
   <text x="254" y="424" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Basic DB Retries &amp; Float/String Hazards</text>
-  <text x="254" y="443" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">Floating-point drift; in-place balance updates lose historical audit</text>
+  <text x="254" y="443" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Floating-point drift; in-place balance updates lose historical audit</text>
 
   <rect x="694" y="400" width="446" height="64" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
   <text x="706" y="424" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">Integer Minor-Unit Double-Entry Ledgers</text>
-  <text x="706" y="443" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">TigerBeetle / Formance / PostgreSQL SERIALIZABLE immutable zero-sum</text>
+  <text x="706" y="443" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">TigerBeetle / Formance / PostgreSQL SERIALIZABLE immutable zero-sum</text>
 
   <!-- Row 6: Pay-Out Rails -->
-  <rect x="20" y="472" width="210" height="64" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="32" y="498" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">6. Pay-Out Rails</text>
-  <text x="32" y="516" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Disbursements</text>
+  <rect x="20" y="472" width="210" height="64" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="32" y="498" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1c1917">6. Pay-Out Rails</text>
+  <text x="32" y="516" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#57534e">Disbursements</text>
 
   <rect x="242" y="472" width="440" height="64" rx="6" fill="#fff5f5" stroke="#fecaca"/>
   <text x="254" y="496" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Regional Batch ACH &amp; Multi-Day Delays</text>
-  <text x="254" y="515" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">T+2/T+3 batch clearing; bank cutoffs and weekend stalls lock cash</text>
+  <text x="254" y="515" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">T+2/T+3 batch clearing; bank cutoffs and weekend stalls lock cash</text>
 
   <rect x="694" y="472" width="446" height="64" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
   <text x="706" y="496" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">Instant Real-Time Rails (FedNow, SEPA, Pix)</text>
-  <text x="706" y="515" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Sub-10s irrevocable settlement via FedNow, SEPA Instant and Pix</text>
+  <text x="706" y="515" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Sub-10s irrevocable settlement via FedNow, SEPA Instant and Pix</text>
 
   <!-- Bottom Callout Footer -->
-  <rect x="20" y="544" width="1120" height="36" rx="6" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
-  <text x="34" y="558" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#334155">Key Takeaway: Modern payment systems isolate card data at the edge,</text>
-  <text x="34" y="572" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#334155">enforce immutable ledgers, and settle over real-time rails.</text>
+  <rect x="20" y="544" width="1120" height="36" rx="6" fill="#f5f1e8" stroke="#d6d0c4" stroke-width="1"/>
+  <text x="34" y="558" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#44403c">Key Takeaway: Modern payment systems isolate card data at the edge,</text>
+  <text x="34" y="572" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#44403c">enforce immutable ledgers, and settle over real-time rails.</text>
 </svg>

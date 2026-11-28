@@ -12,17 +12,16 @@
        50-75%:  Step 3 — Associative combine merges boundary stubs r1 + l2 = "dolor" (+1 word)
        75-100%: Step 4 — Root unstub(l) + words + unstub(r) = 5 words!
     */
-    @keyframes lv-split { 0%, 24% { stroke: #2563eb; stroke-width: 2.5; } 25%, 100% { stroke: #cbd5e1; stroke-width: 1.4; } }
-    @keyframes lv-leaf  { 0%, 24% { stroke: #cbd5e1; stroke-width: 1.4; } 25%, 49% { stroke: #7c3aed; stroke-width: 2.5; } 50%, 100% { stroke: #cbd5e1; stroke-width: 1.4; } }
-    @keyframes lv-merge { 0%, 49% { stroke: #cbd5e1; stroke-width: 1.4; } 50%, 74% { stroke: #d97706; stroke-width: 2.5; } 75%, 100% { stroke: #cbd5e1; stroke-width: 1.4; } }
-    @keyframes lv-root  { 0%, 74% { stroke: #cbd5e1; stroke-width: 1.4; } 75%, 100% { stroke: #059669; stroke-width: 2.5; } }
-    @keyframes dash { to { stroke-dashoffset: -24; } }
+    @keyframes lv-split { 0%, 24% { stroke: #0f766e; stroke-width: 2.5; } 25%, 100% { stroke: #d6d0c4; stroke-width: 1.4; } }
+    @keyframes lv-leaf  { 0%, 24% { stroke: #d6d0c4; stroke-width: 1.4; } 25%, 49% { stroke: #0f766e; stroke-width: 2.5; } 50%, 100% { stroke: #d6d0c4; stroke-width: 1.4; } }
+    @keyframes lv-merge { 0%, 49% { stroke: #d6d0c4; stroke-width: 1.4; } 50%, 74% { stroke: #b45309; stroke-width: 2.5; } 75%, 100% { stroke: #d6d0c4; stroke-width: 1.4; } }
+    @keyframes lv-root  { 0%, 74% { stroke: #d6d0c4; stroke-width: 1.4; } 75%, 100% { stroke: #0f766e; stroke-width: 2.5; } }
 
     .sp { animation: lv-split 12s linear infinite; }
     .lf { animation: lv-leaf 12s linear infinite; }
     .mg { animation: lv-merge 12s linear infinite; }
     .rt { animation: lv-root 12s linear infinite; }
-    .flow { stroke-dasharray: 6 6; animation: dash 1.2s linear infinite; }
+    .flow { stroke-dasharray: 6 6;  }
 
     @media (prefers-reduced-motion: reduce) {
       .sp, .lf, .mg, .rt, .flow { animation: none !important; }
@@ -32,81 +31,81 @@
 
   <defs>
     <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#b45309"/>
     </marker>
   </defs>
 
   <!-- Canvas -->
-  <rect x="0" y="0" width="1120" height="600" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1120" height="600" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1120" height="62" rx="12" fill="#0f172a"/>
-  <rect x="0" y="46" width="1120" height="16" fill="#0f172a"/>
-  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Balanced Parallel foldMapV &amp; The WC Word-Count Monoid</text>
-  <text x="24" y="48" class="sans" font-size="12" fill="#94a3b8">Module 09 · Associativity: (a • b) • (c • d) reduces span from O(n) to O(log n) · WC = Stub(chars) | Part(lStub, words, rStub)</text>
+  <line x1="24" y1="64" x2="1096" y2="64" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#1c1917" font-family="Georgia, 'Times New Roman', serif">Balanced Parallel foldMapV &amp; The WC Word-Count Monoid</text>
+  <text x="24" y="48" class="sans" font-size="12" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">Module 09 · Associativity: (a • b) • (c • d) reduces span from O(n) to O(log n) · WC = Stub(chars) | Part(lStub, words, rStub)</text>
 
   <!-- TOP BANNER: SPLIT INPUT -->
   <rect x="24" y="76" width="1072" height="58" rx="10" fill="#ffffff" class="sp"/>
-  <text x="42" y="100" class="sans" font-size="12.5" font-weight="700" fill="#1e3a8a">1. Input Split Across Word Boundary:  "lorem ipsum do"  |  "lor sit amet, "</text>
-  <text x="42" y="120" class="mono" font-size="10.5" fill="#475569">Naive split sums 3 + 3 = 6 (WRONG!). WC Monoid tracks incomplete left/right stubs to count "dolor" exactly once (5 words).</text>
+  <text x="42" y="100" class="sans" font-size="12.5" font-weight="700" fill="#065f46">1. Input Split Across Word Boundary:  "lorem ipsum do"  |  "lor sit amet, "</text>
+  <text x="42" y="120" class="mono" font-size="10.5" fill="#44403c">Naive split sums 3 + 3 = 6 (WRONG!). WC Monoid tracks incomplete left/right stubs to count "dolor" exactly once (5 words).</text>
 
   <!-- BALANCED BINARY TREE PANEL -->
-  <rect x="24" y="148" width="1072" height="338" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <text x="42" y="174" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">2. Balanced Binary Reduction Tree — O(log n) Parallel Span (vs O(n) Sequential foldLeft)</text>
+  <rect x="24" y="148" width="1072" height="338" rx="10" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <text x="42" y="174" class="sans" font-size="13.5" font-weight="700" fill="#1c1917">2. Balanced Binary Reduction Tree — O(log n) Parallel Span (vs O(n) Sequential foldLeft)</text>
 
   <!-- Tree Edges (Bottom-up reduction) -->
   <!-- Leaves -> Level 1 -->
-  <line x1="164" y1="400" x2="280" y2="338" stroke="#d97706" stroke-width="2" class="flow" marker-end="url(#arr-amber)"/>
-  <line x1="416" y1="400" x2="300" y2="338" stroke="#d97706" stroke-width="2" class="flow" marker-end="url(#arr-amber)"/>
-  <line x1="704" y1="400" x2="820" y2="338" stroke="#d97706" stroke-width="2" class="flow" marker-end="url(#arr-amber)"/>
-  <line x1="956" y1="400" x2="840" y2="338" stroke="#d97706" stroke-width="2" class="flow" marker-end="url(#arr-amber)"/>
+  <line x1="164" y1="400" x2="280" y2="338" stroke="#b45309" stroke-width="2" class="flow" marker-end="url(#arr-amber)"/>
+  <line x1="416" y1="400" x2="300" y2="338" stroke="#b45309" stroke-width="2" class="flow" marker-end="url(#arr-amber)"/>
+  <line x1="704" y1="400" x2="820" y2="338" stroke="#b45309" stroke-width="2" class="flow" marker-end="url(#arr-amber)"/>
+  <line x1="956" y1="400" x2="840" y2="338" stroke="#b45309" stroke-width="2" class="flow" marker-end="url(#arr-amber)"/>
 
   <!-- Level 1 -> Root -->
-  <line x1="290" y1="274" x2="540" y2="236" stroke="#059669" stroke-width="2.2" class="flow" marker-end="url(#arr-green)"/>
-  <line x1="830" y1="274" x2="580" y2="236" stroke="#059669" stroke-width="2.2" class="flow" marker-end="url(#arr-green)"/>
+  <line x1="290" y1="274" x2="540" y2="236" stroke="#0f766e" stroke-width="2.2" class="flow" marker-end="url(#arr-green)"/>
+  <line x1="830" y1="274" x2="580" y2="236" stroke="#0f766e" stroke-width="2.2" class="flow" marker-end="url(#arr-green)"/>
 
   <!-- ROOT NODE -->
-  <rect x="310" y="186" width="500" height="54" rx="8" fill="#ecfdf5" class="rt"/>
+  <rect x="310" y="186" width="500" height="54" rx="8" fill="#f0fdf9" class="rt"/>
   <text x="560" y="208" class="mono" font-size="11.5" font-weight="700" fill="#065f46" text-anchor="middle">ROOT: combine(Part("",2,"do"), Part("lor",2,""))</text>
-  <text x="560" y="227" class="mono" font-size="11" font-weight="700" fill="#047857" text-anchor="middle">"do"+"lor" non-empty → +1 boundaryWord ⇒ Part("", 5, "") → 5 words!</text>
+  <text x="560" y="227" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">"do"+"lor" non-empty → +1 boundaryWord ⇒ Part("", 5, "") → 5 words!</text>
 
   <!-- LEVEL 1 NODES -->
   <rect x="104" y="276" width="372" height="60" rx="8" fill="#fffbeb" class="mg"/>
   <text x="290" y="299" class="mono" font-size="11" font-weight="700" fill="#92400e" text-anchor="middle">Left Half: Part("", 2, "do")</text>
-  <text x="290" y="318" class="mono" font-size="10" fill="#78350f" text-anchor="middle">"ip"+"sum" non-empty (+1) → 1 + 1 + 0 = 2 words, rStub="do"</text>
+  <text x="290" y="318" class="mono" font-size="10" fill="#92400e" text-anchor="middle">"ip"+"sum" non-empty (+1) → 1 + 1 + 0 = 2 words, rStub="do"</text>
 
   <rect x="644" y="276" width="372" height="60" rx="8" fill="#fffbeb" class="mg"/>
   <text x="830" y="299" class="mono" font-size="11" font-weight="700" fill="#92400e" text-anchor="middle">Right Half: Part("lor", 2, "")</text>
-  <text x="830" y="318" class="mono" font-size="10" fill="#78350f" text-anchor="middle">""+"" empty (+0) → 1 + 0 + 1 = 2 words, lStub="lor"</text>
+  <text x="830" y="318" class="mono" font-size="10" fill="#92400e" text-anchor="middle">""+"" empty (+0) → 1 + 0 + 1 = 2 words, lStub="lor"</text>
 
   <!-- LEVEL 0 LEAF CHUNKS -->
-  <rect x="48" y="402" width="232" height="66" rx="7" fill="#f5f3ff" class="lf"/>
-  <text x="164" y="423" class="mono" font-size="10.5" font-weight="700" fill="#5b21b6" text-anchor="middle">Chunk 0: "lorem ip"</text>
-  <text x="164" y="442" class="mono" font-size="10" fill="#4c1d95" text-anchor="middle">Part("", 1, "ip")</text>
-  <text x="164" y="458" class="sans" font-size="10" fill="#6d28d9" text-anchor="middle">Parallel Worker 1</text>
+  <rect x="48" y="402" width="232" height="66" rx="7" fill="#f5f1e8" class="lf"/>
+  <text x="164" y="423" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Chunk 0: "lorem ip"</text>
+  <text x="164" y="442" class="mono" font-size="10" fill="#065f46" text-anchor="middle">Part("", 1, "ip")</text>
+  <text x="164" y="458" class="sans" font-size="10" fill="#065f46" text-anchor="middle">Parallel Worker 1</text>
 
-  <rect x="300" y="402" width="232" height="66" rx="7" fill="#f5f3ff" class="lf"/>
-  <text x="416" y="423" class="mono" font-size="10.5" font-weight="700" fill="#5b21b6" text-anchor="middle">Chunk 1: "sum do"</text>
-  <text x="416" y="442" class="mono" font-size="10" fill="#4c1d95" text-anchor="middle">Part("sum", 0, "do")</text>
-  <text x="416" y="458" class="sans" font-size="10" fill="#6d28d9" text-anchor="middle">Parallel Worker 2</text>
+  <rect x="300" y="402" width="232" height="66" rx="7" fill="#f5f1e8" class="lf"/>
+  <text x="416" y="423" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Chunk 1: "sum do"</text>
+  <text x="416" y="442" class="mono" font-size="10" fill="#065f46" text-anchor="middle">Part("sum", 0, "do")</text>
+  <text x="416" y="458" class="sans" font-size="10" fill="#065f46" text-anchor="middle">Parallel Worker 2</text>
 
-  <rect x="588" y="402" width="232" height="66" rx="7" fill="#f5f3ff" class="lf"/>
-  <text x="704" y="423" class="mono" font-size="10.5" font-weight="700" fill="#5b21b6" text-anchor="middle">Chunk 2: "lor sit "</text>
-  <text x="704" y="442" class="mono" font-size="10" fill="#4c1d95" text-anchor="middle">Part("lor", 1, "")</text>
-  <text x="704" y="458" class="sans" font-size="10" fill="#6d28d9" text-anchor="middle">Parallel Worker 3</text>
+  <rect x="588" y="402" width="232" height="66" rx="7" fill="#f5f1e8" class="lf"/>
+  <text x="704" y="423" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Chunk 2: "lor sit "</text>
+  <text x="704" y="442" class="mono" font-size="10" fill="#065f46" text-anchor="middle">Part("lor", 1, "")</text>
+  <text x="704" y="458" class="sans" font-size="10" fill="#065f46" text-anchor="middle">Parallel Worker 3</text>
 
-  <rect x="840" y="402" width="232" height="66" rx="7" fill="#f5f3ff" class="lf"/>
-  <text x="956" y="423" class="mono" font-size="10.5" font-weight="700" fill="#5b21b6" text-anchor="middle">Chunk 3: "amet, "</text>
-  <text x="956" y="442" class="mono" font-size="10" fill="#4c1d95" text-anchor="middle">Part("", 1, "")</text>
-  <text x="956" y="458" class="sans" font-size="10" fill="#6d28d9" text-anchor="middle">Parallel Worker 4</text>
+  <rect x="840" y="402" width="232" height="66" rx="7" fill="#f5f1e8" class="lf"/>
+  <text x="956" y="423" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Chunk 3: "amet, "</text>
+  <text x="956" y="442" class="mono" font-size="10" fill="#065f46" text-anchor="middle">Part("", 1, "")</text>
+  <text x="956" y="458" class="sans" font-size="10" fill="#065f46" text-anchor="middle">Parallel Worker 4</text>
 
   <!-- Note on Chunk 1 boundary (actually "lorem ip" | "sum do" or "lorem " | "ipsum do") -> wait: if Chunk 0 = "lorem ", Chunk 1 = "ipsum do" has space between ipsum and do -> Part("ipsum", 0, "do")! Let's fix that text cleanly! -->
   <!-- Wait: let's make Chunk 0 = "lorem ip", Chunk 1 = "sum do" so ""+"ip" is actually "ip"+"sum" = "ipsum"! Let's inspect and make the arithmetic 100% exact! -->
 
   <!-- Footer -->
-  <rect x="24" y="502" width="1072" height="44" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
-  <text x="42" y="529" class="sans" font-size="11.5" font-weight="600" fill="#1e3a8a">Takeaway: Monoid associativity + identity let foldMapV split work into balanced O(log n)-span trees and fuse multiple passes via product monoids.</text>
+  <rect x="24" y="502" width="1072" height="44" rx="8" fill="#f0fdf9" stroke="#99f6e4" stroke-width="1"/>
+  <text x="42" y="529" class="sans" font-size="11.5" font-weight="600" fill="#065f46">Takeaway: Monoid associativity + identity let foldMapV split work into balanced O(log n)-span trees and fuse multiple passes via product monoids.</text>
 </svg>

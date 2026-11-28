@@ -3,105 +3,105 @@
   <desc id="desc">Detailed architectural diagram of a consistent hashing ring showing 0 to 2^160-1 or 2^32-1 token space, clockwise key lookup, virtual nodes variance reduction from 100-200 vnodes down to 5-10% standard deviation, and anticlockwise affected key range during node addition and removal.</desc>
 
   <!-- Background -->
-  <rect x="0" y="0" width="1200" height="760" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1200" height="760" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1200" height="58" rx="12" fill="#0f172a"/>
-  <rect x="0" y="42" width="1200" height="16" fill="#0f172a"/>
-  <text x="24" y="28" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#f8fafc">Consistent Hashing Ring: Ring Math, Routing Dynamics, and Virtual Nodes</text>
-  <text x="24" y="48" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#94a3b8">Clockwise Key Routing, Anticlockwise Resharding Invariants, and Variance Reduction via Virtual Nodes</text>
+  <line x1="24" y1="60" x2="1176" y2="60" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="28" font-family="Georgia, 'Times New Roman', serif" font-size="18" font-weight="700" fill="#1c1917">Consistent Hashing Ring: Ring Math, Routing Dynamics, and Virtual Nodes</text>
+  <text x="24" y="48" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#57534e">Clockwise Key Routing, Anticlockwise Resharding Invariants, and Variance Reduction via Virtual Nodes</text>
 
   <!-- Left Panel: The Hash Ring -->
-  <rect x="24" y="74" width="560" height="428" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
-  <rect x="24" y="74" width="560" height="34" rx="8" fill="#f1f5f9"/>
-  <rect x="24" y="100" width="560" height="8" fill="#f1f5f9"/>
-  <text x="38" y="96" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">1. Hash Ring &amp; Clockwise Key Routing</text>
-  <text x="568" y="96" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#64748b" text-anchor="end">Space: [0, 2^160 - 1] (SHA-1) / [0, 2^32 - 1]</text>
+  <rect x="24" y="74" width="560" height="428" rx="8" fill="#ffffff" stroke="#d6d0c4"/>
+  <rect x="24" y="74" width="560" height="34" rx="8" fill="#f5f1e8"/>
+  <rect x="24" y="100" width="560" height="8" fill="#f5f1e8"/>
+  <text x="38" y="96" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1c1917">1. Hash Ring &amp; Clockwise Key Routing</text>
+  <text x="568" y="96" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#57534e" text-anchor="end">Space: [0, 2^160 - 1] (SHA-1) / [0, 2^32 - 1]</text>
 
   <!-- Hash Ring Geometry: Center (304, 280), Radius 130 -->
   <!-- Outer ring track -->
-  <circle cx="304" cy="280" r="130" fill="none" stroke="#94a3b8" stroke-width="4" stroke-dasharray="6 4"/>
-  <circle cx="304" cy="280" r="126" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <circle cx="304" cy="280" r="130" fill="none" stroke="#d6d0c4" stroke-width="4" stroke-dasharray="6 4"/>
+  <circle cx="304" cy="280" r="126" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Ring origin token 0 / max -->
-  <line x1="304" y1="140" x2="304" y2="156" stroke="#0f172a" stroke-width="3"/>
-  <rect x="244" y="122" width="120" height="20" rx="4" fill="#0f172a"/>
-  <text x="304" y="136" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#f8fafc" text-anchor="middle">Token 0 / 2^160 - 1</text>
+  <line x1="304" y1="140" x2="304" y2="156" stroke="#1c1917" stroke-width="3"/>
+  <rect x="244" y="122" width="120" height="20" rx="4" fill="#1c1917"/>
+  <text x="304" y="136" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">Token 0 / 2^160 - 1</text>
 
   <!-- Clockwise indicator arc with arrow -->
-  <path d="M 360 170 A 110 110 0 0 1 410 260" fill="none" stroke="#2563eb" stroke-width="2.5" marker-end="url(#arrow-blue)"/>
-  <text x="426" y="232" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#2563eb">Clockwise</text>
-  <text x="426" y="246" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#64748b">lookup path</text>
+  <path d="M 360 170 A 110 110 0 0 1 410 260" fill="none" stroke="#0f766e" stroke-width="2.5" marker-end="url(#arrow-blue)"/>
+  <text x="426" y="232" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#0f766e">Clockwise</text>
+  <text x="426" y="246" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#57534e">lookup path</text>
 
   <!-- Physical Servers on Ring -->
   <!-- Server 0 at ~45 deg: cx = 304 + 130*cos(45) = 396, cy = 280 + 130*sin(-45) -> let's use standard clock angles -->
   <!-- Let 0 deg be top (12 o'clock): (304, 150) -->
   <!-- Server S0 at 45 deg (top-right): dx = 130*sin(45) = 92, dy = -130*cos(45) = -92 -> (396, 188) -->
-  <circle cx="396" cy="188" r="15" fill="#2563eb" stroke="#1d4ed8" stroke-width="2"/>
+  <circle cx="396" cy="188" r="15" fill="#0f766e" stroke="#065f46" stroke-width="2"/>
   <text x="396" y="193" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">S0</text>
-  <text x="420" y="180" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#1e293b">Node S0</text>
-  <text x="420" y="194" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#64748b">token: 0x3F...</text>
+  <text x="420" y="180" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#1c1917">Node S0</text>
+  <text x="420" y="194" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#57534e">token: 0x3F...</text>
 
   <!-- Server S1 at 135 deg (bottom-right): dx = 92, dy = 92 -> (396, 372) -->
-  <circle cx="396" cy="372" r="15" fill="#059669" stroke="#047857" stroke-width="2"/>
+  <circle cx="396" cy="372" r="15" fill="#0f766e" stroke="#065f46" stroke-width="2"/>
   <text x="396" y="377" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">S1</text>
-  <text x="420" y="372" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#1e293b">Node S1</text>
-  <text x="420" y="386" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#64748b">token: 0x7E...</text>
+  <text x="420" y="372" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#1c1917">Node S1</text>
+  <text x="420" y="386" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#57534e">token: 0x7E...</text>
 
   <!-- Server S2 at 225 deg (bottom-left): dx = -92, dy = 92 -> (212, 372) -->
-  <circle cx="212" cy="372" r="15" fill="#d97706" stroke="#b45309" stroke-width="2"/>
+  <circle cx="212" cy="372" r="15" fill="#b45309" stroke="#b45309" stroke-width="2"/>
   <text x="212" y="377" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">S2</text>
-  <text x="140" y="372" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#1e293b">Node S2</text>
-  <text x="140" y="386" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#64748b">token: 0xBD...</text>
+  <text x="140" y="372" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#1c1917">Node S2</text>
+  <text x="140" y="386" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#57534e">token: 0xBD...</text>
 
   <!-- Server S3 at 315 deg (top-left): dx = -92, dy = -92 -> (212, 188) -->
-  <circle cx="212" cy="188" r="15" fill="#7c3aed" stroke="#6d28d9" stroke-width="2"/>
+  <circle cx="212" cy="188" r="15" fill="#0f766e" stroke="#065f46" stroke-width="2"/>
   <text x="212" y="193" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">S3</text>
-  <text x="140" y="180" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#1e293b">Node S3</text>
-  <text x="140" y="194" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#64748b">token: 0xFA...</text>
+  <text x="140" y="180" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#1c1917">Node S3</text>
+  <text x="140" y="194" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#57534e">token: 0xFA...</text>
 
   <!-- Sample Keys on the Ring -->
   <!-- Key k0 at 20 deg (top): dx = 130*sin(20) = 44, dy = -130*cos(20) = -122 -> (348, 158) -->
-  <circle cx="348" cy="158" r="6" fill="#ef4444" stroke="#ffffff" stroke-width="1.5"/>
+  <circle cx="348" cy="158" r="6" fill="#dc2626" stroke="#ffffff" stroke-width="1.5"/>
   <text x="358" y="152" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#b91c1c">k0</text>
   <!-- Arrow from k0 clockwise to S0 -->
-  <path d="M 354 160 A 130 130 0 0 1 382 180" fill="none" stroke="#ef4444" stroke-width="1.8" stroke-dasharray="3 2"/>
+  <path d="M 354 160 A 130 130 0 0 1 382 180" fill="none" stroke="#dc2626" stroke-width="1.8" stroke-dasharray="3 2"/>
 
   <!-- Key k1 at 90 deg (right): (434, 280) -->
-  <circle cx="434" cy="280" r="6" fill="#ef4444" stroke="#ffffff" stroke-width="1.5"/>
+  <circle cx="434" cy="280" r="6" fill="#dc2626" stroke="#ffffff" stroke-width="1.5"/>
   <text x="444" y="278" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#b91c1c">k1</text>
   <!-- Arrow from k1 clockwise to S1 -->
-  <path d="M 434 286 A 130 130 0 0 1 408 358" fill="none" stroke="#ef4444" stroke-width="1.8" stroke-dasharray="3 2"/>
+  <path d="M 434 286 A 130 130 0 0 1 408 358" fill="none" stroke="#dc2626" stroke-width="1.8" stroke-dasharray="3 2"/>
 
   <!-- Key k2 at 180 deg (bottom): (304, 410) -->
-  <circle cx="304" cy="410" r="6" fill="#ef4444" stroke="#ffffff" stroke-width="1.5"/>
+  <circle cx="304" cy="410" r="6" fill="#dc2626" stroke="#ffffff" stroke-width="1.5"/>
   <text x="314" y="426" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#b91c1c">k2</text>
   <!-- Arrow from k2 clockwise to S2 -->
-  <path d="M 298 410 A 130 130 0 0 1 226 384" fill="none" stroke="#ef4444" stroke-width="1.8" stroke-dasharray="3 2"/>
+  <path d="M 298 410 A 130 130 0 0 1 226 384" fill="none" stroke="#dc2626" stroke-width="1.8" stroke-dasharray="3 2"/>
 
   <!-- Key k3 at 270 deg (left): (174, 280) -->
-  <circle cx="174" cy="280" r="6" fill="#ef4444" stroke="#ffffff" stroke-width="1.5"/>
+  <circle cx="174" cy="280" r="6" fill="#dc2626" stroke="#ffffff" stroke-width="1.5"/>
   <text x="150" y="278" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#b91c1c">k3</text>
   <!-- Arrow from k3 clockwise to S3 -->
-  <path d="M 174 274 A 130 130 0 0 1 200 202" fill="none" stroke="#ef4444" stroke-width="1.8" stroke-dasharray="3 2"/>
+  <path d="M 174 274 A 130 130 0 0 1 200 202" fill="none" stroke="#dc2626" stroke-width="1.8" stroke-dasharray="3 2"/>
 
   <!-- Center Rule Box inside Ring -->
-  <rect x="234" y="252" width="140" height="56" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="304" y="270" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f172a" text-anchor="middle">Lookup Invariant</text>
-  <text x="304" y="286" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#475569" text-anchor="middle">Server = first node</text>
-  <text x="304" y="299" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#2563eb" text-anchor="middle">clockwise from hash(key)</text>
+  <rect x="234" y="252" width="140" height="56" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="304" y="270" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#1c1917" text-anchor="middle">Lookup Invariant</text>
+  <text x="304" y="286" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#44403c" text-anchor="middle">Server = first node</text>
+  <text x="304" y="299" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#0f766e" text-anchor="middle">clockwise from hash(key)</text>
 
   <!-- Left footer note -->
-  <rect x="38" y="442" width="532" height="48" rx="6" fill="#f8fafc" stroke="#e2e8f0"/>
-  <text x="50" y="460" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#0f172a">Lookup Mechanics:</text>
-  <text x="160" y="460" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">In-memory tokens stored in sorted array / red-black tree (e.g. Java TreeMap).</text>
-  <text x="50" y="478" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#64748b">Binary search ceilingEntry(hash(k)) takes O(log(N·V)) time; wraps to first token at ring tail.</text>
+  <rect x="38" y="442" width="532" height="48" rx="6" fill="#faf8f5" stroke="#e7e2d8"/>
+  <text x="50" y="460" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#1c1917">Lookup Mechanics:</text>
+  <text x="160" y="460" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">In-memory tokens stored in sorted array / red-black tree (e.g. Java TreeMap).</text>
+  <text x="50" y="478" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#57534e">Binary search ceilingEntry(hash(k)) takes O(log(N·V)) time; wraps to first token at ring tail.</text>
 
   <!-- Right Panel: Node Addition & Removal Dynamics -->
-  <rect x="600" y="74" width="576" height="428" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
-  <rect x="600" y="74" width="576" height="34" rx="8" fill="#f1f5f9"/>
-  <rect x="600" y="100" width="576" height="8" fill="#f1f5f9"/>
-  <text x="614" y="96" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#0f172a">2. Resharding Dynamics: Anticlockwise Affected Ranges</text>
+  <rect x="600" y="74" width="576" height="428" rx="8" fill="#ffffff" stroke="#d6d0c4"/>
+  <rect x="600" y="74" width="576" height="34" rx="8" fill="#f5f1e8"/>
+  <rect x="600" y="100" width="576" height="8" fill="#f5f1e8"/>
+  <text x="614" y="96" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1c1917">2. Resharding Dynamics: Anticlockwise Affected Ranges</text>
 
   <!-- Sub-Card A: Adding a Server S4 -->
   <rect x="614" y="118" width="548" height="182" rx="6" fill="#f0fdf4" stroke="#86efac" stroke-width="1"/>
@@ -110,21 +110,21 @@
   <text x="772" y="143" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" fill="#15803d">Redistributes only range (S3, S4] from successor S0</text>
 
   <!-- Visual timeline / arc representation of addition -->
-  <line x1="630" y1="184" x2="1140" y2="184" stroke="#94a3b8" stroke-width="2"/>
+  <line x1="630" y1="184" x2="1140" y2="184" stroke="#d6d0c4" stroke-width="2"/>
   <!-- Predecessor S3 -->
-  <circle cx="670" cy="184" r="10" fill="#7c3aed"/>
+  <circle cx="670" cy="184" r="10" fill="#0f766e"/>
   <text x="670" y="188" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">S3</text>
-  <text x="670" y="206" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="600" fill="#475569" text-anchor="middle">Predecessor</text>
+  <text x="670" y="206" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="600" fill="#44403c" text-anchor="middle">Predecessor</text>
 
   <!-- New Node S4 -->
-  <circle cx="830" cy="184" r="12" fill="#10b981" stroke="#047857" stroke-width="2"/>
+  <circle cx="830" cy="184" r="12" fill="#0f766e" stroke="#065f46" stroke-width="2"/>
   <text x="830" y="188" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">S4</text>
-  <text x="830" y="208" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#047857" text-anchor="middle">NEW NODE S4</text>
+  <text x="830" y="208" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">NEW NODE S4</text>
 
   <!-- Successor S0 -->
-  <circle cx="990" cy="184" r="10" fill="#2563eb"/>
+  <circle cx="990" cy="184" r="10" fill="#0f766e"/>
   <text x="990" y="188" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">S0</text>
-  <text x="990" y="206" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="600" fill="#475569" text-anchor="middle">Successor</text>
+  <text x="990" y="206" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="600" fill="#44403c" text-anchor="middle">Successor</text>
 
   <!-- Highlight affected range (S3, S4] -->
   <rect x="670" y="166" width="160" height="12" rx="3" fill="#bbf7d0" opacity="0.8"/>
@@ -132,33 +132,33 @@
   <text x="750" y="158" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#15803d" text-anchor="middle">Anticlockwise range: (S3, S4]</text>
 
   <!-- Explanation bullets -->
-  <text x="630" y="234" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#1e293b">• Keys in arc (S3, S4] previously routed to S0; now reclaimed by new node S4.</text>
-  <text x="630" y="252" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#1e293b">• All other nodes (S1, S2, S3) keep 100% of their existing keys without disruption.</text>
+  <text x="630" y="234" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#1c1917">• Keys in arc (S3, S4] previously routed to S0; now reclaimed by new node S4.</text>
+  <text x="630" y="252" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#1c1917">• All other nodes (S1, S2, S3) keep 100% of their existing keys without disruption.</text>
   <text x="630" y="270" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#15803d">• Theoretical moved keys: exactly 1/(N+1) = 1/5 = 20% vs. 80% under naive modulo!</text>
 
   <!-- Sub-Card B: Removing Server S1 -->
-  <rect x="614" y="310" width="548" height="180" rx="6" fill="#fff5f5" stroke="#fca5a5" stroke-width="1"/>
+  <rect x="614" y="310" width="548" height="180" rx="6" fill="#fff5f5" stroke="#dc2626" stroke-width="1"/>
   <rect x="626" y="320" width="144" height="22" rx="4" fill="#991b1b"/>
   <text x="698" y="335" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">Case B: Removing Node S1</text>
   <text x="780" y="335" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" fill="#b91c1c">Reallocates range (S0, S1] to successor S2</text>
 
   <!-- Visual timeline for removal -->
-  <line x1="630" y1="376" x2="1140" y2="376" stroke="#94a3b8" stroke-width="2"/>
+  <line x1="630" y1="376" x2="1140" y2="376" stroke="#d6d0c4" stroke-width="2"/>
   <!-- Predecessor S0 -->
-  <circle cx="670" cy="376" r="10" fill="#2563eb"/>
+  <circle cx="670" cy="376" r="10" fill="#0f766e"/>
   <text x="670" y="380" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">S0</text>
-  <text x="670" y="398" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="600" fill="#475569" text-anchor="middle">Predecessor</text>
+  <text x="670" y="398" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="600" fill="#44403c" text-anchor="middle">Predecessor</text>
 
   <!-- Removed Node S1 -->
-  <circle cx="830" cy="376" r="12" fill="#ef4444" stroke="#b91c1c" stroke-width="2"/>
+  <circle cx="830" cy="376" r="12" fill="#dc2626" stroke="#b91c1c" stroke-width="2"/>
   <line x1="822" y1="368" x2="838" y2="384" stroke="#ffffff" stroke-width="2.5"/>
   <line x1="838" y1="368" x2="822" y2="384" stroke="#ffffff" stroke-width="2.5"/>
   <text x="830" y="400" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#b91c1c" text-anchor="middle">OFFLINE NODE S1</text>
 
   <!-- Successor S2 -->
-  <circle cx="990" cy="376" r="10" fill="#d97706"/>
+  <circle cx="990" cy="376" r="10" fill="#b45309"/>
   <text x="990" y="380" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">S2</text>
-  <text x="990" y="398" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="600" fill="#475569" text-anchor="middle">Successor</text>
+  <text x="990" y="398" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="600" fill="#44403c" text-anchor="middle">Successor</text>
 
   <!-- Highlight affected range (S0, S1] moving to S2 -->
   <rect x="670" y="358" width="160" height="12" rx="3" fill="#fecaca" opacity="0.8"/>
@@ -166,30 +166,30 @@
   <text x="750" y="350" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#b91c1c" text-anchor="middle">Anticlockwise range: (S0, S1]</text>
 
   <!-- Explanation bullets -->
-  <text x="630" y="426" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#1e293b">• Keys in arc (S0, S1] must be reassigned clockwise to immediate successor S2.</text>
-  <text x="630" y="444" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#1e293b">• Danger: Without virtual nodes, S2 absorbs 100% of S1's load, risking a cascading crash.</text>
+  <text x="630" y="426" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#1c1917">• Keys in arc (S0, S1] must be reassigned clockwise to immediate successor S2.</text>
+  <text x="630" y="444" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#1c1917">• Danger: Without virtual nodes, S2 absorbs 100% of S1's load, risking a cascading crash.</text>
   <text x="630" y="462" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#b91c1c">• Moved keys: 1/N = 1/4 = 25% of keyspace; other nodes (S0, S3) take 0% extra load.</text>
 
   <!-- Bottom Panel: Virtual Nodes & Variance Reduction -->
-  <rect x="24" y="514" width="1152" height="226" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
-  <rect x="24" y="514" width="1152" height="34" rx="8" fill="#f1f5f9"/>
-  <rect x="24" y="540" width="1152" height="8" fill="#f1f5f9"/>
-  <text x="38" y="536" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#0f172a">3. Virtual Nodes (Vnodes): Skew Elimination &amp; Variance Reduction Mechanics</text>
-  <text x="1162" y="536" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" text-anchor="end" fill="#64748b">Empirical Law: Relative Standard Deviation σ / μ ≈ 1 / sqrt(V)</text>
+  <rect x="24" y="514" width="1152" height="226" rx="8" fill="#ffffff" stroke="#d6d0c4"/>
+  <rect x="24" y="514" width="1152" height="34" rx="8" fill="#f5f1e8"/>
+  <rect x="24" y="540" width="1152" height="8" fill="#f5f1e8"/>
+  <text x="38" y="536" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1c1917">3. Virtual Nodes (Vnodes): Skew Elimination &amp; Variance Reduction Mechanics</text>
+  <text x="1162" y="536" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" text-anchor="end" fill="#57534e">Empirical Law: Relative Standard Deviation σ / μ ≈ 1 / sqrt(V)</text>
 
   <!-- Card 1: 1 Vnode (Raw Modulo Skew) -->
   <rect x="38" y="558" width="350" height="170" rx="6" fill="#fef2f2" stroke="#fecaca"/>
   <text x="50" y="578" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">V = 1 Vnode / Server (Naive Ring)</text>
-  <text x="50" y="596" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">Each server has exactly 1 position on the ring</text>
+  <text x="50" y="596" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Each server has exactly 1 position on the ring</text>
 
   <!-- Skew bar chart -->
-  <rect x="50" y="612" width="60" height="42" rx="3" fill="#f87171"/>
+  <rect x="50" y="612" width="60" height="42" rx="3" fill="#dc2626"/>
   <text x="80" y="640" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#ffffff" text-anchor="middle" font-weight="700">S0: 42%</text>
-  <rect x="116" y="634" width="60" height="20" rx="3" fill="#f87171"/>
+  <rect x="116" y="634" width="60" height="20" rx="3" fill="#dc2626"/>
   <text x="146" y="648" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#ffffff" text-anchor="middle" font-weight="700">S1: 11%</text>
-  <rect x="182" y="620" width="60" height="34" rx="3" fill="#f87171"/>
+  <rect x="182" y="620" width="60" height="34" rx="3" fill="#dc2626"/>
   <text x="212" y="642" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#ffffff" text-anchor="middle" font-weight="700">S2: 35%</text>
-  <rect x="248" y="638" width="60" height="16" rx="3" fill="#f87171"/>
+  <rect x="248" y="638" width="60" height="16" rx="3" fill="#dc2626"/>
   <text x="278" y="650" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#ffffff" text-anchor="middle" font-weight="700">S3: 12%</text>
 
   <text x="50" y="682" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#b91c1c">Standard Deviation σ / μ: ~60% - 100%</text>
@@ -199,39 +199,39 @@
   <!-- Card 2: 100-200 Vnodes (Production Tuning) -->
   <rect x="402" y="558" width="370" height="170" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
   <text x="414" y="578" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">V = 100 - 200 Vnodes / Server (Standard)</text>
-  <text x="414" y="596" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">Servers assigned multiple tokens: hash(S0_0), hash(S0_1)...</text>
+  <text x="414" y="596" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Servers assigned multiple tokens: hash(S0_0), hash(S0_1)...</text>
 
   <!-- Balanced bar chart -->
   <rect x="414" y="626" width="64" height="28" rx="3" fill="#4ade80"/>
-  <text x="446" y="644" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#064e3b" text-anchor="middle" font-weight="700">S0: 25.4%</text>
+  <text x="446" y="644" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#065f46" text-anchor="middle" font-weight="700">S0: 25.4%</text>
   <rect x="484" y="628" width="64" height="26" rx="3" fill="#4ade80"/>
-  <text x="516" y="644" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#064e3b" text-anchor="middle" font-weight="700">S1: 24.8%</text>
+  <text x="516" y="644" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#065f46" text-anchor="middle" font-weight="700">S1: 24.8%</text>
   <rect x="554" y="625" width="64" height="29" rx="3" fill="#4ade80"/>
-  <text x="586" y="644" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#064e3b" text-anchor="middle" font-weight="700">S2: 25.1%</text>
+  <text x="586" y="644" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#065f46" text-anchor="middle" font-weight="700">S2: 25.1%</text>
   <rect x="624" y="627" width="64" height="27" rx="3" fill="#4ade80"/>
-  <text x="656" y="644" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#064e3b" text-anchor="middle" font-weight="700">S3: 24.7%</text>
+  <text x="656" y="644" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#065f46" text-anchor="middle" font-weight="700">S3: 24.7%</text>
 
   <text x="414" y="682" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#15803d">Standard Deviation σ / μ: ~5% - 10%</text>
   <text x="414" y="698" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#14532d">• Interleaved tokens balance key distribution evenly</text>
   <text x="414" y="712" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#14532d">• Node crash disperses keys across ALL surviving nodes</text>
 
   <!-- Card 3: Quantitative Trade-offs & Production Tuning -->
-  <rect x="786" y="558" width="378" height="170" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
-  <text x="798" y="578" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#0f172a">Production Trade-offs &amp; Heterogeneity</text>
+  <rect x="786" y="558" width="378" height="170" rx="6" fill="#faf8f5" stroke="#d6d0c4"/>
+  <text x="798" y="578" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#1c1917">Production Trade-offs &amp; Heterogeneity</text>
 
-  <text x="798" y="602" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#2563eb">1. Heterogeneous Server Capacities:</text>
-  <text x="798" y="618" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Assign 2x vnodes to 64-core vs 32-core hosts for a 2:1 traffic split.</text>
+  <text x="798" y="602" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f766e">1. Heterogeneous Server Capacities:</text>
+  <text x="798" y="618" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">Assign 2x vnodes to 64-core vs 32-core hosts for a 2:1 traffic split.</text>
 
-  <text x="798" y="642" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#d97706">2. Memory &amp; Gossip Overhead:</text>
-  <text x="798" y="658" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">1,000 nodes × 256 vnodes = 256k entries (~10 MB RAM, high gossip CPU).</text>
+  <text x="798" y="642" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#b45309">2. Memory &amp; Gossip Overhead:</text>
+  <text x="798" y="658" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">1,000 nodes × 256 vnodes = 256k entries (~10 MB RAM, high gossip CPU).</text>
 
-  <text x="798" y="682" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#059669">3. The 2026 Shift to ScyllaDB Tablets:</text>
-  <text x="798" y="698" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Modern engines replace static vnodes with 1–10 GB dynamic tablets.</text>
+  <text x="798" y="682" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f766e">3. The 2026 Shift to ScyllaDB Tablets:</text>
+  <text x="798" y="698" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">Modern engines replace static vnodes with 1–10 GB dynamic tablets.</text>
 
   <!-- Arrow Markers -->
   <defs>
     <marker id="arrow-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 8 5 L 0 9 z" fill="#2563eb"/>
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arrow-green" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
       <path d="M 0 1 L 8 5 L 0 9 z" fill="#16a34a"/>

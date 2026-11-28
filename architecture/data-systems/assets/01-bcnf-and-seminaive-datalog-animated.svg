@@ -26,10 +26,6 @@
         0%, 46% { opacity: 0.12; }
         54%, 100% { opacity: 1; }
       }
-      @keyframes pulse-d0 {
-        0%, 24% { opacity: 1; stroke-width: 2.4; }
-        30%, 100% { opacity: 0.65; stroke-width: 1.4; }
-      }
       @keyframes show-d1 {
         0%, 24% { opacity: 0.12; transform: translateX(-8px); }
         32%, 100% { opacity: 1; transform: translateX(0px); }
@@ -42,23 +38,19 @@
         0%, 72% { opacity: 0.12; }
         80%, 100% { opacity: 1; }
       }
-      @keyframes loop-dash {
-        to { stroke-dashoffset: -36; }
-      }
 
-      @keyframes st-1 { 0%, 24% { opacity: 1; stroke: #e11d48; stroke-width: 2.5; } 25%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; } }
-      @keyframes st-2 { 0%, 24% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; } 25%, 49% { opacity: 1; stroke: #2563eb; stroke-width: 2.5; } 50%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; } }
-      @keyframes st-3 { 0%, 49% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; } 50%, 74% { opacity: 1; stroke: #d97706; stroke-width: 2.5; } 75%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; } }
-      @keyframes st-4 { 0%, 74% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; } 75%, 100% { opacity: 1; stroke: #059669; stroke-width: 2.5; } }
+      @keyframes st-1 { 0%, 24% { opacity: 1; stroke: #dc2626; stroke-width: 2.5; } 25%, 100% { opacity: 0.86; stroke: #d6d0c4; stroke-width: 1.2; } }
+      @keyframes st-2 { 0%, 24% { opacity: 0.86; stroke: #d6d0c4; stroke-width: 1.2; } 25%, 49% { opacity: 1; stroke: #0f766e; stroke-width: 2.5; } 50%, 100% { opacity: 0.86; stroke: #d6d0c4; stroke-width: 1.2; } }
+      @keyframes st-3 { 0%, 49% { opacity: 0.86; stroke: #d6d0c4; stroke-width: 1.2; } 50%, 74% { opacity: 1; stroke: #b45309; stroke-width: 2.5; } 75%, 100% { opacity: 0.86; stroke: #d6d0c4; stroke-width: 1.2; } }
+      @keyframes st-4 { 0%, 74% { opacity: 0.86; stroke: #d6d0c4; stroke-width: 1.2; } 75%, 100% { opacity: 1; stroke: #0f766e; stroke-width: 2.5; } }
 
       .bcnf-viol { animation: fade-step1 12s ease-in-out infinite; }
       .bcnf-split { animation: show-split 12s ease-out infinite; }
       .bcnf-loss { animation: show-lossless 12s ease-out infinite; }
-      .d0 { animation: pulse-d0 12s ease-in-out infinite; }
       .d1 { animation: show-d1 12s ease-out infinite; }
       .d2 { animation: show-d2 12s ease-out infinite; }
       .dlfp { animation: show-lfp 12s ease-out infinite; }
-      .dash-flow { stroke-dasharray: 6 4; animation: loop-dash 1.8s linear infinite; }
+      .dash-flow { stroke-dasharray: 6 4;  }
 
       .s1 { animation: st-1 12s linear infinite; }
       .s2 { animation: st-2 12s linear infinite; }
@@ -77,202 +69,202 @@
     </style>
 
     <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-violet" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#b45309"/>
     </marker>
   </defs>
 
   <!-- Canvas -->
-  <rect x="0" y="0" width="1200" height="720" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1200" height="720" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1200" height="62" rx="12" fill="#0f172a"/>
-  <rect x="0" y="46" width="1200" height="16" fill="#0f172a"/>
-  <text x="24" y="28" class="sans" font-size="18" font-weight="700" fill="#f8fafc">BCNF Lossless Decomposition &amp; Semi-Naive Datalog Fixed-Point Evaluation</text>
-  <text x="24" y="48" class="sans" font-size="12" fill="#94a3b8">Eliminating FD redundancy via superkey splits (X → Y) alongside incremental ΔR^(k) = R^(k) \ R^(k-1) transitive closure</text>
+  <line x1="24" y1="64" x2="1176" y2="64" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="28" class="sans" font-size="18" font-weight="700" fill="#1c1917" font-family="Georgia, 'Times New Roman', serif">BCNF Lossless Decomposition &amp; Semi-Naive Datalog Fixed-Point Evaluation</text>
+  <text x="24" y="48" class="sans" font-size="12" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">Eliminating FD redundancy via superkey splits (X → Y) alongside incremental ΔR^(k) = R^(k) \ R^(k-1) transitive closure</text>
 
   <!-- LEFT PANEL: BCNF DECOMPOSITION -->
-  <rect x="24" y="78" width="564" height="456" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <rect x="24" y="78" width="564" height="34" rx="10" fill="#f1f5f9"/>
-  <rect x="24" y="102" width="564" height="10" fill="#f1f5f9"/>
-  <text x="40" y="100" class="sans" font-size="13" font-weight="700" fill="#0f172a">1. BCNF Violation Split (R → R1 ⋈ R2)</text>
-  <text x="572" y="100" class="mono" font-size="11" fill="#64748b" text-anchor="end">∀ non-trivial X → Y, X is superkey</text>
+  <rect x="24" y="78" width="564" height="456" rx="10" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <rect x="24" y="78" width="564" height="34" rx="10" fill="#f5f1e8"/>
+  <rect x="24" y="102" width="564" height="10" fill="#f5f1e8"/>
+  <text x="40" y="100" class="sans" font-size="13" font-weight="700" fill="#1c1917">1. BCNF Violation Split (R → R1 ⋈ R2)</text>
+  <text x="572" y="100" class="mono" font-size="11" fill="#57534e" text-anchor="end">∀ non-trivial X → Y, X is superkey</text>
 
   <!-- Original Relation R -->
-  <rect x="42" y="126" width="528" height="122" rx="8" fill="#fff1f2" stroke="#e11d48" stroke-width="1.5" class="bcnf-viol"/>
-  <text x="56" y="146" class="sans" font-size="12" font-weight="700" fill="#9f1239">Relation R(Student, Course, Instructor) — Candidate Key: {Student, Course}</text>
+  <rect x="42" y="126" width="528" height="122" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5" class="bcnf-viol"/>
+  <text x="56" y="146" class="sans" font-size="12" font-weight="700" fill="#991b1b">Relation R(Student, Course, Instructor) — Candidate Key: {Student, Course}</text>
 
   <!-- Mini table R -->
-  <rect x="56" y="156" width="300" height="22" rx="3" fill="#ffe4e6" stroke="#fda4af" stroke-width="1"/>
-  <text x="66" y="171" class="mono" font-size="10.5" font-weight="700" fill="#881337">Student    | Course  | Instructor</text>
+  <rect x="56" y="156" width="300" height="22" rx="3" fill="#fef2f2" stroke="#fda4af" stroke-width="1"/>
+  <text x="66" y="171" class="mono" font-size="10.5" font-weight="700" fill="#7f1d1d">Student    | Course  | Instructor</text>
   <rect x="56" y="178" width="300" height="20" fill="#ffffff" stroke="#fecdd3" stroke-width="1"/>
-  <text x="66" y="192" class="mono" font-size="10.5" fill="#334155">Alice      | CS101   | Prof. Ada</text>
+  <text x="66" y="192" class="mono" font-size="10.5" fill="#44403c">Alice      | CS101   | Prof. Ada</text>
   <rect x="56" y="198" width="300" height="20" fill="#ffffff" stroke="#fecdd3" stroke-width="1"/>
-  <text x="66" y="212" class="mono" font-size="10.5" fill="#334155">Bob        | CS101   | Prof. Ada</text>
+  <text x="66" y="212" class="mono" font-size="10.5" fill="#44403c">Bob        | CS101   | Prof. Ada</text>
   <rect x="56" y="218" width="300" height="20" fill="#ffffff" stroke="#fecdd3" stroke-width="1"/>
-  <text x="66" y="232" class="mono" font-size="10.5" fill="#334155">Cara       | DB202   | Prof. Codd</text>
+  <text x="66" y="232" class="mono" font-size="10.5" fill="#44403c">Cara       | DB202   | Prof. Codd</text>
 
   <!-- FD Violation Box -->
-  <rect x="370" y="156" width="186" height="82" rx="6" fill="#ffffff" stroke="#e11d48" stroke-width="1.4"/>
-  <text x="463" y="175" class="sans" font-size="11" font-weight="700" fill="#e11d48" text-anchor="middle">BCNF Violation!</text>
-  <text x="463" y="195" class="mono" font-size="11" font-weight="700" fill="#0f172a" text-anchor="middle">Instructor → Course</text>
-  <text x="463" y="213" class="sans" font-size="10" fill="#64748b" text-anchor="middle">Instructor is NOT a superkey</text>
-  <text x="463" y="229" class="sans" font-size="10" fill="#9f1239" text-anchor="middle">(repeats CS101 per student)</text>
+  <rect x="370" y="156" width="186" height="82" rx="6" fill="#ffffff" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="463" y="175" class="sans" font-size="11" font-weight="700" fill="#dc2626" text-anchor="middle">BCNF Violation!</text>
+  <text x="463" y="195" class="mono" font-size="11" font-weight="700" fill="#1c1917" text-anchor="middle">Instructor → Course</text>
+  <text x="463" y="213" class="sans" font-size="10" fill="#57534e" text-anchor="middle">Instructor is NOT a superkey</text>
+  <text x="463" y="229" class="sans" font-size="10" fill="#991b1b" text-anchor="middle">(repeats CS101 per student)</text>
 
   <!-- Split Arrows -->
-  <line x1="200" y1="248" x2="164" y2="278" stroke="#2563eb" stroke-width="2" marker-end="url(#arr-blue)"/>
-  <line x1="400" y1="248" x2="436" y2="278" stroke="#2563eb" stroke-width="2" marker-end="url(#arr-blue)"/>
-  <rect x="234" y="254" width="144" height="22" rx="11" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.2"/>
-  <text x="306" y="269" class="mono" font-size="10.5" font-weight="700" fill="#1e40af" text-anchor="middle">Decompose on X → Y</text>
+  <line x1="200" y1="248" x2="164" y2="278" stroke="#0f766e" stroke-width="2" marker-end="url(#arr-blue)"/>
+  <line x1="400" y1="248" x2="436" y2="278" stroke="#0f766e" stroke-width="2" marker-end="url(#arr-blue)"/>
+  <rect x="234" y="254" width="144" height="22" rx="11" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.2"/>
+  <text x="306" y="269" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Decompose on X → Y</text>
 
   <!-- R1 & R2 -->
   <g class="bcnf-split">
-    <rect x="42" y="284" width="254" height="142" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.6"/>
-    <text x="56" y="304" class="sans" font-size="12" font-weight="700" fill="#1e3a8a">R1(Instructor, Course)</text>
-    <text x="56" y="320" class="mono" font-size="10" fill="#1d4ed8">Key: {Instructor} · BCNF ✓</text>
-    <rect x="56" y="330" width="226" height="22" rx="3" fill="#dbeafe" stroke="#93c5fd" stroke-width="1"/>
-    <text x="66" y="345" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a">Instructor (PK) | Course</text>
+    <rect x="42" y="284" width="254" height="142" rx="8" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.6"/>
+    <text x="56" y="304" class="sans" font-size="12" font-weight="700" fill="#065f46">R1(Instructor, Course)</text>
+    <text x="56" y="320" class="mono" font-size="10" fill="#065f46">Key: {Instructor} · BCNF ✓</text>
+    <rect x="56" y="330" width="226" height="22" rx="3" fill="#f0fdf9" stroke="#99f6e4" stroke-width="1"/>
+    <text x="66" y="345" class="mono" font-size="10.5" font-weight="700" fill="#065f46">Instructor (PK) | Course</text>
     <rect x="56" y="352" width="226" height="22" fill="#ffffff" stroke="#bfdbfe" stroke-width="1"/>
-    <text x="66" y="367" class="mono" font-size="10.5" fill="#334155">Prof. Ada       | CS101</text>
+    <text x="66" y="367" class="mono" font-size="10.5" fill="#44403c">Prof. Ada       | CS101</text>
     <rect x="56" y="374" width="226" height="22" fill="#ffffff" stroke="#bfdbfe" stroke-width="1"/>
-    <text x="66" y="389" class="mono" font-size="10.5" fill="#334155">Prof. Codd      | DB202</text>
-    <text x="56" y="414" class="sans" font-size="10" fill="#1e40af">Single fact per instructor.</text>
+    <text x="66" y="389" class="mono" font-size="10.5" fill="#44403c">Prof. Codd      | DB202</text>
+    <text x="56" y="414" class="sans" font-size="10" fill="#065f46">Single fact per instructor.</text>
 
-    <rect x="316" y="284" width="254" height="142" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.6"/>
-    <text x="330" y="304" class="sans" font-size="12" font-weight="700" fill="#5b21b6">R2(Student, Instructor)</text>
-    <text x="330" y="320" class="mono" font-size="10" fill="#6d28d9">Key: {Student, Instructor} · BCNF ✓</text>
-    <rect x="330" y="330" width="226" height="22" rx="3" fill="#ede9fe" stroke="#c4b5fd" stroke-width="1"/>
-    <text x="340" y="345" class="mono" font-size="10.5" font-weight="700" fill="#5b21b6">Student   | Instructor (FK)</text>
+    <rect x="316" y="284" width="254" height="142" rx="8" fill="#f5f1e8" stroke="#0f766e" stroke-width="1.6"/>
+    <text x="330" y="304" class="sans" font-size="12" font-weight="700" fill="#065f46">R2(Student, Instructor)</text>
+    <text x="330" y="320" class="mono" font-size="10" fill="#065f46">Key: {Student, Instructor} · BCNF ✓</text>
+    <rect x="330" y="330" width="226" height="22" rx="3" fill="#f5f1e8" stroke="#d6d0c4" stroke-width="1"/>
+    <text x="340" y="345" class="mono" font-size="10.5" font-weight="700" fill="#065f46">Student   | Instructor (FK)</text>
     <rect x="330" y="352" width="226" height="20" fill="#ffffff" stroke="#ddd6fe" stroke-width="1"/>
-    <text x="340" y="366" class="mono" font-size="10.5" fill="#334155">Alice     | Prof. Ada</text>
+    <text x="340" y="366" class="mono" font-size="10.5" fill="#44403c">Alice     | Prof. Ada</text>
     <rect x="330" y="372" width="226" height="20" fill="#ffffff" stroke="#ddd6fe" stroke-width="1"/>
-    <text x="340" y="386" class="mono" font-size="10.5" fill="#334155">Bob       | Prof. Ada</text>
+    <text x="340" y="386" class="mono" font-size="10.5" fill="#44403c">Bob       | Prof. Ada</text>
     <rect x="330" y="392" width="226" height="20" fill="#ffffff" stroke="#ddd6fe" stroke-width="1"/>
-    <text x="340" y="406" class="mono" font-size="10.5" fill="#334155">Cara      | Prof. Codd</text>
+    <text x="340" y="406" class="mono" font-size="10.5" fill="#44403c">Cara      | Prof. Codd</text>
   </g>
 
   <!-- Lossless Join Verification Box -->
   <g class="bcnf-loss">
-    <rect x="42" y="440" width="528" height="78" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.6"/>
+    <rect x="42" y="440" width="528" height="78" rx="8" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.6"/>
     <text x="58" y="462" class="sans" font-size="12" font-weight="700" fill="#065f46">Lossless-Join Invariant Verified: R1 ⋈ R2 = R (Zero Spurious Tuples)</text>
-    <text x="58" y="483" class="mono" font-size="11" fill="#047857">A(R1) ∩ A(R2) = {Instructor}   and   Instructor → A(R1) = {Instructor, Course}</text>
-    <text x="58" y="503" class="sans" font-size="10.5" fill="#334155">Common attribute forms a superkey of R1. Note: BCNF sacrifices preserving {Student, Course} → Instructor across tables.</text>
+    <text x="58" y="483" class="mono" font-size="11" fill="#065f46">A(R1) ∩ A(R2) = {Instructor}   and   Instructor → A(R1) = {Instructor, Course}</text>
+    <text x="58" y="503" class="sans" font-size="10.5" fill="#44403c">Common attribute forms a superkey of R1. Note: BCNF sacrifices preserving {Student, Course} → Instructor across tables.</text>
   </g>
 
   <!-- RIGHT PANEL: SEMI-NAIVE DATALOG -->
-  <rect x="604" y="78" width="572" height="456" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <rect x="604" y="78" width="572" height="34" rx="10" fill="#f1f5f9"/>
-  <rect x="604" y="102" width="572" height="10" fill="#f1f5f9"/>
-  <text x="620" y="100" class="sans" font-size="13" font-weight="700" fill="#0f172a">2. Semi-Naive Datalog Δ-Evaluation (Transitive Closure)</text>
-  <text x="1160" y="100" class="mono" font-size="11" fill="#64748b" text-anchor="end">LFP = T_P^∞(∅)</text>
+  <rect x="604" y="78" width="572" height="456" rx="10" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <rect x="604" y="78" width="572" height="34" rx="10" fill="#f5f1e8"/>
+  <rect x="604" y="102" width="572" height="10" fill="#f5f1e8"/>
+  <text x="620" y="100" class="sans" font-size="13" font-weight="700" fill="#1c1917">2. Semi-Naive Datalog Δ-Evaluation (Transitive Closure)</text>
+  <text x="1160" y="100" class="mono" font-size="11" fill="#57534e" text-anchor="end">LFP = T_P^∞(∅)</text>
 
   <!-- Datalog Program & Graph -->
-  <rect x="622" y="126" width="536" height="82" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
-  <text x="636" y="146" class="mono" font-size="11" font-weight="700" fill="#0f172a">r0: Reach(x, y) ← Edge(x, y)</text>
-  <text x="636" y="166" class="mono" font-size="11" font-weight="700" fill="#7c3aed">r1: ΔReach^(k+1)(x, z) ← ΔReach^(k)(x, y), Edge(y, z) \ Reach^(k)</text>
-  <text x="636" y="190" class="sans" font-size="10.5" fill="#475569">Base EDB Edge:</text>
+  <rect x="622" y="126" width="536" height="82" rx="8" fill="#faf8f5" stroke="#d6d0c4" stroke-width="1.2"/>
+  <text x="636" y="146" class="mono" font-size="11" font-weight="700" fill="#1c1917">r0: Reach(x, y) ← Edge(x, y)</text>
+  <text x="636" y="166" class="mono" font-size="11" font-weight="700" fill="#0f766e">r1: ΔReach^(k+1)(x, z) ← ΔReach^(k)(x, y), Edge(y, z) \ Reach^(k)</text>
+  <text x="636" y="190" class="sans" font-size="10.5" fill="#44403c">Base EDB Edge:</text>
 
   <!-- Mini Graph 1 -> 2 -> 3 -> 4 -->
-  <circle cx="742" cy="186" r="12" fill="#eff6ff" stroke="#2563eb" stroke-width="1.6"/>
-  <text x="742" y="190" class="mono" font-size="11" font-weight="700" fill="#1e3a8a" text-anchor="middle">1</text>
-  <line x1="754" y1="186" x2="788" y2="186" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
-  <circle cx="802" cy="186" r="12" fill="#eff6ff" stroke="#2563eb" stroke-width="1.6"/>
-  <text x="802" y="190" class="mono" font-size="11" font-weight="700" fill="#1e3a8a" text-anchor="middle">2</text>
-  <line x1="814" y1="186" x2="848" y2="186" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
-  <circle cx="862" cy="186" r="12" fill="#eff6ff" stroke="#2563eb" stroke-width="1.6"/>
-  <text x="862" y="190" class="mono" font-size="11" font-weight="700" fill="#1e3a8a" text-anchor="middle">3</text>
-  <line x1="874" y1="186" x2="908" y2="186" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
-  <circle cx="922" cy="186" r="12" fill="#eff6ff" stroke="#2563eb" stroke-width="1.6"/>
-  <text x="922" y="190" class="mono" font-size="11" font-weight="700" fill="#1e3a8a" text-anchor="middle">4</text>
-  <text x="952" y="190" class="sans" font-size="10.5" fill="#64748b">(avoiding O(k²) re-joins)</text>
+  <circle cx="742" cy="186" r="12" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.6"/>
+  <text x="742" y="190" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">1</text>
+  <line x1="754" y1="186" x2="788" y2="186" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+  <circle cx="802" cy="186" r="12" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.6"/>
+  <text x="802" y="190" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">2</text>
+  <line x1="814" y1="186" x2="848" y2="186" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+  <circle cx="862" cy="186" r="12" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.6"/>
+  <text x="862" y="190" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">3</text>
+  <line x1="874" y1="186" x2="908" y2="186" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+  <circle cx="922" cy="186" r="12" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.6"/>
+  <text x="922" y="190" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">4</text>
+  <text x="952" y="190" class="sans" font-size="10.5" fill="#57534e">(avoiding O(k²) re-joins)</text>
 
   <!-- Iteration Delta Boxes -->
   <!-- k=0 -->
-  <rect x="622" y="222" width="414" height="58" rx="7" fill="#eff6ff" stroke="#2563eb" class="d0"/>
-  <rect x="634" y="232" width="52" height="20" rx="4" fill="#2563eb"/>
+  <rect x="622" y="222" width="414" height="58" rx="7" fill="#f0fdf9" stroke="#0f766e" class="d0"/>
+  <rect x="634" y="232" width="52" height="20" rx="4" fill="#0f766e"/>
   <text x="660" y="246" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">k = 0</text>
-  <text x="698" y="246" class="mono" font-size="11" font-weight="700" fill="#1e3a8a">ΔR^(0) = {(1,2), (2,3), (3,4)}</text>
-  <text x="634" y="268" class="sans" font-size="10.5" fill="#334155">Seed from EDB Edge. Accumulated R^(0) = ΔR^(0) (3 tuples).</text>
+  <text x="698" y="246" class="mono" font-size="11" font-weight="700" fill="#065f46">ΔR^(0) = {(1,2), (2,3), (3,4)}</text>
+  <text x="634" y="268" class="sans" font-size="10.5" fill="#44403c">Seed from EDB Edge. Accumulated R^(0) = ΔR^(0) (3 tuples).</text>
 
   <!-- k=1 -->
   <g class="d1">
-    <line x1="828" y1="280" x2="828" y2="294" stroke="#7c3aed" stroke-width="1.8" marker-end="url(#arr-violet)"/>
-    <rect x="622" y="296" width="414" height="58" rx="7" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
-    <rect x="634" y="306" width="52" height="20" rx="4" fill="#7c3aed"/>
+    <line x1="828" y1="280" x2="828" y2="294" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-violet)"/>
+    <rect x="622" y="296" width="414" height="58" rx="7" fill="#f5f1e8" stroke="#0f766e" stroke-width="1.5"/>
+    <rect x="634" y="306" width="52" height="20" rx="4" fill="#0f766e"/>
     <text x="660" y="320" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">k = 1</text>
-    <text x="698" y="320" class="mono" font-size="11" font-weight="700" fill="#5b21b6">ΔR^(1) = {(1,3), (2,4)}</text>
-    <text x="634" y="342" class="sans" font-size="10.5" fill="#334155">Joins ONLY ΔR^(0) ⋈ Edge → derives 2-hop paths without re-scanning R^(0).</text>
+    <text x="698" y="320" class="mono" font-size="11" font-weight="700" fill="#065f46">ΔR^(1) = {(1,3), (2,4)}</text>
+    <text x="634" y="342" class="sans" font-size="10.5" fill="#44403c">Joins ONLY ΔR^(0) ⋈ Edge → derives 2-hop paths without re-scanning R^(0).</text>
   </g>
 
   <!-- k=2 -->
   <g class="d2">
-    <line x1="828" y1="354" x2="828" y2="368" stroke="#d97706" stroke-width="1.8" marker-end="url(#arr-amber)"/>
-    <rect x="622" y="370" width="414" height="58" rx="7" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
-    <rect x="634" y="380" width="52" height="20" rx="4" fill="#d97706"/>
+    <line x1="828" y1="354" x2="828" y2="368" stroke="#b45309" stroke-width="1.8" marker-end="url(#arr-amber)"/>
+    <rect x="622" y="370" width="414" height="58" rx="7" fill="#fffbeb" stroke="#b45309" stroke-width="1.5"/>
+    <rect x="634" y="380" width="52" height="20" rx="4" fill="#b45309"/>
     <text x="660" y="394" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">k = 2</text>
     <text x="698" y="394" class="mono" font-size="11" font-weight="700" fill="#92400e">ΔR^(2) = {(1,4)}</text>
-    <text x="634" y="416" class="sans" font-size="10.5" fill="#334155">Joins ONLY ΔR^(1) ⋈ Edge → derives 3-hop path (1,4). R^(2) = 6 tuples.</text>
+    <text x="634" y="416" class="sans" font-size="10.5" fill="#44403c">Joins ONLY ΔR^(1) ⋈ Edge → derives 3-hop path (1,4). R^(2) = 6 tuples.</text>
   </g>
 
   <!-- k=3 Fixed Point -->
   <g class="dlfp">
-    <line x1="828" y1="428" x2="828" y2="442" stroke="#059669" stroke-width="1.8" marker-end="url(#arr-emerald)"/>
-    <rect x="622" y="444" width="536" height="74" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
-    <rect x="634" y="454" width="52" height="20" rx="4" fill="#059669"/>
+    <line x1="828" y1="428" x2="828" y2="442" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-emerald)"/>
+    <rect x="622" y="444" width="536" height="74" rx="8" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.8"/>
+    <rect x="634" y="454" width="52" height="20" rx="4" fill="#0f766e"/>
     <text x="660" y="468" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">k = 3</text>
     <text x="698" y="468" class="mono" font-size="11.5" font-weight="700" fill="#065f46">ΔR^(3) = ∅  →  Fixed Point Reached (R^(3) = R^(2))</text>
-    <text x="634" y="490" class="sans" font-size="10.5" fill="#047857">Monotonic T_P stops cleanly at Knaster-Tarski Least Fixed Point (all 6 reachable pairs computed once).</text>
-    <text x="634" y="507" class="mono" font-size="10" fill="#334155">Total tuples: {(1,2), (2,3), (3,4), (1,3), (2,4), (1,4)}</text>
+    <text x="634" y="490" class="sans" font-size="10.5" fill="#065f46">Monotonic T_P stops cleanly at Knaster-Tarski Least Fixed Point (all 6 reachable pairs computed once).</text>
+    <text x="634" y="507" class="mono" font-size="10" fill="#44403c">Total tuples: {(1,2), (2,3), (3,4), (1,3), (2,4), (1,4)}</text>
   </g>
 
   <!-- Feedback Loop Arrow on Right -->
-  <path d="M 1044 252 L 1126 252 L 1126 400 L 1044 400" fill="none" stroke="#7c3aed" stroke-width="2" class="dash-flow" marker-end="url(#arr-violet)"/>
-  <rect x="1062" y="308" width="90" height="38" rx="6" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.2"/>
-  <text x="1107" y="324" class="mono" font-size="10" font-weight="700" fill="#5b21b6" text-anchor="middle">Feed ΔR^(k)</text>
-  <text x="1107" y="338" class="mono" font-size="10" fill="#6d28d9" text-anchor="middle">into next step</text>
+  <path d="M 1044 252 L 1126 252 L 1126 400 L 1044 400" fill="none" stroke="#0f766e" stroke-width="2" class="dash-flow" marker-end="url(#arr-violet)"/>
+  <rect x="1062" y="308" width="90" height="38" rx="6" fill="#f5f1e8" stroke="#0f766e" stroke-width="1.2"/>
+  <text x="1107" y="324" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">Feed ΔR^(k)</text>
+  <text x="1107" y="338" class="mono" font-size="10" fill="#065f46" text-anchor="middle">into next step</text>
 
   <!-- BOTTOM 4 STEP CARDS -->
-  <rect x="24" y="550" width="276" height="146" rx="8" fill="#fff1f2" class="s1"/>
-  <rect x="38" y="564" width="56" height="22" rx="4" fill="#e11d48"/>
+  <rect x="24" y="550" width="276" height="146" rx="8" fill="#fef2f2" class="s1"/>
+  <rect x="38" y="564" width="56" height="22" rx="4" fill="#dc2626"/>
   <text x="66" y="579" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">Step 1</text>
-  <text x="104" y="579" class="sans" font-size="12.5" font-weight="700" fill="#9f1239">Violation &amp; Seed</text>
-  <text x="38" y="606" class="mono" font-size="10.5" fill="#334155">BCNF: Instructor → Course</text>
-  <text x="38" y="626" class="mono" font-size="10.5" fill="#334155">Datalog: ΔR^(0) = Edge</text>
-  <text x="38" y="650" class="sans" font-size="10.5" fill="#475569">Non-superkey FD triggers split;</text>
-  <text x="38" y="666" class="sans" font-size="10.5" fill="#475569">base EDB seeds first delta.</text>
+  <text x="104" y="579" class="sans" font-size="12.5" font-weight="700" fill="#991b1b">Violation &amp; Seed</text>
+  <text x="38" y="606" class="mono" font-size="10.5" fill="#44403c">BCNF: Instructor → Course</text>
+  <text x="38" y="626" class="mono" font-size="10.5" fill="#44403c">Datalog: ΔR^(0) = Edge</text>
+  <text x="38" y="650" class="sans" font-size="10.5" fill="#44403c">Non-superkey FD triggers split;</text>
+  <text x="38" y="666" class="sans" font-size="10.5" fill="#44403c">base EDB seeds first delta.</text>
 
-  <rect x="316" y="550" width="276" height="146" rx="8" fill="#eff6ff" class="s2"/>
-  <rect x="330" y="564" width="56" height="22" rx="4" fill="#2563eb"/>
+  <rect x="316" y="550" width="276" height="146" rx="8" fill="#f0fdf9" class="s2"/>
+  <rect x="330" y="564" width="56" height="22" rx="4" fill="#0f766e"/>
   <text x="358" y="579" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">Step 2</text>
-  <text x="396" y="579" class="sans" font-size="12.5" font-weight="700" fill="#1e3a8a">Split &amp; ΔR^(1)</text>
-  <text x="330" y="606" class="mono" font-size="10.5" fill="#334155">R → R1(Inst,Crs), R2(Stu,Inst)</text>
-  <text x="330" y="626" class="mono" font-size="10.5" fill="#334155">ΔR^(1) = ΔR^(0) ⋈ Edge \ R^(0)</text>
-  <text x="330" y="650" class="sans" font-size="10.5" fill="#475569">Redundancy removed; differential</text>
-  <text x="330" y="666" class="sans" font-size="10.5" fill="#475569">join derives only new 2-hop paths.</text>
+  <text x="396" y="579" class="sans" font-size="12.5" font-weight="700" fill="#065f46">Split &amp; ΔR^(1)</text>
+  <text x="330" y="606" class="mono" font-size="10.5" fill="#44403c">R → R1(Inst,Crs), R2(Stu,Inst)</text>
+  <text x="330" y="626" class="mono" font-size="10.5" fill="#44403c">ΔR^(1) = ΔR^(0) ⋈ Edge \ R^(0)</text>
+  <text x="330" y="650" class="sans" font-size="10.5" fill="#44403c">Redundancy removed; differential</text>
+  <text x="330" y="666" class="sans" font-size="10.5" fill="#44403c">join derives only new 2-hop paths.</text>
 
   <rect x="608" y="550" width="276" height="146" rx="8" fill="#fffbeb" class="s3"/>
-  <rect x="622" y="564" width="56" height="22" rx="4" fill="#d97706"/>
+  <rect x="622" y="564" width="56" height="22" rx="4" fill="#b45309"/>
   <text x="650" y="579" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">Step 3</text>
   <text x="688" y="579" class="sans" font-size="12.5" font-weight="700" fill="#92400e">Lossless &amp; ΔR^(2)</text>
-  <text x="622" y="606" class="mono" font-size="10.5" fill="#334155">R1 ∩ R2 = {Inst} → A(R1)</text>
-  <text x="622" y="626" class="mono" font-size="10.5" fill="#334155">ΔR^(2) = {(1,4)}</text>
-  <text x="622" y="650" class="sans" font-size="10.5" fill="#475569">Superkey intersection prevents</text>
-  <text x="622" y="666" class="sans" font-size="10.5" fill="#475569">spurious rows; 3-hop path found.</text>
+  <text x="622" y="606" class="mono" font-size="10.5" fill="#44403c">R1 ∩ R2 = {Inst} → A(R1)</text>
+  <text x="622" y="626" class="mono" font-size="10.5" fill="#44403c">ΔR^(2) = {(1,4)}</text>
+  <text x="622" y="650" class="sans" font-size="10.5" fill="#44403c">Superkey intersection prevents</text>
+  <text x="622" y="666" class="sans" font-size="10.5" fill="#44403c">spurious rows; 3-hop path found.</text>
 
-  <rect x="900" y="550" width="276" height="146" rx="8" fill="#ecfdf5" class="s4"/>
-  <rect x="914" y="564" width="56" height="22" rx="4" fill="#059669"/>
+  <rect x="900" y="550" width="276" height="146" rx="8" fill="#f0fdf9" class="s4"/>
+  <rect x="914" y="564" width="56" height="22" rx="4" fill="#0f766e"/>
   <text x="942" y="579" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">Step 4</text>
   <text x="980" y="579" class="sans" font-size="12.5" font-weight="700" fill="#065f46">Normal &amp; LFP</text>
-  <text x="914" y="606" class="mono" font-size="10.5" fill="#334155">R1, R2 ∈ BCNF</text>
-  <text x="914" y="626" class="mono" font-size="10.5" fill="#059669">ΔR^(3) = ∅ (Stop!)</text>
-  <text x="914" y="650" class="sans" font-size="10.5" fill="#475569">Empty delta halts recursion at</text>
-  <text x="914" y="666" class="sans" font-size="10.5" fill="#475569">unique Least Fixed Point.</text>
+  <text x="914" y="606" class="mono" font-size="10.5" fill="#44403c">R1, R2 ∈ BCNF</text>
+  <text x="914" y="626" class="mono" font-size="10.5" fill="#0f766e">ΔR^(3) = ∅ (Stop!)</text>
+  <text x="914" y="650" class="sans" font-size="10.5" fill="#44403c">Empty delta halts recursion at</text>
+  <text x="914" y="666" class="sans" font-size="10.5" fill="#44403c">unique Least Fixed Point.</text>
 </svg>

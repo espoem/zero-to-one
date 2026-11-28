@@ -22,42 +22,42 @@
     }
 
     @keyframes g0-hl {
-      0%, 24%  { stroke: #e11d48; stroke-width: 2.6; }
+      0%, 24%  { stroke: #dc2626; stroke-width: 2.6; }
       25%, 100%{ stroke: #fda4af; stroke-width: 1.5; }
     }
     @keyframes g12-hl {
-      0%, 24%  { stroke: #cbd5e1; stroke-width: 1.5; }
-      25%, 49% { stroke: #2563eb; stroke-width: 2.6; }
-      50%, 100%{ stroke: #cbd5e1; stroke-width: 1.5; }
+      0%, 24%  { stroke: #d6d0c4; stroke-width: 1.5; }
+      25%, 49% { stroke: #0f766e; stroke-width: 2.6; }
+      50%, 100%{ stroke: #d6d0c4; stroke-width: 1.5; }
     }
     @keyframes g345-hl {
-      0%, 49%  { stroke: #cbd5e1; stroke-width: 1.5; }
-      50%, 74% { stroke: #7c3aed; stroke-width: 2.6; }
-      75%, 100%{ stroke: #cbd5e1; stroke-width: 1.5; }
+      0%, 49%  { stroke: #d6d0c4; stroke-width: 1.5; }
+      50%, 74% { stroke: #0f766e; stroke-width: 2.6; }
+      75%, 100%{ stroke: #d6d0c4; stroke-width: 1.5; }
     }
     @keyframes allow-hl {
-      0%, 74%  { stroke: #6ee7b7; stroke-width: 1.5; opacity: 0.72; }
-      75%, 98% { stroke: #059669; stroke-width: 3; opacity: 1; }
-      100%     { stroke: #6ee7b7; stroke-width: 1.5; opacity: 0.72; }
+      0%, 74%  { stroke: #99f6e4; stroke-width: 1.5; opacity: 0.72; }
+      75%, 98% { stroke: #0f766e; stroke-width: 3; opacity: 1; }
+      100%     { stroke: #99f6e4; stroke-width: 1.5; opacity: 0.72; }
     }
 
     @keyframes t1-hl {
-      0%, 24%  { opacity: 1; stroke: #e11d48; stroke-width: 2.4; }
-      25%, 100%{ opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; }
+      0%, 24%  { opacity: 1; stroke: #dc2626; stroke-width: 2.4; }
+      25%, 100%{ opacity: 0.86; stroke: #d6d0c4; stroke-width: 1.2; }
     }
     @keyframes t2-hl {
-      0%, 24%  { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; }
-      25%, 49% { opacity: 1; stroke: #2563eb; stroke-width: 2.4; }
-      50%, 100%{ opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; }
+      0%, 24%  { opacity: 0.86; stroke: #d6d0c4; stroke-width: 1.2; }
+      25%, 49% { opacity: 1; stroke: #0f766e; stroke-width: 2.4; }
+      50%, 100%{ opacity: 0.86; stroke: #d6d0c4; stroke-width: 1.2; }
     }
     @keyframes t3-hl {
-      0%, 49%  { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; }
-      50%, 74% { opacity: 1; stroke: #7c3aed; stroke-width: 2.4; }
-      75%, 100%{ opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; }
+      0%, 49%  { opacity: 0.86; stroke: #d6d0c4; stroke-width: 1.2; }
+      50%, 74% { opacity: 1; stroke: #0f766e; stroke-width: 2.4; }
+      75%, 100%{ opacity: 0.86; stroke: #d6d0c4; stroke-width: 1.2; }
     }
     @keyframes t4-hl {
-      0%, 74%  { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; }
-      75%, 100%{ opacity: 1; stroke: #059669; stroke-width: 2.4; }
+      0%, 74%  { opacity: 0.86; stroke: #d6d0c4; stroke-width: 1.2; }
+      75%, 100%{ opacity: 1; stroke: #0f766e; stroke-width: 2.4; }
     }
 
     .req-p { animation: req-drop 12s ease-in-out infinite; }
@@ -81,145 +81,145 @@
 
   <defs>
     <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#dc2626"/>
     </marker>
     <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
   </defs>
 
   <!-- Canvas -->
-  <rect x="0" y="0" width="1120" height="640" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1120" height="640" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1120" height="60" rx="12" fill="#0f172a"/>
-  <rect x="0" y="44" width="1120" height="16" fill="#0f172a"/>
-  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">AWS IAM Multi-Layer Deterministic Policy Evaluation Waterfall</text>
-  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">Explicit Deny Sweep (All Layers) → SCP/RCP → Resource Policy → Permission Boundary → Session Policy → Identity Policy</text>
+  <line x1="24" y1="62" x2="1096" y2="62" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#1c1917" font-family="Georgia, 'Times New Roman', serif">AWS IAM Multi-Layer Deterministic Policy Evaluation Waterfall</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">Explicit Deny Sweep (All Layers) → SCP/RCP → Resource Policy → Permission Boundary → Session Policy → Identity Policy</text>
 
   <!-- LEFT PANEL: 6-LAYER WATERFALL -->
-  <rect x="24" y="76" width="636" height="540" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <text x="42" y="102" class="sans" font-size="14" font-weight="700" fill="#0f172a">6-Layer Authorization Waterfall (Short-Circuit Evaluation)</text>
+  <rect x="24" y="76" width="636" height="540" rx="10" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <text x="42" y="102" class="sans" font-size="14" font-weight="700" fill="#1c1917">6-Layer Authorization Waterfall (Short-Circuit Evaluation)</text>
 
   <!-- Request Flow Track + Animated Cursor -->
-  <line x1="40" y1="146" x2="40" y2="578" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="4 3"/>
+  <line x1="40" y1="146" x2="40" y2="578" stroke="#d6d0c4" stroke-width="2" stroke-dasharray="4 3"/>
   <g class="req-p">
-    <circle cx="40" cy="144" r="9" fill="#2563eb" stroke="#ffffff" stroke-width="2"/>
+    <circle cx="40" cy="144" r="9" fill="#0f766e" stroke="#ffffff" stroke-width="2"/>
     <text x="40" y="148" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">R</text>
   </g>
 
   <!-- Downward Arrows between Gates -->
-  <line x1="274" y1="176" x2="274" y2="188" stroke="#2563eb" stroke-width="2" marker-end="url(#arr-blue)"/>
-  <line x1="274" y1="250" x2="274" y2="262" stroke="#2563eb" stroke-width="2" marker-end="url(#arr-blue)"/>
-  <line x1="274" y1="324" x2="274" y2="336" stroke="#2563eb" stroke-width="2" marker-end="url(#arr-blue)"/>
-  <line x1="274" y1="398" x2="274" y2="410" stroke="#2563eb" stroke-width="2" marker-end="url(#arr-blue)"/>
-  <line x1="274" y1="472" x2="274" y2="484" stroke="#2563eb" stroke-width="2" marker-end="url(#arr-blue)"/>
-  <line x1="160" y1="546" x2="160" y2="562" stroke="#059669" stroke-width="2" marker-end="url(#arr-green)"/>
-  <line x1="388" y1="546" x2="388" y2="562" stroke="#e11d48" stroke-width="2" marker-end="url(#arr-rose)"/>
+  <line x1="274" y1="176" x2="274" y2="188" stroke="#0f766e" stroke-width="2" marker-end="url(#arr-blue)"/>
+  <line x1="274" y1="250" x2="274" y2="262" stroke="#0f766e" stroke-width="2" marker-end="url(#arr-blue)"/>
+  <line x1="274" y1="324" x2="274" y2="336" stroke="#0f766e" stroke-width="2" marker-end="url(#arr-blue)"/>
+  <line x1="274" y1="398" x2="274" y2="410" stroke="#0f766e" stroke-width="2" marker-end="url(#arr-blue)"/>
+  <line x1="274" y1="472" x2="274" y2="484" stroke="#0f766e" stroke-width="2" marker-end="url(#arr-blue)"/>
+  <line x1="160" y1="546" x2="160" y2="562" stroke="#0f766e" stroke-width="2" marker-end="url(#arr-green)"/>
+  <line x1="388" y1="546" x2="388" y2="562" stroke="#dc2626" stroke-width="2" marker-end="url(#arr-rose)"/>
 
   <!-- Right-side Fail / Deny Rail -->
-  <line x1="494" y1="147" x2="526" y2="147" stroke="#e11d48" stroke-width="1.8" marker-end="url(#arr-rose)"/>
-  <line x1="494" y1="221" x2="526" y2="221" stroke="#e11d48" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#arr-rose)"/>
-  <line x1="494" y1="295" x2="526" y2="295" stroke="#e11d48" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#arr-rose)"/>
-  <line x1="494" y1="369" x2="526" y2="369" stroke="#e11d48" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#arr-rose)"/>
-  <line x1="494" y1="443" x2="526" y2="443" stroke="#e11d48" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#arr-rose)"/>
+  <line x1="494" y1="147" x2="526" y2="147" stroke="#dc2626" stroke-width="1.8" marker-end="url(#arr-rose)"/>
+  <line x1="494" y1="221" x2="526" y2="221" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#arr-rose)"/>
+  <line x1="494" y1="295" x2="526" y2="295" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#arr-rose)"/>
+  <line x1="494" y1="369" x2="526" y2="369" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#arr-rose)"/>
+  <line x1="494" y1="443" x2="526" y2="443" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#arr-rose)"/>
 
-  <rect x="530" y="120" width="114" height="54" rx="7" fill="#fff1f2" stroke="#e11d48" stroke-width="1.8"/>
-  <text x="587" y="143" class="mono" font-size="10.5" font-weight="700" fill="#9f1239" text-anchor="middle">EXPLICIT DENY</text>
-  <text x="587" y="160" class="sans" font-size="10" fill="#be123c" text-anchor="middle">Hard Stop (Final)</text>
+  <rect x="530" y="120" width="114" height="54" rx="7" fill="#fef2f2" stroke="#dc2626" stroke-width="1.8"/>
+  <text x="587" y="143" class="mono" font-size="10.5" font-weight="700" fill="#991b1b" text-anchor="middle">EXPLICIT DENY</text>
+  <text x="587" y="160" class="sans" font-size="10" fill="#991b1b" text-anchor="middle">Hard Stop (Final)</text>
 
-  <rect x="530" y="194" width="114" height="278" rx="7" fill="#fff1f2" stroke="#fda4af" stroke-width="1.5"/>
-  <text x="587" y="320" class="mono" font-size="10.5" font-weight="700" fill="#9f1239" text-anchor="middle">FAIL GATE</text>
-  <text x="587" y="338" class="mono" font-size="10" fill="#be123c" text-anchor="middle">→ DENY</text>
-  <text x="587" y="360" class="sans" font-size="10" fill="#be123c" text-anchor="middle">(Missing Allow</text>
-  <text x="587" y="374" class="sans" font-size="10" fill="#be123c" text-anchor="middle">in active layer)</text>
+  <rect x="530" y="194" width="114" height="278" rx="7" fill="#fef2f2" stroke="#fda4af" stroke-width="1.5"/>
+  <text x="587" y="320" class="mono" font-size="10.5" font-weight="700" fill="#991b1b" text-anchor="middle">FAIL GATE</text>
+  <text x="587" y="338" class="mono" font-size="10" fill="#991b1b" text-anchor="middle">→ DENY</text>
+  <text x="587" y="360" class="sans" font-size="10" fill="#991b1b" text-anchor="middle">(Missing Allow</text>
+  <text x="587" y="374" class="sans" font-size="10" fill="#991b1b" text-anchor="middle">in active layer)</text>
 
   <!-- Gate 0: Explicit Deny -->
-  <rect x="58" y="118" width="436" height="58" rx="8" fill="#fff1f2" class="g0"/>
-  <text x="74" y="139" class="sans" font-size="12.5" font-weight="700" fill="#9f1239">1. Global Explicit Deny Sweep (All 6 Policy Types)</text>
-  <text x="74" y="159" class="mono" font-size="10.5" fill="#334155">Any matching Effect: "Deny" in SCP ∪ RCP ∪ Res ∪ Bound ∪ Sess ∪ Id?</text>
+  <rect x="58" y="118" width="436" height="58" rx="8" fill="#fef2f2" class="g0"/>
+  <text x="74" y="139" class="sans" font-size="12.5" font-weight="700" fill="#991b1b">1. Global Explicit Deny Sweep (All 6 Policy Types)</text>
+  <text x="74" y="159" class="mono" font-size="10.5" fill="#44403c">Any matching Effect: "Deny" in SCP ∪ RCP ∪ Res ∪ Bound ∪ Sess ∪ Id?</text>
 
   <!-- Gate 1: SCP & RCP -->
-  <rect x="58" y="192" width="436" height="58" rx="8" fill="#eff6ff" class="g12"/>
-  <text x="74" y="213" class="sans" font-size="12.5" font-weight="700" fill="#1e3a8a">2. Organizations Guardrails (SCP &amp; RCP)</text>
-  <text x="74" y="233" class="mono" font-size="10.5" fill="#334155">Every Root → OU → Account SCP allows? ∧ RCP allows resource?</text>
+  <rect x="58" y="192" width="436" height="58" rx="8" fill="#f0fdf9" class="g12"/>
+  <text x="74" y="213" class="sans" font-size="12.5" font-weight="700" fill="#065f46">2. Organizations Guardrails (SCP &amp; RCP)</text>
+  <text x="74" y="233" class="mono" font-size="10.5" fill="#44403c">Every Root → OU → Account SCP allows? ∧ RCP allows resource?</text>
 
   <!-- Gate 2: Resource Policy -->
-  <rect x="58" y="266" width="436" height="58" rx="8" fill="#eff6ff" class="g12"/>
-  <text x="74" y="287" class="sans" font-size="12.5" font-weight="700" fill="#1e3a8a">3. Resource-Based Policy (Same vs Cross-Account)</text>
-  <text x="74" y="307" class="mono" font-size="10.5" fill="#334155">Same: Res ∨ Id (KMS needs Key Policy!) · Cross: Res ∧ Foreign Id</text>
+  <rect x="58" y="266" width="436" height="58" rx="8" fill="#f0fdf9" class="g12"/>
+  <text x="74" y="287" class="sans" font-size="12.5" font-weight="700" fill="#065f46">3. Resource-Based Policy (Same vs Cross-Account)</text>
+  <text x="74" y="307" class="mono" font-size="10.5" fill="#44403c">Same: Res ∨ Id (KMS needs Key Policy!) · Cross: Res ∧ Foreign Id</text>
 
   <!-- Gate 3: Permission Boundary -->
-  <rect x="58" y="340" width="436" height="58" rx="8" fill="#f5f3ff" class="g345"/>
-  <text x="74" y="361" class="sans" font-size="12.5" font-weight="700" fill="#4c1d95">4. IAM Permission Boundary (Ceiling)</text>
-  <text x="74" y="381" class="mono" font-size="10.5" fill="#334155">If attached: Effective = Identity ∩ Boundary (missing Allow ⇒ Deny)</text>
+  <rect x="58" y="340" width="436" height="58" rx="8" fill="#f5f1e8" class="g345"/>
+  <text x="74" y="361" class="sans" font-size="12.5" font-weight="700" fill="#065f46">4. IAM Permission Boundary (Ceiling)</text>
+  <text x="74" y="381" class="mono" font-size="10.5" fill="#44403c">If attached: Effective = Identity ∩ Boundary (missing Allow ⇒ Deny)</text>
 
   <!-- Gate 4: STS Session Policy -->
-  <rect x="58" y="414" width="436" height="58" rx="8" fill="#f5f3ff" class="g345"/>
-  <text x="74" y="435" class="sans" font-size="12.5" font-weight="700" fill="#4c1d95">5. STS Session Policy (Temporary Credentials)</text>
-  <text x="74" y="455" class="mono" font-size="10.5" fill="#334155">If AssumeRole passed SessionPolicy: Effective ∩ SessionPolicy</text>
+  <rect x="58" y="414" width="436" height="58" rx="8" fill="#f5f1e8" class="g345"/>
+  <text x="74" y="435" class="sans" font-size="12.5" font-weight="700" fill="#065f46">5. STS Session Policy (Temporary Credentials)</text>
+  <text x="74" y="455" class="mono" font-size="10.5" fill="#44403c">If AssumeRole passed SessionPolicy: Effective ∩ SessionPolicy</text>
 
   <!-- Gate 5: Identity Policy -->
-  <rect x="58" y="488" width="436" height="58" rx="8" fill="#f5f3ff" class="g345"/>
-  <text x="74" y="509" class="sans" font-size="12.5" font-weight="700" fill="#4c1d95">6. Identity-Based Policy (Managed + Inline)</text>
-  <text x="74" y="529" class="mono" font-size="10.5" fill="#334155">At least one matching Effect: "Allow" in evaluated intersection?</text>
+  <rect x="58" y="488" width="436" height="58" rx="8" fill="#f5f1e8" class="g345"/>
+  <text x="74" y="509" class="sans" font-size="12.5" font-weight="700" fill="#065f46">6. Identity-Based Policy (Managed + Inline)</text>
+  <text x="74" y="529" class="mono" font-size="10.5" fill="#44403c">At least one matching Effect: "Allow" in evaluated intersection?</text>
 
   <!-- Decision Boxes -->
-  <rect x="58" y="564" width="208" height="36" rx="7" fill="#ecfdf5" class="allow"/>
+  <rect x="58" y="564" width="208" height="36" rx="7" fill="#f0fdf9" class="allow"/>
   <text x="162" y="586" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">ACCESS GRANTED (ALLOW)</text>
 
-  <rect x="286" y="564" width="208" height="36" rx="7" fill="#fff1f2" stroke="#fda4af" stroke-width="1.5"/>
-  <text x="390" y="586" class="mono" font-size="11" font-weight="700" fill="#9f1239" text-anchor="middle">IMPLICIT / DEFAULT DENY</text>
+  <rect x="286" y="564" width="208" height="36" rx="7" fill="#fef2f2" stroke="#fda4af" stroke-width="1.5"/>
+  <text x="390" y="586" class="mono" font-size="11" font-weight="700" fill="#991b1b" text-anchor="middle">IMPLICIT / DEFAULT DENY</text>
 
   <!-- RIGHT PANEL: LIVE TRACE & SET INTERSECTION -->
-  <rect x="678" y="76" width="418" height="540" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <text x="696" y="102" class="sans" font-size="14" font-weight="700" fill="#0f172a">Live Request Trace &amp; Set Intersection (∩)</text>
+  <rect x="678" y="76" width="418" height="540" rx="10" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <text x="696" y="102" class="sans" font-size="14" font-weight="700" fill="#1c1917">Live Request Trace &amp; Set Intersection (∩)</text>
 
   <!-- Request Header -->
-  <rect x="696" y="116" width="382" height="50" rx="7" fill="#eff6ff" stroke="#bfdbfe"/>
-  <text x="710" y="136" class="mono" font-size="10" font-weight="700" fill="#1e3a8a">Principal: arn:aws:iam::1111:role/Deployer</text>
-  <text x="710" y="154" class="mono" font-size="10" fill="#1e40af">Action: s3:PutObject → s3:::prod-vault/app.zip</text>
+  <rect x="696" y="116" width="382" height="50" rx="7" fill="#f0fdf9" stroke="#bfdbfe"/>
+  <text x="710" y="136" class="mono" font-size="10" font-weight="700" fill="#065f46">Principal: arn:aws:iam::1111:role/Deployer</text>
+  <text x="710" y="154" class="mono" font-size="10" fill="#065f46">Action: s3:PutObject → s3:::prod-vault/app.zip</text>
 
   <!-- Trace Step 1 -->
-  <rect x="696" y="178" width="382" height="72" rx="8" fill="#fff1f2" class="t1"/>
-  <text x="710" y="199" class="sans" font-size="12" font-weight="700" fill="#9f1239">Step 1 · Explicit Deny Scan (0 Matches)</text>
-  <text x="710" y="219" class="mono" font-size="10" fill="#334155">Scanned 6 layers: 0 matching Deny statements.</text>
-  <text x="710" y="236" class="sans" font-size="10" fill="#be123c">Note: Any single Deny immediately aborts with Explicit Deny.</text>
+  <rect x="696" y="178" width="382" height="72" rx="8" fill="#fef2f2" class="t1"/>
+  <text x="710" y="199" class="sans" font-size="12" font-weight="700" fill="#991b1b">Step 1 · Explicit Deny Scan (0 Matches)</text>
+  <text x="710" y="219" class="mono" font-size="10" fill="#44403c">Scanned 6 layers: 0 matching Deny statements.</text>
+  <text x="710" y="236" class="sans" font-size="10" fill="#991b1b">Note: Any single Deny immediately aborts with Explicit Deny.</text>
 
   <!-- Trace Step 2 -->
-  <rect x="696" y="260" width="382" height="76" rx="8" fill="#eff6ff" class="t2"/>
-  <text x="710" y="281" class="sans" font-size="12" font-weight="700" fill="#1e3a8a">Step 2 · SCP / RCP &amp; Resource Policy</text>
-  <text x="710" y="301" class="mono" font-size="10" fill="#334155">Org SCP: Allow s3:* · Same-acct S3: pass to identity</text>
-  <text x="710" y="320" class="sans" font-size="10" fill="#1e40af">Exception: KMS Key Policy must explicitly delegate to root.</text>
+  <rect x="696" y="260" width="382" height="76" rx="8" fill="#f0fdf9" class="t2"/>
+  <text x="710" y="281" class="sans" font-size="12" font-weight="700" fill="#065f46">Step 2 · SCP / RCP &amp; Resource Policy</text>
+  <text x="710" y="301" class="mono" font-size="10" fill="#44403c">Org SCP: Allow s3:* · Same-acct S3: pass to identity</text>
+  <text x="710" y="320" class="sans" font-size="10" fill="#065f46">Exception: KMS Key Policy must explicitly delegate to root.</text>
 
   <!-- Trace Step 3: Visual Set Intersection -->
-  <rect x="696" y="346" width="382" height="136" rx="8" fill="#f5f3ff" class="t3"/>
-  <text x="710" y="367" class="sans" font-size="12" font-weight="700" fill="#4c1d95">Step 3 · Effective Permission Intersection (∩)</text>
+  <rect x="696" y="346" width="382" height="136" rx="8" fill="#f5f1e8" class="t3"/>
+  <text x="710" y="367" class="sans" font-size="12" font-weight="700" fill="#065f46">Step 3 · Effective Permission Intersection (∩)</text>
 
-  <text x="710" y="390" class="mono" font-size="10" font-weight="700" fill="#334155">Identity:</text>
-  <rect x="780" y="377" width="280" height="18" rx="4" fill="#dbeafe" stroke="#93c5fd"/>
-  <text x="790" y="390" class="mono" font-size="10" fill="#1e3a8a">s3:*, ec2:Describe*, sqs:SendMessage</text>
+  <text x="710" y="390" class="mono" font-size="10" font-weight="700" fill="#44403c">Identity:</text>
+  <rect x="780" y="377" width="280" height="18" rx="4" fill="#f0fdf9" stroke="#99f6e4"/>
+  <text x="790" y="390" class="mono" font-size="10" fill="#065f46">s3:*, ec2:Describe*, sqs:SendMessage</text>
 
-  <text x="710" y="414" class="mono" font-size="10" font-weight="700" fill="#334155">Boundary:</text>
-  <rect x="780" y="401" width="196" height="18" rx="4" fill="#fef3c7" stroke="#fcd34d"/>
+  <text x="710" y="414" class="mono" font-size="10" font-weight="700" fill="#44403c">Boundary:</text>
+  <rect x="780" y="401" width="196" height="18" rx="4" fill="#fffbeb" stroke="#fde68a"/>
   <text x="790" y="414" class="mono" font-size="10" fill="#92400e">s3:GetObject, s3:PutObject</text>
 
-  <text x="710" y="438" class="mono" font-size="10" font-weight="700" fill="#334155">Session:</text>
-  <rect x="780" y="425" width="128" height="18" rx="4" fill="#ede9fe" stroke="#c4b5fd"/>
-  <text x="790" y="438" class="mono" font-size="10" fill="#5b21b6">s3:PutObject</text>
+  <text x="710" y="438" class="mono" font-size="10" font-weight="700" fill="#44403c">Session:</text>
+  <rect x="780" y="425" width="128" height="18" rx="4" fill="#f5f1e8" stroke="#d6d0c4"/>
+  <text x="790" y="438" class="mono" font-size="10" fill="#065f46">s3:PutObject</text>
 
   <text x="710" y="464" class="mono" font-size="10" font-weight="700" fill="#065f46">Result ∩:</text>
-  <rect x="780" y="450" width="128" height="20" rx="4" fill="#059669"/>
+  <rect x="780" y="450" width="128" height="20" rx="4" fill="#0f766e"/>
   <text x="844" y="464" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">s3:PutObject</text>
 
   <!-- Trace Step 4 -->
-  <rect x="696" y="492" width="382" height="108" rx="8" fill="#ecfdf5" class="t4"/>
+  <rect x="696" y="492" width="382" height="108" rx="8" fill="#f0fdf9" class="t4"/>
   <text x="710" y="514" class="sans" font-size="12.5" font-weight="700" fill="#065f46">Step 4 · Final Verdict: EXPLICIT ALLOW</text>
-  <text x="710" y="535" class="mono" font-size="10.5" fill="#334155">s3:PutObject ∈ (SCP ∩ Boundary ∩ Session ∩ Identity)</text>
-  <text x="710" y="556" class="sans" font-size="10" fill="#047857">• Cross-account requires BOTH Resource Allow ∧ Identity Allow</text>
-  <text x="710" y="574" class="sans" font-size="10" fill="#047857">• Missing Allow in any active ceiling yields Implicit Deny</text>
-  <text x="710" y="591" class="sans" font-size="10" fill="#047857">• Explicit Deny in any layer is absolute and non-overridable</text>
+  <text x="710" y="535" class="mono" font-size="10.5" fill="#44403c">s3:PutObject ∈ (SCP ∩ Boundary ∩ Session ∩ Identity)</text>
+  <text x="710" y="556" class="sans" font-size="10" fill="#065f46">• Cross-account requires BOTH Resource Allow ∧ Identity Allow</text>
+  <text x="710" y="574" class="sans" font-size="10" fill="#065f46">• Missing Allow in any active ceiling yields Implicit Deny</text>
+  <text x="710" y="591" class="sans" font-size="10" fill="#065f46">• Explicit Deny in any layer is absolute and non-overridable</text>
 </svg>

@@ -3,10 +3,10 @@
   <desc id="desc">Animated step-by-step visualization of Segment Tree range addition add([0..3], +5) storing a deferred lazy tag at [0..3], followed by pushDown on demand during query([2..3]), paired with a Trie prefix walk inserting and matching 'cat', 'car', and 'cart' in O(L) time.</desc>
   <defs>
     <marker id="arrow-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#b45309"/>
     </marker>
     <marker id="arrow-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <style>
       .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
@@ -47,23 +47,23 @@
   </defs>
 
   <!-- Canvas -->
-  <rect x="0" y="0" width="1200" height="760" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1200" height="760" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1200" height="60" rx="12" fill="#0f172a"/>
-  <rect x="0" y="44" width="1200" height="16" fill="#0f172a"/>
-  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Segment Tree (Lazy Propagation) &amp; Trie (Prefix Tree)</text>
-  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">Deferred pushDown() Range Updates in 4n Slots (O(log n) Update + Query) vs O(L) Shared-Prefix Character Walk</text>
+  <line x1="24" y1="62" x2="1176" y2="62" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#1c1917" font-family="Georgia, 'Times New Roman', serif">Segment Tree (Lazy Propagation) &amp; Trie (Prefix Tree)</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">Deferred pushDown() Range Updates in 4n Slots (O(log n) Update + Query) vs O(L) Shared-Prefix Character Walk</text>
 
   <!-- LEFT PANEL: Segment Tree with Lazy Propagation -->
-  <rect x="24" y="76" width="564" height="574" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
-  <rect x="24" y="76" width="564" height="36" rx="10" fill="#f1f5f9"/>
-  <rect x="24" y="102" width="564" height="10" fill="#f1f5f9"/>
-  <text x="40" y="99" class="sans" font-size="13" font-weight="700" fill="#0f172a">1. Segment Tree: Range Update + Lazy pushDown</text>
-  <text x="572" y="99" class="mono" font-size="11" fill="#d97706" text-anchor="end">4n array · supports RMQ</text>
+  <rect x="24" y="76" width="564" height="574" rx="10" fill="#ffffff" stroke="#d6d0c4"/>
+  <rect x="24" y="76" width="564" height="36" rx="10" fill="#f5f1e8"/>
+  <rect x="24" y="102" width="564" height="10" fill="#f5f1e8"/>
+  <text x="40" y="99" class="sans" font-size="13" font-weight="700" fill="#1c1917">1. Segment Tree: Range Update + Lazy pushDown</text>
+  <text x="572" y="99" class="mono" font-size="11" fill="#b45309" text-anchor="end">4n array · supports RMQ</text>
 
   <!-- Base tree edges (root 306,154) -->
-  <g stroke="#94a3b8" stroke-width="2">
+  <g stroke="#d6d0c4" stroke-width="2">
     <line x1="306" y1="168" x2="174" y2="238"/><line x1="306" y1="168" x2="438" y2="238"/>
     <line x1="174" y1="268" x2="108" y2="338"/><line x1="174" y1="268" x2="240" y2="338"/>
     <line x1="438" y1="268" x2="372" y2="338"/><line x1="438" y1="268" x2="504" y2="338"/>
@@ -72,27 +72,27 @@
   <!-- Step 1: Initial tree over [0..7], all 0s -> add([0..3], +5) parks lazy=+5 at [0..3] -->
   <g class="seg-1">
     <!-- Root [0..7] -->
-    <rect x="236" y="130" width="140" height="44" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
-    <text x="306" y="149" class="mono" font-size="11.5" font-weight="700" fill="#1d4ed8" text-anchor="middle">[0..7] sum=20</text>
-    <text x="306" y="165" class="mono" font-size="10" fill="#64748b" text-anchor="middle">lazy = 0</text>
+    <rect x="236" y="130" width="140" height="44" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
+    <text x="306" y="149" class="mono" font-size="11.5" font-weight="700" fill="#065f46" text-anchor="middle">[0..7] sum=20</text>
+    <text x="306" y="165" class="mono" font-size="10" fill="#57534e" text-anchor="middle">lazy = 0</text>
 
     <!-- [0..3] HIT! -->
-    <rect x="104" y="224" width="140" height="48" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="3"/>
+    <rect x="104" y="224" width="140" height="48" rx="6" fill="#fffbeb" stroke="#b45309" stroke-width="3"/>
     <text x="174" y="244" class="mono" font-size="11.5" font-weight="700" fill="#b45309" text-anchor="middle">[0..3] sum=20</text>
-    <text x="174" y="262" class="mono" font-size="11" font-weight="700" fill="#d97706" text-anchor="middle">LAZY = +5 (STOP!)</text>
+    <text x="174" y="262" class="mono" font-size="11" font-weight="700" fill="#b45309" text-anchor="middle">LAZY = +5 (STOP!)</text>
 
     <!-- [4..7] untouched -->
-    <rect x="368" y="224" width="140" height="48" rx="6" fill="#f8fafc" stroke="#94a3b8"/>
-    <text x="438" y="244" class="mono" font-size="11.5" font-weight="700" fill="#475569" text-anchor="middle">[4..7] sum=0</text>
-    <text x="438" y="262" class="mono" font-size="10" fill="#64748b" text-anchor="middle">lazy = 0</text>
+    <rect x="368" y="224" width="140" height="48" rx="6" fill="#faf8f5" stroke="#d6d0c4"/>
+    <text x="438" y="244" class="mono" font-size="11.5" font-weight="700" fill="#44403c" text-anchor="middle">[4..7] sum=0</text>
+    <text x="438" y="262" class="mono" font-size="10" fill="#57534e" text-anchor="middle">lazy = 0</text>
 
     <!-- Children [0..1], [2..3], [4..5], [6..7] -->
-    <rect x="54" y="338" width="108" height="44" rx="6" fill="#f8fafc" stroke="#cbd5e1"/><text x="108" y="357" class="mono" font-size="11" fill="#64748b" text-anchor="middle">[0..1] sum=0</text><text x="108" y="373" class="mono" font-size="10" fill="#94a3b8" text-anchor="middle">lazy = 0</text>
-    <rect x="186" y="338" width="108" height="44" rx="6" fill="#f8fafc" stroke="#cbd5e1"/><text x="240" y="357" class="mono" font-size="11" fill="#64748b" text-anchor="middle">[2..3] sum=0</text><text x="240" y="373" class="mono" font-size="10" fill="#94a3b8" text-anchor="middle">lazy = 0</text>
-    <rect x="318" y="338" width="108" height="44" rx="6" fill="#f8fafc" stroke="#cbd5e1"/><text x="372" y="357" class="mono" font-size="11" fill="#64748b" text-anchor="middle">[4..5] sum=0</text><text x="372" y="373" class="mono" font-size="10" fill="#94a3b8" text-anchor="middle">lazy = 0</text>
-    <rect x="450" y="338" width="108" height="44" rx="6" fill="#f8fafc" stroke="#cbd5e1"/><text x="504" y="357" class="mono" font-size="11" fill="#64748b" text-anchor="middle">[6..7] sum=0</text><text x="504" y="373" class="mono" font-size="10" fill="#94a3b8" text-anchor="middle">lazy = 0</text>
+    <rect x="54" y="338" width="108" height="44" rx="6" fill="#faf8f5" stroke="#d6d0c4"/><text x="108" y="357" class="mono" font-size="11" fill="#57534e" text-anchor="middle">[0..1] sum=0</text><text x="108" y="373" class="mono" font-size="10" fill="#57534e" text-anchor="middle">lazy = 0</text>
+    <rect x="186" y="338" width="108" height="44" rx="6" fill="#faf8f5" stroke="#d6d0c4"/><text x="240" y="357" class="mono" font-size="11" fill="#57534e" text-anchor="middle">[2..3] sum=0</text><text x="240" y="373" class="mono" font-size="10" fill="#57534e" text-anchor="middle">lazy = 0</text>
+    <rect x="318" y="338" width="108" height="44" rx="6" fill="#faf8f5" stroke="#d6d0c4"/><text x="372" y="357" class="mono" font-size="11" fill="#57534e" text-anchor="middle">[4..5] sum=0</text><text x="372" y="373" class="mono" font-size="10" fill="#57534e" text-anchor="middle">lazy = 0</text>
+    <rect x="450" y="338" width="108" height="44" rx="6" fill="#faf8f5" stroke="#d6d0c4"/><text x="504" y="357" class="mono" font-size="11" fill="#57534e" text-anchor="middle">[6..7] sum=0</text><text x="504" y="373" class="mono" font-size="10" fill="#57534e" text-anchor="middle">lazy = 0</text>
 
-    <rect x="44" y="410" width="524" height="106" rx="8" fill="#fffbeb" stroke="#fcd34d"/>
+    <rect x="44" y="410" width="524" height="106" rx="8" fill="#fffbeb" stroke="#fde68a"/>
     <text x="60" y="434" class="mono" font-size="12.5" font-weight="700" fill="#b45309">Step 1: update([0..3], +5) -&gt; Total Overlap at [0..3]!</text>
     <text x="60" y="458" class="sans" font-size="11.5" fill="#92400e">Node [0..3] lies fully inside update range. Update sum += 4*5 = 20,</text>
     <text x="60" y="478" class="sans" font-size="11.5" fill="#92400e">set lazy[node] += 5, and return IMMEDIATELY without visiting children!</text>
@@ -100,74 +100,74 @@
 
   <!-- Step 2: query([2..3]) triggers pushDown from [0..3] -> [0..1] and [2..3] -->
   <g class="seg-2">
-    <path d="M 154 276 L 118 330" stroke="#d97706" stroke-width="3" marker-end="url(#arrow-amber)"/>
-    <path d="M 194 276 L 230 330" stroke="#d97706" stroke-width="3" marker-end="url(#arrow-amber)"/>
+    <path d="M 154 276 L 118 330" stroke="#b45309" stroke-width="3" marker-end="url(#arrow-amber)"/>
+    <path d="M 194 276 L 230 330" stroke="#b45309" stroke-width="3" marker-end="url(#arrow-amber)"/>
 
-    <rect x="236" y="130" width="140" height="44" rx="6" fill="#eff6ff" stroke="#2563eb"/>
-    <text x="306" y="149" class="mono" font-size="11.5" font-weight="700" fill="#1d4ed8" text-anchor="middle">[0..7] sum=20</text>
-    <text x="306" y="165" class="mono" font-size="10" fill="#64748b" text-anchor="middle">lazy = 0</text>
+    <rect x="236" y="130" width="140" height="44" rx="6" fill="#f0fdf9" stroke="#0f766e"/>
+    <text x="306" y="149" class="mono" font-size="11.5" font-weight="700" fill="#065f46" text-anchor="middle">[0..7] sum=20</text>
+    <text x="306" y="165" class="mono" font-size="10" fill="#57534e" text-anchor="middle">lazy = 0</text>
 
-    <rect x="104" y="224" width="140" height="48" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="2.5"/>
+    <rect x="104" y="224" width="140" height="48" rx="6" fill="#fffbeb" stroke="#b45309" stroke-width="2.5"/>
     <text x="174" y="244" class="mono" font-size="11.5" font-weight="700" fill="#b45309" text-anchor="middle">[0..3] sum=20</text>
-    <text x="174" y="262" class="mono" font-size="11" font-weight="700" fill="#d97706" text-anchor="middle">pushDown(+5) -&gt; 0</text>
+    <text x="174" y="262" class="mono" font-size="11" font-weight="700" fill="#b45309" text-anchor="middle">pushDown(+5) -&gt; 0</text>
 
-    <rect x="368" y="224" width="140" height="48" rx="6" fill="#f8fafc" stroke="#94a3b8"/>
-    <text x="438" y="244" class="mono" font-size="11.5" font-weight="700" fill="#475569" text-anchor="middle">[4..7] sum=0</text>
-    <text x="438" y="262" class="mono" font-size="10" fill="#64748b" text-anchor="middle">lazy = 0</text>
+    <rect x="368" y="224" width="140" height="48" rx="6" fill="#faf8f5" stroke="#d6d0c4"/>
+    <text x="438" y="244" class="mono" font-size="11.5" font-weight="700" fill="#44403c" text-anchor="middle">[4..7] sum=0</text>
+    <text x="438" y="262" class="mono" font-size="10" fill="#57534e" text-anchor="middle">lazy = 0</text>
 
-    <rect x="54" y="338" width="108" height="44" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="2"/><text x="108" y="357" class="mono" font-size="11" font-weight="700" fill="#b45309" text-anchor="middle">[0..1] sum=10</text><text x="108" y="373" class="mono" font-size="10" fill="#d97706" text-anchor="middle">lazy = +5</text>
-    <rect x="186" y="338" width="108" height="44" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/><text x="240" y="357" class="mono" font-size="11" font-weight="700" fill="#047857" text-anchor="middle">[2..3] sum=10</text><text x="240" y="373" class="mono" font-size="10" fill="#059669" text-anchor="middle">lazy = +5</text>
-    <rect x="318" y="338" width="108" height="44" rx="6" fill="#f8fafc" stroke="#cbd5e1"/><text x="372" y="357" class="mono" font-size="11" fill="#64748b" text-anchor="middle">[4..5] sum=0</text><text x="372" y="373" class="mono" font-size="10" fill="#94a3b8" text-anchor="middle">lazy = 0</text>
-    <rect x="450" y="338" width="108" height="44" rx="6" fill="#f8fafc" stroke="#cbd5e1"/><text x="504" y="357" class="mono" font-size="11" fill="#64748b" text-anchor="middle">[6..7] sum=0</text><text x="504" y="373" class="mono" font-size="10" fill="#94a3b8" text-anchor="middle">lazy = 0</text>
+    <rect x="54" y="338" width="108" height="44" rx="6" fill="#fffbeb" stroke="#b45309" stroke-width="2"/><text x="108" y="357" class="mono" font-size="11" font-weight="700" fill="#b45309" text-anchor="middle">[0..1] sum=10</text><text x="108" y="373" class="mono" font-size="10" fill="#b45309" text-anchor="middle">lazy = +5</text>
+    <rect x="186" y="338" width="108" height="44" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2.5"/><text x="240" y="357" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">[2..3] sum=10</text><text x="240" y="373" class="mono" font-size="10" fill="#0f766e" text-anchor="middle">lazy = +5</text>
+    <rect x="318" y="338" width="108" height="44" rx="6" fill="#faf8f5" stroke="#d6d0c4"/><text x="372" y="357" class="mono" font-size="11" fill="#57534e" text-anchor="middle">[4..5] sum=0</text><text x="372" y="373" class="mono" font-size="10" fill="#57534e" text-anchor="middle">lazy = 0</text>
+    <rect x="450" y="338" width="108" height="44" rx="6" fill="#faf8f5" stroke="#d6d0c4"/><text x="504" y="357" class="mono" font-size="11" fill="#57534e" text-anchor="middle">[6..7] sum=0</text><text x="504" y="373" class="mono" font-size="10" fill="#57534e" text-anchor="middle">lazy = 0</text>
 
-    <rect x="44" y="410" width="524" height="106" rx="8" fill="#eff6ff" stroke="#93c5fd"/>
-    <text x="60" y="434" class="mono" font-size="12.5" font-weight="700" fill="#1d4ed8">Step 2: query([2..3]) -&gt; Partial Overlap at [0..3]!</text>
-    <text x="60" y="458" class="sans" font-size="11.5" fill="#1e3a8a">Before descending, pushDown() propagates +5 to [0..1] (+2*5 = 10)</text>
-    <text x="60" y="478" class="sans" font-size="11.5" fill="#1e3a8a">and [2..3] (+2*5 = 10), then resets lazy[0..3] = 0.</text>
+    <rect x="44" y="410" width="524" height="106" rx="8" fill="#f0fdf9" stroke="#99f6e4"/>
+    <text x="60" y="434" class="mono" font-size="12.5" font-weight="700" fill="#065f46">Step 2: query([2..3]) -&gt; Partial Overlap at [0..3]!</text>
+    <text x="60" y="458" class="sans" font-size="11.5" fill="#065f46">Before descending, pushDown() propagates +5 to [0..1] (+2*5 = 10)</text>
+    <text x="60" y="478" class="sans" font-size="11.5" fill="#065f46">and [2..3] (+2*5 = 10), then resets lazy[0..3] = 0.</text>
   </g>
 
   <!-- Step 3: Query returns sum([2..3]) = 10 in O(log n) -->
   <g class="seg-3">
-    <rect x="236" y="130" width="140" height="44" rx="6" fill="#eff6ff" stroke="#2563eb"/>
-    <text x="306" y="149" class="mono" font-size="11.5" font-weight="700" fill="#1d4ed8" text-anchor="middle">[0..7] sum=20</text>
-    <text x="306" y="165" class="mono" font-size="10" fill="#64748b" text-anchor="middle">lazy = 0</text>
+    <rect x="236" y="130" width="140" height="44" rx="6" fill="#f0fdf9" stroke="#0f766e"/>
+    <text x="306" y="149" class="mono" font-size="11.5" font-weight="700" fill="#065f46" text-anchor="middle">[0..7] sum=20</text>
+    <text x="306" y="165" class="mono" font-size="10" fill="#57534e" text-anchor="middle">lazy = 0</text>
 
-    <rect x="104" y="224" width="140" height="48" rx="6" fill="#f8fafc" stroke="#94a3b8"/>
-    <text x="174" y="244" class="mono" font-size="11.5" font-weight="700" fill="#475569" text-anchor="middle">[0..3] sum=20</text>
-    <text x="174" y="262" class="mono" font-size="10" fill="#64748b" text-anchor="middle">lazy = 0 (cleared)</text>
+    <rect x="104" y="224" width="140" height="48" rx="6" fill="#faf8f5" stroke="#d6d0c4"/>
+    <text x="174" y="244" class="mono" font-size="11.5" font-weight="700" fill="#44403c" text-anchor="middle">[0..3] sum=20</text>
+    <text x="174" y="262" class="mono" font-size="10" fill="#57534e" text-anchor="middle">lazy = 0 (cleared)</text>
 
-    <rect x="368" y="224" width="140" height="48" rx="6" fill="#f8fafc" stroke="#94a3b8"/>
-    <text x="438" y="244" class="mono" font-size="11.5" font-weight="700" fill="#475569" text-anchor="middle">[4..7] sum=0</text>
-    <text x="438" y="262" class="mono" font-size="10" fill="#64748b" text-anchor="middle">lazy = 0</text>
+    <rect x="368" y="224" width="140" height="48" rx="6" fill="#faf8f5" stroke="#d6d0c4"/>
+    <text x="438" y="244" class="mono" font-size="11.5" font-weight="700" fill="#44403c" text-anchor="middle">[4..7] sum=0</text>
+    <text x="438" y="262" class="mono" font-size="10" fill="#57534e" text-anchor="middle">lazy = 0</text>
 
-    <rect x="54" y="338" width="108" height="44" rx="6" fill="#fffbeb" stroke="#d97706"/><text x="108" y="357" class="mono" font-size="11" font-weight="700" fill="#b45309" text-anchor="middle">[0..1] sum=10</text><text x="108" y="373" class="mono" font-size="10" fill="#d97706" text-anchor="middle">lazy = +5</text>
-    <rect x="186" y="338" width="108" height="44" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="3"/><text x="240" y="357" class="mono" font-size="11" font-weight="700" fill="#047857" text-anchor="middle">[2..3] sum=10</text><text x="240" y="373" class="mono" font-size="10" font-weight="700" fill="#047857" text-anchor="middle">RETURN 10!</text>
-    <rect x="318" y="338" width="108" height="44" rx="6" fill="#f8fafc" stroke="#cbd5e1"/><text x="372" y="357" class="mono" font-size="11" fill="#64748b" text-anchor="middle">[4..5] sum=0</text><text x="372" y="373" class="mono" font-size="10" fill="#94a3b8" text-anchor="middle">lazy = 0</text>
-    <rect x="450" y="338" width="108" height="44" rx="6" fill="#f8fafc" stroke="#cbd5e1"/><text x="504" y="357" class="mono" font-size="11" fill="#64748b" text-anchor="middle">[6..7] sum=0</text><text x="504" y="373" class="mono" font-size="10" fill="#94a3b8" text-anchor="middle">lazy = 0</text>
+    <rect x="54" y="338" width="108" height="44" rx="6" fill="#fffbeb" stroke="#b45309"/><text x="108" y="357" class="mono" font-size="11" font-weight="700" fill="#b45309" text-anchor="middle">[0..1] sum=10</text><text x="108" y="373" class="mono" font-size="10" fill="#b45309" text-anchor="middle">lazy = +5</text>
+    <rect x="186" y="338" width="108" height="44" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="3"/><text x="240" y="357" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">[2..3] sum=10</text><text x="240" y="373" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">RETURN 10!</text>
+    <rect x="318" y="338" width="108" height="44" rx="6" fill="#faf8f5" stroke="#d6d0c4"/><text x="372" y="357" class="mono" font-size="11" fill="#57534e" text-anchor="middle">[4..5] sum=0</text><text x="372" y="373" class="mono" font-size="10" fill="#57534e" text-anchor="middle">lazy = 0</text>
+    <rect x="450" y="338" width="108" height="44" rx="6" fill="#faf8f5" stroke="#d6d0c4"/><text x="504" y="357" class="mono" font-size="11" fill="#57534e" text-anchor="middle">[6..7] sum=0</text><text x="504" y="373" class="mono" font-size="10" fill="#57534e" text-anchor="middle">lazy = 0</text>
 
-    <rect x="44" y="410" width="524" height="106" rx="8" fill="#ecfdf5" stroke="#86efac"/>
-    <text x="60" y="434" class="mono" font-size="12.5" font-weight="700" fill="#047857">Step 3: Exact Hit at [2..3] -&gt; Returns sum = 10 in O(log n)!</text>
+    <rect x="44" y="410" width="524" height="106" rx="8" fill="#f0fdf9" stroke="#86efac"/>
+    <text x="60" y="434" class="mono" font-size="12.5" font-weight="700" fill="#065f46">Step 3: Exact Hit at [2..3] -&gt; Returns sum = 10 in O(log n)!</text>
     <text x="60" y="458" class="sans" font-size="11.5" fill="#065f46">Individual leaf nodes 0, 1, 2, 3 were never visited yet remain consistent</text>
     <text x="60" y="478" class="sans" font-size="11.5" fill="#065f46">because deferred tags wait until a query needs finer granularity.</text>
   </g>
 
-  <rect x="44" y="532" width="524" height="98" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
-  <text x="60" y="556" class="sans" font-size="11.5" font-weight="700" fill="#0f172a">Segment Tree vs Fenwick Summary:</text>
-  <text x="60" y="578" class="sans" font-size="11" fill="#334155">1. Handles non-invertible monoids (RMQ min/max, GCD, matrix product).</text>
-  <text x="60" y="598" class="sans" font-size="11" fill="#334155">2. Lazy propagation guarantees O(log n) worst-case range updates &amp; queries.</text>
-  <text x="60" y="618" class="sans" font-size="11" fill="#64748b">3. Allocate 4 * n slots to cover arbitrary non-power-of-two array sizes safely.</text>
+  <rect x="44" y="532" width="524" height="98" rx="8" fill="#faf8f5" stroke="#e7e2d8"/>
+  <text x="60" y="556" class="sans" font-size="11.5" font-weight="700" fill="#1c1917">Segment Tree vs Fenwick Summary:</text>
+  <text x="60" y="578" class="sans" font-size="11" fill="#44403c">1. Handles non-invertible monoids (RMQ min/max, GCD, matrix product).</text>
+  <text x="60" y="598" class="sans" font-size="11" fill="#44403c">2. Lazy propagation guarantees O(log n) worst-case range updates &amp; queries.</text>
+  <text x="60" y="618" class="sans" font-size="11" fill="#57534e">3. Allocate 4 * n slots to cover arbitrary non-power-of-two array sizes safely.</text>
 
   <!-- RIGHT PANEL: Trie (Prefix Tree) -->
-  <rect x="612" y="76" width="564" height="574" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
-  <rect x="612" y="76" width="564" height="36" rx="10" fill="#f1f5f9"/>
-  <rect x="612" y="102" width="564" height="10" fill="#f1f5f9"/>
-  <text x="628" y="99" class="sans" font-size="13" font-weight="700" fill="#0f172a">2. Trie (Prefix Tree): Shared Prefix Walk (&quot;cat&quot;, &quot;car&quot;, &quot;cart&quot;)</text>
-  <text x="1160" y="99" class="mono" font-size="11" fill="#7c3aed" text-anchor="end">O(L) independent of N</text>
+  <rect x="612" y="76" width="564" height="574" rx="10" fill="#ffffff" stroke="#d6d0c4"/>
+  <rect x="612" y="76" width="564" height="36" rx="10" fill="#f5f1e8"/>
+  <rect x="612" y="102" width="564" height="10" fill="#f5f1e8"/>
+  <text x="628" y="99" class="sans" font-size="13" font-weight="700" fill="#1c1917">2. Trie (Prefix Tree): Shared Prefix Walk (&quot;cat&quot;, &quot;car&quot;, &quot;cart&quot;)</text>
+  <text x="1160" y="99" class="mono" font-size="11" fill="#0f766e" text-anchor="end">O(L) independent of N</text>
 
-  <text x="632" y="136" class="sans" font-size="11.5" font-weight="600" fill="#475569">Animated prefix walk for query/insert(&quot;cart&quot;) sharing &quot;ca-&quot; &amp; &quot;car&quot;:</text>
+  <text x="632" y="136" class="sans" font-size="11.5" font-weight="600" fill="#44403c">Animated prefix walk for query/insert(&quot;cart&quot;) sharing &quot;ca-&quot; &amp; &quot;car&quot;:</text>
 
   <!-- Trie Graph Edges -->
-  <g stroke="#94a3b8" stroke-width="2">
+  <g stroke="#d6d0c4" stroke-width="2">
     <line x1="894" y1="168" x2="894" y2="232"/>
     <line x1="894" y1="232" x2="894" y2="296"/>
     <line x1="894" y1="296" x2="788" y2="370"/>
@@ -175,7 +175,7 @@
     <line x1="1000" y1="370" x2="1000" y2="444"/>
   </g>
   <!-- Edge Labels -->
-  <g class="mono" font-size="12" font-weight="700" fill="#1d4ed8">
+  <g class="mono" font-size="12" font-weight="700" fill="#065f46">
     <text x="908" y="204">&apos;c&apos;</text>
     <text x="908" y="268">&apos;a&apos;</text>
     <text x="826" y="330">&apos;t&apos;</text>
@@ -185,58 +185,58 @@
 
   <!-- Base Trie Nodes -->
   <g class="mono" font-size="12" font-weight="700" text-anchor="middle">
-    <circle cx="894" cy="168" r="22" fill="#f8fafc" stroke="#475569" stroke-width="2"/><text x="894" y="172" fill="#0f172a">Root</text>
-    <circle cx="894" cy="232" r="20" fill="#f8fafc" stroke="#475569" stroke-width="2"/><text x="894" y="237" fill="#0f172a">&quot;c&quot;</text>
-    <circle cx="894" cy="296" r="20" fill="#f8fafc" stroke="#475569" stroke-width="2"/><text x="894" y="301" fill="#0f172a">&quot;ca&quot;</text>
-    <circle cx="788" cy="370" r="22" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="788" y="374" fill="#047857">&quot;cat&quot;*</text>
-    <circle cx="1000" cy="370" r="22" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="1000" y="374" fill="#047857">&quot;car&quot;*</text>
-    <circle cx="1000" cy="444" r="24" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="1000" y="448" fill="#047857">&quot;cart&quot;*</text>
+    <circle cx="894" cy="168" r="22" fill="#faf8f5" stroke="#44403c" stroke-width="2"/><text x="894" y="172" fill="#1c1917">Root</text>
+    <circle cx="894" cy="232" r="20" fill="#faf8f5" stroke="#44403c" stroke-width="2"/><text x="894" y="237" fill="#1c1917">&quot;c&quot;</text>
+    <circle cx="894" cy="296" r="20" fill="#faf8f5" stroke="#44403c" stroke-width="2"/><text x="894" y="301" fill="#1c1917">&quot;ca&quot;</text>
+    <circle cx="788" cy="370" r="22" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/><text x="788" y="374" fill="#065f46">&quot;cat&quot;*</text>
+    <circle cx="1000" cy="370" r="22" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/><text x="1000" y="374" fill="#065f46">&quot;car&quot;*</text>
+    <circle cx="1000" cy="444" r="24" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/><text x="1000" y="448" fill="#065f46">&quot;cart&quot;*</text>
   </g>
 
   <!-- Active Token Step Highlights -->
   <g class="tri-1">
-    <circle cx="894" cy="168" r="25" fill="none" stroke="#2563eb" stroke-width="3.5"/>
-    <rect x="632" y="492" width="524" height="62" rx="8" fill="#eff6ff" stroke="#93c5fd"/>
-    <text x="648" y="518" class="mono" font-size="12.5" font-weight="700" fill="#1d4ed8">Char 0: Start at Root -&gt; lookup edge &apos;c&apos;</text>
-    <text x="648" y="538" class="sans" font-size="11" fill="#1e3a8a">O(1) array/map child transition per character.</text>
+    <circle cx="894" cy="168" r="25" fill="none" stroke="#0f766e" stroke-width="3.5"/>
+    <rect x="632" y="492" width="524" height="62" rx="8" fill="#f0fdf9" stroke="#99f6e4"/>
+    <text x="648" y="518" class="mono" font-size="12.5" font-weight="700" fill="#065f46">Char 0: Start at Root -&gt; lookup edge &apos;c&apos;</text>
+    <text x="648" y="538" class="sans" font-size="11" fill="#065f46">O(1) array/map child transition per character.</text>
   </g>
   <g class="tri-2">
-    <circle cx="894" cy="232" r="23" fill="none" stroke="#2563eb" stroke-width="3.5"/>
-    <rect x="632" y="492" width="524" height="62" rx="8" fill="#eff6ff" stroke="#93c5fd"/>
-    <text x="648" y="518" class="mono" font-size="12.5" font-weight="700" fill="#1d4ed8">Char 1: &apos;c&apos; -&gt; node &quot;c&quot; (shared by cat, car, cart)</text>
-    <text x="648" y="538" class="sans" font-size="11" fill="#1e3a8a">Zero duplicate prefix allocation across 3 stored words.</text>
+    <circle cx="894" cy="232" r="23" fill="none" stroke="#0f766e" stroke-width="3.5"/>
+    <rect x="632" y="492" width="524" height="62" rx="8" fill="#f0fdf9" stroke="#99f6e4"/>
+    <text x="648" y="518" class="mono" font-size="12.5" font-weight="700" fill="#065f46">Char 1: &apos;c&apos; -&gt; node &quot;c&quot; (shared by cat, car, cart)</text>
+    <text x="648" y="538" class="sans" font-size="11" fill="#065f46">Zero duplicate prefix allocation across 3 stored words.</text>
   </g>
   <g class="tri-3">
-    <circle cx="894" cy="296" r="23" fill="none" stroke="#2563eb" stroke-width="3.5"/>
-    <rect x="632" y="492" width="524" height="62" rx="8" fill="#eff6ff" stroke="#93c5fd"/>
-    <text x="648" y="518" class="mono" font-size="12.5" font-weight="700" fill="#1d4ed8">Char 2: &apos;a&apos; -&gt; node &quot;ca&quot; (branches to &apos;t&apos; and &apos;r&apos;)</text>
-    <text x="648" y="538" class="sans" font-size="11" fill="#1e3a8a">Prefix search startsWith(&quot;ca&quot;) resolves in 2 steps!</text>
+    <circle cx="894" cy="296" r="23" fill="none" stroke="#0f766e" stroke-width="3.5"/>
+    <rect x="632" y="492" width="524" height="62" rx="8" fill="#f0fdf9" stroke="#99f6e4"/>
+    <text x="648" y="518" class="mono" font-size="12.5" font-weight="700" fill="#065f46">Char 2: &apos;a&apos; -&gt; node &quot;ca&quot; (branches to &apos;t&apos; and &apos;r&apos;)</text>
+    <text x="648" y="538" class="sans" font-size="11" fill="#065f46">Prefix search startsWith(&quot;ca&quot;) resolves in 2 steps!</text>
   </g>
   <g class="tri-4">
-    <circle cx="1000" cy="370" r="25" fill="none" stroke="#059669" stroke-width="3.5"/>
-    <rect x="632" y="492" width="524" height="62" rx="8" fill="#ecfdf5" stroke="#6ee7b7"/>
-    <text x="648" y="518" class="mono" font-size="12.5" font-weight="700" fill="#047857">Char 3: &apos;r&apos; -&gt; node &quot;car&quot;* (isWordEnd = true!)</text>
+    <circle cx="1000" cy="370" r="25" fill="none" stroke="#0f766e" stroke-width="3.5"/>
+    <rect x="632" y="492" width="524" height="62" rx="8" fill="#f0fdf9" stroke="#99f6e4"/>
+    <text x="648" y="518" class="mono" font-size="12.5" font-weight="700" fill="#065f46">Char 3: &apos;r&apos; -&gt; node &quot;car&quot;* (isWordEnd = true!)</text>
     <text x="648" y="538" class="sans" font-size="11" fill="#065f46">Prefix &quot;car&quot; is itself a complete word AND continues via &apos;t&apos;.</text>
   </g>
   <g class="tri-5">
-    <circle cx="1000" cy="444" r="27" fill="none" stroke="#059669" stroke-width="3.5"/>
-    <rect x="632" y="492" width="524" height="62" rx="8" fill="#ecfdf5" stroke="#6ee7b7"/>
-    <text x="648" y="518" class="mono" font-size="12.5" font-weight="700" fill="#047857">Char 4: &apos;t&apos; -&gt; node &quot;cart&quot;* (isWordEnd = true! MATCH)</text>
+    <circle cx="1000" cy="444" r="27" fill="none" stroke="#0f766e" stroke-width="3.5"/>
+    <rect x="632" y="492" width="524" height="62" rx="8" fill="#f0fdf9" stroke="#99f6e4"/>
+    <text x="648" y="518" class="mono" font-size="12.5" font-weight="700" fill="#065f46">Char 4: &apos;t&apos; -&gt; node &quot;cart&quot;* (isWordEnd = true! MATCH)</text>
     <text x="648" y="538" class="sans" font-size="11" fill="#065f46">Finished in 4 steps = O(L), completely independent of dictionary size N.</text>
   </g>
 
-  <rect x="632" y="568" width="524" height="62" rx="8" fill="#f5f3ff" stroke="#c4b5fd"/>
-  <text x="648" y="592" class="sans" font-size="11.5" font-weight="700" fill="#5b21b6">Memory &amp; Production Note:</text>
-  <text x="648" y="612" class="sans" font-size="11" fill="#4c1d95">Fixed 26-slot arrays give O(1) transitions; use hash map / Radix Tree to compress sparse nodes.</text>
+  <rect x="632" y="568" width="524" height="62" rx="8" fill="#f5f1e8" stroke="#d6d0c4"/>
+  <text x="648" y="592" class="sans" font-size="11.5" font-weight="700" fill="#065f46">Memory &amp; Production Note:</text>
+  <text x="648" y="612" class="sans" font-size="11" fill="#065f46">Fixed 26-slot arrays give O(1) transitions; use hash map / Radix Tree to compress sparse nodes.</text>
 
   <!-- Bottom Legend -->
-  <rect x="24" y="666" width="1152" height="74" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="44" y="692" class="sans" font-size="12" font-weight="700" fill="#0f172a">Visual Semantics:</text>
-  <rect x="180" y="678" width="14" height="14" rx="3" fill="#d97706"/>
-  <text x="200" y="690" class="sans" font-size="11" fill="#334155">Pending lazy tag / pushDown propagation</text>
-  <rect x="480" y="678" width="14" height="14" rx="3" fill="#2563eb"/>
-  <text x="500" y="690" class="sans" font-size="11" fill="#334155">Active traversal cursor</text>
-  <rect x="680" y="678" width="14" height="14" rx="3" fill="#059669"/>
-  <text x="700" y="690" class="sans" font-size="11" fill="#334155">Exact query hit / isWordEnd(*) terminal node</text>
-  <text x="44" y="722" class="sans" font-size="11" fill="#64748b">Segment Tree achieves O(log n) worst-case range queries and range updates; Trie achieves O(L) prefix &amp; autocomplete lookup regardless of word count N.</text>
+  <rect x="24" y="666" width="1152" height="74" rx="8" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="44" y="692" class="sans" font-size="12" font-weight="700" fill="#1c1917">Visual Semantics:</text>
+  <rect x="180" y="678" width="14" height="14" rx="3" fill="#b45309"/>
+  <text x="200" y="690" class="sans" font-size="11" fill="#44403c">Pending lazy tag / pushDown propagation</text>
+  <rect x="480" y="678" width="14" height="14" rx="3" fill="#0f766e"/>
+  <text x="500" y="690" class="sans" font-size="11" fill="#44403c">Active traversal cursor</text>
+  <rect x="680" y="678" width="14" height="14" rx="3" fill="#0f766e"/>
+  <text x="700" y="690" class="sans" font-size="11" fill="#44403c">Exact query hit / isWordEnd(*) terminal node</text>
+  <text x="44" y="722" class="sans" font-size="11" fill="#57534e">Segment Tree achieves O(log n) worst-case range queries and range updates; Trie achieves O(L) prefix &amp; autocomplete lookup regardless of word count N.</text>
 </svg>

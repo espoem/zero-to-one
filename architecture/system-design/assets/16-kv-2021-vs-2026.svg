@@ -2,152 +2,149 @@
   <title id="title">Distributed KV Store Comparison: 2021 Default vs 2026 Modern Standard</title>
   <desc id="desc">Side-by-side comparison of distributed key-value store infrastructure defaults in 2021 versus 2026 across 7 architectural layers: replication, storage I/O, runtime, conflict resolution, failure detection, anti-entropy, and cloud managed KV.</desc>
   <defs>
-    <linearGradient id="kvBg2" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#0b1220"/>
-      <stop offset="100%" stop-color="#131c31"/>
-    </linearGradient>
     <marker id="kvShift" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#34d399"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
   </defs>
 
-  <rect x="0" y="0" width="1200" height="684" rx="16" fill="url(#kvBg2)" stroke="#24344d" stroke-width="2"/>
+  <rect x="0" y="0" width="1200" height="684" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <text x="36" y="42" fill="#f8fafc" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="22" font-weight="700">Distributed Key-Value Stores: 2021 Default vs. 2026 Standard</text>
-  <text x="36" y="65" fill="#94a3b8" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="12.5">From leaderless JVM AP rings with manual repair to shard-per-core C++/Rust engines and per-partition Raft/Paxos consensus.</text>
+  <text x="36" y="42" fill="#1c1917" font-family="Georgia, 'Times New Roman', serif" font-size="22" font-weight="700">Distributed Key-Value Stores: 2021 Default vs. 2026 Standard</text>
+  <text x="36" y="65" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12.5">From leaderless JVM AP rings with manual repair to shard-per-core C++/Rust engines and per-partition Raft/Paxos consensus.</text>
+  <line x1="36" y1="76" x2="1164" y2="76" stroke="#1c1917" stroke-width="1.2"/>
 
   <!-- Column Headers -->
-  <rect x="36" y="84" width="176" height="32" rx="6" fill="#1e293b" stroke="#475569"/>
-  <text x="124" y="105" text-anchor="middle" fill="#e2e8f0" font-family="ui-monospace, monospace" font-size="12" font-weight="700">LAYER</text>
+  <rect x="36" y="84" width="176" height="32" rx="6" fill="#f5f1e8" stroke="#d6d0c4"/>
+  <text x="124" y="105" text-anchor="middle" fill="#1c1917" font-family="ui-monospace, monospace" font-size="12" font-weight="700">LAYER</text>
 
-  <rect x="224" y="84" width="424" height="32" rx="6" fill="#3b2314" stroke="#f59e0b"/>
-  <text x="436" y="105" text-anchor="middle" fill="#fcd34d" font-family="ui-monospace, monospace" font-size="12" font-weight="700">THEN (c. 2021 DEFAULT)</text>
+  <rect x="224" y="84" width="424" height="32" rx="6" fill="#fffbeb" stroke="#b45309"/>
+  <text x="436" y="105" text-anchor="middle" fill="#92400e" font-family="ui-monospace, monospace" font-size="12" font-weight="700">THEN (c. 2021 DEFAULT)</text>
 
-  <rect x="692" y="84" width="472" height="32" rx="6" fill="#0f362c" stroke="#34d399"/>
-  <text x="928" y="105" text-anchor="middle" fill="#6ee7b7" font-family="ui-monospace, monospace" font-size="12" font-weight="700">NOW (2026 PRODUCTION STANDARD)</text>
+  <rect x="692" y="84" width="472" height="32" rx="6" fill="#f0fdf9" stroke="#0f766e"/>
+  <text x="928" y="105" text-anchor="middle" fill="#065f46" font-family="ui-monospace, monospace" font-size="12" font-weight="700">NOW (2026 PRODUCTION STANDARD)</text>
 
   <!-- Row 1: Replication & Consistency -->
   <g transform="translate(36, 128)">
-    <rect width="176" height="54" rx="6" fill="#17253f" stroke="#334155"/>
-    <text x="12" y="24" fill="#38bdf8" font-family="system-ui, sans-serif" font-size="11.5" font-weight="700">1. Replication/Geo</text>
-    <text x="12" y="42" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="10">Quorum &amp; Multi-Region</text>
+    <rect width="176" height="54" rx="6" fill="#f5f1e8" stroke="#d6d0c4"/>
+    <text x="12" y="24" fill="#0f766e" font-family="system-ui, sans-serif" font-size="11.5" font-weight="700">1. Replication/Geo</text>
+    <text x="12" y="42" fill="#57534e" font-family="system-ui, sans-serif" font-size="10">Quorum &amp; Multi-Region</text>
 
-    <rect x="188" width="424" height="54" rx="6" fill="#1c1917" stroke="#78350f"/>
-    <text x="200" y="22" fill="#fde68a" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Leaderless AP quorums + async multi-DC gossip</text>
-    <text x="200" y="40" fill="#a8a29e" font-family="system-ui, sans-serif" font-size="9.5">Non-linearizable W+R&gt;N; manual cross-region conflict ops</text>
+    <rect x="188" width="424" height="54" rx="6" fill="#fffbeb" stroke="#b45309"/>
+    <text x="200" y="22" fill="#92400e" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Leaderless AP quorums + async multi-DC gossip</text>
+    <text x="200" y="40" fill="#57534e" font-family="system-ui, sans-serif" font-size="9.5">Non-linearizable W+R&gt;N; manual cross-region conflict ops</text>
 
-    <line x1="618" y1="27" x2="648" y2="27" stroke="#34d399" stroke-width="2" marker-end="url(#kvShift)"/>
+    <line x1="618" y1="27" x2="648" y2="27" stroke="#0f766e" stroke-width="2" marker-end="url(#kvShift)"/>
 
-    <rect x="656" width="472" height="54" rx="6" fill="#0d2621" stroke="#059669"/>
-    <text x="668" y="22" fill="#a7f3d0" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Per-Partition Paxos/Raft + Region-Aware Global Tables</text>
-    <text x="668" y="40" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="9.5">DynamoDB/TiKV leaders, Cassandra 5 Accord, Session tokens</text>
+    <rect x="656" width="472" height="54" rx="6" fill="#f0fdf9" stroke="#0f766e"/>
+    <text x="668" y="22" fill="#065f46" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Per-Partition Paxos/Raft + Region-Aware Global Tables</text>
+    <text x="668" y="40" fill="#44403c" font-family="system-ui, sans-serif" font-size="9.5">DynamoDB/TiKV leaders, Cassandra 5 Accord, Session tokens</text>
   </g>
 
   <!-- Row 2: Runtime & Threading -->
   <g transform="translate(36, 192)">
-    <rect width="176" height="54" rx="6" fill="#17253f" stroke="#334155"/>
-    <text x="12" y="24" fill="#38bdf8" font-family="system-ui, sans-serif" font-size="11.5" font-weight="700">2. Engine Runtime</text>
-    <text x="12" y="42" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="10">Memory &amp; Concurrency</text>
+    <rect width="176" height="54" rx="6" fill="#f5f1e8" stroke="#d6d0c4"/>
+    <text x="12" y="24" fill="#0f766e" font-family="system-ui, sans-serif" font-size="11.5" font-weight="700">2. Engine Runtime</text>
+    <text x="12" y="42" fill="#57534e" font-family="system-ui, sans-serif" font-size="10">Memory &amp; Concurrency</text>
 
-    <rect x="188" width="424" height="54" rx="6" fill="#1c1917" stroke="#78350f"/>
-    <text x="200" y="22" fill="#fde68a" font-family="system-ui, sans-serif" font-size="11" font-weight="600">JVM thread-pools + G1GC / CMS stop-the-world pauses</text>
-    <text x="200" y="40" fill="#a8a29e" font-family="system-ui, sans-serif" font-size="9.5">GC stalls trigger gossip false-positives &amp; p99 spikes</text>
+    <rect x="188" width="424" height="54" rx="6" fill="#fffbeb" stroke="#b45309"/>
+    <text x="200" y="22" fill="#92400e" font-family="system-ui, sans-serif" font-size="11" font-weight="600">JVM thread-pools + G1GC / CMS stop-the-world pauses</text>
+    <text x="200" y="40" fill="#57534e" font-family="system-ui, sans-serif" font-size="9.5">GC stalls trigger gossip false-positives &amp; p99 spikes</text>
 
-    <line x1="618" y1="27" x2="648" y2="27" stroke="#34d399" stroke-width="2" marker-end="url(#kvShift)"/>
+    <line x1="618" y1="27" x2="648" y2="27" stroke="#0f766e" stroke-width="2" marker-end="url(#kvShift)"/>
 
-    <rect x="656" width="472" height="54" rx="6" fill="#0d2621" stroke="#059669"/>
-    <text x="668" y="22" fill="#a7f3d0" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Shard-per-Core C++/Rust (ScyllaDB Seastar, TiKV, Garnet)</text>
-    <text x="668" y="40" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="9.5">Pinned thread/RAM/NVMe queue per core; zero GC pauses</text>
+    <rect x="656" width="472" height="54" rx="6" fill="#f0fdf9" stroke="#0f766e"/>
+    <text x="668" y="22" fill="#065f46" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Shard-per-Core C++/Rust (ScyllaDB Seastar, TiKV, Garnet)</text>
+    <text x="668" y="40" fill="#44403c" font-family="system-ui, sans-serif" font-size="9.5">Pinned thread/RAM/NVMe queue per core; zero GC pauses</text>
   </g>
 
   <!-- Row 3: Storage Engine & I/O -->
   <g transform="translate(36, 256)">
-    <rect width="176" height="54" rx="6" fill="#17253f" stroke="#334155"/>
-    <text x="12" y="24" fill="#38bdf8" font-family="system-ui, sans-serif" font-size="11.5" font-weight="700">3. Storage &amp; I/O</text>
-    <text x="12" y="42" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="10">LSM &amp; Kernel Path</text>
+    <rect width="176" height="54" rx="6" fill="#f5f1e8" stroke="#d6d0c4"/>
+    <text x="12" y="24" fill="#0f766e" font-family="system-ui, sans-serif" font-size="11.5" font-weight="700">3. Storage &amp; I/O</text>
+    <text x="12" y="42" fill="#57534e" font-family="system-ui, sans-serif" font-size="10">LSM &amp; Kernel Path</text>
 
-    <rect x="188" width="424" height="54" rx="6" fill="#1c1917" stroke="#78350f"/>
-    <text x="200" y="22" fill="#fde68a" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Buffered POSIX I/O + Size-Tiered Compaction (50% headroom)</text>
-    <text x="200" y="40" fill="#a8a29e" font-family="system-ui, sans-serif" font-size="9.5">OS page-cache thrashing &amp; heavy write/space amplification</text>
+    <rect x="188" width="424" height="54" rx="6" fill="#fffbeb" stroke="#b45309"/>
+    <text x="200" y="22" fill="#92400e" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Buffered POSIX I/O + Size-Tiered Compaction (50% headroom)</text>
+    <text x="200" y="40" fill="#57534e" font-family="system-ui, sans-serif" font-size="9.5">OS page-cache thrashing &amp; heavy write/space amplification</text>
 
-    <line x1="618" y1="27" x2="648" y2="27" stroke="#34d399" stroke-width="2" marker-end="url(#kvShift)"/>
+    <line x1="618" y1="27" x2="648" y2="27" stroke="#0f766e" stroke-width="2" marker-end="url(#kvShift)"/>
 
-    <rect x="656" width="472" height="54" rx="6" fill="#0d2621" stroke="#059669"/>
-    <text x="668" y="22" fill="#a7f3d0" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Direct I/O + io_uring + Unified/Leveled Compaction + S3 Tiering</text>
-    <text x="668" y="40" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="9.5">NVMe Gen5 saturation, Pebble/RocksDB/B-tree Redwood, cold S3</text>
+    <rect x="656" width="472" height="54" rx="6" fill="#f0fdf9" stroke="#0f766e"/>
+    <text x="668" y="22" fill="#065f46" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Direct I/O + io_uring + Unified/Leveled Compaction + S3 Tiering</text>
+    <text x="668" y="40" fill="#44403c" font-family="system-ui, sans-serif" font-size="9.5">NVMe Gen5 saturation, Pebble/RocksDB/B-tree Redwood, cold S3</text>
   </g>
 
   <!-- Row 4: Conflict Resolution -->
   <g transform="translate(36, 320)">
-    <rect width="176" height="54" rx="6" fill="#17253f" stroke="#334155"/>
-    <text x="12" y="24" fill="#38bdf8" font-family="system-ui, sans-serif" font-size="11.5" font-weight="700">4. Conflicts</text>
-    <text x="12" y="42" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="10">Causal vs Wall Clock</text>
+    <rect width="176" height="54" rx="6" fill="#f5f1e8" stroke="#d6d0c4"/>
+    <text x="12" y="24" fill="#0f766e" font-family="system-ui, sans-serif" font-size="11.5" font-weight="700">4. Conflicts</text>
+    <text x="12" y="42" fill="#57534e" font-family="system-ui, sans-serif" font-size="10">Causal vs Wall Clock</text>
 
-    <rect x="188" width="424" height="54" rx="6" fill="#1c1917" stroke="#78350f"/>
-    <text x="200" y="22" fill="#fde68a" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Raw Vector Clocks (bloat) or Cassandra LWW wall-clock</text>
-    <text x="200" y="40" fill="#a8a29e" font-family="system-ui, sans-serif" font-size="9.5">NTP clock skew silently drops updates; client merge burden</text>
+    <rect x="188" width="424" height="54" rx="6" fill="#fffbeb" stroke="#b45309"/>
+    <text x="200" y="22" fill="#92400e" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Raw Vector Clocks (bloat) or Cassandra LWW wall-clock</text>
+    <text x="200" y="40" fill="#57534e" font-family="system-ui, sans-serif" font-size="9.5">NTP clock skew silently drops updates; client merge burden</text>
 
-    <line x1="618" y1="27" x2="648" y2="27" stroke="#34d399" stroke-width="2" marker-end="url(#kvShift)"/>
+    <line x1="618" y1="27" x2="648" y2="27" stroke="#0f766e" stroke-width="2" marker-end="url(#kvShift)"/>
 
-    <rect x="656" width="472" height="54" rx="6" fill="#0d2621" stroke="#059669"/>
-    <text x="668" y="22" fill="#a7f3d0" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Single-Leader Partition Order, HLC, DVVs, or Typed CRDTs</text>
-    <text x="668" y="40" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="9.5">Eliminates silent LWW drops &amp; unbounded vector-clock growth</text>
+    <rect x="656" width="472" height="54" rx="6" fill="#f0fdf9" stroke="#0f766e"/>
+    <text x="668" y="22" fill="#065f46" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Single-Leader Partition Order, HLC, DVVs, or Typed CRDTs</text>
+    <text x="668" y="40" fill="#44403c" font-family="system-ui, sans-serif" font-size="9.5">Eliminates silent LWW drops &amp; unbounded vector-clock growth</text>
   </g>
 
   <!-- Row 5: Anti-Entropy & Topology -->
   <g transform="translate(36, 384)">
-    <rect width="176" height="54" rx="6" fill="#17253f" stroke="#334155"/>
-    <text x="12" y="24" fill="#38bdf8" font-family="system-ui, sans-serif" font-size="11.5" font-weight="700">5. Anti-Entropy</text>
-    <text x="12" y="42" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="10">Repair &amp; Rebalance</text>
+    <rect width="176" height="54" rx="6" fill="#f5f1e8" stroke="#d6d0c4"/>
+    <text x="12" y="24" fill="#0f766e" font-family="system-ui, sans-serif" font-size="11.5" font-weight="700">5. Anti-Entropy</text>
+    <text x="12" y="42" fill="#57534e" font-family="system-ui, sans-serif" font-size="10">Repair &amp; Rebalance</text>
 
-    <rect x="188" width="424" height="54" rx="6" fill="#1c1917" stroke="#78350f"/>
-    <text x="200" y="22" fill="#fde68a" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Cron nodetool Merkle repairs + ring token shifts</text>
-    <text x="200" y="40" fill="#a8a29e" font-family="system-ui, sans-serif" font-size="9.5">Missed repair past gc_grace_seconds resurrects tombstones</text>
+    <rect x="188" width="424" height="54" rx="6" fill="#fffbeb" stroke="#b45309"/>
+    <text x="200" y="22" fill="#92400e" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Cron nodetool Merkle repairs + ring token shifts</text>
+    <text x="200" y="40" fill="#57534e" font-family="system-ui, sans-serif" font-size="9.5">Missed repair past gc_grace_seconds resurrects tombstones</text>
 
-    <line x1="618" y1="27" x2="648" y2="27" stroke="#34d399" stroke-width="2" marker-end="url(#kvShift)"/>
+    <line x1="618" y1="27" x2="648" y2="27" stroke="#0f766e" stroke-width="2" marker-end="url(#kvShift)"/>
 
-    <rect x="656" width="472" height="54" rx="6" fill="#0d2621" stroke="#059669"/>
-    <text x="668" y="22" fill="#a7f3d0" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Raft Log Catch-Up + Scylla Tablets + Automated Repair Manager</text>
-    <text x="668" y="40" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="9.5">Elastic tablet splitting without ring-wide Merkle invalidation</text>
+    <rect x="656" width="472" height="54" rx="6" fill="#f0fdf9" stroke="#0f766e"/>
+    <text x="668" y="22" fill="#065f46" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Raft Log Catch-Up + Scylla Tablets + Automated Repair Manager</text>
+    <text x="668" y="40" fill="#44403c" font-family="system-ui, sans-serif" font-size="9.5">Elastic tablet splitting without ring-wide Merkle invalidation</text>
   </g>
 
   <!-- Row 6: Admission & Hot Keys -->
   <g transform="translate(36, 448)">
-    <rect width="176" height="54" rx="6" fill="#17253f" stroke="#334155"/>
-    <text x="12" y="24" fill="#38bdf8" font-family="system-ui, sans-serif" font-size="11.5" font-weight="700">6. Hot Partitions</text>
-    <text x="12" y="42" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="10">Admission &amp; Splitting</text>
+    <rect width="176" height="54" rx="6" fill="#f5f1e8" stroke="#d6d0c4"/>
+    <text x="12" y="24" fill="#0f766e" font-family="system-ui, sans-serif" font-size="11.5" font-weight="700">6. Hot Partitions</text>
+    <text x="12" y="42" fill="#57534e" font-family="system-ui, sans-serif" font-size="10">Admission &amp; Splitting</text>
 
-    <rect x="188" width="424" height="54" rx="6" fill="#1c1917" stroke="#78350f"/>
-    <text x="200" y="22" fill="#fde68a" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Static per-partition throughput caps + manual key salting</text>
-    <text x="200" y="40" fill="#a8a29e" font-family="system-ui, sans-serif" font-size="9.5">Single hot key throttles whole shard while peers sit idle</text>
+    <rect x="188" width="424" height="54" rx="6" fill="#fffbeb" stroke="#b45309"/>
+    <text x="200" y="22" fill="#92400e" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Static per-partition throughput caps + manual key salting</text>
+    <text x="200" y="40" fill="#57534e" font-family="system-ui, sans-serif" font-size="9.5">Single hot key throttles whole shard while peers sit idle</text>
 
-    <line x1="618" y1="27" x2="648" y2="27" stroke="#34d399" stroke-width="2" marker-end="url(#kvShift)"/>
+    <line x1="618" y1="27" x2="648" y2="27" stroke="#0f766e" stroke-width="2" marker-end="url(#kvShift)"/>
 
-    <rect x="656" width="472" height="54" rx="6" fill="#0d2621" stroke="#059669"/>
-    <text x="668" y="22" fill="#a7f3d0" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Global Admission Control (GAC) + Heat-Based Auto-Split</text>
-    <text x="668" y="40" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="9.5">Isolates hot keys onto dedicated storage partitions dynamically</text>
+    <rect x="656" width="472" height="54" rx="6" fill="#f0fdf9" stroke="#0f766e"/>
+    <text x="668" y="22" fill="#065f46" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Global Admission Control (GAC) + Heat-Based Auto-Split</text>
+    <text x="668" y="40" fill="#44403c" font-family="system-ui, sans-serif" font-size="9.5">Isolates hot keys onto dedicated storage partitions dynamically</text>
   </g>
 
   <!-- Row 7: Cloud & Testing -->
   <g transform="translate(36, 512)">
-    <rect width="176" height="54" rx="6" fill="#17253f" stroke="#334155"/>
-    <text x="12" y="24" fill="#38bdf8" font-family="system-ui, sans-serif" font-size="11.5" font-weight="700">7. Ops &amp; Testing</text>
-    <text x="12" y="42" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="10">Correctness Proof</text>
+    <rect width="176" height="54" rx="6" fill="#f5f1e8" stroke="#d6d0c4"/>
+    <text x="12" y="24" fill="#0f766e" font-family="system-ui, sans-serif" font-size="11.5" font-weight="700">7. Ops &amp; Testing</text>
+    <text x="12" y="42" fill="#57534e" font-family="system-ui, sans-serif" font-size="10">Correctness Proof</text>
 
-    <rect x="188" width="424" height="54" rx="6" fill="#1c1917" stroke="#78350f"/>
-    <text x="200" y="22" fill="#fde68a" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Ad-hoc Jepsen audits + manual ring ops on bare EC2</text>
-    <text x="200" y="40" fill="#a8a29e" font-family="system-ui, sans-serif" font-size="9.5">Rare race bugs surface only under production partitions</text>
+    <rect x="188" width="424" height="54" rx="6" fill="#fffbeb" stroke="#b45309"/>
+    <text x="200" y="22" fill="#92400e" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Ad-hoc Jepsen audits + manual ring ops on bare EC2</text>
+    <text x="200" y="40" fill="#57534e" font-family="system-ui, sans-serif" font-size="9.5">Rare race bugs surface only under production partitions</text>
 
-    <line x1="618" y1="27" x2="648" y2="27" stroke="#34d399" stroke-width="2" marker-end="url(#kvShift)"/>
+    <line x1="618" y1="27" x2="648" y2="27" stroke="#0f766e" stroke-width="2" marker-end="url(#kvShift)"/>
 
-    <rect x="656" width="472" height="54" rx="6" fill="#0d2621" stroke="#059669"/>
-    <text x="668" y="22" fill="#a7f3d0" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Deterministic Simulation Testing (FDB/Antithesis) + Serverless KV</text>
-    <text x="668" y="40" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="9.5">Seeded fault-injection replays prove linearizability before ship</text>
+    <rect x="656" width="472" height="54" rx="6" fill="#f0fdf9" stroke="#0f766e"/>
+    <text x="668" y="22" fill="#065f46" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Deterministic Simulation Testing (FDB/Antithesis) + Serverless KV</text>
+    <text x="668" y="40" fill="#44403c" font-family="system-ui, sans-serif" font-size="9.5">Seeded fault-injection replays prove linearizability before ship</text>
   </g>
 
   <!-- Footer takeaway -->
-  <rect x="36" y="582" width="1128" height="72" rx="8" fill="#17233b" stroke="#38bdf8" stroke-width="1"/>
-  <text x="54" y="609" fill="#e2e8f0" font-family="system-ui, sans-serif" font-size="12"><tspan fill="#38bdf8" font-weight="700">2026 KV Design Rule:</tspan> Default to per-partition consensus (DynamoDB, TiKV, Spanner, FoundationDB) when correctness matters.</text>
-  <text x="54" y="633" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="12">Reserve leaderless AP rings (ScyllaDB/Cassandra) for ultra-high write availability where eventual consistency and repair discipline are explicit.</text>
+  <rect x="36" y="582" width="1128" height="72" rx="8" fill="#ffffff" stroke="#0f766e" stroke-width="1"/>
+  <text x="54" y="609" fill="#1c1917" font-family="system-ui, sans-serif" font-size="12"><tspan fill="#0f766e" font-weight="700">2026 KV Design Rule:</tspan> Default to per-partition consensus (DynamoDB, TiKV, Spanner, FoundationDB) when correctness matters.</text>
+  <text x="54" y="633" fill="#44403c" font-family="system-ui, sans-serif" font-size="12">Reserve leaderless AP rings (ScyllaDB/Cassandra) for ultra-high write availability where eventual consistency and repair discipline are explicit.</text>
 </svg>

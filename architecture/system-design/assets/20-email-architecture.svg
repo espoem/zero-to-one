@@ -3,144 +3,144 @@
   <desc id="desc">Architecture of a planetary 1B-user distributed email service showing JMAP/HTTPS webmail and WebSocket push, outbound sending pipeline with internal same-domain short-circuit and SPF/DKIM/DMARC/MTA-STS workers, inbound SMTP edge acceptance, user_id-partitioned wide-column metadata store with TimeUUID clustering and read/unread denormalization, SHA-256 content-addressed S3 attachment store, and per-user LSM search.</desc>
   <defs>
     <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#44403c"/>
     </marker>
     <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#b45309"/>
     </marker>
   </defs>
 
   <!-- Background -->
-  <rect x="0" y="0" width="1160" height="700" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1160" height="700" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1160" height="58" rx="12" fill="#0f172a"/>
-  <rect x="0" y="42" width="1160" height="16" fill="#0f172a"/>
-  <text x="24" y="28" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#f8fafc">Distributed Email Service — Planetary Architecture (1B Users · 115.7k Send QPS · 2.19 EB/yr Raw)</text>
-  <text x="24" y="47" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#94a3b8">JMAP/HTTPS &amp; WebSocket Push · Outbound/Inbound SMTP Pipelines · user_id Wide-Column CP Store · SHA-256 CAS Blobs · Per-User LSM Search</text>
+  <line x1="24" y1="60" x2="1136" y2="60" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="28" font-family="Georgia, 'Times New Roman', serif" font-size="18" font-weight="700" fill="#1c1917">Distributed Email Service — Planetary Architecture (1B Users · 115.7k Send QPS · 2.19 EB/yr Raw)</text>
+  <text x="24" y="47" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#57534e">JMAP/HTTPS &amp; WebSocket Push · Outbound/Inbound SMTP Pipelines · user_id Wide-Column CP Store · SHA-256 CAS Blobs · Per-User LSM Search</text>
 
   <!-- COLUMN 1: CLIENTS, JMAP/HTTP & REAL-TIME PUSH -->
-  <rect x="20" y="76" width="245" height="318" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
-  <text x="34" y="100" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1e3a8a">1. Client &amp; Edge Tier</text>
+  <rect x="20" y="76" width="245" height="318" rx="10" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="34" y="100" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#065f46">1. Client &amp; Edge Tier</text>
 
-  <rect x="34" y="114" width="217" height="86" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1"/>
-  <text x="44" y="133" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#1e40af">Webmail &amp; Mobile Clients</text>
-  <text x="44" y="150" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#334155">HTTPS REST / JMAP (RFC 8620)</text>
-  <text x="44" y="166" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Stateless batched JSON delta sync</text>
-  <text x="44" y="182" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#64748b">Legacy IMAP4rev2 / POP3 bridge</text>
+  <rect x="34" y="114" width="217" height="86" rx="6" fill="#ffffff" stroke="#99f6e4" stroke-width="1"/>
+  <text x="44" y="133" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#065f46">Webmail &amp; Mobile Clients</text>
+  <text x="44" y="150" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#44403c">HTTPS REST / JMAP (RFC 8620)</text>
+  <text x="44" y="166" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Stateless batched JSON delta sync</text>
+  <text x="44" y="182" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#57534e">Legacy IMAP4rev2 / POP3 bridge</text>
 
-  <rect x="34" y="212" width="217" height="82" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1"/>
-  <text x="44" y="231" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#1e40af">L7 Load Balancer &amp; Web API</text>
-  <text x="44" y="248" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Per-user send quota &amp; size check</text>
-  <text x="44" y="264" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#1e3a8a">25 MB MIME (~18.75 MB binary)</text>
-  <text x="44" y="280" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Auth, session &amp; folder CRUD</text>
+  <rect x="34" y="212" width="217" height="82" rx="6" fill="#ffffff" stroke="#99f6e4" stroke-width="1"/>
+  <text x="44" y="231" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#065f46">L7 Load Balancer &amp; Web API</text>
+  <text x="44" y="248" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Per-user send quota &amp; size check</text>
+  <text x="44" y="264" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#065f46">25 MB MIME (~18.75 MB binary)</text>
+  <text x="44" y="280" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Auth, session &amp; folder CRUD</text>
 
-  <rect x="34" y="306" width="217" height="74" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
-  <text x="44" y="325" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#1e3a8a">Real-Time Push Gateways</text>
-  <text x="44" y="342" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">WebSockets / SSE (long-poll fallback)</text>
-  <text x="44" y="359" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Pushes new-mail &amp; read-flag deltas</text>
+  <rect x="34" y="306" width="217" height="74" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="1"/>
+  <text x="44" y="325" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#065f46">Real-Time Push Gateways</text>
+  <text x="44" y="342" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">WebSockets / SSE (long-poll fallback)</text>
+  <text x="44" y="359" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Pushes new-mail &amp; read-flag deltas</text>
 
   <!-- COLUMN 2: OUTBOUND SEND & INBOUND RECEIVE PIPELINES -->
-  <rect x="290" y="76" width="465" height="318" rx="10" fill="#f0fdf4" stroke="#10b981" stroke-width="1.5"/>
+  <rect x="290" y="76" width="465" height="318" rx="10" fill="#f0fdf4" stroke="#0f766e" stroke-width="1.5"/>
   <text x="306" y="100" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#065f46">2. Outbound Send &amp; Inbound Receive SMTP Pipelines</text>
 
   <!-- Outbound Send Flow -->
-  <rect x="306" y="114" width="433" height="130" rx="8" fill="#ffffff" stroke="#059669" stroke-width="1.8"/>
-  <rect x="306" y="114" width="433" height="24" rx="8" fill="#059669"/>
-  <rect x="306" y="128" width="433" height="10" fill="#059669"/>
+  <rect x="306" y="114" width="433" height="130" rx="8" fill="#ffffff" stroke="#0f766e" stroke-width="1.8"/>
+  <rect x="306" y="114" width="433" height="24" rx="8" fill="#0f766e"/>
+  <rect x="306" y="128" width="433" height="10" fill="#0f766e"/>
   <text x="316" y="130" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#ffffff">A. Outbound Send Path (115.7k msg/s avg · POST /v1/messages)</text>
-  <text x="316" y="152" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">1. Validate headers/size; strip attachments to S3 SHA-256 CAS store</text>
+  <text x="316" y="152" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">1. Validate headers/size; strip attachments to S3 SHA-256 CAS store</text>
   <text x="316" y="169" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#065f46">2. Same-domain: short-circuit internal delivery AFTER spam scan!</text>
-  <text x="316" y="186" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">3. Enqueue in Outgoing Kafka Queue (invalid messages -&gt; Error Queue)</text>
-  <text x="316" y="203" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">4. Outgoing SMTP Workers: DKIM sign, DNS MX lookup, MTA-STS TLS relay</text>
+  <text x="316" y="186" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">3. Enqueue in Outgoing Kafka Queue (invalid messages -&gt; Error Queue)</text>
+  <text x="316" y="203" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">4. Outgoing SMTP Workers: DKIM sign, DNS MX lookup, MTA-STS TLS relay</text>
   <text x="316" y="220" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#b45309">5. 4xx MTA busy -&gt; Exponential-Backoff Retry Queue; save in Sent folder</text>
 
   <!-- Inbound Receive Flow -->
-  <rect x="306" y="254" width="433" height="126" rx="8" fill="#ffffff" stroke="#10b981" stroke-width="1.5"/>
-  <rect x="306" y="254" width="433" height="24" rx="8" fill="#d1fae5"/>
-  <rect x="306" y="268" width="433" height="10" fill="#d1fae5"/>
+  <rect x="306" y="254" width="433" height="126" rx="8" fill="#ffffff" stroke="#0f766e" stroke-width="1.5"/>
+  <rect x="306" y="254" width="433" height="24" rx="8" fill="#f0fdf9"/>
+  <rect x="306" y="268" width="433" height="10" fill="#f0fdf9"/>
   <text x="316" y="270" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">B. Inbound Receive Path (463k msg/s avg · External MTA -&gt; Port 25)</text>
-  <text x="316" y="292" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">1. SMTP LB -&gt; Acceptance Policy (SPF/DKIM/DMARC/ARC + bounce invalid)</text>
-  <text x="316" y="309" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">2. Decode Base64 (4/3 wire inflation) -&gt; write raw binary to S3 CAS</text>
-  <text x="316" y="326" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">3. Mail Processing Queue -&gt; ML Spam/Phishing &amp; BEC Classifier Workers</text>
-  <text x="316" y="343" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">4. Write Metadata DB + Valkey cache + Kafka Search event</text>
-  <text x="316" y="360" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#047857">5. Push live notification to online user via WebSocket / SSE gateway</text>
+  <text x="316" y="292" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">1. SMTP LB -&gt; Acceptance Policy (SPF/DKIM/DMARC/ARC + bounce invalid)</text>
+  <text x="316" y="309" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">2. Decode Base64 (4/3 wire inflation) -&gt; write raw binary to S3 CAS</text>
+  <text x="316" y="326" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">3. Mail Processing Queue -&gt; ML Spam/Phishing &amp; BEC Classifier Workers</text>
+  <text x="316" y="343" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">4. Write Metadata DB + Valkey cache + Kafka Search event</text>
+  <text x="316" y="360" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#065f46">5. Push live notification to online user via WebSocket / SSE gateway</text>
 
   <!-- COLUMN 3: MAILBOX STORAGE, CAS BLOBS & CACHE -->
-  <rect x="780" y="76" width="360" height="318" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5"/>
+  <rect x="780" y="76" width="360" height="318" rx="10" fill="#fffbeb" stroke="#b45309" stroke-width="1.5"/>
   <text x="794" y="100" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#92400e">3. Storage Tiers (2.19 EB/yr Raw)</text>
 
   <!-- Wide-Column Metadata Store -->
-  <rect x="794" y="114" width="332" height="106" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <rect x="794" y="114" width="332" height="106" rx="6" fill="#fffbeb" stroke="#b45309" stroke-width="1.5"/>
   <text x="804" y="133" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#92400e">Wide-Column Metadata DB (Bigtable / Cassandra)</text>
-  <text x="804" y="150" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#334155">Partition Key: user_id (100% single-shard!)</text>
-  <text x="804" y="166" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#334155">Clustering Key: email_id (TimeUUID / UUIDv7)</text>
-  <text x="804" y="182" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">730 PB/yr headers+bodies; CP strong consistency</text>
+  <text x="804" y="150" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#44403c">Partition Key: user_id (100% single-shard!)</text>
+  <text x="804" y="166" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#44403c">Clustering Key: email_id (TimeUUID / UUIDv7)</text>
+  <text x="804" y="182" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">730 PB/yr headers+bodies; CP strong consistency</text>
   <text x="804" y="198" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#b45309">Denormalized read_emails &amp; unread_emails tables</text>
 
   <!-- Content-Addressed Object Store -->
-  <rect x="794" y="230" width="332" height="82" rx="6" fill="#ffffff" stroke="#fcd34d" stroke-width="1.5"/>
+  <rect x="794" y="230" width="332" height="82" rx="6" fill="#ffffff" stroke="#fde68a" stroke-width="1.5"/>
   <text x="804" y="249" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#b45309">S3 / GCS Attachment Store (SHA-256 CAS)</text>
-  <text x="804" y="266" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#334155">key: blobs/{sha256_digest} + ref_count</text>
-  <text x="804" y="282" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">1,460 PB/yr raw -&gt; deduplicated across forwards</text>
-  <text x="804" y="298" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#059669">Reclaims blob only when ref_count drops to 0</text>
+  <text x="804" y="266" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#44403c">key: blobs/{sha256_digest} + ref_count</text>
+  <text x="804" y="282" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">1,460 PB/yr raw -&gt; deduplicated across forwards</text>
+  <text x="804" y="298" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f766e">Reclaims blob only when ref_count drops to 0</text>
 
   <!-- Valkey Recent Cache -->
-  <rect x="794" y="322" width="332" height="58" rx="6" fill="#ffffff" stroke="#fcd34d" stroke-width="1.2"/>
+  <rect x="794" y="322" width="332" height="58" rx="6" fill="#ffffff" stroke="#fde68a" stroke-width="1.2"/>
   <text x="804" y="341" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#b45309">Valkey / Redis Recent-Mail Cache</text>
-  <text x="804" y="358" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Caches hot inbox threads &amp; folder unread counts</text>
-  <text x="804" y="372" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#64748b">Exploits strong recency skew (today's emails)</text>
+  <text x="804" y="358" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Caches hot inbox threads &amp; folder unread counts</text>
+  <text x="804" y="372" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#57534e">Exploits strong recency skew (today's emails)</text>
 
   <!-- Connecting arrows top -->
-  <line x1="251" y1="245" x2="304" y2="180" stroke="#2563eb" stroke-width="2" marker-end="url(#arr-blue)"/>
-  <line x1="306" y1="355" x2="253" y2="345" stroke="#059669" stroke-width="2" marker-end="url(#arr-green)"/>
-  <line x1="739" y1="180" x2="792" y2="180" stroke="#059669" stroke-width="2" marker-end="url(#arr-green)"/>
-  <line x1="739" y1="315" x2="792" y2="275" stroke="#d97706" stroke-width="2" marker-end="url(#arr-amber)"/>
+  <line x1="251" y1="245" x2="304" y2="180" stroke="#0f766e" stroke-width="2" marker-end="url(#arr-blue)"/>
+  <line x1="306" y1="355" x2="253" y2="345" stroke="#0f766e" stroke-width="2" marker-end="url(#arr-green)"/>
+  <line x1="739" y1="180" x2="792" y2="180" stroke="#0f766e" stroke-width="2" marker-end="url(#arr-green)"/>
+  <line x1="739" y1="315" x2="792" y2="275" stroke="#b45309" stroke-width="2" marker-end="url(#arr-amber)"/>
 
   <!-- BOTTOM LEFT: DELIVERABILITY, SPF/DKIM/DMARC/ARC & IP WARM-UP -->
-  <rect x="20" y="412" width="555" height="268" rx="10" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
-  <text x="34" y="436" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#5b21b6">4. Deliverability Engineering, Authentication &amp; Bulk Guardrails</text>
+  <rect x="20" y="412" width="555" height="268" rx="10" fill="#f5f1e8" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="34" y="436" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#065f46">4. Deliverability Engineering, Authentication &amp; Bulk Guardrails</text>
 
   <rect x="34" y="450" width="256" height="104" rx="6" fill="#ffffff" stroke="#8b5cf6" stroke-width="1.2"/>
-  <text x="44" y="470" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#4c1d95">A. Auth Triad + ARC Forwarding</text>
-  <text x="44" y="487" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#334155">SPF (RFC 7208): Envelope IP check</text>
-  <text x="44" y="503" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#334155">DKIM (RFC 6376): RSA/Ed25519 sig</text>
+  <text x="44" y="470" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#065f46">A. Auth Triad + ARC Forwarding</text>
+  <text x="44" y="487" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#44403c">SPF (RFC 7208): Envelope IP check</text>
+  <text x="44" y="503" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#44403c">DKIM (RFC 6376): RSA/Ed25519 sig</text>
   <text x="44" y="519" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#065f46">DMARC (RFC 7489): From alignment</text>
-  <text x="44" y="535" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#6d28d9">ARC (RFC 8617): Seals list forwards</text>
+  <text x="44" y="535" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#065f46">ARC (RFC 8617): Seals list forwards</text>
 
   <rect x="304" y="450" width="256" height="104" rx="6" fill="#ffffff" stroke="#8b5cf6" stroke-width="1.2"/>
-  <text x="314" y="470" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#4c1d95">B. IP Pool Isolation &amp; Warm-Up</text>
-  <text x="314" y="487" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Separate Transactional (2FA/reset)</text>
-  <text x="314" y="503" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">from Marketing dedicated IP pools!</text>
-  <text x="314" y="519" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">2-6 week exponential IP warm-up</text>
+  <text x="314" y="470" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#065f46">B. IP Pool Isolation &amp; Warm-Up</text>
+  <text x="314" y="487" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Separate Transactional (2FA/reset)</text>
+  <text x="314" y="503" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">from Marketing dedicated IP pools!</text>
+  <text x="314" y="519" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">2-6 week exponential IP warm-up</text>
   <text x="314" y="535" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#dc2626">FBL breaker trips at &gt;= 0.3% spam</text>
 
-  <rect x="34" y="566" width="526" height="98" rx="6" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.2"/>
-  <text x="46" y="586" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#4c1d95">C. RFC 5322 / JWZ Conversation Threading &amp; MIME Base64 Geometry</text>
-  <text x="46" y="604" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#334155">Headers: Message-Id | In-Reply-To | References: [&lt;root&gt;, &lt;parent&gt;]</text>
-  <text x="46" y="621" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">JWZ tree synthesizes placeholder nodes for out-of-order / missing parents</text>
-  <text x="46" y="638" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#5b21b6">MIME Base64 (RFC 2045): 3 bytes -&gt; 4 ASCII chars (+33.3% wire overhead)</text>
+  <rect x="34" y="566" width="526" height="98" rx="6" fill="#f5f1e8" stroke="#0f766e" stroke-width="1.2"/>
+  <text x="46" y="586" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#065f46">C. RFC 5322 / JWZ Conversation Threading &amp; MIME Base64 Geometry</text>
+  <text x="46" y="604" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#44403c">Headers: Message-Id | In-Reply-To | References: [&lt;root&gt;, &lt;parent&gt;]</text>
+  <text x="46" y="621" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">JWZ tree synthesizes placeholder nodes for out-of-order / missing parents</text>
+  <text x="46" y="638" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#065f46">MIME Base64 (RFC 2045): 3 bytes -&gt; 4 ASCII chars (+33.3% wire overhead)</text>
 
   <!-- BOTTOM RIGHT: WRITE-HEAVY PER-USER EMAIL SEARCH -->
-  <rect x="595" y="412" width="545" height="268" rx="10" fill="#fff1f2" stroke="#e11d48" stroke-width="1.5"/>
-  <text x="610" y="436" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#9f1239">5. Write-Heavy Per-User Email Search (Web vs. Mailbox Search)</text>
+  <rect x="595" y="412" width="545" height="268" rx="10" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="610" y="436" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#991b1b">5. Write-Heavy Per-User Email Search (Web vs. Mailbox Search)</text>
 
   <rect x="610" y="450" width="515" height="98" rx="6" fill="#ffffff" stroke="#fda4af" stroke-width="1.2"/>
-  <text x="620" y="470" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#be123c">Option 1: user_id-Routed Elasticsearch / OpenSearch via Kafka</text>
-  <text x="620" y="488" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Every receive / read / move / delete emits async Kafka indexing event</text>
+  <text x="620" y="470" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Option 1: user_id-Routed Elasticsearch / OpenSearch via Kafka</text>
+  <text x="620" y="488" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Every receive / read / move / delete emits async Kafka indexing event</text>
   <text x="620" y="505" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" fill="#065f46">_routing = user_id -&gt; all docs for a user land on 1 shard (no scatter!)</text>
-  <text x="620" y="522" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Trade-off: off-the-shelf rich queries, but duplicates storage cluster</text>
+  <text x="620" y="522" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Trade-off: off-the-shelf rich queries, but duplicates storage cluster</text>
 
-  <rect x="610" y="560" width="515" height="104" rx="6" fill="#ffffff" stroke="#e11d48" stroke-width="1.5"/>
-  <text x="620" y="580" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#9f1239">Option 2: Custom Co-Located LSM-Tree Per-User Index (Gmail Scale)</text>
-  <text x="620" y="598" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Email search is write-heavy (indexed on every delivery, searched rarely)</text>
-  <text x="620" y="615" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">LSM MemTable -&gt; immutable SSTable compaction turns index writes into</text>
-  <text x="620" y="632" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#059669">sequential disk I/O inside the user's Bigtable/Spanner tablet (zero dual DB)</text>
-  <text x="620" y="649" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Supports instant attribute sort (time, sender, unread) + hybrid semantic search</text>
+  <rect x="610" y="560" width="515" height="104" rx="6" fill="#ffffff" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="620" y="580" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Option 2: Custom Co-Located LSM-Tree Per-User Index (Gmail Scale)</text>
+  <text x="620" y="598" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Email search is write-heavy (indexed on every delivery, searched rarely)</text>
+  <text x="620" y="615" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">LSM MemTable -&gt; immutable SSTable compaction turns index writes into</text>
+  <text x="620" y="632" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#0f766e">sequential disk I/O inside the user's Bigtable/Spanner tablet (zero dual DB)</text>
+  <text x="620" y="649" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Supports instant attribute sort (time, sender, unread) + hybrid semantic search</text>
 </svg>

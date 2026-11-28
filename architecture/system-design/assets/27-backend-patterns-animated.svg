@@ -1,178 +1,139 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 600" width="1120" height="600" role="img" aria-labelledby="title desc">
-  <title id="title">Backend Architecture Patterns: Dependency Inversion, Outbox Decoupling, and CQRS / Serverless Trade-offs</title>
-  <desc id="desc">Animated schematic illustrating three core backend architecture mechanics: Panel 1 shows Hexagonal Ports and Adapters enforcing inward dependency arrows toward the pure domain core alongside Modular Monolith strict schema ownership; Panel 2 shows Event-Driven Transactional Outbox committing domain state and event record in one ACID transaction with sequential relay and idempotent deduplication; Panel 3 shows CQRS write-to-read projection lag convergence alongside Serverless FaaS cold-start versus container crossover utilization.</desc>
-
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 560" width="1120" height="560" role="img" aria-labelledby="title desc">
+  <title id="title">Backend Architecture Patterns: Boundaries, Outbox &amp; CQRS / FaaS Mechanics</title>
+  <desc id="desc">Static Editorial Paper diagram across three columns: Panel 1 shows Hexagonal Ports and Adapters enforcing inward dependency inversion and Modular Monolith disjoint table ownership; Panel 2 shows Transactional Outbox atomic state-plus-event commit, CDC relay, and idempotent consumer deduplication; Panel 3 shows CQRS write/read lag convergence and Serverless FaaS vs container utilization crossover.</desc>
+  <defs>
+    <marker id="ed-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M1,2 L9,5 L1,8" fill="none" stroke="#1c1917" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="ed-arr-teal" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M1,2 L9,5 L1,8" fill="none" stroke="#0f766e" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
   <style>
-    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-
-    /* 12s cycle across 3 panels */
-    @keyframes p1-hl { 0%, 32% { stroke: #2563eb; stroke-width: 2.2; } 34%, 100% { stroke: #cbd5e1; stroke-width: 1.5; } }
-    @keyframes p2-hl { 0%, 32% { stroke: #cbd5e1; stroke-width: 1.5; } 34%, 65% { stroke: #059669; stroke-width: 2.2; } 67%, 100% { stroke: #cbd5e1; stroke-width: 1.5; } }
-    @keyframes p3-hl { 0%, 65% { stroke: #cbd5e1; stroke-width: 1.5; } 67%, 100% { stroke: #7c3aed; stroke-width: 2.2; } }
-
-    @keyframes hex-pulse {
-      0%, 32%  { opacity: 1; }
-      35%, 100%{ opacity: 0.78; }
-    }
-
-    @keyframes outbox-pulse {
-      0%, 33%  { opacity: 0.78; }
-      35%, 65% { opacity: 1; }
-      68%, 100%{ opacity: 0.78; }
-    }
-
-    @keyframes cqrs-pulse {
-      0%, 66%  { opacity: 0.78; }
-      68%, 99% { opacity: 1; }
-      100%     { opacity: 0.78; }
-    }
-
-    .p1 { animation: p1-hl 12s linear infinite; }
-    .p2 { animation: p2-hl 12s linear infinite; }
-    .p3 { animation: p3-hl 12s linear infinite; }
-    .h-foc { animation: hex-pulse 12s ease-in-out infinite; }
-    .o-foc { animation: outbox-pulse 12s ease-in-out infinite; }
-    .c-foc { animation: cqrs-pulse 12s ease-in-out infinite; }
-
-    @media (prefers-reduced-motion: reduce) {
-      .p1, .p2, .p3, .h-foc, .o-foc, .c-foc { animation: none !important; opacity: 1 !important; }
-    }
+    .ed-serif { font-family: Georgia, "Times New Roman", serif; }
+    .ed-sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .ed-mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
   </style>
 
-  <!-- Canvas -->
-  <rect x="0" y="0" width="1120" height="600" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1120" height="560" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
+  <text x="32" y="32" class="ed-mono" font-size="10.5" fill="#78716c" letter-spacing="1.4">MODULE 27 · HEXAGONAL PORTS · MODULAR SCHEMA ISOLATION · OUTBOX · CQRS &amp; FAAS</text>
+  <text x="32" y="56" class="ed-serif" font-size="19.5" font-weight="700" fill="#1c1917">Backend Architecture Patterns: Boundary Invariants &amp; Crossover Trade-Offs</text>
+  <line x1="32" y1="68" x2="1088" y2="68" stroke="#1c1917" stroke-width="1.2"/>
 
-  <!-- Header -->
-  <rect x="0" y="0" width="1120" height="60" rx="12" fill="#0f172a"/>
-  <rect x="0" y="44" width="1120" height="16" fill="#0f172a"/>
-  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Backend Architecture Patterns: Boundaries, Outbox &amp; CQRS / FaaS Mechanics</text>
-  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">M27 §1–§4 · Hexagonal Dependency Inversion &amp; Modular Schema Isolation · Atomic Outbox + Idempotent Consumer · CQRS Lag &amp; Serverless Crossover</text>
+  <!-- COLUMN 1: HEXAGONAL + MODULAR MONOLITH -->
+  <text x="32" y="94" class="ed-mono" font-size="10.5" font-weight="700" fill="#0f766e" letter-spacing="0.8">1 · HEXAGONAL CORE &amp; MODULE BOUNDARIES</text>
+  <line x1="32" y1="101" x2="364" y2="101" stroke="#d6d0c4"/>
 
-  <!-- PANEL 1: HEXAGONAL PORTS & ADAPTERS + MODULAR MONOLITH -->
-  <rect x="24" y="76" width="344" height="448" rx="10" fill="#ffffff" class="p1"/>
-  <text x="40" y="102" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">1. Hexagonal Core &amp; Module Isolation</text>
+  <g transform="translate(32, 114)">
+    <rect x="0" y="0" width="158" height="46" rx="3" fill="#ffffff" stroke="#a8a29e"/>
+    <text x="79" y="20" class="ed-sans" font-size="11.5" font-weight="700" fill="#1c1917" text-anchor="middle">HTTP / gRPC</text>
+    <text x="79" y="36" class="ed-mono" font-size="9.5" fill="#78716c" text-anchor="middle">Driving Adapter</text>
 
-  <g class="h-foc">
-    <!-- Driving Adapters -->
-    <rect x="40" y="118" width="148" height="48" rx="6" fill="#eff6ff" stroke="#2563eb"/>
-    <text x="114" y="138" class="mono" font-size="10" font-weight="700" fill="#1e3a8a" text-anchor="middle">HTTP / gRPC Adapter</text>
-    <text x="114" y="155" class="mono" font-size="9.5" fill="#1e40af" text-anchor="middle">Driving (Primary)</text>
+    <rect x="174" y="0" width="158" height="46" rx="3" fill="#ffffff" stroke="#a8a29e"/>
+    <text x="253" y="20" class="ed-sans" font-size="11.5" font-weight="700" fill="#1c1917" text-anchor="middle">Queue / CLI</text>
+    <text x="253" y="36" class="ed-mono" font-size="9.5" fill="#78716c" text-anchor="middle">Driving Adapter</text>
 
-    <rect x="204" y="118" width="148" height="48" rx="6" fill="#eff6ff" stroke="#2563eb"/>
-    <text x="278" y="138" class="mono" font-size="10" font-weight="700" fill="#1e3a8a" text-anchor="middle">Queue / CLI Adapter</text>
-    <text x="278" y="155" class="mono" font-size="9.5" fill="#1e40af" text-anchor="middle">Driving (Primary)</text>
+    <line x1="79" y1="46" x2="112" y2="74" stroke="#1c1917" stroke-width="1.2" marker-end="url(#ed-arr)"/>
+    <line x1="253" y1="46" x2="220" y2="74" stroke="#1c1917" stroke-width="1.2" marker-end="url(#ed-arr)"/>
 
-    <!-- Arrows inward -->
-    <line x1="114" y1="166" x2="144" y2="194" stroke="#2563eb" stroke-width="1.8"/>
-    <line x1="278" y1="166" x2="248" y2="194" stroke="#2563eb" stroke-width="1.8"/>
+    <rect x="8" y="78" width="316" height="106" rx="4" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.4"/>
+    <text x="166" y="100" class="ed-serif" font-size="13.5" font-weight="700" fill="#0f766e" text-anchor="middle">Pure Domain Core + Owned Ports</text>
+    <line x1="24" y1="108" x2="308" y2="108" stroke="#99f6e4"/>
+    <text x="24" y="126" class="ed-mono" font-size="10" fill="#1c1917">r(Core) = r(Ports) &gt; r(Adapters)</text>
+    <text x="24" y="144" class="ed-sans" font-size="11" fill="#44403c">• Inbound: PlaceOrderUseCase</text>
+    <text x="24" y="161" class="ed-sans" font-size="11" fill="#44403c">• Outbound: OrderRepoPort · PaymentPort</text>
+    <text x="24" y="177" class="ed-mono" font-size="9.5" fill="#0f766e">Zero infra imports → 0.5 ms unit tests</text>
 
-    <!-- Pure Domain Core Hexagon-styled Box -->
-    <rect x="48" y="196" width="296" height="114" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
-    <text x="196" y="218" class="sans" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">Pure Domain Core (Zero Infra Imports)</text>
-    <text x="64" y="240" class="mono" font-size="10" fill="#334155">Inbound Port:  PlaceOrderUseCase</text>
-    <text x="64" y="258" class="mono" font-size="10" fill="#334155">Outbound Port: OrderRepoPort (IF)</text>
-    <text x="64" y="276" class="mono" font-size="10" fill="#334155">Outbound Port: PaymentGatewayPort</text>
-    <text x="64" y="296" class="sans" font-size="10" font-weight="700" fill="#047857">All deps point INWARD → test in 0.5 ms</text>
+    <line x1="88" y1="218" x2="88" y2="188" stroke="#0f766e" stroke-width="1.2" marker-end="url(#ed-arr-teal)"/>
+    <line x1="244" y1="218" x2="244" y2="188" stroke="#0f766e" stroke-width="1.2" marker-end="url(#ed-arr-teal)"/>
+    <text x="166" y="208" class="ed-mono" font-size="9.5" fill="#0f766e" text-anchor="middle">implements port ↑</text>
 
-    <!-- Arrows from Driven Adapters pointing UP/INWARD to Ports -->
-    <line x1="114" y1="336" x2="144" y2="310" stroke="#059669" stroke-width="1.8"/>
-    <line x1="278" y1="336" x2="248" y2="310" stroke="#059669" stroke-width="1.8"/>
-    <text x="196" y="328" class="mono" font-size="9.5" font-weight="700" fill="#065f46" text-anchor="middle">implements port ↑</text>
+    <rect x="0" y="222" width="158" height="46" rx="3" fill="#ffffff" stroke="#a8a29e"/>
+    <text x="79" y="242" class="ed-sans" font-size="11.5" font-weight="700" fill="#1c1917" text-anchor="middle">PostgreSQL Repo</text>
+    <text x="79" y="258" class="ed-mono" font-size="9.5" fill="#78716c" text-anchor="middle">Prod Driven</text>
 
-    <!-- Driven Adapters -->
-    <rect x="40" y="338" width="148" height="48" rx="6" fill="#fffbeb" stroke="#d97706"/>
-    <text x="114" y="358" class="mono" font-size="10" font-weight="700" fill="#92400e" text-anchor="middle">PostgreSQL Adapter</text>
-    <text x="114" y="375" class="mono" font-size="9.5" fill="#b45309" text-anchor="middle">Prod Driven (Secondary)</text>
+    <rect x="174" y="222" width="158" height="46" rx="3" fill="#fffbeb" stroke="#b45309"/>
+    <text x="253" y="242" class="ed-sans" font-size="11.5" font-weight="700" fill="#92400e" text-anchor="middle">In-Memory Fake</text>
+    <text x="253" y="258" class="ed-mono" font-size="9.5" fill="#b45309" text-anchor="middle">Test Double</text>
 
-    <rect x="204" y="338" width="148" height="48" rx="6" fill="#f5f3ff" stroke="#7c3aed"/>
-    <text x="278" y="358" class="mono" font-size="10" font-weight="700" fill="#5b21b6" text-anchor="middle">In-Memory Fake</text>
-    <text x="278" y="375" class="mono" font-size="9.5" fill="#6d28d9" text-anchor="middle">Deterministic Test Double</text>
+    <!-- Modular Monolith box -->
+    <rect x="0" y="286" width="332" height="96" rx="3" fill="#ffffff" stroke="#d6d0c4"/>
+    <text x="14" y="307" class="ed-sans" font-size="12" font-weight="700" fill="#1c1917">Modular Monolith Data Invariant</text>
+    <text x="14" y="326" class="ed-mono" font-size="10" fill="#0f766e">WriteTables(M_i) ∩ WriteTables(M_j) = ∅</text>
+    <text x="14" y="344" class="ed-sans" font-size="11" fill="#44403c">No cross-module SQL joins or FK locks;</text>
+    <text x="14" y="362" class="ed-sans" font-size="11" fill="#44403c">local ACID tx + pre-wired extraction seam.</text>
   </g>
 
-  <!-- Modular Monolith Schema Rule -->
-  <rect x="40" y="400" width="312" height="108" rx="7" fill="#f8fafc" stroke="#cbd5e1"/>
-  <text x="54" y="420" class="sans" font-size="11" font-weight="700" fill="#0f172a">Modular Monolith Invariant</text>
-  <text x="54" y="439" class="mono" font-size="10" fill="#334155">Tables(M_i) ∩ Tables(M_j) = ∅</text>
-  <text x="54" y="457" class="mono" font-size="10" fill="#334155">Zero cross-module SQL joins;</text>
-  <text x="54" y="475" class="mono" font-size="10" fill="#047857">ACID local tx + CI import boundary gate</text>
-  <text x="54" y="494" class="sans" font-size="10" font-weight="700" fill="#1e3a8a">Pre-wired seam for 1-sprint service split</text>
+  <line x1="382" y1="88" x2="382" y2="500" stroke="#e7e2d8"/>
 
-  <!-- PANEL 2: EVENT-DRIVEN TRANSACTIONAL OUTBOX -->
-  <rect x="384" y="76" width="352" height="448" rx="10" fill="#ffffff" class="p2"/>
-  <text x="400" y="102" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">2. Event-Driven Outbox &amp; Deduplication</text>
+  <!-- COLUMN 2: OUTBOX -->
+  <text x="400" y="94" class="ed-mono" font-size="10.5" font-weight="700" fill="#b45309" letter-spacing="0.8">2 · TRANSACTIONAL OUTBOX &amp; DEDUP</text>
+  <line x1="400" y1="101" x2="732" y2="101" stroke="#d6d0c4"/>
 
-  <g class="o-foc">
-    <!-- Trap box -->
-    <rect x="400" y="118" width="320" height="62" rx="7" fill="#fff1f2" stroke="#e11d48"/>
-    <text x="414" y="138" class="sans" font-size="11" font-weight="700" fill="#9f1239">Dual-Write Split-Brain Trap</text>
-    <text x="414" y="156" class="mono" font-size="10" fill="#334155">DB.commit() OK + Broker.publish() FAIL</text>
-    <text x="414" y="171" class="mono" font-size="9.5" fill="#be123c">→ silent lost event (or phantom on rollback)</text>
+  <g transform="translate(400, 114)">
+    <rect x="0" y="0" width="332" height="52" rx="3" fill="#fef2f2" stroke="#dc2626"/>
+    <text x="14" y="19" class="ed-sans" font-size="11.5" font-weight="700" fill="#991b1b">Avoid Dual-Write Split-Brain:</text>
+    <text x="14" y="38" class="ed-mono" font-size="10" fill="#7f1d1d">DB.commit() + Kafka.send() loses events</text>
 
-    <!-- Single ACID Tx -->
-    <rect x="400" y="192" width="320" height="92" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
-    <text x="414" y="212" class="sans" font-size="11" font-weight="700" fill="#065f46">1. Single Local ACID Transaction</text>
-    <text x="414" y="232" class="mono" font-size="10" fill="#334155">INSERT INTO orders (...) VALUES (...)</text>
-    <text x="414" y="250" class="mono" font-size="10" fill="#334155">INSERT INTO outbox (id, agg_id, seq, ev)</text>
-    <text x="414" y="270" class="mono" font-size="10" font-weight="700" fill="#047857">COMMIT → both persist or both roll back</text>
+    <rect x="0" y="68" width="332" height="86" rx="3" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.3"/>
+    <text x="14" y="89" class="ed-sans" font-size="12" font-weight="700" fill="#0f766e">1. Single Local ACID Transaction</text>
+    <text x="14" y="108" class="ed-mono" font-size="10" fill="#1c1917">INSERT INTO orders (...) VALUES (...);</text>
+    <text x="14" y="125" class="ed-mono" font-size="10" fill="#1c1917">INSERT INTO outbox (agg_id, seq, ev);</text>
+    <text x="14" y="143" class="ed-mono" font-size="10" font-weight="700" fill="#0f766e">COMMIT → atomic or full rollback</text>
 
-    <!-- Relay -> Partitioned Broker -->
-    <line x1="560" y1="284" x2="560" y2="306" stroke="#059669" stroke-width="1.8"/>
-    <rect x="400" y="308" width="320" height="72" rx="7" fill="#eff6ff" stroke="#2563eb"/>
-    <text x="414" y="328" class="sans" font-size="11" font-weight="700" fill="#1e3a8a">2. CDC / Polling Relay → Partitioned Log</text>
-    <text x="414" y="346" class="mono" font-size="10" fill="#334155">ORDER BY seq ASC · key = aggregate_id</text>
-    <text x="414" y="364" class="mono" font-size="10" fill="#1e40af">At-least-once delivery (retries safe)</text>
+    <line x1="166" y1="154" x2="166" y2="180" stroke="#1c1917" stroke-width="1.2" marker-end="url(#ed-arr)"/>
 
-    <!-- Idempotent Consumer -->
-    <line x1="560" y1="380" x2="560" y2="402" stroke="#2563eb" stroke-width="1.8"/>
-    <rect x="400" y="404" width="320" height="104" rx="7" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
-    <text x="414" y="424" class="sans" font-size="11" font-weight="700" fill="#5b21b6">3. Idempotent Consumer Guard</text>
-    <text x="414" y="444" class="mono" font-size="10" fill="#334155">INSERT INTO processed_events(event_id)</text>
-    <text x="414" y="462" class="mono" font-size="10" fill="#334155">ON CONFLICT DO NOTHING + seq check</text>
-    <text x="414" y="482" class="mono" font-size="10" font-weight="700" fill="#6d28d9">Duplicate / out-of-order replay → NO-OP</text>
-    <text x="414" y="498" class="sans" font-size="9.5" fill="#4c1d95">Poison pills isolated to DLQ after max retries</text>
+    <rect x="0" y="184" width="332" height="72" rx="3" fill="#ffffff" stroke="#1c1917"/>
+    <text x="14" y="205" class="ed-sans" font-size="12" font-weight="700" fill="#1c1917">2. CDC / WAL Relay → Partitioned Log</text>
+    <text x="14" y="224" class="ed-mono" font-size="10" fill="#44403c">ORDER BY seq ASC · key = aggregate_id</text>
+    <text x="14" y="242" class="ed-sans" font-size="11" fill="#78716c">At-least-once broker retries safe</text>
+
+    <line x1="166" y1="256" x2="166" y2="282" stroke="#1c1917" stroke-width="1.2" marker-end="url(#ed-arr)"/>
+
+    <rect x="0" y="286" width="332" height="96" rx="3" fill="#fffbeb" stroke="#b45309"/>
+    <text x="14" y="307" class="ed-sans" font-size="12" font-weight="700" fill="#92400e">3. Idempotent Consumer Guard</text>
+    <text x="14" y="326" class="ed-mono" font-size="10" fill="#1c1917">INSERT processed_events(event_id)</text>
+    <text x="14" y="344" class="ed-mono" font-size="10" fill="#1c1917">ON CONFLICT DO NOTHING + seq gate</text>
+    <text x="14" y="364" class="ed-sans" font-size="11" fill="#92400e">Duplicate/stale replay → NO-OP + DLQ</text>
   </g>
 
-  <!-- PANEL 3: CQRS LAG CONVERGENCE & SERVERLESS CROSSOVER -->
-  <rect x="752" y="76" width="344" height="448" rx="10" fill="#ffffff" class="p3"/>
-  <text x="768" y="102" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">3. CQRS Projection &amp; FaaS Crossover</text>
+  <line x1="750" y1="88" x2="750" y2="500" stroke="#e7e2d8"/>
 
-  <g class="c-foc">
-    <!-- CQRS Split -->
-    <rect x="768" y="118" width="312" height="184" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
-    <text x="782" y="138" class="sans" font-size="11" font-weight="700" fill="#0f172a">CQRS Write / Read Split</text>
+  <!-- COLUMN 3: CQRS + SERVERLESS CROSSOVER -->
+  <text x="768" y="94" class="ed-mono" font-size="10.5" font-weight="700" fill="#1c1917" letter-spacing="0.8">3 · CQRS LAG &amp; SERVERLESS CROSSOVER</text>
+  <line x1="768" y1="101" x2="1088" y2="101" stroke="#d6d0c4"/>
 
-    <rect x="782" y="148" width="136" height="58" rx="6" fill="#ecfdf5" stroke="#059669"/>
-    <text x="850" y="168" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">Command Model</text>
-    <text x="850" y="185" class="mono" font-size="9.5" fill="#334155" text-anchor="middle">v_write = 42 (ACID)</text>
-    <text x="850" y="199" class="mono" font-size="9" fill="#047857" text-anchor="middle">Enforces invariants</text>
+  <g transform="translate(768, 114)">
+    <rect x="0" y="0" width="320" height="178" rx="3" fill="#ffffff" stroke="#d6d0c4"/>
+    <text x="14" y="22" class="ed-sans" font-size="12" font-weight="700" fill="#1c1917">CQRS Write / Read Separation</text>
 
-    <rect x="932" y="148" width="136" height="58" rx="6" fill="#eff6ff" stroke="#2563eb"/>
-    <text x="1000" y="168" class="mono" font-size="10" font-weight="700" fill="#1e3a8a" text-anchor="middle">Read Projection</text>
-    <text x="1000" y="185" class="mono" font-size="9.5" fill="#334155" text-anchor="middle">v_read &lt;= v_write</text>
-    <text x="1000" y="199" class="mono" font-size="9" fill="#1e40af" text-anchor="middle">Denormalized view</text>
+    <rect x="14" y="34" width="138" height="58" rx="3" fill="#f0fdf9" stroke="#0f766e"/>
+    <text x="83" y="54" class="ed-mono" font-size="10" font-weight="700" fill="#0f766e" text-anchor="middle">Command Model</text>
+    <text x="83" y="71" class="ed-mono" font-size="9.5" fill="#1c1917" text-anchor="middle">v_write = 42 (ACID)</text>
 
-    <line x1="918" y1="177" x2="932" y2="177" stroke="#7c3aed" stroke-width="2"/>
+    <line x1="152" y1="63" x2="166" y2="63" stroke="#1c1917" stroke-width="1.2" marker-end="url(#ed-arr)"/>
 
-    <rect x="782" y="218" width="286" height="72" rx="6" fill="#fffbeb" stroke="#d97706"/>
-    <text x="794" y="237" class="mono" font-size="10" font-weight="700" fill="#92400e">Lag Window: Δt = t_proj − t_commit</text>
-    <text x="794" y="255" class="mono" font-size="9.5" fill="#334155">Read-your-writes: pass minVersion=42</text>
-    <text x="794" y="272" class="mono" font-size="9.5" fill="#b45309">or push SSE delta on projection apply</text>
+    <rect x="168" y="34" width="138" height="58" rx="3" fill="#faf8f5" stroke="#1c1917"/>
+    <text x="237" y="54" class="ed-mono" font-size="10" font-weight="700" fill="#1c1917" text-anchor="middle">Read Projection</text>
+    <text x="237" y="71" class="ed-mono" font-size="9.5" fill="#44403c" text-anchor="middle">v_read ≤ v_write</text>
+
+    <rect x="14" y="106" width="292" height="58" rx="3" fill="#fffbeb" stroke="#b45309"/>
+    <text x="26" y="125" class="ed-mono" font-size="10" font-weight="700" fill="#92400e">Lag Window: Δt = t_proj − t_commit</text>
+    <text x="26" y="143" class="ed-mono" font-size="9.5" fill="#44403c">Read-your-writes: check minVersion=42</text>
 
     <!-- Serverless Crossover -->
-    <rect x="768" y="314" width="312" height="194" rx="8" fill="#f5f3ff" stroke="#7c3aed"/>
-    <text x="782" y="336" class="sans" font-size="11" font-weight="700" fill="#5b21b6">Serverless (FaaS) vs Always-On Pods</text>
-    <text x="782" y="357" class="mono" font-size="10" fill="#065f46">Spiky / &lt; 15% duty cycle → FaaS wins</text>
-    <text x="782" y="375" class="mono" font-size="9.5" fill="#334155">Scale-to-zero, zero idle compute bill</text>
-    <text x="782" y="399" class="mono" font-size="10" fill="#9f1239">Steady &gt; 25% duty cycle → Containers win</text>
-    <text x="782" y="417" class="mono" font-size="9.5" fill="#334155">Avoids cold starts (100–900 ms) and</text>
-    <text x="782" y="434" class="mono" font-size="9.5" fill="#334155">DB connection exhaustion (needs Proxy)</text>
-    <rect x="782" y="450" width="284" height="44" rx="5" fill="#ffffff" stroke="#c4b5fd"/>
-    <text x="794" y="468" class="mono" font-size="9.5" font-weight="700" fill="#5b21b6">Rule: Start Modular Monolith (Hexagonal)</text>
-    <text x="794" y="484" class="mono" font-size="9.5" fill="#334155">Split via Outbox/CQRS only on trigger.</text>
+    <rect x="0" y="196" width="320" height="186" rx="3" fill="#ffffff" stroke="#1c1917"/>
+    <text x="14" y="218" class="ed-sans" font-size="12" font-weight="700" fill="#1c1917">Serverless (FaaS) vs Containers</text>
+    <line x1="14" y1="226" x2="306" y2="226" stroke="#d6d0c4"/>
+    <text x="14" y="246" class="ed-mono" font-size="10" font-weight="700" fill="#0f766e">Spiky / &lt; 15% duty → FaaS wins</text>
+    <text x="14" y="263" class="ed-sans" font-size="11" fill="#44403c">Scale-to-zero; no idle pod cost</text>
+    <text x="14" y="287" class="ed-mono" font-size="10" font-weight="700" fill="#dc2626">Steady &gt; 25% duty → Containers win</text>
+    <text x="14" y="304" class="ed-sans" font-size="11" fill="#44403c">Avoids 100–900 ms cold starts &amp;</text>
+    <text x="14" y="320" class="ed-sans" font-size="11" fill="#44403c">DB connection storms (needs Proxy)</text>
+    <text x="14" y="346" class="ed-mono" font-size="9.5" fill="#1c1917">Rule: Start Modular Monolith (Hexagonal);</text>
+    <text x="14" y="362" class="ed-mono" font-size="9.5" fill="#78716c">split Outbox/CQRS/MS only on trigger.</text>
   </g>
 
-  <!-- FOOTER -->
-  <rect x="24" y="542" width="1072" height="44" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
-  <text x="42" y="568" class="sans" font-size="11.5" font-weight="600" fill="#1e3a8a">Takeaway: Enforce domain boundaries inside one process first; pay distribution costs (Outbox, CQRS, Microservices, FaaS) only when a concrete trigger fires.</text>
+  <line x1="32" y1="516" x2="1088" y2="516" stroke="#e7e2d8"/>
+  <text x="32" y="538" class="ed-sans" font-size="11.5" fill="#57534e">Enforce in-process module &amp; hexagonal port invariants first; pay distributed Outbox, CQRS, Microservice, or FaaS costs only when quantified triggers fire.</text>
 </svg>

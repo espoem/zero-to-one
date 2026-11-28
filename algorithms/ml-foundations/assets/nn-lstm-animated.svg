@@ -1,104 +1,109 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 440" width="960" height="440" role="img" aria-labelledby="title desc">
-  <title id="title">LSTM Cell and Constant-Error Carousel</title>
-  <desc id="desc">Animated schematic of an LSTM cell showing the linear cell state highway c_{t-1} to c_t modulated by forget gate f_t, input gate i_t, candidate c_tilde_t, and output gate o_t.</desc>
-  <style>
-    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-    @keyframes carousel-move {
-      0%   { transform: translateX(0px); opacity: 0; }
-      10%  { opacity: 1; }
-      90%  { transform: translateX(740px); opacity: 1; }
-      100% { transform: translateX(740px); opacity: 0; }
-    }
-    @keyframes gate-pulse {
-      0%, 100% { stroke-width: 2; }
-      50%      { stroke-width: 3.5; }
-    }
-    .cec { animation: carousel-move 5s linear infinite; }
-    .gate { animation: gate-pulse 2.5s ease-in-out infinite; }
-    @media (prefers-reduced-motion: reduce) {
-      .cec, .gate { animation: none !important; }
-      .cec { opacity: 1; transform: translateX(370px); }
-    }
-  </style>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 430" width="100%" role="img" aria-label="LSTM Cell: Gated Memory and Constant-Error Carousel">
   <defs>
-    <marker id="arr-dark" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f172a"/>
+    <marker id="arr-ink" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#1c1917"/>
     </marker>
-    <marker id="arr-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    <marker id="arr-teal" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#0f766e"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#b45309"/>
     </marker>
   </defs>
+  <style>
+    .lstm-s1 { animation: lstm-st1 8s infinite; }
+    .lstm-s2 { animation: lstm-st2 8s infinite; }
+    .lstm-s3 { animation: lstm-st3 8s infinite; }
+    .lstm-s4 { animation: lstm-st4 8s infinite; }
+    @keyframes lstm-st1 { 0%, 25%, 100% { stroke-width: 1.4; } 3%, 22% { stroke: #b45309; stroke-width: 2.8; } }
+    @keyframes lstm-st2 { 0%, 25%, 50%, 100% { stroke-width: 1.3; } 28%, 47% { stroke: #0f766e; stroke-width: 2.6; } }
+    @keyframes lstm-st3 { 0%, 50%, 75%, 100% { stroke-width: 1.2; } 53%, 72% { stroke: #0f766e; stroke-width: 2.6; } }
+    @keyframes lstm-st4 { 0%, 75%, 100% { stroke-width: 1.3; } 78%, 97% { stroke: #0f766e; stroke-width: 2.8; } }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+  </style>
 
-  <rect x="0" y="0" width="960" height="440" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
-  <rect x="0" y="0" width="960" height="56" rx="12" fill="#0f172a"/>
-  <rect x="0" y="40" width="960" height="16" fill="#0f172a"/>
-  <text x="24" y="26" class="sans" font-size="17" font-weight="700" fill="#f8fafc">LSTM Cell: Gated Memory &amp; Constant-Error Carousel</text>
-  <text x="24" y="45" class="mono" font-size="12" fill="#94a3b8">c_t = f_t * c_{t-1} + i_t * c_tilde_t   |   h_t = o_t * tanh(c_t)   |   dc_t/dc_{t-1} = diag(f_t)</text>
+  <rect width="920" height="430" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
+  <text x="28" y="34" font-family="Georgia, 'Times New Roman', serif" font-size="19" font-weight="700" fill="#1c1917">LSTM Cell: Gated Memory &amp; Constant-Error Carousel</text>
+  <text x="28" y="54" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11.5" fill="#57534e">c_t = f_t * c_{t-1} + i_t * c_tilde_t   |   h_t = o_t * tanh(c_t)   |   dc_t / dc_{t-1} = diag(f_t)</text>
+  <line x1="28" y1="66" x2="892" y2="66" stroke="#1c1917" stroke-width="1.2"/>
 
-  <!-- Main cell box -->
-  <rect x="130" y="82" width="700" height="296" rx="16" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/>
+  <!-- Outer LSTM cell frame -->
+  <rect x="132" y="84" width="692" height="296" rx="6" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.2"/>
+  <text x="148" y="103" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11" font-weight="700" fill="#57534e" letter-spacing="0.6">RECURRENT STEP t  (CELL BOUNDARY)</text>
+  <text x="806" y="103" text-anchor="end" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11" font-weight="600" fill="#0f766e">Constant-Error Carousel (linear gradient path)</text>
 
-  <!-- Cell State Highway (top) -->
-  <line x1="56" y1="126" x2="896" y2="126" stroke="#059669" stroke-width="4" marker-end="url(#arr-emerald)"/>
-  <text x="54" y="114" class="mono" font-size="13" font-weight="700" fill="#065f46">c_{t-1}</text>
-  <text x="886" y="114" class="mono" font-size="13" font-weight="700" fill="#065f46">c_t</text>
-  <text x="480" y="106" class="sans" font-size="12" font-weight="700" fill="#059669" text-anchor="middle">Constant-Error Carousel (Additive Gradient Path)</text>
-  <circle cx="105" cy="126" r="7" fill="#10b981" stroke="#ffffff" stroke-width="2" class="cec"/>
+  <!-- Constant-Error Carousel (top highway) -->
+  <rect class="lstm-s3" x="150" y="112" width="656" height="30" rx="4" fill="#f0fdf9" stroke="#99f6e4" stroke-width="1"/>
 
-  <!-- Highway ops -->
-  <circle cx="255" cy="126" r="16" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
-  <text x="255" y="131" class="mono" font-size="14" font-weight="700" fill="#92400e" text-anchor="middle">x</text>
-  <circle cx="485" cy="126" r="16" fill="#d1fae5" stroke="#059669" stroke-width="2"/>
-  <text x="485" y="131" class="mono" font-size="15" font-weight="700" fill="#065f46" text-anchor="middle">+</text>
+  <text x="28" y="131" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" font-weight="700" fill="#0f766e">c_{t-1}</text>
+  <line x1="92" y1="127" x2="239" y2="127" stroke="#0f766e" stroke-width="2.2" marker-end="url(#arr-teal)"/>
+  <line x1="275" y1="127" x2="469" y2="127" stroke="#0f766e" stroke-width="2.2" marker-end="url(#arr-teal)"/>
+  <line x1="505" y1="127" x2="854" y2="127" stroke="#0f766e" stroke-width="2.2" marker-end="url(#arr-teal)"/>
+  <text x="864" y="131" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" font-weight="700" fill="#0f766e">c_t</text>
 
-  <!-- Bottom h_{t-1} and x_t bus -->
-  <line x1="56" y1="336" x2="680" y2="336" stroke="#334155" stroke-width="2.5"/>
-  <text x="54" y="324" class="mono" font-size="13" font-weight="700" fill="#1e293b">h_{t-1}</text>
-  <line x1="165" y1="406" x2="165" y2="336" stroke="#2563eb" stroke-width="2.5"/>
-  <text x="165" y="424" class="mono" font-size="13" font-weight="700" fill="#1d4ed8" text-anchor="middle">x_t</text>
+  <!-- Pointwise ops on highway -->
+  <circle class="lstm-s1" cx="257" cy="127" r="14" fill="#ffffff" stroke="#b45309" stroke-width="1.6"/>
+  <text x="257" y="132" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="15" font-weight="700" fill="#b45309">&#215;</text>
 
-  <!-- Gate 1: Forget f_t -->
-  <line x1="255" y1="336" x2="255" y2="144" stroke="#64748b" stroke-width="2"/>
-  <rect x="215" y="238" width="80" height="44" rx="8" fill="#fef3c7" stroke="#d97706" class="gate"/>
-  <text x="255" y="257" class="mono" font-size="12" font-weight="700" fill="#92400e" text-anchor="middle">f_t = sig</text>
-  <text x="255" y="273" class="sans" font-size="10" fill="#b45309" text-anchor="middle">Forget</text>
+  <circle class="lstm-s3" cx="487" cy="127" r="14" fill="#ffffff" stroke="#0f766e" stroke-width="1.6"/>
+  <text x="487" y="132" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="15" font-weight="700" fill="#0f766e">+</text>
 
-  <!-- Gate 2: Input i_t -->
-  <line x1="395" y1="336" x2="395" y2="196" stroke="#64748b" stroke-width="2"/>
-  <rect x="355" y="238" width="80" height="44" rx="8" fill="#dbeafe" stroke="#2563eb" class="gate"/>
-  <text x="395" y="257" class="mono" font-size="12" font-weight="700" fill="#1e3a8a" text-anchor="middle">i_t = sig</text>
-  <text x="395" y="273" class="sans" font-size="10" fill="#1d4ed8" text-anchor="middle">Input</text>
+  <!-- Input concat bus (bottom) -->
+  <text x="28" y="340" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" font-weight="700" fill="#1c1917">h_{t-1}</text>
+  <text x="58" y="366" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" font-weight="700" fill="#1c1917">x_t</text>
+  <path d="M 92 336 L 745 336" fill="none" stroke="#44403c" stroke-width="1.8"/>
+  <path d="M 88 362 L 170 362 L 188 336" fill="none" stroke="#44403c" stroke-width="1.8"/>
+  <text x="196" y="352" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" fill="#57534e">[h_{t-1}, x_t]</text>
 
-  <!-- Candidate c_tilde_t -->
-  <line x1="525" y1="336" x2="525" y2="196" stroke="#64748b" stroke-width="2"/>
-  <rect x="485" y="238" width="80" height="44" rx="8" fill="#ede9fe" stroke="#7c3aed" class="gate"/>
-  <text x="525" y="257" class="mono" font-size="12" font-weight="700" fill="#4c1d95" text-anchor="middle">c~ = tanh</text>
-  <text x="525" y="273" class="sans" font-size="10" fill="#6d28d9" text-anchor="middle">Candidate</text>
+  <!-- Gate branches up from bus -->
+  <line x1="257" y1="336" x2="257" y2="278" stroke="#44403c" stroke-width="1.5" marker-end="url(#arr-ink)"/>
+  <line x1="397" y1="336" x2="397" y2="278" stroke="#44403c" stroke-width="1.5" marker-end="url(#arr-ink)"/>
+  <line x1="527" y1="336" x2="527" y2="278" stroke="#44403c" stroke-width="1.5" marker-end="url(#arr-ink)"/>
+  <line x1="657" y1="336" x2="657" y2="278" stroke="#44403c" stroke-width="1.5" marker-end="url(#arr-ink)"/>
 
-  <!-- Multiply i_t * c~ -> + -->
-  <circle cx="485" cy="196" r="15" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
-  <text x="485" y="201" class="mono" font-size="13" font-weight="700" fill="#1e3a8a" text-anchor="middle">x</text>
-  <line x1="395" y1="196" x2="470" y2="196" stroke="#64748b" stroke-width="2"/>
-  <line x1="525" y1="196" x2="500" y2="196" stroke="#64748b" stroke-width="2"/>
-  <line x1="485" y1="181" x2="485" y2="142" stroke="#059669" stroke-width="2"/>
+  <!-- Hidden state skip out -->
+  <path d="M 745 127 L 745 162" fill="none" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-teal)"/>
 
-  <!-- Gate 4: Output o_t -->
-  <line x1="655" y1="336" x2="655" y2="210" stroke="#64748b" stroke-width="2"/>
-  <rect x="615" y="238" width="80" height="44" rx="8" fill="#fce7f3" stroke="#db2777" class="gate"/>
-  <text x="655" y="257" class="mono" font-size="12" font-weight="700" fill="#831843" text-anchor="middle">o_t = sig</text>
-  <text x="655" y="273" class="sans" font-size="10" fill="#be185d" text-anchor="middle">Output</text>
+  <!-- 4 Gate boxes -->
+  <rect class="lstm-s1" x="212" y="232" width="90" height="40" rx="4" fill="#fffbeb" stroke="#b45309" stroke-width="1.3"/>
+  <text x="257" y="250" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="700" fill="#92400e">f_t = sig</text>
+  <text x="257" y="265" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#57534e">Forget Gate</text>
 
-  <!-- tanh(c_t) * o_t -> h_t -->
-  <line x1="745" y1="126" x2="745" y2="162" stroke="#059669" stroke-width="2"/>
-  <rect x="713" y="162" width="64" height="28" rx="14" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.8"/>
-  <text x="745" y="180" class="mono" font-size="11" font-weight="700" fill="#4c1d95" text-anchor="middle">tanh</text>
-  <line x1="745" y1="190" x2="745" y2="210" stroke="#64748b" stroke-width="2"/>
-  <circle cx="745" cy="226" r="15" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
-  <text x="745" y="231" class="mono" font-size="13" font-weight="700" fill="#831843" text-anchor="middle">x</text>
-  <line x1="655" y1="226" x2="730" y2="226" stroke="#64748b" stroke-width="2"/>
-  <line x1="760" y1="226" x2="896" y2="226" stroke="#0f172a" stroke-width="2.5" marker-end="url(#arr-dark)"/>
-  <text x="884" y="214" class="mono" font-size="13" font-weight="700" fill="#0f172a">h_t</text>
+  <rect class="lstm-s2" x="352" y="232" width="90" height="40" rx="4" fill="#f5f1e8" stroke="#d6d0c4" stroke-width="1.3"/>
+  <text x="397" y="250" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="700" fill="#1c1917">i_t = sig</text>
+  <text x="397" y="265" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#57534e">Input Gate</text>
 
-  <text x="480" y="402" class="sans" font-size="11" fill="#475569" text-anchor="middle">4x parameter matrices [W_f, W_i, W_c, W_o] = 4(d_x d_h + d_h^2 + d_h) weights; bias init b_f = +1 prevents early forgetting</text>
+  <rect class="lstm-s2" x="482" y="232" width="90" height="40" rx="4" fill="#f5f1e8" stroke="#d6d0c4" stroke-width="1.3"/>
+  <text x="527" y="250" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="700" fill="#1c1917">c~ = tanh</text>
+  <text x="527" y="265" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#57534e">Candidate</text>
+
+  <rect class="lstm-s4" x="612" y="232" width="90" height="40" rx="4" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.3"/>
+  <text x="657" y="250" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="700" fill="#0f766e">o_t = sig</text>
+  <text x="657" y="265" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#57534e">Output Gate</text>
+
+  <!-- Gate upward routing -->
+  <line x1="257" y1="232" x2="257" y2="146" stroke="#b45309" stroke-width="1.6" marker-end="url(#arr-amber)"/>
+
+  <circle cx="487" cy="190" r="13" fill="#ffffff" stroke="#1c1917" stroke-width="1.4"/>
+  <text x="487" y="195" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" font-weight="700" fill="#1c1917">&#215;</text>
+
+  <path d="M 397 232 L 397 190 L 468 190" fill="none" stroke="#44403c" stroke-width="1.5" marker-end="url(#arr-ink)"/>
+  <path d="M 527 232 L 527 190 L 506 190" fill="none" stroke="#44403c" stroke-width="1.5" marker-end="url(#arr-ink)"/>
+  <line x1="487" y1="177" x2="487" y2="146" stroke="#0f766e" stroke-width="1.7" marker-end="url(#arr-teal)"/>
+
+  <!-- Output tanh + multiply -> h_t -->
+  <rect class="lstm-s4" x="713" y="166" width="64" height="28" rx="4" fill="#f0fdf9" stroke="#99f6e4" stroke-width="1.2"/>
+  <text x="745" y="184" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="700" fill="#0f766e">tanh</text>
+  <line x1="745" y1="194" x2="745" y2="213" stroke="#0f766e" stroke-width="1.6" marker-end="url(#arr-teal)"/>
+
+  <circle class="lstm-s4" cx="745" cy="230" r="13" fill="#ffffff" stroke="#0f766e" stroke-width="1.6"/>
+  <text x="745" y="235" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" font-weight="700" fill="#0f766e">&#215;</text>
+  <path d="M 702 252 L 722 252 L 733 240" fill="none" stroke="#0f766e" stroke-width="1.6" marker-end="url(#arr-teal)"/>
+
+  <line x1="758" y1="230" x2="854" y2="230" stroke="#0f766e" stroke-width="2" marker-end="url(#arr-teal)"/>
+  <text x="864" y="234" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" font-weight="700" fill="#0f766e">h_t</text>
+
+  <!-- Footer -->
+  <rect x="28" y="392" width="864" height="26" rx="4" fill="#f5f1e8" stroke="#e7e2d8" stroke-width="1"/>
+  <text x="460" y="409" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" fill="#44403c">4 parameter matrices [W_f, W_i, W_c, W_o] = 4(d_x d_h + d_h^2 + d_h) weights; bias init b_f = +1 prevents early forgetting</text>
 </svg>

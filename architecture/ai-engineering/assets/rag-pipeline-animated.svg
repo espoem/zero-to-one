@@ -1,143 +1,120 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 540" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 430" width="980" height="430" role="img" aria-labelledby="title desc">
+  <title id="title">End-to-End RAG Pipeline: Contextual Indexing, Pre-Filtered Hybrid Retrieval &amp; Evaluation</title>
+  <desc id="desc">Static Editorial Paper diagram illustrating offline ingestion, small-to-big contextual chunking, MRL plus BM25 indexing, online ACL pre-filtered hybrid RRF retrieval, Cross-Encoder reranking, Validator Sandwich egress checks, and Ragas 0.4.4 evaluation.</desc>
   <defs>
-    <style>
-      .bg { fill: #0b1020; }
-      .panel { fill: #121a30; stroke: #2b3b66; stroke-width: 1.5; rx: 10; }
-      .box-blue { fill: #152546; stroke: #4c8bf5; stroke-width: 1.6; rx: 8; }
-      .box-green { fill: #122d26; stroke: #2ec486; stroke-width: 1.6; rx: 8; }
-      .box-amber { fill: #2f2513; stroke: #f5a623; stroke-width: 1.6; rx: 8; }
-      .box-purple { fill: #24193c; stroke: #a66bff; stroke-width: 1.6; rx: 8; }
-      .box-red { fill: #33161e; stroke: #f05454; stroke-width: 1.6; rx: 8; }
-      .title { font-family: 'Inter', -apple-system, sans-serif; font-size: 18px; font-weight: 700; fill: #f8fafc; }
-      .subtitle { font-family: 'Inter', -apple-system, sans-serif; font-size: 12px; fill: #94a3b8; }
-      .sec-hdr { font-family: 'Inter', -apple-system, sans-serif; font-size: 13px; font-weight: 700; fill: #e2e8f0; }
-      .lbl { font-family: 'Inter', -apple-system, sans-serif; font-size: 12px; font-weight: 700; fill: #f1f5f9; }
-      .txt { font-family: 'Inter', -apple-system, sans-serif; font-size: 10.5px; fill: #cbd5e1; }
-      .code { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10px; fill: #93c5fd; }
-      .code-green { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10px; fill: #6ee7b7; }
-      .code-amber { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10px; fill: #fcd34d; }
-      .flow { stroke: #60a5fa; stroke-width: 2; fill: none; marker-end: url(#arr-blue); }
-      .flow-anim { stroke: #38bdf8; stroke-width: 2.2; stroke-dasharray: 8 6; fill: none; animation: dashMove 1.8s linear infinite; }
-      .flow-green { stroke: #34d399; stroke-width: 2; fill: none; marker-end: url(#arr-green); }
-      .flow-feedback { stroke: #a66bff; stroke-width: 1.8; stroke-dasharray: 6 4; fill: none; marker-end: url(#arr-purple); animation: dashMove 2.4s linear infinite; }
-      @keyframes dashMove {
-        to { stroke-dashoffset: -28; }
-      }
-      @keyframes pulseDot {
-        0%, 100% { opacity: 0.4; r: 4; }
-        50% { opacity: 1; r: 6; }
-      }
-      .pulse { animation: pulseDot 2s ease-in-out infinite; }
-    </style>
-    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 8 5 L 0 9 z" fill="#60a5fa"/>
+    <marker id="ed-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M1,2 L9,5 L1,8" fill="none" stroke="#1c1917" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
     </marker>
-    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 8 5 L 0 9 z" fill="#34d399"/>
-    </marker>
-    <marker id="arr-purple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 8 5 L 0 9 z" fill="#a66bff"/>
+    <marker id="ed-arr-teal" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M1,2 L9,5 L1,8" fill="none" stroke="#0f766e" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
     </marker>
   </defs>
+  <style>
+    .ed-serif { font-family: Georgia, "Times New Roman", serif; }
+    .ed-sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .ed-mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .rag-s1 { animation: rag-hl-1 12s infinite; }
+    .rag-s2 { animation: rag-hl-2 12s infinite; }
+    .rag-s3 { animation: rag-hl-3 12s infinite; }
+    .rag-s4 { animation: rag-hl-4 12s infinite; }
+    .rag-s5 { animation: rag-hl-5 12s infinite; }
+    .rag-s6 { animation: rag-hl-6 12s infinite; }
+    .rag-s7 { animation: rag-hl-7 12s infinite; }
+    .rag-s8 { animation: rag-hl-8 12s infinite; }
+    @keyframes rag-hl-1 { 0%, 12.5%, 100% { stroke: #1c1917; stroke-width: 1.2; } 2%, 10.5% { stroke: #0f766e; stroke-width: 2.6; } }
+    @keyframes rag-hl-2 { 0%, 12.5%, 25%, 100% { stroke: #1c1917; stroke-width: 1.2; } 14.5%, 23% { stroke: #0f766e; stroke-width: 2.6; } }
+    @keyframes rag-hl-3 { 0%, 25%, 37.5%, 100% { stroke: #1c1917; stroke-width: 1.2; } 27%, 35.5% { stroke: #0f766e; stroke-width: 2.6; } }
+    @keyframes rag-hl-4 { 0%, 37.5%, 50%, 100% { stroke: #0f766e; stroke-width: 1.2; } 39.5%, 48% { stroke: #0f766e; stroke-width: 2.6; } }
+    @keyframes rag-hl-5 { 0%, 50%, 62.5%, 100% { stroke: #1c1917; stroke-width: 1; } 52%, 60.5% { stroke: #b45309; stroke-width: 2.4; } }
+    @keyframes rag-hl-6 { 0%, 62.5%, 75%, 100% { stroke: #1c1917; stroke-width: 1; } 64.5%, 73% { stroke: #0f766e; stroke-width: 2.4; } }
+    @keyframes rag-hl-7 { 0%, 75%, 87.5%, 100% { stroke: #b45309; stroke-width: 1.2; } 77%, 85.5% { stroke: #b45309; stroke-width: 2.4; } }
+    @keyframes rag-hl-8 { 0%, 87.5%, 100% { stroke: #0f766e; stroke-width: 1.2; } 89.5%, 98% { stroke: #0f766e; stroke-width: 2.4; } }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+  </style>
 
-  <rect class="bg" x="0" y="0" width="1280" height="540"/>
+  <rect x="0" y="0" width="980" height="430" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
+  <text x="32" y="34" class="ed-mono" font-size="10.5" fill="#78716c" letter-spacing="1.4">RAG PIPELINE ARCHITECTURE · INGEST → CHUNK → EMBED → STORE → RETRIEVE → GENERATE → EVALUATE</text>
+  <text x="32" y="58" class="ed-serif" font-size="19.5" font-weight="700" fill="#1c1917">Offline Contextual Indexing Feeds Pre-Filtered Hybrid Synthesis</text>
+  <line x1="32" y1="72" x2="948" y2="72" stroke="#1c1917" stroke-width="1.2"/>
 
-  <text class="title" x="24" y="34">End-to-End RAG Pipeline — Ingestion, Contextual Hybrid Indexing, Two-Stage Retrieval &amp; Ragas Evaluation</text>
-  <text class="subtitle" x="24" y="54">Offline Indexing Plane (Ingest → Chunk → Embed → Store) + Online Query Plane (Pre-Filter → Hybrid RRF → Rerank → Validator Sandwich → Evaluate)</text>
+  <!-- Lane 1: Offline Indexing -->
+  <text x="32" y="98" class="ed-mono" font-size="10.5" font-weight="700" fill="#0f766e" letter-spacing="1">A · OFFLINE INDEXING PLANE</text>
+  <line x1="32" y1="106" x2="948" y2="106" stroke="#d6d0c4" stroke-width="0.8"/>
 
-  <!-- Offline Indexing Plane -->
-  <rect class="panel" x="20" y="74" width="1240" height="170"/>
-  <text class="sec-hdr" x="36" y="96">OFFLINE INDEXING PLANE</text>
-  <circle class="pulse" cx="215" cy="91" r="4" fill="#34d399"/>
+  <g transform="translate(32, 120)">
+    <text x="0" y="14" class="ed-sans" font-size="13" font-weight="700" fill="#1c1917">1. Normalize &amp; ACL Tag</text>
+    <line class="rag-s1" x1="0" y1="22" x2="188" y2="22" stroke="#1c1917" stroke-width="1.2"/>
+    <text x="0" y="40" class="ed-sans" font-size="11.5" fill="#44403c">AST / table parse, SHA-256</text>
+    <text x="0" y="56" class="ed-sans" font-size="11.5" fill="#44403c">Attach tenantId + docVer</text>
 
-  <rect class="box-blue" x="36" y="112" width="250" height="114"/>
-  <text class="lbl" x="48" y="134">1. Ingest &amp; Normalize</text>
-  <text class="txt" x="48" y="154">• PDF / HTML / Markdown / Code AST</text>
-  <text class="txt" x="48" y="172">• Attach tenantId, aclRoles, docVer</text>
-  <text class="code" x="48" y="192">SHA-256 dedup + tombstone sync</text>
-  <text class="txt" x="48" y="210">• Strip hidden injection markup</text>
+    <line x1="196" y1="36" x2="246" y2="36" stroke="#1c1917" stroke-width="1.2" marker-end="url(#ed-arr)"/>
+    <text x="221" y="29" class="ed-mono" font-size="9.5" fill="#78716c" text-anchor="middle">split</text>
 
-  <rect class="box-amber" x="342" y="112" width="270" height="114"/>
-  <text class="lbl" x="354" y="134">2. Chunk &amp; Contextualize</text>
-  <text class="txt" x="354" y="154">• Structure-aware (200–800 tok, 15% ovlp)</text>
-  <text class="txt" x="354" y="172">• Small-to-Big: child 192t → parent 1024t</text>
-  <text class="code-amber" x="354" y="192">+ Anthropic Contextual Prefix (50–100t)</text>
-  <text class="txt" x="354" y="210">• Preserves entity &amp; section provenance</text>
+    <text x="256" y="14" class="ed-sans" font-size="13" font-weight="700" fill="#1c1917">2. Small-to-Big + Context</text>
+    <line class="rag-s2" x1="256" y1="22" x2="454" y2="22" stroke="#1c1917" stroke-width="1.2"/>
+    <text x="256" y="40" class="ed-sans" font-size="11.5" fill="#44403c">192t child → 1024t parent</text>
+    <text x="256" y="56" class="ed-sans" font-size="11.5" fill="#0f766e">+60t LLM situating header</text>
 
-  <rect class="box-purple" x="668" y="112" width="260" height="114"/>
-  <text class="lbl" x="680" y="134">3. MRL Embed &amp; Tokenize</text>
-  <text class="txt" x="680" y="154">• gemini-embedding-2 / embed-v5.0-pro</text>
-  <text class="code" x="680" y="174">MRL prefix: 3072 → 768/1536 dims</text>
-  <text class="txt" x="680" y="192">• L2 normalize + BM25 lexical index</text>
-  <text class="txt" x="680" y="210">• Versioned index_vN (no mixed spaces)</text>
+    <line x1="462" y1="36" x2="512" y2="36" stroke="#1c1917" stroke-width="1.2" marker-end="url(#ed-arr)"/>
+    <text x="487" y="29" class="ed-mono" font-size="9.5" fill="#78716c" text-anchor="middle">encode</text>
 
-  <rect class="box-green" x="984" y="112" width="256" height="114"/>
-  <text class="lbl" x="996" y="134">4. Store (Hybrid + Graph)</text>
-  <text class="txt" x="996" y="154">• HNSW Dense Index (int8 / binary PQ)</text>
-  <text class="txt" x="996" y="172">• Inverted Index (Okapi BM25 k1, b)</text>
-  <text class="code-green" x="996" y="192">• Payload ACL bitsets + Parent Store</text>
-  <text class="txt" x="996" y="210">• Optional Leiden Entity Communities</text>
+    <text x="522" y="14" class="ed-sans" font-size="13" font-weight="700" fill="#1c1917">3. Dual Representation</text>
+    <line class="rag-s3" x1="522" y1="22" x2="696" y2="22" stroke="#1c1917" stroke-width="1.2"/>
+    <text x="522" y="40" class="ed-sans" font-size="11.5" fill="#44403c">MRL 768d + L2 normalize</text>
+    <text x="522" y="56" class="ed-sans" font-size="11.5" fill="#44403c">Okapi BM25 token counts</text>
 
-  <path class="flow" d="M 286 169 L 340 169"/>
-  <path class="flow-anim" d="M 286 169 L 340 169"/>
-  <path class="flow" d="M 612 169 L 666 169"/>
-  <path class="flow-anim" d="M 612 169 L 666 169"/>
-  <path class="flow" d="M 928 169 L 982 169"/>
-  <path class="flow-anim" d="M 928 169 L 982 169"/>
+    <line x1="704" y1="36" x2="752" y2="36" stroke="#1c1917" stroke-width="1.2" marker-end="url(#ed-arr)"/>
+    <text x="728" y="29" class="ed-mono" font-size="9.5" fill="#78716c" text-anchor="middle">upsert</text>
 
-  <!-- Online Query & Evaluation Plane -->
-  <rect class="panel" x="20" y="264" width="1240" height="252"/>
-  <text class="sec-hdr" x="36" y="286">ONLINE QUERY, GENERATION &amp; CONTINUOUS EVALUATION PLANE</text>
-  <circle class="pulse" cx="468" cy="281" r="4" fill="#38bdf8"/>
+    <rect class="rag-s4" x="756" y="0" width="160" height="68" rx="3" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.2"/>
+    <text x="768" y="19" class="ed-sans" font-size="12.5" font-weight="700" fill="#0f766e">4. Versioned Store</text>
+    <text x="768" y="38" class="ed-mono" font-size="10" fill="#1c1917">HNSW (int8) + BM25</text>
+    <text x="768" y="55" class="ed-mono" font-size="10" fill="#57534e">ACL bitsets · index_vN</text>
+  </g>
 
-  <rect class="box-blue" x="36" y="304" width="260" height="156"/>
-  <text class="lbl" x="48" y="326">5a. Query Transform &amp; ACL Gate</text>
-  <text class="txt" x="48" y="346">• Rewrite / MultiQuery / Step-Back / HyDE</text>
-  <text class="code" x="48" y="366">Mandatory Pre-Filter: tenantId &amp; acl</text>
-  <text class="txt" x="48" y="384">• HNSW Filter Pushdown (avoids 1%</text>
-  <text class="txt" x="48" y="400">  post-filter recall collapse trap)</text>
-  <text class="code-amber" x="48" y="422">Top-150 BM25 + Top-150 Dense</text>
-  <text class="txt" x="48" y="442">• Parallel scatter across index shards</text>
+  <line x1="32" y1="212" x2="948" y2="212" stroke="#d6d0c4" stroke-dasharray="3 3"/>
 
-  <rect class="box-purple" x="344" y="304" width="276" height="156"/>
-  <text class="lbl" x="356" y="326">5b. Hybrid RRF, Rerank &amp; Compress</text>
-  <text class="code" x="356" y="346">RRF(d) = Σ 1 / (60 + rank_r(d))</text>
-  <text class="txt" x="356" y="366">• Cross-Encoder or ColBERT MaxSim</text>
-  <text class="txt" x="356" y="384">• Top-150 fused → Top-20 → Top-8</text>
-  <text class="txt" x="356" y="402">• Expand child hits → parent spans</text>
-  <text class="code-amber" x="356" y="422">• Lost-in-the-Middle edge placement</text>
-  <text class="txt" x="356" y="442">• Extractive context compression</text>
+  <!-- Lane 2: Online Plane -->
+  <text x="32" y="238" class="ed-mono" font-size="10.5" font-weight="700" fill="#b45309" letter-spacing="1">B · ONLINE RETRIEVAL, BOUNDED GENERATION &amp; RAGAS EVALUATION</text>
+  <line x1="32" y1="246" x2="948" y2="246" stroke="#d6d0c4" stroke-width="0.8"/>
 
-  <rect class="box-green" x="668" y="304" width="272" height="156"/>
-  <text class="lbl" x="680" y="326">6. Generate (Validator Sandwich)</text>
-  <text class="txt" x="680" y="346">• Top Bun: &lt;untrusted_context&gt; isolation</text>
-  <text class="txt" x="680" y="364">• Static-first prompt for KV prefix cache</text>
-  <text class="code-green" x="680" y="384">• CFG/FSM JSON Schema + citationIds</text>
-  <text class="txt" x="680" y="404">• Bottom Bun: verify every citationId</text>
-  <text class="txt" x="680" y="422">  exists in retrieved context + PII check</text>
-  <text class="txt" x="680" y="442">• Fail closed on refusal or ungrounded claim</text>
+  <g transform="translate(32, 260)">
+    <rect class="rag-s5" x="0" y="0" width="198" height="84" rx="3" fill="#ffffff" stroke="#1c1917" stroke-width="1"/>
+    <text x="12" y="20" class="ed-sans" font-size="12.5" font-weight="700" fill="#1c1917">5. Rewrite + ACL Pre-Filter</text>
+    <text x="12" y="39" class="ed-sans" font-size="11" fill="#44403c">Step-back / MultiQuery</text>
+    <text x="12" y="56" class="ed-mono" font-size="10" fill="#b45309">WHERE tenantId = session</text>
+    <text x="12" y="72" class="ed-sans" font-size="10.5" fill="#78716c">HNSW pushdown avoids 1% trap</text>
 
-  <rect class="box-red" x="988" y="304" width="252" height="156"/>
-  <text class="lbl" x="1000" y="326">7. Evaluate (Ragas 0.4.4)</text>
-  <text class="code-amber" x="1000" y="348">Faithfulness: supported / total claims</text>
-  <text class="code" x="1000" y="368">Context Precision@K (rank-aware)</text>
-  <text class="code" x="1000" y="388">Context Recall (ref attribution)</text>
-  <text class="txt" x="1000" y="408">• Answer Relevancy + Noise Sensitivity</text>
-  <text class="txt" x="1000" y="426">• CI regression gate blocks bad chunking</text>
-  <text class="txt" x="1000" y="442">  or embedding upgrades before prod</text>
+    <line x1="198" y1="42" x2="250" y2="42" stroke="#1c1917" stroke-width="1.2" marker-end="url(#ed-arr)"/>
+    <text x="224" y="33" class="ed-mono" font-size="9" fill="#78716c" text-anchor="middle">top-150</text>
 
-  <!-- Store to Retrieve link -->
-  <path class="flow-green" d="M 1112 226 L 1112 252 L 166 252 L 166 302"/>
+    <rect class="rag-s6" x="254" y="0" width="206" height="84" rx="3" fill="#ffffff" stroke="#1c1917" stroke-width="1"/>
+    <text x="266" y="20" class="ed-sans" font-size="12.5" font-weight="700" fill="#1c1917">6. RRF Fuse &amp; Rerank</text>
+    <text x="266" y="39" class="ed-mono" font-size="10" fill="#0f766e">RRF = sum 1/(60 + rank)</text>
+    <text x="266" y="56" class="ed-sans" font-size="11" fill="#44403c">Cross-Encoder 150 → 8 spans</text>
+    <text x="266" y="72" class="ed-sans" font-size="10.5" fill="#78716c">Top-1/2 placed at edges</text>
 
-  <!-- Query plane flows -->
-  <path class="flow" d="M 296 382 L 342 382"/>
-  <path class="flow-anim" d="M 296 382 L 342 382"/>
-  <path class="flow" d="M 620 382 L 666 382"/>
-  <path class="flow-anim" d="M 620 382 L 666 382"/>
-  <path class="flow" d="M 940 382 L 986 382"/>
-  <path class="flow-anim" d="M 940 382 L 986 382"/>
+    <line x1="460" y1="42" x2="500" y2="42" stroke="#1c1917" stroke-width="1.2" marker-end="url(#ed-arr)"/>
+    <text x="480" y="33" class="ed-mono" font-size="9.5" fill="#78716c" text-anchor="middle">top-8</text>
 
-  <!-- Continuous eval feedback -->
-  <path class="flow-feedback" d="M 1114 460 L 1114 494 L 482 494 L 482 462"/>
-  <text class="code" x="650" y="488">Eval telemetry drives chunk size, RRF weight &amp; reranker threshold tuning</text>
+    <rect class="rag-s7" x="504" y="0" width="216" height="84" rx="3" fill="#fffbeb" stroke="#b45309" stroke-width="1.2"/>
+    <text x="516" y="20" class="ed-sans" font-size="12.5" font-weight="700" fill="#92400e">7. Validator Sandwich</text>
+    <text x="516" y="39" class="ed-mono" font-size="10" fill="#44403c">&lt;untrusted_context&gt; + CFG</text>
+    <text x="516" y="56" class="ed-sans" font-size="11" fill="#44403c">Verify citationIds + PII</text>
+    <text x="516" y="72" class="ed-sans" font-size="10.5" fill="#92400e">Fail closed on ungrounded claim</text>
+
+    <line x1="720" y1="42" x2="760" y2="42" stroke="#0f766e" stroke-width="1.2" marker-end="url(#ed-arr-teal)"/>
+    <text x="740" y="33" class="ed-mono" font-size="9.5" fill="#0f766e" text-anchor="middle">eval</text>
+
+    <rect class="rag-s8" x="764" y="0" width="152" height="84" rx="3" fill="#ffffff" stroke="#0f766e" stroke-width="1.2"/>
+    <text x="776" y="20" class="ed-sans" font-size="12.5" font-weight="700" fill="#0f766e">8. Ragas 0.4.4 Gate</text>
+    <text x="776" y="39" class="ed-sans" font-size="11" fill="#44403c">Faithfulness ≥ 0.92</text>
+    <text x="776" y="56" class="ed-sans" font-size="11" fill="#44403c">Ctx Prec@K / Recall</text>
+    <text x="776" y="72" class="ed-sans" font-size="10.5" fill="#78716c">Feeds CI golden corpus</text>
+  </g>
+
+  <line x1="32" y1="364" x2="948" y2="364" stroke="#e7e2d8"/>
+  <circle cx="38" cy="384" r="3" fill="#b45309"/>
+  <text x="48" y="388" class="ed-sans" font-size="11.5" fill="#57534e">Security boundary: untrusted PDFs stay wrapped inside &lt;untrusted_context&gt;, and session ACL predicates run strictly prior to HNSW/BM25 scoring.</text>
+  <text x="32" y="409" class="ed-mono" font-size="10.5" fill="#78716c">Sources: Anthropic Contextual Retrieval (2024) · Cormack et al. RRF (SIGIR 2009) · Ragas 0.4.4 Spec</text>
 </svg>

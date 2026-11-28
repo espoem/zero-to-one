@@ -3,83 +3,81 @@
   <desc id="desc">Animated schematic of Stage 7 asynchronous decoupling where Web Producers publish durable events into a partitioned Message Queue broker with sliding queued message blocks, drained by idempotent Photo, Email, and Billing worker pools, while poison-pill failures route to a Dead-Letter Queue.</desc>
   <defs>
     <style>
-      .flow-blue { stroke-dasharray: 8 6; animation: dash-flow 1.4s linear infinite; }
-      .flow-green { stroke-dasharray: 8 6; animation: dash-flow 1.4s linear infinite; }
-      .flow-red { stroke-dasharray: 6 5; animation: dash-flow 1.6s linear infinite; }
+      .flow-blue { stroke-dasharray: 8 6;  }
+      .flow-green { stroke-dasharray: 8 6;  }
+      .flow-red { stroke-dasharray: 6 5;  }
       .msg-slide-1 { animation: slide-q 2.4s ease-in-out infinite; }
       .msg-slide-2 { animation: slide-q 2.4s ease-in-out 0.6s infinite; }
       .msg-slide-3 { animation: slide-q 2.4s ease-in-out 1.2s infinite; }
-      .pulse-badge { animation: badge-pulse 2.2s ease-in-out infinite; }
-      @keyframes dash-flow { to { stroke-dashoffset: -28; } }
+      
       @keyframes slide-q {
         0%, 100% { transform: translateX(0px); opacity: 0.78; }
         50% { transform: translateX(12px); opacity: 1; }
       }
-      @keyframes badge-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.72; } }
       @media (prefers-reduced-motion: reduce) {
         * { animation: none !important; transition: none !important; }
         .smil-packet { display: none !important; }
       }
     </style>
     <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#dc2626"/>
     </marker>
   </defs>
 
   <!-- Canvas -->
-  <rect x="0" y="0" width="1120" height="550" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1120" height="550" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1120" height="62" rx="12" fill="#0f172a"/>
-  <rect x="0" y="46" width="1120" height="16" fill="#0f172a"/>
-  <text x="24" y="29" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#f8fafc">Stage 7 · Message Queues, Async Workers &amp; Dead-Letter Isolation (8M–10M DAU)</text>
-  <text x="24" y="49" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#94a3b8">Decouple slow or bursty side effects from the HTTP critical path with durable partitioned logs, idempotent consumers, and DLQs</text>
+  <line x1="24" y1="64" x2="1096" y2="64" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="29" font-family="Georgia, 'Times New Roman', serif" font-size="18" font-weight="700" fill="#1c1917">Stage 7 · Message Queues, Async Workers &amp; Dead-Letter Isolation (8M–10M DAU)</text>
+  <text x="24" y="49" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#57534e">Decouple slow or bursty side effects from the HTTP critical path with durable partitioned logs, idempotent consumers, and DLQs</text>
 
   <!-- LEFT: PRODUCERS (WEB SERVERS) -->
   <g transform="translate(24, 98)">
-    <rect x="0" y="0" width="248" height="332" rx="12" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
-    <rect x="0" y="0" width="248" height="34" rx="12" fill="#1d4ed8"/>
-    <rect x="0" y="20" width="248" height="14" fill="#1d4ed8"/>
+    <rect x="0" y="0" width="248" height="332" rx="12" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
+    <rect x="0" y="0" width="248" height="34" rx="12" fill="#065f46"/>
+    <rect x="0" y="20" width="248" height="14" fill="#065f46"/>
     <text x="124" y="22" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#ffffff">Producers (Web Tier)</text>
 
-    <rect x="16" y="50" width="216" height="68" rx="8" fill="#ffffff" stroke="#93c5fd"/>
-    <text x="28" y="71" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1e3a8a">Web Server 1..N</text>
-    <text x="28" y="90" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#2563eb">POST /orders -&gt; 202 Accepted</text>
-    <text x="28" y="106" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Returns in &lt; 10 ms to client</text>
+    <rect x="16" y="50" width="216" height="68" rx="8" fill="#ffffff" stroke="#99f6e4"/>
+    <text x="28" y="71" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#065f46">Web Server 1..N</text>
+    <text x="28" y="90" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#0f766e">POST /orders -&gt; 202 Accepted</text>
+    <text x="28" y="106" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Returns in &lt; 10 ms to client</text>
 
-    <rect x="16" y="134" width="216" height="84" rx="8" fill="#f5f3ff" stroke="#c4b5fd"/>
-    <text x="28" y="155" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#4c1d95">Transactional Outbox</text>
-    <text x="28" y="173" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">1. Commit order + outbox row</text>
-    <text x="28" y="189" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">   in one atomic DB tx</text>
-    <text x="28" y="205" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#6d28d9">2. Relay publishes reliably</text>
+    <rect x="16" y="134" width="216" height="84" rx="8" fill="#f5f1e8" stroke="#d6d0c4"/>
+    <text x="28" y="155" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#065f46">Transactional Outbox</text>
+    <text x="28" y="173" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">1. Commit order + outbox row</text>
+    <text x="28" y="189" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">   in one atomic DB tx</text>
+    <text x="28" y="205" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#065f46">2. Relay publishes reliably</text>
 
-    <rect x="16" y="234" width="216" height="82" rx="8" fill="#dbeafe" stroke="#60a5fa"/>
-    <text x="124" y="256" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e40af">Burst Absorption</text>
-    <text x="124" y="274" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#1e3a8a">10× traffic spike buffers</text>
-    <text x="124" y="290" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#1e3a8a">without dropping requests or</text>
-    <text x="124" y="305" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#1e3a8a">overloading workers</text>
+    <rect x="16" y="234" width="216" height="82" rx="8" fill="#f0fdf9" stroke="#99f6e4"/>
+    <text x="124" y="256" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">Burst Absorption</text>
+    <text x="124" y="274" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#065f46">10× traffic spike buffers</text>
+    <text x="124" y="290" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#065f46">without dropping requests or</text>
+    <text x="124" y="305" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#065f46">overloading workers</text>
   </g>
 
   <!-- CENTER: PARTITIONED MESSAGE QUEUE / BROKER -->
   <g transform="translate(344, 98)">
-    <rect x="0" y="0" width="332" height="332" rx="12" fill="#fffbeb" stroke="#d97706" stroke-width="2"/>
+    <rect x="0" y="0" width="332" height="332" rx="12" fill="#fffbeb" stroke="#b45309" stroke-width="2"/>
     <rect x="0" y="0" width="332" height="34" rx="12" fill="#b45309"/>
     <rect x="0" y="20" width="332" height="14" fill="#b45309"/>
     <text x="166" y="22" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#ffffff">Partitioned Message Queue / Log</text>
     <text x="166" y="54" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" font-weight="700" fill="#92400e">Kafka (KRaft) · SQS · NATS JetStream</text>
 
     <!-- Partition 0 -->
-    <rect x="20" y="70" width="292" height="64" rx="8" fill="#ffffff" stroke="#fcd34d" stroke-width="1.5"/>
-    <text x="32" y="89" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="700" fill="#78350f">Partition 0 · media.jobs</text>
-    <rect x="32" y="96" width="268" height="28" rx="4" fill="#fef3c7" stroke="#f59e0b"/>
+    <rect x="20" y="70" width="292" height="64" rx="8" fill="#ffffff" stroke="#fde68a" stroke-width="1.5"/>
+    <text x="32" y="89" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="700" fill="#92400e">Partition 0 · media.jobs</text>
+    <rect x="32" y="96" width="268" height="28" rx="4" fill="#fffbeb" stroke="#b45309"/>
     <g class="msg-slide-1">
-      <rect x="38" y="100" width="42" height="20" rx="3" fill="#d97706"/>
+      <rect x="38" y="100" width="42" height="20" rx="3" fill="#b45309"/>
       <text x="59" y="114" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="700" fill="#ffffff">m101</text>
     </g>
     <g class="msg-slide-2">
@@ -87,16 +85,16 @@
       <text x="117" y="114" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="700" fill="#ffffff">m102</text>
     </g>
     <g class="msg-slide-3">
-      <rect x="154" y="100" width="42" height="20" rx="3" fill="#f59e0b"/>
+      <rect x="154" y="100" width="42" height="20" rx="3" fill="#b45309"/>
       <text x="175" y="114" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="700" fill="#ffffff">m103</text>
     </g>
 
     <!-- Partition 1 -->
-    <rect x="20" y="148" width="292" height="64" rx="8" fill="#ffffff" stroke="#fcd34d" stroke-width="1.5"/>
-    <text x="32" y="167" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="700" fill="#78350f">Partition 1 · notify.email</text>
-    <rect x="32" y="174" width="268" height="28" rx="4" fill="#fef3c7" stroke="#f59e0b"/>
+    <rect x="20" y="148" width="292" height="64" rx="8" fill="#ffffff" stroke="#fde68a" stroke-width="1.5"/>
+    <text x="32" y="167" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="700" fill="#92400e">Partition 1 · notify.email</text>
+    <rect x="32" y="174" width="268" height="28" rx="4" fill="#fffbeb" stroke="#b45309"/>
     <g class="msg-slide-2">
-      <rect x="38" y="178" width="42" height="20" rx="3" fill="#d97706"/>
+      <rect x="38" y="178" width="42" height="20" rx="3" fill="#b45309"/>
       <text x="59" y="192" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="700" fill="#ffffff">e408</text>
     </g>
     <g class="msg-slide-3">
@@ -105,15 +103,15 @@
     </g>
 
     <!-- Partition 2 -->
-    <rect x="20" y="226" width="292" height="64" rx="8" fill="#ffffff" stroke="#fcd34d" stroke-width="1.5"/>
-    <text x="32" y="245" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="700" fill="#78350f">Partition 2 · billing.ledger</text>
-    <rect x="32" y="252" width="268" height="28" rx="4" fill="#fef3c7" stroke="#f59e0b"/>
+    <rect x="20" y="226" width="292" height="64" rx="8" fill="#ffffff" stroke="#fde68a" stroke-width="1.5"/>
+    <text x="32" y="245" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="700" fill="#92400e">Partition 2 · billing.ledger</text>
+    <rect x="32" y="252" width="268" height="28" rx="4" fill="#fffbeb" stroke="#b45309"/>
     <g class="msg-slide-1">
-      <rect x="38" y="256" width="42" height="20" rx="3" fill="#7c3aed"/>
+      <rect x="38" y="256" width="42" height="20" rx="3" fill="#0f766e"/>
       <text x="59" y="270" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="700" fill="#ffffff">tx92</text>
     </g>
     <g class="msg-slide-3">
-      <rect x="96" y="256" width="42" height="20" rx="3" fill="#d97706"/>
+      <rect x="96" y="256" width="42" height="20" rx="3" fill="#b45309"/>
       <text x="117" y="270" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="700" fill="#ffffff">tx93</text>
     </g>
 
@@ -121,84 +119,84 @@
   </g>
 
   <!-- Step 1: Producers -> Broker -->
-  <path d="M 272 220 L 340 220" fill="none" stroke="#2563eb" stroke-width="2.4" class="flow-blue" marker-end="url(#arr-blue)"/>
-  <circle class="smil-packet" r="5" fill="#2563eb" opacity="0">
+  <path d="M 272 220 L 340 220" fill="none" stroke="#0f766e" stroke-width="2.4" class="flow-blue" marker-end="url(#arr-blue)"/>
+  <circle class="smil-packet" r="5" fill="#0f766e" opacity="0">
     <animateMotion dur="1.4s" repeatCount="indefinite" path="M 272 220 L 340 220"/>
     <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="1.4s" repeatCount="indefinite"/>
   </circle>
   <g class="pulse-badge" transform="translate(306, 194)">
-    <circle cx="0" cy="0" r="11" fill="#2563eb"/>
+    <circle cx="0" cy="0" r="11" fill="#0f766e"/>
     <text x="0" y="4" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#ffffff">1</text>
   </g>
-  <text x="306" y="242" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#1e40af">Enqueue</text>
+  <text x="306" y="242" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#065f46">Enqueue</text>
 
   <!-- RIGHT: CONSUMER WORKER POOL + DLQ -->
   <g transform="translate(748, 88)">
-    <rect x="0" y="0" width="348" height="246" rx="12" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
-    <rect x="0" y="0" width="348" height="32" rx="12" fill="#047857"/>
-    <rect x="0" y="18" width="348" height="14" fill="#047857"/>
+    <rect x="0" y="0" width="348" height="246" rx="12" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
+    <rect x="0" y="0" width="348" height="32" rx="12" fill="#065f46"/>
+    <rect x="0" y="18" width="348" height="14" fill="#065f46"/>
     <text x="174" y="21" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#ffffff">Consumer Worker Pool (KEDA Scaled)</text>
 
-    <rect x="16" y="46" width="316" height="52" rx="6" fill="#ffffff" stroke="#6ee7b7"/>
+    <rect x="16" y="46" width="316" height="52" rx="6" fill="#ffffff" stroke="#99f6e4"/>
     <text x="28" y="66" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#065f46">Photo / Video Workers</text>
-    <text x="28" y="84" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">CPU-heavy transcoding · Independent scale-out</text>
+    <text x="28" y="84" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">CPU-heavy transcoding · Independent scale-out</text>
 
-    <rect x="16" y="108" width="316" height="52" rx="6" fill="#ffffff" stroke="#6ee7b7"/>
+    <rect x="16" y="108" width="316" height="52" rx="6" fill="#ffffff" stroke="#99f6e4"/>
     <text x="28" y="128" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#065f46">Email / Notification Workers</text>
-    <text x="28" y="146" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Bounded SMTP / Push pull with backoff</text>
+    <text x="28" y="146" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Bounded SMTP / Push pull with backoff</text>
 
-    <rect x="16" y="170" width="316" height="60" rx="6" fill="#ffffff" stroke="#6ee7b7"/>
+    <rect x="16" y="170" width="316" height="60" rx="6" fill="#ffffff" stroke="#99f6e4"/>
     <text x="28" y="190" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#065f46">Billing / Webhook Workers</text>
-    <text x="28" y="208" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#047857">Enforce idempotency_key on redelivery</text>
-    <text x="28" y="222" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Safe against duplicate consumer execution</text>
+    <text x="28" y="208" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#065f46">Enforce idempotency_key on redelivery</text>
+    <text x="28" y="222" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Safe against duplicate consumer execution</text>
   </g>
 
   <!-- Dead-Letter Queue (DLQ) -->
   <g transform="translate(748, 352)">
-    <rect x="0" y="0" width="348" height="92" rx="10" fill="#fff1f2" stroke="#e11d48" stroke-width="1.8"/>
-    <rect x="16" y="12" width="142" height="22" rx="6" fill="#e11d48"/>
+    <rect x="0" y="0" width="348" height="92" rx="10" fill="#fef2f2" stroke="#dc2626" stroke-width="1.8"/>
+    <rect x="16" y="12" width="142" height="22" rx="6" fill="#dc2626"/>
     <text x="87" y="27" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#ffffff">Dead-Letter Queue</text>
-    <text x="170" y="27" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#9f1239">Poison-Pill Isolation</text>
-    <text x="16" y="54" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">• Events failing &gt; N retries park in DLQ</text>
-    <text x="16" y="72" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#be123c">• Prevents head-of-line consumer retry loops</text>
+    <text x="170" y="27" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#991b1b">Poison-Pill Isolation</text>
+    <text x="16" y="54" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">• Events failing &gt; N retries park in DLQ</text>
+    <text x="16" y="72" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#991b1b">• Prevents head-of-line consumer retry loops</text>
   </g>
 
   <!-- Step 2: Broker -> Workers -->
-  <path d="M 676 196 L 744 160" fill="none" stroke="#059669" stroke-width="2.2" class="flow-green" marker-end="url(#arr-green)"/>
-  <path d="M 676 266 L 744 266" fill="none" stroke="#059669" stroke-width="2.2" class="flow-green" marker-end="url(#arr-green)"/>
-  <circle class="smil-packet" r="4.5" fill="#059669" opacity="0">
+  <path d="M 676 196 L 744 160" fill="none" stroke="#0f766e" stroke-width="2.2" class="flow-green" marker-end="url(#arr-green)"/>
+  <path d="M 676 266 L 744 266" fill="none" stroke="#0f766e" stroke-width="2.2" class="flow-green" marker-end="url(#arr-green)"/>
+  <circle class="smil-packet" r="4.5" fill="#0f766e" opacity="0">
     <animateMotion dur="1.4s" repeatCount="indefinite" path="M 676 196 L 744 160"/>
     <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="1.4s" repeatCount="indefinite"/>
   </circle>
-  <circle class="smil-packet" r="4.5" fill="#059669" opacity="0">
+  <circle class="smil-packet" r="4.5" fill="#0f766e" opacity="0">
     <animateMotion dur="1.4s" begin="0.7s" repeatCount="indefinite" path="M 676 266 L 744 266"/>
     <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="1.4s" begin="0.7s" repeatCount="indefinite"/>
   </circle>
   <g class="pulse-badge" transform="translate(710, 146)">
-    <circle cx="0" cy="0" r="11" fill="#059669"/>
+    <circle cx="0" cy="0" r="11" fill="#0f766e"/>
     <text x="0" y="4" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#ffffff">2</text>
   </g>
   <text x="710" y="228" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#065f46">Pull</text>
 
   <!-- Step 3: Workers -> DLQ -->
-  <path d="M 922 334 L 922 348" fill="none" stroke="#e11d48" stroke-width="2.2" class="flow-red" marker-end="url(#arr-red)"/>
-  <path d="M 676 346 L 744 396" fill="none" stroke="#e11d48" stroke-width="1.8" class="flow-red" marker-end="url(#arr-red)"/>
-  <circle class="smil-packet" r="4" fill="#e11d48" opacity="0">
+  <path d="M 922 334 L 922 348" fill="none" stroke="#dc2626" stroke-width="2.2" class="flow-red" marker-end="url(#arr-red)"/>
+  <path d="M 676 346 L 744 396" fill="none" stroke="#dc2626" stroke-width="1.8" class="flow-red" marker-end="url(#arr-red)"/>
+  <circle class="smil-packet" r="4" fill="#dc2626" opacity="0">
     <animateMotion dur="1.8s" repeatCount="indefinite" path="M 676 346 L 744 396"/>
     <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="1.8s" repeatCount="indefinite"/>
   </circle>
   <g class="pulse-badge" transform="translate(708, 392)">
-    <circle cx="0" cy="0" r="11" fill="#e11d48"/>
+    <circle cx="0" cy="0" r="11" fill="#dc2626"/>
     <text x="0" y="4" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#ffffff">3</text>
   </g>
 
   <!-- Footer -->
-  <rect x="24" y="462" width="1072" height="72" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
-  <circle cx="46" cy="486" r="5" fill="#2563eb"/>
-  <text x="58" y="490" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" fill="#334155">1. Producers Enqueue (Outbox)</text>
-  <circle cx="256" cy="486" r="5" fill="#059669"/>
-  <text x="268" y="490" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" fill="#334155">2. Independent Consumer Drain</text>
-  <circle cx="476" cy="486" r="5" fill="#e11d48"/>
-  <text x="488" y="490" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" fill="#9f1239">3. DLQ for Poison-Pill Messages</text>
-  <text x="42" y="516" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" fill="#0f172a"><tspan font-weight="700">Engineering Takeaway:</tspan> Producers and consumers scale completely independently. Scale workers on queue depth (KEDA), bound DB concurrency, and require idempotency keys.</text>
+  <rect x="24" y="462" width="1072" height="72" rx="8" fill="#f5f1e8" stroke="#d6d0c4" stroke-width="1"/>
+  <circle cx="46" cy="486" r="5" fill="#0f766e"/>
+  <text x="58" y="490" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" fill="#44403c">1. Producers Enqueue (Outbox)</text>
+  <circle cx="256" cy="486" r="5" fill="#0f766e"/>
+  <text x="268" y="490" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" fill="#44403c">2. Independent Consumer Drain</text>
+  <circle cx="476" cy="486" r="5" fill="#dc2626"/>
+  <text x="488" y="490" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" fill="#991b1b">3. DLQ for Poison-Pill Messages</text>
+  <text x="42" y="516" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" fill="#1c1917"><tspan font-weight="700">Engineering Takeaway:</tspan> Producers and consumers scale completely independently. Scale workers on queue depth (KEDA), bound DB concurrency, and require idempotency keys.</text>
 </svg>

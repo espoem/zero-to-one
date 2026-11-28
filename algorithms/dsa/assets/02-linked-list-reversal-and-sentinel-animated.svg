@@ -5,25 +5,16 @@
     .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
     .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 
-    @keyframes splicePulse {
-      0%, 100% { opacity: 0.75; stroke-width: 1.8; }
-      50% { opacity: 1; stroke-width: 2.8; }
-    }
+    
     @keyframes step1 { 0%, 22% { opacity: 1; } 25%, 97% { opacity: 0.86; } 100% { opacity: 1; } }
     @keyframes step2 { 0%, 22% { opacity: 0.86; } 25%, 47% { opacity: 1; } 50%, 100% { opacity: 0.86; } }
     @keyframes step3 { 0%, 47% { opacity: 0.86; } 50%, 72% { opacity: 1; } 75%, 100% { opacity: 0.86; } }
     @keyframes step4 { 0%, 72% { opacity: 0.86; } 75%, 97% { opacity: 1; } 100% { opacity: 0.86; } }
-    @keyframes wireDash {
-      0% { stroke-dashoffset: 20; }
-      100% { stroke-dashoffset: 0; }
-    }
-
-    .splice-hl { animation: splicePulse 3.5s ease-in-out infinite; }
     .r1 { animation: step1 12s ease-in-out infinite; }
     .r2 { animation: step2 12s ease-in-out infinite; }
     .r3 { animation: step3 12s ease-in-out infinite; }
     .r4 { animation: step4 12s ease-in-out infinite; }
-    .wire-flow { stroke-dasharray: 5 3; animation: wireDash 2s linear infinite; }
+    .wire-flow { stroke-dasharray: 5 3;  }
 
     @media (prefers-reduced-motion: reduce) {
       * { animation: none !important; transition: none !important; }
@@ -33,185 +24,185 @@
 
   <defs>
     <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-violet" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#b45309"/>
     </marker>
   </defs>
 
   <!-- Canvas -->
-  <rect x="0" y="0" width="1200" height="800" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1200" height="800" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1200" height="64" rx="12" fill="#0f172a"/>
-  <rect x="0" y="48" width="1200" height="16" fill="#0f172a"/>
-  <text x="24" y="28" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Linked Lists: Circular Sentinel O(1) Splice &amp; 3-Pointer In-Place Reversal</text>
-  <text x="24" y="49" class="sans" font-size="12" fill="#94a3b8">Eliminating boundary null-checks with a permanent Sentinel node and verifying REVERSE(head) step by step</text>
+  <line x1="24" y1="66" x2="1176" y2="66" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="28" class="sans" font-size="18" font-weight="700" fill="#1c1917" font-family="Georgia, 'Times New Roman', serif">Linked Lists: Circular Sentinel O(1) Splice &amp; 3-Pointer In-Place Reversal</text>
+  <text x="24" y="49" class="sans" font-size="12" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">Eliminating boundary null-checks with a permanent Sentinel node and verifying REVERSE(head) step by step</text>
 
   <!-- ==================== TOP PANEL: CIRCULAR SENTINEL DLL ==================== -->
-  <rect x="20" y="80" width="1160" height="270" rx="10" fill="#ffffff" stroke="#a7f3d0" stroke-width="1.5"/>
-  <rect x="20" y="80" width="1160" height="36" rx="10" fill="#ecfdf5"/>
-  <rect x="20" y="106" width="1160" height="10" fill="#ecfdf5"/>
+  <rect x="20" y="80" width="1160" height="270" rx="10" fill="#ffffff" stroke="#f0fdf9" stroke-width="1.5"/>
+  <rect x="20" y="80" width="1160" height="36" rx="10" fill="#f0fdf9"/>
+  <rect x="20" y="106" width="1160" height="10" fill="#f0fdf9"/>
   <text x="36" y="103" class="sans" font-size="13" font-weight="700" fill="#065f46">1. Circular Sentinel Doubly Linked List: Branchless O(1) Insert &amp; Delete</text>
-  <text x="1164" y="103" class="mono" font-size="11" font-weight="700" fill="#059669" text-anchor="end">Empty invariant: sentinel.next === sentinel</text>
+  <text x="1164" y="103" class="mono" font-size="11" font-weight="700" fill="#0f766e" text-anchor="end">Empty invariant: sentinel.next === sentinel</text>
 
   <!-- Nodes row at y=160 -->
   <!-- Sentinel -->
-  <rect x="48" y="160" width="150" height="68" rx="8" fill="#0f172a" stroke="#334155" stroke-width="2"/>
-  <text x="123" y="186" class="mono" font-size="12" font-weight="700" fill="#34d399" text-anchor="middle">SENTINEL</text>
-  <text x="123" y="204" class="mono" font-size="10" fill="#94a3b8" text-anchor="middle">dummy anchor</text>
-  <text x="123" y="220" class="mono" font-size="10" fill="#cbd5e1" text-anchor="middle">prev=Tail | next=Head</text>
+  <rect x="48" y="160" width="150" height="68" rx="8" fill="#1c1917" stroke="#44403c" stroke-width="2"/>
+  <text x="123" y="186" class="mono" font-size="12" font-weight="700" fill="#99f6e4" text-anchor="middle">SENTINEL</text>
+  <text x="123" y="204" class="mono" font-size="10" fill="#57534e" text-anchor="middle">dummy anchor</text>
+  <text x="123" y="220" class="mono" font-size="10" fill="#57534e" text-anchor="middle">prev=Tail | next=Head</text>
 
   <!-- Node A -->
-  <rect x="256" y="160" width="120" height="68" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
-  <text x="316" y="188" class="mono" font-size="13" font-weight="700" fill="#1e3a8a" text-anchor="middle">Node 'A'</text>
-  <text x="316" y="210" class="mono" font-size="10" fill="#2563eb" text-anchor="middle">P.prev</text>
+  <rect x="256" y="160" width="120" height="68" rx="8" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="316" y="188" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">Node 'A'</text>
+  <text x="316" y="210" class="mono" font-size="10" fill="#0f766e" text-anchor="middle">P.prev</text>
 
   <!-- Inserted NewNode X (pulsing splice) -->
   <g class="splice-hl">
-    <rect x="434" y="146" width="136" height="68" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="2"/>
-    <text x="502" y="174" class="mono" font-size="12.5" font-weight="700" fill="#064e3b" text-anchor="middle">newNode 'X'</text>
-    <text x="502" y="196" class="mono" font-size="10" font-weight="700" fill="#059669" text-anchor="middle">insertBefore(P, 'X')</text>
+    <rect x="434" y="146" width="136" height="68" rx="8" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
+    <text x="502" y="174" class="mono" font-size="12.5" font-weight="700" fill="#065f46" text-anchor="middle">newNode 'X'</text>
+    <text x="502" y="196" class="mono" font-size="10" font-weight="700" fill="#0f766e" text-anchor="middle">insertBefore(P, 'X')</text>
   </g>
 
   <!-- Node B (P) -->
-  <rect x="628" y="160" width="120" height="68" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
-  <text x="688" y="188" class="mono" font-size="13" font-weight="700" fill="#1e3a8a" text-anchor="middle">Node 'B' (P)</text>
-  <text x="688" y="210" class="mono" font-size="10" fill="#2563eb" text-anchor="middle">target P</text>
+  <rect x="628" y="160" width="120" height="68" rx="8" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="688" y="188" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">Node 'B' (P)</text>
+  <text x="688" y="210" class="mono" font-size="10" fill="#0f766e" text-anchor="middle">target P</text>
 
   <!-- Arrows -->
-  <line x1="198" y1="184" x2="252" y2="184" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
-  <line x1="256" y1="204" x2="202" y2="204" stroke="#7c3aed" stroke-width="1.8" marker-end="url(#arr-violet)"/>
+  <line x1="198" y1="184" x2="252" y2="184" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+  <line x1="256" y1="204" x2="202" y2="204" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-violet)"/>
 
   <!-- Splice wiring around X -->
-  <path d="M 376 178 L 430 178" fill="none" stroke="#059669" stroke-width="2" class="wire-flow" marker-end="url(#arr-emerald)"/>
-  <path d="M 434 196 L 380 196" fill="none" stroke="#059669" stroke-width="2" class="wire-flow" marker-end="url(#arr-emerald)"/>
-  <path d="M 570 178 L 624 178" fill="none" stroke="#059669" stroke-width="2" class="wire-flow" marker-end="url(#arr-emerald)"/>
-  <path d="M 628 196 L 574 196" fill="none" stroke="#059669" stroke-width="2" class="wire-flow" marker-end="url(#arr-emerald)"/>
+  <path d="M 376 178 L 430 178" fill="none" stroke="#0f766e" stroke-width="2" class="wire-flow" marker-end="url(#arr-emerald)"/>
+  <path d="M 434 196 L 380 196" fill="none" stroke="#0f766e" stroke-width="2" class="wire-flow" marker-end="url(#arr-emerald)"/>
+  <path d="M 570 178 L 624 178" fill="none" stroke="#0f766e" stroke-width="2" class="wire-flow" marker-end="url(#arr-emerald)"/>
+  <path d="M 628 196 L 574 196" fill="none" stroke="#0f766e" stroke-width="2" class="wire-flow" marker-end="url(#arr-emerald)"/>
 
   <!-- Circular wrap back from B to Sentinel -->
-  <path d="M 688 228 C 688 286, 123 286, 123 232" fill="none" stroke="#2563eb" stroke-width="1.8" class="wire-flow" marker-end="url(#arr-blue)"/>
-  <text x="405" y="290" class="mono" font-size="10" font-weight="700" fill="#1e3a8a" text-anchor="middle">Tail.next ↔ Sentinel ↔ Head.prev (circular ring — zero null checks!)</text>
+  <path d="M 688 228 C 688 286, 123 286, 123 232" fill="none" stroke="#0f766e" stroke-width="1.8" class="wire-flow" marker-end="url(#arr-blue)"/>
+  <text x="405" y="290" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">Tail.next ↔ Sentinel ↔ Head.prev (circular ring — zero null checks!)</text>
 
   <!-- Code Box on Right -->
-  <rect x="780" y="132" width="384" height="198" rx="8" fill="#0f172a"/>
-  <text x="796" y="156" class="mono" font-size="10.5" font-weight="700" fill="#34d399">// Insert before any node P (even empty!)</text>
-  <text x="796" y="178" class="mono" font-size="10.5" fill="#e2e8f0">const n = new ListNode(val, P.prev, P);</text>
-  <text x="796" y="198" class="mono" font-size="10.5" fill="#fbbf24">P.prev.next = n;</text>
-  <text x="796" y="218" class="mono" font-size="10.5" fill="#fbbf24">P.prev = n;</text>
-  <line x1="796" y1="234" x2="1148" y2="234" stroke="#334155"/>
+  <rect x="780" y="132" width="384" height="198" rx="8" fill="#1c1917"/>
+  <text x="796" y="156" class="mono" font-size="10.5" font-weight="700" fill="#99f6e4">// Insert before any node P (even empty!)</text>
+  <text x="796" y="178" class="mono" font-size="10.5" fill="#ffffff">const n = new ListNode(val, P.prev, P);</text>
+  <text x="796" y="198" class="mono" font-size="10.5" fill="#fde68a">P.prev.next = n;</text>
+  <text x="796" y="218" class="mono" font-size="10.5" fill="#fde68a">P.prev = n;</text>
+  <line x1="796" y1="234" x2="1148" y2="234" stroke="#44403c"/>
   <text x="796" y="256" class="mono" font-size="10.5" font-weight="700" fill="#f472b6">// Delete any non-sentinel node X</text>
-  <text x="796" y="278" class="mono" font-size="10.5" fill="#e2e8f0">X.prev.next = X.next;</text>
-  <text x="796" y="298" class="mono" font-size="10.5" fill="#e2e8f0">X.next.prev = X.prev;</text>
-  <text x="796" y="318" class="mono" font-size="10" fill="#94a3b8">// Both X.prev &amp; X.next guaranteed non-null</text>
+  <text x="796" y="278" class="mono" font-size="10.5" fill="#ffffff">X.prev.next = X.next;</text>
+  <text x="796" y="298" class="mono" font-size="10.5" fill="#ffffff">X.next.prev = X.prev;</text>
+  <text x="796" y="318" class="mono" font-size="10" fill="#57534e">// Both X.prev &amp; X.next guaranteed non-null</text>
 
   <!-- ==================== BOTTOM PANEL: 3-POINTER REVERSAL ==================== -->
-  <rect x="20" y="366" width="1160" height="414" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <rect x="20" y="366" width="1160" height="36" rx="10" fill="#eff6ff"/>
-  <rect x="20" y="392" width="1160" height="10" fill="#eff6ff"/>
-  <text x="36" y="389" class="sans" font-size="13" font-weight="700" fill="#1e3a8a">2. In-Place 3-Pointer Singly Linked List Reversal: REVERSE(head)</text>
-  <text x="1164" y="389" class="mono" font-size="10.5" font-weight="700" fill="#2563eb" text-anchor="end">Invariant: prev = reversed prefix, curr = untouched suffix</text>
+  <rect x="20" y="366" width="1160" height="414" rx="10" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <rect x="20" y="366" width="1160" height="36" rx="10" fill="#f0fdf9"/>
+  <rect x="20" y="392" width="1160" height="10" fill="#f0fdf9"/>
+  <text x="36" y="389" class="sans" font-size="13" font-weight="700" fill="#065f46">2. In-Place 3-Pointer Singly Linked List Reversal: REVERSE(head)</text>
+  <text x="1164" y="389" class="mono" font-size="10.5" font-weight="700" fill="#0f766e" text-anchor="end">Invariant: prev = reversed prefix, curr = untouched suffix</text>
 
   <!-- Step 1: Initial State -->
   <g class="r1">
-    <rect x="36" y="416" width="730" height="80" rx="8" fill="#f8fafc" stroke="#93c5fd" stroke-width="1.5"/>
-    <rect x="48" y="426" width="94" height="22" rx="4" fill="#2563eb"/>
+    <rect x="36" y="416" width="730" height="80" rx="8" fill="#faf8f5" stroke="#99f6e4" stroke-width="1.5"/>
+    <rect x="48" y="426" width="94" height="22" rx="4" fill="#0f766e"/>
     <text x="95" y="441" class="mono" font-size="10.5" font-weight="700" fill="#fff" text-anchor="middle">Step 0: Init</text>
-    <text x="156" y="441" class="mono" font-size="10.5" fill="#475569">prev = NIL,  curr = A</text>
+    <text x="156" y="441" class="mono" font-size="10.5" fill="#44403c">prev = NIL,  curr = A</text>
 
-    <rect x="156" y="454" width="60" height="30" rx="5" fill="#f1f5f9" stroke="#7c3aed"/><text x="186" y="473" class="mono" font-size="11" font-weight="700" fill="#5b21b6" text-anchor="middle">NIL</text>
-    <rect x="256" y="454" width="60" height="30" rx="5" fill="#fef3c7" stroke="#d97706" stroke-width="2"/><text x="286" y="473" class="mono" font-size="12" font-weight="700" fill="#92400e" text-anchor="middle">A</text>
-    <rect x="356" y="454" width="60" height="30" rx="5" fill="#eff6ff" stroke="#2563eb"/><text x="386" y="473" class="mono" font-size="12" font-weight="700" fill="#1e3a8a" text-anchor="middle">B</text>
-    <rect x="456" y="454" width="60" height="30" rx="5" fill="#eff6ff" stroke="#2563eb"/><text x="486" y="473" class="mono" font-size="12" font-weight="700" fill="#1e3a8a" text-anchor="middle">C</text>
-    <rect x="556" y="454" width="54" height="30" rx="5" fill="#f1f5f9" stroke="#cbd5e1"/><text x="583" y="473" class="mono" font-size="11" fill="#64748b" text-anchor="middle">NIL</text>
-    <line x1="316" y1="469" x2="352" y2="469" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
-    <line x1="416" y1="469" x2="452" y2="469" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
-    <line x1="516" y1="469" x2="552" y2="469" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
-    <text x="640" y="466" class="mono" font-size="10" fill="#7c3aed">prev=NIL</text>
-    <text x="640" y="482" class="mono" font-size="10" fill="#d97706">curr=A</text>
+    <rect x="156" y="454" width="60" height="30" rx="5" fill="#f5f1e8" stroke="#0f766e"/><text x="186" y="473" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">NIL</text>
+    <rect x="256" y="454" width="60" height="30" rx="5" fill="#fffbeb" stroke="#b45309" stroke-width="2"/><text x="286" y="473" class="mono" font-size="12" font-weight="700" fill="#92400e" text-anchor="middle">A</text>
+    <rect x="356" y="454" width="60" height="30" rx="5" fill="#f0fdf9" stroke="#0f766e"/><text x="386" y="473" class="mono" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">B</text>
+    <rect x="456" y="454" width="60" height="30" rx="5" fill="#f0fdf9" stroke="#0f766e"/><text x="486" y="473" class="mono" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">C</text>
+    <rect x="556" y="454" width="54" height="30" rx="5" fill="#f5f1e8" stroke="#d6d0c4"/><text x="583" y="473" class="mono" font-size="11" fill="#57534e" text-anchor="middle">NIL</text>
+    <line x1="316" y1="469" x2="352" y2="469" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+    <line x1="416" y1="469" x2="452" y2="469" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+    <line x1="516" y1="469" x2="552" y2="469" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+    <text x="640" y="466" class="mono" font-size="10" fill="#0f766e">prev=NIL</text>
+    <text x="640" y="482" class="mono" font-size="10" fill="#b45309">curr=A</text>
   </g>
 
   <!-- Step 2: Iteration 1 (flip A -> NIL) -->
   <g class="r2">
-    <rect x="36" y="506" width="730" height="80" rx="8" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5"/>
-    <rect x="48" y="516" width="94" height="22" rx="4" fill="#d97706"/>
+    <rect x="36" y="506" width="730" height="80" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="1.5"/>
+    <rect x="48" y="516" width="94" height="22" rx="4" fill="#b45309"/>
     <text x="95" y="531" class="mono" font-size="10.5" font-weight="700" fill="#fff" text-anchor="middle">Iter 1: j=0</text>
     <text x="156" y="531" class="mono" font-size="10.5" fill="#92400e">next = B;  A.next = NIL;  prev = A, curr = B</text>
 
-    <rect x="156" y="544" width="60" height="30" rx="5" fill="#f1f5f9" stroke="#94a3b8"/><text x="186" y="563" class="mono" font-size="11" fill="#64748b" text-anchor="middle">NIL</text>
-    <rect x="256" y="544" width="60" height="30" rx="5" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="286" y="563" class="mono" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">A</text>
-    <rect x="356" y="544" width="60" height="30" rx="5" fill="#fef3c7" stroke="#d97706" stroke-width="2"/><text x="386" y="563" class="mono" font-size="12" font-weight="700" fill="#92400e" text-anchor="middle">B</text>
-    <rect x="456" y="544" width="60" height="30" rx="5" fill="#eff6ff" stroke="#2563eb"/><text x="486" y="563" class="mono" font-size="12" font-weight="700" fill="#1e3a8a" text-anchor="middle">C</text>
-    <rect x="556" y="544" width="54" height="30" rx="5" fill="#f1f5f9" stroke="#cbd5e1"/><text x="583" y="563" class="mono" font-size="11" fill="#64748b" text-anchor="middle">NIL</text>
+    <rect x="156" y="544" width="60" height="30" rx="5" fill="#f5f1e8" stroke="#d6d0c4"/><text x="186" y="563" class="mono" font-size="11" fill="#57534e" text-anchor="middle">NIL</text>
+    <rect x="256" y="544" width="60" height="30" rx="5" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/><text x="286" y="563" class="mono" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">A</text>
+    <rect x="356" y="544" width="60" height="30" rx="5" fill="#fffbeb" stroke="#b45309" stroke-width="2"/><text x="386" y="563" class="mono" font-size="12" font-weight="700" fill="#92400e" text-anchor="middle">B</text>
+    <rect x="456" y="544" width="60" height="30" rx="5" fill="#f0fdf9" stroke="#0f766e"/><text x="486" y="563" class="mono" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">C</text>
+    <rect x="556" y="544" width="54" height="30" rx="5" fill="#f5f1e8" stroke="#d6d0c4"/><text x="583" y="563" class="mono" font-size="11" fill="#57534e" text-anchor="middle">NIL</text>
     <!-- Reversed arrow A -> NIL -->
-    <line x1="256" y1="559" x2="220" y2="559" stroke="#059669" stroke-width="2.2" marker-end="url(#arr-emerald)"/>
-    <line x1="416" y1="559" x2="452" y2="559" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
-    <line x1="516" y1="559" x2="552" y2="559" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
-    <text x="640" y="556" class="mono" font-size="10" fill="#059669">prev=A</text>
-    <text x="640" y="572" class="mono" font-size="10" fill="#d97706">curr=B</text>
+    <line x1="256" y1="559" x2="220" y2="559" stroke="#0f766e" stroke-width="2.2" marker-end="url(#arr-emerald)"/>
+    <line x1="416" y1="559" x2="452" y2="559" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+    <line x1="516" y1="559" x2="552" y2="559" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+    <text x="640" y="556" class="mono" font-size="10" fill="#0f766e">prev=A</text>
+    <text x="640" y="572" class="mono" font-size="10" fill="#b45309">curr=B</text>
   </g>
 
   <!-- Step 3: Iteration 2 (flip B -> A) -->
   <g class="r3">
-    <rect x="36" y="596" width="730" height="80" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
-    <rect x="48" y="606" width="94" height="22" rx="4" fill="#7c3aed"/>
+    <rect x="36" y="596" width="730" height="80" rx="8" fill="#f5f1e8" stroke="#0f766e" stroke-width="1.5"/>
+    <rect x="48" y="606" width="94" height="22" rx="4" fill="#0f766e"/>
     <text x="95" y="621" class="mono" font-size="10.5" font-weight="700" fill="#fff" text-anchor="middle">Iter 2: j=1</text>
-    <text x="156" y="621" class="mono" font-size="10.5" fill="#5b21b6">next = C;  B.next = A;  prev = B, curr = C</text>
+    <text x="156" y="621" class="mono" font-size="10.5" fill="#065f46">next = C;  B.next = A;  prev = B, curr = C</text>
 
-    <rect x="156" y="634" width="60" height="30" rx="5" fill="#f1f5f9" stroke="#94a3b8"/><text x="186" y="653" class="mono" font-size="11" fill="#64748b" text-anchor="middle">NIL</text>
-    <rect x="256" y="634" width="60" height="30" rx="5" fill="#ecfdf5" stroke="#059669"/><text x="286" y="653" class="mono" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">A</text>
-    <rect x="356" y="634" width="60" height="30" rx="5" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="386" y="653" class="mono" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">B</text>
-    <rect x="456" y="634" width="60" height="30" rx="5" fill="#fef3c7" stroke="#d97706" stroke-width="2"/><text x="486" y="653" class="mono" font-size="12" font-weight="700" fill="#92400e" text-anchor="middle">C</text>
-    <rect x="556" y="634" width="54" height="30" rx="5" fill="#f1f5f9" stroke="#cbd5e1"/><text x="583" y="653" class="mono" font-size="11" fill="#64748b" text-anchor="middle">NIL</text>
-    <line x1="256" y1="649" x2="220" y2="649" stroke="#059669" stroke-width="2.2" marker-end="url(#arr-emerald)"/>
-    <line x1="356" y1="649" x2="320" y2="649" stroke="#059669" stroke-width="2.2" marker-end="url(#arr-emerald)"/>
-    <line x1="516" y1="649" x2="552" y2="649" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
-    <text x="640" y="646" class="mono" font-size="10" fill="#059669">prev=B</text>
-    <text x="640" y="662" class="mono" font-size="10" fill="#d97706">curr=C</text>
+    <rect x="156" y="634" width="60" height="30" rx="5" fill="#f5f1e8" stroke="#d6d0c4"/><text x="186" y="653" class="mono" font-size="11" fill="#57534e" text-anchor="middle">NIL</text>
+    <rect x="256" y="634" width="60" height="30" rx="5" fill="#f0fdf9" stroke="#0f766e"/><text x="286" y="653" class="mono" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">A</text>
+    <rect x="356" y="634" width="60" height="30" rx="5" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/><text x="386" y="653" class="mono" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">B</text>
+    <rect x="456" y="634" width="60" height="30" rx="5" fill="#fffbeb" stroke="#b45309" stroke-width="2"/><text x="486" y="653" class="mono" font-size="12" font-weight="700" fill="#92400e" text-anchor="middle">C</text>
+    <rect x="556" y="634" width="54" height="30" rx="5" fill="#f5f1e8" stroke="#d6d0c4"/><text x="583" y="653" class="mono" font-size="11" fill="#57534e" text-anchor="middle">NIL</text>
+    <line x1="256" y1="649" x2="220" y2="649" stroke="#0f766e" stroke-width="2.2" marker-end="url(#arr-emerald)"/>
+    <line x1="356" y1="649" x2="320" y2="649" stroke="#0f766e" stroke-width="2.2" marker-end="url(#arr-emerald)"/>
+    <line x1="516" y1="649" x2="552" y2="649" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+    <text x="640" y="646" class="mono" font-size="10" fill="#0f766e">prev=B</text>
+    <text x="640" y="662" class="mono" font-size="10" fill="#b45309">curr=C</text>
   </g>
 
   <!-- Step 4: Termination -->
   <g class="r4">
-    <rect x="36" y="686" width="730" height="80" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
-    <rect x="48" y="696" width="94" height="22" rx="4" fill="#059669"/>
+    <rect x="36" y="686" width="730" height="80" rx="8" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
+    <rect x="48" y="696" width="94" height="22" rx="4" fill="#0f766e"/>
     <text x="95" y="711" class="mono" font-size="10.5" font-weight="700" fill="#fff" text-anchor="middle">Done: j=3</text>
     <text x="156" y="711" class="mono" font-size="10.5" font-weight="700" fill="#065f46">C.next = B;  prev = C, curr = NIL → return prev (C)</text>
 
-    <rect x="156" y="724" width="60" height="30" rx="5" fill="#f1f5f9" stroke="#94a3b8"/><text x="186" y="743" class="mono" font-size="11" fill="#64748b" text-anchor="middle">NIL</text>
-    <rect x="256" y="724" width="60" height="30" rx="5" fill="#ecfdf5" stroke="#059669"/><text x="286" y="743" class="mono" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">A</text>
-    <rect x="356" y="724" width="60" height="30" rx="5" fill="#ecfdf5" stroke="#059669"/><text x="386" y="743" class="mono" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">B</text>
-    <rect x="456" y="724" width="60" height="30" rx="5" fill="#059669"/><text x="486" y="743" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">C ★</text>
-    <rect x="556" y="724" width="54" height="30" rx="5" fill="#f1f5f9" stroke="#cbd5e1"/><text x="583" y="743" class="mono" font-size="11" fill="#64748b" text-anchor="middle">NIL</text>
-    <line x1="256" y1="739" x2="220" y2="739" stroke="#059669" stroke-width="2.2" marker-end="url(#arr-emerald)"/>
-    <line x1="356" y1="739" x2="320" y2="739" stroke="#059669" stroke-width="2.2" marker-end="url(#arr-emerald)"/>
-    <line x1="456" y1="739" x2="420" y2="739" stroke="#059669" stroke-width="2.2" marker-end="url(#arr-emerald)"/>
+    <rect x="156" y="724" width="60" height="30" rx="5" fill="#f5f1e8" stroke="#d6d0c4"/><text x="186" y="743" class="mono" font-size="11" fill="#57534e" text-anchor="middle">NIL</text>
+    <rect x="256" y="724" width="60" height="30" rx="5" fill="#f0fdf9" stroke="#0f766e"/><text x="286" y="743" class="mono" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">A</text>
+    <rect x="356" y="724" width="60" height="30" rx="5" fill="#f0fdf9" stroke="#0f766e"/><text x="386" y="743" class="mono" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">B</text>
+    <rect x="456" y="724" width="60" height="30" rx="5" fill="#0f766e"/><text x="486" y="743" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">C ★</text>
+    <rect x="556" y="724" width="54" height="30" rx="5" fill="#f5f1e8" stroke="#d6d0c4"/><text x="583" y="743" class="mono" font-size="11" fill="#57534e" text-anchor="middle">NIL</text>
+    <line x1="256" y1="739" x2="220" y2="739" stroke="#0f766e" stroke-width="2.2" marker-end="url(#arr-emerald)"/>
+    <line x1="356" y1="739" x2="320" y2="739" stroke="#0f766e" stroke-width="2.2" marker-end="url(#arr-emerald)"/>
+    <line x1="456" y1="739" x2="420" y2="739" stroke="#0f766e" stroke-width="2.2" marker-end="url(#arr-emerald)"/>
     <text x="640" y="736" class="mono" font-size="10" font-weight="700" fill="#065f46">C→B→A→NIL</text>
-    <text x="640" y="752" class="mono" font-size="10" fill="#047857">O(n) time, O(1)</text>
+    <text x="640" y="752" class="mono" font-size="10" fill="#065f46">O(n) time, O(1)</text>
   </g>
 
   <!-- Right Column: Reversal Pseudocode + Cache Locality Note -->
-  <rect x="780" y="416" width="384" height="196" rx="8" fill="#0f172a"/>
-  <text x="796" y="440" class="mono" font-size="11" font-weight="700" fill="#38bdf8">REVERSE(head)  // Module 02 §9.1</text>
-  <text x="796" y="464" class="mono" font-size="10.5" fill="#e2e8f0">1  prev = NIL;  curr = head</text>
-  <text x="796" y="486" class="mono" font-size="10.5" fill="#e2e8f0">2  while curr != NIL</text>
-  <text x="796" y="508" class="mono" font-size="10.5" fill="#fbbf24">3      next = curr.next   // save suffix</text>
-  <text x="796" y="530" class="mono" font-size="10.5" fill="#34d399">4      curr.next = prev   // flip link</text>
+  <rect x="780" y="416" width="384" height="196" rx="8" fill="#1c1917"/>
+  <text x="796" y="440" class="mono" font-size="11" font-weight="700" fill="#99f6e4">REVERSE(head)  // Module 02 §9.1</text>
+  <text x="796" y="464" class="mono" font-size="10.5" fill="#ffffff">1  prev = NIL;  curr = head</text>
+  <text x="796" y="486" class="mono" font-size="10.5" fill="#ffffff">2  while curr != NIL</text>
+  <text x="796" y="508" class="mono" font-size="10.5" fill="#fde68a">3      next = curr.next   // save suffix</text>
+  <text x="796" y="530" class="mono" font-size="10.5" fill="#99f6e4">4      curr.next = prev   // flip link</text>
   <text x="796" y="552" class="mono" font-size="10.5" fill="#c084fc">5      prev = curr;  curr = next</text>
-  <text x="796" y="574" class="mono" font-size="10.5" fill="#38bdf8">6  return prev</text>
-  <text x="796" y="598" class="mono" font-size="10" fill="#94a3b8">// Order of lines 3 &amp; 4 is critical (save next first)</text>
+  <text x="796" y="574" class="mono" font-size="10.5" fill="#99f6e4">6  return prev</text>
+  <text x="796" y="598" class="mono" font-size="10" fill="#57534e">// Order of lines 3 &amp; 4 is critical (save next first)</text>
 
   <rect x="780" y="624" width="384" height="142" rx="8" fill="#fffbeb" stroke="#fde68a"/>
   <text x="796" y="646" class="sans" font-size="11.5" font-weight="700" fill="#92400e">Memory Layout Reality (Module 02 §1)</text>
-  <text x="796" y="668" class="sans" font-size="10.5" fill="#334155">Each heap node carries pointer + header overhead</text>
-  <text x="796" y="686" class="sans" font-size="10.5" fill="#334155">(16–24B in V8/JVM + 8–16B links) and triggers</text>
-  <text x="796" y="704" class="sans" font-size="10.5" fill="#334155">~60–100 ns DRAM cache misses on pointer-chasing.</text>
+  <text x="796" y="668" class="sans" font-size="10.5" fill="#44403c">Each heap node carries pointer + header overhead</text>
+  <text x="796" y="686" class="sans" font-size="10.5" fill="#44403c">(16–24B in V8/JVM + 8–16B links) and triggers</text>
+  <text x="796" y="704" class="sans" font-size="10.5" fill="#44403c">~60–100 ns DRAM cache misses on pointer-chasing.</text>
   <text x="796" y="728" class="mono" font-size="10" font-weight="700" fill="#92400e">Use linked lists only for O(1) splice/LRU stability,</text>
   <text x="796" y="746" class="mono" font-size="10" font-weight="700" fill="#92400e">not sequential scans (arrays beat them 10–100×).</text>
 </svg>

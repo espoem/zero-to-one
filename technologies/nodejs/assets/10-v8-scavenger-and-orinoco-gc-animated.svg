@@ -3,22 +3,22 @@
   <desc id="desc">Animated step-by-step visualization of V8 young-generation Cheney semi-space copying garbage collection with forwarding pointers, remembered-set write barriers, and promotion, paired with old-generation Orinoco Dijkstra tri-color concurrent marking, write-barrier greying, sweeping, and parallel compaction.</desc>
   <defs>
     <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#b45309"/>
     </marker>
     <marker id="arr-violet" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#dc2626"/>
     </marker>
     <marker id="arr-slate" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#44403c"/>
     </marker>
     <style><![CDATA[
       .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
@@ -51,36 +51,36 @@
 
       /* Old-gen Orinoco tri-color states */
       @keyframes o1-color {
-        0%, 23%   { fill: #fffbeb; stroke: #d97706; stroke-width: 2.5; } /* Grey */
-        25%, 100% { fill: #1e293b; stroke: #0f172a; stroke-width: 2.5; } /* Black */
+        0%, 23%   { fill: #fffbeb; stroke: #b45309; stroke-width: 2.5; } /* Grey */
+        25%, 100% { fill: #1c1917; stroke: #1c1917; stroke-width: 2.5; } /* Black */
       }
       @keyframes o1-text {
         0%, 23%   { fill: #92400e; }
-        25%, 100% { fill: #f8fafc; }
+        25%, 100% { fill: #faf8f5; }
       }
       @keyframes o2-color {
-        0%, 23%   { fill: #ffffff; stroke: #94a3b8; stroke-width: 2; }   /* White */
-        25%, 48%  { fill: #fffbeb; stroke: #d97706; stroke-width: 2.5; } /* Grey */
-        50%, 100% { fill: #1e293b; stroke: #0f172a; stroke-width: 2.5; } /* Black */
+        0%, 23%   { fill: #ffffff; stroke: #d6d0c4; stroke-width: 2; }   /* White */
+        25%, 48%  { fill: #fffbeb; stroke: #b45309; stroke-width: 2.5; } /* Grey */
+        50%, 100% { fill: #1c1917; stroke: #1c1917; stroke-width: 2.5; } /* Black */
       }
       @keyframes o2-text {
-        0%, 23%   { fill: #334155; }
+        0%, 23%   { fill: #44403c; }
         25%, 48%  { fill: #92400e; }
-        50%, 100% { fill: #f8fafc; }
+        50%, 100% { fill: #faf8f5; }
       }
       @keyframes o3-color {
-        0%, 48%   { fill: #ffffff; stroke: #94a3b8; stroke-width: 2; }   /* White */
-        50%, 73%  { fill: #fffbeb; stroke: #d97706; stroke-width: 2.5; } /* Barrier -> Grey */
-        75%, 100% { fill: #1e293b; stroke: #0f172a; stroke-width: 2.5; } /* Black */
+        0%, 48%   { fill: #ffffff; stroke: #d6d0c4; stroke-width: 2; }   /* White */
+        50%, 73%  { fill: #fffbeb; stroke: #b45309; stroke-width: 2.5; } /* Barrier -> Grey */
+        75%, 100% { fill: #1c1917; stroke: #1c1917; stroke-width: 2.5; } /* Black */
       }
       @keyframes o3-text {
-        0%, 48%   { fill: #334155; }
+        0%, 48%   { fill: #44403c; }
         50%, 73%  { fill: #92400e; }
-        75%, 100% { fill: #f8fafc; }
+        75%, 100% { fill: #faf8f5; }
       }
       @keyframes o4-sweep {
-        0%, 73%   { opacity: 1; fill: #ffffff; stroke: #94a3b8; }
-        75%, 100% { opacity: 0.85; fill: #fff1f2; stroke: #e11d48; stroke-dasharray: 5 3; }
+        0%, 73%   { opacity: 1; fill: #ffffff; stroke: #d6d0c4; }
+        75%, 100% { opacity: 0.85; fill: #fef2f2; stroke: #dc2626; stroke-dasharray: 5 3; }
       }
       @keyframes show-barrier {
         0%, 48% { opacity: 0; }
@@ -130,184 +130,184 @@
         .wb-arc { opacity: 0.85; }
         .ptr-scan { transform: translateY(116px); }
         .ptr-free { transform: translateY(116px); }
-        .o1-rect, .o2-rect, .o3-rect { fill: #1e293b; stroke: #0f172a; stroke-width: 2.5; }
-        .o1-lbl, .o2-lbl, .o3-lbl { fill: #f8fafc; }
-        .o4-rect { opacity: 0.85; fill: #fff1f2; stroke: #e11d48; stroke-dasharray: 5 3; }
+        .o1-rect, .o2-rect, .o3-rect { fill: #1c1917; stroke: #1c1917; stroke-width: 2.5; }
+        .o1-lbl, .o2-lbl, .o3-lbl { fill: #faf8f5; }
+        .o4-rect { opacity: 0.85; fill: #fef2f2; stroke: #dc2626; stroke-dasharray: 5 3; }
       }
     ]]></style>
   </defs>
 
   <!-- Outer Canvas -->
-  <rect x="0" y="0" width="1200" height="720" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1200" height="720" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1200" height="62" rx="12" fill="#0f172a"/>
-  <rect x="0" y="46" width="1200" height="16" fill="#0f172a"/>
-  <text x="24" y="28" class="sans" font-size="18" font-weight="700" fill="#f8fafc">V8 Generational GC: Semi-Space Scavenger &amp; Orinoco Tri-Color Mark-Compact</text>
-  <text x="24" y="49" class="sans" font-size="12" fill="#94a3b8">Cheney BFS Copying (From -&gt; To, Forwarding Pointers &amp; Remembered Set) + Dijkstra Concurrent Tri-Color Marking</text>
+  <line x1="24" y1="64" x2="1176" y2="64" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="28" class="sans" font-size="18" font-weight="700" fill="#1c1917" font-family="Georgia, 'Times New Roman', serif">V8 Generational GC: Semi-Space Scavenger &amp; Orinoco Tri-Color Mark-Compact</text>
+  <text x="24" y="49" class="sans" font-size="12" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">Cheney BFS Copying (From -&gt; To, Forwarding Pointers &amp; Remembered Set) + Dijkstra Concurrent Tri-Color Marking</text>
 
   <!-- LEFT PANEL: Young Gen Scavenger -->
-  <rect x="24" y="78" width="564" height="552" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
-  <rect x="24" y="78" width="564" height="36" rx="10" fill="#f1f5f9"/>
-  <rect x="24" y="104" width="564" height="10" fill="#f1f5f9"/>
-  <text x="40" y="101" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">1. Young Generation: Cheney Semi-Space Scavenger</text>
-  <text x="572" y="101" class="mono" font-size="11" fill="#2563eb" text-anchor="end">O(live) stop-the-world</text>
+  <rect x="24" y="78" width="564" height="552" rx="10" fill="#ffffff" stroke="#d6d0c4"/>
+  <rect x="24" y="78" width="564" height="36" rx="10" fill="#f5f1e8"/>
+  <rect x="24" y="104" width="564" height="10" fill="#f5f1e8"/>
+  <text x="40" y="101" class="sans" font-size="13.5" font-weight="700" fill="#1c1917">1. Young Generation: Cheney Semi-Space Scavenger</text>
+  <text x="572" y="101" class="mono" font-size="11" fill="#0f766e" text-anchor="end">O(live) stop-the-world</text>
 
   <!-- Roots + Remembered Set -->
-  <rect x="40" y="128" width="210" height="54" rx="8" fill="#eff6ff" stroke="#93c5fd"/>
-  <text x="52" y="147" class="sans" font-size="11.5" font-weight="700" fill="#1d4ed8">GC Roots (Stack / Handles)</text>
-  <text x="52" y="166" class="mono" font-size="11" fill="#1e3a8a">root_0 -&gt; A   |   root_1 -&gt; D</text>
+  <rect x="40" y="128" width="210" height="54" rx="8" fill="#f0fdf9" stroke="#99f6e4"/>
+  <text x="52" y="147" class="sans" font-size="11.5" font-weight="700" fill="#065f46">GC Roots (Stack / Handles)</text>
+  <text x="52" y="166" class="mono" font-size="11" fill="#065f46">root_0 -&gt; A   |   root_1 -&gt; D</text>
 
-  <rect x="272" y="128" width="300" height="54" rx="8" fill="#f5f3ff" stroke="#c4b5fd"/>
-  <text x="284" y="147" class="sans" font-size="11.5" font-weight="700" fill="#6d28d9">Remembered Set (Old -&gt; Young Barrier)</text>
-  <text x="284" y="166" class="mono" font-size="10.5" fill="#4c1d95">slot(old_cache.k) -&gt; A  (no full Old scan!)</text>
+  <rect x="272" y="128" width="300" height="54" rx="8" fill="#f5f1e8" stroke="#d6d0c4"/>
+  <text x="284" y="147" class="sans" font-size="11.5" font-weight="700" fill="#065f46">Remembered Set (Old -&gt; Young Barrier)</text>
+  <text x="284" y="166" class="mono" font-size="10.5" fill="#065f46">slot(old_cache.k) -&gt; A  (no full Old scan!)</text>
 
   <!-- From-Space Box -->
-  <rect x="40" y="200" width="246" height="270" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
-  <rect x="40" y="200" width="246" height="28" rx="8" fill="#e2e8f0"/>
-  <rect x="40" y="218" width="246" height="10" fill="#e2e8f0"/>
-  <text x="163" y="219" class="mono" font-size="11.5" font-weight="700" fill="#0f172a" text-anchor="middle">From-Space (Bump Allocated)</text>
+  <rect x="40" y="200" width="246" height="270" rx="8" fill="#faf8f5" stroke="#d6d0c4" stroke-width="1.5"/>
+  <rect x="40" y="200" width="246" height="28" rx="8" fill="#e7e2d8"/>
+  <rect x="40" y="218" width="246" height="10" fill="#e7e2d8"/>
+  <text x="163" y="219" class="mono" font-size="11.5" font-weight="700" fill="#1c1917" text-anchor="middle">From-Space (Bump Allocated)</text>
 
   <!-- Object A in From-Space -->
-  <rect x="56" y="242" width="214" height="46" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
-  <text x="68" y="261" class="mono" font-size="12" font-weight="700" fill="#1e40af">Obj A (age=0)</text>
-  <text x="68" y="278" class="mono" font-size="10.5" fill="#475569">ptr: A.child -&gt; C</text>
+  <rect x="56" y="242" width="214" height="46" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="68" y="261" class="mono" font-size="12" font-weight="700" fill="#065f46">Obj A (age=0)</text>
+  <text x="68" y="278" class="mono" font-size="10.5" fill="#44403c">ptr: A.child -&gt; C</text>
   <g class="from-a-fwd">
-    <rect x="182" y="248" width="80" height="22" rx="4" fill="#d97706"/>
+    <rect x="182" y="248" width="80" height="22" rx="4" fill="#b45309"/>
     <text x="222" y="263" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">fwd -&gt; A'</text>
   </g>
 
   <!-- Object B (Garbage) in From-Space -->
-  <rect x="56" y="298" width="214" height="46" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
-  <text x="68" y="317" class="mono" font-size="12" font-weight="700" fill="#64748b">Obj B (unreachable)</text>
-  <text x="68" y="334" class="mono" font-size="10.5" fill="#94a3b8">temp array · dead</text>
+  <rect x="56" y="298" width="214" height="46" rx="6" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <text x="68" y="317" class="mono" font-size="12" font-weight="700" fill="#57534e">Obj B (unreachable)</text>
+  <text x="68" y="334" class="mono" font-size="10.5" fill="#57534e">temp array · dead</text>
   <g class="dead-b">
-    <rect x="56" y="298" width="214" height="46" rx="6" fill="#fff1f2" stroke="#e11d48" stroke-width="1.5" stroke-dasharray="4 3"/>
-    <text x="68" y="317" class="mono" font-size="12" font-weight="700" fill="#be123c">Obj B (garbage)</text>
-    <text x="68" y="334" class="mono" font-size="10.5" fill="#e11d48">reclaimed on space swap</text>
+    <rect x="56" y="298" width="214" height="46" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="4 3"/>
+    <text x="68" y="317" class="mono" font-size="12" font-weight="700" fill="#991b1b">Obj B (garbage)</text>
+    <text x="68" y="334" class="mono" font-size="10.5" fill="#dc2626">reclaimed on space swap</text>
   </g>
 
   <!-- Object C in From-Space -->
-  <rect x="56" y="354" width="214" height="46" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
-  <text x="68" y="373" class="mono" font-size="12" font-weight="700" fill="#1e40af">Obj C (age=0)</text>
-  <text x="68" y="390" class="mono" font-size="10.5" fill="#475569">leaf buffer (no refs)</text>
+  <rect x="56" y="354" width="214" height="46" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="68" y="373" class="mono" font-size="12" font-weight="700" fill="#065f46">Obj C (age=0)</text>
+  <text x="68" y="390" class="mono" font-size="10.5" fill="#44403c">leaf buffer (no refs)</text>
   <g class="from-c-fwd">
-    <rect x="182" y="360" width="80" height="22" rx="4" fill="#d97706"/>
+    <rect x="182" y="360" width="80" height="22" rx="4" fill="#b45309"/>
     <text x="222" y="375" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">fwd -&gt; C'</text>
   </g>
 
   <!-- Object D (Promoted) in From-Space -->
-  <rect x="56" y="410" width="214" height="46" rx="6" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
-  <text x="68" y="429" class="mono" font-size="12" font-weight="700" fill="#5b21b6">Obj D (age=1 -&gt; 2)</text>
-  <text x="68" y="446" class="mono" font-size="10.5" fill="#6d28d9">survived 2 scavenges</text>
+  <rect x="56" y="410" width="214" height="46" rx="6" fill="#f5f1e8" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="68" y="429" class="mono" font-size="12" font-weight="700" fill="#065f46">Obj D (age=1 -&gt; 2)</text>
+  <text x="68" y="446" class="mono" font-size="10.5" fill="#065f46">survived 2 scavenges</text>
 
   <!-- To-Space Box -->
-  <rect x="326" y="200" width="246" height="196" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
-  <rect x="326" y="200" width="246" height="28" rx="8" fill="#d1fae5"/>
-  <rect x="326" y="218" width="246" height="10" fill="#d1fae5"/>
+  <rect x="326" y="200" width="246" height="196" rx="8" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
+  <rect x="326" y="200" width="246" height="28" rx="8" fill="#f0fdf9"/>
+  <rect x="326" y="218" width="246" height="10" fill="#f0fdf9"/>
   <text x="449" y="219" class="mono" font-size="11.5" font-weight="700" fill="#065f46" text-anchor="middle">To-Space (Cheney BFS Queue)</text>
 
   <!-- Copied A' in To-Space -->
   <g class="to-a-box">
-    <rect x="382" y="242" width="176" height="46" rx="6" fill="#ffffff" stroke="#059669" stroke-width="2"/>
+    <rect x="382" y="242" width="176" height="46" rx="6" fill="#ffffff" stroke="#0f766e" stroke-width="2"/>
     <text x="394" y="261" class="mono" font-size="12" font-weight="700" fill="#065f46">Obj A' (age=1)</text>
-    <text x="394" y="278" class="mono" font-size="10.5" fill="#047857">A'.child -&gt; C'</text>
+    <text x="394" y="278" class="mono" font-size="10.5" fill="#065f46">A'.child -&gt; C'</text>
   </g>
 
   <!-- Copied C' in To-Space -->
   <g class="to-c-box">
-    <rect x="382" y="300" width="176" height="46" rx="6" fill="#ffffff" stroke="#059669" stroke-width="2"/>
+    <rect x="382" y="300" width="176" height="46" rx="6" fill="#ffffff" stroke="#0f766e" stroke-width="2"/>
     <text x="394" y="319" class="mono" font-size="12" font-weight="700" fill="#065f46">Obj C' (age=1)</text>
-    <text x="394" y="336" class="mono" font-size="10.5" fill="#047857">leaf buffer</text>
+    <text x="394" y="336" class="mono" font-size="10.5" fill="#065f46">leaf buffer</text>
   </g>
 
   <!-- Cheney scan & free pointers -->
   <g class="ptr-scan">
-    <rect x="332" y="250" width="44" height="20" rx="4" fill="#2563eb"/>
+    <rect x="332" y="250" width="44" height="20" rx="4" fill="#0f766e"/>
     <text x="354" y="264" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">scan</text>
   </g>
   <g class="ptr-free">
-    <rect x="332" y="274" width="44" height="20" rx="4" fill="#d97706"/>
+    <rect x="332" y="274" width="44" height="20" rx="4" fill="#b45309"/>
     <text x="354" y="288" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">free</text>
   </g>
 
   <!-- Promotion target box -->
-  <rect x="326" y="408" width="246" height="62" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
-  <text x="338" y="427" class="sans" font-size="11.5" font-weight="700" fill="#5b21b6">Promoted -&gt; Old Space</text>
+  <rect x="326" y="408" width="246" height="62" rx="8" fill="#f5f1e8" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="338" y="427" class="sans" font-size="11.5" font-weight="700" fill="#065f46">Promoted -&gt; Old Space</text>
   <g class="promo-d">
-    <rect x="338" y="435" width="222" height="26" rx="5" fill="#ffffff" stroke="#7c3aed"/>
-    <text x="449" y="452" class="mono" font-size="11" font-weight="700" fill="#5b21b6" text-anchor="middle">Obj D promoted (no future copy)</text>
+    <rect x="338" y="435" width="222" height="26" rx="5" fill="#ffffff" stroke="#0f766e"/>
+    <text x="449" y="452" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">Obj D promoted (no future copy)</text>
   </g>
 
   <!-- Connecting arrows From -> To / Old -->
-  <path d="M 270 265 L 320 265" stroke="#059669" stroke-width="2" marker-end="url(#arr-emerald)" class="to-a-box"/>
-  <path d="M 270 377 C 298 377, 298 323, 320 323" fill="none" stroke="#059669" stroke-width="2" marker-end="url(#arr-emerald)" class="to-c-box"/>
-  <path d="M 270 434 L 320 434" stroke="#7c3aed" stroke-width="2" marker-end="url(#arr-violet)" class="promo-d"/>
+  <path d="M 270 265 L 320 265" stroke="#0f766e" stroke-width="2" marker-end="url(#arr-emerald)" class="to-a-box"/>
+  <path d="M 270 377 C 298 377, 298 323, 320 323" fill="none" stroke="#0f766e" stroke-width="2" marker-end="url(#arr-emerald)" class="to-c-box"/>
+  <path d="M 270 434 L 320 434" stroke="#0f766e" stroke-width="2" marker-end="url(#arr-violet)" class="promo-d"/>
 
   <!-- Young-Gen Step Trace Box -->
-  <rect x="40" y="486" width="532" height="128" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
-  <text x="54" y="508" class="sans" font-size="11" font-weight="700" fill="#475569">SCAVENGER TRACE (CHENEY 1970):</text>
+  <rect x="40" y="486" width="532" height="128" rx="8" fill="#faf8f5" stroke="#d6d0c4"/>
+  <text x="54" y="508" class="sans" font-size="11" font-weight="700" fill="#44403c">SCAVENGER TRACE (CHENEY 1970):</text>
 
   <g class="st-1">
-    <rect x="448" y="494" width="110" height="22" rx="4" fill="#eff6ff" stroke="#93c5fd"/>
-    <text x="503" y="509" class="mono" font-size="10.5" font-weight="700" fill="#1d4ed8" text-anchor="middle">Step 1 / 4</text>
-    <text x="54" y="534" class="mono" font-size="12.5" font-weight="700" fill="#0f172a">Scan Roots + Remembered Set (Old -&gt; Young)</text>
-    <text x="54" y="556" class="sans" font-size="11.5" fill="#334155">Write barrier recorded old_cache -&gt; A; no full Old-Gen scan needed.</text>
-    <text x="54" y="576" class="sans" font-size="11.5" fill="#475569">Initial queue: scan = free = to-space.start.</text>
-    <text x="54" y="596" class="mono" font-size="10.5" fill="#2563eb">Invariant: every live root is evacuated exactly once.</text>
+    <rect x="448" y="494" width="110" height="22" rx="4" fill="#f0fdf9" stroke="#99f6e4"/>
+    <text x="503" y="509" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Step 1 / 4</text>
+    <text x="54" y="534" class="mono" font-size="12.5" font-weight="700" fill="#1c1917">Scan Roots + Remembered Set (Old -&gt; Young)</text>
+    <text x="54" y="556" class="sans" font-size="11.5" fill="#44403c">Write barrier recorded old_cache -&gt; A; no full Old-Gen scan needed.</text>
+    <text x="54" y="576" class="sans" font-size="11.5" fill="#44403c">Initial queue: scan = free = to-space.start.</text>
+    <text x="54" y="596" class="mono" font-size="10.5" fill="#0f766e">Invariant: every live root is evacuated exactly once.</text>
   </g>
   <g class="st-2">
-    <rect x="448" y="494" width="110" height="22" rx="4" fill="#ecfdf5" stroke="#6ee7b7"/>
+    <rect x="448" y="494" width="110" height="22" rx="4" fill="#f0fdf9" stroke="#99f6e4"/>
     <text x="503" y="509" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Step 2 / 4</text>
-    <text x="54" y="534" class="mono" font-size="12.5" font-weight="700" fill="#0f172a">EVACUATE(A): Copy A -&gt; To-Space, Leave Fwd Ptr</text>
-    <text x="54" y="556" class="sans" font-size="11.5" fill="#334155">A copied to To-Space as A'; free advances; forwarding ptr saved in A.</text>
-    <text x="54" y="576" class="sans" font-size="11.5" fill="#475569">Duplicate pointers to A (root_0 &amp; remembered set) reuse fwd -&gt; A'.</text>
-    <text x="54" y="596" class="mono" font-size="10.5" fill="#059669">No mark stack needed: To-Space [scan, free) IS the BFS queue.</text>
+    <text x="54" y="534" class="mono" font-size="12.5" font-weight="700" fill="#1c1917">EVACUATE(A): Copy A -&gt; To-Space, Leave Fwd Ptr</text>
+    <text x="54" y="556" class="sans" font-size="11.5" fill="#44403c">A copied to To-Space as A'; free advances; forwarding ptr saved in A.</text>
+    <text x="54" y="576" class="sans" font-size="11.5" fill="#44403c">Duplicate pointers to A (root_0 &amp; remembered set) reuse fwd -&gt; A'.</text>
+    <text x="54" y="596" class="mono" font-size="10.5" fill="#0f766e">No mark stack needed: To-Space [scan, free) IS the BFS queue.</text>
   </g>
   <g class="st-3">
-    <rect x="448" y="494" width="110" height="22" rx="4" fill="#f5f3ff" stroke="#c4b5fd"/>
-    <text x="503" y="509" class="mono" font-size="10.5" font-weight="700" fill="#5b21b6" text-anchor="middle">Step 3 / 4</text>
-    <text x="54" y="534" class="mono" font-size="12.5" font-weight="700" fill="#0f172a">BFS scan &lt; free: Evacuate C &amp; Promote D</text>
-    <text x="54" y="556" class="sans" font-size="11.5" fill="#334155">Scanning A' discovers A'.child -&gt; C; C copied to C', scan advances.</text>
-    <text x="54" y="576" class="sans" font-size="11.5" fill="#475569">D already survived one scavenge -&gt; PROMOTE(D) directly to Old Space.</text>
-    <text x="54" y="596" class="mono" font-size="10.5" fill="#7c3aed">Objects surviving 2 scavenges stop paying young-gen copy cost.</text>
+    <rect x="448" y="494" width="110" height="22" rx="4" fill="#f5f1e8" stroke="#d6d0c4"/>
+    <text x="503" y="509" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Step 3 / 4</text>
+    <text x="54" y="534" class="mono" font-size="12.5" font-weight="700" fill="#1c1917">BFS scan &lt; free: Evacuate C &amp; Promote D</text>
+    <text x="54" y="556" class="sans" font-size="11.5" fill="#44403c">Scanning A' discovers A'.child -&gt; C; C copied to C', scan advances.</text>
+    <text x="54" y="576" class="sans" font-size="11.5" fill="#44403c">D already survived one scavenge -&gt; PROMOTE(D) directly to Old Space.</text>
+    <text x="54" y="596" class="mono" font-size="10.5" fill="#0f766e">Objects surviving 2 scavenges stop paying young-gen copy cost.</text>
   </g>
   <g class="st-4">
-    <rect x="448" y="494" width="110" height="22" rx="4" fill="#fff1f2" stroke="#fda4af"/>
-    <text x="503" y="509" class="mono" font-size="10.5" font-weight="700" fill="#be123c" text-anchor="middle">Step 4 / 4</text>
-    <text x="54" y="534" class="mono" font-size="12.5" font-weight="700" fill="#0f172a">scan == free: Swap Semi-Spaces (B Reclaimed)</text>
-    <text x="54" y="556" class="sans" font-size="11.5" fill="#334155">swap(From, To). Unreachable Obj B is never visited — zero per-dead-obj cost.</text>
-    <text x="54" y="576" class="sans" font-size="11.5" fill="#475569">Next allocations bump-allocate into the new empty From-Space.</text>
-    <text x="54" y="596" class="mono" font-size="10.5" fill="#059669">Pause time scales strictly with surviving bytes, not garbage.</text>
+    <rect x="448" y="494" width="110" height="22" rx="4" fill="#fef2f2" stroke="#fda4af"/>
+    <text x="503" y="509" class="mono" font-size="10.5" font-weight="700" fill="#991b1b" text-anchor="middle">Step 4 / 4</text>
+    <text x="54" y="534" class="mono" font-size="12.5" font-weight="700" fill="#1c1917">scan == free: Swap Semi-Spaces (B Reclaimed)</text>
+    <text x="54" y="556" class="sans" font-size="11.5" fill="#44403c">swap(From, To). Unreachable Obj B is never visited — zero per-dead-obj cost.</text>
+    <text x="54" y="576" class="sans" font-size="11.5" fill="#44403c">Next allocations bump-allocate into the new empty From-Space.</text>
+    <text x="54" y="596" class="mono" font-size="10.5" fill="#0f766e">Pause time scales strictly with surviving bytes, not garbage.</text>
   </g>
 
   <!-- RIGHT PANEL: Old Gen Orinoco -->
-  <rect x="612" y="78" width="564" height="552" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
-  <rect x="612" y="78" width="564" height="36" rx="10" fill="#f1f5f9"/>
-  <rect x="612" y="104" width="564" height="10" fill="#f1f5f9"/>
-  <text x="628" y="101" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">2. Old Generation: Orinoco Tri-Color Mark-Compact</text>
-  <text x="1160" y="101" class="mono" font-size="11" fill="#059669" text-anchor="end">Concurrent Mark + Sweep</text>
+  <rect x="612" y="78" width="564" height="552" rx="10" fill="#ffffff" stroke="#d6d0c4"/>
+  <rect x="612" y="78" width="564" height="36" rx="10" fill="#f5f1e8"/>
+  <rect x="612" y="104" width="564" height="10" fill="#f5f1e8"/>
+  <text x="628" y="101" class="sans" font-size="13.5" font-weight="700" fill="#1c1917">2. Old Generation: Orinoco Tri-Color Mark-Compact</text>
+  <text x="1160" y="101" class="mono" font-size="11" fill="#0f766e" text-anchor="end">Concurrent Mark + Sweep</text>
 
   <!-- Tri-Color Legend Pills inside Panel -->
-  <rect x="628" y="128" width="164" height="34" rx="6" fill="#ffffff" stroke="#94a3b8"/>
-  <text x="710" y="149" class="mono" font-size="11" font-weight="700" fill="#334155" text-anchor="middle">WHITE: Unseen</text>
+  <rect x="628" y="128" width="164" height="34" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="710" y="149" class="mono" font-size="11" font-weight="700" fill="#44403c" text-anchor="middle">WHITE: Unseen</text>
 
-  <rect x="804" y="128" width="174" height="34" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="2"/>
+  <rect x="804" y="128" width="174" height="34" rx="6" fill="#fffbeb" stroke="#b45309" stroke-width="2"/>
   <text x="891" y="149" class="mono" font-size="11" font-weight="700" fill="#92400e" text-anchor="middle">GREY: In Mark Stack</text>
 
-  <rect x="990" y="128" width="170" height="34" rx="6" fill="#1e293b" stroke="#0f172a"/>
-  <text x="1075" y="149" class="mono" font-size="11" font-weight="700" fill="#f8fafc" text-anchor="middle">BLACK: Live &amp; Scanned</text>
+  <rect x="990" y="128" width="170" height="34" rx="6" fill="#1c1917" stroke="#1c1917"/>
+  <text x="1075" y="149" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">BLACK: Live &amp; Scanned</text>
 
   <!-- Old-Gen Heap Graph Area -->
-  <rect x="628" y="176" width="532" height="294" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
-  <text x="644" y="198" class="sans" font-size="11.5" font-weight="700" fill="#475569">Old-Space Object Graph + Dijkstra Write Barrier (No Black -&gt; White)</text>
+  <rect x="628" y="176" width="532" height="294" rx="8" fill="#faf8f5" stroke="#d6d0c4"/>
+  <text x="644" y="198" class="sans" font-size="11.5" font-weight="700" fill="#44403c">Old-Space Object Graph + Dijkstra Write Barrier (No Black -&gt; White)</text>
 
   <!-- Root -> O1 -->
-  <rect x="650" y="220" width="90" height="44" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
-  <text x="695" y="246" class="mono" font-size="12" font-weight="700" fill="#1d4ed8" text-anchor="middle">Old Root</text>
+  <rect x="650" y="220" width="90" height="44" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
+  <text x="695" y="246" class="mono" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">Old Root</text>
 
   <!-- Edge Root -> O1 -->
-  <line x1="740" y1="242" x2="782" y2="242" stroke="#475569" stroke-width="2" marker-end="url(#arr-slate)"/>
+  <line x1="740" y1="242" x2="782" y2="242" stroke="#44403c" stroke-width="2" marker-end="url(#arr-slate)"/>
 
   <!-- Node O1 -->
   <rect x="790" y="216" width="112" height="54" rx="8" class="o1-rect"/>
@@ -315,7 +315,7 @@
   <text x="846" y="258" class="mono o1-lbl" font-size="10" text-anchor="middle">root target</text>
 
   <!-- Edge O1 -> O2 -->
-  <line x1="902" y1="242" x2="964" y2="242" stroke="#475569" stroke-width="2" marker-end="url(#arr-slate)"/>
+  <line x1="902" y1="242" x2="964" y2="242" stroke="#44403c" stroke-width="2" marker-end="url(#arr-slate)"/>
 
   <!-- Node O2 -->
   <rect x="972" y="216" width="112" height="54" rx="8" class="o2-rect"/>
@@ -329,79 +329,79 @@
 
   <!-- Write-barrier edge O1 -> O3 -->
   <g class="wb-arc">
-    <path d="M 846 270 L 846 338" fill="none" stroke="#d97706" stroke-width="2.5" marker-end="url(#arr-amber)"/>
-    <rect x="652" y="290" width="182" height="38" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+    <path d="M 846 270 L 846 338" fill="none" stroke="#b45309" stroke-width="2.5" marker-end="url(#arr-amber)"/>
+    <rect x="652" y="290" width="182" height="38" rx="6" fill="#fffbeb" stroke="#b45309" stroke-width="1.5"/>
     <text x="743" y="306" class="mono" font-size="10" font-weight="700" fill="#92400e" text-anchor="middle">Write Barrier: O1.x = O3</text>
     <text x="743" y="321" class="sans" font-size="10" fill="#b45309" text-anchor="middle">Marks O3 GREY immediately</text>
   </g>
 
   <!-- Node O4 (Unreachable -> Swept) -->
   <rect x="996" y="346" width="142" height="58" rx="8" class="o4-rect"/>
-  <text x="1067" y="370" class="mono" font-size="13" font-weight="700" fill="#be123c" text-anchor="middle">O4 (dead)</text>
-  <text x="1067" y="388" class="mono" font-size="10" fill="#9f1239" text-anchor="middle">unreferenced page</text>
+  <text x="1067" y="370" class="mono" font-size="13" font-weight="700" fill="#991b1b" text-anchor="middle">O4 (dead)</text>
+  <text x="1067" y="388" class="mono" font-size="10" fill="#991b1b" text-anchor="middle">unreferenced page</text>
 
   <!-- Compacted Pages Strip inside Old-Gen box -->
-  <rect x="644" y="420" width="500" height="38" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="656" y="443" class="sans" font-size="11" font-weight="700" fill="#475569">Page Layout:</text>
-  <rect x="738" y="427" width="76" height="24" rx="4" fill="#1e293b"/>
-  <text x="776" y="443" class="mono" font-size="11" font-weight="700" fill="#f8fafc" text-anchor="middle">O1</text>
-  <rect x="822" y="427" width="76" height="24" rx="4" fill="#1e293b"/>
-  <text x="860" y="443" class="mono" font-size="11" font-weight="700" fill="#f8fafc" text-anchor="middle">O2</text>
-  <rect x="906" y="427" width="76" height="24" rx="4" fill="#1e293b"/>
-  <text x="944" y="443" class="mono" font-size="11" font-weight="700" fill="#f8fafc" text-anchor="middle">O3</text>
+  <rect x="644" y="420" width="500" height="38" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="656" y="443" class="sans" font-size="11" font-weight="700" fill="#44403c">Page Layout:</text>
+  <rect x="738" y="427" width="76" height="24" rx="4" fill="#1c1917"/>
+  <text x="776" y="443" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">O1</text>
+  <rect x="822" y="427" width="76" height="24" rx="4" fill="#1c1917"/>
+  <text x="860" y="443" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">O2</text>
+  <rect x="906" y="427" width="76" height="24" rx="4" fill="#1c1917"/>
+  <text x="944" y="443" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">O3</text>
   <g class="compact-badge">
-    <rect x="990" y="427" width="142" height="24" rx="4" fill="#ecfdf5" stroke="#059669"/>
+    <rect x="990" y="427" width="142" height="24" rx="4" fill="#f0fdf9" stroke="#0f766e"/>
     <text x="1061" y="443" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">O4 Swept · Compacted</text>
   </g>
 
   <!-- Old-Gen Step Trace Box -->
-  <rect x="628" y="486" width="532" height="128" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
-  <text x="642" y="508" class="sans" font-size="11" font-weight="700" fill="#475569">ORINOCO CONCURRENT MARK-COMPACT TRACE:</text>
+  <rect x="628" y="486" width="532" height="128" rx="8" fill="#faf8f5" stroke="#d6d0c4"/>
+  <text x="642" y="508" class="sans" font-size="11" font-weight="700" fill="#44403c">ORINOCO CONCURRENT MARK-COMPACT TRACE:</text>
 
   <g class="st-1">
-    <rect x="1036" y="494" width="110" height="22" rx="4" fill="#fffbeb" stroke="#fcd34d"/>
+    <rect x="1036" y="494" width="110" height="22" rx="4" fill="#fffbeb" stroke="#fde68a"/>
     <text x="1091" y="509" class="mono" font-size="10.5" font-weight="700" fill="#92400e" text-anchor="middle">Phase 1 / 4</text>
-    <text x="642" y="534" class="mono" font-size="12.5" font-weight="700" fill="#0f172a">Root Mark: O1 Enters Grey Worklist</text>
-    <text x="642" y="556" class="sans" font-size="11.5" fill="#334155">Main thread briefly marks roots Grey; JS resumes immediately.</text>
-    <text x="642" y="576" class="sans" font-size="11.5" fill="#475569">Background helper threads begin concurrent marking alongside JS.</text>
-    <text x="642" y="596" class="mono" font-size="10.5" fill="#d97706">Grey = discovered, children not yet scanned.</text>
+    <text x="642" y="534" class="mono" font-size="12.5" font-weight="700" fill="#1c1917">Root Mark: O1 Enters Grey Worklist</text>
+    <text x="642" y="556" class="sans" font-size="11.5" fill="#44403c">Main thread briefly marks roots Grey; JS resumes immediately.</text>
+    <text x="642" y="576" class="sans" font-size="11.5" fill="#44403c">Background helper threads begin concurrent marking alongside JS.</text>
+    <text x="642" y="596" class="mono" font-size="10.5" fill="#b45309">Grey = discovered, children not yet scanned.</text>
   </g>
   <g class="st-2">
-    <rect x="1036" y="494" width="110" height="22" rx="4" fill="#eff6ff" stroke="#93c5fd"/>
-    <text x="1091" y="509" class="mono" font-size="10.5" font-weight="700" fill="#1d4ed8" text-anchor="middle">Phase 2 / 4</text>
-    <text x="642" y="534" class="mono" font-size="12.5" font-weight="700" fill="#0f172a">Concurrent Scan: O1 -&gt; Black, O2 -&gt; Grey</text>
-    <text x="642" y="556" class="sans" font-size="11.5" fill="#334155">Helper pops O1, pushes child O2 as Grey, and paints O1 Black.</text>
-    <text x="642" y="576" class="sans" font-size="11.5" fill="#475569">Main thread continues running request handlers without pausing.</text>
-    <text x="642" y="596" class="mono" font-size="10.5" fill="#2563eb">Invariant: no Black object may point directly to a White object.</text>
+    <rect x="1036" y="494" width="110" height="22" rx="4" fill="#f0fdf9" stroke="#99f6e4"/>
+    <text x="1091" y="509" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Phase 2 / 4</text>
+    <text x="642" y="534" class="mono" font-size="12.5" font-weight="700" fill="#1c1917">Concurrent Scan: O1 -&gt; Black, O2 -&gt; Grey</text>
+    <text x="642" y="556" class="sans" font-size="11.5" fill="#44403c">Helper pops O1, pushes child O2 as Grey, and paints O1 Black.</text>
+    <text x="642" y="576" class="sans" font-size="11.5" fill="#44403c">Main thread continues running request handlers without pausing.</text>
+    <text x="642" y="596" class="mono" font-size="10.5" fill="#0f766e">Invariant: no Black object may point directly to a White object.</text>
   </g>
   <g class="st-3">
-    <rect x="1036" y="494" width="110" height="22" rx="4" fill="#fffbeb" stroke="#d97706"/>
+    <rect x="1036" y="494" width="110" height="22" rx="4" fill="#fffbeb" stroke="#b45309"/>
     <text x="1091" y="509" class="mono" font-size="10.5" font-weight="700" fill="#92400e" text-anchor="middle">Phase 3 / 4</text>
-    <text x="642" y="534" class="mono" font-size="12.5" font-weight="700" fill="#0f172a">Mutator Race: Write Barrier Greys O3</text>
-    <text x="642" y="556" class="sans" font-size="11.5" fill="#334155">JS executes O1.x = O3 (White). O1 is Black and won't be re-scanned!</text>
-    <text x="642" y="576" class="sans" font-size="11.5" fill="#475569">Dijkstra marking barrier intercepts write and pushes O3 to Grey stack.</text>
+    <text x="642" y="534" class="mono" font-size="12.5" font-weight="700" fill="#1c1917">Mutator Race: Write Barrier Greys O3</text>
+    <text x="642" y="556" class="sans" font-size="11.5" fill="#44403c">JS executes O1.x = O3 (White). O1 is Black and won't be re-scanned!</text>
+    <text x="642" y="576" class="sans" font-size="11.5" fill="#44403c">Dijkstra marking barrier intercepts write and pushes O3 to Grey stack.</text>
     <text x="642" y="596" class="mono" font-size="10.5" fill="#b45309">Prevents live O3 from being hidden and freed by the sweeper.</text>
   </g>
   <g class="st-4">
-    <rect x="1036" y="494" width="110" height="22" rx="4" fill="#ecfdf5" stroke="#059669"/>
+    <rect x="1036" y="494" width="110" height="22" rx="4" fill="#f0fdf9" stroke="#0f766e"/>
     <text x="1091" y="509" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Phase 4 / 4</text>
-    <text x="642" y="534" class="mono" font-size="12.5" font-weight="700" fill="#0f172a">Concurrent Sweep &amp; Parallel Compaction</text>
-    <text x="642" y="556" class="sans" font-size="11.5" fill="#334155">Final atomic pause drains mark stack; O4 (White) is lazily swept.</text>
-    <text x="642" y="576" class="sans" font-size="11.5" fill="#475569">Fragmented pages are evacuated in parallel during the pause.</text>
-    <text x="642" y="596" class="mono" font-size="10.5" fill="#059669">Large in-heap caches increase live data and extend full-GC pauses.</text>
+    <text x="642" y="534" class="mono" font-size="12.5" font-weight="700" fill="#1c1917">Concurrent Sweep &amp; Parallel Compaction</text>
+    <text x="642" y="556" class="sans" font-size="11.5" fill="#44403c">Final atomic pause drains mark stack; O4 (White) is lazily swept.</text>
+    <text x="642" y="576" class="sans" font-size="11.5" fill="#44403c">Fragmented pages are evacuated in parallel during the pause.</text>
+    <text x="642" y="596" class="mono" font-size="10.5" fill="#0f766e">Large in-heap caches increase live data and extend full-GC pauses.</text>
   </g>
 
   <!-- Footer Invariant & Legend Bar -->
-  <rect x="24" y="646" width="1152" height="54" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
-  <rect x="40" y="661" width="14" height="14" rx="3" fill="#eff6ff" stroke="#2563eb"/>
-  <text x="60" y="672" class="sans" font-size="11.5" fill="#334155">Roots / Live</text>
-  <rect x="150" y="661" width="14" height="14" rx="3" fill="#ecfdf5" stroke="#059669"/>
-  <text x="170" y="672" class="sans" font-size="11.5" fill="#334155">Evacuated / Swept</text>
-  <rect x="298" y="661" width="14" height="14" rx="3" fill="#fffbeb" stroke="#d97706"/>
-  <text x="318" y="672" class="sans" font-size="11.5" fill="#334155">Forwarding / Grey Barrier</text>
-  <rect x="478" y="661" width="14" height="14" rx="3" fill="#f5f3ff" stroke="#7c3aed"/>
-  <text x="498" y="672" class="sans" font-size="11.5" fill="#334155">Remembered Set / Promotion</text>
-  <rect x="688" y="661" width="14" height="14" rx="3" fill="#fff1f2" stroke="#e11d48"/>
-  <text x="708" y="672" class="sans" font-size="11.5" fill="#334155">Garbage Reclaimed</text>
-  <text x="1160" y="672" class="mono" font-size="11" font-weight="700" fill="#0f172a" text-anchor="end">V8 Generational Hypothesis: Most Objects Die Young</text>
+  <rect x="24" y="646" width="1152" height="54" rx="8" fill="#ffffff" stroke="#d6d0c4"/>
+  <rect x="40" y="661" width="14" height="14" rx="3" fill="#f0fdf9" stroke="#0f766e"/>
+  <text x="60" y="672" class="sans" font-size="11.5" fill="#44403c">Roots / Live</text>
+  <rect x="150" y="661" width="14" height="14" rx="3" fill="#f0fdf9" stroke="#0f766e"/>
+  <text x="170" y="672" class="sans" font-size="11.5" fill="#44403c">Evacuated / Swept</text>
+  <rect x="298" y="661" width="14" height="14" rx="3" fill="#fffbeb" stroke="#b45309"/>
+  <text x="318" y="672" class="sans" font-size="11.5" fill="#44403c">Forwarding / Grey Barrier</text>
+  <rect x="478" y="661" width="14" height="14" rx="3" fill="#f5f1e8" stroke="#0f766e"/>
+  <text x="498" y="672" class="sans" font-size="11.5" fill="#44403c">Remembered Set / Promotion</text>
+  <rect x="688" y="661" width="14" height="14" rx="3" fill="#fef2f2" stroke="#dc2626"/>
+  <text x="708" y="672" class="sans" font-size="11.5" fill="#44403c">Garbage Reclaimed</text>
+  <text x="1160" y="672" class="mono" font-size="11" font-weight="700" fill="#1c1917" text-anchor="end">V8 Generational Hypothesis: Most Objects Die Young</text>
 </svg>

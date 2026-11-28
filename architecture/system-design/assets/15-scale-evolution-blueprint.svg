@@ -2,244 +2,241 @@
   <title id="title">Progressive Architecture Evolution: 1 User to 10M+ DAU</title>
   <desc id="desc">Architectural blueprint showing 9 scaling stages from a single server to multi-region cell-based and shuffle-sharded infrastructure, paired with Gunther's Universal Scalability Law retrograde curve.</desc>
   <defs>
-    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#0b1220"/>
-      <stop offset="100%" stop-color="#111c33"/>
-    </linearGradient>
     <marker id="arrowCyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arrowGreen" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#34d399"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arrowAmber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#fbbf24"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#b45309"/>
     </marker>
   </defs>
 
   <!-- Canvas -->
-  <rect x="0" y="0" width="1200" height="760" rx="16" fill="url(#bgGrad)" stroke="#24344d" stroke-width="2"/>
+  <rect x="0" y="0" width="1200" height="760" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <text x="36" y="44" fill="#f8fafc" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="22" font-weight="700">Scale From Zero to 10M+ Users: Progressive Architecture Blueprint</text>
-  <text x="36" y="68" fill="#94a3b8" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="13">Each architectural layer is introduced strictly to relieve a measured bottleneck — premature distribution adds coherency tax before traffic justifies it.</text>
+  <text x="36" y="44" fill="#1c1917" font-family="Georgia, 'Times New Roman', serif" font-size="22" font-weight="700">Scale From Zero to 10M+ Users: Progressive Architecture Blueprint</text>
+  <text x="36" y="68" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="13">Each architectural layer is introduced strictly to relieve a measured bottleneck — premature distribution adds coherency tax before traffic justifies it.</text>
+  <line x1="36" y1="79" x2="1164" y2="79" stroke="#1c1917" stroke-width="1.2"/>
 
   <!-- Scale progression rail -->
-  <rect x="36" y="86" width="1128" height="30" rx="6" fill="#17233b" stroke="#2a3d5e" stroke-width="1"/>
-  <text x="58" y="106" fill="#38bdf8" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" font-weight="700">1–1k DAU</text>
-  <text x="195" y="106" fill="#38bdf8" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" font-weight="700">10k DAU</text>
-  <text x="355" y="106" fill="#34d399" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" font-weight="700">100k DAU</text>
-  <text x="545" y="106" fill="#34d399" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" font-weight="700">500k DAU</text>
-  <text x="735" y="106" fill="#fbbf24" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" font-weight="700">1M–5M DAU</text>
-  <text x="955" y="106" fill="#f87171" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" font-weight="700">10M+ DAU (Global)</text>
+  <rect x="36" y="86" width="1128" height="30" rx="6" fill="#ffffff" stroke="#d6d0c4" stroke-width="1"/>
+  <text x="58" y="106" fill="#0f766e" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" font-weight="700">1–1k DAU</text>
+  <text x="195" y="106" fill="#0f766e" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" font-weight="700">10k DAU</text>
+  <text x="355" y="106" fill="#0f766e" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" font-weight="700">100k DAU</text>
+  <text x="545" y="106" fill="#0f766e" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" font-weight="700">500k DAU</text>
+  <text x="735" y="106" fill="#b45309" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" font-weight="700">1M–5M DAU</text>
+  <text x="955" y="106" fill="#dc2626" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" font-weight="700">10M+ DAU (Global)</text>
 
   <!-- ROW 1: Stages 0, 1, 2, 3 -->
   <!-- Stage 0 -->
   <g transform="translate(36, 132)">
-    <rect width="266" height="172" rx="10" fill="#132038" stroke="#38bdf8" stroke-width="1.5"/>
-    <rect x="0" y="0" width="266" height="28" rx="10" fill="#1b3054"/>
-    <text x="12" y="19" fill="#38bdf8" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" font-weight="700">STAGE 0–1 · Single Box → DB Split</text>
-    <rect x="14" y="40" width="70" height="36" rx="6" fill="#1e293b" stroke="#64748b"/>
-    <text x="49" y="62" text-anchor="middle" fill="#e2e8f0" font-family="system-ui, sans-serif" font-size="11">DNS</text>
-    <line x1="84" y1="58" x2="106" y2="58" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrowCyan)"/>
-    <rect x="110" y="40" width="66" height="36" rx="6" fill="#1e3a5f" stroke="#38bdf8"/>
-    <text x="143" y="62" text-anchor="middle" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Web App</text>
-    <line x1="176" y1="58" x2="196" y2="58" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrowCyan)"/>
-    <rect x="200" y="40" width="52" height="36" rx="6" fill="#1b4332" stroke="#34d399"/>
-    <text x="226" y="62" text-anchor="middle" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="11" font-weight="600">SQL DB</text>
-    <text x="14" y="98" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="11">• Independent CPU/RAM/IOPS scaling</text>
-    <text x="14" y="116" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="11">• Scale-up works far longer in 2026</text>
-    <text x="14" y="134" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11">  (192-core NVMe Gen5 handles ~50k QPS)</text>
-    <text x="14" y="156" fill="#f87171" font-family="ui-monospace, monospace" font-size="10.5">Limit: Single SPOF, zero failover</text>
+    <rect width="266" height="172" rx="10" fill="#ffffff" stroke="#0f766e" stroke-width="1.5"/>
+    <rect x="0" y="0" width="266" height="28" rx="10" fill="#f5f1e8"/>
+    <text x="12" y="19" fill="#0f766e" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" font-weight="700">STAGE 0–1 · Single Box → DB Split</text>
+    <rect x="14" y="40" width="70" height="36" rx="6" fill="#f5f1e8" stroke="#57534e"/>
+    <text x="49" y="62" text-anchor="middle" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11">DNS</text>
+    <line x1="84" y1="58" x2="106" y2="58" stroke="#0f766e" stroke-width="1.5" marker-end="url(#arrowCyan)"/>
+    <rect x="110" y="40" width="66" height="36" rx="6" fill="#f0fdf9" stroke="#0f766e"/>
+    <text x="143" y="62" text-anchor="middle" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11" font-weight="600">Web App</text>
+    <line x1="176" y1="58" x2="196" y2="58" stroke="#0f766e" stroke-width="1.5" marker-end="url(#arrowCyan)"/>
+    <rect x="200" y="40" width="52" height="36" rx="6" fill="#f0fdf9" stroke="#0f766e"/>
+    <text x="226" y="62" text-anchor="middle" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11" font-weight="600">SQL DB</text>
+    <text x="14" y="98" fill="#44403c" font-family="system-ui, sans-serif" font-size="11">• Independent CPU/RAM/IOPS scaling</text>
+    <text x="14" y="116" fill="#44403c" font-family="system-ui, sans-serif" font-size="11">• Scale-up works far longer in 2026</text>
+    <text x="14" y="134" fill="#57534e" font-family="system-ui, sans-serif" font-size="11">  (192-core NVMe Gen5 handles ~50k QPS)</text>
+    <text x="14" y="156" fill="#dc2626" font-family="ui-monospace, monospace" font-size="10.5">Limit: Single SPOF, zero failover</text>
   </g>
 
   <!-- Arrow 0->2 -->
-  <line x1="302" y1="218" x2="322" y2="218" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrowCyan)"/>
+  <line x1="302" y1="218" x2="322" y2="218" stroke="#0f766e" stroke-width="2" marker-end="url(#arrowCyan)"/>
 
   <!-- Stage 2-3 -->
   <g transform="translate(324, 132)">
-    <rect width="266" height="172" rx="10" fill="#132038" stroke="#34d399" stroke-width="1.5"/>
-    <rect x="0" y="0" width="266" height="28" rx="10" fill="#143832"/>
-    <text x="12" y="19" fill="#34d399" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" font-weight="700">STAGE 2–3 · L4/L7 LB + Read Replicas</text>
-    <rect x="14" y="40" width="54" height="38" rx="6" fill="#1e3a5f" stroke="#38bdf8"/>
-    <text x="41" y="63" text-anchor="middle" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="10.5" font-weight="600">L7 LB</text>
-    <line x1="68" y1="52" x2="88" y2="48" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrowGreen)"/>
-    <line x1="68" y1="66" x2="88" y2="70" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrowGreen)"/>
-    <rect x="92" y="36" width="58" height="20" rx="4" fill="#1e293b" stroke="#94a3b8"/>
-    <text x="121" y="50" text-anchor="middle" fill="#e2e8f0" font-family="system-ui, sans-serif" font-size="10">Web 1..N</text>
-    <rect x="92" y="60" width="58" height="20" rx="4" fill="#1e293b" stroke="#94a3b8"/>
-    <text x="121" y="74" text-anchor="middle" fill="#e2e8f0" font-family="system-ui, sans-serif" font-size="10">Web N+1</text>
-    <line x1="150" y1="46" x2="174" y2="46" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrowAmber)"/>
-    <line x1="150" y1="70" x2="174" y2="70" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrowGreen)"/>
-    <rect x="178" y="36" width="74" height="20" rx="4" fill="#422006" stroke="#fbbf24"/>
-    <text x="215" y="50" text-anchor="middle" fill="#fef3c7" font-family="system-ui, sans-serif" font-size="10">Primary (W)</text>
-    <rect x="178" y="60" width="74" height="20" rx="4" fill="#14532d" stroke="#34d399"/>
-    <text x="215" y="74" text-anchor="middle" fill="#dcfce7" font-family="system-ui, sans-serif" font-size="10">Replicas (R)</text>
-    <text x="14" y="100" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="11">• P2C / Least-Conn load distribution</text>
-    <text x="14" y="118" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="11">• 10:1 read offload via async WAL stream</text>
-    <text x="14" y="136" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="11">• Guard reads with LSN pinning</text>
-    <text x="14" y="156" fill="#f87171" font-family="ui-monospace, monospace" font-size="10.5">Hazard: Replication lag &amp; split-brain</text>
+    <rect width="266" height="172" rx="10" fill="#ffffff" stroke="#0f766e" stroke-width="1.5"/>
+    <rect x="0" y="0" width="266" height="28" rx="10" fill="#f0fdf9"/>
+    <text x="12" y="19" fill="#0f766e" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" font-weight="700">STAGE 2–3 · L4/L7 LB + Read Replicas</text>
+    <rect x="14" y="40" width="54" height="38" rx="6" fill="#f0fdf9" stroke="#0f766e"/>
+    <text x="41" y="63" text-anchor="middle" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10.5" font-weight="600">L7 LB</text>
+    <line x1="68" y1="52" x2="88" y2="48" stroke="#0f766e" stroke-width="1.5" marker-end="url(#arrowGreen)"/>
+    <line x1="68" y1="66" x2="88" y2="70" stroke="#0f766e" stroke-width="1.5" marker-end="url(#arrowGreen)"/>
+    <rect x="92" y="36" width="58" height="20" rx="4" fill="#f5f1e8" stroke="#57534e"/>
+    <text x="121" y="50" text-anchor="middle" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10">Web 1..N</text>
+    <rect x="92" y="60" width="58" height="20" rx="4" fill="#f5f1e8" stroke="#57534e"/>
+    <text x="121" y="74" text-anchor="middle" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10">Web N+1</text>
+    <line x1="150" y1="46" x2="174" y2="46" stroke="#b45309" stroke-width="1.5" marker-end="url(#arrowAmber)"/>
+    <line x1="150" y1="70" x2="174" y2="70" stroke="#0f766e" stroke-width="1.5" marker-end="url(#arrowGreen)"/>
+    <rect x="178" y="36" width="74" height="20" rx="4" fill="#fffbeb" stroke="#b45309"/>
+    <text x="215" y="50" text-anchor="middle" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10">Primary (W)</text>
+    <rect x="178" y="60" width="74" height="20" rx="4" fill="#f0fdf9" stroke="#0f766e"/>
+    <text x="215" y="74" text-anchor="middle" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10">Replicas (R)</text>
+    <text x="14" y="100" fill="#44403c" font-family="system-ui, sans-serif" font-size="11">• P2C / Least-Conn load distribution</text>
+    <text x="14" y="118" fill="#44403c" font-family="system-ui, sans-serif" font-size="11">• 10:1 read offload via async WAL stream</text>
+    <text x="14" y="136" fill="#44403c" font-family="system-ui, sans-serif" font-size="11">• Guard reads with LSN pinning</text>
+    <text x="14" y="156" fill="#dc2626" font-family="ui-monospace, monospace" font-size="10.5">Hazard: Replication lag &amp; split-brain</text>
   </g>
 
   <!-- Arrow 3->4 -->
-  <line x1="590" y1="218" x2="610" y2="218" stroke="#34d399" stroke-width="2" marker-end="url(#arrowGreen)"/>
+  <line x1="590" y1="218" x2="610" y2="218" stroke="#0f766e" stroke-width="2" marker-end="url(#arrowGreen)"/>
 
   <!-- Stage 4-5 -->
   <g transform="translate(612, 132)">
-    <rect width="266" height="172" rx="10" fill="#132038" stroke="#a78bfa" stroke-width="1.5"/>
-    <rect x="0" y="0" width="266" height="28" rx="10" fill="#2e1d52"/>
-    <text x="12" y="19" fill="#c4b5fd" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" font-weight="700">STAGE 4–5 · CDN + Cache + Stateless</text>
-    <rect x="14" y="38" width="52" height="22" rx="4" fill="#3b0764" stroke="#a78bfa"/>
-    <text x="40" y="53" text-anchor="middle" fill="#f3e8ff" font-family="system-ui, sans-serif" font-size="10">CDN PoP</text>
-    <rect x="76" y="38" width="84" height="22" rx="4" fill="#1e3a5f" stroke="#38bdf8"/>
-    <text x="118" y="53" text-anchor="middle" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="10">Stateless Pool</text>
-    <rect x="170" y="38" width="82" height="22" rx="4" fill="#4c1d95" stroke="#c4b5fd"/>
-    <text x="211" y="53" text-anchor="middle" fill="#f3e8ff" font-family="system-ui, sans-serif" font-size="10">Valkey/Redis</text>
-    <rect x="14" y="64" width="238" height="18" rx="4" fill="#1e293b" stroke="#64748b"/>
-    <text x="133" y="77" text-anchor="middle" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="9">External Session Store + Cache-Aside + Leases</text>
-    <text x="14" y="100" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="11">• Zero sticky sessions → safe autoscale</text>
-    <text x="14" y="118" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="11">• CDN + Origin Shield absorbs static egress</text>
-    <text x="14" y="136" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="11">• Single-flight / TTL jitter stops stampedes</text>
-    <text x="14" y="156" fill="#f87171" font-family="ui-monospace, monospace" font-size="9.5">Hazard: Stale-write race &amp; Set-Cookie leak</text>
+    <rect width="266" height="172" rx="10" fill="#ffffff" stroke="#0f766e" stroke-width="1.5"/>
+    <rect x="0" y="0" width="266" height="28" rx="10" fill="#f5f1e8"/>
+    <text x="12" y="19" fill="#065f46" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" font-weight="700">STAGE 4–5 · CDN + Cache + Stateless</text>
+    <rect x="14" y="38" width="52" height="22" rx="4" fill="#f5f1e8" stroke="#0f766e"/>
+    <text x="40" y="53" text-anchor="middle" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10">CDN PoP</text>
+    <rect x="76" y="38" width="84" height="22" rx="4" fill="#f0fdf9" stroke="#0f766e"/>
+    <text x="118" y="53" text-anchor="middle" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10">Stateless Pool</text>
+    <rect x="170" y="38" width="82" height="22" rx="4" fill="#065f46" stroke="#065f46"/>
+    <text x="211" y="53" text-anchor="middle" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10">Valkey/Redis</text>
+    <rect x="14" y="64" width="238" height="18" rx="4" fill="#f5f1e8" stroke="#57534e"/>
+    <text x="133" y="77" text-anchor="middle" fill="#44403c" font-family="system-ui, sans-serif" font-size="9">External Session Store + Cache-Aside + Leases</text>
+    <text x="14" y="100" fill="#44403c" font-family="system-ui, sans-serif" font-size="11">• Zero sticky sessions → safe autoscale</text>
+    <text x="14" y="118" fill="#44403c" font-family="system-ui, sans-serif" font-size="11">• CDN + Origin Shield absorbs static egress</text>
+    <text x="14" y="136" fill="#44403c" font-family="system-ui, sans-serif" font-size="11">• Single-flight / TTL jitter stops stampedes</text>
+    <text x="14" y="156" fill="#dc2626" font-family="ui-monospace, monospace" font-size="9.5">Hazard: Stale-write race &amp; Set-Cookie leak</text>
   </g>
 
   <!-- Arrow 5->6 -->
-  <line x1="878" y1="218" x2="898" y2="218" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrowAmber)"/>
+  <line x1="878" y1="218" x2="898" y2="218" stroke="#b45309" stroke-width="2" marker-end="url(#arrowAmber)"/>
 
   <!-- Stage 6-7 -->
   <g transform="translate(900, 132)">
-    <rect width="264" height="172" rx="10" fill="#132038" stroke="#fbbf24" stroke-width="1.5"/>
-    <rect x="0" y="0" width="264" height="28" rx="10" fill="#422a08"/>
-    <text x="12" y="19" fill="#fbbf24" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" font-weight="700">STAGE 6–7 · Multi-Region + Queues</text>
-    <rect x="14" y="38" width="76" height="22" rx="4" fill="#1e3a5f" stroke="#38bdf8"/>
-    <text x="52" y="53" text-anchor="middle" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="10">GeoDNS/Anycast</text>
-    <rect x="100" y="38" width="72" height="22" rx="4" fill="#14532d" stroke="#34d399"/>
-    <text x="136" y="53" text-anchor="middle" fill="#dcfce7" font-family="system-ui, sans-serif" font-size="10">Region US</text>
-    <rect x="180" y="38" width="70" height="22" rx="4" fill="#14532d" stroke="#34d399"/>
-    <text x="215" y="53" text-anchor="middle" fill="#dcfce7" font-family="system-ui, sans-serif" font-size="10">Region EU</text>
-    <rect x="14" y="64" width="236" height="18" rx="4" fill="#422006" stroke="#fbbf24"/>
-    <text x="132" y="77" text-anchor="middle" fill="#fef3c7" font-family="system-ui, sans-serif" font-size="9.5">Kafka / SQS / Outbox → Async Worker Fleets</text>
-    <text x="14" y="100" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="11">• Producers &amp; consumers scale decoupled</text>
-    <text x="14" y="118" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="11">• Active-passive or regional home-sharding</text>
-    <text x="14" y="136" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="11">• Bounded queues + DLQ isolate poison jobs</text>
-    <text x="14" y="156" fill="#f87171" font-family="ui-monospace, monospace" font-size="10.5">Hazard: Cross-region RTT &amp; ISP DNS TTL</text>
+    <rect width="264" height="172" rx="10" fill="#ffffff" stroke="#b45309" stroke-width="1.5"/>
+    <rect x="0" y="0" width="264" height="28" rx="10" fill="#fffbeb"/>
+    <text x="12" y="19" fill="#b45309" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" font-weight="700">STAGE 6–7 · Multi-Region + Queues</text>
+    <rect x="14" y="38" width="76" height="22" rx="4" fill="#f0fdf9" stroke="#0f766e"/>
+    <text x="52" y="53" text-anchor="middle" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10">GeoDNS/Anycast</text>
+    <rect x="100" y="38" width="72" height="22" rx="4" fill="#f0fdf9" stroke="#0f766e"/>
+    <text x="136" y="53" text-anchor="middle" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10">Region US</text>
+    <rect x="180" y="38" width="70" height="22" rx="4" fill="#f0fdf9" stroke="#0f766e"/>
+    <text x="215" y="53" text-anchor="middle" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10">Region EU</text>
+    <rect x="14" y="64" width="236" height="18" rx="4" fill="#fffbeb" stroke="#b45309"/>
+    <text x="132" y="77" text-anchor="middle" fill="#92400e" font-family="system-ui, sans-serif" font-size="9.5">Kafka / SQS / Outbox → Async Worker Fleets</text>
+    <text x="14" y="100" fill="#44403c" font-family="system-ui, sans-serif" font-size="11">• Producers &amp; consumers scale decoupled</text>
+    <text x="14" y="118" fill="#44403c" font-family="system-ui, sans-serif" font-size="11">• Active-passive or regional home-sharding</text>
+    <text x="14" y="136" fill="#44403c" font-family="system-ui, sans-serif" font-size="11">• Bounded queues + DLQ isolate poison jobs</text>
+    <text x="14" y="156" fill="#dc2626" font-family="ui-monospace, monospace" font-size="10.5">Hazard: Cross-region RTT &amp; ISP DNS TTL</text>
   </g>
 
   <!-- ROW 2: Stages 8 & 9 (Left) + USL Retrograde Curve (Right) -->
   <!-- Stage 8-9 Cell & Shuffle Sharding -->
   <g transform="translate(36, 326)">
-    <rect width="680" height="240" rx="10" fill="#132038" stroke="#f87171" stroke-width="1.5"/>
-    <rect x="0" y="0" width="680" height="30" rx="10" fill="#45121d"/>
-    <text x="14" y="20" fill="#fca5a5" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12.5" font-weight="700">STAGE 8–9 · Horizontal DB Sharding, Telemetry, Cells &amp; Shuffle Sharding (10M+ DAU)</text>
+    <rect width="680" height="240" rx="10" fill="#ffffff" stroke="#dc2626" stroke-width="1.5"/>
+    <rect x="0" y="0" width="680" height="30" rx="10" fill="#fef2f2"/>
+    <text x="14" y="20" fill="#991b1b" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12.5" font-weight="700">STAGE 8–9 · Horizontal DB Sharding, Telemetry, Cells &amp; Shuffle Sharding (10M+ DAU)</text>
 
     <!-- Thin Cell Router -->
-    <rect x="18" y="46" width="132" height="122" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
-    <text x="84" y="68" text-anchor="middle" fill="#38bdf8" font-family="system-ui, sans-serif" font-size="12" font-weight="700">Thin Cell Router</text>
-    <text x="84" y="88" text-anchor="middle" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10.5">Static partition map</text>
-    <text x="84" y="106" text-anchor="middle" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10.5">Consistent hash /</text>
-    <text x="84" y="122" text-anchor="middle" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10.5">Tenant -&gt; Cell ID</text>
-    <text x="84" y="152" text-anchor="middle" fill="#34d399" font-family="ui-monospace, monospace" font-size="10">Static Stability</text>
+    <rect x="18" y="46" width="132" height="122" rx="8" fill="#f5f1e8" stroke="#0f766e" stroke-width="1.5"/>
+    <text x="84" y="68" text-anchor="middle" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" font-weight="700">Thin Cell Router</text>
+    <text x="84" y="88" text-anchor="middle" fill="#44403c" font-family="system-ui, sans-serif" font-size="10.5">Static partition map</text>
+    <text x="84" y="106" text-anchor="middle" fill="#44403c" font-family="system-ui, sans-serif" font-size="10.5">Consistent hash /</text>
+    <text x="84" y="122" text-anchor="middle" fill="#44403c" font-family="system-ui, sans-serif" font-size="10.5">Tenant -&gt; Cell ID</text>
+    <text x="84" y="152" text-anchor="middle" fill="#0f766e" font-family="ui-monospace, monospace" font-size="10">Static Stability</text>
 
     <!-- Arrows to Cells -->
-    <line x1="150" y1="78" x2="188" y2="68" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrowCyan)"/>
-    <line x1="150" y1="107" x2="188" y2="107" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrowCyan)"/>
-    <line x1="150" y1="136" x2="188" y2="148" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrowCyan)"/>
+    <line x1="150" y1="78" x2="188" y2="68" stroke="#0f766e" stroke-width="1.5" marker-end="url(#arrowCyan)"/>
+    <line x1="150" y1="107" x2="188" y2="107" stroke="#0f766e" stroke-width="1.5" marker-end="url(#arrowCyan)"/>
+    <line x1="150" y1="136" x2="188" y2="148" stroke="#0f766e" stroke-width="1.5" marker-end="url(#arrowCyan)"/>
 
     <!-- Cell A -->
-    <rect x="192" y="44" width="218" height="40" rx="6" fill="#172a45" stroke="#34d399"/>
-    <text x="204" y="61" fill="#34d399" font-family="ui-monospace, monospace" font-size="11" font-weight="700">CELL A (Blast radius ≤ 1/C)</text>
-    <text x="204" y="76" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10">App Pool + Cache + DB Shard A + Queue</text>
+    <rect x="192" y="44" width="218" height="40" rx="6" fill="#f5f1e8" stroke="#0f766e"/>
+    <text x="204" y="61" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11" font-weight="700">CELL A (Blast radius ≤ 1/C)</text>
+    <text x="204" y="76" fill="#44403c" font-family="system-ui, sans-serif" font-size="10">App Pool + Cache + DB Shard A + Queue</text>
 
     <!-- Cell B -->
-    <rect x="192" y="90" width="218" height="40" rx="6" fill="#172a45" stroke="#34d399"/>
-    <text x="204" y="107" fill="#34d399" font-family="ui-monospace, monospace" font-size="11" font-weight="700">CELL B (Independent Failure)</text>
-    <text x="204" y="122" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10">App Pool + Cache + DB Shard B + Queue</text>
+    <rect x="192" y="90" width="218" height="40" rx="6" fill="#f5f1e8" stroke="#0f766e"/>
+    <text x="204" y="107" fill="#0f766e" font-family="ui-monospace, monospace" font-size="11" font-weight="700">CELL B (Independent Failure)</text>
+    <text x="204" y="122" fill="#44403c" font-family="system-ui, sans-serif" font-size="10">App Pool + Cache + DB Shard B + Queue</text>
 
     <!-- Cell C (Poisoned) -->
-    <rect x="192" y="136" width="218" height="40" rx="6" fill="#3f1520" stroke="#f87171"/>
-    <text x="204" y="153" fill="#fca5a5" font-family="ui-monospace, monospace" font-size="11" font-weight="700">CELL C (Poison Tenant Isolated)</text>
-    <text x="204" y="168" fill="#fecaca" font-family="system-ui, sans-serif" font-size="9.5">Fault isolated — Cells A &amp; B stay green</text>
+    <rect x="192" y="136" width="218" height="40" rx="6" fill="#fef2f2" stroke="#dc2626"/>
+    <text x="204" y="153" fill="#991b1b" font-family="ui-monospace, monospace" font-size="11" font-weight="700">CELL C (Poison Tenant Isolated)</text>
+    <text x="204" y="168" fill="#991b1b" font-family="system-ui, sans-serif" font-size="9.5">Fault isolated — Cells A &amp; B stay green</text>
 
     <!-- Shuffle Sharding Box -->
-    <rect x="426" y="44" width="238" height="132" rx="8" fill="#1e1b3a" stroke="#a78bfa" stroke-width="1.5"/>
-    <text x="440" y="65" fill="#c4b5fd" font-family="ui-monospace, monospace" font-size="11.5" font-weight="700">SHUFFLE SHARDING MATH</text>
-    <text x="440" y="86" fill="#e2e8f0" font-family="system-ui, sans-serif" font-size="11">N = 8 workers, k = 2 per tenant:</text>
-    <text x="440" y="104" fill="#34d399" font-family="ui-monospace, monospace" font-size="11.5">C(8, 2) = 28 virtual shards</text>
-    <text x="440" y="124" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10.5">Standard 4-shard blast radius: 25.0%</text>
-    <text x="440" y="142" fill="#34d399" font-family="system-ui, sans-serif" font-size="10.5">Shuffle-shard exact overlap: 3.57% (1/28)</text>
-    <text x="440" y="162" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="10">7x smaller outage at identical hardware cost</text>
+    <rect x="426" y="44" width="238" height="132" rx="8" fill="#f5f1e8" stroke="#0f766e" stroke-width="1.5"/>
+    <text x="440" y="65" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" font-weight="700">SHUFFLE SHARDING MATH</text>
+    <text x="440" y="86" fill="#1c1917" font-family="system-ui, sans-serif" font-size="11">N = 8 workers, k = 2 per tenant:</text>
+    <text x="440" y="104" fill="#0f766e" font-family="ui-monospace, monospace" font-size="11.5">C(8, 2) = 28 virtual shards</text>
+    <text x="440" y="124" fill="#44403c" font-family="system-ui, sans-serif" font-size="10.5">Standard 4-shard blast radius: 25.0%</text>
+    <text x="440" y="142" fill="#0f766e" font-family="system-ui, sans-serif" font-size="10.5">Shuffle-shard exact overlap: 3.57% (1/28)</text>
+    <text x="440" y="162" fill="#57534e" font-family="system-ui, sans-serif" font-size="10">7x smaller outage at identical hardware cost</text>
 
     <!-- Bottom Strip inside Stage 8-9 -->
-    <rect x="18" y="186" width="646" height="42" rx="6" fill="#0f172a" stroke="#334155"/>
-    <text x="28" y="202" fill="#fbbf24" font-family="ui-monospace, monospace" font-size="9.5" font-weight="700">SHARDING:</text>
-    <text x="92" y="202" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="9.5">High-cardinality shard key + consistent hashing · Split celebrity hot keys · Avoid cross-shard JOINs</text>
-    <text x="28" y="219" fill="#38bdf8" font-family="ui-monospace, monospace" font-size="9.5" font-weight="700">OPS/AUTO:</text>
-    <text x="92" y="219" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="9.5">OTel traces + Prometheus histograms + SLO burn-rate alerts + GitOps canary + HPA hysteresis</text>
+    <rect x="18" y="186" width="646" height="42" rx="6" fill="#f5f1e8" stroke="#d6d0c4"/>
+    <text x="28" y="202" fill="#b45309" font-family="ui-monospace, monospace" font-size="9.5" font-weight="700">SHARDING:</text>
+    <text x="92" y="202" fill="#44403c" font-family="system-ui, sans-serif" font-size="9.5">High-cardinality shard key + consistent hashing · Split celebrity hot keys · Avoid cross-shard JOINs</text>
+    <text x="28" y="219" fill="#0f766e" font-family="ui-monospace, monospace" font-size="9.5" font-weight="700">OPS/AUTO:</text>
+    <text x="92" y="219" fill="#44403c" font-family="system-ui, sans-serif" font-size="9.5">OTel traces + Prometheus histograms + SLO burn-rate alerts + GitOps canary + HPA hysteresis</text>
   </g>
 
   <!-- Right Panel: Gunther's Universal Scalability Law -->
   <g transform="translate(734, 326)">
-    <rect width="430" height="240" rx="10" fill="#132038" stroke="#38bdf8" stroke-width="1.5"/>
-    <rect x="0" y="0" width="430" height="30" rx="10" fill="#1b3054"/>
-    <text x="14" y="20" fill="#38bdf8" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" font-weight="700">UNIVERSAL SCALABILITY LAW (Gunther 1993)</text>
+    <rect width="430" height="240" rx="10" fill="#ffffff" stroke="#0f766e" stroke-width="1.5"/>
+    <rect x="0" y="0" width="430" height="30" rx="10" fill="#f5f1e8"/>
+    <text x="14" y="20" fill="#0f766e" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" font-weight="700">UNIVERSAL SCALABILITY LAW (Gunther 1993)</text>
 
     <!-- Axes -->
-    <line x1="48" y1="196" x2="404" y2="196" stroke="#64748b" stroke-width="1.5"/>
-    <line x1="48" y1="196" x2="48" y2="52" stroke="#64748b" stroke-width="1.5"/>
-    <text x="225" y="216" text-anchor="middle" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="10.5">Nodes / Concurrency (N)</text>
-    <text x="22" y="126" text-anchor="middle" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="10.5" transform="rotate(-90 22 126)">Throughput C(N)</text>
+    <line x1="48" y1="196" x2="404" y2="196" stroke="#57534e" stroke-width="1.5"/>
+    <line x1="48" y1="196" x2="48" y2="52" stroke="#57534e" stroke-width="1.5"/>
+    <text x="225" y="216" text-anchor="middle" fill="#57534e" font-family="system-ui, sans-serif" font-size="10.5">Nodes / Concurrency (N)</text>
+    <text x="22" y="126" text-anchor="middle" fill="#57534e" font-family="system-ui, sans-serif" font-size="10.5" transform="rotate(-90 22 126)">Throughput C(N)</text>
 
     <!-- Linear ideal line -->
-    <line x1="48" y1="196" x2="210" y2="56" stroke="#475569" stroke-width="1.5" stroke-dasharray="5,5"/>
-    <text x="214" y="52" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="10">Ideal Linear (α=0, β=0)</text>
+    <line x1="48" y1="196" x2="210" y2="56" stroke="#d6d0c4" stroke-width="1.5" stroke-dasharray="5,5"/>
+    <text x="214" y="52" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="10">Ideal Linear (α=0, β=0)</text>
 
     <!-- Amdahl curve (beta=0, alpha=0.05) -->
-    <path d="M 48 196 Q 150 112, 396 92" fill="none" stroke="#34d399" stroke-width="2.2"/>
-    <text x="282" y="84" fill="#34d399" font-family="system-ui, sans-serif" font-size="10" font-weight="600">Amdahl (α&gt;0, β=0)</text>
+    <path d="M 48 196 Q 150 112, 396 92" fill="none" stroke="#0f766e" stroke-width="2.2"/>
+    <text x="282" y="84" fill="#0f766e" font-family="system-ui, sans-serif" font-size="10" font-weight="600">Amdahl (α&gt;0, β=0)</text>
 
     <!-- USL Retrograde curve (alpha=0.05, beta=0.005) -->
-    <path d="M 48 196 Q 130 105, 198 118 T 396 172" fill="none" stroke="#f87171" stroke-width="2.8"/>
-    <circle cx="192" cy="116" r="4.5" fill="#fbbf24" stroke="#0b1220" stroke-width="1.5"/>
-    <line x1="192" y1="120" x2="192" y2="196" stroke="#fbbf24" stroke-width="1.2" stroke-dasharray="3,3"/>
-    <text x="196" y="98" fill="#fbbf24" font-family="ui-monospace, monospace" font-size="9.5" font-weight="700">N_max = √((1-α)/β)</text>
-    <text x="316" y="148" text-anchor="middle" fill="#fca5a5" font-family="system-ui, sans-serif" font-size="10" font-weight="600">Retrograde Zone</text>
-    <text x="316" y="162" text-anchor="middle" fill="#fca5a5" font-family="system-ui, sans-serif" font-size="9.5">(More nodes = LESS RPS)</text>
+    <path d="M 48 196 Q 130 105, 198 118 T 396 172" fill="none" stroke="#dc2626" stroke-width="2.8"/>
+    <circle cx="192" cy="116" r="4.5" fill="#b45309" stroke="#faf8f5" stroke-width="1.5"/>
+    <line x1="192" y1="120" x2="192" y2="196" stroke="#b45309" stroke-width="1.2" stroke-dasharray="3,3"/>
+    <text x="196" y="98" fill="#b45309" font-family="ui-monospace, monospace" font-size="9.5" font-weight="700">N_max = √((1-α)/β)</text>
+    <text x="316" y="148" text-anchor="middle" fill="#991b1b" font-family="system-ui, sans-serif" font-size="10" font-weight="600">Retrograde Zone</text>
+    <text x="316" y="162" text-anchor="middle" fill="#991b1b" font-family="system-ui, sans-serif" font-size="9.5">(More nodes = LESS RPS)</text>
 
     <!-- Formula Footer -->
-    <text x="220" y="232" text-anchor="middle" fill="#cbd5e1" font-family="ui-monospace, monospace" font-size="10.5">C(N) = N / (1 + α(N-1) + β·N·(N-1))</text>
+    <text x="220" y="232" text-anchor="middle" fill="#44403c" font-family="ui-monospace, monospace" font-size="10.5">C(N) = N / (1 + α(N-1) + β·N·(N-1))</text>
   </g>
 
   <!-- ROW 3: Bottleneck & Cost Reality Strip -->
   <g transform="translate(36, 586)">
-    <rect width="1128" height="146" rx="10" fill="#101b2f" stroke="#2a3d5e" stroke-width="1.5"/>
-    <text x="18" y="26" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="13.5" font-weight="700">Key Architectural Decision Gates Across the 0 → 10M Scaling Curve</text>
+    <rect width="1128" height="146" rx="10" fill="#f5f1e8" stroke="#d6d0c4" stroke-width="1.5"/>
+    <text x="18" y="26" fill="#1c1917" font-family="system-ui, sans-serif" font-size="13.5" font-weight="700">Key Architectural Decision Gates Across the 0 → 10M Scaling Curve</text>
 
     <!-- Column 1 -->
-    <rect x="18" y="40" width="260" height="90" rx="8" fill="#17253f" stroke="#38bdf8" stroke-width="1"/>
-    <text x="30" y="60" fill="#38bdf8" font-family="ui-monospace, monospace" font-size="11" font-weight="700">1. WHEN TO STAY VERTICAL</text>
-    <text x="30" y="79" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10.5">• Working set fits in 512 GB–2 TB RAM</text>
-    <text x="30" y="96" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10.5">• Writes &lt; 20k TPS on NVMe Gen5</text>
-    <text x="30" y="113" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="10.5">• Avoids cross-shard distributed txns</text>
+    <rect x="18" y="40" width="260" height="90" rx="8" fill="#f5f1e8" stroke="#0f766e" stroke-width="1"/>
+    <text x="30" y="60" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11" font-weight="700">1. WHEN TO STAY VERTICAL</text>
+    <text x="30" y="79" fill="#44403c" font-family="system-ui, sans-serif" font-size="10.5">• Working set fits in 512 GB–2 TB RAM</text>
+    <text x="30" y="96" fill="#44403c" font-family="system-ui, sans-serif" font-size="10.5">• Writes &lt; 20k TPS on NVMe Gen5</text>
+    <text x="30" y="113" fill="#57534e" font-family="system-ui, sans-serif" font-size="10.5">• Avoids cross-shard distributed txns</text>
 
     <!-- Column 2 -->
-    <rect x="294" y="40" width="260" height="90" rx="8" fill="#17253f" stroke="#34d399" stroke-width="1"/>
-    <text x="306" y="60" fill="#34d399" font-family="ui-monospace, monospace" font-size="11" font-weight="700">2. FIRST HORIZONTAL WIN</text>
-    <text x="306" y="79" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10.5">• Externalize sessions (stateless tier)</text>
-    <text x="306" y="96" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10.5">• CDN + Valkey cache cut DB reads 90%</text>
-    <text x="306" y="113" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="10.5">• Async queues flatten 10× traffic spikes</text>
+    <rect x="294" y="40" width="260" height="90" rx="8" fill="#f5f1e8" stroke="#0f766e" stroke-width="1"/>
+    <text x="306" y="60" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11" font-weight="700">2. FIRST HORIZONTAL WIN</text>
+    <text x="306" y="79" fill="#44403c" font-family="system-ui, sans-serif" font-size="10.5">• Externalize sessions (stateless tier)</text>
+    <text x="306" y="96" fill="#44403c" font-family="system-ui, sans-serif" font-size="10.5">• CDN + Valkey cache cut DB reads 90%</text>
+    <text x="306" y="113" fill="#57534e" font-family="system-ui, sans-serif" font-size="10.5">• Async queues flatten 10× traffic spikes</text>
 
     <!-- Column 3 -->
-    <rect x="570" y="40" width="260" height="90" rx="8" fill="#17253f" stroke="#fbbf24" stroke-width="1"/>
-    <text x="582" y="60" fill="#fbbf24" font-family="ui-monospace, monospace" font-size="11" font-weight="700">3. WHEN TO SHARD / CELL</text>
-    <text x="582" y="79" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10.5">• Write IOPS or WAL saturation on primary</text>
-    <text x="582" y="96" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10.5">• Blast-radius SLO demands ≤ 1/C impact</text>
-    <text x="582" y="113" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="10.5">• Data residency (EU/US) forces locality</text>
+    <rect x="570" y="40" width="260" height="90" rx="8" fill="#f5f1e8" stroke="#b45309" stroke-width="1"/>
+    <text x="582" y="60" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11" font-weight="700">3. WHEN TO SHARD / CELL</text>
+    <text x="582" y="79" fill="#44403c" font-family="system-ui, sans-serif" font-size="10.5">• Write IOPS or WAL saturation on primary</text>
+    <text x="582" y="96" fill="#44403c" font-family="system-ui, sans-serif" font-size="10.5">• Blast-radius SLO demands ≤ 1/C impact</text>
+    <text x="582" y="113" fill="#57534e" font-family="system-ui, sans-serif" font-size="10.5">• Data residency (EU/US) forces locality</text>
 
     <!-- Column 4 -->
-    <rect x="846" y="40" width="264" height="90" rx="8" fill="#17253f" stroke="#f87171" stroke-width="1"/>
-    <text x="858" y="60" fill="#f87171" font-family="ui-monospace, monospace" font-size="11" font-weight="700">4. HIDDEN CLOUD COST TRAPS</text>
-    <text x="858" y="79" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10.5">• Cross-AZ replication &amp; chatty RPCs</text>
-    <text x="858" y="96" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10.5">• NAT Gateway per-GB inspection tax</text>
-    <text x="858" y="113" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="10.5">• Unshielded CDN misses hitting origin</text>
+    <rect x="846" y="40" width="264" height="90" rx="8" fill="#f5f1e8" stroke="#dc2626" stroke-width="1"/>
+    <text x="858" y="60" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11" font-weight="700">4. HIDDEN CLOUD COST TRAPS</text>
+    <text x="858" y="79" fill="#44403c" font-family="system-ui, sans-serif" font-size="10.5">• Cross-AZ replication &amp; chatty RPCs</text>
+    <text x="858" y="96" fill="#44403c" font-family="system-ui, sans-serif" font-size="10.5">• NAT Gateway per-GB inspection tax</text>
+    <text x="858" y="113" fill="#57534e" font-family="system-ui, sans-serif" font-size="10.5">• Unshielded CDN misses hitting origin</text>
   </g>
 </svg>

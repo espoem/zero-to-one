@@ -3,247 +3,247 @@
   <desc id="desc">End-to-end architecture of YouTube video processing: chunked resumable pre-signed upload, GOP-aligned preprocessor, DAG task graph, 3-queue Resource Manager, stateless hardware-accelerated worker pool, CMAF packaging, and multi-tier edge CDN delivery.</desc>
   <defs>
     <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#44403c"/>
     </marker>
     <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-purple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#b45309"/>
     </marker>
   </defs>
 
   <!-- Background -->
-  <rect x="0" y="0" width="1180" height="720" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1180" height="720" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1180" height="58" rx="12" fill="#0f172a"/>
-  <rect x="0" y="42" width="1180" height="16" fill="#0f172a"/>
-  <text x="24" y="28" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#f8fafc">YouTube Video Ingestion &amp; DAG Transcoding Pipeline</text>
-  <text x="24" y="47" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" fill="#94a3b8">Chunked Pre-Signed Upload · GOP Keyframe Slicing · 3-Queue Resource Manager · Stateless Encoders · Multi-Tier CDN Delivery</text>
+  <line x1="24" y1="60" x2="1156" y2="60" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="28" font-family="Georgia, 'Times New Roman', serif" font-size="18" font-weight="700" fill="#1c1917">YouTube Video Ingestion &amp; DAG Transcoding Pipeline</text>
+  <text x="24" y="47" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="11.5" fill="#57534e">Chunked Pre-Signed Upload · GOP Keyframe Slicing · 3-Queue Resource Manager · Stateless Encoders · Multi-Tier CDN Delivery</text>
 
   <!-- COLUMN 1: INGESTION & UPLOAD -->
-  <rect x="20" y="76" width="214" height="444" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
-  <text x="32" y="100" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#1e3a8a">1. Ingestion &amp; Upload</text>
+  <rect x="20" y="76" width="214" height="444" rx="10" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="32" y="100" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#065f46">1. Ingestion &amp; Upload</text>
 
   <!-- Client -->
-  <rect x="32" y="114" width="190" height="76" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1"/>
-  <text x="42" y="133" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e40af">Client (Web / Mobile / TV)</text>
-  <text x="42" y="149" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Resumable chunked PUT</text>
-  <text x="42" y="164" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#334155">Content-Range: 0-8MB</text>
-  <text x="42" y="179" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#64748b">Direct bypass of API proxies</text>
+  <rect x="32" y="114" width="190" height="76" rx="6" fill="#ffffff" stroke="#99f6e4" stroke-width="1"/>
+  <text x="42" y="133" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">Client (Web / Mobile / TV)</text>
+  <text x="42" y="149" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Resumable chunked PUT</text>
+  <text x="42" y="164" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#44403c">Content-Range: 0-8MB</text>
+  <text x="42" y="179" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#57534e">Direct bypass of API proxies</text>
 
   <!-- API Servers & DB -->
-  <rect x="32" y="202" width="190" height="96" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1"/>
-  <text x="42" y="221" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e40af">API Servers &amp; Metadata DB</text>
-  <text x="42" y="238" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#334155">POST /upload-init</text>
-  <text x="42" y="253" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Generates Pre-Signed URLs</text>
-  <text x="42" y="268" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Tracks upload status in DB</text>
-  <text x="42" y="284" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#64748b">state: uploading -&gt; raw_done</text>
+  <rect x="32" y="202" width="190" height="96" rx="6" fill="#ffffff" stroke="#99f6e4" stroke-width="1"/>
+  <text x="42" y="221" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">API Servers &amp; Metadata DB</text>
+  <text x="42" y="238" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#44403c">POST /upload-init</text>
+  <text x="42" y="253" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Generates Pre-Signed URLs</text>
+  <text x="42" y="268" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Tracks upload status in DB</text>
+  <text x="42" y="284" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#57534e">state: uploading -&gt; raw_done</text>
 
   <!-- Raw Blob Storage -->
-  <rect x="32" y="310" width="190" height="92" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
-  <text x="42" y="330" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e3a8a">Original Blob Storage</text>
-  <text x="42" y="347" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#1e40af">s3://raw-video-bucket/</text>
-  <text x="42" y="363" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Immutable master file</text>
-  <text x="42" y="378" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Multi-part chunk assembly</text>
-  <text x="42" y="393" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#2563eb">Emits ObjectCreated event</text>
+  <rect x="32" y="310" width="190" height="92" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.2"/>
+  <text x="42" y="330" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">Original Blob Storage</text>
+  <text x="42" y="347" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#065f46">s3://raw-video-bucket/</text>
+  <text x="42" y="363" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Immutable master file</text>
+  <text x="42" y="378" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Multi-part chunk assembly</text>
+  <text x="42" y="393" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#0f766e">Emits ObjectCreated event</text>
 
   <!-- Ingestion Callout -->
-  <rect x="32" y="414" width="190" height="92" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
-  <text x="42" y="433" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#334155">Resilience &amp; Security</text>
-  <text x="42" y="450" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Per-chunk SHA-256 hash</text>
-  <text x="42" y="465" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Short-lived pre-signed keys</text>
-  <text x="42" y="480" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Network drop resumes chunk</text>
-  <text x="42" y="495" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#64748b">Zero re-upload from byte 0</text>
+  <rect x="32" y="414" width="190" height="92" rx="6" fill="#ffffff" stroke="#d6d0c4" stroke-width="1"/>
+  <text x="42" y="433" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#44403c">Resilience &amp; Security</text>
+  <text x="42" y="450" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">Per-chunk SHA-256 hash</text>
+  <text x="42" y="465" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">Short-lived pre-signed keys</text>
+  <text x="42" y="480" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">Network drop resumes chunk</text>
+  <text x="42" y="495" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#57534e">Zero re-upload from byte 0</text>
 
   <!-- COLUMN 2: PREPROCESSOR & DAG CONFIG -->
   <rect x="254" y="76" width="224" height="444" rx="10" fill="#faf5ff" stroke="#a855f7" stroke-width="1.5"/>
   <text x="266" y="100" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#581c87">2. Preprocessor &amp; DAG</text>
 
   <!-- Preprocessor Card -->
-  <rect x="266" y="114" width="200" height="114" rx="6" fill="#ffffff" stroke="#d8b4fe" stroke-width="1"/>
+  <rect x="266" y="114" width="200" height="114" rx="6" fill="#ffffff" stroke="#d6d0c4" stroke-width="1"/>
   <text x="276" y="133" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#6b21a8">GOP Keyframe Splitter</text>
-  <text x="276" y="150" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Demux container (MP4 / MOV)</text>
-  <text x="276" y="166" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Split strictly at I-Frames</text>
-  <text x="276" y="182" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#334155">GOP size = 2s..4s aligned</text>
+  <text x="276" y="150" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Demux container (MP4 / MOV)</text>
+  <text x="276" y="166" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Split strictly at I-Frames</text>
+  <text x="276" y="182" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#44403c">GOP size = 2s..4s aligned</text>
   <text x="276" y="198" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#7e22ce">Fine-grained parallel runs</text>
-  <text x="276" y="213" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#64748b">Isolates single chunk failures</text>
+  <text x="276" y="213" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#57534e">Isolates single chunk failures</text>
 
   <!-- DAG Config Generator -->
-  <rect x="266" y="240" width="200" height="142" rx="6" fill="#ffffff" stroke="#d8b4fe" stroke-width="1"/>
+  <rect x="266" y="240" width="200" height="142" rx="6" fill="#ffffff" stroke="#d6d0c4" stroke-width="1"/>
   <text x="276" y="259" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#6b21a8">DAG Config &amp; Stages</text>
   <text x="276" y="276" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#7e22ce">Stage 1: Demux Streams</text>
-  <text x="284" y="291" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">- Video track, Audio, Subtitles</text>
+  <text x="284" y="291" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">- Video track, Audio, Subtitles</text>
   <text x="276" y="307" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#7e22ce">Stage 2: Parallel Tasks</text>
-  <text x="284" y="322" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">- Multi-res (4K, 1080p, 720p)</text>
-  <text x="284" y="336" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">- Codecs (AV1, VP9, H.264)</text>
-  <text x="284" y="350" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">- Thumbnails, Sprites, OCR</text>
-  <text x="276" y="368" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#047857">Builds dependency task tree</text>
+  <text x="284" y="322" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">- Multi-res (4K, 1080p, 720p)</text>
+  <text x="284" y="336" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">- Codecs (AV1, VP9, H.264)</text>
+  <text x="284" y="350" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">- Thumbnails, Sprites, OCR</text>
+  <text x="276" y="368" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#065f46">Builds dependency task tree</text>
 
   <!-- Temp Storage -->
-  <rect x="266" y="394" width="200" height="112" rx="6" fill="#f3e8ff" stroke="#9333ea" stroke-width="1.2"/>
+  <rect x="266" y="394" width="200" height="112" rx="6" fill="#f5f1e8" stroke="#9333ea" stroke-width="1.2"/>
   <text x="276" y="414" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#581c87">Temporary Shared Storage</text>
-  <text x="276" y="431" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">High-IOPS local NVMe / S3</text>
-  <text x="276" y="447" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Holds raw GOP segments</text>
-  <text x="276" y="462" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Workers read/write partials</text>
+  <text x="276" y="431" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">High-IOPS local NVMe / S3</text>
+  <text x="276" y="447" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">Holds raw GOP segments</text>
+  <text x="276" y="462" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">Workers read/write partials</text>
   <text x="276" y="478" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#7e22ce">Persists DAG state for retries</text>
-  <text x="276" y="494" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#64748b">Purged on stage completion</text>
+  <text x="276" y="494" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#57534e">Purged on stage completion</text>
 
   <!-- COLUMN 3: RESOURCE MANAGER -->
-  <rect x="498" y="76" width="220" height="444" rx="10" fill="#f0fdf4" stroke="#10b981" stroke-width="1.5"/>
+  <rect x="498" y="76" width="220" height="444" rx="10" fill="#f0fdf4" stroke="#0f766e" stroke-width="1.5"/>
   <text x="510" y="100" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#065f46">3. Resource Manager</text>
 
   <!-- Task Queue -->
-  <rect x="510" y="114" width="196" height="82" rx="6" fill="#ffffff" stroke="#6ee7b7" stroke-width="1"/>
-  <text x="520" y="133" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#047857">Task Priority Queue</text>
-  <text x="520" y="150" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Ordered by VIP / SLA / Stage</text>
-  <text x="520" y="166" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#475569">P1: 720p H.264 (preview)</text>
-  <text x="520" y="181" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#475569">P2: AV1 4K (heavy compute)</text>
+  <rect x="510" y="114" width="196" height="82" rx="6" fill="#ffffff" stroke="#99f6e4" stroke-width="1"/>
+  <text x="520" y="133" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">Task Priority Queue</text>
+  <text x="520" y="150" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Ordered by VIP / SLA / Stage</text>
+  <text x="520" y="166" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#44403c">P1: 720p H.264 (preview)</text>
+  <text x="520" y="181" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#44403c">P2: AV1 4K (heavy compute)</text>
 
   <!-- Worker Queue -->
-  <rect x="510" y="206" width="196" height="82" rx="6" fill="#ffffff" stroke="#6ee7b7" stroke-width="1"/>
-  <text x="520" y="225" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#047857">Worker Availability Queue</text>
-  <text x="520" y="242" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Tracks capacity &amp; hardware</text>
-  <text x="520" y="258" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Argos VCU, NVENC, CPU idle</text>
-  <text x="520" y="273" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#64748b">Sorted by lowest utilization</text>
+  <rect x="510" y="206" width="196" height="82" rx="6" fill="#ffffff" stroke="#99f6e4" stroke-width="1"/>
+  <text x="520" y="225" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">Worker Availability Queue</text>
+  <text x="520" y="242" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Tracks capacity &amp; hardware</text>
+  <text x="520" y="258" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">Argos VCU, NVENC, CPU idle</text>
+  <text x="520" y="273" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#57534e">Sorted by lowest utilization</text>
 
   <!-- Running Queue -->
-  <rect x="510" y="298" width="196" height="82" rx="6" fill="#ffffff" stroke="#6ee7b7" stroke-width="1"/>
-  <text x="520" y="317" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#047857">Running Queue (In-Flight)</text>
-  <text x="520" y="334" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Worker ID &lt;-&gt; Task match</text>
-  <text x="520" y="350" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Lease timeout &amp; heartbeats</text>
+  <rect x="510" y="298" width="196" height="82" rx="6" fill="#ffffff" stroke="#99f6e4" stroke-width="1"/>
+  <text x="520" y="317" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">Running Queue (In-Flight)</text>
+  <text x="520" y="334" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Worker ID &lt;-&gt; Task match</text>
+  <text x="520" y="350" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">Lease timeout &amp; heartbeats</text>
   <text x="520" y="365" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#b91c1c">Evicts worker on lease expiry</text>
 
   <!-- Task Scheduler Engine -->
-  <rect x="510" y="390" width="196" height="116" rx="6" fill="#d1fae5" stroke="#059669" stroke-width="1.2"/>
+  <rect x="510" y="390" width="196" height="116" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.2"/>
   <text x="520" y="410" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">Task Scheduler Engine</text>
-  <text x="520" y="427" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Matchmaking algorithm:</text>
-  <text x="520" y="443" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#047857">1. Pulls top task from Task Q</text>
-  <text x="520" y="458" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#047857">2. Matches capable Worker Q</text>
-  <text x="520" y="473" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#047857">3. Registers in Running Q</text>
+  <text x="520" y="427" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Matchmaking algorithm:</text>
+  <text x="520" y="443" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#065f46">1. Pulls top task from Task Q</text>
+  <text x="520" y="458" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#065f46">2. Matches capable Worker Q</text>
+  <text x="520" y="473" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#065f46">3. Registers in Running Q</text>
   <text x="520" y="490" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#065f46">4. Re-queues task on fail</text>
 
   <!-- COLUMN 4: STATELESS WORKERS -->
-  <rect x="738" y="76" width="214" height="444" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5"/>
+  <rect x="738" y="76" width="214" height="444" rx="10" fill="#fffbeb" stroke="#b45309" stroke-width="1.5"/>
   <text x="750" y="100" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#92400e">4. Task Worker Pool</text>
 
   <!-- Video Encoders -->
-  <rect x="750" y="114" width="190" height="96" rx="6" fill="#ffffff" stroke="#fcd34d" stroke-width="1"/>
+  <rect x="750" y="114" width="190" height="96" rx="6" fill="#ffffff" stroke="#fde68a" stroke-width="1"/>
   <text x="760" y="133" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#b45309">Hardware Video Encoders</text>
-  <text x="760" y="150" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Google Argos VCU / NVENC</text>
-  <text x="760" y="165" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#475569">AV1 (libsvtav1 / ASIC)</text>
-  <text x="760" y="180" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#475569">VP9 (libvpx) &amp; H.264 (x264)</text>
-  <text x="760" y="196" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#047857">Per-shot convex-hull VMAF</text>
+  <text x="760" y="150" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Google Argos VCU / NVENC</text>
+  <text x="760" y="165" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#44403c">AV1 (libsvtav1 / ASIC)</text>
+  <text x="760" y="180" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#44403c">VP9 (libvpx) &amp; H.264 (x264)</text>
+  <text x="760" y="196" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#065f46">Per-shot convex-hull VMAF</text>
 
   <!-- Audio Workers -->
-  <rect x="750" y="218" width="190" height="82" rx="6" fill="#ffffff" stroke="#fcd34d" stroke-width="1"/>
+  <rect x="750" y="218" width="190" height="82" rx="6" fill="#ffffff" stroke="#fde68a" stroke-width="1"/>
   <text x="760" y="237" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#b45309">Audio Transcoders</text>
-  <text x="760" y="254" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">AAC-LC, HE-AAC, Opus</text>
-  <text x="760" y="270" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Multi-language tracks</text>
-  <text x="760" y="286" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#64748b">EBU R128 audio normalizer</text>
+  <text x="760" y="254" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">AAC-LC, HE-AAC, Opus</text>
+  <text x="760" y="270" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">Multi-language tracks</text>
+  <text x="760" y="286" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#57534e">EBU R128 audio normalizer</text>
 
   <!-- Thumbnail & Sprites -->
-  <rect x="750" y="308" width="190" height="84" rx="6" fill="#ffffff" stroke="#fcd34d" stroke-width="1"/>
+  <rect x="750" y="308" width="190" height="84" rx="6" fill="#ffffff" stroke="#fde68a" stroke-width="1"/>
   <text x="760" y="327" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#b45309">Thumbnail &amp; Sprite Workers</text>
-  <text x="760" y="344" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Auto keyframe selection</text>
-  <text x="760" y="359" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Hover storyboard sprites</text>
-  <text x="760" y="375" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#64748b">WebP / AVIF compressed tiles</text>
+  <text x="760" y="344" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Auto keyframe selection</text>
+  <text x="760" y="359" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">Hover storyboard sprites</text>
+  <text x="760" y="375" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#57534e">WebP / AVIF compressed tiles</text>
 
   <!-- Watermark & Inspection -->
-  <rect x="750" y="400" width="190" height="106" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.2"/>
+  <rect x="750" y="400" width="190" height="106" rx="6" fill="#fffbeb" stroke="#b45309" stroke-width="1.2"/>
   <text x="760" y="420" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#92400e">Watermark &amp; Provenance</text>
-  <text x="760" y="437" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Dynamic user watermark</text>
-  <text x="760" y="453" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">C2PA tamper-evident stamp</text>
-  <text x="760" y="469" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Content ID fingerprint hash</text>
+  <text x="760" y="437" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Dynamic user watermark</text>
+  <text x="760" y="453" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">C2PA tamper-evident stamp</text>
+  <text x="760" y="469" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">Content ID fingerprint hash</text>
   <text x="760" y="488" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#b45309">Writes output to Temp Storage</text>
 
   <!-- COLUMN 5: PACKAGING & CDN -->
-  <rect x="972" y="76" width="188" height="444" rx="10" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
-  <text x="984" y="100" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#1e293b">5. Delivery &amp; CDN</text>
+  <rect x="972" y="76" width="188" height="444" rx="10" fill="#faf8f5" stroke="#57534e" stroke-width="1.5"/>
+  <text x="984" y="100" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#1c1917">5. Delivery &amp; CDN</text>
 
   <!-- Segment Packager -->
-  <rect x="982" y="114" width="168" height="88" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
-  <text x="990" y="133" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#0f172a">CMAF Packager</text>
-  <text x="990" y="150" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Unified fMP4 (.m4s)</text>
-  <text x="990" y="165" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">HLS .m3u8 playlist</text>
-  <text x="990" y="180" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">DASH .mpd manifest</text>
-  <text x="990" y="194" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#059669">Single chunk pool</text>
+  <rect x="982" y="114" width="168" height="88" rx="6" fill="#ffffff" stroke="#d6d0c4" stroke-width="1"/>
+  <text x="990" y="133" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#1c1917">CMAF Packager</text>
+  <text x="990" y="150" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">Unified fMP4 (.m4s)</text>
+  <text x="990" y="165" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">HLS .m3u8 playlist</text>
+  <text x="990" y="180" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">DASH .mpd manifest</text>
+  <text x="990" y="194" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#0f766e">Single chunk pool</text>
 
   <!-- Transcoded Blob Storage -->
-  <rect x="982" y="210" width="168" height="88" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
-  <text x="990" y="229" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#0f172a">Transcoded Storage</text>
-  <text x="990" y="246" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9" fill="#1e40af">s3://transcoded/</text>
-  <text x="990" y="261" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Immutable chunks</text>
-  <text x="990" y="276" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Multi-region origin</text>
-  <text x="990" y="291" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#64748b">Cache-Control: 1 year</text>
+  <rect x="982" y="210" width="168" height="88" rx="6" fill="#ffffff" stroke="#d6d0c4" stroke-width="1"/>
+  <text x="990" y="229" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#1c1917">Transcoded Storage</text>
+  <text x="990" y="246" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9" fill="#065f46">s3://transcoded/</text>
+  <text x="990" y="261" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">Immutable chunks</text>
+  <text x="990" y="276" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">Multi-region origin</text>
+  <text x="990" y="291" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#57534e">Cache-Control: 1 year</text>
 
   <!-- Completion Queue -->
-  <rect x="982" y="306" width="168" height="88" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
-  <text x="990" y="325" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#0f172a">Completion Queue</text>
-  <text x="990" y="342" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Kafka event bus</text>
-  <text x="990" y="357" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Updates DB -&gt; ready</text>
-  <text x="990" y="372" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Pushes creator notify</text>
-  <text x="990" y="387" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#64748b">Triggers search index</text>
+  <rect x="982" y="306" width="168" height="88" rx="6" fill="#ffffff" stroke="#d6d0c4" stroke-width="1"/>
+  <text x="990" y="325" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#1c1917">Completion Queue</text>
+  <text x="990" y="342" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">Kafka event bus</text>
+  <text x="990" y="357" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">Updates DB -&gt; ready</text>
+  <text x="990" y="372" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">Pushes creator notify</text>
+  <text x="990" y="387" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#57534e">Triggers search index</text>
 
   <!-- Edge CDN & GGC -->
-  <rect x="982" y="402" width="168" height="104" rx="6" fill="#e2e8f0" stroke="#475569" stroke-width="1.2"/>
-  <text x="990" y="421" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#0f172a">Edge CDN &amp; GGC</text>
-  <text x="990" y="437" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">Google Global Cache</text>
-  <text x="990" y="452" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#334155">ISP-embedded nodes</text>
-  <text x="990" y="468" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#047857">&gt; 95% prime-time hits</text>
-  <text x="990" y="483" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#475569">LL-HLS / LL-DASH</text>
-  <text x="990" y="498" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#0369a1">Smooth ABR Stream</text>
+  <rect x="982" y="402" width="168" height="104" rx="6" fill="#e7e2d8" stroke="#44403c" stroke-width="1.2"/>
+  <text x="990" y="421" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#1c1917">Edge CDN &amp; GGC</text>
+  <text x="990" y="437" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">Google Global Cache</text>
+  <text x="990" y="452" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">ISP-embedded nodes</text>
+  <text x="990" y="468" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#065f46">&gt; 95% prime-time hits</text>
+  <text x="990" y="483" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#44403c">LL-HLS / LL-DASH</text>
+  <text x="990" y="498" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#065f46">Smooth ABR Stream</text>
 
   <!-- Horizontal Data Arrows between Columns -->
   <!-- Col 1 to Col 2 -->
-  <line x1="234" y1="165" x2="252" y2="165" stroke="#2563eb" stroke-width="2" marker-end="url(#arr-blue)"/>
-  <line x1="222" y1="356" x2="252" y2="200" stroke="#7c3aed" stroke-width="1.8" stroke-dasharray="3,3" marker-end="url(#arr-purple)"/>
+  <line x1="234" y1="165" x2="252" y2="165" stroke="#0f766e" stroke-width="2" marker-end="url(#arr-blue)"/>
+  <line x1="222" y1="356" x2="252" y2="200" stroke="#0f766e" stroke-width="1.8" stroke-dasharray="3,3" marker-end="url(#arr-purple)"/>
 
   <!-- Col 2 to Col 3 -->
-  <line x1="466" y1="310" x2="496" y2="155" stroke="#059669" stroke-width="2" marker-end="url(#arr-green)"/>
+  <line x1="466" y1="310" x2="496" y2="155" stroke="#0f766e" stroke-width="2" marker-end="url(#arr-green)"/>
 
   <!-- Col 3 to Col 4 -->
-  <line x1="706" y1="448" x2="736" y2="210" stroke="#d97706" stroke-width="2" marker-end="url(#arr-amber)"/>
+  <line x1="706" y1="448" x2="736" y2="210" stroke="#b45309" stroke-width="2" marker-end="url(#arr-amber)"/>
 
   <!-- Col 4 to Col 5 -->
-  <line x1="940" y1="450" x2="980" y2="158" stroke="#475569" stroke-width="1.8" stroke-dasharray="3,3" marker-end="url(#arr)"/>
-  <line x1="940" y1="480" x2="980" y2="350" stroke="#475569" stroke-width="1.8" marker-end="url(#arr)"/>
+  <line x1="940" y1="450" x2="980" y2="158" stroke="#44403c" stroke-width="1.8" stroke-dasharray="3,3" marker-end="url(#arr)"/>
+  <line x1="940" y1="480" x2="980" y2="350" stroke="#44403c" stroke-width="1.8" marker-end="url(#arr)"/>
 
   <!-- BOTTOM STRIP: CORE DESIGN MECHANICS -->
-  <rect x="20" y="534" width="1140" height="170" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
-  <text x="34" y="556" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#0f172a">DAG Execution &amp; Resource Allocation Mechanics</text>
+  <rect x="20" y="534" width="1140" height="170" rx="10" fill="#faf8f5" stroke="#d6d0c4" stroke-width="1.5"/>
+  <text x="34" y="556" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#1c1917">DAG Execution &amp; Resource Allocation Mechanics</text>
 
   <!-- Sub-Card 1 -->
-  <rect x="34" y="568" width="360" height="122" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
-  <text x="46" y="587" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e3a8a">GOP Alignment &amp; Fault Isolation</text>
-  <text x="46" y="605" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Master videos are sliced at keyframe I-frames into 2-4s GOPs.</text>
-  <text x="46" y="621" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">If a worker crashes, only that single GOP chunk is retried,</text>
-  <text x="46" y="637" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">not the full master file. Prevents cascading stalls and</text>
-  <text x="46" y="653" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">enables massive parallel fan-out across stateless workers.</text>
-  <text x="46" y="673" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#2563eb">Key Benefit: Near-linear speedup with worker cluster scale.</text>
+  <rect x="34" y="568" width="360" height="122" rx="6" fill="#ffffff" stroke="#d6d0c4" stroke-width="1"/>
+  <text x="46" y="587" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">GOP Alignment &amp; Fault Isolation</text>
+  <text x="46" y="605" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Master videos are sliced at keyframe I-frames into 2-4s GOPs.</text>
+  <text x="46" y="621" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">If a worker crashes, only that single GOP chunk is retried,</text>
+  <text x="46" y="637" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">not the full master file. Prevents cascading stalls and</text>
+  <text x="46" y="653" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">enables massive parallel fan-out across stateless workers.</text>
+  <text x="46" y="673" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#0f766e">Key Benefit: Near-linear speedup with worker cluster scale.</text>
 
   <!-- Sub-Card 2 -->
-  <rect x="410" y="568" width="360" height="122" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="410" y="568" width="360" height="122" rx="6" fill="#ffffff" stroke="#d6d0c4" stroke-width="1"/>
   <text x="422" y="587" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">3-Queue Resource Manager Architecture</text>
-  <text x="422" y="605" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Task Queue prioritizes preview renditions (720p/360p).</text>
-  <text x="422" y="621" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Worker Queue routes compute by hardware (Argos VCU vs CPU).</text>
-  <text x="422" y="637" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Running Queue tracks leases; worker death triggers rapid</text>
-  <text x="422" y="653" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">task re-queueing without zombie hangs or head-of-line stalls.</text>
-  <text x="422" y="673" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#047857">Key Benefit: Optimal VCU/GPU utilization and zero deadlock.</text>
+  <text x="422" y="605" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Task Queue prioritizes preview renditions (720p/360p).</text>
+  <text x="422" y="621" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Worker Queue routes compute by hardware (Argos VCU vs CPU).</text>
+  <text x="422" y="637" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Running Queue tracks leases; worker death triggers rapid</text>
+  <text x="422" y="653" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">task re-queueing without zombie hangs or head-of-line stalls.</text>
+  <text x="422" y="673" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#065f46">Key Benefit: Optimal VCU/GPU utilization and zero deadlock.</text>
 
   <!-- Sub-Card 3 -->
-  <rect x="786" y="568" width="360" height="122" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="786" y="568" width="360" height="122" rx="6" fill="#ffffff" stroke="#d6d0c4" stroke-width="1"/>
   <text x="798" y="587" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#92400e">Edge Distribution &amp; Transit Economics</text>
-  <text x="798" y="605" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">Raw cloud egress at $0.02/GB on 7.5 PB/day equals $150,000/day!</text>
-  <text x="798" y="621" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">Deploying ISP-embedded caches (GGC and Netflix Open Connect)</text>
-  <text x="798" y="637" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">pre-warms top 1% titles, absorbing &gt; 95% of prime-time traffic</text>
-  <text x="798" y="653" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">over zero-cost local ISP peering links directly to viewers.</text>
+  <text x="798" y="605" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Raw cloud egress at $0.02/GB on 7.5 PB/day equals $150,000/day!</text>
+  <text x="798" y="621" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">Deploying ISP-embedded caches (GGC and Netflix Open Connect)</text>
+  <text x="798" y="637" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">pre-warms top 1% titles, absorbing &gt; 95% of prime-time traffic</text>
+  <text x="798" y="653" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">over zero-cost local ISP peering links directly to viewers.</text>
   <text x="798" y="673" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#b45309">Key Benefit: Slashes multi-million-dollar WAN transit bills.</text>
 </svg>

@@ -6,23 +6,23 @@
     .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
     .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 
-    @keyframes pulse-step-1 {
-      0%, 24% { stroke-width: 2.5; stroke: #2563eb; opacity: 1; }
-      25%, 100% { stroke-width: 1.5; stroke: #93c5fd; opacity: 0.72; }
+    @keyframes step-hl-1 {
+      0%, 24% { stroke-width: 2.5; stroke: #0f766e; opacity: 1; }
+      25%, 100% { stroke-width: 1.5; stroke: #99f6e4; opacity: 0.72; }
     }
-    @keyframes pulse-step-2 {
-      0%, 24% { stroke-width: 1.5; stroke: #c4b5fd; opacity: 0.72; }
-      25%, 49% { stroke-width: 2.5; stroke: #7c3aed; opacity: 1; }
-      50%, 100% { stroke-width: 1.5; stroke: #c4b5fd; opacity: 0.72; }
+    @keyframes step-hl-2 {
+      0%, 24% { stroke-width: 1.5; stroke: #d6d0c4; opacity: 0.72; }
+      25%, 49% { stroke-width: 2.5; stroke: #0f766e; opacity: 1; }
+      50%, 100% { stroke-width: 1.5; stroke: #d6d0c4; opacity: 0.72; }
     }
-    @keyframes pulse-step-3 {
-      0%, 49% { stroke-width: 1.5; stroke: #6ee7b7; opacity: 0.72; }
-      50%, 74% { stroke-width: 2.5; stroke: #059669; opacity: 1; }
-      75%, 100% { stroke-width: 1.5; stroke: #6ee7b7; opacity: 0.72; }
+    @keyframes step-hl-3 {
+      0%, 49% { stroke-width: 1.5; stroke: #99f6e4; opacity: 0.72; }
+      50%, 74% { stroke-width: 2.5; stroke: #0f766e; opacity: 1; }
+      75%, 100% { stroke-width: 1.5; stroke: #99f6e4; opacity: 0.72; }
     }
-    @keyframes pulse-step-4 {
+    @keyframes step-hl-4 {
       0%, 74% { stroke-width: 1.5; stroke: #fda4af; opacity: 0.72; }
-      75%, 100% { stroke-width: 2.5; stroke: #e11d48; opacity: 1; }
+      75%, 100% { stroke-width: 2.5; stroke: #dc2626; opacity: 1; }
     }
 
     @keyframes packet-ok {
@@ -71,10 +71,10 @@
       75%, 100% { opacity: 1; }
     }
 
-    .card-s1 { animation: pulse-step-1 10s linear infinite; }
-    .card-s2 { animation: pulse-step-2 10s linear infinite; }
-    .card-s3 { animation: pulse-step-3 10s linear infinite; }
-    .card-s4 { animation: pulse-step-4 10s linear infinite; }
+    .card-s1 { animation: step-hl-1 10s linear infinite; }
+    .card-s2 { animation: step-hl-2 10s linear infinite; }
+    .card-s3 { animation: step-hl-3 10s linear infinite; }
+    .card-s4 { animation: step-hl-4 10s linear infinite; }
     .pkt-ok  { animation: packet-ok 10s linear infinite; }
     .pkt-429 { animation: packet-429 10s linear infinite; }
     .lua-arc { stroke-dasharray: 6 4; animation: lua-ping 10s linear infinite; }
@@ -97,183 +97,183 @@
 
   <defs>
     <marker id="arr-slate" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#44403c"/>
     </marker>
     <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-violet" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#dc2626"/>
     </marker>
     <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#b45309"/>
     </marker>
   </defs>
 
   <!-- Canvas -->
-  <rect x="0" y="0" width="1120" height="560" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1120" height="560" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1120" height="60" rx="12" fill="#0f172a"/>
-  <rect x="0" y="44" width="1120" height="16" fill="#0f172a"/>
-  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Distributed Rate Limiter Architecture &amp; Decision Flow</text>
-  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">Client → API Gateway Middleware ↔ Redis / Valkey Cluster (Atomic Lua EVALSHA + Rules Cache) → 200 OK vs 429 Too Many Requests</text>
+  <line x1="24" y1="62" x2="1096" y2="62" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#1c1917" font-family="Georgia, 'Times New Roman', serif">Distributed Rate Limiter Architecture &amp; Decision Flow</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">Client → API Gateway Middleware ↔ Redis / Valkey Cluster (Atomic Lua EVALSHA + Rules Cache) → 200 OK vs 429 Too Many Requests</text>
 
   <!-- LEFT COLUMN: CLIENT & RULES CACHE -->
-  <rect x="24" y="88" width="184" height="156" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5" class="card-s1"/>
-  <rect x="34" y="98" width="22" height="20" rx="4" fill="#2563eb"/>
+  <rect x="24" y="88" width="184" height="156" rx="10" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5" class="card-s1"/>
+  <rect x="34" y="98" width="22" height="20" rx="4" fill="#0f766e"/>
   <text x="45" y="112" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">1</text>
-  <text x="64" y="113" class="sans" font-size="13" font-weight="700" fill="#1e3a8a">Client Traffic</text>
-  <text x="34" y="138" class="sans" font-size="11" fill="#334155">Web / Mobile / Partner SDK</text>
-  <rect x="34" y="150" width="164" height="36" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1"/>
-  <text x="42" y="166" class="mono" font-size="10" fill="#1e40af">Key: user_id | api_key</text>
-  <text x="42" y="180" class="mono" font-size="10" fill="#475569">Route: POST /checkout</text>
-  <text x="34" y="208" class="sans" font-size="10.5" fill="#059669" font-weight="600">● Normal stream → 200 OK</text>
-  <text x="34" y="226" class="sans" font-size="10.5" fill="#e11d48" font-weight="600">● Burst flood → 429 Shed</text>
+  <text x="64" y="113" class="sans" font-size="13" font-weight="700" fill="#065f46">Client Traffic</text>
+  <text x="34" y="138" class="sans" font-size="11" fill="#44403c">Web / Mobile / Partner SDK</text>
+  <rect x="34" y="150" width="164" height="36" rx="6" fill="#ffffff" stroke="#99f6e4" stroke-width="1"/>
+  <text x="42" y="166" class="mono" font-size="10" fill="#065f46">Key: user_id | api_key</text>
+  <text x="42" y="180" class="mono" font-size="10" fill="#44403c">Route: POST /checkout</text>
+  <text x="34" y="208" class="sans" font-size="10.5" fill="#0f766e" font-weight="600">● Normal stream → 200 OK</text>
+  <text x="34" y="226" class="sans" font-size="10.5" fill="#dc2626" font-weight="600">● Burst flood → 429 Shed</text>
 
   <!-- Rules Cache Box -->
-  <rect x="24" y="276" width="184" height="184" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <rect x="24" y="276" width="184" height="184" rx="10" fill="#fffbeb" stroke="#b45309" stroke-width="1.5"/>
   <text x="36" y="300" class="sans" font-size="13" font-weight="700" fill="#92400e">Rules Cache (Local)</text>
-  <text x="36" y="318" class="sans" font-size="10.5" fill="#78350f">In-memory policy snapshot</text>
-  <rect x="36" y="330" width="160" height="78" rx="6" fill="#ffffff" stroke="#fcd34d" stroke-width="1"/>
-  <text x="44" y="348" class="mono" font-size="10" fill="#0f172a">algo:  GCRA / SWC</text>
-  <text x="44" y="365" class="mono" font-size="10" fill="#0f172a">limit: 10 req / 60s</text>
-  <text x="44" y="382" class="mono" font-size="10" fill="#0f172a">burst: 4 tokens</text>
+  <text x="36" y="318" class="sans" font-size="10.5" fill="#92400e">In-memory policy snapshot</text>
+  <rect x="36" y="330" width="160" height="78" rx="6" fill="#ffffff" stroke="#fde68a" stroke-width="1"/>
+  <text x="44" y="348" class="mono" font-size="10" fill="#1c1917">algo:  GCRA / SWC</text>
+  <text x="44" y="365" class="mono" font-size="10" fill="#1c1917">limit: 10 req / 60s</text>
+  <text x="44" y="382" class="mono" font-size="10" fill="#1c1917">burst: 4 tokens</text>
   <text x="44" y="399" class="mono" font-size="10" fill="#b45309">sync:  etcd poll 10s</text>
-  <text x="36" y="428" class="sans" font-size="10" fill="#78350f">Zero network hop for rule</text>
-  <text x="36" y="443" class="sans" font-size="10" fill="#78350f">lookup before Redis check.</text>
+  <text x="36" y="428" class="sans" font-size="10" fill="#92400e">Zero network hop for rule</text>
+  <text x="36" y="443" class="sans" font-size="10" fill="#92400e">lookup before Redis check.</text>
 
   <!-- Arrow: Rules Cache -> Gateway -->
-  <path d="M 208 368 L 248 368 L 248 330 L 270 330" fill="none" stroke="#d97706" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arr-amber)"/>
+  <path d="M 208 368 L 248 368 L 248 330 L 270 330" fill="none" stroke="#b45309" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arr-amber)"/>
   <text x="214" y="384" class="mono" font-size="10" fill="#b45309">rule</text>
 
   <!-- CENTER: API GATEWAY MIDDLEWARE -->
-  <rect x="276" y="88" width="268" height="372" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5" class="card-s1"/>
-  <text x="292" y="114" class="sans" font-size="14" font-weight="700" fill="#1e3a8a">API Gateway / Rate Limiter</text>
-  <text x="292" y="132" class="sans" font-size="11" fill="#475569">Envoy · Kong · Edge Reverse Proxy</text>
+  <rect x="276" y="88" width="268" height="372" rx="10" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5" class="card-s1"/>
+  <text x="292" y="114" class="sans" font-size="14" font-weight="700" fill="#065f46">API Gateway / Rate Limiter</text>
+  <text x="292" y="132" class="sans" font-size="11" fill="#44403c">Envoy · Kong · Edge Reverse Proxy</text>
 
   <!-- Step boxes inside Gateway -->
-  <rect x="292" y="148" width="236" height="66" rx="7" fill="#ffffff" stroke="#93c5fd" stroke-width="1"/>
-  <text x="304" y="168" class="sans" font-size="11.5" font-weight="700" fill="#1e40af">1. Extract Key &amp; Policy</text>
-  <text x="304" y="186" class="mono" font-size="10" fill="#334155">key = rl:{route}:{user_id}</text>
-  <text x="304" y="202" class="sans" font-size="10" fill="#64748b">Match rule from local Rules Cache</text>
+  <rect x="292" y="148" width="236" height="66" rx="7" fill="#ffffff" stroke="#99f6e4" stroke-width="1"/>
+  <text x="304" y="168" class="sans" font-size="11.5" font-weight="700" fill="#065f46">1. Extract Key &amp; Policy</text>
+  <text x="304" y="186" class="mono" font-size="10" fill="#44403c">key = rl:{route}:{user_id}</text>
+  <text x="304" y="202" class="sans" font-size="10" fill="#57534e">Match rule from local Rules Cache</text>
 
-  <rect x="292" y="226" width="236" height="72" rx="7" fill="#ffffff" stroke="#c4b5fd" stroke-width="1.2"/>
-  <text x="304" y="246" class="sans" font-size="11.5" font-weight="700" fill="#5b21b6">2. Atomic Check (No GET+SET)</text>
-  <text x="304" y="264" class="mono" font-size="10" fill="#4c1d95">EVALSHA sha1 1 key now</text>
-  <text x="304" y="280" class="mono" font-size="10" fill="#64748b">→ { allowed, rem, reset_s }</text>
+  <rect x="292" y="226" width="236" height="72" rx="7" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.2"/>
+  <text x="304" y="246" class="sans" font-size="11.5" font-weight="700" fill="#065f46">2. Atomic Check (No GET+SET)</text>
+  <text x="304" y="264" class="mono" font-size="10" fill="#065f46">EVALSHA sha1 1 key now</text>
+  <text x="304" y="280" class="mono" font-size="10" fill="#57534e">→ { allowed, rem, reset_s }</text>
 
-  <rect x="292" y="310" width="236" height="78" rx="7" fill="#ffffff" stroke="#93c5fd" stroke-width="1"/>
-  <text x="304" y="330" class="sans" font-size="11.5" font-weight="700" fill="#0f172a">3. Admission Gate</text>
-  <text x="304" y="349" class="mono" font-size="10.5" font-weight="700" fill="#059669">allowed == 1 → Forward Backend</text>
-  <text x="304" y="368" class="mono" font-size="10.5" font-weight="700" fill="#e11d48">allowed == 0 → Early 429 Shed</text>
+  <rect x="292" y="310" width="236" height="78" rx="7" fill="#ffffff" stroke="#99f6e4" stroke-width="1"/>
+  <text x="304" y="330" class="sans" font-size="11.5" font-weight="700" fill="#1c1917">3. Admission Gate</text>
+  <text x="304" y="349" class="mono" font-size="10.5" font-weight="700" fill="#0f766e">allowed == 1 → Forward Backend</text>
+  <text x="304" y="368" class="mono" font-size="10.5" font-weight="700" fill="#dc2626">allowed == 0 → Early 429 Shed</text>
 
-  <rect x="292" y="398" width="236" height="48" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1"/>
+  <rect x="292" y="398" width="236" height="48" rx="6" fill="#fffbeb" stroke="#b45309" stroke-width="1"/>
   <text x="304" y="417" class="sans" font-size="10.5" font-weight="700" fill="#92400e">Resilience Fallback</text>
-  <text x="304" y="434" class="sans" font-size="10" fill="#78350f">Redis timeout &gt; 5ms → Fail-Open / Local</text>
+  <text x="304" y="434" class="sans" font-size="10" fill="#92400e">Redis timeout &gt; 5ms → Fail-Open / Local</text>
 
   <!-- CENTER-TOP RIGHT: REDIS / VALKEY CLUSTER -->
-  <rect x="592" y="88" width="232" height="196" rx="10" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5" class="card-s2"/>
-  <rect x="604" y="98" width="22" height="20" rx="4" fill="#7c3aed"/>
+  <rect x="592" y="88" width="232" height="196" rx="10" fill="#f5f1e8" stroke="#0f766e" stroke-width="1.5" class="card-s2"/>
+  <rect x="604" y="98" width="22" height="20" rx="4" fill="#0f766e"/>
   <text x="615" y="112" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">2</text>
-  <text x="634" y="113" class="sans" font-size="13" font-weight="700" fill="#5b21b6">Redis / Valkey Cluster</text>
-  <text x="604" y="135" class="sans" font-size="10.5" fill="#4c1d95">Single-threaded atomic Lua</text>
-  <rect x="604" y="146" width="208" height="84" rx="6" fill="#ffffff" stroke="#c4b5fd" stroke-width="1"/>
-  <text x="614" y="164" class="mono" font-size="10" font-weight="700" fill="#5b21b6">EVALSHA (Atomic Script)</text>
-  <text x="614" y="182" class="mono" font-size="10" fill="#334155">1. Read TAT / count in RAM</text>
-  <text x="614" y="198" class="mono" font-size="10" fill="#334155">2. Evaluate + Update + EXPIRE</text>
-  <text x="614" y="214" class="mono" font-size="10" fill="#059669">Zero race across N gateway pods</text>
-  <text x="604" y="250" class="mono" font-size="10" fill="#6d28d9">Pipelined RESP · ~0.3ms RTT</text>
-  <text x="604" y="268" class="mono" font-size="10" fill="#6d28d9">Sharded by CRC16(key) % 16384</text>
+  <text x="634" y="113" class="sans" font-size="13" font-weight="700" fill="#065f46">Redis / Valkey Cluster</text>
+  <text x="604" y="135" class="sans" font-size="10.5" fill="#065f46">Single-threaded atomic Lua</text>
+  <rect x="604" y="146" width="208" height="84" rx="6" fill="#ffffff" stroke="#d6d0c4" stroke-width="1"/>
+  <text x="614" y="164" class="mono" font-size="10" font-weight="700" fill="#065f46">EVALSHA (Atomic Script)</text>
+  <text x="614" y="182" class="mono" font-size="10" fill="#44403c">1. Read TAT / count in RAM</text>
+  <text x="614" y="198" class="mono" font-size="10" fill="#44403c">2. Evaluate + Update + EXPIRE</text>
+  <text x="614" y="214" class="mono" font-size="10" fill="#0f766e">Zero race across N gateway pods</text>
+  <text x="604" y="250" class="mono" font-size="10" fill="#065f46">Pipelined RESP · ~0.3ms RTT</text>
+  <text x="604" y="268" class="mono" font-size="10" fill="#065f46">Sharded by CRC16(key) % 16384</text>
 
   <!-- Gateway <-> Redis bidirectional arrows -->
-  <line x1="544" y1="158" x2="588" y2="158" stroke="#7c3aed" stroke-width="1.8" marker-end="url(#arr-violet)"/>
-  <line x1="588" y1="184" x2="544" y2="184" stroke="#7c3aed" stroke-width="1.8" marker-end="url(#arr-violet)"/>
-  <line x1="544" y1="158" x2="588" y2="158" stroke="#c4b5fd" stroke-width="2.5" class="lua-arc"/>
-  <text x="566" y="149" class="mono" font-size="10" fill="#5b21b6" text-anchor="middle">EVALSHA</text>
-  <text x="566" y="200" class="mono" font-size="10" fill="#5b21b6" text-anchor="middle">{ok,rem}</text>
+  <line x1="544" y1="158" x2="588" y2="158" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-violet)"/>
+  <line x1="588" y1="184" x2="544" y2="184" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-violet)"/>
+  <line x1="544" y1="158" x2="588" y2="158" stroke="#d6d0c4" stroke-width="2.5" class="lua-arc"/>
+  <text x="566" y="149" class="mono" font-size="10" fill="#065f46" text-anchor="middle">EVALSHA</text>
+  <text x="566" y="200" class="mono" font-size="10" fill="#065f46" text-anchor="middle">{ok,rem}</text>
 
   <!-- RIGHT COLUMN: PATH A (200 OK) & PATH B (429) -->
   <!-- Path A: 200 OK -->
-  <rect x="866" y="88" width="230" height="162" rx="10" fill="#ecfdf5" stroke="#059669" stroke-width="1.5" class="card-s3"/>
-  <rect x="878" y="98" width="22" height="20" rx="4" fill="#059669"/>
+  <rect x="866" y="88" width="230" height="162" rx="10" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5" class="card-s3"/>
+  <rect x="878" y="98" width="22" height="20" rx="4" fill="#0f766e"/>
   <text x="889" y="112" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">3</text>
   <text x="908" y="113" class="sans" font-size="13" font-weight="700" fill="#065f46">200 OK → Backend API</text>
-  <text x="878" y="135" class="sans" font-size="10.5" fill="#047857">Admitted to upstream cluster</text>
-  <rect x="878" y="146" width="206" height="90" rx="6" fill="#ffffff" stroke="#6ee7b7" stroke-width="1"/>
+  <text x="878" y="135" class="sans" font-size="10.5" fill="#065f46">Admitted to upstream cluster</text>
+  <rect x="878" y="146" width="206" height="90" rx="6" fill="#ffffff" stroke="#99f6e4" stroke-width="1"/>
   <text x="888" y="164" class="mono" font-size="10" font-weight="700" fill="#065f46">HTTP/1.1 200 OK</text>
-  <text x="888" y="182" class="mono" font-size="10" fill="#334155">RateLimit-Limit: 10</text>
-  <text x="888" y="198" class="mono" font-size="10" fill="#334155">RateLimit-Remaining: 3</text>
-  <text x="888" y="214" class="mono" font-size="10" fill="#334155">RateLimit-Reset: 6</text>
-  <text x="888" y="229" class="sans" font-size="10" fill="#059669">Client paces self cleanly</text>
+  <text x="888" y="182" class="mono" font-size="10" fill="#44403c">RateLimit-Limit: 10</text>
+  <text x="888" y="198" class="mono" font-size="10" fill="#44403c">RateLimit-Remaining: 3</text>
+  <text x="888" y="214" class="mono" font-size="10" fill="#44403c">RateLimit-Reset: 6</text>
+  <text x="888" y="229" class="sans" font-size="10" fill="#0f766e">Client paces self cleanly</text>
 
   <!-- Path B: 429 Too Many Requests -->
-  <rect x="866" y="268" width="230" height="192" rx="10" fill="#fff1f2" stroke="#e11d48" stroke-width="1.5" class="card-s4"/>
-  <rect x="878" y="278" width="22" height="20" rx="4" fill="#e11d48"/>
+  <rect x="866" y="268" width="230" height="192" rx="10" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5" class="card-s4"/>
+  <rect x="878" y="278" width="22" height="20" rx="4" fill="#dc2626"/>
   <text x="889" y="292" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">4</text>
-  <text x="908" y="293" class="sans" font-size="13" font-weight="700" fill="#9f1239">429 Too Many Requests</text>
-  <text x="878" y="314" class="sans" font-size="10.5" fill="#be123c">Rejected before upstream CPU</text>
+  <text x="908" y="293" class="sans" font-size="13" font-weight="700" fill="#991b1b">429 Too Many Requests</text>
+  <text x="878" y="314" class="sans" font-size="10.5" fill="#991b1b">Rejected before upstream CPU</text>
   <rect x="878" y="324" width="206" height="78" rx="6" fill="#ffffff" stroke="#fda4af" stroke-width="1"/>
-  <text x="888" y="342" class="mono" font-size="10" font-weight="700" fill="#9f1239">HTTP/1.1 429 (RFC 6585)</text>
-  <text x="888" y="359" class="mono" font-size="10" fill="#be123c" font-weight="700">Retry-After: 12</text>
-  <text x="888" y="375" class="mono" font-size="10" fill="#334155">RateLimit-Remaining: 0</text>
-  <text x="888" y="391" class="mono" font-size="10" fill="#334155">RateLimit-Reset: 12</text>
+  <text x="888" y="342" class="mono" font-size="10" font-weight="700" fill="#991b1b">HTTP/1.1 429 (RFC 6585)</text>
+  <text x="888" y="359" class="mono" font-size="10" fill="#991b1b" font-weight="700">Retry-After: 12</text>
+  <text x="888" y="375" class="mono" font-size="10" fill="#44403c">RateLimit-Remaining: 0</text>
+  <text x="888" y="391" class="mono" font-size="10" fill="#44403c">RateLimit-Reset: 12</text>
 
-  <rect x="878" y="410" width="206" height="38" rx="6" fill="#ffe4e6" stroke="#fb7185" stroke-width="1"/>
-  <text x="888" y="427" class="sans" font-size="10" font-weight="700" fill="#9f1239">Optional: Drop OR Dead-Letter</text>
-  <text x="888" y="441" class="sans" font-size="10" fill="#881337">Async webhooks → Kafka DLQ</text>
+  <rect x="878" y="410" width="206" height="38" rx="6" fill="#fef2f2" stroke="#fb7185" stroke-width="1"/>
+  <text x="888" y="427" class="sans" font-size="10" font-weight="700" fill="#991b1b">Optional: Drop OR Dead-Letter</text>
+  <text x="888" y="441" class="sans" font-size="10" fill="#7f1d1d">Async webhooks → Kafka DLQ</text>
 
   <!-- Routing Tracks + Arrows -->
   <!-- Client -> Gateway -->
-  <line x1="208" y1="130" x2="270" y2="130" stroke="#2563eb" stroke-width="2" marker-end="url(#arr-blue)"/>
-  <line x1="208" y1="220" x2="270" y2="220" stroke="#e11d48" stroke-width="2" marker-end="url(#arr-rose)"/>
+  <line x1="208" y1="130" x2="270" y2="130" stroke="#0f766e" stroke-width="2" marker-end="url(#arr-blue)"/>
+  <line x1="208" y1="220" x2="270" y2="220" stroke="#dc2626" stroke-width="2" marker-end="url(#arr-rose)"/>
 
   <!-- Gateway -> Path A (200 OK) -->
-  <path d="M 544 344 L 826 344 L 826 140 L 860 140" fill="none" stroke="#059669" stroke-width="2" marker-end="url(#arr-green)"/>
-  <rect x="650" y="328" width="130" height="22" rx="4" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <path d="M 544 344 L 826 344 L 826 140 L 860 140" fill="none" stroke="#0f766e" stroke-width="2" marker-end="url(#arr-green)"/>
+  <rect x="650" y="328" width="130" height="22" rx="4" fill="#f0fdf9" stroke="#99f6e4"/>
   <text x="715" y="343" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">ALLOW → 200 OK</text>
 
   <!-- Gateway -> Path B (429) -->
-  <path d="M 544 378 L 860 378" fill="none" stroke="#e11d48" stroke-width="2" marker-end="url(#arr-rose)"/>
-  <rect x="650" y="366" width="130" height="22" rx="4" fill="#fff1f2" stroke="#fda4af"/>
-  <text x="715" y="381" class="mono" font-size="10" font-weight="700" fill="#9f1239" text-anchor="middle">DENY → 429 Shed</text>
+  <path d="M 544 378 L 860 378" fill="none" stroke="#dc2626" stroke-width="2" marker-end="url(#arr-rose)"/>
+  <rect x="650" y="366" width="130" height="22" rx="4" fill="#fef2f2" stroke="#fda4af"/>
+  <text x="715" y="381" class="mono" font-size="10" font-weight="700" fill="#991b1b" text-anchor="middle">DENY → 429 Shed</text>
 
   <!-- Animated Packet Circles -->
   <g class="pkt-ok">
-    <circle cx="196" cy="130" r="8" fill="#059669" stroke="#ffffff" stroke-width="2"/>
+    <circle cx="196" cy="130" r="8" fill="#0f766e" stroke="#ffffff" stroke-width="2"/>
     <text x="196" y="133.5" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">OK</text>
   </g>
   <g class="pkt-429">
-    <circle cx="196" cy="238" r="8" fill="#e11d48" stroke="#ffffff" stroke-width="2"/>
+    <circle cx="196" cy="238" r="8" fill="#dc2626" stroke="#ffffff" stroke-width="2"/>
     <text x="196" y="241.5" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">429</text>
   </g>
 
   <!-- BOTTOM STEP LEGEND STRIP -->
-  <rect x="24" y="482" width="1072" height="58" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="24" y="482" width="1072" height="58" rx="8" fill="#ffffff" stroke="#d6d0c4" stroke-width="1"/>
   <g class="leg-1">
-    <rect x="36" y="492" width="250" height="38" rx="6" fill="#eff6ff" stroke="#93c5fd"/>
-    <text x="48" y="508" class="sans" font-size="10.5" font-weight="700" fill="#1e3a8a">Step 1 · Edge Match</text>
-    <text x="48" y="523" class="sans" font-size="10" fill="#334155">Gateway extracts key + local Rule</text>
+    <rect x="36" y="492" width="250" height="38" rx="6" fill="#f0fdf9" stroke="#99f6e4"/>
+    <text x="48" y="508" class="sans" font-size="10.5" font-weight="700" fill="#065f46">Step 1 · Edge Match</text>
+    <text x="48" y="523" class="sans" font-size="10" fill="#44403c">Gateway extracts key + local Rule</text>
   </g>
   <g class="leg-2">
-    <rect x="300" y="492" width="250" height="38" rx="6" fill="#f5f3ff" stroke="#c4b5fd"/>
-    <text x="312" y="508" class="sans" font-size="10.5" font-weight="700" fill="#5b21b6">Step 2 · Atomic Redis Lua</text>
-    <text x="312" y="523" class="sans" font-size="10" fill="#334155">Single EVALSHA eliminates race</text>
+    <rect x="300" y="492" width="250" height="38" rx="6" fill="#f5f1e8" stroke="#d6d0c4"/>
+    <text x="312" y="508" class="sans" font-size="10.5" font-weight="700" fill="#065f46">Step 2 · Atomic Redis Lua</text>
+    <text x="312" y="523" class="sans" font-size="10" fill="#44403c">Single EVALSHA eliminates race</text>
   </g>
   <g class="leg-3">
-    <rect x="564" y="492" width="250" height="38" rx="6" fill="#ecfdf5" stroke="#6ee7b7"/>
+    <rect x="564" y="492" width="250" height="38" rx="6" fill="#f0fdf9" stroke="#99f6e4"/>
     <text x="576" y="508" class="sans" font-size="10.5" font-weight="700" fill="#065f46">Step 3 · Admitted (200 OK)</text>
-    <text x="576" y="523" class="sans" font-size="10" fill="#334155">Forward + RateLimit-* headers</text>
+    <text x="576" y="523" class="sans" font-size="10" fill="#44403c">Forward + RateLimit-* headers</text>
   </g>
   <g class="leg-4">
-    <rect x="828" y="492" width="254" height="38" rx="6" fill="#fff1f2" stroke="#fda4af"/>
-    <text x="840" y="508" class="sans" font-size="10.5" font-weight="700" fill="#9f1239">Step 4 · Throttled (429)</text>
-    <text x="840" y="523" class="sans" font-size="10" fill="#334155">Retry-After + Drop / DLQ option</text>
+    <rect x="828" y="492" width="254" height="38" rx="6" fill="#fef2f2" stroke="#fda4af"/>
+    <text x="840" y="508" class="sans" font-size="10.5" font-weight="700" fill="#991b1b">Step 4 · Throttled (429)</text>
+    <text x="840" y="523" class="sans" font-size="10" fill="#44403c">Retry-After + Drop / DLQ option</text>
   </g>
 </svg>

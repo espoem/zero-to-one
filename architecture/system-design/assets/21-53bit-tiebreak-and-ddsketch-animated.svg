@@ -12,9 +12,9 @@
        66-100%(8-12s): Phase 3 — DDSketch logarithmic bucket merge across shards
     */
 
-    @keyframes p1-hl { 0%, 32% { stroke: #2563eb; stroke-width: 2.2; } 34%, 100% { stroke: #cbd5e1; stroke-width: 1.5; } }
-    @keyframes p2-hl { 0%, 32% { stroke: #cbd5e1; stroke-width: 1.5; } 34%, 65% { stroke: #059669; stroke-width: 2.2; } 67%, 100% { stroke: #cbd5e1; stroke-width: 1.5; } }
-    @keyframes p3-hl { 0%, 65% { stroke: #cbd5e1; stroke-width: 1.5; } 67%, 100% { stroke: #7c3aed; stroke-width: 2.2; } }
+    @keyframes p1-hl { 0%, 32% { stroke: #0f766e; stroke-width: 2.2; } 34%, 100% { stroke: #d6d0c4; stroke-width: 1.5; } }
+    @keyframes p2-hl { 0%, 32% { stroke: #d6d0c4; stroke-width: 1.5; } 34%, 65% { stroke: #0f766e; stroke-width: 2.2; } 67%, 100% { stroke: #d6d0c4; stroke-width: 1.5; } }
+    @keyframes p3-hl { 0%, 65% { stroke: #d6d0c4; stroke-width: 1.5; } 67%, 100% { stroke: #0f766e; stroke-width: 2.2; } }
 
     @keyframes skip-cursor {
       0%, 34%  { transform: translate(0px, 0px); opacity: 0.86; }
@@ -45,147 +45,147 @@
 
   <defs>
     <marker id="arr-g" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-v" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
   </defs>
 
   <!-- Canvas -->
-  <rect x="0" y="0" width="1120" height="600" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1120" height="600" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1120" height="60" rx="12" fill="#0f172a"/>
-  <rect x="0" y="44" width="1120" height="16" fill="#0f172a"/>
-  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Leaderboard Internals: 53-Bit IEEE-754 Tie-Break, zskiplist &amp; DDSketch</text>
-  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">M21 §3.2, §3.3 &amp; §4.3 · score × 2³² + (2³² − 1 − Δt_ms) ≤ 2⁵³ − 1 · zskiplist span Weights · DDSketch Relative-Error Merge</text>
+  <line x1="24" y1="62" x2="1096" y2="62" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#1c1917" font-family="Georgia, 'Times New Roman', serif">Leaderboard Internals: 53-Bit IEEE-754 Tie-Break, zskiplist &amp; DDSketch</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">M21 §3.2, §3.3 &amp; §4.3 · score × 2³² + (2³² − 1 − Δt_ms) ≤ 2⁵³ − 1 · zskiplist span Weights · DDSketch Relative-Error Merge</text>
 
   <!-- PANEL 1 (TOP): 53-BIT IEEE-754 PACKING -->
   <rect x="24" y="76" width="1072" height="196" rx="10" fill="#ffffff" class="p1"/>
-  <text x="42" y="100" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">1. Lossless 53-Bit IEEE-754 Binary64 Composite Packing (21 + 32 = 53 Exact Significand Bits)</text>
+  <text x="42" y="100" class="sans" font-size="13.5" font-weight="700" fill="#1c1917">1. Lossless 53-Bit IEEE-754 Binary64 Composite Packing (21 + 32 = 53 Exact Significand Bits)</text>
 
   <!-- Bit layout segments -->
-  <rect x="42" y="114" width="70" height="44" rx="5" fill="#f1f5f9" stroke="#94a3b8"/>
-  <text x="77" y="133" class="mono" font-size="10" font-weight="700" fill="#475569" text-anchor="middle">Sign (1b)</text>
-  <text x="77" y="149" class="mono" font-size="10" fill="#64748b" text-anchor="middle">0 (+)</text>
+  <rect x="42" y="114" width="70" height="44" rx="5" fill="#f5f1e8" stroke="#d6d0c4"/>
+  <text x="77" y="133" class="mono" font-size="10" font-weight="700" fill="#44403c" text-anchor="middle">Sign (1b)</text>
+  <text x="77" y="149" class="mono" font-size="10" fill="#57534e" text-anchor="middle">0 (+)</text>
 
-  <rect x="118" y="114" width="160" height="44" rx="5" fill="#f1f5f9" stroke="#94a3b8"/>
-  <text x="198" y="133" class="mono" font-size="10" font-weight="700" fill="#475569" text-anchor="middle">Exponent (11b)</text>
-  <text x="198" y="149" class="mono" font-size="10" fill="#64748b" text-anchor="middle">IEEE-754 Binary64</text>
+  <rect x="118" y="114" width="160" height="44" rx="5" fill="#f5f1e8" stroke="#d6d0c4"/>
+  <text x="198" y="133" class="mono" font-size="10" font-weight="700" fill="#44403c" text-anchor="middle">Exponent (11b)</text>
+  <text x="198" y="149" class="mono" font-size="10" fill="#57534e" text-anchor="middle">IEEE-754 Binary64</text>
 
-  <rect x="284" y="114" width="330" height="44" rx="5" fill="#eff6ff" stroke="#2563eb" stroke-width="1.8"/>
-  <text x="449" y="133" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">High 21 Bits: Integer Score (0 .. 2,097,151)</text>
-  <text x="449" y="149" class="mono" font-size="10" fill="#1e40af" text-anchor="middle">score × 2³² (recovered via floor(val / 2³²))</text>
+  <rect x="284" y="114" width="330" height="44" rx="5" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.8"/>
+  <text x="449" y="133" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">High 21 Bits: Integer Score (0 .. 2,097,151)</text>
+  <text x="449" y="149" class="mono" font-size="10" fill="#065f46" text-anchor="middle">score × 2³² (recovered via floor(val / 2³²))</text>
 
-  <rect x="620" y="114" width="458" height="44" rx="5" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+  <rect x="620" y="114" width="458" height="44" rx="5" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.8"/>
   <text x="849" y="133" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Low 32 Bits: Inverted Δt_ms = (2³² − 1) − (t − t_seasonStart)</text>
-  <text x="849" y="149" class="mono" font-size="10" fill="#047857" text-anchor="middle">4,294,967,295 ms ≈ 49.71 days @ 1 ms resolution</text>
+  <text x="849" y="149" class="mono" font-size="10" fill="#065f46" text-anchor="middle">4,294,967,295 ms ≈ 49.71 days @ 1 ms resolution</text>
 
   <!-- Alice vs Bob Tie-Break + Warning -->
-  <rect x="42" y="170" width="332" height="86" rx="7" fill="#ecfdf5" stroke="#059669"/>
+  <rect x="42" y="170" width="332" height="86" rx="7" fill="#f0fdf9" stroke="#0f766e"/>
   <text x="56" y="190" class="mono" font-size="10.5" font-weight="700" fill="#065f46">Alice: score=1500, Δt=10,000 ms</text>
-  <text x="56" y="208" class="mono" font-size="10" fill="#334155">low32 = 4,294,957,295 (LARGER)</text>
-  <text x="56" y="226" class="mono" font-size="10" font-weight="700" fill="#059669">→ ZREVRANGE Ranks Alice #1</text>
-  <text x="56" y="244" class="sans" font-size="10" fill="#047857">Earliest achiever deterministically wins ties.</text>
+  <text x="56" y="208" class="mono" font-size="10" fill="#44403c">low32 = 4,294,957,295 (LARGER)</text>
+  <text x="56" y="226" class="mono" font-size="10" font-weight="700" fill="#0f766e">→ ZREVRANGE Ranks Alice #1</text>
+  <text x="56" y="244" class="sans" font-size="10" fill="#065f46">Earliest achiever deterministically wins ties.</text>
 
-  <rect x="388" y="170" width="332" height="86" rx="7" fill="#eff6ff" stroke="#93c5fd"/>
-  <text x="402" y="190" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a">Bob: score=1500, Δt=10,005 ms (+5ms)</text>
-  <text x="402" y="208" class="mono" font-size="10" fill="#334155">low32 = 4,294,957,290 (SMALLER)</text>
-  <text x="402" y="226" class="mono" font-size="10" font-weight="700" fill="#2563eb">→ ZREVRANGE Ranks Bob #2</text>
-  <text x="402" y="244" class="sans" font-size="10" fill="#1e40af">Atomic Lua EVALSHA preserves upper 21 bits.</text>
+  <rect x="388" y="170" width="332" height="86" rx="7" fill="#f0fdf9" stroke="#99f6e4"/>
+  <text x="402" y="190" class="mono" font-size="10.5" font-weight="700" fill="#065f46">Bob: score=1500, Δt=10,005 ms (+5ms)</text>
+  <text x="402" y="208" class="mono" font-size="10" fill="#44403c">low32 = 4,294,957,290 (SMALLER)</text>
+  <text x="402" y="226" class="mono" font-size="10" font-weight="700" fill="#0f766e">→ ZREVRANGE Ranks Bob #2</text>
+  <text x="402" y="244" class="sans" font-size="10" fill="#065f46">Atomic Lua EVALSHA preserves upper 21 bits.</text>
 
-  <rect x="734" y="170" width="344" height="86" rx="7" fill="#fff1f2" stroke="#e11d48"/>
-  <text x="748" y="190" class="mono" font-size="10.5" font-weight="700" fill="#9f1239">TRAP: &gt; 2⁵³ − 1 (e.g. 64-bit / 73-bit)</text>
-  <text x="748" y="208" class="sans" font-size="10" fill="#be123c">Silent ULP rounding collapses timestamps</text>
-  <text x="748" y="224" class="sans" font-size="10" fill="#be123c">into identical floats &amp; breaks ties!</text>
-  <text x="748" y="244" class="mono" font-size="10" fill="#9f1239">MAX_SAFE_INTEGER = 9,007,199,254,740,991</text>
+  <rect x="734" y="170" width="344" height="86" rx="7" fill="#fef2f2" stroke="#dc2626"/>
+  <text x="748" y="190" class="mono" font-size="10.5" font-weight="700" fill="#991b1b">TRAP: &gt; 2⁵³ − 1 (e.g. 64-bit / 73-bit)</text>
+  <text x="748" y="208" class="sans" font-size="10" fill="#991b1b">Silent ULP rounding collapses timestamps</text>
+  <text x="748" y="224" class="sans" font-size="10" fill="#991b1b">into identical floats &amp; breaks ties!</text>
+  <text x="748" y="244" class="mono" font-size="10" fill="#991b1b">MAX_SAFE_INTEGER = 9,007,199,254,740,991</text>
 
   <!-- PANEL 2 (BOTTOM-LEFT): VALKEY ZSKIPLIST SPAN -->
   <rect x="24" y="288" width="526" height="236" rx="10" fill="#ffffff" class="p2"/>
-  <text x="42" y="312" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">2. Valkey zskiplist ZREVRANK via span Weights O(log N)</text>
+  <text x="42" y="312" class="sans" font-size="13.5" font-weight="700" fill="#1c1917">2. Valkey zskiplist ZREVRANK via span Weights O(log N)</text>
 
   <!-- Level 2 -->
-  <rect x="44" y="330" width="56" height="30" rx="5" fill="#f1f5f9" stroke="#475569"/>
+  <rect x="44" y="330" width="56" height="30" rx="5" fill="#f5f1e8" stroke="#44403c"/>
   <text x="72" y="349" class="mono" font-size="10" font-weight="700" text-anchor="middle">HEAD</text>
-  <line x1="100" y1="345" x2="274" y2="345" stroke="#059669" stroke-width="2" marker-end="url(#arr-g)"/>
-  <rect x="160" y="330" width="60" height="18" rx="4" fill="#ecfdf5" stroke="#059669"/>
+  <line x1="100" y1="345" x2="274" y2="345" stroke="#0f766e" stroke-width="2" marker-end="url(#arr-g)"/>
+  <rect x="160" y="330" width="60" height="18" rx="4" fill="#f0fdf9" stroke="#0f766e"/>
   <text x="190" y="343" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">span=4</text>
-  <rect x="280" y="330" width="76" height="30" rx="5" fill="#ecfdf5" stroke="#059669"/>
+  <rect x="280" y="330" width="76" height="30" rx="5" fill="#f0fdf9" stroke="#0f766e"/>
   <text x="318" y="349" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">2100</text>
 
   <!-- Level 1 -->
-  <rect x="44" y="374" width="56" height="30" rx="5" fill="#f1f5f9" stroke="#475569"/>
+  <rect x="44" y="374" width="56" height="30" rx="5" fill="#f5f1e8" stroke="#44403c"/>
   <text x="72" y="393" class="mono" font-size="10" font-weight="700" text-anchor="middle">L1</text>
-  <line x1="100" y1="389" x2="274" y2="389" stroke="#94a3b8" stroke-width="1.5"/>
-  <rect x="280" y="374" width="76" height="30" rx="5" fill="#ecfdf5" stroke="#059669"/>
+  <line x1="100" y1="389" x2="274" y2="389" stroke="#d6d0c4" stroke-width="1.5"/>
+  <rect x="280" y="374" width="76" height="30" rx="5" fill="#f0fdf9" stroke="#0f766e"/>
   <text x="318" y="393" class="mono" font-size="10" fill="#065f46" text-anchor="middle">2100</text>
-  <line x1="356" y1="389" x2="432" y2="389" stroke="#059669" stroke-width="2" marker-end="url(#arr-g)"/>
-  <rect x="366" y="374" width="54" height="18" rx="4" fill="#ecfdf5" stroke="#059669"/>
+  <line x1="356" y1="389" x2="432" y2="389" stroke="#0f766e" stroke-width="2" marker-end="url(#arr-g)"/>
+  <rect x="366" y="374" width="54" height="18" rx="4" fill="#f0fdf9" stroke="#0f766e"/>
   <text x="393" y="387" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">span=2</text>
-  <rect x="438" y="374" width="90" height="30" rx="5" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
-  <text x="483" y="393" class="mono" font-size="10" font-weight="700" fill="#1e3a8a" text-anchor="middle">Alice 1500</text>
+  <rect x="438" y="374" width="90" height="30" rx="5" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
+  <text x="483" y="393" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">Alice 1500</text>
 
   <!-- Level 0 -->
-  <rect x="44" y="418" width="56" height="30" rx="5" fill="#f1f5f9" stroke="#475569"/>
+  <rect x="44" y="418" width="56" height="30" rx="5" fill="#f5f1e8" stroke="#44403c"/>
   <text x="72" y="437" class="mono" font-size="10" text-anchor="middle">L0</text>
-  <rect x="116" y="418" width="48" height="30" rx="4" fill="#f8fafc" stroke="#cbd5e1"/>
+  <rect x="116" y="418" width="48" height="30" rx="4" fill="#faf8f5" stroke="#d6d0c4"/>
   <text x="140" y="437" class="mono" font-size="10" text-anchor="middle">3200</text>
-  <rect x="172" y="418" width="48" height="30" rx="4" fill="#f8fafc" stroke="#cbd5e1"/>
+  <rect x="172" y="418" width="48" height="30" rx="4" fill="#faf8f5" stroke="#d6d0c4"/>
   <text x="196" y="437" class="mono" font-size="10" text-anchor="middle">2800</text>
-  <rect x="228" y="418" width="44" height="30" rx="4" fill="#f8fafc" stroke="#cbd5e1"/>
+  <rect x="228" y="418" width="44" height="30" rx="4" fill="#faf8f5" stroke="#d6d0c4"/>
   <text x="250" y="437" class="mono" font-size="10" text-anchor="middle">2400</text>
-  <rect x="280" y="418" width="76" height="30" rx="4" fill="#f8fafc" stroke="#cbd5e1"/>
+  <rect x="280" y="418" width="76" height="30" rx="4" fill="#faf8f5" stroke="#d6d0c4"/>
   <text x="318" y="437" class="mono" font-size="10" text-anchor="middle">2100</text>
-  <rect x="366" y="418" width="60" height="30" rx="4" fill="#f8fafc" stroke="#cbd5e1"/>
+  <rect x="366" y="418" width="60" height="30" rx="4" fill="#faf8f5" stroke="#d6d0c4"/>
   <text x="396" y="437" class="mono" font-size="10" text-anchor="middle">1750</text>
-  <rect x="438" y="418" width="90" height="30" rx="4" fill="#dbeafe" stroke="#2563eb"/>
-  <text x="483" y="437" class="mono" font-size="10" font-weight="700" fill="#1e3a8a" text-anchor="middle">Alice 1500</text>
+  <rect x="438" y="418" width="90" height="30" rx="4" fill="#f0fdf9" stroke="#0f766e"/>
+  <text x="483" y="437" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">Alice 1500</text>
 
   <!-- Animated Skip Cursor -->
   <g class="sk-cur">
-    <circle cx="82" cy="345" r="7" fill="#059669" stroke="#ffffff" stroke-width="2"/>
+    <circle cx="82" cy="345" r="7" fill="#0f766e" stroke="#ffffff" stroke-width="2"/>
   </g>
 
-  <rect x="44" y="460" width="486" height="48" rx="6" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <rect x="44" y="460" width="486" height="48" rx="6" fill="#f0fdf9" stroke="#99f6e4"/>
   <text x="56" y="480" class="mono" font-size="10" font-weight="700" fill="#065f46">Rank = sum(span) = 4 + 2 = 6 (0-based) → Rank #7 in O(log N)</text>
-  <text x="56" y="497" class="sans" font-size="10" fill="#047857">Avoids O(N) SQL COUNT(*) scans across 25M+ rows.</text>
+  <text x="56" y="497" class="sans" font-size="10" fill="#065f46">Avoids O(N) SQL COUNT(*) scans across 25M+ rows.</text>
 
   <!-- PANEL 3 (BOTTOM-RIGHT): DDSKETCH RELATIVE-ERROR MERGE -->
   <rect x="570" y="288" width="526" height="236" rx="10" fill="#ffffff" class="p3"/>
-  <text x="588" y="312" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">3. DDSketch Logarithmic Bucket Merge (Tail Percentile Ranks)</text>
+  <text x="588" y="312" class="sans" font-size="13.5" font-weight="700" fill="#1c1917">3. DDSketch Logarithmic Bucket Merge (Tail Percentile Ranks)</text>
 
   <!-- Shard A & Shard B -->
-  <rect x="588" y="328" width="210" height="58" rx="6" fill="#f5f3ff" stroke="#c4b5fd"/>
-  <text x="693" y="346" class="mono" font-size="10" font-weight="700" fill="#5b21b6" text-anchor="middle">Shard A Sketch (α = 1%)</text>
-  <text x="693" y="364" class="mono" font-size="10" fill="#334155" text-anchor="middle">B_k = ⌈log_γ(x)⌉, γ=(1+α)/(1−α)</text>
-  <text x="693" y="378" class="mono" font-size="10" fill="#6d28d9" text-anchor="middle">bins: [b10:120, b11:48, b12:9]</text>
+  <rect x="588" y="328" width="210" height="58" rx="6" fill="#f5f1e8" stroke="#d6d0c4"/>
+  <text x="693" y="346" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">Shard A Sketch (α = 1%)</text>
+  <text x="693" y="364" class="mono" font-size="10" fill="#44403c" text-anchor="middle">B_k = ⌈log_γ(x)⌉, γ=(1+α)/(1−α)</text>
+  <text x="693" y="378" class="mono" font-size="10" fill="#065f46" text-anchor="middle">bins: [b10:120, b11:48, b12:9]</text>
 
-  <rect x="588" y="394" width="210" height="58" rx="6" fill="#f5f3ff" stroke="#c4b5fd"/>
-  <text x="693" y="412" class="mono" font-size="10" font-weight="700" fill="#5b21b6" text-anchor="middle">Shard B Sketch (α = 1%)</text>
-  <text x="693" y="430" class="mono" font-size="10" fill="#334155" text-anchor="middle">Same γ base → linear bucket sum</text>
-  <text x="693" y="444" class="mono" font-size="10" fill="#6d28d9" text-anchor="middle">bins: [b10:115, b11:52, b12:11]</text>
+  <rect x="588" y="394" width="210" height="58" rx="6" fill="#f5f1e8" stroke="#d6d0c4"/>
+  <text x="693" y="412" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">Shard B Sketch (α = 1%)</text>
+  <text x="693" y="430" class="mono" font-size="10" fill="#44403c" text-anchor="middle">Same γ base → linear bucket sum</text>
+  <text x="693" y="444" class="mono" font-size="10" fill="#065f46" text-anchor="middle">bins: [b10:115, b11:52, b12:11]</text>
 
-  <line x1="798" y1="357" x2="834" y2="386" stroke="#7c3aed" stroke-width="2" marker-end="url(#arr-v)"/>
-  <line x1="798" y1="423" x2="834" y2="396" stroke="#7c3aed" stroke-width="2" marker-end="url(#arr-v)"/>
+  <line x1="798" y1="357" x2="834" y2="386" stroke="#0f766e" stroke-width="2" marker-end="url(#arr-v)"/>
+  <line x1="798" y1="423" x2="834" y2="396" stroke="#0f766e" stroke-width="2" marker-end="url(#arr-v)"/>
 
   <!-- Merged Global Sketch -->
   <g class="dd-pop">
-    <rect x="840" y="328" width="238" height="124" rx="7" fill="#eff6ff" stroke="#7c3aed" stroke-width="1.8"/>
-    <text x="959" y="348" class="mono" font-size="10.5" font-weight="700" fill="#5b21b6" text-anchor="middle">Merged Global Sketch</text>
+    <rect x="840" y="328" width="238" height="124" rx="7" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.8"/>
+    <text x="959" y="348" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Merged Global Sketch</text>
     <!-- Histogram bars -->
-    <rect x="862" y="390" width="38" height="38" rx="2" fill="#7c3aed"/>
-    <rect x="910" y="376" width="38" height="52" rx="2" fill="#7c3aed"/>
-    <rect x="958" y="398" width="38" height="30" rx="2" fill="#2563eb"/>
-    <rect x="1006" y="412" width="38" height="16" rx="2" fill="#059669"/>
+    <rect x="862" y="390" width="38" height="38" rx="2" fill="#0f766e"/>
+    <rect x="910" y="376" width="38" height="52" rx="2" fill="#0f766e"/>
+    <rect x="958" y="398" width="38" height="30" rx="2" fill="#0f766e"/>
+    <rect x="1006" y="412" width="38" height="16" rx="2" fill="#0f766e"/>
     <text x="959" y="443" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">p95 = "Top 5% Tier" (±1% err)</text>
   </g>
 
-  <rect x="588" y="460" width="490" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
-  <text x="602" y="480" class="mono" font-size="10" font-weight="700" fill="#334155">O(1) space per shard · Exact Top-1K in Valkey + DDSketch long tail</text>
-  <text x="602" y="497" class="sans" font-size="10" fill="#475569">Solves DynamoDB GSI inability to compute exact mid-table ranks.</text>
+  <rect x="588" y="460" width="490" height="48" rx="6" fill="#faf8f5" stroke="#d6d0c4"/>
+  <text x="602" y="480" class="mono" font-size="10" font-weight="700" fill="#44403c">O(1) space per shard · Exact Top-1K in Valkey + DDSketch long tail</text>
+  <text x="602" y="497" class="sans" font-size="10" fill="#44403c">Solves DynamoDB GSI inability to compute exact mid-table ranks.</text>
 
   <!-- FOOTER -->
-  <rect x="24" y="542" width="1072" height="44" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
-  <text x="42" y="568" class="sans" font-size="11.5" font-weight="600" fill="#1e3a8a">Takeaway: 21+32=53-bit packing guarantees exact IEEE-754 tie-breaking, zskiplist spans give O(log N) ranks, and mergeable DDSketch serves bounded-error tail percentiles.</text>
+  <rect x="24" y="542" width="1072" height="44" rx="8" fill="#f0fdf9" stroke="#99f6e4" stroke-width="1"/>
+  <text x="42" y="568" class="sans" font-size="11.5" font-weight="600" fill="#065f46">Takeaway: 21+32=53-bit packing guarantees exact IEEE-754 tie-breaking, zskiplist spans give O(log N) ranks, and mergeable DDSketch serves bounded-error tail percentiles.</text>
 </svg>

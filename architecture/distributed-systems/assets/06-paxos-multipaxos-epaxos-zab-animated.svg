@@ -11,10 +11,10 @@
     @keyframes ph3 { 0%, 49% { opacity: 0.86; } 55%, 96% { opacity: 1; } 100% { opacity: 0.86; } }
     @keyframes ph4 { 0%, 74% { opacity: 0.86; } 80%, 96% { opacity: 1; } 100% { opacity: 0.86; } }
 
-    @keyframes s1 { 0%, 24% { opacity: 1; stroke: #2563eb; stroke-width: 2.2; } 25%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } }
-    @keyframes s2 { 0%, 24% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } 25%, 49% { opacity: 1; stroke: #7c3aed; stroke-width: 2.2; } 50%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } }
-    @keyframes s3 { 0%, 49% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } 50%, 74% { opacity: 1; stroke: #059669; stroke-width: 2.2; } 75%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } }
-    @keyframes s4 { 0%, 74% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1; } 75%, 100% { opacity: 1; stroke: #d97706; stroke-width: 2.2; } }
+    @keyframes s1 { 0%, 24% { opacity: 1; stroke: #0f766e; stroke-width: 2.2; } 25%, 100% { opacity: 0.86; stroke: #d6d0c4; stroke-width: 1; } }
+    @keyframes s2 { 0%, 24% { opacity: 0.86; stroke: #d6d0c4; stroke-width: 1; } 25%, 49% { opacity: 1; stroke: #0f766e; stroke-width: 2.2; } 50%, 100% { opacity: 0.86; stroke: #d6d0c4; stroke-width: 1; } }
+    @keyframes s3 { 0%, 49% { opacity: 0.86; stroke: #d6d0c4; stroke-width: 1; } 50%, 74% { opacity: 1; stroke: #0f766e; stroke-width: 2.2; } 75%, 100% { opacity: 0.86; stroke: #d6d0c4; stroke-width: 1; } }
+    @keyframes s4 { 0%, 74% { opacity: 0.86; stroke: #d6d0c4; stroke-width: 1; } 75%, 100% { opacity: 1; stroke: #b45309; stroke-width: 2.2; } }
 
     .p1 { animation: ph1 16s ease-in-out infinite; }
     .p2 { animation: ph2 16s ease-in-out infinite; }
@@ -32,149 +32,149 @@
 
   <defs>
     <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#b45309"/>
     </marker>
   </defs>
 
-  <rect x="0" y="0" width="1120" height="620" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1120" height="620" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1120" height="62" rx="12" fill="#0f172a"/>
-  <rect x="0" y="46" width="1120" height="16" fill="#0f172a"/>
-  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Paxos, Multi-Paxos, Flexible Quorums, EPaxos &amp; ZAB</text>
-  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">2-Phase Synod (Prepare/Accept) · 1-RTT Leader Amortization · Q₁ ∩ Q₂ ≠ ∅ · Leaderless Dependency DAG · 64-bit zxid</text>
+  <line x1="24" y1="64" x2="1096" y2="64" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#1c1917" font-family="Georgia, 'Times New Roman', serif">Paxos, Multi-Paxos, Flexible Quorums, EPaxos &amp; ZAB</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">2-Phase Synod (Prepare/Accept) · 1-RTT Leader Amortization · Q₁ ∩ Q₂ ≠ ∅ · Leaderless Dependency DAG · 64-bit zxid</text>
 
   <!-- TOP-LEFT: SINGLE-DECREE PAXOS & MULTI-PAXOS -->
-  <rect x="24" y="76" width="534" height="252" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <text x="42" y="100" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">1. Single-Decree Paxos &amp; Multi-Paxos (1-RTT Steady State)</text>
+  <rect x="24" y="76" width="534" height="252" rx="10" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <text x="42" y="100" class="sans" font-size="13.5" font-weight="700" fill="#1c1917">1. Single-Decree Paxos &amp; Multi-Paxos (1-RTT Steady State)</text>
 
   <g class="p1">
-    <rect x="42" y="114" width="240" height="134" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
-    <text x="56" y="134" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a">Phase 1 (Leader Election / Once)</text>
-    <text x="56" y="154" class="mono" font-size="10" fill="#334155">1a: Prepare(n) ──▶ Acceptors</text>
-    <text x="56" y="172" class="mono" font-size="10" fill="#334155">1b: Promise(n, {n_v:2, v:"X"})</text>
-    <text x="56" y="196" class="sans" font-size="10" font-weight="700" fill="#1e40af">Rule: Must adopt v with max n_v</text>
-    <text x="56" y="214" class="sans" font-size="10" fill="#475569">Amortized across slots 1..∞ in</text>
-    <text x="56" y="228" class="sans" font-size="10" font-weight="700" fill="#1e3a8a">Multi-Paxos (skipped on writes!)</text>
+    <rect x="42" y="114" width="240" height="134" rx="8" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
+    <text x="56" y="134" class="mono" font-size="10.5" font-weight="700" fill="#065f46">Phase 1 (Leader Election / Once)</text>
+    <text x="56" y="154" class="mono" font-size="10" fill="#44403c">1a: Prepare(n) ──▶ Acceptors</text>
+    <text x="56" y="172" class="mono" font-size="10" fill="#44403c">1b: Promise(n, {n_v:2, v:"X"})</text>
+    <text x="56" y="196" class="sans" font-size="10" font-weight="700" fill="#065f46">Rule: Must adopt v with max n_v</text>
+    <text x="56" y="214" class="sans" font-size="10" fill="#44403c">Amortized across slots 1..∞ in</text>
+    <text x="56" y="228" class="sans" font-size="10" font-weight="700" fill="#065f46">Multi-Paxos (skipped on writes!)</text>
 
-    <line x1="282" y1="181" x2="304" y2="181" stroke="#059669" stroke-width="2.2" marker-end="url(#arr-emerald)"/>
+    <line x1="282" y1="181" x2="304" y2="181" stroke="#0f766e" stroke-width="2.2" marker-end="url(#arr-emerald)"/>
 
-    <rect x="308" y="114" width="234" height="134" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+    <rect x="308" y="114" width="234" height="134" rx="8" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
     <text x="322" y="134" class="mono" font-size="10.5" font-weight="700" fill="#065f46">Phase 2 (Steady State = 1 RTT)</text>
-    <text x="322" y="154" class="mono" font-size="10" fill="#334155">2a: Accept(n, "X") ──▶ Q₂</text>
-    <text x="322" y="172" class="mono" font-size="10" fill="#334155">2b: Accepted(n, "X") ◀── Q₂</text>
-    <rect x="322" y="186" width="206" height="24" rx="5" fill="#059669"/>
+    <text x="322" y="154" class="mono" font-size="10" fill="#44403c">2a: Accept(n, "X") ──▶ Q₂</text>
+    <text x="322" y="172" class="mono" font-size="10" fill="#44403c">2b: Accepted(n, "X") ◀── Q₂</text>
+    <rect x="322" y="186" width="206" height="24" rx="5" fill="#0f766e"/>
     <text x="425" y="202" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">VALUE "X" CHOSEN!</text>
-    <text x="322" y="228" class="sans" font-size="10" fill="#047857">Stable leader prevents dueling proposers.</text>
+    <text x="322" y="228" class="sans" font-size="10" fill="#065f46">Stable leader prevents dueling proposers.</text>
   </g>
 
-  <rect x="42" y="260" width="500" height="52" rx="6" fill="#fff1f2" stroke="#fda4af"/>
-  <text x="56" y="280" class="mono" font-size="10" font-weight="700" fill="#9f1239">Dueling Proposers Livelock: P1 Prepare(1) → P2 Prepare(2) → P1 Prepare(3)...</text>
-  <text x="56" y="298" class="sans" font-size="10" fill="#be123c">Resolved by electing a single Stable Leader (Multi-Paxos / Raft).</text>
+  <rect x="42" y="260" width="500" height="52" rx="6" fill="#fef2f2" stroke="#fda4af"/>
+  <text x="56" y="280" class="mono" font-size="10" font-weight="700" fill="#991b1b">Dueling Proposers Livelock: P1 Prepare(1) → P2 Prepare(2) → P1 Prepare(3)...</text>
+  <text x="56" y="298" class="sans" font-size="10" fill="#991b1b">Resolved by electing a single Stable Leader (Multi-Paxos / Raft).</text>
 
   <!-- BOTTOM-LEFT: FLEXIBLE PAXOS -->
-  <rect x="24" y="342" width="534" height="198" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <text x="42" y="366" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">2. Flexible Paxos (Howard et al. 2016: Q₁ + Q₂ &gt; N)</text>
+  <rect x="24" y="342" width="534" height="198" rx="10" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <text x="42" y="366" class="sans" font-size="13.5" font-weight="700" fill="#1c1917">2. Flexible Paxos (Howard et al. 2016: Q₁ + Q₂ &gt; N)</text>
 
   <g class="p2">
-    <rect x="42" y="382" width="500" height="104" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
-    <text x="58" y="404" class="mono" font-size="11" font-weight="700" fill="#5b21b6">Only Q₁ ∩ Q₂ ≠ ∅ is required (Q₁, Q₂ need NOT be majorities!)</text>
+    <rect x="42" y="382" width="500" height="104" rx="8" fill="#f5f1e8" stroke="#0f766e" stroke-width="1.5"/>
+    <text x="58" y="404" class="mono" font-size="11" font-weight="700" fill="#065f46">Only Q₁ ∩ Q₂ ≠ ∅ is required (Q₁, Q₂ need NOT be majorities!)</text>
 
     <!-- 10 Node Dots representing N=10 -->
-    <text x="58" y="428" class="mono" font-size="10" font-weight="700" fill="#1e3a8a">N=10 Cluster:</text>
-    <rect x="148" y="414" width="234" height="24" rx="5" fill="#eff6ff" stroke="#2563eb"/>
-    <text x="265" y="430" class="mono" font-size="10" font-weight="700" fill="#1e3a8a" text-anchor="middle">|Q₁| = 9 (Rare Election)</text>
+    <text x="58" y="428" class="mono" font-size="10" font-weight="700" fill="#065f46">N=10 Cluster:</text>
+    <rect x="148" y="414" width="234" height="24" rx="5" fill="#f0fdf9" stroke="#0f766e"/>
+    <text x="265" y="430" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">|Q₁| = 9 (Rare Election)</text>
 
-    <rect x="356" y="414" width="170" height="24" rx="5" fill="#ecfdf5" stroke="#059669"/>
+    <rect x="356" y="414" width="170" height="24" rx="5" fill="#f0fdf9" stroke="#0f766e"/>
     <text x="441" y="430" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">|Q₂| = 2 (Fast Writes)</text>
 
-    <text x="58" y="462" class="mono" font-size="10.5" font-weight="700" fill="#047857">9 + 2 = 11 &gt; 10  ⇒  Guaranteed ≥ 1 overlapping node!</text>
-    <text x="58" y="478" class="sans" font-size="10" fill="#4c1d95">Steady-state writes wait for only 2 acks instead of 6, slashing tail latency.</text>
+    <text x="58" y="462" class="mono" font-size="10.5" font-weight="700" fill="#065f46">9 + 2 = 11 &gt; 10  ⇒  Guaranteed ≥ 1 overlapping node!</text>
+    <text x="58" y="478" class="sans" font-size="10" fill="#065f46">Steady-state writes wait for only 2 acks instead of 6, slashing tail latency.</text>
   </g>
-  <text x="42" y="518" class="sans" font-size="10.5" fill="#475569">Even |Q₂| = 2 survives single-node slowdowns on every Phase 2 write.</text>
+  <text x="42" y="518" class="sans" font-size="10.5" fill="#44403c">Even |Q₂| = 2 survives single-node slowdowns on every Phase 2 write.</text>
 
   <!-- TOP-RIGHT: EPAXOS -->
-  <rect x="574" y="76" width="522" height="244" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <text x="592" y="100" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">3. Egalitarian Paxos (EPaxos: Leaderless WAN 1-RTT)</text>
+  <rect x="574" y="76" width="522" height="244" rx="10" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <text x="592" y="100" class="sans" font-size="13.5" font-weight="700" fill="#1c1917">3. Egalitarian Paxos (EPaxos: Leaderless WAN 1-RTT)</text>
 
   <g class="p3">
-    <rect x="592" y="116" width="150" height="58" rx="6" fill="#eff6ff" stroke="#2563eb"/>
-    <text x="667" y="136" class="sans" font-size="11" font-weight="700" fill="#1e3a8a" text-anchor="middle">Any Command Leader</text>
-    <text x="667" y="153" class="mono" font-size="10" fill="#334155" text-anchor="middle">PreAccept(γ, deps)</text>
-    <text x="667" y="166" class="mono" font-size="10" fill="#1e40af" text-anchor="middle">to Fast Quorum F</text>
+    <rect x="592" y="116" width="150" height="58" rx="6" fill="#f0fdf9" stroke="#0f766e"/>
+    <text x="667" y="136" class="sans" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">Any Command Leader</text>
+    <text x="667" y="153" class="mono" font-size="10" fill="#44403c" text-anchor="middle">PreAccept(γ, deps)</text>
+    <text x="667" y="166" class="mono" font-size="10" fill="#065f46" text-anchor="middle">to Fast Quorum F</text>
 
-    <line x1="742" y1="145" x2="772" y2="145" stroke="#059669" stroke-width="2" marker-end="url(#arr-emerald)"/>
+    <line x1="742" y1="145" x2="772" y2="145" stroke="#0f766e" stroke-width="2" marker-end="url(#arr-emerald)"/>
 
-    <rect x="776" y="116" width="302" height="46" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+    <rect x="776" y="116" width="302" height="46" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
     <text x="790" y="135" class="mono" font-size="10.5" font-weight="700" fill="#065f46">Fast Path (1 RTT): No deps conflict</text>
-    <text x="790" y="152" class="sans" font-size="10" fill="#047857">All F replicas agree on deps → Commit!</text>
+    <text x="790" y="152" class="sans" font-size="10" fill="#065f46">All F replicas agree on deps → Commit!</text>
 
-    <line x1="742" y1="160" x2="772" y2="196" stroke="#d97706" stroke-width="2" marker-end="url(#arr-amber)"/>
+    <line x1="742" y1="160" x2="772" y2="196" stroke="#b45309" stroke-width="2" marker-end="url(#arr-amber)"/>
 
-    <rect x="776" y="172" width="302" height="46" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+    <rect x="776" y="172" width="302" height="46" rx="6" fill="#fffbeb" stroke="#b45309" stroke-width="1.5"/>
     <text x="790" y="191" class="mono" font-size="10.5" font-weight="700" fill="#92400e">Slow Path (2 RTT): Concurrent deps differ</text>
     <text x="790" y="208" class="sans" font-size="10" fill="#b45309">Run Paxos Accept/Accepted on union(deps)</text>
 
-    <rect x="592" y="232" width="486" height="72" rx="6" fill="#f5f3ff" stroke="#c4b5fd"/>
-    <text x="608" y="253" class="mono" font-size="10.5" font-weight="700" fill="#5b21b6">Execution: Topological Sort of Strongly Connected Components</text>
-    <text x="608" y="272" class="sans" font-size="10" fill="#4c1d95">All replicas execute committed commands in identical DAG order with no</text>
-    <text x="608" y="288" class="sans" font-size="10" fill="#4c1d95">single-leader cross-region bottleneck (ideal for geo-distributed writes).</text>
+    <rect x="592" y="232" width="486" height="72" rx="6" fill="#f5f1e8" stroke="#d6d0c4"/>
+    <text x="608" y="253" class="mono" font-size="10.5" font-weight="700" fill="#065f46">Execution: Topological Sort of Strongly Connected Components</text>
+    <text x="608" y="272" class="sans" font-size="10" fill="#065f46">All replicas execute committed commands in identical DAG order with no</text>
+    <text x="608" y="288" class="sans" font-size="10" fill="#065f46">single-leader cross-region bottleneck (ideal for geo-distributed writes).</text>
   </g>
 
   <!-- BOTTOM-RIGHT: ZAB -->
-  <rect x="574" y="334" width="522" height="206" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <text x="592" y="358" class="sans" font-size="13.5" font-weight="700" fill="#0f172a">4. ZooKeeper Atomic Broadcast (ZAB) &amp; 64-bit zxid</text>
+  <rect x="574" y="334" width="522" height="206" rx="10" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <text x="592" y="358" class="sans" font-size="13.5" font-weight="700" fill="#1c1917">4. ZooKeeper Atomic Broadcast (ZAB) &amp; 64-bit zxid</text>
 
   <g class="p4">
     <!-- 64-bit zxid diagram -->
-    <rect x="592" y="372" width="242" height="44" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+    <rect x="592" y="372" width="242" height="44" rx="6" fill="#fffbeb" stroke="#b45309" stroke-width="1.5"/>
     <text x="713" y="391" class="mono" font-size="11" font-weight="700" fill="#92400e" text-anchor="middle">High 32 bits: epoch (e)</text>
     <text x="713" y="407" class="mono" font-size="10" fill="#b45309" text-anchor="middle">Incremented per new primary</text>
 
-    <rect x="836" y="372" width="242" height="44" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
-    <text x="957" y="391" class="mono" font-size="11" font-weight="700" fill="#1e3a8a" text-anchor="middle">Low 32 bits: counter (c)</text>
-    <text x="957" y="407" class="mono" font-size="10" fill="#1e40af" text-anchor="middle">Monotonic tx seq (resets to 0)</text>
+    <rect x="836" y="372" width="242" height="44" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
+    <text x="957" y="391" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">Low 32 bits: counter (c)</text>
+    <text x="957" y="407" class="mono" font-size="10" fill="#065f46" text-anchor="middle">Monotonic tx seq (resets to 0)</text>
 
     <!-- 3 ZAB Phases -->
-    <rect x="592" y="430" width="148" height="54" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
-    <text x="666" y="451" class="mono" font-size="10.5" font-weight="700" fill="#0f172a" text-anchor="middle">1. Discovery</text>
-    <text x="666" y="469" class="sans" font-size="10" fill="#475569" text-anchor="middle">Elect highest zxid</text>
+    <rect x="592" y="430" width="148" height="54" rx="6" fill="#faf8f5" stroke="#d6d0c4"/>
+    <text x="666" y="451" class="mono" font-size="10.5" font-weight="700" fill="#1c1917" text-anchor="middle">1. Discovery</text>
+    <text x="666" y="469" class="sans" font-size="10" fill="#44403c" text-anchor="middle">Elect highest zxid</text>
 
-    <line x1="740" y1="457" x2="756" y2="457" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+    <line x1="740" y1="457" x2="756" y2="457" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-blue)"/>
 
-    <rect x="760" y="430" width="148" height="54" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
-    <text x="834" y="451" class="mono" font-size="10.5" font-weight="700" fill="#0f172a" text-anchor="middle">2. Synchronization</text>
-    <text x="834" y="469" class="sans" font-size="10" fill="#475569" text-anchor="middle">Align follower logs</text>
+    <rect x="760" y="430" width="148" height="54" rx="6" fill="#faf8f5" stroke="#d6d0c4"/>
+    <text x="834" y="451" class="mono" font-size="10.5" font-weight="700" fill="#1c1917" text-anchor="middle">2. Synchronization</text>
+    <text x="834" y="469" class="sans" font-size="10" fill="#44403c" text-anchor="middle">Align follower logs</text>
 
-    <line x1="908" y1="457" x2="924" y2="457" stroke="#059669" stroke-width="1.8" marker-end="url(#arr-emerald)"/>
+    <line x1="908" y1="457" x2="924" y2="457" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-emerald)"/>
 
-    <rect x="928" y="430" width="150" height="54" rx="6" fill="#ecfdf5" stroke="#059669"/>
+    <rect x="928" y="430" width="150" height="54" rx="6" fill="#f0fdf9" stroke="#0f766e"/>
     <text x="1003" y="451" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">3. Broadcast</text>
-    <text x="1003" y="469" class="sans" font-size="10" fill="#047857" text-anchor="middle">FIFO Primary 2PC</text>
+    <text x="1003" y="469" class="sans" font-size="10" fill="#065f46" text-anchor="middle">FIFO Primary 2PC</text>
 
-    <text x="592" y="514" class="sans" font-size="10.5" font-weight="600" fill="#0f172a">Guarantees FIFO primary causal order (stronger than Paxos slot order).</text>
+    <text x="592" y="514" class="sans" font-size="10.5" font-weight="600" fill="#1c1917">Guarantees FIFO primary causal order (stronger than Paxos slot order).</text>
   </g>
 
   <!-- FOOTER STEP BAR -->
-  <rect x="24" y="554" width="256" height="48" rx="8" fill="#eff6ff" class="st1"/>
-  <text x="38" y="574" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a">1. Paxos &amp; Multi-Paxos</text>
-  <text x="38" y="591" class="sans" font-size="10" fill="#334155">Prepare/Promise once; 1-RTT Accept</text>
+  <rect x="24" y="554" width="256" height="48" rx="8" fill="#f0fdf9" class="st1"/>
+  <text x="38" y="574" class="mono" font-size="10.5" font-weight="700" fill="#065f46">1. Paxos &amp; Multi-Paxos</text>
+  <text x="38" y="591" class="sans" font-size="10" fill="#44403c">Prepare/Promise once; 1-RTT Accept</text>
 
-  <rect x="296" y="554" width="256" height="48" rx="8" fill="#f5f3ff" class="st2"/>
-  <text x="310" y="574" class="mono" font-size="10.5" font-weight="700" fill="#5b21b6">2. Flexible Quorum</text>
-  <text x="310" y="591" class="sans" font-size="10" fill="#334155">Q₁ + Q₂ &gt; N shrinks write quorum |Q₂|</text>
+  <rect x="296" y="554" width="256" height="48" rx="8" fill="#f5f1e8" class="st2"/>
+  <text x="310" y="574" class="mono" font-size="10.5" font-weight="700" fill="#065f46">2. Flexible Quorum</text>
+  <text x="310" y="591" class="sans" font-size="10" fill="#44403c">Q₁ + Q₂ &gt; N shrinks write quorum |Q₂|</text>
 
-  <rect x="568" y="554" width="256" height="48" rx="8" fill="#ecfdf5" class="st3"/>
+  <rect x="568" y="554" width="256" height="48" rx="8" fill="#f0fdf9" class="st3"/>
   <text x="582" y="574" class="mono" font-size="10.5" font-weight="700" fill="#065f46">3. EPaxos Fast-Path</text>
-  <text x="582" y="591" class="sans" font-size="10" fill="#334155">Leaderless 1-RTT if deps agree</text>
+  <text x="582" y="591" class="sans" font-size="10" fill="#44403c">Leaderless 1-RTT if deps agree</text>
 
   <rect x="840" y="554" width="256" height="48" rx="8" fill="#fffbeb" class="st4"/>
   <text x="854" y="574" class="mono" font-size="10.5" font-weight="700" fill="#92400e">4. ZAB zxid Broadcast</text>
-  <text x="854" y="591" class="sans" font-size="10" fill="#334155">(epoch, counter) FIFO atomic broadcast</text>
+  <text x="854" y="591" class="sans" font-size="10" fill="#44403c">(epoch, counter) FIFO atomic broadcast</text>
 </svg>

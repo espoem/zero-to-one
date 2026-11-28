@@ -3,16 +3,16 @@
   <desc id="desc">Architecture of an ultra-low-latency electronic stock exchange showing the critical trading path on a single CPU-pinned bare-metal server with dev-shm mmap event bus, embedded order manager, single-writer sequencer, deterministic single-threaded matching engine with hot standby Raft replication, decoupled non-critical market data publisher with reliable UDP multicast, and compliance reporting flows.</desc>
   <defs>
     <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#44403c"/>
     </marker>
     <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#b45309"/>
     </marker>
     <marker id="arr-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M 0 1 L 10 5 L 0 9 z" fill="#dc2626"/>
@@ -20,148 +20,148 @@
   </defs>
 
   <!-- Background Canvas -->
-  <rect x="0" y="0" width="1180" height="720" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1180" height="720" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Top Navigation Header -->
-  <rect x="0" y="0" width="1180" height="58" rx="12" fill="#0f172a"/>
-  <rect x="0" y="42" width="1180" height="16" fill="#0f172a"/>
-  <text x="24" y="28" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#f8fafc">Three-Flow Ultra-Low-Latency Stock Exchange Architecture (Tick-to-Trade &lt; 50 μs)</text>
-  <text x="24" y="47" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#94a3b8">Single Bare-Metal Core-Pinned Server · /dev/shm mmap Event Bus · Embedded Risk &amp; Wallet · Deterministic Matching · Muted Hot Standby</text>
+  <line x1="24" y1="60" x2="1156" y2="60" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="28" font-family="Georgia, 'Times New Roman', serif" font-size="18" font-weight="700" fill="#1c1917">Three-Flow Ultra-Low-Latency Stock Exchange Architecture (Tick-to-Trade &lt; 50 μs)</text>
+  <text x="24" y="47" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#57534e">Single Bare-Metal Core-Pinned Server · /dev/shm mmap Event Bus · Embedded Risk &amp; Wallet · Deterministic Matching · Muted Hot Standby</text>
 
   <!-- CONTAINER 1: CRITICAL TRADING PATH (LEFT / CENTER) -->
-  <rect x="18" y="74" width="814" height="420" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
-  <rect x="18" y="74" width="814" height="28" rx="10" fill="#2563eb"/>
-  <rect x="18" y="92" width="814" height="10" fill="#2563eb"/>
+  <rect x="18" y="74" width="814" height="420" rx="10" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
+  <rect x="18" y="74" width="814" height="28" rx="10" fill="#0f766e"/>
+  <rect x="18" y="92" width="814" height="10" fill="#0f766e"/>
   <text x="32" y="93" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#ffffff">CRITICAL TRADING PATH (Primary Engine: isolcpus Core-Pinned · Zero-GC Zero-Lock · /dev/shm mmap Ring)</text>
 
   <!-- Step 1: External Ingress (Brokers & Colo) -->
-  <rect x="30" y="112" width="130" height="130" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1.2"/>
-  <text x="38" y="130" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e40af">1. Ingress Clients</text>
-  <text x="38" y="148" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" font-weight="600" fill="#0f172a">Brokers &amp; Colo</text>
-  <text x="38" y="166" font-family="ui-monospace, monospace" font-size="9" fill="#475569">FIX 4.2 / SBE</text>
-  <text x="38" y="182" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#64748b">100GbE DPDK NIC</text>
-  <text x="38" y="198" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#64748b">Solarflare Onload</text>
-  <text x="38" y="216" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#0284c7">Kernel-Bypass ~3μs</text>
-  <text x="38" y="232" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#0369a1">Equalized fiber taps</text>
+  <rect x="30" y="112" width="130" height="130" rx="6" fill="#ffffff" stroke="#99f6e4" stroke-width="1.2"/>
+  <text x="38" y="130" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">1. Ingress Clients</text>
+  <text x="38" y="148" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" font-weight="600" fill="#1c1917">Brokers &amp; Colo</text>
+  <text x="38" y="166" font-family="ui-monospace, monospace" font-size="9" fill="#44403c">FIX 4.2 / SBE</text>
+  <text x="38" y="182" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#57534e">100GbE DPDK NIC</text>
+  <text x="38" y="198" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#57534e">Solarflare Onload</text>
+  <text x="38" y="216" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#0f766e">Kernel-Bypass ~3μs</text>
+  <text x="38" y="232" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#065f46">Equalized fiber taps</text>
 
   <!-- Step 2: Client Gateway -->
-  <rect x="184" y="112" width="140" height="130" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1.2"/>
-  <text x="192" y="130" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e40af">2. Client Gateway</text>
-  <text x="192" y="148" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" font-weight="600" fill="#0f172a">Lightweight Ingress</text>
-  <text x="192" y="166" font-family="ui-monospace, monospace" font-size="9" fill="#475569">SBE binary decode</text>
-  <text x="192" y="182" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#64748b">Zero-heap parser</text>
-  <text x="192" y="198" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#64748b">Session auth + CRC</text>
-  <text x="192" y="216" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#2563eb">Lightweight filter</text>
-  <text x="192" y="232" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#475569">No DB or disk I/O</text>
+  <rect x="184" y="112" width="140" height="130" rx="6" fill="#ffffff" stroke="#99f6e4" stroke-width="1.2"/>
+  <text x="192" y="130" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">2. Client Gateway</text>
+  <text x="192" y="148" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" font-weight="600" fill="#1c1917">Lightweight Ingress</text>
+  <text x="192" y="166" font-family="ui-monospace, monospace" font-size="9" fill="#44403c">SBE binary decode</text>
+  <text x="192" y="182" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#57534e">Zero-heap parser</text>
+  <text x="192" y="198" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#57534e">Session auth + CRC</text>
+  <text x="192" y="216" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#0f766e">Lightweight filter</text>
+  <text x="192" y="232" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#44403c">No DB or disk I/O</text>
 
   <!-- Step 3: Embedded Order Manager -->
-  <rect x="348" y="112" width="146" height="130" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1.2"/>
-  <text x="356" y="130" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e40af">3. Embedded OM</text>
-  <text x="356" y="148" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" font-weight="600" fill="#0f172a">Risk &amp; Wallet Library</text>
-  <text x="356" y="166" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#475569">In-process C++ lib</text>
-  <text x="356" y="182" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#0369a1">Risk: &lt;= 1M sh/sym</text>
-  <text x="356" y="198" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#0369a1">Price collar: ±10%</text>
-  <text x="356" y="216" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#0284c7">Wallet balance hold</text>
-  <text x="356" y="232" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#475569">Sub-μs register check</text>
+  <rect x="348" y="112" width="146" height="130" rx="6" fill="#ffffff" stroke="#99f6e4" stroke-width="1.2"/>
+  <text x="356" y="130" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">3. Embedded OM</text>
+  <text x="356" y="148" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" font-weight="600" fill="#1c1917">Risk &amp; Wallet Library</text>
+  <text x="356" y="166" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#44403c">In-process C++ lib</text>
+  <text x="356" y="182" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#065f46">Risk: &lt;= 1M sh/sym</text>
+  <text x="356" y="198" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#065f46">Price collar: ±10%</text>
+  <text x="356" y="216" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#0f766e">Wallet balance hold</text>
+  <text x="356" y="232" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#44403c">Sub-μs register check</text>
 
   <!-- Step 4: Single-Writer Sequencer -->
-  <rect x="518" y="112" width="140" height="130" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1.2"/>
-  <text x="526" y="130" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e40af">4. Sequencer</text>
-  <text x="526" y="148" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" font-weight="600" fill="#0f172a">Single-Writer Core</text>
-  <text x="526" y="166" font-family="ui-monospace, monospace" font-size="9" fill="#1e40af">seq_num = N, N+1...</text>
-  <text x="526" y="182" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#475569">Strict total ordering</text>
-  <text x="526" y="198" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#475569">Replication primary</text>
+  <rect x="518" y="112" width="140" height="130" rx="6" fill="#ffffff" stroke="#99f6e4" stroke-width="1.2"/>
+  <text x="526" y="130" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">4. Sequencer</text>
+  <text x="526" y="148" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" font-weight="600" fill="#1c1917">Single-Writer Core</text>
+  <text x="526" y="166" font-family="ui-monospace, monospace" font-size="9" fill="#065f46">seq_num = N, N+1...</text>
+  <text x="526" y="182" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#44403c">Strict total ordering</text>
+  <text x="526" y="198" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#44403c">Replication primary</text>
   <text x="526" y="216" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#b91c1c">Zero lock contention</text>
-  <text x="526" y="232" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#475569">Appends to /dev/shm</text>
+  <text x="526" y="232" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#44403c">Appends to /dev/shm</text>
 
   <!-- Step 5: Deterministic Matching Engine Core -->
-  <rect x="682" y="112" width="138" height="130" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
-  <text x="690" y="130" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e3a8a">5. Matching Core</text>
-  <text x="690" y="148" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" font-weight="600" fill="#0f172a">Single-Threaded</text>
-  <text x="690" y="166" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#1e40af">Price-Time FIFO book</text>
-  <text x="690" y="182" font-family="ui-monospace, monospace" font-size="9" fill="#334155">limitMap + DList O(1)</text>
-  <text x="690" y="198" font-family="ui-monospace, monospace" font-size="9" fill="#334155">orderMap O(1) cancel</text>
+  <rect x="682" y="112" width="138" height="130" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="690" y="130" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">5. Matching Core</text>
+  <text x="690" y="148" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" font-weight="600" fill="#1c1917">Single-Threaded</text>
+  <text x="690" y="166" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#065f46">Price-Time FIFO book</text>
+  <text x="690" y="182" font-family="ui-monospace, monospace" font-size="9" fill="#44403c">limitMap + DList O(1)</text>
+  <text x="690" y="198" font-family="ui-monospace, monospace" font-size="9" fill="#44403c">orderMap O(1) cancel</text>
   <text x="690" y="216" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#15803d">leavesQty decrement</text>
-  <text x="690" y="232" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#475569">Tick-to-trade 2-5 μs</text>
+  <text x="690" y="232" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#44403c">Tick-to-trade 2-5 μs</text>
 
   <!-- Horizontal Arrows for Steps 1 -> 5 -->
-  <line x1="160" y1="175" x2="182" y2="175" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
-  <line x1="324" y1="175" x2="346" y2="175" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
-  <line x1="494" y1="175" x2="516" y2="175" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
-  <line x1="658" y1="175" x2="680" y2="175" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+  <line x1="160" y1="175" x2="182" y2="175" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+  <line x1="324" y1="175" x2="346" y2="175" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+  <line x1="494" y1="175" x2="516" y2="175" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+  <line x1="658" y1="175" x2="680" y2="175" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-blue)"/>
 
   <!-- /dev/shm Shared Memory Event Bus Strip -->
-  <rect x="30" y="254" width="790" height="42" rx="6" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
-  <text x="44" y="272" font-family="ui-monospace, monospace" font-size="10.5" font-weight="700" fill="#38bdf8">/dev/shm/exchange_events.mmap (RAM-Backed Lock-Free Shared Memory Ring Buffer)</text>
-  <text x="44" y="288" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#94a3b8">Zero kernel syscalls · 64-byte alignas cache-line padding (no false sharing) · Monotonic seq_num sequence cursors</text>
+  <rect x="30" y="254" width="790" height="42" rx="6" fill="#1c1917" stroke="#44403c" stroke-width="1.5"/>
+  <text x="44" y="272" font-family="ui-monospace, monospace" font-size="10.5" font-weight="700" fill="#99f6e4">/dev/shm/exchange_events.mmap (RAM-Backed Lock-Free Shared Memory Ring Buffer)</text>
+  <text x="44" y="288" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#57534e">Zero kernel syscalls · 64-byte alignas cache-line padding (no false sharing) · Monotonic seq_num sequence cursors</text>
 
   <!-- Flow down to /dev/shm and from /dev/shm -->
-  <line x1="588" y1="242" x2="588" y2="252" stroke="#0284c7" stroke-width="1.8" marker-end="url(#arr-blue)"/>
-  <line x1="751" y1="242" x2="751" y2="252" stroke="#059669" stroke-width="1.8" marker-end="url(#arr-green)"/>
+  <line x1="588" y1="242" x2="588" y2="252" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+  <line x1="751" y1="242" x2="751" y2="252" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-green)"/>
 
   <!-- Hot Standby Box (Bottom of Container 1) -->
-  <rect x="30" y="306" width="790" height="174" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1.2"/>
-  <rect x="30" y="306" width="790" height="24" rx="8" fill="#475569"/>
-  <rect x="30" y="320" width="790" height="10" fill="#475569"/>
+  <rect x="30" y="306" width="790" height="174" rx="8" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.2"/>
+  <rect x="30" y="306" width="790" height="24" rx="8" fill="#44403c"/>
+  <rect x="30" y="320" width="790" height="10" fill="#44403c"/>
   <text x="44" y="322" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#ffffff">Hot-Standby Replication Node (Raft Quorum / Reliable UDP / Aeron Cluster · RPO = 0, RTO &lt; 10 ms)</text>
 
   <!-- Sub-cards inside Hot Standby -->
-  <rect x="42" y="338" width="236" height="130" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
-  <text x="52" y="356" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#334155">Standby Matching Core</text>
-  <text x="52" y="374" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Deterministic state machine:</text>
-  <text x="52" y="390" font-family="ui-monospace, monospace" font-size="9" fill="#1e40af">S_{n+1} = f(S_n, cmd_n)</text>
-  <text x="52" y="408" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#475569">Bit-identical order book state</text>
+  <rect x="42" y="338" width="236" height="130" rx="6" fill="#faf8f5" stroke="#d6d0c4" stroke-width="1"/>
+  <text x="52" y="356" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#44403c">Standby Matching Core</text>
+  <text x="52" y="374" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">Deterministic state machine:</text>
+  <text x="52" y="390" font-family="ui-monospace, monospace" font-size="9" fill="#065f46">S_{n+1} = f(S_n, cmd_n)</text>
+  <text x="52" y="408" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#44403c">Bit-identical order book state</text>
   <text x="52" y="426" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#dc2626">Muted Outbound Egress</text>
-  <text x="52" y="442" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#64748b">No duplicate market packets</text>
-  <text x="52" y="458" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#0284c7">Hot cache ready for instant cut</text>
+  <text x="52" y="442" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#57534e">No duplicate market packets</text>
+  <text x="52" y="458" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#0f766e">Hot cache ready for instant cut</text>
 
-  <rect x="290" y="338" width="240" height="130" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
-  <text x="300" y="356" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#334155">Raft Quorum Consensus</text>
-  <text x="300" y="374" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Aeron Cluster Raft log sync</text>
-  <text x="300" y="390" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#475569">Shared rack / direct fiber tie</text>
-  <text x="300" y="408" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#475569">Heartbeat ping every 1 ms</text>
-  <text x="300" y="426" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#d97706">Epoch fencing protection</text>
-  <text x="300" y="442" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#64748b">Prevents split-brain leader dual-exec</text>
-  <text x="300" y="458" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#059669">EOD snapshot compacts cold log</text>
+  <rect x="290" y="338" width="240" height="130" rx="6" fill="#faf8f5" stroke="#d6d0c4" stroke-width="1"/>
+  <text x="300" y="356" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#44403c">Raft Quorum Consensus</text>
+  <text x="300" y="374" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">Aeron Cluster Raft log sync</text>
+  <text x="300" y="390" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#44403c">Shared rack / direct fiber tie</text>
+  <text x="300" y="408" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#44403c">Heartbeat ping every 1 ms</text>
+  <text x="300" y="426" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#b45309">Epoch fencing protection</text>
+  <text x="300" y="442" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#57534e">Prevents split-brain leader dual-exec</text>
+  <text x="300" y="458" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#0f766e">EOD snapshot compacts cold log</text>
 
-  <rect x="542" y="338" width="266" height="130" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
-  <text x="552" y="356" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#334155">Failover &amp; Recovery SLA</text>
-  <text x="552" y="374" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#0f172a">99.999% Tier-1 (&lt;864ms/d) / 99.99% base</text>
-  <text x="552" y="390" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#475569">Primary crash detection: &lt; 3 ms</text>
-  <text x="552" y="408" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#475569">Standby unmutes NIC: &lt; 500 μs</text>
+  <rect x="542" y="338" width="266" height="130" rx="6" fill="#faf8f5" stroke="#d6d0c4" stroke-width="1"/>
+  <text x="552" y="356" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#44403c">Failover &amp; Recovery SLA</text>
+  <text x="552" y="374" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#1c1917">99.999% Tier-1 (&lt;864ms/d) / 99.99% base</text>
+  <text x="552" y="390" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#44403c">Primary crash detection: &lt; 3 ms</text>
+  <text x="552" y="408" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#44403c">Standby unmutes NIC: &lt; 500 μs</text>
   <text x="552" y="426" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#15803d">Zero state rebuilding delay</text>
-  <text x="552" y="442" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#64748b">In-flight client seq ACK check</text>
-  <text x="552" y="458" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#0284c7">Seamless broker session resumption</text>
+  <text x="552" y="442" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#57534e">In-flight client seq ACK check</text>
+  <text x="552" y="458" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#0f766e">Seamless broker session resumption</text>
 
   <!-- CONTAINER 2: NON-CRITICAL MARKET DATA FLOW (TOP RIGHT) -->
-  <rect x="844" y="74" width="318" height="308" rx="10" fill="#f0fdf4" stroke="#10b981" stroke-width="1.5"/>
-  <rect x="844" y="74" width="318" height="28" rx="10" fill="#059669"/>
-  <rect x="844" y="92" width="318" height="10" fill="#059669"/>
+  <rect x="844" y="74" width="318" height="308" rx="10" fill="#f0fdf4" stroke="#0f766e" stroke-width="1.5"/>
+  <rect x="844" y="74" width="318" height="28" rx="10" fill="#0f766e"/>
+  <rect x="844" y="92" width="318" height="10" fill="#0f766e"/>
   <text x="856" y="93" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#ffffff">MARKET DATA FLOW (M1–M3 Decoupled)</text>
 
   <!-- Market Data Publisher -->
   <rect x="856" y="112" width="294" height="80" rx="6" fill="#ffffff" stroke="#86efac" stroke-width="1.2"/>
   <text x="866" y="128" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#065f46">M1. Market Data Publisher</text>
-  <text x="866" y="144" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#334155">Lock-free ring buffer consumes execution stream</text>
-  <text x="866" y="158" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#334155">L1 (BBO) · L2 (Aggregated Depth) · L3 (Individual Orders)</text>
-  <text x="866" y="172" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#047857">Aggregates OHLCV candlesticks (1s, 1m, 5m bars)</text>
-  <text x="866" y="186" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#64748b">Decoupled from matching thread to avoid core jitter</text>
+  <text x="866" y="144" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#44403c">Lock-free ring buffer consumes execution stream</text>
+  <text x="866" y="158" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#44403c">L1 (BBO) · L2 (Aggregated Depth) · L3 (Individual Orders)</text>
+  <text x="866" y="172" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#065f46">Aggregates OHLCV candlesticks (1s, 1m, 5m bars)</text>
+  <text x="866" y="186" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#57534e">Decoupled from matching thread to avoid core jitter</text>
 
   <!-- Reliable UDP Multicast -->
   <rect x="856" y="200" width="294" height="84" rx="6" fill="#ffffff" stroke="#86efac" stroke-width="1.2"/>
   <text x="866" y="216" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#065f46">M2. Reliable UDP Multicast Fairness</text>
-  <text x="866" y="232" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#334155">Single physical wire frame delivers ticks simultaneously</text>
-  <text x="866" y="246" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#334155">Eliminates serial unicast front-running skew</text>
-  <text x="866" y="260" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#047857">Equalized physical fiber spools inside colocation cages</text>
-  <text x="866" y="274" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#64748b">Gap recovery: NACK sequence requests + snapshot TCP</text>
+  <text x="866" y="232" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#44403c">Single physical wire frame delivers ticks simultaneously</text>
+  <text x="866" y="246" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#44403c">Eliminates serial unicast front-running skew</text>
+  <text x="866" y="260" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#065f46">Equalized physical fiber spools inside colocation cages</text>
+  <text x="866" y="274" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#57534e">Gap recovery: NACK sequence requests + snapshot TCP</text>
 
   <!-- KDB+ Analytics -->
   <rect x="856" y="292" width="294" height="80" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
   <text x="866" y="308" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#065f46">M3. Real-Time Tick Analytics &amp; KDB+</text>
   <text x="866" y="324" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#14532d">In-memory columnar timeseries database (KDB+/q)</text>
-  <text x="866" y="338" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#334155">Sub-millisecond quant backtesting &amp; market surveillance</text>
-  <text x="866" y="352" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#047857">EOD rollover flushes to cold compressed Parquet lakehouse</text>
-  <text x="866" y="366" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#64748b">Public edge CDN caches /data/recent (1s TTL) against DDoS</text>
+  <text x="866" y="338" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#44403c">Sub-millisecond quant backtesting &amp; market surveillance</text>
+  <text x="866" y="352" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#065f46">EOD rollover flushes to cold compressed Parquet lakehouse</text>
+  <text x="866" y="366" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#57534e">Public edge CDN caches /data/recent (1s TTL) against DDoS</text>
 
   <!-- CONTAINER 3: NON-CRITICAL REPORTER FLOW (BOTTOM RIGHT) -->
   <rect x="844" y="394" width="318" height="194" rx="10" fill="#fefce8" stroke="#eab308" stroke-width="1.5"/>
@@ -172,49 +172,49 @@
   <!-- Reporter Engine -->
   <rect x="856" y="432" width="294" height="70" rx="6" fill="#ffffff" stroke="#fde047" stroke-width="1.2"/>
   <text x="866" y="448" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#854d0e">R1. Reporter Ingestion Engine</text>
-  <text x="866" y="464" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#334155">Asynchronous batch reader from /dev/shm event stream</text>
-  <text x="866" y="478" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#334155">Extracts client_id, execution_id, fill price &amp; volume</text>
+  <text x="866" y="464" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#44403c">Asynchronous batch reader from /dev/shm event stream</text>
+  <text x="866" y="478" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#44403c">Extracts client_id, execution_id, fill price &amp; volume</text>
   <text x="866" y="492" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#854d0e">Guarantees zero backpressure on critical matching core</text>
 
   <!-- Compliance & Settlement DB -->
   <rect x="856" y="510" width="294" height="70" rx="6" fill="#fef08a" stroke="#ca8a04" stroke-width="1.2"/>
   <text x="866" y="526" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" font-weight="700" fill="#854d0e">R2. Compliance, Tax &amp; Settlement DB</text>
   <text x="866" y="542" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#713f12">PostgreSQL / ClickHouse persistent audit store</text>
-  <text x="866" y="556" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#334155">SEC Rule 613 CAT &amp; MiFID II RTS 25 PTP audit trail</text>
+  <text x="866" y="556" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#44403c">SEC Rule 613 CAT &amp; MiFID II RTS 25 PTP audit trail</text>
   <text x="866" y="570" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" fill="#854d0e">End-of-day broker margin settlement &amp; tax statements</text>
 
   <!-- Connector Lines to Market Data and Reporter Flows -->
-  <path d="M 800 240 C 825 240, 830 152, 854 152" fill="none" stroke="#059669" stroke-width="1.8" marker-end="url(#arr-green)"/>
+  <path d="M 800 240 C 825 240, 830 152, 854 152" fill="none" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-green)"/>
   <path d="M 800 260 C 825 260, 830 467, 854 467" fill="none" stroke="#ca8a04" stroke-width="1.8" marker-end="url(#arr-amber)"/>
 
   <!-- CONTAINER 4: ARCHITECTURAL INVARIANTS & LATENCY BREAKDOWN (BOTTOM FULL-WIDTH) -->
-  <rect x="18" y="600" width="1144" height="106" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <rect x="18" y="600" width="1144" height="24" rx="8" fill="#1e293b"/>
-  <rect x="18" y="614" width="1144" height="10" fill="#1e293b"/>
-  <text x="32" y="616" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#f8fafc">Ultra-Low-Latency Budget &amp; Production Design Invariants (Tick-to-Trade Budget &lt;= 50 μs)</text>
+  <rect x="18" y="600" width="1144" height="106" rx="8" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <rect x="18" y="600" width="1144" height="24" rx="8" fill="#1c1917"/>
+  <rect x="18" y="614" width="1144" height="10" fill="#1c1917"/>
+  <text x="32" y="616" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#ffffff">Ultra-Low-Latency Budget &amp; Production Design Invariants (Tick-to-Trade Budget &lt;= 50 μs)</text>
 
   <!-- 4 Columns of Invariants -->
-  <text x="32" y="638" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#2563eb">Deterministic Single-Threading</text>
-  <text x="32" y="654" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#334155">One core per symbol shard eliminates locks,</text>
-  <text x="32" y="668" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#334155">mutexes, and OS context switch jitter (15μs).</text>
-  <text x="32" y="682" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#64748b">Order book L3-resident, L2-tiled (12.8MB).</text>
-  <text x="32" y="696" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" font-weight="600" fill="#0284c7">Matching Engine Core Budget: 2–5 μs</text>
+  <text x="32" y="638" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f766e">Deterministic Single-Threading</text>
+  <text x="32" y="654" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#44403c">One core per symbol shard eliminates locks,</text>
+  <text x="32" y="668" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#44403c">mutexes, and OS context switch jitter (15μs).</text>
+  <text x="32" y="682" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#57534e">Order book L3-resident, L2-tiled (12.8MB).</text>
+  <text x="32" y="696" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" font-weight="600" fill="#0f766e">Matching Engine Core Budget: 2–5 μs</text>
 
-  <text x="310" y="638" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#2563eb">Kernel-Bypass &amp; Binary Wire</text>
-  <text x="310" y="654" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#334155">Solarflare Onload / DPDK bypasses Linux stack.</text>
-  <text x="310" y="668" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#334155">SBE fixed-offset binary structs decode with</text>
-  <text x="310" y="682" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#64748b">zero string parsing and zero heap allocation.</text>
-  <text x="310" y="696" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" font-weight="600" fill="#0284c7">Ingress &amp; Gateway Budget: ~8 μs</text>
+  <text x="310" y="638" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f766e">Kernel-Bypass &amp; Binary Wire</text>
+  <text x="310" y="654" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#44403c">Solarflare Onload / DPDK bypasses Linux stack.</text>
+  <text x="310" y="668" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#44403c">SBE fixed-offset binary structs decode with</text>
+  <text x="310" y="682" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#57534e">zero string parsing and zero heap allocation.</text>
+  <text x="310" y="696" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" font-weight="600" fill="#0f766e">Ingress &amp; Gateway Budget: ~8 μs</text>
 
-  <text x="600" y="638" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#2563eb">Sequencer Replication Quorum</text>
-  <text x="600" y="654" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#334155">Aeron Cluster in-memory Raft replicates monotonic</text>
-  <text x="600" y="668" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#334155">seq_num log over 100GbE RDMA/UDP in same rack.</text>
-  <text x="600" y="682" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#64748b">Fences stale primary epochs without disk fsync.</text>
-  <text x="600" y="696" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" font-weight="600" fill="#0284c7">Sequencer Log Quorum: ~15 μs</text>
+  <text x="600" y="638" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f766e">Sequencer Replication Quorum</text>
+  <text x="600" y="654" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#44403c">Aeron Cluster in-memory Raft replicates monotonic</text>
+  <text x="600" y="668" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#44403c">seq_num log over 100GbE RDMA/UDP in same rack.</text>
+  <text x="600" y="682" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#57534e">Fences stale primary epochs without disk fsync.</text>
+  <text x="600" y="696" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" font-weight="600" fill="#0f766e">Sequencer Log Quorum: ~15 μs</text>
 
-  <text x="900" y="638" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#059669">Decoupled Asynchronous Flows</text>
-  <text x="900" y="654" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#334155">Market Data (M1–M3) and Reporter (R1–R2)</text>
-  <text x="900" y="668" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#334155">consume async via ring buffers. Zero blocking,</text>
-  <text x="900" y="682" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#64748b">zero database locks on critical order execution.</text>
-  <text x="900" y="696" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" font-weight="600" fill="#047857">End-to-End Tick-to-Trade: &lt; 35 μs (Headroom &lt; 50 μs)</text>
+  <text x="900" y="638" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f766e">Decoupled Asynchronous Flows</text>
+  <text x="900" y="654" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#44403c">Market Data (M1–M3) and Reporter (R1–R2)</text>
+  <text x="900" y="668" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#44403c">consume async via ring buffers. Zero blocking,</text>
+  <text x="900" y="682" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" fill="#57534e">zero database locks on critical order execution.</text>
+  <text x="900" y="696" font-family="ui-sans-serif, system-ui, sans-serif" font-size="8.5" font-weight="600" fill="#065f46">End-to-End Tick-to-Trade: &lt; 35 μs (Headroom &lt; 50 μs)</text>
 </svg>

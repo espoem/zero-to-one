@@ -12,8 +12,8 @@
        50-75%:  Step 3 — Pure LCG advances seed S_0 -> S_1 -> S_2 via (a*S + c) mod 2^48
        75-100%: Step 4 — Rejection sampling drops overflow bucket -> unbiased [0, n)
     */
-    @keyframes p-left  { 0%, 49% { stroke: #2563eb; stroke-width: 2.2; } 50%, 100% { stroke: #cbd5e1; stroke-width: 1.4; } }
-    @keyframes p-right { 0%, 49% { stroke: #cbd5e1; stroke-width: 1.4; } 50%, 100% { stroke: #7c3aed; stroke-width: 2.2; } }
+    @keyframes p-left  { 0%, 49% { stroke: #0f766e; stroke-width: 2.2; } 50%, 100% { stroke: #d6d0c4; stroke-width: 1.4; } }
+    @keyframes p-right { 0%, 49% { stroke: #d6d0c4; stroke-width: 1.4; } 50%, 100% { stroke: #0f766e; stroke-width: 2.2; } }
 
     @keyframes pull-demand {
       0%, 6%   { transform: translateX(0px); opacity: 1; }
@@ -27,21 +27,20 @@
     }
     @keyframes reject-loop {
       0%, 74% { opacity: 0.86; stroke: #fda4af; }
-      78%, 92% { opacity: 1; stroke: #e11d48; stroke-width: 2.2; }
+      78%, 92% { opacity: 1; stroke: #dc2626; stroke-width: 2.2; }
       100% { opacity: 0.86; }
     }
-    @keyframes dash { to { stroke-dashoffset: -24; } }
 
     .pl   { animation: p-left 12s linear infinite; }
     .pr   { animation: p-right 12s linear infinite; }
     .pull { animation: pull-demand 12s ease-in-out infinite; }
     .yval { animation: yield-val 12s ease-in-out infinite; }
     .rej  { animation: reject-loop 12s linear infinite; }
-    .flow { stroke-dasharray: 6 6; animation: dash 1.2s linear infinite; }
+    .flow { stroke-dasharray: 6 6;  }
 
     @media (prefers-reduced-motion: reduce) {
       .pl, .pr, .pull, .yval, .rej, .flow { animation: none !important; }
-      .pl, .pr { stroke: #cbd5e1 !important; stroke-width: 1.5 !important; }
+      .pl, .pr { stroke: #d6d0c4 !important; stroke-width: 1.5 !important; }
       .pull, .yval { opacity: 0 !important; }
       .rej { opacity: 1 !important; }
     }
@@ -49,119 +48,119 @@
 
   <defs>
     <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-violet" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
   </defs>
 
   <!-- Canvas -->
-  <rect x="0" y="0" width="1120" height="600" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1120" height="600" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1120" height="62" rx="12" fill="#0f172a"/>
-  <rect x="0" y="46" width="1120" height="16" fill="#0f172a"/>
-  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Corecursive unfold Pull Stream &amp; Pure LCG Rejection Sampling</text>
-  <text x="24" y="48" class="sans" font-size="12" fill="#94a3b8">Modules 04 &amp; 05 · Anamorphism unfold(s)(f) Demand Pull · Pure S → (A, S) 48-Bit LCG · Unbiased Range Sampling</text>
+  <line x1="24" y1="64" x2="1096" y2="64" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#1c1917" font-family="Georgia, 'Times New Roman', serif">Corecursive unfold Pull Stream &amp; Pure LCG Rejection Sampling</text>
+  <text x="24" y="48" class="sans" font-size="12" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">Modules 04 &amp; 05 · Anamorphism unfold(s)(f) Demand Pull · Pure S → (A, S) 48-Bit LCG · Unbiased Range Sampling</text>
 
   <!-- LEFT PANEL: CORECURSIVE UNFOLD -->
   <rect x="24" y="78" width="526" height="448" rx="10" fill="#ffffff" class="pl"/>
-  <text x="42" y="104" class="sans" font-size="14" font-weight="700" fill="#0f172a">1. Corecursive unfold Pull Stream (Module 04)</text>
+  <text x="42" y="104" class="sans" font-size="14" font-weight="700" fill="#1c1917">1. Corecursive unfold Pull Stream (Module 04)</text>
 
   <!-- Duality pill -->
-  <rect x="42" y="118" width="490" height="58" rx="7" fill="#eff6ff" stroke="#93c5fd"/>
-  <text x="56" y="138" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a">unfold[A, S](state: S)(f: S =&gt; Option[(A, S)]): LazyList[A]</text>
-  <text x="56" y="158" class="sans" font-size="10" fill="#1e40af">Dual of foldRight: produces elements lazily; tail thunk evaluates only when pulled.</text>
+  <rect x="42" y="118" width="490" height="58" rx="7" fill="#f0fdf9" stroke="#99f6e4"/>
+  <text x="56" y="138" class="mono" font-size="10.5" font-weight="700" fill="#065f46">unfold[A, S](state: S)(f: S =&gt; Option[(A, S)]): LazyList[A]</text>
+  <text x="56" y="158" class="sans" font-size="10" fill="#065f46">Dual of foldRight: produces elements lazily; tail thunk evaluates only when pulled.</text>
 
   <!-- Demand-driven pipeline -->
-  <rect x="42" y="190" width="144" height="106" rx="7" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
-  <text x="114" y="212" class="mono" font-size="10.5" font-weight="700" fill="#5b21b6" text-anchor="middle">fibsUnfold</text>
-  <text x="114" y="232" class="mono" font-size="10" fill="#4c1d95" text-anchor="middle">Seed: (0, 1)</text>
-  <text x="114" y="250" class="mono" font-size="10" fill="#4c1d95" text-anchor="middle">Emit f0</text>
-  <text x="114" y="268" class="mono" font-size="10" fill="#4c1d95" text-anchor="middle">Next: (f1, f0+f1)</text>
-  <text x="114" y="286" class="sans" font-size="10" font-weight="700" fill="#7c3aed" text-anchor="middle">Infinite, O(1) space</text>
+  <rect x="42" y="190" width="144" height="106" rx="7" fill="#f5f1e8" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="114" y="212" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">fibsUnfold</text>
+  <text x="114" y="232" class="mono" font-size="10" fill="#065f46" text-anchor="middle">Seed: (0, 1)</text>
+  <text x="114" y="250" class="mono" font-size="10" fill="#065f46" text-anchor="middle">Emit f0</text>
+  <text x="114" y="268" class="mono" font-size="10" fill="#065f46" text-anchor="middle">Next: (f1, f0+f1)</text>
+  <text x="114" y="286" class="sans" font-size="10" font-weight="700" fill="#0f766e" text-anchor="middle">Infinite, O(1) space</text>
 
-  <line x1="190" y1="228" x2="364" y2="228" stroke="#059669" stroke-width="1.8" class="flow" marker-end="url(#arr-green)"/>
-  <line x1="364" y1="262" x2="190" y2="262" stroke="#2563eb" stroke-width="1.8" class="flow" marker-end="url(#arr-blue)"/>
+  <line x1="190" y1="228" x2="364" y2="228" stroke="#0f766e" stroke-width="1.8" class="flow" marker-end="url(#arr-green)"/>
+  <line x1="364" y1="262" x2="190" y2="262" stroke="#0f766e" stroke-width="1.8" class="flow" marker-end="url(#arr-blue)"/>
   <text x="277" y="218" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">Cons(()=&gt;h, ()=&gt;tail)</text>
-  <text x="277" y="278" class="mono" font-size="10" font-weight="700" fill="#1e3a8a" text-anchor="middle">← pull next thunk</text>
+  <text x="277" y="278" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">← pull next thunk</text>
 
   <!-- Animated pull / yield dots -->
-  <circle cx="356" cy="262" r="6" fill="#2563eb" class="pull"/>
-  <circle cx="198" cy="228" r="6" fill="#059669" class="yval"/>
+  <circle cx="356" cy="262" r="6" fill="#0f766e" class="pull"/>
+  <circle cx="198" cy="228" r="6" fill="#0f766e" class="yval"/>
 
-  <rect x="370" y="190" width="162" height="106" rx="7" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <rect x="370" y="190" width="162" height="106" rx="7" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
   <text x="451" y="212" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Consumer</text>
-  <text x="451" y="234" class="mono" font-size="10" fill="#047857" text-anchor="middle">.mapViaUnfold(_*2)</text>
-  <text x="451" y="254" class="mono" font-size="10" fill="#047857" text-anchor="middle">.takeViaUnfold(3)</text>
+  <text x="451" y="234" class="mono" font-size="10" fill="#065f46" text-anchor="middle">.mapViaUnfold(_*2)</text>
+  <text x="451" y="254" class="mono" font-size="10" fill="#065f46" text-anchor="middle">.takeViaUnfold(3)</text>
   <text x="451" y="274" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">→ [0, 2, 2]</text>
-  <text x="451" y="289" class="sans" font-size="10" fill="#047857" text-anchor="middle">Stops at rem == 0</text>
+  <text x="451" y="289" class="sans" font-size="10" fill="#065f46" text-anchor="middle">Stops at rem == 0</text>
 
   <!-- LazyList Memoization & Stream Fusion note -->
-  <rect x="42" y="312" width="490" height="198" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
-  <text x="56" y="334" class="sans" font-size="11.5" font-weight="700" fill="#0f172a">LazyList Thunk Memoisation &amp; Stream Fusion:</text>
-  <text x="56" y="356" class="mono" font-size="10" fill="#334155">1. Call-by-need: lazy val caches head &amp; tail on first force.</text>
-  <text x="56" y="376" class="mono" font-size="10" fill="#334155">2. Deforestation: map &amp; take interleave per element (no temp list).</text>
-  <text x="56" y="396" class="mono" font-size="10" fill="#334155">3. Productivity: guarded corecursion emits Cons in finite steps.</text>
-  <rect x="56" y="414" width="462" height="80" rx="6" fill="#fffbeb" stroke="#fcd34d"/>
+  <rect x="42" y="312" width="490" height="198" rx="8" fill="#faf8f5" stroke="#d6d0c4"/>
+  <text x="56" y="334" class="sans" font-size="11.5" font-weight="700" fill="#1c1917">LazyList Thunk Memoisation &amp; Stream Fusion:</text>
+  <text x="56" y="356" class="mono" font-size="10" fill="#44403c">1. Call-by-need: lazy val caches head &amp; tail on first force.</text>
+  <text x="56" y="376" class="mono" font-size="10" fill="#44403c">2. Deforestation: map &amp; take interleave per element (no temp list).</text>
+  <text x="56" y="396" class="mono" font-size="10" fill="#44403c">3. Productivity: guarded corecursion emits Cons in finite steps.</text>
+  <rect x="56" y="414" width="462" height="80" rx="6" fill="#fffbeb" stroke="#fde68a"/>
   <text x="70" y="434" class="sans" font-size="10.5" font-weight="700" fill="#92400e">Coutts Stream Fusion (Step[S, A]) &amp; Chunked Pull Streams:</text>
-  <text x="70" y="454" class="mono" font-size="10" fill="#78350f">Step = Yield(a, s) | Skip(s) | Done  → zero per-element thunks</text>
-  <text x="70" y="474" class="sans" font-size="10" fill="#78350f">Amortizes thunk overhead across unboxed loops or 1K-4K Chunk[A]s.</text>
+  <text x="70" y="454" class="mono" font-size="10" fill="#92400e">Step = Yield(a, s) | Skip(s) | Done  → zero per-element thunks</text>
+  <text x="70" y="474" class="sans" font-size="10" fill="#92400e">Amortizes thunk overhead across unboxed loops or 1K-4K Chunk[A]s.</text>
 
   <!-- RIGHT PANEL: PURE LCG & REJECTION SAMPLING -->
   <rect x="570" y="78" width="526" height="448" rx="10" fill="#ffffff" class="pr"/>
-  <text x="588" y="104" class="sans" font-size="14" font-weight="700" fill="#0f172a">2. Pure LCG &amp; Rejection Sampling (Module 05)</text>
+  <text x="588" y="104" class="sans" font-size="14" font-weight="700" fill="#1c1917">2. Pure LCG &amp; Rejection Sampling (Module 05)</text>
 
   <!-- Pure State Threading -->
-  <rect x="588" y="118" width="490" height="122" rx="8" fill="#f5f3ff" stroke="#c4b5fd"/>
-  <text x="602" y="138" class="mono" font-size="11" font-weight="700" fill="#5b21b6">Referentially Transparent State: RNG =&gt; (Int, RNG)</text>
+  <rect x="588" y="118" width="490" height="122" rx="8" fill="#f5f1e8" stroke="#d6d0c4"/>
+  <text x="602" y="138" class="mono" font-size="11" font-weight="700" fill="#065f46">Referentially Transparent State: RNG =&gt; (Int, RNG)</text>
 
-  <rect x="602" y="150" width="134" height="74" rx="6" fill="#ffffff" stroke="#7c3aed"/>
-  <text x="669" y="170" class="mono" font-size="10" font-weight="700" fill="#5b21b6" text-anchor="middle">SimpleRNG(s_0)</text>
-  <text x="669" y="188" class="mono" font-size="10" fill="#4c1d95" text-anchor="middle">s_1 = (a·s_0 + c)</text>
-  <text x="669" y="204" class="mono" font-size="10" fill="#4c1d95" text-anchor="middle">&amp; 0xFFFFFFFFFFFF</text>
+  <rect x="602" y="150" width="134" height="74" rx="6" fill="#ffffff" stroke="#0f766e"/>
+  <text x="669" y="170" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">SimpleRNG(s_0)</text>
+  <text x="669" y="188" class="mono" font-size="10" fill="#065f46" text-anchor="middle">s_1 = (a·s_0 + c)</text>
+  <text x="669" y="204" class="mono" font-size="10" fill="#065f46" text-anchor="middle">&amp; 0xFFFFFFFFFFFF</text>
 
-  <line x1="740" y1="187" x2="774" y2="187" stroke="#7c3aed" stroke-width="2" class="flow" marker-end="url(#arr-violet)"/>
+  <line x1="740" y1="187" x2="774" y2="187" stroke="#0f766e" stroke-width="2" class="flow" marker-end="url(#arr-violet)"/>
 
-  <rect x="780" y="150" width="136" height="74" rx="6" fill="#ffffff" stroke="#7c3aed"/>
-  <text x="848" y="170" class="mono" font-size="10" font-weight="700" fill="#5b21b6" text-anchor="middle">(n_1, s_1)</text>
-  <text x="848" y="188" class="mono" font-size="10" fill="#4c1d95" text-anchor="middle">n_1 = s_1 &gt;&gt;&gt; 16</text>
-  <text x="848" y="204" class="sans" font-size="10" fill="#6d28d9" text-anchor="middle">(Upper 32 bits)</text>
+  <rect x="780" y="150" width="136" height="74" rx="6" fill="#ffffff" stroke="#0f766e"/>
+  <text x="848" y="170" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">(n_1, s_1)</text>
+  <text x="848" y="188" class="mono" font-size="10" fill="#065f46" text-anchor="middle">n_1 = s_1 &gt;&gt;&gt; 16</text>
+  <text x="848" y="204" class="sans" font-size="10" fill="#065f46" text-anchor="middle">(Upper 32 bits)</text>
 
-  <line x1="920" y1="187" x2="952" y2="187" stroke="#7c3aed" stroke-width="2" class="flow" marker-end="url(#arr-violet)"/>
+  <line x1="920" y1="187" x2="952" y2="187" stroke="#0f766e" stroke-width="2" class="flow" marker-end="url(#arr-violet)"/>
 
-  <rect x="958" y="150" width="106" height="74" rx="6" fill="#ecfdf5" stroke="#059669"/>
+  <rect x="958" y="150" width="106" height="74" rx="6" fill="#f0fdf9" stroke="#0f766e"/>
   <text x="1011" y="172" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">(n_2, s_2)</text>
-  <text x="1011" y="192" class="sans" font-size="10" fill="#047857" text-anchor="middle">Deterministic</text>
-  <text x="1011" y="208" class="sans" font-size="10" fill="#047857" text-anchor="middle">Replayable!</text>
+  <text x="1011" y="192" class="sans" font-size="10" fill="#065f46" text-anchor="middle">Deterministic</text>
+  <text x="1011" y="208" class="sans" font-size="10" fill="#065f46" text-anchor="middle">Replayable!</text>
 
   <!-- Int.MinValue & Modulo Bias Rejection Sampling -->
-  <rect x="588" y="254" width="490" height="256" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
-  <text x="602" y="276" class="sans" font-size="11.5" font-weight="700" fill="#0f172a">Eliminating Modulo Bias via Rejection Sampling:</text>
-  <text x="602" y="296" class="mono" font-size="10" fill="#334155">2³¹ = q · n + r  (incomplete tail bucket of size r causes bias!)</text>
+  <rect x="588" y="254" width="490" height="256" rx="8" fill="#faf8f5" stroke="#d6d0c4"/>
+  <text x="602" y="276" class="sans" font-size="11.5" font-weight="700" fill="#1c1917">Eliminating Modulo Bias via Rejection Sampling:</text>
+  <text x="602" y="296" class="mono" font-size="10" fill="#44403c">2³¹ = q · n + r  (incomplete tail bucket of size r causes bias!)</text>
 
   <!-- Visual bucket bar -->
-  <rect x="602" y="310" width="334" height="36" rx="5" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <rect x="602" y="310" width="334" height="36" rx="5" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
   <text x="769" y="332" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">q · n Uniform Buckets (0 .. q·n - 1) → ACCEPT (i % n)</text>
 
-  <rect x="942" y="310" width="122" height="36" rx="5" fill="#fff1f2" class="rej"/>
-  <text x="1003" y="326" class="mono" font-size="10" font-weight="700" fill="#9f1239" text-anchor="middle">Tail r (Overflow)</text>
-  <text x="1003" y="340" class="mono" font-size="10" font-weight="700" fill="#e11d48" text-anchor="middle">REJECT &amp; RETRY</text>
+  <rect x="942" y="310" width="122" height="36" rx="5" fill="#fef2f2" class="rej"/>
+  <text x="1003" y="326" class="mono" font-size="10" font-weight="700" fill="#991b1b" text-anchor="middle">Tail r (Overflow)</text>
+  <text x="1003" y="340" class="mono" font-size="10" font-weight="700" fill="#dc2626" text-anchor="middle">REJECT &amp; RETRY</text>
 
-  <rect x="602" y="360" width="462" height="72" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="616" y="380" class="mono" font-size="10" font-weight="700" fill="#0f172a">val (i, rng2) = nonNegativeInt(rng)  // maps MinValue via -(i+1)</text>
+  <rect x="602" y="360" width="462" height="72" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="616" y="380" class="mono" font-size="10" font-weight="700" fill="#1c1917">val (i, rng2) = nonNegativeInt(rng)  // maps MinValue via -(i+1)</text>
   <text x="616" y="399" class="mono" font-size="10" fill="#065f46">val mod = i % n</text>
-  <text x="616" y="418" class="mono" font-size="10" fill="#1e3a8a">if i + (n - 1) - mod &gt;= 0 then (mod, rng2) else retry(rng2)</text>
+  <text x="616" y="418" class="mono" font-size="10" fill="#065f46">if i + (n - 1) - mod &gt;= 0 then (mod, rng2) else retry(rng2)</text>
 
-  <rect x="602" y="444" width="462" height="52" rx="6" fill="#eff6ff" stroke="#93c5fd"/>
-  <text x="616" y="465" class="sans" font-size="10.5" font-weight="700" fill="#1e3a8a">Note for TypeScript LCGs:</text>
-  <text x="616" y="483" class="mono" font-size="10" fill="#1e40af">53-bit JS number mantissa overflows → use BigInt (0x5deece66dn)!</text>
+  <rect x="602" y="444" width="462" height="52" rx="6" fill="#f0fdf9" stroke="#99f6e4"/>
+  <text x="616" y="465" class="sans" font-size="10.5" font-weight="700" fill="#065f46">Note for TypeScript LCGs:</text>
+  <text x="616" y="483" class="mono" font-size="10" fill="#065f46">53-bit JS number mantissa overflows → use BigInt (0x5deece66dn)!</text>
 
   <!-- Footer -->
-  <rect x="24" y="540" width="1072" height="44" rx="8" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1"/>
+  <rect x="24" y="540" width="1072" height="44" rx="8" fill="#f0fdf9" stroke="#99f6e4" stroke-width="1"/>
   <text x="42" y="567" class="sans" font-size="11.5" font-weight="600" fill="#065f46">Takeaway: Corecursive unfold pulls values on demand, while pure State[S, A] threads RNG seeds deterministically with unbiased rejection sampling.</text>
 </svg>

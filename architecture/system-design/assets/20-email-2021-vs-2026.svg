@@ -3,103 +3,103 @@
   <desc id="desc">Six-layer comparison of distributed email service architecture between 2021 legacy defaults and 2026 modern planetary standards, covering IMAP4 vs stateless JMAP RFC 8620/8621, opportunistic STARTTLS vs MTA-STS/DANE, optional SPF/DKIM vs strict DMARC/ARC and 0.3% bulk complaint rules, regex spam filters vs LLM/transformer BEC defense, unrouted Elasticsearch vs user_id-routed LSM hybrid search, and SHA-256 CAS deduplication.</desc>
 
   <!-- Background -->
-  <rect x="0" y="0" width="1160" height="590" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1160" height="590" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1160" height="56" rx="12" fill="#0f172a"/>
-  <rect x="0" y="40" width="1160" height="16" fill="#0f172a"/>
-  <text x="24" y="27" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#f8fafc">Distributed Email Service Evolution: 2021 Default vs. 2026 Modern Standard</text>
-  <text x="24" y="46" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#94a3b8">From Chatty Stateful IMAP, Opportunistic STARTTLS &amp; Duplicate Blobs to JMAP, MTA-STS, DMARC/ARC &amp; Per-User LSM Search</text>
+  <line x1="24" y1="58" x2="1136" y2="58" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="27" font-family="Georgia, 'Times New Roman', serif" font-size="18" font-weight="700" fill="#1c1917">Distributed Email Service Evolution: 2021 Default vs. 2026 Modern Standard</text>
+  <text x="24" y="46" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#57534e">From Chatty Stateful IMAP, Opportunistic STARTTLS &amp; Duplicate Blobs to JMAP, MTA-STS, DMARC/ARC &amp; Per-User LSM Search</text>
 
   <!-- Column Headers -->
-  <rect x="20" y="70" width="210" height="32" rx="6" fill="#e2e8f0"/>
-  <text x="34" y="91" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1e293b">Architectural Layer</text>
+  <rect x="20" y="70" width="210" height="32" rx="6" fill="#e7e2d8"/>
+  <text x="34" y="91" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1c1917">Architectural Layer</text>
 
-  <rect x="242" y="70" width="440" height="32" rx="6" fill="#fee2e2" stroke="#fca5a5" stroke-width="1"/>
+  <rect x="242" y="70" width="440" height="32" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1"/>
   <text x="256" y="91" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#991b1b">2021 Legacy Default (Pain Points)</text>
 
   <rect x="694" y="70" width="446" height="32" rx="6" fill="#dcfce7" stroke="#86efac" stroke-width="1"/>
   <text x="708" y="91" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#166534">2026 Modern Standard (Primary Shifts)</text>
 
   <!-- Row 1 -->
-  <rect x="20" y="112" width="210" height="62" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="32" y="138" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">1. Client Sync Protocol</text>
-  <text x="32" y="156" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Mobile &amp; Web Access</text>
+  <rect x="20" y="112" width="210" height="62" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="32" y="138" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1c1917">1. Client Sync Protocol</text>
+  <text x="32" y="156" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#57534e">Mobile &amp; Web Access</text>
 
   <rect x="242" y="112" width="440" height="62" rx="6" fill="#fff5f5" stroke="#fecaca"/>
   <text x="254" y="136" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Stateful IMAP4rev1 + Ad-Hoc REST Polling</text>
-  <text x="254" y="155" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">Sticky TCP sockets; chatty folder resyncs drain mobile battery</text>
+  <text x="254" y="155" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Sticky TCP sockets; chatty folder resyncs drain mobile battery</text>
 
   <rect x="694" y="112" width="446" height="62" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
   <text x="706" y="136" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">JMAP (RFC 8620 / 8621) over HTTP/2+ &amp; Push</text>
-  <text x="706" y="155" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Stateless batched JSON calls; Email/changes delta token sync</text>
+  <text x="706" y="155" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Stateless batched JSON calls; Email/changes delta token sync</text>
 
   <!-- Row 2 -->
-  <rect x="20" y="182" width="210" height="62" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="32" y="208" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">2. MTA Transport TLS</text>
-  <text x="32" y="226" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">SMTP Relay Security</text>
+  <rect x="20" y="182" width="210" height="62" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="32" y="208" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1c1917">2. MTA Transport TLS</text>
+  <text x="32" y="226" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#57534e">SMTP Relay Security</text>
 
   <rect x="242" y="182" width="440" height="62" rx="6" fill="#fff5f5" stroke="#fecaca"/>
   <text x="254" y="206" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Opportunistic STARTTLS (Downgrade Vulnerable)</text>
-  <text x="254" y="225" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">MITM stripping 250-STARTTLS forces silent cleartext fallback</text>
+  <text x="254" y="225" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">MITM stripping 250-STARTTLS forces silent cleartext fallback</text>
 
   <rect x="694" y="182" width="446" height="62" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
   <text x="706" y="206" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">MTA-STS (RFC 8461) + DNSSEC DANE + TLS-RPT</text>
-  <text x="706" y="225" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Enforces authenticated TLS 1.3 cert match; blocks downgrade</text>
+  <text x="706" y="225" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Enforces authenticated TLS 1.3 cert match; blocks downgrade</text>
 
   <!-- Row 3 -->
-  <rect x="20" y="252" width="210" height="62" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="32" y="278" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">3. Auth &amp; Bulk Rules</text>
-  <text x="32" y="296" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Deliverability Gate</text>
+  <rect x="20" y="252" width="210" height="62" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="32" y="278" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1c1917">3. Auth &amp; Bulk Rules</text>
+  <text x="32" y="296" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#57534e">Deliverability Gate</text>
 
   <rect x="242" y="252" width="440" height="62" rx="6" fill="#fff5f5" stroke="#fecaca"/>
   <text x="254" y="276" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Best-Effort SPF/DKIM &amp; DMARC p=none</text>
-  <text x="254" y="295" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">Unaligned From spoofing passes; mailing lists break p=reject</text>
+  <text x="254" y="295" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Unaligned From spoofing passes; mailing lists break p=reject</text>
 
   <rect x="694" y="252" width="446" height="62" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
   <text x="706" y="276" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">Strict DMARC + ARC (RFC 8617) + &lt;0.3% FBL Cap</text>
-  <text x="706" y="295" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">2024-2026 Gmail/Yahoo rules: RFC 8058 1-click unsub + IP pools</text>
+  <text x="706" y="295" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">2024-2026 Gmail/Yahoo rules: RFC 8058 1-click unsub + IP pools</text>
 
   <!-- Row 4 -->
-  <rect x="20" y="322" width="210" height="62" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="32" y="348" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">4. Anti-Spam &amp; Phishing</text>
-  <text x="32" y="366" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Abuse Filtering</text>
+  <rect x="20" y="322" width="210" height="62" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="32" y="348" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1c1917">4. Anti-Spam &amp; Phishing</text>
+  <text x="32" y="366" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#57534e">Abuse Filtering</text>
 
   <rect x="242" y="322" width="440" height="62" rx="6" fill="#fff5f5" stroke="#fecaca"/>
   <text x="254" y="346" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Static RBLs, Regex &amp; Naive Bayes Token Filters</text>
-  <text x="254" y="365" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">Misses spear-phishing, lookalike domains &amp; AI-authored BEC</text>
+  <text x="254" y="365" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Misses spear-phishing, lookalike domains &amp; AI-authored BEC</text>
 
   <rect x="694" y="322" width="446" height="62" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
   <text x="706" y="346" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">Transformer BEC Models + Click-Time URL Sandbox</text>
-  <text x="706" y="365" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Sender-graph intent scoring + BIMI verified brand logos (VMC)</text>
+  <text x="706" y="365" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Sender-graph intent scoring + BIMI verified brand logos (VMC)</text>
 
   <!-- Row 5 -->
-  <rect x="20" y="392" width="210" height="62" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="32" y="418" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">5. Mailbox Search</text>
-  <text x="32" y="436" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">Write-Heavy Indexing</text>
+  <rect x="20" y="392" width="210" height="62" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="32" y="418" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1c1917">5. Mailbox Search</text>
+  <text x="32" y="436" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#57534e">Write-Heavy Indexing</text>
 
   <rect x="242" y="392" width="440" height="62" rx="6" fill="#fff5f5" stroke="#fecaca"/>
   <text x="254" y="416" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Unrouted Elasticsearch Cluster Scatter-Gather</text>
-  <text x="254" y="435" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">1 user query fans out across all shards; 2x storage footprint</text>
+  <text x="254" y="435" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">1 user query fans out across all shards; 2x storage footprint</text>
 
   <rect x="694" y="392" width="446" height="62" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
   <text x="706" y="416" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">Co-Located Per-User LSM Index + Hybrid Semantic</text>
-  <text x="706" y="435" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Sequential SSTable flushes per user_id; lexical + vector ANN</text>
+  <text x="706" y="435" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Sequential SSTable flushes per user_id; lexical + vector ANN</text>
 
   <!-- Row 6 -->
-  <rect x="20" y="462" width="210" height="62" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="32" y="488" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">6. Blobs &amp; Privacy</text>
-  <text x="32" y="506" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#64748b">1,460 PB/yr Attachments</text>
+  <rect x="20" y="462" width="210" height="62" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="32" y="488" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1c1917">6. Blobs &amp; Privacy</text>
+  <text x="32" y="506" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#57534e">1,460 PB/yr Attachments</text>
 
   <rect x="242" y="462" width="440" height="62" rx="6" fill="#fff5f5" stroke="#fecaca"/>
   <text x="254" y="486" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991b1b">Per-Recipient Duplicate Blobs + Raw Base64</text>
-  <text x="254" y="505" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#475569">100k-employee broadcast stores 100k copies + 33% Base64 tax</text>
+  <text x="254" y="505" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">100k-employee broadcast stores 100k copies + 33% Base64 tax</text>
 
   <rect x="694" y="462" width="446" height="62" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
   <text x="706" y="486" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#166534">SHA-256 CAS Dedupe + Ref-Count GC + E2EE</text>
-  <text x="706" y="505" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#334155">Decode Base64 at edge; 1 physical blob; S/MIME 4.0 / CSE</text>
+  <text x="706" y="505" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10.5" fill="#44403c">Decode Base64 at edge; 1 physical blob; S/MIME 4.0 / CSE</text>
 
   <!-- Bottom Migration Warning Strip -->
-  <rect x="20" y="536" width="1120" height="40" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.2"/>
+  <rect x="20" y="536" width="1120" height="40" rx="6" fill="#fffbeb" stroke="#b45309" stroke-width="1.2"/>
   <text x="34" y="560" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#92400e">Migration Trap: Enforce DMARC p=none -&gt; quarantine -&gt; reject via RUA reports; isolate transactional &amp; marketing IP pools first.</text>
 </svg>

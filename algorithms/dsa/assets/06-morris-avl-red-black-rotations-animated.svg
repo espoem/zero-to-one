@@ -3,13 +3,13 @@
   <desc id="desc">Animated visualization of Morris in-order threading on a 7-node BST using O(1) space, AVL Left-Right (LR) double rotation restoring balance factors to {-1,0,+1}, and Red-Black tree insertion fixup contrasting recoloring against rotation to preserve black-height.</desc>
   <defs>
     <marker id="arrow-violet" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arrow-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <style>
       .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
@@ -59,23 +59,23 @@
   </defs>
 
   <!-- Canvas -->
-  <rect x="0" y="0" width="1200" height="800" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1200" height="800" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1200" height="60" rx="12" fill="#0f172a"/>
-  <rect x="0" y="44" width="1200" height="16" fill="#0f172a"/>
-  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Morris O(1) Traversal, AVL Rotations &amp; Red-Black Tree Fixup</text>
-  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">Threaded Predecessor Links vs Balance-Factor Rotations (h &lt; 1.44 log n) vs Black-Height Fixup (h &lt;= 2 log(n+1))</text>
+  <line x1="24" y1="62" x2="1176" y2="62" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#1c1917" font-family="Georgia, 'Times New Roman', serif">Morris O(1) Traversal, AVL Rotations &amp; Red-Black Tree Fixup</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">Threaded Predecessor Links vs Balance-Factor Rotations (h &lt; 1.44 log n) vs Black-Height Fixup (h &lt;= 2 log(n+1))</text>
 
   <!-- TOP-LEFT PANEL: Morris Traversal -->
-  <rect x="24" y="74" width="564" height="398" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
-  <rect x="24" y="74" width="564" height="34" rx="10" fill="#f1f5f9"/>
-  <rect x="24" y="98" width="564" height="10" fill="#f1f5f9"/>
-  <text x="40" y="96" class="sans" font-size="13" font-weight="700" fill="#0f172a">1. Morris In-Order Traversal (O(1) Space Threading)</text>
-  <text x="572" y="96" class="mono" font-size="11" fill="#7c3aed" text-anchor="end">Theta(n) time · O(1) space</text>
+  <rect x="24" y="74" width="564" height="398" rx="10" fill="#ffffff" stroke="#d6d0c4"/>
+  <rect x="24" y="74" width="564" height="34" rx="10" fill="#f5f1e8"/>
+  <rect x="24" y="98" width="564" height="10" fill="#f5f1e8"/>
+  <text x="40" y="96" class="sans" font-size="13" font-weight="700" fill="#1c1917">1. Morris In-Order Traversal (O(1) Space Threading)</text>
+  <text x="572" y="96" class="mono" font-size="11" fill="#0f766e" text-anchor="end">Theta(n) time · O(1) space</text>
 
   <!-- Base BST 4 -> (2->(1,3), 6->(5,7)) centered around x=230 -->
-  <g stroke="#94a3b8" stroke-width="2">
+  <g stroke="#d6d0c4" stroke-width="2">
     <line x1="230" y1="146" x2="140" y2="206"/>
     <line x1="230" y1="146" x2="320" y2="206"/>
     <line x1="140" y1="206" x2="96" y2="266"/>
@@ -85,249 +85,249 @@
   </g>
   <!-- Base Nodes -->
   <g class="mono" font-size="14" font-weight="700" text-anchor="middle">
-    <circle cx="230" cy="146" r="18" fill="#ffffff" stroke="#475569" stroke-width="2"/><text x="230" y="151" fill="#0f172a">4</text>
-    <circle cx="140" cy="206" r="18" fill="#ffffff" stroke="#475569" stroke-width="2"/><text x="140" y="211" fill="#0f172a">2</text>
-    <circle cx="320" cy="206" r="18" fill="#ffffff" stroke="#475569" stroke-width="2"/><text x="320" y="211" fill="#0f172a">6</text>
-    <circle cx="96" cy="266" r="18" fill="#ffffff" stroke="#475569" stroke-width="2"/><text x="96" y="271" fill="#0f172a">1</text>
-    <circle cx="184" cy="266" r="18" fill="#ffffff" stroke="#475569" stroke-width="2"/><text x="184" y="271" fill="#0f172a">3</text>
-    <circle cx="276" cy="266" r="18" fill="#ffffff" stroke="#475569" stroke-width="2"/><text x="276" y="271" fill="#0f172a">5</text>
-    <circle cx="364" cy="266" r="18" fill="#ffffff" stroke="#475569" stroke-width="2"/><text x="364" y="271" fill="#0f172a">7</text>
+    <circle cx="230" cy="146" r="18" fill="#ffffff" stroke="#44403c" stroke-width="2"/><text x="230" y="151" fill="#1c1917">4</text>
+    <circle cx="140" cy="206" r="18" fill="#ffffff" stroke="#44403c" stroke-width="2"/><text x="140" y="211" fill="#1c1917">2</text>
+    <circle cx="320" cy="206" r="18" fill="#ffffff" stroke="#44403c" stroke-width="2"/><text x="320" y="211" fill="#1c1917">6</text>
+    <circle cx="96" cy="266" r="18" fill="#ffffff" stroke="#44403c" stroke-width="2"/><text x="96" y="271" fill="#1c1917">1</text>
+    <circle cx="184" cy="266" r="18" fill="#ffffff" stroke="#44403c" stroke-width="2"/><text x="184" y="271" fill="#1c1917">3</text>
+    <circle cx="276" cy="266" r="18" fill="#ffffff" stroke="#44403c" stroke-width="2"/><text x="276" y="271" fill="#1c1917">5</text>
+    <circle cx="364" cy="266" r="18" fill="#ffffff" stroke="#44403c" stroke-width="2"/><text x="364" y="271" fill="#1c1917">7</text>
   </g>
 
   <!-- Morris Step 1: Cur=4, create thread 3.right -> 4 -->
   <g class="mor-1">
-    <circle cx="230" cy="146" r="21" fill="none" stroke="#2563eb" stroke-width="3"/>
-    <text x="230" y="121" class="mono" font-size="10.5" font-weight="700" fill="#1d4ed8" text-anchor="middle">cur = 4</text>
-    <path d="M 202 262 Q 252 232 238 166" fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-dasharray="5 3" marker-end="url(#arrow-violet)"/>
-    <text x="278" y="294" class="mono" font-size="10.5" font-weight="700" fill="#6d28d9">thread: 3.right = 4</text>
-    <rect x="40" y="330" width="532" height="126" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
-    <text x="56" y="354" class="mono" font-size="12.5" font-weight="700" fill="#6d28d9">Step 1: Pred(4) = 3. Set 3.right = 4 -&gt; cur = 4.left (2)</text>
-    <text x="56" y="378" class="sans" font-size="11" fill="#334155">Encodes return path back to 4 inside leaf 3&apos;s null right pointer.</text>
-    <text x="56" y="406" class="mono" font-size="12" fill="#475569">Visited: [ ]</text>
-    <text x="56" y="434" class="sans" font-size="10.5" fill="#64748b">Every tree edge is traversed &lt;= 3 times (create, descend, clear thread).</text>
+    <circle cx="230" cy="146" r="21" fill="none" stroke="#0f766e" stroke-width="3"/>
+    <text x="230" y="121" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">cur = 4</text>
+    <path d="M 202 262 Q 252 232 238 166" fill="none" stroke="#0f766e" stroke-width="2.5" stroke-dasharray="5 3" marker-end="url(#arrow-violet)"/>
+    <text x="278" y="294" class="mono" font-size="10.5" font-weight="700" fill="#065f46">thread: 3.right = 4</text>
+    <rect x="40" y="330" width="532" height="126" rx="8" fill="#faf8f5" stroke="#d6d0c4"/>
+    <text x="56" y="354" class="mono" font-size="12.5" font-weight="700" fill="#065f46">Step 1: Pred(4) = 3. Set 3.right = 4 -&gt; cur = 4.left (2)</text>
+    <text x="56" y="378" class="sans" font-size="11" fill="#44403c">Encodes return path back to 4 inside leaf 3&apos;s null right pointer.</text>
+    <text x="56" y="406" class="mono" font-size="12" fill="#44403c">Visited: [ ]</text>
+    <text x="56" y="434" class="sans" font-size="10.5" fill="#57534e">Every tree edge is traversed &lt;= 3 times (create, descend, clear thread).</text>
   </g>
 
   <!-- Morris Step 2: Cur=2, thread 1.right -> 2, visit 1, follow thread to 2 -->
   <g class="mor-2">
-    <circle cx="140" cy="206" r="21" fill="none" stroke="#2563eb" stroke-width="3"/>
-    <circle cx="96" cy="266" r="18" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
-    <text x="96" y="271" class="mono" font-size="14" font-weight="700" fill="#047857" text-anchor="middle">1</text>
-    <path d="M 202 262 Q 252 232 238 166" fill="none" stroke="#c4b5fd" stroke-width="2" stroke-dasharray="5 3"/>
-    <path d="M 114 260 Q 146 244 146 226" fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-dasharray="5 3" marker-end="url(#arrow-violet)"/>
-    <rect x="40" y="330" width="532" height="126" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
-    <text x="56" y="354" class="mono" font-size="12.5" font-weight="700" fill="#6d28d9">Step 2: Thread 1.right = 2; visit 1 (no left); follow -&gt; 2</text>
-    <text x="56" y="378" class="sans" font-size="11" fill="#334155">1 has no left child, so visit 1 and jump via thread back to 2!</text>
-    <text x="56" y="406" class="mono" font-size="12" font-weight="700" fill="#047857">Visited: [ 1 ]</text>
-    <text x="56" y="434" class="sans" font-size="10.5" fill="#64748b">Zero recursion stack frames allocated.</text>
+    <circle cx="140" cy="206" r="21" fill="none" stroke="#0f766e" stroke-width="3"/>
+    <circle cx="96" cy="266" r="18" fill="#f0fdf9" stroke="#0f766e" stroke-width="2.5"/>
+    <text x="96" y="271" class="mono" font-size="14" font-weight="700" fill="#065f46" text-anchor="middle">1</text>
+    <path d="M 202 262 Q 252 232 238 166" fill="none" stroke="#d6d0c4" stroke-width="2" stroke-dasharray="5 3"/>
+    <path d="M 114 260 Q 146 244 146 226" fill="none" stroke="#0f766e" stroke-width="2.5" stroke-dasharray="5 3" marker-end="url(#arrow-violet)"/>
+    <rect x="40" y="330" width="532" height="126" rx="8" fill="#faf8f5" stroke="#d6d0c4"/>
+    <text x="56" y="354" class="mono" font-size="12.5" font-weight="700" fill="#065f46">Step 2: Thread 1.right = 2; visit 1 (no left); follow -&gt; 2</text>
+    <text x="56" y="378" class="sans" font-size="11" fill="#44403c">1 has no left child, so visit 1 and jump via thread back to 2!</text>
+    <text x="56" y="406" class="mono" font-size="12" font-weight="700" fill="#065f46">Visited: [ 1 ]</text>
+    <text x="56" y="434" class="sans" font-size="10.5" fill="#57534e">Zero recursion stack frames allocated.</text>
   </g>
 
   <!-- Morris Step 3: Remove 1.right=null, visit 2 & 3, follow 3.right->4 -->
   <g class="mor-3">
-    <circle cx="140" cy="206" r="18" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
-    <text x="140" y="211" class="mono" font-size="14" font-weight="700" fill="#047857" text-anchor="middle">2</text>
-    <circle cx="96" cy="266" r="18" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
-    <text x="96" y="271" class="mono" font-size="14" font-weight="700" fill="#047857" text-anchor="middle">1</text>
-    <circle cx="184" cy="266" r="18" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
-    <text x="184" y="271" class="mono" font-size="14" font-weight="700" fill="#047857" text-anchor="middle">3</text>
-    <path d="M 202 262 Q 252 232 238 166" fill="none" stroke="#059669" stroke-width="2.5" stroke-dasharray="5 3" marker-end="url(#arrow-emerald)"/>
-    <rect x="40" y="330" width="532" height="126" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
-    <text x="56" y="354" class="mono" font-size="12.5" font-weight="700" fill="#047857">Step 3: 1.right == 2 -&gt; clear 1.right = null, visit 2, 3</text>
-    <text x="56" y="378" class="sans" font-size="11" fill="#334155">Restores left child pointer; moves right to 3, visits 3, jumps to 4.</text>
-    <text x="56" y="406" class="mono" font-size="12" font-weight="700" fill="#047857">Visited: [ 1, 2, 3 ]</text>
-    <text x="56" y="434" class="sans" font-size="10.5" fill="#64748b">Original tree topology is incrementally restored as threads expire.</text>
+    <circle cx="140" cy="206" r="18" fill="#f0fdf9" stroke="#0f766e" stroke-width="2.5"/>
+    <text x="140" y="211" class="mono" font-size="14" font-weight="700" fill="#065f46" text-anchor="middle">2</text>
+    <circle cx="96" cy="266" r="18" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
+    <text x="96" y="271" class="mono" font-size="14" font-weight="700" fill="#065f46" text-anchor="middle">1</text>
+    <circle cx="184" cy="266" r="18" fill="#f0fdf9" stroke="#0f766e" stroke-width="2.5"/>
+    <text x="184" y="271" class="mono" font-size="14" font-weight="700" fill="#065f46" text-anchor="middle">3</text>
+    <path d="M 202 262 Q 252 232 238 166" fill="none" stroke="#0f766e" stroke-width="2.5" stroke-dasharray="5 3" marker-end="url(#arrow-emerald)"/>
+    <rect x="40" y="330" width="532" height="126" rx="8" fill="#faf8f5" stroke="#d6d0c4"/>
+    <text x="56" y="354" class="mono" font-size="12.5" font-weight="700" fill="#065f46">Step 3: 1.right == 2 -&gt; clear 1.right = null, visit 2, 3</text>
+    <text x="56" y="378" class="sans" font-size="11" fill="#44403c">Restores left child pointer; moves right to 3, visits 3, jumps to 4.</text>
+    <text x="56" y="406" class="mono" font-size="12" font-weight="700" fill="#065f46">Visited: [ 1, 2, 3 ]</text>
+    <text x="56" y="434" class="sans" font-size="10.5" fill="#57534e">Original tree topology is incrementally restored as threads expire.</text>
   </g>
 
   <!-- Morris Step 4: Remove 3.right=null, visit 4, 5, 6, 7 -->
   <g class="mor-4">
-    <circle cx="230" cy="146" r="18" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
-    <text x="230" y="151" class="mono" font-size="14" font-weight="700" fill="#047857" text-anchor="middle">4</text>
-    <circle cx="140" cy="206" r="18" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
-    <text x="140" y="211" class="mono" font-size="14" font-weight="700" fill="#047857" text-anchor="middle">2</text>
-    <circle cx="320" cy="206" r="18" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
-    <text x="320" y="211" class="mono" font-size="14" font-weight="700" fill="#047857" text-anchor="middle">6</text>
-    <circle cx="96" cy="266" r="18" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
-    <text x="96" y="271" class="mono" font-size="14" font-weight="700" fill="#047857" text-anchor="middle">1</text>
-    <circle cx="184" cy="266" r="18" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
-    <text x="184" y="271" class="mono" font-size="14" font-weight="700" fill="#047857" text-anchor="middle">3</text>
-    <circle cx="276" cy="266" r="18" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
-    <text x="276" y="271" class="mono" font-size="14" font-weight="700" fill="#047857" text-anchor="middle">5</text>
-    <circle cx="364" cy="266" r="18" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
-    <text x="364" y="271" class="mono" font-size="14" font-weight="700" fill="#047857" text-anchor="middle">7</text>
-    <rect x="40" y="330" width="532" height="126" rx="8" fill="#ecfdf5" stroke="#86efac"/>
-    <text x="56" y="354" class="mono" font-size="12.5" font-weight="700" fill="#047857">Step 4: Clear 3.right = null, visit 4, then right subtree</text>
+    <circle cx="230" cy="146" r="18" fill="#f0fdf9" stroke="#0f766e" stroke-width="2.5"/>
+    <text x="230" y="151" class="mono" font-size="14" font-weight="700" fill="#065f46" text-anchor="middle">4</text>
+    <circle cx="140" cy="206" r="18" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
+    <text x="140" y="211" class="mono" font-size="14" font-weight="700" fill="#065f46" text-anchor="middle">2</text>
+    <circle cx="320" cy="206" r="18" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
+    <text x="320" y="211" class="mono" font-size="14" font-weight="700" fill="#065f46" text-anchor="middle">6</text>
+    <circle cx="96" cy="266" r="18" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
+    <text x="96" y="271" class="mono" font-size="14" font-weight="700" fill="#065f46" text-anchor="middle">1</text>
+    <circle cx="184" cy="266" r="18" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
+    <text x="184" y="271" class="mono" font-size="14" font-weight="700" fill="#065f46" text-anchor="middle">3</text>
+    <circle cx="276" cy="266" r="18" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
+    <text x="276" y="271" class="mono" font-size="14" font-weight="700" fill="#065f46" text-anchor="middle">5</text>
+    <circle cx="364" cy="266" r="18" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
+    <text x="364" y="271" class="mono" font-size="14" font-weight="700" fill="#065f46" text-anchor="middle">7</text>
+    <rect x="40" y="330" width="532" height="126" rx="8" fill="#f0fdf9" stroke="#86efac"/>
+    <text x="56" y="354" class="mono" font-size="12.5" font-weight="700" fill="#065f46">Step 4: Clear 3.right = null, visit 4, then right subtree</text>
     <text x="56" y="378" class="sans" font-size="11" fill="#065f46">Tree 100% restored to original unmodified pointers!</text>
-    <text x="56" y="406" class="mono" font-size="12" font-weight="700" fill="#047857">Visited: [ 1, 2, 3, 4, 5, 6, 7 ]</text>
-    <text x="56" y="434" class="sans" font-size="10.5" fill="#059669">Complete in-order output in O(n) time and O(1) space.</text>
+    <text x="56" y="406" class="mono" font-size="12" font-weight="700" fill="#065f46">Visited: [ 1, 2, 3, 4, 5, 6, 7 ]</text>
+    <text x="56" y="434" class="sans" font-size="10.5" fill="#0f766e">Complete in-order output in O(n) time and O(1) space.</text>
   </g>
 
   <!-- Right side of Morris panel: Algorithm Box -->
-  <rect x="404" y="124" width="168" height="186" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
-  <text x="416" y="144" class="sans" font-size="11" font-weight="700" fill="#0f172a">Morris Rule:</text>
-  <text x="416" y="164" class="mono" font-size="10" fill="#334155">if (!cur.left):</text>
-  <text x="416" y="180" class="mono" font-size="10" fill="#047857">  visit(cur)</text>
-  <text x="416" y="196" class="mono" font-size="10" fill="#1d4ed8">  cur = cur.right</text>
-  <text x="416" y="218" class="mono" font-size="10" fill="#334155">else find pred:</text>
-  <text x="416" y="234" class="mono" font-size="10" fill="#6d28d9">  if (!pred.right):</text>
-  <text x="416" y="250" class="mono" font-size="10" fill="#6d28d9">    pred.right = cur</text>
-  <text x="416" y="266" class="mono" font-size="10" fill="#1d4ed8">    cur = cur.left</text>
-  <text x="416" y="282" class="mono" font-size="10" fill="#047857">  else: unlink+visit</text>
+  <rect x="404" y="124" width="168" height="186" rx="8" fill="#faf8f5" stroke="#e7e2d8"/>
+  <text x="416" y="144" class="sans" font-size="11" font-weight="700" fill="#1c1917">Morris Rule:</text>
+  <text x="416" y="164" class="mono" font-size="10" fill="#44403c">if (!cur.left):</text>
+  <text x="416" y="180" class="mono" font-size="10" fill="#065f46">  visit(cur)</text>
+  <text x="416" y="196" class="mono" font-size="10" fill="#065f46">  cur = cur.right</text>
+  <text x="416" y="218" class="mono" font-size="10" fill="#44403c">else find pred:</text>
+  <text x="416" y="234" class="mono" font-size="10" fill="#065f46">  if (!pred.right):</text>
+  <text x="416" y="250" class="mono" font-size="10" fill="#065f46">    pred.right = cur</text>
+  <text x="416" y="266" class="mono" font-size="10" fill="#065f46">    cur = cur.left</text>
+  <text x="416" y="282" class="mono" font-size="10" fill="#065f46">  else: unlink+visit</text>
 
   <!-- TOP-RIGHT PANEL: AVL Rotations (LR Double Rotation) -->
-  <rect x="612" y="74" width="564" height="398" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
-  <rect x="612" y="74" width="564" height="34" rx="10" fill="#f1f5f9"/>
-  <rect x="612" y="98" width="564" height="10" fill="#f1f5f9"/>
-  <text x="628" y="96" class="sans" font-size="13" font-weight="700" fill="#0f172a">2. AVL Rotations (Strict Balance: BF in {-1, 0, +1})</text>
-  <text x="1160" y="96" class="mono" font-size="11" fill="#2563eb" text-anchor="end">h &lt; 1.44 log2(n+2)</text>
+  <rect x="612" y="74" width="564" height="398" rx="10" fill="#ffffff" stroke="#d6d0c4"/>
+  <rect x="612" y="74" width="564" height="34" rx="10" fill="#f5f1e8"/>
+  <rect x="612" y="98" width="564" height="10" fill="#f5f1e8"/>
+  <text x="628" y="96" class="sans" font-size="13" font-weight="700" fill="#1c1917">2. AVL Rotations (Strict Balance: BF in {-1, 0, +1})</text>
+  <text x="1160" y="96" class="mono" font-size="11" fill="#0f766e" text-anchor="end">h &lt; 1.44 log2(n+2)</text>
 
   <!-- Step 1: Unbalanced LR (30 -> left 10 -> right 20) -->
   <g class="avl-1">
-    <rect x="632" y="122" width="174" height="24" rx="4" fill="#fff1f2" stroke="#fda4af"/>
-    <text x="719" y="138" class="mono" font-size="11" font-weight="700" fill="#be123c" text-anchor="middle">LR Imbalance: BF(30)=+2</text>
+    <rect x="632" y="122" width="174" height="24" rx="4" fill="#fef2f2" stroke="#fda4af"/>
+    <text x="719" y="138" class="mono" font-size="11" font-weight="700" fill="#991b1b" text-anchor="middle">LR Imbalance: BF(30)=+2</text>
 
-    <line x1="830" y1="158" x2="760" y2="214" stroke="#e11d48" stroke-width="2.5"/>
-    <line x1="760" y1="214" x2="824" y2="274" stroke="#2563eb" stroke-width="2.5"/>
-    <path d="M 738 228 Q 748 268 796 274" fill="none" stroke="#2563eb" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#arrow-blue)"/>
+    <line x1="830" y1="158" x2="760" y2="214" stroke="#dc2626" stroke-width="2.5"/>
+    <line x1="760" y1="214" x2="824" y2="274" stroke="#0f766e" stroke-width="2.5"/>
+    <path d="M 738 228 Q 748 268 796 274" fill="none" stroke="#0f766e" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#arrow-blue)"/>
 
-    <circle cx="830" cy="158" r="20" fill="#fff1f2" stroke="#e11d48" stroke-width="2.5"/><text x="830" y="163" class="mono" font-size="13" font-weight="700" fill="#be123c" text-anchor="middle">30</text>
-    <text x="860" y="163" class="mono" font-size="10.5" font-weight="700" fill="#be123c">BF=+2</text>
+    <circle cx="830" cy="158" r="20" fill="#fef2f2" stroke="#dc2626" stroke-width="2.5"/><text x="830" y="163" class="mono" font-size="13" font-weight="700" fill="#991b1b" text-anchor="middle">30</text>
+    <text x="860" y="163" class="mono" font-size="10.5" font-weight="700" fill="#991b1b">BF=+2</text>
 
-    <circle cx="760" cy="214" r="20" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/><text x="760" y="219" class="mono" font-size="13" font-weight="700" fill="#1d4ed8" text-anchor="middle">10</text>
-    <text x="718" y="219" class="mono" font-size="10.5" fill="#1d4ed8" text-anchor="end">BF=-1</text>
+    <circle cx="760" cy="214" r="20" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/><text x="760" y="219" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">10</text>
+    <text x="718" y="219" class="mono" font-size="10.5" fill="#065f46" text-anchor="end">BF=-1</text>
 
-    <circle cx="824" cy="274" r="20" fill="#fffbeb" stroke="#d97706" stroke-width="2.5"/><text x="824" y="279" class="mono" font-size="13" font-weight="700" fill="#b45309" text-anchor="middle">20</text>
+    <circle cx="824" cy="274" r="20" fill="#fffbeb" stroke="#b45309" stroke-width="2.5"/><text x="824" y="279" class="mono" font-size="13" font-weight="700" fill="#b45309" text-anchor="middle">20</text>
     <text x="854" y="279" class="mono" font-size="10.5" fill="#b45309">inserted</text>
 
-    <rect x="632" y="330" width="524" height="126" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
-    <text x="648" y="354" class="mono" font-size="12.5" font-weight="700" fill="#be123c">Phase 1 (LR Case): BF(30) = +2 and BF(10) = -1</text>
-    <text x="648" y="378" class="sans" font-size="11.5" fill="#334155">Inserted node 20 sits in left-right zig-zag. A single right rotation fails!</text>
-    <text x="648" y="402" class="mono" font-size="11.5" font-weight="700" fill="#1d4ed8">Fix Step 1: Left-Rotate(10) to straighten into Left-Left (LL).</text>
-    <text x="648" y="434" class="sans" font-size="10.5" fill="#64748b">4 Cases: LL (Right), RR (Left), LR (Left then Right), RL (Right then Left).</text>
+    <rect x="632" y="330" width="524" height="126" rx="8" fill="#faf8f5" stroke="#d6d0c4"/>
+    <text x="648" y="354" class="mono" font-size="12.5" font-weight="700" fill="#991b1b">Phase 1 (LR Case): BF(30) = +2 and BF(10) = -1</text>
+    <text x="648" y="378" class="sans" font-size="11.5" fill="#44403c">Inserted node 20 sits in left-right zig-zag. A single right rotation fails!</text>
+    <text x="648" y="402" class="mono" font-size="11.5" font-weight="700" fill="#065f46">Fix Step 1: Left-Rotate(10) to straighten into Left-Left (LL).</text>
+    <text x="648" y="434" class="sans" font-size="10.5" fill="#57534e">4 Cases: LL (Right), RR (Left), LR (Left then Right), RL (Right then Left).</text>
   </g>
 
   <!-- Step 2: Intermediate LL (30 -> left 20 -> left 10) -->
   <g class="avl-2">
-    <rect x="632" y="122" width="186" height="24" rx="4" fill="#fffbeb" stroke="#fcd34d"/>
+    <rect x="632" y="122" width="186" height="24" rx="4" fill="#fffbeb" stroke="#fde68a"/>
     <text x="725" y="138" class="mono" font-size="11" font-weight="700" fill="#b45309" text-anchor="middle">After LeftRotate(10) -&gt; LL</text>
 
-    <line x1="830" y1="158" x2="776" y2="214" stroke="#2563eb" stroke-width="2.5"/>
-    <line x1="776" y1="214" x2="722" y2="274" stroke="#2563eb" stroke-width="2.5"/>
-    <path d="M 852 172 Q 876 206 832 232" fill="none" stroke="#059669" stroke-width="2.5" stroke-dasharray="4 3" marker-end="url(#arrow-emerald)"/>
+    <line x1="830" y1="158" x2="776" y2="214" stroke="#0f766e" stroke-width="2.5"/>
+    <line x1="776" y1="214" x2="722" y2="274" stroke="#0f766e" stroke-width="2.5"/>
+    <path d="M 852 172 Q 876 206 832 232" fill="none" stroke="#0f766e" stroke-width="2.5" stroke-dasharray="4 3" marker-end="url(#arrow-emerald)"/>
 
-    <circle cx="830" cy="158" r="20" fill="#fff1f2" stroke="#e11d48" stroke-width="2.5"/><text x="830" y="163" class="mono" font-size="13" font-weight="700" fill="#be123c" text-anchor="middle">30</text>
-    <text x="860" y="163" class="mono" font-size="10.5" font-weight="700" fill="#be123c">BF=+2</text>
+    <circle cx="830" cy="158" r="20" fill="#fef2f2" stroke="#dc2626" stroke-width="2.5"/><text x="830" y="163" class="mono" font-size="13" font-weight="700" fill="#991b1b" text-anchor="middle">30</text>
+    <text x="860" y="163" class="mono" font-size="10.5" font-weight="700" fill="#991b1b">BF=+2</text>
 
-    <circle cx="776" cy="214" r="20" fill="#eff6ff" stroke="#2563eb" stroke-width="2.5"/><text x="776" y="219" class="mono" font-size="13" font-weight="700" fill="#1d4ed8" text-anchor="middle">20</text>
-    <text x="804" y="219" class="mono" font-size="10.5" fill="#1d4ed8">BF=+1</text>
+    <circle cx="776" cy="214" r="20" fill="#f0fdf9" stroke="#0f766e" stroke-width="2.5"/><text x="776" y="219" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">20</text>
+    <text x="804" y="219" class="mono" font-size="10.5" fill="#065f46">BF=+1</text>
 
-    <circle cx="722" cy="274" r="20" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/><text x="722" y="279" class="mono" font-size="13" font-weight="700" fill="#1d4ed8" text-anchor="middle">10</text>
-    <text x="692" y="279" class="mono" font-size="10.5" fill="#64748b" text-anchor="end">BF=0</text>
+    <circle cx="722" cy="274" r="20" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/><text x="722" y="279" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">10</text>
+    <text x="692" y="279" class="mono" font-size="10.5" fill="#57534e" text-anchor="end">BF=0</text>
 
-    <rect x="632" y="330" width="524" height="126" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+    <rect x="632" y="330" width="524" height="126" rx="8" fill="#faf8f5" stroke="#d6d0c4"/>
     <text x="648" y="354" class="mono" font-size="12.5" font-weight="700" fill="#b45309">Phase 2 (Straightened to LL): Now Right-Rotate(30)</text>
-    <text x="648" y="378" class="sans" font-size="11.5" fill="#334155">Left rotation on 10 lifted 20 above 10, creating a straight left spine.</text>
-    <text x="648" y="402" class="mono" font-size="11.5" font-weight="700" fill="#047857">Fix Step 2: Right-Rotate(30) promotes 20 as balanced subtree root.</text>
-    <text x="648" y="434" class="sans" font-size="10.5" fill="#64748b">Subtrees alpha, beta, gamma preserve strict BST in-order: 10 &lt; 20 &lt; 30.</text>
+    <text x="648" y="378" class="sans" font-size="11.5" fill="#44403c">Left rotation on 10 lifted 20 above 10, creating a straight left spine.</text>
+    <text x="648" y="402" class="mono" font-size="11.5" font-weight="700" fill="#065f46">Fix Step 2: Right-Rotate(30) promotes 20 as balanced subtree root.</text>
+    <text x="648" y="434" class="sans" font-size="10.5" fill="#57534e">Subtrees alpha, beta, gamma preserve strict BST in-order: 10 &lt; 20 &lt; 30.</text>
   </g>
 
   <!-- Step 3: Balanced (20 -> 10, 30) -->
   <g class="avl-3">
-    <rect x="632" y="122" width="186" height="24" rx="4" fill="#ecfdf5" stroke="#6ee7b7"/>
-    <text x="725" y="138" class="mono" font-size="11" font-weight="700" fill="#047857" text-anchor="middle">Balanced! All BF = 0</text>
+    <rect x="632" y="122" width="186" height="24" rx="4" fill="#f0fdf9" stroke="#99f6e4"/>
+    <text x="725" y="138" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">Balanced! All BF = 0</text>
 
-    <line x1="786" y1="168" x2="722" y2="236" stroke="#059669" stroke-width="2.5"/>
-    <line x1="786" y1="168" x2="850" y2="236" stroke="#059669" stroke-width="2.5"/>
+    <line x1="786" y1="168" x2="722" y2="236" stroke="#0f766e" stroke-width="2.5"/>
+    <line x1="786" y1="168" x2="850" y2="236" stroke="#0f766e" stroke-width="2.5"/>
 
-    <circle cx="786" cy="168" r="20" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/><text x="786" y="173" class="mono" font-size="13" font-weight="700" fill="#047857" text-anchor="middle">20</text>
-    <text x="816" y="173" class="mono" font-size="10.5" font-weight="700" fill="#047857">BF=0</text>
+    <circle cx="786" cy="168" r="20" fill="#f0fdf9" stroke="#0f766e" stroke-width="2.5"/><text x="786" y="173" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">20</text>
+    <text x="816" y="173" class="mono" font-size="10.5" font-weight="700" fill="#065f46">BF=0</text>
 
-    <circle cx="722" cy="236" r="20" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="722" y="241" class="mono" font-size="13" font-weight="700" fill="#047857" text-anchor="middle">10</text>
-    <text x="694" y="241" class="mono" font-size="10.5" fill="#047857" text-anchor="end">BF=0</text>
+    <circle cx="722" cy="236" r="20" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/><text x="722" y="241" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">10</text>
+    <text x="694" y="241" class="mono" font-size="10.5" fill="#065f46" text-anchor="end">BF=0</text>
 
-    <circle cx="850" cy="236" r="20" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="850" y="241" class="mono" font-size="13" font-weight="700" fill="#047857" text-anchor="middle">30</text>
-    <text x="880" y="241" class="mono" font-size="10.5" fill="#047857">BF=0</text>
+    <circle cx="850" cy="236" r="20" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/><text x="850" y="241" class="mono" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">30</text>
+    <text x="880" y="241" class="mono" font-size="10.5" fill="#065f46">BF=0</text>
 
-    <rect x="632" y="330" width="524" height="126" rx="8" fill="#ecfdf5" stroke="#86efac"/>
-    <text x="648" y="354" class="mono" font-size="12.5" font-weight="700" fill="#047857">Phase 3 (Complete): Height Restored in O(1) Pointer Rewiring</text>
+    <rect x="632" y="330" width="524" height="126" rx="8" fill="#f0fdf9" stroke="#86efac"/>
+    <text x="648" y="354" class="mono" font-size="12.5" font-weight="700" fill="#065f46">Phase 3 (Complete): Height Restored in O(1) Pointer Rewiring</text>
     <text x="648" y="378" class="sans" font-size="11.5" fill="#065f46">Balance factors are all 0. Strict AVL bound h &lt; 1.44 log2(n+2) holds.</text>
-    <text x="648" y="402" class="sans" font-size="11" fill="#047857">Trade-off vs RB: faster O(log n) lookups, slightly more rotations on delete.</text>
+    <text x="648" y="402" class="sans" font-size="11" fill="#065f46">Trade-off vs RB: faster O(log n) lookups, slightly more rotations on delete.</text>
     <text x="648" y="434" class="mono" font-size="10.5" fill="#065f46">LeftRotation(X) &lt;=&gt; RightRotation(Y) with middle subtree beta moving X.right &lt;-&gt; Y.left</text>
   </g>
 
   <!-- AVL Rotation Identity Inset -->
-  <rect x="946" y="122" width="210" height="188" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
-  <text x="960" y="144" class="sans" font-size="11" font-weight="700" fill="#0f172a">Single Rotation Identity:</text>
-  <text x="960" y="168" class="mono" font-size="10.5" fill="#1d4ed8">  X            Y</text>
-  <text x="960" y="186" class="mono" font-size="10.5" fill="#1d4ed8"> / \    L&gt;    / \</text>
-  <text x="960" y="204" class="mono" font-size="10.5" fill="#1d4ed8">a   Y   &lt;R   X   g</text>
-  <text x="960" y="222" class="mono" font-size="10.5" fill="#1d4ed8">   / \      / \</text>
-  <text x="960" y="240" class="mono" font-size="10.5" fill="#7c3aed">  b   g    a   b</text>
-  <text x="960" y="272" class="sans" font-size="10" fill="#475569">Order: a &lt; X &lt; b &lt; Y &lt; g</text>
-  <text x="960" y="290" class="sans" font-size="10" fill="#64748b">Subtree b transfers in O(1).</text>
+  <rect x="946" y="122" width="210" height="188" rx="8" fill="#faf8f5" stroke="#e7e2d8"/>
+  <text x="960" y="144" class="sans" font-size="11" font-weight="700" fill="#1c1917">Single Rotation Identity:</text>
+  <text x="960" y="168" class="mono" font-size="10.5" fill="#065f46">  X            Y</text>
+  <text x="960" y="186" class="mono" font-size="10.5" fill="#065f46"> / \    L&gt;    / \</text>
+  <text x="960" y="204" class="mono" font-size="10.5" fill="#065f46">a   Y   &lt;R   X   g</text>
+  <text x="960" y="222" class="mono" font-size="10.5" fill="#065f46">   / \      / \</text>
+  <text x="960" y="240" class="mono" font-size="10.5" fill="#0f766e">  b   g    a   b</text>
+  <text x="960" y="272" class="sans" font-size="10" fill="#44403c">Order: a &lt; X &lt; b &lt; Y &lt; g</text>
+  <text x="960" y="290" class="sans" font-size="10" fill="#57534e">Subtree b transfers in O(1).</text>
 
   <!-- BOTTOM PANEL: Red-Black Tree Fixup (Full Width) -->
-  <rect x="24" y="488" width="1152" height="288" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
-  <rect x="24" y="488" width="1152" height="34" rx="10" fill="#f1f5f9"/>
-  <rect x="24" y="512" width="1152" height="10" fill="#f1f5f9"/>
-  <text x="40" y="510" class="sans" font-size="13" font-weight="700" fill="#0f172a">3. Red-Black Tree Insertion Fixup (Preserving Black-Height bh(x) with &lt;= 2 Rotations)</text>
-  <text x="1160" y="510" class="mono" font-size="11" fill="#be123c" text-anchor="end">No two consecutive Reds · Root &amp; NIL Black</text>
+  <rect x="24" y="488" width="1152" height="288" rx="10" fill="#ffffff" stroke="#d6d0c4"/>
+  <rect x="24" y="488" width="1152" height="34" rx="10" fill="#f5f1e8"/>
+  <rect x="24" y="512" width="1152" height="10" fill="#f5f1e8"/>
+  <text x="40" y="510" class="sans" font-size="13" font-weight="700" fill="#1c1917">3. Red-Black Tree Insertion Fixup (Preserving Black-Height bh(x) with &lt;= 2 Rotations)</text>
+  <text x="1160" y="510" class="mono" font-size="11" fill="#991b1b" text-anchor="end">No two consecutive Reds · Root &amp; NIL Black</text>
 
   <!-- Case A (Left Half): Red Uncle -> Recolor Only -->
-  <rect x="44" y="536" width="540" height="222" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
-  <text x="60" y="558" class="sans" font-size="12" font-weight="700" fill="#0f172a">Case 1: Red Uncle (U) -&gt; Recolor P, U = Black; G = Red</text>
+  <rect x="44" y="536" width="540" height="222" rx="8" fill="#faf8f5" stroke="#e7e2d8"/>
+  <text x="60" y="558" class="sans" font-size="12" font-weight="700" fill="#1c1917">Case 1: Red Uncle (U) -&gt; Recolor P, U = Black; G = Red</text>
 
   <g class="rb-1">
-    <line x1="180" y1="598" x2="120" y2="648" stroke="#475569" stroke-width="2"/>
-    <line x1="180" y1="598" x2="240" y2="648" stroke="#475569" stroke-width="2"/>
-    <line x1="120" y1="648" x2="88" y2="704" stroke="#e11d48" stroke-width="2.5"/>
-    <circle cx="180" cy="598" r="18" fill="#0f172a"/><text x="180" y="603" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">G</text>
-    <circle cx="120" cy="648" r="18" fill="#e11d48"/><text x="120" y="653" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">P</text>
-    <circle cx="240" cy="648" r="18" fill="#e11d48"/><text x="240" y="653" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">U</text>
-    <circle cx="88" cy="704" r="18" fill="#e11d48" stroke="#9f1239" stroke-width="2"/><text x="88" y="709" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">N</text>
-    <text x="148" y="698" class="mono" font-size="11" font-weight="700" fill="#be123c">Red-Red violation!</text>
-    <text x="300" y="616" class="sans" font-size="11.5" font-weight="600" fill="#be123c">Before: P and N are both Red.</text>
-    <text x="300" y="640" class="sans" font-size="11" fill="#334155">Uncle U is also Red -&gt; 0 rotations needed!</text>
-    <text x="300" y="664" class="mono" font-size="11" fill="#475569">Push black down from G to P &amp; U.</text>
+    <line x1="180" y1="598" x2="120" y2="648" stroke="#44403c" stroke-width="2"/>
+    <line x1="180" y1="598" x2="240" y2="648" stroke="#44403c" stroke-width="2"/>
+    <line x1="120" y1="648" x2="88" y2="704" stroke="#dc2626" stroke-width="2.5"/>
+    <circle cx="180" cy="598" r="18" fill="#1c1917"/><text x="180" y="603" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">G</text>
+    <circle cx="120" cy="648" r="18" fill="#dc2626"/><text x="120" y="653" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">P</text>
+    <circle cx="240" cy="648" r="18" fill="#dc2626"/><text x="240" y="653" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">U</text>
+    <circle cx="88" cy="704" r="18" fill="#dc2626" stroke="#991b1b" stroke-width="2"/><text x="88" y="709" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">N</text>
+    <text x="148" y="698" class="mono" font-size="11" font-weight="700" fill="#991b1b">Red-Red violation!</text>
+    <text x="300" y="616" class="sans" font-size="11.5" font-weight="600" fill="#991b1b">Before: P and N are both Red.</text>
+    <text x="300" y="640" class="sans" font-size="11" fill="#44403c">Uncle U is also Red -&gt; 0 rotations needed!</text>
+    <text x="300" y="664" class="mono" font-size="11" fill="#44403c">Push black down from G to P &amp; U.</text>
   </g>
   <g class="rb-2">
-    <line x1="180" y1="598" x2="120" y2="648" stroke="#475569" stroke-width="2"/>
-    <line x1="180" y1="598" x2="240" y2="648" stroke="#475569" stroke-width="2"/>
-    <line x1="120" y1="648" x2="88" y2="704" stroke="#475569" stroke-width="2"/>
-    <circle cx="180" cy="598" r="18" fill="#e11d48"/><text x="180" y="603" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">G</text>
-    <circle cx="120" cy="648" r="18" fill="#0f172a"/><text x="120" y="653" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">P</text>
-    <circle cx="240" cy="648" r="18" fill="#0f172a"/><text x="240" y="653" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">U</text>
-    <circle cx="88" cy="704" r="18" fill="#e11d48"/><text x="88" y="709" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">N</text>
-    <text x="148" y="698" class="mono" font-size="11" font-weight="700" fill="#047857">bh(G) unchanged!</text>
-    <text x="300" y="616" class="sans" font-size="11.5" font-weight="700" fill="#047857">After Recolor: P, U = Black; G = Red</text>
-    <text x="300" y="640" class="sans" font-size="11" fill="#334155">Black-height of every path through G is identical.</text>
-    <text x="300" y="664" class="mono" font-size="11" fill="#047857">Continue fixup upward at G (root stays Black).</text>
+    <line x1="180" y1="598" x2="120" y2="648" stroke="#44403c" stroke-width="2"/>
+    <line x1="180" y1="598" x2="240" y2="648" stroke="#44403c" stroke-width="2"/>
+    <line x1="120" y1="648" x2="88" y2="704" stroke="#44403c" stroke-width="2"/>
+    <circle cx="180" cy="598" r="18" fill="#dc2626"/><text x="180" y="603" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">G</text>
+    <circle cx="120" cy="648" r="18" fill="#1c1917"/><text x="120" y="653" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">P</text>
+    <circle cx="240" cy="648" r="18" fill="#1c1917"/><text x="240" y="653" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">U</text>
+    <circle cx="88" cy="704" r="18" fill="#dc2626"/><text x="88" y="709" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">N</text>
+    <text x="148" y="698" class="mono" font-size="11" font-weight="700" fill="#065f46">bh(G) unchanged!</text>
+    <text x="300" y="616" class="sans" font-size="11.5" font-weight="700" fill="#065f46">After Recolor: P, U = Black; G = Red</text>
+    <text x="300" y="640" class="sans" font-size="11" fill="#44403c">Black-height of every path through G is identical.</text>
+    <text x="300" y="664" class="mono" font-size="11" fill="#065f46">Continue fixup upward at G (root stays Black).</text>
   </g>
 
   <!-- Case B (Right Half): Black Uncle -> Rotate + Recolor -->
-  <rect x="612" y="536" width="544" height="222" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
-  <text x="628" y="558" class="sans" font-size="12" font-weight="700" fill="#0f172a">Case 2/3: Black Uncle (U) -&gt; Rotate G (+ Recolor P = Black, G = Red)</text>
+  <rect x="612" y="536" width="544" height="222" rx="8" fill="#faf8f5" stroke="#e7e2d8"/>
+  <text x="628" y="558" class="sans" font-size="12" font-weight="700" fill="#1c1917">Case 2/3: Black Uncle (U) -&gt; Rotate G (+ Recolor P = Black, G = Red)</text>
 
   <g class="rb-1">
-    <line x1="748" y1="598" x2="692" y2="648" stroke="#475569" stroke-width="2"/>
-    <line x1="748" y1="598" x2="804" y2="648" stroke="#475569" stroke-width="2"/>
-    <line x1="692" y1="648" x2="656" y2="704" stroke="#e11d48" stroke-width="2.5"/>
-    <circle cx="748" cy="598" r="18" fill="#0f172a"/><text x="748" y="603" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">G</text>
-    <circle cx="692" cy="648" r="18" fill="#e11d48"/><text x="692" y="653" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">P</text>
-    <rect x="786" y="632" width="36" height="30" rx="4" fill="#0f172a"/><text x="804" y="652" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">U</text>
-    <circle cx="656" cy="704" r="18" fill="#e11d48"/><text x="656" y="709" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">N</text>
-    <text x="854" y="616" class="sans" font-size="11.5" font-weight="600" fill="#be123c">Before: Uncle U is Black (or NIL).</text>
-    <text x="854" y="640" class="sans" font-size="11" fill="#334155">Recoloring alone would break black-height!</text>
-    <text x="854" y="664" class="mono" font-size="11" fill="#1d4ed8">Action: Right-Rotate(G) + swap colors(P, G).</text>
+    <line x1="748" y1="598" x2="692" y2="648" stroke="#44403c" stroke-width="2"/>
+    <line x1="748" y1="598" x2="804" y2="648" stroke="#44403c" stroke-width="2"/>
+    <line x1="692" y1="648" x2="656" y2="704" stroke="#dc2626" stroke-width="2.5"/>
+    <circle cx="748" cy="598" r="18" fill="#1c1917"/><text x="748" y="603" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">G</text>
+    <circle cx="692" cy="648" r="18" fill="#dc2626"/><text x="692" y="653" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">P</text>
+    <rect x="786" y="632" width="36" height="30" rx="4" fill="#1c1917"/><text x="804" y="652" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">U</text>
+    <circle cx="656" cy="704" r="18" fill="#dc2626"/><text x="656" y="709" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">N</text>
+    <text x="854" y="616" class="sans" font-size="11.5" font-weight="600" fill="#991b1b">Before: Uncle U is Black (or NIL).</text>
+    <text x="854" y="640" class="sans" font-size="11" fill="#44403c">Recoloring alone would break black-height!</text>
+    <text x="854" y="664" class="mono" font-size="11" fill="#065f46">Action: Right-Rotate(G) + swap colors(P, G).</text>
   </g>
   <g class="rb-2">
-    <line x1="736" y1="598" x2="676" y2="652" stroke="#475569" stroke-width="2"/>
-    <line x1="736" y1="598" x2="796" y2="652" stroke="#475569" stroke-width="2"/>
-    <line x1="796" y1="652" x2="828" y2="704" stroke="#475569" stroke-width="2"/>
-    <circle cx="736" cy="598" r="18" fill="#0f172a"/><text x="736" y="603" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">P</text>
-    <circle cx="676" cy="652" r="18" fill="#e11d48"/><text x="676" y="657" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">N</text>
-    <circle cx="796" cy="652" r="18" fill="#e11d48"/><text x="796" y="657" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">G</text>
-    <rect x="810" y="688" width="36" height="30" rx="4" fill="#0f172a"/><text x="828" y="708" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">U</text>
-    <text x="864" y="616" class="sans" font-size="11.5" font-weight="700" fill="#047857">After Rotate + Recolor: Subtree Done!</text>
-    <text x="864" y="640" class="sans" font-size="11" fill="#334155">P is Black root; N and G are Red children.</text>
-    <text x="864" y="664" class="mono" font-size="11" fill="#047857">Insert takes &lt;= 2 rotations; Delete &lt;= 3.</text>
+    <line x1="736" y1="598" x2="676" y2="652" stroke="#44403c" stroke-width="2"/>
+    <line x1="736" y1="598" x2="796" y2="652" stroke="#44403c" stroke-width="2"/>
+    <line x1="796" y1="652" x2="828" y2="704" stroke="#44403c" stroke-width="2"/>
+    <circle cx="736" cy="598" r="18" fill="#1c1917"/><text x="736" y="603" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">P</text>
+    <circle cx="676" cy="652" r="18" fill="#dc2626"/><text x="676" y="657" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">N</text>
+    <circle cx="796" cy="652" r="18" fill="#dc2626"/><text x="796" y="657" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">G</text>
+    <rect x="810" y="688" width="36" height="30" rx="4" fill="#1c1917"/><text x="828" y="708" class="mono" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">U</text>
+    <text x="864" y="616" class="sans" font-size="11.5" font-weight="700" fill="#065f46">After Rotate + Recolor: Subtree Done!</text>
+    <text x="864" y="640" class="sans" font-size="11" fill="#44403c">P is Black root; N and G are Red children.</text>
+    <text x="864" y="664" class="mono" font-size="11" fill="#065f46">Insert takes &lt;= 2 rotations; Delete &lt;= 3.</text>
   </g>
 </svg>

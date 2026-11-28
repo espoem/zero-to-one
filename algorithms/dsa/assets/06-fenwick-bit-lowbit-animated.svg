@@ -3,10 +3,10 @@
   <desc id="desc">Animated visualization of a 1-indexed Fenwick Tree T[1..8] showing each index's covered interval [i - lowbit(i) + 1, i], upward point update i += i &amp; -i propagating from 3 to 4 to 8, and downward prefix sum query i -= i &amp; -i jumping 7 to 6 to 4 to 0.</desc>
   <defs>
     <marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arrow-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <style>
       .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
@@ -30,29 +30,29 @@
   </defs>
 
   <!-- Canvas -->
-  <rect x="0" y="0" width="1200" height="760" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1200" height="760" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1200" height="60" rx="12" fill="#0f172a"/>
-  <rect x="0" y="44" width="1200" height="16" fill="#0f172a"/>
-  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Fenwick Tree (Binary Indexed Tree): lowbit(i) = i &amp; (-i)</text>
-  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">1-Indexed Responsibility Ranges [i - lowbit(i) + 1, i], Upward Point Updates (i += lowbit), and Downward Prefix Sums (i -= lowbit)</text>
+  <line x1="24" y1="62" x2="1176" y2="62" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#1c1917" font-family="Georgia, 'Times New Roman', serif">Fenwick Tree (Binary Indexed Tree): lowbit(i) = i &amp; (-i)</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">1-Indexed Responsibility Ranges [i - lowbit(i) + 1, i], Upward Point Updates (i += lowbit), and Downward Prefix Sums (i -= lowbit)</text>
 
   <!-- LEFT PANEL: Bitwise Responsibility Map T[1..8] -->
-  <rect x="24" y="76" width="564" height="574" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
-  <rect x="24" y="76" width="564" height="36" rx="10" fill="#f1f5f9"/>
-  <rect x="24" y="102" width="564" height="10" fill="#f1f5f9"/>
-  <text x="40" y="99" class="sans" font-size="13" font-weight="700" fill="#0f172a">1. Coverage Map: T[i] Covers [i - lowbit(i) + 1 .. i]</text>
-  <text x="572" y="99" class="mono" font-size="11" fill="#7c3aed" text-anchor="end">n + 1 words · 0 pointers</text>
+  <rect x="24" y="76" width="564" height="574" rx="10" fill="#ffffff" stroke="#d6d0c4"/>
+  <rect x="24" y="76" width="564" height="36" rx="10" fill="#f5f1e8"/>
+  <rect x="24" y="102" width="564" height="10" fill="#f5f1e8"/>
+  <text x="40" y="99" class="sans" font-size="13" font-weight="700" fill="#1c1917">1. Coverage Map: T[i] Covers [i - lowbit(i) + 1 .. i]</text>
+  <text x="572" y="99" class="mono" font-size="11" fill="#0f766e" text-anchor="end">n + 1 words · 0 pointers</text>
 
   <!-- Grid columns 1..8 (start x=150, col width=52) -->
   <g transform="translate(150, 140)">
-    <g class="mono" font-size="11.5" font-weight="700" fill="#64748b" text-anchor="middle">
+    <g class="mono" font-size="11.5" font-weight="700" fill="#57534e" text-anchor="middle">
       <text x="26" y="0">1</text><text x="78" y="0">2</text><text x="130" y="0">3</text><text x="182" y="0">4</text>
       <text x="234" y="0">5</text><text x="286" y="0">6</text><text x="338" y="0">7</text><text x="390" y="0">8</text>
     </g>
     <!-- Vertical guide lines -->
-    <g stroke="#e2e8f0" stroke-width="1">
+    <g stroke="#e7e2d8" stroke-width="1">
       <line x1="0" y1="10" x2="0" y2="334"/><line x1="52" y1="10" x2="52" y2="334"/><line x1="104" y1="10" x2="104" y2="334"/>
       <line x1="156" y1="10" x2="156" y2="334"/><line x1="208" y1="10" x2="208" y2="334"/><line x1="260" y1="10" x2="260" y2="334"/>
       <line x1="312" y1="10" x2="312" y2="334"/><line x1="364" y1="10" x2="364" y2="334"/><line x1="416" y1="10" x2="416" y2="334"/>
@@ -61,135 +61,135 @@
     <!-- Row labels (left of x=0) and Range Bars -->
     <g class="mono" font-size="11" font-weight="700">
       <!-- T[1] 0001 -> [1..1] -->
-      <text x="-112" y="34" fill="#334155">T[1] 0001</text>
-      <rect x="4" y="16" width="44" height="26" rx="4" fill="#eff6ff" stroke="#2563eb"/><text x="26" y="33" fill="#1d4ed8" text-anchor="middle">A[1]</text>
+      <text x="-112" y="34" fill="#44403c">T[1] 0001</text>
+      <rect x="4" y="16" width="44" height="26" rx="4" fill="#f0fdf9" stroke="#0f766e"/><text x="26" y="33" fill="#065f46" text-anchor="middle">A[1]</text>
 
       <!-- T[2] 0010 -> [1..2] -->
-      <text x="-112" y="74" fill="#334155">T[2] 0010</text>
-      <rect x="4" y="56" width="96" height="26" rx="4" fill="#eff6ff" stroke="#2563eb"/><text x="52" y="73" fill="#1d4ed8" text-anchor="middle">A[1..2]</text>
+      <text x="-112" y="74" fill="#44403c">T[2] 0010</text>
+      <rect x="4" y="56" width="96" height="26" rx="4" fill="#f0fdf9" stroke="#0f766e"/><text x="52" y="73" fill="#065f46" text-anchor="middle">A[1..2]</text>
 
       <!-- T[3] 0011 -> [3..3] -->
-      <text x="-112" y="114" fill="#2563eb">T[3] 0011</text>
-      <rect x="108" y="96" width="44" height="26" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/><text x="130" y="113" fill="#1d4ed8" text-anchor="middle">A[3]</text>
+      <text x="-112" y="114" fill="#0f766e">T[3] 0011</text>
+      <rect x="108" y="96" width="44" height="26" rx="4" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/><text x="130" y="113" fill="#065f46" text-anchor="middle">A[3]</text>
 
       <!-- T[4] 0100 -> [1..4] -->
-      <text x="-112" y="154" fill="#059669">T[4] 0100</text>
-      <rect x="4" y="136" width="200" height="26" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="104" y="153" fill="#047857" text-anchor="middle">A[1..4]</text>
+      <text x="-112" y="154" fill="#0f766e">T[4] 0100</text>
+      <rect x="4" y="136" width="200" height="26" rx="4" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/><text x="104" y="153" fill="#065f46" text-anchor="middle">A[1..4]</text>
 
       <!-- T[5] 0101 -> [5..5] -->
-      <text x="-112" y="194" fill="#334155">T[5] 0101</text>
-      <rect x="212" y="176" width="44" height="26" rx="4" fill="#eff6ff" stroke="#2563eb"/><text x="234" y="193" fill="#1d4ed8" text-anchor="middle">A[5]</text>
+      <text x="-112" y="194" fill="#44403c">T[5] 0101</text>
+      <rect x="212" y="176" width="44" height="26" rx="4" fill="#f0fdf9" stroke="#0f766e"/><text x="234" y="193" fill="#065f46" text-anchor="middle">A[5]</text>
 
       <!-- T[6] 0110 -> [5..6] -->
-      <text x="-112" y="234" fill="#059669">T[6] 0110</text>
-      <rect x="212" y="216" width="96" height="26" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="260" y="233" fill="#047857" text-anchor="middle">A[5..6]</text>
+      <text x="-112" y="234" fill="#0f766e">T[6] 0110</text>
+      <rect x="212" y="216" width="96" height="26" rx="4" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/><text x="260" y="233" fill="#065f46" text-anchor="middle">A[5..6]</text>
 
       <!-- T[7] 0111 -> [7..7] -->
-      <text x="-112" y="274" fill="#059669">T[7] 0111</text>
-      <rect x="316" y="256" width="44" height="26" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="338" y="273" fill="#047857" text-anchor="middle">A[7]</text>
+      <text x="-112" y="274" fill="#0f766e">T[7] 0111</text>
+      <rect x="316" y="256" width="44" height="26" rx="4" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/><text x="338" y="273" fill="#065f46" text-anchor="middle">A[7]</text>
 
       <!-- T[8] 1000 -> [1..8] -->
-      <text x="-112" y="314" fill="#7c3aed">T[8] 1000</text>
-      <rect x="4" y="296" width="408" height="26" rx="4" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2"/><text x="208" y="313" fill="#5b21b6" text-anchor="middle">A[1..8]</text>
+      <text x="-112" y="314" fill="#0f766e">T[8] 1000</text>
+      <rect x="4" y="296" width="408" height="26" rx="4" fill="#f5f1e8" stroke="#0f766e" stroke-width="2"/><text x="208" y="313" fill="#065f46" text-anchor="middle">A[1..8]</text>
     </g>
   </g>
 
   <!-- Two's Complement Bit Isolation Explainer -->
-  <rect x="44" y="492" width="524" height="138" rx="8" fill="#f5f3ff" stroke="#c4b5fd"/>
-  <text x="60" y="516" class="sans" font-size="12" font-weight="700" fill="#5b21b6">How Two&apos;s Complement Isolates the Lowest Set Bit (i &amp; -i)</text>
-  <text x="60" y="542" class="mono" font-size="12" fill="#0f172a">  i  =  6  =  0110</text>
-  <text x="60" y="564" class="mono" font-size="12" fill="#475569"> -i  = ~i+1 = 1010   (bits above LSB invert, bits below stay 0)</text>
-  <line x1="60" y1="576" x2="540" y2="576" stroke="#c4b5fd" stroke-width="1"/>
-  <text x="60" y="598" class="mono" font-size="12.5" font-weight="700" fill="#6d28d9">i &amp; -i = 0010 = 2  -&gt;  T[6] covers length 2: [6 - 2 + 1, 6] = [5, 6]</text>
-  <text x="60" y="618" class="sans" font-size="10.5" fill="#4c1d95">Why 1-indexed? Because lowbit(0) = 0 would cause an infinite loop!</text>
+  <rect x="44" y="492" width="524" height="138" rx="8" fill="#f5f1e8" stroke="#d6d0c4"/>
+  <text x="60" y="516" class="sans" font-size="12" font-weight="700" fill="#065f46">How Two&apos;s Complement Isolates the Lowest Set Bit (i &amp; -i)</text>
+  <text x="60" y="542" class="mono" font-size="12" fill="#1c1917">  i  =  6  =  0110</text>
+  <text x="60" y="564" class="mono" font-size="12" fill="#44403c"> -i  = ~i+1 = 1010   (bits above LSB invert, bits below stay 0)</text>
+  <line x1="60" y1="576" x2="540" y2="576" stroke="#d6d0c4" stroke-width="1"/>
+  <text x="60" y="598" class="mono" font-size="12.5" font-weight="700" fill="#065f46">i &amp; -i = 0010 = 2  -&gt;  T[6] covers length 2: [6 - 2 + 1, 6] = [5, 6]</text>
+  <text x="60" y="618" class="sans" font-size="10.5" fill="#065f46">Why 1-indexed? Because lowbit(0) = 0 would cause an infinite loop!</text>
 
   <!-- RIGHT-TOP PANEL: Point Update (i += lowbit(i)) -->
-  <rect x="612" y="76" width="564" height="278" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
-  <rect x="612" y="76" width="564" height="36" rx="10" fill="#f1f5f9"/>
-  <rect x="612" y="102" width="564" height="10" fill="#f1f5f9"/>
-  <text x="628" y="99" class="sans" font-size="13" font-weight="700" fill="#0f172a">2. Point Update add(idx=3, +5): i += i &amp; -i</text>
-  <text x="1160" y="99" class="mono" font-size="11" fill="#2563eb" text-anchor="end">Propagates Upward O(log n)</text>
+  <rect x="612" y="76" width="564" height="278" rx="10" fill="#ffffff" stroke="#d6d0c4"/>
+  <rect x="612" y="76" width="564" height="36" rx="10" fill="#f5f1e8"/>
+  <rect x="612" y="102" width="564" height="10" fill="#f5f1e8"/>
+  <text x="628" y="99" class="sans" font-size="13" font-weight="700" fill="#1c1917">2. Point Update add(idx=3, +5): i += i &amp; -i</text>
+  <text x="1160" y="99" class="mono" font-size="11" fill="#0f766e" text-anchor="end">Propagates Upward O(log n)</text>
 
   <!-- Slots 1..8 bar -->
   <g transform="translate(636, 154)" class="mono" font-size="12" font-weight="700" text-anchor="middle">
-    <rect x="0" y="0" width="56" height="44" rx="5" fill="#f8fafc" stroke="#cbd5e1"/><text x="28" y="27" fill="#64748b">T[1]</text>
-    <rect x="64" y="0" width="56" height="44" rx="5" fill="#f8fafc" stroke="#cbd5e1"/><text x="92" y="27" fill="#64748b">T[2]</text>
-    <rect x="128" y="0" width="56" height="44" rx="5" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/><text x="156" y="27" fill="#1d4ed8">T[3]</text>
-    <rect x="192" y="0" width="56" height="44" rx="5" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/><text x="220" y="27" fill="#1d4ed8">T[4]</text>
-    <rect x="256" y="0" width="56" height="44" rx="5" fill="#f8fafc" stroke="#cbd5e1"/><text x="284" y="27" fill="#64748b">T[5]</text>
-    <rect x="320" y="0" width="56" height="44" rx="5" fill="#f8fafc" stroke="#cbd5e1"/><text x="348" y="27" fill="#64748b">T[6]</text>
-    <rect x="384" y="0" width="56" height="44" rx="5" fill="#f8fafc" stroke="#cbd5e1"/><text x="412" y="27" fill="#64748b">T[7]</text>
-    <rect x="448" y="0" width="56" height="44" rx="5" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/><text x="476" y="27" fill="#1d4ed8">T[8]</text>
+    <rect x="0" y="0" width="56" height="44" rx="5" fill="#faf8f5" stroke="#d6d0c4"/><text x="28" y="27" fill="#57534e">T[1]</text>
+    <rect x="64" y="0" width="56" height="44" rx="5" fill="#faf8f5" stroke="#d6d0c4"/><text x="92" y="27" fill="#57534e">T[2]</text>
+    <rect x="128" y="0" width="56" height="44" rx="5" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/><text x="156" y="27" fill="#065f46">T[3]</text>
+    <rect x="192" y="0" width="56" height="44" rx="5" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/><text x="220" y="27" fill="#065f46">T[4]</text>
+    <rect x="256" y="0" width="56" height="44" rx="5" fill="#faf8f5" stroke="#d6d0c4"/><text x="284" y="27" fill="#57534e">T[5]</text>
+    <rect x="320" y="0" width="56" height="44" rx="5" fill="#faf8f5" stroke="#d6d0c4"/><text x="348" y="27" fill="#57534e">T[6]</text>
+    <rect x="384" y="0" width="56" height="44" rx="5" fill="#faf8f5" stroke="#d6d0c4"/><text x="412" y="27" fill="#57534e">T[7]</text>
+    <rect x="448" y="0" width="56" height="44" rx="5" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/><text x="476" y="27" fill="#065f46">T[8]</text>
   </g>
 
   <g class="fw-1">
-    <rect x="764" y="154" width="56" height="44" rx="5" fill="#2563eb"/><text x="792" y="181" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">T[3]+5</text>
-    <text x="636" y="246" class="mono" font-size="12.5" font-weight="700" fill="#1d4ed8">Step 1: i = 3 (0011) -&gt; T[3] += 5</text>
-    <text x="636" y="272" class="sans" font-size="11.5" fill="#334155">lowbit(3) = 1. Next ancestor covering index 3 is 3 + 1 = 4.</text>
-    <text x="636" y="298" class="mono" font-size="11.5" fill="#475569">Path so far: [ 3 ]</text>
+    <rect x="764" y="154" width="56" height="44" rx="5" fill="#0f766e"/><text x="792" y="181" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">T[3]+5</text>
+    <text x="636" y="246" class="mono" font-size="12.5" font-weight="700" fill="#065f46">Step 1: i = 3 (0011) -&gt; T[3] += 5</text>
+    <text x="636" y="272" class="sans" font-size="11.5" fill="#44403c">lowbit(3) = 1. Next ancestor covering index 3 is 3 + 1 = 4.</text>
+    <text x="636" y="298" class="mono" font-size="11.5" fill="#44403c">Path so far: [ 3 ]</text>
   </g>
   <g class="fw-2">
-    <path d="M 792 150 Q 824 122 856 150" fill="none" stroke="#2563eb" stroke-width="2.5" marker-end="url(#arrow-blue)"/>
-    <rect x="828" y="154" width="56" height="44" rx="5" fill="#2563eb"/><text x="856" y="181" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">T[4]+5</text>
-    <text x="636" y="246" class="mono" font-size="12.5" font-weight="700" fill="#1d4ed8">Step 2: i = 4 (0100) -&gt; T[4] += 5</text>
-    <text x="636" y="272" class="sans" font-size="11.5" fill="#334155">lowbit(4) = 4. Next ancestor covering index 3 is 4 + 4 = 8.</text>
-    <text x="636" y="298" class="mono" font-size="11.5" fill="#475569">Path so far: [ 3 -&gt; 4 ]</text>
+    <path d="M 792 150 Q 824 122 856 150" fill="none" stroke="#0f766e" stroke-width="2.5" marker-end="url(#arrow-blue)"/>
+    <rect x="828" y="154" width="56" height="44" rx="5" fill="#0f766e"/><text x="856" y="181" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">T[4]+5</text>
+    <text x="636" y="246" class="mono" font-size="12.5" font-weight="700" fill="#065f46">Step 2: i = 4 (0100) -&gt; T[4] += 5</text>
+    <text x="636" y="272" class="sans" font-size="11.5" fill="#44403c">lowbit(4) = 4. Next ancestor covering index 3 is 4 + 4 = 8.</text>
+    <text x="636" y="298" class="mono" font-size="11.5" fill="#44403c">Path so far: [ 3 -&gt; 4 ]</text>
   </g>
   <g class="fw-3">
-    <path d="M 792 150 Q 824 122 856 150" fill="none" stroke="#93c5fd" stroke-width="2"/>
-    <path d="M 856 150 Q 984 106 1112 150" fill="none" stroke="#2563eb" stroke-width="2.5" marker-end="url(#arrow-blue)"/>
-    <rect x="1084" y="154" width="56" height="44" rx="5" fill="#2563eb"/><text x="1112" y="181" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">T[8]+5</text>
-    <text x="636" y="246" class="mono" font-size="12.5" font-weight="700" fill="#1d4ed8">Step 3: i = 8 (1000) -&gt; T[8] += 5, 8 + 8 = 16 &gt; n (Done!)</text>
-    <text x="636" y="272" class="sans" font-size="11.5" fill="#334155">Updated every range containing index 3 in only 3 steps (&lt;= log2 n).</text>
-    <text x="636" y="298" class="mono" font-size="11.5" font-weight="700" fill="#1d4ed8">Full Upward Chain: 3 -&gt; 4 -&gt; 8</text>
+    <path d="M 792 150 Q 824 122 856 150" fill="none" stroke="#99f6e4" stroke-width="2"/>
+    <path d="M 856 150 Q 984 106 1112 150" fill="none" stroke="#0f766e" stroke-width="2.5" marker-end="url(#arrow-blue)"/>
+    <rect x="1084" y="154" width="56" height="44" rx="5" fill="#0f766e"/><text x="1112" y="181" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">T[8]+5</text>
+    <text x="636" y="246" class="mono" font-size="12.5" font-weight="700" fill="#065f46">Step 3: i = 8 (1000) -&gt; T[8] += 5, 8 + 8 = 16 &gt; n (Done!)</text>
+    <text x="636" y="272" class="sans" font-size="11.5" fill="#44403c">Updated every range containing index 3 in only 3 steps (&lt;= log2 n).</text>
+    <text x="636" y="298" class="mono" font-size="11.5" font-weight="700" fill="#065f46">Full Upward Chain: 3 -&gt; 4 -&gt; 8</text>
   </g>
 
   <!-- RIGHT-BOTTOM PANEL: Prefix Sum Query (i -= lowbit(i)) -->
-  <rect x="612" y="372" width="564" height="278" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
-  <rect x="612" y="372" width="564" height="36" rx="10" fill="#f1f5f9"/>
-  <rect x="612" y="398" width="564" height="10" fill="#f1f5f9"/>
-  <text x="628" y="395" class="sans" font-size="13" font-weight="700" fill="#0f172a">3. Prefix Sum prefixSum(7): i -= i &amp; -i</text>
-  <text x="1160" y="395" class="mono" font-size="11" fill="#059669" text-anchor="end">Disjoint Ranges O(log n)</text>
+  <rect x="612" y="372" width="564" height="278" rx="10" fill="#ffffff" stroke="#d6d0c4"/>
+  <rect x="612" y="372" width="564" height="36" rx="10" fill="#f5f1e8"/>
+  <rect x="612" y="398" width="564" height="10" fill="#f5f1e8"/>
+  <text x="628" y="395" class="sans" font-size="13" font-weight="700" fill="#1c1917">3. Prefix Sum prefixSum(7): i -= i &amp; -i</text>
+  <text x="1160" y="395" class="mono" font-size="11" fill="#0f766e" text-anchor="end">Disjoint Ranges O(log n)</text>
 
   <g transform="translate(636, 450)" class="mono" font-size="12" font-weight="700" text-anchor="middle">
-    <rect x="0" y="0" width="56" height="44" rx="5" fill="#f8fafc" stroke="#cbd5e1"/><text x="28" y="27" fill="#64748b">T[1]</text>
-    <rect x="64" y="0" width="56" height="44" rx="5" fill="#f8fafc" stroke="#cbd5e1"/><text x="92" y="27" fill="#64748b">T[2]</text>
-    <rect x="128" y="0" width="56" height="44" rx="5" fill="#f8fafc" stroke="#cbd5e1"/><text x="156" y="27" fill="#64748b">T[3]</text>
-    <rect x="192" y="0" width="56" height="44" rx="5" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="220" y="27" fill="#047857">T[4]</text>
-    <rect x="256" y="0" width="56" height="44" rx="5" fill="#f8fafc" stroke="#cbd5e1"/><text x="284" y="27" fill="#64748b">T[5]</text>
-    <rect x="320" y="0" width="56" height="44" rx="5" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="348" y="27" fill="#047857">T[6]</text>
-    <rect x="384" y="0" width="56" height="44" rx="5" fill="#ecfdf5" stroke="#059669" stroke-width="2"/><text x="412" y="27" fill="#047857">T[7]</text>
-    <rect x="448" y="0" width="56" height="44" rx="5" fill="#f8fafc" stroke="#cbd5e1"/><text x="476" y="27" fill="#64748b">T[8]</text>
+    <rect x="0" y="0" width="56" height="44" rx="5" fill="#faf8f5" stroke="#d6d0c4"/><text x="28" y="27" fill="#57534e">T[1]</text>
+    <rect x="64" y="0" width="56" height="44" rx="5" fill="#faf8f5" stroke="#d6d0c4"/><text x="92" y="27" fill="#57534e">T[2]</text>
+    <rect x="128" y="0" width="56" height="44" rx="5" fill="#faf8f5" stroke="#d6d0c4"/><text x="156" y="27" fill="#57534e">T[3]</text>
+    <rect x="192" y="0" width="56" height="44" rx="5" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/><text x="220" y="27" fill="#065f46">T[4]</text>
+    <rect x="256" y="0" width="56" height="44" rx="5" fill="#faf8f5" stroke="#d6d0c4"/><text x="284" y="27" fill="#57534e">T[5]</text>
+    <rect x="320" y="0" width="56" height="44" rx="5" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/><text x="348" y="27" fill="#065f46">T[6]</text>
+    <rect x="384" y="0" width="56" height="44" rx="5" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/><text x="412" y="27" fill="#065f46">T[7]</text>
+    <rect x="448" y="0" width="56" height="44" rx="5" fill="#faf8f5" stroke="#d6d0c4"/><text x="476" y="27" fill="#57534e">T[8]</text>
   </g>
 
   <g class="fw-1">
-    <rect x="1020" y="450" width="56" height="44" rx="5" fill="#059669"/><text x="1048" y="477" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">+T[7]</text>
-    <text x="636" y="542" class="mono" font-size="12.5" font-weight="700" fill="#047857">Step 1: i = 7 (0111) -&gt; acc += T[7]  (covers A[7..7])</text>
-    <text x="636" y="568" class="sans" font-size="11.5" fill="#334155">Strip lowest bit: 7 - lowbit(7) = 7 - 1 = 6.</text>
-    <text x="636" y="594" class="mono" font-size="11.5" fill="#475569">Sum = T[7]</text>
+    <rect x="1020" y="450" width="56" height="44" rx="5" fill="#0f766e"/><text x="1048" y="477" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">+T[7]</text>
+    <text x="636" y="542" class="mono" font-size="12.5" font-weight="700" fill="#065f46">Step 1: i = 7 (0111) -&gt; acc += T[7]  (covers A[7..7])</text>
+    <text x="636" y="568" class="sans" font-size="11.5" fill="#44403c">Strip lowest bit: 7 - lowbit(7) = 7 - 1 = 6.</text>
+    <text x="636" y="594" class="mono" font-size="11.5" fill="#44403c">Sum = T[7]</text>
   </g>
   <g class="fw-2">
-    <path d="M 1048 446 Q 1016 418 984 446" fill="none" stroke="#059669" stroke-width="2.5" marker-end="url(#arrow-emerald)"/>
-    <rect x="956" y="450" width="56" height="44" rx="5" fill="#059669"/><text x="984" y="477" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">+T[6]</text>
-    <text x="636" y="542" class="mono" font-size="12.5" font-weight="700" fill="#047857">Step 2: i = 6 (0110) -&gt; acc += T[6]  (covers A[5..6])</text>
-    <text x="636" y="568" class="sans" font-size="11.5" fill="#334155">Strip lowest bit: 6 - lowbit(6) = 6 - 2 = 4.</text>
-    <text x="636" y="594" class="mono" font-size="11.5" fill="#475569">Sum = T[7] + T[6] = A[5..7]</text>
+    <path d="M 1048 446 Q 1016 418 984 446" fill="none" stroke="#0f766e" stroke-width="2.5" marker-end="url(#arrow-emerald)"/>
+    <rect x="956" y="450" width="56" height="44" rx="5" fill="#0f766e"/><text x="984" y="477" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">+T[6]</text>
+    <text x="636" y="542" class="mono" font-size="12.5" font-weight="700" fill="#065f46">Step 2: i = 6 (0110) -&gt; acc += T[6]  (covers A[5..6])</text>
+    <text x="636" y="568" class="sans" font-size="11.5" fill="#44403c">Strip lowest bit: 6 - lowbit(6) = 6 - 2 = 4.</text>
+    <text x="636" y="594" class="mono" font-size="11.5" fill="#44403c">Sum = T[7] + T[6] = A[5..7]</text>
   </g>
   <g class="fw-3">
-    <path d="M 1048 446 Q 1016 418 984 446" fill="none" stroke="#6ee7b7" stroke-width="2"/>
-    <path d="M 984 446 Q 920 412 856 446" fill="none" stroke="#059669" stroke-width="2.5" marker-end="url(#arrow-emerald)"/>
-    <rect x="828" y="450" width="56" height="44" rx="5" fill="#059669"/><text x="856" y="477" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">+T[4]</text>
-    <text x="636" y="542" class="mono" font-size="12.5" font-weight="700" fill="#047857">Step 3: i = 4 (0100) -&gt; acc += T[4]  (covers A[1..4]), 4 - 4 = 0!</text>
+    <path d="M 1048 446 Q 1016 418 984 446" fill="none" stroke="#99f6e4" stroke-width="2"/>
+    <path d="M 984 446 Q 920 412 856 446" fill="none" stroke="#0f766e" stroke-width="2.5" marker-end="url(#arrow-emerald)"/>
+    <rect x="828" y="450" width="56" height="44" rx="5" fill="#0f766e"/><text x="856" y="477" class="mono" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">+T[4]</text>
+    <text x="636" y="542" class="mono" font-size="12.5" font-weight="700" fill="#065f46">Step 3: i = 4 (0100) -&gt; acc += T[4]  (covers A[1..4]), 4 - 4 = 0!</text>
     <text x="636" y="568" class="sans" font-size="11.5" fill="#065f46">Disjoint union A[1..4] U A[5..6] U A[7..7] = exact sum A[1..7]!</text>
-    <text x="636" y="594" class="mono" font-size="11.5" font-weight="700" fill="#047857">Range Sum [L..R] = prefixSum(R) - prefixSum(L - 1)</text>
+    <text x="636" y="594" class="mono" font-size="11.5" font-weight="700" fill="#065f46">Range Sum [L..R] = prefixSum(R) - prefixSum(L - 1)</text>
   </g>
 
   <!-- Bottom Legend -->
-  <rect x="24" y="666" width="1152" height="74" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="44" y="692" class="sans" font-size="12" font-weight="700" fill="#0f172a">Fenwick vs Segment Tree Trade-off:</text>
-  <rect x="284" y="678" width="14" height="14" rx="3" fill="#2563eb"/>
-  <text x="304" y="690" class="sans" font-size="11" fill="#334155">Point update (i += i &amp; -i)</text>
-  <rect x="490" y="678" width="14" height="14" rx="3" fill="#059669"/>
-  <text x="510" y="690" class="sans" font-size="11" fill="#334155">Prefix query (i -= i &amp; -i)</text>
-  <text x="44" y="722" class="sans" font-size="11" fill="#64748b">BIT uses n+1 memory with zero pointers and fast bitwise cache locality, but requires an invertible operation (Sum, XOR); use Segment Tree for RMQ/min/max.</text>
+  <rect x="24" y="666" width="1152" height="74" rx="8" fill="#ffffff" stroke="#d6d0c4"/>
+  <text x="44" y="692" class="sans" font-size="12" font-weight="700" fill="#1c1917">Fenwick vs Segment Tree Trade-off:</text>
+  <rect x="284" y="678" width="14" height="14" rx="3" fill="#0f766e"/>
+  <text x="304" y="690" class="sans" font-size="11" fill="#44403c">Point update (i += i &amp; -i)</text>
+  <rect x="490" y="678" width="14" height="14" rx="3" fill="#0f766e"/>
+  <text x="510" y="690" class="sans" font-size="11" fill="#44403c">Prefix query (i -= i &amp; -i)</text>
+  <text x="44" y="722" class="sans" font-size="11" fill="#57534e">BIT uses n+1 memory with zero pointers and fast bitwise cache locality, but requires an invertible operation (Sum, XOR); use Segment Tree for RMQ/min/max.</text>
 </svg>

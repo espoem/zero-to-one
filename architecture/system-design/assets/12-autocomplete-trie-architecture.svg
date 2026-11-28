@@ -3,188 +3,188 @@
   <desc id="desc">Dual-path autocomplete architecture illustrating the online low-latency query path under 100 ms with debouncing, shard map routing, in-memory trie nodes with cached Top-5 suggestions, and safety filtering, alongside the offline and nearline data gathering pipeline with weekly batch and real-time streaming aggregations, worker trie builders, and document/KV persistence.</desc>
   <defs>
     <marker id="arr-gray" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#57534e"/>
     </marker>
     <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-indigo" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#4f46e5"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#d97706"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#b45309"/>
     </marker>
     <marker id="arr-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#dc2626"/>
     </marker>
   </defs>
 
   <!-- Background Canvas -->
-  <rect x="0" y="0" width="1180" height="720" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1180" height="720" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header Banner -->
-  <rect x="0" y="0" width="1180" height="60" rx="12" fill="#0f172a"/>
-  <rect x="0" y="44" width="1180" height="16" fill="#0f172a"/>
-  <text x="24" y="28" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#f8fafc">Search Autocomplete — Dual-Path In-Memory Trie Architecture</text>
-  <text x="24" y="48" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#94a3b8">Online Query Path (&lt;100 ms SLA) · Offline &amp; Nearline Data Gathering · Uneven Shard Routing · Snapshot Atomic Swap</text>
+  <line x1="24" y1="62" x2="1156" y2="62" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="28" font-family="Georgia, 'Times New Roman', serif" font-size="18" font-weight="700" fill="#1c1917">Search Autocomplete — Dual-Path In-Memory Trie Architecture</text>
+  <text x="24" y="48" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="12" fill="#57534e">Online Query Path (&lt;100 ms SLA) · Offline &amp; Nearline Data Gathering · Uneven Shard Routing · Snapshot Atomic Swap</text>
 
   <!-- ========================================== -->
   <!-- SECTION 1: ONLINE QUERY PATH (TOP) -->
   <!-- ========================================== -->
-  <rect x="20" y="74" width="1140" height="268" rx="10" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
-  <text x="36" y="96" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1e3a8a">1. ONLINE QUERY PATH (&lt;100 ms SLA · BBG 24k/48k QPS · Enterprise 116k/350k QPS · Server &lt;10 ms)</text>
+  <rect x="20" y="74" width="1140" height="268" rx="10" fill="#f0fdf9" stroke="#99f6e4" stroke-width="1.5"/>
+  <text x="36" y="96" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#065f46">1. ONLINE QUERY PATH (&lt;100 ms SLA · BBG 24k/48k QPS · Enterprise 116k/350k QPS · Server &lt;10 ms)</text>
 
   <!-- Box 1: Client Browser -->
-  <rect x="36" y="108" width="200" height="122" rx="6" fill="#ffffff" stroke="#3b82f6" stroke-width="1.5"/>
-  <rect x="36" y="108" width="200" height="22" rx="6" fill="#dbeafe"/>
-  <text x="46" y="124" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e40af">Client Browser / Mobile App</text>
-  <text x="46" y="145" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">1. Keystroke Event ("sys...")</text>
-  <text x="46" y="161" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">2. 50-100 ms Input Debounce</text>
-  <text x="46" y="177" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">3. AbortController (cancel stale)</text>
-  <text x="46" y="193" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#047857">4. Browser Cache (1-2 char TTL)</text>
-  <text x="46" y="213" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9" fill="#1e40af">GET /v1/suggest?q=sys</text>
+  <rect x="36" y="108" width="200" height="122" rx="6" fill="#ffffff" stroke="#0f766e" stroke-width="1.5"/>
+  <rect x="36" y="108" width="200" height="22" rx="6" fill="#f0fdf9"/>
+  <text x="46" y="124" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">Client Browser / Mobile App</text>
+  <text x="46" y="145" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">1. Keystroke Event ("sys...")</text>
+  <text x="46" y="161" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">2. 50-100 ms Input Debounce</text>
+  <text x="46" y="177" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">3. AbortController (cancel stale)</text>
+  <text x="46" y="193" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#065f46">4. Browser Cache (1-2 char TTL)</text>
+  <text x="46" y="213" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9" fill="#065f46">GET /v1/suggest?q=sys</text>
 
   <!-- Arrow: Client -> LB -->
-  <line x1="236" y1="169" x2="268" y2="169" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+  <line x1="236" y1="169" x2="268" y2="169" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-blue)"/>
 
   <!-- Box 2: LB & Shard Map Manager -->
-  <rect x="270" y="108" width="244" height="122" rx="6" fill="#ffffff" stroke="#6366f1" stroke-width="1.5"/>
-  <rect x="270" y="108" width="244" height="22" rx="6" fill="#e0e7ff"/>
-  <text x="280" y="124" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#4338ca">LB &amp; Shard Map Manager</text>
-  <text x="280" y="145" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">1. Histogram-Guided Prefix Routing</text>
-  <text x="280" y="161" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">2. Split hot ranges: aa-ag, ah-an</text>
+  <rect x="270" y="108" width="244" height="122" rx="6" fill="#ffffff" stroke="#0f766e" stroke-width="1.5"/>
+  <rect x="270" y="108" width="244" height="22" rx="6" fill="#f5f1e8"/>
+  <text x="280" y="124" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">LB &amp; Shard Map Manager</text>
+  <text x="280" y="145" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">1. Histogram-Guided Prefix Routing</text>
+  <text x="280" y="161" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">2. Split hot ranges: aa-ag, ah-an</text>
   <text x="280" y="177" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#b45309">3. Dedicated multi-node s* partition</text>
-  <text x="280" y="193" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">4. Merge cold tails: u-z single shard</text>
-  <text x="280" y="213" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9" fill="#4338ca">ZooKeeper/etcd Sync Dynamic Map</text>
+  <text x="280" y="193" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">4. Merge cold tails: u-z single shard</text>
+  <text x="280" y="213" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9" fill="#065f46">ZooKeeper/etcd Sync Dynamic Map</text>
 
   <!-- Arrow: LB -> Trie Cache -->
-  <line x1="514" y1="169" x2="546" y2="169" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#arr-indigo)"/>
+  <line x1="514" y1="169" x2="546" y2="169" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-indigo)"/>
 
   <!-- Box 3: Sharded Trie Cache Fleet -->
-  <rect x="548" y="108" width="308" height="122" rx="6" fill="#ffffff" stroke="#10b981" stroke-width="1.5"/>
-  <rect x="548" y="108" width="308" height="22" rx="6" fill="#d1fae5"/>
+  <rect x="548" y="108" width="308" height="122" rx="6" fill="#ffffff" stroke="#0f766e" stroke-width="1.5"/>
+  <rect x="548" y="108" width="308" height="22" rx="6" fill="#f0fdf9"/>
   <text x="558" y="124" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">In-Memory Sharded Trie Cache (RAM Fleet)</text>
-  <text x="558" y="145" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">1. O(p) prefix traversal (bounded p &lt;= 50 chars)</text>
-  <text x="558" y="161" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#047857">2. O(1) Top-5 pre-cached at target prefix node</text>
-  <text x="558" y="177" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">3. Zero subtree scan &amp; zero runtime sorting</text>
-  <text x="558" y="193" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">4. ~50 GB RAM across 8-16 memory-optimized nodes</text>
+  <text x="558" y="145" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">1. O(p) prefix traversal (bounded p &lt;= 50 chars)</text>
+  <text x="558" y="161" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#065f46">2. O(1) Top-5 pre-cached at target prefix node</text>
+  <text x="558" y="177" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">3. Zero subtree scan &amp; zero runtime sorting</text>
+  <text x="558" y="193" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">4. ~50 GB RAM across 8-16 memory-optimized nodes</text>
   <text x="558" y="213" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9" fill="#065f46">Lookup Latency &lt; 1 ms in Memory</text>
 
   <!-- Arrow: Trie Cache -> Policy Filter -->
-  <line x1="856" y1="169" x2="888" y2="169" stroke="#059669" stroke-width="1.8" marker-end="url(#arr-green)"/>
+  <line x1="856" y1="169" x2="888" y2="169" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-green)"/>
 
   <!-- Box 4: Policy & Safety Filter -->
   <rect x="890" y="108" width="254" height="122" rx="6" fill="#ffffff" stroke="#f43f5e" stroke-width="1.5"/>
-  <rect x="890" y="108" width="254" height="22" rx="6" fill="#ffe4e6"/>
-  <text x="900" y="124" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#9f1239">Policy &amp; Safety Filter Layer</text>
-  <text x="900" y="145" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">1. Bloom filter + Aho-Corasick trie</text>
-  <text x="900" y="161" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">2. Profanity &amp; hate-speech blacklists</text>
-  <text x="900" y="177" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#9f1239">3. PII suppression (SSN, phone, card)</text>
-  <text x="900" y="193" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">4. Real-time legal &amp; DMCA takedown gates</text>
-  <text x="900" y="213" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9" fill="#9f1239">Sanitized Top-5 Suggestions</text>
+  <rect x="890" y="108" width="254" height="22" rx="6" fill="#fef2f2"/>
+  <text x="900" y="124" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#991b1b">Policy &amp; Safety Filter Layer</text>
+  <text x="900" y="145" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">1. Bloom filter + Aho-Corasick trie</text>
+  <text x="900" y="161" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">2. Profanity &amp; hate-speech blacklists</text>
+  <text x="900" y="177" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#991b1b">3. PII suppression (SSN, phone, card)</text>
+  <text x="900" y="193" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">4. Real-time legal &amp; DMCA takedown gates</text>
+  <text x="900" y="213" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9" fill="#991b1b">Sanitized Top-5 Suggestions</text>
 
   <!-- Return Path Loopback Arrow -->
-  <path d="M 1017 230 L 1017 252 L 136 252 L 136 232" fill="none" stroke="#059669" stroke-width="1.6" stroke-dasharray="5,3" marker-end="url(#arr-green)"/>
-  <text x="150" y="248" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#047857">Fast Response to Client (&lt;100 ms p99 SLA · Server Processing &lt;10 ms · HTTP 200)</text>
+  <path d="M 1017 230 L 1017 252 L 136 252 L 136 232" fill="none" stroke="#0f766e" stroke-width="1.6" stroke-dasharray="5,3" marker-end="url(#arr-green)"/>
+  <text x="150" y="248" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#065f46">Fast Response to Client (&lt;100 ms p99 SLA · Server Processing &lt;10 ms · HTTP 200)</text>
 
   <!-- ========================================== -->
   <!-- SECTION 2: OFFLINE & NEARLINE PIPELINE (BOTTOM) -->
   <!-- ========================================== -->
-  <rect x="20" y="354" width="1140" height="346" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
-  <text x="36" y="376" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#0f172a">2. OFFLINE &amp; NEARLINE DATA GATHERING PIPELINE · Aggregation, Persistence &amp; Snapshot Swap</text>
+  <rect x="20" y="354" width="1140" height="346" rx="10" fill="#faf8f5" stroke="#d6d0c4" stroke-width="1.5"/>
+  <text x="36" y="376" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1c1917">2. OFFLINE &amp; NEARLINE DATA GATHERING PIPELINE · Aggregation, Persistence &amp; Snapshot Swap</text>
 
   <!-- Box 1: Analytics Query Logs -->
-  <rect x="36" y="388" width="200" height="120" rx="6" fill="#ffffff" stroke="#64748b" stroke-width="1.5"/>
-  <rect x="36" y="388" width="200" height="22" rx="6" fill="#f1f5f9"/>
-  <text x="46" y="404" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#334155">Analytics Query Logs</text>
-  <text x="46" y="425" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">1. Append-only logs (Kafka bus)</text>
-  <text x="46" y="441" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">2. Raw query strings + timestamp</text>
-  <text x="46" y="457" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">3. Locale, country &amp; user device</text>
-  <text x="46" y="473" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#0f172a">4. 0.4 GB/day growth (10M DAU)</text>
-  <text x="46" y="493" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9" fill="#475569">Unindexed Stream Ingestion</text>
+  <rect x="36" y="388" width="200" height="120" rx="6" fill="#ffffff" stroke="#57534e" stroke-width="1.5"/>
+  <rect x="36" y="388" width="200" height="22" rx="6" fill="#f5f1e8"/>
+  <text x="46" y="404" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#44403c">Analytics Query Logs</text>
+  <text x="46" y="425" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">1. Append-only logs (Kafka bus)</text>
+  <text x="46" y="441" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">2. Raw query strings + timestamp</text>
+  <text x="46" y="457" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">3. Locale, country &amp; user device</text>
+  <text x="46" y="473" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#1c1917">4. 0.4 GB/day growth (10M DAU)</text>
+  <text x="46" y="493" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9" fill="#44403c">Unindexed Stream Ingestion</text>
 
   <!-- Arrow: Logs -> Aggregators -->
-  <line x1="236" y1="448" x2="268" y2="448" stroke="#64748b" stroke-width="1.8" marker-end="url(#arr-gray)"/>
+  <line x1="236" y1="448" x2="268" y2="448" stroke="#57534e" stroke-width="1.8" marker-end="url(#arr-gray)"/>
 
   <!-- Box 2: Dual Aggregators -->
-  <rect x="270" y="388" width="244" height="120" rx="6" fill="#ffffff" stroke="#d97706" stroke-width="1.5"/>
-  <rect x="270" y="388" width="244" height="22" rx="6" fill="#fef3c7"/>
+  <rect x="270" y="388" width="244" height="120" rx="6" fill="#ffffff" stroke="#b45309" stroke-width="1.5"/>
+  <rect x="270" y="388" width="244" height="22" rx="6" fill="#fffbeb"/>
   <text x="280" y="404" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#92400e">Aggregators (Batch &amp; Stream)</text>
-  <text x="280" y="425" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">1. Weekly Batch (MapReduce/Spark)</text>
-  <text x="280" y="441" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">2. Long-term frequency table rollups</text>
+  <text x="280" y="425" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">1. Weekly Batch (MapReduce/Spark)</text>
+  <text x="280" y="441" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">2. Long-term frequency table rollups</text>
   <text x="280" y="457" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#b45309">3. Real-time Trending (Apache Flink)</text>
   <text x="280" y="473" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#b45309">4. Exponential decay: Wt = a*Ct + (1-a)W</text>
   <text x="280" y="493" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9" fill="#92400e">Catches Breaking Viral Events</text>
 
   <!-- Arrow: Aggregators -> Workers -->
-  <line x1="514" y1="448" x2="546" y2="448" stroke="#d97706" stroke-width="1.8" marker-end="url(#arr-amber)"/>
+  <line x1="514" y1="448" x2="546" y2="448" stroke="#b45309" stroke-width="1.8" marker-end="url(#arr-amber)"/>
 
   <!-- Box 3: Trie Builder Workers -->
-  <rect x="548" y="388" width="240" height="120" rx="6" fill="#ffffff" stroke="#d97706" stroke-width="1.5"/>
-  <rect x="548" y="388" width="240" height="22" rx="6" fill="#fef3c7"/>
+  <rect x="548" y="388" width="240" height="120" rx="6" fill="#ffffff" stroke="#b45309" stroke-width="1.5"/>
+  <rect x="548" y="388" width="240" height="22" rx="6" fill="#fffbeb"/>
   <text x="558" y="404" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#92400e">Trie Snapshot Workers</text>
-  <text x="558" y="425" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">1. Blend batch + trending scores</text>
-  <text x="558" y="441" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">2. Build Trie / Radix / FST DAG</text>
-  <text x="558" y="457" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#047857">3. Cache sorted Top-5 at each node</text>
-  <text x="558" y="473" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#475569">4. Enforce 50-character prefix cap</text>
+  <text x="558" y="425" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">1. Blend batch + trending scores</text>
+  <text x="558" y="441" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">2. Build Trie / Radix / FST DAG</text>
+  <text x="558" y="457" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#065f46">3. Cache sorted Top-5 at each node</text>
+  <text x="558" y="473" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">4. Enforce 50-character prefix cap</text>
   <text x="558" y="493" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9" fill="#92400e">Serialize Immutable Trie Blobs</text>
 
   <!-- Arrow: Workers -> Storage -->
-  <line x1="788" y1="448" x2="818" y2="448" stroke="#d97706" stroke-width="1.8" marker-end="url(#arr-amber)"/>
+  <line x1="788" y1="448" x2="818" y2="448" stroke="#b45309" stroke-width="1.8" marker-end="url(#arr-amber)"/>
 
   <!-- Box 4: Persistent DB Options -->
-  <rect x="820" y="388" width="324" height="120" rx="6" fill="#ffffff" stroke="#2563eb" stroke-width="1.5"/>
-  <rect x="820" y="388" width="324" height="22" rx="6" fill="#dbeafe"/>
-  <text x="830" y="404" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#1e40af">Persistence: Document Store vs KV DB</text>
-  <text x="830" y="425" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#1e3a8a">Option A: Document Store (MongoDB / S3)</text>
-  <text x="830" y="441" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">Periodic serialized Trie snapshot / partition tree blobs</text>
-  <text x="830" y="457" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#047857">Option B: Prefix Key-Value DB (RocksDB / Redis)</text>
-  <text x="830" y="473" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#475569">prefix -> Top-5 list hash map; granular point updates</text>
-  <text x="830" y="493" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9" fill="#1e40af">Durable Shard Backfill &amp; Cold Starts</text>
+  <rect x="820" y="388" width="324" height="120" rx="6" fill="#ffffff" stroke="#0f766e" stroke-width="1.5"/>
+  <rect x="820" y="388" width="324" height="22" rx="6" fill="#f0fdf9"/>
+  <text x="830" y="404" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#065f46">Persistence: Document Store vs KV DB</text>
+  <text x="830" y="425" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#065f46">Option A: Document Store (MongoDB / S3)</text>
+  <text x="830" y="441" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">Periodic serialized Trie snapshot / partition tree blobs</text>
+  <text x="830" y="457" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#065f46">Option B: Prefix Key-Value DB (RocksDB / Redis)</text>
+  <text x="830" y="473" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#44403c">prefix -> Top-5 list hash map; granular point updates</text>
+  <text x="830" y="493" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9" fill="#065f46">Durable Shard Backfill &amp; Cold Starts</text>
 
   <!-- Upward Arrow: Snapshot Push to Trie Cache Fleet -->
-  <path d="M 982 388 L 982 312 L 702 312 L 702 232" fill="none" stroke="#059669" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arr-green)"/>
-  <text x="846" y="304" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#047857">Blue-Green Atomic Pointer Swap (Zero Downtime)</text>
+  <path d="M 982 388 L 982 312 L 702 312 L 702 232" fill="none" stroke="#0f766e" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arr-green)"/>
+  <text x="846" y="304" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="#065f46">Blue-Green Atomic Pointer Swap (Zero Downtime)</text>
 
   <!-- ========================================== -->
   <!-- BOTTOM THREE SUMMARY SPECIFICATION CARDS -->
   <!-- ========================================== -->
   <!-- Card 1: Capacity & SLA -->
-  <rect x="36" y="522" width="350" height="164" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <rect x="36" y="522" width="350" height="22" rx="6" fill="#f1f5f9"/>
-  <text x="46" y="538" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#0f172a">Capacity Model &amp; Scale Reconciliation</text>
-  <text x="46" y="558" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">1. BBG Ch. 13: 10M DAU x 10 queries x 20 keystrokes</text>
-  <text x="46" y="574" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#0f172a">   2B req/day / 86.4k = 23,148 ~ 24k QPS (48k peak)</text>
-  <text x="46" y="592" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">2. Storage Growth: 10M x 10 x 20B x 20% = 0.4 GB/day</text>
-  <text x="46" y="610" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#1e40af">3. Enterprise Scale (§6.2): 100M-500M DAU</text>
-  <text x="46" y="626" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#1e40af">   115k avg QPS / 350k peak QPS · 2 GB/day log growth</text>
-  <text x="46" y="646" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#047857">4. RAM Working Set: ~50 GB across 8-16 memory nodes</text>
-  <text x="46" y="666" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#059669">SLA: p99 Latency &lt; 100 ms (Server Lookup &lt; 10 ms)</text>
+  <rect x="36" y="522" width="350" height="164" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <rect x="36" y="522" width="350" height="22" rx="6" fill="#f5f1e8"/>
+  <text x="46" y="538" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#1c1917">Capacity Model &amp; Scale Reconciliation</text>
+  <text x="46" y="558" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">1. BBG Ch. 13: 10M DAU x 10 queries x 20 keystrokes</text>
+  <text x="46" y="574" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#1c1917">   2B req/day / 86.4k = 23,148 ~ 24k QPS (48k peak)</text>
+  <text x="46" y="592" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">2. Storage Growth: 10M x 10 x 20B x 20% = 0.4 GB/day</text>
+  <text x="46" y="610" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#065f46">3. Enterprise Scale (§6.2): 100M-500M DAU</text>
+  <text x="46" y="626" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9.5" fill="#065f46">   115k avg QPS / 350k peak QPS · 2 GB/day log growth</text>
+  <text x="46" y="646" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#065f46">4. RAM Working Set: ~50 GB across 8-16 memory nodes</text>
+  <text x="46" y="666" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f766e">SLA: p99 Latency &lt; 100 ms (Server Lookup &lt; 10 ms)</text>
 
   <!-- Card 2: Algorithmic Complexity -->
-  <rect x="400" y="522" width="370" height="164" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <rect x="400" y="522" width="370" height="22" rx="6" fill="#f1f5f9"/>
-  <text x="410" y="538" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#0f172a">Algorithmic Complexity Proof (Raw vs Cached)</text>
+  <rect x="400" y="522" width="370" height="164" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <rect x="400" y="522" width="370" height="22" rx="6" fill="#f5f1e8"/>
+  <text x="410" y="538" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#1c1917">Algorithmic Complexity Proof (Raw vs Cached)</text>
   <text x="410" y="558" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#dc2626">1. Raw Trie Lookup: O(p) + O(c) + O(c log k)</text>
   <text x="410" y="574" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#7f1d1d">   Traverse p steps + scan c subtree leaves + sort top-k</text>
   <text x="410" y="590" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#7f1d1d">   Prefix "s" scans millions of nodes -&gt; &gt;100 ms latency</text>
-  <text x="410" y="610" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#047857">2. Materialized Top-5 at Node: O(p) + O(1)</text>
+  <text x="410" y="610" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#065f46">2. Materialized Top-5 at Node: O(p) + O(1)</text>
   <text x="410" y="626" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#065f46">   Descend p steps; return pre-sorted Top-5 immediately</text>
-  <text x="410" y="644" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#0f172a">3. Prefix Cap: p &lt;= 50 chars bounds maximum hops</text>
-  <text x="410" y="666" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#059669">Net Query Complexity: Strictly Bounded O(1) &lt; 1 ms RAM</text>
+  <text x="410" y="644" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#1c1917">3. Prefix Cap: p &lt;= 50 chars bounds maximum hops</text>
+  <text x="410" y="666" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f766e">Net Query Complexity: Strictly Bounded O(1) &lt; 1 ms RAM</text>
 
   <!-- Card 3: Shard Map Manager -->
-  <rect x="784" y="522" width="360" height="164" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
-  <rect x="784" y="522" width="360" height="22" rx="6" fill="#f1f5f9"/>
-  <text x="794" y="538" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#0f172a">Shard Map Manager &amp; Prefix Skew Balancing</text>
+  <rect x="784" y="522" width="360" height="164" rx="6" fill="#ffffff" stroke="#d6d0c4"/>
+  <rect x="784" y="522" width="360" height="22" rx="6" fill="#f5f1e8"/>
+  <text x="794" y="538" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" fill="#1c1917">Shard Map Manager &amp; Prefix Skew Balancing</text>
   <text x="794" y="558" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#dc2626">1. Flaw of Naive Letter Ranges (a-m, n-z):</text>
   <text x="794" y="574" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#7f1d1d">   Letter "s" and "c" receive 40x more traffic than "x", "z"</text>
-  <text x="794" y="592" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#047857">2. Dynamic Histogram Partitioning:</text>
+  <text x="794" y="592" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#065f46">2. Dynamic Histogram Partitioning:</text>
   <text x="794" y="608" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#065f46">   High-volume prefixes split: "aa-ag", "ah-an", "s*" shards</text>
   <text x="794" y="624" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9.5" fill="#065f46">   Low-volume tails merged: "u-z" into one balanced shard</text>
-  <text x="794" y="644" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#334155">3. etcd/ZooKeeper Distributes Shard Routing Map</text>
-  <text x="794" y="666" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#4338ca">L7 Routers Cache Map for Zero-Hop Direct Shard Dispatch</text>
+  <text x="794" y="644" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#44403c">3. etcd/ZooKeeper Distributes Shard Routing Map</text>
+  <text x="794" y="666" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="#065f46">L7 Routers Cache Map for Zero-Hop Direct Shard Dispatch</text>
 </svg>

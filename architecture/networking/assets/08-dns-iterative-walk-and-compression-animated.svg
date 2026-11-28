@@ -68,133 +68,133 @@
 
   <defs>
     <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-violet" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
   </defs>
 
   <!-- Canvas -->
-  <rect x="0" y="0" width="1120" height="620" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1120" height="620" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1120" height="60" rx="12" fill="#0f172a"/>
-  <rect x="0" y="44" width="1120" height="16" fill="#0f172a"/>
-  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Module 08 — DNS Iterative Walk, TTL Cache &amp; 0xC000 Wire Compression</text>
-  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">Root (.) -&gt; TLD (.com) -&gt; Authoritative NS Delegation with Glue Records · RFC 1035 Section 4.1.4 14-Bit Offset Pointer Jump</text>
+  <line x1="24" y1="62" x2="1096" y2="62" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#1c1917" font-family="Georgia, 'Times New Roman', serif">Module 08 — DNS Iterative Walk, TTL Cache &amp; 0xC000 Wire Compression</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">Root (.) -&gt; TLD (.com) -&gt; Authoritative NS Delegation with Glue Records · RFC 1035 Section 4.1.4 14-Bit Offset Pointer Jump</text>
 
   <!-- TOP PANEL: ITERATIVE WALK & TTL CACHE -->
-  <rect x="24" y="74" width="1072" height="278" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <text x="42" y="98" class="sans" font-size="14" font-weight="700" fill="#0f172a">1. Recursive Resolver Iterative Hierarchy Walk (Query: api.example.com, Type A)</text>
+  <rect x="24" y="74" width="1072" height="278" rx="10" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <text x="42" y="98" class="sans" font-size="14" font-weight="700" fill="#1c1917">1. Recursive Resolver Iterative Hierarchy Walk (Query: api.example.com, Type A)</text>
 
   <!-- Stub Resolver -->
-  <rect x="44" y="168" width="176" height="84" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
-  <text x="132" y="192" class="sans" font-size="12.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">Stub Resolver</text>
-  <text x="132" y="210" class="mono" font-size="10" fill="#1e40af" text-anchor="middle">getaddrinfo(3)</text>
-  <text x="132" y="228" class="mono" font-size="10" fill="#475569" text-anchor="middle">RD = 1 (Recursion)</text>
-  <text x="132" y="242" class="mono" font-size="10" font-weight="700" fill="#059669" text-anchor="middle">8. Gets 203.0.113.10</text>
+  <rect x="44" y="168" width="176" height="84" rx="8" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="132" y="192" class="sans" font-size="12.5" font-weight="700" fill="#065f46" text-anchor="middle">Stub Resolver</text>
+  <text x="132" y="210" class="mono" font-size="10" fill="#065f46" text-anchor="middle">getaddrinfo(3)</text>
+  <text x="132" y="228" class="mono" font-size="10" fill="#44403c" text-anchor="middle">RD = 1 (Recursion)</text>
+  <text x="132" y="242" class="mono" font-size="10" font-weight="700" fill="#0f766e" text-anchor="middle">8. Gets 203.0.113.10</text>
 
   <!-- Recursive Resolver + Cache -->
-  <rect x="376" y="128" width="234" height="196" rx="10" fill="#f8fafc" stroke="#334155" stroke-width="2"/>
-  <rect x="376" y="128" width="234" height="30" rx="10" fill="#1e293b"/>
-  <rect x="376" y="146" width="234" height="12" fill="#1e293b"/>
-  <text x="493" y="148" class="sans" font-size="12" font-weight="700" fill="#f8fafc" text-anchor="middle">Recursive Resolver (1.1.1.1)</text>
+  <rect x="376" y="128" width="234" height="196" rx="10" fill="#faf8f5" stroke="#44403c" stroke-width="2"/>
+  <rect x="376" y="128" width="234" height="30" rx="10" fill="#1c1917"/>
+  <rect x="376" y="146" width="234" height="12" fill="#1c1917"/>
+  <text x="493" y="148" class="sans" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">Recursive Resolver (1.1.1.1)</text>
 
   <text x="493" y="178" class="mono" font-size="10" font-weight="700" fill="#92400e" text-anchor="middle">1. Cache Miss -&gt; Walk Tree</text>
-  <text x="493" y="194" class="mono" font-size="10" fill="#475569" text-anchor="middle">Sends RD = 0 iteratively</text>
+  <text x="493" y="194" class="mono" font-size="10" fill="#44403c" text-anchor="middle">Sends RD = 0 iteratively</text>
 
   <!-- Cache Card -->
   <g class="ttlc">
-    <rect x="392" y="210" width="202" height="98" rx="7" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+    <rect x="392" y="210" width="202" height="98" rx="7" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
     <text x="493" y="230" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">TTL Cache (Populated)</text>
-    <text x="404" y="248" class="mono" font-size="10" fill="#047857">.com NS -&gt; TTL 172800s</text>
-    <text x="404" y="264" class="mono" font-size="10" fill="#047857">example.com NS -&gt; 86400s</text>
+    <text x="404" y="248" class="mono" font-size="10" fill="#065f46">.com NS -&gt; TTL 172800s</text>
+    <text x="404" y="264" class="mono" font-size="10" fill="#065f46">example.com NS -&gt; 86400s</text>
     <text x="404" y="280" class="mono" font-size="10" font-weight="700" fill="#065f46">api.example.com A: 300s</text>
-    <text x="404" y="298" class="sans" font-size="10" fill="#047857">Next query = 0ms cache hit!</text>
+    <text x="404" y="298" class="sans" font-size="10" fill="#065f46">Next query = 0ms cache hit!</text>
   </g>
 
   <!-- Root, TLD, Auth -->
-  <rect x="774" y="114" width="296" height="62" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <rect x="774" y="114" width="296" height="62" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="1.5"/>
   <text x="922" y="136" class="sans" font-size="12" font-weight="700" fill="#92400e" text-anchor="middle">Root NS (.) — 13 Anycast Clusters</text>
-  <text x="922" y="154" class="mono" font-size="10" fill="#78350f" text-anchor="middle">2/3. Referral: .com NS + Glue IP</text>
+  <text x="922" y="154" class="mono" font-size="10" fill="#92400e" text-anchor="middle">2/3. Referral: .com NS + Glue IP</text>
   <text x="922" y="168" class="mono" font-size="10" fill="#b45309" text-anchor="middle">(a.gtld-servers.net -&gt; 192.5.6.30)</text>
 
-  <rect x="774" y="190" width="296" height="62" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
-  <text x="922" y="212" class="sans" font-size="12" font-weight="700" fill="#1e3a8a" text-anchor="middle">.com TLD NS (Verisign)</text>
-  <text x="922" y="230" class="mono" font-size="10" fill="#1e40af" text-anchor="middle">4/5. Referral: ns1.example.com</text>
-  <text x="922" y="244" class="mono" font-size="10" fill="#2563eb" text-anchor="middle">+ Glue A in Additional (breaks cycle)</text>
+  <rect x="774" y="190" width="296" height="62" rx="8" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="922" y="212" class="sans" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">.com TLD NS (Verisign)</text>
+  <text x="922" y="230" class="mono" font-size="10" fill="#065f46" text-anchor="middle">4/5. Referral: ns1.example.com</text>
+  <text x="922" y="244" class="mono" font-size="10" fill="#0f766e" text-anchor="middle">+ Glue A in Additional (breaks cycle)</text>
 
-  <rect x="774" y="266" width="296" height="66" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <rect x="774" y="266" width="296" height="66" rx="8" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
   <text x="922" y="288" class="sans" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">Authoritative NS (example.com)</text>
-  <text x="922" y="306" class="mono" font-size="10" font-weight="700" fill="#047857" text-anchor="middle">6/7. AA=1 Answer: 203.0.113.10</text>
+  <text x="922" y="306" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">6/7. AA=1 Answer: 203.0.113.10</text>
   <text x="922" y="322" class="mono" font-size="10" fill="#065f46" text-anchor="middle">TTL = 300s · RCODE = NOERROR (0)</text>
 
   <!-- Connectors -->
-  <line x1="220" y1="210" x2="374" y2="210" stroke="#2563eb" stroke-width="2" marker-end="url(#arr-blue)"/>
-  <line x1="610" y1="184" x2="772" y2="145" stroke="#d97706" stroke-width="1.8" marker-end="url(#arr-blue)"/>
-  <line x1="610" y1="220" x2="772" y2="220" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
-  <line x1="610" y1="256" x2="772" y2="298" stroke="#059669" stroke-width="1.8" marker-end="url(#arr-green)"/>
+  <line x1="220" y1="210" x2="374" y2="210" stroke="#0f766e" stroke-width="2" marker-end="url(#arr-blue)"/>
+  <line x1="610" y1="184" x2="772" y2="145" stroke="#b45309" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+  <line x1="610" y1="220" x2="772" y2="220" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+  <line x1="610" y1="256" x2="772" y2="298" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-green)"/>
 
   <!-- Animated Query Tokens -->
   <g class="hs">
-    <circle cx="212" cy="210" r="8" fill="#2563eb" stroke="#ffffff" stroke-width="2"/>
+    <circle cx="212" cy="210" r="8" fill="#0f766e" stroke="#ffffff" stroke-width="2"/>
   </g>
   <g class="hr">
-    <circle cx="585" cy="184" r="8" fill="#d97706" stroke="#ffffff" stroke-width="2"/>
+    <circle cx="585" cy="184" r="8" fill="#b45309" stroke="#ffffff" stroke-width="2"/>
   </g>
   <g class="ht">
-    <circle cx="585" cy="220" r="8" fill="#2563eb" stroke="#ffffff" stroke-width="2"/>
+    <circle cx="585" cy="220" r="8" fill="#0f766e" stroke="#ffffff" stroke-width="2"/>
   </g>
   <g class="ha">
-    <circle cx="585" cy="256" r="8" fill="#059669" stroke="#ffffff" stroke-width="2"/>
+    <circle cx="585" cy="256" r="8" fill="#0f766e" stroke="#ffffff" stroke-width="2"/>
   </g>
 
   <!-- BOTTOM PANEL: WIRE FORMAT 0xC000 COMPRESSION -->
-  <rect x="24" y="366" width="1072" height="186" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <text x="42" y="390" class="sans" font-size="14" font-weight="700" fill="#0f172a">2. DNS Wire-Format Label Encoding &amp; 0xC000 Pointer Compression (RFC 1035 §4.1.4)</text>
+  <rect x="24" y="366" width="1072" height="186" rx="10" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <text x="42" y="390" class="sans" font-size="14" font-weight="700" fill="#1c1917">2. DNS Wire-Format Label Encoding &amp; 0xC000 Pointer Compression (RFC 1035 §4.1.4)</text>
 
   <!-- Wire Byte Strip -->
-  <rect x="42" y="422" width="110" height="46" rx="5" fill="#f1f5f9" stroke="#64748b"/>
-  <text x="97" y="442" class="mono" font-size="10" font-weight="700" fill="#334155" text-anchor="middle">Header (12B)</text>
-  <text x="97" y="458" class="mono" font-size="10" fill="#64748b" text-anchor="middle">0x00 .. 0x0B</text>
+  <rect x="42" y="422" width="110" height="46" rx="5" fill="#f5f1e8" stroke="#57534e"/>
+  <text x="97" y="442" class="mono" font-size="10" font-weight="700" fill="#44403c" text-anchor="middle">Header (12B)</text>
+  <text x="97" y="458" class="mono" font-size="10" fill="#57534e" text-anchor="middle">0x00 .. 0x0B</text>
 
-  <rect x="158" y="422" width="110" height="46" rx="5" fill="#eff6ff" stroke="#2563eb"/>
-  <text x="213" y="442" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">[03] a p i</text>
-  <text x="213" y="458" class="mono" font-size="10" fill="#1e40af" text-anchor="middle">Offset 0x0C</text>
+  <rect x="158" y="422" width="110" height="46" rx="5" fill="#f0fdf9" stroke="#0f766e"/>
+  <text x="213" y="442" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">[03] a p i</text>
+  <text x="213" y="458" class="mono" font-size="10" fill="#065f46" text-anchor="middle">Offset 0x0C</text>
 
-  <rect x="274" y="422" width="224" height="46" rx="5" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <rect x="274" y="422" width="224" height="46" rx="5" fill="#f0fdf9" stroke="#0f766e" stroke-width="2"/>
   <text x="386" y="442" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">[07] example [03] com [00]</text>
-  <text x="386" y="458" class="mono" font-size="10" font-weight="700" fill="#047857" text-anchor="middle">Target Suffix at Offset 0x10</text>
+  <text x="386" y="458" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">Target Suffix at Offset 0x10</text>
 
-  <rect x="504" y="422" width="112" height="46" rx="5" fill="#f1f5f9" stroke="#64748b"/>
-  <text x="560" y="442" class="mono" font-size="10" font-weight="700" fill="#334155" text-anchor="middle">QTYPE/CLASS</text>
-  <text x="560" y="458" class="mono" font-size="10" fill="#64748b" text-anchor="middle">0x1D .. 0x20</text>
+  <rect x="504" y="422" width="112" height="46" rx="5" fill="#f5f1e8" stroke="#57534e"/>
+  <text x="560" y="442" class="mono" font-size="10" font-weight="700" fill="#44403c" text-anchor="middle">QTYPE/CLASS</text>
+  <text x="560" y="458" class="mono" font-size="10" fill="#57534e" text-anchor="middle">0x1D .. 0x20</text>
 
-  <rect x="622" y="422" width="112" height="46" rx="5" fill="#fffbeb" stroke="#d97706"/>
+  <rect x="622" y="422" width="112" height="46" rx="5" fill="#fffbeb" stroke="#b45309"/>
   <text x="678" y="442" class="mono" font-size="10.5" font-weight="700" fill="#92400e" text-anchor="middle">[03] n s 1</text>
   <text x="678" y="458" class="mono" font-size="10" fill="#b45309" text-anchor="middle">NS Record Name</text>
 
-  <rect x="740" y="422" width="146" height="46" rx="5" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2"/>
-  <text x="813" y="442" class="mono" font-size="11" font-weight="700" fill="#5b21b6" text-anchor="middle">[0xC0] [0x10]</text>
-  <text x="813" y="458" class="mono" font-size="10" font-weight="700" fill="#6d28d9" text-anchor="middle">11b ptr -&gt; Offset 0x10</text>
+  <rect x="740" y="422" width="146" height="46" rx="5" fill="#f5f1e8" stroke="#0f766e" stroke-width="2"/>
+  <text x="813" y="442" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">[0xC0] [0x10]</text>
+  <text x="813" y="458" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">11b ptr -&gt; Offset 0x10</text>
 
-  <rect x="892" y="422" width="186" height="46" rx="5" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <rect x="892" y="422" width="186" height="46" rx="5" fill="#f0fdf9" stroke="#99f6e4"/>
   <text x="985" y="442" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Decoded: ns1.example.com</text>
-  <text x="985" y="458" class="mono" font-size="10" fill="#047857" text-anchor="middle">2 bytes replace 13 bytes!</text>
+  <text x="985" y="458" class="mono" font-size="10" fill="#065f46" text-anchor="middle">2 bytes replace 13 bytes!</text>
 
   <!-- Pointer Jump Arc above strip -->
-  <path d="M 813 420 C 790 388, 410 388, 386 420" fill="none" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#arr-violet)" class="parc"/>
+  <path d="M 813 420 C 790 388, 410 388, 386 420" fill="none" stroke="#0f766e" stroke-width="2.5" marker-end="url(#arr-violet)" class="parc"/>
 
   <!-- Bit Breakdown Box -->
-  <rect x="42" y="484" width="1036" height="54" rx="7" fill="#f5f3ff" stroke="#c4b5fd"/>
-  <text x="56" y="505" class="mono" font-size="10.5" font-weight="700" fill="#5b21b6">Pointer Bit Layout (16 bits): [ 1 1 | 14-bit byte offset from DNS Header start ]  -&gt;  0xC010 = 11000000 00010000 -&gt; jump to byte 16 (0x10)</text>
-  <text x="56" y="525" class="sans" font-size="10.5" fill="#4c1d95">Label length octets max at 63 (00xxxxxx); top bits 11 (0xC0) unambiguously signal compression. EDNS(0) OPT extends UDP buffer to 1,232B.</text>
+  <rect x="42" y="484" width="1036" height="54" rx="7" fill="#f5f1e8" stroke="#d6d0c4"/>
+  <text x="56" y="505" class="mono" font-size="10.5" font-weight="700" fill="#065f46">Pointer Bit Layout (16 bits): [ 1 1 | 14-bit byte offset from DNS Header start ]  -&gt;  0xC010 = 11000000 00010000 -&gt; jump to byte 16 (0x10)</text>
+  <text x="56" y="525" class="sans" font-size="10.5" fill="#065f46">Label length octets max at 63 (00xxxxxx); top bits 11 (0xC0) unambiguously signal compression. EDNS(0) OPT extends UDP buffer to 1,232B.</text>
 
   <!-- FOOTER -->
-  <rect x="24" y="564" width="1072" height="42" rx="8" fill="#eff6ff" stroke="#93c5fd"/>
-  <text x="42" y="590" class="sans" font-size="11.5" font-weight="600" fill="#1e3a8a">Takeaway: Recursive resolvers walk Root -&gt; TLD -&gt; Auth once per TTL, while 0xC000 pointers deduplicate repeated suffixes in compact UDP frames.</text>
+  <rect x="24" y="564" width="1072" height="42" rx="8" fill="#f0fdf9" stroke="#99f6e4"/>
+  <text x="42" y="590" class="sans" font-size="11.5" font-weight="600" fill="#065f46">Takeaway: Recursive resolvers walk Root -&gt; TLD -&gt; Auth once per TTL, while 0xC000 pointers deduplicate repeated suffixes in compact UDP frames.</text>
 </svg>

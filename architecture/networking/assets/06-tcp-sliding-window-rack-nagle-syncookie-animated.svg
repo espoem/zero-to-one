@@ -46,148 +46,148 @@
       <rect x="40" y="138" width="494" height="150" rx="6"/>
     </clipPath>
     <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#dc2626"/>
     </marker>
   </defs>
 
   <!-- Canvas -->
-  <rect x="0" y="0" width="1120" height="660" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1120" height="660" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1120" height="60" rx="12" fill="#0f172a"/>
-  <rect x="0" y="44" width="1120" height="16" fill="#0f172a"/>
-  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Module 06 — TCP Sliding Window, RACK-TLP, Nagle Deadlock &amp; SYN Cookies</text>
-  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">RFC 9293 Flow Control &amp; PAWS · RFC 8985 Time-Based Loss · 40ms Nagle/Delayed-ACK Stall · RFC 4987 Stateless SYN Cookies</text>
+  <line x1="24" y1="62" x2="1096" y2="62" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#1c1917" font-family="Georgia, 'Times New Roman', serif">Module 06 — TCP Sliding Window, RACK-TLP, Nagle Deadlock &amp; SYN Cookies</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">RFC 9293 Flow Control &amp; PAWS · RFC 8985 Time-Based Loss · 40ms Nagle/Delayed-ACK Stall · RFC 4987 Stateless SYN Cookies</text>
 
   <!-- QUADRANT 1: SLIDING WINDOW + PAWS -->
-  <rect x="24" y="74" width="526" height="256" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <text x="42" y="98" class="sans" font-size="14" font-weight="700" fill="#0f172a">1. Sliding Window (SND.UNA / SND.NXT / RCV.WND) &amp; PAWS</text>
-  <text x="42" y="116" class="mono" font-size="10" fill="#475569">Effective RCV.WND = HeaderWindow &lt;&lt; WScale (S ≤ 14 =&gt; 1 GiB max)</text>
+  <rect x="24" y="74" width="526" height="256" rx="10" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <text x="42" y="98" class="sans" font-size="14" font-weight="700" fill="#1c1917">1. Sliding Window (SND.UNA / SND.NXT / RCV.WND) &amp; PAWS</text>
+  <text x="42" y="116" class="mono" font-size="10" fill="#44403c">Effective RCV.WND = HeaderWindow &lt;&lt; WScale (S ≤ 14 =&gt; 1 GiB max)</text>
 
   <!-- Static Byte Stream Cells -->
   <g clip-path="url(#wnd-clip)">
-    <rect x="50" y="168" width="90" height="44" rx="4" fill="#ecfdf5" stroke="#059669"/>
+    <rect x="50" y="168" width="90" height="44" rx="4" fill="#f0fdf9" stroke="#0f766e"/>
     <text x="95" y="188" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">Bytes 1..2</text>
-    <text x="95" y="203" class="mono" font-size="10" fill="#047857" text-anchor="middle">ACKed</text>
+    <text x="95" y="203" class="mono" font-size="10" fill="#065f46" text-anchor="middle">ACKed</text>
 
-    <rect x="142" y="168" width="90" height="44" rx="4" fill="#fffbeb" stroke="#d97706"/>
+    <rect x="142" y="168" width="90" height="44" rx="4" fill="#fffbeb" stroke="#b45309"/>
     <text x="187" y="188" class="mono" font-size="10" font-weight="700" fill="#92400e" text-anchor="middle">Bytes 3..4</text>
     <text x="187" y="203" class="mono" font-size="10" fill="#b45309" text-anchor="middle">Sent/Unack</text>
 
-    <rect x="234" y="168" width="90" height="44" rx="4" fill="#eff6ff" stroke="#2563eb"/>
-    <text x="279" y="188" class="mono" font-size="10" font-weight="700" fill="#1e3a8a" text-anchor="middle">Bytes 5..6</text>
-    <text x="279" y="203" class="mono" font-size="10" fill="#1e40af" text-anchor="middle">Usable</text>
+    <rect x="234" y="168" width="90" height="44" rx="4" fill="#f0fdf9" stroke="#0f766e"/>
+    <text x="279" y="188" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">Bytes 5..6</text>
+    <text x="279" y="203" class="mono" font-size="10" fill="#065f46" text-anchor="middle">Usable</text>
 
-    <rect x="326" y="168" width="90" height="44" rx="4" fill="#eff6ff" stroke="#2563eb"/>
-    <text x="371" y="188" class="mono" font-size="10" font-weight="700" fill="#1e3a8a" text-anchor="middle">Bytes 7..8</text>
-    <text x="371" y="203" class="mono" font-size="10" fill="#1e40af" text-anchor="middle">Usable</text>
+    <rect x="326" y="168" width="90" height="44" rx="4" fill="#f0fdf9" stroke="#0f766e"/>
+    <text x="371" y="188" class="mono" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">Bytes 7..8</text>
+    <text x="371" y="203" class="mono" font-size="10" fill="#065f46" text-anchor="middle">Usable</text>
 
-    <rect x="418" y="168" width="96" height="44" rx="4" fill="#f1f5f9" stroke="#94a3b8"/>
-    <text x="466" y="188" class="mono" font-size="10" font-weight="700" fill="#475569" text-anchor="middle">Bytes 9+</text>
-    <text x="466" y="203" class="mono" font-size="10" fill="#64748b" text-anchor="middle">Blocked</text>
+    <rect x="418" y="168" width="96" height="44" rx="4" fill="#f5f1e8" stroke="#d6d0c4"/>
+    <text x="466" y="188" class="mono" font-size="10" font-weight="700" fill="#44403c" text-anchor="middle">Bytes 9+</text>
+    <text x="466" y="203" class="mono" font-size="10" fill="#57534e" text-anchor="middle">Blocked</text>
 
     <!-- Sliding Window Frame -->
     <g class="swnd">
-      <rect x="140" y="156" width="186" height="68" rx="6" fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-dasharray="5 3"/>
-      <rect x="134" y="138" width="66" height="16" rx="3" fill="#7c3aed"/>
+      <rect x="140" y="156" width="186" height="68" rx="6" fill="none" stroke="#0f766e" stroke-width="2.5" stroke-dasharray="5 3"/>
+      <rect x="134" y="138" width="66" height="16" rx="3" fill="#0f766e"/>
       <text x="167" y="149" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">SND.UNA</text>
-      <rect x="216" y="228" width="66" height="16" rx="3" fill="#2563eb"/>
+      <rect x="216" y="228" width="66" height="16" rx="3" fill="#0f766e"/>
       <text x="249" y="239" class="mono" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">SND.NXT</text>
-      <text x="292" y="149" class="mono" font-size="10" font-weight="700" fill="#5b21b6">RCV.WND -&gt;</text>
+      <text x="292" y="149" class="mono" font-size="10" font-weight="700" fill="#065f46">RCV.WND -&gt;</text>
     </g>
   </g>
 
-  <rect x="42" y="264" width="490" height="52" rx="7" fill="#f5f3ff" stroke="#c4b5fd"/>
-  <text x="56" y="284" class="mono" font-size="10" font-weight="700" fill="#5b21b6">PAWS (RFC 7323): 32-bit SEQ wraps in ~3.4s at 10 Gbps</text>
-  <text x="56" y="302" class="sans" font-size="10" fill="#4c1d95">Drop segment if TSval &lt; TS.Recent (rejects delayed wrapped duplicates).</text>
+  <rect x="42" y="264" width="490" height="52" rx="7" fill="#f5f1e8" stroke="#d6d0c4"/>
+  <text x="56" y="284" class="mono" font-size="10" font-weight="700" fill="#065f46">PAWS (RFC 7323): 32-bit SEQ wraps in ~3.4s at 10 Gbps</text>
+  <text x="56" y="302" class="sans" font-size="10" fill="#065f46">Drop segment if TSval &lt; TS.Recent (rejects delayed wrapped duplicates).</text>
 
   <!-- QUADRANT 2: RACK-TLP -->
-  <rect x="570" y="74" width="526" height="256" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <text x="588" y="98" class="sans" font-size="14" font-weight="700" fill="#0f172a">2. RACK-TLP Time-Based Loss Recovery (RFC 8985)</text>
-  <text x="588" y="116" class="sans" font-size="10.5" fill="#475569">Replaces 3-DupACK counting; solves small cwnd &amp; tail-packet drops.</text>
+  <rect x="570" y="74" width="526" height="256" rx="10" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <text x="588" y="98" class="sans" font-size="14" font-weight="700" fill="#1c1917">2. RACK-TLP Time-Based Loss Recovery (RFC 8985)</text>
+  <text x="588" y="116" class="sans" font-size="10.5" fill="#44403c">Replaces 3-DupACK counting; solves small cwnd &amp; tail-packet drops.</text>
 
   <!-- Timeline of packets -->
-  <rect x="588" y="132" width="144" height="50" rx="6" fill="#ecfdf5" stroke="#059669"/>
+  <rect x="588" y="132" width="144" height="50" rx="6" fill="#f0fdf9" stroke="#0f766e"/>
   <text x="660" y="152" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">P1 (xmit t=0ms)</text>
-  <text x="660" y="169" class="mono" font-size="10" fill="#047857" text-anchor="middle">Delivered OK</text>
+  <text x="660" y="169" class="mono" font-size="10" fill="#065f46" text-anchor="middle">Delivered OK</text>
 
-  <rect x="752" y="132" width="152" height="50" rx="6" fill="#fff1f2" stroke="#e11d48" stroke-width="1.5"/>
-  <text x="828" y="152" class="mono" font-size="10.5" font-weight="700" fill="#9f1239" text-anchor="middle">P2 (xmit t=2ms)</text>
-  <text x="828" y="169" class="mono" font-size="10" font-weight="700" fill="#e11d48" text-anchor="middle">DROPPED ON WIRE</text>
+  <rect x="752" y="132" width="152" height="50" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="828" y="152" class="mono" font-size="10.5" font-weight="700" fill="#991b1b" text-anchor="middle">P2 (xmit t=2ms)</text>
+  <text x="828" y="169" class="mono" font-size="10" font-weight="700" fill="#dc2626" text-anchor="middle">DROPPED ON WIRE</text>
 
-  <rect x="924" y="132" width="154" height="50" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
-  <text x="1001" y="152" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">P3 (xmit t=4ms)</text>
-  <text x="1001" y="169" class="mono" font-size="10" fill="#1e40af" text-anchor="middle">SACKed at t=44ms</text>
+  <rect x="924" y="132" width="154" height="50" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="1001" y="152" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">P3 (xmit t=4ms)</text>
+  <text x="1001" y="169" class="mono" font-size="10" fill="#065f46" text-anchor="middle">SACKed at t=44ms</text>
 
   <!-- RACK Decision -->
   <g class="racktx">
-    <rect x="588" y="198" width="490" height="54" rx="7" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+    <rect x="588" y="198" width="490" height="54" rx="7" fill="#fffbeb" stroke="#b45309" stroke-width="1.5"/>
     <text x="602" y="218" class="mono" font-size="10.5" font-weight="700" fill="#92400e">RACK Check: P2.xmit + reorder_wnd (RTT/4) &lt; P3.xmit</text>
-    <text x="602" y="236" class="sans" font-size="10.5" fill="#78350f">Only 1 SACK received (not 3 dupACKs!), yet P2 is retransmitted immediately.</text>
+    <text x="602" y="236" class="sans" font-size="10.5" fill="#92400e">Only 1 SACK received (not 3 dupACKs!), yet P2 is retransmitted immediately.</text>
   </g>
 
-  <rect x="588" y="264" width="490" height="52" rx="7" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <rect x="588" y="264" width="490" height="52" rx="7" fill="#f0fdf9" stroke="#99f6e4"/>
   <text x="602" y="284" class="mono" font-size="10.5" font-weight="700" fill="#065f46">TLP (Tail Loss Probe): fires probe after ~2×RTT on idle tail</text>
-  <text x="602" y="302" class="sans" font-size="10" fill="#047857">Elicits ACK so RACK triggers Fast Retransmit instead of cwnd=1 RTO stall.</text>
+  <text x="602" y="302" class="sans" font-size="10" fill="#065f46">Elicits ACK so RACK triggers Fast Retransmit instead of cwnd=1 RTO stall.</text>
 
   <!-- QUADRANT 3: NAGLE VS DELAYED ACK -->
-  <rect x="24" y="344" width="526" height="248" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <text x="42" y="368" class="sans" font-size="14" font-weight="700" fill="#0f172a">3. Nagle (RFC 896) vs. Delayed ACK: 40 ms Deadlock</text>
+  <rect x="24" y="344" width="526" height="248" rx="10" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <text x="42" y="368" class="sans" font-size="14" font-weight="700" fill="#1c1917">3. Nagle (RFC 896) vs. Delayed ACK: 40 ms Deadlock</text>
 
-  <rect x="42" y="384" width="234" height="52" rx="6" fill="#eff6ff" stroke="#2563eb"/>
-  <text x="159" y="404" class="mono" font-size="10.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">Write 1 (50B Headers)</text>
-  <text x="159" y="422" class="sans" font-size="10" fill="#1e40af" text-anchor="middle">Sent immediately; unACKed</text>
+  <rect x="42" y="384" width="234" height="52" rx="6" fill="#f0fdf9" stroke="#0f766e"/>
+  <text x="159" y="404" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Write 1 (50B Headers)</text>
+  <text x="159" y="422" class="sans" font-size="10" fill="#065f46" text-anchor="middle">Sent immediately; unACKed</text>
 
-  <rect x="298" y="384" width="234" height="52" rx="6" fill="#fff1f2" stroke="#e11d48"/>
-  <text x="415" y="404" class="mono" font-size="10.5" font-weight="700" fill="#9f1239" text-anchor="middle">Write 2 (200B Body &lt; MSS)</text>
-  <text x="415" y="422" class="sans" font-size="10" fill="#be123c" text-anchor="middle">HELD by Nagle waiting for ACK!</text>
+  <rect x="298" y="384" width="234" height="52" rx="6" fill="#fef2f2" stroke="#dc2626"/>
+  <text x="415" y="404" class="mono" font-size="10.5" font-weight="700" fill="#991b1b" text-anchor="middle">Write 2 (200B Body &lt; MSS)</text>
+  <text x="415" y="422" class="sans" font-size="10" fill="#991b1b" text-anchor="middle">HELD by Nagle waiting for ACK!</text>
 
-  <line x1="276" y1="410" x2="296" y2="410" stroke="#64748b" stroke-width="2" marker-end="url(#arr-rose)"/>
+  <line x1="276" y1="410" x2="296" y2="410" stroke="#57534e" stroke-width="2" marker-end="url(#arr-rose)"/>
 
   <!-- 40ms Stall Progress Bar -->
   <text x="42" y="458" class="mono" font-size="10.5" font-weight="700" fill="#92400e">Server Delayed ACK Timer (waits for response data up to 40 ms):</text>
-  <rect x="42" y="468" width="490" height="22" rx="5" fill="#fef3c7" stroke="#d97706"/>
-  <rect x="42" y="468" width="490" height="22" rx="5" fill="#d97706" class="nstall"/>
+  <rect x="42" y="468" width="490" height="22" rx="5" fill="#fffbeb" stroke="#b45309"/>
+  <rect x="42" y="468" width="490" height="22" rx="5" fill="#b45309" class="nstall"/>
   <text x="287" y="483" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">40 ms DEADLOCK (Client waits ACK | Server waits Body)</text>
 
-  <rect x="42" y="502" width="490" height="74" rx="7" fill="#ecfdf5" stroke="#059669"/>
+  <rect x="42" y="502" width="490" height="74" rx="7" fill="#f0fdf9" stroke="#0f766e"/>
   <text x="56" y="522" class="mono" font-size="10.5" font-weight="700" fill="#065f46">At 40ms: Timer expires -&gt; Standalone ACK -&gt; Write 2 unblocks</text>
-  <text x="56" y="542" class="mono" font-size="10.5" font-weight="700" fill="#047857">Production Fix: setsockopt(TCP_NODELAY) / socket.setNoDelay(true)</text>
+  <text x="56" y="542" class="mono" font-size="10.5" font-weight="700" fill="#065f46">Production Fix: setsockopt(TCP_NODELAY) / socket.setNoDelay(true)</text>
   <text x="56" y="560" class="sans" font-size="10" fill="#065f46">Bypasses Nagle buffering so small sequential writes stream at 0 ms delay.</text>
 
   <!-- QUADRANT 4: STATELESS SYN COOKIES -->
-  <rect x="570" y="344" width="526" height="248" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <text x="588" y="368" class="sans" font-size="14" font-weight="700" fill="#0f172a">4. Stateless SYN Cookie ISN Encoding (RFC 4987)</text>
-  <text x="588" y="386" class="sans" font-size="10.5" fill="#475569">Survives SYN floods when SYN Queue overflows (net.ipv4.tcp_syncookies = 1).</text>
+  <rect x="570" y="344" width="526" height="248" rx="10" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <text x="588" y="368" class="sans" font-size="14" font-weight="700" fill="#1c1917">4. Stateless SYN Cookie ISN Encoding (RFC 4987)</text>
+  <text x="588" y="386" class="sans" font-size="10.5" fill="#44403c">Survives SYN floods when SYN Queue overflows (net.ipv4.tcp_syncookies = 1).</text>
 
   <!-- Step 1: Flood + 0 bytes -->
-  <rect x="588" y="398" width="234" height="62" rx="6" fill="#fff1f2" stroke="#e11d48"/>
-  <text x="705" y="418" class="mono" font-size="10.5" font-weight="700" fill="#9f1239" text-anchor="middle">1. Spoofed SYN Flood</text>
-  <text x="705" y="435" class="mono" font-size="10" fill="#be123c" text-anchor="middle">Allocates 0 bytes in SYN Queue</text>
-  <text x="705" y="450" class="sans" font-size="10" fill="#9f1239" text-anchor="middle">Attacker never sends final ACK</text>
+  <rect x="588" y="398" width="234" height="62" rx="6" fill="#fef2f2" stroke="#dc2626"/>
+  <text x="705" y="418" class="mono" font-size="10.5" font-weight="700" fill="#991b1b" text-anchor="middle">1. Spoofed SYN Flood</text>
+  <text x="705" y="435" class="mono" font-size="10" fill="#991b1b" text-anchor="middle">Allocates 0 bytes in SYN Queue</text>
+  <text x="705" y="450" class="sans" font-size="10" fill="#991b1b" text-anchor="middle">Attacker never sends final ACK</text>
 
   <!-- Step 2: ISN Cookie formula -->
-  <rect x="838" y="398" width="240" height="62" rx="6" fill="#f5f3ff" stroke="#7c3aed"/>
-  <text x="958" y="418" class="mono" font-size="10.5" font-weight="700" fill="#5b21b6" text-anchor="middle">2. Server Sends SYN-ACK</text>
-  <text x="958" y="436" class="mono" font-size="10" fill="#4c1d95" text-anchor="middle">ISN = HMAC(4-tuple, t, K) + MSS</text>
-  <text x="958" y="451" class="sans" font-size="10" fill="#5b21b6" text-anchor="middle">Discards all state immediately</text>
+  <rect x="838" y="398" width="240" height="62" rx="6" fill="#f5f1e8" stroke="#0f766e"/>
+  <text x="958" y="418" class="mono" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">2. Server Sends SYN-ACK</text>
+  <text x="958" y="436" class="mono" font-size="10" fill="#065f46" text-anchor="middle">ISN = HMAC(4-tuple, t, K) + MSS</text>
+  <text x="958" y="451" class="sans" font-size="10" fill="#065f46" text-anchor="middle">Discards all state immediately</text>
 
   <!-- Step 3: Verification -->
   <g class="scack">
-    <rect x="588" y="472" width="490" height="104" rx="7" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+    <rect x="588" y="472" width="490" height="104" rx="7" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
     <text x="602" y="494" class="mono" font-size="10.5" font-weight="700" fill="#065f46">3. Legitimate Client Replies: ACK = ISN_cookie + 1</text>
-    <text x="602" y="514" class="mono" font-size="10" fill="#047857">Server checks: (AckNum − 1) == HMAC(4-tuple, t, Secret) + MSS_idx</text>
+    <text x="602" y="514" class="mono" font-size="10" fill="#065f46">Server checks: (AckNum − 1) == HMAC(4-tuple, t, Secret) + MSS_idx</text>
     <text x="602" y="534" class="sans" font-size="10.5" fill="#065f46">If valid: reconstructs MSS &amp; allocates socket directly in Accept Queue.</text>
-    <text x="602" y="554" class="mono" font-size="10" fill="#475569">Bit layout (32-bit ISN): [ t mod 32 (5b) | MSS idx (3b) | Hash (24b) ]</text>
+    <text x="602" y="554" class="mono" font-size="10" fill="#44403c">Bit layout (32-bit ISN): [ t mod 32 (5b) | MSS idx (3b) | Hash (24b) ]</text>
   </g>
 
   <!-- FOOTER -->
-  <rect x="24" y="604" width="1072" height="42" rx="8" fill="#eff6ff" stroke="#93c5fd"/>
-  <text x="42" y="630" class="sans" font-size="11.5" font-weight="600" fill="#1e3a8a">Takeaway: Modern TCP pairs scaled sliding windows &amp; PAWS with time-based RACK-TLP, TCP_NODELAY, and cryptographic SYN Cookies.</text>
+  <rect x="24" y="604" width="1072" height="42" rx="8" fill="#f0fdf9" stroke="#99f6e4"/>
+  <text x="42" y="630" class="sans" font-size="11.5" font-weight="600" fill="#065f46">Takeaway: Modern TCP pairs scaled sliding windows &amp; PAWS with time-based RACK-TLP, TCP_NODELAY, and cryptographic SYN Cookies.</text>
 </svg>

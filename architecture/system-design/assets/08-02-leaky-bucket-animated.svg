@@ -36,13 +36,6 @@
       100% { opacity: 0.86; }
     }
 
-    @keyframes overflow-bounce {
-      0%, 24% { opacity: 0; transform: translate(0px, 0px); }
-      28% { opacity: 1; transform: translate(0px, 16px); }
-      38%, 48% { opacity: 1; transform: translate(118px, 16px); }
-      52%, 100% { opacity: 0; transform: translate(118px, 16px); }
-    }
-
     @keyframes drip-out {
       0%, 50% { opacity: 0; transform: translateY(0px); }
       54% { opacity: 1; transform: translateY(0px); }
@@ -51,29 +44,28 @@
     }
 
     @keyframes step-1 {
-      0%, 24% { opacity: 1; stroke: #2563eb; stroke-width: 2.5; }
-      25%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; }
+      0%, 24% { opacity: 1; stroke: #0f766e; stroke-width: 2.5; }
+      25%, 100% { opacity: 0.86; stroke: #d6d0c4; stroke-width: 1.2; }
     }
     @keyframes step-2 {
-      0%, 24% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; }
-      25%, 49% { opacity: 1; stroke: #e11d48; stroke-width: 2.5; }
-      50%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; }
+      0%, 24% { opacity: 0.86; stroke: #d6d0c4; stroke-width: 1.2; }
+      25%, 49% { opacity: 1; stroke: #dc2626; stroke-width: 2.5; }
+      50%, 100% { opacity: 0.86; stroke: #d6d0c4; stroke-width: 1.2; }
     }
     @keyframes step-3 {
-      0%, 49% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; }
-      50%, 74% { opacity: 1; stroke: #059669; stroke-width: 2.5; }
-      75%, 100% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; }
+      0%, 49% { opacity: 0.86; stroke: #d6d0c4; stroke-width: 1.2; }
+      50%, 74% { opacity: 1; stroke: #0f766e; stroke-width: 2.5; }
+      75%, 100% { opacity: 0.86; stroke: #d6d0c4; stroke-width: 1.2; }
     }
     @keyframes step-4 {
-      0%, 74% { opacity: 0.86; stroke: #cbd5e1; stroke-width: 1.2; }
-      75%, 100% { opacity: 1; stroke: #2563eb; stroke-width: 2.5; }
+      0%, 74% { opacity: 0.86; stroke: #d6d0c4; stroke-width: 1.2; }
+      75%, 100% { opacity: 1; stroke: #0f766e; stroke-width: 2.5; }
     }
 
     .qs1 { animation: q-slot1 12s ease-in-out infinite; }
     .qs2 { animation: q-slot2 12s ease-in-out infinite; }
     .qs3 { animation: q-slot3 12s ease-in-out infinite; }
     .qs4 { animation: q-slot4 12s ease-in-out infinite; }
-    .ovf { animation: overflow-bounce 12s ease-in-out infinite; }
     .drip { animation: drip-out 12s ease-in-out infinite; }
     .c1 { animation: step-1 12s linear infinite; }
     .c2 { animation: step-2 12s linear infinite; }
@@ -92,123 +84,123 @@
 
   <defs>
     <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f766e"/>
     </marker>
   </defs>
 
   <!-- Canvas -->
-  <rect x="0" y="0" width="1120" height="560" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1120" height="560" rx="4" fill="#faf8f5" stroke="#e7e2d8" stroke-width="1"/>
 
   <!-- Header -->
-  <rect x="0" y="0" width="1120" height="60" rx="12" fill="#0f172a"/>
-  <rect x="0" y="44" width="1120" height="16" fill="#0f172a"/>
-  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#f8fafc">Leaky Bucket Algorithm — Traffic Shaping &amp; Constant Outflow</text>
-  <text x="24" y="47" class="sans" font-size="12" fill="#94a3b8">Parameters: Queue Capacity B = 4 slots · Constant Leak Rate R = 1 req/s (1/R = 1000 ms) · O(1) Lazy Drain</text>
+  <line x1="24" y1="62" x2="1096" y2="62" stroke="#1c1917" stroke-width="1.2"/>
+  
+  <text x="24" y="27" class="sans" font-size="18" font-weight="700" fill="#1c1917" font-family="Georgia, 'Times New Roman', serif">Leaky Bucket Algorithm — Traffic Shaping &amp; Constant Outflow</text>
+  <text x="24" y="47" class="sans" font-size="12" fill="#57534e" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">Parameters: Queue Capacity B = 4 slots · Constant Leak Rate R = 1 req/s (1/R = 1000 ms) · O(1) Lazy Drain</text>
 
   <!-- LEFT PANEL: FIFO BUCKET & SPOUT -->
-  <rect x="24" y="76" width="448" height="404" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <text x="42" y="102" class="sans" font-size="14" font-weight="700" fill="#0f172a">FIFO Queue Bucket &amp; Constant Spout</text>
+  <rect x="24" y="76" width="448" height="404" rx="10" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <text x="42" y="102" class="sans" font-size="14" font-weight="700" fill="#1c1917">FIFO Queue Bucket &amp; Constant Spout</text>
 
   <!-- Bursty inflow arrow -->
-  <rect x="130" y="114" width="184" height="34" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.2"/>
-  <text x="222" y="135" class="sans" font-size="11.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">Bursty Arrivals (r1..r5)</text>
-  <line x1="222" y1="148" x2="222" y2="174" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+  <rect x="130" y="114" width="184" height="34" rx="6" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.2"/>
+  <text x="222" y="135" class="sans" font-size="11.5" font-weight="700" fill="#065f46" text-anchor="middle">Bursty Arrivals (r1..r5)</text>
+  <line x1="222" y1="148" x2="222" y2="174" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arr-blue)"/>
 
   <!-- Overflowing 5th request -->
   <g class="ovf">
-    <rect x="234" y="156" width="114" height="28" rx="5" fill="#fff1f2" stroke="#e11d48" stroke-width="1.5"/>
-    <text x="291" y="174" class="mono" font-size="10" font-weight="700" fill="#9f1239" text-anchor="middle">r5 → 429 DROP</text>
+    <rect x="234" y="156" width="114" height="28" rx="5" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+    <text x="291" y="174" class="mono" font-size="10" font-weight="700" fill="#991b1b" text-anchor="middle">r5 → 429 DROP</text>
   </g>
 
   <!-- Bucket Container -->
-  <rect x="122" y="180" width="200" height="156" rx="10" fill="#f1f5f9" stroke="#334155" stroke-width="2.5"/>
-  <text x="222" y="198" class="mono" font-size="10" font-weight="700" fill="#475569" text-anchor="middle">QUEUE CAPACITY B = 4</text>
+  <rect x="122" y="180" width="200" height="156" rx="10" fill="#f5f1e8" stroke="#44403c" stroke-width="2.5"/>
+  <text x="222" y="198" class="mono" font-size="10" font-weight="700" fill="#44403c" text-anchor="middle">QUEUE CAPACITY B = 4</text>
 
   <!-- Slots (top=4 down to bottom=1) -->
-  <rect x="140" y="206" width="164" height="26" rx="4" fill="#dbeafe" stroke="#2563eb" class="qs4"/>
-  <text x="222" y="223" class="mono qs4" font-size="10.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">Slot 4 · r4 / r6</text>
+  <rect x="140" y="206" width="164" height="26" rx="4" fill="#f0fdf9" stroke="#0f766e" class="qs4"/>
+  <text x="222" y="223" class="mono qs4" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Slot 4 · r4 / r6</text>
 
-  <rect x="140" y="236" width="164" height="26" rx="4" fill="#dbeafe" stroke="#2563eb" class="qs3"/>
-  <text x="222" y="253" class="mono qs3" font-size="10.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">Slot 3 · req r3</text>
+  <rect x="140" y="236" width="164" height="26" rx="4" fill="#f0fdf9" stroke="#0f766e" class="qs3"/>
+  <text x="222" y="253" class="mono qs3" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Slot 3 · req r3</text>
 
-  <rect x="140" y="266" width="164" height="26" rx="4" fill="#dbeafe" stroke="#2563eb" class="qs2"/>
-  <text x="222" y="283" class="mono qs2" font-size="10.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">Slot 2 · req r2</text>
+  <rect x="140" y="266" width="164" height="26" rx="4" fill="#f0fdf9" stroke="#0f766e" class="qs2"/>
+  <text x="222" y="283" class="mono qs2" font-size="10.5" font-weight="700" fill="#065f46" text-anchor="middle">Slot 2 · req r2</text>
 
-  <rect x="140" y="296" width="164" height="26" rx="4" fill="#3b82f6" stroke="#1d4ed8" class="qs1"/>
+  <rect x="140" y="296" width="164" height="26" rx="4" fill="#0f766e" stroke="#065f46" class="qs1"/>
   <text x="222" y="313" class="mono qs1" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">Slot 1 · req r1 (next)</text>
 
   <!-- Spout & Constant Drip -->
-  <rect x="206" y="336" width="32" height="18" fill="#334155"/>
+  <rect x="206" y="336" width="32" height="18" fill="#44403c"/>
   <g class="drip">
-    <circle cx="222" cy="358" r="8" fill="#059669" stroke="#ffffff" stroke-width="1.5"/>
+    <circle cx="222" cy="358" r="8" fill="#0f766e" stroke="#ffffff" stroke-width="1.5"/>
   </g>
-  <rect x="108" y="380" width="228" height="36" rx="7" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <rect x="108" y="380" width="228" height="36" rx="7" fill="#f0fdf9" stroke="#0f766e" stroke-width="1.5"/>
   <text x="222" y="402" class="mono" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">Backend: Strict 1 req/s Outflow</text>
 
   <!-- Lazy Drain State Box -->
-  <rect x="42" y="424" width="412" height="44" rx="7" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.2"/>
-  <text x="56" y="443" class="mono" font-size="10.5" font-weight="700" fill="#5b21b6">water = max(0, water - elapsedSec · leakRate)</text>
-  <text x="56" y="459" class="sans" font-size="10" fill="#4c1d95">O(1) lazy-drain state: { water, lastLeakMs } · zero timer threads</text>
+  <rect x="42" y="424" width="412" height="44" rx="7" fill="#f5f1e8" stroke="#0f766e" stroke-width="1.2"/>
+  <text x="56" y="443" class="mono" font-size="10.5" font-weight="700" fill="#065f46">water = max(0, water - elapsedSec · leakRate)</text>
+  <text x="56" y="459" class="sans" font-size="10" fill="#065f46">O(1) lazy-drain state: { water, lastLeakMs } · zero timer threads</text>
 
   <!-- RIGHT PANEL: INFLOW VS OUTFLOW & STEPS -->
-  <rect x="492" y="76" width="604" height="404" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-  <text x="512" y="102" class="sans" font-size="14" font-weight="700" fill="#0f172a">Bursty Input vs Smoothed Constant Outflow</text>
+  <rect x="492" y="76" width="604" height="404" rx="10" fill="#ffffff" stroke="#d6d0c4" stroke-width="1.5"/>
+  <text x="512" y="102" class="sans" font-size="14" font-weight="700" fill="#1c1917">Bursty Input vs Smoothed Constant Outflow</text>
 
   <!-- Dual Mini-Timelines -->
-  <rect x="512" y="114" width="564" height="114" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="512" y="114" width="564" height="114" rx="8" fill="#faf8f5" stroke="#d6d0c4" stroke-width="1"/>
   <!-- Input Row -->
-  <text x="526" y="138" class="sans" font-size="11" font-weight="700" fill="#1e3a8a">Inflow (Bursty)</text>
-  <line x1="640" y1="154" x2="1056" y2="154" stroke="#94a3b8" stroke-width="1.2"/>
-  <rect x="652" y="126" width="12" height="28" rx="2" fill="#2563eb"/>
-  <rect x="668" y="126" width="12" height="28" rx="2" fill="#2563eb"/>
-  <rect x="684" y="126" width="12" height="28" rx="2" fill="#2563eb"/>
-  <rect x="700" y="126" width="12" height="28" rx="2" fill="#2563eb"/>
-  <rect x="716" y="126" width="12" height="28" rx="2" fill="#e11d48"/>
-  <text x="736" y="144" class="mono" font-size="10" font-weight="700" fill="#e11d48">5th at t=0s → 429</text>
-  <rect x="858" y="126" width="12" height="28" rx="2" fill="#2563eb"/>
-  <text x="876" y="144" class="mono" font-size="10" fill="#1e40af">r6 at t=1.0s → OK</text>
+  <text x="526" y="138" class="sans" font-size="11" font-weight="700" fill="#065f46">Inflow (Bursty)</text>
+  <line x1="640" y1="154" x2="1056" y2="154" stroke="#d6d0c4" stroke-width="1.2"/>
+  <rect x="652" y="126" width="12" height="28" rx="2" fill="#0f766e"/>
+  <rect x="668" y="126" width="12" height="28" rx="2" fill="#0f766e"/>
+  <rect x="684" y="126" width="12" height="28" rx="2" fill="#0f766e"/>
+  <rect x="700" y="126" width="12" height="28" rx="2" fill="#0f766e"/>
+  <rect x="716" y="126" width="12" height="28" rx="2" fill="#dc2626"/>
+  <text x="736" y="144" class="mono" font-size="10" font-weight="700" fill="#dc2626">5th at t=0s → 429</text>
+  <rect x="858" y="126" width="12" height="28" rx="2" fill="#0f766e"/>
+  <text x="876" y="144" class="mono" font-size="10" fill="#065f46">r6 at t=1.0s → OK</text>
 
   <!-- Output Row -->
   <text x="526" y="198" class="sans" font-size="11" font-weight="700" fill="#065f46">Outflow (Smooth)</text>
-  <line x1="640" y1="212" x2="1056" y2="212" stroke="#94a3b8" stroke-width="1.2"/>
-  <rect x="730" y="184" width="14" height="28" rx="2" fill="#059669"/>
+  <line x1="640" y1="212" x2="1056" y2="212" stroke="#d6d0c4" stroke-width="1.2"/>
+  <rect x="730" y="184" width="14" height="28" rx="2" fill="#0f766e"/>
   <text x="737" y="180" class="mono" font-size="10" fill="#065f46" text-anchor="middle">1s</text>
-  <rect x="820" y="184" width="14" height="28" rx="2" fill="#059669"/>
+  <rect x="820" y="184" width="14" height="28" rx="2" fill="#0f766e"/>
   <text x="827" y="180" class="mono" font-size="10" fill="#065f46" text-anchor="middle">2s</text>
-  <rect x="910" y="184" width="14" height="28" rx="2" fill="#059669"/>
+  <rect x="910" y="184" width="14" height="28" rx="2" fill="#0f766e"/>
   <text x="917" y="180" class="mono" font-size="10" fill="#065f46" text-anchor="middle">3s</text>
-  <rect x="1000" y="184" width="14" height="28" rx="2" fill="#059669"/>
+  <rect x="1000" y="184" width="14" height="28" rx="2" fill="#0f766e"/>
   <text x="1007" y="180" class="mono" font-size="10" fill="#065f46" text-anchor="middle">4s</text>
 
   <!-- 4 Step Cards -->
-  <rect x="512" y="238" width="564" height="52" rx="7" fill="#eff6ff" class="c1"/>
-  <text x="528" y="259" class="sans" font-size="12" font-weight="700" fill="#1e3a8a">1. t = 0.0s · Burst of 4 fills queue</text>
-  <text x="528" y="277" class="mono" font-size="10.5" fill="#334155">water: 0 → 4 ≤ B  ·  remaining: 0  ·  queued for 1/R pacing</text>
-  <rect x="964" y="250" width="98" height="26" rx="5" fill="#2563eb"/>
+  <rect x="512" y="238" width="564" height="52" rx="7" fill="#f0fdf9" class="c1"/>
+  <text x="528" y="259" class="sans" font-size="12" font-weight="700" fill="#065f46">1. t = 0.0s · Burst of 4 fills queue</text>
+  <text x="528" y="277" class="mono" font-size="10.5" fill="#44403c">water: 0 → 4 ≤ B  ·  remaining: 0  ·  queued for 1/R pacing</text>
+  <rect x="964" y="250" width="98" height="26" rx="5" fill="#0f766e"/>
   <text x="1013" y="267" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">4× QUEUED</text>
 
-  <rect x="512" y="298" width="564" height="52" rx="7" fill="#fff1f2" class="c2"/>
-  <text x="528" y="319" class="sans" font-size="12" font-weight="700" fill="#9f1239">2. t = 0.0s · 5th arrival overflows capacity</text>
-  <text x="528" y="337" class="mono" font-size="10.5" fill="#334155">water + 1 = 5 &gt; 4  ·  retryAfterMs = ceil((5-4)/1 × 1000) = 1000</text>
-  <rect x="964" y="310" width="98" height="26" rx="5" fill="#e11d48"/>
+  <rect x="512" y="298" width="564" height="52" rx="7" fill="#fef2f2" class="c2"/>
+  <text x="528" y="319" class="sans" font-size="12" font-weight="700" fill="#991b1b">2. t = 0.0s · 5th arrival overflows capacity</text>
+  <text x="528" y="337" class="mono" font-size="10.5" fill="#44403c">water + 1 = 5 &gt; 4  ·  retryAfterMs = ceil((5-4)/1 × 1000) = 1000</text>
+  <rect x="964" y="310" width="98" height="26" rx="5" fill="#dc2626"/>
   <text x="1013" y="327" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">429 SHED</text>
 
-  <rect x="512" y="358" width="564" height="52" rx="7" fill="#ecfdf5" class="c3"/>
+  <rect x="512" y="358" width="564" height="52" rx="7" fill="#f0fdf9" class="c3"/>
   <text x="528" y="379" class="sans" font-size="12" font-weight="700" fill="#065f46">3. t = 1.0s · Spout drains 1 request to Backend</text>
-  <text x="528" y="397" class="mono" font-size="10.5" fill="#334155">water = max(0, 4 - 1.0 × 1) = 3.0  ·  1 slot freed smoothly</text>
-  <rect x="964" y="370" width="98" height="26" rx="5" fill="#059669"/>
+  <text x="528" y="397" class="mono" font-size="10.5" fill="#44403c">water = max(0, 4 - 1.0 × 1) = 3.0  ·  1 slot freed smoothly</text>
+  <rect x="964" y="370" width="98" height="26" rx="5" fill="#0f766e"/>
   <text x="1013" y="387" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">DRIP 1/s</text>
 
-  <rect x="512" y="418" width="564" height="52" rx="7" fill="#eff6ff" class="c4"/>
-  <text x="528" y="439" class="sans" font-size="12" font-weight="700" fill="#1e3a8a">4. t = 1.0s · Next request admitted cleanly</text>
-  <text x="528" y="457" class="mono" font-size="10.5" fill="#334155">water + 1 = 4 ≤ B  ·  Backend never sees &gt; 1 req/s instantaneous</text>
-  <rect x="964" y="430" width="98" height="26" rx="5" fill="#059669"/>
+  <rect x="512" y="418" width="564" height="52" rx="7" fill="#f0fdf9" class="c4"/>
+  <text x="528" y="439" class="sans" font-size="12" font-weight="700" fill="#065f46">4. t = 1.0s · Next request admitted cleanly</text>
+  <text x="528" y="457" class="mono" font-size="10.5" fill="#44403c">water + 1 = 4 ≤ B  ·  Backend never sees &gt; 1 req/s instantaneous</text>
+  <rect x="964" y="430" width="98" height="26" rx="5" fill="#0f766e"/>
   <text x="1013" y="447" class="mono" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">ADMITTED</text>
 
   <!-- FOOTER -->
-  <rect x="24" y="494" width="1072" height="46" rx="8" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1"/>
+  <rect x="24" y="494" width="1072" height="46" rx="8" fill="#f0fdf9" stroke="#99f6e4" stroke-width="1"/>
   <text x="42" y="522" class="sans" font-size="11.5" font-weight="600" fill="#065f46">Takeaway: Leaky Bucket shapes spiky bursts into a strictly constant outflow R = 1 req/s, protecting rate-sensitive downstreams in O(1) memory.</text>
 </svg>

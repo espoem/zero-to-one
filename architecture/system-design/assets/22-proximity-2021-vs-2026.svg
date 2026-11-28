@@ -1,25 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 620" width="100%" height="100%">
   <defs>
     <style>
-      .bg { fill: #0b1020; }
-      .panel { fill: #121a30; stroke: #2b3b66; stroke-width: 1.5; rx: 10; }
-      .col-2021 { fill: #2a1820; stroke: #e05263; stroke-width: 1.5; rx: 8; }
-      .col-2026 { fill: #102a24; stroke: #2ec486; stroke-width: 1.5; rx: 8; }
-      .dim-box { fill: #16223f; stroke: #4c8bf5; stroke-width: 1.5; rx: 6; }
-      .title { font-family: 'Inter', -apple-system, sans-serif; font-size: 18px; font-weight: 700; fill: #f8fafc; }
-      .subtitle { font-family: 'Inter', -apple-system, sans-serif; font-size: 12px; fill: #94a3b8; }
-      .hdr { font-family: 'Inter', -apple-system, sans-serif; font-size: 14px; font-weight: 700; fill: #f1f5f9; }
-      .dim-txt { font-family: 'Inter', -apple-system, sans-serif; font-size: 12px; font-weight: 700; fill: #93c5fd; }
-      .txt { font-family: 'Inter', -apple-system, sans-serif; font-size: 11px; fill: #e2e8f0; }
-      .code-old { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10.5px; fill: #fca5a5; }
-      .code-new { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10.5px; fill: #6ee7b7; }
+      .bg { fill: #faf8f5; }
+      .panel { fill: #ffffff; stroke: #d6d0c4; stroke-width: 1.2; rx: 6; }
+      .col-2021 { fill: #fef2f2; stroke: #dc2626; stroke-width: 1.2; rx: 4; }
+      .col-2026 { fill: #f0fdf9; stroke: #0f766e; stroke-width: 1.3; rx: 4; }
+      .dim-box { fill: #f5f1e8; stroke: #1c1917; stroke-width: 1.2; rx: 4; }
+      .title { font-family: Georgia, "Times New Roman", serif; font-size: 18px; font-weight: 700; fill: #1c1917; }
+      .subtitle { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; font-size: 12px; fill: #57534e; }
+      .hdr { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; font-size: 13.5px; font-weight: 700; fill: #1c1917; }
+      .dim-txt { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; font-size: 12px; font-weight: 700; fill: #0f766e; }
+      .txt { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; font-size: 11px; fill: #44403c; }
+      .code-old { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9.8px; fill: #991b1b; }
+      .code-new { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9.8px; fill: #065f46; }
     </style>
   </defs>
 
-  <rect class="bg" x="0" y="0" width="1280" height="620"/>
+  <rect class="bg" x="0" y="0" width="1280" height="620" rx="4" stroke="#e7e2d8" stroke-width="1"/>
 
   <text class="title" x="24" y="32">Proximity Service Evolution: 2021 Default vs. 2026 Modern Standard</text>
   <text class="subtitle" x="24" y="50">From Manual SQL Geohash Likes &amp; Cold-Booting Quadtrees to PostGIS 3.5+ GiST, Valkey GEOSEARCH, Hybrid Vector Search &amp; Overture GERS</text>
+  <line x1="24" y1="60" x2="1256" y2="60" stroke="#1c1917" stroke-width="1.2"/>
 
   <!-- Column Headers -->
   <rect class="dim-box" x="20" y="68" width="220" height="38"/>
