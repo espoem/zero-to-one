@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 440" width="960" height="440" role="img" aria-labelledby="title desc">
+  <title id="title">2D Convolutional Neural Network (CNN) Cross-Correlation and Receptive Field</title>
+  <desc id="desc">Animated 2D convolution showing a 3x3 kernel window sliding over a 5x5 input grid to compute a 3x3 output feature map, plus multi-layer receptive field growth.</desc>
+  <style>
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    @keyframes slide-win {
+      0%, 20%   { transform: translate(0px, 0px); }
+      25%, 45%  { transform: translate(84px, 0px); }
+      50%, 70%  { transform: translate(0px, 84px); }
+      75%, 95%  { transform: translate(84px, 84px); }
+      100%      { transform: translate(0px, 0px); }
+    }
+    @keyframes slide-out {
+      0%, 20%   { transform: translate(0px, 0px); }
+      25%, 45%  { transform: translate(48px, 0px); }
+      50%, 70%  { transform: translate(0px, 48px); }
+      75%, 95%  { transform: translate(48px, 48px); }
+      100%      { transform: translate(0px, 0px); }
+    }
+    .win-in  { animation: slide-win 8s ease-in-out infinite; }
+    .win-out { animation: slide-out 8s ease-in-out infinite; }
+    @media (prefers-reduced-motion: reduce) {
+      .win-in, .win-out { animation: none !important; }
+    }
+  </style>
+  <defs>
+    <marker id="arr-indigo" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#4f46e5"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="960" height="440" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="960" height="56" rx="12" fill="#0f172a"/>
+  <rect x="0" y="40" width="960" height="16" fill="#0f172a"/>
+  <text x="24" y="26" class="sans" font-size="17" font-weight="700" fill="#f8fafc">CNN: 2D Cross-Correlation, Stride, Dilation &amp; Receptive Field</text>
+  <text x="24" y="45" class="mono" font-size="12" fill="#94a3b8">(I * K)(i,j) = sum_{m,n} I(i + md, j + nd) K(m,n) + b   |   r_l = r_{l-1} + (k_l - 1) j_{l-1}</text>
+
+  <!-- Input 5x5 grid -->
+  <rect x="40" y="84" width="248" height="296" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="164" y="108" class="sans" font-size="13" font-weight="700" fill="#0f172a" text-anchor="middle">Input Feature Map I (5 x 5)</text>
+  <g transform="translate(59, 124)" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1">
+    <rect x="0" y="0" width="42" height="42"/><rect x="42" y="0" width="42" height="42"/><rect x="84" y="0" width="42" height="42"/><rect x="126" y="0" width="42" height="42"/><rect x="168" y="0" width="42" height="42"/>
+    <rect x="0" y="42" width="42" height="42"/><rect x="42" y="42" width="42" height="42"/><rect x="84" y="42" width="42" height="42"/><rect x="126" y="42" width="42" height="42"/><rect x="168" y="42" width="42" height="42"/>
+    <rect x="0" y="84" width="42" height="42"/><rect x="42" y="84" width="42" height="42"/><rect x="84" y="84" width="42" height="42"/><rect x="126" y="84" width="42" height="42"/><rect x="168" y="84" width="42" height="42"/>
+    <rect x="0" y="126" width="42" height="42"/><rect x="42" y="126" width="42" height="42"/><rect x="84" y="126" width="42" height="42"/><rect x="126" y="126" width="42" height="42"/><rect x="168" y="126" width="42" height="42"/>
+    <rect x="0" y="168" width="42" height="42"/><rect x="42" y="168" width="42" height="42"/><rect x="84" y="168" width="42" height="42"/><rect x="126" y="168" width="42" height="42"/><rect x="168" y="168" width="42" height="42"/>
+    <rect x="0" y="0" width="126" height="126" fill="#3b82f6" fill-opacity="0.22" stroke="#2563eb" stroke-width="2.5" class="win-in"/>
+  </g>
+  <text x="164" y="360" class="mono" font-size="11" fill="#475569" text-anchor="middle">p=0, s=1, d=1, k=3 -&gt; H_out = 3</text>
+
+  <!-- Kernel 3x3 -->
+  <rect x="330" y="114" width="170" height="206" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="415" y="138" class="sans" font-size="13" font-weight="700" fill="#0f172a" text-anchor="middle">Shared Kernel K (3x3)</text>
+  <g transform="translate(352, 154)">
+    <rect x="0" y="0" width="42" height="42" fill="#ede9fe" stroke="#7c3aed"/><text x="21" y="25" class="mono" font-size="11" fill="#4c1d95" text-anchor="middle">w00</text>
+    <rect x="42" y="0" width="42" height="42" fill="#ede9fe" stroke="#7c3aed"/><text x="63" y="25" class="mono" font-size="11" fill="#4c1d95" text-anchor="middle">w01</text>
+    <rect x="84" y="0" width="42" height="42" fill="#ede9fe" stroke="#7c3aed"/><text x="105" y="25" class="mono" font-size="11" fill="#4c1d95" text-anchor="middle">w02</text>
+    <rect x="0" y="42" width="42" height="42" fill="#ede9fe" stroke="#7c3aed"/><text x="21" y="67" class="mono" font-size="11" fill="#4c1d95" text-anchor="middle">w10</text>
+    <rect x="42" y="42" width="42" height="42" fill="#ede9fe" stroke="#7c3aed"/><text x="63" y="67" class="mono" font-size="11" fill="#4c1d95" text-anchor="middle">w11</text>
+    <rect x="84" y="42" width="42" height="42" fill="#ede9fe" stroke="#7c3aed"/><text x="105" y="67" class="mono" font-size="11" fill="#4c1d95" text-anchor="middle">w12</text>
+    <rect x="0" y="84" width="42" height="42" fill="#ede9fe" stroke="#7c3aed"/><text x="21" y="109" class="mono" font-size="11" fill="#4c1d95" text-anchor="middle">w20</text>
+    <rect x="42" y="84" width="42" height="42" fill="#ede9fe" stroke="#7c3aed"/><text x="63" y="109" class="mono" font-size="11" fill="#4c1d95" text-anchor="middle">w21</text>
+    <rect x="84" y="84" width="42" height="42" fill="#ede9fe" stroke="#7c3aed"/><text x="105" y="109" class="mono" font-size="11" fill="#4c1d95" text-anchor="middle">w22</text>
+  </g>
+  <text x="415" y="304" class="sans" font-size="11" fill="#6d28d9" text-anchor="middle">Translation Equivariance</text>
+
+  <line x1="292" y1="220" x2="326" y2="220" stroke="#4f46e5" stroke-width="2.2" marker-end="url(#arr-indigo)"/>
+  <line x1="504" y1="220" x2="540" y2="220" stroke="#4f46e5" stroke-width="2.2" marker-end="url(#arr-indigo)"/>
+
+  <!-- Output 3x3 -->
+  <rect x="546" y="84" width="374" height="296" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="733" y="108" class="sans" font-size="13" font-weight="700" fill="#0f172a" text-anchor="middle">Output Map &amp; Receptive Field Growth</text>
+  <g transform="translate(570, 126)" fill="#ecfdf5" stroke="#10b981" stroke-width="1">
+    <rect x="0" y="0" width="48" height="48"/><rect x="48" y="0" width="48" height="48"/><rect x="96" y="0" width="48" height="48"/>
+    <rect x="0" y="48" width="48" height="48"/><rect x="48" y="48" width="48" height="48"/><rect x="96" y="48" width="48" height="48"/>
+    <rect x="0" y="96" width="48" height="48"/><rect x="48" y="96" width="48" height="48"/><rect x="96" y="96" width="48" height="48"/>
+    <rect x="0" y="0" width="48" height="48" fill="#10b981" fill-opacity="0.35" stroke="#059669" stroke-width="2.5" class="win-out"/>
+  </g>
+
+  <!-- Receptive field ladder -->
+  <rect x="734" y="126" width="168" height="190" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="818" y="148" class="sans" font-size="12" font-weight="700" fill="#0f172a" text-anchor="middle">RF Recurrence</text>
+  <text x="746" y="174" class="mono" font-size="11" fill="#334155">L0: r0 = 1, j0 = 1</text>
+  <text x="746" y="198" class="mono" font-size="11" fill="#2563eb">L1 (3x3, s=1): r=3</text>
+  <text x="746" y="222" class="mono" font-size="11" fill="#7c3aed">L2 (3x3, s=1): r=5</text>
+  <text x="746" y="246" class="mono" font-size="11" fill="#059669">If L1 s=2: j1=2</text>
+  <text x="746" y="268" class="mono" font-size="11" fill="#059669">L2 (3x3, s=1): r=7</text>
+  <text x="746" y="298" class="sans" font-size="10" fill="#64748b">1x1 conv mixes channels</text>
+
+  <text x="733" y="360" class="mono" font-size="11" fill="#475569" text-anchor="middle">2x (3x3) = 18 weights vs 1x (5x5) = 25 weights</text>
+  <text x="480" y="416" class="sans" font-size="12" fill="#475569" text-anchor="middle">Parameter sharing across spatial offsets reduces O(H^2 W^2) dense layers to O(C_in C_out k^2 H_out W_out) MACs</text>
+</svg>

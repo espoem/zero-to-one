@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 600" width="1120" height="600" role="img" aria-labelledby="title desc">
+  <title id="title">8 Ways to Shrink the LLM KV Cache</title>
+  <desc id="desc">Animated overview of the 8 KV-cache compression methods reducing M_KV = 2 L n_kv d_h b T B across four axes: head and latent dimension (MQA, GQA, MLA), sequence horizon (Sliding Window, Attention Sinks), allocator and prefix sharing (PagedAttention, RadixAttention), and bit-width (FP8/INT8/KIVI KV Quantization).</desc>
+  <style>
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    @keyframes bar-shrink {
+      0%, 15%  { width: 220px; }
+      45%, 75% { width: 48px; }
+      100%     { width: 220px; }
+    }
+    @keyframes card-hi {
+      0%, 100% { stroke-width: 1.6; }
+      50%      { stroke-width: 2.6; }
+    }
+    .shrink { animation: bar-shrink 8s ease-in-out infinite; }
+    .card { animation: card-hi 4s ease-in-out infinite; }
+    @media (prefers-reduced-motion: reduce) {
+      .shrink, .card { animation: none !important; }
+      .shrink { width: 48px; }
+    }
+  </style>
+
+  <rect x="0" y="0" width="1120" height="600" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="1120" height="64" rx="12" fill="#0f172a"/>
+  <rect x="0" y="48" width="1120" height="16" fill="#0f172a"/>
+  <text x="24" y="28" class="sans" font-size="18" font-weight="700" fill="#f8fafc">8 Ways to Shrink the KV Cache: Attacking Every Factor of M_KV</text>
+  <text x="24" y="50" class="mono" font-size="13" fill="#94a3b8">M_KV = 2 * L * n_kv * d_h * b * T * B   (Llama-2-7B MHA baseline: 512 KiB/token BF16; 131k ctx = 64 GiB for 1 seq)</text>
+
+  <!-- Baseline comparison bar -->
+  <rect x="24" y="80" width="1072" height="58" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="42" y="104" class="sans" font-size="12" font-weight="700" fill="#0f172a">Per-Token KV Compression Ratio (vs 512 KiB/token MHA-32)</text>
+  <rect x="42" y="114" width="220" height="14" rx="4" fill="#fee2e2" stroke="#e11d48"/>
+  <rect x="42" y="114" width="220" height="14" rx="4" fill="#2563eb" class="shrink"/>
+  <text x="280" y="125" class="mono" font-size="11" fill="#334155">MHA (1x) -&gt; GQA-8 (4x) -&gt; MQA (32x) -&gt; MLA (57x per token at 576 elems) -&gt; +KIVI 2-bit</text>
+
+  <!-- Row 1: Head & Latent Dimension + Sequence Horizon -->
+  <!-- 1. MQA -->
+  <rect x="24" y="156" width="256" height="186" rx="10" fill="#ffffff" stroke="#2563eb" class="card"/>
+  <text x="40" y="182" class="sans" font-size="13" font-weight="700" fill="#1e3a8a">1. MQA (Shazeer 2019)</text>
+  <text x="40" y="204" class="mono" font-size="11" fill="#1d4ed8">n_kv = 1  (saves n_h x)</text>
+  <text x="40" y="228" class="sans" font-size="11" fill="#334155">All n_h query heads share</text>
+  <text x="40" y="244" class="sans" font-size="11" fill="#334155">one K and one V head.</text>
+  <text x="40" y="272" class="mono" font-size="10" fill="#475569">Bytes: 2 * L * d_h * b * T * B</text>
+  <text x="40" y="294" class="sans" font-size="10" fill="#be123c">Trade-off: slight quality drop</text>
+  <text x="40" y="324" class="mono" font-size="10" fill="#64748b">arXiv:1911.02150</text>
+
+  <!-- 2. GQA -->
+  <rect x="296" y="156" width="256" height="186" rx="10" fill="#ffffff" stroke="#2563eb" class="card"/>
+  <text x="312" y="182" class="sans" font-size="13" font-weight="700" fill="#1e3a8a">2. GQA (Ainslie 2023)</text>
+  <text x="312" y="204" class="mono" font-size="11" fill="#1d4ed8">n_kv = n_h / G  (G groups)</text>
+  <text x="312" y="228" class="sans" font-size="11" fill="#334155">Interpolates MHA (G=n_h)</text>
+  <text x="312" y="244" class="sans" font-size="11" fill="#334155">and MQA (G=1); uptrain 5%.</text>
+  <text x="312" y="272" class="mono" font-size="10" fill="#475569">Llama-3-8B GQA-8: 128 KiB/tok</text>
+  <text x="312" y="294" class="sans" font-size="10" fill="#047857">Default in Llama-3 / Mistral</text>
+  <text x="312" y="324" class="mono" font-size="10" fill="#64748b">arXiv:2305.13245</text>
+
+  <!-- 3. MLA -->
+  <rect x="568" y="156" width="256" height="186" rx="10" fill="#ffffff" stroke="#7c3aed" class="card"/>
+  <text x="584" y="182" class="sans" font-size="13" font-weight="700" fill="#4c1d95">3. MLA (DeepSeek-V2 2024)</text>
+  <text x="584" y="204" class="mono" font-size="11" fill="#6d28d9">Cache c_t^KV + k_t^R only</text>
+  <text x="584" y="228" class="sans" font-size="11" fill="#334155">Low-rank latent (d_c=512) +</text>
+  <text x="584" y="244" class="sans" font-size="11" fill="#334155">decoupled RoPE (d_h^R=64).</text>
+  <text x="584" y="272" class="mono" font-size="10" fill="#475569">576 elems/layer = 67.5 KiB/tok</text>
+  <text x="584" y="294" class="sans" font-size="10" fill="#6d28d9">Absorb W^UK, W^UV into Q/O</text>
+  <text x="584" y="324" class="mono" font-size="10" fill="#64748b">arXiv:2405.04434</text>
+
+  <!-- 4. Sliding Window -->
+  <rect x="840" y="156" width="256" height="186" rx="10" fill="#ffffff" stroke="#d97706" class="card"/>
+  <text x="856" y="182" class="sans" font-size="13" font-weight="700" fill="#92400e">4. Sliding Window (SWA)</text>
+  <text x="856" y="204" class="mono" font-size="11" fill="#b45309">T -&gt; min(T, W) rolling buf</text>
+  <text x="856" y="228" class="sans" font-size="11" fill="#334155">Each token attends to last W</text>
+  <text x="856" y="244" class="sans" font-size="11" fill="#334155">(Mistral W=4096); O(W) mem.</text>
+  <text x="856" y="272" class="mono" font-size="10" fill="#475569">RF grows as L * W across layers</text>
+  <text x="856" y="294" class="sans" font-size="10" fill="#be123c">Evicts t=0 unless sinks kept</text>
+  <text x="856" y="324" class="mono" font-size="10" fill="#64748b">arXiv:2004.05150 / 2310.06825</text>
+
+  <!-- Row 2: Attention Sinks, PagedAttention, RadixAttention, KV Quantization -->
+  <!-- 5. Attention Sinks -->
+  <rect x="24" y="362" width="256" height="186" rx="10" fill="#ffffff" stroke="#d97706" class="card"/>
+  <text x="40" y="388" class="sans" font-size="13" font-weight="700" fill="#92400e">5. Attention Sinks (2023)</text>
+  <text x="40" y="410" class="mono" font-size="11" fill="#b45309">T -&gt; n_sink + W (4 + W)</text>
+  <text x="40" y="434" class="sans" font-size="11" fill="#334155">Retains first 4 sink tokens</text>
+  <text x="40" y="450" class="sans" font-size="11" fill="#334155">absorbing softmax surplus.</text>
+  <text x="40" y="478" class="mono" font-size="10" fill="#475569">Stable to 4M+ tokens, 22.2x</text>
+  <text x="40" y="500" class="sans" font-size="10" fill="#047857">faster vs SWA recomputation</text>
+  <text x="40" y="530" class="mono" font-size="10" fill="#64748b">arXiv:2309.17453 (StreamingLLM)</text>
+
+  <!-- 6. PagedAttention -->
+  <rect x="296" y="362" width="256" height="186" rx="10" fill="#ffffff" stroke="#059669" class="card"/>
+  <text x="312" y="388" class="sans" font-size="13" font-weight="700" fill="#065f46">6. PagedAttention (vLLM)</text>
+  <text x="312" y="410" class="mono" font-size="11" fill="#047857">ceil(T / B_blk) * B_blk</text>
+  <text x="312" y="434" class="sans" font-size="11" fill="#334155">OS-style non-contiguous KV</text>
+  <text x="312" y="450" class="sans" font-size="11" fill="#334155">blocks + CoW beam sharing.</text>
+  <text x="312" y="478" class="mono" font-size="10" fill="#475569">&lt; 4% waste vs 60-80% static</text>
+  <text x="312" y="500" class="sans" font-size="10" fill="#047857">2-4x batch &amp; throughput</text>
+  <text x="312" y="530" class="mono" font-size="10" fill="#64748b">arXiv:2309.06180</text>
+
+  <!-- 7. RadixAttention -->
+  <rect x="568" y="362" width="256" height="186" rx="10" fill="#ffffff" stroke="#059669" class="card"/>
+  <text x="584" y="388" class="sans" font-size="13" font-weight="700" fill="#065f46">7. RadixAttention (SGLang)</text>
+  <text x="584" y="410" class="mono" font-size="11" fill="#047857">T_eff = |union prefix_i|</text>
+  <text x="584" y="434" class="sans" font-size="11" fill="#334155">Radix tree over token IDs;</text>
+  <text x="584" y="450" class="sans" font-size="11" fill="#334155">LRU eviction + cache sched.</text>
+  <text x="584" y="478" class="mono" font-size="10" fill="#475569">Shares system prompt &amp; tree</text>
+  <text x="584" y="500" class="sans" font-size="10" fill="#047857">Up to 6.4x multi-turn speed</text>
+  <text x="584" y="530" class="mono" font-size="10" fill="#64748b">arXiv:2312.07104</text>
+
+  <!-- 8. KV Quantization -->
+  <rect x="840" y="362" width="256" height="186" rx="10" fill="#ffffff" stroke="#e11d48" class="card"/>
+  <text x="856" y="388" class="sans" font-size="13" font-weight="700" fill="#9f1239">8. KV Quantization (KIVI)</text>
+  <text x="856" y="410" class="mono" font-size="11" fill="#be123c">b: 2B (BF16) -&gt; 1B -&gt; 0.25B</text>
+  <text x="856" y="434" class="sans" font-size="11" fill="#334155">FP8/INT8 halves VRAM; KIVI</text>
+  <text x="856" y="450" class="sans" font-size="11" fill="#334155">2-bit: K per-chan, V per-tok.</text>
+  <text x="856" y="478" class="mono" font-size="10" fill="#475569">2.6x lower peak memory, up to</text>
+  <text x="856" y="500" class="sans" font-size="10" fill="#be123c">4x batch, 2.35-3.47x thrpt</text>
+  <text x="856" y="530" class="mono" font-size="10" fill="#64748b">arXiv:2402.02750</text>
+
+  <text x="560" y="578" class="sans" font-size="12" fill="#475569" text-anchor="middle">Methods 1-3 &amp; 6-8 raise max batch size B (throughput); Methods 4-5 cap context footprint T (infinite streaming)</text>
+</svg>

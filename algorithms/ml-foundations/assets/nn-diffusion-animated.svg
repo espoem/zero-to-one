@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 440" width="960" height="440" role="img" aria-labelledby="title desc">
+  <title id="title">Denoising Diffusion Probabilistic Model (DDPM) Forward and Reverse Chains</title>
+  <desc id="desc">Animated DDPM schematic showing forward Markov noising q(x_t|x_0) from data x_0 to isotropic Gaussian x_T, and learned reverse denoising chain p_theta(x_{t-1}|x_t) via noise predictor epsilon_theta.</desc>
+  <style>
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    @keyframes fwd-noise {
+      0%   { transform: translateX(0px); opacity: 0; }
+      10%  { opacity: 1; }
+      45%  { transform: translateX(650px); opacity: 1; }
+      50%, 100% { transform: translateX(650px); opacity: 0; }
+    }
+    @keyframes rev-denoise {
+      0%, 50% { transform: translateX(0px); opacity: 0; }
+      55%     { opacity: 1; }
+      92%     { transform: translateX(-650px); opacity: 1; }
+      100%    { transform: translateX(-650px); opacity: 0; }
+    }
+    .fwd-n { animation: fwd-noise 7s ease-in-out infinite; }
+    .rev-d { animation: rev-denoise 7s ease-in-out infinite; }
+    @media (prefers-reduced-motion: reduce) {
+      .fwd-n, .rev-d { animation: none !important; }
+      .fwd-n { opacity: 1; transform: translateX(325px); }
+      .rev-d { opacity: 1; transform: translateX(-325px); }
+    }
+  </style>
+  <defs>
+    <marker id="arr-blue-d" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-emerald-d" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="960" height="440" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="960" height="56" rx="12" fill="#0f172a"/>
+  <rect x="0" y="40" width="960" height="16" fill="#0f172a"/>
+  <text x="24" y="26" class="sans" font-size="17" font-weight="700" fill="#f8fafc">Diffusion (DDPM): Forward Noising &amp; Learned Reverse Denoising</text>
+  <text x="24" y="45" class="mono" font-size="12" fill="#94a3b8">x_t = sqrt(alpha_bar_t) x_0 + sqrt(1 - alpha_bar_t) eps   |   L_simple = E[||eps - eps_theta(x_t, t)||^2]</text>
+
+  <!-- States -->
+  <rect x="70" y="132" width="110" height="110" rx="12" fill="#dbeafe" stroke="#2563eb" stroke-width="2.2"/>
+  <text x="125" y="180" class="mono" font-size="16" font-weight="700" fill="#1e3a8a" text-anchor="middle">x_0</text>
+  <text x="125" y="204" class="sans" font-size="11" fill="#1d4ed8" text-anchor="middle">Clean Data</text>
+
+  <rect x="315" y="132" width="110" height="110" rx="12" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="370" y="180" class="mono" font-size="16" font-weight="700" fill="#4c1d95" text-anchor="middle">x_{t-1}</text>
+  <text x="370" y="204" class="sans" font-size="11" fill="#6d28d9" text-anchor="middle">Partially Noisy</text>
+
+  <rect x="535" y="132" width="110" height="110" rx="12" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="590" y="180" class="mono" font-size="16" font-weight="700" fill="#831843" text-anchor="middle">x_t</text>
+  <text x="590" y="204" class="sans" font-size="11" fill="#be185d" text-anchor="middle">Closed-Form Jump</text>
+
+  <rect x="780" y="132" width="110" height="110" rx="12" fill="#f1f5f9" stroke="#475569" stroke-width="2.2"/>
+  <text x="835" y="180" class="mono" font-size="16" font-weight="700" fill="#0f172a" text-anchor="middle">x_T</text>
+  <text x="835" y="204" class="mono" font-size="11" fill="#475569" text-anchor="middle">N(0, I)</text>
+
+  <!-- Forward arrows (top) -->
+  <path d="M 184 150 Q 250 96 311 150" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#arr-blue-d)"/>
+  <path d="M 429 150 Q 480 96 531 150" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#arr-blue-d)"/>
+  <path d="M 649 150 Q 715 96 776 150" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#arr-blue-d)"/>
+  <text x="480" y="96" class="sans" font-size="12" font-weight="700" fill="#1d4ed8" text-anchor="middle">Forward Chain q(x_t | x_{t-1}) = N(sqrt(alpha_t) x_{t-1}, beta_t I)</text>
+
+  <!-- Reverse arrows (bottom) -->
+  <path d="M 776 228 Q 715 282 649 228" fill="none" stroke="#059669" stroke-width="2.2" marker-end="url(#arr-emerald-d)"/>
+  <path d="M 531 228 Q 480 282 429 228" fill="none" stroke="#059669" stroke-width="2.2" marker-end="url(#arr-emerald-d)"/>
+  <path d="M 311 228 Q 250 282 184 228" fill="none" stroke="#059669" stroke-width="2.2" marker-end="url(#arr-emerald-d)"/>
+  <text x="480" y="294" class="sans" font-size="12" font-weight="700" fill="#047857" text-anchor="middle">Reverse Denoising p_theta(x_{t-1} | x_t) via U-Net / DiT predicting eps_theta(x_t, t)</text>
+
+  <!-- Animated tracks -->
+  <line x1="130" y1="336" x2="780" y2="336" stroke="#2563eb" stroke-width="2" marker-end="url(#arr-blue-d)"/>
+  <circle cx="130" cy="336" r="7" fill="#2563eb" class="fwd-n"/>
+  <text x="455" y="328" class="sans" font-size="10" fill="#1e40af" text-anchor="middle">Training samples t ~ Unif{1..T} in O(1) without simulating intermediate steps</text>
+
+  <line x1="780" y1="376" x2="130" y2="376" stroke="#059669" stroke-width="2" marker-end="url(#arr-emerald-d)"/>
+  <circle cx="780" cy="376" r="7" fill="#059669" class="rev-d"/>
+  <text x="455" y="368" class="sans" font-size="10" fill="#065f46" text-anchor="middle">Ancestral sampling subtracts scaled eps_theta(x_t, t) + sigma_t z iteratively from t=T to 1</text>
+
+  <text x="480" y="418" class="sans" font-size="11" fill="#475569" text-anchor="middle">L_simple drops ELBO step-dependent weights, prioritizing perceptual denoising across noise scales</text>
+</svg>

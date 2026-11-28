@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 440" width="960" height="440" role="img" aria-labelledby="title desc">
+  <title id="title">Generative Adversarial Network (GAN) Minimax Game</title>
+  <desc id="desc">Animated schematic of a GAN showing Generator G mapping latent noise z to synthetic samples competing against real data x in Discriminator D, with opposing gradient updates.</desc>
+  <style>
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    @keyframes fake-flow {
+      0%   { transform: translateX(0px); opacity: 0; }
+      10%  { opacity: 1; }
+      90%  { transform: translateX(460px); opacity: 1; }
+      100% { transform: translateX(460px); opacity: 0; }
+    }
+    @keyframes real-flow {
+      0%   { transform: translateX(0px); opacity: 0; }
+      10%  { opacity: 1; }
+      90%  { transform: translateX(220px); opacity: 1; }
+      100% { transform: translateX(220px); opacity: 0; }
+    }
+    .fake-dot { animation: fake-flow 5s ease-in-out infinite; }
+    .real-dot { animation: real-flow 5s ease-in-out infinite; }
+    @media (prefers-reduced-motion: reduce) {
+      .fake-dot, .real-dot { animation: none !important; }
+      .fake-dot { opacity: 1; transform: translateX(230px); }
+      .real-dot { opacity: 1; transform: translateX(110px); }
+    }
+  </style>
+  <defs>
+    <marker id="arr-gan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#334155"/>
+    </marker>
+    <marker id="arr-g-grad" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="960" height="440" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="960" height="56" rx="12" fill="#0f172a"/>
+  <rect x="0" y="40" width="960" height="16" fill="#0f172a"/>
+  <text x="24" y="26" class="sans" font-size="17" font-weight="700" fill="#f8fafc">GAN: Two-Player Minimax Game &amp; Jensen-Shannon Equilibrium</text>
+  <text x="24" y="45" class="mono" font-size="12" fill="#94a3b8">min_G max_D V(D,G) = E[log D(x)] + E[log(1 - D(G(z)))]   |   V(D*,G) = -log 4 + 2 JSD(p_data || p_g)</text>
+
+  <!-- Latent z -->
+  <rect x="40" y="232" width="110" height="72" rx="10" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="95" y="264" class="mono" font-size="13" font-weight="700" fill="#92400e" text-anchor="middle">z ~ p_z</text>
+  <text x="95" y="284" class="sans" font-size="11" fill="#b45309" text-anchor="middle">Latent Noise</text>
+
+  <!-- Generator G -->
+  <line x1="150" y1="268" x2="210" y2="268" stroke="#334155" stroke-width="2" marker-end="url(#arr-gan)"/>
+  <rect x="214" y="220" width="150" height="96" rx="10" fill="#ede9fe" stroke="#7c3aed" stroke-width="2.2"/>
+  <text x="289" y="256" class="sans" font-size="14" font-weight="700" fill="#4c1d95" text-anchor="middle">Generator G</text>
+  <text x="289" y="278" class="mono" font-size="11" fill="#6d28d9" text-anchor="middle">G(z) ~ p_g</text>
+  <text x="289" y="298" class="sans" font-size="10" fill="#5b21b6" text-anchor="middle">max E[log D(G(z))]</text>
+
+  <!-- Real data x -->
+  <rect x="330" y="96" width="150" height="82" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="405" y="132" class="sans" font-size="14" font-weight="700" fill="#1e3a8a" text-anchor="middle">Real Data x</text>
+  <text x="405" y="154" class="mono" font-size="11" fill="#1d4ed8" text-anchor="middle">x ~ p_data</text>
+
+  <!-- Discriminator D -->
+  <line x1="364" y1="268" x2="538" y2="224" stroke="#334155" stroke-width="2" marker-end="url(#arr-gan)"/>
+  <line x1="480" y1="137" x2="538" y2="180" stroke="#334155" stroke-width="2" marker-end="url(#arr-gan)"/>
+
+  <rect x="542" y="144" width="176" height="120" rx="10" fill="#ecfdf5" stroke="#059669" stroke-width="2.2"/>
+  <text x="630" y="182" class="sans" font-size="14" font-weight="700" fill="#065f46" text-anchor="middle">Discriminator D</text>
+  <text x="630" y="206" class="mono" font-size="11" fill="#047857" text-anchor="middle">D(u) in (0, 1)</text>
+  <text x="630" y="232" class="mono" font-size="10" fill="#065f46" text-anchor="middle">D*(x) = p_data /</text>
+  <text x="630" y="248" class="mono" font-size="10" fill="#065f46" text-anchor="middle">(p_data + p_g)</text>
+
+  <!-- Verdict -->
+  <line x1="718" y1="204" x2="770" y2="204" stroke="#334155" stroke-width="2" marker-end="url(#arr-gan)"/>
+  <rect x="774" y="156" width="146" height="96" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.8"/>
+  <text x="847" y="188" class="sans" font-size="12" font-weight="700" fill="#0f172a" text-anchor="middle">Real vs Fake</text>
+  <text x="847" y="212" class="mono" font-size="11" fill="#059669" text-anchor="middle">Equilibrium:</text>
+  <text x="847" y="232" class="mono" font-size="12" font-weight="700" fill="#0f172a" text-anchor="middle">D*(x) = 0.5</text>
+
+  <!-- Animated dots -->
+  <circle cx="95" cy="268" r="6" fill="#7c3aed" class="fake-dot"/>
+  <circle cx="330" cy="137" r="6" fill="#2563eb" class="real-dot"/>
+
+  <!-- Gradient loop back to G -->
+  <path d="M 630 264 L 630 364 L 289 364 L 289 320" fill="none" stroke="#e11d48" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arr-g-grad)"/>
+  <text x="460" y="356" class="sans" font-size="11" font-weight="700" fill="#be123c" text-anchor="middle">Non-Saturating Gradient to G (Avoids Mode Collapse &amp; Vanishing Early Grad)</text>
+
+  <text x="480" y="416" class="sans" font-size="11" fill="#475569" text-anchor="middle">Failure mode: Mode collapse occurs when G maps many z to a single high-scoring mode of D instead of covering p_data</text>
+</svg>

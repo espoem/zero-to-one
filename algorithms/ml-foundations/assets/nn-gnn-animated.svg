@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 440" width="960" height="440" role="img" aria-labelledby="title desc">
+  <title id="title">Graph Neural Network (GCN and GAT) Message Passing</title>
+  <desc id="desc">Animated GNN message passing showing neighbor embeddings h_j propagating along graph edges to aggregate at target node i under GCN symmetric degree normalization or GAT learned edge attention alpha_ij.</desc>
+  <style>
+    .sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    @keyframes msg-in-1 {
+      0%   { transform: translate(0px, 0px); opacity: 0; }
+      15%  { opacity: 1; }
+      85%  { transform: translate(118px, 68px); opacity: 1; }
+      100% { transform: translate(118px, 68px); opacity: 0; }
+    }
+    @keyframes msg-in-2 {
+      0%   { transform: translate(0px, 0px); opacity: 0; }
+      15%  { opacity: 1; }
+      85%  { transform: translate(118px, -68px); opacity: 1; }
+      100% { transform: translate(118px, -68px); opacity: 0; }
+    }
+    @keyframes msg-in-3 {
+      0%   { transform: translate(0px, 0px); opacity: 0; }
+      15%  { opacity: 1; }
+      85%  { transform: translate(-118px, 0px); opacity: 1; }
+      100% { transform: translate(-118px, 0px); opacity: 0; }
+    }
+    .m1 { animation: msg-in-1 4s ease-in-out infinite; }
+    .m2 { animation: msg-in-2 4s ease-in-out infinite; }
+    .m3 { animation: msg-in-3 4s ease-in-out infinite; }
+    @media (prefers-reduced-motion: reduce) {
+      .m1, .m2, .m3 { animation: none !important; opacity: 1; }
+    }
+  </style>
+
+  <rect x="0" y="0" width="960" height="440" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="0" y="0" width="960" height="56" rx="12" fill="#0f172a"/>
+  <rect x="0" y="40" width="960" height="16" fill="#0f172a"/>
+  <text x="24" y="26" class="sans" font-size="17" font-weight="700" fill="#f8fafc">GNN: Neighborhood Message Passing (GCN Spectral vs GAT Attention)</text>
+  <text x="24" y="45" class="mono" font-size="12" fill="#94a3b8">GCN: H(l+1) = sigma(D~^{-1/2} A~ D~^{-1/2} H(l) W(l))   |   GAT: h_i' = sigma(sum_{j in N_i} alpha_{ij} W h_j)</text>
+
+  <!-- Left panel: Graph Message Passing -->
+  <rect x="30" y="78" width="440" height="310" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="250" y="102" class="sans" font-size="13" font-weight="700" fill="#0f172a" text-anchor="middle">1-Hop Neighborhood Aggregation at Node i</text>
+
+  <line x1="132" y1="164" x2="250" y2="232" stroke="#94a3b8" stroke-width="2.2"/>
+  <line x1="132" y1="300" x2="250" y2="232" stroke="#94a3b8" stroke-width="2.2"/>
+  <line x1="368" y1="232" x2="250" y2="232" stroke="#94a3b8" stroke-width="2.2"/>
+  <line x1="132" y1="164" x2="132" y2="300" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 3"/>
+
+  <!-- Messages -->
+  <circle cx="132" cy="164" r="6" fill="#2563eb" class="m1"/>
+  <circle cx="132" cy="300" r="6" fill="#7c3aed" class="m2"/>
+  <circle cx="368" cy="232" r="6" fill="#059669" class="m3"/>
+
+  <!-- Neighbor nodes -->
+  <circle cx="132" cy="164" r="24" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="132" y="169" class="mono" font-size="12" font-weight="700" fill="#1e3a8a" text-anchor="middle">h_j1</text>
+
+  <circle cx="132" cy="300" r="24" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="132" y="305" class="mono" font-size="12" font-weight="700" fill="#4c1d95" text-anchor="middle">h_j2</text>
+
+  <circle cx="368" cy="232" r="24" fill="#d1fae5" stroke="#059669" stroke-width="2"/>
+  <text x="368" y="237" class="mono" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">h_j3</text>
+
+  <!-- Target node i -->
+  <circle cx="250" cy="232" r="28" fill="#fef3c7" stroke="#d97706" stroke-width="2.6"/>
+  <text x="250" y="236" class="mono" font-size="13" font-weight="700" fill="#92400e" text-anchor="middle">h_i'</text>
+  <text x="250" y="366" class="sans" font-size="11" fill="#475569" text-anchor="middle">Permutation-equivariant over node order</text>
+
+  <!-- Right panel: GCN vs GAT comparison -->
+  <rect x="492" y="78" width="438" height="145" rx="10" fill="#ffffff" stroke="#2563eb" stroke-width="1.8"/>
+  <text x="512" y="104" class="sans" font-size="13" font-weight="700" fill="#1e3a8a">GCN (Kipf &amp; Welling 2017): Fixed Degree Normalization</text>
+  <text x="512" y="130" class="mono" font-size="11" fill="#334155">A~ = A + I (self-loops),  D~_ii = sum_j A~_ij</text>
+  <text x="512" y="154" class="mono" font-size="11" fill="#334155">weight(i, j) = 1 / sqrt(deg_i * deg_j)</text>
+  <text x="512" y="182" class="sans" font-size="11" fill="#475569">First-order Chebyshev truncation; isotropic over neighbors.</text>
+  <text x="512" y="202" class="sans" font-size="11" fill="#be123c">Risk: Over-smoothing collapses node features for L &gt; 4..6.</text>
+
+  <rect x="492" y="243" width="438" height="145" rx="10" fill="#ffffff" stroke="#059669" stroke-width="1.8"/>
+  <text x="512" y="269" class="sans" font-size="13" font-weight="700" fill="#065f46">GAT (Velickovic et al. 2018): Learned Edge Attention</text>
+  <text x="512" y="295" class="mono" font-size="11" fill="#334155">e_ij = LeakyReLU(a^T [W h_i || W h_j])</text>
+  <text x="512" y="319" class="mono" font-size="11" fill="#334155">alpha_ij = softmax_j(e_ij) over j in N_i</text>
+  <text x="512" y="347" class="sans" font-size="11" fill="#475569">Anisotropic per-edge weights; inductive on unseen graphs.</text>
+  <text x="512" y="367" class="sans" font-size="11" fill="#047857">Multi-head: concat hidden layers, average output layer.</text>
+
+  <text x="480" y="418" class="sans" font-size="11" fill="#475569" text-anchor="middle">L message-passing layers gather information from the L-hop neighborhood; GraphSAGE / neighbor sampling bounds fan-out cost</text>
+</svg>

@@ -1,0 +1,25 @@
+{
+  "name": "zero-to-one-ml-foundations",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Executable proofs, KV-cache math, quantization, and drift pipelines for the Zero-to-One ML Foundations track",
+  "type": "module",
+  "scripts": {
+    "test": "npm run test:ts && npm run test:py",
+    "test:ts": "node --test \"examples/ts/**/*.test.ts\"",
+    "test:py": "uv run pytest",
+    "typecheck": "tsc --noEmit -p tsconfig.json && uv run mypy examples/py",
+    "lint": "oxlint -c ../../.oxlintrc.json examples/ts && uv run ruff check examples/py",
+    "fmt": "oxfmt -c ../../.oxfmtrc.json . && uv run ruff format examples/py",
+    "fmt:check": "oxfmt -c ../../.oxfmtrc.json --check . && uv run ruff format --check examples/py"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.6",
+    "oxfmt": "0.76.0",
+    "oxlint": "1.91.0",
+    "typescript": "7.0.2"
+  },
+  "engines": {
+    "node": ">=26"
+  }
+}
