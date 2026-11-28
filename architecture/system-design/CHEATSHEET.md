@@ -160,6 +160,7 @@ $$B_{\text{kv-token}} = 2 \times L \times n_{\text{kv-heads}} \times d_{\text{he
 | **Read-Through** | Cache library/proxy fetches DB transparently on miss | Paired with Write-Through or Write-Behind | Centralizes miss logic; still needs stampede coalescing |
 | **Write-Through** | Reads hit cache | App writes cache + DB synchronously | Cache always fresh; adds DB write latency to every mutation |
 | **Write-Behind** | Reads hit cache | App writes cache only; async worker flushes batch to DB | Lowest write latency & coalesced writes; **data loss risk** on cache crash |
+| **Write-Around** | Reads populate cache on miss (cache-aside) | App writes DB only, bypassing cache (invalidate if key exists) | Avoids cache pollution on write-once/seldom-read payloads; cold miss on first read |
 
 #### Stampede & Stale-Race Defenses
 
@@ -381,3 +382,77 @@ flowchart LR
 | **L5 Zero-Trust East-West** | Service mesh and message broker | SPIFFE mTLS SVIDs, publisher-signed event envelopes | Flat VPC trust lets one SSRF pivot inward |
 | **L6 CSRF** | BFF, for cookie-authenticated unsafe methods | `SameSite`, Fetch Metadata, constant-time synchronizer token | Applied to Bearer M2M endpoints, breaking clients |
 | **L7 XSS** | Frontend and response headers | Nonce-based CSP, Trusted Types, `HttpOnly` cookies | `unsafe-inline` CSP bypassed via gadgets |
+
+---
+
+## 8. System Design in 12 Lines
+
+A rapid symptom-to-mechanism triage table mapping the twelve recurring bottlenecks onto their root mechanism, primary architectural fix, core trade-off, and owning module.
+
+| Symptom | Root Cause / Mechanism | Primary Fix | Key Trade-off | Owning Module |
+| :-- | :-- | :-- | :-- | :-- |
+| **Slow reads** | Repeated synchronous disk/DB round trips on hot keys | Add L1/L2 caching (`Cache-Aside` / `Read-Through`) + `W-TinyLFU` | Bounded staleness + stampede risk at TTL expiry | [Module 05](modules/05-caching-strategies-and-invalidation.md#1-cache-topology-patterns) |
+| **Write spikes** | Bursty synchronous writes exhaust DB locks and pools ($L = \lambda W$) | Buffer mutations in a queue or partitioned log (Kafka/SQS) | Eventual consistency + consumer lag monitoring | [Module 07](modules/07-asynchrony-queues-streams-and-workflows.md#1-why-asynchrony-decoupling-in-time) |
+| **Too much traffic** | Single compute node hits CPU/NIC/memory ceiling | Scale stateless app pods horizontally behind L4/L7 LB (P2C) | Externalized session state + coherency tax ($\beta$) | [Module 03](modules/03-networking-edge-and-cdn-composition.md#2-l4-vs-l7-load-balancing-composition), [Module 15](modules/15-scale-from-zero-to-millions.md) |
+| **Read-heavy DB** | Primary IOPS/CPU saturated by `SELECT` queries (`R:W >= 10:1`) | Add read replicas + LSN-pinned read-your-writes routing | Replication lag + cross-AZ transfer cost | [Module 06](modules/06-scaling-reads-writes-and-partitioning.md#1-scaling-reads) |
+| **Write-heavy DB** | Single-primary WAL flush and lock contention saturate (`> 10k TPS`) | Shard by high-cardinality key (consistent hashing) or LSM store | Cross-shard joins lost + online rebalance complexity | [Module 06](modules/06-scaling-reads-writes-and-partitioning.md#2-sharding-and-consistent-hashing-in-practice) |
+| **Slow queries** | Full table scans, `OFFSET` scans, or missing spatial/text indexes | Add composite covering index, keyset pagination, or ES/H3 index | Extra write amplification + index RAM footprint | [Module 04](modules/04-api-design-data-modeling-and-id-generation.md#22-keyset--cursor-pagination), [Module 09](modules/09-search-geospatial-and-specialized-components.md) |
+| **Slow file loads** | Origin server streams large static blobs across continents | Edge CDN + Origin Shield + presigned object-store URLs (S3/R2) | Cache-key leak risk + purge/invalidation lag | [Module 03](modules/03-networking-edge-and-cdn-composition.md#5-cdn-composition-and-production-failure-modes), [Module 09](modules/09-search-geospatial-and-specialized-components.md) |
+| **Temporary failures** | Transient network blips or brief brownouts drop single attempts | Jittered exponential backoff + capped retry budget (`<= 10%`) + DLQ | Retry amplification / metastable collapse if uncapped | [Module 08](modules/08-rate-limiting-load-shedding-and-resilience.md), [Module 07](modules/07-asynchrony-queues-streams-and-workflows.md) |
+| **Too many requests** | Unbounded client bursts or abuse overwhelm downstream capacity | Identity-keyed GCRA / Token Bucket rate limiter + LIFO load shedding | Valid burst traffic rejected (`429` / `503`) under overload | [Module 08](modules/08-rate-limiting-load-shedding-and-resilience.md) |
+| **One service failing** | Synchronous dependency hang exhausts caller pools ($L = \lambda W$) | Circuit breaker + isolated bulkhead pools + graceful degradation | Stale fallback responses or degraded non-core UX | [Module 08](modules/08-rate-limiting-load-shedding-and-resilience.md), [Module 27](modules/27-backend-architecture-patterns.md) |
+| **Duplicate requests** | Client retries after timeout re-execute mutating writes/charges | Store `Idempotency-Key` + payload hash in same ACID tx + dedupe log | Key retention storage + strict payload-mismatch handling | [Module 04](modules/04-api-design-data-modeling-and-id-generation.md#3-idempotency-keys-and-safe-retries), [Module 10](modules/10-contention-inventory-and-financial-correctness.md) |
+| **Can't see what broke** | Missing correlation, averaged `p99`s, or unredacted noisy logs | OTel traces, native histograms, PII-redacted logs, dual-window burn alerts | Telemetry storage/egress cost + cardinality discipline | [Module 11](modules/11-reliability-slos-observability-and-dr.md) |
+
+---
+
+## 9. System Design Master Template
+
+A reusable one-page markdown skeleton for structuring both 60-minute Staff/Principal interviews and production High-Level Design (HLD) reviews (see [Module 01](modules/01-framing-requirements-and-delivery.md#3-the-structured-4560-minute-delivery-framework)).
+
+```markdown
+# <System Name> — High-Level Design
+
+## 1. Scope, Requirements & Assumptions (0–5 min)
+
+- **Functional Journeys (Top 3–4):**
+  1. <Actor> <action> -> <observable outcome>
+- **Explicit Out-of-Scope Cuts:** <Feature X (reason)>, <Feature Y (reason)>
+- **Non-Functional Contract:**
+  - Latency: p50 <= <X> ms | p99 <= <Y> ms (measurement boundary: edge vs origin)
+  - Availability & Durability: <99.99%> request success | <RPO=0 / RTO<5m>
+  - Consistency: <Strong / Causal / Eventual (staleness <= Z s)> per data class
+  - Scale & Cost: <DAU>, <R:W ratio>, <monthly infra ceiling>, <residency>
+- **Assumption Log:** `A-01: <assumption> — <basis>`
+
+## 2. Back-of-the-Envelope Check (5–13 min; stop early if no threshold crossed)
+
+- **QPS:** avg = `DAU * actions / 86,400`, peak = `avg * M_diurnal`
+- **5-Year Storage:** `writes/day * 1,825 * row_bytes * ~5 (rep + idx + slack)`
+- **Working-Set Cache & Concurrency:** `0.20 * daily_read_set * 1.25`, `L = lambda * W`
+- **Threshold Decision:** <Single tuned primary suffices | Sharding/CDN/Queue forced by X>
+
+## 3. API Contract & Data Model (13–22 min)
+
+- **Endpoints / RPCs:** `POST /v1/...` (with `Idempotency-Key`), `GET /v1/...` (keyset cursor)
+- **Core Entities & Keys:** `<Entity>(<PK/ShardKey>, <Clustering/SortKey>, <Fields>)`
+- **Storage Selection:** <Engine> justified by <access pattern & consistency>
+
+## 4. High-Level Topology & Critical Flows (22–42 min)
+
+- **Read Path:** Client -> Edge/CDN -> L7 LB -> Service -> L1/L2 Cache -> Store/Replica
+- **Write Path:** Client -> Edge/Gateway -> Service -> Primary ACID (+ Outbox) -> Async Workers
+- **Architecture Pattern & Boundary Choice:** <Modular Monolith / Microservices / Event-Driven / CQRS>
+
+## 5. Deep Dives & Bottleneck Proofs (42–55 min)
+
+- **Bottleneck 1 (<Hot keys / Stampede / Contention / Tail Fan-out>):** Mechanism + numbers + mitigation
+- **Bottleneck 2 (<Sharding rebalance / Ordering / Idempotency / Lag>):** Mechanism + numbers + mitigation
+- **ADR Summary:** Chosen option vs rejected alternatives + 10x reversal trigger
+
+## 6. Failure Modes, SLOs & Graceful Degradation (55–60 min)
+
+- **Failure Domains & Blast Radius:** Multi-AZ static stability / cell isolation / circuit breakers
+- **SLIs & Burn-Rate Alerts:** `14.4x` (1h/5m page), `6x` (6h/30m page), `1x` (3d/6h ticket)
+- **Degraded Mode:** <Feature shed / stale-while-revalidate / fail-closed boundary>
+```

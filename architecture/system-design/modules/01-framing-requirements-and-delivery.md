@@ -453,6 +453,85 @@ ByteByteGo's framework predates the Staff/Principal bar described in §4. It rem
 
 ---
 
+## 12. Engineering Specification Documents
+
+Before code or infrastructure changes begin, production engineering teams turn ambiguous product goals into six complementary specification documents that connect directly to Architecture Decision Records (§5.1). Each document answers a distinct question, has a single clear owner, and terminates in an explicit ADR link whenever a structural trade-off, schema boundary, or reversal trigger is introduced.
+
+```mermaid
+flowchart LR
+    PRD["1. PRD\n(Why & What)\nOwner: PM + Staff Eng"] --> BRIEF["4. Design Brief\n(Problem Frame & Cuts)\nOwner: Tech Lead"]
+    PRD --> FLOW["3. App Flow\n(State & User Journeys)\nOwner: Product + FE/BE"]
+    BRIEF --> TRD["2. TRD\n(How, NFRs & Topology)\nOwner: Staff / Lead Eng"]
+    FLOW --> TRD
+    TRD -->|"Structural choices\n& 10x triggers"| ADR["ADRs (§5.1)\nContext, Rejection Rationale,\nEscape Hatch"]
+    TRD --> BG["5. Background Schema\n(Jobs, Queues & Migrations)\nOwner: Backend / Data Eng"]
+    ADR --> PLAN["6. Implementation Plan\n(Milestones, Flags & Rollout)\nOwner: Delivery Lead"]
+    BG --> PLAN
+```
+
+| Document | Core Purpose | Mandatory Sections | Primary Owner | Link to ADRs (§5.1) |
+| :-- | :-- | :-- | :-- | :-- |
+| **Product Requirements Document (PRD)** | Defines user problem, business success metrics, prioritized scope, and explicit non-goals | Problem statement, target personas, user stories with acceptance criteria, success KPIs, non-goals, launch constraints | Product Manager (reviewed by Staff Eng) | Supplies business constraints (`DAU`, latency feel, residency) that become ADR Context and Scope cuts |
+| **Technical Requirements Document (TRD)** | Translates PRD into measurable NFRs, API/data contracts, topology, and failure budgets | Quantified NFRs (`p99`, nines, RPO/RTO, cost), system topology, API & data model, security/residency boundaries, SLIs/SLOs | Staff / Tech Lead Engineer | Hosts or links one ADR per non-trivial choice (`ADR-NNN`), recording rejected options and 10x triggers |
+| **App Flow** | Maps end-to-end user states, screen/API transitions, and error/retry paths | Happy-path state machine, edge/error transitions (`429`, `409`, timeouts), idempotent client retries, offline/degraded UX | Product Designer + FE/BE Leads | Surfaces state transitions that require ADR decisions (e.g., optimistic UI vs pessimistic reservation holds) |
+| **Design Brief** | One-page alignment artifact framed before deep design work to kill bad directions early | Context, top 3 constraints, candidate approaches (2–3), open questions, explicit cut list, decision deadline | Tech Lead / Staff Engineer | Seeds the initial ADR shortlist; rejected brief options migrate verbatim into the ADR `Rejected Alternatives` list |
+| **Background Schema** | Specifies out-of-band execution: async queues, cron schedules, CDC pipelines, and DDL migrations | Event/job payload schemas, queue/partition keys, retry/DLQ & idempotency rules, backfill/expand-contract DDL, lag SLOs | Backend / Data Platform Engineer | Records async consistency, outbox/CDC, and zero-downtime migration ADRs (plus rollback reversal triggers) |
+| **Implementation Plan** | Sequences build slices, feature flags, dual-write/shadow phases, and production rollout gates | Milestone dependency DAG, schema/API ordering, feature-flag kill switches, canary/rollback criteria, verification tests | Engineering Delivery Lead | References accepted ADRs as preconditions and wires ADR reversal triggers into dashboard alerts before GA |
+
+### 12.1 Minimal Templates and ADR Linkage
+
+Keep each template short enough to read in five minutes; specifications that grow past reviewable length drift from the code within a month.
+
+```markdown
+# 1. PRD (Minimal Skeleton)
+
+- **Goal & Hypothesis:** <Metric X moves from A to B because of capability C>
+- **In-Scope Journeys (P0/P1):** <Numbered actor-outcome statements>
+- **Out-of-Scope (Explicit Cuts):** <Deferred items + reason>
+- **Constraints & Compliance:** <Launch date, GDPR/PCI residency, budget ceiling>
+- **Linked Artifacts:** Design Brief (<link>) · TRD (<link>)
+
+# 2. TRD (Minimal Skeleton)
+
+- **Quantified NFRs:** <p50/p99 latency, availability nines, RPO/RTO, peak QPS, $/mo>
+- **Architecture & Data Ownership:** <Component boundaries, storage engines, consistency per entity>
+- **API & Contract Summary:** <Endpoints, Idempotency-Key, cursor pagination, error envelope>
+- **Failure Modes & SLOs:** <Circuit breakers, graceful degradation, burn-rate page thresholds>
+- **Linked ADRs:** `ADR-012` (Monolith vs Mesh), `ADR-014` (Outbox CDC vs Dual-Write)
+
+# 3. App Flow (Minimal Skeleton)
+
+- **Entry & Auth State:** <Unauthenticated -> BFF session / step-up MFA>
+- **Primary Journey Transitions:** `Idle -> Pending (Idempotency-Key) -> Confirmed | Compensated`
+- **Degraded / Failure States:** <Timeout -> Poll status; 429 -> Backoff + Retry-After banner>
+- **ADR Triggers:** <Any client-visible eventual consistency requiring UX polling/SSE>
+
+# 4. Design Brief (Minimal Skeleton)
+
+- **Problem & 3 Hardest Constraints:** <1 paragraph + 3 numbered limits>
+- **Options Considered:** Option A (simple baseline) | Option B (distributed) | Option C (managed)
+- **Recommended Direction & Cuts:** <Choice + what we refuse to build in v1>
+- **Open Decisions -> ADRs:** <Questions assigned to owners with due date>
+
+# 5. Background Schema (Minimal Skeleton)
+
+- **Job / Topic Inventory:** `<topic_or_queue>`, partition key, retention, schema version (Protobuf/Avro)
+- **Outbox & Consumer Contract:** `outbox(id, aggregate_id, seq, payload)` + `processed_events(event_id)`
+- **Backpressure, Retries & DLQ:** Max attempts (`5`), jittered backoff, DLQ redrive runbook, lag SLO (`p99 < 5 s`)
+- **Zero-Downtime Migration Plan:** Expand (nullable + dual-write) -> Backfill -> Verify -> Contract
+
+# 6. Implementation Plan (Minimal Skeleton)
+
+- **Ordered Slices:** Slice 1 (Schema + Outbox) -> Slice 2 (Behind dark flag) -> Slice 3 (Canary 1%/10%/100%)
+- **ADR Gate Check:** All referenced ADRs `Accepted` with reversal-trigger SLI alerts provisioned
+- **Rollback & Kill Switch:** Feature flag `<flag_name>` disables write path in `< 30 s`; reverse-CDC active 72h
+- **Verification Matrix:** Deterministic unit/property tests + integration suite + load test sign-off
+```
+
+Every document above maps one-to-one with a failure mode in production delivery: skipping the **Design Brief** wastes weeks coding the wrong topology; skipping the **App Flow** leaves client retries un-idempotent; skipping the **Background Schema** causes dual-write corruption and poison-pill queue stalls; and severing the **TRD** from **ADRs** ensures future engineers repeat already-rejected architectural mistakes.
+
+---
+
 ## Interview Drill
 
 **Q1. A stakeholder says "the system must be fast and highly available." What is wrong with this requirement and how do you fix it?**

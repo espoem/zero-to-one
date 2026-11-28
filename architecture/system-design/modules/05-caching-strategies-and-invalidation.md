@@ -1,12 +1,12 @@
 # Module 05 — Caching Strategies, Stampede Defense, and Invalidation
 
-A cache is a deliberately stale, intentionally lossy copy of data placed closer to the consumer than the authoritative store. It trades correctness guarantees for latency and load: every cache hit avoids an expensive call to a database or service, but every cache copy is a new place for data to go wrong. This module treats caching as an engineering discipline rather than a library call: we classify the five topology patterns by read/write ratio, staleness tolerance, and failure blast radius; we analyze why textbook eviction policies fail under real Zipf-plus-scan traffic; we prove out the three production failure modes that turn a cache from a shield into an amplifier; and we close with negative caching and the Redis operational traps. The executable proofs for the hit-rate and single-flight claims live in `../examples/03-caching-and-hashing.test.ts`. Caching _theory_ — consistency models, dual-write hazards, invalidation semantics, and stampede analysis as abstract results — is owned by [`architecture/data-systems`](../../data-systems/README.md); this module contributes the composition, sizing, and failure-mode playbook. Eviction data structures and sketch math are owned by [`algorithms/dsa`](../../../algorithms/dsa/README.md).
+A cache is a deliberately stale, intentionally lossy copy of data placed closer to the consumer than the authoritative store. It trades correctness guarantees for latency and load: every cache hit avoids an expensive call to a database or service, but every cache copy is a new place for data to go wrong. This module treats caching as an engineering discipline rather than a library call: we classify the six topology patterns by read/write ratio, staleness tolerance, and failure blast radius; we analyze why textbook eviction policies fail under real Zipf-plus-scan traffic; we prove out the three production failure modes that turn a cache from a shield into an amplifier; and we close with negative caching and the Redis operational traps. The executable proofs for the hit-rate and single-flight claims live in `../examples/03-caching-and-hashing.test.ts`. Caching _theory_ — consistency models, dual-write hazards, invalidation semantics, and stampede analysis as abstract results — is owned by [`architecture/data-systems`](../../data-systems/README.md); this module contributes the composition, sizing, and failure-mode playbook. Eviction data structures and sketch math are owned by [`algorithms/dsa`](../../../algorithms/dsa/README.md).
 
 ---
 
 ## 1. Cache Topology Patterns
 
-A topology is an answer to three questions: who populates the cache, who writes through it, and what happens on a miss. The five canonical patterns differ only in those answers, yet their operational profiles are radically different. We use the notation $R$ for the read rate and $W$ for the write rate, and we call the ratio $R:W$ the **access skew** of the workload.
+A topology is an answer to three questions: who populates the cache, who writes through it, and what happens on a miss. The six canonical patterns differ only in those answers, yet their operational profiles are radically different. We use the notation $R$ for the read rate and $W$ for the write rate, and we call the ratio $R:W$ the **access skew** of the workload.
 
 ### 1.1 Cache-Aside (Lazy Loading)
 
@@ -87,15 +87,35 @@ background refresher:
 
 Refresh-ahead converts predictable tail latency into steady background load. It is excellent for a small, stable hot set (top stories, leaderboards, exchange rates) and dangerous for a large or shifting key space, where it wastes database capacity refreshing values nobody reads. If the refresher falls behind, hot keys still expire and you get the stampede of §3.1 — refresh-ahead reduces probability, it does not eliminate the need for stampede defenses.
 
-### 1.6 Decision Matrix
+### 1.6 Write-Around (No-Write-Allocate)
+
+In **write-around**, writes go directly to the authoritative backing store and bypass the cache entirely; the cache is populated only on a subsequent read miss (paired with cache-aside or read-through). In hardware and storage cache terminology this corresponds to a **no-write-allocate** policy.
+
+```text
+write(key, new_value):
+    db.write(key, new_value)            # bypass cache allocation
+    cache.delete(key)                   # mandatory if updating an existing key
+
+read(key):
+    value = cache.get(key)
+    if value != MISS: return value
+    value = db.select(key)              # load only if actually read
+    cache.set(key, value, ttl)
+    return value
+```
+
+Write-around prevents **write-induced cache pollution**: when an application ingests large payloads, audit logs, historical archives, or write-once user uploads that are rarely read back soon, write-through would evict genuinely hot read keys to store cold writes. The trade-off is a cold cache miss (higher p99 latency) on the first read after a write—and when mutating an existing key rather than inserting an append-only key, failing to invalidate (`cache.delete(key)`) leaves the cache serving the prior value until TTL expiry.
+
+### 1.7 Decision Matrix
 
 | Pattern | Typical access skew | Staleness window | Failure blast radius | Choose when |
 | --- | --- | --- | --- | --- |
 | Cache-Aside | Any, strongly read-biased | Until first write invalidates or TTL | Cache loss increases DB load, never loses data | General web apps; default choice |
 | Read-Through | Read-biased | Same as cache-aside | Loader bug affects all readers at once | You want one centralized miss path |
 | Write-Through | Moderate writes, read-after-write common | Near zero | DB write failure can desync cache | Freshness matters, write rate modest |
-| Write-Behind | Write-heavy, bursty | Flush lag (seconds) | Cache crash loses acknowledged writes | Throughput critical, loss tolerable or buffered |
+| Write-Behind (Write-Back) | Write-heavy, bursty | Flush lag (seconds) | Cache crash loses acknowledged writes | Throughput critical, loss tolerable or buffered |
 | Refresh-Ahead | Stable hot set, very read-biased | Refresh horizon | Refresh storm wastes DB capacity | Predictable hot keys, strict tail latency |
+| Write-Around | Write-once or seldom re-read writes | Cold miss on first read; stale if update skips delete | Cache untouched on write; read path degrades to DB on miss | Large payloads, logs, append-heavy ingestion avoiding pollution |
 
 ```mermaid
 flowchart TD
@@ -104,16 +124,36 @@ flowchart TD
     Q -->|"Read-after-write freshness"| B["Write-Through"]
     Q -->|"Write-heavy bursts"| C["Write-Behind plus durable buffer"]
     Q -->|"Small stable hot set"| D["Refresh-Ahead"]
+    Q -->|"Write-once / rarely re-read"| G["Write-Around (bypass cache)"]
     A --> E["Add stampede defenses in all cases"]
     B --> E
     C --> E
     D --> E
+    G --> E
     E --> F["Measure hit rate, p99 miss latency, invalidation lag"]
 ```
 
 The diagram forces the important conclusion: **every** topology ends at the same node. Stampede defense and measurement are not optional add-ons to a particular pattern; they are table stakes for all of them.
 
-### 1.7 Where a Cache Sits on the Consistency Spectrum
+#### Complete 11-Strategy Caching Reference
+
+Caching designs combine a **read/write topology**, an **eviction policy** (§2), an **expiry/invalidation mechanism** (§3.2), and a **concurrency defense** (§3.1). The table below summarizes all eleven strategies side by side.
+
+| # | Strategy | Category | Core Mechanism | Primary Failure Mode / Trade-off | Where Covered |
+| :-: | :-- | :-- | :-- | :-- | :-- |
+| 1 | **Cache-Aside** | Read/Write Topology | App reads cache, loads DB on miss, deletes cache after DB write | Stale-write race without lease tokens (§3.2) | [§1.1](#11-cache-aside-lazy-loading) |
+| 2 | **Read-Through** | Read/Write Topology | Cache library/proxy owns miss callback to backing store | Loader bug impacts all readers; still needs coalescing | [§1.2](#12-read-through) |
+| 3 | **Refresh-Ahead** | Read/Write Topology | Async refresher reloads hot keys before TTL expiry | Wastes DB capacity if hot set shifts unpredictably | [§1.5](#15-refresh-ahead) |
+| 4 | **Write-Through** | Read/Write Topology | App writes cache and DB synchronously before ACK | Write amplification + higher write latency | [§1.3](#13-write-through) |
+| 5 | **Write-Back (Write-Behind)** | Read/Write Topology | App ACKs cache write immediately; async batch flushes to DB | Volatile buffer crash causes RPO > 0 data loss | [§1.4](#14-write-behind-write-back) |
+| 6 | **Write-Around** | Read/Write Topology | Writes go directly to DB bypassing cache; reads fill on miss | First read after write misses; updates still need delete | [§1.6](#16-write-around-no-write-allocate) |
+| 7 | **LRU** | Eviction Policy | Evicts least recently touched entry (`O(1)` hash + doubly linked list) | Catastrophic cache pollution on one-hit sequential scans | [§2.1](#21-why-pure-lru-suffers-catastrophic-cache-pollution) |
+| 8 | **LFU** | Eviction Policy | Evicts entry with lowest access count | Frequency aging ("stale ghosts") starves rising keys | [§2.2](#22-why-pure-lfu-suffers-frequency-aging-stale-ghosts) |
+| 9 | **TTL Expiry** | Expiration Control | Time-to-live bounds max staleness; add random jitter $[\tau, \tau(1+j)]$ | Synchronized fixed TTLs trigger batch expiry stampedes | [§3.1](#31-cache-stampede--thundering-herd) |
+| 10 | **Event Invalidation** | Invalidation Mechanism | Debezium/WAL CDC or outbox events evict/update keys on commit | Replication lag, duplicate delivery, and per-key ordering | [§3.2](#32-cache-aside-stale-write-race-condition) |
+| 11 | **Request Coalescing** | Stampede Defense | Single-flight deduplicates concurrent misses per key into 1 DB fetch | One slow DB call stalls all waiters; add per-caller timeouts | [§3.1](#31-cache-stampede--thundering-herd) |
+
+### 1.8 Where a Cache Sits on the Consistency Spectrum
 
 A cache is a materialized read replica with no durability and no ordering guarantee, so it cannot, by itself, provide linearizability. The strongest practical guarantee most caches offer is "eventually consistent within the TTL and invalidation lag window". Whether that is acceptable is a product decision, not a library feature: a banking balance cannot tolerate a five-second stale read, while a "trending topics" list can. The formal consistency hierarchy and linearizability checking are owned by [`architecture/distributed-systems`](../../distributed-systems/README.md); the system-design task is to map each data class to an allowed staleness budget and then choose a topology whose worst-case staleness fits that budget.
 

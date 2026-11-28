@@ -2,7 +2,7 @@
 
 This preparation bank tests Senior, Staff, and Principal distributed system design competency across the seven domains defined in [`exams/README.md`](README.md). Every question is original and grounded in primary engineering literature, official protocol RFCs, and production postmortems.
 
-- **Bank scope**: **132 questions** (`Q-SD-001`–`Q-SD-132`) covering quantitative capacity modeling, edge/API design, caching/partitioning, asynchrony/resilience, specialized indexing/financial correctness, SLO observability/DR, end-to-end canonical architectures, progressive scaling, distributed key-value stores, planetary-scale geospatial navigation, distributed message queue internals, high-contention hotel reservation and overbooking systems, planetary distributed email services, real-time gaming leaderboards, proximity / location-based services, real-time ephemeral location sharing (Nearby Friends), and high-throughput digital wallets, distributed ledgers, event sourcing, and Multi-Raft CQRS, reliable AI application & agent systems (Validator Sandwich, guarded semantic caching, calibrated HITL routing, bounded agents), secure-by-design system architecture (DDD domain primitives, identity taxonomy, 7-layer API defense, fail-closed CI/CD gates), and proxy/SPOF/API-lifecycle/CAP-PACELC composition.
+- **Bank scope**: **138 questions** (`Q-SD-001`–`Q-SD-138`) covering quantitative capacity modeling, edge/API design, caching/partitioning, asynchrony/resilience, specialized indexing/financial correctness, SLO observability/DR, end-to-end canonical architectures, progressive scaling, distributed key-value stores, planetary-scale geospatial navigation, distributed message queue internals, high-contention hotel reservation and overbooking systems, planetary distributed email services, real-time gaming leaderboards, proximity / location-based services, real-time ephemeral location sharing (Nearby Friends), and high-throughput digital wallets, distributed ledgers, event sourcing, and Multi-Raft CQRS, reliable AI application & agent systems (Validator Sandwich, guarded semantic caching, calibrated HITL routing, bounded agents), secure-by-design system architecture (DDD domain primitives, identity taxonomy, 7-layer API defense, fail-closed CI/CD gates), proxy/SPOF/API-lifecycle/CAP-PACELC composition, engineering specification documents, write-around caching, and backend architecture patterns (Modular Monolith, Microservices, Event-Driven, Serverless, Layered, Hexagonal, CQRS).
 - **Difficulty calibration**: Level `1` tests foundational mechanics, Level `2` tests Senior-level trade-off reasoning, and Level `3` tests Staff/Principal failure modes, subtle race conditions, and quantitative traps.
 - **Timed practice**: Complete the [50-Question Written Architecture Drill](#timed-mock-exam-written-architecture-drill-50-questions--75-minutes) under a strict 75-minute timer, then run the [two 60-minute Staff/Principal design loops](#timed-mock-design-loops-2--60-minute-staffprincipal-simulations) against the explicit 0–4 grading rubrics.
 
@@ -2733,6 +2733,128 @@ A design review contains four claims. Select **two** statements that are correct
 - Why not B: CAP's `C` means single-copy linearizability while ACID's `C` means invariant preservation; document stores such as MongoDB (multi-document transactions on replica sets since 4.0) and DynamoDB (`TransactWriteItems`) support ACID transactions while remaining CP under partition.
 - Ref: [modules/04-api-design-data-modeling-and-id-generation.md](../modules/04-api-design-data-modeling-and-id-generation.md#43-cap--pacelc-workload-selection-delta-and-common-database-misconceptions), https://www.rfc-editor.org/rfc/rfc5789
 - Ref: [modules/04-api-design-data-modeling-and-id-generation.md](../modules/04-api-design-data-modeling-and-id-generation.md#35-api-design-methodology-protocol-spec-nuances-and-full-lifecycle), https://graphql.github.io/graphql-over-http/
+
+</details>
+
+---
+
+## Domain 10: Backend Architecture Patterns, Write-Around Caching & Engineering Specs (`Q-SD-133`–`Q-SD-138`)
+
+### Q-SD-133 · Caching Strategies: Write-Around vs. Write-Through & Write-Behind · difficulty 2 · single
+
+An audit-ingestion service writes `50,000` large `64 KiB` compliance records per minute to PostgreSQL. Fewer than `2%` of newly written records are ever read within the first 24 hours, while a small hot set of active policies accounts for `95%` of reads in a `16 GiB` Redis cluster. The team currently uses `Write-Through` caching. What happens under `Write-Through`, and which topology change resolves it?
+
+- A) `Write-Through` pollutes Redis by caching `50,000` cold writes/minute and evicting hot policy entries; switch to `Write-Around` (writing directly to PostgreSQL, bypassing Redis allocation on insert, and deleting existing keys on update) paired with `Cache-Aside` reads.
+- B) `Write-Through` causes data loss on Redis restart; switch to `Write-Behind` so Redis flushes compliance records asynchronously to PostgreSQL.
+- C) `Write-Through` under-utilizes Redis RAM; switch to `Refresh-Ahead` on every ingested compliance record.
+- D) `Write-Through` is optimal here because it guarantees every audit record is warm in Redis even if nobody reads it.
+
+<details><summary>Answer</summary>
+
+**A.** `Write-Through` updates Redis synchronously on every write, creating write amplification and pushing `~3.2 GiB/min` of write-once compliance records through the `16 GiB` cache, evicting genuinely hot read keys. `Write-Around` (no-write-allocate) writes directly to PostgreSQL and populates Redis only on a read miss (while deleting existing keys on updates so cached copies never turn stale).
+
+- Why not B: `Write-Through` commits synchronously to PostgreSQL so Redis crashes do not lose committed writes, whereas `Write-Behind` introduces RPO > 0 risk in volatile memory and still caches cold writes.
+- Why not C: `Refresh-Ahead` continuously reloads keys before TTL expiry, worsening DB load on cold write-once records.
+- Why not D: Caching payloads with `< 2%` read probability wastes cache RAM and degrades the hit ratio of hot policies.
+- Ref: [modules/05-caching-strategies-and-invalidation.md](../modules/05-caching-strategies-and-invalidation.md#16-write-around-no-write-allocate), https://en.wikipedia.org/wiki/Cache_(computing)
+
+</details>
+
+### Q-SD-134 · Requirements & Delivery: Engineering Specification Documents & ADR Linkage · difficulty 2 · multi
+
+A team preparing a major payment-ledger redesign wants clear separation across its six engineering specification documents and Architecture Decision Records (ADRs). Select **two** statements that accurately describe document ownership and ADR linkage.
+
+- A) The **Design Brief** is a short pre-design alignment frame whose rejected candidate options feed directly into the ADR `Rejected Alternatives` list before deep implementation begins.
+- B) The **Background Schema** documents out-of-band execution contracts (async queues, outbox/CDC pipelines, retry/DLQ limits, and expand-contract DDL migrations) and links to migration and consistency ADRs.
+- C) The **Product Requirements Document (PRD)** specifies database isolation levels, PostgreSQL index types, and feature-flag rollback thresholds, making a separate TRD redundant.
+- D) Once an **Implementation Plan** ships to production, teams should silently edit the accepted ADR's `Decision` field in place whenever 10x traffic invalidates the original topology.
+
+<details><summary>Answer</summary>
+
+**A, B.** The Design Brief frames constraints and cuts early so discarded options become explicit ADR `Rejected Alternatives`, while the Background Schema captures async topics, transactional outbox schemas, DLQ rules, and zero-downtime migrations tied to consistency/migration ADRs.
+
+- Why not C: The PRD owns business goals, user journeys, and non-goals; quantified NFRs, topology, and storage choices belong to the TRD and its ADRs.
+- Why not D: ADRs are append-only historical records—when a 10x reversal trigger fires, teams write a superseding ADR referencing the measured threshold rather than silently rewriting history.
+- Ref: [modules/01-framing-requirements-and-delivery.md](../modules/01-framing-requirements-and-delivery.md#12-engineering-specification-documents), [modules/01-framing-requirements-and-delivery.md](../modules/01-framing-requirements-and-delivery.md#51-architecture-decision-records-with-rejection-rationales)
+
+</details>
+
+### Q-SD-135 · Backend Architecture Patterns: Modular Monolith vs. Microservices Crossover · difficulty 3 · scenario
+
+A SaaS company has `18` backend engineers, `4,000` peak API QPS (`150` write TPS), and a `180 GB` PostgreSQL database. A consultant recommends splitting the backend immediately into `9` Kubernetes microservices with an Istio service mesh (`99.95%` target per service) and a synchronous 7-hop request path for checkout. Which assessment is accurate?
+
+- A) Splitting into 9 synchronous microservices improves checkout availability because Kubernetes restarts failing pods independently.
+- B) Staying in a Hexagonal Modular Monolith with disjoint schemas and typed internal ports preserves local ACID checkout and `99.95%–99.99%` availability, whereas the 7-hop synchronous mesh drops composite availability to $0.9995^7 \approx 99.65\%$ (`~2.5 hours/month` downtime) while adding network latency and ops tax without crossing any scaling or org trigger.
+- C) A Modular Monolith requires cross-module SQL `JOIN`s across all 9 domains, so microservices are mandatory to enforce module boundaries.
+- D) At `150` write TPS, a single PostgreSQL primary is already past its NVMe write saturation limit and must be sharded across 9 service databases.
+
+<details><summary>Answer</summary>
+
+**B.** At `18` engineers, `4,000` QPS, and `150` write TPS, a single well-tuned PostgreSQL primary + Redis inside a Modular Monolith sits well below the split crossover (`> 45` engineers or `> 12k` write TPS). Enforcing disjoint DB schemas (`Tables(M_i) ∩ Tables(M_j) = ∅`) and CI import boundaries achieves strong encapsulation without paying the multiplicative availability drop ($0.9995^7 \approx 99.65\%$), mTLS sidecar hops, and distributed saga complexity.
+
+- Why not A: Synchronous service chains multiply failure probability ($\prod A_i$), lowering composite availability rather than raising it.
+- Why not C: A Modular Monolith explicitly forbids cross-module SQL joins via schema isolation and database roles.
+- Why not D: Modern NVMe PostgreSQL handles `5,000–12,000` write TPS comfortably before write saturation forces sharding or service extraction.
+- Ref: [modules/27-backend-architecture-patterns.md](../modules/27-backend-architecture-patterns.md#23-modular-monolith), [modules/01-framing-requirements-and-delivery.md](../modules/01-framing-requirements-and-delivery.md#54-quantitative-crossover-single-well-tuned-postgresql-vs-7-service-microservice-mesh)
+
+</details>
+
+### Q-SD-136 · Backend Architecture Patterns: Hexagonal Ports & Adapters Dependency Inversion · difficulty 2 · single
+
+In **Hexagonal (Ports & Adapters)** architecture, how are compile-time dependencies oriented between the domain core, an inbound HTTP controller, and a PostgreSQL persistence repository?
+
+- A) The domain core imports the HTTP controller framework and the PostgreSQL driver directly so transactions execute without interface overhead.
+- B) Both the HTTP controller (driving adapter) and the PostgreSQL repository (driven adapter) depend inward on Port interfaces owned by the domain core; the domain core imports neither HTTP nor SQL packages.
+- C) The PostgreSQL repository defines the domain entity structs and exports them upward to the domain core and HTTP controllers.
+- D) Hexagonal architecture forbids in-memory test doubles and requires spinning up real containers for every unit test.
+
+<details><summary>Answer</summary>
+
+**B.** Cockburn's Hexagonal Architecture applies Dependency Inversion at the boundary: the domain core owns both inbound (driving) ports and outbound (driven) port interfaces (`OrderRepositoryPort`), and external adapters depend inward to implement or invoke those ports—enabling sub-millisecond deterministic in-memory unit verification and clean infrastructure swaps.
+
+- Why not A: Direct imports from domain core to HTTP/SQL couple invariants to frameworks (classical Layered leakage).
+- Why not C: Exporting database schemas upward leaks persistence details into domain rules.
+- Why not D: Swapping the Postgres adapter for an in-memory test fake without touching domain logic is the primary testing advantage of Hexagonal architecture.
+- Ref: [modules/27-backend-architecture-patterns.md](../modules/27-backend-architecture-patterns.md#22-hexagonal-architecture-ports-and-adapters), https://alistair.cockburn.us/hexagonal-architecture/
+
+</details>
+
+### Q-SD-137 · Backend Architecture Patterns: CQRS Eventual Consistency & Projection Lag · difficulty 3 · scenario
+
+An order service uses **CQRS**: commands mutate normalized PostgreSQL tables and emit versioned events (`aggregateVersion`) via an outbox into an OpenSearch read projection. Under peak load, projection lag reaches `1.5 seconds`. A mobile client executes `POST /v1/orders` (returning `orderId` and `version: 4`), immediately navigates to `GET /v1/orders/ord-99`, and intermittently receives `404` or `version: 3`. Which design addresses this while keeping CQRS benefits?
+
+- A) Switch the entire query API to run live SQL `JOIN`s directly against the PostgreSQL write primary on every list and search call.
+- B) Remove `aggregateVersion` checks in the projector so events overwrite the OpenSearch document in arrival order regardless of version.
+- C) Return `version: 4` (or the created view DTO) in the `POST` response, pass `minVersion=4` on immediate read-after-write lookups to wait briefly or fall back to primary read only when `read.version < minVersion`, and keep version-monotone guards in the projector so stale events never overwrite newer state.
+- D) Force `POST /v1/orders` to block synchronously until OpenSearch finishes a full segment refresh before returning `201 Created`.
+
+<details><summary>Answer</summary>
+
+**C.** CQRS trades synchronous read-after-write visibility for independent read/write scaling ($v_{\text{read}} \le v_{\text{write}}$ during lag). Session-scoped `minVersion` hints (or returning the created DTO / push-based SSE updates) solve read-your-writes for the mutating user without sacrificing OpenSearch offload for the 99% normal read traffic, while monotonic `aggregateVersion` checks in the projector prevent out-of-order replays from regressing state.
+
+- Why not A: Routing all read traffic back to the transactional primary negates CQRS read scaling.
+- Why not B: Dropping version guards lets delayed or redelivered `version: 3` events overwrite `version: 4`.
+- Why not D: Blocking write transactions on OpenSearch refresh couples write availability and latency to the search cluster.
+- Ref: [modules/27-backend-architecture-patterns.md](../modules/27-backend-architecture-patterns.md#27-command-query-responsibility-segregation-cqrs), https://martinfowler.com/bliki/CQRS.html
+
+</details>
+
+### Q-SD-138 · Backend Architecture Patterns: Event-Driven Outbox, Idempotency & Serverless Economics · difficulty 3 · multi
+
+Select **two** correct architectural statements regarding **Event-Driven Architecture** and **Serverless (FaaS)** in production systems.
+
+- A) Writing a domain row to PostgreSQL and an `outbox` record in the same local ACID transaction prevents lost events on process crash and prevents phantom events on transaction rollback, provided consumers also deduplicate at-least-once redeliveries via a persisted `processed_events` table.
+- B) Moving a steady `45%`-average-utilization, database-heavy REST API from containers to FaaS Lambda functions with direct PostgreSQL TCP connections eliminates connection-pool saturation and always reduces monthly compute cost.
+- C) Partitioning an event stream by `aggregate_id` preserves per-entity ordering across retries when paired with a single-writer or sequence-guarded consumer, while routing repeated poison-pill failures to a Dead-Letter Queue (DLQ) prevents blocking the partition.
+- D) Calling `kafka.send(event)` inside an application `try` block immediately after `db.commit()` guarantees exactly-once delivery without an outbox or CDC relay.
+
+<details><summary>Answer</summary>
+
+**A, C.** Transactional outbox + idempotent `processed_events` deduplication solves dual-write split-brain and at-least-once redelivery, while `aggregate_id` partitioning plus sequence guards and DLQs preserve per-entity ordering without poison-pill head-of-line stalls.
+
+- Why not B: At `45%` steady utilization, FaaS costs more than containers, suffers cold-start p99 spikes, and multiplies direct DB TCP connections unless mediated by RDS Proxy/PgBouncer.
+- Why not D: A crash, OOM, or network timeout between `db.commit()` and `kafka.send()` drops the event permanently—dual-write is never atomic.
+- Ref: [modules/27-backend-architecture-patterns.md](../modules/27-backend-architecture-patterns.md#25-event-driven-architecture-eda), [modules/27-backend-architecture-patterns.md](../modules/27-backend-architecture-patterns.md#26-serverless-function-as-a-service--faas)
 
 </details>
 ---
