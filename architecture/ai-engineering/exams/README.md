@@ -1,0 +1,22 @@
+# AI Engineering Certification & Interview Coverage Matrix
+
+No single vendor-neutral certification covers the full AI Engineering lifecycle (RAG retrieval, agent harnesses, MCP, evaluations, LLMOps, and AI security). This matrix maps the **Senior AI Engineer Technical Interview Loop** alongside aligned objectives from **AWS Certified AI Practitioner (AIF-C01)** and **Microsoft Certified: Azure AI Engineer Associate (AI-200 / AI-102 successor alignment)** to the 7 modules, 3 executable proof suites, and 60-question bank in this track.
+
+> [!NOTE]
+> **Exam Scope Delta.** Cloud provider certifications (AWS AIF-C01, Azure AI-200) emphasize managed platform services (Bedrock Knowledge Bases, Azure AI Search, Content Safety) and high-level Responsible AI principles, whereas the Senior AI Engineer interview loop and this track additionally require protocol-level mastery of MCP 2026-07-28, LangGraph Pregel BSP execution, Ragas 0.4.4 math, disaggregated serving, ModelScan 0.8.8, and CycloneDX 1.7 ML-BOMs.
+
+## Comprehensive Domain Coverage Matrix
+
+| Domain | Objectives & Capabilities | Weight | Mapped Modules | Verified Examples & Proofs | Status |
+| :-- | :-- | :-: | :-- | :-- | :-: |
+| **1. LLM Fundamentals & Context Engineering** | BPE tokenization, `temperature`/`top-p`/`min-p` sampling, API `finish_reason` handling, static-to-volatile prefix caching, function calling, CFG/FSM structured outputs + Zod/Pydantic validation | 13% | `01` | [`system-design` M25](../../system-design/modules/25-reliable-ai-systems.md) | ✅ full |
+| **2. RAG Pipeline & Vector Retrieval** | 7-stage RAG lifecycle, MRL embeddings (`gemini-embedding-2`, `embed-v5.0-pro`), HNSW RAM sizing, chunking & Contextual Retrieval, metadata pre-filter vs post-filter selectivity trap, BM25 + dense + RRF (`k=60`) | 15% | `02` | [`examples/01-rag-hybrid-and-eval.test.ts`](../examples/01-rag-hybrid-and-eval.test.ts) | ✅ full |
+| **3. Advanced RAG Patterns** | Cross-encoder & ColBERT MaxSim reranking, small-to-big parent/sentence retrieval, GraphRAG (Leiden communities + map-reduce), Lost-in-the-Middle context compression, query rewriting, decomposition, HyDE, Agentic RAG | 13% | `03` | [`examples/01-rag-hybrid-and-eval.test.ts`](../examples/01-rag-hybrid-and-eval.test.ts) | ✅ full |
+| **4. Agent Harness, MCP & Orchestration** | Deterministic harness budgets, plan/act/observe/learn loop, SHA-256 cycle detection, idempotent tools, episodic/semantic/procedural memory, MCP 2026-07-28 JSON-RPC 2.0 + MRTR `input_required`, LangGraph `Send`/`Command`/`interrupt()`, HITL queues | 17% | `04` | [`examples/02-agent-harness-and-metrics.test.ts`](../examples/02-agent-harness-and-metrics.test.ts) | ✅ full |
+| **5. Agent Metrics, Evals & Benchmarking** | 8 operational agent metrics (`TSR`, `TA`, `steps`, `ER`, `GHR`, `OR`, `CPT`, `TTR`), trajectory vs outcome evals, Ragas 0.4.4 (`faithfulness`, `context precision@K`, `context recall`, relevancy), LLM-as-a-Judge biases + Cohen's $\kappa$, contamination & Pareto frontiers | 13% | `05` | [`examples/01-rag-hybrid-and-eval.test.ts`](../examples/01-rag-hybrid-and-eval.test.ts), [`examples/02-agent-harness-and-metrics.test.ts`](../examples/02-agent-harness-and-metrics.test.ts) | ✅ full |
+| **6. LLMOps: Serving, Observability & CI/CD** | vLLM PagedAttention, SGLang RadixAttention, disaggregated prefill/decode, AI gateway degradation ladders, OTel GenAI spans/metrics (`NO_CONTENT` default), immutable quadruple releases, golden gates, shadow & canary rollouts | 13% | `06` | [`technologies/observability`](../../../technologies/observability/README.md) | ✅ full |
+| **7. AI Security Stack & Responsible AI** | 8-layer security stack (red teaming, guardrails + permissions, direct/indirect injection isolation, ModelScan 0.8.8 / safetensors vs pickle VM, secrets + CycloneDX 1.7 ML-BOM, tenant policy, monitoring, OWASP LLM 2025/2026 + Agentic 2026 + NIST AI RMF/600-1 + MITRE ATLAS v2026.11), fairness & data ethics | 16% | `07` | [`examples/03-ai-security-guardrails.test.ts`](../examples/03-ai-security-guardrails.test.ts) | ✅ full |
+
+## Question Bank & Timed Mock Exam
+
+- **[AI Engineering Question Bank & 40-Question Timed Mock Exam](./ai-engineering.md)**: **60 original questions** (`Q-AIE-001`–`Q-AIE-060`) calibrated across difficulties `1–3` with full distractor rationales, module cross-links, and primary specification URLs, plus a timed 40-question mock exam and scoring key.

@@ -1,0 +1,152 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 600" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #0b1020; }
+      .panel { fill: #121a30; stroke: #2b3b66; stroke-width: 1.5; rx: 10; }
+      .harness { fill: #10182b; stroke: #4c8bf5; stroke-width: 2; stroke-dasharray: 8 4; rx: 12; }
+      .box-blue { fill: #152546; stroke: #4c8bf5; stroke-width: 1.6; rx: 8; }
+      .box-green { fill: #122d26; stroke: #2ec486; stroke-width: 1.6; rx: 8; }
+      .box-amber { fill: #2f2513; stroke: #f5a623; stroke-width: 1.6; rx: 8; }
+      .box-purple { fill: #24193c; stroke: #a66bff; stroke-width: 1.6; rx: 8; }
+      .box-red { fill: #33161e; stroke: #f05454; stroke-width: 1.6; rx: 8; }
+      .title { font-family: 'Inter', -apple-system, sans-serif; font-size: 18px; font-weight: 700; fill: #f8fafc; }
+      .subtitle { font-family: 'Inter', -apple-system, sans-serif; font-size: 12px; fill: #94a3b8; }
+      .sec-hdr { font-family: 'Inter', -apple-system, sans-serif; font-size: 13px; font-weight: 700; fill: #e2e8f0; }
+      .lbl { font-family: 'Inter', -apple-system, sans-serif; font-size: 12px; font-weight: 700; fill: #f1f5f9; }
+      .txt { font-family: 'Inter', -apple-system, sans-serif; font-size: 10.5px; fill: #cbd5e1; }
+      .code { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10px; fill: #93c5fd; }
+      .code-green { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10px; fill: #6ee7b7; }
+      .code-amber { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10px; fill: #fcd34d; }
+      .arrow { stroke: #60a5fa; stroke-width: 2; fill: none; marker-end: url(#arr-blue); }
+      .arrow-anim { stroke: #38bdf8; stroke-width: 2.2; stroke-dasharray: 7 5; fill: none; animation: flowDash 1.6s linear infinite; }
+      .arrow-green { stroke: #34d399; stroke-width: 2; fill: none; marker-end: url(#arr-green); }
+      .arrow-amber { stroke: #fbbf24; stroke-width: 2; stroke-dasharray: 5 4; fill: none; marker-end: url(#arr-amber); animation: flowDash 2s linear infinite; }
+      @keyframes flowDash {
+        to { stroke-dashoffset: -24; }
+      }
+      @keyframes heartbeat {
+        0%, 100% { transform: scale(1); opacity: 0.7; }
+        50% { transform: scale(1.15); opacity: 1; }
+      }
+      .dot { animation: heartbeat 1.8s ease-in-out infinite; transform-origin: center; }
+    </style>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#60a5fa"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#34d399"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#fbbf24"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1280" height="600"/>
+
+  <text class="title" x="24" y="34">Bounded Agent Harness, Loop Engine, MCP 2026-07-28 &amp; LangGraph Pregel Orchestration</text>
+  <text class="subtitle" x="24" y="54">User Goal → Deterministic Harness Envelope → Plan/Act/Observe/Learn Loop → 1:1 Isolated MCP Clients + Memory + HITL Interrupts → Verified Output</text>
+
+  <!-- User Goal -->
+  <rect class="box-blue" x="24" y="190" width="160" height="120"/>
+  <text class="lbl" x="36" y="214">User Goal</text>
+  <text class="txt" x="36" y="234">• Session Principal</text>
+  <text class="txt" x="36" y="252">• allowedTools ACL</text>
+  <text class="code" x="36" y="272">idempotencyKey</text>
+  <text class="code-amber" x="36" y="290">deadlineMs + C_max</text>
+
+  <!-- Outer Harness Envelope -->
+  <rect class="harness" x="218" y="76" width="830" height="494"/>
+  <text class="sec-hdr" x="236" y="100">DETERMINISTIC AGENT HARNESS ENVELOPE (LangGraph Pregel BSP / Checkpointer)</text>
+  <circle class="dot" cx="808" cy="95" r="5" fill="#34d399"/>
+
+  <!-- Budget & Guardrail Bar -->
+  <rect class="box-red" x="236" y="114" width="794" height="58"/>
+  <text class="lbl" x="250" y="135">Hard Termination &amp; Policy Gates (Checked Before Every Step)</text>
+  <text class="code-amber" x="250" y="156">S &lt;= S_max  |  K_tools &lt;= K_max  |  Cost &lt;= C_max  |  SHA-256(tool+args) cycle == false  |  Tool AuthZ allowlist</text>
+
+  <!-- Loop Engine -->
+  <rect class="panel" x="236" y="186" width="440" height="250"/>
+  <text class="sec-hdr" x="250" y="208">Agent Loop Engineering</text>
+
+  <rect class="box-blue" x="254" y="224" width="176" height="74"/>
+  <text class="lbl" x="266" y="244">1. PLAN</text>
+  <text class="txt" x="266" y="262">Assemble budgeted context</text>
+  <text class="txt" x="266" y="278">+ structured next action</text>
+
+  <rect class="box-green" x="480" y="224" width="176" height="74"/>
+  <text class="lbl" x="492" y="244">2. ACT</text>
+  <text class="txt" x="492" y="262">Dispatch validated tool</text>
+  <text class="txt" x="492" y="278">or Send() fan-out</text>
+
+  <rect class="box-amber" x="480" y="340" width="176" height="74"/>
+  <text class="lbl" x="492" y="360">3. OBSERVE</text>
+  <text class="txt" x="492" y="378">Inspect result / isError</text>
+  <text class="txt" x="492" y="394">+ MRTR input_required</text>
+
+  <rect class="box-purple" x="254" y="340" width="176" height="74"/>
+  <text class="lbl" x="266" y="360">4. LEARN &amp; COMPACT</text>
+  <text class="txt" x="266" y="378">Checkpoint state + trim</text>
+  <text class="txt" x="266" y="394">tool bloat / write memory</text>
+
+  <!-- Loop cycle arrows -->
+  <path class="arrow" d="M 430 261 L 478 261"/>
+  <path class="arrow-anim" d="M 430 261 L 478 261"/>
+  <path class="arrow" d="M 568 298 L 568 338"/>
+  <path class="arrow-anim" d="M 568 298 L 568 338"/>
+  <path class="arrow" d="M 480 377 L 432 377"/>
+  <path class="arrow-anim" d="M 480 377 L 432 377"/>
+  <path class="arrow" d="M 342 340 L 342 300"/>
+  <path class="arrow-anim" d="M 342 340 L 342 300"/>
+
+  <!-- MCP 2026-07-28 Host/Client/Server -->
+  <rect class="box-purple" x="698" y="186" width="332" height="176"/>
+  <text class="lbl" x="712" y="208">MCP 2026-07-28 (Host → 1:1 Client → Server)</text>
+  <text class="code" x="712" y="228">JSON-RPC 2.0 (Stateless _meta version + caps)</text>
+  <text class="txt" x="712" y="246">• Tools: tools/list (deterministic) &amp; tools/call</text>
+  <text class="txt" x="712" y="264">• Resources &amp; Prompts: server/discover + listen</text>
+  <text class="code-amber" x="712" y="284">• resultType: "input_required" (MRTR new id)</text>
+  <text class="txt" x="712" y="302">• JSON Schema 2020-12 (no remote $ref SSRF)</text>
+  <text class="txt" x="712" y="320">• Servers isolated: no peer or full-history view</text>
+  <text class="code-green" x="712" y="342">• W3C traceparent propagated in _meta</text>
+
+  <!-- Memory + HITL -->
+  <rect class="box-green" x="236" y="452" width="440" height="100"/>
+  <text class="lbl" x="250" y="474">Memory Architecture (Context-Budgeted Retrieval)</text>
+  <text class="txt" x="250" y="494">• Short-Term: Thread Checkpointer + Progressive Compaction</text>
+  <text class="txt" x="250" y="512">• Long-Term BaseStore: Episodic (runs) | Semantic (facts) | Procedural</text>
+  <text class="code-green" x="250" y="532">Query → Retrieve Relevant Memories → Grounded Injection</text>
+
+  <rect class="box-amber" x="698" y="378" width="332" height="174"/>
+  <text class="lbl" x="712" y="400">HITL &amp; Multi-Agent Orchestration</text>
+  <text class="code-amber" x="712" y="420">interrupt(payload) → Command(resume=...)</text>
+  <text class="txt" x="712" y="440">• Suspends durable graph prior to irreversible writes</text>
+  <text class="txt" x="712" y="458">• Priority queue (impactUsd × uncertainty)</text>
+  <text class="txt" x="712" y="476">• Sub-agents via isolated context + Send()</text>
+  <text class="txt" x="712" y="494">• Typed error surfaces for model self-repair</text>
+  <text class="code" x="712" y="514">• Human overrides logged to golden eval corpus</text>
+  <text class="txt" x="712" y="534">• Escalates cleanly on policy or budget exhaustion</text>
+
+  <!-- Task Output & 8 Metrics -->
+  <rect class="box-green" x="1082" y="150" width="174" height="290"/>
+  <text class="lbl" x="1094" y="174">Task Output &amp;</text>
+  <text class="lbl" x="1094" y="190">8 Agent Metrics</text>
+  <text class="code-green" x="1094" y="216">1. Task Success</text>
+  <text class="code-green" x="1094" y="236">2. Tool Accuracy</text>
+  <text class="code" x="1094" y="256">3. Steps / Task</text>
+  <text class="code" x="1094" y="276">4. Escalation Rate</text>
+  <text class="code-amber" x="1094" y="296">5. Guardrail Hits</text>
+  <text class="code-amber" x="1094" y="316">6. Override Rate</text>
+  <text class="code" x="1094" y="336">7. Cost / Task</text>
+  <text class="code" x="1094" y="356">8. Time to Resolve</text>
+  <text class="txt" x="1094" y="384">OTel GenAI Spans:</text>
+  <text class="code" x="1094" y="402">invoke_agent → chat</text>
+  <text class="code" x="1094" y="418">→ execute_tool</text>
+
+  <!-- External Connectors -->
+  <path class="arrow" d="M 184 250 L 234 250"/>
+  <path class="arrow-anim" d="M 184 250 L 234 250"/>
+  <path class="arrow-amber" d="M 656 261 L 696 261"/>
+  <path class="arrow-amber" d="M 696 320 L 656 377"/>
+  <path class="arrow-green" d="M 456 436 L 456 450"/>
+  <path class="arrow-green" d="M 1030 280 L 1080 280"/>
+</svg>
